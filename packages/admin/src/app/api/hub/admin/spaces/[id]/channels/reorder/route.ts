@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { readOrderedIds } from '@/lib/query'
+import { forwardUpstream } from '@/server/forward'
 import { reorderChannels } from '@/server/hub'
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -11,5 +12,5 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     )
   }
   const { status, body } = await reorderChannels((await ctx.params).id, orderedIds)
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }

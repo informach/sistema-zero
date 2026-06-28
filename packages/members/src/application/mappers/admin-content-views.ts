@@ -23,6 +23,8 @@ export interface CourseView {
   status: string
   /** Plataforma do curso (`adult` | `kids`). */
   audience: string
+  /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
+  sequentialLock: boolean
   createdAt: string
   updatedAt: string
 }
@@ -38,6 +40,7 @@ export function toCourseView(c: Course): CourseView {
     salesPageUrl: resolveSalesPageUrl(c),
     status: c.status,
     audience: c.audience,
+    sequentialLock: c.sequentialLock,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
   }

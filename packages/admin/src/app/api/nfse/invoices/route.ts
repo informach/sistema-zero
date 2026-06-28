@@ -1,22 +1,18 @@
 import { NextResponse } from 'next/server'
+import { parseLimit, parseOffset } from '@/lib/list-params'
 import { isValidUuid } from '@/lib/nfse'
+import { forwardUpstream } from '@/server/forward'
 import { createManualInvoice, listInvoices } from '@/server/nfse'
-
-function num(value: string | null): number | undefined {
-  if (!value) return undefined
-  const n = Number(value)
-  return Number.isInteger(n) && n >= 0 ? n : undefined
-}
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const { status, body } = await listInvoices({
     status: searchParams.get('status') ?? undefined,
     q: searchParams.get('q') ?? undefined,
-    limit: num(searchParams.get('limit')),
-    offset: num(searchParams.get('offset')),
+    limit: parseLimit(searchParams.get('limit')),
+    offset: parseOffset(searchParams.get('offset')),
   })
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }
 
 /** Emissão MANUAL por pagamento — valida o uuid AQUI (400) antes de ir ao gateway. */
@@ -35,5 +31,5 @@ export async function POST(req: Request) {
     )
   }
   const { status, body } = await createManualInvoice(paymentId)
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }

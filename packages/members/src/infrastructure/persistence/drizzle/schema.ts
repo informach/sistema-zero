@@ -76,6 +76,10 @@ export const courses = members.table(
     coverImageUrl: text('cover_image_url'),
     status: courseStatusEnum('status').notNull().default('draft'),
     audience: courseAudienceEnum('audience').notNull().default('adult'),
+    // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
+    // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
+    // (decisão da usuária: padrão ligado, com toggle por curso no admin).
+    sequentialLock: boolean('sequential_lock').notNull().default(true),
     metadata: jsonb('metadata').$type<Record<string, unknown>>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),

@@ -1,10 +1,11 @@
-import type { CourseAudience } from '../../domain/course/course'
+import type { CourseAudience, ModuleWithLessons } from '../../domain/course/course'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
-import { computeProgress } from '../../domain/progress/progress'
+import { computeProgress, resolveContinueLesson } from '../../domain/progress/progress'
+import { lockedLessonSetForCourse } from '../lesson-locking/lesson-locking'
 import { type MyCourseView, toMyCourseView } from '../mappers/views'
 
 /**
@@ -80,6 +81,25 @@ export class ListMyCoursesService {
       this.positions.lastAccessedByCourseIds(userId, courseIds),
     ])
 
+    // Trava sequencial: só recomputa o "continuar" quando a última aula ACESSADA
+    // pode ter travado — curso com trava ligada, ator não-privilegiado e aula
+    // acessada. Busca outline + concluídas desses cursos EM LOTE (2 queries), em
+    // vez de 2 por curso DENTRO do loop (o N+1 que o resto do método já evita).
+    const lockCourseIds = courses
+      .filter(
+        (c) => c.audience === audience && c.sequentialLock && !privileged && lastAccessed.get(c.id),
+      )
+      .map((c) => c.id)
+    const lockData =
+      lockCourseIds.length > 0
+        ? await Promise.all([
+            this.courses.findOutlinesByCourseIds(lockCourseIds, { publishedOnly: true }),
+            this.progress.listCompletedLessonIdsByCourseIds(userId, lockCourseIds),
+          ])
+        : null
+    const outlinesByCourse = lockData?.[0] ?? new Map<string, ModuleWithLessons[]>()
+    const completedIdsByCourse = lockData?.[1] ?? new Map<string, string[]>()
+
     const views: MyCourseView[] = []
     for (const course of courses) {
       // Vitrine por audiência: matrícula específica de curso da OUTRA plataforma
@@ -89,7 +109,27 @@ export class ListMyCoursesService {
       const entitlement = pickStronger(specific ?? null, master)
       if (!entitlement) continue
       const progress = computeProgress(completed.get(course.id) ?? 0, totals.get(course.id) ?? 0)
-      views.push(toMyCourseView(course, entitlement, progress, lastAccessed.get(course.id) ?? null))
+      let continueLessonId = lastAccessed.get(course.id) ?? null
+      if (continueLessonId && course.sequentialLock && !privileged) {
+        const outline = outlinesByCourse.get(course.id) ?? []
+        const completedSet = new Set(completedIdsByCourse.get(course.id) ?? [])
+        const orderedPublishedIds = outline.flatMap((m) => m.lessons.map((l) => l.id))
+        const lockedSet = lockedLessonSetForCourse(
+          course,
+          orderedPublishedIds,
+          completedSet,
+          privileged,
+        )
+        if (lockedSet.has(continueLessonId)) {
+          continueLessonId = resolveContinueLesson(
+            outline,
+            completedSet,
+            continueLessonId,
+            lockedSet,
+          )
+        }
+      }
+      views.push(toMyCourseView(course, entitlement, progress, continueLessonId))
     }
     return views
   }

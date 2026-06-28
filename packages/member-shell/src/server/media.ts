@@ -188,3 +188,18 @@ export async function removeStaleAvatars(
     console.warn('[media] limpeza de arquivos antigos falhou', { userId, namespace, error })
   }
 }
+
+/**
+ * Remove UM objeto recém-subido (best-effort) — usado para REVERTER um upload de
+ * avatar cujo PATCH de conta falhou: o WebP já está no R2 mas ninguém o referencia,
+ * então sem isto ele fica órfão até a próxima troca bem-sucedida (`removeStaleAvatars`
+ * preserva `keepKey`, NÃO apaga este). Não pode usar `removeStaleAvatars` aqui (ela
+ * apagaria o avatar ATUAL válido, que segue referenciado pela conta).
+ */
+export async function removeStoredAvatar(key: string): Promise<void> {
+  try {
+    await r2DeleteObjects([key])
+  } catch (error) {
+    console.warn('[media] reversão de avatar órfão falhou', { key, error })
+  }
+}

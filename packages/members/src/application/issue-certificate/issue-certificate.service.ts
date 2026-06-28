@@ -18,6 +18,7 @@ import type { CourseRepository } from '../../domain/ports/course-repository.port
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import { type CertificateView, toCertificateView } from '../mappers/views'
 
 export interface IssueCertificateInput {
@@ -103,6 +104,12 @@ export class IssueCertificateService {
       this.courses.findOutline(course.id, { publishedOnly: true }),
     ])
     const orderedLessonIds = outline.flatMap((m) => m.lessons.map((l) => l.id))
+    assertLessonUnlockedFromState(
+      course,
+      input.lessonId,
+      { completedLessonIds: completedIds, orderedPublishedLessonIds: orderedLessonIds },
+      input.privileged,
+    )
     const preceding = precedingPublishedLessonIds(orderedLessonIds, input.lessonId)
     if (!eligibleForCertificate(preceding, completedIds)) {
       throw new CertificateNotEligibleError()
@@ -152,14 +159,27 @@ export class IssueCertificateService {
     completedIdsBefore?: string[],
     now = this.clock(),
   ): Promise<void> {
-    const completedIds =
-      completedIdsBefore ?? (await this.progress.listCompletedLessonIds(input.userId, course.id))
-
     // Conclui a aula do certificado. Se ela for a última pendente, o curso fecha (100% +
     // badge course-complete); havendo aulas DEPOIS do certificado, o curso segue incompleto
-    // (courseCompleted é calculado abaixo pela contagem real). `markComplete` é idempotente;
-    // o award é FAIL-OPEN (nunca derruba a emissão).
-    await this.progress.markComplete(input.userId, input.lessonId, course.id, now)
+    // (courseCompleted é calculado abaixo pela contagem real). `markComplete` é idempotente
+    // e devolve se a conclusão é NOVA; o award é FAIL-OPEN (nunca derruba a emissão).
+    const newlyCompleted = await this.progress.markComplete(
+      input.userId,
+      input.lessonId,
+      course.id,
+      now,
+    )
+
+    // Replay (re-baixar o PDF de um certificado JÁ emitido) com a aula já concluída: não há
+    // o que curar → pula as 3 contagens + o award (idempotentes, mas trabalho à toa — o BFF
+    // chama o members a CADA download, antes de checar o cache do PDF). A 1ª emissão
+    // (`completedIdsBefore` definido) e a auto-cura de crash pós-insert (markComplete acabou
+    // de inserir → `newlyCompleted`) seguem para o award. Trade-off aceito: um award que
+    // tenha FALHADO na 1ª emissão não é re-tentado no download (é fail-open/cosmético).
+    if (!newlyCompleted && completedIdsBefore === undefined) return
+
+    const completedIds =
+      completedIdsBefore ?? (await this.progress.listCompletedLessonIds(input.userId, course.id))
     const [total, completed, moduleLessonIds] = await Promise.all([
       this.courses.countPublishedLessons(course.id),
       this.progress.countCompletedPublished(input.userId, course.id),

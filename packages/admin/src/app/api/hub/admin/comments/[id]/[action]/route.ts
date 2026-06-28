@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { forwardUpstream } from '@/server/forward'
 import { commentAction } from '@/server/hub'
 
 const ALLOWED = new Set(['approve', 'reject', 'hide', 'delete'])
@@ -12,5 +13,5 @@ export async function POST(
     return NextResponse.json({ error: { code: 'INVALID_ACTION' } }, { status: 400 })
   }
   const { status, body } = await commentAction(id, action)
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }

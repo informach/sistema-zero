@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { isValidCancelReason } from '@/lib/nfse'
+import { forwardUpstream } from '@/server/forward'
 import { cancelInvoice } from '@/server/nfse'
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -18,5 +19,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     )
   }
   const { status, body } = await cancelInvoice(id, reason)
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }

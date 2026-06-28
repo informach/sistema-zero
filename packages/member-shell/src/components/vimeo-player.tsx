@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from 'react'
 interface VimeoPlayerProps {
   /** ID numérico já extraído da URL (nunca o `src` cru). */
   vimeoId: string
+  /** Hash de privacidade (`h`) dos vídeos NÃO LISTADOS — o SDK exige a URL completa com ele. */
+  vimeoHash?: string | null
   /** Watermark discreto (e-mail do aluno) sobre o vídeo, no canto superior esquerdo. */
   watermark?: string | null
   /** Retomar de onde parou (segundos). */
@@ -36,6 +38,7 @@ interface VimeoPlayerProps {
  */
 export function VimeoPlayer({
   vimeoId,
+  vimeoHash,
   watermark,
   initialPositionSeconds,
   onProgress,
@@ -61,9 +64,14 @@ export function VimeoPlayer({
     const host = hostRef.current
     if (!host) return
     reachedRef.current = false
-    // Mesmos params do embed canônico antigo (sem título/byline, com DNT).
+    // Mesmos params do embed canônico antigo (sem título/byline, com DNT). Vídeo
+    // NÃO LISTADO precisa da URL canônica COM o hash de privacidade (o SDK não
+    // aceita `h` solto — só dentro da `url`); listado segue por `id` numérico.
+    // A URL é MONTADA do id+hash já validados — nunca o `src` cru (invariante).
     const player = new Player(host, {
-      id: Number(vimeoId),
+      ...(vimeoHash
+        ? { url: `https://player.vimeo.com/video/${vimeoId}?h=${vimeoHash}` }
+        : { id: Number(vimeoId) }),
       byline: false,
       title: false,
       portrait: false,
@@ -100,7 +108,7 @@ export function VimeoPlayer({
       // o React nunca soube dele, então o próximo run cria um novo limpo.
       player.destroy().catch(() => {})
     }
-  }, [vimeoId, thresholdPercent])
+  }, [vimeoId, vimeoHash, thresholdPercent])
 
   // Sincroniza o estado do botão com a Fullscreen API (Esc, F11, etc.).
   useEffect(() => {

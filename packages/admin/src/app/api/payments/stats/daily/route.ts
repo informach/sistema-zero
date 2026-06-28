@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { forwardUpstream } from '@/server/forward'
 import { getDailyPaymentsStats } from '@/server/payments'
 
 export async function GET(req: Request) {
@@ -8,5 +8,5 @@ export async function GET(req: Request) {
     to: searchParams.get('to') ?? undefined,
     productId: searchParams.get('productId') ?? undefined,
   })
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }

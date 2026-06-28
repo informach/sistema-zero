@@ -1,6 +1,7 @@
 'use client'
 
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
+import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Flame, Gift, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -46,6 +47,7 @@ export function LessonCelebration({
       : progressBefore.percent
 
   const [percent, setPercent] = useState(progressBefore.percent)
+  const cardRef = useModalA11y<HTMLDivElement>({ open: true, onClose })
 
   // Anima a barra antes→depois após a entrada do modal (transition no CSS).
   useEffect(() => {
@@ -56,13 +58,20 @@ export function LessonCelebration({
   return (
     <div
       className="sz-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Aula concluída"
+      onClick={onClose}
+      role="presentation"
     >
       <KidsConfetti />
 
-      <div className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl md:p-8">
+      <div
+        ref={cardRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Aula concluída"
+        onClick={(e) => e.stopPropagation()}
+        className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl outline-none md:p-8"
+      >
         <KidsMascot expression="celebrating" className="kid-wiggle mx-auto size-24" />
         <h2 className="sz-display mt-3 text-2xl">Aula concluída!</h2>
         <p className="mt-1 text-muted-foreground text-sm">Mandou muito bem!</p>

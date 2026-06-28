@@ -1,8 +1,9 @@
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Card } from '@sistemazero/ui/card'
-import { CheckCircle2, Circle, Clock, PlayCircle } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, Lock, PlayCircle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { cn } from '@/lib/cn'
 import type { CourseDetailView, LessonOutlineView } from '@/lib/types'
 import { getMyCourse } from '@/server/members'
 
@@ -89,27 +90,52 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               ) : null}
             </div>
             <ul>
-              {module.lessons.map((lesson) => (
-                <li key={lesson.id} className="border-b border-border last:border-b-0">
-                  <Link
-                    href={lessonHref(lesson)}
-                    className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/50"
-                  >
+              {module.lessons.map((lesson) => {
+                // Ícone de estado: concluída ✓, travada 🔒, ou círculo vazio.
+                const rowInner = (
+                  <>
                     {lesson.completed ? (
                       <CheckCircle2 className="size-4 shrink-0 text-accent dark:text-primary" />
+                    ) : lesson.locked ? (
+                      <Lock className="size-4 shrink-0 text-muted-foreground" />
                     ) : (
                       <Circle className="size-4 shrink-0 text-muted-foreground" />
                     )}
-                    <span className="flex-1 text-sm">{lesson.title}</span>
+                    <span
+                      className={cn('flex-1 text-sm', lesson.locked && 'text-muted-foreground')}
+                    >
+                      {lesson.title}
+                    </span>
                     {lesson.estimatedMinutes ? (
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="size-3" />
                         {lesson.estimatedMinutes} min
                       </span>
                     ) : null}
-                  </Link>
-                </li>
-              ))}
+                  </>
+                )
+                return (
+                  <li key={lesson.id} className="border-b border-border last:border-b-0">
+                    {lesson.locked ? (
+                      // Aula travada: linha NÃO clicável (a regra de acesso é do backend).
+                      <div
+                        aria-disabled="true"
+                        title="Conclua a aula anterior para liberar"
+                        className="flex cursor-not-allowed items-center gap-3 px-5 py-3 opacity-70"
+                      >
+                        {rowInner}
+                      </div>
+                    ) : (
+                      <Link
+                        href={lessonHref(lesson)}
+                        className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/50"
+                      >
+                        {rowInner}
+                      </Link>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           </Card>
         ))}

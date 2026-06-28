@@ -373,7 +373,20 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       }))
   }
 
-  async findLessonWithContent(lessonId: string): Promise<LessonWithContent | null> {
+  async findOutlinesByCourseIds(
+    courseIds: string[],
+    opts?: { publishedOnly?: boolean },
+  ): Promise<Map<string, ModuleWithLessons[]>> {
+    const out = new Map<string, ModuleWithLessons[]>()
+    for (const courseId of new Set(courseIds))
+      out.set(courseId, await this.findOutline(courseId, opts))
+    return out
+  }
+
+  async findLessonWithContent(
+    lessonId: string,
+    opts?: { includeAttachments?: boolean },
+  ): Promise<LessonWithContent | null> {
     const lesson = this.lessons.find((l) => l.id === lessonId)
     if (!lesson) return null
     return {
@@ -381,9 +394,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       blocks: this.blocks
         .filter((b) => b.lessonId === lessonId)
         .sort((a, b) => a.sortOrder - b.sortOrder),
-      attachments: this.attachments
-        .filter((a) => a.lessonId === lessonId)
-        .sort((a, b) => a.sortOrder - b.sortOrder),
+      attachments:
+        opts?.includeAttachments === false
+          ? []
+          : this.attachments
+              .filter((a) => a.lessonId === lessonId)
+              .sort((a, b) => a.sortOrder - b.sortOrder),
     }
   }
 
@@ -474,11 +490,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const now = new Date()
     // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna;
     // `audience` ausente cai no default da coluna (`adult`).
-    const { salesPageUrl, audience, ...rest } = fields
+    const { salesPageUrl, audience, sequentialLock, ...rest } = fields
     const course: Course = {
       id: randomUUID(),
       ...rest,
       audience: audience ?? 'adult',
+      sequentialLock: sequentialLock ?? true,
       metadata: salesPageUrl ? { salesPageUrl } : null,
       createdAt: now,
       updatedAt: now,
@@ -804,6 +821,22 @@ export class InMemoryProgressRepository implements ProgressRepository {
     return this.completions
       .filter((c) => c.userId === userId && c.courseId === courseId)
       .map((c) => c.lessonId)
+  }
+
+  async listCompletedLessonIdsByCourseIds(
+    userId: string,
+    courseIds: string[],
+  ): Promise<Map<string, string[]>> {
+    const set = new Set(courseIds)
+    const out = new Map<string, string[]>()
+    for (const c of this.completions) {
+      if (c.userId === userId && set.has(c.courseId)) {
+        const arr = out.get(c.courseId) ?? []
+        arr.push(c.lessonId)
+        out.set(c.courseId, arr)
+      }
+    }
+    return out
   }
 
   async lastCompletedAt(userId: string, courseId: string): Promise<Date | null> {

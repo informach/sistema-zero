@@ -61,7 +61,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > (**certificados**: enum `lesson_block_kind` + `'certificate'` + tabela `certificates_issued`)
 > — **aplicadas** no Postgres compartilhado (`sistemazero`, :5433); **`0026`**
 > (`studio_submissions.account_id` — conta RESPONSÁVEL da entrega, p/ o admin mostrar
-> criança+responsável; nullable, legado `null`) **gerada, FALTA aplicar** (`db:migrate`).
+> criança+responsável; nullable, legado `null`) e **`0027`** (`courses.sequential_lock`
+> boolean NOT NULL DEFAULT `true` — trava sequencial estilo Duolingo, ver Conceito 10)
+> **geradas, FALTA aplicar** (`db:migrate`).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -210,6 +212,22 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    (≠ do `salesPageUrl`, que limpa: um PATCH de build antigo do admin não pode rebaixar
    curso kids em silêncio). Views (`MyCourseView`/`CatalogCourseView`/`CourseDetailView`/
    `CourseView` admin) expõem `audience`. O front kids é o `@sistemazero/community-kids`.
+10. **Trava sequencial das aulas (estilo Duolingo)** (06/2026, migration `0027`): coluna
+   `courses.sequential_lock` (boolean, default `true` — backfill LIGADO p/ os cursos
+   existentes; toggle por curso no admin, decisão da usuária). Ligada → uma aula só fica
+   ACESSÍVEL quando TODAS as aulas publicadas ANTERIORES (ordem do curso: módulo.sortOrder →
+   aula.sortOrder) estão concluídas; a 1ª publicada nunca trava. **Domain puro
+   `domain/progress/locking.ts`** (`isLessonLocked`/`lockedLessonIds`) REUSA o
+   `precedingPublishedLessonIds` do certificado (mesma ordem dos 3 gates). Dois pontos:
+   (a) o **outline** (`GetMyCourseService` → `LessonOutlineView.locked`) marca as travadas
+   p/ a UI esconder/desabilitar; (b) o **gate em profundidade** no `GetLessonService` lança
+   `LessonLockedError`→**423 `LESSON_LOCKED`** ao abrir uma aula travada por URL direta/mini-
+   trilha. **Equipe interna (privileged) IGNORA** a trava (lockedSet vazio + gate pulado,
+   espelha a chave-mestra virtual); curso com a trava desligada idem. **Aula JÁ concluída
+   NUNCA trava** (espelha "conclusão nunca regride"). Autoria: `CourseBody.sequentialLock`
+   opcional — ausente no CREATE → `true`; no UPDATE **PRESERVA a atual** (régua do `audience`).
+   `false` é mantido. Os fronts (community + community-kids) leem `locked` por aula e renderizam
+   o nó/linha travado (cadeado, não clicável) + página de "aula bloqueada" no 423.
 
 ## Arquitetura (DDD + Hexagonal — espelha auth/catalog)
 

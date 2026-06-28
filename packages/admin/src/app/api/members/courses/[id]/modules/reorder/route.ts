@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { readOrderedIds } from '@/lib/query'
+import { forwardUpstream } from '@/server/forward'
 import { reorderModules } from '@/server/members'
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -12,5 +13,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     )
   }
   const { status, body } = await reorderModules(id, orderedIds)
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }

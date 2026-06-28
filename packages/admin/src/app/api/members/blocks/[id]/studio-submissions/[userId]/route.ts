@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { forwardUpstream } from '@/server/forward'
 import { getStudioSubmission } from '@/server/members'
 
 type Ctx = { params: Promise<{ id: string; userId: string }> }
@@ -15,5 +16,5 @@ export async function GET(_req: Request, { params }: Ctx) {
       : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível abrir a entrega.' } }
     return NextResponse.json(normalized, { status: status === 200 ? 502 : status })
   }
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }

@@ -144,6 +144,16 @@ Bearer; o gateway injeta o `x-internal-token` na rota `public`) — e o shim `ro
 `APP_PUBLIC_URL`** (origem pública absoluta p/ o QR; ausente → QR só com o caminho, degradado — setar em prod).
 Tipos em `lib/types.ts` (`CertificateBlock`/`CertificateConfig`/`CertificateIssueView`/`CertificateStateView`/
 `CertificateValidationView`). O members é o portão (elegibilidade + registro imutável); o BFF só monta/serve o PDF.
+⚠️ **`CertificateBlockView` tem a prop `tone: 'default' | 'kids'`** (full review 27/06): o kids passa
+`tone="kids"` (copy sem jargão/travessão); o estado de carga é `role="status"` e a virada de estado vai
+numa região `aria-live="polite"` (a11y — o leitor anuncia bloqueado→elegível→emitido).
+
+**Trava sequencial das aulas (estilo Duolingo, 06/2026):** `LessonOutlineView.locked` (em
+`lib/types.ts`, mirror do members) = aula ainda bloqueada porque uma aula publicada anterior não
+foi concluída (curso com `sequential_lock` ON; equipe interna e aula já concluída vêm `false`). Só
+estrutural — os DOIS apps (community + community-kids) leem o flag e renderizam o nó/linha travado
+não-clicável + gate de `nextHref`; abrir aula travada por URL → **423 `LESSON_LOCKED`** do members,
+que cada app trata com uma página "aula bloqueada". O gate confiável é o members (`GetLessonService`).
 
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
 `tests/hub-redact.test.ts`). O **`StudioBlockView`** tem a prop `enableShare?`: ligada, constrói o

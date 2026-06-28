@@ -1,6 +1,7 @@
 'use client'
 
 import type { StudioShareResult } from '@sistemazero/studio'
+import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Gamepad2, Link2 } from 'lucide-react'
 import { useState } from 'react'
 import { KidsConfetti } from './kids-confetti'
@@ -20,28 +21,40 @@ export function MuralCelebration({
   onClose: () => void
 }) {
   const [copied, setCopied] = useState(false)
+  const [copyFailed, setCopyFailed] = useState(false)
+  const cardRef = useModalA11y<HTMLDivElement>({ open: true, onClose })
 
   async function copyLink() {
     if (!result.playUrl) return
     try {
       const abs = new URL(result.playUrl, window.location.origin).href
-      await navigator.clipboard?.writeText(abs)
+      if (!navigator.clipboard) throw new Error('clipboard indisponível')
+      await navigator.clipboard.writeText(abs)
+      setCopyFailed(false)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // clipboard pode falhar (permissão) — silencioso.
+      // clipboard pode falhar (permissão/contexto inseguro) — avisa em vez de morrer no clique.
+      setCopyFailed(true)
     }
   }
 
   return (
     <div
       className="sz-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Jogo publicado no Mural"
+      onClick={onClose}
+      role="presentation"
     >
       <KidsConfetti />
-      <div className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl md:p-8">
+      <div
+        ref={cardRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Jogo publicado no Mural"
+        onClick={(e) => e.stopPropagation()}
+        className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl outline-none md:p-8"
+      >
         <KidsMascot expression="celebrating" className="kid-wiggle mx-auto size-24" />
         <h2 className="sz-display mt-3 text-2xl">Seu jogo está no Mural! 🎉</h2>
         <p className="mt-1 text-muted-foreground text-sm">
@@ -68,6 +81,15 @@ export function MuralCelebration({
               <Link2 className="size-4" />
               {copied ? 'Link copiado!' : 'Copiar link de jogar'}
             </button>
+          ) : null}
+          {/* Anuncia o sucesso ao leitor de tela (a troca de rótulo no botão não é falada). */}
+          <span aria-live="polite" className="sr-only">
+            {copied ? 'Link copiado!' : ''}
+          </span>
+          {copyFailed ? (
+            <p role="status" className="text-muted-foreground text-xs">
+              Não consegui copiar agora. Toque em Jogar meu jogo para abrir o link.
+            </p>
           ) : null}
           {result.muralUrl ? (
             <a

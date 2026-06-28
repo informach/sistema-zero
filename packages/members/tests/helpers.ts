@@ -155,8 +155,8 @@ export function buildApp(
         studioSubmissions,
         clock,
       ),
-      resolveAttachment: new GetAttachmentDownloadService(checkAccess, courses),
-      resolveEbook: new GetEbookDownloadService(checkAccess, courses),
+      resolveAttachment: new GetAttachmentDownloadService(checkAccess, courses, progress),
+      resolveEbook: new GetEbookDownloadService(checkAccess, courses, progress),
       markComplete: new MarkLessonCompleteService(
         checkAccess,
         courses,
@@ -167,12 +167,13 @@ export function buildApp(
         clock,
       ),
       getProgress: new GetCourseProgressService(checkAccess, courses, progress),
-      savePosition: new SaveVideoPositionService(checkAccess, courses, positions, clock),
+      savePosition: new SaveVideoPositionService(checkAccess, courses, progress, positions, clock),
       getCourseRating: new GetCourseRatingService(checkAccess, ratings),
       saveCourseRating: new SaveCourseRatingService(checkAccess, ratings, clock),
       submitQuiz: new SubmitQuizAttemptService(
         checkAccess,
         courses,
+        progress,
         quizAttempts,
         awardGamification,
         () => randomUUID(),
@@ -181,18 +182,30 @@ export function buildApp(
       submitStudio: new SubmitStudioProjectService(
         checkAccess,
         courses,
+        progress,
         studioSubmissions,
         awardGamification,
         () => randomUUID(),
         clock,
       ),
-      getStudioCarryover: new GetStudioCarryoverService(checkAccess, courses, studioSubmissions),
+      getStudioCarryover: new GetStudioCarryoverService(
+        checkAccess,
+        courses,
+        progress,
+        studioSubmissions,
+      ),
       getOwnStudioSubmission: new GetOwnStudioSubmissionService(
         checkAccess,
         courses,
+        progress,
         studioSubmissions,
       ),
-      getShowcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
+      getShowcasePayload: new GetShowcasePayloadService(
+        checkAccess,
+        courses,
+        progress,
+        studioSubmissions,
+      ),
       getCertificate: new GetCertificateService(checkAccess, courses, progress, certificates),
       issueCertificate: new IssueCertificateService(
         checkAccess,
@@ -268,7 +281,12 @@ export function buildApp(
       profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
         defaultMaxProfiles: 1,
       }),
-      showcasePayload: new GetShowcasePayloadService(checkAccess, courses, studioSubmissions),
+      showcasePayload: new GetShowcasePayloadService(
+        checkAccess,
+        courses,
+        progress,
+        studioSubmissions,
+      ),
       validateCertificate: new ValidateCertificateService(certificates),
       internalToken: opts.internalToken,
     },
@@ -300,6 +318,10 @@ export function seedSampleCourse(
   slug = 'curso-demo',
   status: CourseStatus = 'published',
   audience: CourseAudience = 'adult',
+  // Conveniência de teste: trava sequencial DESLIGADA por padrão (navegação livre,
+  // como o comportamento legado). Em produção o default da coluna é LIGADO; os
+  // testes da trava passam `true` explicitamente.
+  sequentialLock = false,
 ) {
   const now = new Date('2026-06-01T00:00:00.000Z')
   const courseId = randomUUID()
@@ -316,6 +338,7 @@ export function seedSampleCourse(
     coverImageUrl: null,
     status,
     audience,
+    sequentialLock,
     metadata: null,
     createdAt: now,
     updatedAt: now,

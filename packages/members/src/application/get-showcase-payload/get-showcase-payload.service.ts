@@ -1,8 +1,10 @@
 import type { CourseAudience } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 
 /**
  * Conteúdo AUTORITATIVO para auto-publicar o projeto no Mural (consumido pelo BFF no
@@ -25,6 +27,7 @@ export class GetShowcasePayloadService {
   constructor(
     private readonly checkAccess: CheckAccessService,
     private readonly courses: CourseRepository,
+    private readonly progress: ProgressRepository,
     private readonly submissions: StudioSubmissionRepository,
   ) {}
 
@@ -35,7 +38,8 @@ export class GetShowcasePayloadService {
     privileged = false,
     accountId?: string,
   ): Promise<ShowcasePayloadView> {
-    const lesson = await this.courses.findLessonWithContent(lessonId)
+    // Só usa os blocos (estúdio) — pula a query de anexos.
+    const lesson = await this.courses.findLessonWithContent(lessonId, { includeAttachments: false })
     // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.
     if (!lesson?.isPublished) throw new LessonNotFoundError()
     // Acesso pela CONTA (sessão de perfil); a entrega é do PERFIL (userId).
@@ -44,6 +48,7 @@ export class GetShowcasePayloadService {
       lesson.courseId,
       privileged,
     )
+    await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
 
     const base = {
       title: '',

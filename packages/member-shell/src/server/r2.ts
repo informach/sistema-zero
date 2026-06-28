@@ -189,9 +189,38 @@ export async function r2GetObjectPrivate(key: string): Promise<R2PrivateObject> 
   }
 }
 
-/** Materializa um stream em Buffer (SÓ p/ aplicar marca d'água — tem teto no caller). */
-export async function bufferFromStream(stream: ReadableStream<Uint8Array>): Promise<Buffer> {
-  return Buffer.from(await new Response(stream).arrayBuffer())
+/**
+ * Materializa um stream em Buffer (SÓ p/ aplicar marca d'água). `maxBytes` é um
+ * teto DEFENSIVO: o caller já escolhe pelo Content-Length do HEAD, mas um HEAD
+ * sem `Content-Length` (ou que MENTE) faria bufferizar um objeto sem limite na
+ * memória da réplica única (OOM). Com o teto, o excedente ABORTA o stream e lança
+ * — o caller cai no `mediaErrorResponse` (503) em vez de derrubar o host.
+ */
+export async function bufferFromStream(
+  stream: ReadableStream<Uint8Array>,
+  maxBytes?: number,
+): Promise<Buffer> {
+  if (maxBytes === undefined) {
+    return Buffer.from(await new Response(stream).arrayBuffer())
+  }
+  const reader = stream.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      total += value.byteLength
+      if (total > maxBytes) {
+        await reader.cancel()
+        throw new Error(`Objeto excede o teto de ${maxBytes} bytes para marca d'água.`)
+      }
+      chunks.push(value)
+    }
+  } finally {
+    reader.releaseLock()
+  }
+  return Buffer.concat(chunks)
 }
 
 /** Metadados de um objeto do bucket PRIVADO sem abrir o corpo (HEAD). */

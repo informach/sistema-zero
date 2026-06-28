@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { forwardUpstream } from '@/server/forward'
 import { impersonateUser } from '@/server/users'
 
 /** "Entrar como" (suporte): emite o token de handoff de impersonação via gateway.
@@ -7,5 +7,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params
   const platform = new URL(req.url).searchParams.get('platform') === 'kids' ? 'kids' : undefined
   const { status, body } = await impersonateUser(id, platform)
-  return NextResponse.json(body, { status })
+  return forwardUpstream({ status, body })
 }

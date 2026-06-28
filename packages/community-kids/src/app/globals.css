@@ -531,6 +531,16 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   --node-shadow: var(--border);
   box-shadow: 0 5px 0 var(--node-shadow);
 }
+/* Aula travada (trava sequencial estilo Duolingo): cadeado neutro tracejado,
+   sem brilho — sinaliza "ainda não liberada"; o nó não é clicável. */
+.kids-node--locked {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  border: 2px dashed var(--border);
+  --node-shadow: var(--border);
+  box-shadow: 0 5px 0 var(--node-shadow);
+  opacity: 0.85;
+}
 /* Baú de fim de unidade (gamificação): fechado = tracejado neutro;
    aberto = veste o tema da unidade (mesmos tokens dos nós done). */
 .kids-node--chest-closed {

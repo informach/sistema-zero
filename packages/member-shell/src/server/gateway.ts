@@ -59,13 +59,26 @@ async function rawFetch(path: string, opts: CallOpts, access: string | null): Pr
     ...(await clientForwardHeaders()),
   }
   if (access) reqHeaders.authorization = `Bearer ${access}`
-  return fetch(url, {
-    method: opts.method ?? 'GET',
-    headers: reqHeaders,
-    body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
-    cache: 'no-store',
-    signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
-  })
+  try {
+    return await fetch(url, {
+      method: opts.method ?? 'GET',
+      headers: reqHeaders,
+      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+      cache: 'no-store',
+      signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+    })
+  } catch {
+    // Timeout / conexão recusada / falha de DNS: NÃO rejeita (rejeição não tratada).
+    // Degrada para um 503 SINTÉTICO — espelha o `publicAuthPost` — para o caller
+    // cair no MESMO caminho de não-2xx. Sem isto, um soluço transitório do gateway
+    // faz `getMeReadonly`/`gatewayFetchReadonly` LANÇAR no render de um Server
+    // Component (layout/page) — que documenta degradar para o fallback de iniciais
+    // — e derruba o shell inteiro (o app adulto não tem `error.tsx`).
+    return new Response(
+      JSON.stringify({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Serviço indisponível.' } }),
+      { status: 503, headers: { 'content-type': 'application/json' } },
+    )
+  }
 }
 
 async function readJson<T>(res: Response): Promise<T> {

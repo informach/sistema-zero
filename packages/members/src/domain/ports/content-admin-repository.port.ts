@@ -26,6 +26,11 @@ export interface CourseFields {
    * — um PATCH de build antigo do admin não pode rebaixar um curso kids em silêncio.
    */
   audience: CourseAudience | null
+  /**
+   * Trava sequencial (estilo Duolingo). `null` = "não informado": no CREATE vira
+   * `true` (padrão LIGADO); no UPDATE **preserva a atual** (mesma régua do `audience`).
+   */
+  sequentialLock: boolean | null
 }
 
 export interface ModuleFields {

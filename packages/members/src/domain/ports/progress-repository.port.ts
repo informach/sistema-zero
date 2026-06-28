@@ -27,6 +27,11 @@ export interface ProgressRepository {
   ): Promise<Map<string, number>>
   /** Ids das aulas concluídas pelo aluno no curso (para marcar `completed` no outline). */
   listCompletedLessonIds(userId: string, courseId: string): Promise<string[]>
+  /** Ids das aulas concluídas por curso, em lote (evita N+1 na trava de "meus cursos"). */
+  listCompletedLessonIdsByCourseIds(
+    userId: string,
+    courseIds: string[],
+  ): Promise<Map<string, string[]>>
   /** Data da última conclusão no curso (ou `null`). */
   lastCompletedAt(userId: string, courseId: string): Promise<Date | null>
 }

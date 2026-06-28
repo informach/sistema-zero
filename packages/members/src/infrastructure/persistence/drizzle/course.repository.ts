@@ -24,6 +24,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     coverImageUrl: row.coverImageUrl,
     status: row.status,
     audience: row.audience,
+    sequentialLock: row.sequentialLock,
     metadata: row.metadata ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -143,20 +144,59 @@ export class DrizzleCourseRepository implements CourseRepository {
     return mods.map((m) => ({ ...toModule(m), lessons: byModule.get(m.id) ?? [] }))
   }
 
-  async findLessonWithContent(lessonId: string): Promise<LessonWithContent | null> {
+  async findOutlinesByCourseIds(
+    courseIds: string[],
+    opts?: { publishedOnly?: boolean },
+  ): Promise<Map<string, ModuleWithLessons[]>> {
+    if (courseIds.length === 0) return new Map()
+    const lessonWhere = opts?.publishedOnly
+      ? and(inArray(lessons.courseId, courseIds), eq(lessons.isPublished, true))
+      : inArray(lessons.courseId, courseIds)
+    const [mods, less] = await Promise.all([
+      this.db
+        .select()
+        .from(modules)
+        .where(inArray(modules.courseId, courseIds))
+        .orderBy(asc(modules.sortOrder)),
+      this.db.select().from(lessons).where(lessonWhere).orderBy(asc(lessons.sortOrder)),
+    ])
+    // Aulas por módulo (a ordenação global por sortOrder preserva a relativa por módulo).
+    const lessonsByModule = new Map<string, Lesson[]>()
+    for (const l of less) {
+      const arr = lessonsByModule.get(l.moduleId) ?? []
+      arr.push(toLesson(l))
+      lessonsByModule.set(l.moduleId, arr)
+    }
+    const out = new Map<string, ModuleWithLessons[]>()
+    for (const m of mods) {
+      const arr = out.get(m.courseId) ?? []
+      arr.push({ ...toModule(m), lessons: lessonsByModule.get(m.id) ?? [] })
+      out.set(m.courseId, arr)
+    }
+    return out
+  }
+
+  async findLessonWithContent(
+    lessonId: string,
+    opts?: { includeAttachments?: boolean },
+  ): Promise<LessonWithContent | null> {
     const [lesson] = await this.db.select().from(lessons).where(eq(lessons.id, lessonId)).limit(1)
     if (!lesson) return null
+    const wantAttachments = opts?.includeAttachments !== false
     const [blocks, attachments] = await Promise.all([
       this.db
         .select()
         .from(lessonBlocks)
         .where(eq(lessonBlocks.lessonId, lessonId))
         .orderBy(asc(lessonBlocks.sortOrder)),
-      this.db
-        .select()
-        .from(lessonAttachments)
-        .where(eq(lessonAttachments.lessonId, lessonId))
-        .orderBy(asc(lessonAttachments.sortOrder)),
+      // Leituras que só usam blocos (GETs lazy do Studio) pedem `false` → pula a query.
+      wantAttachments
+        ? this.db
+            .select()
+            .from(lessonAttachments)
+            .where(eq(lessonAttachments.lessonId, lessonId))
+            .orderBy(asc(lessonAttachments.sortOrder))
+        : Promise.resolve([]),
     ])
     return {
       ...toLesson(lesson),

@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server'
+import { parseLimit, parseOffset } from '@/lib/list-params'
 import type { MemberRow, MemberSummaryView, Paginated, UserView } from '@/lib/types'
 import { listMembers } from '@/server/members'
 import { batchGetUsers } from '@/server/users'
-
-function num(value: string | null): number | undefined {
-  if (!value) return undefined
-  const n = Number(value)
-  return Number.isInteger(n) && n >= 0 ? n : undefined
-}
 
 /**
  * Lista membros (área de membros) e HIDRATA nome/email do auth em lote. O members
@@ -19,8 +14,8 @@ export async function GET(req: Request) {
   const { status, body } = await listMembers({
     status: searchParams.get('status') ?? undefined,
     courseRef: searchParams.get('courseRef') ?? undefined,
-    limit: num(searchParams.get('limit')),
-    offset: num(searchParams.get('offset')),
+    limit: parseLimit(searchParams.get('limit')),
+    offset: parseOffset(searchParams.get('offset')),
   })
 
   const page = body as Paginated<MemberSummaryView> | null

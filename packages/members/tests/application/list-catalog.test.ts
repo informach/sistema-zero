@@ -17,6 +17,7 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
     coverImageUrl: null,
     status: 'published' as CourseStatus,
     audience: 'adult',
+    sequentialLock: true,
     metadata: null,
     createdAt: created,
     updatedAt: created,

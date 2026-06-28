@@ -143,9 +143,19 @@ export function QuizBlockView({ blockId, content, quizState }: Props) {
                 </label>
               )
             })}
-            {correction && !correction.correct && correction.explanation ? (
-              <div className="lesson-prose rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
-                {renderMarkdown(correction.explanation)}
+            {correction?.explanation ? (
+              <div className="rounded-lg bg-muted/60 px-3 py-2 text-xs">
+                <p
+                  className={cn(
+                    'mb-1 font-semibold',
+                    correction.correct ? 'text-accent dark:text-primary' : 'text-foreground',
+                  )}
+                >
+                  {correction.correct ? 'Isso! Por quê:' : 'Por quê:'}
+                </p>
+                <div className="lesson-prose text-muted-foreground">
+                  {renderMarkdown(correction.explanation)}
+                </div>
               </div>
             ) : null}
           </fieldset>

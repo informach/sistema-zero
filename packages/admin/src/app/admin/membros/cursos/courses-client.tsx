@@ -48,6 +48,7 @@ interface FormState {
   salesPageUrl: string
   status: string
   audience: string
+  sequentialLock: boolean
 }
 
 const EMPTY: FormState = {
@@ -59,6 +60,8 @@ const EMPTY: FormState = {
   salesPageUrl: '',
   status: 'draft',
   audience: 'adult',
+  // Padrão LIGADO (decisão da usuária): curso novo já trava as aulas em sequência.
+  sequentialLock: true,
 }
 
 export function CoursesClient({ currentRole }: { currentRole: string }) {
@@ -118,6 +121,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       salesPageUrl: c.salesPageUrl ?? '',
       status: c.status,
       audience: c.audience ?? 'adult',
+      sequentialLock: c.sequentialLock ?? true,
     })
     setOpen(true)
   }
@@ -143,6 +147,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         status: form.status,
         // SEMPRE enviado (explícito > depender do preserve do members no PATCH).
         audience: form.audience,
+        sequentialLock: form.sequentialLock,
       }
       if (editing) {
         await apiSend(`/api/members/courses/${editing.id}`, 'PATCH', payload)
@@ -367,6 +372,25 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                 </option>
               ))}
             </Select>
+          </Field>
+          <Field
+            label="Trava sequencial das aulas"
+            htmlFor="csequentiallock"
+            tooltip="Estilo Duolingo: o aluno só abre a próxima aula depois de concluir a anterior, na ordem. Desligado = navegação livre (pode pular entre as aulas)."
+          >
+            <label
+              htmlFor="csequentiallock"
+              className="flex items-center gap-2 text-muted-foreground text-sm"
+            >
+              <input
+                id="csequentiallock"
+                type="checkbox"
+                checked={form.sequentialLock}
+                onChange={(e) => setForm((f) => ({ ...f, sequentialLock: e.target.checked }))}
+                className="size-4"
+              />
+              Liberar uma aula de cada vez (concluir a anterior destrava a próxima)
+            </label>
           </Field>
           <Field label="Subtítulo" htmlFor="subtitle" hint="Opcional.">
             <Input

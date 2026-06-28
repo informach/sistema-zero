@@ -2,8 +2,16 @@ import { describe, expect, test } from 'bun:test'
 import { balloonLabel, buildTrail } from '../src/components/kids/trail-layout'
 import type { CourseDetailView, LessonOutlineView, ModuleOutlineView } from '../src/lib/types'
 
-function lesson(id: string, completed: boolean): LessonOutlineView {
-  return { id, slug: id, title: `Aula ${id}`, sortOrder: 0, estimatedMinutes: null, completed }
+function lesson(id: string, completed: boolean, locked = false): LessonOutlineView {
+  return {
+    id,
+    slug: id,
+    title: `Aula ${id}`,
+    sortOrder: 0,
+    estimatedMinutes: null,
+    completed,
+    locked,
+  }
 }
 
 function moduleOf(id: string, lessons: LessonOutlineView[]): ModuleOutlineView {
@@ -77,6 +85,14 @@ describe('buildTrail', () => {
     ])
     const nodes = buildTrail(c).flatMap((u) => u.nodes)
     expect(nodes.map((n) => n.state)).toEqual(['done', 'current', 'todo'])
+  })
+
+  test('aulas travadas viram nó locked; current é a 1ª não concluída e LIBERADA', () => {
+    const c = course([
+      moduleOf('m1', [lesson('a', true), lesson('b', false, false), lesson('c', false, true)]),
+    ])
+    const nodes = buildTrail(c).flatMap((u) => u.nodes)
+    expect(nodes.map((n) => n.state)).toEqual(['done', 'current', 'locked'])
   })
 
   test('curso 100% concluído não tem nó current', () => {

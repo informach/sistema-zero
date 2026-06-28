@@ -1,6 +1,8 @@
 import { EbookBlockNotFoundError, LessonNotFoundError } from '../../domain/course/course.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 import type { EbookDownloadView } from '../mappers/views'
 
 /**
@@ -13,6 +15,7 @@ export class GetEbookDownloadService {
   constructor(
     private readonly checkAccess: CheckAccessService,
     private readonly courses: CourseRepository,
+    private readonly progress: ProgressRepository,
   ) {}
 
   async execute(
@@ -33,6 +36,7 @@ export class GetEbookDownloadService {
     if (!lesson || lesson.courseId !== course.id || !lesson.isPublished) {
       throw new LessonNotFoundError()
     }
+    await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'ebook') throw new EbookBlockNotFoundError()

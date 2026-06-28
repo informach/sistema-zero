@@ -7,9 +7,11 @@ import {
   type StudioCheckResult,
 } from '../../domain/course/studio-activity'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 import type { GamificationDeltaView } from '../mappers/views'
 
 export interface StudioSubmissionResultView {
@@ -37,6 +39,7 @@ export class SubmitStudioProjectService {
   constructor(
     private readonly checkAccess: CheckAccessService,
     private readonly courses: CourseRepository,
+    private readonly progress: ProgressRepository,
     private readonly submissions: StudioSubmissionRepository,
     private readonly gamification: AwardGamificationService,
     private readonly newId: () => string,
@@ -61,6 +64,7 @@ export class SubmitStudioProjectService {
       lesson.courseId,
       privileged,
     )
+    await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'studio') throw new StudioBlockNotFoundError()

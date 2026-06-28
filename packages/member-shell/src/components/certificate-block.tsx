@@ -13,6 +13,29 @@ function filenameFromDisposition(header: string | null): string | null {
 }
 
 /**
+ * Copy por tom: `default` (adulto) e `kids` (8–13 anos — voz humana/fluida, sem
+ * jargão como "emissão", sem travessão). A semântica/estado é idêntica nos dois.
+ */
+const CERTIFICATE_COPY = {
+  default: {
+    locked: 'Conclua as aulas anteriores ao certificado para liberar a emissão.',
+    eligibleDesc: 'Você concluiu as aulas necessárias. Emita seu certificado de conclusão.',
+    eligibleBtn: 'Emitir meu certificado',
+    issuedDesc: 'Seu certificado está pronto. Baixe quantas vezes quiser, é sempre o mesmo.',
+    issuedBtn: 'Baixar certificado (PDF)',
+    notEligible: 'Conclua as aulas anteriores ao certificado para emitir.',
+  },
+  kids: {
+    locked: 'Conclua as aulas de antes e seu certificado aparece aqui!',
+    eligibleDesc: 'Você arrasou! Toque no botão para pegar o seu certificado.',
+    eligibleBtn: 'Pegar meu certificado',
+    issuedDesc: 'Seu certificado está pronto! Pode baixar quantas vezes quiser.',
+    issuedBtn: 'Baixar certificado (PDF)',
+    notEligible: 'Conclua as aulas de antes para pegar o seu certificado.',
+  },
+} as const
+
+/**
  * Bloco CERTIFICADO (pode ficar em qualquer aula do curso). Lê o estado no members
  * (`GET …/certificate`): bloqueado até concluir as aulas anteriores; elegível → "Emitir";
  * já emitido → "Baixar (PDF)" + nº de série + link de validação. Emitir/baixar é um POST
@@ -22,10 +45,14 @@ function filenameFromDisposition(header: string | null): string | null {
 export function CertificateBlockView({
   blockId,
   content,
+  tone = 'default',
 }: {
   blockId: string
   content: CertificateBlock
+  /** Voz do texto: `kids` suaviza a copy para crianças (default = adulto). */
+  tone?: 'default' | 'kids'
 }) {
+  const copy = CERTIFICATE_COPY[tone]
   const player = useLessonPlayer()
   const lessonId = player?.lessonId ?? null
   const [state, setState] = useState<CertificateStateView | null>(null)
@@ -73,7 +100,7 @@ export function CertificateBlockView({
         }
         setError(
           code === 'CERTIFICATE_NOT_ELIGIBLE'
-            ? 'Conclua as aulas anteriores ao certificado para emitir.'
+            ? copy.notEligible
             : 'Não foi possível gerar o certificado agora. Tente novamente.',
         )
         return
@@ -104,13 +131,16 @@ export function CertificateBlockView({
     } finally {
       setBusy(false)
     }
-  }, [path])
+  }, [path, copy.notEligible])
 
   const title = content.title?.trim() || 'Certificado de Conclusão'
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-border bg-card py-10 text-sm text-muted-foreground">
+      <div
+        role="status"
+        className="flex items-center justify-center rounded-lg border border-border bg-card py-10 text-sm text-muted-foreground"
+      >
         <Loader2 className="mr-2 size-4 animate-spin" aria-hidden /> Carregando certificado…
       </div>
     )
@@ -131,61 +161,58 @@ export function CertificateBlockView({
       </div>
       <h3 className="sz-display text-lg font-bold text-foreground">{title}</h3>
 
-      {revoked ? (
-        <>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Este certificado foi revogado e não está disponível para download.
-          </p>
-          {state?.serial ? (
-            <p className="mt-3 text-xs text-muted-foreground">Nº {state.serial}</p>
-          ) : null}
-        </>
-      ) : issued ? (
-        <>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Seu certificado está pronto. Baixe quantas vezes quiser — é sempre o mesmo.
-          </p>
-          <button
-            type="button"
-            onClick={download}
-            disabled={busy}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition disabled:opacity-60"
-          >
-            {busy ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              <Download className="size-4" aria-hidden />
-            )}
-            Baixar certificado (PDF)
-          </button>
-          {state?.serial ? (
-            <p className="mt-3 text-xs text-muted-foreground">Nº {state.serial}</p>
-          ) : null}
-        </>
-      ) : eligible ? (
-        <>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Você concluiu as aulas necessárias. Emita seu certificado de conclusão.
-          </p>
-          <button
-            type="button"
-            onClick={download}
-            disabled={busy}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition disabled:opacity-60"
-          >
-            {busy ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              <Award className="size-4" aria-hidden />
-            )}
-            Emitir meu certificado
-          </button>
-        </>
-      ) : (
-        <p className="mt-1 text-sm text-muted-foreground">
-          Conclua as aulas anteriores ao certificado para liberar a emissão.
-        </p>
-      )}
+      {/* Região viva: a virada bloqueado→elegível→emitido é anunciada ao leitor de tela. */}
+      <div aria-live="polite">
+        {revoked ? (
+          <>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Este certificado foi revogado e não está disponível para download.
+            </p>
+            {state?.serial ? (
+              <p className="mt-3 text-xs text-muted-foreground">Nº {state.serial}</p>
+            ) : null}
+          </>
+        ) : issued ? (
+          <>
+            <p className="mt-1 text-sm text-muted-foreground">{copy.issuedDesc}</p>
+            <button
+              type="button"
+              onClick={download}
+              disabled={busy}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition disabled:opacity-60"
+            >
+              {busy ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+              ) : (
+                <Download className="size-4" aria-hidden />
+              )}
+              {copy.issuedBtn}
+            </button>
+            {state?.serial ? (
+              <p className="mt-3 text-xs text-muted-foreground">Nº {state.serial}</p>
+            ) : null}
+          </>
+        ) : eligible ? (
+          <>
+            <p className="mt-1 text-sm text-muted-foreground">{copy.eligibleDesc}</p>
+            <button
+              type="button"
+              onClick={download}
+              disabled={busy}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-semibold text-primary-foreground transition disabled:opacity-60"
+            >
+              {busy ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+              ) : (
+                <Award className="size-4" aria-hidden />
+              )}
+              {copy.eligibleBtn}
+            </button>
+          </>
+        ) : (
+          <p className="mt-1 text-sm text-muted-foreground">{copy.locked}</p>
+        )}
+      </div>
 
       {error ? (
         <p className="mt-3 text-sm text-destructive" role="alert">

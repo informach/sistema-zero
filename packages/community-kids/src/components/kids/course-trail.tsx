@@ -1,4 +1,4 @@
-import { Check, Gift, Star } from 'lucide-react'
+import { Check, Gift, Lock, Star } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView } from '@/lib/types'
@@ -10,6 +10,7 @@ const NODE_STATE_CLASS: Record<TrailNode['state'], string> = {
   done: 'kids-node--done',
   current: 'kids-node--current',
   todo: 'kids-node--todo',
+  locked: 'kids-node--locked',
 }
 
 /** Posições (0..1) dos conectores entre os centros de nós consecutivos. */
@@ -17,7 +18,13 @@ const DOT_STEPS = [0.55, 0.78] as const
 
 function nodeAria(node: TrailNode): string {
   const status =
-    node.state === 'done' ? 'concluída' : node.state === 'current' ? 'aula atual' : 'disponível'
+    node.state === 'done'
+      ? 'concluída'
+      : node.state === 'current'
+        ? 'aula atual'
+        : node.state === 'locked'
+          ? 'bloqueada — conclua a aula anterior'
+          : 'disponível'
   const minutes = node.lesson.estimatedMinutes ? ` — ${node.lesson.estimatedMinutes} min` : ''
   return `${node.lesson.title} (${status})${minutes}`
 }
@@ -87,31 +94,57 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                     {nextOffset !== undefined ? (
                       <TrailDots from={node.offset} to={nextOffset} done={node.state === 'done'} />
                     ) : null}
-                    <Link
-                      href={lessonHref(node.lesson.id)}
-                      aria-label={nodeAria(node)}
-                      className="kids-node-link -ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5"
-                      style={{ left: `calc(50% + ${node.offset} * var(--trail-step))` }}
-                    >
-                      {node.state === 'current' ? (
-                        <span className="kids-balloon">{label}</span>
-                      ) : null}
-                      <span className={cn('kids-node', NODE_STATE_CLASS[node.state])}>
-                        {node.state === 'done' ? (
-                          <Check className="size-7" strokeWidth={3.5} />
-                        ) : (
-                          <Star className="size-7 fill-current" />
-                        )}
-                      </span>
-                      <span
-                        className={cn(
-                          'line-clamp-2 max-w-24 text-center font-semibold text-xs leading-tight',
-                          node.state === 'todo' ? 'text-muted-foreground' : 'text-foreground',
-                        )}
-                      >
-                        {node.lesson.title}
-                      </span>
-                    </Link>
+                    {(() => {
+                      const inner = (
+                        <>
+                          {node.state === 'current' ? (
+                            <span className="kids-balloon">{label}</span>
+                          ) : null}
+                          <span className={cn('kids-node', NODE_STATE_CLASS[node.state])}>
+                            {node.state === 'done' ? (
+                              <Check className="size-7" strokeWidth={3.5} />
+                            ) : node.state === 'locked' ? (
+                              <Lock className="size-6" strokeWidth={2.5} />
+                            ) : (
+                              <Star className="size-7 fill-current" />
+                            )}
+                          </span>
+                          <span
+                            className={cn(
+                              'line-clamp-2 max-w-24 text-center font-semibold text-xs leading-tight',
+                              node.state === 'done' || node.state === 'current'
+                                ? 'text-foreground'
+                                : 'text-muted-foreground',
+                            )}
+                          >
+                            {node.lesson.title}
+                          </span>
+                        </>
+                      )
+                      const className =
+                        'kids-node-link -ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5'
+                      const style = { left: `calc(50% + ${node.offset} * var(--trail-step))` }
+                      // Aula travada: nó NÃO clicável (a regra de acesso é do backend).
+                      return node.state === 'locked' ? (
+                        <div
+                          role="img"
+                          aria-label={nodeAria(node)}
+                          className={cn(className, 'cursor-not-allowed')}
+                          style={style}
+                        >
+                          {inner}
+                        </div>
+                      ) : (
+                        <Link
+                          href={lessonHref(node.lesson.id)}
+                          aria-label={nodeAria(node)}
+                          className={className}
+                          style={style}
+                        >
+                          {inner}
+                        </Link>
+                      )
+                    })()}
                   </li>
                 )
               })}

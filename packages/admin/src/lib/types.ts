@@ -154,6 +154,8 @@ export interface CourseView {
   status: string
   /** Plataforma do curso (`adult` | `kids`) — a chave-mestra cobre só `adult`. */
   audience: CourseAudience
+  /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
+  sequentialLock: boolean
   createdAt: string
   updatedAt: string
 }

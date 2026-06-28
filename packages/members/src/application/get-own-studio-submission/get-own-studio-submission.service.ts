@@ -1,7 +1,9 @@
 import { LessonNotFoundError, StudioBlockNotFoundError } from '../../domain/course/course.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 
 /** Projeto que o PRÓPRIO aluno/perfil ENVIOU neste bloco. `null` se nunca enviou. */
 export interface OwnStudioSubmissionView {
@@ -20,6 +22,7 @@ export class GetOwnStudioSubmissionService {
   constructor(
     private readonly checkAccess: CheckAccessService,
     private readonly courses: CourseRepository,
+    private readonly progress: ProgressRepository,
     private readonly submissions: StudioSubmissionRepository,
   ) {}
 
@@ -30,10 +33,16 @@ export class GetOwnStudioSubmissionService {
     privileged = false,
     accountId?: string,
   ): Promise<OwnStudioSubmissionView> {
-    const lesson = await this.courses.findLessonWithContent(lessonId)
+    // Só usa os blocos (estúdio) — pula a query de anexos.
+    const lesson = await this.courses.findLessonWithContent(lessonId, { includeAttachments: false })
     // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.
     if (!lesson?.isPublished) throw new LessonNotFoundError()
-    await this.checkAccess.requireById(accountId ?? userId, lesson.courseId, privileged)
+    const { course } = await this.checkAccess.requireById(
+      accountId ?? userId,
+      lesson.courseId,
+      privileged,
+    )
+    await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
 
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'studio') throw new StudioBlockNotFoundError()

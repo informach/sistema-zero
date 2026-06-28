@@ -26,8 +26,23 @@ export interface CourseRepository {
    * `publishedOnly` filtra aulas rascunho (visão do ALUNO); o admin vê tudo.
    */
   findOutline(courseId: string, opts?: { publishedOnly?: boolean }): Promise<ModuleWithLessons[]>
-  /** Aula com o conteúdo completo (blocos ordenados + anexos). */
-  findLessonWithContent(lessonId: string): Promise<LessonWithContent | null>
+  /**
+   * Outlines de VÁRIOS cursos em lote (módulos + aulas em 2 queries, sem N+1).
+   * Mesmo `publishedOnly` do `findOutline`. courseId → módulos com aulas ordenados.
+   */
+  findOutlinesByCourseIds(
+    courseIds: string[],
+    opts?: { publishedOnly?: boolean },
+  ): Promise<Map<string, ModuleWithLessons[]>>
+  /**
+   * Aula com o conteúdo completo (blocos ordenados + anexos). `includeAttachments`
+   * (default `true`) pode ser `false` p/ leituras que só usam os blocos (ex.: os
+   * GETs lazy do Studio) — evita 1 query de anexos descartada; `attachments` volta `[]`.
+   */
+  findLessonWithContent(
+    lessonId: string,
+    opts?: { includeAttachments?: boolean },
+  ): Promise<LessonWithContent | null>
   /** Total de aulas do curso, qualquer status (visão de AUTORIA no admin). */
   countLessons(courseId: string): Promise<number>
   /** Total de aulas PUBLICADAS (denominador do progresso do aluno). */

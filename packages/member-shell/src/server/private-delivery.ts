@@ -1,5 +1,5 @@
 import 'server-only'
-import { watermarkCacheKey } from '../lib/download-mime'
+import { WATERMARK_MAX_BYTES, watermarkCacheKey } from '../lib/download-mime'
 import {
   bufferFromStream,
   r2GetObjectPrivate,
@@ -31,7 +31,7 @@ export async function presignWatermarkedPdf(opts: {
   if (!cached) {
     const obj = await r2GetObjectPrivate(opts.srcKey)
     const stored = await watermarkGate().run(async () => {
-      const original = await bufferFromStream(obj.body)
+      const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
       try {
         const marked = await watermarkPdf(original, opts.email)
         await r2PutObjectPrivate({

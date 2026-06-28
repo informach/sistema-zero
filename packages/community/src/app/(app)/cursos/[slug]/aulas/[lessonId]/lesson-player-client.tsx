@@ -10,7 +10,7 @@ import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Circle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Circle, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -24,7 +24,13 @@ interface Props {
   course: CourseDetailView
   lesson: LessonDetailView
   prevHref: string | null
+  /** Próxima aula LIBERADA (travada → null): botão "Próxima" do rodapé. */
   nextHref: string | null
+  /**
+   * Próxima aula na ORDEM, ignorando a trava — destino do avanço APÓS concluir
+   * (concluir a atual destrava a próxima). `null` só na última aula do curso.
+   */
+  nextLessonHref: string | null
   /** E-mail do aluno (sessão) — watermark do player de vídeo. */
   viewerEmail: string | null
   /** Id da sessão (conta) — isola o rascunho LOCAL do Estúdio por usuário. */
@@ -43,6 +49,7 @@ export function LessonPlayer({
   lesson,
   prevHref,
   nextHref,
+  nextLessonHref,
   viewerEmail,
   viewerId,
   viewer,
@@ -144,7 +151,8 @@ export function LessonPlayer({
         await apiSend(`/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`, 'POST')
         completedRef.current = true
         toast.success('Aula concluída!')
-        if (!opts.silent && nextHref) router.push(nextHref)
+        // Avança para a próxima na ordem (concluir a atual a destravou).
+        if (!opts.silent && nextLessonHref) router.push(nextLessonHref)
         router.refresh()
       } catch (err) {
         const apiErr = err as ApiError
@@ -165,7 +173,7 @@ export function LessonPlayer({
         if (!opts.silent) setCompleting(false)
       }
     },
-    [lesson.id, nextHref, router],
+    [lesson.id, nextLessonHref, router],
   )
 
   const onVideoReachedThreshold = useCallback(() => {
@@ -295,6 +303,20 @@ export function LessonPlayer({
                   <ul>
                     {module.lessons.map((item) => {
                       const active = item.id === lesson.id
+                      if (item.locked) {
+                        return (
+                          <li key={item.id}>
+                            <div
+                              aria-disabled="true"
+                              title="Conclua a aula anterior para liberar"
+                              className="flex cursor-not-allowed items-center gap-2 px-4 py-2 text-sm text-muted-foreground opacity-70"
+                            >
+                              <Lock className="size-3.5 shrink-0" />
+                              <span className="truncate">{item.title}</span>
+                            </div>
+                          </li>
+                        )
+                      }
                       return (
                         <li key={item.id}>
                           <Link

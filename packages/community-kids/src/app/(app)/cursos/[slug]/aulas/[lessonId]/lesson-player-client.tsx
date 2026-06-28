@@ -8,7 +8,7 @@ import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, ArrowRight, Check, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -34,7 +34,13 @@ interface Props {
   course: CourseDetailView
   lesson: LessonDetailView
   prevHref: string | null
+  /** Próxima aula LIBERADA (travada → null): botão "Próxima" do rodapé. */
   nextHref: string | null
+  /**
+   * Próxima aula na ORDEM, ignorando a trava — destino do botão "Próxima aula" da
+   * COMEMORAÇÃO (ao concluir, a aula atual já destravou a próxima). `null` na última.
+   */
+  nextLessonHref: string | null
   /** E-mail do aluno (sessão) — watermark do player de vídeo. */
   viewerEmail: string | null
   /** Id da sessão (perfil ativo no kids) — isola o rascunho LOCAL do Estúdio por perfil. */
@@ -53,6 +59,7 @@ export function LessonPlayer({
   lesson,
   prevHref,
   nextHref,
+  nextLessonHref,
   viewerEmail,
   viewerId,
   ratingViewer,
@@ -374,6 +381,41 @@ export function LessonPlayer({
                     {module.lessons.map((item, lessonIndex) => {
                       const active = item.id === lesson.id
                       const number = (moduleStartIndexes[moduleIndex] ?? 0) + lessonIndex + 1
+                      const numberBadge = (
+                        <span
+                          className={cn(
+                            'grid size-6 shrink-0 place-items-center rounded-full border-2 font-bold text-[0.65rem] [font-family:var(--font-display)]',
+                            item.completed
+                              ? 'border-transparent [background-color:var(--unit-bg)] [background-image:var(--unit-bg-image)] text-(--unit-fg)'
+                              : active
+                                ? 'border-(--unit) text-(--unit)'
+                                : 'border-border',
+                          )}
+                        >
+                          {item.completed ? (
+                            <Check className="size-3.5" strokeWidth={3.5} />
+                          ) : item.locked ? (
+                            <Lock className="size-3" strokeWidth={2.5} />
+                          ) : (
+                            number
+                          )}
+                        </span>
+                      )
+                      // Aula travada: item NÃO clicável (a regra de acesso é do backend).
+                      if (item.locked) {
+                        return (
+                          <li key={item.id}>
+                            <div
+                              aria-disabled="true"
+                              title="Conclua a aula anterior para liberar"
+                              className="flex cursor-not-allowed items-center gap-2.5 px-4 py-2 text-muted-foreground text-sm opacity-70"
+                            >
+                              {numberBadge}
+                              <span className="truncate">{item.title}</span>
+                            </div>
+                          </li>
+                        )
+                      }
                       return (
                         <li key={item.id}>
                           <Link
@@ -386,22 +428,7 @@ export function LessonPlayer({
                             )}
                             aria-current={active ? 'page' : undefined}
                           >
-                            <span
-                              className={cn(
-                                'grid size-6 shrink-0 place-items-center rounded-full border-2 font-bold text-[0.65rem] [font-family:var(--font-display)]',
-                                item.completed
-                                  ? 'border-transparent [background-color:var(--unit-bg)] [background-image:var(--unit-bg-image)] text-(--unit-fg)'
-                                  : active
-                                    ? 'border-(--unit) text-(--unit)'
-                                    : 'border-border',
-                              )}
-                            >
-                              {item.completed ? (
-                                <Check className="size-3.5" strokeWidth={3.5} />
-                              ) : (
-                                number
-                              )}
-                            </span>
+                            {numberBadge}
                             <span className="truncate">{item.title}</span>
                           </Link>
                         </li>
@@ -419,7 +446,8 @@ export function LessonPlayer({
         <LessonCelebration
           progressBefore={celebration.progress}
           gamification={celebration.gamification}
-          nextHref={nextHref}
+          // Próxima na ORDEM (ignora a trava): concluir esta aula já liberou a próxima.
+          nextHref={nextLessonHref}
           courseHref={courseHref}
           onClose={() => setCelebration(null)}
         />

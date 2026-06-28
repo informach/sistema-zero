@@ -5,7 +5,7 @@ import { renderInline, renderMarkdown } from '@sistemazero/member-shell/lib/mark
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, Check, Sparkles, Timer, Trophy, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { QuizAttemptResultView, QuizBlock, QuizQuestion, QuizStateView } from '@/lib/types'
@@ -49,6 +49,24 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   const retryAvailableAt =
     result?.retryAvailableAt ?? cooldownUntil ?? quizState?.retryAvailableAt ?? null
   const cooldownLeft = useCooldown(passed ? null : retryAvailableAt)
+
+  // Foco-roving do radiogroup (a11y): as setas movem foco+seleção dentro do grupo.
+  const groupRef = useRef<HTMLDivElement>(null)
+
+  // Markdown da pergunta ATIVA memoizado por `id` — selecionar uma resposta re-renderiza,
+  // mas não re-parseia o enunciado/opções (só muda ao avançar de pergunta).
+  const activeQuestion = questions[step]
+  const promptNode = useMemo(
+    () => (activeQuestion ? renderMarkdown(activeQuestion.prompt) : null),
+    [activeQuestion],
+  )
+  const choiceNodes = useMemo(
+    () =>
+      activeQuestion
+        ? activeQuestion.choices.map((c) => renderInline(c.label, { plainLinks: true }))
+        : [],
+    [activeQuestion],
+  )
 
   if (questions.length === 0) return null
 
@@ -222,9 +240,47 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   }
 
   // ── Wizard: uma pergunta por vez ───────────────────────────────────────────
-  const question = questions[step] as QuizQuestion
+  const question = activeQuestion as QuizQuestion
   const chosen = answers[question.id]
   const isLast = step === questions.length - 1
+  // Foco-roving: a opção marcada é o único tab-stop (ou a 1ª, se nada marcado).
+  const selectedIndex = question.choices.findIndex((c) => c.id === chosen)
+  const rovingIndex = selectedIndex === -1 ? 0 : selectedIndex
+
+  function moveChoice(delta: number) {
+    const n = question.choices.length
+    if (n === 0) return
+    const from = selectedIndex === -1 ? 0 : selectedIndex
+    const next = (from + delta + n) % n
+    const choice = question.choices[next]
+    if (!choice) return
+    setAnswers((a) => ({ ...a, [question.id]: choice.id }))
+    groupRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next]?.focus()
+  }
+
+  function onRadioKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (submitting) return
+    switch (e.key) {
+      case 'ArrowDown':
+      case 'ArrowRight':
+        e.preventDefault()
+        moveChoice(1)
+        break
+      case 'ArrowUp':
+      case 'ArrowLeft':
+        e.preventDefault()
+        moveChoice(-1)
+        break
+      case 'Home':
+        e.preventDefault()
+        moveChoice(-rovingIndex)
+        break
+      case 'End':
+        e.preventDefault()
+        moveChoice(question.choices.length - 1 - rovingIndex)
+        break
+    }
+  }
 
   return (
     <Card className="flex flex-col gap-5 p-5 md:p-6">
@@ -247,11 +303,15 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
       </p>
 
       {/* Enunciado em markdown (negrito/títulos/listas/imagens); sz-display dá a fonte da marca. */}
-      <div className="lesson-prose sz-display text-lg md:text-xl">
-        {renderMarkdown(question.prompt)}
-      </div>
+      <div className="lesson-prose sz-display text-lg md:text-xl">{promptNode}</div>
 
-      <div role="radiogroup" aria-label={question.prompt} className="flex flex-col gap-3">
+      <div
+        ref={groupRef}
+        role="radiogroup"
+        aria-label={question.prompt}
+        onKeyDown={onRadioKeyDown}
+        className="flex flex-col gap-3"
+      >
         {question.choices.map((choice, ci) => {
           const selected = chosen === choice.id
           return (
@@ -260,6 +320,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
               type="button"
               role="radio"
               aria-checked={selected}
+              tabIndex={ci === rovingIndex ? 0 : -1}
               disabled={submitting}
               onClick={() => setAnswers((a) => ({ ...a, [question.id]: choice.id }))}
               className={cn(
@@ -280,9 +341,10 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
                 {CHOICE_LETTERS[ci] ?? '•'}
               </span>
               {/* Opção: markdown INLINE (negrito/itálico/código/imagens) — o <button>
-                  só aceita conteúdo inline; `plainLinks` evita aninhar <a> num <button>. */}
+                  só aceita conteúdo inline; `plainLinks` evita aninhar <a> num <button>.
+                  Pré-renderizado e memoizado por pergunta (não re-parseia ao selecionar). */}
               <span className="flex-1 [&_img]:my-1 [&_img]:max-h-40 [&_img]:rounded-lg [&_img]:align-middle">
-                {renderInline(choice.label, { plainLinks: true })}
+                {choiceNodes[ci]}
               </span>
               {selected ? <Check className="size-5 shrink-0" strokeWidth={3} /> : null}
             </button>
@@ -395,9 +457,19 @@ function QuizReview({
                     )
                   })}
                 </div>
-                {!correction.correct && correction.explanation ? (
-                  <div className="lesson-prose mt-2 rounded-xl bg-card px-3 py-2 text-muted-foreground">
-                    {renderMarkdown(correction.explanation)}
+                {correction.explanation ? (
+                  <div className="mt-2 rounded-xl bg-card px-3 py-2">
+                    <p
+                      className={cn(
+                        'mb-1 text-xs font-bold',
+                        correction.correct ? 'text-success-foreground' : 'text-destructive',
+                      )}
+                    >
+                      {correction.correct ? 'Isso! Por quê:' : 'Por quê:'}
+                    </p>
+                    <div className="lesson-prose text-muted-foreground">
+                      {renderMarkdown(correction.explanation)}
+                    </div>
                   </div>
                 ) : null}
               </div>

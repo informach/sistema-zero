@@ -4,6 +4,7 @@ import type { ProgressRepository } from '../../domain/ports/progress-repository.
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import { computeProgress, resolveContinueLesson } from '../../domain/progress/progress'
 import type { CheckAccessService } from '../access/check-access.service'
+import { lockedLessonSetForCourse } from '../lesson-locking/lesson-locking'
 import { type CourseDetailView, toCourseDetailView, toCourseProgressView } from '../mappers/views'
 
 /** Detalhe do curso (módulos + aulas resumidas + flags de conclusão) — exige acesso. */
@@ -45,7 +46,10 @@ export class GetMyCourseService {
       computeProgress(completedPublished, publishedLessonIds.length),
       last,
     )
-    const continueLessonId = resolveContinueLesson(outline, completedSet, lastAccessed)
+    // Trava sequencial: só calcula quando o curso a tem ligada E o ator não é equipe
+    // interna (privileged navega tudo destravado, como a chave-mestra virtual).
+    const lockedSet = lockedLessonSetForCourse(course, publishedLessonIds, completedSet, privileged)
+    const continueLessonId = resolveContinueLesson(outline, completedSet, lastAccessed, lockedSet)
     return toCourseDetailView(
       course,
       outline,
@@ -54,6 +58,7 @@ export class GetMyCourseService {
       progressView,
       continueLessonId,
       myRating,
+      lockedSet,
     )
   }
 }

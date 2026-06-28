@@ -210,6 +210,29 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     expect(await progress.listCompletedLessonIds(USER, courseId)).toContain(lessonId)
   })
 
+  test('re-baixar certificado já emitido pula a conclusão/award redundante', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const { lessonId, blockId } = seedCertificateLesson(courses, courseId, moduleId)
+    await complete(app, lessonIds[0])
+    await complete(app, lessonIds[1])
+    await issue(app, lessonId, blockId) // 1ª emissão: conclui a aula + award
+
+    // A partir daqui, conta o caminho PESADO (só roda dentro de completeCertificateLesson).
+    let heavyCalls = 0
+    const orig = courses.countPublishedLessons.bind(courses)
+    courses.countPublishedLessons = ((...args: Parameters<typeof orig>) => {
+      heavyCalls++
+      return orig(...args)
+    }) as typeof courses.countPublishedLessons
+
+    const again = await issue(app, lessonId, blockId) // re-download
+    expect(again.status).toBe(200)
+    // Aula do certificado já concluída → markComplete devolve false → contagens + award pulados.
+    expect(heavyCalls).toBe(0)
+  })
+
   test('validação pública confirma; revogar invalida', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)

@@ -276,8 +276,16 @@ src/
             payments.ts: getDailyPaymentsStats DENSIFICA a série (dias civis BRT, zeros, totals
             via BigInt) e resolve productId→offerIds no catálogo antes de chamar o payments; +
             micro-cache TTL da lista de ofertas (garantia). sentry.ts: ingestão via fetch (sem SDK)
+            forward.ts: `forwardUpstream({status,body})` — repassa a resposta do gateway; em SUCESSO
+            o corpo intacto, em ERRO normaliza p/ `{error:{code,message}}` (não vaza corpo interno).
+            Use SEMPRE no pass-through em vez de `NextResponse.json(body,{status})`. Exceções: rotas
+            que TRANSFORMAM o body no sucesso (ex.: `api/members` hidrata e tem normalização própria).
   lib/      env.ts (server-only) · types.ts · format.ts · cn.ts · api.ts (client fetch)
             cookies.ts (nomes dos cookies, prefixo __Host- em prod) · csrf.ts (same-origin, puro)
+            upstream.ts (normalizeUpstreamError, puro/testado — usado por server/forward.ts) ·
+            list-params.ts (parseLimit COM TETO 100 / parseOffset, puros/testados — todo route de
+            listagem usa, NÃO reintroduza o `num()` local sem teto) · dates.ts
+            (dateInputToSaoPauloEndOfDayIso — validade `input[type=date]` → fim do dia em SP)
             slug.ts (slugify/skuify/offerSlugSuggestion/offerCodeSuggestion — kebab MINÚSCULO,
             espelha os VOs do catalog: Sku lowercase!; autogeração usa dirty-flag por campo)
   components/ catalog/* (offers-multi-select · components-editor · offer-items-editor ·
@@ -477,7 +485,11 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   "Audiência" no dialog, **sempre enviado** (o members PRESERVA quando ausente — ≠ salesPageUrl);
   `CourseView.audience` devolvido; badge "Kids" na listagem. Curso `kids` fica FORA da chave-mestra
   `all_courses` (copy do GrantAccessDialog = "todos os cursos ADULTOS"; option de curso kids ganha
-  sufixo `[Kids]`). **Convite multi-plataforma**: `POST /auth/admin/users` aceita
+  sufixo `[Kids]`). Body de curso também aceita **`sequentialLock`** (boolean, 06/2026 — trava
+  sequencial estilo Duolingo): checkbox "Trava sequencial das aulas" no dialog, **sempre enviado**
+  (members PRESERVA quando ausente; default `true` no curso novo); `CourseView.sequentialLock`
+  devolvido. Ligada, o aluno só abre a próxima aula após concluir a anterior (gate no members → 423).
+  **Convite multi-plataforma**: `POST /auth/admin/users` aceita
   `platform: 'main'|'kids'` (select "Plataforma do convite" no dialog — decide a base do link do
   e-mail `welcome`); impersonação aceita `?platform=kids` (`impersonateUser(id, platform?)` em
   `server/users.ts` devolve a `communityUrl` do app kids; o botão de UI kids entra quando o
@@ -506,7 +518,15 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `accountId`, então a rota BFF (`GET /api/members/blocks/:id/studio-submissions`) mostra a CRIANÇA
   (nome do PERFIL via `getUserProfiles` da conta) + o RESPONSÁVEL (conta via `batchGetUsers`) —
   perfil≠conta no kids, iguais no adulto. Requer
-  `transpilePackages:['@sistemazero/studio']` + `@source "../../../studio/src"` + `frame-src blob:` na CSP.
+  `transpilePackages:['@sistemazero/studio']` + `@source "../../../studio/src"` + na CSP do `next.config.ts`:
+  `frame-src blob:` E **`script-src data: https:`** (+ `media/font/style/img https:`). ⚠️ **Sem `script-src
+  data:` o PREVIEW do Estúdio fica EM BRANCO** nas Entregas (e na autoria): o `script.js` do aluno é
+  injetado como `<script src="data:text/javascript;base64,…">` num iframe `srcdoc` que HERDA a CSP do
+  painel — sem `data:` o navegador bloqueia e o professor abre os blocos mas não vê o resultado rodar
+  (corrigido 27/06, espelha o community-kids; a fronteira de segurança é o sandbox sem `allow-same-origin`
+  + a meta-CSP do próprio srcdoc, NÃO a CSP do pai). Mudança de CSP = HEADER → exige **restart do server**
+  (não basta HMR). `features.extensions:false` no viewer só esconde o PAINEL de extensões; o runtime/blocos
+  do projeto seguem carregando.
 
 - **Bloco `certificate` (06/2026; layout por imagem base 26/06):** o "diploma" do curso — pode ficar em
   QUALQUER aula (libera quando as ANTERIORES estão concluídas; ver o members). O form (em

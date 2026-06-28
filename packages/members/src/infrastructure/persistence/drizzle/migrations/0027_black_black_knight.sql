@@ -1,0 +1,1 @@
+ALTER TABLE "members"."courses" ADD COLUMN "sequential_lock" boolean DEFAULT true NOT NULL;

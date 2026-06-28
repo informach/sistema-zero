@@ -1,11 +1,14 @@
 import type { CourseDetailView, LessonOutlineView, ModuleOutlineView } from '@/lib/types'
 import { type UnitTheme, unitThemeAt } from './unit-theme'
 
-export type TrailNodeState = 'done' | 'current' | 'todo'
+export type TrailNodeState = 'done' | 'current' | 'todo' | 'locked'
 
 export interface TrailNode {
   lesson: LessonOutlineView
-  /** `current` = PRIMEIRA aula não concluída do curso inteiro (única). */
+  /**
+   * `current` = PRIMEIRA aula não concluída e LIBERADA (única). `locked` = aula
+   * travada pela trava sequencial (estilo Duolingo) — nó não clicável.
+   */
   state: TrailNodeState
   /** Coluna do serpenteado (−2..2) — multiplicada por --trail-step no render. */
   offset: number
@@ -39,12 +42,15 @@ const OFFSETS = [0, 1, 2, 1, 0, -1, -2, -1] as const
 
 /**
  * Deriva a trilha Duolingo do shape REAL do curso (members): módulo =
- * unidade temática, aula = nó, fim de unidade = baú. Trilha LIVRE — estado
- * é só visual, todos os nós de aula são clicáveis (a regra de acesso não
- * muda); o baú não é clicável.
+ * unidade temática, aula = nó, fim de unidade = baú. Quando o curso tem a
+ * trava sequencial ligada, as aulas posteriores vêm `locked` do backend e
+ * seus nós ficam não-clicáveis (cadeado); o baú nunca é clicável.
  */
 export function buildTrail(course: CourseDetailView): TrailUnit[] {
-  const currentId = course.modules.flatMap((m) => m.lessons).find((l) => !l.completed)?.id ?? null
+  // A "atual" é a 1ª não concluída E não travada (a trava garante que a 1ª
+  // pendente liberada é justamente a próxima na ordem).
+  const currentId =
+    course.modules.flatMap((m) => m.lessons).find((l) => !l.completed && !l.locked)?.id ?? null
 
   let globalIndex = 0
   const nextOffset = () => {
@@ -60,7 +66,13 @@ export function buildTrail(course: CourseDetailView): TrailUnit[] {
       (lesson): TrailNode => ({
         lesson,
         offset: nextOffset(),
-        state: lesson.completed ? 'done' : lesson.id === currentId ? 'current' : 'todo',
+        state: lesson.completed
+          ? 'done'
+          : lesson.locked
+            ? 'locked'
+            : lesson.id === currentId
+              ? 'current'
+              : 'todo',
       }),
     ),
     chest:

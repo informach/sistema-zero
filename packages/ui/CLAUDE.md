@@ -57,7 +57,11 @@ estrela 1–5: radios nativos sr-only sobre as metades — 1ª estrela é alvo i
 âmbar `fill-amber-400`; sem `onChange` = read-only) · **`scroll-lock`** (`@sistemazero/ui/scroll-lock`
 — `useBodyScrollLock(active)` + `lockBodyScroll`/`unlockBodyScroll` REFCONTADOS; o `Dialog` usa, e
 overlays de tela cheia também — fechar um modal por cima de um overlay não destrava o body cedo) ·
-switch · table · textarea · `cn`
+switch · table · textarea · **`use-modal-a11y`** (`@sistemazero/ui/use-modal-a11y` —
+`useModalA11y({open,onClose})` devolve o `ref` do card e faz a gestão de foco de modal: foca ao
+abrir, PRENDE o Tab, Esc fecha, devolve o foco ao gatilho; pilha refcontada + lock de scroll. O
+`Dialog` consome este hook; overlays "bespoke" que precisam do mesmo comportamento sem o chrome do
+Dialog — ex.: as celebrações do community-kids — reusam o hook direto) · `cn`
 (clsx + tailwind-merge) · **`phone`** (`@sistemazero/ui/phone`, módulo PURO sem React:
 `phoneDigits`/`brLocalDigits`/`formatTelefone` — máscara BR "(11) 99999-9999"; usado pelo
 perfil do community e pelo pré-checkout do funil; convenção: o auth guarda SÓ DÍGITOS locais).

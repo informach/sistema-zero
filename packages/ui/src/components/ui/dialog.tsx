@@ -1,20 +1,8 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
 import { cn } from '../../lib/cn'
-import { lockBodyScroll, unlockBodyScroll } from './scroll-lock'
-
-const FOCUSABLE =
-  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
-
-let dialogIdSequence = 0
-const openDialogStack: number[] = []
-
-function removeDialogFromStack(id: number) {
-  const index = openDialogStack.lastIndexOf(id)
-  if (index !== -1) openDialogStack.splice(index, 1)
-}
+import { useModalA11y } from './use-modal-a11y'
 
 /**
  * Modal controlado e leve (sem dep externa): overlay + card, fecha no Esc/backdrop.
@@ -44,60 +32,9 @@ export function Dialog({
   /** Presente → renderiza o link "Voltar" no canto esquerdo do header. */
   onBack?: () => void
 }) {
-  const cardRef = useRef<HTMLDivElement>(null)
-  const onCloseRef = useRef(onClose)
-  const dialogIdRef = useRef(0)
-  if (dialogIdRef.current === 0) dialogIdRef.current = ++dialogIdSequence
-
-  useEffect(() => {
-    onCloseRef.current = onClose
-  }, [onClose])
-
-  // Gestão de foco do modal (a11y): ao abrir, leva o foco para dentro (o leitor de tela
-  // anuncia o diálogo pelo `aria-label`); prende o Tab no card (não escapa pro fundo); e
-  // devolve o foco ao gatilho ao fechar. Sem isto, teclado/leitor ficam "presos" atrás do modal.
-  useEffect(() => {
-    if (!open) return
-    const dialogId = dialogIdRef.current
-    const previouslyFocused = document.activeElement as HTMLElement | null
-    const card = cardRef.current
-    removeDialogFromStack(dialogId)
-    openDialogStack.push(dialogId)
-    // Foca o container (anuncia o título) — evita cair no "X"/"Voltar" como 1º foco.
-    card?.focus()
-    const onKey = (e: KeyboardEvent) => {
-      if (openDialogStack[openDialogStack.length - 1] !== dialogId) return
-      if (e.key === 'Escape') {
-        onCloseRef.current()
-        return
-      }
-      if (e.key !== 'Tab' || !card) return
-      const focusables = Array.from(card.querySelectorAll<HTMLElement>(FOCUSABLE))
-      const first = focusables[0]
-      const last = focusables[focusables.length - 1]
-      if (!first || !last) {
-        e.preventDefault()
-        card.focus()
-        return
-      }
-      const active = document.activeElement
-      if (e.shiftKey && (active === first || active === card)) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && active === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    lockBodyScroll()
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      removeDialogFromStack(dialogId)
-      unlockBodyScroll()
-      if (previouslyFocused && document.contains(previouslyFocused)) previouslyFocused.focus()
-    }
-  }, [open])
+  // Gestão de foco do modal (a11y) compartilhada: foca o card ao abrir, prende o Tab,
+  // fecha no Esc e devolve o foco ao gatilho — ver `useModalA11y`.
+  const cardRef = useModalA11y<HTMLDivElement>({ open, onClose })
 
   if (!open) return null
 

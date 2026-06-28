@@ -77,9 +77,13 @@ export class CourseAdminService {
   async create(fields: CourseFields): Promise<CourseView> {
     // Curso novo nasce sem aulas → nunca pode nascer `published`.
     if (fields.status === 'published') throw new NoPublishedLessonError()
-    // Audiência ausente → `adult` (plataforma principal).
+    // Audiência ausente → `adult`; trava sequencial ausente → `true` (padrão LIGADO).
     return toCourseView(
-      await this.content.createCourse({ ...fields, audience: fields.audience ?? 'adult' }),
+      await this.content.createCourse({
+        ...fields,
+        audience: fields.audience ?? 'adult',
+        sequentialLock: fields.sequentialLock ?? true,
+      }),
     )
   }
 
@@ -101,11 +105,13 @@ export class CourseAdminService {
     // preservando as demais; objeto que ficou vazio volta a `null`.
     // `audience` AUSENTE preserva a atual (≠ do salesPageUrl, que limpa): um
     // PATCH de build antigo do admin sem o campo não rebaixa curso kids → adult.
-    const { salesPageUrl, audience, ...rest } = fields
+    // `sequentialLock` AUSENTE também PRESERVA a atual (mesma régua do audience).
+    const { salesPageUrl, audience, sequentialLock, ...rest } = fields
     const merged = {
       ...existing,
       ...rest,
       audience: audience ?? existing.audience,
+      sequentialLock: sequentialLock ?? existing.sequentialLock,
       metadata: withSalesPageUrl(existing.metadata, salesPageUrl),
     }
     const ok = await this.content.updateCourse(merged)
