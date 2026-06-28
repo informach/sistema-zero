@@ -5,6 +5,7 @@ import type { CertificateRecord } from '../../src/domain/certificate/certificate
 import {
   type Course,
   type CourseAudience,
+  type CourseLevel,
   isCourseAccessible,
   type Lesson,
   type LessonAttachment,
@@ -1090,6 +1091,11 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
 interface XpEventRow extends XpEventInput {
   userId: string
   audience: CourseAudience
+  /**
+   * Snapshot da dificuldade do curso nos marcos de curso (mirror de `xp_events.source_level`).
+   * Opcional: fixtures de teste que empurram eventos crus (não-curso) não precisam setá-lo.
+   */
+  sourceLevel?: CourseLevel | null
   createdAt: Date
 }
 
@@ -1195,10 +1201,16 @@ export class InMemoryGamificationRepository implements GamificationRepository {
           x.userId === input.userId && x.sourceType === e.sourceType && x.sourceId === e.sourceId,
       )
       if (dup) continue
+      // Mirror do SQL: congela `courses.level` nos marcos de curso (rank não regride).
+      const sourceLevel =
+        e.sourceType === 'course_complete' || e.sourceType === 'course_showcased'
+          ? (this.sources?.courses.courses.find((c) => c.id === e.sourceId)?.level ?? null)
+          : null
       this.events.push({
         ...e,
         userId: input.userId,
         audience: input.audience,
+        sourceLevel,
         createdAt: input.now,
       })
       newEvents.push(e)
@@ -1460,17 +1472,21 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     audience: CourseAudience,
   ): Promise<QualifyingByLevel> {
     const mine = this.events.filter((e) => e.userId === userId && e.audience === audience)
-    const completed = new Set(
-      mine.filter((e) => e.sourceType === 'course_complete').map((e) => e.sourceId),
-    )
-    const showcased = new Set(
-      mine.filter((e) => e.sourceType === 'course_showcased').map((e) => e.sourceId),
+    const completed = mine.filter((e) => e.sourceType === 'course_complete')
+    const showcasedByCourse = new Map(
+      mine.filter((e) => e.sourceType === 'course_showcased').map((e) => [e.sourceId, e]),
     )
     const result: QualifyingByLevel = { iniciante: 0, intermediario: 0, avancado: 0 }
-    for (const courseId of completed) {
-      if (!showcased.has(courseId)) continue
-      const course = this.sources?.courses.courses.find((c) => c.id === courseId)
-      if (course) result[course.level] += 1
+    for (const ce of completed) {
+      const sc = showcasedByCourse.get(ce.sourceId)
+      if (!sc) continue
+      // Mirror do COALESCE(showcased.source_level, complete.source_level, courses.level):
+      // o snapshot congelado vence; `courses.level` ao vivo é só fallback legado.
+      const level =
+        sc.sourceLevel ??
+        ce.sourceLevel ??
+        this.sources?.courses.courses.find((c) => c.id === ce.sourceId)?.level
+      if (level && level in result) result[level] += 1
     }
     return result
   }

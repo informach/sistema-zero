@@ -65,7 +65,8 @@ URL da oferta no `customPages` do sitemap (`astro.config.mjs`).
 colapsa pro+kids num arquivo só). Cada página resolve `getFunnel(...)`, **404 se o funil ou o passo
 não existir**, lê o conteúdo de `f.content.*` e navega por `f.basePath`. As ilhas NÃO leem a rota —
 recebem tudo por prop: `Quiz` (steps/total/landing/funnel/donePath), `PreCheckoutModal`
-(basePath/funnel), `CheckoutForm`→`Pix/Card/BoletoCheckout` (successPath). `[audience]/index.astro`
+(basePath/funnel), `CheckoutForm`→`Pix/Card` (successPath; boleto é só API — `startBoleto` +
+`/api/checkout/boleto`, sem ilha). `[audience]/index.astro`
 = landing de área (redireciona ao produto, ou "em breve" se vazia). `/` → `DEFAULT_FUNNEL`; URLs
 planas antigas → 301 (config `redirects`).
 

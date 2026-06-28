@@ -14,15 +14,16 @@
  * null`) — quem tem o produto daquele servidor vê todos os canais dele. **Clube e Mural são
  * SEPARADOS** (produtos distintos): o **Clube** (`clube-dos-criadores`) é o fórum vendável; o
  * **Mural** (`mural-dos-criadores`) é a vitrine, independente, dada de bônus no desafio do
- * primeiro jogo. A chave de cada servidor casa com (a) o slug do produto de COMUNIDADE no
- * catálogo e (b) o ref que o community-kids checa em `/members/access` (o Clube usa o
- * `CLUBE_ACCESS_REF` do member-shell).
+ * primeiro jogo. A chave de cada servidor casa com o slug do produto de COMUNIDADE no
+ * catálogo (quem compra o produto ganha a chave → o hub libera o servidor). O ACESSO é
+ * decidido SÓ aqui (o "Quem vê"); o community-kids só mostra a tela de bloqueio quando o
+ * hub devolve o servidor como teaser.
  *
  * Para um smoke test sem matrícula, rode com `SEED_PUBLIC=true` (deixa os dois públicos —
  * TROCAR para community_gated no admin antes de valer "só quem comprou"). Re-rodar é seguro.
  */
 import { randomUUID } from 'node:crypto'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import type { AccessConfig } from '../src/domain/access/access-config'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
 import { channels, spaces } from '../src/infrastructure/persistence/drizzle/schema'
@@ -91,7 +92,7 @@ async function main(): Promise<void> {
         if (current !== JSON.stringify(access)) {
           await conn.db
             .update(spaces)
-            .set({ accessConfig: access, updatedAt: new Date() })
+            .set({ accessConfig: access, version: sql`${spaces.version} + 1`, updatedAt: now })
             .where(eq(spaces.id, spaceId))
           console.log(`~ servidor "${s.slug}" — acesso reconciliado p/ ${access.visibility}`)
         } else {

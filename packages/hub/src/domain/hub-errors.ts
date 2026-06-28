@@ -45,6 +45,12 @@ export class AccessDeniedError extends DomainError {
     super(message)
   }
 }
+export class AccessUnavailableError extends DomainError {
+  readonly code = 'ACCESS_UNAVAILABLE'
+  constructor(message = 'Não foi possível verificar seu acesso agora') {
+    super(message)
+  }
+}
 /** Canal só permite staff postar, ou tópico travado. → 403. */
 export class PostingNotAllowedError extends DomainError {
   readonly code = 'POSTING_NOT_ALLOWED'

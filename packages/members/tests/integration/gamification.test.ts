@@ -1068,6 +1068,34 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     expect(me.level.slug).toBe('coder')
   })
 
+  test('rank NÃO regride quando o curso é re-nivelado depois de qualificado', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses) // iniciante
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await completeCourse(app, course.lessonIds)
+    await postShowcase(app, {
+      userId: USER,
+      accountId: USER,
+      courseId: course.courseId,
+      audience: 'adult',
+    })
+
+    // Qualificado como INICIANTE → Coder; faltam 4 iniciantes p/ Hacker.
+    const before = await readJson(await getMe(app))
+    expect(before.level.slug).toBe('coder')
+    expect(before.level.remaining.iniciante).toBe(4)
+
+    // O admin re-nivela o curso p/ avançado DEPOIS da qualificação.
+    const row = courses.courses.find((c) => c.id === course.courseId)
+    if (row) row.level = 'avancado'
+
+    // O rank usa o SNAPSHOT congelado no marco: continua contando como iniciante.
+    // Se seguisse o `courses.level` AO VIVO, `remaining.iniciante` viraria 5 (0 qualificados).
+    const after = await readJson(await getMe(app))
+    expect(after.level.slug).toBe('coder')
+    expect(after.level.remaining.iniciante).toBe(4)
+  })
+
   test('webhook é idempotente por x-delivery-id (replay = no-op)', async () => {
     const { app, courses, entitlements } = buildApp()
     const course = seedSampleCourse(courses)

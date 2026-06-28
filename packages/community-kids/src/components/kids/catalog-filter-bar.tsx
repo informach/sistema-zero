@@ -28,12 +28,14 @@ export function CatalogFilterBar({ filters, onChange, onClear, hasActiveFilters 
           aria-label="Buscar curso"
         />
       </div>
-      <div className="flex items-center gap-3">
+      {/* Mobile: grade 2-col (selects ocupam a célula, nunca estouram); sm+: linha que
+          pode quebrar. Antes era `flex` sem wrap → o 3º select (nível) vazava no celular. */}
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
         <Select
           value={filters.acesso}
           onChange={(e) => onChange('acesso', e.target.value)}
           aria-label="Filtrar por acesso"
-          className="w-36"
+          className="w-full sm:w-36"
         >
           <option value="todos">Todos</option>
           <option value="liberados">Liberados</option>
@@ -43,7 +45,7 @@ export function CatalogFilterBar({ filters, onChange, onClear, hasActiveFilters 
           value={filters.nivel}
           onChange={(e) => onChange('nivel', e.target.value)}
           aria-label="Filtrar por nível"
-          className="w-40"
+          className="w-full sm:w-40"
         >
           <option value="todos">Todos os níveis</option>
           <option value="iniciante">Iniciante</option>
@@ -54,14 +56,14 @@ export function CatalogFilterBar({ filters, onChange, onClear, hasActiveFilters 
           value={filters.ordem}
           onChange={(e) => onChange('ordem', e.target.value)}
           aria-label="Ordenar"
-          className="w-32"
+          className="w-full sm:w-32"
         >
           <option value="padrao">Padrão</option>
           <option value="az">A → Z</option>
           <option value="za">Z → A</option>
         </Select>
         {hasActiveFilters ? (
-          <Button variant="ghost" onClick={onClear} className="shrink-0">
+          <Button variant="ghost" onClick={onClear} className="col-span-2 shrink-0 sm:col-auto">
             <X className="size-4" />
             Limpar
           </Button>

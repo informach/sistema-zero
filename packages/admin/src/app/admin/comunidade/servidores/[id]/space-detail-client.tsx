@@ -37,6 +37,7 @@ type ApprovalChoice = 'inherit' | 'yes' | 'no'
 
 interface ChannelForm {
   id: string | null
+  version: number | null
   name: string
   slug: string
   topic: string
@@ -49,6 +50,7 @@ interface ChannelForm {
 
 const emptyChannel = (): ChannelForm => ({
   id: null,
+  version: null,
   name: '',
   slug: '',
   topic: '',
@@ -115,6 +117,7 @@ export function SpaceDetailClient({
   function openEditChannel(c: HubChannelView) {
     setChForm({
       id: c.id,
+      version: c.version,
       name: c.name,
       slug: c.slug,
       topic: c.topic ?? '',
@@ -143,8 +146,15 @@ export function SpaceDetailClient({
       status: chForm.status,
     }
     await run(async () => {
-      if (chForm.id) await apiSend(`/api/hub/admin/channels/${chForm.id}`, 'PATCH', body)
-      else await apiSend(`/api/hub/admin/spaces/${spaceId}/channels`, 'POST', body)
+      if (chForm.id) {
+        if (chForm.version === null) throw new Error('Versão do canal ausente.')
+        await apiSend(`/api/hub/admin/channels/${chForm.id}`, 'PATCH', {
+          ...body,
+          version: chForm.version,
+        })
+      } else {
+        await apiSend(`/api/hub/admin/spaces/${spaceId}/channels`, 'POST', body)
+      }
       setChOpen(false)
     }, 'Canal salvo.')
   }
@@ -337,10 +347,16 @@ export function SpaceDetailClient({
             disabled={busy}
             onClick={() => {
               if (!confirm('Excluir este servidor e TODOS os seus canais/tópicos?')) return
-              void run(async () => {
-                await apiSend(`/api/hub/admin/spaces/${spaceId}`, 'DELETE')
-                router.push('/admin/comunidade/servidores')
-              })
+              setBusy(true)
+              void apiSend(`/api/hub/admin/spaces/${spaceId}`, 'DELETE')
+                .then(() => {
+                  toast.success('Servidor excluído.')
+                  router.push('/admin/comunidade/servidores')
+                })
+                .catch((err) => {
+                  toast.error((err as ApiError).message ?? 'Falha ao excluir.')
+                  setBusy(false)
+                })
             }}
           >
             <Trash2 className="size-4" /> Excluir servidor
@@ -429,6 +445,7 @@ function SpaceEditButton({
     setBusy(true)
     try {
       await apiSend(`/api/hub/admin/spaces/${tree.id}`, 'PATCH', {
+        version: tree.version,
         slug: tree.slug,
         name: form.name.trim(),
         audience: tree.audience,

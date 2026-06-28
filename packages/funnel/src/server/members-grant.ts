@@ -6,8 +6,8 @@ export interface GrantMembersDeps {
   /**
    * Resolve a oferta pelo funil do lead — usado SÓ como fallback quando o lead não
    * tem `offer_ref` gravado (leads antigos). A oferta efetivamente comprada vem do
-   * `lead.offerRef` (gravado no checkout). SEM fallback global no código: lead sem
-   * `offerRef` E sem funil conhecido → lança (não inventa oferta).
+   * `lead.offerRef` (gravado no checkout). Lead legado sem funil cai no default;
+   * chave desconhecida continua lançando (não inventa oferta).
    */
   resolveOffer: (funnel: string | null) => { offerSlug: string }
   /** Marca a concessão concluída (one-shot) — poll repetido após pago não re-chama o members. */

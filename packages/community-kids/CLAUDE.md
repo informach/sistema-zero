@@ -112,17 +112,17 @@ com `teaserWhenLocked` ON → aparecem no menu (`nav.ts`: itens "Clube" e "Mural
 mesmo sem acesso, e a UI mostra `KidsLockedSpace` (recado gentil, sem conteúdo) quando
 `space.locked`. A rota antiga `/comunidade` foi REMOVIDA sem redirect (não há usuário real em prod
 ainda — decisão do usuário).
-**⚠️ Clube E Mural = produtos à parte com gate na PÁGINA (06/2026, igual ao Estúdio):** cada `page.tsx`
-checa o acesso no SERVIDOR via `checkClubeAccessReadonly()`/`checkMuralAccessReadonly()` (`GET
-/members/access?refs=<ref>`; `CLUBE_ACCESS_REF`=`clube-dos-criadores`, `MURAL_ACCESS_REF`=
-`mural-dos-criadores` no member-shell) ANTES de renderizar — 3 estados: sem acesso (200) →
-`KidsLockedClube`/`KidsLockedMural` ("ainda não liberado", espelham o `KidsLockedStudio`); status ≠ 200
-→ `KidsAccessUnavailable` ("tente de novo"); com acesso → `KidsSpaceViewClient`. Acesso pela CONTA;
-equipe/`hasMasterKids` curto-circuitam `true`. Isso substitui depender SÓ do teaser do hub: garante o
-recado mesmo que o servidor do hub não esteja alinhado. **Clube e Mural são PRODUTOS SEPARADOS** (o
-Mural é bônus do desafio do 1º jogo). **Setup do operador:** vender cada produto no catálogo E
-configurar o servidor homônimo no hub como `community_gated` com o MESMO ref (defesa em profundidade na
-API; o gate da página é UX) — sem isso o gate da página barra e o do hub não casa. O componente único `components/kids/kids-space-view-client.tsx` (movido
+**⚠️ Acesso ao Clube/Mural = UM portão só, o "Quem vê" do hub (06/2026):** NÃO há gate de produto na
+página (era um 2º portão que contradizia o "Quem vê" — removido p/ não confundir). A `page.tsx` só
+renderiza o `KidsSpaceViewClient`; o HUB decide o acesso pelo `accessConfig` ("Quem vê" no admin:
+público / por curso / **por comunidade** / por cargo). Sem acesso, o hub devolve o servidor BLOQUEADO
+(teaser, exige `teaserWhenLocked` ON) e a página passa um **`lockedView`** custom — `KidsLockedClube`/
+`KidsLockedMural` ("ainda não liberado", espelham o `KidsLockedStudio`); senão cai no genérico
+`KidsLockedSpace`. ⚠️ O Estúdio é DIFERENTE: NÃO é servidor do hub, então lá o gate é na página mesmo
+(`checkStudioAccessReadonly`). **Setup do operador (vender como produto):** no admin, "Quem vê = Por
+comunidade" + a chave do produto (Clube → `clube-dos-criadores`; Mural → `mural-dos-criadores`,
+independente, bônus do desafio do 1º jogo) — a MESMA chave do produto de comunidade no catálogo.
+O componente único `components/kids/kids-space-view-client.tsx` (movido
 de `app/(app)/comunidade`)
 recebe `slug` + `mode`: no `wall` esconde o composer/sidebar e renderiza CARDS de projeto (capa +
 título + resumo + "por {authorDisplayName}"); a criança só comenta (moderado) e reage. **Vitrine
@@ -661,6 +661,29 @@ Verde: typecheck + test (26) + biome + `build:kids`. Achados LOW corrigidos:
   MESMO URL+cor diferente renderizarem juntas. Mantido como está; clonar como o `thumb-canvas` é
   endurecimento opcional, não correção. Compras em 1 toque, sem-PIN entre irmãos e nome no perfil
   público (opt-in) seguem decisões de produto.
+
+## Full review (correções) — 28/06/2026 (2ª passada — refator do gate Clube/Mural)
+
+7ª auditoria, focada no delta que trocou o gate de produto da PÁGINA pelo **portão único do hub**
+("Quem vê"): Clube/Mural agora só renderizam o `KidsSpaceViewClient` (sem
+`checkClube/MuralAccessReadonly`), que distingue BLOQUEADO (teaser → `lockedView`) de INDISPONÍVEL
+(`ACCESS_UNAVAILABLE`/503 → tela de retry). **Segurança: NADA acionável** — o hub é a fronteira de
+conteúdo e a aplica SERVER-SIDE (`/channels` → 403 quando locked; members fora → 503; provado em
+`hub/tests/integration/access-read.test.ts`), e o `ApiError` carrega `status`/`code` do envelope. As
+refs antigas (`checkClube/MuralAccessReadonly`) sumiram do repo inteiro — zero dead code. Verde:
+typecheck + test (26) + biome + build:kids. Achado corrigido:
+
+- **Botão "Tentar de novo" virou clique-morto (MEDIUM):** a decisão "indisponível" saiu da página
+  (server) p/ o estado do `KidsSpaceViewClient` (client), mas `KidsAccessUnavailable` seguia só com
+  `router.refresh()` — que PRESERVA o estado do client e NÃO re-dispara o efeito de carga (deps
+  `[slug, mode]`), deixando `unavailable` grudado. Uma criança COM acesso, num soluço transitório do
+  hub/members, ficava presa (só reload duro recuperava). Agora `KidsAccessUnavailable` aceita `onRetry`
+  e o client passa um retry REAL (`reloadNonce` no deps do efeito → volta ao skeleton e refaz o fetch);
+  o prop `unavailableView?: ReactNode` virou `unavailableTitle?: string` (a tela interativa nasce no
+  client p/ receber o callback — função não cruza a fronteira server→client).
+- **Verificados de pé (não-bug):** contraste do `CourseLevelChip` (cor só no pontinho, texto em
+  `text-foreground` = AA garantido) e a grade responsiva do `catalog-filter-bar` (mobile 2-col, sm+
+  flex-wrap) — corretos, sem regressão.
 
 ## Comandos
 

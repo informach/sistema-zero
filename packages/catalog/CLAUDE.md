@@ -15,9 +15,23 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 **área de membros** (resolve, no grant, exatamente o que a oferta incluía). Runtime: **Bun**. Linguagem: **TS (ESM)**.
 
 > Estado: **slice completo e testado** (produtos/combos/ofertas + cupons + leitura pública +
-> escrita admin + resolução de entitlements). Migrations `0000`/`0001` aplicadas no Postgres
-> compartilhado (cria o **schema `catalog`**). Seed dos produtos atuais (No Comando da IA, R$37; e o
-> **Estúdio Completo** kids, R$97, `accessType:'community'` courseRef `estudio-completo`) disponível.
+> escrita admin + resolução de entitlements). Migrations `0000`/`0001`/`0002`/`0003` no Postgres
+> compartilhado (cria o **schema `catalog`**; `0003` = enum `product_kind` += `'tool'`). Seed
+> (`scripts/seed.ts`): **No Comando da IA** (ebook, R$37) · **Estúdio Completo** (kids, R$97 —
+> **`kind: 'tool'`/Ferramenta**, entrega `accessType:'community'` courseRef `estudio-completo`; o seed
+> RECONCILIA o kind legado `community`→`tool` de forma idempotente) · **Clube dos Criadores** e
+> **Mural dos Criadores** (kids, `kind: 'community'`, entrega `community` courseRef = slug — SEM oferta
+> no seed; o Mural é dado de BÔNUS na oferta do desafio) · **Desafio do Primeiro Jogo** (kids,
+> `kind: 'course'`, entrega `course` courseRef `desafio-primeiro-jogo`) **+ oferta ativa R$37 com o
+> Mural como item de BÔNUS** (`items`) — é a oferta que o funil `/kids/desafio-primeiro-jogo` vende
+> (env `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo`). O **Clube** fica SEM oferta no
+> seed (preço/venda no painel). ⚠️ A CHAVE de comunidade (= slug) casa com o `accessConfig`
+> `community_gated` do servidor homônimo no hub e com o `/members/access`. **`tool` é só TAXONOMIA do
+> produto** — a entrega/acesso segue por `fulfillment.accessType`, NÃO há accessType `tool` no members.
+> ⚠️ Os CURSOS (`no-comando-da-ia`, `desafio-primeiro-jogo`) NÃO são seedados (members é DEV-only) —
+> são autorados no admin com ESSES slugs (audience kids no desafio); o produto só guarda o courseRef
+> (texto), então o checkout do funil funciona mesmo antes do curso existir (o aluno só vê o conteúdo
+> quando o curso for publicado).
 > **2º full review 06/2026 com TODOS os achados implementados**: view pública de produto sanitizada +
 > `draft` 404 público, `x-internal-token` (entitlements S2S + admin/escrita + redeem, obrigatório em
 > prod), 23505 via `cause` (drizzle ≥0.44), escape do ILIKE, uuid nas bordas, `/readyz` + `HOST ::`,

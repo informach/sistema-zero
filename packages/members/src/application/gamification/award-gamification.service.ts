@@ -121,7 +121,11 @@ export class AwardGamificationService {
    */
   async awardCourseShowcased(input: {
     userId: string
-    /** CONTA dona do perfil (do hub). Só usada se o perfil ainda não existir. */
+    /**
+     * CONTA dona do perfil (do hub). Na prática NÃO é usada: como o marco é amount 0,
+     * o `award` nunca entra no ramo que cria/atualiza o perfil — `accountId` só seria
+     * gravado lá. Mantida na assinatura por simetria com os demais awards.
+     */
     accountId: string
     courseId: string
     audience: CourseAudience

@@ -9,6 +9,10 @@ export const PRODUCT_KINDS = [
   'community',
   'service',
   'bundle',
+  // Ferramenta/app vendável fora de trilha (ex.: Estúdio Completo). Taxonomia
+  // comercial — a entrega segue via fulfillment (`accessType: 'community'`, a CHAVE
+  // casa com o `/members/access`); o `kind` só diz "o que é", não como libera.
+  'tool',
   'other',
 ] as const
 

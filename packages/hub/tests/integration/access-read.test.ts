@@ -185,6 +185,56 @@ describe('leitura do aluno com resolução de acesso', () => {
     expect(((await okDetail.json()) as { locked: boolean }).locked).toBe(false)
   })
 
+  test('teaser: falha do members no detalhe vira 503 ACCESS_UNAVAILABLE, não bloqueio real', async () => {
+    await ctx.repo.createSpace(
+      space({
+        slug: 'clube-indisponivel',
+        name: 'Clube indisponível',
+        audience: 'kids',
+        accessConfig: COURSE_A,
+        teaserWhenLocked: true,
+      }),
+    )
+    ctx.members.checkAccess = async () => {
+      throw new Error('members indisponível')
+    }
+
+    const res = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces/clube-indisponivel', {
+        headers: studentHeaders(randomUUID()),
+      }),
+    )
+    expect(res.status).toBe(503)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      'ACCESS_UNAVAILABLE',
+    )
+  })
+
+  test('teaser: falha do members nos canais também vira 503 ACCESS_UNAVAILABLE', async () => {
+    await ctx.repo.createSpace(
+      space({
+        slug: 'clube-canais-indisponivel',
+        name: 'Clube canais indisponível',
+        audience: 'kids',
+        accessConfig: COURSE_A,
+        teaserWhenLocked: true,
+      }),
+    )
+    ctx.members.checkAccess = async () => {
+      throw new Error('members indisponível')
+    }
+
+    const res = await ctx.app.handle(
+      jsonRequest('GET', '/hub/spaces/clube-canais-indisponivel/channels', {
+        headers: studentHeaders(randomUUID()),
+      }),
+    )
+    expect(res.status).toBe(503)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      'ACCESS_UNAVAILABLE',
+    )
+  })
+
   test('canal com gate próprio estreita o acesso (AND com o space)', async () => {
     const userId = randomUUID()
     const sp = await ctx.repo.findActiveSpaceBySlug('geral')

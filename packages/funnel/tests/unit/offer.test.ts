@@ -10,7 +10,7 @@ const env = {
   },
 } as unknown as Env
 
-describe('resolução de oferta (100% por env, sem fallback)', () => {
+describe('resolução de oferta (100% por env, com compat de lead legado)', () => {
   test('resolveOfferSlug devolve a oferta da env do funil', () => {
     expect(resolveOfferSlug(env, 'pro/no-comando-da-ia')).toBe('oferta-nci')
     expect(resolveOfferSlug(env, 'kids/desafio-primeiro-jogo')).toBe('oferta-kids-julho')
@@ -22,9 +22,9 @@ describe('resolução de oferta (100% por env, sem fallback)', () => {
     expect(resolve('pro/no-comando-da-ia').offerSlug).toBe('oferta-nci')
   })
 
-  test('SEM fallback: funil nulo/desconhecido → lança', () => {
+  test('funil nulo é legado e cai no default; funil desconhecido → lança', () => {
     const resolve = makeResolveOffer(env)
-    expect(() => resolve(null)).toThrow()
+    expect(resolve(null).offerSlug).toBe('oferta-nci')
     expect(() => resolve('pro/inexistente')).toThrow()
   })
 

@@ -41,7 +41,7 @@ const CreateComment = z.object({
   replyToId: z.string().uuid().nullish(),
   attachmentIds: ATTACHMENT_IDS,
 })
-const EditBody = z.object({ body: BODY })
+const EditBody = z.object({ body: BODY, version: z.number().int().nonnegative() })
 const ReactBody = z.object({ emoji: z.string().min(1).max(16) })
 const ReportBody = z.object({ reason: z.string().min(1).max(1000) })
 
@@ -175,7 +175,7 @@ export function createHubRoutes(deps: {
       if (!parsed.success) return invalid()
       const id = await idFrom(ctx)
       if (!id) return invalid()
-      const r = await hub.editThread(id, stripImageMarkdown(parsed.data.body))
+      const r = await hub.editThread(id, stripImageMarkdown(parsed.data.body), parsed.data.version)
       return okRedacted(r, await viewerId())
     },
   }
@@ -219,7 +219,7 @@ export function createHubRoutes(deps: {
       if (!parsed.success) return invalid()
       const id = await idFrom(ctx)
       if (!id) return invalid()
-      const r = await hub.editComment(id, stripImageMarkdown(parsed.data.body))
+      const r = await hub.editComment(id, stripImageMarkdown(parsed.data.body), parsed.data.version)
       return okRedacted(r, await viewerId())
     },
   }

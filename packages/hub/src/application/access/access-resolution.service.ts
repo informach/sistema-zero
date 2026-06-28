@@ -32,6 +32,11 @@ interface CourseAccess {
   communities: Set<string>
 }
 
+export interface SpaceAccessDecision {
+  accessible: boolean
+  unavailable: boolean
+}
+
 type AccessRefs = {
   courseRefs: string[]
   communityRefs: string[]
@@ -111,6 +116,15 @@ export class AccessResolutionService {
     return this.evaluateWithFetch(space.accessConfig, actor, space.audience)
   }
 
+  /**
+   * Variante para o DETALHE do servidor: diferencia "sem acesso" de "não consegui
+   * verificar". A listagem segue fail-closed para não derrubar espaços públicos.
+   */
+  async decideSpaceAccess(actor: Actor, space: Space): Promise<SpaceAccessDecision> {
+    if (actor.privileged) return { accessible: true, unavailable: false }
+    return this.evaluateWithFetchDecision(space.accessConfig, actor, space.audience)
+  }
+
   async canAccessChannel(actor: Actor, space: Space, channel: Channel): Promise<boolean> {
     if (!(await this.canAccessSpace(actor, space))) return false
     if (actor.privileged) return true
@@ -158,6 +172,32 @@ export class AccessResolutionService {
       return this.evaluate(access, actor, audience, ca)
     }
     return this.evaluate(access, actor, audience, NO_COURSE_ACCESS)
+  }
+
+  private async evaluateWithFetchDecision(
+    access: AccessConfig,
+    actor: Actor,
+    audience: Audience,
+  ): Promise<SpaceAccessDecision> {
+    if (access.visibility === 'course_gated' || access.visibility === 'community_gated') {
+      try {
+        const ca = await this.resolveCourseAccess(
+          actor.accountId,
+          access.visibility === 'course_gated' ? access.courses : [],
+          access.visibility === 'community_gated' ? (access.communities ?? []) : [],
+        )
+        return {
+          accessible: this.evaluate(access, actor, audience, ca),
+          unavailable: false,
+        }
+      } catch {
+        return { accessible: false, unavailable: true }
+      }
+    }
+    return {
+      accessible: this.evaluate(access, actor, audience, NO_COURSE_ACCESS),
+      unavailable: false,
+    }
   }
 
   /** Avaliação PURA dado o resultado de acesso a cursos já carregado. */

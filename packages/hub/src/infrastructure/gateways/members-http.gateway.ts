@@ -31,6 +31,12 @@ export interface MembersHttpGatewayOptions {
 const DEFAULT_TIMEOUT_MS = 5_000
 /** Path EXATO que o members assina/verifica (`<MÉTODO>.<path>.<corpo>`; chamada S2S direta). */
 const SHOWCASE_WEBHOOK_PATH = '/members/webhooks/showcase'
+const SHOWCASE_NOTIFY_ATTEMPTS = 3
+const SHOWCASE_NOTIFY_RETRY_BASE_MS = 100
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+const retryableShowcaseStatus = (status: number) =>
+  status === 408 || status === 429 || status >= 500
 
 /**
  * Adapter HTTP do members. Resolve `POST /members/internal/access-check` (rota S2S
@@ -125,43 +131,60 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
     async notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void> {
       // Sem segredo HMAC (dev/local) → no-op: o nível do aluno só não atualiza na hora.
       if (!opts.hmacSecret) return
-      try {
-        const rawBody = JSON.stringify({
-          userId: args.userId,
-          accountId: args.accountId,
-          courseId: args.courseId,
-          audience: args.audience,
-        })
-        const ts = Math.floor(now().getTime() / 1000)
-        const signature = signHmac(
-          opts.hmacSecret,
-          canonicalHmacMessage({ method: 'POST', path: SHOWCASE_WEBHOOK_PATH, body: rawBody }),
-          ts,
-        )
-        const res = await doFetch(`${base}${SHOWCASE_WEBHOOK_PATH}`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            'x-signature': `t=${ts},v1=${signature}`,
-            'x-delivery-id': randomUUID(),
-          },
-          body: rawBody,
-          signal: AbortSignal.timeout(timeoutMs),
-        })
-        if (!res.ok) {
+      const rawBody = JSON.stringify({
+        userId: args.userId,
+        accountId: args.accountId,
+        courseId: args.courseId,
+        audience: args.audience,
+      })
+      const deliveryId = randomUUID()
+      for (let attempt = 1; attempt <= SHOWCASE_NOTIFY_ATTEMPTS; attempt++) {
+        try {
+          // Assinatura DENTRO do try: o chamador dispara em fire-and-forget (`void`),
+          // então o método NÃO pode rejeitar — uma falha ao assinar cai no best-effort
+          // abaixo em vez de virar unhandled rejection (que derrubaria o processo).
+          const ts = Math.floor(now().getTime() / 1000)
+          const signature = signHmac(
+            opts.hmacSecret,
+            canonicalHmacMessage({ method: 'POST', path: SHOWCASE_WEBHOOK_PATH, body: rawBody }),
+            ts,
+          )
+          const res = await doFetch(`${base}${SHOWCASE_WEBHOOK_PATH}`, {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'x-signature': `t=${ts},v1=${signature}`,
+              'x-delivery-id': deliveryId,
+            },
+            body: rawBody,
+            signal: AbortSignal.timeout(timeoutMs),
+          })
+          if (res.ok) return
+          if (retryableShowcaseStatus(res.status) && attempt < SHOWCASE_NOTIFY_ATTEMPTS) {
+            await delay(SHOWCASE_NOTIFY_RETRY_BASE_MS * attempt)
+            continue
+          }
           opts.logger?.warn('members.showcase_notify_failed', {
             userId: args.userId,
             courseId: args.courseId,
             status: res.status,
+            attempt,
           })
+          return
+        } catch (error) {
+          if (attempt < SHOWCASE_NOTIFY_ATTEMPTS) {
+            await delay(SHOWCASE_NOTIFY_RETRY_BASE_MS * attempt)
+            continue
+          }
+          // Best-effort: a publicação no Mural NUNCA falha por causa do nível do aluno.
+          opts.logger?.warn('members.showcase_notify_error', {
+            userId: args.userId,
+            courseId: args.courseId,
+            attempt,
+            error: error instanceof Error ? error.message : String(error),
+          })
+          return
         }
-      } catch (error) {
-        // Best-effort: a publicação no Mural NUNCA falha por causa do nível do aluno.
-        opts.logger?.warn('members.showcase_notify_error', {
-          userId: args.userId,
-          courseId: args.courseId,
-          error: error instanceof Error ? error.message : String(error),
-        })
       }
     },
   }

@@ -5,8 +5,6 @@ export const {
   listMyCourses,
   listCatalog,
   checkStudioAccessReadonly,
-  checkClubeAccessReadonly,
-  checkMuralAccessReadonly,
   getProfileAllowanceReadonly,
   getMyCourse,
   getLesson,

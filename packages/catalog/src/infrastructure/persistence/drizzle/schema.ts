@@ -24,6 +24,7 @@ export const productKindEnum = catalog.enum('product_kind', [
   'community',
   'service',
   'bundle',
+  'tool',
   'other',
 ])
 export const productStatusEnum = catalog.enum('product_status', ['draft', 'active', 'archived'])

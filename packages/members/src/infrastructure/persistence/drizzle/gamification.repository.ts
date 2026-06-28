@@ -16,7 +16,7 @@ import {
   sum,
 } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
-import type { CourseAudience } from '../../../domain/course/course'
+import type { CourseAudience, CourseLevel } from '../../../domain/course/course'
 import type { BadgeSlug } from '../../../domain/gamification/badges'
 import {
   applyDailyCap,
@@ -106,6 +106,22 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
       )
 
+      // SNAPSHOT da dificuldade dos MARCOS de curso (course_complete/course_showcased):
+      // resolve `courses.level` AGORA (1 query) p/ congelar o nível no ledger — o rank
+      // do aluno deixa de depender do `courses.level` ao vivo, então re-nivelar/apagar o
+      // curso depois NUNCA rebaixa o rank. Demais sources não têm nível (null).
+      const courseMarcoIds = input.events
+        .filter((e) => e.sourceType === 'course_complete' || e.sourceType === 'course_showcased')
+        .map((e) => e.sourceId)
+      const levelByCourseId = new Map<string, CourseLevel>()
+      if (courseMarcoIds.length > 0) {
+        const levelRows = await tx
+          .select({ id: courses.id, level: courses.level })
+          .from(courses)
+          .where(inArray(courses.id, courseMarcoIds))
+        for (const r of levelRows) levelByCourseId.set(r.id, r.level)
+      }
+
       // Ledger idempotente: só os eventos realmente NOVOS voltam do RETURNING.
       const newEvents =
         input.events.length > 0
@@ -119,6 +135,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
                   sourceType: e.sourceType,
                   sourceId: e.sourceId,
                   amount: e.amount,
+                  sourceLevel: levelByCourseId.get(e.sourceId) ?? null,
                   createdAt: input.now,
                 })),
               )
@@ -602,14 +619,17 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     audience: CourseAudience,
   ): Promise<QualifyingByLevel> {
     // INTERSEÇÃO dos marcos `course_complete` ∩ `course_showcased` (mesmo curso, mesma
-    // vitrine) joinada com `courses.level`. Self-join no ledger via alias; `countDistinct`
-    // é defensivo (o UNIQUE do ledger já garante 1 marco por curso). Curso apagado some do
-    // join (sem FK) e simplesmente não conta — coerente com "qualificado = ainda existe".
+    // vitrine). A dificuldade vem do SNAPSHOT congelado no ledger (`source_level`) — o
+    // `course.level` ao vivo é só FALLBACK p/ linhas legadas sem snapshot. Assim o RANK
+    // NUNCA REGRIDE quando o curso é re-nivelado depois. Self-join via alias; `countDistinct`
+    // é defensivo (UNIQUE do ledger já dá 1 marco por curso). `courses` é LEFT join: curso
+    // APAGADO ainda conta pelo snapshot (não derruba o rank de quem já qualificou).
     const showcased = alias(xpEvents, 'sc')
+    const level = sql<CourseLevel>`coalesce(${showcased.sourceLevel}, ${xpEvents.sourceLevel}, ${courses.level})`
     const rows = await this.db
-      .select({ level: courses.level, qualifying: countDistinct(xpEvents.sourceId) })
+      .select({ level, qualifying: countDistinct(xpEvents.sourceId) })
       .from(xpEvents)
-      .innerJoin(courses, eq(courses.id, xpEvents.sourceId))
+      .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
       .innerJoin(
         showcased,
         and(
@@ -626,9 +646,12 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           eq(xpEvents.sourceType, 'course_complete'),
         ),
       )
-      .groupBy(courses.level)
+      .groupBy(level)
     const result: QualifyingByLevel = { iniciante: 0, intermediario: 0, avancado: 0 }
-    for (const row of rows) result[row.level] = Number(row.qualifying)
+    // `level` nunca é null na prática (todo marco pós-deploy tem snapshot); o guard
+    // descarta uma linha residual sem dificuldade (curso apagado + snapshot legado null).
+    for (const row of rows)
+      if (row.level && row.level in result) result[row.level] = Number(row.qualifying)
     return result
   }
 

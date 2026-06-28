@@ -453,6 +453,12 @@ export const xpEvents = members.table(
     sourceType: xpSourceTypeEnum('source_type').notNull(),
     sourceId: uuid('source_id').notNull(),
     amount: integer('amount').notNull(),
+    // SNAPSHOT da dificuldade do curso, gravado SÓ nos marcos de curso
+    // (`course_complete`/`course_showcased`; null nos demais e nas linhas legadas).
+    // Congela o nível no momento do award p/ o RANK DO ALUNO NUNCA REGREDIR se o
+    // professor re-nivelar ou apagar o curso depois (XP/badges já são snapshot —
+    // a dificuldade passa a ser também). Ver domain/gamification/levels.ts.
+    sourceLevel: courseLevelEnum('source_level'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (t) => [

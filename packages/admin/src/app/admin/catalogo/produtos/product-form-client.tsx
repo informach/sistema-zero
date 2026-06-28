@@ -29,6 +29,7 @@ const KINDS: { value: string; label: string }[] = [
   { value: 'course', label: 'Curso' },
   { value: 'template_kit', label: 'Kit de templates' },
   { value: 'community', label: 'Comunidade' },
+  { value: 'tool', label: 'Ferramenta' },
   { value: 'bundle', label: 'Combo (agrupa produtos)' },
 ]
 const PRODUCT_STATUSES = ['draft', 'active', 'archived']

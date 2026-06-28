@@ -150,6 +150,34 @@ describe('members-http.gateway', () => {
     })
   })
 
+  test('notifyShowcasePublished: retenta 5xx com o mesmo delivery-id', async () => {
+    const deliveryIds: string[] = []
+    let calls = 0
+    const fetchImpl = (async (_url: string, init?: RequestInit) => {
+      calls++
+      const sentHeaders = init?.headers as Record<string, string>
+      deliveryIds.push(sentHeaders['x-delivery-id'] ?? '')
+      return new Response('{"ok":true}', { status: calls === 1 ? 502 : 200 })
+    }) as unknown as typeof fetch
+    const gw = createMembersHttpGateway({
+      baseUrl: 'http://members:3004',
+      fetchImpl,
+      hmacSecret: 'segredo-de-teste-1234567890',
+      now: () => new Date('2026-06-28T00:00:00.000Z'),
+    })
+
+    await gw.notifyShowcasePublished({
+      userId: 'perfil-1',
+      accountId: 'conta-1',
+      courseId: 'curso-1',
+      audience: 'kids',
+    })
+
+    expect(calls).toBe(2)
+    expect(deliveryIds[0]).toBeTruthy()
+    expect(deliveryIds[1]).toBe(deliveryIds[0])
+  })
+
   test('notifyShowcasePublished: sem hmacSecret → no-op (não chama fetch)', async () => {
     let called = false
     const fetchImpl = (async () => {

@@ -192,16 +192,16 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           }
           const valid = parseAccessRefs(query.refs)
           const result = await deps.accessCheck.execute(resolveAccountId(headers), valid)
-          const hasMasterForAudience =
-            (query.audience ?? 'kids') === 'kids' ? result.hasMasterKids : result.hasMaster
           const validSet = new Set(valid)
           const access: Record<string, boolean> = {}
+          // ⚠️ A chave-mestra (`all_courses`/`all_kids_courses`) é SÓ para CURSOS (decisão
+          // do usuário). Esta rota gateia PRODUTOS NÃO-CURSO vendidos à parte (Estúdio,
+          // e refs de comunidade), que exigem o PRÓPRIO acesso (`community`/matrícula
+          // específica) — por isso NÃO aplicamos a chave-mestra aqui. (O acesso a curso
+          // continua honrando a chave-mestra, mas pelo caminho do curso, não por esta rota.)
           for (const ref of requested) {
             access[ref] =
-              validSet.has(ref) &&
-              (result.grants.includes(ref) ||
-                result.communities.includes(ref) ||
-                hasMasterForAudience)
+              validSet.has(ref) && (result.grants.includes(ref) || result.communities.includes(ref))
           }
           return { access }
         },

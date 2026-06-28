@@ -1,4 +1,4 @@
-import { getFunnelByKey } from '../funnels/registry'
+import { DEFAULT_FUNNEL, getFunnelByKey } from '../funnels/registry'
 import type { Env } from '../lib/env'
 import type { ResolvedOffer } from './checkout'
 
@@ -19,14 +19,14 @@ export function resolveOfferSlug(env: Env, funnelKey: string): string {
 
 /**
  * Resolvedor de oferta do checkout a partir do funil do lead (`leads.funnel` →
- * registry → env). SEM fallback: lead sem funil / funil desconhecido → LANÇA (a
- * cobrança não inventa uma oferta).
+ * registry → env). `null` é legado pré-multifunil e pertence ao funil default;
+ * chave desconhecida ainda LANÇA (a cobrança não inventa uma oferta).
  */
 export function makeResolveOffer(env: Env): (funnel: string | null) => ResolvedOffer {
   return (funnel) => {
-    const f = getFunnelByKey(funnel)
+    const f = funnel ? getFunnelByKey(funnel) : DEFAULT_FUNNEL
     if (!f) {
-      throw new Error(`Funil desconhecido ao resolver a oferta: "${funnel ?? '(vazio)'}".`)
+      throw new Error(`Funil desconhecido ao resolver a oferta: "${funnel}".`)
     }
     return {
       offerSlug: resolveOfferSlug(env, f.key),

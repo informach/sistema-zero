@@ -68,7 +68,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > como backstop) e **`0029`** (`0029_daffy_plazm`: enum `course_level`
 > [`iniciante`|`intermediario`|`avancado`] + coluna `courses.level` NOT NULL DEFAULT `iniciante`
 > — dificuldade do curso, alimenta o NÍVEL DO ALUNO; + `ALTER TYPE xp_source_type ADD VALUE
-> 'course_showcased'` — marco "publicou no Mural") **geradas, FALTA aplicar** (`db:migrate`).
+> 'course_showcased'` — marco "publicou no Mural") e **`0030`** (`0030_watery_martin_li`:
+> `xp_events.source_level` `course_level` NULLABLE — SNAPSHOT da dificuldade gravado nos marcos
+> de curso p/ o RANK NUNCA REGREDIR se o curso for re-nivelado/apagado; ver Conceito 11)
+> **geradas, FALTA aplicar** (`db:migrate`).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -244,9 +247,16 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    coluna/backfill, como o ranking/missões): catálogo EM CÓDIGO em `domain/gamification/levels.ts`
    (`STUDENT_LEVELS` + `computeStudentLevel` puro). Um curso "qualificado" = tem AMBOS os marcos no
    ledger `xp_events` — `course_complete` (já existia) ∩ `course_showcased` (NOVO, gravado pelo webhook
-   abaixo) — agrupado por `courses.level` (`countQualifyingCoursesByLevel`, INTERSEÇÃO via self-join +
-   JOIN em `courses`). `GET /gamification/me` e `PublicProfileView` devolvem
-   `level: {slug, next, remaining}`. ⚠️ O nível só muda quando um curso é PUBLICADO no Mural (não na
+   abaixo) — agrupado pela dificuldade (`countQualifyingCoursesByLevel`, INTERSEÇÃO via self-join no
+   ledger). ⚠️ **RANK NUNCA REGRIDE (migration `0030`):** a dificuldade contada vem do **SNAPSHOT
+   congelado** `xp_events.source_level` (gravado nos marcos de curso no momento do award — o repo
+   resolve `courses.level` AGORA), NÃO do `courses.level` ao vivo. O `courses` entra só como **LEFT
+   join** p/ FALLBACK de linhas legadas sem snapshot (`coalesce(showcased.source_level,
+   complete.source_level, courses.level)`). Assim re-nivelar OU apagar o curso depois não muda o rank
+   de quem já qualificou (espelha "XP/badges são snapshot" e "conclusão nunca regride"). `GET
+   /gamification/me` e `PublicProfileView` devolvem `level: {slug, next, remaining}` (o `me` calcula
+   SEMPRE — barato, por-aluno; o shell kids mostra a insígnia/aura em toda página, ≠ do ranking caro
+   que fica atrás de `?ranking=true`). ⚠️ O nível só muda quando um curso é PUBLICADO no Mural (não na
    conclusão) → NÃO está no delta de `LessonCompleteView` (seria query inútil no caminho quente).
    **Webhook `POST /members/webhooks/showcase`** (HMAC + dedupe `x-delivery-id`, mesmo padrão do
    `/grant`): o HUB avisa `{userId, accountId, courseId, audience}` ao publicar a vitrine → grava o
@@ -381,8 +391,12 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   (ex.: o **Estúdio Completo** vendável da vitrine kids). Resolve pela CONTA
   (`resolveAccountId`), reusa o `AccessCheckService` (mesmo motor do `/internal/access-check`
   S2S do hub) e devolve `{ access: { ref: boolean } }` aplicando a regra POR REF:
-  `grants.includes(ref) || communities.includes(ref) || hasMaster<Audiência>`. `?audience`
-  (default `kids`) escolhe a chave-mestra. **TODA ref pedida volta no mapa** (06/2026):
+  `grants.includes(ref) || communities.includes(ref)`. ⚠️ **A chave-mestra NÃO conta aqui**
+  (decisão 06/2026: `all_courses`/`all_kids_courses` cobre SÓ CURSOS): esta rota gateia
+  PRODUTOS NÃO-CURSO vendidos à parte (Estúdio, comunidade), que exigem o PRÓPRIO acesso —
+  a chave-mestra de cursos não os destrava. (O `?audience` é tolerado mas não muda o veredito;
+  o acesso a CURSO honra a chave-mestra, mas pelo caminho do curso — `CheckAccessService` —,
+  não por esta rota.) **TODA ref pedida volta no mapa** (06/2026):
   `splitRequestedRefs` mantém as pedidas (trim/não-vazias, teto 50) e as de formato
   inválido recebem `false` EXPLÍCITO (em vez de sumir — chamador não distinguia "negado"
   de "descartado"); só as válidas (`parseAccessRefs`, regex de slug) vão ao motor/DB.

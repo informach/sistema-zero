@@ -1,5 +1,3 @@
-import type { CourseLevel } from '../course/course'
-
 /**
  * NÍVEL DO ALUNO (rank de longo prazo, fatia 06/2026). Catálogo EM CÓDIGO (mesma
  * decisão das badges/missões: o preDeploy de prod roda só `db:migrate`, e o catálogo
@@ -105,9 +103,4 @@ export function computeStudentLevel(q: QualifyingByLevel): StudentLevel {
     next: next?.slug ?? null,
     remaining: next ? remainingFor(q, next) : null,
   }
-}
-
-/** Mapeia o enum `CourseLevel` para a chave de `QualifyingByLevel` (identidade hoje). */
-export function qualifyingKeyFor(level: CourseLevel): keyof QualifyingByLevel {
-  return level
 }

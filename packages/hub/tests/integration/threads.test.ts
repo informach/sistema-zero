@@ -129,7 +129,7 @@ describe('tópicos e comentários', () => {
     expect(((await own.json()) as { items: unknown[] }).items).toHaveLength(1)
   })
 
-  test('editar tópico: autor edita, terceiro leva 403', async () => {
+  test('editar tópico/comentário: autor edita, terceiro leva 403 e versão antiga dá 409', async () => {
     const ctx = buildApp()
     const { channelId } = await seedChannel(ctx)
     const author = randomUUID()
@@ -140,12 +140,12 @@ describe('tópicos e comentários', () => {
           body: { title: 'T', body: 'v1' },
         }),
       )
-    ).json()) as { id: string }
+    ).json()) as { id: string; version: number }
 
     const byOther = await ctx.app.handle(
       jsonRequest('PATCH', `/hub/threads/${t.id}`, {
         headers: studentHeaders(randomUUID()),
-        body: { body: 'hack' },
+        body: { body: 'hack', version: t.version },
       }),
     )
     expect(byOther.status).toBe(403)
@@ -153,11 +153,53 @@ describe('tópicos e comentários', () => {
     const byAuthor = await ctx.app.handle(
       jsonRequest('PATCH', `/hub/threads/${t.id}`, {
         headers: studentHeaders(author),
-        body: { body: 'v2' },
+        body: { body: 'v2', version: t.version },
       }),
     )
     expect(byAuthor.status).toBe(200)
-    expect(((await byAuthor.json()) as { editedAt: string | null }).editedAt).not.toBeNull()
+    const edited = (await byAuthor.json()) as { editedAt: string | null; version: number }
+    expect(edited.editedAt).not.toBeNull()
+    expect(edited.version).toBe(t.version + 1)
+
+    const stale = await ctx.app.handle(
+      jsonRequest('PATCH', `/hub/threads/${t.id}`, {
+        headers: studentHeaders(author),
+        body: { body: 'v3 stale', version: t.version },
+      }),
+    )
+    expect(stale.status).toBe(409)
+    expect(((await stale.json()) as { error: { code: string } }).error.code).toBe(
+      'CONCURRENCY_CONFLICT',
+    )
+
+    const c = (await (
+      await ctx.app.handle(
+        jsonRequest('POST', `/hub/threads/${t.id}/comments`, {
+          headers: studentHeaders(author),
+          body: { body: 'c1' },
+        }),
+      )
+    ).json()) as { id: string; version: number }
+
+    const editedComment = await ctx.app.handle(
+      jsonRequest('PATCH', `/hub/comments/${c.id}`, {
+        headers: studentHeaders(author),
+        body: { body: 'c2', version: c.version },
+      }),
+    )
+    expect(editedComment.status).toBe(200)
+    expect(((await editedComment.json()) as { version: number }).version).toBe(c.version + 1)
+
+    const staleComment = await ctx.app.handle(
+      jsonRequest('PATCH', `/hub/comments/${c.id}`, {
+        headers: studentHeaders(author),
+        body: { body: 'c3 stale', version: c.version },
+      }),
+    )
+    expect(staleComment.status).toBe(409)
+    expect(((await staleComment.json()) as { error: { code: string } }).error.code).toBe(
+      'CONCURRENCY_CONFLICT',
+    )
   })
 
   test('paginação por cursor (mais novos primeiro)', async () => {

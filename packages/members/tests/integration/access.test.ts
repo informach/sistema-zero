@@ -43,7 +43,10 @@ describe('GET /members/access', () => {
     expect(body.access['estudio-completo']).toBe(true)
   })
 
-  test('chave-mestra KIDS cobre o ref (audience=kids)', async () => {
+  test('chave-mestra KIDS NÃO cobre produto não-curso (decisão: master = só CURSOS)', async () => {
+    // A chave-mestra `all_kids_courses` libera só CURSOS kids; produtos vendidos à parte
+    // (Estúdio/comunidade) exigem o PRÓPRIO acesso. Esta rota gateia esses produtos, então
+    // a chave-mestra NÃO conta aqui (≠ do acesso a curso, que a honra pelo caminho do curso).
     const { app, entitlements } = buildApp({ internalToken: TOKEN })
     const accountId = randomUUID()
     grantAllKidsCourses(entitlements, { userId: accountId })
@@ -52,7 +55,7 @@ describe('GET /members/access', () => {
       get('estudio-completo', { ...ok(accountId), 'x-auth-account-id': accountId }),
     )
     const body = (await res.json()) as { access: Record<string, boolean> }
-    expect(body.access['estudio-completo']).toBe(true)
+    expect(body.access['estudio-completo']).toBe(false)
   })
 
   test('sem matrícula → hasAccess false', async () => {

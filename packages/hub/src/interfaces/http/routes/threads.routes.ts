@@ -62,7 +62,7 @@ export function threadsRoutes(deps: ThreadsRoutesDeps) {
     .patch(
       '/hub/threads/:id',
       ({ headers, params, body }) =>
-        deps.threads.editThread(resolveActor(headers), params.id, body.body),
+        deps.threads.editThread(resolveActor(headers), params.id, body.body, body.version),
       { params: IdParams, body: EditBody },
     )
     .get(
@@ -87,7 +87,7 @@ export function threadsRoutes(deps: ThreadsRoutesDeps) {
     .patch(
       '/hub/comments/:id',
       ({ headers, params, body }) =>
-        deps.threads.editComment(resolveActor(headers), params.id, body.body),
+        deps.threads.editComment(resolveActor(headers), params.id, body.body, body.version),
       { params: IdParams, body: EditBody },
     )
 }

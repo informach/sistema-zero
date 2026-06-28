@@ -920,6 +920,7 @@ export interface HubResolvedAttachment {
 
 export interface HubThreadView {
   id: string
+  version: number
   channelId: string
   /** `null` quando NÃO é do viewer — o BFF redige o id de terceiros (ver `hub-redact`). */
   authorId: string | null
@@ -972,6 +973,7 @@ export interface ShowcasePayloadView {
 
 export interface HubCommentView {
   id: string
+  version: number
   threadId: string
   /** `null` quando NÃO é do viewer — o BFF redige o id de terceiros (ver `hub-redact`). */
   authorId: string | null
