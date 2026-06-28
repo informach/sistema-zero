@@ -65,7 +65,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > boolean NOT NULL DEFAULT `true` — trava sequencial estilo Duolingo, ver Conceito 10) e
 > **`0028`** (`studio_submissions.message` varchar(1000) nullable — recado OPCIONAL do aluno
 > ao professor no envio do Estúdio; o cap de 1000 chars no DB espelha o `maxLength` do DTO,
-> como backstop) **geradas, FALTA aplicar** (`db:migrate`).
+> como backstop) e **`0029`** (`0029_daffy_plazm`: enum `course_level`
+> [`iniciante`|`intermediario`|`avancado`] + coluna `courses.level` NOT NULL DEFAULT `iniciante`
+> — dificuldade do curso, alimenta o NÍVEL DO ALUNO; + `ALTER TYPE xp_source_type ADD VALUE
+> 'course_showcased'` — marco "publicou no Mural") **geradas, FALTA aplicar** (`db:migrate`).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -233,6 +236,24 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    opcional — ausente no CREATE → `true`; no UPDATE **PRESERVA a atual** (régua do `audience`).
    `false` é mantido. Os fronts (community + community-kids) leem `locked` por aula e renderizam
    o nó/linha travado (cadeado, não clicável) + página de "aula bloqueada" no 423.
+11. **Nível do CURSO + nível do ALUNO (rank, 06/2026, migration `0029`):** o curso ganhou
+   `courses.level` (`iniciante`|`intermediario`|`avancado`, default `iniciante`) — COLUNA dedicada,
+   autorada no admin (régua do `audience`/`sequentialLock`: ausente no CREATE → `iniciante`, no UPDATE
+   **PRESERVA** a atual). Exposta em `CourseView` (admin) + `Catalog/My/Detail` (aluno). Com isso o
+   ALUNO tem um **nível/rank** (`noob`→`coder`→`hacker`→`elite`→`god`) **DERIVADO na leitura** (sem
+   coluna/backfill, como o ranking/missões): catálogo EM CÓDIGO em `domain/gamification/levels.ts`
+   (`STUDENT_LEVELS` + `computeStudentLevel` puro). Um curso "qualificado" = tem AMBOS os marcos no
+   ledger `xp_events` — `course_complete` (já existia) ∩ `course_showcased` (NOVO, gravado pelo webhook
+   abaixo) — agrupado por `courses.level` (`countQualifyingCoursesByLevel`, INTERSEÇÃO via self-join +
+   JOIN em `courses`). `GET /gamification/me` e `PublicProfileView` devolvem
+   `level: {slug, next, remaining}`. ⚠️ O nível só muda quando um curso é PUBLICADO no Mural (não na
+   conclusão) → NÃO está no delta de `LessonCompleteView` (seria query inútil no caminho quente).
+   **Webhook `POST /members/webhooks/showcase`** (HMAC + dedupe `x-delivery-id`, mesmo padrão do
+   `/grant`): o HUB avisa `{userId, accountId, courseId, audience}` ao publicar a vitrine → grava o
+   marco `course_showcased` (idempotente, amount 0) via `AwardGamificationService.awardCourseShowcased`.
+   Como é amount 0, **NÃO toca `gamification_profiles`** (o ramo que grava `privileged`/`accountId` só
+   roda com `amount > 0`) → marco de showcase não rebaixa o `privileged` de equipe. Kids-only por ora
+   (o Mural é kids); a estrutura é por audiência (extensível ao adulto).
 
 ## Arquitetura (DDD + Hexagonal — espelha auth/catalog)
 

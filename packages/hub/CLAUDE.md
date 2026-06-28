@@ -288,6 +288,17 @@ tópicos/comentários/reações). `resolveActor` preenche os dois; o course-gate
 **micro-cache** por `(userId, spaceId/courseRefs)` com TTL `accessCacheTtlMs` (30s prod / 0 fora);
 `invalidateUser()` existe p/ o futuro webhook de grant/revoke.
 
+⚠️ **Notifica o members ao PUBLICAR no Mural (nível do aluno, 06/2026):** após criar a thread de
+vitrine (`ShowcaseService.create`/`createFromStudio` — NÃO o standalone, que não tem curso), o hub
+chama `members.notifyShowcasePublished({userId, accountId, courseId, audience})` →
+`POST {MEMBERS_BASE_URL}/members/webhooks/showcase` assinado com **HMAC** (`GATEWAY_HMAC_SECRET`,
+canônico `<MÉTODO>.<path>.<corpo>` + `x-delivery-id`) — o members grava o marco `course_showcased`
+que, junto de `course_complete`, faz o aluno subir de nível (rank Noob→God). **Best-effort**: o
+adapter ENGOLE erro/timeout e loga (`members.showcase_notify_*`) — a publicação NUNCA falha por isso;
+o members é idempotente por user+curso (notifica mesmo no `deduped`, recuperando uma 1ª falha). Sem
+`hmacSecret` (não setado) = no-op silencioso. Usa as envs JÁ existentes `MEMBERS_BASE_URL` +
+`GATEWAY_HMAC_SECRET` (nenhuma env nova).
+
 **R2 (anexos UGC):** o hub só guarda metadado; o presign/upload/HEAD vivem no BFF (member-shell/
 community). Buckets `testes-ugc` (dev) / `comunidade-sistema-zero-ugc` (prod). **Fluxo ainda não
 ligado** (ver Estado).
@@ -335,8 +346,15 @@ só promove a réplica quando o `select 1` responde.
 **Seed dos servidores kids (`scripts/seed-community-spaces.ts`, `bun run db:seed-community`, 06/2026):**
 cria IDEMPOTENTEmente o **Clube dos Criadores** (canal `geral` members) e o **Mural dos Criadores**
 (canal `parede` staff_only) com os SLUGS FIXOS que o community-kids consome — sem eles, clicar no menu
-dá 404 `SPACE_NOT_FOUND`. Nascem `course_gated` (slug = courseRef) + `teaserWhenLocked`; `SEED_PUBLIC=true`
-deixa públicos p/ smoke test. Postgres é privado → rodar via `railway ssh` no serviço hub. Re-rodar é seguro.
+dá 404 `SPACE_NOT_FOUND`. **Acesso (06/2026): cada servidor é um PRODUTO INDEPENDENTE** —
+`community_gated` na SUA própria chave (= o slug) + `teaserWhenLocked`; canais herdam (`accessConfig:
+null`). **Clube e Mural são SEPARADOS:** o **Clube** (`clube-dos-criadores`, casa com o `CLUBE_ACCESS_REF`
+do member-shell) é o fórum vendável; o **Mural** (`mural-dos-criadores`) é a vitrine, independente, dada
+de bônus no desafio do 1º jogo. **NÃO há mais gate por curso** (o antigo `course_gated` slug=courseRef
+saiu). O seed **RECONCILIA servidores existentes**: re-rodar atualiza o `accessConfig` do modelo antigo
+(course_gated) p/ o novo, por servidor (idempotente — só escreve se mudou; esses 2 slugs são infra dona
+do seed). `SEED_PUBLIC=true` deixa públicos p/ smoke test. Postgres é privado → rodar via `railway ssh`
+no serviço hub. Re-rodar é seguro.
 
 ## Testes (31, `bun test`)
 

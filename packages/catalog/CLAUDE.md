@@ -54,10 +54,20 @@ Validado contra Hotmart, Kiwify, Teachable, Thinkific, Kajabi, Gumroad, Podia (+
    Os antigos `download`/`external`/`none` + `assets` foram REMOVIDOS do cadastro (entregas mortas —
    criavam acessos invisíveis ao aluno); e-book avulso = curso com bloco de livro 3D. Linhas legadas
    no JSONB carregam sem erro (o type descreve o que se ESCREVE). `community` (tiers) é fatia futura.
-   **`maxProfiles?` (06/2026, kids):** teto de PERFIS estilo Netflix liberado pela entrega
-   (planos "N perfis"); inteiro ≥ 1, JSONB (sem migração). Congela no snapshot da matrícula no
-   grant; o members resolve o teto efetivo da conta (MAX entre as matrículas kids ativas) e o
-   `auth` consome ao criar perfil. `assertCoherent` valida `maxProfiles ≥ 1` quando presente.
+   **`maxProfiles` (06/2026, kids) MUDOU p/ a OFERTA (28/06):** o teto de PERFIS estilo Netflix
+   (planos "N perfis") vive em **`OfferContent.maxProfiles`** (1..50, JSONB, sem migração) — NÃO
+   mais no produto (ofertas diferentes do mesmo produto dão quantidades diferentes). `GetOfferService.
+   getEntitlements` **injeta** o valor da oferta no `fulfillment` do entitlement PRIMÁRIO (e descarta
+   qualquer valor legado do produto) → é o que o members congela no snapshot do grant. O members
+   resolve o teto efetivo da conta (MAX entre as matrículas kids ativas) e o `auth` consome ao criar
+   perfil. **Tipos SEPARADOS (28/06):** o produto NÃO tem mais `maxProfiles` em lugar nenhum
+   (saiu do `FulfillmentSpec`, do DTO e do `assertCoherent`); o campo de FIO/snapshot vive num tipo
+   próprio **`EntitlementFulfillment = FulfillmentSpec & { maxProfiles? }`** (em `mappers/entitlement-view.ts`)
+   — só a view de entitlement o carrega. ⚠️ **Deploy:** ofertas kids autoradas com o teto no
+   PRODUTO (antes de 28/06) precisam ser **re-autoradas com `maxProfiles` na OFERTA**, senão novos
+   compradores caem no `DEFAULT_KIDS_MAX_PROFILES` do members (compradores existentes ficam a salvo —
+   snapshot congelado); `getEntitlements` LOGA `catalog.max_profiles_unapplied` quando a oferta tem
+   teto mas nenhum item primário o recebe.
 8. **Coerência de cadastro validada no domínio** (`ProductAggregate.assertCoherent()`): produto
    `active` não-bundle exige fulfillment (`course`+courseRef OU `all_courses`); `bundle` exige
    fulfillment null e, `active`, ≥1 componente; não-bundle não aceita components; `draft`/`archived`
@@ -152,7 +162,11 @@ src/
 - `POST /catalog/offers/:slug/quote` → preço com cupom opcional (`{ couponCode? }` → preço/desconto/total).
   Público + rate-limit por IP; é o valor AUTORITATIVO que o funil cobra. **Só cota oferta disponível**
   (`isAvailable()`: status `active` + dentro da janela) — pausar/arquivar interrompe a venda
-  (`OFFER_NOT_AVAILABLE`→409). A resolução de entitlements (pós-pagamento) NÃO é gated por isso.
+  (`OFFER_NOT_AVAILABLE`→409). **Revalida também a ENTREGABILIDADE** (reusa
+  `assertActiveOfferDeliverable`): produto principal/entregáveis arquivados ou alterados DEPOIS
+  da ativação da oferta → 409 (fecha o "checkout pago vira matrícula `none`"). Custo: +1
+  `findById` + resolução do grafo por quote (NÃO cacheada) — aceitável por ser frequência de
+  checkout. A resolução de entitlements (pós-pagamento) NÃO é gated por isso.
   **Preço de oferta precisa ser > 0** e **cupom que ZERA o preço → 422 `COUPON_NOT_APPLICABLE`**
   (cobrança de R$ 0,00 não existe — a Efí rejeita; melhor erro legível aqui do que o checkout
   quebrar na criação da cobrança).

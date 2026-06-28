@@ -77,6 +77,8 @@ export async function createApplication(env: Env): Promise<Application> {
     baseUrl: env.MEMBERS_BASE_URL,
     timeoutMs: env.MEMBERS_REQUEST_TIMEOUT_MS,
     internalToken: env.MEMBERS_INTERNAL_TOKEN,
+    // Assina o webhook `/members/webhooks/showcase` (nível do aluno) — o members o verifica.
+    hmacSecret: env.GATEWAY_HMAC_SECRET,
     logger,
   })
   const accessCache = new MicroCache<{

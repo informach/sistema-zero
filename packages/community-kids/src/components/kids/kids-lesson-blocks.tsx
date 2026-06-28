@@ -16,6 +16,7 @@ import {
   ListChecks,
   type LucideIcon,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { cn } from '@/lib/cn'
 import { renderMarkdown } from '@/lib/markdown'
@@ -139,7 +140,16 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
  * links e abre o overlay do Zappy (no lugar da tela de sucesso sóbria do editor).
  */
 function StudioBlockKids({ block, content }: { block: LessonBlockView; content: StudioBlock }) {
+  const router = useRouter()
   const [shared, setShared] = useState<StudioShareResult | null>(null)
+  // Ao fechar a celebração do Mural, REVALIDA os dados do servidor: publicar pode ter
+  // feito o aluno SUBIR DE NÍVEL (marco course_showcased já gravado no members), e o
+  // refresh re-busca a gamificação do layout → o LevelUpWatcher acende a festa do rank
+  // logo em seguida (sequência: "no Mural!" → "subiu de nível!").
+  function closeShare() {
+    setShared(null)
+    router.refresh()
+  }
   return (
     <div className="kids-unit-grad flex flex-col gap-3">
       <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-grad" />
@@ -150,7 +160,7 @@ function StudioBlockKids({ block, content }: { block: LessonBlockView; content: 
         enableShare={Boolean(content.showcase?.enabled)}
         onShared={setShared}
       />
-      {shared ? <MuralCelebration result={shared} onClose={() => setShared(null)} /> : null}
+      {shared ? <MuralCelebration result={shared} onClose={closeShare} /> : null}
     </div>
   )
 }

@@ -55,7 +55,7 @@ import {
   RevokeCertificateService,
   ValidateCertificateService,
 } from '../src/application/validate-certificate/validate-certificate.service'
-import type { CourseAudience, CourseStatus } from '../src/domain/course/course'
+import type { CourseAudience, CourseLevel, CourseStatus } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { HubGateway } from '../src/domain/ports/hub-gateway.port'
@@ -206,6 +206,9 @@ export function buildApp(
         progress,
         studioSubmissions,
       ),
+      profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
+        defaultMaxProfiles: 1,
+      }),
       getCertificate: new GetCertificateService(checkAccess, courses, progress, certificates),
       issueCertificate: new IssueCertificateService(
         checkAccess,
@@ -243,6 +246,7 @@ export function buildApp(
       revoke,
       processed,
       hub,
+      award: awardGamification,
       webhookSecret: WEBHOOK_SECRET,
       toleranceSeconds: 300,
       now: clock,
@@ -322,6 +326,7 @@ export function seedSampleCourse(
   // como o comportamento legado). Em produção o default da coluna é LIGADO; os
   // testes da trava passam `true` explicitamente.
   sequentialLock = false,
+  level: CourseLevel = 'iniciante',
 ) {
   const now = new Date('2026-06-01T00:00:00.000Z')
   const courseId = randomUUID()
@@ -339,6 +344,7 @@ export function seedSampleCourse(
     status,
     audience,
     sequentialLock,
+    level,
     metadata: null,
     createdAt: now,
     updatedAt: now,

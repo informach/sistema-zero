@@ -20,6 +20,7 @@ import type {
   MembersGateway,
   ShowcaseEligibilityArgs,
   ShowcaseEligibilityResult,
+  ShowcasePublishedArgs,
 } from '../../src/domain/ports/members-gateway.port'
 import type {
   CreateMuteBanInput,
@@ -838,5 +839,11 @@ export class FakeMembersGateway implements MembersGateway {
   async getShowcaseEligibility(args: ShowcaseEligibilityArgs): Promise<ShowcaseEligibilityResult> {
     this.eligibilityCalls.push(args)
     return this.showcaseEligibility
+  }
+
+  /** Registra as notificações de "publicou no Mural" (nível do aluno) — best-effort. */
+  showcaseNotifications: ShowcasePublishedArgs[] = []
+  async notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void> {
+    this.showcaseNotifications.push(args)
   }
 }

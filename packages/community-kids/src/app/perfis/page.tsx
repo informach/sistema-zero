@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { getProfileAllowanceReadonly } from '@/server/members'
 import { isParentVerifiedFor } from '@/server/parent-gate'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
@@ -19,8 +20,10 @@ export default async function PerfisPage({
 }) {
   const session = await getSession()
   if (!session) redirect('/login')
-  const res = await listReadonly()
+  // Perfis + teto da conta (p/ a área dos pais travar o "Adicionar" e mostrar "X de Y").
+  const [res, allowanceRes] = await Promise.all([listReadonly(), getProfileAllowanceReadonly()])
   const profiles = res.status === 200 ? (res.body?.profiles ?? []) : []
+  const maxProfiles = allowanceRes.status === 200 ? (allowanceRes.body?.maxProfiles ?? null) : null
   const isProfileSession = Boolean(session.activeProfile)
   // Sessão da conta com o portão já aberto (senha verificada há pouco) → a Área
   // dos pais abre sem re-pedir a senha (ex.: logo após sair de um perfil).
@@ -35,6 +38,7 @@ export default async function PerfisPage({
       isProfileSession={isProfileSession}
       parentVerified={parentVerified}
       startManaging={startManaging}
+      maxProfiles={maxProfiles}
     />
   )
 }

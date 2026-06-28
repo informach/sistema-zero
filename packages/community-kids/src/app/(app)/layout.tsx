@@ -2,6 +2,7 @@ import { ImpersonationBanner } from '@sistemazero/member-shell/components/impers
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { AppSidebar } from '@/components/kids/app-sidebar'
+import { LevelUpWatcher } from '@/components/kids/level-up-watcher'
 import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { actorLabel } from '@/lib/act'
@@ -55,6 +56,19 @@ async function TopbarChrome({ session }: { session: Session }) {
 }
 
 /**
+ * Vigia a SUBIDA DE NÍVEL (rank): só em sessão de PERFIL (kids). Lê a gamificação
+ * deduplicada (mesma chave `{withRanking:true}` da chrome → 1 ida ao gateway) e
+ * entrega o slug ao watcher CLIENTE, que compara com o último visto (localStorage)
+ * e comemora. Não renderiza nada visível até o nível avançar.
+ */
+async function LevelUpChrome({ session }: { session: Session }) {
+  if (!session.activeProfile) return null
+  const gam = await getGamificationReadonly({ withRanking: true })
+  const levelSlug = gam.status === 200 ? gam.body?.level?.slug : undefined
+  return <LevelUpWatcher levelSlug={levelSlug} profileKey={session.id} />
+}
+
+/**
  * Shell autenticado do aluno: sessão obrigatória (qualquer conta ativa).
  * Navegação estilo Duolingo — sidebar fixa no desktop, top bar + tab bar
  * inferior no mobile (o pb-24 do main respira acima da tab bar).
@@ -97,6 +111,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <MobileTabbar />
         </div>
       </div>
+      {/* Comemoração de subida de nível (rank) — fora da chrome, sem fallback visível. */}
+      <Suspense fallback={null}>
+        <LevelUpChrome session={session} />
+      </Suspense>
     </div>
   )
 }

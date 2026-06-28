@@ -115,6 +115,7 @@ const priceLabel = formatBRLFromCents2(priceCents)
         allowCoupon={offer?.allowsCoupon === true}
         successPath={successPath}
         isKids={f.audience === 'kids'}
+        installmentsMax={offer?.installmentsMax ?? null}
       />
     </div>
 

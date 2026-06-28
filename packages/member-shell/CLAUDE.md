@@ -187,6 +187,13 @@ mostrar a própria tela de sucesso (no Estúdio Completo, sem `onShared`, a teli
 summary` (admin) — com resumo, o `ShareDialog` abre preenchido e NÃO chama a IA (a criança edita se
 quiser); em branco (ou no Estúdio Completo, que não passa) → a IA gera o rascunho.
 
+**Nível do aluno + dificuldade do curso (06/2026):** `lib/types.ts` ganhou `StudentLevelSlug`/
+`StudentLevelView` (rank `noob`→`god` derivado no members) — `GamificationMeView.level?` e
+`PublicProfileGameView.level?` (ambos OPCIONAIS, mirror do members). E `CourseLevelSlug`
+(`iniciante`|`intermediario`|`avancado`) em `CatalogCourseView`/`MyCourseView`/`CourseDetailView`
+(`level?`). Tudo passthrough (os clients não mapeiam) — a APRESENTAÇÃO (aura/insígnia/chip) vive no
+community-kids; aqui é só o tipo.
+
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),
 client `members.getGamification()` + variante **`getGamificationReadonly()`** (Server Components —

@@ -18,6 +18,14 @@ export const COURSE_AUDIENCES = ['adult', 'kids'] as const
 export type CourseAudience = (typeof COURSE_AUDIENCES)[number]
 
 /**
+ * Nível pedagógico (dificuldade) do curso. Default `iniciante`. Definido pelo
+ * professor no admin; alimenta o NÍVEL DO ALUNO (domain/gamification/levels.ts):
+ * um curso concluído E publicado no Mural conta para o nível conforme esta dificuldade.
+ */
+export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado'] as const
+export type CourseLevel = (typeof COURSE_LEVELS)[number]
+
+/**
  * Status que concedem acesso a quem já tem matrícula: `published` (à venda) ou
  * `archived` (retirado da venda, mas quem comprou mantém o acesso — padrão LMS).
  * `draft` nunca concede acesso. Descoberta/venda usa só `published`; consumo usa isto.
@@ -37,6 +45,8 @@ export interface Course {
   coverImageUrl: string | null
   status: CourseStatus
   audience: CourseAudience
+  /** Dificuldade do curso (iniciante/intermediário/avançado). Default `iniciante`. */
+  level: CourseLevel
   /**
    * Trava sequencial (estilo Duolingo): quando `true`, uma aula só fica acessível
    * depois que TODAS as aulas publicadas anteriores (ordem do curso) estão

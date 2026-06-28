@@ -65,6 +65,23 @@ export type MembersAudience = 'adult' | 'kids'
  */
 export const STUDIO_ACCESS_REF = 'estudio-completo'
 
+/**
+ * Ref do produto vendável "Clube dos Criadores" (= slug do produto no catálogo). Como o
+ * Estúdio, o Clube é um produto À PARTE: quem NÃO tem acesso vê o recado "ainda não
+ * liberado" em vez do fórum. ⚠️ Tem que casar com o slug do produto no catálogo E com o
+ * `accessConfig` do servidor `clube-dos-criadores` no hub (`community_gated` com este ref —
+ * defesa em profundidade na API; o gate da página é só UX).
+ */
+export const CLUBE_ACCESS_REF = 'clube-dos-criadores'
+
+/**
+ * Ref do produto vendável "Mural dos Criadores" (= slug do produto no catálogo). Produto
+ * INDEPENDENTE do Clube (dado de bônus no desafio do 1º jogo): quem NÃO tem acesso vê o
+ * recado "ainda não liberado" em vez da vitrine. ⚠️ Casa com o slug do produto no catálogo
+ * E com o `accessConfig` do servidor `mural-dos-criadores` no hub (`community_gated`).
+ */
+export const MURAL_ACCESS_REF = 'mural-dos-criadores'
+
 export type AuthClient = ReturnType<typeof createAuthClient>
 export type MembersClient = ReturnType<typeof createMembersClient>
 export type PaymentsClient = ReturnType<typeof createPaymentsClient>
@@ -283,6 +300,33 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     checkStudioAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
       return gw.gatewayFetchReadonly('/members/access', {
         query: { refs: STUDIO_ACCESS_REF, audience },
+      })
+    },
+    /**
+     * Teto de perfis (kids) da CONTA — a área dos pais usa p/ travar o "Adicionar" e
+     * mostrar "X de Y". Server Component (sem refresh de cookie).
+     */
+    getProfileAllowanceReadonly(): Promise<GatewayResponse<{ maxProfiles: number }>> {
+      return gw.gatewayFetchReadonly('/members/profile-allowance')
+    },
+    /**
+     * "Esta conta tem acesso ao Clube dos Criadores?" — Server Component (sem refresh de
+     * cookie), p/ gatear a página `/clube-dos-criadores` (produto à parte, igual ao
+     * Estúdio): sem acesso → recado "ainda não liberado". Acesso resolve pela CONTA.
+     */
+    checkClubeAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: CLUBE_ACCESS_REF, audience },
+      })
+    },
+    /**
+     * "Esta conta tem acesso ao Mural dos Criadores?" — Server Component (sem refresh de
+     * cookie), p/ gatear a página `/mural-dos-criadores` (produto à parte, independente do
+     * Clube): sem acesso → recado "ainda não liberado". Acesso resolve pela CONTA.
+     */
+    checkMuralAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: MURAL_ACCESS_REF, audience },
       })
     },
 

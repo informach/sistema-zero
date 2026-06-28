@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { BADGE_SLUGS } from '../../src/domain/gamification/badges'
 import { DAILY_COIN_CAP } from '../../src/domain/gamification/coins'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
-import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
+import { buildApp, grantLifetime, seedSampleCourse, signedWebhookHeaders } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
 const authHeaders = { 'x-auth-user-id': USER, 'content-type': 'application/json' }
@@ -338,6 +338,12 @@ describe('Gamificação — GET /members/gamification/me', () => {
       },
       // Catálogo completo do domain, todo bloqueado (derivado — robusto a novos slugs).
       badges: BADGE_SLUGS.map((slug) => ({ slug, unlockedAt: null })),
+      // Sem cursos qualificados → Noob; falta 1 curso (concluído + publicado) p/ Coder.
+      level: {
+        slug: 'noob',
+        next: 'coder',
+        remaining: { any: 1, iniciante: 0, intermediario: 0, avancado: 0 },
+      },
     })
   })
 
@@ -1021,5 +1027,113 @@ describe('Gamificação — correções do full review (freeze/streak display/ra
       ),
     )
     expect(me.ranking).toBeUndefined()
+  })
+})
+
+describe('Nível do aluno — webhook /showcase + derivação', () => {
+  const postShowcase = (app: App, body: object, deliveryId: string = randomUUID()) => {
+    const raw = JSON.stringify(body)
+    return app.handle(
+      new Request('http://localhost/members/webhooks/showcase', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/showcase', raw, deliveryId),
+        body: raw,
+      }),
+    )
+  }
+
+  // Conclui o curso inteiro (todas as aulas publicadas) → marco course_complete.
+  const completeCourse = async (app: App, lessonIds: readonly string[]) => {
+    for (const id of lessonIds) await complete(app, id)
+  }
+
+  test('concluir + publicar no Mural → curso qualificado → sobe p/ Coder', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses) // iniciante, adult (default)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await completeCourse(app, course.lessonIds)
+
+    // Só concluiu (sem publicar) → ainda Noob.
+    expect((await readJson(await getMe(app))).level.slug).toBe('noob')
+
+    const res = await postShowcase(app, {
+      userId: USER,
+      accountId: USER,
+      courseId: course.courseId,
+      audience: 'adult',
+    })
+    expect(res.status).toBe(200)
+
+    const me = await readJson(await getMe(app))
+    expect(me.level.slug).toBe('coder')
+  })
+
+  test('webhook é idempotente por x-delivery-id (replay = no-op)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await completeCourse(app, course.lessonIds)
+
+    const body = { userId: USER, accountId: USER, courseId: course.courseId, audience: 'adult' }
+    expect((await postShowcase(app, body, 'dup-1')).status).toBe(200)
+    const replay = await readJson(await postShowcase(app, body, 'dup-1'))
+    expect(replay.deduped).toBe(true)
+    expect((await readJson(await getMe(app))).level.slug).toBe('coder')
+  })
+
+  test('falha ao registrar marco não deduplica a entrega', async () => {
+    const { app, courses, entitlements, gamification, processed } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await completeCourse(app, course.lessonIds)
+
+    const originalAward = gamification.award.bind(gamification)
+    gamification.award = async () => {
+      throw new Error('db down')
+    }
+
+    const body = { userId: USER, accountId: USER, courseId: course.courseId, audience: 'adult' }
+    const res = await postShowcase(app, body, 'retry-me')
+
+    expect(res.status).toBe(502)
+    expect(await processed.isProcessed('retry-me')).toBe(false)
+
+    gamification.award = originalAward
+    const retry = await postShowcase(app, body, 'retry-me')
+    expect(retry.status).toBe(200)
+    expect(await processed.isProcessed('retry-me')).toBe(true)
+    expect((await readJson(await getMe(app))).level.slug).toBe('coder')
+  })
+
+  test('publicar SEM concluir não qualifica (continua Noob)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    await postShowcase(app, {
+      userId: USER,
+      accountId: USER,
+      courseId: course.courseId,
+      audience: 'adult',
+    })
+    expect((await readJson(await getMe(app))).level.slug).toBe('noob')
+  })
+
+  test('assinatura HMAC inválida → 401', async () => {
+    const { app } = buildApp()
+    const body = JSON.stringify({
+      userId: USER,
+      accountId: USER,
+      courseId: randomUUID(),
+      audience: 'adult',
+    })
+    const res = await app.handle(
+      new Request('http://localhost/members/webhooks/showcase', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-signature': 't=1,v1=deadbeef' },
+        body,
+      }),
+    )
+    expect(res.status).toBe(401)
   })
 })

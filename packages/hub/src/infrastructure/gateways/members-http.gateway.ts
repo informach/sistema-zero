@@ -1,9 +1,12 @@
+import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
+import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type {
   CourseAccessResult,
   MembersGateway,
   ShowcaseEligibilityArgs,
   ShowcaseEligibilityResult,
+  ShowcasePublishedArgs,
 } from '../../domain/ports/members-gateway.port'
 
 export interface MembersHttpGatewayOptions {
@@ -13,12 +16,21 @@ export interface MembersHttpGatewayOptions {
   timeoutMs?: number
   /** Token interno exigido pelo members na rota S2S (= INTERNAL_API_TOKEN do members). */
   internalToken?: string
+  /**
+   * Segredo HMAC (= GATEWAY_HMAC_SECRET) p/ assinar o webhook `/members/webhooks/showcase`
+   * (o members o verifica). Sem ele, a notificação de Mural é um no-op silencioso.
+   */
+  hmacSecret?: string
   /** Injetável em testes; default = fetch global. */
   fetchImpl?: typeof fetch
+  /** Injetável em testes (clock do timestamp da assinatura). */
+  now?: () => Date
   logger?: Logger
 }
 
 const DEFAULT_TIMEOUT_MS = 5_000
+/** Path EXATO que o members assina/verifica (`<MÉTODO>.<path>.<corpo>`; chamada S2S direta). */
+const SHOWCASE_WEBHOOK_PATH = '/members/webhooks/showcase'
 
 /**
  * Adapter HTTP do members. Resolve `POST /members/internal/access-check` (rota S2S
@@ -30,6 +42,7 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
   const doFetch = opts.fetchImpl ?? fetch
   const base = opts.baseUrl.replace(/\/$/, '')
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const now = opts.now ?? (() => new Date())
   const headers: Record<string, string> = {
     accept: 'application/json',
     'content-type': 'application/json',
@@ -106,6 +119,49 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
         chain: typeof b.chain === 'string' ? b.chain : null,
         courseId: typeof b.courseId === 'string' ? b.courseId : '',
         audience: b.audience === 'kids' ? 'kids' : 'adult',
+      }
+    },
+
+    async notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void> {
+      // Sem segredo HMAC (dev/local) → no-op: o nível do aluno só não atualiza na hora.
+      if (!opts.hmacSecret) return
+      try {
+        const rawBody = JSON.stringify({
+          userId: args.userId,
+          accountId: args.accountId,
+          courseId: args.courseId,
+          audience: args.audience,
+        })
+        const ts = Math.floor(now().getTime() / 1000)
+        const signature = signHmac(
+          opts.hmacSecret,
+          canonicalHmacMessage({ method: 'POST', path: SHOWCASE_WEBHOOK_PATH, body: rawBody }),
+          ts,
+        )
+        const res = await doFetch(`${base}${SHOWCASE_WEBHOOK_PATH}`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-signature': `t=${ts},v1=${signature}`,
+            'x-delivery-id': randomUUID(),
+          },
+          body: rawBody,
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!res.ok) {
+          opts.logger?.warn('members.showcase_notify_failed', {
+            userId: args.userId,
+            courseId: args.courseId,
+            status: res.status,
+          })
+        }
+      } catch (error) {
+        // Best-effort: a publicação no Mural NUNCA falha por causa do nível do aluno.
+        opts.logger?.warn('members.showcase_notify_error', {
+          userId: args.userId,
+          courseId: args.courseId,
+          error: error instanceof Error ? error.message : String(error),
+        })
       }
     },
   }

@@ -53,12 +53,12 @@ export function createApplication(env: Env): Application {
 
   // Serviços de domínio/aplicação
   const resolver = new ResolveOfferEntitlementsService(products)
-  const getOffer = new GetOfferService(offers, products, resolver)
+  const getOffer = new GetOfferService(offers, products, resolver, logger)
   const getProduct = new GetProductService(products)
   const listProducts = new ListProductsService(products)
   const listOffers = new ListOffersService(offers, products)
   const listCoupons = new ListCouponsService(coupons)
-  const quoteOffer = new QuoteOfferService(offers, coupons)
+  const quoteOffer = new QuoteOfferService(offers, coupons, products, resolver)
   const redeemCoupon = new RedeemCouponService(coupons, logger)
   const createProduct = new CreateProductService(products, logger)
   const updateProduct = new UpdateProductService(products, logger)

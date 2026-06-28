@@ -55,12 +55,15 @@ export default function CardCheckout({
   priceCents,
   couponCode,
   successPath,
+  installmentsMax,
 }: {
   contact: CheckoutContactInput | null
   priceCents: number
   couponCode?: string
   /** Para onde ir quando o pagamento confirmar (próximo passo do funil; obrigatório). */
   successPath: string
+  /** Máximo de parcelas da OFERTA (catálogo). Limita a lista da Efí; `null` = sem teto. */
+  installmentsMax?: number | null
 }) {
   const [number, setNumber] = useState('')
   const [holderName, setHolderName] = useState('')
@@ -165,7 +168,10 @@ export default function CardCheckout({
         .setTotal(priceCents)
         .getInstallments()
       if (reqIdRef.current !== myId) return
-      const list = 'installments' in res ? res.installments : null
+      const raw = 'installments' in res ? res.installments : null
+      // Limita ao máximo de parcelas da OFERTA (catálogo). `installmentsMax` nulo = sem teto.
+      const list =
+        raw && installmentsMax ? raw.filter((i) => i.installment <= installmentsMax) : raw
       setInstallmentsList(list)
       // Mantém a parcela escolhida se ainda existir na lista nova; senão, 1x.
       setInstallments((cur) => (list?.some((i) => i.installment === cur) ? cur : 1))

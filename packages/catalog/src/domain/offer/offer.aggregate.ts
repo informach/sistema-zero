@@ -24,6 +24,14 @@ export interface OfferContent {
    * faz sentido). Defina `true` nas ofertas que aceitam cupom.
    */
   allowsCoupon?: boolean
+  /**
+   * Teto de PERFIS (estilo Netflix) que ESTA oferta libera (plataforma kids — planos
+   * "N perfis"). Inteiro ≥ 1; ausente = sem teto por esta oferta (o members aplica o
+   * default). Injetado no `fulfillment` resolvido em `/entitlements` → congela no
+   * snapshot da matrícula. Mora na OFERTA (não no produto) — ofertas diferentes do
+   * mesmo produto podem dar quantidades diferentes.
+   */
+  maxProfiles?: number
 }
 
 /** Estado serializável da oferta (ida/volta ao banco). */

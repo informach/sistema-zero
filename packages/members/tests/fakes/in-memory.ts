@@ -36,6 +36,7 @@ import {
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
 } from '../../src/domain/gamification/gamification'
+import type { QualifyingByLevel } from '../../src/domain/gamification/levels'
 import type { MissionGoalType } from '../../src/domain/gamification/missions'
 import type { AvatarRepository } from '../../src/domain/ports/avatar-repository.port'
 import type { CatalogGateway, ResolvedOffer } from '../../src/domain/ports/catalog-gateway.port'
@@ -490,12 +491,13 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const now = new Date()
     // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna;
     // `audience` ausente cai no default da coluna (`adult`).
-    const { salesPageUrl, audience, sequentialLock, ...rest } = fields
+    const { salesPageUrl, audience, sequentialLock, level, ...rest } = fields
     const course: Course = {
       id: randomUUID(),
       ...rest,
       audience: audience ?? 'adult',
       sequentialLock: sequentialLock ?? true,
+      level: level ?? 'iniciante',
       metadata: salesPageUrl ? { salesPageUrl } : null,
       createdAt: now,
       updatedAt: now,
@@ -1450,6 +1452,27 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     return this.badges
       .filter((b) => b.userId === userId && b.audience === audience)
       .map((b) => ({ badgeSlug: b.badgeSlug, unlockedAt: b.unlockedAt }))
+  }
+
+  /** Mirror do SQL: cursos com AMBOS os marcos (complete ∩ showcased) por dificuldade. */
+  async countQualifyingCoursesByLevel(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<QualifyingByLevel> {
+    const mine = this.events.filter((e) => e.userId === userId && e.audience === audience)
+    const completed = new Set(
+      mine.filter((e) => e.sourceType === 'course_complete').map((e) => e.sourceId),
+    )
+    const showcased = new Set(
+      mine.filter((e) => e.sourceType === 'course_showcased').map((e) => e.sourceId),
+    )
+    const result: QualifyingByLevel = { iniciante: 0, intermediario: 0, avancado: 0 }
+    for (const courseId of completed) {
+      if (!showcased.has(courseId)) continue
+      const course = this.sources?.courses.courses.find((c) => c.id === courseId)
+      if (course) result[course.level] += 1
+    }
+    return result
   }
 
   /**

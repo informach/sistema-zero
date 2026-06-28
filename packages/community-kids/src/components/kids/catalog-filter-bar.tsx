@@ -40,6 +40,17 @@ export function CatalogFilterBar({ filters, onChange, onClear, hasActiveFilters 
           <option value="bloqueados">Bloqueados</option>
         </Select>
         <Select
+          value={filters.nivel}
+          onChange={(e) => onChange('nivel', e.target.value)}
+          aria-label="Filtrar por nível"
+          className="w-40"
+        >
+          <option value="todos">Todos os níveis</option>
+          <option value="iniciante">Iniciante</option>
+          <option value="intermediario">Intermediário</option>
+          <option value="avancado">Avançado</option>
+        </Select>
+        <Select
           value={filters.ordem}
           onChange={(e) => onChange('ordem', e.target.value)}
           aria-label="Ordenar"

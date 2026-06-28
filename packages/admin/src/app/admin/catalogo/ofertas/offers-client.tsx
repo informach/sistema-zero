@@ -28,7 +28,7 @@ import { type OfferItemDraft, OfferItemsEditor } from '@/components/catalog/offe
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatCents, reaisToCents } from '@/lib/format'
 import { offerCodeSuggestion, offerSlugSuggestion } from '@/lib/slug'
-import type { OfferListItem, Paginated, ProductView } from '@/lib/types'
+import type { OfferContent, OfferListItem, Paginated, ProductView } from '@/lib/types'
 
 const LIMIT = 20
 const OFFER_STATUSES = ['draft', 'active', 'paused', 'archived']
@@ -48,6 +48,7 @@ interface FormState {
   pricingMode: string
   installmentsMax: string
   guaranteeDays: string
+  maxProfiles: string
   status: string
   items: OfferItemDraft[]
 }
@@ -62,13 +63,27 @@ const EMPTY_FORM: FormState = {
   pricingMode: 'one_time',
   installmentsMax: '',
   guaranteeDays: '',
+  maxProfiles: '',
   status: 'draft',
   items: [],
 }
 
+/** Teto de perfis kids (espelha o DTO do catálogo: `maxProfiles` 1..50). */
+const MAX_KIDS_PROFILES = 50
+
 function optInt(v: string): number | null {
   const n = Number.parseInt(v, 10)
   return Number.isFinite(n) && n > 0 ? n : null
+}
+
+/**
+ * Mescla o `maxProfiles` no `content` existente da oferta SEM apagar os demais campos
+ * (badge/cta/cupom). `max` nulo → remove o teto. Objeto vazio → `null`.
+ */
+function mergeOfferContent(base: OfferContent | null, max: number | null): OfferContent | null {
+  const { maxProfiles: _drop, ...rest } = base ?? {}
+  const merged: OfferContent = max != null ? { ...rest, maxProfiles: max } : rest
+  return Object.keys(merged).length > 0 ? merged : null
 }
 
 export function OffersClient() {
@@ -160,6 +175,7 @@ export function OffersClient() {
       pricingMode: o.pricingMode,
       installmentsMax: o.installmentsMax != null ? String(o.installmentsMax) : '',
       guaranteeDays: o.guaranteeDays != null ? String(o.guaranteeDays) : '',
+      maxProfiles: o.content?.maxProfiles != null ? String(o.content.maxProfiles) : '',
       status: o.status,
       items: [...o.items]
         .sort((a, b) => a.sortOrder - b.sortOrder)
@@ -181,6 +197,9 @@ export function OffersClient() {
       return
     }
     const compareAtCents = form.compareAt.trim() ? reaisToCents(form.compareAt) : null
+    // Teto de perfis (kids) da OFERTA, clampado 1..50; mesclado no `content` sem apagar o resto.
+    const maxP = optInt(form.maxProfiles)
+    const maxProfiles = maxP ? Math.min(maxP, MAX_KIDS_PROFILES) : null
     setSaving(true)
     try {
       // PATCH substitui a coleção de itens — envia sempre o estado completo do editor.
@@ -193,6 +212,7 @@ export function OffersClient() {
           pricingMode: form.pricingMode,
           installmentsMax: optInt(form.installmentsMax),
           guaranteeDays: optInt(form.guaranteeDays),
+          content: mergeOfferContent(editing.content, maxProfiles),
           status: form.status,
           items,
         })
@@ -210,6 +230,7 @@ export function OffersClient() {
             ? { installmentsMax: optInt(form.installmentsMax) }
             : {}),
           ...(optInt(form.guaranteeDays) ? { guaranteeDays: optInt(form.guaranteeDays) } : {}),
+          ...(maxProfiles ? { content: { maxProfiles } } : {}),
           status: form.status,
           ...(items.length ? { items } : {}),
         })
@@ -495,6 +516,19 @@ export function OffersClient() {
               />
             </Field>
           </div>
+          <Field
+            label="Quantidade de perfis (plataforma Kids)"
+            htmlFor="maxProfiles"
+            tooltip="Quantos perfis de criança (estilo Netflix) ESTA oferta libera. O responsável cria até esse número de perfis. Deixe VAZIO fora da plataforma Kids. Inteiro de 1 a 50."
+          >
+            <Input
+              id="maxProfiles"
+              inputMode="numeric"
+              placeholder="Ex.: 2 (vazio = sem limite de perfis)"
+              value={form.maxProfiles}
+              onChange={(e) => setForm((f) => ({ ...f, maxProfiles: e.target.value }))}
+            />
+          </Field>
           <Field
             label="Bônus / Itens extras"
             tooltip="Produtos entregues junto com o principal, só nesta oferta (ex.: planilha bônus). Quem compra recebe acesso a tudo."

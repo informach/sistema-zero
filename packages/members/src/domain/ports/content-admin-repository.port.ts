@@ -1,6 +1,7 @@
 import type {
   Course,
   CourseAudience,
+  CourseLevel,
   CourseStatus,
   Lesson,
   LessonAttachment,
@@ -31,6 +32,11 @@ export interface CourseFields {
    * `true` (padrão LIGADO); no UPDATE **preserva a atual** (mesma régua do `audience`).
    */
   sequentialLock: boolean | null
+  /**
+   * Nível (dificuldade) do curso. `null` = "não informado": no CREATE vira
+   * `iniciante`; no UPDATE **preserva a atual** (mesma régua do `audience`).
+   */
+  level: CourseLevel | null
 }
 
 export interface ModuleFields {

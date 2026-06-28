@@ -6,11 +6,20 @@
  * slugs certos + 1 canal cada), sem duplicar se já existirem.
  *
  * Uso: `DATABASE_URL=... bun run db:seed-community` (dentro do Railway via `railway ssh`,
- * pois o Postgres é privado). Os servidores nascem `course_gated` (só quem comprou o
- * curso de mesmo slug vê o conteúdo) + `teaserWhenLocked` (aparecem BLOQUEADOS no menu
- * sem acesso). Para um smoke test rápido sem matrícula, rode com `SEED_PUBLIC=true`
- * (deixa os dois públicos — TROCAR para course_gated no admin antes de valer "só quem
- * comprou"). Re-rodar é seguro (não recria o que já existe).
+ * pois o Postgres é privado).
+ *
+ * **Modelo de acesso (06/2026): cada servidor é um PRODUTO INDEPENDENTE** (`community_gated`,
+ * NÃO mais por curso). Cada um nasce com a SUA própria chave de comunidade (= o slug) +
+ * `teaserWhenLocked` (aparece BLOQUEADO no menu sem acesso); os canais herdam (`accessConfig:
+ * null`) — quem tem o produto daquele servidor vê todos os canais dele. **Clube e Mural são
+ * SEPARADOS** (produtos distintos): o **Clube** (`clube-dos-criadores`) é o fórum vendável; o
+ * **Mural** (`mural-dos-criadores`) é a vitrine, independente, dada de bônus no desafio do
+ * primeiro jogo. A chave de cada servidor casa com (a) o slug do produto de COMUNIDADE no
+ * catálogo e (b) o ref que o community-kids checa em `/members/access` (o Clube usa o
+ * `CLUBE_ACCESS_REF` do member-shell).
+ *
+ * Para um smoke test sem matrícula, rode com `SEED_PUBLIC=true` (deixa os dois públicos —
+ * TROCAR para community_gated no admin antes de valer "só quem comprou"). Re-rodar é seguro.
  */
 import { randomUUID } from 'node:crypto'
 import { and, eq } from 'drizzle-orm'
@@ -30,8 +39,11 @@ interface SpaceSeed {
   slug: string
   name: string
   description: string
-  /** courseRef que libera o acesso (convenção: = slug do servidor). */
-  courseRef: string
+  /**
+   * Chave de comunidade do PRODUTO que libera ESTE servidor (independente dos outros).
+   * Convenção: = o slug. Casa com o slug do produto de comunidade no catálogo.
+   */
+  communityRef: string
   channel: { slug: string; name: string; postingPolicy: 'members' | 'staff_only' }
 }
 
@@ -40,23 +52,25 @@ const SEEDS: SpaceSeed[] = [
     slug: 'clube-dos-criadores',
     name: 'Clube dos Criadores',
     description: 'Converse com os colegas e mostre o que você criou! 🎉',
-    courseRef: 'clube-dos-criadores',
+    communityRef: 'clube-dos-criadores',
     channel: { slug: 'geral', name: 'Geral', postingPolicy: 'members' },
   },
   {
     slug: 'mural-dos-criadores',
     name: 'Mural dos Criadores',
     description: 'A vitrine dos projetos! Curta e comente o que os colegas criaram. 🎨',
-    courseRef: 'mural-dos-criadores',
+    // Produto SEPARADO do Clube (bônus do desafio do 1º jogo) → chave própria.
+    communityRef: 'mural-dos-criadores',
     // Canal staff_only: a criança não posta — os projetos são auto-publicados.
     channel: { slug: 'parede', name: 'Parede', postingPolicy: 'staff_only' },
   },
 ]
 
-function accessFor(courseRef: string): AccessConfig {
+/** Acesso de um servidor: o SEU produto de comunidade libera (ou público no smoke test). */
+function accessFor(communityRef: string): AccessConfig {
   return SEED_PUBLIC
-    ? { visibility: 'public', courses: [], roles: [] }
-    : { visibility: 'course_gated', courses: [courseRef], roles: [] }
+    ? { visibility: 'public', courses: [], communities: [], roles: [] }
+    : { visibility: 'community_gated', courses: [], communities: [communityRef], roles: [] }
 }
 
 async function main(): Promise<void> {
@@ -64,12 +78,25 @@ async function main(): Promise<void> {
   try {
     for (const s of SEEDS) {
       const now = new Date()
+      const access = accessFor(s.communityRef)
       // Servidor — idempotente por slug (índice único spaces_slug_uq).
       const existing = await conn.db.select().from(spaces).where(eq(spaces.slug, s.slug)).limit(1)
       let spaceId: string
       if (existing[0]) {
         spaceId = existing[0].id
-        console.log(`= servidor "${s.slug}" já existe (${spaceId})`)
+        // RECONCILIA o acesso ao modelo atual (community_gated pelo SEU produto): apaga o
+        // resíduo do modelo ANTIGO (course_gated por curso homônimo). Idempotente — só escreve
+        // se mudou. Esses 2 slugs são infra dona do seed, então sobrescrever é seguro.
+        const current = JSON.stringify(existing[0].accessConfig ?? null)
+        if (current !== JSON.stringify(access)) {
+          await conn.db
+            .update(spaces)
+            .set({ accessConfig: access, updatedAt: new Date() })
+            .where(eq(spaces.id, spaceId))
+          console.log(`~ servidor "${s.slug}" — acesso reconciliado p/ ${access.visibility}`)
+        } else {
+          console.log(`= servidor "${s.slug}" já existe e está no modelo certo (${spaceId})`)
+        }
       } else {
         const [row] = await conn.db
           .insert(spaces)
@@ -81,7 +108,7 @@ async function main(): Promise<void> {
             description: s.description,
             iconUrl: null,
             audience: 'kids',
-            accessConfig: accessFor(s.courseRef),
+            accessConfig: access,
             requiresApproval: true,
             teaserWhenLocked: true,
             sortOrder: 0,
@@ -94,7 +121,7 @@ async function main(): Promise<void> {
         console.log(`+ servidor "${s.slug}" criado (${spaceId})`)
       }
 
-      // Canal — idempotente por (spaceId, slug).
+      // Canal — idempotente por (spaceId, slug). Herda o acesso do servidor.
       const ch = await conn.db
         .select({ id: channels.id })
         .from(channels)
@@ -110,7 +137,7 @@ async function main(): Promise<void> {
           slug: s.channel.slug,
           name: s.channel.name,
           topic: null,
-          accessConfig: null, // herda do servidor
+          accessConfig: null, // herda do servidor (community_gated pelo produto daquele servidor)
           postingPolicy: s.channel.postingPolicy,
           requiresApproval: null, // herda do servidor
           sortOrder: 0,
@@ -122,7 +149,7 @@ async function main(): Promise<void> {
       }
     }
     console.log(
-      `✓ Seed da comunidade concluído (acesso: ${SEED_PUBLIC ? 'PÚBLICO' : 'course_gated'}).`,
+      `✓ Seed da comunidade concluído (acesso: ${SEED_PUBLIC ? 'PÚBLICO' : 'community_gated — chave própria por servidor'}).`,
     )
   } finally {
     await conn.close()

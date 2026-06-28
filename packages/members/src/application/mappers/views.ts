@@ -3,6 +3,7 @@ import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
+import type { StudentLevel } from '../../domain/gamification/levels'
 import type { AwardResult } from '../../domain/ports/gamification-repository.port'
 import type { CourseProgress } from '../../domain/progress/progress'
 import type { CourseFeedbackAnswers, CourseRating } from '../../domain/rating/course-rating'
@@ -191,6 +192,12 @@ export interface GamificationMeView {
   /** Catálogo COMPLETO na ordem do domain — badge bloqueada tem `unlockedAt: null`. */
   badges: { slug: string; unlockedAt: string | null }[]
   /**
+   * Nível do aluno (rank): `slug` (noob…god), próximo nível e o que falta p/ subir
+   * (por dificuldade). Derivado dos cursos qualificados (concluído + publicado no
+   * Mural). Rótulo/cor/ícone são apresentação e vivem no app.
+   */
+  level: StudentLevel
+  /**
    * Colocação no ranking de XP da VITRINE pedida (`?ranking=true` junto do
    * `?audience=`) — XP/perfil/coorte são por audiência, então os rankings
    * adult/kids são separados. Ausente quando o caller não pediu.
@@ -220,6 +227,8 @@ export interface PublicProfileView {
   profileId: string
   xp: number
   ranking: { position: number; totalStudents: number } | null
+  /** Nível do aluno (rank) — derivado dos cursos qualificados (concluído + Mural). */
+  level: StudentLevel
   /** SÓ as conquistas conquistadas (não o catálogo completo). */
   badges: { slug: string; unlockedAt: string }[]
   /** Config 3D equipada (peça+cor por categoria) — p/ uma futura visualização do personagem. */
@@ -340,6 +349,8 @@ export interface MyCourseView {
   coverImageUrl: string | null
   /** Plataforma do curso (`adult` | `kids`) — a vitrine já vem filtrada. */
   audience: string
+  /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
+  level: string
   access: AccessView
   progress: CourseProgress
   /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
@@ -358,6 +369,7 @@ export function toMyCourseView(
     subtitle: course.subtitle,
     coverImageUrl: course.coverImageUrl,
     audience: course.audience,
+    level: course.level,
     access: toAccessView(entitlement),
     progress,
     continueLessonId,
@@ -375,6 +387,8 @@ export interface CatalogCourseView {
   coverImageUrl: string | null
   /** Plataforma do curso (`adult` | `kids`) — o catálogo já vem filtrado. */
   audience: string
+  /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
+  level: string
   hasAccess: boolean
   /** URL da página de vendas (funil) — de `course.metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
@@ -387,6 +401,7 @@ export function toCatalogCourseView(course: Course, hasAccess: boolean): Catalog
     subtitle: course.subtitle,
     coverImageUrl: course.coverImageUrl,
     audience: course.audience,
+    level: course.level,
     hasAccess,
     salesPageUrl: resolveSalesPageUrl(course),
   }
@@ -448,6 +463,8 @@ export interface CourseDetailView {
   coverImageUrl: string | null
   /** Plataforma do curso (`adult` | `kids`) — o BFF pode validar/redirecionar. */
   audience: string
+  /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
+  level: string
   access: AccessView
   progress: CourseProgressView
   /** Aula-alvo do CTA "Continuar de onde parou" (ver `resolveContinueLesson`). */
@@ -478,6 +495,7 @@ export function toCourseDetailView(
     description: course.description,
     coverImageUrl: course.coverImageUrl,
     audience: course.audience,
+    level: course.level,
     access: toAccessView(entitlement),
     progress,
     continueLessonId,

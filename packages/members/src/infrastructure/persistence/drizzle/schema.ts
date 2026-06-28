@@ -30,6 +30,15 @@ export const courseStatusEnum = members.enum('course_status', ['draft', 'publish
 // kids = community-kids). É coluna (não metadata) porque participa da AUTORIZAÇÃO:
 // a chave-mestra `all_courses` cobre só cursos `adult` (ver CheckAccessService).
 export const courseAudienceEnum = members.enum('course_audience', ['adult', 'kids'])
+// Nível pedagógico do curso (dificuldade). Default `iniciante` (backfill dos cursos
+// já existentes). Definido pelo professor no admin; alimenta o nível do ALUNO
+// (domain/gamification/levels.ts): um curso "qualificado" (concluído + publicado no
+// Mural) conta para o nível conforme a sua dificuldade.
+export const courseLevelEnum = members.enum('course_level', [
+  'iniciante',
+  'intermediario',
+  'avancado',
+])
 export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'rich_text',
   'video',
@@ -77,6 +86,10 @@ export const courses = members.table(
     coverImageUrl: text('cover_image_url'),
     status: courseStatusEnum('status').notNull().default('draft'),
     audience: courseAudienceEnum('audience').notNull().default('adult'),
+    // Dificuldade do curso (iniciante/intermediário/avançado). Default `iniciante`
+    // (backfill dos existentes). Régua de autoria igual a `audience`: o UPDATE sem o
+    // campo PRESERVA o valor atual (um PATCH de build antigo não rebaixa o curso).
+    level: courseLevelEnum('level').notNull().default('iniciante'),
     // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
     // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
     // (decisão da usuária: padrão ligado, com toggle por curso no admin).
@@ -343,6 +356,10 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   'quiz_perfect',
   // Atividade do Estúdio aprovada (auto-correção, fase 2) — XP, não é marco.
   'studio_passed',
+  // MARCO (amount 0): o aluno PUBLICOU o projeto do curso no Mural dos Criadores
+  // (sourceId = courseId). Gravado pelo webhook hub→members; combinado com
+  // `course_complete` define o curso "qualificado" p/ o nível do aluno.
+  'course_showcased',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)

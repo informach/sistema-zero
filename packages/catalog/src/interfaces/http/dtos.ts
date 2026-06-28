@@ -38,8 +38,8 @@ const FulfillmentSchema = t.Object({
   ]),
   courseRef: t.Optional(t.String({ maxLength: 200 })),
   release: t.Optional(ReleaseRuleSchema),
-  // Teto de perfis liberados (plataforma kids — planos "N perfis"). Inteiro ≥ 1.
-  maxProfiles: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
+  // ⚠️ `maxProfiles` (teto de perfis kids) NÃO é mais do produto — vive na OFERTA
+  // (OfferContent.maxProfiles) e é injetado no fulfillment resolvido em /entitlements.
 })
 
 const MetadataSchema = t.Record(t.String(), t.Unknown())
@@ -61,6 +61,9 @@ const OfferContentSchema = t.Object({
   highlight: t.Optional(t.String({ maxLength: 200 })),
   // Opt-in: exibe o campo de cupom no checkout do funil. Ausente/false → escondido.
   allowsCoupon: t.Optional(t.Boolean()),
+  // Teto de PERFIS (kids — planos "N perfis") DESTA oferta. Inteiro ≥ 1; injetado no
+  // fulfillment resolvido (/entitlements) → o members congela no snapshot da matrícula.
+  maxProfiles: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
 })
 
 const OfferItemSchema = t.Object({

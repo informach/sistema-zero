@@ -15,6 +15,7 @@ import {
   sql,
   sum,
 } from 'drizzle-orm'
+import { alias } from 'drizzle-orm/pg-core'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { BadgeSlug } from '../../../domain/gamification/badges'
 import {
@@ -30,6 +31,7 @@ import {
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
 } from '../../../domain/gamification/gamification'
+import type { QualifyingByLevel } from '../../../domain/gamification/levels'
 import type { MissionGoalType } from '../../../domain/gamification/missions'
 import {
   type AwardInput,
@@ -593,6 +595,41 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       .from(userBadges)
       .where(and(eq(userBadges.userId, userId), eq(userBadges.audience, audience)))
     return rows
+  }
+
+  async countQualifyingCoursesByLevel(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<QualifyingByLevel> {
+    // INTERSEÇÃO dos marcos `course_complete` ∩ `course_showcased` (mesmo curso, mesma
+    // vitrine) joinada com `courses.level`. Self-join no ledger via alias; `countDistinct`
+    // é defensivo (o UNIQUE do ledger já garante 1 marco por curso). Curso apagado some do
+    // join (sem FK) e simplesmente não conta — coerente com "qualificado = ainda existe".
+    const showcased = alias(xpEvents, 'sc')
+    const rows = await this.db
+      .select({ level: courses.level, qualifying: countDistinct(xpEvents.sourceId) })
+      .from(xpEvents)
+      .innerJoin(courses, eq(courses.id, xpEvents.sourceId))
+      .innerJoin(
+        showcased,
+        and(
+          eq(showcased.userId, xpEvents.userId),
+          eq(showcased.audience, xpEvents.audience),
+          eq(showcased.sourceType, 'course_showcased'),
+          eq(showcased.sourceId, xpEvents.sourceId),
+        ),
+      )
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          eq(xpEvents.sourceType, 'course_complete'),
+        ),
+      )
+      .groupBy(courses.level)
+    const result: QualifyingByLevel = { iniciante: 0, intermediario: 0, avancado: 0 }
+    for (const row of rows) result[row.level] = Number(row.qualifying)
+    return result
   }
 
   async getRanking(

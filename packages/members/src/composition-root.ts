@@ -341,6 +341,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getRoom,
       saveRoom,
       buyRoomItem,
+      profileAllowance,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     webhooks: {
@@ -348,6 +349,7 @@ export async function createApplication(env: Env): Promise<Application> {
       revoke,
       processed,
       hub,
+      award: awardGamification,
       webhookSecret: env.GATEWAY_HMAC_SECRET,
       toleranceSeconds: env.HMAC_TOLERANCE_SECONDS,
       now: clock,

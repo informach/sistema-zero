@@ -40,6 +40,7 @@ export default function CheckoutForm({
   allowCoupon = false,
   successPath,
   isKids = false,
+  installmentsMax = null,
 }: {
   initialContact: InitialContact
   priceCents: number
@@ -50,6 +51,8 @@ export default function CheckoutForm({
   successPath: string
   /** Funil kids → os dados são do RESPONSÁVEL (quem compra); o título deixa claro. */
   isKids?: boolean
+  /** Máximo de parcelas da OFERTA (catálogo) — limita o seletor do cartão. */
+  installmentsMax?: number | null
 }) {
   const [nome, setNome] = useState(initialContact.nome)
   const [email, setEmail] = useState(initialContact.email)
@@ -284,6 +287,7 @@ export default function CheckoutForm({
               priceCents={finalCents}
               couponCode={couponCode}
               successPath={successPath}
+              installmentsMax={installmentsMax}
             />
           </MethodCard>
         </div>

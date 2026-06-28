@@ -11,9 +11,11 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { KidsAvatar } from '@/components/kids/kids-avatar'
+import { AvatarWithAura } from '@/components/kids/avatar-with-aura'
+import { LevelBadge } from '@/components/kids/level-badge'
 import { apiSend } from '@/lib/api'
-import type { ProfileView } from '@/lib/types'
+import { nextLevelHint } from '@/lib/level-info'
+import type { ProfileView, StudentLevelView } from '@/lib/types'
 
 /** Colocação no ranking kids (XP) — `null` = gamificação indisponível (esconde a linha). */
 export interface RankingInfo {
@@ -37,10 +39,12 @@ const ProfileSchema = z.object({
 export function ProfileClient({
   profile,
   ranking,
+  level,
   avatarPhotoUrl,
 }: {
   profile: ProfileView
   ranking: RankingInfo | null
+  level: StudentLevelView | null
   avatarPhotoUrl: string | null
 }) {
   const router = useRouter()
@@ -51,6 +55,7 @@ export function ProfileClient({
       <IdentityCard
         profile={profile}
         ranking={ranking}
+        level={level}
         avatarPhotoUrl={avatarPhotoUrl}
         onEdit={() => setEditing(true)}
         // Personalizar = abrir o configurador 3D em tela cheia (não há mais modal).
@@ -66,16 +71,19 @@ export function ProfileClient({
 function IdentityCard({
   profile,
   ranking,
+  level,
   avatarPhotoUrl,
   onEdit,
   onCustomize,
 }: {
   profile: ProfileView
   ranking: RankingInfo | null
+  level: StudentLevelView | null
   avatarPhotoUrl: string | null
   onEdit: () => void
   onCustomize: () => void
 }) {
+  const hint = nextLevelHint(level ?? undefined)
   return (
     <Card>
       {/* Sem CardHeader: o pt-0 default do CardContent deixaria o card sem topo. */}
@@ -89,7 +97,12 @@ function IdentityCard({
             onClick={onCustomize}
             className="group relative shrink-0 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
-            <KidsAvatar photoUrl={avatarPhotoUrl} size="xl" label={`Avatar de ${profile.name}`} />
+            <AvatarWithAura
+              photoUrl={avatarPhotoUrl}
+              levelSlug={level?.slug}
+              size="xl"
+              label={`Avatar de ${profile.name}`}
+            />
             <span
               aria-hidden="true"
               className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
@@ -98,10 +111,14 @@ function IdentityCard({
             </span>
           </button>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold">{profile.name}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="font-semibold">{profile.name}</p>
+              <LevelBadge levelSlug={level?.slug} />
+            </div>
             {profile.whatsapp ? (
               <p className="truncate text-muted-foreground text-sm">{profile.whatsapp}</p>
             ) : null}
+            {hint ? <p className="mt-1.5 text-muted-foreground text-sm">{hint}</p> : null}
             {ranking ? (
               <p className="mt-1.5 flex items-center gap-1.5 text-sm">
                 <Trophy className="size-4 shrink-0 text-primary" />

@@ -164,6 +164,15 @@ export class ShowcaseService {
       idempotencyKey,
       now: this.clock(),
     })
+    // Nível do aluno: avisa o members que este curso foi publicado no Mural (best-effort,
+    // idempotente por user+curso; nunca derruba a publicação). Notifica mesmo no deduped —
+    // recupera uma notificação que falhou na 1ª publicação (a 1ª talvez não tenha gravado).
+    await this.members.notifyShowcasePublished({
+      userId: actor.userId,
+      accountId: actor.accountId,
+      courseId: elig.courseId,
+      audience: elig.audience,
+    })
     return { thread: toThreadView(thread), deduped }
   }
 
@@ -248,6 +257,13 @@ export class ShowcaseService {
       playId: cmd.playId,
       idempotencyKey,
       now: this.clock(),
+    })
+    // Nível do aluno: mesma notificação best-effort do `create` (idempotente por user+curso).
+    await this.members.notifyShowcasePublished({
+      userId: actor.userId,
+      accountId: actor.accountId,
+      courseId: elig.courseId,
+      audience: elig.audience,
     })
     return { thread: toThreadView(thread), deduped }
   }

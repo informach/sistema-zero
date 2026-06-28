@@ -105,11 +105,24 @@ A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edi
 
 **Renome (06/2026):** a antiga "Turma" (`/comunidade`) virou **Clube dos Criadores**
 (`/clube-dos-criadores`, modo fórum) e ganhou um irmão **Mural dos Criadores**
-(`/mural-dos-criadores`, modo `wall` = vitrine). Ambos são SERVIDORES do hub `course_gated`
-(produto à parte) com `teaserWhenLocked` ON → aparecem no menu (`nav.ts`: itens "Clube" e "Mural")
+(`/mural-dos-criadores`, modo `wall` = vitrine). Ambos são SERVIDORES do hub `community_gated`
+em PRODUTOS SEPARADOS (cada um na SUA chave = slug; NÃO mais por curso): Clube = `clube-dos-criadores`
+(fórum vendável), Mural = `mural-dos-criadores` (vitrine independente, bônus do desafio do 1º jogo)
+com `teaserWhenLocked` ON → aparecem no menu (`nav.ts`: itens "Clube" e "Mural")
 mesmo sem acesso, e a UI mostra `KidsLockedSpace` (recado gentil, sem conteúdo) quando
 `space.locked`. A rota antiga `/comunidade` foi REMOVIDA sem redirect (não há usuário real em prod
-ainda — decisão do usuário). O componente único `components/kids/kids-space-view-client.tsx` (movido
+ainda — decisão do usuário).
+**⚠️ Clube E Mural = produtos à parte com gate na PÁGINA (06/2026, igual ao Estúdio):** cada `page.tsx`
+checa o acesso no SERVIDOR via `checkClubeAccessReadonly()`/`checkMuralAccessReadonly()` (`GET
+/members/access?refs=<ref>`; `CLUBE_ACCESS_REF`=`clube-dos-criadores`, `MURAL_ACCESS_REF`=
+`mural-dos-criadores` no member-shell) ANTES de renderizar — 3 estados: sem acesso (200) →
+`KidsLockedClube`/`KidsLockedMural` ("ainda não liberado", espelham o `KidsLockedStudio`); status ≠ 200
+→ `KidsAccessUnavailable` ("tente de novo"); com acesso → `KidsSpaceViewClient`. Acesso pela CONTA;
+equipe/`hasMasterKids` curto-circuitam `true`. Isso substitui depender SÓ do teaser do hub: garante o
+recado mesmo que o servidor do hub não esteja alinhado. **Clube e Mural são PRODUTOS SEPARADOS** (o
+Mural é bônus do desafio do 1º jogo). **Setup do operador:** vender cada produto no catálogo E
+configurar o servidor homônimo no hub como `community_gated` com o MESMO ref (defesa em profundidade na
+API; o gate da página é UX) — sem isso o gate da página barra e o do hub não casa. O componente único `components/kids/kids-space-view-client.tsx` (movido
 de `app/(app)/comunidade`)
 recebe `slug` + `mode`: no `wall` esconde o composer/sidebar e renderiza CARDS de projeto (capa +
 título + resumo + "por {authorDisplayName}"); a criança só comenta (moderado) e reage. **Vitrine
@@ -282,6 +295,26 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `room-builder.tsx` (quarto), que também leem `balanceUnlimited`. Compras da equipe voltam grátis
   (`unlimited:true`). Ver `docs/gamificacao.md` §4.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
+- **Nível do aluno (rank Noob→God, 06/2026)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
+  `levelInfo()`/`nextLevelHint()`; cor = CSS var `--level-<slug>` em `globals.css` `:root`+`.dark`),
+  `components/kids/avatar-with-aura.tsx` (`AvatarWithAura` — anel/brilho na cor do nível ao redor do
+  `KidsAvatar`, estático p/ reduced-motion) e `level-badge.tsx` (`LevelBadge` — insígnia ícone+nome).
+  Usados no **perfil** (`profile-client.tsx`: aura no avatar + insígnia + linha "faltam X projetos…"
+  via `nextLevelHint`), no **menu** (`user-menu.tsx`: aura no avatar do header + insígnia no dropdown)
+  e no **perfil público** (`public-profile-view.tsx`: aura + insígnia). O nível vem de
+  `gamification.level` / `PublicProfileDTO.level` (members deriva). A **dificuldade do CURSO** (≠ do
+  nível do aluno) é o `course-level-chip.tsx` (`CourseLevelChip`) sobre a capa nos cards
+  (`course-card.tsx`/`catalog-course-card.tsx`). **COMEMORAÇÃO de SUBIDA de nível:**
+  `level-up-celebration.tsx` (overlay Zappy + confete + som + insígnia GRANDE na cor do nível,
+  `useModalA11y`, auto-fecha em 7s) disparada pelo `level-up-watcher.tsx` (cliente) — compara o
+  `level.slug` do servidor com o ÚLTIMO visto em `localStorage` (`sz:kids:level:<profileId>`) e
+  comemora UMA vez quando SOBE, seja por publicar no Mural OU por concluir um curso já publicado
+  (não amarrado a uma ação). NÃO comemora na 1ª carga (sem valor salvo) nem em queda. Montado no
+  `(app)/layout.tsx` via `LevelUpChrome` (server, só sessão de PERFIL, gamificação deduplicada
+  `{withRanking:true}`). ⚠️ Para refletir NA HORA após publicar, o `StudioBlockKids` chama
+  `router.refresh()` ao fechar a `MuralCelebration` → o layout re-busca o nível → o watcher acende
+  (sequência "no Mural!" → "subiu de nível!"). O marco `course_showcased` no members é gravado
+  SÍNCRONO no fluxo do publish (hub aguarda o webhook), então o refresh já vê o nível novo.
 - `badge-showcase.tsx` — vitrine do perfil: catálogo completo, bloqueada = tracejada+cadeado,
   desbloqueada = cor da marca + data. Inclui as **badges de MAESTRIA** da expansão
   (`studio-first`/`-master-3`/`-master-10` do Estúdio; `coins-saver-300`/`-1000` de poupador de

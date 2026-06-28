@@ -143,6 +143,14 @@
      vermelho escuro do tema claro. No dark o hot é mais claro → texto navy (ver .dark). */
   --sz-hot-fg: oklch(1 0 0);
   --sz-gradient: linear-gradient(90deg, oklch(0.5 0.14 200), oklch(0.52 0.18 135));
+
+  /* Níveis do aluno (rank Noob→God) — cor da AURA + insígnia. Versões AA p/ texto
+     branco no light; o dark clareia (ver .dark). Cada nível tem sua cor. */
+  --level-noob: oklch(0.55 0.02 255); /* cinza neutro (começo) */
+  --level-coder: oklch(0.52 0.14 200); /* cyan da marca */
+  --level-hacker: oklch(0.55 0.17 130); /* lime/verde */
+  --level-elite: oklch(0.5 0.2 300); /* violeta */
+  --level-god: oklch(0.66 0.16 75); /* dourado */
 }
 
 /* ============================================================
@@ -209,6 +217,13 @@
   /* Hot mais CLARO no dark → texto branco falharia; usa navy escuro (contraste ~5:1). */
   --sz-hot-fg: oklch(0.16 0.01 265);
   --sz-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
+
+  /* Níveis no dark: neons/claros (a aura aparece sobre o azul-noite). */
+  --level-noob: oklch(0.72 0.02 255);
+  --level-coder: var(--brand-cyan);
+  --level-hacker: var(--brand-lime);
+  --level-elite: oklch(0.7 0.18 300);
+  --level-god: oklch(0.82 0.15 82);
 }
 
 @layer base {

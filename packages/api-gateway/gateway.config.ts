@@ -976,6 +976,17 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Teto de perfis (kids) da conta — o app dos pais trava o "Adicionar" + "X de Y".
+    {
+      id: 'members-profile-allowance',
+      methods: ['GET'],
+      pathPattern: '/members/profile-allowance',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Perfil de gamificação do aluno (XP/streak/badges) — widgets do kids buscam
     // a cada render de página (layout + home), por isso o teto generoso.
     {

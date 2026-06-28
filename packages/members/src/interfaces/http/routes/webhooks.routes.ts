@@ -1,12 +1,13 @@
 import { PayloadTooLargeError } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
+import type { AwardGamificationService } from '../../../application/gamification/award-gamification.service'
 import type { GrantEntitlementService } from '../../../application/grant-entitlement/grant-entitlement.service'
 import type { RevokeEntitlementService } from '../../../application/revoke-entitlement/revoke-entitlement.service'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import type { ProcessedWebhookRepository } from '../../../domain/ports/processed-webhook-repository.port'
 import { ValidationError } from '../../../domain/shared/errors'
-import { GrantWebhookBody, SubscriptionWebhookBody } from '../dtos'
+import { GrantWebhookBody, ShowcaseWebhookBody, SubscriptionWebhookBody } from '../dtos'
 import { getRawBody, isOversizeBody } from '../raw-body'
 import { assertWebhookSignature } from '../webhook-auth'
 
@@ -38,6 +39,8 @@ export interface WebhooksRoutesDeps {
   processed: ProcessedWebhookRepository
   /** Notifica o hub (comunidade) no grant → invalida o cache de acesso na hora. */
   hub: HubGateway
+  /** Registra o marco `course_showcased` quando o hub avisa que o aluno publicou no Mural. */
+  award: AwardGamificationService
   webhookSecret: string
   toleranceSeconds: number
   now: () => Date
@@ -138,5 +141,31 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         return { ok: true, affected: result.affected }
       },
       { body: SubscriptionWebhookBody },
+    )
+    .post(
+      // O hub avisa que o aluno PUBLICOU o projeto do curso no Mural dos Criadores.
+      // Grava o marco `course_showcased` (idempotente por user+curso): junto de
+      // `course_complete`, qualifica o curso p/ o nível do aluno. Aqui o award precisa
+      // ser observado: se falhar, NÃO marcamos a entrega para manter o retry possível.
+      '/showcase',
+      async ({ headers, body, set }) => {
+        const deliveryId = resolveDeliveryId(headers)
+        if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
+          return { ok: true, deduped: true }
+        }
+        const awarded = await deps.award.awardCourseShowcased({
+          userId: body.userId,
+          accountId: body.accountId,
+          courseId: body.courseId,
+          audience: body.audience,
+        })
+        if (!awarded) {
+          set.status = 502
+          return { ok: false, error: 'SHOWCASE_AWARD_FAILED' }
+        }
+        if (deliveryId) await deps.processed.markProcessed(deliveryId, 'showcase')
+        return { ok: true }
+      },
+      { body: ShowcaseWebhookBody },
     )
 }

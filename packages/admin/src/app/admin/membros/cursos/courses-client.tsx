@@ -32,8 +32,10 @@ import { slugify } from '@/lib/slug'
 import {
   AUDIENCE_LABELS,
   COURSE_AUDIENCES,
+  COURSE_LEVELS,
   COURSE_STATUSES,
   type CourseView,
+  LEVEL_LABELS,
   type Paginated,
 } from '@/lib/types'
 
@@ -48,6 +50,7 @@ interface FormState {
   salesPageUrl: string
   status: string
   audience: string
+  level: string
   sequentialLock: boolean
 }
 
@@ -60,6 +63,8 @@ const EMPTY: FormState = {
   salesPageUrl: '',
   status: 'draft',
   audience: 'adult',
+  // Padrão: todo curso nasce iniciante (espelha o default da coluna no members).
+  level: 'iniciante',
   // Padrão LIGADO (decisão da usuária): curso novo já trava as aulas em sequência.
   sequentialLock: true,
 }
@@ -121,6 +126,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       salesPageUrl: c.salesPageUrl ?? '',
       status: c.status,
       audience: c.audience ?? 'adult',
+      level: c.level ?? 'iniciante',
       sequentialLock: c.sequentialLock ?? true,
     })
     setOpen(true)
@@ -147,6 +153,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         status: form.status,
         // SEMPRE enviado (explícito > depender do preserve do members no PATCH).
         audience: form.audience,
+        level: form.level,
         sequentialLock: form.sequentialLock,
       }
       if (editing) {
@@ -369,6 +376,23 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
               {COURSE_AUDIENCES.map((a) => (
                 <option key={a} value={a}>
                   {AUDIENCE_LABELS[a]}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field
+            label="Nível do curso"
+            htmlFor="clevel"
+            tooltip="Dificuldade do curso (Iniciante/Intermediário/Avançado). Conta para o NÍVEL do aluno: concluir e publicar no Mural cursos de cada dificuldade faz o aluno subir de Noob até God."
+          >
+            <Select
+              id="clevel"
+              value={form.level}
+              onChange={(e) => setForm((f) => ({ ...f, level: e.target.value }))}
+            >
+              {COURSE_LEVELS.map((l) => (
+                <option key={l} value={l}>
+                  {LEVEL_LABELS[l]}
                 </option>
               ))}
             </Select>

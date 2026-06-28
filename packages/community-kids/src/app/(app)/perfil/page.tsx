@@ -44,6 +44,7 @@ export default async function ProfilePage() {
       <ProfileClient
         profile={profile}
         ranking={gamification?.ranking ?? null}
+        level={gamification?.level ?? null}
         avatarPhotoUrl={avatarPhotoUrl}
       />
       {league ? <LeagueBoard league={league} /> : null}
