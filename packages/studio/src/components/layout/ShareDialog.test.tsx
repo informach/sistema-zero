@@ -26,12 +26,16 @@ function seedProject(): void {
   })
 }
 
-function makeAdapter(): StudioShareAdapter {
+function makeAdapter(over: Partial<StudioShareAdapter> = {}): StudioShareAdapter {
   return {
     generateDescription: mock(async () => 'Um jogo de nave que desvia de asteroides.'),
     publish: mock(async () => ({ muralUrl: '/mural?thread=1', playUrl: '/jogar/abc' })),
+    ...over,
   }
 }
+
+const pubArg = (adapter: StudioShareAdapter) =>
+  (adapter.publish as ReturnType<typeof mock>).mock.calls[0]?.[0]
 
 describe('ShareDialog', () => {
   afterEach(() => {
@@ -45,50 +49,102 @@ describe('ShareDialog', () => {
     expect(document.body.querySelector('dialog')).toBeNull()
   })
 
-  it('o confirm exige os dois checkboxes antes de avançar', () => {
+  it('Publicar fica desabilitado até ter título + resumo + capa', async () => {
     seedProject()
     render(<ShareDialog open onClose={() => {}} adapter={makeAdapter()} />)
-    const next = screen.getByRole('button', { name: 'Avançar' }) as HTMLButtonElement
-    expect(next.disabled).toBe(true)
-    const checks = screen.getAllByRole('checkbox')
-    for (const c of checks) fireEvent.click(c)
-    expect((screen.getByRole('button', { name: 'Avançar' }) as HTMLButtonElement).disabled).toBe(
-      false,
-    )
+
+    // título já vem do nome do projeto; o resumo é preenchido pela IA na abertura.
+    await screen.findByDisplayValue('Um jogo de nave que desvia de asteroides.')
+    const publish = () => screen.getByRole('button', { name: 'Publicar' }) as HTMLButtonElement
+    // Falta a capa → desabilitado.
+    expect(publish().disabled).toBe(true)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Gerar capa' }))
+    await waitFor(() => expect(publish().disabled).toBe(false))
   })
 
-  it('gera a descrição via adapter e publica com print + título + descrição', async () => {
+  it('gera a capa pelo print e publica com coverDataUrl + título + resumo', async () => {
     seedProject()
     const adapter = makeAdapter()
     render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
 
-    // confirm → describe
-    for (const c of screen.getAllByRole('checkbox')) fireEvent.click(c)
-    fireEvent.click(screen.getByRole('button', { name: 'Avançar' }))
-
-    // a IA preenche o textarea
     await screen.findByDisplayValue('Um jogo de nave que desvia de asteroides.')
     expect(adapter.generateDescription).toHaveBeenCalledTimes(1)
 
-    // describe → cover (o print mockado resolve na hora)
-    fireEvent.click(screen.getByRole('button', { name: 'Avançar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Gerar capa' }))
     await waitFor(() =>
-      expect((screen.getByRole('button', { name: 'Avançar' }) as HTMLButtonElement).disabled).toBe(
+      expect((screen.getByRole('button', { name: 'Publicar' }) as HTMLButtonElement).disabled).toBe(
         false,
       ),
     )
-
-    // cover → review
-    fireEvent.click(screen.getByRole('button', { name: 'Avançar' }))
     fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
 
-    // sucesso com os links
     await screen.findByText('Ver no Mural')
-    expect(screen.getByText('Abrir o jogo')).toBeTruthy()
     expect(adapter.publish).toHaveBeenCalledTimes(1)
-    const arg = (adapter.publish as ReturnType<typeof mock>).mock.calls[0]?.[0]
-    expect(arg?.coverDataUrl).toBe('data:image/png;base64,FAKECOVER')
-    expect(arg?.title).toBe('Meu Jogo')
-    expect(arg?.description).toBe('Um jogo de nave que desvia de asteroides.')
+    expect(pubArg(adapter)?.coverDataUrl).toBe('data:image/png;base64,FAKECOVER')
+    expect(pubArg(adapter)?.useAdminCover).toBeFalsy()
+    expect(pubArg(adapter)?.title).toBe('Meu Jogo')
+    expect(pubArg(adapter)?.description).toBe('Um jogo de nave que desvia de asteroides.')
+  })
+
+  it('trava a IA em 3 gerações por abertura (automática + cliques)', async () => {
+    seedProject()
+    const adapter = makeAdapter()
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+
+    // Geração automática na abertura = 1ª. O botão tem aria-label ESTÁVEL.
+    await screen.findByDisplayValue('Um jogo de nave que desvia de asteroides.')
+    const btn = () =>
+      screen.getByRole('button', { name: 'Gerar resumo com a IA' }) as HTMLButtonElement
+
+    await waitFor(() => expect(btn().disabled).toBe(false)) // auto-gen terminou
+    fireEvent.click(btn()) // 2ª
+    await waitFor(() => expect(btn().disabled).toBe(false))
+    fireEvent.click(btn()) // 3ª → atinge o teto
+    await waitFor(() => expect(btn().disabled).toBe(true))
+
+    expect(adapter.generateDescription).toHaveBeenCalledTimes(3)
+  })
+
+  it('não mostra título editável quando o host usa título autoritativo', async () => {
+    seedProject()
+    const adapter = makeAdapter({
+      titleEditable: false,
+      presetDescription: 'Resumo configurado pelo professor.',
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+
+    expect(screen.queryByLabelText('Título')).toBeNull()
+    await screen.findByDisplayValue('Resumo configurado pelo professor.')
+    fireEvent.click(screen.getByRole('button', { name: 'Gerar capa' }))
+    await waitFor(() =>
+      expect((screen.getByRole('button', { name: 'Publicar' }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+
+    await screen.findByText('Ver no Mural')
+    expect(adapter.publish).toHaveBeenCalledTimes(1)
+    expect(pubArg(adapter)?.title).toBe('Meu Jogo')
+  })
+
+  it('usa a capa do curso (preset) → publica com useAdminCover e sem coverDataUrl', async () => {
+    seedProject()
+    const adapter = makeAdapter({ presetCoverUrl: 'https://cdn.example.com/capa.webp' })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+
+    await screen.findByDisplayValue('Um jogo de nave que desvia de asteroides.')
+    fireEvent.click(screen.getByRole('button', { name: 'Usar a capa do curso' }))
+    await waitFor(() =>
+      expect((screen.getByRole('button', { name: 'Publicar' }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+
+    await screen.findByText('Ver no Mural')
+    expect(pubArg(adapter)?.useAdminCover).toBe(true)
+    expect(pubArg(adapter)?.coverDataUrl).toBeNull()
   })
 })

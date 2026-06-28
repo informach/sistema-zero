@@ -38,8 +38,16 @@ export interface StudioShareGenerateInput {
 /** Entrada de {@link StudioShareAdapter.publish}. */
 export interface StudioSharePublishInput {
   project: Project
-  /** Print PNG (data URL) ou `null` quando o projeto não é canvas / deu timeout. */
+  /**
+   * Imagem da capa (data URL) — print automático do jogo OU upload da criança.
+   * `null` quando a criança optou pela capa padrão do curso (ver `useAdminCover`).
+   */
   coverDataUrl: string | null
+  /**
+   * `true` = usar a capa padrão configurada pelo admin (o HOST resolve a URL de
+   * forma autoritativa no servidor). Mutuamente exclusivo com `coverDataUrl`.
+   */
+  useAdminCover?: boolean
   title: string
   /** Descrição final, já revisada/editada pela criança. */
   description: string
@@ -51,16 +59,26 @@ export interface StudioSharePublishInput {
  */
 export interface StudioShareAdapter {
   /**
-   * Título inicial do post (admin da AULA). Preenche o campo; a criança pode ajustar. Ausente
-   * (ex.: Estúdio Completo) → cai no nome do projeto.
+   * Título inicial do post. Ausente (ex.: Estúdio Completo) → cai no nome do projeto.
    */
   presetTitle?: string
+  /**
+   * `false` quando o título é autoritativo do host/servidor e não deve aparecer como
+   * campo editável na UX. Default `true` para o Estúdio Completo/standalone.
+   */
+  titleEditable?: boolean
   /**
    * Descrição inicial do post (admin da AULA). Presente → o dialog **PULA a geração por IA**
    * (economia): abre já com este texto, que a criança pode editar (ou pedir uma da IA no botão
    * "Gerar"). Ausente/vazio → a IA gera o rascunho (comportamento do Estúdio Completo).
    */
   presetDescription?: string
+  /**
+   * URL da capa PADRÃO configurada pelo admin (vitrine da aula). Quando presente,
+   * o ShareDialog oferece "usar a capa do curso" como fallback do print e a usa no
+   * preview. O HOST re-resolve a URL no servidor ao publicar (não confia no cliente).
+   */
+  presetCoverUrl?: string
   /**
    * Gera um rascunho CURTO (≤1 parágrafo, PT) via SERVIDOR (chave no servidor).
    * NUNCA usa a BYOK do painel de IA do aluno. Pode rejeitar/voltar vazio — o
@@ -86,4 +104,18 @@ export const StudioShareProvider = StudioShareContext.Provider
 /** Adapter de compartilhar da instância atual (`null` quando o host não passou um). */
 export function useStudioShare(): StudioShareAdapter | null {
   return useContext(StudioShareContext)
+}
+
+/**
+ * Motivo de DESABILITAR o botão Compartilhar (tooltip), ou `null` = habilitado.
+ * Diferente do adapter, este valor é VOLÁTIL (lido ao vivo, NÃO latchado): o host
+ * troca conforme o estado (ex.: habilita após a entrega ao professor). `null`
+ * default → botão habilitado quando há adapter.
+ */
+const StudioShareDisabledContext = createContext<string | null>(null)
+
+export const StudioShareDisabledProvider = StudioShareDisabledContext.Provider
+
+export function useStudioShareDisabledReason(): string | null {
+  return useContext(StudioShareDisabledContext)
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { normalizeUpstreamError } from '@/lib/upstream'
 import { getInvoicePdf } from '@/server/nfse'
 
 /**
@@ -11,10 +12,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   if (!res.ok || !res.body) {
     const body = await res.json().catch(() => null)
-    return NextResponse.json(
-      body ?? { error: { code: 'PDF_UNAVAILABLE', message: 'PDF indisponível.' } },
-      { status: res.ok ? 502 : res.status },
-    )
+    // Envelope de erro presente → normaliza (só code+message, sem vazar corpo
+    // interno); senão, mensagem amigável da rota.
+    const normalized = (body as { error?: { message?: string } } | null)?.error?.message
+      ? normalizeUpstreamError(body)
+      : { error: { code: 'PDF_UNAVAILABLE', message: 'PDF indisponível.' } }
+    return NextResponse.json(normalized, { status: res.ok ? 502 : res.status })
   }
 
   // `id` vem da URL — sanitiza p/ o filename do header (sem aspas/CR/LF).

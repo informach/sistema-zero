@@ -306,7 +306,9 @@ export function createStudioRoutes(deps: {
         )
       }
 
-      // 2. Capa (print) → R2 PÚBLICO (best-effort → null = capa padrão do admin).
+      // 2. Capa: print/upload da criança → R2 PÚBLICO; OU a capa padrão do curso
+      // (admin) quando ela escolheu "usar a capa do curso" (`useDefaultCover`). A URL
+      // do admin vem do payload AUTORITATIVO do members (não confiamos no cliente).
       let coverImageUrl: string | null = null
       const cover = form.get('cover')
       if (
@@ -326,6 +328,8 @@ export function createStudioRoutes(deps: {
         } catch {
           // best-effort: deixa null.
         }
+      } else if (form.get('useDefaultCover') === '1') {
+        coverImageUrl = payload.body.defaultCoverUrl ?? null
       }
 
       // 3. Projeto jogável → R2 PRIVADO (servido só via /api/studio/play/:id; sem URL pública).

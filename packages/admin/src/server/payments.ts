@@ -171,6 +171,9 @@ export function getPaymentsOps(): Promise<GatewayResponse<PaymentOps>> {
 // (densificação/agregação/clamp são puras e vivem em `@/lib/sales-series` —
 // unit-testadas via bun test.)
 
+const OFFERS_PAGE = 100 // tamanho de página ao resolver as ofertas do produto
+const OFFERS_MAX = 1000 // teto de ofertas varridas (10 páginas) — backstop anti-loop
+
 function parseDate(value: string | undefined): Date | undefined {
   if (!value) return undefined
   const d = new Date(value)
@@ -194,11 +197,32 @@ export async function getDailyPaymentsStats(p: {
 
   let offerIds: string[] | undefined
   if (p.productId) {
-    const offers = await listOffers({ productId: p.productId, limit: 100 })
-    if (offers.status !== 200) {
-      return offers as unknown as GatewayResponse<DailyPaymentStats>
+    // Pagina TODAS as ofertas do produto: uma única página de 100 truncava
+    // silenciosamente a série/totais de um produto com >100 ofertas (a venda
+    // referencia a oferta via `metadata.offerId`). Teto de segurança em
+    // OFFERS_MAX páginas (produto realista tem punhado de ofertas; o teto evita
+    // loop infinito se o upstream devolver páginas cheias p/ sempre).
+    const ids: string[] = []
+    for (let offset = 0; offset < OFFERS_MAX; offset += OFFERS_PAGE) {
+      const offers = await listOffers({ productId: p.productId, limit: OFFERS_PAGE, offset })
+      if (offers.status !== 200) {
+        // Falha do catálogo → código ESTÁVEL do domínio de stats (não o status/
+        // code cru do catálogo, que daria um toast confuso); `forwardUpstream`
+        // normaliza o corpo na borda (sem vazar interno).
+        return {
+          status: 502,
+          body: {
+            error: {
+              code: 'STATS_UNAVAILABLE',
+              message: 'Não foi possível resolver as ofertas do produto.',
+            },
+          },
+        } as unknown as GatewayResponse<DailyPaymentStats>
+      }
+      ids.push(...offers.body.items.map((o) => o.id))
+      if (offers.body.items.length < OFFERS_PAGE) break
     }
-    offerIds = offers.body.items.map((o) => o.id)
+    offerIds = ids
     if (offerIds.length === 0) return { status: 200, body: buildStats(from, to, []) }
   }
 

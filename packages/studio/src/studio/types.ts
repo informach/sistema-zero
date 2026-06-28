@@ -108,6 +108,14 @@ export interface StudioCommonProps {
    * ao estúdio de aula (hoje) e ao estúdio completo (produto futuro).
    */
   share?: StudioShareAdapter
+  /**
+   * Motivo para DESABILITAR o botão Compartilhar (vira a dica/tooltip). Texto
+   * presente → o botão aparece, porém desabilitado; `undefined` → habilitado.
+   * Ao contrário do `share` (latchado), é VOLÁTIL: o host pode trocá-lo conforme
+   * o estado — ex.: "Envie o projeto ao professor primeiro", que some após a
+   * entrega liberar o compartilhamento.
+   */
+  shareDisabledReason?: string
   /** Classes extras no root. O Studio preenche 100% do container do host. */
   className?: string
   style?: CSSProperties

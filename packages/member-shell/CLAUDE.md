@@ -42,7 +42,7 @@ real em prod, ok).
 | Route handlers (`createShellRoutes`) — a LÓGICA inteira de `/api/*` | `route.ts` de 1-3 linhas (`export const { POST } = shell.routes.x`) |
 | `createMemberProxy` (anti-CSRF + gate + rotação pré-render) | `proxy.ts` com config do app + `matcher` LITERAL |
 | Libs puras (csrf, download-mime, act, format, markdown, types, api, cn…) | — |
-| Componentes de DOMÍNIO (vimeo-player, lesson-blocks, quiz-block, ebook 3D, **studio/studio-block** — editor @sistemazero/studio embarcado, dynamic ssr:false, rascunho LOCAL IndexedDB chaveado por bloco, "Enviar para o professor" (com confirmação) + "Expandir" (tela cheia por **overlay CSS** `fixed inset-0 z-50` no card, **NÃO** a Fullscreen API nativa — ela restringe a pintura à subárvore do elemento e some com os menus/diálogos PORTALADOS no body, ex.: o três-pontinhos do editor "não fazia nada"; o overlay cobre a navegação z-40 e o botão "Reduzir"/Esc mora no cabeçalho DENTRO dele; trava o scroll
+| Componentes de DOMÍNIO (vimeo-player, lesson-blocks, quiz-block, ebook 3D, **studio/studio-block** — editor @sistemazero/studio embarcado, dynamic ssr:false, rascunho LOCAL IndexedDB chaveado por bloco, "Enviar para o professor" (com confirmação + campo OPCIONAL de **recado ao professor** no modal → corpo `message`, ≤1000, trim; o client `submitStudioProject` e o handler `studioSubmit` repassam) + "Expandir" (tela cheia por **overlay CSS** `fixed inset-0 z-50` no card, **NÃO** a Fullscreen API nativa — ela restringe a pintura à subárvore do elemento e some com os menus/diálogos PORTALADOS no body, ex.: o três-pontinhos do editor "não fazia nada"; o overlay cobre a navegação z-40 e o botão "Reduzir"/Esc mora no cabeçalho DENTRO dele; trava o scroll
 do body enquanto expandido via `useBodyScrollLock` do ui — REFCONTADO com o `Dialog`, senão a barra de
 rolagem fantasma da página atrás voltava ao fechar o "Enviar?") —, anexos, progress-bar, impersonation-banner, user-avatar) — 100% em tokens CSS, vestem o tema do app | Componentes de IDENTIDADE (topnav, user-menu, cards, auth-shell) + globals.css/tokens |
 | Helpers de cookie (`sessionCookieNames`/`prefixedCookieName`/`expireCookieOptions`) | CONSTANTES `sz_member_*`/`sz_kids_*` (compile-time POR APP — cookies não escopam por porta em dev) |
@@ -93,7 +93,9 @@ montado no `createShell` como `routes.studio*`) expõe três rotas consumidas pe
   infantil; saída sanitizada + truncada (280). **FAIL-SOFT**: sem chave/timeout/não-2xx → `{description:'',
   fallback:true}` (a criança escreve). Rate-limit in-process por sessão (`globalThis`, réplica única).
 - **`POST /api/studio/publish`** (multipart, FORA do matcher do proxy — guard próprio `requireUploadSession`):
-  print → R2 **PÚBLICO** (`r2PutObject`, WebP); projeto inteiro (JSON auto-suficiente, assets data URLs)
+  capa: o campo `cover` (print OU upload da criança) → R2 **PÚBLICO** (`r2PutObject`, WebP); OU, quando vem
+  `useDefaultCover=1` (a criança escolheu "usar a capa do curso"), `coverImageUrl = payload.defaultCoverUrl`
+  (URL AUTORITATIVA do `getShowcasePayload` do members — NÃO confia no cliente). Projeto inteiro (JSON auto-suficiente, assets data URLs)
   passa por parse + `sanitizePlayableProject` ANTES de persistir (contrato mínimo: `files` canônicos
   obrigatórios; `extraFiles`/`assets`/`installedExtensions` sempre arrays seguros; limites de tamanho
   rechecados após normalização; JSON inválido → 400, excedente → 413) →
@@ -158,7 +160,11 @@ que cada app trata com uma página "aula bloqueada". O gate confiável é o memb
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
 `tests/hub-redact.test.ts`). O **`StudioBlockView`** tem a prop `enableShare?`: ligada, constrói o
 `StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via `/api/studio/publish`) e o
-passa ao `<StudioLesson share>` — o botão "Compartilhar" aparece na Topbar do editor. ⚠️ **O kids liga SÓ
+passa ao `<StudioLesson share>` — o botão "Compartilhar" aparece na Topbar do editor. ⚠️ **Só HABILITA
+após a ENTREGA ao professor**: o `StudioBlockView` passa `shareDisabledReason` ao `<StudioLesson>`
+(`share && !submitted ? '…envie ao professor primeiro' : undefined`) — o botão aparece desabilitado com
+dica até o aluno enviar o projeto, e habilita quando `submitted` vira true. Casa com o backend, que barra
+publicar sem entrega (`SHOWCASE_NOT_ELIGIBLE`) — antes dava a tela vermelha ao tentar publicar cedo. ⚠️ **O kids liga SÓ
 no bloco da ÚLTIMA aula do projeto** (`enableShare={Boolean(content.showcase?.enabled)}` no
 `kids-lesson-blocks`): publicar é fim-de-projeto, então nas aulas intermediárias o botão fica OFF (a criança
 não solta o jogo antes de terminar). Isso **substituiu o antigo "Publicar no Mural" da `LessonCelebration`**

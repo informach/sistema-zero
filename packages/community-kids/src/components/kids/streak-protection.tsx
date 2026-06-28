@@ -26,6 +26,9 @@ export function StreakProtection({
   const [planning, setPlanning] = useState(false)
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  // Início depois do fim: o servidor recusa (toast genérico), mas é melhor barrar
+  // ANTES p/ a criança — compara `YYYY-MM-DD` como texto (ordenação lexicográfica OK).
+  const invalidRange = Boolean(from && to && from > to)
 
   async function buyFreeze() {
     if (busy) return
@@ -141,14 +144,19 @@ export function StreakProtection({
                 />
               </label>
             </div>
+            {invalidRange ? (
+              <p role="alert" className="text-muted-foreground text-xs">
+                A data de início precisa vir antes da data de fim.
+              </p>
+            ) : null}
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => saveVacation(false)}
-                disabled={busy || !from || !to}
+                disabled={busy || !from || !to || invalidRange}
                 className={cn(
                   'sz-btn-gradient h-9 px-4 text-sm',
-                  (busy || !from || !to) && 'opacity-60',
+                  (busy || !from || !to || invalidRange) && 'opacity-60',
                 )}
               >
                 Ativar férias

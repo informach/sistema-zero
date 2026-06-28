@@ -10,6 +10,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  varchar,
 } from 'drizzle-orm/pg-core'
 import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
@@ -298,6 +299,12 @@ export const studioSubmissions = members.table(
     checkedAt: timestamp('checked_at', { withTimezone: true }),
     /** STICKY: 1ª vez que atingiu a nota de corte (gate "aprovou uma vez = destrava"). */
     passedAt: timestamp('passed_at', { withTimezone: true }),
+    /**
+     * Recado OPCIONAL do aluno ao professor, escrito no modal de envio. `null` = sem recado.
+     * Capado em 1000 chars no DB (espelha o `maxLength` do DTO) — backstop caso um
+     * futuro caminho de escrita não passe pela borda validada.
+     */
+    message: varchar('message', { length: 1000 }),
   },
   (t) => [
     uniqueIndex('studio_submissions_user_block_uq').on(t.userId, t.blockId),

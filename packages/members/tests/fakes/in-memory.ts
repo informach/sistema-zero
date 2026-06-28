@@ -1016,6 +1016,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         options?.preservePassedAt && existing.passedAt
           ? existing.passedAt
           : (submission.passedAt ?? null)
+      existing.message = submission.message ?? null
     } else {
       this.submissions.push({
         ...submission,
@@ -1023,6 +1024,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         results: submission.results ?? null,
         checkedAt: submission.checkedAt ?? null,
         passedAt: submission.passedAt ?? null,
+        message: submission.message ?? null,
       })
     }
   }
@@ -1055,6 +1057,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         score: s.score ?? null,
         checkedAt: s.checkedAt ?? null,
         passed: s.passedAt != null,
+        message: s.message ?? null,
       }))
   }
 
@@ -1068,6 +1071,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           results: s.results ?? null,
           checkedAt: s.checkedAt ?? null,
           passedAt: s.passedAt ?? null,
+          message: s.message ?? null,
         }
       : null
   }

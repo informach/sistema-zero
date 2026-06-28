@@ -11,6 +11,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { Spinner } from '@sistemazero/ui/spinner'
+import { Textarea } from '@sistemazero/ui/textarea'
 import { CheckCircle2, Maximize2, Minimize2, Send } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
@@ -73,6 +74,9 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
   // Confirmação antes de enviar: o envio destrava/regrava a entrega no professor —
   // um clique sem querer mandava um projeto vazio (relatado pela usuária).
   const [confirmOpen, setConfirmOpen] = useState(false)
+  // Recado OPCIONAL do aluno ao professor, digitado no modal de confirmação.
+  const [message, setMessage] = useState('')
+  const MESSAGE_MAX = 1000
 
   const activity = content.activity
   const passingScore = activity?.passingScore
@@ -173,16 +177,23 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
       const results = run
         ? run.results.map((r) => ({ checkId: r.checkId, passed: r.passed, message: r.message }))
         : undefined
+      // Recado opcional ao professor (trim → omite se vazio).
+      const note = message.trim()
       const res = await apiSend<StudioSubmissionResultView>(
         `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-submission`,
         'POST',
-        activity ? { project, results } : { project },
+        {
+          project,
+          ...(activity ? { results } : {}),
+          ...(note ? { message: note } : {}),
+        },
       )
       setSubmitted(true)
       setSubmittedAt(res.submittedAt)
       if (res.score !== undefined) setScore(res.score)
       if (res.passed !== undefined) setPassed(res.passed)
       setXp(res.gamification?.xpAwarded ?? null)
+      setMessage('') // recado é por envio: limpa após mandar
       // Destrava o "Concluir aula" (gate do backend) → re-render da página.
       player?.refreshAfterStudio?.()
     } catch (err) {
@@ -195,7 +206,7 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
     } finally {
       setSubmitting(false)
     }
-  }, [lessonId, blockId, player, activity])
+  }, [lessonId, blockId, player, activity, message])
 
   // O Studio LATCHA o adapter uma vez (memoizado por lessonId/blockId), mas `onShared` pode
   // mudar por render — lê via ref pra manter o adapter estável e ainda chamar o handler ATUAL.
@@ -209,6 +220,9 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
   // (ou no Estúdio Completo, que nem passa isso) → a IA gera o rascunho.
   const presetTitle = content.showcase?.title
   const presetDescription = content.showcase?.summary
+  // Capa padrão do curso (admin): fallback do print no dialog + preview. O servidor
+  // re-resolve a URL de forma autoritativa ao publicar (não confia no cliente).
+  const presetCoverUrl = content.showcase?.defaultCoverUrl
 
   // Adapter de COMPARTILHAR (Mural) — só no kids (`enableShare`). O Studio o LATCHA
   // uma vez, então memoizamos por (lessonId, blockId): I/O do servidor vive aqui, a
@@ -218,7 +232,9 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
     if (!enableShare || !lessonId) return undefined
     return {
       presetTitle,
+      titleEditable: false,
       presetDescription,
+      presetCoverUrl,
       async generateDescription({ project, title }) {
         try {
           const res = await apiSend<{ description?: string }>('/api/studio/describe', 'POST', {
@@ -234,7 +250,7 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
           return '' // fail-soft: a criança escreve do zero
         }
       },
-      async publish({ project, coverDataUrl, title, description }) {
+      async publish({ project, coverDataUrl, useAdminCover, title, description }) {
         const form = new FormData()
         form.set('lessonId', lessonId)
         form.set('blockId', blockId)
@@ -248,6 +264,9 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
         if (coverDataUrl) {
           const blob = await (await fetch(coverDataUrl)).blob()
           form.set('cover', new File([blob], 'cover', { type: blob.type || 'image/png' }))
+        } else if (useAdminCover) {
+          // Sem print/upload: o servidor usa a capa padrão do curso (resolve a URL lá).
+          form.set('useDefaultCover', '1')
         }
         const res = await fetch('/api/studio/publish', { method: 'POST', body: form })
         const body = (await res.json().catch(() => null)) as {
@@ -263,7 +282,7 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
       // Publicou: entrega os links ao host (kids abre a celebração); o ShareDialog fecha sozinho.
       onPublished: (result) => onSharedRef.current?.(result),
     }
-  }, [enableShare, lessonId, blockId, presetTitle, presetDescription])
+  }, [enableShare, lessonId, blockId, presetTitle, presetDescription, presetCoverUrl])
 
   const ready = StudioLesson !== null && seed !== null
 
@@ -317,6 +336,14 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
             activity={content.activity}
             features={{ extensions: false }}
             share={share}
+            // Só habilita o "Compartilhar" DEPOIS de enviar o projeto ao professor:
+            // publicar no Mural exige a entrega (o members também barra com SHOWCASE_NOT_ELIGIBLE).
+            // O botão aparece, mas desabilitado com dica, até a entrega.
+            shareDisabledReason={
+              share && !submitted
+                ? 'Envie o projeto para o professor primeiro para poder compartilhar.'
+                : undefined
+            }
             blockUnloadWhenDirty={false}
           />
         ) : (
@@ -395,6 +422,21 @@ export function StudioBlockView({ blockId, content, studioState, enableShare, on
             ? ' Dica: clique em "Verificar" no editor antes, para ver se já atingiu a nota.'
             : ''}
         </p>
+        <div className="mt-4 flex flex-col gap-1.5">
+          <label htmlFor="studio-teacher-message" className="font-medium text-sm">
+            Recado para o professor{' '}
+            <span className="font-normal text-muted-foreground">(opcional)</span>
+          </label>
+          <Textarea
+            id="studio-teacher-message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value.slice(0, MESSAGE_MAX))}
+            maxLength={MESSAGE_MAX}
+            rows={3}
+            disabled={submitting}
+            placeholder="Quer contar algo pro professor sobre o seu projeto? (não é obrigatório)"
+          />
+        </div>
       </Dialog>
     </div>
   )

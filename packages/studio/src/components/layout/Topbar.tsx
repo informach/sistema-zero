@@ -36,7 +36,7 @@ import { useStudioPersistence } from '../../state/studioStores'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioLayout } from '../../studio/layoutContext'
-import { useStudioShare } from '../../studio/share'
+import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
 import { useStudioTheme } from '../../studio/theme'
 import { ExportDialog } from './ExportDialog'
 import { ShareDialog } from './ShareDialog'
@@ -113,6 +113,8 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const theme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
   const share = useStudioShare()
+  // Motivo p/ desabilitar o Compartilhar (ex.: "envie ao professor primeiro"); null = ok.
+  const shareDisabledReason = useStudioShareDisabledReason()
   // Stores da INSTÂNCIA: usados só para LER o projeto sob demanda (no clique do
   // Baixar), sem assinar re-render a cada edição. Fora de um <Studio> (null), o
   // fallback lê a store default via a estática. Ver storesContext.ts.
@@ -439,11 +441,19 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
           {share && (
             <button
               type="button"
-              onClick={() => setShowShare(true)}
-              title={t('share.action')}
-              aria-label={t('share.action')}
+              onClick={() => {
+                if (!shareDisabledReason) setShowShare(true)
+              }}
+              disabled={Boolean(shareDisabledReason)}
+              title={shareDisabledReason ?? t('share.action')}
+              aria-label={shareDisabledReason ?? t('share.action')}
               style={{ touchAction: 'manipulation' }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-sz-accent transition-colors hover:bg-sz-accent/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60"
+              className={cn(
+                'inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+                shareDisabledReason
+                  ? 'cursor-not-allowed text-sz-fg-mute opacity-50'
+                  : 'text-sz-accent hover:bg-sz-accent/15',
+              )}
             >
               <IconShare />
               {!isCompact && <span className="text-sm font-medium">{t('share.action')}</span>}

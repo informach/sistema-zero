@@ -85,6 +85,9 @@ export class ListMyCoursesService {
     // pode ter travado — curso com trava ligada, ator não-privilegiado e aula
     // acessada. Busca outline + concluídas desses cursos EM LOTE (2 queries), em
     // vez de 2 por curso DENTRO do loop (o N+1 que o resto do método já evita).
+    // O `audience` aqui NÃO é redundante com o `continue` do loop abaixo: ele escopa
+    // o fetch em lote à vitrine atual — o loop descarta os cursos da outra audiência,
+    // então carregar o outline deles seria trabalho jogado fora.
     const lockCourseIds = courses
       .filter(
         (c) => c.audience === audience && c.sequentialLock && !privileged && lastAccessed.get(c.id),

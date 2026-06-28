@@ -514,7 +514,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   no members/member-shell); vazio = aula independente. **Acompanhamento do
   professor:** botão "Entregas" no bloco → `studio-submissions-dialog.tsx` lista quem entregou +
   abre o projeto do aluno num Estúdio embutido (`…/:userId`, **modal LARGO `max-w-7xl`** p/ caber a
-  IDE; lista em `max-w-2xl`) ou baixa o `.szproject.json`. **Identidade (kids):** a entrega vem com
+  IDE; lista em `max-w-2xl`) ou baixa o `.szproject.json`. A lista marca "Deixou um recado" e o
+  detalhe mostra o **recado opcional do aluno** (`message` da entrega) quando há. **Identidade (kids):** a entrega vem com
   `accountId`, então a rota BFF (`GET /api/members/blocks/:id/studio-submissions`) mostra a CRIANÇA
   (nome do PERFIL via `getUserProfiles` da conta) + o RESPONSÁVEL (conta via `batchGetUsers`) —
   perfil≠conta no kids, iguais no adulto. Requer

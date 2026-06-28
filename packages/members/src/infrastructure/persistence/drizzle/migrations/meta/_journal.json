@@ -197,6 +197,13 @@
       "when": 1782588740897,
       "tag": "0027_black_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1782646097944,
+      "tag": "0028_futuristic_ezekiel",
+      "breakpoints": true
     }
   ]
 }

@@ -41,7 +41,7 @@ blocks/[blockId]/certificate` (GET estado + POST emitir/baixar) e `/api/certific
 no negative-lookahead do matcher do proxy); env `APP_PUBLIC_URL` p/ o QR. O members é o portão (ver
 `../members/CLAUDE.md`); PDF/QR/R2 vivem no member-shell.
 o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado,
-rascunho local, "Enviar para o professor" + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
+rascunho local, "Enviar para o professor" (o modal de confirmação tem um campo OPCIONAL de recado ao professor — compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
 ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
 distingue os dois no toast/botão. Exige `@sistemazero/studio` em transpilePackages + `@source`
 + `frame-src blob:`;
@@ -593,6 +593,36 @@ server-enforced). **Correção/perf: sem CRITICAL/HIGH.** Achados corrigidos; ve
   `target > 0` (evita >100% / NaN).
 - **Não alterados (decisão consciente):** verificações de segurança da revisão acharam tudo de pé;
   copy do certificado revogado fica neutra; som da celebração já respeita reduced-motion/autoplay.
+
+## Full review (correções) — 28/06/2026
+
+6ª auditoria (segurança/correção/perf/a11y, lente infantil), focada no delta desde 27/06:
+**refator dos modais da Área dos pais** (`ParentPasswordChange`/`ParentGate` → `Dialog`
+compartilhado, com `form={formId}` ligando o submit do rodapé ao `<form>` do corpo). **Segurança:
+NADA acionável** — proxy/matcher, portão dos pais (cookie HMAC + cooldown por conta), redação de
+PII no Mural/hub (`renderUgcMarkdown`, `authorId` de terceiros redigido, `viewerId` nunca exibido),
+R2/CSP/CSRF e os shims (todos 5–11 linhas, salvo `client-error`/`parents/verify`, exceções
+documentadas) seguem de pé. **Sem CRITICAL/HIGH/MEDIUM confirmado.** O refator do `Dialog` foi
+VERIFICADO correto (submit por `form=`, ids distintos, `onClose` travado em `!saving`/`!busy`,
+foco/trap/restore via `useModalA11y` — ganho a11y vs. o overlay pelado antigo, sem Esc/backdrop).
+Verde: typecheck + test (26) + biome + `build:kids`. Achados LOW corrigidos:
+
+- **Férias com período inválido (LOW):** `streak-protection.tsx` habilitava "Ativar férias" com
+  `from > to` (servidor recusava com toast genérico). Agora `invalidRange` (compara `YYYY-MM-DD`
+  como texto) desabilita o botão + hint `role="alert"` ("a data de início precisa vir antes…").
+- **Corrida de troca de canal (LOW):** `kids-space-view-client.tsx` — `loadThreads` setava o estado
+  sem guarda; clicar canal A→B podia renderizar as threads de A sob a seleção de B (se A resolvesse
+  por último). Agora o efeito passa `isCurrent` (flag `alive` na cleanup, espelha o efeito de carga
+  do espaço) e o `setThreads`/toast só rodam se o canal ainda é o atual.
+- **Timer órfão na celebração do Mural (LOW):** `mural-celebration.tsx` — o `setTimeout` do "Link
+  copiado!" não era limpo ao fechar antes de 2s; agora vive num `ref` limpo no unmount (consistência
+  com o resto; React 18+ não avisa mais, mas evita o timer pendente).
+- **Não alterados (decisão consciente / latente):** `asset-part.tsx` muta o material `Color_*` do
+  GLB cacheado in-place — BENIGNO no estado atual (miniaturas são PNG estático → só 1 consumidor vivo
+  do GLB por vez; o fallback ao vivo CLONA antes de recolorir); vira risco só se duas peças com o
+  MESMO URL+cor diferente renderizarem juntas. Mantido como está; clonar como o `thumb-canvas` é
+  endurecimento opcional, não correção. Compras em 1 toque, sem-PIN entre irmãos e nome no perfil
+  público (opt-in) seguem decisões de produto.
 
 ## Comandos
 

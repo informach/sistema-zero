@@ -1074,11 +1074,15 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const results = Array.isArray((raw as { results?: unknown })?.results)
         ? (raw as { results?: unknown[] }).results
         : undefined
+      // Recado OPCIONAL do aluno ao professor (cap defensivo; o members revalida ≤1000 + trim).
+      const rawMessage = (raw as { message?: unknown })?.message
+      const message = typeof rawMessage === 'string' ? rawMessage.slice(0, 1000) : undefined
       const { status, body } = await members.submitStudioProject(
         lessonId,
         blockId,
         project,
         results,
+        message,
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },

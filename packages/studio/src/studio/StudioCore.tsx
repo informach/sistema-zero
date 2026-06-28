@@ -18,7 +18,7 @@ import {
   resolveStudioConfig,
   StudioConfigProvider,
 } from './config'
-import { StudioShareProvider } from './share'
+import { StudioShareDisabledProvider, StudioShareProvider } from './share'
 import { StudioThemeProvider } from './theme'
 import type { StudioCoreProps, StudioHandle } from './types'
 
@@ -70,6 +70,7 @@ function StudioCoreBody({
   allowLevelReveal,
   activity,
   share,
+  shareDisabledReason,
   onChange,
   onSave,
   onError,
@@ -252,33 +253,35 @@ function StudioCoreBody({
 
   return (
     <StudioShareProvider value={shareValue}>
-      <StudioActivityProvider value={activityValue}>
-        <StudioConfigProvider value={config}>
-          <StudioThemeProvider value={effectiveTheme}>
-            <div
-              data-sz-theme={effectiveTheme}
-              className={['h-full min-h-0', className].filter(Boolean).join(' ')}
-              style={{ fontFamily: 'var(--font-family-sans)', ...style }}
-            >
-              {sanitized === null ? (
-                <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-                  <p className="text-sm">
-                    Projeto inválido — confira o initialProject passado ao Studio.
-                  </p>
-                </div>
-              ) : hasProject ? (
-                <ErrorBoundary
-                  fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
-                  resetKeys={[sanitizedId]}
-                  label="Studio"
-                >
-                  <Shell onExit={onExit} canToggleTheme={theme === undefined} />
-                </ErrorBoundary>
-              ) : null}
-            </div>
-          </StudioThemeProvider>
-        </StudioConfigProvider>
-      </StudioActivityProvider>
+      <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
+        <StudioActivityProvider value={activityValue}>
+          <StudioConfigProvider value={config}>
+            <StudioThemeProvider value={effectiveTheme}>
+              <div
+                data-sz-theme={effectiveTheme}
+                className={['h-full min-h-0', className].filter(Boolean).join(' ')}
+                style={{ fontFamily: 'var(--font-family-sans)', ...style }}
+              >
+                {sanitized === null ? (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+                    <p className="text-sm">
+                      Projeto inválido — confira o initialProject passado ao Studio.
+                    </p>
+                  </div>
+                ) : hasProject ? (
+                  <ErrorBoundary
+                    fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
+                    resetKeys={[sanitizedId]}
+                    label="Studio"
+                  >
+                    <Shell onExit={onExit} canToggleTheme={theme === undefined} />
+                  </ErrorBoundary>
+                ) : null}
+              </div>
+            </StudioThemeProvider>
+          </StudioConfigProvider>
+        </StudioActivityProvider>
+      </StudioShareDisabledProvider>
     </StudioShareProvider>
   )
 }

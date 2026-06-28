@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { MemberDetail, MemberProfileProgress } from '@/lib/types'
+import { normalizeUpstreamError } from '@/lib/upstream'
 import { getMember } from '@/server/members'
 import { getUser, getUserProfiles } from '@/server/users'
 
@@ -20,10 +21,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ userId:
   )
   if (detail.status !== 200 || !detail.body) {
     // Normaliza erro fora do envelope `{ error }` (como faz a lista) p/ a UI não
-    // cair no genérico "Algo deu errado." (achado do review).
+    // cair no genérico "Algo deu errado." (achado do review). Envelope presente →
+    // `normalizeUpstreamError` (só code+message, sem vazar campos extras do upstream).
     const envelope = detail.body as { error?: { code?: string; message?: string } } | null
     const normalized = envelope?.error?.message
-      ? detail.body
+      ? normalizeUpstreamError(detail.body)
       : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } }
     return NextResponse.json(normalized, { status: detail.status === 200 ? 502 : detail.status })
   }

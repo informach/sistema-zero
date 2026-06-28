@@ -14,6 +14,8 @@ export interface StudioSubmissionSummaryView {
   checkedAt: string | null
   /** Atingiu a nota de corte (sticky). */
   passed: boolean
+  /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
+  message: string | null
 }
 
 export interface StudioSubmissionDetailView {
@@ -25,6 +27,8 @@ export interface StudioSubmissionDetailView {
   results: StudioCheckResult[] | null
   checkedAt: string | null
   passed: boolean
+  /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
+  message: string | null
 }
 
 /**
@@ -44,6 +48,7 @@ export class StudioSubmissionsAdminService {
       score: r.score,
       checkedAt: r.checkedAt?.toISOString() ?? null,
       passed: r.passed,
+      message: r.message,
     }))
   }
 
@@ -57,6 +62,7 @@ export class StudioSubmissionsAdminService {
       results: row.results,
       checkedAt: row.checkedAt?.toISOString() ?? null,
       passed: row.passedAt != null,
+      message: row.message,
     }
   }
 }

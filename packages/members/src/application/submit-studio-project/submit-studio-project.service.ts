@@ -52,9 +52,12 @@ export class SubmitStudioProjectService {
     blockId: string,
     project: unknown,
     clientResults: readonly ClientCheckResult[] = [],
+    message: string | null = null,
     privileged = false,
     accountId?: string,
   ): Promise<StudioSubmissionResultView> {
+    // Recado do aluno ao professor: trim → vazio vira null (não guarda " ").
+    const note = message?.trim() ? message.trim() : null
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno → não aceita entregas.
     if (!lesson?.isPublished) throw new LessonNotFoundError()
@@ -88,6 +91,7 @@ export class SubmitStudioProjectService {
         courseId: lesson.courseId,
         project,
         submittedAt,
+        message: note,
       })
       return { submittedAt: submittedAt.toISOString() }
     }
@@ -113,6 +117,7 @@ export class SubmitStudioProjectService {
         results: grade.results,
         checkedAt: submittedAt,
         passedAt,
+        message: note,
       },
       { preservePassedAt: true },
     )

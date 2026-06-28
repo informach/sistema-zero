@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { forwardUpstream } from '@/server/forward'
 import { listStudioSubmissions } from '@/server/members'
 import { batchGetUsers, getUserProfiles } from '@/server/users'
 
@@ -13,13 +14,20 @@ type Ctx = { params: Promise<{ id: string }> }
 export async function GET(_req: Request, { params }: Ctx) {
   const { id } = await params
   const { status, body } = await listStudioSubmissions(id)
-  if (status !== 200 || !body) {
+  if (status !== 200) return forwardUpstream({ status, body })
+  if (!body || !Array.isArray(body.submissions)) {
     // 200 sem corpo NÃO pode vazar como sucesso: o client trataria 200 como ok e
     // leria `submissions` undefined → `.map` quebra a tela. Remapeia p/ 502 (como
     // as rotas irmãs `[userId]` e member-detail).
-    return NextResponse.json(body ?? { error: { code: 'UPSTREAM_ERROR' } }, {
-      status: status === 200 ? 502 : status,
-    })
+    return NextResponse.json(
+      {
+        error: {
+          code: 'UPSTREAM_ERROR',
+          message: 'Não foi possível carregar as entregas.',
+        },
+      },
+      { status: 502 },
+    )
   }
 
   const submissions = body.submissions
@@ -70,6 +78,7 @@ export async function GET(_req: Request, { params }: Ctx) {
       score: s.score,
       checkedAt: s.checkedAt,
       passed: s.passed,
+      message: s.message,
     }
   })
   return NextResponse.json({ submissions: rows }, { status: 200 })
