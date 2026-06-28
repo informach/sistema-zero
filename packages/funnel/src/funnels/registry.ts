@@ -60,6 +60,11 @@ export interface FunnelObrigadoPasso {
   texto: string
 }
 export interface FunnelObrigado {
+  /**
+   * Frase de abertura da confirmação (antes de "O seu acesso ao <produto>…"). Ausente →
+   * "Obrigado por assumir o comando." (NCI). Por funil: o Desafio fala da criança.
+   */
+  intro?: string
   entrega: string[]
   passos: FunnelObrigadoPasso[]
 }
@@ -109,6 +114,12 @@ export interface FunnelDef {
   productSku: string
   /** Prefixo das imagens do funil em /public (ex.: `/img/no-comando-da-ia`). */
   imagesBase: string
+  /**
+   * Imagem do produto no card do CHECKOUT (arquivo dentro de `imagesBase`). Ausente →
+   * `produto-capa.webp` (padrão do NCI). Funis sem capa dedicada apontam p/ a arte do
+   * hero (ex.: o Desafio usa `hero-desafio.webp`).
+   */
+  checkoutImage?: string
   /** Assinatura exibida no checkout (ex.: "Helena e Júlio · Sistema Zero"). */
   byline: string
   /** `<title>` da página de vendas (indexável) — por funil, para SEO. */

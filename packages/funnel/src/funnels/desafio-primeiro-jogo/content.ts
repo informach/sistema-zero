@@ -365,6 +365,7 @@ export const DESAFIO_HERO_POR_PERFIL: Record<string, HeroVariacao> = {
 
 // Conteúdo da /obrigado (entrega + primeiros passos), em linguagem para os pais.
 export const DESAFIO_OBRIGADO: FunnelObrigado = {
+  intro: 'Obrigado por investir no potencial do seu filho.',
   entrega: [
     'Trilha guiada de 3 dias (uma vitória por dia)',
     'Estúdio e blocos feitos pra criança, sem instalar nada',
@@ -375,19 +376,24 @@ export const DESAFIO_OBRIGADO: FunnelObrigado = {
   ],
   passos: [
     {
-      titulo: 'Abra seu e-mail',
+      titulo: 'Confirme seu acesso no e-mail',
       texto:
-        'Enviamos o acesso ao Desafio do Primeiro Jogo para o e-mail usado na compra. Se não encontrar em alguns minutos, confira a caixa de spam ou promoções.',
+        'Enviamos o link de primeiro acesso para o e-mail da compra. É com ele que você cria a sua senha. Se não chegar em alguns minutos, dê uma olhada no spam ou nas promoções.',
     },
     {
-      titulo: 'Crie sua senha',
+      titulo: 'Faça o cadastro do seu filho',
       texto:
-        'Primeiro acesso? O link do e-mail leva direto para definir a sua senha. Já tem conta? É só entrar normalmente.',
+        'Já dentro da plataforma, faça o cadastro do seu filho. É rapidinho, e pronto: o espaço de aprender já fica liberado para ele.',
     },
     {
-      titulo: 'Comece o Dia 1 com seu filho',
+      titulo: 'Cada um tem o seu acesso',
       texto:
-        'A trilha de 3 dias e os materiais já estão na área de membros. É só abrir o computador com seu filho e começar pela primeira vitória.',
+        'Tem a área do aluno, onde seu filho entra pelo perfil dele, e a área dos pais, que você acessa com a senha que criou no passo 1.',
+    },
+    {
+      titulo: 'É só começar',
+      texto:
+        'Abra o curso junto com o seu filho. A primeira aula traz as orientações para os pais, e dali em diante ele já começa a criar o primeiro jogo.',
     },
   ],
 }

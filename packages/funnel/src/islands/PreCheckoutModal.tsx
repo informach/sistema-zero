@@ -177,7 +177,7 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
             {isKids && (
               <p className="mt-4 rounded-xl border border-cyan/30 bg-cyan/10 px-4 py-3 text-sm text-ink">
                 <strong>Estes dados são do responsável</strong> (mãe, pai ou tutor). O perfil da
-                criança — nome e idade — você cria depois, já dentro da plataforma.
+                criança (nome e idade) você cria depois, já dentro da plataforma.
               </p>
             )}
 

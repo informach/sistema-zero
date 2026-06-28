@@ -39,6 +39,7 @@ export default function CheckoutForm({
   priceCents,
   allowCoupon = false,
   successPath,
+  isKids = false,
 }: {
   initialContact: InitialContact
   priceCents: number
@@ -47,6 +48,8 @@ export default function CheckoutForm({
    *  Obrigatório: a página injeta o caminho POR FUNIL (sem default — evita mandar o
    *  comprador de outro funil para o /obrigado do funil padrão). */
   successPath: string
+  /** Funil kids → os dados são do RESPONSÁVEL (quem compra); o título deixa claro. */
+  isKids?: boolean
 }) {
   const [nome, setNome] = useState(initialContact.nome)
   const [email, setEmail] = useState(initialContact.email)
@@ -173,7 +176,7 @@ export default function CheckoutForm({
       {/* ── Dados pessoais ─────────────────────────────────────────────── */}
       <section aria-labelledby="dados-pessoais">
         <h2 id="dados-pessoais" className="text-lg font-bold text-ink">
-          Dados pessoais
+          {isKids ? 'Dados pessoais do responsável' : 'Dados pessoais'}
         </h2>
         <div className="mt-4 flex flex-col gap-4">
           <Field label="Seu e-mail" error={errorFor('email')}>

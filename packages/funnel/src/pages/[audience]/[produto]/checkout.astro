@@ -91,11 +91,9 @@ const priceLabel = formatBRLFromCents2(priceCents)
     <!-- ── Produto ─────────────────────────────────────────────────────── -->
     <div class="flex items-center gap-4 rounded-2xl border border-line/70 bg-card/50 p-4 sm:p-5">
       <img
-        src={`${f.imagesBase}/produto-capa.webp`}
-        alt={`Capa do ebook ${productName}`}
-        width="480"
-        height="679"
-        class="w-16 shrink-0 rounded-lg border border-line/60 sm:w-20"
+        src={`${f.imagesBase}/${f.checkoutImage ?? 'produto-capa.webp'}`}
+        alt={`Capa do curso ${productName}`}
+        class="size-16 shrink-0 rounded-lg border border-line/60 object-cover sm:size-20"
         decoding="async"
       />
       <div>
@@ -114,6 +112,7 @@ const priceLabel = formatBRLFromCents2(priceCents)
         priceCents={priceCents}
         allowCoupon={offer?.allowsCoupon === true}
         successPath={successPath}
+        isKids={f.audience === 'kids'}
       />
     </div>
 

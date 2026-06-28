@@ -125,6 +125,12 @@ Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): perfil = a
 (`perfil_p1`, sem motor de scoring), `derive` = `horas_ano_calculadas = horas/dia × dias/semana × 52`,
 `renderCorpo` resolve `{resposta_p3}`/`{resposta_p5}`/`{resultado}`. A oferta no catálogo
 (slug `desafio-primeiro-jogo`, âncora R$ 97) é passo da usuária no admin (igual ao NCI).
+⚠️ **Pré-checkout no KIDS deixa explícito que os dados são do RESPONSÁVEL** (28/06): o
+`PreCheckoutModal` deriva `isKids = funnel.startsWith('kids/')` (a `funnel` prop é a chave
+`audience/produto`) e, no kids, troca o subtítulo, adiciona um callout ("Estes dados são do
+responsável… o perfil da criança você cria depois, na plataforma") e rotula os campos
+"… do responsável". Evita o pai preencher os dados da criança no pré-checkout (o perfil da
+criança nasce depois, na área kids).
 
 **Admin por funil (`/admin`):** seletor de funil no topo filtra as 3 abas. `adminLeads/adminFunnel/
 adminPerfis` aceitam `?funnel=` (repo filtra por `leads.funnel`; `eventCounts` junta ao lead).
