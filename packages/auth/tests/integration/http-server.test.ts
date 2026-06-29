@@ -4,11 +4,13 @@ import { BatchGetUsersService } from '../../src/application/admin/batch-get-user
 import { CreateUserService } from '../../src/application/admin/create-user/create-user.service'
 import { GetUserService } from '../../src/application/admin/get-user/get-user.service'
 import { ListUsersService } from '../../src/application/admin/list-users/list-users.service'
+import { ReadAuditLogService } from '../../src/application/admin/read-audit-log/read-audit-log.service'
 import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from '../../src/application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from '../../src/application/get-me/get-me.service'
 import { CreateImpersonationTokenService } from '../../src/application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from '../../src/application/impersonation/exchange-impersonation-token.service'
+import { WriteAuditLogService } from '../../src/application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from '../../src/application/login/login.service'
 import { LogoutService } from '../../src/application/logout/logout.service'
 import { ChangeMyPasswordService } from '../../src/application/me/change-password.service'
@@ -40,6 +42,7 @@ import {
   FakeMessagingClient,
   FakeProfileAllowanceGateway,
   fakeHasher,
+  InMemoryAuditLogRepository,
   InMemoryImpersonationTokenRepository,
   InMemoryOtpCodeRepository,
   InMemoryPasswordResetTokenRepository,
@@ -136,6 +139,9 @@ function buildApp(
   )
   const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
   const batchGetUsers = new BatchGetUsersService(users)
+  const auditLogs = new InMemoryAuditLogRepository()
+  const writeAuditLog = new WriteAuditLogService(auditLogs)
+  const readAuditLog = new ReadAuditLogService(auditLogs)
   const impersonationTokens = new InMemoryImpersonationTokenRepository()
   const createImpersonationToken = new CreateImpersonationTokenService(
     users,
@@ -201,6 +207,8 @@ function buildApp(
     createUser,
     updateUser,
     batchGetUsers,
+    writeAuditLog,
+    readAuditLog,
     createImpersonationToken,
     exchangeImpersonationToken,
     profiles: {
@@ -225,6 +233,7 @@ function buildApp(
     resetTokens,
     otpCodes,
     impersonationTokens,
+    auditLogs,
     messaging,
     tokenIssuer,
   }
@@ -1996,5 +2005,83 @@ describe('Auth — sessão de perfil (PR2)', () => {
     expect(res.status).toBe(200)
     const body = (await res.json()) as { profiles: { id: string; name: string }[] }
     expect(body.profiles.map((p) => p.id)).toContain(PROFILE_ID)
+  })
+})
+
+describe('Auth audit log (/auth/internal/audit + /auth/admin/audit)', () => {
+  const ACTOR = '00000000-0000-4000-8000-000000000aaa'
+  const EVENT = {
+    actorId: ACTOR,
+    actorEmail: 'admin@example.com',
+    actorRole: 'admin',
+    action: 'members-admin-grant',
+    method: 'POST',
+    path: '/members/admin/entitlements',
+    targetId: '00000000-0000-4000-8000-000000000bbb',
+    status: 201,
+    ip: '9.9.9.9',
+    userAgent: 'jest',
+    requestId: 'req-1',
+  }
+  function adminHeaders(role: string) {
+    return {
+      'x-internal-token': INTERNAL_TOKEN,
+      'x-auth-user-id': crypto.randomUUID(),
+      'x-auth-user-role': role,
+      'x-auth-user-status': 'active',
+    }
+  }
+  function getReq(path: string, headers: Record<string, string> = {}) {
+    return new Request(`http://localhost${path}`, { headers })
+  }
+
+  test('write S2S exige x-internal-token (ausente/errado → 401)', async () => {
+    const { app } = buildApp()
+    expect((await app.handle(post('/auth/internal/audit', EVENT))).status).toBe(401)
+    expect(
+      (await app.handle(post('/auth/internal/audit', EVENT, { 'x-internal-token': 'errado' })))
+        .status,
+    ).toBe(401)
+  })
+
+  test('write S2S grava e a leitura admin devolve o registro', async () => {
+    const { app, auditLogs } = buildApp()
+    const w = await app.handle(
+      post('/auth/internal/audit', EVENT, { 'x-internal-token': INTERNAL_TOKEN }),
+    )
+    expect(w.status).toBe(201)
+    expect(auditLogs.logs).toHaveLength(1)
+
+    const r = await app.handle(getReq('/auth/admin/audit', adminHeaders('admin')))
+    expect(r.status).toBe(200)
+    const body = (await r.json()) as { items: { action: string; actorId: string }[]; total: number }
+    expect(body.total).toBe(1)
+    expect(body.items[0]?.action).toBe('members-admin-grant')
+    expect(body.items[0]?.actorId).toBe(ACTOR)
+  })
+
+  test('leitura admin: staff → 403 (sensível, só admin+); filtro por actorId', async () => {
+    const { app } = buildApp()
+    await app.handle(post('/auth/internal/audit', EVENT, { 'x-internal-token': INTERNAL_TOKEN }))
+    await app.handle(
+      post(
+        '/auth/internal/audit',
+        { ...EVENT, actorId: '00000000-0000-4000-8000-000000000ccc', requestId: 'req-2' },
+        { 'x-internal-token': INTERNAL_TOKEN },
+      ),
+    )
+    expect((await app.handle(getReq('/auth/admin/audit', adminHeaders('staff')))).status).toBe(403)
+
+    const r = await app.handle(getReq(`/auth/admin/audit?actorId=${ACTOR}`, adminHeaders('admin')))
+    const body = (await r.json()) as { total: number }
+    expect(body.total).toBe(1)
+  })
+
+  test('leitura admin: actorId inválido é 400 na borda', async () => {
+    const { app } = buildApp()
+    const r = await app.handle(
+      getReq('/auth/admin/audit?actorId=not-a-uuid', adminHeaders('admin')),
+    )
+    expect(r.status).toBe(400)
   })
 })

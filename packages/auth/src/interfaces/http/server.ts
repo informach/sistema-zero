@@ -5,11 +5,13 @@ import type { BatchGetUsersService } from '../../application/admin/batch-get-use
 import type { CreateUserService } from '../../application/admin/create-user/create-user.service'
 import type { GetUserService } from '../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../application/admin/list-users/list-users.service'
+import type { ReadAuditLogService } from '../../application/admin/read-audit-log/read-audit-log.service'
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
 import type { EnsureBuyerService } from '../../application/ensure-buyer/ensure-buyer.service'
 import type { GetMeService } from '../../application/get-me/get-me.service'
 import type { CreateImpersonationTokenService } from '../../application/impersonation/create-impersonation-token.service'
 import type { ExchangeImpersonationTokenService } from '../../application/impersonation/exchange-impersonation-token.service'
+import type { WriteAuditLogService } from '../../application/internal/write-audit-log/write-audit-log.service'
 import type { LoginService } from '../../application/login/login.service'
 import type { LogoutService } from '../../application/logout/logout.service'
 import type { ChangeMyPasswordService } from '../../application/me/change-password.service'
@@ -59,6 +61,8 @@ export interface HttpDeps {
   createUser: CreateUserService
   updateUser: UpdateUserService
   batchGetUsers: BatchGetUsersService
+  writeAuditLog: WriteAuditLogService
+  readAuditLog: ReadAuditLogService
   createImpersonationToken: CreateImpersonationTokenService
   exchangeImpersonationToken: ExchangeImpersonationTokenService
   /** Gerenciamento de perfis (estilo Netflix) pelo responsável. */
@@ -142,6 +146,7 @@ export function createServer(deps: HttpDeps) {
       internalRoutes({
         createPasswordToken: deps.createPasswordToken,
         ensureBuyer: deps.ensureBuyer,
+        writeAuditLog: deps.writeAuditLog,
         internalToken: deps.env.AUTH_INTERNAL_TOKEN,
       }),
     )
@@ -160,6 +165,7 @@ export function createServer(deps: HttpDeps) {
         createUser: deps.createUser,
         updateUser: deps.updateUser,
         batchGetUsers: deps.batchGetUsers,
+        readAuditLog: deps.readAuditLog,
         createImpersonationToken: deps.createImpersonationToken,
         listProfiles: deps.profiles.listProfiles,
         urls: { main: deps.env.COMMUNITY_URL, kids: deps.env.KIDS_COMMUNITY_URL },

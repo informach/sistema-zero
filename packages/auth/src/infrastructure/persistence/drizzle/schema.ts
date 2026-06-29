@@ -217,6 +217,7 @@ export const auditLogs = auth.table(
     actorId: uuid('actor_id').notNull(),
     actorEmail: text('actor_email'),
     actorRole: text('actor_role'),
+    impersonatorId: uuid('impersonator_id'),
     action: text('action').notNull(),
     method: text('method').notNull(),
     path: text('path').notNull(),

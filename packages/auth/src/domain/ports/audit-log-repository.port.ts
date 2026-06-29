@@ -4,6 +4,8 @@ export interface AuditLogRecord {
   actorId: string
   actorEmail: string | null
   actorRole: string | null
+  /** Ator REAL em sessão de suporte (impersonação); `null` fora dela. */
+  impersonatorId: string | null
   action: string
   method: string
   path: string
@@ -21,6 +23,7 @@ export interface CreateAuditLogInput {
   actorId: string
   actorEmail?: string | null
   actorRole?: string | null
+  impersonatorId?: string | null
   action: string
   method: string
   path: string

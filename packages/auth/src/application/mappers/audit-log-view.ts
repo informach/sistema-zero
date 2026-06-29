@@ -6,6 +6,7 @@ export interface AuditLogView {
   actorId: string
   actorEmail: string | null
   actorRole: string | null
+  impersonatorId: string | null
   action: string
   method: string
   path: string
@@ -23,6 +24,7 @@ export function toAuditLogView(r: AuditLogRecord): AuditLogView {
     actorId: r.actorId,
     actorEmail: r.actorEmail,
     actorRole: r.actorRole,
+    impersonatorId: r.impersonatorId,
     action: r.action,
     method: r.method,
     path: r.path,

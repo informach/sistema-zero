@@ -193,6 +193,65 @@ export interface MemberRatingView {
   updatedAt: string
 }
 
+// ── Analytics de aprendizado (espelha o @sistemazero/members) ─────────────────
+
+/** Linha do overview de analytics de um curso. */
+export interface CourseAnalyticsView {
+  courseId: string
+  courseRef: string
+  title: string
+  audience: CourseAudience
+  status: string
+  publishedLessons: number
+  started: number
+  completed: number
+  completionRate: number
+}
+
+/** Uma aula no funil + conclusões. */
+export interface LessonFunnelView {
+  lessonId: string
+  title: string
+  moduleTitle: string
+  completions: number
+}
+
+export interface CourseFunnelView {
+  courseId: string
+  started: number
+  completed: number
+  lessons: LessonFunnelView[]
+}
+
+// ── Auditoria de ações administrativas (espelha o @sistemazero/auth) ──────────
+
+/** Um registro da trilha de auditoria (quem fez o quê, quando, de onde). */
+export interface AuditLogView {
+  id: string
+  actorId: string
+  actorEmail: string | null
+  actorRole: string | null
+  /** Ator REAL quando a ação saiu de uma sessão de suporte (impersonação); `null` fora dela. */
+  impersonatorId: string | null
+  action: string
+  method: string
+  path: string
+  targetId: string | null
+  status: number
+  ip: string | null
+  userAgent: string | null
+  requestId: string | null
+  createdAt: string
+}
+
+/** Resposta paginada da trilha (o auth devolve `{items,total,limit,offset}`). */
+export interface AuditLogPage {
+  items: AuditLogView[]
+  total: number
+  limit: number
+  offset: number
+}
+
 // ── Autoria de conteúdo (espelha admin-content-views do @sistemazero/members) ──
 
 export const COURSE_STATUSES = ['draft', 'published', 'archived'] as const

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import realConfig from '../../gateway.config'
 import { loadEnv } from '../../src/infrastructure/config/env'
 import { loadGatewayConfig } from '../../src/infrastructure/config/load-gateway-config'
 
@@ -186,6 +187,37 @@ describe('loadGatewayConfig', () => {
     expect(cfg.routes[0]?.maxBodyBytes).toBe(64 * 1024)
   })
 
+  test('audit exige que todos os métodos da rota sejam mutantes', async () => {
+    await expect(
+      loadGatewayConfig(env, {
+        services: { p: service },
+        routes: [
+          {
+            id: 'audit-mixed',
+            methods: ['GET', 'POST'],
+            pathPattern: '/x',
+            service: 'p',
+            audit: {},
+          },
+        ],
+      }),
+    ).rejects.toThrow(/métodos não mutantes: GET/)
+
+    const cfg = await loadGatewayConfig(env, {
+      services: { p: service },
+      routes: [
+        {
+          id: 'audit-write',
+          methods: ['POST', 'PATCH'],
+          pathPattern: '/x',
+          service: 'p',
+          audit: {},
+        },
+      ],
+    })
+    expect(cfg.routes[0]?.audit).toEqual({})
+  })
+
   test('produção: rota jwt sem JWT_ISSUER/JWT_AUDIENCE → erro', async () => {
     const prodEnv = loadEnv({
       NODE_ENV: 'production',
@@ -244,5 +276,40 @@ describe('loadGatewayConfig', () => {
     })
     const cfg = await loadGatewayConfig(withIssuer, { services: { p: service }, routes })
     expect(cfg.routes).toHaveLength(1)
+  })
+})
+
+// O boot real valida a config inteira (fail-fast), mas nenhum teste a CARREGAVA — então
+// invariantes que valem só sobre as rotas REAIS (audit em rota mutante, ids únicos, novas
+// rotas presentes) ficavam sem rede. Asserimos direto sobre o objeto exportado (estático).
+describe('gateway.config.ts (configuração real)', () => {
+  const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
+
+  test('toda rota audit-marcada declara SÓ métodos mutantes', () => {
+    const audited = realConfig.routes.filter((r) => r.audit)
+    expect(audited.length).toBeGreaterThan(0) // guarda contra remoção silenciosa do recurso
+    for (const r of audited) {
+      for (const method of r.methods) {
+        expect(MUTATING.has(method)).toBe(true)
+      }
+    }
+  })
+
+  test('ids de rota são únicos', () => {
+    const ids = realConfig.routes.map((r) => r.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  test('rotas novas (analytics + leitura de auditoria) presentes como GET autenticado', () => {
+    const byId = new Map(realConfig.routes.map((r) => [r.id, r]))
+    for (const id of [
+      'members-admin-analytics-overview',
+      'members-admin-analytics-funnel',
+      'auth-admin-audit-list',
+    ]) {
+      const route = byId.get(id)
+      expect(route?.methods).toEqual(['GET'])
+      expect(route?.auth).not.toBe('public')
+    }
   })
 })

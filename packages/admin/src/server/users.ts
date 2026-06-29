@@ -1,11 +1,14 @@
 import 'server-only'
-import type { Paginated, UserView } from '@/lib/types'
+import type { AuditLogPage, Paginated, UserView } from '@/lib/types'
 import { type GatewayResponse, gatewayFetch } from './gateway'
 
 export interface ListUsersParams {
   q?: string
   role?: string
   status?: string
+  source?: string
+  createdFrom?: string
+  createdTo?: string
   limit?: number
   offset?: number
 }
@@ -13,7 +16,16 @@ export interface ListUsersParams {
 /** Lista usuários (admin) via gateway: `GET /auth/admin/users` (JWT + RBAC). */
 export function listUsers(p: ListUsersParams): Promise<GatewayResponse<Paginated<UserView>>> {
   return gatewayFetch('/auth/admin/users', {
-    query: { q: p.q, role: p.role, status: p.status, limit: p.limit, offset: p.offset },
+    query: {
+      q: p.q,
+      role: p.role,
+      status: p.status,
+      source: p.source,
+      createdFrom: p.createdFrom,
+      createdTo: p.createdTo,
+      limit: p.limit,
+      offset: p.offset,
+    },
   })
 }
 
@@ -63,6 +75,31 @@ export function getUserProfiles(
  */
 export function batchGetUsers(ids: string[]): Promise<GatewayResponse<{ users: UserView[] }>> {
   return gatewayFetch('/auth/admin/users/batch', { method: 'POST', body: { ids } })
+}
+
+export interface ListAuditParams {
+  actorId?: string
+  action?: string
+  targetId?: string
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+/** Trilha de auditoria (admin): `GET /auth/admin/audit` (JWT + RBAC, admin+). */
+export function listAudit(p: ListAuditParams): Promise<GatewayResponse<AuditLogPage>> {
+  return gatewayFetch('/auth/admin/audit', {
+    query: {
+      actorId: p.actorId,
+      action: p.action,
+      targetId: p.targetId,
+      from: p.from,
+      to: p.to,
+      limit: p.limit,
+      offset: p.offset,
+    },
+  })
 }
 
 /**

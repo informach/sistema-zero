@@ -1,6 +1,8 @@
 import 'server-only'
 import type {
   AdminEntitlementView,
+  CourseAnalyticsView,
+  CourseFunnelView,
   CourseTreeView,
   CourseView,
   LessonContentView,
@@ -101,6 +103,16 @@ export function getMemberRatings(
 /** Revoga um certificado emitido: `POST /members/admin/certificates/:id/revoke`. */
 export function revokeCertificate(id: string): Promise<GatewayResponse<{ revoked: boolean }>> {
   return gatewayFetch(`/members/admin/certificates/${enc(id)}/revoke`, { method: 'POST' })
+}
+
+/** Analytics de aprendizado — overview por curso: `GET /members/admin/analytics/courses`. */
+export function getCourseAnalytics(): Promise<GatewayResponse<{ courses: CourseAnalyticsView[] }>> {
+  return gatewayFetch('/members/admin/analytics/courses')
+}
+
+/** Funil por aula de um curso: `GET /members/admin/analytics/courses/:courseId`. */
+export function getCourseFunnel(courseId: string): Promise<GatewayResponse<CourseFunnelView>> {
+  return gatewayFetch(`/members/admin/analytics/courses/${enc(courseId)}`)
 }
 
 /** Concessão manual de acesso: `POST /members/admin/entitlements` (oferta ou curso). */

@@ -5,6 +5,7 @@ import { createHmacStrategy } from './application/auth/hmac.strategy'
 import { createJwtStrategy } from './application/auth/jwt.strategy'
 import { createSessionStrategy } from './application/auth/session.strategy'
 import { createPipeline, type Pipeline } from './application/pipeline/pipeline'
+import { createAuditStage } from './application/pipeline/stages/audit.stage'
 import { createAuthStage } from './application/pipeline/stages/auth.stage'
 import { createAuthorizationStage } from './application/pipeline/stages/authorization.stage'
 import { createCorsStage } from './application/pipeline/stages/cors.stage'
@@ -23,6 +24,7 @@ import { defaultTransformerRegistry } from './application/transform/transformers
 import type { LoadBalancer, UpstreamTarget } from './domain/load-balancing/load-balancer.port'
 import type { GatewayStore } from './domain/ports/gateway-store.port'
 import type { Forwarder } from './domain/proxy/forwarder.port'
+import { createHttpAuditEmitter } from './infrastructure/audit/http-audit-emitter'
 import type { Env } from './infrastructure/config/env'
 import type { ServiceConfig } from './infrastructure/config/gateway-config.schema'
 import { loadGatewayConfig } from './infrastructure/config/load-gateway-config'
@@ -202,8 +204,15 @@ export async function createApplication(
       via: '1.1 sistemazero-gateway',
     }),
   ]
+  // Auditoria de ações admin: emite S2S ao auth (best-effort) nas rotas `audit`-marcadas.
+  const auditEmitter = createHttpAuditEmitter({
+    authUrl: env.AUTH_URL,
+    internalToken: env.AUTH_INTERNAL_TOKEN,
+    logger,
+  })
   const finalizers = [
     createResponseTransformStage({ getTransformers }),
+    createAuditStage({ emitter: auditEmitter }),
     createFinalizeStage(rateLimiter, metrics, env.LOG_LEVEL === 'debug'),
   ]
   const pipeline: Pipeline = createPipeline(stages, finalizers)

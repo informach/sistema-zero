@@ -131,6 +131,22 @@ export const routeConfigSchema = z.object({
   stripPrefix: z.boolean().default(false),
   rewritePrefix: z.string().optional(),
   versions: z.array(versionMappingSchema).optional(),
+  /**
+   * Emissão de AUDITORIA (opt-in): após a rota responder com SUCESSO (2xx), o gateway
+   * emite um registro S2S best-effort ao auth (`POST /auth/internal/audit`). Só faz
+   * sentido em rotas ADMIN MUTANTES — todos os métodos declarados devem ser
+   * POST/PUT/PATCH/DELETE; o boot valida. `action` sobrescreve o rótulo (default =
+   * id da rota). `targetField` captura um campo string do corpo JSON quando a rota
+   * não tem path param; `targetResponseField` captura um campo string do JSON de
+   * resposta (ex.: `user.id`) quando o id nasce no upstream. Nunca afeta a resposta.
+   */
+  audit: z
+    .object({
+      action: z.string().min(1).optional(),
+      targetField: z.string().min(1).optional(),
+      targetResponseField: z.string().min(1).optional(),
+    })
+    .optional(),
 })
 
 export const serviceConfigSchema = z.object({

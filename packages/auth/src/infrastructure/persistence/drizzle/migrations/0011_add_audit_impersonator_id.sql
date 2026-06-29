@@ -1,0 +1,1 @@
+ALTER TABLE "auth"."audit_logs" ADD COLUMN "impersonator_id" uuid;

@@ -1,5 +1,11 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type {
+  AuditLogListFilter,
+  AuditLogRecord,
+  AuditLogRepository,
+  CreateAuditLogInput,
+} from '../../src/domain/ports/audit-log-repository.port'
+import type {
   CreateImpersonationTokenInput,
   ImpersonationTokenRecord,
   ImpersonationTokenRepository,
@@ -90,6 +96,10 @@ export class InMemoryUserRepository implements UserRepository {
     }
     if (filter.role) all = all.filter((u) => u.role === filter.role)
     if (filter.status) all = all.filter((u) => u.status === filter.status)
+    if (filter.source) all = all.filter((u) => u.signupSource === filter.source)
+    const { createdFrom, createdTo } = filter
+    if (createdFrom) all = all.filter((u) => u.createdAt >= createdFrom)
+    if (createdTo) all = all.filter((u) => u.createdAt <= createdTo)
     all.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     const page = all.slice(filter.offset, filter.offset + filter.limit)
     return { users: page.map((u) => UserAggregate.restore(u.toSnapshot())), total: all.length }
@@ -474,6 +484,52 @@ export class FakeProfileAllowanceGateway implements ProfileAllowanceGateway {
   async getAllowance(): Promise<{ maxProfiles: number }> {
     this.calls++
     return { maxProfiles: this.maxProfiles }
+  }
+}
+
+/** Trilha de auditoria em memória (mais recentes primeiro, com filtros + paginação). */
+export class InMemoryAuditLogRepository implements AuditLogRepository {
+  readonly logs: AuditLogRecord[] = []
+
+  async create(input: CreateAuditLogInput): Promise<void> {
+    this.logs.push({
+      id: input.id,
+      actorId: input.actorId,
+      actorEmail: input.actorEmail ?? null,
+      actorRole: input.actorRole ?? null,
+      impersonatorId: input.impersonatorId ?? null,
+      action: input.action,
+      method: input.method,
+      path: input.path,
+      targetId: input.targetId ?? null,
+      status: input.status,
+      ip: input.ip ?? null,
+      userAgent: input.userAgent ?? null,
+      requestId: input.requestId ?? null,
+      createdAt: input.createdAt ?? new Date(),
+    })
+  }
+
+  async list(filter: AuditLogListFilter): Promise<{ items: AuditLogRecord[]; total: number }> {
+    let items = [...this.logs]
+    if (filter.actorId) items = items.filter((l) => l.actorId === filter.actorId)
+    if (filter.action) items = items.filter((l) => l.action === filter.action)
+    if (filter.targetId) items = items.filter((l) => l.targetId === filter.targetId)
+    const { startDate, endDate } = filter
+    if (startDate) items = items.filter((l) => l.createdAt >= startDate)
+    if (endDate) items = items.filter((l) => l.createdAt <= endDate)
+    items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    return {
+      items: items.slice(filter.offset, filter.offset + filter.limit),
+      total: items.length,
+    }
+  }
+
+  async deleteExpired(before: Date): Promise<number> {
+    const kept = this.logs.filter((l) => l.createdAt >= before)
+    const removed = this.logs.length - kept.length
+    this.logs.splice(0, this.logs.length, ...kept)
+    return removed
   }
 }
 

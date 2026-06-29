@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
+import { GetCourseAnalyticsService } from '../src/application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from '../src/application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from '../src/application/avatar/equip-avatar.service'
 import { GetAvatarService } from '../src/application/avatar/get-avatar.service'
@@ -66,6 +67,7 @@ import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
 import {
   FakeCatalogGateway,
+  InMemoryAnalyticsRepository,
   InMemoryAvatarRepository,
   InMemoryCertificateRepository,
   InMemoryCourseRatingRepository,
@@ -269,6 +271,7 @@ export function buildApp(
       listMemberCertificates: new ListMemberCertificatesService(certificates),
       listMemberRatings: new ListMemberRatingsService(ratings),
       getGamification: new GetGamificationService(gamification, clock),
+      analytics: new GetCourseAnalyticsService(new InMemoryAnalyticsRepository(courses, progress)),
       grantManual: new GrantManualEntitlementService({
         catalog,
         courses,

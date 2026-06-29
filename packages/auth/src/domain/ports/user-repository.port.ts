@@ -7,6 +7,11 @@ export interface ListUsersFilter {
   q?: string
   role?: UserRole
   status?: UserStatus
+  /** Origem do cadastro (funnel/web/mobile/admin) — match exato. */
+  source?: string
+  /** Janela de cadastro (createdAt): a partir de / até (inclusive). */
+  createdFrom?: Date
+  createdTo?: Date
   limit: number
   offset: number
 }

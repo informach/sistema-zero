@@ -5,6 +5,7 @@ export interface WriteAuditLogCommand {
   actorId: string
   actorEmail?: string | null
   actorRole?: string | null
+  impersonatorId?: string | null
   action: string
   method: string
   path: string
@@ -28,6 +29,7 @@ export class WriteAuditLogService {
       actorId: command.actorId,
       actorEmail: command.actorEmail ?? null,
       actorRole: command.actorRole ?? null,
+      impersonatorId: command.impersonatorId ?? null,
       action: command.action,
       method: command.method,
       path: command.path,

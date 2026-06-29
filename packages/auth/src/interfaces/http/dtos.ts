@@ -121,6 +121,10 @@ export const ListUsersQuery = t.Object({
   q: t.Optional(t.String({ maxLength: 320 })),
   role: t.Optional(roleLiteral),
   status: t.Optional(statusLiteral),
+  // Origem do cadastro (match exato) + janela de cadastro (ISO-8601; a rota parseia).
+  source: t.Optional(t.String({ maxLength: 40 })),
+  createdFrom: t.Optional(t.String({ maxLength: 40 })),
+  createdTo: t.Optional(t.String({ maxLength: 40 })),
   // t.Numeric coage a string da query string para número.
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0 })),
@@ -178,6 +182,8 @@ export const WriteAuditBody = t.Object({
   actorId: t.String({ pattern: UUID_PATTERN }),
   actorEmail: NULLABLE(320),
   actorRole: NULLABLE(40),
+  // Ator REAL em sessão de suporte (impersonação). Opcional/uuid — ausente fora dela.
+  impersonatorId: t.Optional(t.Union([t.String({ pattern: UUID_PATTERN }), t.Null()])),
   action: t.String({ minLength: 1, maxLength: 120 }),
   method: t.String({ minLength: 1, maxLength: 10 }),
   path: t.String({ minLength: 1, maxLength: 2000 }),
@@ -190,7 +196,7 @@ export const WriteAuditBody = t.Object({
 
 /** Query de `GET /auth/admin/audit` (listagem paginada da trilha). */
 export const ListAuditQuery = t.Object({
-  actorId: t.Optional(t.String({ maxLength: 64 })),
+  actorId: t.Optional(t.String({ pattern: UUID_PATTERN })),
   action: t.Optional(t.String({ maxLength: 120 })),
   targetId: t.Optional(t.String({ maxLength: 200 })),
   // ISO-8601 (a rota converte para Date; inválida → ignorada).

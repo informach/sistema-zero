@@ -71,6 +71,20 @@
       "when": 1781971849878,
       "tag": "0009_add_public_profile_enabled",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1782725712334,
+      "tag": "0010_amused_karen_page",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1782756911648,
+      "tag": "0011_add_audit_impersonator_id",
+      "breakpoints": true
     }
   ]
 }

@@ -39,6 +39,11 @@ import {
 } from '../../src/domain/gamification/gamification'
 import type { QualifyingByLevel } from '../../src/domain/gamification/levels'
 import type { MissionGoalType } from '../../src/domain/gamification/missions'
+import type {
+  AnalyticsRepository,
+  CourseLessonCount,
+  LessonFunnelRow,
+} from '../../src/domain/ports/analytics-repository.port'
 import type { AvatarRepository } from '../../src/domain/ports/avatar-repository.port'
 import type { CatalogGateway, ResolvedOffer } from '../../src/domain/ports/catalog-gateway.port'
 import type { CertificateRepository } from '../../src/domain/ports/certificate-repository.port'
@@ -866,6 +871,115 @@ export class InMemoryProgressRepository implements ProgressRepository {
         courseTitle: null,
         at: c.completedAt,
       }))
+  }
+}
+
+/** Analytics de aprendizado em memória (espelha a lógica do Drizzle sobre cursos+conclusões). */
+export class InMemoryAnalyticsRepository implements AnalyticsRepository {
+  constructor(
+    private readonly courseRepo: InMemoryCourseRepository,
+    private readonly progress: InMemoryProgressRepository,
+  ) {}
+
+  private publishedLessonsOf(courseId: string): Lesson[] {
+    return this.courseRepo.lessons.filter((l) => l.courseId === courseId && l.isPublished)
+  }
+
+  /** Conclusões de aulas AINDA publicadas (espelha o inner join do SQL). */
+  private publishedCompletions() {
+    const pubIds = new Set(this.courseRepo.lessons.filter((l) => l.isPublished).map((l) => l.id))
+    return this.progress.completions.filter((c) => pubIds.has(c.lessonId))
+  }
+
+  async coursesWithLessonCounts(): Promise<CourseLessonCount[]> {
+    return this.courseRepo.courses
+      .filter((c) => c.status !== 'draft')
+      .map((c) => ({
+        courseId: c.id,
+        courseRef: c.slug,
+        title: c.title,
+        audience: c.audience,
+        status: c.status,
+        publishedLessons: this.publishedLessonsOf(c.id).length,
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title))
+  }
+
+  async startedCountsByCourse(): Promise<Map<string, number>> {
+    const byCourse = new Map<string, Set<string>>()
+    for (const c of this.publishedCompletions()) {
+      const set = byCourse.get(c.courseId) ?? new Set<string>()
+      set.add(c.userId)
+      byCourse.set(c.courseId, set)
+    }
+    return new Map([...byCourse].map(([k, v]) => [k, v.size]))
+  }
+
+  async completedCountsByCourse(): Promise<Map<string, number>> {
+    // done por (curso, aprendiz) sobre aulas publicadas.
+    const done = new Map<string, Map<string, number>>()
+    for (const c of this.publishedCompletions()) {
+      const perUser = done.get(c.courseId) ?? new Map<string, number>()
+      perUser.set(c.userId, (perUser.get(c.userId) ?? 0) + 1)
+      done.set(c.courseId, perUser)
+    }
+    const out = new Map<string, number>()
+    for (const [courseId, perUser] of done) {
+      const total = this.publishedLessonsOf(courseId).length
+      if (total === 0) continue
+      let n = 0
+      for (const v of perUser.values()) if (v >= total) n++
+      if (n > 0) out.set(courseId, n)
+    }
+    return out
+  }
+
+  async lessonFunnel(courseId: string): Promise<LessonFunnelRow[]> {
+    // Curso rascunho/inexistente → funil vazio (espelha o innerJoin não-rascunho do SQL).
+    const course = this.courseRepo.courses.find((c) => c.id === courseId)
+    if (!course || course.status === 'draft') return []
+    const completionsByLesson = new Map<string, Set<string>>()
+    for (const c of this.progress.completions) {
+      const set = completionsByLesson.get(c.lessonId) ?? new Set<string>()
+      set.add(c.userId)
+      completionsByLesson.set(c.lessonId, set)
+    }
+    return this.publishedLessonsOf(courseId)
+      .map((l) => ({
+        l,
+        mod: this.courseRepo.modules.find((m) => m.id === l.moduleId),
+      }))
+      .sort(
+        (a, b) =>
+          (a.mod?.sortOrder ?? 0) - (b.mod?.sortOrder ?? 0) || a.l.sortOrder - b.l.sortOrder,
+      )
+      .map(({ l, mod }) => ({
+        lessonId: l.id,
+        title: l.title,
+        moduleTitle: mod?.title ?? '',
+        completions: completionsByLesson.get(l.id)?.size ?? 0,
+      }))
+  }
+
+  async startedAndCompletedForCourse(
+    courseId: string,
+  ): Promise<{ started: number; completed: number }> {
+    const course = this.courseRepo.courses.find((c) => c.id === courseId)
+    if (!course || course.status === 'draft') return { started: 0, completed: 0 }
+    const total = this.publishedLessonsOf(courseId).length
+    if (total === 0) return { started: 0, completed: 0 }
+    const done = new Map<string, number>()
+    for (const c of this.publishedCompletions()) {
+      if (c.courseId !== courseId) continue
+      done.set(c.userId, (done.get(c.userId) ?? 0) + 1)
+    }
+    let started = 0
+    let completed = 0
+    for (const v of done.values()) {
+      started++
+      if (v >= total) completed++
+    }
+    return { started, completed }
   }
 }
 

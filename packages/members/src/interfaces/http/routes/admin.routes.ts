@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia'
+import type { GetCourseAnalyticsService } from '../../../application/analytics/get-course-analytics.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetMemberActivityService } from '../../../application/get-member-activity/get-member-activity.service'
 import type { GetMemberDetailService } from '../../../application/get-member-detail/get-member-detail.service'
@@ -17,6 +18,7 @@ import { assertInternalCaller, requireAdmin } from '../auth'
 import {
   AdminActivityQuery,
   AdminGamificationQuery,
+  CourseIdParams,
   GrantEntitlementBody,
   IdParams,
   ListMembersQuery,
@@ -39,6 +41,7 @@ export interface AdminRoutesDeps {
   listMemberCertificates: ListMemberCertificatesService
   listMemberRatings: ListMemberRatingsService
   getGamification: GetGamificationService
+  analytics: GetCourseAnalyticsService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
   revokeCertificate: RevokeCertificateService
@@ -130,6 +133,21 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.listMemberRatings.execute(params.userId)
         },
         { params: UserIdParams },
+      )
+      // Analytics de aprendizado: overview por curso (conclusão) + funil por aula.
+      // `/analytics/courses` (3 seg) e `/analytics/courses/:courseId` (4 seg) não
+      // colidem com `/members/...` nem com `/courses/...` da autoria.
+      .get('/analytics/courses', async ({ headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.analytics.overview()
+      })
+      .get(
+        '/analytics/courses/:courseId',
+        async ({ params, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.analytics.funnel(params.courseId)
+        },
+        { params: CourseIdParams },
       )
       .post(
         '/entitlements',

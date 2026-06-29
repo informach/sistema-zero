@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, inArray, or, type SQL, sql } from 'drizzle-orm'
+import { and, desc, eq, gte, ilike, inArray, lte, or, type SQL, sql } from 'drizzle-orm'
 import type { ListUsersFilter, UserRepository } from '../../../domain/ports/user-repository.port'
 import { UserAggregate, type UserSnapshot } from '../../../domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../../domain/user/user.errors'
@@ -114,6 +114,9 @@ function buildListWhere(filter: ListUsersFilter): SQL | undefined {
   }
   if (filter.role) clauses.push(eq(users.role, filter.role))
   if (filter.status) clauses.push(eq(users.status, filter.status))
+  if (filter.source) clauses.push(eq(users.signupSource, filter.source))
+  if (filter.createdFrom) clauses.push(gte(users.createdAt, filter.createdFrom))
+  if (filter.createdTo) clauses.push(lte(users.createdAt, filter.createdTo))
   return clauses.length > 0 ? and(...clauses) : undefined
 }
 

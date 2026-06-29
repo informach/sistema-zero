@@ -78,6 +78,31 @@ describe('ListUsersService', () => {
     const res = await service.execute({ limit: 9999, offset: 0 })
     expect(res.limit).toBe(100)
   })
+
+  test('filtra por origem (signupSource) e janela de cadastro', async () => {
+    users.seed(makeUser({ signupSource: 'funnel', createdAt: new Date('2026-03-10') }))
+    users.seed(makeUser({ signupSource: 'admin', createdAt: new Date('2026-03-20') }))
+    users.seed(makeUser({ signupSource: 'funnel', createdAt: new Date('2026-05-01') }))
+
+    const bySource = await service.execute({ source: 'funnel', limit: 20, offset: 0 })
+    expect(bySource.total).toBe(2)
+
+    const byWindow = await service.execute({
+      createdFrom: new Date('2026-03-01'),
+      createdTo: new Date('2026-03-31T23:59:59'),
+      limit: 20,
+      offset: 0,
+    })
+    expect(byWindow.total).toBe(2)
+
+    const both = await service.execute({
+      source: 'funnel',
+      createdFrom: new Date('2026-04-01'),
+      limit: 20,
+      offset: 0,
+    })
+    expect(both.total).toBe(1)
+  })
 })
 
 describe('UpdateUserService — guards hierárquicos', () => {

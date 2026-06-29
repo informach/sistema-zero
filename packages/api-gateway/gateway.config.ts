@@ -366,6 +366,7 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
     },
     {
       id: 'payments-admin-subscription-cancel',
@@ -376,6 +377,7 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
     },
     // ── Minhas compras (app community — self-service do COMPRADOR) ──────────
     // JWT obrigatório (qualquer conta ativa, inclusive `customer` — sem `roles`).
@@ -620,6 +622,7 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: authInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: { targetResponseField: 'user.id' },
     },
     {
       id: 'auth-admin-user-get',
@@ -640,6 +643,7 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: authInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      audit: {},
     },
     // Hidratação de identidade em LOTE (≤100 ids) — usada pelo painel admin (área de
     // membros lista userIds e precisa de nome/email). Leitura → superadmin/admin/staff.
@@ -666,6 +670,7 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: authInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
     },
     // Perfis (estilo Netflix) de uma conta — o painel de membros hidrata o progresso
     // por perfil. LEITURA staff+. 4 segmentos, literal `profiles` ≠ `impersonate`.
@@ -676,6 +681,18 @@ const config: GatewayConfigInput = {
       service: 'auth',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Auditoria de ações administrativas — leitura sensível (admin+; staff não vê
+    // ações de outros operadores). Deve ir pelo gateway para injetar o token interno.
+    {
+      id: 'auth-admin-audit-list',
+      methods: ['GET'],
+      pathPattern: '/auth/admin/audit',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: authInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
@@ -1455,6 +1472,29 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
+    // Analytics de aprendizado (LEITURA staff+): overview por curso + funil por aula.
+    // `/analytics/courses` (3 seg) e `/analytics/courses/:courseId` (4 seg) não colidem
+    // com `/members/admin/members*` nem com a autoria `/members/admin/courses*`.
+    {
+      id: 'members-admin-analytics-overview',
+      methods: ['GET'],
+      pathPattern: '/members/admin/analytics/courses',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-admin-analytics-funnel',
+      methods: ['GET'],
+      pathPattern: '/members/admin/analytics/courses/:courseId',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-admin-grant',
       methods: ['POST'],
@@ -1464,6 +1504,7 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      audit: { targetField: 'userId' },
     },
     {
       id: 'members-admin-entitlement-manage',
@@ -1474,6 +1515,7 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      audit: {},
     },
 
     // ── Área de membros — Admin de AUTORIA de conteúdo ───────────────────────
@@ -1577,6 +1619,7 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
     },
 
     // ── Mensageria (@sistemazero/messaging) ─────────────────────────────────

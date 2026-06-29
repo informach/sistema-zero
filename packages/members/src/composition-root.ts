@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
+import { GetCourseAnalyticsService } from './application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
@@ -62,6 +63,7 @@ import type { Env } from './infrastructure/config/env'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
+import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
@@ -290,6 +292,7 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const listMemberCertificates = new ListMemberCertificatesService(certificates)
   const listMemberRatings = new ListMemberRatingsService(ratings)
+  const analytics = new GetCourseAnalyticsService(new DrizzleAnalyticsRepository(db))
   const grantManual = new GrantManualEntitlementService({
     catalog,
     courses,
@@ -375,6 +378,7 @@ export async function createApplication(env: Env): Promise<Application> {
       listMemberCertificates,
       listMemberRatings,
       getGamification,
+      analytics,
       grantManual,
       manageEntitlement,
       revokeCertificate,
