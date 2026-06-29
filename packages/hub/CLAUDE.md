@@ -85,7 +85,12 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    `x-internal-token` NÃO é fronteira de confiança aqui; full review 18/06), então o CORPO não é
    confiável:** o `ShowcaseService` (1) **re-valida a ELEGIBILIDADE no members** via
    `getShowcaseEligibility` (S2S `GET /members/internal/showcase-eligibility`, fail-closed) — só
-   publica quem REALMENTE concluiu o projeto; (2) usa título/resumo/audiência/curso/cadeia
+   publica quem REALMENTE concluiu o projeto. ⚠️ A rota interna do members checa com
+   **`privileged:false`** (equipe testando NÃO vai ao Mural real) → para admin/staff sem matrícula
+   real o members responde **403**; o adapter mapeia **403/404 → `eligible:false`** (resposta
+   GRACIOSA: `PostingNotAllowedError`→403 limpo, NUNCA 500 "Erro interno") e mantém 401/5xx/timeout
+   como throw fail-closed (bug 28/06: o 403 virava 500). Publicar de verdade exige conta REAL de
+   criança com matrícula + entrega; (2) usa título/resumo/audiência/curso/cadeia
    AUTORITATIVOS de lá (o corpo não dita conteúdo); (3) tira o `authorDisplayName` do header confiável
    **`x-auth-profile-name`** (claim `pfl.name` do gateway), nunca do corpo; (4) DERIVA a idempotência
    (`autor:curso:cadeia`); e EXIGE `space.audience === 'kids'` E canal `postingPolicy === 'staff_only'`
@@ -283,6 +288,19 @@ tópicos/comentários/reações). `resolveActor` preenche os dois; o course-gate
 **micro-cache** por `(userId, spaceId/courseRefs)` com TTL `accessCacheTtlMs` (30s prod / 0 fora);
 `invalidateUser()` existe p/ o futuro webhook de grant/revoke.
 
+⚠️ **Notifica o members ao PUBLICAR no Mural (nível do aluno, 06/2026):** após criar a thread de
+vitrine (`ShowcaseService.create`/`createFromStudio` — NÃO o standalone, que não tem curso), o hub
+chama `members.notifyShowcasePublished({userId, accountId, courseId, audience})` →
+`POST {MEMBERS_BASE_URL}/members/webhooks/showcase` assinado com **HMAC** (`GATEWAY_HMAC_SECRET`,
+canônico `<MÉTODO>.<path>.<corpo>` + `x-delivery-id`) — o members grava o marco `course_showcased`
+que, junto de `course_complete`, faz o aluno subir de nível (rank Noob→God). **Best-effort + FIRE-AND-
+FORGET**: o `ShowcaseService` chama com `void` (NÃO `await`) — a thread já está salva e o nível é
+consistência eventual, então não pendura a resposta de "Publicar" se o members estiver lento (o adapter
+tem retries internos + timeout e ENGOLE erro, logando `members.showcase_notify_*`; NUNCA lança). O
+members é idempotente por user+curso (notifica mesmo no `deduped`, recuperando uma 1ª falha). Sem
+`hmacSecret` (não setado) = no-op silencioso. Usa as envs JÁ existentes `MEMBERS_BASE_URL` +
+`GATEWAY_HMAC_SECRET` (nenhuma env nova).
+
 **R2 (anexos UGC):** o hub só guarda metadado; o presign/upload/HEAD vivem no BFF (member-shell/
 community). Buckets `testes-ugc` (dev) / `comunidade-sistema-zero-ugc` (prod). **Fluxo ainda não
 ligado** (ver Estado).
@@ -330,8 +348,17 @@ só promove a réplica quando o `select 1` responde.
 **Seed dos servidores kids (`scripts/seed-community-spaces.ts`, `bun run db:seed-community`, 06/2026):**
 cria IDEMPOTENTEmente o **Clube dos Criadores** (canal `geral` members) e o **Mural dos Criadores**
 (canal `parede` staff_only) com os SLUGS FIXOS que o community-kids consome — sem eles, clicar no menu
-dá 404 `SPACE_NOT_FOUND`. Nascem `course_gated` (slug = courseRef) + `teaserWhenLocked`; `SEED_PUBLIC=true`
-deixa públicos p/ smoke test. Postgres é privado → rodar via `railway ssh` no serviço hub. Re-rodar é seguro.
+dá 404 `SPACE_NOT_FOUND`. **Acesso (06/2026): cada servidor é um PRODUTO INDEPENDENTE** —
+`community_gated` na SUA própria chave (= o slug) + `teaserWhenLocked`; canais herdam (`accessConfig:
+null`). **Clube e Mural são SEPARADOS:** o **Clube** (`clube-dos-criadores`) é o fórum vendável; o
+**Mural** (`mural-dos-criadores`) é a vitrine, independente, dada de bônus no desafio do 1º jogo. A chave
+de cada servidor = o slug do produto de COMUNIDADE no catálogo. O ACESSO é decidido SÓ por este "Quem
+vê" (o community-kids NÃO tem 2º gate de produto na página — só mostra a tela de bloqueio quando o hub
+devolve o teaser). **NÃO há mais gate por curso** (o antigo `course_gated` slug=courseRef
+saiu). O seed **RECONCILIA servidores existentes**: re-rodar atualiza o `accessConfig` do modelo antigo
+(course_gated) p/ o novo, por servidor (idempotente — só escreve se mudou; esses 2 slugs são infra dona
+do seed). `SEED_PUBLIC=true` deixa públicos p/ smoke test. Postgres é privado → rodar via `railway ssh`
+no serviço hub. Re-rodar é seguro.
 
 ## Testes (31, `bun test`)
 

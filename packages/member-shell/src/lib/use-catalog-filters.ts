@@ -2,18 +2,21 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { CatalogCourseView } from './types'
+import type { CatalogCourseView, CourseLevelSlug } from './types'
 
 export type CatalogAccessFilter = 'todos' | 'liberados' | 'bloqueados'
 export type CatalogSort = 'padrao' | 'az' | 'za'
+/** Filtro por dificuldade do curso (`todos` = sem filtro). */
+export type CatalogLevelFilter = 'todos' | CourseLevelSlug
 
 export interface CatalogFilters {
   q: string
   acesso: CatalogAccessFilter
+  nivel: CatalogLevelFilter
   ordem: CatalogSort
 }
 
-const DEFAULTS: CatalogFilters = { q: '', acesso: 'todos', ordem: 'padrao' }
+const DEFAULTS: CatalogFilters = { q: '', acesso: 'todos', nivel: 'todos', ordem: 'padrao' }
 
 /** Atraso do espelho da busca na URL — digitação contínua só navega ao parar. */
 const Q_DEBOUNCE_MS = 350
@@ -24,6 +27,10 @@ function parseAccess(v: string | null): CatalogAccessFilter {
 
 function parseSort(v: string | null): CatalogSort {
   return v === 'az' || v === 'za' ? v : 'padrao'
+}
+
+function parseLevel(v: string | null): CatalogLevelFilter {
+  return v === 'iniciante' || v === 'intermediario' || v === 'avancado' ? v : 'todos'
 }
 
 /**
@@ -90,12 +97,14 @@ export function useCatalogFilters(courses: CatalogCourseView[]) {
   const filters: CatalogFilters = {
     q,
     acesso: parseAccess(searchParams.get('acesso')),
+    nivel: parseLevel(searchParams.get('nivel')),
     ordem: parseSort(searchParams.get('ordem')),
   }
 
   const hasActiveFilters =
     filters.q !== DEFAULTS.q ||
     filters.acesso !== DEFAULTS.acesso ||
+    filters.nivel !== DEFAULTS.nivel ||
     filters.ordem !== DEFAULTS.ordem
 
   const filtered = useMemo(() => {
@@ -109,10 +118,11 @@ export function useCatalogFilters(courses: CatalogCourseView[]) {
     }
     if (filters.acesso === 'liberados') list = list.filter((c) => c.hasAccess)
     if (filters.acesso === 'bloqueados') list = list.filter((c) => !c.hasAccess)
+    if (filters.nivel !== 'todos') list = list.filter((c) => c.level === filters.nivel)
     if (filters.ordem === 'az') list = [...list].sort((a, b) => a.title.localeCompare(b.title))
     if (filters.ordem === 'za') list = [...list].sort((a, b) => b.title.localeCompare(a.title))
     return list
-  }, [courses, filters.q, filters.acesso, filters.ordem])
+  }, [courses, filters.q, filters.acesso, filters.nivel, filters.ordem])
 
   return { filters, filtered, setFilter, clearFilters, hasActiveFilters }
 }

@@ -44,7 +44,11 @@ function deps(
       productSku: 'no-comando-da-ia',
     }),
     fulfill: makeFulfill({ repo, gateway: gw.gateway }),
-    grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: 'no-comando-da-ia', repo }),
+    grantMembers: makeGrantMembers({
+      gateway: gw.gateway,
+      resolveOffer: () => ({ offerSlug: 'no-comando-da-ia' }),
+      repo,
+    }),
     log,
   }
 }
@@ -601,7 +605,11 @@ describe('welcome no caminho síncrono (simetria com o webhook)', () => {
         repo,
         internalToken: WEBHOOK_TOKEN,
         fulfill: makeFulfill({ repo, gateway: gw.gateway }),
-        grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: 'no-comando-da-ia', repo }),
+        grantMembers: makeGrantMembers({
+          gateway: gw.gateway,
+          resolveOffer: () => ({ offerSlug: 'no-comando-da-ia' }),
+          repo,
+        }),
         sendWelcome: makeSendWelcome({
           gateway: gw.gateway,
           communityUrl: 'http://localhost:3007',

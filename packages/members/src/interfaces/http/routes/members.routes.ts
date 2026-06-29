@@ -25,6 +25,7 @@ import type { IssueCertificateService } from '../../../application/issue-certifi
 import type { ListCatalogService } from '../../../application/list-catalog/list-catalog.service'
 import type { ListMyCoursesService } from '../../../application/list-my-courses/list-my-courses.service'
 import type { MarkLessonCompleteService } from '../../../application/mark-lesson-complete/mark-lesson-complete.service'
+import type { GetProfileAllowanceService } from '../../../application/profile-allowance/get-profile-allowance.service'
 import type { GetPublicProfileService } from '../../../application/profiles/get-public-profile.service'
 import type { BuyRoomItemService } from '../../../application/room/buy-room-item.service'
 import type { GetRoomService } from '../../../application/room/get-room.service'
@@ -94,6 +95,7 @@ export interface MembersRoutesDeps {
   getStudioCarryover: GetStudioCarryoverService
   getOwnStudioSubmission: GetOwnStudioSubmissionService
   getShowcasePayload: GetShowcasePayloadService
+  profileAllowance: GetProfileAllowanceService
   getCertificate: GetCertificateService
   issueCertificate: IssueCertificateService
   getCourseRating: GetCourseRatingService
@@ -190,21 +192,28 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           }
           const valid = parseAccessRefs(query.refs)
           const result = await deps.accessCheck.execute(resolveAccountId(headers), valid)
-          const hasMasterForAudience =
-            (query.audience ?? 'kids') === 'kids' ? result.hasMasterKids : result.hasMaster
           const validSet = new Set(valid)
           const access: Record<string, boolean> = {}
+          // ⚠️ A chave-mestra (`all_courses`/`all_kids_courses`) é SÓ para CURSOS (decisão
+          // do usuário). Esta rota gateia PRODUTOS NÃO-CURSO vendidos à parte (Estúdio,
+          // e refs de comunidade), que exigem o PRÓPRIO acesso (`community`/matrícula
+          // específica) — por isso NÃO aplicamos a chave-mestra aqui. (O acesso a curso
+          // continua honrando a chave-mestra, mas pelo caminho do curso, não por esta rota.)
           for (const ref of requested) {
             access[ref] =
-              validSet.has(ref) &&
-              (result.grants.includes(ref) ||
-                result.communities.includes(ref) ||
-                hasMasterForAudience)
+              validSet.has(ref) && (result.grants.includes(ref) || result.communities.includes(ref))
           }
           return { access }
         },
         { query: AccessQuery },
       )
+      // Teto de PERFIS (kids) da CONTA — o app dos pais usa p/ travar o botão
+      // "Adicionar" e mostrar "X de Y". Acesso pela CONTA (`resolveAccountId`); equipe
+      // interna (privileged) → ilimitado (espelha o bypass do auth ao criar perfil).
+      .get('/profile-allowance', async ({ headers }) => {
+        if (isPrivilegedActor(headers)) return { maxProfiles: Number.MAX_SAFE_INTEGER }
+        return deps.profileAllowance.execute(resolveAccountId(headers))
+      })
       // Perfil de gamificação do aluno NA VITRINE (`?audience=`, default adult —
       // XP/streak/badges são segregados por audiência) — recurso do PRÓPRIO
       // usuário (sem CheckAccess: qualquer conta ativa; sem perfil → zeros).

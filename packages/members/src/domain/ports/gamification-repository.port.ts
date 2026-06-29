@@ -1,4 +1,5 @@
 import type { CourseAudience } from '../course/course'
+import type { QualifyingByLevel } from '../gamification/levels'
 import type { MissionGoalType } from '../gamification/missions'
 
 /**
@@ -15,6 +16,10 @@ export type XpSourceType =
   | 'quiz_perfect'
   // Atividade do Estúdio aprovada (auto-correção, fase 2). XP igual ao quiz.
   | 'studio_passed'
+  // MARCO (amount 0): projeto do curso publicado no Mural dos Criadores
+  // (sourceId = courseId). Gravado pelo webhook hub→members; combinado com
+  // `course_complete` define o curso "qualificado" p/ o nível do aluno.
+  | 'course_showcased'
 
 export interface XpEventInput {
   sourceType: XpSourceType
@@ -151,6 +156,16 @@ export interface GamificationRepository {
     userId: string,
     audience: CourseAudience,
   ): Promise<{ badgeSlug: string; unlockedAt: Date }[]>
+  /**
+   * Cursos "qualificados" do aluno por dificuldade — concluídos (`course_complete`)
+   * E publicados no Mural (`course_showcased`) — para derivar o NÍVEL do aluno. É a
+   * INTERSEÇÃO dos dois marcos no ledger da vitrine, joinada com `courses.level`.
+   * Curso sem ambos os marcos não conta; nível ausente do resultado = 0.
+   */
+  countQualifyingCoursesByLevel(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<QualifyingByLevel>
   /**
    * Colocação do PERFIL no ranking de XP da VITRINE. Coorte (estilo Netflix) =
    * PERFIS (linhas de `gamification_profiles`, `privileged=false`) cuja CONTA

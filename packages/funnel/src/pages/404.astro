@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+// 404 personalizada — o Astro serve esta página para QUALQUER rota não encontrada.
+// É global (fora do contexto de um funil), então usa o tema padrão e não indexa.
+// SSR (sem prerender) p/ a middleware aplicar os security headers.
+---
+
+<BaseLayout title="Página não encontrada" noindex={true}>
+  <main
+    class="mx-auto flex min-h-[80vh] max-w-xl flex-col items-center justify-center px-4 py-16 text-center"
+  >
+    <img src="/img/logo-sistema-zero.svg" alt="Sistema Zero" class="h-5 w-auto" decoding="async" />
+
+    <p class="mt-10 font-extrabold text-7xl text-lime leading-none sm:text-8xl">404</p>
+    <h1 class="mt-6 font-bold text-2xl text-ink sm:text-3xl">Opa, não achamos essa página</h1>
+    <p class="mx-auto mt-4 max-w-md text-base text-muted leading-relaxed">
+      O link que você abriu não existe ou saiu do ar. Acontece. Volte para o início e siga daí.
+    </p>
+
+    <a href="/" class="btn btn-primary mt-8">Ir para a página inicial</a>
+  </main>
+</BaseLayout>

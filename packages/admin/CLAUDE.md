@@ -289,9 +289,10 @@ src/
             slug.ts (slugify/skuify/offerSlugSuggestion/offerCodeSuggestion — kebab MINÚSCULO,
             espelha os VOs do catalog: Sku lowercase!; autogeração usa dirty-flag por campo)
   components/ catalog/* (offers-multi-select · components-editor · offer-items-editor ·
-            fulfillment-editor — courseRef = SLUG do curso do members; **campo "Quantidade de perfis
-            (plataforma Kids)" → `fulfillment.maxProfiles`** (PR4, perfis estilo Netflix; vazio = sem
-            limite; `sanitizeFulfillment` preserva o campo)) · admin/* (topbar/header/tabs/…)
+            fulfillment-editor — courseRef = SLUG do curso do members; **o campo "Quantidade de perfis
+            (plataforma Kids)" MUDOU p/ o form da OFERTA (28/06)** — vive em `OfferContent.maxProfiles`
+            (em `ofertas/offers-client.tsx`, mesclado no `content` sem apagar badge/cta), NÃO mais no
+            produto) · admin/* (topbar/header/tabs/…)
             ⚠️ Primitivos de UI (button/card/input/table/dialog/badge/select/info-tooltip/…) vivem
             no **`@sistemazero/ui`** (packages/ui, compartilhado com o community) — importe
             `@sistemazero/ui/<componente>`; NÃO recrie cópias locais. O Button espelha as classes
@@ -489,6 +490,11 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   sequencial estilo Duolingo): checkbox "Trava sequencial das aulas" no dialog, **sempre enviado**
   (members PRESERVA quando ausente; default `true` no curso novo); `CourseView.sequentialLock`
   devolvido. Ligada, o aluno só abre a próxima aula após concluir a anterior (gate no members → 423).
+  Body de curso também aceita **`level`** (`iniciante`|`intermediario`|`avancado`, 06/2026 —
+  dificuldade): select "Nível do curso" no dialog, **sempre enviado** (members PRESERVA quando ausente;
+  default `iniciante`); `CourseView.level` devolvido. Alimenta o NÍVEL DO ALUNO no community-kids
+  (concluir + publicar no Mural cursos de cada dificuldade → rank Noob→God). `COURSE_LEVELS`/
+  `LEVEL_LABELS` em `lib/types.ts`.
   **Convite multi-plataforma**: `POST /auth/admin/users` aceita
   `platform: 'main'|'kids'` (select "Plataforma do convite" no dialog — decide a base do link do
   e-mail `welcome`); impersonação aceita `?platform=kids` (`impersonateUser(id, platform?)` em

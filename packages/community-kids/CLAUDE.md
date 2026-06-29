@@ -40,10 +40,19 @@ por QR abre a página PÚBLICA **`/validar/[id]`** (FORA do grupo `(app)`, sem l
 blocks/[blockId]/certificate` (GET estado + POST emitir/baixar) e `/api/certificates/[id]/validate` (público,
 no negative-lookahead do matcher do proxy); env `APP_PUBLIC_URL` p/ o QR. O members é o portão (ver
 `../members/CLAUDE.md`); PDF/QR/R2 vivem no member-shell.
-o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado,
+o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado
+(altura padrão GENEROSA: `lg:h-[82vh]`, piso 44rem — mais espaço pra programar; mudança no member-shell,
+vale tb no adulto),
 rascunho local, "Enviar para o professor" (o modal de confirmação tem um campo OPCIONAL de recado ao professor — compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
 ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
-distingue os dois no toast/botão. Exige `@sistemazero/studio` em transpilePackages + `@source`
+distingue os dois no toast/botão. **MODO CRIAÇÃO GUIADA (28/06):** quando a aula tem um bloco de VÍDEO
+**e** um de ESTÚDIO (`lessonSupportsGuided`), um botão "Modo criação guiada" aparece sob o título →
+abre o `GuidedCreationMode` (export do `kids-lesson-blocks`): overlay `fixed inset-0` com o vídeo à
+esquerda e o estúdio à direita (lado a lado no desktop; empilha no mobile) + botão "Voltar ao modo
+normal". O estúdio recebe `fillHeight` (prop nova do `StudioBlockView` → o editor preenche a coluna). É
+um OU outro (guiada vs layout normal) — renderizar os dois montaria o MESMO bloco de estúdio 2× (mesma
+chave de rascunho no IndexedDB → conflito); alternar remonta e re-semeia do rascunho local (sem perda).
+Renderizado DENTRO do `LessonPlayerProvider` (precisa do contexto do player). Exige `@sistemazero/studio` em transpilePackages + `@source`
 + `frame-src blob:`;
 ⚠️ invariantes de segurança COPIADOS do shell: URL canônica de vídeo, sandbox SEM
 allow-same-origin, markdown controlado — mexeu na segurança de bloco, replique nos DOIS
@@ -105,11 +114,29 @@ A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edi
 
 **Renome (06/2026):** a antiga "Turma" (`/comunidade`) virou **Clube dos Criadores**
 (`/clube-dos-criadores`, modo fórum) e ganhou um irmão **Mural dos Criadores**
-(`/mural-dos-criadores`, modo `wall` = vitrine). Ambos são SERVIDORES do hub `course_gated`
-(produto à parte) com `teaserWhenLocked` ON → aparecem no menu (`nav.ts`: itens "Clube" e "Mural")
+(`/mural-dos-criadores`, modo `wall` = vitrine). Ambos são SERVIDORES do hub `community_gated`
+em PRODUTOS SEPARADOS (cada um na SUA chave = slug; NÃO mais por curso): Clube = `clube-dos-criadores`
+(fórum vendável), Mural = `mural-dos-criadores` (vitrine independente, bônus do desafio do 1º jogo)
+com `teaserWhenLocked` ON → aparecem no menu (`nav.ts`: itens "Clube" e "Mural")
 mesmo sem acesso, e a UI mostra `KidsLockedSpace` (recado gentil, sem conteúdo) quando
 `space.locked`. A rota antiga `/comunidade` foi REMOVIDA sem redirect (não há usuário real em prod
-ainda — decisão do usuário). O componente único `components/kids/kids-space-view-client.tsx` (movido
+ainda — decisão do usuário).
+**⚠️ Acesso ao Clube/Mural = UM portão só, o "Quem vê" do hub (06/2026):** NÃO há gate de produto na
+página (era um 2º portão que contradizia o "Quem vê" — removido p/ não confundir). A `page.tsx` só
+renderiza o `KidsSpaceViewClient`; o HUB decide o acesso pelo `accessConfig` ("Quem vê" no admin:
+público / por curso / **por comunidade** / por cargo). Sem acesso, o hub devolve o servidor BLOQUEADO
+(teaser) e a página passa um **`lockedView`** custom — `KidsLockedClube`/`KidsLockedMural` ("ainda não
+liberado", espelham o `KidsLockedStudio`); senão cai no genérico `KidsLockedSpace`. ⚠️ **O cliente trata
+403 `ACCESS_DENIED` como bloqueado** (`forbidden` → `lockedView`), NÃO como erro: um servidor SEM teaser
+(`teaserWhenLocked` false — padrão de quem cria pelo admin) faz o hub 403ar em vez de devolver o teaser
+`locked`, e sem isso a criança via um toast "sem acesso" + "espaço não encontrado" (bug 28/06: Clube
+criado pelo admin sem teaser). Servidores kids são itens FIXOS do menu → não há existência a esconder.
+(O seed do hub também reconcilia `teaser_when_locked=true` nesses 2 slugs.) ⚠️ O Estúdio é DIFERENTE:
+NÃO é servidor do hub, então lá o gate é na página mesmo
+(`checkStudioAccessReadonly`). **Setup do operador (vender como produto):** no admin, "Quem vê = Por
+comunidade" + a chave do produto (Clube → `clube-dos-criadores`; Mural → `mural-dos-criadores`,
+independente, bônus do desafio do 1º jogo) — a MESMA chave do produto de comunidade no catálogo.
+O componente único `components/kids/kids-space-view-client.tsx` (movido
 de `app/(app)/comunidade`)
 recebe `slug` + `mode`: no `wall` esconde o composer/sidebar e renderiza CARDS de projeto (capa +
 título + resumo + "por {authorDisplayName}"); a criança só comenta (moderado) e reage. **Vitrine
@@ -214,7 +241,12 @@ anexo (o servidor recusaria).
 2. **Classificação do curso INCLUÍDA (decisão do usuário, 06/2026)**: porta kids do fluxo de 5
    modais do community (`course-rating-flow.tsx` próprio, copy em tom kids + mascote; rota shim
    `/api/members/courses/[slug]/rating` compartilhada). Compartilhar usa SÓ `salesPageUrl` do
-   curso (kids segue SEM `FUNNEL_URL`).
+   curso (kids segue SEM `FUNNEL_URL`). ⚠️ **Identidade no agradecimento = a CRIANÇA, nunca o
+   responsável (28/06):** `RatingViewer` é `{name, age, avatarUrl}` montado na `page.tsx` do
+   perfil ATIVO (`listProfilesReadonly` → o perfil `id == session.id`): **nome do PERFIL** +
+   **idade** (`computeAgeFromBirthDate(birthDate)` do member-shell; sem nascimento → só o nome) +
+   foto do perfil. NUNCA e-mail nem `session.firstName/lastName` (= conta do responsável). O
+   `viewerEmail` do player segue sendo o do responsável SÓ p/ watermark de vídeo (não exibido).
 3. **Telefone agora é DO PERFIL** (decisão do usuário, 06/2026 — antes o perfil kids não tinha
    telefone): a criança edita nome/foto/**telefone** (`whatsapp` do perfil) na página "Meu
    perfil" via `/api/profiles/:id`. O telefone do RESPONSÁVEL segue na compra (não se mistura).
@@ -277,6 +309,26 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `room-builder.tsx` (quarto), que também leem `balanceUnlimited`. Compras da equipe voltam grátis
   (`unlimited:true`). Ver `docs/gamificacao.md` §4.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
+- **Nível do aluno (rank Noob→God, 06/2026)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
+  `levelInfo()`/`nextLevelHint()`; cor = CSS var `--level-<slug>` em `globals.css` `:root`+`.dark`),
+  `components/kids/avatar-with-aura.tsx` (`AvatarWithAura` — anel/brilho na cor do nível ao redor do
+  `KidsAvatar`, estático p/ reduced-motion) e `level-badge.tsx` (`LevelBadge` — insígnia ícone+nome).
+  Usados no **perfil** (`profile-client.tsx`: aura no avatar + insígnia + linha "faltam X projetos…"
+  via `nextLevelHint`), no **menu** (`user-menu.tsx`: aura no avatar do header + insígnia no dropdown)
+  e no **perfil público** (`public-profile-view.tsx`: aura + insígnia). O nível vem de
+  `gamification.level` / `PublicProfileDTO.level` (members deriva). A **dificuldade do CURSO** (≠ do
+  nível do aluno) é o `course-level-chip.tsx` (`CourseLevelChip`) sobre a capa nos cards
+  (`course-card.tsx`/`catalog-course-card.tsx`). **COMEMORAÇÃO de SUBIDA de nível:**
+  `level-up-celebration.tsx` (overlay Zappy + confete + som + insígnia GRANDE na cor do nível,
+  `useModalA11y`, auto-fecha em 7s) disparada pelo `level-up-watcher.tsx` (cliente) — compara o
+  `level.slug` do servidor com o ÚLTIMO visto em `localStorage` (`sz:kids:level:<profileId>`) e
+  comemora UMA vez quando SOBE, seja por publicar no Mural OU por concluir um curso já publicado
+  (não amarrado a uma ação). NÃO comemora na 1ª carga (sem valor salvo) nem em queda. Montado no
+  `(app)/layout.tsx` via `LevelUpChrome` (server, só sessão de PERFIL, gamificação deduplicada
+  `{withRanking:true}`). ⚠️ Para refletir NA HORA após publicar, o `StudioBlockKids` chama
+  `router.refresh()` ao fechar a `MuralCelebration` → o layout re-busca o nível → o watcher acende
+  (sequência "no Mural!" → "subiu de nível!"). O marco `course_showcased` no members é gravado
+  SÍNCRONO no fluxo do publish (hub aguarda o webhook), então o refresh já vê o nível novo.
 - `badge-showcase.tsx` — vitrine do perfil: catálogo completo, bloqueada = tracejada+cadeado,
   desbloqueada = cor da marca + data. Inclui as **badges de MAESTRIA** da expansão
   (`studio-first`/`-master-3`/`-master-10` do Estúdio; `coins-saver-300`/`-1000` de poupador de
@@ -623,6 +675,29 @@ Verde: typecheck + test (26) + biome + `build:kids`. Achados LOW corrigidos:
   MESMO URL+cor diferente renderizarem juntas. Mantido como está; clonar como o `thumb-canvas` é
   endurecimento opcional, não correção. Compras em 1 toque, sem-PIN entre irmãos e nome no perfil
   público (opt-in) seguem decisões de produto.
+
+## Full review (correções) — 28/06/2026 (2ª passada — refator do gate Clube/Mural)
+
+7ª auditoria, focada no delta que trocou o gate de produto da PÁGINA pelo **portão único do hub**
+("Quem vê"): Clube/Mural agora só renderizam o `KidsSpaceViewClient` (sem
+`checkClube/MuralAccessReadonly`), que distingue BLOQUEADO (teaser → `lockedView`) de INDISPONÍVEL
+(`ACCESS_UNAVAILABLE`/503 → tela de retry). **Segurança: NADA acionável** — o hub é a fronteira de
+conteúdo e a aplica SERVER-SIDE (`/channels` → 403 quando locked; members fora → 503; provado em
+`hub/tests/integration/access-read.test.ts`), e o `ApiError` carrega `status`/`code` do envelope. As
+refs antigas (`checkClube/MuralAccessReadonly`) sumiram do repo inteiro — zero dead code. Verde:
+typecheck + test (26) + biome + build:kids. Achado corrigido:
+
+- **Botão "Tentar de novo" virou clique-morto (MEDIUM):** a decisão "indisponível" saiu da página
+  (server) p/ o estado do `KidsSpaceViewClient` (client), mas `KidsAccessUnavailable` seguia só com
+  `router.refresh()` — que PRESERVA o estado do client e NÃO re-dispara o efeito de carga (deps
+  `[slug, mode]`), deixando `unavailable` grudado. Uma criança COM acesso, num soluço transitório do
+  hub/members, ficava presa (só reload duro recuperava). Agora `KidsAccessUnavailable` aceita `onRetry`
+  e o client passa um retry REAL (`reloadNonce` no deps do efeito → volta ao skeleton e refaz o fetch);
+  o prop `unavailableView?: ReactNode` virou `unavailableTitle?: string` (a tela interativa nasce no
+  client p/ receber o callback — função não cruza a fronteira server→client).
+- **Verificados de pé (não-bug):** contraste do `CourseLevelChip` (cor só no pontinho, texto em
+  `text-foreground` = AA garantido) e a grade responsiva do `catalog-filter-bar` (mobile 2-col, sm+
+  flex-wrap) — corretos, sem regressão.
 
 ## Comandos
 

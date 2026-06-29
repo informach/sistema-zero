@@ -110,6 +110,35 @@ export class AwardGamificationService {
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
 
+  /**
+   * MARCO `course_showcased` (amount 0): o aluno publicou o projeto do curso no
+   * Mural dos Criadores. Idempotente por (user, course). NÃO move XP/streak nem
+   * concede badge — só registra o marco que, junto de `course_complete`, qualifica
+   * o curso p/ o nível do aluno. Por ser amount 0, NÃO toca o perfil
+   * (`gamification_profiles`): `privileged`/`accountId` ficam intactos (o award só
+   * grava o perfil no ramo de `amount > 0`); por isso `privileged` aqui é irrelevante.
+   * Disparado pelo webhook hub→members — fail-open como o resto da gamificação.
+   */
+  async awardCourseShowcased(input: {
+    userId: string
+    /**
+     * CONTA dona do perfil (do hub). Na prática NÃO é usada: como o marco é amount 0,
+     * o `award` nunca entra no ramo que cria/atualiza o perfil — `accountId` só seria
+     * gravado lá. Mantida na assinatura por simetria com os demais awards.
+     */
+    accountId: string
+    courseId: string
+    audience: CourseAudience
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [{ sourceType: 'course_showcased', sourceId: input.courseId, amount: 0 }],
+      false,
+    )
+  }
+
   private async award(
     userId: string,
     accountId: string,

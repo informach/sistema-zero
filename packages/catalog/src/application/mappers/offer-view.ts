@@ -55,6 +55,8 @@ export interface OfferListItemView {
   productId: string
   productName: string | null
   items: { productId: string; sortOrder: number }[]
+  /** Conteúdo comercial (badge/cta/cupom/maxProfiles) — o admin edita sem apagar os demais campos. */
+  content: OfferContent | null
   createdAt: string
   updatedAt: string
 }
@@ -83,6 +85,7 @@ export function toOfferListItem(
     productId: offer.productId,
     productName,
     items: offer.items.map((item) => ({ productId: item.productId, sortOrder: item.sortOrder })),
+    content: offer.content,
     createdAt: offer.createdAt.toISOString(),
     updatedAt: offer.updatedAt.toISOString(),
   }

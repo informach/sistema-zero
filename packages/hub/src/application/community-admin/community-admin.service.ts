@@ -74,11 +74,15 @@ export class SpaceAdminService {
     return toSpaceTreeView(space, channels)
   }
 
-  async update(id: string, fields: SpaceFields): Promise<SpaceView> {
-    assertAccessCoherent(fields.accessConfig)
+  async update(
+    id: string,
+    fields: Partial<SpaceFields>,
+    expectedVersion: number,
+  ): Promise<SpaceView> {
     const existing = await this.repo.findSpaceById(id)
     if (!existing) throw new SpaceNotFoundError()
-    const merged = { ...existing, ...fields }
+    const merged = { ...existing, ...fields, version: expectedVersion }
+    assertAccessCoherent(merged.accessConfig)
     const ok = await this.repo.updateSpace(merged)
     if (!ok) throw new ConcurrencyConflictError()
     const fresh = await this.repo.findSpaceById(id)
@@ -107,11 +111,15 @@ export class ChannelAdminService {
     return toChannelView(await this.repo.createChannel(spaceId, fields))
   }
 
-  async update(id: string, fields: ChannelFields): Promise<ChannelView> {
-    assertAccessCoherent(fields.accessConfig)
+  async update(
+    id: string,
+    fields: Partial<ChannelFields>,
+    expectedVersion: number,
+  ): Promise<ChannelView> {
     const existing = await this.repo.findChannelById(id)
     if (!existing) throw new ChannelNotFoundError()
-    const merged = { ...existing, ...fields }
+    const merged = { ...existing, ...fields, version: expectedVersion }
+    assertAccessCoherent(merged.accessConfig)
     const ok = await this.repo.updateChannel(merged)
     if (!ok) throw new ConcurrencyConflictError()
     const fresh = await this.repo.findChannelById(id)

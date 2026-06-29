@@ -1,5 +1,6 @@
 import { canonicalizeAvatarConfig } from '../../domain/avatar/avatar-config'
 import type { CourseAudience } from '../../domain/course/course'
+import { computeStudentLevel } from '../../domain/gamification/levels'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { RoomRepository } from '../../domain/ports/room-repository.port'
@@ -23,10 +24,11 @@ export class GetPublicProfileService {
   ) {}
 
   async execute(profileId: string, audience: CourseAudience): Promise<PublicProfileView> {
-    const [profile, badges, avatarConfig, avatarPhotoUrl, roomRaw, roomInventory] =
+    const [profile, badges, qualifying, avatarConfig, avatarPhotoUrl, roomRaw, roomInventory] =
       await Promise.all([
         this.gamification.getProfile(profileId, audience),
         this.gamification.listBadges(profileId, audience),
+        this.gamification.countQualifyingCoursesByLevel(profileId, audience),
         this.avatar.getConfig(profileId, audience),
         this.avatar.getPhotoUrl(profileId, audience),
         this.room.getState(profileId, audience),
@@ -43,6 +45,8 @@ export class GetPublicProfileService {
       profileId,
       xp: profile?.xp ?? 0,
       ranking,
+      // Nível do aluno (rank) — mesma derivação do /gamification/me.
+      level: computeStudentLevel(qualifying),
       // listBadges já devolve SÓ as conquistadas (≠ do /gamification/me, que traz o catálogo).
       badges: badges.map((b) => ({ slug: b.badgeSlug, unlockedAt: b.unlockedAt.toISOString() })),
       avatar: { style: equipped.style, slots: equipped.slots },

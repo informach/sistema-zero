@@ -87,6 +87,24 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.pending).toBe(false)
     // O hub RE-VALIDOU a elegibilidade no members (acesso pela conta, entrega pelo perfil).
     expect(ctx.members.eligibilityCalls.length).toBe(1)
+    // E notificou o members (nível do aluno) com o curso autoritativo da elegibilidade.
+    expect(ctx.members.showcaseNotifications.length).toBe(1)
+    expect(ctx.members.showcaseNotifications[0]).toMatchObject({
+      courseId: 'curso-1',
+      audience: 'kids',
+    })
+  })
+
+  test('projeto NÃO elegível → não publica nem notifica o nível do aluno', async () => {
+    ctx.members.showcaseEligibility = { ...ctx.members.showcaseEligibility, eligible: false }
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread', {
+        headers: child(randomUUID()),
+        body: showcaseBody(),
+      }),
+    )
+    expect(res.status).toBe(403)
+    expect(ctx.members.showcaseNotifications.length).toBe(0)
   })
 
   test('capa AUSENTE no corpo → cai na capa padrão do members', async () => {

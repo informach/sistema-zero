@@ -19,11 +19,14 @@ const { env } = getDeps()
 Astro.response.headers.set('cache-control', 'no-store')
 Astro.response.headers.append('set-cookie', clearLeadCookie(env.NODE_ENV === 'production'))
 
-// CTA p/ a área de membros (mesma base do link do e-mail de boas-vindas).
-const communityUrl = env.COMMUNITY_URL
+// CTA p/ a área de membros (mesma base do link do e-mail de boas-vindas). Por
+// audiência: o funil kids leva ao app KIDS, não ao community adulto.
+const communityUrl = f.audience === 'kids' ? env.KIDS_COMMUNITY_URL : env.COMMUNITY_URL
 
 // O que a compra entrega + próximos passos vêm do conteúdo do funil.
 const { entrega, passos } = f.content.obrigado
+// Frase de abertura por funil (kids fala da criança; default = NCI "assumir o comando").
+const introObrigado = f.content.obrigado.intro ?? 'Obrigado por assumir o comando.'
 const productName = f.productName
 ---
 
@@ -32,7 +35,7 @@ const productName = f.productName
   noindex={true}
   htmlClass={f.theme ? `theme-${f.theme}` : undefined}
 >
-  <Header />
+  <Header productName={productName} />
   <main class="mx-auto max-w-2xl px-4 py-14 sm:py-20">
     <!-- ── Confirmação ──────────────────────────────────────────────────── -->
     <section class="reveal-up text-center">
@@ -48,7 +51,7 @@ const productName = f.productName
       </div>
       <h1 class="mt-6 text-3xl font-extrabold sm:text-4xl">Pagamento confirmado!</h1>
       <p class="mx-auto mt-4 max-w-md text-lg leading-relaxed text-muted">
-        Obrigado por assumir o comando. O seu acesso ao
+        {introObrigado} O seu acesso ao
         <strong class="text-ink">{productName}</strong> está a caminho do seu e-mail.
       </p>
     </section>
@@ -63,11 +66,9 @@ const productName = f.productName
           >
           </div>
           <img
-            src={`${f.imagesBase}/produto-capa.webp`}
-            alt={`Capa do ebook ${productName}`}
-            width="480"
-            height="679"
-            class="relative w-24 -rotate-2 rounded-lg border border-line/60 shadow-xl sm:w-28"
+            src={`${f.imagesBase}/${f.checkoutImage ?? 'produto-capa.webp'}`}
+            alt={`Capa do curso ${productName}`}
+            class="relative aspect-square w-24 -rotate-2 rounded-lg border border-line/60 object-cover shadow-xl sm:w-28"
             decoding="async"
           />
         </div>

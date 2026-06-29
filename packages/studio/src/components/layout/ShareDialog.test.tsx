@@ -129,6 +129,28 @@ describe('ShareDialog', () => {
     expect(pubArg(adapter)?.title).toBe('Meu Jogo')
   })
 
+  it('SEM generateDescription (aula) → sem botão de IA; publica com o resumo do admin', async () => {
+    seedProject()
+    const adapter = makeAdapter({
+      generateDescription: undefined,
+      titleEditable: false,
+      presetDescription: 'Resumo definido pelo professor.',
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+
+    await screen.findByDisplayValue('Resumo definido pelo professor.')
+    // Sem IA: o botão "Gerar/Regerar" não existe e a auto-geração não roda.
+    expect(screen.queryByRole('button', { name: 'Gerar resumo com a IA' })).toBeNull()
+    expect(adapter.generateDescription).toBeUndefined()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Gerar capa' }))
+    await waitFor(() =>
+      expect((screen.getByRole('button', { name: 'Publicar' }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    )
+  })
+
   it('usa a capa do curso (preset) → publica com useAdminCover e sem coverDataUrl', async () => {
     seedProject()
     const adapter = makeAdapter({ presetCoverUrl: 'https://cdn.example.com/capa.webp' })

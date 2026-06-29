@@ -9,6 +9,7 @@ import { getLeadId, leadCookie } from '../../../lib/lead-session'
 import { formatBRLFromCents2 } from '../../../lib/money'
 import { getActiveOffer } from '../../../server/catalog'
 import { getDeps } from '../../../server/deps'
+import { resolveOfferSlug } from '../../../server/offer'
 
 export const prerender = false
 
@@ -75,7 +76,8 @@ const initialContact = {
 if (!initialContact.email) return Astro.redirect(ofertaPath)
 
 // Preço/nome vêm do catálogo (fonte da verdade); fallback p/ rótulos do funil se fora.
-const offer = await getActiveOffer(gateway, f.catalogOfferSlug)
+// Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout/cobrança.
+const offer = await getActiveOffer(gateway, resolveOfferSlug(env, f.key))
 const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
 const productName = offer?.productName || f.productName
 const priceLabel = formatBRLFromCents2(priceCents)
@@ -91,11 +93,9 @@ const priceLabel = formatBRLFromCents2(priceCents)
     <!-- ── Produto ─────────────────────────────────────────────────────── -->
     <div class="flex items-center gap-4 rounded-2xl border border-line/70 bg-card/50 p-4 sm:p-5">
       <img
-        src={`${f.imagesBase}/produto-capa.webp`}
-        alt={`Capa do ebook ${productName}`}
-        width="480"
-        height="679"
-        class="w-16 shrink-0 rounded-lg border border-line/60 sm:w-20"
+        src={`${f.imagesBase}/${f.checkoutImage ?? 'produto-capa.webp'}`}
+        alt={`Capa do curso ${productName}`}
+        class="size-16 shrink-0 rounded-lg border border-line/60 object-cover sm:size-20"
         decoding="async"
       />
       <div>
@@ -114,6 +114,8 @@ const priceLabel = formatBRLFromCents2(priceCents)
         priceCents={priceCents}
         allowCoupon={offer?.allowsCoupon === true}
         successPath={successPath}
+        isKids={f.audience === 'kids'}
+        installmentsMax={offer?.installmentsMax ?? null}
       />
     </div>
 

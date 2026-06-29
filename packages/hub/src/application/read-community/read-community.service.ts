@@ -1,4 +1,8 @@
-import { AccessDeniedError, SpaceNotFoundError } from '../../domain/hub-errors'
+import {
+  AccessDeniedError,
+  AccessUnavailableError,
+  SpaceNotFoundError,
+} from '../../domain/hub-errors'
 import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
 import type { ReadStateRepository } from '../../domain/ports/read-state-repository.port'
 import type { ThreadRepository } from '../../domain/ports/thread-repository.port'
@@ -38,7 +42,9 @@ export class ReadCommunityService {
   async getSpace(actor: Actor, slug: string): Promise<SpacePublicView> {
     const space = await this.read.findActiveSpaceBySlug(slug)
     if (!space) throw new SpaceNotFoundError()
-    if (!(await this.access.canAccessSpace(actor, space))) {
+    const decision = await this.access.decideSpaceAccess(actor, space)
+    if (!decision.accessible) {
+      if (decision.unavailable && space.teaserWhenLocked) throw new AccessUnavailableError()
       // Sem acesso: teaser → devolve só os metadados com `locked:true`; senão 403.
       if (space.teaserWhenLocked) return toSpacePublicView(space, true)
       throw new AccessDeniedError()
@@ -49,7 +55,11 @@ export class ReadCommunityService {
   async listChannels(actor: Actor, slug: string): Promise<{ items: ChannelPublicView[] }> {
     const space = await this.read.findActiveSpaceBySlug(slug)
     if (!space) throw new SpaceNotFoundError()
-    if (!(await this.access.canAccessSpace(actor, space))) throw new AccessDeniedError()
+    const decision = await this.access.decideSpaceAccess(actor, space)
+    if (!decision.accessible) {
+      if (decision.unavailable && space.teaserWhenLocked) throw new AccessUnavailableError()
+      throw new AccessDeniedError()
+    }
     const channels = await this.read.listActiveChannels(space.id)
     const visible = await this.access.filterVisibleChannels(actor, space, channels)
     const ids = visible.map((c) => c.id)

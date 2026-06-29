@@ -68,9 +68,8 @@ export interface StudioShareAdapter {
    */
   titleEditable?: boolean
   /**
-   * Descrição inicial do post (admin da AULA). Presente → o dialog **PULA a geração por IA**
-   * (economia): abre já com este texto, que a criança pode editar (ou pedir uma da IA no botão
-   * "Gerar"). Ausente/vazio → a IA gera o rascunho (comportamento do Estúdio Completo).
+   * Descrição inicial do post. Na AULA, é o resumo do admin (a criança só ajusta);
+   * abre já preenchido. No Estúdio Completo costuma vir vazio (a IA gera o rascunho).
    */
   presetDescription?: string
   /**
@@ -83,8 +82,13 @@ export interface StudioShareAdapter {
    * Gera um rascunho CURTO (≤1 parágrafo, PT) via SERVIDOR (chave no servidor).
    * NUNCA usa a BYOK do painel de IA do aluno. Pode rejeitar/voltar vazio — o
    * dialog cai no modo "escreva você mesmo" sem travar a publicação.
+   *
+   * **OPCIONAL**: ausente → o dialog NÃO mostra o botão "Gerar/Regerar" nem gera
+   * automaticamente (caso do Estúdio da AULA, onde o projeto já é conhecido e o
+   * admin define o resumo — a criança só ajusta). Presente → IA disponível (Estúdio
+   * Completo, onde o projeto é livre e ninguém sabe do que se trata).
    */
-  generateDescription(input: StudioShareGenerateInput): Promise<string>
+  generateDescription?(input: StudioShareGenerateInput): Promise<string>
   /** Publica no Mural. Resolve com os links; rejeita em falha (mensagem ao aluno). */
   publish(input: StudioSharePublishInput): Promise<StudioShareResult>
   /**

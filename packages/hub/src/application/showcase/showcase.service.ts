@@ -164,6 +164,19 @@ export class ShowcaseService {
       idempotencyKey,
       now: this.clock(),
     })
+    // Nível do aluno: avisa o members que este curso foi publicado no Mural (best-effort,
+    // idempotente por user+curso; nunca derruba a publicação). Notifica mesmo no deduped —
+    // recupera uma notificação que falhou na 1ª publicação (a 1ª talvez não tenha gravado).
+    // FIRE-AND-FORGET (não `await`): a thread já está salva; bloquear a resposta aqui
+    // penduraria o "Publicar no Mural" por segundos se o members estivesse lento/fora (o
+    // método tem retries internos). O nível do aluno é consistência eventual — o marco
+    // grava em background (idempotente) e a UI o reflete na próxima leitura. NUNCA lança.
+    void this.members.notifyShowcasePublished({
+      userId: actor.userId,
+      accountId: actor.accountId,
+      courseId: elig.courseId,
+      audience: elig.audience,
+    })
     return { thread: toThreadView(thread), deduped }
   }
 
@@ -248,6 +261,17 @@ export class ShowcaseService {
       playId: cmd.playId,
       idempotencyKey,
       now: this.clock(),
+    })
+    // Nível do aluno: mesma notificação best-effort do `create` (idempotente por user+curso).
+    // FIRE-AND-FORGET (não `await`): a thread já está salva; bloquear a resposta aqui
+    // penduraria o "Publicar no Mural" por segundos se o members estivesse lento/fora (o
+    // método tem retries internos). O nível do aluno é consistência eventual — o marco
+    // grava em background (idempotente) e a UI o reflete na próxima leitura. NUNCA lança.
+    void this.members.notifyShowcasePublished({
+      userId: actor.userId,
+      accountId: actor.accountId,
+      courseId: elig.courseId,
+      audience: elig.audience,
     })
     return { thread: toThreadView(thread), deduped }
   }

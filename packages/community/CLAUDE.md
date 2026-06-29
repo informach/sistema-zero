@@ -417,7 +417,7 @@ valida e só então importa o `server.js` standalone).
   (sem edição posterior nesta fatia). Fluxo de 5 modais (`course-rating-flow.tsx`, Dialog do
   ui com `titleAlign='center'` + `onBack`): (1) estrelas com MEIA estrela (`StarRating` do
   `@sistemazero/ui` — clicar já persiste) → (2) frase pela nota + textarea → (3) 6 perguntas
-  Sim/Não/Não sei opcionais (Pular) → (4) agradecimento (UserAvatar + nome + nota + comentário)
+  Sim/Não/Não sei opcionais (Pular) → (4) agradecimento (UserAvatar + **só o nome, NUNCA o e-mail** — info sensível: `getUserDisplayName(first,last,null)` + nota + comentário)
   → (5) compartilhar: input readonly com `shareUrl` (`salesPageUrl ?? FUNNEL_URL`, resolvido
   NO SERVIDOR pela page) + Copiar (clipboard + fallback execCommand + toast). CADA passo faz
   `PUT /api/members/courses/:slug/rating` com o estado ACUMULADO (fechar no meio não perde

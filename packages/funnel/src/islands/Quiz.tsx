@@ -48,6 +48,7 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
   const [answers, setAnswers] = useState<Answers>({})
   const [index, setIndex] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
   const reduce = useReducedMotion()
 
   // Entrada do funil: `/` redireciona pra cá. UMA ida ao servidor: POST /api/leads
@@ -88,6 +89,7 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
   async function handleSubmit(pairs: AnswerPair[]) {
     if (submitting || index == null) return
     setSubmitting(true)
+    setErro(null)
     try {
       for (let i = 0; i < pairs.length; i++) {
         const pair = pairs[i]
@@ -110,6 +112,9 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
       setIndex(next)
       setSubmitting(false)
     } catch {
+      // Sem avançar a pergunta (o avanço só ocorre após o PATCH OK). Mostra o
+      // erro p/ o usuário re-tentar em vez de "não aconteceu nada".
+      setErro('Não consegui salvar sua resposta. Verifique a conexão e tente de novo.')
       setSubmitting(false)
     }
   }
@@ -206,6 +211,11 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
             )}
           </motion.div>
         </AnimatePresence>
+        {erro && (
+          <p role="alert" className="mt-4 text-center text-sm text-red-400">
+            {erro}
+          </p>
+        )}
       </div>
     </div>
   )

@@ -4,8 +4,10 @@ import { splitName } from './fulfillment'
 
 export interface WelcomeEmailDeps {
   gateway: GatewayClient
-  /** Base do app do aluno (link de definir senha): `${communityUrl}/redefinir-senha?token=...`. */
+  /** Base do app do aluno ADULTO (link de definir senha) — funil `pro/*`. */
   communityUrl: string
+  /** Base do app KIDS — funil `kids/*`. Ausente → cai no `communityUrl` (compat). */
+  kidsCommunityUrl?: string
   /** One-shot atômico do welcome (claim) + liberação quando NADA foi emitido. */
   repo: Pick<FunnelRepo, 'claimWelcome' | 'releaseWelcome'>
   log?: (msg: string, meta?: Record<string, unknown>) => void
@@ -52,7 +54,11 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
       }
 
       const { firstName } = splitName(lead.nome)
-      const link = `${deps.communityUrl}/redefinir-senha?token=${encodeURIComponent(token)}`
+      // Funil kids → app KIDS; senão o adulto. A chave do lead é `audience/produto`.
+      const baseUrl = lead.funnel?.startsWith('kids/')
+        ? (deps.kidsCommunityUrl ?? deps.communityUrl)
+        : deps.communityUrl
+      const link = `${baseUrl}/redefinir-senha?token=${encodeURIComponent(token)}`
       const variables = { nome: firstName, link }
 
       await sendOne(

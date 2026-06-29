@@ -160,7 +160,10 @@ que cada app trata com uma página "aula bloqueada". O gate confiável é o memb
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
 `tests/hub-redact.test.ts`). O **`StudioBlockView`** tem a prop `enableShare?`: ligada, constrói o
 `StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via `/api/studio/publish`) e o
-passa ao `<StudioLesson share>` — o botão "Compartilhar" aparece na Topbar do editor. ⚠️ **Só HABILITA
+passa ao `<StudioLesson share>` — o botão "Compartilhar" aparece na Topbar do editor. ⚠️ **A CAPA (data URL
+do print/upload) vira Blob via `dataUrlBase64ToBlob` (`lib/data-url.ts`, `atob`), NUNCA `fetch('data:…')`**:
+a CSP dos apps (`connect-src 'self' https:`) bloqueia `fetch` de `data:` → "Failed to fetch" no publish
+(bug 28/06; vale tb no Estúdio Completo `studio-full-client.tsx`). ⚠️ **Só HABILITA
 após a ENTREGA ao professor**: o `StudioBlockView` passa `shareDisabledReason` ao `<StudioLesson>`
 (`share && !submitted ? '…envie ao professor primeiro' : undefined`) — o botão aparece desabilitado com
 dica até o aluno enviar o projeto, e habilita quando `submitted` vira true. Casa com o backend, que barra
@@ -183,6 +186,13 @@ mostrar a própria tela de sucesso (no Estúdio Completo, sem `onShared`, a teli
 **Economia de IA:** o adapter ainda passa `presetTitle`/`presetDescription` do `content.showcase.title/
 summary` (admin) — com resumo, o `ShareDialog` abre preenchido e NÃO chama a IA (a criança edita se
 quiser); em branco (ou no Estúdio Completo, que não passa) → a IA gera o rascunho.
+
+**Nível do aluno + dificuldade do curso (06/2026):** `lib/types.ts` ganhou `StudentLevelSlug`/
+`StudentLevelView` (rank `noob`→`god` derivado no members) — `GamificationMeView.level?` e
+`PublicProfileGameView.level?` (ambos OPCIONAIS, mirror do members). E `CourseLevelSlug`
+(`iniciante`|`intermediario`|`avancado`) em `CatalogCourseView`/`MyCourseView`/`CourseDetailView`
+(`level?`). Tudo passthrough (os clients não mapeiam) — a APRESENTAÇÃO (aura/insígnia/chip) vive no
+community-kids; aqui é só o tipo.
 
 **Gamificação (06/2026):** tipos em `lib/types.ts` (`GamificationDelta`/`GamificationMeView`/
 `LessonCompleteResult`/`BadgeSlug` — mirror das views do members; `QuizAttemptResultView.gamification?`),

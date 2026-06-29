@@ -285,6 +285,13 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         query: { refs: STUDIO_ACCESS_REF, audience },
       })
     },
+    /**
+     * Teto de perfis (kids) da CONTA — a área dos pais usa p/ travar o "Adicionar" e
+     * mostrar "X de Y". Server Component (sem refresh de cookie).
+     */
+    getProfileAllowanceReadonly(): Promise<GatewayResponse<{ maxProfiles: number }>> {
+      return gw.gatewayFetchReadonly('/members/profile-allowance')
+    },
 
     /** Detalhe do curso (módulos + aulas + progresso). */
     getMyCourse(slug: string): Promise<GatewayResponse<CourseDetailView>> {
@@ -646,8 +653,11 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     getThread(id: string): Promise<GatewayResponse<HubThreadView>> {
       return gw.gatewayFetch(`/hub/threads/${enc(id)}`)
     },
-    editThread(id: string, body: string): Promise<GatewayResponse<HubThreadView>> {
-      return gw.gatewayFetch(`/hub/threads/${enc(id)}`, { method: 'PATCH', body: { body } })
+    editThread(id: string, body: string, version: number): Promise<GatewayResponse<HubThreadView>> {
+      return gw.gatewayFetch(`/hub/threads/${enc(id)}`, {
+        method: 'PATCH',
+        body: { body, version },
+      })
     },
     listComments(
       threadId: string,
@@ -663,8 +673,15 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     ): Promise<GatewayResponse<HubCommentView>> {
       return gw.gatewayFetch(`/hub/threads/${enc(threadId)}/comments`, { method: 'POST', body })
     },
-    editComment(id: string, body: string): Promise<GatewayResponse<HubCommentView>> {
-      return gw.gatewayFetch(`/hub/comments/${enc(id)}`, { method: 'PATCH', body: { body } })
+    editComment(
+      id: string,
+      body: string,
+      version: number,
+    ): Promise<GatewayResponse<HubCommentView>> {
+      return gw.gatewayFetch(`/hub/comments/${enc(id)}`, {
+        method: 'PATCH',
+        body: { body, version },
+      })
     },
     react(
       target: 'thread' | 'comment',

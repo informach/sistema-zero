@@ -55,12 +55,15 @@ export default function CardCheckout({
   priceCents,
   couponCode,
   successPath,
+  installmentsMax,
 }: {
   contact: CheckoutContactInput | null
   priceCents: number
   couponCode?: string
   /** Para onde ir quando o pagamento confirmar (próximo passo do funil; obrigatório). */
   successPath: string
+  /** Máximo de parcelas da OFERTA (catálogo). Limita a lista da Efí; `null` = sem teto. */
+  installmentsMax?: number | null
 }) {
   const [number, setNumber] = useState('')
   const [holderName, setHolderName] = useState('')
@@ -79,7 +82,7 @@ export default function CardCheckout({
   const [paymentId, setPaymentId] = useState<string | null>(null)
 
   // Corrida: só a consulta mais recente pode aplicar estado (o SDK da Efí não
-  // expõe AbortController, então o controle é por id monotônico).
+  // expõe AbortController, então o controle é por id monotônico + cleanup do Effect).
   const reqIdRef = useRef(0)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -116,8 +119,8 @@ export default function CardCheckout({
     [],
   )
 
-  // Digitação do número: mascara ciente da bandeira e agenda a detecção (fluxo
-  // da doc da Efí: identificar bandeira → consultar parcelas, ainda na digitação).
+  // Digitação do número: mascara ciente da bandeira e agenda a detecção. A consulta
+  // de parcelas fica em um Effect dependente de bandeira+valor, para reagir a cupom.
   function onNumberChange(raw: string) {
     const rawDigits = raw.replace(/\D/g, '')
     const prevDigits = number.replace(/\D/g, '')
@@ -143,10 +146,10 @@ export default function CardCheckout({
       setInstallments(1)
       return
     }
-    debounceRef.current = setTimeout(() => void detectBrandAndInstallments(digits), 400)
+    debounceRef.current = setTimeout(() => void detectBrand(digits), 400)
   }
 
-  async function detectBrandAndInstallments(digits: string) {
+  async function detectBrand(digits: string) {
     const myId = ++reqIdRef.current
     try {
       const EfiPay = await loadEfi()
@@ -156,28 +159,71 @@ export default function CardCheckout({
       if (!b) {
         setInstallmentsList(null)
         setInstallments(1)
-        return
       }
-      setLoadingInstallments(true)
-      const res = await EfiPay.CreditCard.setAccount(EFI_ACCOUNT)
-        .setEnvironment(EFI_ENV)
-        .setBrand(b)
-        .setTotal(priceCents)
-        .getInstallments()
-      if (reqIdRef.current !== myId) return
-      const list = 'installments' in res ? res.installments : null
-      setInstallmentsList(list)
-      // Mantém a parcela escolhida se ainda existir na lista nova; senão, 1x.
-      setInstallments((cur) => (list?.some((i) => i.installment === cur) ? cur : 1))
     } catch (e) {
-      // Falha na consulta de parcelas NÃO trava o pagamento — cai no fallback 1x.
-      // Loga p/ diagnóstico (a Efí devolve {code, error, error_description} — sem dado sensível).
-      console.error('[checkout/cartão] consulta de parcelas falhou:', e)
-      if (reqIdRef.current === myId) setInstallmentsList(null)
-    } finally {
-      if (reqIdRef.current === myId) setLoadingInstallments(false)
+      // Falha na detecção não trava o pagamento; o submit re-verifica a bandeira.
+      console.error('[checkout/cartão] detecção de bandeira falhou:', e)
+      if (reqIdRef.current === myId) {
+        setBrand(null)
+        setInstallmentsList(null)
+        setInstallments(1)
+      }
     }
   }
+
+  // Consulta/reconsulta parcelas quando a bandeira, o total (cupom) ou o teto da
+  // oferta mudam. Evita listar parcelas calculadas com preço antigo.
+  // ⚠️ A obsolescência aqui é SÓ o flag `ignore` do cleanup — NÃO o `reqIdRef`
+  // (que é do `detectBrand`). O React roda o cleanup antes de re-executar o
+  // Effect, então no máximo uma instância tem `ignore=false`. Compartilhar o
+  // `reqIdRef` travava o spinner: um `detectBrand` da MESMA bandeira incrementa o
+  // contador sem o Effect re-rodar, invalidando a consulta em voo sem nada que
+  // restaurasse `loadingInstallments`.
+  useEffect(() => {
+    if (!brand || !EFI_ACCOUNT) {
+      setInstallmentsList(null)
+      setLoadingInstallments(false)
+      setInstallments(1)
+      return undefined
+    }
+
+    let ignore = false
+    setLoadingInstallments(true)
+    setInstallmentsList(null)
+
+    ;(async () => {
+      try {
+        const EfiPay = await loadEfi()
+        const res = await EfiPay.CreditCard.setAccount(EFI_ACCOUNT)
+          .setEnvironment(EFI_ENV)
+          .setBrand(brand)
+          .setTotal(priceCents)
+          .getInstallments()
+        if (ignore) return
+        const raw = 'installments' in res ? res.installments : null
+        // Limita ao máximo de parcelas da OFERTA (catálogo). `installmentsMax` nulo = sem teto.
+        const list =
+          raw && installmentsMax ? raw.filter((i) => i.installment <= installmentsMax) : raw
+        setInstallmentsList(list)
+        // Mantém a parcela escolhida se ainda existir na lista nova; senão, 1x.
+        setInstallments((cur) => (list?.some((i) => i.installment === cur) ? cur : 1))
+      } catch (e) {
+        // Falha na consulta de parcelas NÃO trava o pagamento — cai no fallback 1x.
+        // Loga p/ diagnóstico (a Efí devolve {code, error, error_description} — sem dado sensível).
+        console.error('[checkout/cartão] consulta de parcelas falhou:', e)
+        if (!ignore) {
+          setInstallmentsList(null)
+          setInstallments(1)
+        }
+      } finally {
+        if (!ignore) setLoadingInstallments(false)
+      }
+    })()
+
+    return () => {
+      ignore = true
+    }
+  }, [brand, priceCents, installmentsMax])
 
   // Polling curto caso o cartão volte PENDING (raro — cartão é síncrono).
   useEffect(() => {

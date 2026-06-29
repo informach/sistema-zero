@@ -14,6 +14,7 @@ import { ArrowLeft, Copy, Flag, Hash, Lock, MessageCircle, Play, Plus, Send } fr
 import Link from 'next/link'
 import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { KidsAccessUnavailable } from '@/components/kids/kids-access-unavailable'
 import { KidsSpaceSkeleton } from '@/components/kids/kids-space-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type {
@@ -114,10 +115,26 @@ export function KidsSpaceViewClient({
   slug,
   viewerId,
   mode = 'forum',
+  lockedView,
+  unavailableTitle,
 }: {
   slug: string
   viewerId: string
   mode?: SpaceViewMode
+  /**
+   * Tela de "sem acesso" customizada (ex.: `KidsLockedClube`/`KidsLockedMural`),
+   * mostrada quando o servidor vem BLOQUEADO (teaser do hub). Ausente → recado
+   * genérico `KidsLockedSpace`. O ACESSO é decidido SÓ pelo "Quem vê" do hub —
+   * isto é só a apresentação do bloqueio.
+   */
+  lockedView?: ReactNode
+  /**
+   * Título da tela "não consegui verificar o acesso agora" (falha transitória do
+   * hub/members). A tela é montada AQUI (client) com um retry REAL — re-roda o
+   * fetch — porque a decisão "indisponível" é estado deste componente e um
+   * `router.refresh()` não re-dispararia a carga. Ausente → recado genérico.
+   */
+  unavailableTitle?: string
 }) {
   const isWall = mode === 'wall'
   const [space, setSpace] = useState<HubSpaceView | null>(null)
@@ -127,6 +144,12 @@ export function KidsSpaceViewClient({
   const [thread, setThread] = useState<HubThreadView | null>(null)
   const [comments, setComments] = useState<HubCommentView[]>([])
   const [loading, setLoading] = useState(true)
+  const [unavailable, setUnavailable] = useState(false)
+  // Sem acesso (403): servidor sem teaser → o hub 403a em vez de devolver o teaser
+  // `locked`. Tratamos como bloqueado (tela "ainda não liberado"), não como erro.
+  const [forbidden, setForbidden] = useState(false)
+  // Bump p/ re-rodar a carga do espaço (retry da tela de indisponível).
+  const [reloadNonce, setReloadNonce] = useState(0)
   const [busy, setBusy] = useState(false)
 
   const [showNew, setShowNew] = useState(false)
@@ -167,10 +190,13 @@ export function KidsSpaceViewClient({
     [viewerId],
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadNonce` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
   useEffect(() => {
     let alive = true
     ;(async () => {
       try {
+        setUnavailable(false)
+        setForbidden(false)
         const sp = await apiGet<HubSpaceView>(`/api/hub/spaces/${enc(slug)}`)
         if (!alive) return
         setSpace(sp)
@@ -184,7 +210,22 @@ export function KidsSpaceViewClient({
         setChannels(ch.items)
         setChannel(pickInitialChannel(ch.items, mode))
       } catch (err) {
-        if (alive) toast.error((err as ApiError).message ?? 'Não consegui abrir este espaço.')
+        if (!alive) return
+        const e = err as ApiError
+        if (e.code === 'ACCESS_UNAVAILABLE' || e.status === 503) {
+          setUnavailable(true)
+          return
+        }
+        // SEM ACESSO (403): o servidor existe mas a criança não tem o produto. Mostra a
+        // tela "ainda não liberado" (lockedView), NÃO um toast de erro. Acontece quando o
+        // servidor está SEM teaser (o hub 403a em vez de devolver o teaser `locked`) — ex.:
+        // servidor criado pelo admin (teaserWhenLocked nasce false). Os servidores kids são
+        // itens FIXOS do menu, então não há existência a esconder.
+        if (e.code === 'ACCESS_DENIED' || e.status === 403) {
+          setForbidden(true)
+          return
+        }
+        toast.error(e.message ?? 'Não consegui abrir este espaço.')
       } finally {
         if (alive) setLoading(false)
       }
@@ -192,7 +233,15 @@ export function KidsSpaceViewClient({
     return () => {
       alive = false
     }
-  }, [slug, mode])
+  }, [slug, mode, reloadNonce])
+
+  // Retry da tela de indisponível: re-roda a carga (volta ao skeleton e refaz o
+  // fetch). `router.refresh()` não serviria — preserva o estado deste client.
+  const retryLoad = useCallback(() => {
+    setUnavailable(false)
+    setLoading(true)
+    setReloadNonce((n) => n + 1)
+  }, [])
 
   // `isCurrent` evita a corrida de troca de canal: clicar A→B deixa os dois fetches
   // em voo; sem a guarda, se A resolve por último, as threads de A renderizam sob B.
@@ -398,9 +447,30 @@ export function KidsSpaceViewClient({
   }
 
   if (loading) return <KidsSpaceSkeleton isWall={isWall} />
+  if (unavailable) {
+    return unavailableTitle ? (
+      <KidsAccessUnavailable title={unavailableTitle} onRetry={retryLoad} />
+    ) : (
+      <p className="px-4 py-8 text-muted-foreground">Tente de novo.</p>
+    )
+  }
+  // Sem acesso (403 sem teaser) OU teaser do hub (`locked`): a MESMA tela gentil "ainda
+  // não liberado". `lockedView` é a tela específica do servidor (Clube/Mural); o
+  // `KidsLockedSpace` (genérico) só serve quando há `space` (caso teaser). Vem ANTES do
+  // "não encontrado" porque no 403 o `space` é null.
+  if (forbidden || space?.locked) {
+    return (
+      <>
+        {lockedView ??
+          (space ? (
+            <KidsLockedSpace space={space} />
+          ) : (
+            <p className="px-4 py-8 text-center text-muted-foreground">Ainda não liberado.</p>
+          ))}
+      </>
+    )
+  }
   if (!space) return <p className="px-4 py-8 text-muted-foreground">Espaço não encontrado.</p>
-  // Sem acesso (teaser): recado gentil, sem nenhum conteúdo.
-  if (space.locked) return <KidsLockedSpace space={space} />
 
   return (
     <>

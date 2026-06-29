@@ -283,8 +283,9 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
                 size="lg"
               />
               <div className="flex min-w-0 flex-col gap-1">
+                {/* Só o NOME — nunca o e-mail (info sensível): sem nome → "Aluno". */}
                 <p className="text-sm font-medium">
-                  {getUserDisplayName(viewer.firstName, viewer.lastName, viewer.email)}
+                  {getUserDisplayName(viewer.firstName, viewer.lastName, null) || 'Aluno'}
                 </p>
                 <StarRating value={rating} size="sm" />
                 {comment.trim() ? (

@@ -215,6 +215,35 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
         }
       >
         <div className="flex flex-col gap-4">
+          {/* Explicador do modelo de acesso — "fechadura × chave" + independência por servidor. */}
+          <div className="rounded-lg border border-border bg-muted/40 p-3 text-muted-foreground text-xs leading-relaxed">
+            <p className="font-medium text-foreground">Como o acesso funciona</p>
+            <p className="mt-1">
+              Cada servidor é uma porta com UMA fechadura — o campo <strong>"Quem vê"</strong>. É só
+              ele que decide quem entra:
+            </p>
+            <ul className="mt-1.5 list-disc space-y-0.5 pl-4">
+              <li>
+                <strong>Público</strong>: qualquer aluno logado.
+              </li>
+              <li>
+                <strong>Por comunidade</strong>: só quem tem a "chave". Você cria um produto no
+                catálogo que entrega essa mesma chave — comprar o produto = ganhar a chave. É assim
+                que um servidor vira "vendido" (ex.: Clube dos Criadores).
+              </li>
+              <li>
+                <strong>Por curso</strong> / <strong>Por cargo</strong>: quem tem matrícula no curso
+                / o cargo da equipe.
+              </li>
+            </ul>
+            <p className="mt-1.5">
+              Cada servidor é <strong>independente</strong> (pode ter regra diferente). Os{' '}
+              <strong>canais herdam</strong> a fechadura do servidor — só configure um canal se
+              quiser ele MAIS restrito. <strong>Exigir aprovação</strong> = moderação (não mexe no
+              acesso); <strong>Aparecer bloqueado no menu</strong> = só a aparência para quem não
+              tem acesso.
+            </p>
+          </div>
           <Field label="Nome" htmlFor="sp-name">
             <Input
               id="sp-name"
@@ -329,5 +358,8 @@ function SpaceRow({ space, canWrite }: { space: HubSpaceView; canWrite: boolean 
 }
 
 function accessLabel(v: string): string {
-  return v === 'public' ? 'Público' : v === 'course_gated' ? 'Por curso' : 'Por cargo'
+  if (v === 'public') return 'Público'
+  if (v === 'course_gated') return 'Por curso'
+  if (v === 'community_gated') return 'Por comunidade'
+  return 'Por cargo'
 }

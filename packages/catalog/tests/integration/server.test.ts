@@ -40,12 +40,12 @@ function build(opts: { env?: typeof env; readinessOk?: boolean } = {}) {
   const updateProduct = new UpdateProductService(products, logger)
   const createOffer = new CreateOfferService(offers, products, resolver, logger)
   const updateOffer = new UpdateOfferService(offers, products, resolver, logger)
-  const getOffer = new GetOfferService(offers, products, resolver)
+  const getOffer = new GetOfferService(offers, products, resolver, logger)
   const getProduct = new GetProductService(products)
   const listProducts = new ListProductsService(products)
   const listOffers = new ListOffersService(offers, products)
   const listCoupons = new ListCouponsService(coupons)
-  const quoteOffer = new QuoteOfferService(offers, coupons)
+  const quoteOffer = new QuoteOfferService(offers, coupons, products, resolver)
   const redeemCoupon = new RedeemCouponService(coupons, logger)
   const createCoupon = new CreateCouponService(coupons, offers, logger)
   const updateCoupon = new UpdateCouponService(coupons, offers, logger)
@@ -863,6 +863,180 @@ describe('catalog HTTP', () => {
       expect((await res.json()) as { error: { code: string } }).toMatchObject({
         error: { code: 'OFFER_NOT_AVAILABLE' },
       })
+    })
+
+    it('quote revalida produto principal alterado após ativação', async () => {
+      const built = build()
+      const product = await built.createProduct.execute({
+        sku: 'quote-main-p',
+        slug: 'quote-main-p',
+        name: 'Produto principal',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'quote-main-p' },
+      })
+      await built.createOffer.execute({
+        productId: product.id,
+        code: 'quote-main-of',
+        slug: 'quote-main-of',
+        name: 'Oferta com produto principal',
+        priceCents: 3700,
+        status: 'active',
+      })
+
+      const patch = await built.app.handle(
+        req('PATCH', `/catalog/products/${product.id}`, {
+          headers: ADMIN,
+          body: { status: 'archived', fulfillment: null },
+        }),
+      )
+      expect(patch.status).toBe(200)
+
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers/quote-main-of/quote', { body: {} }),
+      )
+      expect(res.status).toBe(409)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'OFFER_NOT_AVAILABLE' },
+      })
+    })
+
+    it('quote revalida produtos inclusos alterados após ativação', async () => {
+      const built = build()
+      const main = await built.createProduct.execute({
+        sku: 'quote-items-main',
+        slug: 'quote-items-main',
+        name: 'Principal',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'quote-items-main' },
+      })
+      const bonus = await built.createProduct.execute({
+        sku: 'quote-items-bonus',
+        slug: 'quote-items-bonus',
+        name: 'Bonus',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'quote-items-bonus' },
+      })
+      await built.createOffer.execute({
+        productId: main.id,
+        code: 'quote-items-of',
+        slug: 'quote-items-of',
+        name: 'Oferta com bonus',
+        priceCents: 3700,
+        status: 'active',
+        items: [{ productId: bonus.id }],
+      })
+
+      const patch = await built.app.handle(
+        req('PATCH', `/catalog/products/${bonus.id}`, {
+          headers: ADMIN,
+          body: { status: 'archived', fulfillment: null },
+        }),
+      )
+      expect(patch.status).toBe(200)
+
+      const res = await built.app.handle(
+        req('POST', '/catalog/offers/quote-items-of/quote', { body: {} }),
+      )
+      expect(res.status).toBe(409)
+      expect((await res.json()) as { error: { code: string } }).toMatchObject({
+        error: { code: 'OFFER_NOT_AVAILABLE' },
+      })
+    })
+  })
+
+  // O teto de perfis kids vive na OFERTA (`OfferContent.maxProfiles`) e é injetado no
+  // fulfillment do entitlement PRIMÁRIO em /entitlements — é o que o members congela no
+  // snapshot e o auth lê ao criar perfil. Trava o contrato cross-package.
+  describe('entitlements: maxProfiles (teto de perfis kids)', () => {
+    async function seedKidsOffer(opts: {
+      offerMaxProfiles?: number
+      productMaxProfiles?: number
+      withBonus?: boolean
+    }) {
+      const built = build()
+      const main = await built.createProduct.execute({
+        sku: 'kids-main',
+        slug: 'kids-main',
+        name: 'Plano Kids',
+        kind: 'ebook',
+        status: 'active',
+        // `productMaxProfiles` simula uma linha LEGADA (campo gravado quando o teto
+        // ainda morava no produto) — passado direto no service, pois o DTO HTTP já
+        // não aceita o campo. Deve ser DESCARTADO na resolução.
+        fulfillment: {
+          accessType: 'all_kids_courses',
+          ...(opts.productMaxProfiles ? { maxProfiles: opts.productMaxProfiles } : {}),
+        },
+      })
+      let bonusId: string | undefined
+      if (opts.withBonus) {
+        const bonus = await built.createProduct.execute({
+          sku: 'kids-bonus',
+          slug: 'kids-bonus',
+          name: 'Bônus',
+          kind: 'ebook',
+          status: 'active',
+          fulfillment: { accessType: 'course', courseRef: 'kids-bonus' },
+        })
+        bonusId = bonus.id
+      }
+      await built.createOffer.execute({
+        productId: main.id,
+        code: 'kids-of',
+        slug: 'kids-of',
+        name: 'Plano N Perfis',
+        priceCents: 9700,
+        status: 'active',
+        content: opts.offerMaxProfiles ? { maxProfiles: opts.offerMaxProfiles } : null,
+        items: bonusId ? [{ productId: bonusId }] : undefined,
+      })
+      return built
+    }
+
+    async function entitlementsOf(built: ReturnType<typeof build>) {
+      const res = await built.app.handle(req('GET', '/catalog/offers/kids-of/entitlements'))
+      expect(res.status).toBe(200)
+      return (await res.json()) as {
+        items: {
+          isPrimary: boolean
+          fulfillment: { accessType: string; maxProfiles?: number } | null
+        }[]
+      }
+    }
+
+    it('injeta o maxProfiles da OFERTA no fulfillment do item primário', async () => {
+      const built = await seedKidsOffer({ offerMaxProfiles: 4 })
+      const { items } = await entitlementsOf(built)
+      expect(items.find((i) => i.isPrimary)?.fulfillment?.maxProfiles).toBe(4)
+    })
+
+    it('oferta SEM maxProfiles → nenhum item carrega o campo', async () => {
+      const built = await seedKidsOffer({})
+      const { items } = await entitlementsOf(built)
+      for (const it of items) expect(it.fulfillment?.maxProfiles).toBeUndefined()
+    })
+
+    it('a OFERTA vence: sobrescreve o maxProfiles LEGADO do produto', async () => {
+      const built = await seedKidsOffer({ offerMaxProfiles: 3, productMaxProfiles: 99 })
+      const { items } = await entitlementsOf(built)
+      expect(items.find((i) => i.isPrimary)?.fulfillment?.maxProfiles).toBe(3)
+    })
+
+    it('maxProfiles LEGADO no produto, oferta sem o campo → descartado (não vaza 99)', async () => {
+      const built = await seedKidsOffer({ productMaxProfiles: 99 })
+      const { items } = await entitlementsOf(built)
+      expect(items.find((i) => i.isPrimary)?.fulfillment?.maxProfiles).toBeUndefined()
+    })
+
+    it('só o primário recebe o teto — itens-bônus (não-primários) ficam sem', async () => {
+      const built = await seedKidsOffer({ offerMaxProfiles: 4, withBonus: true })
+      const { items } = await entitlementsOf(built)
+      const nonPrimary = items.filter((i) => !i.isPrimary)
+      expect(nonPrimary.length).toBeGreaterThan(0)
+      for (const it of nonPrimary) expect(it.fulfillment?.maxProfiles).toBeUndefined()
     })
   })
 

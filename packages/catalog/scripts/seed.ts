@@ -2,6 +2,7 @@ import { createLogger, serializeError } from '@sistemazero/core/logging'
 import { CreateOfferService } from '../src/application/create-offer/create-offer.service'
 import { CreateProductService } from '../src/application/create-product/create-product.service'
 import { ResolveOfferEntitlementsService } from '../src/application/resolve-offer-entitlements/resolve-offer-entitlements.service'
+import { UpdateProductService } from '../src/application/update-product/update-product.service'
 import { loadEnv } from '../src/infrastructure/config/env'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
 import { DrizzleOfferRepository } from '../src/infrastructure/persistence/drizzle/offer.repository'
@@ -23,6 +24,23 @@ const OFFER_SLUG = 'no-comando-da-ia'
 const STUDIO_SKU = 'estudio-completo'
 const STUDIO_OFFER_SLUG = 'estudio-completo'
 
+// Servidores da comunidade kids vendidos como produtos À PARTE (gate `community_gated`
+// no hub + `/members/access`). Cada um é INDEPENDENTE, com a SUA chave (= o slug do
+// produto, que casa com o `accessConfig` do servidor homônimo no hub):
+// - Clube dos Criadores: fórum vendável (`kind: community`).
+// - Mural dos Criadores: vitrine, produto SEPARADO do Clube — dado de BÔNUS no desafio
+//   do 1º jogo (o operador adiciona como item da oferta do desafio). Sem oferta própria
+//   aqui (preço/venda é decisão do operador no painel); o produto basta p/ ser concedido.
+const CLUBE_SKU = 'clube-dos-criadores'
+const MURAL_SKU = 'mural-dos-criadores'
+
+// Desafio do Primeiro Jogo (kids) — o funil `/kids/desafio-primeiro-jogo` vende ESTA
+// oferta (env `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo`). É um
+// CURSO (a criança faz o 1º jogo dentro do curso, autorado no admin com este slug) +
+// o **Mural de BÔNUS** (item da oferta). Sem o produto/oferta, o checkout do funil quebra.
+const DESAFIO_SKU = 'desafio-primeiro-jogo'
+const DESAFIO_OFFER_SLUG = 'desafio-primeiro-jogo'
+
 const env = loadEnv()
 const logger = createLogger({ level: 'info', pretty: env.NODE_ENV !== 'production' })
 const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
@@ -31,7 +49,38 @@ const products = new DrizzleProductRepository(connection.db)
 const offers = new DrizzleOfferRepository(connection.db)
 const resolver = new ResolveOfferEntitlementsService(products)
 const createProduct = new CreateProductService(products, logger)
+const updateProduct = new UpdateProductService(products, logger)
 const createOffer = new CreateOfferService(offers, products, resolver, logger)
+
+/**
+ * Garante um produto de COMUNIDADE (servidor do hub vendido à parte): cria se não
+ * existe; idempotente. Entrega via `community` — o `courseRef` é a CHAVE (= sku/slug),
+ * que casa com o `accessConfig` `community_gated` do servidor homônimo no hub e com o
+ * `/members/access`. NÃO cria oferta (preço/venda é decisão do operador no painel).
+ */
+async function ensureCommunityProduct(input: {
+  sku: string
+  name: string
+  description: string
+}): Promise<string> {
+  const existing = await products.findBySku(input.sku)
+  if (existing) {
+    logger.info('seed.product_exists', { id: existing.id, sku: existing.sku })
+    return existing.id
+  }
+  const view = await createProduct.execute({
+    sku: input.sku,
+    slug: input.sku,
+    name: input.name,
+    kind: 'community',
+    status: 'active',
+    sellable: true,
+    description: input.description,
+    fulfillment: { accessType: 'community', courseRef: input.sku, release: { mode: 'immediate' } },
+  })
+  logger.info('seed.product_created', { id: view.id, sku: view.sku })
+  return view.id
+}
 
 async function main(): Promise<void> {
   let product = await products.findBySku(PRODUCT_SKU)
@@ -83,22 +132,29 @@ async function main(): Promise<void> {
   }
 
   // ── Estúdio Completo (kids) ───────────────────────────────────────────────
+  // `kind: 'tool'` (Ferramenta) — é um app/editor vendável, NÃO uma comunidade. A
+  // ENTREGA segue via `accessType: 'community'` (a CHAVE `estudio-completo` casa com o
+  // `/members/access` e a re-validação do publish no hub) — `kind` é só taxonomia.
   let studio = await products.findBySku(STUDIO_SKU)
   if (studio) {
-    logger.info('seed.product_exists', { id: studio.id, sku: studio.sku })
+    // RECONCILIA o tipo do que já existe (legado `community` → `tool`). Idempotente:
+    // só atualiza se o kind divergir (preserva o fulfillment `community`).
+    if (studio.kind !== 'tool') {
+      await updateProduct.execute({ id: studio.id, kind: 'tool' })
+      logger.info('seed.product_reconciled', { id: studio.id, sku: studio.sku, kind: 'tool' })
+    } else {
+      logger.info('seed.product_exists', { id: studio.id, sku: studio.sku })
+    }
   } else {
     const view = await createProduct.execute({
       sku: STUDIO_SKU,
       slug: STUDIO_SKU,
       name: 'Estúdio Completo',
-      kind: 'community',
+      kind: 'tool',
       status: 'active',
       sellable: true,
       description:
         'O editor completo do Sistema Zero (blocos, ponte e código) liberado para a criança criar seus próprios jogos e apps na comunidade kids.',
-      // Entrega via `community`: o `courseRef` é a CHAVE de acesso (não um curso de
-      // trilha). Casa com o `/members/access?refs=estudio-completo` e a re-validação
-      // do publish no hub (`STUDIO_STANDALONE_ACCESS_REF`).
       fulfillment: {
         accessType: 'community',
         courseRef: STUDIO_SKU,
@@ -126,6 +182,69 @@ async function main(): Promise<void> {
       guaranteeDays: 7,
       status: 'active',
       content: { badge: 'Crie seus próprios jogos', ctaLabel: 'Quero o Estúdio' },
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  // ── Comunidade kids: Clube + Mural (produtos `community`, SEPARADOS) ──────
+  await ensureCommunityProduct({
+    sku: CLUBE_SKU,
+    name: 'Clube dos Criadores',
+    description:
+      'Acesso ao Clube dos Criadores: o fórum da comunidade kids para conversar com os colegas e mostrar os projetos.',
+  })
+  const muralProductId = await ensureCommunityProduct({
+    sku: MURAL_SKU,
+    name: 'Mural dos Criadores',
+    description:
+      'Acesso ao Mural dos Criadores: a vitrine onde a galera vê e curte os jogos criados pela comunidade kids.',
+  })
+
+  // ── Desafio do Primeiro Jogo (kids): CURSO + Mural de bônus ───────────────
+  // CURSO (`accessType:'course'`, courseRef = slug; o conteúdo é autorado no admin com
+  // ESTE slug + audience kids — sem ele o aluno compra mas vê 404 no curso). A oferta
+  // leva o **Mural como item de BÔNUS** (`items`) → comprar libera o curso + o Mural.
+  let desafio = await products.findBySku(DESAFIO_SKU)
+  if (desafio) {
+    logger.info('seed.product_exists', { id: desafio.id, sku: desafio.sku })
+  } else {
+    const view = await createProduct.execute({
+      sku: DESAFIO_SKU,
+      slug: DESAFIO_SKU,
+      name: 'Desafio do Primeiro Jogo',
+      kind: 'course',
+      status: 'active',
+      sellable: true,
+      description:
+        'O desafio que leva a criança a criar o seu PRIMEIRO jogo, do zero, no Estúdio do Sistema Zero — passo a passo, com direito a publicar no Mural dos Criadores.',
+      fulfillment: { accessType: 'course', courseRef: DESAFIO_SKU, release: { mode: 'immediate' } },
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    desafio = await products.findById(view.id)
+  }
+  if (!desafio) throw new Error('Produto do Desafio não encontrado após a criação')
+
+  const existingDesafioOffer = await offers.findBySlug(DESAFIO_OFFER_SLUG)
+  if (existingDesafioOffer) {
+    logger.info('seed.offer_exists', {
+      id: existingDesafioOffer.id,
+      slug: existingDesafioOffer.slug,
+    })
+  } else {
+    const view = await createOffer.execute({
+      productId: desafio.id,
+      code: 'desafio-padrao',
+      slug: DESAFIO_OFFER_SLUG,
+      name: 'Desafio do Primeiro Jogo — Oferta padrão',
+      priceCents: 3700,
+      currency: 'BRL',
+      pricingMode: 'one_time',
+      installmentsMax: 12,
+      guaranteeDays: 7,
+      status: 'active',
+      content: { badge: 'Crie seu primeiro jogo', ctaLabel: 'Topar o desafio' },
+      // Mural dos Criadores entra como BÔNUS desta oferta (item extra entregue junto).
+      items: [{ productId: muralProductId }],
     })
     logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
   }

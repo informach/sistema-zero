@@ -1,8 +1,9 @@
 import { Card, CardContent } from '@sistemazero/ui/card'
 import { Sparkles, Trophy } from 'lucide-react'
 import type { PublicProfileDTO } from '@/lib/types'
+import { AvatarWithAura } from './avatar-with-aura'
 import { badgeInfo } from './badges'
-import { KidsAvatar } from './kids-avatar'
+import { LevelBadge } from './level-badge'
 import { LazyRoomCanvas } from './room/lazy-room-canvas'
 
 /**
@@ -22,13 +23,17 @@ export function PublicProfileView({ profile }: { profile: PublicProfileDTO }) {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
-            <KidsAvatar
+            <AvatarWithAura
               photoUrl={profile.avatarPhotoUrl ?? null}
+              levelSlug={profile.level?.slug}
               size="xl"
               label={`Avatar de ${profile.name}`}
             />
             <div className="min-w-0 flex-1">
-              <h1 className="sz-display text-2xl">{profile.name}</h1>
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                <h1 className="sz-display text-2xl">{profile.name}</h1>
+                <LevelBadge levelSlug={profile.level?.slug} />
+              </div>
               <p className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm sm:justify-start">
                 <span className="inline-flex items-center gap-1.5 text-primary">
                   <Sparkles className="size-4" />

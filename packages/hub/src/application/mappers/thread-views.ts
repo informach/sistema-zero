@@ -38,6 +38,7 @@ const attachmentsFor = (map: AttachmentMap | undefined, id: string): AttachmentV
 
 export interface ThreadView {
   id: string
+  version: number
   channelId: string
   authorId: string
   title: string
@@ -68,6 +69,7 @@ export interface ThreadView {
 
 export interface CommentView {
   id: string
+  version: number
   threadId: string
   authorId: string
   /** Primeiro nome do autor (snapshot) — exibido/clicável; o BFF decide o link pela flag. */
@@ -97,6 +99,7 @@ export function toThreadView(
 ): ThreadView {
   return {
     id: t.id,
+    version: t.version,
     channelId: t.channelId,
     authorId: t.authorId,
     title: t.title,
@@ -127,6 +130,7 @@ export function toCommentView(
 ): CommentView {
   return {
     id: c.id,
+    version: c.version,
     threadId: c.threadId,
     authorId: c.authorId,
     authorDisplayName: c.authorDisplayName,

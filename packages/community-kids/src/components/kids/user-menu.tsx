@@ -8,7 +8,8 @@ import { useEffect, useRef, useState } from 'react'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
-import { KidsAvatar } from './kids-avatar'
+import { AvatarWithAura } from './avatar-with-aura'
+import { LevelBadge } from './level-badge'
 
 /**
  * Menu do avatar: cabeçalho com foto + nome + colocação no ranking/XP (NÃO o
@@ -74,6 +75,7 @@ export function UserMenu({
   // troca nome/foto pelo perfil ativo). O subtítulo mostra ranking/XP (não o e-mail).
   const isProfile = Boolean(user.activeProfile)
   const subtitle = profileMenuSubtitle(gamification, isProfile)
+  const levelSlug = gamification?.level?.slug
 
   return (
     <div className="relative" ref={ref}>
@@ -85,7 +87,7 @@ export function UserMenu({
         aria-expanded={open}
       >
         {isProfile ? (
-          <KidsAvatar photoUrl={avatarPhotoUrl} size="sm" />
+          <AvatarWithAura photoUrl={avatarPhotoUrl} levelSlug={levelSlug} size="sm" />
         ) : (
           <UserAvatar
             avatarUrl={user.avatarUrl}
@@ -105,7 +107,7 @@ export function UserMenu({
           {/* Cabeçalho: avatar à esquerda + nome (do perfil ativo, se houver) */}
           <div className="flex items-center gap-3 border-b border-border px-3 py-3">
             {isProfile ? (
-              <KidsAvatar photoUrl={avatarPhotoUrl} size="md" />
+              <AvatarWithAura photoUrl={avatarPhotoUrl} levelSlug={levelSlug} size="md" />
             ) : (
               <UserAvatar
                 avatarUrl={user.avatarUrl}
@@ -119,8 +121,9 @@ export function UserMenu({
               <p className="truncate font-semibold text-sm">
                 {getUserDisplayName(user.firstName, user.lastName, user.email)}
               </p>
+              {isProfile ? <LevelBadge levelSlug={levelSlug} size="sm" className="mt-1" /> : null}
               {subtitle ? (
-                <p className="truncate text-muted-foreground text-xs">{subtitle}</p>
+                <p className="mt-1 truncate text-muted-foreground text-xs">{subtitle}</p>
               ) : null}
             </div>
           </div>

@@ -1,5 +1,11 @@
 ---
 import { PRODUTO } from '../content/copy'
+
+// Nome do produto exibido ao lado do logo. Por funil — ausente cai no NCI (compat).
+interface Props {
+  productName?: string
+}
+const { productName = PRODUTO.nome } = Astro.props
 ---
 
 <header class="border-b border-line">
@@ -10,6 +16,6 @@ import { PRODUTO } from '../content/copy'
       class="h-3.5 w-auto sm:h-4"
       decoding="async"
     />
-    <span class="text-sm text-muted">· {PRODUTO.nome}</span>
+    <span class="text-sm text-muted">· {productName}</span>
   </div>
 </header>

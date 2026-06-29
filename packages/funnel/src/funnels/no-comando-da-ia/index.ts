@@ -46,7 +46,6 @@ export const NO_COMANDO_DA_IA: FunnelDef = {
   produto: 'no-comando-da-ia',
   key: 'pro/no-comando-da-ia',
   basePath: '/pro/no-comando-da-ia',
-  catalogOfferSlug: 'no-comando-da-ia',
   productName: 'No Comando da IA',
   productSku: 'no-comando-da-ia',
   imagesBase: '/img/no-comando-da-ia',

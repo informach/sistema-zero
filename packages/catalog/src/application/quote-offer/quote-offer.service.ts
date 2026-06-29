@@ -1,8 +1,13 @@
 import { CouponNotApplicableError, CouponNotFoundError } from '../../domain/coupon/coupon.errors'
+import type { OfferAggregate } from '../../domain/offer/offer.aggregate'
 import { OfferNotAvailableError, OfferNotFoundError } from '../../domain/offer/offer.errors'
 import type { CouponRepository } from '../../domain/ports/coupon-repository.port'
 import type { OfferRepository } from '../../domain/ports/offer-repository.port'
+import type { ProductRepository } from '../../domain/ports/product-repository.port'
+import { ValidationError } from '../../domain/shared/errors'
+import { assertActiveOfferDeliverable } from '../create-offer/create-offer.service'
 import type { OfferQuoteView } from '../mappers/quote-view'
+import type { ResolveOfferEntitlementsService } from '../resolve-offer-entitlements/resolve-offer-entitlements.service'
 
 export interface QuoteOfferCommand {
   offerSlug: string
@@ -18,6 +23,8 @@ export class QuoteOfferService {
   constructor(
     private readonly offers: OfferRepository,
     private readonly coupons: CouponRepository,
+    private readonly products: ProductRepository,
+    private readonly resolver: ResolveOfferEntitlementsService,
   ) {}
 
   async execute(command: QuoteOfferCommand): Promise<OfferQuoteView> {
@@ -26,6 +33,7 @@ export class QuoteOfferService {
     // Disponibilidade é AUTORITATIVA aqui: a cotação é o gate de cobrança do funil,
     // então oferta pausada/draft/arquivada (ou fora da janela) não gera preço a cobrar.
     if (!offer.isAvailable()) throw new OfferNotAvailableError()
+    await this.assertDeliverable(offer)
 
     const priceCents = offer.priceCents
     if (priceCents <= 0) throw new OfferNotAvailableError('Oferta sem preço cobrável')
@@ -67,6 +75,19 @@ export class QuoteOfferService {
         percentOff: coupon.percentOff,
         amountOffCents: coupon.amountOffCents,
       },
+    }
+  }
+
+  private async assertDeliverable(offer: OfferAggregate): Promise<void> {
+    const product = await this.products.findById(offer.productId)
+    if (!product) throw new OfferNotAvailableError('Oferta sem produto principal válido')
+    try {
+      await assertActiveOfferDeliverable(offer, product, this.resolver)
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw new OfferNotAvailableError('Oferta sem entrega disponível')
+      }
+      throw error
     }
   }
 }

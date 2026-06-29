@@ -5,6 +5,7 @@ export const {
   listMyCourses,
   listCatalog,
   checkStudioAccessReadonly,
+  getProfileAllowanceReadonly,
   getMyCourse,
   getLesson,
   resolveAttachment,

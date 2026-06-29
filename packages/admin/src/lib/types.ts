@@ -142,6 +142,15 @@ export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
   kids: 'Kids',
 }
 
+/** Dificuldade do curso. Alimenta o nível do ALUNO (cursos qualificados por nível). */
+export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado'] as const
+export type CourseLevel = (typeof COURSE_LEVELS)[number]
+export const LEVEL_LABELS: Record<CourseLevel, string> = {
+  iniciante: 'Iniciante',
+  intermediario: 'Intermediário',
+  avancado: 'Avançado',
+}
+
 export interface CourseView {
   id: string
   slug: string
@@ -154,6 +163,8 @@ export interface CourseView {
   status: string
   /** Plataforma do curso (`adult` | `kids`) — a chave-mestra cobre só `adult`. */
   audience: CourseAudience
+  /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
+  level: CourseLevel
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   createdAt: string
@@ -416,7 +427,16 @@ export interface FulfillmentSpec {
   /** SLUG do curso na área de membros (obrigatório quando `accessType = course`). */
   courseRef?: string
   release?: ReleaseRule
-  /** Teto de PERFIS (estilo Netflix) liberado — plataforma Kids. Inteiro ≥ 1. */
+  // ⚠️ `maxProfiles` saiu do produto — agora vive na OFERTA (`OfferContent.maxProfiles`).
+}
+
+/** Conteúdo comercial da oferta (badge/cta/cupom/perfis). Editado no form da oferta. */
+export interface OfferContent {
+  badge?: string
+  ctaLabel?: string
+  highlight?: string
+  allowsCoupon?: boolean
+  /** Teto de PERFIS (estilo Netflix) DESTA oferta — plataforma Kids. Inteiro 1..50. */
   maxProfiles?: number
 }
 
@@ -470,6 +490,8 @@ export interface OfferListItem {
   productId: string
   productName: string | null
   items: OfferItemView[]
+  /** Conteúdo comercial (badge/cta/cupom/maxProfiles) — p/ editar sem apagar os demais campos. */
+  content: OfferContent | null
   createdAt: string
   updatedAt: string
 }

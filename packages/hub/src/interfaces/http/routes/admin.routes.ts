@@ -11,11 +11,13 @@ import type {
 import { assertInternalCaller, requireAdmin } from '../auth'
 import {
   ChannelBody,
+  ChannelPatchBody,
   IdParams,
   ListSpacesQuery,
   ReorderBody,
   ReorderSpacesBody,
   SpaceBody,
+  SpacePatchBody,
 } from '../dtos'
 
 const DEFAULT_LIMIT = 20
@@ -30,7 +32,17 @@ export interface AdminRoutesDeps {
 }
 
 type SpaceInput = typeof SpaceBody.static
+type SpacePatchInput = typeof SpacePatchBody.static
 type ChannelInput = typeof ChannelBody.static
+type ChannelPatchInput = typeof ChannelPatchBody.static
+
+const normalizeAccess = (accessConfig: NonNullable<SpaceInput['accessConfig']>) =>
+  normalizeAccessConfig({
+    visibility: accessConfig.visibility,
+    courses: accessConfig.courses ?? [],
+    communities: accessConfig.communities ?? [],
+    roles: accessConfig.roles ?? [],
+  })
 
 const spaceFields = (b: SpaceInput): SpaceFields => ({
   slug: b.slug,
@@ -38,16 +50,23 @@ const spaceFields = (b: SpaceInput): SpaceFields => ({
   description: b.description ?? null,
   iconUrl: b.iconUrl ?? null,
   audience: b.audience,
-  accessConfig: normalizeAccessConfig({
-    visibility: b.accessConfig.visibility,
-    courses: b.accessConfig.courses ?? [],
-    communities: b.accessConfig.communities ?? [],
-    roles: b.accessConfig.roles ?? [],
-  }),
+  accessConfig: normalizeAccess(b.accessConfig),
   // Pré-moderação: kids nasce ligada por padrão (decisão de segurança).
   requiresApproval: b.requiresApproval ?? b.audience === 'kids',
   teaserWhenLocked: b.teaserWhenLocked ?? false,
   status: b.status ?? 'active',
+})
+
+const spacePatchFields = (b: SpacePatchInput): Partial<SpaceFields> => ({
+  ...(b.slug !== undefined ? { slug: b.slug } : {}),
+  ...(b.name !== undefined ? { name: b.name } : {}),
+  ...(b.description !== undefined ? { description: b.description ?? null } : {}),
+  ...(b.iconUrl !== undefined ? { iconUrl: b.iconUrl ?? null } : {}),
+  ...(b.audience !== undefined ? { audience: b.audience } : {}),
+  ...(b.accessConfig !== undefined ? { accessConfig: normalizeAccess(b.accessConfig) } : {}),
+  ...(b.requiresApproval !== undefined ? { requiresApproval: b.requiresApproval } : {}),
+  ...(b.teaserWhenLocked !== undefined ? { teaserWhenLocked: b.teaserWhenLocked } : {}),
+  ...(b.status !== undefined ? { status: b.status } : {}),
 })
 
 const channelFields = (b: ChannelInput): ChannelFields => ({
@@ -65,6 +84,27 @@ const channelFields = (b: ChannelInput): ChannelFields => ({
   postingPolicy: b.postingPolicy ?? 'members',
   requiresApproval: b.requiresApproval ?? null,
   status: b.status ?? 'active',
+})
+
+const channelPatchFields = (b: ChannelPatchInput): Partial<ChannelFields> => ({
+  ...(b.slug !== undefined ? { slug: b.slug } : {}),
+  ...(b.name !== undefined ? { name: b.name } : {}),
+  ...(b.topic !== undefined ? { topic: b.topic ?? null } : {}),
+  ...(b.accessConfig !== undefined
+    ? {
+        accessConfig: b.accessConfig
+          ? normalizeAccessConfig({
+              visibility: b.accessConfig.visibility,
+              courses: b.accessConfig.courses ?? [],
+              communities: b.accessConfig.communities ?? [],
+              roles: b.accessConfig.roles ?? [],
+            })
+          : null,
+      }
+    : {}),
+  ...(b.postingPolicy !== undefined ? { postingPolicy: b.postingPolicy } : {}),
+  ...(b.requiresApproval !== undefined ? { requiresApproval: b.requiresApproval ?? null } : {}),
+  ...(b.status !== undefined ? { status: b.status } : {}),
 })
 
 function clampLimit(limit: number | undefined): number {
@@ -131,9 +171,9 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         '/spaces/:id',
         async ({ params, body, headers }) => {
           guard(headers)
-          return deps.spaces.update(params.id, spaceFields(body))
+          return deps.spaces.update(params.id, spacePatchFields(body), body.version)
         },
-        { params: IdParams, body: SpaceBody },
+        { params: IdParams, body: SpacePatchBody },
       )
       .delete(
         '/spaces/:id',
@@ -165,9 +205,9 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         '/channels/:id',
         async ({ params, body, headers }) => {
           guard(headers)
-          return deps.channels.update(params.id, channelFields(body))
+          return deps.channels.update(params.id, channelPatchFields(body), body.version)
         },
-        { params: IdParams, body: ChannelBody },
+        { params: IdParams, body: ChannelPatchBody },
       )
       .delete(
         '/channels/:id',

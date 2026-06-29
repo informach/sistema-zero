@@ -169,16 +169,27 @@ export class ThreadService {
     )
   }
 
-  async editThread(actor: Actor, threadId: string, body: string): Promise<ThreadView> {
+  async editThread(
+    actor: Actor,
+    threadId: string,
+    body: string,
+    expectedVersion: number,
+  ): Promise<ThreadView> {
     const { thread } = await this.requireThreadView(actor, threadId)
     if (thread.authorId !== actor.userId && !actor.privileged) {
       throw new AccessDeniedError('Só o autor pode editar')
     }
     const trimmed = body.trim()
     if (!trimmed || trimmed.length > MAX_BODY) throw new PostingNotAllowedError('Conteúdo inválido')
-    const updated: Thread = { ...thread, body: trimmed, editedAt: this.clock() }
+    const updated: Thread = {
+      ...thread,
+      version: expectedVersion,
+      body: trimmed,
+      editedAt: this.clock(),
+    }
     // O tópico foi carregado acima; falha aqui = conflito de versão (409), não 404.
     if (!(await this.threads.updateThread(updated))) throw new ConcurrencyConflictError()
+    updated.version = expectedVersion + 1
     const attachments = await this.attachments.listByThreadIds([thread.id])
     return toThreadView(updated, [], (attachments.get(thread.id) ?? []).map(toAttachmentView))
   }
@@ -238,7 +249,12 @@ export class ThreadService {
     return toCommentPage(items, hasMore, reactions, attachments)
   }
 
-  async editComment(actor: Actor, commentId: string, body: string): Promise<CommentView> {
+  async editComment(
+    actor: Actor,
+    commentId: string,
+    body: string,
+    expectedVersion: number,
+  ): Promise<CommentView> {
     const comment = await this.threads.findCommentById(commentId)
     if (!comment) throw new CommentNotFoundError()
     // Garante acesso ao tópico-pai (e que o tópico existe/é visível ao ator).
@@ -248,9 +264,15 @@ export class ThreadService {
     }
     const trimmed = body.trim()
     if (!trimmed || trimmed.length > MAX_BODY) throw new PostingNotAllowedError('Conteúdo inválido')
-    const updated: Comment = { ...comment, body: trimmed, editedAt: this.clock() }
+    const updated: Comment = {
+      ...comment,
+      version: expectedVersion,
+      body: trimmed,
+      editedAt: this.clock(),
+    }
     // O comentário foi carregado acima; falha aqui = conflito de versão (409), não 404.
     if (!(await this.threads.updateComment(updated))) throw new ConcurrencyConflictError()
+    updated.version = expectedVersion + 1
     const attachments = await this.attachments.listByCommentIds([commentId])
     return toCommentView(updated, [], (attachments.get(commentId) ?? []).map(toAttachmentView))
   }

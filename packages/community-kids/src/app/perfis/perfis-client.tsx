@@ -54,11 +54,14 @@ export function PerfisClient({
   isProfileSession,
   parentVerified,
   startManaging = false,
+  maxProfiles,
 }: {
   initialProfiles: ProfileView[]
   isProfileSession: boolean
   parentVerified: boolean
   startManaging?: boolean
+  /** Teto de perfis do plano (matrícula kids). `null` = desconhecido → não trava a UI. */
+  maxProfiles: number | null
 }) {
   const [profiles, setProfiles] = useState(initialProfiles)
   const [managing, setManaging] = useState(startManaging)
@@ -72,6 +75,10 @@ export function PerfisClient({
   const [editing, setEditing] = useState<Editing>(null)
   const [showPurchases, setShowPurchases] = useState(false) // sub-tela "Minhas compras"
   const [removing, setRemoving] = useState<ProfileView | null>(null) // confirmação de remover perfil
+
+  // Atingiu o teto do plano? (`maxProfiles` nulo = desconhecido → não trava a UI; o
+  // servidor segue como rede de segurança, 409 ao salvar.)
+  const atProfileLimit = maxProfiles != null && profiles.length >= maxProfiles
 
   // Entrou na gestão pelo `?manage=1` (logo após "Área dos pais" sair de um perfil):
   // limpa o parâmetro da URL p/ um refresh depois de "Concluir" não reabrir sozinho.
@@ -264,7 +271,7 @@ export function PerfisClient({
             />
           </li>
         ))}
-        {managing ? (
+        {managing && !atProfileLimit ? (
           <li>
             <button
               type="button"
@@ -280,6 +287,24 @@ export function PerfisClient({
           </li>
         ) : null}
       </ul>
+
+      {/* Limite do plano: feedback claro na área dos pais (a trava real é o servidor). */}
+      {managing && maxProfiles != null ? (
+        <p className="text-center text-muted-foreground text-sm">
+          {atProfileLimit ? (
+            <>
+              Você usou todos os <strong>{maxProfiles}</strong>{' '}
+              {maxProfiles === 1 ? 'perfil' : 'perfis'} do seu plano. Para liberar mais, fale com a
+              gente ou amplie o seu plano.
+            </>
+          ) : (
+            <>
+              {profiles.length} de {maxProfiles} {maxProfiles === 1 ? 'perfil' : 'perfis'} do seu
+              plano.
+            </>
+          )}
+        </p>
+      ) : null}
 
       {managing ? <ChildrenDashboard /> : null}
 

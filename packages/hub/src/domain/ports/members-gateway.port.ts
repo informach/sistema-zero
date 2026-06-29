@@ -36,6 +36,17 @@ export interface ShowcaseEligibilityResult {
  * auto-publicação no Mural (o hub não confia no corpo da publicação). Implementação
  * HTTP em `infrastructure/gateways/members-http.gateway.ts`.
  */
+/** Argumentos da notificação "aluno publicou no Mural" (alimenta o nível do aluno). */
+export interface ShowcasePublishedArgs {
+  /** PERFIL de criança (dono da gamificação) — `x-auth-user-id`. */
+  userId: string
+  /** CONTA do responsável (dona do perfil de gamificação) — `x-auth-account-id ?? userId`. */
+  accountId: string
+  /** Curso cujo projeto foi publicado (do `getShowcaseEligibility`). */
+  courseId: string
+  audience: 'adult' | 'kids'
+}
+
 export interface MembersGateway {
   checkAccess(
     userId: string,
@@ -44,4 +55,10 @@ export interface MembersGateway {
   ): Promise<CourseAccessResult>
   /** `GET /members/internal/showcase-eligibility`. Erro/timeout → lança (fail-closed). */
   getShowcaseEligibility(args: ShowcaseEligibilityArgs): Promise<ShowcaseEligibilityResult>
+  /**
+   * Avisa o members que o aluno PUBLICOU o projeto do curso no Mural — grava o marco
+   * `course_showcased` (alimenta o nível do aluno). **Best-effort**: NUNCA lança (a
+   * publicação não pode falhar por causa disso); o members é idempotente por user+curso.
+   */
+  notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void>
 }

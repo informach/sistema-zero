@@ -80,6 +80,9 @@ export interface AccessView {
   expiresAt: string | null
 }
 
+/** Dificuldade do curso (espelha o enum `course_level` do members). */
+export type CourseLevelSlug = 'iniciante' | 'intermediario' | 'avancado'
+
 export interface CourseProgress {
   completedLessons: number
   totalLessons: number
@@ -100,6 +103,8 @@ export interface CatalogCourseView {
   subtitle: string | null
   coverImageUrl: string | null
   hasAccess: boolean
+  /** Dificuldade do curso — opcional p/ tolerar members antigo. */
+  level?: CourseLevelSlug
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
   salesPageUrl: string | null
 }
@@ -191,6 +196,8 @@ export interface MyCourseView {
   title: string
   subtitle: string | null
   coverImageUrl: string | null
+  /** Dificuldade do curso — opcional p/ tolerar members antigo. */
+  level?: CourseLevelSlug
   access: AccessView
   progress: CourseProgress
   /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
@@ -251,6 +258,8 @@ export interface CourseDetailView {
   subtitle: string | null
   description: string | null
   coverImageUrl: string | null
+  /** Dificuldade do curso — opcional p/ tolerar members antigo. */
+  level?: CourseLevelSlug
   access: AccessView
   progress: CourseProgressView
   /** Aula-alvo do "Continuar de onde parei" (última acessada > 1ª não concluída > 1ª). */
@@ -453,6 +462,21 @@ export interface GamificationDelta {
   coinsCapped?: boolean
 }
 
+/** Slug do nível (rank) do aluno — apresentação (rótulo/cor/ícone) vive no app. */
+export type StudentLevelSlug = 'noob' | 'coder' | 'hacker' | 'elite' | 'god'
+
+/**
+ * Nível do aluno (rank de longo prazo). Derivado dos cursos qualificados (concluídos
+ * E publicados no Mural) por dificuldade — ver members `domain/gamification/levels.ts`.
+ */
+export interface StudentLevelView {
+  slug: StudentLevelSlug
+  /** Próximo nível (`null` no topo). */
+  next: StudentLevelSlug | null
+  /** Quanto falta p/ o próximo, por dificuldade (`null` no topo). */
+  remaining: { any: number; iniciante: number; intermediario: number; avancado: number } | null
+}
+
 /** `GET /members/gamification/me` — widgets (sidebar/home) e vitrine do perfil. */
 export interface GamificationMeView {
   xp: number
@@ -476,6 +500,10 @@ export interface GamificationMeView {
   }
   /** Catálogo COMPLETO na ordem do members — bloqueada tem `unlockedAt: null`. */
   badges: { slug: string; unlockedAt: string | null }[]
+  /**
+   * Nível do aluno (rank). Opcional p/ tolerar members antigo — a UI cai em `noob`.
+   */
+  level?: StudentLevelView
   /**
    * Colocação no ranking de XP da VITRINE do app (rankings adult/kids são
    * separados). Presente só quando pedido com `withRanking` (página de perfil).
@@ -662,6 +690,8 @@ export interface PublicProfileGameView {
   profileId: string
   xp: number
   ranking: { position: number; totalStudents: number } | null
+  /** Nível do aluno (rank) — opcional p/ tolerar members antigo. */
+  level?: StudentLevelView
   /** SÓ as conquistas que a criança tem (não o catálogo). */
   badges: { slug: string; unlockedAt: string }[]
   avatar: { style: string; slots: Record<string, AvatarSlotView> }
@@ -890,6 +920,7 @@ export interface HubResolvedAttachment {
 
 export interface HubThreadView {
   id: string
+  version: number
   channelId: string
   /** `null` quando NÃO é do viewer — o BFF redige o id de terceiros (ver `hub-redact`). */
   authorId: string | null
@@ -942,6 +973,7 @@ export interface ShowcasePayloadView {
 
 export interface HubCommentView {
   id: string
+  version: number
   threadId: string
   /** `null` quando NÃO é do viewer — o BFF redige o id de terceiros (ver `hub-redact`). */
   authorId: string | null

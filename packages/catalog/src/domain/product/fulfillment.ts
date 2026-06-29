@@ -37,11 +37,4 @@ export interface FulfillmentSpec {
   courseRef?: string
   /** Regra de liberação (drip). Default implícito: imediata. ARMAZENADA, ainda não aplicada pelo members. */
   release?: ReleaseRule
-  /**
-   * Teto de PERFIS (estilo Netflix) que esta compra libera — usado só na plataforma
-   * KIDS, onde o responsável cria 1 perfil por filho (o `members` resolve o teto
-   * efetivo da conta pelo MÁXIMO entre as matrículas kids ativas). Ausente = sem
-   * teto definido por esta entrega (a área de membros aplica o default). Inteiro ≥ 1.
-   */
-  maxProfiles?: number
 }

@@ -1,6 +1,7 @@
 import type { CourseAudience } from '../../domain/course/course'
 import { BADGE_SLUGS } from '../../domain/gamification/badges'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
+import { computeStudentLevel } from '../../domain/gamification/levels'
 import {
   type GamificationRepository,
   MAX_STREAK_FREEZES,
@@ -32,10 +33,11 @@ export class GetGamificationService {
     // um membro da equipe que TAMBÉM comprou um curso se via ranqueado entre os clientes.
     const now = this.clock()
     const wantsRanking = opts.withRanking && !opts.privileged
-    const [profile, badges, ranking] = await Promise.all([
+    const [profile, badges, ranking, qualifying] = await Promise.all([
       this.repo.getProfile(userId, opts.audience),
       this.repo.listBadges(userId, opts.audience),
       wantsRanking ? this.repo.getRanking(userId, accountId, opts.audience, now) : null,
+      this.repo.countQualifyingCoursesByLevel(userId, opts.audience),
     ])
     const today = localDateSaoPaulo(now)
     const unlockedBySlug = new Map(badges.map((b) => [b.badgeSlug, b.unlockedAt]))
@@ -84,6 +86,8 @@ export class GetGamificationService {
         slug,
         unlockedAt: unlockedBySlug.get(slug)?.toISOString() ?? null,
       })),
+      // Nível do aluno (rank): derivado dos cursos qualificados (concluído + Mural).
+      level: computeStudentLevel(qualifying),
       ...(ranking ? { ranking } : {}),
     }
   }

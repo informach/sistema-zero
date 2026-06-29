@@ -83,6 +83,7 @@ export class CourseAdminService {
         ...fields,
         audience: fields.audience ?? 'adult',
         sequentialLock: fields.sequentialLock ?? true,
+        level: fields.level ?? 'iniciante',
       }),
     )
   }
@@ -106,12 +107,14 @@ export class CourseAdminService {
     // `audience` AUSENTE preserva a atual (≠ do salesPageUrl, que limpa): um
     // PATCH de build antigo do admin sem o campo não rebaixa curso kids → adult.
     // `sequentialLock` AUSENTE também PRESERVA a atual (mesma régua do audience).
-    const { salesPageUrl, audience, sequentialLock, ...rest } = fields
+    // `level` AUSENTE idem (build antigo do admin sem o campo não rebaixa a dificuldade).
+    const { salesPageUrl, audience, sequentialLock, level, ...rest } = fields
     const merged = {
       ...existing,
       ...rest,
       audience: audience ?? existing.audience,
       sequentialLock: sequentialLock ?? existing.sequentialLock,
+      level: level ?? existing.level,
       metadata: withSalesPageUrl(existing.metadata, salesPageUrl),
     }
     const ok = await this.content.updateCourse(merged)

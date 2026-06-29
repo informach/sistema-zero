@@ -54,6 +54,68 @@ describe('admin de spaces/channels', () => {
     expect(((await dup.json()) as { error: { code: string } }).error.code).toBe('DUPLICATE_SLUG')
   })
 
+  test('PATCH de servidor rejeita versão antiga → 409 CONCURRENCY_CONFLICT', async () => {
+    const { app } = buildApp()
+    const created = await createSpace(app, validSpace())
+    const space = (await created.json()) as { id: string; version: number }
+
+    const first = await app.handle(
+      jsonRequest('PATCH', `/hub/admin/spaces/${space.id}`, {
+        headers: adminHeaders(),
+        body: validSpace({ name: 'Geral editado', version: space.version }),
+      }),
+    )
+    expect(first.status).toBe(200)
+    const edited = (await first.json()) as { name: string; version: number }
+    expect(edited.name).toBe('Geral editado')
+    expect(edited.version).toBe(space.version + 1)
+
+    const stale = await app.handle(
+      jsonRequest('PATCH', `/hub/admin/spaces/${space.id}`, {
+        headers: adminHeaders(),
+        body: validSpace({ name: 'Geral sobrescrito', version: space.version }),
+      }),
+    )
+    expect(stale.status).toBe(409)
+    expect(((await stale.json()) as { error: { code: string } }).error.code).toBe(
+      'CONCURRENCY_CONFLICT',
+    )
+  })
+
+  test('PATCH parcial de servidor preserva campos ausentes', async () => {
+    const { app } = buildApp()
+    const created = await createSpace(
+      app,
+      validSpace({
+        description: 'Descrição original',
+        requiresApproval: true,
+        teaserWhenLocked: true,
+        status: 'archived',
+      }),
+    )
+    const space = (await created.json()) as { id: string; version: number }
+
+    const patched = await app.handle(
+      jsonRequest('PATCH', `/hub/admin/spaces/${space.id}`, {
+        headers: adminHeaders(),
+        body: { name: 'Nome parcial', version: space.version },
+      }),
+    )
+    expect(patched.status).toBe(200)
+    const body = (await patched.json()) as {
+      name: string
+      description: string | null
+      requiresApproval: boolean
+      teaserWhenLocked: boolean
+      status: string
+    }
+    expect(body.name).toBe('Nome parcial')
+    expect(body.description).toBe('Descrição original')
+    expect(body.requiresApproval).toBe(true)
+    expect(body.teaserWhenLocked).toBe(true)
+    expect(body.status).toBe('archived')
+  })
+
   test('course_gated sem cursos → 400 VALIDATION_ERROR', async () => {
     const { app } = buildApp()
     const res = await createSpace(
@@ -111,6 +173,79 @@ describe('admin de spaces/channels', () => {
     )
     const channels = ((await tree.json()) as { channels: Array<{ id: string }> }).channels
     expect(channels.map((c) => c.id)).toEqual([c2.id, c1.id])
+  })
+
+  test('PATCH de canal rejeita versão antiga → 409 CONCURRENCY_CONFLICT', async () => {
+    const { app } = buildApp()
+    const space = (await (await createSpace(app, validSpace())).json()) as { id: string }
+    const created = await app.handle(
+      jsonRequest('POST', `/hub/admin/spaces/${space.id}/channels`, {
+        headers: adminHeaders(),
+        body: { slug: 'duvidas', name: 'Dúvidas' },
+      }),
+    )
+    const channel = (await created.json()) as { id: string; version: number }
+
+    const first = await app.handle(
+      jsonRequest('PATCH', `/hub/admin/channels/${channel.id}`, {
+        headers: adminHeaders(),
+        body: { slug: 'duvidas', name: 'Dúvidas editadas', version: channel.version },
+      }),
+    )
+    expect(first.status).toBe(200)
+    const edited = (await first.json()) as { name: string; version: number }
+    expect(edited.name).toBe('Dúvidas editadas')
+    expect(edited.version).toBe(channel.version + 1)
+
+    const stale = await app.handle(
+      jsonRequest('PATCH', `/hub/admin/channels/${channel.id}`, {
+        headers: adminHeaders(),
+        body: { slug: 'duvidas', name: 'Dúvidas sobrescritas', version: channel.version },
+      }),
+    )
+    expect(stale.status).toBe(409)
+    expect(((await stale.json()) as { error: { code: string } }).error.code).toBe(
+      'CONCURRENCY_CONFLICT',
+    )
+  })
+
+  test('PATCH parcial de canal preserva campos ausentes', async () => {
+    const { app } = buildApp()
+    const space = (await (await createSpace(app, validSpace())).json()) as { id: string }
+    const created = await app.handle(
+      jsonRequest('POST', `/hub/admin/spaces/${space.id}/channels`, {
+        headers: adminHeaders(),
+        body: {
+          slug: 'avisos',
+          name: 'Avisos',
+          topic: 'Original',
+          postingPolicy: 'staff_only',
+          requiresApproval: true,
+          status: 'archived',
+        },
+      }),
+    )
+    const channel = (await created.json()) as { id: string; version: number }
+
+    const patched = await app.handle(
+      jsonRequest('PATCH', `/hub/admin/channels/${channel.id}`, {
+        headers: adminHeaders(),
+        body: { name: 'Avisos editados', version: channel.version },
+      }),
+    )
+    expect(patched.status).toBe(200)
+    const body = (await patched.json()) as {
+      name: string
+      topic: string | null
+      postingPolicy: string
+      requiresApproval: boolean | null
+      status: string
+    }
+    expect(body.name).toBe('Avisos editados')
+    expect(body.topic).toBe('Original')
+    expect(body.postingPolicy).toBe('staff_only')
+    expect(body.requiresApproval).toBe(true)
+    expect(body.status).toBe('archived')
   })
 
   test('reorder com id desconhecido → 400', async () => {

@@ -20,6 +20,7 @@ const POSTING_POLICY = t.Union([t.Literal('members'), t.Literal('staff_only')])
 
 const SLUG = t.String({ minLength: 1, maxLength: 120, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' })
 const NAME = t.String({ minLength: 1, maxLength: 200 })
+const VERSION = t.Integer({ minimum: 0 })
 const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 5000 }), t.Null()]))
 const HTTP_URL_PATTERN = '^https?://'
 const NULLABLE_URL = t.Optional(
@@ -50,7 +51,7 @@ export const AccessConfigSchema = t.Object(
   { additionalProperties: false },
 )
 
-/** Corpo de `POST/PATCH /hub/admin/spaces[/:id]`. */
+/** Corpo de `POST /hub/admin/spaces`. */
 export const SpaceBody = t.Object({
   slug: SLUG,
   name: NAME,
@@ -65,7 +66,21 @@ export const SpaceBody = t.Object({
   status: t.Optional(SPACE_STATUS),
 })
 
-/** Corpo de `POST /hub/admin/spaces/:id/channels` e `PATCH /hub/admin/channels/:id`. */
+/** Corpo de `PATCH /hub/admin/spaces/:id` — exige a versão vista pelo cliente. */
+export const SpacePatchBody = t.Object({
+  slug: t.Optional(SLUG),
+  name: t.Optional(NAME),
+  description: NULLABLE_TEXT,
+  iconUrl: NULLABLE_URL,
+  audience: t.Optional(AUDIENCE),
+  accessConfig: t.Optional(AccessConfigSchema),
+  requiresApproval: t.Optional(t.Boolean()),
+  teaserWhenLocked: t.Optional(t.Boolean()),
+  status: t.Optional(SPACE_STATUS),
+  version: VERSION,
+})
+
+/** Corpo de `POST /hub/admin/spaces/:id/channels`. */
 export const ChannelBody = t.Object({
   slug: SLUG,
   name: NAME,
@@ -76,6 +91,18 @@ export const ChannelBody = t.Object({
   // `null`/ausente = herda do space.
   requiresApproval: t.Optional(t.Union([t.Boolean(), t.Null()])),
   status: t.Optional(SPACE_STATUS),
+})
+
+/** Corpo de `PATCH /hub/admin/channels/:id` — exige a versão vista pelo cliente. */
+export const ChannelPatchBody = t.Object({
+  slug: t.Optional(SLUG),
+  name: t.Optional(NAME),
+  topic: NULLABLE_TEXT,
+  accessConfig: t.Optional(t.Union([AccessConfigSchema, t.Null()])),
+  postingPolicy: t.Optional(POSTING_POLICY),
+  requiresApproval: t.Optional(t.Union([t.Boolean(), t.Null()])),
+  status: t.Optional(SPACE_STATUS),
+  version: VERSION,
 })
 
 /** Query de `GET /hub/admin/spaces`. */
@@ -115,8 +142,8 @@ export const CreateCommentBody = t.Object({
   attachmentIds: ATTACHMENT_IDS,
 })
 
-/** Edição (autor): só o corpo Markdown. */
-export const EditBody = t.Object({ body: MARKDOWN_BODY })
+/** Edição (autor): corpo Markdown + versão vista pelo cliente. */
+export const EditBody = t.Object({ body: MARKDOWN_BODY, version: VERSION })
 
 /**
  * Corpo de `POST /hub/internal/showcase-thread` (BFF → hub, em nome da criança). O

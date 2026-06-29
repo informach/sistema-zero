@@ -33,7 +33,11 @@ function deps(
     repo,
     internalToken: TOKEN,
     fulfill: makeFulfill({ repo, gateway: gw.gateway }),
-    grantMembers: makeGrantMembers({ gateway: gw.gateway, offerRef: OFFER, repo }),
+    grantMembers: makeGrantMembers({
+      gateway: gw.gateway,
+      resolveOffer: () => ({ offerSlug: OFFER }),
+      repo,
+    }),
   }
 }
 

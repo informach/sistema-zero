@@ -185,16 +185,19 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 — o host troca conforme o estado. O kids usa p/ só liberar o Compartilhar APÓS a entrega ao professor.
 
 - **Adapter** (`src/studio/share.ts`, contexto INTERNO latchado como o `activity` — só os TIPOS saem no
-  index): `generateDescription({project,title}) → Promise<string>` (rascunho da IA, SERVIDOR — nunca a
-  BYOK do aluno) e `publish({project,coverDataUrl,useAdminCover?,title,description}) → Promise<{muralUrl?,playUrl?}>`.
+  index): **`generateDescription?`** ({project,title}) → Promise<string> (rascunho da IA, SERVIDOR — nunca a
+  BYOK do aluno; **OPCIONAL** — ausente = SEM IA: o dialog não gera nem mostra o botão; é o caso do Estúdio
+  da AULA, onde o admin define o resumo e a criança só ajusta; presente = Estúdio Completo, projeto livre) e
+  `publish({project,coverDataUrl,useAdminCover?,title,description}) → Promise<{muralUrl?,playUrl?}>`.
   Toda a rede/R2/hub/IA-de-servidor vive no HOST (community-kids via member-shell); o Studio só ORQUESTRA
   a UX. Campos novos do adapter: **`presetCoverUrl?`** (capa padrão do curso/admin — fallback do print +
   preview) e, no publish, **`useAdminCover?`** (`true` = usar a capa padrão; o HOST re-resolve a URL no
   servidor, não confia no cliente — mutuamente exclusivo com `coverDataUrl`).
 - **Dialog** (`src/components/layout/ShareDialog.tsx`, sobre o `Modal` de `#ui`): **UM MODAL SÓ** (redesenho
   06/2026 — enxugou a máquina de passos antiga): texto do que vai acontecer + **aviso de SNAPSHOT** → campo
-  **Título** (editável) → campo **Resumo** (editável; "Gerar/Regerar" com IA ao lado) → **Capa**: botão
-  **"Gerar capa"** que tenta o `captureCoverFromProject`; se voltar `null` usa a capa do curso (`presetCoverUrl`)
+  **Título** (editável — oculto quando `titleEditable:false`, ex.: aula) → campo **Resumo** (editável; o botão
+  "Gerar/Regerar" com IA aparece SÓ quando o adapter tem `generateDescription` — Estúdio Completo) → **Capa**:
+  botão **"Gerar capa"** (`variant="primary"`, ação principal) que tenta o `captureCoverFromProject`; se voltar `null` usa a capa do curso (`presetCoverUrl`)
   e, faltando ela, pede **upload** de imagem da criança (`<input type=file>` → dataURL); também há "Usar a capa
   do curso" e "Enviar uma imagem" sempre disponíveis. **Publicar só HABILITA com título + resumo + capa**
   preenchidos (nada em branco). **Preset (economia de IA):** `presetTitle`/`presetDescription` (admin da aula)

@@ -231,6 +231,20 @@ export const SubscriptionWebhookBody = t.Object({
   subscriptionId: t.String({ minLength: 1, maxLength: 100 }),
 })
 
+/**
+ * Corpo de `POST /members/webhooks/showcase` — o HUB avisa que o aluno PUBLICOU o
+ * projeto de um curso no Mural dos Criadores. Grava o marco `course_showcased`
+ * (sourceId = courseId) no ledger — combinado com `course_complete` define o curso
+ * "qualificado" p/ o NÍVEL DO ALUNO. `accountId` vem do hub (a conta dona do perfil,
+ * usada só se o perfil de gamificação ainda não existir — o marco é amount 0).
+ */
+export const ShowcaseWebhookBody = t.Object({
+  userId: UUID,
+  accountId: UUID,
+  courseId: UUID,
+  audience: AUDIENCE,
+})
+
 /** Corpo de `PUT /members/courses/:slug/lessons/:lessonId/position` (throttled no client). */
 export const VideoPositionBody = t.Object({
   positionSeconds: t.Integer({ minimum: 0, maximum: 100_000 }),
@@ -351,6 +365,12 @@ export const ManageEntitlementBody = t.Object({
 // ── Autoria de conteúdo (cursos/módulos/aulas/blocos/anexos) ─────────────────
 
 const COURSE_STATUS = t.Union([t.Literal('draft'), t.Literal('published'), t.Literal('archived')])
+// Nível (dificuldade) do curso — espelha o enum `course_level` do schema.
+const COURSE_LEVEL = t.Union([
+  t.Literal('iniciante'),
+  t.Literal('intermediario'),
+  t.Literal('avancado'),
+])
 const TITLE = t.String({ minLength: 1, maxLength: 300 })
 const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Null()]))
 // URLs escritas pelo admin exigem esquema http(s) — sem isto um `javascript:`
@@ -380,6 +400,9 @@ export const CourseBody = t.Object({
   // Trava sequencial (estilo Duolingo). AUSENTE: create → `true` (padrão LIGADO);
   // update → PRESERVA a atual (mesma régua do audience).
   sequentialLock: t.Optional(t.Union([t.Boolean(), t.Null()])),
+  // Dificuldade. AUSENTE: create → `iniciante`; update → PRESERVA a atual
+  // (mesma régua do audience/sequentialLock).
+  level: t.Optional(t.Union([COURSE_LEVEL, t.Null()])),
 })
 
 /** Query de `GET /members/admin/courses`. */

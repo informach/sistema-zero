@@ -11,7 +11,13 @@ import {
 import type { GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
 import { getLeadId } from '../lib/lead-session'
-import { quotePreview, readCouponCode, redeemCouponBestEffort, resolveCharge } from './catalog'
+import {
+  getActiveOffer,
+  quotePreview,
+  readCouponCode,
+  redeemCouponBestEffort,
+  resolveCharge,
+} from './catalog'
 
 /** Oferta resolvida (slug/nome/sku) que o checkout cobra para um dado funil. */
 export interface ResolvedOffer {
@@ -250,8 +256,8 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   const input = {
     amountInCents: charge.amountInCents,
     method: 'PIX',
-    description: `${productName} (ebook)`,
-    payerMessage: `Pagamento do ebook ${productName}`,
+    description: productName,
+    payerMessage: `Pagamento de ${productName}`,
     customer: {
       name: c.contact.nome,
       email: c.contact.email,
@@ -318,7 +324,7 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
   const input = {
     amountInCents: charge.amountInCents,
     method: 'BOLETO',
-    description: `${productName} (ebook)`,
+    description: productName,
     customer: {
       name: lead.nome ?? 'Cliente',
       email: lead.email,
@@ -326,7 +332,7 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
       phone: lead.telefone.replace(/\D/g, ''),
       address: cleanAddress(form.address),
     },
-    boleto: { expiresInDays: 3, message: `Pagamento do ebook ${productName}` },
+    boleto: { expiresInDays: 3, message: `Pagamento de ${productName}` },
     metadata: leadMetadata(lead, productSku, charge),
   }
 
@@ -376,12 +382,19 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
   await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
+  // Limite de parcelas é da OFERTA (catálogo) — autoritativo no servidor (o seletor do
+  // cliente é burlável). `installmentsMax` nulo = sem teto. Clampa em vez de recusar.
+  const activeOffer = await getActiveOffer(deps.gateway, offerSlug)
+  const installments = activeOffer?.installmentsMax
+    ? Math.min(c.installments, activeOffer.installmentsMax)
+    : c.installments
+
   // Nonce por tentativa → cartão recusado pode re-tentar sem replay da resposta.
   const idempotencyKey = `funil-${lead.id}-card-${c.attemptId}`
   const input = {
     amountInCents: charge.amountInCents,
     method: 'CREDIT_CARD',
-    description: `${productName} (ebook)`,
+    description: productName,
     customer: {
       name: c.contact.nome,
       email: c.contact.email,
@@ -390,7 +403,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
       // Endereço é opcional no cartão (a Efí aceita sem) — só envia se coletado.
       ...(c.address ? { address: cleanAddress(c.address) } : {}),
     },
-    card: { token: c.token, brand: c.brand, last4: c.last4, installments: c.installments },
+    card: { token: c.token, brand: c.brand, last4: c.last4, installments },
     metadata: leadMetadata(lead, productSku, charge),
   }
 

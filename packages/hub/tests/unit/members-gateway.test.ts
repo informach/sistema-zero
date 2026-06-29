@@ -87,7 +87,7 @@ describe('members-http.gateway', () => {
     })
   })
 
-  test('getShowcaseEligibility: resposta não-ok → lança (fail-closed)', async () => {
+  test('getShowcaseEligibility: 5xx → lança (fail-closed)', async () => {
     const fetchImpl = (async () => new Response('nope', { status: 500 })) as unknown as typeof fetch
     const gw = createMembersHttpGateway({ baseUrl: 'http://members:3004', fetchImpl })
     await expect(
@@ -98,5 +98,118 @@ describe('members-http.gateway', () => {
         blockId: 'bloco-1',
       }),
     ).rejects.toThrow()
+  })
+
+  // 403 (equipe sem matrícula real — o internal checa privileged:false) e 404 (aula
+  // rascunho) NÃO são falha de infra: viram eligible:false → o service responde 403
+  // limpo (PostingNotAllowedError), nunca 500 "Erro interno".
+  for (const status of [403, 404]) {
+    test(`getShowcaseEligibility: ${status} → eligible:false (gracioso, sem lançar)`, async () => {
+      const fetchImpl = (async () => new Response('no', { status })) as unknown as typeof fetch
+      const gw = createMembersHttpGateway({ baseUrl: 'http://members:3004', fetchImpl })
+      const res = await gw.getShowcaseEligibility({
+        userId: 'perfil-1',
+        accountId: 'conta-1',
+        lessonId: 'aula-1',
+        blockId: 'bloco-1',
+      })
+      expect(res.eligible).toBe(false)
+    })
+  }
+
+  test('notifyShowcasePublished: POST assinado (HMAC) p/ o webhook do members', async () => {
+    let captured: { url: string; init?: RequestInit } | null = null
+    const fetchImpl = (async (url: string, init?: RequestInit) => {
+      captured = { url: String(url), init }
+      return new Response('{"ok":true}', { status: 200 })
+    }) as unknown as typeof fetch
+    const gw = createMembersHttpGateway({
+      baseUrl: 'http://members:3004',
+      fetchImpl,
+      hmacSecret: 'segredo-de-teste-1234567890',
+      now: () => new Date('2026-06-28T00:00:00.000Z'),
+    })
+    await gw.notifyShowcasePublished({
+      userId: 'perfil-1',
+      accountId: 'conta-1',
+      courseId: 'curso-1',
+      audience: 'kids',
+    })
+    expect(captured).not.toBeNull()
+    const { url, init } = captured as unknown as { url: string; init: RequestInit }
+    expect(url).toBe('http://members:3004/members/webhooks/showcase')
+    expect(init.method).toBe('POST')
+    const sentHeaders = init.headers as Record<string, string>
+    expect(sentHeaders['x-signature']).toMatch(/^t=\d+,v1=[0-9a-f]+$/)
+    expect(sentHeaders['x-delivery-id']).toBeTruthy()
+    expect(JSON.parse(String(init.body))).toEqual({
+      userId: 'perfil-1',
+      accountId: 'conta-1',
+      courseId: 'curso-1',
+      audience: 'kids',
+    })
+  })
+
+  test('notifyShowcasePublished: retenta 5xx com o mesmo delivery-id', async () => {
+    const deliveryIds: string[] = []
+    let calls = 0
+    const fetchImpl = (async (_url: string, init?: RequestInit) => {
+      calls++
+      const sentHeaders = init?.headers as Record<string, string>
+      deliveryIds.push(sentHeaders['x-delivery-id'] ?? '')
+      return new Response('{"ok":true}', { status: calls === 1 ? 502 : 200 })
+    }) as unknown as typeof fetch
+    const gw = createMembersHttpGateway({
+      baseUrl: 'http://members:3004',
+      fetchImpl,
+      hmacSecret: 'segredo-de-teste-1234567890',
+      now: () => new Date('2026-06-28T00:00:00.000Z'),
+    })
+
+    await gw.notifyShowcasePublished({
+      userId: 'perfil-1',
+      accountId: 'conta-1',
+      courseId: 'curso-1',
+      audience: 'kids',
+    })
+
+    expect(calls).toBe(2)
+    expect(deliveryIds[0]).toBeTruthy()
+    expect(deliveryIds[1]).toBe(deliveryIds[0])
+  })
+
+  test('notifyShowcasePublished: sem hmacSecret → no-op (não chama fetch)', async () => {
+    let called = false
+    const fetchImpl = (async () => {
+      called = true
+      return new Response('{}', { status: 200 })
+    }) as unknown as typeof fetch
+    const gw = createMembersHttpGateway({ baseUrl: 'http://members:3004', fetchImpl })
+    await gw.notifyShowcasePublished({
+      userId: 'p',
+      accountId: 'c',
+      courseId: 'curso-1',
+      audience: 'kids',
+    })
+    expect(called).toBe(false)
+  })
+
+  test('notifyShowcasePublished: erro de rede NÃO lança (best-effort)', async () => {
+    const fetchImpl = (async () => {
+      throw new Error('rede caiu')
+    }) as unknown as typeof fetch
+    const gw = createMembersHttpGateway({
+      baseUrl: 'http://members:3004',
+      fetchImpl,
+      hmacSecret: 'segredo-de-teste-1234567890',
+    })
+    await expect(
+      gw.notifyShowcasePublished({
+        userId: 'p',
+        accountId: 'c',
+        courseId: 'curso-1',
+        audience: 'kids',
+      }),
+    ).resolves.toBeUndefined()
   })
 })
