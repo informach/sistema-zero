@@ -129,6 +129,70 @@ export interface MemberDetail {
   profiles?: MemberProfileProgress[]
 }
 
+// ── Ficha 360 do aluno (espelha as views admin do @sistemazero/members) ───────
+
+/** Nível/rank do aluno (noob…god). Rótulo/cor são apresentação (no app). */
+export interface StudentLevelView {
+  slug: string
+  next: string | null
+}
+
+/** Gamificação do aprendiz numa vitrine (ficha admin) — subconjunto do `gamification/me`. */
+export interface MemberGamificationView {
+  xp: number
+  coins: { balance: number }
+  streak: { current: number; best: number; activeToday: boolean }
+  badges: { slug: string; unlockedAt: string | null }[]
+  level: StudentLevelView
+}
+
+export const MEMBER_ACTIVITY_KINDS = [
+  'lesson_accessed',
+  'lesson_completed',
+  'quiz_attempt',
+  'studio_submission',
+] as const
+export type MemberActivityKind = (typeof MEMBER_ACTIVITY_KINDS)[number]
+
+/** Um item da linha do tempo de atividade do aluno (ficha admin). */
+export interface MemberActivityItemView {
+  kind: MemberActivityKind
+  at: string
+  lessonId: string | null
+  lessonTitle: string | null
+  courseTitle: string | null
+  score?: number | null
+  passed?: boolean | null
+  message?: string | null
+}
+
+export interface MemberActivityPage {
+  items: MemberActivityItemView[]
+  hasMore: boolean
+}
+
+/** Certificado emitido (ficha admin) — inclui revogados. */
+export interface MemberCertificateView {
+  id: string
+  serial: string
+  courseRef: string
+  courseTitle: string
+  studentName: string
+  issuedAt: string
+  completedAt: string
+  revokedAt: string | null
+}
+
+/** Classificação dada pelo aluno (ficha admin). `rating` = nota 1–5. */
+export interface MemberRatingView {
+  courseId: string
+  courseRef: string | null
+  courseTitle: string | null
+  rating: number
+  comment: string | null
+  updatedAt: string
+}
+
 // ── Autoria de conteúdo (espelha admin-content-views do @sistemazero/members) ──
 
 export const COURSE_STATUSES = ['draft', 'published', 'archived'] as const

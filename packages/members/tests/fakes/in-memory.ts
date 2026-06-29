@@ -53,6 +53,7 @@ import type {
 import type {
   CourseRatingRepository,
   CourseRatingUpsert,
+  MemberCourseRating,
 } from '../../src/domain/ports/course-rating-repository.port'
 import type { CourseRepository } from '../../src/domain/ports/course-repository.port'
 import type {
@@ -78,13 +79,18 @@ import {
   type XpEventInput,
 } from '../../src/domain/ports/gamification-repository.port'
 import type { ProcessedWebhookRepository } from '../../src/domain/ports/processed-webhook-repository.port'
-import type { ProgressRepository } from '../../src/domain/ports/progress-repository.port'
+import type {
+  ProgressRepository,
+  RecentLessonActivity,
+} from '../../src/domain/ports/progress-repository.port'
 import type {
   QuizAttemptRecord,
   QuizAttemptRepository,
+  RecentQuizAttempt,
 } from '../../src/domain/ports/quiz-attempt-repository.port'
 import type { RoomRepository } from '../../src/domain/ports/room-repository.port'
 import type {
+  RecentStudioSubmission,
   StudioSubmissionDetail,
   StudioSubmissionRecord,
   StudioSubmissionRepository,
@@ -848,6 +854,19 @@ export class InMemoryProgressRepository implements ProgressRepository {
     return cs.reduce((a, b) => (a.completedAt.getTime() >= b.completedAt.getTime() ? a : b))
       .completedAt
   }
+
+  async listRecentCompletions(userId: string, limit: number): Promise<RecentLessonActivity[]> {
+    return this.completions
+      .filter((c) => c.userId === userId)
+      .sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime())
+      .slice(0, limit)
+      .map((c) => ({
+        lessonId: c.lessonId,
+        lessonTitle: this.lessonSource?.lessons.find((l) => l.id === c.lessonId)?.title ?? null,
+        courseTitle: null,
+        at: c.completedAt,
+      }))
+  }
 }
 
 interface PositionRow {
@@ -896,6 +915,14 @@ export class InMemoryVideoPositionRepository implements VideoPositionRepository 
     }
     return out
   }
+
+  async listRecentAccessed(userId: string, limit: number): Promise<RecentLessonActivity[]> {
+    return this.rows
+      .filter((r) => r.userId === userId)
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      .slice(0, limit)
+      .map((r) => ({ lessonId: r.lessonId, lessonTitle: null, courseTitle: null, at: r.updatedAt }))
+  }
 }
 
 export class InMemoryCourseRatingRepository implements CourseRatingRepository {
@@ -927,6 +954,13 @@ export class InMemoryCourseRatingRepository implements CourseRatingRepository {
     }
     this.rows.push(row)
     return row
+  }
+
+  async listByUser(userId: string): Promise<MemberCourseRating[]> {
+    return this.rows
+      .filter((r) => r.userId === userId)
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      .map((r) => ({ ...r, courseTitle: null, courseRef: null }))
   }
 }
 
@@ -986,6 +1020,22 @@ export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
       existing.everPassed = existing.everPassed || a.passed
     }
     return out
+  }
+
+  async listRecentByUser(userId: string, limit: number): Promise<RecentQuizAttempt[]> {
+    return [...this.attempts]
+      .filter((a) => a.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, limit)
+      .map((a) => ({
+        blockId: a.blockId,
+        lessonId: a.lessonId,
+        lessonTitle: null,
+        courseTitle: null,
+        score: a.score,
+        passed: a.passed,
+        createdAt: a.createdAt,
+      }))
   }
 }
 
@@ -1085,6 +1135,23 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       const course = this.courses?.courses.find((c) => c.id === s.courseId)
       return course?.audience === audience
     }).length
+  }
+
+  async listRecentByUser(userId: string, limit: number): Promise<RecentStudioSubmission[]> {
+    return this.submissions
+      .filter((s) => s.userId === userId)
+      .sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime())
+      .slice(0, limit)
+      .map((s) => ({
+        blockId: s.blockId,
+        lessonId: s.lessonId,
+        lessonTitle: null,
+        courseTitle: this.courses?.courses.find((c) => c.id === s.courseId)?.title ?? null,
+        score: s.score ?? null,
+        passed: s.passedAt != null,
+        submittedAt: s.submittedAt,
+        message: s.message ?? null,
+      }))
   }
 }
 
@@ -1940,6 +2007,12 @@ export class InMemoryCertificateRepository implements CertificateRepository {
 
   async findById(id: string): Promise<CertificateRecord | null> {
     return this.rows.find((r) => r.id === id) ?? null
+  }
+
+  async listByUser(userId: string): Promise<CertificateRecord[]> {
+    return this.rows
+      .filter((r) => r.userId === userId)
+      .sort((a, b) => b.issuedAt.getTime() - a.issuedAt.getTime())
   }
 
   async revoke(id: string, revokedAt: Date): Promise<void> {

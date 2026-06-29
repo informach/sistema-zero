@@ -27,6 +27,7 @@ import { GetCourseProgressService } from './application/get-course-progress/get-
 import { GetCourseRatingService } from './application/get-course-rating/get-course-rating.service'
 import { GetEbookDownloadService } from './application/get-ebook-download/get-ebook-download.service'
 import { GetLessonService } from './application/get-lesson/get-lesson.service'
+import { GetMemberActivityService } from './application/get-member-activity/get-member-activity.service'
 import { GetMemberDetailService } from './application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from './application/get-my-course/get-my-course.service'
 import { GetOwnStudioSubmissionService } from './application/get-own-studio-submission/get-own-studio-submission.service'
@@ -36,6 +37,8 @@ import { GrantEntitlementService } from './application/grant-entitlement/grant-e
 import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { IssueCertificateService } from './application/issue-certificate/issue-certificate.service'
 import { ListCatalogService } from './application/list-catalog/list-catalog.service'
+import { ListMemberCertificatesService } from './application/list-member-certificates/list-member-certificates.service'
+import { ListMemberRatingsService } from './application/list-member-ratings/list-member-ratings.service'
 import { ListMembersService } from './application/list-members/list-members.service'
 import { ListMyCoursesService } from './application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
@@ -279,6 +282,14 @@ export async function createApplication(env: Env): Promise<Application> {
   // Gestão admin (painel)
   const listMembers = new ListMembersService(entitlements, clock)
   const getMemberDetail = new GetMemberDetailService(entitlements, courses, progress)
+  const getMemberActivity = new GetMemberActivityService(
+    progress,
+    positions,
+    quizAttempts,
+    studioSubmissions,
+  )
+  const listMemberCertificates = new ListMemberCertificatesService(certificates)
+  const listMemberRatings = new ListMemberRatingsService(ratings)
   const grantManual = new GrantManualEntitlementService({
     catalog,
     courses,
@@ -360,6 +371,10 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
       listMembers,
       getMemberDetail,
+      getMemberActivity,
+      listMemberCertificates,
+      listMemberRatings,
+      getGamification,
       grantManual,
       manageEntitlement,
       revokeCertificate,

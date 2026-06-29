@@ -1,3 +1,5 @@
+import type { RecentLessonActivity } from './progress-repository.port'
+
 /**
  * Posição de reprodução por aluno+aula (1 linha, upsert) — também serve de
  * "last-accessed" do curso (a linha mais recente por `updatedAt`).
@@ -17,4 +19,9 @@ export interface VideoPositionRepository {
   lastAccessedLessonId(userId: string, courseId: string): Promise<string | null>
   /** Última aula acessada por curso, em lote (evita N+1 em listagens). courseId → lessonId. */
   lastAccessedByCourseIds(userId: string, courseIds: string[]): Promise<Map<string, string>>
+  /**
+   * Aulas acessadas mais recentes do aluno (ficha admin — linha do tempo), com
+   * aula/curso resolvidos por join. Limitado a `limit` (mais recentes primeiro).
+   */
+  listRecentAccessed(userId: string, limit: number): Promise<RecentLessonActivity[]>
 }

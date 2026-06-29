@@ -27,6 +27,7 @@ import { GetCourseProgressService } from '../src/application/get-course-progress
 import { GetCourseRatingService } from '../src/application/get-course-rating/get-course-rating.service'
 import { GetEbookDownloadService } from '../src/application/get-ebook-download/get-ebook-download.service'
 import { GetLessonService } from '../src/application/get-lesson/get-lesson.service'
+import { GetMemberActivityService } from '../src/application/get-member-activity/get-member-activity.service'
 import { GetMemberDetailService } from '../src/application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from '../src/application/get-my-course/get-my-course.service'
 import { GetOwnStudioSubmissionService } from '../src/application/get-own-studio-submission/get-own-studio-submission.service'
@@ -36,6 +37,8 @@ import { GrantEntitlementService } from '../src/application/grant-entitlement/gr
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { IssueCertificateService } from '../src/application/issue-certificate/issue-certificate.service'
 import { ListCatalogService } from '../src/application/list-catalog/list-catalog.service'
+import { ListMemberCertificatesService } from '../src/application/list-member-certificates/list-member-certificates.service'
+import { ListMemberRatingsService } from '../src/application/list-member-ratings/list-member-ratings.service'
 import { ListMembersService } from '../src/application/list-members/list-members.service'
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
@@ -257,6 +260,15 @@ export function buildApp(
       internalToken: opts.internalToken,
       listMembers: new ListMembersService(entitlements, clock),
       getMemberDetail: new GetMemberDetailService(entitlements, courses, progress),
+      getMemberActivity: new GetMemberActivityService(
+        progress,
+        positions,
+        quizAttempts,
+        studioSubmissions,
+      ),
+      listMemberCertificates: new ListMemberCertificatesService(certificates),
+      listMemberRatings: new ListMemberRatingsService(ratings),
+      getGamification: new GetGamificationService(gamification, clock),
       grantManual: new GrantManualEntitlementService({
         catalog,
         courses,

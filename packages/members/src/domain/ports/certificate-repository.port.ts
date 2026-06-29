@@ -11,6 +11,11 @@ export interface CertificateRepository {
   insertIfAbsent(record: CertificateRecord): Promise<CertificateRecord>
   /** Busca pelo id público (validação por QR/serial). */
   findById(id: string): Promise<CertificateRecord | null>
+  /**
+   * Certificados emitidos para um aluno (perfil/conta), mais recentes primeiro.
+   * Visão admin (ficha do aluno) — inclui revogados. Snapshot imutável, sem join.
+   */
+  listByUser(userId: string): Promise<CertificateRecord[]>
   /** Marca como revogado (admin). Idempotente; no-op se já revogado/inexistente. */
   revoke(id: string, revokedAt: Date): Promise<void>
 }

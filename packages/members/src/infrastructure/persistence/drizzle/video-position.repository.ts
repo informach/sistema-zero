@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { and, desc, eq, inArray } from 'drizzle-orm'
+import type { RecentLessonActivity } from '../../../domain/ports/progress-repository.port'
 import type { VideoPositionRepository } from '../../../domain/ports/video-position-repository.port'
 import type { Database } from './db'
-import { lessonProgress } from './schema'
+import { courses, lessonProgress, lessons } from './schema'
 
 export class DrizzleVideoPositionRepository implements VideoPositionRepository {
   constructor(private readonly db: Database) {}
@@ -56,5 +57,27 @@ export class DrizzleVideoPositionRepository implements VideoPositionRepository {
       if (!out.has(r.courseId)) out.set(r.courseId, r.lessonId)
     }
     return out
+  }
+
+  async listRecentAccessed(userId: string, limit: number): Promise<RecentLessonActivity[]> {
+    const rows = await this.db
+      .select({
+        lessonId: lessonProgress.lessonId,
+        lessonTitle: lessons.title,
+        courseTitle: courses.title,
+        at: lessonProgress.updatedAt,
+      })
+      .from(lessonProgress)
+      .leftJoin(lessons, eq(lessons.id, lessonProgress.lessonId))
+      .leftJoin(courses, eq(courses.id, lessonProgress.courseId))
+      .where(eq(lessonProgress.userId, userId))
+      .orderBy(desc(lessonProgress.updatedAt))
+      .limit(limit)
+    return rows.map((r) => ({
+      lessonId: r.lessonId,
+      lessonTitle: r.lessonTitle ?? null,
+      courseTitle: r.courseTitle ?? null,
+      at: r.at,
+    }))
   }
 }

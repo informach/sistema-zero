@@ -1,8 +1,11 @@
 import { randomUUID } from 'node:crypto'
 import { and, count, desc, eq, inArray } from 'drizzle-orm'
-import type { ProgressRepository } from '../../../domain/ports/progress-repository.port'
+import type {
+  ProgressRepository,
+  RecentLessonActivity,
+} from '../../../domain/ports/progress-repository.port'
 import type { Database } from './db'
-import { lessonCompletions, lessons } from './schema'
+import { courses, lessonCompletions, lessons } from './schema'
 
 export class DrizzleProgressRepository implements ProgressRepository {
   constructor(private readonly db: Database) {}
@@ -117,5 +120,27 @@ export class DrizzleProgressRepository implements ProgressRepository {
       .orderBy(desc(lessonCompletions.completedAt))
       .limit(1)
     return row?.at ?? null
+  }
+
+  async listRecentCompletions(userId: string, limit: number): Promise<RecentLessonActivity[]> {
+    const rows = await this.db
+      .select({
+        lessonId: lessonCompletions.lessonId,
+        lessonTitle: lessons.title,
+        courseTitle: courses.title,
+        at: lessonCompletions.completedAt,
+      })
+      .from(lessonCompletions)
+      .leftJoin(lessons, eq(lessons.id, lessonCompletions.lessonId))
+      .leftJoin(courses, eq(courses.id, lessonCompletions.courseId))
+      .where(eq(lessonCompletions.userId, userId))
+      .orderBy(desc(lessonCompletions.completedAt))
+      .limit(limit)
+    return rows.map((r) => ({
+      lessonId: r.lessonId,
+      lessonTitle: r.lessonTitle ?? null,
+      courseTitle: r.courseTitle ?? null,
+      at: r.at,
+    }))
   }
 }

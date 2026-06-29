@@ -166,6 +166,40 @@ export const UpdateUserBody = t.Object({
   version: t.Optional(t.Integer({ minimum: 0 })),
 })
 
+// ── Auditoria de ações administrativas ──────────────────────────────────────
+
+const NULLABLE = (max: number) => t.Optional(t.Union([t.String({ maxLength: max }), t.Null()]))
+
+/**
+ * Corpo de `POST /auth/internal/audit` (S2S — o gateway emite após uma rota admin
+ * mutante responder com sucesso). `actorId` é uuid (o ator resolvido do JWT).
+ */
+export const WriteAuditBody = t.Object({
+  actorId: t.String({ pattern: UUID_PATTERN }),
+  actorEmail: NULLABLE(320),
+  actorRole: NULLABLE(40),
+  action: t.String({ minLength: 1, maxLength: 120 }),
+  method: t.String({ minLength: 1, maxLength: 10 }),
+  path: t.String({ minLength: 1, maxLength: 2000 }),
+  targetId: NULLABLE(200),
+  status: t.Integer({ minimum: 100, maximum: 599 }),
+  ip: NULLABLE(64),
+  userAgent: NULLABLE(500),
+  requestId: NULLABLE(100),
+})
+
+/** Query de `GET /auth/admin/audit` (listagem paginada da trilha). */
+export const ListAuditQuery = t.Object({
+  actorId: t.Optional(t.String({ maxLength: 64 })),
+  action: t.Optional(t.String({ maxLength: 120 })),
+  targetId: t.Optional(t.String({ maxLength: 200 })),
+  // ISO-8601 (a rota converte para Date; inválida → ignorada).
+  from: t.Optional(t.String({ maxLength: 40 })),
+  to: t.Optional(t.String({ maxLength: 40 })),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+  offset: t.Optional(t.Numeric({ minimum: 0 })),
+})
+
 // ── Perfis (estilo Netflix) — gerenciados pelo responsável ──────────────────
 // Nome com ao menos 3 caracteres (não-vazio) — validação espelhada no agregado.
 const PROFILE_NAME = t.String({ minLength: 3, maxLength: 60 })

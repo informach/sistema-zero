@@ -31,8 +31,15 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > **estornar**/**cancelar**, stats e saúde de webhooks/operações; detalhe exibe a **garantia** da
 > oferta comprada — resolvida no BFF de `metadata.offerId` → `guaranteeDays` do catálogo — com
 > aviso de estorno fora da garantia) + **Fatia Membros** (abas
-> Alunos|Cursos — **Alunos**: listar + detalhe com matrículas/progresso + conceder manual
-> (oferta/curso) + revogar/expirar/estender, identidade hidratada do auth via batch; **Cursos**:
+> Alunos|Cursos — **Alunos**: listar + **ficha 360 do aluno** (`[userId]/member-detail-client.tsx`
+> em abas: Visão geral [progresso+matrículas], Gamificação, Atividade, Certificados, Classificações,
+> Pagamentos) com matrículas/progresso + conceder manual
+> (oferta/curso) + revogar/expirar/estender + **"Entrar como"** (reusa `lib/impersonation`) +
+> revogar certificado, identidade hidratada do auth via batch. A 360 tem **seletor de aprendiz**
+> (conta=adult / cada perfil=kids); Gamificação/Atividade/Certificados/Classificações são por
+> aprendiz (BFF chama `/api/members/[userId]/{gamification?audience,activity,certificates,ratings}`,
+> keyados no id do aprendiz — a conta OU o profileId); Pagamentos busca `/api/payments/transactions?q=<email>`;
+> **Cursos**:
 > autoria — CRUD de cursos + editor de módulos/aulas com **drag-and-drop** (dnd-kit clássico:
 > core 6.3 + sortable 10; hook `components/dnd/use-sortable-item.ts`; reorder otimista →
 > endpoints `/reorder`, erro→toast+reload) + módulos **colapsáveis** com contador "X de Y aulas
@@ -468,6 +475,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `POST /members/admin/entitlements` (`{mode:'offer'|'course'|'all_courses', userId,
   offerRef|courseRef?, expiresAt?}`) → concessão manual; `PATCH /members/admin/entitlements/:id`
   (`{action:'revoke'|'expire'|'extend', expiresAt?}`).
+  **Ficha 360 (06/2026):** `GET /members/admin/members/:userId/gamification?audience=adult|kids`
+  (→ `MemberGamificationView`), `…/activity?limit&offset` (→ `MemberActivityPage` = `{items,hasMore}`,
+  mescla acesso/conclusão/quiz/Estúdio), `…/certificates` (→ `{certificates}`), `…/ratings` (→ `{ratings}`);
+  `POST /members/admin/certificates/:id/revoke` (revogar certificado). Todas keyadas no `:userId` do
+  APRENDIZ (a conta OU um profileId) — a UI chama 1× por aprendiz (audiência `adult` p/ a conta,
+  `kids` p/ os perfis). Pagamentos do aluno na ficha reusam `/api/payments/transactions?q=<email>`.
+  Adapters `getMember{Gamification,Activity,Certificates,Ratings}`+`revokeCertificate` em `server/members.ts`.
   O **BFF agrega**: o handler `GET /api/members` hidrata nome/email do auth via
   `POST /auth/admin/users/batch` (`server/users.ts`: `batchGetUsers`/`getUser`). Adapter em
   `src/server/members.ts`; views em `src/lib/types.ts`.

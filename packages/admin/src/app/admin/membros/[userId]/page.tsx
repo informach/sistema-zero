@@ -9,8 +9,13 @@ export default async function MembroDetailPage({
   params: Promise<{ userId: string }>
 }) {
   const { userId } = await params
-  // O papel do operador guia o gating de UX (escrita = admin/superadmin). A fonte da
-  // verdade é o gateway + members (servidor).
+  // O papel do operador guia o gating de UX (escrita = admin/superadmin; "Entrar como"
+  // usa id+papel). A fonte da verdade dos guards é o gateway + members/auth (servidor).
   const session = await getSession()
-  return <MemberDetailClient userId={userId} currentRole={session?.role ?? ''} />
+  return (
+    <MemberDetailClient
+      userId={userId}
+      currentUser={{ id: session?.id ?? '', role: session?.role ?? '' }}
+    />
+  )
 }

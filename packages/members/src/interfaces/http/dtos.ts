@@ -322,6 +322,19 @@ export const ListMembersQuery = t.Object({
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
 
+/**
+ * Query de `GET /members/admin/members/:userId/gamification` — a gamificação é
+ * SEGREGADA por vitrine. O BFF passa `adult` para a conta e `kids` para cada perfil.
+ * Ausente → `adult` (paridade com a rota do aluno).
+ */
+export const AdminGamificationQuery = t.Object({ audience: t.Optional(AUDIENCE) })
+
+/** Query de `GET /members/admin/members/:userId/activity` — paginação da linha do tempo. */
+export const AdminActivityQuery = t.Object({
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+  offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
+})
+
 // `userId` do grant manual vai à coluna uuid `entitlements.user_id`.
 const USER_ID = UUID
 const EXPIRES_AT = t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()]))

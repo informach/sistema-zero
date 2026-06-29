@@ -60,6 +60,18 @@ export interface StudioSubmissionDetail {
   message: string | null
 }
 
+/** Uma entrega recente do Estúdio (ficha admin), com a aula/curso resolvidos. */
+export interface RecentStudioSubmission {
+  blockId: string
+  lessonId: string
+  lessonTitle: string | null
+  courseTitle: string | null
+  score: number | null
+  passed: boolean
+  submittedAt: Date
+  message: string | null
+}
+
 export interface StudioSubmissionRepository {
   /** Insere/atualiza a entrega do aluno no bloco (UNIQUE user+block). */
   upsert(
@@ -87,4 +99,9 @@ export interface StudioSubmissionRepository {
    * (kids). Escopado por audiência p/ paridade com xp/badges/cursos do dashboard.
    */
   countByUserAndAudience(userId: string, audience: CourseAudience): Promise<number>
+  /**
+   * Entregas mais recentes do aluno (ficha admin — linha do tempo), com aula/curso
+   * resolvidos por join. Limitado a `limit` (mais recentes primeiro). Sem o projeto.
+   */
+  listRecentByUser(userId: string, limit: number): Promise<RecentStudioSubmission[]>
 }
