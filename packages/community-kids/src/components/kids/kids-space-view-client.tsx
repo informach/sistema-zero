@@ -145,6 +145,9 @@ export function KidsSpaceViewClient({
   const [comments, setComments] = useState<HubCommentView[]>([])
   const [loading, setLoading] = useState(true)
   const [unavailable, setUnavailable] = useState(false)
+  // Sem acesso (403): servidor sem teaser → o hub 403a em vez de devolver o teaser
+  // `locked`. Tratamos como bloqueado (tela "ainda não liberado"), não como erro.
+  const [forbidden, setForbidden] = useState(false)
   // Bump p/ re-rodar a carga do espaço (retry da tela de indisponível).
   const [reloadNonce, setReloadNonce] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -193,6 +196,7 @@ export function KidsSpaceViewClient({
     ;(async () => {
       try {
         setUnavailable(false)
+        setForbidden(false)
         const sp = await apiGet<HubSpaceView>(`/api/hub/spaces/${enc(slug)}`)
         if (!alive) return
         setSpace(sp)
@@ -210,6 +214,15 @@ export function KidsSpaceViewClient({
         const e = err as ApiError
         if (e.code === 'ACCESS_UNAVAILABLE' || e.status === 503) {
           setUnavailable(true)
+          return
+        }
+        // SEM ACESSO (403): o servidor existe mas a criança não tem o produto. Mostra a
+        // tela "ainda não liberado" (lockedView), NÃO um toast de erro. Acontece quando o
+        // servidor está SEM teaser (o hub 403a em vez de devolver o teaser `locked`) — ex.:
+        // servidor criado pelo admin (teaserWhenLocked nasce false). Os servidores kids são
+        // itens FIXOS do menu, então não há existência a esconder.
+        if (e.code === 'ACCESS_DENIED' || e.status === 403) {
+          setForbidden(true)
           return
         }
         toast.error(e.message ?? 'Não consegui abrir este espaço.')
@@ -441,10 +454,23 @@ export function KidsSpaceViewClient({
       <p className="px-4 py-8 text-muted-foreground">Tente de novo.</p>
     )
   }
+  // Sem acesso (403 sem teaser) OU teaser do hub (`locked`): a MESMA tela gentil "ainda
+  // não liberado". `lockedView` é a tela específica do servidor (Clube/Mural); o
+  // `KidsLockedSpace` (genérico) só serve quando há `space` (caso teaser). Vem ANTES do
+  // "não encontrado" porque no 403 o `space` é null.
+  if (forbidden || space?.locked) {
+    return (
+      <>
+        {lockedView ??
+          (space ? (
+            <KidsLockedSpace space={space} />
+          ) : (
+            <p className="px-4 py-8 text-center text-muted-foreground">Ainda não liberado.</p>
+          ))}
+      </>
+    )
+  }
   if (!space) return <p className="px-4 py-8 text-muted-foreground">Espaço não encontrado.</p>
-  // Sem acesso (teaser do hub — decidido pelo "Quem vê"): recado gentil, sem conteúdo.
-  // `lockedView` permite uma tela específica do servidor (Clube/Mural); senão o genérico.
-  if (space.locked) return <>{lockedView ?? <KidsLockedSpace space={space} />}</>
 
   return (
     <>

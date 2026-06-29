@@ -6,7 +6,9 @@ import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-pla
 import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
 import { VimeoPlayer } from '@sistemazero/member-shell/components/vimeo-player'
 import type { StudioShareResult } from '@sistemazero/studio'
+import { Button } from '@sistemazero/ui/button'
 import {
+  ArrowLeft,
   Award,
   BookOpenText,
   Clapperboard,
@@ -54,6 +56,58 @@ export function KidsLessonBlocks({ blocks }: { blocks: LessonBlockView[] }) {
       {ordered.map((block) => (
         <BlockRenderer key={block.id} block={block} />
       ))}
+    </div>
+  )
+}
+
+/**
+ * A aula suporta o "modo criação guiada"? (tem um bloco de VÍDEO **e** um de ESTÚDIO).
+ * Só então o botão de ativar aparece — o modo é vídeo à esquerda + estúdio à direita.
+ */
+export function lessonSupportsGuided(blocks: LessonBlockView[]): boolean {
+  return blocks.some((b) => b.kind === 'video') && blocks.some((b) => b.kind === 'studio')
+}
+
+/**
+ * MODO CRIAÇÃO GUIADA: tela limpa em overlay — botão "voltar ao modo normal" + o VÍDEO da
+ * aula à esquerda e o ESTÚDIO à direita (lado a lado no desktop), pra a criança assistir e ir
+ * fazendo junto. Usa o 1º bloco de vídeo + o 1º de estúdio (o estúdio é o MESMO bloco — mesmo
+ * rascunho/entrega/Compartilhar). No mobile empilha (vídeo em cima). Renderizado DENTRO do
+ * `LessonPlayerProvider` (precisa do contexto do player: viewerId, posição do vídeo etc.).
+ */
+export function GuidedCreationMode({
+  blocks,
+  lessonTitle,
+  onExit,
+}: {
+  blocks: LessonBlockView[]
+  lessonTitle: string
+  onExit: () => void
+}) {
+  const videoBlock = blocks.find((b) => b.kind === 'video')
+  const studioBlock = blocks.find((b) => b.kind === 'studio')
+  if (!videoBlock || !studioBlock) return null
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="flex shrink-0 items-center gap-3 border-border border-b px-3 py-2">
+        <Button variant="outline" onClick={onExit} className="rounded-full">
+          <ArrowLeft className="size-4" />
+          Voltar ao modo normal
+        </Button>
+        <span className="sz-display truncate text-sm">{lessonTitle}</span>
+      </div>
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 lg:grid-cols-2">
+        <div className="scrollbar-subtle min-h-0 overflow-y-auto">
+          <Video content={videoBlock.content as unknown as VideoBlock} />
+        </div>
+        <div className="flex min-h-0 flex-col">
+          <StudioBlockKids
+            block={studioBlock}
+            content={studioBlock.content as unknown as StudioBlock}
+            fillHeight
+          />
+        </div>
+      </div>
     </div>
   )
 }
@@ -139,7 +193,16 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
  * admin); nas intermediárias a criança desenvolve sem publicar. Ao publicar, `onShared` traz os
  * links e abre o overlay do Zappy (no lugar da tela de sucesso sóbria do editor).
  */
-function StudioBlockKids({ block, content }: { block: LessonBlockView; content: StudioBlock }) {
+function StudioBlockKids({
+  block,
+  content,
+  fillHeight,
+}: {
+  block: LessonBlockView
+  content: StudioBlock
+  /** Modo criação guiada: o editor preenche a coluna ao lado do vídeo. */
+  fillHeight?: boolean
+}) {
   const router = useRouter()
   const [shared, setShared] = useState<StudioShareResult | null>(null)
   // Ao fechar a celebração do Mural, REVALIDA os dados do servidor: publicar pode ter
@@ -151,7 +214,7 @@ function StudioBlockKids({ block, content }: { block: LessonBlockView; content: 
     router.refresh()
   }
   return (
-    <div className="kids-unit-grad flex flex-col gap-3">
+    <div className={cn('kids-unit-grad flex flex-col gap-3', fillHeight && 'min-h-0 flex-1')}>
       <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-grad" />
       <StudioBlockView
         blockId={block.id}
@@ -159,6 +222,7 @@ function StudioBlockKids({ block, content }: { block: LessonBlockView; content: 
         studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
         enableShare={Boolean(content.showcase?.enabled)}
         onShared={setShared}
+        fillHeight={fillHeight}
       />
       {shared ? <MuralCelebration result={shared} onClose={closeShare} /> : null}
     </div>

@@ -40,10 +40,19 @@ por QR abre a página PÚBLICA **`/validar/[id]`** (FORA do grupo `(app)`, sem l
 blocks/[blockId]/certificate` (GET estado + POST emitir/baixar) e `/api/certificates/[id]/validate` (público,
 no negative-lookahead do matcher do proxy); env `APP_PUBLIC_URL` p/ o QR. O members é o portão (ver
 `../members/CLAUDE.md`); PDF/QR/R2 vivem no member-shell.
-o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado,
+o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado
+(altura padrão GENEROSA: `lg:h-[82vh]`, piso 44rem — mais espaço pra programar; mudança no member-shell,
+vale tb no adulto),
 rascunho local, "Enviar para o professor" (o modal de confirmação tem um campo OPCIONAL de recado ao professor — compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
 ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
-distingue os dois no toast/botão. Exige `@sistemazero/studio` em transpilePackages + `@source`
+distingue os dois no toast/botão. **MODO CRIAÇÃO GUIADA (28/06):** quando a aula tem um bloco de VÍDEO
+**e** um de ESTÚDIO (`lessonSupportsGuided`), um botão "Modo criação guiada" aparece sob o título →
+abre o `GuidedCreationMode` (export do `kids-lesson-blocks`): overlay `fixed inset-0` com o vídeo à
+esquerda e o estúdio à direita (lado a lado no desktop; empilha no mobile) + botão "Voltar ao modo
+normal". O estúdio recebe `fillHeight` (prop nova do `StudioBlockView` → o editor preenche a coluna). É
+um OU outro (guiada vs layout normal) — renderizar os dois montaria o MESMO bloco de estúdio 2× (mesma
+chave de rascunho no IndexedDB → conflito); alternar remonta e re-semeia do rascunho local (sem perda).
+Renderizado DENTRO do `LessonPlayerProvider` (precisa do contexto do player). Exige `@sistemazero/studio` em transpilePackages + `@source`
 + `frame-src blob:`;
 ⚠️ invariantes de segurança COPIADOS do shell: URL canônica de vídeo, sandbox SEM
 allow-same-origin, markdown controlado — mexeu na segurança de bloco, replique nos DOIS
@@ -116,9 +125,14 @@ ainda — decisão do usuário).
 página (era um 2º portão que contradizia o "Quem vê" — removido p/ não confundir). A `page.tsx` só
 renderiza o `KidsSpaceViewClient`; o HUB decide o acesso pelo `accessConfig` ("Quem vê" no admin:
 público / por curso / **por comunidade** / por cargo). Sem acesso, o hub devolve o servidor BLOQUEADO
-(teaser, exige `teaserWhenLocked` ON) e a página passa um **`lockedView`** custom — `KidsLockedClube`/
-`KidsLockedMural` ("ainda não liberado", espelham o `KidsLockedStudio`); senão cai no genérico
-`KidsLockedSpace`. ⚠️ O Estúdio é DIFERENTE: NÃO é servidor do hub, então lá o gate é na página mesmo
+(teaser) e a página passa um **`lockedView`** custom — `KidsLockedClube`/`KidsLockedMural` ("ainda não
+liberado", espelham o `KidsLockedStudio`); senão cai no genérico `KidsLockedSpace`. ⚠️ **O cliente trata
+403 `ACCESS_DENIED` como bloqueado** (`forbidden` → `lockedView`), NÃO como erro: um servidor SEM teaser
+(`teaserWhenLocked` false — padrão de quem cria pelo admin) faz o hub 403ar em vez de devolver o teaser
+`locked`, e sem isso a criança via um toast "sem acesso" + "espaço não encontrado" (bug 28/06: Clube
+criado pelo admin sem teaser). Servidores kids são itens FIXOS do menu → não há existência a esconder.
+(O seed do hub também reconcilia `teaser_when_locked=true` nesses 2 slugs.) ⚠️ O Estúdio é DIFERENTE:
+NÃO é servidor do hub, então lá o gate é na página mesmo
 (`checkStudioAccessReadonly`). **Setup do operador (vender como produto):** no admin, "Quem vê = Por
 comunidade" + a chave do produto (Clube → `clube-dos-criadores`; Mural → `mural-dos-criadores`,
 independente, bônus do desafio do 1º jogo) — a MESMA chave do produto de comunidade no catálogo.

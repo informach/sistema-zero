@@ -85,16 +85,25 @@ async function main(): Promise<void> {
       let spaceId: string
       if (existing[0]) {
         spaceId = existing[0].id
-        // RECONCILIA o acesso ao modelo atual (community_gated pelo SEU produto): apaga o
-        // resíduo do modelo ANTIGO (course_gated por curso homônimo). Idempotente — só escreve
-        // se mudou. Esses 2 slugs são infra dona do seed, então sobrescrever é seguro.
-        const current = JSON.stringify(existing[0].accessConfig ?? null)
-        if (current !== JSON.stringify(access)) {
+        // RECONCILIA ao modelo atual: (a) acesso community_gated pelo SEU produto (apaga o
+        // resíduo do course_gated antigo) e (b) `teaser_when_locked = true` — sem teaser, o
+        // hub 403a em vez de devolver o teaser `locked`, e o app mostra erro em vez da tela
+        // "ainda não liberado" (servidor criado pelo admin nasce com teaser FALSE). Esses 2
+        // slugs são infra dona do seed → sobrescrever é seguro. Idempotente (só escreve se mudou).
+        const drifted =
+          JSON.stringify(existing[0].accessConfig ?? null) !== JSON.stringify(access) ||
+          existing[0].teaserWhenLocked !== true
+        if (drifted) {
           await conn.db
             .update(spaces)
-            .set({ accessConfig: access, version: sql`${spaces.version} + 1`, updatedAt: now })
+            .set({
+              accessConfig: access,
+              teaserWhenLocked: true,
+              version: sql`${spaces.version} + 1`,
+              updatedAt: now,
+            })
             .where(eq(spaces.id, spaceId))
-          console.log(`~ servidor "${s.slug}" — acesso reconciliado p/ ${access.visibility}`)
+          console.log(`~ servidor "${s.slug}" — reconciliado (${access.visibility}, teaser on)`)
         } else {
           console.log(`= servidor "${s.slug}" já existe e está no modelo certo (${spaceId})`)
         }

@@ -8,14 +8,18 @@ import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Lock } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Lock, Wand2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/kids/course-rating-flow'
 import { KidsLessonAttachments } from '@/components/kids/kids-lesson-attachments'
-import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
+import {
+  GuidedCreationMode,
+  KidsLessonBlocks,
+  lessonSupportsGuided,
+} from '@/components/kids/kids-lesson-blocks'
 import { LessonCelebration } from '@/components/kids/lesson-celebration'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
 import { type ApiError, apiSend } from '@/lib/api'
@@ -67,6 +71,9 @@ export function LessonPlayer({
 }: Props) {
   const router = useRouter()
   const [completing, setCompleting] = useState(false)
+  // Modo criação guiada (vídeo + estúdio lado a lado) — só quando a aula tem AMBOS os blocos.
+  const [guided, setGuided] = useState(false)
+  const canGuide = useMemo(() => lessonSupportsGuided(lesson.blocks), [lesson.blocks])
   // Snapshot do progresso ANTES do refresh (a celebração anima antes→depois)
   // + delta de gamificação vindo na RESPOSTA do complete; null = overlay fechado.
   const [celebration, setCelebration] = useState<{
@@ -263,6 +270,21 @@ export function LessonPlayer({
     ],
   )
 
+  // Guiada e normal NÃO coexistem: renderizar os dois montaria o MESMO bloco de estúdio
+  // 2× (mesma chave de rascunho no IndexedDB → conflito) e dois players de vídeo. Logo é um
+  // OU outro. Alternar remonta o editor, que re-semeia do rascunho LOCAL (sem perda).
+  if (guided) {
+    return (
+      <LessonPlayerProvider value={playerContext}>
+        <GuidedCreationMode
+          blocks={lesson.blocks}
+          lessonTitle={lesson.title}
+          onExit={() => setGuided(false)}
+        />
+      </LessonPlayerProvider>
+    )
+  }
+
   return (
     <LessonPlayerProvider value={playerContext}>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
@@ -288,6 +310,23 @@ export function LessonPlayer({
             </span>
             <h1 className="sz-display mt-3 text-2xl md:text-3xl">{lesson.title}</h1>
           </div>
+
+          {/* Modo criação guiada: só aparece quando a aula tem VÍDEO + ESTÚDIO. */}
+          {canGuide ? (
+            <button
+              type="button"
+              onClick={() => setGuided(true)}
+              className="flex items-center gap-3 self-start rounded-2xl border-2 border-primary/40 bg-primary/5 px-4 py-2.5 text-left text-primary transition-colors hover:bg-primary/10 active:translate-y-[1px]"
+            >
+              <Wand2 className="size-5 shrink-0" />
+              <span className="sz-display text-sm">
+                Modo criação guiada
+                <span className="block font-normal text-muted-foreground text-xs">
+                  Vídeo e estúdio lado a lado pra assistir e criar junto
+                </span>
+              </span>
+            </button>
+          ) : null}
 
           <KidsLessonBlocks blocks={lesson.blocks} />
 
