@@ -7,6 +7,7 @@ import {
 import type { Resigner } from '../../../infrastructure/upstream/resign.transformer'
 import { applyRequestTransformers } from '../../transform/transform-chain'
 import type { Transformer } from '../../transform/transformer.port'
+import { ensureRawBody } from '../context'
 import type { Stage } from '../stage.port'
 
 export interface RequestTransformDeps {
@@ -25,6 +26,9 @@ export function createRequestTransformStage(deps: RequestTransformDeps): Stage {
     name: 'request-transform',
     async run(ctx) {
       if (!ctx.route) return undefined
+      // Rotas auditadas que precisam do alvo no JSON (ex.: grant manual sem :userId
+      // no path) devem capturar o corpo antes do proxy consumir o stream.
+      if (ctx.route.route.audit?.targetField) await ensureRawBody(ctx)
       // Anti-spoof: o cliente NUNCA define os headers de identidade nem os de
       // confiança interna (x-internal-token) — sempre removidos, mesmo em
       // `passthrough`; o `header-inject` da rota (re)põe o token DEPOIS do strip.

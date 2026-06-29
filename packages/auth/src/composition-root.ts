@@ -4,11 +4,13 @@ import { BatchGetUsersService } from './application/admin/batch-get-users/batch-
 import { CreateUserService } from './application/admin/create-user/create-user.service'
 import { GetUserService } from './application/admin/get-user/get-user.service'
 import { ListUsersService } from './application/admin/list-users/list-users.service'
+import { ReadAuditLogService } from './application/admin/read-audit-log/read-audit-log.service'
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from './application/get-me/get-me.service'
 import { CreateImpersonationTokenService } from './application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from './application/impersonation/exchange-impersonation-token.service'
+import { WriteAuditLogService } from './application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
 import { ChangeMyPasswordService } from './application/me/change-password.service'
@@ -36,6 +38,7 @@ import {
   createNullMessagingClient,
 } from './infrastructure/messaging/gateway-messaging-client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
+import { DrizzleAuditLogRepository } from './infrastructure/persistence/drizzle/audit-log.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleImpersonationTokenRepository } from './infrastructure/persistence/drizzle/impersonation-token.repository'
 import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/otp-code.repository'
@@ -69,6 +72,8 @@ const PURGE_INTERVAL_MS = 6 * 60 * 60 * 1000
  * após a folga não há mais o que detectar — o token nem verificaria.
  */
 const PURGE_GRACE_MS = 7 * 24 * 60 * 60 * 1000
+/** Retenção da trilha de auditoria (compliance) — bem mais longa que a dos tokens. */
+const AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1000
 
 /**
  * Raiz de composição (injeção de dependências). ÚNICO lugar onde adapters
@@ -98,6 +103,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const otpCodes = new DrizzleOtpCodeRepository(db)
   const impersonationTokens = new DrizzleImpersonationTokenRepository(db)
   const profilesRepo = new DrizzleProfileRepository(db)
+  const auditLogs = new DrizzleAuditLogRepository(db)
   const hasher = createBunPasswordHasher()
 
   // Teto de perfis (kids) resolvido S2S no members (matrícula = fonte da verdade).
@@ -217,6 +223,9 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const updateUser = new UpdateUserService(users, refreshTokens, logger)
   const batchGetUsers = new BatchGetUsersService(users)
+  // Auditoria: o gateway emite (S2S) e o painel lê.
+  const writeAuditLog = new WriteAuditLogService(auditLogs)
+  const readAuditLog = new ReadAuditLogService(auditLogs)
   // Impersonação (suporte): handoff single-use admin→community + exchange por sessão.
   const createImpersonationToken = new CreateImpersonationTokenService(
     users,
@@ -280,6 +289,8 @@ export async function createApplication(env: Env): Promise<Application> {
     createUser,
     updateUser,
     batchGetUsers,
+    writeAuditLog,
+    readAuditLog,
     createImpersonationToken,
     exchangeImpersonationToken,
     profiles: {
@@ -307,14 +318,18 @@ export async function createApplication(env: Env): Promise<Application> {
       `
       if (!row?.locked) return // outra réplica está purgando neste ciclo
       const cutoff = new Date(Date.now() - PURGE_GRACE_MS)
-      const [refresh, reset, otp, impersonation] = await Promise.all([
+      // A auditoria tem retenção PRÓPRIA (mais longa que a folga dos tokens) — é
+      // trilha de compliance, não dado efêmero de sessão.
+      const auditCutoff = new Date(Date.now() - AUDIT_RETENTION_MS)
+      const [refresh, reset, otp, impersonation, audit] = await Promise.all([
         refreshTokens.deleteExpired(cutoff),
         passwordResetTokens.deleteExpired(cutoff),
         otpCodes.deleteExpired(cutoff),
         impersonationTokens.deleteExpired(cutoff),
+        auditLogs.deleteExpired(auditCutoff),
       ])
-      if (refresh + reset + otp + impersonation > 0) {
-        logger.info('tokens.purged', { refresh, reset, otp, impersonation })
+      if (refresh + reset + otp + impersonation + audit > 0) {
+        logger.info('tokens.purged', { refresh, reset, otp, impersonation, audit })
       }
     })
   }

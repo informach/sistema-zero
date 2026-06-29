@@ -23,3 +23,11 @@ export function dateInputToSaoPauloEndOfDayIso(value: string): string | null {
   const date = new Date(`${value}T23:59:59.999${SAO_PAULO_UTC_OFFSET}`)
   return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
+
+/** `input[type=date]` como início do dia civil em São Paulo. */
+export function dateInputToSaoPauloStartOfDayIso(value: string): string | null {
+  if (!isValidDateInput(value)) return null
+
+  const date = new Date(`${value}T00:00:00.000${SAO_PAULO_UTC_OFFSET}`)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}

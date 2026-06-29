@@ -1,9 +1,15 @@
 import 'server-only'
 import type {
   AdminEntitlementView,
+  CourseAnalyticsView,
+  CourseFunnelView,
   CourseTreeView,
   CourseView,
   LessonContentView,
+  MemberActivityPage,
+  MemberCertificateView,
+  MemberGamificationView,
+  MemberRatingView,
   MemberSummaryView,
   Paginated,
 } from '@/lib/types'
@@ -55,6 +61,58 @@ export function getMember(
   return gatewayFetch(`/members/admin/members/${encodeURIComponent(userId)}`, {
     query: { profileIds: profileIds.length > 0 ? profileIds.join(',') : undefined },
   })
+}
+
+/**
+ * Gamificação do aprendiz (ficha 360): `GET /members/admin/members/:userId/gamification`.
+ * `audience` = `adult` para a conta, `kids` para um perfil (o BFF chama por aprendiz).
+ */
+export function getMemberGamification(
+  userId: string,
+  audience: 'adult' | 'kids',
+): Promise<GatewayResponse<MemberGamificationView>> {
+  return gatewayFetch(`/members/admin/members/${enc(userId)}/gamification`, {
+    query: { audience },
+  })
+}
+
+/** Linha do tempo de atividade do aprendiz: `GET /members/admin/members/:userId/activity`. */
+export function getMemberActivity(
+  userId: string,
+  p: { limit?: number; offset?: number } = {},
+): Promise<GatewayResponse<MemberActivityPage>> {
+  return gatewayFetch(`/members/admin/members/${enc(userId)}/activity`, {
+    query: { limit: p.limit, offset: p.offset },
+  })
+}
+
+/** Certificados emitidos para o aprendiz: `GET /members/admin/members/:userId/certificates`. */
+export function getMemberCertificates(
+  userId: string,
+): Promise<GatewayResponse<{ certificates: MemberCertificateView[] }>> {
+  return gatewayFetch(`/members/admin/members/${enc(userId)}/certificates`)
+}
+
+/** Classificações dadas pelo aprendiz: `GET /members/admin/members/:userId/ratings`. */
+export function getMemberRatings(
+  userId: string,
+): Promise<GatewayResponse<{ ratings: MemberRatingView[] }>> {
+  return gatewayFetch(`/members/admin/members/${enc(userId)}/ratings`)
+}
+
+/** Revoga um certificado emitido: `POST /members/admin/certificates/:id/revoke`. */
+export function revokeCertificate(id: string): Promise<GatewayResponse<{ revoked: boolean }>> {
+  return gatewayFetch(`/members/admin/certificates/${enc(id)}/revoke`, { method: 'POST' })
+}
+
+/** Analytics de aprendizado — overview por curso: `GET /members/admin/analytics/courses`. */
+export function getCourseAnalytics(): Promise<GatewayResponse<{ courses: CourseAnalyticsView[] }>> {
+  return gatewayFetch('/members/admin/analytics/courses')
+}
+
+/** Funil por aula de um curso: `GET /members/admin/analytics/courses/:courseId`. */
+export function getCourseFunnel(courseId: string): Promise<GatewayResponse<CourseFunnelView>> {
+  return gatewayFetch(`/members/admin/analytics/courses/${enc(courseId)}`)
 }
 
 /** Concessão manual de acesso: `POST /members/admin/entitlements` (oferta ou curso). */

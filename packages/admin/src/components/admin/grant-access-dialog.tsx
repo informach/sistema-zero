@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { dateInputToSaoPauloEndOfDayIso } from '@/lib/dates'
+import { mapPool } from '@/lib/pool'
 import type { CourseView, OfferListItem, Paginated } from '@/lib/types'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -58,14 +59,21 @@ function resolveExpiresAt(form: GrantForm): string | null | undefined {
 export function GrantAccessDialog({
   open,
   userId,
+  userIds,
   onClose,
   onGranted,
 }: {
   open: boolean
-  userId: string
+  /** Alvo único (lista de usuários / detalhe do membro). */
+  userId?: string
+  /** Alvo em LOTE (seleção múltipla) — tem precedência sobre `userId`. */
+  userIds?: string[]
   onClose: () => void
   onGranted?: () => void
 }) {
+  // Alvos efetivos: o lote (se houver) ou o único. Distintos, sem vazios.
+  const targets = [...new Set(userIds && userIds.length > 0 ? userIds : userId ? [userId] : [])]
+  const bulk = targets.length > 1
   const [form, setForm] = useState<GrantForm>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
 
@@ -116,28 +124,57 @@ export function GrantAccessDialog({
       toast.error('Informe uma data de validade válida.')
       return
     }
+    if (targets.length === 0) {
+      toast.error('Nenhum usuário selecionado.')
+      return
+    }
+    const bodyFor = (uid: string) =>
+      form.mode === 'offer'
+        ? { mode: 'offer', userId: uid, offerRef: form.offerId, expiresAt }
+        : form.mode === 'course'
+          ? { mode: 'course', userId: uid, courseRef: form.courseRef, expiresAt }
+          : form.mode === 'all_kids_courses'
+            ? { mode: 'all_kids_courses', userId: uid, expiresAt }
+            : { mode: 'all_courses', userId: uid, expiresAt }
+
     setSaving(true)
     try {
-      const body =
-        form.mode === 'offer'
-          ? { mode: 'offer', userId, offerRef: form.offerId, expiresAt }
-          : form.mode === 'course'
-            ? { mode: 'course', userId, courseRef: form.courseRef, expiresAt }
-            : form.mode === 'all_kids_courses'
-              ? { mode: 'all_kids_courses', userId, expiresAt }
-              : { mode: 'all_courses', userId, expiresAt }
-      await apiSend('/api/members/entitlements', 'POST', body)
-      toast.success('Acesso concedido.')
+      if (!bulk) {
+        // Alvo único: mantém os toasts precisos (sucesso / 409 → "use Estender").
+        try {
+          await apiSend('/api/members/entitlements', 'POST', bodyFor(targets[0] as string))
+          toast.success('Acesso concedido.')
+        } catch (err) {
+          const e = err as ApiError
+          toast.error(
+            e.status === 409
+              ? 'Já existe uma matrícula revogada/expirada deste conteúdo — use "Estender".'
+              : (e.message ?? 'Não foi possível conceder o acesso.'),
+          )
+          return
+        }
+      } else {
+        // Lote: cada concessão é idempotente e auditada individualmente no gateway.
+        const results = await mapPool(targets, async (uid) => {
+          try {
+            await apiSend('/api/members/entitlements', 'POST', bodyFor(uid))
+            return 'ok' as const
+          } catch (err) {
+            return (err as ApiError).status === 409 ? ('conflict' as const) : ('error' as const)
+          }
+        })
+        const ok = results.filter((r) => r === 'ok').length
+        const conflict = results.filter((r) => r === 'conflict').length
+        const failed = results.filter((r) => r === 'error').length
+        const parts = [`${ok} concedido(s)`]
+        if (conflict > 0) parts.push(`${conflict} já tinha(m)/revogada(s)`)
+        if (failed > 0) parts.push(`${failed} falhou(aram)`)
+        if (failed > 0) toast.warning(`Concessão em lote: ${parts.join(' · ')}`)
+        else toast.success(`Concessão em lote: ${parts.join(' · ')}`)
+      }
       setForm(EMPTY_FORM)
       onGranted?.()
       onClose()
-    } catch (err) {
-      const e = err as ApiError
-      if (e.status === 409) {
-        toast.error('Já existe uma matrícula revogada/expirada deste conteúdo — use "Estender".')
-      } else {
-        toast.error(e.message ?? 'Não foi possível conceder o acesso.')
-      }
     } finally {
       setSaving(false)
     }
@@ -147,8 +184,12 @@ export function GrantAccessDialog({
     <Dialog
       open={open}
       onClose={close}
-      title="Conceder acesso manual"
-      description="Cortesia/promoção/teste. Por oferta (resolve no catálogo) ou direto por curso."
+      title={bulk ? `Conceder acesso a ${targets.length} usuários` : 'Conceder acesso manual'}
+      description={
+        bulk
+          ? 'Lote: a mesma concessão é aplicada a cada usuário selecionado (idempotente).'
+          : 'Cortesia/promoção/teste. Por oferta (resolve no catálogo) ou direto por curso.'
+      }
       footer={
         <>
           <Button variant="outline" onClick={close} disabled={saving}>

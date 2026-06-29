@@ -740,6 +740,32 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   painel busca no auth) devolve TAMBÉM `profilesProgress` = progresso de CADA perfil sobre os
   MESMOS cursos da família (o nome do perfil é hidratado pelo painel). Ausente → só o progresso
   da conta (compat). `parseProfileIds` valida uuid + capa em 50 na borda.
+- **Ficha 360 do aluno (LEITURA, 06/2026):** 4 rotas read-only por APRENDIZ (o `:userId` é o
+  aprendiz — a CONTA no adulto, o PERFIL no kids; o painel chama 1× por aprendiz). Reusam
+  repos/serviços existentes; nenhuma toca dados.
+  • `GET …/:userId/gamification?audience=adult|kids` → reusa `GetGamificationService`
+    (XP/nível/streak/badges/coins); `withRanking:false` + `privileged:false` (a ficha mostra o
+    estado REAL, sem passe de equipe). `audience` ausente → `adult`.
+  • `GET …/:userId/activity?limit&offset` → `GetMemberActivityService` mescla 4 fontes keyadas por
+    `userId` (lesson_progress=acesso, lesson_completions=conclusão, quiz_attempts, studio_submissions),
+    ordena por data desc e pagina (`{items, hasMore}`). Cada fonte traz `offset+limit+1` linhas
+    (join de aula/curso p/ título); a mescla/fatia é em memória.
+  • `GET …/:userId/certificates` → `ListMemberCertificatesService` (inclui revogados).
+  • `GET …/:userId/ratings` → `ListMemberRatingsService` (classificações dadas; join `courses`).
+  Novos métodos de repo: `CertificateRepository.listByUser`, `CourseRatingRepository.listByUser`
+  (+ `MemberCourseRating`), `QuizAttemptRepository.listRecentByUser`,
+  `StudioSubmissionRepository.listRecentByUser`, `ProgressRepository.listRecentCompletions`,
+  `VideoPositionRepository.listRecentAccessed`. Views em `mappers/admin-views.ts`.
+- **Analytics de aprendizado (LEITURA, 06/2026):** `GET /members/admin/analytics/courses`
+  (overview: por curso não-rascunho → `publishedLessons`, `started` [concluiu ≥1 aula publicada],
+  `completed` [concluiu TODAS], `completionRate`) e `GET …/analytics/courses/:courseId` (funil por
+  aula na ordem do curso: conclusões distintas por aula → detecta o gargalo). `GetCourseAnalyticsService`
+  + `AnalyticsRepository`/`DrizzleAnalyticsRepository` (tudo derivado de `lesson_completions` ×
+  `lessons` publicadas — SEM tocar matrícula/chave-mestra; `completed` via subquery `done >= total`).
+  O funil usa `startedAndCompletedForCourse(courseId)` (filtrado por courseId, índice-friendly — NÃO
+  recomputa os agregados GLOBAIS de todos os cursos) e, como o overview, **exclui curso rascunho**
+  (`ne(status,'draft')`; funil de draft/inexistente → `{started:0, completed:0, lessons:[]}`).
+  Staff+ no gateway. A LÓGICA é testada via fake (`InMemoryAnalyticsRepository`).
 - `POST /members/admin/entitlements` (body `{mode:'offer',offerRef}` | `{mode:'course',courseRef}`
   | `{mode:'all_courses'}`, + `userId`, `expiresAt?`) → concessão MANUAL. Reusa o agregado
   (`sourceKind:'manual'`, `sourceId:'manual'`, key `manual:${userId}:${productId}`; curso usa

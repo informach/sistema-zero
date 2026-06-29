@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import type { CertificateRecord } from '../../../domain/certificate/certificate'
 import type { CertificateRepository } from '../../../domain/ports/certificate-repository.port'
 import type { Database } from './db'
@@ -59,6 +59,15 @@ export class DrizzleCertificateRepository implements CertificateRepository {
       .where(eq(certificatesIssued.id, id))
       .limit(1)
     return rows[0] ? toRecord(rows[0]) : null
+  }
+
+  async listByUser(userId: string): Promise<CertificateRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(certificatesIssued)
+      .where(eq(certificatesIssued.userId, userId))
+      .orderBy(desc(certificatesIssued.issuedAt))
+    return rows.map(toRecord)
   }
 
   async revoke(id: string, revokedAt: Date): Promise<void> {

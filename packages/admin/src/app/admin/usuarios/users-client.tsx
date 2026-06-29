@@ -26,8 +26,10 @@ import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { dateInputToSaoPauloEndOfDayIso, dateInputToSaoPauloStartOfDayIso } from '@/lib/dates'
 import { formatDate } from '@/lib/format'
 import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
+import { mapPool } from '@/lib/pool'
 import {
   type Paginated,
   PRIVILEGED_ROLES,
@@ -77,6 +79,14 @@ const EMPTY_CREATE: CreateFormState = {
   platform: 'main',
 }
 
+/** Origens de cadastro conhecidas (filtro). `signupSource` é texto livre no auth. */
+const SOURCE_OPTIONS = [
+  { value: 'funnel', label: 'Funil' },
+  { value: 'admin', label: 'Convite (admin)' },
+  { value: 'web', label: 'Web' },
+  { value: 'mobile', label: 'Mobile' },
+]
+
 export function UsersClient({ currentUser }: { currentUser: { id: string; role: string } }) {
   const [items, setItems] = useState<UserView[]>([])
   const [total, setTotal] = useState(0)
@@ -84,7 +94,15 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
   const [q, setQ] = useState('')
   const [role, setRole] = useState('')
   const [status, setStatus] = useState('')
+  const [source, setSource] = useState('')
+  const [createdFrom, setCreatedFrom] = useState('')
+  const [createdTo, setCreatedTo] = useState('')
   const [loading, setLoading] = useState(true)
+
+  // Seleção em lote (ids da página atual). Limpa ao recarregar/trocar filtro.
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkGrantOpen, setBulkGrantOpen] = useState(false)
+  const [bulkBusy, setBulkBusy] = useState(false)
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<UserView | null>(null)
@@ -117,11 +135,17 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
 
   const load = useCallback(async () => {
     setLoading(true)
+    setSelected(new Set()) // a seleção é por-visão; troca de filtro/página zera.
     try {
       const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
       if (q.trim()) params.set('q', q.trim())
       if (role) params.set('role', role)
       if (status) params.set('status', status)
+      if (source) params.set('source', source)
+      const fromIso = createdFrom ? dateInputToSaoPauloStartOfDayIso(createdFrom) : null
+      const toIso = createdTo ? dateInputToSaoPauloEndOfDayIso(createdTo) : null
+      if (fromIso) params.set('createdFrom', fromIso)
+      if (toIso) params.set('createdTo', toIso)
       const page = await apiGet<Paginated<UserView>>(`/api/admin/users?${params}`)
       setItems(page.items)
       setTotal(page.total)
@@ -130,7 +154,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
     } finally {
       setLoading(false)
     }
-  }, [offset, q, role, status])
+  }, [offset, q, role, status, source, createdFrom, createdTo])
 
   // Debounce da busca + recarga ao mudar filtros/página.
   useEffect(() => {
@@ -253,6 +277,68 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
 
   const isSelf = editing?.id === currentUser.id
 
+  // ── Seleção em lote ──────────────────────────────────────────────────────
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  const allOnPageSelected = items.length > 0 && items.every((u) => selected.has(u.id))
+  function toggleAllOnPage() {
+    setSelected((prev) => {
+      if (items.every((u) => prev.has(u.id))) {
+        const next = new Set(prev)
+        for (const u of items) next.delete(u.id)
+        return next
+      }
+      const next = new Set(prev)
+      for (const u of items) next.add(u.id)
+      return next
+    })
+  }
+
+  /** Suspender/ativar em lote: itera o PATCH por usuário (cada um auditado no gateway). */
+  async function bulkSetStatus(targetStatus: 'suspended' | 'active') {
+    // Só contas que o operador PODE editar e que não são a própria (anti-lockout).
+    const editable = items.filter(
+      (u) => selected.has(u.id) && canEdit(u) && u.id !== currentUser.id,
+    )
+    const skipped = selected.size - editable.length
+    if (editable.length === 0) {
+      toast.error('Nenhum usuário elegível na seleção (sem permissão ou é você).')
+      return
+    }
+    const verb = targetStatus === 'suspended' ? 'Suspender' : 'Ativar'
+    if (!window.confirm(`${verb} ${editable.length} usuário(s)?`)) return
+    setBulkBusy(true)
+    try {
+      const results = await mapPool(editable, async (u) => {
+        try {
+          await apiSend(`/api/admin/users/${u.id}`, 'PATCH', {
+            status: targetStatus,
+            version: u.version,
+          })
+          return 'ok' as const
+        } catch {
+          return 'error' as const
+        }
+      })
+      const ok = results.filter((r) => r === 'ok').length
+      const failed = results.length - ok
+      const parts = [`${ok} ${targetStatus === 'suspended' ? 'suspenso(s)' : 'ativado(s)'}`]
+      if (failed > 0) parts.push(`${failed} falhou(aram)`)
+      if (skipped > 0) parts.push(`${skipped} ignorado(s)`)
+      if (failed > 0) toast.warning(parts.join(' · '))
+      else toast.success(parts.join(' · '))
+      await load()
+    } finally {
+      setBulkBusy(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <AdminHeader
@@ -312,10 +398,95 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
         </Select>
       </div>
 
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <label className="space-y-1 text-sm sm:w-44">
+          <span className="text-muted-foreground text-xs">Origem do cadastro</span>
+          <Select
+            value={source}
+            onChange={(e) => {
+              setOffset(0)
+              setSource(e.target.value)
+            }}
+          >
+            <option value="">Todas as origens</option>
+            {SOURCE_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </Select>
+        </label>
+        <label className="space-y-1 text-sm">
+          <span className="text-muted-foreground text-xs">Cadastro de</span>
+          <Input
+            type="date"
+            value={createdFrom}
+            onChange={(e) => {
+              setOffset(0)
+              setCreatedFrom(e.target.value)
+            }}
+          />
+        </label>
+        <label className="space-y-1 text-sm">
+          <span className="text-muted-foreground text-xs">até</span>
+          <Input
+            type="date"
+            value={createdTo}
+            onChange={(e) => {
+              setOffset(0)
+              setCreatedTo(e.target.value)
+            }}
+          />
+        </label>
+      </div>
+
+      {canWrite && selected.size > 0 ? (
+        <Card className="flex flex-wrap items-center gap-2 p-3">
+          <span className="text-sm">
+            <strong>{selected.size}</strong> selecionado(s)
+          </span>
+          <div className="ml-auto flex flex-wrap gap-2">
+            <Button size="sm" disabled={bulkBusy} onClick={() => setBulkGrantOpen(true)}>
+              <KeyRound className="size-4" /> Conceder acesso
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={bulkBusy}
+              onClick={() => bulkSetStatus('suspended')}
+            >
+              {bulkBusy ? <Spinner /> : null} Suspender
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={bulkBusy}
+              onClick={() => bulkSetStatus('active')}
+            >
+              Ativar
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+              Limpar
+            </Button>
+          </div>
+        </Card>
+      ) : null}
+
       <Card>
         <Table>
           <TableHeader>
             <TableRow>
+              {canWrite ? (
+                <TableHead className="w-8">
+                  <input
+                    type="checkbox"
+                    aria-label="Selecionar todos nesta página"
+                    checked={allOnPageSelected}
+                    onChange={toggleAllOnPage}
+                    className="size-4 align-middle accent-[color:var(--primary)]"
+                  />
+                </TableHead>
+              ) : null}
               <TableHead>Usuário</TableHead>
               <TableHead>Papel</TableHead>
               <TableHead>Status</TableHead>
@@ -325,16 +496,30 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableSkeletonRows columns={5} />
+              <TableSkeletonRows columns={canWrite ? 6 : 5} />
             ) : items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={canWrite ? 6 : 5}
+                  className="py-10 text-center text-muted-foreground"
+                >
                   Nenhum usuário encontrado.
                 </TableCell>
               </TableRow>
             ) : (
               items.map((u) => (
                 <TableRow key={u.id}>
+                  {canWrite ? (
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        aria-label={`Selecionar ${u.firstName} ${u.lastName}`}
+                        checked={selected.has(u.id)}
+                        onChange={() => toggle(u.id)}
+                        className="size-4 align-middle accent-[color:var(--primary)]"
+                      />
+                    </TableCell>
+                  ) : null}
                   <TableCell>
                     <div className="font-medium">
                       {u.firstName} {u.lastName}
@@ -570,6 +755,16 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
         open={grantUserId !== null}
         userId={grantUserId ?? ''}
         onClose={() => setGrantUserId(null)}
+      />
+
+      <GrantAccessDialog
+        open={bulkGrantOpen}
+        userIds={[...selected]}
+        onClose={() => setBulkGrantOpen(false)}
+        onGranted={() => {
+          setBulkGrantOpen(false)
+          setSelected(new Set())
+        }}
       />
     </div>
   )

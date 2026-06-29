@@ -88,6 +88,18 @@ function validateReferences(
           `(${env.MAX_REQUEST_BODY_BYTES}) — o teto do servidor venceria; suba a env ou reduza a rota`,
       )
     }
+    // Auditoria só faz sentido em rota MUTANTE: todo método declarado para uma rota
+    // auditada precisa representar ação de mudança de estado.
+    if (route.audit) {
+      const MUTATING = ['POST', 'PUT', 'PATCH', 'DELETE']
+      const nonMutating = route.methods.filter((m) => !MUTATING.includes(m))
+      if (nonMutating.length > 0) {
+        problems.push(
+          `rota "${route.id}": audit exige apenas métodos mutantes ` +
+            `(POST/PUT/PATCH/DELETE); métodos não mutantes: ${nonMutating.join(', ')}`,
+        )
+      }
+    }
     if (route.auth !== 'public' && route.auth.strategies.includes('jwt')) usesJwt = true
     if (route.upstreamAuth === 'resign') usesResign = true
   }

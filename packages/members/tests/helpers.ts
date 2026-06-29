@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
+import { GetCourseAnalyticsService } from '../src/application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from '../src/application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from '../src/application/avatar/equip-avatar.service'
 import { GetAvatarService } from '../src/application/avatar/get-avatar.service'
@@ -27,6 +28,7 @@ import { GetCourseProgressService } from '../src/application/get-course-progress
 import { GetCourseRatingService } from '../src/application/get-course-rating/get-course-rating.service'
 import { GetEbookDownloadService } from '../src/application/get-ebook-download/get-ebook-download.service'
 import { GetLessonService } from '../src/application/get-lesson/get-lesson.service'
+import { GetMemberActivityService } from '../src/application/get-member-activity/get-member-activity.service'
 import { GetMemberDetailService } from '../src/application/get-member-detail/get-member-detail.service'
 import { GetMyCourseService } from '../src/application/get-my-course/get-my-course.service'
 import { GetOwnStudioSubmissionService } from '../src/application/get-own-studio-submission/get-own-studio-submission.service'
@@ -36,6 +38,8 @@ import { GrantEntitlementService } from '../src/application/grant-entitlement/gr
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { IssueCertificateService } from '../src/application/issue-certificate/issue-certificate.service'
 import { ListCatalogService } from '../src/application/list-catalog/list-catalog.service'
+import { ListMemberCertificatesService } from '../src/application/list-member-certificates/list-member-certificates.service'
+import { ListMemberRatingsService } from '../src/application/list-member-ratings/list-member-ratings.service'
 import { ListMembersService } from '../src/application/list-members/list-members.service'
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
@@ -63,6 +67,7 @@ import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
 import {
   FakeCatalogGateway,
+  InMemoryAnalyticsRepository,
   InMemoryAvatarRepository,
   InMemoryCertificateRepository,
   InMemoryCourseRatingRepository,
@@ -257,6 +262,16 @@ export function buildApp(
       internalToken: opts.internalToken,
       listMembers: new ListMembersService(entitlements, clock),
       getMemberDetail: new GetMemberDetailService(entitlements, courses, progress),
+      getMemberActivity: new GetMemberActivityService(
+        progress,
+        positions,
+        quizAttempts,
+        studioSubmissions,
+      ),
+      listMemberCertificates: new ListMemberCertificatesService(certificates),
+      listMemberRatings: new ListMemberRatingsService(ratings),
+      getGamification: new GetGamificationService(gamification, clock),
+      analytics: new GetCourseAnalyticsService(new InMemoryAnalyticsRepository(courses, progress)),
       grantManual: new GrantManualEntitlementService({
         catalog,
         courses,

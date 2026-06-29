@@ -1,7 +1,8 @@
-import { and, asc, count, eq, inArray, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import type {
+  RecentStudioSubmission,
   StudioSubmissionDetail,
   StudioSubmissionRecord,
   StudioSubmissionRepository,
@@ -9,7 +10,7 @@ import type {
   StudioSubmissionSummary,
 } from '../../../domain/ports/studio-submission-repository.port'
 import type { Database } from './db'
-import { courses, studioSubmissions } from './schema'
+import { courses, lessons, studioSubmissions } from './schema'
 
 export class DrizzleStudioSubmissionRepository implements StudioSubmissionRepository {
   constructor(private readonly db: Database) {}
@@ -174,5 +175,35 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       .innerJoin(courses, eq(courses.id, studioSubmissions.courseId))
       .where(and(eq(studioSubmissions.userId, userId), eq(courses.audience, audience)))
     return row?.value ?? 0
+  }
+
+  async listRecentByUser(userId: string, limit: number): Promise<RecentStudioSubmission[]> {
+    const rows = await this.db
+      .select({
+        blockId: studioSubmissions.blockId,
+        lessonId: studioSubmissions.lessonId,
+        lessonTitle: lessons.title,
+        courseTitle: courses.title,
+        score: studioSubmissions.score,
+        passedAt: studioSubmissions.passedAt,
+        submittedAt: studioSubmissions.submittedAt,
+        message: studioSubmissions.message,
+      })
+      .from(studioSubmissions)
+      .leftJoin(lessons, eq(lessons.id, studioSubmissions.lessonId))
+      .leftJoin(courses, eq(courses.id, studioSubmissions.courseId))
+      .where(eq(studioSubmissions.userId, userId))
+      .orderBy(desc(studioSubmissions.submittedAt))
+      .limit(limit)
+    return rows.map((r) => ({
+      blockId: r.blockId,
+      lessonId: r.lessonId,
+      lessonTitle: r.lessonTitle ?? null,
+      courseTitle: r.courseTitle ?? null,
+      score: r.score ?? null,
+      passed: r.passedAt != null,
+      submittedAt: r.submittedAt,
+      message: r.message ?? null,
+    }))
   }
 }

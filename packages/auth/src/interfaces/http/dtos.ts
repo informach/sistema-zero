@@ -121,6 +121,10 @@ export const ListUsersQuery = t.Object({
   q: t.Optional(t.String({ maxLength: 320 })),
   role: t.Optional(roleLiteral),
   status: t.Optional(statusLiteral),
+  // Origem do cadastro (match exato) + janela de cadastro (ISO-8601; a rota parseia).
+  source: t.Optional(t.String({ maxLength: 40 })),
+  createdFrom: t.Optional(t.String({ maxLength: 40 })),
+  createdTo: t.Optional(t.String({ maxLength: 40 })),
   // t.Numeric coage a string da query string para número.
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0 })),
@@ -164,6 +168,42 @@ export const UpdateUserBody = t.Object({
   phone: t.Optional(t.Union([t.String({ maxLength: 20 }), t.Null()])),
   // Concorrência otimista: a `version` que o cliente leu (rejeita edição defasada).
   version: t.Optional(t.Integer({ minimum: 0 })),
+})
+
+// ── Auditoria de ações administrativas ──────────────────────────────────────
+
+const NULLABLE = (max: number) => t.Optional(t.Union([t.String({ maxLength: max }), t.Null()]))
+
+/**
+ * Corpo de `POST /auth/internal/audit` (S2S — o gateway emite após uma rota admin
+ * mutante responder com sucesso). `actorId` é uuid (o ator resolvido do JWT).
+ */
+export const WriteAuditBody = t.Object({
+  actorId: t.String({ pattern: UUID_PATTERN }),
+  actorEmail: NULLABLE(320),
+  actorRole: NULLABLE(40),
+  // Ator REAL em sessão de suporte (impersonação). Opcional/uuid — ausente fora dela.
+  impersonatorId: t.Optional(t.Union([t.String({ pattern: UUID_PATTERN }), t.Null()])),
+  action: t.String({ minLength: 1, maxLength: 120 }),
+  method: t.String({ minLength: 1, maxLength: 10 }),
+  path: t.String({ minLength: 1, maxLength: 2000 }),
+  targetId: NULLABLE(200),
+  status: t.Integer({ minimum: 100, maximum: 599 }),
+  ip: NULLABLE(64),
+  userAgent: NULLABLE(500),
+  requestId: NULLABLE(100),
+})
+
+/** Query de `GET /auth/admin/audit` (listagem paginada da trilha). */
+export const ListAuditQuery = t.Object({
+  actorId: t.Optional(t.String({ pattern: UUID_PATTERN })),
+  action: t.Optional(t.String({ maxLength: 120 })),
+  targetId: t.Optional(t.String({ maxLength: 200 })),
+  // ISO-8601 (a rota converte para Date; inválida → ignorada).
+  from: t.Optional(t.String({ maxLength: 40 })),
+  to: t.Optional(t.String({ maxLength: 40 })),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+  offset: t.Optional(t.Numeric({ minimum: 0 })),
 })
 
 // ── Perfis (estilo Netflix) — gerenciados pelo responsável ──────────────────

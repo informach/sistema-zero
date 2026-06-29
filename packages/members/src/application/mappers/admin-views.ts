@@ -1,4 +1,6 @@
+import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
+import type { MemberCourseRating } from '../../domain/ports/course-rating-repository.port'
 import type { MemberSummary } from '../../domain/ports/entitlement-repository.port'
 
 /**
@@ -95,4 +97,74 @@ export interface MemberDetailView {
   entitlements: AdminEntitlementView[]
   progress: MemberCourseProgressView[]
   profilesProgress?: MemberProfileProgressView[]
+}
+
+/** Tipo de evento na linha do tempo de atividade do aluno (ficha admin). */
+export type MemberActivityKind =
+  | 'lesson_accessed'
+  | 'lesson_completed'
+  | 'quiz_attempt'
+  | 'studio_submission'
+
+/**
+ * Um item da linha do tempo de atividade do aluno (ficha admin). União achatada das
+ * 4 fontes (aula acessada/concluída, tentativa de quiz, entrega do Estúdio) ordenada
+ * por `at` desc. Campos específicos (`score`/`passed`/`message`) só vêm quando o
+ * `kind` os tem.
+ */
+export interface MemberActivityItemView {
+  kind: MemberActivityKind
+  at: string
+  lessonId: string | null
+  lessonTitle: string | null
+  courseTitle: string | null
+  score?: number | null
+  passed?: boolean | null
+  message?: string | null
+}
+
+/** Certificado emitido (ficha admin): inclui revogados. */
+export interface MemberCertificateView {
+  id: string
+  serial: string
+  courseRef: string
+  courseTitle: string
+  studentName: string
+  issuedAt: string
+  completedAt: string
+  revokedAt: string | null
+}
+
+export function toMemberCertificateView(c: CertificateRecord): MemberCertificateView {
+  return {
+    id: c.id,
+    serial: c.serial,
+    courseRef: c.courseRef,
+    courseTitle: c.courseTitle,
+    studentName: c.studentName,
+    issuedAt: c.issuedAt.toISOString(),
+    completedAt: c.completedAt.toISOString(),
+    revokedAt: c.revokedAt ? c.revokedAt.toISOString() : null,
+  }
+}
+
+/** Classificação dada pelo aluno (ficha admin). `rating` = nota 1–5 (ratingHalf÷2). */
+export interface MemberRatingView {
+  courseId: string
+  courseRef: string | null
+  courseTitle: string | null
+  rating: number
+  comment: string | null
+  updatedAt: string
+}
+
+export function toMemberRatingView(r: MemberCourseRating): MemberRatingView {
+  return {
+    courseId: r.courseId,
+    courseRef: r.courseRef,
+    courseTitle: r.courseTitle,
+    rating: r.ratingHalf / 2,
+    comment: r.comment,
+    updatedAt: r.updatedAt.toISOString(),
+  }
 }

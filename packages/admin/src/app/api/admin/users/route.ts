@@ -8,6 +8,9 @@ export async function GET(req: Request) {
     q: searchParams.get('q') ?? undefined,
     role: searchParams.get('role') ?? undefined,
     status: searchParams.get('status') ?? undefined,
+    source: searchParams.get('source') ?? undefined,
+    createdFrom: searchParams.get('createdFrom') ?? undefined,
+    createdTo: searchParams.get('createdTo') ?? undefined,
     limit: parseLimit(searchParams.get('limit')),
     offset: parseOffset(searchParams.get('offset')),
   })

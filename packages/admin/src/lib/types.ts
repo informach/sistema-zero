@@ -129,6 +129,129 @@ export interface MemberDetail {
   profiles?: MemberProfileProgress[]
 }
 
+// ── Ficha 360 do aluno (espelha as views admin do @sistemazero/members) ───────
+
+/** Nível/rank do aluno (noob…god). Rótulo/cor são apresentação (no app). */
+export interface StudentLevelView {
+  slug: string
+  next: string | null
+}
+
+/** Gamificação do aprendiz numa vitrine (ficha admin) — subconjunto do `gamification/me`. */
+export interface MemberGamificationView {
+  xp: number
+  coins: { balance: number }
+  streak: { current: number; best: number; activeToday: boolean }
+  badges: { slug: string; unlockedAt: string | null }[]
+  level: StudentLevelView
+}
+
+export const MEMBER_ACTIVITY_KINDS = [
+  'lesson_accessed',
+  'lesson_completed',
+  'quiz_attempt',
+  'studio_submission',
+] as const
+export type MemberActivityKind = (typeof MEMBER_ACTIVITY_KINDS)[number]
+
+/** Um item da linha do tempo de atividade do aluno (ficha admin). */
+export interface MemberActivityItemView {
+  kind: MemberActivityKind
+  at: string
+  lessonId: string | null
+  lessonTitle: string | null
+  courseTitle: string | null
+  score?: number | null
+  passed?: boolean | null
+  message?: string | null
+}
+
+export interface MemberActivityPage {
+  items: MemberActivityItemView[]
+  hasMore: boolean
+}
+
+/** Certificado emitido (ficha admin) — inclui revogados. */
+export interface MemberCertificateView {
+  id: string
+  serial: string
+  courseRef: string
+  courseTitle: string
+  studentName: string
+  issuedAt: string
+  completedAt: string
+  revokedAt: string | null
+}
+
+/** Classificação dada pelo aluno (ficha admin). `rating` = nota 1–5. */
+export interface MemberRatingView {
+  courseId: string
+  courseRef: string | null
+  courseTitle: string | null
+  rating: number
+  comment: string | null
+  updatedAt: string
+}
+
+// ── Analytics de aprendizado (espelha o @sistemazero/members) ─────────────────
+
+/** Linha do overview de analytics de um curso. */
+export interface CourseAnalyticsView {
+  courseId: string
+  courseRef: string
+  title: string
+  audience: CourseAudience
+  status: string
+  publishedLessons: number
+  started: number
+  completed: number
+  completionRate: number
+}
+
+/** Uma aula no funil + conclusões. */
+export interface LessonFunnelView {
+  lessonId: string
+  title: string
+  moduleTitle: string
+  completions: number
+}
+
+export interface CourseFunnelView {
+  courseId: string
+  started: number
+  completed: number
+  lessons: LessonFunnelView[]
+}
+
+// ── Auditoria de ações administrativas (espelha o @sistemazero/auth) ──────────
+
+/** Um registro da trilha de auditoria (quem fez o quê, quando, de onde). */
+export interface AuditLogView {
+  id: string
+  actorId: string
+  actorEmail: string | null
+  actorRole: string | null
+  /** Ator REAL quando a ação saiu de uma sessão de suporte (impersonação); `null` fora dela. */
+  impersonatorId: string | null
+  action: string
+  method: string
+  path: string
+  targetId: string | null
+  status: number
+  ip: string | null
+  userAgent: string | null
+  requestId: string | null
+  createdAt: string
+}
+
+/** Resposta paginada da trilha (o auth devolve `{items,total,limit,offset}`). */
+export interface AuditLogPage {
+  items: AuditLogView[]
+  total: number
+  limit: number
+  offset: number
+}
+
 // ── Autoria de conteúdo (espelha admin-content-views do @sistemazero/members) ──
 
 export const COURSE_STATUSES = ['draft', 'published', 'archived'] as const

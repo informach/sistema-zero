@@ -4,6 +4,7 @@ import type { BatchGetUsersService } from '../../../application/admin/batch-get-
 import type { CreateUserService } from '../../../application/admin/create-user/create-user.service'
 import type { GetUserService } from '../../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../../application/admin/list-users/list-users.service'
+import type { ReadAuditLogService } from '../../../application/admin/read-audit-log/read-audit-log.service'
 import type { UpdateUserService } from '../../../application/admin/update-user/update-user.service'
 import type { CreateImpersonationTokenService } from '../../../application/impersonation/create-impersonation-token.service'
 import { type PlatformUrls, resolvePlatformUrl } from '../../../application/platform'
@@ -14,6 +15,7 @@ import { type GatewayActor, resolveGatewayActor } from '../auth'
 import {
   BatchGetUsersBody,
   CreateUserBody,
+  ListAuditQuery,
   ListUsersQuery,
   PlatformQuery,
   UpdateUserBody,
@@ -27,6 +29,8 @@ export interface AdminRoutesDeps {
   createUser: CreateUserService
   updateUser: UpdateUserService
   batchGetUsers: BatchGetUsersService
+  /** Trilha de auditoria de ações administrativas (leitura para o painel). */
+  readAuditLog: ReadAuditLogService
   createImpersonationToken: CreateImpersonationTokenService
   /** Lista os perfis (estilo Netflix) de uma conta — suporte vê o progresso por perfil. */
   listProfiles: ListProfilesService
@@ -82,6 +86,9 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             q: query.q,
             role: query.role,
             status: query.status,
+            source: query.source,
+            createdFrom: parseDate(query.createdFrom),
+            createdTo: parseDate(query.createdTo),
             limit: query.limit ?? 20,
             offset: query.offset ?? 0,
           })
@@ -179,5 +186,30 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         },
         { params: UserIdParams },
       )
+      // Trilha de auditoria (quem fez o quê). SENSÍVEL → admin+ (não staff): expõe as
+      // ações de OUTROS operadores. Path `/audit` (2 segmentos) ≠ `/users*`.
+      .get(
+        '/audit',
+        async ({ headers, query }) => {
+          requireActor(headers, WRITE_ROLES)
+          return deps.readAuditLog.execute({
+            actorId: query.actorId,
+            action: query.action,
+            targetId: query.targetId,
+            startDate: parseDate(query.from),
+            endDate: parseDate(query.to),
+            limit: query.limit ?? 50,
+            offset: query.offset ?? 0,
+          })
+        },
+        { query: ListAuditQuery },
+      )
   )
+}
+
+/** ISO-8601 → Date; ausente/ inválida → undefined (filtro ignorado). */
+function parseDate(value: string | undefined): Date | undefined {
+  if (!value) return undefined
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? undefined : d
 }

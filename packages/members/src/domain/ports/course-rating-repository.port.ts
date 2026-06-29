@@ -6,6 +6,14 @@ export interface CourseRatingUpsert {
   feedbackAnswers: CourseFeedbackAnswers | null
 }
 
+/** Classificação dada por um aluno, com o curso resolvido (ficha admin). */
+export interface MemberCourseRating extends CourseRating {
+  /** Título do curso atual (join; `null` se o curso foi apagado). */
+  courseTitle: string | null
+  /** Slug do curso atual (join; `null` se apagado). */
+  courseRef: string | null
+}
+
 export interface CourseRatingRepository {
   find(userId: string, courseId: string): Promise<CourseRating | null>
   /**
@@ -19,4 +27,9 @@ export interface CourseRatingRepository {
     fields: CourseRatingUpsert,
     now: Date,
   ): Promise<CourseRating>
+  /**
+   * Classificações que um aluno deu, mais recentes primeiro, com o curso resolvido
+   * (join `courses`). Visão admin (ficha do aluno). Curso apagado → título/ref `null`.
+   */
+  listByUser(userId: string): Promise<MemberCourseRating[]>
 }

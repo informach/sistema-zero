@@ -292,6 +292,26 @@ arquivado/sumido → CAI para sessão da conta — a criança volta à grade). R
   ANTES de habilitar a UI de perfis (validar em staging primeiro) — NÃO é preDeploy. O
   backfill de `gamification_profiles.account_id` já é da migration `0014` do members.
 
+## Auditoria de ações administrativas (`audit_logs`, migration `0010`)
+
+Trilha append-only de **quem fez o quê** no painel (estorno, conceder/revogar acesso,
+mudar papel/status, **entrar como** [impersonação], revogar certificado). O `auth` é o
+DONO do store (autoridade de identidade); quem ALIMENTA é o **gateway** (único ponto que
+autentica o ator e vê toda mutação admin — ver api-gateway §audit). Tabela `auth.audit_logs`
+(`actor_id`+`actor_email`/`actor_role` snapshot, `impersonator_id` = ator REAL quando a
+ação saiu de uma sessão de SUPORTE (impersonação; `null` fora dela — migration `0011`),
+`action` = id da rota do gateway,
+`method`/`path`, `target_id` = recurso afetado, `status` http, `ip`/`user_agent`/`request_id`,
+`created_at`; índices por ator+data, alvo, ação+data, data). Rotas:
+- **`POST /auth/internal/audit`** (S2S, `x-internal-token`) — o gateway emite (best-effort)
+  após uma rota admin mutante responder 2xx. `WriteAuditLogService` (append-only).
+- **`GET /auth/admin/audit`** (`?actorId&action&targetId&from&to&limit&offset`) — listagem
+  paginada do painel. **admin+ (NÃO staff)**: expõe ações de outros operadores.
+  `ReadAuditLogService` + `toAuditLogView` (datas → ISO).
+Purga: retenção PRÓPRIA de **365 dias** (`AUDIT_RETENTION_MS`, compliance — bem mais longa
+que a folga dos tokens), no mesmo ciclo de purga (advisory lock). É trilha de auditoria, não
+dado efêmero — `revoke`/update não existem na app.
+
 ## Sentry (monitoramento de erros)
 
 `@sentry/bun` (estável), ligado por `SENTRY_DSN` (ausente = no-op; projeto
@@ -326,6 +346,10 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   auth o EXIGE também no admin, igual ao members/catalog: é o que prova que os
   `X-Auth-User-*` vieram do gateway; sem isso, quem alcançasse o serviço direto
   na rede interna forjaria identidade de superadmin só com headers).
+  A LISTAGEM (`ListUsersQuery`) aceita `q` (e-mail/nome, ILIKE escapado), `role`, `status` e,
+  desde 06/2026 (busca avançada do painel), **`source`** (origem do cadastro = `signupSource`,
+  match exato) + **`createdFrom`/`createdTo`** (ISO-8601, janela de cadastro — a rota parseia p/
+  Date, `buildListWhere` aplica `gte`/`lte`). Os filtros são compostos (AND).
   O `batch` (`BatchGetUsersService` + `UserRepository.listByIds`, ≤100 ids) hidrata identidade
   p/ a área de membros (que lista `userId`s) — evita N+1. O serviço lê o ator desses
   headers (`resolveGatewayActor`),

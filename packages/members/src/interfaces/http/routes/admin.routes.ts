@@ -1,9 +1,14 @@
 import { Elysia } from 'elysia'
+import type { GetCourseAnalyticsService } from '../../../application/analytics/get-course-analytics.service'
+import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
+import type { GetMemberActivityService } from '../../../application/get-member-activity/get-member-activity.service'
 import type { GetMemberDetailService } from '../../../application/get-member-detail/get-member-detail.service'
 import type {
   GrantManualCommand,
   GrantManualEntitlementService,
 } from '../../../application/grant-manual-entitlement/grant-manual-entitlement.service'
+import type { ListMemberCertificatesService } from '../../../application/list-member-certificates/list-member-certificates.service'
+import type { ListMemberRatingsService } from '../../../application/list-member-ratings/list-member-ratings.service'
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
 import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
@@ -11,6 +16,9 @@ import { InvalidEntitlementCommandError } from '../../../domain/entitlement/enti
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import { assertInternalCaller, requireAdmin } from '../auth'
 import {
+  AdminActivityQuery,
+  AdminGamificationQuery,
+  CourseIdParams,
   GrantEntitlementBody,
   IdParams,
   ListMembersQuery,
@@ -29,6 +37,11 @@ export interface AdminRoutesDeps {
   internalToken?: string
   listMembers: ListMembersService
   getMemberDetail: GetMemberDetailService
+  getMemberActivity: GetMemberActivityService
+  listMemberCertificates: ListMemberCertificatesService
+  listMemberRatings: ListMemberRatingsService
+  getGamification: GetGamificationService
+  analytics: GetCourseAnalyticsService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
   revokeCertificate: RevokeCertificateService
@@ -74,6 +87,67 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.getMemberDetail.execute(params.userId, parseProfileIds(query.profileIds))
         },
         { params: UserIdParams, query: MemberDetailQuery },
+      )
+      // Gamificação do APRENDIZE (ficha admin): XP/nível/streak/badges/coins da vitrine
+      // pedida. O `:userId` é o aprendiz (conta=adult / perfil=kids — o BFF passa a
+      // audiência certa). Read-only: sem ranking (`accountId`=userId é irrelevante) nem
+      // passe de equipe (o painel sempre vê o estado REAL do aluno).
+      .get(
+        '/members/:userId/gamification',
+        async ({ params, query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.getGamification.execute(params.userId, params.userId, {
+            audience: query.audience ?? 'adult',
+            withRanking: false,
+            privileged: false,
+          })
+        },
+        { params: UserIdParams, query: AdminGamificationQuery },
+      )
+      // Linha do tempo de atividade do aprendiz (aulas/quizzes/entregas), paginada.
+      .get(
+        '/members/:userId/activity',
+        async ({ params, query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.getMemberActivity.execute(params.userId, {
+            limit: clampLimit(query.limit),
+            offset: query.offset ?? 0,
+          })
+        },
+        { params: UserIdParams, query: AdminActivityQuery },
+      )
+      // Certificados emitidos para o aprendiz (inclui revogados).
+      .get(
+        '/members/:userId/certificates',
+        async ({ params, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.listMemberCertificates.execute(params.userId)
+        },
+        { params: UserIdParams },
+      )
+      // Classificações que o aprendiz deu aos cursos.
+      .get(
+        '/members/:userId/ratings',
+        async ({ params, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.listMemberRatings.execute(params.userId)
+        },
+        { params: UserIdParams },
+      )
+      // Analytics de aprendizado: overview por curso (conclusão) + funil por aula.
+      // `/analytics/courses` (3 seg) e `/analytics/courses/:courseId` (4 seg) não
+      // colidem com `/members/...` nem com `/courses/...` da autoria.
+      .get('/analytics/courses', async ({ headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.analytics.overview()
+      })
+      .get(
+        '/analytics/courses/:courseId',
+        async ({ params, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.analytics.funnel(params.courseId)
+        },
+        { params: CourseIdParams },
       )
       .post(
         '/entitlements',

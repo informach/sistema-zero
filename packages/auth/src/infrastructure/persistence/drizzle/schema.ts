@@ -201,6 +201,44 @@ export const profiles = auth.table(
   (t) => [index('profiles_account_idx').on(t.accountUserId, t.sortOrder)],
 )
 
+/**
+ * Trilha de auditoria de AÇÕES ADMINISTRATIVAS (quem fez o quê, quando, de onde).
+ * Alimentada pelo GATEWAY (único ponto que autentica o ator e vê toda mutação admin):
+ * após uma rota admin MUTANTE responder com sucesso, o gateway emite um registro S2S
+ * (`POST /auth/internal/audit`). Append-only (sem update/delete na app); a purga
+ * periódica apaga registros antigos. `actor_id` é snapshot (sem FK — o ator pode ser
+ * desativado depois). `action` = id da rota do gateway (ex.: `members-admin-grant`);
+ * `method`+`path` dão o detalhe; `target_id` = o recurso afetado (path param).
+ */
+export const auditLogs = auth.table(
+  'audit_logs',
+  {
+    id: uuid('id').primaryKey(),
+    actorId: uuid('actor_id').notNull(),
+    actorEmail: text('actor_email'),
+    actorRole: text('actor_role'),
+    impersonatorId: uuid('impersonator_id'),
+    action: text('action').notNull(),
+    method: text('method').notNull(),
+    path: text('path').notNull(),
+    targetId: text('target_id'),
+    status: integer('status').notNull(),
+    ip: text('ip'),
+    userAgent: text('user_agent'),
+    requestId: text('request_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Filtro "ações de um admin" + ordenação temporal.
+    index('audit_logs_actor_created_idx').on(t.actorId, t.createdAt),
+    // Filtro "o que aconteceu com este recurso/aluno".
+    index('audit_logs_target_idx').on(t.targetId),
+    // Filtro por tipo de ação + listagem geral por data (purga usa created_at).
+    index('audit_logs_action_created_idx').on(t.action, t.createdAt),
+    index('audit_logs_created_idx').on(t.createdAt),
+  ],
+)
+
 export const schema = {
   users,
   refreshTokens,
@@ -208,4 +246,5 @@ export const schema = {
   otpCodes,
   impersonationTokens,
   profiles,
+  auditLogs,
 }

@@ -6,6 +6,7 @@ import {
   MessagesSquare,
   Package,
   ReceiptText,
+  ScrollText,
   Users,
 } from 'lucide-react'
 
@@ -16,6 +17,8 @@ export interface NavItem {
   /** Prefixo p/ marcar ativo (default = href). */
   match?: string
   soon?: boolean
+  /** Quando definido, limita a visibilidade no menu a estes papéis. */
+  roles?: readonly string[]
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -36,6 +39,12 @@ export const NAV_ITEMS: NavItem[] = [
     icon: MessagesSquare,
     match: '/admin/comunidade',
   },
+  {
+    label: 'Auditoria',
+    href: '/admin/auditoria',
+    icon: ScrollText,
+    roles: ['superadmin', 'admin'],
+  },
 ]
 
 export const CATALOG_TABS = [
@@ -47,6 +56,7 @@ export const CATALOG_TABS = [
 export const MEMBERS_TABS = [
   { label: 'Alunos', href: '/admin/membros' },
   { label: 'Cursos', href: '/admin/membros/cursos' },
+  { label: 'Análises', href: '/admin/membros/analises' },
 ]
 
 export const PAYMENTS_TABS = [

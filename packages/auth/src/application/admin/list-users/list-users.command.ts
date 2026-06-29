@@ -6,6 +6,11 @@ export interface ListUsersCommand {
   q?: string
   role?: UserRole
   status?: UserStatus
+  /** Origem do cadastro (match exato). */
+  source?: string
+  /** Janela de cadastro (createdAt) — Date já parseada na borda. */
+  createdFrom?: Date
+  createdTo?: Date
   limit: number
   offset: number
 }

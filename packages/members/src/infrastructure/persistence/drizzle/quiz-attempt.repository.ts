@@ -3,9 +3,10 @@ import type { QuizAttemptSummary } from '../../../domain/course/quiz'
 import type {
   QuizAttemptRecord,
   QuizAttemptRepository,
+  RecentQuizAttempt,
 } from '../../../domain/ports/quiz-attempt-repository.port'
 import type { Database } from './db'
-import { quizAttempts } from './schema'
+import { courses, lessons, quizAttempts } from './schema'
 
 export class DrizzleQuizAttemptRepository implements QuizAttemptRepository {
   constructor(private readonly db: Database) {}
@@ -81,5 +82,29 @@ export class DrizzleQuizAttemptRepository implements QuizAttemptRepository {
       existing.everPassed = existing.everPassed || r.passed
     }
     return out
+  }
+
+  async listRecentByUser(userId: string, limit: number): Promise<RecentQuizAttempt[]> {
+    const rows = await this.db
+      .select({
+        blockId: quizAttempts.blockId,
+        lessonId: quizAttempts.lessonId,
+        lessonTitle: lessons.title,
+        courseTitle: courses.title,
+        score: quizAttempts.score,
+        passed: quizAttempts.passed,
+        createdAt: quizAttempts.createdAt,
+      })
+      .from(quizAttempts)
+      .leftJoin(lessons, eq(lessons.id, quizAttempts.lessonId))
+      .leftJoin(courses, eq(courses.id, quizAttempts.courseId))
+      .where(eq(quizAttempts.userId, userId))
+      .orderBy(desc(quizAttempts.createdAt), desc(quizAttempts.id))
+      .limit(limit)
+    return rows.map((r) => ({
+      ...r,
+      lessonTitle: r.lessonTitle ?? null,
+      courseTitle: r.courseTitle ?? null,
+    }))
   }
 }

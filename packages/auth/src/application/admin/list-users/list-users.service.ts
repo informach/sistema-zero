@@ -25,6 +25,9 @@ export class ListUsersService {
       q: command.q?.trim() || undefined,
       role: command.role,
       status: command.status,
+      source: command.source?.trim() || undefined,
+      createdFrom: command.createdFrom,
+      createdTo: command.createdTo,
       limit,
       offset,
     })

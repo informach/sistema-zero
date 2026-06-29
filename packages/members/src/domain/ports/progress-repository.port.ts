@@ -8,6 +8,15 @@
  *   do ALUNO: o denominador dela é `countPublishedLessons*`; sem o filtro, o
  *   numerador inflava (curso "100%" sem o aluno ter feito as aulas visíveis).
  */
+
+/** Uma aula tocada/concluída recentemente (ficha admin), com a aula/curso resolvidos. */
+export interface RecentLessonActivity {
+  lessonId: string
+  lessonTitle: string | null
+  courseTitle: string | null
+  at: Date
+}
+
 export interface ProgressRepository {
   /**
    * Marca a aula como concluída. Idempotente (ON CONFLICT DO NOTHING);
@@ -34,4 +43,9 @@ export interface ProgressRepository {
   ): Promise<Map<string, string[]>>
   /** Data da última conclusão no curso (ou `null`). */
   lastCompletedAt(userId: string, courseId: string): Promise<Date | null>
+  /**
+   * Aulas concluídas mais recentes do aluno (ficha admin — linha do tempo), com
+   * aula/curso resolvidos por join. Limitado a `limit` (mais recentes primeiro).
+   */
+  listRecentCompletions(userId: string, limit: number): Promise<RecentLessonActivity[]>
 }

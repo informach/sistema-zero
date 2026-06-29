@@ -24,15 +24,30 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 `metadata.icons`, mesmos assets do community). Porta **3005**.
 
 > Estado: **Fatia 1 — Catálogo** (produtos/ofertas/cupons: listar/criar/editar) + **Fatia 2 —
-> Usuários** (listar com busca/filtros + **criar via convite por e-mail** + editar
+> Usuários** (listar com busca/filtros — q/papel/status + **busca avançada 06/2026**: origem do
+> cadastro + janela `createdFrom/createdTo` — + **criar via convite por e-mail** + editar
 > status/papel/perfil, guards hierárquicos e concorrência otimista; ações por linha **Conceder
 > acesso** — `GrantAccessDialog` compartilhado com pickers de oferta/curso + presets de validade —
-> e **Matrículas**) + **Fatia Pagamentos** (transações + assinaturas: listar/filtrar/detalhe +
+> e **Matrículas**; **ações em LOTE 06/2026**: checkbox por linha + "selecionar todos da página" →
+> barra com **Conceder acesso em lote** (`GrantAccessDialog` com `userIds[]`, itera o POST por
+> usuário via `lib/pool.mapPool` conc. 5 — cada concessão idempotente e auditada individualmente)
+> e **Suspender/Ativar em lote** (PATCH por usuário; pula self + contas que o operador não pode
+> editar; resumo por item no toast)) + **Análises de aprendizado (06/2026)** (aba "Análises" sob
+> Membros → `/admin/membros/analises`, `analises-client.tsx`: overview de conclusão por curso +
+> funil por aula com destaque do GARGALO [maior queda]; BFF `GET /api/members/analytics/courses[/:courseId]`)
+> + **Fatia Pagamentos** (transações + assinaturas: listar/filtrar/detalhe +
 > **estornar**/**cancelar**, stats e saúde de webhooks/operações; detalhe exibe a **garantia** da
 > oferta comprada — resolvida no BFF de `metadata.offerId` → `guaranteeDays` do catálogo — com
 > aviso de estorno fora da garantia) + **Fatia Membros** (abas
-> Alunos|Cursos — **Alunos**: listar + detalhe com matrículas/progresso + conceder manual
-> (oferta/curso) + revogar/expirar/estender, identidade hidratada do auth via batch; **Cursos**:
+> Alunos|Cursos — **Alunos**: listar + **ficha 360 do aluno** (`[userId]/member-detail-client.tsx`
+> em abas: Visão geral [progresso+matrículas], Gamificação, Atividade, Certificados, Classificações,
+> Pagamentos) com matrículas/progresso + conceder manual
+> (oferta/curso) + revogar/expirar/estender + **"Entrar como"** (reusa `lib/impersonation`) +
+> revogar certificado, identidade hidratada do auth via batch. A 360 tem **seletor de aprendiz**
+> (conta=adult / cada perfil=kids); Gamificação/Atividade/Certificados/Classificações são por
+> aprendiz (BFF chama `/api/members/[userId]/{gamification?audience,activity,certificates,ratings}`,
+> keyados no id do aprendiz — a conta OU o profileId); Pagamentos busca `/api/payments/transactions?q=<email>`;
+> **Cursos**:
 > autoria — CRUD de cursos + editor de módulos/aulas com **drag-and-drop** (dnd-kit clássico:
 > core 6.3 + sortable 10; hook `components/dnd/use-sortable-item.ts`; reorder otimista →
 > endpoints `/reorder`, erro→toast+reload) + módulos **colapsáveis** com contador "X de Y aulas
@@ -76,7 +91,11 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > componente (combo); rascunho livre. Produto legado (download/assets) é normalizado no load
 > (`sanitizeFulfillment`) — salvar auto-limpa) +
 > **Fatia Mídia** (upload de imagens/anexos → Cloudflare R2 com sharp→WebP; vídeos → Vimeo via TUS
-> direto do browser + capa + transcrição re-hospedada no R2 — ver §Mídia).
+> direto do browser + capa + transcrição re-hospedada no R2 — ver §Mídia) +
+> **Fatia Auditoria (06/2026)** (item de nav "Auditoria" → `/admin/auditoria`,
+> `auditoria-client.tsx`: trilha de ações administrativas com filtros ação/ator/alvo/período +
+> paginação; BFF `GET /api/admin/audit` → gateway `GET /auth/admin/audit`, admin+. A trilha é
+> ALIMENTADA pelo gateway nas rotas admin mutantes marcadas com `audit` — o painel só LÊ).
 > Login via IdP (`@sistemazero/auth`) com JWT/RBAC. Badges usam tokens `--success/--success-foreground`
 > (contraste AA no light; `bg-success/15 text-success-foreground`).
 
@@ -468,6 +487,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `POST /members/admin/entitlements` (`{mode:'offer'|'course'|'all_courses', userId,
   offerRef|courseRef?, expiresAt?}`) → concessão manual; `PATCH /members/admin/entitlements/:id`
   (`{action:'revoke'|'expire'|'extend', expiresAt?}`).
+  **Ficha 360 (06/2026):** `GET /members/admin/members/:userId/gamification?audience=adult|kids`
+  (→ `MemberGamificationView`), `…/activity?limit&offset` (→ `MemberActivityPage` = `{items,hasMore}`,
+  mescla acesso/conclusão/quiz/Estúdio), `…/certificates` (→ `{certificates}`), `…/ratings` (→ `{ratings}`);
+  `POST /members/admin/certificates/:id/revoke` (revogar certificado). Todas keyadas no `:userId` do
+  APRENDIZ (a conta OU um profileId) — a UI chama 1× por aprendiz (audiência `adult` p/ a conta,
+  `kids` p/ os perfis). Pagamentos do aluno na ficha reusam `/api/payments/transactions?q=<email>`.
+  Adapters `getMember{Gamification,Activity,Certificates,Ratings}`+`revokeCertificate` em `server/members.ts`.
   O **BFF agrega**: o handler `GET /api/members` hidrata nome/email do auth via
   `POST /auth/admin/users/batch` (`server/users.ts`: `batchGetUsers`/`getUser`). Adapter em
   `src/server/members.ts`; views em `src/lib/types.ts`.

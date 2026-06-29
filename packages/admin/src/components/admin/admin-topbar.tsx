@@ -11,6 +11,7 @@ import { UserMenu } from './user-menu'
 
 export function AdminTopbar({ user }: { user: SessionUser }) {
   const pathname = usePathname()
+  const navItems = NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(user.role))
 
   function isActive(href: string, match?: string): boolean {
     const prefix = match ?? href
@@ -43,7 +44,7 @@ export function AdminTopbar({ user }: { user: SessionUser }) {
         </Link>
 
         <nav className="ml-2 hidden items-center gap-1 md:flex">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active = isActive(item.href, item.match)
             const Icon = item.icon
             return (
@@ -77,7 +78,7 @@ export function AdminTopbar({ user }: { user: SessionUser }) {
 
       {/* Nav compacto (mobile) */}
       <nav className="flex items-center gap-1 overflow-x-auto border-t border-border px-4 py-1.5 md:hidden">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = isActive(item.href, item.match)
           return (
             <Link
