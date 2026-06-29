@@ -52,6 +52,8 @@ export interface ProfileView {
   whatsapp: string | null
   /** Data de nascimento (`YYYY-MM-DD`) — só os pais editam (controle de idade). */
   birthDate: string | null
+  /** Perfil público entre crianças (opt-in dos pais). */
+  publicProfileEnabled: boolean
   sortOrder: number
 }
 

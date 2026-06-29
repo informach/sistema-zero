@@ -24,7 +24,8 @@ export default async function HomePage() {
     getGamificationReadonly({ withRanking: true }),
     getMissionsReadonly(),
   ])
-  const courses = status === 200 ? (body?.courses ?? []) : []
+  if (status !== 200) throw new Error('Falha ao carregar os cursos')
+  const courses = body?.courses ?? []
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
   const missionsData = missions.status === 200 ? (missions.body ?? null) : null
 

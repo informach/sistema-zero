@@ -173,9 +173,14 @@ const UpdateProfileBody = z
     name: ProfileName.optional(),
     whatsapp: ProfileWhatsapp,
     birthDate: ProfileBirthDate,
+    publicProfileEnabled: z.boolean().optional(),
   })
   .refine(
-    (b) => b.name !== undefined || b.whatsapp !== undefined || b.birthDate !== undefined,
+    (b) =>
+      b.name !== undefined ||
+      b.whatsapp !== undefined ||
+      b.birthDate !== undefined ||
+      b.publicProfileEnabled !== undefined,
     'Nada para atualizar',
   )
 const ExitProfileBody = z.object({ password: z.string().min(1).max(200) })
@@ -989,8 +994,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const accountProfiles = list.body?.profiles ?? []
       if (accountProfiles.length === 0) return NextResponse.json({ children: [] })
 
-      const { body } = await members.getChildrenStats(accountProfiles.map((p) => p.id))
-      const byId = new Map((body?.children ?? []).map((c) => [c.profileId, c]))
+      const stats = await members.getChildrenStats(accountProfiles.map((p) => p.id))
+      if (stats.status !== 200) {
+        return NextResponse.json(stats.body ?? { error: { code: 'SERVICE_UNAVAILABLE' } }, {
+          status: stats.status,
+        })
+      }
+      const byId = new Map((stats.body?.children ?? []).map((c) => [c.profileId, c]))
       const children: ChildDashboardView[] = accountProfiles.map((p) => {
         const s = byId.get(p.id)
         return {

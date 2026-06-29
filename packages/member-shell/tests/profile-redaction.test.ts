@@ -9,6 +9,7 @@ const profiles: ProfileView[] = [
     avatarUrl: null,
     whatsapp: '+5531999999999',
     birthDate: '2015-04-10',
+    publicProfileEnabled: true,
     sortOrder: 0,
   },
   {
@@ -17,6 +18,7 @@ const profiles: ProfileView[] = [
     avatarUrl: null,
     whatsapp: '+5531888888888',
     birthDate: '2017-02-03',
+    publicProfileEnabled: false,
     sortOrder: 1,
   },
 ]

@@ -489,6 +489,11 @@ export function createStudioRoutes(deps: {
       if (!UUID_RE.test(id))
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
       const playable = await hub.resolveStudioPlay(id)
+      if (playable.status >= 500) {
+        return NextResponse.json(playable.body ?? { error: { code: 'SERVICE_UNAVAILABLE' } }, {
+          status: playable.status,
+        })
+      }
       if (playable.status !== 200 || playable.body?.visible !== true) {
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
       }

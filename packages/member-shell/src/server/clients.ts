@@ -78,6 +78,8 @@ export interface ProfileWriteInput {
   whatsapp?: string | null
   /** Data de nascimento (`YYYY-MM-DD`) — o auth recusa edição em sessão de perfil. */
   birthDate?: string | null
+  /** Perfil público entre crianças — o auth recusa edição em sessão de perfil. */
+  publicProfileEnabled?: boolean
 }
 
 /**

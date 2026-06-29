@@ -314,7 +314,7 @@ function VimeoLessonVideo({ vimeoId }: { vimeoId: string }) {
   return (
     <VimeoPlayer
       vimeoId={vimeoId}
-      watermark={player?.viewerEmail ?? null}
+      watermark={player?.viewerWatermark ?? null}
       initialPositionSeconds={player?.initialPositionSeconds ?? null}
       onProgress={player?.onVideoProgress}
       onFlush={player?.onVideoFlush}

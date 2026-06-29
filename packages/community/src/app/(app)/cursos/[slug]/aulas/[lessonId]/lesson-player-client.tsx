@@ -31,8 +31,8 @@ interface Props {
    * (concluir a atual destrava a próxima). `null` só na última aula do curso.
    */
   nextLessonHref: string | null
-  /** E-mail do aluno (sessão) — watermark do player de vídeo. */
-  viewerEmail: string | null
+  /** Rótulo do watermark do player de vídeo (adulto = e-mail do aluno). */
+  viewerWatermark: string | null
   /** Id da sessão (conta) — isola o rascunho LOCAL do Estúdio por usuário. */
   viewerId: string | null
   /** Identidade exibida no agradecimento do rating (avatar + nome). */
@@ -50,7 +50,7 @@ export function LessonPlayer({
   prevHref,
   nextHref,
   nextLessonHref,
-  viewerEmail,
+  viewerWatermark,
   viewerId,
   viewer,
   shareUrl,
@@ -185,7 +185,7 @@ export function LessonPlayer({
     () => ({
       lessonId: lesson.id,
       courseSlug: course.slug,
-      viewerEmail,
+      viewerWatermark,
       viewerId,
       initialPositionSeconds: lesson.completed ? null : lesson.positionSeconds,
       onVideoProgress,
@@ -199,7 +199,7 @@ export function LessonPlayer({
       lesson.completed,
       lesson.positionSeconds,
       course.slug,
-      viewerEmail,
+      viewerWatermark,
       viewerId,
       onVideoProgress,
       onVideoFlush,

@@ -6,6 +6,7 @@
 // menus do editor saem sem fundo/cor). Ver o comentário no globals.css.
 import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import type { Project, StudioShareAdapter } from '@sistemazero/studio'
+import { RefreshCw } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -29,28 +30,41 @@ type EditorState =
  */
 export function StudioFullClient({ viewerId }: { viewerId: string | null }) {
   const [mod, setMod] = useState<StudioModule | null>(null)
+  const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
   // O Estúdio SEGUE o tema da comunidade (next-themes) — sem toggle próprio e sem
   // destoar do app ao redor. `resolvedTheme` é undefined no 1º render → cai em claro.
   const { resolvedTheme } = useTheme()
   const studioTheme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
 
+  const loadStudio = useCallback(
+    async (isCurrent?: () => boolean) => {
+      setMod(null)
+      setLoadError(false)
+      try {
+        const m = await import('@sistemazero/studio')
+        if (isCurrent && !isCurrent()) return
+        // Isola o armazenamento LOCAL por PERFIL (kids): irmãos no mesmo navegador NÃO compartilham
+        // a lista de projetos. ANTES de renderizar a ProjectList. Vazio (sem sessão) = store padrão.
+        m.setStudioStorageNamespace(viewerId ?? '')
+        setMod(m)
+        // Aquece os chunks pesados (Blockly/Monaco) enquanto a criança olha a lista.
+        m.prefetchStudioModes()
+      } catch {
+        if (isCurrent && !isCurrent()) return
+        setLoadError(true)
+      }
+    },
+    [viewerId],
+  )
+
   useEffect(() => {
     let active = true
-    void (async () => {
-      const m = await import('@sistemazero/studio')
-      if (!active) return
-      // Isola o armazenamento LOCAL por PERFIL (kids): irmãos no mesmo navegador NÃO compartilham
-      // a lista de projetos. ANTES de renderizar a ProjectList. Vazio (sem sessão) = store padrão.
-      m.setStudioStorageNamespace(viewerId ?? '')
-      setMod(m)
-      // Aquece os chunks pesados (Blockly/Monaco) enquanto a criança olha a lista.
-      m.prefetchStudioModes()
-    })()
+    void loadStudio(() => active)
     return () => {
       active = false
     }
-  }, [viewerId])
+  }, [loadStudio])
 
   // Adapter de COMPARTILHAR (Mural) — standalone (SEM aula): `describe` rascunha a
   // descrição via IA no servidor (fail-soft) e `publish` sobe projeto + capa por
@@ -115,7 +129,20 @@ export function StudioFullClient({ viewerId }: { viewerId: string | null }) {
   // mantém a usabilidade em telas baixas (a página rola se não couber).
   return (
     <div className="min-h-[34rem] w-full flex-1 overflow-hidden rounded-2xl border-2 border-border bg-card">
-      {mod === null ? (
+      {loadError ? (
+        <div className="grid h-full place-items-center p-6 text-center">
+          <div className="flex max-w-sm flex-col items-center gap-3">
+            <p className="font-semibold">Não consegui carregar o Estúdio.</p>
+            <button
+              type="button"
+              onClick={() => void loadStudio()}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
+            >
+              <RefreshCw className="size-4" /> Tentar de novo
+            </button>
+          </div>
+        </div>
+      ) : mod === null ? (
         <div className="grid h-full place-items-center text-muted-foreground text-sm">
           Carregando o Estúdio…
         </div>
