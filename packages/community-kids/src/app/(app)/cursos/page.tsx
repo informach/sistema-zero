@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic'
  */
 export default async function CatalogPage() {
   const { status, body } = await listCatalog()
-  const courses = status === 200 ? (body?.courses ?? []) : []
+  if (status !== 200) throw new Error('Falha ao carregar o catálogo')
+  const courses = body?.courses ?? []
 
   return (
     <div className="flex flex-col gap-8">

@@ -10,8 +10,11 @@ import { createContext, useContext } from 'react'
 export interface LessonPlayerContextValue {
   lessonId: string
   courseSlug: string
-  /** E-mail do aluno — watermark anti-pirataria no player de vídeo. */
-  viewerEmail: string | null
+  /**
+   * Rótulo do watermark anti-pirataria do player de vídeo. Adulto = e-mail do
+   * aluno; kids = rótulo do perfil ("Perfil <id8>", sem PII do responsável).
+   */
+  viewerWatermark: string | null
   /**
    * Id da sessão (no kids = PERFIL ativo; no adulto = conta). Isola o rascunho LOCAL do Estúdio
    * por perfil — irmãos no mesmo navegador não misturam o trabalho. `null` fora do player.

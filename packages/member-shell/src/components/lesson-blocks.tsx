@@ -159,7 +159,7 @@ function VimeoLessonVideo({ vimeoId, vimeoHash }: { vimeoId: string; vimeoHash: 
     <VimeoPlayer
       vimeoId={vimeoId}
       vimeoHash={vimeoHash}
-      watermark={player?.viewerEmail ?? null}
+      watermark={player?.viewerWatermark ?? null}
       initialPositionSeconds={player?.initialPositionSeconds ?? null}
       onProgress={player?.onVideoProgress}
       onFlush={player?.onVideoFlush}

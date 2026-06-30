@@ -246,7 +246,9 @@ anexo (o servidor recusaria).
    perfil ATIVO (`listProfilesReadonly` → o perfil `id == session.id`): **nome do PERFIL** +
    **idade** (`computeAgeFromBirthDate(birthDate)` do member-shell; sem nascimento → só o nome) +
    foto do perfil. NUNCA e-mail nem `session.firstName/lastName` (= conta do responsável). O
-   `viewerEmail` do player segue sendo o do responsável SÓ p/ watermark de vídeo (não exibido).
+   watermark do player (`viewerWatermark`, antigo `viewerEmail`) virou `Perfil <id8>` (rótulo do
+   perfil, sem PII do responsável) — não mais o e-mail; o download de PDF/ebook segue marcando com o
+   e-mail da CONTA server-side (rastreabilidade anti-pirataria, fora da tela).
 3. **Telefone agora é DO PERFIL** (decisão do usuário, 06/2026 — antes o perfil kids não tinha
    telefone): a criança edita nome/foto/**telefone** (`whatsapp` do perfil) na página "Meu
    perfil" via `/api/profiles/:id`. O telefone do RESPONSÁVEL segue na compra (não se mistura).

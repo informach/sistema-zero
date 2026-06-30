@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, Camera, Check, Loader2, Lock, Shuffle, X } from 'lucide-react'
+import { ArrowLeft, Camera, Check, Loader2, Lock, RefreshCw, Shuffle, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -21,6 +21,7 @@ import { AvatarThumb } from './thumb-canvas'
 
 type Slots = Record<string, AvatarSlot>
 type Mode = 'customize' | 'photo'
+type LoadState = 'loading' | 'ready' | 'error'
 
 /** Poses do `Poses.glb` (valor = nome da animação; rótulo PT didático). */
 const POSES = [
@@ -89,6 +90,7 @@ function ItemTile({
 export function AvatarConfigurator({ dark }: { dark: boolean }) {
   const router = useRouter()
   const [state, setState] = useState<AvatarStateView | null>(null)
+  const [loadState, setLoadState] = useState<LoadState>('loading')
   const [slots, setSlots] = useState<Slots>({})
   const [balance, setBalance] = useState(0)
   // Equipe (passe livre) = moedas ilimitadas: a lojinha mostra ∞ e nunca trava por saldo.
@@ -103,22 +105,33 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
     captureRef.current = c
   }, [])
 
+  const loadAvatar = useCallback(async (isCurrent?: () => boolean) => {
+    setLoadState('loading')
+    try {
+      const res = await fetch('/api/members/avatar')
+      if (!res.ok) throw new Error('avatar load failed')
+      const data = (await res.json()) as AvatarStateView | null
+      if (!data) throw new Error('avatar missing')
+      if (isCurrent && !isCurrent()) return
+      setState(data)
+      setSlots({ ...data.equipped } as Slots)
+      setBalance(data.balance)
+      setCoinsUnlimited(data.balanceUnlimited === true)
+      setLoadState('ready')
+    } catch {
+      if (isCurrent && !isCurrent()) return
+      setState(null)
+      setLoadState('error')
+    }
+  }, [])
+
   useEffect(() => {
     let alive = true
-    fetch('/api/members/avatar')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: AvatarStateView | null) => {
-        if (!alive || !data) return
-        setState(data)
-        setSlots({ ...data.equipped } as Slots)
-        setBalance(data.balance)
-        setCoinsUnlimited(data.balanceUnlimited === true)
-      })
-      .catch(() => {})
+    void loadAvatar(() => alive)
     return () => {
       alive = false
     }
-  }, [])
+  }, [loadAvatar])
 
   const ownedById = useMemo(
     () => new Map((state?.parts ?? []).map((p) => [p.id, p.owned])),
@@ -232,7 +245,8 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
           if (blob) {
             const fd = new FormData()
             fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
-            await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
+            const photo = await fetch('/api/members/avatar/snapshot', { method: 'POST', body: fd })
+            if (!photo.ok) toast.error('Avatar salvo, mas a foto não atualizou agora.')
           }
         } catch {
           // ignora — foto é cosmética; a próxima vez tenta de novo
@@ -254,6 +268,36 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
   const currentColor = slots[category]?.color
   const items = partsByCategory.get(category) ?? []
   const activePose = mode === 'photo' ? pose : 'Idle'
+
+  if (loadState === 'error') {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col bg-background">
+        <div className="relative z-10 flex items-center justify-between gap-2 p-4">
+          <button
+            type="button"
+            onClick={() => router.push('/perfil')}
+            aria-label="Voltar"
+            className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90"
+          >
+            <ArrowLeft className="size-5" />
+          </button>
+        </div>
+        <div className="grid flex-1 place-items-center px-6 text-center">
+          <div className="flex max-w-sm flex-col items-center gap-3">
+            <KidsMascot expression="thinking" className="size-24" />
+            <p className="font-semibold">Não consegui carregar seu avatar.</p>
+            <button
+              type="button"
+              onClick={() => void loadAvatar()}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
+            >
+              <RefreshCw className="size-4" /> Tentar de novo
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">

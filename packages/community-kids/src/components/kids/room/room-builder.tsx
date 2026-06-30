@@ -8,13 +8,14 @@ import {
   Paintbrush,
   Palette,
   PawPrint,
+  RefreshCw,
   RotateCw,
   Sofa,
   Sprout,
   Sun,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import {
@@ -44,6 +45,7 @@ type TabId =
   | 'clima'
   | 'bichinho'
   | 'tema'
+type LoadState = 'loading' | 'ready' | 'error'
 
 const TABS: { id: TabId; label: string; icon: typeof Sofa }[] = [
   { id: 'moveis', label: 'Móveis', icon: Sofa },
@@ -170,6 +172,7 @@ function freeWallSpot(
 /** Editor do quarto 3D: cena ao vivo + barra de categorias (móveis/piso/parede/clima/…). */
 export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null }) {
   const [data, setData] = useState<RoomEditorView | null>(null)
+  const [loadState, setLoadState] = useState<LoadState>('loading')
   const [draft, setDraft] = useState<RoomStateView>({
     theme: 'aconchego',
     placedItems: [],
@@ -191,23 +194,35 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     setDraft(next)
   }
 
+  const loadRoom = useCallback(async (isCurrent?: () => boolean) => {
+    setLoadState('loading')
+    setSelected(null)
+    try {
+      const res = await fetch('/api/members/room')
+      if (!res.ok) throw new Error('room load failed')
+      const d = (await res.json()) as RoomEditorView | null
+      if (!d) throw new Error('room missing')
+      if (isCurrent && !isCurrent()) return
+      setData(d)
+      draftRef.current = d.state
+      setDraft(d.state)
+      setBalance(d.balance)
+      setCoinsUnlimited(d.balanceUnlimited === true)
+      setLoadState('ready')
+    } catch {
+      if (isCurrent && !isCurrent()) return
+      setData(null)
+      setLoadState('error')
+    }
+  }, [])
+
   useEffect(() => {
     let alive = true
-    fetch('/api/members/room')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: RoomEditorView | null) => {
-        if (!alive || !d) return
-        setData(d)
-        draftRef.current = d.state
-        setDraft(d.state)
-        setBalance(d.balance)
-        setCoinsUnlimited(d.balanceUnlimited === true)
-      })
-      .catch(() => {})
+    void loadRoom(() => alive)
     return () => {
       alive = false
     }
-  }, [])
+  }, [loadRoom])
 
   // Teclado: setas movem a peça selecionada, R gira, Delete tira, Esc deseleciona. O handler
   // vive num ref atualizado a cada render (sempre lê o estado fresco) → 1 listener estável, sem
@@ -444,7 +459,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
   }
 
   async function save() {
-    if (saving) return
+    if (saving || loadState !== 'ready') return
     setSaving(true)
     try {
       const res = await fetch('/api/members/room', {
@@ -475,6 +490,20 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
             onPaintWall={paintWall}
             paintColor={paintColor}
           />
+        ) : loadState === 'error' ? (
+          <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted p-6 text-center">
+            <div className="flex max-w-sm flex-col items-center gap-3">
+              <KidsMascot expression="thinking" className="size-20" />
+              <p className="font-semibold">Não consegui carregar seu quarto.</p>
+              <button
+                type="button"
+                onClick={() => void loadRoom()}
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
+              >
+                <RefreshCw className="size-4" /> Tentar de novo
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted">
             <KidsMascot expression="thinking" className="size-20" />
@@ -539,8 +568,11 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         <button
           type="button"
           onClick={save}
-          disabled={saving}
-          className={cn('sz-btn-gradient h-11 px-6 text-base', saving && 'opacity-60')}
+          disabled={saving || loadState !== 'ready'}
+          className={cn(
+            'sz-btn-gradient h-11 px-6 text-base',
+            (saving || loadState !== 'ready') && 'opacity-60',
+          )}
         >
           {saving ? 'Salvando…' : 'Salvar quarto'}
         </button>

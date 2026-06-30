@@ -1,3 +1,4 @@
+import { redactProfilesForProfileSession } from '@sistemazero/member-shell/lib/profile-redaction'
 import { redirect } from 'next/navigation'
 import { getProfileAllowanceReadonly } from '@/server/members'
 import { isParentVerifiedFor } from '@/server/parent-gate'
@@ -22,9 +23,15 @@ export default async function PerfisPage({
   if (!session) redirect('/login')
   // Perfis + teto da conta (p/ a área dos pais travar o "Adicionar" e mostrar "X de Y").
   const [res, allowanceRes] = await Promise.all([listReadonly(), getProfileAllowanceReadonly()])
-  const profiles = res.status === 200 ? (res.body?.profiles ?? []) : []
-  const maxProfiles = allowanceRes.status === 200 ? (allowanceRes.body?.maxProfiles ?? null) : null
   const isProfileSession = Boolean(session.activeProfile)
+  const profiles =
+    res.status === 200
+      ? redactProfilesForProfileSession(
+          res.body?.profiles ?? [],
+          isProfileSession ? session.id : null,
+        )
+      : []
+  const maxProfiles = allowanceRes.status === 200 ? (allowanceRes.body?.maxProfiles ?? null) : null
   // Sessão da conta com o portão já aberto (senha verificada há pouco) → a Área
   // dos pais abre sem re-pedir a senha (ex.: logo após sair de um perfil).
   const parentVerified = !isProfileSession && (await isParentVerifiedFor(session.id))

@@ -39,8 +39,10 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    versionado em `scripts/seed-templates.ts` (seed = upsert): e-mails com layout da marca
    (600px, card branco, CTA gradiente cyan→lime `#42e5e0→#bfea00`, paleta hex ≈ tokens oklch do
    community) e logo PNG hospedada (`EMAIL_LOGO_URL`). Variáveis são CONTRATO com os
-   consumidores — `welcome`/`password-reset`: `nome`+`link` (funil/auth); `otp`: `nome`+`codigo`
-   (auth); `nfse-emitida`: `nome`+`produto`+`valor`+`chave` (fiscal — DANFSe anexado por URL).
+   consumidores — `welcome`/`password-reset`/`new-access`: `nome`+`link` (funil/auth); `otp`:
+   `nome`+`codigo` (auth); `nfse-emitida`: `nome`+`produto`+`valor`+`chave` (fiscal — DANFSe anexado
+   por URL). `new-access` (e-mail + whatsapp) = aviso de "novo curso liberado" ao comprador
+   RECORRENTE (já tem conta) — link p/ `/cursos`, SEM token de senha (≠ do `welcome`, que é 1º acesso).
    NÃO renomeie sem mudar os chamadores.
 4. **Outbox + worker + webhooks de status** (espelha o `payments`): enfileira em `QUEUED`, o worker
    envia respeitando o ritmo, e os webhooks (`delivered`/`read`/`bounce`/`spam`) atualizam a `Message`
@@ -109,7 +111,7 @@ tests/    unit/ (render, pacing, message, send-worker, sendgrid-webhook) · inte
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | testes (**sandbox off** — gotcha do monorepo) |
 | `bun run db:generate` / `db:migrate` | migrations (Drizzle; cria o schema `messaging`) |
-| `bun run templates:seed` | **UPSERT** dos templates padrão: `welcome` (e-mail + whatsapp), `password-reset` (e-mail), `otp` (e-mail + whatsapp — `{{codigo}}`) e `nfse-emitida` (e-mail — `{{nome}}/{{produto}}/{{valor}}/{{chave}}`, NFS-e anexada em PDF via anexos por URL). É a fonte da verdade versionada do conteúdo — key existente tem subject/body/variables ATUALIZADOS (`active` preservado). E-mails têm layout HTML da marca (tabelas + CSS inline) com **logos EMBUTIDAS** (attachment inline + `cid:`, padrão do comunidade-sistema-zero — a imagem viaja DENTRO do e-mail; sem hospedagem externa/proxy/R2; PNGs PURAS em `assets/logo-sistema-zero-{light,dark}.png`, injetadas no gateway pelo composition-root, anexadas só quando o HTML referencia o `cid:`) e **dark mode** via `@media (prefers-color-scheme: dark)` com o tema dark do community + swap da logo (Apple Mail/Samsung/Outlook iOS; o Gmail que inverte à força mantém a logo de tinta escura — limitação aceita). ⚠️ NUNCA apague asset remoto referenciado por e-mail JÁ ENVIADO (aprendido na marra) |
+| `bun run templates:seed` | **UPSERT** dos templates padrão: `welcome` (e-mail + whatsapp), `new-access` (e-mail + whatsapp — comprador recorrente; `{{nome}}/{{link}}` p/ `/cursos`, sem token), `password-reset` (e-mail), `otp` (e-mail + whatsapp — `{{codigo}}`) e `nfse-emitida` (e-mail — `{{nome}}/{{produto}}/{{valor}}/{{chave}}`, NFS-e anexada em PDF via anexos por URL). É a fonte da verdade versionada do conteúdo — key existente tem subject/body/variables ATUALIZADOS (`active` preservado). E-mails têm layout HTML da marca (tabelas + CSS inline) com **logos EMBUTIDAS** (attachment inline + `cid:`, padrão do comunidade-sistema-zero — a imagem viaja DENTRO do e-mail; sem hospedagem externa/proxy/R2; PNGs PURAS em `assets/logo-sistema-zero-{light,dark}.png`, injetadas no gateway pelo composition-root, anexadas só quando o HTML referencia o `cid:`) e **dark mode** via `@media (prefers-color-scheme: dark)` com o tema dark do community + swap da logo (Apple Mail/Samsung/Outlook iOS; o Gmail que inverte à força mantém a logo de tinta escura — limitação aceita). ⚠️ NUNCA apague asset remoto referenciado por e-mail JÁ ENVIADO (aprendido na marra) |
 | `bun run evolution:create-instance <name> <phone>` | cria instância na Evolution (QR) + registra no banco |
 | `bun run webhooks:register <name> <url>` | aponta o webhook da instância p/ o nosso endpoint |
 | `bun run send:test <email\|whatsapp> <templateKey> <contato>` | dispara um envio de teste |
@@ -256,9 +258,11 @@ escalonados (cada lane com seu próprio `next_available_at`).
 
 ## Pontos em aberto (futuro)
 
-- ~~Integração com a compra~~ **FEITA (jun/2026):** o funil envia o `welcome` no `payment.paid`
-  pelos **dois canais** (e-mail + WhatsApp; chaves de idempotência POR canal — `welcome-<leadId>` /
-  `welcome-wa-<leadId>`; o funil prefixa o DDI 55 no telefone BR) com o link de **definir senha**
+- ~~Integração com a compra~~ **FEITA (jun/2026):** o funil RAMIFICA por tipo de comprador no
+  `payment.paid` — NOVO recebe `welcome` (definir senha); **RECORRENTE recebe `new-access`** (aviso
+  de novo curso, link p/ `/cursos`, sem token). Ambos pelos **dois canais** (e-mail + WhatsApp;
+  chaves de idempotência POR tipo+canal — `welcome-`/`new-access-<leadId>` + `-wa-`; o funil prefixa
+  o DDI 55 no telefone BR). O `welcome` leva o link de **definir senha**
   (o `auth` emite o token via `POST /auth/internal/password-tokens`;
   link aponta p/ o app `@sistemazero/community` `/redefinir-senha?token=...`). O `auth` também envia
   o `password-reset` (reset por link) e o **`otp`** (login passwordless + recuperação de senha por

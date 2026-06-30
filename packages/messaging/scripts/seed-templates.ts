@@ -227,6 +227,50 @@ const seeds = [
     ].join('\n'),
   },
   {
+    key: 'new-access',
+    channel: 'email' as const,
+    name: 'Novo acesso liberado (e-mail)',
+    subject: 'Novo curso liberado, {{nome}}! 🎉',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Seu novo acesso já está na área de membros — é só entrar.',
+      title: 'Novo curso liberado, {{nome}}! 🎉',
+      content: [
+        p(
+          'Boa notícia! Sua compra foi confirmada e um novo curso já está liberado na sua conta do <strong>Sistema Zero</strong>.',
+        ),
+        p(
+          'Como você já tem conta, não precisa criar senha de novo — é só entrar com o seu e-mail e senha de sempre e começar.',
+        ),
+        ctaButton('Ver meus cursos', '{{link}}'),
+        divider,
+        small(
+          'Esqueceu a senha? Use a opção <strong>“Esqueci minha senha”</strong> na página de login para criar uma nova.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque uma compra foi realizada com este endereço.',
+    }),
+  },
+  {
+    key: 'new-access',
+    channel: 'whatsapp' as const,
+    name: 'Novo acesso liberado (WhatsApp)',
+    variables: ['nome', 'link'],
+    body: [
+      'Olá, {{nome}}! 👋',
+      '',
+      'Boa notícia! Sua compra foi confirmada e um novo curso já está liberado no seu *Sistema Zero*. 🎉',
+      '',
+      'Como você já tem conta, é só entrar com o seu e-mail e senha de sempre e começar:',
+      '{{link}}',
+      '',
+      '_Esqueceu a senha? Use a opção "Esqueci minha senha" na página de login._',
+      '',
+      'Bons estudos! 🚀',
+    ].join('\n'),
+  },
+  {
     key: 'password-reset',
     channel: 'email' as const,
     name: 'Redefinição de senha (e-mail)',

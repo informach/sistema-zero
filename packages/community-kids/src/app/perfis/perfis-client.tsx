@@ -141,11 +141,15 @@ export function PerfisClient({
     toast.error(res.status === 401 ? 'Senha incorreta.' : 'Não foi possível abrir a área dos pais.')
   }
 
-  async function saveProfile(name: string, birthDate: string | null, existing?: ProfileView) {
+  async function saveProfile(
+    name: string,
+    birthDate: string | null,
+    publicProfileEnabled: boolean,
+    existing?: ProfileView,
+  ) {
     setBusy(true)
-    // A data de nascimento só é editável pelos pais (sessão da conta) — esta tela é a
-    // Área dos pais. O auth recusa `birthDate` em sessão de perfil (defesa em profundidade).
-    const payload = { name, birthDate }
+    // Campos parent-only: o auth recusa birthDate/publicProfileEnabled em sessão de perfil.
+    const payload = existing ? { name, birthDate, publicProfileEnabled } : { name, birthDate }
     const res = existing
       ? await fetch(`/api/profiles/${existing.id}`, {
           method: 'PATCH',
@@ -602,7 +606,12 @@ function ProfileForm({
   editing: { mode: 'create' } | { mode: 'edit'; profile: ProfileView }
   busy: boolean
   onCancel: () => void
-  onSave: (name: string, birthDate: string | null, existing?: ProfileView) => void
+  onSave: (
+    name: string,
+    birthDate: string | null,
+    publicProfileEnabled: boolean,
+    existing?: ProfileView,
+  ) => void
   onArchive: (p: ProfileView) => void
   onAvatar: (p: ProfileView, file: File) => void
 }) {
@@ -610,6 +619,9 @@ function ProfileForm({
   const profile = isEdit ? editing.profile : null
   const [name, setName] = useState(profile?.name ?? '')
   const [birthDate, setBirthDate] = useState(profile?.birthDate ?? '')
+  const [publicProfileEnabled, setPublicProfileEnabled] = useState(
+    profile?.publicProfileEnabled ?? false,
+  )
   const fileRef = useRef<HTMLInputElement>(null)
   // `max` do seletor = hoje (nascimento não pode ser no futuro).
   const today = new Date().toISOString().slice(0, 10)
@@ -671,6 +683,24 @@ function ProfileForm({
         </p>
       </Field>
 
+      {profile ? (
+        <label className="flex items-start gap-3 rounded-2xl border-2 border-border bg-card p-4">
+          <input
+            type="checkbox"
+            checked={publicProfileEnabled}
+            onChange={(e) => setPublicProfileEnabled(e.target.checked)}
+            className="mt-1 size-4 accent-primary"
+          />
+          <span className="flex flex-col gap-1">
+            <span className="font-semibold text-sm">Perfil público na comunidade kids</span>
+            <span className="text-muted-foreground text-xs">
+              Mostra nome, avatar, conquistas e quarto para outras crianças. Nunca mostra e-mail,
+              telefone ou nascimento.
+            </span>
+          </span>
+        </label>
+      ) : null}
+
       <div className="flex items-center justify-between gap-3">
         {profile ? (
           <Button
@@ -689,7 +719,9 @@ function ProfileForm({
             Cancelar
           </Button>
           <Button
-            onClick={() => onSave(name.trim(), birthDate || null, profile ?? undefined)}
+            onClick={() =>
+              onSave(name.trim(), birthDate || null, publicProfileEnabled, profile ?? undefined)
+            }
             disabled={busy || name.trim().length === 0}
           >
             {busy ? <Spinner className="size-4" /> : 'Salvar'}

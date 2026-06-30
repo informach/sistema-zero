@@ -76,7 +76,7 @@ export default async function LessonPage({
       prevHref={href(index > 0 ? flat[index - 1] : undefined)}
       nextHref={nextOutline && !nextOutline.locked ? nextLessonHref : null}
       nextLessonHref={nextLessonHref}
-      viewerEmail={session?.email ?? null}
+      viewerWatermark={session?.email ?? null}
       viewerId={session?.id ?? null}
       viewer={{
         firstName: session?.firstName ?? null,

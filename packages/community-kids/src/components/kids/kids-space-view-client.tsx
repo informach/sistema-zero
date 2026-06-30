@@ -182,6 +182,7 @@ export function KidsSpaceViewClient({
   // assíncronos (nunca durante o render), então a escrita em render é segura.
   const threadRef = useRef(thread)
   const commentsRef = useRef(comments)
+  const commentRequestRef = useRef(0)
   threadRef.current = thread
   commentsRef.current = comments
 
@@ -254,13 +255,13 @@ export function KidsSpaceViewClient({
       setThreads(page.items)
       setThreadsCursor(page.nextCursor)
       setThreadsHasMore(page.hasMore)
+      // Marca como visto só depois de uma carga bem-sucedida.
+      apiSend(`/api/hub/channels/${enc(channelId)}/seen`, 'POST', {}).catch(() => {})
+      setChannels((prev) => prev.map((c) => (c.id === channelId ? { ...c, hasUnread: false } : c)))
     } catch (err) {
       if (isCurrent && !isCurrent()) return
       toast.error((err as ApiError).message ?? 'Falha ao carregar.')
     }
-    // Marca como visto e apaga o ponto de não-lido localmente (sem refetch dos canais).
-    apiSend(`/api/hub/channels/${enc(channelId)}/seen`, 'POST', {}).catch(() => {})
-    setChannels((prev) => prev.map((c) => (c.id === channelId ? { ...c, hasUnread: false } : c)))
   }, [])
 
   async function loadMoreThreads() {
@@ -291,25 +292,29 @@ export function KidsSpaceViewClient({
     }
   }, [channel, loadThreads])
 
-  const loadComments = useCallback(async (threadId: string) => {
+  const loadComments = useCallback(async (threadId: string, isCurrent?: () => boolean) => {
     try {
       const page = await apiGet<HubPage<HubCommentView>>(
         `/api/hub/threads/${enc(threadId)}/comments`,
       )
+      if (isCurrent && !isCurrent()) return
       setComments(page.items)
       setCommentsCursor(page.nextCursor)
       setCommentsHasMore(page.hasMore)
     } catch (err) {
+      if (isCurrent && !isCurrent()) return
       toast.error((err as ApiError).message ?? 'Falha ao carregar as respostas.')
     }
   }, [])
 
   async function openThread(t: HubThreadView) {
+    const requestId = commentRequestRef.current + 1
+    commentRequestRef.current = requestId
     setThread(t)
     setComments([])
     setCommentsCursor(null)
     setCommentsHasMore(false)
-    await loadComments(t.id)
+    await loadComments(t.id, () => commentRequestRef.current === requestId)
   }
 
   async function loadMoreComments() {
@@ -699,7 +704,10 @@ function PlayLinkActions({ playUrl, title }: { playUrl: string; title: string })
       // share nativo cancelado/indisponível → cai para copiar
     }
     try {
-      await navigator.clipboard?.writeText(abs)
+      if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+        throw new Error('clipboard unavailable')
+      }
+      await navigator.clipboard.writeText(abs)
       toast.success('Link copiado! 🔗')
     } catch {
       toast.error('Não consegui copiar o link.')
