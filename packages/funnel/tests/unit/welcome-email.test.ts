@@ -85,15 +85,79 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     expect(gw.calls.messages[0]?.input.channel).toBe('email')
   })
 
-  test('comprador RECORRENTE (is_new=false) → não envia (já tem credenciais)', async () => {
+  test('comprador RECORRENTE (is_new=false) → new-access SEM token, link p/ /cursos (e-mail + WhatsApp)', async () => {
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()
     const lead = await registeredLead(repo, { isNew: false, userId: 'user-existing' })
 
     await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })(lead)
 
+    // Já tem credenciais → NÃO pede token de senha.
     expect(gw.calls.passwordTokens).toHaveLength(0)
+    expect(gw.calls.messages).toHaveLength(2)
+    const link = `${COMMUNITY_URL}/cursos`
+
+    const email = gw.calls.messages[0]
+    expect(email?.input.templateKey).toBe('new-access')
+    expect(email?.input.channel).toBe('email')
+    expect(email?.input.recipient).toEqual({ name: 'Ana', email: 'ana@example.com' })
+    expect(email?.input.variables?.link).toBe(link)
+    expect(email?.idempotencyKey).toBe(`new-access-${lead.id}`)
+
+    const wa = gw.calls.messages[1]
+    expect(wa?.input.templateKey).toBe('new-access')
+    expect(wa?.input.channel).toBe('whatsapp')
+    expect(wa?.input.recipient).toEqual({ name: 'Ana', phone: '5511999998888' })
+    expect(wa?.input.variables?.link).toBe(link)
+    expect(wa?.idempotencyKey).toBe(`new-access-wa-${lead.id}`)
+  })
+
+  test('RECORRENTE em funil kids → new-access aponta p/ o app KIDS /cursos', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const base = await registeredLead(repo, { isNew: false, userId: 'user-existing' })
+    const lead = { ...base, funnel: 'kids/desafio-primeiro-jogo' }
+
+    await makeSendWelcome({
+      gateway: gw.gateway,
+      communityUrl: COMMUNITY_URL,
+      kidsCommunityUrl: 'http://localhost:3008',
+      repo,
+    })(lead)
+
+    expect(gw.calls.passwordTokens).toHaveLength(0)
+    expect(gw.calls.messages[0]?.input.variables?.link).toBe('http://localhost:3008/cursos')
+  })
+
+  test('RECORRENTE one-shot: 2ª execução não reenvia (claim por lead cobre os dois tipos)', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    const lead = await registeredLead(repo, { isNew: false, userId: 'user-existing' })
+    const send = makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })
+
+    await send(lead)
+    expect(gw.calls.messages).toHaveLength(2)
+    expect(leads.get(lead.id)?.welcomeSentAt).not.toBeNull()
+
+    const fresh = await repo.getLead(lead.id)
+    if (fresh) await send(fresh)
+    await send({ ...lead, welcomeSentAt: null }) // snapshot velho → claim atômico barra
+    expect(gw.calls.messages).toHaveLength(2)
+  })
+
+  test('sem registro no IdP (buyer_is_new nulo) → não envia nada', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Ana', email: 'ana@example.com' })
+    await repo.setPayment(id, 'pay-x')
+    await repo.markPaid(id, new Date())
+    const lead = await repo.getLead(id)
+    if (!lead) throw new Error('lead')
+
+    await makeSendWelcome({ gateway: gw.gateway, communityUrl: COMMUNITY_URL, repo })(lead)
     expect(gw.calls.messages).toHaveLength(0)
+    expect(gw.calls.passwordTokens).toHaveLength(0)
   })
 
   test('falha ao emitir o token → não envia e NÃO lança (best-effort)', async () => {

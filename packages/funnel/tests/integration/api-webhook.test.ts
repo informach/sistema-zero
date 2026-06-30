@@ -179,8 +179,12 @@ describe('POST /api/webhooks/payments', () => {
     expect(leads.get(id)?.buyerIsNew).toBe(false)
     expect(gw.calls.grant).toHaveLength(1)
     expect(gw.calls.grant[0]?.input).toMatchObject({ userId: 'user-existing', paymentId: 'pay-1' })
-    // Recorrente NÃO recebe o e-mail de boas-vindas (já tem credenciais).
-    expect(gw.calls.messages).toHaveLength(0)
+    // Recorrente NÃO cria senha de novo: recebe o aviso de "novo acesso" (new-access)
+    // por e-mail + WhatsApp, com link p/ /cursos e SEM token de senha.
+    expect(gw.calls.passwordTokens).toHaveLength(0)
+    expect(gw.calls.messages).toHaveLength(2)
+    expect(gw.calls.messages[0]?.input.templateKey).toBe('new-access')
+    expect(gw.calls.messages[0]?.input.variables?.link).toBe(`${COMMUNITY_URL}/cursos`)
   })
 
   test('falha transitória no registro → 502 e NÃO marca a entrega (gateway re-entrega)', async () => {

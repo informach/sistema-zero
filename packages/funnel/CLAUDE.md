@@ -270,11 +270,19 @@ gateway re-entrega) e **best-effort** no polling do Pix (`pixStatus`) e no cart�
 coluna e não re-chama o members — antes, CADA poll pós-pago disparava um S2S real. Falha NÃO
 marca (retry segue); corrida webhook×polling pode chamar 2× (inócuo — members deduplica).
 
-**Boas-vindas / 1º acesso (`sendWelcome`) — e-mail + WhatsApp:** roda no webhook E nos caminhos
-síncronos (`runPostPayment`: cartão PAID/polling — simetria com o grant; se a entrega do webhook
-quebrar de vez, o comprador não fica sem o link de senha) DEPOIS de fulfill+grant, **só p/
-comprador NOVO** (`buyerUserId` setado — o recorrente já tem credenciais).
-Via `server/welcome-email.ts` (`makeSendWelcome`): pede o token de definição de senha ao auth
+**Notificação pós-compra (`sendWelcome`) — e-mail + WhatsApp, RAMIFICADA por tipo de comprador:**
+roda no webhook E nos caminhos síncronos (`runPostPayment`: cartão PAID/polling — simetria com o
+grant; se a entrega do webhook quebrar de vez, o comprador não fica sem o aviso) DEPOIS de
+fulfill+grant, decidindo pelo `buyerIsNew` (do `created` do `ensure-buyer`):
+- **NOVO** (`buyerIsNew===true`): template `welcome` + link de DEFINIR senha (1º acesso),
+  `…/redefinir-senha?token=` (token single-use do auth).
+- **RECORRENTE** (`buyerIsNew===false`): já tem credenciais → template **`new-access`** (aviso de
+  "novo curso liberado"), link `…/cursos`, **SEM token** (mandar criar senha de novo seria confuso).
+  Antes o recorrente não recebia NADA.
+`buyerIsNew` nulo (não registrado) → não envia. O nome `makeSendWelcome`/coluna `welcome_sent_at`
+seguem (compat do wiring), mas cobrem os dois casos; chaves de idempotência por tipo+canal
+(`welcome-`/`new-access-` + `-wa-`). No caso NOVO,
+via `server/welcome-email.ts` (`makeSendWelcome`): pede o token de definição de senha ao auth
 (`POST /auth/internal/password-tokens`, HMAC via gateway), monta o link
 `${COMMUNITY_URL}/redefinir-senha?token=...` e enfileira o template `welcome` no messaging
 (`POST /messaging/send`) pelos **DOIS canais** — o template existe em e-mail E whatsapp no seed do

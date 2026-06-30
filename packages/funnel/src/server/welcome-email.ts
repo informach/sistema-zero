@@ -14,51 +14,72 @@ export interface WelcomeEmailDeps {
 }
 
 /**
- * Boas-vindas pós-compra com o link de DEFINIR a senha (1º acesso ao app
- * community), por E-MAIL e WHATSAPP (template `welcome` existe nos dois canais;
- * mesmo token/link nos dois — single-use: o primeiro clique vale, tanto faz o
- * canal). Roda após fulfill+grant, SÓ para comprador NOVO (`buyerIsNew` —
- * recém-criado no IdP; o recorrente já tem credenciais, mandar um link de
- * redefinição seria confuso). BEST-EFFORT deliberado: qualquer falha é logada e
- * NUNCA lança — as mensagens não são críticas para a concessão do acesso (o
- * aluno tem o "esqueci minha senha" como fallback), então não força reentrega
- * do webhook. Cada canal é INDEPENDENTE: a falha de um não impede o outro.
- * Idempotente no replay: `Idempotency-Key` POR CANAL (`welcome-<leadId>` /
- * `welcome-wa-<leadId>` — o messaging deduplica por consumer+chave; reusar a
- * mesma chave devolveria a mensagem do 1º canal em vez de enfileirar o 2º).
+ * Notificação pós-compra por E-MAIL e WHATSAPP, RAMIFICADA pelo tipo de comprador
+ * (`buyerIsNew`, vindo do `created` do `ensure-buyer`). Roda após fulfill+grant.
+ * - **NOVO** (`buyerIsNew === true`): boas-vindas com o link de DEFINIR a senha
+ *   (1º acesso) — template `welcome`, link `…/redefinir-senha?token=` (token
+ *   single-use; mesmo nos dois canais).
+ * - **RECORRENTE** (`buyerIsNew === false`): já tem credenciais — NÃO recebe link
+ *   de senha (seria confuso). Recebe um aviso de "novo acesso liberado" — template
+ *   `new-access`, link `…/cursos` (sem token).
+ * `buyerIsNew` nulo = comprador ainda não registrado no IdP → nada a notificar.
  *
- * ⚠️ ONE-SHOT ATÔMICO (`claimWelcome`, full review 06/2026): o welcome roda em
- * DOIS caminhos (webhook E síncrono cartão/polling) e o auth CONSOME os tokens
- * pendentes ao emitir um novo (1 vivo/usuário) — sem o claim, a 2ª execução
- * emitia um token novo (invalidando o do e-mail JÁ entregue) e o messaging
- * deduplicava o reenvio: o comprador clicava num LINK MORTO. Só a execução que
- * vence o claim emite token/envia; o claim só é liberado se NADA foi emitido
- * (falha na emissão do token) — depois de emitido, nunca (re-emitir mataria o
- * link entregue).
+ * BEST-EFFORT deliberado: qualquer falha é logada e NUNCA lança — as mensagens não
+ * são críticas para a concessão do acesso (o aluno tem "esqueci minha senha" como
+ * fallback), então não força reentrega do webhook. Cada canal é INDEPENDENTE: a
+ * falha de um não impede o outro. Idempotente no replay: `Idempotency-Key` POR
+ * CANAL + tipo (`welcome-<leadId>` / `new-access-<leadId>` e os `-wa-` — o messaging
+ * deduplica por consumer+chave; reusar a mesma chave devolveria a mensagem do 1º
+ * canal em vez de enfileirar o 2º).
+ *
+ * ⚠️ ONE-SHOT ATÔMICO (`claimWelcome` → `welcome_sent_at`, full review 06/2026): a
+ * notificação roda em DOIS caminhos (webhook E síncrono cartão/polling). No caso
+ * NOVO, o auth CONSOME os tokens pendentes ao emitir um novo (1 vivo/usuário) — sem
+ * o claim, a 2ª execução emitia um token novo (invalidando o do e-mail JÁ entregue)
+ * e o messaging deduplicava o reenvio: o comprador clicava num LINK MORTO. Só a
+ * execução que vence o claim envia; o claim só é liberado (`releaseWelcome`) se NADA
+ * saiu (falha na emissão do token, caso NOVO) — depois de enviado, nunca. Cada
+ * compra é um `lead` distinto, então o claim por-lead serve aos dois casos. (A
+ * coluna/método mantêm o nome `welcome*` por compat do wiring, mas cobrem os dois.)
  */
 export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise<void> {
   return async (lead: Lead) => {
-    if (!lead.buyerIsNew || !lead.email) return
+    // Sem e-mail não há canal primário; `buyerIsNew` nulo = ainda não registrado.
+    if (!lead.email || lead.buyerIsNew == null) return
     // Repetição barata (lead fresco do chamador) — a corrida real é do claim.
     if (lead.welcomeSentAt) return
     try {
       if (!(await deps.repo.claimWelcome(lead.id, new Date()))) return
-      const tokenRes = await deps.gateway.createPasswordToken(lead.email)
-      const token = readToken(tokenRes.body)
-      if (tokenRes.status !== 201 || !token) {
-        deps.log?.('welcome.token_failed', { leadId: lead.id, status: tokenRes.status })
-        // Sem token emitido NADA saiu → libera o claim p/ um caminho futuro
-        // (reentrega do webhook / próximo poll) tentar de novo.
-        await deps.repo.releaseWelcome(lead.id)
-        return
-      }
 
       const { firstName } = splitName(lead.nome)
       // Funil kids → app KIDS; senão o adulto. A chave do lead é `audience/produto`.
       const baseUrl = lead.funnel?.startsWith('kids/')
         ? (deps.kidsCommunityUrl ?? deps.communityUrl)
         : deps.communityUrl
-      const link = `${baseUrl}/redefinir-senha?token=${encodeURIComponent(token)}`
+
+      // Resolve o conteúdo por tipo de comprador. No NOVO, emite o token de senha
+      // (e libera o claim se falhar — nada saiu). No RECORRENTE, não há token.
+      let templateKey: string
+      let link: string
+      let keyPrefix: string
+      if (lead.buyerIsNew) {
+        const tokenRes = await deps.gateway.createPasswordToken(lead.email)
+        const token = readToken(tokenRes.body)
+        if (tokenRes.status !== 201 || !token) {
+          deps.log?.('welcome.token_failed', { leadId: lead.id, status: tokenRes.status })
+          // Sem token emitido NADA saiu → libera o claim p/ um caminho futuro tentar.
+          await deps.repo.releaseWelcome(lead.id)
+          return
+        }
+        templateKey = 'welcome'
+        link = `${baseUrl}/redefinir-senha?token=${encodeURIComponent(token)}`
+        keyPrefix = 'welcome'
+      } else {
+        templateKey = 'new-access'
+        link = `${baseUrl}/cursos`
+        keyPrefix = 'new-access'
+      }
+
       const variables = { nome: firstName, link }
 
       await sendOne(
@@ -66,11 +87,11 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
         lead.id,
         {
           channel: 'email',
-          templateKey: 'welcome',
+          templateKey,
           recipient: { name: firstName, email: lead.email },
           variables,
         },
-        `welcome-${lead.id}`,
+        `${keyPrefix}-${lead.id}`,
       )
 
       const phone = toWhatsAppPhone(lead.telefone)
@@ -80,11 +101,11 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
           lead.id,
           {
             channel: 'whatsapp',
-            templateKey: 'welcome',
+            templateKey,
             recipient: { name: firstName, phone },
             variables,
           },
-          `welcome-wa-${lead.id}`,
+          `${keyPrefix}-wa-${lead.id}`,
         )
       }
     } catch (err) {
