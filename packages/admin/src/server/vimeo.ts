@@ -209,7 +209,14 @@ export async function getTextTrackVtt(link: string): Promise<string> {
   return text
 }
 
-/** Sobe a capa custom do vídeo (POST /pictures cria o slot + PUT envia os bytes). */
+/**
+ * Sobe a capa custom do vídeo. Fluxo de 3 passos do Vimeo (pictures):
+ *  1) POST /pictures cria o slot e devolve `uri` + `link`;
+ *  2) PUT envia os bytes da imagem para o `link`;
+ *  3) PATCH `uri` com `{active:true}` ATIVA a capa (sem este passo a imagem sobe
+ *     mas nunca vira a thumbnail do vídeo — `active:true` no POST é ignorado porque
+ *     ainda não há imagem). Ver https://developer.vimeo.com/api/upload/thumbnails.
+ */
 export async function uploadVideoThumbnail(
   vimeoVideoId: string,
   imageBytes: ArrayBuffer,
@@ -217,9 +224,10 @@ export async function uploadVideoThumbnail(
 ): Promise<void> {
   const picture = await vimeoFetch<{ uri: string; link: string }>(
     `/videos/${vimeoVideoId}/pictures`,
-    { method: 'POST', body: JSON.stringify({ active: true }) },
+    { method: 'POST' },
   )
   if (!picture?.link) throw new Error('Resposta do Vimeo sem o link de upload da capa')
+  if (!picture?.uri) throw new Error('Resposta do Vimeo sem a URI da capa')
 
   const uploadResponse = await fetch(picture.link, {
     method: 'PUT',
@@ -231,4 +239,11 @@ export async function uploadVideoThumbnail(
     const body = await uploadResponse.text().catch(() => '')
     throw new Error(`PUT da capa no Vimeo falhou (${uploadResponse.status}): ${body.slice(0, 300)}`)
   }
+
+  // Ativa a capa recém-enviada (passo 3). `picture.uri` = `/videos/<id>/pictures/<pid>`.
+  await vimeoFetch(
+    picture.uri,
+    { method: 'PATCH', body: JSON.stringify({ active: true }) },
+    { skipJsonParse: true },
+  )
 }

@@ -25,6 +25,7 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { MembersTabs } from '@/components/admin/members-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { ImageUploader } from '@/components/media/image-uploader'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
@@ -83,6 +84,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [editing, setEditing] = useState<CourseView | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY)
   const [saving, setSaving] = useState(false)
+  const { confirm, confirmDialog } = useConfirm()
   // Auto-geração do slug a partir do título (só na criação): para quando o
   // usuário edita o slug manualmente (dirty), p/ não sobrescrever a escolha dele.
   const [slugDirty, setSlugDirty] = useState(false)
@@ -172,23 +174,32 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     }
   }
 
-  async function remove(c: CourseView) {
-    if (
-      !window.confirm(`Excluir o curso "${c.title}"? Módulos, aulas e progresso serão removidos.`)
-    ) {
-      return
-    }
-    try {
-      await apiSend(`/api/members/courses/${c.id}`, 'DELETE')
-      toast.success('Curso excluído.')
-      await load()
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível excluir.')
-    }
+  function remove(c: CourseView) {
+    confirm({
+      title: 'Excluir curso',
+      message: (
+        <>
+          Excluir o curso <strong className="text-foreground">{c.title}</strong>? Módulos, aulas e
+          progresso serão removidos. Esta ação não pode ser desfeita.
+        </>
+      ),
+      confirmText: 'Excluir',
+      confirmVariant: 'destructive',
+      onConfirm: async () => {
+        try {
+          await apiSend(`/api/members/courses/${c.id}`, 'DELETE')
+          toast.success('Curso excluído.')
+          await load()
+        } catch (err) {
+          toast.error((err as ApiError).message ?? 'Não foi possível excluir.')
+        }
+      },
+    })
   }
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
       <AdminHeader
         title="Membros"
         description="Cursos da área de membros — autoria de conteúdo (módulos, aulas, blocos)."

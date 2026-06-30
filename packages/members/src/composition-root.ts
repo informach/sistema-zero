@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
+import { PurgeUserDataService } from './application/admin/purge-user-data/purge-user-data.service'
 import { GetCourseAnalyticsService } from './application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
@@ -77,6 +78,7 @@ import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
+import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
 import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
 import { createServer } from './interfaces/http/server'
 
@@ -302,6 +304,8 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
   })
   const manageEntitlement = new ManageEntitlementService(entitlements, clock)
+  // Exclusão de usuário (painel): purga TODOS os dados do aluno em transação.
+  const purgeUserData = new PurgeUserDataService(new DrizzleUserDataPurgeRepository(db))
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
   // quando o banco responde — sem isto o redeploy promove uma réplica que ainda
@@ -382,6 +386,7 @@ export async function createApplication(env: Env): Promise<Application> {
       grantManual,
       manageEntitlement,
       revokeCertificate,
+      purgeUserData,
       hub,
     },
     content: {

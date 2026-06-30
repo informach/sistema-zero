@@ -58,6 +58,23 @@ describe('POST /messaging/webhooks/sendgrid', () => {
     expect(ctx.messages.store.get(msg.id)?.status).toBe('DELIVERED')
   })
 
+  it('evento acionável sem mensagem conhecida retorna 503 para provocar retry', async () => {
+    const ctx = buildApp()
+    const res = await ctx.app.handle(
+      postJson('/messaging/webhooks/sendgrid', [
+        {
+          sg_message_id: 'sg-ainda-nao-persistido.x',
+          sg_event_id: 'evt-pendente',
+          event: 'delivered',
+          timestamp: 1717689097,
+        },
+      ]),
+    )
+
+    expect(res.status).toBe(503)
+    expect(await ctx.webhookInbox.alreadyReceived('sendgrid', 'evt-pendente')).toBe(false)
+  })
+
   it('bounce HARD (type bounce) → SUPPRESSED + adiciona à lista de supressão', async () => {
     const ctx = buildApp()
     const msg = seedSent(ctx, 'email', 'sg-2', { email: 'bounce@b.com' })

@@ -3,6 +3,7 @@
 import { Badge } from '@sistemazero/ui/badge'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
+import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
@@ -17,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { GraduationCap, KeyRound, LogIn, Pencil, Plus, Search } from 'lucide-react'
+import { GraduationCap, KeyRound, LogIn, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -25,6 +26,7 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { dateInputToSaoPauloEndOfDayIso, dateInputToSaoPauloStartOfDayIso } from '@/lib/dates'
 import { formatDate } from '@/lib/format'
@@ -103,6 +105,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkGrantOpen, setBulkGrantOpen] = useState(false)
   const [bulkBusy, setBulkBusy] = useState(false)
+  const { confirm, confirmDialog } = useConfirm()
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<UserView | null>(null)
@@ -128,6 +131,32 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
   // admin não edita contas admin/superadmin; superadmin edita qualquer uma. staff é só leitura.
   const canEdit = (u: UserView): boolean =>
     canWrite && (isSuper || !PRIVILEGED_ROLES.includes(u.role))
+  // Exclusão (destrutiva, cascata): SÓ superadmin, nunca a si mesmo nem contas
+  // admin/superadmin (o gateway e o auth re-checam — isto é só o gating de UX).
+  const canDelete = (u: UserView): boolean =>
+    isSuper && u.id !== currentUser.id && !PRIVILEGED_ROLES.includes(u.role)
+
+  // Exclusão com dupla confirmação (digitar o e-mail).
+  const [deletingUser, setDeletingUser] = useState<UserView | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+
+  function askDelete(u: UserView) {
+    setDeleteConfirm('')
+    setDeletingUser(u)
+  }
+  async function confirmDelete() {
+    if (!deletingUser) return
+    try {
+      await apiSend(`/api/admin/users/${deletingUser.id}`, 'DELETE')
+      toast.success('Usuário excluído.')
+      setDeletingUser(null)
+      await load()
+    } catch (err) {
+      // Mantém o modal aberto p/ nova tentativa (a conta segue intacta se a falha
+      // ocorreu antes de apagar a identidade no auth).
+      toast.error((err as ApiError).message ?? 'Não foi possível excluir o usuário.')
+    }
+  }
   // admin só pode atribuir staff/customer (não promove a admin/superadmin).
   const assignableRoles = isSuper
     ? USER_ROLES
@@ -301,7 +330,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
   }
 
   /** Suspender/ativar em lote: itera o PATCH por usuário (cada um auditado no gateway). */
-  async function bulkSetStatus(targetStatus: 'suspended' | 'active') {
+  function bulkSetStatus(targetStatus: 'suspended' | 'active') {
     // Só contas que o operador PODE editar e que não são a própria (anti-lockout).
     const editable = items.filter(
       (u) => selected.has(u.id) && canEdit(u) && u.id !== currentUser.id,
@@ -312,35 +341,75 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       return
     }
     const verb = targetStatus === 'suspended' ? 'Suspender' : 'Ativar'
-    if (!window.confirm(`${verb} ${editable.length} usuário(s)?`)) return
-    setBulkBusy(true)
-    try {
-      const results = await mapPool(editable, async (u) => {
+    confirm({
+      title: `${verb} usuários`,
+      message: `${verb} ${editable.length} usuário(s) selecionado(s)?`,
+      confirmText: verb,
+      confirmVariant: targetStatus === 'suspended' ? 'destructive' : 'default',
+      onConfirm: async () => {
+        setBulkBusy(true)
         try {
-          await apiSend(`/api/admin/users/${u.id}`, 'PATCH', {
-            status: targetStatus,
-            version: u.version,
+          const results = await mapPool(editable, async (u) => {
+            try {
+              await apiSend(`/api/admin/users/${u.id}`, 'PATCH', {
+                status: targetStatus,
+                version: u.version,
+              })
+              return 'ok' as const
+            } catch {
+              return 'error' as const
+            }
           })
-          return 'ok' as const
-        } catch {
-          return 'error' as const
+          const ok = results.filter((r) => r === 'ok').length
+          const failed = results.length - ok
+          const parts = [`${ok} ${targetStatus === 'suspended' ? 'suspenso(s)' : 'ativado(s)'}`]
+          if (failed > 0) parts.push(`${failed} falhou(aram)`)
+          if (skipped > 0) parts.push(`${skipped} ignorado(s)`)
+          if (failed > 0) toast.warning(parts.join(' · '))
+          else toast.success(parts.join(' · '))
+          await load()
+        } finally {
+          setBulkBusy(false)
         }
-      })
-      const ok = results.filter((r) => r === 'ok').length
-      const failed = results.length - ok
-      const parts = [`${ok} ${targetStatus === 'suspended' ? 'suspenso(s)' : 'ativado(s)'}`]
-      if (failed > 0) parts.push(`${failed} falhou(aram)`)
-      if (skipped > 0) parts.push(`${skipped} ignorado(s)`)
-      if (failed > 0) toast.warning(parts.join(' · '))
-      else toast.success(parts.join(' · '))
-      await load()
-    } finally {
-      setBulkBusy(false)
-    }
+      },
+    })
   }
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
+      <ConfirmDialog
+        open={deletingUser !== null}
+        onClose={() => setDeletingUser(null)}
+        title="Excluir usuário"
+        confirmText="Excluir definitivamente"
+        confirmVariant="destructive"
+        confirmDisabled={
+          deleteConfirm.trim().toLowerCase() !== (deletingUser?.email ?? '').toLowerCase()
+        }
+        onConfirm={confirmDelete}
+        message={
+          <>
+            Esta ação é <strong className="text-foreground">irreversível</strong>. Apaga a conta{' '}
+            <strong className="text-foreground">{deletingUser?.email}</strong>, todos os perfis,
+            progresso, gamificação, certificados e dados de comunidade. Pagamentos e notas fiscais
+            são preservados.
+          </>
+        }
+      >
+        <div className="space-y-1.5">
+          <label htmlFor="delete-confirm-email" className="font-medium text-foreground text-xs">
+            Para confirmar, digite o e-mail do usuário:
+          </label>
+          <Input
+            id="delete-confirm-email"
+            value={deleteConfirm}
+            placeholder={deletingUser?.email}
+            autoComplete="off"
+            onChange={(e) => setDeleteConfirm(e.target.value)}
+          />
+        </div>
+      </ConfirmDialog>
       <AdminHeader
         title="Usuários"
         description="Gerencie contas, papéis e status (suspender/bloquear) da base."
@@ -570,6 +639,17 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                       {canEdit(u) ? (
                         <Button variant="ghost" size="sm" onClick={() => openEdit(u)}>
                           <Pencil className="size-4" /> Editar
+                        </Button>
+                      ) : null}
+                      {canDelete(u) ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Excluir o usuário e todos os seus dados (irreversível)"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => askDelete(u)}
+                        >
+                          <Trash2 className="size-4" /> Excluir
                         </Button>
                       ) : null}
                     </div>

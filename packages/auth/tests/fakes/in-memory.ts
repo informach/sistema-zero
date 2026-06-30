@@ -119,6 +119,10 @@ export class InMemoryUserRepository implements UserRepository {
     return true
   }
 
+  async deleteById(id: string): Promise<void> {
+    this.byId.delete(id)
+  }
+
   /** Helper de teste: insere um agregado diretamente (ex.: usuário suspenso). */
   seed(user: UserAggregate): void {
     this.byId.set(user.id, UserAggregate.restore(user.toSnapshot()))

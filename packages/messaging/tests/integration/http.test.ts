@@ -489,4 +489,24 @@ describe('Tetos dos headers de idempotência', () => {
     )
     expect(res.status).toBe(400)
   })
+
+  it('headers vazios de idempotência → 400 (não entram no índice parcial)', async () => {
+    const ctx = buildApp()
+    await seedEmailTemplate(ctx.app)
+    await seedDefaultSender(ctx.app)
+    const res = await ctx.app.handle(
+      postJson(
+        '/messaging/send',
+        {
+          channel: 'email',
+          templateKey: 'welcome',
+          recipient: { name: 'Helena', email: 'helena@example.com' },
+          variables: { nome: 'Helena', senha: 'abc' },
+        },
+        { 'x-consumer-id': 'funnel', 'idempotency-key': '' },
+      ),
+    )
+    expect(res.status).toBe(400)
+    expect(ctx.messages.store.size).toBe(0)
+  })
 })

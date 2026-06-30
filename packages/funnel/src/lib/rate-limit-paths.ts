@@ -1,11 +1,11 @@
 import { AUDIENCES } from '../funnels/registry'
 
 // GETs que tocam banco/gateway e precisam de teto best-effort por IP:
-// - checkout/resultado antigos e multi-funil (`/<audience>/<produto>/...`);
+// - oferta/checkout/resultado antigos e multi-funil (`/<audience>/<produto>/...`);
 // - /api/checkout/:id, /api/leads e admin.
 // As audiências vêm do registry (fonte da verdade) — um público novo entra no teto sozinho.
 const RATE_LIMITED_GET = new RegExp(
-  `^\\/(?:checkout|resultado)\\/?$|^\\/(?:${AUDIENCES.join('|')})\\/[^/]+\\/(?:checkout|resultado)\\/?$|^\\/admin(?:\\/|$)|^\\/api\\/(?:leads|checkout|admin)(?:\\/|$)`,
+  `^\\/(?:oferta|checkout|resultado)\\/?$|^\\/(?:${AUDIENCES.join('|')})\\/[^/]+\\/(?:oferta|checkout|resultado)\\/?$|^\\/admin(?:\\/|$)|^\\/api\\/(?:leads|checkout|admin)(?:\\/|$)`,
 )
 
 export function isRateLimitedGetPath(pathname: string): boolean {

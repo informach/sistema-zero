@@ -129,36 +129,56 @@ export class DrizzleWhatsAppInstanceRepository implements WhatsAppInstanceReposi
     config: PacingConfig,
   ): Promise<WhatsAppInstance | null> {
     return this.db.transaction(async (tx) => {
-      const rows = await tx
-        .select()
-        .from(whatsappInstances)
-        .where(
-          and(
-            eq(whatsappInstances.enabled, true),
-            eq(whatsappInstances.status, 'CONNECTED'),
-            lte(whatsappInstances.nextAvailableAt, now),
-          ),
-        )
-        .orderBy(asc(whatsappInstances.nextAvailableAt))
-        .limit(20)
-        .for('update', { skipLocked: true })
-      for (const row of rows) {
-        const inst = toAggregate(row)
-        if (!isLaneAvailable(inst.snapshot(), config, now)) continue
-        // Reserva (lease): empurra o próximo horário p/ frente enquanto envia.
-        // Bump de version: um update admin/webhook carregado ANTES desta escrita
-        // conflita (em vez de regravar contadores de ritmo velhos por cima).
-        await tx
-          .update(whatsappInstances)
-          .set({
-            nextAvailableAt: new Date(now.getTime() + leaseMs),
-            updatedAt: now,
-            version: sql`${whatsappInstances.version} + 1`,
-          })
-          .where(eq(whatsappInstances.id, row.id))
-        return inst
+      const pageSize = 50
+      const today = now.toISOString().slice(0, 10)
+      let cursor: { nextAvailableAt: Date; id: string } | null = null
+
+      while (true) {
+        const rows = await tx
+          .select()
+          .from(whatsappInstances)
+          .where(
+            and(
+              eq(whatsappInstances.enabled, true),
+              eq(whatsappInstances.status, 'CONNECTED'),
+              lte(whatsappInstances.nextAvailableAt, now),
+              // Filtra no SQL as lanes já esgotadas pelo teto cheio do dia. O
+              // aquecimento ainda é validado em memória, então continuamos
+              // paginando até achar uma lane realmente disponível.
+              sql`(${whatsappInstances.dayCursor} is null or ${whatsappInstances.dayCursor} <> ${today}::date or ${whatsappInstances.sentToday} < ${whatsappInstances.dailyCap})`,
+              cursor
+                ? sql`(${whatsappInstances.nextAvailableAt} > ${cursor.nextAvailableAt} or (${whatsappInstances.nextAvailableAt} = ${cursor.nextAvailableAt} and ${whatsappInstances.id} > ${cursor.id}::uuid))`
+                : undefined,
+            ),
+          )
+          .orderBy(asc(whatsappInstances.nextAvailableAt), asc(whatsappInstances.id))
+          .limit(pageSize)
+          .for('update', { skipLocked: true })
+
+        if (rows.length === 0) return null
+
+        for (const row of rows) {
+          const inst = toAggregate(row)
+          if (!isLaneAvailable(inst.snapshot(), config, now)) {
+            cursor = { nextAvailableAt: row.nextAvailableAt, id: row.id }
+            continue
+          }
+          // Reserva (lease): empurra o próximo horário p/ frente enquanto envia.
+          // Bump de version: um update admin/webhook carregado ANTES desta escrita
+          // conflita (em vez de regravar contadores de ritmo velhos por cima).
+          await tx
+            .update(whatsappInstances)
+            .set({
+              nextAvailableAt: new Date(now.getTime() + leaseMs),
+              updatedAt: now,
+              version: sql`${whatsappInstances.version} + 1`,
+            })
+            .where(eq(whatsappInstances.id, row.id))
+          return inst
+        }
+
+        if (rows.length < pageSize) return null
       }
-      return null
     })
   }
 

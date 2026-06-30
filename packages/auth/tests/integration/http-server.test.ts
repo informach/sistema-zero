@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { decodeJwt } from 'jose'
 import { BatchGetUsersService } from '../../src/application/admin/batch-get-users/batch-get-users.service'
 import { CreateUserService } from '../../src/application/admin/create-user/create-user.service'
+import { DeleteUserService } from '../../src/application/admin/delete-user/delete-user.service'
 import { GetUserService } from '../../src/application/admin/get-user/get-user.service'
 import { ListUsersService } from '../../src/application/admin/list-users/list-users.service'
 import { ReadAuditLogService } from '../../src/application/admin/read-audit-log/read-audit-log.service'
@@ -138,6 +139,7 @@ function buildApp(
     silentLogger,
   )
   const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
+  const deleteUser = new DeleteUserService(users, silentLogger)
   const batchGetUsers = new BatchGetUsersService(users)
   const auditLogs = new InMemoryAuditLogRepository()
   const writeAuditLog = new WriteAuditLogService(auditLogs)
@@ -206,6 +208,7 @@ function buildApp(
     getUser,
     createUser,
     updateUser,
+    deleteUser,
     batchGetUsers,
     writeAuditLog,
     readAuditLog,

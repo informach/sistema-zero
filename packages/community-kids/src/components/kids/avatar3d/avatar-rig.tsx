@@ -96,8 +96,11 @@ export function AvatarRig({
   const stood = useRef(false)
   const reduced = useReducedMotion()
 
-  const armature = useGLTF(baseGlbUrl('Armature'))
-  const poses = useGLTF(baseGlbUrl('Poses'))
+  // `false, false` = SEM Draco/Meshopt (GLBs simples). O decoder Meshopt instancia WASM
+  // ao ser configurado → a CSP do kids (sem `wasm-unsafe-eval`) bloqueia e gera um
+  // `CompileError` no console. Desligar mantém a CSP estrita e zera o erro (ver asset-part).
+  const armature = useGLTF(baseGlbUrl('Armature'), false, false)
+  const poses = useGLTF(baseGlbUrl('Poses'), false, false)
   const { actions } = useAnimations(poses.animations, animRoot)
 
   const skeleton = useMemo(() => findSkeleton(armature.scene), [armature.scene])
@@ -220,5 +223,7 @@ export function AvatarRig({
 }
 
 // Pré-carrega o esqueleto base + poses (as peças carregam sob demanda por categoria equipada).
-useGLTF.preload(baseGlbUrl('Armature'))
-useGLTF.preload(baseGlbUrl('Poses'))
+// `false, false` = SEM Draco/Meshopt (mesmos args do load — o cache do drei é por URL, então
+// preload e load PRECISAM concordar, senão o 1º a rodar fixa o decoder Meshopt e o WASM volta).
+useGLTF.preload(baseGlbUrl('Armature'), false, false)
+useGLTF.preload(baseGlbUrl('Poses'), false, false)

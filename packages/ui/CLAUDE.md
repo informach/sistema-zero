@@ -38,6 +38,14 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
 ## Componentes
 
 badge (variant `success` usa tokens `--success/*`) · button (+`buttonVariants` p/ Links) · card ·
+**confirm-dialog** (`@sistemazero/ui/confirm-dialog` — `ConfirmDialog` sobre o `Dialog`: rodapé
+Cancelar/Confirmar; substitui o `window.confirm()` nativo. Props `open/onClose/title/message/
+onConfirm/confirmText/cancelText/confirmVariant('default'|'destructive')/confirmDisabled/children`.
+`onConfirm` pode ser async — mostra spinner e trava os botões; o chamador fecha no sucesso (via
+`onClose`) e mantém aberto no erro. `children` entra abaixo da `message` — use p/ um campo de
+confirmação, ex.: digitar o e-mail antes de excluir, com Confirmar travado por `confirmDisabled`.
+No admin há o hook `useConfirm` (`components/admin/use-confirm.tsx`) que embrulha o estado p/ os
+confirms simples) ·
 dialog (props opcionais `titleAlign: 'left'|'center'` e `onBack` — fluxos multi-passo estilo
 Udemy; X/Voltar são absolutos no header; **gestão de foco a11y**: foca o card ao abrir, PRENDE o
 Tab, devolve o foco ao gatilho ao fechar — pilha de diálogos + lock de scroll refcontado (via

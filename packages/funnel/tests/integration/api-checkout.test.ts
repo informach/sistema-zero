@@ -174,6 +174,31 @@ describe('POST /api/checkout/pix', () => {
     expect(gw.calls.redeem[0]?.idempotencyKey).toBe('pay-1')
   })
 
+  test('confirmação por polling usa o comprador congelado na cobrança, não o lead editado depois', async () => {
+    const { repo, leads, id } = await paidLead()
+    const gw = createFakeGateway()
+    await startPix(req('POST', cookieFor(id), { contact: CONTACT }), deps(repo, gw))
+
+    // Simula alguém voltando à oferta/pré-checkout e alterando o lead enquanto o
+    // Pix original ainda está pendente. A entrega precisa seguir o snapshot da cobrança.
+    await repo.updateLead(id, {
+      nome: 'Outro Comprador',
+      email: 'outro@example.com',
+      telefone: '11911112222',
+    })
+
+    gw.setStatus('PAID')
+    const res = await pixStatus(req('GET', cookieFor(id)), 'pay-1', deps(repo, gw))
+    expect(res.status).toBe(200)
+    expect(gw.calls.ensureBuyer[0]?.input).toMatchObject({
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      phone: '11999998888',
+    })
+    expect(leads.get(id)?.email).toBe('ana@example.com')
+    expect(leads.get(id)?.telefone).toBe('11999998888')
+  })
+
   test('400 sem os dados pessoais no corpo (Pix não é gerado sem contato)', async () => {
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()

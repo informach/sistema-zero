@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
+import { PurgeUserDataService } from '../src/application/admin/purge-user-data/purge-user-data.service'
 import { GetCourseAnalyticsService } from '../src/application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from '../src/application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from '../src/application/avatar/equip-avatar.service'
@@ -282,6 +283,9 @@ export function buildApp(
       }),
       manageEntitlement: new ManageEntitlementService(entitlements, clock),
       revokeCertificate: new RevokeCertificateService(certificates, clock),
+      // Purga: o fake do banco do membro guarda dados em arrays soltos; aqui só
+      // garantimos que a rota responde (a purga real é coberta no Drizzle/DB).
+      purgeUserData: new PurgeUserDataService({ purgeForUser: async () => {} }),
       hub,
     },
     content: {

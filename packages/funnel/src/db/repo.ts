@@ -17,6 +17,25 @@ export interface PerfilCount {
   count: number
 }
 
+/** Snapshot congelado da cobrança criada (usado quando aquela cobrança confirma). */
+export interface PaymentSnapshot {
+  offerRef?: string | null
+  nome?: string | null
+  email?: string | null
+  telefone?: string | null
+  document?: string | null
+}
+
+/** Contexto persistido por `payment_id` em `lead_payments`. */
+export interface PaymentContext {
+  couponCode: string | null
+  offerRef: string | null
+  nome: string | null
+  email: string | null
+  telefone: string | null
+  document: string | null
+}
+
 /** Filtro/ordenação da listagem de leads (busca por nome/e-mail + funil + data). */
 export interface LeadFilter {
   /** Busca case-insensitive em nome OU e-mail. */
@@ -62,12 +81,19 @@ export interface FunnelRepo {
   mergeQuizAnswers(id: string, patch: Record<string, string | number>): Promise<void>
   /**
    * Aponta o lead p/ a cobrança + grava o par no histórico (`lead_payments`),
-   * com o cupom aplicado NESTA cobrança (o redeem da confirmação lê de lá).
+   * com o cupom e o snapshot aplicados NESTA cobrança (a confirmação lê de lá).
    * `couponCode` ausente (re-aponte do webhook) não sobrescreve o histórico.
    */
-  setPayment(id: string, paymentId: string, couponCode?: string | null): Promise<void>
+  setPayment(
+    id: string,
+    paymentId: string,
+    couponCode?: string | null,
+    snapshot?: PaymentSnapshot,
+  ): Promise<void>
   /** Cupom aplicado na cobrança (histórico `lead_payments`); null = sem cupom. */
   couponForPayment(paymentId: string): Promise<string | null>
+  /** Oferta/comprador congelados por cobrança; null = pagamento fora do histórico. */
+  paymentContext(paymentId: string): Promise<PaymentContext | null>
   /** Marca pago se ainda não estava; retorna true se ESTA chamada foi a que pagou. */
   markPaid(id: string, paidAt: Date): Promise<boolean>
   /**
@@ -145,16 +171,25 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         .where(eq(leads.id, id))
     },
 
-    async setPayment(id, paymentId, couponCode) {
+    async setPayment(id, paymentId, couponCode, snapshot) {
       // Além do ponteiro "cobrança atual" no lead, grava o HISTÓRICO em
-      // lead_payments (com o cupom DESTA cobrança) — uma cobrança antiga ainda
-      // pagável (boleto/Pix re-gerado) precisa continuar resolvendo o lead no
-      // webhook (findLeadByPayment) e redimir o cupom certo na confirmação.
+      // lead_payments (com cupom + comprador/oferta DESTA cobrança) — uma
+      // cobrança antiga ainda pagável (boleto/Pix re-gerado) precisa continuar
+      // resolvendo o lead no webhook e entregar para o comprador correto.
       await db.transaction(async (tx) => {
         await tx.update(leads).set({ paymentId, updatedAt: new Date() }).where(eq(leads.id, id))
         await tx
           .insert(leadPayments)
-          .values({ paymentId, leadId: id, couponCode: couponCode ?? null })
+          .values({
+            paymentId,
+            leadId: id,
+            couponCode: couponCode ?? null,
+            offerRef: snapshot?.offerRef ?? null,
+            customerName: snapshot?.nome ?? null,
+            customerEmail: snapshot?.email ?? null,
+            customerPhone: snapshot?.telefone ?? null,
+            customerDocument: snapshot?.document ?? null,
+          })
           .onConflictDoNothing({ target: leadPayments.paymentId })
       })
     },
@@ -166,6 +201,22 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         .where(eq(leadPayments.paymentId, paymentId))
         .limit(1)
       return row?.couponCode ?? null
+    },
+
+    async paymentContext(paymentId) {
+      const [row] = await db
+        .select({
+          couponCode: leadPayments.couponCode,
+          offerRef: leadPayments.offerRef,
+          nome: leadPayments.customerName,
+          email: leadPayments.customerEmail,
+          telefone: leadPayments.customerPhone,
+          document: leadPayments.customerDocument,
+        })
+        .from(leadPayments)
+        .where(eq(leadPayments.paymentId, paymentId))
+        .limit(1)
+      return row ?? null
     },
 
     async markPaid(id, paidAt) {

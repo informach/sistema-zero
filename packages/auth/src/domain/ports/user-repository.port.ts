@@ -39,4 +39,11 @@ export interface UserRepository {
    * (conflito) — a aplicação traduz em `VersionConflictError` (409).
    */
   update(user: UserAggregate, expectedVersion: number): Promise<boolean>
+  /**
+   * Exclui FÍSICA e definitivamente o usuário e os dados auth-owned keyados nele
+   * (refresh tokens, tokens de reset/OTP, handoffs de impersonação, perfis), numa
+   * única transação. A trilha de auditoria (`audit_logs`) é PRESERVADA (compliance —
+   * `actor_id` é snapshot, sem FK). Idempotente: usuário inexistente = no-op.
+   */
+  deleteById(id: string): Promise<void>
 }

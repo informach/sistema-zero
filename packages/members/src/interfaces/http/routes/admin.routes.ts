@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia'
+import type { PurgeUserDataService } from '../../../application/admin/purge-user-data/purge-user-data.service'
 import type { GetCourseAnalyticsService } from '../../../application/analytics/get-course-analytics.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetMemberActivityService } from '../../../application/get-member-activity/get-member-activity.service'
@@ -45,6 +46,8 @@ export interface AdminRoutesDeps {
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
   revokeCertificate: RevokeCertificateService
+  /** Purga TODOS os dados do aluno (exclusão de usuário pelo painel, superadmin-only no gateway). */
+  purgeUserData: PurgeUserDataService
   /** Notifica o hub (comunidade) na concessão manual → invalida o cache de acesso na hora. */
   hub: HubGateway
 }
@@ -185,6 +188,22 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return result
         },
         { body: ManageEntitlementBody, params: IdParams },
+      )
+      // Purga TODOS os dados do aluno (exclusão de usuário pelo painel). DESTRUTIVA:
+      // o gateway restringe a `superadmin`. `?profileIds=<csv>` cobre os perfis kids
+      // (dados keyados no id do perfil + na conta). 5 segmentos — não colide com
+      // `/members/admin/members/:userId`. Idempotente (DELETEs).
+      .delete(
+        '/users/:id/data',
+        async ({ params, query, headers, set }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          await deps.purgeUserData.execute({
+            userId: params.id,
+            profileIds: parseProfileIds(query.profileIds),
+          })
+          set.status = 204
+        },
+        { params: IdParams, query: MemberDetailQuery },
       )
       // Revoga um certificado emitido (a validação pública passa a mostrar inválido).
       // `/members/admin/certificates/:id/revoke` (4 segmentos) não colide com as demais.

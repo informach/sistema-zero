@@ -7,6 +7,7 @@ import {
 } from '../src/application/community-admin/community-admin.service'
 import { ModerationService } from '../src/application/moderation/moderation.service'
 import { ReportService } from '../src/application/moderation/report.service'
+import { PurgeUserDataService } from '../src/application/purge-user-data/purge-user-data.service'
 import { ReactionService } from '../src/application/reactions/reaction.service'
 import { ReadCommunityService } from '../src/application/read-community/read-community.service'
 import { ReadStateService } from '../src/application/read-state/read-state.service'
@@ -140,6 +141,7 @@ export function buildApp(
       internalToken,
       spaces: new SpaceAdminService(repo),
       channels: new ChannelAdminService(repo),
+      purgeUserData: new PurgeUserDataService({ purgeForUser: async () => {} }),
     },
     moderation: {
       requireAdminEnabled: opts.requireAdmin ?? false,

@@ -46,11 +46,22 @@ const registry = new RouteRegistry([
     pathPattern: '/auth/internal/profiles/:id/public',
   }),
   r({ id: 'user-get', methods: ['GET'], pathPattern: '/auth/admin/users/:id' }),
+  r({ id: 'user-delete', methods: ['DELETE'], pathPattern: '/auth/admin/users/:id' }),
   r({
     id: 'user-impersonate',
     methods: ['POST'],
     pathPattern: '/auth/admin/users/:id/impersonate',
   }),
+  // Purga de usuário (exclusão em cascata): members explícito + hub explícito ganha
+  // do wildcard `/hub/admin/*` por especificidade.
+  r({
+    id: 'members-member-detail',
+    methods: ['GET'],
+    pathPattern: '/members/admin/members/:userId',
+  }),
+  r({ id: 'members-purge', methods: ['DELETE'], pathPattern: '/members/admin/users/:id/data' }),
+  r({ id: 'hub-admin-write', methods: ['POST', 'PATCH', 'DELETE'], pathPattern: '/hub/admin/*' }),
+  r({ id: 'hub-purge', methods: ['DELETE'], pathPattern: '/hub/admin/users/:id/data' }),
 ])
 
 describe('RouteRegistry', () => {
@@ -100,6 +111,24 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('GET', '/auth/admin/users/u-123', 'v1')?.route.id).toBe('user-get')
     // POST no detalhe (sem /impersonate) não existe → undefined.
     expect(registry.resolve('POST', '/auth/admin/users/u-123', 'v1')).toBeUndefined()
+  })
+
+  test('exclusão de usuário: DELETE distingue do GET pelo método; purgas resolvem certo', () => {
+    // DELETE /auth/admin/users/:id (mesmo path do GET) cai no delete, não no get.
+    expect(registry.resolve('DELETE', '/auth/admin/users/u-1', 'v1')?.route.id).toBe('user-delete')
+    expect(registry.resolve('GET', '/auth/admin/users/u-1', 'v1')?.route.id).toBe('user-get')
+    // Purga em members: 5 segmentos, não colide com /members/admin/members/:userId.
+    expect(registry.resolve('DELETE', '/members/admin/users/u-1/data', 'v1')?.route.id).toBe(
+      'members-purge',
+    )
+    // Purga em hub: rota EXPLÍCITA vence o wildcard /hub/admin/* por especificidade.
+    const hubPurge = registry.resolve('DELETE', '/hub/admin/users/u-1/data', 'v1')
+    expect(hubPurge?.route.id).toBe('hub-purge')
+    expect(hubPurge?.params.id).toBe('u-1')
+    // Outro DELETE admin do hub (não-users) segue caindo no wildcard.
+    expect(registry.resolve('DELETE', '/hub/admin/channels/c-1', 'v1')?.route.id).toBe(
+      'hub-admin-write',
+    )
   })
 
   test('/members/gamification/me resolve na rota própria (não colide com /members/courses/:slug)', () => {

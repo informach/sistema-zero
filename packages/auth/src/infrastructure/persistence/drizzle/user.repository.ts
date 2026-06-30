@@ -3,7 +3,14 @@ import type { ListUsersFilter, UserRepository } from '../../../domain/ports/user
 import { UserAggregate, type UserSnapshot } from '../../../domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../../domain/user/user.errors'
 import type { Database } from './db'
-import { users } from './schema'
+import {
+  impersonationTokens,
+  otpCodes,
+  passwordResetTokens,
+  profiles,
+  refreshTokens,
+  users,
+} from './schema'
 
 type UserRow = typeof users.$inferSelect
 
@@ -69,6 +76,22 @@ export class DrizzleUserRepository implements UserRepository {
       .where(and(eq(users.id, s.id), eq(users.version, expectedVersion)))
       .returning({ id: users.id })
     return updated.length === 1
+  }
+
+  async deleteById(id: string): Promise<void> {
+    // Tudo numa transação: ou some o usuário + todos os dependentes auth-owned, ou
+    // nada. `audit_logs` NÃO é tocada de propósito (trilha de compliance; `actor_id`
+    // é snapshot sem FK). `impersonation_tokens` cobre os dois lados (alvo OU ator).
+    await this.db.transaction(async (tx) => {
+      await tx.delete(refreshTokens).where(eq(refreshTokens.userId, id))
+      await tx.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, id))
+      await tx.delete(otpCodes).where(eq(otpCodes.userId, id))
+      await tx
+        .delete(impersonationTokens)
+        .where(or(eq(impersonationTokens.targetUserId, id), eq(impersonationTokens.actorId, id)))
+      await tx.delete(profiles).where(eq(profiles.accountUserId, id))
+      await tx.delete(users).where(eq(users.id, id))
+    })
   }
 
   async create(user: UserAggregate): Promise<void> {

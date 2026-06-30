@@ -69,7 +69,9 @@ function ThumbAssetMeshes({
   skin: THREE.Material
   skeleton: THREE.Skeleton
 }) {
-  const { scene } = useGLTF(partGlbUrl(assetId))
+  // `false, false` = SEM Draco/Meshopt (GLB simples; o Meshopt do drei instancia WASM →
+  // bloqueado pela CSP do kids). Mesmos args do avatar-rig/asset-part (cache por URL).
+  const { scene } = useGLTF(partGlbUrl(assetId), false, false)
   const meshes = useMemo<ThumbMesh[]>(() => {
     const items: ThumbMesh[] = []
     scene.traverse((child) => {
@@ -130,7 +132,7 @@ function ThumbAssetMeshes({
  * isso NÃO sai em branco. Traços de rosto vão sobre a cabeça base `head-01`; roupas sozinhas.
  */
 function ThumbRig({ partId, category }: { partId: string; category: string }) {
-  const armature = useGLTF(baseGlbUrl('Armature'))
+  const armature = useGLTF(baseGlbUrl('Armature'), false, false)
   const cloned = useMemo(() => cloneSkinnedScene(armature.scene), [armature.scene])
   const skeleton = useMemo(() => findSkeleton(cloned), [cloned])
   const rootBone = useMemo(() => (skeleton ? rootBoneOf(skeleton) : null), [skeleton])
@@ -240,4 +242,4 @@ export function AvatarThumb({ partId, category }: { partId: string; category: st
   )
 }
 
-useGLTF.preload(baseGlbUrl('Armature'))
+useGLTF.preload(baseGlbUrl('Armature'), false, false)

@@ -21,6 +21,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { StatusBadge } from '@/components/admin/status-badge'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { dateInputToSaoPauloEndOfDayIso } from '@/lib/dates'
 import { formatCentsStr, formatDate } from '@/lib/format'
@@ -95,6 +96,7 @@ export function MemberDetailClient({
   const [extendDate, setExtendDate] = useState('')
 
   const [busyId, setBusyId] = useState<string | null>(null)
+  const { confirm, confirmDialog } = useConfirm()
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -140,12 +142,31 @@ export function MemberDetailClient({
   }
 
   function confirmRevoke(e: AdminEntitlementView) {
-    if (window.confirm(`Revogar o acesso "${e.name}"? O aluno perde o acesso imediatamente.`)) {
-      void manage(e.id, 'revoke')
-    }
+    confirm({
+      title: 'Revogar acesso',
+      message: (
+        <>
+          Revogar o acesso <strong className="text-foreground">{e.name}</strong>? O aluno perde o
+          acesso imediatamente.
+        </>
+      ),
+      confirmText: 'Revogar',
+      confirmVariant: 'destructive',
+      onConfirm: () => manage(e.id, 'revoke'),
+    })
   }
   function confirmExpire(e: AdminEntitlementView) {
-    if (window.confirm(`Expirar o acesso "${e.name}"?`)) void manage(e.id, 'expire')
+    confirm({
+      title: 'Expirar acesso',
+      message: (
+        <>
+          Expirar o acesso <strong className="text-foreground">{e.name}</strong>?
+        </>
+      ),
+      confirmText: 'Expirar',
+      confirmVariant: 'destructive',
+      onConfirm: () => manage(e.id, 'expire'),
+    })
   }
   function openExtend(e: AdminEntitlementView) {
     setExtendTarget(e)
@@ -203,6 +224,7 @@ export function MemberDetailClient({
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
       <Link
         href="/admin/membros"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -693,20 +715,32 @@ function CertificatesTab({ learnerId, canWrite }: { learnerId: string; canWrite:
     `/api/members/${learnerId}/certificates`,
   )
   const [busyId, setBusyId] = useState<string | null>(null)
+  const { confirm, confirmDialog } = useConfirm()
 
-  async function revoke(c: MemberCertificateView) {
-    if (!window.confirm(`Revogar o certificado ${c.serial}? A validação pública passa a inválido.`))
-      return
-    setBusyId(c.id)
-    try {
-      await apiSend(`/api/members/certificates/${c.id}/revoke`, 'POST', {})
-      toast.success('Certificado revogado.')
-      reload()
-    } catch (e) {
-      toast.error((e as ApiError).message ?? 'Não foi possível revogar.')
-    } finally {
-      setBusyId(null)
-    }
+  function revoke(c: MemberCertificateView) {
+    confirm({
+      title: 'Revogar certificado',
+      message: (
+        <>
+          Revogar o certificado <strong className="text-foreground">{c.serial}</strong>? A validação
+          pública passa a inválido.
+        </>
+      ),
+      confirmText: 'Revogar',
+      confirmVariant: 'destructive',
+      onConfirm: async () => {
+        setBusyId(c.id)
+        try {
+          await apiSend(`/api/members/certificates/${c.id}/revoke`, 'POST', {})
+          toast.success('Certificado revogado.')
+          reload()
+        } catch (e) {
+          toast.error((e as ApiError).message ?? 'Não foi possível revogar.')
+        } finally {
+          setBusyId(null)
+        }
+      },
+    })
   }
 
   if (loading || error) return <SectionState loading={loading} error={error} />
@@ -720,6 +754,7 @@ function CertificatesTab({ learnerId, canWrite }: { learnerId: string; canWrite:
 
   return (
     <Card>
+      {confirmDialog}
       <Table>
         <TableHeader>
           <TableRow>

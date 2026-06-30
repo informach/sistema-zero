@@ -91,6 +91,14 @@ export const leadPayments = funil.table('lead_payments', {
   leadId: uuid('lead_id')
     .notNull()
     .references(() => leads.id, { onDelete: 'cascade' }),
+  // Oferta e comprador congelados no momento em que a cobrança foi criada. O lead
+  // segue mutável enquanto o visitante navega/re-tenta, mas a entrega pós-pagamento
+  // precisa usar os dados da cobrança que DE FATO foi paga.
+  offerRef: text('offer_ref'),
+  customerName: text('customer_name'),
+  customerEmail: text('customer_email'),
+  customerPhone: text('customer_phone'),
+  customerDocument: text('customer_document'),
   // Cupom aplicado NESTA cobrança (null = sem cupom). O redeem da confirmação lê
   // daqui (cobrança efetivamente paga) — `leads.coupon_code` é só o contexto do
   // ÚLTIMO checkout e ficava obsoleto (re-cotação sem cupom redimia cupom não

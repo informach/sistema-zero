@@ -2,6 +2,7 @@ import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type { BatchGetUsersService } from '../../../application/admin/batch-get-users/batch-get-users.service'
 import type { CreateUserService } from '../../../application/admin/create-user/create-user.service'
+import type { DeleteUserService } from '../../../application/admin/delete-user/delete-user.service'
 import type { GetUserService } from '../../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../../application/admin/list-users/list-users.service'
 import type { ReadAuditLogService } from '../../../application/admin/read-audit-log/read-audit-log.service'
@@ -28,6 +29,7 @@ export interface AdminRoutesDeps {
   getUser: GetUserService
   createUser: CreateUserService
   updateUser: UpdateUserService
+  deleteUser: DeleteUserService
   batchGetUsers: BatchGetUsersService
   /** Trilha de auditoria de ações administrativas (leitura para o painel). */
   readAuditLog: ReadAuditLogService
@@ -54,6 +56,8 @@ export interface AdminRoutesDeps {
 // ainda aplica os guards hierárquicos sobre isso).
 const READ_ROLES: readonly UserRole[] = ['superadmin', 'admin', 'staff']
 const WRITE_ROLES: readonly UserRole[] = ['superadmin', 'admin']
+// Exclusão de usuário (destrutiva, cascata) é SÓ superadmin — o serviço re-checa.
+const DELETE_ROLES: readonly UserRole[] = ['superadmin']
 
 /**
  * Rotas admin de usuários (painel `@sistemazero/admin`). O gateway já verificou o
@@ -150,6 +154,22 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return { user }
         },
         { body: UpdateUserBody, params: UserIdParams },
+      )
+      // Exclusão FÍSICA (limpeza de contas de teste/lixo). DESTRUTIVA: o serviço
+      // re-checa superadmin + não-self + alvo não-admin/superadmin. A cascata em
+      // members/hub é orquestrada pelo painel ANTES desta chamada (financeiro/fiscal
+      // são retidos). Mesmo path do GET/PATCH — o matcher distingue pelo método.
+      .delete(
+        '/users/:id',
+        async ({ headers, params, set }) => {
+          const actor = requireActor(headers, DELETE_ROLES)
+          await deps.deleteUser.execute({
+            targetId: params.id,
+            actor: { id: actor.id, role: actor.role },
+          })
+          set.status = 204
+        },
+        { params: UserIdParams },
       )
       // "Entrar como": emite o token de HANDOFF de impersonação (single-use, ~60s).
       // O serviço re-checa a matriz (admin só customer/staff; superadmin qualquer;

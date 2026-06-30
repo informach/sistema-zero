@@ -780,6 +780,16 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   o `extendTo` do ciclo de assinatura segue NUNCA ressuscitando `revoked`.
   `ManageEntitlementService`. Erros novos: `ENTITLEMENT_CONFLICT`→409,
   `OFFER_NOT_FOUND`→404. Oferta resolvida sem itens no grant manual → 400.
+- **`DELETE /members/admin/users/:id/data[?profileIds=<csv>]` (purga, 06/2026):** parte da
+  EXCLUSÃO de usuário pelo painel — purga TODOS os dados do aprendiz numa transação
+  (`PurgeUserDataService` + `DrizzleUserDataPurgeRepository`): entitlements/lesson_completions/
+  lesson_progress/quiz_attempts/course_ratings/xp_events/user_badges/coin_events/avatar_inventory/
+  mission_claims/room_inventory (por `user_id IN (conta, ...perfis)`) + studio_submissions/
+  gamification_profiles/avatar_configs/league_membership/room_state/certificates_issued (por
+  `user_id IN (...)` **OU** `account_id = conta` — cobre os dados kids dos perfis). NÃO toca
+  conteúdo (cursos/aulas) nem `processed_webhooks`. Idempotente; sucesso → **204**. Gateway:
+  `members-admin-user-purge` (DELETE, `roles:['superadmin']`). O painel chama ANTES de apagar a
+  identidade no auth.
 
 **Autoria de conteúdo** (`interfaces/http/routes/content.routes.ts`, prefixo `/members/admin`,
 coexiste com `admin.routes`). Porta de escrita SEPARADA (`ContentAdminRepository` +
