@@ -372,7 +372,13 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   1 esqueleto compartilhado (`base/Armature.glb`, ossos `mixamorig:*`) + 1 GLB skinned por peça equipada
   (`useGLTF` → `<skinnedMesh skeleton={compartilhado}>`); material `Color_*` recebe a cor da peça, `Skin_*`
   usa o material de pele compartilhado (cor do slot `head`); oclusão `hat→hair`; poses opcionais do
-  `base/Poses.glb`. **GLB SIMPLES (sem Draco/KTX2/meshopt → sem WASM, CSP-safe)** — a `<Canvas>` precisa de
+  `base/Poses.glb`. **GLB SIMPLES (sem Draco/KTX2/meshopt → sem WASM, CSP-safe)** — ⚠️ **TODA chamada `useGLTF`/
+`useGLTF.preload` PASSA `(url, false, false)`** (sem Draco, sem Meshopt): o drei v10 LIGA o
+decoder Meshopt por padrão e ele **instancia WebAssembly ao ser configurado** → a CSP do kids
+(`script-src` SEM `wasm-unsafe-eval`, decisão de segurança infantil) bloqueava com um
+`CompileError` no console (regressão silenciosa — o avatar carregava, mas o erro assustava). O cache
+do drei é por URL, então preload e load PRECISAM concordar nos args (avatar-rig/asset-part/thumb-canvas).
+A `<Canvas>` precisa de
   `preserveDrawingBuffer` (snapshot) e os assets vivem em **`public/avatar3d/{parts,base}/`** (~13MB,
   same-origin, `connect-src 'self'`; ids 1:1 com o catálogo). ⚠️ É a 1ª carga de GLB sob a CSP — QA no
   navegador deve confirmar **zero `.wasm`** + montagem/skinning. Ao

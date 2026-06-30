@@ -24,7 +24,11 @@ export function AssetPart({
   /** Esqueleto compartilhado (do `Armature.glb`). */
   skeleton: Skeleton
 }) {
-  const { scene } = useGLTF(partGlbUrl(asset))
+  // `false, false` = SEM Draco e SEM Meshopt: os GLBs são simples (sem compressão), e
+  // o decoder Meshopt do drei instancia WebAssembly ao ser configurado → bloqueado pela
+  // CSP do kids (`script-src` sem `wasm-unsafe-eval`, decisão de segurança infantil) e
+  // jogava um `CompileError` no console. Desligar mantém a CSP estrita e zera o erro.
+  const { scene } = useGLTF(partGlbUrl(asset), false, false)
 
   // Pinta os materiais tintáveis (`Color_*`) com a cor da peça.
   useEffect(() => {
