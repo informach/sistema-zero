@@ -77,6 +77,45 @@ export function batchGetUsers(ids: string[]): Promise<GatewayResponse<{ users: U
   return gatewayFetch('/auth/admin/users/batch', { method: 'POST', body: { ids } })
 }
 
+/**
+ * Exclui um usuário EM CASCATA (limpeza de contas de teste/lixo). Orquestra, via
+ * gateway, a purga dos dados do aprendiz ANTES de apagar a identidade — a ordem
+ * minimiza o estado órfão e mantém o retry seguro (todos os passos são idempotentes):
+ *  1) busca os perfis kids da conta (dados keyados no id do perfil);
+ *  2) purga em members (progresso/quiz/Estúdio/gamificação/avatar/quarto/certificados);
+ *  3) purga em hub (reações/leitura/mutes-bans);
+ *  4) apaga a identidade no auth (tokens + perfis + usuário) — POR ÚLTIMO.
+ * Financeiro (payments) e fiscal (NFS-e) são RETIDOS (decisão). Só superadmin (o
+ * gateway e o auth re-checam). Falha em qualquer passo ANTES do auth aborta com o
+ * erro do upstream — a conta segue intacta para nova tentativa.
+ */
+export async function deleteUser(id: string): Promise<GatewayResponse> {
+  const eid = encodeURIComponent(id)
+
+  // 1) Perfis kids da conta — seus dados ficam keyados no id do perfil.
+  const profilesRes = await getUserProfiles(id)
+  if (profilesRes.status >= 400) return profilesRes
+  const profileIds = profilesRes.body.profiles.map((p) => p.id)
+  const query = profileIds.length > 0 ? { profileIds: profileIds.join(',') } : undefined
+
+  // 2) Aprendizado/gamificação (members).
+  const membersRes = await gatewayFetch(`/members/admin/users/${eid}/data`, {
+    method: 'DELETE',
+    query,
+  })
+  if (membersRes.status >= 400) return membersRes
+
+  // 3) Comunidade (hub).
+  const hubRes = await gatewayFetch(`/hub/admin/users/${eid}/data`, { method: 'DELETE', query })
+  if (hubRes.status >= 400) return hubRes
+
+  // 4) Identidade (auth) — por último. Sucesso → 204; devolvemos 200 {ok:true} ao
+  // client (o forward não monta corpo em 204).
+  const authRes = await gatewayFetch(`/auth/admin/users/${eid}`, { method: 'DELETE' })
+  if (authRes.status >= 400) return authRes
+  return { status: 200, body: { ok: true } }
+}
+
 export interface ListAuditParams {
   actorId?: string
   action?: string

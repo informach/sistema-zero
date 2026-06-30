@@ -81,6 +81,48 @@ describe('POST /api/webhooks/payments', () => {
     expect(leads.get(id)?.buyerUserId).toBe('user-1')
   })
 
+  test('payment.paid usa o snapshot da cobrança quando o lead foi editado depois', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = createFakeGateway()
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, {
+      nome: 'Ana Souza',
+      email: 'ana@example.com',
+      telefone: '11999998888',
+    })
+    await repo.setPayment(id, 'pay-1', null, {
+      offerRef: OFFER,
+      nome: 'Ana Souza',
+      email: 'ana@example.com',
+      telefone: '11999998888',
+      document: '52998224725',
+    })
+
+    await repo.updateLead(id, {
+      nome: 'Outro Comprador',
+      email: 'outro@example.com',
+      telefone: '11911112222',
+      offerRef: 'outra-oferta',
+    })
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-1' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      deps(repo, gw),
+    )
+    expect(res.status).toBe(200)
+    expect(gw.calls.ensureBuyer[0]?.input).toMatchObject({
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      phone: '11999998888',
+    })
+    expect(gw.calls.grant[0]?.input).toMatchObject({ offerRef: OFFER })
+    expect(leads.get(id)?.email).toBe('ana@example.com')
+    expect(leads.get(id)?.offerRef).toBe(OFFER)
+  })
+
   test('payment.paid concede acesso na área de membros DEPOIS do registro', async () => {
     const { repo, leads } = createFakeRepo()
     const gw = createFakeGateway()
@@ -206,6 +248,25 @@ describe('POST /api/webhooks/payments', () => {
     expect(leads.get(id)?.paidAt).not.toBeNull() // markPaid já rodou (idempotente)
     expect(leads.get(id)?.buyerRegisteredAt).toBeNull() // ainda não registrado
     expect(await repo.isWebhookProcessed('d1')).toBe(false) // não deduplica → retry possível
+  })
+
+  test('payment.paid sem lead mapeado → 502 e NÃO marca delivery como processado', async () => {
+    const { repo } = createFakeRepo()
+    const gw = createFakeGateway()
+
+    const res = await handlePaymentWebhook(
+      req(
+        { id: 'd1', event: 'payment.paid', data: { paymentId: 'pay-sem-lead' } },
+        { token: TOKEN, deliveryId: 'd1' },
+      ),
+      deps(repo, gw),
+    )
+
+    expect(res.status).toBe(502)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      'PAYMENT_NOT_MAPPED',
+    )
+    expect(await repo.isWebhookProcessed('d1')).toBe(false)
   })
 
   test('cobrança ANTIGA paga (ponteiro sobrescrito) confirma via histórico e re-aponta o lead', async () => {

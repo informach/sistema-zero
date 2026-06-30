@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { HubAccessFields, PUBLIC_ACCESS } from '@/components/admin/hub-access-fields'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type {
@@ -73,6 +74,7 @@ export function SpaceDetailClient({
   const [tree, setTree] = useState<HubSpaceTreeView | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  const { confirm, confirmDialog } = useConfirm()
 
   const [chOpen, setChOpen] = useState(false)
   const [chForm, setChForm] = useState<ChannelForm>(emptyChannel())
@@ -181,6 +183,7 @@ export function SpaceDetailClient({
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
       <Link
         href="/admin/comunidade/servidores"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -240,13 +243,23 @@ export function SpaceDetailClient({
                     channel={c}
                     canWrite={canWrite}
                     onEdit={() => openEditChannel(c)}
-                    onDelete={() => {
-                      if (!confirm(`Excluir o canal "${c.name}"?`)) return
-                      void run(
-                        () => apiSend(`/api/hub/admin/channels/${c.id}`, 'DELETE'),
-                        'Canal excluído.',
-                      )
-                    }}
+                    onDelete={() =>
+                      confirm({
+                        title: 'Excluir canal',
+                        message: (
+                          <>
+                            Excluir o canal <strong className="text-foreground">{c.name}</strong>?
+                          </>
+                        ),
+                        confirmText: 'Excluir',
+                        confirmVariant: 'destructive',
+                        onConfirm: () =>
+                          run(
+                            () => apiSend(`/api/hub/admin/channels/${c.id}`, 'DELETE'),
+                            'Canal excluído.',
+                          ),
+                      })
+                    }
                   />
                 ))}
               </div>
@@ -345,19 +358,26 @@ export function SpaceDetailClient({
           <Button
             variant="destructive"
             disabled={busy}
-            onClick={() => {
-              if (!confirm('Excluir este servidor e TODOS os seus canais/tópicos?')) return
-              setBusy(true)
-              void apiSend(`/api/hub/admin/spaces/${spaceId}`, 'DELETE')
-                .then(() => {
-                  toast.success('Servidor excluído.')
-                  router.push('/admin/comunidade/servidores')
-                })
-                .catch((err) => {
-                  toast.error((err as ApiError).message ?? 'Falha ao excluir.')
-                  setBusy(false)
-                })
-            }}
+            onClick={() =>
+              confirm({
+                title: 'Excluir servidor',
+                message:
+                  'Excluir este servidor e TODOS os seus canais e tópicos? Esta ação não pode ser desfeita.',
+                confirmText: 'Excluir servidor',
+                confirmVariant: 'destructive',
+                onConfirm: async () => {
+                  setBusy(true)
+                  try {
+                    await apiSend(`/api/hub/admin/spaces/${spaceId}`, 'DELETE')
+                    toast.success('Servidor excluído.')
+                    router.push('/admin/comunidade/servidores')
+                  } catch (err) {
+                    toast.error((err as ApiError).message ?? 'Falha ao excluir.')
+                    setBusy(false)
+                  }
+                },
+              })
+            }
           >
             <Trash2 className="size-4" /> Excluir servidor
           </Button>

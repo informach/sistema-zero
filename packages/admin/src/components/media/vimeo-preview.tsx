@@ -25,8 +25,7 @@ export function VimeoPreview({ embedUrl, title }: { embedUrl: string; title?: st
         src={url.toString()}
         title={title ?? 'Pré-visualização do vídeo'}
         className="h-full w-full"
-        allow="autoplay; picture-in-picture"
-        allowFullScreen
+        allow="autoplay; picture-in-picture; fullscreen"
       />
     </div>
   )

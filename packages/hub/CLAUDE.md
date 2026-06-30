@@ -238,6 +238,14 @@ hide,delete,pin,unpin,lock,unlock}` e `…/comments/:id/{approve,reject,hide,del
 `POST /hub/admin/{mutes,bans}` + `POST /hub/admin/{mutes,bans}/remove`, `GET /hub/admin/mutes-bans`.
 > ⚠️ Mute/ban são `/mutes` e `/bans` (não `/mute`/`/unmute`); remoção é `POST …/remove`, não DELETE.
 
+**Exclusão de usuário (purga, 06/2026):** `DELETE /hub/admin/users/:id/data[?profileIds=<csv>]`
+(`PurgeUserDataService` + `DrizzleUserDataPurgeRepository`) — parte da exclusão de usuário pelo
+painel: apaga o ESTADO DE INTERAÇÃO do usuário (reações, `read_state`, `mutes_bans`) por
+`user_id IN (conta, ...perfis)` numa transação. Conteúdo autorado (threads/comments) é PRESERVADO
+(histórico imutável; `author_id` é snapshot). Idempotente; sucesso → **204**. Gateway:
+`hub-admin-user-purge` (DELETE, `roles:['superadmin']` — rota EXPLÍCITA vence o wildcard
+`hub-admin-write` por especificidade, fixando superadmin-only).
+
 **Anexos + webhook (MONTADOS — `server.ts` usa `attachmentsRoutes` e `webhooksRoutes`):**
 `POST /hub/attachments` (registra o metadado `pending_upload`; JWT + `x-internal-token`),
 `GET /hub/attachments/:id/resolve` (autoriza pelo acesso ao conteúdo-pai e devolve o `storageRef`

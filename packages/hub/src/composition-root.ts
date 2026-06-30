@@ -8,6 +8,7 @@ import {
 } from './application/community-admin/community-admin.service'
 import { ModerationService } from './application/moderation/moderation.service'
 import { ReportService } from './application/moderation/report.service'
+import { PurgeUserDataService } from './application/purge-user-data/purge-user-data.service'
 import { ReactionService } from './application/reactions/reaction.service'
 import { ReadCommunityService } from './application/read-community/read-community.service'
 import { ReadStateService } from './application/read-state/read-state.service'
@@ -32,6 +33,7 @@ import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/
 import { DrizzleReactionRepository } from './infrastructure/persistence/drizzle/reaction.repository'
 import { DrizzleReadStateRepository } from './infrastructure/persistence/drizzle/read-state.repository'
 import { DrizzleThreadRepository } from './infrastructure/persistence/drizzle/thread.repository'
+import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -92,6 +94,8 @@ export async function createApplication(env: Env): Promise<Application> {
   // Casos de uso (admin da estrutura)
   const spaceAdmin = new SpaceAdminService(communityAdmin)
   const channelAdmin = new ChannelAdminService(communityAdmin)
+  // Exclusão de usuário (painel): purga reações/leitura/mutes-bans.
+  const purgeUserData = new PurgeUserDataService(new DrizzleUserDataPurgeRepository(db))
 
   // Casos de uso (leitura do aluno, com resolução de acesso)
   const accessResolution = new AccessResolutionService(members, accessCache)
@@ -200,6 +204,7 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
       spaces: spaceAdmin,
       channels: channelAdmin,
+      purgeUserData,
     },
     moderation: {
       requireAdminEnabled: env.REQUIRE_ADMIN,

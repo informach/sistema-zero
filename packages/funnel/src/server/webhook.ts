@@ -3,6 +3,7 @@ import { json, jsonError } from '../lib/http'
 import { safeEqual } from '../lib/safe-equal'
 import { FulfillmentRetryError } from './fulfillment'
 import { GrantRetryError } from './members-grant'
+import { applyPaymentContextToLead } from './payment-context'
 
 export interface WebhookDeps {
   repo: FunnelRepo
@@ -48,73 +49,83 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
     return json({ ok: true, deduped: true })
   }
 
-  if (eventName === 'payment.paid' && typeof paymentId === 'string') {
-    const lead = await deps.repo.findLeadByPayment(paymentId)
-    if (lead) {
-      // Cobrança ANTIGA paga (o lead já aponta p/ uma mais nova, ainda não paga):
-      // re-aponta o ponteiro p/ a cobrança que DE FATO foi paga antes de marcar —
-      // o grant/admin passam a referenciar a cobrança certa. Se o lead já está
-      // pago, o ponteiro fica como está (a cobrança paga é a referência).
-      if (lead.paymentId !== paymentId && !lead.paidAt) {
-        await deps.repo.setPayment(lead.id, paymentId)
-        lead.paymentId = paymentId
+  if (eventName === 'payment.paid') {
+    if (typeof paymentId !== 'string' || !paymentId) {
+      return jsonError('paymentId ausente.', 400, 'BAD_REQUEST')
+    }
+    let lead = await deps.repo.findLeadByPayment(paymentId)
+    if (!lead) {
+      // Não marca o delivery como processado: o mapeamento pode aparecer logo
+      // depois de uma corrida entre criação da cobrança e entrega do webhook.
+      return jsonError('Pagamento ainda não mapeado; reentregar.', 502, 'PAYMENT_NOT_MAPPED')
+    }
+
+    // Cobrança ANTIGA paga (o lead já aponta p/ uma mais nova, ainda não paga):
+    // re-aponta o ponteiro p/ a cobrança que DE FATO foi paga antes de marcar —
+    // o grant/admin passam a referenciar a cobrança certa. Se o lead já está
+    // pago, o ponteiro fica como está (a cobrança paga é a referência).
+    if (lead.paymentId !== paymentId && !lead.paidAt) {
+      await deps.repo.setPayment(lead.id, paymentId)
+      lead.paymentId = paymentId
+    }
+    if (!lead.paidAt) {
+      lead = await applyPaymentContextToLead(deps.repo, lead, paymentId)
+    }
+    const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
+    if (newlyPaid) {
+      await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'webhook')
+      // Registra o uso do cupom só na transição p/ pago (exactly-once via
+      // markPaid), lendo o cupom DA COBRANÇA PAGA (lead_payments) — o
+      // `lead.couponCode` é o contexto do ÚLTIMO checkout e podia estar
+      // obsoleto (re-cotação sem cupom; boleto antigo com cupom pago depois).
+      if (deps.redeemCoupon) {
+        await deps.redeemCoupon(await deps.repo.couponForPayment(paymentId), paymentId)
       }
-      const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
-      if (newlyPaid) {
-        await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'webhook')
-        // Registra o uso do cupom só na transição p/ pago (exactly-once via
-        // markPaid), lendo o cupom DA COBRANÇA PAGA (lead_payments) — o
-        // `lead.couponCode` é o contexto do ÚLTIMO checkout e podia estar
-        // obsoleto (re-cotação sem cupom; boleto antigo com cupom pago depois).
-        if (deps.redeemCoupon) {
-          await deps.redeemCoupon(await deps.repo.couponForPayment(paymentId), paymentId)
+    }
+
+    // Registra o comprador no IdP (auth). Falha transitória → devolve 502 e NÃO
+    // marca a entrega como processada, para o gateway re-entregar (recuperação
+    // durável, inclusive p/ boleto, que não tem polling de tela). markPaid é
+    // idempotente, então reprocessar a reentrega é seguro.
+    const fresh = await deps.repo.getLead(lead.id)
+    if (fresh) {
+      try {
+        await deps.fulfill(fresh)
+      } catch (err) {
+        if (err instanceof FulfillmentRetryError) {
+          return jsonError('Registro do comprador pendente; reentregar.', 502, 'FULFILL_RETRY')
         }
+        throw err
       }
+    }
 
-      // Registra o comprador no IdP (auth). Falha transitória → devolve 502 e NÃO
-      // marca a entrega como processada, para o gateway re-entregar (recuperação
-      // durável, inclusive p/ boleto, que não tem polling de tela). markPaid é
-      // idempotente, então reprocessar a reentrega é seguro.
-      const fresh = await deps.repo.getLead(lead.id)
-      if (fresh) {
-        try {
-          await deps.fulfill(fresh)
-        } catch (err) {
-          if (err instanceof FulfillmentRetryError) {
-            return jsonError('Registro do comprador pendente; reentregar.', 502, 'FULFILL_RETRY')
+    // Concede o acesso na área de membros. Roda DEPOIS do registro (relê o lead p/
+    // pegar o `buyer_user_id` recém-gravado). Falha → 502 sem marcar a entrega como
+    // processada → o gateway re-entrega e a concessão (idempotente) é retentada.
+    if (deps.grantMembers || deps.sendWelcome) {
+      const registered = await deps.repo.getLead(lead.id)
+      if (registered?.buyerUserId) {
+        if (deps.grantMembers) {
+          try {
+            await deps.grantMembers(registered)
+          } catch (err) {
+            if (err instanceof GrantRetryError) {
+              return jsonError('Concessão de acesso pendente; reentregar.', 502, 'GRANT_RETRY')
+            }
+            throw err
           }
-          throw err
         }
-      }
 
-      // Concede o acesso na área de membros. Roda DEPOIS do registro (relê o lead p/
-      // pegar o `buyer_user_id` recém-gravado). Falha → 502 sem marcar a entrega como
-      // processada → o gateway re-entrega e a concessão (idempotente) é retentada.
-      if (deps.grantMembers || deps.sendWelcome) {
-        const registered = await deps.repo.getLead(lead.id)
-        if (registered?.buyerUserId) {
-          if (deps.grantMembers) {
-            try {
-              await deps.grantMembers(registered)
-            } catch (err) {
-              if (err instanceof GrantRetryError) {
-                return jsonError('Concessão de acesso pendente; reentregar.', 502, 'GRANT_RETRY')
-              }
-              throw err
-            }
-          }
-
-          // Boas-vindas (e-mail + WhatsApp) + link de definir senha (1º acesso ao
-          // app community). BEST-EFFORT: o handler já engole falhas (e o cinto
-          // extra aqui garante que as mensagens NUNCA mudam o status do webhook);
-          // idempotente no replay via Idempotency-Key por canal (`welcome-<leadId>`
-          // / `welcome-wa-<leadId>` — o messaging deduplica).
-          if (deps.sendWelcome) {
-            try {
-              await deps.sendWelcome(registered)
-            } catch {
-              // nunca propaga — boas-vindas não é crítico (fallback: "esqueci minha senha")
-            }
+        // Boas-vindas (e-mail + WhatsApp) + link de definir senha (1º acesso ao
+        // app community). BEST-EFFORT: o handler já engole falhas (e o cinto
+        // extra aqui garante que as mensagens NUNCA mudam o status do webhook);
+        // idempotente no replay via Idempotency-Key por canal (`welcome-<leadId>`
+        // / `welcome-wa-<leadId>` — o messaging deduplica).
+        if (deps.sendWelcome) {
+          try {
+            await deps.sendWelcome(registered)
+          } catch {
+            // nunca propaga — boas-vindas não é crítico (fallback: "esqueci minha senha")
           }
         }
       }

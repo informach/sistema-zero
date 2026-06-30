@@ -31,6 +31,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { HtmlCodeEditor } from '@/components/editor/html-code-editor'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
@@ -377,6 +378,7 @@ export function LessonEditorClient({
   const [lesson, setLesson] = useState<LessonContentView | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  const { confirm, confirmDialog } = useConfirm()
 
   const [blockOpen, setBlockOpen] = useState(false)
   const [editingBlock, setEditingBlock] = useState<BlockView | null>(null)
@@ -513,8 +515,14 @@ export function LessonEditorClient({
     }, 'Bloco salvo.')
   }
   function deleteBlock(b: BlockView) {
-    if (!window.confirm('Excluir este bloco?')) return
-    void run(() => apiSend(`/api/members/blocks/${b.id}`, 'DELETE'), 'Bloco excluído.')
+    confirm({
+      title: 'Excluir bloco',
+      message: 'Tem certeza que deseja excluir este bloco? Esta ação não pode ser desfeita.',
+      confirmText: 'Excluir',
+      confirmVariant: 'destructive',
+      onConfirm: () =>
+        run(() => apiSend(`/api/members/blocks/${b.id}`, 'DELETE'), 'Bloco excluído.'),
+    })
   }
 
   // ── Reordenação (drag-and-drop, otimista; falhou → toast + reload) ─────────
@@ -589,8 +597,18 @@ export function LessonEditorClient({
     }, 'Anexo salvo.')
   }
   function deleteAtt(a: AttachmentView) {
-    if (!window.confirm(`Excluir o anexo "${a.label}"?`)) return
-    void run(() => apiSend(`/api/members/attachments/${a.id}`, 'DELETE'), 'Anexo excluído.')
+    confirm({
+      title: 'Excluir anexo',
+      message: (
+        <>
+          Excluir o anexo <strong className="text-foreground">{a.label}</strong>?
+        </>
+      ),
+      confirmText: 'Excluir',
+      confirmVariant: 'destructive',
+      onConfirm: () =>
+        run(() => apiSend(`/api/members/attachments/${a.id}`, 'DELETE'), 'Anexo excluído.'),
+    })
   }
 
   /** E-book: além do bloco (livro 3D), o PDF entra nos materiais da aula p/ download. */
@@ -612,6 +630,7 @@ export function LessonEditorClient({
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
       <Link
         href={`/admin/membros/cursos/${courseId}`}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

@@ -150,6 +150,17 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
       }
 
       setProgress(1)
+      // Já propaga o `src` (embedUrl do ticket) ASSIM QUE o upload termina — antes de
+      // o transcode acabar. Sem isto, salvar o bloco durante "processando" gravava sem
+      // vídeo (o `src` só era preenchido no `onReady` do status `ready`). Duração/
+      // legendas entram depois, quando o polling chegar a `ready` (o callback do editor
+      // só sobrescreve esses campos quando vêm preenchidos).
+      onReadyRef.current({
+        vimeoVideoId: ticket.vimeoVideoId,
+        embedUrl: ticket.embedUrl,
+        durationSeconds: null,
+        captions: [],
+      })
       checkStatus(ticket.vimeoVideoId)
     },
     [checkStatus],

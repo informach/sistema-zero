@@ -31,6 +31,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { slugify } from '@/lib/slug'
@@ -51,6 +52,7 @@ export function CourseEditorClient({
   const [tree, setTree] = useState<Tree | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  const { confirm, confirmDialog } = useConfirm()
   // Módulos COLAPSADOS (default = tudo expandido).
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
 
@@ -176,8 +178,19 @@ export function CourseEditorClient({
     }, 'Módulo salvo.')
   }
   function deleteModule(m: ModuleView) {
-    if (!window.confirm(`Excluir o módulo "${m.title}" e suas aulas?`)) return
-    void run(() => apiSend(`/api/members/modules/${m.id}`, 'DELETE'), 'Módulo excluído.')
+    confirm({
+      title: 'Excluir módulo',
+      message: (
+        <>
+          Excluir o módulo <strong className="text-foreground">{m.title}</strong> e todas as suas
+          aulas? Esta ação não pode ser desfeita.
+        </>
+      ),
+      confirmText: 'Excluir',
+      confirmVariant: 'destructive',
+      onConfirm: () =>
+        run(() => apiSend(`/api/members/modules/${m.id}`, 'DELETE'), 'Módulo excluído.'),
+    })
   }
 
   // ── Aulas ──
@@ -220,12 +233,24 @@ export function CourseEditorClient({
     }, 'Aula salva.')
   }
   function deleteLesson(l: LessonView) {
-    if (!window.confirm(`Excluir a aula "${l.title}"?`)) return
-    void run(() => apiSend(`/api/members/lessons/${l.id}`, 'DELETE'), 'Aula excluída.')
+    confirm({
+      title: 'Excluir aula',
+      message: (
+        <>
+          Excluir a aula <strong className="text-foreground">{l.title}</strong>? Esta ação não pode
+          ser desfeita.
+        </>
+      ),
+      confirmText: 'Excluir',
+      confirmVariant: 'destructive',
+      onConfirm: () =>
+        run(() => apiSend(`/api/members/lessons/${l.id}`, 'DELETE'), 'Aula excluída.'),
+    })
   }
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
       <Link
         href="/admin/membros/cursos"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"

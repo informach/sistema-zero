@@ -3,6 +3,7 @@ import { ConcurrencyConflictError } from '../../domain/ports/concurrency.error'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
 import type { SuppressionRepository } from '../../domain/ports/suppression-repository.port'
 import type { WebhookInboxRepository } from '../../domain/ports/webhook-inbox.port'
+import { DomainError } from '../../domain/shared/errors'
 import type { Logger } from '../../infrastructure/logging/logger'
 
 /** Ação normalizada derivada do evento do provedor. */
@@ -29,6 +30,10 @@ export interface DeliveryStatusInput {
 export interface DeliveryStatusResult {
   deduped: boolean
   applied: boolean
+}
+
+export class WebhookMessagePendingError extends DomainError {
+  readonly code = 'WEBHOOK_MESSAGE_PENDING'
 }
 
 /** Re-tentativas locais quando o update conflita com o worker (corrida benigna). */
@@ -64,15 +69,18 @@ export class ApplyDeliveryStatusService {
       ? await this.messages.findByProviderMessageId(input.providerMessageId)
       : null
 
-    // Sem mensagem (ex.: status chegou antes de persistirmos o envio): NÃO marca
-    // como recebido, para uma reentrega futura ser processada quando a msg existir.
+    // Sem mensagem (ex.: status chegou antes de persistirmos o providerMessageId):
+    // NÃO marca como recebido E não responde 2xx na borda; provedores precisam
+    // reentregar o evento para o status/supressão não se perder.
     if (!message) {
       this.logger.warn('webhook.message_not_found', {
         provider: input.provider,
         providerMessageId: input.providerMessageId,
         eventType: input.eventType,
       })
-      return { deduped: false, applied: false }
+      throw new WebhookMessagePendingError(
+        `Mensagem do webhook ainda não encontrada (${input.provider}/${input.providerMessageId ?? 'sem-id'})`,
+      )
     }
 
     let changed = false

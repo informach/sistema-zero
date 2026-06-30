@@ -1,4 +1,11 @@
-import type { EventCount, FunnelRepo, Lead, LeadUpdate, PerfilCount } from '../../src/db/repo'
+import type {
+  EventCount,
+  FunnelRepo,
+  Lead,
+  LeadUpdate,
+  PaymentContext,
+  PerfilCount,
+} from '../../src/db/repo'
 
 const matchesQuery = (l: Lead, term: string) =>
   (l.nome ?? '').toLowerCase().includes(term) || (l.email ?? '').toLowerCase().includes(term)
@@ -38,8 +45,8 @@ export interface FakeRepoState {
     metadata: Record<string, unknown> | null
   }>
   processed: Set<string>
-  /** Histórico payment_id → { lead, cupom da cobrança } (espelha funil.lead_payments). */
-  payments: Map<string, { leadId: string; couponCode: string | null }>
+  /** Histórico payment_id → contexto da cobrança (espelha funil.lead_payments). */
+  payments: Map<string, { leadId: string } & PaymentContext>
 }
 
 /** Implementação em memória do FunnelRepo para testes (sem Postgres). */
@@ -47,7 +54,7 @@ export function createFakeRepo(): FakeRepoState {
   const leads = new Map<string, Lead>()
   const events: FakeRepoState['events'] = []
   const processed = new Set<string>()
-  const payments = new Map<string, { leadId: string; couponCode: string | null }>()
+  const payments = new Map<string, { leadId: string } & PaymentContext>()
   let seq = 0
 
   const repo: FunnelRepo = {
@@ -67,18 +74,32 @@ export function createFakeRepo(): FakeRepoState {
       const lead = leads.get(id)
       if (lead) lead.quizAnswers = { ...(lead.quizAnswers ?? {}), ...patch }
     },
-    async setPayment(id, paymentId, couponCode) {
+    async setPayment(id, paymentId, couponCode, snapshot) {
       const lead = leads.get(id)
       if (lead) {
         lead.paymentId = paymentId
         // onConflictDoNothing: cobrança já registrada preserva o cupom original.
         if (!payments.has(paymentId)) {
-          payments.set(paymentId, { leadId: id, couponCode: couponCode ?? null })
+          payments.set(paymentId, {
+            leadId: id,
+            couponCode: couponCode ?? null,
+            offerRef: snapshot?.offerRef ?? null,
+            nome: snapshot?.nome ?? null,
+            email: snapshot?.email ?? null,
+            telefone: snapshot?.telefone ?? null,
+            document: snapshot?.document ?? null,
+          })
         }
       }
     },
     async couponForPayment(paymentId) {
       return payments.get(paymentId)?.couponCode ?? null
+    },
+    async paymentContext(paymentId) {
+      const mapped = payments.get(paymentId)
+      if (!mapped) return null
+      const { couponCode, offerRef, nome, email, telefone, document } = mapped
+      return { couponCode, offerRef, nome, email, telefone, document }
     },
     async markPaid(id, paidAt) {
       const lead = leads.get(id)

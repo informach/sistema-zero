@@ -18,6 +18,7 @@ import {
   redeemCouponBestEffort,
   resolveCharge,
 } from './catalog'
+import { applyPaymentContextToLead } from './payment-context'
 
 /** Oferta resolvida (slug/nome/sku) que o checkout cobra para um dado funil. */
 export interface ResolvedOffer {
@@ -283,7 +284,13 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
     )
   }
   const view = body as PaymentView
-  await deps.repo.setPayment(lead.id, view.id, charge.couponCode)
+  await deps.repo.setPayment(lead.id, view.id, charge.couponCode, {
+    offerRef: offerSlug,
+    nome: lead.nome,
+    email: lead.email,
+    telefone: lead.telefone,
+    document: lead.document,
+  })
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout')
 
   return json({ paymentId: view.id, status: view.status, pix: view.pix ?? null })
@@ -351,7 +358,13 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
     )
   }
   const view = body as PaymentView
-  await deps.repo.setPayment(lead.id, view.id, charge.couponCode)
+  await deps.repo.setPayment(lead.id, view.id, charge.couponCode, {
+    offerRef: offerSlug,
+    nome: lead.nome,
+    email: lead.email,
+    telefone: lead.telefone,
+    document: form.cpf.replace(/\D/g, ''),
+  })
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_boleto')
 
   return json({ paymentId: view.id, status: view.status, boleto: view.boleto ?? null })
@@ -422,7 +435,13 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
     )
   }
   const view = body as PaymentView
-  await deps.repo.setPayment(lead.id, view.id, charge.couponCode)
+  await deps.repo.setPayment(lead.id, view.id, charge.couponCode, {
+    offerRef: offerSlug,
+    nome: lead.nome,
+    email: lead.email,
+    telefone: lead.telefone,
+    document: lead.document,
+  })
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_card')
 
   if (view.status === 'PAID') {
@@ -478,7 +497,7 @@ export async function pixStatus(
 ): Promise<Response> {
   const leadId = getLeadId(request)
   if (!leadId) return jsonError('Sem lead na sessão.', 401, 'NO_LEAD')
-  const lead = await deps.repo.getLead(leadId)
+  let lead = await deps.repo.getLead(leadId)
   if (!lead || lead.paymentId !== paymentId) {
     return jsonError('Pagamento não encontrado.', 404, 'NOT_FOUND')
   }
@@ -492,6 +511,9 @@ export async function pixStatus(
   const view = body as PaymentView
 
   if (view.status === 'PAID') {
+    if (!lead.paidAt) {
+      lead = await applyPaymentContextToLead(deps.repo, lead, paymentId)
+    }
     const newlyPaid = await deps.repo.markPaid(lead.id, new Date())
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_polling')

@@ -1,12 +1,12 @@
 ---
-// Entrada do site → funil default (multi-funil: ver src/funnels). A entrada de um
-// funil é o quiz quando ele tem; senão, a própria oferta. Hoje cai em
-// /pro/no-comando-da-ia/quiz.
-import { DEFAULT_FUNNEL } from '../funnels/registry'
+// Entrada do site → funil KIDS (Desafio do Primeiro Jogo). A entrada de um funil é
+// o quiz quando ele tem; senão, a própria oferta. Referenciamos o funil kids
+// explicitamente (não o DEFAULT_FUNNEL global, que ainda é o PRO e segue como
+// fallback de oferta/lead-scope) → cai em /kids/desafio-primeiro-jogo/quiz.
+import { DESAFIO_PRIMEIRO_JOGO } from '../funnels/desafio-primeiro-jogo'
 
 export const prerender = false
-const entry = DEFAULT_FUNNEL.steps.quiz
-  ? `${DEFAULT_FUNNEL.basePath}/quiz`
-  : `${DEFAULT_FUNNEL.basePath}/oferta`
+const home = DESAFIO_PRIMEIRO_JOGO
+const entry = home.steps.quiz ? `${home.basePath}/quiz` : `${home.basePath}/oferta`
 return Astro.redirect(entry, 302)
 ---

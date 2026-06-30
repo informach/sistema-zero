@@ -3,6 +3,7 @@ import type {
   ChannelAdminService,
   SpaceAdminService,
 } from '../../../application/community-admin/community-admin.service'
+import type { PurgeUserDataService } from '../../../application/purge-user-data/purge-user-data.service'
 import { normalizeAccessConfig } from '../../../domain/access/access-config'
 import type {
   ChannelFields,
@@ -14,6 +15,8 @@ import {
   ChannelPatchBody,
   IdParams,
   ListSpacesQuery,
+  PurgeUserDataQuery,
+  parseProfileIds,
   ReorderBody,
   ReorderSpacesBody,
   SpaceBody,
@@ -29,6 +32,8 @@ export interface AdminRoutesDeps {
   internalToken?: string
   spaces: SpaceAdminService
   channels: ChannelAdminService
+  /** Purga os dados de comunidade do usuário (exclusão pelo painel; superadmin-only no gateway). */
+  purgeUserData: PurgeUserDataService
 }
 
 type SpaceInput = typeof SpaceBody.static
@@ -216,6 +221,22 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.channels.remove(params.id)
         },
         { params: IdParams },
+      )
+      // ── Exclusão de usuário (purga de dados de comunidade) ──
+      // DESTRUTIVA: o gateway restringe a `superadmin`. Apaga reações/leitura/
+      // mutes-bans da conta + perfis (`?profileIds=<csv>`). Idempotente.
+      // `/hub/admin/users/:id/data` (4 segmentos) não colide com spaces/channels.
+      .delete(
+        '/users/:id/data',
+        async ({ params, query, headers, set }) => {
+          guard(headers)
+          await deps.purgeUserData.execute({
+            userId: params.id,
+            profileIds: parseProfileIds(query.profileIds),
+          })
+          set.status = 204
+        },
+        { params: IdParams, query: PurgeUserDataQuery },
       )
   )
 }

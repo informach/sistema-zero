@@ -645,6 +645,21 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       audit: {},
     },
+    // EXCLUSÃO de usuário (limpeza de contas de teste/lixo). DESTRUTIVA + cascata —
+    // SÓ superadmin (o auth re-checa: não-self, alvo não-admin/superadmin). Mesmo
+    // path literal do GET/PATCH — o matcher distingue pelo MÉTODO. O painel orquestra
+    // a purga em members/hub ANTES desta chamada (financeiro/fiscal são retidos).
+    {
+      id: 'auth-admin-user-delete',
+      methods: ['DELETE'],
+      pathPattern: '/auth/admin/users/:id',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin'], statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
     // Hidratação de identidade em LOTE (≤100 ids) — usada pelo painel admin (área de
     // membros lista userIds e precisa de nome/email). Leitura → superadmin/admin/staff.
     {
@@ -1621,6 +1636,20 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       audit: {},
     },
+    // PURGA dos dados do aluno (exclusão de usuário pelo painel). DESTRUTIVA — SÓ
+    // superadmin (espelha o delete do auth). `?profileIds=` cobre os perfis kids.
+    // 5 segmentos — não colide com `/members/admin/members/:userId`.
+    {
+      id: 'members-admin-user-purge',
+      methods: ['DELETE'],
+      pathPattern: '/members/admin/users/:id/data',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
 
     // ── Mensageria (@sistemazero/messaging) ─────────────────────────────────
     // Envio S2S (backend → gateway por HMAC de borda → messaging). O gateway injeta
@@ -2075,6 +2104,20 @@ const config: GatewayConfigInput = {
       transforms: hubInternalTransforms,
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // PURGA dos dados de comunidade do usuário (exclusão pelo painel). DESTRUTIVA —
+    // SÓ superadmin (rota EXPLÍCITA vence o wildcard `hub-admin-write` por
+    // especificidade, fixando superadmin-only; espelha o delete do auth).
+    {
+      id: 'hub-admin-user-purge',
+      methods: ['DELETE'],
+      pathPattern: '/hub/admin/users/:id/data',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin'], statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
     },
     // Concessão/revogação (funil/members → gateway → hub): invalida o cache de
     // acesso. HMAC de borda + o gateway re-assina como consumer `gateway`.

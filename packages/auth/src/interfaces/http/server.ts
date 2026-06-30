@@ -3,6 +3,7 @@ import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { BatchGetUsersService } from '../../application/admin/batch-get-users/batch-get-users.service'
 import type { CreateUserService } from '../../application/admin/create-user/create-user.service'
+import type { DeleteUserService } from '../../application/admin/delete-user/delete-user.service'
 import type { GetUserService } from '../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../application/admin/list-users/list-users.service'
 import type { ReadAuditLogService } from '../../application/admin/read-audit-log/read-audit-log.service'
@@ -60,6 +61,7 @@ export interface HttpDeps {
   getUser: GetUserService
   createUser: CreateUserService
   updateUser: UpdateUserService
+  deleteUser: DeleteUserService
   batchGetUsers: BatchGetUsersService
   writeAuditLog: WriteAuditLogService
   readAuditLog: ReadAuditLogService
@@ -164,6 +166,7 @@ export function createServer(deps: HttpDeps) {
         getUser: deps.getUser,
         createUser: deps.createUser,
         updateUser: deps.updateUser,
+        deleteUser: deps.deleteUser,
         batchGetUsers: deps.batchGetUsers,
         readAuditLog: deps.readAuditLog,
         createImpersonationToken: deps.createImpersonationToken,

@@ -11,6 +11,18 @@ import { IdParams, SendBody } from '../dtos'
 const MAX_IDEMPOTENCY_KEY_LENGTH = 200
 const MAX_CONSUMER_ID_LENGTH = 100
 
+function optionalHeader(value: string | undefined, name: string, maxLength: number): string | null {
+  if (value === undefined) return null
+  const normalized = value.trim()
+  if (normalized.length === 0) {
+    throw new ValidationError(`${name} não pode ser vazio`)
+  }
+  if (normalized.length > maxLength) {
+    throw new ValidationError(`${name} acima de ${maxLength} caracteres`)
+  }
+  return normalized
+}
+
 export interface SendRoutesDeps {
   sendMessage: SendMessageService
   getMessage: GetMessageService
@@ -28,14 +40,16 @@ export function sendRoutes(deps: SendRoutesDeps) {
       '/messaging/send',
       async ({ body, headers, set }) => {
         requireInternalToken(headers, deps.internalToken)
-        if ((headers['idempotency-key']?.length ?? 0) > MAX_IDEMPOTENCY_KEY_LENGTH) {
-          throw new ValidationError(
-            `Idempotency-Key acima de ${MAX_IDEMPOTENCY_KEY_LENGTH} caracteres`,
-          )
-        }
-        if ((headers['x-consumer-id']?.length ?? 0) > MAX_CONSUMER_ID_LENGTH) {
-          throw new ValidationError(`X-Consumer-Id acima de ${MAX_CONSUMER_ID_LENGTH} caracteres`)
-        }
+        const idempotencyKey = optionalHeader(
+          headers['idempotency-key'],
+          'Idempotency-Key',
+          MAX_IDEMPOTENCY_KEY_LENGTH,
+        )
+        const consumerId = optionalHeader(
+          headers['x-consumer-id'],
+          'X-Consumer-Id',
+          MAX_CONSUMER_ID_LENGTH,
+        )
         const view = await deps.sendMessage.execute({
           channel: body.channel,
           templateKey: body.templateKey,
@@ -45,8 +59,8 @@ export function sendRoutes(deps: SendRoutesDeps) {
           senderId: body.senderId ?? null,
           scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,
           priority: body.priority,
-          consumerId: headers['x-consumer-id'] ?? null,
-          idempotencyKey: headers['idempotency-key'] ?? null,
+          consumerId,
+          idempotencyKey,
         })
         set.status = 202
         return view
@@ -57,7 +71,11 @@ export function sendRoutes(deps: SendRoutesDeps) {
       '/messaging/messages/:id',
       async ({ params, headers }) => {
         requireInternalToken(headers, deps.internalToken)
-        const consumerId = headers['x-consumer-id'] ?? null
+        const consumerId = optionalHeader(
+          headers['x-consumer-id'],
+          'X-Consumer-Id',
+          MAX_CONSUMER_ID_LENGTH,
+        )
         if (deps.internalToken && !consumerId) {
           throw new UnauthorizedError('Consumer autenticado ausente')
         }

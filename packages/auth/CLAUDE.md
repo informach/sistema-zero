@@ -356,6 +356,15 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   re-checa papel/status (defesa em profundidade) e aplica os GUARDS hierárquicos:
   ninguém altera o próprio papel/status; `admin` não toca/promove a admin/superadmin;
   suspender/bloquear revoga as sessões do alvo. Concorrência otimista por `version`.
+- **Exclusão pelo painel (`DELETE /auth/admin/users/:id`, 06/2026):** limpeza de contas de
+  teste/lixo. `DeleteUserService` apaga FÍSICA e definitivamente o usuário + os dados auth-owned
+  (refresh/reset/otp/impersonation tokens + `profiles`) numa transação (`UserRepository.deleteById`);
+  **`audit_logs` é PRESERVADA** (compliance, `actor_id` snapshot). Guards (defesa em profundidade,
+  o gateway já restringe a `superadmin`): SÓ superadmin, **nunca a si mesmo** nem alvo
+  `admin`/`superadmin` (403 `FORBIDDEN`); alvo inexistente → 404; sucesso → **204**. A cascata em
+  members/hub (progresso/gamificação/comunidade) é orquestrada pelo **painel** (BFF) ANTES desta
+  chamada via gateway — financeiro/fiscal são RETIDOS. Rota no gateway: `auth-admin-user-delete`
+  (DELETE, `roles:['superadmin']` + `authInternalTransforms` + `audit`).
 - **Criação pelo painel (`POST /auth/admin/users`, fluxo CONVITE):**
   `CreateUserService` cria a conta **`active`** com **senha aleatória** de 32 bytes
   hasheada (impossível de usar; `active` é obrigatório — o token de senha exige

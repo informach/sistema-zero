@@ -507,8 +507,8 @@ export function PreviewIframe(): JSX.Element {
         sandbox="allow-scripts allow-modals"
         // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
         // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
+        // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
         allow="fullscreen"
-        allowFullScreen
         className="h-full w-full flex-1 bg-white"
       />
       {previewPaused && (

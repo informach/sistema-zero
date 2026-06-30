@@ -1,6 +1,9 @@
 'use client'
 
 import { Button } from '@sistemazero/ui/button'
+import { Dialog } from '@sistemazero/ui/dialog'
+import { Input } from '@sistemazero/ui/input'
+import { Field } from '@sistemazero/ui/label'
 import Image from '@tiptap/extension-image'
 import { EditorContent, type Editor as TiptapEditor, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -98,6 +101,9 @@ export default function RichTextEditorImpl({
 function Toolbar({ editor }: { editor: TiptapEditor }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  // Modal da plataforma p/ a URL do link (substitui o window.prompt nativo).
+  const [linkOpen, setLinkOpen] = useState(false)
+  const [linkValue, setLinkValue] = useState('')
 
   // Upload de imagem → R2 (sharp→WebP, mesma rota/contrato do ImageUploader,
   // `scope=block`) → insere o node Image, que serializa p/ `![](url)` no markdown.
@@ -122,13 +128,17 @@ function Toolbar({ editor }: { editor: TiptapEditor }) {
 
   function setLink() {
     const previous = editor.getAttributes('link').href as string | undefined
-    const url = window.prompt('URL do link (https://…)', previous ?? '')
-    if (url === null) return
-    if (url.trim() === '') {
+    setLinkValue(previous ?? '')
+    setLinkOpen(true)
+  }
+  function applyLink() {
+    const url = linkValue.trim()
+    if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run()
-      return
+    } else {
+      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
     }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url.trim() }).run()
+    setLinkOpen(false)
   }
 
   const items: {
@@ -245,6 +255,38 @@ function Toolbar({ editor }: { editor: TiptapEditor }) {
       >
         {uploading ? <Loader2 className="size-4 animate-spin" /> : <ImagePlus className="size-4" />}
       </Button>
+
+      <Dialog
+        open={linkOpen}
+        onClose={() => setLinkOpen(false)}
+        title="Inserir link"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setLinkOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={applyLink}>
+              {linkValue.trim() === '' ? 'Remover link' : 'Aplicar'}
+            </Button>
+          </>
+        }
+      >
+        <Field label="URL do link" hint="Deixe em branco para remover o link.">
+          <Input
+            type="url"
+            value={linkValue}
+            placeholder="https://…"
+            autoFocus
+            onChange={(e) => setLinkValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                applyLink()
+              }
+            }}
+          />
+        </Field>
+      </Dialog>
     </div>
   )
 }

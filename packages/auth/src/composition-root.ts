@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { BatchGetUsersService } from './application/admin/batch-get-users/batch-get-users.service'
 import { CreateUserService } from './application/admin/create-user/create-user.service'
+import { DeleteUserService } from './application/admin/delete-user/delete-user.service'
 import { GetUserService } from './application/admin/get-user/get-user.service'
 import { ListUsersService } from './application/admin/list-users/list-users.service'
 import { ReadAuditLogService } from './application/admin/read-audit-log/read-audit-log.service'
@@ -222,6 +223,8 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
   )
   const updateUser = new UpdateUserService(users, refreshTokens, logger)
+  // Exclusão física (limpeza de contas de teste): superadmin-only, guards no serviço.
+  const deleteUser = new DeleteUserService(users, logger)
   const batchGetUsers = new BatchGetUsersService(users)
   // Auditoria: o gateway emite (S2S) e o painel lê.
   const writeAuditLog = new WriteAuditLogService(auditLogs)
@@ -288,6 +291,7 @@ export async function createApplication(env: Env): Promise<Application> {
     getUser,
     createUser,
     updateUser,
+    deleteUser,
     batchGetUsers,
     writeAuditLog,
     readAuditLog,

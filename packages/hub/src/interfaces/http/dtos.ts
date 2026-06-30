@@ -237,6 +237,22 @@ export const ReportsQuery = t.Object({
 
 export const SpaceIdQuery = t.Object({ spaceId: UUID })
 
+/** Query da purga de usuário: `?profileIds=<csv de uuids>` (perfis kids da conta). */
+export const PurgeUserDataQuery = t.Object({
+  profileIds: t.Optional(t.String({ maxLength: 2000 })),
+})
+
+const UUID_RE = new RegExp(UUID_PATTERN)
+/** Quebra o CSV de `profileIds` em uuids válidos (descarta lixo; teto de 50). */
+export function parseProfileIds(csv: string | undefined): string[] {
+  if (!csv) return []
+  return csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => UUID_RE.test(s))
+    .slice(0, 50)
+}
+
 /** Silenciar/banir um usuário num servidor. */
 export const MuteBanBody = t.Object({
   userId: UUID,

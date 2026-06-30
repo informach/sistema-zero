@@ -101,6 +101,16 @@ describe('ApplyDeliveryStatusService — ordem do dedupe (aplicar ANTES de marca
     expect(second).toEqual({ deduped: true, applied: false })
   })
 
+  it('evento acionável sem mensagem não é deduplicado e força retry do provedor', async () => {
+    const messages = new InMemoryMessageRepository()
+    const { service, inbox } = makeService(messages)
+
+    await expect(
+      service.execute(deliveredInput('sg-ainda-nao-existe', 'evt-pendente')),
+    ).rejects.toThrow(/ainda não encontrada/)
+    expect(await inbox.alreadyReceived('sendgrid', 'evt-pendente')).toBe(false)
+  })
+
   it('bounce adiciona supressão e suprime a mensagem', async () => {
     const messages = new InMemoryMessageRepository()
     const m = seedSent(messages, 'sg-4')

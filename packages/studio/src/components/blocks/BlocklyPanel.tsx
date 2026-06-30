@@ -51,6 +51,10 @@ function blocklyWorkspaceConfiguration(theme: 'dark' | 'light'): Blockly.Blockly
     trashcan: true,
     // Habilita "Recolher/Expandir blocos" no menu de contexto nativo.
     collapse: true,
+    // Sem sons: o Blockly, sem `media` configurado, baixa click/disconnect/delete
+    // .mp3 do servidor demo (blockly-demo.appspot.com) → bloqueado pela CSP
+    // `connect-src` do host (admin/community-kids). Desligar mata o ruído no console.
+    sounds: false,
   }
 }
 
