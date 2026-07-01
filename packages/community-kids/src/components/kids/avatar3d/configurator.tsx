@@ -1,7 +1,6 @@
 'use client'
 
 import { ArrowLeft, Camera, Check, Loader2, Lock, RefreshCw, Shuffle, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -88,7 +87,14 @@ function ItemTile({
  * "foto" (snapshot) vira o avatar em todo o app; a config 3D também é salva. Estado no members.
  */
 export function AvatarConfigurator({ dark }: { dark: boolean }) {
-  const router = useRouter()
+  // Sair do avatar = navegação DURA (full reload), NÃO `router.push`. A foto nova do avatar
+  // precisa aparecer em TODO lugar (menu, tab bar, quarto, perfil), e o avatar do menu/tab bar
+  // vive no LAYOUT do grupo (app), que PERSISTE entre navegações SPA e não re-busca o
+  // `getAvatarReadonly` — `router.push` troca só a página, não o layout, e `push`+`refresh`
+  // tem corrida conhecida (vercel/next#54766), então a foto "demorava" a trocar. Um reload
+  // re-renderiza a árvore inteira no servidor → layout + página leem o `avatarPhotoUrl` novo
+  // (o `gatewayFetch` é `no-store`, sem cache de dados) e a imagem atualiza na hora em todo canto.
+  const goToProfile = () => window.location.assign('/perfil')
   const [state, setState] = useState<AvatarStateView | null>(null)
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [slots, setSlots] = useState<Slots>({})
@@ -253,10 +259,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
         }
       }
       toast.success(redirect ? 'Avatar salvo! 😄' : 'Mudanças salvas! 😄')
-      if (redirect) {
-        router.push('/perfil')
-        router.refresh()
-      }
+      if (redirect) goToProfile()
     } catch {
       toast.error('Não consegui salvar agora. Tente de novo!')
     } finally {
@@ -275,7 +278,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
         <div className="relative z-10 flex items-center justify-between gap-2 p-4">
           <button
             type="button"
-            onClick={() => router.push('/perfil')}
+            onClick={goToProfile}
             aria-label="Voltar"
             className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90"
           >
@@ -306,7 +309,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => router.push('/perfil')}
+            onClick={goToProfile}
             aria-label="Voltar"
             className="grid size-11 place-items-center rounded-full bg-card/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-90"
           >
