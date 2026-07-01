@@ -67,7 +67,11 @@ helpers PUROS de anexo (`lib/hub-attachments`: allowlist de MIME, limites, `sani
 confiável de criança p/ criança. Renderize com **`renderUgcMarkdown`** (`lib/markdown`: modo restrito
 — SEM `<img>` externo, que seria pixel-rastreador vazando o IP de quem LÊ, e links só como TEXTO) e o
 WRITE strippa imagem na origem (`stripImageMarkdown`, aplicado em create/edit de tópico e comentário).
-`renderMarkdown` cru (com `![](…)` e `<a>`) é SÓ p/ conteúdo do ADMIN (rich_text/quiz). Os path ids
+`renderMarkdown` cru (com `![](…)` e `<a>`) é SÓ p/ conteúdo do ADMIN (rich_text/quiz). Imagens
+aceitam o sufixo OPCIONAL `{width=NN align=left|center|right}` (autoria do admin — largura % +
+alinhamento em bloco; validado por `imageStyleFromAttrs`, valor inválido é ignorado). O `pattern`
+inline e o `stripImageMarkdown` consomem o sufixo (senão sobraria como texto). O editor do admin
+(`resizable-image.tsx`) EMITE esse sufixo — contrato compartilhado, mexeu num mexa no outro. Os path ids
 do hub/perfil (thread/comment/canal/profileId) são validados como UUID na borda (`idFrom`/`UUID_RE`,
 espelhando o `hubShowcase`). Cobertura em `tests/markdown.test.tsx`.
 

@@ -68,7 +68,13 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > saída MARKDOWN via tiptap-markdown, `dynamic ssr:false` + `immediatelyRender:false` +
 > `shouldRerenderOnTransaction:true`; estilos `.rich-text-content` no globals.css; **suporta
 > IMAGEM** via `@tiptap/extension-image` + botão da toolbar que faz upload em `/api/media/images`
-> (`scope=block`) e insere `setImage` → serializa p/ `![](url)`; prop `compact` reduz a altura
+> (`scope=block`) e insere `setImage`; a imagem é **REDIMENSIONÁVEL/ALINHÁVEL** —
+> `components/editor/resizable-image.tsx` estende o Image com `width` (% 10–100) e `align`
+> (left/center/right), NodeView (`ReactNodeViewRenderer`) com **alça de arrastar** + botões de
+> alinhar quando selecionada, e serializa p/ `![](url){width=NN align=xx}` (sufixo só quando há
+> atributo → sem atributo = `![](url)`, compat total). O renderer do aluno
+> (`member-shell/lib/markdown`) LÊ esse mesmo sufixo (`imageStyleFromAttrs`) — mexeu num, mexa no
+> outro. prop `compact` reduz a altura
 > mínima) e bloco **quiz usa o MESMO editor TipTap** (`aulas/[lessonId]/quiz-builder.tsx` —
 > enunciado, opções e explicação são MARKDOWN com formatação rica + imagens, `compact` nas
 > opções/explicação; checkbox "correta"/nota de corte seguem; `validateQuiz` espelha o members;

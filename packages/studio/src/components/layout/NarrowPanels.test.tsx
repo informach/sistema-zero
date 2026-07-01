@@ -129,6 +129,26 @@ describe('NarrowPanels', () => {
     expect(getByTestId('console-probe')).toBeTruthy()
   })
 
+  it('preview inativo fica VIVO (inert, sem display:none), console inativo usa hidden', () => {
+    // Regressão: o preview NÃO pode virar `display:none` quando inativo — o navegador
+    // pausa o `requestAnimationFrame` do iframe não renderizado e um erro dentro do
+    // loop de jogo só apareceria no Console após abrir a aba Pré-visualização. Ele fica
+    // renderizado (opacity:0 + inert). Já o Console inativo segue com `hidden` (barato).
+    const { getByTestId } = render(
+      <NarrowPanels editorPanes={oneEditor} preview={<div data-testid="prev">preview</div>} />,
+    )
+    const previewPanel = getByTestId('prev').closest('[role="tabpanel"]')
+    if (!previewPanel) throw new Error('painel do preview não encontrado')
+    expect(previewPanel.hasAttribute('hidden')).toBe(false)
+    expect(previewPanel.hasAttribute('inert')).toBe(true)
+    expect(previewPanel.className).toContain('opacity-0')
+
+    const consolePanel = getByTestId('console-probe').closest('[role="tabpanel"]')
+    if (!consolePanel) throw new Error('painel do console não encontrado')
+    expect(consolePanel.hasAttribute('hidden')).toBe(true)
+    expect(consolePanel.hasAttribute('inert')).toBe(false)
+  })
+
   it('gaveta de Arquivos: abre, e escolher um arquivo fecha + foca o editor', () => {
     const { getByRole, queryByRole, getByText } = render(
       <NarrowPanels

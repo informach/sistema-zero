@@ -24,6 +24,88 @@ import { szTheme } from './theme'
 let initialized = false
 
 /**
+ * Corrige o ANCORAMENTO do editor de campo (o `<input>` que abre ao clicar num campo
+ * de texto/número). Nossos sockets OVAIS de valor são campos "full-block" (o
+ * `borderRect_` do campo tem tamanho ZERO) → o Blockly calcula a posição do editor
+ * por um caminho que ERRA o X quando o workspace está rolado horizontalmente dentro
+ * do overlay `fixed` do **modo criação guiada**: o `<input>` abre deslocado (~1 dígito
+ * à esquerda) e se sobrepõe ao número desenhado no SVG — "400" vira um "4000" fantasma,
+ * com o contorno de seleção puxado p/ a esquerda. Para um campo full-block o editor
+ * deve cobrir o BLOCO INTEIRO (o oval) — usamos o bounding box AO VIVO do SVG do
+ * BLOCO-fonte (`getBoundingClientRect`), que é sempre correto em posição E tamanho.
+ * Assim o `<input>` preenche todo o campo (como nos outros modos) E fica alinhado.
+ * Só para campos full-block (os demais já usam o `borderRect_` ao vivo e ficam
+ * intactos). Idempotente (guardado por `initialized`). Ver [[studio-campos-valor-ovais]].
+ */
+function patchFieldEditorAnchor(): void {
+  // `getScaledBBox`/`isFullBlockField` vivem na base `Field` (o `FieldInput` abstrato
+  // não é exportado em runtime). O gate `isFullBlockField()` restringe a mudança aos
+  // campos que ocupam o bloco inteiro (nossos sockets de valor); os demais seguem
+  // pelo `borderRect_` ao vivo do Blockly, intactos.
+  const proto = Blockly.Field.prototype as unknown as {
+    getScaledBBox: () => Blockly.utils.Rect
+    isFullBlockField: () => boolean
+    getSourceBlock: () => { getSvgRoot?: () => SVGGElement | null } | null
+  }
+  const original = proto.getScaledBBox
+  proto.getScaledBBox = function (this: typeof proto): Blockly.utils.Rect {
+    try {
+      if (this.isFullBlockField()) {
+        // O campo full-block PREENCHE o bloco: o rect AO VIVO do bloco (o oval) dá a
+        // posição E o tamanho corretos — o editor cobre todo o campo (o SVG do campo
+        // sozinho seria só o texto → editor minúsculo).
+        const rect = this.getSourceBlock()?.getSvgRoot?.()?.getBoundingClientRect()
+        if (rect && rect.width > 0 && rect.height > 0) {
+          return new Blockly.utils.Rect(rect.top, rect.bottom, rect.left, rect.right)
+        }
+      }
+    } catch {
+      // Qualquer surpresa cai no cálculo nativo do Blockly.
+    }
+    return original.call(this)
+  }
+
+  // Mesmo com o bbox correto, o `resizeEditor_` do Blockly ainda desloca o WidgetDiv
+  // uns px à esquerda no overlay `fixed` do modo guiado (a conta interna dele soma um
+  // offset de scroll/scale que erra ali). Depois que ele posiciona, ENCAIXAMOS o
+  // WidgetDiv EXATAMENTE sobre o rect ao vivo do bloco (o oval) — para campos
+  // full-block. `WidgetDiv` é absoluto no `document.body` (origem 0,0), então o rect
+  // de viewport do oval é a coordenada certa. `resizeEditor_` roda a cada mudança do
+  // workspace enquanto edita, então o encaixe se mantém.
+  // `FieldInput`/`FieldTextInput` não são exportados em runtime; pegamos a classe do
+  // campo `field_number` pelo REGISTRY e subimos a cadeia de protótipos até quem
+  // DEFINE `resizeEditor_` (o `FieldInput` base). Patch lá vale p/ número E texto.
+  const numberFieldCls = Blockly.registry.getClass(Blockly.registry.Type.FIELD, 'field_number') as
+    | (new (
+        ...a: unknown[]
+      ) => unknown)
+    | null
+  let inputProto: Record<string, unknown> | null = numberFieldCls?.prototype ?? null
+  while (inputProto && !Object.hasOwn(inputProto, 'resizeEditor_')) {
+    inputProto = Object.getPrototypeOf(inputProto)
+  }
+  if (inputProto && typeof inputProto.resizeEditor_ === 'function') {
+    const originalResize = inputProto.resizeEditor_ as (this: typeof proto) => void
+    inputProto.resizeEditor_ = function (this: typeof proto): void {
+      originalResize.call(this)
+      try {
+        if (!this.isFullBlockField()) return
+        const rect = this.getSourceBlock()?.getSvgRoot?.()?.getBoundingClientRect()
+        const div = Blockly.WidgetDiv.getDiv()
+        if (div && rect && rect.width > 0 && rect.height > 0) {
+          div.style.left = `${rect.left}px`
+          div.style.top = `${rect.top}px`
+          div.style.width = `${rect.width}px`
+          div.style.height = `${rect.height}px`
+        }
+      } catch {
+        // Sem encaixe se algo faltar — o posicionamento nativo (já ~ok) permanece.
+      }
+    }
+  }
+}
+
+/**
  * Registra o item "Organizar blocos" no menu de contexto do workspace —
  * arruma as pilhas HTML/CSS/JS em colunas que não se sobrepõem (ver
  * `organizeBlocks`). Idempotente: ignora se já registrado.
@@ -129,6 +211,9 @@ export function ensureBlocklyInitialized(): void {
   // Blockly 11 removeu FieldColour do core — registramos o plugin oficial
   // para que `field_colour` continue funcionando (usado por extensões) e
   // adicionamos `field_colour_sz` com paleta MakeCode + input HEX.
+  // Ancoramento correto do editor de campo full-block (ver função). Antes de qualquer
+  // instância de campo abrir seu editor.
+  patchFieldEditorAnchor()
   registerFieldColour()
   registerFieldColourSZ()
   // Campo de seleção de imagem (asset) dos blocos de Jogo 2D. Registrado ANTES da

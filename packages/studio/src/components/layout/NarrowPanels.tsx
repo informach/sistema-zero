@@ -6,6 +6,12 @@ import { type BottomTab, useUIStore } from '../../state/uiStore'
 import { renderBottomPanel, useVisibleBottomTabs } from './bottomTabs'
 import { type TabItem, Tabs } from './TabStrip'
 
+// O preview segue VIVO mesmo quando não é a aba ativa (ver `keepLiveIds` no
+// TabStrip): sem isso, o loop de jogo (rAF) do iframe pausa em `display:none` e um
+// erro de runtime dentro do loop só apareceria no Console depois de abrir a aba
+// Pré-visualização. Mantendo-o vivo, os erros chegam ao Console em tempo real.
+const KEEP_LIVE_PANEL_IDS: ReadonlySet<string> = new Set(['preview'])
+
 export interface NarrowEditorPane {
   id: string
   label: ReactNode
@@ -104,6 +110,7 @@ export function NarrowPanels({
         active={effectiveActive}
         onSelect={handleSelect}
         renderPanel={renderPanel}
+        keepLiveIds={preview ? KEEP_LIVE_PANEL_IDS : undefined}
         ariaLabel="Painéis do editor"
         size="md"
         className="bg-sz-bg"

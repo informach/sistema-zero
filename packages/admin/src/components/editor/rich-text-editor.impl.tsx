@@ -4,7 +4,6 @@ import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
-import Image from '@tiptap/extension-image'
 import { EditorContent, type Editor as TiptapEditor, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import {
@@ -27,6 +26,7 @@ import { toast } from 'sonner'
 import { Markdown } from 'tiptap-markdown'
 import { type ApiError, apiUpload } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { ResizableImage } from './resizable-image'
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 const ACCEPTED_IMAGE = 'image/png,image/jpeg,image/webp'
@@ -59,9 +59,10 @@ export default function RichTextEditorImpl({
         heading: { levels: [1, 2, 3] },
         link: { openOnClick: false },
       }),
-      // Imagem como bloco (não-inline) — o tiptap-markdown serializa o node p/
-      // `![alt](src)`, que o renderer do aluno (member-shell/lib/markdown) desenha.
-      Image.configure({ allowBase64: false }),
+      // Imagem como bloco (não-inline) REDIMENSIONÁVEL: alça de arrastar (largura %)
+      // + alinhamento; serializa p/ `![alt](src){width=NN align=xx}` (o renderer do
+      // aluno member-shell/lib/markdown entende o sufixo). Sem atributos → `![](src)`.
+      ResizableImage.configure({ allowBase64: false }),
       Markdown.configure({ html: false }),
     ],
     content,

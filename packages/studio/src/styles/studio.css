@@ -149,6 +149,21 @@
 }
 
 /*
+ * Ao EDITAR um campo, o Blockly abre um <input> HTML POR CIMA do campo e mantém o
+ * texto do SVG visível (eles devem coincidir pixel a pixel). Nos sockets OVAIS de
+ * valor (campos "full-block") dentro do overlay `fixed` do MODO CRIAÇÃO GUIADA, o
+ * Blockly desalinha o editor por alguns px (bug de coordenada dele — ver
+ * `patchFieldEditorAnchor` em blockly/setup.ts, que já reduz o desvio): o número do
+ * SVG aparece ATRÁS do input e vira um FANTASMA ("400" parece "4000"). Escondemos o
+ * texto do PRÓPRIO campo em edição (`.blocklyEditing` = bloco em edição; o escopo
+ * `.blocklyEditableField` NÃO alcança rótulos `.blocklyLabelField`, que seguem
+ * visíveis) — some o fantasma independentemente do px exato do editor.
+ */
+[data-sz-theme] .blocklyEditing .blocklyEditableField text.blocklyText {
+  fill-opacity: 0;
+}
+
+/*
  * Handles de resize do react-resizable-panels — sutil em repouso, claramente
  * arrastável em hover/drag. Usa um track central de 1px mas área de hit
  * generosa (toda a faixa do handle) para facilitar agarrar.

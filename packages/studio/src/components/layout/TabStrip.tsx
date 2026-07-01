@@ -18,6 +18,18 @@ export interface TabsProps {
    * Blockly, iframe do preview) ao trocar de aba.
    */
   renderPanel: (id: string) => ReactNode
+  /**
+   * Painéis que devem seguir RENDERIZADOS (compostos, dentro da viewport) quando
+   * INATIVOS — mascarados por `opacity:0` em vez de `display:none`. Necessário para
+   * o PREVIEW: o navegador PAUSA o `requestAnimationFrame` de um iframe não
+   * renderizado (`display:none`), então o loop de jogo não roda e um erro de runtime
+   * DENTRO do loop só apareceria no Console depois de abrir a aba Pré-visualização.
+   * Mantendo o preview vivo (opacity:0, inerte, atrás da aba ativa), o loop continua
+   * rodando e os erros chegam ao Console em tempo real. Mesmo motivo do rAF em
+   * `cover/coverCapture.ts`. Ausente (ex.: BottomPanel wide) = comportamento idêntico
+   * ao anterior (todo inativo vira `display:none`).
+   */
+  keepLiveIds?: ReadonlySet<string>
   ariaLabel: string
   size?: 'sm' | 'md'
   className?: string
@@ -45,6 +57,7 @@ export function Tabs({
   className,
   tablistClassName,
   rightSlot,
+  keepLiveIds,
 }: TabsProps): JSX.Element {
   const baseId = useId()
   const tabId = (id: string) => `${baseId}-tab-${id}`
@@ -110,17 +123,31 @@ export function Tabs({
         </div>
         {rightSlot && <div className="flex shrink-0 items-center">{rightSlot}</div>}
       </div>
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className={cn('min-h-0 flex-1 overflow-hidden', keepLiveIds && 'relative')}>
         {items.map((item) => {
           const selected = active === item.id
+          // Inativo mas VIVO: fica renderizado (rAF do preview segue rodando), porém
+          // imperceptível (opacity:0), inerte (fora do foco/hit-test) e sobreposto SEM
+          // interferir (pointer-events:none) — a aba ativa aparece por cima. Só quando
+          // o chamador marca o painel em `keepLiveIds`; senão, inativo = `display:none`.
+          const keepLive = !selected && (keepLiveIds?.has(item.id) ?? false)
           return (
             <div
               key={item.id}
               role="tabpanel"
               id={panelId(item.id)}
               aria-labelledby={tabId(item.id)}
-              hidden={!selected}
-              className={selected ? 'h-full' : 'hidden'}
+              // `inert` (React 19) tira o painel vivo-oculto do foco e da árvore de
+              // acessibilidade sem `display:none` (que pausaria o rAF).
+              inert={keepLive}
+              hidden={!selected && !keepLive}
+              className={
+                selected
+                  ? 'h-full'
+                  : keepLive
+                    ? 'pointer-events-none absolute inset-0 opacity-0'
+                    : 'hidden'
+              }
             >
               {renderPanel(item.id)}
             </div>

@@ -130,6 +130,42 @@ describe('renderInline (tokens)', () => {
     expect(tags).toEqual(['img', 'strong'])
   })
 
+  test('sufixo {width=NN align=xx} vira style no <img>', () => {
+    const out = renderInline('![g](https://cdn.x/g.webp){width=50 align=center}')
+    const img = el(out[0])
+    expect(img.type).toBe('img')
+    expect(img.props.src).toBe('https://cdn.x/g.webp')
+    const style = (img.props as { style?: Record<string, unknown> }).style
+    expect(style?.width).toBe('50%')
+    expect(style).toMatchObject({ display: 'block', marginLeft: 'auto', marginRight: 'auto' })
+  })
+
+  test('só width (sem align) aplica largura e mantém alinhamento natural', () => {
+    const out = renderInline('![g](https://cdn.x/g.webp){width=30}')
+    const style = (el(out[0]).props as { style?: Record<string, unknown> }).style
+    expect(style).toEqual({ width: '30%' })
+  })
+
+  test('align=right usa margem à esquerda (bloco à direita)', () => {
+    const out = renderInline('![g](https://cdn.x/g.webp){align=right}')
+    const style = (el(out[0]).props as { style?: Record<string, unknown> }).style
+    expect(style).toMatchObject({ display: 'block', marginLeft: 'auto', marginRight: '0' })
+    expect(style?.width).toBeUndefined()
+  })
+
+  test('sufixo com valores inválidos é ignorado (sem style)', () => {
+    const out = renderInline('![g](https://cdn.x/g.webp){width=999 align=diagonal}')
+    const img = el(out[0])
+    expect(img.type).toBe('img')
+    // width 999 fora de 1–100 e align inválido → nenhum style aplicado.
+    expect((img.props as { style?: unknown }).style).toBeUndefined()
+  })
+
+  test('imagem SEM sufixo continua sem style (compat)', () => {
+    const out = renderInline('![g](https://cdn.x/g.webp)')
+    expect((el(out[0]).props as { style?: unknown }).style).toBeUndefined()
+  })
+
   test('imagem javascript: NÃO vira <img> (fica texto plano)', () => {
     const out = renderInline('![x](javascript:alert(1))')
     expect(out.every((n) => !isValidElement(n) || el(n).type !== 'img')).toBe(true)
@@ -174,6 +210,10 @@ describe('UGC do aluno (anti pixel-rastreador / link off-platform)', () => {
 
   test('stripImageMarkdown remove a imagem (preserva o alt) e mantém o resto', () => {
     expect(stripImageMarkdown('veja ![gato](https://x.test/g.png) aqui')).toBe('veja gato aqui')
+    // Consome também o sufixo {width/align} (senão sobraria como texto literal).
+    expect(stripImageMarkdown('![gato](https://x.test/g.png){width=50 align=center} fim')).toBe(
+      'gato fim',
+    )
     expect(stripImageMarkdown('só texto **negrito**')).toBe('só texto **negrito**')
     // esquema não-http não é tocado (já não viraria <img> no render mesmo)
     expect(stripImageMarkdown('![x](javascript:alert(1))')).toBe('![x](javascript:alert(1))')
