@@ -18,12 +18,83 @@ import { useEffect, useMemo, useState } from 'react'
 //
 // O host NÃO seta data-sz-theme no <html>: o tema é escopado pelo root do
 // <Studio> — o toggle da Topbar muda SÓ a área do editor, provando o isolamento.
-type View = { name: 'list' } | { name: 'editor'; projectId: string } | { name: 'dual' }
+type View =
+  | { name: 'list' }
+  | { name: 'editor'; projectId: string }
+  | { name: 'dual' }
+  | { name: 'guided' }
 
 function parseViewFromLocation(): View {
   if (window.location.pathname === '/dual') return { name: 'dual' }
+  if (window.location.pathname === '/guided') return { name: 'guided' }
   const match = window.location.pathname.match(/^\/editor\/(.+)$/)
   return match?.[1] ? { name: 'editor', projectId: decodeURIComponent(match[1]) } : { name: 'list' }
+}
+
+// REPRO TEMPORÁRIO (modo criação guiada): overlay `fixed inset-0` + grid 2 colunas,
+// StudioEditor na DIREITA (layout NARROW). Semeia um bloco de valor p/ clicar e medir o
+// deslocamento do editor de campo do Blockly. Em /guided.
+function GuidedView(): JSX.Element {
+  const [project] = useState(() => {
+    const p = createEmptyProject('guided-repro', 'Repro Guiada')
+    const bs = p.blocksState as { blocks: { blocks: unknown[] } }
+    bs.blocks.blocks.push({ type: 'sz_val_number', x: 40, y: 40, fields: { NUM: 400 } })
+    return p
+  })
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        flexDirection: 'column',
+        background: '#eef',
+      }}
+    >
+      <div style={{ padding: 8, borderBottom: '1px solid #99a' }}>Repro do modo criação guiada</div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 12,
+          padding: 12,
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ background: '#cdf', display: 'grid', placeItems: 'center' }}>
+          VÍDEO (coluna esquerda)
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flex: 1,
+              minHeight: 0,
+              border: '1px solid #99a',
+              padding: 12,
+              background: '#fff',
+            }}
+          >
+            <div
+              style={{
+                isolation: 'isolate',
+                overflow: 'hidden',
+                flex: 1,
+                minHeight: 0,
+                border: '1px solid #99a',
+              }}
+            >
+              <StudioEditor initialProject={project} persistence="none" theme="light" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 type EditorState =
@@ -166,6 +237,9 @@ export function App(): JSX.Element {
 
   if (view.name === 'dual') {
     return <DualView />
+  }
+  if (view.name === 'guided') {
+    return <GuidedView />
   }
   if (view.name === 'editor') {
     return <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
