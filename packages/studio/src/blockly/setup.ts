@@ -30,10 +30,12 @@ let initialized = false
  * por um caminho que ERRA o X quando o workspace está rolado horizontalmente dentro
  * do overlay `fixed` do **modo criação guiada**: o `<input>` abre deslocado (~1 dígito
  * à esquerda) e se sobrepõe ao número desenhado no SVG — "400" vira um "4000" fantasma,
- * com o contorno de seleção puxado p/ a esquerda. O bounding box AO VIVO do SVG do
- * campo (`getBoundingClientRect`) é sempre correto; ancoramos o editor nele. Só para
- * campos full-block (os demais já usam o `borderRect_` ao vivo e ficam intactos).
- * Idempotente (guardado por `initialized`). Ver [[studio-campos-valor-ovais]].
+ * com o contorno de seleção puxado p/ a esquerda. Para um campo full-block o editor
+ * deve cobrir o BLOCO INTEIRO (o oval) — usamos o bounding box AO VIVO do SVG do
+ * BLOCO-fonte (`getBoundingClientRect`), que é sempre correto em posição E tamanho.
+ * Assim o `<input>` preenche todo o campo (como nos outros modos) E fica alinhado.
+ * Só para campos full-block (os demais já usam o `borderRect_` ao vivo e ficam
+ * intactos). Idempotente (guardado por `initialized`). Ver [[studio-campos-valor-ovais]].
  */
 function patchFieldEditorAnchor(): void {
   // `getScaledBBox`/`isFullBlockField` vivem na base `Field` (o `FieldInput` abstrato
@@ -43,13 +45,16 @@ function patchFieldEditorAnchor(): void {
   const proto = Blockly.Field.prototype as unknown as {
     getScaledBBox: () => Blockly.utils.Rect
     isFullBlockField: () => boolean
-    getSvgRoot: () => SVGGElement | null
+    getSourceBlock: () => { getSvgRoot?: () => SVGGElement | null } | null
   }
   const original = proto.getScaledBBox
   proto.getScaledBBox = function (this: typeof proto): Blockly.utils.Rect {
     try {
       if (this.isFullBlockField()) {
-        const rect = this.getSvgRoot()?.getBoundingClientRect()
+        // O campo full-block PREENCHE o bloco: o rect AO VIVO do bloco (o oval) dá a
+        // posição E o tamanho corretos — o editor cobre todo o campo (o SVG do campo
+        // sozinho seria só o texto → editor minúsculo).
+        const rect = this.getSourceBlock()?.getSvgRoot?.()?.getBoundingClientRect()
         if (rect && rect.width > 0 && rect.height > 0) {
           return new Blockly.utils.Rect(rect.top, rect.bottom, rect.left, rect.right)
         }

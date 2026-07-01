@@ -58,3 +58,6 @@ playwright-report/
 
 # Temporários de sessão (scripts de operação, segredos efêmeros)
 .tmp/
+
+# Screenshots/rascunhos soltos no root do monorepo (assets reais vivem em packages/*/public)
+/*.png

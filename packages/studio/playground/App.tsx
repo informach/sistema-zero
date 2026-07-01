@@ -31,9 +31,7 @@ function parseViewFromLocation(): View {
   return match?.[1] ? { name: 'editor', projectId: decodeURIComponent(match[1]) } : { name: 'list' }
 }
 
-// REPRO TEMPORÁRIO (modo criação guiada): overlay `fixed inset-0` + grid 2 colunas,
-// StudioEditor na DIREITA (layout NARROW). Semeia um bloco de valor p/ clicar e medir o
-// deslocamento do editor de campo do Blockly. Em /guided.
+// REPRO TEMPORÁRIO do modo criação guiada (overlay fixed + coluna estreita). Em /guided.
 function GuidedView(): JSX.Element {
   const [project] = useState(() => {
     const p = createEmptyProject('guided-repro', 'Repro Guiada')
@@ -41,80 +39,24 @@ function GuidedView(): JSX.Element {
     bs.blocks.blocks.push({ type: 'sz_val_number', x: 40, y: 40, fields: { NUM: 400 } })
     return p
   })
-  const params = new URLSearchParams(window.location.search)
-  // CONTROLES p/ bisseccionar o bug do editor de campo:
-  //   ?plain        → SEM overlay fixed, largura TOTAL (layout wide) — imita o modo normal.
-  //   ?plain&narrow → SEM overlay fixed, mas em coluna estreita (layout narrow, não-fixo).
-  if (params.has('plain')) {
-    const narrow = params.has('narrow')
-    return (
-      <div style={{ height: '100vh', display: 'flex', padding: 12, background: '#eef' }}>
-        <div
-          style={{
-            isolation: 'isolate',
-            overflow: 'hidden',
-            flex: narrow ? undefined : 1,
-            width: narrow ? 380 : undefined,
-            minHeight: 0,
-            border: '1px solid #99a',
-          }}
-        >
-          <StudioEditor initialProject={project} persistence="none" theme="light" />
-        </div>
-      </div>
-    )
-  }
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: 50,
-        display: 'flex',
-        flexDirection: 'column',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 12,
+        padding: 12,
         background: '#eef',
       }}
     >
-      <div style={{ padding: 8, borderBottom: '1px solid #99a' }}>Repro do modo criação guiada</div>
+      <div style={{ background: '#cdf', display: 'grid', placeItems: 'center' }}>VÍDEO</div>
       <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 12,
-          padding: 12,
-          flex: 1,
-          minHeight: 0,
-          overflow: 'hidden',
-        }}
+        style={{ isolation: 'isolate', overflow: 'hidden', minHeight: 0, border: '1px solid #99a' }}
       >
-        <div style={{ background: '#cdf', display: 'grid', placeItems: 'center' }}>
-          VÍDEO (coluna esquerda)
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              flex: 1,
-              minHeight: 0,
-              border: '1px solid #99a',
-              padding: 12,
-              background: '#fff',
-            }}
-          >
-            <div
-              style={{
-                isolation: 'isolate',
-                overflow: 'hidden',
-                flex: 1,
-                minHeight: 0,
-                border: '1px solid #99a',
-              }}
-            >
-              <StudioEditor initialProject={project} persistence="none" theme="light" />
-            </div>
-          </div>
-        </div>
+        <StudioEditor initialProject={project} persistence="none" theme="light" />
       </div>
     </div>
   )
