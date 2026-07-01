@@ -1,4 +1,37 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
+
+/**
+ * Estilo de uma imagem a partir do sufixo de atributos `{width=NN align=xx}` do
+ * markdown (autoria do admin). `width` = 1–100 (percentual da coluna); `align` =
+ * left|center|right (alinhamento em BLOCO por margem — espelha o NodeView do
+ * editor). Valores inválidos são ignorados → `undefined` (tamanho/posição natural).
+ */
+export function imageStyleFromAttrs(raw: string | undefined): CSSProperties | undefined {
+  if (!raw) return undefined
+  const style: CSSProperties = {}
+  for (const part of raw.trim().split(/\s+/)) {
+    const [k, v] = part.split('=')
+    if (k === 'width' && v) {
+      const n = Number.parseInt(v, 10)
+      if (Number.isFinite(n) && n >= 1 && n <= 100) style.width = `${n}%`
+    } else if (k === 'align' && v) {
+      if (v === 'center') {
+        style.display = 'block'
+        style.marginLeft = 'auto'
+        style.marginRight = 'auto'
+      } else if (v === 'right') {
+        style.display = 'block'
+        style.marginLeft = 'auto'
+        style.marginRight = '0'
+      } else if (v === 'left') {
+        style.display = 'block'
+        style.marginLeft = '0'
+        style.marginRight = 'auto'
+      }
+    }
+  }
+  return Object.keys(style).length > 0 ? style : undefined
+}
 
 /** Opções de renderização inline (compartilhadas por `renderMarkdown`). */
 export interface RenderInlineOpts {
@@ -28,8 +61,10 @@ export interface RenderInlineOpts {
  * headings 1-3, listas `-`/`*` e numeradas `1.`, citação `> `, código
  * inline/fenced, negrito, itálico (`*x*`/`_x_`), links e imagens `![alt](url)`
  * — links e imagens só com esquema http(s) (esquema inválido cai como texto
- * literal). É o ALVO do editor TipTap do admin (saída markdown) — token novo na
- * toolbar de lá exige suporte aqui. Consumido pelo bloco `rich_text`
+ * literal). Imagens aceitam o sufixo OPCIONAL `{width=NN align=left|center|right}`
+ * (autoria do admin — largura % e alinhamento em bloco; valores validados via
+ * `imageStyleFromAttrs`). É o ALVO do editor TipTap do admin (saída markdown) —
+ * token novo na toolbar de lá exige suporte aqui. Consumido pelo bloco `rich_text`
  * (`lesson-blocks.tsx`) e pelo bloco `quiz` (`quiz-block.tsx`).
  *
  * ⚠️ Para CONTEÚDO DO ALUNO (UGC do hub) use `renderUgcMarkdown` (modo restrito:
@@ -170,7 +205,9 @@ export function renderUgcMarkdown(md: string): ReactNode[] {
  * inválido já cai como texto literal e não vira `<img>`. PURO/testável.
  */
 export function stripImageMarkdown(md: string): string {
-  return md.replace(/!\[([^\]]*)\]\(https?:\/\/[^\s)]+\)/g, '$1')
+  // Também consome o sufixo opcional `{width=… align=…}` — senão sobraria como
+  // texto literal no corpo do UGC.
+  return md.replace(/!\[([^\]]*)\]\(https?:\/\/[^\s)]+\)(?:\{[^}]*\})?/g, '$1')
 }
 
 /**
@@ -185,7 +222,7 @@ export function stripImageMarkdown(md: string): string {
 export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNode[] {
   const parts: ReactNode[] = []
   const pattern =
-    /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`|!\[[^\]]*\]\(https?:\/\/[^\s)]+\)|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g
+    /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`|!\[[^\]]*\]\(https?:\/\/[^\s)]+\)(?:\{[^}]*\})?|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g
   let last = 0
   let key = 0
   for (const match of text.matchAll(pattern)) {
@@ -199,7 +236,8 @@ export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNo
     } else if (token.startsWith('`')) {
       parts.push(<code key={`i-${key++}`}>{token.slice(1, -1)}</code>)
     } else if (token.startsWith('![')) {
-      const img = token.match(/^!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)$/)
+      // Grupo 3 = sufixo opcional `{width=NN align=xx}` (autoria do admin — tamanho/alinhamento).
+      const img = token.match(/^!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)(?:\{([^}]*)\})?$/)
       if (img?.[2]) {
         if (opts.dropImages) {
           // UGC: não embute `<img>` externo (pixel-rastreador). Só o texto alternativo.
@@ -207,7 +245,16 @@ export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNo
         } else {
           // <img> (não next/image): URLs externas arbitrárias da autoria, sem remotePatterns;
           // a CSP dos apps libera img-src https:. Esquema != http(s) já caiu como texto acima.
-          parts.push(<img key={`img-${key++}`} src={img[2]} alt={img[1] ?? ''} loading="lazy" />)
+          // O sufixo `{...}` define largura%/alinhamento (via style; valores validados).
+          parts.push(
+            <img
+              key={`img-${key++}`}
+              src={img[2]}
+              alt={img[1] ?? ''}
+              loading="lazy"
+              style={imageStyleFromAttrs(img[3])}
+            />,
+          )
         }
       } else {
         parts.push(token)

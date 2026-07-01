@@ -327,7 +327,9 @@ export function PerfisClient({
             </Button>
           </>
         ) : (
-          <Button variant="ghost" onClick={openParentArea} disabled={busy}>
+          // `outline` (não `ghost`): a "Área dos pais" é a ação da tela e precisa PARECER
+          // botão (borda + fundo), não texto solto.
+          <Button variant="outline" onClick={openParentArea} disabled={busy}>
             Área dos pais
           </Button>
         )}

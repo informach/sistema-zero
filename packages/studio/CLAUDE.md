@@ -48,7 +48,14 @@ layout é a largura do PRÓPRIO root, via `ResizeObserver` (`src/studio/layoutCo
   renderiza um `NarrowPanels` (`src/components/layout/NarrowPanels.tsx`) — UMA tira de abas plana:
   editores do modo (Blocos/Código) → Pré-visualização → Console/Terminal/IA. O explorador de arquivos
   (modos Código) vira GAVETA sobreposta (botão "Arquivos"). O `TabStrip` mantém TODOS os painéis montados
-  (só alterna `hidden`), igual ao wide — preserva xterm/Monaco/Blockly/iframe ao trocar de aba.
+  (só alterna `hidden`), igual ao wide — preserva xterm/Monaco/Blockly/iframe ao trocar de aba. ⚠️ **EXCEÇÃO
+  do preview:** a aba **Pré-visualização** é `keepLiveIds` no `TabStrip` — quando INATIVA fica RENDERIZADA
+  (composta, na viewport) mascarada por `absolute inset-0 opacity-0 pointer-events-none` + `inert`, NÃO
+  `display:none`. Motivo: o navegador PAUSA o `requestAnimationFrame` de um iframe não renderizado, então um
+  erro de runtime DENTRO do loop de jogo só apareceria no Console depois de abrir a aba do preview (bug do
+  "console só atualiza depois de ver a pré-visualização"). Mantendo o preview vivo, o loop roda em background
+  e os erros chegam ao Console em tempo real. Mesmo motivo do rAF em `cover/coverCapture.ts` (opacity:0 =
+  composto; visibility/display = pausado). ⚠️ verificar em BROWSER real (headless NÃO estrangula o rAF).
 - **compact** (<440): só micro-ajustes de identidade na Topbar (logo vira símbolo, badge vira bolinha).
 
 **Responsividade POR SEÇÃO (não pela página)**: o cabeçalho do Monaco e a barra do Preview compactam
