@@ -18,48 +18,12 @@ import { useEffect, useMemo, useState } from 'react'
 //
 // O host NÃO seta data-sz-theme no <html>: o tema é escopado pelo root do
 // <Studio> — o toggle da Topbar muda SÓ a área do editor, provando o isolamento.
-type View =
-  | { name: 'list' }
-  | { name: 'editor'; projectId: string }
-  | { name: 'dual' }
-  | { name: 'guided' }
+type View = { name: 'list' } | { name: 'editor'; projectId: string } | { name: 'dual' }
 
 function parseViewFromLocation(): View {
   if (window.location.pathname === '/dual') return { name: 'dual' }
-  if (window.location.pathname === '/guided') return { name: 'guided' }
   const match = window.location.pathname.match(/^\/editor\/(.+)$/)
   return match?.[1] ? { name: 'editor', projectId: decodeURIComponent(match[1]) } : { name: 'list' }
-}
-
-// REPRO TEMPORÁRIO do modo criação guiada (overlay fixed + coluna estreita). Em /guided.
-function GuidedView(): JSX.Element {
-  const [project] = useState(() => {
-    const p = createEmptyProject('guided-repro', 'Repro Guiada')
-    const bs = p.blocksState as { blocks: { blocks: unknown[] } }
-    bs.blocks.blocks.push({ type: 'sz_val_number', x: 40, y: 40, fields: { NUM: 400 } })
-    return p
-  })
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 50,
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 12,
-        padding: 12,
-        background: '#eef',
-      }}
-    >
-      <div style={{ background: '#cdf', display: 'grid', placeItems: 'center' }}>VÍDEO</div>
-      <div
-        style={{ isolation: 'isolate', overflow: 'hidden', minHeight: 0, border: '1px solid #99a' }}
-      >
-        <StudioEditor initialProject={project} persistence="none" theme="light" />
-      </div>
-    </div>
-  )
 }
 
 type EditorState =
@@ -202,9 +166,6 @@ export function App(): JSX.Element {
 
   if (view.name === 'dual') {
     return <DualView />
-  }
-  if (view.name === 'guided') {
-    return <GuidedView />
   }
   if (view.name === 'editor') {
     return <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />

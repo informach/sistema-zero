@@ -64,6 +64,45 @@ function patchFieldEditorAnchor(): void {
     }
     return original.call(this)
   }
+
+  // Mesmo com o bbox correto, o `resizeEditor_` do Blockly ainda desloca o WidgetDiv
+  // uns px à esquerda no overlay `fixed` do modo guiado (a conta interna dele soma um
+  // offset de scroll/scale que erra ali). Depois que ele posiciona, ENCAIXAMOS o
+  // WidgetDiv EXATAMENTE sobre o rect ao vivo do bloco (o oval) — para campos
+  // full-block. `WidgetDiv` é absoluto no `document.body` (origem 0,0), então o rect
+  // de viewport do oval é a coordenada certa. `resizeEditor_` roda a cada mudança do
+  // workspace enquanto edita, então o encaixe se mantém.
+  // `FieldInput`/`FieldTextInput` não são exportados em runtime; pegamos a classe do
+  // campo `field_number` pelo REGISTRY e subimos a cadeia de protótipos até quem
+  // DEFINE `resizeEditor_` (o `FieldInput` base). Patch lá vale p/ número E texto.
+  const numberFieldCls = Blockly.registry.getClass(Blockly.registry.Type.FIELD, 'field_number') as
+    | (new (
+        ...a: unknown[]
+      ) => unknown)
+    | null
+  let inputProto: Record<string, unknown> | null = numberFieldCls?.prototype ?? null
+  while (inputProto && !Object.hasOwn(inputProto, 'resizeEditor_')) {
+    inputProto = Object.getPrototypeOf(inputProto)
+  }
+  if (inputProto && typeof inputProto.resizeEditor_ === 'function') {
+    const originalResize = inputProto.resizeEditor_ as (this: typeof proto) => void
+    inputProto.resizeEditor_ = function (this: typeof proto): void {
+      originalResize.call(this)
+      try {
+        if (!this.isFullBlockField()) return
+        const rect = this.getSourceBlock()?.getSvgRoot?.()?.getBoundingClientRect()
+        const div = Blockly.WidgetDiv.getDiv()
+        if (div && rect && rect.width > 0 && rect.height > 0) {
+          div.style.left = `${rect.left}px`
+          div.style.top = `${rect.top}px`
+          div.style.width = `${rect.width}px`
+          div.style.height = `${rect.height}px`
+        }
+      } catch {
+        // Sem encaixe se algo faltar — o posicionamento nativo (já ~ok) permanece.
+      }
+    }
+  }
 }
 
 /**
