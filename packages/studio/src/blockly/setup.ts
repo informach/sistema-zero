@@ -24,6 +24,44 @@ import { szTheme } from './theme'
 let initialized = false
 
 /**
+ * Corrige o ANCORAMENTO do editor de campo (o `<input>` que abre ao clicar num campo
+ * de texto/número). Nossos sockets OVAIS de valor são campos "full-block" (o
+ * `borderRect_` do campo tem tamanho ZERO) → o Blockly calcula a posição do editor
+ * por um caminho que ERRA o X quando o workspace está rolado horizontalmente dentro
+ * do overlay `fixed` do **modo criação guiada**: o `<input>` abre deslocado (~1 dígito
+ * à esquerda) e se sobrepõe ao número desenhado no SVG — "400" vira um "4000" fantasma,
+ * com o contorno de seleção puxado p/ a esquerda. O bounding box AO VIVO do SVG do
+ * campo (`getBoundingClientRect`) é sempre correto; ancoramos o editor nele. Só para
+ * campos full-block (os demais já usam o `borderRect_` ao vivo e ficam intactos).
+ * Idempotente (guardado por `initialized`). Ver [[studio-campos-valor-ovais]].
+ */
+function patchFieldEditorAnchor(): void {
+  // `getScaledBBox`/`isFullBlockField` vivem na base `Field` (o `FieldInput` abstrato
+  // não é exportado em runtime). O gate `isFullBlockField()` restringe a mudança aos
+  // campos que ocupam o bloco inteiro (nossos sockets de valor); os demais seguem
+  // pelo `borderRect_` ao vivo do Blockly, intactos.
+  const proto = Blockly.Field.prototype as unknown as {
+    getScaledBBox: () => Blockly.utils.Rect
+    isFullBlockField: () => boolean
+    getSvgRoot: () => SVGGElement | null
+  }
+  const original = proto.getScaledBBox
+  proto.getScaledBBox = function (this: typeof proto): Blockly.utils.Rect {
+    try {
+      if (this.isFullBlockField()) {
+        const rect = this.getSvgRoot()?.getBoundingClientRect()
+        if (rect && rect.width > 0 && rect.height > 0) {
+          return new Blockly.utils.Rect(rect.top, rect.bottom, rect.left, rect.right)
+        }
+      }
+    } catch {
+      // Qualquer surpresa cai no cálculo nativo do Blockly.
+    }
+    return original.call(this)
+  }
+}
+
+/**
  * Registra o item "Organizar blocos" no menu de contexto do workspace —
  * arruma as pilhas HTML/CSS/JS em colunas que não se sobrepõem (ver
  * `organizeBlocks`). Idempotente: ignora se já registrado.
@@ -129,6 +167,9 @@ export function ensureBlocklyInitialized(): void {
   // Blockly 11 removeu FieldColour do core — registramos o plugin oficial
   // para que `field_colour` continue funcionando (usado por extensões) e
   // adicionamos `field_colour_sz` com paleta MakeCode + input HEX.
+  // Ancoramento correto do editor de campo full-block (ver função). Antes de qualquer
+  // instância de campo abrir seu editor.
+  patchFieldEditorAnchor()
   registerFieldColour()
   registerFieldColourSZ()
   // Campo de seleção de imagem (asset) dos blocos de Jogo 2D. Registrado ANTES da

@@ -41,6 +41,29 @@ function GuidedView(): JSX.Element {
     bs.blocks.blocks.push({ type: 'sz_val_number', x: 40, y: 40, fields: { NUM: 400 } })
     return p
   })
+  const params = new URLSearchParams(window.location.search)
+  // CONTROLES p/ bisseccionar o bug do editor de campo:
+  //   ?plain        → SEM overlay fixed, largura TOTAL (layout wide) — imita o modo normal.
+  //   ?plain&narrow → SEM overlay fixed, mas em coluna estreita (layout narrow, não-fixo).
+  if (params.has('plain')) {
+    const narrow = params.has('narrow')
+    return (
+      <div style={{ height: '100vh', display: 'flex', padding: 12, background: '#eef' }}>
+        <div
+          style={{
+            isolation: 'isolate',
+            overflow: 'hidden',
+            flex: narrow ? undefined : 1,
+            width: narrow ? 380 : undefined,
+            minHeight: 0,
+            border: '1px solid #99a',
+          }}
+        >
+          <StudioEditor initialProject={project} persistence="none" theme="light" />
+        </div>
+      </div>
+    )
+  }
   return (
     <div
       style={{
