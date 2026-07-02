@@ -10,7 +10,6 @@
     "test": "bun test src",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "harness": "vite --config harness/vite.config.ts",
     "remotion": "remotion studio remotion/index.ts",
     "aula": "bun run src/cli.ts",
     "aula:voz": "bun run src/cli.ts voz",

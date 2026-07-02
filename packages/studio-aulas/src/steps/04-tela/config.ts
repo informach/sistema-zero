@@ -1,25 +1,23 @@
-// Configuração compartilhada entre o driver e o harness.
+// Configuração da gravação. Grava no PLAYGROUND REAL do Estúdio (packages/studio,
+// `bun run --filter @sistemazero/studio dev`, porta 5173) — a automação é injetada
+// nele via /@fs/ do Vite. Não há app/harness próprio.
 
-export const HARNESS_PORT = 5273
-export const HARNESS_HOST = '127.0.0.1'
-export const HARNESS_URL = `http://${HARNESS_HOST}:${HARNESS_PORT}`
+export const PLAYGROUND_PORT = 5173
+export const PLAYGROUND_HOST = '127.0.0.1'
+export const PLAYGROUND_URL = `http://${PLAYGROUND_HOST}:${PLAYGROUND_PORT}`
 
-/** Resolução da gravação da tela (16:9). */
+/** Resolução da gravação (16:9). */
 export const TELA_LARGURA = 1280
 export const TELA_ALTURA = 720
 
 /** Ritmo didático (ms). Lento de propósito — a criança precisa acompanhar. */
 export const RITMO = {
-  /** Movimento do cursor entre dois pontos. */
   cursorMs: 900,
-  /** Pausa após abrir uma categoria (a criança lê os blocos). */
   aposCategoriaMs: 800,
-  /** Pausa após encaixar um bloco. */
-  aposEncaixeMs: 700,
-  /** Pausa após configurar um campo. */
-  aposCampoMs: 600,
+  aposEncaixeMs: 800,
+  aposCampoMs: 700,
   /** Quanto tempo um balão fica na tela. */
-  balaoMs: 2600,
-  /** Duração padrão do "testar" (rodar o preview). */
-  testarMs: 2500,
+  balaoMs: 2800,
+  /** Duração padrão do "testar" (mostra o preview, roda, esconde). */
+  testarMs: 3000,
 } as const

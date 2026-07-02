@@ -5,24 +5,51 @@ import { type Browser, type BrowserContext, chromium, type Page } from '@playwri
 import { loadRoteiroFile } from '../../roteiro/parse'
 import type { Cena } from '../../roteiro/schema'
 import { aviso, etapa, ok, passo } from '../../util/log'
-import { assertAulaExiste, aulaPaths, PACKAGE_ROOT } from '../../util/paths'
-import { HARNESS_URL, RITMO, TELA_ALTURA, TELA_LARGURA } from './config'
+import { AUTOMATION_FILE, assertAulaExiste, aulaPaths, REPO_ROOT } from '../../util/paths'
+import { PLAYGROUND_URL, RITMO, TELA_ALTURA, TELA_LARGURA } from './config'
 import type { TelaBalao, TelaCenaRange, TelaTimeline } from './timeline'
 
-/** Sobe o harness Vite e resolve quando responder. Devolve um `parar()`. */
-async function subirHarness(): Promise<() => void> {
+// URL /@fs/ do módulo de automação (Vite serve arquivos do monorepo por caminho
+// absoluto com barras normais). Injetado no playground → resolve blockly/studio
+// para a MESMA instância do editor.
+const INJECT_URL = `/@fs/${AUTOMATION_FILE.replace(/\\/g, '/')}`
+
+/**
+ * Espelho ESTRUTURAL da AulasAPI do harness (harness/automation.ts) — duplicado
+ * de PROPÓSITO: importar o tipo de lá puxaria o harness (Blockly/JSX) para o
+ * typecheck do CI, que cobre só src/ (gotcha 3 do CLAUDE.md). Os callbacks do
+ * page.evaluate rodam NO BROWSER, onde o módulo injetado define globalThis.__aulas.
+ */
+interface AulasNoBrowser {
+  esperarPronto(): Promise<boolean>
+  criarProjetoAula(id: string, nome: string, extensoes: string[]): Promise<string>
+  esconderPreview(): Promise<void>
+  abrirCategoria(nome: string): Promise<void>
+  pegarBloco(tipo: string, encaixarEm?: string): Promise<unknown>
+  configurarCampo(campo: string, valor: string | number, tipo?: string): Promise<void>
+  zoom(nivel: 'perto' | 'longe' | 'ajustar' | number): Promise<void>
+  medirAncora(bloco: string, campo?: string): Promise<AncoraMedida | null>
+  testar(ms: number): Promise<void>
+}
+
+declare global {
+  // Só existe no contexto do BROWSER (após o injetar); o pipeline Node nunca o lê.
+  var __aulas: AulasNoBrowser
+}
+
+/** Sobe o playground REAL do Estúdio (porta 5173) e resolve quando responder. */
+async function subirPlayground(): Promise<() => void> {
   // node:child_process (não Bun.spawn): este módulo roda sob NODE (o Playwright
-  // não conecta o pipe de debug sob Bun). O Vite em si segue rodando via `bun`.
-  const proc: ChildProcess = spawn('bun', ['x', 'vite', '--config', 'harness/vite.config.ts'], {
-    cwd: PACKAGE_ROOT,
+  // não conecta o pipe de debug sob Bun). O Vite do playground roda via `bun`.
+  const proc: ChildProcess = spawn('bun', ['run', '--filter', '@sistemazero/studio', 'dev'], {
+    cwd: REPO_ROOT,
     stdio: 'inherit',
     shell: true, // Windows: acha o bun.exe no PATH
   })
   const parar = () => {
     try {
-      // No Windows, matar só o pid (do shell) deixa vite/esbuild órfãos segurando
-      // a porta. taskkill /T mata a árvore inteira.
       if (process.platform === 'win32' && proc.pid) {
+        // taskkill /T mata a árvore (o kill do pid do shell deixa vite/esbuild órfãos).
         spawnSync('taskkill', ['/pid', String(proc.pid), '/T', '/F'])
       } else {
         proc.kill()
@@ -31,24 +58,32 @@ async function subirHarness(): Promise<() => void> {
       /* já morto */
     }
   }
-  const limite = Date.now() + 60_000
+  const limite = Date.now() + 90_000
   while (Date.now() < limite) {
     try {
-      const res = await fetch(HARNESS_URL)
+      const res = await fetch(PLAYGROUND_URL)
       if (res.ok) return parar
     } catch {
       /* ainda subindo */
     }
-    await new Promise((r) => setTimeout(r, 500))
+    await new Promise((r) => setTimeout(r, 600))
   }
   parar()
-  throw new Error('Harness Vite não respondeu em 60s')
+  throw new Error('Playground do Estúdio não respondeu em 90s')
+}
+
+/** Injeta o módulo de automação (window.__aulas) na página atual, via /@fs/. */
+async function injetar(page: Page): Promise<void> {
+  await page.evaluate((url) => import(/* @vite-ignore */ url), INJECT_URL)
+  const ok = await page.evaluate(() => Boolean(globalThis.__aulas))
+  if (!ok) throw new Error('automação não carregou (window.__aulas ausente)')
 }
 
 /**
- * Etapa 4 — grava o passo a passo da tela do Estúdio (só as cenas de PRÁTICA),
- * com cursor animado e encaixe confiável, e escreve a timeline (faixas de cena +
- * balões com coordenadas) para a montagem.
+ * Etapa 4 — grava o passo a passo no PLAYGROUND REAL do Estúdio: semeia um
+ * projeto vazio (com Jogo 2D), esconde o preview (blocos ocupam a tela toda),
+ * arrasta os blocos de verdade com zoom e destaque, e escreve a timeline
+ * (faixas de cena + balões com coordenadas + escala) para a montagem.
  */
 export async function gravarTela(slug: string): Promise<TelaTimeline> {
   const paths = aulaPaths(slug)
@@ -61,9 +96,9 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
 
   mkdirSync(paths.telaDir, { recursive: true })
   etapa(`Tela — ${roteiro.meta.titulo}`)
-  const pararHarness = await subirHarness()
+  const pararPlayground = await subirPlayground()
 
-  const ext = roteiro.meta.extensoes.join(',')
+  const projetoId = `aula-gravacao-${slug}`
   const cenasRange: TelaCenaRange[] = []
   const baloes: TelaBalao[] = []
   let browser: Browser | undefined
@@ -71,28 +106,41 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
   let videoPath: string | null = null
 
   try {
-    // Headful de propósito: no Windows o chrome-headless-shell trava no launch
-    // (Timeout ...ms). O Chromium completo (headed) é confiável e grava vídeo
-    // igual — e numa ferramenta LOCAL ver a janela montando a aula até ajuda.
+    // Headful: no Windows o chrome-headless-shell trava no launch; o Chromium
+    // completo (headed) é confiável e grava vídeo igual.
     browser = await chromium.launch({ headless: false })
     context = await browser.newContext({
       viewport: { width: TELA_LARGURA, height: TELA_ALTURA },
       recordVideo: { dir: paths.telaDir, size: { width: TELA_LARGURA, height: TELA_ALTURA } },
     })
+    const page = await context.newPage()
+    page.setDefaultTimeout(120_000)
+
+    // 1. Semeia um projeto de gravação (vazio + extensões) na lista do playground.
+    await page.goto(PLAYGROUND_URL, { waitUntil: 'domcontentloaded' })
+    await injetar(page)
+    await page.evaluate(([id, nome, ext]) => globalThis.__aulas.criarProjetoAula(id, nome, ext), [
+      projetoId,
+      `Aula: ${roteiro.meta.titulo}`,
+      roteiro.meta.extensoes,
+    ] as [string, string, string[]])
+
+    // 2. Abre o editor desse projeto e re-injeta a automação.
+    await page.goto(`${PLAYGROUND_URL}/editor/${encodeURIComponent(projetoId)}`, {
+      waitUntil: 'domcontentloaded',
+    })
+    await injetar(page)
+    const pronto = await page.evaluate(() => globalThis.__aulas.esperarPronto())
+    if (!pronto) throw new Error('Blockly não ficou pronto no editor')
+    await page.waitForTimeout(2500) // editor assenta (frames, layout medido)
+
+    // 3. Esconde o preview → os blocos ocupam a tela toda (nada atrás do preview).
+    await page.evaluate(() => globalThis.__aulas.esconderPreview())
+    await page.waitForTimeout(700)
+
+    // 4. A gravação começa a contar AQUI (após tudo pronto e preview escondido).
     const videoT0 = Date.now()
     const agora = () => Date.now() - videoT0
-
-    const page = await context.newPage()
-    await page.goto(`${HARNESS_URL}/?ext=${encodeURIComponent(ext)}`)
-    // Compile a frio do Estúdio (Monaco/Blockly) pode passar de 30s.
-    await page.waitForFunction(() => Boolean((globalThis as any).__aulas), null, {
-      timeout: 120_000,
-    })
-    const pronto = await page.evaluate(() => (globalThis as any).__aulas.esperarPronto())
-    if (!pronto) throw new Error('Blockly não ficou pronto no harness')
-    // Deixa o editor assentar (render dos frames, layout medido).
-    await page.waitForTimeout(2500)
-
     for (const cena of praticas) {
       passo(`cena ${cena.id}`)
       const inicioMs = agora()
@@ -102,14 +150,14 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
       cenasRange.push({ id: cena.id, inicioMs, fimMs: agora() })
     }
   } finally {
-    // Limpeza sempre — inclusive se o launch/goto falhar (senão o Vite fica órfão).
+    // Limpeza sempre — inclusive se algo falhar (senão o Vite fica órfão).
     if (context) {
       const video = context.pages()[0]?.video()
       await context.close()
       if (video) videoPath = await video.path()
     }
     await browser?.close()
-    pararHarness()
+    pararPlayground()
     if (videoPath) renameSync(videoPath, join(paths.telaDir, 'tela.webm'))
   }
 
@@ -127,6 +175,8 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
   return timeline
 }
 
+type AncoraMedida = { x: number; y: number; w: number; h: number; escala: number }
+
 async function executarAcao(
   page: Page,
   cena: Cena,
@@ -136,16 +186,13 @@ async function executarAcao(
 ): Promise<void> {
   switch (acao.tipo) {
     case 'abrirCategoria': {
-      await page.evaluate(
-        (n: string) => (globalThis as any).__aulas.abrirCategoria(n),
-        acao.categoria,
-      )
+      await page.evaluate((n: string) => globalThis.__aulas.abrirCategoria(n), acao.categoria)
       await page.waitForTimeout(RITMO.aposCategoriaMs)
       return
     }
     case 'pegarBloco': {
       await page.evaluate(
-        ([t, e]: [string, string | undefined]) => (globalThis as any).__aulas.pegarBloco(t, e),
+        ([t, e]: [string, string | undefined]) => globalThis.__aulas.pegarBloco(t, e),
         [acao.bloco, acao.encaixarEm] as [string, string | undefined],
       )
       await page.waitForTimeout(RITMO.aposEncaixeMs)
@@ -154,23 +201,27 @@ async function executarAcao(
     case 'configurarCampo': {
       await page.evaluate(
         ([c, v, t]: [string, string | number, string | undefined]) =>
-          (globalThis as any).__aulas.configurarCampo(c, v, t),
+          globalThis.__aulas.configurarCampo(c, v, t),
         [acao.campo, acao.valor, acao.bloco] as [string, string | number, string | undefined],
       )
       await page.waitForTimeout(RITMO.aposCampoMs)
       return
     }
     case 'balao': {
-      const rect = (await page.evaluate(
-        ([b, c]: [string, string | undefined]) => (globalThis as any).__aulas.medirAncora(b, c),
+      const rect = await page.evaluate(
+        ([b, c]: [string, string | undefined]) => globalThis.__aulas.medirAncora(b, c),
         [acao.ancora.bloco, acao.ancora.campo] as [string, string | undefined],
-      )) as { x: number; y: number; w: number; h: number } | null
+      )
       if (rect) {
         const apareceMs = agora()
         baloes.push({
           cenaId: cena.id,
           texto: acao.texto,
-          ...rect,
+          x: rect.x,
+          y: rect.y,
+          w: rect.w,
+          h: rect.h,
+          escala: rect.escala,
           apareceMs,
           escondeMs: apareceMs + RITMO.balaoMs,
         })
@@ -182,7 +233,7 @@ async function executarAcao(
     }
     case 'testar': {
       const ms = acao.segundos ? acao.segundos * 1000 : RITMO.testarMs
-      await page.evaluate((m: number) => (globalThis as any).__aulas.testar(m), ms)
+      await page.evaluate((m: number) => globalThis.__aulas.testar(m), ms)
       return
     }
     case 'pausar': {
@@ -191,7 +242,7 @@ async function executarAcao(
     }
     case 'zoom': {
       await page.evaluate(
-        (n: 'perto' | 'longe' | 'ajustar' | number) => (globalThis as any).__aulas.zoom(n),
+        (n: 'perto' | 'longe' | 'ajustar' | number) => globalThis.__aulas.zoom(n),
         acao.nivel,
       )
       await page.waitForTimeout(300)

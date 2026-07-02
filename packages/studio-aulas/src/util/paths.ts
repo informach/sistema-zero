@@ -5,6 +5,10 @@ import { fileURLToPath } from 'node:url'
 // Raiz do pacote (…/packages/studio-aulas), independente do cwd de quem chama.
 const here = dirname(fileURLToPath(import.meta.url))
 export const PACKAGE_ROOT = resolve(here, '..', '..')
+/** Raiz do monorepo (…/sistema-zero) — para subir o playground do Estúdio. */
+export const REPO_ROOT = resolve(PACKAGE_ROOT, '..', '..')
+/** Caminho absoluto do módulo de automação injetado no playground (via /@fs/). */
+export const AUTOMATION_FILE = join(PACKAGE_ROOT, 'harness', 'automation.ts')
 
 export const AULAS_DIR = join(PACKAGE_ROOT, 'aulas')
 export const CENARIOS_DIR = join(PACKAGE_ROOT, 'cenarios')

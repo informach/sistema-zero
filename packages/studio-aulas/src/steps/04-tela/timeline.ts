@@ -9,6 +9,8 @@ export interface TelaBalao {
   y: number
   w: number
   h: number
+  /** Escala do workspace no momento (o balão sai proporcional ao zoom do bloco). */
+  escala: number
   apareceMs: number
   escondeMs: number
 }

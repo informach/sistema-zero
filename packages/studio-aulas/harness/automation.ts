@@ -1,16 +1,15 @@
-// API de automação exposta em `window.__aulas`, usada pelo driver Playwright.
-// Vive no PACOTE NOVO (não no Estúdio). Fala com o Blockly da instância via
-// `Blockly.getMainWorkspace()` (mesma cópia de blockly, deduplicada pelo Vite) e
-// desenha um cursor grande e visível.
+// API de automação INJETADA no playground REAL do Estúdio (packages/studio,
+// porta 5173) via `/@fs/` do Vite — NÃO é um app próprio. Como o Vite do
+// playground transforma este módulo, os imports `blockly/core` e
+// `@sistemazero/studio` resolvem para a MESMA instância do editor, então
+// `Blockly.getMainWorkspace()` enxerga o workspace real e a API pública do
+// Estúdio (criar/salvar projeto) está disponível. Zero alteração no Estúdio.
 //
-// ARRASTO REAL: o bloco não "aparece" encaixado — ele é criado na posição do
-// flyout e DESLIZA (moveTo quadro a quadro) até a conexão do frame, com o cursor
-// acompanhando; só no fim dá o "snap" (connect). Fica realista e didático, mas o
-// encaixe continua determinístico (não depende de drag físico frágil).
-//
-// Este arquivo NÃO passa pelo typecheck do CI (só o Vite/esbuild transpila), por
-// isso alguns acessos ao Blockly usam `any` — a API interna não é 100% tipada.
+// Este arquivo NÃO passa pelo typecheck do CI (só o Vite transpila); a API
+// interna do Blockly não é 100% tipada, então a superfície usada é declarada
+// nos tipos ESTRUTURAIS abaixo (WorkspaceLike etc.) — nada de `any`.
 
+import { createEmptyProject, createLocalPersistenceAdapter } from '@sistemazero/studio'
 import * as Blockly from 'blockly/core'
 
 export interface Rect {
@@ -19,30 +18,92 @@ export interface Rect {
   w: number
   h: number
 }
+/** Âncora medida + a ESCALA do workspace (para o balão sair proporcional ao zoom). */
+export interface Ancora extends Rect {
+  escala: number
+}
+
+// --- Superfície TIPADA do Blockly que a automação toca ----------------------
+// Tipos estruturais no lugar de `any`: documentam exatamente o que usamos da
+// API interna (upgrade do Blockly quebrou algo? o nome aparece aqui).
+
+interface CampoLike {
+  getScaledBBox?(): { left: number; top: number; right: number; bottom: number }
+}
+
+interface ConexaoLike {
+  type: number
+  x?: number
+  y?: number
+  targetBlock(): BlocoLike | null
+  connect(outra: ConexaoLike): void
+  getOffsetInBlock?(): { x: number; y: number }
+}
+
+interface BlocoLike {
+  id: string
+  getSvgRoot?(): Element | null
+  getRelativeToSurfaceXY(): { x: number; y: number }
+  getHeightWidth(): { width: number; height: number }
+  getField?(nome: string): CampoLike | null
+  inputList?: Array<{ connection: ConexaoLike | null }>
+  nextConnection: ConexaoLike | null
+  previousConnection: ConexaoLike | null
+  moveTo(xy: Blockly.utils.Coordinate): void
+  setFieldValue(valor: string, campo: string): void
+}
+
+interface ToolboxItemLike {
+  getName?(): string
+}
+
+interface ToolboxLike {
+  getToolboxItems?(): ToolboxItemLike[]
+  setSelectedItem?(item: ToolboxItemLike): void
+}
+
+interface WorkspaceLike {
+  scale?: number
+  getInjectionDiv(): Element
+  getOriginOffsetInPixels?(): { x: number; y: number }
+  getBlocksByType(tipo: string, ordenado: boolean): BlocoLike[]
+  getFlyout?(): {
+    getWorkspace?(): { getBlocksByType?(tipo: string, ordenado: boolean): BlocoLike[] } | null
+    hide?(): void
+  } | null
+  getToolbox?(): ToolboxLike | null
+  centerOnBlock?(id: string): void
+  setScale?(escala: number): void
+  render?(): void
+  zoomToFit?(): void
+  scrollCenter?(): void
+}
 
 const espera = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 const lerp = (a: number, b: number, p: number) => a + (b - a) * p
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2)
 
-/** Anima por `ms` chamando `step(progresso 0..1)` a cada quadro (requestAnimationFrame). */
+// Baseado em setTimeout (não requestAnimationFrame): rAF fica PAUSADO em aba
+// oculta/não-focada e a animação travaria; setTimeout no pior caso só afrouxa,
+// mas sempre completa (performance.now avança no relógio).
 function animar(ms: number, step: (p: number) => void): Promise<void> {
   return new Promise((res) => {
     const t0 = performance.now()
-    const fr = (now: number) => {
-      const p = Math.min(1, (now - t0) / Math.max(1, ms))
+    const tick = () => {
+      const p = Math.min(1, (performance.now() - t0) / Math.max(1, ms))
       step(easeInOut(p))
-      if (p < 1) requestAnimationFrame(fr)
+      if (p < 1) setTimeout(tick, 16)
       else res()
     }
-    requestAnimationFrame(fr)
+    tick()
   })
 }
 
 // --- Cursor visível --------------------------------------------------------
 
 let cursorEl: HTMLElement | null = null
-let cursorX = 40
-let cursorY = 40
+let cursorX = 60
+let cursorY = 60
 
 function garantirCursor(): HTMLElement {
   if (cursorEl) return cursorEl
@@ -52,15 +113,16 @@ function garantirCursor(): HTMLElement {
     'position:fixed',
     'left:0',
     'top:0',
-    'width:44px',
-    'height:44px',
+    'width:48px',
+    'height:48px',
     'z-index:2147483647',
     'pointer-events:none',
     'will-change:transform',
+    'filter:drop-shadow(0 3px 5px rgba(0,0,0,.4))',
     `transform:translate(${cursorX}px,${cursorY}px)`,
   ].join(';')
   el.innerHTML = `
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="48" height="48" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M6 4 L6 34 L14 26 L20 38 L26 35 L20 24 L32 24 Z"
         fill="#111" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
     </svg>`
@@ -69,7 +131,6 @@ function garantirCursor(): HTMLElement {
   return el
 }
 
-/** Posiciona o cursor instantaneamente (usado durante o arrasto, quadro a quadro). */
 function posicionarCursor(x: number, y: number): void {
   const el = garantirCursor()
   cursorX = x
@@ -77,40 +138,80 @@ function posicionarCursor(x: number, y: number): void {
   el.style.transform = `translate(${x}px,${y}px)`
 }
 
-/** Move o cursor suavemente de onde está até (x,y) em `ms`. */
 function moverCursor(x: number, y: number, ms: number): Promise<void> {
   const fromX = cursorX
   const fromY = cursorY
   return animar(ms, (p) => posicionarCursor(lerp(fromX, x, p), lerp(fromY, y, p)))
 }
 
+/** Anel de clique BEM visível (dois anéis + duração maior) no ponto do cursor. */
 function pulsoClique(): void {
-  const r = document.createElement('div')
-  r.style.cssText = [
+  for (const [cor, atraso] of [
+    ['#22d3ee', 0],
+    ['#f59e0b', 120],
+  ] as const) {
+    const r = document.createElement('div')
+    r.style.cssText = [
+      'position:fixed',
+      `left:${cursorX - 4}px`,
+      `top:${cursorY - 4}px`,
+      'width:8px',
+      'height:8px',
+      'border-radius:50%',
+      `border:4px solid ${cor}`,
+      'z-index:2147483646',
+      'pointer-events:none',
+    ].join(';')
+    document.body.appendChild(r)
+    r.animate(
+      [
+        { transform: 'scale(1)', opacity: 1 },
+        { transform: 'scale(7)', opacity: 0 },
+      ],
+      {
+        duration: 700,
+        delay: atraso,
+        easing: 'ease-out',
+        fill: 'forwards',
+      },
+    ).onfinish = () => r.remove()
+  }
+}
+
+/** Contorno pulsante ao redor de um retângulo (destaca ONDE a ação acontece). */
+function destacar(rect: Rect, ms: number): void {
+  const el = document.createElement('div')
+  el.style.cssText = [
     'position:fixed',
-    `left:${cursorX - 6}px`,
-    `top:${cursorY - 6}px`,
-    'width:24px',
-    'height:24px',
-    'border-radius:50%',
-    'border:3px solid #22d3ee',
-    'z-index:2147483646',
+    `left:${rect.x - 5}px`,
+    `top:${rect.y - 5}px`,
+    `width:${rect.w + 10}px`,
+    `height:${rect.h + 10}px`,
+    'border:4px solid #f59e0b',
+    'border-radius:12px',
+    'box-shadow:0 0 0 4px rgba(245,158,11,.25)',
+    'z-index:2147483645',
     'pointer-events:none',
   ].join(';')
-  document.body.appendChild(r)
-  r.animate(
+  document.body.appendChild(el)
+  el.animate(
     [
-      { transform: 'scale(.4)', opacity: 1 },
-      { transform: 'scale(1.8)', opacity: 0 },
+      { opacity: 0, transform: 'scale(1.06)' },
+      { opacity: 1, transform: 'scale(1)' },
+      { opacity: 1, transform: 'scale(1)' },
+      { opacity: 0, transform: 'scale(1.04)' },
     ],
-    { duration: 450, easing: 'ease-out' },
-  ).onfinish = () => r.remove()
+    { duration: ms, easing: 'ease-in-out', fill: 'forwards' },
+  ).onfinish = () => el.remove()
 }
 
 // --- Geometria workspace <-> tela ------------------------------------------
 
-function ws(): any {
-  return Blockly.getMainWorkspace() as any
+function ws(): WorkspaceLike {
+  return Blockly.getMainWorkspace() as unknown as WorkspaceLike
+}
+function escalaAtual(): number {
+  return ws().scale ?? 1
 }
 function centro(r: Rect): { x: number; y: number } {
   return { x: r.x + r.w / 2, y: r.y + r.h / 2 }
@@ -119,37 +220,35 @@ function injRect(): DOMRect {
   return ws().getInjectionDiv().getBoundingClientRect()
 }
 function originPx(): { x: number; y: number } {
-  const w = ws()
-  return w.getOriginOffsetInPixels ? w.getOriginOffsetInPixels() : { x: 0, y: 0 }
+  return ws().getOriginOffsetInPixels?.() ?? { x: 0, y: 0 }
 }
 function wsParaTela(wx: number, wy: number): { x: number; y: number } {
-  const s = ws().scale ?? 1
+  const s = escalaAtual()
   const i = injRect()
   const o = originPx()
   return { x: i.left + o.x + wx * s, y: i.top + o.y + wy * s }
 }
 function telaParaWs(sx: number, sy: number): { x: number; y: number } {
-  const s = ws().scale ?? 1
+  const s = escalaAtual()
   const i = injRect()
   const o = originPx()
   return { x: (sx - i.left - o.x) / s, y: (sy - i.top - o.y) / s }
 }
 
-/** Retângulo de tela de um bloco (via SVG root — reflete zoom/scroll atuais). */
-function rectDoBloco(block: any): Rect {
+function rectDoBloco(block: BlocoLike): Rect {
   const svg = block.getSvgRoot?.()
   if (svg) {
     const r = svg.getBoundingClientRect()
     return { x: r.left, y: r.top, w: r.width, h: r.height }
   }
-  const s = ws().scale ?? 1
+  const s = escalaAtual()
   const xy = block.getRelativeToSurfaceXY()
   const hw = block.getHeightWidth()
   const p = wsParaTela(xy.x, xy.y)
   return { x: p.x, y: p.y, w: hw.width * s, h: hw.height * s }
 }
 
-function rectDoCampo(block: any, campo?: string): Rect {
+function rectDoCampo(block: BlocoLike, campo?: string): Rect {
   if (campo) {
     const field = block.getField?.(campo)
     if (field?.getScaledBBox) {
@@ -164,13 +263,12 @@ function rectDoCampo(block: any, campo?: string): Rect {
   return rectDoBloco(block)
 }
 
-function primeiroBlocoDoTipo(tipo: string): any | null {
+function primeiroBlocoDoTipo(tipo: string): BlocoLike | null {
   const list = ws().getBlocksByType(tipo, false)
-  return list.length ? list[0] : null
+  return list.length ? (list[0] ?? null) : null
 }
 
-/** O bloco correspondente DENTRO do flyout aberto (ponto de "pegar"). */
-function blocoNoFlyout(tipo: string): any | null {
+function blocoNoFlyout(tipo: string): BlocoLike | null {
   try {
     const fw = ws().getFlyout?.()?.getWorkspace?.()
     const b = fw?.getBlocksByType?.(tipo, false)?.[0]
@@ -181,14 +279,13 @@ function blocoNoFlyout(tipo: string): any | null {
   return null
 }
 
-function centralizar(block: any): void {
+function centralizar(block: BlocoLike): void {
   try {
     ws().centerOnBlock?.(block.id)
   } catch {
     /* sem suporte */
   }
 }
-
 function setEscala(scale: number): void {
   try {
     ws().setScale?.(scale)
@@ -197,11 +294,26 @@ function setEscala(scale: number): void {
   }
 }
 
-/** Conexão de statement no FIM da cadeia do frame/pai (onde o bloco vai encaixar). */
-function conexaoDeEncaixe(paiTipo: string): any | null {
+/**
+ * Zoom que faz o bloco CABER bem na tela (≈82% da largura útil), preso entre 0.9
+ * e 1.7, e centraliza. Bloco largo afasta (não estoura o quadro), bloco estreito
+ * aproxima — e o balão, proporcional ao tamanho renderizado, acompanha.
+ */
+function ajustarZoomAoBloco(block: BlocoLike): void {
+  try {
+    const largBloco1 = block.getHeightWidth?.().width ?? 200 // coords de ws (escala 1)
+    const alvo = (injRect().width * 0.82) / Math.max(60, largBloco1)
+    setEscala(Math.min(1.7, Math.max(0.9, alvo)))
+  } catch {
+    /* mantém a escala */
+  }
+  centralizar(block)
+}
+
+function conexaoDeEncaixe(paiTipo: string): ConexaoLike | null {
   const pai = primeiroBlocoDoTipo(paiTipo)
   if (!pai) return null
-  let conn: any = null
+  let conn: ConexaoLike | null = null
   for (const input of pai.inputList ?? []) {
     if (input.connection && input.connection.type === Blockly.ConnectionType.NEXT_STATEMENT) {
       conn = input.connection
@@ -211,15 +323,14 @@ function conexaoDeEncaixe(paiTipo: string): any | null {
   if (!conn) conn = pai.nextConnection
   let guard = 0
   while (conn?.targetBlock() && guard++ < 500) {
-    const next = conn.targetBlock().nextConnection
+    const next = conn.targetBlock()?.nextConnection
     if (!next) break
     conn = next
   }
   return conn
 }
 
-/** Coord. de workspace onde o TOPO do bloco deve chegar p/ casar com a conexão. */
-function destinoDoArrasto(block: any, paiTipo?: string): { x: number; y: number } {
+function destinoDoArrasto(block: BlocoLike, paiTipo?: string): { x: number; y: number } {
   if (paiTipo) {
     const conn = conexaoDeEncaixe(paiTipo)
     if (conn && typeof conn.x === 'number') {
@@ -234,10 +345,10 @@ function destinoDoArrasto(block: any, paiTipo?: string): { x: number; y: number 
     }
   }
   const i = injRect()
-  return telaParaWs(i.left + i.width * 0.4, i.top + i.height * 0.5)
+  return telaParaWs(i.left + i.width * 0.45, i.top + i.height * 0.5)
 }
 
-function encaixar(block: any, paiTipo: string): void {
+function encaixar(block: BlocoLike, paiTipo: string): void {
   const conn = conexaoDeEncaixe(paiTipo)
   if (!conn || !block?.previousConnection) return
   try {
@@ -250,7 +361,7 @@ function encaixar(block: any, paiTipo: string): void {
 function abrirCategoriaBlockly(nome: string): void {
   const toolbox = ws().getToolbox?.()
   if (!toolbox) return
-  const itens: any[] = toolbox.getToolboxItems?.() ?? []
+  const itens: ToolboxItemLike[] = toolbox.getToolboxItems?.() ?? []
   const alvo = itens.find(
     (it) => (it.getName?.() ?? '').toLowerCase().trim() === nome.toLowerCase().trim(),
   )
@@ -269,36 +380,81 @@ function rectDaCategoria(nome: string): Rect | null {
   return { x: r.left, y: r.top, w: r.width, h: r.height }
 }
 
+function botaoPreview(): HTMLButtonElement | null {
+  const q =
+    document.querySelector('button[title*="pré-visualização" i]') ||
+    document.querySelector('button[aria-label*="pré-visualização" i]')
+  return (q as HTMLButtonElement) ?? null
+}
+function rotuloBotao(b: HTMLButtonElement): string {
+  return (b.title || b.getAttribute('aria-label') || '').toLowerCase()
+}
+
 // --- API pública -----------------------------------------------------------
 
-let ultimoBloco: any = null
+let ultimoBloco: BlocoLike | null = null
 
 export type NivelZoom = 'perto' | 'longe' | 'ajustar' | number
 
 export interface AulasAPI {
-  pronto: boolean
   esperarPronto(): Promise<boolean>
+  criarProjetoAula(id: string, nome: string, extensoes: string[]): Promise<string>
+  esconderPreview(): Promise<void>
+  mostrarPreview(): Promise<void>
   abrirCategoria(nome: string): Promise<void>
   pegarBloco(tipo: string, encaixarEm?: string): Promise<Rect>
   configurarCampo(campo: string, valor: string | number, tipo?: string): Promise<void>
   zoom(nivel: NivelZoom): Promise<void>
-  medirAncora(bloco: string, campo?: string): Promise<Rect | null>
+  medirAncora(bloco: string, campo?: string): Promise<Ancora | null>
   moverPara(x: number, y: number, ms: number): Promise<void>
   testar(ms: number): Promise<void>
 }
 
 const api: AulasAPI = {
-  pronto: false,
-
   async esperarPronto() {
     for (let i = 0; i < 400; i++) {
-      if (Blockly.getMainWorkspace()) {
-        this.pronto = true
-        return true
-      }
+      if (Blockly.getMainWorkspace()) return true
       await espera(150)
     }
     return false
+  },
+
+  // Semeia um projeto VAZIO (com os 3 frames) + extensões, via a API pública do
+  // Estúdio, e salva no IndexedDB local. O driver então navega p/ /editor/<id>.
+  async criarProjetoAula(id, nome, extensoes) {
+    const projeto = createEmptyProject(id, nome)
+    if (extensoes?.length) {
+      // Espelha o installExtension do Estúdio: registra em installedExtensions E
+      // em ir.extensions — sem o segundo, o load trata a extensão como órfã e o
+      // flyout da categoria (ex.: Jogo 2D) vem VAZIO.
+      projeto.installedExtensions = extensoes.map((x) => ({
+        id: x,
+        version: '0.0.0',
+        installedAt: 0,
+      }))
+      projeto.ir = {
+        ...projeto.ir,
+        extensions: extensoes.map((x) => ({ extensionId: x })),
+      }
+    }
+    const adapter = createLocalPersistenceAdapter()
+    await adapter.save(projeto)
+    return id
+  },
+
+  async esconderPreview() {
+    const b = botaoPreview()
+    if (b && /ocultar|esconder/.test(rotuloBotao(b))) {
+      b.click()
+      await espera(500)
+    }
+  },
+  async mostrarPreview() {
+    const b = botaoPreview()
+    if (b && /mostrar|exibir/.test(rotuloBotao(b))) {
+      b.click()
+      await espera(700)
+    }
   },
 
   async abrirCategoria(nome) {
@@ -307,13 +463,13 @@ const api: AulasAPI = {
       const c = centro(r)
       await moverCursor(c.x, c.y, 900)
       pulsoClique()
+      destacar(r, 1100)
     }
     abrirCategoriaBlockly(nome)
-    await espera(350) // deixa o flyout abrir e renderizar os blocos
+    await espera(400)
   },
 
   async pegarBloco(tipo, encaixarEm) {
-    // 1. "Pega" o bloco no flyout: o cursor vai até ele.
     const flyBlock = blocoNoFlyout(tipo)
     const grab = flyBlock ? rectDoBloco(flyBlock) : null
     if (grab) {
@@ -321,23 +477,21 @@ const api: AulasAPI = {
       pulsoClique()
       await espera(150)
     }
-
-    // 2. Cria o bloco real e o posiciona ONDE estava no flyout (para deslizar de lá).
-    const block = Blockly.serialization.blocks.append({ type: tipo }, ws())
+    const block = Blockly.serialization.blocks.append(
+      { type: tipo },
+      Blockly.getMainWorkspace() as Blockly.Workspace,
+    ) as unknown as BlocoLike
     const inicio = grab ? telaParaWs(grab.x, grab.y) : block.getRelativeToSurfaceXY()
     try {
       block.moveTo(new Blockly.utils.Coordinate(inicio.x, inicio.y))
     } catch {
       /* ignora */
     }
-    // Fecha o flyout p/ o canvas ficar limpo durante o arrasto.
     try {
       ws().getFlyout?.()?.hide?.()
     } catch {
       /* sem flyout */
     }
-
-    // 3. ARRASTA: desliza o bloco (e o cursor) do flyout até a conexão do frame.
     const alvo = destinoDoArrasto(block, encaixarEm)
     await animar(1250, (p) => {
       const wx = lerp(inicio.x, alvo.x, p)
@@ -350,36 +504,35 @@ const api: AulasAPI = {
       const s = wsParaTela(wx, wy)
       posicionarCursor(s.x + 16, s.y + 12)
     })
-
-    // 4. SNAP: conecta de fato (encaixe determinístico).
     if (encaixarEm) encaixar(block, encaixarEm)
     ws().render?.()
     ultimoBloco = block
     pulsoClique()
-    await espera(300)
-    centralizar(block)
     await espera(250)
-    return rectDoBloco(block)
+    ajustarZoomAoBloco(block)
+    await espera(300)
+    const r = rectDoBloco(block)
+    destacar(r, 1200)
+    return r
   },
 
   async configurarCampo(campo, valor, tipo) {
     const block = tipo ? primeiroBlocoDoTipo(tipo) : ultimoBloco
     if (!block) return
-    // Zoom no detalhe: o campo é justamente "onde precisa" enxergar de perto.
-    setEscala(1.35)
-    centralizar(block)
+    ajustarZoomAoBloco(block)
     await espera(300)
     const r = rectDoCampo(block, campo)
     const c = centro(r)
     await moverCursor(c.x, c.y, 600)
     pulsoClique()
+    destacar(r, 1100)
     try {
       block.setFieldValue(String(valor), campo)
     } catch {
-      /* input_value (soquete) — sem field; ignora */
+      /* input_value (soquete) — sem field */
     }
     ws().render?.()
-    await espera(250)
+    await espera(300)
   },
 
   async zoom(nivel) {
@@ -407,9 +560,13 @@ const api: AulasAPI = {
   async medirAncora(bloco, campo) {
     const block = primeiroBlocoDoTipo(bloco)
     if (!block) return null
-    centralizar(block)
-    await espera(300)
-    return rectDoCampo(block, campo)
+    // Zoom que faz o bloco caber → o balão (proporcional) fica bom. O anel de
+    // destaque do balão é desenhado na montagem (Remotion), então NÃO destacamos
+    // aqui para não dobrar o contorno.
+    ajustarZoomAoBloco(block)
+    await espera(350)
+    const r = rectDoCampo(block, campo)
+    return { ...r, escala: escalaAtual() }
   },
 
   async moverPara(x, y, ms) {
@@ -417,8 +574,17 @@ const api: AulasAPI = {
   },
 
   async testar(ms) {
+    await this.mostrarPreview()
     await espera(ms)
+    await this.esconderPreview()
   },
 }
 
-;(window as any).__aulas = api
+declare global {
+  interface Window {
+    /** API de automação consumida pelo driver Playwright (src/steps/04-tela). */
+    __aulas?: AulasAPI
+  }
+}
+
+window.__aulas = api

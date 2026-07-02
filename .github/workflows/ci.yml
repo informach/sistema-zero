@@ -47,7 +47,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -83,7 +83,7 @@ jobs:
       RAILWAY_API: https://backboard.railway.com/graphql/v2
       STAGING_ENV_ID: f634cff6-aafb-4804-8b69-172fad4e946e
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0 # diff do range do push (multi-commit)
 
