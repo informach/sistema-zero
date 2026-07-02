@@ -323,9 +323,13 @@ export function createStageEStore(
           )
           callbacks.onProjectUpdated?.(project)
           set({ savingIdentity: false })
-        } catch (error) {
-          // Identidade salva; só o rename falhou (o refetch pós-avanço realinha).
-          set({ savingIdentity: false, identityError: friendlyErrorMessage(error) })
+        } catch {
+          // Identidade salva; só o rename falhou (o refetch pós-avanço realinha) —
+          // a mensagem genérica de erro aqui assustaria sem motivo.
+          set({
+            savingIdentity: false,
+            identityError: 'A cara do jogo foi salva! O nome novo aparece já já.',
+          })
         }
         return true
       },

@@ -107,6 +107,13 @@ export function PensaClient({ viewerId }: { viewerId: string | null }) {
       mode: 'kids',
       projectKind: 'game',
       theme,
+      // Carinha do Zappy dentro do Pensa (mesmos sprites do resto do app kids).
+      mascotImages: {
+        happy: '/zappy/happy.webp',
+        thinking: '/zappy/thinking.webp',
+        celebrating: '/zappy/celebrating.webp',
+        sleeping: '/zappy/sleeping.webp',
+      },
       createStudioProject,
       // Modo Missão: o editor do Estúdio embarcado no projeto semeado.
       renderStudio: (studioProjectId: string, pensaProjectId: string) => (

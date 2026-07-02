@@ -12,6 +12,7 @@ import { useStore } from 'zustand'
 import { type PensaIdentityPalette, parseIdentityContent } from '../../core/specContent'
 import { MAX_ICON_GENERATIONS, type PensaStageEStore } from '../../state/stageEStore'
 import { usePensaApp } from '../appContext'
+import { ZappyImage } from '../common/ZappyImage'
 
 const NAME_MAX = 40
 
@@ -193,9 +194,11 @@ export function IdentityPanel({
       {step === 'name' ? (
         loadingSuggestions ? (
           <div
+            role="status"
             aria-busy="true"
             className="flex items-center gap-2 py-4 font-semibold text-pz-muted"
           >
+            <ZappyImage pose="thinking" fallbackEmoji="💭" className="h-9 w-9 object-contain" />
             <LoadingDots />
             {c.loadingSuggestions}
           </div>
@@ -336,9 +339,11 @@ export function IdentityPanel({
           <p className="text-lg font-bold text-pz-text">{c.iconQuestion}</p>
           {loadingIcons ? (
             <div
+              role="status"
               aria-busy="true"
               className="flex items-center gap-2 py-4 font-semibold text-pz-muted"
             >
+              <ZappyImage pose="thinking" fallbackEmoji="💭" className="h-9 w-9 object-contain" />
               <LoadingDots />
               {c.loadingIcons}
             </div>

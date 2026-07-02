@@ -68,10 +68,12 @@ describe('StageZView', () => {
     })
     renderStage(transport)
 
+    // O CTA aparece nas DUAS pontas: banner do topo + convite no fim do chat
+    // (a criança termina a conversa lá embaixo e não pode ter que rolar).
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Criar a Carta da Ideia' })).toBeTruthy()
+      expect(screen.getAllByRole('button', { name: 'Criar a Carta da Ideia' })).toHaveLength(2)
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Criar a Carta da Ideia' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Criar a Carta da Ideia' })[1]!)
 
     await waitFor(() => {
       expect(screen.getByText(IDEA_TEXT)).toBeTruthy()
@@ -99,10 +101,11 @@ describe('StageZView', () => {
       expect(screen.getByText(IDEA_TEXT)).toBeTruthy()
     })
 
-    // "Quero mudar uma coisa" volta ao chat; o banner agora oferece VER a carta.
+    // "Quero mudar uma coisa" volta ao chat; banner E convite do fim do chat
+    // agora oferecem VER a carta.
     fireEvent.click(screen.getByRole('button', { name: 'Quero mudar uma coisa' }))
     expect(screen.getByLabelText('Sua mensagem para o Zappy')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Ver a Carta da Ideia' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Ver a Carta da Ideia' })[0]!)
     expect(screen.getByText(IDEA_TEXT)).toBeTruthy()
   })
 

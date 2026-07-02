@@ -6,7 +6,7 @@ mock.module('server-only', () => ({}))
 const { buildStageZSystem } = await import('../src/server/pensa-agents/stage-z')
 const { PENSA_CHILD_SAFETY_CLAUSE } = await import('../src/server/pensa-agents/safety')
 const { transcriptForEvaluator } = await import('../src/server/pensa-agents/stage-z-evaluator')
-const { pensaChatRateLimited } = await import('../src/routes/pensa-ai')
+const { pensaChatRateLimited, GenerateBody } = await import('../src/routes/pensa-ai')
 
 describe('buildStageZSystem (agente de clareza — etapa Z)', () => {
   const base = {
@@ -67,6 +67,48 @@ describe('transcriptForEvaluator', () => {
     expect(t).toContain('RESUMO das mensagens antigas: A criança quer um jogo de dinossauro.')
     expect(t).toContain('CRIANÇA: quero um jogo de pular') // quebra de linha achatada
     expect(t).toContain('ZAPPY: Boa! Quem vai jogar?')
+  })
+})
+
+describe('GenerateBody (corpo do /artifacts/generate)', () => {
+  // Regressão do 500 em staging (02/07): o Zod 4 monta o mapa do discriminador no
+  // PRIMEIRO parse — 3 variantes com `type: 'identity'` derrubavam TODO safeParse
+  // ("Duplicate discriminator value") e nenhum teste exercitava o schema.
+  const uuid = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001'
+  const palette = { name: 'Espacial', colors: ['#0D1117', '#C4F042', '#3BC7E5', '#FFFFFF'] }
+
+  it('aceita as 7 variantes válidas', () => {
+    const bodies = [
+      { type: 'idea' },
+      { type: 'friendly_spec', projectId: uuid },
+      { type: 'friendly_spec', projectId: uuid, feedback: 'quero uma tela de recorde' },
+      { type: 'identity', projectId: uuid, step: 'suggestions' },
+      { type: 'identity', projectId: uuid, step: 'icons', name: 'Dino Ninja', palette },
+      {
+        type: 'identity',
+        projectId: uuid,
+        step: 'save',
+        name: 'Dino Ninja',
+        palette,
+        iconSvg: null,
+      },
+      { type: 'mission_plan', projectId: uuid },
+      { type: 'checklist_seed', projectId: uuid },
+    ]
+    for (const body of bodies) {
+      const parsed = GenerateBody.safeParse(body)
+      expect(parsed.success).toBe(true)
+    }
+  })
+
+  it('rejeita corpo inválido sem lançar', () => {
+    expect(GenerateBody.safeParse(null).success).toBe(false)
+    expect(GenerateBody.safeParse({ type: 'banana' }).success).toBe(false)
+    expect(GenerateBody.safeParse({ type: 'identity', projectId: uuid }).success).toBe(false)
+    expect(
+      GenerateBody.safeParse({ type: 'identity', projectId: 'não-uuid', step: 'suggestions' })
+        .success,
+    ).toBe(false)
   })
 })
 

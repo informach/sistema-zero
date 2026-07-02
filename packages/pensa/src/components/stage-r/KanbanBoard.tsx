@@ -54,12 +54,21 @@ export function KanbanBoard({
   const [tab, setTab] = useState<PensaTaskColumn>('backlog')
   // Card do backlog aguardando a confirmação de troca (regra 1-em-doing).
   const [swapTaskId, setSwapTaskId] = useState<string | null>(null)
+  // Último move anunciado (aria-live) — visível só para leitores de tela.
+  const [announce, setAnnounce] = useState<string | null>(null)
   const panelId = useId()
 
   if (!tasks) return null
 
   const recommendedId = byColumn(tasks, 'backlog')[0]?.id ?? null
   const busy = movingTaskId !== null
+
+  // Feedback do move: no mobile o card "sumiria" da aba atual sem isto — a aba
+  // segue o card; o anúncio cobre leitores de tela em qualquer largura.
+  const followMove = (target: PensaTaskColumn): void => {
+    setAnnounce(c.movedTo(copy.kanban[target]))
+    if (!wide) setTab(target)
+  }
 
   const handleAction = (task: PensaTaskView): void => {
     const target = NEXT_COLUMN[task.column]
@@ -68,13 +77,25 @@ export function KanbanBoard({
       setSwapTaskId(task.id)
       return
     }
-    void store.getState().moveTask(task.id, target)
+    void store
+      .getState()
+      .moveTask(task.id, target)
+      .then((ok) => {
+        if (ok) followMove(target)
+      })
   }
 
   const handleSwapConfirm = (): void => {
     const taskId = swapTaskId
     setSwapTaskId(null)
-    if (taskId) void store.getState().swapDoing(taskId)
+    if (taskId) {
+      void store
+        .getState()
+        .swapDoing(taskId)
+        .then((ok) => {
+          if (ok) followMove('doing')
+        })
+    }
   }
 
   const renderColumn = (column: PensaTaskColumn, withHeader: boolean): JSX.Element => {
@@ -101,6 +122,9 @@ export function KanbanBoard({
               onAction={() => handleAction(task)}
             />
           ))}
+          {columnTasks.length === 0 ? (
+            <p className="px-2 py-3 text-center text-sm text-pz-muted">{c.emptyColumn[column]}</p>
+          ) : null}
         </div>
       </div>
     )
@@ -108,6 +132,9 @@ export function KanbanBoard({
 
   return (
     <section aria-label={c.boardLabel} className="flex flex-col gap-3">
+      <p role="status" aria-live="polite" className="sr-only">
+        {announce}
+      </p>
       {moveError ? (
         <p
           role="alert"

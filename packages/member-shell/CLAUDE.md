@@ -168,11 +168,22 @@ passthroughs finos Zod→members, escrita gateada por impersonação-readonly) e
 `response_format: json_schema`) → persiste o turno COMPLETO (`pensaAppendTurn`; **abort = nada
 persiste**) → `event: state` + `event: done`; `: ping` a cada 15s (Cloudflare corta conexão ociosa);
 rate-limit in-process por sessão (10/min + 150/dia, `globalThis`/`Symbol.for`, réplica única) — e
-`pensaGenerateArtifact` (`POST /api/pensa/cycles/:cycleId/artifacts/generate` — sínteses; fase atual
-`type:'idea'` = Carta da Ideia, exige `state.ready`, conteúdo `{text}` parágrafo único). Plumbing LLM em
+`pensaGenerateArtifact` (`POST /api/pensa/cycles/:cycleId/artifacts/generate` — TODAS as sínteses:
+idea/friendly_spec/identity(3 steps)/mission_plan/checklist_seed). ⚠️ **`GenerateBody` (Zod 4): as 3
+variantes da identidade repetem `type:'identity'` → NÃO podem ser irmãs num `discriminatedUnion('type')`**
+(o Zod 4 monta o mapa do discriminador no PRIMEIRO parse e lança "Duplicate discriminator value" — foi o
+500 de TODA geração em staging 02/07; o erro é lazy, então import/testes que não parseiam não pegam).
+Elas vivem numa união ANINHADA discriminada por `step`; regressão travada em `tests/pensa-ai.test.ts`
+(safeParse das 7 variantes). Os catches das gerações LOGAM (`console.error('[pensa-ai] …')`) antes do
+502 — catch mudo foi o que escondeu esse bug. O `friendly_spec` recebe a Carta + o TRANSCRIPT da etapa Z
+(detalhes concretos da conversa) e gera PRD com seções FIXAS nomeadas (contrato do agente de missões);
+revisão com `feedback` atualiza também o PRD anterior (senão deriva) e o feedback entra MESMO sem
+previousSpec. `mission_plan` e `checklist_seed` respeitam o **`buildEnv`** do projeto ('external' = sem
+Estúdio/blocos/catálogo; o item obrigatório de publicar muda de texto). Plumbing LLM em
 **`server/pensa-llm.ts`** (fetch OpenRouter DIRETO, sem SDK: `streamPensaChat` com parser SSE próprio +
-`completePensaJson` com Zod e 1 retry; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` + nova
-OPCIONAL **`OPENROUTER_PENSA_MODEL`** (sínteses; ausente → cai no MODEL). Prompts VERSIONADOS em
+`completePensaJson` com Zod e 1 retry; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` +
+OPCIONAL **`OPENROUTER_PENSA_MODEL`** — usada pelas sínteses E pelo CHAT (`pensaChatModel` = PENSA_MODEL
+|| MODEL; o modelo barato genérico gerava chips vagos — QA 02/07). Prompts VERSIONADOS em
 `server/pensa-agents/*` — a **cláusula de segurança infantil SEMPRE entra no system kids** e a regra
 anti-inferência (PRD §11.3: o agente não decide pela criança; chips `SUGESTÕES:` são escolha DELA) é
 travada em `tests/pensa-ai.test.ts`. Tipos mirror em `lib/types.ts` (`Pensa*`). A conversa do chat NÃO

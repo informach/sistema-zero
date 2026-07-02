@@ -205,6 +205,9 @@ export interface PensaTransport {
   streamChat(input: PensaChatInput, handlers: PensaChatHandlers): () => void
 }
 
+/** Poses do mascote que o host pode fornecer (URLs de imagem, ex. WebP). */
+export type PensaMascotPose = 'happy' | 'thinking' | 'celebrating' | 'sleeping'
+
 export interface PensaHostAdapter {
   transport: PensaTransport
   mode: 'kids' | 'adult'
@@ -212,6 +215,11 @@ export interface PensaHostAdapter {
   projectKind?: PensaProjectKind
   /** host fixa; ausente = 'light' */
   theme?: 'light' | 'dark'
+  /**
+   * Imagens do mascote (Zappy) por pose — ausente (ou pose faltando), a UI cai
+   * no emoji de fallback de cada ponto (modo adulto/host sem assets).
+   */
+  mascotImages?: Partial<Record<PensaMascotPose, string>>
   onOpenStudio?: (seed: {
     pensaProjectId: string
     studioProjectId: string | null

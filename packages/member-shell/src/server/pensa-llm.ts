@@ -40,9 +40,14 @@ export function pensaLlmAvailable(): boolean {
   return Boolean(getEnv().OPENROUTER_API_KEY)
 }
 
-/** Modelo do chat (conversa) — o OPENROUTER_MODEL padrão. */
+/**
+ * Modelo do chat (conversa) — o MESMO das sínteses quando configurado: o modelo
+ * barato genérico (OPENROUTER_MODEL) gerava sugestões vagas/genéricas no chat
+ * com a criança (QA 02/07), e a conversa é a matéria-prima de TODO o plano.
+ */
 export function pensaChatModel(): string {
-  return getEnv().OPENROUTER_MODEL
+  const env = getEnv()
+  return env.OPENROUTER_PENSA_MODEL || env.OPENROUTER_MODEL
 }
 
 /** Modelo das sínteses (mais capaz quando configurado). */

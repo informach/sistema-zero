@@ -20,6 +20,7 @@ export function MissionSheet({
   onOpenStudio,
   openStudioEmphasis = false,
   guidance = null,
+  errorMessage = null,
 }: {
   task: PensaTaskView
   /** Move para 'done' em voo (desabilita as ações). */
@@ -31,6 +32,8 @@ export function MissionSheet({
   openStudioEmphasis?: boolean
   /** buildEnv 'external': linha gentil no lugar de "Abrir o Estúdio". */
   guidance?: string | null
+  /** Erro do "Consegui!"/semeadura — sem isto a falha era invisível aqui. */
+  errorMessage?: string | null
 }): JSX.Element {
   const { copy } = usePensaApp()
   const c = copy.stageR
@@ -132,6 +135,14 @@ export function MissionSheet({
       </section>
 
       <div className="flex flex-col gap-2">
+        {errorMessage ? (
+          <p
+            role="alert"
+            className="rounded-2xl border-2 border-pz-warn bg-pz-surface px-4 py-2.5 font-semibold text-pz-warn"
+          >
+            {errorMessage}
+          </p>
+        ) : null}
         {!alreadyDone && !allChecked ? (
           <p className="text-sm font-semibold text-pz-muted">{c.finishHint}</p>
         ) : null}

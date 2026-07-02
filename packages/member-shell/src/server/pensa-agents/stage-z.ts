@@ -33,12 +33,12 @@ const FIVE_QUESTIONS_KIDS = `As 5 perguntas que precisam ficar claras (nesta ord
 2. DIVERSÃO (problem): o que vai fazer a pessoa querer jogar DE NOVO? Qual é a graça?
 3. AÇÃO PRINCIPAL (action): o que o jogador FAZ no jogo? Qual é o botão mais importante?
 4. TELAS (screens): o que aparece primeiro quando alguém abre o jogo? E depois? (em linhas gerais: tela de título, o jogo, tela de fim)
-5. FICOU BOM (success): como a criança vai saber que o jogo ficou bom de verdade? (ex.: alguém joga sem precisar de explicação, dá vontade de jogar de novo)`
+5. FICOU BOM (success): como saber que o jogo ficou bom DE VERDADE, com um sinal CONCRETO que dá pra ver ou testar no jogo (ex.: dá pra chegar na fase 3, o placar conta os pontos, alguém joga até o fim sem pedir ajuda). Sentimento vago ("as pessoas se divertem", "vai ficar legal") NÃO conta como resposta: acolha e peça um sinal que dê pra observar.`
 
 const FIVE_QUESTIONS_CYCLE2 = `Esta é uma NOVA VERSÃO de um jogo que já existe. Foque no INCREMENTO (não redesenhe o jogo inteiro). As perguntas que precisam ficar claras:
 1. AÇÃO PRINCIPAL (action): o que exatamente vamos ADICIONAR ou mudar nesta versão?
 2. DIVERSÃO (problem): por que isso deixa o jogo mais legal?
-3. FICOU BOM (success): como saber que a novidade deu certo?
+3. FICOU BOM (success): como saber que a novidade deu certo, com um sinal concreto que dá pra ver ou testar?
 Considere QUEM (who) e TELAS (screens) já respondidas pela versão anterior, a menos que a novidade mude isso.`
 
 const ANTI_INFERENCE_RULES = `REGRAS INEGOCIÁVEIS (anti-inferência):
@@ -50,8 +50,10 @@ const ANTI_INFERENCE_RULES = `REGRAS INEGOCIÁVEIS (anti-inferência):
 
 const CHIPS_RULE = `FORMATO DA RESPOSTA:
 - Responda em texto corrido curto (a conversa aparece em bolhas de chat).
-- SEMPRE termine com UMA linha final exatamente neste formato, com 2 a 4 sugestões curtas (máx 6 palavras cada) que sirvam de resposta clicável à sua pergunta:
-SUGESTÕES: opção um | opção dois | opção três
+- SEMPRE termine com UMA linha final exatamente neste formato, com 2 a 4 sugestões (até 8 palavras cada) que sirvam de resposta clicável à sua pergunta:
+SUGESTÕES: primeira opção | segunda opção | terceira opção
+- Cada sugestão é uma resposta PRONTA da criança: CONCRETA e amarrada ao jogo DELA — use o tema, o personagem e os nomes que ela já contou nesta conversa. NUNCA ofereça opção vaga ou genérica (proibido: "os amigos se divertem", "ficar legal", "jogar bastante").
+- Exemplo: num jogo de dinossauro que pula cactos, para "como saber que ficou bom?" sugira coisas observáveis: SUGESTÕES: dá pra chegar na fase 3 | o placar conta os cactos pulados | meu amigo joga sem eu explicar
 - Não use markdown, títulos nem listas numeradas. Não escreva nada depois da linha SUGESTÕES.`
 
 /** System prompt do chat da etapa Z. */

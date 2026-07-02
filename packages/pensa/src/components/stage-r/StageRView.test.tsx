@@ -139,10 +139,12 @@ describe('StageRView', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Missões prontas! Hora do lançamento' }))
 
+    // Há 2 regiões status (o anúncio sr-only do quadro + o toast de XP).
     await waitFor(() => {
-      expect(screen.getByRole('status')).toBeTruthy()
+      expect(screen.getAllByRole('status').some((el) => el.textContent?.includes('+15 XP'))).toBe(
+        true,
+      )
     })
-    expect(screen.getByRole('status').textContent).toContain('+15 XP')
     const advance = transport.calls.find((call) => call.path === ADVANCE_PATH)
     expect(advance?.body).toEqual({ from: 'r' })
     // O toast fica um instante na tela e então volta ao mapa.

@@ -1,9 +1,11 @@
 /**
- * Indicador de espera de GERAÇÃO (pode levar ~30s): três bolinhas pulando
- * (motion-reduce: paradas) + mensagem e dica via copy. Compartilhado pelas
- * etapas R e O (a etapa E mantém o dela, anterior a este componente).
+ * Indicador de espera de GERAÇÃO (pode levar ~30s): Zappy pensando + três
+ * bolinhas pulando (motion-reduce: paradas) + mensagem e dica via copy.
+ * Compartilhado pelas etapas E, R e O. `role="status"` anuncia início/fim da
+ * espera a leitores de tela.
  */
 import type { JSX } from 'react'
+import { ZappyImage } from './ZappyImage'
 
 export function GeneratingIndicator({
   message,
@@ -13,7 +15,12 @@ export function GeneratingIndicator({
   hint?: string
 }): JSX.Element {
   return (
-    <div aria-busy="true" className="flex flex-col items-center gap-2">
+    <div role="status" aria-busy="true" className="flex flex-col items-center gap-2">
+      <ZappyImage
+        pose="thinking"
+        fallbackEmoji="💭"
+        className="h-16 w-16 object-contain text-3xl"
+      />
       <div aria-hidden="true" className="flex gap-1.5">
         {['a', 'b', 'c'].map((key, index) => (
           <span

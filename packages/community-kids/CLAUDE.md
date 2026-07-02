@@ -269,12 +269,14 @@ anexo (o servidor recusaria).
 O **Pensa** (`@sistemazero/pensa`) é o app da metodologia ZERO onde a criança PLANEJA o jogo
 antes de construir no Estúdio: projeto → ciclos "Versão N" → etapas **Z** (Zerar a Bagunça,
 chat com o Zappy pelas 5 perguntas) / **E** (Enxergar o Jogo) / **R** (Rodar as Missões) /
-**O** (O Grande Lançamento). Item "Pensa" no `nav.ts` (Lightbulb, entre Cursos e Clube) → rota
+**O** (O Grande Lançamento). Item "Pensa" no `nav.ts` (Lightbulb, entre Mural e Pinta — o trio
+criativo Pensa→Pinta→Estúdio anda JUNTO no menu) → rota
 `/pensa` (`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
 `app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
 ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
 `KidsPensaUnavailable` (retry); com acesso = `pensa-client.tsx` (`'use client'`, import dinâmico
-do pacote no effect, tema do next-themes). Diferente do Estúdio (IndexedDB), a persistência é
+do pacote no effect, tema do next-themes, **`mascotImages` = os sprites `/zappy/*.webp`** — a
+carinha do Zappy dentro do Pensa). Diferente do Estúdio (IndexedDB), a persistência é
 BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
 (shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` tem
 `force-dynamic`). Erros do transport são duck-typed `{status, code}` (a classe não atravessa o

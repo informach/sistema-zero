@@ -15,28 +15,12 @@ import type { PensaCopy } from '../../core/copy'
 import { parseFriendlySpecContent, parseIdentityContent } from '../../core/specContent'
 import { createStageEStore } from '../../state/stageEStore'
 import { usePensaApp, usePensaStore } from '../appContext'
+import { GeneratingIndicator } from '../common/GeneratingIndicator'
+import { ZappyImage } from '../common/ZappyImage'
 import { FeedbackBar } from './FeedbackBar'
 import { FlowStrips } from './FlowStrips'
 import { IdentityPanel } from './IdentityPanel'
 import { ScreenWireframes } from './ScreenWireframes'
-
-function GeneratingIndicator({ copy }: { copy: PensaCopy }): JSX.Element {
-  return (
-    <div aria-busy="true" className="flex flex-col items-center gap-2">
-      <div aria-hidden="true" className="flex gap-1.5">
-        {['a', 'b', 'c'].map((key, index) => (
-          <span
-            key={key}
-            className="h-3 w-3 animate-bounce rounded-full bg-pz-accent motion-reduce:animate-none"
-            style={{ animationDelay: `${index * 0.15}s` }}
-          />
-        ))}
-      </div>
-      <p className="font-bold text-pz-text">{copy.stageE.generating}</p>
-      <p className="text-sm text-pz-muted">{copy.stageE.generatingHint}</p>
-    </div>
-  )
-}
 
 function StageProgress({
   copy,
@@ -175,9 +159,11 @@ export function StageEView({
 
       {stageError ? (
         <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-10 text-center">
-          <span aria-hidden="true" className="text-4xl">
-            🫧
-          </span>
+          <ZappyImage
+            pose="sleeping"
+            fallbackEmoji="🫧"
+            className="h-16 w-16 object-contain text-4xl"
+          />
           <h3 className="text-lg font-bold text-pz-text">{copy.errors.title}</h3>
           <p role="alert" className="text-pz-muted">
             {stageError}
@@ -198,9 +184,11 @@ export function StageEView({
         </p>
       ) : !spec ? (
         <section className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-12 text-center">
-          <span aria-hidden="true" className="text-5xl">
-            🔭
-          </span>
+          <ZappyImage
+            pose="happy"
+            fallbackEmoji="🔭"
+            className="h-20 w-20 object-contain text-5xl"
+          />
           <h3 className="text-2xl font-extrabold text-pz-text">{c.heroTitle}</h3>
           <p className="max-w-md text-pz-muted">{c.heroBody}</p>
           {specError ? (
@@ -209,7 +197,7 @@ export function StageEView({
             </p>
           ) : null}
           {generatingSpec ? (
-            <GeneratingIndicator copy={copy} />
+            <GeneratingIndicator message={c.generating} hint={c.generatingHint} />
           ) : (
             <button
               type="button"
@@ -225,9 +213,11 @@ export function StageEView({
         </section>
       ) : !specContent ? (
         <section className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-10 text-center">
-          <span aria-hidden="true" className="text-4xl">
-            🌀
-          </span>
+          <ZappyImage
+            pose="sleeping"
+            fallbackEmoji="🌀"
+            className="h-16 w-16 object-contain text-4xl"
+          />
           <h3 className="text-lg font-bold text-pz-text">{copy.errors.title}</h3>
           <p className="text-pz-muted">{c.specBrokenBody}</p>
           {specError ? (
@@ -236,7 +226,7 @@ export function StageEView({
             </p>
           ) : null}
           {generatingSpec ? (
-            <GeneratingIndicator copy={copy} />
+            <GeneratingIndicator message={c.generating} hint={c.generatingHint} />
           ) : (
             <button
               type="button"
@@ -332,9 +322,11 @@ export function StageEView({
 
           {allReady ? (
             <section className="flex flex-col items-center gap-2 rounded-3xl border-2 border-pz-ok bg-pz-surface p-6 text-center">
-              <span aria-hidden="true" className="text-4xl">
-                🚀
-              </span>
+              <ZappyImage
+                pose="celebrating"
+                fallbackEmoji="🚀"
+                className="h-16 w-16 object-contain text-4xl"
+              />
               <h3 className="text-xl font-bold text-pz-text">{c.allDoneTitle}</h3>
               <p className="max-w-md text-pz-muted">{c.allDoneBody}</p>
               {advanceError ? (

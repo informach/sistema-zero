@@ -17,6 +17,9 @@ pacote): `C:\Users\tocha\.claude\plans\pensa-contract.md` — ler ANTES de mudar
 Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
 - **Z — Zerar a Bagunça**: chat com o Zappy (SSE via host) pelas 5 perguntas; estrelas acendem
   pelo `state` do evaluator (servidor); Carta da Ideia (artefato `idea`) → validar → advance.
+  Quando `ready`, o CTA "Criar a Carta da Ideia" aparece nas DUAS pontas: banner do topo E um
+  convite no FIM do log do chat (prop `footer` do ChatPanel — a criança termina a conversa lá
+  embaixo e não pode ter que rolar; travado em teste).
 - **E — Enxergar o Jogo**: spec amigável (tirinhas Entrada→Processamento→Saída + wireframes
   DESENHADOS do JSON `screens`) com aprovação por seção + funil de identidade (nome → paleta →
   ícone SVG; o save AUTO-valida e o pacote renomeia o projeto via PATCH).
@@ -43,7 +46,9 @@ Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
 - **`PensaTransport.streamChat(input, handlers)`** — SSE do chat (delta/state/done/error);
   devolve fn de ABORT (abortar = o BFF não persiste o turno).
 - **`PensaHostAdapter`**: `mode` ('kids'|'adult' — troca a COPY inteira), `projectKind`,
-  `theme` (host fixa), e as capabilities OPCIONAIS do Estúdio: `createStudioProject(name)`
+  `theme` (host fixa), **`mascotImages`** (URLs do Zappy por pose happy/thinking/celebrating/
+  sleeping — o kids passa `/zappy/*.webp`; ausente → emoji de fallback; consumo SEMPRE via
+  `components/common/ZappyImage.tsx`), e as capabilities OPCIONAIS do Estúdio: `createStudioProject(name)`
   (semeia no IndexedDB do perfil, id charset `[A-Za-z0-9_-]`),
   `renderStudio(studioProjectId, pensaProjectId)` (editor embarcado do Modo Missão),
   `onOpenStudio(seed)` e **`syncStudioSnapshot({pensaProjectId, studioProjectId})`** (fire-and-

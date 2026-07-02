@@ -66,8 +66,8 @@ export async function suggestIdentity(input: {
     pensaSafetyClause(input.mode),
     `Você sugere a identidade visual de um jogo criado por uma criança.
 Responda com:
-- names: exatamente 3 sugestões de NOME para o jogo — curtos (1 a 3 palavras), divertidos, fáceis de lembrar, em português (nome próprio inventado é ok). NUNCA use marca registrada.
-- palettes: exatamente 4 paletas de cores que combinam com o tema do jogo. Cada paleta tem um nome divertido em português (ex.: "Floresta Radical", "Espaço Neon") e 5 cores em hex (#RRGGBB): fundo, cor principal, cor de destaque, e 2 de apoio. Cores vivas e alegres, com bom contraste entre fundo e principal.`,
+- names: exatamente 3 sugestões de NOME para o jogo — curtos (1 a 3 palavras), divertidos, fáceis de lembrar, em português (nome próprio inventado é ok). Pelo menos 2 dos 3 devem usar palavras, o personagem ou o tema que a CRIANÇA citou na ideia — nada genérico que serviria pra qualquer jogo. NUNCA use marca registrada.
+- palettes: exatamente 4 paletas de cores amarradas ao CENÁRIO da ideia (espaço → fundo escuro e neons; floresta → verdes e terrosos; praia → azuis e areia). Cada paleta tem um nome divertido em português (ex.: "Floresta Radical", "Espaço Neon") e 5 cores em hex (#RRGGBB): fundo, cor principal, cor de destaque, e 2 de apoio. Cores vivas e alegres, com bom contraste entre fundo e principal.`,
   ].join('\n\n')
 
   const raw = await completePensaJson({
@@ -119,7 +119,7 @@ export async function generateIcons(input: {
 - Cada SVG: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"> ... </svg>, no máximo 6000 caracteres.
 - SOMENTE estes elementos: svg, g, path, circle, rect, ellipse, line, polyline, polygon, defs, linearGradient, radialGradient, stop.
 - PROIBIDO: text, image, use, script, style, class, animação, href, filtros. Sem atributos on*.
-- Estilo: formas chapadas e simples (flat), silhueta clara do tema do jogo, legível PEQUENO (vira o ícone do card). Fundo = um rect cobrindo o viewBox com cantos arredondados (rx 24).
+- Estilo: formas chapadas e simples (flat), legível PEQUENO (vira o ícone do card). A silhueta deve ser o PERSONAGEM PRINCIPAL ou o objeto central da ideia (o dinossauro, a nave, o balão) — nunca um símbolo genérico de joystick/estrela. Fundo = um rect cobrindo o viewBox com cantos arredondados (rx 24).
 - Use SOMENTE as cores desta paleta (hex exatos): ${input.palette.colors.join(', ')}.`,
   ].join('\n\n')
 

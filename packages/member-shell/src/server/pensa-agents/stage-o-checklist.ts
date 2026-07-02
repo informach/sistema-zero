@@ -20,8 +20,11 @@ export function buildChecklistSeed(input: {
   mode: 'kids' | 'adult'
   gameName: string
   cycleNumber: number
+  /** 'external' = jogo construído FORA do Estúdio (o publish via Compartilhar não existe). */
+  buildEnv?: 'embedded' | 'studio' | 'external' | null
 }): ChecklistSeedItem[] {
   const v = `Versão ${input.cycleNumber}`
+  const external = input.buildEnv === 'external'
   if (input.mode === 'adult') {
     return [
       {
@@ -64,7 +67,7 @@ export function buildChecklistSeed(input: {
   return [
     {
       category: 'test',
-      title: 'Caça aos Bugs com o Buga',
+      title: 'Caça aos Bugs com o Zappy',
       description: `Jogue ${input.gameName} 3 vezes caçando bugs, como um detetive. Em cada rodada anote: "Eu esperava que..." e "Mas o que aconteceu foi...". Achou um bug? Ele vira uma missão de conserto no seu quadro. Não achou nenhum? Uau, pode marcar!`,
       required: true,
       position: 0,
@@ -85,13 +88,23 @@ export function buildChecklistSeed(input: {
       required: false,
       position: 2,
     },
-    {
-      category: 'publish',
-      title: 'Publicar no Mural dos Criadores',
-      description: `Abra ${input.gameName} no Estúdio e use o botão Compartilhar. Seu jogo ganha um link público pra qualquer pessoa jogar!`,
-      required: true,
-      position: 3,
-    },
+    // O publish depende de ONDE o jogo foi construído: fora do Estúdio não existe
+    // o botão Compartilhar — o item obrigatório precisa ser realizável.
+    external
+      ? {
+          category: 'publish' as const,
+          title: 'Publicar o seu jogo',
+          description: `Deixe ${input.gameName} rodando direitinho e combine com um adulto como publicar: um link, um vídeo do jogo ou mostrar no Clube dos Criadores.`,
+          required: true,
+          position: 3,
+        }
+      : {
+          category: 'publish' as const,
+          title: 'Publicar no Mural dos Criadores',
+          description: `Abra ${input.gameName} no Estúdio e use o botão Compartilhar. Seu jogo ganha um link público pra qualquer pessoa jogar!`,
+          required: true,
+          position: 3,
+        },
     {
       category: 'share',
       title: 'Mostrar pra família e amigos',

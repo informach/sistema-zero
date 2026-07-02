@@ -11,18 +11,20 @@ import type { FormEvent, JSX, ReactNode } from 'react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { hideChipLines, splitChips } from '../../core/chips'
+import type { PensaMascotPose } from '../../core/types'
 import type { PensaChatStore } from '../../state/chatStore'
 import { usePensaApp } from '../appContext'
+import { ZappyImage } from '../common/ZappyImage'
 
 const MESSAGE_MAX = 2000
 
-function ZappyAvatar(): JSX.Element {
+function ZappyAvatar({ pose = 'happy' }: { pose?: PensaMascotPose }): JSX.Element {
   return (
     <span
       aria-hidden="true"
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pz-accent/15 text-lg"
+      className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pz-accent/15"
     >
-      ⚡
+      <ZappyImage pose={pose} fallbackEmoji="⚡" className="h-8 w-8 object-contain text-lg" />
     </span>
   )
 }
@@ -38,7 +40,7 @@ function AssistantRow({
 }): JSX.Element {
   return (
     <div className="flex items-end gap-2">
-      <ZappyAvatar />
+      <ZappyAvatar pose={busy ? 'thinking' : 'happy'} />
       <div
         aria-busy={busy || undefined}
         className="max-w-[80%] rounded-2xl rounded-bl-md border-2 border-pz-border bg-pz-surface px-4 py-2.5 text-pz-text"
@@ -64,9 +66,12 @@ function UserRow({ children }: { children: ReactNode }): JSX.Element {
 export function ChatPanel({
   store,
   projectId,
+  footer,
 }: {
   store: PensaChatStore
   projectId: string
+  /** Renderizado como ÚLTIMO item do log (o autoscroll o traz à vista). */
+  footer?: ReactNode
 }): JSX.Element {
   const { copy } = usePensaApp()
   const messages = useStore(store, (s) => s.messages)
@@ -88,7 +93,7 @@ export function ChatPanel({
     const list = listRef.current
     if (list) list.scrollTop = list.scrollHeight
   }, [])
-  const lastSignature = `${messages.length}:${streamingText.length}:${String(sending)}`
+  const lastSignature = `${messages.length}:${streamingText.length}:${String(sending)}:${String(Boolean(footer))}`
   const previousSignature = useRef(lastSignature)
   useEffect(() => {
     if (previousSignature.current === lastSignature) return
@@ -144,13 +149,15 @@ export function ChatPanel({
           </AssistantRow>
         ) : null}
         {thinking ? (
-          <div className="flex items-center gap-2 pl-11 text-sm font-semibold text-pz-muted">
+          <div className="flex items-center gap-2 text-sm font-semibold text-pz-muted">
+            <ZappyAvatar pose="thinking" />
             <span aria-hidden="true" className="animate-pulse motion-reduce:animate-none">
               💭
             </span>
             <span aria-busy="true">{copy.chat.thinking}</span>
           </div>
         ) : null}
+        {!sending ? footer : null}
       </div>
 
       {chatError ? (

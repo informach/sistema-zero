@@ -9,6 +9,7 @@ import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import type { PensaBuildEnv } from '../../core/types'
 import { usePensaApp } from '../appContext'
+import { ZappyImage } from '../common/ZappyImage'
 
 const ENV_ORDER: readonly PensaBuildEnv[] = ['embedded', 'studio', 'external'] as const
 
@@ -43,9 +44,7 @@ export function BuildEnvChooser({
       aria-label={c.title}
       className="flex flex-col items-center gap-4 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-10 text-center"
     >
-      <span aria-hidden="true" className="text-5xl">
-        🏗️
-      </span>
+      <ZappyImage pose="happy" fallbackEmoji="🏗️" className="h-20 w-20 object-contain text-5xl" />
       <h3 className="text-2xl font-extrabold text-pz-text">{c.title}</h3>
       <p className="max-w-md text-pz-muted">{c.subtitle}</p>
 

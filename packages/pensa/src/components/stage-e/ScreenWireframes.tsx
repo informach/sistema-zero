@@ -40,9 +40,13 @@ const KIND_SHAPE_CLASS: Record<PensaScreenElementKind, string> = {
   text: 'w-3/5 rounded-md px-2 py-0.5 text-center text-[10px] font-medium',
 }
 
-/** Índice da cor da paleta por kind (cicla no tamanho da paleta escolhida). */
+/**
+ * Índice da cor da paleta por kind (cicla no tamanho da paleta escolhida).
+ * A cor 0 é o FUNDO da paleta (contrato do agente de identidade) — nenhum
+ * elemento visível pode usá-la, senão some sobre o preenchimento do fundo.
+ */
 const KIND_PALETTE_INDEX: Record<PensaScreenElementKind, number> = {
-  title: 0,
+  title: 2,
   hero: 1,
   button: 2,
   score: 3,

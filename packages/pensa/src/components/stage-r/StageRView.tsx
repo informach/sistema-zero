@@ -20,6 +20,7 @@ import { createStageRStore } from '../../state/stageRStore'
 import { usePensaApp, usePensaStore } from '../appContext'
 import { GeneratingIndicator } from '../common/GeneratingIndicator'
 import { useMediaQuery } from '../common/useMediaQuery'
+import { ZappyImage } from '../common/ZappyImage'
 import { BuildEnvChooser, ENV_EMOJI } from './BuildEnvChooser'
 import { KanbanBoard } from './KanbanBoard'
 import { MissionMode } from './MissionMode'
@@ -76,6 +77,8 @@ export function StageRView({
   const generating = useStore(stageStore, (s) => s.generating)
   const generateError = useStore(stageStore, (s) => s.generateError)
   const movingTaskId = useStore(stageStore, (s) => s.movingTaskId)
+  const moveError = useStore(stageStore, (s) => s.moveError)
+  const seedError = useStore(stageStore, (s) => s.seedError)
   const advancing = useStore(stageStore, (s) => s.advancing)
   const advanceError = useStore(stageStore, (s) => s.advanceError)
 
@@ -175,6 +178,9 @@ export function StageRView({
         // 'studio': a missão é o guia e o Estúdio Completo é o destino.
         openStudioEmphasis={buildEnv === 'studio'}
         guidance={buildEnv === 'external' ? copy.buildEnv.externalGuidance : null}
+        // Falha do "Consegui!" ou da semeadura fica visível AQUI (o aviso do
+        // quadro está escondido enquanto a missão ocupa a tela).
+        errorMessage={moveError ?? seedError}
       />
     )
     // Split SÓ no env 'embedded' ('studio'/'external' abrem sempre o painel).
@@ -250,9 +256,11 @@ export function StageRView({
 
       {stageError ? (
         <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-10 text-center">
-          <span aria-hidden="true" className="text-4xl">
-            🫧
-          </span>
+          <ZappyImage
+            pose="sleeping"
+            fallbackEmoji="🫧"
+            className="h-16 w-16 object-contain text-4xl"
+          />
           <h3 className="text-lg font-bold text-pz-text">{copy.errors.title}</h3>
           <p role="alert" className="text-pz-muted">
             {stageError}
@@ -273,9 +281,11 @@ export function StageRView({
         </p>
       ) : tasks === null && !hasPlan ? (
         <section className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-12 text-center">
-          <span aria-hidden="true" className="text-5xl">
-            🗺️
-          </span>
+          <ZappyImage
+            pose="happy"
+            fallbackEmoji="🗺️"
+            className="h-20 w-20 object-contain text-5xl"
+          />
           <h3 className="text-2xl font-extrabold text-pz-text">{c.heroTitle}</h3>
           <p className="max-w-md text-pz-muted">{c.heroBody}</p>
           {generateError ? (
@@ -300,9 +310,11 @@ export function StageRView({
         </section>
       ) : tasks === null ? (
         <section className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-12 text-center">
-          <span aria-hidden="true" className="text-5xl">
-            📦
-          </span>
+          <ZappyImage
+            pose="happy"
+            fallbackEmoji="📦"
+            className="h-20 w-20 object-contain text-5xl"
+          />
           <h3 className="text-2xl font-extrabold text-pz-text">{c.regenTitle}</h3>
           <p className="max-w-md text-pz-muted">{c.regenBody}</p>
           {generateError ? (
@@ -330,9 +342,11 @@ export function StageRView({
 
           {allDone ? (
             <section className="flex flex-col items-center gap-2 rounded-3xl border-2 border-pz-ok bg-pz-surface p-6 text-center">
-              <span aria-hidden="true" className="text-4xl">
-                🚀
-              </span>
+              <ZappyImage
+                pose="celebrating"
+                fallbackEmoji="🚀"
+                className="h-16 w-16 object-contain text-4xl"
+              />
               <h3 className="text-xl font-bold text-pz-text">{c.allDoneTitle}</h3>
               <p className="max-w-md text-pz-muted">{c.allDoneBody}</p>
               {advanceError ? (

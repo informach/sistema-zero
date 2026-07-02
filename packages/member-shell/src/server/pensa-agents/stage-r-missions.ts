@@ -113,30 +113,49 @@ export interface MissionPlanTask {
   mission: PensaMission
 }
 
-function missionsSystem(input: { mode: 'kids' | 'adult'; cycleNumber: number }): string {
+function missionsSystem(input: {
+  mode: 'kids' | 'adult'
+  cycleNumber: number
+  buildEnv?: 'embedded' | 'studio' | 'external' | null
+}): string {
+  const external = input.buildEnv === 'external'
   const catalog = STUDIO_CATEGORY_HINTS.map((c) => `- ${c}`).join('\n')
   const count = input.cycleNumber <= 1 ? 'entre 5 e 8 missões' : 'entre 3 e 5 missões'
   return [
     pensaSafetyClause(input.mode),
-    `Você é o agente de missões do Pensa (Sistema Zero). Transforme o plano do jogo em MISSÕES que a CRIANÇA (7 a 12 anos) executa SOZINHA no Estúdio — o editor de blocos do Sistema Zero (blocos em português, categorias de HTML/CSS/Canvas/Programação e a extensão Jogo 2D com sprites, movimento, colisões, placar, som e telas). As missões NUNCA são prompts para IA: são passos que a criança faz com as próprias mãos.`,
+    external
+      ? `Você é o agente de missões do Pensa (Sistema Zero). Transforme o plano do jogo em MISSÕES que a CRIANÇA (7 a 12 anos) executa SOZINHA no editor que ela usa no computador dela (ex.: VS Code) — o jogo é construído FORA do Estúdio, então NUNCA mande abrir o Estúdio nem cite blocos. As missões NUNCA são prompts para IA: são passos que a criança faz com as próprias mãos.`
+      : `Você é o agente de missões do Pensa (Sistema Zero). Transforme o plano do jogo em MISSÕES que a CRIANÇA (7 a 12 anos) executa SOZINHA no Estúdio — o editor de blocos do Sistema Zero (blocos em português, categorias de HTML/CSS/Canvas/Programação e a extensão Jogo 2D com sprites, movimento, colisões, placar, som e telas). As missões NUNCA são prompts para IA: são passos que a criança faz com as próprias mãos.`,
     `FORMATO de cada missão:
 - title: verbo + objeto, curto ("Faça o pulo do herói").
 - summary: 1 frase do que a missão entrega.
 - taskType: um de setup|gameplay|screens|polish.
-- story: 1 frase de contexto divertida ("Todo herói precisa escapar do perigo.").
-- steps: 3 a 6 passos imperativos CURTOS e numerados na ordem de execução, cada um com hint (dica opcional de onde achar/como testar; hint pode ser string vazia). O primeiro passo costuma ser abrir o projeto no Estúdio; o último costuma ser rodar e testar.
+- story: 1 frase de contexto divertida NO MUNDO DESTE jogo — cite o personagem/tema do plano ("O Dino Espacial não pode tropeçar nos meteoros!"). Nunca frase genérica que serviria pra qualquer jogo.
+- steps: 3 a 6 passos imperativos CURTOS e numerados na ordem de execução, cada um com hint (dica opcional de onde achar/como testar; hint pode ser string vazia). O primeiro passo costuma ser abrir o projeto${external ? ' no editor' : ' no Estúdio'}; o último costuma ser rodar e testar.${
+      external
+        ? `
+- categories: sempre [] (lista vazia — não há Estúdio neste projeto).
+- blocks: sempre [] (lista vazia).`
+        : `
 - categories: 1 a 3 categorias do CATÁLOGO abaixo (nomes EXATOS — não invente categoria).
-- blocks: 1 a 4 DESCRIÇÕES em linguagem natural dos blocos que ajudam ("o bloco de pular quando estiver no chão", "o bloco quando a tecla for pressionada"). NÃO invente nomes exatos de bloco; descreva o que o bloco faz.
-- doneWhen: 1 a 3 critérios OBSERVÁVEIS que a criança consegue checar jogando ("O herói pula quando aperto espaço").`,
+- blocks: 1 a 4 DESCRIÇÕES em linguagem natural dos blocos que ajudam ("o bloco de pular quando estiver no chão", "o bloco quando a tecla for pressionada"). NÃO invente nomes exatos de bloco; descreva o que o bloco faz. Quando um passo usa um bloco, o hint dele diz em qual categoria procurar (ex.: "procure em Jogo 2D › 🕹️ Movimento").`
+    }
+- doneWhen: 1 a 3 critérios OBSERVÁVEIS que a criança consegue checar jogando, usando os elementos NOMEADOS do jogo ("O Dino Espacial pula quando aperto espaço") — nunca "o personagem".`,
     `REGRAS DO PLANO:
 - Gere ${count}, na ordem de construção.
-- A PRIMEIRA missão é sempre "Monte o palco" (criar/abrir o projeto no Estúdio, fundo e o personagem principal aparecendo na tela).
+- A PRIMEIRA missão é sempre "Monte o palco" (criar/abrir o projeto${external ? ' no editor' : ' no Estúdio'}, fundo e o personagem principal aparecendo na tela).
 - A ÚLTIMA missão é sempre "Toque final" (tela de título com o nome do jogo, usando as cores da paleta do jogo).
 - Cada missão cabe numa sessão de 15 a 30 minutos de uma criança. Uma mecânica por missão.
 - Baseie-se SOMENTE no plano fornecido (não invente mecânica nova).
 - Linguagem alegre, sem jargão, sem travessão.`,
-    `CATÁLOGO DE CATEGORIAS DO ESTÚDIO (use nomes EXATOS):\n${catalog}`,
-  ].join('\n\n')
+    external
+      ? ''
+      : `CATÁLOGO DE CATEGORIAS DO ESTÚDIO (use nomes EXATOS):\n${catalog}
+
+ESCOLHA DO KIT: se a mecânica principal bate com um Kit, as primeiras missões devem apontar a categoria do Kit — correr e pular obstáculos → 🦕 Kit dino; nave que atira → 🚀 Kit espaço; mirar e atirar por turnos → 🦍 Kit gorilas; esticar ponte pra atravessar → 🤸 Kit equilibrista; subir desviando → 🎈 Kit balão. Sem Kit compatível, use as subcategorias genéricas de Jogo 2D.`,
+  ]
+    .filter(Boolean)
+    .join('\n\n')
 }
 
 /** Clamps pós-validação + montagem do shape `PensaMission` do contrato. */
@@ -181,6 +200,8 @@ export async function synthesizeMissions(input: {
   prdMarkdown: string
   friendlySpec: unknown
   identity?: { name?: string; palette?: { colors?: string[] } } | null
+  /** Onde a criança constrói — 'external' gera missões SEM Estúdio/blocos. */
+  buildEnv?: 'embedded' | 'studio' | 'external' | null
 }): Promise<MissionPlanTask[]> {
   const user = [
     `Jogo: "${input.identity?.name ?? input.projectName}" (Versão ${input.cycleNumber}).`,
@@ -196,7 +217,11 @@ export async function synthesizeMissions(input: {
     .join('\n\n')
 
   const raw = await completePensaJson({
-    system: missionsSystem({ mode: input.mode, cycleNumber: input.cycleNumber }),
+    system: missionsSystem({
+      mode: input.mode,
+      cycleNumber: input.cycleNumber,
+      buildEnv: input.buildEnv,
+    }),
     user,
     schema: MissionSchema,
     jsonSchema: MISSIONS_JSON_SCHEMA as unknown as Record<string, unknown>,

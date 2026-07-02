@@ -15,6 +15,7 @@ import type { PensaChecklistCategory } from '../../core/types'
 import { createStageOStore } from '../../state/stageOStore'
 import { usePensaApp, usePensaStore } from '../appContext'
 import { GeneratingIndicator } from '../common/GeneratingIndicator'
+import { ZappyImage } from '../common/ZappyImage'
 import { LaunchCelebration } from './LaunchCelebration'
 
 const CATEGORY_EMOJI: Record<PensaChecklistCategory, string> = {
@@ -77,9 +78,7 @@ export function StageOView({
 
   const hero = (
     <section className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-12 text-center">
-      <span aria-hidden="true" className="text-5xl">
-        🚀
-      </span>
+      <ZappyImage pose="happy" fallbackEmoji="🚀" className="h-20 w-20 object-contain text-5xl" />
       <h3 className="text-2xl font-extrabold text-pz-text">{c.heroTitle}</h3>
       <p className="max-w-md text-pz-muted">{c.heroBody}</p>
       {hasSeed ? (
@@ -129,9 +128,11 @@ export function StageOView({
 
       {stageError ? (
         <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-10 text-center">
-          <span aria-hidden="true" className="text-4xl">
-            🫧
-          </span>
+          <ZappyImage
+            pose="sleeping"
+            fallbackEmoji="🫧"
+            className="h-16 w-16 object-contain text-4xl"
+          />
           <h3 className="text-lg font-bold text-pz-text">{copy.errors.title}</h3>
           <p role="alert" className="text-pz-muted">
             {stageError}
@@ -244,7 +245,9 @@ export function StageOView({
               {c.launchCta}
             </button>
             {allRequiredDone ? null : (
-              <p className="text-sm font-semibold text-pz-muted">{c.launchHint}</p>
+              <p className="text-sm font-semibold text-pz-muted">
+                {c.launchHint(required.filter((item) => !item.done).map((item) => item.title))}
+              </p>
             )}
           </section>
         </>

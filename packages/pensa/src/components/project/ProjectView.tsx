@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react'
 import { versionLabel } from '../../core/copy'
 import type { PensaPlanStage } from '../../core/stages'
 import { usePensaApp, usePensaStore } from '../appContext'
+import { ZappyImage } from '../common/ZappyImage'
 import { StageEView } from '../stage-e/StageEView'
 import { StageOView } from '../stage-o/StageOView'
 import { StageRView } from '../stage-r/StageRView'
@@ -114,9 +115,11 @@ export function ProjectView(): JSX.Element {
 
       {detailError ? (
         <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-border bg-pz-surface px-6 py-10 text-center">
-          <span aria-hidden="true" className="text-4xl">
-            🫧
-          </span>
+          <ZappyImage
+            pose="sleeping"
+            fallbackEmoji="🫧"
+            className="h-16 w-16 object-contain text-4xl"
+          />
           <h2 className="text-lg font-bold text-pz-text">{copy.errors.title}</h2>
           <p role="alert" className="text-pz-muted">
             {detailError}
@@ -148,11 +151,14 @@ export function ProjectView(): JSX.Element {
             <section className="rounded-3xl border-2 border-pz-border bg-pz-surface p-6">
               <h2 className="text-xl font-bold text-pz-text">{copy.stages[stage].name}</h2>
               <p className="mt-1 text-pz-muted">{copy.stages[stage].subtitle}</p>
-              <div className="mt-4 rounded-2xl bg-pz-bg p-4">
-                <p className="font-semibold text-pz-text">
-                  <span aria-hidden="true">{STAGE_INTRO_EMOJI[stage]} </span>
-                  {stageIntro[stage]}
-                </p>
+              {/* Balão de fala do Zappy (a intro já fala em nome dele). */}
+              <div className="mt-4 flex items-center gap-3 rounded-2xl bg-pz-bg p-4">
+                <ZappyImage
+                  pose="happy"
+                  fallbackEmoji={STAGE_INTRO_EMOJI[stage]}
+                  className="h-12 w-12 shrink-0 object-contain text-3xl"
+                />
+                <p className="min-w-0 font-semibold text-pz-text">{stageIntro[stage]}</p>
               </div>
               <button
                 type="button"
@@ -164,9 +170,11 @@ export function ProjectView(): JSX.Element {
             </section>
           ) : (
             <section className="flex flex-col items-center gap-3 rounded-3xl border-2 border-pz-ok bg-pz-surface p-8 text-center">
-              <span aria-hidden="true" className="text-5xl">
-                🏆
-              </span>
+              <ZappyImage
+                pose="celebrating"
+                fallbackEmoji="🏆"
+                className="h-20 w-20 object-contain text-5xl"
+              />
               <h2 className="text-xl font-bold text-pz-text">
                 {copy.newCycle.doneTitle(detail.currentCycle.number)}
               </h2>

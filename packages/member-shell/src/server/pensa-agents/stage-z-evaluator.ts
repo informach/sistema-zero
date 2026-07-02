@@ -21,6 +21,7 @@ Julgue quais das 5 perguntas a CRIANÇA JÁ RESPONDEU DE FORMA EXPLÍCITA, com d
 REGRAS:
 - Só marque true se a INFORMAÇÃO VEIO DA CRIANÇA. Sugestão apresentada pelo Zappy mas NÃO confirmada pela criança = false.
 - Resposta vaga que o Zappy ainda está clareando = false.
+- success SÓ é true com um critério CONCRETO, que dá pra ver ou testar no jogo (ex.: chegar na fase 3, o placar contando pontos, alguém jogar até o fim sem ajuda). Sentimento genérico ("os amigos se divertem", "vai ficar legal") = false.
 - ready = true SOMENTE quando as 5 forem true.
 - Para versões 2+ (a conversa dirá), who e screens herdados da versão anterior contam como true a menos que a novidade os mude.`
 

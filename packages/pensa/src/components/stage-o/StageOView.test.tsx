@@ -77,7 +77,8 @@ describe('StageOView', () => {
     expect((screen.getByRole('button', { name: /Lançar!/ }) as HTMLButtonElement).disabled).toBe(
       true,
     )
-    expect(screen.getByText('Complete os passos obrigatórios para lançar.')).toBeTruthy()
+    // O hint agora diz QUAIS obrigatórios faltam.
+    expect(screen.getByText(/Falta pouco! Ainda:/)).toBeTruthy()
 
     // Item de publicar tem o atalho "Abrir o Estúdio" (host com onOpenStudio).
     fireEvent.click(screen.getByRole('button', { name: /Abrir o Estúdio/ }))

@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { useStore } from 'zustand'
 import { createChatStore } from '../../state/chatStore'
 import { usePensaApp, usePensaStore } from '../appContext'
+import { ZappyImage } from '../common/ZappyImage'
 import { ChatPanel } from './ChatPanel'
 import { IdeaCard } from './IdeaCard'
 import { QuestionTracker } from './QuestionTracker'
@@ -59,6 +60,55 @@ export function StageZView({
     const ok = await chatStore.getState().generateIdea()
     if (ok) setBackToChat(false)
   }
+
+  const ideaCtaButton = (
+    <button
+      type="button"
+      onClick={() => {
+        if (ideaArtifact) {
+          setBackToChat(false)
+        } else {
+          void handleGenerate()
+        }
+      }}
+      disabled={generatingIdea}
+      aria-busy={generatingIdea || undefined}
+      className="min-h-12 rounded-2xl bg-pz-accent px-6 font-bold text-pz-accent-fg transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {generatingIdea
+        ? copy.chat.generating
+        : ideaArtifact
+          ? copy.chat.viewIdeaCta
+          : copy.chat.readyCta}
+    </button>
+  )
+
+  // Convite no FIM da conversa (onde a criança está olhando quando termina) —
+  // o banner do topo permanece; o CTA fica visível nas duas pontas.
+  const readyFooter = ready ? (
+    <div className="flex items-end gap-2">
+      <span
+        aria-hidden="true"
+        className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-pz-ok/15"
+      >
+        <ZappyImage
+          pose="celebrating"
+          fallbackEmoji="🌟"
+          className="h-8 w-8 object-contain text-lg"
+        />
+      </span>
+      <div className="flex max-w-[80%] flex-col items-start gap-2 rounded-2xl rounded-bl-md border-2 border-pz-ok bg-pz-surface px-4 py-3">
+        <p className="font-bold text-pz-text">{copy.chat.readyTitle}</p>
+        <p className="text-sm text-pz-muted">{copy.chat.readyBody}</p>
+        {ideaError ? (
+          <p role="alert" className="text-sm font-semibold text-pz-warn">
+            {ideaError}
+          </p>
+        ) : null}
+        {ideaCtaButton}
+      </div>
+    </div>
+  ) : null
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col gap-4 p-6">
@@ -127,28 +177,10 @@ export function StageZView({
                   </p>
                 ) : null}
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (ideaArtifact) {
-                    setBackToChat(false)
-                  } else {
-                    void handleGenerate()
-                  }
-                }}
-                disabled={generatingIdea}
-                aria-busy={generatingIdea || undefined}
-                className="min-h-12 rounded-2xl bg-pz-accent px-6 font-bold text-pz-accent-fg transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {generatingIdea
-                  ? copy.chat.generating
-                  : ideaArtifact
-                    ? copy.chat.viewIdeaCta
-                    : copy.chat.readyCta}
-              </button>
+              {ideaCtaButton}
             </div>
           ) : null}
-          <ChatPanel store={chatStore} projectId={detail.id} />
+          <ChatPanel store={chatStore} projectId={detail.id} footer={readyFooter} />
         </>
       )}
     </div>

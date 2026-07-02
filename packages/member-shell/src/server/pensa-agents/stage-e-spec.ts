@@ -21,8 +21,16 @@ export interface StageESpecInput {
   cycleGoal?: string | null
   /** Texto da ideia clarificada (artefato `idea` validado). */
   ideaText: string
+  /**
+   * Transcript da conversa da etapa Z (contexto adicional): a conversa tem os
+   * detalhes concretos que a Carta resume (nomes, inimigos, o que a criança
+   * recusou) — sem ele o esboço sai genérico.
+   */
+  transcript?: string
   /** Revisão: a spec anterior (JSON) + o pedido de mudança da criança. */
   previousSpec?: unknown
+  /** Revisão: o PRD anterior — atualizado em vez de regenerado (senão deriva). */
+  previousPrd?: string
   feedback?: string
 }
 
@@ -169,18 +177,20 @@ function specSystem(input: StageESpecInput): string {
   return [
     pensaSafetyClause(input.mode),
     `Você é o agente de esboço do Pensa (Sistema Zero). A criança clarificou a ideia de um jogo; agora você o DESENHA em duas camadas consistentes entre si:
-1. prdMarkdown — documento técnico INTERNO (markdown), completo: objetivo do jogo, quem joga, mecânica principal, telas com todos os elementos, fluxos, regras (pontuação, vitória/derrota), estados importantes e critérios de "ficou bom". Este texto alimenta a geração das missões de construção no Estúdio (editor de blocos HTML/CSS/JS com kits de Jogo 2D) — seja concreto e construível por uma criança com blocos.
+1. prdMarkdown — documento técnico INTERNO (markdown) com EXATAMENTE estas seções, nesta ordem: "## Objetivo", "## Quem joga", "## Mecânica principal", "## Controles", "## Telas" (uma subseção "### <nome da tela>" por tela, listando TODOS os elementos dela), "## Regras e pontuação", "## Estados do jogo" e "## Ficou bom quando". Use os NOMES que a criança deu (do jogo, do personagem, dos itens) em todo o documento. Este texto alimenta a geração das missões de construção no Estúdio (editor de blocos HTML/CSS/JS com kits de Jogo 2D) — seja concreto e construível por uma criança com blocos.
 2. flows + screens — a visão que a CRIANÇA valida:
    - flows: cada fluxo é uma tirinha de 3 quadrinhos em linguagem infantil ("Quando o jogador..." / "...o jogo..." / "...e aparece na tela..."). Use de 3 a 5 fluxos NO MÁXIMO. input = o que o jogador faz; processing = o que o jogo faz por dentro; output = o que aparece na tela. Cada fluxo lista as telas envolvidas (pelo nome EXATO usado em screens).
    - screens: os esboços que o app desenha. Tipicamente 3 telas de jogo (ex.: "Tela do título", "O jogo", "Fim de jogo"), NO MÁXIMO 6. Cada elemento tem kind (title|button|score|hero|enemy|item|background|text), label CURTO em português e zone (top|middle|bottom).`,
     kids
       ? 'Linguagem dos flows/screens: infantil, alegre, SEM jargão (nunca PRD, requisito, sistema). Sem travessão.'
       : '',
-    `FIDELIDADE: baseie TUDO na ideia clarificada. Não invente mecânica/personagem/tela que a criança não decidiu; detalhar o que ela decidiu é ok (é o seu trabalho), criar features novas NÃO é.`,
-    input.previousSpec && input.feedback
-      ? `MODO REVISÃO: a criança pediu uma mudança na versão anterior. Aplique SOMENTE a mudança pedida (e ajustes de consistência), preservando todo o resto igual.
-Versão anterior (JSON): ${JSON.stringify(input.previousSpec).slice(0, 20_000)}
+    `FIDELIDADE: baseie TUDO na ideia clarificada e na conversa. Detalhes que a criança citou na conversa (nomes, cores, inimigos, como perde) DEVEM aparecer no esboço; não invente mecânica/personagem/tela que ela não decidiu. Detalhar o que ela decidiu é ok (é o seu trabalho), criar features novas NÃO é.`,
+    input.feedback
+      ? input.previousSpec
+        ? `MODO REVISÃO: a criança pediu uma mudança na versão anterior. Aplique SOMENTE a mudança pedida (e ajustes de consistência), preservando todo o resto igual — inclusive no prdMarkdown${input.previousPrd ? ' (atualize o PRD anterior abaixo em vez de reescrevê-lo do zero)' : ''}.
+Versão anterior (JSON): ${JSON.stringify(input.previousSpec).slice(0, 20_000)}${input.previousPrd ? `\nPRD anterior (markdown):\n${input.previousPrd.slice(0, 20_000)}` : ''}
 Pedido da criança: "${input.feedback.slice(0, 500)}"`
+        : `PEDIDO DA CRIANÇA (incorpore ao esboço): "${input.feedback.slice(0, 500)}"`
       : '',
   ]
     .filter(Boolean)
@@ -196,6 +206,9 @@ export async function synthesizeSpec(input: StageESpecInput): Promise<{
     `Projeto: "${input.projectName}" (Versão ${input.cycleNumber}).`,
     input.cycleGoal ? `Objetivo desta versão: ${input.cycleGoal}` : '',
     `Ideia clarificada (decidida pela criança): ${input.ideaText}`,
+    input.transcript
+      ? `CONVERSA da etapa de clareza (contexto adicional; a ideia clarificada prevalece):\n${input.transcript}`
+      : '',
     'Gere o esboço completo.',
   ]
     .filter(Boolean)

@@ -12,6 +12,7 @@ import { useEffect, useRef } from 'react'
 import type { PensaGamificationDelta } from '../../core/gamification'
 import { usePensaApp } from '../appContext'
 import { trapTabKey } from '../common/focusTrap'
+import { ZappyImage } from '../common/ZappyImage'
 
 /** Confete: posição/atraso fixos + cor pelos tokens pz-stage-* (4 cores). */
 const CONFETTI_COLORS = [
@@ -92,9 +93,11 @@ export function LaunchCelebration({
       </div>
 
       <div className="relative flex w-full max-w-md flex-col items-center gap-4 rounded-3xl border-2 border-pz-border bg-pz-surface p-6 text-center shadow-xl">
-        <span aria-hidden="true" className="text-5xl">
-          🎆
-        </span>
+        <ZappyImage
+          pose="celebrating"
+          fallbackEmoji="🎆"
+          className="h-24 w-24 object-contain text-5xl"
+        />
         <h3 className="text-2xl font-extrabold text-pz-text">{c.title}</h3>
         <p className="text-pz-muted">{c.body}</p>
 

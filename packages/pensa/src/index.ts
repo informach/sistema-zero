@@ -11,6 +11,7 @@ export type {
   PensaChecklistItemView,
   PensaCycleView,
   PensaHostAdapter,
+  PensaMascotPose,
   PensaMission,
   PensaProjectDetailView,
   PensaProjectKind,

@@ -9,7 +9,7 @@ import { synthesizeSpec } from '../server/pensa-agents/stage-e-spec'
 import { buildChecklistSeed } from '../server/pensa-agents/stage-o-checklist'
 import { synthesizeMissions } from '../server/pensa-agents/stage-r-missions'
 import { buildStageZSystem } from '../server/pensa-agents/stage-z'
-import { evaluateStageZ } from '../server/pensa-agents/stage-z-evaluator'
+import { evaluateStageZ, transcriptForEvaluator } from '../server/pensa-agents/stage-z-evaluator'
 import { synthesizeIdea } from '../server/pensa-agents/stage-z-idea'
 import { PensaLlmError, pensaLlmAvailable, streamPensaChat } from '../server/pensa-llm'
 import type { SessionModule } from '../server/session'
@@ -32,7 +32,11 @@ const PaletteSchema = z.object({
 })
 
 // Um endpoint de geração por ciclo; o `type` (e o `step` da identidade) escolhe a síntese.
-const GenerateBody = z.discriminatedUnion('type', [
+// ⚠️ As 3 variantes da identidade repetem `type: 'identity'` — valor duplicado no
+// discriminador externo derruba o parse no Zod 4 ("Duplicate discriminator value"),
+// então elas compõem uma união ANINHADA discriminada por `step`.
+// Exportado só p/ o teste de regressão (tests/pensa-ai.test.ts).
+export const GenerateBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('idea') }),
   z.object({
     type: z.literal('friendly_spec'),
@@ -40,26 +44,28 @@ const GenerateBody = z.discriminatedUnion('type', [
     /** Revisão: o pedido de mudança da criança sobre a versão anterior. */
     feedback: z.string().trim().min(2).max(500).optional(),
   }),
-  z.object({
-    type: z.literal('identity'),
-    projectId: z.string().regex(UUID_RE),
-    step: z.literal('suggestions'),
-  }),
-  z.object({
-    type: z.literal('identity'),
-    projectId: z.string().regex(UUID_RE),
-    step: z.literal('icons'),
-    name: z.string().trim().min(2).max(40),
-    palette: PaletteSchema,
-  }),
-  z.object({
-    type: z.literal('identity'),
-    projectId: z.string().regex(UUID_RE),
-    step: z.literal('save'),
-    name: z.string().trim().min(2).max(40),
-    palette: PaletteSchema,
-    iconSvg: z.string().max(16_384).nullable(),
-  }),
+  z.discriminatedUnion('step', [
+    z.object({
+      type: z.literal('identity'),
+      projectId: z.string().regex(UUID_RE),
+      step: z.literal('suggestions'),
+    }),
+    z.object({
+      type: z.literal('identity'),
+      projectId: z.string().regex(UUID_RE),
+      step: z.literal('icons'),
+      name: z.string().trim().min(2).max(40),
+      palette: PaletteSchema,
+    }),
+    z.object({
+      type: z.literal('identity'),
+      projectId: z.string().regex(UUID_RE),
+      step: z.literal('save'),
+      name: z.string().trim().min(2).max(40),
+      palette: PaletteSchema,
+      iconSvg: z.string().max(16_384).nullable(),
+    }),
+  ]),
   // Plano de missões da etapa R (a criança executa no Estúdio).
   z.object({
     type: z.literal('mission_plan'),
@@ -266,7 +272,8 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
                   string,
                   unknown
                 >
-              } catch {
+              } catch (err) {
+                console.error('[pensa-ai] evaluator failed', err)
                 state = undefined
               }
 
@@ -345,8 +352,14 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
         return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 })
       }
 
-      /** Ideia clarificada (latest do type `idea` na etapa z) — insumo das sínteses da E. */
-      const loadIdeaText = async (): Promise<string | NextResponse> => {
+      /**
+       * Ideia clarificada (latest do type `idea` na etapa z) + o transcript da
+       * conversa — insumos das sínteses da E (o transcript carrega os detalhes
+       * concretos que a Carta resume).
+       */
+      const loadStageZ = async (): Promise<
+        { ideaText: string; transcript: string } | NextResponse
+      > => {
         const zRes = await members.pensaGetStage(cycleId, 'z')
         if (zRes.status !== 200 || !zRes.body) {
           return NextResponse.json(zRes.body ?? { error: { code: 'PENSA_NOT_FOUND' } }, {
@@ -364,7 +377,11 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             { status: 409 },
           )
         }
-        return text
+        const transcript = transcriptForEvaluator(
+          zRes.body.conversation.messages.slice(-PROMPT_WINDOW),
+          zRes.body.conversation.summary,
+        )
+        return { ideaText: text, transcript }
       }
 
       /** Projeto + ciclo (contexto de prompt) com checagem de etapa corrente. */
@@ -425,7 +442,8 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
           return NextResponse.json(saved.body ?? { ok: saved.status === 200 }, {
             status: saved.status,
           })
-        } catch {
+        } catch (err) {
+          console.error('[pensa-ai] idea generate failed', err)
           return aiFailed('Não consegui montar a Carta agora. Tente de novo.')
         }
       }
@@ -434,15 +452,22 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       if (body.type === 'friendly_spec') {
         const loaded = await loadProjectCycle(body.projectId, 'e')
         if (loaded instanceof NextResponse) return loaded
-        const ideaText = await loadIdeaText()
-        if (ideaText instanceof NextResponse) return ideaText
+        const stageZ = await loadStageZ()
+        if (stageZ instanceof NextResponse) return stageZ
 
-        // Revisão: a spec anterior vem do latest da etapa E + o pedido da criança.
+        // Revisão: spec E prd anteriores vêm do latest da etapa E (o PRD também é
+        // atualizado, senão deriva do que a criança aprovou). Se o fetch falhar, o
+        // feedback AINDA entra no prompt — o pedido da criança nunca é descartado.
         let previousSpec: unknown
+        let previousPrd: string | undefined
         if (body.feedback) {
           const eRes = await members.pensaGetStage(cycleId, 'e')
           if (eRes.status === 200 && eRes.body) {
             previousSpec = eRes.body.artifacts.find((a) => a.type === 'friendly_spec')?.content
+            const prdContent = eRes.body.artifacts.find((a) => a.type === 'prd')?.content as
+              | { markdown?: unknown }
+              | undefined
+            if (typeof prdContent?.markdown === 'string') previousPrd = prdContent.markdown
           }
         }
         try {
@@ -451,8 +476,11 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             projectName: loaded.project.name,
             cycleNumber: loaded.cycle.number,
             cycleGoal: loaded.cycle.goal,
-            ideaText,
-            ...(previousSpec && body.feedback ? { previousSpec, feedback: body.feedback } : {}),
+            ideaText: stageZ.ideaText,
+            transcript: stageZ.transcript,
+            ...(body.feedback ? { feedback: body.feedback } : {}),
+            ...(previousSpec ? { previousSpec } : {}),
+            ...(previousPrd ? { previousPrd } : {}),
           })
           // O PRD interno acompanha a spec (mesma chamada = consistentes); a criança
           // valida SÓ a friendly_spec (o gate e→r exige friendly_spec + identity).
@@ -472,7 +500,8 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
           return NextResponse.json(saved.body ?? { ok: saved.status === 200 }, {
             status: saved.status,
           })
-        } catch {
+        } catch (err) {
+          console.error('[pensa-ai] friendly_spec generate failed', err)
           return aiFailed('Não consegui desenhar o jogo agora. Tente de novo.')
         }
       }
@@ -509,19 +538,24 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             prdMarkdown: prd.markdown,
             friendlySpec: friendly,
             identity: identity ?? null,
+            buildEnv: onR.project.buildEnv ?? null,
           })
           const replaced = await members.pensaReplaceTasks(cycleId, tasks)
           if (replaced.status !== 200 || !replaced.body) {
             return NextResponse.json(replaced.body ?? { ok: false }, { status: replaced.status })
           }
-          // Espelho auditável do plano como artefato da etapa R.
-          await members.pensaSaveArtifact(cycleId, {
+          // Espelho auditável do plano como artefato da etapa R (best-effort).
+          const mirror = await members.pensaSaveArtifact(cycleId, {
             stage: 'r',
             type: 'mission_plan',
             content: { tasks },
           })
+          if (mirror.status !== 200) {
+            console.error('[pensa-ai] mission_plan mirror save failed', mirror.status)
+          }
           return NextResponse.json(replaced.body, { status: 200 })
-        } catch {
+        } catch (err) {
+          console.error('[pensa-ai] mission_plan generate failed', err)
           return aiFailed('Não consegui montar as missões agora. Tente de novo.')
         }
       }
@@ -534,17 +568,21 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
           mode: 'kids',
           gameName: seeded.project.name,
           cycleNumber: seeded.cycle.number,
+          buildEnv: seeded.project.buildEnv ?? null,
         })
         const replaced = await members.pensaReplaceChecklist(cycleId, items)
         if (replaced.status !== 200 || !replaced.body) {
           return NextResponse.json(replaced.body ?? { ok: false }, { status: replaced.status })
         }
-        // Espelho auditável do seed como artefato da etapa O.
-        await members.pensaSaveArtifact(cycleId, {
+        // Espelho auditável do seed como artefato da etapa O (best-effort).
+        const mirror = await members.pensaSaveArtifact(cycleId, {
           stage: 'o',
           type: 'checklist_seed',
           content: { items },
         })
+        if (mirror.status !== 200) {
+          console.error('[pensa-ai] checklist_seed mirror save failed', mirror.status)
+        }
         return NextResponse.json(replaced.body, { status: 200 })
       }
 
@@ -553,35 +591,37 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       if (loaded instanceof NextResponse) return loaded
 
       if (body.step === 'suggestions') {
-        const ideaText = await loadIdeaText()
-        if (ideaText instanceof NextResponse) return ideaText
+        const stageZ = await loadStageZ()
+        if (stageZ instanceof NextResponse) return stageZ
         try {
           const suggestions = await suggestIdentity({
             mode: 'kids',
             projectName: loaded.project.name,
-            ideaText,
+            ideaText: stageZ.ideaText,
           })
           return NextResponse.json({ suggestions }, { status: 200 })
-        } catch {
+        } catch (err) {
+          console.error('[pensa-ai] identity suggestions failed', err)
           return aiFailed('Não consegui sugerir nomes agora. Tente de novo.')
         }
       }
 
       if (body.step === 'icons') {
-        const ideaText = await loadIdeaText()
-        if (ideaText instanceof NextResponse) return ideaText
+        const stageZ = await loadStageZ()
+        if (stageZ instanceof NextResponse) return stageZ
         try {
           const icons = await generateIcons({
             mode: 'kids',
             gameName: body.name,
-            ideaText,
+            ideaText: stageZ.ideaText,
             palette: body.palette,
           })
           if (icons.length === 0) {
             return aiFailed('Os ícones não saíram bons. Tente gerar de novo.')
           }
           return NextResponse.json({ icons }, { status: 200 })
-        } catch {
+        } catch (err) {
+          console.error('[pensa-ai] identity icons failed', err)
           return aiFailed('Não consegui desenhar os ícones agora. Tente de novo.')
         }
       }

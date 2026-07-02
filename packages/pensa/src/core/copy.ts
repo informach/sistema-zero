@@ -183,6 +183,10 @@ export interface PensaCopy {
     boardLabel: string
     /** aria-label das abas de coluna no mobile. */
     columnsLabel: string
+    /** Dica exibida numa coluna VAZIA (orienta a criança sobre o que vai ali). */
+    emptyColumn: Record<'backlog' | 'doing' | 'review' | 'done', string>
+    /** Anúncio (aria-live) quando um card muda de coluna. */
+    movedTo(column: string): string
     /** Destaque da "próxima recomendada" (primeira do backlog). */
     nextUp: string
     /** Botão de estado do card, por coluna. */
@@ -227,8 +231,8 @@ export interface PensaCopy {
     progressLabel(done: number, total: number): string
     openStudio: string
     launchCta: string
-    /** Ajuda quando o "Lançar!" ainda está travado pelos obrigatórios. */
-    launchHint: string
+    /** Ajuda quando o "Lançar!" está travado: diz QUAIS obrigatórios faltam. */
+    launchHint(missing: string[]): string
   }
   launch: {
     title: string
@@ -453,6 +457,13 @@ const KIDS_COPY: PensaCopy = {
     regenCta: 'Recriar as missões',
     boardLabel: 'Quadro de missões',
     columnsLabel: 'Colunas do quadro',
+    emptyColumn: {
+      backlog: 'Nenhuma missão esperando. Tudo em andamento!',
+      doing: 'Toque em Começar numa missão para trazer ela pra cá!',
+      review: 'Quando uma missão funcionar, ela vem pra cá pra você testar.',
+      done: 'As missões que você terminar aparecem aqui. Bora!',
+    },
+    movedTo: (column) => `Missão foi para ${column}!`,
     nextUp: 'Próxima!',
     cardStart: 'Começar',
     cardTest: 'Já funciona? Teste!',
@@ -491,7 +502,10 @@ const KIDS_COPY: PensaCopy = {
     progressLabel: (done, total) => `${done} de ${total} passos obrigatórios prontos`,
     openStudio: 'Abrir o Estúdio',
     launchCta: 'Lançar!',
-    launchHint: 'Complete os passos obrigatórios para lançar.',
+    launchHint: (missing) =>
+      missing.length > 0
+        ? `Falta pouco! Ainda: ${missing.join(', ')}.`
+        : 'Complete os passos obrigatórios para lançar.',
   },
   launch: {
     title: 'Você lançou seu jogo!',
@@ -710,6 +724,13 @@ const ADULT_COPY: PensaCopy = {
     regenCta: 'Recriar as missões',
     boardLabel: 'Quadro de missões',
     columnsLabel: 'Colunas do quadro',
+    emptyColumn: {
+      backlog: 'Nenhuma missão na fila.',
+      doing: 'Use o botão Começar numa missão para trazê-la para cá.',
+      review: 'Missões funcionando chegam aqui para o teste.',
+      done: 'As missões concluídas aparecem aqui.',
+    },
+    movedTo: (column) => `Missão movida para ${column}.`,
     nextUp: 'Próxima',
     cardStart: 'Começar',
     cardTest: 'Funciona? Teste!',
@@ -747,7 +768,10 @@ const ADULT_COPY: PensaCopy = {
     progressLabel: (done, total) => `${done} de ${total} passos obrigatórios prontos`,
     openStudio: 'Abrir o Estúdio',
     launchCta: 'Lançar!',
-    launchHint: 'Complete os passos obrigatórios para lançar.',
+    launchHint: (missing) =>
+      missing.length > 0
+        ? `Ainda faltam: ${missing.join(', ')}.`
+        : 'Complete os passos obrigatórios para lançar.',
   },
   launch: {
     title: 'Projeto lançado!',

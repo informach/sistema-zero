@@ -4,7 +4,7 @@
  * generateSpec(projectId, feedback) do pai; enquanto gera, tudo desabilita.
  */
 import type { FormEvent, JSX } from 'react'
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { usePensaApp } from '../appContext'
 
 const FEEDBACK_MAX = 500
@@ -28,6 +28,14 @@ export function FeedbackBar({
   const [tooShort, setTooShort] = useState(false)
   const [failed, setFailed] = useState(false)
   const fieldId = useId()
+  const fieldRef = useRef<HTMLTextAreaElement>(null)
+
+  // A barra abre no MEIO de uma seção alta: sem foco+scroll a criança nem vê
+  // que o campo apareceu (mesmo naipe do CTA escondido da etapa Z).
+  useEffect(() => {
+    fieldRef.current?.focus()
+    fieldRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [])
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
@@ -54,6 +62,7 @@ export function FeedbackBar({
       </label>
       <textarea
         id={fieldId}
+        ref={fieldRef}
         value={text}
         onChange={(event) => {
           setText(event.target.value)

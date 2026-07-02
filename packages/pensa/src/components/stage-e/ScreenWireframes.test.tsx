@@ -85,8 +85,9 @@ describe('ScreenWireframes', () => {
     )
 
     const painted = view.container.querySelector<HTMLElement>('[data-kind="title"]')
-    // #22c55e = rgb(34, 197, 94); pintado com alpha via style inline.
-    expect(painted?.getAttribute('style')).toContain('rgba(34, 197, 94')
+    // title usa a 3ª cor (destaque, #0ea5e9 = rgb(14, 165, 233)) — NUNCA a cor 0,
+    // que é o FUNDO da paleta (título sumia sobre o preenchimento do fundo).
+    expect(painted?.getAttribute('style')).toContain('rgba(14, 165, 233')
     expect(painted?.className).not.toContain('bg-pz-accent/20')
     const hero = view.container.querySelector<HTMLElement>('[data-kind="hero"]')
     // hero usa a 2ª cor da paleta (#facc15 = rgb(250, 204, 21)).
