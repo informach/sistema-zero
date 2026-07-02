@@ -256,8 +256,20 @@ function rectDoCampo(block: BlocoLike, campo?: string): Rect {
         const b = field.getScaledBBox()
         return { x: b.left, y: b.top, w: b.right - b.left, h: b.bottom - b.top }
       } catch {
-        /* cai no bloco */
+        /* cai no soquete/bloco */
       }
+    }
+    // Soquete de VALOR (x/y): não tem field → mede a CONEXÃO do input e cerca um
+    // retângulo pequeno nela (senão o balão do X ancoraria no bloco INTEIRO).
+    const conn = (
+      block as { getInput?: (n: string) => { connection?: { x: number; y: number } } | null }
+    ).getInput?.(campo)?.connection
+    if (conn && typeof conn.x === 'number') {
+      const s = wsParaTela(conn.x, conn.y)
+      const esc = escalaAtual()
+      const w = 56 * esc
+      const h = 42 * esc
+      return { x: s.x - 8, y: s.y - h / 2, w, h }
     }
   }
   return rectDoBloco(block)

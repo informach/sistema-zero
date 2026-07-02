@@ -131,6 +131,12 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
     })
     const page = await context.newPage()
     page.setDefaultTimeout(120_000)
+    // videoT0 = início REAL da gravação (o recordVideo começa na criação do
+    // contexto). Cena/balão são relativos a ISTO → batem com o vídeo na montagem.
+    // O "lead" de setup (lista→criar→editor→esconder preview) fica ANTES da 1ª
+    // cena e é PULADO pelo corte (telaInicioS já inclui o lead).
+    const videoT0 = Date.now()
+    const agora = () => Date.now() - videoT0
 
     // 1. Semeia um projeto de gravação (vazio + extensões) na lista do playground.
     await page.goto(playgroundUrl, { waitUntil: 'domcontentloaded' })
@@ -154,9 +160,7 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
     await page.evaluate(() => globalThis.__aulas.esconderPreview())
     await page.waitForTimeout(700)
 
-    // 4. A gravação começa a contar AQUI (após tudo pronto e preview escondido).
-    const videoT0 = Date.now()
-    const agora = () => Date.now() - videoT0
+    // 4. Passo a passo (o cronômetro já corre desde o início da gravação).
     for (const cena of praticas) {
       passo(`cena ${cena.id}`)
       const inicioMs = agora()
