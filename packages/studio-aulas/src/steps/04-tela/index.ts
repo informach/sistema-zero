@@ -6,7 +6,7 @@ import { loadRoteiroFile } from '../../roteiro/parse'
 import type { Cena } from '../../roteiro/schema'
 import { aviso, etapa, ok, passo } from '../../util/log'
 import { AUTOMATION_FILE, assertAulaExiste, aulaPaths, REPO_ROOT } from '../../util/paths'
-import { PLAYGROUND_URL, RITMO, TELA_ALTURA, TELA_LARGURA } from './config'
+import { RITMO, TELA_ALTURA, TELA_LARGURA } from './config'
 import type { TelaBalao, TelaCenaRange, TelaTimeline } from './timeline'
 
 // URL /@fs/ do módulo de automação (Vite serve arquivos do monorepo por caminho
@@ -37,13 +37,17 @@ declare global {
   var __aulas: AulasNoBrowser
 }
 
-/** Sobe o playground REAL do Estúdio (porta 5173) e resolve quando responder. */
-async function subirPlayground(): Promise<() => void> {
+/**
+ * Sobe o playground REAL do Estúdio e resolve com a URL na PORTA REAL + um parar().
+ * O Vite auto-incrementa a porta se a padrão (5173) estiver ocupada, então NÃO dá
+ * para assumir 5173 — a porta é capturada do stdout do próprio Vite.
+ */
+async function subirPlayground(): Promise<{ url: string; parar: () => void }> {
   // node:child_process (não Bun.spawn): este módulo roda sob NODE (o Playwright
   // não conecta o pipe de debug sob Bun). O Vite do playground roda via `bun`.
   const proc: ChildProcess = spawn('bun', ['run', '--filter', '@sistemazero/studio', 'dev'], {
     cwd: REPO_ROOT,
-    stdio: 'inherit',
+    stdio: ['ignore', 'pipe', 'inherit'], // pipa o stdout p/ capturar a porta
     shell: true, // Windows: acha o bun.exe no PATH
   })
   const parar = () => {
@@ -58,18 +62,30 @@ async function subirPlayground(): Promise<() => void> {
       /* já morto */
     }
   }
-  const limite = Date.now() + 90_000
-  while (Date.now() < limite) {
-    try {
-      const res = await fetch(PLAYGROUND_URL)
-      if (res.ok) return parar
-    } catch {
-      /* ainda subindo */
-    }
-    await new Promise((r) => setTimeout(r, 600))
+  // O Vite COLORE a porta com códigos ANSI (…:\e[1m5173\e[22m/), então é preciso
+  // limpá-los antes de casar o número. (regex via fromCharCode: evita o char de
+  // controle literal no fonte, que o Biome barra.)
+  const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g')
+  try {
+    const url = await new Promise<string>((resolve, reject) => {
+      let buf = ''
+      const timer = setTimeout(() => reject(new Error('Playground não subiu em 90s')), 90_000)
+      proc.stdout?.on('data', (d: Buffer) => {
+        const txt = d.toString()
+        process.stdout.write(txt) // mantém os logs do Vite visíveis no console
+        buf += txt
+        const m = buf.replace(ANSI, '').match(/http:\/\/(?:127\.0\.0\.1|localhost):(\d+)/)
+        if (m) {
+          clearTimeout(timer)
+          resolve(`http://127.0.0.1:${m[1]}`)
+        }
+      })
+    })
+    return { url, parar }
+  } catch (e) {
+    parar()
+    throw e
   }
-  parar()
-  throw new Error('Playground do Estúdio não respondeu em 90s')
 }
 
 /** Injeta o módulo de automação (window.__aulas) na página atual, via /@fs/. */
@@ -96,7 +112,7 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
 
   mkdirSync(paths.telaDir, { recursive: true })
   etapa(`Tela — ${roteiro.meta.titulo}`)
-  const pararPlayground = await subirPlayground()
+  const { url: playgroundUrl, parar: pararPlayground } = await subirPlayground()
 
   const projetoId = `aula-gravacao-${slug}`
   const cenasRange: TelaCenaRange[] = []
@@ -117,7 +133,7 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
     page.setDefaultTimeout(120_000)
 
     // 1. Semeia um projeto de gravação (vazio + extensões) na lista do playground.
-    await page.goto(PLAYGROUND_URL, { waitUntil: 'domcontentloaded' })
+    await page.goto(playgroundUrl, { waitUntil: 'domcontentloaded' })
     await injetar(page)
     await page.evaluate(([id, nome, ext]) => globalThis.__aulas.criarProjetoAula(id, nome, ext), [
       projetoId,
@@ -126,7 +142,7 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
     ] as [string, string, string[]])
 
     // 2. Abre o editor desse projeto e re-injeta a automação.
-    await page.goto(`${PLAYGROUND_URL}/editor/${encodeURIComponent(projetoId)}`, {
+    await page.goto(`${playgroundUrl}/editor/${encodeURIComponent(projetoId)}`, {
       waitUntil: 'domcontentloaded',
     })
     await injetar(page)

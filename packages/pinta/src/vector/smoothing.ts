@@ -86,6 +86,22 @@ export function smoothStrokeToPath(points: Vec2[], epsilon = 1.5): string {
 }
 
 /**
+ * Teto de pontos crus que entram no RDP. O RDP é O(n²) no pior caso
+ * (zigue-zague denso onde nada é descartável) — sem o teto, o soltar do
+ * pincel trava por SEGUNDOS num rabisco longo em aparelho lento. 1500 pontos
+ * são dezenas de segundos de arrasto; a Catmull-Rom passa por cima da
+ * decimação sem perda visível.
+ */
+const MAX_RAW_POINTS = 1500
+
+/** Decimação por passo fixo (O(n)), sempre preservando a última ponta. */
+function decimate(points: Vec2[], maxPoints: number): Vec2[] {
+  if (points.length <= maxPoints) return points
+  const stride = Math.ceil(points.length / maxPoints)
+  return points.filter((_, i) => i % stride === 0 || i === points.length - 1)
+}
+
+/**
  * Como `smoothStrokeToPath`, mas GARANTE `d.length <= maxChars` simplificando
  * mais agressivamente quando preciso. Sem isso um rabisco longo estoura o
  * `MAX_PATH_CHARS` do sanitize e o traço é salvo mas DESCARTADO no próximo
@@ -97,16 +113,18 @@ export function smoothStrokeToPathCapped(
   maxChars = MAX_PATH_CHARS,
 ): string {
   let eps = epsilon
-  let d = catmullRomToPath(simplifyRDP(points, eps))
+  // Re-simplifica sempre o conjunto JÁ simplificado (encolhe monotonicamente):
+  // o loop só roda em traço patológico e não re-paga o RDP cheio por dobrada.
+  let simplified = simplifyRDP(decimate(points, MAX_RAW_POINTS), eps)
+  let d = catmullRomToPath(simplified)
   while (d.length > maxChars && eps < 2048) {
     eps *= 2
-    d = catmullRomToPath(simplifyRDP(points, eps))
+    simplified = simplifyRDP(simplified, eps)
+    d = catmullRomToPath(simplified)
   }
   if (d.length > maxChars) {
     // Último recurso (traço patológico): decima por passo fixo.
-    const stride = Math.ceil(points.length / 250)
-    const decimated = points.filter((_, i) => i % stride === 0 || i === points.length - 1)
-    d = catmullRomToPath(simplifyRDP(decimated, eps))
+    d = catmullRomToPath(simplifyRDP(decimate(simplified, 250), eps))
   }
   return d
 }

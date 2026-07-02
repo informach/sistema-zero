@@ -17,32 +17,36 @@ das aulas reais.
 
 - **src/** = pipeline Node (Bun). É o ÚNICO que o CI typecheck-a (`tsconfig.json`
   inclui só `src`). `cli.ts` orquestra (`voz|avatar|tela|plano|render|all|validar`).
-- **harness/** = app Vite que monta `<StudioEditor>` e expõe `window.__aulas`
-  (automação Blockly + cursor visível). JSX/browser; fora do typecheck do CI
-  (`tsconfig.app.json`, compilado pelo Vite).
+- **harness/automation.ts** = módulo de automação (cursor visível + Blockly)
+  INJETADO no playground REAL do Estúdio via `/@fs/` do Vite (não é app próprio);
+  expõe `window.__aulas`. JSX/browser; fora do typecheck do CI.
 - **remotion/** = compositor ("Premiere em código"). Também fora do typecheck do
   CI; renderizado pelo Remotion CLI. Importa TIPOS de `src/steps/07-montagem/plano`.
 
 ## Como a tela é gravada (etapa 4) — o ponto delicado
 
-`src/steps/04-tela/index.ts` (driver Playwright) sobe o harness Vite (porta 5273),
-abre o Chromium com `recordVideo`, e para cada cena de PRÁTICA chama a API do
-harness via `page.evaluate`. O harness (`harness/automation.ts`):
-- pega o workspace por `Blockly.getMainWorkspace()` (mesma cópia de Blockly,
-  deduplicada pelo Vite — por isso o alias do config aponta pro SOURCE do studio);
-- **encaixe CONFIÁVEL** (não drag físico): `Blockly.serialization.blocks.append`
-  + conecta na boca de statement do frame (padrão de `studio/.../blockClipboard.ts`);
-- desenha um **cursor grande** animado (WAAPI) — é o que dá o "arrastar" didático;
-- mede coordenadas de bloco/campo (`getOriginOffsetInPixels`, `field.getScaledBBox`)
-  pros balões.
-O driver escreve `out/tela/timeline.json` (faixas de cena + balões com px e tempo),
-consumido pela montagem.
+`src/steps/04-tela/index.ts` (driver Playwright, roda sob **Node** — Playwright não
+conecta o pipe de debug sob Bun) sobe o **playground REAL do Estúdio**
+(`bun run --filter @sistemazero/studio dev`) e **captura a porta real do stdout do
+Vite** (auto-incrementa se 5173 ocupada — NÃO assumir 5173). No browser (headful):
+1. abre o playground, INJETA `harness/automation.ts` via `import('/@fs/<abs>')` — o
+   Vite transforma o módulo, então `blockly/core` e `@sistemazero/studio` resolvem
+   para a MESMA instância do editor (`getMainWorkspace()` enxerga o workspace real);
+2. `criarProjetoAula` semeia um projeto vazio + extensões (API pública
+   `createEmptyProject` + `createLocalPersistenceAdapter`), navega p/ `/editor/<id>`,
+   re-injeta;
+3. **esconde o preview** (`esconderPreview` clica o toggle do Topbar) → os blocos
+   ocupam a tela toda (senão o preview cobre o bloco e o balão aponta pra trás dele);
+4. por cena de PRÁTICA: **arrasto REAL** (bloco desliza do flyout à conexão + snap
+   determinístico via `serialization.blocks.append`), **zoom que faz o bloco caber**
+   (`ajustarZoomAoBloco`), **destaque forte** (anel + duplo pulso de clique), e
+   `medirAncora` devolve o retângulo **+ a escala** (balão proporcional na montagem).
+O driver escreve `out/tela/timeline.json` (faixas de cena + balões com px/escala/tempo).
 
 ⚠️ **Precisa de navegador real pra calibrar**: `bun test` (happy-dom) NÃO renderiza
-Blockly nem estrangula rAF. Nomes de campo (NAME/COLOR) e a conexão nos frames
-podem variar; a automação é DEFENSIVA (try/catch + avisos) pra degradar sem
-derrubar a gravação. Ao evoluir, rode `aula:tela dia-1-a-nave-ganha-vida` e olhe o
-webm.
+Blockly. A automação é DEFENSIVA (try/catch) pra degradar sem derrubar a gravação.
+Soquetes de VALOR (x/y) não têm campo → a âncora cai no bloco inteiro. Ao evoluir,
+rode `aula:tela dia-1-a-nave-ganha-vida` e olhe o webm.
 
 ## Montagem (etapa 7)
 
@@ -59,10 +63,11 @@ resolução da gravação → coordenadas de balão batem 1:1).
 1. **Isolamento**: nada de editar outros packages. Precisa de algo interno do
    Estúdio? Ou usa a API pública, ou o dado viaja pelo `initialProject`
    (ex.: extensões via `installedExtensions`, não há `installExtension` público).
-2. **Blockly single-instance**: o harness importa `blockly/core` e o alias do Vite
-   aponta o studio pro SOURCE — se o Blockly duplicar, `getMainWorkspace()` não vê
-   o workspace do editor. Não troque o alias por resolução via node_modules sem
-   conferir a deduplicação.
+2. **Blockly single-instance**: a automação é servida pelo Vite do PLAYGROUND (via
+   `/@fs/`), então `blockly/core` e `@sistemazero/studio` resolvem para a mesma
+   instância do editor e `getMainWorkspace()` funciona. Se um dia o `/@fs/` for
+   bloqueado (fs.allow), o Vite precisa enxergar a raiz do monorepo (tem workspaces
+   + bun.lock + .git → detectada por padrão).
 3. **CI leve**: só `src/` typecheck-a e o `test` roda `parse.test.ts`. NÃO puxe
    Remotion/React pra dentro de `src/` (só TIPOS de `plano.ts`). Assim os tipos
    pesados de vídeo não podem quebrar o pipeline do monorepo.
@@ -76,7 +81,7 @@ resolução da gravação → coordenadas de balão batem 1:1).
 ## Comandos
 
 - `bun run src/cli.ts <cmd> <slug>` (ou `aula:<cmd>` pelos scripts)
-- `bun run harness` — Estúdio no harness (127.0.0.1:5273)
+- `aula:tela <slug>` sobe o playground do Estúdio sozinho (porta capturada do Vite)
 - `bun run remotion` — Remotion Studio (preview)
 - `bun run typecheck` / `bun run test` / `bun run check`
 

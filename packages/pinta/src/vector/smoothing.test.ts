@@ -64,14 +64,25 @@ describe('smoothStrokeToPathCapped', () => {
   it('rabisco patológico fica DENTRO do teto do sanitize (o traço não some no load)', async () => {
     const { MAX_PATH_CHARS } = await import('./model')
     const { smoothStrokeToPathCapped } = await import('./smoothing')
-    // Zigue-zague denso: cada ponto muda de direção (o RDP não descarta nada
-    // no epsilon padrão).
+    // Zigue-zague denso com período ÍMPAR: continua zigue-zague mesmo depois
+    // da decimação por passo fixo (período par viraria reta e o teto nunca
+    // seria exercitado), então o RDP não descarta nada no epsilon padrão.
     const points = Array.from({ length: 6000 }, (_, i) => ({
-      x: i % 2 === 0 ? i * 0.5 : i * 0.5 + 40,
+      x: i % 3 === 0 ? i * 0.5 : i * 0.5 + 40,
       y: i * 0.3,
     }))
     const d = smoothStrokeToPathCapped(points, 1.2)
     expect(d.length).toBeGreaterThan(0)
     expect(d.length).toBeLessThanOrEqual(MAX_PATH_CHARS)
+  })
+
+  it('traço normal (curto) não é decimado nem degradado', async () => {
+    const { smoothStrokeToPathCapped } = await import('./smoothing')
+    const { smoothStrokeToPath } = await import('./smoothing')
+    const points = Array.from({ length: 80 }, (_, i) => ({
+      x: i * 2,
+      y: Math.sin(i / 5) * 12,
+    }))
+    expect(smoothStrokeToPathCapped(points)).toBe(smoothStrokeToPath(points))
   })
 })

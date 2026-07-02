@@ -67,7 +67,9 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
   `previousShapesOf`. Alças de seleção dimensionadas em px de TELA (÷zoom). Teclado: Delete/setas
   na seleção (listener no window, ignora inputs). Todo gesto guarda `pointerId` (multi-touch não
   corrompe). Pincel usa `smoothStrokeToPathCapped` — o `d` criado SEMPRE cabe no `MAX_PATH_CHARS`
-  do sanitize (senão o traço sumiria no reload).
+  do sanitize (senão o traço sumiria no reload); acima de 1500 pontos crus decima O(n)
+  ANTES do RDP (O(n²) no pior caso — rabisco zigue-zague longo travava o soltar do
+  pincel por segundos e estourava o timeout de 5s do teste no CI).
 - **Animação compartilhada**: `animation/frames.ts` e `tiles/tilesetOps.ts` são GENÉRICOS sobre o
   estilo (`AnimatedSpriteAsset`/`AnyTilesetAsset`; clone vetorial regenera ids de shape);
   `AnimationList`/`FrameStrip`/`PreviewPlayer`/`TileStrip` servem os 2 estilos (thumbs pixel =
