@@ -141,14 +141,14 @@ function ElementBlock({
   const rgb = paletteRgb(kind, palette)
 
   // Logo do jogo: texto grande na fonte display do host (Baloo no kids; sem a
-  // var cai na herdada). Plano B se o contraste reprovar no QA: plate
-  // `bg-pz-surface/70 rounded-lg px-2` atrás do texto.
+  // var cai na herdada). O text-shadow dá o contorno escuro que segura a
+  // leitura quando a cor da paleta é clara sobre o card branco (QA 02/07).
   if (kind === 'title') {
     return (
       <span
         data-kind="title"
         className={clsx(
-          'relative max-w-full text-center text-base leading-tight font-extrabold tracking-tight break-words [font-family:var(--font-display)] drop-shadow-[0_1px_0_rgba(0,0,0,0.25)]',
+          'relative max-w-full text-center text-base leading-tight font-extrabold tracking-tight break-words [font-family:var(--font-display)] [text-shadow:0_1px_0_rgba(0,0,0,0.45),0_0_1px_rgba(0,0,0,0.35)]',
           rgb ? undefined : KIND_TOKEN_TEXT_CLASS.title,
         )}
         style={rgb ? { color: rgbString(rgb) } : undefined}
