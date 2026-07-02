@@ -13,6 +13,7 @@ import {
 } from '../../animation/frames'
 import { activeAnimationOf } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
+import { type AnimatedSpriteAsset, isAnimatedSpriteKind } from '../../core/project'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { useToast } from '../ui/Toast'
@@ -27,14 +28,12 @@ export function AnimationList(): JSX.Element | null {
   const [renaming, setRenaming] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
 
-  if (asset.kind !== 'pixel-sprite') return null
+  if (!isAnimatedSpriteKind(asset)) return null
   const active = activeAnimationOf(asset, { animationId, frameIndex })
 
-  function withSprite(
-    action: (sprite: Extract<typeof asset, { kind: 'pixel-sprite' }>) => void,
-  ): void {
+  function withSprite(action: (sprite: AnimatedSpriteAsset) => void): void {
     const current = editor.getState().asset
-    if (current.kind === 'pixel-sprite') action(current)
+    if (isAnimatedSpriteKind(current)) action(current)
   }
 
   return (

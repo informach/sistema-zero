@@ -6,7 +6,7 @@
  * Round-trip garantido por teste que reimplementa o `parseGrid`/`parseSolidList`
  * do runtime (game-2d/runtime.ts).
  */
-import type { TilemapAsset, TilesetAsset } from '../core/project'
+import type { AnyTilesetAsset, TilemapAsset } from '../core/project'
 import { flattenLayers } from '../tiles/tilemapOps'
 
 /** O texto de grade do bloco (camadas visíveis ACHATADAS, a de cima vence). */
@@ -25,7 +25,7 @@ export function tilemapToStudioGrid(tilemap: TilemapAsset): string {
 }
 
 /** A lista de sólidos do bloco (`"1, 3"`); vazia = nenhum tile sólido. */
-export function tilesetSolidList(tileset: TilesetAsset): string {
+export function tilesetSolidList(tileset: AnyTilesetAsset): string {
   const indices: number[] = []
   tileset.solid.forEach((isSolid, index) => {
     if (isSolid) indices.push(index)
@@ -37,7 +37,7 @@ export function tilesetSolidList(tileset: TilesetAsset): string {
  * `.pinta-tilemap.json` — o pacote completo p/ usar FORA do Studio (VS Code):
  * grade + sólidos + tamanho do tile + dimensões (a imagem vai ao lado no ZIP).
  */
-export function tilemapExportJson(tilemap: TilemapAsset, tileset: TilesetAsset): string {
+export function tilemapExportJson(tilemap: TilemapAsset, tileset: AnyTilesetAsset): string {
   return JSON.stringify(
     {
       tileSize: tileset.tileSize,
@@ -57,7 +57,7 @@ export function tilemapExportJson(tilemap: TilemapAsset, tileset: TilesetAsset):
 }
 
 /** A receita em PT mostrada no ExportDialog/LEIA-ME. */
-export function tilemapRecipe(tilemap: TilemapAsset, tileset: TilesetAsset): string {
+export function tilemapRecipe(tilemap: TilemapAsset, tileset: AnyTilesetAsset): string {
   const solid = tilesetSolidList(tileset)
   return [
     `Mapa de ${tilemap.cols} × ${tilemap.rows} peças, cada peça com ${tileset.tileSize} × ${tileset.tileSize}.`,

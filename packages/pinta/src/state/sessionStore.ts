@@ -7,23 +7,41 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { PixelToolId } from '../pixel/tools'
 
+/** Ferramentas da sessão: as do motor pixel + a Mão (navegação, mapa/vetor). */
+export type PintaSessionTool = PixelToolId | 'pan'
+
 export const ZOOM_LEVELS = [2, 4, 6, 8, 12, 16, 24, 32] as const
 
+/**
+ * Zoom do editor VETORIAL: o palco desenha em px de documento (não em células),
+ * então faz sentido reduzir (<1) para documentos grandes; sprites pequenos
+ * (32px) ainda alcançam um palco confortável no topo da escala.
+ */
+export const VECTOR_ZOOM_LEVELS = [0.25, 0.5, 1, 2, 4, 8, 12, 16] as const
+
+/**
+ * Zoom do editor de MAPA: o fator multiplica o tileSize por célula — com
+ * níveis próprios o mostrador diz a verdade (antes um "8×" desenhava a 2×).
+ */
+export const TILEMAP_ZOOM_LEVELS = [0.5, 1, 2, 4, 8] as const
+
 export interface PintaSessionState {
-  tool: PixelToolId
+  tool: PintaSessionTool
   /** Índice de paleta selecionado (1 = primeira cor visível). */
   color: number
   brushSize: number
   mirrorX: boolean
   filled: boolean
   zoom: number
+  /** Degraus de zoom do editor (pixel e vetor usam escalas diferentes). */
+  zoomLevels: readonly number[]
   onion: boolean
   playing: boolean
   /** Animação/quadro em edição (sprites; null = a primeira do asset). */
   animationId: string | null
   frameIndex: number
 
-  setTool(tool: PixelToolId): void
+  setTool(tool: PintaSessionTool): void
   setColor(color: number): void
   setBrushSize(size: number): void
   toggleMirror(): void
@@ -39,11 +57,11 @@ export interface PintaSessionState {
 
 export type PintaSessionStore = StoreApi<PintaSessionState>
 
-function nextZoom(current: number, direction: 1 | -1): number {
-  const index = ZOOM_LEVELS.findIndex((level) => level >= current)
-  const at = index === -1 ? ZOOM_LEVELS.length - 1 : index
-  const target = Math.min(Math.max(at + direction, 0), ZOOM_LEVELS.length - 1)
-  return ZOOM_LEVELS[target] ?? 8
+function nextZoom(levels: readonly number[], current: number, direction: 1 | -1): number {
+  const index = levels.findIndex((level) => level >= current)
+  const at = index === -1 ? levels.length - 1 : index
+  const target = Math.min(Math.max(at + direction, 0), levels.length - 1)
+  return levels[target] ?? 8
 }
 
 export function createSessionStore(initial?: Partial<PintaSessionState>): PintaSessionStore {
@@ -54,6 +72,7 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     mirrorX: false,
     filled: false,
     zoom: 8,
+    zoomLevels: ZOOM_LEVELS,
     onion: false,
     playing: true,
     animationId: null,
@@ -65,9 +84,9 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     setBrushSize: (size) => set({ brushSize: Math.min(Math.max(Math.round(size), 1), 3) }),
     toggleMirror: () => set((state) => ({ mirrorX: !state.mirrorX })),
     toggleFilled: () => set((state) => ({ filled: !state.filled })),
-    setZoom: (zoom) => set({ zoom: Math.min(Math.max(zoom, 1), 48) }),
-    zoomIn: () => set((state) => ({ zoom: nextZoom(state.zoom, 1) })),
-    zoomOut: () => set((state) => ({ zoom: nextZoom(state.zoom, -1) })),
+    setZoom: (zoom) => set({ zoom: Math.min(Math.max(zoom, 0.25), 48) }),
+    zoomIn: () => set((state) => ({ zoom: nextZoom(state.zoomLevels, state.zoom, 1) })),
+    zoomOut: () => set((state) => ({ zoom: nextZoom(state.zoomLevels, state.zoom, -1) })),
     toggleOnion: () => set((state) => ({ onion: !state.onion })),
     setPlaying: (playing) => set({ playing }),
     selectAnimation: (id) => set({ animationId: id, frameIndex: 0 }),

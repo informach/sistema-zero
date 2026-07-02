@@ -4,7 +4,7 @@ import {
   createPixelSpriteAsset,
   createTilemapAsset,
   createTilesetAsset,
-  createVectorAsset,
+  createVectorBackgroundAsset,
   type PintaAsset,
 } from '../core/project'
 import { setCell } from '../tiles/tilemapOps'
@@ -23,7 +23,7 @@ function makeGallery(): PintaAsset[] {
     createPixelBackgroundAsset({ name: 'ceu', width: 16, height: 12 }),
     tileset,
     tilemap,
-    createVectorAsset({ name: 'livre', width: 480, height: 360 }),
+    createVectorBackgroundAsset({ name: 'livre', width: 480, height: 360 }),
   ]
 }
 
@@ -38,7 +38,7 @@ describe('galleryToPintaJson / importPintaJson', () => {
       'pixel-sprite',
       'tilemap',
       'tileset',
-      'vector',
+      'vector-background',
     ])
     const sprite = assets.find((a) => a.kind === 'pixel-sprite')
     expect(sprite?.kind === 'pixel-sprite' && sprite.animations[0]?.frames[0]?.data[0]).toBe(5)
@@ -122,7 +122,8 @@ describe('zipGallery', () => {
     // PNGs dependem de canvas real (null no happy-dom); os textos SEMPRE saem.
     expect(Object.keys(files)).toContain('mapas/fase.grade.txt')
     expect(Object.keys(files)).toContain('mapas/fase.pinta-tilemap.json')
-    expect(Object.keys(files)).toContain('vetores/livre.svg')
+    // O desenho vetorial (ex-'vetores/') agora vive em cenarios/, ao lado do pixel.
+    expect(Object.keys(files)).toContain('cenarios/livre.svg')
     expect(Object.keys(files)).toContain('personagens/heroi/spritesheet.json')
     expect(Object.keys(files)).toContain('galeria.pinta.json')
 

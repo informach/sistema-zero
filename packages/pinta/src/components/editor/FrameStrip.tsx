@@ -2,6 +2,8 @@
  * Filmstrip dos quadros da animação selecionada (embaixo do canvas, layout
  * MakeCode): miniaturas clicáveis + novo/duplicar/apagar/mover + o toggle 👻
  * do onion skin. Mutação = helpers puros de frames.ts → commit no editorStore.
+ * Serve os DOIS estilos: thumbs pixel pintam num canvas; thumbs vetoriais são
+ * SVG inline.
  */
 import type { JSX } from 'react'
 import { useEffect, useRef } from 'react'
@@ -9,30 +11,29 @@ import { addFrame, duplicateFrame, moveFrame, removeFrame } from '../../animatio
 import { activeAnimationOf } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import type { PaletteId } from '../../core/palette'
-import type { PintaBitmap } from '../../core/project'
+import {
+  type AnimatedSpriteAsset,
+  isAnimatedSpriteKind,
+  type PintaBitmap,
+  type VectorFrame,
+} from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
+import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { IconButton } from '../ui/Button'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
-function FrameThumb({
-  bitmap,
-  paletteId,
+function ThumbButton({
   selected,
   label,
   onSelect,
+  children,
 }: {
-  bitmap: PintaBitmap
-  paletteId: PaletteId
   selected: boolean
   label: string
   onSelect: () => void
+  children: JSX.Element
 }): JSX.Element {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) paintBitmap(canvas, bitmap, paletteId)
-  }, [bitmap, paletteId])
   return (
     <button
       type="button"
@@ -43,12 +44,29 @@ function FrameThumb({
         selected ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border'
       }`}
     >
-      <canvas
-        ref={canvasRef}
-        className="pin-pixelated h-full w-full object-contain"
-        style={{ imageRendering: 'pixelated' }}
-      />
+      {children}
     </button>
+  )
+}
+
+function PixelFrameThumb({
+  bitmap,
+  paletteId,
+}: {
+  bitmap: PintaBitmap
+  paletteId: PaletteId
+}): JSX.Element {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) paintBitmap(canvas, bitmap, paletteId)
+  }, [bitmap, paletteId])
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pin-pixelated h-full w-full object-contain"
+      style={{ imageRendering: 'pixelated' }}
+    />
   )
 }
 
@@ -60,20 +78,20 @@ export function FrameStrip(): JSX.Element | null {
   const frameIndex = useSession((state) => state.frameIndex)
   const onion = useSession((state) => state.onion)
 
-  if (asset.kind !== 'pixel-sprite') return null
+  if (!isAnimatedSpriteKind(asset)) return null
   const animation = activeAnimationOf(asset, { animationId, frameIndex })
   if (!animation) return null
   const selectedIndex = Math.min(frameIndex, animation.frames.length - 1)
 
   function mutate(
-    op: (sprite: Extract<typeof asset, { kind: 'pixel-sprite' }>) => {
-      next: typeof asset
+    op: (sprite: AnimatedSpriteAsset) => {
+      next: AnimatedSpriteAsset
       selectIndex?: number
       limitToast?: string
     },
   ): void {
     const current = editor.getState().asset
-    if (current.kind !== 'pixel-sprite') return
+    if (!isAnimatedSpriteKind(current)) return
     const { next, selectIndex, limitToast } = op(current)
     if (next === current) {
       if (limitToast) showToast(limitToast)
@@ -88,15 +106,24 @@ export function FrameStrip(): JSX.Element | null {
       <span className="px-1 text-sm font-bold text-pin-muted">{COPY.animation.frames}</span>
       <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1">
         {animation.frames.map((frame, index) => (
-          <FrameThumb
+          <ThumbButton
             // biome-ignore lint/suspicious/noArrayIndexKey: quadros não têm id; a ordem É a identidade
             key={index}
-            bitmap={frame}
-            paletteId={asset.paletteId}
             selected={index === selectedIndex}
             label={`Quadro ${index + 1}`}
             onSelect={() => session.getState().selectFrame(index)}
-          />
+          >
+            {asset.kind === 'pixel-sprite' ? (
+              <PixelFrameThumb bitmap={frame as PintaBitmap} paletteId={asset.paletteId} />
+            ) : (
+              <VectorFrameSvg
+                width={asset.frameWidth}
+                height={asset.frameHeight}
+                shapes={frame as VectorFrame}
+                className="h-full w-full"
+              />
+            )}
+          </ThumbButton>
         ))}
       </div>
       <div className="flex items-center gap-1">

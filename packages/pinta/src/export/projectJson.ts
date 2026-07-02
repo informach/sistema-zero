@@ -41,7 +41,10 @@ function encodeAsset(asset: PintaAsset): EncodedAsset {
         ...asset,
         layers: asset.layers.map((l) => ({ ...l, cells: Array.from(l.cells) })),
       }
-    case 'vector':
+    // Shapes vetoriais já são JSON puro — passam direto, sem codec.
+    case 'vector-sprite':
+    case 'vector-background':
+    case 'vector-tileset':
       return { ...asset }
   }
 }
@@ -126,7 +129,14 @@ export function importPintaJson(text: string): PintaImportResult {
       warnings.push('O backup tem mais desenhos do que o limite; alguns ficaram de fora.')
       break
     }
-    const decoded = sanitizePintaAsset(decodeAsset(raw))
+    // Cinturão extra do contrato "nunca lança": um registro que exploda no
+    // decode vira descarte-com-aviso, sem derrubar o restauro inteiro.
+    let decoded: PintaAsset | null = null
+    try {
+      decoded = sanitizePintaAsset(decodeAsset(raw))
+    } catch {
+      decoded = null
+    }
     if (decoded) {
       assets.push(decoded)
     } else {

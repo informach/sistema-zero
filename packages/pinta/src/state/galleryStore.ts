@@ -8,14 +8,18 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import {
+  assetStyle,
   createPixelBackgroundAsset,
   createPixelSpriteAsset,
   createTilemapAsset,
   createTilesetAsset,
-  createVectorAsset,
+  createVectorBackgroundAsset,
+  createVectorSpriteAsset,
+  createVectorTilesetAsset,
   normalizeAssetName,
   PINTA_LIMITS,
   type PintaAsset,
+  type PintaAssetStyle,
 } from '../core/project'
 import { deleteAsset, listAllAssets, persistAsset } from './persistence'
 
@@ -24,7 +28,9 @@ export type NewAssetInput =
   | { kind: 'pixel-background'; name: string; width: number; height: number }
   | { kind: 'tileset'; name: string; tileSize: number }
   | { kind: 'tilemap'; name: string; tilesetId: string; cols: number; rows: number }
-  | { kind: 'vector'; name: string; width: number; height: number }
+  | { kind: 'vector-sprite'; name: string; frameSize: number }
+  | { kind: 'vector-background'; name: string; width: number; height: number }
+  | { kind: 'vector-tileset'; name: string; tileSize: number }
 
 export interface PintaGalleryState {
   assets: PintaAsset[]
@@ -33,6 +39,11 @@ export interface PintaGalleryState {
   loadError: string | null
   /** Erro da última mutação (criar/renomear/duplicar/apagar) — copy amigável. */
   mutateError: string | null
+  /**
+   * Último ESTILO usado (pixel/vetor) — pré-seleciona o primeiro passo do
+   * "Criar novo". Derivado do asset mais recente no load; atualizado no create.
+   */
+  lastStyle: PintaAssetStyle
 
   load(): Promise<void>
   /** Cria e persiste; devolve o asset novo ou null (nome inválido/duplicado/cota). */
@@ -86,8 +97,12 @@ function buildAsset(input: NewAssetInput, name: string): PintaAsset {
         cols: input.cols,
         rows: input.rows,
       })
-    case 'vector':
-      return createVectorAsset({ name, width: input.width, height: input.height })
+    case 'vector-sprite':
+      return createVectorSpriteAsset({ name, frameSize: input.frameSize })
+    case 'vector-background':
+      return createVectorBackgroundAsset({ name, width: input.width, height: input.height })
+    case 'vector-tileset':
+      return createVectorTilesetAsset({ name, tileSize: input.tileSize })
   }
 }
 
@@ -100,6 +115,8 @@ function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
   copy.createdAt = now
   copy.updatedAt = now
   if (copy.kind === 'pixel-sprite') {
+    copy.animations = copy.animations.map((a) => ({ ...a, id: newId() }))
+  } else if (copy.kind === 'vector-sprite') {
     copy.animations = copy.animations.map((a) => ({ ...a, id: newId() }))
   } else if (copy.kind === 'tilemap') {
     copy.layers = copy.layers.map((l) => ({ ...l, id: newId() }))
@@ -114,12 +131,22 @@ export function createGalleryStore(): PintaGalleryStore {
     loading: false,
     loadError: null,
     mutateError: null,
+    lastStyle: 'pixel',
 
     async load() {
       set({ loading: true, loadError: null })
       try {
         const assets = await listAllAssets()
-        set({ assets, loaded: true, loading: false })
+        // O estilo do asset mais recente vira o default do "Criar novo".
+        const recentStyle = assets
+          .map((a) => assetStyle(a.kind))
+          .find((style): style is PintaAssetStyle => style !== null)
+        set((state) => ({
+          assets,
+          loaded: true,
+          loading: false,
+          lastStyle: recentStyle ?? state.lastStyle,
+        }))
       } catch {
         set({ loading: false, loadError: COPY.gallery.loadError })
       }
@@ -143,7 +170,11 @@ export function createGalleryStore(): PintaGalleryStore {
       const asset = buildAsset(input, name)
       try {
         await persistAsset(asset)
-        set((state) => ({ assets: upsertSorted(state.assets, asset), mutateError: null }))
+        set((state) => ({
+          assets: upsertSorted(state.assets, asset),
+          mutateError: null,
+          lastStyle: assetStyle(asset.kind) ?? state.lastStyle,
+        }))
         return asset
       } catch {
         set({ mutateError: COPY.editor.saveError })
@@ -219,10 +250,15 @@ export function createGalleryStore(): PintaGalleryStore {
     async importAssets(incoming) {
       let added = 0
       let skipped = 0
+      // Tilesets ENTRAM PRIMEIRO: se a quota cortar no meio, é melhor perder um
+      // mapa (degrada com "peças sumiram") do que importar o mapa sem as peças.
+      const ordered = [...incoming].sort(
+        (a, b) => (a.kind === 'tilemap' ? 1 : 0) - (b.kind === 'tilemap' ? 1 : 0),
+      )
       // Mapa id-antigo → id-novo p/ religar tilemaps aos SEUS tilesets do backup.
       const idMap = new Map<string, string>()
       const prepared: PintaAsset[] = []
-      for (const asset of incoming) {
+      for (const asset of ordered) {
         const taken = new Set([...get().assets, ...prepared].map((a) => a.name))
         if (get().assets.length + prepared.length >= PINTA_LIMITS.maxAssets) {
           skipped += 1

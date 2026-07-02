@@ -1,15 +1,39 @@
 import { describe, expect, it } from 'bun:test'
+import type { VectorShape } from '../vector/model'
 import {
+  assetRole,
+  assetStyle,
   createBitmap,
   createPixelBackgroundAsset,
   createPixelSpriteAsset,
   createTilemapAsset,
   createTilesetAsset,
-  createVectorAsset,
+  createVectorBackgroundAsset,
+  createVectorSpriteAsset,
+  createVectorTilesetAsset,
+  isAnimatedSpriteKind,
+  isTilesetKind,
   normalizeAssetName,
   PINTA_LIMITS,
+  paletteIdOf,
   sanitizePintaAsset,
 } from './project'
+
+function rectShape(id = 's1'): VectorShape {
+  return {
+    id,
+    type: 'rect',
+    x: 1,
+    y: 2,
+    w: 10,
+    h: 8,
+    rx: 0,
+    fill: '#ff2121',
+    stroke: null,
+    opacity: 1,
+    rotation: 0,
+  }
+}
 
 describe('normalizeAssetName', () => {
   it('kebab-case ASCII, remove acentos', () => {
@@ -52,13 +76,15 @@ describe('fábricas', () => {
 })
 
 describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
-  it('round-trip das fábricas', () => {
+  it('round-trip das fábricas (TODOS os kinds — guarda contra apagar a galeria)', () => {
     const assets = [
       createPixelSpriteAsset({ name: 'heroi', frameSize: 16 }),
       createPixelBackgroundAsset({ name: 'ceu', width: 160, height: 120 }),
       createTilesetAsset({ name: 'pecas', tileSize: 16 }),
       createTilemapAsset({ name: 'fase', tilesetId: 't1', cols: 4, rows: 3 }),
-      createVectorAsset({ name: 'livre', width: 480, height: 360 }),
+      createVectorBackgroundAsset({ name: 'livre', width: 480, height: 360 }),
+      createVectorSpriteAsset({ name: 'heroi-vetor', frameSize: 64 }),
+      createVectorTilesetAsset({ name: 'pecas-vetor', tileSize: 32 }),
     ]
     for (const asset of assets) {
       const out = sanitizePintaAsset(asset)
@@ -66,6 +92,93 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
       expect(out?.kind).toBe(asset.kind)
       expect(out?.name).toBe(asset.name)
     }
+  })
+
+  it('MIGRAÇÃO lazy: kind antigo "vector" volta como vector-background, dados intactos', () => {
+    const legacy = {
+      ...createVectorBackgroundAsset({ name: 'livre', width: 480, height: 360 }),
+      kind: 'vector',
+      shapes: [rectShape()],
+    }
+    const out = sanitizePintaAsset(legacy)
+    expect(out?.kind).toBe('vector-background')
+    if (out?.kind !== 'vector-background') return
+    expect(out.width).toBe(480)
+    expect(out.height).toBe(360)
+    expect(out.shapes).toHaveLength(1)
+    expect(out.shapes[0]?.type).toBe('rect')
+  })
+
+  it('vector-sprite: quadro VAZIO é válido; animações sem lista → null', () => {
+    const sprite = createVectorSpriteAsset({ name: 'v', frameSize: 64 })
+    const out = sanitizePintaAsset(sprite)
+    expect(out?.kind).toBe('vector-sprite')
+    if (out?.kind !== 'vector-sprite') return
+    expect(out.animations[0]?.frames).toEqual([[]])
+
+    expect(sanitizePintaAsset({ ...sprite, animations: [] })).toBeNull()
+    expect(sanitizePintaAsset({ ...sprite, animations: 'x' })).toBeNull()
+  })
+
+  it('vector-sprite: quotas recortam animações e quadros; shape inválido cai fora', () => {
+    const sprite = createVectorSpriteAsset({ name: 'v', frameSize: 32 })
+    const base = sprite.animations[0]
+    if (!base) throw new Error('animação esperada')
+    const overloaded = {
+      ...sprite,
+      animations: Array.from({ length: PINTA_LIMITS.maxAnimations + 3 }, (_, i) => ({
+        ...base,
+        id: `anim-${i}`,
+        frames: Array.from({ length: PINTA_LIMITS.maxFramesPerAnimation + 3 }, () => [
+          rectShape(),
+          { ...rectShape('ruim'), fill: 'vermelho' },
+        ]),
+      })),
+    }
+    const out = sanitizePintaAsset(overloaded)
+    expect(out?.kind).toBe('vector-sprite')
+    if (out?.kind !== 'vector-sprite') return
+    expect(out.animations).toHaveLength(PINTA_LIMITS.maxAnimations)
+    expect(out.animations[0]?.frames).toHaveLength(PINTA_LIMITS.maxFramesPerAnimation)
+    // O shape com fill inválido foi descartado; o válido ficou.
+    expect(out.animations[0]?.frames[0]).toHaveLength(1)
+  })
+
+  it('vector-tileset: solid é realinhado ao número de tiles; tile vazio é válido', () => {
+    const tileset = createVectorTilesetAsset({ name: 'pv', tileSize: 16 })
+    const out = sanitizePintaAsset({ ...tileset, solid: [true, true, true] })
+    expect(out?.kind).toBe('vector-tileset')
+    if (out?.kind !== 'vector-tileset') return
+    expect(out.solid).toEqual([true])
+    expect(out.tiles).toEqual([[]])
+  })
+})
+
+describe('helpers de estilo/papel', () => {
+  it('assetStyle e assetRole cobrem todos os kinds', () => {
+    expect(assetStyle('pixel-sprite')).toBe('pixel')
+    expect(assetStyle('vector-tileset')).toBe('vector')
+    expect(assetStyle('tilemap')).toBeNull()
+    expect(assetRole('vector-sprite')).toBe('sprite')
+    expect(assetRole('pixel-background')).toBe('background')
+    expect(assetRole('vector-background')).toBe('background')
+    expect(assetRole('tilemap')).toBe('tilemap')
+  })
+
+  it('isTilesetKind/isAnimatedSpriteKind aceitam os dois estilos', () => {
+    expect(isTilesetKind(createTilesetAsset({ name: 'a', tileSize: 16 }))).toBe(true)
+    expect(isTilesetKind(createVectorTilesetAsset({ name: 'b', tileSize: 16 }))).toBe(true)
+    expect(isTilesetKind(createPixelSpriteAsset({ name: 'c', frameSize: 8 }))).toBe(false)
+    expect(isAnimatedSpriteKind(createVectorSpriteAsset({ name: 'd', frameSize: 32 }))).toBe(true)
+    expect(isAnimatedSpriteKind(createPixelSpriteAsset({ name: 'e', frameSize: 8 }))).toBe(true)
+  })
+
+  it('paletteIdOf devolve a paleta própria ou o default', () => {
+    expect(paletteIdOf(createPixelSpriteAsset({ name: 'a', frameSize: 8 }))).toBe('arcade')
+    expect(paletteIdOf(createVectorSpriteAsset({ name: 'b', frameSize: 32 }))).toBe('arcade')
+    expect(paletteIdOf(createTilemapAsset({ name: 'c', tilesetId: 't', cols: 2, rows: 2 }))).toBe(
+      'arcade',
+    )
   })
 
   it('lixo → null', () => {

@@ -4,7 +4,7 @@
  * no structured clone); só o JSON precisa de texto compacto — um cenário
  * 480×360 quase vazio vira poucos bytes em vez de 170 KB de array.
  */
-import type { PintaBitmap } from './project'
+import { PINTA_LIMITS, type PintaBitmap } from './project'
 
 /** RLE: pares [contagem (1–255), índice]. */
 function rleEncode(data: Uint8Array): Uint8Array {
@@ -73,6 +73,12 @@ export function decodeBitmap(raw: unknown): PintaBitmap | null {
     return null
   }
   if (!Number.isInteger(e.width) || !Number.isInteger(e.height) || e.width < 1 || e.height < 1) {
+    return null
+  }
+  // Teto ANTES de alocar: um backup malicioso com width/height gigantes
+  // alocaria GB (ou lançaria RangeError) dentro do rleDecode — o sanitize
+  // do modelo (512) chegaria tarde demais.
+  if (e.width > PINTA_LIMITS.maxBitmapSize || e.height > PINTA_LIMITS.maxBitmapSize) {
     return null
   }
   const bytes = base64ToBytes(e.rle)

@@ -1,26 +1,34 @@
 /**
- * "Baixar tudo": um ZIP organizado por tipo com TODOS os assets + LEIA-ME com
- * as receitas em PT (os números de cada bloco do Estúdio). fflate carregado
- * SOB DEMANDA (padrão studio/src/export/zip.ts).
+ * "Baixar tudo": um ZIP organizado por PAPEL com TODOS os assets (os dois
+ * estilos lado a lado) + LEIA-ME com as receitas em PT (os números de cada
+ * bloco do Estúdio). fflate carregado SOB DEMANDA (padrão studio/export/zip).
  *
  * Estrutura:
- *   personagens/<nome>/spritesheet.png + spritesheet.json + animacoes/<anim>.png
- *   cenarios/<nome>.png
- *   tilesets/<nome>.png
+ *   personagens/<nome>/spritesheet.png + spritesheet.json [+ .svg]
+ *     + animacoes/<anim>.png
+ *   cenarios/<nome>.png [+ <nome>.svg]
+ *   tilesets/<nome>.png [+ <nome>.svg]
  *   mapas/<nome>.png + <nome>.grade.txt + <nome>.pinta-tilemap.json
- *   vetores/<nome>.svg
  *   galeria.pinta.json (o backup completo, re-importável)
  *   LEIA-ME.txt
  */
-import type { PintaAsset, TilesetAsset } from '../core/project'
+import { type AnyTilesetAsset, isTilesetKind, type PintaAsset } from '../core/project'
 import { tilesetPngDataUrl } from '../tiles/packTileset'
+import { vectorTilesetPngDataUrl, vectorTilesetSvg } from '../tiles/packVectorTileset'
 import { tilemapPngDataUrl } from '../tiles/renderTilemap'
+import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
 import { vectorPngDataUrl } from '../vector/rasterize'
 import { vectorToSvg } from '../vector/svg'
 import { bitmapToPngDataUrl, composeSheetPngDataUrl, dataUrlToBlob } from './png'
 import { galleryToPintaJson } from './projectJson'
 import { packSpritesheet, spritesheetMetadata, spritesheetRecipe } from './spritesheet'
 import { tilemapExportJson, tilemapRecipe, tilemapToStudioGrid } from './studioGrid'
+import {
+  packVectorSpritesheet,
+  vectorSheetPngDataUrl,
+  vectorSheetSvg,
+  vectorStripPngDataUrl,
+} from './vectorSheet'
 
 type FileMap = Record<string, Uint8Array | string>
 
@@ -28,6 +36,27 @@ async function dataUrlBytes(dataUrl: string | null): Promise<Uint8Array | null> 
   const blob = dataUrl ? dataUrlToBlob(dataUrl) : null
   if (!blob) return null
   return new Uint8Array(await blob.arrayBuffer())
+}
+
+/**
+ * Nome de ANIMAÇÃO → nome de arquivo seguro: o nome é texto livre (pode ter
+ * `/`, `..`) e vira caminho dentro do ZIP — sem sanear, um nome esperto cria
+ * pastas/traversal e dois nomes iguais sobrescrevem a mesma entrada.
+ */
+function safeFileName(name: string, index: number, taken: Set<string>): string {
+  const cleaned =
+    name
+      .replace(/\.\./g, '-')
+      .replace(/[/\\:*?"<>|]/g, '-')
+      .trim() || `animacao-${index}`
+  let candidate = cleaned
+  let n = 2
+  while (taken.has(candidate)) {
+    candidate = `${cleaned}-${n}`
+    n += 1
+  }
+  taken.add(candidate)
+  return candidate
 }
 
 /** Monta o mapa de arquivos (async: rasterizações). Pula o que não renderizar. */
@@ -41,9 +70,9 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
     'Cada pasta tem um tipo de desenho, prontos para usar no Estúdio ou em qualquer editor.',
     '',
   ]
-  const tilesetsById = new Map<string, TilesetAsset>()
+  const tilesetsById = new Map<string, AnyTilesetAsset>()
   for (const asset of assets) {
-    if (asset.kind === 'tileset') tilesetsById.set(asset.id, asset)
+    if (isTilesetKind(asset)) tilesetsById.set(asset.id, asset)
   }
 
   for (const asset of assets) {
@@ -62,7 +91,8 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
         )
         if (sheet) files[`personagens/${asset.name}/spritesheet.png`] = sheet
         files[`personagens/${asset.name}/spritesheet.json`] = spritesheetMetadata(pack)
-        for (const animation of asset.animations) {
+        const takenNames = new Set<string>()
+        for (const [animationIndex, animation] of asset.animations.entries()) {
           const strip = await dataUrlBytes(
             composeSheetPngDataUrl({
               cells: animation.frames.map((bitmap, col) => ({ bitmap, col, row: 0 })),
@@ -73,9 +103,12 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
               paletteId: asset.paletteId,
             }),
           )
-          if (strip) files[`personagens/${asset.name}/animacoes/${animation.name}.png`] = strip
+          if (strip) {
+            const fileName = safeFileName(animation.name, animationIndex, takenNames)
+            files[`personagens/${asset.name}/animacoes/${fileName}.png`] = strip
+          }
         }
-        readme.push(`— Personagem "${asset.name}":`, spritesheetRecipe(pack), '')
+        readme.push(`• Personagem "${asset.name}":`, spritesheetRecipe(pack), '')
         break
       }
       case 'pixel-background': {
@@ -91,17 +124,44 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
       case 'tilemap': {
         const tileset = tilesetsById.get(asset.tilesetId)
         if (!tileset) break
-        const png = await dataUrlBytes(tilemapPngDataUrl(asset, tileset))
+        const png = await dataUrlBytes(
+          tileset.kind === 'tileset'
+            ? tilemapPngDataUrl(asset, tileset)
+            : await vectorTilemapPngDataUrl(asset, tileset),
+        )
         if (png) files[`mapas/${asset.name}.png`] = png
         files[`mapas/${asset.name}.grade.txt`] = tilemapToStudioGrid(asset)
         files[`mapas/${asset.name}.pinta-tilemap.json`] = tilemapExportJson(asset, tileset)
-        readme.push(`— Mapa "${asset.name}":`, tilemapRecipe(asset, tileset), '')
+        readme.push(`• Mapa "${asset.name}":`, tilemapRecipe(asset, tileset), '')
         break
       }
-      case 'vector': {
-        files[`vetores/${asset.name}.svg`] = vectorToSvg(asset)
+      case 'vector-sprite': {
+        const pack = packVectorSpritesheet(asset)
+        const sheet = await dataUrlBytes(await vectorSheetPngDataUrl(pack))
+        if (sheet) files[`personagens/${asset.name}/spritesheet.png`] = sheet
+        files[`personagens/${asset.name}/spritesheet.svg`] = vectorSheetSvg(pack)
+        files[`personagens/${asset.name}/spritesheet.json`] = spritesheetMetadata(pack)
+        const takenNames = new Set<string>()
+        for (const [animationIndex, animation] of asset.animations.entries()) {
+          const strip = await dataUrlBytes(await vectorStripPngDataUrl(asset, animation))
+          if (strip) {
+            const fileName = safeFileName(animation.name, animationIndex, takenNames)
+            files[`personagens/${asset.name}/animacoes/${fileName}.png`] = strip
+          }
+        }
+        readme.push(`• Personagem "${asset.name}":`, spritesheetRecipe(pack), '')
+        break
+      }
+      case 'vector-background': {
+        files[`cenarios/${asset.name}.svg`] = vectorToSvg(asset)
         const png = await dataUrlBytes(await vectorPngDataUrl(asset))
-        if (png) files[`vetores/${asset.name}.png`] = png
+        if (png) files[`cenarios/${asset.name}.png`] = png
+        break
+      }
+      case 'vector-tileset': {
+        files[`tilesets/${asset.name}.svg`] = vectorTilesetSvg(asset)
+        const png = await dataUrlBytes(await vectorTilesetPngDataUrl(asset))
+        if (png) files[`tilesets/${asset.name}.png`] = png
         break
       }
     }

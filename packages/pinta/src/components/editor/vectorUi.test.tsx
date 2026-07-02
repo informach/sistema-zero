@@ -14,12 +14,14 @@ beforeEach(() => {
 
 async function openVectorEditor(): Promise<void> {
   const seed = createGalleryStore()
-  await seed.getState().create({ kind: 'vector', name: 'livre', width: 480, height: 360 })
+  await seed
+    .getState()
+    .create({ kind: 'vector-background', name: 'livre', width: 480, height: 360 })
   render(<PintaApp />)
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'Abrir livre' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Abrir livre/ })).toBeTruthy()
   })
-  fireEvent.click(screen.getByRole('button', { name: 'Abrir livre' }))
+  fireEvent.click(screen.getByRole('button', { name: /Abrir livre/ }))
   await waitFor(() => {
     expect(screen.getByText('livre')).toBeTruthy()
   })
@@ -33,13 +35,13 @@ describe('UI vetorial (F5)', () => {
     expect(screen.getByRole('button', { name: COPY.vector.star })).toBeTruthy()
     expect(screen.getByText(COPY.vector.fill)).toBeTruthy()
     expect(screen.getByText(COPY.vector.stroke)).toBeTruthy()
-    expect(screen.getByRole('img', { name: 'Área de desenho livre' })).toBeTruthy()
+    expect(screen.getByRole('img', { name: 'Área de desenho' })).toBeTruthy()
   })
 
   it('ferramenta de texto abre o diálogo e adiciona o shape', async () => {
     await openVectorEditor()
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
-    fireEvent.pointerDown(screen.getByRole('img', { name: 'Área de desenho livre' }), {
+    fireEvent.pointerDown(screen.getByRole('img', { name: 'Área de desenho' }), {
       isPrimary: true,
       clientX: 10,
       clientY: 10,
@@ -61,7 +63,7 @@ describe('UI vetorial (F5)', () => {
   it('apagar a seleção remove o shape', async () => {
     await openVectorEditor()
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
-    fireEvent.pointerDown(screen.getByRole('img', { name: 'Área de desenho livre' }), {
+    fireEvent.pointerDown(screen.getByRole('img', { name: 'Área de desenho' }), {
       isPrimary: true,
     })
     await waitFor(() => {

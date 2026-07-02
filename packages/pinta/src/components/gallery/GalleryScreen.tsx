@@ -6,6 +6,7 @@
 import type { JSX } from 'react'
 import { useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
+import { isTilesetKind } from '../../core/project'
 import { triggerDownload } from '../../export/download'
 import { importPintaJson } from '../../export/projectJson'
 import { zipGallery } from '../../export/zip'
@@ -34,7 +35,10 @@ export function GalleryScreen(): JSX.Element {
 
   const renameTarget = assets.find((a) => a.id === renameId) ?? null
   const removeTarget = assets.find((a) => a.id === removeId) ?? null
-  const tilesets = assets.filter((a) => a.kind === 'tileset')
+  const tilesets = assets.filter(isTilesetKind)
+  const lastStyle = usePintaGallery((state) => state.lastStyle)
+  const findAsset = (id: string): (typeof assets)[number] | null =>
+    assets.find((a) => a.id === id) ?? null
 
   async function handleDownloadAll(): Promise<void> {
     if (zipping) return
@@ -126,6 +130,7 @@ export function GalleryScreen(): JSX.Element {
             key={asset.id}
             asset={asset}
             justCreated={asset.id === justCreatedId}
+            findAsset={findAsset}
             onOpen={() => openAsset(asset.id)}
             onRename={() => {
               setRenameId(asset.id)
@@ -147,11 +152,14 @@ export function GalleryScreen(): JSX.Element {
         ))}
       </div>
 
+      {/* Montado só quando aberto: o passo de estilo nasce do lastStyle ATUAL. */}
       <NewAssetDialog
+        key={String(createOpen)}
         open={createOpen}
         tilesets={tilesets}
         takenNames={new Set(assets.map((a) => a.name))}
         creating={creating}
+        initialStyle={lastStyle}
         onClose={() => setCreateOpen(false)}
         onCreate={(input) => {
           setCreating(true)

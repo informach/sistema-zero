@@ -1,10 +1,9 @@
 /**
  * A prévia RODANDO da animação selecionada (requisito-núcleo, layout
- * MakeCode): canvas pequeno tocando em loop ao lado do editor, play/pause e o
- * controle de velocidade 🐢→🐇 — o fps gravado é o MESMO que sai no export.
- *
- * O canvas pinta 1:1 e o upscale é CSS (`image-rendering: pixelated`), então
- * não há blit por frame — só quando o ÍNDICE do quadro muda.
+ * MakeCode): tocando em loop ao lado do editor, play/pause e o controle de
+ * velocidade 🐢→🐇 — o fps gravado é o MESMO que sai no export. Serve os DOIS
+ * estilos: pixel pinta num canvas (upscale CSS pixelated), vetor renderiza o
+ * quadro como SVG inline (síncrono, sem canvas).
  */
 import type { JSX } from 'react'
 import { useEffect, useRef } from 'react'
@@ -12,7 +11,9 @@ import { setAnimationFps, setAnimationLoop } from '../../animation/frames'
 import { useAnimationPlayer } from '../../animation/player'
 import { activeAnimationOf } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
+import { isAnimatedSpriteKind, type PintaBitmap, type VectorFrame } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
+import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { IconButton } from '../ui/Button'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
@@ -26,8 +27,8 @@ export function PreviewPlayer(): JSX.Element | null {
   const playing = useSession((state) => state.playing)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const sprite = asset.kind === 'pixel-sprite' ? asset : null
-  const animation = sprite ? activeAnimationOf(sprite, { animationId, frameIndex }) : null
+  const animated = isAnimatedSpriteKind(asset) ? asset : null
+  const animation = animated ? activeAnimationOf(animated, { animationId, frameIndex }) : null
 
   const playingIndex = useAnimationPlayer({
     playing: playing && Boolean(animation),
@@ -41,13 +42,17 @@ export function PreviewPlayer(): JSX.Element | null {
     ? playingIndex
     : Math.min(frameIndex, (animation?.frames.length ?? 1) - 1)
   const shown = animation?.frames[shownIndex] ?? null
+  const shownBitmap = animated?.kind === 'pixel-sprite' && shown ? (shown as PintaBitmap) : null
+  const shownShapes = animated?.kind === 'vector-sprite' && shown ? (shown as VectorFrame) : null
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (canvas && shown && sprite) paintBitmap(canvas, shown, sprite.paletteId)
-  }, [shown, sprite])
+    if (canvas && shownBitmap && animated?.kind === 'pixel-sprite') {
+      paintBitmap(canvas, shownBitmap, animated.paletteId)
+    }
+  }, [shownBitmap, animated])
 
-  if (!sprite || !animation) return null
+  if (!animated || !animation) return null
 
   const fpsIndex = FPS_CHOICES.findIndex((f) => f >= animation.fps)
   const sliderValue = fpsIndex === -1 ? FPS_CHOICES.length - 1 : fpsIndex
@@ -59,11 +64,20 @@ export function PreviewPlayer(): JSX.Element | null {
     >
       <span className="text-sm font-bold text-pin-muted">{COPY.animation.preview}</span>
       <div className="pin-checkerboard rounded-xl border-2 border-pin-border p-1">
-        <canvas
-          ref={canvasRef}
-          className="pin-pixelated block h-24 w-24 object-contain"
-          style={{ imageRendering: 'pixelated' }}
-        />
+        {animated.kind === 'pixel-sprite' ? (
+          <canvas
+            ref={canvasRef}
+            className="pin-pixelated block h-24 w-24 object-contain"
+            style={{ imageRendering: 'pixelated' }}
+          />
+        ) : (
+          <VectorFrameSvg
+            width={animated.frameWidth}
+            height={animated.frameHeight}
+            shapes={shownShapes ?? []}
+            className="block h-24 w-24"
+          />
+        )}
       </div>
       <div className="flex items-center gap-1">
         <IconButton
@@ -80,7 +94,7 @@ export function PreviewPlayer(): JSX.Element | null {
           title={COPY.animation.loop}
           onClick={() => {
             const state = editor.getState()
-            if (state.asset.kind !== 'pixel-sprite') return
+            if (!isAnimatedSpriteKind(state.asset)) return
             state.replace(setAnimationLoop(state.asset, animation.id, !animation.loop))
           }}
         >
@@ -102,7 +116,7 @@ export function PreviewPlayer(): JSX.Element | null {
           onChange={(event) => {
             const fps = FPS_CHOICES[Number(event.target.value)] ?? 8
             const state = editor.getState()
-            if (state.asset.kind !== 'pixel-sprite') return
+            if (!isAnimatedSpriteKind(state.asset)) return
             // replace (sem undo): arrastar o slider não deve encher a história.
             state.replace(setAnimationFps(state.asset, animation.id, fps))
           }}

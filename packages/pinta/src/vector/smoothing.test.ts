@@ -59,3 +59,19 @@ describe('smoothStrokeToPath (pipeline do pincel)', () => {
     expect(parsed?.commands.length ?? 99).toBeLessThan(raw.length)
   })
 })
+
+describe('smoothStrokeToPathCapped', () => {
+  it('rabisco patológico fica DENTRO do teto do sanitize (o traço não some no load)', async () => {
+    const { MAX_PATH_CHARS } = await import('./model')
+    const { smoothStrokeToPathCapped } = await import('./smoothing')
+    // Zigue-zague denso: cada ponto muda de direção (o RDP não descarta nada
+    // no epsilon padrão).
+    const points = Array.from({ length: 6000 }, (_, i) => ({
+      x: i % 2 === 0 ? i * 0.5 : i * 0.5 + 40,
+      y: i * 0.3,
+    }))
+    const d = smoothStrokeToPathCapped(points, 1.2)
+    expect(d.length).toBeGreaterThan(0)
+    expect(d.length).toBeLessThanOrEqual(MAX_PATH_CHARS)
+  })
+})

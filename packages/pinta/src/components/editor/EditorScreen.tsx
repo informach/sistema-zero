@@ -6,17 +6,18 @@
  */
 import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
-import { activeBitmapOf } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
-import type { PintaAsset } from '../../core/project'
-import { bitmapToPngDataUrl } from '../../export/png'
-import { packSpritesheet, spritesheetPngDataUrl } from '../../export/spritesheet'
+import { assetStyle, type PintaAsset } from '../../core/project'
+import { buildStudioPayload } from '../../export/studioBridge'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
 import { persistAsset } from '../../state/persistence'
-import { createSessionStore, type PintaSessionStore } from '../../state/sessionStore'
-import { packTileset, tilesetPngDataUrl } from '../../tiles/packTileset'
-import { tilemapPngDataUrl } from '../../tiles/renderTilemap'
-import { vectorPngDataUrl } from '../../vector/rasterize'
+import {
+  createSessionStore,
+  type PintaSessionState,
+  type PintaSessionStore,
+  TILEMAP_ZOOM_LEVELS,
+  VECTOR_ZOOM_LEVELS,
+} from '../../state/sessionStore'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
 import { Button, IconButton } from '../ui/Button'
@@ -82,7 +83,25 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   if (asset.kind === 'tilemap') {
     return <TilemapEditor />
   }
-  return <VectorEditor />
+  // Kinds vetoriais: o MESMO editor de shapes; personagem ganha a coluna de
+  // animações + tira de quadros (espelho do pixel), peças ganham a tira de tiles.
+  const isVectorSprite = asset.kind === 'vector-sprite'
+  const isVectorTileset = asset.kind === 'vector-tileset'
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 sm:p-4">
+      <div className="flex min-h-0 flex-1 items-stretch gap-3">
+        <VectorEditor />
+        {isVectorSprite ? (
+          <div className="flex w-48 shrink-0 flex-col gap-3 overflow-y-auto">
+            <PreviewPlayer />
+            <AnimationList />
+          </div>
+        ) : null}
+      </div>
+      {isVectorSprite ? <FrameStrip /> : null}
+      {isVectorTileset ? <TileStrip /> : null}
+    </div>
+  )
 }
 
 function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
@@ -98,72 +117,32 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   const [exportOpen, setExportOpen] = useState(false)
 
   const kind = COPY.kinds[asset.kind]
-  const paletteId = asset.kind === 'tilemap' || asset.kind === 'vector' ? 'arcade' : asset.paletteId
 
   /**
-   * O que atravessa a ponte "Usar no Estúdio" (PNG achatado na v1): sprite →
-   * a FOLHA inteira (a criança usa os from/to da receita); tileset → a FOLHA
-   * de peças (é a imagem que o bloco de tilemap carrega); tilemap → o mapa
-   * ACHATADO como imagem; vetorial → rasterizado; demais → o bitmap ativo.
+   * O que atravessa a ponte "Usar no Estúdio" (PNG achatado na v1): montado em
+   * `export/studioBridge.ts` (sprites enviam a FOLHA inteira; tilesets a folha
+   * de peças; tilemap o mapa achatado; vetoriais rasterizam).
    */
   async function exportForStudio(): Promise<{
     dataUrl: string
     width: number
     height: number
   } | null> {
-    if (asset.kind === 'vector') {
-      const dataUrl = await vectorPngDataUrl(asset)
-      if (!dataUrl) return null
-      return { dataUrl, width: asset.width, height: asset.height }
-    }
-    return exportForStudioSync()
-  }
-
-  function exportForStudioSync(): { dataUrl: string; width: number; height: number } | null {
-    if (asset.kind === 'pixel-sprite') {
-      const pack = packSpritesheet(asset)
-      const dataUrl = spritesheetPngDataUrl(asset, pack)
-      if (!dataUrl) return null
-      return {
-        dataUrl,
-        width: pack.columns * pack.frameWidth,
-        height: pack.rows * pack.frameHeight,
-      }
-    }
-    if (asset.kind === 'tileset') {
-      const pack = packTileset(asset)
-      const dataUrl = tilesetPngDataUrl(asset)
-      if (!dataUrl) return null
-      return {
-        dataUrl,
-        width: pack.columns * pack.tileSize,
-        height: pack.rows * pack.tileSize,
-      }
-    }
-    if (asset.kind === 'tilemap') {
-      const tileset = gallery
-        .getState()
-        .assets.find((a) => a.kind === 'tileset' && a.id === asset.tilesetId)
-      if (tileset?.kind !== 'tileset') return null
-      const dataUrl = tilemapPngDataUrl(asset, tileset)
-      if (!dataUrl) return null
-      return {
-        dataUrl,
-        width: asset.cols * tileset.tileSize,
-        height: asset.rows * tileset.tileSize,
-      }
-    }
-    const bitmap = activeBitmapOf(asset, { animationId, frameIndex })
-    if (!bitmap) return null
-    const dataUrl = bitmapToPngDataUrl(bitmap, paletteId)
-    if (!dataUrl) return null
-    return { dataUrl, width: bitmap.width, height: bitmap.height }
+    return buildStudioPayload(
+      asset,
+      (id) => gallery.getState().assets.find((a) => a.id === id) ?? null,
+      { animationId, frameIndex },
+    )
   }
 
   async function handleSendToStudio(): Promise<void> {
     if (!adapter.sendToStudio || sending) return
-    const payload = await exportForStudio()
+    // A trava arma ANTES da rasterização (async, pode levar centenas de ms) —
+    // senão um duplo clique dispara dois exports + dois envios concorrentes.
+    setSending(true)
+    const payload = await exportForStudio().catch(() => null)
     if (!payload) {
+      setSending(false)
       showToast(COPY.sendToStudio.error)
       return
     }
@@ -172,10 +151,10 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
     // AQUI dá a mensagem gentil antes do fail-soft genérico da ponte.
     const STUDIO_MAX_ASSET_CHARS = 800_000
     if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) {
+      setSending(false)
       showToast(COPY.sendToStudio.tooBig)
       return
     }
-    setSending(true)
     try {
       const result = await adapter.sendToStudio({
         id: asset.id,
@@ -244,6 +223,26 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   )
 }
 
+/**
+ * Defaults da sessão por tipo de editor: o vetor usa a escala de zoom própria
+ * (o palco desenha em px de documento) e começa num zoom confortável para o
+ * tamanho; o mapa usa níveis onde o fator É a escala real da célula.
+ */
+function sessionDefaultsFor(asset: PintaAsset): Partial<PintaSessionState> {
+  if (asset.kind === 'tilemap') return { zoom: 2, zoomLevels: TILEMAP_ZOOM_LEVELS }
+  if (assetStyle(asset.kind) !== 'vector') return {}
+  const docSize =
+    asset.kind === 'vector-sprite'
+      ? Math.max(asset.frameWidth, asset.frameHeight)
+      : asset.kind === 'vector-tileset'
+        ? asset.tileSize
+        : asset.kind === 'vector-background'
+          ? Math.max(asset.width, asset.height)
+          : 0
+  const zoom = docSize <= 48 ? 8 : docSize <= 160 ? 4 : 1
+  return { zoom, zoomLevels: VECTOR_ZOOM_LEVELS }
+}
+
 export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | null {
   const { gallery, closeEditor } = usePintaApp()
   const [stores] = useState<{ editor: PintaEditorStore; session: PintaSessionStore } | null>(() => {
@@ -255,7 +254,7 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
         persist: persistAsset,
         onSaved: (saved) => gallery.getState().absorb(saved),
       }),
-      session: createSessionStore(),
+      session: createSessionStore(sessionDefaultsFor(asset)),
     }
   })
 

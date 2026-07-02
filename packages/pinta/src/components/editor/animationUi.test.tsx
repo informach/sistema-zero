@@ -17,9 +17,9 @@ async function openSpriteEditor(): Promise<void> {
   await seed.getState().create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 8 })
   render(<PintaApp />)
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'Abrir heroi' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Abrir heroi/ })).toBeTruthy()
   })
-  fireEvent.click(screen.getByRole('button', { name: 'Abrir heroi' }))
+  fireEvent.click(screen.getByRole('button', { name: /Abrir heroi/ }))
   await waitFor(() => {
     expect(screen.getByText('heroi')).toBeTruthy()
   })
@@ -59,9 +59,9 @@ describe('UI de animação (F2)', () => {
     await seed.getState().create({ kind: 'pixel-background', name: 'ceu', width: 8, height: 8 })
     render(<PintaApp />)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Abrir ceu' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir ceu/ })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir ceu' }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir ceu/ }))
     await waitFor(() => {
       expect(screen.getByText('ceu')).toBeTruthy()
     })

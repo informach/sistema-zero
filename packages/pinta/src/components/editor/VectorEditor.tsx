@@ -1,21 +1,36 @@
 /**
- * Editor VETORIAL (corte v1, referência: editor do Scratch) — shapes como
- * elementos SVG REAIS (hit-testing do browser de graça): pincel suavizado,
- * retângulo/elipse/linha/polígono/estrela/texto, fill+stroke+opacidade,
- * seleção com mover/redimensionar (8 alças)/girar, ordem e duplicar.
+ * Editor VETORIAL (referência: editor do Scratch) — shapes como elementos SVG
+ * REAIS (hit-testing do browser de graça): pincel suavizado, retângulo/elipse/
+ * linha/polígono/estrela/texto, fill+stroke+opacidade, seleção com mover/
+ * redimensionar (8 alças)/girar, ordem e duplicar.
+ *
+ * Serve os TRÊS kinds vetoriais editando o "documento de shapes ativo"
+ * (`activeShapesOf`/`withActiveShapes`): o cenário inteiro, o quadro da
+ * animação selecionada (vector-sprite) ou o tile selecionado (vector-tileset).
  *
  * Gestos: mover/redimensionar/girar pintam via `replace` e fecham com
  * `commitGesture` (1 entrada de undo por gesto); criar forma commita no up.
+ *
+ * O palco tem dimensão DEFINIDA (width/height = documento × zoom, como o
+ * canvas do pixel) — sem isso o wrapper shrink-to-fit colapsa o SVG a zero e
+ * "a área de desenho não aparece".
  */
 import type { JSX, PointerEvent } from 'react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  type ActiveFrameRef,
+  activeShapesOf,
+  previousShapesOf,
+  withActiveShapes,
+} from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import { newId } from '../../core/id'
-import type { PintaAsset } from '../../core/project'
-import { PINTA_LIMITS } from '../../core/project'
+import { safeSetPointerCapture } from '../../core/pointer'
+import { PINTA_LIMITS, type PintaAsset } from '../../core/project'
 import {
   type Bounds,
   boundsCenter,
+  flipShape,
   rotateShapeTo,
   scaleShape,
   shapeBounds,
@@ -33,17 +48,28 @@ import {
   makeText,
   type ShapeStyle,
 } from '../../vector/shapes'
-import { smoothStrokeToPath } from '../../vector/smoothing'
-import { shapeCommonAttrs, shapeGeometryAttrs } from '../../vector/svg'
+import { smoothStrokeToPathCapped } from '../../vector/smoothing'
+import { ShapeElement } from '../../vector/VectorFrameSvg'
 import { Button, IconButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { useToast } from '../ui/Toast'
-import { useEditor, useEditorStores } from './editorContext'
+import { useEditor, useEditorStores, useSession } from './editorContext'
+import { ZoomControls } from './ZoomControls'
 
-type VectorTool = 'select' | 'brush' | 'rect' | 'ellipse' | 'line' | 'polygon' | 'star' | 'text'
+type VectorTool =
+  | 'select'
+  | 'pan'
+  | 'brush'
+  | 'rect'
+  | 'ellipse'
+  | 'line'
+  | 'polygon'
+  | 'star'
+  | 'text'
 
 const TOOLS: Array<{ id: VectorTool; emoji: string; label: string }> = [
   { id: 'select', emoji: '👆', label: COPY.vector.select },
+  { id: 'pan', emoji: '🖐️', label: COPY.vector.pan },
   { id: 'brush', emoji: '🖌️', label: COPY.vector.brush },
   { id: 'rect', emoji: '⬜', label: COPY.tools.rect },
   { id: 'ellipse', emoji: '⚪', label: COPY.tools.ellipse },
@@ -74,54 +100,32 @@ const SWATCHES = [
 
 const STROKE_WIDTHS = [1, 2, 3, 4, 6, 8] as const
 
+// Todo gesto guarda o pointerId: pointer capture é POR ponteiro, então um
+// segundo dedo/palma no palco dispararia move/up do gesto do primeiro dedo.
 type Gesture =
-  | { kind: 'draw'; start: Vec2; points: Vec2[] }
-  | { kind: 'move'; last: Vec2; base: PintaAsset }
+  | { kind: 'draw'; pointerId: number; start: Vec2; points: Vec2[] }
+  | { kind: 'move'; pointerId: number; last: Vec2; base: PintaAsset }
   | {
       kind: 'resize'
+      pointerId: number
       handle: string
       anchor: Vec2
       start: Vec2
       base: PintaAsset
       baseShape: VectorShape
     }
-  | { kind: 'rotate'; center: Vec2; startAngle: number; baseRotation: number; base: PintaAsset }
+  | {
+      kind: 'rotate'
+      pointerId: number
+      center: Vec2
+      startAngle: number
+      baseRotation: number
+      base: PintaAsset
+    }
+  | { kind: 'pan'; pointerId: number; startClient: Vec2; startScroll: Vec2 }
 
-/** Um shape do modelo → elemento SVG de React (mesmos atributos do export). */
-function ShapeElement({
-  shape,
-  onPointerDown,
-}: {
-  shape: VectorShape
-  onPointerDown?: (event: PointerEvent<SVGElement>) => void
-}): JSX.Element {
-  const { tag, attrs, content } = shapeGeometryAttrs(shape)
-  const common = shapeCommonAttrs(shape)
-  const props: Record<string, unknown> = { ...attrs, ...common, onPointerDown }
-  // React usa camelCase p/ estes atributos.
-  if ('stroke-width' in props) {
-    props.strokeWidth = props['stroke-width']
-    delete props['stroke-width']
-  }
-  if ('stroke-linecap' in props) {
-    props.strokeLinecap = props['stroke-linecap']
-    delete props['stroke-linecap']
-  }
-  if ('stroke-linejoin' in props) {
-    props.strokeLinejoin = props['stroke-linejoin']
-    delete props['stroke-linejoin']
-  }
-  if ('font-size' in props) {
-    props.fontSize = props['font-size']
-    delete props['font-size']
-  }
-  if ('font-family' in props) {
-    props.fontFamily = props['font-family']
-    delete props['font-family']
-  }
-  const Tag = tag as 'rect'
-  return <Tag {...(props as JSX.IntrinsicElements['rect'])}>{content}</Tag>
-}
+/** Pontos do pincel mais próximos que isso (em unidades do documento) são descartados. */
+const BRUSH_MIN_POINT_DISTANCE = 0.35
 
 const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
   { id: 'nw', fx: 0, fy: 0 },
@@ -135,9 +139,13 @@ const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
 ]
 
 export function VectorEditor(): JSX.Element | null {
-  const { editor } = useEditorStores()
+  const { editor, session } = useEditorStores()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
+  const animationId = useSession((state) => state.animationId)
+  const frameIndex = useSession((state) => state.frameIndex)
+  const zoom = useSession((state) => state.zoom)
+  const onion = useSession((state) => state.onion)
   const [tool, setTool] = useState<VectorTool>('brush')
   const [style, setStyle] = useState<ShapeStyle>(DEFAULT_STYLE)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -145,27 +153,95 @@ export function VectorEditor(): JSX.Element | null {
   const [textAt, setTextAt] = useState<Vec2 | null>(null)
   const [textValue, setTextValue] = useState('')
   const svgRef = useRef<SVGSVGElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
   const gestureRef = useRef<Gesture | null>(null)
 
-  if (asset.kind !== 'vector') return null
-  const vector = asset
-  const selected = vector.shapes.filter((s) => selectedIds.includes(s.id))
+  // Trocar de quadro/tile é trocar de documento: seleção e prévia não migram.
+  // (Hook antes do return condicional — a ordem dos hooks não pode variar.)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: as deps são o GATILHO (mudou o quadro/tile ativo), não leituras
+  useEffect(() => {
+    setSelectedIds([])
+    setPreview(null)
+    gestureRef.current = null
+  }, [animationId, frameIndex])
+
+  // Atalhos de teclado da seleção (Delete apaga; setas movem, Shift = 10) —
+  // no window, sem exigir foco no palco; campos de texto são ignorados.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o handler lê o estado vivo via stores; só a seleção re-registra
+  useEffect(() => {
+    if (selectedIds.length === 0) return
+    function onKeyDown(event: globalThis.KeyboardEvent): void {
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return
+      }
+      const step = event.shiftKey ? 10 : 1
+      switch (event.key) {
+        case 'Delete':
+        case 'Backspace':
+          event.preventDefault()
+          removeSelected()
+          return
+        case 'ArrowLeft':
+          event.preventDefault()
+          nudgeSelected(-step, 0)
+          return
+        case 'ArrowRight':
+          event.preventDefault()
+          nudgeSelected(step, 0)
+          return
+        case 'ArrowUp':
+          event.preventDefault()
+          nudgeSelected(0, -step)
+          return
+        case 'ArrowDown':
+          event.preventDefault()
+          nudgeSelected(0, step)
+          return
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [selectedIds])
+
+  const ref: ActiveFrameRef = { animationId, frameIndex }
+  const doc = activeShapesOf(asset, ref)
+  if (!doc) return null
+
+  const onionShapes = onion ? previousShapesOf(asset, ref) : null
+  const selected = doc.shapes.filter((s) => selectedIds.includes(s.id))
   const single = selected.length === 1 ? selected[0] : null
+
+  function currentRef(): ActiveFrameRef {
+    const s = session.getState()
+    return { animationId: s.animationId, frameIndex: s.frameIndex }
+  }
+
+  /** Shapes ATUAIS do documento ativo (sempre do estado vivo, não do render). */
+  function currentShapes(): VectorShape[] {
+    const state = editor.getState()
+    return activeShapesOf(state.asset, currentRef())?.shapes ?? []
+  }
 
   function svgPoint(event: PointerEvent<Element>): Vec2 {
     const svg = svgRef.current
     const rect = svg?.getBoundingClientRect()
-    if (!svg || !rect) return { x: 0, y: 0 }
+    // Guarda anti-NaN: com o palco sem medida (happy-dom, layout ainda não
+    // feito) devolve a origem em vez de dividir por zero.
+    if (!svg || !rect || !doc || rect.width < 1 || rect.height < 1) return { x: 0, y: 0 }
     return {
-      x: ((event.clientX - rect.left) / rect.width) * vector.width,
-      y: ((event.clientY - rect.top) / rect.height) * vector.height,
+      x: ((event.clientX - rect.left) / rect.width) * doc.width,
+      y: ((event.clientY - rect.top) / rect.height) * doc.height,
     }
   }
 
   function commitShapes(next: VectorShape[], recordUndo = true): void {
     const state = editor.getState()
-    if (state.asset.kind !== 'vector') return
-    const updated = { ...state.asset, shapes: next }
+    const updated = withActiveShapes(state.asset, currentRef(), next)
+    if (updated === state.asset) return
     if (recordUndo) state.commit(updated)
     else state.replace(updated)
   }
@@ -173,7 +249,8 @@ export function VectorEditor(): JSX.Element | null {
   function drawPreview(start: Vec2, current: Vec2, points: Vec2[]): VectorShape | null {
     switch (tool) {
       case 'brush':
-        return makePath(smoothStrokeToPath(points, 1.2), style)
+        // Capped: garante que o `d` criado SEMPRE passa no sanitize do load.
+        return makePath(smoothStrokeToPathCapped(points, 1.2), style)
       case 'rect':
         return makeRect(start, current, style)
       case 'ellipse':
@@ -190,8 +267,8 @@ export function VectorEditor(): JSX.Element | null {
   }
 
   function handleCanvasPointerDown(event: PointerEvent<SVGSVGElement>): void {
-    if (!event.isPrimary) return
-    event.currentTarget.setPointerCapture?.(event.pointerId)
+    if (!event.isPrimary || gestureRef.current) return
+    safeSetPointerCapture(event.currentTarget, event.pointerId)
     const at = svgPoint(event)
     if (tool === 'text') {
       setTextAt(at)
@@ -203,18 +280,29 @@ export function VectorEditor(): JSX.Element | null {
       setSelectedIds([])
       return
     }
-    if (vector.shapes.length >= PINTA_LIMITS.maxShapes) {
+    if (tool === 'pan') {
+      const stage = stageRef.current
+      if (!stage) return
+      gestureRef.current = {
+        kind: 'pan',
+        pointerId: event.pointerId,
+        startClient: { x: event.clientX, y: event.clientY },
+        startScroll: { x: stage.scrollLeft, y: stage.scrollTop },
+      }
+      return
+    }
+    if (currentShapes().length >= PINTA_LIMITS.maxShapes) {
       showToast(COPY.vector.shapeLimit)
       return
     }
-    gestureRef.current = { kind: 'draw', start: at, points: [at] }
+    gestureRef.current = { kind: 'draw', pointerId: event.pointerId, start: at, points: [at] }
     setPreview(drawPreview(at, at, [at]))
   }
 
   function handleShapePointerDown(shape: VectorShape, event: PointerEvent<SVGElement>): void {
-    if (tool !== 'select' || !event.isPrimary) return
+    if (tool !== 'select' || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
-    svgRef.current?.setPointerCapture?.(event.pointerId)
+    if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const at = svgPoint(event)
     const ids = event.shiftKey
       ? selectedIds.includes(shape.id)
@@ -224,7 +312,12 @@ export function VectorEditor(): JSX.Element | null {
         ? selectedIds
         : [shape.id]
     setSelectedIds(ids)
-    gestureRef.current = { kind: 'move', last: at, base: editor.getState().asset }
+    gestureRef.current = {
+      kind: 'move',
+      pointerId: event.pointerId,
+      last: at,
+      base: editor.getState().asset,
+    }
   }
 
   function handleResizeDown(
@@ -232,15 +325,16 @@ export function VectorEditor(): JSX.Element | null {
     bounds: Bounds,
     event: PointerEvent<SVGElement>,
   ): void {
-    if (!single || !event.isPrimary) return
+    if (!single || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
-    svgRef.current?.setPointerCapture?.(event.pointerId)
+    if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const anchor = {
       x: bounds.x + (1 - handle.fx) * bounds.width,
       y: bounds.y + (1 - handle.fy) * bounds.height,
     }
     gestureRef.current = {
       kind: 'resize',
+      pointerId: event.pointerId,
       handle: handle.id,
       anchor,
       start: svgPoint(event),
@@ -250,13 +344,14 @@ export function VectorEditor(): JSX.Element | null {
   }
 
   function handleRotateDown(bounds: Bounds, event: PointerEvent<SVGElement>): void {
-    if (!single || !event.isPrimary) return
+    if (!single || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
-    svgRef.current?.setPointerCapture?.(event.pointerId)
+    if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const center = boundsCenter(bounds)
     const at = svgPoint(event)
     gestureRef.current = {
       kind: 'rotate',
+      pointerId: event.pointerId,
       center,
       startAngle: Math.atan2(at.y - center.y, at.x - center.x),
       baseRotation: single.rotation,
@@ -266,10 +361,23 @@ export function VectorEditor(): JSX.Element | null {
 
   function handlePointerMove(event: PointerEvent<SVGSVGElement>): void {
     const gesture = gestureRef.current
-    if (!gesture) return
+    if (!gesture || event.pointerId !== gesture.pointerId) return
+
+    if (gesture.kind === 'pan') {
+      const stage = stageRef.current
+      if (!stage) return
+      stage.scrollLeft = gesture.startScroll.x - (event.clientX - gesture.startClient.x)
+      stage.scrollTop = gesture.startScroll.y - (event.clientY - gesture.startClient.y)
+      return
+    }
+
     const at = svgPoint(event)
 
     if (gesture.kind === 'draw') {
+      // Decimação: ponto quase em cima do anterior não acrescenta nada e
+      // encareceria a re-suavização do traço a cada move.
+      const last = gesture.points[gesture.points.length - 1]
+      if (last && Math.hypot(at.x - last.x, at.y - last.y) < BRUSH_MIN_POINT_DISTANCE) return
       gesture.points.push(at)
       setPreview(drawPreview(gesture.start, at, gesture.points))
       return
@@ -278,10 +386,8 @@ export function VectorEditor(): JSX.Element | null {
       const dx = at.x - gesture.last.x
       const dy = at.y - gesture.last.y
       gesture.last = at
-      const state = editor.getState()
-      if (state.asset.kind !== 'vector') return
       commitShapes(
-        state.asset.shapes.map((s) => (selectedIds.includes(s.id) ? translateShape(s, dx, dy) : s)),
+        currentShapes().map((s) => (selectedIds.includes(s.id) ? translateShape(s, dx, dy) : s)),
         false,
       )
       return
@@ -295,10 +401,8 @@ export function VectorEditor(): JSX.Element | null {
       const fx = isCorner || horizontal ? (denomX === 0 ? 1 : (at.x - anchor.x) / denomX) : 1
       const fy = isCorner || !horizontal ? (denomY === 0 ? 1 : (at.y - anchor.y) / denomY) : 1
       const resized = scaleShape(baseShape, anchor, fx, fy)
-      const state = editor.getState()
-      if (state.asset.kind !== 'vector') return
       commitShapes(
-        state.asset.shapes.map((s) => (s.id === baseShape.id ? resized : s)),
+        currentShapes().map((s) => (s.id === baseShape.id ? resized : s)),
         false,
       )
       return
@@ -306,19 +410,20 @@ export function VectorEditor(): JSX.Element | null {
     if (gesture.kind === 'rotate') {
       const angle = Math.atan2(at.y - gesture.center.y, at.x - gesture.center.x)
       const degrees = gesture.baseRotation + ((angle - gesture.startAngle) * 180) / Math.PI
-      const state = editor.getState()
-      if (state.asset.kind !== 'vector' || !single) return
+      if (!single) return
       commitShapes(
-        state.asset.shapes.map((s) => (s.id === single.id ? rotateShapeTo(s, degrees) : s)),
+        currentShapes().map((s) => (s.id === single.id ? rotateShapeTo(s, degrees) : s)),
         false,
       )
     }
   }
 
-  function endGesture(): void {
+  function endGesture(event?: PointerEvent<SVGSVGElement>): void {
     const gesture = gestureRef.current
-    gestureRef.current = null
     if (!gesture) return
+    if (event && event.pointerId !== gesture.pointerId) return
+    gestureRef.current = null
+    if (gesture.kind === 'pan') return
     if (gesture.kind === 'draw') {
       const shape = preview
       setPreview(null)
@@ -326,9 +431,10 @@ export function VectorEditor(): JSX.Element | null {
       const bounds = shapeBounds(shape)
       // Toque sem arrasto em ferramenta de forma: nada a criar (pincel pode).
       if (shape.type !== 'path' && bounds.width < 2 && bounds.height < 2) return
-      commitShapes([...vector.shapes, shape])
+      commitShapes([...currentShapes(), shape])
+      // A ferramenta fica ATIVA (padrão Scratch): desenhar 3 estrelas seguidas
+      // não exige reescolher; a forma criada fica selecionada para ajustes.
       setSelectedIds([shape.id])
-      setTool('select')
       return
     }
     // move/resize/rotate: fecha o gesto com 1 entrada de undo.
@@ -337,9 +443,7 @@ export function VectorEditor(): JSX.Element | null {
 
   function updateSelected(update: (shape: VectorShape) => VectorShape): void {
     if (selected.length === 0) return
-    const state = editor.getState()
-    if (state.asset.kind !== 'vector') return
-    commitShapes(state.asset.shapes.map((s) => (selectedIds.includes(s.id) ? update(s) : s)))
+    commitShapes(currentShapes().map((s) => (selectedIds.includes(s.id) ? update(s) : s)))
   }
 
   function applyStyle(partial: Partial<ShapeStyle>): void {
@@ -356,10 +460,10 @@ export function VectorEditor(): JSX.Element | null {
 
   function moveOrder(delta: 1 | -1): void {
     if (!single) return
-    const index = vector.shapes.findIndex((s) => s.id === single.id)
+    const shapes = [...currentShapes()]
+    const index = shapes.findIndex((s) => s.id === single.id)
     const target = index + delta
-    if (index === -1 || target < 0 || target >= vector.shapes.length) return
-    const shapes = [...vector.shapes]
+    if (index === -1 || target < 0 || target >= shapes.length) return
     const [moved] = shapes.splice(index, 1)
     if (!moved) return
     shapes.splice(target, 0, moved)
@@ -368,25 +472,56 @@ export function VectorEditor(): JSX.Element | null {
 
   function duplicateSelected(): void {
     if (selected.length === 0) return
-    if (vector.shapes.length + selected.length > PINTA_LIMITS.maxShapes) {
+    const shapes = currentShapes()
+    if (shapes.length + selected.length > PINTA_LIMITS.maxShapes) {
       showToast(COPY.vector.shapeLimit)
       return
     }
     const copies = selected.map((s) => ({ ...translateShape(s, 12, 12), id: newId() }))
-    commitShapes([...vector.shapes, ...copies])
+    commitShapes([...shapes, ...copies])
     setSelectedIds(copies.map((c) => c.id))
   }
 
   function removeSelected(): void {
     if (selected.length === 0) return
-    commitShapes(vector.shapes.filter((s) => !selectedIds.includes(s.id)))
+    commitShapes(currentShapes().filter((s) => !selectedIds.includes(s.id)))
     setSelectedIds([])
   }
 
+  /** Espelha cada shape selecionado em torno do PRÓPRIO centro. */
+  function flipSelected(axis: 'h' | 'v'): void {
+    if (selected.length === 0) return
+    commitShapes(
+      currentShapes().map((s) =>
+        selectedIds.includes(s.id) ? flipShape(s, axis, boundsCenter(shapeBounds(s))) : s,
+      ),
+    )
+  }
+
+  /** Move a seleção com as setas (Shift = passos de 10). */
+  function nudgeSelected(dx: number, dy: number): void {
+    if (selectedIds.length === 0) return
+    commitShapes(
+      currentShapes().map((s) => (selectedIds.includes(s.id) ? translateShape(s, dx, dy) : s)),
+    )
+  }
+
+  /** Zoom que encaixa o documento inteiro no palco visível. */
+  function zoomToFit(): void {
+    const stage = stageRef.current
+    if (!stage || !doc) return
+    const availWidth = stage.clientWidth - 24
+    const availHeight = stage.clientHeight - 24
+    if (availWidth < 1 || availHeight < 1) return
+    session.getState().setZoom(Math.min(availWidth / doc.width, availHeight / doc.height))
+  }
+
   const singleBounds = single ? shapeBounds(single) : null
+  const stageWidth = Math.max(Math.round(doc.width * zoom), 1)
+  const stageHeight = Math.max(Math.round(doc.height * zoom), 1)
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 sm:p-4">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
       <div className="flex min-h-0 flex-1 items-stretch gap-3">
         {/* Ferramentas */}
         <div className="flex flex-col items-center gap-1 overflow-y-auto rounded-3xl border-2 border-pin-border bg-pin-surface p-2">
@@ -404,22 +539,33 @@ export function VectorEditor(): JSX.Element | null {
           ))}
         </div>
 
-        {/* O palco SVG */}
-        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-2">
-          <div className="pin-checkerboard max-h-full max-w-full rounded-lg border-2 border-pin-border shadow-inner">
+        {/* O palco SVG: dimensão DEFINIDA (doc × zoom), centraliza quando menor
+            que a área e rola quando maior. */}
+        <div ref={stageRef} className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2">
+          <div className="pin-checkerboard m-auto rounded-lg border-2 border-pin-border shadow-inner">
             <svg
               ref={svgRef}
-              viewBox={`0 0 ${vector.width} ${vector.height}`}
-              className="block max-h-[70vh] max-w-full bg-white/60"
-              style={{ aspectRatio: `${vector.width} / ${vector.height}`, touchAction: 'none' }}
+              width={stageWidth}
+              height={stageHeight}
+              viewBox={`0 0 ${doc.width} ${doc.height}`}
+              className="block bg-white/60"
+              style={{ touchAction: 'none' }}
               role="img"
-              aria-label="Área de desenho livre"
+              aria-label="Área de desenho"
               onPointerDown={handleCanvasPointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={endGesture}
               onPointerCancel={endGesture}
             >
-              {vector.shapes.map((shape) => (
+              {/* Onion skin: o quadro ANTERIOR, apagadinho e sem eventos. */}
+              {onionShapes ? (
+                <g opacity={0.3} pointerEvents="none">
+                  {onionShapes.map((shape) => (
+                    <ShapeElement key={`onion-${shape.id}`} shape={shape} />
+                  ))}
+                </g>
+              ) : null}
+              {doc.shapes.map((shape) => (
                 <ShapeElement
                   key={shape.id}
                   shape={shape}
@@ -428,7 +574,9 @@ export function VectorEditor(): JSX.Element | null {
               ))}
               {preview ? <ShapeElement shape={preview} /> : null}
 
-              {/* Moldura + alças da seleção única */}
+              {/* Moldura + alças da seleção única. As medidas dividem pelo zoom
+                  para manter um tamanho CONSTANTE na tela (alça pequena demais
+                  em zoom baixo era impossível de tocar). */}
               {single && singleBounds ? (
                 <g
                   transform={
@@ -444,20 +592,20 @@ export function VectorEditor(): JSX.Element | null {
                     height={singleBounds.height}
                     fill="none"
                     stroke="#00a0c8"
-                    strokeDasharray="4 3"
-                    strokeWidth={1.5}
+                    strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                    strokeWidth={1.5 / zoom}
                     pointerEvents="none"
                   />
                   {HANDLES.map((handle) => (
                     <rect
                       key={handle.id}
-                      x={singleBounds.x + handle.fx * singleBounds.width - 4}
-                      y={singleBounds.y + handle.fy * singleBounds.height - 4}
-                      width={8}
-                      height={8}
+                      x={singleBounds.x + handle.fx * singleBounds.width - 7 / zoom}
+                      y={singleBounds.y + handle.fy * singleBounds.height - 7 / zoom}
+                      width={14 / zoom}
+                      height={14 / zoom}
                       fill="#ffffff"
                       stroke="#00a0c8"
-                      strokeWidth={1.5}
+                      strokeWidth={1.5 / zoom}
                       style={{ cursor: 'pointer' }}
                       onPointerDown={(event) => handleResizeDown(handle, singleBounds, event)}
                     />
@@ -465,13 +613,12 @@ export function VectorEditor(): JSX.Element | null {
                   {/* Alça de girar (acima do topo-centro) */}
                   <circle
                     cx={singleBounds.x + singleBounds.width / 2}
-                    cy={singleBounds.y - 16}
-                    r={6}
+                    cy={singleBounds.y - 22 / zoom}
+                    r={8 / zoom}
                     fill="#ffffff"
                     stroke="#00a0c8"
-                    strokeWidth={1.5}
+                    strokeWidth={1.5 / zoom}
                     style={{ cursor: 'grab' }}
-                    aria-label={COPY.vector.rotate}
                     onPointerDown={(event) => handleRotateDown(singleBounds, event)}
                   />
                 </g>
@@ -489,8 +636,8 @@ export function VectorEditor(): JSX.Element | null {
                         height={b.height}
                         fill="none"
                         stroke="#00a0c8"
-                        strokeDasharray="4 3"
-                        strokeWidth={1}
+                        strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                        strokeWidth={1 / zoom}
                         pointerEvents="none"
                       />
                     )
@@ -511,17 +658,17 @@ export function VectorEditor(): JSX.Element | null {
                 aria-pressed={style.fill === 'none'}
                 title={COPY.vector.none}
                 onClick={() => applyStyle({ fill: 'none' })}
-                className={`pin-checkerboard h-8 w-8 rounded-lg border-2 ${style.fill === 'none' ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
+                className={`pin-checkerboard h-10 w-10 rounded-lg border-2 ${style.fill === 'none' ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
               />
               {SWATCHES.map((hex) => (
                 <button
                   key={`fill-${hex}`}
                   type="button"
-                  aria-label={`${COPY.vector.fill}: ${hex}`}
+                  aria-label={`${COPY.vector.fill}: ${COPY.colorNames[hex] ?? hex}`}
                   aria-pressed={style.fill === hex}
-                  title={hex}
+                  title={COPY.colorNames[hex] ?? hex}
                   onClick={() => applyStyle({ fill: hex })}
-                  className={`h-8 w-8 rounded-lg border-2 ${style.fill === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
+                  className={`h-10 w-10 rounded-lg border-2 ${style.fill === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
                   style={{ backgroundColor: hex }}
                 />
               ))}
@@ -537,19 +684,19 @@ export function VectorEditor(): JSX.Element | null {
                 aria-pressed={style.stroke === null}
                 title={COPY.vector.none}
                 onClick={() => applyStyle({ stroke: null })}
-                className={`pin-checkerboard h-8 w-8 rounded-lg border-2 ${style.stroke === null ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
+                className={`pin-checkerboard h-10 w-10 rounded-lg border-2 ${style.stroke === null ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
               />
               {SWATCHES.map((hex) => (
                 <button
                   key={`stroke-${hex}`}
                   type="button"
-                  aria-label={`${COPY.vector.stroke}: ${hex}`}
+                  aria-label={`${COPY.vector.stroke}: ${COPY.colorNames[hex] ?? hex}`}
                   aria-pressed={style.stroke?.color === hex}
-                  title={hex}
+                  title={COPY.colorNames[hex] ?? hex}
                   onClick={() =>
                     applyStyle({ stroke: { color: hex, width: style.stroke?.width ?? 2 } })
                   }
-                  className={`h-8 w-8 rounded-lg border-2 ${style.stroke?.color === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
+                  className={`h-10 w-10 rounded-lg border-2 ${style.stroke?.color === hex ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
                   style={{ backgroundColor: hex }}
                 />
               ))}
@@ -593,7 +740,21 @@ export function VectorEditor(): JSX.Element | null {
 
           {selected.length > 0 ? (
             <section className="flex flex-col gap-2 rounded-3xl border-2 border-pin-border bg-pin-surface p-3">
-              <div className="flex justify-center gap-1">
+              <div className="flex flex-wrap justify-center gap-1">
+                <IconButton
+                  aria-label={COPY.tools.flipH}
+                  title={COPY.tools.flipH}
+                  onClick={() => flipSelected('h')}
+                >
+                  <span aria-hidden="true">↔️</span>
+                </IconButton>
+                <IconButton
+                  aria-label={COPY.tools.flipV}
+                  title={COPY.tools.flipV}
+                  onClick={() => flipSelected('v')}
+                >
+                  <span aria-hidden="true">↕️</span>
+                </IconButton>
                 <IconButton
                   aria-label={COPY.vector.forward}
                   title={COPY.vector.forward}
@@ -630,6 +791,14 @@ export function VectorEditor(): JSX.Element | null {
         </div>
       </div>
 
+      {/* Zoom do palco */}
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <ZoomControls />
+        <Button variant="ghost" onClick={zoomToFit}>
+          {COPY.editor.zoomFit}
+        </Button>
+      </div>
+
       {/* Texto novo */}
       <Dialog open={textAt !== null} onClose={() => setTextAt(null)} title={COPY.vector.textPrompt}>
         <form
@@ -637,13 +806,14 @@ export function VectorEditor(): JSX.Element | null {
           onSubmit={(event) => {
             event.preventDefault()
             if (!textAt || !textValue.trim()) return
-            if (vector.shapes.length >= PINTA_LIMITS.maxShapes) {
+            const shapes = currentShapes()
+            if (shapes.length >= PINTA_LIMITS.maxShapes) {
               showToast(COPY.vector.shapeLimit)
               setTextAt(null)
               return
             }
             const shape = makeText(textAt, textValue.trim().slice(0, 200), style)
-            commitShapes([...vector.shapes, shape])
+            commitShapes([...shapes, shape])
             setSelectedIds([shape.id])
             setTool('select')
             setTextAt(null)

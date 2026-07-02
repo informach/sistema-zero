@@ -8,6 +8,24 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { bitmapBytes, createHistory } from '../core/history'
 import type { PintaAsset, PintaBitmap } from '../core/project'
+import type { VectorShape } from '../vector/model'
+
+/**
+ * Bytes aproximados de um shape: a base cobre os campos fixos; path/texto/
+ * polígono carregam payload variável (um `d` de pincel chega a 20k chars) —
+ * sem isso o orçamento do undo reteria MUITO mais memória do que estima.
+ */
+function shapeBytes(shape: VectorShape): number {
+  let bytes = 128
+  if (shape.type === 'path') bytes += shape.d.length * 2
+  else if (shape.type === 'text') bytes += shape.text.length * 2
+  else if (shape.type === 'polygon') bytes += shape.points.length * 16
+  return bytes
+}
+
+function shapesBytes(shapes: VectorShape[]): number {
+  return shapes.reduce((sum, shape) => sum + shapeBytes(shape), 0)
+}
 
 export type PintaSaveState = 'saved' | 'saving' | 'error'
 
@@ -50,8 +68,19 @@ export function assetBytes(asset: PintaAsset): number {
       break
     case 'tilemap':
       return asset.layers.reduce((sum, layer) => sum + layer.cells.byteLength + 64, 128)
-    case 'vector':
-      return 256 + asset.shapes.length * 128
+    case 'vector-background':
+      return 256 + shapesBytes(asset.shapes)
+    case 'vector-sprite':
+      return (
+        256 +
+        asset.animations.reduce(
+          (sum, animation) =>
+            sum + animation.frames.reduce((s, frame) => s + shapesBytes(frame), 64),
+          0,
+        )
+      )
+    case 'vector-tileset':
+      return 256 + asset.tiles.reduce((sum, tile) => sum + shapesBytes(tile), 64)
   }
   return bitmaps.reduce((sum, bitmap) => sum + bitmapBytes(bitmap), 128)
 }

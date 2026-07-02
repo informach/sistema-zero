@@ -18,9 +18,9 @@ describe('UI de tiles (F4)', () => {
     await seed.getState().create({ kind: 'tileset', name: 'pecas', tileSize: 16 })
     render(<PintaApp />)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Abrir pecas' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir pecas/ })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir pecas' }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir pecas/ }))
     await waitFor(() => {
       expect(screen.getByText(COPY.tiles.tiles)).toBeTruthy()
     })
@@ -48,9 +48,9 @@ describe('UI de tiles (F4)', () => {
 
     render(<PintaApp />)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Abrir fase' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir fase/ })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir fase' }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir fase/ }))
     await waitFor(() => {
       expect(screen.getByText(COPY.tiles.pickTile)).toBeTruthy()
     })
@@ -75,9 +75,9 @@ describe('UI de tiles (F4)', () => {
     })
     render(<PintaApp />)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Abrir orfao' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir orfao/ })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir orfao' }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir orfao/ }))
     await waitFor(() => {
       expect(screen.getAllByText(COPY.tiles.missingTileset).length).toBeGreaterThan(0)
     })

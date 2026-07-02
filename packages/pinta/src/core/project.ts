@@ -19,7 +19,42 @@ export interface PintaBitmap {
   data: Uint8Array
 }
 
-export type PintaAssetKind = 'pixel-sprite' | 'pixel-background' | 'tileset' | 'tilemap' | 'vector'
+export type PintaAssetKind =
+  | 'pixel-sprite'
+  | 'pixel-background'
+  | 'tileset'
+  | 'tilemap'
+  | 'vector-sprite'
+  | 'vector-background'
+  | 'vector-tileset'
+
+/** Estilo de desenho (a PRIMEIRA escolha da criança ao criar um asset). */
+export type PintaAssetStyle = 'pixel' | 'vector'
+
+/** Papel do asset no jogo (a SEGUNDA escolha, igual nos dois estilos). */
+export type PintaAssetRole = 'sprite' | 'background' | 'tileset' | 'tilemap'
+
+/** Estilo derivado do kind. `null` para o tilemap (herda o estilo das peças). */
+export function assetStyle(kind: PintaAssetKind): PintaAssetStyle | null {
+  if (kind === 'tilemap') return null
+  return kind.startsWith('vector') ? 'vector' : 'pixel'
+}
+
+export function assetRole(kind: PintaAssetKind): PintaAssetRole {
+  switch (kind) {
+    case 'pixel-sprite':
+    case 'vector-sprite':
+      return 'sprite'
+    case 'pixel-background':
+    case 'vector-background':
+      return 'background'
+    case 'tileset':
+    case 'vector-tileset':
+      return 'tileset'
+    case 'tilemap':
+      return 'tilemap'
+  }
+}
 
 interface PintaAssetBase {
   id: string
@@ -33,15 +68,24 @@ interface PintaAssetBase {
   updatedAt: number
 }
 
-export interface PintaAnimation {
+/**
+ * Uma animação nomeada. Genérica no tipo do QUADRO com default `PintaBitmap`:
+ * o código pixel existente não muda; o sprite vetorial usa `VectorFrame`.
+ */
+export interface PintaAnimation<TFrame = PintaBitmap> {
   id: string
   /** Nome livre em PT ("parado", "andar", "pular"…), mostrado na UI e no export. */
   name: string
   /** Quadros por segundo (1–30) — o MESMO valor que sai no metadado do export. */
   fps: number
   loop: boolean
-  frames: PintaBitmap[]
+  frames: TFrame[]
 }
+
+/** Um quadro vetorial = lista de shapes (ordem = z-order, fundo primeiro). */
+export type VectorFrame = VectorShape[]
+
+export type PintaVectorAnimation = PintaAnimation<VectorFrame>
 
 export interface PixelSpriteAsset extends PintaAssetBase {
   kind: 'pixel-sprite'
@@ -87,12 +131,32 @@ export interface TilemapAsset extends PintaAssetBase {
   layers: TilemapLayer[]
 }
 
-export interface VectorAsset extends PintaAssetBase {
-  kind: 'vector'
+export interface VectorSpriteAsset extends PintaAssetBase {
+  kind: 'vector-sprite'
+  /** O quadro rasteriza 1:1 na spritesheet — este É o tamanho do sprite no jogo. */
+  frameWidth: number
+  frameHeight: number
+  /** Sempre ≥1; a primeira nasce "parado". */
+  animations: PintaVectorAnimation[]
+}
+
+/** O antigo kind `vector` ("Desenho livre") — migrado no sanitize. */
+export interface VectorBackgroundAsset extends PintaAssetBase {
+  kind: 'vector-background'
   width: number
   height: number
   /** Ordem = z-order (fundo primeiro). */
   shapes: VectorShape[]
+}
+
+export interface VectorTilesetAsset extends PintaAssetBase {
+  kind: 'vector-tileset'
+  /** Tile QUADRADO (o bloco de tilemap do Studio usa um número só). */
+  tileSize: number
+  /** O índice no array É o índice do tile no Studio (empacotamento row-major). */
+  tiles: VectorFrame[]
+  /** Paralelo a `tiles`: alimenta a lista de "tiles sólidos" do bloco. */
+  solid: boolean[]
 }
 
 export type PintaAsset =
@@ -100,7 +164,32 @@ export type PintaAsset =
   | PixelBackgroundAsset
   | TilesetAsset
   | TilemapAsset
-  | VectorAsset
+  | VectorSpriteAsset
+  | VectorBackgroundAsset
+  | VectorTilesetAsset
+
+/** Os dois estilos de tileset — o tilemap referencia qualquer um. */
+export type AnyTilesetAsset = TilesetAsset | VectorTilesetAsset
+
+export function isTilesetKind(asset: PintaAsset): asset is AnyTilesetAsset {
+  return asset.kind === 'tileset' || asset.kind === 'vector-tileset'
+}
+
+/** Sprites animados dos dois estilos — as ops de animation/frames.ts servem os dois. */
+export type AnimatedSpriteAsset = PixelSpriteAsset | VectorSpriteAsset
+
+export function isAnimatedSpriteKind(asset: PintaAsset): asset is AnimatedSpriteAsset {
+  return asset.kind === 'pixel-sprite' || asset.kind === 'vector-sprite'
+}
+
+/**
+ * Paleta do asset, com default para kinds sem paleta própria (tilemap herda a
+ * das peças na prática; vetoriais usam cor livre e só precisam de um valor
+ * estável para os caminhos de export que pedem paleta).
+ */
+export function paletteIdOf(asset: PintaAsset): PaletteId {
+  return 'paletteId' in asset ? asset.paletteId : DEFAULT_PALETTE_ID
+}
 
 /**
  * Quotas do modelo — compartilhadas entre criação, edição e o sanitizer do
@@ -134,6 +223,13 @@ export const VECTOR_SIZES = [
   { width: 480, height: 360 },
   { width: 960, height: 540 },
 ] as const
+/**
+ * O quadro vetorial rasteriza 1:1 na folha do Estúdio, então o documento É o
+ * tamanho do sprite no jogo (o zoom do editor dá o conforto, sem perda).
+ */
+export const VECTOR_SPRITE_SIZES = [32, 64, 128] as const
+/** Paridade com os tamanhos que o bloco de tilemap do Studio espera. */
+export const VECTOR_TILE_SIZES = TILE_SIZES
 
 const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 
@@ -252,22 +348,62 @@ export function createTilemapAsset(input: {
   }
 }
 
-export function createVectorAsset(input: {
+export function createVectorSpriteAsset(input: {
+  name: string
+  frameSize: number
+  now?: number
+}): VectorSpriteAsset {
+  const now = input.now ?? Date.now()
+  const size = clampInt(input.frameSize, PINTA_LIMITS.minFrameSize, PINTA_LIMITS.maxFrameSize)
+  return {
+    id: newId(),
+    kind: 'vector-sprite',
+    name: input.name,
+    createdAt: now,
+    updatedAt: now,
+    frameWidth: size,
+    frameHeight: size,
+    animations: [{ id: newId(), name: 'parado', fps: 8, loop: true, frames: [[]] }],
+  }
+}
+
+export function createVectorBackgroundAsset(input: {
   name: string
   width: number
   height: number
   now?: number
-}): VectorAsset {
+}): VectorBackgroundAsset {
   const now = input.now ?? Date.now()
   return {
     id: newId(),
-    kind: 'vector',
+    kind: 'vector-background',
     name: input.name,
     createdAt: now,
     updatedAt: now,
     width: clampInt(input.width, 1, 2048),
     height: clampInt(input.height, 1, 2048),
     shapes: [],
+  }
+}
+
+export function createVectorTilesetAsset(input: {
+  name: string
+  tileSize: number
+  now?: number
+}): VectorTilesetAsset {
+  const now = input.now ?? Date.now()
+  const tileSize = VECTOR_TILE_SIZES.includes(input.tileSize as (typeof VECTOR_TILE_SIZES)[number])
+    ? input.tileSize
+    : 16
+  return {
+    id: newId(),
+    kind: 'vector-tileset',
+    name: input.name,
+    createdAt: now,
+    updatedAt: now,
+    tileSize,
+    tiles: [[]],
+    solid: [false],
   }
 }
 
@@ -339,9 +475,43 @@ function sanitizeAnimation(
   return { id: a.id, name, fps, loop, frames }
 }
 
+/** Um quadro vetorial vindo do disco: shapes válidos sobrevivem, o resto cai. */
+function sanitizeVectorFrame(raw: unknown): VectorFrame | null {
+  if (!Array.isArray(raw)) return null
+  return raw
+    .slice(0, PINTA_LIMITS.maxShapes)
+    .map((s) => sanitizeVectorShape(s))
+    .filter((s): s is VectorShape => s !== null)
+}
+
+function sanitizeVectorAnimation(raw: unknown): PintaVectorAnimation | null {
+  if (!raw || typeof raw !== 'object') return null
+  const a = raw as Record<string, unknown>
+  if (typeof a.id !== 'string' || !a.id) return null
+  const name =
+    typeof a.name === 'string' && a.name.trim()
+      ? a.name.trim().slice(0, PINTA_LIMITS.maxAnimationNameChars)
+      : 'animação'
+  const fps = typeof a.fps === 'number' && Number.isFinite(a.fps) ? clampInt(a.fps, 1, 30) : 8
+  const loop = a.loop !== false
+  if (!Array.isArray(a.frames)) return null
+  // Diferente do pixel: um quadro vetorial VAZIO ([]) é válido (quadro em branco);
+  // só descartamos o que nem é lista.
+  const frames = a.frames
+    .slice(0, PINTA_LIMITS.maxFramesPerAnimation)
+    .map((f) => sanitizeVectorFrame(f))
+    .filter((f): f is VectorFrame => f !== null)
+  if (frames.length === 0) return null
+  return { id: a.id, name, fps, loop, frames }
+}
+
 /**
  * Valida um asset vindo de fonte não confiável (IndexedDB de outra versão,
  * import). Retorna o asset normalizado ou `null` (descartar). Nunca lança.
+ *
+ * Também é o ponto de MIGRAÇÃO lazy: o kind antigo `vector` ("Desenho livre")
+ * volta como `vector-background` — o registro no disco só é reescrito no
+ * próximo save do asset.
  */
 export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
   if (!raw || typeof raw !== 'object') return null
@@ -377,16 +547,18 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
     }
     case 'tileset': {
       if (!isFinitePositiveInt(record.tileSize, PINTA_LIMITS.maxFrameSize)) return null
-      const tileDims = { width: record.tileSize, height: record.tileSize }
+      const tileSize = record.tileSize
+      const tileDims = { width: tileSize, height: tileSize }
       if (!Array.isArray(record.tiles)) return null
+      // Tile corrompido vira tile VAZIO (não some): o índice no array é a
+      // identidade da peça nos mapas e na folha — compactar deslocaria tudo.
       const tiles = record.tiles
         .slice(0, PINTA_LIMITS.maxTiles)
-        .map((t) => sanitizeBitmap(t, tileDims))
-        .filter((t): t is PintaBitmap => t !== null)
+        .map((t) => sanitizeBitmap(t, tileDims) ?? createBitmap(tileSize, tileSize))
       if (tiles.length === 0) return null
       const rawSolid = Array.isArray(record.solid) ? record.solid : []
       const solid = tiles.map((_, i) => rawSolid[i] === true)
-      return { ...base, kind: 'tileset', tileSize: record.tileSize, paletteId, tiles, solid }
+      return { ...base, kind: 'tileset', tileSize, paletteId, tiles, solid }
     }
     case 'tilemap': {
       if (typeof record.tilesetId !== 'string' || !record.tilesetId) return null
@@ -416,15 +588,50 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         layers,
       }
     }
-    case 'vector': {
+    // `vector` é o kind ANTIGO (pré paridade vetorial): migra para
+    // `vector-background` aqui, sem tocar nos dados.
+    case 'vector':
+    case 'vector-background': {
       if (!isFinitePositiveInt(record.width, 2048)) return null
       if (!isFinitePositiveInt(record.height, 2048)) return null
-      if (!Array.isArray(record.shapes)) return null
-      const shapes = record.shapes
-        .slice(0, PINTA_LIMITS.maxShapes)
-        .map((s) => sanitizeVectorShape(s))
-        .filter((s): s is VectorShape => s !== null)
-      return { ...base, kind: 'vector', width: record.width, height: record.height, shapes }
+      const shapes = sanitizeVectorFrame(record.shapes)
+      if (shapes === null) return null
+      return {
+        ...base,
+        kind: 'vector-background',
+        width: record.width,
+        height: record.height,
+        shapes,
+      }
+    }
+    case 'vector-sprite': {
+      if (!isFinitePositiveInt(record.frameWidth, PINTA_LIMITS.maxFrameSize)) return null
+      if (!isFinitePositiveInt(record.frameHeight, PINTA_LIMITS.maxFrameSize)) return null
+      if (!Array.isArray(record.animations)) return null
+      const animations = record.animations
+        .slice(0, PINTA_LIMITS.maxAnimations)
+        .map((a) => sanitizeVectorAnimation(a))
+        .filter((a): a is PintaVectorAnimation => a !== null)
+      if (animations.length === 0) return null
+      return {
+        ...base,
+        kind: 'vector-sprite',
+        frameWidth: record.frameWidth,
+        frameHeight: record.frameHeight,
+        animations,
+      }
+    }
+    case 'vector-tileset': {
+      if (!isFinitePositiveInt(record.tileSize, PINTA_LIMITS.maxFrameSize)) return null
+      if (!Array.isArray(record.tiles)) return null
+      // Como no pixel: tile corrompido vira VAZIO para preservar os índices.
+      const tiles = record.tiles
+        .slice(0, PINTA_LIMITS.maxTiles)
+        .map((t) => sanitizeVectorFrame(t) ?? [])
+      if (tiles.length === 0) return null
+      const rawSolid = Array.isArray(record.solid) ? record.solid : []
+      const solid = tiles.map((_, i) => rawSolid[i] === true)
+      return { ...base, kind: 'vector-tileset', tileSize: record.tileSize, tiles, solid }
     }
     default:
       return null

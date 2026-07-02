@@ -9,7 +9,13 @@ import type { JSX } from 'react'
 import { useEffect, useRef } from 'react'
 import { COPY } from '../../core/copy'
 import type { PaletteId } from '../../core/palette'
-import type { PintaBitmap, TilemapAsset } from '../../core/project'
+import {
+  type AnyTilesetAsset,
+  isTilesetKind,
+  type PintaBitmap,
+  type TilemapAsset,
+  type VectorFrame,
+} from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
 import { persistAsset } from '../../state/persistence'
 import {
@@ -19,31 +25,48 @@ import {
   removeTile,
   toggleSolid,
 } from '../../tiles/tilesetOps'
+import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { usePintaApp } from '../appContext'
 import { IconButton } from '../ui/Button'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
-function TileThumb({
+function PixelTileThumb({
   bitmap,
   paletteId,
-  selected,
-  solid,
-  label,
-  onSelect,
 }: {
   bitmap: PintaBitmap
   paletteId: PaletteId
-  selected: boolean
-  solid: boolean
-  label: string
-  onSelect: () => void
 }): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const canvas = canvasRef.current
     if (canvas) paintBitmap(canvas, bitmap, paletteId)
   }, [bitmap, paletteId])
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pin-pixelated h-full w-full object-contain"
+      style={{ imageRendering: 'pixelated' }}
+    />
+  )
+}
+
+function TileThumbButton({
+  index,
+  selected,
+  solid,
+  label,
+  onSelect,
+  children,
+}: {
+  index: number
+  selected: boolean
+  solid: boolean
+  label: string
+  onSelect: () => void
+  children: JSX.Element
+}): JSX.Element {
   return (
     <button
       type="button"
@@ -54,11 +77,14 @@ function TileThumb({
         selected ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border'
       }`}
     >
-      <canvas
-        ref={canvasRef}
-        className="pin-pixelated h-full w-full object-contain"
-        style={{ imageRendering: 'pixelated' }}
-      />
+      {children}
+      {/* O NÚMERO da peça é o que a criança digita na grade/sólidos do Estúdio. */}
+      <span
+        aria-hidden="true"
+        className="absolute top-0 left-0 rounded-br-lg bg-pin-surface/85 px-1 text-[10px] font-bold text-pin-muted"
+      >
+        {index}
+      </span>
       {solid ? (
         <span aria-hidden="true" className="absolute right-0 bottom-0 text-xs">
           🧱
@@ -75,7 +101,7 @@ export function TileStrip(): JSX.Element | null {
   const asset = useEditor((state) => state.asset)
   const frameIndex = useSession((state) => state.frameIndex)
 
-  if (asset.kind !== 'tileset') return null
+  if (!isTilesetKind(asset)) return null
   const selectedIndex = Math.min(frameIndex, asset.tiles.length - 1)
 
   /** Persiste o remap nos MAPAS deste tileset (best-effort, fora do undo). */
@@ -94,15 +120,15 @@ export function TileStrip(): JSX.Element | null {
   }
 
   function mutate(
-    op: (tileset: Extract<typeof asset, { kind: 'tileset' }>) => {
-      next: typeof asset
+    op: (tileset: AnyTilesetAsset) => {
+      next: AnyTilesetAsset
       selectIndex?: number
       remap?: { insertedAt: number } | { removedAt: number }
       limitToast?: string
     },
   ): void {
     const current = editor.getState().asset
-    if (current.kind !== 'tileset') return
+    if (!isTilesetKind(current)) return
     const { next, selectIndex, remap, limitToast } = op(current)
     if (next === current) {
       if (limitToast) showToast(limitToast)
@@ -118,16 +144,26 @@ export function TileStrip(): JSX.Element | null {
       <span className="px-1 text-sm font-bold text-pin-muted">{COPY.tiles.tiles}</span>
       <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1">
         {asset.tiles.map((tile, index) => (
-          <TileThumb
+          <TileThumbButton
             // biome-ignore lint/suspicious/noArrayIndexKey: peças não têm id; a ordem É a identidade (índice nos mapas)
             key={index}
-            bitmap={tile}
-            paletteId={asset.paletteId}
+            index={index}
             selected={index === selectedIndex}
             solid={asset.solid[index] === true}
             label={`Peça ${index}`}
             onSelect={() => session.getState().selectFrame(index)}
-          />
+          >
+            {asset.kind === 'tileset' ? (
+              <PixelTileThumb bitmap={tile as PintaBitmap} paletteId={asset.paletteId} />
+            ) : (
+              <VectorFrameSvg
+                width={asset.tileSize}
+                height={asset.tileSize}
+                shapes={tile as VectorFrame}
+                className="h-full w-full"
+              />
+            )}
+          </TileThumbButton>
         ))}
       </div>
       <div className="flex items-center gap-1">

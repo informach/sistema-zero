@@ -114,4 +114,35 @@ describe('assetBytes', () => {
     const asset = makeAsset()
     expect(assetBytes(asset)).toBeGreaterThan(16)
   })
+
+  it('kinds vetoriais crescem com o número de shapes (orçamento do undo)', async () => {
+    const { createVectorSpriteAsset, createVectorTilesetAsset } = await import('../core/project')
+    const sprite = createVectorSpriteAsset({ name: 'v', frameSize: 32 })
+    const empty = assetBytes(sprite)
+    const shape = {
+      id: 's1',
+      type: 'rect' as const,
+      x: 0,
+      y: 0,
+      w: 4,
+      h: 4,
+      rx: 0,
+      fill: '#ff2121',
+      stroke: null,
+      opacity: 1,
+      rotation: 0,
+    }
+    const animation = sprite.animations[0]
+    if (!animation) throw new Error('animação esperada')
+    const withShapes = {
+      ...sprite,
+      animations: [{ ...animation, frames: [[shape, shape, shape]] }],
+    }
+    expect(assetBytes(withShapes)).toBeGreaterThan(empty)
+
+    const tileset = createVectorTilesetAsset({ name: 't', tileSize: 16 })
+    expect(
+      assetBytes({ ...tileset, tiles: [[shape], [shape]], solid: [false, false] }),
+    ).toBeGreaterThan(assetBytes(tileset))
+  })
 })

@@ -56,7 +56,8 @@ function isVec2(value: unknown): value is Vec2 {
 }
 
 const MAX_TEXT_CHARS = 200
-const MAX_PATH_CHARS = 20_000
+/** Teto do `d` do pincel — o sanitize DESCARTA acima disso; a criação (smoothing) capa antes. */
+export const MAX_PATH_CHARS = 20_000
 const MAX_POLYGON_POINTS = 64
 
 /**

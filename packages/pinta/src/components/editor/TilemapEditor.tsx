@@ -8,9 +8,17 @@
 import type { JSX, PointerEvent } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
-import type { PintaAsset, TilesetAsset } from '../../core/project'
+import { safeSetPointerCapture } from '../../core/pointer'
+import {
+  type AnyTilesetAsset,
+  isTilesetKind,
+  type PintaAsset,
+  type TilesetAsset,
+  type VectorFrame,
+} from '../../core/project'
 import { bitmapToRGBA } from '../../pixel/render'
 import { packTileset } from '../../tiles/packTileset'
+import { packVectorTileset, vectorTilesetSvg } from '../../tiles/packVectorTileset'
 import {
   addLayer,
   cellAt,
@@ -20,32 +28,32 @@ import {
   setCell,
   toggleLayerVisible,
 } from '../../tiles/tilemapOps'
+import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { usePintaGallery } from '../appContext'
 import { Button, IconButton } from '../ui/Button'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { ZoomControls } from './ZoomControls'
 
-type MapTool = 'pencil' | 'fill' | 'eraser' | 'picker'
+type MapTool = 'pencil' | 'fill' | 'eraser' | 'picker' | 'pan'
 
 const MAP_TOOLS: Array<{ id: MapTool; emoji: string; label: string }> = [
   { id: 'pencil', emoji: '✏️', label: COPY.tools.pencil },
   { id: 'fill', emoji: '🪣', label: COPY.tools.fill },
   { id: 'eraser', emoji: '🧽', label: COPY.tools.eraser },
   { id: 'picker', emoji: '💧', label: COPY.tools.picker },
+  // Em touch o palco tem touch-action:none (todo toque pinta) — a Mão é o
+  // jeito de navegar um mapa maior que a tela.
+  { id: 'pan', emoji: '🖐️', label: COPY.vector.pan },
 ]
 
-/** Miniatura de UMA peça no picker (canvas 1:1, CSS pixelated). */
-function PickerTile({
+/** Miniatura de UMA peça pixel no picker (canvas 1:1, CSS pixelated). */
+function PixelPickerThumb({
   tileset,
   index,
-  selected,
-  onSelect,
 }: {
   tileset: TilesetAsset
   index: number
-  selected: boolean
-  onSelect: () => void
 }): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const bitmap = tileset.tiles[index]
@@ -62,6 +70,27 @@ function PickerTile({
     )
   }, [bitmap, tileset.paletteId])
   return (
+    <canvas
+      ref={canvasRef}
+      className="pin-pixelated h-full w-full object-contain"
+      style={{ imageRendering: 'pixelated' }}
+    />
+  )
+}
+
+/** Miniatura de UMA peça no picker (pixel = canvas; vetor = SVG inline). */
+function PickerTile({
+  tileset,
+  index,
+  selected,
+  onSelect,
+}: {
+  tileset: AnyTilesetAsset
+  index: number
+  selected: boolean
+  onSelect: () => void
+}): JSX.Element {
+  return (
     <button
       type="button"
       aria-label={`Peça ${index}`}
@@ -71,11 +100,23 @@ function PickerTile({
         selected ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border'
       }`}
     >
-      <canvas
-        ref={canvasRef}
-        className="pin-pixelated h-full w-full object-contain"
-        style={{ imageRendering: 'pixelated' }}
-      />
+      {tileset.kind === 'tileset' ? (
+        <PixelPickerThumb tileset={tileset} index={index} />
+      ) : (
+        <VectorFrameSvg
+          width={tileset.tileSize}
+          height={tileset.tileSize}
+          shapes={(tileset.tiles[index] ?? []) as VectorFrame}
+          className="h-full w-full"
+        />
+      )}
+      {/* O NÚMERO da peça é o que aparece na grade colável do Estúdio. */}
+      <span
+        aria-hidden="true"
+        className="absolute top-0 left-0 rounded-br-lg bg-pin-surface/85 px-1 text-[10px] font-bold text-pin-muted"
+      >
+        {index}
+      </span>
       {tileset.solid[index] === true ? (
         <span aria-hidden="true" className="absolute right-0 bottom-0 text-[10px]">
           🧱
@@ -99,55 +140,111 @@ export function TilemapEditor(): JSX.Element | null {
     () =>
       tilemap
         ? (tilesets.find(
-            (a): a is TilesetAsset => a.kind === 'tileset' && a.id === tilemap.tilesetId,
+            (a): a is AnyTilesetAsset => isTilesetKind(a) && a.id === tilemap.tilesetId,
           ) ?? null)
         : null,
     [tilemap, tilesets],
   )
 
   const [activeLayerId, setActiveLayerId] = useState<string | null>(null)
+  // Incrementa quando o offscreen do tileset fica pronto (o vetor chega ASYNC).
+  const [sheetVersion, setSheetVersion] = useState(0)
+  // Incrementa no fim do gesto: força a passada COMPLETA de repaint.
+  const [paintTick, setPaintTick] = useState(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLCanvasElement | null>(null)
-  // Snapshot no início do arrasto (1 entrada de undo por gesto).
-  const gestureBaseRef = useRef<PintaAsset | null>(null)
+  // Snapshot no início do arrasto (1 entrada de undo por gesto) + o ponteiro
+  // dono do gesto (um segundo dedo/palma não pode pintar no gesto do primeiro).
+  const gestureBaseRef = useRef<{ base: PintaAsset; pointerId: number } | null>(null)
+  // Gesto da ferramenta Mão (navegação, fora do undo).
+  const panRef = useRef<{
+    pointerId: number
+    startClient: { x: number; y: number }
+    startScroll: { x: number; y: number }
+  } | null>(null)
 
   const layer = tilemap?.layers.find((l) => l.id === activeLayerId) ?? tilemap?.layers[0] ?? null
 
   // Offscreen do tileset (1:1, layout row-major da folha) — refeito quando o
   // tileset muda. É a MESMA conta do runtime: sx=(i%cols)*ts, sy=floor(i/cols)*ts.
+  // Pixel monta síncrono; o vetor rasteriza a folha SVG uma vez (async, com
+  // flag de cancelamento — trocar de tileset no meio do load não pinta errado).
   useEffect(() => {
     if (!tileset) return
-    const pack = packTileset(tileset)
-    const sheet = document.createElement('canvas')
-    sheet.width = pack.columns * pack.tileSize
-    sheet.height = pack.rows * pack.tileSize
-    const ctx = sheet.getContext('2d')
-    if (!ctx) return
-    for (const cell of pack.cells) {
-      ctx.putImageData(
-        new ImageData(
-          bitmapToRGBA(cell.bitmap, tileset.paletteId),
-          cell.bitmap.width,
-          cell.bitmap.height,
-        ),
-        cell.col * pack.tileSize,
-        cell.row * pack.tileSize,
-      )
+    sheetRef.current = null
+    if (tileset.kind === 'tileset') {
+      const pack = packTileset(tileset)
+      const sheet = document.createElement('canvas')
+      sheet.width = pack.columns * pack.tileSize
+      sheet.height = pack.rows * pack.tileSize
+      const ctx = sheet.getContext('2d')
+      if (!ctx) return
+      for (const cell of pack.cells) {
+        ctx.putImageData(
+          new ImageData(
+            bitmapToRGBA(cell.bitmap, tileset.paletteId),
+            cell.bitmap.width,
+            cell.bitmap.height,
+          ),
+          cell.col * pack.tileSize,
+          cell.row * pack.tileSize,
+        )
+      }
+      sheetRef.current = sheet
+      setSheetVersion((v) => v + 1)
+      return
     }
-    sheetRef.current = sheet
-  }, [tileset])
+    // happy-dom: canvas 2D é null e o load do Image nunca dispara — a MESMA
+    // guarda do rasterize.ts, ANTES de criar Blob URL (senão vaza sem revoke).
+    if (typeof Image === 'undefined' || !document.createElement('canvas').getContext('2d')) {
+      return
+    }
+    let cancelled = false
+    const pack = packVectorTileset(tileset)
+    const svg = vectorTilesetSvg(tileset)
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+    const img = new Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      if (cancelled) return
+      const sheet = document.createElement('canvas')
+      sheet.width = pack.columns * pack.tileSize
+      sheet.height = pack.rows * pack.tileSize
+      const ctx = sheet.getContext('2d')
+      if (!ctx) return
+      ctx.drawImage(img, 0, 0)
+      sheetRef.current = sheet
+      setSheetVersion((v) => v + 1)
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      if (!cancelled) showToast(COPY.tiles.sheetError)
+    }
+    img.src = url
+    return () => {
+      cancelled = true
+    }
+  }, [tileset, showToast])
 
   // Repinta o mapa (flatten das camadas visíveis + grade por CÉLULA). O
-  // sheetRef é preenchido pelo efeito acima (a dep `tileset` já cobre).
+  // O zoom da sessão é o FATOR real de escala do tile (níveis próprios do
+  // tilemap via sessionDefaults — o mostrador de zoom diz a verdade).
+  const cellPx = tileset ? Math.max(Math.round(tileset.tileSize * zoom), 4) : 4
+
+  // sheetRef é preenchido pelo efeito acima (sheetVersion sinaliza o async).
+  // Durante o ARRASTO de lápis/borracha o repaint completo (até 10k drawImage
+  // num mapa 100×100) é pulado — o applyAt pinta só a célula tocada e o fim do
+  // gesto força a passada completa via paintTick.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: sheetVersion/paintTick disparam o repaint
   useEffect(() => {
+    if (gestureBaseRef.current) return
     const canvas = canvasRef.current
     const sheet = sheetRef.current
     if (!canvas || !sheet || !tilemap || !tileset) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     const ts = tileset.tileSize
-    const scale = Math.max(zoom / 4, 0.5)
-    const cellPx = Math.max(Math.round(ts * scale), 4)
     canvas.width = tilemap.cols * cellPx
     canvas.height = tilemap.rows * cellPx
     ctx.imageSmoothingEnabled = false
@@ -176,7 +273,7 @@ export function TilemapEditor(): JSX.Element | null {
       ctx.lineTo(canvas.width, y * cellPx + 0.5)
     }
     ctx.stroke()
-  }, [tilemap, tileset, zoom])
+  }, [tilemap, tileset, cellPx, sheetVersion, paintTick])
 
   if (!tilemap) return null
   if (!tileset) {
@@ -199,6 +296,36 @@ export function TilemapEditor(): JSX.Element | null {
     }
   }
 
+  /** Pinta SÓ a célula tocada (o repaint completo fica para o fim do gesto). */
+  function paintCellNow(
+    next: Extract<PintaAsset, { kind: 'tilemap' }>,
+    col: number,
+    row: number,
+  ): void {
+    const canvas = canvasRef.current
+    const sheet = sheetRef.current
+    if (!canvas || !sheet || !tileset) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const ts = tileset.tileSize
+    const cols = Math.max(1, Math.floor(sheet.width / ts))
+    const flat = flattenLayers(next)
+    const index = flat[row * next.cols + col] ?? -1
+    const x = col * cellPx
+    const y = row * cellPx
+    ctx.imageSmoothingEnabled = false
+    ctx.clearRect(x, y, cellPx, cellPx)
+    if (index >= 0) {
+      const sx = (index % cols) * ts
+      const sy = Math.floor(index / cols) * ts
+      ctx.drawImage(sheet, sx, sy, ts, ts, x, y, cellPx, cellPx)
+    }
+    // Redesenha as bordas da célula (a grade é parte do editor).
+    ctx.strokeStyle = 'rgba(127,127,127,0.3)'
+    ctx.lineWidth = 1
+    ctx.strokeRect(x + 0.5, y + 0.5, cellPx - 1, cellPx - 1)
+  }
+
   function applyAt(col: number, row: number): void {
     const state = editor.getState()
     const current = state.asset
@@ -219,28 +346,60 @@ export function TilemapEditor(): JSX.Element | null {
       tool === 'fill'
         ? floodFillCells(current, layer.id, col, row, tile)
         : setCell(current, layer.id, col, row, tile)
-    if (next !== current) state.replace(next)
+    if (next === current) return
+    state.replace(next)
+    if ((tool === 'pencil' || tool === 'eraser') && next.kind === 'tilemap') {
+      paintCellNow(next, col, row)
+    }
   }
 
   function handlePointerDown(event: PointerEvent<HTMLCanvasElement>): void {
-    if (!event.isPrimary) return
-    event.currentTarget.setPointerCapture?.(event.pointerId)
-    gestureBaseRef.current = editor.getState().asset
+    if (!event.isPrimary || gestureBaseRef.current || panRef.current) return
+    safeSetPointerCapture(event.currentTarget, event.pointerId)
+    if (tool === 'pan') {
+      const stage = stageRef.current
+      if (!stage) return
+      panRef.current = {
+        pointerId: event.pointerId,
+        startClient: { x: event.clientX, y: event.clientY },
+        startScroll: { x: stage.scrollLeft, y: stage.scrollTop },
+      }
+      return
+    }
+    gestureBaseRef.current = { base: editor.getState().asset, pointerId: event.pointerId }
     const { col, row } = cellFromEvent(event)
     applyAt(col, row)
   }
 
   function handlePointerMove(event: PointerEvent<HTMLCanvasElement>): void {
-    if (!gestureBaseRef.current) return
+    const pan = panRef.current
+    if (pan && event.pointerId === pan.pointerId) {
+      const stage = stageRef.current
+      if (!stage) return
+      stage.scrollLeft = pan.startScroll.x - (event.clientX - pan.startClient.x)
+      stage.scrollTop = pan.startScroll.y - (event.clientY - pan.startClient.y)
+      return
+    }
+    const gesture = gestureBaseRef.current
+    if (!gesture || event.pointerId !== gesture.pointerId) return
     if (tool !== 'pencil' && tool !== 'eraser') return
     const { col, row } = cellFromEvent(event)
     applyAt(col, row)
   }
 
-  function endGesture(): void {
-    const base = gestureBaseRef.current
+  function endGesture(event?: PointerEvent<HTMLCanvasElement>): void {
+    const pan = panRef.current
+    if (pan && (!event || event.pointerId === pan.pointerId)) {
+      panRef.current = null
+      return
+    }
+    const gesture = gestureBaseRef.current
+    if (!gesture) return
+    if (event && event.pointerId !== gesture.pointerId) return
     gestureBaseRef.current = null
-    if (base) editor.getState().commitGesture(base)
+    editor.getState().commitGesture(gesture.base)
+    // Passada completa depois do arrasto (o incremental cobriu só as tocadas).
+    setPaintTick((v) => v + 1)
   }
 
   return (
@@ -262,9 +421,9 @@ export function TilemapEditor(): JSX.Element | null {
           ))}
         </div>
 
-        {/* A grade do mapa */}
-        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-2">
-          <div className="pin-checkerboard rounded-lg border-2 border-pin-border shadow-inner">
+        {/* A grade do mapa (centraliza quando menor; rola quando maior) */}
+        <div ref={stageRef} className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2">
+          <div className="pin-checkerboard m-auto rounded-lg border-2 border-pin-border shadow-inner">
             <canvas
               ref={canvasRef}
               className="pin-pixelated block"
@@ -329,7 +488,7 @@ export function TilemapEditor(): JSX.Element | null {
                       {l.name}
                     </button>
                     <IconButton
-                      aria-label={`${l.visible ? COPY.tiles.hide : COPY.tiles.show}: ${l.name}`}
+                      aria-label={`${COPY.tiles.show} ou ${COPY.tiles.hide.toLowerCase()}: ${l.name}`}
                       aria-pressed={l.visible}
                       title={l.visible ? COPY.tiles.hide : COPY.tiles.show}
                       onClick={() => {

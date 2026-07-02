@@ -7,6 +7,10 @@
  * `from = r × columns` e `to = from + n − 1` — exatamente os números que a
  * criança digita no bloco "Animar sprite".
  *
+ * A GEOMETRIA (`SheetGeometry`) é independente do conteúdo do quadro: pixel e
+ * vetor (`export/vectorSheet.ts`) produzem a MESMA folha e compartilham
+ * metadados/receita — o teste-guarda do runtime vale para os dois.
+ *
  * `packSpritesheet` é PURA (geometria + metadados); a rasterização fica em
  * `png.ts` (composeSheetPngDataUrl).
  */
@@ -26,54 +30,72 @@ export interface SpritesheetAnimationMeta {
   loop: boolean
 }
 
-export interface SpritesheetPack {
+/** A folha SEM o conteúdo dos quadros — o que metadados/receita precisam. */
+export interface SheetGeometry {
   frameWidth: number
   frameHeight: number
   columns: number
   rows: number
   animations: SpritesheetAnimationMeta[]
+}
+
+export interface SpritesheetPack extends SheetGeometry {
   /** Cada quadro posicionado na grade (col/row) — entrada da rasterização. */
   cells: Array<{ bitmap: PintaBitmap; col: number; row: number }>
 }
 
-export function packSpritesheet(asset: PixelSpriteAsset): SpritesheetPack {
-  const columns = Math.max(...asset.animations.map((a) => a.frames.length), 1)
-  const rows = asset.animations.length
-  const cells: SpritesheetPack['cells'] = []
-  const animations: SpritesheetAnimationMeta[] = asset.animations.map((animation, row) => {
-    animation.frames.forEach((bitmap, col) => {
-      cells.push({ bitmap, col, row })
-    })
+/** A geometria da folha a partir das CONTAGENS (uma linha por animação). */
+export function packAnimationsGeometry(
+  frameWidth: number,
+  frameHeight: number,
+  animations: Array<{ name: string; fps: number; loop: boolean; frameCount: number }>,
+): SheetGeometry {
+  const columns = Math.max(...animations.map((a) => a.frameCount), 1)
+  const rows = animations.length
+  const metas: SpritesheetAnimationMeta[] = animations.map((animation, row) => {
     const from = row * columns
     return {
       name: animation.name,
       row,
-      frames: animation.frames.length,
+      frames: animation.frameCount,
       from,
-      to: from + animation.frames.length - 1,
+      to: from + animation.frameCount - 1,
       fps: animation.fps,
       loop: animation.loop,
     }
   })
-  return {
-    frameWidth: asset.frameWidth,
-    frameHeight: asset.frameHeight,
-    columns,
-    rows,
-    animations,
-    cells,
-  }
+  return { frameWidth, frameHeight, columns, rows, animations: metas }
+}
+
+export function packSpritesheet(asset: PixelSpriteAsset): SpritesheetPack {
+  const geometry = packAnimationsGeometry(
+    asset.frameWidth,
+    asset.frameHeight,
+    asset.animations.map((a) => ({
+      name: a.name,
+      fps: a.fps,
+      loop: a.loop,
+      frameCount: a.frames.length,
+    })),
+  )
+  const cells: SpritesheetPack['cells'] = []
+  asset.animations.forEach((animation, row) => {
+    animation.frames.forEach((bitmap, col) => {
+      cells.push({ bitmap, col, row })
+    })
+  })
+  return { ...geometry, cells }
 }
 
 /** O JSON de metadados que acompanha o PNG (receita do bloco). */
-export function spritesheetMetadata(pack: SpritesheetPack): string {
+export function spritesheetMetadata(geometry: SheetGeometry): string {
   return JSON.stringify(
     {
-      frameWidth: pack.frameWidth,
-      frameHeight: pack.frameHeight,
-      columns: pack.columns,
-      rows: pack.rows,
-      animations: pack.animations,
+      frameWidth: geometry.frameWidth,
+      frameHeight: geometry.frameHeight,
+      columns: geometry.columns,
+      rows: geometry.rows,
+      animations: geometry.animations,
     },
     null,
     2,
@@ -101,13 +123,13 @@ export function spritesheetPngDataUrl(
  * Receita do bloco em PT, mostrada no ExportDialog e no LEIA-ME do ZIP — os
  * números que a criança usa no "Carregar folha de quadros" + "Animar sprite".
  */
-export function spritesheetRecipe(pack: SpritesheetPack): string {
+export function spritesheetRecipe(geometry: SheetGeometry): string {
   const lines = [
-    `Folha de quadros: cada quadro tem ${pack.frameWidth} × ${pack.frameHeight}.`,
+    `Folha de quadros: cada quadro tem ${geometry.frameWidth} × ${geometry.frameHeight}.`,
     'No Estúdio, use "Carregar folha de quadros" com esses tamanhos.',
     '',
   ]
-  for (const animation of pack.animations) {
+  for (const animation of geometry.animations) {
     lines.push(
       `Animação "${animation.name}": do quadro ${animation.from} ao ${animation.to}, velocidade ${animation.fps}.`,
     )

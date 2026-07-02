@@ -13,6 +13,14 @@ import { bitmapToRGBA } from '../pixel/render'
 export const PNG_SCALES = [1, 2, 4] as const
 
 /**
+ * `toDataURL` acima do teto de canvas do device devolve "data:," SEM lançar —
+ * valida o prefixo para a falha virar `null` (toast de erro, não PNG vazio).
+ */
+function pngOrNull(dataUrl: string): string | null {
+  return dataUrl.startsWith('data:image/png') ? dataUrl : null
+}
+
+/**
  * Bitmap → `data:image/png;base64,...` com upscale nearest-neighbor.
  * `null` sem canvas 2D no ambiente.
  */
@@ -28,7 +36,7 @@ export function bitmapToPngDataUrl(
   if (!baseCtx) return null
   const rgba = bitmapToRGBA(bitmap, paletteId)
   baseCtx.putImageData(new ImageData(rgba, bitmap.width, bitmap.height), 0, 0)
-  if (scale === 1) return base.toDataURL('image/png')
+  if (scale === 1) return pngOrNull(base.toDataURL('image/png'))
 
   const scaled = document.createElement('canvas')
   scaled.width = bitmap.width * scale
@@ -37,7 +45,7 @@ export function bitmapToPngDataUrl(
   if (!scaledCtx) return null
   scaledCtx.imageSmoothingEnabled = false
   scaledCtx.drawImage(base, 0, 0, scaled.width, scaled.height)
-  return scaled.toDataURL('image/png')
+  return pngOrNull(scaled.toDataURL('image/png'))
 }
 
 /**
@@ -68,7 +76,7 @@ export function composeSheetPngDataUrl(input: {
       cell.row * input.cellHeight,
     )
   }
-  if (scale === 1) return canvas.toDataURL('image/png')
+  if (scale === 1) return pngOrNull(canvas.toDataURL('image/png'))
 
   const scaled = document.createElement('canvas')
   scaled.width = canvas.width * scale
@@ -77,7 +85,7 @@ export function composeSheetPngDataUrl(input: {
   if (!scaledCtx) return null
   scaledCtx.imageSmoothingEnabled = false
   scaledCtx.drawImage(canvas, 0, 0, scaled.width, scaled.height)
-  return scaled.toDataURL('image/png')
+  return pngOrNull(scaled.toDataURL('image/png'))
 }
 
 /** data URL → Blob via atob (CSP-safe; nunca fetch). `null` se malformada. */

@@ -1,17 +1,18 @@
 /**
- * Aproximar/afastar em degraus fixos (ZOOM_LEVELS) + o valor atual.
+ * Aproximar/afastar em degraus fixos (os `zoomLevels` da sessão — pixel e
+ * vetor usam escalas diferentes) + o valor atual.
  */
 import type { JSX } from 'react'
 import { COPY } from '../../core/copy'
-import { ZOOM_LEVELS } from '../../state/sessionStore'
 import { IconButton } from '../ui/Button'
 import { useEditorStores, useSession } from './editorContext'
 
 export function ZoomControls(): JSX.Element {
   const { session } = useEditorStores()
   const zoom = useSession((state) => state.zoom)
-  const min = ZOOM_LEVELS[0]
-  const max = ZOOM_LEVELS[ZOOM_LEVELS.length - 1]
+  const levels = useSession((state) => state.zoomLevels)
+  const min = levels[0]
+  const max = levels[levels.length - 1]
 
   return (
     <div className="flex items-center gap-1 rounded-3xl border-2 border-pin-border bg-pin-surface px-2 py-1">
@@ -23,7 +24,10 @@ export function ZoomControls(): JSX.Element {
       >
         <span aria-hidden="true">➖</span>
       </IconButton>
-      <span className="min-w-12 text-center text-sm font-bold text-pin-muted">{zoom}×</span>
+      {/* Arredonda a exibição: o "Ajustar" do vetor grava zoom fracionário. */}
+      <span className="min-w-12 text-center text-sm font-bold text-pin-muted">
+        {Math.round(zoom * 10) / 10}×
+      </span>
       <IconButton
         aria-label={COPY.editor.zoomIn}
         title={COPY.editor.zoomIn}

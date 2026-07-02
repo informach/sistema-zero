@@ -29,6 +29,12 @@ describe('bitmapCodec (RLE + base64 do .pinta.json)', () => {
     expect(decoded?.data.every((v) => v === 7)).toBe(true)
   })
 
+  it('dimensões gigantes → null ANTES de alocar (backup malicioso)', () => {
+    // Sem o teto, width*height de 1e9 lançaria RangeError (ou alocaria GB).
+    expect(decodeBitmap({ width: 1_000_000_000, height: 1_000_000_000, rle: btoa('') })).toBeNull()
+    expect(decodeBitmap({ width: 40_000, height: 40_000, rle: btoa('') })).toBeNull()
+  })
+
   it('registro corrompido → null (nunca lança)', () => {
     expect(decodeBitmap(null)).toBeNull()
     expect(decodeBitmap({ width: 2, height: 2 })).toBeNull()

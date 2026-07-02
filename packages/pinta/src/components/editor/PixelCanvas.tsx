@@ -11,7 +11,8 @@ import type { JSX, PointerEvent } from 'react'
 import { useEffect, useRef } from 'react'
 import { activeBitmapOf, previousFrameOf, withActiveBitmap } from '../../core/assetEdit'
 import { TRANSPARENT_INDEX } from '../../core/palette'
-import type { PintaBitmap } from '../../core/project'
+import { safeSetPointerCapture } from '../../core/pointer'
+import { type PintaBitmap, paletteIdOf } from '../../core/project'
 import { createScaledPainter, paintPixelGrid, type ScaledPainter } from '../../pixel/render'
 import {
   type ToolGesture,
@@ -35,10 +36,21 @@ export function PixelCanvas(): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const painterRef = useRef<ScaledPainter | null>(null)
   const gestureRef = useRef<ToolGesture | null>(null)
+  // Dono do gesto: um segundo dedo/palma não injeta pontos no traço do primeiro.
+  const gesturePointerRef = useRef<number | null>(null)
 
   const frameRef = { animationId, frameIndex }
   const bitmap = activeBitmapOf(asset, frameRef)
   const under = onion ? previousFrameOf(asset, frameRef) : null
+
+  // Trocar de quadro/animação NO MEIO de um gesto (multi-touch) descarta o
+  // gesto — sem isso o pointerup commitaria o bitmap antigo POR CIMA do quadro
+  // recém-selecionado.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: as deps são o GATILHO (mudou o quadro ativo)
+  useEffect(() => {
+    gestureRef.current = null
+    gesturePointerRef.current = null
+  }, [animationId, frameIndex])
 
   function paint(current: PintaBitmap): void {
     const canvas = canvasRef.current
@@ -48,7 +60,7 @@ export function PixelCanvas(): JSX.Element {
     if (!painter) return
     painter.paint(
       current,
-      asset.kind === 'tilemap' || asset.kind === 'vector' ? 'arcade' : asset.paletteId,
+      paletteIdOf(asset),
       zoom,
       under ? { bitmap: under, alpha: ONION_ALPHA } : undefined,
     )
@@ -84,7 +96,8 @@ export function PixelCanvas(): JSX.Element {
   function settings(): ToolSettings {
     const s = session.getState()
     return {
-      tool: s.tool,
+      // 'pan' é da sessão (mapa/vetor), não do motor pixel — aqui vira lápis.
+      tool: s.tool === 'pan' ? 'pencil' : s.tool,
       color: s.color,
       brushSize: s.brushSize,
       mirrorX: s.mirrorX,
@@ -93,13 +106,19 @@ export function PixelCanvas(): JSX.Element {
   }
 
   function commitBitmap(next: PintaBitmap): void {
+    // Ref VIVO da sessão (não o do render): o commit cai no quadro certo mesmo
+    // se a seleção mudou durante o gesto.
     const state = editor.getState()
-    state.commit(withActiveBitmap(state.asset, frameRef, next))
+    const s = session.getState()
+    state.commit(
+      withActiveBitmap(state.asset, { animationId: s.animationId, frameIndex: s.frameIndex }, next),
+    )
   }
 
   function handlePointerDown(event: PointerEvent<HTMLCanvasElement>): void {
-    if (!event.isPrimary || !bitmap) return
-    event.currentTarget.setPointerCapture?.(event.pointerId)
+    if (!event.isPrimary || !bitmap || gestureRef.current) return
+    safeSetPointerCapture(event.currentTarget, event.pointerId)
+    gesturePointerRef.current = event.pointerId
     const result = toolPointerDown(bitmap, settings(), pixelPos(event))
     if (result.pickedColor !== undefined) {
       const s = session.getState()
@@ -123,7 +142,7 @@ export function PixelCanvas(): JSX.Element {
 
   function handlePointerMove(event: PointerEvent<HTMLCanvasElement>): void {
     const gesture = gestureRef.current
-    if (!gesture) return
+    if (!gesture || event.pointerId !== gesturePointerRef.current) return
     const next = toolPointerMove(gesture, pixelPos(event))
     if (next !== gesture) {
       gestureRef.current = next
@@ -133,8 +152,9 @@ export function PixelCanvas(): JSX.Element {
 
   function endGesture(event: PointerEvent<HTMLCanvasElement>): void {
     const gesture = gestureRef.current
-    if (!gesture) return
+    if (!gesture || event.pointerId !== gesturePointerRef.current) return
     gestureRef.current = null
+    gesturePointerRef.current = null
     const committed = toolPointerUp(gesture, pixelPos(event))
     if (committed) {
       commitBitmap(committed)

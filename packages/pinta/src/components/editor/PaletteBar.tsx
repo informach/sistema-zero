@@ -14,7 +14,8 @@ export function PaletteBar(): JSX.Element | null {
   const color = useSession((state) => state.color)
   const tool = useSession((state) => state.tool)
 
-  if (asset.kind === 'tilemap' || asset.kind === 'vector') return null
+  // Só kinds com paleta indexada própria (vetoriais usam cor livre).
+  if (!('paletteId' in asset)) return null
   const palette = getPalette(asset.paletteId)
 
   return (

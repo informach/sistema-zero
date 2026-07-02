@@ -33,12 +33,17 @@
   --color-pin-danger: oklch(0.55 0.19 25);
   --color-pin-scrim: oklch(0.2 0.02 260 / 0.45); /* fundo do modal */
 
-  /* Uma cor alegre e distinta por TIPO de asset (cards da galeria/criação). */
+  /* Uma cor alegre e distinta por PAPEL de asset (a mesma nos dois estilos). */
   --color-pin-kind-sprite: oklch(0.55 0.21 300); /* roxo    · Personagem */
   --color-pin-kind-background: oklch(0.55 0.15 235); /* azul    · Cenário de fundo */
   --color-pin-kind-tileset: oklch(0.66 0.17 55); /* laranja · Peças do cenário */
   --color-pin-kind-tilemap: oklch(0.55 0.14 155); /* verde   · Mapa */
-  --color-pin-kind-vector: oklch(0.6 0.21 350); /* rosa    · Desenho livre */
+
+  /* Selinho de ESTILO (Pixel | Vetor) nos cards e no passo de criação.
+     ⚠️ Diferente dos kind-* (só emoji decorativo), estes carregam TEXTO branco:
+     manter L ≤ ~0.55 nos DOIS temas para dar contraste AA. */
+  --color-pin-style-pixel: oklch(0.52 0.14 200); /* cyan  · Pixel art */
+  --color-pin-style-vector: oklch(0.53 0.21 350); /* rosa  · Vetor */
 }
 
 /* Tema escuro — override por atributo data-pinta-theme="dark" no root. */
@@ -59,7 +64,11 @@
   --color-pin-kind-background: oklch(0.76 0.12 235);
   --color-pin-kind-tileset: oklch(0.79 0.14 65);
   --color-pin-kind-tilemap: oklch(0.8 0.16 155);
-  --color-pin-kind-vector: oklch(0.75 0.16 350);
+
+  /* Escuro: os style-* NÃO clareiam (texto branco em cima); a saturação já
+     destaca o chip sobre o card escuro. */
+  --color-pin-style-pixel: oklch(0.52 0.14 200);
+  --color-pin-style-vector: oklch(0.53 0.21 350);
 }
 
 /*

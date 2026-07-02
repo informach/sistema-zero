@@ -28,24 +28,28 @@ describe('PintaApp — galeria', () => {
     })
   })
 
-  it('cria um personagem em 3 passos e abre o editor; voltar mostra o card', async () => {
+  it('cria um personagem (estilo → tipo → tamanho → nome) e abre o editor; voltar mostra o card', async () => {
     render(<PintaApp />)
     await waitFor(() => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
 
-    // Passo 1: tipo.
+    // Passo 1: ESTILO (pixel art | vetor).
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    expect(screen.getByText(COPY.newAsset.styleTitle)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
+
+    // Passo 2: tipo.
     expect(screen.getByText(COPY.newAsset.title)).toBeTruthy()
     fireEvent.click(
       screen.getByRole('button', { name: new RegExp(COPY.kinds['pixel-sprite'].title) }),
     )
 
-    // Passo 2: tamanho (o primeiro já vem selecionado).
+    // Passo 3: tamanho (o primeiro já vem selecionado).
     expect(screen.getByText(COPY.newAsset.sizeTitle)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.next }))
 
-    // Passo 3: nome.
+    // Passo 4: nome.
     const input = screen.getByPlaceholderText(COPY.newAsset.namePlaceholder)
     fireEvent.change(input, { target: { value: 'Meu Herói' } })
     fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.createButton }))
@@ -60,16 +64,17 @@ describe('PintaApp — galeria', () => {
     // Voltar → galeria com o card.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.back }))
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Abrir meu-heroi' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir meu-heroi/ })).toBeTruthy()
     })
   })
 
-  it('mapa fica desabilitado sem peças do cenário', async () => {
+  it('mapa fica desabilitado sem peças do cenário (nos dois estilos)', async () => {
     render(<PintaApp />)
     await waitFor(() => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.vector.title) }))
     const tilemapCard = screen.getByRole('button', {
       name: new RegExp(COPY.kinds.tilemap.title),
     }) as HTMLButtonElement
@@ -84,7 +89,7 @@ describe('PintaApp — galeria', () => {
 
     render(<PintaApp />)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Abrir apagavel' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir apagavel/ })).toBeTruthy()
     })
 
     fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.remove} apagavel` }))
@@ -95,7 +100,7 @@ describe('PintaApp — galeria', () => {
     await act(async () => {
       await Bun.sleep(0)
     })
-    expect(screen.queryByRole('button', { name: 'Abrir apagavel' })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Abrir apagavel/ })).toBeNull()
   })
 
   it('botão "Usar no Estúdio" só aparece com o callback do host', async () => {
@@ -104,9 +109,9 @@ describe('PintaApp — galeria', () => {
 
     const { unmount } = render(<PintaApp />)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Abrir ceu' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir ceu/ })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir ceu' }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir ceu/ }))
     await waitFor(() => {
       expect(screen.getByText('ceu')).toBeTruthy()
     })
@@ -115,9 +120,9 @@ describe('PintaApp — galeria', () => {
 
     render(<PintaApp adapter={{ sendToStudio: async () => ({ ok: true }) }} />)
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Abrir ceu' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: /Abrir ceu/ })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir ceu' }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir ceu/ }))
     await waitFor(() => {
       expect(screen.getByText(new RegExp(COPY.editor.sendToStudio))).toBeTruthy()
     })

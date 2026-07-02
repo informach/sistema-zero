@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test src",
     "check": "biome check .",
-    "check:fix": "biome check --write ."
+    "check:fix": "biome check --write .",
+    "dev": "vite --config playground/vite.config.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -34,6 +35,10 @@
     "@types/react-dom": "^19.2.3",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "@tailwindcss/vite": "^4.3.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "tailwindcss": "^4.3.0",
+    "vite": "^8.0.14"
   }
 }

@@ -4,7 +4,7 @@
  * Catmull-Rom convertida em cubic béziers → `d` (M/C absolutos, o formato que
  * a geometria sabe mover/escalar). Tudo puro.
  */
-import type { Vec2 } from './model'
+import { MAX_PATH_CHARS, type Vec2 } from './model'
 
 /** Distância ponto→segmento (RDP). */
 function pointToSegment(p: Vec2, a: Vec2, b: Vec2): number {
@@ -83,4 +83,30 @@ export function catmullRomToPath(points: Vec2[]): string {
 /** O pipeline completo do pincel: pontos crus do arrasto → `d` suavizado. */
 export function smoothStrokeToPath(points: Vec2[], epsilon = 1.5): string {
   return catmullRomToPath(simplifyRDP(points, epsilon))
+}
+
+/**
+ * Como `smoothStrokeToPath`, mas GARANTE `d.length <= maxChars` simplificando
+ * mais agressivamente quando preciso. Sem isso um rabisco longo estoura o
+ * `MAX_PATH_CHARS` do sanitize e o traço é salvo mas DESCARTADO no próximo
+ * load — perda silenciosa de desenho.
+ */
+export function smoothStrokeToPathCapped(
+  points: Vec2[],
+  epsilon = 1.5,
+  maxChars = MAX_PATH_CHARS,
+): string {
+  let eps = epsilon
+  let d = catmullRomToPath(simplifyRDP(points, eps))
+  while (d.length > maxChars && eps < 2048) {
+    eps *= 2
+    d = catmullRomToPath(simplifyRDP(points, eps))
+  }
+  if (d.length > maxChars) {
+    // Último recurso (traço patológico): decima por passo fixo.
+    const stride = Math.ceil(points.length / 250)
+    const decimated = points.filter((_, i) => i % stride === 0 || i === points.length - 1)
+    d = catmullRomToPath(simplifyRDP(decimated, eps))
+  }
+  return d
 }

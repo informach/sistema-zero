@@ -224,3 +224,44 @@ export function rotateShapeTo(shape: VectorShape, degrees: number): VectorShape 
   const normalized = ((degrees % 360) + 360) % 360
   return { ...shape, rotation: Math.round(normalized * 10) / 10 }
 }
+
+/**
+ * Espelha o shape em torno de um centro (horizontal ou vertical) — o
+ * `scaleShape` clampa fatores negativos de propósito, então o flip é uma
+ * operação própria. Espelhar inverte o sentido da rotação.
+ */
+export function flipShape(shape: VectorShape, axis: 'h' | 'v', center: Vec2): VectorShape {
+  const mx = (x: number) => (axis === 'h' ? round2(2 * center.x - x) : x)
+  const my = (y: number) => (axis === 'v' ? round2(2 * center.y - y) : y)
+  const flip = (): VectorShape => {
+    switch (shape.type) {
+      case 'rect':
+        return {
+          ...shape,
+          x: axis === 'h' ? round2(2 * center.x - shape.x - shape.w) : shape.x,
+          y: axis === 'v' ? round2(2 * center.y - shape.y - shape.h) : shape.y,
+        }
+      case 'ellipse':
+        return { ...shape, cx: mx(shape.cx), cy: my(shape.cy) }
+      case 'line':
+        return { ...shape, x1: mx(shape.x1), y1: my(shape.y1), x2: mx(shape.x2), y2: my(shape.y2) }
+      case 'polygon':
+        return { ...shape, points: shape.points.map((p) => ({ x: mx(p.x), y: my(p.y) })) }
+      case 'path':
+        return { ...shape, d: mapPathPoints(shape.d, (x, y) => ({ x: mx(x), y: my(y) })) }
+      case 'text': {
+        // Texto não espelha de verdade (ficaria ilegível): move o box espelhado.
+        const bounds = shapeBounds(shape)
+        return {
+          ...shape,
+          x: axis === 'h' ? round2(2 * center.x - shape.x - bounds.width) : shape.x,
+          y: my(shape.y),
+        }
+      }
+    }
+  }
+  const flipped = flip()
+  return shape.rotation !== 0
+    ? { ...flipped, rotation: Math.round(((360 - shape.rotation) % 360) * 10) / 10 }
+    : flipped
+}

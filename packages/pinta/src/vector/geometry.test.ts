@@ -85,3 +85,45 @@ describe('rotateShapeTo', () => {
     expect(rotateShapeTo(rect, -90).rotation).toBe(270)
   })
 })
+
+describe('flipShape', () => {
+  it('espelha rect/linha em torno do centro e inverte a rotação', async () => {
+    const { flipShape, shapeBounds, boundsCenter } = await import('./geometry')
+    const rect = {
+      id: 'r',
+      type: 'rect' as const,
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 4,
+      rx: 0,
+      fill: '#ff2121',
+      stroke: null,
+      opacity: 1,
+      rotation: 30,
+    }
+    const center = boundsCenter(shapeBounds(rect))
+    const flipped = flipShape(rect, 'h', center)
+    // Em torno do próprio centro, o rect volta ao MESMO box; a rotação inverte.
+    expect(shapeBounds(flipped)).toEqual(shapeBounds(rect))
+    expect(flipped.rotation).toBe(330)
+
+    const line = {
+      id: 'l',
+      type: 'line' as const,
+      x1: 0,
+      y1: 0,
+      x2: 10,
+      y2: 4,
+      fill: 'none',
+      stroke: { color: '#000000', width: 2 },
+      opacity: 1,
+      rotation: 0,
+    }
+    const flippedLine = flipShape(line, 'h', { x: 5, y: 2 })
+    if (flippedLine.type !== 'line') throw new Error('linha esperada')
+    expect(flippedLine.x1).toBe(10)
+    expect(flippedLine.x2).toBe(0)
+    expect(flippedLine.y1).toBe(0)
+  })
+})

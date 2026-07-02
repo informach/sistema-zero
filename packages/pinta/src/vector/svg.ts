@@ -3,9 +3,18 @@
  * editor renderiza (atributos idênticos) — o export é o editor serializado,
  * snapshot-testável e abre em qualquer navegador/editor de SVG.
  */
-import type { VectorAsset } from '../core/project'
 import { boundsCenter, shapeBounds } from './geometry'
 import type { VectorShape } from './model'
+
+/**
+ * Um "documento" vetorial ESTRUTURAL: qualquer coisa com dimensões + shapes
+ * (o `VectorBackgroundAsset` inteiro, um quadro de `vector-sprite`, um tile).
+ */
+export interface VectorDoc {
+  width: number
+  height: number
+  shapes: VectorShape[]
+}
 
 function escapeXml(value: string): string {
   return value
@@ -105,12 +114,16 @@ export function shapeToMarkup(shape: VectorShape): string {
   return `<${tag} ${attrText}/>`
 }
 
+/** Markup dos shapes (sem o elemento `<svg>` em volta), na ordem do z-order. */
+export function shapesToMarkup(shapes: VectorShape[], indent = '  '): string {
+  return shapes.map((shape) => `${indent}${shapeToMarkup(shape)}`).join('\n')
+}
+
 /** O documento SVG inteiro (ordem do array = z-order, fundo primeiro). */
-export function vectorToSvg(asset: VectorAsset): string {
-  const shapes = asset.shapes.map((shape) => `  ${shapeToMarkup(shape)}`).join('\n')
+export function vectorToSvg(doc: VectorDoc): string {
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${asset.width}" height="${asset.height}" viewBox="0 0 ${asset.width} ${asset.height}">`,
-    shapes,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${doc.width}" height="${doc.height}" viewBox="0 0 ${doc.width} ${doc.height}">`,
+    shapesToMarkup(doc.shapes),
     '</svg>',
   ].join('\n')
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { createVectorAsset } from '../core/project'
+import { createVectorBackgroundAsset } from '../core/project'
 import type { VectorShape } from './model'
 import { shapeToMarkup, vectorToSvg } from './svg'
 
@@ -73,7 +73,7 @@ describe('shapeToMarkup', () => {
 
 describe('vectorToSvg (snapshot do documento)', () => {
   it('documento completo com viewBox e z-order preservado', () => {
-    const asset = createVectorAsset({ name: 'livre', width: 480, height: 360 })
+    const asset = createVectorBackgroundAsset({ name: 'livre', width: 480, height: 360 })
     const withShapes = {
       ...asset,
       shapes: [
