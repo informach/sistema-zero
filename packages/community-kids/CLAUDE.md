@@ -12,8 +12,23 @@ lime neon `#C4F042` sobre `#0D1117`; acentos SÓ cyan/lime/vermelho — sem hues
 fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), CTA "botão 3D" (sombra
 dura + afunda no clique), microinterações `kid-pop`/`kid-wiggle`/`kid-float` com
 `prefers-reduced-motion` global. **Layout próprio (≠ community)**: sidebar fixa no desktop + top
-bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`), home com mascote + card-herói
-"Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
+bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`). **Nav (lote UX 07/2026):** a sidebar
+segue com os 9 `NAV_ITEMS`; a TAB BAR mobile usa **`MOBILE_NAV_ITEMS` (5 abas)** — Início, Cursos,
+**Criar**, Mural, Perfil (9 alvos eram minúsculos p/ mãos pequenas). "Criar" → **`/criar`**
+(`(app)/criar/page.tsx`, em `protectedPrefixes`): hub de cards do trio criativo (Pensa→Pinta→
+Estúdio, na ordem da jornada) + Quarto + Clube; a aba acende nessas rotas (`NavItem.match` aceita
+`string | string[]`). **Home (lote UX 07/2026):** o StreakCard MORREU — virou
+**`creator-career-card.tsx`** ("Carreira de Criador": aura + insígnia do rank + `nextLevelHint` +
+fogo/XP secundários; placeholder gentil quando a gamificação está fora; a home soma
+`getAvatarReadonly()` ao Promise.all p/ a foto da aura). **Festa no fim do vídeo:** a
+auto-conclusão a 90% ARMA a celebração (`deferredCelebrationRef` no lesson-player-client) e o
+overlay completo abre no **`onVideoEnded`** (fio novo do member-shell); manual segue igual.
+**Cartão do jogo com QR** (`game-card-dialog.tsx`; dep `qrcode` client-side, canvas puro
+CSP-safe): botão QrCode no `PlayLinkActions` dos cards do Mural → cartão imprimível (capa +
+título + QR do `/jogar/<id>`; imprimir usa `body[data-print='game-card']` + regra `@media print`
+no globals.css). **`/estudio` com paleta calma:** `studio-full-client` passa
+`level="intermediario"` + `allowLevelReveal` ao `StudioEditor` (aceita curadoria desde 07/2026).
+Home com mascote + card-herói "Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
 (`course-trail.tsx` + `trail-layout.ts` puro/testado: módulo = unidade temática
 cyan→lime→gradiente via `unit-theme.ts`, aula = nó circular; com a **trava sequencial** do curso
 (`sequential_lock`, estilo Duolingo) as aulas posteriores vêm `locked` do members → nó com
@@ -354,7 +369,7 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `room-builder.tsx` (quarto), que também leem `balanceUnlimited`. Compras da equipe voltam grátis
   (`unlimited:true`). Ver `docs/gamificacao.md` §4.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
-- **Nível do aluno (rank Noob→God, 06/2026)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
+- **Nível do aluno (rank, 06/2026; rótulos kid-friendly 07/2026: Faísca→Construtor(a)→Inventor(a)→Mestre dos Jogos→Lenda — slugs internos noob…god NÃO mudam)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
   `levelInfo()`/`nextLevelHint()`; cor = CSS var `--level-<slug>` em `globals.css` `:root`+`.dark`),
   `components/kids/avatar-with-aura.tsx` (`AvatarWithAura` — anel/brilho na cor do nível ao redor do
   `KidsAvatar`, estático p/ reduced-motion) e `level-badge.tsx` (`LevelBadge` — insígnia ícone+nome).
@@ -724,8 +739,16 @@ Verde: typecheck + test (26) + biome + `build:kids`. Achados LOW corrigidos:
   GLB cacheado in-place — BENIGNO no estado atual (miniaturas são PNG estático → só 1 consumidor vivo
   do GLB por vez; o fallback ao vivo CLONA antes de recolorir); vira risco só se duas peças com o
   MESMO URL+cor diferente renderizarem juntas. Mantido como está; clonar como o `thumb-canvas` é
-  endurecimento opcional, não correção. Compras em 1 toque, sem-PIN entre irmãos e nome no perfil
-  público (opt-in) seguem decisões de produto.
+  endurecimento opcional, não correção. Sem-PIN entre irmãos e nome no perfil
+  público (opt-in) seguem decisões de produto. ⚠️ **Compra em 1 toque MUDOU (07/2026, lote UX kids)**:
+  avatar e quarto agora têm **confirmação LEVE em 2 toques** — 1º toque numa peça/item travado VESTE de
+  prévia (avatar; o `hasLocked` já bloqueava o Salvar) ou arma a confirmação (quarto), mostra barra com
+  preço + "Deixar para depois" (desfaz a prévia) e o chip do item vira "Comprar? N"; o 2º toque no MESMO
+  item compra. A confirmação só desarma no SUCESSO (falha por saldo mantém a barra p/ desistir).
+  `configurator.tsx` (`pendingBuy`/`cancelPendingBuy`) e `room-builder.tsx` (`confirmBuyId`/
+  `resolvePendingBuy` + `PriceChip`). No MESMO lote UX: cooldown do quiz 5min→90s (members) com copy de
+  "hora de revisar"; ranks renomeados (ver Nível do aluno); StreakCard/MissionsPanel ganham placeholder
+  gentil quando a gamificação está fora (não somem mais); copy do catálogo/vazios em tom kids.
 
 ## Full review (correções) — 28/06/2026 (2ª passada — refator do gate Clube/Mural)
 

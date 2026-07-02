@@ -16,6 +16,8 @@ export const proxy = createMemberProxy({
     '/cursos',
     '/perfil',
     '/meu-avatar',
+    // Hub "Criar" (tab bar mobile de 5 itens): cards p/ o trio criativo + quarto + clube.
+    '/criar',
     '/quarto',
     '/crianca',
     '/clube-dos-criadores',

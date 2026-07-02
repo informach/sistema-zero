@@ -27,6 +27,8 @@ export interface PensaCopy {
     loading: string
     emptyTitle: string
     emptyBody: string
+    /** CTA do estado vazio (rótulo DISTINTO do `create` do header). */
+    emptyCta: string
   }
   card: {
     menuLabel: string
@@ -205,6 +207,8 @@ export interface PensaCopy {
     /** Ajuda quando o "Consegui!" ainda está travado pelos checks. */
     finishHint: string
     openStudio: string
+    /** Ponte com o ateliê (só com adapter.onOpenPinta). */
+    openPinta: string
     /** Gaveta do Modo Missão (split). */
     hideMission: string
     showMission: string
@@ -282,7 +286,9 @@ const KIDS_COPY: PensaCopy = {
     create: 'Criar um jogo novo',
     loading: 'Buscando seus planos...',
     emptyTitle: 'Nenhum plano por aqui ainda',
-    emptyBody: 'Que tal começar agora? Clique no botão e vamos planejar seu primeiro jogo juntos!',
+    emptyBody:
+      'Todo jogo incrível nasce de um plano! Nessas quatro etapas, o Zappy ajuda você a transformar a sua ideia em missões para construir de verdade.',
+    emptyCta: 'Planejar meu primeiro jogo',
   },
   card: {
     menuLabel: 'Mais opções do projeto',
@@ -478,6 +484,7 @@ const KIDS_COPY: PensaCopy = {
     doneWhenLabel: 'Ficou pronto quando...',
     finishHint: 'Marque tudo o que ficou pronto para concluir a missão!',
     openStudio: 'Abrir o Estúdio',
+    openPinta: 'Desenhar no Pinta',
     hideMission: 'Esconder a missão',
     showMission: 'Mostrar a missão',
     swapTitle: 'Trocar de missão?',
@@ -552,7 +559,9 @@ const ADULT_COPY: PensaCopy = {
     create: 'Criar projeto novo',
     loading: 'Carregando seus projetos...',
     emptyTitle: 'Nenhum projeto ainda',
-    emptyBody: 'Comece agora: clique no botão e planeje seu primeiro projeto.',
+    emptyBody:
+      'Todo bom projeto nasce de um plano. Nessas quatro etapas você transforma a ideia em missões executáveis.',
+    emptyCta: 'Planejar o primeiro projeto',
   },
   card: {
     menuLabel: 'Mais opções do projeto',
@@ -745,6 +754,7 @@ const ADULT_COPY: PensaCopy = {
     doneWhenLabel: 'Pronto quando...',
     finishHint: 'Marque os critérios prontos para concluir a missão.',
     openStudio: 'Abrir o Estúdio',
+    openPinta: 'Desenhar no Pinta',
     hideMission: 'Esconder a missão',
     showMission: 'Mostrar a missão',
     swapTitle: 'Trocar de missão?',

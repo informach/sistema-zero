@@ -28,6 +28,8 @@ export interface LessonPlayerContextValue {
   onVideoFlush?: (seconds: number) => void
   /** Atingiu ~90% assistido → auto-conclusão (uma vez por aula). */
   onVideoReachedThreshold?: () => void
+  /** Vídeo TERMINOU (100%) — o kids usa p/ abrir a celebração no fim de verdade. */
+  onVideoEnded?: () => void
   /** Marca a aula como concluída (mesmo fluxo do botão). Usado pelo quiz. */
   refreshAfterQuiz?: () => void
   /** Re-renderiza a página após o envio do projeto do Estúdio (destrava o gate). */

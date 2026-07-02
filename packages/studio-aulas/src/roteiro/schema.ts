@@ -58,6 +58,8 @@ const PegarBloco = z.object({
    * dele). Ausente = fica solto (rascunho).
    */
   encaixarEm: z.string().min(1).optional(),
+  /** Apelido pra mirar este bloco depois (ex.: `seJogando`); referenciado por `@seJogando`. */
+  ref: z.string().min(1).optional(),
   /** Rótulo curto p/ referência humana no roteiro (não afeta a gravação). */
   rotulo: z.string().optional(),
 })
@@ -96,6 +98,35 @@ const Zoom = z.object({
   nivel: z.union([z.enum(['perto', 'longe', 'ajustar']), z.number().positive()]),
 })
 
+const PreencherSoquete = z.object({
+  tipo: z.literal('preencherSoquete'),
+  /** Tipo do bloco de VALOR a criar (ex.: `sz_val_variable`, `sz_g2d_scene_is`). */
+  bloco: z.string().min(1),
+  /** Tipo do bloco PAI que tem o soquete. Ausente = último bloco colocado. */
+  emBloco: z.string().min(1).optional(),
+  /** Nome do soquete (input_value) onde plugar (ex.: `TITLE`, `COND`, `A`). */
+  input: z.string().min(1),
+  /** Opcional: campo do bloco de valor a preencher (ex.: dropdown/número). */
+  campo: z.string().min(1).optional(),
+  valor: z.union([z.string(), z.number()]).optional(),
+  /** Apelido pra mirar o bloco de valor criado (ex.: a comparação). */
+  ref: z.string().min(1).optional(),
+})
+
+const Envolver = z.object({
+  tipo: z.literal('envolver'),
+  /** Tipo do container novo que abraça a cadeia (ex.: `sz_js_if_else`). */
+  container: z.string().min(1),
+  /** Input de STATEMENT do container p/ onde a cadeia vai (ex.: `THEN`, `DO`). */
+  corpo: z.string().min(1),
+  /** Tipo/`@apelido` do bloco pai cuja cadeia será envolvida (ex.: `sz_frame_behavior`). */
+  deDentroDe: z.string().min(1),
+  /** Input de STATEMENT do pai que segura a cadeia (ex.: `CHILDREN`). */
+  inputPai: z.string().min(1),
+  /** Apelido pra mirar o container criado (ex.: `seJogando`). */
+  ref: z.string().min(1).optional(),
+})
+
 export const AcaoTelaSchema = z.discriminatedUnion('tipo', [
   AbrirCategoria,
   PegarBloco,
@@ -104,6 +135,8 @@ export const AcaoTelaSchema = z.discriminatedUnion('tipo', [
   Testar,
   Pausar,
   Zoom,
+  PreencherSoquete,
+  Envolver,
 ])
 export type AcaoTela = z.infer<typeof AcaoTelaSchema>
 

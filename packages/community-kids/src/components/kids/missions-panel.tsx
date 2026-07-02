@@ -29,7 +29,7 @@ function missionLabel(m: MissionView): string {
  * "Resgatar" quando concluída. As missões chegam JÁ RESOLVIDAS do servidor (prop
  * `initial`, no Promise.all da home — sem fetch/waterfall pós-hidratação); o cliente
  * só cuida do resgate (POST idempotente). `initial` nulo (gamificação indisponível)
- * → o painel some (degrada em silêncio).
+ * → placeholder gentil (a home não "encolhe" sem explicação; era sumir em silêncio).
  */
 export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
   const [data, setData] = useState<MissionsMeView | null>(initial)
@@ -67,7 +67,20 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
     }
   }
 
-  if (!data) return null
+  if (!data) {
+    return (
+      <section className="space-y-3">
+        <h2 className="sz-display flex items-center gap-2 text-lg">
+          <Sparkles className="size-5 text-primary" /> Missões
+        </h2>
+        <div className="rounded-3xl border-2 border-border border-dashed px-5 py-6 text-center">
+          <p className="text-muted-foreground text-sm">
+            As missões estão tirando uma soneca… volte daqui a pouquinho! 💤
+          </p>
+        </div>
+      </section>
+    )
+  }
   const all = [...data.daily, ...data.weekly]
   if (all.length === 0) return null
 

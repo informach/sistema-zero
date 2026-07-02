@@ -179,6 +179,20 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     tooltip: 'Cria uma imagem (Image) e define a fonte dela numa variável.',
   },
   {
+    // Roda o corpo quando a imagem termina de carregar (`img.onload = () => {…}`).
+    type: 'sz_js_image_onload',
+    message0: 'quando a imagem %1 carregar %2 fazer %3',
+    args0: [
+      { type: 'input_value', name: 'TARGET', check: 'JSValue' },
+      { type: 'input_dummy' },
+      { type: 'input_statement', name: 'DO', check: 'JSStmt' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Roda os blocos de dentro quando a imagem termina de carregar (img.onload).',
+  },
+  {
     type: 'sz_canvas_save',
     message0: 'Salvar estado do pincel %1',
     args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
@@ -794,7 +808,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   {
     name: '🖼️ Imagem',
     colour: '#1aa870',
-    types: ['sz_val_image', 'sz_js_new_image', 'sz_canvas_draw_image'],
+    types: ['sz_val_image', 'sz_js_new_image', 'sz_js_image_onload', 'sz_canvas_draw_image'],
   },
   {
     name: '🎞️ Animação & entrada',

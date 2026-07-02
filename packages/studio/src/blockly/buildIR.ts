@@ -2651,6 +2651,25 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           src: exprInput(block, 'SRC', { type: 'str', value: '' }),
         },
       }
+    case 'sz_js_image_onload':
+      return {
+        kind: 'js',
+        value: {
+          type: 'imageOnLoad',
+          target: exprInput(block, 'TARGET', { type: 'var', name: 'img' }),
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_index_set':
+      return {
+        kind: 'js',
+        value: {
+          type: 'indexSet',
+          object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
+          index: exprInput(block, 'INDEX', { type: 'str', value: 'chave' }),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
+        },
+      }
     case 'sz_js_method_on':
       return {
         kind: 'js',

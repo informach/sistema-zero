@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { beforeEach, describe, expect, it } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { getCopy } from '../../core/copy'
 import type { PensaBuildEnv, PensaTaskView } from '../../core/types'
@@ -76,6 +76,12 @@ async function generateBoard(): Promise<void> {
 }
 
 describe('StageRView', () => {
+  // Os checks do MissionSheet PERSISTEM por task.id em localStorage (07/2026):
+  // sem limpar, um teste que marcou tudo contaminaria o seguinte (ids fixos).
+  beforeEach(() => {
+    window.localStorage.clear()
+  })
+
   it('sem plano: hero "Criar as missões"; gerar abre o quadro', async () => {
     const transport = createFakeTransport(respondWith(makeTasks()))
     await renderStage(makeStudioAdapter(transport))
@@ -389,5 +395,80 @@ describe('StageRView: onde construir (buildEnv)', () => {
     // No lugar, a linha gentil de orientação.
     expect(screen.getByText(/Siga os passos no seu computador e volte pra marcar/)).toBeTruthy()
     expect(screen.getByText('Passo a passo')).toBeTruthy()
+  })
+
+  it('Modo Missão em tela ESTREITA: vira gaveta sobre o Estúdio (o split não some mais)', async () => {
+    // Tela estreita: NENHUMA media query casa (min-width: 1024px → false).
+    const realMatchMedia = window.matchMedia
+    window.matchMedia = ((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia
+    try {
+      const transport = createFakeTransport(respondWith(makeTasks()))
+      const adapter = makeStudioAdapter(transport, { studioProjectId: 'studio-7' })
+      await renderStage(adapter, { studioProjectId: 'studio-7' })
+      await generateBoard()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Ver a missão: Fazer o Dino pular' }))
+
+      // Estúdio embarcado + missão como GAVETA (aberta por padrão).
+      expect(screen.getByTestId('studio-embed')).toBeTruthy()
+      expect(screen.getByText('Ficou pronto quando...')).toBeTruthy()
+
+      // Fecha (header OU fundo escurecido compartilham o nome acessível) e reabre.
+      const closers = screen.getAllByRole('button', { name: 'Esconder a missão' })
+      expect(closers.length).toBeGreaterThanOrEqual(1)
+      fireEvent.click(closers[0] as HTMLElement)
+      expect(screen.queryByText('Ficou pronto quando...')).toBeNull()
+      // O Estúdio segue visível embaixo da gaveta fechada.
+      expect(screen.getByTestId('studio-embed')).toBeTruthy()
+      fireEvent.click(screen.getByRole('button', { name: 'Mostrar a missão' }))
+      expect(screen.getByText('Ficou pronto quando...')).toBeTruthy()
+    } finally {
+      window.matchMedia = realMatchMedia
+    }
+  })
+
+  it('checks do "Ficou pronto quando..." PERSISTEM ao sair e voltar da missão', async () => {
+    const transport = createFakeTransport(respondWith(makeTasks()))
+    const adapter = makeStudioAdapter(transport, { withRender: false, withCreate: false })
+    await renderStage(adapter)
+    await generateBoard()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver a missão: Fazer o Dino pular' }))
+    const boxes = screen.getAllByRole('checkbox') as HTMLInputElement[]
+    fireEvent.click(boxes[0] as HTMLInputElement)
+    expect((screen.getAllByRole('checkbox')[0] as HTMLInputElement).checked).toBe(true)
+
+    // Sai para o quadro e reabre: o progresso continua marcado (localStorage).
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar às missões' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ver a missão: Fazer o Dino pular' }))
+    const reopened = screen.getAllByRole('checkbox') as HTMLInputElement[]
+    expect(reopened[0]?.checked).toBe(true)
+    expect(reopened[1]?.checked).toBe(false)
+  })
+
+  it('"Desenhar no Pinta" aparece só com adapter.onOpenPinta e chama o host', async () => {
+    const transport = createFakeTransport(respondWith(makeTasks()))
+    const base = makeStudioAdapter(transport, { withRender: false, withCreate: false })
+    let pintaOpens = 0
+    const adapter = Object.assign(base, {
+      onOpenPinta: () => {
+        pintaOpens += 1
+      },
+    })
+    await renderStage(adapter)
+    await generateBoard()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver a missão: Fazer o Dino pular' }))
+    fireEvent.click(screen.getByRole('button', { name: /Desenhar no Pinta/ }))
+    expect(pintaOpens).toBe(1)
   })
 })

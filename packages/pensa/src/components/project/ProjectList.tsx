@@ -290,7 +290,39 @@ export function ProjectList(): JSX.Element {
           {copy.list.loading}
         </p>
       ) : projects.length === 0 ? (
-        <EmptyState emoji="🚀" title={copy.list.emptyTitle} body={copy.list.emptyBody} />
+        // Onboarding do primeiro uso: as 4 etapas do ZERO (nomes já existem na
+        // copy das stages) + CTA próprio (rótulo distinto do botão do header).
+        <EmptyState
+          emoji="🚀"
+          title={copy.list.emptyTitle}
+          body={copy.list.emptyBody}
+          action={
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-wrap items-center justify-center gap-1.5">
+                {(['z', 'e', 'r', 'o'] as const).map((stage, index) => (
+                  <span key={stage} className="flex items-center gap-1.5">
+                    {index > 0 ? (
+                      <span aria-hidden="true" className="font-bold text-pz-muted">
+                        →
+                      </span>
+                    ) : null}
+                    <span className="rounded-full bg-pz-accent/15 px-3 py-1 text-sm font-bold text-pz-accent">
+                      {copy.stages[stage].name}
+                    </span>
+                  </span>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setNewOpen(true)}
+                className="min-h-12 rounded-2xl bg-pz-accent px-6 text-lg font-bold text-pz-accent-fg shadow-md transition hover:brightness-105"
+              >
+                <span aria-hidden="true">✨ </span>
+                {copy.list.emptyCta}
+              </button>
+            </div>
+          }
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (

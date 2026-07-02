@@ -2892,6 +2892,20 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (!src) return rawJSBlock(stmt)
       return block('sz_js_new_image', { VAR: stmt.varName }, {}, stmt.__id, { SRC: src })
     }
+    case 'imageOnLoad': {
+      const target = exprToValueBlock(stmt.target)
+      if (!target) return rawJSBlock(stmt)
+      return block('sz_js_image_onload', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
+        TARGET: target,
+      })
+    }
+    case 'indexSet': {
+      const obj = exprToValueBlock(stmt.object)
+      const index = exprToValueBlock(stmt.index)
+      const value = exprToValueBlock(stmt.value)
+      if (!obj || !index || !value) return rawJSBlock(stmt)
+      return block('sz_js_index_set', {}, {}, stmt.__id, { OBJ: obj, INDEX: index, VALUE: value })
+    }
     case 'memberCall': {
       const obj = exprToValueBlock(stmt.object)
       if (!obj) return rawJSBlock(stmt)

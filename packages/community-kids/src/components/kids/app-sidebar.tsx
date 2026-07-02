@@ -10,12 +10,12 @@ import { NAV_ITEMS } from './nav'
 import { StreakWidget } from './streak-widget'
 import { UserMenu } from './user-menu'
 
-export function isNavActive(pathname: string, href: string, match?: string): boolean {
+export function isNavActive(pathname: string, href: string, match?: string | string[]): boolean {
   // Raiz só acende em match exato (todo path começa com '/').
   if (href === '/') return pathname === '/'
   if (pathname === href || pathname.startsWith(`${href}/`)) return true
-  if (match) return pathname === match || pathname.startsWith(`${match}/`)
-  return false
+  const matches = typeof match === 'string' ? [match] : (match ?? [])
+  return matches.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
 }
 
 /**

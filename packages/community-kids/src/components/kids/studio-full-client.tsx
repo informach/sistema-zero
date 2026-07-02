@@ -223,6 +223,12 @@ function EditorScreen({
       onExit={onExit}
       share={share}
       theme={theme}
+      // Paleta CALMA no editor livre kids (07/2026): nível intermediário mostra
+      // o núcleo + Jogo 2D e esconde Classes/Avançado/Jogo 3D atrás do toggle
+      // "Mostrar blocos avançados" (allowLevelReveal) — antes eram ~500 blocos
+      // de uma vez (DEFAULT_LEARNING_LEVEL 'avancado').
+      level="intermediario"
+      allowLevelReveal
     />
   )
 }

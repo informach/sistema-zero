@@ -38,11 +38,14 @@ function ItemTile({
   part,
   selected,
   disabled,
+  confirming,
   onSelect,
 }: {
   part: AvatarPartView
   selected: boolean
   disabled: boolean
+  /** Peça travada aguardando o 2º toque de confirmação da compra. */
+  confirming?: boolean
   onSelect: () => void
 }) {
   const isNone = part.id.endsWith('-none')
@@ -72,8 +75,13 @@ function ItemTile({
         </span>
       )}
       {part.locked ? (
-        <span className="absolute inset-x-1 bottom-1 inline-flex items-center justify-center gap-1 rounded-full bg-(--kids-lime-tint) px-1.5 py-0.5 font-bold text-[0.7rem] shadow">
-          <Lock className="size-3" /> {part.price}
+        <span
+          className={cn(
+            'absolute inset-x-1 bottom-1 inline-flex items-center justify-center gap-1 rounded-full px-1.5 py-0.5 font-bold text-[0.7rem] shadow',
+            confirming ? 'bg-primary text-primary-foreground' : 'bg-(--kids-lime-tint)',
+          )}
+        >
+          <Lock className="size-3" /> {confirming ? `Comprar? ${part.price}` : part.price}
         </span>
       ) : null}
     </button>
@@ -106,6 +114,11 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
   const [category, setCategory] = useState<AvatarCategory>('head')
   const [busy, setBusy] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  // Compra pendente de confirmação (2º toque). `prevSlot` restaura a prévia no cancelar.
+  const [pendingBuy, setPendingBuy] = useState<{
+    part: AvatarPartView
+    prevSlot?: AvatarSlot
+  } | null>(null)
   const captureRef = useRef<CaptureFn | null>(null)
   const onReady = useCallback((c: CaptureFn) => {
     captureRef.current = c
@@ -159,12 +172,44 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
     return id ? ownedById.get(id) === false : false
   })
 
+  /**
+   * Confirmação LEVE de compra (07/2026; antes era 1 toque direto): o 1º toque numa peça
+   * travada VESTE de prévia (o `hasLocked` já bloqueia o Salvar) e arma a confirmação; o
+   * 2º toque na MESMA peça compra. Evita o "gastei sem querer" sem modal pesado.
+   */
   function selectPart(part: AvatarPartView) {
     if (!part.owned) {
-      void buy(part)
+      if (pendingBuy?.part.id === part.id) {
+        // O `buy` só desarma a confirmação no SUCESSO — falhou (ex.: sem moedas), a barra
+        // fica de pé com o "Deixar para depois" (que desveste a prévia).
+        void buy(part)
+        return
+      }
+      setPendingBuy((p) => ({
+        part,
+        // Prévia em cadeia na MESMA categoria preserva o slot original p/ o "deixar para depois".
+        prevSlot: p && p.part.category === part.category ? p.prevSlot : slots[part.category],
+      }))
+      setSlots((s) => ({ ...s, [part.category]: { ...s[part.category], asset: part.id } }))
       return
     }
+    setPendingBuy(null)
     setSlots((s) => ({ ...s, [part.category]: { ...s[part.category], asset: part.id } }))
+  }
+
+  /** "Deixar para depois": desfaz a prévia da peça travada e desarma a confirmação. */
+  function cancelPendingBuy() {
+    setPendingBuy((p) => {
+      if (p) {
+        setSlots((s) => {
+          const next = { ...s }
+          if (p.prevSlot) next[p.part.category] = p.prevSlot
+          else delete next[p.part.category]
+          return next
+        })
+      }
+      return null
+    })
   }
 
   function selectColor(color: string) {
@@ -173,6 +218,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
 
   /** "Surpreenda-me": sorteia uma peça GRÁTIS/possuída + cor por categoria (nunca peça travada). */
   function randomize() {
+    setPendingBuy(null)
     setSlots((prev) => {
       const next: Slots = { ...prev }
       for (const cat of AVATAR_CATEGORIES) {
@@ -215,7 +261,8 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
       )
       if (typeof body?.balance === 'number') setBalance(body.balance)
       if (body?.unlimited === true) setCoinsUnlimited(true)
-      // Compra já equipa (a criança quer ver na hora).
+      // Compra já equipa (a criança quer ver na hora) e desarma a confirmação.
+      setPendingBuy(null)
       setSlots((sl) => ({ ...sl, [part.category]: { ...sl[part.category], asset: part.id } }))
       toast.success('Desbloqueado! 🎉')
     } catch {
@@ -383,6 +430,39 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
       <div className="relative z-10 flex flex-col gap-3 rounded-t-3xl bg-card/95 p-4 shadow-2xl backdrop-blur">
         {mode === 'customize' ? (
           <>
+            {/* Barra de confirmação da compra (a peça já está vestida de prévia). */}
+            {pendingBuy ? (
+              <div
+                role="status"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
+              >
+                <p className="font-semibold text-sm">
+                  Gostou? Está vestido de prévia!{' '}
+                  <span className="text-muted-foreground">
+                    ({AVATAR_PART_INFO[pendingBuy.part.id]?.labelPt ?? pendingBuy.part.id})
+                  </span>
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={cancelPendingBuy}
+                    disabled={!!busy}
+                    className="inline-flex h-11 items-center rounded-full border-2 border-border bg-card px-4 font-semibold text-muted-foreground text-sm"
+                  >
+                    Deixar para depois
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => selectPart(pendingBuy.part)}
+                    disabled={!!busy}
+                    className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
+                  >
+                    <ZappyCoin className="size-4" /> Comprar por {pendingBuy.part.price}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
             {/* Cores (acima dos itens, como no WawaSensei) */}
             {palette && palette.length > 0 ? (
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-subtle">
@@ -444,6 +524,7 @@ export function AvatarConfigurator({ dark }: { dark: boolean }) {
                   part={part}
                   selected={slots[part.category]?.asset === part.id}
                   disabled={!!busy}
+                  confirming={pendingBuy?.part.id === part.id}
                   onSelect={() => selectPart(part)}
                 />
               ))}

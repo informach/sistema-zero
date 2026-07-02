@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { beforeEach, describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { PensaHostAdapter } from '../core/types'
 import {
@@ -28,6 +28,37 @@ function makeAdapter(overrides: Partial<PensaHostAdapter> = {}): PensaHostAdapte
 }
 
 describe('PensaApp', () => {
+  // O "continuar de onde parou" (adapter.stateKey) grava em localStorage.
+  beforeEach(() => {
+    window.localStorage.clear()
+  })
+
+  it('continua de onde parou: com stateKey, abrir um projeto grava e o próximo mount reabre', async () => {
+    const { unmount } = render(<PensaApp adapter={makeAdapter({ stateKey: 'viewer-1' })} />)
+    await waitFor(() => {
+      expect(screen.getByText('Jogo do Dino')).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir projeto: Jogo do Dino' }))
+    await waitFor(() => {
+      expect(screen.getByText('Versão 1')).toBeTruthy()
+    })
+    expect(window.localStorage.getItem('pensa:resume:viewer-1')).toBe('proj-1')
+    unmount()
+
+    // Remount (refresh): cai DIRETO no projeto, não na lista.
+    render(<PensaApp adapter={makeAdapter({ stateKey: 'viewer-1' })} />)
+    await waitFor(() => {
+      expect(screen.getByText('Versão 1')).toBeTruthy()
+    })
+
+    // Voltar à lista LIMPA a memória (a criança escolheu sair do projeto).
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar para meus planos' }))
+    await waitFor(() => {
+      expect(screen.getByText('Meus planos de jogo')).toBeTruthy()
+    })
+    expect(window.localStorage.getItem('pensa:resume:viewer-1')).toBeNull()
+  })
+
   it('aplica o tema no root (default light; host pode fixar dark)', async () => {
     const { container, unmount } = render(<PensaApp adapter={makeAdapter()} />)
     expect(container.querySelector('[data-pensa-theme="light"]')).toBeTruthy()

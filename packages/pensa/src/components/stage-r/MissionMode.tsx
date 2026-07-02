@@ -1,15 +1,20 @@
 /**
- * MODO MISSÃO (split, desktop ≥1024px): overlay de tela cheia com o card da
- * missão à esquerda (w-80, colapsável em gaveta) e o Estúdio embarcado
- * (adapter.renderStudio) preenchendo a direita. A11y na mecânica do Dialog
+ * MODO MISSÃO: overlay de tela cheia com o card da missão e o Estúdio
+ * embarcado (adapter.renderStudio). Em tela LARGA (≥1024px) é um split com a
+ * missão à esquerda (w-80, colapsável); em tela ESTREITA (tablet/celular,
+ * 07/2026) o Estúdio ocupa tudo e a missão vira uma GAVETA sobreposta
+ * (aberta por padrão — a criança lê a missão antes de construir; o toggle do
+ * header e o toque no fundo escurecido fecham). A11y na mecânica do Dialog
  * interno: foco entra no container (e volta ao acionador ao sair), Esc volta
  * às missões, aria-modal + trap de Tab. Renderiza INLINE (sem portal), então
  * permanece dentro do escopo [data-pensa-theme] do root.
  */
+import { clsx } from 'clsx'
 import type { JSX, KeyboardEvent, ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { usePensaApp } from '../appContext'
 import { trapTabKey } from '../common/focusTrap'
+import { useMediaQuery } from '../common/useMediaQuery'
 
 export function MissionMode({
   title,
@@ -29,6 +34,7 @@ export function MissionMode({
   const c = copy.stageR
   const rootRef = useRef<HTMLDivElement>(null)
   const [collapsed, setCollapsed] = useState(false)
+  const wide = useMediaQuery('(min-width: 1024px)')
 
   // Foca o overlay ao abrir e devolve o foco ao acionador ao sair.
   useEffect(() => {
@@ -77,11 +83,29 @@ export function MissionMode({
           {collapsed ? c.showMission : c.hideMission}
         </button>
       </header>
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
         {collapsed ? null : (
-          <aside className="w-80 shrink-0 overflow-y-auto border-r-2 border-pz-border bg-pz-surface p-4">
-            {children}
-          </aside>
+          <>
+            {/* Tela estreita: fundo escurecido atrás da gaveta (toque fecha). */}
+            {wide ? null : (
+              <button
+                type="button"
+                aria-label={c.hideMission}
+                onClick={() => setCollapsed(true)}
+                className="absolute inset-0 z-10 bg-black/40"
+              />
+            )}
+            <aside
+              className={clsx(
+                'overflow-y-auto border-r-2 border-pz-border bg-pz-surface p-4',
+                wide
+                  ? 'w-80 shrink-0'
+                  : 'absolute inset-y-0 left-0 z-20 w-[85vw] max-w-80 shadow-2xl',
+              )}
+            >
+              {children}
+            </aside>
+          </>
         )}
         <div data-mission-studio="" className="min-w-0 flex-1 overflow-hidden">
           {studio}

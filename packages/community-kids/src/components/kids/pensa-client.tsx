@@ -107,6 +107,8 @@ export function PensaClient({ viewerId }: { viewerId: string | null }) {
       mode: 'kids',
       projectKind: 'game',
       theme,
+      // "Continuar de onde parou": o pacote lembra o projeto aberto por PERFIL.
+      stateKey: viewerId ?? undefined,
       // Carinha do Zappy dentro do Pensa (mesmos sprites do resto do app kids).
       mascotImages: {
         happy: '/zappy/happy.webp',
@@ -126,6 +128,9 @@ export function PensaClient({ viewerId }: { viewerId: string | null }) {
       ),
       // "Abrir o Estúdio" (tela cheia): mesma lista/namespace do produto Estúdio.
       onOpenStudio: () => router.push('/estudio'),
+      // "Desenhar no Pinta" na missão aberta: os desenhos chegam ao Estúdio
+      // pela biblioteca pessoal ("Meus desenhos") do MESMO perfil.
+      onOpenPinta: () => router.push('/pinta'),
       syncStudioSnapshot,
     }),
     [transport, theme, createStudioProject, syncStudioSnapshot, viewerId, router],

@@ -121,7 +121,7 @@ describe('Quiz server-side', () => {
     expect(body.questions[0]).toMatchObject({ correct: true, correctChoiceIds: ['b'] })
   })
 
-  test('reprovou → cooldown: retry imediato 429; após 5 min liberado', async () => {
+  test('reprovou → cooldown: retry imediato 429; após 90s liberado', async () => {
     const { app, courses, entitlements, clockRef } = buildApp()
     const course = seedSampleCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
@@ -131,7 +131,7 @@ describe('Quiz server-side', () => {
     expect(fail.status).toBe(200)
     const failBody = await readJson(fail)
     expect(failBody).toMatchObject({ score: 50, passed: false })
-    expect(failBody.retryAvailableAt).toBe('2026-06-02T12:05:00.000Z')
+    expect(failBody.retryAvailableAt).toBe('2026-06-02T12:01:30.000Z')
 
     const blocked = await submit(app, course.lessonIds[0], blockId, { q1: ['b'], q2: ['a'] })
     expect(blocked.status).toBe(429)
@@ -144,11 +144,11 @@ describe('Quiz server-side', () => {
       lastScore: 50,
       passed: false,
       attemptsCount: 1,
-      retryAvailableAt: '2026-06-02T12:05:00.000Z',
+      retryAvailableAt: '2026-06-02T12:01:30.000Z',
     })
 
-    // 5 minutos depois → liberado e aprova.
-    clockRef.now = new Date('2026-06-02T12:05:01.000Z')
+    // 90 segundos depois → liberado e aprova.
+    clockRef.now = new Date('2026-06-02T12:01:31.000Z')
     const retry = await submit(app, course.lessonIds[0], blockId, { q1: ['b'], q2: ['a'] })
     expect(retry.status).toBe(200)
     expect(await readJson(retry)).toMatchObject({ passed: true, attemptsCount: 2 })

@@ -378,6 +378,12 @@ do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (
    ganhou teto de pixels TOTAIS p/ animados (não só por frame). **Fix aqui = fix nos dois apps;
    mudança aqui RODA NOS DOIS — rode as suítes dos dois.**
 5. Réplica ÚNICA por app (single-flight/gate em `globalThis` são por processo).
+5b. **`onVideoEnded` (07/2026):** o `LessonPlayerContextValue` tem o callback opcional
+   `onVideoEnded` (vídeo TERMINOU de verdade, evento `ended` do SDK — distinto do
+   `onVideoReachedThreshold` a ~90%). Fio: `VimeoPlayer.onEnded` → `VimeoLessonVideo`
+   (lesson-blocks) → contexto. O kids usa p/ abrir a CELEBRAÇÃO completa no fim do vídeo
+   quando a aula foi auto-concluída a 90% (antes: só toast, a criança "perdia a festa");
+   o adulto não passa o callback (zero mudança).
 6. **`vimeo-player`: o SDK é o DONO do iframe** (`new Player(divHost, { id })`). NUNCA voltar ao
    padrão "iframe no JSX + `new Player(iframe)`": `destroy()` REMOVE o iframe do DOM real sem o
    React saber — com o double-invoke do StrictMode (e re-runs do effect) o ref vira um iframe

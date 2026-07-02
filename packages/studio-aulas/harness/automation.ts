@@ -37,6 +37,7 @@ interface ConexaoLike {
   y?: number
   targetBlock(): BlocoLike | null
   connect(outra: ConexaoLike): void
+  disconnect?(): void
   getOffsetInBlock?(): { x: number; y: number }
 }
 
@@ -49,6 +50,10 @@ interface BlocoLike {
   inputList?: Array<{ connection: ConexaoLike | null }>
   nextConnection: ConexaoLike | null
   previousConnection: ConexaoLike | null
+  /** Conexão de SAÍDA (blocos de valor plugam por aqui num soquete). */
+  outputConnection?: ConexaoLike | null
+  /** Um input nomeado do bloco (soquete de valor ou boca de statement). */
+  getInput?(nome: string): { connection: ConexaoLike | null } | null
   moveTo(xy: Blockly.utils.Coordinate): void
   setFieldValue(valor: string, campo: string): void
 }
@@ -280,6 +285,16 @@ function primeiroBlocoDoTipo(tipo: string): BlocoLike | null {
   return list.length ? (list[0] ?? null) : null
 }
 
+// APELIDOS: blocos criados podem receber um `ref` e ser mirados depois por
+// `@ref` (senão, com vários blocos do mesmo tipo, não dá para saber qual). Um
+// SELETOR de bloco é: um tipo (`sz_frame_behavior`) OU `@apelido`.
+const refs = new Map<string, BlocoLike>()
+
+function resolverBloco(seletor: string): BlocoLike | null {
+  if (seletor.startsWith('@')) return refs.get(seletor.slice(1)) ?? null
+  return primeiroBlocoDoTipo(seletor)
+}
+
 function blocoNoFlyout(tipo: string): BlocoLike | null {
   try {
     const fw = ws().getFlyout?.()?.getWorkspace?.()
@@ -322,8 +337,8 @@ function ajustarZoomAoBloco(block: BlocoLike): void {
   centralizar(block)
 }
 
-function conexaoDeEncaixe(paiTipo: string): ConexaoLike | null {
-  const pai = primeiroBlocoDoTipo(paiTipo)
+function conexaoDeEncaixe(paiSel: string): ConexaoLike | null {
+  const pai = resolverBloco(paiSel)
   if (!pai) return null
   let conn: ConexaoLike | null = null
   for (const input of pai.inputList ?? []) {
@@ -350,7 +365,7 @@ function destinoDoArrasto(block: BlocoLike, paiTipo?: string): { x: number; y: n
       const off = pc?.getOffsetInBlock ? pc.getOffsetInBlock() : { x: 0, y: 0 }
       return { x: conn.x - off.x, y: conn.y - off.y }
     }
-    const pai = primeiroBlocoDoTipo(paiTipo)
+    const pai = resolverBloco(paiTipo)
     if (pai) {
       const p = pai.getRelativeToSurfaceXY()
       return { x: p.x + 40, y: p.y + 60 }
@@ -405,11 +420,6 @@ function rotuloBotao(b: HTMLButtonElement): string {
 // --- API pública -----------------------------------------------------------
 
 let ultimoBloco: BlocoLike | null = null
-// Projeto semeado (vazio OU o final da aula anterior). Guardado para o
-// `exportarProjeto` devolver a base + o blocksState ATUAL (fim desta aula = início
-// da próxima). É o que encadeia o curso: cada aula parte do resultado da anterior.
-// biome-ignore lint/suspicious/noExplicitAny: Project é do @sistemazero/studio; aqui só repassamos.
-let projetoBase: any = null
 
 export type NivelZoom = 'perto' | 'longe' | 'ajustar' | number
 
@@ -421,8 +431,23 @@ export interface AulasAPI {
   esconderPreview(): Promise<void>
   mostrarPreview(): Promise<void>
   abrirCategoria(nome: string): Promise<void>
-  pegarBloco(tipo: string, encaixarEm?: string): Promise<Rect>
+  pegarBloco(tipo: string, encaixarEm?: string, ref?: string): Promise<Rect>
   configurarCampo(campo: string, valor: string | number, tipo?: string): Promise<void>
+  preencherSoquete(
+    valorTipo: string,
+    emBloco: string | undefined,
+    input: string,
+    campo?: string,
+    valorCampo?: string | number,
+    ref?: string,
+  ): Promise<Rect | null>
+  envolver(
+    container: string,
+    corpo: string,
+    deDentroDe: string,
+    inputPai: string,
+    ref?: string,
+  ): Promise<Rect | null>
   zoom(nivel: NivelZoom): Promise<void>
   medirAncora(bloco: string, campo?: string): Promise<Ancora | null>
   moverPara(x: number, y: number, ms: number): Promise<void>
@@ -458,7 +483,6 @@ const api: AulasAPI = {
     }
     const adapter = createLocalPersistenceAdapter()
     await adapter.save(projeto)
-    projetoBase = projeto
     return id
   },
 
@@ -468,19 +492,26 @@ const api: AulasAPI = {
   async criarProjetoDeBase(base, id, nome, extensoes) {
     // biome-ignore lint/suspicious/noExplicitAny: Project vem do host, só ajustamos id/nome.
     const projeto: any = { ...(base as object), id, name: nome }
-    // Garante as extensões (se a base não trouxe, usa as do roteiro) — sem
-    // installedExtensions + ir.extensions o flyout da categoria vem vazio.
+    // Se a base não trouxe extensões, usa as do roteiro.
     if (!projeto.installedExtensions?.length && extensoes?.length) {
       projeto.installedExtensions = extensoes.map((x) => ({
         id: x,
         version: '0.0.0',
         installedAt: 0,
       }))
-      projeto.ir = { ...(projeto.ir ?? {}), extensions: extensoes.map((x) => ({ extensionId: x })) }
+    }
+    // SEMPRE re-deriva ir.extensions de installedExtensions: sem os dois, o flyout
+    // da categoria (ex.: Jogo 2D) vem VAZIO. O exportarProjeto/persistência às vezes
+    // devolve installedExtensions sem o ir, então garantimos aqui.
+    const exts: Array<{ id: string }> = projeto.installedExtensions ?? []
+    if (exts.length) {
+      projeto.ir = {
+        ...(projeto.ir ?? {}),
+        extensions: exts.map((e) => ({ extensionId: e.id })),
+      }
     }
     const adapter = createLocalPersistenceAdapter()
     await adapter.save(projeto)
-    projetoBase = projeto
     return id
   },
 
@@ -524,7 +555,7 @@ const api: AulasAPI = {
     await espera(400)
   },
 
-  async pegarBloco(tipo, encaixarEm) {
+  async pegarBloco(tipo, encaixarEm, ref) {
     const flyBlock = blocoNoFlyout(tipo)
     const grab = flyBlock ? rectDoBloco(flyBlock) : null
     if (grab) {
@@ -562,6 +593,7 @@ const api: AulasAPI = {
     if (encaixarEm) encaixar(block, encaixarEm)
     ws().render?.()
     ultimoBloco = block
+    if (ref) refs.set(ref, block)
     pulsoClique()
     await espera(250)
     ajustarZoomAoBloco(block)
@@ -572,7 +604,7 @@ const api: AulasAPI = {
   },
 
   async configurarCampo(campo, valor, tipo) {
-    const block = tipo ? primeiroBlocoDoTipo(tipo) : ultimoBloco
+    const block = tipo ? resolverBloco(tipo) : ultimoBloco
     if (!block) return
     ajustarZoomAoBloco(block)
     await espera(300)
@@ -588,6 +620,105 @@ const api: AulasAPI = {
     }
     ws().render?.()
     await espera(300)
+  },
+
+  // Cria um bloco de VALOR e pluga a saída dele num SOQUETE (input_value) do bloco
+  // pai — ex.: "valor da variável pontos" no soquete de uma comparação, ou o
+  // título no "Mostrar tela". Sem isto, os soquetes ficavam vazios.
+  async preencherSoquete(valorTipo, emBloco, input, campo, valorCampo, ref) {
+    const pai = emBloco ? resolverBloco(emBloco) : ultimoBloco
+    const conn = pai?.getInput?.(input)?.connection
+    if (!pai || !conn) return null
+    const bloco = Blockly.serialization.blocks.append(
+      { type: valorTipo },
+      Blockly.getMainWorkspace() as Blockly.Workspace,
+    ) as unknown as BlocoLike
+    // Desliza o bloco de valor até perto do soquete e pluga a saída nele.
+    const alvo =
+      typeof conn.x === 'number' && typeof conn.y === 'number'
+        ? { x: conn.x, y: conn.y }
+        : pai.getRelativeToSurfaceXY()
+    const inicio = bloco.getRelativeToSurfaceXY()
+    await animar(900, (p) => {
+      const wx = lerp(inicio.x, alvo.x, p)
+      const wy = lerp(inicio.y, alvo.y, p)
+      try {
+        bloco.moveTo(new Blockly.utils.Coordinate(wx, wy))
+      } catch {
+        /* ignora */
+      }
+      const s = wsParaTela(wx, wy)
+      posicionarCursor(s.x + 16, s.y + 12)
+    })
+    try {
+      if (bloco.outputConnection) conn.connect(bloco.outputConnection)
+    } catch {
+      /* não plugou: fica solto (rascunho) */
+    }
+    if (campo != null && valorCampo != null) {
+      try {
+        bloco.setFieldValue(String(valorCampo), campo)
+      } catch {
+        /* sem esse campo */
+      }
+    }
+    ws().render?.()
+    ultimoBloco = bloco
+    if (ref) refs.set(ref, bloco)
+    await espera(200)
+    ajustarZoomAoBloco(bloco)
+    await espera(300)
+    const r = rectDoBloco(bloco)
+    destacar(r, 1200)
+    return r
+  },
+
+  // ENVOLVE a cadeia existente (dentro de `inputPai` do bloco `deDentroDe`) num
+  // novo container (ex.: mover o loop do jogo pra dentro de um "Se jogando"). É a
+  // cirurgia de conexões: solta a cadeia do pai → pluga o container no lugar →
+  // move a cadeia pro corpo do container.
+  async envolver(container, corpo, deDentroDe, inputPai, ref) {
+    const pai = resolverBloco(deDentroDe)
+    const paiConn = pai?.getInput?.(inputPai)?.connection
+    if (!pai || !paiConn) return null
+    const primeiro = paiConn.targetBlock() // primeiro bloco da cadeia (ou null)
+    const cont = Blockly.serialization.blocks.append(
+      { type: container },
+      Blockly.getMainWorkspace() as Blockly.Workspace,
+    ) as unknown as BlocoLike
+    const corpoConn = cont.getInput?.(corpo)?.connection
+    if (!corpoConn) return null
+    // 1. solta a cadeia do pai (fica flutuando, mas ligada entre si).
+    if (primeiro?.previousConnection) {
+      try {
+        primeiro.previousConnection.disconnect?.()
+      } catch {
+        /* já solta */
+      }
+    }
+    // 2. pluga o container no lugar da cadeia (input do pai).
+    try {
+      if (cont.previousConnection) paiConn.connect(cont.previousConnection)
+    } catch {
+      /* não plugou */
+    }
+    // 3. move a cadeia pra dentro do CORPO do container.
+    if (primeiro?.previousConnection) {
+      try {
+        corpoConn.connect(primeiro.previousConnection)
+      } catch {
+        /* não coube */
+      }
+    }
+    ws().render?.()
+    ultimoBloco = cont
+    if (ref) refs.set(ref, cont)
+    await espera(300)
+    ajustarZoomAoBloco(cont)
+    await espera(300)
+    const r = rectDoBloco(cont)
+    destacar(r, 1400)
+    return r
   },
 
   async zoom(nivel) {
@@ -613,7 +744,7 @@ const api: AulasAPI = {
   },
 
   async medirAncora(bloco, campo) {
-    const block = primeiroBlocoDoTipo(bloco)
+    const block = resolverBloco(bloco)
     if (!block) return null
     // Zoom que faz o bloco caber → o balão (proporcional) fica bom. O anel de
     // destaque do balão é desenhado na montagem (Remotion), então NÃO destacamos

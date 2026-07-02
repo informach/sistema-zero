@@ -1,10 +1,15 @@
 import { ContinueHero } from '@/components/kids/continue-hero'
 import { CourseCard } from '@/components/kids/course-card'
+import { CreatorCareerCard } from '@/components/kids/creator-career-card'
 import { KidsMascot } from '@/components/kids/mascot'
 import { MissionsPanel } from '@/components/kids/missions-panel'
-import { StreakCard } from '@/components/kids/streak-card'
 import { unitThemeAt } from '@/components/kids/unit-theme'
-import { getGamificationReadonly, getMissionsReadonly, listMyCourses } from '@/server/members'
+import {
+  getAvatarReadonly,
+  getGamificationReadonly,
+  getMissionsReadonly,
+  listMyCourses,
+} from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -19,15 +24,20 @@ export default async function HomePage() {
   // layout (clients.ts memoiza por esse booleano) — uma ÚNICA ida ao gateway por
   // render nesta rota, a mais acessada. Missões antes vinham de um fetch client
   // pós-hidratação (waterfall); agora entram no Promise.all do servidor.
-  const [{ status, body }, gam, missions] = await Promise.all([
+  const [{ status, body }, gam, missions, avatarRes] = await Promise.all([
     listMyCourses(),
     getGamificationReadonly({ withRanking: true }),
     getMissionsReadonly(),
+    // Foto do avatar p/ a aura da Carreira de Criador (React.cache deduplica
+    // com a busca do layout — segue 1 ida ao gateway por render).
+    getAvatarReadonly(),
   ])
   if (status !== 200) throw new Error('Falha ao carregar os cursos')
   const courses = body?.courses ?? []
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
   const missionsData = missions.status === 200 ? (missions.body ?? null) : null
+  const avatarPhotoUrl =
+    avatarRes.status === 200 && avatarRes.body ? (avatarRes.body.photoUrl ?? null) : null
 
   return (
     <div className="flex flex-col gap-8">
@@ -48,9 +58,12 @@ export default async function HomePage() {
 
       <ContinueHero courses={courses} />
 
-      {gamification && courses.length > 0 ? <StreakCard gamification={gamification} /> : null}
+      {/* Gamificação fora → os cards mostram placeholder gentil (não somem em silêncio). */}
+      {courses.length > 0 ? (
+        <CreatorCareerCard gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
+      ) : null}
 
-      {/* Missões diárias/semanais (dados do servidor; some se a gamificação estiver fora). */}
+      {/* Missões diárias/semanais (dados do servidor). */}
       {courses.length > 0 ? <MissionsPanel initial={missionsData} /> : null}
 
       <section className="flex flex-col gap-4">

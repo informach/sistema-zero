@@ -31,7 +31,12 @@ Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
   paleta escolhida; sem paleta caem nos tokens (`KIND_TOKEN_TEXT_CLASS`).
 - **R — Rodar as Missões**: kanban (Missões/Fazendo agora/Hora de testar/Prontas; máx 1 em
   "Fazendo agora"; botões movem, não drag) de missões que a CRIANÇA executa no Estúdio; **Modo
-  Missão** split (≥1024px + `renderStudio` do host) com a missão à esquerda e o editor à direita;
+  Missão** (`renderStudio` do host + projeto semeado) — o MissionMode ADAPTA o layout à largura
+  (07/2026): ≥1024px = split com a missão à esquerda; abaixo disso a missão vira GAVETA sobre o
+  Estúdio (scrim fecha; toggle do header reabre) — a LARGURA não gateia mais o split no
+  StageRView. Os checks "Ficou pronto quando..." **PERSISTEM em localStorage por task.id**
+  (`pensa:checks:<taskId>`; card done limpa a chave; regenerar missões troca os ids = zera).
+  O MissionSheet também mostra **"Desenhar no Pinta"** quando o host dá `adapter.onOpenPinta`;
   semeadura LAZY via `createStudioProject` do host + PATCH `studioProjectId`.
   **O ESTÚDIO EMBUTIDO É OPCIONAL (buildEnv, 07/2026)**: com `detail.buildEnv === null` a etapa R
   abre o CHOOSER "Onde você vai construir?" (3 cartões — `BuildEnvChooser`): `embedded` = split
@@ -52,7 +57,10 @@ Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
 - **`PensaTransport.streamChat(input, handlers)`** — SSE do chat (delta/state/done/error);
   devolve fn de ABORT (abortar = o BFF não persiste o turno).
 - **`PensaHostAdapter`**: `mode` ('kids'|'adult' — troca a COPY inteira), `projectKind`,
-  `theme` (host fixa), **`mascotImages`** (URLs do Zappy por pose happy/thinking/celebrating/
+  `theme` (host fixa), **`stateKey`** (id do viewer p/ "continuar de onde parou": o PensaApp
+  espelha `activeProjectId` em `localStorage pensa:resume:<stateKey>` e REABRE no mount; voltar à
+  lista/arquivar limpa; ausente = não lembra), **`onOpenPinta`** (botão "Desenhar no Pinta" na
+  missão aberta; ausente = some), **`mascotImages`** (URLs do Zappy por pose happy/thinking/celebrating/
   sleeping — o kids passa `/zappy/*.webp`; ausente → emoji de fallback; consumo SEMPRE via
   `components/common/ZappyImage.tsx`), e as capabilities OPCIONAIS do Estúdio: `createStudioProject(name)`
   (semeia no IndexedDB do perfil, id charset `[A-Za-z0-9_-]`),

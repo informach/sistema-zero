@@ -19,6 +19,8 @@ interface VimeoPlayerProps {
   onFlush?: (seconds: number) => void
   /** Disparado UMA vez ao cruzar o limiar de % assistido. */
   onReachedThreshold?: () => void
+  /** Vídeo TERMINOU (evento `ended` do SDK) — p/ o host celebrar no fim de verdade. */
+  onEnded?: () => void
   /** Fração assistida que conta como "viu a aula" (default 0.9). */
   thresholdPercent?: number
 }
@@ -44,6 +46,7 @@ export function VimeoPlayer({
   onProgress,
   onFlush,
   onReachedThreshold,
+  onEnded,
   thresholdPercent = 0.9,
 }: VimeoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -51,8 +54,8 @@ export function VimeoPlayer({
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   // Callbacks em refs: o Player é criado uma vez por vídeo; sem stale closures.
-  const callbacksRef = useRef({ onProgress, onFlush, onReachedThreshold })
-  callbacksRef.current = { onProgress, onFlush, onReachedThreshold }
+  const callbacksRef = useRef({ onProgress, onFlush, onReachedThreshold, onEnded })
+  callbacksRef.current = { onProgress, onFlush, onReachedThreshold, onEnded }
   const reachedRef = useRef(false)
   const lastSecondsRef = useRef(0)
 
@@ -101,6 +104,7 @@ export function VimeoPlayer({
     })
     player.on('ended', (data: { duration: number }) => {
       callbacksRef.current.onFlush?.(data.duration)
+      callbacksRef.current.onEnded?.()
     })
 
     return () => {

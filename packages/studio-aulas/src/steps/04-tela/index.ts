@@ -33,8 +33,23 @@ interface AulasNoBrowser {
   exportarProjeto(id: string): Promise<unknown>
   esconderPreview(): Promise<void>
   abrirCategoria(nome: string): Promise<void>
-  pegarBloco(tipo: string, encaixarEm?: string): Promise<unknown>
+  pegarBloco(tipo: string, encaixarEm?: string, ref?: string): Promise<unknown>
   configurarCampo(campo: string, valor: string | number, tipo?: string): Promise<void>
+  preencherSoquete(
+    valorTipo: string,
+    emBloco: string | undefined,
+    input: string,
+    campo?: string,
+    valorCampo?: string | number,
+    ref?: string,
+  ): Promise<AncoraMedida | null>
+  envolver(
+    container: string,
+    corpo: string,
+    deDentroDe: string,
+    inputPai: string,
+    ref?: string,
+  ): Promise<AncoraMedida | null>
   zoom(nivel: 'perto' | 'longe' | 'ajustar' | number): Promise<void>
   medirAncora(bloco: string, campo?: string): Promise<AncoraMedida | null>
   testar(ms: number): Promise<void>
@@ -253,8 +268,9 @@ async function executarAcao(
     }
     case 'pegarBloco': {
       await page.evaluate(
-        ([t, e]: [string, string | undefined]) => globalThis.__aulas.pegarBloco(t, e),
-        [acao.bloco, acao.encaixarEm] as [string, string | undefined],
+        ([t, e, r]: [string, string | undefined, string | undefined]) =>
+          globalThis.__aulas.pegarBloco(t, e, r),
+        [acao.bloco, acao.encaixarEm, acao.ref] as [string, string | undefined, string | undefined],
       )
       await page.waitForTimeout(RITMO.aposEncaixeMs)
       return
@@ -266,6 +282,43 @@ async function executarAcao(
         [acao.campo, acao.valor, acao.bloco] as [string, string | number, string | undefined],
       )
       await page.waitForTimeout(RITMO.aposCampoMs)
+      return
+    }
+    case 'preencherSoquete': {
+      await page.evaluate(
+        ([vt, em, inp, campo, val, r]: [
+          string,
+          string | undefined,
+          string,
+          string | undefined,
+          string | number | undefined,
+          string | undefined,
+        ]) => globalThis.__aulas.preencherSoquete(vt, em, inp, campo, val, r),
+        [acao.bloco, acao.emBloco, acao.input, acao.campo, acao.valor, acao.ref] as [
+          string,
+          string | undefined,
+          string,
+          string | undefined,
+          string | number | undefined,
+          string | undefined,
+        ],
+      )
+      await page.waitForTimeout(RITMO.aposEncaixeMs)
+      return
+    }
+    case 'envolver': {
+      await page.evaluate(
+        ([c, corpo, de, inp, r]: [string, string, string, string, string | undefined]) =>
+          globalThis.__aulas.envolver(c, corpo, de, inp, r),
+        [acao.container, acao.corpo, acao.deDentroDe, acao.inputPai, acao.ref] as [
+          string,
+          string,
+          string,
+          string,
+          string | undefined,
+        ],
+      )
+      await page.waitForTimeout(RITMO.aposEncaixeMs)
       return
     }
     case 'balao': {

@@ -875,6 +875,25 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       }
       return asRaw(source, node)
     }
+    // <img>.onload = () => {…} → imageOnLoad ("quando a imagem carregar, fazer …").
+    // Só a arrow/função SEM parâmetros (o gerador re-emite `() =>`); com parâmetro
+    // (`(e) => …`) cai no avançado p/ não perder o argumento.
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.property?.type === 'Identifier' &&
+      expr.left.property.name === 'onload' &&
+      (expr.right?.type === 'ArrowFunctionExpression' ||
+        expr.right?.type === 'FunctionExpression') &&
+      (expr.right.params?.length ?? 0) === 0 &&
+      !isGlobalObject(expr.left.object)
+    ) {
+      const target = toExpr(expr.left.object, ctx)
+      if (target && isSimpleValue(target)) {
+        return { type: 'imageOnLoad', target, body: bodyOfFn(expr.right, source, ctx) }
+      }
+      return asRaw(source, node)
+    }
     // Geral: <obj>.prop = v sobre qualquer objeto representável. Cobre instância
     // (`p.x = v`) e aninhamento (`this.velocidade.x = v`). Roda DEPOIS dos matchers
     // específicos (fillStyle, dataset, textContent) e dos pares de canvas (consumidos
@@ -889,6 +908,21 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       const value = toExpr(expr.right, ctx)
       if (isSimpleValue(object) && isSimpleValue(value)) {
         return { type: 'memberSet', object, name: expr.left.property.name, value }
+      }
+      return asRaw(source, node)
+    }
+    // <obj>[chave] = v / <lista>[i] = v → indexSet (escrita por chave/índice).
+    // O `el.style['prop']` computado já foi consumido acima por tryMatchSetStyle.
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      expr.left.computed &&
+      !isGlobalObject(expr.left.object)
+    ) {
+      const object = toExpr(expr.left.object, ctx)
+      const index = toExpr(expr.left.property, ctx)
+      const value = toExpr(expr.right, ctx)
+      if (isSimpleValue(object) && isSimpleValue(index) && isSimpleValue(value)) {
+        return { type: 'indexSet', object, index, value }
       }
       return asRaw(source, node)
     }

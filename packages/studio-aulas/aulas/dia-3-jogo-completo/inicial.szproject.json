@@ -1,0 +1,842 @@
+{
+  "id": "01KVZVXA9SBCXS1QYZ2VY6TWXK",
+  "name": "Meu primeiro jogo",
+  "createdAt": 1782407145785,
+  "updatedAt": 1783018726772,
+  "mode": "blocks",
+  "files": {
+    "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Meu primeiro jogo</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+    "style.css": "",
+    "script.js": "// Gerado pelo Sistema Zero Studio\n\nSZGame2D.setupStage(800, 480, \"#1a2240\");\nconst nave = SZGame2D.createShip({ x: 400, y: 410, w: 54, h: 62, body: \"#f87171\", wings: \"#60a5fa\" });\nconst tiros = SZGame2D.createGroup();\nconst asteroides = SZGame2D.createGroup();\nlet pontos = 0;\nSZGame2D.onKey(\"Space\", function () {\n  SZGame2D.spawnBullet(tiros, { x: SZGame2D.centerX(nave), y: SZGame2D.spriteY(nave), radius: 5, color: \"#a3e635\", vx: 0, vy: -9 });\n  SZGame2D.playShoot();\n});\nSZGame2D.gameLoop(function update() {\n  SZGame2D.clear();\n  SZGame2D.drawStarfield(ctx, 1);\n  SZGame2D.arrowsX(nave, 7);\n  SZGame2D.clampToScreen(nave, ctx);\n  SZGame2D.drawSprite(ctx, nave);\n  SZGame2D.updateGroup(tiros);\n  SZGame2D.pruneOffscreen(ctx, tiros, 40, function (sprite) {\n\n  });\n  SZGame2D.drawGroup(ctx, tiros);\n  if (SZGame2D.everyFrames(\"cada\", 40)) {\n    SZGame2D.spawnAsteroid(asteroides, { x: SZGame2D.randomX(), y: -30, size: 40, color: \"#aab1cf\", vx: 0, vy: 3 });\n  }\n  SZGame2D.updateGroup(asteroides);\n  SZGame2D.drawGroup(ctx, asteroides);\n  SZGame2D.pruneOffscreen(ctx, asteroides, 40, function (sprite) {\n\n  });\n  SZGame2D.overlapGroups(tiros, asteroides, function (tiro, asteroide) {\n    SZGame2D.removeFromGroup(tiros, tiro);\n    SZGame2D.removeFromGroup(asteroides, asteroide);\n    pontos = pontos + 1;\n    SZGame2D.explodeSprite(asteroide, \"#fb923c\");\n    SZGame2D.playExplosion();\n  });\n  SZGame2D.drawScore(ctx, \"Pontos:\", pontos, 12, 30, \"#ffffff\", 24);\n});\n"
+  },
+  "extraFiles": [],
+  "assets": [],
+  "ir": {
+    "html": [],
+    "css": [],
+    "js": [
+      {
+        "type": "g2d:setupStage",
+        "width": {
+          "type": "num",
+          "value": 800,
+          "__id": "?n^XAozYrarG.vIur[Sf"
+        },
+        "height": {
+          "type": "num",
+          "value": 480,
+          "__id": "Q[l^WurpWt*Y{ZrD167s"
+        },
+        "bg": "#1a2240",
+        "__id": "L=o5*e?evB{qTH)fut[}"
+      },
+      {
+        "type": "g2d:createShip",
+        "varName": "nave",
+        "x": {
+          "type": "num",
+          "value": 400,
+          "__id": "ZZNUuS%;LHic*PmsW60^"
+        },
+        "y": {
+          "type": "num",
+          "value": 410,
+          "__id": "QM*mmLkg?P%1)o1L?ybw"
+        },
+        "w": {
+          "type": "num",
+          "value": 54,
+          "__id": "0h}gv4SNW+-OI2Uo*m4?"
+        },
+        "h": {
+          "type": "num",
+          "value": 62,
+          "__id": "!xPX]{)]$oq[2(rqgqWc"
+        },
+        "bodyColor": "#f87171",
+        "wingColor": "#60a5fa",
+        "__id": "m;DOIFO$G2H%G$oULre3"
+      },
+      {
+        "type": "g2d:createGroup",
+        "varName": "tiros",
+        "__id": "+]Topj+}//y!`7o+Njbk"
+      },
+      {
+        "type": "g2d:createGroup",
+        "varName": "asteroides",
+        "__id": "Sfcvxo+dr9wNdw2.E1NO"
+      },
+      {
+        "type": "var",
+        "name": "pontos",
+        "value": {
+          "type": "num",
+          "value": 0,
+          "__id": "~_c;m%zXF7^?X;9O-LF_"
+        },
+        "__id": "aGmsLR-pk4h6H}wi,r@:"
+      },
+      {
+        "type": "g2d:onKey",
+        "key": "Space",
+        "body": [
+          {
+            "type": "g2d:spawnBullet",
+            "groupVar": "tiros",
+            "x": {
+              "type": "g2d:centerX",
+              "spriteVar": "nave",
+              "__id": "p%{`%}OwY+Q[2?P,,bI{"
+            },
+            "y": {
+              "type": "g2d:spriteY",
+              "spriteVar": "nave",
+              "__id": "G`6R=9XNpz|H;(wC:twP"
+            },
+            "radius": {
+              "type": "num",
+              "value": 5,
+              "__id": "a;7i3$_kY_`%EjqaOK%r"
+            },
+            "color": "#a3e635",
+            "vx": {
+              "type": "num",
+              "value": 0,
+              "__id": "#dQ@_{0g_Ptpmg#h!sSX"
+            },
+            "vy": {
+              "type": "num",
+              "value": -9,
+              "__id": "eC8igALvNE]tBW8t9(*X"
+            },
+            "__id": ",:r`mjV{|$]eY)C#uJsl"
+          },
+          {
+            "type": "g2d:playShoot",
+            "__id": "{*c8/V$(XSn!Z.wHK4/U"
+          }
+        ],
+        "__id": "+0hbI4A%[fd3c;Euzg^f"
+      },
+      {
+        "type": "g2d:updateEachFrame",
+        "body": [
+          {
+            "type": "g2d:clear",
+            "__id": "aq:v[6wqfeQ~o|eP@Col"
+          },
+          {
+            "type": "g2d:starfield",
+            "ctxVar": "ctx",
+            "speed": {
+              "type": "num",
+              "value": 1,
+              "__id": "EawJBOU5Iyf;_$uD6q9o"
+            },
+            "__id": "y]pzxfW*S`-m@pg6ahA["
+          },
+          {
+            "type": "g2d:arrowsX",
+            "spriteVar": "nave",
+            "speed": {
+              "type": "num",
+              "value": 7,
+              "__id": "9+AFZ|N:4n-BK|lWMvv:"
+            },
+            "__id": ":fc15n6aNhA*{W%kseog"
+          },
+          {
+            "type": "g2d:clampToScreen",
+            "spriteVar": "nave",
+            "ctxVar": "ctx",
+            "__id": "{!b=K}_p:M$r0`)5.P:x"
+          },
+          {
+            "type": "g2d:drawSprite",
+            "spriteVar": "nave",
+            "ctxVar": "ctx",
+            "__id": "Rx)hC^VV-ZkZ4K@bt#Bl"
+          },
+          {
+            "type": "g2d:updateGroup",
+            "groupVar": "tiros",
+            "__id": "=:R`lR.|]w)cvci!:5hN"
+          },
+          {
+            "type": "g2d:pruneOffscreen",
+            "groupVar": "tiros",
+            "ctxVar": "ctx",
+            "itemName": "sprite",
+            "body": [],
+            "__id": "_.JD|jt8[2j6PVAI#*t,"
+          },
+          {
+            "type": "g2d:drawGroup",
+            "groupVar": "tiros",
+            "ctxVar": "ctx",
+            "__id": "k$YFI4`O`.0d+a@^gd]T"
+          },
+          {
+            "type": "g2d:everyFrames",
+            "n": {
+              "type": "num",
+              "value": 40,
+              "__id": "cp3KW11_^[+G/ewb|(R="
+            },
+            "body": [
+              {
+                "type": "g2d:spawnAsteroid",
+                "groupVar": "asteroides",
+                "x": {
+                  "type": "g2d:randomX",
+                  "__id": "g2!RtFRar57o;_t[Q]87"
+                },
+                "y": {
+                  "type": "num",
+                  "value": -30,
+                  "__id": "`c-`GOJtB-@d0D@[@V!4"
+                },
+                "size": {
+                  "type": "num",
+                  "value": 40,
+                  "__id": "v,QU4u0YB,M{ata`2P0*"
+                },
+                "color": "#aab1cf",
+                "vx": {
+                  "type": "num",
+                  "value": 0,
+                  "__id": "[$PFpsLM7Qtj8X=]ZmuY"
+                },
+                "vy": {
+                  "type": "num",
+                  "value": 3,
+                  "__id": "8:l)GlQK;GaD1tJfulCt"
+                },
+                "__id": "CtTQ)~jkm~lUs|4j.Z0g"
+              }
+            ],
+            "__id": "zW+wtd68S#ABu[4f}spq"
+          },
+          {
+            "type": "g2d:updateGroup",
+            "groupVar": "asteroides",
+            "__id": "6k@lsZK]f]LD7Njh_c2q"
+          },
+          {
+            "type": "g2d:drawGroup",
+            "groupVar": "asteroides",
+            "ctxVar": "ctx",
+            "__id": "$mPDsa-|n$^S7T$Lt{XE"
+          },
+          {
+            "type": "g2d:pruneOffscreen",
+            "groupVar": "asteroides",
+            "ctxVar": "ctx",
+            "itemName": "sprite",
+            "body": [],
+            "__id": "83qIWD`x(C-l5`T.NetD"
+          },
+          {
+            "type": "g2d:onGroupOverlap",
+            "aGroup": "tiros",
+            "aName": "tiro",
+            "bGroup": "asteroides",
+            "bName": "asteroide",
+            "body": [
+              {
+                "type": "g2d:removeFromGroup",
+                "spriteVar": "tiro",
+                "groupVar": "tiros",
+                "__id": "EBMo.!hO4lU?@Wh(hYv5"
+              },
+              {
+                "type": "g2d:removeFromGroup",
+                "spriteVar": "asteroide",
+                "groupVar": "asteroides",
+                "__id": "~R^CY]O1P,[},[f$BtxS"
+              },
+              {
+                "type": "assign",
+                "name": "pontos",
+                "value": {
+                  "type": "binop",
+                  "op": "+",
+                  "left": {
+                    "type": "var",
+                    "name": "pontos"
+                  },
+                  "right": {
+                    "type": "num",
+                    "value": 1
+                  }
+                },
+                "__id": "d.eU!E63P@wBh3c_{Va+"
+              },
+              {
+                "type": "g2d:explode",
+                "spriteVar": "asteroide",
+                "color": "#fb923c",
+                "__id": "9!V.!T+^y~OZJgAqcfs."
+              },
+              {
+                "type": "g2d:playExplosion",
+                "__id": "K%?U`aGK2n^ikMmg9tnq"
+              }
+            ],
+            "__id": "e7;kFGF(tvtagrra:g/h"
+          },
+          {
+            "type": "g2d:drawScore",
+            "ctxVar": "ctx",
+            "label": "Pontos:",
+            "value": {
+              "type": "var",
+              "name": "pontos",
+              "__id": "^|Yy|%qBUj4Yx2]r.a/A"
+            },
+            "x": {
+              "type": "num",
+              "value": 12,
+              "__id": "lnti_#{|/83HuEcY#FMY"
+            },
+            "y": {
+              "type": "num",
+              "value": 30,
+              "__id": "B81Q!aS_C;IAIeh`*6O%"
+            },
+            "color": "#ffffff",
+            "size": {
+              "type": "num",
+              "value": 24,
+              "__id": "]$oa$.z2Lch{d}b+nj{j"
+            },
+            "__id": "LoP5.-E^UDHufCTH6T2N"
+          }
+        ],
+        "__id": "Q/tzC:$$a2;NLzG+SE.g"
+      }
+    ],
+    "extensions": [
+      {
+        "extensionId": "game-2d"
+      }
+    ]
+  },
+  "blocksState": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "sz_frame_behavior",
+          "id": "#8]O_^T4a(#2igj92cJW",
+          "x": 156,
+          "y": -36,
+          "inputs": {
+            "CHILDREN": {
+              "block": {
+                "type": "sz_g2d_setup_stage",
+                "id": "L=o5*e?evB{qTH)fut[}",
+                "fields": {
+                  "BG": "#1a2240"
+                },
+                "inputs": {
+                  "W": {
+                    "shadow": {
+                      "type": "sz_val_number",
+                      "id": "?n^XAozYrarG.vIur[Sf",
+                      "fields": {
+                        "NUM": 800
+                      }
+                    }
+                  },
+                  "H": {
+                    "shadow": {
+                      "type": "sz_val_number",
+                      "id": "Q[l^WurpWt*Y{ZrD167s",
+                      "fields": {
+                        "NUM": 480
+                      }
+                    }
+                  }
+                },
+                "next": {
+                  "block": {
+                    "type": "sz_g2d_create_ship",
+                    "id": "m;DOIFO$G2H%G$oULre3",
+                    "fields": {
+                      "NAME": "nave",
+                      "BODY": "#f87171",
+                      "WINGS": "#60a5fa"
+                    },
+                    "inputs": {
+                      "X": {
+                        "shadow": {
+                          "type": "sz_val_number",
+                          "id": "ZZNUuS%;LHic*PmsW60^",
+                          "fields": {
+                            "NUM": 400
+                          }
+                        }
+                      },
+                      "Y": {
+                        "shadow": {
+                          "type": "sz_val_number",
+                          "id": "QM*mmLkg?P%1)o1L?ybw",
+                          "fields": {
+                            "NUM": 410
+                          }
+                        }
+                      },
+                      "W": {
+                        "shadow": {
+                          "type": "sz_val_number",
+                          "id": "0h}gv4SNW+-OI2Uo*m4?",
+                          "fields": {
+                            "NUM": 54
+                          }
+                        }
+                      },
+                      "H": {
+                        "shadow": {
+                          "type": "sz_val_number",
+                          "id": "!xPX]{)]$oq[2(rqgqWc",
+                          "fields": {
+                            "NUM": 62
+                          }
+                        }
+                      }
+                    },
+                    "next": {
+                      "block": {
+                        "type": "sz_g2d_create_group",
+                        "id": "+]Topj+}//y!`7o+Njbk",
+                        "fields": {
+                          "NAME": "tiros"
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_group",
+                            "id": "Sfcvxo+dr9wNdw2.E1NO",
+                            "fields": {
+                              "NAME": "asteroides"
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_js_var_create",
+                                "id": "aGmsLR-pk4h6H}wi,r@:",
+                                "fields": {
+                                  "NAME": "pontos"
+                                },
+                                "inputs": {
+                                  "VALUE": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "id": "~_c;m%zXF7^?X;9O-LF_",
+                                      "fields": {
+                                        "NUM": 0
+                                      }
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_on_key",
+                                    "id": "+0hbI4A%[fd3c;Euzg^f",
+                                    "fields": {
+                                      "KEY": "Space"
+                                    },
+                                    "inputs": {
+                                      "BODY": {
+                                        "block": {
+                                          "type": "sz_g2d_spawn_bullet",
+                                          "id": ",:r`mjV{|$]eY)C#uJsl",
+                                          "fields": {
+                                            "GROUP": "tiros",
+                                            "COLOR": "#a3e635"
+                                          },
+                                          "inputs": {
+                                            "X": {
+                                              "block": {
+                                                "type": "sz_g2d_center_x",
+                                                "id": "p%{`%}OwY+Q[2?P,,bI{",
+                                                "fields": {
+                                                  "SPRITE": "nave"
+                                                }
+                                              }
+                                            },
+                                            "Y": {
+                                              "block": {
+                                                "type": "sz_g2d_sprite_y",
+                                                "id": "G`6R=9XNpz|H;(wC:twP",
+                                                "fields": {
+                                                  "SPRITE": "nave"
+                                                }
+                                              }
+                                            },
+                                            "R": {
+                                              "shadow": {
+                                                "type": "sz_val_number",
+                                                "id": "a;7i3$_kY_`%EjqaOK%r",
+                                                "fields": {
+                                                  "NUM": 5
+                                                }
+                                              }
+                                            },
+                                            "VX": {
+                                              "block": {
+                                                "type": "sz_val_number",
+                                                "id": "#dQ@_{0g_Ptpmg#h!sSX",
+                                                "fields": {
+                                                  "NUM": 0
+                                                }
+                                              }
+                                            },
+                                            "VY": {
+                                              "block": {
+                                                "type": "sz_val_number",
+                                                "id": "eC8igALvNE]tBW8t9(*X",
+                                                "fields": {
+                                                  "NUM": -9
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_play_shoot",
+                                              "id": "{*c8/V$(XSn!Z.wHK4/U"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g2d_update_each_frame",
+                                        "id": "Q/tzC:$$a2;NLzG+SE.g",
+                                        "inputs": {
+                                          "BODY": {
+                                            "block": {
+                                              "type": "sz_g2d_clear",
+                                              "id": "aq:v[6wqfeQ~o|eP@Col",
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_starfield",
+                                                  "id": "y]pzxfW*S`-m@pg6ahA[",
+                                                  "inputs": {
+                                                    "SPEED": {
+                                                      "shadow": {
+                                                        "type": "sz_val_number",
+                                                        "id": "EawJBOU5Iyf;_$uD6q9o",
+                                                        "fields": {
+                                                          "NUM": 1
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_arrows_x",
+                                                      "id": ":fc15n6aNhA*{W%kseog",
+                                                      "fields": {
+                                                        "SPRITE": "nave"
+                                                      },
+                                                      "inputs": {
+                                                        "SPEED": {
+                                                          "shadow": {
+                                                            "type": "sz_val_number",
+                                                            "id": "9+AFZ|N:4n-BK|lWMvv:",
+                                                            "fields": {
+                                                              "NUM": 7
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_clamp_to_screen",
+                                                          "id": "{!b=K}_p:M$r0`)5.P:x",
+                                                          "fields": {
+                                                            "SPRITE": "nave"
+                                                          },
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_g2d_draw_sprite",
+                                                              "id": "Rx)hC^VV-ZkZ4K@bt#Bl",
+                                                              "fields": {
+                                                                "SPRITE": "nave"
+                                                              },
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "sz_g2d_update_group",
+                                                                  "id": "=:R`lR.|]w)cvci!:5hN",
+                                                                  "fields": {
+                                                                    "GROUP": "tiros"
+                                                                  },
+                                                                  "next": {
+                                                                    "block": {
+                                                                      "type": "sz_g2d_prune_offscreen",
+                                                                      "id": "_.JD|jt8[2j6PVAI#*t,",
+                                                                      "fields": {
+                                                                        "GROUP": "tiros",
+                                                                        "ITEM": "sprite"
+                                                                      },
+                                                                      "next": {
+                                                                        "block": {
+                                                                          "type": "sz_g2d_draw_group",
+                                                                          "id": "k$YFI4`O`.0d+a@^gd]T",
+                                                                          "fields": {
+                                                                            "GROUP": "tiros"
+                                                                          },
+                                                                          "next": {
+                                                                            "block": {
+                                                                              "type": "sz_g2d_every_frames",
+                                                                              "id": "zW+wtd68S#ABu[4f}spq",
+                                                                              "inputs": {
+                                                                                "N": {
+                                                                                  "block": {
+                                                                                    "type": "sz_val_number",
+                                                                                    "id": "cp3KW11_^[+G/ewb|(R=",
+                                                                                    "fields": {
+                                                                                      "NUM": 40
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                "BODY": {
+                                                                                  "block": {
+                                                                                    "type": "sz_g2d_spawn_asteroid",
+                                                                                    "id": "CtTQ)~jkm~lUs|4j.Z0g",
+                                                                                    "fields": {
+                                                                                      "GROUP": "asteroides",
+                                                                                      "COLOR": "#aab1cf"
+                                                                                    },
+                                                                                    "inputs": {
+                                                                                      "X": {
+                                                                                        "block": {
+                                                                                          "type": "sz_g2d_random_x",
+                                                                                          "id": "g2!RtFRar57o;_t[Q]87"
+                                                                                        }
+                                                                                      },
+                                                                                      "Y": {
+                                                                                        "block": {
+                                                                                          "type": "sz_val_number",
+                                                                                          "id": "`c-`GOJtB-@d0D@[@V!4",
+                                                                                          "fields": {
+                                                                                            "NUM": -30
+                                                                                          }
+                                                                                        }
+                                                                                      },
+                                                                                      "SIZE": {
+                                                                                        "shadow": {
+                                                                                          "type": "sz_val_number",
+                                                                                          "id": "v,QU4u0YB,M{ata`2P0*",
+                                                                                          "fields": {
+                                                                                            "NUM": 40
+                                                                                          }
+                                                                                        }
+                                                                                      },
+                                                                                      "VX": {
+                                                                                        "block": {
+                                                                                          "type": "sz_val_number",
+                                                                                          "id": "[$PFpsLM7Qtj8X=]ZmuY",
+                                                                                          "fields": {
+                                                                                            "NUM": 0
+                                                                                          }
+                                                                                        }
+                                                                                      },
+                                                                                      "VY": {
+                                                                                        "block": {
+                                                                                          "type": "sz_val_number",
+                                                                                          "id": "8:l)GlQK;GaD1tJfulCt",
+                                                                                          "fields": {
+                                                                                            "NUM": 3
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              },
+                                                                              "next": {
+                                                                                "block": {
+                                                                                  "type": "sz_g2d_update_group",
+                                                                                  "id": "6k@lsZK]f]LD7Njh_c2q",
+                                                                                  "fields": {
+                                                                                    "GROUP": "asteroides"
+                                                                                  },
+                                                                                  "next": {
+                                                                                    "block": {
+                                                                                      "type": "sz_g2d_draw_group",
+                                                                                      "id": "$mPDsa-|n$^S7T$Lt{XE",
+                                                                                      "fields": {
+                                                                                        "GROUP": "asteroides"
+                                                                                      },
+                                                                                      "next": {
+                                                                                        "block": {
+                                                                                          "type": "sz_g2d_prune_offscreen",
+                                                                                          "id": "83qIWD`x(C-l5`T.NetD",
+                                                                                          "fields": {
+                                                                                            "GROUP": "asteroides",
+                                                                                            "ITEM": "sprite"
+                                                                                          },
+                                                                                          "next": {
+                                                                                            "block": {
+                                                                                              "type": "sz_g2d_on_group_overlap",
+                                                                                              "id": "e7;kFGF(tvtagrra:g/h",
+                                                                                              "fields": {
+                                                                                                "A": "tiros",
+                                                                                                "ANAME": "tiro",
+                                                                                                "B": "asteroides",
+                                                                                                "BNAME": "asteroide"
+                                                                                              },
+                                                                                              "inputs": {
+                                                                                                "BODY": {
+                                                                                                  "block": {
+                                                                                                    "type": "sz_g2d_remove_from_group",
+                                                                                                    "id": "EBMo.!hO4lU?@Wh(hYv5",
+                                                                                                    "fields": {
+                                                                                                      "SPRITE": "tiro",
+                                                                                                      "GROUP": "tiros"
+                                                                                                    },
+                                                                                                    "next": {
+                                                                                                      "block": {
+                                                                                                        "type": "sz_g2d_remove_from_group",
+                                                                                                        "id": "~R^CY]O1P,[},[f$BtxS",
+                                                                                                        "fields": {
+                                                                                                          "SPRITE": "asteroide",
+                                                                                                          "GROUP": "asteroides"
+                                                                                                        },
+                                                                                                        "next": {
+                                                                                                          "block": {
+                                                                                                            "type": "sz_js_var_increment",
+                                                                                                            "id": "d.eU!E63P@wBh3c_{Va+",
+                                                                                                            "fields": {
+                                                                                                              "DELTA": 1,
+                                                                                                              "NAME": "pontos"
+                                                                                                            },
+                                                                                                            "next": {
+                                                                                                              "block": {
+                                                                                                                "type": "sz_g2d_explode",
+                                                                                                                "id": "9!V.!T+^y~OZJgAqcfs.",
+                                                                                                                "fields": {
+                                                                                                                  "SPRITE": "asteroide",
+                                                                                                                  "COLOR": "#fb923c"
+                                                                                                                },
+                                                                                                                "next": {
+                                                                                                                  "block": {
+                                                                                                                    "type": "sz_g2d_play_explosion",
+                                                                                                                    "id": "K%?U`aGK2n^ikMmg9tnq"
+                                                                                                                  }
+                                                                                                                }
+                                                                                                              }
+                                                                                                            }
+                                                                                                          }
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                }
+                                                                                              },
+                                                                                              "next": {
+                                                                                                "block": {
+                                                                                                  "type": "sz_g2d_draw_score",
+                                                                                                  "id": "LoP5.-E^UDHufCTH6T2N",
+                                                                                                  "fields": {
+                                                                                                    "LABEL": "Pontos:",
+                                                                                                    "COLOR": "#ffffff"
+                                                                                                  },
+                                                                                                  "inputs": {
+                                                                                                    "VALUE": {
+                                                                                                      "block": {
+                                                                                                        "type": "sz_val_variable",
+                                                                                                        "id": "^|Yy|%qBUj4Yx2]r.a/A",
+                                                                                                        "fields": {
+                                                                                                          "NAME": "pontos"
+                                                                                                        }
+                                                                                                      }
+                                                                                                    },
+                                                                                                    "X": {
+                                                                                                      "shadow": {
+                                                                                                        "type": "sz_val_number",
+                                                                                                        "id": "lnti_#{|/83HuEcY#FMY",
+                                                                                                        "fields": {
+                                                                                                          "NUM": 12
+                                                                                                        }
+                                                                                                      }
+                                                                                                    },
+                                                                                                    "Y": {
+                                                                                                      "shadow": {
+                                                                                                        "type": "sz_val_number",
+                                                                                                        "id": "B81Q!aS_C;IAIeh`*6O%",
+                                                                                                        "fields": {
+                                                                                                          "NUM": 30
+                                                                                                        }
+                                                                                                      }
+                                                                                                    },
+                                                                                                    "SIZE": {
+                                                                                                      "shadow": {
+                                                                                                        "type": "sz_val_number",
+                                                                                                        "id": "]$oa$.z2Lch{d}b+nj{j",
+                                                                                                        "fields": {
+                                                                                                          "NUM": 24
+                                                                                                        }
+                                                                                                      }
+                                                                                                    }
+                                                                                                  }
+                                                                                                }
+                                                                                              }
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "installedExtensions": [
+    {
+      "id": "game-2d",
+      "version": "0.19.0",
+      "installedAt": 1782407339485
+    }
+  ]
+}

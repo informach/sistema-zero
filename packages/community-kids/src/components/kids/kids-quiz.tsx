@@ -27,7 +27,8 @@ const CHOICE_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
  * final. A SEMÂNTICA é a mesma do quiz compartilhado (member-shell): o GET da
  * aula não traz gabarito e a nota/correções só chegam na RESPOSTA do submit —
  * por isso o feedback é no fim, nunca por pergunta (grading é server-side).
- * Reprovou → cooldown de 5 min com countdown; `passingScore` segue bloqueando
+ * Reprovou → cooldown curto (90s, valor do members) com countdown enquadrado como
+ * "hora de revisar a correção"; `passingScore` segue bloqueando
  * o "Concluir aula" (gate do backend — aqui só refletimos o estado).
  */
 export function KidsQuiz({ blockId, content, quizState }: Props) {
@@ -169,10 +170,16 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
         </div>
         <QuizReview questions={questions} result={result} answers={answers} />
         {cooldownLeft !== null ? (
-          <p className="inline-flex items-center gap-2 text-muted-foreground text-sm">
-            <Timer className="size-4" />
-            Você pode tentar de novo em {cooldownLeft}.
-          </p>
+          <div className="flex flex-col gap-1">
+            <p className="text-sm">
+              Enquanto o relógio corre, olhe a correção aqui em cima — assim a próxima tentativa
+              fica ainda melhor!
+            </p>
+            <p className="inline-flex items-center gap-2 text-muted-foreground text-sm">
+              <Timer className="size-4" />
+              Você pode tentar de novo em {cooldownLeft}.
+            </p>
+          </div>
         ) : (
           <button type="button" onClick={retry} className="sz-btn-gradient h-11 self-start px-6">
             Tentar de novo!
@@ -195,6 +202,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
               {passingScore}% para passar.
             </p>
           ) : null}
+          <p className="text-sm">Respire fundo e pense nas perguntas — já já dá para tentar!</p>
           <p className="inline-flex items-center gap-2 text-muted-foreground text-sm">
             <Timer className="size-4" />
             Você pode tentar de novo em {cooldownLeft}.

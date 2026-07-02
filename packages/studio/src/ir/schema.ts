@@ -2050,6 +2050,10 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'setProp'; objectVar: string; name: string; value: JSExpr })
   // Escreve a propriedade de qualquer valor (objeto = expressão; cobre this.velocidade.x = v).
   | (JSStatementCommon & { type: 'memberSet'; object: JSExpr; name: string; value: JSExpr })
+  // Escreve um item por chave/índice (`obj[chave] = v` / `lista[i] = v`).
+  | (JSStatementCommon & { type: 'indexSet'; object: JSExpr; index: JSExpr; value: JSExpr })
+  // Roda o corpo quando uma imagem termina de carregar (`img.onload = () => {…}`).
+  | (JSStatementCommon & { type: 'imageOnLoad'; target: JSExpr; body: JSStatement[] })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Retorno de um método (`return v;`) ou saída antecipada (`return;`).
@@ -3832,6 +3836,19 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       object: JSExprSchema,
       name: irText(),
       value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('indexSet'),
+      object: JSExprSchema,
+      index: JSExprSchema,
+      value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('imageOnLoad'),
+      target: JSExprSchema,
+      body: z.array(JSStatementSchema),
       ...idField,
     }),
     z.object({

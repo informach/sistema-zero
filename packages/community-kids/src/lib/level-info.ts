@@ -1,4 +1,4 @@
-import { Code2, Crown, Egg, type LucideIcon, Rocket, TerminalSquare } from 'lucide-react'
+import { Crown, Gamepad2, Hammer, Lightbulb, type LucideIcon, Sparkles } from 'lucide-react'
 import type { StudentLevelSlug, StudentLevelView } from '@/lib/types'
 
 /**
@@ -17,34 +17,35 @@ export interface LevelInfo {
   icon: LucideIcon
 }
 
+// Rótulos kid-friendly (07/2026): slugs internos (noob…god) NÃO mudam — só a apresentação.
 export const LEVEL_INFO: Record<StudentLevelSlug, LevelInfo> = {
   noob: {
-    label: 'Noob',
-    blurb: 'Todo mundo começa aqui. Bora subir!',
+    label: 'Faísca',
+    blurb: 'Todo mundo começa com uma faísca. Bora acender!',
     colorVar: 'var(--level-noob)',
-    icon: Egg,
+    icon: Sparkles,
   },
   coder: {
-    label: 'Coder',
+    label: 'Construtor(a)',
     blurb: 'Você já fez e publicou o seu primeiro projeto!',
     colorVar: 'var(--level-coder)',
-    icon: Code2,
+    icon: Hammer,
   },
   hacker: {
-    label: 'Hacker',
+    label: 'Inventor(a)',
     blurb: 'Cinco projetos iniciantes no Mural. Mandou bem!',
     colorVar: 'var(--level-hacker)',
-    icon: TerminalSquare,
+    icon: Lightbulb,
   },
   elite: {
-    label: 'Elite',
-    blurb: 'Projetos intermediários dominados. Nível Elite!',
+    label: 'Mestre dos Jogos',
+    blurb: 'Projetos intermediários dominados. Você é Mestre dos Jogos!',
     colorVar: 'var(--level-elite)',
-    icon: Rocket,
+    icon: Gamepad2,
   },
   god: {
-    label: 'God',
-    blurb: 'O topo. Você é uma lenda do Sistema Zero!',
+    label: 'Lenda',
+    blurb: 'O topo. Você é uma Lenda do Sistema Zero!',
     colorVar: 'var(--level-god)',
     icon: Crown,
   },

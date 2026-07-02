@@ -156,6 +156,33 @@ function resizeBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
   }
 }
 
+/**
+ * Re-renderiza TODOS os blocos do workspace. Após uma carga programática, blocos
+ * com filhos aninhados (tomadas de valor / corpos) às vezes desenham COLAPSADOS —
+ * o valor/corpo encaixado só aparece após um re-layout, e o aluno precisava usar
+ * "Organizar blocos" (que faz exatamente este `ws.render()`) toda vez. Chamamos
+ * uma vez no `FINISHED_LOADING`: um re-render do workspace inteiro conserta todos
+ * de uma vez (mais geral que remendar bloco a bloco). Agendado também em rAF para
+ * cobrir o caso de a 1ª medição (fonte/layout) ainda não estar pronta no load.
+ */
+function rerenderBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
+  try {
+    workspace.render?.()
+  } catch {
+    // Workspace pode ter sido descartado entre o agendamento e o render.
+  }
+}
+
+function scheduleBlocklyRerender(workspace: Blockly.WorkspaceSvg): void {
+  const render = () => rerenderBlocklyWorkspace(workspace)
+  render()
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(render)
+    return
+  }
+  setTimeout(render, 0)
+}
+
 function scheduleBlocklyResize(workspace: Blockly.WorkspaceSvg): void {
   const resize = () => resizeBlocklyWorkspace(workspace)
   queueMicrotask(resize)
@@ -407,6 +434,9 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
         // sobrescrever files quando a estrutura visual não mudou.
         regenerateFromBlocks(workspace, { force: true })
         scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
+        // Conserta blocos com filhos que carregaram COLAPSADOS (o mesmo re-render
+        // que "Organizar blocos" faz), sem o aluno precisar acionar nada.
+        scheduleBlocklyRerender(workspace as Blockly.WorkspaceSvg)
         return
       }
       if (event.type === Blockly.Events.BLOCK_DRAG) {

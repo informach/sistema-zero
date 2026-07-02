@@ -6,7 +6,8 @@
  * missões"; plano salvo sem quadro vivo → "Recriar as missões"; com tasks →
  * KanbanBoard. Abrir uma missão semeia o projeto do Estúdio (LAZY; NUNCA no
  * env 'external') e o comportamento segue o buildEnv: 'embedded' = MODO
- * MISSÃO split (desktop ≥1024px + adapter.renderStudio + semeado); 'studio' =
+ * MISSÃO (adapter.renderStudio + semeado; o MissionMode adapta o layout à
+ * largura — split no desktop, gaveta no tablet); 'studio' =
  * SEMPRE painel com "Abrir o Estúdio" em destaque; 'external' = painel guia
  * puro com a linha gentil de orientação. Todas em 'done' → CTA de avanço r→o
  * (toast "+XP" quando o advance devolve gamificação). Componente INTERNO — a
@@ -19,7 +20,6 @@ import type { PensaBuildEnv } from '../../core/types'
 import { createStageRStore } from '../../state/stageRStore'
 import { usePensaApp, usePensaStore } from '../appContext'
 import { GeneratingIndicator } from '../common/GeneratingIndicator'
-import { useMediaQuery } from '../common/useMediaQuery'
 import { ZappyImage } from '../common/ZappyImage'
 import { BuildEnvChooser, ENV_EMOJI } from './BuildEnvChooser'
 import { KanbanBoard } from './KanbanBoard'
@@ -52,8 +52,6 @@ export function StageRView({
   // Chooser REABERTO via "Trocar" (com buildEnv null ele abre sozinho).
   const [chooserOpen, setChooserOpen] = useState(false)
   const advanceTimer = useRef<number | null>(null)
-  // Split do Modo Missão: desktop largo + renderStudio + projeto semeado.
-  const wide = useMediaQuery('(min-width: 1024px)')
   const settingBuildEnv = usePensaStore((s) => s.settingBuildEnv)
   const buildEnvError = usePensaStore((s) => s.buildEnvError)
 
@@ -163,6 +161,7 @@ export function StageRView({
           name: detail.name,
         })
     : null
+  const handleOpenPinta = adapter.onOpenPinta ?? null
 
   // ── Missão aberta ──────────────────────────────────────────────────────────
   if (openTask) {
@@ -175,6 +174,7 @@ export function StageRView({
         }}
         // 'external': sem "Abrir o Estúdio"; entra a linha gentil de orientação.
         onOpenStudio={buildEnv === 'external' ? null : handleOpenStudio}
+        onOpenPinta={handleOpenPinta}
         // 'studio': a missão é o guia e o Estúdio Completo é o destino.
         openStudioEmphasis={buildEnv === 'studio'}
         guidance={buildEnv === 'external' ? copy.buildEnv.externalGuidance : null}
@@ -184,7 +184,9 @@ export function StageRView({
       />
     )
     // Split SÓ no env 'embedded' ('studio'/'external' abrem sempre o painel).
-    if (buildEnv === 'embedded' && wide && adapter.renderStudio && studioProjectId) {
+    // A LARGURA não gateia mais (07/2026): o MissionMode se adapta — em tela
+    // estreita a missão vira gaveta sobre o Estúdio (antes o tablet perdia o split).
+    if (buildEnv === 'embedded' && adapter.renderStudio && studioProjectId) {
       return (
         <MissionMode
           title={openTask.title}

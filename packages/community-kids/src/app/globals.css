@@ -945,3 +945,26 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Cartão do jogo (game-card-dialog, 07/2026): ao imprimir, SÓ o cartão aparece.
+ * O botão "Imprimir" seta `body[data-print="game-card"]` antes do window.print()
+ * e o afterprint limpa (truque clássico de visibilidade — o layout da página
+ * continua no fluxo, invisível, e o cartão é reposicionado no topo).
+ */
+@media print {
+  body[data-print="game-card"] * {
+    visibility: hidden;
+  }
+  body[data-print="game-card"] .game-card-print,
+  body[data-print="game-card"] .game-card-print * {
+    visibility: visible;
+  }
+  body[data-print="game-card"] .game-card-print {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    height: fit-content;
+    max-width: 26rem;
+  }
+}

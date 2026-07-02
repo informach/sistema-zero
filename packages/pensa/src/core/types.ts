@@ -216,6 +216,17 @@ export interface PensaHostAdapter {
   /** host fixa; ausente = 'light' */
   theme?: 'light' | 'dark'
   /**
+   * Identificador do VIEWER (perfil/conta) p/ "continuar de onde parou": o
+   * pacote lembra o projeto aberto em localStorage namespaced por esta chave
+   * e o reabre no próximo mount. Ausente = não lembra (comportamento antigo).
+   */
+  stateKey?: string
+  /**
+   * Ponte com o ateliê: mostra "Desenhar no Pinta" na missão aberta — a
+   * criança desenha os assets do jogo e volta. Ausente = botão some.
+   */
+  onOpenPinta?: () => void
+  /**
    * Imagens do mascote (Zappy) por pose — ausente (ou pose faltando), a UI cai
    * no emoji de fallback de cada ponto (modo adulto/host sem assets).
    */

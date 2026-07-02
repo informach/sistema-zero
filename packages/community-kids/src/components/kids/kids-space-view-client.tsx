@@ -10,7 +10,18 @@ import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowLeft, Copy, Flag, Hash, Lock, MessageCircle, Play, Plus, Send } from 'lucide-react'
+import {
+  ArrowLeft,
+  Copy,
+  Flag,
+  Hash,
+  Lock,
+  MessageCircle,
+  Play,
+  Plus,
+  QrCode,
+  Send,
+} from 'lucide-react'
 import Link from 'next/link'
 import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -25,6 +36,7 @@ import type {
   HubSpaceView,
   HubThreadView,
 } from '@/lib/types'
+import { GameCardDialog } from './game-card-dialog'
 import { KidsLockedSpace } from './kids-locked-space'
 import { pickInitialChannel } from './space-channel'
 
@@ -688,10 +700,20 @@ function playPathFor(thread: HubThreadView): string | null {
 
 /**
  * "Jogar" (abre a página pública em nova aba) + "Copiar link" (Web Share API com
- * fallback p/ a área de transferência). A criança manda esse link para a família e
- * os amigos jogarem — sem login, só o jogo.
+ * fallback p/ a área de transferência) + "Cartão" (cartão imprimível com QR do
+ * jogo — mostrar pra família, 07/2026). A criança manda esse link para a família
+ * e os amigos jogarem — sem login, só o jogo.
  */
-function PlayLinkActions({ playUrl, title }: { playUrl: string; title: string }) {
+function PlayLinkActions({
+  playUrl,
+  title,
+  coverImageUrl = null,
+}: {
+  playUrl: string
+  title: string
+  coverImageUrl?: string | null
+}) {
+  const [cardOpen, setCardOpen] = useState(false)
   const shareOrCopy = useCallback(async () => {
     const abs =
       typeof window !== 'undefined' ? new URL(playUrl, window.location.origin).href : playUrl
@@ -731,6 +753,23 @@ function PlayLinkActions({ playUrl, title }: { playUrl: string; title: string })
       >
         <Copy className="size-4" /> Copiar link
       </button>
+      <button
+        type="button"
+        onClick={() => setCardOpen(true)}
+        aria-label={`Cartão do jogo ${title}`}
+        title="Cartão do jogo (imprimir com QR)"
+        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border-2 border-border px-3 font-bold text-sm transition-colors hover:bg-muted/60"
+      >
+        <QrCode className="size-4" />
+      </button>
+      {cardOpen ? (
+        <GameCardDialog
+          title={title}
+          coverImageUrl={coverImageUrl}
+          playUrl={playUrl}
+          onClose={() => setCardOpen(false)}
+        />
+      ) : null}
     </div>
   )
 }
@@ -770,7 +809,13 @@ function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () =>
           </p>
         </div>
       </button>
-      {playUrl ? <PlayLinkActions playUrl={playUrl} title={thread.title} /> : null}
+      {playUrl ? (
+        <PlayLinkActions
+          playUrl={playUrl}
+          title={thread.title}
+          coverImageUrl={thread.coverImageUrl ?? null}
+        />
+      ) : null}
     </article>
   )
 }

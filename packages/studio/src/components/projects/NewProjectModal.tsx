@@ -116,7 +116,7 @@ export function NewProjectModal({
             <span>
               <span className="font-medium text-sz-fg">Básico</span>
               <span className="block text-xs text-sz-fg-mute">
-                Blocos, Ponte e Código com HTML/CSS/JS no preview leve.
+                Crie com blocos e código, vendo o resultado na hora. Perfeito para começar.
               </span>
             </span>
           </label>
@@ -131,7 +131,7 @@ export function NewProjectModal({
             <span>
               <span className="font-medium text-sz-fg">Profissional</span>
               <span className="block text-xs text-sz-fg-mute">
-                TypeScript + npm + Vite num dev-server real (WebContainer).
+                Programe como os profissionais, com vários arquivos e só código (sem blocos).
               </span>
             </span>
           </label>

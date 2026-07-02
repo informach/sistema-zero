@@ -116,12 +116,22 @@ export function GalleryScreen(): JSX.Element {
       {loadError ? (
         <div className="flex flex-col items-center gap-3 py-12">
           <p className="text-base text-pin-muted">{loadError}</p>
-          <Button onClick={() => void gallery.getState().load()}>Tentar de novo</Button>
+          <Button onClick={() => void gallery.getState().load()}>{COPY.gallery.retry}</Button>
         </div>
       ) : null}
 
       {loaded && !loadError && assets.length === 0 ? (
-        <p className="py-12 text-center text-base text-pin-muted">{COPY.gallery.empty}</p>
+        // Onboarding do primeiro uso: convite grande + CTA próprio (rótulo
+        // distinto do "Criar novo" do header p/ não colidir com o getByRole).
+        <div className="flex flex-col items-center gap-4 py-12 text-center">
+          <span aria-hidden="true" className="text-5xl">
+            🎨
+          </span>
+          <p className="max-w-md text-base text-pin-muted">{COPY.gallery.empty}</p>
+          <Button variant="primary" onClick={() => setCreateOpen(true)}>
+            <span aria-hidden="true">✨</span> {COPY.gallery.emptyCta}
+          </Button>
+        </div>
       ) : null}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">

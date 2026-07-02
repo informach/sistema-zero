@@ -199,7 +199,8 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`
    e anexa `quizState` (lastScore/passed/attemptsCount/retryAvailableAt); correções/
    explicações só chegam na RESPOSTA do submit. Quiz **com `passingScore`**: reprovar
-   → **cooldown de 5 min** (`QUIZ_COOLDOWN`→429) e bloqueia o complete da aula até
+   → **cooldown de 90s** (`QUIZ_COOLDOWN`→429; era 5 min — reduzido 07/2026, lente
+   infantil: a janela dá tempo de ler a correção sem desmotivar) e bloqueia o complete da aula até
    aprovar (`QUIZ_GATE_NOT_PASSED`→409). Quiz **SEM `passingScore` = fixação**: não
    reprova (`gradeQuizAttempt` → `passed:true` ao enviar) — **sem cooldown** e o XP é
    creditado uma vez (ledger idempotente); nunca bloqueia o complete. Aula já concluída
@@ -414,7 +415,7 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   o quiz no servidor — body `{answers: {questionId: choiceIds[]}}`. Resposta:
   `{score, passed, passingScore, attemptsCount, retryAvailableAt, questions:[{questionId,
   correct, correctChoiceIds, explanation}]}` (gabarito SÓ aqui). 429 `QUIZ_COOLDOWN` no
-  retry < 5min após reprovar; 404 `QUIZ_BLOCK_NOT_FOUND` se o bloco não é quiz. O
+  retry < 90s após reprovar (`QUIZ_RETRY_COOLDOWN_MS`); 404 `QUIZ_BLOCK_NOT_FOUND` se o bloco não é quiz. O
   `POST /complete` devolve 409 `QUIZ_GATE_NOT_PASSED` se houver quiz com `passingScore`
   sem aprovação.
 - **`GET|PUT /members/courses/:slug/rating`** (aluno): classificação do curso estilo Udemy —

@@ -188,6 +188,14 @@ export function LessonPlayer({
 
   // ── Concluir aula (botão manual + auto a ~90% do vídeo) ─────────────────────
   const completedRef = useRef(lesson.completed)
+  // Festa ADIADA da auto-conclusão (07/2026): a 90% ainda tem vídeo rolando
+  // (overlay no meio seria hostil), então guardamos o delta e a celebração
+  // completa abre quando o vídeo TERMINA (onVideoEnded). Antes, quem assistia
+  // até o fim ganhava só um toast e "perdia a festa" da conclusão manual.
+  const deferredCelebrationRef = useRef<{
+    progress: CourseProgressView
+    gamification: GamificationDelta | null
+  } | null>(null)
 
   const complete = useCallback(
     async (opts: { silent?: boolean } = {}) => {
@@ -201,8 +209,9 @@ export function LessonPlayer({
         completedRef.current = true
         const gamification = res?.gamification ?? null
         if (opts.silent) {
-          // Auto-conclusão a ~90% do vídeo: só o toast (com o XP ganho) —
-          // interromper o vídeo com um overlay no meio da reprodução seria hostil.
+          // Auto-conclusão a ~90% do vídeo: toast discreto agora (com o XP) e
+          // a festa completa fica ARMADA para o fim do vídeo.
+          deferredCelebrationRef.current = { progress: course.progress, gamification }
           const xp = gamification?.xpAwarded ?? 0
           toast.success(xp > 0 ? `Aula concluída! +${xp} XP` : 'Aula concluída!')
         } else {
@@ -243,6 +252,15 @@ export function LessonPlayer({
     void complete({ silent: true })
   }, [complete])
 
+  const onVideoEnded = useCallback(() => {
+    // Fim de verdade do vídeo: se a auto-conclusão armou a festa, abre agora
+    // (uma vez). Sem conclusão (gate de quiz/estúdio pendente) não há festa.
+    const deferred = deferredCelebrationRef.current
+    if (!deferred) return
+    deferredCelebrationRef.current = null
+    setCelebration(deferred)
+  }, [])
+
   const playerContext = useMemo<LessonPlayerContextValue>(
     () => ({
       lessonId: lesson.id,
@@ -253,6 +271,7 @@ export function LessonPlayer({
       onVideoProgress,
       onVideoFlush,
       onVideoReachedThreshold,
+      onVideoEnded,
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
     }),
@@ -266,6 +285,7 @@ export function LessonPlayer({
       onVideoProgress,
       onVideoFlush,
       onVideoReachedThreshold,
+      onVideoEnded,
       router,
     ],
   )

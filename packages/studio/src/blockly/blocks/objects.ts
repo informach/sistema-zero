@@ -85,6 +85,20 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     tooltip: 'Escreve uma propriedade de um objeto.',
   },
   {
+    type: 'sz_js_index_set',
+    message0: 'definir item %1 de %2 como %3',
+    args0: [
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
+      { type: 'input_value', name: 'OBJ', check: 'JSValue' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Escreve um item por chave ou índice: obj[chave] = v ou lista[i] = v.',
+  },
+  {
     type: 'sz_val_method_on',
     message0: 'de %1 chamar método %2',
     args0: [

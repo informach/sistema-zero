@@ -31,6 +31,7 @@ import { PreviewPlayer } from './PreviewPlayer'
 import { TilemapEditor } from './TilemapEditor'
 import { TileStrip } from './TileStrip'
 import { ToolBar } from './ToolBar'
+import { useMediaQuery } from './useMediaQuery'
 import { VectorEditor } from './VectorEditor'
 import { ZoomControls } from './ZoomControls'
 
@@ -51,7 +52,34 @@ function SaveBadge(): JSX.Element {
   return <span className={`text-sm font-bold ${tone}`}>{label}</span>
 }
 
+/**
+ * Coluna de prévia + animações do personagem: à DIREITA em tela larga (layout
+ * MakeCode) e como FAIXA horizontal rolável abaixo do palco em tela estreita
+ * (tablet/celular, 07/2026 — a coluna fixa w-48 espremia o canvas).
+ */
+function SpriteSidePanel({ wide }: { wide: boolean }): JSX.Element {
+  if (wide) {
+    return (
+      <div className="flex w-48 shrink-0 flex-col gap-3 overflow-y-auto">
+        <PreviewPlayer />
+        <AnimationList />
+      </div>
+    )
+  }
+  return (
+    <div className="flex shrink-0 gap-3 overflow-x-auto">
+      <div className="w-44 shrink-0">
+        <PreviewPlayer />
+      </div>
+      <div className="min-w-56 flex-1">
+        <AnimationList />
+      </div>
+    </div>
+  )
+}
+
 function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
+  const wide = useMediaQuery('(min-width: 768px)')
   if (
     asset.kind === 'pixel-sprite' ||
     asset.kind === 'pixel-background' ||
@@ -63,14 +91,9 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
         <div className="flex min-h-0 flex-1 items-stretch gap-3">
           <ToolBar />
           <PixelCanvas />
-          {isSprite ? (
-            // Coluna direita (layout MakeCode): prévia RODANDO + animações.
-            <div className="flex w-48 shrink-0 flex-col gap-3 overflow-y-auto">
-              <PreviewPlayer />
-              <AnimationList />
-            </div>
-          ) : null}
+          {isSprite && wide ? <SpriteSidePanel wide /> : null}
         </div>
+        {isSprite && !wide ? <SpriteSidePanel wide={false} /> : null}
         {isSprite ? <FrameStrip /> : null}
         {asset.kind === 'tileset' ? <TileStrip /> : null}
         <div className="flex flex-wrap items-center justify-center gap-3">
@@ -91,13 +114,9 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
     <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 sm:p-4">
       <div className="flex min-h-0 flex-1 items-stretch gap-3">
         <VectorEditor />
-        {isVectorSprite ? (
-          <div className="flex w-48 shrink-0 flex-col gap-3 overflow-y-auto">
-            <PreviewPlayer />
-            <AnimationList />
-          </div>
-        ) : null}
+        {isVectorSprite && wide ? <SpriteSidePanel wide /> : null}
       </div>
+      {isVectorSprite && !wide ? <SpriteSidePanel wide={false} /> : null}
       {isVectorSprite ? <FrameStrip /> : null}
       {isVectorTileset ? <TileStrip /> : null}
     </div>
@@ -190,7 +209,7 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       </span>
       <IconButton
         aria-label={COPY.editor.undo}
-        title={COPY.editor.undo}
+        title={`${COPY.editor.undo} (Ctrl+Z)`}
         disabled={!canUndo}
         onClick={() => editorState.undo()}
       >
@@ -198,7 +217,7 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       </IconButton>
       <IconButton
         aria-label={COPY.editor.redo}
-        title={COPY.editor.redo}
+        title={`${COPY.editor.redo} (Ctrl+Y)`}
         disabled={!canRedo}
         onClick={() => editorState.redo()}
       >
@@ -274,6 +293,34 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
       window.removeEventListener('pagehide', flush)
       flush()
     }
+  }, [stores])
+
+  // Atalhos de desfazer/refazer (07/2026): Ctrl/Cmd+Z desfaz; Ctrl/Cmd+Shift+Z
+  // e Ctrl/Cmd+Y refazem. Ignora campos de texto (mesmo guard do VectorEditor);
+  // undo/redo são no-op sem histórico, então não precisa checar canUndo/canRedo.
+  useEffect(() => {
+    if (!stores) return
+    const editorStore = stores.editor
+    function onKeyDown(event: KeyboardEvent): void {
+      if (!(event.ctrlKey || event.metaKey)) return
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return
+      }
+      const key = event.key.toLowerCase()
+      if (key === 'z' && !event.shiftKey) {
+        event.preventDefault()
+        editorStore.getState().undo()
+      } else if ((key === 'z' && event.shiftKey) || key === 'y') {
+        event.preventDefault()
+        editorStore.getState().redo()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
   }, [stores])
 
   if (!stores) return null

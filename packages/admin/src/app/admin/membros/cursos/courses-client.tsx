@@ -394,7 +394,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
           <Field
             label="Nível do curso"
             htmlFor="clevel"
-            tooltip="Dificuldade do curso (Iniciante/Intermediário/Avançado). Conta para o NÍVEL do aluno: concluir e publicar no Mural cursos de cada dificuldade faz o aluno subir de Noob até God."
+            tooltip="Dificuldade do curso (Iniciante/Intermediário/Avançado). Conta para o NÍVEL do aluno: concluir e publicar no Mural cursos de cada dificuldade faz o aluno subir de Faísca até Lenda."
           >
             <Select
               id="clevel"

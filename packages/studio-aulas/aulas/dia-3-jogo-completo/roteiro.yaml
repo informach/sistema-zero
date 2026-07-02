@@ -2,10 +2,9 @@ meta:
   slug: dia-3-jogo-completo
   titulo: "Dia 3 — Um jogo de verdade"
   dia: 3
-  # Começa com o jogo do Dia 2 já montado (imagem 1: nave, tiros, asteroides,
-  # placar) e termina com o jogo completo (imagem 2: vidas, telas início/jogando/
-  # ganhou/perdeu, ganhar e perder).
-  projetoInicial: vazio
+  # Começa do jogo REAL do Dia 2 (imagem 1) e termina no jogo completo (imagem 2):
+  # vidas, telas início/jogando/ganhou/perdeu, ganhar e perder.
+  projetoInicial: "inicial.szproject.json"
   extensoes: [game-2d]
   cenarioAbertura: cenario-a
   cenarioMeio: cenario-b
@@ -18,21 +17,18 @@ cenas:
     tipo: apresentacao
     emocao: empolgado
     narracao: >-
-      Oi! Bem-vindo ao Dia 3, o nosso último dia juntos. O seu jogo já está demais:
-      tem nave, tem tiro, tem asteroide e tem placar. Hoje a gente vai transformar
-      ele num jogo de verdade: você vai dar vidas pra sua nave, um jeito de ganhar e
-      um jeito de perder, e as telas de começo, de vitória e de derrota. Tem
-      bastante coisa boa, então vamos com calma, por partes. Bora?
+      Oi! Bem-vindo ao Dia 3, o nosso último dia juntos. Seu jogo já tem nave, tiro,
+      asteroide e placar. Hoje a gente transforma ele num jogo de verdade: com vidas,
+      um jeito de ganhar e um de perder, e as telas de começo, vitória e derrota.
+      Vamos com calma, por partes. Bora?
 
   - id: c2-var-vs-const
     tipo: teoria
     emocao: curioso
     narracao: >-
-      Pra começar a gente precisa de duas caixinhas novas, e elas são de tipos
-      diferentes. Uma guarda as vidas da nave, um número que MUDA durante o jogo:
-      cada batida tira uma vida. A outra guarda o seu objetivo, vinte e seis
-      asteroides, um número que NÃO muda nunca. Quando o número muda, a gente chama
-      de variável. Quando fica sempre o mesmo, a gente chama de constante.
+      Duas caixinhas novas, de tipos diferentes. Uma guarda as vidas, um número que
+      MUDA no jogo: cada batida tira uma vida, então é uma variável. A outra guarda
+      o objetivo, vinte e seis asteroides, um número que NÃO muda: é uma constante.
     ilustracao:
       nome: variavel
       params: { nome: vidas }
@@ -41,43 +37,52 @@ cenas:
     tipo: pratica
     emocao: neutro
     narracao: >-
-      Bora criar as duas. Na categoria Programação, subcategoria Variáveis, pega o
-      bloco Criar variável e encaixa lá no comecinho, junto das outras caixinhas. No
-      nome escreve vidas, e no valor coloca 3, porque a nave começa com três vidas.
-      Logo abaixo, pega o bloco Criar constante, escreve alvo no nome e 26 no valor.
-      Se um dia quiser um desafio maior ou menor, é só trocar esse número.
+      Na categoria Programação, Variáveis, pega Criar variável, escreve vidas e põe o
+      valor 3. Depois Criar constante, escreve alvo e põe 26.
     acoes:
       - tipo: abrirCategoria
         categoria: "Programação"
       - tipo: pegarBloco
         bloco: sz_js_var_create
         encaixarEm: sz_frame_behavior
-        rotulo: "criar variável"
+        ref: varVidas
       - tipo: configurarCampo
         campo: NAME
         valor: vidas
+        bloco: "@varVidas"
+      - tipo: preencherSoquete
+        bloco: sz_val_number
+        emBloco: "@varVidas"
+        input: VALUE
+        campo: NUM
+        valor: 3
       - tipo: balao
-        ancora: { bloco: sz_js_var_create, campo: NAME }
-        texto: "vidas: muda no jogo (variável)"
+        ancora: { bloco: "@varVidas", campo: NAME }
+        texto: "vidas = 3 (variável)"
       - tipo: pegarBloco
         bloco: sz_js_const_create
         encaixarEm: sz_frame_behavior
-        rotulo: "criar constante"
+        ref: constAlvo
       - tipo: configurarCampo
         campo: NAME
         valor: alvo
-        bloco: sz_js_const_create
+        bloco: "@constAlvo"
+      - tipo: preencherSoquete
+        bloco: sz_val_number
+        emBloco: "@constAlvo"
+        input: VALUE
+        campo: NUM
+        valor: 26
       - tipo: balao
-        ancora: { bloco: sz_js_const_create, campo: NAME }
-        texto: "alvo: fica firme (constante)"
+        ancora: { bloco: "@constAlvo", campo: NAME }
+        texto: "alvo = 26 (constante)"
 
-  - id: c4-nave-se-machuca
+  - id: c4-colisao
     tipo: teoria
     emocao: curioso
     narracao: >-
-      Ontem você fez o TIRO destruir o asteroide. Hoje vamos fazer o contrário
-      também: quando um asteroide encostar na sua NAVE, a nave se machuca. É outra
-      colisão, parecida com a de ontem, mas agora entre a nave e o asteroide.
+      Ontem o tiro destruía o asteroide. Hoje o contrário: quando um asteroide encosta
+      na sua nave, a nave se machuca. É outra colisão, agora entre a nave e o asteroide.
     ilustracao:
       nome: colisao
       params: { a: nave, b: asteroide }
@@ -86,203 +91,286 @@ cenas:
     tipo: pratica
     emocao: neutro
     narracao: >-
-      Na categoria Jogo 2D, subcategoria Quando, pega o bloco Quando o sprite
-      encostar num do grupo, deixa o sprite como nave e o grupo como asteroides, e
-      encaixa dentro da caixa A cada quadro. Dentro dele, dois efeitos de Aparência:
-      Tremer a tela, que já vem com força 8, e Fazer o sprite piscar, que troca de
-      60 pra 90 quadros, pra nave ficar protegida um tempinho depois da batida.
+      Na Jogo 2D, Quando, pega Quando o sprite encostar num do grupo, com a nave e os
+      asteroides, dentro do loop. Lá dentro, Tremer a tela e Fazer a nave piscar.
     acoes:
       - tipo: abrirCategoria
         categoria: "Jogo 2D"
       - tipo: pegarBloco
         bloco: sz_g2d_on_sprite_group_overlap
         encaixarEm: sz_g2d_update_each_frame
-        rotulo: "quando a nave encostar"
+        ref: colNave
       - tipo: balao
-        ancora: { bloco: sz_g2d_on_sprite_group_overlap }
+        ancora: { bloco: "@colNave" }
         texto: "asteroide encosta na nave = dano"
       - tipo: pegarBloco
         bloco: sz_g2d_shake
-        encaixarEm: sz_g2d_on_sprite_group_overlap
-        rotulo: "tremer a tela"
-      - tipo: balao
-        ancora: { bloco: sz_g2d_shake }
-        texto: "a tela treme na batida"
+        encaixarEm: "@colNave"
       - tipo: pegarBloco
         bloco: sz_g2d_blink
-        encaixarEm: sz_g2d_on_sprite_group_overlap
-        rotulo: "piscar"
+        encaixarEm: "@colNave"
       - tipo: balao
-        ancora: { bloco: sz_g2d_blink }
+        ancora: { bloco: sz_g2d_blink, campo: SPRITE }
         texto: "a nave pisca e fica protegida"
 
   - id: c6-perde-vida-e-coracoes
     tipo: pratica
     emocao: comemorando
     narracao: >-
-      E a nave perde uma vida. Na Programação, subcategoria Variáveis, pega Somar em
-      variável. Ele vem com 1, mas a gente quer TIRAR uma vida, então troca por menos
-      1, e no nome escreve vidas. Somar menos 1 é o mesmo que tirar 1. Pra fechar,
-      na Jogo 2D, Placar e HUD, pega Desenhar vidas em corações, lá embaixo perto do
-      placar, e liga a contagem na variável vidas. Olha os seus coraçõezinhos!
+      A nave perde uma vida: pega Somar em variável, troca o 1 por menos 1 e escreve
+      vidas. E mostra as vidas em corações, ligando a contagem na variável vidas.
     acoes:
       - tipo: abrirCategoria
         categoria: "Programação"
       - tipo: pegarBloco
         bloco: sz_js_var_increment
-        encaixarEm: sz_g2d_on_sprite_group_overlap
-        rotulo: "somar -1 em vidas"
+        encaixarEm: "@colNave"
+        ref: perdeVida
+      - tipo: configurarCampo
+        campo: DELTA
+        valor: -1
+        bloco: "@perdeVida"
+      - tipo: configurarCampo
+        campo: NAME
+        valor: vidas
+        bloco: "@perdeVida"
       - tipo: balao
-        ancora: { bloco: sz_js_var_increment }
+        ancora: { bloco: "@perdeVida" }
         texto: "cada batida: -1 vida"
       - tipo: abrirCategoria
         categoria: "Jogo 2D"
       - tipo: pegarBloco
         bloco: sz_g2d_draw_hearts
         encaixarEm: sz_g2d_update_each_frame
-        rotulo: "desenhar corações"
+        ref: coracoes
+      - tipo: preencherSoquete
+        bloco: sz_val_variable
+        emBloco: "@coracoes"
+        input: COUNT
+        campo: NAME
+        valor: vidas
       - tipo: balao
-        ancora: { bloco: sz_g2d_draw_hearts }
-        texto: "as vidas viram corações na tela"
-      - tipo: zoom
-        nivel: ajustar
-      - tipo: testar
-        segundos: 4
+        ancora: { bloco: "@coracoes" }
+        texto: "as vidas viram corações"
 
   - id: c7-o-que-e-tela
     tipo: teoria
     emocao: curioso
     narracao: >-
-      Agora a parte mais importante do dia, e eu vou bem devagar. Um jogo de verdade
-      tem vários lugares: a tela de começo, a hora em que você está jogando, a tela
-      de quando ganha e a de quando perde. A gente chama cada um desses lugares de
-      tela. E a gente usa o bloco Se pra perguntar: a tela atual é qual? Se for a de
-      jogar, roda o jogo. Se for a de vitória, mostra o Você ganhou.
+      Agora a parte mais importante, bem devagar. Um jogo tem vários lugares: começo,
+      jogando, vitória e derrota. A gente chama cada um de tela, e usa o Se pra
+      perguntar: a tela atual é qual? Se for jogando, roda o jogo.
     ilustracao:
       nome: condicional
 
-  - id: c8-telas-e-o-se
+  - id: c8-envolver-no-se
     tipo: pratica
     emocao: calmo
     narracao: >-
-      Lá em cima, antes da caixa A cada quadro, na Jogo 2D, Telas e cenas, pega Ir
-      para a tela e escolhe início no menuzinho, pro jogo abrir na tela de começo.
-      Depois, na Programação, Lógica e Se, pega um Se, e no espaço da pergunta
-      encaixa o bloco a tela atual é, de Telas e cenas, marcado em jogando. Agora
-      arrasta TODO o jogo que você montou pra dentro desse Se. Vai com calma: é como
-      guardar o jogo inteiro numa caixa que só funciona quando a tela é jogando.
+      Lá em cima, Ir para a tela início. Depois pega um Se e envolve TODO o jogo dentro
+      dele, e a pergunta vai ser: a tela atual é jogando? É como guardar o jogo inteiro
+      numa caixa que só funciona quando a tela é jogando.
     acoes:
       - tipo: abrirCategoria
         categoria: "Jogo 2D"
       - tipo: pegarBloco
         bloco: sz_g2d_set_scene
         encaixarEm: sz_frame_behavior
-        rotulo: "ir para a tela início"
+        ref: irInicio
+      - tipo: configurarCampo
+        campo: SCENE
+        valor: inicio
+        bloco: "@irInicio"
       - tipo: balao
-        ancora: { bloco: sz_g2d_set_scene }
-        texto: "o jogo abre na tela de início"
-      - tipo: abrirCategoria
-        categoria: "Programação"
-      - tipo: pegarBloco
-        bloco: sz_js_if_else
-        encaixarEm: sz_g2d_update_each_frame
-        rotulo: "Se"
+        ancora: { bloco: "@irInicio", campo: SCENE }
+        texto: "o jogo abre no início"
+      - tipo: envolver
+        container: sz_js_if_else
+        corpo: THEN
+        deDentroDe: sz_g2d_update_each_frame
+        inputPai: BODY
+        ref: seJogando
+      - tipo: preencherSoquete
+        bloco: sz_g2d_scene_is
+        emBloco: "@seJogando"
+        input: COND
+        campo: SCENE
+        valor: jogando
       - tipo: balao
-        ancora: { bloco: sz_js_if_else }
-        texto: "o Se só faz o de dentro se a resposta for sim"
+        ancora: { bloco: "@seJogando" }
+        texto: "o jogo todo, só quando a tela é jogando"
+      - tipo: zoom
+        nivel: ajustar
 
   - id: c9-ganhar-e-perder
     tipo: pratica
     emocao: neutro
     narracao: >-
-      Ainda dentro do jogando, no finalzinho, duas perguntas decidem o fim. A
-      vitória: pega outro Se e, com blocos de Valores, monta se pontos for maior ou
-      igual a alvo, e dentro escolhe Ir para a tela ganhou. A derrota: mais um Se,
-      montando se vidas for menor ou igual a zero, e dentro Ir para a tela perdeu.
-      Chegou nos vinte e seis, ganhou. Acabaram as vidas, perdeu.
+      Ainda dentro do jogando, duas perguntas decidem o fim. Vitória: se pontos for
+      maior ou igual a alvo, Ir para a tela ganhou. Derrota: se vidas for menor ou
+      igual a zero, Ir para a tela perdeu.
+    acoes:
+      - tipo: abrirCategoria
+        categoria: "Programação"
+      - tipo: pegarBloco
+        bloco: sz_js_if_else
+        encaixarEm: "@seJogando"
+        ref: seVitoria
+      - tipo: preencherSoquete
+        bloco: sz_val_compare
+        emBloco: "@seVitoria"
+        input: COND
+        campo: OP
+        valor: ">="
+        ref: cmpVit
+      - tipo: preencherSoquete
+        bloco: sz_val_variable
+        emBloco: "@cmpVit"
+        input: LEFT
+        campo: NAME
+        valor: pontos
+      - tipo: preencherSoquete
+        bloco: sz_val_variable
+        emBloco: "@cmpVit"
+        input: RIGHT
+        campo: NAME
+        valor: alvo
+      - tipo: pegarBloco
+        bloco: sz_g2d_set_scene
+        encaixarEm: "@seVitoria"
+        ref: irGanhou
+      - tipo: configurarCampo
+        campo: SCENE
+        valor: ganhou
+        bloco: "@irGanhou"
+      - tipo: balao
+        ancora: { bloco: "@cmpVit" }
+        texto: "se pontos ≥ alvo, você ganhou"
+      - tipo: pegarBloco
+        bloco: sz_js_if_else
+        encaixarEm: "@seJogando"
+        ref: seDerrota
+      - tipo: preencherSoquete
+        bloco: sz_val_compare
+        emBloco: "@seDerrota"
+        input: COND
+        campo: OP
+        valor: "<="
+        ref: cmpDer
+      - tipo: preencherSoquete
+        bloco: sz_val_variable
+        emBloco: "@cmpDer"
+        input: LEFT
+        campo: NAME
+        valor: vidas
+      - tipo: preencherSoquete
+        bloco: sz_val_number
+        emBloco: "@cmpDer"
+        input: RIGHT
+        campo: NUM
+        valor: 0
+      - tipo: pegarBloco
+        bloco: sz_g2d_set_scene
+        encaixarEm: "@seDerrota"
+        ref: irPerdeu
+      - tipo: configurarCampo
+        campo: SCENE
+        valor: perdeu
+        bloco: "@irPerdeu"
+      - tipo: balao
+        ancora: { bloco: "@cmpDer" }
+        texto: "se vidas ≤ 0, você perdeu"
+      - tipo: zoom
+        nivel: ajustar
+
+  - id: c10-tela-inicio
+    tipo: pratica
+    emocao: neutro
+    narracao: >-
+      Falta o que cada tela mostra. Ao lado do Se jogando, um Se pra tela de início,
+      com o bloco Mostrar tela e o título Nave contra Asteroides.
     acoes:
       - tipo: abrirCategoria
         categoria: "Programação"
       - tipo: pegarBloco
         bloco: sz_js_if_else
         encaixarEm: sz_g2d_update_each_frame
-        rotulo: "Se (vitória)"
-      - tipo: balao
-        ancora: { bloco: sz_js_if_else }
-        texto: "se pontos ≥ alvo → ganhou"
-
-  - id: c10-as-tres-telas
-    tipo: pratica
-    emocao: neutro
-    narracao: >-
-      Agora as três telas que a gente nomeou. Ao lado do Se a tela atual é jogando,
-      monta três Se irmãos, cada um com o a tela atual é e, dentro, o bloco Mostrar
-      tela, de Telas e cenas. No início, título Nave contra Asteroides e dica Aperte
-      Enter para começar. No ganhou, Você ganhou. No perdeu, Você perdeu. Em todas,
-      você escolhe as cores e os textos. Capricha, porque é a cara do seu jogo.
-    acoes:
-      - tipo: abrirCategoria
-        categoria: "Jogo 2D"
+        ref: seTelaInicio
+      - tipo: preencherSoquete
+        bloco: sz_g2d_scene_is
+        emBloco: "@seTelaInicio"
+        input: COND
+        campo: SCENE
+        valor: inicio
       - tipo: pegarBloco
         bloco: sz_g2d_show_screen
-        encaixarEm: sz_g2d_update_each_frame
-        rotulo: "mostrar tela"
+        encaixarEm: "@seTelaInicio"
+        ref: telaInicio
+      - tipo: preencherSoquete
+        bloco: sz_val_text
+        emBloco: "@telaInicio"
+        input: TITLE
+        campo: TEXT
+        valor: "Nave contra Asteroides"
       - tipo: balao
-        ancora: { bloco: sz_g2d_show_screen }
-        texto: "título, subtítulo e dica de cada tela"
+        ancora: { bloco: "@telaInicio" }
+        texto: "a tela de começo do jogo"
+      - tipo: zoom
+        nivel: ajustar
 
   - id: c11-enter-troca-tela
     tipo: pratica
     emocao: neutro
     narracao: >-
-      As telas aparecem, mas falta fazer elas trocarem no Enter. Na Jogo 2D, Quando,
-      pega Quando apertar a tecla e escolhe Enter. Ele fica solto, fora do loop.
-      Dentro, três decisões: se a tela é início, Ir para a tela jogando; se é perdeu,
-      Reiniciar o jogo; se é ganhou, Reiniciar de novo. Pronto, agora o Enter leva
-      você de uma tela pra outra, e o seu jogo tem começo, meio e fim.
+      Por fim, o Enter troca as telas. Na Jogo 2D, Quando, pega Quando apertar a tecla
+      e escolhe Enter, solto fora do loop. Na tela de início, o Enter começa o jogo.
     acoes:
       - tipo: abrirCategoria
         categoria: "Jogo 2D"
       - tipo: pegarBloco
         bloco: sz_g2d_on_key
         encaixarEm: sz_frame_behavior
-        rotulo: "quando apertar Enter"
-      - tipo: balao
-        ancora: { bloco: sz_g2d_on_key }
-        texto: "o Enter troca as telas"
+        ref: aoEnter
+      - tipo: configurarCampo
+        campo: KEY
+        valor: Enter
+        bloco: "@aoEnter"
       - tipo: pegarBloco
-        bloco: sz_g2d_restart
-        encaixarEm: sz_g2d_on_key
-        rotulo: "reiniciar o jogo"
+        bloco: sz_js_if_else
+        encaixarEm: "@aoEnter"
+        ref: seEnterInicio
+      - tipo: preencherSoquete
+        bloco: sz_g2d_scene_is
+        emBloco: "@seEnterInicio"
+        input: COND
+        campo: SCENE
+        valor: inicio
+      - tipo: pegarBloco
+        bloco: sz_g2d_set_scene
+        encaixarEm: "@seEnterInicio"
+        ref: enterJogar
+      - tipo: configurarCampo
+        campo: SCENE
+        valor: jogando
+        bloco: "@enterJogar"
       - tipo: balao
-        ancora: { bloco: sz_g2d_restart }
-        texto: "ganhou ou perdeu? Enter recomeça"
+        ancora: { bloco: "@aoEnter", campo: KEY }
+        texto: "o Enter começa o jogo"
+      - tipo: zoom
+        nivel: ajustar
 
   - id: c12-teste
     tipo: teste
     emocao: comemorando
     narracao: >-
-      Agora testa o jogo inteiro, como se fosse outra pessoa jogando. Aperta jogar,
-      apareceu a tela de início? Aperta Enter, atira nos asteroides, e deixa um
-      bater na nave de propósito pra ver as vidas caírem nos corações. Joga até
-      ganhar ou perder e veja a tela certa aparecer. Se algo ficar estranho, não tem
-      problema nenhum, é assim mesmo. Arrumar o que não funcionou também é criar.
+      Agora testa do começo ao fim: aperta jogar, aparece a tela de início, Enter,
+      atira, deixa um asteroide bater pra ver as vidas caírem, e joga até ganhar ou
+      perder. Se algo ficar estranho, é assim mesmo. Arrumar também é criar.
 
-  - id: c13-compartilhar
-    tipo: recapitulacao
-    emocao: comemorando
-    narracao: >-
-      E agora a melhor parte. Lá em cima tem um botão escrito Compartilhar. Clica
-      nele: ele publica o seu jogo e gera um link só dele. Com esse link você manda o
-      jogo pros seus amigos, primos e avós, e eles jogam no computador ou no celular.
-      Imagina mandar pra alguém e a pessoa dizer que jogou o jogo que VOCÊ fez.
-
-  - id: c14-fecho
+  - id: c13-fecho
     tipo: fecho
     emocao: comemorando
     narracao: >-
-      Você conseguiu. Em três dias você criou um jogo de verdade, do zero até o fim,
-      com a sua nave, os seus asteroides, o seu placar, as suas telas e a sua cara.
-      Isso não é sorte nem dom: é o que acontece quando alguém segue os passos com
-      paciência e não desiste no meio. E foi exatamente o que você fez. Criar é ainda
-      mais divertido do que jogar. Comemora, mostra pra todo mundo, e até a próxima!
+      Você conseguiu. Em três dias você criou um jogo de verdade, do zero ao fim, com
+      a sua cara. Isso não é sorte nem dom: é seguir os passos com paciência e não
+      desistir. Criar é ainda melhor que jogar. Comemora e mostra pra todo mundo. Até!

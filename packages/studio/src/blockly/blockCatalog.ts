@@ -53,8 +53,12 @@ const LABEL_OVERRIDES: Record<string, string> = {
   sz_val_object_op: 'Chaves, valores ou pares de um objeto',
   // Objetos — "item %1 de %2" (acesso por chave/índice).
   sz_val_index_get: 'Item de uma lista ou objeto (por índice/chave)',
+  // Objetos — "definir item %1 de %2 como %3" (escrita por chave/índice).
+  sz_js_index_set: 'Guardar um item numa lista ou objeto (por índice/chave)',
   // Imagem — "imagem %1" (o %1 é o seletor de imagem do projeto).
   sz_val_image: 'Imagem do projeto',
+  // Imagem — "quando a imagem %1 carregar, fazer …".
+  sz_js_image_onload: 'Quando a imagem terminar de carregar',
 }
 
 /** Texto do bloco sem os placeholders `%N` — vira o rótulo do picker. */

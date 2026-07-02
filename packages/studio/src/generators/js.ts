@@ -68,6 +68,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'g3d:forEachInSwarm':
     case 'funcDecl':
     case 'forEach':
+    case 'imageOnLoad':
     case 'setTimeout':
     case 'setInterval':
     case 'setTimeoutSeconds':
@@ -222,6 +223,7 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     case 'g3d:forEachInSwarm':
     case 'forEach':
+    case 'imageOnLoad':
     case 'setTimeout':
     case 'setInterval':
     case 'setTimeoutSeconds':
@@ -1444,6 +1446,18 @@ function compileStatementCode(
     case 'memberCall': {
       const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.method)}(${args});`
+    }
+    case 'indexSet':
+      return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}[${compileExpr(stmt.index, 0, identifiers, recAt(base))}] = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
+    case 'imageOnLoad': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      return `${pad}${target}.onload = () => {\n${body}\n${pad}};`
     }
     case 'return':
       return stmt.value === undefined
@@ -2843,6 +2857,15 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'memberCall':
       collectExprIdentifiers(stmt.object, names)
       for (const arg of stmt.args) collectExprIdentifiers(arg, names)
+      return
+    case 'indexSet':
+      collectExprIdentifiers(stmt.object, names)
+      collectExprIdentifiers(stmt.index, names)
+      collectExprIdentifiers(stmt.value, names)
+      return
+    case 'imageOnLoad':
+      collectExprIdentifiers(stmt.target, names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)

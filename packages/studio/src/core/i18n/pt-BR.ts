@@ -45,14 +45,14 @@ export const ptBR: Record<string, string> = {
   'extensions.installed': 'Instalada',
   'extensions.available': 'Disponível',
   'extensions.loadExample': 'Carregar exemplo',
-  'extensions.permissions': 'Permissões',
+  'extensions.permissions': 'O que ela pode usar',
   'extensions.removeWarning':
     'Existem {count} blocos desta extensão em uso. Removê-la apagará esses blocos.',
   'extensions.confirmRemove': 'Confirmar remoção',
   'extensions.cancel': 'Cancelar',
-  'extensions.empty': 'Nenhuma extensão instalada neste projeto.',
+  'extensions.empty': 'Este projeto ainda não tem extensões. Instale uma para ganhar blocos novos!',
   'extensions.officialOnly':
-    'Sistema Zero Studio só carrega extensões oficiais, revisadas manualmente pela equipe do produto.',
+    'Aqui só entram extensões oficiais do Sistema Zero, revisadas com carinho pela nossa equipe.',
 
   'console.clear': 'Limpar',
   'console.empty': 'Sem mensagens. Use console.log para registrar algo.',
@@ -60,8 +60,8 @@ export const ptBR: Record<string, string> = {
   'console.messages': '{count} mensagens',
 
   'ai.placeholder':
-    'Painel de IA está em modo de demonstração. A integração real chegará em fase futura.',
-  'ai.sendDisabled': 'Disponível em fase futura',
+    'O ajudante de IA ainda está em construção. Logo ele chega para criar junto com você!',
+  'ai.sendDisabled': 'Chegando em breve',
   'ai.title': 'Assistente IA (prévia)',
 
   'project.newName': 'Meu projeto',
@@ -97,11 +97,22 @@ export const ptBR: Record<string, string> = {
   'projects.importWarn.extensions':
     '{count} extensão(ões) foram ignoradas (pedem permissões não liberadas).',
   'projects.importWarn.blocks':
-    'Os blocos não foram carregados porque o projeto usa um recurso que esta versão não reconhece ({reason}). O código foi mantido.',
+    'Os blocos deste projeto usam uma novidade que esta versão ainda não conhece ({reason}), então eles não apareceram. O código continua guardado.',
   'projects.importWarn.program':
     'Parte da programação salva não pôde ser lida e o projeto abriu vazio.',
   'projects.importWarn.proDowngrade':
     'Projeto profissional foi aberto como clássico (a estrutura de pastas não pôde ser lida).',
+
+  'kits.title': 'Que jogo você quer criar?',
+  'kits.subtitle': 'Escolha um jogo pronto para abrir, jogar e mexer do seu jeito.',
+  'kits.show': 'Ver os jogos prontos',
+  'kits.hide': 'Esconder os jogos prontos',
+  'kits.scratch': 'Quero começar do zero',
+  'kits.creating': 'Criando…',
+  'kits.error': 'Não consegui criar o projeto agora. Tente de novo.',
+  'kits.group.game2d': 'Jogos 2D',
+  'kits.group.game3d': 'Jogos 3D',
+  'kits.group.classic': 'Clássicos (só com blocos básicos)',
 
   'editor.fontSize.increase': 'Aumentar fonte do editor',
   'editor.fontSize.decrease': 'Diminuir fonte do editor',
@@ -109,7 +120,7 @@ export const ptBR: Record<string, string> = {
   'editor.format': 'Formatar código',
 
   'bridge.advancedNotice':
-    'Este código não é representável em blocos e foi marcado como Código avançado. Você pode continuar editando no editor de código.',
+    'Esse pedaço do código ainda não tem um bloco igual a ele, então virou um cartão de "Código avançado". Ele continua funcionando, e você pode editar no editor de código.',
 
   'code.advancedBlock': 'Código avançado',
 
@@ -129,7 +140,7 @@ export const ptBR: Record<string, string> = {
 
   'convert.title': 'Transformar em projeto profissional?',
   'convert.body':
-    'O projeto profissional usa um ambiente de verdade (TypeScript + npm + Vite), com vários arquivos e pastas. Você sai dos blocos e passa a editar só no Código. Esta ação não pode ser desfeita.',
+    'No projeto profissional você programa como os profissionais de verdade: vários arquivos e pastas, editando tudo pelo Código. Os blocos ficam para trás. Esta ação não pode ser desfeita.',
   'convert.legacyTitle': 'Este projeto precisa virar profissional',
   'convert.legacyBody':
     'Este projeto tem {count} arquivo(s) além dos três básicos, que o modo Blocos e Ponte não edita. Quer transformá-lo num projeto profissional (Vite) para trabalhar com todos eles? Esta ação não pode ser desfeita.',
