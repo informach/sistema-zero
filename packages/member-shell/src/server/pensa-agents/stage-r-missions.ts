@@ -10,11 +10,13 @@ import { pensaSafetyClause } from './safety'
  * blocos) — nunca prompts de IA (decisão de produto: a criança constrói; o Pensa
  * aponta o caminho).
  *
- * As `studioHints.categories` saem de um catálogo CURADO com os nomes REAIS da
- * toolbox do Estúdio (snapshot manual de blocks.ts/toolbox.ts — o member-shell não
- * importa os internals do studio no servidor). `studioHints.blocks` são DESCRIÇÕES
- * em linguagem natural ("o bloco de pular quando estiver no chão"), nunca nomes
- * exatos inventados — a criança acha pelo tema da categoria + busca da toolbox.
+ * `studioHints.categories` e os labels de bloco saem de catálogos CURADOS com os
+ * nomes REAIS da toolbox (snapshots manuais de blocks.ts/toolbox.ts do game-2d —
+ * o member-shell NÃO importa os internals do studio no servidor: o BLOCK_CATALOG
+ * público puxa blockly/core). Os passos citam os labels EXATOS entre aspas e o
+ * plano segue a arquitetura real de um jogo canvas (setup fora do loop → eventos →
+ * UM "A cada quadro"). Projeto semeado pelo Pensa nasce SEM extensão instalada —
+ * a 1ª missão SEMPRE ensina a instalar a Jogo 2D (decisão: ensinar, não pré-instalar).
  */
 
 /** Categorias/subcategorias REAIS da toolbox (snapshot 07/2026 — studio v0.x). */
@@ -46,6 +48,125 @@ export const STUDIO_CATEGORY_HINTS = [
   'Jogo 2D › 🦍 Kit gorilas',
   'Jogo 2D › 🤸 Kit equilibrista',
   'Jogo 2D › 🎈 Kit balão',
+] as const
+
+/**
+ * Blocos-chave REAIS por categoria — labels EXATOS do `message0` de
+ * `packages/studio/src/official-extensions/game-2d/blocks.ts` (snapshot manual
+ * 07/2026; mudou label lá, atualize aqui). O prompt cita esses labels entre
+ * aspas para os passos apontarem blocos que EXISTEM na paleta.
+ * ⚠️ "Fazer o sprite pular no chão" é o pulo GENÉRICO (Movimento);
+ * "Controlar o dinossauro" (Kit dino) já embute pulo+gravidade — não confundir.
+ */
+export const STUDIO_BLOCK_HINTS: ReadonlyArray<readonly [string, readonly string[]]> = [
+  [
+    'Jogo 2D › 🎮 Sprites',
+    [
+      'Criar sprite',
+      'Criar sprite com imagem',
+      'Desenhar o sprite',
+      'Trocar imagem do sprite',
+      'Mudar a posição do sprite',
+      'Mudar a velocidade do sprite',
+    ],
+  ],
+  [
+    'Jogo 2D › 🕹️ Movimento',
+    [
+      'Mover o sprite estilo plataforma',
+      'Mover sprite em 4 direções com setas',
+      'Fazer o sprite pular no chão',
+      'Botar a gravidade do mundo',
+      'Aplicar velocidade e gravidade ao sprite',
+      'Quicar o sprite nas bordas da tela',
+      'Manter o sprite dentro da tela',
+      'Controlar o sprite como nave',
+      'Fazer sprite seguir o ponteiro',
+    ],
+  ],
+  [
+    'Jogo 2D › ⏱️ Quando…',
+    [
+      'A cada quadro do jogo, fazer',
+      'Quando apertar a tecla',
+      'Quando clicar/tocar',
+      'Quando o sprite encostar no sprite',
+      'Quando o sprite encostar num do grupo',
+      'A cada … segundos fazer',
+    ],
+  ],
+  ['Jogo 2D › ❓ Perguntas', ['a tecla está apertada?', 'o sprite está encostando no sprite?']],
+  [
+    'Jogo 2D › 🪐 Muitos (grupos)',
+    [
+      'Criar grupo de sprites',
+      'Criar tiro no grupo',
+      'Atualizar (mover) o grupo',
+      'Desenhar o grupo',
+      'Para cada sprite do grupo',
+      'quantos sprites tem no grupo',
+      'Tirar do grupo quem sair da tela',
+    ],
+  ],
+  [
+    'Jogo 2D › ✨ Aparência',
+    [
+      'Preparar o jogo em tela cheia',
+      'Fazer a tela preencher N% da janela',
+      'Limpar a tela',
+      'Mostrar fim de jogo com o texto',
+    ],
+  ],
+  [
+    'Jogo 2D › 🏆 Placar e HUD',
+    ['Criar pontuação', 'Mostrar placar', 'Desenhar vidas (corações)', 'Barra de progresso'],
+  ],
+  [
+    'Jogo 2D › 🎬 Telas e cenas',
+    ['Ir para a tela', 'a tela atual é …?', 'Mostrar tela com título', 'Reiniciar o jogo'],
+  ],
+  ['Jogo 2D › 🔊 Som', ['Tocar efeito', 'Tocar música de fundo', 'Parar a música de fundo']],
+  ['Jogo 2D › 🎥 Câmera', ['Fazer a câmera seguir o sprite']],
+  ['Jogo 2D › 🗺️ Mapa', ['Desenhar o mapa', 'Impedir o sprite de atravessar os tiles sólidos']],
+  [
+    'Jogo 2D › 🦕 Kit dino',
+    [
+      'Criar dinossauro',
+      'Controlar o dinossauro',
+      'No grupo criar obstáculo',
+      'No grupo criar um ovo (bônus)',
+      'Desenhar fundo de floresta',
+      'Tocar som de pulo',
+    ],
+  ],
+  [
+    'Jogo 2D › 🚀 Kit espaço',
+    [
+      'Criar nave',
+      'No grupo criar um asteroide',
+      'Atirar do sprite para a frente',
+      'Desenhar fundo de estrelas',
+      'Soltar explosão no sprite',
+    ],
+  ],
+  [
+    'Jogo 2D › 🦍 Kit gorilas',
+    [
+      'Criar cidade de prédios',
+      'Pôr o gorila na cidade',
+      'Mirar arrastando a partir do gorila',
+      'Jogar a banana do gorila',
+      'O robô do gorila joga',
+    ],
+  ],
+  [
+    'Jogo 2D › 🤸 Kit equilibrista',
+    ['Criar equilibrista', 'Atualizar o equilibrista', 'o equilibrista caiu?'],
+  ],
+  [
+    'Jogo 2D › 🎈 Kit balão',
+    ['Criar balão', 'Atualizar o balão', 'combustível do balão', 'o balão bateu?'],
+  ],
 ] as const
 
 const MissionSchema = z.object({
@@ -113,13 +234,17 @@ export interface MissionPlanTask {
   mission: PensaMission
 }
 
-function missionsSystem(input: {
+/** Exportada só p/ os testes de prompt (tests/pensa-missions.test.ts). */
+export function missionsSystem(input: {
   mode: 'kids' | 'adult'
   cycleNumber: number
   buildEnv?: 'embedded' | 'studio' | 'external' | null
 }): string {
   const external = input.buildEnv === 'external'
   const catalog = STUDIO_CATEGORY_HINTS.map((c) => `- ${c}`).join('\n')
+  const blockCatalog = STUDIO_BLOCK_HINTS.map(
+    ([category, labels]) => `- ${category}: ${labels.map((label) => `"${label}"`).join(' · ')}`,
+  ).join('\n')
   const count = input.cycleNumber <= 1 ? 'entre 5 e 8 missões' : 'entre 3 e 5 missões'
   return [
     pensaSafetyClause(input.mode),
@@ -131,19 +256,32 @@ function missionsSystem(input: {
 - summary: 1 frase do que a missão entrega.
 - taskType: um de setup|gameplay|screens|polish.
 - story: 1 frase de contexto divertida NO MUNDO DESTE jogo — cite o personagem/tema do plano ("O Dino Espacial não pode tropeçar nos meteoros!"). Nunca frase genérica que serviria pra qualquer jogo.
-- steps: 3 a 6 passos imperativos CURTOS e numerados na ordem de execução, cada um com hint (dica opcional de onde achar/como testar; hint pode ser string vazia). O primeiro passo costuma ser abrir o projeto${external ? ' no editor' : ' no Estúdio'}; o último costuma ser rodar e testar.${
+- steps: 3 a 7 passos imperativos CURTOS e numerados na ordem de execução, cada um com hint (dica opcional de onde achar/como testar; hint pode ser string vazia). O primeiro passo costuma ser abrir o projeto${external ? ' no editor' : ' no Estúdio'}; o último costuma ser rodar e testar.${
       external
         ? `
 - categories: sempre [] (lista vazia — não há Estúdio neste projeto).
 - blocks: sempre [] (lista vazia).`
         : `
-- categories: 1 a 3 categorias do CATÁLOGO abaixo (nomes EXATOS — não invente categoria).
-- blocks: 1 a 4 DESCRIÇÕES em linguagem natural dos blocos que ajudam ("o bloco de pular quando estiver no chão", "o bloco quando a tecla for pressionada"). NÃO invente nomes exatos de bloco; descreva o que o bloco faz. Quando um passo usa um bloco, o hint dele diz em qual categoria procurar (ex.: "procure em Jogo 2D › 🕹️ Movimento").`
+- categories: 1 a 3 categorias do CATÁLOGO DE CATEGORIAS abaixo (nomes EXATOS — não invente categoria).
+- blocks: 1 a 4 blocos que ajudam, citando o label EXATO do CATÁLOGO DE BLOCOS abaixo, entre aspas (ex.: "Controlar o dinossauro", "Quando apertar a tecla"). Se precisar de um bloco que não está no catálogo, descreva-o em linguagem natural — NUNCA invente um label. Quando um passo usa um bloco, o hint diz a categoria onde achar (ex.: "procure em Jogo 2D › 🕹️ Movimento").`
     }
 - doneWhen: 1 a 3 critérios OBSERVÁVEIS que a criança consegue checar jogando, usando os elementos NOMEADOS do jogo ("O Dino Espacial pula quando aperto espaço") — nunca "o personagem".`,
+    external
+      ? ''
+      : `ARQUITETURA REAL DE UM JOGO NO ESTÚDIO (siga esta ordem no plano E dentro dos passos):
+- O código do jogo vive no bloco ⚙️ Comportamento (categoria 🗂️ Áreas do projeto) — só o que está DENTRO dele roda.
+- SETUP no topo, FORA do loop: "Preparar o jogo em tela cheia" (ou "Fazer a tela preencher N% da janela"), criar os sprites e grupos, "Criar pontuação" e "Ir para a tela" com o nome "inicio".
+- EVENTOS soltos: "Quando apertar a tecla" para começar o jogo e para as ações do jogador.
+- UM ÚNICO loop "A cada quadro do jogo, fazer", nesta ordem interna: "Limpar a tela" → desenhar o cenário → decidir pela cena atual ("a tela atual é …?") → controlar e desenhar o herói → criar obstáculos/itens com "A cada … segundos fazer" → "Atualizar (mover) o grupo" e "Desenhar o grupo" → tratar as colisões ("Quando o sprite encostar num do grupo") → placar/HUD por último ("Mostrar placar").
+- Cada passo diz ONDE o bloco entra: no topo (fora do loop), dentro do "A cada quadro do jogo, fazer", ou como evento solto.`,
     `REGRAS DO PLANO:
-- Gere ${count}, na ordem de construção.
-- A PRIMEIRA missão é sempre "Monte o palco" (criar/abrir o projeto${external ? ' no editor' : ' no Estúdio'}, fundo e o personagem principal aparecendo na tela).
+- Gere ${count}, na ordem de construção.${
+      external
+        ? `
+- A PRIMEIRA missão é sempre "Monte o palco" (criar/abrir o projeto no editor, fundo e o personagem principal aparecendo na tela).`
+        : `
+- A PRIMEIRA missão é sempre "Monte o palco" e COMEÇA instalando a extensão: passo com o caminho exato "abra o menu ⋯ (Mais opções) → Extensões → no cartão Jogo 2D, aperte Instalar" (sem ela a categoria Jogo 2D não existe na paleta; o hint desse passo avisa: se a categoria Jogo 2D já aparecer, pode pular). Se o plano pedir um jogo 3D, a extensão é a Jogo 3D. Depois vêm os passos de preparar a tela e fazer o personagem principal aparecer.`
+    }
 - A ÚLTIMA missão é sempre "Toque final" (tela de título com o nome do jogo, usando as cores da paleta do jogo).
 - Cada missão cabe numa sessão de 15 a 30 minutos de uma criança. Uma mecânica por missão.
 - Baseie-se SOMENTE no plano fornecido (não invente mecânica nova).
@@ -152,14 +290,19 @@ function missionsSystem(input: {
       ? ''
       : `CATÁLOGO DE CATEGORIAS DO ESTÚDIO (use nomes EXATOS):\n${catalog}
 
-ESCOLHA DO KIT: se a mecânica principal bate com um Kit, as primeiras missões devem apontar a categoria do Kit — correr e pular obstáculos → 🦕 Kit dino; nave que atira → 🚀 Kit espaço; mirar e atirar por turnos → 🦍 Kit gorilas; esticar ponte pra atravessar → 🤸 Kit equilibrista; subir desviando → 🎈 Kit balão. Sem Kit compatível, use as subcategorias genéricas de Jogo 2D.`,
+CATÁLOGO DE BLOCOS DO ESTÚDIO (labels EXATOS por categoria — cite entre aspas):\n${blockCatalog}
+
+ESCOLHA DO KIT: se a mecânica principal bate com um Kit, use os blocos DELE nas primeiras missões — correr e pular obstáculos → 🦕 Kit dino ("Criar dinossauro", "Controlar o dinossauro", "No grupo criar obstáculo", "Desenhar fundo de floresta"); nave que atira → 🚀 Kit espaço ("Criar nave", "No grupo criar um asteroide", "Atirar do sprite para a frente"); mirar e atirar por turnos → 🦍 Kit gorilas ("Criar cidade de prédios", "Pôr o gorila na cidade", "Jogar a banana do gorila"); esticar ponte pra atravessar → 🤸 Kit equilibrista ("Criar equilibrista", "Atualizar o equilibrista"); subir desviando → 🎈 Kit balão ("Criar balão", "Atualizar o balão"). Sem Kit compatível, use os blocos genéricos de Jogo 2D. ⚠️ "Fazer o sprite pular no chão" é o pulo GENÉRICO; com o Kit dino use "Controlar o dinossauro" (já embute pulo e gravidade).`,
   ]
     .filter(Boolean)
     .join('\n\n')
 }
 
 /** Clamps pós-validação + montagem do shape `PensaMission` do contrato. */
-export function clampMissions(raw: z.infer<typeof MissionSchema>): MissionPlanTask[] {
+export function clampMissions(
+  raw: z.infer<typeof MissionSchema>,
+  external = false,
+): MissionPlanTask[] {
   const clip = (s: string, n: number) => s.trim().slice(0, n)
   const validCategories = new Set<string>(STUDIO_CATEGORY_HINTS)
   return raw.tasks.slice(0, 12).map((t) => {
@@ -181,7 +324,10 @@ export function clampMissions(raw: z.infer<typeof MissionSchema>): MissionPlanTa
         : 'gameplay',
       mission: {
         story: clip(t.story, 200),
-        steps: steps.length > 0 ? steps : [{ text: 'Abra seu projeto no Estúdio' }],
+        steps:
+          steps.length > 0
+            ? steps
+            : [{ text: external ? 'Abra seu projeto no editor' : 'Abra seu projeto no Estúdio' }],
         ...(categories.length > 0 || blocks.length > 0
           ? { studioHints: { categories: categories.slice(0, 3), blocks: blocks.slice(0, 4) } }
           : {}),
@@ -229,7 +375,7 @@ export async function synthesizeMissions(input: {
     maxTokens: 6_000,
     temperature: 0.4,
   })
-  const tasks = clampMissions(raw)
+  const tasks = clampMissions(raw, input.buildEnv === 'external')
   if (tasks.length === 0) throw new Error('Plano de missões vazio')
   return tasks
 }

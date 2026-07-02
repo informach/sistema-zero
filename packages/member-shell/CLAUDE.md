@@ -179,7 +179,16 @@ Elas vivem numa união ANINHADA discriminada por `step`; regressão travada em `
 (detalhes concretos da conversa) e gera PRD com seções FIXAS nomeadas (contrato do agente de missões);
 revisão com `feedback` atualiza também o PRD anterior (senão deriva) e o feedback entra MESMO sem
 previousSpec. `mission_plan` e `checklist_seed` respeitam o **`buildEnv`** do projeto ('external' = sem
-Estúdio/blocos/catálogo; o item obrigatório de publicar muda de texto). Plumbing LLM em
+Estúdio/blocos/catálogo; o item obrigatório de publicar muda de texto). **As missões citam os
+BLOCOS REAIS do Estúdio** (07/2026): `stage-r-missions.ts` tem DOIS snapshots curados manuais —
+`STUDIO_CATEGORY_HINTS` (categorias) e `STUDIO_BLOCK_HINTS` (labels EXATOS do `message0` de
+`packages/studio/src/official-extensions/game-2d/blocks.ts`; drift manual — mudou label lá,
+atualize aqui; NÃO importar `BLOCK_CATALOG` no servidor: puxa blockly/core). O prompt exige
+labels entre aspas, segue a ARQUITETURA real (setup fora do loop → eventos → UM "A cada quadro
+do jogo, fazer" → HUD por último) e a 1ª missão SEMPRE ensina a instalar a extensão Jogo 2D
+(menu ⋯ → Extensões → Instalar) — o projeto semeado pelo Pensa nasce com
+`installedExtensions: []` (decisão: ensinar a instalar, não pré-instalar na semeadura).
+Prompt/clamp travados em `tests/pensa-missions.test.ts`. Plumbing LLM em
 **`server/pensa-llm.ts`** (fetch OpenRouter DIRETO, sem SDK: `streamPensaChat` com parser SSE próprio +
 `completePensaJson` com Zod e 1 retry; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` +
 OPCIONAL **`OPENROUTER_PENSA_MODEL`** — usada pelas sínteses E pelo CHAT (`pensaChatModel` = PENSA_MODEL
