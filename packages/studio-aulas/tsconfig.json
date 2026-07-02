@@ -1,0 +1,12 @@
+{
+  // Este tsconfig cobre SÓ o pipeline Node (src/). É o que roda no CI
+  // (`bun run --filter '*' typecheck`). O código de browser/JSX (harness/ e
+  // remotion/) é compilado pelo Vite e pelo Remotion CLI e tem tsconfig próprio
+  // (tsconfig.app.json), fora do typecheck do CI — assim os tipos pesados de
+  // React/Remotion não podem quebrar o pipeline do monorepo.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun"]
+  },
+  "include": ["src"]
+}

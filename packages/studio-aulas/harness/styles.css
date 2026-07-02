@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* O Tailwind precisa VER as classes usadas DENTRO do @sistemazero/studio (elas
+   moram no source do pacote), senão as utilitárias sz-* não são geradas e o
+   editor sai sem estilo. Mesmo princípio do docs/embedding.md (transpilePackages
+   + @source dos apps consumidores). */
+@source "../../studio/src";
+@source ".";
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: #fef9ef;
+}

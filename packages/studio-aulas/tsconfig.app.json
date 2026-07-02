@@ -1,0 +1,11 @@
+{
+  // Browser/JSX (harness/ + remotion/). NÃO é chamado pelo `typecheck` do CI —
+  // serve ao editor/IDE e ao build do Vite/Remotion. React 19 + JSX automático.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["react", "react-dom", "vite/client"]
+  },
+  "include": ["harness", "remotion"]
+}
