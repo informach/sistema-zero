@@ -22,7 +22,13 @@ Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
   embaixo e não pode ter que rolar; travado em teste).
 - **E — Enxergar o Jogo**: spec amigável (tirinhas Entrada→Processamento→Saída + wireframes
   DESENHADOS do JSON `screens`) com aprovação por seção + funil de identidade (nome → paleta →
-  ícone SVG; o save AUTO-valida e o pacote renomeia o projeto via PATCH).
+  ícone SVG; o save AUTO-valida e o pacote renomeia o projeto via PATCH). **Wireframes são
+  PICTÓRICOS** (07/2026): title = logo na fonte display do host (`[font-family:var(--font-display)]`,
+  Baloo no kids), button = botão "3D", score = chip de HUD, hero/enemy/item = SPRITES
+  (`WireframeSprites.tsx`, SVG inline decorativo por `currentColor`) com legenda pequenina, e o
+  background preenche a TELINHA (camada no card, sob as zonas). `KIND_PALETTE_INDEX` é contrato:
+  cor 0 = FUNDO da paleta, proibida em elemento visível. Tudo repinta via style inline com a
+  paleta escolhida; sem paleta caem nos tokens (`KIND_TOKEN_TEXT_CLASS`).
 - **R — Rodar as Missões**: kanban (Missões/Fazendo agora/Hora de testar/Prontas; máx 1 em
   "Fazendo agora"; botões movem, não drag) de missões que a CRIANÇA executa no Estúdio; **Modo
   Missão** split (≥1024px + `renderStudio` do host) com a missão à esquerda e o editor à direita;
@@ -95,6 +101,13 @@ sobre `@sistemazero/studio` (namespace `setStudioStorageNamespace(viewerId)` —
 
 ## Backlog
 
+- **Dar USO ao ícone do jogo antes de investir em geração por imagem** (decisão 02/07): hoje o
+  ícone aparece 1× no card "done" da identidade e nunca mais. Plano quando priorizar: exibir no
+  card da lista "Meus planos de jogo" (precisa do members expor iconUrl/iconSvg na list view), na
+  tela de título do wireframe e na festa do lançamento — e SÓ ENTÃO trocar a geração SVG por
+  modelo de imagem do OpenRouter (ex. google/gemini-2.5-flash-image ~US$0,03/img; desenho de
+  pipeline pronto no histórico: env `OPENROUTER_PENSA_IMAGE_MODEL` opcional + sharp preset icon
+  512² + R2 público `pensa/icons/<projectId>/` + `iconUrl` aditivo no artefato).
 - Modo adulto (`mode:'adult'` tem copy mas sem fluxos próprios: pesquisa de mercado, stack
   técnica, prompts copiáveis, ASCII art).
 - "Bug vira card de conserto" na etapa O (hoje a Caça aos Bugs orienta sem materializar card —
