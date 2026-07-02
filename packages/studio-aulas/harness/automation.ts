@@ -405,12 +405,19 @@ function rotuloBotao(b: HTMLButtonElement): string {
 // --- API pública -----------------------------------------------------------
 
 let ultimoBloco: BlocoLike | null = null
+// Projeto semeado (vazio OU o final da aula anterior). Guardado para o
+// `exportarProjeto` devolver a base + o blocksState ATUAL (fim desta aula = início
+// da próxima). É o que encadeia o curso: cada aula parte do resultado da anterior.
+// biome-ignore lint/suspicious/noExplicitAny: Project é do @sistemazero/studio; aqui só repassamos.
+let projetoBase: any = null
 
 export type NivelZoom = 'perto' | 'longe' | 'ajustar' | number
 
 export interface AulasAPI {
   esperarPronto(): Promise<boolean>
   criarProjetoAula(id: string, nome: string, extensoes: string[]): Promise<string>
+  criarProjetoDeBase(base: unknown, id: string, nome: string, extensoes: string[]): Promise<string>
+  exportarProjeto(id: string): Promise<unknown>
   esconderPreview(): Promise<void>
   mostrarPreview(): Promise<void>
   abrirCategoria(nome: string): Promise<void>
@@ -451,7 +458,35 @@ const api: AulasAPI = {
     }
     const adapter = createLocalPersistenceAdapter()
     await adapter.save(projeto)
+    projetoBase = projeto
     return id
+  },
+
+  // Semeia a partir do PROJETO FINAL da aula anterior (um Project completo:
+  // files/ir/blocksState/installedExtensions/assets). Sobrescreve id/nome e
+  // salva. É o que faz a aula continuar de onde a anterior parou.
+  async criarProjetoDeBase(base, id, nome, extensoes) {
+    // biome-ignore lint/suspicious/noExplicitAny: Project vem do host, só ajustamos id/nome.
+    const projeto: any = { ...(base as object), id, name: nome }
+    // Garante as extensões (se a base não trouxe, usa as do roteiro) — sem
+    // installedExtensions + ir.extensions o flyout da categoria vem vazio.
+    if ((!projeto.installedExtensions || !projeto.installedExtensions.length) && extensoes?.length) {
+      projeto.installedExtensions = extensoes.map((x) => ({ id: x, version: '0.0.0', installedAt: 0 }))
+      projeto.ir = { ...(projeto.ir ?? {}), extensions: extensoes.map((x) => ({ extensionId: x })) }
+    }
+    const adapter = createLocalPersistenceAdapter()
+    await adapter.save(projeto)
+    projetoBase = projeto
+    return id
+  },
+
+  // Devolve o Project ATUAL (base + blocksState do workspace agora) para virar o
+  // `inicial` da PRÓXIMA aula. Serializa o workspace direto (não depende do
+  // autosave debounced).
+  async exportarProjeto(id) {
+    // biome-ignore lint/suspicious/noExplicitAny: serialização do Blockly é livre.
+    const blocksState = (Blockly as any).serialization.workspaces.save(ws())
+    return { ...(projetoBase ?? {}), id, blocksState }
   },
 
   async esconderPreview() {

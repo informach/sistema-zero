@@ -106,7 +106,11 @@ describe('ProjectView: fechamento de ciclo (Versão N+1)', () => {
     const post = transport.calls.find((call) => call.method === 'POST')
     expect(post?.path).toBe('/projects/proj-1/cycles')
     expect(post?.body).toEqual({ goal: 'Mais fases' })
-    expect(screen.queryByRole('dialog')).toBeNull()
+    // O fecho do dialog é um setState do PAI depois do await do createCycle —
+    // flusha um frame DEPOIS do detalhe absorvido em runner lento (flake no CI).
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull()
+    })
     // Etapa corrente de novo é o Z (convite do Zappy).
     expect(screen.getAllByText('Zerar a Bagunça').length).toBeGreaterThan(0)
     expect(screen.queryByText('Você ZEROU a Versão 1!')).toBeNull()
