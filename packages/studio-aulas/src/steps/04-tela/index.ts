@@ -1,11 +1,17 @@
 import { type ChildProcess, spawn, spawnSync } from 'node:child_process'
-import { mkdirSync, renameSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { type Browser, type BrowserContext, chromium, type Page } from '@playwright/test'
 import { loadRoteiroFile } from '../../roteiro/parse'
 import type { Cena } from '../../roteiro/schema'
 import { aviso, etapa, ok, passo } from '../../util/log'
-import { AUTOMATION_FILE, assertAulaExiste, aulaPaths, REPO_ROOT } from '../../util/paths'
+import {
+  AUTOMATION_FILE,
+  assertAulaExiste,
+  aulaPaths,
+  REPO_ROOT,
+  resolverProjetoInicial,
+} from '../../util/paths'
 import { RITMO, TELA_ALTURA, TELA_LARGURA } from './config'
 import type { TelaBalao, TelaCenaRange, TelaTimeline } from './timeline'
 
@@ -23,6 +29,8 @@ const INJECT_URL = `/@fs/${AUTOMATION_FILE.replace(/\\/g, '/')}`
 interface AulasNoBrowser {
   esperarPronto(): Promise<boolean>
   criarProjetoAula(id: string, nome: string, extensoes: string[]): Promise<string>
+  criarProjetoDeBase(base: unknown, id: string, nome: string, extensoes: string[]): Promise<string>
+  exportarProjeto(id: string): Promise<unknown>
   esconderPreview(): Promise<void>
   abrirCategoria(nome: string): Promise<void>
   pegarBloco(tipo: string, encaixarEm?: string): Promise<unknown>
@@ -138,14 +146,38 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
     const videoT0 = Date.now()
     const agora = () => Date.now() - videoT0
 
-    // 1. Semeia um projeto de gravação (vazio + extensões) na lista do playground.
+    // 1. Semeia o projeto na lista do playground. `vazio` = do zero; senão parte
+    //    do PROJETO FINAL da aula anterior (é assim que o curso encadeia: cada
+    //    aula começa de onde a anterior terminou).
     await page.goto(playgroundUrl, { waitUntil: 'domcontentloaded' })
     await injetar(page)
-    await page.evaluate(([id, nome, ext]) => globalThis.__aulas.criarProjetoAula(id, nome, ext), [
-      projetoId,
-      `Aula: ${roteiro.meta.titulo}`,
-      roteiro.meta.extensoes,
-    ] as [string, string, string[]])
+    const nomeProjeto = `Aula: ${roteiro.meta.titulo}`
+    const inicialPath = resolverProjetoInicial(slug, roteiro.meta.projetoInicial)
+    if (inicialPath) {
+      if (!existsSync(inicialPath)) {
+        throw new Error(
+          `projetoInicial não encontrado: ${inicialPath}\n` +
+            `Exporte o jogo do fim da aula anterior (no Estúdio: ⋯ → Exportar para o Estúdio) e salve aí.`,
+        )
+      }
+      const base: unknown = JSON.parse(readFileSync(inicialPath, 'utf8'))
+      passo(`começando do projeto: ${roteiro.meta.projetoInicial}`)
+      await page.evaluate(
+        ([b, id, nome, ext]) => globalThis.__aulas.criarProjetoDeBase(b, id, nome, ext),
+        [base, projetoId, nomeProjeto, roteiro.meta.extensoes] as [
+          unknown,
+          string,
+          string,
+          string[],
+        ],
+      )
+    } else {
+      await page.evaluate(([id, nome, ext]) => globalThis.__aulas.criarProjetoAula(id, nome, ext), [
+        projetoId,
+        nomeProjeto,
+        roteiro.meta.extensoes,
+      ] as [string, string, string[]])
+    }
 
     // 2. Abre o editor desse projeto e re-injeta a automação.
     await page.goto(`${playgroundUrl}/editor/${encodeURIComponent(projetoId)}`, {
@@ -169,6 +201,15 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
       }
       cenasRange.push({ id: cena.id, inicioMs, fimMs: agora() })
     }
+
+    // 5. Exporta o PROJETO FINAL desta aula (base + blocos montados) → será o
+    //    `inicial` da PRÓXIMA aula. É o elo que encadeia o curso.
+    const projetoFinal = await page.evaluate(
+      (id) => globalThis.__aulas.exportarProjeto(id),
+      projetoId,
+    )
+    writeFileSync(paths.projetoFinal, JSON.stringify(projetoFinal, null, 2))
+    ok(`projeto final: ${paths.projetoFinal}`)
   } finally {
     // Limpeza sempre — inclusive se algo falhar (senão o Vite fica órfão).
     if (context) {

@@ -470,8 +470,12 @@ const api: AulasAPI = {
     const projeto: any = { ...(base as object), id, name: nome }
     // Garante as extensões (se a base não trouxe, usa as do roteiro) — sem
     // installedExtensions + ir.extensions o flyout da categoria vem vazio.
-    if ((!projeto.installedExtensions || !projeto.installedExtensions.length) && extensoes?.length) {
-      projeto.installedExtensions = extensoes.map((x) => ({ id: x, version: '0.0.0', installedAt: 0 }))
+    if (!projeto.installedExtensions?.length && extensoes?.length) {
+      projeto.installedExtensions = extensoes.map((x) => ({
+        id: x,
+        version: '0.0.0',
+        installedAt: 0,
+      }))
       projeto.ir = { ...(projeto.ir ?? {}), extensions: extensoes.map((x) => ({ extensionId: x })) }
     }
     const adapter = createLocalPersistenceAdapter()
@@ -480,13 +484,17 @@ const api: AulasAPI = {
     return id
   },
 
-  // Devolve o Project ATUAL (base + blocksState do workspace agora) para virar o
-  // `inicial` da PRÓXIMA aula. Serializa o workspace direto (não depende do
-  // autosave debounced).
+  // Devolve o Project ATUAL para virar o `inicial` da PRÓXIMA aula. CARREGA o
+  // projeto salvo (files/ir/installedExtensions/assets) da persistência — não dá
+  // para usar `projetoBase`, que foi setado na página da LISTA e se perdeu no
+  // navigate para o editor (módulo reinjetado) — e sobrescreve só o `blocksState`
+  // com o estado ATUAL do workspace (serialização direta, sem depender do autosave).
   async exportarProjeto(id) {
+    const adapter = createLocalPersistenceAdapter()
+    const base = (await adapter.load(id)) ?? {}
     // biome-ignore lint/suspicious/noExplicitAny: serialização do Blockly é livre.
     const blocksState = (Blockly as any).serialization.workspaces.save(ws())
-    return { ...(projetoBase ?? {}), id, blocksState }
+    return { ...base, id, blocksState }
   },
 
   async esconderPreview() {

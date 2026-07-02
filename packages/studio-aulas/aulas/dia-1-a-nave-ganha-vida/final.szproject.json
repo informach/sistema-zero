@@ -1,0 +1,49 @@
+{
+  "id": "aula-gravacao-dia-1-a-nave-ganha-vida",
+  "blocksState": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "sz_frame_structure",
+          "id": "@/EbD1:@_K-p%_)i~@f3",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "type": "sz_frame_appearance",
+          "id": "b1zT/l,x8uG1Y~[`o(y_",
+          "x": 452,
+          "y": 32
+        },
+        {
+          "type": "sz_frame_behavior",
+          "id": "DW.(R2`{qFPuV|KE1;H+",
+          "x": 872,
+          "y": 32,
+          "inputs": {
+            "CHILDREN": {
+              "block": {
+                "type": "sz_g2d_create_sprite",
+                "id": "?Of:kBv#2hwTn+Sb}D[W",
+                "fields": {
+                  "NAME": "nave",
+                  "COLOR": "#22d3ee"
+                },
+                "next": {
+                  "block": {
+                    "type": "sz_g2d_set_velocity",
+                    "id": "dzw,vN+*}#[4/jXTB:0%",
+                    "fields": {
+                      "SPRITE": "jogador"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

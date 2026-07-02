@@ -25,6 +25,13 @@ export interface AulaPaths {
   /** Metadados de tempo/coordenadas capturados na gravação da tela. */
   telaTimeline: string
   videoFinal: string
+  /**
+   * Projeto FINAL desta aula (o jogo completo ao fim dela), no formato
+   * `.szproject.json`. Vira o `inicial` da PRÓXIMA aula — é o que encadeia o
+   * curso. Fica na RAIZ da pasta da aula (não em out/) para ser referenciável e
+   * versionável.
+   */
+  projetoFinal: string
 }
 
 export function aulaPaths(slug: string): AulaPaths {
@@ -40,7 +47,18 @@ export function aulaPaths(slug: string): AulaPaths {
     telaDir: join(outDir, 'tela'),
     telaTimeline: join(outDir, 'tela', 'timeline.json'),
     videoFinal: join(outDir, 'aula.mp4'),
+    projetoFinal: join(dir, 'final.szproject.json'),
   }
+}
+
+/**
+ * Resolve o caminho do projeto INICIAL declarado em `meta.projetoInicial`:
+ * `vazio` → null (começa vazio); senão é um arquivo relativo à pasta da aula
+ * (ex.: `inicial.szproject.json`, ou `../dia-2/final.szproject.json`).
+ */
+export function resolverProjetoInicial(slug: string, projetoInicial: string): string | null {
+  if (!projetoInicial || projetoInicial === 'vazio') return null
+  return join(AULAS_DIR, slug, projetoInicial)
 }
 
 export function assertAulaExiste(paths: AulaPaths): void {
