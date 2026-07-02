@@ -256,6 +256,12 @@ export type JSExpr =
   | (JSExprCommon & { type: 'memberGet'; object: JSExpr; name: string })
   // Chamada de método em forma de valor sobre qualquer objeto (object.metodo(args)).
   | (JSExprCommon & { type: 'memberCallExpr'; object: JSExpr; method: string; args: JSExpr[] })
+  // Object.keys/values/entries(obj) — a lista de chaves/valores/pares de um objeto.
+  | (JSExprCommon & { type: 'objectOp'; op: 'keys' | 'values' | 'entries'; object: JSExpr })
+  // Imagem do projeto (asset): gera a FONTE resolvida (dataURL do projeto, com fallback pro nome).
+  | (JSExprCommon & { type: 'assetImage'; name: string })
+  // Acesso por chave/índice computado: obj[chave] / lista[i].
+  | (JSExprCommon & { type: 'indexGet'; object: JSExpr; index: JSExpr })
 
 /** Campo de TELA do showScreen (título/subtítulo/dica): texto legado de projetos
  * antigos OU uma expressão (variável, "juntar texto", resultado de função…). */
@@ -586,6 +592,19 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       object: JSExprSchema,
       method: irText(),
       args: z.array(JSExprSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('objectOp'),
+      op: z.enum(['keys', 'values', 'entries']),
+      object: JSExprSchema,
+      ...idField,
+    }),
+    z.object({ type: z.literal('assetImage'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('indexGet'),
+      object: JSExprSchema,
+      index: JSExprSchema,
       ...idField,
     }),
   ]),
@@ -2039,14 +2058,17 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'funcDecl'; name: string; params: string[]; body: JSStatement[] })
   // Chamada de função como comando (`nome(args);`).
   | (JSStatementCommon & { type: 'callFunction'; name: string; args: JSExpr[] })
-  // Para cada item (com posição opcional) de uma lista (`arr.forEach((item, i) => {…})`).
+  // Para cada item (com posição opcional) de uma lista (`<lista>.forEach((item, i) => {…})`).
+  // A lista é uma EXPRESSÃO (variável, `Object.keys(x)`, `obj.lista`…), não só um nome.
   | (JSStatementCommon & {
       type: 'forEach'
-      arrayVar: string
+      arrayExpr: JSExpr
       itemName: string
       indexName?: string
       body: JSStatement[]
     })
+  // Criar uma imagem com fonte (`const v = new Image(); v.src = <fonte>;`).
+  | (JSStatementCommon & { type: 'newImage'; varName: string; src: JSExpr })
   // Executar depois de um tempo (`setTimeout(() => {…}, ms)`).
   | (JSStatementCommon & { type: 'setTimeout'; delay: JSExpr; body: JSStatement[] })
   // Repetir a cada intervalo de tempo (`setInterval(() => {…}, ms)`).
@@ -3839,10 +3861,16 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('forEach'),
-      arrayVar: irText(),
+      arrayExpr: JSExprSchema,
       itemName: irText(),
       indexName: irText().optional(),
       body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('newImage'),
+      varName: irText(),
+      src: JSExprSchema,
       ...idField,
     }),
     z.object({

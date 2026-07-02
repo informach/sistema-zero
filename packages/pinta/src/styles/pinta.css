@@ -1,0 +1,118 @@
+/*
+ * Tokens + estilos do componente <PintaApp>. Este arquivo é exportado como
+ * `@sistemazero/pinta/styles.css` e deve ser importado DENTRO do pipeline
+ * Tailwind do consumer (depois do `@import "tailwindcss"` dele), junto com
+ * `@source` apontando para packages/pinta/src.
+ *
+ * NÃO importa tailwindcss aqui (duplicaria preflight/utilities no consumer) e
+ * NÃO define `@custom-variant dark` (sobrescreveria a variant dark do app
+ * consumidor — última definição vence). Sem regras globais de html/body.
+ *
+ * Prefixo dos tokens: `pin-` (utilitárias `bg-pin-*`, `text-pin-*`…). NÃO usar
+ * `pt-`/`px-`/etc. — colidem com as raízes de padding do Tailwind.
+ *
+ * Tema: os valores no @theme valem para o tema CLARO (default do Pinta, público
+ * kids — creme MakeCode, como o Estúdio). O escuro é ativado por
+ * `[data-pinta-theme="dark"]` no ROOT do componente — nunca no <html> do host.
+ * Conteúdo portalado p/ fora do root precisa do <PintaThemeScope>.
+ *
+ * Paleta da marca (identidade dual): accent = CYAN escuro sobre creme no claro;
+ * LIME (#C4F042) sobre #0D1117 no escuro. Fontes vêm do HOST (nenhum @font-face
+ * aqui; os componentes herdam a fonte do app — Baloo no kids).
+ */
+@theme {
+  --color-pin-bg: oklch(0.975 0.012 85); /* creme MakeCode (#fef9ef) */
+  --color-pin-surface: oklch(0.995 0.006 85); /* card quase-branco quente */
+  --color-pin-border: oklch(0.89 0.018 80);
+  --color-pin-text: oklch(0.145 0.012 262);
+  --color-pin-muted: oklch(0.5 0.012 255);
+  --color-pin-accent: oklch(0.52 0.14 200); /* cyan escuro (AA sobre creme) */
+  --color-pin-accent-fg: oklch(0.995 0.006 85); /* texto sobre o accent */
+  --color-pin-ok: oklch(0.55 0.14 155);
+  --color-pin-warn: oklch(0.6 0.14 65);
+  --color-pin-danger: oklch(0.55 0.19 25);
+  --color-pin-scrim: oklch(0.2 0.02 260 / 0.45); /* fundo do modal */
+
+  /* Uma cor alegre e distinta por TIPO de asset (cards da galeria/criação). */
+  --color-pin-kind-sprite: oklch(0.55 0.21 300); /* roxo    · Personagem */
+  --color-pin-kind-background: oklch(0.55 0.15 235); /* azul    · Cenário de fundo */
+  --color-pin-kind-tileset: oklch(0.66 0.17 55); /* laranja · Peças do cenário */
+  --color-pin-kind-tilemap: oklch(0.55 0.14 155); /* verde   · Mapa */
+  --color-pin-kind-vector: oklch(0.6 0.21 350); /* rosa    · Desenho livre */
+}
+
+/* Tema escuro — override por atributo data-pinta-theme="dark" no root. */
+[data-pinta-theme="dark"] {
+  --color-pin-bg: oklch(0.17 0.014 262); /* #0d1117 */
+  --color-pin-surface: oklch(0.215 0.015 262); /* painel um tom acima do bg */
+  --color-pin-border: oklch(0.32 0.02 262);
+  --color-pin-text: oklch(0.965 0.005 250);
+  --color-pin-muted: oklch(0.72 0.015 250);
+  --color-pin-accent: oklch(0.91 0.19 122); /* lime #c4f042 */
+  --color-pin-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o lime */
+  --color-pin-ok: oklch(0.8 0.16 155);
+  --color-pin-warn: oklch(0.83 0.14 85);
+  --color-pin-danger: oklch(0.72 0.17 25);
+  --color-pin-scrim: oklch(0.08 0.01 262 / 0.6);
+
+  --color-pin-kind-sprite: oklch(0.74 0.16 300);
+  --color-pin-kind-background: oklch(0.76 0.12 235);
+  --color-pin-kind-tileset: oklch(0.79 0.14 65);
+  --color-pin-kind-tilemap: oklch(0.8 0.16 155);
+  --color-pin-kind-vector: oklch(0.75 0.16 350);
+}
+
+/*
+ * Xadrez de transparência atrás dos canvases de desenho e miniaturas. CSS puro
+ * (conic-gradient), custo zero por frame — o canvas só pinta os pixels opacos.
+ */
+[data-pinta-theme] .pin-checkerboard {
+  background-color: oklch(0.95 0 0);
+  background-image: conic-gradient(
+    oklch(0.85 0 0) 0 25%,
+    transparent 0 50%,
+    oklch(0.85 0 0) 0 75%,
+    transparent 0
+  );
+  background-size: 16px 16px;
+}
+[data-pinta-theme="dark"] .pin-checkerboard {
+  background-color: oklch(0.28 0 0);
+  background-image: conic-gradient(
+    oklch(0.36 0 0) 0 25%,
+    transparent 0 50%,
+    oklch(0.36 0 0) 0 75%,
+    transparent 0
+  );
+}
+
+/* Canvas de pixel art: nunca suavizar o upscale. */
+[data-pinta-theme] .pin-pixelated {
+  image-rendering: pixelated;
+}
+
+/*
+ * Pop suave do card recém-criado na galeria (uma vez, ao entrar com a classe).
+ * Com prefers-reduced-motion o card só aparece, sem pop.
+ */
+@keyframes pin-card-pop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+[data-pinta-theme] .pin-card-pop {
+  animation: pin-card-pop 0.3s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-pinta-theme] .pin-card-pop {
+    animation: none;
+  }
+}

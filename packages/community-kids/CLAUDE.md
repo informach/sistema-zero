@@ -264,6 +264,47 @@ anexo (o servidor recusaria).
    marca (letras desenhadas em paths, nunca `<text>`). Favicons herdados do community DE
    PROPÓSITO (decisão: mesmo favicon).
 
+## Pensa (planejamento guiado — produto vendável, 07/2026)
+
+O **Pensa** (`@sistemazero/pensa`) é o app da metodologia ZERO onde a criança PLANEJA o jogo
+antes de construir no Estúdio: projeto → ciclos "Versão N" → etapas **Z** (Zerar a Bagunça,
+chat com o Zappy pelas 5 perguntas) / **E** (Enxergar o Jogo) / **R** (Rodar as Missões) /
+**O** (O Grande Lançamento). Item "Pensa" no `nav.ts` (Lightbulb, entre Cursos e Clube) → rota
+`/pensa` (`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+`app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
+ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
+`KidsPensaUnavailable` (retry); com acesso = `pensa-client.tsx` (`'use client'`, import dinâmico
+do pacote no effect, tema do next-themes). Diferente do Estúdio (IndexedDB), a persistência é
+BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
+(shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` tem
+`force-dynamic`). Erros do transport são duck-typed `{status, code}` (a classe não atravessa o
+dynamic import). `MainContainer` dá largura total a `/pensa` (kanban/Modo Missão). Requisitos de
+build: `transpilePackages` + `@import` do `pensa.css` + `@source "../../../pensa/src"` no
+globals.css (MESMO gotcha das utilitárias `sz-*` do Estúdio — sem isso as `pz-*` são no-op).
+`api/pensa/*` fica DENTRO do matcher do proxy (JSON pequeno; a resposta SSE não é bufferizada
+pelo middleware). Deploy: `packages/pensa/**` nos watchPatterns do railway.json + case no ci.yml.
+
+## Pinta (editor de assets de jogos — produto vendável, 07/2026)
+
+O **Pinta** (`@sistemazero/pinta`) é o ateliê onde a criança DESENHA os assets dos jogos: pixel
+art (personagens com ANIMAÇÕES + prévia rodando, cenários), peças/mapas e desenho livre —
+terceiro irmão do fluxo criativo (**Pensa planeja → Pinta desenha → Estúdio constrói**). Item
+"Pinta" no `nav.ts` (Palette, imediatamente antes de Estúdio) → rota `/pinta`
+(`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+`app/(app)/pinta/page.tsx` chama `checkPintaAccessReadonly()` (refs `pinta,estudio-completo` numa
+ida — a 2ª vira `studioOwned`, copy da ponte) → 200 sem produto = `KidsLockedPinta`; status ≠ 200
+= `KidsPintaUnavailable` (retry); com acesso = `pinta-client.tsx` (`'use client'`, import
+dinâmico no effect, tema do next-themes). **Sem backend próprio**: a galeria vive no IndexedDB
+POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
+a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
+(`@sistemazero/studio/personal-assets` → `savePersonalAsset`, upsert por id) — o desenho aparece
+em "Meus desenhos" no painel de Imagens do `/estudio` do MESMO perfil. `MainContainer` dá largura
+total a `/pinta`. Requisitos de build: `transpilePackages` + `@import` do `pinta.css` +
+`@source "../../../pinta/src"` no globals.css (MESMO gotcha das utilitárias `sz-*`/`pz-*` — sem
+isso as `pin-*` são no-op e os modais saem washed-out). Deploy: `packages/pinta/**` (e
+`packages/studio/**`) nos watchPatterns do railway.json + case `packages/pinta/*` no ci.yml.
+Produto no catálogo: sku/slug/chave **`pinta`** (seed idempotente, R$97 placeholder).
+
 ## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
 
 > **Fonte da verdade do contrato/regras/idempotência:** o [CLAUDE.md do members](../members/CLAUDE.md)

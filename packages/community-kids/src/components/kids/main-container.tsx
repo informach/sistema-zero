@@ -18,7 +18,13 @@ const LESSON_PATH = /^\/cursos\/[^/]+\/aulas\/[^/]+/
  */
 export function MainContainer({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? ''
-  if (pathname.startsWith('/estudio')) {
+  // Pensa e Pinta seguem a régua do Estúdio: app embarcado quer largura E altura
+  // totais (kanban/Modo Missão no Pensa; canvas + painéis de animação no Pinta).
+  if (
+    pathname.startsWith('/estudio') ||
+    pathname.startsWith('/pensa') ||
+    pathname.startsWith('/pinta')
+  ) {
     return (
       <main className="flex min-h-0 w-full flex-1 flex-col px-2 pt-4 pb-24 md:px-4 md:py-4 md:pb-4">
         {children}

@@ -20,10 +20,15 @@ export type XpSourceType =
   // (sourceId = courseId). Gravado pelo webhook hub→members; combinado com
   // `course_complete` define o curso "qualificado" p/ o nível do aluno.
   | 'course_showcased'
+  // Pensa (07/2026): etapa do ciclo concluída (z→e/e→r/r→o; sourceId = uuid
+  // DETERMINÍSTICO de (cycleId, stage) — `pensaStageSourceId`) e ciclo LANÇADO
+  // (o→done; sourceId = cycleId). XP real (amount > 0) — movem streak.
+  | 'pensa_stage_complete'
+  | 'pensa_cycle_complete'
 
 export interface XpEventInput {
   sourceType: XpSourceType
-  /** lessonId | blockId | moduleId | courseId — snapshot, sem FK (XP é histórico). */
+  /** lessonId | blockId | moduleId | courseId | cycleId — snapshot, sem FK (XP é histórico). */
   sourceId: string
   amount: number
   /**

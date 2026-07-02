@@ -86,7 +86,7 @@ describe('countAdvancedJS', () => {
       },
       {
         type: 'forEach',
-        arrayVar: 'lista',
+        arrayExpr: { type: 'var', name: 'lista' },
         itemName: 'item',
         body: [raw('await processa(item);')],
       },

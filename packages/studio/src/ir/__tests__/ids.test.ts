@@ -47,7 +47,7 @@ describe('assignStableIdsToIR', () => {
             },
             {
               type: 'forEach',
-              arrayVar: 'itens',
+              arrayExpr: { type: 'var', name: 'itens' },
               itemName: 'item',
               body: [
                 {

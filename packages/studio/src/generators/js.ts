@@ -1436,6 +1436,11 @@ function compileStatementCode(
       return `${pad}${identifiers.get(stmt.objectVar)}.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     case 'memberSet':
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
+    case 'newImage': {
+      const imgVar = identifiers.get(stmt.varName)
+      const src = compileExpr(stmt.src, 0, identifiers, recAt(base))
+      return `${pad}const ${imgVar} = new Image();\n${pad}${imgVar}.src = ${src};`
+    }
     case 'memberCall': {
       const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.method)}(${args});`
@@ -1468,7 +1473,8 @@ function compileStatementCode(
       )
       const item = identifiers.get(stmt.itemName)
       const params = stmt.indexName ? `${item}, ${identifiers.get(stmt.indexName)}` : item
-      return `${pad}${identifiers.get(stmt.arrayVar)}.forEach((${params}) => {\n${body}\n${pad}});`
+      const list = compileExpr(stmt.arrayExpr, 20, identifiers)
+      return `${pad}${list}.forEach((${params}) => {\n${body}\n${pad}});`
     }
     case 'setTimeout': {
       const body = compileStatements(
@@ -2830,6 +2836,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.object, names)
       collectExprIdentifiers(stmt.value, names)
       return
+    case 'newImage':
+      names.add(stmt.varName)
+      collectExprIdentifiers(stmt.src, names)
+      return
     case 'memberCall':
       collectExprIdentifiers(stmt.object, names)
       for (const arg of stmt.args) collectExprIdentifiers(arg, names)
@@ -2847,7 +2857,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       for (const arg of stmt.args) collectExprIdentifiers(arg, names)
       return
     case 'forEach':
-      names.add(stmt.arrayVar)
+      collectExprIdentifiers(stmt.arrayExpr, names)
       names.add(stmt.itemName)
       if (stmt.indexName) names.add(stmt.indexName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
@@ -2970,6 +2980,13 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'memberCallExpr':
       collectExprIdentifiers(expr.object, names)
       for (const arg of expr.args) collectExprIdentifiers(arg, names)
+      return
+    case 'objectOp':
+      collectExprIdentifiers(expr.object, names)
+      return
+    case 'indexGet':
+      collectExprIdentifiers(expr.object, names)
+      collectExprIdentifiers(expr.index, names)
       return
     case 'hslColor':
       collectExprIdentifiers(expr.h, names)

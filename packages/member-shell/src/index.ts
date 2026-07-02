@@ -3,6 +3,8 @@ import { sessionCookieNames } from './lib/cookies'
 import { createShellRoutes } from './routes'
 import { createCertificateRoutes } from './routes/certificate'
 import { createHubRoutes } from './routes/hub'
+import { createPensaRoutes } from './routes/pensa'
+import { createPensaAiRoutes } from './routes/pensa-ai'
 import { createStudioRoutes } from './routes/studio'
 import {
   createAuthClient,
@@ -59,6 +61,8 @@ export function createShell(cfg: ShellConfig) {
     ...createHubRoutes({ hub, members, media, session }),
     ...createStudioRoutes({ hub, members, media }),
     ...createCertificateRoutes({ members, session }),
+    ...createPensaRoutes({ members, session }),
+    ...createPensaAiRoutes({ members, session }),
   }
 
   return {

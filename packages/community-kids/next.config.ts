@@ -89,6 +89,8 @@ const nextConfig: NextConfig = {
     '@sistemazero/ui',
     '@sistemazero/member-shell',
     '@sistemazero/studio',
+    '@sistemazero/pensa',
+    '@sistemazero/pinta',
     'three',
   ],
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,

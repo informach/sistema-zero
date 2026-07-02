@@ -21,6 +21,9 @@ export const proxy = createMemberProxy({
     '/clube-dos-criadores',
     '/mural-dos-criadores',
     '/estudio',
+    '/pensa',
+    // Pinta não tem `/api/pinta` (dados locais ao navegador) — só a página é gateada.
+    '/pinta',
     '/perfis',
   ],
   isRootProtected: true,

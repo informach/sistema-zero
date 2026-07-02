@@ -33,6 +33,8 @@ import {
   advanceStreak,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  pensaCycleBadgeSlugs,
+  pensaStageBadgeSlugs,
   quizPerfectBadgeSlugs,
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
@@ -1296,6 +1298,8 @@ const COIN_TYPE_FOR_XP: Partial<Record<XpEventInput['sourceType'], string>> = {
   quiz_passed: 'quiz_passed',
   unit_complete: 'unit_complete',
   studio_passed: 'studio_passed',
+  pensa_stage_complete: 'pensa_stage_complete',
+  pensa_cycle_complete: 'pensa_cycle_complete',
 }
 
 /**
@@ -1417,6 +1421,17 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     }
     if (newEvents.some((e) => e.sourceType === 'studio_passed')) {
       for (const slug of studioMasteryBadgeSlugs(countByType('studio_passed'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    // Pensa (mirror do Drizzle): 1ª etapa (Carta da Ideia) + 1º/3º ciclo lançado.
+    if (newEvents.some((e) => e.sourceType === 'pensa_stage_complete')) {
+      for (const slug of pensaStageBadgeSlugs(countByType('pensa_stage_complete'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'pensa_cycle_complete')) {
+      for (const slug of pensaCycleBadgeSlugs(countByType('pensa_cycle_complete'))) {
         badgeCandidates.add(slug)
       }
     }

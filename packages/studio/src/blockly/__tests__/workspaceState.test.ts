@@ -612,7 +612,7 @@ describe('buildWorkspaceStateFromIR', () => {
       js: [
         {
           type: 'forEach',
-          arrayVar: 'cards',
+          arrayExpr: { type: 'var', name: 'cards' },
           itemName: 'carta',
           indexName: 'i',
           body: [{ type: 'consoleLog', value: { type: 'var', name: 'carta' } }],

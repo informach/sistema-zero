@@ -16,6 +16,7 @@ import type {
   CourseFeedbackAnswers,
   CourseRatingView,
   EbookDownloadView,
+  GamificationDelta,
   GamificationMeView,
   HubAttachmentKind,
   HubChannelView,
@@ -32,6 +33,20 @@ import type {
   MyCourseView,
   Paginated,
   PaymentView,
+  PensaArtifactType,
+  PensaArtifactView,
+  PensaBuildEnv,
+  PensaChecklistCategory,
+  PensaChecklistItemView,
+  PensaMission,
+  PensaProjectDetailView,
+  PensaProjectKind,
+  PensaProjectListView,
+  PensaProjectStatus,
+  PensaStage,
+  PensaStageView,
+  PensaTaskColumn,
+  PensaTaskView,
   ProductAccessView,
   ProfileView,
   PublicProfileGameView,
@@ -64,6 +79,20 @@ export type MembersAudience = 'adult' | 'kids'
  * com o `STUDIO_STANDALONE_ACCESS_REF` do hub e com o slug do produto no catálogo.
  */
 export const STUDIO_ACCESS_REF = 'estudio-completo'
+
+/**
+ * Ref do produto vendável "Pensa" (planejamento guiado — metodologia ZERO). Quem
+ * possui cria projetos no Pensa; o members aplica o gate no CREATE do projeto.
+ * ⚠️ Tem que casar com o `PENSA_ACCESS_REF` do members e o slug do produto no catálogo.
+ */
+export const PENSA_ACCESS_REF = 'pensa'
+
+/**
+ * Ref do produto vendável "Pinta" (editor de assets de jogos — pixel art/animações/
+ * tiles/vetorial). O gate é SÓ na página (dados são locais ao navegador, padrão
+ * Estúdio Completo). ⚠️ Tem que casar com o slug do produto no catálogo.
+ */
+export const PINTA_ACCESS_REF = 'pinta'
 
 export type AuthClient = ReturnType<typeof createAuthClient>
 export type MembersClient = ReturnType<typeof createMembersClient>
@@ -467,6 +496,210 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return gw.gatewayFetch(`/members/room/items/${enc(itemId)}/buy`, {
         method: 'POST',
         query: { audience },
+      })
+    },
+
+    // ── Pensa (planejamento guiado — metodologia ZERO) ──────────────────────
+    /**
+     * "Esta conta tem acesso ao Pensa?" — Server Component (sem refresh de cookie),
+     * p/ gatear a página /pensa antes de carregar o app (espelha o Estúdio Completo).
+     */
+    checkPensaAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: PENSA_ACCESS_REF, audience },
+      })
+    },
+
+    // ── Pinta (editor de assets de jogos) ───────────────────────────────────
+    /**
+     * "Esta conta tem acesso ao Pinta?" — Server Component (sem refresh de
+     * cookie), p/ gatear a página /pinta. Pede DUAS refs numa ida: a segunda
+     * (`estudio-completo`) alimenta o `studioOwned` do adapter (só muda a copy
+     * do sucesso da ponte "Usar no Estúdio").
+     */
+    checkPintaAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: `${PINTA_ACCESS_REF},${STUDIO_ACCESS_REF}`, audience },
+      })
+    },
+    /** Projetos ATIVOS do perfil (lista do Pensa). */
+    pensaListProjects(): Promise<GatewayResponse<{ projects: PensaProjectListView[] }>> {
+      return gw.gatewayFetch('/members/pensa/projects', { query: { audience } })
+    },
+    /** Cria projeto + ciclo 1 (Versão 1, etapa z). O members aplica o gate do produto. */
+    pensaCreateProject(body: {
+      name: string
+      kind: PensaProjectKind
+    }): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
+      return gw.gatewayFetch('/members/pensa/projects', {
+        method: 'POST',
+        query: { audience },
+        body,
+      })
+    },
+    pensaGetProject(
+      projectId: string,
+    ): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}`, { query: { audience } })
+    },
+    /** Renomear/arquivar/anotar o projeto semeado no Estúdio/onde construir. */
+    pensaUpdateProject(
+      projectId: string,
+      body: {
+        name?: string
+        status?: PensaProjectStatus
+        studioProjectId?: string
+        buildEnv?: PensaBuildEnv
+      },
+    ): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}`, {
+        method: 'PATCH',
+        query: { audience },
+        body,
+      })
+    },
+    /** Snapshot do projeto do ESTÚDIO na nuvem (backup do jogo em construção). */
+    pensaGetStudioSnapshot(
+      projectId: string,
+    ): Promise<GatewayResponse<{ project: unknown | null; updatedAt: string | null }>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/studio-snapshot`, {
+        query: { audience },
+      })
+    },
+    pensaSaveStudioSnapshot(
+      projectId: string,
+      project: unknown,
+    ): Promise<GatewayResponse<{ updatedAt: string }>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/studio-snapshot`, {
+        method: 'PUT',
+        query: { audience },
+        body: { project },
+      })
+    },
+    /** Cria a Versão N+1 (exige a anterior `done`). */
+    pensaCreateCycle(
+      projectId: string,
+      goal: string,
+    ): Promise<GatewayResponse<{ project: PensaProjectDetailView }>> {
+      return gw.gatewayFetch(`/members/pensa/projects/${enc(projectId)}/cycles`, {
+        method: 'POST',
+        query: { audience },
+        body: { goal },
+      })
+    },
+    /** Conversa + estado + latest artifacts de uma etapa do ciclo. */
+    pensaGetStage(cycleId: string, stage: string): Promise<GatewayResponse<PensaStageView>> {
+      return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/stages/${enc(stage)}`, {
+        query: { audience },
+      })
+    },
+    /**
+     * Persiste um TURNO do chat (mensagem da criança + resposta do agente + estado).
+     * Chamado pelo BFF ao fim de cada stream — nunca pelo browser direto.
+     */
+    pensaAppendTurn(
+      cycleId: string,
+      stage: string,
+      body: {
+        userMessage: { content: string }
+        assistantMessage: { content: string }
+        state?: Record<string, unknown>
+        summary?: string
+      },
+    ): Promise<GatewayResponse<{ state: Record<string, unknown>; messageCount: number }>> {
+      return gw.gatewayFetch(
+        `/members/pensa/cycles/${enc(cycleId)}/stages/${enc(stage)}/conversation`,
+        { method: 'PUT', query: { audience }, body },
+      )
+    },
+    /** Salva um artefato (version = latest+1) — conteúdo já validado/sanitizado no BFF. */
+    pensaSaveArtifact(
+      cycleId: string,
+      body: { stage: PensaStage; type: PensaArtifactType; content: unknown },
+    ): Promise<GatewayResponse<{ artifact: PensaArtifactView }>> {
+      return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/artifacts`, {
+        method: 'POST',
+        query: { audience },
+        body,
+      })
+    },
+    /** Marca o latest do type como validado (a criança aprovou). */
+    pensaValidateArtifact(
+      cycleId: string,
+      type: PensaArtifactType,
+    ): Promise<GatewayResponse<{ artifact: PensaArtifactView }>> {
+      return gw.gatewayFetch(
+        `/members/pensa/cycles/${enc(cycleId)}/artifacts/${enc(type)}/validate`,
+        { method: 'POST', query: { audience } },
+      )
+    },
+    /**
+     * Avança a etapa (o members é o portão: 409 PENSA_GATE_NOT_READY se reprova).
+     * A resposta traz o delta de `gamification` (XP/moedas/badges do Pensa — a UI
+     * celebra sem round-trip; `null` = award falhou, fail-open).
+     */
+    pensaAdvance(
+      cycleId: string,
+      from: 'z' | 'e' | 'r' | 'o',
+    ): Promise<
+      GatewayResponse<{
+        cycle: PensaProjectDetailView['currentCycle']
+        gamification?: GamificationDelta | null
+      }>
+    > {
+      return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/advance`, {
+        method: 'POST',
+        query: { audience },
+        body: { from },
+      })
+    },
+    /** REPLACE total das missões do ciclo (geração da fase R). */
+    pensaReplaceTasks(
+      cycleId: string,
+      tasks: Array<{ title: string; summary?: string; taskType?: string; mission: PensaMission }>,
+    ): Promise<GatewayResponse<{ tasks: PensaTaskView[] }>> {
+      return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/tasks`, {
+        method: 'PUT',
+        query: { audience },
+        body: { tasks },
+      })
+    },
+    /** Move/anota um card do kanban. */
+    pensaUpdateTask(
+      taskId: string,
+      body: { column?: PensaTaskColumn; position?: number; notes?: string | null },
+    ): Promise<GatewayResponse<{ task: PensaTaskView }>> {
+      return gw.gatewayFetch(`/members/pensa/tasks/${enc(taskId)}`, {
+        method: 'PATCH',
+        query: { audience },
+        body,
+      })
+    },
+    /** REPLACE do checklist do ciclo (semeado na entrada da etapa O). */
+    pensaReplaceChecklist(
+      cycleId: string,
+      items: Array<{
+        category: PensaChecklistCategory
+        title: string
+        description?: string
+        required?: boolean
+        position?: number
+      }>,
+    ): Promise<GatewayResponse<{ items: PensaChecklistItemView[] }>> {
+      return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/checklist`, {
+        method: 'PUT',
+        query: { audience },
+        body: { items },
+      })
+    },
+    pensaToggleChecklist(
+      itemId: string,
+      done: boolean,
+    ): Promise<GatewayResponse<{ item: PensaChecklistItemView }>> {
+      return gw.gatewayFetch(`/members/pensa/checklist/${enc(itemId)}`, {
+        method: 'PATCH',
+        query: { audience },
+        body: { done },
       })
     },
 

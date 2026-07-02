@@ -6,6 +6,12 @@
    vazando por trás). O JS-import do studio-full-client sozinho NÃO basta: traz só os
    tokens, não registra as cores para a geração das utilitárias. */
 @import "../../../studio/src/styles/studio.css";
+/* Tokens do Pensa (--color-pz-…) — MESMO gotcha do Estúdio: o @import dentro do
+   pipeline registra as cores p/ o @source gerar as utilitárias pz-*. */
+@import "../../../pensa/src/styles/pensa.css";
+/* Tokens do Pinta (--color-pin-…) — MESMO gotcha: registra as cores p/ o @source
+   gerar as utilitárias pin-*. */
+@import "../../../pinta/src/styles/pinta.css";
 /* Componentes compartilhados (@sistemazero/ui + @sistemazero/member-shell) —
    o scanner do Tailwind v4 precisa VER as classes deles (sem isto renderizam pelados). */
 @source "../../../ui/src";
@@ -13,6 +19,10 @@
 /* Editor embarcável (bloco `studio`): o scanner precisa gerar as classes utilitárias
    do @sistemazero/studio; os tokens --color-sz-* vêm do CSS importado pelo componente. */
 @source "../../../studio/src";
+/* App de planejamento embarcável (@sistemazero/pensa) — idem. */
+@source "../../../pensa/src";
+/* Editor de assets embarcável (@sistemazero/pinta) — idem. */
+@source "../../../pinta/src";
 
 @custom-variant dark (&:is(.dark *));
 

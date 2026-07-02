@@ -1005,13 +1005,17 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         },
         stmt.__id,
       )
-    case 'forEach':
+    case 'forEach': {
+      const array = exprToValueBlock(stmt.arrayExpr)
+      if (!array) return rawJSBlock(stmt)
       return block(
         'sz_js_for_each',
-        { ITEM: stmt.itemName, INDEX: stmt.indexName ?? '', NAME: stmt.arrayVar },
+        { ITEM: stmt.itemName, INDEX: stmt.indexName ?? '' },
         { DO: statementsToBlocks(stmt.body) },
         stmt.__id,
+        { ARRAY: array },
       )
+    }
     case 'setTimeout': {
       const vs = valueBlocks({ MS: stmt.delay })
       return vs === null
@@ -2883,6 +2887,11 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         VALUE: value,
       })
     }
+    case 'newImage': {
+      const src = exprToValueBlock(stmt.src)
+      if (!src) return rawJSBlock(stmt)
+      return block('sz_js_new_image', { VAR: stmt.varName }, {}, stmt.__id, { SRC: src })
+    }
     case 'memberCall': {
       const obj = exprToValueBlock(stmt.object)
       if (!obj) return rawJSBlock(stmt)
@@ -3452,6 +3461,19 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       const b = block('sz_val_call_function', { NAME: expr.name }, {}, undefined, valueInputs)
       if (expr.args.length > 0) b.extraState = { items: expr.args.length }
       return b
+    }
+    case 'objectOp': {
+      const obj = exprToValueBlock(expr.object)
+      if (!obj) return null
+      return block('sz_val_object_op', { OP: expr.op }, {}, expr.__id, { OBJ: obj })
+    }
+    case 'assetImage':
+      return block('sz_val_image', { ASSET: expr.name }, {}, expr.__id)
+    case 'indexGet': {
+      const obj = exprToValueBlock(expr.object)
+      const idx = exprToValueBlock(expr.index)
+      if (!obj || !idx) return null
+      return block('sz_val_index_get', {}, {}, expr.__id, { OBJ: obj, INDEX: idx })
     }
     default:
       return null

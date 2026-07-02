@@ -164,6 +164,8 @@
         "@react-three/drei": "^10",
         "@react-three/fiber": "^9",
         "@sistemazero/member-shell": "workspace:*",
+        "@sistemazero/pensa": "workspace:*",
+        "@sistemazero/pinta": "workspace:*",
         "@sistemazero/studio": "workspace:*",
         "@sistemazero/ui": "workspace:*",
         "@vimeo/player": "^2.30.4",
@@ -391,6 +393,54 @@
       },
       "peerDependencies": {
         "typescript": "^5",
+      },
+    },
+    "packages/pensa": {
+      "name": "@sistemazero/pensa",
+      "version": "0.1.0",
+      "dependencies": {
+        "clsx": "^2.1.1",
+        "zod": "^4.4.3",
+        "zustand": "^5.0.0",
+      },
+      "devDependencies": {
+        "@happy-dom/global-registrator": "^20.10.2",
+        "@testing-library/react": "^16.0.1",
+        "@types/bun": "^1.3.14",
+        "@types/react": "^19.2.15",
+        "@types/react-dom": "^19.2.3",
+        "react": "^19.2.6",
+        "react-dom": "^19.2.6",
+        "typescript": "^5.7.0",
+      },
+      "peerDependencies": {
+        "react": "^19",
+        "react-dom": "^19",
+      },
+    },
+    "packages/pinta": {
+      "name": "@sistemazero/pinta",
+      "version": "0.1.0",
+      "dependencies": {
+        "clsx": "^2.1.1",
+        "fflate": "^0.8.2",
+        "idb-keyval": "^6.2.1",
+        "zod": "^4.4.3",
+        "zustand": "^5.0.0",
+      },
+      "devDependencies": {
+        "@happy-dom/global-registrator": "^20.10.2",
+        "@testing-library/react": "^16.0.1",
+        "@types/bun": "^1.3.14",
+        "@types/react": "^19.2.15",
+        "@types/react-dom": "^19.2.3",
+        "react": "^19.2.6",
+        "react-dom": "^19.2.6",
+        "typescript": "^5.7.0",
+      },
+      "peerDependencies": {
+        "react": "^19",
+        "react-dom": "^19",
       },
     },
     "packages/studio": {
@@ -1172,6 +1222,10 @@
     "@sistemazero/messaging": ["@sistemazero/messaging@workspace:packages/messaging"],
 
     "@sistemazero/payments": ["@sistemazero/payments@workspace:packages/payments"],
+
+    "@sistemazero/pensa": ["@sistemazero/pensa@workspace:packages/pensa"],
+
+    "@sistemazero/pinta": ["@sistemazero/pinta@workspace:packages/pinta"],
 
     "@sistemazero/studio": ["@sistemazero/studio@workspace:packages/studio"],
 

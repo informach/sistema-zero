@@ -45,6 +45,22 @@ import { ListMembersService } from '../src/application/list-members/list-members
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
+import { AdvancePensaStageService } from '../src/application/pensa/advance-stage.service'
+import { AppendPensaConversationTurnService } from '../src/application/pensa/append-conversation-turn.service'
+import { CreatePensaCycleService } from '../src/application/pensa/create-cycle.service'
+import { CreatePensaProjectService } from '../src/application/pensa/create-project.service'
+import { GetPensaProjectService } from '../src/application/pensa/get-project.service'
+import { GetPensaStageService } from '../src/application/pensa/get-stage.service'
+import { GetPensaStudioSnapshotService } from '../src/application/pensa/get-studio-snapshot.service'
+import { ListPensaProjectsService } from '../src/application/pensa/list-projects.service'
+import { ReplacePensaChecklistService } from '../src/application/pensa/replace-checklist.service'
+import { ReplacePensaTasksService } from '../src/application/pensa/replace-tasks.service'
+import { SavePensaArtifactService } from '../src/application/pensa/save-artifact.service'
+import { SavePensaStudioSnapshotService } from '../src/application/pensa/save-studio-snapshot.service'
+import { TogglePensaChecklistItemService } from '../src/application/pensa/toggle-checklist-item.service'
+import { UpdatePensaProjectService } from '../src/application/pensa/update-project.service'
+import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
+import { ValidatePensaArtifactService } from '../src/application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
@@ -83,6 +99,7 @@ import {
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
+import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
 
@@ -117,6 +134,7 @@ export function buildApp(
   const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
+  const pensa = new InMemoryPensaRepository()
 
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
@@ -247,6 +265,26 @@ export function buildApp(
       buyRoomItem: new BuyRoomItemService(room, gamification, clock),
       internalToken: opts.internalToken,
     },
+    pensa: {
+      listProjects: new ListPensaProjectsService(pensa),
+      createProject: new CreatePensaProjectService(pensa, () => randomUUID(), clock),
+      getProject: new GetPensaProjectService(pensa),
+      updateProject: new UpdatePensaProjectService(pensa, clock),
+      getStudioSnapshot: new GetPensaStudioSnapshotService(pensa),
+      saveStudioSnapshot: new SavePensaStudioSnapshotService(pensa, clock),
+      createCycle: new CreatePensaCycleService(pensa, () => randomUUID(), clock),
+      getStage: new GetPensaStageService(pensa),
+      appendConversationTurn: new AppendPensaConversationTurnService(pensa, clock),
+      saveArtifact: new SavePensaArtifactService(pensa, () => randomUUID(), clock),
+      validateArtifact: new ValidatePensaArtifactService(pensa, clock),
+      advanceStage: new AdvancePensaStageService(pensa, awardGamification, clock),
+      replaceTasks: new ReplacePensaTasksService(pensa, () => randomUUID(), clock),
+      updateTask: new UpdatePensaTaskService(pensa, clock),
+      replaceChecklist: new ReplacePensaChecklistService(pensa, () => randomUUID(), clock),
+      toggleChecklistItem: new TogglePensaChecklistItemService(pensa, clock),
+      accessCheck: new AccessCheckService(entitlements, clock),
+      internalToken: opts.internalToken,
+    },
     webhooks: {
       grant,
       revoke,
@@ -328,6 +366,7 @@ export function buildApp(
     gamification,
     avatar,
     room,
+    pensa,
     processed,
     catalog,
     clockRef,

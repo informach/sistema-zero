@@ -675,6 +675,20 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         method: f(block, 'METHOD'),
         args: getArgs(block),
       }
+    case 'sz_val_object_op':
+      return {
+        type: 'objectOp',
+        op: (f(block, 'OP') || 'keys') as 'keys' | 'values' | 'entries',
+        object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
+      }
+    case 'sz_val_index_get':
+      return {
+        type: 'indexGet',
+        object: exprInput(block, 'OBJ', { type: 'var', name: 'lista' }),
+        index: exprInput(block, 'INDEX', { type: 'num', value: 0 }),
+      }
+    case 'sz_val_image':
+      return { type: 'assetImage', name: f(block, 'ASSET') }
     case 'sz_val_call_function':
       return { type: 'call', name: f(block, 'NAME'), args: getArgs(block) }
     case 'sz_val_join':
@@ -1931,7 +1945,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'forEach',
-          arrayVar: f(block, 'NAME'),
+          arrayExpr: exprInput(block, 'ARRAY', { type: 'var', name: 'lista' }),
           itemName: f(block, 'ITEM'),
           ...(indexName ? { indexName } : {}),
           body: getStatementChildren(block, 'DO', seen),
@@ -2626,6 +2640,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
           name: f(block, 'NAME'),
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_js_new_image':
+      return {
+        kind: 'js',
+        value: {
+          type: 'newImage',
+          varName: f(block, 'VAR'),
+          src: exprInput(block, 'SRC', { type: 'str', value: '' }),
         },
       }
     case 'sz_js_method_on':

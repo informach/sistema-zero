@@ -51,10 +51,39 @@ function blocklyWorkspaceConfiguration(theme: 'dark' | 'light'): Blockly.Blockly
     trashcan: true,
     // Habilita "Recolher/Expandir blocos" no menu de contexto nativo.
     collapse: true,
-    // Sem sons: o Blockly, sem `media` configurado, baixa click/disconnect/delete
-    // .mp3 do servidor demo (blockly-demo.appspot.com) → bloqueado pela CSP
-    // `connect-src` do host (admin/community-kids). Desligar mata o ruído no console.
+    // `sounds:false` DESLIGA o preload automático do Blockly, que — sem `media`
+    // configurado — baixaria click/disconnect/delete .mp3 do servidor demo
+    // (blockly-demo.appspot.com) → bloqueado pela CSP do host, sujando o console.
+    // Os sons VOLTAM servidos pelo próprio app (mesma origem) via `preloadBlockSounds`
+    // após a injeção (ver abaixo); `hasSounds` só gateia o preload, `play()` sempre toca.
     sounds: false,
+  }
+}
+
+// Caminho (MESMA ORIGEM) onde cada app que embarca o Estúdio serve os 3 sons do
+// Blockly (copiados de `blockly/media` → `public/studio-sounds/`). Mesma origem passa
+// na CSP `media-src 'self'` de todos os apps — diferente de deixar o Blockly baixá-los
+// do servidor demo externo (bloqueado). App que não sirva os arquivos fica só sem som.
+const STUDIO_SOUNDS_PATH = '/studio-sounds/'
+
+/**
+ * Recarrega os sons de ENCAIXAR (`click`)/DESCONECTAR (`disconnect`)/DESCARTAR
+ * (`delete`) bloco a partir dos arquivos servidos pelo HOST, já que a config tem
+ * `sounds:false` (que impede o preload do servidor demo). Espelha o próprio preload do
+ * Blockly (`load(['<media>click.mp3'], 'click')` etc.), só trocando a origem. Defensivo:
+ * sem audio manager ou com 404 (app sem os arquivos) → fica em silêncio, nunca quebra.
+ */
+function preloadBlockSounds(workspace: Blockly.WorkspaceSvg): void {
+  try {
+    const audio = workspace.getAudioManager?.() as unknown as
+      | { load(filenames: string[], name: string): void }
+      | undefined
+    if (!audio) return
+    audio.load([`${STUDIO_SOUNDS_PATH}click.mp3`], 'click')
+    audio.load([`${STUDIO_SOUNDS_PATH}disconnect.mp3`], 'disconnect')
+    audio.load([`${STUDIO_SOUNDS_PATH}delete.mp3`], 'delete')
+  } catch {
+    // Sem som se algo faltar — nunca derruba a injeção.
   }
 }
 
@@ -632,6 +661,8 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     // é estável (store desta instância), então o efeito segue rodando uma vez.
     ;(injected as unknown as { __szAssets?: () => unknown }).__szAssets = () =>
       projectStoreApi.getState().project?.assets ?? []
+    // Sons de encaixar/desconectar/descartar bloco, servidos pelo host (mesma origem).
+    preloadBlockSounds(injected)
     setWorkspace(injected)
 
     // Handlers POR INSTÂNCIA do colar de blocos (os itens de menu são GLOBAIS):

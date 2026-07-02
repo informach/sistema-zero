@@ -6,6 +6,9 @@
     "watchPatterns": [
       "/packages/community-kids/**",
       "/packages/member-shell/**",
+      "/packages/pensa/**",
+      "/packages/pinta/**",
+      "/packages/studio/**",
       "/packages/ui/**",
       "/bun.lock",
       "/package.json",

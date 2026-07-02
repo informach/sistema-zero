@@ -151,6 +151,8 @@ jobs:
                   packages/hub/*) add hub ;; # backend da comunidade (Clube/Mural) — serviço próprio
                   packages/fiscal/*) add fiscal ;;
                   packages/studio/*) add community; add community-kids ;; # lib embarcada pelos 2 apps de aluno (editor/player)
+                  packages/pensa/*) add community-kids ;; # app de planejamento embarcado (kids v1)
+                  packages/pinta/*) add community-kids ;; # editor de assets embarcado (kids v1)
                 esac
               done <<< "$CHANGED"
             fi

@@ -81,6 +81,16 @@ Núcleo PURO em `packages/members/src/domain/gamification/gamification.ts`.
 | Quiz aprovado (base) | **20** | `XP_VALUES.QUIZ_PASSED_BASE` |
 | Bônus de nota do quiz (cap) | **+10** | `XP_VALUES.QUIZ_SCORE_BONUS_MAX` |
 | Baú de fim de unidade (módulo 100%) | **25** | `XP_VALUES.UNIT_COMPLETE` |
+| Pensa: etapa Z/E/R concluída (advance) | **15** | `XP_VALUES.PENSA_STAGE_COMPLETE` |
+| Pensa: ciclo lançado (o→done) | **30** | `XP_VALUES.PENSA_CYCLE_COMPLETE` |
+
+**Pensa (07/2026):** o award roda DENTRO do `advance-stage` do Pensa (fail-open, delta na
+resposta como o complete). Moedas: 5 por etapa / 15 por ciclo (`COIN_VALUES`, contam no teto
+diário). Idempotência: `xp_events.source_id` é uuid, então cada ETAPA usa um uuid
+DETERMINÍSTICO derivado de `(cycleId, stage)` (`pensaStageSourceId`, uuid v5-like em
+`domain/pensa/gamification.ts`); o ciclo usa o próprio `cycleId`. O fechamento o→done credita
+SÓ `pensa_cycle_complete` (sem stage duplicado). Migration `0032_zippy_runaways` (ADD VALUE nos
+enums `xp_source_type` E `coin_source_type`).
 
 Fórmula do quiz (`quizPassedXp`): `20 + min(10, max(0, round(score/10)))`. Exemplos:
 score 100 → 30; score 50 → 25; score 0 → 20.
@@ -211,7 +221,7 @@ regressão). **Como mudar:** o gate é só `privileged`; para desligar, pare de 
 
 ## 5. Conquistas (badges)
 
-Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (17 slugs).
+Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (20 slugs).
 Persiste só `user_badges` (UNIQUE `user_id, audience, badge_slug` — a "1ª aula" do kids é
 independente da do adult). Título/ícone/copy vivem no app kids, não no banco.
 
@@ -222,6 +232,7 @@ independente da do adult). Título/ícone/copy vivem no app kids, não no banco.
 | Cursos 100% | `course-complete`, `-2`, `-3` (1/2/3 cursos) | `courseBadgeSlugs`, conta `course_complete` no ledger |
 | Quiz nota mil | `quiz-perfect`, `-10`, `-30` (1/10/30) | `quizPerfectBadgeSlugs`, conta `quiz_perfect` |
 | Maestria do Estúdio | `studio-first`, `studio-master-3`, `studio-master-10` (1/3/10) | `studioMasteryBadgeSlugs`, conta `studio_passed` |
+| Pensa (planejamento) | `pensa-first-idea` (1ª etapa concluída = 1ª Carta), `pensa-first-launch`/`pensa-creator-3` (1/3 ciclos) | `pensaStageBadgeSlugs`/`pensaCycleBadgeSlugs`, contam `pensa_stage_complete`/`pensa_cycle_complete` |
 | Poupador | `coins-saver-300`, `coins-saver-1000` | `coinsSaverBadgeSlugs`, lê `lifetime_coins_earned` |
 
 As contagens são **POR VITRINE** (`countByType` filtra `userId + audience + sourceType`). Os

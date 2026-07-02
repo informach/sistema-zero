@@ -16,6 +16,7 @@ import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
+import type { PensaBuildEnv, PensaChatMessage, PensaMission } from '../../../domain/pensa/pensa'
 import type { CourseFeedbackAnswers } from '../../../domain/rating/course-rating'
 import type { RoomState } from '../../../domain/room/room-catalog'
 
@@ -360,6 +361,11 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // (sourceId = courseId). Gravado pelo webhook hub→members; combinado com
   // `course_complete` define o curso "qualificado" p/ o nível do aluno.
   'course_showcased',
+  // Pensa (07/2026): etapa do ciclo concluída (z→e/e→r/r→o; sourceId = uuid
+  // DETERMINÍSTICO de (cycleId, stage) — `pensaStageSourceId`) e ciclo LANÇADO
+  // (o→done; sourceId = cycleId). XP real (amount > 0) — movem streak.
+  'pensa_stage_complete',
+  'pensa_cycle_complete',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)
@@ -378,6 +384,10 @@ export const coinSourceTypeEnum = members.enum('coin_source_type', [
   'spend_room',
   'spend_streak_freeze',
   'admin_adjust',
+  // Pensa (07/2026): faucets de moeda das etapas/ciclos concluídos — o coin_event
+  // reusa o MESMO (sourceType, sourceId) do XP (idempotência alinhada ao ledger).
+  'pensa_stage_complete',
+  'pensa_cycle_complete',
 ])
 
 // Perfil agregado (1 linha por aluno POR VITRINE — XP/streak kids e adult são
@@ -652,6 +662,171 @@ export const certificatesIssued = members.table(
   ],
 )
 
+// ── Pensa (planejamento guiado — metodologia ZERO, fatia 07/2026) ───────────
+// Projeto → ciclos (1 = MVP) → etapas z→e→r→o→done; artefatos versionados por
+// etapa; kanban de missões; checklist de lançamento. Dono = `user_id` (perfil
+// kids); `account_id` = conta responsável (snapshot no INSERT, imutável).
+// Cotas/limites vivem nos USE CASES (não no banco). Tipos: domain/pensa/pensa.ts.
+export const pensaProjectKindEnum = members.enum('pensa_project_kind', ['game', 'webapp'])
+export const pensaProjectStatusEnum = members.enum('pensa_project_status', ['active', 'archived'])
+export const pensaStageEnum = members.enum('pensa_stage', ['z', 'e', 'r', 'o', 'done'])
+export const pensaArtifactTypeEnum = members.enum('pensa_artifact_type', [
+  'idea',
+  'prd',
+  'friendly_spec',
+  'identity',
+  'mission_plan',
+  'checklist_seed',
+])
+export const pensaArtifactStatusEnum = members.enum('pensa_artifact_status', ['draft', 'validated'])
+export const pensaTaskColumnEnum = members.enum('pensa_task_column', [
+  'backlog',
+  'doing',
+  'review',
+  'done',
+])
+export const pensaChecklistCategoryEnum = members.enum('pensa_checklist_category', [
+  'test',
+  'polish',
+  'publish',
+  'share',
+])
+
+export const pensaProjects = members.table(
+  'pensa_projects',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    // Conta responsável (kids: o pai; adulto: = user_id). Imutável (só no INSERT).
+    accountId: uuid('account_id').notNull(),
+    audience: courseAudienceEnum('audience').notNull().default('kids'),
+    kind: pensaProjectKindEnum('kind').notNull(),
+    name: varchar('name', { length: 120 }).notNull(),
+    status: pensaProjectStatusEnum('status').notNull().default('active'),
+    // Id do projeto semeado no IndexedDB do Estúdio (fase R).
+    studioProjectId: text('studio_project_id'),
+    // "Onde você vai construir?" ('embedded'|'studio'|'external'; null = chooser
+    // pendente). Validado no APP (union do DTO), não com enum pg — é preferência
+    // de UX, não integridade.
+    buildEnv: text('build_env').$type<PensaBuildEnv>(),
+    // Snapshot do Estúdio na NUVEM (backup do jogo atrelado ao projeto do Pensa).
+    // BLOB pesado (≤1.8M chars serializado, cap no use case) — NUNCA pega carona
+    // nas leituras de projeto/detail (o repo seleciona colunas explícitas).
+    studioSnapshot: jsonb('studio_snapshot'),
+    studioSnapshotAt: timestamp('studio_snapshot_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('pensa_projects_user_idx').on(t.userId, t.status)],
+)
+
+export const pensaCycles = members.table(
+  'pensa_cycles',
+  {
+    id: uuid('id').primaryKey(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    // 1 = MVP ("Versão 1").
+    number: integer('number').notNull(),
+    // Objetivo do ciclo (ciclos ≥2).
+    goal: text('goal'),
+    stage: pensaStageEnum('stage').notNull().default('z'),
+    zCompletedAt: timestamp('z_completed_at', { withTimezone: true }),
+    eCompletedAt: timestamp('e_completed_at', { withTimezone: true }),
+    rCompletedAt: timestamp('r_completed_at', { withTimezone: true }),
+    oCompletedAt: timestamp('o_completed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('pensa_cycles_project_number_uq').on(t.projectId, t.number)],
+)
+
+// 1 linha por (ciclo, etapa); upsert por turno. `message_count` é a contagem
+// TOTAL histórica (não encolhe quando o trim corta mensagens antigas).
+export const pensaConversations = members.table(
+  'pensa_conversations',
+  {
+    id: uuid('id').primaryKey(),
+    cycleId: uuid('cycle_id')
+      .notNull()
+      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    stage: pensaStageEnum('stage').notNull(),
+    messages: jsonb('messages').$type<PensaChatMessage[]>().notNull().default([]),
+    // Sumarização quando o cap corta mensagens antigas.
+    summary: text('summary'),
+    // Etapa z: PensaZState; demais {}.
+    state: jsonb('state').$type<Record<string, unknown>>().notNull().default({}),
+    messageCount: integer('message_count').notNull().default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('pensa_conversations_cycle_stage_uq').on(t.cycleId, t.stage)],
+)
+
+// Versionados APPEND-ONLY; "latest" = MAX(version) por (cycle, type).
+export const pensaArtifacts = members.table(
+  'pensa_artifacts',
+  {
+    id: uuid('id').primaryKey(),
+    cycleId: uuid('cycle_id')
+      .notNull()
+      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    stage: pensaStageEnum('stage').notNull(),
+    type: pensaArtifactTypeEnum('type').notNull(),
+    // 1, 2, 3…
+    version: integer('version').notNull(),
+    content: jsonb('content').$type<unknown>().notNull(),
+    status: pensaArtifactStatusEnum('status').notNull().default('draft'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('pensa_artifacts_cycle_type_version_uq').on(t.cycleId, t.type, t.version),
+    index('pensa_artifacts_cycle_type_idx').on(t.cycleId, t.type),
+  ],
+)
+
+// Cards do kanban (missões). `position` = ordem DENTRO da coluna (re-sequenciada no move).
+export const pensaTasks = members.table(
+  'pensa_tasks',
+  {
+    id: uuid('id').primaryKey(),
+    cycleId: uuid('cycle_id')
+      .notNull()
+      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    title: varchar('title', { length: 200 }).notNull(),
+    summary: text('summary'),
+    // Ex.: 'setup' | 'gameplay' | 'polish' | 'fix'.
+    taskType: varchar('task_type', { length: 40 }),
+    // PensaMission (jsonb opaco, validado na borda — ver domain/pensa/pensa.ts).
+    mission: jsonb('mission').$type<PensaMission>().notNull(),
+    boardColumn: pensaTaskColumnEnum('board_column').notNull().default('backlog'),
+    position: integer('position').notNull(),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('pensa_tasks_cycle_idx').on(t.cycleId, t.boardColumn, t.position)],
+)
+
+export const pensaChecklistItems = members.table(
+  'pensa_checklist_items',
+  {
+    id: uuid('id').primaryKey(),
+    cycleId: uuid('cycle_id')
+      .notNull()
+      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    category: pensaChecklistCategoryEnum('category').notNull(),
+    title: varchar('title', { length: 200 }).notNull(),
+    description: text('description'),
+    // Itens opcionais (ex.: Toque de Brilho) = false — não travam o o→done.
+    required: boolean('required').notNull().default(true),
+    position: integer('position').notNull(),
+    done: boolean('done').notNull().default(false),
+    doneAt: timestamp('done_at', { withTimezone: true }),
+  },
+  (t) => [index('pensa_checklist_cycle_idx').on(t.cycleId, t.position)],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table(
   'processed_webhooks',
@@ -688,6 +863,12 @@ export const schema = {
   roomState,
   roomInventory,
   certificatesIssued,
+  pensaProjects,
+  pensaCycles,
+  pensaConversations,
+  pensaArtifacts,
+  pensaTasks,
+  pensaChecklistItems,
   processedWebhooks,
 }
 

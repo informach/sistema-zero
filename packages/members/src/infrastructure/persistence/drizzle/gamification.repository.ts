@@ -27,6 +27,8 @@ import {
   advanceStreak,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  pensaCycleBadgeSlugs,
+  pensaStageBadgeSlugs,
   quizPerfectBadgeSlugs,
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
@@ -72,6 +74,8 @@ const COIN_TYPE_FOR_XP: Partial<Record<XpSourceType, CoinSourceTypeValue>> = {
   quiz_passed: 'quiz_passed',
   unit_complete: 'unit_complete',
   studio_passed: 'studio_passed',
+  pensa_stage_complete: 'pensa_stage_complete',
+  pensa_cycle_complete: 'pensa_cycle_complete',
 }
 
 function masterAccessType(audience: CourseAudience): 'all_courses' | 'all_kids_courses' {
@@ -194,6 +198,19 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       // Badges de MAESTRIA do Estúdio: ledger `studio_passed` (projetos aprovados).
       if (newEvents.some((e) => e.sourceType === 'studio_passed')) {
         for (const slug of studioMasteryBadgeSlugs(await countByType('studio_passed'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+
+      // Badges do PENSA: 1ª etapa concluída (é sempre a Z = 1ª Carta da Ideia) e
+      // 1º/3º ciclo lançado — contados pelo ledger, como as demais de maestria.
+      if (newEvents.some((e) => e.sourceType === 'pensa_stage_complete')) {
+        for (const slug of pensaStageBadgeSlugs(await countByType('pensa_stage_complete'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+      if (newEvents.some((e) => e.sourceType === 'pensa_cycle_complete')) {
+        for (const slug of pensaCycleBadgeSlugs(await countByType('pensa_cycle_complete'))) {
           badgeCandidates.add(slug)
         }
       }

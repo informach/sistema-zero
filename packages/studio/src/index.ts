@@ -24,6 +24,7 @@ export {
   MODE_LABELS,
   normalizeProPath,
 } from '#core'
+export type { PersonalAsset, SavePersonalAssetResult } from './asset-library/personal'
 export { BLOCK_CATALOG, type BlockCatalogEntry } from './blockly/blockCatalog'
 export {
   createProProject,
@@ -44,7 +45,6 @@ export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/
 export { type RenderProjectOptions, renderProjectToPreviewDoc } from './preview/renderProject'
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'
 export type { ProjectSummary } from './state/persistence'
-export { setStorageNamespace as setStudioStorageNamespace } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
 export type {
   ActivityCheck,
@@ -82,3 +82,18 @@ export type {
   StudioLocale,
   StudioProps,
 } from './studio/types'
+
+import { setPersonalAssetsNamespace } from './asset-library/personal'
+import { setStorageNamespace } from './state/persistence'
+
+/**
+ * Namespeia TODO o armazenamento local do Studio por VIEWER (perfil kids ou
+ * conta adulto): a persistência de projetos E a biblioteca pessoal ("Meus
+ * desenhos", alimentada pelo Pinta). O host chama ANTES de usar a
+ * ProjectList/editor; vazio = stores históricos compartilhados (a lição reseta
+ * p/ '').
+ */
+export function setStudioStorageNamespace(namespace: string): void {
+  setStorageNamespace(namespace)
+  setPersonalAssetsNamespace(namespace)
+}

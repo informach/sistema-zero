@@ -5,6 +5,8 @@ export const {
   listMyCourses,
   listCatalog,
   checkStudioAccessReadonly,
+  checkPensaAccessReadonly,
+  checkPintaAccessReadonly,
   getProfileAllowanceReadonly,
   getMyCourse,
   getLesson,

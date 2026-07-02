@@ -167,4 +167,24 @@ describe('Parser dos blocos convertidos — código com conta/variável vira blo
     expect(t3.has('g2d:scaleSprite')).toBe(true)
     expect(t3.has('rawJS')).toBe(false)
   })
+
+  it('migra o `sz_js_for_each` legado: campo NAME → soquete ARRAY com variável', () => {
+    const legacy = {
+      blocks: {
+        blocks: [
+          {
+            type: 'sz_js_for_each',
+            fields: { ITEM: 'carta', INDEX: '', NAME: 'cartas' },
+          },
+        ],
+      },
+    }
+    const migrated = migrateLegacyValueFields(legacy)
+    const b = firstBlock(migrated)
+    expect(b.fields?.NAME).toBeUndefined()
+    expect(b.fields?.ITEM).toBe('carta')
+    const array = (b.inputs?.ARRAY as { block?: AnyBlock } | undefined)?.block
+    expect(array?.type).toBe('sz_val_variable')
+    expect(array?.fields?.NAME).toBe('cartas')
+  })
 })

@@ -154,6 +154,37 @@ Tipos em `lib/types.ts` (`CertificateBlock`/`CertificateConfig`/`CertificateIssu
 `tone="kids"` (copy sem jargão/travessão); o estado de carga é `role="status"` e a virada de estado vai
 numa região `aria-live="polite"` (a11y — o leitor anuncia bloqueado→elegível→emitido).
 
+**Pensa (planejamento guiado — metodologia ZERO, 07/2026):** o shell é o BFF do app
+`@sistemazero/pensa` (embarcado no kids em `/pensa`; projeto → ciclos "Versão N" → etapas Z/E/R/O
+persistidos no members, tabelas `pensa_*`). Client members: métodos `pensa*` (list/create/get/update
+projeto, create cycle, get stage, append turn, save/validate artifact, advance, replace/update tasks,
+replace/toggle checklist — sempre `?audience=`) + **`PENSA_ACCESS_REF = 'pensa'`** +
+`checkPensaAccessReadonly()` (gate da página, espelha o `checkStudioAccessReadonly`; o gate REAL de
+produto é do members no CREATE do projeto). Handlers: **`createPensaRoutes`** (`routes/pensa.ts` —
+passthroughs finos Zod→members, escrita gateada por impersonação-readonly) e **`createPensaAiRoutes`**
+(`routes/pensa-ai.ts`): **`pensaChat` = `POST /api/pensa/chat` SSE** — agente de clareza da etapa Z
+(Zappy): pré-voo em JSON (401/403/409 `PENSA_STAGE_MISMATCH`/429/503) → stream OpenRouter repassado como
+`event: delta` → **evaluator estruturado** das 5 perguntas (`stage-z-evaluator.ts`, modelo do chat,
+`response_format: json_schema`) → persiste o turno COMPLETO (`pensaAppendTurn`; **abort = nada
+persiste**) → `event: state` + `event: done`; `: ping` a cada 15s (Cloudflare corta conexão ociosa);
+rate-limit in-process por sessão (10/min + 150/dia, `globalThis`/`Symbol.for`, réplica única) — e
+`pensaGenerateArtifact` (`POST /api/pensa/cycles/:cycleId/artifacts/generate` — sínteses; fase atual
+`type:'idea'` = Carta da Ideia, exige `state.ready`, conteúdo `{text}` parágrafo único). Plumbing LLM em
+**`server/pensa-llm.ts`** (fetch OpenRouter DIRETO, sem SDK: `streamPensaChat` com parser SSE próprio +
+`completePensaJson` com Zod e 1 retry; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` + nova
+OPCIONAL **`OPENROUTER_PENSA_MODEL`** (sínteses; ausente → cai no MODEL). Prompts VERSIONADOS em
+`server/pensa-agents/*` — a **cláusula de segurança infantil SEMPRE entra no system kids** e a regra
+anti-inferência (PRD §11.3: o agente não decide pela criança; chips `SUGESTÕES:` são escolha DELA) é
+travada em `tests/pensa-ai.test.ts`. Tipos mirror em `lib/types.ts` (`Pensa*`). A conversa do chat NÃO
+passa pelo gateway (OpenRouter é chamado do BFF); a persistência passa (members = portão de ownership).
+
+**Pinta (editor de assets de jogos, 07/2026):** diferente do Pensa, o Pinta NÃO tem backend — os
+desenhos vivem no IndexedDB do navegador (por perfil) e a ponte "Usar no Estúdio" grava direto na
+biblioteca pessoal do `@sistemazero/studio` (client-side). O shell só carrega o GATE da página:
+**`PINTA_ACCESS_REF = 'pinta'`** + `checkPintaAccessReadonly()` (`server/clients.ts`), que pede
+**DUAS refs numa ida** (`refs: 'pinta,estudio-completo'`) — a segunda alimenta o `studioOwned` do
+adapter do Pinta (só muda a copy do sucesso da ponte). Sem rotas `/api/pinta`.
+
 **Trava sequencial das aulas (estilo Duolingo, 06/2026):** `LessonOutlineView.locked` (em
 `lib/types.ts`, mirror do members) = aula ainda bloqueada porque uma aula publicada anterior não
 foi concluída (curso com `sequential_lock` ON; equipe interna e aula já concluída vêm `false`). Só

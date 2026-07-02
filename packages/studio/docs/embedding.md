@@ -28,6 +28,20 @@ No CSS global do consumer (ex.: `src/app/globals.css`):
 
 O `styles.css` do studio NÃO traz `@import "tailwindcss"` nem `@custom-variant dark` — não colide com o preflight nem com a variant dark do app. Os tokens são namespaced (`--color-sz-*`) e o tema é escopado por `[data-sz-theme]` no root do componente (nunca no `<html>` do host).
 
+## 2b. Sons dos blocos (opcional, recomendado)
+
+O Blockly toca um somzinho ao ENCAIXAR/DESCONECTAR/DESCARTAR bloco. Por padrão ele os baixaria de um servidor demo externo (`blockly-demo.appspot.com`), que a CSP dos apps bloqueia (spam no console). Por isso o studio injeta com `sounds:false` e **recarrega os sons a partir do PRÓPRIO app** (mesma origem, passa na CSP `media-src 'self'`).
+
+Para o som funcionar, o consumer serve 3 arquivos em **`public/studio-sounds/`**:
+
+```
+public/studio-sounds/click.mp3       # copiados de node_modules/blockly/media/
+public/studio-sounds/disconnect.mp3
+public/studio-sounds/delete.mp3
+```
+
+Caminho fixo `/studio-sounds/` (ver `STUDIO_SOUNDS_PATH` no `BlocklyPanel.tsx`). App que NÃO sirva os arquivos simplesmente fica **sem som** (o 404 falha em silêncio, nada quebra). A CSP precisa de `media-src 'self'` (admin/community/community-kids já têm).
+
 ## 3. Render client-only
 
 Monaco/Blockly/IndexedDB não existem no server.

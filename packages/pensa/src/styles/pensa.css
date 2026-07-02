@@ -1,0 +1,154 @@
+/*
+ * Tokens + estilos do componente <PensaApp>. Este arquivo é exportado como
+ * `@sistemazero/pensa/styles.css` e deve ser importado DENTRO do pipeline
+ * Tailwind do consumer (depois do `@import "tailwindcss"` dele), junto com
+ * `@source` apontando para packages/pensa/src.
+ *
+ * NÃO importa tailwindcss aqui (duplicaria preflight/utilities no consumer) e
+ * NÃO define `@custom-variant dark` (sobrescreveria a variant dark do app
+ * consumidor — última definição vence). Sem regras globais de html/body.
+ *
+ * Tema: os valores no @theme valem para o tema CLARO (default do Pensa, público
+ * kids). O escuro é ativado por `[data-pensa-theme="dark"]` no ROOT do
+ * componente — nunca no <html> do host. Conteúdo portalado p/ fora do root
+ * precisa do <PensaThemeScope> (reaplica o atributo).
+ *
+ * Paleta da marca (identidade dual): accent = CYAN escuro sobre off-white/creme
+ * no claro; LIME (#C4F042) sobre #0D1117 no escuro. Fontes vêm do HOST
+ * (nenhum @font-face aqui; os componentes herdam a fonte do app).
+ */
+@theme {
+  --color-pz-bg: oklch(0.975 0.012 85); /* off-white/creme */
+  --color-pz-surface: oklch(0.995 0.006 85); /* card quase-branco quente */
+  --color-pz-border: oklch(0.89 0.018 80);
+  --color-pz-text: oklch(0.145 0.012 262);
+  --color-pz-muted: oklch(0.5 0.012 255);
+  --color-pz-accent: oklch(0.52 0.14 200); /* cyan escuro (AA sobre creme) */
+  --color-pz-accent-fg: oklch(0.995 0.006 85); /* texto sobre o accent */
+  --color-pz-ok: oklch(0.55 0.14 155);
+  --color-pz-warn: oklch(0.6 0.14 65);
+  --color-pz-scrim: oklch(0.2 0.02 260 / 0.45); /* fundo do modal */
+
+  /* Uma cor alegre e distinta por etapa da metodologia ZERO. */
+  --color-pz-stage-z: oklch(0.55 0.21 300); /* roxo    · Zerar a Bagunça */
+  --color-pz-stage-e: oklch(0.55 0.15 235); /* azul    · Enxergar o Jogo */
+  --color-pz-stage-r: oklch(0.66 0.17 55); /* laranja · Rodar as Missões */
+  --color-pz-stage-o: oklch(0.6 0.21 350); /* rosa    · O Grande Lançamento */
+}
+
+/* Tema escuro — override por atributo data-pensa-theme="dark" no root. */
+[data-pensa-theme="dark"] {
+  --color-pz-bg: oklch(0.17 0.014 262); /* #0d1117 */
+  --color-pz-surface: oklch(0.215 0.015 262); /* painel um tom acima do bg */
+  --color-pz-border: oklch(0.32 0.02 262);
+  --color-pz-text: oklch(0.965 0.005 250);
+  --color-pz-muted: oklch(0.72 0.015 250);
+  --color-pz-accent: oklch(0.91 0.19 122); /* lime #c4f042 */
+  --color-pz-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o lime */
+  --color-pz-ok: oklch(0.8 0.16 155);
+  --color-pz-warn: oklch(0.83 0.14 85);
+  --color-pz-scrim: oklch(0.08 0.01 262 / 0.6);
+
+  --color-pz-stage-z: oklch(0.74 0.16 300);
+  --color-pz-stage-e: oklch(0.76 0.12 235);
+  --color-pz-stage-r: oklch(0.79 0.14 65);
+  --color-pz-stage-o: oklch(0.75 0.16 350);
+}
+
+/*
+ * Pulso do nó ATUAL do Mapa da criação. A cor entra por --pz-pulse-color
+ * (setada inline pelo componente com o token da etapa). Respeita
+ * prefers-reduced-motion: sem animação, o nó atual segue destacado pelo anel
+ * estático que o componente desenha.
+ */
+@keyframes pz-stage-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0
+      color-mix(in srgb, var(--pz-pulse-color, var(--color-pz-accent)) 45%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 10px
+      color-mix(in srgb, var(--pz-pulse-color, var(--color-pz-accent)) 0%, transparent);
+  }
+}
+[data-pensa-theme] .pz-stage-pulse {
+  animation: pz-stage-pulse 1.8s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-pensa-theme] .pz-stage-pulse {
+    animation: none;
+  }
+}
+
+/*
+ * Pop suave da estrela do QuestionTracker quando ACENDE (uma vez, ao entrar
+ * com a classe). Com prefers-reduced-motion a estrela só muda de cor, sem pop.
+ */
+@keyframes pz-star-pop {
+  0% {
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+[data-pensa-theme] .pz-star-pop {
+  animation: pz-star-pop 0.45s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-pensa-theme] .pz-star-pop {
+    animation: none;
+  }
+}
+
+/*
+ * Confete da festa do lançamento (LaunchCelebration): CSS puro, animação
+ * FINITA (uma queda, `forwards` — nunca infinita) com cor/posição/atraso
+ * inline por peça. Com prefers-reduced-motion o confete fica invisível
+ * (opacity 0 é o estado base) e a festa segue sem movimento.
+ */
+@keyframes pz-confetti-fall {
+  0% {
+    transform: translateY(-8vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(108vh) rotate(540deg);
+    opacity: 0;
+  }
+}
+[data-pensa-theme] .pz-confetti-piece {
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 16px;
+  border-radius: 3px;
+  opacity: 0;
+  animation: pz-confetti-fall 2.8s ease-in forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-pensa-theme] .pz-confetti-piece {
+    animation: none;
+  }
+}
+
+/* Selo "VERSÃO N LANÇADA" carimbado sobre a Carta da Ideia. */
+[data-pensa-theme] .pz-launch-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  border: 3px solid var(--color-pz-ok);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  color: var(--color-pz-ok);
+  background: color-mix(in srgb, var(--color-pz-surface) 82%, transparent);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}

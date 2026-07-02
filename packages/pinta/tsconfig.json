@@ -1,0 +1,29 @@
+{
+  // Standalone (não estende o tsconfig.base do monorepo), espelhando o modelo do
+  // packages/pensa: pacote TS-source sem build, consumido direto pelos apps.
+  // verbatimModuleSyntax LIGADO — todo import só-de-tipo usa `import type`, o que
+  // mantém a fonte compilável por qualquer bundler/tsconfig de host.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "useDefineForClassFields": true,
+    "noEmit": true,
+    "types": ["bun"]
+  },
+  "include": ["src", "test-setup.ts"],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "@sistemazero/pensa",
+  "version": "0.1.0",
+  "description": "Pensa — planejamento guiado (metodologia ZERO) para crianças planejarem jogos antes de construir no Estúdio; consumido como TS source pelos apps do monorepo.",
+  "type": "module",
+  "private": true,
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles/pensa.css"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test src",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^20.10.2",
+    "@testing-library/react": "^16.0.1",
+    "@types/bun": "^1.3.14",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "typescript": "^5.7.0"
+  }
+}

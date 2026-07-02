@@ -45,6 +45,22 @@ import { ListMembersService } from './application/list-members/list-members.serv
 import { ListMyCoursesService } from './application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
+import { AdvancePensaStageService } from './application/pensa/advance-stage.service'
+import { AppendPensaConversationTurnService } from './application/pensa/append-conversation-turn.service'
+import { CreatePensaCycleService } from './application/pensa/create-cycle.service'
+import { CreatePensaProjectService } from './application/pensa/create-project.service'
+import { GetPensaProjectService } from './application/pensa/get-project.service'
+import { GetPensaStageService } from './application/pensa/get-stage.service'
+import { GetPensaStudioSnapshotService } from './application/pensa/get-studio-snapshot.service'
+import { ListPensaProjectsService } from './application/pensa/list-projects.service'
+import { ReplacePensaChecklistService } from './application/pensa/replace-checklist.service'
+import { ReplacePensaTasksService } from './application/pensa/replace-tasks.service'
+import { SavePensaArtifactService } from './application/pensa/save-artifact.service'
+import { SavePensaStudioSnapshotService } from './application/pensa/save-studio-snapshot.service'
+import { TogglePensaChecklistItemService } from './application/pensa/toggle-checklist-item.service'
+import { UpdatePensaProjectService } from './application/pensa/update-project.service'
+import { UpdatePensaTaskService } from './application/pensa/update-task.service'
+import { ValidatePensaArtifactService } from './application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
@@ -73,6 +89,7 @@ import { DrizzleCourseRatingRepository } from './infrastructure/persistence/driz
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
+import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
@@ -266,6 +283,27 @@ export async function createApplication(env: Env): Promise<Application> {
   const validateCertificate = new ValidateCertificateService(certificates)
   const revokeCertificate = new RevokeCertificateService(certificates, clock)
 
+  // Pensa (planejamento guiado — projeto/ciclos/etapas/artefatos/kanban/checklist)
+  const pensaRepo = new DrizzlePensaRepository(db)
+  const pensaNewId = () => randomUUID()
+  const listPensaProjects = new ListPensaProjectsService(pensaRepo)
+  const createPensaProject = new CreatePensaProjectService(pensaRepo, pensaNewId, clock)
+  const getPensaProject = new GetPensaProjectService(pensaRepo)
+  const updatePensaProject = new UpdatePensaProjectService(pensaRepo, clock)
+  const getPensaStudioSnapshot = new GetPensaStudioSnapshotService(pensaRepo)
+  const savePensaStudioSnapshot = new SavePensaStudioSnapshotService(pensaRepo, clock)
+  const createPensaCycle = new CreatePensaCycleService(pensaRepo, pensaNewId, clock)
+  const getPensaStage = new GetPensaStageService(pensaRepo)
+  const appendPensaConversationTurn = new AppendPensaConversationTurnService(pensaRepo, clock)
+  const savePensaArtifact = new SavePensaArtifactService(pensaRepo, pensaNewId, clock)
+  const validatePensaArtifact = new ValidatePensaArtifactService(pensaRepo, clock)
+  // O advance credita a gamificação NA RESPOSTA (award-dentro-da-ação, fail-open).
+  const advancePensaStage = new AdvancePensaStageService(pensaRepo, awardGamification, clock)
+  const replacePensaTasks = new ReplacePensaTasksService(pensaRepo, pensaNewId, clock)
+  const updatePensaTask = new UpdatePensaTaskService(pensaRepo, clock)
+  const replacePensaChecklist = new ReplacePensaChecklistService(pensaRepo, pensaNewId, clock)
+  const togglePensaChecklistItem = new TogglePensaChecklistItemService(pensaRepo, clock)
+
   // Motor de acesso (webhooks)
   const grant = new GrantEntitlementService({
     catalog,
@@ -360,6 +398,26 @@ export async function createApplication(env: Env): Promise<Application> {
       saveRoom,
       buyRoomItem,
       profileAllowance,
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    pensa: {
+      listProjects: listPensaProjects,
+      createProject: createPensaProject,
+      getProject: getPensaProject,
+      updateProject: updatePensaProject,
+      getStudioSnapshot: getPensaStudioSnapshot,
+      saveStudioSnapshot: savePensaStudioSnapshot,
+      createCycle: createPensaCycle,
+      getStage: getPensaStage,
+      appendConversationTurn: appendPensaConversationTurn,
+      saveArtifact: savePensaArtifact,
+      validateArtifact: validatePensaArtifact,
+      advanceStage: advancePensaStage,
+      replaceTasks: replacePensaTasks,
+      updateTask: updatePensaTask,
+      replaceChecklist: replacePensaChecklist,
+      toggleChecklistItem: togglePensaChecklistItem,
+      accessCheck,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     webhooks: {

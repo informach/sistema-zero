@@ -1,8 +1,14 @@
-import { type JSX, useId, useRef, useState } from 'react'
+import { type JSX, useEffect, useId, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { normalizeAssetName, PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, Modal } from '#ui'
 import { ASSET_LIBRARY, type LibraryAsset } from '../../asset-library/catalog'
+import {
+  getPersonalAssetsNamespace,
+  listPersonalAssets,
+  type PersonalAsset,
+  removePersonalAsset,
+} from '../../asset-library/personal'
 import { useProjectStore } from '../../state/projectStore'
 import { fileToAssetDataUrl } from './imageProcessing'
 
@@ -38,6 +44,42 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   const fileRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  // "Meus desenhos" (biblioteca pessoal, alimentada pelo Pinta): só existe com
+  // namespace de perfil setado — some na aula e no adulto (deliberado). Carrega
+  // ao ABRIR o painel (a criança pode ter desenhado no Pinta em outra aba).
+  const personalNamespace = getPersonalAssetsNamespace()
+  const [personal, setPersonal] = useState<PersonalAsset[]>([])
+  useEffect(() => {
+    if (!open || !personalNamespace) return
+    let cancelled = false
+    void listPersonalAssets().then((assets) => {
+      if (!cancelled) setPersonal(assets)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [open, personalNamespace])
+
+  const addFromPersonal = (drawing: PersonalAsset) => {
+    setError(null)
+    const taken = new Set(assets.map((a) => a.name))
+    const err = addAsset({
+      name: uniqueName(drawing.name, taken),
+      dataUrl: drawing.dataUrl,
+      width: drawing.width,
+      height: drawing.height,
+      source: 'library',
+      libId: `personal:${drawing.id}`,
+    })
+    if (err) setError(err)
+  }
+
+  const removeFromPersonal = (id: string) => {
+    // Otimista: a remoção no IDB é best-effort (fail-soft).
+    setPersonal((current) => current.filter((a) => a.id !== id))
+    void removePersonalAsset(id)
+  }
 
   const usedChars = assets.reduce((sum, a) => sum + a.dataUrl.length, 0)
   const budgetPct = Math.min(
@@ -195,6 +237,59 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
               </ul>
             )}
           </section>
+
+          {personalNamespace ? (
+            <section>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
+                Meus desenhos
+              </h3>
+              {personal.length === 0 ? (
+                <p className="text-sm text-sz-fg-soft">
+                  Desenhe no Pinta e toque em "Usar no Estúdio" — seus desenhos aparecem aqui.
+                </p>
+              ) : (
+                <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {personal.map((drawing) => (
+                    <li
+                      key={drawing.id}
+                      className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
+                    >
+                      <img
+                        src={drawing.dataUrl}
+                        alt={drawing.name}
+                        className="h-12 w-12 shrink-0 rounded bg-sz-bg object-contain"
+                        style={{ imageRendering: 'pixelated' }}
+                      />
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span
+                          className="truncate font-mono text-xs text-sz-fg"
+                          title={drawing.name}
+                        >
+                          {drawing.name}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="text-xs text-sz-accent hover:underline"
+                            onClick={() => addFromPersonal(drawing)}
+                          >
+                            Adicionar ao projeto
+                          </button>
+                          <button
+                            type="button"
+                            className="text-xs text-red-400 hover:underline"
+                            onClick={() => removeFromPersonal(drawing.id)}
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ) : null}
 
           <section>
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">

@@ -44,6 +44,9 @@ const EnvSchema = z
     // escreve do zero), nunca quebra o boot nem a publicação.
     OPENROUTER_API_KEY: z.string().optional(),
     OPENROUTER_MODEL: z.string().default('openai/gpt-4o-mini'),
+    // Modelo das SÍNTESES do Pensa (ideia clarificada/spec/missões) — mais capaz que
+    // o do chat. OPCIONAL: ausente → cai no OPENROUTER_MODEL.
+    OPENROUTER_PENSA_MODEL: z.string().optional(),
     OPENROUTER_REFERER: z.string().url().optional(),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   })

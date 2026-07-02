@@ -10,6 +10,7 @@ import {
 } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
 import { QuizCooldownError } from '../../domain/course/course.errors'
+import { PensaGateNotReadyError } from '../../domain/pensa/pensa.errors'
 
 export type { ErrorEnvelope }
 
@@ -54,6 +55,13 @@ const DOMAIN_STATUS: Record<string, number> = {
   MISSION_NOT_COMPLETED: 409,
   MAX_FREEZES: 409,
   VACATION_INVALID: 400,
+  // Pensa (planejamento guiado). NOT_FOUND cobre também ownership mismatch
+  // (nunca vazar existência); os demais são conflitos de estado/cota.
+  PENSA_NOT_FOUND: 404,
+  PENSA_QUOTA_EXCEEDED: 409,
+  PENSA_CYCLE_NOT_DONE: 409,
+  PENSA_GATE_NOT_READY: 409,
+  PENSA_STAGE_MISMATCH: 409,
 }
 
 /** Traduz qualquer erro num par status + corpo padronizado. */
@@ -61,7 +69,13 @@ export function buildErrorResponse(input: {
   code: string | number
   error: unknown
   logger: Logger
-}): { status: number; body: ErrorEnvelope & { retryAvailableAt?: string } } {
+}): {
+  status: number
+  body: ErrorEnvelope & {
+    retryAvailableAt?: string
+    details?: { gate: string; missing: string[] }
+  }
+} {
   const { error, code } = input
 
   // Cooldown do quiz: além do code/message, expõe `retryAvailableAt` ESTRUTURADO
@@ -72,6 +86,18 @@ export function buildErrorResponse(input: {
       body: {
         ...envelope(error.code, error.message),
         retryAvailableAt: error.retryAvailableAt.toISOString(),
+      },
+    }
+  }
+
+  // Gate do advance do Pensa: expõe `details.gate` + `details.missing`
+  // ESTRUTURADOS (contrato) — a UI mostra exatamente o que falta na etapa.
+  if (error instanceof PensaGateNotReadyError) {
+    return {
+      status: 409,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { gate: error.gate, missing: error.missing },
       },
     }
   }

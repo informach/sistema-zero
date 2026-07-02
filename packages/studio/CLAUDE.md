@@ -354,6 +354,24 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 - **Tela cheia** (`sz_js_request/exit/toggle_fullscreen` + `sz_val_is_fullscreen` + evento `fullscreenchange`): ⚠️ exige `allow="fullscreen"` no iframe (`components/preview/PreviewIframe.tsx` + `StudioProjectPlayer.tsx`), senão `requestFullscreen()` rejeita em silêncio.
 - O CSS criativo (variáveis `--x`/`var()`, grid, 3D `rotateX`/`perspective`, pseudo `:hover`/`::before`) JÁ funciona pela "Regra CSS" + "propriedade: valor" genéricas (o parser preserva seletor/propriedade/valor livres); os blocos dedicados são só atalho de UX.
 
+## Biblioteca pessoal "Meus desenhos" (ponte Pinta → Estúdio, 07/2026)
+
+`src/asset-library/personal.ts` (subpath **`@sistemazero/studio/personal-assets`**) — o Studio é o
+DONO do formato/limites/normalização; o Pinta só conhece o callback `sendToStudio` do host, e o
+host (community-kids `pinta-client.tsx`) liga os dois via o subpath (zero import pinta↔studio).
+Store idb-keyval PRÓPRIA `sistema-zero-personal-assets-<ns>` (um DB por PERFIL), registros
+`asset:<id>` com **UPSERT por id** (reenviar o mesmo desenho atualiza, não duplica). API:
+`listPersonalAssets` / `savePersonalAsset` (**fail-soft `{ok:false}`** — quota/ambiente sem IDB
+nunca derruba o editor; valida `isValidAssetDataUrl` + `normalizeAssetName` do `#core`, dedup de
+nome por sufixo contra OUTROS ids, `PERSONAL_ASSET_LIMITS = {maxCount:128, maxTotalChars:24M}`) /
+`removePersonalAsset` / `set`/`getPersonalAssetsNamespace`. **`setStudioStorageNamespace(ns)`
+virou wrapper** que seta os DOIS namespaces (persistência de projetos + biblioteca pessoal) — 
+nenhum host muda. O `AssetsPanel` ganhou a seção **"Meus desenhos"** entre "No projeto" e
+"Biblioteca": carrega ao ABRIR o painel, **só renderiza com namespace ≠ `''`** (some na aula e no
+adulto — deliberado), "Adicionar ao projeto" copia via `addAsset` com `uniqueName`
+(`libId: personal:<id>`), "Excluir" é otimista/best-effort; estado vazio orienta "Desenhe no
+Pinta…". Testes em `src/asset-library/personal.test.ts` (mock idb FUNCIONAL Map-por-DB).
+
 ## Comandos
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)

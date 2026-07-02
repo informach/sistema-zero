@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./player": "./src/components/preview/StudioProjectPlayer.tsx",
+    "./personal-assets": "./src/asset-library/personal.ts",
     "./styles.css": "./src/styles/studio.css"
   },
   "imports": {
