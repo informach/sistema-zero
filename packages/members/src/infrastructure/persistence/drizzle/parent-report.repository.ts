@@ -12,7 +12,10 @@ export class DrizzleParentReportRepository implements ParentReportRepository {
       .select({ accountId: parentReportsSent.accountId })
       .from(parentReportsSent)
       .where(
-        and(eq(parentReportsSent.weekKey, weekKey), inArray(parentReportsSent.accountId, accountIds)),
+        and(
+          eq(parentReportsSent.weekKey, weekKey),
+          inArray(parentReportsSent.accountId, accountIds),
+        ),
       )
     return new Set(rows.map((r) => r.accountId))
   }

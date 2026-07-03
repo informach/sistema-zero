@@ -110,11 +110,7 @@ export interface StudioSubmissionRepository {
    * CONTAS (account_id) com entrega do Estúdio na audiência dentro da janela —
    * fecha o buraco da enumeração do report (atividade sem XP novo). Distinct.
    */
-  listAccountsSubmittedInPeriod(
-    audience: CourseAudience,
-    from: Date,
-    to: Date,
-  ): Promise<string[]>
+  listAccountsSubmittedInPeriod(audience: CourseAudience, from: Date, to: Date): Promise<string[]>
   /**
    * Entregas mais recentes do aluno (ficha admin — linha do tempo), com aula/curso
    * resolvidos por join. Limitado a `limit` (mais recentes primeiro). Sem o projeto.

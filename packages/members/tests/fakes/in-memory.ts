@@ -2059,10 +2059,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   ): Promise<number> {
     return this.badges.filter(
       (b) =>
-        b.userId === userId &&
-        b.audience === audience &&
-        b.unlockedAt >= from &&
-        b.unlockedAt < to,
+        b.userId === userId && b.audience === audience && b.unlockedAt >= from && b.unlockedAt < to,
     ).length
   }
 

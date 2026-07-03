@@ -5,7 +5,10 @@ import { AwardGamificationService } from '../../src/application/gamification/awa
 import { SendParentReportsService } from '../../src/application/parent-report/send-parent-reports.service'
 import type { AccountIdentity, AuthGateway } from '../../src/domain/ports/auth-gateway.port'
 import type { HubGateway } from '../../src/domain/ports/hub-gateway.port'
-import type { MessagingGateway, SendEmailInput } from '../../src/domain/ports/messaging-gateway.port'
+import type {
+  MessagingGateway,
+  SendEmailInput,
+} from '../../src/domain/ports/messaging-gateway.port'
 import {
   InMemoryAvatarRepository,
   InMemoryCourseRepository,

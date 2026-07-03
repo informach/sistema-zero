@@ -129,7 +129,13 @@ export class GetChildrenStatsService {
             weekFrom,
             now,
           ),
-          this.gamification.countEventsInPeriod(profileId, audience, ['quiz_passed'], weekFrom, now),
+          this.gamification.countEventsInPeriod(
+            profileId,
+            audience,
+            ['quiz_passed'],
+            weekFrom,
+            now,
+          ),
           this.gamification.countBadgesUnlockedInPeriod(profileId, audience, weekFrom, now),
           this.studio.countSubmittedInPeriodByAudience(profileId, audience, weekFrom, now),
         ])

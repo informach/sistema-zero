@@ -6,7 +6,10 @@ import type { GamificationRepository } from '../../domain/ports/gamification-rep
 import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
 import type { ParentReportRepository } from '../../domain/ports/parent-report-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
-import type { ChildStatsView, GetChildrenStatsService } from '../children-stats/get-children-stats.service'
+import type {
+  ChildStatsView,
+  GetChildrenStatsService,
+} from '../children-stats/get-children-stats.service'
 
 export interface ParentReportOptions {
   /** Dia da semana do gatilho (0=domingo … 6=sábado; default 5 = sexta). */
@@ -32,16 +35,24 @@ function childSummary(name: string, stats: ChildStatsView): string {
   const lines: string[] = [`⭐ ${name}`]
   if (w.xpEarned > 0) lines.push(`   • ${w.xpEarned} XP conquistados`)
   if (w.lessonsCompleted > 0) {
-    lines.push(`   • ${w.lessonsCompleted} ${w.lessonsCompleted === 1 ? 'aula concluída' : 'aulas concluídas'}`)
+    lines.push(
+      `   • ${w.lessonsCompleted} ${w.lessonsCompleted === 1 ? 'aula concluída' : 'aulas concluídas'}`,
+    )
   }
   if (w.quizzesPassed > 0) {
-    lines.push(`   • ${w.quizzesPassed} ${w.quizzesPassed === 1 ? 'quiz aprovado' : 'quizzes aprovados'}`)
+    lines.push(
+      `   • ${w.quizzesPassed} ${w.quizzesPassed === 1 ? 'quiz aprovado' : 'quizzes aprovados'}`,
+    )
   }
   if (w.projectsSubmitted > 0) {
-    lines.push(`   • ${w.projectsSubmitted} ${w.projectsSubmitted === 1 ? 'projeto entregue' : 'projetos entregues'}`)
+    lines.push(
+      `   • ${w.projectsSubmitted} ${w.projectsSubmitted === 1 ? 'projeto entregue' : 'projetos entregues'}`,
+    )
   }
   if (w.badgesUnlocked > 0) {
-    lines.push(`   • ${w.badgesUnlocked} ${w.badgesUnlocked === 1 ? 'conquista nova' : 'conquistas novas'}`)
+    lines.push(
+      `   • ${w.badgesUnlocked} ${w.badgesUnlocked === 1 ? 'conquista nova' : 'conquistas novas'}`,
+    )
   }
   for (const game of stats.games ?? []) {
     lines.push(`   • 🎮 Publicou o jogo "${game.title}" no Mural!`)

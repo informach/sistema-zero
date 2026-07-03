@@ -5,7 +5,12 @@ import type { CreatePasswordTokenService } from '../../../application/password-r
 import type { ProfileRepository } from '../../../domain/ports/profile-repository.port'
 import type { UserRepository } from '../../../domain/ports/user-repository.port'
 import { UserNotFoundError } from '../../../domain/user/user.errors'
-import { BatchGetUsersBody, CreatePasswordTokenBody, EnsureBuyerBody, WriteAuditBody } from '../dtos'
+import {
+  BatchGetUsersBody,
+  CreatePasswordTokenBody,
+  EnsureBuyerBody,
+  WriteAuditBody,
+} from '../dtos'
 import { requireInternalToken } from '../internal-auth'
 
 export interface InternalRoutesDeps {

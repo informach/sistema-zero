@@ -5,7 +5,6 @@ import type { EquipAvatarService } from '../../../application/avatar/equip-avata
 import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
 import type { SetAvatarPhotoService } from '../../../application/avatar/set-avatar-photo.service'
 import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
-import type { ParentReportPrefsService } from '../../../application/parent-report/report-prefs.service'
 import type { BuyStreakFreezeService } from '../../../application/gamification/buy-streak-freeze.service'
 import type { ClaimMissionService } from '../../../application/gamification/claim-mission.service'
 import type { GetChallengeService } from '../../../application/gamification/get-challenge.service'
@@ -27,6 +26,7 @@ import type { IssueCertificateService } from '../../../application/issue-certifi
 import type { ListCatalogService } from '../../../application/list-catalog/list-catalog.service'
 import type { ListMyCoursesService } from '../../../application/list-my-courses/list-my-courses.service'
 import type { MarkLessonCompleteService } from '../../../application/mark-lesson-complete/mark-lesson-complete.service'
+import type { ParentReportPrefsService } from '../../../application/parent-report/report-prefs.service'
 import type { GetProfileAllowanceService } from '../../../application/profile-allowance/get-profile-allowance.service'
 import type { GetPublicProfileService } from '../../../application/profiles/get-public-profile.service'
 import type { BuyRoomItemService } from '../../../application/room/buy-room-item.service'
@@ -429,7 +429,8 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       )
       .put(
         '/parents/report-prefs',
-        async ({ headers, body }) => deps.parentReportPrefs.set(resolveUserId(headers), body.disabled),
+        async ({ headers, body }) =>
+          deps.parentReportPrefs.set(resolveUserId(headers), body.disabled),
         { body: ParentReportPrefsBody },
       )
       .get(
