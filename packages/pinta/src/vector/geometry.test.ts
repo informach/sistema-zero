@@ -2,9 +2,12 @@ import { describe, expect, it } from 'bun:test'
 import {
   boundsCenter,
   parsePathD,
+  rotatePoint,
   rotateShapeTo,
   scaleShape,
+  setShapeNode,
   shapeBounds,
+  shapeNodes,
   translateShape,
 } from './geometry'
 import type { VectorShape } from './model'
@@ -83,6 +86,61 @@ describe('rotateShapeTo', () => {
   it('normaliza para 0–360', () => {
     expect(rotateShapeTo(rect, 370).rotation).toBe(10)
     expect(rotateShapeTo(rect, -90).rotation).toBe(270)
+  })
+})
+
+describe('reshape (shapeNodes / setShapeNode)', () => {
+  it('lista os nós on-curve por tipo', () => {
+    expect(shapeNodes(polygon)).toEqual([
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 5, y: 10 },
+    ])
+    expect(shapeNodes(line)).toEqual([
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ])
+    // Path M + C: 2 nós (o ponto do M e o fim do C), sem os controles.
+    expect(shapeNodes(path)).toEqual([
+      { x: 0, y: 0 },
+      { x: 10, y: 10 },
+    ])
+    // Paramétricos não têm nós (editam pela bbox).
+    expect(shapeNodes(rect)).toEqual([])
+    expect(shapeNodes(ellipse)).toEqual([])
+  })
+
+  it('move um vértice do polígono', () => {
+    const moved = setShapeNode(polygon, 2, { x: 7, y: 12 })
+    expect(moved.type === 'polygon' && moved.points[2]).toEqual({ x: 7, y: 12 })
+    expect(moved.type === 'polygon' && moved.points[0]).toEqual({ x: 0, y: 0 })
+  })
+
+  it('move uma ponta da linha', () => {
+    expect(setShapeNode(line, 1, { x: 20, y: 5 })).toMatchObject({ x2: 20, y2: 5, x1: 0, y1: 0 })
+  })
+
+  it('mover o fim de um C arrasta o controle de saída junto', () => {
+    // 'M 0 0 C 1 1 2 2 10 10' → mover o nó final (index 1) em +5,+5 move o
+    // control2 (2,2 → 7,7) e o anchor (10,10 → 15,15). Sem próximo C.
+    const moved = setShapeNode(path, 1, { x: 15, y: 15 })
+    expect(moved.type === 'path' && moved.d).toBe('M 0 0 C 1 1 7 7 15 15')
+  })
+
+  it('índice fora da faixa devolve o shape sem mudar', () => {
+    expect(setShapeNode(line, 5, { x: 0, y: 0 })).toBe(line)
+  })
+})
+
+describe('rotatePoint', () => {
+  it('gira em torno do centro (90° leva (1,0)→(0,1) relativo)', () => {
+    const p = rotatePoint({ x: 1, y: 0 }, { x: 0, y: 0 }, 90)
+    expect(p.x).toBeCloseTo(0, 5)
+    expect(p.y).toBeCloseTo(1, 5)
+  })
+
+  it('0° devolve cópia igual', () => {
+    expect(rotatePoint({ x: 3, y: 4 }, { x: 1, y: 1 }, 0)).toEqual({ x: 3, y: 4 })
   })
 })
 

@@ -16,16 +16,37 @@ export interface VectorStroke {
   width: number
 }
 
+/** Degradê de 2 cores (linear com ângulo, ou radial). Cores hex, sem `'none'`. */
+export interface VectorGradient {
+  type: 'linear' | 'radial'
+  /** Cor hex `#rrggbb` do começo (0%). */
+  from: string
+  /** Cor hex `#rrggbb` do fim (100%). */
+  to: string
+  /** Graus (só `linear`): 0 = →, 90 = ↓. Ignorado no radial. */
+  angle: number
+}
+
+/** Preenchimento: cor sólida (hex ou `'none'`) OU degradê. */
+export type VectorFill = string | VectorGradient
+
 interface VectorShapeBase {
   id: string
-  /** Cor hex `#rrggbb` ou `'none'` (sem preenchimento). */
-  fill: string
+  /** Cor sólida (`#rrggbb`/`'none'`) ou degradê. */
+  fill: VectorFill
   /** `null` = sem contorno. */
   stroke: VectorStroke | null
   /** 0–1. */
   opacity: number
   /** Graus, em torno do centro do bounding box. */
   rotation: number
+  /** Grupo: shapes com o MESMO id se movem/selecionam juntos. Ausente = solto. */
+  groupId?: string
+}
+
+/** id do `<linearGradient>/<radialGradient>` de um shape (único = id do shape). */
+export function gradientId(shapeId: string): string {
+  return `pin-grad-${shapeId}`
 }
 
 export type VectorShape = VectorShapeBase &
@@ -43,6 +64,29 @@ const HEX_COLOR = /^#[0-9a-f]{6}$/i
 
 export function isVectorColor(value: unknown): value is string {
   return value === 'none' || (typeof value === 'string' && HEX_COLOR.test(value))
+}
+
+function isHex(value: unknown): value is string {
+  return typeof value === 'string' && HEX_COLOR.test(value)
+}
+
+export function isVectorGradient(value: unknown): value is VectorGradient {
+  if (!value || typeof value !== 'object') return false
+  const g = value as Record<string, unknown>
+  return (g.type === 'linear' || g.type === 'radial') && isHex(g.from) && isHex(g.to)
+}
+
+/** Normaliza um preenchimento vindo de fonte não confiável; `null` = inválido. */
+function sanitizeFill(raw: unknown): VectorFill | null {
+  if (isVectorGradient(raw)) {
+    return {
+      type: raw.type,
+      from: raw.from,
+      to: raw.to,
+      angle: isFiniteNumber(raw.angle) ? ((raw.angle % 360) + 360) % 360 : 90,
+    }
+  }
+  return isVectorColor(raw) ? raw : null
 }
 
 function isFiniteNumber(value: unknown): value is number {
@@ -68,7 +112,8 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
   if (!raw || typeof raw !== 'object') return null
   const s = raw as Record<string, unknown>
   if (typeof s.id !== 'string' || !s.id) return null
-  if (!isVectorColor(s.fill)) return null
+  const fill = sanitizeFill(s.fill)
+  if (fill === null) return null
   let stroke: VectorStroke | null = null
   if (s.stroke != null) {
     const st = s.stroke as Record<string, unknown>
@@ -77,7 +122,8 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
   }
   const opacity = isFiniteNumber(s.opacity) ? Math.min(Math.max(s.opacity, 0), 1) : 1
   const rotation = isFiniteNumber(s.rotation) ? s.rotation % 360 : 0
-  const base = { id: s.id, fill: s.fill, stroke, opacity, rotation }
+  const groupId = typeof s.groupId === 'string' && s.groupId ? s.groupId : undefined
+  const base = { id: s.id, fill, stroke, opacity, rotation, ...(groupId ? { groupId } : {}) }
 
   switch (s.type) {
     case 'rect':

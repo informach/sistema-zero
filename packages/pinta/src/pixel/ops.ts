@@ -17,10 +17,13 @@ export interface BrushOptions {
   color: number
   /** 1 = 1px, 2 = 2×2, 3 = 3×3 centrado. */
   size: number
+  /** Espelha no eixo vertical central (esquerda↔direita). */
   mirrorX?: boolean
+  /** Espelha no eixo horizontal central (cima↔baixo). */
+  mirrorY?: boolean
 }
 
-/** Carimba o pincel (tamanho + espelho) num bitmap MUTÁVEL — uso interno. */
+/** Carimba o pincel (tamanho + espelhos) num bitmap MUTÁVEL — uso interno. */
 function stamp(bitmap: PintaBitmap, x: number, y: number, opts: BrushOptions): void {
   const size = Math.min(Math.max(Math.round(opts.size), 1), 3)
   // 1 → só (x,y); 2 → quadrado 2×2 ancorado; 3 → 3×3 centrado.
@@ -28,8 +31,14 @@ function stamp(bitmap: PintaBitmap, x: number, y: number, opts: BrushOptions): v
   const to = size >= 2 ? 1 : 0
   for (let dy = from; dy <= to; dy += 1) {
     for (let dx = from; dx <= to; dx += 1) {
-      setPixel(bitmap, x + dx, y + dy, opts.color)
-      if (opts.mirrorX) setPixel(bitmap, bitmap.width - 1 - (x + dx), y + dy, opts.color)
+      const px = x + dx
+      const py = y + dy
+      const mx = bitmap.width - 1 - px
+      const my = bitmap.height - 1 - py
+      setPixel(bitmap, px, py, opts.color)
+      if (opts.mirrorX) setPixel(bitmap, mx, py, opts.color)
+      if (opts.mirrorY) setPixel(bitmap, px, my, opts.color)
+      if (opts.mirrorX && opts.mirrorY) setPixel(bitmap, mx, my, opts.color)
     }
   }
 }

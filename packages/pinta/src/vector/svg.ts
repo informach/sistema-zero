@@ -4,7 +4,7 @@
  * snapshot-testável e abre em qualquer navegador/editor de SVG.
  */
 import { boundsCenter, shapeBounds } from './geometry'
-import type { VectorShape } from './model'
+import { gradientId, isVectorGradient, type VectorGradient, type VectorShape } from './model'
 
 /**
  * Um "documento" vetorial ESTRUTURAL: qualquer coisa com dimensões + shapes
@@ -26,9 +26,47 @@ function escapeXml(value: string): string {
 
 const round2 = (value: number) => Math.round(value * 100) / 100
 
+/**
+ * Vetor do degradê LINEAR em coords de objectBoundingBox (0–1): o ângulo (0 = →,
+ * 90 = ↓) vira uma reta que atravessa o centro. Usado no export string e no
+ * render React (mesmos números).
+ */
+export function linearGradientVector(angle: number): {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+} {
+  const rad = (angle * Math.PI) / 180
+  const dx = Math.cos(rad) / 2
+  const dy = Math.sin(rad) / 2
+  return {
+    x1: round2(0.5 - dx),
+    y1: round2(0.5 - dy),
+    x2: round2(0.5 + dx),
+    y2: round2(0.5 + dy),
+  }
+}
+
+/** `<defs>` com um gradiente por shape de preenchimento degradê (`''` se nenhum). */
+export function gradientDefsMarkup(shapes: VectorShape[]): string {
+  const defs = shapes
+    .filter((s) => isVectorGradient(s.fill))
+    .map((s) => {
+      const g = s.fill as VectorGradient
+      const id = gradientId(s.id)
+      const stops = `<stop offset="0" stop-color="${g.from}"/><stop offset="1" stop-color="${g.to}"/>`
+      if (g.type === 'radial') return `  <radialGradient id="${id}">${stops}</radialGradient>`
+      const v = linearGradientVector(g.angle)
+      return `  <linearGradient id="${id}" x1="${v.x1}" y1="${v.y1}" x2="${v.x2}" y2="${v.y2}">${stops}</linearGradient>`
+    })
+  return defs.length > 0 ? `<defs>\n${defs.join('\n')}\n</defs>` : ''
+}
+
 /** Atributos comuns (fill/stroke/opacity/transform de rotação). */
 export function shapeCommonAttrs(shape: VectorShape): Record<string, string> {
-  const attrs: Record<string, string> = { fill: shape.fill }
+  const fill = isVectorGradient(shape.fill) ? `url(#${gradientId(shape.id)})` : shape.fill
+  const attrs: Record<string, string> = { fill }
   if (shape.stroke) {
     attrs.stroke = shape.stroke.color
     attrs['stroke-width'] = String(shape.stroke.width)
@@ -121,9 +159,11 @@ export function shapesToMarkup(shapes: VectorShape[], indent = '  '): string {
 
 /** O documento SVG inteiro (ordem do array = z-order, fundo primeiro). */
 export function vectorToSvg(doc: VectorDoc): string {
-  return [
+  const defs = gradientDefsMarkup(doc.shapes)
+  const lines = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${doc.width}" height="${doc.height}" viewBox="0 0 ${doc.width} ${doc.height}">`,
-    shapesToMarkup(doc.shapes),
-    '</svg>',
-  ].join('\n')
+  ]
+  if (defs) lines.push(defs)
+  lines.push(shapesToMarkup(doc.shapes), '</svg>')
+  return lines.join('\n')
 }

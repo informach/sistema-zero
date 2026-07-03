@@ -31,12 +31,20 @@ import {
   type Bounds,
   boundsCenter,
   flipShape,
+  rotatePoint,
   rotateShapeTo,
   scaleShape,
+  setShapeNode,
   shapeBounds,
+  shapeNodes,
   translateShape,
 } from '../../vector/geometry'
-import type { Vec2, VectorShape } from '../../vector/model'
+import {
+  isVectorGradient,
+  type Vec2,
+  type VectorGradient,
+  type VectorShape,
+} from '../../vector/model'
 import {
   DEFAULT_STYLE,
   makeEllipse,
@@ -49,7 +57,7 @@ import {
   type ShapeStyle,
 } from '../../vector/shapes'
 import { smoothStrokeToPathCapped } from '../../vector/smoothing'
-import { ShapeElement } from '../../vector/VectorFrameSvg'
+import { GradientDefs, ShapeElement } from '../../vector/VectorFrameSvg'
 import { Button, IconButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { useToast } from '../ui/Toast'
@@ -58,6 +66,7 @@ import { ZoomControls } from './ZoomControls'
 
 type VectorTool =
   | 'select'
+  | 'reshape'
   | 'pan'
   | 'brush'
   | 'rect'
@@ -66,9 +75,11 @@ type VectorTool =
   | 'polygon'
   | 'star'
   | 'text'
+  | 'picker'
 
 const TOOLS: Array<{ id: VectorTool; emoji: string; label: string }> = [
   { id: 'select', emoji: '👆', label: COPY.vector.select },
+  { id: 'reshape', emoji: '✒️', label: COPY.vector.reshape },
   { id: 'pan', emoji: '🖐️', label: COPY.vector.pan },
   { id: 'brush', emoji: '🖌️', label: COPY.vector.brush },
   { id: 'rect', emoji: '⬜', label: COPY.tools.rect },
@@ -77,7 +88,11 @@ const TOOLS: Array<{ id: VectorTool; emoji: string; label: string }> = [
   { id: 'polygon', emoji: '🔷', label: COPY.vector.polygon },
   { id: 'star', emoji: '⭐', label: COPY.vector.star },
   { id: 'text', emoji: '🔤', label: COPY.vector.text },
+  { id: 'picker', emoji: '💧', label: COPY.tools.picker },
 ]
+
+/** No máximo de cores personalizadas guardadas na sessão (aparecem como swatches). */
+const MAX_CUSTOM_COLORS = 6
 
 /** Cores livres do vetorial (os hex da paleta Arcade, sem o slot transparente). */
 const SWATCHES = [
@@ -124,6 +139,15 @@ type Gesture =
       baseRotation: number
       base: PintaAsset
     }
+  | {
+      kind: 'reshape'
+      pointerId: number
+      shapeId: string
+      nodeIndex: number
+      center: Vec2
+      rotation: number
+      base: PintaAsset
+    }
   | { kind: 'pan'; pointerId: number; startClient: Vec2; startScroll: Vec2 }
 
 /** Pontos do pincel mais próximos que isso (em unidades do documento) são descartados. */
@@ -140,6 +164,35 @@ const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
   { id: 'w', fx: 0, fy: 0.5 },
 ]
 
+/** Ponto dentro do retângulo (hit-test grosso do conta-gotas). */
+function bboxContains(b: Bounds, p: Vec2): boolean {
+  return p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height
+}
+
+/** Expande ids para incluir TODOS os shapes dos mesmos grupos (seleção junta). */
+function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
+  const groups = new Set<string>()
+  for (const s of shapes) if (ids.includes(s.id) && s.groupId) groups.add(s.groupId)
+  if (groups.size === 0) return ids
+  const result = new Set(ids)
+  for (const s of shapes) if (s.groupId && groups.has(s.groupId)) result.add(s.id)
+  return [...result]
+}
+
+/** Trava o ponto de arrasto: Shift = quadrado/círculo (formas) ou 45° (linha). */
+function constrainPoint(tool: VectorTool, start: Vec2, current: Vec2): Vec2 {
+  const dx = current.x - start.x
+  const dy = current.y - start.y
+  if (tool === 'line') {
+    const step = Math.PI / 4
+    const snapped = Math.round(Math.atan2(dy, dx) / step) * step
+    const len = Math.hypot(dx, dy)
+    return { x: start.x + Math.cos(snapped) * len, y: start.y + Math.sin(snapped) * len }
+  }
+  const size = Math.max(Math.abs(dx), Math.abs(dy))
+  return { x: start.x + (dx < 0 ? -size : size), y: start.y + (dy < 0 ? -size : size) }
+}
+
 export function VectorEditor(): JSX.Element | null {
   const { editor, session } = useEditorStores()
   const { showToast } = useToast()
@@ -150,13 +203,20 @@ export function VectorEditor(): JSX.Element | null {
   const onion = useSession((state) => state.onion)
   const [tool, setTool] = useState<VectorTool>('brush')
   const [style, setStyle] = useState<ShapeStyle>(DEFAULT_STYLE)
+  // Cores personalizadas recentes (conta-gotas + seletor livre) — viram swatches.
+  const [customColors, setCustomColors] = useState<string[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [preview, setPreview] = useState<VectorShape | null>(null)
   const [textAt, setTextAt] = useState<Vec2 | null>(null)
   const [textValue, setTextValue] = useState('')
+  // Lados do polígono / pontas da estrela (configuráveis quando a ferramenta ativa).
+  const [polygonSides, setPolygonSides] = useState(6)
+  const [starTips, setStarTips] = useState(5)
   const svgRef = useRef<SVGSVGElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const gestureRef = useRef<Gesture | null>(null)
+  // Área de transferência (copiar/colar) — shapes clonados, vive na sessão.
+  const clipboardRef = useRef<VectorShape[]>([])
 
   // Trocar de quadro/tile é trocar de documento: seleção e prévia não migram.
   // (Hook antes do return condicional — a ordem dos hooks não pode variar.)
@@ -209,14 +269,46 @@ export function VectorEditor(): JSX.Element | null {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [selectedIds])
 
+  // Copiar/colar/selecionar-tudo (Ctrl/Cmd+C/V/A) — sempre ativo, ignora campos
+  // de texto. Não colide com o desfazer/refazer do EditorScreen (Z/Y).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lê estado vivo via stores/refs; só a seleção re-registra (p/ o copiar)
+  useEffect(() => {
+    function onKey(event: globalThis.KeyboardEvent): void {
+      if (!(event.ctrlKey || event.metaKey)) return
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return
+      }
+      const key = event.key.toLowerCase()
+      if (key === 'a') {
+        event.preventDefault()
+        selectAll()
+      } else if (key === 'c') {
+        event.preventDefault()
+        copySelected()
+      } else if (key === 'v') {
+        event.preventDefault()
+        pasteClipboard()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedIds])
+
   const ref: ActiveFrameRef = { animationId, frameIndex }
   const doc = activeShapesOf(asset, ref)
   if (!doc) return null
 
   // Paleta do JOGO (Pensa) entra na frente das cores fixas, sem duplicar. Só
-  // no vetor (cor livre) — o bitmap é indexado em 16 cores e não muda.
+  // no vetor (cor livre) — o bitmap é indexado em 16 cores e não muda. As cores
+  // personalizadas recentes (conta-gotas/seletor) vêm na frente de tudo.
   const projectSwatches = (asset.projectRef?.palette ?? []).filter((hex) => !SWATCH_SET.has(hex))
-  const swatches = [...projectSwatches, ...SWATCHES]
+  const baseSwatches = [...projectSwatches, ...SWATCHES]
+  const extraCustom = customColors.filter((hex) => !baseSwatches.includes(hex))
+  const swatches = [...extraCustom, ...baseSwatches]
 
   const onionShapes = onion ? previousShapesOf(asset, ref) : null
   const selected = doc.shapes.filter((s) => selectedIds.includes(s.id))
@@ -265,9 +357,9 @@ export function VectorEditor(): JSX.Element | null {
       case 'line':
         return makeLine(start, current, style)
       case 'polygon':
-        return makePolygon(start, current, 6, style)
+        return makePolygon(start, current, polygonSides, style)
       case 'star':
-        return makeStar(start, current, 5, style)
+        return makeStar(start, current, starTips, style)
       default:
         return null
     }
@@ -282,7 +374,7 @@ export function VectorEditor(): JSX.Element | null {
       setTextValue('')
       return
     }
-    if (tool === 'select') {
+    if (tool === 'select' || tool === 'reshape') {
       // Clique no fundo: limpa a seleção.
       setSelectedIds([])
       return
@@ -298,6 +390,22 @@ export function VectorEditor(): JSX.Element | null {
       }
       return
     }
+    if (tool === 'picker') {
+      // Conta-gotas: adota o estilo da forma mais AO TOPO sob o toque (bbox — o
+      // clique de forma borbulha até aqui porque não é a ferramenta de seleção).
+      const hit = [...currentShapes()].reverse().find((s) => bboxContains(shapeBounds(s), at))
+      if (hit) {
+        setStyle((cur) => ({
+          ...cur,
+          fill: hit.fill,
+          stroke: hit.stroke ? { ...hit.stroke } : null,
+          opacity: hit.opacity,
+        }))
+        if (typeof hit.fill === 'string' && hit.fill !== 'none') rememberColor(hit.fill)
+        if (hit.stroke) rememberColor(hit.stroke.color)
+      }
+      return
+    }
     if (currentShapes().length >= PINTA_LIMITS.maxShapes) {
       showToast(COPY.vector.shapeLimit)
       return
@@ -307,17 +415,23 @@ export function VectorEditor(): JSX.Element | null {
   }
 
   function handleShapePointerDown(shape: VectorShape, event: PointerEvent<SVGElement>): void {
-    if (tool !== 'select' || !event.isPrimary || gestureRef.current) return
+    if ((tool !== 'select' && tool !== 'reshape') || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
+    // Reshape: só seleciona (single) — quem arrasta o corpo NÃO move; os nós é
+    // que reshapeiam.
+    if (tool === 'reshape') {
+      setSelectedIds([shape.id])
+      return
+    }
     const at = svgPoint(event)
+    // Clicar num shape agrupado seleciona o grupo inteiro (move junto).
+    const clicked = expandToGroups(currentShapes(), [shape.id])
     const ids = event.shiftKey
-      ? selectedIds.includes(shape.id)
-        ? selectedIds
-        : [...selectedIds, shape.id]
+      ? [...new Set([...selectedIds, ...clicked])]
       : selectedIds.includes(shape.id)
         ? selectedIds
-        : [shape.id]
+        : clicked
     setSelectedIds(ids)
     gestureRef.current = {
       kind: 'move',
@@ -366,6 +480,21 @@ export function VectorEditor(): JSX.Element | null {
     }
   }
 
+  function handleReshapeDown(nodeIndex: number, event: PointerEvent<SVGElement>): void {
+    if (!single || !event.isPrimary || gestureRef.current) return
+    event.stopPropagation()
+    if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
+    gestureRef.current = {
+      kind: 'reshape',
+      pointerId: event.pointerId,
+      shapeId: single.id,
+      nodeIndex,
+      center: boundsCenter(shapeBounds(single)),
+      rotation: single.rotation,
+      base: editor.getState().asset,
+    }
+  }
+
   function handlePointerMove(event: PointerEvent<SVGSVGElement>): void {
     const gesture = gestureRef.current
     if (!gesture || event.pointerId !== gesture.pointerId) return
@@ -386,7 +515,9 @@ export function VectorEditor(): JSX.Element | null {
       const last = gesture.points[gesture.points.length - 1]
       if (last && Math.hypot(at.x - last.x, at.y - last.y) < BRUSH_MIN_POINT_DISTANCE) return
       gesture.points.push(at)
-      setPreview(drawPreview(gesture.start, at, gesture.points))
+      // Shift trava a proporção (quadrado/círculo/45°) — não vale pro pincel.
+      const end = event.shiftKey && tool !== 'brush' ? constrainPoint(tool, gesture.start, at) : at
+      setPreview(drawPreview(gesture.start, end, gesture.points))
       return
     }
     if (gesture.kind === 'move') {
@@ -423,6 +554,16 @@ export function VectorEditor(): JSX.Element | null {
         false,
       )
     }
+    if (gesture.kind === 'reshape') {
+      // O ponteiro (coords do doc) volta ao espaço LOCAL do shape (sem rotação).
+      const local = rotatePoint(at, gesture.center, -gesture.rotation)
+      commitShapes(
+        currentShapes().map((s) =>
+          s.id === gesture.shapeId ? setShapeNode(s, gesture.nodeIndex, local) : s,
+        ),
+        false,
+      )
+    }
   }
 
   function endGesture(event?: PointerEvent<SVGSVGElement>): void {
@@ -453,6 +594,11 @@ export function VectorEditor(): JSX.Element | null {
     commitShapes(currentShapes().map((s) => (selectedIds.includes(s.id) ? update(s) : s)))
   }
 
+  /** Guarda uma cor livre no topo das recentes (dedup, teto). */
+  function rememberColor(hex: string): void {
+    setCustomColors((cur) => [hex, ...cur.filter((c) => c !== hex)].slice(0, MAX_CUSTOM_COLORS))
+  }
+
   function applyStyle(partial: Partial<ShapeStyle>): void {
     setStyle((current) => ({ ...current, ...partial }))
     if (selected.length > 0) {
@@ -465,12 +611,27 @@ export function VectorEditor(): JSX.Element | null {
     }
   }
 
-  function moveOrder(delta: 1 | -1): void {
+  /** Ordem-Z: um passo (±1) ou direto pro topo/fundo (front/back). */
+  /** Degradê "de trabalho": o atual, ou um novo a partir da cor sólida vigente. */
+  function currentGradient(): VectorGradient {
+    if (isVectorGradient(style.fill)) return style.fill
+    const from =
+      typeof style.fill === 'string' && style.fill.startsWith('#') ? style.fill : '#78dc52'
+    return { type: 'linear', from, to: '#ffffff', angle: 90 }
+  }
+
+  function applyGradient(partial: Partial<VectorGradient>): void {
+    applyStyle({ fill: { ...currentGradient(), ...partial } })
+  }
+
+  function moveOrder(to: 1 | -1 | 'front' | 'back'): void {
     if (!single) return
     const shapes = [...currentShapes()]
     const index = shapes.findIndex((s) => s.id === single.id)
-    const target = index + delta
-    if (index === -1 || target < 0 || target >= shapes.length) return
+    if (index === -1) return
+    const last = shapes.length - 1
+    const target = to === 'front' ? last : to === 'back' ? 0 : index + to
+    if (target < 0 || target > last || target === index) return
     const [moved] = shapes.splice(index, 1)
     if (!moved) return
     shapes.splice(target, 0, moved)
@@ -493,6 +654,55 @@ export function VectorEditor(): JSX.Element | null {
     if (selected.length === 0) return
     commitShapes(currentShapes().filter((s) => !selectedIds.includes(s.id)))
     setSelectedIds([])
+  }
+
+  /** Agrupa a seleção (2+): passam a se mover/selecionar juntos. */
+  function groupSelected(): void {
+    if (selected.length < 2) return
+    const gid = newId()
+    commitShapes(
+      currentShapes().map((s) => (selectedIds.includes(s.id) ? { ...s, groupId: gid } : s)),
+    )
+  }
+
+  /** Desagrupa a seleção (tira o vínculo de grupo). */
+  function ungroupSelected(): void {
+    if (!selected.some((s) => s.groupId)) return
+    commitShapes(
+      currentShapes().map((s) =>
+        selectedIds.includes(s.id) && s.groupId ? { ...s, groupId: undefined } : s,
+      ),
+    )
+  }
+
+  function copySelected(): void {
+    if (selected.length === 0) return
+    clipboardRef.current = selected.map((s) => structuredClone(s))
+  }
+
+  /** Cola o clipboard (ids/grupos NOVOS, deslocado +12,+12), selecionando as cópias. */
+  function pasteClipboard(): void {
+    const clip = clipboardRef.current
+    if (clip.length === 0) return
+    const shapes = currentShapes()
+    if (shapes.length + clip.length > PINTA_LIMITS.maxShapes) {
+      showToast(COPY.vector.shapeLimit)
+      return
+    }
+    const groupMap = new Map<string, string>()
+    const copies = clip.map((s) => {
+      const moved = translateShape({ ...structuredClone(s), id: newId() }, 12, 12)
+      if (!s.groupId) return moved
+      const gid = groupMap.get(s.groupId) ?? newId()
+      groupMap.set(s.groupId, gid)
+      return { ...moved, groupId: gid }
+    })
+    commitShapes([...shapes, ...copies])
+    setSelectedIds(copies.map((c) => c.id))
+  }
+
+  function selectAll(): void {
+    setSelectedIds(currentShapes().map((s) => s.id))
   }
 
   /** Espelha cada shape selecionado em torno do PRÓPRIO centro. */
@@ -524,6 +734,8 @@ export function VectorEditor(): JSX.Element | null {
   }
 
   const singleBounds = single ? shapeBounds(single) : null
+  const reshapeNodes = tool === 'reshape' && single ? shapeNodes(single) : []
+  const activeGradient = isVectorGradient(style.fill) ? style.fill : null
   const stageWidth = Math.max(Math.round(doc.width * zoom), 1)
   const stageHeight = Math.max(Math.round(doc.height * zoom), 1)
 
@@ -564,6 +776,10 @@ export function VectorEditor(): JSX.Element | null {
               onPointerUp={endGesture}
               onPointerCancel={endGesture}
             >
+              {/* Degradês de TODOS os shapes visíveis (doc + onion + prévia). */}
+              <GradientDefs
+                shapes={[...doc.shapes, ...(onionShapes ?? []), ...(preview ? [preview] : [])]}
+              />
               {/* Onion skin: o quadro ANTERIOR, apagadinho e sem eventos. */}
               {onionShapes ? (
                 <g opacity={0.3} pointerEvents="none">
@@ -584,7 +800,7 @@ export function VectorEditor(): JSX.Element | null {
               {/* Moldura + alças da seleção única. As medidas dividem pelo zoom
                   para manter um tamanho CONSTANTE na tela (alça pequena demais
                   em zoom baixo era impossível de tocar). */}
-              {single && singleBounds ? (
+              {tool !== 'reshape' && single && singleBounds ? (
                 <g
                   transform={
                     single.rotation !== 0
@@ -628,6 +844,42 @@ export function VectorEditor(): JSX.Element | null {
                     style={{ cursor: 'grab' }}
                     onPointerDown={(event) => handleRotateDown(singleBounds, event)}
                   />
+                </g>
+              ) : null}
+              {/* Modo reshape: nós arrastáveis (sem alças de bbox). */}
+              {tool === 'reshape' && single && singleBounds ? (
+                <g
+                  transform={
+                    single.rotation !== 0
+                      ? `rotate(${single.rotation} ${boundsCenter(singleBounds).x} ${boundsCenter(singleBounds).y})`
+                      : undefined
+                  }
+                >
+                  <rect
+                    x={singleBounds.x}
+                    y={singleBounds.y}
+                    width={singleBounds.width}
+                    height={singleBounds.height}
+                    fill="none"
+                    stroke="#00a0c8"
+                    strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+                    strokeWidth={1 / zoom}
+                    pointerEvents="none"
+                  />
+                  {reshapeNodes.map((node, i) => (
+                    <circle
+                      // biome-ignore lint/suspicious/noArrayIndexKey: o índice É a identidade do nó
+                      key={`node-${i}`}
+                      cx={node.x}
+                      cy={node.y}
+                      r={7 / zoom}
+                      fill="#ffffff"
+                      stroke="#00a0c8"
+                      strokeWidth={1.5 / zoom}
+                      style={{ cursor: 'move' }}
+                      onPointerDown={(event) => handleReshapeDown(i, event)}
+                    />
+                  ))}
                 </g>
               ) : null}
               {/* Moldura fina nas seleções múltiplas */}
@@ -679,6 +931,78 @@ export function VectorEditor(): JSX.Element | null {
                   style={{ backgroundColor: hex }}
                 />
               ))}
+              {/* Seletor de cor livre (abre a roda de cores do sistema). */}
+              <input
+                type="color"
+                aria-label={`${COPY.vector.fill}: ${COPY.vector.customColor}`}
+                title={COPY.vector.customColor}
+                value={
+                  typeof style.fill === 'string' && style.fill.startsWith('#')
+                    ? style.fill
+                    : '#000000'
+                }
+                onChange={(event) => {
+                  rememberColor(event.target.value)
+                  applyStyle({ fill: event.target.value })
+                }}
+                className="h-10 w-10 cursor-pointer rounded-lg border-2 border-pin-border bg-pin-bg p-0.5"
+              />
+            </div>
+
+            {/* Degradê: direção/tipo + as duas cores (de → para). */}
+            <span className="mt-3 mb-1 block text-sm font-bold text-pin-muted">
+              {COPY.vector.gradient}
+            </span>
+            <div className="flex flex-wrap items-center gap-1">
+              <IconButton
+                active={activeGradient?.type === 'linear' && activeGradient.angle === 0}
+                aria-label={COPY.vector.gradientH}
+                aria-pressed={activeGradient?.type === 'linear' && activeGradient.angle === 0}
+                title={COPY.vector.gradientH}
+                onClick={() => applyGradient({ type: 'linear', angle: 0 })}
+              >
+                <span aria-hidden="true">↔️</span>
+              </IconButton>
+              <IconButton
+                active={activeGradient?.type === 'linear' && activeGradient.angle === 90}
+                aria-label={COPY.vector.gradientV}
+                aria-pressed={activeGradient?.type === 'linear' && activeGradient.angle === 90}
+                title={COPY.vector.gradientV}
+                onClick={() => applyGradient({ type: 'linear', angle: 90 })}
+              >
+                <span aria-hidden="true">↕️</span>
+              </IconButton>
+              <IconButton
+                active={activeGradient?.type === 'radial'}
+                aria-label={COPY.vector.gradientRadial}
+                aria-pressed={activeGradient?.type === 'radial'}
+                title={COPY.vector.gradientRadial}
+                onClick={() => applyGradient({ type: 'radial' })}
+              >
+                <span aria-hidden="true">🔘</span>
+              </IconButton>
+              <input
+                type="color"
+                aria-label={COPY.vector.gradientFrom}
+                title={COPY.vector.gradientFrom}
+                value={activeGradient?.from ?? currentGradient().from}
+                onChange={(event) => {
+                  rememberColor(event.target.value)
+                  applyGradient({ from: event.target.value })
+                }}
+                className="h-10 w-10 cursor-pointer rounded-lg border-2 border-pin-border bg-pin-bg p-0.5"
+              />
+              <input
+                type="color"
+                aria-label={COPY.vector.gradientTo}
+                title={COPY.vector.gradientTo}
+                value={activeGradient?.to ?? currentGradient().to}
+                onChange={(event) => {
+                  rememberColor(event.target.value)
+                  applyGradient({ to: event.target.value })
+                }}
+                className="h-10 w-10 cursor-pointer rounded-lg border-2 border-pin-border bg-pin-bg p-0.5"
+              />
             </div>
 
             <span className="mt-3 mb-1 block text-sm font-bold text-pin-muted">
@@ -707,6 +1031,20 @@ export function VectorEditor(): JSX.Element | null {
                   style={{ backgroundColor: hex }}
                 />
               ))}
+              {/* Seletor de cor livre do contorno. */}
+              <input
+                type="color"
+                aria-label={`${COPY.vector.stroke}: ${COPY.vector.customColor}`}
+                title={COPY.vector.customColor}
+                value={style.stroke?.color ?? '#000000'}
+                onChange={(event) => {
+                  rememberColor(event.target.value)
+                  applyStyle({
+                    stroke: { color: event.target.value, width: style.stroke?.width ?? 2 },
+                  })
+                }}
+                className="h-10 w-10 cursor-pointer rounded-lg border-2 border-pin-border bg-pin-bg p-0.5"
+              />
             </div>
 
             <label className="mt-3 block text-sm font-bold text-pin-muted">
@@ -745,6 +1083,29 @@ export function VectorEditor(): JSX.Element | null {
             </label>
           </section>
 
+          {tool === 'polygon' || tool === 'star' ? (
+            <section className="rounded-3xl border-2 border-pin-border bg-pin-surface p-3">
+              <label className="block text-sm font-bold text-pin-muted">
+                {tool === 'polygon'
+                  ? `${COPY.vector.sides}: ${polygonSides}`
+                  : `${COPY.vector.tips}: ${starTips}`}
+                <input
+                  type="range"
+                  min={3}
+                  max={12}
+                  step={1}
+                  value={tool === 'polygon' ? polygonSides : starTips}
+                  onChange={(event) =>
+                    tool === 'polygon'
+                      ? setPolygonSides(Number(event.target.value))
+                      : setStarTips(Number(event.target.value))
+                  }
+                  className="mt-1 w-full accent-pin-accent"
+                />
+              </label>
+            </section>
+          ) : null}
+
           {selected.length > 0 ? (
             <section className="flex flex-col gap-2 rounded-3xl border-2 border-pin-border bg-pin-surface p-3">
               <div className="flex flex-wrap justify-center gap-1">
@@ -763,6 +1124,14 @@ export function VectorEditor(): JSX.Element | null {
                   <span aria-hidden="true">↕️</span>
                 </IconButton>
                 <IconButton
+                  aria-label={COPY.vector.toFront}
+                  title={COPY.vector.toFront}
+                  disabled={!single}
+                  onClick={() => moveOrder('front')}
+                >
+                  <span aria-hidden="true">🔝</span>
+                </IconButton>
+                <IconButton
                   aria-label={COPY.vector.forward}
                   title={COPY.vector.forward}
                   disabled={!single}
@@ -778,6 +1147,32 @@ export function VectorEditor(): JSX.Element | null {
                 >
                   <span aria-hidden="true">⏬</span>
                 </IconButton>
+                <IconButton
+                  aria-label={COPY.vector.toBack}
+                  title={COPY.vector.toBack}
+                  disabled={!single}
+                  onClick={() => moveOrder('back')}
+                >
+                  <span aria-hidden="true">🔙</span>
+                </IconButton>
+                {selected.length >= 2 ? (
+                  <IconButton
+                    aria-label={COPY.vector.group}
+                    title={COPY.vector.group}
+                    onClick={groupSelected}
+                  >
+                    <span aria-hidden="true">🔗</span>
+                  </IconButton>
+                ) : null}
+                {selected.some((s) => s.groupId) ? (
+                  <IconButton
+                    aria-label={COPY.vector.ungroup}
+                    title={COPY.vector.ungroup}
+                    onClick={ungroupSelected}
+                  >
+                    <span aria-hidden="true">✂️</span>
+                  </IconButton>
+                ) : null}
                 <IconButton
                   aria-label={COPY.vector.duplicate}
                   title={COPY.vector.duplicate}

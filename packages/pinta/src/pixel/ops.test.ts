@@ -43,6 +43,35 @@ describe('drawStroke (lápis)', () => {
     expect(rows(out)).toEqual(['.1.1.', '.....', '.....', '.....', '.....'])
   })
 
+  it('espelho vertical (mirrorY) reflete de cima pra baixo', () => {
+    const out = drawStroke(
+      empty5(),
+      { x: 1, y: 0 },
+      { x: 1, y: 0 },
+      {
+        color: 1,
+        size: 1,
+        mirrorY: true,
+      },
+    )
+    expect(rows(out)).toEqual(['.1...', '.....', '.....', '.....', '.1...'])
+  })
+
+  it('mirrorX + mirrorY plota os 4 quadrantes', () => {
+    const out = drawStroke(
+      empty5(),
+      { x: 1, y: 1 },
+      { x: 1, y: 1 },
+      {
+        color: 1,
+        size: 1,
+        mirrorX: true,
+        mirrorY: true,
+      },
+    )
+    expect(rows(out)).toEqual(['.....', '.1.1.', '.....', '.1.1.', '.....'])
+  })
+
   it('fora dos limites é no-op silencioso (bounds-check)', () => {
     const out = drawStroke(empty5(), { x: 0, y: 0 }, { x: 0, y: 0 }, { color: 1, size: 3 })
     expect(rows(out)).toEqual(['11...', '11...', '.....', '.....', '.....'])

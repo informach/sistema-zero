@@ -123,15 +123,17 @@ export function createScaledPainter(canvas: HTMLCanvasElement): ScaledPainter | 
 
 /**
  * Desenha uma grade de pixels por cima do canvas escalado (1 linha por pixel).
- * Só chamar em zoom ≥ 6 — abaixo disso a grade vira ruído.
+ * `show` é o toggle da criança; abaixo de zoom 6 a grade vira ruído e some
+ * sozinha (independente do toggle).
  */
 export function paintPixelGrid(
   canvas: HTMLCanvasElement,
   bitmap: PintaBitmap,
   scale: number,
+  show = true,
 ): void {
   const ctx = canvas.getContext('2d')
-  if (!ctx || scale < 6) return
+  if (!ctx || !show || scale < 6) return
   ctx.strokeStyle = 'rgba(127, 127, 127, 0.25)'
   ctx.lineWidth = 1
   ctx.beginPath()
@@ -144,4 +146,32 @@ export function paintPixelGrid(
     ctx.lineTo(bitmap.width * scale, y * scale + 0.5)
   }
   ctx.stroke()
+}
+
+/**
+ * Contorno tracejado da SELEÇÃO retangular (marquee/recorte flutuante). Em px de
+ * pixel × escala; visível em qualquer zoom (ao contrário da grade).
+ */
+export function paintSelectionOverlay(
+  canvas: HTMLCanvasElement | null,
+  rect: { x: number; y: number; width: number; height: number },
+  scale: number,
+): void {
+  const ctx = canvas?.getContext('2d')
+  if (!ctx) return
+  const x = rect.x * scale
+  const y = rect.y * scale
+  const w = rect.width * scale
+  const h = rect.height * scale
+  ctx.save()
+  ctx.lineWidth = 2
+  // Duas passadas (branco por baixo, preto tracejado por cima) p/ contrastar
+  // sobre qualquer cor do desenho.
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)'
+  ctx.setLineDash([])
+  ctx.strokeRect(x + 1, y + 1, w - 2, h - 2)
+  ctx.strokeStyle = 'rgba(0,0,0,0.9)'
+  ctx.setLineDash([4, 3])
+  ctx.strokeRect(x + 1, y + 1, w - 2, h - 2)
+  ctx.restore()
 }

@@ -5,6 +5,7 @@
  */
 import type { AnyTilesetAsset, TilemapAsset, VectorFrame } from '../core/project'
 import { bitmapDominantColor } from '../export/png'
+import { isVectorGradient } from '../vector/model'
 import { flattenLayers } from './tilemapOps'
 
 /** Cor "dominante" de um tile vetorial: o fill visível do shape do TOPO. */
@@ -12,6 +13,8 @@ function vectorTileColor(tile: VectorFrame): string | null {
   for (let i = tile.length - 1; i >= 0; i -= 1) {
     const shape = tile[i]
     if (!shape) continue
+    // Degradê: usa a cor de começo como representante no minimapa.
+    if (isVectorGradient(shape.fill)) return shape.fill.from
     if (shape.fill !== 'none') return shape.fill
     if (shape.stroke) return shape.stroke.color
   }

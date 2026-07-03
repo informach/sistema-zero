@@ -68,19 +68,20 @@ export function GalleryScreen(): JSX.Element {
   const findAsset = (id: string): (typeof assets)[number] | null =>
     assets.find((a) => a.id === id) ?? null
 
-  // Agrupamento por jogo do Pensa: a ordem das seções segue o asset mais
+  // Agrupamento por jogo do Pensa: chave = projectRef.id (não o nome — dois
+  // jogos homônimos não devem fundir). A ordem das seções segue o asset mais
   // recente (a lista já vem por updatedAt desc; o Map preserva a inserção).
-  const byProject = new Map<string, PintaAsset[]>()
+  const byProject = new Map<string, { name: string; assets: PintaAsset[] }>()
   const looseAssets: PintaAsset[] = []
   for (const asset of assets) {
-    const projectName = asset.projectRef?.name
-    if (!projectName) {
+    const ref = asset.projectRef
+    if (!ref) {
       looseAssets.push(asset)
       continue
     }
-    const list = byProject.get(projectName) ?? []
-    list.push(asset)
-    byProject.set(projectName, list)
+    const entry = byProject.get(ref.id) ?? { name: ref.name, assets: [] }
+    entry.assets.push(asset)
+    byProject.set(ref.id, entry)
   }
   const projectSections = [...byProject.entries()]
 
@@ -135,11 +136,9 @@ export function GalleryScreen(): JSX.Element {
         return
       }
       const { added, skipped } = await gallery.getState().importAssets(restored)
-      const suffix = skipped > 0 || warnings.length > 0 ? ' Alguns ficaram de fora.' : ''
+      const suffix = skipped > 0 || warnings.length > 0 ? COPY.gallery.restorePartial : ''
       showToast(
-        added === 1
-          ? `Trouxe 1 desenho de volta!${suffix}`
-          : `Trouxe ${added} desenhos de volta!${suffix}`,
+        (added === 1 ? COPY.gallery.restoredOne : COPY.gallery.restoredMany(added)) + suffix,
       )
     } catch {
       showToast(COPY.gallery.restoreError)
@@ -211,14 +210,14 @@ export function GalleryScreen(): JSX.Element {
       ) : (
         // Seções por jogo do Pensa (desenhos com projectRef) + avulsos no fim.
         <div className="flex flex-col gap-6">
-          {projectSections.map(([projectName, sectionAssets]) => (
-            <section key={projectName} aria-label={projectName}>
+          {projectSections.map(([projectId, section]) => (
+            <section key={projectId} aria-label={section.name}>
               <h2 className="mb-2 text-lg font-bold">
                 <span aria-hidden="true">🎮 </span>
-                {projectName}
+                {section.name}
               </h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {sectionAssets.map(renderCard)}
+                {section.assets.map(renderCard)}
               </div>
             </section>
           ))}
