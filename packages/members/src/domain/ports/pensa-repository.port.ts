@@ -59,6 +59,19 @@ export interface NewPensaArtifact {
   content: unknown
 }
 
+/**
+ * Artefato HERDADO do ciclo anterior ao criar o ciclo N+1 — nasce `validated`
+ * (version 1) na MESMA transação da criação do ciclo. A identidade do jogo
+ * (nome/paleta/ícone) não muda entre versões: herdá-la poupa a criança de refazer
+ * o funil de identidade a cada "Versão" (modelo "V1 e incrementa, leve").
+ */
+export interface InheritedPensaArtifact {
+  id: string
+  stage: PensaWorkStage
+  type: PensaArtifactType
+  content: unknown
+}
+
 export interface NewPensaTask {
   id: string
   title: string
@@ -76,6 +89,14 @@ export interface PensaTaskBoardChange {
   column: PensaTaskColumn
   position: number
   notes?: string | null
+}
+
+/** Edição de CONTEÚDO de uma task (autoria manual) — campo `undefined` = não mexe. */
+export interface PensaTaskContentPatch {
+  title?: string
+  summary?: string | null
+  taskType?: string | null
+  mission?: PensaMission
 }
 
 export interface NewPensaChecklistItem {
@@ -121,8 +142,11 @@ export interface PensaRepository {
   // ── Ciclos ────────────────────────────────────────────────────────────────
   /** Ciclos do projeto por `number` ASC. */
   listCycles(projectId: string): Promise<PensaCycle[]>
-  /** Insere o ciclo + toca o projeto (transação). */
-  createCycle(cycle: NewPensaCycle, now: Date): Promise<void>
+  /**
+   * Insere o ciclo + toca o projeto (transação). `inherit` = artefatos herdados do
+   * ciclo anterior (ex.: a identidade), inseridos como `validated` na MESMA transação.
+   */
+  createCycle(cycle: NewPensaCycle, now: Date, inherit?: InheritedPensaArtifact[]): Promise<void>
   /** Ciclo + projeto dono, filtrado por (userId, audience) — mismatch → null. */
   findCycleWithProject(
     cycleId: string,
@@ -159,6 +183,8 @@ export interface PensaRepository {
   listTasks(cycleId: string): Promise<PensaTask[]>
   /** REPLACE total (delete + insert) + toca o projeto (transação). */
   replaceTasks(projectId: string, cycleId: string, tasks: NewPensaTask[], now: Date): Promise<void>
+  /** APPEND (insert sem apagar) + toca o projeto — autoria manual / "sugerir mais". */
+  appendTasks(projectId: string, cycleId: string, tasks: NewPensaTask[], now: Date): Promise<void>
   /** Task + projeto dono, filtrado por (userId, audience) — mismatch → null. */
   findTaskWithProject(
     taskId: string,
@@ -167,6 +193,15 @@ export interface PensaRepository {
   ): Promise<{ task: PensaTask; project: PensaProject } | null>
   /** Aplica o lote de mudanças de board (move/re-sequência/notes) + toca o projeto. */
   applyTaskChanges(projectId: string, changes: PensaTaskBoardChange[], now: Date): Promise<void>
+  /** Edita o CONTEÚDO de 1 task (título/summary/taskType/mission) + toca o projeto. */
+  updateTaskContent(
+    projectId: string,
+    taskId: string,
+    patch: PensaTaskContentPatch,
+    now: Date,
+  ): Promise<PensaTask>
+  /** Apaga 1 task + toca o projeto (transação). */
+  deleteTask(projectId: string, taskId: string, now: Date): Promise<void>
 
   // ── Checklist de lançamento ───────────────────────────────────────────────
   /** Itens do ciclo por position ASC. */

@@ -103,6 +103,14 @@ const EnvSchema = z
     SHOWCASE_WALL_SLUGS: z.string().default('mural-dos-criadores'),
     // Canal dentro do servidor de vitrine que recebe os posts auto-publicados.
     SHOWCASE_WALL_CHANNEL_SLUG: z.string().min(1).default('parede'),
+
+    // ── BFF do kids (S2S direto na rede interna): limpeza de R2 na moderação ────
+    // Ao APAGAR um post do Mural (delete terminal), o hub avisa o BFF a apagar os
+    // artefatos R2 do jogo (snapshot privado + capa pública). Ausente (dev/local) →
+    // não limpa (noopStudioArtifactGateway). Ex.: http://community-kids.railway.internal:3008.
+    // Assina com o GATEWAY_HMAC_SECRET já existente (o BFF verifica) — sem env de segredo nova.
+    KIDS_BFF_BASE_URL: z.string().url().optional(),
+    KIDS_BFF_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(4_000),
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.MEMBERS_INTERNAL_TOKEN), {
     message:

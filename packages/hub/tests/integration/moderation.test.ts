@@ -5,6 +5,7 @@ import type {
   ChannelFields,
   SpaceFields,
 } from '../../src/domain/ports/community-admin-repository.port'
+import type { StudioArtifactGateway } from '../../src/domain/ports/studio-artifact-gateway.port'
 import { adminHeaders, buildApp, jsonRequest, studentHeaders } from '../helpers'
 
 const PUBLIC: AccessConfig = { visibility: 'public', courses: [], roles: [] }
@@ -235,6 +236,68 @@ describe('moderação', () => {
       }),
     )
     expect(bannedReact.status).toBe(403)
+  })
+
+  test('apagar post de vitrine limpa o R2 (playId + capa); OCULTAR não', async () => {
+    const calls: Array<{ playId: string; coverUrl: string | null }> = []
+    const studioArtifacts: StudioArtifactGateway = {
+      async cleanupShowcaseArtifacts(args) {
+        calls.push(args)
+      },
+    }
+    const ctx = buildApp({ studioArtifacts })
+    const { channelId } = await seed(ctx, { space: { audience: 'kids' } })
+    const cover = 'https://cdn.example/studio/cover/abc/def.webp'
+    const playId = randomUUID()
+    const { thread } = await ctx.threadRepo.createShowcaseThread({
+      id: randomUUID(),
+      channelId,
+      authorId: randomUUID(),
+      authorDisplayName: 'Mika',
+      authorPublic: false,
+      title: 'Meu Jogo',
+      slug: `meu-jogo-${randomUUID().slice(0, 6)}`,
+      body: 'oi',
+      coverImageUrl: cover,
+      playId,
+      idempotencyKey: randomUUID(),
+      now: new Date(),
+    })
+
+    // Ocultar é REVERSÍVEL → NÃO limpa (des-ocultar precisa do artefato).
+    const hidden = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${thread.id}/hide`, { headers: adminHeaders() }),
+    )
+    expect(hidden.status).toBe(200)
+    expect(calls).toHaveLength(0)
+
+    // Apagar é TERMINAL → limpa com o playId + a capa.
+    const deleted = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${thread.id}/delete`, { headers: adminHeaders() }),
+    )
+    expect(deleted.status).toBe(200)
+    expect(calls).toEqual([{ playId, coverUrl: cover }])
+  })
+
+  test('apagar tópico NÃO-vitrine não chama a limpeza de R2', async () => {
+    const calls: unknown[] = []
+    const studioArtifacts: StudioArtifactGateway = {
+      async cleanupShowcaseArtifacts(args) {
+        calls.push(args)
+      },
+    }
+    const ctx = buildApp({ studioArtifacts })
+    const { channelId } = await seed(ctx)
+    const threadId = (
+      (await (await postThread(ctx, channelId, studentHeaders(randomUUID()))).json()) as {
+        id: string
+      }
+    ).id
+    const deleted = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${threadId}/delete`, { headers: adminHeaders() }),
+    )
+    expect(deleted.status).toBe(200)
+    expect(calls).toHaveLength(0)
   })
 
   test('silenciar com expiresAt inválido → 400', async () => {

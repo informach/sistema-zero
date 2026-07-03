@@ -11,7 +11,7 @@
 import type { PintaVectorAnimation, VectorSpriteAsset } from '../core/project'
 import type { VectorShape } from '../vector/model'
 import { svgToPngDataUrl } from '../vector/rasterize'
-import { shapesToMarkup } from '../vector/svg'
+import { gradientDefsMarkup, shapesToMarkup } from '../vector/svg'
 import { packAnimationsGeometry, type SheetGeometry } from './spritesheet'
 
 export interface VectorSheetCell {
@@ -63,11 +63,14 @@ export function cellsToSheetSvg(options: {
     (cell) =>
       `  <svg x="${cell.col * cellWidth}" y="${cell.row * cellHeight}" width="${cellWidth}" height="${cellHeight}" viewBox="0 0 ${cellWidth} ${cellHeight}">\n${shapesToMarkup(cell.shapes, '    ')}\n  </svg>`,
   )
-  return [
+  // Um `<defs>` no topo da folha serve TODAS as células (ids de shape únicos).
+  const defs = gradientDefsMarkup(cells.flatMap((cell) => cell.shapes))
+  const lines = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
-    ...parts,
-    '</svg>',
-  ].join('\n')
+  ]
+  if (defs) lines.push(defs)
+  lines.push(...parts, '</svg>')
+  return lines.join('\n')
 }
 
 /** A folha inteira como SVG (mesmo layout que o PNG rasterizado). */

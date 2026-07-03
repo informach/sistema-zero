@@ -7,8 +7,11 @@
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { PixelToolId } from '../pixel/tools'
 
-/** Ferramentas da sessão: as do motor pixel + a Mão (navegação, mapa/vetor). */
-export type PintaSessionTool = PixelToolId | 'pan'
+/**
+ * Ferramentas da sessão: as do motor pixel + a Mão (navegação, mapa/vetor) + a
+ * Seleção (recorta/move um retângulo — vive no PixelCanvas, não no motor puro).
+ */
+export type PintaSessionTool = PixelToolId | 'pan' | 'select'
 
 export const ZOOM_LEVELS = [2, 4, 6, 8, 12, 16, 24, 32] as const
 
@@ -31,7 +34,11 @@ export interface PintaSessionState {
   color: number
   brushSize: number
   mirrorX: boolean
+  /** Simetria de cima e de baixo (espelha no eixo horizontal central). */
+  mirrorY: boolean
   filled: boolean
+  /** Grade de pixels por cima do desenho (só rende em zoom alto). */
+  showGrid: boolean
   zoom: number
   /** Degraus de zoom do editor (pixel e vetor usam escalas diferentes). */
   zoomLevels: readonly number[]
@@ -45,7 +52,9 @@ export interface PintaSessionState {
   setColor(color: number): void
   setBrushSize(size: number): void
   toggleMirror(): void
+  toggleMirrorY(): void
   toggleFilled(): void
+  toggleGrid(): void
   setZoom(zoom: number): void
   zoomIn(): void
   zoomOut(): void
@@ -70,7 +79,9 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     color: 1,
     brushSize: 1,
     mirrorX: false,
+    mirrorY: false,
     filled: false,
+    showGrid: true,
     zoom: 8,
     zoomLevels: ZOOM_LEVELS,
     onion: false,
@@ -83,7 +94,9 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     setColor: (color) => set({ color }),
     setBrushSize: (size) => set({ brushSize: Math.min(Math.max(Math.round(size), 1), 3) }),
     toggleMirror: () => set((state) => ({ mirrorX: !state.mirrorX })),
+    toggleMirrorY: () => set((state) => ({ mirrorY: !state.mirrorY })),
     toggleFilled: () => set((state) => ({ filled: !state.filled })),
+    toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
     setZoom: (zoom) => set({ zoom: Math.min(Math.max(zoom, 0.25), 48) }),
     zoomIn: () => set((state) => ({ zoom: nextZoom(state.zoomLevels, state.zoom, 1) })),
     zoomOut: () => set((state) => ({ zoom: nextZoom(state.zoomLevels, state.zoom, -1) })),

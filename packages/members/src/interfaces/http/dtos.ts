@@ -461,11 +461,19 @@ export const PensaTasksReplaceBody = t.Object({
   ),
 })
 
-/** Corpo de `PATCH /members/pensa/tasks/:taskId` — move no kanban e/ou anota. */
+/**
+ * Corpo de `PATCH /members/pensa/tasks/:taskId` — move no kanban, anota E/OU edita
+ * o conteúdo da missão (autoria manual: título/summary/taskType/mission).
+ */
 export const PensaTaskUpdateBody = t.Object({
   column: t.Optional(PENSA_TASK_COLUMN),
   position: t.Optional(t.Integer({ minimum: 0, maximum: 1000 })),
   notes: t.Optional(t.Union([t.String({ maxLength: 5000 }), t.Null()])),
+  // Autoria manual (editar a missão à mão):
+  title: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+  summary: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
+  taskType: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
+  mission: t.Optional(PensaMissionSchema),
 })
 
 // REPLACE do checklist — mesmo racional das tasks (≤40 é 409 do use case).

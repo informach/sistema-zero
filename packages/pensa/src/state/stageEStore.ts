@@ -8,7 +8,12 @@
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import { friendlyErrorMessage } from '../core/copy'
-import type { PensaIdentityPalette, PensaIdentitySuggestions } from '../core/specContent'
+import { PENSA_NAME_MAX, PENSA_NAME_MIN } from '../core/limits'
+import type {
+  PensaIdentityPalette,
+  PensaIdentitySuggestions,
+  PensaSpecScreen,
+} from '../core/specContent'
 import type {
   PensaArtifactView,
   PensaCycleView,
@@ -59,6 +64,8 @@ export interface PensaStageEStoreState {
 
   loadStage(cycleId: string): Promise<void>
   generateSpec(projectId: string, feedback?: string): Promise<boolean>
+  /** Edição PONTUAL (sem IA): troca UMA tela à mão, mantém o resto e re-valida. */
+  editScreen(projectId: string, screenIndex: number, screen: PensaSpecScreen): Promise<boolean>
   approveFlows(): void
   approveScreens(): void
   validateSpec(): Promise<boolean>
@@ -70,6 +77,8 @@ export interface PensaStageEStoreState {
   generateIcons(projectId: string): Promise<void>
   chooseIcon(index: number | null): void
   saveIdentity(projectId: string): Promise<boolean>
+  /** Reabre o funil de identidade (do estado 'done') p/ ajustar nome/paleta/ícone. */
+  reopenIdentity(): void
   advance(): Promise<boolean>
 }
 
@@ -177,6 +186,29 @@ export function createStageEStore(
         }
       },
 
+      async editScreen(projectId, screenIndex, screen) {
+        const { cycleId, spec, generatingSpec } = get()
+        if (!cycleId || !spec || generatingSpec) return false
+        const content = spec.content as { screens?: PensaSpecScreen[] } | null
+        const screens = Array.isArray(content?.screens) ? [...content.screens] : []
+        if (screenIndex < 0 || screenIndex >= screens.length) return false
+        screens[screenIndex] = screen
+        set({ generatingSpec: true, specError: null })
+        try {
+          const { artifact } = await transport.request<{ artifact: PensaArtifactView }>(
+            `/cycles/${cycleId}/artifacts/generate`,
+            { method: 'POST', body: { type: 'spec_edit', projectId, screens } },
+          )
+          // Edição PONTUAL: o resto ficou igual — NÃO reseta as aprovações (o
+          // servidor re-validou o spec; o gate e→r segue satisfeito).
+          set({ generatingSpec: false, spec: artifact })
+          return true
+        } catch (error) {
+          set({ generatingSpec: false, specError: friendlyErrorMessage(error) })
+          return false
+        }
+      },
+
       approveFlows() {
         if (get().flowsApproved) return
         set({ flowsApproved: true })
@@ -223,8 +255,8 @@ export function createStageEStore(
       },
 
       chooseName(name) {
-        const trimmed = name.trim().slice(0, 40)
-        if (trimmed.length < 2) return
+        const trimmed = name.trim().slice(0, PENSA_NAME_MAX)
+        if (trimmed.length < PENSA_NAME_MIN) return
         // Nome novo invalida os ícones (eles são gerados a partir do nome).
         set({
           chosenName: trimmed,
@@ -254,6 +286,12 @@ export function createStageEStore(
 
       backToPaletteStep() {
         set({ identityStep: 'palette', identityError: null })
+      },
+
+      reopenIdentity() {
+        // Volta ao funil para ajustar (mantém nome/paleta/ícone já escolhidos; ao
+        // salvar de novo cria uma nova versão validada e renomeia o projeto).
+        set({ identityStep: 'name', identityError: null })
       },
 
       async generateIcons(projectId) {

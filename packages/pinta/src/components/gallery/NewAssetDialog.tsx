@@ -368,7 +368,12 @@ export function NewAssetDialog({
               <button
                 key={choice.key}
                 type="button"
-                onClick={() => setSizeKey(choice.key)}
+                // Tocar num tamanho já avança para o nome (um toque a menos); o
+                // botão "Avançar" fica p/ quem aceita o tamanho pré-selecionado.
+                onClick={() => {
+                  setSizeKey(choice.key)
+                  setStep('name')
+                }}
                 aria-pressed={sizeKey === choice.key}
                 className={`flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 p-3 transition ${
                   sizeKey === choice.key
@@ -417,7 +422,7 @@ export function NewAssetDialog({
             {normalized && normalized !== name.trim() && !nameError ? (
               <>
                 {' '}
-                Vai ficar assim: <strong>{normalized}</strong>
+                {COPY.newAsset.willLookLike} <strong>{normalized}</strong>
               </>
             ) : null}
           </p>

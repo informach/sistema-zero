@@ -93,7 +93,15 @@ describe('GenerateBody (corpo do /artifacts/generate)', () => {
         iconSvg: null,
       },
       { type: 'mission_plan', projectId: uuid },
+      { type: 'mission_plan', projectId: uuid, append: true },
       { type: 'checklist_seed', projectId: uuid },
+      {
+        type: 'spec_edit',
+        projectId: uuid,
+        screens: [
+          { name: 'Tela do título', elements: [{ kind: 'title', label: 'Meu Jogo', zone: 'top' }] },
+        ],
+      },
     ]
     for (const body of bodies) {
       const parsed = GenerateBody.safeParse(body)
@@ -108,6 +116,14 @@ describe('GenerateBody (corpo do /artifacts/generate)', () => {
     expect(
       GenerateBody.safeParse({ type: 'identity', projectId: 'não-uuid', step: 'suggestions' })
         .success,
+    ).toBe(false)
+    // spec_edit: kind/zone fora do domínio → rejeita.
+    expect(
+      GenerateBody.safeParse({
+        type: 'spec_edit',
+        projectId: uuid,
+        screens: [{ name: 'X', elements: [{ kind: 'banana', label: 'a', zone: 'top' }] }],
+      }).success,
     ).toBe(false)
   })
 })

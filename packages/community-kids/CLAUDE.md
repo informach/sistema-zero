@@ -178,9 +178,10 @@ clipboard) — a raiz do card deixou de ser `<button>` (âncora não aninha em b
 `StudioProjectPlayer` (subpath `@sistemazero/studio/player`, `ssr:false`) buscando o projeto em
 `/api/studio/play/:id` — mostra SÓ o jogo + título, NUNCA o nome da criança, e tolera snapshots
 legados/incompletos sem derrubar a página pública. As rotas `/api/studio/{describe,
-publish,play/[id]}` são shims sobre `shell.routes.studio*`; o `proxy.ts` exclui `api/studio/publish`
-(multipart) e `api/studio/play` (stream público) do matcher (`api/studio/describe` FICA no matcher — ganha
-o anti-CSRF same-origin). **Data de nascimento (controle de idade):** os pais informam no `ProfileForm` da Área dos
+publish,play/[id],cleanup}` são shims sobre `shell.routes.studio*`; o `proxy.ts` exclui `api/studio/publish`
+(multipart), `api/studio/play` (stream público) e **`api/studio/cleanup`** (S2S do hub, HMAC — limpeza de
+R2 na moderação: apagar post do Mural → apaga snapshot jogável + capa) do matcher (`api/studio/describe`
+FICA no matcher — ganha o anti-CSRF same-origin). **Data de nascimento (controle de idade):** os pais informam no `ProfileForm` da Área dos
 pais (`app/perfis`) — `<input type=date>`; só a CONTA edita (o auth recusa em sessão de perfil).
 
 ## Estúdio Completo (produto vendável — 06/2026)

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { createVectorBackgroundAsset } from '../core/project'
 import type { VectorShape } from './model'
-import { shapeToMarkup, vectorToSvg } from './svg'
+import { gradientDefsMarkup, shapeToMarkup, vectorToSvg } from './svg'
 
 const base = { fill: '#78dc52', stroke: null, opacity: 1, rotation: 0 }
 
@@ -68,6 +68,53 @@ describe('shapeToMarkup', () => {
     const markup = shapeToMarkup(shape)
     expect(markup).toContain('points="0,0 10,0 5,9.13"')
     expect(markup).toContain('opacity="0.5"')
+  })
+})
+
+describe('degradê (gradient)', () => {
+  const gradShape: VectorShape = {
+    ...base,
+    id: 'g1',
+    type: 'rect',
+    x: 0,
+    y: 0,
+    w: 10,
+    h: 10,
+    rx: 0,
+    fill: { type: 'linear', from: '#ff2121', to: '#003fad', angle: 90 },
+  }
+
+  it('fill vira url(#pin-grad-<id>)', () => {
+    expect(shapeToMarkup(gradShape)).toContain('fill="url(#pin-grad-g1)"')
+  })
+
+  it('gradientDefsMarkup emite o linearGradient com os stops', () => {
+    const defs = gradientDefsMarkup([gradShape])
+    expect(defs).toContain('<linearGradient id="pin-grad-g1"')
+    expect(defs).toContain('<stop offset="0" stop-color="#ff2121"/>')
+    expect(defs).toContain('<stop offset="1" stop-color="#003fad"/>')
+    // 90° = de cima pra baixo: x fixo em 0.5, y de 0 a 1.
+    expect(defs).toContain('x1="0.5" y1="0" x2="0.5" y2="1"')
+  })
+
+  it('radial emite radialGradient', () => {
+    const radial: VectorShape = {
+      ...gradShape,
+      id: 'g2',
+      fill: { type: 'radial', from: '#ffffff', to: '#000000', angle: 90 },
+    }
+    expect(gradientDefsMarkup([radial])).toContain('<radialGradient id="pin-grad-g2">')
+  })
+
+  it('sem degradê o markup fica idêntico (defs vazio)', () => {
+    expect(gradientDefsMarkup([{ ...gradShape, fill: '#78dc52' }])).toBe('')
+  })
+
+  it('vectorToSvg insere o <defs> antes dos shapes', () => {
+    const asset = createVectorBackgroundAsset({ name: 'g', width: 10, height: 10 })
+    const svg = vectorToSvg({ ...asset, shapes: [gradShape] })
+    expect(svg).toContain('<defs>')
+    expect(svg.indexOf('<defs>')).toBeLessThan(svg.indexOf('<rect'))
   })
 })
 

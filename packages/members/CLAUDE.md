@@ -816,12 +816,16 @@ INSERT, imutável); tudo segregado por `audience` (`?audience=` como as demais, 
   `pensa_checklist_items` (`required=false` não trava o lançamento).
 - **Rotas** (`routes/pensa.routes.ts`, prefixo `/members/pensa`, JWT + `x-internal-token`):
   GET/POST `/projects` · GET/PATCH `/projects/:projectId` · POST `…/cycles` (exige anterior
-  `done`) · GET `/cycles/:cycleId/stages/:stage` (a view traz TAMBÉM `tasks` + `checklist`
+  `done`; **HERDA a identidade validada** do ciclo anterior — `InheritedPensaArtifact` inserido
+  validated v1 na MESMA tx do `createCycle`; a criança não refaz nome/paleta/ícone a cada Versão)
+  · GET `/cycles/:cycleId/stages/:stage` (a view traz TAMBÉM `tasks` + `checklist`
   VIVOS do ciclo — o reload da UI re-hidrata o kanban sem re-gerar o plano) · PUT
   `…/stages/:stage/conversation` (turno
   user+assistant; trim server-side) · POST `…/artifacts` (version = latest+1) · POST
-  `…/artifacts/:type/validate` · POST `…/advance` · PUT `…/tasks` (REPLACE; nascem backlog)
-  · PATCH `/tasks/:taskId` (move re-sequencia a coluna destino E a origem) · PUT
+  `…/artifacts/:type/validate` · POST `…/advance` · PUT `…/tasks` (REPLACE; nascem backlog) ·
+  **POST `…/tasks` (APPEND ao fim do backlog — autoria manual "+ Nova missão"/"sugerir mais"; ≤60)**
+  · PATCH `/tasks/:taskId` (move re-sequencia origem+destino E/OU EDITA o conteúdo
+  title/summary/taskType/mission) · **DELETE `/tasks/:taskId` (apaga 1 card)** · PUT
   `…/checklist` (REPLACE) · PATCH `/checklist/:itemId`. ⚠️ **Teto de corpo próprio de 1 MB**
   (const `MAX_PENSA_BODY_BYTES` em `server.ts`, `bodyLimitForPath`) nas 3 rotas pesadas
   (conversation/artifacts/tasks) — o teto padrão de 64 KB barraria payloads legítimos.
@@ -833,7 +837,8 @@ INSERT, imutável); tudo segregado por `audience` (`?audience=` como as demais, 
   (`user_id`+`audience`); mismatch → **404 `PENSA_NOT_FOUND` (nunca vazar existência)**.
 - **Gates do advance** (`domain/pensa/advance.ts`, puro — `evaluateAdvanceGate`): z→e exige
   latest `idea` VALIDATED; e→r exige `friendly_spec` E `identity` validated; r→o ≥1 task;
-  o→done todo checklist `required` done. Reprovado → **409 `PENSA_GATE_NOT_READY` com
+  o→done **checklist NÃO-VAZIO** com todo `required` done (checklist vazio TRAVA — espelha o
+  "≥1 task" do r→o; senão o→done daria o prêmio maior por nada). Reprovado → **409 `PENSA_GATE_NOT_READY` com
   `details.{gate,missing}`** (case especial no error-handler, como o `retryAvailableAt` do
   quiz); `from` ≠ stage atual → 409 `PENSA_STAGE_MISMATCH`. Sucesso grava
   `<from>_completed_at`.
@@ -853,7 +858,7 @@ INSERT, imutável); tudo segregado por `audience` (`?audience=` como as demais, 
 - **Migration `0032`** (`0032_zippy_runaways`, gerada — FALTA aplicar): `ALTER TYPE … ADD VALUE
   'pensa_stage_complete'/'pensa_cycle_complete'` nos DOIS enums (`xp_source_type` E
   `coin_source_type` — a moeda reusa o mesmo (sourceType, sourceId) do XP).
-- **Cotas nos USE CASES (não no banco)**: ≤20 projetos `active`/(user,audience), ≤10
+- **Cotas nos USE CASES (não no banco)**: ≤20 projetos `active`/(user,audience), ≤20
   ciclos/projeto, ≤60 tasks e ≤40 itens no replace → 409 `PENSA_QUOTA_EXCEEDED` (por isso o
   `maxItems` dos DTOs é mais folgado — na borda viraria 400). Conversa: trim p/ as últimas
   80 msgs E ≤262K chars (`trimConversation`, puro — a msg mais recente SEMPRE fica);

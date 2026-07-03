@@ -394,7 +394,7 @@ function createPensaTransport(): PensaTransport {
   return {
     async request<T>(
       path: string,
-      init?: { method?: 'GET' | 'POST' | 'PATCH' | 'PUT'; body?: unknown },
+      init?: { method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'; body?: unknown },
     ): Promise<T> {
       const res = await fetch(`/api/pensa${path}`, {
         method: init?.method ?? 'GET',

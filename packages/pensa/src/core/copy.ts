@@ -128,6 +128,26 @@ export interface PensaCopy {
       warning: string
       tooShort: string
     }
+    /** Edição PONTUAL de UMA tela (sem refazer o desenho inteiro). */
+    screenEdit: {
+      edit: string
+      title: string
+      nameLabel: string
+      elementsLabel: string
+      addElement: string
+      removeElement: string
+      kindLabel: string
+      zoneLabel: string
+      labelPlaceholder: string
+      save: string
+      saving: string
+      cancel: string
+      kinds: Record<
+        'title' | 'button' | 'score' | 'hero' | 'enemy' | 'item' | 'background' | 'text',
+        string
+      >
+      zones: Record<'top' | 'middle' | 'bottom', string>
+    }
     identity: {
       intro: string
       steps: Record<'name' | 'palette' | 'icon', string>
@@ -151,6 +171,8 @@ export interface PensaCopy {
       doneTitle: string
       doneBody: string
       noIcon: string
+      /** Botão para reabrir o funil e ajustar a identidade já salva. */
+      editIdentity: string
     }
   }
   buildEnv: {
@@ -221,6 +243,38 @@ export interface PensaCopy {
     allDoneBody: string
     advanceCta: string
     xpToast(xp: number): string
+    /** Autoria manual do quadro (a criança cria/edita/apaga/reordena missões). */
+    author: {
+      addMission: string
+      suggestMore: string
+      suggestingMore: string
+      editMission: string
+      deleteMission: string
+      moveUp: string
+      moveDown: string
+      notesLabel: string
+      notesPlaceholder: string
+      deleteTitle: string
+      deleteBody: string
+      deleteConfirm: string
+      deleteCancel: string
+      editorNewTitle: string
+      editorEditTitle: string
+      titleLabel: string
+      titlePlaceholder: string
+      stepsLabel: string
+      stepPlaceholder: string
+      addStep: string
+      removeStep: string
+      doneWhenLabel: string
+      donePlaceholder: string
+      addDone: string
+      removeDone: string
+      needTitle: string
+      save: string
+      saving: string
+      cancel: string
+    }
   }
   stageO: {
     loading: string
@@ -397,6 +451,31 @@ const KIDS_COPY: PensaCopy = {
       warning: 'O Zappy vai refazer o desenho inteiro com a sua mudança.',
       tooShort: 'Escreve um pouquinho mais para o Zappy entender direitinho.',
     },
+    screenEdit: {
+      edit: 'Mudar esta tela',
+      title: 'Mudar a tela',
+      nameLabel: 'Nome da tela',
+      elementsLabel: 'O que aparece na tela',
+      addElement: 'Adicionar uma coisa',
+      removeElement: 'Tirar',
+      kindLabel: 'O que é',
+      zoneLabel: 'Onde fica',
+      labelPlaceholder: 'Ex.: Botão Jogar',
+      save: 'Salvar a tela',
+      saving: 'Salvando...',
+      cancel: 'Cancelar',
+      kinds: {
+        title: 'Título / logo',
+        button: 'Botão',
+        score: 'Placar',
+        hero: 'Herói',
+        enemy: 'Inimigo',
+        item: 'Item',
+        background: 'Fundo / cenário',
+        text: 'Texto',
+      },
+      zones: { top: 'Em cima', middle: 'No meio', bottom: 'Embaixo' },
+    },
     identity: {
       intro: 'Hora de escolher o nome, as cores e o símbolo do seu jogo!',
       steps: { name: 'Nome', palette: 'Cores', icon: 'Símbolo' },
@@ -420,6 +499,7 @@ const KIDS_COPY: PensaCopy = {
       doneTitle: 'A cara do jogo ficou assim',
       doneBody: 'Que capricho! Seu jogo vai aparecer assim para todo mundo:',
       noIcon: 'Sem símbolo por enquanto',
+      editIdentity: 'Mudar a identidade',
     },
   },
   buildEnv: {
@@ -496,6 +576,37 @@ const KIDS_COPY: PensaCopy = {
     allDoneBody: 'Seu jogo está construído! Agora só falta preparar o grande lançamento.',
     advanceCta: 'Missões prontas! Hora do lançamento',
     xpToast: (xp) => `+${xp} XP! Você mandou muito bem!`,
+    author: {
+      addMission: 'Nova missão',
+      suggestMore: 'Sugerir mais missões',
+      suggestingMore: 'O Zappy está pensando em mais missões...',
+      editMission: 'Editar a missão',
+      deleteMission: 'Apagar a missão',
+      moveUp: 'Subir',
+      moveDown: 'Descer',
+      notesLabel: 'Minha anotação',
+      notesPlaceholder: 'Escreva um lembrete pra você...',
+      deleteTitle: 'Apagar esta missão?',
+      deleteBody: 'Ela some do quadro. Você pode criar outra depois, sem problema!',
+      deleteConfirm: 'Apagar',
+      deleteCancel: 'Deixar',
+      editorNewTitle: 'Criar uma missão',
+      editorEditTitle: 'Editar a missão',
+      titleLabel: 'Nome da missão',
+      titlePlaceholder: 'Ex.: Fazer o herói pular',
+      stepsLabel: 'Passo a passo',
+      stepPlaceholder: 'O que fazer neste passo?',
+      addStep: 'Adicionar passo',
+      removeStep: 'Tirar este passo',
+      doneWhenLabel: 'Fica pronto quando...',
+      donePlaceholder: 'Ex.: o herói pula quando aperto espaço',
+      addDone: 'Adicionar sinal de pronto',
+      removeDone: 'Tirar este sinal',
+      needTitle: 'Escreva um nome pra missão.',
+      save: 'Salvar a missão',
+      saving: 'Salvando...',
+      cancel: 'Cancelar',
+    },
   },
   stageO: {
     loading: 'Abrindo o checklist do lançamento...',
@@ -667,6 +778,31 @@ const ADULT_COPY: PensaCopy = {
       warning: 'O esboço inteiro será refeito com a sua mudança.',
       tooShort: 'Escreva um pouco mais para o Zappy entender.',
     },
+    screenEdit: {
+      edit: 'Editar esta tela',
+      title: 'Editar a tela',
+      nameLabel: 'Nome da tela',
+      elementsLabel: 'Elementos da tela',
+      addElement: 'Adicionar elemento',
+      removeElement: 'Remover',
+      kindLabel: 'Tipo',
+      zoneLabel: 'Posição',
+      labelPlaceholder: 'Ex.: Botão Jogar',
+      save: 'Salvar a tela',
+      saving: 'Salvando...',
+      cancel: 'Cancelar',
+      kinds: {
+        title: 'Título / logo',
+        button: 'Botão',
+        score: 'Placar',
+        hero: 'Herói',
+        enemy: 'Inimigo',
+        item: 'Item',
+        background: 'Fundo / cenário',
+        text: 'Texto',
+      },
+      zones: { top: 'Topo', middle: 'Meio', bottom: 'Base' },
+    },
     identity: {
       intro: 'Escolha o nome, as cores e o símbolo do projeto.',
       steps: { name: 'Nome', palette: 'Cores', icon: 'Símbolo' },
@@ -690,6 +826,7 @@ const ADULT_COPY: PensaCopy = {
       doneTitle: 'A identidade ficou assim',
       doneBody: 'O projeto vai aparecer assim:',
       noIcon: 'Sem símbolo por enquanto',
+      editIdentity: 'Ajustar a identidade',
     },
   },
   buildEnv: {
@@ -765,6 +902,37 @@ const ADULT_COPY: PensaCopy = {
     allDoneBody: 'O projeto está construído. Agora é preparar o lançamento.',
     advanceCta: 'Missões prontas! Hora do lançamento',
     xpToast: (xp) => `+${xp} XP! Muito bem!`,
+    author: {
+      addMission: 'Nova tarefa',
+      suggestMore: 'Sugerir mais tarefas',
+      suggestingMore: 'Gerando mais tarefas...',
+      editMission: 'Editar a tarefa',
+      deleteMission: 'Apagar a tarefa',
+      moveUp: 'Subir',
+      moveDown: 'Descer',
+      notesLabel: 'Anotação',
+      notesPlaceholder: 'Um lembrete para você...',
+      deleteTitle: 'Apagar esta tarefa?',
+      deleteBody: 'Ela sai do quadro. Você pode criar outra quando quiser.',
+      deleteConfirm: 'Apagar',
+      deleteCancel: 'Manter',
+      editorNewTitle: 'Criar uma tarefa',
+      editorEditTitle: 'Editar a tarefa',
+      titleLabel: 'Nome da tarefa',
+      titlePlaceholder: 'Ex.: Implementar o pulo',
+      stepsLabel: 'Passo a passo',
+      stepPlaceholder: 'O que fazer neste passo?',
+      addStep: 'Adicionar passo',
+      removeStep: 'Remover passo',
+      doneWhenLabel: 'Pronto quando...',
+      donePlaceholder: 'Ex.: o pulo responde à tecla espaço',
+      addDone: 'Adicionar critério',
+      removeDone: 'Remover critério',
+      needTitle: 'Dê um nome à tarefa.',
+      save: 'Salvar',
+      saving: 'Salvando...',
+      cancel: 'Cancelar',
+    },
   },
   stageO: {
     loading: 'Abrindo o checklist do lançamento...',

@@ -13,6 +13,7 @@ import type {
   PensaWorkStage,
 } from '../../../domain/pensa/pensa'
 import type {
+  InheritedPensaArtifact,
   NewPensaArtifact,
   NewPensaChecklistItem,
   NewPensaCycle,
@@ -22,6 +23,7 @@ import type {
   PensaProjectPatch,
   PensaRepository,
   PensaTaskBoardChange,
+  PensaTaskContentPatch,
 } from '../../../domain/ports/pensa-repository.port'
 import type { Database } from './db'
 import {
@@ -201,9 +203,28 @@ export class DrizzlePensaRepository implements PensaRepository {
     return rows.map(toCycle)
   }
 
-  async createCycle(cycle: NewPensaCycle, now: Date): Promise<void> {
+  async createCycle(
+    cycle: NewPensaCycle,
+    now: Date,
+    inherit: InheritedPensaArtifact[] = [],
+  ): Promise<void> {
     await this.db.transaction(async (tx) => {
       await tx.insert(pensaCycles).values({ ...cycle, createdAt: now, updatedAt: now })
+      if (inherit.length > 0) {
+        // Ciclo NOVO → primeira versão de cada tipo herdado; nasce validated.
+        await tx.insert(pensaArtifacts).values(
+          inherit.map((a) => ({
+            id: a.id,
+            cycleId: cycle.id,
+            stage: a.stage,
+            type: a.type,
+            version: 1,
+            content: a.content,
+            status: 'validated' as const,
+            createdAt: now,
+          })),
+        )
+      }
       await touchProject(tx, cycle.projectId, now)
     })
   }
@@ -410,6 +431,33 @@ export class DrizzlePensaRepository implements PensaRepository {
     })
   }
 
+  async appendTasks(
+    projectId: string,
+    cycleId: string,
+    tasks: NewPensaTask[],
+    now: Date,
+  ): Promise<void> {
+    if (tasks.length === 0) return
+    await this.db.transaction(async (tx) => {
+      await tx.insert(pensaTasks).values(
+        tasks.map((task) => ({
+          id: task.id,
+          cycleId,
+          title: task.title,
+          summary: task.summary,
+          taskType: task.taskType,
+          mission: task.mission,
+          boardColumn: task.column,
+          position: task.position,
+          notes: task.notes,
+          createdAt: now,
+          updatedAt: now,
+        })),
+      )
+      await touchProject(tx, projectId, now)
+    })
+  }
+
   async findTaskWithProject(
     taskId: string,
     userId: string,
@@ -442,6 +490,37 @@ export class DrizzlePensaRepository implements PensaRepository {
           })
           .where(eq(pensaTasks.id, change.id))
       }
+      await touchProject(tx, projectId, now)
+    })
+  }
+
+  async updateTaskContent(
+    projectId: string,
+    taskId: string,
+    patch: PensaTaskContentPatch,
+    now: Date,
+  ): Promise<PensaTask> {
+    return this.db.transaction(async (tx) => {
+      const [updated] = await tx
+        .update(pensaTasks)
+        .set({
+          ...(patch.title !== undefined ? { title: patch.title } : {}),
+          ...(patch.summary !== undefined ? { summary: patch.summary } : {}),
+          ...(patch.taskType !== undefined ? { taskType: patch.taskType } : {}),
+          ...(patch.mission !== undefined ? { mission: patch.mission } : {}),
+          updatedAt: now,
+        })
+        .where(eq(pensaTasks.id, taskId))
+        .returning()
+      if (!updated) throw new Error('Task desapareceu durante a edição')
+      await touchProject(tx, projectId, now)
+      return toTask(updated)
+    })
+  }
+
+  async deleteTask(projectId: string, taskId: string, now: Date): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      await tx.delete(pensaTasks).where(eq(pensaTasks.id, taskId))
       await touchProject(tx, projectId, now)
     })
   }

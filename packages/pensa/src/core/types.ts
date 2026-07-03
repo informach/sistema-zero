@@ -196,7 +196,9 @@ export class PensaApiError extends Error {
 export interface PensaChatInput {
   projectId: string
   cycleId: string
-  stage: 'z' | 'e'
+  // Só a etapa Z tem chat (clareza com o Zappy). A etapa E é geração de artefato
+  // (spec/identidade), não conversa — o BFF (`ChatBody`) só aceita 'z'.
+  stage: 'z'
   message: string
 }
 
@@ -214,7 +216,7 @@ export interface PensaTransport {
    */
   request<T>(
     path: string,
-    init?: { method?: 'GET' | 'POST' | 'PATCH' | 'PUT'; body?: unknown },
+    init?: { method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'; body?: unknown },
   ): Promise<T>
   /** Fase 1; na Fase 0 pode lançar 'not implemented'. Devolve fn de abort. */
   streamChat(input: PensaChatInput, handlers: PensaChatHandlers): () => void

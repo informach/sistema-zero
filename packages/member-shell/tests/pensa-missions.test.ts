@@ -3,9 +3,14 @@ import { describe, expect, it, mock } from 'bun:test'
 // `server-only` lança fora do React Server — neutraliza p/ testar os prompts puros.
 mock.module('server-only', () => ({}))
 
-const { missionsSystem, clampMissions, STUDIO_BLOCK_HINTS, STUDIO_CATEGORY_HINTS } = await import(
-  '../src/server/pensa-agents/stage-r-missions'
-)
+const {
+  missionsSystem,
+  clampMissions,
+  missionTargetFromSpec,
+  MISSION_CEILING,
+  STUDIO_BLOCK_HINTS,
+  STUDIO_CATEGORY_HINTS,
+} = await import('../src/server/pensa-agents/stage-r-missions')
 
 describe('missionsSystem (agente de missões — etapa R)', () => {
   it('no Estúdio: ensina a INSTALAR a extensão, cita blocos reais e a arquitetura do loop', () => {
@@ -30,6 +35,67 @@ describe('missionsSystem (agente de missões — etapa R)', () => {
     expect(system).not.toContain('abrir o projeto no Estúdio')
     expect(system).not.toContain('Extensões')
     expect(system).not.toContain('"A cada quadro do jogo, fazer"')
+  })
+})
+
+describe('missionTargetFromSpec (alvo proporcional ao tamanho do jogo)', () => {
+  const spec = (f: number, s: number) => ({ flows: Array(f).fill({}), screens: Array(s).fill({}) })
+
+  it('null sem spec legível (cai no range padrão por versão)', () => {
+    expect(missionTargetFromSpec(null, 1)).toBeNull()
+    expect(missionTargetFromSpec({ flows: [], screens: [] }, 1)).toBeNull()
+    expect(missionTargetFromSpec({}, 1)).toBeNull()
+  })
+
+  it('jogo GRANDE gera MAIS missões que um pequeno (V1), sem passar do teto', () => {
+    const small = missionTargetFromSpec(spec(3, 3), 1)
+    const big = missionTargetFromSpec(spec(8, 12), 1)
+    // V1 já tem piso alto (a arquitetura pede setup→loop→HUD→título).
+    expect(small?.max).toBeGreaterThanOrEqual(8)
+    expect(big?.max).toBeGreaterThan(small?.max ?? 0)
+    expect(big?.max).toBeLessThanOrEqual(MISSION_CEILING)
+    expect(big?.min).toBeGreaterThanOrEqual(5)
+    expect(big?.min).toBeLessThan(big?.max ?? 0)
+  })
+
+  it('Versão 2+ é mais enxuta que a V1 (incremento)', () => {
+    const v1 = missionTargetFromSpec(spec(5, 6), 1)
+    const v2 = missionTargetFromSpec(spec(5, 6), 2)
+    expect(v2?.max).toBeLessThanOrEqual(12)
+    expect(v2?.max).toBeLessThan(v1?.max ?? 0)
+  })
+
+  it('missionsSystem injeta o alvo derivado da spec quando informado', () => {
+    const system = missionsSystem({
+      mode: 'kids',
+      cycleNumber: 1,
+      buildEnv: 'embedded',
+      targetMissions: { min: 9, max: 14 },
+    })
+    expect(system).toContain('entre 9 e 14 missões')
+  })
+})
+
+describe('missionsSystem — append ("sugerir mais missões")', () => {
+  it('append: NÃO pede a 1ª "Monte o palco" nem a última "Toque final"; avisa que ADICIONA', () => {
+    const system = missionsSystem({
+      mode: 'kids',
+      cycleNumber: 1,
+      buildEnv: 'embedded',
+      append: true,
+      targetMissions: { min: 3, max: 5 },
+    })
+    expect(system).toContain('ADICIONANDO')
+    expect(system).toContain('NÃO inclua "Monte o palco" nem "Toque final"')
+    // As regras POSITIVAS de 1ª/última missão somem no append.
+    expect(system).not.toContain('A PRIMEIRA missão é sempre "Monte o palco"')
+    expect(system).not.toContain('A ÚLTIMA missão é sempre "Toque final"')
+  })
+
+  it('sem append: mantém as regras de "Monte o palco" e "Toque final"', () => {
+    const system = missionsSystem({ mode: 'kids', cycleNumber: 1, buildEnv: 'embedded' })
+    expect(system).toContain('A PRIMEIRA missão é sempre "Monte o palco"')
+    expect(system).toContain('A ÚLTIMA missão é sempre "Toque final"')
   })
 })
 

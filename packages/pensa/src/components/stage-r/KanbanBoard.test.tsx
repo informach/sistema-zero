@@ -29,7 +29,11 @@ function renderBoard(
     <PensaAppProvider
       value={{ adapter, copy: getCopy('kids'), store: createProjectStore(transport) }}
     >
-      <KanbanBoard store={stageStore} onOpenMission={(taskId) => opened.push(taskId)} />
+      <KanbanBoard
+        store={stageStore}
+        projectId="project-1"
+        onOpenMission={(taskId) => opened.push(taskId)}
+      />
     </PensaAppProvider>,
   )
   return { transport, stageStore, opened }

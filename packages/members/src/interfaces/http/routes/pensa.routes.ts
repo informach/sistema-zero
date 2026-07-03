@@ -2,8 +2,10 @@ import { Elysia } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
 import type { AdvancePensaStageService } from '../../../application/pensa/advance-stage.service'
 import type { AppendPensaConversationTurnService } from '../../../application/pensa/append-conversation-turn.service'
+import type { AppendPensaTasksService } from '../../../application/pensa/append-tasks.service'
 import type { CreatePensaCycleService } from '../../../application/pensa/create-cycle.service'
 import type { CreatePensaProjectService } from '../../../application/pensa/create-project.service'
+import type { DeletePensaTaskService } from '../../../application/pensa/delete-task.service'
 import type { GetPensaProjectService } from '../../../application/pensa/get-project.service'
 import type { GetPensaStageService } from '../../../application/pensa/get-stage.service'
 import type { GetPensaStudioSnapshotService } from '../../../application/pensa/get-studio-snapshot.service'
@@ -55,7 +57,9 @@ export interface PensaRoutesDeps {
   validateArtifact: ValidatePensaArtifactService
   advanceStage: AdvancePensaStageService
   replaceTasks: ReplacePensaTasksService
+  appendTasks: AppendPensaTasksService
   updateTask: UpdatePensaTaskService
+  deleteTask: DeletePensaTaskService
   replaceChecklist: ReplacePensaChecklistService
   toggleChecklistItem: TogglePensaChecklistItemService
   /** Gate de PRODUTO na criação de projeto (mesma régua da rota `/members/access`). */
@@ -260,7 +264,20 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
         }),
         { body: PensaTasksReplaceBody, params: PensaCycleParams, query: AudienceQuery },
       )
-      // Move/anota um card (re-sequencia a coluna destino).
+      // APPEND ao backlog (autoria manual "+ Nova missão" e "sugerir mais"; ≤60 total).
+      .post(
+        '/cycles/:cycleId/tasks',
+        async ({ headers, params, body, query }) => ({
+          tasks: await deps.appendTasks.execute(
+            resolveUserId(headers),
+            query.audience ?? 'adult',
+            params.cycleId,
+            body.tasks,
+          ),
+        }),
+        { body: PensaTasksReplaceBody, params: PensaCycleParams, query: AudienceQuery },
+      )
+      // Edita/move/anota um card (re-sequencia a coluna destino).
       .patch(
         '/tasks/:taskId',
         async ({ headers, params, body, query }) => ({
@@ -272,6 +289,19 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
           ),
         }),
         { body: PensaTaskUpdateBody, params: PensaTaskParams, query: AudienceQuery },
+      )
+      // Apaga um card (autoria manual).
+      .delete(
+        '/tasks/:taskId',
+        async ({ headers, params, query }) => {
+          await deps.deleteTask.execute(
+            resolveUserId(headers),
+            query.audience ?? 'adult',
+            params.taskId,
+          )
+          return { ok: true }
+        },
+        { params: PensaTaskParams, query: AudienceQuery },
       )
       // REPLACE do checklist de lançamento (≤40 itens).
       .put(

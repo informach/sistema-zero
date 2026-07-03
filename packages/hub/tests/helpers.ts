@@ -14,6 +14,7 @@ import { ReadStateService } from '../src/application/read-state/read-state.servi
 import { ShowcaseService } from '../src/application/showcase/showcase.service'
 import { ThreadService } from '../src/application/threads/thread.service'
 import type { AttachmentLimits } from '../src/domain/attachment/attachment'
+import type { StudioArtifactGateway } from '../src/domain/ports/studio-artifact-gateway.port'
 import { MicroCache } from '../src/infrastructure/cache/micro-cache'
 import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
@@ -57,6 +58,8 @@ export function buildApp(
     showcaseWallSlugs?: string[]
     /** Slug do canal da parede dentro do servidor de vitrine. */
     showcaseWallChannelSlug?: string
+    /** Gateway de limpeza de R2 (moderação) — injetável p/ espiar a chamada no delete. */
+    studioArtifacts?: StudioArtifactGateway
   } = {},
 ) {
   const repo = new InMemoryCommunityAdminRepository()
@@ -146,7 +149,7 @@ export function buildApp(
     moderation: {
       requireAdminEnabled: opts.requireAdmin ?? false,
       internalToken,
-      moderation: new ModerationService(threadRepo, moderationRepo, clock),
+      moderation: new ModerationService(threadRepo, moderationRepo, clock, opts.studioArtifacts),
     },
     webhooks: {
       access,

@@ -89,10 +89,11 @@ describe('evaluateAdvanceGate — gates do contrato', () => {
         ],
       }).ok,
     ).toBe(true)
-    // Checklist VAZIO não trava (nenhum required pendente).
-    expect(evaluateAdvanceGate('o', { latestArtifacts: [], taskCount: 0, checklist: [] }).ok).toBe(
-      true,
-    )
+    // Checklist VAZIO trava (lançamento não preparado) — espelha o "≥1 task" do r→o.
+    expect(evaluateAdvanceGate('o', { latestArtifacts: [], taskCount: 0, checklist: [] })).toEqual({
+      ok: false,
+      missing: ['checklist'],
+    })
   })
 
   test('máquina linear z→e→r→o→done', () => {

@@ -3,8 +3,10 @@ import { randomUUID } from 'node:crypto'
 import { AwardGamificationService } from '../../src/application/gamification/award-gamification.service'
 import { AdvancePensaStageService } from '../../src/application/pensa/advance-stage.service'
 import { AppendPensaConversationTurnService } from '../../src/application/pensa/append-conversation-turn.service'
+import { AppendPensaTasksService } from '../../src/application/pensa/append-tasks.service'
 import { CreatePensaCycleService } from '../../src/application/pensa/create-cycle.service'
 import { CreatePensaProjectService } from '../../src/application/pensa/create-project.service'
+import { DeletePensaTaskService } from '../../src/application/pensa/delete-task.service'
 import { GetPensaProjectService } from '../../src/application/pensa/get-project.service'
 import { GetPensaStageService } from '../../src/application/pensa/get-stage.service'
 import { GetPensaStudioSnapshotService } from '../../src/application/pensa/get-studio-snapshot.service'
@@ -55,7 +57,9 @@ function buildServices(now = new Date('2026-07-01T12:00:00.000Z')) {
     validateArtifact: new ValidatePensaArtifactService(repo, clock),
     advance: new AdvancePensaStageService(repo, award, clock),
     replaceTasks: new ReplacePensaTasksService(repo, () => randomUUID(), clock),
+    appendTasks: new AppendPensaTasksService(repo, () => randomUUID(), clock),
     updateTask: new UpdatePensaTaskService(repo, clock),
+    deleteTask: new DeletePensaTaskService(repo, clock),
     replaceChecklist: new ReplacePensaChecklistService(repo, () => randomUUID(), clock),
     toggleItem: new TogglePensaChecklistItemService(repo, clock),
   }
@@ -202,20 +206,50 @@ describe('Pensa — ciclos', () => {
     const detail = await s.createCycle.execute(USER, 'kids', project.id, 'Mais fases')
     expect(detail.cycles).toHaveLength(2)
     expect(detail.currentCycle).toMatchObject({ number: 2, stage: 'z', goal: 'Mais fases' })
-    // O artifactsIndex é do ciclo CORRENTE (novo, vazio) — não do concluído.
-    expect(detail.artifactsIndex).toEqual([])
+    // O artifactsIndex é do ciclo CORRENTE (novo). Ele HERDA a identidade validada
+    // do anterior (a criança não refaz o funil); ideia/spec NÃO são herdadas.
+    expect(detail.artifactsIndex).toHaveLength(1)
+    expect(detail.artifactsIndex[0]).toMatchObject({
+      type: 'identity',
+      status: 'validated',
+      stage: 'e',
+      version: 1,
+    })
   })
 
-  test('cota de 10 ciclos → PENSA_QUOTA_EXCEEDED', async () => {
+  test('ciclo N+1 herda a identidade validada → e→r passa sem refazer o funil', async () => {
+    const s = buildServices()
+    const project = await createProject(s)
+    await driveTo(s, project.currentCycle.id, 'done')
+    const detail = await s.createCycle.execute(USER, 'kids', project.id, 'Versão 2')
+    const cycle2 = detail.currentCycle.id
+
+    // z→e (idea validada).
+    await s.saveArtifact.execute(USER, 'kids', cycle2, { stage: 'z', type: 'idea', content: {} })
+    await s.validateArtifact.execute(USER, 'kids', cycle2, 'idea')
+    await s.advance.execute(USER, 'kids', cycle2, 'z')
+    // Só o friendly_spec (NÃO recria a identidade — ela veio herdada).
+    await s.saveArtifact.execute(USER, 'kids', cycle2, {
+      stage: 'e',
+      type: 'friendly_spec',
+      content: {},
+    })
+    await s.validateArtifact.execute(USER, 'kids', cycle2, 'friendly_spec')
+    // e→r PASSA porque a identidade foi herdada validada.
+    const afterE = await s.advance.execute(USER, 'kids', cycle2, 'e')
+    expect(afterE.cycle.stage).toBe('r')
+  })
+
+  test('cota de 20 ciclos → PENSA_QUOTA_EXCEEDED', async () => {
     const s = buildServices()
     const project = await createProject(s)
     let detail = await s.get.execute(USER, 'kids', project.id)
-    for (let i = 2; i <= 10; i++) {
+    for (let i = 2; i <= 20; i++) {
       await driveTo(s, detail.currentCycle.id, 'done')
       detail = await s.createCycle.execute(USER, 'kids', project.id, `Ciclo ${i}`)
     }
     await driveTo(s, detail.currentCycle.id, 'done')
-    expect(s.createCycle.execute(USER, 'kids', project.id, 'Ciclo 11')).rejects.toMatchObject({
+    expect(s.createCycle.execute(USER, 'kids', project.id, 'Ciclo 21')).rejects.toMatchObject({
       code: 'PENSA_QUOTA_EXCEEDED',
     })
   })
@@ -673,6 +707,95 @@ describe('Pensa — kanban (replace + move)', () => {
     expect(s.updateTask.execute(OTHER, 'kids', task.id, { column: 'doing' })).rejects.toMatchObject(
       { code: 'PENSA_NOT_FOUND' },
     )
+  })
+})
+
+describe('Pensa — autoria manual (append/editar/apagar)', () => {
+  test('append NÃO apaga o quadro: entra no FIM do backlog preservando colunas/notas', async () => {
+    const s = buildServices()
+    const project = await createProject(s)
+    const cycleId = project.currentCycle.id
+    const [t0, t1] = await s.replaceTasks.execute(USER, 'kids', cycleId, [
+      { title: 'T0', mission },
+      { title: 'T1', mission },
+    ])
+    if (!t0 || !t1) throw new Error('replace falhou')
+    // Progresso do quadro: T0 vira doing, T1 ganha nota.
+    await s.updateTask.execute(USER, 'kids', t0.id, { column: 'doing' })
+    await s.updateTask.execute(USER, 'kids', t1.id, { notes: 'quase' })
+
+    const added = await s.appendTasks.execute(USER, 'kids', cycleId, [{ title: 'Nova', mission }])
+    expect(added).toHaveLength(1)
+    expect(added[0]).toMatchObject({ title: 'Nova', column: 'backlog' })
+
+    const all = await s.repo.listTasks(cycleId)
+    // O progresso SOBREVIVEU (≠ do replace).
+    expect(all.find((t) => t.id === t0.id)?.column).toBe('doing')
+    expect(all.find((t) => t.id === t1.id)?.notes).toBe('quase')
+    // A nova entrou no fim do backlog (position > a da T1 que ficou no backlog).
+    const nova = all.find((t) => t.title === 'Nova')
+    expect(nova?.column).toBe('backlog')
+    expect(nova?.position).toBeGreaterThan(all.find((t) => t.id === t1.id)?.position ?? 0)
+  })
+
+  test('append respeita o teto de 60 → PENSA_QUOTA_EXCEEDED', async () => {
+    const s = buildServices()
+    const project = await createProject(s)
+    const cycleId = project.currentCycle.id
+    await s.replaceTasks.execute(
+      USER,
+      'kids',
+      cycleId,
+      Array.from({ length: 59 }, (_, i) => ({ title: `T${i}`, mission })),
+    )
+    // 59 + 2 = 61 > 60.
+    expect(
+      s.appendTasks.execute(USER, 'kids', cycleId, [
+        { title: 'A', mission },
+        { title: 'B', mission },
+      ]),
+    ).rejects.toMatchObject({ code: 'PENSA_QUOTA_EXCEEDED' })
+    // 59 + 1 = 60 cabe.
+    const ok = await s.appendTasks.execute(USER, 'kids', cycleId, [{ title: 'C', mission }])
+    expect(ok).toHaveLength(1)
+  })
+
+  test('PATCH edita CONTEÚDO (título/steps) sem mexer na coluna/posição', async () => {
+    const s = buildServices()
+    const project = await createProject(s)
+    const cycleId = project.currentCycle.id
+    const [task] = await s.replaceTasks.execute(USER, 'kids', cycleId, [
+      { title: 'Velho', mission },
+    ])
+    if (!task) throw new Error('replace falhou')
+    await s.updateTask.execute(USER, 'kids', task.id, { column: 'doing' })
+
+    const edited = await s.updateTask.execute(USER, 'kids', task.id, {
+      title: 'Novo título',
+      mission: { steps: [{ text: 'Passo A' }, { text: 'Passo B' }], doneWhen: ['Deu certo'] },
+    })
+    expect(edited.title).toBe('Novo título')
+    expect(edited.mission.steps).toHaveLength(2)
+    // Continua em doing (edição de conteúdo não move).
+    expect(edited.column).toBe('doing')
+  })
+
+  test('DELETE apaga só a task alvo; ownership de outro dono → 404', async () => {
+    const s = buildServices()
+    const project = await createProject(s)
+    const cycleId = project.currentCycle.id
+    const [t0, t1] = await s.replaceTasks.execute(USER, 'kids', cycleId, [
+      { title: 'T0', mission },
+      { title: 'T1', mission },
+    ])
+    if (!t0 || !t1) throw new Error('replace falhou')
+
+    expect(s.deleteTask.execute(OTHER, 'kids', t0.id)).rejects.toMatchObject({
+      code: 'PENSA_NOT_FOUND',
+    })
+    await s.deleteTask.execute(USER, 'kids', t0.id)
+    const all = await s.repo.listTasks(cycleId)
+    expect(all.map((t) => t.id)).toEqual([t1.id])
   })
 })
 

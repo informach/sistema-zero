@@ -5,15 +5,17 @@
 import type { JSX } from 'react'
 import { activeBitmapOf, withActiveBitmap } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
-import { flipHorizontal, flipVertical, rotate90 } from '../../pixel/ops'
-import type { PixelToolId } from '../../pixel/tools'
+import { clearBitmap, flipHorizontal, flipVertical, rotate90 } from '../../pixel/ops'
+import type { PintaSessionTool } from '../../state/sessionStore'
 import { IconButton } from '../ui/Button'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
-const TOOLS: Array<{ id: PixelToolId; emoji: string; label: string }> = [
+const TOOLS: Array<{ id: PintaSessionTool; emoji: string; label: string }> = [
   { id: 'pencil', emoji: '✏️', label: COPY.tools.pencil },
   { id: 'eraser', emoji: '🧽', label: COPY.tools.eraser },
   { id: 'fill', emoji: '🪣', label: COPY.tools.fill },
+  { id: 'recolor', emoji: '🔁', label: COPY.tools.recolor },
+  { id: 'select', emoji: '🔲', label: COPY.tools.select },
   { id: 'line', emoji: '📏', label: COPY.tools.line },
   { id: 'rect', emoji: '⬜', label: COPY.tools.rect },
   { id: 'ellipse', emoji: '⚪', label: COPY.tools.ellipse },
@@ -27,6 +29,8 @@ export function ToolBar(): JSX.Element {
   const tool = useSession((state) => state.tool)
   const brushSize = useSession((state) => state.brushSize)
   const mirrorX = useSession((state) => state.mirrorX)
+  const mirrorY = useSession((state) => state.mirrorY)
+  const showGrid = useSession((state) => state.showGrid)
   const filled = useSession((state) => state.filled)
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
@@ -47,6 +51,17 @@ export function ToolBar(): JSX.Element {
         : op === 'flipV'
           ? flipVertical(bitmap)
           : rotate90(bitmap)
+    state.commit(withActiveBitmap(state.asset, ref, next))
+  }
+
+  function clearActive(): void {
+    const ref = { animationId, frameIndex }
+    const state = editor.getState()
+    const bitmap = activeBitmapOf(state.asset, ref)
+    if (!bitmap) return
+    const next = clearBitmap(bitmap)
+    // Já está vazio: não gasta uma entrada de undo.
+    if (next.data.every((v, i) => v === bitmap.data[i])) return
     state.commit(withActiveBitmap(state.asset, ref, next))
   }
 
@@ -107,6 +122,24 @@ export function ToolBar(): JSX.Element {
       >
         <span aria-hidden="true">🦋</span>
       </IconButton>
+      <IconButton
+        active={mirrorY}
+        aria-label={COPY.tools.mirrorV}
+        aria-pressed={mirrorY}
+        title={COPY.tools.mirrorV}
+        onClick={() => session.getState().toggleMirrorY()}
+      >
+        <span aria-hidden="true">🪞</span>
+      </IconButton>
+      <IconButton
+        active={showGrid}
+        aria-label={COPY.tools.grid}
+        aria-pressed={showGrid}
+        title={COPY.tools.grid}
+        onClick={() => session.getState().toggleGrid()}
+      >
+        <span aria-hidden="true">▦</span>
+      </IconButton>
       {showFilled ? (
         <IconButton
           active={filled}
@@ -142,6 +175,9 @@ export function ToolBar(): JSX.Element {
         onClick={() => transformBitmap('rotate')}
       >
         <span aria-hidden="true">🔄</span>
+      </IconButton>
+      <IconButton aria-label={COPY.tools.clear} title={COPY.tools.clear} onClick={clearActive}>
+        <span aria-hidden="true">🧹</span>
       </IconButton>
     </div>
   )

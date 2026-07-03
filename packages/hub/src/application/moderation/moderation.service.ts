@@ -9,6 +9,10 @@ import type {
   ModerationRepository,
   ReportStatus,
 } from '../../domain/ports/moderation-repository.port'
+import {
+  noopStudioArtifactGateway,
+  type StudioArtifactGateway,
+} from '../../domain/ports/studio-artifact-gateway.port'
 import type { ThreadRepository } from '../../domain/ports/thread-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import {
@@ -47,6 +51,12 @@ export class ModerationService {
     private readonly threads: ThreadRepository,
     private readonly mod: ModerationRepository,
     private readonly clock: () => Date,
+    /**
+     * Limpeza de R2 ao APAGAR um post de vitrine (best-effort). Default no-op p/
+     * dev/local/testes; o composition-root injeta o adapter HTTP quando há
+     * `KIDS_BFF_BASE_URL`.
+     */
+    private readonly studioBff: StudioArtifactGateway = noopStudioArtifactGateway,
   ) {}
 
   // ── Fila de aprovação ──────────────────────────────────────────────────────
@@ -101,10 +111,22 @@ export class ModerationService {
   }
 
   async deleteThread(moderatorId: string, id: string): Promise<{ ok: true }> {
+    // Captura os campos de vitrine ANTES de apagar (o delete é soft/status, a linha
+    // permanece; mas ler antes deixa o fluxo explícito — hide, reversível, NÃO limpa).
+    const thread = await this.threads.findThreadById(id)
     if (!(await this.threads.setThreadStatus(id, 'deleted', this.clock()))) {
       throw new ThreadNotFoundError()
     }
     await this.log('delete', moderatorId, id)
+    // Post de vitrine apagado (terminal) → some com os artefatos R2 do jogo (snapshot
+    // jogável no R2 privado + a capa no R2 público, que seguiria buscável pela URL).
+    // FIRE-AND-FORGET best-effort: o gateway NUNCA lança e a moderação já foi aplicada.
+    if (thread?.isShowcase && thread.playId) {
+      void this.studioBff.cleanupShowcaseArtifacts({
+        playId: thread.playId,
+        coverUrl: thread.coverImageUrl,
+      })
+    }
     return { ok: true }
   }
 

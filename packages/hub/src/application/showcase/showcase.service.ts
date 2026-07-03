@@ -7,6 +7,7 @@ import {
 import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
 import type { MembersGateway } from '../../domain/ports/members-gateway.port'
 import type { ThreadRepository } from '../../domain/ports/thread-repository.port'
+import type { Channel } from '../../domain/space/space'
 import type { Actor } from '../access/access-resolution.service'
 import { type ThreadView, toThreadView } from '../mappers/thread-views'
 import { threadSlug } from '../slug'
@@ -116,6 +117,32 @@ export class ShowcaseService {
     private readonly showcaseChannelSlug = 'parede',
   ) {}
 
+  /**
+   * Destino da vitrine (FONTE ÚNICA das 3 publicações): o Mural é um space KIDS
+   * cuja parede é um canal `staff_only` (curado pelo admin) E está na allowlist de
+   * slugs. Barra injeção cross-vitrine (servidores adultos), num futuro space
+   * curado kids que NÃO seja a parede, e em canal de postagem livre.
+   * ⚠️ Esta é a invariante de segurança do destino — NÃO afrouxar.
+   */
+  private async resolveShowcaseDestination(spaceSlug: string): Promise<Channel> {
+    const space = await this.read.findActiveSpaceBySlug(spaceSlug)
+    if (!space) throw new SpaceNotFoundError()
+    // allowlist: não basta ser kids + staff_only.
+    if (this.showcaseWallSlugs.size > 0 && !this.showcaseWallSlugs.has(space.slug)) {
+      throw new PostingNotAllowedError('Destino não é uma parede de vitrine')
+    }
+    if (space.audience !== 'kids') {
+      throw new PostingNotAllowedError('A vitrine só publica em servidores kids')
+    }
+    const channels = await this.read.listActiveChannels(space.id)
+    const channel = channels.find((c) => c.slug === this.showcaseChannelSlug)
+    if (!channel) throw new ChannelNotFoundError()
+    if (channel.postingPolicy !== 'staff_only') {
+      throw new PostingNotAllowedError('A vitrine só publica na parede curada (staff_only)')
+    }
+    return channel
+  }
+
   async create(
     actor: Actor,
     cmd: CreateShowcaseCommand,
@@ -131,24 +158,8 @@ export class ShowcaseService {
     if (elig.audience !== 'kids')
       throw new PostingNotAllowedError('A vitrine é só da plataforma kids')
 
-    // Destino: o Mural é um space KIDS cuja parede é um canal `staff_only` (curado pelo
-    // admin) — barra injeção cross-vitrine (servidores adultos) e em canal de postagem livre.
-    const space = await this.read.findActiveSpaceBySlug(cmd.spaceSlug)
-    if (!space) throw new SpaceNotFoundError()
-    // Destino DESIGNADO (allowlist) — não basta ser kids + staff_only: trava injeção
-    // num futuro space curado kids que não seja a parede da vitrine.
-    if (this.showcaseWallSlugs.size > 0 && !this.showcaseWallSlugs.has(space.slug)) {
-      throw new PostingNotAllowedError('Destino não é uma parede de vitrine')
-    }
-    if (space.audience !== 'kids') {
-      throw new PostingNotAllowedError('A vitrine só publica em servidores kids')
-    }
-    const channels = await this.read.listActiveChannels(space.id)
-    const channel = channels.find((c) => c.slug === this.showcaseChannelSlug)
-    if (!channel) throw new ChannelNotFoundError()
-    if (channel.postingPolicy !== 'staff_only') {
-      throw new PostingNotAllowedError('A vitrine só publica na parede curada (staff_only)')
-    }
+    // Destino: parede curada do Mural (kids + staff_only + allowlist) — ver helper.
+    const channel = await this.resolveShowcaseDestination(cmd.spaceSlug)
 
     const title = elig.title.trim()
     const body = elig.summary.trim()
@@ -256,20 +267,8 @@ export class ShowcaseService {
     if (elig.audience !== 'kids')
       throw new PostingNotAllowedError('A vitrine é só da plataforma kids')
 
-    const space = await this.read.findActiveSpaceBySlug(cmd.spaceSlug)
-    if (!space) throw new SpaceNotFoundError()
-    if (this.showcaseWallSlugs.size > 0 && !this.showcaseWallSlugs.has(space.slug)) {
-      throw new PostingNotAllowedError('Destino não é uma parede de vitrine')
-    }
-    if (space.audience !== 'kids') {
-      throw new PostingNotAllowedError('A vitrine só publica em servidores kids')
-    }
-    const channels = await this.read.listActiveChannels(space.id)
-    const channel = channels.find((c) => c.slug === this.showcaseChannelSlug)
-    if (!channel) throw new ChannelNotFoundError()
-    if (channel.postingPolicy !== 'staff_only') {
-      throw new PostingNotAllowedError('A vitrine só publica na parede curada (staff_only)')
-    }
+    // Destino: parede curada do Mural (mesmas guardas de `create`) — ver helper.
+    const channel = await this.resolveShowcaseDestination(cmd.spaceSlug)
 
     // Título AUTORITATIVO do admin; corpo = descrição da criança (limitada).
     const title = elig.title.trim()
@@ -354,7 +353,9 @@ export class ShowcaseService {
       owns = has(STUDIO_STANDALONE_ACCESS_REF)
       ownsClub = has(CHALLENGE_CLUB_REF)
     } catch {
+      // Fail-closed EM AMBOS: erro transitório não libera publicar nem entrar no desafio.
       owns = false
+      ownsClub = false
     }
     if (!owns) throw new PostingNotAllowedError('Sem acesso ao Estúdio para publicar')
 
@@ -370,21 +371,8 @@ export class ShowcaseService {
         ? cmd.challengeKey
         : null
 
-    // Destino: o Mural kids + parede curada (mesmas guardas das outras publicações).
-    const space = await this.read.findActiveSpaceBySlug(cmd.spaceSlug)
-    if (!space) throw new SpaceNotFoundError()
-    if (this.showcaseWallSlugs.size > 0 && !this.showcaseWallSlugs.has(space.slug)) {
-      throw new PostingNotAllowedError('Destino não é uma parede de vitrine')
-    }
-    if (space.audience !== 'kids') {
-      throw new PostingNotAllowedError('A vitrine só publica em servidores kids')
-    }
-    const channels = await this.read.listActiveChannels(space.id)
-    const channel = channels.find((c) => c.slug === this.showcaseChannelSlug)
-    if (!channel) throw new ChannelNotFoundError()
-    if (channel.postingPolicy !== 'staff_only') {
-      throw new PostingNotAllowedError('A vitrine só publica na parede curada (staff_only)')
-    }
+    // Destino: parede curada do Mural (mesmas guardas das outras publicações) — ver helper.
+    const channel = await this.resolveShowcaseDestination(cmd.spaceSlug)
 
     // Sem aula → título E corpo são da criança (limitados). O nome do autor vem do header.
     const title = cmd.title.trim()

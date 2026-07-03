@@ -1,5 +1,6 @@
 import 'server-only'
 import {
+  DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
   HeadObjectCommand,
@@ -269,6 +270,16 @@ export async function r2PutObjectPrivate(input: R2PutObjectInput): Promise<void>
     console.error('[r2] putObjectPrivate falhou', { key, error })
     throw new Error('Falha ao gravar o arquivo no armazenamento.', { cause: error })
   }
+}
+
+/**
+ * Apaga UM objeto do bucket PRIVADO (limpeza do snapshot jogável `studio/play/<id>.json`
+ * quando o post do Mural é APAGADO pela moderação — o `deleted` é terminal). Espelha
+ * o `r2DeleteObjects` (público, em lote); aqui é 1 key só.
+ */
+export async function r2DeleteObjectPrivate(key: string): Promise<void> {
+  const cfg = requirePrivateR2Config()
+  await getClient(cfg).send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: normalizeKey(key) }))
 }
 
 /**

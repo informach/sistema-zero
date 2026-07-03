@@ -6,8 +6,45 @@
  */
 import type { JSX, PointerEvent } from 'react'
 import { memo } from 'react'
-import type { VectorShape } from './model'
-import { shapeCommonAttrs, shapeGeometryAttrs } from './svg'
+import { gradientId, isVectorGradient, type VectorGradient, type VectorShape } from './model'
+import { linearGradientVector, shapeCommonAttrs, shapeGeometryAttrs } from './svg'
+
+/**
+ * `<defs>` React com um gradiente por shape de preenchimento degradê — os
+ * MESMOS números do export string (`gradientDefsMarkup`). Renderizar dentro do
+ * `<svg>` que usa os shapes (o `url(#id)` resolve no mesmo documento).
+ */
+export function GradientDefs({ shapes }: { shapes: VectorShape[] }): JSX.Element | null {
+  const grads = shapes.filter((s) => isVectorGradient(s.fill))
+  if (grads.length === 0) return null
+  return (
+    <defs>
+      {grads.map((s) => {
+        const g = s.fill as VectorGradient
+        const id = gradientId(s.id)
+        const stops = (
+          <>
+            <stop offset="0" stopColor={g.from} />
+            <stop offset="1" stopColor={g.to} />
+          </>
+        )
+        if (g.type === 'radial') {
+          return (
+            <radialGradient key={id} id={id}>
+              {stops}
+            </radialGradient>
+          )
+        }
+        const v = linearGradientVector(g.angle)
+        return (
+          <linearGradient key={id} id={id} x1={v.x1} y1={v.y1} x2={v.x2} y2={v.y2}>
+            {stops}
+          </linearGradient>
+        )
+      })}
+    </defs>
+  )
+}
 
 /** Um shape do modelo → elemento SVG de React (mesmos atributos do export). */
 export function ShapeElement({
@@ -70,6 +107,7 @@ export const VectorFrameSvg = memo(function VectorFrameSvg({
       aria-hidden="true"
       focusable="false"
     >
+      <GradientDefs shapes={shapes} />
       {shapes.map((shape) => (
         <ShapeElement key={shape.id} shape={shape} />
       ))}

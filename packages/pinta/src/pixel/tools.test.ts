@@ -5,7 +5,15 @@ import { type ToolSettings, toolPointerDown, toolPointerMove, toolPointerUp } fr
 const empty5 = () => bmp(['.....', '.....', '.....', '.....', '.....'])
 
 function settings(overrides: Partial<ToolSettings> = {}): ToolSettings {
-  return { tool: 'pencil', color: 1, brushSize: 1, mirrorX: false, filled: false, ...overrides }
+  return {
+    tool: 'pencil',
+    color: 1,
+    brushSize: 1,
+    mirrorX: false,
+    mirrorY: false,
+    filled: false,
+    ...overrides,
+  }
 }
 
 describe('lápis/borracha (gesto acumulativo)', () => {
@@ -85,5 +93,22 @@ describe('conta-gotas', () => {
     expect(result.gesture).toBeNull()
     expect(result.pickedColor).toBe(5)
     expect(result.preview).toBe(base)
+  })
+})
+
+describe('trocar cor (recolor, um toque)', () => {
+  it('troca TODAS as ocorrências da cor sob o toque, não só a região contígua', () => {
+    const base = bmp(['2..2.', '.....', '2..2.', '.....', '.....'])
+    const result = toolPointerDown(base, settings({ tool: 'recolor', color: 7 }), { x: 0, y: 0 })
+    expect(result.gesture).toBeNull()
+    expect(result.commit).toBeDefined()
+    if (!result.commit) return
+    expect(rows(result.commit)).toEqual(['7..7.', '.....', '7..7.', '.....', '.....'])
+  })
+
+  it('tocar numa cor igual à selecionada não commita (sem gasto de undo)', () => {
+    const base = bmp(['2....', '.....', '.....', '.....', '.....'])
+    const result = toolPointerDown(base, settings({ tool: 'recolor', color: 2 }), { x: 0, y: 0 })
+    expect(result.commit).toBeUndefined()
   })
 })

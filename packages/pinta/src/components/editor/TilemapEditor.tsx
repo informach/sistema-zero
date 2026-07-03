@@ -93,7 +93,7 @@ function PickerTile({
   return (
     <button
       type="button"
-      aria-label={`Peça ${index}`}
+      aria-label={COPY.tiles.tileLabel(index)}
       aria-pressed={selected}
       onClick={onSelect}
       className={`pin-checkerboard relative h-12 w-12 overflow-hidden rounded-xl border-2 transition ${
@@ -432,7 +432,7 @@ export function TilemapEditor(): JSX.Element | null {
               onPointerMove={handlePointerMove}
               onPointerUp={endGesture}
               onPointerCancel={endGesture}
-              aria-label="Grade do mapa"
+              aria-label={COPY.tiles.mapGrid}
               role="img"
             />
           </div>
@@ -524,7 +524,10 @@ export function TilemapEditor(): JSX.Element | null {
               onClick={() => {
                 const state = editor.getState()
                 if (state.asset.kind !== 'tilemap') return
-                const next = addLayer(state.asset, `Camada ${state.asset.layers.length + 1}`)
+                const next = addLayer(
+                  state.asset,
+                  `${COPY.tiles.layerNamePrefix} ${state.asset.layers.length + 1}`,
+                )
                 if (next === state.asset) {
                   showToast(COPY.tiles.layerLimit)
                   return

@@ -3,10 +3,10 @@
  * aqui e o sanitize do modelo valida o resto do caminho.
  */
 import { newId } from '../core/id'
-import type { Vec2, VectorShape, VectorStroke } from './model'
+import type { Vec2, VectorFill, VectorShape, VectorStroke } from './model'
 
 export interface ShapeStyle {
-  fill: string
+  fill: VectorFill
   stroke: VectorStroke | null
   opacity: number
 }
@@ -49,8 +49,10 @@ export function makeEllipse(a: Vec2, b: Vec2, style: ShapeStyle): VectorShape {
 }
 
 export function makeLine(a: Vec2, b: Vec2, style: ShapeStyle): VectorShape {
-  // Linha sem stroke seria invisível — garante um traço.
-  const stroke = style.stroke ?? { color: style.fill === 'none' ? '#000000' : style.fill, width: 2 }
+  // Linha sem stroke seria invisível — garante um traço (cor sólida; degradê no
+  // fill não vira cor de contorno).
+  const fallback = typeof style.fill === 'string' && style.fill !== 'none' ? style.fill : '#000000'
+  const stroke = style.stroke ?? { color: fallback, width: 2 }
   return { ...base({ ...style, stroke }), type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y }
 }
 

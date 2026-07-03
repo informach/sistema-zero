@@ -7,7 +7,7 @@
  * ABSOLUTAS em pares x,y) — `translate`/`scale` reescrevem os números; um `d`
  * fora desse formato fica INTACTO (defensivo, não quebra).
  */
-import type { Vec2, VectorShape } from './model'
+import { MAX_PATH_CHARS, type Vec2, type VectorShape } from './model'
 
 export interface Bounds {
   x: number
@@ -223,6 +223,103 @@ function clampFactor(factor: number): number {
 export function rotateShapeTo(shape: VectorShape, degrees: number): VectorShape {
   const normalized = ((degrees % 360) + 360) % 360
   return { ...shape, rotation: Math.round(normalized * 10) / 10 }
+}
+
+/** Gira um ponto em torno de um centro (graus). `0` devolve cópia sem conta. */
+export function rotatePoint(p: Vec2, center: Vec2, degrees: number): Vec2 {
+  if (degrees === 0) return { x: p.x, y: p.y }
+  const rad = (degrees * Math.PI) / 180
+  const cos = Math.cos(rad)
+  const sin = Math.sin(rad)
+  const dx = p.x - center.x
+  const dy = p.y - center.y
+  return { x: center.x + dx * cos - dy * sin, y: center.y + dx * sin + dy * cos }
+}
+
+// ── Reshape: nós editáveis (só shapes de vértices/pontos) ────────────────────
+
+/**
+ * Nós ON-CURVE (arrastáveis) de um shape reshapeável, em coords LOCAIS (sem
+ * rotação). Vazio p/ rect/ellipse/text (esses editam pelas 8 alças de bbox).
+ * No path (M/L/C), o nó é o ÚLTIMO par de cada comando (o ponto sobre a curva).
+ */
+export function shapeNodes(shape: VectorShape): Vec2[] {
+  switch (shape.type) {
+    case 'polygon':
+      return shape.points.map((p) => ({ x: p.x, y: p.y }))
+    case 'line':
+      return [
+        { x: shape.x1, y: shape.y1 },
+        { x: shape.x2, y: shape.y2 },
+      ]
+    case 'path': {
+      const parsed = parsePathD(shape.d)
+      if (!parsed) return []
+      const nodes: Vec2[] = []
+      for (const c of parsed.commands) {
+        if (c.op.toUpperCase() === 'Z' || c.coords.length < 2) continue
+        const n = c.coords.length
+        nodes.push({ x: c.coords[n - 2] ?? 0, y: c.coords[n - 1] ?? 0 })
+      }
+      return nodes
+    }
+    default:
+      return []
+  }
+}
+
+/**
+ * Move o nó `index` para `pos` (coords LOCAIS). No path, arrasta junto os
+ * pontos de controle vizinhos (o de saída deste comando e o de entrada do
+ * próximo), pra a curva acompanhar o nó sem editar handles à parte.
+ */
+export function setShapeNode(shape: VectorShape, index: number, pos: Vec2): VectorShape {
+  switch (shape.type) {
+    case 'polygon': {
+      if (index < 0 || index >= shape.points.length) return shape
+      const points = shape.points.map((p, i) =>
+        i === index ? { x: round2(pos.x), y: round2(pos.y) } : p,
+      )
+      return { ...shape, points }
+    }
+    case 'line':
+      if (index === 0) return { ...shape, x1: round2(pos.x), y1: round2(pos.y) }
+      if (index === 1) return { ...shape, x2: round2(pos.x), y2: round2(pos.y) }
+      return shape
+    case 'path': {
+      const parsed = parsePathD(shape.d)
+      if (!parsed) return shape
+      // Índice do nó → índice do comando (pulando Z e comandos vazios).
+      const anchorCmd: number[] = []
+      parsed.commands.forEach((c, ci) => {
+        if (c.op.toUpperCase() !== 'Z' && c.coords.length >= 2) anchorCmd.push(ci)
+      })
+      const ci = anchorCmd[index]
+      if (ci === undefined) return shape
+      const cmd = parsed.commands[ci]
+      if (!cmd) return shape
+      const n = cmd.coords.length
+      const dx = pos.x - (cmd.coords[n - 2] ?? 0)
+      const dy = pos.y - (cmd.coords[n - 1] ?? 0)
+      cmd.coords[n - 2] = round2(pos.x)
+      cmd.coords[n - 1] = round2(pos.y)
+      // Controle de SAÍDA deste C (control2 = par 3,4).
+      if (cmd.op.toUpperCase() === 'C' && cmd.coords.length >= 6) {
+        cmd.coords[2] = round2((cmd.coords[2] ?? 0) + dx)
+        cmd.coords[3] = round2((cmd.coords[3] ?? 0) + dy)
+      }
+      // Controle de ENTRADA do próximo C (control1 = par 1,2).
+      const next = parsed.commands[ci + 1]
+      if (next && next.op.toUpperCase() === 'C' && next.coords.length >= 2) {
+        next.coords[0] = round2((next.coords[0] ?? 0) + dx)
+        next.coords[1] = round2((next.coords[1] ?? 0) + dy)
+      }
+      const d = serializePath(parsed)
+      return d.length <= MAX_PATH_CHARS ? { ...shape, d } : shape
+    }
+    default:
+      return shape
+  }
 }
 
 /**

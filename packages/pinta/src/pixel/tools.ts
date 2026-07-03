@@ -14,9 +14,17 @@
 import { TRANSPARENT_INDEX } from '../core/palette'
 import type { PintaBitmap } from '../core/project'
 import { bitmapsEqual, clampToBitmap, getPixel, type Vec2 } from './bitmap'
-import { drawEllipse, drawLine, drawRect, drawStroke, floodFill } from './ops'
+import { drawEllipse, drawLine, drawRect, drawStroke, floodFill, replaceColor } from './ops'
 
-export type PixelToolId = 'pencil' | 'eraser' | 'fill' | 'line' | 'rect' | 'ellipse' | 'picker'
+export type PixelToolId =
+  | 'pencil'
+  | 'eraser'
+  | 'fill'
+  | 'recolor'
+  | 'line'
+  | 'rect'
+  | 'ellipse'
+  | 'picker'
 
 export interface ToolSettings {
   tool: PixelToolId
@@ -25,6 +33,7 @@ export interface ToolSettings {
   /** 1–3. */
   brushSize: number
   mirrorX: boolean
+  mirrorY: boolean
   /** Formas preenchidas (vale p/ rect/ellipse). */
   filled: boolean
 }
@@ -54,11 +63,13 @@ function brushOf(settings: ToolSettings): {
   color: number
   size: number
   mirrorX: boolean
+  mirrorY: boolean
 } {
   return {
     color: settings.tool === 'eraser' ? TRANSPARENT_INDEX : settings.color,
     size: settings.brushSize,
     mirrorX: settings.mirrorX,
+    mirrorY: settings.mirrorY,
   }
 }
 
@@ -75,6 +86,18 @@ export function toolPointerDown(
     }
     case 'fill': {
       const next = floodFill(bitmap, pos, settings.color)
+      return {
+        gesture: null,
+        preview: next,
+        commit: bitmapsEqual(next, bitmap) ? undefined : next,
+      }
+    }
+    case 'recolor': {
+      // Troca TODA a cor sob o dedo pela cor selecionada (não é contíguo como o
+      // balde) — gesto de um toque, igual ao fill.
+      const from = getPixel(bitmap, pos.x, pos.y)
+      if (from < 0) return { gesture: null, preview: bitmap }
+      const next = replaceColor(bitmap, from, settings.color)
       return {
         gesture: null,
         preview: next,

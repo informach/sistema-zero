@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { assetStyle, type PintaAsset } from '../../core/project'
 import { buildStudioPayload } from '../../export/studioBridge'
+import { tilemapToStudioGrid } from '../../export/studioGrid'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
 import { persistAsset } from '../../state/persistence'
 import {
@@ -23,6 +24,7 @@ import { ExportDialog } from '../export/ExportDialog'
 import { Button, IconButton } from '../ui/Button'
 import { useToast } from '../ui/Toast'
 import { AnimationList } from './AnimationList'
+import { CoachMarks } from './CoachMarks'
 import { PintaEditorProvider, useEditor, useSession } from './editorContext'
 import { FrameStrip } from './FrameStrip'
 import { PaletteBar } from './PaletteBar'
@@ -196,6 +198,22 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
     }
   }
 
+  /**
+   * Mapa NÃO é uma figura: o 🚀 copia a GRADE jogável (o que o bloco de mapa do
+   * Estúdio consome), não um PNG achatado. A imagem do mapa continua no "Baixar".
+   */
+  async function handleSendTilemap(): Promise<void> {
+    if (asset.kind !== 'tilemap') return
+    try {
+      await navigator.clipboard.writeText(tilemapToStudioGrid(asset))
+      showToast(COPY.sendToStudio.mapGridCopied)
+    } catch {
+      showToast(COPY.sendToStudio.mapGridError)
+    }
+  }
+
+  const isTilemap = asset.kind === 'tilemap'
+
   return (
     <header className="flex flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
       <IconButton aria-label={COPY.editor.back} title={COPY.editor.back} onClick={onBack}>
@@ -227,7 +245,11 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       <div className="ml-auto flex items-center gap-2">
         <Button onClick={() => setExportOpen(true)}>⬇ {COPY.editor.download}</Button>
         {adapter.sendToStudio ? (
-          <Button variant="primary" disabled={sending} onClick={() => void handleSendToStudio()}>
+          <Button
+            variant="primary"
+            disabled={sending}
+            onClick={() => void (isTilemap ? handleSendTilemap() : handleSendToStudio())}
+          >
             🚀 {sending ? COPY.sendToStudio.sending : COPY.editor.sendToStudio}
           </Button>
         ) : null}
@@ -342,5 +364,13 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
 
 function EditorBodyBound(): JSX.Element {
   const asset = useEditor((state) => state.asset)
-  return <EditorBody asset={asset} />
+  // Dicas de 1º uso por ESTILO (pixel/vetor/mapa).
+  const coach = assetStyle(asset.kind) ?? 'map'
+  const coachCopy = COPY.coach[coach]
+  return (
+    <>
+      <CoachMarks id={coach} title={coachCopy.title} tips={coachCopy.tips} />
+      <EditorBody asset={asset} />
+    </>
+  )
 }

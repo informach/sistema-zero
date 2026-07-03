@@ -106,15 +106,26 @@ montado no `createShell` como `routes.studio*`) expõe três rotas consumidas pe
   R2 **PRIVADO** `studio/play/<uuid>.json` (`r2PutObjectPrivate`); chama
   `hub.createShowcaseThreadStudio` (gateway → hub); devolve `{ muralUrl, playUrl }`.
 - **`GET /api/studio/play/:id`** — **PÚBLICA (sem login)**: stream do projeto do R2 privado
-  (`r2GetObjectPrivate`), MESMA ORIGEM (sem CORS), `Cache-Control immutable`, 404 no miss. É o que a página
-  `/jogar/:id` do community-kids consome (renderiza o `StudioProjectPlayer` — só o jogo, sem o nome da
-  criança).
+  (`r2GetObjectPrivate`), MESMA ORIGEM (sem CORS), `Cache-Control: private, no-store` (privacidade
+  infantil — o jogo é UGC de criança e NÃO deve ser cacheado em intermediários; o snapshot é imutável,
+  mas o custo de re-ler o R2 é aceito de propósito), `X-Content-Type-Options: nosniff`, 404 no miss. É o
+  que a página `/jogar/:id` do community-kids consome (renderiza o `StudioProjectPlayer` — só o jogo, sem
+  o nome da criança).
 - **`POST /api/studio/publish-standalone`** (multipart, FORA do matcher — coberto pelo prefixo
   `api/studio/publish` no negative-lookahead) — o "Compartilhar" do **Estúdio Completo** (produto vendável
   da vitrine kids, SEM aula). Mesma mecânica do `publish` (sessão estrita, `sanitizePlayableProject`,
   capa→R2 público, jogável→R2 privado) MENOS o acoplamento de aula: SEM `lessonId/blockId` e SEM
   `getShowcasePayload`; `title` + `description` vêm da criança. Chama `hub.createShowcaseThreadStudioStandalone`
   — o HUB re-valida a POSSE do produto (S2S `members.checkAccess`). Exposto como `routes.studioPublishStandalone`.
+- **`POST /api/studio/cleanup`** (S2S do HUB, rede interna, **HMAC** — FORA do matcher do proxy, `api/studio/cleanup`
+  no negative-lookahead) — limpeza de R2 na MODERAÇÃO: ao APAGAR (delete terminal, ≠ hide reversível) um post
+  do Mural, o hub avisa `{playId, coverUrl}` e o BFF apaga o snapshot jogável (`studio/play/<id>.json`, R2
+  privado — `r2DeleteObjectPrivate`) + a capa (`studio/cover/...`, R2 público — `r2DeleteObjects`, key derivada da
+  URL, SÓ sob `studio/cover/`). Verifica o HMAC com **`GATEWAY_HMAC_SECRET`** (env NOVA, opcional; ausente →
+  no-op, não apaga nada; assinatura inválida → 401; senão 204). Helpers PUROS (verify + cover-key) em
+  **`lib/studio-cleanup.ts`** (fora do route.ts p/ serem testáveis — `tests/studio-cleanup.test.ts`; o member-shell
+  NÃO depende do `@sistemazero/core`, então o HMAC é reimplementado com `node:crypto`, EM SINCRONIA com
+  `core/security/hmac.ts`). Exposto como `routes.studioCleanup` (shim no kids `app/api/studio/cleanup/route.ts`).
 
 **Estúdio Completo como produto (06/2026):** além do publish acima, o BFF ganhou o gate de acesso —
 `members.checkStudioAccessReadonly()` (`GET /members/access?refs=estudio-completo`, RSC sem refresh →
@@ -169,7 +180,8 @@ passthroughs finos Zod→members, escrita gateada por impersonação-readonly) e
 persiste**) → `event: state` + `event: done`; `: ping` a cada 15s (Cloudflare corta conexão ociosa);
 rate-limit in-process por sessão (10/min + 150/dia, `globalThis`/`Symbol.for`, réplica única) — e
 `pensaGenerateArtifact` (`POST /api/pensa/cycles/:cycleId/artifacts/generate` — TODAS as sínteses:
-idea/friendly_spec/identity(3 steps)/mission_plan/checklist_seed). ⚠️ **`GenerateBody` (Zod 4): as 3
+idea/friendly_spec/identity(3 steps)/mission_plan/checklist_seed + **`spec_edit`** 07/2026 = edição
+PONTUAL de UMA tela SEM IA: troca só `friendly_spec.screens`, mantém fluxos/PRD e auto-valida). ⚠️ **`GenerateBody` (Zod 4): as 3
 variantes da identidade repetem `type:'identity'` → NÃO podem ser irmãs num `discriminatedUnion('type')`**
 (o Zod 4 monta o mapa do discriminador no PRIMEIRO parse e lança "Duplicate discriminator value" — foi o
 500 de TODA geração em staging 02/07; o erro é lazy, então import/testes que não parseiam não pegam).
@@ -190,9 +202,18 @@ do jogo, fazer" → HUD por último) e a 1ª missão SEMPRE ensina a instalar a 
 `installedExtensions: []` (decisão: ensinar a instalar, não pré-instalar na semeadura).
 Prompt/clamp travados em `tests/pensa-missions.test.ts`. Plumbing LLM em
 **`server/pensa-llm.ts`** (fetch OpenRouter DIRETO, sem SDK: `streamPensaChat` com parser SSE próprio +
-`completePensaJson` com Zod e 1 retry; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` +
-OPCIONAL **`OPENROUTER_PENSA_MODEL`** — usada pelas sínteses E pelo CHAT (`pensaChatModel` = PENSA_MODEL
-|| MODEL; o modelo barato genérico gerava chips vagos — QA 02/07). Prompts VERSIONADOS em
+`completePensaJson` com Zod e 1 retry — a 2ª tentativa manda um NUDGE de reparo, não repete o corpo
+cru: recupera JSON cortado de plano grande sem 502; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` +
+OPCIONAL **`OPENROUTER_PENSA_MODEL`** (chat + base das sínteses) e **`OPENROUTER_PENSA_SYNTHESIS_MODEL`**
+(03/07: só as sínteses PESADAS spec/missões — pode ser mais forte p/ jogos grandes; ausente → PENSA_MODEL →
+MODEL). ⚠️ `pensaChatModel` = PENSA_MODEL || MODEL (o genérico gerava chips vagos — QA 02/07);
+`pensaSynthesisModel` = SYNTHESIS || PENSA_MODEL || MODEL.
+**Escalar p/ jogo GRANDE (03/07, full review):** o nº de missões é PROPORCIONAL ao spec
+(`missionTargetFromSpec` em `stage-r-missions.ts` — flows+telas, piso 5, teto `MISSION_CEILING=24`;
+era fixo 5-8); `clampSpec` sobe p/ 12 telas/8 fluxos/14 elem; `max_tokens` das sínteses = 8k; e o chat da
+etapa Z tem **sumarização rolante** (`summarizeStageZ`) quando passa da janela (`PROMPT_WINDOW=40`, = a do
+evaluator) — a ideia inicial não some numa conversa longa (o members já persistia `summary`; o BFF nunca
+mandava). Contrato: `pensa-contract.md`. Prompts VERSIONADOS em
 `server/pensa-agents/*` — a **cláusula de segurança infantil SEMPRE entra no system kids** e a regra
 anti-inferência (PRD §11.3: o agente não decide pela criança; chips `SUGESTÕES:` são escolha DELA) é
 travada em `tests/pensa-ai.test.ts`. Tipos mirror em `lib/types.ts` (`Pensa*`). A conversa do chat NÃO

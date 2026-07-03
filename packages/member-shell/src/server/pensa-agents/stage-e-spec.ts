@@ -148,16 +148,19 @@ export function clampSpec(spec: z.infer<typeof SpecSchema>): {
   friendly: FriendlySpecContent
 } {
   const clip = (s: string, n: number) => s.trim().slice(0, n)
-  const screens = spec.screens.slice(0, 6).map((s) => ({
+  // Tetos FOLGADOS (jogo grande cabe): a telinha do app CRESCE p/ os elementos
+  // (não corta) e os wireframes rolam num grid. V1 fica pequeno pela pedagogia,
+  // não por um teto apertado que sumia com telas de um jogo grande.
+  const screens = spec.screens.slice(0, 12).map((s) => ({
     name: clip(s.name, 40),
-    elements: s.elements.slice(0, 10).map((e) => ({
+    elements: s.elements.slice(0, 14).map((e) => ({
       kind: e.kind,
       label: clip(e.label, 60),
       zone: e.zone,
     })),
   }))
   const screenNames = new Set(screens.map((s) => s.name))
-  const flows = spec.flows.slice(0, 5).map((f, i) => ({
+  const flows = spec.flows.slice(0, 8).map((f, i) => ({
     id: clip(f.id, 40) || `fluxo-${i + 1}`,
     title: clip(f.title, 80),
     input: clip(f.input, 240),
@@ -179,8 +182,8 @@ function specSystem(input: StageESpecInput): string {
     `Você é o agente de esboço do Pensa (Sistema Zero). A criança clarificou a ideia de um jogo; agora você o DESENHA em duas camadas consistentes entre si:
 1. prdMarkdown — documento técnico INTERNO (markdown) com EXATAMENTE estas seções, nesta ordem: "## Objetivo", "## Quem joga", "## Mecânica principal", "## Controles", "## Telas" (uma subseção "### <nome da tela>" por tela, listando TODOS os elementos dela), "## Regras e pontuação", "## Estados do jogo" e "## Ficou bom quando". Use os NOMES que a criança deu (do jogo, do personagem, dos itens) em todo o documento. Este texto alimenta a geração das missões de construção no Estúdio (editor de blocos HTML/CSS/JS com kits de Jogo 2D) — seja concreto e construível por uma criança com blocos.
 2. flows + screens — a visão que a CRIANÇA valida:
-   - flows: cada fluxo é uma tirinha de 3 quadrinhos em linguagem infantil ("Quando o jogador..." / "...o jogo..." / "...e aparece na tela..."). Use de 3 a 5 fluxos NO MÁXIMO. input = o que o jogador faz; processing = o que o jogo faz por dentro; output = o que aparece na tela. Cada fluxo lista as telas envolvidas (pelo nome EXATO usado em screens).
-   - screens: os esboços que o app desenha. Tipicamente 3 telas de jogo (ex.: "Tela do título", "O jogo", "Fim de jogo"), NO MÁXIMO 6. Cada elemento tem kind (title|button|score|hero|enemy|item|background|text), label CURTO em português e zone (top|middle|bottom).`,
+   - flows: cada fluxo é uma tirinha de 3 quadrinhos em linguagem infantil ("Quando o jogador..." / "...o jogo..." / "...e aparece na tela..."). Use de 3 a 8 fluxos (jogo pequeno fica em 3; jogo grande chega a 8). input = o que o jogador faz; processing = o que o jogo faz por dentro; output = o que aparece na tela. Cada fluxo lista as telas envolvidas (pelo nome EXATO usado em screens).
+   - screens: os esboços que o app desenha. Tipicamente 3 telas de jogo (ex.: "Tela do título", "O jogo", "Fim de jogo"); um jogo GRANDE pode ter mais, NO MÁXIMO 12. Cada elemento tem kind (title|button|score|hero|enemy|item|background|text), label CURTO em português e zone (top|middle|bottom). Se o jogo for grande, foque nas telas ESSENCIAIS desta versão (o resto pode vir nas próximas Versões).`,
     kids
       ? 'Linguagem dos flows/screens: infantil, alegre, SEM jargão (nunca PRD, requisito, sistema). Sem travessão.'
       : '',
@@ -188,7 +191,7 @@ function specSystem(input: StageESpecInput): string {
     input.feedback
       ? input.previousSpec
         ? `MODO REVISÃO: a criança pediu uma mudança na versão anterior. Aplique SOMENTE a mudança pedida (e ajustes de consistência), preservando todo o resto igual — inclusive no prdMarkdown${input.previousPrd ? ' (atualize o PRD anterior abaixo em vez de reescrevê-lo do zero)' : ''}.
-Versão anterior (JSON): ${JSON.stringify(input.previousSpec).slice(0, 20_000)}${input.previousPrd ? `\nPRD anterior (markdown):\n${input.previousPrd.slice(0, 20_000)}` : ''}
+Versão anterior (JSON): ${JSON.stringify(input.previousSpec).slice(0, 24_000)}${input.previousPrd ? `\nPRD anterior (markdown):\n${input.previousPrd.slice(0, 48_000)}` : ''}
 Pedido da criança: "${input.feedback.slice(0, 500)}"`
         : `PEDIDO DA CRIANÇA (incorpore ao esboço): "${input.feedback.slice(0, 500)}"`
       : '',
@@ -220,7 +223,8 @@ export async function synthesizeSpec(input: StageESpecInput): Promise<{
     schema: SpecSchema,
     jsonSchema: SPEC_JSON_SCHEMA as unknown as Record<string, unknown>,
     schemaName: 'pensa_stage_e_spec',
-    maxTokens: 6_000,
+    // Folga p/ o JSON de um jogo grande (PRD + até 8 fluxos + 12 telas) não truncar.
+    maxTokens: 8_000,
     temperature: 0.4,
   })
   return clampSpec(spec)

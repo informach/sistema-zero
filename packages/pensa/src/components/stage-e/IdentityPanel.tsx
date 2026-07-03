@@ -9,12 +9,13 @@ import { clsx } from 'clsx'
 import type { FormEvent, JSX } from 'react'
 import { useEffect, useId, useState } from 'react'
 import { useStore } from 'zustand'
+import { PENSA_NAME_MAX, PENSA_NAME_MIN } from '../../core/limits'
 import { type PensaIdentityPalette, parseIdentityContent } from '../../core/specContent'
 import { MAX_ICON_GENERATIONS, type PensaStageEStore } from '../../state/stageEStore'
 import { usePensaApp } from '../appContext'
 import { ZappyImage } from '../common/ZappyImage'
 
-const NAME_MAX = 40
+const NAME_MAX = PENSA_NAME_MAX
 
 /** SVG sanitizado → data URI de <img> (nunca vira markup no DOM). */
 function svgToDataUri(svg: string): string {
@@ -134,7 +135,7 @@ export function IdentityPanel({
   const handleInvent = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
     const trimmed = customName.trim()
-    if (trimmed.length < 2) {
+    if (trimmed.length < PENSA_NAME_MIN) {
       setNameError(c.nameTooShort)
       return
     }
@@ -180,6 +181,14 @@ export function IdentityPanel({
             {identityError}
           </p>
         ) : null}
+        <button
+          type="button"
+          onClick={() => store.getState().reopenIdentity()}
+          className="min-h-11 rounded-2xl border-2 border-pz-border px-4 font-semibold text-pz-muted transition hover:border-pz-accent hover:text-pz-accent"
+        >
+          <span aria-hidden="true">✏️ </span>
+          {c.editIdentity}
+        </button>
       </div>
     )
   }

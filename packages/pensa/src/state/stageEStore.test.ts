@@ -127,6 +127,55 @@ describe('stageEStore.generateSpec', () => {
   })
 })
 
+describe('stageEStore.editScreen (edição pontual de UMA tela)', () => {
+  it('POST spec_edit com TODAS as telas (a editada trocada) e MANTÉM as aprovações', async () => {
+    const transport = createFakeTransport((path, init) => {
+      if (path === STAGE_PATH) {
+        return makeStageView({
+          stage: 'e',
+          artifacts: [
+            makeSpecArtifact({
+              status: 'validated',
+              content: {
+                flows: [],
+                screens: [
+                  { name: 'T1', elements: [] },
+                  { name: 'T2', elements: [] },
+                ],
+              },
+            }),
+          ],
+        })
+      }
+      if (path === GENERATE_PATH && init?.method === 'POST') {
+        return { artifact: makeSpecArtifact({ version: 2, status: 'validated' }) }
+      }
+      throw new Error(`rota inesperada: ${path}`)
+    })
+    const store = createStageEStore(transport)
+    await store.getState().loadStage('cycle-1')
+    // Spec validado ⇒ loadStage já marcou as duas seções aprovadas.
+    expect(store.getState().screensApproved).toBe(true)
+
+    const novaTela = {
+      name: 'T1 novo',
+      elements: [{ kind: 'title' as const, label: 'Logo', zone: 'top' as const }],
+    }
+    expect(await store.getState().editScreen('proj-1', 0, novaTela)).toBe(true)
+
+    const post = transport.calls.find((c) => c.path === GENERATE_PATH)
+    const body = post?.body as { type: string; projectId: string; screens: unknown[] }
+    expect(body.type).toBe('spec_edit')
+    expect(body.projectId).toBe('proj-1')
+    // Manda TODAS as telas (não só a editada) — a 0 trocada, a 1 intacta.
+    expect(body.screens).toHaveLength(2)
+    expect(body.screens[0]).toEqual(novaTela)
+    // Edição PONTUAL NÃO reseta as aprovações (o resto ficou igual).
+    expect(store.getState().flowsApproved).toBe(true)
+    expect(store.getState().screensApproved).toBe(true)
+  })
+})
+
 describe('stageEStore: aprovações + validação automática', () => {
   it('aprovar só uma seção não valida; aprovar as duas valida UMA vez', async () => {
     const transport = createFakeTransport((path, init) => {
