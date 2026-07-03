@@ -49,6 +49,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   INSUFFICIENT_COINS: 402,
   // Quarto virtual.
   ROOM_ITEM_FREE: 400,
+  ROOM_ITEM_NOT_PURCHASABLE: 400,
   ROOM_ITEM_NOT_FOUND: 404,
   // Missões + proteção de sequência.
   MISSION_NOT_FOUND: 404,

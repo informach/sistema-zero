@@ -19,6 +19,7 @@ import {
 import { AwardGamificationService } from '../src/application/gamification/award-gamification.service'
 import { BuyStreakFreezeService } from '../src/application/gamification/buy-streak-freeze.service'
 import { ClaimMissionService } from '../src/application/gamification/claim-mission.service'
+import { GetChallengeService } from '../src/application/gamification/get-challenge.service'
 import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
 import { GetLeagueService } from '../src/application/gamification/get-league.service'
 import { GetMissionsService } from '../src/application/gamification/get-missions.service'
@@ -45,6 +46,7 @@ import { ListMembersService } from '../src/application/list-members/list-members
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
+import { ParentReportPrefsService } from '../src/application/parent-report/report-prefs.service'
 import { AdvancePensaStageService } from '../src/application/pensa/advance-stage.service'
 import { AppendPensaConversationTurnService } from '../src/application/pensa/append-conversation-turn.service'
 import { CreatePensaCycleService } from '../src/application/pensa/create-cycle.service'
@@ -91,6 +93,7 @@ import {
   InMemoryCourseRepository,
   InMemoryEntitlementRepository,
   InMemoryGamificationRepository,
+  InMemoryParentReportRepository,
   InMemoryProcessedWebhookRepository,
   InMemoryProgressRepository,
   InMemoryQuizAttemptRepository,
@@ -132,6 +135,7 @@ export function buildApp(
   const room = new InMemoryRoomRepository()
   // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
   const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
+  const parentReports = new InMemoryParentReportRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
   const pensa = new InMemoryPensaRepository()
@@ -148,10 +152,18 @@ export function buildApp(
   const revoke = new RevokeEntitlementService({ entitlements, clock, logger: silentLogger })
 
   // Fake do hub: registra as notificações de mudança de acesso (grant) p/ asserção.
+  // `showcaseByAuthors` é configurável por teste (default null = hub indisponível).
   const hubCalls: { userId: string; event: string }[] = []
+  const hubShowcaseByAuthors: {
+    items: { authorId: string; title: string; playId: string | null; createdAt: string }[] | null
+  } = { items: null }
   const hub: HubGateway = {
     async notifyAccessChanged(userId, event) {
       hubCalls.push({ userId, event })
+    },
+    async listShowcaseByAuthors(authorIds) {
+      if (!hubShowcaseByAuthors.items) return null
+      return hubShowcaseByAuthors.items.filter((i) => authorIds.includes(i.authorId))
     },
   }
 
@@ -243,6 +255,7 @@ export function buildApp(
         clock,
       ),
       getGamification: new GetGamificationService(gamification, clock),
+      getChallenge: new GetChallengeService(gamification, clock),
       getMissions: new GetMissionsService(gamification, clock),
       claimMission: new ClaimMissionService(gamification, clock),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
@@ -254,7 +267,9 @@ export function buildApp(
         progress,
         studioSubmissions,
         clock,
+        hub,
       ),
+      parentReportPrefs: new ParentReportPrefsService(parentReports, clock),
       getAvatar: new GetAvatarService(avatar, gamification),
       buyAvatarPart: new BuyAvatarPartService(avatar, gamification, clock),
       equipAvatar: new EquipAvatarService(avatar, clock),
@@ -371,6 +386,7 @@ export function buildApp(
     catalog,
     clockRef,
     hubCalls,
+    hubShowcaseByAuthors,
   }
 }
 

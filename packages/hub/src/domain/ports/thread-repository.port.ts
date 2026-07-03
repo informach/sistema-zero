@@ -36,6 +36,8 @@ export interface CreateShowcaseThreadInput {
   coverImageUrl: string | null
   /** Id público do artefato jogável (UUID) ou `null` — alimenta o "Acessar" do card. */
   playId: string | null
+  /** Desafio mensal (`m:YYYY-MM`), já VALIDADO pelo service — `null`/ausente = post normal. */
+  challengeKey?: string | null
   /** Chave de idempotência (hash perfil:curso:cadeia[:clientKey]) — UNIQUE; conflito devolve o existente. */
   idempotencyKey: string
   now: Date
@@ -64,6 +66,8 @@ export interface ListThreadsOpts {
   includeAllPending: boolean
   cursor: CursorPos | null
   limit: number
+  /** Só posts do desafio (`m:YYYY-MM`) — prateleira do Mural; ausente = todos. */
+  challengeKey?: string | null
 }
 
 export interface ListCommentsOpts {
@@ -83,8 +87,23 @@ export interface ThreadRepository {
   createShowcaseThread(
     input: CreateShowcaseThreadInput,
   ): Promise<{ thread: Thread; deduped: boolean }>
-  /** `true` quando o playId pertence a um post de vitrine ainda visível. */
-  hasVisibleShowcasePlayId(playId: string): Promise<boolean>
+  /**
+   * `true` quando o playId pertence a um post de vitrine ainda visível.
+   * `countHit` FUNDE o incremento de `playsCount` na mesma ida (sem bump de version).
+   */
+  hasVisibleShowcasePlayId(playId: string, countHit?: boolean): Promise<boolean>
+  /** Agregado da carreira: posts de vitrine visíveis do autor + soma das jogadas. */
+  showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }>
+  /**
+   * Posts de vitrine VISÍVEIS dos autores dados criados em `[from, to)` — report
+   * dos pais (members→hub S2S; a rota NUNCA é exposta no gateway: vazaria playIds
+   * entre famílias). Só campos não-sensíveis.
+   */
+  listShowcaseByAuthors(
+    authorIds: string[],
+    from: Date,
+    to: Date,
+  ): Promise<Array<{ authorId: string; title: string; playId: string | null; createdAt: Date }>>
   findThreadById(id: string): Promise<Thread | null>
   /** Página de tópicos (pinned primeiro, depois lastActivityAt desc). `hasMore` se veio `limit+1`. */
   listThreads(

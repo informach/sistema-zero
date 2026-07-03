@@ -7,6 +7,9 @@
  */
 export const BADGE_SLUGS = [
   'first-lesson',
+  // 1º jogo publicado no Mural (marco `course_showcased` — UNIVERSAL: todo comprador
+  // de curso alcança pelo Compartilhar da última aula). 07/2026, lote troféus.
+  'first-showcase',
   'streak-7',
   'streak-30',
   'streak-60',
@@ -27,6 +30,8 @@ export const BADGE_SLUGS = [
   'pensa-first-idea',
   'pensa-first-launch',
   'pensa-creator-3',
+  // 1ª participação no Desafio do mês (game jam — ledger `challenge_entry`). 07/2026.
+  'challenge-first',
   'coins-saver-300',
   'coins-saver-1000',
 ] as const

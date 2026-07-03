@@ -99,6 +99,22 @@ export interface StudioSubmissionRepository {
    * (kids). Escopado por audiência p/ paridade com xp/badges/cursos do dashboard.
    */
   countByUserAndAudience(userId: string, audience: CourseAudience): Promise<number>
+  /** Entregas do aluno na audiência com `submitted_at` em `[from, to)` — report semanal. */
+  countSubmittedInPeriodByAudience(
+    userId: string,
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<number>
+  /**
+   * CONTAS (account_id) com entrega do Estúdio na audiência dentro da janela —
+   * fecha o buraco da enumeração do report (atividade sem XP novo). Distinct.
+   */
+  listAccountsSubmittedInPeriod(
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<string[]>
   /**
    * Entregas mais recentes do aluno (ficha admin — linha do tempo), com aula/curso
    * resolvidos por join. Limitado a `limit` (mais recentes primeiro). Sem o projeto.

@@ -25,11 +25,13 @@ import {
 } from '../../../domain/gamification/coins'
 import {
   advanceStreak,
+  challengeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
   pensaCycleBadgeSlugs,
   pensaStageBadgeSlugs,
   quizPerfectBadgeSlugs,
+  showcaseBadgeSlugs,
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
 } from '../../../domain/gamification/gamification'
@@ -51,6 +53,7 @@ import {
   type SpendCoinsResult,
   type XpSourceType,
 } from '../../../domain/ports/gamification-repository.port'
+import { TROPHY_FOR_BADGE } from '../../../domain/room/room-catalog'
 import type { Database } from './db'
 import {
   avatarInventory,
@@ -195,6 +198,14 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         }
       }
 
+      // Badge do 1º JOGO PUBLICADO no Mural: ledger `course_showcased` (marco do
+      // webhook do hub). Universal: todo comprador de curso alcança (07/2026).
+      if (newEvents.some((e) => e.sourceType === 'course_showcased')) {
+        for (const slug of showcaseBadgeSlugs(await countByType('course_showcased'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+
       // Badges de MAESTRIA do Estúdio: ledger `studio_passed` (projetos aprovados).
       if (newEvents.some((e) => e.sourceType === 'studio_passed')) {
         for (const slug of studioMasteryBadgeSlugs(await countByType('studio_passed'))) {
@@ -211,6 +222,14 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       }
       if (newEvents.some((e) => e.sourceType === 'pensa_cycle_complete')) {
         for (const slug of pensaCycleBadgeSlugs(await countByType('pensa_cycle_complete'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+
+      // Badge da 1ª participação no Desafio do mês (game jam) — ledger
+      // `challenge_entry` (1 marco/mês pelo sourceId determinístico do monthKey).
+      if (newEvents.some((e) => e.sourceType === 'challenge_entry')) {
+        for (const slug of challengeBadgeSlugs(await countByType('challenge_entry'))) {
           badgeCandidates.add(slug)
         }
       }
@@ -438,6 +457,29 @@ export class DrizzleGamificationRepository implements GamificationRepository {
               .returning({ slug: userBadges.badgeSlug, unlockedAt: userBadges.unlockedAt })
           : []
 
+      // 🏆 TROFÉUS do quarto (07/2026): badge NOVA com troféu mapeado concede o item
+      // na MESMA transação (idempotente pelo UNIQUE de room_inventory) — a "estante
+      // de troféus viva": a conquista vira um objeto 3D no quarto da criança.
+      const trophyIds = badgesUnlocked
+        .map((b) => TROPHY_FOR_BADGE[b.slug as BadgeSlug])
+        .filter((id): id is string => Boolean(id))
+      if (trophyIds.length > 0) {
+        await tx
+          .insert(roomInventory)
+          .values(
+            trophyIds.map((itemId) => ({
+              id: randomUUID(),
+              userId: input.userId,
+              audience: input.audience,
+              itemId,
+              acquiredAt: input.now,
+            })),
+          )
+          .onConflictDoNothing({
+            target: [roomInventory.userId, roomInventory.audience, roomInventory.itemId],
+          })
+      }
+
       return {
         xpAwarded,
         totalXp,
@@ -558,6 +600,27 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       )
       .limit(1)
     return row?.balance ?? 0
+  }
+
+  async hasXpEvent(
+    userId: string,
+    audience: CourseAudience,
+    sourceType: XpSourceType,
+    sourceId: string,
+  ): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: xpEvents.id })
+      .from(xpEvents)
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          eq(xpEvents.sourceType, sourceType),
+          eq(xpEvents.sourceId, sourceId),
+        ),
+      )
+      .limit(1)
+    return Boolean(row)
   }
 
   async getProfile(
@@ -1169,5 +1232,65 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       )
       .groupBy(xpEvents.userId)
     return new Map(rows.map((r) => [r.userId, Number(r.total ?? 0)]))
+  }
+
+  async countBadgesUnlockedInPeriod(
+    userId: string,
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<number> {
+    const [row] = await this.db
+      .select({ c: count() })
+      .from(userBadges)
+      .where(
+        and(
+          eq(userBadges.userId, userId),
+          eq(userBadges.audience, audience),
+          gte(userBadges.unlockedAt, from),
+          lt(userBadges.unlockedAt, to),
+        ),
+      )
+    return row?.c ?? 0
+  }
+
+  async listActiveAccountsInPeriod(
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<string[]> {
+    // DISTINCT contas com atividade de XP da vitrine na janela — destinatários do
+    // report semanal. O join usa o par (user_id, audience) do perfil.
+    const rows = await this.db
+      .selectDistinct({ accountId: gamificationProfiles.accountId })
+      .from(xpEvents)
+      .innerJoin(
+        gamificationProfiles,
+        and(
+          eq(gamificationProfiles.userId, xpEvents.userId),
+          eq(gamificationProfiles.audience, xpEvents.audience),
+        ),
+      )
+      .where(
+        and(
+          eq(xpEvents.audience, audience),
+          gte(xpEvents.createdAt, from),
+          lt(xpEvents.createdAt, to),
+        ),
+      )
+    return rows.map((r) => r.accountId).filter((id): id is string => Boolean(id))
+  }
+
+  async listProfileIdsByAccount(accountId: string, audience: CourseAudience): Promise<string[]> {
+    const rows = await this.db
+      .select({ userId: gamificationProfiles.userId })
+      .from(gamificationProfiles)
+      .where(
+        and(
+          eq(gamificationProfiles.accountId, accountId),
+          eq(gamificationProfiles.audience, audience),
+        ),
+      )
+    return rows.map((r) => r.userId)
   }
 }

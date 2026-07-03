@@ -8,6 +8,7 @@ import { isOversizeBody, markOversizeBody, setRawBody } from './raw-body'
 import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
 import { type AttachmentsRoutesDeps, attachmentsRoutes } from './routes/attachments.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
+import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
 import { type ModerationRoutesDeps, moderationRoutes } from './routes/moderation.routes'
 import { type ReactionsRoutesDeps, reactionsRoutes } from './routes/reactions.routes'
 import { type ReportRoutesDeps, reportRoutes } from './routes/report.routes'
@@ -30,6 +31,8 @@ export interface HttpDeps {
   admin: AdminRoutesDeps
   moderation: ModerationRoutesDeps
   webhooks: WebhooksRoutesDeps
+  /** S2S direto members→hub (HMAC) — report dos pais. */
+  internal: InternalRoutesDeps
 }
 
 /**
@@ -99,4 +102,5 @@ export function createServer(deps: HttpDeps) {
     .use(adminRoutes(deps.admin))
     .use(moderationRoutes(deps.moderation))
     .use(webhooksRoutes(deps.webhooks))
+    .use(internalRoutes(deps.internal))
 }

@@ -41,9 +41,13 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    community) e logo PNG hospedada (`EMAIL_LOGO_URL`). Variáveis são CONTRATO com os
    consumidores — `welcome`/`password-reset`/`new-access`: `nome`+`link` (funil/auth); `otp`:
    `nome`+`codigo` (auth); `nfse-emitida`: `nome`+`produto`+`valor`+`chave` (fiscal — DANFSe anexado
-   por URL). `new-access` (e-mail + whatsapp) = aviso de "novo curso liberado" ao comprador
+   por URL); `weekly-report` (Fase 5, 07/2026): `nome`+`criancas`+`semana`+`resumo`+`link` — o
+   resumo semanal dos pais enviado pelo MEMBERS (consumer HMAC `members` via gateway,
+   `idempotencyKey = weekly-report:<accountId>:<weekKey>` — o dedupe absorve o retry do
+   mark-after-send de lá; `resumo` é multilinha, renderizado num bloco `white-space:pre-wrap`).
+   `new-access` (e-mail + whatsapp) = aviso de "novo curso liberado" ao comprador
    RECORRENTE (já tem conta) — link p/ `/cursos`, SEM token de senha (≠ do `welcome`, que é 1º acesso).
-   NÃO renomeie sem mudar os chamadores.
+   NÃO renomeie sem mudar os chamadores. Template novo → re-rode `templates:seed` no deploy.
 4. **Outbox + worker + webhooks de status** (espelha o `payments`): enfileira em `QUEUED`, o worker
    envia respeitando o ritmo, e os webhooks (`delivered`/`read`/`bounce`/`spam`) atualizam a `Message`
    e alimentam a **supressão** (não reenviar a hard-bounce/spam/unsub). ⚠️ `bounce` com

@@ -1,7 +1,11 @@
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
-import { checkStudioAccessReadonly } from '@/server/members'
+import {
+  checkChallengeAccessReadonly,
+  checkStudioAccessReadonly,
+  getChallengeReadonly,
+} from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -20,8 +24,23 @@ export const dynamic = 'force-dynamic'
 export default async function EstudioPage() {
   // `session.id` = o PERFIL ativo (kids) → isola os projetos do Estúdio por criança no
   // IndexedDB (irmãos no mesmo navegador não compartilham a lista). Resolve junto do gate.
-  const [res, session] = await Promise.all([checkStudioAccessReadonly(), getSession()])
+  // A posse do DESAFIO (Clube+Estúdio, best-effort) liga o checkbox do Compartilhar.
+  const [res, session, challengeAccess] = await Promise.all([
+    checkStudioAccessReadonly(),
+    getSession(),
+    checkChallengeAccessReadonly().catch(() => null),
+  ])
   if (res.status !== 200) return <KidsStudioUnavailable />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
-  return hasAccess ? <StudioFullClient viewerId={session?.id ?? null} /> : <KidsLockedStudio />
+  if (!hasAccess) return <KidsLockedStudio />
+  const challengeEligible =
+    challengeAccess?.status === 200 &&
+    challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
+    challengeAccess.body?.access?.['estudio-completo'] === true
+  const challengeRes = challengeEligible ? await getChallengeReadonly().catch(() => null) : null
+  const challenge =
+    challengeRes?.status === 200 && challengeRes.body
+      ? { key: challengeRes.body.challenge.key, title: challengeRes.body.challenge.title }
+      : null
+  return <StudioFullClient viewerId={session?.id ?? null} challenge={challenge} />
 }

@@ -43,6 +43,7 @@ export {
 export { createLocalPersistenceAdapter } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
 export { type RenderProjectOptions, renderProjectToPreviewDoc } from './preview/renderProject'
+export { importProjectSnapshot } from './projects/importSnapshot'
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'
 export type { ProjectSummary } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'

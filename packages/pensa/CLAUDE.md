@@ -44,6 +44,13 @@ Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
   "Abrir o Estúdio" primário, `external` = SEM semeadura, missão como guia puro (VS Code etc.).
   Trocável pelo chip "Trocar" no header (preserva o quadro). Persistido no projeto
   (PATCH `{buildEnv}` → `projectStore.setBuildEnv`).
+  **Missões de ARTE (Fase 5, 07/2026):** `PensaMission` ganhou `artKind?:
+  'sprite'|'background'|'tileset'` + `palette?: string[]` (geradas pelo BFF SÓ quando a
+  criança POSSUI o Pinta — produto à parte). No MissionSheet, missão com `artKind` inverte o
+  destaque: "🎨 Desenhar no Pinta" vira o botão primário. O clique monta um
+  **`PensaPintaIntent`** (`{pensaProjectId, projectName, artKind?, palette?}`) e o entrega ao
+  `adapter.onOpenPinta(intent)` — o HOST leva o intent ao Pinta (no kids: sessionStorage
+  `sz:pinta:intent` + router.push('/pinta') → o Pinta abre o "Criar novo" pré-configurado).
 - **O — O Grande Lançamento**: checklist (Caça aos Bugs/Teste do Convidado/Toque de
   Brilho/Publicar no Mural/Mostrar; `required` trava o advance) → festa (confete finito +
   carta carimbada + delta de XP) → "Criar a Versão N+1".
@@ -59,8 +66,9 @@ Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
 - **`PensaHostAdapter`**: `mode` ('kids'|'adult' — troca a COPY inteira), `projectKind`,
   `theme` (host fixa), **`stateKey`** (id do viewer p/ "continuar de onde parou": o PensaApp
   espelha `activeProjectId` em `localStorage pensa:resume:<stateKey>` e REABRE no mount; voltar à
-  lista/arquivar limpa; ausente = não lembra), **`onOpenPinta`** (botão "Desenhar no Pinta" na
-  missão aberta; ausente = some), **`mascotImages`** (URLs do Zappy por pose happy/thinking/celebrating/
+  lista/arquivar limpa; ausente = não lembra), **`onOpenPinta(intent?: PensaPintaIntent)`** (botão
+  "Desenhar no Pinta" na missão aberta; ausente = some — o host SÓ passa com a POSSE do Pinta; o
+  `intent` leva projeto/artKind/paleta p/ abrir o Pinta pré-configurado), **`mascotImages`** (URLs do Zappy por pose happy/thinking/celebrating/
   sleeping — o kids passa `/zappy/*.webp`; ausente → emoji de fallback; consumo SEMPRE via
   `components/common/ZappyImage.tsx`), e as capabilities OPCIONAIS do Estúdio: `createStudioProject(name)`
   (semeia no IndexedDB do perfil, id charset `[A-Za-z0-9_-]`),

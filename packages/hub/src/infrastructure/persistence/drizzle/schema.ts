@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import {
   bigint,
   boolean,
@@ -154,6 +155,12 @@ export const threads = hub.table(
     // Id PÚBLICO do artefato jogável (UUID). Quando presente, o card do Mural ganha
     // "Acessar" → página pública /jogar/<play_id> (sem login). Só na vitrine do Estúdio.
     playId: text('play_id'),
+    // Contador de jogadas do link público (vaidade, best-effort — incrementado no
+    // resolve do /jogar; SEM bump de `version`, jogar não é edição).
+    playsCount: integer('plays_count').notNull().default(0),
+    // Desafio mensal (game jam): `m:YYYY-MM` (SP) validado pelo hub no publish
+    // standalone — só entra com a posse Clube+Estúdio e o mês corrente.
+    challengeKey: text('challenge_key'),
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     editedAt: timestamp('edited_at', { withTimezone: true }),
@@ -166,6 +173,12 @@ export const threads = hub.table(
     index('threads_author_status_idx').on(t.authorId, t.status),
     // Dedupe da auto-publicação da vitrine (NULL = posts normais, distintos).
     uniqueIndex('threads_showcase_key_uq').on(t.showcaseIdempotencyKey),
+    // Resolve do /jogar por playId (parcial: só vitrines com link têm a chave).
+    index('threads_play_id_idx').on(t.playId).where(sql`${t.playId} is not null`),
+    // Prateleira do desafio do mês por canal (parcial: só quem entrou no desafio).
+    index('threads_channel_challenge_idx')
+      .on(t.channelId, t.challengeKey)
+      .where(sql`${t.challengeKey} is not null`),
   ],
 )
 

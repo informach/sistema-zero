@@ -1,7 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { BuyRoomItemService } from '../../src/application/room/buy-room-item.service'
 import { InsufficientCoinsError } from '../../src/domain/gamification/coins.errors'
-import { RoomItemFreeError, RoomItemNotFoundError } from '../../src/domain/room/room.errors'
+import {
+  RoomItemFreeError,
+  RoomItemNotFoundError,
+  RoomItemNotPurchasableError,
+} from '../../src/domain/room/room.errors'
 import {
   canonicalizeRoomState,
   DEFAULT_ROOM_THEME,
@@ -13,10 +17,19 @@ import {
 import { InMemoryGamificationRepository, InMemoryRoomRepository } from '../fakes/in-memory'
 
 describe('room-catalog', () => {
-  test('ids únicos; itens/temas grátis têm preço 0', () => {
+  test('ids únicos; grátis/troféu têm preço 0 e pago tem preço > 0', () => {
     const ids = [...ROOM_ITEMS.map((i) => i.id), ...ROOM_THEMES.map((t) => t.id)]
     expect(new Set(ids).size).toBe(ids.length)
-    for (const i of ROOM_ITEMS) expect(i.tier === 'free' ? i.price === 0 : i.price > 0).toBe(true)
+    for (const i of ROOM_ITEMS) {
+      // Troféu (07/2026) é ganho por conquista: preço 0 mas NUNCA 'free' implícito.
+      expect(i.tier === 'coins' ? i.price > 0 : i.price === 0).toBe(true)
+    }
+  })
+
+  test('troféu não é comprável nem grátis implícito', () => {
+    const trophies = ROOM_ITEMS.filter((i) => i.tier === 'trophy')
+    expect(trophies.length).toBeGreaterThan(0)
+    for (const t of trophies) expect(t.price).toBe(0)
   })
 })
 
@@ -177,6 +190,11 @@ describe('BuyRoomItemService reconhece piso/luz', () => {
   test('piso grátis → RoomItemFreeError (roomThing acha o piso)', async () => {
     await expect(make().execute('u1', 'kids', 'piso-madeira-clara')).rejects.toBeInstanceOf(
       RoomItemFreeError,
+    )
+  })
+  test('troféu → RoomItemNotPurchasableError (ganho por conquista, nunca comprado)', async () => {
+    await expect(make().execute('u1', 'kids', 'trofeu-primeiro-jogo')).rejects.toBeInstanceOf(
+      RoomItemNotPurchasableError,
     )
   })
   test('luz paga sem saldo → InsufficientCoinsError (roomThing acha a luz)', async () => {

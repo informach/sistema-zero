@@ -213,7 +213,41 @@ não-clicável + gate de `nextHref`; abrir aula travada por URL → **423 `LESSO
 que cada app trata com uma página "aula bloqueada". O gate confiável é o members (`GetLessonService`).
 
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
-`tests/hub-redact.test.ts`). O **`StudioBlockView`** tem a prop `enableShare?`: ligada, constrói o
+`tests/hub-redact.test.ts`) e, na Fase 5 (07/2026), **`playsCount?`** (contador de jogadas do link
+público) e **`challengeKey?`** (tag do Desafio do mês) — ambos estruturais, sobrevivem à redação.
+
+**Fase 5 (07/2026) — plays/carreira/desafio/arte no shell:**
+- **Contador de jogadas:** o `studioPlay.GET` (público) deduplica por **`ip:playId`** (TTL 30min,
+  in-process `globalThis`/`Symbol.for`, teto anti-OOM 50k entradas) e só o 1º hit da janela chama o
+  hub com `resolveStudioPlay(id, countHit=true)` → `?count=1` (o hub funde o UPDATE no resolve).
+  Contador de VAIDADE: best-effort é suficiente; F5/refetch não infla.
+- **Carreira:** `hub.myShowcaseStatsReadonly()` (RSC, sem refresh) → `{published, plays}` — a home
+  e o /perfil do kids exibem "seus jogos já foram jogados N vezes".
+- **Desafio do mês:** `members.getChallengeReadonly()` (React.cache) → `ChallengeMeView`
+  (tema global + `entered`); `members.checkChallengeAccessReadonly()` pede as DUAS refs
+  (`CLUB_ACCESS_REF='clube-dos-criadores'` + `STUDIO_ACCESS_REF`) numa ida — o kids só liga
+  card/checkbox com ambas true (o gate REAL é o do hub). O `studioPublishStandalone` aceita o campo
+  `challengeKey` no multipart (formato validado FROUXO na borda; posse+mês são do hub, com drop
+  silencioso da tag) e o repassa ao `hub.createShowcaseThreadStudioStandalone`. O shim
+  `GET /api/hub/channels/:id/threads` encaminha `?challenge=m:YYYY-MM` (prateleira do Mural).
+- **Missões de ARTE (Pensa→Pinta):** `stage-r-missions.ts` — o `MissionSchema`/`MISSIONS_JSON_SCHEMA`
+  ganhou `artKind` (string; ⚠️ additionalProperties:false — campo novo TEM que entrar em
+  required+properties) e o `missionsSystem` o param `includeArtMissions` (só liga fora do
+  buildEnv 'external'): o prompt pede 1–2 missões de DESENHO (artKind sprite/background/tileset,
+  passos citam o botão "Desenhar no Pinta" e o "🚀 Usar no Estúdio", categories/blocks vazios).
+  `clampMissions(raw, external, palette)` valida o artKind e anexa a PALETA da identidade só nas
+  missões de arte. O `pensa-ai.ts` (mission_plan) checa a POSSE do Pinta
+  (`members.checkPintaAccessReadonly()`, best-effort → false) antes de ligar `includeArtMissions` —
+  produto vendido à parte: sem posse o plano nasce sem missão de arte. `PensaMission` (mirror em
+  `lib/types.ts`) ganhou `artKind?`/`palette?`. Travado em `tests/pensa-missions.test.ts`.
+- **Report dos pais (Lote E):** o handler `childrenStats` repassa os campos novos da view do
+  members — `week` ("Esta semana" por filho) e `games` (jogos do Mural na semana; `null` = hub
+  fora, degrada) — mirrors `ChildWeekStatsView`/`ChildWeekGameView` em `lib/types.ts`
+  (`ChildStatsView.week?/games?`; `ChildDashboardView` estende). E o handler novo
+  **`parentReportPrefs`** (GET/PUT, clients `getParentReportPrefs`/`setParentReportPrefs` →
+  `/members/parents/report-prefs`) é o opt-out do e-mail semanal (`ParentReportPrefsView
+  {disabled}`, Zod `ParentReportPrefsBody`) — o shim do KIDS gateia os DOIS métodos com
+  `requireParentGateAccountOnly` (tela exclusiva dos pais, como children-stats/payments-my). O **`StudioBlockView`** tem a prop `enableShare?`: ligada, constrói o
 `StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via `/api/studio/publish`) e o
 passa ao `<StudioLesson share>` — o botão "Compartilhar" aparece na Topbar do editor. ⚠️ **A CAPA (data URL
 do print/upload) vira Blob via `dataUrlBase64ToBlob` (`lib/data-url.ts`, `atob`), NUNCA `fetch('data:…')`**:

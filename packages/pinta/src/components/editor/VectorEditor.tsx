@@ -98,6 +98,8 @@ const SWATCHES = [
   '#000000',
 ] as const
 
+const SWATCH_SET: ReadonlySet<string> = new Set(SWATCHES)
+
 const STROKE_WIDTHS = [1, 2, 3, 4, 6, 8] as const
 
 // Todo gesto guarda o pointerId: pointer capture é POR ponteiro, então um
@@ -210,6 +212,11 @@ export function VectorEditor(): JSX.Element | null {
   const ref: ActiveFrameRef = { animationId, frameIndex }
   const doc = activeShapesOf(asset, ref)
   if (!doc) return null
+
+  // Paleta do JOGO (Pensa) entra na frente das cores fixas, sem duplicar. Só
+  // no vetor (cor livre) — o bitmap é indexado em 16 cores e não muda.
+  const projectSwatches = (asset.projectRef?.palette ?? []).filter((hex) => !SWATCH_SET.has(hex))
+  const swatches = [...projectSwatches, ...SWATCHES]
 
   const onionShapes = onion ? previousShapesOf(asset, ref) : null
   const selected = doc.shapes.filter((s) => selectedIds.includes(s.id))
@@ -660,7 +667,7 @@ export function VectorEditor(): JSX.Element | null {
                 onClick={() => applyStyle({ fill: 'none' })}
                 className={`pin-checkerboard h-10 w-10 rounded-lg border-2 ${style.fill === 'none' ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
               />
-              {SWATCHES.map((hex) => (
+              {swatches.map((hex) => (
                 <button
                   key={`fill-${hex}`}
                   type="button"
@@ -686,7 +693,7 @@ export function VectorEditor(): JSX.Element | null {
                 onClick={() => applyStyle({ stroke: null })}
                 className={`pin-checkerboard h-10 w-10 rounded-lg border-2 ${style.stroke === null ? 'border-pin-accent ring-1 ring-pin-accent' : 'border-pin-border'}`}
               />
-              {SWATCHES.map((hex) => (
+              {swatches.map((hex) => (
                 <button
                   key={`stroke-${hex}`}
                   type="button"

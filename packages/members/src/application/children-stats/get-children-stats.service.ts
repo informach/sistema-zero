@@ -1,12 +1,30 @@
 import type { CourseAudience } from '../../domain/course/course'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
+import { weekBoundsUtc, weeklyPeriodKey } from '../../domain/gamification/missions'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import {
   type GamificationRepository,
   MAX_STREAK_FREEZES,
 } from '../../domain/ports/gamification-repository.port'
+import type { HubGateway } from '../../domain/ports/hub-gateway.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
+
+/** Janela "Esta semana" (semana civil SP corrente, parcial) de um filho. */
+export interface ChildWeekStatsView {
+  xpEarned: number
+  lessonsCompleted: number
+  quizzesPassed: number
+  badgesUnlocked: number
+  projectsSubmitted: number
+}
+
+/** Jogo publicado no Mural na semana (title + link público de jogar). */
+export interface ChildWeekGameView {
+  title: string
+  playId: string | null
+  publishedAt: string
+}
 
 /** Resumo de progresso de UM filho (perfil) para a área dos pais. */
 export interface ChildStatsView {
@@ -20,6 +38,13 @@ export interface ChildStatsView {
   projectsCount: number
   /** Colocação no ranking da vitrine (null = conta sem matrícula na audiência). */
   rankingPosition: number | null
+  /** "Esta semana" (semana civil SP corrente, parcial — seg→agora). */
+  week: ChildWeekStatsView
+  /**
+   * Jogos publicados no Mural nesta semana. `null` = hub indisponível (o report
+   * degrada sem a lista; NUNCA falha por causa dela).
+   */
+  games: ChildWeekGameView[] | null
 }
 
 /**
@@ -36,6 +61,8 @@ export class GetChildrenStatsService {
     private readonly progress: ProgressRepository,
     private readonly studio: StudioSubmissionRepository,
     private readonly clock: () => Date,
+    /** Jogos da semana no Mural (S2S direto, best-effort — `null` degrada). */
+    private readonly hub?: HubGateway,
   ) {}
 
   async execute(
@@ -50,6 +77,7 @@ export class GetChildrenStatsService {
     //    outra conta não volta (defesa em profundidade); sem atividade tb não volta.
     const authorized = await this.gamification.listByAccount(accountId, profileIds, audience)
     if (authorized.length === 0) return []
+    const authorizedIds = authorized.map((rec) => rec.userId)
 
     // 2) Cursos publicados da vitrine UMA vez (denominador compartilhado entre os filhos).
     const published = await this.courses.listPublishedCourses(audience)
@@ -62,23 +90,48 @@ export class GetChildrenStatsService {
     //    vez) — evita o fan-out de N `getRanking`, cada um re-derivando a mesma coorte.
     const now = this.clock()
     const today = localDateSaoPaulo(now)
-    const positions = await this.gamification.rankProfiles(
-      accountId,
-      authorized.map((rec) => rec.userId),
-      audience,
-      now,
-    )
+    const positions = await this.gamification.rankProfiles(accountId, authorizedIds, audience, now)
 
-    // 4) Por filho (em paralelo): badges + progresso + projetos.
+    // 3b) Janela "Esta semana" (semana civil SP CORRENTE, parcial: seg → agora — o
+    //     report de sexta fala de "essa semana"). XP em 1 ida p/ todos os filhos;
+    //     jogos do Mural em 1 ida ao hub (best-effort → null degrada, nunca falha).
+    const weekKey = weeklyPeriodKey(today)
+    const { from: weekFrom } = weekBoundsUtc(weekKey)
+    const [weekXpByProfile, weekGames] = await Promise.all([
+      this.gamification.sumWeeklyXp(audience, authorizedIds, weekFrom, now),
+      this.hub
+        ? this.hub.listShowcaseByAuthors(authorizedIds, weekFrom, now)
+        : Promise.resolve(null),
+    ])
+
+    // 4) Por filho (em paralelo): badges + progresso + projetos + contadores da semana.
     return Promise.all(
       authorized.map(async (rec) => {
         const profileId = rec.userId
-        const [badges, completedByCourse, projectsCount] = await Promise.all([
+        const [
+          badges,
+          completedByCourse,
+          projectsCount,
+          weekLessons,
+          weekQuizzes,
+          weekBadges,
+          weekProjects,
+        ] = await Promise.all([
           this.gamification.listBadges(profileId, audience),
           courseIds.length
             ? this.progress.countCompletedPublishedByCourseIds(profileId, courseIds)
             : Promise.resolve(new Map<string, number>()),
           this.studio.countByUserAndAudience(profileId, audience),
+          this.gamification.countEventsInPeriod(
+            profileId,
+            audience,
+            ['lesson_complete'],
+            weekFrom,
+            now,
+          ),
+          this.gamification.countEventsInPeriod(profileId, audience, ['quiz_passed'], weekFrom, now),
+          this.gamification.countBadgesUnlockedInPeriod(profileId, audience, weekFrom, now),
+          this.studio.countSubmittedInPeriodByAudience(profileId, audience, weekFrom, now),
         ])
 
         let coursesInProgress = 0
@@ -119,6 +172,18 @@ export class GetChildrenStatsService {
           coursesCompleted,
           projectsCount,
           rankingPosition: positions.get(profileId) ?? null,
+          week: {
+            xpEarned: weekXpByProfile.get(profileId) ?? 0,
+            lessonsCompleted: weekLessons,
+            quizzesPassed: weekQuizzes,
+            badgesUnlocked: weekBadges,
+            projectsSubmitted: weekProjects,
+          },
+          games: weekGames
+            ? weekGames
+                .filter((g) => g.authorId === profileId)
+                .map((g) => ({ title: g.title, playId: g.playId, publishedAt: g.createdAt }))
+            : null,
         }
       }),
     )

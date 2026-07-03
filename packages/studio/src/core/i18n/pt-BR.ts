@@ -204,6 +204,9 @@ export const ptBR: Record<string, string> = {
   'share.cover.badType': 'Envie um arquivo de imagem (PNG ou JPG).',
   'share.cover.tooBig': 'Essa imagem é muito grande. Tente uma menor.',
   'share.needAll': 'Preencha o título, o resumo e a capa para publicar.',
+  // Desafio do mês (game jam) — checkbox opcional; só aparece com adapter.challenge.
+  'share.challenge.label': 'Participar do Desafio do mês: {title}',
+  'share.challenge.hint': 'Seu jogo entra na prateleira do desafio no Mural. Boa sorte!',
   'share.ai.capped': 'Você já pediu algumas ideias — agora é só deixar o texto do seu jeito. 😊',
   'share.ai.button': 'Gerar resumo com a IA',
   'share.error': 'Não foi possível publicar: {reason}',

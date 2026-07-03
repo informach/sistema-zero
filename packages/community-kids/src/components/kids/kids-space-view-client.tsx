@@ -14,6 +14,8 @@ import {
   ArrowLeft,
   Copy,
   Flag,
+  Gamepad2,
+  Hammer,
   Hash,
   Lock,
   MessageCircle,
@@ -23,6 +25,7 @@ import {
   Send,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsAccessUnavailable } from '@/components/kids/kids-access-unavailable'
@@ -129,10 +132,24 @@ export function KidsSpaceViewClient({
   mode = 'forum',
   lockedView,
   unavailableTitle,
+  canRemix = false,
+  challenge = null,
 }: {
   slug: string
   viewerId: string
   mode?: SpaceViewMode
+  /**
+   * A criança POSSUI o Estúdio Completo → o card do Mural ganha "Fazer a minha
+   * versão" (remix: importa o snapshot público como projeto novo no /estudio).
+   * Produto vendido à parte: sem posse o botão nem renderiza.
+   */
+  canRemix?: boolean
+  /**
+   * DESAFIO do mês: no Mural (wall), os posts com `challengeKey` do mês corrente
+   * ganham uma PRATELEIRA no topo da grade. Visível a quem vê o Mural (ver não
+   * exige posse; participar sim — o gate é no publish).
+   */
+  challenge?: { key: string; title: string; emoji: string } | null
   /**
    * Tela de "sem acesso" customizada (ex.: `KidsLockedClube`/`KidsLockedMural`),
    * mostrada quando o servidor vem BLOQUEADO (teaser do hub). Ausente → recado
@@ -201,6 +218,33 @@ export function KidsSpaceViewClient({
   const authorLabel = useCallback(
     (item: AuthorItem): ReactNode => displayAuthor(item, viewerId),
     [viewerId],
+  )
+
+  // Remix ("Fazer a minha versão"): baixa o snapshot PÚBLICO do jogo e o importa
+  // como projeto NOVO no namespace do PERFIL (mesma lista do /estudio). Client-side
+  // de ponta a ponta — o snapshot é imutável, o remix nunca toca o post original.
+  const router = useRouter()
+  const remixBusyRef = useRef(false)
+  const handleRemix = useCallback(
+    async (t: HubThreadView) => {
+      if (!t.playId || remixBusyRef.current) return
+      remixBusyRef.current = true
+      try {
+        const res = await fetch(`/api/studio/play/${enc(t.playId)}`)
+        if (!res.ok) throw new Error('play indisponível')
+        const snapshot: unknown = await res.json()
+        const studio = await import('@sistemazero/studio')
+        studio.setStudioStorageNamespace(viewerId)
+        await studio.importProjectSnapshot(snapshot, { name: `Remix de ${t.title}` })
+        toast.success('Sua versão foi criada! Abrindo o Estúdio... 🎮')
+        router.push('/estudio')
+      } catch {
+        toast.error('Não consegui criar a sua versão agora. Tente de novo!')
+      } finally {
+        remixBusyRef.current = false
+      }
+    },
+    [viewerId, router],
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadNonce` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
@@ -544,6 +588,7 @@ export function KidsSpaceViewClient({
                 onReact={react}
                 onReport={report}
                 authorLabel={authorLabel}
+                onRemix={canRemix ? handleRemix : null}
               />
             ) : (
               <div className="space-y-3">
@@ -606,11 +651,48 @@ export function KidsSpaceViewClient({
                       : 'Nenhuma conversa ainda. Comece a primeira! ✨'}
                   </div>
                 ) : isWall ? (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {threads.map((t) => (
-                      <ShowcaseCard key={t.id} thread={t} onOpen={() => openThread(t)} />
-                    ))}
-                  </div>
+                  (() => {
+                    // Prateleira do DESAFIO do mês: separa os posts com a tag do
+                    // mês corrente; o resto segue na grade normal abaixo.
+                    const challengeThreads = challenge
+                      ? threads.filter((t) => t.challengeKey === challenge.key)
+                      : []
+                    const others = challenge
+                      ? threads.filter((t) => t.challengeKey !== challenge.key)
+                      : threads
+                    return (
+                      <div className="space-y-5">
+                        {challenge && challengeThreads.length > 0 ? (
+                          <section aria-label="Desafio do mês">
+                            <h3 className="mb-2 flex items-center gap-2 font-bold [font-family:var(--font-display)]">
+                              <span aria-hidden="true">{challenge.emoji}</span>🏆 Desafio do mês:{' '}
+                              {challenge.title}
+                            </h3>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                              {challengeThreads.map((t) => (
+                                <ShowcaseCard
+                                  key={t.id}
+                                  thread={t}
+                                  onOpen={() => openThread(t)}
+                                  onRemix={canRemix ? handleRemix : null}
+                                />
+                              ))}
+                            </div>
+                          </section>
+                        ) : null}
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          {others.map((t) => (
+                            <ShowcaseCard
+                              key={t.id}
+                              thread={t}
+                              onOpen={() => openThread(t)}
+                              onRemix={canRemix ? handleRemix : null}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })()
                 ) : (
                   threads.map((t) => (
                     <button
@@ -708,10 +790,13 @@ function PlayLinkActions({
   playUrl,
   title,
   coverImageUrl = null,
+  onRemix = null,
 }: {
   playUrl: string
   title: string
   coverImageUrl?: string | null
+  /** "Fazer a minha versão" (remix) — presente SÓ com a posse do Estúdio Completo. */
+  onRemix?: (() => void) | null
 }) {
   const [cardOpen, setCardOpen] = useState(false)
   const shareOrCopy = useCallback(async () => {
@@ -737,31 +822,42 @@ function PlayLinkActions({
   }, [playUrl, title])
 
   return (
-    <div className="flex items-center gap-2 border-border border-t-2 p-3">
-      <a
-        href={playUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 font-bold text-primary-foreground text-sm"
-      >
-        <Play className="size-4" /> Jogar
-      </a>
-      <button
-        type="button"
-        onClick={shareOrCopy}
-        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border-2 border-border px-3 font-bold text-sm transition-colors hover:bg-muted/60"
-      >
-        <Copy className="size-4" /> Copiar link
-      </button>
-      <button
-        type="button"
-        onClick={() => setCardOpen(true)}
-        aria-label={`Cartão do jogo ${title}`}
-        title="Cartão do jogo (imprimir com QR)"
-        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border-2 border-border px-3 font-bold text-sm transition-colors hover:bg-muted/60"
-      >
-        <QrCode className="size-4" />
-      </button>
+    <div className="flex flex-col gap-2 border-border border-t-2 p-3">
+      <div className="flex items-center gap-2">
+        <a
+          href={playUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 font-bold text-primary-foreground text-sm"
+        >
+          <Play className="size-4" /> Jogar
+        </a>
+        <button
+          type="button"
+          onClick={shareOrCopy}
+          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border-2 border-border px-3 font-bold text-sm transition-colors hover:bg-muted/60"
+        >
+          <Copy className="size-4" /> Copiar link
+        </button>
+        <button
+          type="button"
+          onClick={() => setCardOpen(true)}
+          aria-label={`Cartão do jogo ${title}`}
+          title="Cartão do jogo (imprimir com QR)"
+          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border-2 border-border px-3 font-bold text-sm transition-colors hover:bg-muted/60"
+        >
+          <QrCode className="size-4" />
+        </button>
+      </div>
+      {onRemix ? (
+        <button
+          type="button"
+          onClick={onRemix}
+          className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl border-2 border-primary px-3 font-bold text-primary text-sm transition-colors hover:bg-(--kids-cyan-tint)"
+        >
+          <Hammer className="size-4" /> Fazer a minha versão
+        </button>
+      ) : null}
       {cardOpen ? (
         <GameCardDialog
           title={title}
@@ -774,8 +870,17 @@ function PlayLinkActions({
   )
 }
 
-function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () => void }) {
+function ShowcaseCard({
+  thread,
+  onOpen,
+  onRemix = null,
+}: {
+  thread: HubThreadView
+  onOpen: () => void
+  onRemix?: ((thread: HubThreadView) => void) | null
+}) {
   const playUrl = playPathFor(thread)
+  const plays = thread.playsCount ?? 0
   return (
     <article className="group flex w-full flex-col overflow-hidden rounded-2xl border-2 border-border bg-card transition-colors hover:border-primary">
       <button type="button" onClick={onOpen} className="flex w-full flex-col text-left">
@@ -804,8 +909,15 @@ function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () =>
               fluir markdown aqui, use `renderUgcMarkdown` (restrito), como em
               ThreadDetail/CommentRow — nunca `renderMarkdown` cru. */}
           <p className="line-clamp-2 text-muted-foreground text-sm">{thread.body}</p>
-          <p className="flex items-center gap-1 pt-1 text-muted-foreground text-xs">
-            <MessageCircle className="size-3" /> {thread.commentCount}
+          <p className="flex items-center gap-3 pt-1 text-muted-foreground text-xs">
+            <span className="inline-flex items-center gap-1">
+              <MessageCircle className="size-3" /> {thread.commentCount}
+            </span>
+            {plays > 0 ? (
+              <span className="inline-flex items-center gap-1">
+                <Gamepad2 className="size-3" /> {plays} {plays === 1 ? 'jogada' : 'jogadas'}
+              </span>
+            ) : null}
           </p>
         </div>
       </button>
@@ -814,6 +926,7 @@ function ShowcaseCard({ thread, onOpen }: { thread: HubThreadView; onOpen: () =>
           playUrl={playUrl}
           title={thread.title}
           coverImageUrl={thread.coverImageUrl ?? null}
+          onRemix={onRemix ? () => onRemix(thread) : null}
         />
       ) : null}
     </article>
@@ -925,6 +1038,7 @@ function ThreadDetail({
   onReact,
   onReport,
   authorLabel,
+  onRemix = null,
 }: {
   thread: HubThreadView
   comments: HubCommentView[]
@@ -942,9 +1056,11 @@ function ThreadDetail({
   onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (item: AuthorItem) => ReactNode
+  onRemix?: ((thread: HubThreadView) => void) | null
 }) {
   // memo: o corpo do tópico não muda quando um comentário recebe reação.
   const threadBody = useMemo(() => renderUgcMarkdown(thread.body), [thread.body])
+  const plays = thread.playsCount ?? 0
   return (
     <div className="space-y-4">
       <button
@@ -962,10 +1078,22 @@ function ThreadDetail({
           </div>
         ) : null}
         <h2 className="[font-family:var(--font-display)] font-bold text-lg">{thread.title}</h2>
-        <p className="text-muted-foreground text-xs">{authorLabel(thread)}</p>
+        <p className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
+          {authorLabel(thread)}
+          {isWall && plays > 0 ? (
+            <span className="inline-flex items-center gap-1">
+              <Gamepad2 className="size-3" /> {plays} {plays === 1 ? 'jogada' : 'jogadas'}
+            </span>
+          ) : null}
+        </p>
         <div className="lesson-prose">{threadBody}</div>
         {isWall && thread.playId ? (
-          <PlayLinkActions playUrl={`/jogar/${enc(thread.playId)}`} title={thread.title} />
+          <PlayLinkActions
+            playUrl={`/jogar/${enc(thread.playId)}`}
+            title={thread.title}
+            coverImageUrl={thread.coverImageUrl ?? null}
+            onRemix={onRemix ? () => onRemix(thread) : null}
+          />
         ) : null}
         <AttachmentList attachments={thread.attachments} />
         <div className="flex items-center justify-between">

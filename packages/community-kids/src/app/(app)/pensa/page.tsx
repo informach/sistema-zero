@@ -1,7 +1,7 @@
 import { KidsLockedPensa } from '@/components/kids/kids-locked-pensa'
 import { KidsPensaUnavailable } from '@/components/kids/kids-pensa-unavailable'
 import { PensaClient } from '@/components/kids/pensa-client'
-import { checkPensaAccessReadonly } from '@/server/members'
+import { checkPensaAccessReadonly, checkPintaAccessReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -19,8 +19,19 @@ export const dynamic = 'force-dynamic'
 export default async function PensaPage() {
   // `session.id` = o PERFIL ativo (kids) → o Modo Missão semeia/abre o projeto do
   // Estúdio no MESMO namespace do IndexedDB que o /estudio usa (fase R do Pensa).
-  const [res, session] = await Promise.all([checkPensaAccessReadonly(), getSession()])
+  // A posse do PINTA (produto à parte) só liga o "Desenhar no Pinta" das missões:
+  // best-effort — soluço na checagem degrada escondendo o botão, nunca trava a página.
+  const [res, pintaRes, session] = await Promise.all([
+    checkPensaAccessReadonly(),
+    checkPintaAccessReadonly().catch(() => null),
+    getSession(),
+  ])
   if (res.status !== 200) return <KidsPensaUnavailable />
   const hasAccess = res.body?.access?.pensa === true
-  return hasAccess ? <PensaClient viewerId={session?.id ?? null} /> : <KidsLockedPensa />
+  const pintaOwned = pintaRes?.status === 200 && pintaRes.body?.access?.pinta === true
+  return hasAccess ? (
+    <PensaClient viewerId={session?.id ?? null} pintaOwned={pintaOwned} />
+  ) : (
+    <KidsLockedPensa />
+  )
 }

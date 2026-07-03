@@ -106,6 +106,14 @@ const AUTH_ALLOWED_CIDRS = (process.env.AUTH_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
   .split(',')
   .map((c) => c.trim())
   .filter(Boolean)
+// O members como consumer HMAC de borda (report SEMANAL dos pais via
+// /messaging/send — Fase 5, 07/2026). Espelha o auth/fiscal. DEVE bater com o
+// MEMBERS_HMAC_SECRET do members.
+const MEMBERS_HMAC_SECRET = process.env.MEMBERS_HMAC_SECRET ?? ''
+const MEMBERS_ALLOWED_CIDRS = (process.env.MEMBERS_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
 // Token interno injetado nas rotas S2S do auth (/auth/internal/*) como defesa em
 // profundidade (igual ao members/messaging). DEVE bater com o AUTH_INTERNAL_TOKEN do auth.
 const AUTH_INTERNAL_TOKEN = process.env.AUTH_INTERNAL_TOKEN ?? ''
@@ -176,6 +184,17 @@ const config: GatewayConfigInput = {
             id: 'fiscal',
             hmacSecret: FISCAL_HMAC_SECRET,
             allowedCidrs: FISCAL_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
+    // O members como consumer HMAC de borda (report semanal dos pais via
+    // /messaging/send). Condicional, igual ao auth/fiscal.
+    ...(MEMBERS_HMAC_SECRET
+      ? [
+          {
+            id: 'members',
+            hmacSecret: MEMBERS_HMAC_SECRET,
+            allowedCidrs: MEMBERS_ALLOWED_CIDRS,
           },
         ]
       : []),
@@ -1031,6 +1050,18 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
+    // Desafio do MÊS (game jam kids): tema determinístico global + `entered` do perfil.
+    // Literal `/gamification/challenge` (2 seg) não colide com `/gamification/me`.
+    {
+      id: 'members-gamification-challenge',
+      methods: ['GET'],
+      pathPattern: '/members/gamification/challenge',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Missões (diárias/semanais) + proteção de sequência — recurso do PRÓPRIO perfil
     // (kids). `/missions/me` (3 seg), `/missions/:slug/claim` (4 seg), `/streak-freeze/buy`
     // (3 seg) e `/vacation` (2 seg) NÃO colidem entre si nem com `/gamification/me`.
@@ -1355,6 +1386,29 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Preferência do REPORT semanal dos pais (opt-out) — mesma régua do
+    // children-stats: keyada na CONTA; o BFF gateia atrás do portão de senha.
+    {
+      id: 'members-parent-report-prefs-get',
+      methods: ['GET'],
+      pathPattern: '/members/parents/report-prefs',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-parent-report-prefs-put',
+      methods: ['PUT'],
+      pathPattern: '/members/parents/report-prefs',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'members-course-detail',
@@ -2118,6 +2172,7 @@ const config: GatewayConfigInput = {
     },
     // Player público do Estúdio (BFF sem Bearer) valida que o playId ainda pertence
     // a um post visível no Mural antes de servir o JSON privado do R2.
+    // `?count=1` (BFF, deduplicado por ip:playId lá) funde o contador de jogadas.
     {
       id: 'hub-studio-play-visible',
       methods: ['GET'],
@@ -2126,6 +2181,17 @@ const config: GatewayConfigInput = {
       auth: 'public',
       transforms: hubInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
+    // Carreira do aluno: agregado dos próprios jogos no Mural (publicados + jogadas).
+    {
+      id: 'hub-my-showcase-stats',
+      methods: ['GET'],
+      pathPattern: '/hub/my-showcase-stats',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'hub-comment-edit',

@@ -25,6 +25,9 @@ export type XpSourceType =
   // (o→done; sourceId = cycleId). XP real (amount > 0) — movem streak.
   | 'pensa_stage_complete'
   | 'pensa_cycle_complete'
+  // Desafio MENSAL (game jam, 07/2026): publicou no Mural com a tag do mês
+  // (sourceId = uuid determinístico do monthKey — `challengeSourceId`). XP real.
+  | 'challenge_entry'
 
 export interface XpEventInput {
   sourceType: XpSourceType
@@ -156,6 +159,16 @@ export interface GamificationRepository {
   spendCoins(input: SpendCoinsInput): Promise<SpendCoinsResult>
   /** Saldo da carteira Zappy da vitrine (0 sem perfil). Leitura para a lojinha. */
   getBalance(userId: string, audience: CourseAudience): Promise<number>
+  /**
+   * O ledger tem o evento (user, audience, sourceType, sourceId)? Leitura pontual
+   * (ex.: `entered` do Desafio do mês — sourceId = uuid determinístico do monthKey).
+   */
+  hasXpEvent(
+    userId: string,
+    audience: CourseAudience,
+    sourceType: XpSourceType,
+    sourceId: string,
+  ): Promise<boolean>
   getProfile(userId: string, audience: CourseAudience): Promise<GamificationProfileRecord | null>
   listBadges(
     userId: string,
@@ -284,6 +297,20 @@ export interface GamificationRepository {
     from: Date,
     to: Date,
   ): Promise<Map<string, number>>
+  /** Badges destravadas na janela `[from, to)` — bloco "Esta semana" do report dos pais. */
+  countBadgesUnlockedInPeriod(
+    userId: string,
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<number>
+  /**
+   * CONTAS (account_id) com atividade de XP na vitrine dentro da janela — enumeração
+   * dos destinatários do report semanal dos pais. Distinct, sem PII.
+   */
+  listActiveAccountsInPeriod(audience: CourseAudience, from: Date, to: Date): Promise<string[]>
+  /** Perfis (userId) da CONTA na vitrine (gamification_profiles por account_id). */
+  listProfileIdsByAccount(accountId: string, audience: CourseAudience): Promise<string[]>
 }
 
 export interface LeagueMembershipRecord {

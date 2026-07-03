@@ -129,6 +129,17 @@ export interface PensaMissionStep {
   hint?: string
 }
 
+/**
+ * Contexto que a missão de ARTE leva ao Pinta (07/2026): o host abre o ateliê
+ * pré-configurado (tipo de desenho + nome do jogo + paleta da identidade).
+ */
+export interface PensaPintaIntent {
+  pensaProjectId: string
+  projectName: string
+  artKind?: 'sprite' | 'background' | 'tileset'
+  palette?: string[]
+}
+
 export interface PensaMission {
   story?: string
   /** 1–12 passos. */
@@ -136,6 +147,10 @@ export interface PensaMission {
   studioHints?: { categories: string[]; blocks: string[] }
   /** 1–3 critérios observáveis. */
   doneWhen: string[]
+  /** Missão de ARTE (07/2026): "Desenhar no Pinta" vira o botão em destaque. */
+  artKind?: 'sprite' | 'background' | 'tileset'
+  /** Paleta do jogo (hex) que acompanha a missão de arte ao Pinta. */
+  palette?: string[]
 }
 
 export interface PensaTaskView {
@@ -223,9 +238,11 @@ export interface PensaHostAdapter {
   stateKey?: string
   /**
    * Ponte com o ateliê: mostra "Desenhar no Pinta" na missão aberta — a
-   * criança desenha os assets do jogo e volta. Ausente = botão some.
+   * criança desenha os assets do jogo e volta. Ausente = botão some (o HOST
+   * só deve passar quando a criança POSSUI o Pinta — produto à parte). O
+   * `intent` (07/2026) leva projeto/artKind/paleta p/ abrir pré-configurado.
    */
-  onOpenPinta?: () => void
+  onOpenPinta?: (intent?: PensaPintaIntent) => void
   /**
    * Imagens do mascote (Zappy) por pose — ausente (ou pose faltando), a UI cai
    * no emoji de fallback de cada ponto (modo adulto/host sem assets).

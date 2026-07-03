@@ -16,7 +16,7 @@
 import type { JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
-import type { PensaBuildEnv } from '../../core/types'
+import type { PensaBuildEnv, PensaMission } from '../../core/types'
 import { createStageRStore } from '../../state/stageRStore'
 import { usePensaApp, usePensaStore } from '../appContext'
 import { GeneratingIndicator } from '../common/GeneratingIndicator'
@@ -161,7 +161,18 @@ export function StageRView({
           name: detail.name,
         })
     : null
-  const handleOpenPinta = adapter.onOpenPinta ?? null
+  // Intent do Pinta (07/2026): a missão de arte leva projeto + artKind + paleta
+  // p/ o ateliê abrir pré-configurado; missão comum abre o Pinta "cru".
+  const openPinta = adapter.onOpenPinta
+  const handleOpenPintaFor = openPinta
+    ? (mission: PensaMission) =>
+        openPinta({
+          pensaProjectId: detail.id,
+          projectName: detail.name,
+          ...(mission.artKind ? { artKind: mission.artKind } : {}),
+          ...(mission.palette && mission.palette.length > 0 ? { palette: mission.palette } : {}),
+        })
+    : null
 
   // ── Missão aberta ──────────────────────────────────────────────────────────
   if (openTask) {
@@ -174,7 +185,7 @@ export function StageRView({
         }}
         // 'external': sem "Abrir o Estúdio"; entra a linha gentil de orientação.
         onOpenStudio={buildEnv === 'external' ? null : handleOpenStudio}
-        onOpenPinta={handleOpenPinta}
+        onOpenPinta={handleOpenPintaFor ? () => handleOpenPintaFor(openTask.mission) : null}
         // 'studio': a missão é o guia e o Estúdio Completo é o destino.
         openStudioEmphasis={buildEnv === 'studio'}
         guidance={buildEnv === 'external' ? copy.buildEnv.externalGuidance : null}

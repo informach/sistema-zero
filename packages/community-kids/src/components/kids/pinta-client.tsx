@@ -3,11 +3,12 @@
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
-import type { PintaHostAdapter } from '@sistemazero/pinta'
+import type { PintaHostAdapter, PintaInitialIntent } from '@sistemazero/pinta'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { clearPintaIntent, readPintaIntent } from './pinta-intent'
 
 // O pacote é client-only (zustand/canvas/IndexedDB); carregamos DENTRO de um
 // effect (igual ao pensa-client) e o server renderiza só o placeholder.
@@ -32,6 +33,13 @@ export function PintaClient({
   // O Pinta SEGUE o tema da comunidade (next-themes) — sem toggle próprio.
   const { resolvedTheme } = useTheme()
   const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  // Intent da missão de arte do Pensa: leitura SÍNCRONA no 1º render (o adapter
+  // precisa dele quando o PintaApp montar) + limpeza 1x no mount — recarregar
+  // /pinta depois não reabre o "Criar novo" pré-configurado.
+  const [initialIntent] = useState<PintaInitialIntent | null>(readPintaIntent)
+  useEffect(() => {
+    clearPintaIntent()
+  }, [])
 
   const loadPinta = useCallback(
     async (isCurrent?: () => boolean) => {
@@ -73,8 +81,10 @@ export function PintaClient({
         bridge.setPersonalAssetsNamespace(viewerId ?? '')
         return bridge.savePersonalAsset(asset)
       },
+      // Missão de arte do Pensa: abre a criação pré-configurada (1x no mount).
+      ...(initialIntent ? { initialIntent } : {}),
     }),
-    [theme, studioOwned, viewerId, router],
+    [theme, studioOwned, viewerId, router, initialIntent],
   )
 
   return (

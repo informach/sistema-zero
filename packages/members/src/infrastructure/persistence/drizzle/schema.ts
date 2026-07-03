@@ -366,6 +366,10 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // (o→done; sourceId = cycleId). XP real (amount > 0) — movem streak.
   'pensa_stage_complete',
   'pensa_cycle_complete',
+  // Desafio MENSAL (game jam, 07/2026): publicou no Mural com a tag do mês
+  // (sourceId = uuid DETERMINÍSTICO do monthKey — `challengeSourceId`; o UNIQUE
+  // do ledger deduplica 1 marco/mês). XP real (amount > 0) — move streak.
+  'challenge_entry',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)
@@ -598,6 +602,28 @@ export const leagueMembership = members.table(
     index('league_membership_cohort_idx').on(t.audience, t.weekKey, t.tier),
   ],
 )
+
+// ── Report semanal dos pais (Fase 5, 07/2026) ────────────────────────────────
+// Dedupe de ENVIO por (conta, semana): o job marca APÓS o envio (crash-safety —
+// o dedupe do messaging por idempotencyKey `weekly-report:<conta>:<semana>`
+// absorve o retry de um crash entre enviar e marcar; at-most-once efetivo).
+export const parentReportsSent = members.table(
+  'parent_reports_sent',
+  {
+    accountId: uuid('account_id').notNull(),
+    weekKey: text('week_key').notNull(),
+    sentAt: timestamp('sent_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('parent_reports_sent_account_week_uq').on(t.accountId, t.weekKey)],
+)
+
+// Opt-out do report semanal (toggle na área dos pais + link no rodapé do e-mail).
+// ⚠️ NÃO usar a supressão do messaging (semântica de BOUNCE — mataria transacionais).
+export const parentReportPrefs = members.table('parent_report_prefs', {
+  accountId: uuid('account_id').primaryKey(),
+  disabled: boolean('disabled').notNull().default(false),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+})
 
 // ── Quarto virtual (decore-do-seu-jeito — fatia 06/2026) ────────────────────
 // Estado decorado (1 linha/perfil POR VITRINE; tema + itens posicionados + pet) +

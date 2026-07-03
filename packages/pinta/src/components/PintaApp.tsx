@@ -4,7 +4,7 @@
  * `setPintaStorageNamespace(viewerId)` ANTES de montar.
  */
 import type { JSX } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PintaHostAdapter } from '../core/types'
 import { createGalleryStore } from '../state/galleryStore'
 import { type PintaAppContextValue, PintaAppProvider } from './appContext'
@@ -27,12 +27,20 @@ export function PintaApp({ adapter }: { adapter?: PintaHostAdapter }): JSX.Eleme
     void gallery.getState().load()
   }, [gallery])
 
+  // Intent do Pensa (missão de arte) vive num ref: consumido 1x pela galeria.
+  const initialIntentRef = useRef(resolvedAdapter.initialIntent ?? null)
+
   const context = useMemo<PintaAppContextValue>(
     () => ({
       adapter: resolvedAdapter,
       gallery,
       openAsset: (id) => setView({ screen: 'editor', assetId: id }),
       closeEditor: () => setView({ screen: 'gallery' }),
+      takeInitialIntent: () => {
+        const intent = initialIntentRef.current
+        initialIntentRef.current = null
+        return intent
+      },
     }),
     [resolvedAdapter, gallery],
   )

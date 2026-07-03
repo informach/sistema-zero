@@ -214,6 +214,8 @@ function buildApp(
     readAuditLog,
     createImpersonationToken,
     exchangeImpersonationToken,
+    users,
+    profilesRepo,
     profiles: {
       listProfiles,
       createProfile,

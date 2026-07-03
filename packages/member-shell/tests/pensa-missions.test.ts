@@ -61,6 +61,8 @@ describe('clampMissions', () => {
     categories: ['Jogo 2D › 🕹️ Movimento', 'Categoria Inventada'],
     blocks: ['"Fazer o sprite pular no chão"'],
     doneWhen: ['O Bolt pula ao apertar espaço', 'a', 'b', 'c'],
+    // Strict mode do JSON schema exige o campo; vazio = missão normal.
+    artKind: '',
   }
 
   it('mantém categoria válida do catálogo e derruba a inventada; corta doneWhen em 3', () => {
@@ -89,5 +91,54 @@ describe('clampMissions', () => {
     expect(studio?.mission.steps[0]?.text).toBe('Abra seu projeto no Estúdio')
     const [external] = clampMissions({ tasks: [empty] }, true)
     expect(external?.mission.steps[0]?.text).toBe('Abra seu projeto no editor')
+  })
+
+  it('missão de ARTE: artKind válido carrega o tipo + a paleta FILTRADA (só hex)', () => {
+    const art = { ...baseTask, artKind: 'sprite' }
+    const [task] = clampMissions({ tasks: [art] }, false, ['#FF2121', 'azul', '#00a0c8'])
+    expect(task?.mission.artKind).toBe('sprite')
+    expect(task?.mission.palette).toEqual(['#FF2121', '#00a0c8'])
+    // Missão normal (artKind vazio) NÃO ganha nem artKind nem paleta.
+    const [normal] = clampMissions({ tasks: [baseTask] }, false, ['#ff2121'])
+    expect(normal?.mission.artKind).toBeUndefined()
+    expect(normal?.mission.palette).toBeUndefined()
+  })
+
+  it('artKind inventado é descartado; em external artKind NUNCA passa (não há Pinta)', () => {
+    const inventado = { ...baseTask, artKind: 'gif-animado' }
+    const [task] = clampMissions({ tasks: [inventado] })
+    expect(task?.mission.artKind).toBeUndefined()
+    const art = { ...baseTask, artKind: 'sprite' }
+    const [external] = clampMissions({ tasks: [art] }, true, ['#ff2121'])
+    expect(external?.mission.artKind).toBeUndefined()
+    expect(external?.mission.palette).toBeUndefined()
+  })
+})
+
+describe('missionsSystem — missões de arte (posse do Pinta)', () => {
+  it('includeArtMissions liga a seção do Pinta e o artKind com valores', () => {
+    const system = missionsSystem({
+      mode: 'kids',
+      cycleNumber: 1,
+      buildEnv: 'embedded',
+      includeArtMissions: true,
+    })
+    expect(system).toContain('MISSÕES DE ARTE')
+    expect(system).toContain('Desenhar no Pinta')
+    expect(system).toContain('sprite|background|tileset')
+  })
+
+  it('sem a posse (default) e no external: artKind SEMPRE vazio, sem seção do Pinta', () => {
+    const semPosse = missionsSystem({ mode: 'kids', cycleNumber: 1, buildEnv: 'embedded' })
+    expect(semPosse).not.toContain('MISSÕES DE ARTE')
+    expect(semPosse).toContain('SEMPRE string vazia')
+    // external ignora includeArtMissions (não há Pinta fora da plataforma).
+    const external = missionsSystem({
+      mode: 'kids',
+      cycleNumber: 1,
+      buildEnv: 'external',
+      includeArtMissions: true,
+    })
+    expect(external).not.toContain('MISSÕES DE ARTE')
   })
 })

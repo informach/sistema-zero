@@ -6,12 +6,20 @@
  * pelo MESMO `id`. Itens/temas são SINKS das moedas Zappy (cosmético puro).
  */
 
+import type { BadgeSlug } from '../gamification/badges'
+
 export type RoomItemCategory = 'furniture' | 'decor' | 'plant' | 'light' | 'pet'
 
 export interface RoomItemDef {
   id: string
   category: RoomItemCategory
-  tier: 'free' | 'coins'
+  /**
+   * `free` = todo mundo possui; `coins` = comprável com Zappy; `trophy` (07/2026) =
+   * NÃO-comprável, GANHO por conquista (o award concede via `room_inventory` quando a
+   * badge mapeada em `TROPHY_FOR_BADGE` destrava). Trophy exige inventário p/ possuir
+   * (nunca `free`, senão todos teriam).
+   */
+  tier: 'free' | 'coins' | 'trophy'
   price: number
   /** Largura/altura em células. Item de chão: w×h no piso. Item de PAREDE: w=horizontal, h=ALTURA. */
   w: number
@@ -56,6 +64,17 @@ const item = (
   ...(mount ? { mount } : {}),
 })
 
+/** Troféu: decoração NÃO-comprável, concedida por conquista (preço 0, tier próprio). */
+const trophy = (id: string, w: number, h: number, mount?: 'wall'): RoomItemDef => ({
+  id,
+  category: 'decor',
+  tier: 'trophy',
+  price: 0,
+  w,
+  h,
+  ...(mount ? { mount } : {}),
+})
+
 export const ROOM_ITEMS: readonly RoomItemDef[] = [
   // Móveis (chão)
   item('cama', 'furniture', 0, 2, 3), // cama de SOLTEIRO (estreita 2 × comprida 3)
@@ -93,11 +112,34 @@ export const ROOM_ITEMS: readonly RoomItemDef[] = [
   item('pet-gato', 'pet', 300, 1, 1),
   item('pet-cachorro', 'pet', 300, 1, 1),
   item('pet-passaro', 'pet', 250, 1, 1),
+  // 🏆 TROFÉUS (07/2026) — a "estante de troféus viva": concedidos por CONQUISTA
+  // (nunca compráveis; mapa badge→troféu em TROPHY_FOR_BADGE). Os 4 primeiros são
+  // UNIVERSAIS (todo comprador de curso alcança); os 2 últimos são bônus de produto.
+  trophy('trofeu-primeiro-jogo', 1, 1), // 1º jogo publicado no Mural (first-showcase)
+  trophy('trofeu-diploma', 1, 1, 'wall'), // 1º curso 100% (course-complete)
+  trophy('trofeu-chama', 1, 1), // streak de 30 dias (streak-30)
+  trophy('trofeu-medalha-mil', 1, 1, 'wall'), // 10 quizzes nota mil (quiz-perfect-10)
+  trophy('trofeu-foguete', 1, 2), // 1º ciclo ZERO lançado (pensa-first-launch — bônus Pensa)
+  trophy('trofeu-console', 1, 1), // 3 atividades do Estúdio aprovadas (studio-master-3 — bônus)
 ]
 
 export const ROOM_ITEMS_BY_ID: ReadonlyMap<string, RoomItemDef> = new Map(
   ROOM_ITEMS.map((i) => [i.id, i]),
 )
+
+/**
+ * Badge → troféu do quarto (07/2026): quando a badge DESTRAVA, o award concede o
+ * item na MESMA transação (insere em `room_inventory`, idempotente). Badge sem
+ * entrada = sem troféu. Manter os ids em sincronia com os `trophy(...)` acima.
+ */
+export const TROPHY_FOR_BADGE: Readonly<Partial<Record<BadgeSlug, string>>> = {
+  'first-showcase': 'trofeu-primeiro-jogo',
+  'course-complete': 'trofeu-diploma',
+  'streak-30': 'trofeu-chama',
+  'quiz-perfect-10': 'trofeu-medalha-mil',
+  'pensa-first-launch': 'trofeu-foguete',
+  'studio-master-3': 'trofeu-console',
+}
 
 export const ROOM_THEMES: readonly RoomThemeDef[] = [
   { id: 'aconchego', tier: 'free', price: 0 },

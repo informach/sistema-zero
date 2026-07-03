@@ -54,6 +54,14 @@ const STYLE_RING_CLASSES: Record<PintaAssetStyle, string> = {
   vector: 'border-pin-style-vector',
 }
 
+/** Papel sugerido pela missão de arte do Pensa (a criança ainda escolhe o estilo). */
+export type NewAssetRole = 'sprite' | 'background' | 'tileset'
+
+const KIND_FOR_ROLE: Record<PintaAssetStyle, Record<NewAssetRole, PintaAssetKind>> = {
+  pixel: { sprite: 'pixel-sprite', background: 'pixel-background', tileset: 'tileset' },
+  vector: { sprite: 'vector-sprite', background: 'vector-background', tileset: 'vector-tileset' },
+}
+
 type Step = 'style' | 'kind' | 'size' | 'name'
 
 interface SizeChoice {
@@ -145,6 +153,9 @@ export function NewAssetDialog({
   takenNames,
   creating,
   initialStyle = 'pixel',
+  initialRole = null,
+  initialName = '',
+  projectName = null,
   onClose,
   onCreate,
 }: {
@@ -155,6 +166,12 @@ export function NewAssetDialog({
   creating: boolean
   /** Último estilo usado (galeria) — vem pré-destacado no primeiro passo. */
   initialStyle?: PintaAssetStyle
+  /** Papel pré-escolhido (missão de arte do Pensa): escolher o estilo PULA o passo de tipo. */
+  initialRole?: NewAssetRole | null
+  /** Nome sugerido (a criança pode trocar). */
+  initialName?: string
+  /** Nome do jogo do Pensa — mostra o selo "Desenho para o jogo: ..." no topo. */
+  projectName?: string | null
   onClose: () => void
   onCreate: (input: NewAssetInput) => void
 }): JSX.Element | null {
@@ -163,7 +180,7 @@ export function NewAssetDialog({
   const [kind, setKind] = useState<PintaAssetKind | null>(null)
   const [sizeKey, setSizeKey] = useState<string>('')
   const [tilesetId, setTilesetId] = useState<string>('')
-  const [name, setName] = useState('')
+  const [name, setName] = useState(initialName)
 
   const normalized = useMemo(() => normalizeAssetName(name), [name])
   const nameError = !name.trim()
@@ -180,7 +197,20 @@ export function NewAssetDialog({
     setKind(null)
     setSizeKey('')
     setTilesetId('')
-    setName('')
+    setName(initialName)
+  }
+
+  /** Com papel pré-escolhido, escolher o estilo já resolve o tipo → tamanho. */
+  function pickStyle(s: PintaAssetStyle): void {
+    setStyle(s)
+    if (initialRole) {
+      const k = KIND_FOR_ROLE[s][initialRole]
+      setKind(k)
+      setSizeKey(sizeChoicesFor(k)[0]?.key ?? '')
+      setStep('size')
+      return
+    }
+    setStep('kind')
   }
 
   function close(): void {
@@ -221,6 +251,13 @@ export function NewAssetDialog({
         ))}
       </div>
 
+      {projectName ? (
+        <p className="mb-3 rounded-2xl bg-pin-bg px-4 py-2 text-center text-sm font-bold text-pin-muted">
+          <span aria-hidden="true">🎮 </span>
+          {COPY.newAsset.forProjectPrefix}: {projectName}
+        </p>
+      ) : null}
+
       {step === 'style' ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {STYLE_ORDER.map((s) => {
@@ -229,10 +266,7 @@ export function NewAssetDialog({
               <button
                 key={s}
                 type="button"
-                onClick={() => {
-                  setStyle(s)
-                  setStep('kind')
-                }}
+                onClick={() => pickStyle(s)}
                 className={`flex flex-col items-center gap-2 rounded-2xl border-2 bg-pin-bg p-6 text-center transition hover:shadow-md ${STYLE_RING_CLASSES[s]}`}
               >
                 <span aria-hidden="true" className="text-5xl">
@@ -348,7 +382,7 @@ export function NewAssetDialog({
             ))}
           </div>
           <div className="mt-1 flex justify-between">
-            <Button variant="ghost" onClick={() => setStep('kind')}>
+            <Button variant="ghost" onClick={() => setStep(initialRole ? 'style' : 'kind')}>
               {COPY.newAsset.back}
             </Button>
             <Button variant="primary" disabled={!sizeKey} onClick={() => setStep('name')}>

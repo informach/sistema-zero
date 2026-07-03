@@ -197,12 +197,33 @@ export const ShowcaseThreadStudioStandaloneBody = t.Object({
   ),
   playId: UUID,
   clientIdempotencyKey: UUID,
+  // Tag do DESAFIO do mês — string FROUXA de propósito: a validação (formato +
+  // mês corrente + posse Clube+Estúdio) é do service, com drop SILENCIOSO da tag
+  // (um 400 aqui falharia a publicação da criança por causa do desafio).
+  challengeKey: t.Optional(t.Union([t.String({ maxLength: 16 }), t.Null()])),
 })
 
 /** Paginação por cursor opaco (listagem de tópicos). */
 export const ThreadListQuery = t.Object({
   cursor: t.Optional(t.String({ maxLength: 500 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+  /** Prateleira do desafio mensal: só posts com este `challenge_key` (`m:YYYY-MM`). */
+  challenge: t.Optional(t.String({ pattern: '^m:\\d{4}-\\d{2}$' })),
+})
+
+/** Query do resolve do /jogar: `count=1` = conta a jogada (hit fundido no UPDATE). */
+export const PlayResolveQuery = t.Object({
+  count: t.Optional(t.Literal('1')),
+})
+
+/**
+ * `POST /hub/internal/showcase-by-authors` (members→hub S2S, HMAC — report dos
+ * pais). `authorIds` = perfis dos filhos (o members garante a posse da conta).
+ */
+export const ShowcaseByAuthorsBody = t.Object({
+  authorIds: t.Array(UUID, { minItems: 1, maxItems: 50 }),
+  from: t.String({ maxLength: 40 }),
+  to: t.String({ maxLength: 40 }),
 })
 
 /** Paginação por cursor opaco (comentários, cronológico). */

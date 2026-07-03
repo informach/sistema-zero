@@ -6,6 +6,7 @@ import { Flame, Gift, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
+import { TROPHY_BADGE_SLUGS } from '@/lib/room-catalog'
 import type { CourseProgressView, GamificationDelta } from '@/lib/types'
 import { badgeInfo } from './badges'
 import { KidsConfetti } from './kids-confetti'
@@ -169,6 +170,17 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
           </p>
         )
       })}
+
+      {/* 🏆 Conquista com troféu mapeado = objeto novo no quarto (07/2026). */}
+      {badges.some(({ slug }) => TROPHY_BADGE_SLUGS.has(slug)) ? (
+        <Link
+          href="/quarto"
+          prefetch={false}
+          className="inline-flex items-center gap-1.5 rounded-xl border-2 border-(--kids-lime) px-3 py-1.5 font-bold text-sm"
+        >
+          🏆 Um troféu novo apareceu no seu quarto! Ver
+        </Link>
+      ) : null}
     </div>
   )
 }

@@ -19,6 +19,7 @@ import {
 import { AwardGamificationService } from './application/gamification/award-gamification.service'
 import { BuyStreakFreezeService } from './application/gamification/buy-streak-freeze.service'
 import { ClaimMissionService } from './application/gamification/claim-mission.service'
+import { GetChallengeService } from './application/gamification/get-challenge.service'
 import { GetGamificationService } from './application/gamification/get-gamification.service'
 import { GetLeagueService } from './application/gamification/get-league.service'
 import { GetMissionsService } from './application/gamification/get-missions.service'
@@ -61,6 +62,8 @@ import { TogglePensaChecklistItemService } from './application/pensa/toggle-chec
 import { UpdatePensaProjectService } from './application/pensa/update-project.service'
 import { UpdatePensaTaskService } from './application/pensa/update-task.service'
 import { ValidatePensaArtifactService } from './application/pensa/validate-artifact.service'
+import { ParentReportPrefsService } from './application/parent-report/report-prefs.service'
+import { SendParentReportsService } from './application/parent-report/send-parent-reports.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
@@ -77,7 +80,9 @@ import {
   ValidateCertificateService,
 } from './application/validate-certificate/validate-certificate.service'
 import type { Env } from './infrastructure/config/env'
+import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
+import { createGatewayMessagingClient } from './infrastructure/gateways/gateway-messaging-client'
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
@@ -89,6 +94,7 @@ import { DrizzleCourseRatingRepository } from './infrastructure/persistence/driz
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
+import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
@@ -112,6 +118,13 @@ export interface Application {
  * entre os serviços (a do payments é 8103081227979411315).
  */
 const RETENTION_ADVISORY_LOCK_KEY = '30792292938117747'
+
+/**
+ * Chave do advisory lock do REPORT semanal dos pais (retenção+1 — única no banco
+ * compartilhado: payments 8103081227979411315, retenção 30792292938117747, hub
+ * 51020304050607081, auth 1635430504). Só UMA réplica envia por ciclo.
+ */
+const PARENT_REPORT_ADVISORY_LOCK_KEY = '30792292938117748'
 
 /**
  * Raiz de composição (injeção de dependências). ÚNICO lugar que instancia adapters
@@ -172,13 +185,49 @@ export async function createApplication(env: Env): Promise<Application> {
     defaultMaxProfiles: env.DEFAULT_KIDS_MAX_PROFILES,
   })
   // S2S: resumo de progresso dos filhos (consumido pelo BFF da área dos pais, kids).
+  // O hub entra p/ os JOGOS da semana no Mural (best-effort — sem HUB_BASE_URL degrada).
   const childrenStats = new GetChildrenStatsService(
     gamificationRepo,
     courses,
     progress,
     studioSubmissions,
     clock,
+    hub,
   )
+
+  // Report SEMANAL dos pais (Fase 5): prefs (opt-out) sempre; o JOB de envio só
+  // liga com o quarteto AUTH_BASE_URL/AUTH_INTERNAL_TOKEN/GATEWAY_URL/
+  // MEMBERS_HMAC_SECRET configurado (sem eles = no-op, dev).
+  const parentReports = new DrizzleParentReportRepository(db)
+  const parentReportPrefs = new ParentReportPrefsService(parentReports, clock)
+  const parentReportSender =
+    env.AUTH_BASE_URL && env.AUTH_INTERNAL_TOKEN && env.GATEWAY_URL && env.MEMBERS_HMAC_SECRET
+      ? new SendParentReportsService(
+          gamificationRepo,
+          studioSubmissions,
+          childrenStats,
+          parentReports,
+          createAuthHttpGateway({
+            baseUrl: env.AUTH_BASE_URL,
+            internalToken: env.AUTH_INTERNAL_TOKEN,
+            timeoutMs: env.AUTH_REQUEST_TIMEOUT_MS,
+            logger,
+          }),
+          createGatewayMessagingClient({
+            gatewayUrl: env.GATEWAY_URL,
+            consumerId: 'members',
+            hmacSecret: env.MEMBERS_HMAC_SECRET,
+          }),
+          clock,
+          logger,
+          {
+            dow: env.PARENT_REPORT_DOW,
+            hour: env.PARENT_REPORT_HOUR,
+            batchLimit: env.PARENT_REPORT_BATCH_LIMIT,
+            kidsUrl: env.KIDS_COMMUNITY_URL,
+          },
+        )
+      : null
   const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, positions, clock)
   const listCatalog = new ListCatalogService(courses, entitlements, clock)
   const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
@@ -210,6 +259,7 @@ export async function createApplication(env: Env): Promise<Application> {
     roomRepo,
     clock,
   )
+  const getChallenge = new GetChallengeService(gamificationRepo, clock)
   const getMissions = new GetMissionsService(gamificationRepo, clock)
   const claimMission = new ClaimMissionService(gamificationRepo, clock)
   const buyStreakFreeze = new BuyStreakFreezeService(gamificationRepo, () => randomUUID(), clock)
@@ -383,12 +433,14 @@ export async function createApplication(env: Env): Promise<Application> {
       getCourseRating,
       saveCourseRating,
       getGamification,
+      getChallenge,
       getMissions,
       claimMission,
       buyStreakFreeze,
       setVacation,
       getLeague,
       childrenStats,
+      parentReportPrefs,
       getAvatar,
       buyAvatarPart,
       equipAvatar,
@@ -467,6 +519,7 @@ export async function createApplication(env: Env): Promise<Application> {
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null
+  let parentReportTimer: ReturnType<typeof setInterval> | null = null
 
   // Retenção do dedupe de webhooks (fora do hot path): apaga `processed_webhooks`
   // antigos para a tabela não crescer sem limite. O advisory lock garante que SÓ
@@ -483,6 +536,21 @@ export async function createApplication(env: Env): Promise<Application> {
     })
   }
 
+  // Report SEMANAL dos pais: ciclo horário sob advisory lock PRÓPRIO (1 réplica).
+  // O lock cobre a duração do CICLO inteiro (a transação fica aberta enquanto o
+  // sender roda) — dois ciclos concorrentes não disputam contas; o dedupe do
+  // messaging por idempotencyKey é o backstop.
+  const runParentReportCycle = async () => {
+    if (!parentReportSender) return
+    await connection.sql.begin(async (gate) => {
+      const [row] = await gate`
+        select pg_try_advisory_xact_lock(${PARENT_REPORT_ADVISORY_LOCK_KEY}::bigint) as locked
+      `
+      if (!row?.locked) return // outra réplica está enviando neste ciclo
+      await parentReportSender.runCycle()
+    })
+  }
+
   return {
     logger,
     async start() {
@@ -493,6 +561,15 @@ export async function createApplication(env: Env): Promise<Application> {
           }),
         )
       }, env.RETENTION_CLEANUP_INTERVAL_MS)
+      if (parentReportSender) {
+        parentReportTimer = setInterval(() => {
+          void runParentReportCycle().catch((error) =>
+            logger.error('parent_report.cycle_failed', {
+              error: error instanceof Error ? error.message : String(error),
+            }),
+          )
+        }, env.PARENT_REPORT_INTERVAL_MS)
+      }
       // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
       // Railway (`members.railway.internal` resolve IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
@@ -500,6 +577,7 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)
+      if (parentReportTimer) clearInterval(parentReportTimer)
       await server.stop()
       await connection.close()
       logger.info('app.stopped')

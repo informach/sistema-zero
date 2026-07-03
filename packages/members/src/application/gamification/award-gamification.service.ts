@@ -1,5 +1,6 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
+import { CHALLENGE_ENTRY_XP, challengeSourceId } from '../../domain/gamification/challenges'
 import { COIN_VALUES, quizPassedCoins } from '../../domain/gamification/coins'
 import { localDateSaoPaulo, quizPassedXp, XP_VALUES } from '../../domain/gamification/gamification'
 import { pensaStageSourceId } from '../../domain/pensa/gamification'
@@ -150,6 +151,35 @@ export class AwardGamificationService {
             },
           ]
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+  }
+
+  /**
+   * DESAFIO do mês (game jam, 07/2026): publicou no Mural com a tag do mês →
+   * XP real (move streak) + badge `challenge-first`. Idempotente pelo sourceId
+   * DETERMINÍSTICO do monthKey (`challengeSourceId` — 1 marco/mês, mesmo com 2
+   * jogos publicados). Disparado pelo webhook hub→members; fail-open.
+   * ⚠️ Risco aceito v1: o webhook não carrega role → `privileged: false` (equipe
+   * testando o desafio entra no ranking kids — o hub não conhece roles).
+   */
+  async awardChallengeEntry(input: {
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    monthKey: string
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [
+        {
+          sourceType: 'challenge_entry',
+          sourceId: challengeSourceId(input.monthKey),
+          amount: CHALLENGE_ENTRY_XP,
+        },
+      ],
+      false,
+    )
   }
 
   /**

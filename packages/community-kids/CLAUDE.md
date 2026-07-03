@@ -509,6 +509,55 @@ A `<Canvas>` precisa de
 adulto (campos já chegam — decisão de produto). *(Ligas, lojinha/Zappy, avatar, quarto, missões e
 proteção de sequência saíram do backlog — entregues na expansão de 6 fases.)*
 
+## Fase 5 — Carreira/Projeto transversal/Troféus/Plays/Remix/Desafio (07/2026, não commitado)
+
+> ⚠️ **Restrição central**: Pensa/Pinta/Estúdio/Clube/Mural são produtos VENDIDOS À PARTE — nada
+> da jornada/gamificação nuclear DEPENDE deles; integrações cross-app só aparecem com a POSSE
+> dos dois lados (`GET /members/access?refs=csv`). Ver memória `produtos-vendidos-a-parte.md`.
+
+- **Troféus no quarto (A):** aba "🏆 Troféus" no `room-builder` (ganho = posicionável; não-ganho =
+  cadeado + dica `TROPHY_HINT` de `lib/room-catalog.ts`, sem preço — tier `trophy` não é comprável);
+  6 modelos low-poly em `furniture-models.tsx` (+ material `gold`). Badge nova `first-showcase` em
+  `badges.ts`; a `lesson-celebration` mostra "🏆 Um troféu novo apareceu no seu quarto!" quando a
+  badge destravada está em `TROPHY_BADGE_SLUGS`. Conformance kids×members cobre os itens.
+- **Carreira (B):** `career-timeline.tsx` no `/perfil` — escada universal Faísca→Lenda (rung atual +
+  `nextLevelHint`) + FEITOS como cartões (universais primeiro; badges `studio-*`/`pensa-*` agrupadas
+  em "Bônus dos apps criativos"; troféu → link "veja no seu quarto") + linha de jogos/jogadas. O
+  `CreatorCareerCard` (home) ganhou "seus jogos já foram jogados N vezes" + "Ver minha carreira"
+  (dados de `shell.hub.myShowcaseStatsReadonly()`, best-effort).
+- **Plays (B):** cards/detalhe do Mural mostram "🎮 N jogadas" (`thread.playsCount`; contado no
+  resolve público do /jogar com dedupe ip:playId no BFF).
+- **Remix (B):** página do Mural checa `checkStudioAccessReadonly` → `canRemix` no
+  `KidsSpaceViewClient`; botão "Fazer a minha versão" no `PlayLinkActions` (só com posse do
+  Estúdio) → fetch `/api/studio/play/:id` → `setStudioStorageNamespace(viewerId)` →
+  `importProjectSnapshot(snapshot, {name: 'Remix de <título>'})` → toast + push `/estudio`.
+- **Projeto transversal Pensa↔Pinta (C):** a página `/pensa` também checa
+  `checkPintaAccessReadonly` (best-effort) → `pintaOwned` no `PensaClient`, que SÓ então liga o
+  `onOpenPinta` — o intent da missão de arte vai por `sessionStorage sz:pinta:intent`
+  (`components/kids/pinta-intent.ts`: chave + reader/clear compartilhados) e o `pinta-client` o lê
+  1x no mount (lazy useState + clear em efeito) → `adapter.initialIntent` (o Pinta abre o "Criar
+  novo" pré-configurado; asset nasce com `projectRef` e a galeria agrupa por jogo).
+- **Desafio do MÊS (D — game jam, decisão da usuária: MENSAL e só Clube+Estúdio):** card
+  `challenge-card.tsx` na home SÓ com as duas refs (`checkChallengeAccessReadonly`, 1 ida; tema de
+  `getChallengeReadonly` — determinístico global, `m:YYYY-MM` SP); o `/estudio` passa
+  `challenge={key,title}` ao `StudioFullClient` → checkbox "Participar do Desafio" no Compartilhar
+  (o publish leva `challengeKey`; gate REAL no hub com drop silencioso); o Mural ganha a PRATELEIRA
+  "🏆 Desafio do mês" no topo (posts com `challengeKey` do mês — visível a quem vê o Mural; a
+  posse só é exigida p/ PARTICIPAR). Participar = marco `challenge_entry` (XP 50 + badge
+  `challenge-first`) via webhook hub→members.
+- **Report dos pais (E):** o card de cada filho na Área dos pais (`perfis-client.tsx`
+  `ChildStatsCard`) ganhou o bloco **"Esta semana"** (`ChildWeekBlock`: destaques em uma linha
+  a partir de `child.week` + jogos publicados no Mural em `child.games`, cada um com botão
+  "Cartão" reusando o `GameCardDialog` QR; `games` nulo = hub fora, só os números) e o
+  `ChildrenDashboard` ganhou o **`WeeklyReportToggle`** (checkbox "Receber o resumo da semana
+  por e-mail" → `GET|PUT /api/parents/report-prefs`, shim NOVO gateado por
+  `requireParentGateAccountOnly` nos DOIS métodos — mesma régua do children-stats). O e-mail em
+  si é do members (job de sexta 17h SP; ver o CLAUDE.md de lá).
+- **PENDENTE da Fase 5:** QA em browser + aplicar migrations members 0029–0035 e hub 0005 +
+  re-rodar `templates:seed` do messaging (template `weekly-report`) + envs novas do members
+  (`AUTH_BASE_URL`/`AUTH_INTERNAL_TOKEN`/`GATEWAY_URL`/`MEMBERS_HMAC_SECRET`/
+  `KIDS_COMMUNITY_URL`) e do gateway (`MEMBERS_HMAC_SECRET`).
+
 ## Full review (segurança + desempenho — lente infantil) — 19/06/2026
 
 Auditoria focada em segurança/desempenho de uma comunidade com área de membros para crianças

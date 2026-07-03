@@ -20,12 +20,24 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 - **`PintaHostAdapter`** (`src/core/types.ts`): `theme?` ('light' default kids | 'dark'),
   `studioOwned?` (só muda a COPY do sucesso da ponte), `onOpenStudio?`,
   `sendToStudio?(PintaExportedAsset) → PintaSendResult` — **ausente = o botão "Usar no Estúdio"
-  não aparece** (degrade, padrão Pensa).
+  não aparece** (degrade, padrão Pensa) — e **`initialIntent?: PintaInitialIntent`** (Fase 5,
+  07/2026): `{projectRef: PintaProjectRef, artKind?}` vindo da MISSÃO DE ARTE do Pensa — abre o
+  "Criar novo" pré-configurado UMA vez no mount (`takeInitialIntent` no appContext consome via
+  ref; voltar do editor à galeria NÃO reabre). Com `artKind`, escolher o ESTILO pula o passo de
+  tipo (`NewAssetDialog.initialRole` mapeia sprite/background/tileset → kind do estilo), o nome
+  vem sugerido (`heroi`/`cenario`/`pecas` com sufixo anti-colisão) e o topo mostra o selo
+  "Desenho para o jogo: <nome>". Fechar o diálogo descarta o intent.
 
 ## Modelo de dados (`src/core/project.ts` — NÃO em types.ts)
 
 - **Não há "projeto"**: a galeria é a lista de ASSETS do perfil; cada asset é um registro
-  independente no IndexedDB (`pinta:asset:<id>`, store `sistema-zero-pinta-<ns>`).
+  independente no IndexedDB (`pinta:asset:<id>`, store `sistema-zero-pinta-<ns>`). **MAS (Fase 5)
+  todo asset pode carregar um `projectRef?: PintaProjectRef`** (`{id, name, palette?}` — o vínculo
+  com o PROJETO do Pensa): a galeria agrupa por `projectRef.name` (seções "🎮 <jogo>" + "Desenhos
+  avulsos"; sem nenhum ref = grade plana, zero regressão) e o **VectorEditor** põe a paleta do
+  jogo na FRENTE dos swatches fixos (dedupe; SÓ no vetor — o bitmap é indexado em 16 cores e não
+  muda). `sanitizeProjectRef` é o portão ÚNICO (exportado: o `galleryStore.create` também o usa) —
+  hex minúsculo, ≤8 cores, nome no teto; malformado descarta o REF, nunca o asset.
 - **`PintaAssetKind` = ESTILO × PAPEL** (união discriminada plana de 7 kinds):
   `pixel-sprite` · `pixel-background` · `tileset` · `tilemap` (papel dos dois estilos — o
   `tilesetId` aponta para tileset pixel OU vetorial) · `vector-sprite` · `vector-background` ·
@@ -156,8 +168,14 @@ por px reais.
   multi-touch, PNG vazio, contraste do selinho, Mão/pan, flip, teclado, zoom honesto do mapa,
   pintura incremental no arrasto do mapa). ZIP: a pasta `vetores/` MORREU — vetor sai em
   `personagens/`/`cenarios/`/`tilesets/` ao lado do pixel (+ `.svg` extra).
+- **Fase 5 — projeto transversal Pensa↔Pinta (07/2026, não commitado)**: `projectRef` no asset
+  (agrupamento da galeria + paleta no vetor), `PintaHostAdapter.initialIntent` (missão de arte
+  abre o "Criar novo" pré-configurado), `NewAssetDialog` com `initialRole`/`initialName`/selo do
+  jogo, exports novos `PintaInitialIntent`/`PintaProjectRef` no index. O intent chega do kids por
+  `sessionStorage sz:pinta:intent` (escrito pelo pensa-client, lido/limpo pelo pinta-client).
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
-  ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch).
+  ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
+  missão de arte → Pinta pré-preenchido → asset agrupado).
 - **Backlog conhecido (baixo, do full review)**: undo do tileset não desfaz o remap dos mapas
   (pré-existente, exige transação tileset+mapas); strings de UI soltas fora do copy.ts;
   auto-avançar no passo de tamanho; nome do estilo "Vetor" pode virar "Desenho de formas" se o

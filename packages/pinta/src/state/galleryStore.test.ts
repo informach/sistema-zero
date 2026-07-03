@@ -23,6 +23,21 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
     expect(await listAllAssets()).toHaveLength(1)
   })
 
+  it('create com projectRef (Pensa) anexa o vínculo SANEADO e ele persiste', async () => {
+    const store = createGalleryStore()
+    const asset = await store.getState().create({
+      kind: 'vector-sprite',
+      name: 'heroi',
+      frameSize: 64,
+      projectRef: { id: 'pensa-1', name: 'Corrida Maluca', palette: ['#FF2121', 'lixo'] },
+    })
+    expect(asset?.projectRef?.name).toBe('Corrida Maluca')
+    // Portão único: mesmo saneamento do load (hex minúsculo, inválido cai).
+    expect(asset?.projectRef?.palette).toEqual(['#ff2121'])
+    const listed = await listAllAssets()
+    expect(listed[0]?.projectRef?.id).toBe('pensa-1')
+  })
+
   it('nome inválido/duplicado → null + copy amigável', async () => {
     const store = createGalleryStore()
     expect(

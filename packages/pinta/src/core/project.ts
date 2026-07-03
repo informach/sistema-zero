@@ -56,6 +56,18 @@ export function assetRole(kind: PintaAssetKind): PintaAssetRole {
   }
 }
 
+/**
+ * Vínculo do asset com um PROJETO do Pensa (07/2026): agrupa a galeria por jogo
+ * ("os desenhos do meu Dino") e carrega a paleta da identidade p/ os swatches
+ * extras do vetor. Opcional — desenho avulso segue sem vínculo.
+ */
+export interface PintaProjectRef {
+  id: string
+  name: string
+  /** Paleta do jogo (hex `#rrggbb`, ≤8) escolhida na etapa E do Pensa. */
+  palette?: string[]
+}
+
 interface PintaAssetBase {
   id: string
   /**
@@ -66,6 +78,8 @@ interface PintaAssetBase {
   name: string
   createdAt: number
   updatedAt: number
+  /** Projeto do Pensa dono deste desenho (agrupamento da galeria). */
+  projectRef?: PintaProjectRef
 }
 
 /**
@@ -446,11 +460,37 @@ function sanitizeTimestamps(raw: Record<string, unknown>): {
   return { createdAt, updatedAt }
 }
 
+const PROJECT_REF_HEX = /^#[0-9a-f]{6}$/i
+
+/**
+ * `projectRef` válido sobrevive ao round-trip; malformado é DESCARTADO (não o
+ * asset). Exportado: o `galleryStore.create` passa o intent do Pensa por aqui
+ * também (portão ÚNICO — hex minúsculo, nome no teto, ≤8 cores).
+ */
+export function sanitizeProjectRef(raw: unknown): PintaProjectRef | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const r = raw as Record<string, unknown>
+  if (typeof r.id !== 'string' || !r.id || r.id.length > 64) return undefined
+  if (typeof r.name !== 'string' || !r.name.trim()) return undefined
+  const palette = Array.isArray(r.palette)
+    ? r.palette
+        .filter((c): c is string => typeof c === 'string' && PROJECT_REF_HEX.test(c))
+        .map((c) => c.toLowerCase())
+        .slice(0, 8)
+    : []
+  return {
+    id: r.id,
+    name: r.name.trim().slice(0, PINTA_LIMITS.maxNameChars),
+    ...(palette.length > 0 ? { palette } : {}),
+  }
+}
+
 function sanitizeBase(raw: Record<string, unknown>): PintaAssetBase | null {
   if (typeof raw.id !== 'string' || !raw.id || raw.id.includes(':')) return null
   const name = typeof raw.name === 'string' ? normalizeAssetName(raw.name) : null
   if (!name) return null
-  return { id: raw.id, name, ...sanitizeTimestamps(raw) }
+  const projectRef = sanitizeProjectRef(raw.projectRef)
+  return { id: raw.id, name, ...sanitizeTimestamps(raw), ...(projectRef ? { projectRef } : {}) }
 }
 
 function sanitizeAnimation(

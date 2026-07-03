@@ -221,18 +221,20 @@ regressão). **Como mudar:** o gate é só `privileged`; para desligar, pare de 
 
 ## 5. Conquistas (badges)
 
-Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (20 slugs).
+Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (22 slugs).
 Persiste só `user_badges` (UNIQUE `user_id, audience, badge_slug` — a "1ª aula" do kids é
 independente da do adult). Título/ícone/copy vivem no app kids, não no banco.
 
 | Família | Slugs | Derivação |
 |---|---|---|
 | 1ª aula | `first-lesson` | 1º `lesson_complete` da vitrine (`countByType === 1`) |
+| 1º jogo no Mural | `first-showcase` (Fase 5) | `showcaseBadgeSlugs`, conta `course_showcased` (universal — todo comprador de curso alcança) |
 | Streak | `streak-7/30/60/180/365` | `streakBadgeSlugs(current)` |
 | Cursos 100% | `course-complete`, `-2`, `-3` (1/2/3 cursos) | `courseBadgeSlugs`, conta `course_complete` no ledger |
 | Quiz nota mil | `quiz-perfect`, `-10`, `-30` (1/10/30) | `quizPerfectBadgeSlugs`, conta `quiz_perfect` |
 | Maestria do Estúdio | `studio-first`, `studio-master-3`, `studio-master-10` (1/3/10) | `studioMasteryBadgeSlugs`, conta `studio_passed` |
 | Pensa (planejamento) | `pensa-first-idea` (1ª etapa concluída = 1ª Carta), `pensa-first-launch`/`pensa-creator-3` (1/3 ciclos) | `pensaStageBadgeSlugs`/`pensaCycleBadgeSlugs`, contam `pensa_stage_complete`/`pensa_cycle_complete` |
+| Desafio do mês | `challenge-first` (Fase 5) | `challengeBadgeSlugs`, conta `challenge_entry` |
 | Poupador | `coins-saver-300`, `coins-saver-1000` | `coinsSaverBadgeSlugs`, lê `lifetime_coins_earned` |
 
 As contagens são **POR VITRINE** (`countByType` filtra `userId + audience + sourceType`). Os
@@ -243,10 +245,40 @@ destravam badge, não dão XP/streak/moeda.
 
 1. Adicionar o slug ao array `BADGE_SLUGS` (`badges.ts`) — vira o tipo `BadgeSlug`.
 2. Fazer alguma função `*BadgeSlugs(...)` (ou um novo bloco no `award` do repositório)
-   retorná-lo a partir de uma contagem do ledger ou de um valor do perfil.
+   retorná-lo a partir de uma contagem do ledger ou de um valor do perfil. ⚠️ Espelhar o
+   MESMO bloco no fake (`tests/fakes/in-memory.ts`) — ele é o oráculo dos testes.
 3. Adicionar a apresentação (título/ícone/copy) no app `community-kids` (`BADGE_INFO`).
 4. **Nenhuma migration** — catálogo em código; deploy atômico. Sem backfill (atividade anterior
    ao deploy não retroage).
+
+### Troféus no quarto (Fase 5, 07/2026)
+
+Conquista GRANDE vira um OBJETO 3D no quarto: `room-catalog.ts` (members) tem itens de tier
+**`'trophy'`** (decor, preço 0, `BuyRoomItemService` RECUSA compra — `ROOM_ITEM_NOT_PURCHASABLE`)
+e o mapa **`TROPHY_FOR_BADGE`** (badge → item). No `award` do repo, badge NOVA mapeada → o item
+entra em `room_inventory` NA MESMA transação (`onConflictDoNothing`). Mapa atual:
+`first-showcase`→`trofeu-primeiro-jogo`, `course-complete`→`trofeu-diploma`,
+`streak-30`→`trofeu-chama`, `quiz-perfect-10`→`trofeu-medalha-mil`,
+`pensa-first-launch`→`trofeu-foguete` (bônus de produto), `studio-master-3`→`trofeu-console`
+(bônus). No kids: aba "🏆 Troféus" no room-builder (não-ganho = cadeado + dica `TROPHY_HINT`),
+modelos low-poly em `furniture-models.tsx`, e a celebração de aula avisa "troféu novo no quarto"
+via `TROPHY_BADGE_SLUGS`. Conformance test cobre badge↔item↔apresentação.
+
+### Desafio do MÊS (game jam — Fase 5, 07/2026)
+
+MENSAL (decisão da usuária: 1 semana é pouco p/ criança criar um jogo) e SÓ p/ quem possui
+**Clube dos Criadores + Estúdio Completo** (produtos à parte — a escada de níveis NÃO depende).
+Tema em CÓDIGO (`domain/gamification/challenges.ts`, 12 temas), DETERMINÍSTICO e GLOBAL por
+`monthKey` `m:YYYY-MM` (mês civil SP). Fluxo: o kids mostra o card (home) e o checkbox no
+Compartilhar SÓ com as duas refs (`/members/access?refs=clube-dos-criadores,estudio-completo`);
+o publish standalone leva `challengeKey`; o HUB valida posse+mês (drop SILENCIOSO da tag — a
+publicação nunca falha) e grava `threads.challenge_key`; thread com a tag → webhook
+`POST /members/webhooks/challenge` → **XP 50** (`challenge_entry`, sourceId = uuid determinístico
+do mês `challengeSourceId` — 1 marco/mês pelo UNIQUE do ledger) + badge `challenge-first`. O
+Mural mostra a prateleira do mês (filtro `?challenge=`); a rota do aluno
+`GET /members/gamification/challenge` devolve tema + `entered`. Sem julgamento/vencedor no v1
+(follow-up: destaque via `is_pinned`). ⚠️ Risco aceito v1: o webhook não carrega role →
+equipe testando entra no ranking kids.
 
 ---
 
@@ -733,6 +765,11 @@ public_profile_enabled boolean DEFAULT false NOT NULL` (opt-in do perfil públic
 **hub**: `0004_add_author_display_public` — `ADD COLUMN author_display_name` em `comments`,
 `author_public boolean DEFAULT false` em `comments` e `threads` (snapshot de nome+flag para os nomes
 clicáveis). Idempotente (`IF NOT EXISTS`, padrão do hub).
+
+**Fase 5 (07/2026, geradas — FALTA aplicar):** members `0034_thick_misty_knight`
+(`ALTER TYPE xp_source_type ADD VALUE 'challenge_entry'`) e hub `0005_plays_challenge`
+(`threads.plays_count` + `threads.challenge_key` + índices parciais `play_id` e
+`channel_id, challenge_key`). Troféus NÃO precisam de migration (reusam `room_inventory`).
 
 ---
 

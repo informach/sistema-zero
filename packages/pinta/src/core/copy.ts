@@ -25,6 +25,7 @@ export const COPY = {
     cancel: 'Cancelar',
     quotaFull: 'A sua galeria está cheia! Apague um desenho antigo para criar um novo.',
     downloadAll: 'Baixar tudo',
+    looseSection: 'Desenhos avulsos',
     restore: 'Trazer de volta',
     restoreError: 'Não consegui ler esse arquivo. Ele é um backup do Pinta (.pinta.json)?',
     zipError: 'Não consegui montar o arquivo agora. Tente de novo.',
@@ -44,6 +45,7 @@ export const COPY = {
     creating: 'Criando...',
     chooseTilesetTitle: 'Quais peças o mapa vai usar?',
     needTileset: 'Antes de criar um mapa, crie as suas "Peças do cenário".',
+    forProjectPrefix: 'Desenho para o jogo',
   },
   styles: {
     pixel: {

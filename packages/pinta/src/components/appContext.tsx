@@ -4,7 +4,7 @@
  */
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
-import type { PintaHostAdapter } from '../core/types'
+import type { PintaHostAdapter, PintaInitialIntent } from '../core/types'
 import type { PintaGalleryState, PintaGalleryStore } from '../state/galleryStore'
 
 export interface PintaAppContextValue {
@@ -14,6 +14,11 @@ export interface PintaAppContextValue {
   openAsset(id: string): void
   /** Volta para a galeria. */
   closeEditor(): void
+  /**
+   * Intent do Pensa consumido UMA vez (missão de arte): a 1ª chamada devolve e
+   * limpa — voltar do editor à galeria não reabre o "Criar novo".
+   */
+  takeInitialIntent(): PintaInitialIntent | null
 }
 
 const PintaAppContext = createContext<PintaAppContextValue | null>(null)

@@ -140,6 +140,8 @@ export class ThreadService {
     channelId: string,
     cursor: CursorPos | null,
     limit: number,
+    /** Prateleira do desafio mensal (`m:YYYY-MM`) — filtra por `challenge_key`. */
+    challengeKey: string | null = null,
   ): Promise<Page<ThreadView>> {
     await this.requireChannelAccess(actor, channelId)
     const { items, hasMore } = await this.threads.listThreads(channelId, {
@@ -147,6 +149,7 @@ export class ThreadService {
       includeAllPending: actor.privileged,
       cursor,
       limit,
+      challengeKey,
     })
     const ids = items.map((t) => t.id)
     const [reactions, attachments] = await Promise.all([

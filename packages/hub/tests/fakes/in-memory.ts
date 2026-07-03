@@ -16,6 +16,7 @@ import type {
 } from '../../src/domain/ports/community-admin-repository.port'
 import type { CommunityReadRepository } from '../../src/domain/ports/community-read-repository.port'
 import type {
+  ChallengeEntryArgs,
   CourseAccessResult,
   MembersGateway,
   ShowcaseEligibilityArgs,
@@ -253,6 +254,8 @@ export class InMemoryThreadRepository implements ThreadRepository {
       authorPublic: input.authorPublic,
       coverImageUrl: null,
       playId: null,
+      playsCount: 0,
+      challengeKey: null,
       lastActivityAt: input.now,
       createdAt: input.now,
       editedAt: null,
@@ -292,6 +295,8 @@ export class InMemoryThreadRepository implements ThreadRepository {
       authorPublic: input.authorPublic,
       coverImageUrl: input.coverImageUrl,
       playId: input.playId,
+      playsCount: 0,
+      challengeKey: input.challengeKey ?? null,
       lastActivityAt: input.now,
       createdAt: input.now,
       editedAt: null,
@@ -301,8 +306,42 @@ export class InMemoryThreadRepository implements ThreadRepository {
     return { thread, deduped: false }
   }
 
-  async hasVisibleShowcasePlayId(playId: string): Promise<boolean> {
-    return this.threads.some((t) => t.playId === playId && t.isShowcase && t.status === 'visible')
+  async hasVisibleShowcasePlayId(playId: string, countHit = false): Promise<boolean> {
+    const found = this.threads.find(
+      (t) => t.playId === playId && t.isShowcase && t.status === 'visible',
+    )
+    if (found && countHit) found.playsCount += 1
+    return Boolean(found)
+  }
+
+  async showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }> {
+    const mine = this.threads.filter(
+      (t) => t.authorId === authorId && t.isShowcase && t.status === 'visible',
+    )
+    return { published: mine.length, plays: mine.reduce((sum, t) => sum + t.playsCount, 0) }
+  }
+
+  async listShowcaseByAuthors(
+    authorIds: string[],
+    from: Date,
+    to: Date,
+  ): Promise<Array<{ authorId: string; title: string; playId: string | null; createdAt: Date }>> {
+    return this.threads
+      .filter(
+        (t) =>
+          authorIds.includes(t.authorId) &&
+          t.isShowcase &&
+          t.status === 'visible' &&
+          t.createdAt >= from &&
+          t.createdAt < to,
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .map((t) => ({
+        authorId: t.authorId,
+        title: t.title,
+        playId: t.playId,
+        createdAt: t.createdAt,
+      }))
   }
 
   async findThreadById(id: string): Promise<Thread | null> {
@@ -318,7 +357,12 @@ export class InMemoryThreadRepository implements ThreadRepository {
       (t.status === 'pending' && (opts.includeAllPending || t.authorId === opts.viewerId))
     const byActivityDesc = (a: Thread, b: Thread) =>
       b.lastActivityAt.getTime() - a.lastActivityAt.getTime() || (a.id < b.id ? 1 : -1)
-    const all = this.threads.filter((t) => t.channelId === channelId && visible(t))
+    const all = this.threads.filter(
+      (t) =>
+        t.channelId === channelId &&
+        visible(t) &&
+        (!opts.challengeKey || t.challengeKey === opts.challengeKey),
+    )
     const pinned = all.filter((t) => t.isPinned).sort(byActivityDesc)
     let rest = all.filter((t) => !t.isPinned).sort(byActivityDesc)
     if (opts.cursor) {
@@ -845,5 +889,11 @@ export class FakeMembersGateway implements MembersGateway {
   showcaseNotifications: ShowcasePublishedArgs[] = []
   async notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void> {
     this.showcaseNotifications.push(args)
+  }
+
+  /** Registra as notificações do DESAFIO do mês (XP + badge) — best-effort. */
+  challengeNotifications: ChallengeEntryArgs[] = []
+  async notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void> {
+    this.challengeNotifications.push(args)
   }
 }

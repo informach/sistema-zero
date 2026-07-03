@@ -297,6 +297,9 @@ export async function createApplication(env: Env): Promise<Application> {
     readAuditLog,
     createImpersonationToken,
     exchangeImpersonationToken,
+    // Report dos pais (S2S members): identidade mínima em lote.
+    users,
+    profilesRepo,
     profiles: {
       listProfiles,
       createProfile,

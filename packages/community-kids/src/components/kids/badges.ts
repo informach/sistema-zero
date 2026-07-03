@@ -31,6 +31,11 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     description: 'Você concluiu a sua primeira aula!',
     icon: Sparkles,
   },
+  'first-showcase': {
+    title: 'Meu primeiro jogo',
+    description: 'Você publicou o seu primeiro jogo no Mural! Tem até troféu no seu quarto.',
+    icon: Gamepad2,
+  },
   'streak-7': {
     title: 'Semana em chamas',
     description: '7 dias seguidos aprendendo!',

@@ -291,11 +291,14 @@ export interface MissionClaimView {
   coinBalance: number
 }
 
-/** Um item/tema do catálogo do quarto na visão do aluno (lojinha/editor). */
+/**
+ * Um item/tema do catálogo do quarto na visão do aluno (lojinha/editor).
+ * `tier: 'trophy'` (07/2026) = NÃO-comprável, GANHO por conquista (badge mapeada).
+ */
 export interface RoomItemView {
   id: string
   category: RoomItemCategory
-  tier: 'free' | 'coins'
+  tier: 'free' | 'coins' | 'trophy'
   price: number
   owned: boolean
   locked: boolean

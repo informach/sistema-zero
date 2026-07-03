@@ -1,4 +1,5 @@
-import { Flame, Sparkles, Trophy } from 'lucide-react'
+import { Flame, Gamepad2, Sparkles, Trophy } from 'lucide-react'
+import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import { levelInfo, nextLevelHint } from '@/lib/level-info'
 import type { GamificationMeView } from '@/lib/types'
@@ -16,9 +17,12 @@ import { LevelBadge } from './level-badge'
 export function CreatorCareerCard({
   gamification,
   avatarPhotoUrl = null,
+  showcaseStats = null,
 }: {
   gamification: GamificationMeView | null
   avatarPhotoUrl?: string | null
+  /** Jogos publicados no Mural + soma das jogadas (best-effort; null = linha some). */
+  showcaseStats?: { published: number; plays: number } | null
 }) {
   if (!gamification) {
     return (
@@ -99,6 +103,23 @@ export function CreatorCareerCard({
         />
         {streakMessage}
       </p>
+      {showcaseStats && showcaseStats.published > 0 ? (
+        <p className="mt-2 flex flex-wrap items-center gap-2 text-muted-foreground text-sm">
+          <Gamepad2 className="size-4 shrink-0 text-primary" />
+          <span>
+            {showcaseStats.plays === 1
+              ? 'Seus jogos já foram jogados 1 vez!'
+              : `Seus jogos já foram jogados ${showcaseStats.plays} vezes!`}
+          </span>
+          <Link
+            href="/perfil"
+            prefetch={false}
+            className="font-bold text-primary underline-offset-2 hover:underline"
+          >
+            Ver minha carreira
+          </Link>
+        </p>
+      ) : null}
     </section>
   )
 }

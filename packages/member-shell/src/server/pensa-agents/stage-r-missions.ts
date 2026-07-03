@@ -180,6 +180,9 @@ const MissionSchema = z.object({
       categories: z.array(z.string()),
       blocks: z.array(z.string()),
       doneWhen: z.array(z.string()),
+      // Missão de ARTE (07/2026): 'sprite'|'background'|'tileset' abre o Pinta
+      // pré-configurado; string vazia = missão normal (o modo strict exige o campo).
+      artKind: z.string(),
     }),
   ),
 })
@@ -203,12 +206,14 @@ const MISSIONS_JSON_SCHEMA = {
           'categories',
           'blocks',
           'doneWhen',
+          'artKind',
         ],
         properties: {
           title: { type: 'string' },
           summary: { type: 'string' },
           taskType: { type: 'string' },
           story: { type: 'string' },
+          artKind: { type: 'string' },
           steps: {
             type: 'array',
             items: {
@@ -239,8 +244,11 @@ export function missionsSystem(input: {
   mode: 'kids' | 'adult'
   cycleNumber: number
   buildEnv?: 'embedded' | 'studio' | 'external' | null
+  /** Criança POSSUI o Pinta → o plano ganha 1–2 missões de ARTE (artKind). */
+  includeArtMissions?: boolean
 }): string {
   const external = input.buildEnv === 'external'
+  const art = input.includeArtMissions === true && !external
   const catalog = STUDIO_CATEGORY_HINTS.map((c) => `- ${c}`).join('\n')
   const blockCatalog = STUDIO_BLOCK_HINTS.map(
     ([category, labels]) => `- ${category}: ${labels.map((label) => `"${label}"`).join(' · ')}`,
@@ -265,7 +273,19 @@ export function missionsSystem(input: {
 - categories: 1 a 3 categorias do CATÁLOGO DE CATEGORIAS abaixo (nomes EXATOS — não invente categoria).
 - blocks: 1 a 4 blocos que ajudam, citando o label EXATO do CATÁLOGO DE BLOCOS abaixo, entre aspas (ex.: "Controlar o dinossauro", "Quando apertar a tecla"). Se precisar de um bloco que não está no catálogo, descreva-o em linguagem natural — NUNCA invente um label. Quando um passo usa um bloco, o hint diz a categoria onde achar (ex.: "procure em Jogo 2D › 🕹️ Movimento").`
     }
-- doneWhen: 1 a 3 critérios OBSERVÁVEIS que a criança consegue checar jogando, usando os elementos NOMEADOS do jogo ("O Dino Espacial pula quando aperto espaço") — nunca "o personagem".`,
+- doneWhen: 1 a 3 critérios OBSERVÁVEIS que a criança consegue checar jogando, usando os elementos NOMEADOS do jogo ("O Dino Espacial pula quando aperto espaço") — nunca "o personagem".
+- artKind: ${
+      art
+        ? 'SOMENTE nas missões de ARTE (ver regra abaixo), um de sprite|background|tileset; nas demais missões, string vazia ""'
+        : 'SEMPRE string vazia ""'
+    }.`,
+    art
+      ? `MISSÕES DE ARTE (a criança TEM o Pinta, o ateliê de desenho do Sistema Zero):
+- Inclua 1 ou 2 missões de DESENHO logo após a primeira missão: desenhar o personagem principal (artKind "sprite") e, se o plano tiver cenário próprio, o fundo (artKind "background").
+- Os passos citam o Pinta: abrir pelo botão "Desenhar no Pinta" da missão, criar o desenho usando as CORES DA PALETA do jogo, e apertar "🚀 Usar no Estúdio" no final (o desenho aparece em "Meus desenhos" no painel de Imagens do Estúdio).
+- Missão de arte: categories [] e blocks [] (o trabalho é no Pinta, não nos blocos).
+- doneWhen da missão de arte é observável no Pinta/Estúdio ("O Dino Espacial aparece em Meus desenhos").`
+      : '',
     external
       ? ''
       : `ARQUITETURA REAL DE UM JOGO NO ESTÚDIO (siga esta ordem no plano E dentro dos passos):
@@ -298,13 +318,19 @@ ESCOLHA DO KIT: se a mecânica principal bate com um Kit, use os blocos DELE nas
     .join('\n\n')
 }
 
+const ART_KINDS = ['sprite', 'background', 'tileset'] as const
+const HEX_RE = /^#[0-9a-f]{6}$/i
+
 /** Clamps pós-validação + montagem do shape `PensaMission` do contrato. */
 export function clampMissions(
   raw: z.infer<typeof MissionSchema>,
   external = false,
+  /** Paleta da identidade (hex) — anexada SÓ às missões de arte (abre o Pinta já colorido). */
+  palette: string[] = [],
 ): MissionPlanTask[] {
   const clip = (s: string, n: number) => s.trim().slice(0, n)
   const validCategories = new Set<string>(STUDIO_CATEGORY_HINTS)
+  const safePalette = palette.filter((c) => HEX_RE.test(c)).slice(0, 8)
   return raw.tasks.slice(0, 12).map((t) => {
     const steps = t.steps.slice(0, 12).map((s) => {
       const hint = clip(s.hint, 160)
@@ -316,6 +342,12 @@ export function clampMissions(
       .map((d) => clip(d, 160))
       .filter(Boolean)
       .slice(0, 3)
+    // Missão de ARTE (07/2026): artKind válido carrega o tipo + a paleta do jogo
+    // (o kids abre o Pinta pré-configurado). Fora do external — lá não há Pinta.
+    const artKind =
+      !external && (ART_KINDS as readonly string[]).includes(t.artKind.trim())
+        ? (t.artKind.trim() as (typeof ART_KINDS)[number])
+        : undefined
     return {
       title: clip(t.title, 200) || 'Missão',
       summary: clip(t.summary, 300),
@@ -332,6 +364,8 @@ export function clampMissions(
           ? { studioHints: { categories: categories.slice(0, 3), blocks: blocks.slice(0, 4) } }
           : {}),
         doneWhen: doneWhen.length > 0 ? doneWhen : ['Ficou do jeito que você imaginou'],
+        ...(artKind ? { artKind } : {}),
+        ...(artKind && safePalette.length > 0 ? { palette: safePalette } : {}),
       },
     }
   })
@@ -348,6 +382,8 @@ export async function synthesizeMissions(input: {
   identity?: { name?: string; palette?: { colors?: string[] } } | null
   /** Onde a criança constrói — 'external' gera missões SEM Estúdio/blocos. */
   buildEnv?: 'embedded' | 'studio' | 'external' | null
+  /** Criança POSSUI o Pinta → o plano ganha 1–2 missões de ARTE (artKind). */
+  includeArtMissions?: boolean
 }): Promise<MissionPlanTask[]> {
   const user = [
     `Jogo: "${input.identity?.name ?? input.projectName}" (Versão ${input.cycleNumber}).`,
@@ -367,6 +403,7 @@ export async function synthesizeMissions(input: {
       mode: input.mode,
       cycleNumber: input.cycleNumber,
       buildEnv: input.buildEnv,
+      includeArtMissions: input.includeArtMissions,
     }),
     user,
     schema: MissionSchema,
@@ -375,7 +412,11 @@ export async function synthesizeMissions(input: {
     maxTokens: 6_000,
     temperature: 0.4,
   })
-  const tasks = clampMissions(raw, input.buildEnv === 'external')
+  const tasks = clampMissions(
+    raw,
+    input.buildEnv === 'external',
+    input.identity?.palette?.colors ?? [],
+  )
   if (tasks.length === 0) throw new Error('Plano de missões vazio')
   return tasks
 }

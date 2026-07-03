@@ -5,8 +5,10 @@ import type { EquipAvatarService } from '../../../application/avatar/equip-avata
 import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
 import type { SetAvatarPhotoService } from '../../../application/avatar/set-avatar-photo.service'
 import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
+import type { ParentReportPrefsService } from '../../../application/parent-report/report-prefs.service'
 import type { BuyStreakFreezeService } from '../../../application/gamification/buy-streak-freeze.service'
 import type { ClaimMissionService } from '../../../application/gamification/claim-mission.service'
+import type { GetChallengeService } from '../../../application/gamification/get-challenge.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetLeagueService } from '../../../application/gamification/get-league.service'
 import type { GetMissionsService } from '../../../application/gamification/get-missions.service'
@@ -57,6 +59,7 @@ import {
   GamificationQuery,
   LessonIdParams,
   MissionSlugParams,
+  ParentReportPrefsBody,
   PublicProfileParams,
   parseAccessRefs,
   parseProfileIds,
@@ -101,12 +104,14 @@ export interface MembersRoutesDeps {
   getCourseRating: GetCourseRatingService
   saveCourseRating: SaveCourseRatingService
   getGamification: GetGamificationService
+  getChallenge: GetChallengeService
   getMissions: GetMissionsService
   claimMission: ClaimMissionService
   buyStreakFreeze: BuyStreakFreezeService
   setVacation: SetVacationService
   getLeague: GetLeagueService
   childrenStats: GetChildrenStatsService
+  parentReportPrefs: ParentReportPrefsService
   getAvatar: GetAvatarService
   buyAvatarPart: BuyAvatarPartService
   equipAvatar: EquipAvatarService
@@ -232,6 +237,15 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           })
         },
         { query: GamificationQuery },
+      )
+      // Desafio do MÊS (game jam): tema determinístico global + `entered` do perfil.
+      // A posse (Clube+Estúdio) gateia só a UI (via /members/access); o gate REAL do
+      // publish com a tag é o do hub.
+      .get(
+        '/gamification/challenge',
+        async ({ headers, query }) =>
+          deps.getChallenge.execute(resolveUserId(headers), query.audience ?? 'kids'),
+        { query: AudienceQuery },
       )
       // ── Missões (diárias/semanais) — recurso do PRÓPRIO perfil ──────────────
       .get(
@@ -406,6 +420,17 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           }
         },
         { query: ChildrenStatsQuery },
+      )
+      // Preferência do REPORT SEMANAL dos pais (opt-out). Keyada na CONTA — em
+      // sessão de perfil o userId é o perfil e não acha pref nenhuma (a criança
+      // não desliga o report dos pais); o BFF gateia atrás do portão de senha.
+      .get('/parents/report-prefs', async ({ headers }) =>
+        deps.parentReportPrefs.get(resolveUserId(headers)),
+      )
+      .put(
+        '/parents/report-prefs',
+        async ({ headers, body }) => deps.parentReportPrefs.set(resolveUserId(headers), body.disabled),
+        { body: ParentReportPrefsBody },
       )
       .get(
         '/courses/:slug',

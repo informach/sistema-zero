@@ -360,6 +360,35 @@ const seeds = [
       '🔒 _Nunca compartilhe este código — nossa equipe jamais vai pedi-lo. Se você não solicitou, ignore esta mensagem._',
     ].join('\n'),
   },
+  // Report SEMANAL dos pais (kids, Fase 5 07/2026) — enviado pelo MEMBERS (consumer
+  // HMAC `members` no gateway) toda sexta 17h SP, com a semana corrente parcial.
+  // CONTRATO de variáveis com o members (send-parent-reports): NÃO renomear sem
+  // mudar o chamador. `resumo` é TEXTO com quebras de linha (o render escapa HTML;
+  // o bloco pre-wrap preserva as quebras).
+  {
+    key: 'weekly-report',
+    channel: 'email' as const,
+    name: 'Resumo semanal para os pais (e-mail)',
+    subject: 'Essa semana no Sistema Zero: as conquistas de {{criancas}} 🌟',
+    variables: ['nome', 'criancas', 'semana', 'resumo', 'link'],
+    body: emailLayout({
+      preheader: 'O resumo da semana de aprendizado e criação das crianças.',
+      title: 'Olá, {{nome}}! Veja como foi a semana 🌟',
+      content: [
+        p(
+          'Este é o resumo da semana ({{semana}}) de <strong>{{criancas}}</strong> no <strong>Sistema Zero</strong>:',
+        ),
+        `<div class="codebox" style="white-space:pre-wrap;font-family:${FONT};font-size:15px;line-height:24px;color:${TEXT};background:${BOX_BG};border:1px solid ${BORDER};border-radius:12px;padding:16px 20px;margin:20px 0;">{{resumo}}</div>`,
+        ctaButton('Ver na plataforma', '{{link}}'),
+        divider,
+        small(
+          'Para deixar de receber este resumo semanal, desative-o na <strong>Área dos pais</strong> da plataforma.',
+        ),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque há um perfil de criança ativo na sua conta do Sistema Zero.',
+    }),
+  },
 ]
 
 // ── Upsert ────────────────────────────────────────────────────────────────────

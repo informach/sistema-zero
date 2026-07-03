@@ -217,6 +217,12 @@ export async function createApplication(env: Env): Promise<Application> {
       webhookSecret: env.GATEWAY_HMAC_SECRET,
       toleranceSeconds: env.HMAC_TOLERANCE_SECONDS,
     },
+    // S2S direto members→hub (HMAC — report dos pais). NUNCA expor no gateway.
+    internal: {
+      showcase: showcaseService,
+      webhookSecret: env.GATEWAY_HMAC_SECRET,
+      toleranceSeconds: env.HMAC_TOLERANCE_SECONDS,
+    },
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null

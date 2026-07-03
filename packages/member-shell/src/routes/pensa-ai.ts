@@ -529,6 +529,16 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             { status: 409 },
           )
         }
+        // Missões de ARTE só quando a criança POSSUI o Pinta (produtos são vendidos
+        // à parte — sem posse, nada de missão apontando p/ porta fechada). Best-effort:
+        // falha na checagem = sem missões de arte (o plano segue completo).
+        let includeArtMissions = false
+        try {
+          const access = await members.checkPintaAccessReadonly()
+          includeArtMissions = access.status === 200 && access.body?.access?.pinta === true
+        } catch {
+          // sem posse confirmada → sem missões de arte
+        }
         try {
           const tasks = await synthesizeMissions({
             mode: 'kids',
@@ -539,6 +549,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             friendlySpec: friendly,
             identity: identity ?? null,
             buildEnv: onR.project.buildEnv ?? null,
+            includeArtMissions,
           })
           const replaced = await members.pensaReplaceTasks(cycleId, tasks)
           if (replaced.status !== 200 || !replaced.body) {

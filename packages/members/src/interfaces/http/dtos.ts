@@ -193,6 +193,11 @@ export const ChildrenStatsQuery = t.Object({
   audience: t.Optional(AUDIENCE),
 })
 
+/** Corpo de `PUT /members/parents/report-prefs` — opt-out do resumo semanal. */
+export const ParentReportPrefsBody = t.Object({
+  disabled: t.Boolean(),
+})
+
 /**
  * Query da rota S2S `GET /members/internal/showcase-eligibility` (consumida pelo
  * `@sistemazero/hub` ao auto-publicar no Mural): elegibilidade + conteúdo AUTORITATIVO
@@ -243,6 +248,18 @@ export const ShowcaseWebhookBody = t.Object({
   accountId: UUID,
   courseId: UUID,
   audience: AUDIENCE,
+})
+
+/**
+ * Corpo de `POST /members/webhooks/challenge` — o HUB avisa que o aluno publicou no
+ * Mural com a tag do DESAFIO do mês (posse Clube+Estúdio já validada lá). O members
+ * revalida o MÊS e degrada com 200 sem award em mismatch (nunca 5xx — retry martelaria).
+ */
+export const ChallengeWebhookBody = t.Object({
+  userId: UUID,
+  accountId: UUID,
+  audience: AUDIENCE,
+  challengeKey: t.String({ pattern: '^m:\\d{4}-\\d{2}$' }),
 })
 
 /** Corpo de `PUT /members/courses/:slug/lessons/:lessonId/position` (throttled no client). */
@@ -421,6 +438,13 @@ const PensaMissionSchema = t.Object({
   ),
   /** 1–3 critérios observáveis de "pronto". */
   doneWhen: t.Array(t.String({ minLength: 1, maxLength: 300 }), { minItems: 1, maxItems: 3 }),
+  // Missão de ARTE (07/2026): abre o Pinta pré-configurado no kids. Sem o campo
+  // AQUI o TypeBox o removeria em silêncio antes do jsonb (gargalo do contrato).
+  artKind: t.Optional(
+    t.Union([t.Literal('sprite'), t.Literal('background'), t.Literal('tileset')]),
+  ),
+  /** Paleta do jogo (hex) que acompanha a missão de arte (≤8 cores). */
+  palette: t.Optional(t.Array(t.String({ maxLength: 20 }), { maxItems: 8 })),
 })
 
 // REPLACE total das tasks. O teto de NEGÓCIO (≤60 → 409 PENSA_QUOTA_EXCEEDED) é

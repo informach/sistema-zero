@@ -14,6 +14,7 @@ import {
   Sprout,
   Sun,
   Trash2,
+  Trophy,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -26,6 +27,7 @@ import {
   ROOM_THEME_INFO,
   ROOM_WALL_PALETTE,
   resolveRoomAppearance,
+  TROPHY_HINT,
 } from '@/lib/room-catalog'
 import type { RoomEditorView, RoomItemView, RoomStateView, RoomThemeView } from '@/lib/types'
 import { KidsMascot } from '../mascot'
@@ -38,6 +40,7 @@ const PLACEABLE: ReadonlySet<string> = new Set(['furniture', 'decor', 'plant', '
 type TabId =
   | 'moveis'
   | 'enfeites'
+  | 'trofeus'
   | 'plantas'
   | 'luzes'
   | 'piso'
@@ -50,6 +53,8 @@ type LoadState = 'loading' | 'ready' | 'error'
 const TABS: { id: TabId; label: string; icon: typeof Sofa }[] = [
   { id: 'moveis', label: 'Móveis', icon: Sofa },
   { id: 'enfeites', label: 'Enfeites', icon: Frame },
+  // 🏆 Troféus (07/2026): ganhos por conquista — a estante de troféus viva.
+  { id: 'trofeus', label: 'Troféus', icon: Trophy },
   { id: 'plantas', label: 'Plantas', icon: Sprout },
   { id: 'luzes', label: 'Luzes', icon: Lightbulb },
   { id: 'piso', label: 'Piso', icon: LayoutGrid },
@@ -684,7 +689,10 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     if (!data) return null
     const cat = CAT_BY_TAB[tab]
     if (cat) {
-      const items = data.items.filter((i) => PLACEABLE.has(i.category) && i.category === cat)
+      // Troféus ficam FORA das bandejas de compra (têm bandeja própria 🏆).
+      const items = data.items.filter(
+        (i) => PLACEABLE.has(i.category) && i.category === cat && i.tier !== 'trophy',
+      )
       return (
         <ShopGrid
           items={items}
@@ -693,6 +701,15 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
           confirmingId={confirmBuyId}
           onPick={addItem}
           onBuy={buy}
+        />
+      )
+    }
+    if (tab === 'trofeus') {
+      return (
+        <TrophyTray
+          trophies={data.items.filter((i) => i.tier === 'trophy')}
+          owned={isOwned}
+          onPick={addItem}
         />
       )
     }
@@ -815,6 +832,64 @@ function ShopGrid({
           </button>
         )
       })}
+    </div>
+  )
+}
+
+/**
+ * Bandeja 🏆 dos troféus (07/2026): ganhos por CONQUISTA, nunca comprados. Ganho =
+ * posicionável como qualquer enfeite; travado = cadeado + a DICA de como ganhar
+ * (TROPHY_HINT) no lugar do preço.
+ */
+function TrophyTray({
+  trophies,
+  owned,
+  onPick,
+}: {
+  trophies: RoomItemView[]
+  owned: (id: string) => boolean
+  onPick: (item: RoomItemView) => void
+}) {
+  if (trophies.length === 0) return <Empty />
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="font-semibold text-muted-foreground text-sm">
+        Suas conquistas viram troféus de verdade no quarto! 🏆
+      </p>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {trophies.map((t) => {
+          const info = ROOM_ITEM_INFO[t.id]
+          if (!info) return null
+          const has = owned(t.id)
+          return has ? (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => onPick(t)}
+              className="flex flex-col items-center gap-1 rounded-2xl border-2 border-(--kids-lime) bg-(--kids-lime-tint) p-2 text-xs transition-colors hover:border-primary"
+            >
+              <span className="text-2xl" aria-hidden="true">
+                {info.emoji}
+              </span>
+              <span className="truncate font-semibold">{info.labelPt}</span>
+              <span className="text-muted-foreground">Conquistado!</span>
+            </button>
+          ) : (
+            <div
+              key={t.id}
+              className="flex flex-col items-center gap-1 rounded-2xl border-2 border-border border-dashed p-2 text-center text-xs opacity-80"
+            >
+              <span className="grid size-8 place-items-center" aria-hidden="true">
+                <Lock className="size-5 text-muted-foreground" />
+              </span>
+              <span className="truncate font-semibold">{info.labelPt}</span>
+              <span className="text-muted-foreground">
+                {TROPHY_HINT[t.id] ?? 'Continue criando!'}
+              </span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

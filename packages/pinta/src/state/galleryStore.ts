@@ -20,10 +20,12 @@ import {
   PINTA_LIMITS,
   type PintaAsset,
   type PintaAssetStyle,
+  type PintaProjectRef,
+  sanitizeProjectRef,
 } from '../core/project'
 import { deleteAsset, listAllAssets, persistAsset } from './persistence'
 
-export type NewAssetInput =
+export type NewAssetInput = (
   | { kind: 'pixel-sprite'; name: string; frameSize: number }
   | { kind: 'pixel-background'; name: string; width: number; height: number }
   | { kind: 'tileset'; name: string; tileSize: number }
@@ -31,6 +33,10 @@ export type NewAssetInput =
   | { kind: 'vector-sprite'; name: string; frameSize: number }
   | { kind: 'vector-background'; name: string; width: number; height: number }
   | { kind: 'vector-tileset'; name: string; tileSize: number }
+) & {
+  /** Vínculo com o projeto do Pensa (agrupa a galeria; paleta nos swatches do vetor). */
+  projectRef?: PintaProjectRef
+}
 
 export interface PintaGalleryState {
   assets: PintaAsset[]
@@ -83,6 +89,14 @@ function uniqueName(base: string, taken: Set<string>): string | null {
 }
 
 function buildAsset(input: NewAssetInput, name: string): PintaAsset {
+  const built = buildAssetByKind(input, name)
+  // Vínculo com o projeto do Pensa (07/2026): passa pelo MESMO portão do load
+  // (hex minúsculo, teto de nome/cores) p/ o asset nascer igual ao round-trip.
+  const projectRef = sanitizeProjectRef(input.projectRef)
+  return projectRef ? { ...built, projectRef } : built
+}
+
+function buildAssetByKind(input: NewAssetInput, name: string): PintaAsset {
   switch (input.kind) {
     case 'pixel-sprite':
       return createPixelSpriteAsset({ name, frameSize: input.frameSize })

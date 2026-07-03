@@ -1165,3 +1165,87 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     expect(res.status).toBe(401)
   })
 })
+
+describe('Desafio do mês (game jam) — webhook /challenge + rota do aluno', () => {
+  // Clock default do buildApp: 2026-06-02T12:00Z → SP 2026-06-02 → m:2026-06.
+  const MONTH = 'm:2026-06'
+
+  const postChallenge = (app: App, body: object, deliveryId: string = randomUUID()) => {
+    const raw = JSON.stringify(body)
+    return app.handle(
+      new Request('http://localhost/members/webhooks/challenge', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/challenge', raw, deliveryId),
+        body: raw,
+      }),
+    )
+  }
+
+  const getChallenge = (app: App) =>
+    app.handle(
+      new Request('http://localhost/members/gamification/challenge?audience=kids', {
+        headers: authHeaders,
+      }),
+    )
+
+  test('rota do aluno: tema determinístico do mês + entered=false sem marco', async () => {
+    const { app } = buildApp()
+    const me = await readJson(await getChallenge(app))
+    expect(me.challenge.key).toBe(MONTH)
+    expect(typeof me.challenge.title).toBe('string')
+    expect(me.entered).toBe(false)
+  })
+
+  test('webhook do mês corrente: XP + badge challenge-first + entered=true', async () => {
+    const { app } = buildApp()
+    const res = await postChallenge(app, {
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      challengeKey: MONTH,
+    })
+    expect(res.status).toBe(200)
+
+    const challenge = await readJson(await getChallenge(app))
+    expect(challenge.entered).toBe(true)
+
+    const me = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids', {
+          headers: authHeaders,
+        }),
+      ),
+    )
+    expect(me.xp).toBe(50)
+    const badge = me.badges.find((b: { slug: string }) => b.slug === 'challenge-first')
+    expect(badge?.unlockedAt).not.toBeNull()
+  })
+
+  test('2ª publicação no MESMO mês não duplica o XP (sourceId determinístico)', async () => {
+    const { app } = buildApp()
+    const body = { userId: USER, accountId: USER, audience: 'kids', challengeKey: MONTH }
+    await postChallenge(app, body)
+    await postChallenge(app, body) // delivery-id novo → passa o dedupe de webhook
+    const me = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids', {
+          headers: authHeaders,
+        }),
+      ),
+    )
+    expect(me.xp).toBe(50)
+  })
+
+  test('mês ERRADO (retry atrasado/skew) → 200 ignored, sem award', async () => {
+    const { app } = buildApp()
+    const res = await postChallenge(app, {
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      challengeKey: 'm:2026-05',
+    })
+    expect(res.status).toBe(200)
+    expect((await readJson(res)).ignored).toBe(true)
+    expect((await readJson(await getChallenge(app))).entered).toBe(false)
+  })
+})

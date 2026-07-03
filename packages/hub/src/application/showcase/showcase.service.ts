@@ -22,6 +22,23 @@ const MAX_STUDIO_DESCRIPTION = 280
  * standalone. Fixo como `MURAL_SPACE_SLUG`/`showcaseChannelSlug` — muda junto com o catálogo.
  */
 const STUDIO_STANDALONE_ACCESS_REF = 'estudio-completo'
+/**
+ * Ref do produto "Clube dos Criadores" — junto do Estúdio, é a POSSE exigida p/
+ * participar do DESAFIO do mês (decisão da usuária: game jam MENSAL só p/ quem
+ * tem os dois). Fixa como o slug do produto no catálogo/hub.
+ */
+const CHALLENGE_CLUB_REF = 'clube-dos-criadores'
+
+const CHALLENGE_KEY_RE = /^m:\d{4}-\d{2}$/
+// `m:YYYY-MM` do mês civil de São Paulo — MESMA régua do members (challenges.ts).
+const SP_MONTH_FORMAT = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Sao_Paulo',
+  year: 'numeric',
+  month: '2-digit',
+})
+function currentChallengeKey(now: Date): string {
+  return `m:${SP_MONTH_FORMAT.format(now)}`
+}
 
 export interface CreateShowcaseCommand {
   /** Slug do servidor do Mural (ex.: `mural-dos-criadores`). */
@@ -57,6 +74,12 @@ export interface CreateStandaloneShowcaseCommand {
   playId: string
   /** Chave de idempotência gerada no cliente (UUID) — dedup-a duplo-clique/retry. */
   clientIdempotencyKey: string
+  /**
+   * Tag do DESAFIO do mês (`m:YYYY-MM`) — o hub VALIDA (posse Clube+Estúdio + mês
+   * corrente em SP) e, reprovada, grava o post SEM a tag (drop silencioso: a
+   * publicação da criança NUNCA falha por causa do desafio).
+   */
+  challengeKey?: string | null
 }
 
 /**
@@ -180,9 +203,33 @@ export class ShowcaseService {
     return { thread: toThreadView(thread), deduped }
   }
 
-  /** Link público `/jogar/:playId` só vale enquanto o post do Mural segue visível. */
-  async isPlayable(playId: string): Promise<boolean> {
-    return this.threads.hasVisibleShowcasePlayId(playId)
+  /**
+   * Link público `/jogar/:playId` só vale enquanto o post do Mural segue visível.
+   * `countHit` funde o incremento de `playsCount` na MESMA ida (o BFF já deduplicou
+   * por ip:playId — o hub não conhece o IP real de quem joga).
+   */
+  async isPlayable(playId: string, countHit = false): Promise<boolean> {
+    return this.threads.hasVisibleShowcasePlayId(playId, countHit)
+  }
+
+  /** Carreira do aluno: quantos jogos publicados (visíveis) + soma das jogadas. */
+  async myShowcaseStats(actor: Actor): Promise<{ published: number; plays: number }> {
+    // `authorId` das threads de vitrine é o PERFIL (actor.userId) — mesma identidade
+    // usada na criação; a agregação nunca vaza dados de outros autores.
+    return this.threads.showcaseStatsByAuthor(actor.userId)
+  }
+
+  /**
+   * Report dos pais (members→hub S2S, rota HMAC — NUNCA exposta no gateway):
+   * posts de vitrine visíveis dos PERFIS dados na janela. O members é quem
+   * garante que os authorIds são os filhos da conta.
+   */
+  async showcaseByAuthors(
+    authorIds: string[],
+    from: Date,
+    to: Date,
+  ): Promise<Array<{ authorId: string; title: string; playId: string | null; createdAt: Date }>> {
+    return this.threads.listShowcaseByAuthors(authorIds, from, to)
   }
 
   /**
@@ -293,21 +340,35 @@ export class ShowcaseService {
   ): Promise<{ thread: ThreadView; deduped: boolean }> {
     // Elegibilidade = posse do produto do Estúdio (acesso pela CONTA). Fail-closed:
     // um erro transitório no members NÃO libera a publicação (o gateway re-entrega).
+    // Com tag de DESAFIO, a MESMA chamada também resolve a posse do Clube (1 ida).
+    const wantsChallenge = Boolean(cmd.challengeKey)
+    const refs = wantsChallenge
+      ? [STUDIO_STANDALONE_ACCESS_REF, CHALLENGE_CLUB_REF]
+      : [STUDIO_STANDALONE_ACCESS_REF]
     let owns = false
+    let ownsClub = false
     try {
-      const access = await this.members.checkAccess(
-        actor.accountId,
-        [STUDIO_STANDALONE_ACCESS_REF],
-        [STUDIO_STANDALONE_ACCESS_REF],
-      )
-      owns =
-        access.granted.includes(STUDIO_STANDALONE_ACCESS_REF) ||
-        access.communities.includes(STUDIO_STANDALONE_ACCESS_REF) ||
-        access.hasMasterKids
+      const access = await this.members.checkAccess(actor.accountId, refs, refs)
+      const has = (ref: string) =>
+        access.granted.includes(ref) || access.communities.includes(ref) || access.hasMasterKids
+      owns = has(STUDIO_STANDALONE_ACCESS_REF)
+      ownsClub = has(CHALLENGE_CLUB_REF)
     } catch {
       owns = false
     }
     if (!owns) throw new PostingNotAllowedError('Sem acesso ao Estúdio para publicar')
+
+    // Tag do desafio: formato + mês CORRENTE (SP, recomputado aqui — o corpo não
+    // dita o mês) + posse do Clube. Reprovada → post SEM a tag (drop SILENCIOSO:
+    // a publicação da criança nunca falha por causa do desafio).
+    const challengeKey =
+      wantsChallenge &&
+      cmd.challengeKey &&
+      CHALLENGE_KEY_RE.test(cmd.challengeKey) &&
+      cmd.challengeKey === currentChallengeKey(this.clock()) &&
+      ownsClub
+        ? cmd.challengeKey
+        : null
 
     // Destino: o Mural kids + parede curada (mesmas guardas das outras publicações).
     const space = await this.read.findActiveSpaceBySlug(cmd.spaceSlug)
@@ -357,9 +418,21 @@ export class ShowcaseService {
       body,
       coverImageUrl,
       playId: cmd.playId,
+      challengeKey,
       idempotencyKey,
       now: this.clock(),
     })
+    // Desafio do mês: avisa o members (XP + badge) SÓ quando a thread nasceu/existe
+    // com a tag — fire-and-forget best-effort como o notifyShowcasePublished; o
+    // members deduplica por mês (mesmo no `deduped` a notificação recupera uma 1ª falha).
+    if (thread.challengeKey) {
+      void this.members.notifyChallengeEntry({
+        userId: actor.userId,
+        accountId: actor.accountId,
+        audience: 'kids',
+        challengeKey: thread.challengeKey,
+      })
+    }
     return { thread: toThreadView(thread), deduped }
   }
 }

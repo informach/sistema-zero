@@ -40,7 +40,8 @@ export class GetRoomService {
       tier: i.tier,
       price: i.price,
       owned: i.tier === 'free' || ownedSet.has(i.id),
-      locked: i.tier === 'coins' && !ownedSet.has(i.id),
+      // `coins` trava até comprar; `trophy` (07/2026) trava até GANHAR a conquista.
+      locked: i.tier !== 'free' && !ownedSet.has(i.id),
     }))
     // Temas/pisos/luzes compartilham o shape {id,tier,price} → mesma projeção.
     const choices = (list: readonly RoomThemeDef[]): RoomThemeView[] =>

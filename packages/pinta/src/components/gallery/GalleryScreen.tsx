@@ -4,9 +4,10 @@
  * carregando/vazio/erro com retry.
  */
 import type { JSX } from 'react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
-import { isTilesetKind } from '../../core/project'
+import { isTilesetKind, type PintaAsset } from '../../core/project'
+import type { PintaInitialIntent } from '../../core/types'
 import { triggerDownload } from '../../export/download'
 import { importPintaJson } from '../../export/projectJson'
 import { zipGallery } from '../../export/zip'
@@ -15,10 +16,26 @@ import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
-import { NewAssetDialog } from './NewAssetDialog'
+import { NewAssetDialog, type NewAssetRole } from './NewAssetDialog'
+
+/** Nome sugerido pela missão de arte (com sufixo se a criança já usou o base). */
+const ROLE_NAME_BASE: Record<NewAssetRole, string> = {
+  sprite: 'heroi',
+  background: 'cenario',
+  tileset: 'pecas',
+}
+
+function suggestName(role: NewAssetRole, taken: ReadonlySet<string>): string {
+  const base = ROLE_NAME_BASE[role]
+  if (!taken.has(base)) return base
+  for (let n = 2; n <= 99; n += 1) {
+    if (!taken.has(`${base}-${n}`)) return `${base}-${n}`
+  }
+  return ''
+}
 
 export function GalleryScreen(): JSX.Element {
-  const { gallery, openAsset } = usePintaApp()
+  const { gallery, openAsset, takeInitialIntent } = usePintaApp()
   const { showToast } = useToast()
   const assets = usePintaGallery((state) => state.assets)
   const loaded = usePintaGallery((state) => state.loaded)
@@ -26,6 +43,17 @@ export function GalleryScreen(): JSX.Element {
   const loadError = usePintaGallery((state) => state.loadError)
   const [createOpen, setCreateOpen] = useState(false)
   const [creating, setCreating] = useState(false)
+  // Intent do Pensa (missão de arte): abre o "Criar novo" pré-configurado. É
+  // consumido no efeito (não no initializer) p/ o duplo-mount do StrictMode
+  // não engolir o intent; o segundo run recebe null e não faz nada.
+  const [intent, setIntent] = useState<PintaInitialIntent | null>(null)
+  useEffect(() => {
+    const taken = takeInitialIntent()
+    if (taken) {
+      setIntent(taken)
+      setCreateOpen(true)
+    }
+  }, [takeInitialIntent])
   const [renameId, setRenameId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
   const [removeId, setRemoveId] = useState<string | null>(null)
@@ -39,6 +67,48 @@ export function GalleryScreen(): JSX.Element {
   const lastStyle = usePintaGallery((state) => state.lastStyle)
   const findAsset = (id: string): (typeof assets)[number] | null =>
     assets.find((a) => a.id === id) ?? null
+
+  // Agrupamento por jogo do Pensa: a ordem das seções segue o asset mais
+  // recente (a lista já vem por updatedAt desc; o Map preserva a inserção).
+  const byProject = new Map<string, PintaAsset[]>()
+  const looseAssets: PintaAsset[] = []
+  for (const asset of assets) {
+    const projectName = asset.projectRef?.name
+    if (!projectName) {
+      looseAssets.push(asset)
+      continue
+    }
+    const list = byProject.get(projectName) ?? []
+    list.push(asset)
+    byProject.set(projectName, list)
+  }
+  const projectSections = [...byProject.entries()]
+
+  const renderCard = (asset: PintaAsset): JSX.Element => (
+    <AssetCard
+      key={asset.id}
+      asset={asset}
+      justCreated={asset.id === justCreatedId}
+      findAsset={findAsset}
+      onOpen={() => openAsset(asset.id)}
+      onRename={() => {
+        setRenameId(asset.id)
+        setRenameValue(asset.name)
+      }}
+      onDuplicate={() => {
+        void gallery
+          .getState()
+          .duplicate(asset.id)
+          .then((copy) => {
+            if (!copy) {
+              const error = gallery.getState().mutateError
+              if (error) showToast(error)
+            }
+          })
+      }}
+      onRemove={() => setRemoveId(asset.id)}
+    />
+  )
 
   async function handleDownloadAll(): Promise<void> {
     if (zipping) return
@@ -134,33 +204,34 @@ export function GalleryScreen(): JSX.Element {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {assets.map((asset) => (
-          <AssetCard
-            key={asset.id}
-            asset={asset}
-            justCreated={asset.id === justCreatedId}
-            findAsset={findAsset}
-            onOpen={() => openAsset(asset.id)}
-            onRename={() => {
-              setRenameId(asset.id)
-              setRenameValue(asset.name)
-            }}
-            onDuplicate={() => {
-              void gallery
-                .getState()
-                .duplicate(asset.id)
-                .then((copy) => {
-                  if (!copy) {
-                    const error = gallery.getState().mutateError
-                    if (error) showToast(error)
-                  }
-                })
-            }}
-            onRemove={() => setRemoveId(asset.id)}
-          />
-        ))}
-      </div>
+      {projectSections.length === 0 ? (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {assets.map(renderCard)}
+        </div>
+      ) : (
+        // Seções por jogo do Pensa (desenhos com projectRef) + avulsos no fim.
+        <div className="flex flex-col gap-6">
+          {projectSections.map(([projectName, sectionAssets]) => (
+            <section key={projectName} aria-label={projectName}>
+              <h2 className="mb-2 text-lg font-bold">
+                <span aria-hidden="true">🎮 </span>
+                {projectName}
+              </h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {sectionAssets.map(renderCard)}
+              </div>
+            </section>
+          ))}
+          {looseAssets.length > 0 ? (
+            <section aria-label={COPY.gallery.looseSection}>
+              <h2 className="mb-2 text-lg font-bold text-pin-muted">{COPY.gallery.looseSection}</h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {looseAssets.map(renderCard)}
+              </div>
+            </section>
+          ) : null}
+        </div>
+      )}
 
       {/* Montado só quando aberto: o passo de estilo nasce do lastStyle ATUAL. */}
       <NewAssetDialog
@@ -170,15 +241,26 @@ export function GalleryScreen(): JSX.Element {
         takenNames={new Set(assets.map((a) => a.name))}
         creating={creating}
         initialStyle={lastStyle}
-        onClose={() => setCreateOpen(false)}
+        initialRole={intent?.artKind ?? null}
+        initialName={
+          intent?.artKind ? suggestName(intent.artKind, new Set(assets.map((a) => a.name))) : ''
+        }
+        projectName={intent?.projectRef.name ?? null}
+        onClose={() => {
+          // Fechar descarta o intent: o próximo "Criar novo" volta ao normal.
+          setIntent(null)
+          setCreateOpen(false)
+        }}
         onCreate={(input) => {
           setCreating(true)
+          const projectRef = intent?.projectRef
           void gallery
             .getState()
-            .create(input)
+            .create(projectRef ? { ...input, projectRef } : input)
             .then((asset) => {
               setCreating(false)
               if (asset) {
+                setIntent(null)
                 setCreateOpen(false)
                 setJustCreatedId(asset.id)
                 openAsset(asset.id)

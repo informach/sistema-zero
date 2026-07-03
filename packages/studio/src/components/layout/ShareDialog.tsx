@@ -51,6 +51,8 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
   const [result, setResult] = useState<StudioShareResult | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [copied, setCopied] = useState(false)
+  // Desafio do mês: opt-in EXPLÍCITO da criança (checkbox; só com adapter.challenge).
+  const [joinChallenge, setJoinChallenge] = useState(false)
 
   const fileRef = useRef<HTMLInputElement | null>(null)
   // Gera o rascunho da descrição UMA vez por abertura (quando não há preset).
@@ -73,6 +75,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     setResult(null)
     setErrorMsg('')
     setCopied(false)
+    setJoinChallenge(false)
     describeStartedRef.current = false
   }, [
     open,
@@ -173,6 +176,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         description: description.trim().slice(0, MAX_DESCRIPTION),
         coverDataUrl: cover?.kind === 'image' ? cover.dataUrl : null,
         useAdminCover: cover?.kind === 'preset',
+        ...(adapter.challenge && joinChallenge ? { challengeKey: adapter.challenge.key } : {}),
       })
       .then((res) => {
         // Host com celebração própria (kids): entrega os links e SAI. Sem
@@ -418,6 +422,28 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
               />
             </div>
           </div>
+
+          {/* Desafio do mês (game jam) — só com adapter.challenge (posse Clube+Estúdio). */}
+          {adapter.challenge ? (
+            <label className="flex items-start gap-2 rounded-md border border-sz-border bg-sz-bg px-3 py-2">
+              <input
+                type="checkbox"
+                checked={joinChallenge}
+                onChange={(e) => setJoinChallenge(e.target.checked)}
+                disabled={publishing}
+                className="mt-0.5"
+              />
+              <span>
+                <span className="block font-medium text-sm text-sz-fg">
+                  <span aria-hidden="true">🏆 </span>
+                  {t('share.challenge.label', { title: adapter.challenge.title })}
+                </span>
+                {joinChallenge ? (
+                  <span className="block text-sz-fg-mute text-xs">{t('share.challenge.hint')}</span>
+                ) : null}
+              </span>
+            </label>
+          ) : null}
 
           <p
             role="alert"

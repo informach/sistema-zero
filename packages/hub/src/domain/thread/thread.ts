@@ -23,6 +23,10 @@ export interface Thread {
   coverImageUrl: string | null
   /** Id público do artefato jogável (UUID) — só na vitrine do Estúdio; `null` = sem link de jogar. */
   playId: string | null
+  /** Jogadas do link público (vaidade, best-effort — incrementado no resolve do /jogar). */
+  playsCount: number
+  /** Desafio mensal (game jam): `m:YYYY-MM` — só com posse Clube+Estúdio no mês certo. */
+  challengeKey: string | null
   lastActivityAt: Date
   createdAt: Date
   editedAt: Date | null

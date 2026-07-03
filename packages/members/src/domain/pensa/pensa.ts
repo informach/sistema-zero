@@ -135,6 +135,10 @@ export interface PensaMission {
   studioHints?: { categories: string[]; blocks: string[] }
   /** 1–3 critérios observáveis. */
   doneWhen: string[]
+  /** Missão de ARTE (07/2026): o kids abre o Pinta pré-configurado. */
+  artKind?: 'sprite' | 'background' | 'tileset'
+  /** Paleta do jogo (hex, ≤8) que acompanha a missão de arte. */
+  palette?: string[]
 }
 
 /** Card do kanban (missão). `position` = ordem DENTRO da coluna (densa, re-sequenciada). */

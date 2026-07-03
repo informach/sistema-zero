@@ -11,6 +11,7 @@ import type {
   CertificateIssueView,
   CertificateStateView,
   CertificateValidationView,
+  ChallengeMeView,
   ChildStatsView,
   CourseDetailView,
   CourseFeedbackAnswers,
@@ -32,6 +33,7 @@ import type {
   MissionsMeView,
   MyCourseView,
   Paginated,
+  ParentReportPrefsView,
   PaymentView,
   PensaArtifactType,
   PensaArtifactView,
@@ -93,6 +95,13 @@ export const PENSA_ACCESS_REF = 'pensa'
  * Estúdio Completo). ⚠️ Tem que casar com o slug do produto no catálogo.
  */
 export const PINTA_ACCESS_REF = 'pinta'
+
+/**
+ * Ref do produto "Clube dos Criadores" — junto do Estúdio, é a POSSE do DESAFIO
+ * do mês (game jam). ⚠️ Tem que casar com o `CHALLENGE_CLUB_REF` do hub e o slug
+ * do produto/servidor no catálogo.
+ */
+export const CLUB_ACCESS_REF = 'clube-dos-criadores'
 
 export type AuthClient = ReturnType<typeof createAuthClient>
 export type MembersClient = ReturnType<typeof createMembersClient>
@@ -282,6 +291,10 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     (): Promise<GatewayResponse<MissionsMeView>> =>
       gw.gatewayFetchReadonly('/members/gamification/missions/me', { query: { audience } }),
   )
+  const challengeReadonlyCached = cache(
+    (): Promise<GatewayResponse<ChallengeMeView>> =>
+      gw.gatewayFetchReadonly('/members/gamification/challenge', { query: { audience } }),
+  )
   const leagueReadonlyCached = cache(
     (): Promise<GatewayResponse<LeagueMeView>> =>
       gw.gatewayFetchReadonly('/members/gamification/league/me', { query: { audience } }),
@@ -314,6 +327,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     checkStudioAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
       return gw.gatewayFetchReadonly('/members/access', {
         query: { refs: STUDIO_ACCESS_REF, audience },
+      })
+    },
+    /**
+     * Posse do DESAFIO do mês (Clube dos Criadores + Estúdio Completo) NUMA ida —
+     * Server Component. O card/checkbox do desafio só liga com as DUAS refs true
+     * (o gate real do publish com a tag é o do hub).
+     */
+    checkChallengeAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: `${CLUB_ACCESS_REF},${STUDIO_ACCESS_REF}`, audience },
       })
     },
     /**
@@ -394,6 +417,11 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       withRanking?: boolean
     }): Promise<GatewayResponse<GamificationMeView>> {
       return gamificationReadonlyCached(opts?.withRanking ?? false)
+    },
+
+    /** Desafio do MÊS (game jam): tema global + `entered` — Server Component. */
+    getChallengeReadonly(): Promise<GatewayResponse<ChallengeMeView>> {
+      return challengeReadonlyCached()
     },
 
     // ── Missões + proteção de sequência ──────────────────────────────────────
@@ -717,6 +745,17 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       })
     },
 
+    /** Preferência do report SEMANAL dos pais (opt-out) — atrás do portão de senha. */
+    getParentReportPrefs(): Promise<GatewayResponse<ParentReportPrefsView>> {
+      return gw.gatewayFetch('/members/parents/report-prefs')
+    },
+    setParentReportPrefs(disabled: boolean): Promise<GatewayResponse<ParentReportPrefsView>> {
+      return gw.gatewayFetch('/members/parents/report-prefs', {
+        method: 'PUT',
+        body: { disabled },
+      })
+    },
+
     /** Salva a posição de reprodução do vídeo (throttled no client). */
     saveVideoPosition(
       slug: string,
@@ -873,10 +912,11 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     },
     listThreads(
       channelId: string,
-      params: { cursor?: string; limit?: number } = {},
+      params: { cursor?: string; limit?: number; challenge?: string } = {},
     ): Promise<GatewayResponse<HubPage<HubThreadView>>> {
       return gw.gatewayFetch(`/hub/channels/${enc(channelId)}/threads`, {
-        query: { cursor: params.cursor, limit: params.limit },
+        // `challenge` = prateleira do Desafio do mês (`m:YYYY-MM`) — só posts com a tag.
+        query: { cursor: params.cursor, limit: params.limit, challenge: params.challenge },
       })
     },
     createThread(
@@ -1002,15 +1042,30 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       coverImageUrl: string | null
       playId: string
       clientIdempotencyKey: string
+      /** Tag do Desafio do mês — o hub valida (posse + mês) com drop silencioso. */
+      challengeKey?: string | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread-studio-standalone', {
         method: 'POST',
         body,
       })
     },
-    /** Valida se o playId público ainda pertence a um post visível no Mural. */
-    resolveStudioPlay(playId: string): Promise<GatewayResponse<{ visible: boolean }>> {
-      return gw.gatewayFetch(`/hub/internal/studio-play/${enc(playId)}`)
+    /**
+     * Valida se o playId público ainda pertence a um post visível no Mural.
+     * `countHit` funde o incremento de jogadas na MESMA ida (o chamador já
+     * deduplicou por ip:playId — ver `routes/studio.ts`).
+     */
+    resolveStudioPlay(
+      playId: string,
+      countHit = false,
+    ): Promise<GatewayResponse<{ visible: boolean }>> {
+      return gw.gatewayFetch(
+        `/hub/internal/studio-play/${enc(playId)}${countHit ? '?count=1' : ''}`,
+      )
+    },
+    /** Carreira (RSC, sem refresh): jogos publicados no Mural + soma das jogadas. */
+    myShowcaseStatsReadonly(): Promise<GatewayResponse<{ published: number; plays: number }>> {
+      return gw.gatewayFetchReadonly('/hub/my-showcase-stats')
     },
     report(
       target: 'thread' | 'comment',

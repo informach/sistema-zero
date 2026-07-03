@@ -94,6 +94,34 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
     }
   })
 
+  it('projectRef (Pensa) sobrevive ao round-trip: hex minúsculo, teto de cores', () => {
+    const sprite = {
+      ...createPixelSpriteAsset({ name: 'heroi', frameSize: 16 }),
+      projectRef: {
+        id: 'pensa-1',
+        name: '  Corrida Maluca  ',
+        palette: ['#FF2121', '#00a0c8', 'azul', '#123', ...Array(10).fill('#aabbcc')],
+      },
+    }
+    const out = sanitizePintaAsset(sprite)
+    expect(out?.projectRef?.id).toBe('pensa-1')
+    expect(out?.projectRef?.name).toBe('Corrida Maluca')
+    // Inválidas caem, válidas viram minúsculas, teto de 8.
+    expect(out?.projectRef?.palette?.[0]).toBe('#ff2121')
+    expect(out?.projectRef?.palette?.[1]).toBe('#00a0c8')
+    expect(out?.projectRef?.palette?.length).toBeLessThanOrEqual(8)
+  })
+
+  it('projectRef malformado é DESCARTADO sem derrubar o asset', () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 16 })
+    const semId = sanitizePintaAsset({ ...sprite, projectRef: { name: 'jogo' } })
+    expect(semId).not.toBeNull()
+    expect(semId?.projectRef).toBeUndefined()
+    const lixo = sanitizePintaAsset({ ...sprite, projectRef: 'oi' })
+    expect(lixo).not.toBeNull()
+    expect(lixo?.projectRef).toBeUndefined()
+  })
+
   it('MIGRAÇÃO lazy: kind antigo "vector" volta como vector-background, dados intactos', () => {
     const legacy = {
       ...createVectorBackgroundAsset({ name: 'livre', width: 480, height: 360 }),

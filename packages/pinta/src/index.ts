@@ -7,5 +7,11 @@
  * 2. `<PintaApp adapter={...} />` — uncontrolled, navegação por estado.
  */
 export { PintaApp } from './components/PintaApp'
-export type { PintaExportedAsset, PintaHostAdapter, PintaSendResult } from './core/types'
+export type { PintaProjectRef } from './core/project'
+export type {
+  PintaExportedAsset,
+  PintaHostAdapter,
+  PintaInitialIntent,
+  PintaSendResult,
+} from './core/types'
 export { setPintaStorageNamespace } from './state/persistence'

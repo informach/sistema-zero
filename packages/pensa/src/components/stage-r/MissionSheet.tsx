@@ -75,6 +75,8 @@ export function MissionSheet({
   const { copy } = usePensaApp()
   const c = copy.stageR
   const mission = task.mission
+  // Missão de ARTE (07/2026): o trabalho é no Pinta → o botão dele ganha o destaque.
+  const artEmphasis = Boolean(mission.artKind)
   const alreadyDone = task.column === 'done'
   // Checklist do card aberto: card feito = tudo ok; senão restaura o salvo.
   const [checked, setChecked] = useState<boolean[]>(() => {
@@ -230,7 +232,12 @@ export function MissionSheet({
             <button
               type="button"
               onClick={onOpenPinta}
-              className="min-h-12 rounded-2xl border-2 border-pz-border px-5 font-semibold text-pz-text transition hover:border-pz-accent"
+              className={clsx(
+                'min-h-12 rounded-2xl px-5 transition',
+                artEmphasis
+                  ? 'bg-pz-accent text-lg font-bold text-pz-accent-fg hover:brightness-105'
+                  : 'border-2 border-pz-border font-semibold text-pz-text hover:border-pz-accent',
+              )}
             >
               <span aria-hidden="true">🎨 </span>
               {c.openPinta}

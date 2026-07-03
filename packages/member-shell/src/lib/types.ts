@@ -424,6 +424,8 @@ export interface QuizQuestionResultView {
 /** Catálogo v1 de badges (mirror de members `domain/gamification/badges.ts`). */
 export type BadgeSlug =
   | 'first-lesson'
+  // 1º jogo publicado no Mural (07/2026, lote troféus).
+  | 'first-showcase'
   | 'streak-7'
   | 'streak-30'
   | 'streak-60'
@@ -533,6 +535,20 @@ export interface MissionView {
 export interface MissionsMeView {
   daily: MissionView[]
   weekly: MissionView[]
+}
+/** Desafio do MÊS (game jam kids) — mirror do `ChallengeMeView` do members. */
+export interface ChallengeMeView {
+  challenge: {
+    /** `m:YYYY-MM` (mês civil SP) — a MESMA chave que o hub valida no publish. */
+    key: string
+    slug: string
+    emoji: string
+    title: string
+    description: string
+    suggestedKit: string
+  }
+  /** O perfil já publicou no desafio deste mês. */
+  entered: boolean
 }
 export interface MissionClaimResult {
   claimed: boolean
@@ -650,11 +666,14 @@ export interface RoomStateView {
   floor?: string
   lighting?: string
 }
-/** Item/tema do catálogo do quarto (lojinha/editor). `category` largo (forward-compat). */
+/**
+ * Item/tema do catálogo do quarto (lojinha/editor). `category` largo (forward-compat).
+ * `tier: 'trophy'` (07/2026) = NÃO-comprável, GANHO por conquista (badge mapeada).
+ */
 export interface RoomItemView {
   id: string
   category: string
-  tier: 'free' | 'coins'
+  tier: 'free' | 'coins' | 'trophy'
   price: number
   owned: boolean
   locked: boolean
@@ -712,6 +731,22 @@ export interface PublicProfileDTO extends PublicProfileGameView {
   name: string
 }
 
+/** "Esta semana" de um filho (semana civil SP corrente, parcial) — Fase 5. */
+export interface ChildWeekStatsView {
+  xpEarned: number
+  lessonsCompleted: number
+  quizzesPassed: number
+  badgesUnlocked: number
+  projectsSubmitted: number
+}
+
+/** Jogo publicado no Mural na semana (o cartão QR usa `playId`). */
+export interface ChildWeekGameView {
+  title: string
+  playId: string | null
+  publishedAt: string
+}
+
 /** Resumo de progresso de UM filho (perfil) — espelha a view do members. */
 export interface ChildStatsView {
   profileId: string
@@ -724,6 +759,15 @@ export interface ChildStatsView {
   projectsCount: number
   /** Colocação no ranking da vitrine (null = conta sem matrícula). */
   rankingPosition: number | null
+  /** "Esta semana" (opcional p/ tolerar members antigo). */
+  week?: ChildWeekStatsView
+  /** Jogos publicados no Mural na semana (`null` = hub indisponível, degrada). */
+  games?: ChildWeekGameView[] | null
+}
+
+/** Preferência do report semanal dos pais (opt-out por CONTA). */
+export interface ParentReportPrefsView {
+  disabled: boolean
 }
 
 /** Card do filho na área dos pais: stats do members + identidade do perfil (auth). */
@@ -959,6 +1003,10 @@ export interface HubThreadView {
    * sem login). `null` = sem link jogável (posts antigos / fluxo da aula).
    */
   playId: string | null
+  /** Jogadas do link público (vaidade; opcional p/ tolerar hub antigo). */
+  playsCount?: number
+  /** Desafio mensal (`m:YYYY-MM`) — a UI mostra o selo/prateleira do mês. */
+  challengeKey?: string | null
   reactions: HubReaction[]
   attachments: HubAttachmentView[]
   lastActivityAt: string
@@ -1127,6 +1175,10 @@ export interface PensaMission {
   studioHints?: { categories: string[]; blocks: string[] }
   /** Critérios observáveis "Ficou pronto quando..." (1–3). */
   doneWhen: string[]
+  /** Missão de ARTE (07/2026): abre o Pinta pré-configurado (só quem POSSUI o Pinta). */
+  artKind?: 'sprite' | 'background' | 'tileset'
+  /** Paleta do jogo (hex, ≤8) — vai junto da missão de arte p/ o Pinta colorir. */
+  palette?: string[]
 }
 
 export interface PensaTaskView {

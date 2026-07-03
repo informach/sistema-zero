@@ -9,6 +9,7 @@ import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { PINTA_INTENT_KEY } from './pinta-intent'
 
 // Os packages são client-only (zustand/Blockly/IndexedDB); carregamos DENTRO de um
 // effect (igual ao studio-full-client) e o server renderiza só o placeholder.
@@ -23,7 +24,14 @@ type StudioModule = typeof import('@sistemazero/studio')
  * IndexedDB do MESMO namespace por perfil que o /estudio usa) e o editor embarcado
  * do Modo Missão (`renderStudio`).
  */
-export function PensaClient({ viewerId }: { viewerId: string | null }) {
+export function PensaClient({
+  viewerId,
+  pintaOwned = false,
+}: {
+  viewerId: string | null
+  /** A criança POSSUI o Pinta (produto à parte)? Sem ele, o botão da missão some. */
+  pintaOwned?: boolean
+}) {
   const [mod, setMod] = useState<PensaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const router = useRouter()
@@ -128,12 +136,43 @@ export function PensaClient({ viewerId }: { viewerId: string | null }) {
       ),
       // "Abrir o Estúdio" (tela cheia): mesma lista/namespace do produto Estúdio.
       onOpenStudio: () => router.push('/estudio'),
-      // "Desenhar no Pinta" na missão aberta: os desenhos chegam ao Estúdio
-      // pela biblioteca pessoal ("Meus desenhos") do MESMO perfil.
-      onOpenPinta: () => router.push('/pinta'),
+      // "Desenhar no Pinta" na missão aberta — SÓ com a posse do produto (vendido
+      // à parte; sem ele o botão some). O intent da missão de arte atravessa por
+      // sessionStorage: o pinta-client lê 1x e abre o "Criar novo" pré-configurado.
+      ...(pintaOwned
+        ? {
+            onOpenPinta: (intent?: {
+              pensaProjectId: string
+              projectName: string
+              artKind?: 'sprite' | 'background' | 'tileset'
+              palette?: string[]
+            }) => {
+              if (intent) {
+                try {
+                  sessionStorage.setItem(
+                    PINTA_INTENT_KEY,
+                    JSON.stringify({
+                      projectRef: {
+                        id: intent.pensaProjectId,
+                        name: intent.projectName,
+                        ...(intent.palette && intent.palette.length > 0
+                          ? { palette: intent.palette }
+                          : {}),
+                      },
+                      ...(intent.artKind ? { artKind: intent.artKind } : {}),
+                    }),
+                  )
+                } catch {
+                  // sem sessionStorage (modo privado) → abre o Pinta sem pré-preencher.
+                }
+              }
+              router.push('/pinta')
+            },
+          }
+        : {}),
       syncStudioSnapshot,
     }),
-    [transport, theme, createStudioProject, syncStudioSnapshot, viewerId, router],
+    [transport, theme, createStudioProject, syncStudioSnapshot, viewerId, router, pintaOwned],
   )
 
   return (

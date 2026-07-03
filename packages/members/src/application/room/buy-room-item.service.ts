@@ -2,7 +2,11 @@ import type { CourseAudience } from '../../domain/course/course'
 import { InsufficientCoinsError } from '../../domain/gamification/coins.errors'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { RoomRepository } from '../../domain/ports/room-repository.port'
-import { RoomItemFreeError, RoomItemNotFoundError } from '../../domain/room/room.errors'
+import {
+  RoomItemFreeError,
+  RoomItemNotFoundError,
+  RoomItemNotPurchasableError,
+} from '../../domain/room/room.errors'
 import {
   ROOM_FLOORS_BY_ID,
   ROOM_ITEMS_BY_ID,
@@ -18,7 +22,7 @@ export interface BuyRoomItemResult {
 }
 
 /** Item, tema, piso OU luz do quarto (catálogos distintos, ids sem colisão). */
-function roomThing(id: string): { tier: 'free' | 'coins'; price: number } | null {
+function roomThing(id: string): { tier: 'free' | 'coins' | 'trophy'; price: number } | null {
   const found =
     ROOM_ITEMS_BY_ID.get(id) ??
     ROOM_THEMES_BY_ID.get(id) ??
@@ -48,6 +52,8 @@ export class BuyRoomItemService {
     const thing = roomThing(itemId)
     if (!thing) throw new RoomItemNotFoundError()
     if (thing.tier === 'free') throw new RoomItemFreeError()
+    // Troféu é GANHO por conquista, nunca comprado (07/2026).
+    if (thing.tier === 'trophy') throw new RoomItemNotPurchasableError()
 
     const owned = await this.room.listInventory(userId, audience)
     if (owned.includes(itemId)) {
