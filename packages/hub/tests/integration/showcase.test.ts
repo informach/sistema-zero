@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type { AccessConfig } from '../../src/domain/access/access-config'
 import { buildApp, jsonRequest, studentHeaders } from '../helpers'
 
@@ -565,5 +566,212 @@ describe('vitrine (Mural dos Criadores)', () => {
       }),
     )
     expect(res.status).toBe(401)
+  })
+
+  // ── Contador de jogadas + agregado da carreira (Fase 5, 07/2026) ──
+
+  test('studio-play com count=1 conta a jogada; sem count só valida', async () => {
+    const accountId = randomUUID()
+    ownsStudio(accountId)
+    const playId = '77777777-7777-7777-7777-777777777777'
+    await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+        headers: child(accountId),
+        body: standaloneBody({ playId }),
+      }),
+    )
+    const resolve = (qs = '') =>
+      ctx.app.handle(
+        jsonRequest('GET', `/hub/internal/studio-play/${playId}${qs}`, {
+          headers: { 'x-internal-token': INTERNAL },
+        }),
+      )
+    expect(await (await resolve('?count=1')).json()).toEqual({ visible: true })
+    expect(await (await resolve('?count=1')).json()).toEqual({ visible: true })
+    // Sem `count` (revalidações/refetches) NÃO infla o contador.
+    expect(await (await resolve()).json()).toEqual({ visible: true })
+    const t = ctx.threadRepo.threads.find((x) => x.playId === playId)
+    expect(t?.playsCount).toBe(2)
+  })
+
+  // ── Desafio do MÊS (game jam — tag validada com drop silencioso) ──
+
+  describe('desafio do mês (challengeKey no standalone)', () => {
+    // Clock FIXO: 2026-06-15 12:00Z → mês civil de SP = 2026-06 → 'm:2026-06'.
+    const NOW = new Date('2026-06-15T12:00:00.000Z')
+    const MONTH = 'm:2026-06'
+
+    const challengeCtx = async () => {
+      const gated = buildApp({ internalToken: INTERNAL, clock: () => NOW })
+      await seedMural(gated)
+      return gated
+    }
+    const ownsBoth = (gated: Awaited<ReturnType<typeof challengeCtx>>, accountId: string) =>
+      gated.members.communitiesByUser.set(
+        accountId,
+        new Set(['estudio-completo', 'clube-dos-criadores']),
+      )
+    const publish = (
+      gated: Awaited<ReturnType<typeof challengeCtx>>,
+      accountId: string,
+      over: Record<string, unknown> = {},
+    ) =>
+      gated.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers: child(accountId),
+          body: standaloneBody(over),
+        }),
+      )
+
+    test('posse Clube+Estúdio + mês corrente → tag entra + notifica o members', async () => {
+      const gated = await challengeCtx()
+      const accountId = randomUUID()
+      ownsBoth(gated, accountId)
+      const res = await publish(gated, accountId, { challengeKey: MONTH })
+      expect(res.status).toBe(200)
+      const { thread } = (await res.json()) as { thread: { challengeKey: string | null } }
+      expect(thread.challengeKey).toBe(MONTH)
+      expect(gated.members.challengeNotifications).toMatchObject([
+        { audience: 'kids', challengeKey: MONTH },
+      ])
+    })
+
+    test('SEM o Clube: publica normal, mas a tag cai em silêncio (sem notificação)', async () => {
+      const gated = await challengeCtx()
+      const accountId = randomUUID()
+      gated.members.communitiesByUser.set(accountId, new Set(['estudio-completo']))
+      const res = await publish(gated, accountId, { challengeKey: MONTH })
+      expect(res.status).toBe(200)
+      const { thread } = (await res.json()) as { thread: { challengeKey: string | null } }
+      expect(thread.challengeKey).toBeNull()
+      expect(gated.members.challengeNotifications.length).toBe(0)
+    })
+
+    test('mês ERRADO/formato inválido: publica normal, tag cai em silêncio', async () => {
+      const gated = await challengeCtx()
+      const accountId = randomUUID()
+      ownsBoth(gated, accountId)
+      for (const bad of ['m:2026-05', 'lixo', 'm:26-06']) {
+        const res = await publish(gated, accountId, { challengeKey: bad })
+        expect(res.status).toBe(200)
+        const { thread } = (await res.json()) as { thread: { challengeKey: string | null } }
+        expect(thread.challengeKey).toBeNull()
+      }
+      expect(gated.members.challengeNotifications.length).toBe(0)
+    })
+
+    test('listagem com ?challenge= devolve SÓ os posts do desafio do mês', async () => {
+      const gated = await challengeCtx()
+      const accountId = randomUUID()
+      ownsBoth(gated, accountId)
+      await publish(gated, accountId, { challengeKey: MONTH })
+      await publish(gated, accountId, {}) // post normal, sem tag
+      const sp = await gated.repo.findActiveSpaceBySlug('mural-dos-criadores')
+      const channels = await gated.repo.listActiveChannels(sp?.id ?? '')
+      const channelId = channels[0]?.id as string
+      const res = await gated.app.handle(
+        jsonRequest('GET', `/hub/channels/${channelId}/threads?challenge=${MONTH}`, {
+          headers: child(accountId),
+        }),
+      )
+      expect(res.status).toBe(200)
+      const page = (await res.json()) as { items: { challengeKey: string | null }[] }
+      expect(page.items.length).toBe(1)
+      expect(page.items[0]?.challengeKey).toBe(MONTH)
+    })
+  })
+
+  // ── showcase-by-authors (S2S members→hub, HMAC — report dos pais) ──
+
+  describe('showcase-by-authors (rota interna HMAC)', () => {
+    const PATH = '/hub/internal/showcase-by-authors'
+    const signedRequest = (bodyStr: string, secret = 'test-gateway-hmac-secret-0001') => {
+      const ts = Math.floor(Date.now() / 1000)
+      const sig = signHmac(
+        secret,
+        canonicalHmacMessage({ method: 'POST', path: PATH, body: bodyStr }),
+        ts,
+      )
+      return new Request(`http://local${PATH}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-signature': `t=${ts},v1=${sig}` },
+        body: bodyStr,
+      })
+    }
+
+    test('devolve SÓ os posts dos autores pedidos na janela; sem HMAC → 401', async () => {
+      const kidA = randomUUID()
+      const kidB = randomUUID()
+      for (const kid of [kidA, kidB]) {
+        ctx.members.communitiesByUser.set(kid, new Set(['estudio-completo']))
+        const res = await ctx.app.handle(
+          jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+            headers: child(kid),
+            body: standaloneBody(),
+          }),
+        )
+        expect(res.status).toBe(200)
+      }
+
+      const from = new Date(Date.now() - 3_600_000).toISOString()
+      const to = new Date(Date.now() + 3_600_000).toISOString()
+      const ok = await ctx.app.handle(
+        signedRequest(JSON.stringify({ authorIds: [kidA], from, to })),
+      )
+      expect(ok.status).toBe(200)
+      const { items } = (await ok.json()) as {
+        items: { authorId: string; title: string; playId: string | null }[]
+      }
+      expect(items.length).toBe(1)
+      expect(items[0]?.authorId).toBe(kidA)
+      expect(items[0]?.playId).toBeTruthy()
+
+      // Fora da janela → vazio.
+      const past = await ctx.app.handle(
+        signedRequest(
+          JSON.stringify({
+            authorIds: [kidA],
+            from: new Date(Date.now() - 7_200_000).toISOString(),
+            to: new Date(Date.now() - 3_600_000).toISOString(),
+          }),
+        ),
+      )
+      expect(((await past.json()) as { items: unknown[] }).items.length).toBe(0)
+
+      // Assinatura errada → 401 (a rota NUNCA aceita chamada sem HMAC válido).
+      const bad = await ctx.app.handle(
+        signedRequest(JSON.stringify({ authorIds: [kidA], from, to }), 'segredo-errado-123456'),
+      )
+      expect(bad.status).toBe(401)
+    })
+  })
+
+  test('my-showcase-stats agrega SÓ os posts visíveis do próprio autor', async () => {
+    const accountId = randomUUID()
+    ownsStudio(accountId)
+    const headers = child(accountId)
+    const p1 = randomUUID()
+    const publish = (playId: string) =>
+      ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers,
+          body: standaloneBody({ playId }),
+        }),
+      )
+    await publish(p1)
+    await publish(randomUUID())
+    await ctx.app.handle(
+      jsonRequest('GET', `/hub/internal/studio-play/${p1}?count=1`, {
+        headers: { 'x-internal-token': INTERNAL },
+      }),
+    )
+    const stats = await ctx.app.handle(jsonRequest('GET', '/hub/my-showcase-stats', { headers }))
+    expect(stats.status).toBe(200)
+    expect(await stats.json()).toEqual({ published: 2, plays: 1 })
+    // Outro aluno NÃO vê os números de ninguém (agregado por autor).
+    const other = await ctx.app.handle(
+      jsonRequest('GET', '/hub/my-showcase-stats', { headers: child(randomUUID()) }),
+    )
+    expect(await other.json()).toEqual({ published: 0, plays: 0 })
   })
 })

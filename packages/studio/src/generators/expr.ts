@@ -507,6 +507,14 @@ export function compileExpr(
       const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.method)}(${args})`
     }
+    case 'objectOp':
+      return `Object.${expr.op}(${compileExpr(expr.object, 0, identifiers, rec)})`
+    case 'assetImage':
+      // Fonte RESOLVIDA do asset: o dataURL semeado em __SZGAME_ASSETS (ver
+      // preview/assetsBridge), com fallback pro nome cru. Usável direto em img.src.
+      return `(window.__SZGAME_ASSETS?.[${JSON.stringify(expr.name)}] ?? ${JSON.stringify(expr.name)})`
+    case 'indexGet':
+      return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}[${compileExpr(expr.index, 0, identifiers, rec)}]`
     default: {
       // Sem este ramo, uma expressão fora do esquema (ex.: IR de um JSON
       // importado por um estranho) caía pela borda do `switch` e `compileExpr`

@@ -154,6 +154,57 @@ Tipos em `lib/types.ts` (`CertificateBlock`/`CertificateConfig`/`CertificateIssu
 `tone="kids"` (copy sem jargão/travessão); o estado de carga é `role="status"` e a virada de estado vai
 numa região `aria-live="polite"` (a11y — o leitor anuncia bloqueado→elegível→emitido).
 
+**Pensa (planejamento guiado — metodologia ZERO, 07/2026):** o shell é o BFF do app
+`@sistemazero/pensa` (embarcado no kids em `/pensa`; projeto → ciclos "Versão N" → etapas Z/E/R/O
+persistidos no members, tabelas `pensa_*`). Client members: métodos `pensa*` (list/create/get/update
+projeto, create cycle, get stage, append turn, save/validate artifact, advance, replace/update tasks,
+replace/toggle checklist — sempre `?audience=`) + **`PENSA_ACCESS_REF = 'pensa'`** +
+`checkPensaAccessReadonly()` (gate da página, espelha o `checkStudioAccessReadonly`; o gate REAL de
+produto é do members no CREATE do projeto). Handlers: **`createPensaRoutes`** (`routes/pensa.ts` —
+passthroughs finos Zod→members, escrita gateada por impersonação-readonly) e **`createPensaAiRoutes`**
+(`routes/pensa-ai.ts`): **`pensaChat` = `POST /api/pensa/chat` SSE** — agente de clareza da etapa Z
+(Zappy): pré-voo em JSON (401/403/409 `PENSA_STAGE_MISMATCH`/429/503) → stream OpenRouter repassado como
+`event: delta` → **evaluator estruturado** das 5 perguntas (`stage-z-evaluator.ts`, modelo do chat,
+`response_format: json_schema`) → persiste o turno COMPLETO (`pensaAppendTurn`; **abort = nada
+persiste**) → `event: state` + `event: done`; `: ping` a cada 15s (Cloudflare corta conexão ociosa);
+rate-limit in-process por sessão (10/min + 150/dia, `globalThis`/`Symbol.for`, réplica única) — e
+`pensaGenerateArtifact` (`POST /api/pensa/cycles/:cycleId/artifacts/generate` — TODAS as sínteses:
+idea/friendly_spec/identity(3 steps)/mission_plan/checklist_seed). ⚠️ **`GenerateBody` (Zod 4): as 3
+variantes da identidade repetem `type:'identity'` → NÃO podem ser irmãs num `discriminatedUnion('type')`**
+(o Zod 4 monta o mapa do discriminador no PRIMEIRO parse e lança "Duplicate discriminator value" — foi o
+500 de TODA geração em staging 02/07; o erro é lazy, então import/testes que não parseiam não pegam).
+Elas vivem numa união ANINHADA discriminada por `step`; regressão travada em `tests/pensa-ai.test.ts`
+(safeParse das 7 variantes). Os catches das gerações LOGAM (`console.error('[pensa-ai] …')`) antes do
+502 — catch mudo foi o que escondeu esse bug. O `friendly_spec` recebe a Carta + o TRANSCRIPT da etapa Z
+(detalhes concretos da conversa) e gera PRD com seções FIXAS nomeadas (contrato do agente de missões);
+revisão com `feedback` atualiza também o PRD anterior (senão deriva) e o feedback entra MESMO sem
+previousSpec. `mission_plan` e `checklist_seed` respeitam o **`buildEnv`** do projeto ('external' = sem
+Estúdio/blocos/catálogo; o item obrigatório de publicar muda de texto). **As missões citam os
+BLOCOS REAIS do Estúdio** (07/2026): `stage-r-missions.ts` tem DOIS snapshots curados manuais —
+`STUDIO_CATEGORY_HINTS` (categorias) e `STUDIO_BLOCK_HINTS` (labels EXATOS do `message0` de
+`packages/studio/src/official-extensions/game-2d/blocks.ts`; drift manual — mudou label lá,
+atualize aqui; NÃO importar `BLOCK_CATALOG` no servidor: puxa blockly/core). O prompt exige
+labels entre aspas, segue a ARQUITETURA real (setup fora do loop → eventos → UM "A cada quadro
+do jogo, fazer" → HUD por último) e a 1ª missão SEMPRE ensina a instalar a extensão Jogo 2D
+(menu ⋯ → Extensões → Instalar) — o projeto semeado pelo Pensa nasce com
+`installedExtensions: []` (decisão: ensinar a instalar, não pré-instalar na semeadura).
+Prompt/clamp travados em `tests/pensa-missions.test.ts`. Plumbing LLM em
+**`server/pensa-llm.ts`** (fetch OpenRouter DIRETO, sem SDK: `streamPensaChat` com parser SSE próprio +
+`completePensaJson` com Zod e 1 retry; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` +
+OPCIONAL **`OPENROUTER_PENSA_MODEL`** — usada pelas sínteses E pelo CHAT (`pensaChatModel` = PENSA_MODEL
+|| MODEL; o modelo barato genérico gerava chips vagos — QA 02/07). Prompts VERSIONADOS em
+`server/pensa-agents/*` — a **cláusula de segurança infantil SEMPRE entra no system kids** e a regra
+anti-inferência (PRD §11.3: o agente não decide pela criança; chips `SUGESTÕES:` são escolha DELA) é
+travada em `tests/pensa-ai.test.ts`. Tipos mirror em `lib/types.ts` (`Pensa*`). A conversa do chat NÃO
+passa pelo gateway (OpenRouter é chamado do BFF); a persistência passa (members = portão de ownership).
+
+**Pinta (editor de assets de jogos, 07/2026):** diferente do Pensa, o Pinta NÃO tem backend — os
+desenhos vivem no IndexedDB do navegador (por perfil) e a ponte "Usar no Estúdio" grava direto na
+biblioteca pessoal do `@sistemazero/studio` (client-side). O shell só carrega o GATE da página:
+**`PINTA_ACCESS_REF = 'pinta'`** + `checkPintaAccessReadonly()` (`server/clients.ts`), que pede
+**DUAS refs numa ida** (`refs: 'pinta,estudio-completo'`) — a segunda alimenta o `studioOwned` do
+adapter do Pinta (só muda a copy do sucesso da ponte). Sem rotas `/api/pinta`.
+
 **Trava sequencial das aulas (estilo Duolingo, 06/2026):** `LessonOutlineView.locked` (em
 `lib/types.ts`, mirror do members) = aula ainda bloqueada porque uma aula publicada anterior não
 foi concluída (curso com `sequential_lock` ON; equipe interna e aula já concluída vêm `false`). Só
@@ -162,7 +213,41 @@ não-clicável + gate de `nextHref`; abrir aula travada por URL → **423 `LESSO
 que cada app trata com uma página "aula bloqueada". O gate confiável é o members (`GetLessonService`).
 
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
-`tests/hub-redact.test.ts`). O **`StudioBlockView`** tem a prop `enableShare?`: ligada, constrói o
+`tests/hub-redact.test.ts`) e, na Fase 5 (07/2026), **`playsCount?`** (contador de jogadas do link
+público) e **`challengeKey?`** (tag do Desafio do mês) — ambos estruturais, sobrevivem à redação.
+
+**Fase 5 (07/2026) — plays/carreira/desafio/arte no shell:**
+- **Contador de jogadas:** o `studioPlay.GET` (público) deduplica por **`ip:playId`** (TTL 30min,
+  in-process `globalThis`/`Symbol.for`, teto anti-OOM 50k entradas) e só o 1º hit da janela chama o
+  hub com `resolveStudioPlay(id, countHit=true)` → `?count=1` (o hub funde o UPDATE no resolve).
+  Contador de VAIDADE: best-effort é suficiente; F5/refetch não infla.
+- **Carreira:** `hub.myShowcaseStatsReadonly()` (RSC, sem refresh) → `{published, plays}` — a home
+  e o /perfil do kids exibem "seus jogos já foram jogados N vezes".
+- **Desafio do mês:** `members.getChallengeReadonly()` (React.cache) → `ChallengeMeView`
+  (tema global + `entered`); `members.checkChallengeAccessReadonly()` pede as DUAS refs
+  (`CLUB_ACCESS_REF='clube-dos-criadores'` + `STUDIO_ACCESS_REF`) numa ida — o kids só liga
+  card/checkbox com ambas true (o gate REAL é o do hub). O `studioPublishStandalone` aceita o campo
+  `challengeKey` no multipart (formato validado FROUXO na borda; posse+mês são do hub, com drop
+  silencioso da tag) e o repassa ao `hub.createShowcaseThreadStudioStandalone`. O shim
+  `GET /api/hub/channels/:id/threads` encaminha `?challenge=m:YYYY-MM` (prateleira do Mural).
+- **Missões de ARTE (Pensa→Pinta):** `stage-r-missions.ts` — o `MissionSchema`/`MISSIONS_JSON_SCHEMA`
+  ganhou `artKind` (string; ⚠️ additionalProperties:false — campo novo TEM que entrar em
+  required+properties) e o `missionsSystem` o param `includeArtMissions` (só liga fora do
+  buildEnv 'external'): o prompt pede 1–2 missões de DESENHO (artKind sprite/background/tileset,
+  passos citam o botão "Desenhar no Pinta" e o "🚀 Usar no Estúdio", categories/blocks vazios).
+  `clampMissions(raw, external, palette)` valida o artKind e anexa a PALETA da identidade só nas
+  missões de arte. O `pensa-ai.ts` (mission_plan) checa a POSSE do Pinta
+  (`members.checkPintaAccessReadonly()`, best-effort → false) antes de ligar `includeArtMissions` —
+  produto vendido à parte: sem posse o plano nasce sem missão de arte. `PensaMission` (mirror em
+  `lib/types.ts`) ganhou `artKind?`/`palette?`. Travado em `tests/pensa-missions.test.ts`.
+- **Report dos pais (Lote E):** o handler `childrenStats` repassa os campos novos da view do
+  members — `week` ("Esta semana" por filho) e `games` (jogos do Mural na semana; `null` = hub
+  fora, degrada) — mirrors `ChildWeekStatsView`/`ChildWeekGameView` em `lib/types.ts`
+  (`ChildStatsView.week?/games?`; `ChildDashboardView` estende). E o handler novo
+  **`parentReportPrefs`** (GET/PUT, clients `getParentReportPrefs`/`setParentReportPrefs` →
+  `/members/parents/report-prefs`) é o opt-out do e-mail semanal (`ParentReportPrefsView
+  {disabled}`, Zod `ParentReportPrefsBody`) — o shim do KIDS gateia os DOIS métodos com
+  `requireParentGateAccountOnly` (tela exclusiva dos pais, como children-stats/payments-my). O **`StudioBlockView`** tem a prop `enableShare?`: ligada, constrói o
 `StudioShareAdapter` (descreve via `/api/studio/describe`, publica multipart via `/api/studio/publish`) e o
 passa ao `<StudioLesson share>` — o botão "Compartilhar" aparece na Topbar do editor. ⚠️ **A CAPA (data URL
 do print/upload) vira Blob via `dataUrlBase64ToBlob` (`lib/data-url.ts`, `atob`), NUNCA `fetch('data:…')`**:
@@ -327,6 +412,12 @@ do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (
    ganhou teto de pixels TOTAIS p/ animados (não só por frame). **Fix aqui = fix nos dois apps;
    mudança aqui RODA NOS DOIS — rode as suítes dos dois.**
 5. Réplica ÚNICA por app (single-flight/gate em `globalThis` são por processo).
+5b. **`onVideoEnded` (07/2026):** o `LessonPlayerContextValue` tem o callback opcional
+   `onVideoEnded` (vídeo TERMINOU de verdade, evento `ended` do SDK — distinto do
+   `onVideoReachedThreshold` a ~90%). Fio: `VimeoPlayer.onEnded` → `VimeoLessonVideo`
+   (lesson-blocks) → contexto. O kids usa p/ abrir a CELEBRAÇÃO completa no fim do vídeo
+   quando a aula foi auto-concluída a 90% (antes: só toast, a criança "perdia a festa");
+   o adulto não passa o callback (zero mudança).
 6. **`vimeo-player`: o SDK é o DONO do iframe** (`new Player(divHost, { id })`). NUNCA voltar ao
    padrão "iframe no JSX + `new Player(iframe)`": `destroy()` REMOVE o iframe do DOM real sem o
    React saber — com o double-invoke do StrictMode (e re-runs do effect) o ref vira um iframe

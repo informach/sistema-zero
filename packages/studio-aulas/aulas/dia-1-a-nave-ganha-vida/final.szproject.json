@@ -1,0 +1,68 @@
+{
+  "id": "aula-gravacao-dia-1-a-nave-ganha-vida",
+  "name": "Aula: Dia 1 — A nave ganha vida",
+  "createdAt": 1783019845721,
+  "updatedAt": 1783019873787,
+  "mode": "blocks",
+  "files": {
+    "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Aula: Dia 1 — A nave ganha vida</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+    "style.css": "",
+    "script.js": "// Gerado pelo Sistema Zero Studio\n\nconst nave = SZGame2D.createSprite({ x: 100, y: 100, w: 40, h: 40, color: \"#22d3ee\" });\njogador.vx = 0; jogador.vy = 0;\n"
+  },
+  "extraFiles": [],
+  "assets": [],
+  "ir": null,
+  "blocksState": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "sz_frame_structure",
+          "id": "fhB8/h7z1[(x(t|1O:Oy",
+          "x": 32,
+          "y": 32
+        },
+        {
+          "type": "sz_frame_appearance",
+          "id": "+9d^kecC[-36DvP(r,{%",
+          "x": 452,
+          "y": 32
+        },
+        {
+          "type": "sz_frame_behavior",
+          "id": "G+W-E+NTPNpykns;*F(,",
+          "x": 872,
+          "y": 32,
+          "inputs": {
+            "CHILDREN": {
+              "block": {
+                "type": "sz_g2d_create_sprite",
+                "id": "9_BJ}sSA`d*oyt}htr~!",
+                "fields": {
+                  "NAME": "nave",
+                  "COLOR": "#22d3ee"
+                },
+                "next": {
+                  "block": {
+                    "type": "sz_g2d_set_velocity",
+                    "id": "$JvS9zHH:OQJ%mW[I!gx",
+                    "fields": {
+                      "SPRITE": "jogador"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "installedExtensions": [
+    {
+      "id": "game-2d",
+      "version": "0.0.0",
+      "installedAt": 0
+    }
+  ]
+}

@@ -164,6 +164,7 @@ function VimeoLessonVideo({ vimeoId, vimeoHash }: { vimeoId: string; vimeoHash: 
       onProgress={player?.onVideoProgress}
       onFlush={player?.onVideoFlush}
       onReachedThreshold={player?.onVideoReachedThreshold}
+      onEnded={player?.onVideoEnded}
     />
   )
 }

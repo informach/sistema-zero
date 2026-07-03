@@ -106,6 +106,14 @@ const AUTH_ALLOWED_CIDRS = (process.env.AUTH_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
   .split(',')
   .map((c) => c.trim())
   .filter(Boolean)
+// O members como consumer HMAC de borda (report SEMANAL dos pais via
+// /messaging/send — Fase 5, 07/2026). Espelha o auth/fiscal. DEVE bater com o
+// MEMBERS_HMAC_SECRET do members.
+const MEMBERS_HMAC_SECRET = process.env.MEMBERS_HMAC_SECRET ?? ''
+const MEMBERS_ALLOWED_CIDRS = (process.env.MEMBERS_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
 // Token interno injetado nas rotas S2S do auth (/auth/internal/*) como defesa em
 // profundidade (igual ao members/messaging). DEVE bater com o AUTH_INTERNAL_TOKEN do auth.
 const AUTH_INTERNAL_TOKEN = process.env.AUTH_INTERNAL_TOKEN ?? ''
@@ -176,6 +184,17 @@ const config: GatewayConfigInput = {
             id: 'fiscal',
             hmacSecret: FISCAL_HMAC_SECRET,
             allowedCidrs: FISCAL_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
+    // O members como consumer HMAC de borda (report semanal dos pais via
+    // /messaging/send). Condicional, igual ao auth/fiscal.
+    ...(MEMBERS_HMAC_SECRET
+      ? [
+          {
+            id: 'members',
+            hmacSecret: MEMBERS_HMAC_SECRET,
+            allowedCidrs: MEMBERS_ALLOWED_CIDRS,
           },
         ]
       : []),
@@ -1031,6 +1050,18 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
+    // Desafio do MÊS (game jam kids): tema determinístico global + `entered` do perfil.
+    // Literal `/gamification/challenge` (2 seg) não colide com `/gamification/me`.
+    {
+      id: 'members-gamification-challenge',
+      methods: ['GET'],
+      pathPattern: '/members/gamification/challenge',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Missões (diárias/semanais) + proteção de sequência — recurso do PRÓPRIO perfil
     // (kids). `/missions/me` (3 seg), `/missions/:slug/claim` (4 seg), `/streak-freeze/buy`
     // (3 seg) e `/vacation` (2 seg) NÃO colidem entre si nem com `/gamification/me`.
@@ -1187,6 +1218,161 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 1024,
     },
+    // ── Pensa (planejamento guiado — metodologia ZERO, vitrine kids) ──────────
+    // Recurso do PRÓPRIO perfil (como avatar/quarto): projetos → ciclos → etapas
+    // Z/E/R/O com artefatos, kanban de missões e checklist. O gate de PRODUTO
+    // (ref `pensa`) é aplicado pelo members no CREATE do projeto; as demais rotas
+    // são ownership por user_id. Literal `pensa` no 2º segmento — não colide com
+    // `/members/courses…`, `/members/profiles/:id/public` nem `/members/admin/*`.
+    // A chamada de IA (chat SSE) NÃO passa por aqui — vive no BFF (member-shell).
+    {
+      id: 'members-pensa-projects',
+      methods: ['GET', 'POST'],
+      pathPattern: '/members/pensa/projects',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
+    {
+      id: 'members-pensa-project',
+      methods: ['GET', 'PATCH'],
+      pathPattern: '/members/pensa/projects/:projectId',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
+    {
+      // Snapshot do projeto do ESTÚDIO atrelado ao projeto do Pensa (backup na
+      // nuvem do jogo em construção): GET restaura em navegador novo, PUT sobe o
+      // JSON inteiro (pode ter assets data-URL) — por isso SEM maxBodyBytes (cai
+      // no teto GLOBAL de 2MB, mesma régua da entrega do bloco estúdio).
+      id: 'members-pensa-studio-snapshot',
+      methods: ['GET', 'PUT'],
+      pathPattern: '/members/pensa/projects/:projectId/studio-snapshot',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-pensa-cycle-create',
+      methods: ['POST'],
+      pathPattern: '/members/pensa/projects/:projectId/cycles',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
+    {
+      id: 'members-pensa-stage',
+      methods: ['GET'],
+      pathPattern: '/members/pensa/cycles/:cycleId/stages/:stage',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    // Persiste um TURNO do chat (mensagem da criança + resposta do agente + estado
+    // das 5 perguntas) — chamado pelo BFF ao fim de cada stream, nunca pelo browser
+    // direto. Corpo maior (conversa/summary).
+    {
+      id: 'members-pensa-conversation',
+      methods: ['PUT'],
+      pathPattern: '/members/pensa/cycles/:cycleId/stages/:stage/conversation',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 512 * 1024,
+    },
+    {
+      id: 'members-pensa-artifact-create',
+      methods: ['POST'],
+      pathPattern: '/members/pensa/cycles/:cycleId/artifacts',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 512 * 1024,
+    },
+    {
+      id: 'members-pensa-artifact-validate',
+      methods: ['POST'],
+      pathPattern: '/members/pensa/cycles/:cycleId/artifacts/:type/validate',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    {
+      id: 'members-pensa-advance',
+      methods: ['POST'],
+      pathPattern: '/members/pensa/cycles/:cycleId/advance',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    {
+      id: 'members-pensa-tasks-replace',
+      methods: ['PUT'],
+      pathPattern: '/members/pensa/cycles/:cycleId/tasks',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 512 * 1024,
+    },
+    {
+      id: 'members-pensa-task-update',
+      methods: ['PATCH'],
+      pathPattern: '/members/pensa/tasks/:taskId',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
+    {
+      id: 'members-pensa-checklist-replace',
+      methods: ['PUT'],
+      pathPattern: '/members/pensa/cycles/:cycleId/checklist',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-pensa-checklist-toggle',
+      methods: ['PATCH'],
+      pathPattern: '/members/pensa/checklist/:itemId',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
     // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header
     // confiável `x-auth-user-id` (o members usa resolveUserId — não o accountId do
     // cliente); o BFF chama atrás do portão de senha. Path literal `/members/parents/*`
@@ -1200,6 +1386,29 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Preferência do REPORT semanal dos pais (opt-out) — mesma régua do
+    // children-stats: keyada na CONTA; o BFF gateia atrás do portão de senha.
+    {
+      id: 'members-parent-report-prefs-get',
+      methods: ['GET'],
+      pathPattern: '/members/parents/report-prefs',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-parent-report-prefs-put',
+      methods: ['PUT'],
+      pathPattern: '/members/parents/report-prefs',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'members-course-detail',
@@ -1963,6 +2172,7 @@ const config: GatewayConfigInput = {
     },
     // Player público do Estúdio (BFF sem Bearer) valida que o playId ainda pertence
     // a um post visível no Mural antes de servir o JSON privado do R2.
+    // `?count=1` (BFF, deduplicado por ip:playId lá) funde o contador de jogadas.
     {
       id: 'hub-studio-play-visible',
       methods: ['GET'],
@@ -1971,6 +2181,17 @@ const config: GatewayConfigInput = {
       auth: 'public',
       transforms: hubInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
+    // Carreira do aluno: agregado dos próprios jogos no Mural (publicados + jogadas).
+    {
+      id: 'hub-my-showcase-stats',
+      methods: ['GET'],
+      pathPattern: '/hub/my-showcase-stats',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'hub-comment-edit',

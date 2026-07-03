@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
-import type { HubGateway } from '../../domain/ports/hub-gateway.port'
+import type { HubGateway, ShowcaseByAuthorItem } from '../../domain/ports/hub-gateway.port'
 
 export interface HubHttpGatewayOptions {
   /** Base do hub (ex.: http://hub.railway.internal:3010). Sem `/hub`. */
@@ -23,6 +23,7 @@ export interface HubHttpGatewayOptions {
  * hub vê (chamada DIRETA, sem reescrita do gateway).
  */
 const GRANT_PATH = '/hub/webhooks/grant'
+const SHOWCASE_BY_AUTHORS_PATH = '/hub/internal/showcase-by-authors'
 const DEFAULT_TIMEOUT_MS = 4_000
 
 /**
@@ -71,10 +72,63 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
         })
       }
     },
+
+    async listShowcaseByAuthors(
+      authorIds: string[],
+      from: Date,
+      to: Date,
+    ): Promise<ShowcaseByAuthorItem[] | null> {
+      try {
+        const rawBody = JSON.stringify({
+          authorIds,
+          from: from.toISOString(),
+          to: to.toISOString(),
+        })
+        const ts = Math.floor(now().getTime() / 1000)
+        const signature = signHmac(
+          opts.hmacSecret,
+          canonicalHmacMessage({ method: 'POST', path: SHOWCASE_BY_AUTHORS_PATH, body: rawBody }),
+          ts,
+        )
+        const res = await doFetch(`${base}${SHOWCASE_BY_AUTHORS_PATH}`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-signature': `t=${ts},v1=${signature}`,
+          },
+          body: rawBody,
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!res.ok) {
+          opts.logger?.warn('hub.showcase_by_authors_failed', { status: res.status })
+          return null
+        }
+        const body = (await res.json()) as { items?: unknown }
+        if (!Array.isArray(body.items)) return null
+        return body.items
+          .filter((i): i is Record<string, unknown> => Boolean(i) && typeof i === 'object')
+          .map((i) => ({
+            authorId: typeof i.authorId === 'string' ? i.authorId : '',
+            title: typeof i.title === 'string' ? i.title : '',
+            playId: typeof i.playId === 'string' ? i.playId : null,
+            createdAt: typeof i.createdAt === 'string' ? i.createdAt : '',
+          }))
+          .filter((i) => i.authorId !== '')
+      } catch (error) {
+        // Best-effort: o report degrada SEM a lista de jogos (games: null).
+        opts.logger?.warn('hub.showcase_by_authors_error', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+        return null
+      }
+    },
   }
 }
 
 /** No-op (sem `HUB_BASE_URL` — dev/local ou hub não configurado): não notifica nada. */
 export const noopHubGateway: HubGateway = {
   async notifyAccessChanged() {},
+  async listShowcaseByAuthors() {
+    return null
+  },
 }

@@ -221,6 +221,10 @@ const VideoPositionBody = z.object({
   positionSeconds: z.number().int().min(0).max(100_000),
 })
 
+const ParentReportPrefsBody = z.object({
+  disabled: z.boolean(),
+})
+
 const QuizAttemptBody = z.object({
   // Espelha o TypeBox do members: ≤100 questões, ≤20 choices/questão, chaves/ids ≤64.
   answers: z
@@ -1014,9 +1018,37 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           coursesCompleted: s?.coursesCompleted ?? 0,
           projectsCount: s?.projectsCount ?? 0,
           rankingPosition: s?.rankingPosition ?? null,
+          // "Esta semana" + jogos do Mural (Fase 5) — opcionais (members antigo).
+          week: s?.week,
+          games: s?.games ?? null,
         }
       })
       return NextResponse.json({ children })
+    },
+  }
+
+  /**
+   * Preferência do REPORT semanal dos pais (opt-out). Como o children-stats, é
+   * tela EXCLUSIVA dos pais — o shim do KIDS gateia com
+   * `requireParentGateAccountOnly` (sessão de perfil é recusada lá).
+   */
+  const parentReportPrefs = {
+    GET: async () => {
+      const { status, body } = await members.getParentReportPrefs()
+      return NextResponse.json(body ?? { disabled: false }, { status })
+    },
+    PUT: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const parsed = ParentReportPrefsBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Corpo inválido' } },
+          { status: 400 },
+        )
+      }
+      const { status, body } = await members.setParentReportPrefs(parsed.data.disabled)
+      return NextResponse.json(body ?? { disabled: parsed.data.disabled }, { status })
     },
   }
 
@@ -1351,6 +1383,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     streakFreezeBuy,
     vacationSet,
     childrenStats,
+    parentReportPrefs,
     lessonPosition,
     quizAttempts,
     studioSubmit,

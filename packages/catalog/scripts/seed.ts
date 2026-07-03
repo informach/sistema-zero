@@ -24,6 +24,20 @@ const OFFER_SLUG = 'no-comando-da-ia'
 const STUDIO_SKU = 'estudio-completo'
 const STUDIO_OFFER_SLUG = 'estudio-completo'
 
+// Pensa (kids) — o app de PLANEJAMENTO guiado (metodologia ZERO): a criança clareia a
+// ideia com o Zappy, enxerga o jogo, roda as missões e lança. Mesmo molde do Estúdio:
+// `kind: 'tool'` + entrega via `community` — a CHAVE `pensa` casa com o gate do members
+// no CREATE de projeto do Pensa e com o `/members/access?refs=pensa` da página /pensa.
+const PENSA_SKU = 'pensa'
+const PENSA_OFFER_SLUG = 'pensa'
+
+// Pinta (kids): o editor de assets de jogos (pixel art/animações/tiles/vetorial) —
+// terceiro irmão do fluxo Pensa → Pinta → Estúdio. Mesmo molde: `kind: 'tool'` +
+// entrega via `community`; a CHAVE `pinta` casa com o `/members/access?refs=pinta`
+// da página /pinta (os DADOS são locais ao navegador — não há backend do Pinta).
+const PINTA_SKU = 'pinta'
+const PINTA_OFFER_SLUG = 'pinta'
+
 // Servidores da comunidade kids vendidos como produtos À PARTE (gate `community_gated`
 // no hub + `/members/access`). Cada um é INDEPENDENTE, com a SUA chave (= o slug do
 // produto, que casa com o `accessConfig` do servidor homônimo no hub):
@@ -182,6 +196,105 @@ async function main(): Promise<void> {
       guaranteeDays: 7,
       status: 'active',
       content: { badge: 'Crie seus próprios jogos', ctaLabel: 'Quero o Estúdio' },
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  // ── Pensa (kids) — planejamento guiado (metodologia ZERO) ─────────────────
+  // Irmão do Estúdio: `kind: 'tool'` (app vendável) com entrega `community` — o
+  // members gateia o CREATE de projeto do Pensa pela chave `pensa` e a página
+  // /pensa gateia pelo `/members/access?refs=pensa`. Preço inicial R$97 (mesma
+  // faixa do Estúdio) — o operador ajusta no painel; comercialmente Pensa +
+  // Estúdio como combo é a oferta natural (montar no painel quando fizer sentido).
+  let pensa = await products.findBySku(PENSA_SKU)
+  if (pensa) {
+    logger.info('seed.product_exists', { id: pensa.id, sku: pensa.sku })
+  } else {
+    const view = await createProduct.execute({
+      sku: PENSA_SKU,
+      slug: PENSA_SKU,
+      name: 'Pensa',
+      kind: 'tool',
+      status: 'active',
+      sellable: true,
+      description:
+        'O app de planejamento do Sistema Zero: a criança clareia a ideia com o Zappy, enxerga o jogo, transforma tudo em missões e lança de verdade, versão por versão.',
+      fulfillment: {
+        accessType: 'community',
+        courseRef: PENSA_SKU,
+        release: { mode: 'immediate' },
+      },
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    pensa = await products.findById(view.id)
+  }
+  if (!pensa) throw new Error('Produto do Pensa não encontrado após a criação')
+
+  const existingPensaOffer = await offers.findBySlug(PENSA_OFFER_SLUG)
+  if (existingPensaOffer) {
+    logger.info('seed.offer_exists', { id: existingPensaOffer.id, slug: existingPensaOffer.slug })
+  } else {
+    const view = await createOffer.execute({
+      productId: pensa.id,
+      code: 'pensa-padrao',
+      slug: PENSA_OFFER_SLUG,
+      name: 'Pensa — Oferta padrão',
+      priceCents: 9700,
+      currency: 'BRL',
+      pricingMode: 'one_time',
+      installmentsMax: 12,
+      guaranteeDays: 7,
+      status: 'active',
+      content: { badge: 'Pense como um criador de jogos', ctaLabel: 'Quero o Pensa' },
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  // ── Pinta (kids) — editor de assets de jogos ──────────────────────────────
+  // Terceiro irmão do fluxo criativo (Pensa planeja → Pinta desenha → Estúdio
+  // constrói): `kind: 'tool'` com entrega `community` — a página /pinta gateia
+  // pelo `/members/access?refs=pinta`; os desenhos são locais ao navegador.
+  // Preço inicial R$97 (placeholder, mesma faixa dos irmãos) — o operador ajusta.
+  let pinta = await products.findBySku(PINTA_SKU)
+  if (pinta) {
+    logger.info('seed.product_exists', { id: pinta.id, sku: pinta.sku })
+  } else {
+    const view = await createProduct.execute({
+      sku: PINTA_SKU,
+      slug: PINTA_SKU,
+      name: 'Pinta',
+      kind: 'tool',
+      status: 'active',
+      sellable: true,
+      description:
+        'O ateliê do Sistema Zero: a criança desenha os personagens (com animações!), cenários e peças dos próprios jogos, em pixel art e desenho livre, e usa tudo direto no Estúdio.',
+      fulfillment: {
+        accessType: 'community',
+        courseRef: PINTA_SKU,
+        release: { mode: 'immediate' },
+      },
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    pinta = await products.findById(view.id)
+  }
+  if (!pinta) throw new Error('Produto do Pinta não encontrado após a criação')
+
+  const existingPintaOffer = await offers.findBySlug(PINTA_OFFER_SLUG)
+  if (existingPintaOffer) {
+    logger.info('seed.offer_exists', { id: existingPintaOffer.id, slug: existingPintaOffer.slug })
+  } else {
+    const view = await createOffer.execute({
+      productId: pinta.id,
+      code: 'pinta-padrao',
+      slug: PINTA_OFFER_SLUG,
+      name: 'Pinta — Oferta padrão',
+      priceCents: 9700,
+      currency: 'BRL',
+      pricingMode: 'one_time',
+      installmentsMax: 12,
+      guaranteeDays: 7,
+      status: 'active',
+      content: { badge: 'Desenhe os seus próprios jogos', ctaLabel: 'Quero o Pinta' },
     })
     logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
   }

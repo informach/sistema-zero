@@ -1,0 +1,21 @@
+/*
+ * Entry CSS do PLAYGROUND (equivale ao globals.css de um app consumidor):
+ * um consumer real replica as 3 primeiras linhas no css dele.
+ */
+@import "tailwindcss";
+@import "../src/styles/pinta.css";
+
+@source "../src";
+
+/* Resets de APP standalone — fora do CSS exportado pelo package. */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

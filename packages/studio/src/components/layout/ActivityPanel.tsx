@@ -74,6 +74,15 @@ export function ActivityPanel(): JSX.Element | null {
         </Button>
       </div>
 
+      {/* Micro-celebração (07/2026): a vitória acontece AQUI, onde o esforço
+          acontece — antes a lista sóbria de checks era o único feedback. */}
+      {result && result.results.length > 0 && result.results.every((r) => r.passed) ? (
+        <output className="sz-activity-pop mx-4 mb-2 block rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-600">
+          <span aria-hidden>🎉✨ </span>
+          Você conseguiu! Todas as checagens passaram.
+        </output>
+      ) : null}
+
       {result ? (
         <ul className="flex flex-col gap-2 px-4 pb-4">
           {result.results.map((r) => {

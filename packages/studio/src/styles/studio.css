@@ -205,3 +205,30 @@
 .sz-resize-handle[data-resize-handle-active] {
   background: color-mix(in srgb, var(--color-sz-accent) 15%, transparent);
 }
+
+/*
+ * Micro-celebração da ATIVIDADE (ActivityPanel): pop finito quando todas as
+ * checagens passam. `prefers-reduced-motion` desliga a animação (o banner
+ * continua aparecendo, estático).
+ */
+@keyframes sz-activity-pop {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.sz-activity-pop {
+  animation: sz-activity-pop 350ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sz-activity-pop {
+    animation: none;
+  }
+}

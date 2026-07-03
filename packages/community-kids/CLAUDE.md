@@ -12,8 +12,23 @@ lime neon `#C4F042` sobre `#0D1117`; acentos SÓ cyan/lime/vermelho — sem hues
 fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), CTA "botão 3D" (sombra
 dura + afunda no clique), microinterações `kid-pop`/`kid-wiggle`/`kid-float` com
 `prefers-reduced-motion` global. **Layout próprio (≠ community)**: sidebar fixa no desktop + top
-bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`), home com mascote + card-herói
-"Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
+bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`). **Nav (lote UX 07/2026):** a sidebar
+segue com os 9 `NAV_ITEMS`; a TAB BAR mobile usa **`MOBILE_NAV_ITEMS` (5 abas)** — Início, Cursos,
+**Criar**, Mural, Perfil (9 alvos eram minúsculos p/ mãos pequenas). "Criar" → **`/criar`**
+(`(app)/criar/page.tsx`, em `protectedPrefixes`): hub de cards do trio criativo (Pensa→Pinta→
+Estúdio, na ordem da jornada) + Quarto + Clube; a aba acende nessas rotas (`NavItem.match` aceita
+`string | string[]`). **Home (lote UX 07/2026):** o StreakCard MORREU — virou
+**`creator-career-card.tsx`** ("Carreira de Criador": aura + insígnia do rank + `nextLevelHint` +
+fogo/XP secundários; placeholder gentil quando a gamificação está fora; a home soma
+`getAvatarReadonly()` ao Promise.all p/ a foto da aura). **Festa no fim do vídeo:** a
+auto-conclusão a 90% ARMA a celebração (`deferredCelebrationRef` no lesson-player-client) e o
+overlay completo abre no **`onVideoEnded`** (fio novo do member-shell); manual segue igual.
+**Cartão do jogo com QR** (`game-card-dialog.tsx`; dep `qrcode` client-side, canvas puro
+CSP-safe): botão QrCode no `PlayLinkActions` dos cards do Mural → cartão imprimível (capa +
+título + QR do `/jogar/<id>`; imprimir usa `body[data-print='game-card']` + regra `@media print`
+no globals.css). **`/estudio` com paleta calma:** `studio-full-client` passa
+`level="intermediario"` + `allowLevelReveal` ao `StudioEditor` (aceita curadoria desde 07/2026).
+Home com mascote + card-herói "Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
 (`course-trail.tsx` + `trail-layout.ts` puro/testado: módulo = unidade temática
 cyan→lime→gradiente via `unit-theme.ts`, aula = nó circular; com a **trava sequencial** do curso
 (`sequential_lock`, estilo Duolingo) as aulas posteriores vêm `locked` do members → nó com
@@ -264,6 +279,49 @@ anexo (o servidor recusaria).
    marca (letras desenhadas em paths, nunca `<text>`). Favicons herdados do community DE
    PROPÓSITO (decisão: mesmo favicon).
 
+## Pensa (planejamento guiado — produto vendável, 07/2026)
+
+O **Pensa** (`@sistemazero/pensa`) é o app da metodologia ZERO onde a criança PLANEJA o jogo
+antes de construir no Estúdio: projeto → ciclos "Versão N" → etapas **Z** (Zerar a Bagunça,
+chat com o Zappy pelas 5 perguntas) / **E** (Enxergar o Jogo) / **R** (Rodar as Missões) /
+**O** (O Grande Lançamento). Item "Pensa" no `nav.ts` (Lightbulb, entre Mural e Pinta — o trio
+criativo Pensa→Pinta→Estúdio anda JUNTO no menu) → rota
+`/pensa` (`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+`app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
+ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
+`KidsPensaUnavailable` (retry); com acesso = `pensa-client.tsx` (`'use client'`, import dinâmico
+do pacote no effect, tema do next-themes, **`mascotImages` = os sprites `/zappy/*.webp`** — a
+carinha do Zappy dentro do Pensa). Diferente do Estúdio (IndexedDB), a persistência é
+BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
+(shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` tem
+`force-dynamic`). Erros do transport são duck-typed `{status, code}` (a classe não atravessa o
+dynamic import). `MainContainer` dá largura total a `/pensa` (kanban/Modo Missão). Requisitos de
+build: `transpilePackages` + `@import` do `pensa.css` + `@source "../../../pensa/src"` no
+globals.css (MESMO gotcha das utilitárias `sz-*` do Estúdio — sem isso as `pz-*` são no-op).
+`api/pensa/*` fica DENTRO do matcher do proxy (JSON pequeno; a resposta SSE não é bufferizada
+pelo middleware). Deploy: `packages/pensa/**` nos watchPatterns do railway.json + case no ci.yml.
+
+## Pinta (editor de assets de jogos — produto vendável, 07/2026)
+
+O **Pinta** (`@sistemazero/pinta`) é o ateliê onde a criança DESENHA os assets dos jogos: pixel
+art (personagens com ANIMAÇÕES + prévia rodando, cenários), peças/mapas e desenho livre —
+terceiro irmão do fluxo criativo (**Pensa planeja → Pinta desenha → Estúdio constrói**). Item
+"Pinta" no `nav.ts` (Palette, imediatamente antes de Estúdio) → rota `/pinta`
+(`protectedPrefixes`), gate de produto em 3 ESTADOS espelhando o `/estudio`:
+`app/(app)/pinta/page.tsx` chama `checkPintaAccessReadonly()` (refs `pinta,estudio-completo` numa
+ida — a 2ª vira `studioOwned`, copy da ponte) → 200 sem produto = `KidsLockedPinta`; status ≠ 200
+= `KidsPintaUnavailable` (retry); com acesso = `pinta-client.tsx` (`'use client'`, import
+dinâmico no effect, tema do next-themes). **Sem backend próprio**: a galeria vive no IndexedDB
+POR PERFIL (`setPintaStorageNamespace(viewerId)` ANTES de montar — mesmo contrato do /estudio) e
+a ponte **"Usar no Estúdio"** grava na biblioteca pessoal do Studio
+(`@sistemazero/studio/personal-assets` → `savePersonalAsset`, upsert por id) — o desenho aparece
+em "Meus desenhos" no painel de Imagens do `/estudio` do MESMO perfil. `MainContainer` dá largura
+total a `/pinta`. Requisitos de build: `transpilePackages` + `@import` do `pinta.css` +
+`@source "../../../pinta/src"` no globals.css (MESMO gotcha das utilitárias `sz-*`/`pz-*` — sem
+isso as `pin-*` são no-op e os modais saem washed-out). Deploy: `packages/pinta/**` (e
+`packages/studio/**`) nos watchPatterns do railway.json + case `packages/pinta/*` no ci.yml.
+Produto no catálogo: sku/slug/chave **`pinta`** (seed idempotente, R$97 placeholder).
+
 ## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
 
 > **Fonte da verdade do contrato/regras/idempotência:** o [CLAUDE.md do members](../members/CLAUDE.md)
@@ -311,7 +369,7 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `room-builder.tsx` (quarto), que também leem `balanceUnlimited`. Compras da equipe voltam grátis
   (`unlimited:true`). Ver `docs/gamificacao.md` §4.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
-- **Nível do aluno (rank Noob→God, 06/2026)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
+- **Nível do aluno (rank, 06/2026; rótulos kid-friendly 07/2026: Faísca→Construtor(a)→Inventor(a)→Mestre dos Jogos→Lenda — slugs internos noob…god NÃO mudam)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
   `levelInfo()`/`nextLevelHint()`; cor = CSS var `--level-<slug>` em `globals.css` `:root`+`.dark`),
   `components/kids/avatar-with-aura.tsx` (`AvatarWithAura` — anel/brilho na cor do nível ao redor do
   `KidsAvatar`, estático p/ reduced-motion) e `level-badge.tsx` (`LevelBadge` — insígnia ícone+nome).
@@ -450,6 +508,55 @@ A `<Canvas>` precisa de
 **Backlog da gamificação:** revisão de aula estende streak? · vitrine de gamificação no community
 adulto (campos já chegam — decisão de produto). *(Ligas, lojinha/Zappy, avatar, quarto, missões e
 proteção de sequência saíram do backlog — entregues na expansão de 6 fases.)*
+
+## Fase 5 — Carreira/Projeto transversal/Troféus/Plays/Remix/Desafio (07/2026, não commitado)
+
+> ⚠️ **Restrição central**: Pensa/Pinta/Estúdio/Clube/Mural são produtos VENDIDOS À PARTE — nada
+> da jornada/gamificação nuclear DEPENDE deles; integrações cross-app só aparecem com a POSSE
+> dos dois lados (`GET /members/access?refs=csv`). Ver memória `produtos-vendidos-a-parte.md`.
+
+- **Troféus no quarto (A):** aba "🏆 Troféus" no `room-builder` (ganho = posicionável; não-ganho =
+  cadeado + dica `TROPHY_HINT` de `lib/room-catalog.ts`, sem preço — tier `trophy` não é comprável);
+  6 modelos low-poly em `furniture-models.tsx` (+ material `gold`). Badge nova `first-showcase` em
+  `badges.ts`; a `lesson-celebration` mostra "🏆 Um troféu novo apareceu no seu quarto!" quando a
+  badge destravada está em `TROPHY_BADGE_SLUGS`. Conformance kids×members cobre os itens.
+- **Carreira (B):** `career-timeline.tsx` no `/perfil` — escada universal Faísca→Lenda (rung atual +
+  `nextLevelHint`) + FEITOS como cartões (universais primeiro; badges `studio-*`/`pensa-*` agrupadas
+  em "Bônus dos apps criativos"; troféu → link "veja no seu quarto") + linha de jogos/jogadas. O
+  `CreatorCareerCard` (home) ganhou "seus jogos já foram jogados N vezes" + "Ver minha carreira"
+  (dados de `shell.hub.myShowcaseStatsReadonly()`, best-effort).
+- **Plays (B):** cards/detalhe do Mural mostram "🎮 N jogadas" (`thread.playsCount`; contado no
+  resolve público do /jogar com dedupe ip:playId no BFF).
+- **Remix (B):** página do Mural checa `checkStudioAccessReadonly` → `canRemix` no
+  `KidsSpaceViewClient`; botão "Fazer a minha versão" no `PlayLinkActions` (só com posse do
+  Estúdio) → fetch `/api/studio/play/:id` → `setStudioStorageNamespace(viewerId)` →
+  `importProjectSnapshot(snapshot, {name: 'Remix de <título>'})` → toast + push `/estudio`.
+- **Projeto transversal Pensa↔Pinta (C):** a página `/pensa` também checa
+  `checkPintaAccessReadonly` (best-effort) → `pintaOwned` no `PensaClient`, que SÓ então liga o
+  `onOpenPinta` — o intent da missão de arte vai por `sessionStorage sz:pinta:intent`
+  (`components/kids/pinta-intent.ts`: chave + reader/clear compartilhados) e o `pinta-client` o lê
+  1x no mount (lazy useState + clear em efeito) → `adapter.initialIntent` (o Pinta abre o "Criar
+  novo" pré-configurado; asset nasce com `projectRef` e a galeria agrupa por jogo).
+- **Desafio do MÊS (D — game jam, decisão da usuária: MENSAL e só Clube+Estúdio):** card
+  `challenge-card.tsx` na home SÓ com as duas refs (`checkChallengeAccessReadonly`, 1 ida; tema de
+  `getChallengeReadonly` — determinístico global, `m:YYYY-MM` SP); o `/estudio` passa
+  `challenge={key,title}` ao `StudioFullClient` → checkbox "Participar do Desafio" no Compartilhar
+  (o publish leva `challengeKey`; gate REAL no hub com drop silencioso); o Mural ganha a PRATELEIRA
+  "🏆 Desafio do mês" no topo (posts com `challengeKey` do mês — visível a quem vê o Mural; a
+  posse só é exigida p/ PARTICIPAR). Participar = marco `challenge_entry` (XP 50 + badge
+  `challenge-first`) via webhook hub→members.
+- **Report dos pais (E):** o card de cada filho na Área dos pais (`perfis-client.tsx`
+  `ChildStatsCard`) ganhou o bloco **"Esta semana"** (`ChildWeekBlock`: destaques em uma linha
+  a partir de `child.week` + jogos publicados no Mural em `child.games`, cada um com botão
+  "Cartão" reusando o `GameCardDialog` QR; `games` nulo = hub fora, só os números) e o
+  `ChildrenDashboard` ganhou o **`WeeklyReportToggle`** (checkbox "Receber o resumo da semana
+  por e-mail" → `GET|PUT /api/parents/report-prefs`, shim NOVO gateado por
+  `requireParentGateAccountOnly` nos DOIS métodos — mesma régua do children-stats). O e-mail em
+  si é do members (job de sexta 17h SP; ver o CLAUDE.md de lá).
+- **PENDENTE da Fase 5:** QA em browser + aplicar migrations members 0029–0035 e hub 0005 +
+  re-rodar `templates:seed` do messaging (template `weekly-report`) + envs novas do members
+  (`AUTH_BASE_URL`/`AUTH_INTERNAL_TOKEN`/`GATEWAY_URL`/`MEMBERS_HMAC_SECRET`/
+  `KIDS_COMMUNITY_URL`) e do gateway (`MEMBERS_HMAC_SECRET`).
 
 ## Full review (segurança + desempenho — lente infantil) — 19/06/2026
 
@@ -681,8 +788,16 @@ Verde: typecheck + test (26) + biome + `build:kids`. Achados LOW corrigidos:
   GLB cacheado in-place — BENIGNO no estado atual (miniaturas são PNG estático → só 1 consumidor vivo
   do GLB por vez; o fallback ao vivo CLONA antes de recolorir); vira risco só se duas peças com o
   MESMO URL+cor diferente renderizarem juntas. Mantido como está; clonar como o `thumb-canvas` é
-  endurecimento opcional, não correção. Compras em 1 toque, sem-PIN entre irmãos e nome no perfil
-  público (opt-in) seguem decisões de produto.
+  endurecimento opcional, não correção. Sem-PIN entre irmãos e nome no perfil
+  público (opt-in) seguem decisões de produto. ⚠️ **Compra em 1 toque MUDOU (07/2026, lote UX kids)**:
+  avatar e quarto agora têm **confirmação LEVE em 2 toques** — 1º toque numa peça/item travado VESTE de
+  prévia (avatar; o `hasLocked` já bloqueava o Salvar) ou arma a confirmação (quarto), mostra barra com
+  preço + "Deixar para depois" (desfaz a prévia) e o chip do item vira "Comprar? N"; o 2º toque no MESMO
+  item compra. A confirmação só desarma no SUCESSO (falha por saldo mantém a barra p/ desistir).
+  `configurator.tsx` (`pendingBuy`/`cancelPendingBuy`) e `room-builder.tsx` (`confirmBuyId`/
+  `resolvePendingBuy` + `PriceChip`). No MESMO lote UX: cooldown do quiz 5min→90s (members) com copy de
+  "hora de revisar"; ranks renomeados (ver Nível do aluno); StreakCard/MissionsPanel ganham placeholder
+  gentil quando a gamificação está fora (não somem mais); copy do catálogo/vazios em tom kids.
 
 ## Full review (correções) — 28/06/2026 (2ª passada — refator do gate Clube/Mural)
 

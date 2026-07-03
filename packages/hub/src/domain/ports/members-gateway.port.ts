@@ -47,6 +47,17 @@ export interface ShowcasePublishedArgs {
   audience: 'adult' | 'kids'
 }
 
+/** Argumentos da notificação "aluno publicou no DESAFIO do mês" (XP + badge). */
+export interface ChallengeEntryArgs {
+  /** PERFIL de criança (dono da gamificação) — `x-auth-user-id`. */
+  userId: string
+  /** CONTA do responsável — `x-auth-account-id ?? userId`. */
+  accountId: string
+  audience: 'adult' | 'kids'
+  /** `m:YYYY-MM` — o service SÓ chama com a chave já VALIDADA (posse + mês corrente). */
+  challengeKey: string
+}
+
 export interface MembersGateway {
   checkAccess(
     userId: string,
@@ -61,4 +72,10 @@ export interface MembersGateway {
    * publicação não pode falhar por causa disso); o members é idempotente por user+curso.
    */
   notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void>
+  /**
+   * Avisa o members que o aluno publicou no Mural com a tag do DESAFIO do mês —
+   * grava o marco `challenge_entry` (XP + badge). **Best-effort** como o showcase;
+   * o members deduplica por mês (sourceId determinístico do monthKey).
+   */
+  notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void>
 }

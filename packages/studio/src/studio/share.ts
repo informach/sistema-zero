@@ -51,6 +51,12 @@ export interface StudioSharePublishInput {
   title: string
   /** Descrição final, já revisada/editada pela criança. */
   description: string
+  /**
+   * Tag do DESAFIO do mês (`m:YYYY-MM`) — presente quando a criança marcou o
+   * checkbox "Participar do Desafio" (só aparece com `adapter.challenge`). O
+   * gate REAL (posse + mês) é do servidor, com drop silencioso da tag.
+   */
+  challengeKey?: string
 }
 
 /**
@@ -58,6 +64,12 @@ export interface StudioSharePublishInput {
  * precisa saber) como elas funcionam por dentro.
  */
 export interface StudioShareAdapter {
+  /**
+   * DESAFIO do mês (game jam): presente → o ShareDialog mostra o checkbox
+   * "🏆 Participar do Desafio: <title>"; marcado, o publish leva `challengeKey`.
+   * O host SÓ passa quando a criança possui Clube+Estúdio (o gate real é o do hub).
+   */
+  challenge?: { key: string; title: string }
   /**
    * Título inicial do post. Ausente (ex.: Estúdio Completo) → cai no nome do projeto.
    */

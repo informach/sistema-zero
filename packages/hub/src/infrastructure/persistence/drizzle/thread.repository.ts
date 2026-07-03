@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, max, or, type SQL, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, inArray, lt, max, or, type SQL, sql } from 'drizzle-orm'
 import { DuplicateSlugError } from '../../../domain/hub-errors'
 import type {
   CreateCommentInput,
@@ -30,6 +30,8 @@ const toThread = (r: ThreadRow): Thread => ({
   authorPublic: r.authorPublic,
   coverImageUrl: r.coverImageUrl,
   playId: r.playId,
+  playsCount: r.playsCount,
+  challengeKey: r.challengeKey,
   lastActivityAt: r.lastActivityAt,
   createdAt: r.createdAt,
   editedAt: r.editedAt,
@@ -137,6 +139,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
         authorPublic: input.authorPublic,
         coverImageUrl: input.coverImageUrl,
         playId: input.playId,
+        challengeKey: input.challengeKey ?? null,
         showcaseIdempotencyKey: input.idempotencyKey,
         lastActivityAt: input.now,
         createdAt: input.now,
@@ -154,7 +157,24 @@ export class DrizzleThreadRepository implements ThreadRepository {
     return { thread: toThread(existing as ThreadRow), deduped: true }
   }
 
-  async hasVisibleShowcasePlayId(playId: string): Promise<boolean> {
+  async hasVisibleShowcasePlayId(playId: string, countHit = false): Promise<boolean> {
+    if (countHit) {
+      // Hit FUNDIDO no resolve (1 round-trip): o RETURNING responde o "visível?"
+      // e o UPDATE conta a jogada. NÃO bump-a `version` — jogar não é edição (um
+      // play concorrente não pode fazer a moderação/edição dar 409).
+      const rows = await this.db
+        .update(threads)
+        .set({ playsCount: sql`${threads.playsCount} + 1` })
+        .where(
+          and(
+            eq(threads.playId, playId),
+            eq(threads.isShowcase, true),
+            eq(threads.status, 'visible'),
+          ),
+        )
+        .returning({ id: threads.id })
+      return rows.length > 0
+    }
     const [row] = await this.db
       .select({ id: threads.id })
       .from(threads)
@@ -169,6 +189,53 @@ export class DrizzleThreadRepository implements ThreadRepository {
     return Boolean(row)
   }
 
+  async listShowcaseByAuthors(
+    authorIds: string[],
+    from: Date,
+    to: Date,
+  ): Promise<Array<{ authorId: string; title: string; playId: string | null; createdAt: Date }>> {
+    if (authorIds.length === 0) return []
+    // Usa o threads_author_status_idx (autor+status); a janela é curta (1 semana).
+    const rows = await this.db
+      .select({
+        authorId: threads.authorId,
+        title: threads.title,
+        playId: threads.playId,
+        createdAt: threads.createdAt,
+      })
+      .from(threads)
+      .where(
+        and(
+          inArray(threads.authorId, authorIds),
+          eq(threads.isShowcase, true),
+          eq(threads.status, 'visible'),
+          gte(threads.createdAt, from),
+          lt(threads.createdAt, to),
+        ),
+      )
+      .orderBy(desc(threads.createdAt))
+    return rows
+  }
+
+  async showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }> {
+    // Agregado NO banco (usa o threads_author_status_idx): "seus jogos já foram
+    // jogados N vezes" do card de carreira — nunca lista threads p/ somar no app.
+    const [row] = await this.db
+      .select({
+        published: sql<number>`count(*)::int`,
+        plays: sql<number>`coalesce(sum(${threads.playsCount}), 0)::int`,
+      })
+      .from(threads)
+      .where(
+        and(
+          eq(threads.authorId, authorId),
+          eq(threads.isShowcase, true),
+          eq(threads.status, 'visible'),
+        ),
+      )
+    return { published: row?.published ?? 0, plays: row?.plays ?? 0 }
+  }
+
   async findThreadById(id: string): Promise<Thread | null> {
     const [row] = await this.db.select().from(threads).where(eq(threads.id, id)).limit(1)
     return row ? toThread(row) : null
@@ -179,17 +246,22 @@ export class DrizzleThreadRepository implements ThreadRepository {
     opts: ListThreadsOpts,
   ): Promise<{ items: Thread[]; hasMore: boolean }> {
     const vis = threadVisibility(opts)
+    // Filtro do desafio mensal (prateleira do Mural): usa o índice parcial.
+    const challenge = opts.challengeKey ? eq(threads.challengeKey, opts.challengeKey) : undefined
     // Página 1 (sem cursor): os FIXADOS vêm primeiro (sempre visíveis).
     const pinned =
       opts.cursor === null
         ? await this.db
             .select()
             .from(threads)
-            .where(and(eq(threads.channelId, channelId), eq(threads.isPinned, true), vis))
+            .where(
+              and(eq(threads.channelId, channelId), eq(threads.isPinned, true), vis, challenge),
+            )
             .orderBy(desc(threads.lastActivityAt), desc(threads.id))
         : []
 
     const where: SQL[] = [eq(threads.channelId, channelId), eq(threads.isPinned, false), vis as SQL]
+    if (challenge) where.push(challenge)
     if (opts.cursor) {
       // Row comparison: (last_activity_at, id) < (cursor) → próxima página (desc).
       where.push(

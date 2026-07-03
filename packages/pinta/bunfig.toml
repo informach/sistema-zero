@@ -1,0 +1,3 @@
+[test]
+# happy-dom global (document/window) p/ os testes de componente.
+preload = ["./test-setup.ts"]

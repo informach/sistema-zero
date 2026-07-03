@@ -10,6 +10,7 @@ import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
+import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -18,6 +19,7 @@ export interface HttpDeps {
   /** Probe de readiness (`/readyz`): banco alcançável. */
   readiness: ReadinessProbe
   members: MembersRoutesDeps
+  pensa: PensaRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
   content: ContentRoutesDeps
@@ -31,13 +33,35 @@ const STUDIO_SUBMISSION_PATH = /\/studio-submission$/
 const ADMIN_BLOCK_CREATE_PATH = /\/members\/admin\/lessons\/[^/]+\/blocks$/
 const ADMIN_BLOCK_UPDATE_PATH = /\/members\/admin\/blocks\/[^/]+$/
 
+// Rotas do Pensa com corpo GRANDE (conversa de turno, artefato jsonb, replace de
+// tasks): o teto padrão de 64 KB barraria payloads legítimos. Teto FIXO de 1 MB
+// (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
+// racional do MAX_STUDIO_BODY_BYTES).
+const PENSA_CONVERSATION_PATH = /\/members\/pensa\/cycles\/[^/]+\/stages\/[^/]+\/conversation$/
+const PENSA_ARTIFACT_CREATE_PATH = /\/members\/pensa\/cycles\/[^/]+\/artifacts$/
+const PENSA_TASKS_REPLACE_PATH = /\/members\/pensa\/cycles\/[^/]+\/tasks$/
+const MAX_PENSA_BODY_BYTES = 1024 * 1024
+
+// Snapshot do Estúdio na nuvem (Pensa): o PUT carrega o jogo INTEIRO serializado
+// (cap de 1.8M chars no use case) — o teto de 1 MB do Pensa NÃO basta; entra no
+// teto de 2 MB do Estúdio (MAX_STUDIO_BODY_BYTES — é o mesmo perfil de payload).
+const PENSA_STUDIO_SNAPSHOT_PATH = /\/members\/pensa\/projects\/[^/]+\/studio-snapshot$/
+
 function bodyLimitForPath(pathname: string, env: Env): number {
   if (
     STUDIO_SUBMISSION_PATH.test(pathname) ||
     ADMIN_BLOCK_CREATE_PATH.test(pathname) ||
-    ADMIN_BLOCK_UPDATE_PATH.test(pathname)
+    ADMIN_BLOCK_UPDATE_PATH.test(pathname) ||
+    PENSA_STUDIO_SNAPSHOT_PATH.test(pathname)
   ) {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
+  }
+  if (
+    PENSA_CONVERSATION_PATH.test(pathname) ||
+    PENSA_ARTIFACT_CREATE_PATH.test(pathname) ||
+    PENSA_TASKS_REPLACE_PATH.test(pathname)
+  ) {
+    return Math.max(MAX_PENSA_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
   return env.MAX_REQUEST_BODY_BYTES
 }
@@ -49,7 +73,11 @@ function bodyLimitForPath(pathname: string, env: Env): number {
 export function createServer(deps: HttpDeps) {
   // O teto do Bun.serve é o MAIOR dos limites — o per-rota (mais estrito) é
   // aplicado no `onParse`; senão o Bun cortaria a entrega do Estúdio antes dela.
-  const serveCeiling = Math.max(deps.env.MAX_REQUEST_BODY_BYTES, deps.env.MAX_STUDIO_BODY_BYTES)
+  const serveCeiling = Math.max(
+    deps.env.MAX_REQUEST_BODY_BYTES,
+    deps.env.MAX_STUDIO_BODY_BYTES,
+    MAX_PENSA_BODY_BYTES,
+  )
   const app = new Elysia({
     serve: { maxRequestBodySize: serveCeiling },
   })
@@ -104,6 +132,7 @@ export function createServer(deps: HttpDeps) {
   return app
     .use(healthRoutes(deps.readiness))
     .use(membersRoutes(deps.members))
+    .use(pensaRoutes(deps.pensa))
     .use(webhooksRoutes(deps.webhooks))
     .use(adminRoutes(deps.admin))
     .use(contentRoutes(deps.content))

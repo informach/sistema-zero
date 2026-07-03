@@ -14,6 +14,7 @@ import { listAllProjects, type ProjectSummary } from '../state/persistence'
 import { useProjectStore } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { type StudioTheme, StudioThemeProvider } from '../studio/theme'
+import { KitGallery } from './KitGallery'
 
 export interface ProjectListProps {
   /** Chamado quando um projeto deve abrir no editor (criado, importado ou clicado). */
@@ -39,6 +40,8 @@ export function ProjectList({
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null)
   const [search, setSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  // Vitrine de kits: aberta por padrão só no primeiro uso (lista vazia).
+  const [kitsOpen, setKitsOpen] = useState(false)
   // A lista vive FORA do <Studio>, então aplica o tema por conta própria: o host
   // pode FIXAR o tema (`themeProp`); senão cai na preferência do settingsStore
   // (singleton compartilhado com o editor), carregada no mount.
@@ -127,19 +130,46 @@ export function ProjectList({
             {filtered === null ? (
               <p className="text-sm text-sz-fg-soft">Carregando…</p>
             ) : filtered.length === 0 && projects?.length === 0 ? (
-              <EmptyState onCreate={() => setModalOpen(true)} />
+              // Primeiro uso: a vitrine É o onboarding (jogo pronto em 1 clique),
+              // com o "começar do zero" como alternativa.
+              <div className="flex flex-col gap-6 rounded-lg border border-dashed border-sz-border bg-sz-panel/40 p-6">
+                <p className="text-sm text-sz-fg-soft">{t('projects.empty')}</p>
+                <KitGallery onOpenProject={onOpenProject} />
+                <div>
+                  <Button variant="ghost" size="sm" onClick={() => setModalOpen(true)}>
+                    + {t('kits.scratch')}
+                  </Button>
+                </div>
+              </div>
             ) : filtered.length === 0 ? (
               <p className="text-sm text-sz-fg-soft">{t('projects.emptySearch')}</p>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filtered.map((summary) => (
-                  <ProjectCard
-                    key={summary.id}
-                    summary={summary}
-                    onChanged={() => void reload()}
-                    onOpen={() => onOpenProject(summary.id)}
-                  />
-                ))}
+              <div className="flex flex-col gap-6">
+                <div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-expanded={kitsOpen}
+                    onClick={() => setKitsOpen((value) => !value)}
+                  >
+                    <span aria-hidden>🎮</span> {kitsOpen ? t('kits.hide') : t('kits.show')}
+                  </Button>
+                  {kitsOpen ? (
+                    <div className="mt-4 rounded-lg border border-sz-border bg-sz-panel/40 p-4">
+                      <KitGallery onOpenProject={onOpenProject} />
+                    </div>
+                  ) : null}
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {filtered.map((summary) => (
+                    <ProjectCard
+                      key={summary.id}
+                      summary={summary}
+                      onChanged={() => void reload()}
+                      onOpen={() => onOpenProject(summary.id)}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -155,16 +185,5 @@ export function ProjectList({
         />
       </div>
     </StudioThemeProvider>
-  )
-}
-
-function EmptyState({ onCreate }: { onCreate: () => void }): JSX.Element {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-sz-border bg-sz-panel/40 px-6 py-16 text-center">
-      <p className="mb-4 text-sm text-sz-fg-soft">{t('projects.empty')}</p>
-      <Button variant="primary" size="md" onClick={onCreate}>
-        + {t('projects.new')}
-      </Button>
-    </div>
   )
 }

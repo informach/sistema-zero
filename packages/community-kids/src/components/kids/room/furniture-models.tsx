@@ -336,6 +336,79 @@ function Espelho({ w, h }: FProps) {
   )
 }
 
+// ── 🏆 Troféus (07/2026) — concedidos por conquista; dourado com brilho leve ──
+function TrofeuPrimeiroJogo() {
+  return (
+    <group>
+      <Box s={[0.56, 0.16, 0.56]} p={[0, 0.08, 0]} m="woodDark" />
+      <Cyl s={[0.14, 0.3, 0.14]} p={[0, 0.3, 0]} m="gold" />
+      <Cyl s={[0.42, 0.34, 0.42]} p={[0, 0.62, 0]} m="gold" />
+      <Ball s={[0.14, 0.14, 0.14]} p={[-0.3, 0.66, 0]} m="gold" />
+      <Ball s={[0.14, 0.14, 0.14]} p={[0.3, 0.66, 0]} m="gold" />
+      <Ball s={[0.16, 0.16, 0.16]} p={[0, 0.88, 0]} m="yellow" />
+    </group>
+  )
+}
+
+function TrofeuDiploma({ w, h }: FProps) {
+  return (
+    <group>
+      <Box s={[w * 0.88, h * 0.9, 0.08]} p={[0, 0, 0]} m="gold" />
+      <Box s={[w * 0.72, h * 0.72, 0.04]} p={[0, 0, 0.05]} m="cream" />
+      <Ball s={[w * 0.18, w * 0.18, 0.06]} p={[w * 0.2, -h * 0.22, 0.08]} m="red" />
+      <Box s={[w * 0.5, 0.05, 0.03]} p={[0, h * 0.16, 0.07]} m="grayDark" />
+      <Box s={[w * 0.42, 0.05, 0.03]} p={[0, h * 0.02, 0.07]} m="grayDark" />
+    </group>
+  )
+}
+
+function TrofeuChama() {
+  return (
+    <group>
+      <Cyl s={[0.5, 0.2, 0.5]} p={[0, 0.1, 0]} m="grayDark" />
+      <Cone s={[0.36, 0.6, 0.36]} p={[0, 0.5, 0]} m="red" />
+      <Cone s={[0.22, 0.44, 0.22]} p={[0.04, 0.62, 0]} m="yellow" />
+      <Cone s={[0.1, 0.26, 0.1]} p={[-0.03, 0.74, 0]} m="lamp" />
+    </group>
+  )
+}
+
+function TrofeuMedalhaMil({ w, h }: FProps) {
+  return (
+    <group>
+      <Box s={[w * 0.34, h * 0.5, 0.05]} p={[0, h * 0.24, 0]} m="blue" />
+      <Ball s={[w * 0.6, w * 0.6, 0.12]} p={[0, -h * 0.14, 0.04]} m="gold" />
+      <Ball s={[w * 0.4, w * 0.4, 0.1]} p={[0, -h * 0.14, 0.1]} m="yellow" />
+    </group>
+  )
+}
+
+function TrofeuFoguete({ h }: FProps) {
+  return (
+    <group>
+      <Cyl s={[0.5, 0.16, 0.5]} p={[0, 0.08, 0]} m="grayDark" />
+      <Cyl s={[0.34, h * 0.5, 0.34]} p={[0, h * 0.36, 0]} m="white" />
+      <Cone s={[0.34, 0.4, 0.34]} p={[0, h * 0.66, 0]} m="red" />
+      <Ball s={[0.16, 0.16, 0.1]} p={[0, h * 0.4, 0.16]} m="glass" />
+      <Cone s={[0.16, 0.3, 0.16]} p={[-0.22, 0.24, 0]} m="red" />
+      <Cone s={[0.16, 0.3, 0.16]} p={[0.22, 0.24, 0]} m="red" />
+      <Cone s={[0.2, 0.26, 0.2]} p={[0, 0.12, 0]} m="lamp" r={[Math.PI, 0, 0]} />
+    </group>
+  )
+}
+
+function TrofeuConsole() {
+  return (
+    <group>
+      <Box s={[0.6, 0.5, 0.44]} p={[0, 0.4, 0]} m="grayDark" />
+      <Box s={[0.48, 0.3, 0.04]} p={[0, 0.46, 0.23]} m="screen" />
+      <Box s={[0.64, 0.16, 0.5]} p={[0, 0.08, 0]} m="gold" />
+      <Ball s={[0.08, 0.08, 0.08]} p={[-0.14, 0.14, 0.28]} m="red" />
+      <Ball s={[0.08, 0.08, 0.08]} p={[0.14, 0.14, 0.28]} m="green" />
+    </group>
+  )
+}
+
 function FallbackBox({ w, h }: FProps) {
   return <Box s={[w * 0.7, 0.7, h * 0.7]} p={[0, 0.35, 0]} m="gray" />
 }
@@ -397,6 +470,18 @@ export function FurnitureModel({ itemId, w, h }: { itemId: string; w: number; h:
       return <Luminaria />
     case 'vela':
       return <Vela />
+    case 'trofeu-primeiro-jogo':
+      return <TrofeuPrimeiroJogo />
+    case 'trofeu-diploma':
+      return <TrofeuDiploma w={w} h={h} />
+    case 'trofeu-chama':
+      return <TrofeuChama />
+    case 'trofeu-medalha-mil':
+      return <TrofeuMedalhaMil w={w} h={h} />
+    case 'trofeu-foguete':
+      return <TrofeuFoguete w={w} h={h} />
+    case 'trofeu-console':
+      return <TrofeuConsole />
     default:
       return <FallbackBox w={w} h={h} />
   }

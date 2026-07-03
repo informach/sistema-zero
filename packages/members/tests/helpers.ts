@@ -19,6 +19,7 @@ import {
 import { AwardGamificationService } from '../src/application/gamification/award-gamification.service'
 import { BuyStreakFreezeService } from '../src/application/gamification/buy-streak-freeze.service'
 import { ClaimMissionService } from '../src/application/gamification/claim-mission.service'
+import { GetChallengeService } from '../src/application/gamification/get-challenge.service'
 import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
 import { GetLeagueService } from '../src/application/gamification/get-league.service'
 import { GetMissionsService } from '../src/application/gamification/get-missions.service'
@@ -45,6 +46,23 @@ import { ListMembersService } from '../src/application/list-members/list-members
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
+import { ParentReportPrefsService } from '../src/application/parent-report/report-prefs.service'
+import { AdvancePensaStageService } from '../src/application/pensa/advance-stage.service'
+import { AppendPensaConversationTurnService } from '../src/application/pensa/append-conversation-turn.service'
+import { CreatePensaCycleService } from '../src/application/pensa/create-cycle.service'
+import { CreatePensaProjectService } from '../src/application/pensa/create-project.service'
+import { GetPensaProjectService } from '../src/application/pensa/get-project.service'
+import { GetPensaStageService } from '../src/application/pensa/get-stage.service'
+import { GetPensaStudioSnapshotService } from '../src/application/pensa/get-studio-snapshot.service'
+import { ListPensaProjectsService } from '../src/application/pensa/list-projects.service'
+import { ReplacePensaChecklistService } from '../src/application/pensa/replace-checklist.service'
+import { ReplacePensaTasksService } from '../src/application/pensa/replace-tasks.service'
+import { SavePensaArtifactService } from '../src/application/pensa/save-artifact.service'
+import { SavePensaStudioSnapshotService } from '../src/application/pensa/save-studio-snapshot.service'
+import { TogglePensaChecklistItemService } from '../src/application/pensa/toggle-checklist-item.service'
+import { UpdatePensaProjectService } from '../src/application/pensa/update-project.service'
+import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
+import { ValidatePensaArtifactService } from '../src/application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
@@ -75,6 +93,7 @@ import {
   InMemoryCourseRepository,
   InMemoryEntitlementRepository,
   InMemoryGamificationRepository,
+  InMemoryParentReportRepository,
   InMemoryProcessedWebhookRepository,
   InMemoryProgressRepository,
   InMemoryQuizAttemptRepository,
@@ -83,6 +102,7 @@ import {
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
+import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
 
@@ -115,8 +135,10 @@ export function buildApp(
   const room = new InMemoryRoomRepository()
   // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
   const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
+  const parentReports = new InMemoryParentReportRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
+  const pensa = new InMemoryPensaRepository()
 
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
@@ -130,10 +152,18 @@ export function buildApp(
   const revoke = new RevokeEntitlementService({ entitlements, clock, logger: silentLogger })
 
   // Fake do hub: registra as notificações de mudança de acesso (grant) p/ asserção.
+  // `showcaseByAuthors` é configurável por teste (default null = hub indisponível).
   const hubCalls: { userId: string; event: string }[] = []
+  const hubShowcaseByAuthors: {
+    items: { authorId: string; title: string; playId: string | null; createdAt: string }[] | null
+  } = { items: null }
   const hub: HubGateway = {
     async notifyAccessChanged(userId, event) {
       hubCalls.push({ userId, event })
+    },
+    async listShowcaseByAuthors(authorIds) {
+      if (!hubShowcaseByAuthors.items) return null
+      return hubShowcaseByAuthors.items.filter((i) => authorIds.includes(i.authorId))
     },
   }
 
@@ -225,6 +255,7 @@ export function buildApp(
         clock,
       ),
       getGamification: new GetGamificationService(gamification, clock),
+      getChallenge: new GetChallengeService(gamification, clock),
       getMissions: new GetMissionsService(gamification, clock),
       claimMission: new ClaimMissionService(gamification, clock),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
@@ -236,7 +267,9 @@ export function buildApp(
         progress,
         studioSubmissions,
         clock,
+        hub,
       ),
+      parentReportPrefs: new ParentReportPrefsService(parentReports, clock),
       getAvatar: new GetAvatarService(avatar, gamification),
       buyAvatarPart: new BuyAvatarPartService(avatar, gamification, clock),
       equipAvatar: new EquipAvatarService(avatar, clock),
@@ -245,6 +278,26 @@ export function buildApp(
       getRoom: new GetRoomService(room, gamification),
       saveRoom: new SaveRoomService(room, clock),
       buyRoomItem: new BuyRoomItemService(room, gamification, clock),
+      internalToken: opts.internalToken,
+    },
+    pensa: {
+      listProjects: new ListPensaProjectsService(pensa),
+      createProject: new CreatePensaProjectService(pensa, () => randomUUID(), clock),
+      getProject: new GetPensaProjectService(pensa),
+      updateProject: new UpdatePensaProjectService(pensa, clock),
+      getStudioSnapshot: new GetPensaStudioSnapshotService(pensa),
+      saveStudioSnapshot: new SavePensaStudioSnapshotService(pensa, clock),
+      createCycle: new CreatePensaCycleService(pensa, () => randomUUID(), clock),
+      getStage: new GetPensaStageService(pensa),
+      appendConversationTurn: new AppendPensaConversationTurnService(pensa, clock),
+      saveArtifact: new SavePensaArtifactService(pensa, () => randomUUID(), clock),
+      validateArtifact: new ValidatePensaArtifactService(pensa, clock),
+      advanceStage: new AdvancePensaStageService(pensa, awardGamification, clock),
+      replaceTasks: new ReplacePensaTasksService(pensa, () => randomUUID(), clock),
+      updateTask: new UpdatePensaTaskService(pensa, clock),
+      replaceChecklist: new ReplacePensaChecklistService(pensa, () => randomUUID(), clock),
+      toggleChecklistItem: new TogglePensaChecklistItemService(pensa, clock),
+      accessCheck: new AccessCheckService(entitlements, clock),
       internalToken: opts.internalToken,
     },
     webhooks: {
@@ -328,10 +381,12 @@ export function buildApp(
     gamification,
     avatar,
     room,
+    pensa,
     processed,
     catalog,
     clockRef,
     hubCalls,
+    hubShowcaseByAuthors,
   }
 }
 

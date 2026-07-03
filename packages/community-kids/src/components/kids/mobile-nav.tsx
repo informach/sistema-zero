@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { isNavActive } from './app-sidebar'
 import { KidsLogo } from './kids-logo'
-import { NAV_ITEMS } from './nav'
+import { MOBILE_NAV_ITEMS } from './nav'
 import { StreakWidget } from './streak-widget'
 import { UserMenu } from './user-menu'
 
@@ -37,7 +37,11 @@ export function MobileTopbar({
   )
 }
 
-/** Tab bar inferior do mobile (estilo Duolingo): abas grandes ícone + label. */
+/**
+ * Tab bar inferior do mobile (estilo Duolingo): 5 abas grandes ícone + label
+ * (07/2026 — eram os 9 itens da sidebar, alvos minúsculos p/ mãos pequenas;
+ * o resto vive no hub "Criar").
+ */
 export function MobileTabbar() {
   const pathname = usePathname()
 
@@ -48,7 +52,7 @@ export function MobileTabbar() {
     >
       {/* `prefetch={false}`: mesmo motivo da sidebar — rotas `force-dynamic` + gateway numa réplica
           única não aguentam o prefetch de todos os itens a cada página (tempestade de 502/ERR_HTTP2). */}
-      {NAV_ITEMS.map((item) => {
+      {MOBILE_NAV_ITEMS.map((item) => {
         const active = isNavActive(pathname, item.href, item.match)
         const Icon = item.icon
         return (

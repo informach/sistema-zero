@@ -27,6 +27,38 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     tooltip: 'Cria um objeto com pares chave: valor. Use + para adicionar campos.',
   },
   {
+    type: 'sz_val_object_op',
+    message0: '%1 de %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'OP',
+        options: [
+          ['chaves', 'keys'],
+          ['valores', 'values'],
+          ['pares', 'entries'],
+        ],
+      },
+      { type: 'input_value', name: 'OBJ', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'A lista de chaves, valores ou pares de um objeto (Object.keys/values/entries).',
+  },
+  {
+    type: 'sz_val_index_get',
+    message0: 'item %1 de %2',
+    args0: [
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
+      { type: 'input_value', name: 'OBJ', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Lê um item por chave ou índice: obj[chave] ou lista[i].',
+  },
+  {
     type: 'sz_val_member_get',
     message0: 'propriedade %1 de %2',
     args0: [
@@ -51,6 +83,20 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Escreve uma propriedade de um objeto.',
+  },
+  {
+    type: 'sz_js_index_set',
+    message0: 'definir item %1 de %2 como %3',
+    args0: [
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
+      { type: 'input_value', name: 'OBJ', check: 'JSValue' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Escreve um item por chave ou índice: obj[chave] = v ou lista[i] = v.',
   },
   {
     type: 'sz_val_method_on',

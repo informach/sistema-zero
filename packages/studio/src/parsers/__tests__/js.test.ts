@@ -1057,7 +1057,7 @@ document.addEventListener('keyup', (e) => {
     expect(parseJS(code)).toEqual([
       {
         type: 'forEach',
-        arrayVar: 'cards',
+        arrayExpr: { type: 'var', name: 'cards' },
         itemName: 'emoji',
         indexName: 'index',
         body: [{ type: 'consoleLog', value: { type: 'var', name: 'emoji' } }],
@@ -1069,10 +1069,19 @@ document.addEventListener('keyup', (e) => {
     const code = ['itens.forEach((x) => {', '  total += x;', '});'].join('\n')
     expect(parseJS(code)[0]).toMatchObject({
       type: 'forEach',
-      arrayVar: 'itens',
+      arrayExpr: { type: 'var', name: 'itens' },
       itemName: 'x',
     })
     expect((parseJS(code)[0] as { indexName?: string }).indexName).toBeUndefined()
+  })
+
+  it('forEach aceita uma EXPRESSÃO como lista (Object.keys), não só variável', () => {
+    const code = 'Object.keys(config).forEach((chave) => { total += 1; });'
+    expect(parseJS(code)[0]).toMatchObject({
+      type: 'forEach',
+      arrayExpr: { type: 'objectOp', op: 'keys', object: { type: 'var', name: 'config' } },
+      itemName: 'chave',
+    })
   })
 
   it('reconhece setTimeout(callback, ms)', () => {

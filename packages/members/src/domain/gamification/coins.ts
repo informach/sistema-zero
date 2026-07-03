@@ -18,6 +18,10 @@ export const COIN_VALUES = {
   QUIZ_SCORE_BONUS_MAX: 5,
   /** Baú de fim de unidade (todas as aulas publicadas do módulo concluídas). */
   UNIT_COMPLETE: 15,
+  /** Pensa: etapa do ciclo concluída (advance z→e, e→r, r→o) — conta no teto diário. */
+  PENSA_STAGE_COMPLETE: 5,
+  /** Pensa: ciclo LANÇADO (advance o→done) — conta no teto diário. */
+  PENSA_CYCLE_COMPLETE: 15,
 } as const
 
 /** Teto DIÁRIO de GANHO de moeda (dia civil de São Paulo). Limita o ganho, nunca o saldo. */

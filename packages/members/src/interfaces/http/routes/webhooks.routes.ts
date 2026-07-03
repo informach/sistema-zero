@@ -4,10 +4,16 @@ import { Elysia } from 'elysia'
 import type { AwardGamificationService } from '../../../application/gamification/award-gamification.service'
 import type { GrantEntitlementService } from '../../../application/grant-entitlement/grant-entitlement.service'
 import type { RevokeEntitlementService } from '../../../application/revoke-entitlement/revoke-entitlement.service'
+import { currentChallengeKey } from '../../../domain/gamification/challenges'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import type { ProcessedWebhookRepository } from '../../../domain/ports/processed-webhook-repository.port'
 import { ValidationError } from '../../../domain/shared/errors'
-import { GrantWebhookBody, ShowcaseWebhookBody, SubscriptionWebhookBody } from '../dtos'
+import {
+  ChallengeWebhookBody,
+  GrantWebhookBody,
+  ShowcaseWebhookBody,
+  SubscriptionWebhookBody,
+} from '../dtos'
 import { getRawBody, isOversizeBody } from '../raw-body'
 import { assertWebhookSignature } from '../webhook-auth'
 
@@ -167,5 +173,37 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         return { ok: true }
       },
       { body: ShowcaseWebhookBody },
+    )
+    .post(
+      // O hub avisa que o aluno publicou no Mural com a tag do DESAFIO do mês
+      // (posse Clube+Estúdio já validada lá). Revalida o MÊS aqui: mismatch (clock
+      // skew/retry atrasado que virou o mês) → 200 SEM award — nunca 5xx, o retry
+      // martelaria um evento que jamais vai passar. Award = XP real (dedupado pelo
+      // sourceId determinístico do mês) + badge `challenge-first`.
+      '/challenge',
+      async ({ headers, body, set }) => {
+        const deliveryId = resolveDeliveryId(headers)
+        if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
+          return { ok: true, deduped: true }
+        }
+        if (body.challengeKey !== currentChallengeKey(deps.now())) {
+          deps.logger.warn('challenge.month_mismatch', { challengeKey: body.challengeKey })
+          if (deliveryId) await deps.processed.markProcessed(deliveryId, 'challenge')
+          return { ok: true, ignored: true }
+        }
+        const awarded = await deps.award.awardChallengeEntry({
+          userId: body.userId,
+          accountId: body.accountId,
+          audience: body.audience,
+          monthKey: body.challengeKey,
+        })
+        if (!awarded) {
+          set.status = 502
+          return { ok: false, error: 'CHALLENGE_AWARD_FAILED' }
+        }
+        if (deliveryId) await deps.processed.markProcessed(deliveryId, 'challenge')
+        return { ok: true }
+      },
+      { body: ChallengeWebhookBody },
     )
 }

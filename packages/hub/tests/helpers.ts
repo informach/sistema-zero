@@ -154,6 +154,19 @@ export function buildApp(
       webhookSecret: TEST_WEBHOOK_SECRET,
       toleranceSeconds: 300,
     },
+    internal: {
+      showcase: new ShowcaseService(
+        repo,
+        threadRepo,
+        members,
+        clock,
+        () => randomUUID(),
+        new Set(opts.showcaseWallSlugs ?? []),
+        opts.showcaseWallChannelSlug ?? 'parede',
+      ),
+      webhookSecret: TEST_WEBHOOK_SECRET,
+      toleranceSeconds: 300,
+    },
   })
 
   return {

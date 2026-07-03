@@ -25,7 +25,9 @@ import type { ForgotPasswordService } from '../../application/password-reset/for
 import type { ResetPasswordService } from '../../application/password-reset/reset-password.service'
 import type { RefreshService } from '../../application/refresh/refresh.service'
 import type { RegisterService } from '../../application/register/register.service'
+import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import type { TokenIssuer } from '../../domain/ports/token-issuer.port'
+import type { UserRepository } from '../../domain/ports/user-repository.port'
 import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { PayloadTooLargeError } from './errors'
@@ -67,6 +69,9 @@ export interface HttpDeps {
   readAuditLog: ReadAuditLogService
   createImpersonationToken: CreateImpersonationTokenService
   exchangeImpersonationToken: ExchangeImpersonationTokenService
+  /** Report dos pais (S2S members): identidade mínima em lote (users/emails + profiles/batch). */
+  users: UserRepository
+  profilesRepo: ProfileRepository
   /** Gerenciamento de perfis (estilo Netflix) pelo responsável. */
   profiles: ProfilesRoutesDeps
 }
@@ -149,6 +154,8 @@ export function createServer(deps: HttpDeps) {
         createPasswordToken: deps.createPasswordToken,
         ensureBuyer: deps.ensureBuyer,
         writeAuditLog: deps.writeAuditLog,
+        users: deps.users,
+        profiles: deps.profilesRepo,
         internalToken: deps.env.AUTH_INTERNAL_TOKEN,
       }),
     )

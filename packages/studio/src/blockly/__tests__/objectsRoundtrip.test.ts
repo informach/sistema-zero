@@ -133,3 +133,146 @@ describe('Objetos — round-trip código↔blocos', () => {
     })
   })
 })
+
+// Blocos novos: Object.keys/values/entries, acesso por chave e imagem do projeto.
+const SCRIPT2 = `const chaves = Object.keys(config);
+const valores = Object.values(config);
+const arte = (window.__SZGAME_ASSETS?.["heroi"] ?? "heroi");
+
+class Cena {
+  desenhar() {
+    const atual = this.dados[chave];
+  }
+}`
+
+describe('Object.keys/values, acesso por chave e imagem — round-trip', () => {
+  beforeAll(() => ensureBlocklyInitialized())
+
+  const parsed1 = parseProjectFiles(files(SCRIPT2))
+  const regenerated = generateProjectFiles({ ir: parsed1, projectName: 'Cena' })
+  const parsed2 = parseProjectFiles(regenerated)
+
+  it('o ciclo bloco↔texto é estável (parse → gerar → parse não degrada)', () => {
+    expect(parsed2.js).toEqual(parsed1.js)
+  })
+
+  it('gera os blocos novos e nada sobra como avançado', () => {
+    const types = collectTypes(buildWorkspaceStateFromIR(parsed1).blocks.blocks)
+    for (const expected of ['sz_val_object_op', 'sz_val_index_get', 'sz_val_image']) {
+      expect(types, `faltou o bloco ${expected}`).toContain(expected)
+    }
+    expect(rawCount(parsed1.js)).toBe(0)
+  })
+
+  it('via Blockly real: bloco → IR → código preserva a saída', () => {
+    const state = buildWorkspaceStateFromIR(parsed1)
+    const ws = new Blockly.Workspace()
+    Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+    const ir2 = buildIRFromWorkspace(ws)
+    const out = generateProjectFiles({
+      ir: { ...ir2, htmlShell: parsed1.htmlShell },
+      projectName: 'Cena',
+    })
+    expect(out['script.js']).toEqual(regenerated['script.js'])
+  })
+})
+
+// Fase 4b — o padrão `Resources` que motivou a ampliação: carrega imagens
+// iterando um objeto (`Object.keys(...).forEach`), lê por chave (`toLoad[key]`)
+// e cria a imagem (`new Image(); img.src = ...`).
+const SCRIPT3 = `class Resources {
+  constructor() {
+    this.toLoad = { sky: "sky.png", ground: "ground.png" };
+    this.images = {};
+    Object.keys(this.toLoad).forEach((key) => {
+      const img = new Image();
+      img.src = this.toLoad[key];
+    });
+  }
+}`
+
+describe('Resources — new Image + forEach + Object.keys + índice (Fase 4b)', () => {
+  beforeAll(() => ensureBlocklyInitialized())
+
+  const parsed1 = parseProjectFiles(files(SCRIPT3))
+  const regenerated = generateProjectFiles({ ir: parsed1, projectName: 'Recursos' })
+  const parsed2 = parseProjectFiles(regenerated)
+
+  it('o ciclo bloco↔texto é estável (parse → gerar → parse não degrada)', () => {
+    expect(parsed2.js).toEqual(parsed1.js)
+  })
+
+  it('gera os blocos novos e nada sobra como avançado', () => {
+    const types = collectTypes(buildWorkspaceStateFromIR(parsed1).blocks.blocks)
+    for (const expected of [
+      'sz_js_for_each',
+      'sz_val_object_op',
+      'sz_js_new_image',
+      'sz_val_index_get',
+    ]) {
+      expect(types, `faltou o bloco ${expected}`).toContain(expected)
+    }
+    expect(rawCount(parsed1.js)).toBe(0)
+  })
+
+  it('via Blockly real: bloco → IR → código preserva a saída', () => {
+    const state = buildWorkspaceStateFromIR(parsed1)
+    const ws = new Blockly.Workspace()
+    Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+    const ir2 = buildIRFromWorkspace(ws)
+    const out = generateProjectFiles({
+      ir: { ...ir2, htmlShell: parsed1.htmlShell },
+      projectName: 'Recursos',
+    })
+    expect(out['script.js']).toEqual(regenerated['script.js'])
+  })
+})
+
+// Resources COMPLETO: escrita por índice (`this.images[key] = {…}`) + handler de
+// carregamento (`img.onload = () => {…}`) — os 2 últimos trechos que caíam no rawJS.
+const SCRIPT4 = `class Resources {
+  constructor() {
+    this.toLoad = { sky: (window.__SZGAME_ASSETS?.["sky"] ?? "sky") };
+    this.images = {};
+    Object.keys(this.toLoad).forEach((key) => {
+      const img = new Image();
+      img.src = this.toLoad[key];
+      this.images[key] = { image: img, isLoaded: false };
+      img.onload = () => {
+        this.images[key].isLoaded = true;
+      };
+    });
+  }
+}`
+
+describe('Resources completo — indexSet + img.onload viram blocos', () => {
+  beforeAll(() => ensureBlocklyInitialized())
+
+  const parsed1 = parseProjectFiles(files(SCRIPT4))
+  const regenerated = generateProjectFiles({ ir: parsed1, projectName: 'Recursos' })
+  const parsed2 = parseProjectFiles(regenerated)
+
+  it('o ciclo bloco↔texto é estável (parse → gerar → parse não degrada)', () => {
+    expect(parsed2.js).toEqual(parsed1.js)
+  })
+
+  it('gera os blocos novos e nada sobra como avançado', () => {
+    const types = collectTypes(buildWorkspaceStateFromIR(parsed1).blocks.blocks)
+    for (const expected of ['sz_js_index_set', 'sz_js_image_onload']) {
+      expect(types, `faltou o bloco ${expected}`).toContain(expected)
+    }
+    expect(rawCount(parsed1.js)).toBe(0)
+  })
+
+  it('via Blockly real: bloco → IR → código preserva a saída', () => {
+    const state = buildWorkspaceStateFromIR(parsed1)
+    const ws = new Blockly.Workspace()
+    Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+    const ir2 = buildIRFromWorkspace(ws)
+    const out = generateProjectFiles({
+      ir: { ...ir2, htmlShell: parsed1.htmlShell },
+      projectName: 'Recursos',
+    })
+    expect(out['script.js']).toEqual(regenerated['script.js'])
+  })
+})

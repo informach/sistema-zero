@@ -62,6 +62,39 @@ const registry = new RouteRegistry([
   r({ id: 'members-purge', methods: ['DELETE'], pathPattern: '/members/admin/users/:id/data' }),
   r({ id: 'hub-admin-write', methods: ['POST', 'PATCH', 'DELETE'], pathPattern: '/hub/admin/*' }),
   r({ id: 'hub-purge', methods: ['DELETE'], pathPattern: '/hub/admin/users/:id/data' }),
+  // Pensa (planejamento guiado) — literal `pensa` no 2º segmento.
+  r({ id: 'pensa-projects', methods: ['GET', 'POST'], pathPattern: '/members/pensa/projects' }),
+  r({
+    id: 'pensa-project',
+    methods: ['GET', 'PATCH'],
+    pathPattern: '/members/pensa/projects/:projectId',
+  }),
+  r({
+    id: 'pensa-cycle-create',
+    methods: ['POST'],
+    pathPattern: '/members/pensa/projects/:projectId/cycles',
+  }),
+  r({
+    id: 'pensa-studio-snapshot',
+    methods: ['GET', 'PUT'],
+    pathPattern: '/members/pensa/projects/:projectId/studio-snapshot',
+  }),
+  r({
+    id: 'pensa-stage',
+    methods: ['GET'],
+    pathPattern: '/members/pensa/cycles/:cycleId/stages/:stage',
+  }),
+  r({
+    id: 'pensa-conversation',
+    methods: ['PUT'],
+    pathPattern: '/members/pensa/cycles/:cycleId/stages/:stage/conversation',
+  }),
+  r({
+    id: 'pensa-advance',
+    methods: ['POST'],
+    pathPattern: '/members/pensa/cycles/:cycleId/advance',
+  }),
+  r({ id: 'pensa-task-update', methods: ['PATCH'], pathPattern: '/members/pensa/tasks/:taskId' }),
 ])
 
 describe('RouteRegistry', () => {
@@ -188,6 +221,45 @@ describe('RouteRegistry', () => {
     expect(a?.params.id).toBe('abc-123')
     expect(registry.resolve('POST', '/auth/profiles/abc-123/select', 'v1')?.route.id).toBe(
       'profile-select',
+    )
+  })
+
+  test('pensa: rotas por nº de segmentos/método; não colidem entre si nem com cursos', () => {
+    expect(registry.resolve('GET', '/members/pensa/projects', 'v1')?.route.id).toBe(
+      'pensa-projects',
+    )
+    expect(registry.resolve('POST', '/members/pensa/projects', 'v1')?.route.id).toBe(
+      'pensa-projects',
+    )
+    const detail = registry.resolve('PATCH', '/members/pensa/projects/p-1', 'v1')
+    expect(detail?.route.id).toBe('pensa-project')
+    expect(detail?.params.projectId).toBe('p-1')
+    // 5 segmentos (cycles/snapshot) não caem no detalhe de 4; literais distintos não colidem.
+    expect(registry.resolve('POST', '/members/pensa/projects/p-1/cycles', 'v1')?.route.id).toBe(
+      'pensa-cycle-create',
+    )
+    expect(
+      registry.resolve('GET', '/members/pensa/projects/p-1/studio-snapshot', 'v1')?.route.id,
+    ).toBe('pensa-studio-snapshot')
+    expect(
+      registry.resolve('PUT', '/members/pensa/projects/p-1/studio-snapshot', 'v1')?.route.id,
+    ).toBe('pensa-studio-snapshot')
+    // Stage (5 seg, GET) ≠ conversation (6 seg, PUT).
+    const stage = registry.resolve('GET', '/members/pensa/cycles/c-1/stages/z', 'v1')
+    expect(stage?.route.id).toBe('pensa-stage')
+    expect(stage?.params.stage).toBe('z')
+    expect(
+      registry.resolve('PUT', '/members/pensa/cycles/c-1/stages/z/conversation', 'v1')?.route.id,
+    ).toBe('pensa-conversation')
+    expect(registry.resolve('POST', '/members/pensa/cycles/c-1/advance', 'v1')?.route.id).toBe(
+      'pensa-advance',
+    )
+    expect(registry.resolve('PATCH', '/members/pensa/tasks/t-1', 'v1')?.route.id).toBe(
+      'pensa-task-update',
+    )
+    // Literal `pensa` nunca cai em /members/courses/:slug.
+    expect(registry.resolve('GET', '/members/courses/pensa', 'v1')?.route.id).toBe(
+      'members-course-detail',
     )
   })
 

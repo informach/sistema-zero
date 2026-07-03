@@ -109,6 +109,36 @@ const EnvSchema = z
     // `maxProfiles` no snapshot (compradores legados, anteriores ao campo). O teto
     // real vem do produto (catalog → snapshot); este é só o piso de compat/rollout.
     DEFAULT_KIDS_MAX_PROFILES: z.coerce.number().int().positive().default(1),
+
+    // ── Report SEMANAL dos pais (Fase 5, 07/2026) ─────────────────────────────
+    // O job só liga com o QUARTETO configurado (AUTH_BASE_URL + AUTH_INTERNAL_TOKEN
+    // + GATEWAY_URL + MEMBERS_HMAC_SECRET) — sem eles é no-op silencioso (dev).
+    // AUTH (S2S direto): e-mail/nome do responsável + nomes das crianças.
+    AUTH_BASE_URL: z.string().url().optional(),
+    AUTH_INTERNAL_TOKEN: z
+      .string()
+      .min(16, 'AUTH_INTERNAL_TOKEN deve ter ao menos 16 caracteres')
+      .optional(),
+    AUTH_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(8_000),
+    // Envio do e-mail VIA GATEWAY (consumer HMAC `members` — o x-consumer-id
+    // confiável só o gateway injeta; NUNCA falar com o messaging direto).
+    GATEWAY_URL: z.string().url().optional(),
+    MEMBERS_HMAC_SECRET: z
+      .string()
+      .min(16, 'MEMBERS_HMAC_SECRET deve ter ao menos 16 caracteres')
+      .optional(),
+    // Gatilho: dia da semana (0=domingo … 6=sábado; default 5 = sexta) + hora SP.
+    PARENT_REPORT_DOW: z.coerce.number().int().min(0).max(6).default(5),
+    PARENT_REPORT_HOUR: z.coerce.number().int().min(0).max(23).default(17),
+    // Ciclo do job (horário) + teto de contas por ciclo.
+    PARENT_REPORT_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(60 * 60 * 1000),
+    PARENT_REPORT_BATCH_LIMIT: z.coerce.number().int().positive().default(200),
+    // URL pública do app kids (CTA "Ver na plataforma" do e-mail → /perfis).
+    KIDS_COMMUNITY_URL: z.string().url().optional(),
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.INTERNAL_API_TOKEN), {
     message:

@@ -94,6 +94,23 @@ describe('redactAuthors', () => {
     expect(out.playId).toBe('play-uuid')
   })
 
+  test('playsCount e challengeKey (estruturais) sobrevivem à redação', () => {
+    const out = redactAuthors(
+      {
+        id: 'p1',
+        authorId: OTHER,
+        isShowcase: true,
+        playId: 'play-uuid',
+        playsCount: 42,
+        challengeKey: 'm:2026-07',
+      },
+      ME,
+    )
+    expect(out.authorId).toBeNull()
+    expect(out.playsCount).toBe(42)
+    expect(out.challengeKey).toBe('m:2026-07')
+  })
+
   test('autor PÚBLICO (opt-in dos pais): expõe authorProfileId (alvo do link) + nome', () => {
     const out = redactAuthors(
       { id: 't1', authorId: OTHER as string | null, authorPublic: true, authorDisplayName: 'Lia' },

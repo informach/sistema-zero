@@ -1,10 +1,12 @@
 import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
+import { CareerTimeline } from '@/components/kids/career-timeline'
 import { LeagueBoard } from '@/components/kids/league-board'
 import { StreakProtection } from '@/components/kids/streak-protection'
 import { getAvatarReadonly, getGamificationReadonly, getLeagueReadonly } from '@/server/members'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
+import { shell } from '@/server/shell'
 import { ProfileClient } from './profile-client'
 
 export const dynamic = 'force-dynamic'
@@ -20,11 +22,13 @@ export default async function ProfilePage() {
   const session = await getSession()
   if (!session) redirect('/login')
 
-  const [profilesRes, gam, avatarRes, leagueRes] = await Promise.all([
+  const [profilesRes, gam, avatarRes, leagueRes, showcaseRes] = await Promise.all([
     listReadonly(),
     getGamificationReadonly({ withRanking: true }),
     getAvatarReadonly(),
     getLeagueReadonly(),
+    // Jogos publicados + jogadas (linha da carreira) — best-effort, some no erro.
+    shell.hub.myShowcaseStatsReadonly().catch(() => null),
   ])
   const profiles = profilesRes.status === 200 ? (profilesRes.body?.profiles ?? []) : []
   const profile = profiles.find((p) => p.id === session.id) ?? null
@@ -34,6 +38,7 @@ export default async function ProfilePage() {
   const league = leagueRes.status === 200 ? (leagueRes.body ?? null) : null
   const avatarPhotoUrl =
     avatarRes.status === 200 && avatarRes.body ? (avatarRes.body.photoUrl ?? null) : null
+  const showcaseStats = showcaseRes?.status === 200 ? (showcaseRes.body ?? null) : null
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -47,6 +52,9 @@ export default async function ProfilePage() {
         level={gamification?.level ?? null}
         avatarPhotoUrl={avatarPhotoUrl}
       />
+      {gamification ? (
+        <CareerTimeline gamification={gamification} showcaseStats={showcaseStats} />
+      ) : null}
       {league ? <LeagueBoard league={league} /> : null}
       {gamification ? (
         <StreakProtection

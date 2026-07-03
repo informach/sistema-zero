@@ -1,0 +1,60 @@
+/**
+ * Mock FUNCIONAL do idb-keyval (Map por "DB") — o IndexedDB real não existe no
+ * happy-dom. O registry de module mocks do bun é GLOBAL na suíte (não isolado
+ * por arquivo), então o mock não é restaurado de propósito; todo arquivo que
+ * toca persistência importa ESTE módulo antes de importar o código sob teste.
+ */
+import { mock } from 'bun:test'
+
+type KV = Map<IDBValidKey, unknown>
+
+const dbs = new Map<string, KV>()
+
+function resolveKV(store?: { name?: string } | string): KV {
+  const key =
+    typeof store === 'string' ? store : ((store as { name?: string } | undefined)?.name ?? '')
+  let kv = dbs.get(key)
+  if (!kv) {
+    kv = new Map()
+    dbs.set(key, kv)
+  }
+  return kv
+}
+
+mock.module('idb-keyval', () => ({
+  createStore: (dbName: string, _storeName: string) => ({ name: dbName }),
+  get: async (key: IDBValidKey, store?: { name?: string }) => resolveKV(store).get(key),
+  getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
+    keys.map((key) => resolveKV(store).get(key)),
+  set: async (key: IDBValidKey, value: unknown, store?: { name?: string }) => {
+    resolveKV(store).set(key, value)
+  },
+  setMany: async (pairs: Array<[IDBValidKey, unknown]>, store?: { name?: string }) => {
+    for (const [key, value] of pairs) resolveKV(store).set(key, value)
+  },
+  del: async (key: IDBValidKey, store?: { name?: string }) => {
+    resolveKV(store).delete(key)
+  },
+  delMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
+    for (const key of keys) resolveKV(store).delete(key)
+  },
+  keys: async (store?: { name?: string }) => [...resolveKV(store).keys()],
+  update: async (
+    key: IDBValidKey,
+    updater: (old: unknown) => unknown,
+    store?: { name?: string },
+  ) => {
+    const kv = resolveKV(store)
+    kv.set(key, updater(kv.get(key)))
+  },
+}))
+
+/** Zera TODOS os "DBs" (chamar no beforeEach). */
+export function clearIdbMock(): void {
+  dbs.clear()
+}
+
+/** Acesso direto a um DB (asserções de baixo nível). */
+export function idbMockDb(name: string): KV {
+  return resolveKV(name)
+}

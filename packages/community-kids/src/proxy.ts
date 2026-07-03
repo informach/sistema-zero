@@ -16,11 +16,16 @@ export const proxy = createMemberProxy({
     '/cursos',
     '/perfil',
     '/meu-avatar',
+    // Hub "Criar" (tab bar mobile de 5 itens): cards p/ o trio criativo + quarto + clube.
+    '/criar',
     '/quarto',
     '/crianca',
     '/clube-dos-criadores',
     '/mural-dos-criadores',
     '/estudio',
+    '/pensa',
+    // Pinta não tem `/api/pinta` (dados locais ao navegador) — só a página é gateada.
+    '/pinta',
     '/perfis',
   ],
   isRootProtected: true,

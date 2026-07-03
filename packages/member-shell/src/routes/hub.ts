@@ -135,10 +135,14 @@ export function createHubRoutes(deps: {
       const id = await idFrom(ctx)
       if (!id) return invalid()
       const url = new URL(req.url)
+      // `challenge` = prateleira do Desafio do mês (`m:YYYY-MM`); lixo → ignorado
+      // (lista completa) — o hub também valida no DTO.
+      const rawChallenge = url.searchParams.get('challenge') ?? ''
       const [r, vid] = await Promise.all([
         hub.listThreads(id, {
           cursor: url.searchParams.get('cursor') ?? undefined,
           limit: num(url.searchParams.get('limit')),
+          challenge: /^m:\d{4}-\d{2}$/.test(rawChallenge) ? rawChallenge : undefined,
         }),
         viewerId(),
       ])

@@ -14,6 +14,7 @@ import {
   Sprout,
   Sun,
   Trash2,
+  Trophy,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -26,6 +27,7 @@ import {
   ROOM_THEME_INFO,
   ROOM_WALL_PALETTE,
   resolveRoomAppearance,
+  TROPHY_HINT,
 } from '@/lib/room-catalog'
 import type { RoomEditorView, RoomItemView, RoomStateView, RoomThemeView } from '@/lib/types'
 import { KidsMascot } from '../mascot'
@@ -38,6 +40,7 @@ const PLACEABLE: ReadonlySet<string> = new Set(['furniture', 'decor', 'plant', '
 type TabId =
   | 'moveis'
   | 'enfeites'
+  | 'trofeus'
   | 'plantas'
   | 'luzes'
   | 'piso'
@@ -50,6 +53,8 @@ type LoadState = 'loading' | 'ready' | 'error'
 const TABS: { id: TabId; label: string; icon: typeof Sofa }[] = [
   { id: 'moveis', label: 'Móveis', icon: Sofa },
   { id: 'enfeites', label: 'Enfeites', icon: Frame },
+  // 🏆 Troféus (07/2026): ganhos por conquista — a estante de troféus viva.
+  { id: 'trofeus', label: 'Troféus', icon: Trophy },
   { id: 'plantas', label: 'Plantas', icon: Sprout },
   { id: 'luzes', label: 'Luzes', icon: Lightbulb },
   { id: 'piso', label: 'Piso', icon: LayoutGrid },
@@ -183,6 +188,9 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
   const [coinsUnlimited, setCoinsUnlimited] = useState(false)
   const [selected, setSelected] = useState<number | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  // Confirmação LEVE de compra (07/2026): 1º toque num item travado arma a confirmação
+  // (chip vira "Comprar?" + barra com preço); o 2º toque compra. Nada de modal pesado.
+  const [confirmBuyId, setConfirmBuyId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [tab, setTab] = useState<TabId>('moveis')
   const [brush, setBrush] = useState<string>(ROOM_WALL_PALETTE[0]?.hex ?? '#f3ede1')
@@ -421,7 +429,16 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     }))
   }
 
-  async function buy(id: string) {
+  /** Portão da compra: 1º toque arma a confirmação; 2º toque no MESMO item compra de fato. */
+  function buy(id: string) {
+    if (confirmBuyId === id) {
+      void doBuy(id)
+      return
+    }
+    setConfirmBuyId(id)
+  }
+
+  async function doBuy(id: string) {
     if (busy) return
     setBusy(id)
     try {
@@ -450,6 +467,8 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       )
       if (typeof body?.balance === 'number') setBalance(body.balance)
       if (body?.unlimited === true) setCoinsUnlimited(true)
+      // Sucesso desarma a confirmação; na falha ela fica de pé (dá p/ desistir ou tentar de novo).
+      setConfirmBuyId(null)
       toast.success('Desbloqueado! 🎉')
     } catch {
       toast.error('Não consegui comprar agora.')
@@ -475,6 +494,8 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
       setSaving(false)
     }
   }
+
+  const pendingBuy = resolvePendingBuy()
 
   return (
     <div className="flex flex-col gap-4">
@@ -587,7 +608,10 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
             <button
               key={t.id}
               type="button"
-              onClick={() => setTab(t.id)}
+              onClick={() => {
+                setTab(t.id)
+                setConfirmBuyId(null)
+              }}
               aria-pressed={active}
               className={cn(
                 'flex min-w-16 shrink-0 flex-col items-center gap-1 rounded-2xl border-2 px-3 py-2 font-semibold text-xs transition-colors',
@@ -601,17 +625,93 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         })}
       </div>
 
+      {/* Barra de confirmação da compra (1º toque armou; aqui confirma ou desiste). */}
+      {pendingBuy ? (
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
+        >
+          <p className="font-semibold text-sm">
+            Gostou? <span className="text-muted-foreground">({pendingBuy.label})</span>
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmBuyId(null)}
+              disabled={!!busy}
+              className="inline-flex h-11 items-center rounded-full border-2 border-border bg-card px-4 font-semibold text-muted-foreground text-sm"
+            >
+              Deixar para depois
+            </button>
+            <button
+              type="button"
+              onClick={() => buy(pendingBuy.id)}
+              disabled={!!busy}
+              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
+            >
+              <ZappyCoin className="size-4" /> Comprar por {pendingBuy.price}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {/* Bandeja da categoria ativa */}
       <div>{data ? renderTray() : null}</div>
     </div>
   )
 
+  /** Preço + rótulo do item aguardando confirmação (procura nos 4 catálogos da lojinha). */
+  function resolvePendingBuy(): { id: string; price: number; label: string } | null {
+    if (!confirmBuyId || !data) return null
+    const item = data.items.find((i) => i.id === confirmBuyId)
+    if (item)
+      return { id: item.id, price: item.price, label: ROOM_ITEM_INFO[item.id]?.labelPt ?? item.id }
+    const theme = (data.themes ?? []).find((t) => t.id === confirmBuyId)
+    if (theme)
+      return {
+        id: theme.id,
+        price: theme.price,
+        label: ROOM_THEME_INFO[theme.id]?.labelPt ?? theme.id,
+      }
+    const floor = (data.floors ?? []).find((f) => f.id === confirmBuyId)
+    if (floor) return { id: floor.id, price: floor.price, label: floorInfo(floor.id).labelPt }
+    const lighting = (data.lightings ?? []).find((l) => l.id === confirmBuyId)
+    if (lighting)
+      return {
+        id: lighting.id,
+        price: lighting.price,
+        label: lightingPreset(lighting.id).labelPt,
+      }
+    return null
+  }
+
   function renderTray() {
     if (!data) return null
     const cat = CAT_BY_TAB[tab]
     if (cat) {
-      const items = data.items.filter((i) => PLACEABLE.has(i.category) && i.category === cat)
-      return <ShopGrid items={items} owned={isOwned} busy={busy} onPick={addItem} onBuy={buy} />
+      // Troféus ficam FORA das bandejas de compra (têm bandeja própria 🏆).
+      const items = data.items.filter(
+        (i) => PLACEABLE.has(i.category) && i.category === cat && i.tier !== 'trophy',
+      )
+      return (
+        <ShopGrid
+          items={items}
+          owned={isOwned}
+          busy={busy}
+          confirmingId={confirmBuyId}
+          onPick={addItem}
+          onBuy={buy}
+        />
+      )
+    }
+    if (tab === 'trofeus') {
+      return (
+        <TrophyTray
+          trophies={data.items.filter((i) => i.tier === 'trophy')}
+          owned={isOwned}
+          onPick={addItem}
+        />
+      )
     }
     if (tab === 'piso') {
       return (
@@ -619,6 +719,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
           choices={data.floors}
           activeId={appearance.floorId}
           busy={busy}
+          confirmingId={confirmBuyId}
           onApply={(id) => updateDraft((d) => ({ ...d, floor: id }))}
           onBuy={buy}
           label={(id) => floorInfo(id).labelPt}
@@ -641,6 +742,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
           choices={data.lightings}
           activeId={appearance.lightingId}
           busy={busy}
+          confirmingId={confirmBuyId}
           onApply={(id) => updateDraft((d) => ({ ...d, lighting: id }))}
           onBuy={buy}
           label={(id) => lightingPreset(id).labelPt}
@@ -660,6 +762,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
           choices={data.themes}
           activeId={draft.theme}
           busy={busy}
+          confirmingId={confirmBuyId}
           onApply={applyTheme}
           onBuy={buy}
           label={(id) => ROOM_THEME_INFO[id]?.labelPt ?? id}
@@ -683,6 +786,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         pets={pets}
         current={draft.pet}
         busy={busy}
+        confirmingId={confirmBuyId}
         onPick={(id) => updateDraft((d) => ({ ...d, pet: id }))}
         onBuy={buy}
       />
@@ -694,12 +798,14 @@ function ShopGrid({
   items,
   owned,
   busy,
+  confirmingId,
   onPick,
   onBuy,
 }: {
   items: RoomItemView[]
   owned: (id: string) => boolean
   busy: string | null
+  confirmingId: string | null
   onPick: (item: RoomItemView) => void
   onBuy: (id: string) => void
 }) {
@@ -722,11 +828,7 @@ function ShopGrid({
               {info.emoji}
             </span>
             <span className="truncate font-semibold">{info.labelPt}</span>
-            {locked ? (
-              <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-                <Lock className="size-3" /> {it.price}
-              </span>
-            ) : null}
+            {locked ? <PriceChip price={it.price} confirming={confirmingId === it.id} /> : null}
           </button>
         )
       })}
@@ -734,10 +836,85 @@ function ShopGrid({
   )
 }
 
+/**
+ * Bandeja 🏆 dos troféus (07/2026): ganhos por CONQUISTA, nunca comprados. Ganho =
+ * posicionável como qualquer enfeite; travado = cadeado + a DICA de como ganhar
+ * (TROPHY_HINT) no lugar do preço.
+ */
+function TrophyTray({
+  trophies,
+  owned,
+  onPick,
+}: {
+  trophies: RoomItemView[]
+  owned: (id: string) => boolean
+  onPick: (item: RoomItemView) => void
+}) {
+  if (trophies.length === 0) return <Empty />
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="font-semibold text-muted-foreground text-sm">
+        Suas conquistas viram troféus de verdade no quarto! 🏆
+      </p>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {trophies.map((t) => {
+          const info = ROOM_ITEM_INFO[t.id]
+          if (!info) return null
+          const has = owned(t.id)
+          return has ? (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => onPick(t)}
+              className="flex flex-col items-center gap-1 rounded-2xl border-2 border-(--kids-lime) bg-(--kids-lime-tint) p-2 text-xs transition-colors hover:border-primary"
+            >
+              <span className="text-2xl" aria-hidden="true">
+                {info.emoji}
+              </span>
+              <span className="truncate font-semibold">{info.labelPt}</span>
+              <span className="text-muted-foreground">Conquistado!</span>
+            </button>
+          ) : (
+            <div
+              key={t.id}
+              className="flex flex-col items-center gap-1 rounded-2xl border-2 border-border border-dashed p-2 text-center text-xs opacity-80"
+            >
+              <span className="grid size-8 place-items-center" aria-hidden="true">
+                <Lock className="size-5 text-muted-foreground" />
+              </span>
+              <span className="truncate font-semibold">{info.labelPt}</span>
+              <span className="text-muted-foreground">
+                {TROPHY_HINT[t.id] ?? 'Continue criando!'}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/** Preço do item travado; quando a confirmação está armada vira "Comprar?" em destaque. */
+function PriceChip({ price, confirming }: { price: number; confirming: boolean }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-0.5',
+        confirming
+          ? 'rounded-full bg-primary px-1.5 py-0.5 font-bold text-primary-foreground'
+          : 'text-muted-foreground',
+      )}
+    >
+      <Lock className="size-3" /> {confirming ? `Comprar? ${price}` : price}
+    </span>
+  )
+}
+
 function ChoiceGrid({
   choices,
   activeId,
   busy,
+  confirmingId,
   onApply,
   onBuy,
   label,
@@ -746,6 +923,7 @@ function ChoiceGrid({
   choices: RoomThemeView[]
   activeId: string
   busy: string | null
+  confirmingId: string | null
   onApply: (id: string) => void
   onBuy: (id: string) => void
   label: (id: string) => string
@@ -766,11 +944,7 @@ function ChoiceGrid({
         >
           {preview(c.id)}
           <span className="truncate font-semibold">{label(c.id)}</span>
-          {c.locked ? (
-            <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-              <Lock className="size-3" /> {c.price}
-            </span>
-          ) : null}
+          {c.locked ? <PriceChip price={c.price} confirming={confirmingId === c.id} /> : null}
         </button>
       ))}
     </div>
@@ -807,12 +981,14 @@ function PetTray({
   pets,
   current,
   busy,
+  confirmingId,
   onPick,
   onBuy,
 }: {
   pets: RoomItemView[]
   current: string | null
   busy: string | null
+  confirmingId: string | null
   onPick: (id: string | null) => void
   onBuy: (id: string) => void
 }) {
@@ -849,11 +1025,7 @@ function PetTray({
               {info.emoji}
             </span>
             <span className="font-semibold">{info.labelPt}</span>
-            {p.locked ? (
-              <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-                <Lock className="size-3" /> {p.price}
-              </span>
-            ) : null}
+            {p.locked ? <PriceChip price={p.price} confirming={confirmingId === p.id} /> : null}
           </button>
         )
       })}

@@ -28,7 +28,18 @@ type EditorState =
  * por isso NÃO passamos `features` (sem WebContainer = sem necessidade de COOP/COEP). O
  * botão "Compartilhar" publica no Mural via o caminho standalone (sem aula).
  */
-export function StudioFullClient({ viewerId }: { viewerId: string | null }) {
+export function StudioFullClient({
+  viewerId,
+  challenge = null,
+}: {
+  viewerId: string | null
+  /**
+   * DESAFIO do mês (game jam) — presente SÓ quando a criança possui Clube +
+   * Estúdio (a página checa as refs): liga o checkbox "Participar do Desafio"
+   * no Compartilhar. O gate REAL da tag é o do hub no publish.
+   */
+  challenge?: { key: string; title: string } | null
+}) {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
@@ -71,6 +82,8 @@ export function StudioFullClient({ viewerId }: { viewerId: string | null }) {
   // multipart à rota standalone, que devolve os links. Memoizado (o Studio o latcha).
   const share = useMemo<StudioShareAdapter>(
     () => ({
+      // Desafio do mês: liga o checkbox no ShareDialog (posse checada na página).
+      ...(challenge ? { challenge } : {}),
       async generateDescription({ project, title }) {
         try {
           const res = await fetch('/api/studio/describe', {
@@ -92,11 +105,13 @@ export function StudioFullClient({ viewerId }: { viewerId: string | null }) {
           return '' // fail-soft: a criança escreve do zero
         }
       },
-      async publish({ project, coverDataUrl, title, description }) {
+      async publish({ project, coverDataUrl, title, description, challengeKey }) {
         const form = new FormData()
         form.set('title', title)
         form.set('description', description)
         form.set('clientIdempotencyKey', crypto.randomUUID())
+        // Tag do desafio (checkbox marcado) — o hub valida posse+mês (drop silencioso).
+        if (challengeKey) form.set('challengeKey', challengeKey)
         form.set(
           'project',
           new File([JSON.stringify(project)], 'project.json', { type: 'application/json' }),
@@ -118,7 +133,7 @@ export function StudioFullClient({ viewerId }: { viewerId: string | null }) {
         return { muralUrl: body?.muralUrl, playUrl: body?.playUrl }
       },
     }),
-    [],
+    [challenge],
   )
 
   const openProject = useCallback((projectId: string) => setView({ name: 'editor', projectId }), [])
@@ -223,6 +238,12 @@ function EditorScreen({
       onExit={onExit}
       share={share}
       theme={theme}
+      // Paleta CALMA no editor livre kids (07/2026): nível intermediário mostra
+      // o núcleo + Jogo 2D e esconde Classes/Avançado/Jogo 3D atrás do toggle
+      // "Mostrar blocos avançados" (allowLevelReveal) — antes eram ~500 blocos
+      // de uma vez (DEFAULT_LEARNING_LEVEL 'avancado').
+      level="intermediario"
+      allowLevelReveal
     />
   )
 }

@@ -20,15 +20,16 @@ export default async function CatalogPage() {
       <div>
         <h1 className="sz-display text-2xl md:text-3xl">Todos os cursos</h1>
         <p className="mt-1 text-muted-foreground text-sm">
-          Tudo o que está disponível na plataforma — o que você já tem liberado e o que ainda pode
-          destravar.
+          Suas aventuras de aprender: as que já são suas e as que você ainda pode ganhar.
         </p>
       </div>
 
       {courses.length === 0 ? (
         <section className="flex flex-col items-center gap-4 rounded-3xl border-2 border-border border-dashed px-6 py-16 text-center">
           <KidsMascot expression="thinking" className="size-16" />
-          <p className="text-muted-foreground text-sm">Nenhum curso publicado ainda.</p>
+          <p className="text-muted-foreground text-sm">
+            Os cursos estão a caminho! Volte daqui a pouquinho. 🚀
+          </p>
         </section>
       ) : (
         // Busca/filtros client-side persistidos na URL (?q=&acesso=&ordem=).

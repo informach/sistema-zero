@@ -158,6 +158,31 @@ const OBJECT_MUTATOR_MIXIN = {
       if (!outerGroup) Blockly.Events.setGroup(false)
     }
   },
+
+  /**
+   * Após uma carga programática, o `loadExtraState` reconstrói os pares chave:valor
+   * ANTES de o Blockly conectar os filhos nos soquetes ITEM (a desserialização dos
+   * inputs vem DEPOIS). Resultado: o objeto aparecia COLAPSADO — só as CHAVES, com
+   * os soquetes de VALOR (ex.: blocos de imagem) sem desenhar — até o aluno usar
+   * "Organizar blocos". No `FINISHED_LOADING` (pós-carga, com os filhos JÁ
+   * conectados E já renderizados pelo load) re-renderizamos o bloco E TODOS os
+   * descendentes: re-renderizar só o PRÓPRIO bloco reposiciona as linhas de input
+   * mas deixa os FILHOS (ex.: blocos de imagem) no lugar antigo — enfileirar cada
+   * descendente força cada um a se redesenhar dentro do soquete. NÃO reconstrói a
+   * forma (preserva sombras/valores). Barato: 1 evento por carga.
+   */
+  onchange(this: ObjectMutatorBlock, event?: Blockly.Events.Abstract): void {
+    if (event?.type !== Blockly.Events.FINISHED_LOADING) return
+    const svg = this as unknown as {
+      isInFlyout?: boolean
+      rendered?: boolean
+      getDescendants?: (ordered: boolean) => Array<{ queueRender?: () => void }>
+      queueRender?: () => void
+    }
+    if (svg.isInFlyout || !svg.rendered) return
+    const all = svg.getDescendants ? svg.getDescendants(false) : [svg]
+    for (const d of all) d.queueRender?.()
+  },
 }
 
 /**

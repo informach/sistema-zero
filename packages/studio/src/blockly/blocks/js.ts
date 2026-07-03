@@ -333,7 +333,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
       { type: 'field_input', name: 'INDEX', text: '' },
-      { type: 'field_input', name: 'NAME', text: 'lista' },
+      { type: 'input_value', name: 'ARRAY', check: 'JSValue' },
     ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],

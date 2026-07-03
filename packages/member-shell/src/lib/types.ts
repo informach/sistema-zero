@@ -424,6 +424,8 @@ export interface QuizQuestionResultView {
 /** Catálogo v1 de badges (mirror de members `domain/gamification/badges.ts`). */
 export type BadgeSlug =
   | 'first-lesson'
+  // 1º jogo publicado no Mural (07/2026, lote troféus).
+  | 'first-showcase'
   | 'streak-7'
   | 'streak-30'
   | 'streak-60'
@@ -441,6 +443,10 @@ export type BadgeSlug =
   | 'studio-master-10'
   | 'coins-saver-300'
   | 'coins-saver-1000'
+  // Pensa (07/2026): planejamento guiado — 1ª Carta da Ideia + lançamentos de versão.
+  | 'pensa-first-idea'
+  | 'pensa-first-launch'
+  | 'pensa-creator-3'
 
 /**
  * Delta de UMA ação (complete/quiz aprovado) — vem NA resposta da ação (a UI
@@ -529,6 +535,20 @@ export interface MissionView {
 export interface MissionsMeView {
   daily: MissionView[]
   weekly: MissionView[]
+}
+/** Desafio do MÊS (game jam kids) — mirror do `ChallengeMeView` do members. */
+export interface ChallengeMeView {
+  challenge: {
+    /** `m:YYYY-MM` (mês civil SP) — a MESMA chave que o hub valida no publish. */
+    key: string
+    slug: string
+    emoji: string
+    title: string
+    description: string
+    suggestedKit: string
+  }
+  /** O perfil já publicou no desafio deste mês. */
+  entered: boolean
 }
 export interface MissionClaimResult {
   claimed: boolean
@@ -646,11 +666,14 @@ export interface RoomStateView {
   floor?: string
   lighting?: string
 }
-/** Item/tema do catálogo do quarto (lojinha/editor). `category` largo (forward-compat). */
+/**
+ * Item/tema do catálogo do quarto (lojinha/editor). `category` largo (forward-compat).
+ * `tier: 'trophy'` (07/2026) = NÃO-comprável, GANHO por conquista (badge mapeada).
+ */
 export interface RoomItemView {
   id: string
   category: string
-  tier: 'free' | 'coins'
+  tier: 'free' | 'coins' | 'trophy'
   price: number
   owned: boolean
   locked: boolean
@@ -708,6 +731,22 @@ export interface PublicProfileDTO extends PublicProfileGameView {
   name: string
 }
 
+/** "Esta semana" de um filho (semana civil SP corrente, parcial) — Fase 5. */
+export interface ChildWeekStatsView {
+  xpEarned: number
+  lessonsCompleted: number
+  quizzesPassed: number
+  badgesUnlocked: number
+  projectsSubmitted: number
+}
+
+/** Jogo publicado no Mural na semana (o cartão QR usa `playId`). */
+export interface ChildWeekGameView {
+  title: string
+  playId: string | null
+  publishedAt: string
+}
+
 /** Resumo de progresso de UM filho (perfil) — espelha a view do members. */
 export interface ChildStatsView {
   profileId: string
@@ -720,6 +759,15 @@ export interface ChildStatsView {
   projectsCount: number
   /** Colocação no ranking da vitrine (null = conta sem matrícula). */
   rankingPosition: number | null
+  /** "Esta semana" (opcional p/ tolerar members antigo). */
+  week?: ChildWeekStatsView
+  /** Jogos publicados no Mural na semana (`null` = hub indisponível, degrada). */
+  games?: ChildWeekGameView[] | null
+}
+
+/** Preferência do report semanal dos pais (opt-out por CONTA). */
+export interface ParentReportPrefsView {
+  disabled: boolean
 }
 
 /** Card do filho na área dos pais: stats do members + identidade do perfil (auth). */
@@ -955,6 +1003,10 @@ export interface HubThreadView {
    * sem login). `null` = sem link jogável (posts antigos / fluxo da aula).
    */
   playId: string | null
+  /** Jogadas do link público (vaidade; opcional p/ tolerar hub antigo). */
+  playsCount?: number
+  /** Desafio mensal (`m:YYYY-MM`) — a UI mostra o selo/prateleira do mês. */
+  challengeKey?: string | null
   reactions: HubReaction[]
   attachments: HubAttachmentView[]
   lastActivityAt: string
@@ -1000,4 +1052,153 @@ export interface HubPage<T> {
   items: T[]
   nextCursor: string | null
   hasMore: boolean
+}
+
+// ── Pensa (planejamento guiado — metodologia ZERO) ───────────────────────────
+// Mirror das views do members (tabelas `pensa_*`). Projeto → ciclos ("Versão N",
+// 1 = MVP) → etapas z/e/r/o com artefatos versionados, kanban de missões e
+// checklist de lançamento. Datas SEMPRE ISO string.
+
+export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
+export type PensaProjectKind = 'game' | 'webapp'
+export type PensaProjectStatus = 'active' | 'archived'
+export type PensaArtifactType =
+  | 'idea'
+  | 'prd'
+  | 'friendly_spec'
+  | 'identity'
+  | 'mission_plan'
+  | 'checklist_seed'
+export type PensaArtifactStatus = 'draft' | 'validated'
+export type PensaTaskColumn = 'backlog' | 'doing' | 'review' | 'done'
+export type PensaChecklistCategory = 'test' | 'polish' | 'publish' | 'share'
+/** Onde a criança escolheu CONSTRUIR (etapa R): junto da missão / Estúdio Completo / computador. */
+export type PensaBuildEnv = 'embedded' | 'studio' | 'external'
+
+export interface PensaCycleView {
+  id: string
+  number: number
+  goal: string | null
+  stage: PensaStage
+  zCompletedAt: string | null
+  eCompletedAt: string | null
+  rCompletedAt: string | null
+  oCompletedAt: string | null
+}
+
+export interface PensaProjectListView {
+  id: string
+  name: string
+  kind: PensaProjectKind
+  status: PensaProjectStatus
+  /** Ciclo CORRENTE (maior number) — o card da lista mostra "Versão N" + etapa. */
+  cycleNumber: number
+  stage: PensaStage
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PensaArtifactIndexEntry {
+  type: PensaArtifactType
+  stage: PensaStage
+  version: number
+  status: PensaArtifactStatus
+  createdAt: string
+}
+
+export interface PensaProjectDetailView {
+  id: string
+  name: string
+  kind: PensaProjectKind
+  status: PensaProjectStatus
+  /** Id do projeto semeado no IndexedDB do Estúdio (fase R) — `null` até semear. */
+  studioProjectId: string | null
+  /** Onde construir (escolha da criança na etapa R) — `null` = ainda não escolheu. */
+  buildEnv: PensaBuildEnv | null
+  /** Quando o snapshot do Estúdio foi salvo na nuvem — `null` = nunca (o BLOB não vem aqui). */
+  studioSnapshotAt: string | null
+  createdAt: string
+  updatedAt: string
+  /** Ordenados por number ASC. */
+  cycles: PensaCycleView[]
+  currentCycle: PensaCycleView
+  /** Latest por type, do ciclo CORRENTE. */
+  artifactsIndex: PensaArtifactIndexEntry[]
+}
+
+export interface PensaChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+  at: string
+}
+
+/** Estado das 5 perguntas da etapa Z (dirigido pelo evaluator do BFF). */
+export interface PensaZState {
+  answered: { who: boolean; problem: boolean; action: boolean; screens: boolean; success: boolean }
+  ready: boolean
+}
+
+export interface PensaArtifactView {
+  id: string
+  stage: PensaStage
+  type: PensaArtifactType
+  version: number
+  status: PensaArtifactStatus
+  content: unknown
+  createdAt: string
+}
+
+export interface PensaStageView {
+  stage: PensaStage
+  conversation: { messages: PensaChatMessage[]; summary: string | null; messageCount: number }
+  /** Etapa z → PensaZState; demais etapas `{}` até existir estado próprio. */
+  state: Record<string, unknown>
+  /** Latest por type DESTA etapa. */
+  artifacts: PensaArtifactView[]
+  /**
+   * Estado VIVO do kanban/checklist do CICLO (vêm em TODA etapa): o reload da UI
+   * re-hidrata o quadro sem re-gerar o plano (que zeraria as colunas).
+   */
+  tasks: PensaTaskView[]
+  checklist: PensaChecklistItemView[]
+}
+
+export interface PensaMissionStep {
+  text: string
+  hint?: string
+}
+
+/** Missão executada pela CRIANÇA no Estúdio (fase R kids). */
+export interface PensaMission {
+  story?: string
+  steps: PensaMissionStep[]
+  studioHints?: { categories: string[]; blocks: string[] }
+  /** Critérios observáveis "Ficou pronto quando..." (1–3). */
+  doneWhen: string[]
+  /** Missão de ARTE (07/2026): abre o Pinta pré-configurado (só quem POSSUI o Pinta). */
+  artKind?: 'sprite' | 'background' | 'tileset'
+  /** Paleta do jogo (hex, ≤8) — vai junto da missão de arte p/ o Pinta colorir. */
+  palette?: string[]
+}
+
+export interface PensaTaskView {
+  id: string
+  title: string
+  summary: string | null
+  taskType: string | null
+  column: PensaTaskColumn
+  position: number
+  mission: PensaMission
+  notes: string | null
+}
+
+export interface PensaChecklistItemView {
+  id: string
+  category: PensaChecklistCategory
+  title: string
+  description: string | null
+  required: boolean
+  position: number
+  done: boolean
+  doneAt: string | null
 }

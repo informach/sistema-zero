@@ -41,6 +41,7 @@ export function threadsRoutes(deps: ThreadsRoutesDeps) {
           params.id,
           decodeCursor(query.cursor),
           clampLimit(query.limit),
+          query.challenge ?? null,
         ),
       { params: IdParams, query: ThreadListQuery },
     )

@@ -131,8 +131,10 @@ export interface StudioCommonProps {
 }
 
 /**
- * Curadoria de aprendizado FIXADA pelo professor (divulgação progressiva) —
- * exclusiva do <StudioLesson>. Mantida fora do editor puro de propósito.
+ * Curadoria de aprendizado FIXADA pelo host (divulgação progressiva). Nasceu
+ * exclusiva do <StudioLesson>; desde 07/2026 o <StudioEditor> também aceita —
+ * o host kids abre o editor LIVRE num nível mais calmo (com "revelar
+ * avançado" ligado), em vez dos ~500 blocos de uma vez.
  */
 export interface StudioLearningProps {
   /**
@@ -164,8 +166,12 @@ export type StudioCoreProps = StudioCommonProps &
     activity?: LessonActivity | null
   }
 
-/** Props do <StudioEditor> — editor completo independente (sem conceito de aula). */
-export type StudioEditorProps = StudioCommonProps
+/**
+ * Props do <StudioEditor> — editor completo independente (sem conceito de
+ * AULA/atividade; a curadoria de aprendizado é opcional — default 'avancado',
+ * paleta cheia, zero regressão p/ hosts existentes).
+ */
+export type StudioEditorProps = StudioCommonProps & StudioLearningProps
 
 /**
  * Props do <StudioLesson> — editor configurável de aula: editor + curadoria de

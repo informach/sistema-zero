@@ -454,7 +454,7 @@ describe('importProjectFromJSON', () => {
 
     expect(imported.blocksState).toBeNull()
     // O descarte (silencioso antes) agora vira aviso para a UI mostrar.
-    expect(warnings.some((w) => w.includes('blocos não foram carregados'))).toBe(true)
+    expect(warnings.some((w) => w.includes('ainda não conhece'))).toBe(true)
   })
 
   it('avisa quando imagens não cabem; importa o resto; sem avisos quando tudo cabe', async () => {

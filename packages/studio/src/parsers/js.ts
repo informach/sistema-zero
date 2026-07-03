@@ -554,6 +554,7 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
       tryFuseCanvasGradient(nodes, i, ctx) ??
       tryFuseAnimationLoop(nodes, i, source, ctx) ??
       tryFuseGame2DSpriteAssign(nodes, i, ctx) ??
+      tryFuseNewImage(nodes, i, ctx) ??
       tryFuseKeyboard(nodes, i, ctx)
     if (fused) {
       out.push(fused.stmt)
@@ -874,6 +875,25 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       }
       return asRaw(source, node)
     }
+    // <img>.onload = () => {…} → imageOnLoad ("quando a imagem carregar, fazer …").
+    // Só a arrow/função SEM parâmetros (o gerador re-emite `() =>`); com parâmetro
+    // (`(e) => …`) cai no avançado p/ não perder o argumento.
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.property?.type === 'Identifier' &&
+      expr.left.property.name === 'onload' &&
+      (expr.right?.type === 'ArrowFunctionExpression' ||
+        expr.right?.type === 'FunctionExpression') &&
+      (expr.right.params?.length ?? 0) === 0 &&
+      !isGlobalObject(expr.left.object)
+    ) {
+      const target = toExpr(expr.left.object, ctx)
+      if (target && isSimpleValue(target)) {
+        return { type: 'imageOnLoad', target, body: bodyOfFn(expr.right, source, ctx) }
+      }
+      return asRaw(source, node)
+    }
     // Geral: <obj>.prop = v sobre qualquer objeto representável. Cobre instância
     // (`p.x = v`) e aninhamento (`this.velocidade.x = v`). Roda DEPOIS dos matchers
     // específicos (fillStyle, dataset, textContent) e dos pares de canvas (consumidos
@@ -888,6 +908,21 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       const value = toExpr(expr.right, ctx)
       if (isSimpleValue(object) && isSimpleValue(value)) {
         return { type: 'memberSet', object, name: expr.left.property.name, value }
+      }
+      return asRaw(source, node)
+    }
+    // <obj>[chave] = v / <lista>[i] = v → indexSet (escrita por chave/índice).
+    // O `el.style['prop']` computado já foi consumido acima por tryMatchSetStyle.
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      expr.left.computed &&
+      !isGlobalObject(expr.left.object)
+    ) {
+      const object = toExpr(expr.left.object, ctx)
+      const index = toExpr(expr.left.property, ctx)
+      const value = toExpr(expr.right, ctx)
+      if (isSimpleValue(object) && isSimpleValue(index) && isSimpleValue(value)) {
+        return { type: 'indexSet', object, index, value }
       }
       return asRaw(source, node)
     }
@@ -1289,25 +1324,29 @@ function tryMatchSetAttribute(expr: Node, ctx: ParseCtx): JSStatement | null {
   }
 }
 
-/** `<lista>.forEach((item[, i]) => { … })` → `forEach`. */
+/** `<lista>.forEach((item[, i]) => { … })` → `forEach`. A LISTA pode ser qualquer
+ * expressão representável (variável, `Object.keys(x)`, `obj.lista`, `this.itens`…). */
 function tryMatchForEach(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression') return null
   const callee = expr.callee
   if (callee?.type !== 'MemberExpression' || callee.computed) return null
-  if (callee.object?.type !== 'Identifier' || callee.property?.name !== 'forEach') return null
-  if (ctx.instanceVars.has(callee.object.name)) return null
+  if (callee.property?.name !== 'forEach') return null
+  // Instância de classe conhecida com um `forEach` PRÓPRIO não é iteração de lista.
+  if (callee.object?.type === 'Identifier' && ctx.instanceVars.has(callee.object.name)) return null
   if (expr.arguments?.length !== 1) return null
   const cb = expr.arguments[0]
   if (cb.type !== 'ArrowFunctionExpression' && cb.type !== 'FunctionExpression') return null
   const params = cb.params ?? []
   if (params.length < 1 || params.length > 2) return null
   if (!params.every((p: Node) => p?.type === 'Identifier')) return null
+  const arrayExpr = toExpr(callee.object, ctx)
+  if (!arrayExpr || !isSimpleValue(arrayExpr)) return null
   const itemName: string = params[0].name
   const indexName: string | undefined = params[1]?.name
   const body = bodyOfFn(cb, source, ctx)
   return {
     type: 'forEach',
-    arrayVar: callee.object.name,
+    arrayExpr,
     itemName,
     ...(indexName ? { indexName } : {}),
     body,
@@ -4157,6 +4196,34 @@ interface FusedStatement {
   consumed: number
 }
 
+/**
+ * `const v = new Image(); v.src = <valor>;` → bloco `newImage` ("criar imagem [v]
+ * com fonte [valor]"). Só o PAR isolado (sem `onload`/`drawImage` — esse é o
+ * `tryMatchDrawImage`, num bloco `{}`). A fonte pode ser qualquer valor simples
+ * (string, `this.toLoad[key]`, bloco de imagem do projeto…). `new Image()` fica
+ * FORA do `newInstance` de propósito (ver o cascade de `mapDeclarator`).
+ */
+function tryFuseNewImage(nodes: Node[], i: number, ctx: ParseCtx): FusedStatement | null {
+  const decl = nodes[i]
+  if (decl?.type !== 'VariableDeclaration' || decl.declarations?.length !== 1) return null
+  const d0 = decl.declarations[0]
+  if (d0?.id?.type !== 'Identifier') return null
+  const init = d0.init
+  if (init?.type !== 'NewExpression' || init.callee?.name !== 'Image') return null
+  if ((init.arguments?.length ?? 0) !== 0) return null
+  const varName = d0.id.name
+
+  const srcStmt = nodes[i + 1]
+  if (srcStmt?.type !== 'ExpressionStatement') return null
+  const assign = srcStmt.expression
+  if (assign?.type !== 'AssignmentExpression' || assign.operator !== '=') return null
+  if (memberObjName(assign.left, 'src') !== varName) return null
+  const src = toExpr(assign.right, ctx)
+  if (!src || !isSimpleValue(src)) return null
+
+  return { stmt: { type: 'newImage', varName, src }, consumed: 2 }
+}
+
 /** `<canvas>.width = W;` (ou `height`) onde `<canvas>` é um elemento conhecido. */
 function matchCanvasDimAssign(
   node: Node,
@@ -5000,6 +5067,16 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         const idx = toExpr(node.property, ctx)
         if (isSimpleValue(idx)) return { type: 'index', arrayVar: node.object.name, index: idx }
       }
+      // Geral: acesso por chave/índice computado sobre QUALQUER objeto representável
+      // (`this.toLoad[key]`, `obj.lista[i]`…) — o `index` acima cobre só `arr[i]` com
+      // `arr` = variável simples; aqui o objeto é uma expressão (thisProp, memberGet…).
+      if (node.computed && node.property && node.object?.type !== 'Identifier') {
+        const object = toExpr(node.object, ctx)
+        const index = toExpr(node.property, ctx)
+        if (object && index && isSimpleValue(object) && isSimpleValue(index)) {
+          return { type: 'indexGet', object, index }
+        }
+      }
       // <obj>.dataset.chave → leitura de data-attribute (sz_val_dataset).
       if (
         !node.computed &&
@@ -5033,6 +5110,28 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     }
     // `a && b` / `a || b` → operador lógico (sz_val_logic). Aninha cadeias longas.
     case 'LogicalExpression': {
+      // Fonte de imagem gerada pelo bloco `sz_val_image`:
+      // `window.__SZGAME_ASSETS?.["nome"] ?? "nome"` → assetImage (round-trip fiel).
+      if (node.operator === '??') {
+        const l = node.left
+        if (
+          (l?.type === 'MemberExpression' || l?.type === 'OptionalMemberExpression') &&
+          l.computed &&
+          l.property?.type === 'StringLiteral' &&
+          (l.object?.type === 'MemberExpression' ||
+            l.object?.type === 'OptionalMemberExpression') &&
+          !l.object.computed &&
+          l.object.object?.type === 'Identifier' &&
+          l.object.object.name === 'window' &&
+          l.object.property?.type === 'Identifier' &&
+          l.object.property.name === '__SZGAME_ASSETS' &&
+          node.right?.type === 'StringLiteral' &&
+          node.right.value === l.property.value
+        ) {
+          return { type: 'assetImage', name: l.property.value }
+        }
+        return null
+      }
       if (node.operator !== '&&' && node.operator !== '||') return null
       const left = toExpr(node.left, ctx)
       const right = toExpr(node.right, ctx)
@@ -5106,6 +5205,27 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
               store: obj.name === 'sessionStorage' ? 'session' : 'local',
               key,
             }
+          }
+        }
+      }
+      // Object.keys(x) / Object.values(x) / Object.entries(x) → objectOp (lista).
+      if (
+        node.callee?.type === 'MemberExpression' &&
+        !node.callee.computed &&
+        node.callee.object?.type === 'Identifier' &&
+        node.callee.object.name === 'Object' &&
+        node.callee.property?.type === 'Identifier' &&
+        (node.callee.property.name === 'keys' ||
+          node.callee.property.name === 'values' ||
+          node.callee.property.name === 'entries') &&
+        node.arguments?.length === 1
+      ) {
+        const object = toExpr(node.arguments[0], ctx)
+        if (object && isSimpleValue(object)) {
+          return {
+            type: 'objectOp',
+            op: node.callee.property.name as 'keys' | 'values' | 'entries',
+            object,
           }
         }
       }
@@ -5444,6 +5564,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return isSimpleValue(expr.object)
     case 'memberCallExpr':
       return isSimpleValue(expr.object) && expr.args.every(isSimpleValue)
+    case 'objectOp':
+      return isSimpleValue(expr.object)
+    case 'assetImage':
+      return true
+    case 'indexGet':
+      return isSimpleValue(expr.object) && isSimpleValue(expr.index)
     default:
       return false
   }

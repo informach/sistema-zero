@@ -6,6 +6,12 @@
    vazando por trás). O JS-import do studio-full-client sozinho NÃO basta: traz só os
    tokens, não registra as cores para a geração das utilitárias. */
 @import "../../../studio/src/styles/studio.css";
+/* Tokens do Pensa (--color-pz-…) — MESMO gotcha do Estúdio: o @import dentro do
+   pipeline registra as cores p/ o @source gerar as utilitárias pz-*. */
+@import "../../../pensa/src/styles/pensa.css";
+/* Tokens do Pinta (--color-pin-…) — MESMO gotcha: registra as cores p/ o @source
+   gerar as utilitárias pin-*. */
+@import "../../../pinta/src/styles/pinta.css";
 /* Componentes compartilhados (@sistemazero/ui + @sistemazero/member-shell) —
    o scanner do Tailwind v4 precisa VER as classes deles (sem isto renderizam pelados). */
 @source "../../../ui/src";
@@ -13,6 +19,10 @@
 /* Editor embarcável (bloco `studio`): o scanner precisa gerar as classes utilitárias
    do @sistemazero/studio; os tokens --color-sz-* vêm do CSS importado pelo componente. */
 @source "../../../studio/src";
+/* App de planejamento embarcável (@sistemazero/pensa) — idem. */
+@source "../../../pensa/src";
+/* Editor de assets embarcável (@sistemazero/pinta) — idem. */
+@source "../../../pinta/src";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -933,5 +943,28 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Cartão do jogo (game-card-dialog, 07/2026): ao imprimir, SÓ o cartão aparece.
+ * O botão "Imprimir" seta `body[data-print="game-card"]` antes do window.print()
+ * e o afterprint limpa (truque clássico de visibilidade — o layout da página
+ * continua no fluxo, invisível, e o cartão é reposicionado no topo).
+ */
+@media print {
+  body[data-print="game-card"] * {
+    visibility: hidden;
+  }
+  body[data-print="game-card"] .game-card-print,
+  body[data-print="game-card"] .game-card-print * {
+    visibility: visible;
+  }
+  body[data-print="game-card"] .game-card-print {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    height: fit-content;
+    max-width: 26rem;
   }
 }

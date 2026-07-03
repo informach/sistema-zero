@@ -15,3 +15,11 @@ export class RoomItemFreeError extends DomainError {
     super(message)
   }
 }
+
+/** Tentou COMPRAR um troféu — troféus são ganhos por conquista (07/2026). → 400. */
+export class RoomItemNotPurchasableError extends DomainError {
+  readonly code = 'ROOM_ITEM_NOT_PURCHASABLE'
+  constructor(message = 'Esse item é um troféu: ele é ganho por conquista, não comprado') {
+    super(message)
+  }
+}

@@ -2,8 +2,15 @@ import { Elysia } from 'elysia'
 import type { EnsureBuyerService } from '../../../application/ensure-buyer/ensure-buyer.service'
 import type { WriteAuditLogService } from '../../../application/internal/write-audit-log/write-audit-log.service'
 import type { CreatePasswordTokenService } from '../../../application/password-reset/create-password-token.service'
+import type { ProfileRepository } from '../../../domain/ports/profile-repository.port'
+import type { UserRepository } from '../../../domain/ports/user-repository.port'
 import { UserNotFoundError } from '../../../domain/user/user.errors'
-import { CreatePasswordTokenBody, EnsureBuyerBody, WriteAuditBody } from '../dtos'
+import {
+  BatchGetUsersBody,
+  CreatePasswordTokenBody,
+  EnsureBuyerBody,
+  WriteAuditBody,
+} from '../dtos'
 import { requireInternalToken } from '../internal-auth'
 
 export interface InternalRoutesDeps {
@@ -11,6 +18,9 @@ export interface InternalRoutesDeps {
   ensureBuyer: EnsureBuyerService
   /** Registra ações administrativas na trilha de auditoria (emitido pelo gateway). */
   writeAuditLog: WriteAuditLogService
+  /** Identidade mínima do responsável + nomes das crianças (report dos pais, S2S members). */
+  users: UserRepository
+  profiles: ProfileRepository
   /** `AUTH_INTERNAL_TOKEN` — injetado pelo gateway nas rotas internas (defesa em profundidade). */
   internalToken: string | undefined
 }
@@ -80,6 +90,31 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           return { recorded: true }
         },
         { body: WriteAuditBody },
+      )
+      // Report dos pais (S2S do MEMBERS, direto na rede interna — só o token):
+      // identidade MÍNIMA do responsável por lote de contas. E-mail + primeiro
+      // nome, NADA além (sem hash/role/telefone). Ids ausentes são omitidos.
+      .post(
+        '/users/emails',
+        async ({ body, headers }) => {
+          requireInternalToken(headers, deps.internalToken)
+          const found = await deps.users.listByIds([...new Set(body.ids)])
+          return {
+            users: found.map((u) => ({ id: u.id, email: u.email, firstName: u.firstName })),
+          }
+        },
+        { body: BatchGetUsersBody },
+      )
+      // Nomes das CRIANÇAS por lote de perfis (saudação do e-mail semanal). SÓ
+      // ativos, SÓ id + nome — nunca foto/telefone/nascimento/conta.
+      .post(
+        '/profiles/batch',
+        async ({ body, headers }) => {
+          requireInternalToken(headers, deps.internalToken)
+          const found = await deps.profiles.listActiveByIds([...new Set(body.ids)])
+          return { profiles: found.map((p) => ({ id: p.id, name: p.name })) }
+        },
+        { body: BatchGetUsersBody },
       )
   )
 }

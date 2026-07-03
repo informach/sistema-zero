@@ -13,8 +13,7 @@ function fakeWorkspace(box: { left: number; top: number; right: number; bottom: 
     getCanvas: () => canvas,
     getTheme: () => ({ name: 'sz-light', getComponentStyle: () => '#fef9ef' }),
     options: { renderer: 'zelos' },
-    // biome-ignore lint/suspicious/noExplicitAny: mock mínimo do WorkspaceSvg
-  } as any
+  } as never
 }
 
 describe('buildBlocksSvg — imagem de TODOS os blocos', () => {

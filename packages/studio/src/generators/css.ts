@@ -296,7 +296,7 @@ function isGoogleFont(entry: CSSEntry): entry is GoogleFontCSS {
 /** Monta o @import do Google Fonts (espaços viram +, ex.: "Press Start 2P"). */
 function googleFontImport(family: string): string {
   const fam = family.trim().replace(/\s+/g, '+')
-  return '@import url("https://fonts.googleapis.com/css?family=' + fam + '");'
+  return `@import url("https://fonts.googleapis.com/css?family=${fam}");`
 }
 
 function isRawCSS(entry: CSSEntry): entry is Extract<CSSEntry, { type: 'rawCSS' }> {

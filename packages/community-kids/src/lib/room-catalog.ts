@@ -56,7 +56,40 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   'pet-gato': { labelPt: 'Gato', emoji: '🐱', w: 1, h: 1 },
   'pet-cachorro': { labelPt: 'Cachorro', emoji: '🐶', w: 1, h: 1 },
   'pet-passaro': { labelPt: 'Passarinho', emoji: '🐦', w: 1, h: 1 },
+  // 🏆 Troféus (07/2026) — ganhos por conquista, nunca comprados (tier 'trophy').
+  'trofeu-primeiro-jogo': { labelPt: 'Troféu do 1º Jogo', emoji: '🏆', w: 1, h: 1 },
+  'trofeu-diploma': { labelPt: 'Diploma na Parede', emoji: '📜', w: 1, h: 1, mount: 'wall' },
+  'trofeu-chama': { labelPt: 'Chama dos 30 Dias', emoji: '🔥', w: 1, h: 1 },
+  'trofeu-medalha-mil': { labelPt: 'Medalha Nota Mil', emoji: '🥇', w: 1, h: 1, mount: 'wall' },
+  'trofeu-foguete': { labelPt: 'Foguete do Lançamento', emoji: '🚀', w: 1, h: 2 },
+  'trofeu-console': { labelPt: 'Console de Criador', emoji: '🕹️', w: 1, h: 1 },
 }
+
+/**
+ * Como GANHAR cada troféu (dica exibida na bandeja 🏆 quando ainda travado).
+ * Espelha o `TROPHY_FOR_BADGE` do members — a conquista é a badge mapeada.
+ */
+export const TROPHY_HINT: Record<string, string> = {
+  'trofeu-primeiro-jogo': 'Publique o seu primeiro jogo no Mural!',
+  'trofeu-diploma': 'Complete um curso inteirinho!',
+  'trofeu-chama': 'Faça uma sequência de 30 dias!',
+  'trofeu-medalha-mil': 'Tire nota mil em 10 quizzes!',
+  'trofeu-foguete': 'Lance a Versão 1 de um plano no Pensa!',
+  'trofeu-console': 'Complete 3 atividades do Estúdio com nota!',
+}
+
+/**
+ * Badges que CONCEDEM troféu (espelha as chaves do `TROPHY_FOR_BADGE` do members) —
+ * a celebração usa p/ avisar "tem troféu novo no seu quarto!".
+ */
+export const TROPHY_BADGE_SLUGS: ReadonlySet<string> = new Set([
+  'first-showcase',
+  'course-complete',
+  'streak-30',
+  'quiz-perfect-10',
+  'pensa-first-launch',
+  'studio-master-3',
+])
 
 interface RoomThemeInfo {
   labelPt: string

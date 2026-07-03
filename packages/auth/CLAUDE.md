@@ -270,6 +270,13 @@ arquivado/sumido → CAI para sessão da conta — a criança volta à grade). R
   hub/kids exibir o nome clicável de um autor/ranqueado SEM expor conta, foto, telefone
   ou nascimento. `publicProfileEnabled === false` → o consumidor anonimiza (não vaza o
   nome); perfil inexistente/arquivado → 404 (não enumera).
+- **Report semanal dos pais (Fase 5, 07/2026) — 2 rotas S2S em lote** (mesma proteção
+  `x-internal-token`; consumidas pelo MEMBERS via `AUTH_BASE_URL`, fora do gateway;
+  body `{ids: uuid[] ≤100}`): `POST /auth/internal/users/emails` →
+  `{users: [{id, email, firstName}]}` (identidade do RESPONSÁVEL p/ o destinatário do
+  e-mail) e `POST /auth/internal/profiles/batch` → `{profiles: [{id, name}]}` (NOMES das
+  crianças p/ o corpo do resumo; só perfis ATIVOS — `ProfileRepository.listActiveByIds`).
+  Ambas devolvem SÓ o que existe (id desconhecido é omitido, não enumera).
 - **Guards:** **criar** e **arquivar** perfil RECUSAM a sessão de perfil (403) — detectada
   pela presença do `x-auth-account-id` que o gateway injeta só quando há `pfl`. Mas
   **editar** (`PATCH /:id`) usa `ownProfileEditContext`: a CONTA edita qualquer perfil

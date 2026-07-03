@@ -60,6 +60,10 @@ export interface ThreadView {
   coverImageUrl: string | null
   /** Id público do artefato jogável (UUID) — só na vitrine do Estúdio; o BFF deriva o link /jogar. */
   playId: string | null
+  /** Jogadas do link público (contador de vaidade, best-effort). */
+  playsCount: number
+  /** Desafio mensal (`m:YYYY-MM`) — a UI mostra o selo/prateleira do mês. */
+  challengeKey: string | null
   reactions: ReactionSummaryItem[]
   attachments: AttachmentView[]
   lastActivityAt: string
@@ -115,6 +119,8 @@ export function toThreadView(
     authorPublic: t.authorPublic,
     coverImageUrl: t.coverImageUrl,
     playId: t.playId,
+    playsCount: t.playsCount,
+    challengeKey: t.challengeKey,
     reactions,
     attachments,
     lastActivityAt: t.lastActivityAt.toISOString(),

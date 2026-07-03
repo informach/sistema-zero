@@ -57,6 +57,32 @@ function describeRateLimited(key: string): boolean {
   return false
 }
 
+// Dedupe do CONTADOR de jogadas por `ip:playId` (TTL 30min, in-process — réplica
+// única, mesmo padrão do rate-limit acima). Só o 1º hit da janela vai com `count=1`
+// ao hub; F5/reabrir não infla. É contador de VAIDADE: best-effort é suficiente.
+const PLAYS_KEY = Symbol.for('@sistemazero/member-shell/studio-plays-seen')
+const playsSlot = globalThis as Record<symbol, unknown>
+if (!playsSlot[PLAYS_KEY]) playsSlot[PLAYS_KEY] = new Map<string, number>()
+const playsSeen = playsSlot[PLAYS_KEY] as Map<string, number>
+const PLAYS_TTL_MS = 30 * 60_000
+/** Teto anti-OOM da borda pública: cheio de entradas VIVAS → para de contar. */
+const PLAYS_MAX_ENTRIES = 50_000
+
+function shouldCountPlay(ip: string, playId: string): boolean {
+  const now = Date.now()
+  const key = `${ip}:${playId}`
+  const seenAt = playsSeen.get(key)
+  if (seenAt !== undefined && now - seenAt < PLAYS_TTL_MS) return false
+  if (playsSeen.size >= PLAYS_MAX_ENTRIES) {
+    for (const [k, at] of playsSeen) {
+      if (now - at >= PLAYS_TTL_MS) playsSeen.delete(k)
+    }
+    if (playsSeen.size >= PLAYS_MAX_ENTRIES) return false
+  }
+  playsSeen.set(key, now)
+  return true
+}
+
 function sanitizeProjectString(raw: unknown, maxChars: number): string {
   return typeof raw === 'string' ? raw.slice(0, maxChars) : ''
 }
@@ -399,6 +425,10 @@ export function createStudioRoutes(deps: {
       if (!UUID_RE.test(clientIdempotencyKey)) return invalid()
       if (title.length < 1 || title.length > 200) return invalid()
       if (description.length < 1 || description.length > 280) return invalid()
+      // Tag do DESAFIO do mês — repassada FROUXA (formato só): o gate real (posse
+      // Clube+Estúdio + mês corrente) é o do hub, com drop silencioso da tag.
+      const rawChallenge = String(form.get('challengeKey') ?? '')
+      const challengeKey = /^m:\d{4}-\d{2}$/.test(rawChallenge) ? rawChallenge : null
 
       const projectPart = form.get('project')
       if (!(projectPart instanceof File) || projectPart.size === 0) return invalid()
@@ -462,6 +492,7 @@ export function createStudioRoutes(deps: {
         coverImageUrl,
         playId,
         clientIdempotencyKey,
+        challengeKey,
       })
       if (r.status !== 200 || !r.body) {
         return NextResponse.json(r.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
@@ -483,12 +514,14 @@ export function createStudioRoutes(deps: {
 
   const studioPlay = {
     // PÚBLICO (sem login): só serve enquanto o playId segue associado a post visível
-    // no Mural. O projeto fica no R2 privado, MESMA ORIGEM (sem CORS).
-    GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+    // no Mural. O projeto fica no R2 privado, MESMA ORIGEM (sem CORS). O 1º hit por
+    // ip:playId na janela também CONTA a jogada (fundido no resolve — 1 round-trip).
+    GET: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const { id } = await ctx.params
       if (!UUID_RE.test(id))
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
-      const playable = await hub.resolveStudioPlay(id)
+      const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'
+      const playable = await hub.resolveStudioPlay(id, shouldCountPlay(ip, id))
       if (playable.status >= 500) {
         return NextResponse.json(playable.body ?? { error: { code: 'SERVICE_UNAVAILABLE' } }, {
           status: playable.status,

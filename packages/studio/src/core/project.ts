@@ -52,6 +52,10 @@ const MAX_ASSET_NAME_CHARS = 48
  * Teto do `dataUrl` de UM asset (chars do data: URL). ~800 mil chars ≈ 580 KB de
  * binário após o inflar do base64 (a UI faz downscale/compressão antes; isto é a
  * cerca anti-inchaço do save/quota). Subido ~2x (2026-06) p/ projetos maiores.
+ * ⚠️ Manter em sincronia com STUDIO_MAX_ASSET_CHARS do Pinta
+ * (packages/pinta/src/components/editor/EditorScreen.tsx) — a ponte "Usar no
+ * Estúdio" valida lá primeiro para dar a mensagem gentil; mudar aqui sem lá
+ * faria o Pinta recusar o que o Estúdio aceitaria (ou vice-versa).
  */
 const MAX_ASSET_DATA_URL_CHARS = 800_000
 /** Orçamento total de assets do projeto (~8 MB de binário inflado em base64). */

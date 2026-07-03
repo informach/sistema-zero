@@ -38,6 +38,8 @@ export const MAT = {
   leafLight: mat('#73bd6c'),
   terracotta: mat('#c8714e'),
   metal: mat('#b9c0c7'),
+  // Dourado dos TROFÉUS (brilho leve p/ "chamar o olho" sem point light).
+  gold: mat('#e8b23a', { emissive: '#ffd76a', emissiveIntensity: 0.18 }),
   glass: mat('#bfe3f0', { emissive: '#bfe3f0', emissiveIntensity: 0.06 }),
   lamp: mat('#ffe9b0', { emissive: '#ffd27a', emissiveIntensity: 0.5 }),
   screen: mat('#2a2f3a', { emissive: '#3a86c8', emissiveIntensity: 0.25 }),

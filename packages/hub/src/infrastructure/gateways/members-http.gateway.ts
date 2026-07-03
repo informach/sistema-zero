@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type {
+  ChallengeEntryArgs,
   CourseAccessResult,
   MembersGateway,
   ShowcaseEligibilityArgs,
@@ -29,8 +30,9 @@ export interface MembersHttpGatewayOptions {
 }
 
 const DEFAULT_TIMEOUT_MS = 5_000
-/** Path EXATO que o members assina/verifica (`<MÉTODO>.<path>.<corpo>`; chamada S2S direta). */
+/** Paths EXATOS que o members assina/verifica (`<MÉTODO>.<path>.<corpo>`; S2S direta). */
 const SHOWCASE_WEBHOOK_PATH = '/members/webhooks/showcase'
+const CHALLENGE_WEBHOOK_PATH = '/members/webhooks/challenge'
 const SHOWCASE_NOTIFY_ATTEMPTS = 3
 const SHOWCASE_NOTIFY_RETRY_BASE_MS = 100
 
@@ -129,63 +131,81 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
     },
 
     async notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void> {
-      // Sem segredo HMAC (dev/local) → no-op: o nível do aluno só não atualiza na hora.
-      if (!opts.hmacSecret) return
-      const rawBody = JSON.stringify({
+      await postSignedWebhook(SHOWCASE_WEBHOOK_PATH, 'showcase', {
         userId: args.userId,
         accountId: args.accountId,
         courseId: args.courseId,
         audience: args.audience,
       })
-      const deliveryId = randomUUID()
-      for (let attempt = 1; attempt <= SHOWCASE_NOTIFY_ATTEMPTS; attempt++) {
-        try {
-          // Assinatura DENTRO do try: o chamador dispara em fire-and-forget (`void`),
-          // então o método NÃO pode rejeitar — uma falha ao assinar cai no best-effort
-          // abaixo em vez de virar unhandled rejection (que derrubaria o processo).
-          const ts = Math.floor(now().getTime() / 1000)
-          const signature = signHmac(
-            opts.hmacSecret,
-            canonicalHmacMessage({ method: 'POST', path: SHOWCASE_WEBHOOK_PATH, body: rawBody }),
-            ts,
-          )
-          const res = await doFetch(`${base}${SHOWCASE_WEBHOOK_PATH}`, {
-            method: 'POST',
-            headers: {
-              'content-type': 'application/json',
-              'x-signature': `t=${ts},v1=${signature}`,
-              'x-delivery-id': deliveryId,
-            },
-            body: rawBody,
-            signal: AbortSignal.timeout(timeoutMs),
-          })
-          if (res.ok) return
-          if (retryableShowcaseStatus(res.status) && attempt < SHOWCASE_NOTIFY_ATTEMPTS) {
-            await delay(SHOWCASE_NOTIFY_RETRY_BASE_MS * attempt)
-            continue
-          }
-          opts.logger?.warn('members.showcase_notify_failed', {
-            userId: args.userId,
-            courseId: args.courseId,
-            status: res.status,
-            attempt,
-          })
-          return
-        } catch (error) {
-          if (attempt < SHOWCASE_NOTIFY_ATTEMPTS) {
-            await delay(SHOWCASE_NOTIFY_RETRY_BASE_MS * attempt)
-            continue
-          }
-          // Best-effort: a publicação no Mural NUNCA falha por causa do nível do aluno.
-          opts.logger?.warn('members.showcase_notify_error', {
-            userId: args.userId,
-            courseId: args.courseId,
-            attempt,
-            error: error instanceof Error ? error.message : String(error),
-          })
-          return
-        }
-      }
     },
+
+    async notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void> {
+      await postSignedWebhook(CHALLENGE_WEBHOOK_PATH, 'challenge', {
+        userId: args.userId,
+        accountId: args.accountId,
+        audience: args.audience,
+        challengeKey: args.challengeKey,
+      })
+    },
+  }
+
+  /**
+   * POST assinado (HMAC canônico `<MÉTODO>.<path>.<corpo>` + `x-delivery-id`) com
+   * retry — BEST-EFFORT: NUNCA lança (os chamadores disparam em fire-and-forget
+   * `void`; uma rejeição viraria unhandled rejection e derrubaria o processo).
+   * Sem segredo HMAC (dev/local) → no-op.
+   */
+  async function postSignedWebhook(
+    path: string,
+    kind: string,
+    payload: Record<string, string>,
+  ): Promise<void> {
+    if (!opts.hmacSecret) return
+    const rawBody = JSON.stringify(payload)
+    const deliveryId = randomUUID()
+    for (let attempt = 1; attempt <= SHOWCASE_NOTIFY_ATTEMPTS; attempt++) {
+      try {
+        // Assinatura DENTRO do try (falha ao assinar cai no best-effort abaixo).
+        const ts = Math.floor(now().getTime() / 1000)
+        const signature = signHmac(
+          opts.hmacSecret,
+          canonicalHmacMessage({ method: 'POST', path, body: rawBody }),
+          ts,
+        )
+        const res = await doFetch(`${base}${path}`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-signature': `t=${ts},v1=${signature}`,
+            'x-delivery-id': deliveryId,
+          },
+          body: rawBody,
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (res.ok) return
+        if (retryableShowcaseStatus(res.status) && attempt < SHOWCASE_NOTIFY_ATTEMPTS) {
+          await delay(SHOWCASE_NOTIFY_RETRY_BASE_MS * attempt)
+          continue
+        }
+        opts.logger?.warn(`members.${kind}_notify_failed`, {
+          userId: payload.userId,
+          status: res.status,
+          attempt,
+        })
+        return
+      } catch (error) {
+        if (attempt < SHOWCASE_NOTIFY_ATTEMPTS) {
+          await delay(SHOWCASE_NOTIFY_RETRY_BASE_MS * attempt)
+          continue
+        }
+        // Best-effort: a publicação no Mural NUNCA falha por causa da gamificação.
+        opts.logger?.warn(`members.${kind}_notify_error`, {
+          userId: payload.userId,
+          attempt,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        return
+      }
+    }
   }
 }

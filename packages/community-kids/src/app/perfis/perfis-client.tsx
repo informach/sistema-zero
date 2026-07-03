@@ -13,8 +13,10 @@ import {
   Award,
   BookOpenCheck,
   Flame,
+  Gamepad2,
   Pencil,
   Plus,
+  QrCode,
   Receipt,
   Sparkles,
   Star,
@@ -23,14 +25,18 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { GameCardDialog } from '@/components/kids/game-card-dialog'
 import { KidsMascot } from '@/components/kids/mascot'
 import { apiGet } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
   type ChildDashboardView,
+  type ChildWeekGameView,
+  type ChildWeekStatsView,
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
   type Paginated,
+  type ParentReportPrefsView,
   type PaymentView,
   type ProfileView,
 } from '@/lib/types'
@@ -386,7 +392,73 @@ function ChildrenDashboard() {
           ? [0, 1].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
           : children.map((c) => <ChildStatsCard key={c.profileId} child={c} />)}
       </div>
+      <WeeklyReportToggle />
     </section>
+  )
+}
+
+/**
+ * Opt-out do resumo semanal por e-mail (toda sexta no fim da tarde). A preferência
+ * vive no members por CONTA (`/api/parents/report-prefs`, atrás do portão de senha).
+ * Falha ao carregar → o bloco some (best-effort, como o resto do dashboard).
+ */
+function WeeklyReportToggle() {
+  const [prefs, setPrefs] = useState<ParentReportPrefsView | null>(null)
+  const [failed, setFailed] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/parents/report-prefs')
+      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
+      .then((data: ParentReportPrefsView) => {
+        if (alive) setPrefs(data)
+      })
+      .catch(() => {
+        if (alive) setFailed(true)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  async function toggle(receive: boolean) {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/parents/report-prefs', {
+        method: 'PUT',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ disabled: !receive }),
+      })
+      if (!res.ok) throw new Error('save failed')
+      setPrefs((await res.json()) as ParentReportPrefsView)
+    } catch {
+      toast.error('Não foi possível salvar. Tente de novo.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (failed || prefs === null) return null
+
+  return (
+    <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-border bg-card p-4">
+      <input
+        type="checkbox"
+        checked={!prefs.disabled}
+        disabled={saving}
+        onChange={(e) => void toggle(e.target.checked)}
+        className="mt-0.5 size-5 accent-[color:var(--primary)]"
+      />
+      <span className="min-w-0">
+        <span className="block font-semibold text-foreground text-sm">
+          Receber o resumo da semana por e-mail
+        </span>
+        <span className="block text-muted-foreground text-xs">
+          Toda sexta no fim da tarde enviamos como foi a semana das crianças.
+        </span>
+      </span>
+    </label>
   )
 }
 
@@ -434,6 +506,84 @@ function ChildStatsCard({ child }: { child: ChildDashboardView }) {
           value={child.coursesInProgress}
         />
       </div>
+      {child.week ? <ChildWeekBlock week={child.week} games={child.games ?? null} /> : null}
+    </div>
+  )
+}
+
+/**
+ * "Esta semana" do filho (semana corrente parcial, seg até agora): destaques em uma
+ * linha + jogos publicados no Mural com o cartão QR imprimível. `games` nulo = hub
+ * indisponível na hora (o bloco degrada só para os números).
+ */
+function ChildWeekBlock({
+  week,
+  games,
+}: {
+  week: ChildWeekStatsView
+  games: ChildWeekGameView[] | null
+}) {
+  const [cardGame, setCardGame] = useState<ChildWeekGameView | null>(null)
+
+  const parts: string[] = []
+  if (week.xpEarned > 0) parts.push(`+${week.xpEarned} XP`)
+  if (week.lessonsCompleted > 0)
+    parts.push(
+      week.lessonsCompleted === 1
+        ? '1 aula concluída'
+        : `${week.lessonsCompleted} aulas concluídas`,
+    )
+  if (week.quizzesPassed > 0)
+    parts.push(
+      week.quizzesPassed === 1 ? '1 quiz aprovado' : `${week.quizzesPassed} quizzes aprovados`,
+    )
+  if (week.badgesUnlocked > 0)
+    parts.push(
+      week.badgesUnlocked === 1 ? '1 medalha nova' : `${week.badgesUnlocked} medalhas novas`,
+    )
+  if (week.projectsSubmitted > 0)
+    parts.push(
+      week.projectsSubmitted === 1
+        ? '1 projeto enviado'
+        : `${week.projectsSubmitted} projetos enviados`,
+    )
+
+  const weekGames = games ?? []
+
+  return (
+    <div className="rounded-xl border border-border bg-background/60 p-3">
+      <p className="mb-1 font-bold text-foreground text-xs uppercase tracking-wide">Esta semana</p>
+      {parts.length > 0 ? (
+        <p className="text-foreground text-sm">{parts.join(' · ')}</p>
+      ) : (
+        <p className="text-muted-foreground text-sm">Sem novidades por enquanto.</p>
+      )}
+      {weekGames.length > 0 ? (
+        <ul className="mt-2 flex flex-col gap-1.5">
+          {weekGames.map((g) => (
+            <li key={`${g.playId ?? g.title}:${g.publishedAt}`} className="flex items-center gap-2">
+              <Gamepad2 className="size-4 shrink-0 text-primary" />
+              <span className="min-w-0 flex-1 truncate text-foreground text-sm">{g.title}</span>
+              {g.playId ? (
+                <button
+                  type="button"
+                  onClick={() => setCardGame(g)}
+                  className="inline-flex min-h-8 items-center gap-1 rounded-full border border-border px-2.5 font-semibold text-muted-foreground text-xs"
+                >
+                  <QrCode className="size-3.5" /> Cartão
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {cardGame?.playId ? (
+        <GameCardDialog
+          title={cardGame.title}
+          playUrl={`/jogar/${cardGame.playId}`}
+          onClose={() => setCardGame(null)}
+        />
+      ) : null}
     </div>
   )
 }

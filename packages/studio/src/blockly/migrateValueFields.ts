@@ -134,8 +134,15 @@ function shadowFor(kind: 'number' | 'text' | 'color', value: unknown): { shadow:
   return { shadow: { type: 'sz_val_text', fields: { TEXT: String(value ?? '') } } }
 }
 
+/** O `sz_js_for_each` legado guardava a lista no campo de texto `NAME`; hoje é o
+ * soquete de valor `ARRAY` (aceita variável/`Object.keys`/expressão). */
+function forEachNeedsMigration(block: BlockNode): boolean {
+  return block.type === 'sz_js_for_each' && !!block.fields && 'NAME' in (block.fields as object)
+}
+
 /** O bloco (ou algum descendente) tem campo legado a migrar? (read-only, barato) */
 function blockNeedsMigration(block: BlockNode): boolean {
+  if (forEachNeedsMigration(block)) return true
   const map = LEGACY_VALUE_FIELDS[block.type ?? '']
   if (map && block.fields && Object.keys(map).some((f) => f in (block.fields as object))) {
     return true
@@ -153,6 +160,16 @@ function blockNeedsMigration(block: BlockNode): boolean {
 
 /** Muta o bloco (já clonado) movendo `fields.X` legados para `inputs.X = { shadow }`. */
 function migrateBlock(block: BlockNode): void {
+  // `sz_js_for_each`: campo `NAME` (nome da lista) → soquete `ARRAY` com um bloco de
+  // variável (senão o Blockly dropava o campo órfão e a lista virava a default "lista").
+  if (forEachNeedsMigration(block) && block.fields) {
+    const name = String(block.fields.NAME ?? 'lista')
+    delete block.fields.NAME
+    block.inputs = block.inputs ?? {}
+    if (!block.inputs.ARRAY) {
+      block.inputs.ARRAY = { block: { type: 'sz_val_variable', fields: { NAME: name } } }
+    }
+  }
   const map = LEGACY_VALUE_FIELDS[block.type ?? '']
   if (map && block.fields) {
     for (const [field, kind] of Object.entries(map)) {

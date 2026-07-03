@@ -1,12 +1,15 @@
 import {
+  BrainCircuit,
   Coins,
   Crown,
   Flame,
   Gamepad2,
   GraduationCap,
+  Lightbulb,
   type LucideIcon,
   Medal,
   PiggyBank,
+  Rocket,
   Sparkles,
   Target,
 } from 'lucide-react'
@@ -27,6 +30,11 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     title: 'Primeiro passo',
     description: 'Você concluiu a sua primeira aula!',
     icon: Sparkles,
+  },
+  'first-showcase': {
+    title: 'Meu primeiro jogo',
+    description: 'Você publicou o seu primeiro jogo no Mural! Tem até troféu no seu quarto.',
+    icon: Gamepad2,
   },
   'streak-7': {
     title: 'Semana em chamas',
@@ -107,6 +115,21 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     title: 'Magnata Zappy',
     description: 'Mil moedas Zappy conquistadas. Uau!',
     icon: PiggyBank,
+  },
+  'pensa-first-idea': {
+    title: 'Ideia brilhante',
+    description: 'Você clareou a sua primeira ideia no Pensa!',
+    icon: Lightbulb,
+  },
+  'pensa-first-launch': {
+    title: 'Grande lançamento',
+    description: 'Você planejou, construiu e lançou a Versão 1 de um jogo!',
+    icon: Rocket,
+  },
+  'pensa-creator-3': {
+    title: 'Cabeça de criador',
+    description: 'Três versões lançadas com o Pensa. Você pensa como gente grande!',
+    icon: BrainCircuit,
   },
 }
 

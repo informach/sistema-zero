@@ -1,4 +1,4 @@
-import { and, asc, eq, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, sql } from 'drizzle-orm'
 import type {
   CreateProfileOutcome,
   ProfileRepository,
@@ -41,6 +41,15 @@ export class DrizzleProfileRepository implements ProfileRepository {
   async findById(id: string): Promise<ProfileAggregate | null> {
     const [row] = await this.db.select().from(profiles).where(eq(profiles.id, id)).limit(1)
     return row ? fromRow(row) : null
+  }
+
+  async listActiveByIds(ids: string[]): Promise<ProfileAggregate[]> {
+    if (ids.length === 0) return []
+    const rows = await this.db
+      .select()
+      .from(profiles)
+      .where(and(inArray(profiles.id, ids), eq(profiles.status, 'active')))
+    return rows.map(fromRow)
   }
 
   async createWithinLimit(

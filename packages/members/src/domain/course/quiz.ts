@@ -1,7 +1,11 @@
 import type { QuizBlock, QuizChoice } from './lesson-block'
 
-/** Cooldown de retry após reprovar (espelha o legado: 5 minutos). */
-export const QUIZ_RETRY_COOLDOWN_MS = 5 * 60_000
+/**
+ * Cooldown de retry após reprovar. 90s (07/2026; era 5 min): para uma criança de
+ * 7–8 anos, 5 minutos é desmotivador — 90s ainda barra o chute em loop (a correção
+ * chega no submit, então a janela dá tempo de LER a revisão antes de tentar de novo).
+ */
+export const QUIZ_RETRY_COOLDOWN_MS = 90_000
 
 /** Nota de corte quando o bloco não define `passingScore`. */
 export const QUIZ_DEFAULT_PASSING_SCORE = 100

@@ -1,7 +1,10 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
+import { CHALLENGE_ENTRY_XP, challengeSourceId } from '../../domain/gamification/challenges'
 import { COIN_VALUES, quizPassedCoins } from '../../domain/gamification/coins'
 import { localDateSaoPaulo, quizPassedXp, XP_VALUES } from '../../domain/gamification/gamification'
+import { pensaStageSourceId } from '../../domain/pensa/gamification'
+import type { PensaWorkStage } from '../../domain/pensa/pensa'
 import type {
   GamificationRepository,
   XpEventInput,
@@ -108,6 +111,75 @@ export class AwardGamificationService {
       },
     ]
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+  }
+
+  /**
+   * Advance do Pensa bem-sucedido: fechar uma ETAPA (z→e/e→r/r→o) credita
+   * `pensa_stage_complete`; fechar o CICLO (o→done) credita SÓ o
+   * `pensa_cycle_complete` — o lançamento vale o prêmio MAIOR, sem acumular
+   * com o de etapa (decisão do plano). Idempotência pelo ledger: a etapa usa
+   * um uuid DETERMINÍSTICO de (cycleId, stage) — `pensaStageSourceId` — e o
+   * ciclo usa o próprio cycleId; um replay do award nunca duplica.
+   */
+  async awardPensaAdvance(input: {
+    userId: string
+    /** CONTA do responsável (sessão de perfil). Default → userId no caller. */
+    accountId: string
+    cycleId: string
+    /** Etapa que FECHOU (o `from` do advance). */
+    from: PensaWorkStage
+    /** Audiência do PROJETO Pensa — TODA a gamificação é segregada por vitrine. */
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    const events: XpEventInput[] =
+      input.from === 'o'
+        ? [
+            {
+              sourceType: 'pensa_cycle_complete',
+              sourceId: input.cycleId,
+              amount: XP_VALUES.PENSA_CYCLE_COMPLETE,
+              coins: COIN_VALUES.PENSA_CYCLE_COMPLETE,
+            },
+          ]
+        : [
+            {
+              sourceType: 'pensa_stage_complete',
+              sourceId: pensaStageSourceId(input.cycleId, input.from),
+              amount: XP_VALUES.PENSA_STAGE_COMPLETE,
+              coins: COIN_VALUES.PENSA_STAGE_COMPLETE,
+            },
+          ]
+    return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+  }
+
+  /**
+   * DESAFIO do mês (game jam, 07/2026): publicou no Mural com a tag do mês →
+   * XP real (move streak) + badge `challenge-first`. Idempotente pelo sourceId
+   * DETERMINÍSTICO do monthKey (`challengeSourceId` — 1 marco/mês, mesmo com 2
+   * jogos publicados). Disparado pelo webhook hub→members; fail-open.
+   * ⚠️ Risco aceito v1: o webhook não carrega role → `privileged: false` (equipe
+   * testando o desafio entra no ranking kids — o hub não conhece roles).
+   */
+  async awardChallengeEntry(input: {
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    monthKey: string
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [
+        {
+          sourceType: 'challenge_entry',
+          sourceId: challengeSourceId(input.monthKey),
+          amount: CHALLENGE_ENTRY_XP,
+        },
+      ],
+      false,
+    )
   }
 
   /**

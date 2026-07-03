@@ -120,7 +120,38 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    autor do header de perfil, capa https-only). Idempotência = `autor:studio-standalone:clientKey`
    (sem curso/cadeia; republicar = post novo). Gateway `hub-showcase-create-studio-standalone` (segmento
    literal distinto de `showcase-thread-studio` — sem colisão de prefixo).
-11. **Snapshot de autor + nomes clicáveis (06/2026):** todo tópico/comentário guarda no CREATE um
+12. **Plays + carreira + Desafio do mês (Fase 5, 07/2026):**
+   - **Contador de jogadas:** `threads.plays_count` (vaidade, best-effort). O incremento é
+     FUNDIDO no resolve do link público: `GET /hub/internal/studio-play/:playId?count=1` vira
+     `UPDATE ... SET plays_count = plays_count + 1 WHERE play_id AND is_showcase AND
+     status='visible' RETURNING id` (1 round-trip; o RETURNING responde o "visível?").
+     **NÃO bump-a `version`** (jogar não é edição — um play concorrente não pode 409-ar a
+     moderação). O DEDUPE por `ip:playId` (TTL 30min) é do BFF (member-shell) — o hub não
+     conhece o IP real. Sem `count` → SELECT puro (revalidações não inflam).
+   - **Carreira:** `GET /hub/my-showcase-stats` (rota de ALUNO, JWT no gateway) →
+     `{published, plays}` agregado NO banco (`showcaseStatsByAuthor`, usa o
+     `threads_author_status_idx`) — "seus jogos já foram jogados N vezes" do kids.
+   - **Desafio do MÊS (game jam):** `threads.challenge_key` (`m:YYYY-MM`). No
+     `createStandaloneShowcase`, a tag do corpo é VALIDADA: formato + mês CORRENTE
+     recomputado em SP (`currentChallengeKey` local, mesma régua do members) + posse de
+     `estudio-completo` E `clube-dos-criadores` (as DUAS refs na MESMA chamada
+     `members.checkAccess`). Reprovada → o post é gravado **SEM a tag (drop SILENCIOSO)** —
+     a publicação da criança NUNCA falha por causa do desafio. Thread com a tag →
+     `members.notifyChallengeEntry` (fire-and-forget best-effort, webhook direto
+     `POST /members/webhooks/challenge` HMAC + retry — helper `postSignedWebhook`
+     compartilhado com o notify do showcase); o members deduplica por mês. Filtro
+     `?challenge=m:YYYY-MM` no `GET /hub/channels/:id/threads` (prateleira do Mural, índice
+     parcial). `ThreadView` expõe `playsCount` + `challengeKey`.
+   - **Report dos pais (Lote E):** rota S2S **`POST /hub/internal/showcase-by-authors`**
+     (`interfaces/http/routes/internal.routes.ts`, HMAC canônico `GATEWAY_HMAC_SECRET` no hook
+     `transform` — mesmo padrão dos webhooks de entrada; consumida SÓ members→hub via
+     `HUB_BASE_URL`): body `{authorIds ≤50, from, to}` (janela ≤45 dias) → threads de vitrine
+     VISÍVEIS desses autores no período (`listShowcaseByAuthors` no repo) com
+     `{authorId, title, playId, publishedAt}` — alimenta os "jogos da semana" do e-mail/tela dos
+     pais. ⚠️ **NUNCA expor no gateway**: a rota devolve playIds de QUALQUER autor — na borda
+     vazaria jogos entre famílias; o portão de família é do members (só manda os profileIds da
+     conta autenticada).
+13. **Snapshot de autor + nomes clicáveis (06/2026):** todo tópico/comentário guarda no CREATE um
    snapshot do **primeiro nome** (`author_display_name`) e da **flag pública** (`author_public`) do
    autor — alimenta os **nomes clicáveis** do Mural e do fórum kids (clube). A fonte é SEMPRE
    confiável (headers do gateway), nunca o corpo: `resolveDisplayName` tira o nome de
@@ -344,7 +375,11 @@ um fresh DB pulava o enum. Consertado: `0002` virou `ADD VALUE IF NOT EXISTS` (r
 `0002`/`0003` journaled. `0003_add_play_id` (`ADD COLUMN IF NOT EXISTS play_id`).
 `0004_add_author_display_public` (`ADD COLUMN IF NOT EXISTS` de `comments.author_display_name` +
 `comments.author_public` + `threads.author_public` — snapshot de autor p/ nomes clicáveis; o
-`threads.author_display_name` já vinha da `0001`). ⚠️ O `db:generate` re-emite as linhas de `play_id`
+`threads.author_display_name` já vinha da `0001`). **`0005_plays_challenge` (Fase 5, 07/2026 —
+escrita à MÃO, journaled, FALTA aplicar):** `threads.plays_count` int NOT NULL DEFAULT 0 +
+`threads.challenge_key` text + índice PARCIAL `threads_play_id_idx (play_id) WHERE play_id IS NOT
+NULL` (conserta o seq scan pré-existente do resolve do /jogar) + índice parcial
+`threads_channel_challenge_idx (channel_id, challenge_key)`. ⚠️ O `db:generate` re-emite as linhas de `play_id`
 (0003) e `community_gated` (0002) por DRIFT do snapshot — REMOVA-as do SQL gerado (já aplicadas).
 `db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
 nova, CONFIRA o journal antes de gerar.

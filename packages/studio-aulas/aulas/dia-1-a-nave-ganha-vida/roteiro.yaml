@@ -1,0 +1,107 @@
+meta:
+  slug: dia-1-a-nave-ganha-vida
+  titulo: "Dia 1 — A nave ganha vida"
+  dia: 1
+  projetoInicial: vazio
+  extensoes: [game-2d]
+  cenarioAbertura: cenario-a
+  cenarioMeio: cenario-b
+  voz:
+    estabilidade: 0.4
+    estilo: 0.6
+
+cenas:
+  - id: c1-oi
+    tipo: apresentacao
+    emocao: empolgado
+    narracao: >-
+      Oi! Que bom que você veio. Hoje a gente vai dar vida pra sua primeira nave,
+      e é você que vai montar, peça por peça. Bora?
+
+  - id: c2-o-que-e-sprite
+    tipo: teoria
+    emocao: curioso
+    narracao: >-
+      Antes, uma palavrinha nova: sprite. Sprite é só o nome chique do
+      bonequinho do jogo. A nossa nave vai ser um sprite. Não precisa ter medo,
+      eu te explico tudo.
+    ilustracao:
+      nome: sprite
+      params: { nome: nave }
+
+  - id: c3-criar-a-nave
+    tipo: pratica
+    emocao: neutro
+    narracao: >-
+      Agora bora criar a nave. Na categoria Jogo 2D, procura o bloco criar
+      sprite e encaixa ali na nossa caixa de Comportamento, até dar aquele
+      clique de peça entrando no lugar.
+    acoes:
+      - tipo: abrirCategoria
+        categoria: "Jogo 2D"
+      - tipo: pegarBloco
+        bloco: sz_g2d_create_sprite
+        encaixarEm: sz_frame_behavior
+        rotulo: "criar sprite"
+      - tipo: configurarCampo
+        campo: NAME
+        valor: nave
+      - tipo: configurarCampo
+        campo: COLOR
+        valor: "#22d3ee"
+      - tipo: balao
+        ancora: { bloco: sz_g2d_create_sprite, campo: NAME }
+        texto: "Aqui a gente dá o nome: nave"
+      - tipo: balao
+        ancora: { bloco: sz_g2d_create_sprite, campo: X }
+        texto: "X é a posição na largura"
+      - tipo: zoom
+        nivel: ajustar
+      - tipo: testar
+        segundos: 3
+
+  - id: c4-o-que-e-xy
+    tipo: teoria
+    emocao: curioso
+    narracao: >-
+      Você viu esse x e esse y? Eles dizem ONDE a nave fica na tela. O x é
+      esquerda e direita. O y é cima e baixo. Igualzinho achar um lugar num mapa.
+    ilustracao:
+      nome: coordenadas-xy
+
+  - id: c5-fazer-mover
+    tipo: pratica
+    emocao: neutro
+    narracao: >-
+      Agora bora fazer a nave se mexer. Pega o bloco mudar a velocidade e encaixa
+      logo depois. Um empurrãozinho pro lado e ela já anda.
+    acoes:
+      - tipo: abrirCategoria
+        categoria: "Jogo 2D"
+      - tipo: pegarBloco
+        bloco: sz_g2d_set_velocity
+        encaixarEm: sz_frame_behavior
+        rotulo: "mudar a velocidade"
+      - tipo: balao
+        ancora: { bloco: sz_g2d_set_velocity, campo: VX }
+        texto: "VX empurra pro lado"
+      - tipo: zoom
+        nivel: ajustar
+      - tipo: testar
+        segundos: 4
+
+  - id: c6-testar
+    tipo: teste
+    emocao: comemorando
+    narracao: >-
+      Olha a nossa nave se mexendo! Se ficou estranho, não tem problema nenhum, é
+      assim mesmo. Volta no bloco, confere os nomes e ajusta. Arrumar o que não
+      funcionou também é criar.
+
+  - id: c7-fecho
+    tipo: fecho
+    emocao: comemorando
+    narracao: >-
+      Você acabou de fazer a sua primeira nave ganhar vida. Capricha na cor, deixa
+      do seu jeito, porque esse jogo é seu. Amanhã a gente ensina ela a atirar.
+      Até já!

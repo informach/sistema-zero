@@ -3,6 +3,7 @@ import type { ShowcaseService } from '../../../application/showcase/showcase.ser
 import { assertInternalCaller, resolveActor } from '../auth'
 import {
   PlayIdParams,
+  PlayResolveQuery,
   ShowcaseThreadBody,
   ShowcaseThreadStudioBody,
   ShowcaseThreadStudioStandaloneBody,
@@ -72,6 +73,7 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
             coverImageUrl: body.coverImageUrl ?? null,
             playId: body.playId,
             clientIdempotencyKey: body.clientIdempotencyKey,
+            challengeKey: body.challengeKey ?? null,
           },
         )
         return { thread, deduped }
@@ -80,10 +82,17 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
     )
     .get(
       '/hub/internal/studio-play/:playId',
-      async ({ params }) => {
-        const visible = await deps.showcase.isPlayable(params.playId)
+      async ({ params, query }) => {
+        // `count=1` funde o incremento de jogadas no MESMO round-trip (o BFF já
+        // deduplicou por ip:playId — só hits "novos" chegam com count).
+        const visible = await deps.showcase.isPlayable(params.playId, query.count === '1')
         return { visible }
       },
-      { params: PlayIdParams },
+      { params: PlayIdParams, query: PlayResolveQuery },
     )
+    .get('/hub/my-showcase-stats', async ({ headers }) => {
+      // Rota de ALUNO (JWT no gateway; aqui o token interno + ator dos headers):
+      // agregado da carreira — "seus jogos já foram jogados N vezes".
+      return deps.showcase.myShowcaseStats(resolveActor(headers))
+    })
 }

@@ -31,9 +31,13 @@ import {
 } from '../../src/domain/gamification/coins'
 import {
   advanceStreak,
+  challengeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  pensaCycleBadgeSlugs,
+  pensaStageBadgeSlugs,
   quizPerfectBadgeSlugs,
+  showcaseBadgeSlugs,
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
 } from '../../src/domain/gamification/gamification'
@@ -83,6 +87,7 @@ import {
   type SpendCoinsResult,
   type XpEventInput,
 } from '../../src/domain/ports/gamification-repository.port'
+import type { ParentReportRepository } from '../../src/domain/ports/parent-report-repository.port'
 import type { ProcessedWebhookRepository } from '../../src/domain/ports/processed-webhook-repository.port'
 import type {
   ProgressRepository,
@@ -1251,6 +1256,35 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
     }).length
   }
 
+  async countSubmittedInPeriodByAudience(
+    userId: string,
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<number> {
+    return this.submissions.filter((s) => {
+      if (s.userId !== userId) return false
+      if (s.submittedAt < from || s.submittedAt >= to) return false
+      const course = this.courses?.courses.find((c) => c.id === s.courseId)
+      return course?.audience === audience
+    }).length
+  }
+
+  async listAccountsSubmittedInPeriod(
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<string[]> {
+    const accounts = new Set<string>()
+    for (const s of this.submissions) {
+      if (s.submittedAt < from || s.submittedAt >= to) continue
+      const course = this.courses?.courses.find((c) => c.id === s.courseId)
+      if (course?.audience !== audience) continue
+      if (s.accountId) accounts.add(s.accountId)
+    }
+    return [...accounts]
+  }
+
   async listRecentByUser(userId: string, limit: number): Promise<RecentStudioSubmission[]> {
     return this.submissions
       .filter((s) => s.userId === userId)
@@ -1296,6 +1330,8 @@ const COIN_TYPE_FOR_XP: Partial<Record<XpEventInput['sourceType'], string>> = {
   quiz_passed: 'quiz_passed',
   unit_complete: 'unit_complete',
   studio_passed: 'studio_passed',
+  pensa_stage_complete: 'pensa_stage_complete',
+  pensa_cycle_complete: 'pensa_cycle_complete',
 }
 
 /**
@@ -1417,6 +1453,29 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     }
     if (newEvents.some((e) => e.sourceType === 'studio_passed')) {
       for (const slug of studioMasteryBadgeSlugs(countByType('studio_passed'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    // 1º jogo publicado no Mural (mirror do Drizzle — marco `course_showcased`).
+    if (newEvents.some((e) => e.sourceType === 'course_showcased')) {
+      for (const slug of showcaseBadgeSlugs(countByType('course_showcased'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    // Pensa (mirror do Drizzle): 1ª etapa (Carta da Ideia) + 1º/3º ciclo lançado.
+    if (newEvents.some((e) => e.sourceType === 'pensa_stage_complete')) {
+      for (const slug of pensaStageBadgeSlugs(countByType('pensa_stage_complete'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'pensa_cycle_complete')) {
+      for (const slug of pensaCycleBadgeSlugs(countByType('pensa_cycle_complete'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    // Desafio do mês (mirror do Drizzle — 1ª participação = challenge-first).
+    if (newEvents.some((e) => e.sourceType === 'challenge_entry')) {
+      for (const slug of challengeBadgeSlugs(countByType('challenge_entry'))) {
         badgeCandidates.add(slug)
       }
     }
@@ -1606,6 +1665,21 @@ export class InMemoryGamificationRepository implements GamificationRepository {
 
   async getBalance(userId: string, audience: CourseAudience): Promise<number> {
     return this.profiles.get(this.profileKey(userId, audience))?.coinBalance ?? 0
+  }
+
+  async hasXpEvent(
+    userId: string,
+    audience: CourseAudience,
+    sourceType: XpEventInput['sourceType'],
+    sourceId: string,
+  ): Promise<boolean> {
+    return this.events.some(
+      (e) =>
+        e.userId === userId &&
+        e.audience === audience &&
+        e.sourceType === sourceType &&
+        e.sourceId === sourceId,
+    )
   }
 
   async getProfile(
@@ -1975,6 +2049,68 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       out.set(e.userId, (out.get(e.userId) ?? 0) + e.amount)
     }
     return out
+  }
+
+  async countBadgesUnlockedInPeriod(
+    userId: string,
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<number> {
+    return this.badges.filter(
+      (b) =>
+        b.userId === userId && b.audience === audience && b.unlockedAt >= from && b.unlockedAt < to,
+    ).length
+  }
+
+  async listActiveAccountsInPeriod(
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<string[]> {
+    const accounts = new Set<string>()
+    for (const e of this.events) {
+      if (e.audience !== audience || e.createdAt < from || e.createdAt >= to) continue
+      const accountId = this.accountIds.get(this.profileKey(e.userId, audience))
+      if (accountId) accounts.add(accountId)
+    }
+    return [...accounts]
+  }
+
+  async listProfileIdsByAccount(accountId: string, audience: CourseAudience): Promise<string[]> {
+    const out: string[] = []
+    for (const [key, acc] of this.accountIds) {
+      if (acc !== accountId) continue
+      const [userId, aud] = key.split(':')
+      if (aud === audience && userId) out.push(userId)
+    }
+    return out
+  }
+}
+
+/** Fake in-memory do report semanal dos pais (envio dedupado + opt-out). */
+export class InMemoryParentReportRepository implements ParentReportRepository {
+  readonly sent = new Set<string>() // `${accountId}:${weekKey}`
+  readonly prefs = new Map<string, boolean>()
+
+  async listSentAccounts(weekKey: string, accountIds: string[]): Promise<Set<string>> {
+    return new Set(accountIds.filter((id) => this.sent.has(`${id}:${weekKey}`)))
+  }
+
+  async markSent(accountId: string, weekKey: string, _now: Date): Promise<void> {
+    this.sent.add(`${accountId}:${weekKey}`)
+  }
+
+  async listDisabledAccounts(accountIds: string[]): Promise<Set<string>> {
+    return new Set(accountIds.filter((id) => this.prefs.get(id) === true))
+  }
+
+  async isDisabled(accountId: string): Promise<boolean> {
+    return this.prefs.get(accountId) === true
+  }
+
+  async setDisabled(accountId: string, disabled: boolean, _now: Date): Promise<void> {
+    this.prefs.set(accountId, disabled)
   }
 }
 

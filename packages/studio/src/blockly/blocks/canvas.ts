@@ -154,6 +154,45 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     colour: C,
   },
   {
+    // Bloco-VALOR: a imagem do projeto que a criança escolhe pelo picker. Gera a
+    // FONTE resolvida (dataURL do projeto, com fallback pro nome) — encaixa em
+    // qualquer tomada de valor: `img.src`, um objeto `{ sky: [imagem] }`, etc.
+    type: 'sz_val_image',
+    message0: 'imagem %1',
+    args0: [{ type: 'field_asset_picker', name: 'ASSET', text: 'foto' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'A imagem do projeto que você escolher, pronta para usar (ex.: em img.src).',
+  },
+  {
+    // Cria um objeto de imagem já com a fonte (`const v = new Image(); v.src = …`).
+    type: 'sz_js_new_image',
+    message0: 'criar imagem %1 com fonte %2',
+    args0: [
+      { type: 'field_input', name: 'VAR', text: 'img' },
+      { type: 'input_value', name: 'SRC', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cria uma imagem (Image) e define a fonte dela numa variável.',
+  },
+  {
+    // Roda o corpo quando a imagem termina de carregar (`img.onload = () => {…}`).
+    type: 'sz_js_image_onload',
+    message0: 'quando a imagem %1 carregar %2 fazer %3',
+    args0: [
+      { type: 'input_value', name: 'TARGET', check: 'JSValue' },
+      { type: 'input_dummy' },
+      { type: 'input_statement', name: 'DO', check: 'JSStmt' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Roda os blocos de dentro quando a imagem termina de carregar (img.onload).',
+  },
+  {
     type: 'sz_canvas_save',
     message0: 'Salvar estado do pincel %1',
     args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
@@ -766,7 +805,11 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
       'sz_canvas_scale',
     ],
   },
-  { name: '🖼️ Imagem', colour: '#1aa870', types: ['sz_canvas_draw_image'] },
+  {
+    name: '🖼️ Imagem',
+    colour: '#1aa870',
+    types: ['sz_val_image', 'sz_js_new_image', 'sz_js_image_onload', 'sz_canvas_draw_image'],
+  },
   {
     name: '🎞️ Animação & entrada',
     colour: '#0d7d50',

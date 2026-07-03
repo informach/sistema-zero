@@ -1,0 +1,14 @@
+# Segredos (nunca commitar — ver .env.example)
+.env
+.env.local
+
+# Saídas geradas por aula (áudio, avatar, clipes de tela, vídeo final) — pesadas
+aulas/**/out/
+
+# Artefatos de ferramenta
+node_modules/
+.remotion/
+out/
+test-results/
+playwright-report/
+*.log

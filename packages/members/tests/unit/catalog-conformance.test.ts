@@ -12,6 +12,8 @@ import {
 } from '../../../community-kids/src/lib/avatar3d-catalog'
 import { STREAK_FREEZE_PRICE as KIDS_STREAK_FREEZE_PRICE } from '../../../community-kids/src/lib/gamification-prices'
 import {
+  TROPHY_BADGE_SLUGS as KIDS_TROPHY_BADGES,
+  TROPHY_HINT as KIDS_TROPHY_HINT,
   ROOM_WALL_PALETTE as KIDS_WALL_PALETTE,
   LIGHTING_PRESETS,
   ROOM_FLOOR_INFO,
@@ -34,6 +36,7 @@ import {
   ROOM_ITEMS,
   ROOM_LIGHTINGS,
   ROOM_THEMES,
+  TROPHY_FOR_BADGE,
 } from '../../src/domain/room/room-catalog'
 
 /**
@@ -60,6 +63,28 @@ describe('conformância de catálogo (kids apresentação × members autoridade)
     const memberIds = new Set(ROOM_ITEMS.map((m) => m.id))
     for (const id of Object.keys(ROOM_ITEM_INFO)) {
       expect(memberIds.has(id), `item "${id}" existe no kids mas NÃO no members`).toBe(true)
+    }
+  })
+
+  test('troféus: badge↔item↔apresentação em sincronia (members × kids)', () => {
+    const byId = new Map(ROOM_ITEMS.map((m) => [m.id, m]))
+    for (const [badge, itemId] of Object.entries(TROPHY_FOR_BADGE)) {
+      const def = byId.get(itemId)
+      expect(def, `troféu "${itemId}" (badge ${badge}) não existe no catálogo`).toBeDefined()
+      expect(def?.tier, `"${itemId}" mapeado de badge precisa ser tier trophy`).toBe('trophy')
+      expect(KIDS_TROPHY_HINT[itemId], `dica kids ausente p/ o troféu "${itemId}"`).toBeDefined()
+      expect(
+        KIDS_TROPHY_BADGES.has(badge),
+        `badge "${badge}" ausente em TROPHY_BADGE_SLUGS (kids)`,
+      ).toBe(true)
+    }
+    // Recíprocos: todo item trophy tem badge; o set kids não tem badge órfã.
+    const mappedItems = new Set(Object.values(TROPHY_FOR_BADGE))
+    for (const m of ROOM_ITEMS.filter((i) => i.tier === 'trophy')) {
+      expect(mappedItems.has(m.id), `troféu "${m.id}" sem badge mapeada`).toBe(true)
+    }
+    for (const badge of KIDS_TROPHY_BADGES) {
+      expect(badge in TROPHY_FOR_BADGE, `badge "${badge}" no kids sem troféu no members`).toBe(true)
     }
   })
 

@@ -8,6 +8,10 @@ export const XP_VALUES = {
   QUIZ_SCORE_BONUS_MAX: 10,
   /** Baú de fim de unidade (todas as aulas publicadas do módulo concluídas). */
   UNIT_COMPLETE: 25,
+  /** Pensa: etapa do ciclo concluída (advance z→e, e→r, r→o). */
+  PENSA_STAGE_COMPLETE: 15,
+  /** Pensa: ciclo LANÇADO (advance o→done) — vale o prêmio maior, sem acumular com a etapa. */
+  PENSA_CYCLE_COMPLETE: 30,
 } as const
 
 /** XP de um quiz APROVADO: base + bônus proporcional à nota (cap em +10). */
@@ -137,6 +141,11 @@ export function streakBadgeSlugs(current: number): BadgeSlug[] {
   return STREAK_BADGES.filter(([days]) => current >= days).map(([, slug]) => slug)
 }
 
+/** Badge do 1º jogo PUBLICADO no Mural (contado pelo ledger `course_showcased`). */
+export function showcaseBadgeSlugs(showcased: number): BadgeSlug[] {
+  return showcased >= 1 ? ['first-showcase'] : []
+}
+
 /** Badges por nº de CURSOS 100% concluídos (contado pelo ledger `course_complete`). */
 export function courseBadgeSlugs(completedCourses: number): BadgeSlug[] {
   const slugs: BadgeSlug[] = []
@@ -170,4 +179,25 @@ export function coinsSaverBadgeSlugs(lifetimeCoins: number): BadgeSlug[] {
   if (lifetimeCoins >= 300) slugs.push('coins-saver-300')
   if (lifetimeCoins >= 1000) slugs.push('coins-saver-1000')
   return slugs
+}
+
+/**
+ * Badges por nº de ETAPAS do Pensa concluídas (ledger `pensa_stage_complete`).
+ * A 1ª etapa concluída é SEMPRE a Z — a 1ª Carta da Ideia validada.
+ */
+export function pensaStageBadgeSlugs(stagesCompleted: number): BadgeSlug[] {
+  return stagesCompleted >= 1 ? ['pensa-first-idea'] : []
+}
+
+/** Badges por nº de CICLOS do Pensa lançados (ledger `pensa_cycle_complete`). */
+export function pensaCycleBadgeSlugs(cyclesCompleted: number): BadgeSlug[] {
+  const slugs: BadgeSlug[] = []
+  if (cyclesCompleted >= 1) slugs.push('pensa-first-launch')
+  if (cyclesCompleted >= 3) slugs.push('pensa-creator-3')
+  return slugs
+}
+
+/** Badge da 1ª participação no Desafio do mês (ledger `challenge_entry`). */
+export function challengeBadgeSlugs(entries: number): BadgeSlug[] {
+  return entries >= 1 ? ['challenge-first'] : []
 }

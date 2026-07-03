@@ -19,7 +19,15 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > compartilhado (cria o **schema `catalog`**; `0003` = enum `product_kind` += `'tool'`). Seed
 > (`scripts/seed.ts`): **No Comando da IA** (ebook, R$37) · **Estúdio Completo** (kids, R$97 —
 > **`kind: 'tool'`/Ferramenta**, entrega `accessType:'community'` courseRef `estudio-completo`; o seed
-> RECONCILIA o kind legado `community`→`tool` de forma idempotente) · **Clube dos Criadores** e
+> RECONCILIA o kind legado `community`→`tool` de forma idempotente) · **Pensa** (kids, R$97 —
+> `kind: 'tool'`, entrega `community` courseRef `pensa`; o app de PLANEJAMENTO guiado/metodologia
+> ZERO — a chave casa com o gate do members no create de projeto do Pensa e com o
+> `/members/access?refs=pensa` da página `/pensa`; oferta padrão `pensa`, ajustável no painel —
+> combo Pensa+Estúdio é decisão do operador) · **Pinta** (kids, R$97 — `kind: 'tool'`, entrega
+> `community` courseRef `pinta`; o EDITOR DE ASSETS de jogos (pixel art/animações/tiles/vetorial),
+> terceiro irmão do fluxo Pensa→Pinta→Estúdio — a chave casa com o `/members/access?refs=pinta`
+> da página `/pinta`; os DADOS são locais ao navegador, sem backend; oferta padrão `pinta`) ·
+> **Clube dos Criadores** e
 > **Mural dos Criadores** (kids, `kind: 'community'`, entrega `community` courseRef = slug — SEM oferta
 > no seed; o Mural é dado de BÔNUS na oferta do desafio) · **Desafio do Primeiro Jogo** (kids,
 > `kind: 'course'`, entrega `course` courseRef `desafio-primeiro-jogo`) **+ oferta ativa R$37 com o

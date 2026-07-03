@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import type {
@@ -175,6 +175,49 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       .innerJoin(courses, eq(courses.id, studioSubmissions.courseId))
       .where(and(eq(studioSubmissions.userId, userId), eq(courses.audience, audience)))
     return row?.value ?? 0
+  }
+
+  async countSubmittedInPeriodByAudience(
+    userId: string,
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<number> {
+    // "Esta semana" do report dos pais — mesma régua de audiência do count total.
+    const [row] = await this.db
+      .select({ value: count() })
+      .from(studioSubmissions)
+      .innerJoin(courses, eq(courses.id, studioSubmissions.courseId))
+      .where(
+        and(
+          eq(studioSubmissions.userId, userId),
+          eq(courses.audience, audience),
+          gte(studioSubmissions.submittedAt, from),
+          lt(studioSubmissions.submittedAt, to),
+        ),
+      )
+    return row?.value ?? 0
+  }
+
+  async listAccountsSubmittedInPeriod(
+    audience: CourseAudience,
+    from: Date,
+    to: Date,
+  ): Promise<string[]> {
+    // Enumeração do report: entrega na janela = atividade mesmo sem XP novo
+    // (reenvio de projeto já pontuado). `account_id` legado null é descartado.
+    const rows = await this.db
+      .selectDistinct({ accountId: studioSubmissions.accountId })
+      .from(studioSubmissions)
+      .innerJoin(courses, eq(courses.id, studioSubmissions.courseId))
+      .where(
+        and(
+          eq(courses.audience, audience),
+          gte(studioSubmissions.submittedAt, from),
+          lt(studioSubmissions.submittedAt, to),
+        ),
+      )
+    return rows.map((r) => r.accountId).filter((id): id is string => Boolean(id))
   }
 
   async listRecentByUser(userId: string, limit: number): Promise<RecentStudioSubmission[]> {
