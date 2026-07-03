@@ -839,8 +839,11 @@ function PlayLinkActions({
         await navigator.share({ title, url: abs })
         return
       }
-    } catch {
-      // share nativo cancelado/indisponível → cai para copiar
+    } catch (err) {
+      // Cancelar a folha de compartilhar (AbortError) NÃO é falha: a criança
+      // desistiu de propósito — não copiar às escondidas nem dizer "copiado".
+      if (err instanceof Error && err.name === 'AbortError') return
+      // share nativo indisponível/falhou de verdade → cai para copiar
     }
     try {
       if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {

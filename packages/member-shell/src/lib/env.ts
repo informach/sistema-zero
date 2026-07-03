@@ -25,6 +25,11 @@ const EnvSchema = z
     APP_PUBLIC_URL: z.string().url().optional(),
     // Sentry (opcional): ausente = no-op. Espelho de erros LOCAIS da área do aluno.
     SENTRY_DSN: z.string().url().optional(),
+    // Segredo HMAC (= GATEWAY_HMAC_SECRET dos serviços) p/ VERIFICAR a chamada S2S
+    // `POST /api/studio/cleanup` que o hub dispara ao APAGAR um post do Mural (limpa
+    // o R2 do jogo). OPCIONAL: ausente → a rota é no-op (não há como autenticar o
+    // chamador, então nada é apagado). ≥16 chars quando presente.
+    GATEWAY_HMAC_SECRET: z.string().min(16, 'GATEWAY_HMAC_SECRET deve ter ≥16 chars').optional(),
     // Cloudflare R2 (upload de avatar). OPCIONAIS: ausentes → upload responde 503
     // amigável (MEDIA_NOT_CONFIGURED), nunca quebra o boot.
     R2_ACCOUNT_ID: z.string().optional(),

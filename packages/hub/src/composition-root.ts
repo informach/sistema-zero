@@ -14,6 +14,7 @@ import { ReadCommunityService } from './application/read-community/read-communit
 import { ReadStateService } from './application/read-state/read-state.service'
 import { ShowcaseService } from './application/showcase/showcase.service'
 import { ThreadService } from './application/threads/thread.service'
+import { noopStudioArtifactGateway } from './domain/ports/studio-artifact-gateway.port'
 import { MicroCache } from './infrastructure/cache/micro-cache'
 import {
   accessCacheTtlMs,
@@ -23,6 +24,7 @@ import {
   showcaseWallSlugs,
 } from './infrastructure/config/env'
 import { createMembersHttpGateway } from './infrastructure/gateways/members-http.gateway'
+import { createStudioArtifactHttpGateway } from './infrastructure/gateways/studio-artifact-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAttachmentRepository } from './infrastructure/persistence/drizzle/attachment.repository'
 import { DrizzleCommunityAdminRepository } from './infrastructure/persistence/drizzle/community-admin.repository'
@@ -83,6 +85,16 @@ export async function createApplication(env: Env): Promise<Application> {
     hmacSecret: env.GATEWAY_HMAC_SECRET,
     logger,
   })
+  // Limpeza de R2 na moderação: ao APAGAR um post do Mural, avisa o BFF do kids a
+  // apagar o snapshot jogável + a capa. Sem `KIDS_BFF_BASE_URL` (dev/local) → no-op.
+  const studioArtifacts = env.KIDS_BFF_BASE_URL
+    ? createStudioArtifactHttpGateway({
+        baseUrl: env.KIDS_BFF_BASE_URL,
+        hmacSecret: env.GATEWAY_HMAC_SECRET,
+        timeoutMs: env.KIDS_BFF_REQUEST_TIMEOUT_MS,
+        logger,
+      })
+    : noopStudioArtifactGateway
   const accessCache = new MicroCache<{
     granted: Set<string>
     hasMaster: boolean
@@ -155,7 +167,12 @@ export async function createApplication(env: Env): Promise<Application> {
     showcaseWallSlugs(env),
     showcaseWallChannelSlug(env),
   )
-  const moderationService = new ModerationService(threadRepo, moderationRepo, () => new Date())
+  const moderationService = new ModerationService(
+    threadRepo,
+    moderationRepo,
+    () => new Date(),
+    studioArtifacts,
+  )
 
   // Readiness (`/readyz`, healthcheck do Railway): só promove a réplica quando o
   // banco responde — sem isto o redeploy promove uma réplica que ainda não fala

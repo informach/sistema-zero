@@ -131,6 +131,16 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    - **Carreira:** `GET /hub/my-showcase-stats` (rota de ALUNO, JWT no gateway) →
      `{published, plays}` agregado NO banco (`showcaseStatsByAuthor`, usa o
      `threads_author_status_idx`) — "seus jogos já foram jogados N vezes" do kids.
+   - **Limpeza de R2 na moderação (07/2026):** ocultar/apagar um post do Mural já revoga o
+     `/jogar` (o resolve exige `is_showcase AND status='visible'`), mas os artefatos R2 do jogo
+     ficavam órfãos. Agora, ao **APAGAR** (delete TERMINAL; `hide` é reversível e NÃO limpa) uma
+     thread `is_showcase` com `play_id`, o `ModerationService.deleteThread` dispara
+     `StudioArtifactGateway.cleanupShowcaseArtifacts({playId, coverUrl})` — adapter HTTP S2S
+     `createStudioArtifactHttpGateway` (`infrastructure/gateways/studio-artifact-http.gateway.ts`,
+     espelha o `postSignedWebhook`: HMAC canônico + retry, **best-effort, NUNCA lança**, fire-and-
+     forget) → `POST {KIDS_BFF_BASE_URL}/api/studio/cleanup`. O R2 é do BFF do kids (member-shell),
+     que apaga o snapshot jogável (privado) + a capa (pública). Sem `KIDS_BFF_BASE_URL` →
+     `noopStudioArtifactGateway`. Port em `domain/ports/studio-artifact-gateway.port.ts`.
    - **Desafio do MÊS (game jam):** `threads.challenge_key` (`m:YYYY-MM`). No
      `createStandaloneShowcase`, a tag do corpo é VALIDADA: formato + mês CORRENTE
      recomputado em SP (`currentChallengeKey` local, mesma régua do members) + posse de
@@ -359,7 +369,10 @@ o logger.
   (`ATTACHMENT_MAX_{IMAGE,PDF,DOCUMENT,AUDIO,VIDEO}_BYTES` + `ATTACHMENT_MAX_PER_POST`),
   `PROCESSED_WEBHOOKS_RETENTION_DAYS` (30) + `RETENTION_CLEANUP_INTERVAL_MS` (6h) +
   `ATTACHMENT_ORPHAN_RETENTION_HOURS` (24 — poda anexos `pending_upload` nunca vinculados; o
-  objeto no R2 é coletado pelo BFF, dono do bucket).
+  objeto no R2 é coletado pelo BFF, dono do bucket) + **`KIDS_BFF_BASE_URL`** (opcional; ex.:
+  `http://community-kids.railway.internal:3008`) + `KIDS_BFF_REQUEST_TIMEOUT_MS` (4s) — liga a
+  **limpeza de R2 na moderação** (ver abaixo); ausente = no-op. Assina com o `GATEWAY_HMAC_SECRET`
+  já existente (sem env de segredo nova).
 
 Segredos que precisam **bater entre serviços** (ver `.env.example` quando criado):
 `HUB_INTERNAL_TOKEN` (gateway) = `INTERNAL_API_TOKEN` (hub); `MEMBERS_INTERNAL_TOKEN` (hub) =

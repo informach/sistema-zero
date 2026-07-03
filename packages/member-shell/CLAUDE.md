@@ -106,15 +106,26 @@ montado no `createShell` como `routes.studio*`) expõe três rotas consumidas pe
   R2 **PRIVADO** `studio/play/<uuid>.json` (`r2PutObjectPrivate`); chama
   `hub.createShowcaseThreadStudio` (gateway → hub); devolve `{ muralUrl, playUrl }`.
 - **`GET /api/studio/play/:id`** — **PÚBLICA (sem login)**: stream do projeto do R2 privado
-  (`r2GetObjectPrivate`), MESMA ORIGEM (sem CORS), `Cache-Control immutable`, 404 no miss. É o que a página
-  `/jogar/:id` do community-kids consome (renderiza o `StudioProjectPlayer` — só o jogo, sem o nome da
-  criança).
+  (`r2GetObjectPrivate`), MESMA ORIGEM (sem CORS), `Cache-Control: private, no-store` (privacidade
+  infantil — o jogo é UGC de criança e NÃO deve ser cacheado em intermediários; o snapshot é imutável,
+  mas o custo de re-ler o R2 é aceito de propósito), `X-Content-Type-Options: nosniff`, 404 no miss. É o
+  que a página `/jogar/:id` do community-kids consome (renderiza o `StudioProjectPlayer` — só o jogo, sem
+  o nome da criança).
 - **`POST /api/studio/publish-standalone`** (multipart, FORA do matcher — coberto pelo prefixo
   `api/studio/publish` no negative-lookahead) — o "Compartilhar" do **Estúdio Completo** (produto vendável
   da vitrine kids, SEM aula). Mesma mecânica do `publish` (sessão estrita, `sanitizePlayableProject`,
   capa→R2 público, jogável→R2 privado) MENOS o acoplamento de aula: SEM `lessonId/blockId` e SEM
   `getShowcasePayload`; `title` + `description` vêm da criança. Chama `hub.createShowcaseThreadStudioStandalone`
   — o HUB re-valida a POSSE do produto (S2S `members.checkAccess`). Exposto como `routes.studioPublishStandalone`.
+- **`POST /api/studio/cleanup`** (S2S do HUB, rede interna, **HMAC** — FORA do matcher do proxy, `api/studio/cleanup`
+  no negative-lookahead) — limpeza de R2 na MODERAÇÃO: ao APAGAR (delete terminal, ≠ hide reversível) um post
+  do Mural, o hub avisa `{playId, coverUrl}` e o BFF apaga o snapshot jogável (`studio/play/<id>.json`, R2
+  privado — `r2DeleteObjectPrivate`) + a capa (`studio/cover/...`, R2 público — `r2DeleteObjects`, key derivada da
+  URL, SÓ sob `studio/cover/`). Verifica o HMAC com **`GATEWAY_HMAC_SECRET`** (env NOVA, opcional; ausente →
+  no-op, não apaga nada; assinatura inválida → 401; senão 204). Helpers PUROS (verify + cover-key) em
+  **`lib/studio-cleanup.ts`** (fora do route.ts p/ serem testáveis — `tests/studio-cleanup.test.ts`; o member-shell
+  NÃO depende do `@sistemazero/core`, então o HMAC é reimplementado com `node:crypto`, EM SINCRONIA com
+  `core/security/hmac.ts`). Exposto como `routes.studioCleanup` (shim no kids `app/api/studio/cleanup/route.ts`).
 
 **Estúdio Completo como produto (06/2026):** além do publish acima, o BFF ganhou o gate de acesso —
 `members.checkStudioAccessReadonly()` (`GET /members/access?refs=estudio-completo`, RSC sem refresh →

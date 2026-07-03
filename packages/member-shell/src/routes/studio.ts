@@ -2,12 +2,20 @@ import 'server-only'
 import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { getEnv } from '../lib/env'
 import { UGC_IMAGE_INPUT_MIME } from '../lib/hub-attachments'
+import { coverKeyFromPublicUrl, verifyCleanupSignature } from '../lib/studio-cleanup'
 import type { HubClient, MembersClient } from '../server/clients'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
 import { generateProjectDescription } from '../server/openrouter'
-import { r2GetObjectPrivate, r2PutObject, r2PutObjectPrivate } from '../server/r2'
+import {
+  r2DeleteObjectPrivate,
+  r2DeleteObjects,
+  r2GetObjectPrivate,
+  r2PutObject,
+  r2PutObjectPrivate,
+} from '../server/r2'
 
 export type StudioRoutes = ReturnType<typeof createStudioRoutes>
 
@@ -68,10 +76,13 @@ const PLAYS_TTL_MS = 30 * 60_000
 /** Teto anti-OOM da borda pública: cheio de entradas VIVAS → para de contar. */
 const PLAYS_MAX_ENTRIES = 50_000
 
-function shouldCountPlay(ip: string, playId: string): boolean {
+// Peek/commit SEPARADOS: `peekCountPlay` decide SE conta (sem gravar) e o `commit`
+// só grava DEPOIS que o hub confirma que o playId é de post VISÍVEL — assim UUIDs
+// bem-formados porém inexistentes/ocultos NÃO poluem o mapa (a contagem em si é
+// fundida no resolve do hub, gateada em SQL por is_showcase AND status='visible').
+function peekCountPlay(ip: string, playId: string): boolean {
   const now = Date.now()
-  const key = `${ip}:${playId}`
-  const seenAt = playsSeen.get(key)
+  const seenAt = playsSeen.get(`${ip}:${playId}`)
   if (seenAt !== undefined && now - seenAt < PLAYS_TTL_MS) return false
   if (playsSeen.size >= PLAYS_MAX_ENTRIES) {
     for (const [k, at] of playsSeen) {
@@ -79,8 +90,13 @@ function shouldCountPlay(ip: string, playId: string): boolean {
     }
     if (playsSeen.size >= PLAYS_MAX_ENTRIES) return false
   }
-  playsSeen.set(key, now)
   return true
+}
+
+function commitCountPlay(ip: string, playId: string): void {
+  // A janela pode ter enchido durante o await do resolve — respeita o teto anti-OOM.
+  if (playsSeen.size >= PLAYS_MAX_ENTRIES) return
+  playsSeen.set(`${ip}:${playId}`, Date.now())
 }
 
 function sanitizeProjectString(raw: unknown, maxChars: number): string {
@@ -234,6 +250,7 @@ function sanitizePlayableProject(raw: unknown) {
  * - `POST /api/studio/describe` — rascunho da descrição via OpenRouter (servidor), fail-soft.
  * - `POST /api/studio/publish` — print→R2 público, projeto→R2 privado, post no Mural + link de jogar.
  * - `GET  /api/studio/play/:id` — PÚBLICO (sem login): stream do projeto do R2 (mesma origem).
+ * - `POST /api/studio/cleanup` — S2S do hub (HMAC): apaga os artefatos R2 ao MODERAR-apagar o post.
  */
 export function createStudioRoutes(deps: {
   hub: HubClient
@@ -521,7 +538,8 @@ export function createStudioRoutes(deps: {
       if (!UUID_RE.test(id))
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
       const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'
-      const playable = await hub.resolveStudioPlay(id, shouldCountPlay(ip, id))
+      const wouldCount = peekCountPlay(ip, id)
+      const playable = await hub.resolveStudioPlay(id, wouldCount)
       if (playable.status >= 500) {
         return NextResponse.json(playable.body ?? { error: { code: 'SERVICE_UNAVAILABLE' } }, {
           status: playable.status,
@@ -530,6 +548,8 @@ export function createStudioRoutes(deps: {
       if (playable.status !== 200 || playable.body?.visible !== true) {
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
       }
+      // Visível confirmado → grava o dedupe (não polui o mapa com playIds inexistentes/ocultos).
+      if (wouldCount) commitCountPlay(ip, id)
       try {
         const obj = await r2GetObjectPrivate(PLAY_KEY(id))
         return new NextResponse(obj.body, {
@@ -547,5 +567,47 @@ export function createStudioRoutes(deps: {
     },
   }
 
-  return { studioDescribe, studioPublish, studioPublishStandalone, studioPlay }
+  // S2S do HUB (rede interna, HMAC): apaga os artefatos R2 de um post do Mural
+  // APAGADO pela moderação — o snapshot jogável (R2 privado `studio/play/<id>.json`)
+  // e a capa (R2 público `studio/cover/...`, que seguiria buscável pela URL). FORA do
+  // matcher do proxy (não é sessão de aluno): a auth é o HMAC do hub. Best-effort: o
+  // hub dispara em fire-and-forget → 204 sempre, salvo 401 em assinatura inválida.
+  const studioCleanup = {
+    POST: async (req: Request) => {
+      const secret = getEnv().GATEWAY_HMAC_SECRET
+      const raw = await req.text()
+      // Sem segredo não há como autenticar o chamador → no-op (não apaga nada).
+      if (!secret) return new NextResponse(null, { status: 204 })
+      if (!verifyCleanupSignature(secret, raw, req.headers.get('x-signature'))) {
+        return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
+      }
+      let body: { playId?: unknown; coverUrl?: unknown }
+      try {
+        body = JSON.parse(raw)
+      } catch {
+        return invalid()
+      }
+      const playId = typeof body.playId === 'string' ? body.playId : ''
+      if (UUID_RE.test(playId)) {
+        try {
+          await r2DeleteObjectPrivate(PLAY_KEY(playId))
+        } catch {
+          // best-effort: o objeto pode já não existir (moderação idempotente).
+        }
+      }
+      if (typeof body.coverUrl === 'string' && body.coverUrl) {
+        const key = coverKeyFromPublicUrl(getEnv().R2_PUBLIC_URL, body.coverUrl)
+        if (key) {
+          try {
+            await r2DeleteObjects([key])
+          } catch {
+            // best-effort.
+          }
+        }
+      }
+      return new NextResponse(null, { status: 204 })
+    },
+  }
+
+  return { studioDescribe, studioPublish, studioPublishStandalone, studioPlay, studioCleanup }
 }
