@@ -174,7 +174,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                         unit.chest.opened ? 'sz-display-grad' : 'text-muted-foreground',
                       )}
                     >
-                      {unit.chest.opened ? 'Baú aberto! +25 XP' : 'Baú da unidade'}
+                      {unit.chest.opened ? 'Baú aberto!' : 'Baú da unidade'}
                     </span>
                   </div>
                 </li>

@@ -170,6 +170,10 @@ export function KidsSpaceViewClient({
   const [channels, setChannels] = useState<HubChannelView[]>([])
   const [channel, setChannel] = useState<HubChannelView | null>(null)
   const [threads, setThreads] = useState<HubThreadView[]>([])
+  // Prateleira do Desafio do mês: busca DEDICADA (`?challenge=<key>`) → TODAS as
+  // entradas do mês, independente da paginação da grade. Best-effort (falha/vazio →
+  // cai no filtro client-side das threads já carregadas).
+  const [challengeThreads, setChallengeThreads] = useState<HubThreadView[]>([])
   const [thread, setThread] = useState<HubThreadView | null>(null)
   const [comments, setComments] = useState<HubCommentView[]>([])
   const [loading, setLoading] = useState(true)
@@ -320,6 +324,27 @@ export function KidsSpaceViewClient({
     }
   }, [])
 
+  // Busca DEDICADA da prateleira do Desafio: `?challenge=<key>` faz o hub devolver SÓ
+  // os posts do mês (independente da paginação da grade). Best-effort — sem toast: se
+  // falhar, o render cai no filtro client-side das threads carregadas.
+  const challengeKey = challenge?.key ?? null
+  const loadChallengeShelf = useCallback(
+    async (channelId: string, isCurrent?: () => boolean) => {
+      if (!isWall || !challengeKey) return
+      try {
+        const page = await apiGet<HubPage<HubThreadView>>(
+          `/api/hub/channels/${enc(channelId)}/threads?challenge=${enc(challengeKey)}`,
+        )
+        if (isCurrent && !isCurrent()) return
+        setChallengeThreads(page.items)
+      } catch {
+        if (isCurrent && !isCurrent()) return
+        setChallengeThreads([])
+      }
+    },
+    [isWall, challengeKey],
+  )
+
   async function loadMoreThreads() {
     if (!channel || !threadsCursor || loadingMoreThreads) return
     setLoadingMoreThreads(true)
@@ -341,12 +366,14 @@ export function KidsSpaceViewClient({
     if (!channel) return
     setThread(null)
     setShowNew(false)
+    setChallengeThreads([])
     let alive = true
     void loadThreads(channel.id, () => alive)
+    void loadChallengeShelf(channel.id, () => alive)
     return () => {
       alive = false
     }
-  }, [channel, loadThreads])
+  }, [channel, loadThreads, loadChallengeShelf])
 
   const loadComments = useCallback(async (threadId: string, isCurrent?: () => boolean) => {
     try {
@@ -652,24 +679,29 @@ export function KidsSpaceViewClient({
                   </div>
                 ) : isWall ? (
                   (() => {
-                    // Prateleira do DESAFIO do mês: separa os posts com a tag do
-                    // mês corrente; o resto segue na grade normal abaixo.
-                    const challengeThreads = challenge
-                      ? threads.filter((t) => t.challengeKey === challenge.key)
-                      : []
+                    // Prateleira do DESAFIO do mês: usa a busca DEDICADA
+                    // (`challengeThreads`, ?challenge=<key> → todas as entradas do mês);
+                    // se falhou/vazia, cai no filtro das threads já carregadas. A grade
+                    // normal (`others`) exclui os posts do desafio p/ não duplicar.
+                    const shelf =
+                      challengeThreads.length > 0
+                        ? challengeThreads
+                        : challenge
+                          ? threads.filter((t) => t.challengeKey === challenge.key)
+                          : []
                     const others = challenge
                       ? threads.filter((t) => t.challengeKey !== challenge.key)
                       : threads
                     return (
                       <div className="space-y-5">
-                        {challenge && challengeThreads.length > 0 ? (
+                        {challenge && shelf.length > 0 ? (
                           <section aria-label="Desafio do mês">
                             <h3 className="mb-2 flex items-center gap-2 font-bold [font-family:var(--font-display)]">
                               <span aria-hidden="true">{challenge.emoji}</span>🏆 Desafio do mês:{' '}
                               {challenge.title}
                             </h3>
                             <div className="grid gap-4 sm:grid-cols-2">
-                              {challengeThreads.map((t) => (
+                              {shelf.map((t) => (
                                 <ShowcaseCard
                                   key={t.id}
                                   thread={t}

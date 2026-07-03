@@ -447,6 +447,8 @@ export type BadgeSlug =
   | 'pensa-first-idea'
   | 'pensa-first-launch'
   | 'pensa-creator-3'
+  // Desafio do mês (07/2026, Fase 5): 1ª participação (ledger `challenge_entry`).
+  | 'challenge-first'
 
 /**
  * Delta de UMA ação (complete/quiz aprovado) — vem NA resposta da ação (a UI
