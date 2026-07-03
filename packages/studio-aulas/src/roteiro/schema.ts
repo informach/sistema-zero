@@ -161,6 +161,14 @@ export const CenaSchema = z.object({
   ilustracao: IlustracaoSchema.optional(),
   /** Só em cenas de prática: o passo a passo na tela do Estúdio. */
   acoes: z.array(AcaoTelaSchema).optional(),
+  /**
+   * Só no modo sincronizado (`meta.sincronizarAudio`): nome do arquivo de áudio
+   * REAL desta cena, em `audio-narracao/` ao lado do roteiro (ex.:
+   * `AudioParte01.mp3`). A gravação da tela é RITMADA pela duração dele (monta os
+   * blocos e depois roda o jogo até preencher o tempo da fala), e a montagem usa
+   * esse áudio como trilha. Cada cena vira exatamente a duração do seu áudio.
+   */
+  audio: z.string().optional(),
 })
 export type Cena = z.infer<typeof CenaSchema>
 
@@ -190,6 +198,14 @@ export const MetaSchema = z.object({
   cenarioAbertura: z.string().default('cenario-a'),
   /** Nome do arquivo de fundo do meio (teoria/prática). */
   cenarioMeio: z.string().default('cenario-b'),
+  /**
+   * Modo "só a tela crua sincronizada com áudios REAIS": cada cena declara um
+   * `audio` (arquivo em `audio-narracao/`), a gravação é ritmada pela duração
+   * dele e a montagem vira só tela + áudio (sem balões, teoria ou avatar). Usado
+   * quando a narração já foi gravada por fora e o vídeo é apenas a tela do
+   * Estúdio 100% sincronizada com ela.
+   */
+  sincronizarAudio: z.boolean().default(false),
   voz: VozOverridesSchema,
 })
 export type Meta = z.infer<typeof MetaSchema>

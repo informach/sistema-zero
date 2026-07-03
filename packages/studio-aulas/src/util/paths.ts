@@ -19,6 +19,11 @@ export interface AulaPaths {
   dir: string
   roteiro: string
   outDir: string
+  /**
+   * Áudios de narração REAIS (gravados por fora), na raiz da aula. Fonte do modo
+   * sincronizado: `cena.audio` referencia um arquivo daqui. Versionável.
+   */
+  audioNarracaoDir: string
   audioDir: string
   avatarDir: string
   telaDir: string
@@ -42,6 +47,7 @@ export function aulaPaths(slug: string): AulaPaths {
     dir,
     roteiro: join(dir, 'roteiro.yaml'),
     outDir,
+    audioNarracaoDir: join(dir, 'audio-narracao'),
     audioDir: join(outDir, 'audio'),
     avatarDir: join(outDir, 'avatar'),
     telaDir: join(outDir, 'tela'),

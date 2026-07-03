@@ -822,6 +822,32 @@ typecheck + test (26) + biome + build:kids. Achado corrigido:
   `text-foreground` = AA garantido) e a grade responsiva do `catalog-filter-bar` (mobile 2-col, sm+
   flex-wrap) — corretos, sem regressão.
 
+## Full review (gamificação — Fase 5) — 03/07/2026
+
+8ª auditoria, focada na gamificação (delta Fase 5 + conformância kids × members). Gating cross-app
+(Desafio exige Clube+Estúdio; Remix exige Estúdio; Pensa↔Pinta exige Pinta) e degradação best-effort
+auditados e **de pé**. Achados corrigidos; verde no typecheck+test+check (members/member-shell/kids)
++ `build:kids` E `build:community`.
+
+- **Badge `challenge-first` INVISÍVEL (ALTO):** o members concede a badge do Desafio do mês
+  (XP 50, ledger `challenge_entry`) mas o union `BadgeSlug` do **member-shell** estava 1 slug atrás
+  (21 vs 22 do members) → `BADGE_INFO` (kids) omitia a entrada e COMPILAVA (o `Record<BadgeSlug,…>`
+  é sobre o union defasado); `badgeInfo()` caía em `null` e a badge sumia de TODA superfície
+  (showcase/carreira/celebração). Fix: `+'challenge-first'` no union (`member-shell/src/lib/types.ts`)
+  + entrada em `BADGE_INFO` (`badges.ts`, ícone `Swords`). **Guard novo:**
+  `packages/community-kids/tests/badge-conformance.test.ts` assere `BADGE_SLUGS` (members, módulo
+  PURO por caminho relativo) == chaves de `BADGE_INFO` (kids) — o teste vive no KIDS (não no members)
+  porque `BADGE_INFO` importa lucide + o alias `@/lib/types`, que o `tsc` do members não resolve.
+- **Prateleira "Desafio do mês" incompleta (MÉDIO):** o shim já repassava `?challenge=m:YYYY-MM` ao
+  hub (que devolve SÓ os posts do mês), mas o `KidsSpaceViewClient` nunca enviava — a prateleira era
+  filtro client-side da página carregada (entradas fora da 1ª página só em "Carregar mais"). Agora um
+  fetch DEDICADO (`challengeThreads`, disparado na troca de canal, best-effort com fallback ao filtro)
+  monta a prateleira com TODAS as entradas; a grade "others" segue excluindo os posts do desafio.
+- **Copy das badges do Estúdio (BAIXO):** `studio-first/-master-3/-master-10` diziam "projetos
+  criados", mas o critério real é `studio_passed` (atividades com NOTA) — alinhado à dica do troféu.
+- **Literais soltos (BAIXO):** `course-trail.tsx` tirou o "+25 XP" hardcoded do baú ("Baú aberto!");
+  `kids-quiz.tsx` trocou o fallback `?? 100` da nota mínima por `null` (nunca há caminho real sem valor).
+
 ## Comandos
 
 `bun run dev` (:3008) · `build`/`start` · `typecheck` · `bun test` · `check[:fix]` ·

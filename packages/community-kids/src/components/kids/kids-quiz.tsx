@@ -46,7 +46,10 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   const passedBefore = quizState?.passed ?? false
   const passed = result?.passed ?? passedBefore
   const lastScore = result?.score ?? quizState?.lastScore ?? null
-  const passingScore = result?.passingScore ?? content.passingScore ?? 100
+  // Nota mínima só é EXIBIDA nas telas de reprovação (servidor mandou `result.passingScore`)
+  // e no chip gateado por `content.passingScore != null` — nunca há caminho real sem valor,
+  // então o fallback é `null` (não um 100 hardcoded que assumia a régua do servidor).
+  const passingScore = result?.passingScore ?? content.passingScore ?? null
   const retryAvailableAt =
     result?.retryAvailableAt ?? cooldownUntil ?? quizState?.retryAvailableAt ?? null
   const cooldownLeft = useCooldown(passed ? null : retryAvailableAt)

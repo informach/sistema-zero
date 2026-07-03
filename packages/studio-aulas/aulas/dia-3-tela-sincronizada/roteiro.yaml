@@ -1,0 +1,312 @@
+meta:
+  slug: dia-3-tela-sincronizada
+  titulo: "Dia 3 — A tela (sincronizada com a narração)"
+  dia: 3
+  # Só a gravação da TELA do Estúdio, 100% sincronizada com os 9 áudios REAIS
+  # gravados pela professora (em audio-narracao/). Cada cena = 1 áudio; a tela é
+  # ritmada pela duração dele (monta os blocos e segura; nas partes sem montagem
+  # roda o jogo). Sem balões, sem avatar, sem teoria: tela crua + áudio.
+  projetoInicial: "inicial.szproject.json"
+  extensoes: [game-2d]
+  sincronizarAudio: true
+
+cenas:
+  # --- Abertura: roda o jogo do Dia 2 enquanto ela dá as boas-vindas ----------
+  - id: p0-abertura
+    tipo: pratica
+    emocao: empolgado
+    audio: AudioAbertura.mp3
+    narracao: >-
+      Abertura: boas-vindas ao Dia 3. A tela mostra o jogo do Dia 2 rodando
+      (nave, tiro, asteroide, placar).
+
+  # --- Parte 1: vidas (variável) e alvo (constante) ---------------------------
+  - id: p1-vidas-alvo
+    tipo: pratica
+    emocao: neutro
+    audio: AudioParte01.mp3
+    narracao: >-
+      Cria a variável vidas com valor 3 e a constante alvo com valor 26.
+    acoes:
+      - tipo: abrirCategoria
+        categoria: "Programação"
+      - tipo: pegarBloco
+        bloco: sz_js_var_create
+        encaixarEm: sz_frame_behavior
+        ref: varVidas
+      - tipo: configurarCampo
+        campo: NAME
+        valor: vidas
+        bloco: "@varVidas"
+      - tipo: preencherSoquete
+        bloco: sz_val_number
+        emBloco: "@varVidas"
+        input: VALUE
+        campo: NUM
+        valor: 3
+      - tipo: pegarBloco
+        bloco: sz_js_const_create
+        encaixarEm: sz_frame_behavior
+        ref: constAlvo
+      - tipo: configurarCampo
+        campo: NAME
+        valor: alvo
+        bloco: "@constAlvo"
+      - tipo: preencherSoquete
+        bloco: sz_val_number
+        emBloco: "@constAlvo"
+        input: VALUE
+        campo: NUM
+        valor: 26
+      - tipo: zoom
+        nivel: ajustar
+
+  # --- Parte 2: a nave se machuca (colisão, treme, pisca, -1 vida, corações) ---
+  - id: p2-nave-apanha
+    tipo: pratica
+    emocao: neutro
+    audio: AudioParte02.mp3
+    narracao: >-
+      Quando um asteroide encosta na nave: treme a tela, a nave pisca, perde uma
+      vida (menos 1 em vidas) e desenha as vidas em corações.
+    acoes:
+      - tipo: abrirCategoria
+        categoria: "Jogo 2D"
+      - tipo: pegarBloco
+        bloco: sz_g2d_on_sprite_group_overlap
+        encaixarEm: sz_g2d_update_each_frame
+        ref: colNave
+      - tipo: pegarBloco
+        bloco: sz_g2d_shake
+        encaixarEm: "@colNave"
+      - tipo: pegarBloco
+        bloco: sz_g2d_blink
+        encaixarEm: "@colNave"
+      - tipo: abrirCategoria
+        categoria: "Programação"
+      - tipo: pegarBloco
+        bloco: sz_js_var_increment
+        encaixarEm: "@colNave"
+        ref: perdeVida
+      - tipo: configurarCampo
+        campo: DELTA
+        valor: -1
+        bloco: "@perdeVida"
+      - tipo: configurarCampo
+        campo: NAME
+        valor: vidas
+        bloco: "@perdeVida"
+      - tipo: abrirCategoria
+        categoria: "Jogo 2D"
+      - tipo: pegarBloco
+        bloco: sz_g2d_draw_hearts
+        encaixarEm: sz_g2d_update_each_frame
+        ref: coracoes
+      - tipo: preencherSoquete
+        bloco: sz_val_variable
+        emBloco: "@coracoes"
+        input: COUNT
+        campo: NAME
+        valor: vidas
+      - tipo: zoom
+        nivel: ajustar
+
+  # --- Parte 3: as telas (ir início, envolver no Se jogando, ganhar, perder) ---
+  - id: p3-telas
+    tipo: pratica
+    emocao: calmo
+    audio: AudioParte03.mp3
+    narracao: >-
+      Vai para a tela início; envolve todo o jogo num Se a tela atual é jogando;
+      e decide o fim: se pontos maior ou igual a alvo vai para ganhou, se vidas
+      menor ou igual a zero vai para perdeu.
+    acoes:
+      - tipo: abrirCategoria
+        categoria: "Jogo 2D"
+      - tipo: pegarBloco
+        bloco: sz_g2d_set_scene
+        encaixarEm: sz_frame_behavior
+        ref: irInicio
+      - tipo: configurarCampo
+        campo: SCENE
+        valor: inicio
+        bloco: "@irInicio"
+      - tipo: envolver
+        container: sz_js_if_else
+        corpo: THEN
+        deDentroDe: sz_g2d_update_each_frame
+        inputPai: BODY
+        ref: seJogando
+      - tipo: preencherSoquete
+        bloco: sz_g2d_scene_is
+        emBloco: "@seJogando"
+        input: COND
+        campo: SCENE
+        valor: jogando
+      - tipo: zoom
+        nivel: ajustar
+      - tipo: abrirCategoria
+        categoria: "Programação"
+      - tipo: pegarBloco
+        bloco: sz_js_if_else
+        encaixarEm: "@seJogando"
+        ref: seVitoria
+      - tipo: preencherSoquete
+        bloco: sz_val_compare
+        emBloco: "@seVitoria"
+        input: COND
+        campo: OP
+        valor: ">="
+        ref: cmpVit
+      - tipo: preencherSoquete
+        bloco: sz_val_variable
+        emBloco: "@cmpVit"
+        input: LEFT
+        campo: NAME
+        valor: pontos
+      - tipo: preencherSoquete
+        bloco: sz_val_variable
+        emBloco: "@cmpVit"
+        input: RIGHT
+        campo: NAME
+        valor: alvo
+      - tipo: pegarBloco
+        bloco: sz_g2d_set_scene
+        encaixarEm: "@seVitoria"
+        ref: irGanhou
+      - tipo: configurarCampo
+        campo: SCENE
+        valor: ganhou
+        bloco: "@irGanhou"
+      - tipo: pegarBloco
+        bloco: sz_js_if_else
+        encaixarEm: "@seJogando"
+        ref: seDerrota
+      - tipo: preencherSoquete
+        bloco: sz_val_compare
+        emBloco: "@seDerrota"
+        input: COND
+        campo: OP
+        valor: "<="
+        ref: cmpDer
+      - tipo: preencherSoquete
+        bloco: sz_val_variable
+        emBloco: "@cmpDer"
+        input: LEFT
+        campo: NAME
+        valor: vidas
+      - tipo: preencherSoquete
+        bloco: sz_val_number
+        emBloco: "@cmpDer"
+        input: RIGHT
+        campo: NUM
+        valor: 0
+      - tipo: pegarBloco
+        bloco: sz_g2d_set_scene
+        encaixarEm: "@seDerrota"
+        ref: irPerdeu
+      - tipo: configurarCampo
+        campo: SCENE
+        valor: perdeu
+        bloco: "@irPerdeu"
+      - tipo: zoom
+        nivel: ajustar
+
+  # --- Parte 4: mostrar a tela de início (título) -----------------------------
+  - id: p4-mostrar-tela
+    tipo: pratica
+    emocao: neutro
+    audio: AudioParte04.mp3
+    narracao: >-
+      Ao lado do Se jogando, um Se para a tela de início, com Mostrar tela e o
+      título Nave contra Asteroides.
+    acoes:
+      - tipo: abrirCategoria
+        categoria: "Programação"
+      - tipo: pegarBloco
+        bloco: sz_js_if_else
+        encaixarEm: sz_g2d_update_each_frame
+        ref: seTelaInicio
+      - tipo: preencherSoquete
+        bloco: sz_g2d_scene_is
+        emBloco: "@seTelaInicio"
+        input: COND
+        campo: SCENE
+        valor: inicio
+      - tipo: pegarBloco
+        bloco: sz_g2d_show_screen
+        encaixarEm: "@seTelaInicio"
+        ref: telaInicio
+      - tipo: preencherSoquete
+        bloco: sz_val_text
+        emBloco: "@telaInicio"
+        input: TITLE
+        campo: TEXT
+        valor: "Nave contra Asteroides"
+      - tipo: zoom
+        nivel: ajustar
+
+  # --- Parte 5: Enter troca de tela -------------------------------------------
+  - id: p5-enter
+    tipo: pratica
+    emocao: neutro
+    audio: AudioParte05.mp3
+    narracao: >-
+      O Enter troca as telas: Quando apertar Enter, se a tela atual é início, vai
+      para jogando.
+    acoes:
+      - tipo: abrirCategoria
+        categoria: "Jogo 2D"
+      - tipo: pegarBloco
+        bloco: sz_g2d_on_key
+        encaixarEm: sz_frame_behavior
+        ref: aoEnter
+      - tipo: configurarCampo
+        campo: KEY
+        valor: Enter
+        bloco: "@aoEnter"
+      - tipo: pegarBloco
+        bloco: sz_js_if_else
+        encaixarEm: "@aoEnter"
+        ref: seEnterInicio
+      - tipo: preencherSoquete
+        bloco: sz_g2d_scene_is
+        emBloco: "@seEnterInicio"
+        input: COND
+        campo: SCENE
+        valor: inicio
+      - tipo: pegarBloco
+        bloco: sz_g2d_set_scene
+        encaixarEm: "@seEnterInicio"
+        ref: enterJogar
+      - tipo: configurarCampo
+        campo: SCENE
+        valor: jogando
+        bloco: "@enterJogar"
+      - tipo: zoom
+        nivel: ajustar
+
+  # --- Parte 6: teste (roda o jogo completo do começo ao fim) ------------------
+  - id: p6-teste
+    tipo: pratica
+    emocao: comemorando
+    audio: AudioParte06.mp3
+    narracao: >-
+      Teste: roda o jogo completo (tela de início, Enter, jogar, perder vidas,
+      ganhar ou perder).
+
+  # --- Parte 7: compartilhar (jogo rodando) -----------------------------------
+  - id: p7-compartilhe
+    tipo: pratica
+    emocao: comemorando
+    audio: AudioParte07.mp3
+    narracao: >-
+      Compartilhe: o jogo completo rodando, pronto para mostrar pra todo mundo.
+
+  # --- Fecho: jogo rodando enquanto se despede ---------------------------------
+  - id: p8-fecho
+    tipo: pratica
+    emocao: comemorando
+    audio: AudioFecho.mp3
+    narracao: >-
+      Fecho: parabéns e despedida, com o jogo completo rodando na tela.

@@ -11,6 +11,7 @@ import {
   PiggyBank,
   Rocket,
   Sparkles,
+  Swords,
   Target,
 } from 'lucide-react'
 import type { BadgeSlug } from '@/lib/types'
@@ -93,17 +94,17 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
   },
   'studio-first': {
     title: 'Criador de jogos',
-    description: 'Você criou o seu primeiro projeto no Estúdio!',
+    description: 'Você mandou bem na sua primeira atividade do Estúdio!',
     icon: Gamepad2,
   },
   'studio-master-3': {
     title: 'Oficina de jogos',
-    description: 'Três projetos criados no Estúdio!',
+    description: 'Três atividades do Estúdio feitas com nota!',
     icon: Gamepad2,
   },
   'studio-master-10': {
     title: 'Mestre do Estúdio',
-    description: 'Dez projetos criados. Você é um game designer!',
+    description: 'Dez atividades do Estúdio com nota. Você é um game designer!',
     icon: Crown,
   },
   'coins-saver-300': {
@@ -130,6 +131,11 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     title: 'Cabeça de criador',
     description: 'Três versões lançadas com o Pensa. Você pensa como gente grande!',
     icon: BrainCircuit,
+  },
+  'challenge-first': {
+    title: 'Desafiante do mês',
+    description: 'Você topou o Desafio do mês e mostrou o seu jogo!',
+    icon: Swords,
   },
 }
 
