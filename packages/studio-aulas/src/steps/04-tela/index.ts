@@ -1,5 +1,12 @@
 import { type ChildProcess, spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  writeFileSync,
+} from 'node:fs'
 import { join } from 'node:path'
 import { type Browser, type BrowserContext, chromium, type Page } from '@playwright/test'
 import { loadRoteiroFile } from '../../roteiro/parse'
@@ -32,6 +39,7 @@ interface AulasNoBrowser {
   criarProjetoDeBase(base: unknown, id: string, nome: string, extensoes: string[]): Promise<string>
   exportarProjeto(id: string): Promise<unknown>
   esconderPreview(): Promise<void>
+  mostrarPreview(): Promise<void>
   abrirCategoria(nome: string): Promise<void>
   pegarBloco(tipo: string, encaixarEm?: string, ref?: string): Promise<unknown>
   configurarCampo(campo: string, valor: string | number, tipo?: string): Promise<void>
@@ -118,6 +126,48 @@ async function injetar(page: Page): Promise<void> {
   if (!ok) throw new Error('automação não carregou (window.__aulas ausente)')
 }
 
+/** Duração de um áudio em ms (ffprobe). 0 se indisponível. Roda sob Node. */
+function duracaoAudioMs(path: string): number {
+  try {
+    const out = spawnSync(
+      'ffprobe',
+      ['-v', 'quiet', '-show_entries', 'format=duration', '-of', 'csv=p=0', path],
+      { encoding: 'utf8' },
+    )
+    const n = Number.parseFloat((out.stdout ?? '').trim())
+    if (Number.isFinite(n) && n > 0) return Math.round(n * 1000)
+  } catch {
+    /* sem ffprobe */
+  }
+  return 0
+}
+
+/**
+ * Modo sincronizado: copia os áudios REAIS de `audio-narracao/<cena.audio>` para
+ * `out/audio/<cena.id>.mp3` (onde a montagem os procura) e devolve a duração de
+ * cada um em ms (o relógio-mestre da gravação). Falha claro se faltar arquivo.
+ */
+function prepararAudiosNarracao(
+  paths: ReturnType<typeof aulaPaths>,
+  cenas: Cena[],
+): Map<string, number> {
+  mkdirSync(paths.audioDir, { recursive: true })
+  const dur = new Map<string, number>()
+  for (const cena of cenas) {
+    if (!cena.audio) throw new Error(`cena ${cena.id}: modo sincronizado exige "audio:" no roteiro`)
+    const origem = join(paths.audioNarracaoDir, cena.audio)
+    if (!existsSync(origem)) {
+      throw new Error(`áudio da cena ${cena.id} não encontrado: ${origem}`)
+    }
+    const destino = join(paths.audioDir, `${cena.id}.mp3`)
+    copyFileSync(origem, destino)
+    const ms = duracaoAudioMs(destino)
+    if (!ms) throw new Error(`não consegui medir a duração de ${origem} (ffprobe no PATH?)`)
+    dur.set(cena.id, ms)
+  }
+  return dur
+}
+
 /**
  * Etapa 4 — grava o passo a passo no PLAYGROUND REAL do Estúdio: semeia um
  * projeto vazio (com Jogo 2D), esconde o preview (blocos ocupam a tela toda),
@@ -128,10 +178,18 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
   const paths = aulaPaths(slug)
   assertAulaExiste(paths)
   const roteiro = loadRoteiroFile(paths.roteiro)
-  const praticas = roteiro.cenas.filter((c) => c.tipo === 'pratica' && c.acoes?.length)
-  if (!praticas.length) {
-    throw new Error('Nenhuma cena de prática com ações no roteiro — nada a gravar.')
+  const sincronizar = roteiro.meta.sincronizarAudio
+  // No modo sincronizado grava TODAS as cenas (mesmo sem ações: rodam o jogo),
+  // ritmadas pela duração do áudio real. No modo normal, só práticas com ações.
+  const cenasGravar = sincronizar
+    ? roteiro.cenas
+    : roteiro.cenas.filter((c) => c.tipo === 'pratica' && c.acoes?.length)
+  if (!cenasGravar.length) {
+    throw new Error('Nenhuma cena para gravar no roteiro.')
   }
+  const audioMs = sincronizar
+    ? prepararAudiosNarracao(paths, cenasGravar)
+    : new Map<string, number>()
 
   mkdirSync(paths.telaDir, { recursive: true })
   etapa(`Tela — ${roteiro.meta.titulo}`)
@@ -204,16 +262,50 @@ export async function gravarTela(slug: string): Promise<TelaTimeline> {
     await page.waitForTimeout(2500) // editor assenta (frames, layout medido)
 
     // 3. Esconde o preview → os blocos ocupam a tela toda (nada atrás do preview).
-    await page.evaluate(() => globalThis.__aulas.esconderPreview())
-    await page.waitForTimeout(700)
+    //    No modo sincronizado o preview é gerido POR CENA (esconde pra montar,
+    //    mostra pra rodar o jogo), então NÃO esconde global aqui.
+    if (!sincronizar) {
+      await page.evaluate(() => globalThis.__aulas.esconderPreview())
+      await page.waitForTimeout(700)
+    }
 
     // 4. Passo a passo (o cronômetro já corre desde o início da gravação).
-    for (const cena of praticas) {
+    //    O editor começa com o preview VISÍVEL (jogo rodando) — bom pra abertura.
+    let previewVisivel = true
+    for (const cena of cenasGravar) {
       passo(`cena ${cena.id}`)
       const inicioMs = agora()
+      const temAcoes = Boolean(cena.acoes?.length)
+
+      if (sincronizar) {
+        // Cena de MONTAGEM → esconde o preview (blocos na tela toda) e, depois de
+        // montar, SEGURA nos blocos (rodar o jogo meio-construído mostraria tela
+        // quebrada). Cena SEM montagem → mostra o preview e roda o jogo completo.
+        if (temAcoes && previewVisivel) {
+          await page.evaluate(() => globalThis.__aulas.esconderPreview())
+          previewVisivel = false
+          await page.waitForTimeout(300)
+        } else if (!temAcoes && !previewVisivel) {
+          await page.evaluate(() => globalThis.__aulas.mostrarPreview())
+          previewVisivel = true
+          await page.waitForTimeout(300)
+        }
+      }
+
       for (const acao of cena.acoes ?? []) {
         await executarAcao(page, cena, acao, agora, baloes)
       }
+
+      // Sincronizado: SEGURA a cena até bater a duração do áudio real (relógio-
+      // mestre → 100% sincronizado com a narração). Blocos parados nas cenas de
+      // montagem; jogo rodando nas cenas sem montagem.
+      if (sincronizar) {
+        const alvoMs = inicioMs + (audioMs.get(cena.id) ?? 0)
+        while (agora() < alvoMs) {
+          await page.waitForTimeout(150)
+        }
+      }
+
       cenasRange.push({ id: cena.id, inicioMs, fimMs: agora() })
     }
 

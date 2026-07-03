@@ -5,6 +5,9 @@
 # Saídas geradas por aula (áudio, avatar, clipes de tela, vídeo final) — pesadas
 aulas/**/out/
 
+# Narração de voz por aula (mp3 pesados, gerados pelo ElevenLabs) — ficam locais, fora do git
+aulas/**/audio-narracao/
+
 # Artefatos de ferramenta
 node_modules/
 .remotion/

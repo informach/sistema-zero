@@ -116,7 +116,10 @@ export function construirPlano(slug: string): Plano {
         const telaDurS = (range.fimMs - range.inicioMs) / 1000
         base.telaInicioS = range.inicioMs / 1000
         base.telaFimS = range.fimMs / 1000
-        base.duracaoS = Math.max(audioS, telaDurS)
+        // Sincronizado: o áudio real é o relógio-mestre (a tela foi gravada já no
+        // ritmo dele), então a cena dura EXATAMENTE o áudio — os 9 áudios emendam
+        // sem deriva. No modo normal, a cena cabe o maior dos dois.
+        base.duracaoS = roteiro.meta.sincronizarAudio ? audioS : Math.max(audioS, telaDurS)
         base.baloes = tela.baloes
           .filter((b) => b.cenaId === cena.id)
           .map((b) => ({
