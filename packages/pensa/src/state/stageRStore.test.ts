@@ -204,6 +204,115 @@ describe('stageRStore.moveTask', () => {
   })
 })
 
+describe('stageRStore — autoria manual (add/editar/apagar/reordenar/notas/sugerir mais)', () => {
+  function loaded(respond: Parameters<typeof createFakeTransport>[0]) {
+    const transport = createFakeTransport(respond)
+    const store = createStageRStore(transport)
+    store.setState({ cycleId: 'cycle-1', stageLoaded: true, hasPlan: true, tasks: makeTasks() })
+    return { transport, store }
+  }
+
+  const draft = {
+    title: 'Nova missão',
+    mission: { steps: [{ text: 'Passo 1' }], doneWhen: ['Deu certo'] },
+  }
+
+  it('addTask: POST /tasks e ANEXA os cards devolvidos (não zera o quadro)', async () => {
+    const { transport, store } = loaded((path, init) => {
+      if (path === '/cycles/cycle-1/tasks' && init?.method === 'POST') {
+        return { tasks: [makeTask({ id: 'task-9', title: 'Nova missão' })] }
+      }
+      throw new Error(`rota inesperada: ${path}`)
+    })
+    const antes = store.getState().tasks?.length ?? 0
+
+    expect(await store.getState().addTask(draft)).toBe(true)
+    const post = transport.calls.find((c) => c.method === 'POST')
+    expect(post?.path).toBe('/cycles/cycle-1/tasks')
+    expect(post?.body).toEqual({ tasks: [draft] })
+    expect(store.getState().tasks).toHaveLength(antes + 1)
+    expect(store.getState().tasks?.at(-1)?.title).toBe('Nova missão')
+  })
+
+  it('editTask: PATCH de conteúdo substitui pela task canônica', async () => {
+    const { transport, store } = loaded((path, init) => {
+      if (path === '/tasks/task-1' && init?.method === 'PATCH') {
+        return { task: makeTask({ id: 'task-1', title: 'Editada' }) }
+      }
+      throw new Error(`rota inesperada: ${path}`)
+    })
+
+    expect(await store.getState().editTask('task-1', { ...draft, title: 'Editada' })).toBe(true)
+    const patch = transport.calls.find((c) => c.method === 'PATCH')
+    expect(patch?.body).toMatchObject({ title: 'Editada', mission: draft.mission })
+    expect(store.getState().tasks?.find((t) => t.id === 'task-1')?.title).toBe('Editada')
+  })
+
+  it('removeTask: some OTIMISTA; rollback no erro', async () => {
+    const okStore = loaded((path, init) => {
+      if (path === '/tasks/task-1' && init?.method === 'DELETE') return { ok: true }
+      throw new Error(`rota inesperada: ${path}`)
+    })
+    const antes = okStore.store.getState().tasks?.length ?? 0
+    expect(await okStore.store.getState().removeTask('task-1')).toBe(true)
+    expect(okStore.store.getState().tasks?.some((t) => t.id === 'task-1')).toBe(false)
+    expect(okStore.store.getState().tasks).toHaveLength(antes - 1)
+
+    const failStore = loaded(() => {
+      throw new PensaApiError('boom', 500, 'INTERNAL_ERROR')
+    })
+    expect(await failStore.store.getState().removeTask('task-1')).toBe(false)
+    // Rollback: o card volta.
+    expect(failStore.store.getState().tasks?.some((t) => t.id === 'task-1')).toBe(true)
+    expect(failStore.store.getState().taskActionError).not.toBeNull()
+  })
+
+  it('reorderTask: PATCH de position dentro da coluna; borda recusa sem rede', async () => {
+    const { transport, store } = loaded((path, init) => {
+      if (path === '/tasks/task-1' && init?.method === 'PATCH') {
+        return { task: makeTask({ id: 'task-1', position: 1 }) }
+      }
+      throw new Error(`rota inesperada: ${path}`)
+    })
+    // task-1 é o 1º do backlog → não sobe.
+    expect(await store.getState().reorderTask('task-1', 'up')).toBe(false)
+    expect(transport.calls).toHaveLength(0)
+    // Descer manda o PATCH de position.
+    expect(await store.getState().reorderTask('task-1', 'down')).toBe(true)
+    const patch = transport.calls.find((c) => c.method === 'PATCH')
+    expect(patch?.body).toEqual({ position: 1 })
+  })
+
+  it('setTaskNotes: PATCH otimista das notas', async () => {
+    const { transport, store } = loaded((path, init) => {
+      if (path === '/tasks/task-1' && init?.method === 'PATCH') {
+        return { task: makeTask({ id: 'task-1', notes: 'lembrete' }) }
+      }
+      throw new Error(`rota inesperada: ${path}`)
+    })
+
+    expect(await store.getState().setTaskNotes('task-1', 'lembrete')).toBe(true)
+    const patch = transport.calls.find((c) => c.method === 'PATCH')
+    expect(patch?.body).toEqual({ notes: 'lembrete' })
+    expect(store.getState().tasks?.find((t) => t.id === 'task-1')?.notes).toBe('lembrete')
+  })
+
+  it('suggestMoreMissions: POST generate {append:true} e ANEXA (não substitui)', async () => {
+    const { transport, store } = loaded((path, init) => {
+      if (path === GENERATE_PATH && init?.method === 'POST') {
+        return { tasks: [makeTask({ id: 'task-9', title: 'Mais uma' })] }
+      }
+      throw new Error(`rota inesperada: ${path}`)
+    })
+    const antes = store.getState().tasks?.length ?? 0
+
+    expect(await store.getState().suggestMoreMissions('proj-1')).toBe(true)
+    const post = transport.calls.find((c) => c.method === 'POST')
+    expect(post?.body).toMatchObject({ type: 'mission_plan', projectId: 'proj-1', append: true })
+    expect(store.getState().tasks).toHaveLength(antes + 1)
+  })
+})
+
 describe('stageRStore.ensureStudioProject', () => {
   it('sem a capability: devolve null e não toca a rede (degrade)', async () => {
     const transport = createFakeTransport(() => {

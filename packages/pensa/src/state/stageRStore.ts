@@ -16,12 +16,21 @@ import { friendlyErrorMessage } from '../core/copy'
 import { type PensaGamificationDelta, parseGamificationDelta } from '../core/gamification'
 import type {
   PensaCycleView,
+  PensaMission,
   PensaProjectDetailView,
   PensaStageView,
   PensaTaskColumn,
   PensaTaskView,
   PensaTransport,
 } from '../core/types'
+
+/** O que a criança escreve ao criar/editar uma missão à mão (autoria manual). */
+export interface PensaTaskDraft {
+  title: string
+  summary?: string | null
+  taskType?: string | null
+  mission: PensaMission
+}
 
 export interface PensaStageRStoreState {
   cycleId: string | null
@@ -41,6 +50,12 @@ export interface PensaStageRStoreState {
   movingTaskId: string | null
   moveError: string | null
 
+  /** Autoria manual (add/editar/apagar) em voo + erro gentil. */
+  savingTask: boolean
+  taskActionError: string | null
+  /** "Sugerir mais missões" (append via IA) em voo. */
+  suggestingMore: boolean
+
   /** Semeadura do projeto do Estúdio em voo. */
   seeding: boolean
   seedError: string | null
@@ -53,6 +68,18 @@ export interface PensaStageRStoreState {
   loadStage(cycleId: string): Promise<void>
   /** POST generate {type:'mission_plan'} → REPLACE total (tasks com ids reais). */
   generateMissions(projectId: string): Promise<boolean>
+  /** "Sugerir mais missões": POST generate {append:true} → APPEND (não zera o quadro). */
+  suggestMoreMissions(projectId: string): Promise<boolean>
+  /** Autoria manual: cria 1 missão no fim do backlog (POST /tasks). */
+  addTask(draft: PensaTaskDraft): Promise<boolean>
+  /** Autoria manual: edita título/resumo/missão de 1 card (PATCH conteúdo). */
+  editTask(taskId: string, draft: PensaTaskDraft): Promise<boolean>
+  /** Autoria manual: apaga 1 card (DELETE, otimista com rollback). */
+  removeTask(taskId: string): Promise<boolean>
+  /** Sobe/desce 1 card DENTRO da coluna (otimista com rollback). */
+  reorderTask(taskId: string, direction: 'up' | 'down'): Promise<boolean>
+  /** Grava a anotação da criança no card (PATCH notes, otimista). */
+  setTaskNotes(taskId: string, notes: string | null): Promise<boolean>
   /**
    * Move OTIMISTA (rollback no erro). Alvo 'doing' já ocupado por outra task →
    * recusa (false, sem rede): a UI pergunta e chama swapDoing.
@@ -97,6 +124,10 @@ export function createStageRStore(
     movingTaskId: null,
     moveError: null,
 
+    savingTask: false,
+    taskActionError: null,
+    suggestingMore: false,
+
     seeding: false,
     seedError: null,
 
@@ -137,6 +168,139 @@ export function createStageRStore(
         return true
       } catch (error) {
         set({ generating: false, generateError: friendlyErrorMessage(error) })
+        return false
+      }
+    },
+
+    async suggestMoreMissions(projectId) {
+      const { cycleId, suggestingMore } = get()
+      if (!cycleId || suggestingMore) return false
+      set({ suggestingMore: true, generateError: null })
+      try {
+        // append:true → o BFF gera poucas NOVAS e as ANEXA (não zera o quadro).
+        const { tasks } = await transport.request<{ tasks: PensaTaskView[] }>(
+          `/cycles/${cycleId}/artifacts/generate`,
+          { method: 'POST', body: { type: 'mission_plan', projectId, append: true } },
+        )
+        set((state) => ({
+          suggestingMore: false,
+          tasks: [...(state.tasks ?? []), ...tasks],
+        }))
+        return true
+      } catch (error) {
+        set({ suggestingMore: false, generateError: friendlyErrorMessage(error) })
+        return false
+      }
+    },
+
+    async addTask(draft) {
+      const { cycleId, savingTask } = get()
+      if (!cycleId || savingTask) return false
+      set({ savingTask: true, taskActionError: null })
+      try {
+        const { tasks } = await transport.request<{ tasks: PensaTaskView[] }>(
+          `/cycles/${cycleId}/tasks`,
+          { method: 'POST', body: { tasks: [draft] } },
+        )
+        set((state) => ({ savingTask: false, tasks: [...(state.tasks ?? []), ...tasks] }))
+        return true
+      } catch (error) {
+        set({ savingTask: false, taskActionError: friendlyErrorMessage(error) })
+        return false
+      }
+    },
+
+    async editTask(taskId, draft) {
+      const { savingTask } = get()
+      if (savingTask) return false
+      set({ savingTask: true, taskActionError: null })
+      try {
+        const { task } = await transport.request<{ task: PensaTaskView }>(`/tasks/${taskId}`, {
+          method: 'PATCH',
+          body: { title: draft.title, summary: draft.summary ?? null, mission: draft.mission },
+        })
+        set((state) => ({
+          savingTask: false,
+          tasks: (state.tasks ?? []).map((t) => (t.id === taskId ? task : t)),
+        }))
+        return true
+      } catch (error) {
+        set({ savingTask: false, taskActionError: friendlyErrorMessage(error) })
+        return false
+      }
+    },
+
+    async removeTask(taskId) {
+      const { tasks, savingTask } = get()
+      if (!tasks || savingTask) return false
+      const before = tasks
+      // Otimista: some da lista já; volta no erro.
+      set({ savingTask: true, taskActionError: null, tasks: tasks.filter((t) => t.id !== taskId) })
+      try {
+        await transport.request(`/tasks/${taskId}`, { method: 'DELETE' })
+        set({ savingTask: false })
+        return true
+      } catch (error) {
+        set({ savingTask: false, taskActionError: friendlyErrorMessage(error), tasks: before })
+        return false
+      }
+    },
+
+    async reorderTask(taskId, direction) {
+      const { tasks, movingTaskId } = get()
+      if (!tasks || movingTaskId) return false
+      const current = tasks.find((t) => t.id === taskId)
+      if (!current) return false
+      const column = [...tasks]
+        .filter((t) => t.column === current.column)
+        .sort((a, b) => a.position - b.position)
+      const index = column.findIndex((t) => t.id === taskId)
+      const target = direction === 'up' ? index - 1 : index + 1
+      if (target < 0 || target >= column.length) return false
+      // Otimista: troca a posição com o vizinho; o servidor re-sequencia denso.
+      const before = tasks
+      set((state) => ({
+        movingTaskId: taskId,
+        moveError: null,
+        tasks: (state.tasks ?? []).map((t) => (t.id === taskId ? { ...t, position: target } : t)),
+      }))
+      try {
+        const { task } = await transport.request<{ task: PensaTaskView }>(`/tasks/${taskId}`, {
+          method: 'PATCH',
+          body: { position: target },
+        })
+        set((state) => ({
+          movingTaskId: null,
+          tasks: (state.tasks ?? []).map((t) => (t.id === taskId ? task : t)),
+        }))
+        return true
+      } catch (error) {
+        set({ movingTaskId: null, moveError: friendlyErrorMessage(error), tasks: before })
+        return false
+      }
+    },
+
+    async setTaskNotes(taskId, notes) {
+      const { tasks } = get()
+      if (!tasks) return false
+      const current = tasks.find((t) => t.id === taskId)
+      if (!current) return false
+      const before = tasks
+      set((state) => ({
+        taskActionError: null,
+        tasks: (state.tasks ?? []).map((t) => (t.id === taskId ? { ...t, notes } : t)),
+      }))
+      try {
+        const { task } = await transport.request<{ task: PensaTaskView }>(`/tasks/${taskId}`, {
+          method: 'PATCH',
+          body: { notes },
+        })
+        set((state) => ({
+          tasks: (state.tasks ?? []).map((t) => (t.id === taskId ? task : t)),
+        }))
+        return true
+      } catch (error) {
+        set({ taskActionError: friendlyErrorMessage(error), tasks: before })
         return false
       }
     },

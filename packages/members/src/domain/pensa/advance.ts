@@ -28,7 +28,7 @@ export interface AdvanceGateResult {
  * - z→e: latest `idea` validated (senão missing ['idea'])
  * - e→r: latest `friendly_spec` E latest `identity` validated
  * - r→o: ≥1 task no ciclo (senão missing ['tasks'])
- * - o→done: todo item `required` do checklist `done` (senão missing ['checklist'])
+ * - o→done: checklist não-vazio com todo item `required` `done` (senão missing ['checklist'])
  * Puro — o use case `advance-stage` resolve os insumos e aplica o resultado.
  */
 export function evaluateAdvanceGate(
@@ -51,7 +51,11 @@ export function evaluateAdvanceGate(
       if (input.taskCount < 1) missing.push('tasks')
       break
     case 'o':
-      if (input.checklist.some((i) => i.required && !i.done)) missing.push('checklist')
+      // Lançar exige um checklist PREPARADO (≥1 item) com todo item `required`
+      // feito — espelha o "≥1 task" do r→o. Checklist VAZIO = lançamento não
+      // preparado, não "pronto" (senão o→done daria o prêmio MAIOR por nada).
+      if (input.checklist.length === 0 || input.checklist.some((i) => i.required && !i.done))
+        missing.push('checklist')
       break
   }
   return { ok: missing.length === 0, missing }

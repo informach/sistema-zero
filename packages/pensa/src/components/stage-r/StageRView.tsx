@@ -351,7 +351,7 @@ export function StageRView({
         </section>
       ) : (
         <>
-          <KanbanBoard store={stageStore} onOpenMission={handleOpenMission} />
+          <KanbanBoard store={stageStore} projectId={detail.id} onOpenMission={handleOpenMission} />
 
           {allDone ? (
             <section className="flex flex-col items-center gap-2 rounded-3xl border-2 border-pz-ok bg-pz-surface p-6 text-center">

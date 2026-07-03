@@ -681,10 +681,15 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body: { from },
       })
     },
-    /** REPLACE total das missões do ciclo (geração da fase R). */
+    /** REPLACE total das missões do ciclo (geração da fase R / "recomeçar"). */
     pensaReplaceTasks(
       cycleId: string,
-      tasks: Array<{ title: string; summary?: string; taskType?: string; mission: PensaMission }>,
+      tasks: Array<{
+        title: string
+        summary?: string | null
+        taskType?: string | null
+        mission: PensaMission
+      }>,
     ): Promise<GatewayResponse<{ tasks: PensaTaskView[] }>> {
       return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/tasks`, {
         method: 'PUT',
@@ -692,15 +697,46 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body: { tasks },
       })
     },
-    /** Move/anota um card do kanban. */
+    /** APPEND ao backlog (autoria manual "+ Nova missão" / "sugerir mais"; ≤60 total). */
+    pensaAppendTasks(
+      cycleId: string,
+      tasks: Array<{
+        title: string
+        summary?: string | null
+        taskType?: string | null
+        mission: PensaMission
+      }>,
+    ): Promise<GatewayResponse<{ tasks: PensaTaskView[] }>> {
+      return gw.gatewayFetch(`/members/pensa/cycles/${enc(cycleId)}/tasks`, {
+        method: 'POST',
+        query: { audience },
+        body: { tasks },
+      })
+    },
+    /** Move/anota E/OU edita o conteúdo de um card do kanban (autoria manual). */
     pensaUpdateTask(
       taskId: string,
-      body: { column?: PensaTaskColumn; position?: number; notes?: string | null },
+      body: {
+        column?: PensaTaskColumn
+        position?: number
+        notes?: string | null
+        title?: string
+        summary?: string | null
+        taskType?: string | null
+        mission?: PensaMission
+      },
     ): Promise<GatewayResponse<{ task: PensaTaskView }>> {
       return gw.gatewayFetch(`/members/pensa/tasks/${enc(taskId)}`, {
         method: 'PATCH',
         query: { audience },
         body,
+      })
+    },
+    /** Apaga um card do kanban (autoria manual). */
+    pensaDeleteTask(taskId: string): Promise<GatewayResponse<{ ok: boolean }>> {
+      return gw.gatewayFetch(`/members/pensa/tasks/${enc(taskId)}`, {
+        method: 'DELETE',
+        query: { audience },
       })
     },
     /** REPLACE do checklist do ciclo (semeado na entrada da etapa O). */

@@ -22,7 +22,12 @@ Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
   embaixo e não pode ter que rolar; travado em teste).
 - **E — Enxergar o Jogo**: spec amigável (tirinhas Entrada→Processamento→Saída + wireframes
   DESENHADOS do JSON `screens`) com aprovação por seção + funil de identidade (nome → paleta →
-  ícone SVG; o save AUTO-valida e o pacote renomeia o projeto via PATCH). **Wireframes são
+  ícone SVG; o save AUTO-valida e o pacote renomeia o projeto via PATCH). **Autoria manual
+  (07/2026):** cada telinha tem "✏️ Mudar esta tela" (`ScreenEditor`: nome + elementos
+  kind/label/zone, add/remove) → `stageEStore.editScreen` faz um POST generate `{type:'spec_edit'}`
+  que troca SÓ aquela tela, mantém fluxos/PRD e re-valida SEM refazer o desenho inteiro nem
+  re-aprovar tudo (conserta 1 tela de um jogo grande). A identidade JÁ SALVA (estado 'done') tem
+  "✏️ Mudar a identidade" (`reopenIdentity` reabre o funil). **Wireframes são
   PICTÓRICOS** (07/2026): title = logo na fonte display do host (`[font-family:var(--font-display)]`,
   Baloo no kids), button = botão "3D", score = chip de HUD, hero/enemy/item = SPRITES
   (`WireframeSprites.tsx`, SVG inline decorativo por `currentColor`) com legenda pequenina, e o
@@ -30,7 +35,14 @@ Projeto → ciclos ("Versão N", 1 = MVP) → etapas **z→e→r→o→done**:
   cor 0 = FUNDO da paleta, proibida em elemento visível. Tudo repinta via style inline com a
   paleta escolhida; sem paleta caem nos tokens (`KIND_TOKEN_TEXT_CLASS`).
 - **R — Rodar as Missões**: kanban (Missões/Fazendo agora/Hora de testar/Prontas; máx 1 em
-  "Fazendo agora"; botões movem, não drag) de missões que a CRIANÇA executa no Estúdio; **Modo
+  "Fazendo agora"; botões movem, não drag) de missões que a CRIANÇA executa no Estúdio.
+  **AUTORIA MANUAL (07/2026):** o quadro não é mais só-leitura — `KanbanBoard` tem "➕ Nova
+  missão" (abre o `MissionEditor`: nome + passos 1-12 + doneWhen 1-3) e "✨ Sugerir mais missões"
+  (append via IA — `mission_plan` com `append:true`, NÃO zera o quadro); cada `MissionCard` tem
+  barra de autoria (✏️ editar / ↑↓ reordenar dentro da coluna / 🗑️ apagar com confirmação / 📝
+  anotação inline que salva no blur). Ações no `stageRStore`
+  (`addTask`/`editTask`/`removeTask`/`reorderTask`/`setTaskNotes`/`suggestMoreMissions`, otimistas
+  com rollback) sobre as rotas POST/PATCH-amplia/DELETE de tasks. Copy em `stageR.author.*`; **Modo
   Missão** (`renderStudio` do host + projeto semeado) — o MissionMode ADAPTA o layout à largura
   (07/2026): ≥1024px = split com a missão à esquerda; abaixo disso a missão vira GAVETA sobre o
   Estúdio (scrim fecha; toggle do header reabre) — a LARGURA não gateia mais o split no

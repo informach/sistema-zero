@@ -15,6 +15,7 @@ import { usePensaApp } from '../appContext'
 import { Dialog } from '../common/Dialog'
 import { useMediaQuery } from '../common/useMediaQuery'
 import { MissionCard } from './MissionCard'
+import { MissionEditor } from './MissionEditor'
 
 const COLUMNS: readonly PensaTaskColumn[] = ['backlog', 'doing', 'review', 'done'] as const
 
@@ -39,21 +40,31 @@ function byColumn(tasks: PensaTaskView[], column: PensaTaskColumn): PensaTaskVie
 
 export function KanbanBoard({
   store,
+  projectId,
   onOpenMission,
 }: {
   store: PensaStageRStore
+  /** Id do projeto do Pensa (p/ "sugerir mais missões" via IA). */
+  projectId: string
   onOpenMission: (taskId: string) => void
 }): JSX.Element | null {
   const { copy } = usePensaApp()
   const c = copy.stageR
+  const a = c.author
   const tasks = useStore(store, (s) => s.tasks)
   const movingTaskId = useStore(store, (s) => s.movingTaskId)
   const moveError = useStore(store, (s) => s.moveError)
+  const savingTask = useStore(store, (s) => s.savingTask)
+  const suggestingMore = useStore(store, (s) => s.suggestingMore)
+  const taskActionError = useStore(store, (s) => s.taskActionError)
   // Mobile: colunas viram abas horizontais (uma coluna visível por vez).
   const wide = useMediaQuery('(min-width: 768px)')
   const [tab, setTab] = useState<PensaTaskColumn>('backlog')
   // Card do backlog aguardando a confirmação de troca (regra 1-em-doing).
   const [swapTaskId, setSwapTaskId] = useState<string | null>(null)
+  // Editor de missão (autoria manual): 'new' = criar, task = editar, null = fechado.
+  const [editorTask, setEditorTask] = useState<PensaTaskView | 'new' | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<PensaTaskView | null>(null)
   // Último move anunciado (aria-live) — visível só para leitores de tela.
   const [announce, setAnnounce] = useState<string | null>(null)
   const panelId = useId()
@@ -112,7 +123,7 @@ export function KanbanBoard({
           </h4>
         ) : null}
         <div className="flex flex-col gap-2 rounded-2xl bg-pz-bg p-2">
-          {columnTasks.map((task) => (
+          {columnTasks.map((task, index) => (
             <MissionCard
               key={task.id}
               task={task}
@@ -120,6 +131,15 @@ export function KanbanBoard({
               busy={busy}
               onOpen={() => onOpenMission(task.id)}
               onAction={() => handleAction(task)}
+              author={{
+                onEdit: () => setEditorTask(task),
+                onDelete: () => setDeleteTarget(task),
+                onMoveUp: () => void store.getState().reorderTask(task.id, 'up'),
+                onMoveDown: () => void store.getState().reorderTask(task.id, 'down'),
+                canMoveUp: index > 0,
+                canMoveDown: index < columnTasks.length - 1,
+                onNotesSave: (notes) => void store.getState().setTaskNotes(task.id, notes),
+              }}
             />
           ))}
           {columnTasks.length === 0 ? (
@@ -135,12 +155,36 @@ export function KanbanBoard({
       <p role="status" aria-live="polite" className="sr-only">
         {announce}
       </p>
-      {moveError ? (
+
+      {/* Autoria manual: a criança cria a sua missão OU pede mais pro Zappy. */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setEditorTask('new')}
+          disabled={savingTask}
+          className="min-h-11 rounded-2xl bg-pz-accent px-4 font-bold text-pz-accent-fg transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <span aria-hidden="true">➕ </span>
+          {a.addMission}
+        </button>
+        <button
+          type="button"
+          onClick={() => void store.getState().suggestMoreMissions(projectId)}
+          disabled={suggestingMore}
+          aria-busy={suggestingMore || undefined}
+          className="min-h-11 rounded-2xl border-2 border-pz-border px-4 font-semibold text-pz-text transition hover:border-pz-accent disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <span aria-hidden="true">✨ </span>
+          {suggestingMore ? a.suggestingMore : a.suggestMore}
+        </button>
+      </div>
+
+      {moveError || taskActionError ? (
         <p
           role="alert"
           className="rounded-2xl border-2 border-pz-warn bg-pz-surface px-4 py-2.5 font-semibold text-pz-warn"
         >
-          {moveError}
+          {moveError ?? taskActionError}
         </p>
       ) : null}
 
@@ -201,6 +245,47 @@ export function KanbanBoard({
               className="min-h-11 rounded-2xl bg-pz-accent px-5 font-bold text-pz-accent-fg transition hover:brightness-105"
             >
               {c.swapConfirm}
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Editor de missão (criar/editar à mão). `key` remonta ao trocar de alvo. */}
+      {editorTask !== null ? (
+        <MissionEditor
+          key={editorTask === 'new' ? 'new' : editorTask.id}
+          store={store}
+          open
+          task={editorTask === 'new' ? null : editorTask}
+          onClose={() => setEditorTask(null)}
+        />
+      ) : null}
+
+      <Dialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title={a.deleteTitle}
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-pz-muted">{a.deleteBody}</p>
+          <div className="flex flex-wrap justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setDeleteTarget(null)}
+              className="min-h-11 rounded-2xl border-2 border-pz-border px-5 font-semibold text-pz-muted transition hover:bg-pz-bg hover:text-pz-text"
+            >
+              {a.deleteCancel}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const target = deleteTarget
+                setDeleteTarget(null)
+                if (target) void store.getState().removeTask(target.id)
+              }}
+              className="min-h-11 rounded-2xl bg-pz-warn px-5 font-bold text-pz-surface transition hover:brightness-105"
+            >
+              {a.deleteConfirm}
             </button>
           </div>
         </div>

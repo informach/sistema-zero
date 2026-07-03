@@ -239,6 +239,36 @@ export interface MissionPlanTask {
   mission: PensaMission
 }
 
+/**
+ * Teto DURO de missões por geração (bem abaixo das 60 tasks/ciclo do members) — o
+ * plano de um jogo grande é uma SEQUÊNCIA maior de missões pequenas, não 8 missões
+ * inchadas. O alvo real vem do tamanho do jogo (`missionTargetFromSpec`).
+ */
+export const MISSION_CEILING = 24
+
+/**
+ * Alvo de missões PROPORCIONAL ao tamanho do jogo (nº de fluxos + telas da spec):
+ * jogo grande = MAIS missões pequenas. Sem spec legível → null (cai no range padrão
+ * por versão). V1 tem piso ~5 (a arquitetura já pede setup→loop→HUD→título);
+ * Versão 2+ é mais enxuta (incremento). Exportada p/ os testes.
+ */
+export function missionTargetFromSpec(
+  friendlySpec: unknown,
+  cycleNumber: number,
+): { min: number; max: number } | null {
+  const spec = (friendlySpec ?? {}) as { flows?: unknown[]; screens?: unknown[] }
+  const flows = Array.isArray(spec.flows) ? spec.flows.length : 0
+  const screens = Array.isArray(spec.screens) ? spec.screens.length : 0
+  if (flows === 0 && screens === 0) return null
+  const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n))
+  if (cycleNumber <= 1) {
+    const max = clamp(6 + flows + Math.ceil(screens / 2), 8, MISSION_CEILING)
+    return { min: clamp(max - 3, 5, max - 1), max }
+  }
+  const max = clamp(3 + flows, 4, 12)
+  return { min: clamp(max - 2, 3, Math.max(3, max - 1)), max }
+}
+
 /** Exportada só p/ os testes de prompt (tests/pensa-missions.test.ts). */
 export function missionsSystem(input: {
   mode: 'kids' | 'adult'
@@ -246,14 +276,23 @@ export function missionsSystem(input: {
   buildEnv?: 'embedded' | 'studio' | 'external' | null
   /** Criança POSSUI o Pinta → o plano ganha 1–2 missões de ARTE (artKind). */
   includeArtMissions?: boolean
+  /** Alvo de missões derivado do TAMANHO do jogo (spec). Ausente → range padrão por versão. */
+  targetMissions?: { min: number; max: number }
+  /** "Sugerir mais": ADICIONA a um plano existente (sem "Monte o palco"/"Toque final"). */
+  append?: boolean
 }): string {
   const external = input.buildEnv === 'external'
+  const append = input.append === true
   const art = input.includeArtMissions === true && !external
   const catalog = STUDIO_CATEGORY_HINTS.map((c) => `- ${c}`).join('\n')
   const blockCatalog = STUDIO_BLOCK_HINTS.map(
     ([category, labels]) => `- ${category}: ${labels.map((label) => `"${label}"`).join(' · ')}`,
   ).join('\n')
-  const count = input.cycleNumber <= 1 ? 'entre 5 e 8 missões' : 'entre 3 e 5 missões'
+  const count = input.targetMissions
+    ? `entre ${input.targetMissions.min} e ${input.targetMissions.max} missões`
+    : input.cycleNumber <= 1
+      ? 'entre 5 e 8 missões'
+      : 'entre 3 e 5 missões'
   return [
     pensaSafetyClause(input.mode),
     external
@@ -264,7 +303,7 @@ export function missionsSystem(input: {
 - summary: 1 frase do que a missão entrega.
 - taskType: um de setup|gameplay|screens|polish.
 - story: 1 frase de contexto divertida NO MUNDO DESTE jogo — cite o personagem/tema do plano ("O Dino Espacial não pode tropeçar nos meteoros!"). Nunca frase genérica que serviria pra qualquer jogo.
-- steps: 3 a 7 passos imperativos CURTOS e numerados na ordem de execução, cada um com hint (dica opcional de onde achar/como testar; hint pode ser string vazia). O primeiro passo costuma ser abrir o projeto${external ? ' no editor' : ' no Estúdio'}; o último costuma ser rodar e testar.${
+- steps: 3 a 10 passos imperativos CURTOS e numerados na ordem de execução, cada um com hint (dica opcional de onde achar/como testar; hint pode ser string vazia). O primeiro passo costuma ser abrir o projeto${external ? ' no editor' : ' no Estúdio'}; o último costuma ser rodar e testar.${
       external
         ? `
 - categories: sempre [] (lista vazia — não há Estúdio neste projeto).
@@ -294,14 +333,22 @@ export function missionsSystem(input: {
 - EVENTOS soltos: "Quando apertar a tecla" para começar o jogo e para as ações do jogador.
 - UM ÚNICO loop "A cada quadro do jogo, fazer", nesta ordem interna: "Limpar a tela" → desenhar o cenário → decidir pela cena atual ("a tela atual é …?") → controlar e desenhar o herói → criar obstáculos/itens com "A cada … segundos fazer" → "Atualizar (mover) o grupo" e "Desenhar o grupo" → tratar as colisões ("Quando o sprite encostar num do grupo") → placar/HUD por último ("Mostrar placar").
 - Cada passo diz ONDE o bloco entra: no topo (fora do loop), dentro do "A cada quadro do jogo, fazer", ou como evento solto.`,
-    `REGRAS DO PLANO:
+    append
+      ? `REGRAS DO PLANO (você está ADICIONANDO missões a um plano que já começou):
+- Gere ${count} missões NOVAS, na ordem de construção.
+- NÃO inclua "Monte o palco" nem "Toque final": elas já existem no quadro.
+- NÃO repita nenhuma mecânica que as missões existentes já cobrem (elas vêm na conversa).
+- Cada missão cabe numa sessão de 15 a 30 minutos de uma criança. Uma mecânica por missão.
+- Baseie-se SOMENTE no plano fornecido (não invente mecânica nova).
+- Linguagem alegre, sem jargão, sem travessão.`
+      : `REGRAS DO PLANO:
 - Gere ${count}, na ordem de construção.${
-      external
-        ? `
+          external
+            ? `
 - A PRIMEIRA missão é sempre "Monte o palco" (criar/abrir o projeto no editor, fundo e o personagem principal aparecendo na tela).`
-        : `
+            : `
 - A PRIMEIRA missão é sempre "Monte o palco" e COMEÇA instalando a extensão: passo com o caminho exato "abra o menu ⋯ (Mais opções) → Extensões → no cartão Jogo 2D, aperte Instalar" (sem ela a categoria Jogo 2D não existe na paleta; o hint desse passo avisa: se a categoria Jogo 2D já aparecer, pode pular). Se o plano pedir um jogo 3D, a extensão é a Jogo 3D. Depois vêm os passos de preparar a tela e fazer o personagem principal aparecer.`
-    }
+        }
 - A ÚLTIMA missão é sempre "Toque final" (tela de título com o nome do jogo, usando as cores da paleta do jogo).
 - Cada missão cabe numa sessão de 15 a 30 minutos de uma criança. Uma mecânica por missão.
 - Baseie-se SOMENTE no plano fornecido (não invente mecânica nova).
@@ -331,7 +378,7 @@ export function clampMissions(
   const clip = (s: string, n: number) => s.trim().slice(0, n)
   const validCategories = new Set<string>(STUDIO_CATEGORY_HINTS)
   const safePalette = palette.filter((c) => HEX_RE.test(c)).slice(0, 8)
-  return raw.tasks.slice(0, 12).map((t) => {
+  return raw.tasks.slice(0, MISSION_CEILING).map((t) => {
     const steps = t.steps.slice(0, 12).map((s) => {
       const hint = clip(s.hint, 160)
       return hint ? { text: clip(s.text, 200), hint } : { text: clip(s.text, 200) }
@@ -384,15 +431,26 @@ export async function synthesizeMissions(input: {
   buildEnv?: 'embedded' | 'studio' | 'external' | null
   /** Criança POSSUI o Pinta → o plano ganha 1–2 missões de ARTE (artKind). */
   includeArtMissions?: boolean
+  /**
+   * "Sugerir MAIS missões" (append): títulos que já existem no quadro. Presente →
+   * gera POUCAS missões NOVAS que continuam o plano (sem repetir as existentes).
+   */
+  existingTitles?: string[]
 }): Promise<MissionPlanTask[]> {
+  const appendMode = (input.existingTitles?.length ?? 0) > 0
   const user = [
     `Jogo: "${input.identity?.name ?? input.projectName}" (Versão ${input.cycleNumber}).`,
     input.cycleGoal ? `Objetivo desta versão: ${input.cycleGoal}` : '',
     input.identity?.palette?.colors?.length
       ? `Paleta do jogo (para a missão Toque final): ${input.identity.palette.colors.join(', ')}`
       : '',
-    `PLANO INTERNO (markdown):\n${input.prdMarkdown.slice(0, 24_000)}`,
-    `VISÃO AMIGÁVEL (JSON):\n${JSON.stringify(input.friendlySpec).slice(0, 8_000)}`,
+    // Fatias FOLGADAS: as mecânicas avançadas de um jogo grande vivem no fim do PRD
+    // — cortar cedo demais fazia o planejador nem enxergá-las.
+    `PLANO INTERNO (markdown):\n${input.prdMarkdown.slice(0, 48_000)}`,
+    `VISÃO AMIGÁVEL (JSON):\n${JSON.stringify(input.friendlySpec).slice(0, 20_000)}`,
+    appendMode
+      ? `MISSÕES QUE JÁ EXISTEM no quadro (NÃO repita nenhuma; gere missões NOVAS e diferentes que CONTINUAM o plano, sem a primeira "Monte o palco" nem a última "Toque final"): ${(input.existingTitles ?? []).map((t) => `"${t}"`).join(', ')}`
+      : '',
     'Gere o plano de missões.',
   ]
     .filter(Boolean)
@@ -404,12 +462,18 @@ export async function synthesizeMissions(input: {
       cycleNumber: input.cycleNumber,
       buildEnv: input.buildEnv,
       includeArtMissions: input.includeArtMissions,
+      append: appendMode,
+      // Append gera um punhado de novas; senão o alvo vem do tamanho do jogo.
+      targetMissions: appendMode
+        ? { min: 3, max: 5 }
+        : (missionTargetFromSpec(input.friendlySpec, input.cycleNumber) ?? undefined),
     }),
     user,
     schema: MissionSchema,
     jsonSchema: MISSIONS_JSON_SCHEMA as unknown as Record<string, unknown>,
     schemaName: 'pensa_mission_plan',
-    maxTokens: 6_000,
+    // Folga p/ até MISSION_CEILING missões × passos não truncar o JSON.
+    maxTokens: 8_000,
     temperature: 0.4,
   })
   const tasks = clampMissions(

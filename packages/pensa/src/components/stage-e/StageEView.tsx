@@ -20,6 +20,7 @@ import { ZappyImage } from '../common/ZappyImage'
 import { FeedbackBar } from './FeedbackBar'
 import { FlowStrips } from './FlowStrips'
 import { IdentityPanel } from './IdentityPanel'
+import { ScreenEditor } from './ScreenEditor'
 import { ScreenWireframes } from './ScreenWireframes'
 
 function StageProgress({
@@ -82,6 +83,8 @@ export function StageEView({
   )
   // Qual seção está com a barra de feedback aberta (uma por vez).
   const [feedbackFor, setFeedbackFor] = useState<'flows' | 'screens' | null>(null)
+  // Índice da tela em edição pontual (autoria manual); null = editor fechado.
+  const [editingScreen, setEditingScreen] = useState<number | null>(null)
 
   const cycleId = detail?.currentCycle.id ?? null
 
@@ -298,7 +301,20 @@ export function StageEView({
               busy={sectionsBusy}
               onApprove={() => stageStore.getState().approveScreens()}
               onChange={() => setFeedbackFor('screens')}
+              onEditScreen={(index) => setEditingScreen(index)}
+              editLabel={c.screenEdit.edit}
             />
+            {editingScreen !== null && specContent.screens[editingScreen] ? (
+              <ScreenEditor
+                key={editingScreen}
+                store={stageStore}
+                open
+                projectId={detail.id}
+                screenIndex={editingScreen}
+                screen={specContent.screens[editingScreen]}
+                onClose={() => setEditingScreen(null)}
+              />
+            ) : null}
             {feedbackFor === 'screens' ? (
               <FeedbackBar
                 busy={generatingSpec}

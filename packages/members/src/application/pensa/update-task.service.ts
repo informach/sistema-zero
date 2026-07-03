@@ -1,9 +1,10 @@
 import type { CourseAudience } from '../../domain/course/course'
-import type { PensaTask, PensaTaskColumn } from '../../domain/pensa/pensa'
+import type { PensaMission, PensaTask, PensaTaskColumn } from '../../domain/pensa/pensa'
 import { PensaNotFoundError } from '../../domain/pensa/pensa.errors'
 import type {
   PensaRepository,
   PensaTaskBoardChange,
+  PensaTaskContentPatch,
 } from '../../domain/ports/pensa-repository.port'
 import { type PensaTaskView, toPensaTaskView } from '../mappers/pensa-views'
 
@@ -13,14 +14,20 @@ export interface UpdatePensaTaskInput {
   position?: number
   /** Presente (mesmo `null`) = sobrescreve as anotações. */
   notes?: string | null
+  // ── Edição de CONTEÚDO (autoria manual — editar a missão à mão) ──
+  title?: string
+  summary?: string | null
+  taskType?: string | null
+  mission?: PensaMission
 }
 
 const byPosition = (a: PensaTask, b: PensaTask): number => a.position - b.position
 
 /**
- * Move/anota um card do kanban. Movendo, a coluna DESTINO é re-sequenciada
- * densa (0..n-1) — e a de ORIGEM também, num move entre colunas (não deixa
- * buracos). Ownership pelo projeto dono → 404.
+ * Edita/move/anota um card do kanban. AUTORIA MANUAL: title/summary/taskType/
+ * mission editam o conteúdo. Movendo, a coluna DESTINO é re-sequenciada densa
+ * (0..n-1) — e a de ORIGEM também, num move entre colunas (não deixa buracos).
+ * Ownership pelo projeto dono → 404.
  */
 export class UpdatePensaTaskService {
   constructor(
@@ -36,13 +43,32 @@ export class UpdatePensaTaskService {
   ): Promise<PensaTaskView> {
     const found = await this.repo.findTaskWithProject(taskId, userId, audience)
     if (!found) throw new PensaNotFoundError()
-    const { task, project } = found
+    let { task } = found
+    const { project } = found
+
+    // 1) Edição de CONTEÚDO (se houver) — atualiza a task base que a view final usa.
+    const contentPatch: PensaTaskContentPatch = {}
+    if (input.title !== undefined) contentPatch.title = input.title
+    if (input.summary !== undefined) contentPatch.summary = input.summary
+    if (input.taskType !== undefined) contentPatch.taskType = input.taskType
+    if (input.mission !== undefined) contentPatch.mission = input.mission
+    const hasContent = Object.keys(contentPatch).length > 0
+    if (hasContent) {
+      task = await this.repo.updateTaskContent(project.id, taskId, contentPatch, this.clock())
+    }
+
+    // 2) Move/anota no kanban. Só edição de conteúdo (sem mover/anotar) → devolve
+    // já (o updateTaskContent tocou o projeto). Sem conteúdo E sem mover/anotar →
+    // ainda entra no lote no-op p/ tocar `updated_at`, como manda o contrato.
+    const moving = input.column !== undefined || input.position !== undefined
+    if (hasContent && !moving && input.notes === undefined) {
+      return toPensaTaskView(task)
+    }
 
     const changes = new Map<string, PensaTaskBoardChange>()
     let finalColumn = task.column
     let finalPosition = task.position
 
-    const moving = input.column !== undefined || input.position !== undefined
     if (moving) {
       const all = await this.repo.listTasks(task.cycleId)
       const targetColumn = input.column ?? task.column

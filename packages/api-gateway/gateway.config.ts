@@ -1330,26 +1330,29 @@ const config: GatewayConfigInput = {
       maxBodyBytes: 1024,
     },
     {
+      // PUT = REPLACE total; POST = APPEND (autoria manual / "sugerir mais missões").
       id: 'members-pensa-tasks-replace',
-      methods: ['PUT'],
+      methods: ['PUT', 'POST'],
       pathPattern: '/members/pensa/cycles/:cycleId/tasks',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
-      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 512 * 1024,
     },
     {
+      // PATCH = mover/anotar/EDITAR o conteúdo da missão; DELETE = apagar 1 card.
       id: 'members-pensa-task-update',
-      methods: ['PATCH'],
+      methods: ['PATCH', 'DELETE'],
       pathPattern: '/members/pensa/tasks/:taskId',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
-      maxBodyBytes: 4096,
+      // O PATCH pode carregar a missão inteira editada (steps+hints) → 64KB de folga.
+      maxBodyBytes: 64 * 1024,
     },
     {
       id: 'members-pensa-checklist-replace',

@@ -180,7 +180,8 @@ passthroughs finos Zod→members, escrita gateada por impersonação-readonly) e
 persiste**) → `event: state` + `event: done`; `: ping` a cada 15s (Cloudflare corta conexão ociosa);
 rate-limit in-process por sessão (10/min + 150/dia, `globalThis`/`Symbol.for`, réplica única) — e
 `pensaGenerateArtifact` (`POST /api/pensa/cycles/:cycleId/artifacts/generate` — TODAS as sínteses:
-idea/friendly_spec/identity(3 steps)/mission_plan/checklist_seed). ⚠️ **`GenerateBody` (Zod 4): as 3
+idea/friendly_spec/identity(3 steps)/mission_plan/checklist_seed + **`spec_edit`** 07/2026 = edição
+PONTUAL de UMA tela SEM IA: troca só `friendly_spec.screens`, mantém fluxos/PRD e auto-valida). ⚠️ **`GenerateBody` (Zod 4): as 3
 variantes da identidade repetem `type:'identity'` → NÃO podem ser irmãs num `discriminatedUnion('type')`**
 (o Zod 4 monta o mapa do discriminador no PRIMEIRO parse e lança "Duplicate discriminator value" — foi o
 500 de TODA geração em staging 02/07; o erro é lazy, então import/testes que não parseiam não pegam).
@@ -201,9 +202,18 @@ do jogo, fazer" → HUD por último) e a 1ª missão SEMPRE ensina a instalar a 
 `installedExtensions: []` (decisão: ensinar a instalar, não pré-instalar na semeadura).
 Prompt/clamp travados em `tests/pensa-missions.test.ts`. Plumbing LLM em
 **`server/pensa-llm.ts`** (fetch OpenRouter DIRETO, sem SDK: `streamPensaChat` com parser SSE próprio +
-`completePensaJson` com Zod e 1 retry; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` +
-OPCIONAL **`OPENROUTER_PENSA_MODEL`** — usada pelas sínteses E pelo CHAT (`pensaChatModel` = PENSA_MODEL
-|| MODEL; o modelo barato genérico gerava chips vagos — QA 02/07). Prompts VERSIONADOS em
+`completePensaJson` com Zod e 1 retry — a 2ª tentativa manda um NUDGE de reparo, não repete o corpo
+cru: recupera JSON cortado de plano grande sem 502; erro → `PensaLlmError`); envs `OPENROUTER_API_KEY/MODEL` +
+OPCIONAL **`OPENROUTER_PENSA_MODEL`** (chat + base das sínteses) e **`OPENROUTER_PENSA_SYNTHESIS_MODEL`**
+(03/07: só as sínteses PESADAS spec/missões — pode ser mais forte p/ jogos grandes; ausente → PENSA_MODEL →
+MODEL). ⚠️ `pensaChatModel` = PENSA_MODEL || MODEL (o genérico gerava chips vagos — QA 02/07);
+`pensaSynthesisModel` = SYNTHESIS || PENSA_MODEL || MODEL.
+**Escalar p/ jogo GRANDE (03/07, full review):** o nº de missões é PROPORCIONAL ao spec
+(`missionTargetFromSpec` em `stage-r-missions.ts` — flows+telas, piso 5, teto `MISSION_CEILING=24`;
+era fixo 5-8); `clampSpec` sobe p/ 12 telas/8 fluxos/14 elem; `max_tokens` das sínteses = 8k; e o chat da
+etapa Z tem **sumarização rolante** (`summarizeStageZ`) quando passa da janela (`PROMPT_WINDOW=40`, = a do
+evaluator) — a ideia inicial não some numa conversa longa (o members já persistia `summary`; o BFF nunca
+mandava). Contrato: `pensa-contract.md`. Prompts VERSIONADOS em
 `server/pensa-agents/*` — a **cláusula de segurança infantil SEMPRE entra no system kids** e a regra
 anti-inferência (PRD §11.3: o agente não decide pela criança; chips `SUGESTÕES:` são escolha DELA) é
 travada em `tests/pensa-ai.test.ts`. Tipos mirror em `lib/types.ts` (`Pensa*`). A conversa do chat NÃO

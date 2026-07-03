@@ -50,8 +50,10 @@ import { ParentReportPrefsService } from './application/parent-report/report-pre
 import { SendParentReportsService } from './application/parent-report/send-parent-reports.service'
 import { AdvancePensaStageService } from './application/pensa/advance-stage.service'
 import { AppendPensaConversationTurnService } from './application/pensa/append-conversation-turn.service'
+import { AppendPensaTasksService } from './application/pensa/append-tasks.service'
 import { CreatePensaCycleService } from './application/pensa/create-cycle.service'
 import { CreatePensaProjectService } from './application/pensa/create-project.service'
+import { DeletePensaTaskService } from './application/pensa/delete-task.service'
 import { GetPensaProjectService } from './application/pensa/get-project.service'
 import { GetPensaStageService } from './application/pensa/get-stage.service'
 import { GetPensaStudioSnapshotService } from './application/pensa/get-studio-snapshot.service'
@@ -350,7 +352,9 @@ export async function createApplication(env: Env): Promise<Application> {
   // O advance credita a gamificação NA RESPOSTA (award-dentro-da-ação, fail-open).
   const advancePensaStage = new AdvancePensaStageService(pensaRepo, awardGamification, clock)
   const replacePensaTasks = new ReplacePensaTasksService(pensaRepo, pensaNewId, clock)
+  const appendPensaTasks = new AppendPensaTasksService(pensaRepo, pensaNewId, clock)
   const updatePensaTask = new UpdatePensaTaskService(pensaRepo, clock)
+  const deletePensaTask = new DeletePensaTaskService(pensaRepo, clock)
   const replacePensaChecklist = new ReplacePensaChecklistService(pensaRepo, pensaNewId, clock)
   const togglePensaChecklistItem = new TogglePensaChecklistItemService(pensaRepo, clock)
 
@@ -466,7 +470,9 @@ export async function createApplication(env: Env): Promise<Application> {
       validateArtifact: validatePensaArtifact,
       advanceStage: advancePensaStage,
       replaceTasks: replacePensaTasks,
+      appendTasks: appendPensaTasks,
       updateTask: updatePensaTask,
+      deleteTask: deletePensaTask,
       replaceChecklist: replacePensaChecklist,
       toggleChecklistItem: togglePensaChecklistItem,
       accessCheck,

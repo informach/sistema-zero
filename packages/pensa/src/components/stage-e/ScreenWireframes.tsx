@@ -241,16 +241,24 @@ function ElementBlock({
 function ScreenCard({
   screen,
   palette,
+  onEdit,
+  editLabel,
 }: {
   screen: PensaSpecScreen
   palette?: string[]
+  /** Abre o editor pontual desta tela (autoria manual). */
+  onEdit?: () => void
+  editLabel?: string
 }): JSX.Element {
   // O fundo é a CENA da telinha: camada absoluta sob as zonas (não uma faixa).
   const backgrounds = screen.elements.filter((element) => element.kind === 'background')
   const visibles = screen.elements.filter((element) => element.kind !== 'background')
   return (
     <li data-screen={screen.name} className="flex flex-col gap-1.5">
-      <div className="relative flex aspect-[4/3] flex-col gap-1 overflow-hidden rounded-2xl border-2 border-pz-border bg-pz-surface p-2">
+      {/* min-h (não aspect fixo): telinhas com MUITOS elementos CRESCEM em vez de
+          cortar — nada some numa tela cheia de um jogo grande (o fundo é inset-0, ele
+          acompanha a altura). overflow-hidden segue só p/ arredondar os cantos. */}
+      <div className="relative flex min-h-44 flex-col gap-1 overflow-hidden rounded-2xl border-2 border-pz-border bg-pz-surface p-2">
         {backgrounds.map((element, index) => (
           <BackgroundLayer
             // biome-ignore lint/suspicious/noArrayIndexKey: elementos podem repetir kind+label; a posição é a identidade.
@@ -280,6 +288,16 @@ function ScreenCard({
         })}
       </div>
       <p className="text-center text-sm font-bold text-pz-text">{screen.name}</p>
+      {onEdit ? (
+        <button
+          type="button"
+          onClick={onEdit}
+          className="min-h-9 self-center rounded-xl border-2 border-pz-border px-3 text-xs font-bold text-pz-muted transition hover:border-pz-accent hover:text-pz-accent"
+        >
+          <span aria-hidden="true">✏️ </span>
+          {editLabel}
+        </button>
+      ) : null}
     </li>
   )
 }
@@ -291,6 +309,8 @@ export function ScreenWireframes({
   busy,
   onApprove,
   onChange,
+  onEditScreen,
+  editLabel,
 }: {
   screens: PensaSpecScreen[]
   /** Hex da paleta escolhida no funil (repinta os wireframes na hora). */
@@ -299,12 +319,22 @@ export function ScreenWireframes({
   busy?: boolean
   onApprove: () => void
   onChange: () => void
+  /** Edição PONTUAL de uma tela (autoria manual). Ausente = sem botão de editar. */
+  onEditScreen?: (index: number) => void
+  editLabel?: string
 }): JSX.Element {
   return (
     <div className="flex flex-col gap-4">
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {screens.map((screen) => (
-          <ScreenCard key={screen.name} screen={screen} palette={palette} />
+        {screens.map((screen, index) => (
+          <ScreenCard
+            // biome-ignore lint/suspicious/noArrayIndexKey: nomes de tela podem repetir; a posição é a identidade.
+            key={`${screen.name}-${index}`}
+            screen={screen}
+            palette={palette}
+            editLabel={editLabel}
+            {...(onEditScreen ? { onEdit: () => onEditScreen(index) } : {})}
+          />
         ))}
       </ul>
       <ApprovalActions approved={approved} busy={busy} onApprove={onApprove} onChange={onChange} />

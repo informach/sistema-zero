@@ -4,11 +4,12 @@
  */
 import type { FormEvent, JSX } from 'react'
 import { useId, useState } from 'react'
+import { PENSA_NAME_MAX, PENSA_NAME_MIN } from '../../core/limits'
 import { usePensaApp, usePensaStore } from '../appContext'
 import { Dialog } from '../common/Dialog'
 
-const NAME_MIN = 2
-const NAME_MAX = 120
+const NAME_MIN = PENSA_NAME_MIN
+const NAME_MAX = PENSA_NAME_MAX
 
 export function NewProjectDialog({
   open,

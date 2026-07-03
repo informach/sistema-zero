@@ -49,8 +49,10 @@ import { MarkLessonCompleteService } from '../src/application/mark-lesson-comple
 import { ParentReportPrefsService } from '../src/application/parent-report/report-prefs.service'
 import { AdvancePensaStageService } from '../src/application/pensa/advance-stage.service'
 import { AppendPensaConversationTurnService } from '../src/application/pensa/append-conversation-turn.service'
+import { AppendPensaTasksService } from '../src/application/pensa/append-tasks.service'
 import { CreatePensaCycleService } from '../src/application/pensa/create-cycle.service'
 import { CreatePensaProjectService } from '../src/application/pensa/create-project.service'
+import { DeletePensaTaskService } from '../src/application/pensa/delete-task.service'
 import { GetPensaProjectService } from '../src/application/pensa/get-project.service'
 import { GetPensaStageService } from '../src/application/pensa/get-stage.service'
 import { GetPensaStudioSnapshotService } from '../src/application/pensa/get-studio-snapshot.service'
@@ -294,7 +296,9 @@ export function buildApp(
       validateArtifact: new ValidatePensaArtifactService(pensa, clock),
       advanceStage: new AdvancePensaStageService(pensa, awardGamification, clock),
       replaceTasks: new ReplacePensaTasksService(pensa, () => randomUUID(), clock),
+      appendTasks: new AppendPensaTasksService(pensa, () => randomUUID(), clock),
       updateTask: new UpdatePensaTaskService(pensa, clock),
+      deleteTask: new DeletePensaTaskService(pensa, clock),
       replaceChecklist: new ReplacePensaChecklistService(pensa, () => randomUUID(), clock),
       toggleChecklistItem: new TogglePensaChecklistItemService(pensa, clock),
       accessCheck: new AccessCheckService(entitlements, clock),

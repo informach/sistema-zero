@@ -94,7 +94,16 @@ const registry = new RouteRegistry([
     methods: ['POST'],
     pathPattern: '/members/pensa/cycles/:cycleId/advance',
   }),
-  r({ id: 'pensa-task-update', methods: ['PATCH'], pathPattern: '/members/pensa/tasks/:taskId' }),
+  r({
+    id: 'pensa-tasks-replace',
+    methods: ['PUT', 'POST'],
+    pathPattern: '/members/pensa/cycles/:cycleId/tasks',
+  }),
+  r({
+    id: 'pensa-task-update',
+    methods: ['PATCH', 'DELETE'],
+    pathPattern: '/members/pensa/tasks/:taskId',
+  }),
 ])
 
 describe('RouteRegistry', () => {
@@ -255,6 +264,16 @@ describe('RouteRegistry', () => {
       'pensa-advance',
     )
     expect(registry.resolve('PATCH', '/members/pensa/tasks/t-1', 'v1')?.route.id).toBe(
+      'pensa-task-update',
+    )
+    // Autoria manual: POST /cycles/:id/tasks (append) e DELETE /tasks/:id (apagar).
+    expect(registry.resolve('POST', '/members/pensa/cycles/c-1/tasks', 'v1')?.route.id).toBe(
+      'pensa-tasks-replace',
+    )
+    expect(registry.resolve('PUT', '/members/pensa/cycles/c-1/tasks', 'v1')?.route.id).toBe(
+      'pensa-tasks-replace',
+    )
+    expect(registry.resolve('DELETE', '/members/pensa/tasks/t-1', 'v1')?.route.id).toBe(
       'pensa-task-update',
     )
     // Literal `pensa` nunca cai em /members/courses/:slug.

@@ -11,6 +11,7 @@ import type {
   PensaWorkStage,
 } from '../../src/domain/pensa/pensa'
 import type {
+  InheritedPensaArtifact,
   NewPensaArtifact,
   NewPensaChecklistItem,
   NewPensaCycle,
@@ -20,6 +21,7 @@ import type {
   PensaProjectPatch,
   PensaRepository,
   PensaTaskBoardChange,
+  PensaTaskContentPatch,
 } from '../../src/domain/ports/pensa-repository.port'
 
 /**
@@ -158,8 +160,24 @@ export class InMemoryPensaRepository implements PensaRepository {
       .map((c) => ({ ...c }))
   }
 
-  async createCycle(cycle: NewPensaCycle, now: Date): Promise<void> {
+  async createCycle(
+    cycle: NewPensaCycle,
+    now: Date,
+    inherit: InheritedPensaArtifact[] = [],
+  ): Promise<void> {
     this.cycles.push(this.newCycleRow(cycle, now))
+    for (const a of inherit) {
+      this.artifacts.push({
+        id: a.id,
+        cycleId: cycle.id,
+        stage: a.stage,
+        type: a.type,
+        version: 1,
+        content: a.content,
+        status: 'validated',
+        createdAt: now,
+      })
+    }
     this.touch(cycle.projectId, now)
   }
 
@@ -310,6 +328,18 @@ export class InMemoryPensaRepository implements PensaRepository {
     return project ? { task: { ...task }, project: { ...project } } : null
   }
 
+  async appendTasks(
+    projectId: string,
+    cycleId: string,
+    tasks: NewPensaTask[],
+    now: Date,
+  ): Promise<void> {
+    for (const task of tasks) {
+      this.tasks.push({ ...task, cycleId, createdAt: now, updatedAt: now })
+    }
+    this.touch(projectId, now)
+  }
+
   async applyTaskChanges(
     projectId: string,
     changes: PensaTaskBoardChange[],
@@ -323,6 +353,29 @@ export class InMemoryPensaRepository implements PensaRepository {
       if (change.notes !== undefined) task.notes = change.notes
       task.updatedAt = now
     }
+    this.touch(projectId, now)
+  }
+
+  async updateTaskContent(
+    projectId: string,
+    taskId: string,
+    patch: PensaTaskContentPatch,
+    now: Date,
+  ): Promise<PensaTask> {
+    const task = this.tasks.find((t) => t.id === taskId)
+    if (!task) throw new Error('task inexistente no fake')
+    if (patch.title !== undefined) task.title = patch.title
+    if (patch.summary !== undefined) task.summary = patch.summary
+    if (patch.taskType !== undefined) task.taskType = patch.taskType
+    if (patch.mission !== undefined) task.mission = patch.mission
+    task.updatedAt = now
+    this.touch(projectId, now)
+    return { ...task }
+  }
+
+  async deleteTask(projectId: string, taskId: string, now: Date): Promise<void> {
+    const i = this.tasks.findIndex((t) => t.id === taskId)
+    if (i >= 0) this.tasks.splice(i, 1)
     this.touch(projectId, now)
   }
 

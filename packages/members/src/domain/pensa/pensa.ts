@@ -36,7 +36,8 @@ export type PensaBuildEnv = 'embedded' | 'studio' | 'external'
 
 // ── Cotas e limites (enforçados nos USE CASES, não no banco) ────────────────
 export const MAX_ACTIVE_PROJECTS = 20
-export const MAX_CYCLES_PER_PROJECT = 10
+/** "Versões" por jogo — folga p/ um jogo iterado por muitos releases (era 10). */
+export const MAX_CYCLES_PER_PROJECT = 20
 export const MAX_TASKS_PER_CYCLE = 60
 export const MAX_CHECKLIST_ITEMS_PER_CYCLE = 40
 export const MAX_CONVERSATION_MESSAGES = 80

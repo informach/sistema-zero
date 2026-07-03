@@ -50,10 +50,14 @@ export function pensaChatModel(): string {
   return env.OPENROUTER_PENSA_MODEL || env.OPENROUTER_MODEL
 }
 
-/** Modelo das sínteses (mais capaz quando configurado). */
+/**
+ * Modelo das SÍNTESES PESADAS (spec/missões) — mais capaz quando configurado via
+ * `OPENROUTER_PENSA_SYNTHESIS_MODEL` (planos de jogos grandes valem um modelo mais
+ * forte); senão cai no modelo do Pensa (chat) e, por fim, no genérico.
+ */
 export function pensaSynthesisModel(): string {
   const env = getEnv()
-  return env.OPENROUTER_PENSA_MODEL || env.OPENROUTER_MODEL
+  return env.OPENROUTER_PENSA_SYNTHESIS_MODEL || env.OPENROUTER_PENSA_MODEL || env.OPENROUTER_MODEL
 }
 
 function baseHeaders(apiKey: string): Record<string, string> {
@@ -244,10 +248,15 @@ export async function streamPensaChat(opts: {
   return full
 }
 
+/** Nudge da 2ª tentativa (JSON cortado/fora do schema) — ver o loop de retry. */
+const JSON_REPAIR_NUDGE =
+  'Sua resposta anterior veio CORTADA ou fora do formato. Responda AGORA um ÚNICO objeto JSON VÁLIDO e COMPLETO que obedeça ao schema do começo ao fim, sem cortar no meio. Se precisar caber, seja mais ENXUTO no texto de cada campo (menos palavras) — mas não remova campos obrigatórios nem itens essenciais do plano.'
+
 /**
  * Saída ESTRUTURADA validada: `response_format: json_schema` (OpenRouter é
- * OpenAI-compatible) + parse Zod. 1 retry em JSON/shape inválido; segunda falha →
- * `PensaLlmError`. Não-streaming (sínteses são chamadas curtas de servidor).
+ * OpenAI-compatible) + parse Zod. 1 retry em JSON/shape inválido (com nudge de
+ * reparo); segunda falha → `PensaLlmError`. Não-streaming (sínteses são chamadas
+ * curtas de servidor).
  */
 export async function completePensaJson<T>(opts: {
   system: string
@@ -259,23 +268,33 @@ export async function completePensaJson<T>(opts: {
   maxTokens?: number
   temperature?: number
 }): Promise<T> {
-  const body = {
-    model: opts.model ?? pensaSynthesisModel(),
-    messages: [
-      { role: 'system' as const, content: opts.system },
-      { role: 'user' as const, content: opts.user },
-    ],
-    stream: false,
-    temperature: opts.temperature ?? 0.3,
-    max_tokens: opts.maxTokens ?? 1600,
-    response_format: {
-      type: 'json_schema',
-      json_schema: { name: opts.schemaName, strict: true, schema: opts.jsonSchema },
-    },
+  const model = opts.model ?? pensaSynthesisModel()
+  const baseMessages = [
+    { role: 'system' as const, content: opts.system },
+    { role: 'user' as const, content: opts.user },
+  ]
+  const responseFormat = {
+    type: 'json_schema' as const,
+    json_schema: { name: opts.schemaName, strict: true, schema: opts.jsonSchema },
   }
 
   let lastError: unknown
   for (let attempt = 0; attempt < 2; attempt += 1) {
+    // 2ª tentativa: o 1º erro de um plano grande costuma ser JSON CORTADO (estourou
+    // os tokens) ou fora do schema. Em vez de repetir o MESMO corpo cru, pede um JSON
+    // válido e mais enxuto — recupera a geração sem desistir com 502.
+    const messages =
+      attempt === 0
+        ? baseMessages
+        : [...baseMessages, { role: 'user' as const, content: JSON_REPAIR_NUDGE }]
+    const body = {
+      model,
+      messages,
+      stream: false,
+      temperature: opts.temperature ?? 0.3,
+      max_tokens: opts.maxTokens ?? 1600,
+      response_format: responseFormat,
+    }
     try {
       const res = await connectWithTimeout(body)
       let timer: ReturnType<typeof setTimeout> | undefined

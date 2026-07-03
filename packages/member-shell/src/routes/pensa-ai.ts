@@ -9,7 +9,11 @@ import { synthesizeSpec } from '../server/pensa-agents/stage-e-spec'
 import { buildChecklistSeed } from '../server/pensa-agents/stage-o-checklist'
 import { synthesizeMissions } from '../server/pensa-agents/stage-r-missions'
 import { buildStageZSystem } from '../server/pensa-agents/stage-z'
-import { evaluateStageZ, transcriptForEvaluator } from '../server/pensa-agents/stage-z-evaluator'
+import {
+  evaluateStageZ,
+  summarizeStageZ,
+  transcriptForEvaluator,
+} from '../server/pensa-agents/stage-z-evaluator'
 import { synthesizeIdea } from '../server/pensa-agents/stage-z-idea'
 import { PensaLlmError, pensaLlmAvailable, streamPensaChat } from '../server/pensa-llm'
 import type { SessionModule } from '../server/session'
@@ -36,6 +40,31 @@ const PaletteSchema = z.object({
 // discriminador externo derruba o parse no Zod 4 ("Duplicate discriminator value"),
 // então elas compõem uma união ANINHADA discriminada por `step`.
 // Exportado só p/ o teste de regressão (tests/pensa-ai.test.ts).
+// Tela editada à mão pela criança (edição pontual da etapa E). Espelha o shape
+// de `friendly_spec.screens`; o members revalida o teto do artefato.
+const SPEC_EDIT_KINDS = [
+  'title',
+  'button',
+  'score',
+  'hero',
+  'enemy',
+  'item',
+  'background',
+  'text',
+] as const
+const SpecScreenSchema = z.object({
+  name: z.string().trim().min(1).max(40),
+  elements: z
+    .array(
+      z.object({
+        kind: z.enum(SPEC_EDIT_KINDS),
+        label: z.string().trim().min(1).max(60),
+        zone: z.enum(['top', 'middle', 'bottom']),
+      }),
+    )
+    .max(14),
+})
+
 export const GenerateBody = z.discriminatedUnion('type', [
   z.object({ type: z.literal('idea') }),
   z.object({
@@ -43,6 +72,13 @@ export const GenerateBody = z.discriminatedUnion('type', [
     projectId: z.string().regex(UUID_RE),
     /** Revisão: o pedido de mudança da criança sobre a versão anterior. */
     feedback: z.string().trim().min(2).max(500).optional(),
+  }),
+  // Edição pontual (sem IA): a criança mudou UMA tela à mão; troca só as telas,
+  // mantém os fluxos/PRD e auto-valida (edição deliberada = aprovada).
+  z.object({
+    type: z.literal('spec_edit'),
+    projectId: z.string().regex(UUID_RE),
+    screens: z.array(SpecScreenSchema).min(1).max(12),
   }),
   z.discriminatedUnion('step', [
     z.object({
@@ -70,6 +106,9 @@ export const GenerateBody = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('mission_plan'),
     projectId: z.string().regex(UUID_RE),
+    // append = "sugerir MAIS missões" (não apaga o quadro; gera poucas novas que
+    // continuam o plano). Ausente/false = REPLACE (geração inicial / "recomeçar").
+    append: z.boolean().optional(),
   }),
   // Determinístico (sem LLM): semeia o checklist do Grande Lançamento na etapa O.
   z.object({
@@ -94,8 +133,12 @@ const rlStore = rlSlot[RL_KEY] as RlMap
 
 const CHAT_PER_MINUTE = 10
 const CHAT_PER_DAY = 150
-/** Janela do prompt: summary + as últimas N mensagens persistidas. */
-const PROMPT_WINDOW = 24
+/**
+ * Janela do prompt: summary + as últimas N mensagens persistidas. Igual à do
+ * evaluator (o escritor da resposta não pode enxergar MENOS que o juiz das
+ * estrelas); acima dela, `summarizeStageZ` preserva o começo da conversa.
+ */
+const PROMPT_WINDOW = 40
 
 export function pensaChatRateLimited(key: string, now = Date.now()): boolean {
   const dayKey = new Date(now).toISOString().slice(0, 10)
@@ -277,11 +320,25 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
                 state = undefined
               }
 
-              // Persiste o turno COMPLETO (user+assistant+state numa chamada).
+              // Resumo rolante: quando a conversa passa da janela do prompt, resume
+              // o começo (senão a ideia inicial some do contexto num jogo grande).
+              // Best-effort — falha mantém o resumo anterior (members faz ?? existing).
+              let summary: string | undefined
+              if (updated.length > PROMPT_WINDOW) {
+                try {
+                  summary = await summarizeStageZ(updated)
+                } catch (err) {
+                  console.error('[pensa-ai] summary failed', err)
+                  summary = undefined
+                }
+              }
+
+              // Persiste o turno COMPLETO (user+assistant+state+summary numa chamada).
               const saved = await members.pensaAppendTurn(cycleId, stage, {
                 userMessage: { content: message },
                 assistantMessage: { content: assistantText },
                 ...(state ? { state } : {}),
+                ...(summary ? { summary } : {}),
               })
               if (saved.status !== 200 || !saved.body) {
                 send('error', {
@@ -343,7 +400,9 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       const body = parsed.data
       // `identity/save` e `checklist_seed` NÃO chamam IA — dispensam disponibilidade e teto.
       const callsLlm =
-        body.type !== 'checklist_seed' && !(body.type === 'identity' && body.step === 'save')
+        body.type !== 'checklist_seed' &&
+        body.type !== 'spec_edit' &&
+        !(body.type === 'identity' && body.step === 'save')
       if (callsLlm && !pensaLlmAvailable()) {
         return NextResponse.json({ error: { code: 'PENSA_AI_UNAVAILABLE' } }, { status: 503 })
       }
@@ -506,6 +565,45 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
         }
       }
 
+      // ── type: 'spec_edit' — a criança editou UMA tela À MÃO (sem IA) ────────
+      // Mantém os fluxos/PRD, regrava só as telas e AUTO-VALIDA (edição pontual =
+      // não precisa refazer o desenho inteiro nem re-aprovar tudo).
+      if (body.type === 'spec_edit') {
+        const loaded = await loadProjectCycle(body.projectId, 'e')
+        if (loaded instanceof NextResponse) return loaded
+        const eRes = await members.pensaGetStage(cycleId, 'e')
+        if (eRes.status !== 200 || !eRes.body) {
+          return NextResponse.json(eRes.body ?? { error: { code: 'PENSA_NOT_FOUND' } }, {
+            status: eRes.status === 200 ? 502 : eRes.status,
+          })
+        }
+        const current = eRes.body.artifacts.find((a) => a.type === 'friendly_spec')?.content as
+          | { flows?: unknown }
+          | undefined
+        if (!current) {
+          return NextResponse.json(
+            { error: { code: 'PENSA_NOT_READY', message: 'O desenho do jogo ainda não existe.' } },
+            { status: 409 },
+          )
+        }
+        const content = {
+          flows: Array.isArray(current.flows) ? current.flows : [],
+          screens: body.screens,
+        }
+        const saved = await members.pensaSaveArtifact(cycleId, {
+          stage: 'e',
+          type: 'friendly_spec',
+          content,
+        })
+        if (saved.status !== 200 || !saved.body) {
+          return NextResponse.json(saved.body ?? { ok: false }, { status: saved.status })
+        }
+        const validated = await members.pensaValidateArtifact(cycleId, 'friendly_spec')
+        return NextResponse.json(validated.body ?? saved.body, {
+          status: validated.status === 200 ? 200 : validated.status,
+        })
+      }
+
       // ── type: 'mission_plan' — missões da etapa R (criança constrói no Estúdio) ─
       if (body.type === 'mission_plan') {
         const onR = await loadProjectCycle(body.projectId, 'r')
@@ -539,6 +637,17 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
         } catch {
           // sem posse confirmada → sem missões de arte
         }
+        // "Sugerir mais": junta os títulos que já existem p/ o modelo NÃO repetir e
+        // gerar poucas missões NOVAS que continuam o plano (sem apagar o quadro).
+        const append = body.append === true
+        let existingTitles: string[] | undefined
+        if (append) {
+          const rStage = await members.pensaGetStage(cycleId, 'r')
+          existingTitles =
+            rStage.status === 200
+              ? (rStage.body?.tasks ?? []).map((t) => t.title).slice(0, 60)
+              : undefined
+        }
         try {
           const tasks = await synthesizeMissions({
             mode: 'kids',
@@ -550,21 +659,27 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             identity: identity ?? null,
             buildEnv: onR.project.buildEnv ?? null,
             includeArtMissions,
+            existingTitles,
           })
-          const replaced = await members.pensaReplaceTasks(cycleId, tasks)
-          if (replaced.status !== 200 || !replaced.body) {
-            return NextResponse.json(replaced.body ?? { ok: false }, { status: replaced.status })
+          // append = "sugerir mais" (não zera o quadro); senão REPLACE.
+          const saved = append
+            ? await members.pensaAppendTasks(cycleId, tasks)
+            : await members.pensaReplaceTasks(cycleId, tasks)
+          if (saved.status !== 200 || !saved.body) {
+            return NextResponse.json(saved.body ?? { ok: false }, { status: saved.status })
           }
-          // Espelho auditável do plano como artefato da etapa R (best-effort).
-          const mirror = await members.pensaSaveArtifact(cycleId, {
-            stage: 'r',
-            type: 'mission_plan',
-            content: { tasks },
-          })
-          if (mirror.status !== 200) {
-            console.error('[pensa-ai] mission_plan mirror save failed', mirror.status)
+          // Espelho auditável SÓ no replace (representa o plano INTEIRO da etapa R).
+          if (!append) {
+            const mirror = await members.pensaSaveArtifact(cycleId, {
+              stage: 'r',
+              type: 'mission_plan',
+              content: { tasks },
+            })
+            if (mirror.status !== 200) {
+              console.error('[pensa-ai] mission_plan mirror save failed', mirror.status)
+            }
           }
-          return NextResponse.json(replaced.body, { status: 200 })
+          return NextResponse.json(saved.body, { status: 200 })
         } catch (err) {
           console.error('[pensa-ai] mission_plan generate failed', err)
           return aiFailed('Não consegui montar as missões agora. Tente de novo.')

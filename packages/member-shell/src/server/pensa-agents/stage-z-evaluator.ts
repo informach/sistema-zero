@@ -93,3 +93,38 @@ export async function evaluateStageZ(
     answered.who && answered.problem && answered.action && answered.screens && answered.success
   return { answered, ready }
 }
+
+const SUMMARY_SYSTEM = `Você resume uma conversa entre o Zappy e uma criança planejando um jogo, para NÃO perder o começo quando a conversa fica longa (a próxima resposta só enxerga as mensagens recentes + este resumo).
+Escreva um RESUMO curto (no máximo 6 frases), em 3ª pessoa, guardando SÓ o que a CRIANÇA decidiu e os fatos concretos do jogo: nome do jogo/personagem, para quem é, a graça, a ação principal, as telas, o critério de "ficou bom", inimigos/itens citados e o que ela recusou. NÃO invente; se algo não foi decidido, não afirme. Sem saudação, sem markdown, sem a linha SUGESTÕES.`
+
+const SummarySchema = z.object({ summary: z.string() })
+const SUMMARY_JSON_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['summary'],
+  properties: { summary: { type: 'string' } },
+} as const
+
+/**
+ * Resume a conversa da etapa Z (chamada barata do modelo do chat) quando ela passa
+ * da janela do prompt — o resumo entra no `RESUMO` do system e no transcript do
+ * evaluator, então a criança pode conversar bastante sobre um jogo grande sem que o
+ * começo (o coração da ideia) suma do contexto. Best-effort (o chamador engole erro).
+ */
+export async function summarizeStageZ(messages: PensaChatMessage[]): Promise<string> {
+  const transcript = messages
+    .map((m) => `${m.role === 'user' ? 'CRIANÇA' : 'ZAPPY'}: ${m.content.replace(/\n+/g, ' ')}`)
+    .join('\n')
+    .slice(0, 24_000)
+  const result = await completePensaJson({
+    system: SUMMARY_SYSTEM,
+    user: transcript,
+    schema: SummarySchema,
+    jsonSchema: SUMMARY_JSON_SCHEMA as unknown as Record<string, unknown>,
+    schemaName: 'pensa_stage_z_summary',
+    model: pensaChatModel(),
+    maxTokens: 400,
+    temperature: 0.2,
+  })
+  return result.summary.trim().slice(0, 2000)
+}
