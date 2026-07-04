@@ -59,6 +59,46 @@ export function collectSprites(workspace: Blockly.Workspace | null | undefined):
 }
 
 /**
+ * Blocos de laço do Jogo 2D que dão um NOME LOCAL a cada sprite no corpo (o
+ * sprite "da vez", ex.: "para cada sprite …", "… encostar (chamado asteroide)").
+ * Esses nomes valem só DENTRO do bloco, então entram no seletor apenas quando o
+ * campo está dentro dele (escopo por ancestral). Campos que aqui DECLARAM o nome
+ * seguem `field_input` — só os consumidores viram seletor.
+ */
+const SPRITE_LOOP_BINDERS: Record<string, string[]> = {
+  sz_g2d_for_each_in_group: ['ITEM'],
+  sz_g2d_prune_offscreen: ['ITEM'],
+  sz_g2d_on_group_overlap: ['ANAME', 'BNAME'],
+  sz_g2d_on_sprite_group_overlap: ['ANAME'],
+}
+
+/**
+ * Nomes de sprite LOCAIS em escopo no ponto do campo: sobe pelos blocos que
+ * ENVOLVEM o bloco do campo (`getSurroundParent`) e coleta os nomes dados por
+ * laços. Só aparecem dentro do laço que os declara.
+ */
+export function collectScopedSpriteNames(block: Blockly.Block | null | undefined): string[] {
+  const seen = new Set<string>()
+  const ordered: string[] = []
+  let cur = block?.getSurroundParent() ?? null
+  while (cur) {
+    const fields = SPRITE_LOOP_BINDERS[cur.type]
+    if (fields) {
+      for (const f of fields) {
+        if (!cur.getField(f)) continue
+        const name = cur.getFieldValue(f)
+        if (name && !seen.has(name)) {
+          seen.add(name)
+          ordered.push(name)
+        }
+      }
+    }
+    cur = cur.getSurroundParent() ?? null
+  }
+  return ordered
+}
+
+/**
  * Reaplica o `data-sz-theme` do root no conteúdo portalado do DropDownDiv (vive
  * sob document.body, fora do escopo de tema). Mesmo padrão do FieldColourSZ.
  */
@@ -79,6 +119,9 @@ export class FieldSpritePicker extends Blockly.FieldTextInput {
     const block = this.getSourceBlock()
     const ws = block?.workspace
     const sprites = collectSprites(ws)
+    const globalNames = new Set(sprites.map((s) => s.name))
+    // Sprites LOCAIS em escopo (nome dado por um laço que ENVOLVE este campo).
+    const localNames = collectScopedSpriteNames(block).filter((n) => !globalNames.has(n))
     const assets = ((ws as unknown as AssetAccessor | undefined)?.__szAssets?.() ?? []).filter(
       (a) => a && a.kind === 'image',
     )
@@ -93,7 +136,7 @@ export class FieldSpritePicker extends Blockly.FieldTextInput {
     wrap.style.cssText =
       'padding:8px;width:240px;background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
 
-    if (sprites.length === 0) {
+    if (sprites.length === 0 && localNames.length === 0) {
       const empty = document.createElement('div')
       empty.textContent =
         'Nenhum sprite no programa ainda — crie um (ex.: "Criar sprite", "Criar nave"…) ou digite o nome abaixo.'
@@ -123,6 +166,31 @@ export class FieldSpritePicker extends Blockly.FieldTextInput {
         btn.append(swatch, label)
         btn.addEventListener('click', () => {
           this.setValue(sprite.name)
+          Blockly.DropDownDiv.hideIfOwner(this)
+        })
+        list.appendChild(btn)
+      }
+      // Sprites LOCAIS do laço (o sprite "da vez"): swatch de laço 🔁 + marca "no laço".
+      for (const name of localNames) {
+        const btn = document.createElement('button')
+        btn.type = 'button'
+        btn.title = `${name} — sprite deste laço (local)`
+        const selected = name === this.getValue()
+        btn.style.cssText = `display:flex;align-items:center;gap:8px;padding:5px 7px;border:1px solid ${selected ? 'var(--color-sz-accent)' : 'var(--color-sz-border)'};border-radius:6px;background:var(--color-sz-bg);cursor:pointer;text-align:left;`
+        const swatch = document.createElement('span')
+        swatch.textContent = '🔁'
+        swatch.style.cssText =
+          'flex:none;width:22px;height:22px;border-radius:5px;border:1px dashed var(--color-sz-border);display:flex;align-items:center;justify-content:center;font-size:12px;'
+        const label = document.createElement('span')
+        label.textContent = name
+        label.style.cssText =
+          'flex:1;min-width:0;font-size:13px;color:var(--color-sz-fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
+        const tag = document.createElement('span')
+        tag.textContent = 'no laço'
+        tag.style.cssText = 'flex:none;font-size:11px;color:var(--color-sz-fg-soft);'
+        btn.append(swatch, label, tag)
+        btn.addEventListener('click', () => {
+          this.setValue(name)
           Blockly.DropDownDiv.hideIfOwner(this)
         })
         list.appendChild(btn)

@@ -31,6 +31,14 @@ describe('FieldNamePicker', () => {
       expect(collectVariables(ws)).toEqual(['pontos', 'bateu'])
     })
 
+    it('reconhece objetos nomeados dos kits (jogo do equilibrista/balão, cidade)', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_g2d_create_stickhero').setFieldValue('jogo', 'NAME')
+      ws.newBlock('sz_g2d_create_city').setFieldValue('cidade', 'NAME')
+
+      expect(collectVariables(ws)).toEqual(['jogo', 'cidade'])
+    })
+
     it('não repete o mesmo nome e ignora blocos que só CONSOMEM a variável', () => {
       const ws = new Blockly.Workspace()
       ws.newBlock('sz_js_var_create').setFieldValue('contador', 'NAME')

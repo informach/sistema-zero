@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from 'bun:test'
 import { gameTwoDBlocks } from '../../../official-extensions/game-2d/blocks'
 import { registerExtensionBlocks } from '../../blocks'
 import { ensureBlocklyInitialized } from '../../setup'
-import { collectSprites } from '../FieldSpritePicker'
+import { collectScopedSpriteNames, collectSprites } from '../FieldSpritePicker'
 
 describe('FieldSpritePicker.collectSprites — reconhece sprites de QUALQUER criador', () => {
   beforeAll(() => {
@@ -44,5 +44,48 @@ describe('FieldSpritePicker.collectSprites — reconhece sprites de QUALQUER cri
     ws.newBlock('sz_g2d_draw_sprite') // usa sprite, não cria
 
     expect(collectSprites(ws).map((s) => s.name)).toEqual(['jogador'])
+  })
+})
+
+describe('collectScopedSpriteNames — sprites LOCAIS do laço-pai em escopo', () => {
+  beforeAll(() => {
+    ensureBlocklyInitialized()
+    registerExtensionBlocks(gameTwoDBlocks)
+  })
+
+  /** Encaixa `child` no corpo (BODY) de `parent`. */
+  function nestInBody(parent: Blockly.Block, child: Blockly.Block): void {
+    parent.getInput('BODY')?.connection?.connect(child.previousConnection as Blockly.Connection)
+  }
+
+  it('vê o nome "chamado" do laço-pai (on_sprite_group_overlap → ANAME)', () => {
+    const ws = new Blockly.Workspace()
+    const loop = ws.newBlock('sz_g2d_on_sprite_group_overlap')
+    loop.setFieldValue('asteroide', 'ANAME')
+    const inner = ws.newBlock('sz_g2d_remove_from_group')
+    nestInBody(loop, inner)
+
+    expect(collectScopedSpriteNames(inner)).toEqual(['asteroide'])
+  })
+
+  it('vê os DOIS nomes do overlap de grupos (ANAME + BNAME) e junta laços aninhados', () => {
+    const ws = new Blockly.Workspace()
+    const outer = ws.newBlock('sz_g2d_on_group_overlap')
+    outer.setFieldValue('tiro', 'ANAME')
+    outer.setFieldValue('alvo', 'BNAME')
+    const inner = ws.newBlock('sz_g2d_for_each_in_group')
+    inner.setFieldValue('cada', 'ITEM')
+    nestInBody(outer, inner)
+    const leaf = ws.newBlock('sz_g2d_remove_from_group')
+    nestInBody(inner, leaf)
+
+    expect(collectScopedSpriteNames(leaf)).toEqual(['cada', 'tiro', 'alvo'])
+  })
+
+  it('fora de qualquer laço → nenhum sprite local', () => {
+    const ws = new Blockly.Workspace()
+    const solto = ws.newBlock('sz_g2d_remove_from_group')
+    expect(collectScopedSpriteNames(solto)).toEqual([])
+    expect(collectScopedSpriteNames(null)).toEqual([])
   })
 })

@@ -56,6 +56,11 @@ const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_score: ['NAME'],
   sz_g2d_collides: ['NAME'],
   sz_g2d_circle_collides: ['NAME'],
+  // Kits que guardam um "objeto" nomeado numa variável (jogo do equilibrista/balão,
+  // cidade dos gorilas) — os consumidores (GAME/CITY) redigitavam o nome.
+  sz_g2d_create_stickhero: ['NAME'],
+  sz_g2d_create_balloon: ['NAME'],
+  sz_g2d_create_city: ['NAME'],
 }
 
 /** Blocos que DECLARAM um grupo de sprites nomeado (Jogo 2D). */
