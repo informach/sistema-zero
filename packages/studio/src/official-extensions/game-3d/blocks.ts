@@ -16,7 +16,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_create_scene',
     message0: 'Criar cena 3D no canvas %1 e guardar em %2',
     args0: [
-      { type: 'field_input', name: 'CANVAS', text: 'tela' },
+      { type: 'field_name_picker', name: 'CANVAS', text: 'tela', kind: 'canvas' },
       { type: 'field_input', name: 'NAME', text: 'cena' },
     ],
     previousStatement: 'JSStmt',
@@ -42,7 +42,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_background',
     message0: 'Cor de fundo da cena %1 como %2',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'field_colour', name: 'COLOR', colour: '#0b1020' },
     ],
     previousStatement: 'JSStmt',
@@ -53,7 +53,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_camera',
     message0: 'Posicionar câmera da cena %1 em x %2 y %3 z %4',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -69,7 +69,7 @@ export const gameThreeDBlocks = [
     message0: 'Criar cubo %1 na cena %2 tamanho %3 cor %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'caixa' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#22d3ee' },
     ],
@@ -83,7 +83,7 @@ export const gameThreeDBlocks = [
     message0: 'Criar esfera %1 na cena %2 raio %3 cor %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'bola' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#f59e0b' },
     ],
@@ -97,7 +97,7 @@ export const gameThreeDBlocks = [
     message0: 'Criar caixa %1 na cena %2 largura %3 altura %4 profundidade %5 cor %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'chao' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
       { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'input_value', name: 'D', check: 'JSValue' },
@@ -114,7 +114,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_position',
     message0: 'Posição do objeto %1 em x %2 y %3 z %4',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'caixa' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -128,7 +128,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_rotation',
     message0: 'Rotação do objeto %1 em x %2 y %3 z %4 (radianos)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'caixa' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -143,7 +143,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_scale',
     message0: 'Tamanho (escala) do objeto %1 em %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'caixa' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
       { type: 'input_value', name: 'FACTOR', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -156,7 +156,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_animate',
     message0: 'A cada frame 3D da cena %1, fazer %2',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_statement', name: 'BODY' },
     ],
     previousStatement: 'JSStmt',
@@ -171,7 +171,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_control_keys',
     message0: 'Mover %1 com o teclado (WASD/setas), velocidade %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -185,7 +185,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_velocity',
     message0: 'Definir velocidade do objeto %1 em x %2 y %3 z %4',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -200,7 +200,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_jump',
     message0: 'Fazer %1 pular com força %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'FORCE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -214,8 +214,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_apply_gravity',
     message0: 'Mover %1 com gravidade (chão: %2)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'GROUND', text: 'chao' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'GROUND', text: 'chao', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -227,8 +227,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_camera_follow',
     message0: 'A câmera da cena %1 segue o objeto %2',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -267,8 +267,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_collides',
     message0: 'o objeto %1 está encostando em %2 ?',
     args0: [
-      { type: 'field_input', name: 'A', text: 'jogador' },
-      { type: 'field_input', name: 'B', text: 'chao' },
+      { type: 'field_name_picker', name: 'A', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'B', text: 'chao', kind: 'object3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -278,8 +278,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_hit_any',
     message0: 'o objeto %1 encostou em algum de %2 ?',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'GROUP', text: 'inimigos' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -300,9 +300,9 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_run_enemies',
     message0: 'Na cena %1, soltar inimigos no grupo %2 (chão %3) a cada %4 quadros, velocidade %5',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_input', name: 'GROUP', text: 'inimigos' },
-      { type: 'field_input', name: 'GROUND', text: 'chao' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
+      { type: 'field_name_picker', name: 'GROUND', text: 'chao', kind: 'object3d' },
       { type: 'input_value', name: 'EVERY', check: 'JSValue' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
@@ -316,7 +316,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_stop',
     message0: 'Fim de jogo: parar a cena %1',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'cena' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: KIT_C,
@@ -328,8 +328,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_isometric_camera',
     message0: 'Câmera isométrica na cena %1 seguindo o objeto %2',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_input', name: 'FOLLOW', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'FOLLOW', text: 'jogador', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -341,7 +341,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_grid_position',
     message0: 'Colocar o objeto %1 na linha %2 coluna %3',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'caixa' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
       { type: 'input_value', name: 'ROW', check: 'JSValue' },
       { type: 'input_value', name: 'COL', check: 'JSValue' },
     ],
@@ -354,7 +354,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_grid_step',
     message0: 'Mover %1 em grade com as setas (a cada frame)',
-    args0: [{ type: 'field_input', name: 'OBJ', text: 'jogador' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: GRID_C,
@@ -365,7 +365,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_grid_move',
     message0: 'Dar um passo de %1 para %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'DIR',
@@ -386,7 +386,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_move_across',
     message0: 'Mover os objetos do grupo %1 (velocidade %2, dando a volta de x %3 até %4)',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'carros' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'carros', kind: 'group3d' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
       { type: 'input_value', name: 'MIN', check: 'JSValue' },
       { type: 'input_value', name: 'MAX', check: 'JSValue' },
@@ -402,8 +402,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_touches_box',
     message0: 'o objeto %1 encosta em algum de %2 ?',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'GROUP', text: 'carros' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'carros', kind: 'group3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -416,7 +416,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_create_crossing_scene',
     message0: 'Criar mundo Travessia no canvas %1 e guardar em %2',
     args0: [
-      { type: 'field_input', name: 'CANVAS', text: 'jogo' },
+      { type: 'field_name_picker', name: 'CANVAS', text: 'jogo', kind: 'canvas' },
       { type: 'field_input', name: 'NAME', text: 'mundo' },
     ],
     previousStatement: 'JSStmt',
@@ -429,7 +429,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_create_crosser',
     message0: 'Criar personagem da Travessia no mundo %1 cor %2 e guardar em %3',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
       { type: 'field_colour', name: 'COLOR', colour: '#ffffff' },
       { type: 'field_input', name: 'NAME', text: 'jogador' },
     ],
@@ -442,7 +442,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_crosser_move',
     message0: 'Mover o personagem %1 para %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'DIR',
@@ -464,8 +464,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_crosser_step',
     message0: 'Atualizar o personagem %1 no mundo %2 (a cada frame)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -477,8 +477,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_crosser_reset',
     message0: 'Recomeçar a Travessia: personagem %1 no mundo %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -489,7 +489,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_add_row',
     message0: 'No mundo %1, na linha %2, criar faixa de %3 indo para %4 velocidade %5',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
       { type: 'input_value', name: 'ROW', check: 'JSValue' },
       {
         type: 'field_dropdown',
@@ -522,7 +522,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_generate_rows',
     message0: 'No mundo %1, gerar %2 linhas aleatórias',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
       { type: 'input_value', name: 'COUNT', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -535,7 +535,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_move_traffic',
     message0: 'Mover os veículos do mundo %1 (a cada frame)',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'mundo' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: KIT2_C,
@@ -545,8 +545,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_crosser_hit',
     message0: 'o personagem %1 bateu num veículo? (mundo %2)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -556,7 +556,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_crosser_row',
     message0: 'a pontuação (linha) do personagem %1',
-    args0: [{ type: 'field_input', name: 'OBJ', text: 'jogador' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     output: 'JSValue',
     colour: EVENT_C,
     tooltip:
@@ -568,8 +568,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_top_camera',
     message0: 'Câmera aérea (de cima) na cena %1 seguindo o objeto %2',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_input', name: 'FOLLOW', text: '' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'FOLLOW', text: '', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -581,7 +581,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_move_in_circle',
     message0: 'Mover %1 em círculo: raio %2 velocidade %3',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'carro' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
       { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
@@ -596,8 +596,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_distance_to',
     message0: 'a distância entre %1 e %2',
     args0: [
-      { type: 'field_input', name: 'A', text: 'carro' },
-      { type: 'field_input', name: 'B', text: 'rival' },
+      { type: 'field_name_picker', name: 'A', text: 'carro', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'B', text: 'rival', kind: 'object3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -607,8 +607,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_is_near',
     message0: 'o objeto %1 está perto de %2 (menos de %3)?',
     args0: [
-      { type: 'field_input', name: 'A', text: 'carro' },
-      { type: 'field_input', name: 'B', text: 'rival' },
+      { type: 'field_name_picker', name: 'A', text: 'carro', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'B', text: 'rival', kind: 'object3d' },
       { type: 'input_value', name: 'DIST', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -622,7 +622,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_create_race_scene',
     message0: 'Criar mundo de corrida no canvas %1 e guardar em %2',
     args0: [
-      { type: 'field_input', name: 'CANVAS', text: 'pista' },
+      { type: 'field_name_picker', name: 'CANVAS', text: 'pista', kind: 'canvas' },
       { type: 'field_input', name: 'NAME', text: 'mundo' },
     ],
     previousStatement: 'JSStmt',
@@ -634,7 +634,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_create_race_track',
     message0: 'No mundo %1, criar a pista de corrida',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'mundo' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: RACE_C,
@@ -644,7 +644,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_create_race_car',
     message0: 'Criar carro do jogador no mundo %1 cor %2 e guardar em %3',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
       { type: 'field_colour', name: 'COLOR', colour: '#ef2d56' },
       { type: 'field_input', name: 'NAME', text: 'carro' },
     ],
@@ -657,8 +657,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_race_step',
     message0: 'Dirigir o carro %1 no mundo %2 (a cada frame)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'carro' },
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -670,7 +670,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_race_control',
     message0: 'Carro %1: %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'carro' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'MODE',
@@ -689,7 +689,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_run_rivals',
     message0: 'No mundo %1, soltar e mover os carros rivais',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'mundo' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: RACE_C,
@@ -699,8 +699,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_race_reset',
     message0: 'Recomeçar a corrida: carro %1 no mundo %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'carro' },
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -711,8 +711,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_race_hit',
     message0: 'o carro %1 bateu num rival? (mundo %2)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'carro' },
-      { type: 'field_input', name: 'WORLD', text: 'mundo' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -722,7 +722,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_race_laps',
     message0: 'as voltas (pontuação) do carro %1',
-    args0: [{ type: 'field_input', name: 'OBJ', text: 'carro' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' }],
     output: 'JSValue',
     colour: EVENT_C,
     tooltip:
@@ -733,7 +733,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_fall',
     message0: 'fazer %1 cair girando',
-    args0: [{ type: 'field_input', name: 'OBJ', text: 'peca' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'peca', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -744,7 +744,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_slide_between',
     message0: 'Mover %1 no eixo %2 de %3 até %4 e voltar (velocidade %5)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'plataforma' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'plataforma', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'AXIS',
@@ -769,7 +769,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_spin',
     message0: 'Girar %1 no eixo %2 velocidade %3',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'objeto' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'AXIS',
@@ -794,7 +794,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_create_stack_scene',
     message0: 'Criar mundo de empilhar no canvas %1 e guardar em %2',
     args0: [
-      { type: 'field_input', name: 'CANVAS', text: 'jogo' },
+      { type: 'field_name_picker', name: 'CANVAS', text: 'jogo', kind: 'canvas' },
       { type: 'field_input', name: 'NAME', text: 'torre' },
     ],
     previousStatement: 'JSStmt',
@@ -806,7 +806,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_create_stack_tower',
     message0: 'No mundo %1, montar a base da torre',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'torre' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: STACK_C,
@@ -815,7 +815,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_stack_drop',
     message0: 'Soltar o bloco do mundo %1',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'torre' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: STACK_C,
@@ -825,7 +825,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_stack_step',
     message0: 'Atualizar a torre %1 (a cada frame)',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'torre' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: STACK_C,
@@ -835,7 +835,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_stack_reset',
     message0: 'Recomeçar a torre %1',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'torre' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: STACK_C,
@@ -844,7 +844,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_stack_score',
     message0: 'a pontuação (andares) da torre %1',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'torre' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     output: 'JSValue',
     colour: EVENT_C,
     tooltip: 'Quantos andares já foram empilhados (a pontuação). Use num "se" ou no placar.',
@@ -852,7 +852,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_stack_game_over',
     message0: 'a torre %1 caiu (fim de jogo)?',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'torre' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     output: 'JSValue',
     colour: EVENT_C,
     tooltip: 'Verdadeiro quando o jogador erra o encaixe. Use num "se" para mostrar o fim de jogo.',
@@ -872,7 +872,7 @@ export const gameThreeDBlocks = [
           ['z', 'z'],
         ],
       },
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -891,7 +891,7 @@ export const gameThreeDBlocks = [
           ['z', 'z'],
         ],
       },
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -900,7 +900,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_get_scale',
     message0: 'tamanho (escala) do objeto %1',
-    args0: [{ type: 'field_input', name: 'OBJ', text: 'jogador' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     output: 'JSValue',
     colour: EVENT_C,
     tooltip: 'Lê o tamanho atual do objeto (1 = normal).',
@@ -908,7 +908,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_dt',
     message0: 'tempo desde o último quadro (cena %1)',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'cena' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' }],
     output: 'JSValue',
     colour: EVENT_C,
     tooltip:
@@ -920,7 +920,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_move_by',
     message0: 'mover %1 em x %2 y %3 z %4 (relativo)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -936,7 +936,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_rotate_by',
     message0: 'girar %1 no eixo %2 em %3 (relativo)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'AXIS',
@@ -958,7 +958,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_move_towards',
     message0: 'suavizar %1 até x %2 y %3 z %4 (força %5)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -977,8 +977,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_look_at_object',
     message0: 'virar %1 para olhar o objeto %2',
     args0: [
-      { type: 'field_input', name: 'A', text: 'canhao' },
-      { type: 'field_input', name: 'B', text: 'alvo' },
+      { type: 'field_name_picker', name: 'A', text: 'canhao', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'B', text: 'alvo', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -989,7 +989,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_look_at_point',
     message0: 'virar %1 para o ponto x %2 y %3 z %4',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -1004,7 +1004,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_move_forward',
     message0: 'andar %1 para frente %2 (na direção que olha)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'DIST', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -1017,7 +1017,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_face_velocity',
     message0: 'girar %1 para a direção do movimento',
-    args0: [{ type: 'field_input', name: 'OBJ', text: 'jogador' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1027,8 +1027,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_angle_to',
     message0: 'ângulo de %1 para %2 (no chão)',
     args0: [
-      { type: 'field_input', name: 'A', text: 'jogador' },
-      { type: 'field_input', name: 'B', text: 'alvo' },
+      { type: 'field_name_picker', name: 'A', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'B', text: 'alvo', kind: 'object3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -1039,7 +1039,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_pick_at_mouse',
     message0: 'objeto sob o mouse na cena %1',
-    args0: [{ type: 'field_input', name: 'WORLD', text: 'cena' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' }],
     output: 'JSValue',
     colour: EVENT_C,
     tooltip:
@@ -1049,8 +1049,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_pointer_over',
     message0: 'o mouse está sobre o objeto %1 (cena %2)?',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'botao' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'botao', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -1060,8 +1060,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_aim_ahead',
     message0: 'objeto que %1 está mirando (cena %2, alcance %3)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'DIST', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -1074,8 +1074,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_on_ground',
     message0: 'tem chão sob %1 (cena %2)?',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -1086,8 +1086,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_ground_height',
     message0: 'altura do chão sob %1 (cena %2)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
     ],
     output: 'JSValue',
     colour: EVENT_C,
@@ -1099,7 +1099,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_body',
     message0: 'dar corpo físico a %1 (gravidade %2)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'GRAVITY', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -1112,8 +1112,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_step_body',
     message0: 'mover %1 com física no mundo %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1124,7 +1124,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_set_solid',
     message0: 'marcar %1 como sólido (não atravessa)',
-    args0: [{ type: 'field_input', name: 'OBJ', text: 'chao' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'chao', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1134,8 +1134,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_platformer_controls',
     message0: 'controle de plataforma para %1 no mundo %2 (velocidade %3, pulo %4)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
       { type: 'input_value', name: 'JUMP', check: 'JSValue' },
     ],
@@ -1150,8 +1150,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_fps_controls',
     message0: 'controle de primeira pessoa para %1 no mundo %2 (velocidade %3)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -1165,8 +1165,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_resolve_collision',
     message0: 'empurrar %1 para fora de %2',
     args0: [
-      { type: 'field_input', name: 'A', text: 'jogador' },
-      { type: 'field_input', name: 'B', text: 'parede' },
+      { type: 'field_name_picker', name: 'A', text: 'jogador', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'B', text: 'parede', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1179,8 +1179,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_fps_camera',
     message0: 'câmera em primeira pessoa na cena %1 presa a %2',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1192,8 +1192,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_orbit_camera',
     message0: 'câmera orbital na cena %1 olhando para %2',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1204,8 +1204,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_third_person_camera',
     message0: 'câmera em terceira pessoa na cena %1 atrás de %2 (distância %3, altura %4)',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'input_value', name: 'DIST', check: 'JSValue' },
       { type: 'input_value', name: 'HEIGHT', check: 'JSValue' },
     ],
@@ -1220,8 +1220,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_camera_look_at',
     message0: 'a câmera da cena %1 olha para %2',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
-      { type: 'field_input', name: 'OBJ', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1232,7 +1232,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_fov',
     message0: 'campo de visão da câmera da cena %1 = %2 graus',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'DEG', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -1248,7 +1248,7 @@ export const gameThreeDBlocks = [
     message0: 'Criar cilindro %1 na cena %2 (raio %3, altura %4, cor %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'cilindro' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
       { type: 'input_value', name: 'HEIGHT', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#22d3ee' },
@@ -1263,7 +1263,7 @@ export const gameThreeDBlocks = [
     message0: 'Criar cone %1 na cena %2 (raio %3, altura %4, cor %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'cone' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
       { type: 'input_value', name: 'HEIGHT', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#f59e0b' },
@@ -1278,7 +1278,7 @@ export const gameThreeDBlocks = [
     message0: 'Criar plano (chão) %1 na cena %2 (largura %3, profundidade %4, cor %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'chao' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
       { type: 'input_value', name: 'D', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#67c240' },
@@ -1294,7 +1294,7 @@ export const gameThreeDBlocks = [
     message0: 'Criar rosca (anel) %1 na cena %2 (raio %3, grossura %4, cor %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'anel' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
       { type: 'input_value', name: 'TUBE', check: 'JSValue' },
       { type: 'field_colour', name: 'COLOR', colour: '#a78bfa' },
@@ -1309,7 +1309,7 @@ export const gameThreeDBlocks = [
     message0: 'Criar modelo %1 na cena %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'modelo' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1320,8 +1320,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_add_to_model',
     message0: 'Adicionar %1 ao modelo %2',
     args0: [
-      { type: 'field_input', name: 'PART', text: 'peca' },
-      { type: 'field_input', name: 'MODEL', text: 'modelo' },
+      { type: 'field_name_picker', name: 'PART', text: 'peca', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'MODEL', text: 'modelo', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1340,7 +1340,7 @@ export const gameThreeDBlocks = [
           ['Esconder', 'hide'],
         ],
       },
-      { type: 'field_input', name: 'OBJ', text: 'objeto' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1351,8 +1351,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_remove_object',
     message0: 'Remover %1 da cena %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'objeto' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1363,7 +1363,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_color',
     message0: 'Pintar %1 de %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'objeto' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       { type: 'field_colour', name: 'COLOR', colour: '#ff5577' },
     ],
     previousStatement: 'JSStmt',
@@ -1375,7 +1375,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_opacity',
     message0: 'Transparência de %1 = %2 (0 a 1)',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'objeto' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       { type: 'input_value', name: 'OPACITY', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -1388,7 +1388,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_material',
     message0: 'Deixar %1 com material %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'objeto' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'KIND',
@@ -1410,8 +1410,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_texture',
     message0: 'Vestir %1 com a imagem %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'objeto' },
-      { type: 'field_input', name: 'ASSET', text: 'textura' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
+      { type: 'field_asset_picker', name: 'ASSET', text: 'textura' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1424,7 +1424,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_add_ambient_light',
     message0: 'Adicionar luz ambiente na cena %1 (cor %2, força %3)',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'field_colour', name: 'COLOR', colour: '#ffffff' },
       { type: 'input_value', name: 'INTENSITY', check: 'JSValue' },
     ],
@@ -1439,7 +1439,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_add_sun_light',
     message0: 'Adicionar luz do sol na cena %1 (cor %2, força %3)',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'field_colour', name: 'COLOR', colour: '#fff8e1' },
       { type: 'input_value', name: 'INTENSITY', check: 'JSValue' },
     ],
@@ -1453,7 +1453,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_add_point_light',
     message0: 'Adicionar luz pontual na cena %1 (cor %2, força %3) em x %4 y %5 z %6',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'field_colour', name: 'COLOR', colour: '#ffd27f' },
       { type: 'input_value', name: 'INTENSITY', check: 'JSValue' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1470,7 +1470,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_fog',
     message0: 'Neblina na cena %1 (cor %2, perto %3, longe %4)',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'field_colour', name: 'COLOR', colour: '#9ca3af' },
       { type: 'input_value', name: 'NEAR', check: 'JSValue' },
       { type: 'input_value', name: 'FAR', check: 'JSValue' },
@@ -1485,7 +1485,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_set_sky',
     message0: 'Céu degradê na cena %1 (topo %2, horizonte %3)',
     args0: [
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
       { type: 'field_colour', name: 'TOP', colour: '#1e3a8a' },
       { type: 'field_colour', name: 'BOTTOM', colour: '#93c5fd' },
     ],
@@ -1506,7 +1506,7 @@ export const gameThreeDBlocks = [
           ['Desligar', 'off'],
         ],
       },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1520,7 +1520,7 @@ export const gameThreeDBlocks = [
     message0: 'Criar enxame %1 na cena %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'enxame' },
-      { type: 'field_input', name: 'WORLD', text: 'cena' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1531,8 +1531,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_spawn_in_swarm',
     message0: 'Soltar cópia de %1 no enxame %2 em x %3 y %4 z %5',
     args0: [
-      { type: 'field_input', name: 'ORIGINAL', text: 'modelo' },
-      { type: 'field_input', name: 'SWARM', text: 'enxame' },
+      { type: 'field_name_picker', name: 'ORIGINAL', text: 'modelo', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'group3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -1548,7 +1548,7 @@ export const gameThreeDBlocks = [
     message0: 'Para cada %1 do enxame %2 %3',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
-      { type: 'field_input', name: 'SWARM', text: 'enxame' },
+      { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'group3d' },
       { type: 'input_statement', name: 'BODY' },
     ],
     previousStatement: 'JSStmt',
@@ -1560,8 +1560,8 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_remove_from_swarm',
     message0: 'Tirar %1 do enxame %2',
     args0: [
-      { type: 'field_input', name: 'ITEM', text: 'item' },
-      { type: 'field_input', name: 'SWARM', text: 'enxame' },
+      { type: 'field_name_picker', name: 'ITEM', text: 'item', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'group3d' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1572,7 +1572,7 @@ export const gameThreeDBlocks = [
     type: 'sz_g3d_prune_swarm',
     message0: 'No enxame %1, tirar o que saiu de %2 a %3 no eixo %4',
     args0: [
-      { type: 'field_input', name: 'SWARM', text: 'enxame' },
+      { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'group3d' },
       { type: 'input_value', name: 'MIN', check: 'JSValue' },
       { type: 'input_value', name: 'MAX', check: 'JSValue' },
       {

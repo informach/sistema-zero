@@ -2,15 +2,19 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { gameTwoDBlocks } from '../../../official-extensions/game-2d/blocks'
+import { gameThreeDBlocks } from '../../../official-extensions/game-3d/blocks'
 import { registerExtensionBlocks } from '../../blocks'
 import { ensureBlocklyInitialized } from '../../setup'
 import {
   collectCanvasIds,
   collectClassNames,
   collectFunctionNames,
+  collectGroups3d,
   collectGroupsAndLists,
   collectMethodNames,
+  collectObjects3d,
   collectPropertyNames,
+  collectScenes3d,
   collectScopedVariableNames,
   collectSpritesheets,
   collectTilemaps,
@@ -22,6 +26,7 @@ describe('FieldNamePicker', () => {
   beforeAll(() => {
     ensureBlocklyInitialized()
     registerExtensionBlocks(gameTwoDBlocks)
+    registerExtensionBlocks(gameThreeDBlocks)
   })
 
   describe('collectVariables — nomes das variáveis já criadas', () => {
@@ -296,6 +301,80 @@ describe('FieldNamePicker', () => {
     it('um bloco de desenho consome o ctx via seletor de variável', () => {
       const b = new Blockly.Workspace().newBlock('sz_canvas_clear')
       expect(kindOf(b, 'CTX')).toBe('variable')
+    })
+  })
+
+  describe('Jogo 2D (folha de quadros + mapa de tiles)', () => {
+    const kindOf = (block: Blockly.Block, field: string): string | undefined => {
+      const f = block.getField(field)
+      return f instanceof FieldNamePicker ? f.kind : undefined
+    }
+
+    it('collectSpritesheets / collectTilemaps listam os nomes declarados', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_g2d_load_spritesheet').setFieldValue('correr', 'NAME')
+      ws.newBlock('sz_g2d_create_tilemap').setFieldValue('fase1', 'NAME')
+      expect(collectSpritesheets(ws)).toEqual(['correr'])
+      expect(collectTilemaps(ws)).toEqual(['fase1'])
+    })
+
+    it('animar sprite consome a folha (SHEET = spritesheet); NAME que declara segue texto', () => {
+      const ws = new Blockly.Workspace()
+      const decl = ws.newBlock('sz_g2d_load_spritesheet')
+      expect(decl.getField('NAME')).not.toBeInstanceOf(FieldNamePicker)
+      expect(kindOf(ws.newBlock('sz_g2d_animate_sprite'), 'SHEET')).toBe('spritesheet')
+    })
+
+    it('desenhar/colidir mapa consomem o mapa (MAP = tilemap)', () => {
+      const ws = new Blockly.Workspace()
+      expect(kindOf(ws.newBlock('sz_g2d_draw_tilemap'), 'MAP')).toBe('tilemap')
+      expect(kindOf(ws.newBlock('sz_g2d_tilemap_collide'), 'MAP')).toBe('tilemap')
+    })
+  })
+
+  describe('Jogo 3D (cena / objeto / grupo + textura)', () => {
+    const kindOf = (block: Blockly.Block, field: string): string | undefined => {
+      const f = block.getField(field)
+      return f instanceof FieldNamePicker ? f.kind : undefined
+    }
+
+    it('collectScenes3d / collectObjects3d / collectGroups3d listam os nomes declarados', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_g3d_create_scene').setFieldValue('mundo', 'NAME')
+      ws.newBlock('sz_g3d_create_box').setFieldValue('caixa', 'NAME')
+      ws.newBlock('sz_g3d_create_model').setFieldValue('nave', 'NAME')
+      ws.newBlock('sz_g3d_create_group').setFieldValue('inimigos', 'NAME')
+      ws.newBlock('sz_g3d_create_swarm').setFieldValue('estrelas', 'NAME')
+
+      expect(collectScenes3d(ws)).toEqual(['mundo'])
+      expect(collectObjects3d(ws)).toEqual(['caixa', 'nave'])
+      expect(collectGroups3d(ws)).toEqual(['inimigos', 'estrelas'])
+    })
+
+    it('WORLD = scene3d; NAME que declara a cena segue texto', () => {
+      const ws = new Blockly.Workspace()
+      expect(ws.newBlock('sz_g3d_create_scene').getField('NAME')).not.toBeInstanceOf(
+        FieldNamePicker,
+      )
+      expect(kindOf(ws.newBlock('sz_g3d_create_box'), 'WORLD')).toBe('scene3d')
+    })
+
+    it('OBJ/A/B = object3d; GROUP = group3d; textura ASSET = seletor de imagem', () => {
+      const ws = new Blockly.Workspace()
+      expect(kindOf(ws.newBlock('sz_g3d_set_position'), 'OBJ')).toBe('object3d')
+      expect(kindOf(ws.newBlock('sz_g3d_run_enemies'), 'GROUP')).toBe('group3d')
+      // A textura vira o MESMO seletor de imagem já usado (field_asset_picker), não um FieldNamePicker.
+      const tex = ws.newBlock('sz_g3d_set_texture')
+      expect(tex.getField('ASSET')).not.toBeInstanceOf(FieldNamePicker)
+      expect(kindOf(tex, 'OBJ')).toBe('object3d')
+    })
+
+    it('o "item" do para-cada do enxame DECLARA (texto); tirar-do-enxame CONSOME (object3d)', () => {
+      const ws = new Blockly.Workspace()
+      expect(ws.newBlock('sz_g3d_for_each_swarm').getField('ITEM')).not.toBeInstanceOf(
+        FieldNamePicker,
+      )
+      expect(kindOf(ws.newBlock('sz_g3d_remove_from_swarm'), 'ITEM')).toBe('object3d')
     })
   })
 

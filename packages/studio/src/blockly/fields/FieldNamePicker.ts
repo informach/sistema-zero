@@ -23,7 +23,11 @@ import {
  *  - `method`   → métodos de classe, mesma lógica de escopo do `property`;
  *  - `canvas`   → id de uma tela de desenho (`sz_html_canvas`);
  *  - `spritesheet` → folha de quadros do Jogo 2D (`sz_g2d_load_spritesheet`);
- *  - `tilemap`  → mapa de tiles do Jogo 2D (`sz_g2d_create_tilemap`).
+ *  - `tilemap`  → mapa de tiles do Jogo 2D (`sz_g2d_create_tilemap`);
+ *  - `scene3d`  → cena/mundo do Jogo 3D (blocos `criar cena…`);
+ *  - `object3d` → objeto/malha do Jogo 3D (caixa/bola/modelo…); tem locais de laço
+ *                 (o "item" do "para cada no enxame");
+ *  - `group3d`  → grupo/enxame do Jogo 3D (`criar grupo`/`criar enxame`).
  *
  * Estende `FieldTextInput` (NÃO `FieldDropdown`), então o VALOR continua sendo uma
  * string — IR, round-trip, serialização e allowlist ficam IDÊNTICOS a um
@@ -44,6 +48,9 @@ export type NameKind =
   | 'canvas'
   | 'spritesheet'
   | 'tilemap'
+  | 'scene3d'
+  | 'object3d'
+  | 'group3d'
 
 const NAME_KINDS: readonly NameKind[] = [
   'variable',
@@ -55,6 +62,9 @@ const NAME_KINDS: readonly NameKind[] = [
   'canvas',
   'spritesheet',
   'tilemap',
+  'scene3d',
+  'object3d',
+  'group3d',
 ]
 
 /** Coage o `kind` cru da definição do bloco para um `NameKind` válido (default variável). */
@@ -115,6 +125,35 @@ const CANVAS_DECL_BLOCKS: Record<string, string[]> = { sz_html_canvas: ['ID'] }
 /** Folhas de quadros / mapas de tiles do Jogo 2D (fonte dos seletores SHEET/MAP). */
 const SPRITESHEET_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_load_spritesheet: ['NAME'] }
 const TILEMAP_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_create_tilemap: ['NAME'] }
+
+/** Cenas/mundos do Jogo 3D (fonte do seletor WORLD). */
+const SCENE3D_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g3d_create_scene: ['NAME'],
+  sz_g3d_create_fullscreen_scene: ['NAME'],
+  sz_g3d_create_crossing_scene: ['NAME'],
+  sz_g3d_create_race_scene: ['NAME'],
+  sz_g3d_create_stack_scene: ['NAME'],
+}
+/** Objetos/malhas do Jogo 3D (fonte dos seletores OBJ/A/B/FOLLOW/GROUND/MODEL/PART/ORIGINAL). */
+const OBJECT3D_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g3d_create_box: ['NAME'],
+  sz_g3d_create_sphere: ['NAME'],
+  sz_g3d_create_block: ['NAME'],
+  sz_g3d_create_crosser: ['NAME'],
+  sz_g3d_create_race_car: ['NAME'],
+  sz_g3d_create_cylinder: ['NAME'],
+  sz_g3d_create_cone: ['NAME'],
+  sz_g3d_create_plane: ['NAME'],
+  sz_g3d_create_torus: ['NAME'],
+  sz_g3d_create_model: ['NAME'],
+}
+/** O "item" do "para cada no enxame" é um nome LOCAL de objeto 3D (escopo por ancestral). */
+const OBJECT3D_LOOP_BINDERS: Record<string, string[]> = { sz_g3d_for_each_swarm: ['ITEM'] }
+/** Grupos/enxames do Jogo 3D (fonte dos seletores GROUP/SWARM). */
+const GROUP3D_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g3d_create_group: ['NAME'],
+  sz_g3d_create_swarm: ['NAME'],
+}
 /** Métodos declarados (fallback global do seletor de método, quando não há classe em contexto). */
 const METHOD_DECL_BLOCKS: Record<string, string[]> = { sz_js_class_method: ['NAME'] }
 /**
@@ -216,6 +255,28 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do mapa de tiles',
     empty: 'Nenhum mapa de tiles ainda — crie um ("Criar mapa de tiles") ou digite o nome abaixo.',
   },
+  scene3d: {
+    icon: '🌐',
+    placeholder: 'nome da cena / mundo',
+    empty: 'Nenhuma cena 3D ainda — crie uma ("Criar cena/mundo…") ou digite o nome abaixo.',
+  },
+  object3d: {
+    icon: '🧊',
+    placeholder: 'nome do objeto 3D',
+    empty: 'Nenhum objeto 3D ainda — crie um (caixa/bola/modelo…) ou digite o nome abaixo.',
+  },
+  group3d: {
+    icon: '👾',
+    placeholder: 'nome do grupo / enxame',
+    empty:
+      'Nenhum grupo ou enxame 3D ainda — crie um ("Criar grupo/enxame") ou digite o nome abaixo.',
+  },
+}
+
+/** Laços que introduzem nomes LOCAIS, por `kind` de seletor (escopo por ancestral). */
+const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, Record<string, string[]>>> = {
+  variable: VARIABLE_LOOP_BINDERS,
+  object3d: OBJECT3D_LOOP_BINDERS,
 }
 
 /** Anda o workspace e coleta os nomes declarados nos campos do registro, sem repetir. */
@@ -246,16 +307,20 @@ export function collectVariables(workspace: Blockly.Workspace | null | undefined
 }
 
 /**
- * Nomes de variável LOCAIS em escopo no ponto do campo: sobe pelos blocos que
- * ENVOLVEM o bloco do campo (`getSurroundParent`) e coleta os nomes dados por laços
- * (o "i" do contar, o "item" do para-cada…). Só aparecem dentro do laço que os declara.
+ * Nomes LOCAIS em escopo no ponto do campo: sobe pelos blocos que ENVOLVEM o bloco do
+ * campo (`getSurroundParent`) e coleta os nomes dados pelos laços do registro `binders`
+ * (o "i" do contar, o "item" do para-cada / do enxame…). Só aparecem dentro do laço
+ * que os declara.
  */
-export function collectScopedVariableNames(block: Blockly.Block | null | undefined): string[] {
+function collectScopedNames(
+  block: Blockly.Block | null | undefined,
+  binders: Record<string, string[]>,
+): string[] {
   const seen = new Set<string>()
   const ordered: string[] = []
   let cur = block?.getSurroundParent() ?? null
   while (cur) {
-    const fields = VARIABLE_LOOP_BINDERS[cur.type]
+    const fields = binders[cur.type]
     if (fields) {
       for (const f of fields) {
         if (!cur.getField(f)) continue
@@ -269,6 +334,11 @@ export function collectScopedVariableNames(block: Blockly.Block | null | undefin
     cur = cur.getSurroundParent() ?? null
   }
   return ordered
+}
+
+/** Nomes de variável LOCAIS (o "i" do contar, o "item" do para-cada…) em escopo. */
+export function collectScopedVariableNames(block: Blockly.Block | null | undefined): string[] {
+  return collectScopedNames(block, VARIABLE_LOOP_BINDERS)
 }
 
 /**
@@ -328,6 +398,21 @@ export function collectSpritesheets(workspace: Blockly.Workspace | null | undefi
 /** Nomes dos mapas de tiles (`sz_g2d_create_tilemap`) declarados. */
 export function collectTilemaps(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, TILEMAP_DECL_BLOCKS)
+}
+
+/** Nomes das cenas/mundos 3D declarados. */
+export function collectScenes3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, SCENE3D_DECL_BLOCKS)
+}
+
+/** Nomes dos objetos/malhas 3D declarados. */
+export function collectObjects3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, OBJECT3D_DECL_BLOCKS)
+}
+
+/** Nomes dos grupos/enxames 3D declarados. */
+export function collectGroups3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, GROUP3D_DECL_BLOCKS)
 }
 
 /**
@@ -431,6 +516,12 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectSpritesheets(ws)
       case 'tilemap':
         return collectTilemaps(ws)
+      case 'scene3d':
+        return collectScenes3d(ws)
+      case 'object3d':
+        return collectObjects3d(ws)
+      case 'group3d':
+        return collectGroups3d(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)
@@ -454,12 +545,12 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
     const ws = block?.workspace ?? null
     const globals = this.collectGlobals(block, ws)
     const globalSet = new Set(globals)
-    // Variáveis LOCAIS em escopo (nome dado por um laço que ENVOLVE este campo). Só o
-    // seletor de variável tem locais — grupos/listas/OOP não têm binder de laço.
-    const locals =
-      this.kind === 'variable'
-        ? collectScopedVariableNames(block).filter((n) => !globalSet.has(n))
-        : []
+    // Nomes LOCAIS em escopo (dados por um laço que ENVOLVE este campo). Só os kinds
+    // com binder de laço têm locais (variável e objeto 3D — ver LOOP_BINDERS_BY_KIND).
+    const binders = LOOP_BINDERS_BY_KIND[this.kind]
+    const locals = binders
+      ? collectScopedNames(block, binders).filter((n) => !globalSet.has(n))
+      : []
     const ui = KIND_UI[this.kind]
 
     const content = Blockly.DropDownDiv.getContentDiv()
