@@ -3,12 +3,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 
-/** Largura-alvo das texturas (px) — legível (inclusive em tela cheia) sem estourar a memória. */
-const TEXTURE_WIDTH = 1536
-/** Folhas (sheets) ao redor da atual com textura garantida. */
-const RENDER_WINDOW = 2
-/** Folhas além das quais a textura é descartada (evita thrash no limiar). */
-const KEEP_WINDOW = 3
+/**
+ * Largura-alvo das texturas (px) — legível (inclusive em tela cheia) sem estourar a
+ * memória de GPU. É CIENTE DA DENSIDADE DA TELA: em telas de alta densidade (retina/2×)
+ * o WebGL pinta o canvas a 2×, então uma textura de 1536px fica MOLE (o PDF é vetorial,
+ * sempre nítido) — subimos p/ 2048px (~248 DPI numa A4, vs. ~186 antes) para o texto
+ * ficar nítido; tela comum (1×) fica em 1536 (memória enxuta). Cap em 2048 p/ não
+ * explodir a GPU (2048×~2896×4 ≈ 24 MB/página; a janela deslizante abaixo limita o total).
+ */
+const TEXTURE_WIDTH = Math.min(
+  2048,
+  Math.round(
+    1536 * (typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1),
+  ),
+)
+/** Folhas (sheets) ao redor da atual com textura garantida (±1 cobre a virada de 1 folha). */
+const RENDER_WINDOW = 1
+/** Folhas além das quais a textura é descartada (evita thrash no limiar; > RENDER_WINDOW). */
+const KEEP_WINDOW = 2
 
 type PdfStatus = 'loading' | 'ready' | 'error'
 
@@ -52,7 +64,7 @@ function pagesForWindow(center: number, w: number, total: number): number[] {
 /**
  * Baixa o PDF (rota autenticada do BFF — já vem com a marca d'água do aluno),
  * renderiza páginas em canvases via pdf.js e as expõe como texturas three.js,
- * com janela deslizante (folha atual ±2) + dispose das distantes — PDFs grandes
+ * com janela deslizante (folha atual ±1) + dispose das distantes — PDFs grandes
  * não explodem a memória de GPU.
  */
 export function usePdfPages(pdfUrl: string): PdfPages {
