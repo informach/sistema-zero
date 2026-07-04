@@ -5,8 +5,15 @@ import { gameTwoDBlocks } from '../../../official-extensions/game-2d/blocks'
 import { registerExtensionBlocks } from '../../blocks'
 import { ensureBlocklyInitialized } from '../../setup'
 import {
+  collectCanvasIds,
+  collectClassNames,
+  collectFunctionNames,
   collectGroupsAndLists,
+  collectMethodNames,
+  collectPropertyNames,
   collectScopedVariableNames,
+  collectSpritesheets,
+  collectTilemaps,
   collectVariables,
   FieldNamePicker,
 } from '../FieldNamePicker'
@@ -49,6 +56,15 @@ describe('FieldNamePicker', () => {
       ws.newBlock('sz_g2d_create_city').setFieldValue('cidade', 'NAME')
 
       expect(collectVariables(ws)).toEqual(['jogo', 'cidade'])
+    })
+
+    it('reconhece instâncias de objeto (criar pessoa = novo Pessoa → VARNAME)', () => {
+      const ws = new Blockly.Workspace()
+      const novo = ws.newBlock('sz_js_new_var')
+      novo.setFieldValue('joao', 'VARNAME')
+      novo.setFieldValue('Pessoa', 'CLASS')
+
+      expect(collectVariables(ws)).toEqual(['joao'])
     })
 
     it('não repete o mesmo nome e ignora blocos que só CONSOMEM a variável', () => {
@@ -170,6 +186,116 @@ describe('FieldNamePicker', () => {
       expect((field as FieldNamePicker).kind).toBe('variable')
       block.setFieldValue('placar', 'NAME')
       expect(block.getFieldValue('NAME')).toBe('placar')
+    })
+  })
+
+  describe('collectClassNames / collectFunctionNames / collectMethodNames / collectPropertyNames', () => {
+    it('lista os nomes de classe declarados', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_js_class').setFieldValue('Pessoa', 'NAME')
+      ws.newBlock('sz_js_class').setFieldValue('Carro', 'NAME')
+      expect(collectClassNames(ws)).toEqual(['Pessoa', 'Carro'])
+    })
+
+    it('lista os nomes de função declarados', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_js_function').setFieldValue('fazerAlgo', 'NAME')
+      expect(collectFunctionNames(ws)).toEqual(['fazerAlgo'])
+    })
+
+    it('lista os métodos de todas as classes (fallback global)', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_js_class_method').setFieldValue('falar', 'NAME')
+      ws.newBlock('sz_js_class_method').setFieldValue('andar', 'NAME')
+      expect(collectMethodNames(ws)).toEqual(['falar', 'andar'])
+    })
+
+    it('lista propriedades escritas (this.x/obj.x) + chaves de objeto literal', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_js_set_this_prop').setFieldValue('nome', 'NAME')
+      ws.newBlock('sz_js_member_set').setFieldValue('x', 'NAME')
+      // sz_val_object nasce com uma chave KEY0 (default) — renomeamos para 'cor'.
+      ws.newBlock('sz_val_object').setFieldValue('cor', 'KEY0')
+      expect(collectPropertyNames(ws)).toEqual(['nome', 'x', 'cor'])
+    })
+  })
+
+  describe('fiação dos blocos de OOP (o consumidor certo vira picker com o kind certo)', () => {
+    const kindOf = (block: Blockly.Block, field: string): string | undefined => {
+      const f = block.getField(field)
+      return f instanceof FieldNamePicker ? f.kind : undefined
+    }
+
+    it('classe: sz_js_new_var.CLASS = class; VARNAME segue texto (declara)', () => {
+      const b = new Blockly.Workspace().newBlock('sz_js_new_var')
+      expect(kindOf(b, 'CLASS')).toBe('class')
+      expect(b.getField('VARNAME')).not.toBeInstanceOf(FieldNamePicker)
+    })
+
+    it('método/objeto: sz_js_call_method.OBJ = variable, METHOD = method', () => {
+      const b = new Blockly.Workspace().newBlock('sz_js_call_method')
+      expect(kindOf(b, 'OBJ')).toBe('variable')
+      expect(kindOf(b, 'METHOD')).toBe('method')
+    })
+
+    it('propriedade: sz_val_get_prop.NAME = property, OBJ = variable', () => {
+      const b = new Blockly.Workspace().newBlock('sz_val_get_prop')
+      expect(kindOf(b, 'NAME')).toBe('property')
+      expect(kindOf(b, 'OBJ')).toBe('variable')
+    })
+
+    it('propriedade "minha": sz_val_this_prop.NAME = property', () => {
+      const b = new Blockly.Workspace().newBlock('sz_val_this_prop')
+      expect(kindOf(b, 'NAME')).toBe('property')
+    })
+
+    it('objeto (tomada de valor): sz_val_member_get.NAME = property', () => {
+      const b = new Blockly.Workspace().newBlock('sz_val_member_get')
+      expect(kindOf(b, 'NAME')).toBe('property')
+    })
+
+    it('função: sz_js_call_function.NAME = function', () => {
+      const b = new Blockly.Workspace().newBlock('sz_js_call_function')
+      expect(kindOf(b, 'NAME')).toBe('function')
+    })
+
+    it('herança: o campo SUPER do extends é um picker de classe', () => {
+      const cls = new Blockly.Workspace().newBlock('sz_js_class') as Blockly.Block & {
+        addExtends_(): void
+      }
+      cls.addExtends_()
+      expect(kindOf(cls, 'SUPER')).toBe('class')
+    })
+  })
+
+  describe('Canvas (contexto de desenho + id da tela)', () => {
+    const kindOf = (block: Blockly.Block, field: string): string | undefined => {
+      const f = block.getField(field)
+      return f instanceof FieldNamePicker ? f.kind : undefined
+    }
+
+    it('collectCanvasIds lista os ids das telas de desenho criadas', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_html_canvas').setFieldValue('tela', 'ID')
+      ws.newBlock('sz_html_canvas').setFieldValue('placar', 'ID')
+      expect(collectCanvasIds(ws)).toEqual(['tela', 'placar'])
+    })
+
+    it('o ctx guardado pelo Pegar canvas entra na lista de variáveis', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_canvas_setup').setFieldValue('pincel', 'CTX')
+      expect(collectVariables(ws)).toEqual(['pincel'])
+    })
+
+    it('sz_canvas_setup: CANVAS_ID = canvas (seletor); CTX segue texto (declara)', () => {
+      const b = new Blockly.Workspace().newBlock('sz_canvas_setup')
+      expect(kindOf(b, 'CANVAS_ID')).toBe('canvas')
+      expect(b.getField('CTX')).not.toBeInstanceOf(FieldNamePicker)
+    })
+
+    it('um bloco de desenho consome o ctx via seletor de variável', () => {
+      const b = new Blockly.Workspace().newBlock('sz_canvas_clear')
+      expect(kindOf(b, 'CTX')).toBe('variable')
     })
   })
 

@@ -84,7 +84,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     message0: 'criar %1 = novo %2',
     args0: [
       { type: 'field_input', name: 'VARNAME', text: 'pessoa' },
-      { type: 'field_input', name: 'CLASS', text: 'Pessoa' },
+      { type: 'field_name_picker', name: 'CLASS', text: 'Pessoa', kind: 'class' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -98,8 +98,8 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_call_method',
     message0: 'no objeto %1 chamar método %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'pessoa' },
-      { type: 'field_input', name: 'METHOD', text: 'falar' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'pessoa', kind: 'variable' },
+      { type: 'field_name_picker', name: 'METHOD', text: 'falar', kind: 'method' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -112,8 +112,8 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     type: 'sz_val_call_method',
     message0: 'no objeto %1 chamar método %2',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'pessoa' },
-      { type: 'field_input', name: 'METHOD', text: 'calcular' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'pessoa', kind: 'variable' },
+      { type: 'field_name_picker', name: 'METHOD', text: 'calcular', kind: 'method' },
     ],
     inputsInline: true,
     output: 'JSValue',
@@ -125,7 +125,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_set_this_prop',
     message0: 'definir minha propriedade %1 = %2',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'nome' },
+      { type: 'field_name_picker', name: 'NAME', text: 'nome', kind: 'property' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -138,8 +138,8 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_set_prop',
     message0: 'no objeto %1 definir propriedade %2 = %3',
     args0: [
-      { type: 'field_input', name: 'OBJ', text: 'pessoa' },
-      { type: 'field_input', name: 'NAME', text: 'nome' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'pessoa', kind: 'variable' },
+      { type: 'field_name_picker', name: 'NAME', text: 'nome', kind: 'property' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -151,7 +151,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_this_prop',
     message0: 'minha propriedade %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'nome' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'nome', kind: 'property' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Lê uma propriedade do próprio objeto, dentro de um método.',
@@ -160,8 +160,8 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     type: 'sz_val_get_prop',
     message0: 'propriedade %1 do objeto %2',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'nome' },
-      { type: 'field_input', name: 'OBJ', text: 'pessoa' },
+      { type: 'field_name_picker', name: 'NAME', text: 'nome', kind: 'property' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'pessoa', kind: 'variable' },
     ],
     output: 'JSValue',
     colour: C,

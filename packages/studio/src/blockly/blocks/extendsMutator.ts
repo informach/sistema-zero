@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { FieldNamePicker } from '../fields/FieldNamePicker'
 import { withMutation } from './mutatorEvents'
 
 /**
@@ -70,14 +71,16 @@ const EXTENDS_MUTATOR_MIXIN = {
     const input = this.appendDummyInput(EXT_INPUT)
     if (this.hasExtends_) {
       input.appendField('estende')
-      input.appendField(
-        new Blockly.FieldTextInput(this.superName_ || 'Base', (value: string) => {
-          const clean = sanitize(value, this.superName_ || 'Base')
-          this.superName_ = clean
-          return clean
-        }),
-        'SUPER',
-      )
+      // Seletor de CLASSE (escolhe a classe-mãe entre as já criadas) preservando o
+      // saneamento do nome via validador (a classe do campo é FieldNamePicker, mas o
+      // valor segue sendo string — round-trip idêntico ao FieldTextInput).
+      const superField = new FieldNamePicker(this.superName_ || 'Base', 'class')
+      superField.setValidator((value: string) => {
+        const clean = sanitize(value, this.superName_ || 'Base')
+        this.superName_ = clean
+        return clean
+      })
+      input.appendField(superField, 'SUPER')
       input.appendField(
         new Blockly.FieldImage(MINUS_ICON, 15, 15, 'remover herança', () => {
           this.removeExtends_()
