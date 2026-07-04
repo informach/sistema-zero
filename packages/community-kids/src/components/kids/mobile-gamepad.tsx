@@ -425,7 +425,7 @@ export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadP
     minHeight: 0,
     alignSelf: 'center',
     width: landscape
-      ? 'min(100% - 20px, calc((100dvh - 140px) * 5 / 3 + 380px))'
+      ? 'min(100% - 20px, calc((100dvh - 152px) * 5 / 3 + 380px))'
       : 'min(100% - 20px, 640px)',
     marginBottom: 10,
     background: C.bodyGrad,
@@ -473,7 +473,7 @@ export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadP
             <div
               style={{
                 ...screenWrap,
-                width: 'min(100%, calc((100dvh - 140px) * 5 / 3))',
+                width: 'min(100%, calc((100dvh - 152px) * 5 / 3))',
                 aspectRatio: '5/3',
               }}
             >
