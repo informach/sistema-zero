@@ -21,6 +21,29 @@ import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
 
+// "Compartilhar" da AULA = UMA vez só. O projeto da aula tem começo/meio/fim: a
+// criança termina, publica no Mural, pronto — não fica republicando (cada republish
+// hoje cria um post NOVO). Trava persistida LOCAL por (perfil, bloco) via a chave do
+// projeto (sobrevive a refresh). O Estúdio Completo (projeto livre) NÃO passa por
+// aqui — lá o compartilhar segue ilimitado. Guardado contra ambiente sem localStorage.
+const SHARED_FLAG_PREFIX = 'sz:studio:shared:'
+function readSharedFlag(projectId: string): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    return window.localStorage.getItem(SHARED_FLAG_PREFIX + projectId) === '1'
+  } catch {
+    return false
+  }
+}
+function writeSharedFlag(projectId: string): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(SHARED_FLAG_PREFIX + projectId, '1')
+  } catch {
+    // Sem localStorage (modo privado): a trava vale só nesta sessão (estado em memória).
+  }
+}
+
 interface Props {
   blockId: string
   content: StudioBlock
@@ -80,6 +103,8 @@ export function StudioBlockView({
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(studioState?.submitted ?? false)
   const [submittedAt, setSubmittedAt] = useState<string | null>(studioState?.submittedAt ?? null)
+  // "Compartilhar" da aula é 1 vez só (ver helper): trava depois do 1º publish bem-sucedido.
+  const [alreadyShared, setAlreadyShared] = useState<boolean>(() => readSharedFlag(projectId))
   const [score, setScore] = useState<number | null>(studioState?.lastScore ?? null)
   const [passed, setPassed] = useState<boolean>(studioState?.passed ?? false)
   const [xp, setXp] = useState<number | null>(null)
@@ -317,10 +342,15 @@ export function StudioBlockView({
         }
         return { muralUrl: body?.muralUrl, playUrl: body?.playUrl }
       },
-      // Publicou: entrega os links ao host (kids abre a celebração); o ShareDialog fecha sozinho.
-      onPublished: (result) => onSharedRef.current?.(result),
+      // Publicou: TRAVA o compartilhar da aula (1 vez só, persistido local) e entrega os
+      // links ao host (kids abre a celebração); o ShareDialog fecha sozinho.
+      onPublished: (result) => {
+        setAlreadyShared(true)
+        writeSharedFlag(projectId)
+        onSharedRef.current?.(result)
+      },
     }
-  }, [enableShare, lessonId, blockId, presetTitle, presetDescription, presetCoverUrl])
+  }, [enableShare, lessonId, blockId, projectId, presetTitle, presetDescription, presetCoverUrl])
 
   const ready = StudioLesson !== null && seed !== null
 
@@ -379,12 +409,18 @@ export function StudioBlockView({
             activity={content.activity}
             features={{ extensions: false }}
             share={share}
-            // Só habilita o "Compartilhar" DEPOIS de enviar o projeto ao professor:
-            // publicar no Mural exige a entrega (o members também barra com SHOWCASE_NOT_ELIGIBLE).
-            // O botão aparece, mas desabilitado com dica, até a entrega.
+            // O "Compartilhar" da aula: (1) só habilita DEPOIS de enviar ao professor
+            // (publicar exige a entrega; o members também barra com SHOWCASE_NOT_ELIGIBLE);
+            // (2) é UMA vez só — depois de publicado, trava (o projeto da aula tem fim; o
+            // Estúdio Completo não usa isso e segue ilimitado). Botão VISÍVEL porém
+            // desabilitado com a dica em cada caso.
             shareDisabledReason={
-              share && !submitted
-                ? 'Envie o projeto para o professor primeiro para poder compartilhar.'
+              share
+                ? !submitted
+                  ? 'Envie o projeto para o professor primeiro para poder compartilhar.'
+                  : alreadyShared
+                    ? 'Você já compartilhou este jogo no Mural. 🎉'
+                    : undefined
                 : undefined
             }
             // Item ⋯ → "Sincronizar com o enviado" (só na aula; abre a confirmação).
