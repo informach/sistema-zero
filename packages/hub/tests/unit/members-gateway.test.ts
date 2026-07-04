@@ -75,6 +75,7 @@ describe('members-http.gateway', () => {
       accountId: 'conta-1',
       lessonId: 'aula-1',
       blockId: 'bloco-1',
+      privileged: false,
     })
     expect(res).toEqual({
       eligible: true,
@@ -87,6 +88,36 @@ describe('members-http.gateway', () => {
     })
   })
 
+  test('getShowcaseEligibility: privileged=true adiciona ?privileged=true (equipe testa o Mural); false omite', async () => {
+    const urls: string[] = []
+    const fetchImpl = (async (url: string) => {
+      urls.push(String(url))
+      return new Response(
+        JSON.stringify({
+          eligible: true,
+          title: 't',
+          summary: 's',
+          defaultCoverUrl: null,
+          chain: null,
+          courseId: 'c',
+          audience: 'kids',
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      )
+    }) as unknown as typeof fetch
+    const gw = createMembersHttpGateway({ baseUrl: 'http://members:3004', fetchImpl })
+    const base = {
+      userId: 'perfil-1',
+      accountId: 'conta-1',
+      lessonId: 'aula-1',
+      blockId: 'bloco-1',
+    }
+    await gw.getShowcaseEligibility({ ...base, privileged: true })
+    await gw.getShowcaseEligibility({ ...base, privileged: false })
+    expect(urls[0]).toContain('privileged=true')
+    expect(urls[1]).not.toContain('privileged')
+  })
+
   test('getShowcaseEligibility: 5xx → lança (fail-closed)', async () => {
     const fetchImpl = (async () => new Response('nope', { status: 500 })) as unknown as typeof fetch
     const gw = createMembersHttpGateway({ baseUrl: 'http://members:3004', fetchImpl })
@@ -96,6 +127,7 @@ describe('members-http.gateway', () => {
         accountId: 'conta-1',
         lessonId: 'aula-1',
         blockId: 'bloco-1',
+        privileged: false,
       }),
     ).rejects.toThrow()
   })
@@ -112,6 +144,7 @@ describe('members-http.gateway', () => {
         accountId: 'conta-1',
         lessonId: 'aula-1',
         blockId: 'bloco-1',
+        privileged: false,
       })
       expect(res.eligible).toBe(false)
     })

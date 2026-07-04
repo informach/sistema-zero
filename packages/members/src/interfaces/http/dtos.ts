@@ -213,12 +213,16 @@ export const ParentReportPrefsBody = t.Object({
  * Query da rota S2S `GET /members/internal/showcase-eligibility` (consumida pelo
  * `@sistemazero/hub` ao auto-publicar no Mural): elegibilidade + conteúdo AUTORITATIVO
  * do projeto. `accountId` resolve o ACESSO (conta), `userId` a ENTREGA (perfil).
+ * `privileged` = `'true'` quando o HUB derivou que o ator é EQUIPE (chave-mestra
+ * virtual) — o hub o repassa e o members honra (equipe publica no Mural p/ TESTAR o
+ * fluxo, como já faz na rota de aluno `showcase-payload`). Ausente/≠'true' → `false`.
  */
 export const ShowcaseEligibilityQuery = t.Object({
   accountId: UUID,
   userId: UUID,
   lessonId: UUID,
   blockId: UUID,
+  privileged: t.Optional(t.Literal('true')),
 })
 
 /**

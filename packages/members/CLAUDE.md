@@ -197,9 +197,13 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    entrega pelo PERFIL): `{eligible, title, summary, defaultCoverUrl, chain, courseId, audience}`,
    `eligible:false` se o bloco não é vitrine/desabilitado/sem entrega. O BFF re-busca isso no
    clique e publica no hub (`POST /hub/internal/showcase-thread`). ⚠️ O **HUB também re-valida** a
-   elegibilidade via `GET /members/internal/showcase-eligibility?accountId=&userId=&lessonId=&blockId=`
-   (rota S2S, MESMO `GetShowcasePayloadService`, `privileged:false`) — a rota de publicação é
-   alcançável na borda por qualquer conta ativa, então o hub não confia no corpo (full review 18/06).
+   elegibilidade via `GET /members/internal/showcase-eligibility?accountId=&userId=&lessonId=&blockId=&privileged=`
+   (rota S2S, MESMO `GetShowcasePayloadService`) — a rota de publicação é alcançável na borda por
+   qualquer conta ativa, então o hub não confia no corpo (full review 18/06). ⚠️ **`privileged` agora
+   HONRADO (07/2026 — reversão):** o hub repassa `?privileged=true` quando o ator é EQUIPE (o papel vem
+   do gateway) e o members o passa ao `execute(...)` — admin/staff PUBLICA no Mural p/ testar o fluxo
+   (chave-mestra virtual; a rota de aluno `showcase-payload` já honrava `isPrivilegedActor`). Antes era
+   `privileged:false` fixo (equipe não ia ao Mural) — a trava impedia testar. Aluno comum é sempre `false`.
 7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
    conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
    member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`

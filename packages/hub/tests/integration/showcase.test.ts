@@ -511,6 +511,25 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(res.status).toBe(403)
   })
 
+  test('standalone: EQUIPE (privileged) publica SEM o produto — chave-mestra virtual p/ testar o Mural', async () => {
+    // Ator com role de equipe (o gateway injeta; aqui simulamos) → `actor.privileged` →
+    // bypass da posse do Estúdio. É como o admin testa a publicação sem comprar o produto.
+    const staff = studentHeaders(randomUUID(), {
+      'x-internal-token': INTERNAL,
+      'x-auth-profile-name': 'Prof',
+      'x-auth-user-role': 'admin',
+    })
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+        headers: staff,
+        body: standaloneBody(),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const { thread } = (await res.json()) as { thread: { isShowcase: boolean } }
+    expect(thread.isShowcase).toBe(true)
+  })
+
   test('standalone: chave-mestra KIDS cobre a publicação', async () => {
     const accountId = randomUUID()
     ctx.members.mastersKids.add(accountId)

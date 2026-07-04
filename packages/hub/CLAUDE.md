@@ -85,12 +85,17 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    `x-internal-token` NÃO é fronteira de confiança aqui; full review 18/06), então o CORPO não é
    confiável:** o `ShowcaseService` (1) **re-valida a ELEGIBILIDADE no members** via
    `getShowcaseEligibility` (S2S `GET /members/internal/showcase-eligibility`, fail-closed) — só
-   publica quem REALMENTE concluiu o projeto. ⚠️ A rota interna do members checa com
-   **`privileged:false`** (equipe testando NÃO vai ao Mural real) → para admin/staff sem matrícula
-   real o members responde **403**; o adapter mapeia **403/404 → `eligible:false`** (resposta
+   publica quem REALMENTE concluiu o projeto. ⚠️ **`privileged` HONRADO (07/2026 — reversão):** o
+   `ShowcaseService` REPASSA `actor.privileged` (`ShowcaseEligibilityArgs.privileged` → query
+   `?privileged=true`) e o members honra — **EQUIPE (superadmin/admin/staff) PUBLICA no Mural p/
+   TESTAR o fluxo inteiro** (chave-mestra virtual; consistente com a rota de aluno `showcase-payload`
+   que já honrava `isPrivilegedActor` e com o passe-livre de produto). O papel vem do GATEWAY (aluno
+   comum é sempre `privileged=false`; a rota S2S é inalcançável por quem forjaria o param), então NÃO
+   é um furo. Antes: `privileged:false` fixo (equipe não ia ao Mural) → 403 → `eligible:false`; a
+   trava impedia o admin de testar. O adapter ainda mapeia **403/404 → `eligible:false`** (resposta
    GRACIOSA: `PostingNotAllowedError`→403 limpo, NUNCA 500 "Erro interno") e mantém 401/5xx/timeout
-   como throw fail-closed (bug 28/06: o 403 virava 500). Publicar de verdade exige conta REAL de
-   criança com matrícula + entrega; (2) usa título/resumo/audiência/curso/cadeia
+   como throw fail-closed. Aluno comum publica de verdade só com conta REAL + matrícula + entrega;
+   (2) usa título/resumo/audiência/curso/cadeia
    AUTORITATIVOS de lá (o corpo não dita conteúdo); (3) tira o `authorDisplayName` do header confiável
    **`x-auth-profile-name`** (claim `pfl.name` do gateway), nunca do corpo; (4) DERIVA a idempotência
    (`autor:curso:cadeia`); e EXIGE `space.audience === 'kids'` E canal `postingPolicy === 'staff_only'`
@@ -116,7 +121,10 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    ELEGIBILIDADE deixa de ser "concluiu a aula" e vira **"a CONTA possui o produto do Estúdio"**:
    `members.checkAccess(accountId, ['estudio-completo'], ['estudio-completo'])` (fail-closed) exige
    `granted` OU `communities` OU `hasMasterKids` — o ref fixo `STUDIO_STANDALONE_ACCESS_REF` casa com o
-   slug do produto no catálogo. Demais guardas IDÊNTICAS (destino kids + parede `staff_only` + allowlist,
+   slug do produto no catálogo. ⚠️ **`actor.privileged` (equipe) faz BYPASS da posse (07/2026):**
+   `owns=ownsClub=true` sem chamar o members — admin/staff publica (e testa o desafio) sem comprar o
+   produto, espelhando o passe-livre da elegibilidade por aula e da rota `/members/access`. Demais
+   guardas IDÊNTICAS (destino kids + parede `staff_only` + allowlist,
    autor do header de perfil, capa https-only). Idempotência = `autor:studio-standalone:clientKey`
    (sem curso/cadeia; republicar = post novo). Gateway `hub-showcase-create-studio-standalone` (segmento
    literal distinto de `showcase-thread-studio` — sem colisão de prefixo).
