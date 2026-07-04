@@ -235,7 +235,7 @@ regressão). **Como mudar:** o gate é só `privileged`; para desligar, pare de 
 
 ## 5. Conquistas (badges)
 
-Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (22 slugs).
+Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (23 slugs).
 Persiste só `user_badges` (UNIQUE `user_id, audience, badge_slug` — a "1ª aula" do kids é
 independente da do adult). Título/ícone/copy vivem no app kids, não no banco.
 
@@ -309,16 +309,16 @@ SIMPLES (sem Draco/KTX2/WASM, CSP-safe), assets em `community-kids/public/avatar
 
 ### Categorias (`AVATAR_CATEGORIES`) + config
 
-12 categorias: `head, hair, eyes, eyebrows, nose, facialHair, glasses, hat, top, bottom, shoes,
-accessory` — uma peça **+ cor** por categoria (`head` = formato + tom de pele). Config v2: `{version:2, style:'char-v1',
-slots: cat→{asset, color?}}` (`avatar_configs.equipped` jsonb). Removíveis (`facialHair/glasses/
-hat/accessory`) têm peça `*-none` grátis = "tirar". `AVATAR_HIDE_GROUPS = {hat:['hair']}` (chapéu
+14 categorias: `head, hair, eyes, eyebrows, nose, faceDecor, facialHair, glasses, hat, top, bottom,
+outfit, shoes, accessory` — uma peça **+ cor** por categoria (`head` = formato + tom de pele). Config v2: `{version:2, style:'char-v1',
+slots: cat→{asset, color?}}` (`avatar_configs.equipped` jsonb). Removíveis (com peça `*-none` grátis
+= "tirar"): `hair, faceDecor, facialHair, glasses, hat, outfit, accessory`. `AVATAR_HIDE_GROUPS = {hat:['hair']}` (chapéu
 real esconde o cabelo — só render, o servidor NÃO gateia). Default grátis em `DEFAULT_AVATAR_SLOTS`.
 
 ### Peças (`AVATAR3D_PARTS`) + cores — livre vs pago
 
-~64 peças; identidade (body/eyes/eyebrows/nose) **100% grátis**. Pagas 50–150 Zappy: cabelo
-(4), barba (2), óculos (3), chapéu (5), top (5), bottom (4), shoes (4), acessório (4). `tier`
+~96 peças; identidade (head/eyes/eyebrows/nose) **100% grátis**. Pagas 50–150 Zappy na maioria
+das categorias (cabelo, barba, faceDecor, óculos, chapéu, top, bottom, outfit, shoes, acessório). `tier`
 derivado (`free()`/`paid()`); peça grátis é **implicitamente possuída** (não vai ao inventário).
 **COR é GRÁTIS** e irrestrita dentro da paleta da categoria (`AVATAR_CATEGORY_PALETTES`; pintar
 não custa — a economia está nas PEÇAS). `nose`/`glasses` sem paleta (nariz segue a pele; óculos
@@ -741,9 +741,9 @@ no código (06/2026).
 | `STREAK_COIN_MILESTONES` | 7→20,30→50,60→80,180→150,365→300 | `gamification/coins.ts` | Bônus de moeda dos marcos (exemptos do teto) |
 | `STREAK_FREEZE_PRICE` | 80 | `gamification/coins.ts` | Preço do protetor comprável |
 | `MAX_STREAK_FREEZES` | 5 | `ports/gamification-repository.port.ts` | Teto de protetores acumuláveis |
-| `BADGE_SLUGS` | 17 slugs | `gamification/badges.ts` | Catálogo de conquistas |
+| `BADGE_SLUGS` | 23 slugs | `gamification/badges.ts` | Catálogo de conquistas |
 | `AVATAR3D_PARTS` (preços) | ver §6 | `avatar/avatar3d-catalog.ts` | Catálogo + preços das peças |
-| `AVATAR_CATEGORIES` | 12 categorias | `avatar/avatar3d-catalog.ts` | Categorias do avatar 3D |
+| `AVATAR_CATEGORIES` | 14 categorias | `avatar/avatar3d-catalog.ts` | Categorias do avatar 3D |
 | `DEFAULT_AVATAR_SLOTS` | conjunto grátis | `avatar/avatar3d-catalog.ts` | Avatar inicial (peça+cor) |
 | `AVATAR_CATEGORY_PALETTES` | paletas de cor | `avatar/avatar3d-catalog.ts` | Cores grátis por categoria |
 | `ROOM_GRID` | {cols:12,rows:8} | `room/room-catalog.ts` (+ espelho no kids) | Tamanho da grade |
