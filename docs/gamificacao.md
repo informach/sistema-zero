@@ -83,6 +83,8 @@ Núcleo PURO em `packages/members/src/domain/gamification/gamification.ts`.
 | Baú de fim de unidade (módulo 100%) | **25** | `XP_VALUES.UNIT_COMPLETE` |
 | Pensa: etapa Z/E/R concluída (advance) | **15** | `XP_VALUES.PENSA_STAGE_COMPLETE` |
 | Pensa: ciclo lançado (o→done) | **30** | `XP_VALUES.PENSA_CYCLE_COMPLETE` |
+| Clube: tópico aprovado pela equipe | **+5** | `XP_VALUES.CLUBE_THREAD` |
+| Clube: comentário aprovado pela equipe | **+3** | `XP_VALUES.CLUBE_COMMENT` |
 
 **Pensa (07/2026):** o award roda DENTRO do `advance-stage` do Pensa (fail-open, delta na
 resposta como o complete). Moedas: 5 por etapa / 15 por ciclo (`COIN_VALUES`, contam no teto
@@ -91,6 +93,18 @@ DETERMINÍSTICO derivado de `(cycleId, stage)` (`pensaStageSourceId`, uuid v5-li
 `domain/pensa/gamification.ts`); o ciclo usa o próprio `cycleId`. O fechamento o→done credita
 SÓ `pensa_cycle_complete` (sem stage duplicado). Migration `0032_zippy_runaways` (ADD VALUE nos
 enums `xp_source_type` E `coin_source_type`).
+
+**Clube dos Criadores (07/2026):** o Clube (fórum kids no hub) premia SÓ conteúdo **APROVADO
+pela equipe** — nunca no envio (bloqueia farm de post e não paga o rejeitado). Tópico rende
+**+5 XP** (`clube_thread`) e comentário **+3 XP** (`clube_comment`) — é **XP puro, SEM moeda
+Zappy**: não há torneira para farmar, `clube_*` não entra em `coin_source_type`. Como é
+`amount > 0`, **MOVE o streak** (voltar ao Clube conta como dia ativo, igual a uma aula).
+Idempotente pelo `contentId` no ledger (`xp_events.source_id`) — re-aprovar (hide→approve) é
+inerte. O award roda por **webhook**: o `ModerationService.approveThread`/`approveComment` do hub
+dispara `POST /members/webhooks/clube` (HMAC + dedupe, padrão do `/showcase`/`/challenge`) SÓ para
+audiência **kids**, e o members chama `AwardGamificationService.awardClubeContribution`
+(`privileged: false`). Migration `0036` (ADD VALUE `clube_thread`/`clube_comment` só no
+`xp_source_type` — **não** toca `coin_source_type`).
 
 Fórmula do quiz (`quizPassedXp`): `20 + min(10, max(0, round(score/10)))`. Exemplos:
 score 100 → 30; score 50 → 25; score 0 → 20.
@@ -221,7 +235,7 @@ regressão). **Como mudar:** o gate é só `privileged`; para desligar, pare de 
 
 ## 5. Conquistas (badges)
 
-Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (22 slugs).
+Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (23 slugs).
 Persiste só `user_badges` (UNIQUE `user_id, audience, badge_slug` — a "1ª aula" do kids é
 independente da do adult). Título/ícone/copy vivem no app kids, não no banco.
 
@@ -235,6 +249,7 @@ independente da do adult). Título/ícone/copy vivem no app kids, não no banco.
 | Maestria do Estúdio | `studio-first`, `studio-master-3`, `studio-master-10` (1/3/10) | `studioMasteryBadgeSlugs`, conta `studio_passed` |
 | Pensa (planejamento) | `pensa-first-idea` (1ª etapa concluída = 1ª Carta), `pensa-first-launch`/`pensa-creator-3` (1/3 ciclos) | `pensaStageBadgeSlugs`/`pensaCycleBadgeSlugs`, contam `pensa_stage_complete`/`pensa_cycle_complete` |
 | Desafio do mês | `challenge-first` (Fase 5) | `challengeBadgeSlugs`, conta `challenge_entry` |
+| Clube dos Criadores (07/2026) | `clube-primeiro-post` | `clubeBadgeSlugs`, conta `clube_thread` no ledger (1ª conversa APROVADA — **só thread destrava; comentário não**) |
 | Poupador | `coins-saver-300`, `coins-saver-1000` | `coinsSaverBadgeSlugs`, lê `lifetime_coins_earned` |
 
 As contagens são **POR VITRINE** (`countByType` filtra `userId + audience + sourceType`). Os
@@ -294,16 +309,16 @@ SIMPLES (sem Draco/KTX2/WASM, CSP-safe), assets em `community-kids/public/avatar
 
 ### Categorias (`AVATAR_CATEGORIES`) + config
 
-12 categorias: `head, hair, eyes, eyebrows, nose, facialHair, glasses, hat, top, bottom, shoes,
-accessory` — uma peça **+ cor** por categoria (`head` = formato + tom de pele). Config v2: `{version:2, style:'char-v1',
-slots: cat→{asset, color?}}` (`avatar_configs.equipped` jsonb). Removíveis (`facialHair/glasses/
-hat/accessory`) têm peça `*-none` grátis = "tirar". `AVATAR_HIDE_GROUPS = {hat:['hair']}` (chapéu
+14 categorias: `head, hair, eyes, eyebrows, nose, faceDecor, facialHair, glasses, hat, top, bottom,
+outfit, shoes, accessory` — uma peça **+ cor** por categoria (`head` = formato + tom de pele). Config v2: `{version:2, style:'char-v1',
+slots: cat→{asset, color?}}` (`avatar_configs.equipped` jsonb). Removíveis (com peça `*-none` grátis
+= "tirar"): `hair, faceDecor, facialHair, glasses, hat, outfit, accessory`. `AVATAR_HIDE_GROUPS = {hat:['hair']}` (chapéu
 real esconde o cabelo — só render, o servidor NÃO gateia). Default grátis em `DEFAULT_AVATAR_SLOTS`.
 
 ### Peças (`AVATAR3D_PARTS`) + cores — livre vs pago
 
-~64 peças; identidade (body/eyes/eyebrows/nose) **100% grátis**. Pagas 50–150 Zappy: cabelo
-(4), barba (2), óculos (3), chapéu (5), top (5), bottom (4), shoes (4), acessório (4). `tier`
+~96 peças; identidade (head/eyes/eyebrows/nose) **100% grátis**. Pagas 50–150 Zappy na maioria
+das categorias (cabelo, barba, faceDecor, óculos, chapéu, top, bottom, outfit, shoes, acessório). `tier`
 derivado (`free()`/`paid()`); peça grátis é **implicitamente possuída** (não vai ao inventário).
 **COR é GRÁTIS** e irrestrita dentro da paleta da categoria (`AVATAR_CATEGORY_PALETTES`; pintar
 não custa — a economia está nas PEÇAS). `nose`/`glasses` sem paleta (nariz segue a pele; óculos
@@ -472,7 +487,7 @@ Domínio em `packages/members/src/domain/gamification/missions.ts`; serviços em
 
 ### Pools
 
-**Diárias (`DAILY_MISSIONS`, 5):**
+**Diárias (`DAILY_MISSIONS`, 6):**
 
 | slug | meta (`goalType`) | alvo | XP | moedas |
 |---|---|---|---|---|
@@ -481,17 +496,25 @@ Domínio em `packages/members/src/domain/gamification/missions.ts`; serviços em
 | daily-quiz | quiz_passed | 1 | 15 | 15 |
 | daily-estudio | studio_passed | 1 | 20 | 25 |
 | daily-bau | unit_complete | 1 | 15 | 15 |
+| daily-clube (07/2026) | clube_thread | 1 | 10 | 10 |
 
-**Semanais (`WEEKLY_MISSIONS`, 3):**
+**Semanais (`WEEKLY_MISSIONS`, 4):**
 
 | slug | meta | alvo | XP | moedas |
 |---|---|---|---|---|
 | weekly-aulas-10 | lesson_complete | 10 | 60 | 75 |
 | weekly-quizzes-5 | quiz_passed | 5 | 50 | 60 |
 | weekly-estudio-3 | studio_passed | 3 | 75 | 80 |
+| weekly-clube-3 (07/2026) | clube_thread | 3 | 40 | 45 |
 
-Tamanho do set atribuído por criança: `DAILY_SET_SIZE = 3` (vê 3 das 5) e `WEEKLY_SET_SIZE = 2`
-(vê 2 das 3). `MissionGoalType` = `lesson_complete | quiz_passed | studio_passed | unit_complete`.
+Tamanho do set atribuído por criança: `DAILY_SET_SIZE = 3` (vê 3 das 6) e `WEEKLY_SET_SIZE = 2`
+(vê 2 das 4). `MissionGoalType` = `lesson_complete | quiz_passed | studio_passed | unit_complete
+| clube_thread`.
+
+> As missões de **Clube** (07/2026) contam `clube_thread` no ledger — como esse evento só é
+> gravado na APROVAÇÃO pela equipe (§3), a missão só progride com tópico aprovado (anti-farm,
+> mesmo princípio derivado dos demais goals). Elas dão **moedas** (via `claimMission`, com teto
+> diário) mesmo o `clube_thread` do award sendo XP puro — a torneira da missão é o resgate, não o post.
 
 ### Atribuição determinística
 
@@ -702,6 +725,8 @@ no código (06/2026).
 | `XP_VALUES.QUIZ_PASSED_BASE` | 20 | `gamification/gamification.ts` | XP base do quiz aprovado |
 | `XP_VALUES.QUIZ_SCORE_BONUS_MAX` | 10 | `gamification/gamification.ts` | Cap do bônus de nota (XP) |
 | `XP_VALUES.UNIT_COMPLETE` | 25 | `gamification/gamification.ts` | XP do baú de unidade |
+| `XP_VALUES.CLUBE_THREAD` | 5 | `gamification/gamification.ts` | XP por tópico do Clube aprovado (XP puro, sem moeda) |
+| `XP_VALUES.CLUBE_COMMENT` | 3 | `gamification/gamification.ts` | XP por comentário do Clube aprovado (XP puro, sem moeda) |
 | `SP_DATE_FORMAT` (timeZone) | America/Sao_Paulo | `gamification/gamification.ts` | Fuso do "dia civil" do streak |
 | `STREAK_BADGES` | [7,30,60,180,365] | `gamification/gamification.ts` | Marcos de badge de streak |
 | `STREAK_BADGES`/cursos/quizzes | 1/2/3 · 1/10/30 | `gamification/gamification.ts` | Limiares das badges derivadas |
@@ -716,9 +741,9 @@ no código (06/2026).
 | `STREAK_COIN_MILESTONES` | 7→20,30→50,60→80,180→150,365→300 | `gamification/coins.ts` | Bônus de moeda dos marcos (exemptos do teto) |
 | `STREAK_FREEZE_PRICE` | 80 | `gamification/coins.ts` | Preço do protetor comprável |
 | `MAX_STREAK_FREEZES` | 5 | `ports/gamification-repository.port.ts` | Teto de protetores acumuláveis |
-| `BADGE_SLUGS` | 17 slugs | `gamification/badges.ts` | Catálogo de conquistas |
+| `BADGE_SLUGS` | 23 slugs | `gamification/badges.ts` | Catálogo de conquistas |
 | `AVATAR3D_PARTS` (preços) | ver §6 | `avatar/avatar3d-catalog.ts` | Catálogo + preços das peças |
-| `AVATAR_CATEGORIES` | 12 categorias | `avatar/avatar3d-catalog.ts` | Categorias do avatar 3D |
+| `AVATAR_CATEGORIES` | 14 categorias | `avatar/avatar3d-catalog.ts` | Categorias do avatar 3D |
 | `DEFAULT_AVATAR_SLOTS` | conjunto grátis | `avatar/avatar3d-catalog.ts` | Avatar inicial (peça+cor) |
 | `AVATAR_CATEGORY_PALETTES` | paletas de cor | `avatar/avatar3d-catalog.ts` | Cores grátis por categoria |
 | `ROOM_GRID` | {cols:12,rows:8} | `room/room-catalog.ts` (+ espelho no kids) | Tamanho da grade |
@@ -726,8 +751,8 @@ no código (06/2026).
 | `DEFAULT_ROOM_THEME` | aconchego | `room/room-catalog.ts` (+ literal no kids) | Tema padrão |
 | `ROOM_ITEMS` (preços) | ver §7 | `room/room-catalog.ts` | Catálogo + preços dos itens |
 | `ROOM_THEMES` (preços) | aconchego 0,floresta 200,oceano 250,espaco 300,doce 200 | `room/room-catalog.ts` | Catálogo + preços dos temas |
-| `DAILY_MISSIONS` | 5 missões | `gamification/missions.ts` | Pool diário |
-| `WEEKLY_MISSIONS` | 3 missões | `gamification/missions.ts` | Pool semanal |
+| `DAILY_MISSIONS` | 6 missões | `gamification/missions.ts` | Pool diário |
+| `WEEKLY_MISSIONS` | 4 missões | `gamification/missions.ts` | Pool semanal |
 | `DAILY_SET_SIZE` | 3 | `gamification/missions.ts` | Missões diárias por criança |
 | `WEEKLY_SET_SIZE` | 2 | `gamification/missions.ts` | Missões semanais por criança |
 | `LEAGUE_TIERS` | bronze→diamante | `gamification/league.ts` | Tiers das ligas |
@@ -753,6 +778,7 @@ compartilhado (`sistemazero`, :5433); o `preDeployCommand` de prod roda só `db:
 | `0020_add_room` | tabelas `room_state` (UNIQUE `user_id,audience`; `state` jsonb) e `room_inventory` (UNIQUE `user_id,audience,item_id`) |
 | `0021_add_missions_and_freeze` | tabela `mission_claims` (UNIQUE `user_id,audience,mission_slug,period_key` + índice por período) + colunas `streak_freezes`/`freeze_granted_month`/`vacation_from`/`vacation_to` em `gamification_profiles` |
 | `0022_add_league` | tabela `league_membership` (UNIQUE `user_id,audience,week_key` + índice de coorte `audience,week_key,tier`) |
+| `0036` (Clube dos Criadores, 07/2026 — EM PRODUÇÃO) | `ALTER TYPE xp_source_type ADD VALUE 'clube_thread'` + `'clube_comment'` (XP puro do Clube; **não** mexe em `coin_source_type`) |
 
 > Pré-requisitos já no banco (fatia de gamificação anterior): `0009` (enum `xp_source_type` +
 > `gamification_profiles`/`xp_events`/`user_badges`), `0010`/`0011` (marcos `course_complete`/

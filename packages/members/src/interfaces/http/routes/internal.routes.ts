@@ -37,8 +37,12 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         query: ProfileAllowanceQuery,
       })
       // O hub re-valida a elegibilidade aqui (não confia no corpo da publicação): acesso
-      // pela CONTA (`accountId`), entrega pelo PERFIL (`userId`). `privileged:false` — só
-      // quem realmente concluiu o projeto publica (equipe testando não vai ao Mural real).
+      // pela CONTA (`accountId`), entrega pelo PERFIL (`userId`). **`privileged` HONRADO**
+      // (07/2026): o hub deriva o papel do header confiável do gateway e o repassa; equipe
+      // (superadmin/admin/staff) publica no Mural p/ TESTAR o fluxo inteiro — CONSISTENTE
+      // com a rota de aluno `showcase-payload` (que já honra `isPrivilegedActor`) e com a
+      // chave-mestra virtual da equipe. Aluno comum NUNCA vem com `privileged=true` (o papel
+      // é do gateway); a rota é S2S (x-internal-token), inalcançável por quem forjaria o param.
       .get(
         '/showcase-eligibility',
         ({ query }) =>
@@ -46,7 +50,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
             query.userId,
             query.lessonId,
             query.blockId,
-            false,
+            query.privileged === 'true',
             query.accountId,
           ),
         { query: ShowcaseEligibilityQuery },

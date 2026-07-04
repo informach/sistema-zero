@@ -153,6 +153,9 @@ export class ShowcaseService {
       accountId: actor.accountId,
       lessonId: cmd.lessonId,
       blockId: cmd.blockId,
+      // Equipe (chave-mestra virtual) publica no Mural p/ TESTAR o fluxo — o members
+      // honra o `privileged` (como já faz na rota de aluno). Aluno comum = false.
+      privileged: actor.privileged,
     })
     if (!elig.eligible) throw new PostingNotAllowedError('Projeto não elegível para o Mural')
     if (elig.audience !== 'kids')
@@ -262,6 +265,9 @@ export class ShowcaseService {
       accountId: actor.accountId,
       lessonId: cmd.lessonId,
       blockId: cmd.blockId,
+      // Equipe (chave-mestra virtual) publica no Mural p/ TESTAR o fluxo — o members
+      // honra o `privileged` (como já faz na rota de aluno). Aluno comum = false.
+      privileged: actor.privileged,
     })
     if (!elig.eligible) throw new PostingNotAllowedError('Projeto não elegível para o Mural')
     if (elig.audience !== 'kids')
@@ -346,16 +352,24 @@ export class ShowcaseService {
       : [STUDIO_STANDALONE_ACCESS_REF]
     let owns = false
     let ownsClub = false
-    try {
-      const access = await this.members.checkAccess(actor.accountId, refs, refs)
-      const has = (ref: string) =>
-        access.granted.includes(ref) || access.communities.includes(ref) || access.hasMasterKids
-      owns = has(STUDIO_STANDALONE_ACCESS_REF)
-      ownsClub = has(CHALLENGE_CLUB_REF)
-    } catch {
-      // Fail-closed EM AMBOS: erro transitório não libera publicar nem entrar no desafio.
-      owns = false
-      ownsClub = false
+    if (actor.privileged) {
+      // Equipe (chave-mestra virtual): passe livre p/ TESTAR a publicação (e o desafio)
+      // sem comprar o produto — espelha o bypass da rota `/members/access` e da
+      // elegibilidade por aula. O papel vem do gateway; aluno comum nunca é privileged.
+      owns = true
+      ownsClub = true
+    } else {
+      try {
+        const access = await this.members.checkAccess(actor.accountId, refs, refs)
+        const has = (ref: string) =>
+          access.granted.includes(ref) || access.communities.includes(ref) || access.hasMasterKids
+        owns = has(STUDIO_STANDALONE_ACCESS_REF)
+        ownsClub = has(CHALLENGE_CLUB_REF)
+      } catch {
+        // Fail-closed EM AMBOS: erro transitório não libera publicar nem entrar no desafio.
+        owns = false
+        ownsClub = false
+      }
     }
     if (!owns) throw new PostingNotAllowedError('Sem acesso ao Estúdio para publicar')
 

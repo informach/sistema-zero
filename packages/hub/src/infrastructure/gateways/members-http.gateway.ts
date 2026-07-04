@@ -98,6 +98,9 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
         lessonId: args.lessonId,
         blockId: args.blockId,
       })
+      // Equipe (chave-mestra virtual): repassa `privileged=true` p/ o members honrar (publicar
+      // no Mural p/ testar). Aluno comum → omite (o default do members é `false`).
+      if (args.privileged) qs.set('privileged', 'true')
       const res = await doFetch(`${base}/members/internal/showcase-eligibility?${qs}`, {
         method: 'GET',
         headers,

@@ -85,12 +85,17 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    `x-internal-token` NÃO é fronteira de confiança aqui; full review 18/06), então o CORPO não é
    confiável:** o `ShowcaseService` (1) **re-valida a ELEGIBILIDADE no members** via
    `getShowcaseEligibility` (S2S `GET /members/internal/showcase-eligibility`, fail-closed) — só
-   publica quem REALMENTE concluiu o projeto. ⚠️ A rota interna do members checa com
-   **`privileged:false`** (equipe testando NÃO vai ao Mural real) → para admin/staff sem matrícula
-   real o members responde **403**; o adapter mapeia **403/404 → `eligible:false`** (resposta
+   publica quem REALMENTE concluiu o projeto. ⚠️ **`privileged` HONRADO (07/2026 — reversão):** o
+   `ShowcaseService` REPASSA `actor.privileged` (`ShowcaseEligibilityArgs.privileged` → query
+   `?privileged=true`) e o members honra — **EQUIPE (superadmin/admin/staff) PUBLICA no Mural p/
+   TESTAR o fluxo inteiro** (chave-mestra virtual; consistente com a rota de aluno `showcase-payload`
+   que já honrava `isPrivilegedActor` e com o passe-livre de produto). O papel vem do GATEWAY (aluno
+   comum é sempre `privileged=false`; a rota S2S é inalcançável por quem forjaria o param), então NÃO
+   é um furo. Antes: `privileged:false` fixo (equipe não ia ao Mural) → 403 → `eligible:false`; a
+   trava impedia o admin de testar. O adapter ainda mapeia **403/404 → `eligible:false`** (resposta
    GRACIOSA: `PostingNotAllowedError`→403 limpo, NUNCA 500 "Erro interno") e mantém 401/5xx/timeout
-   como throw fail-closed (bug 28/06: o 403 virava 500). Publicar de verdade exige conta REAL de
-   criança com matrícula + entrega; (2) usa título/resumo/audiência/curso/cadeia
+   como throw fail-closed. Aluno comum publica de verdade só com conta REAL + matrícula + entrega;
+   (2) usa título/resumo/audiência/curso/cadeia
    AUTORITATIVOS de lá (o corpo não dita conteúdo); (3) tira o `authorDisplayName` do header confiável
    **`x-auth-profile-name`** (claim `pfl.name` do gateway), nunca do corpo; (4) DERIVA a idempotência
    (`autor:curso:cadeia`); e EXIGE `space.audience === 'kids'` E canal `postingPolicy === 'staff_only'`
@@ -116,7 +121,10 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    ELEGIBILIDADE deixa de ser "concluiu a aula" e vira **"a CONTA possui o produto do Estúdio"**:
    `members.checkAccess(accountId, ['estudio-completo'], ['estudio-completo'])` (fail-closed) exige
    `granted` OU `communities` OU `hasMasterKids` — o ref fixo `STUDIO_STANDALONE_ACCESS_REF` casa com o
-   slug do produto no catálogo. Demais guardas IDÊNTICAS (destino kids + parede `staff_only` + allowlist,
+   slug do produto no catálogo. ⚠️ **`actor.privileged` (equipe) faz BYPASS da posse (07/2026):**
+   `owns=ownsClub=true` sem chamar o members — admin/staff publica (e testa o desafio) sem comprar o
+   produto, espelhando o passe-livre da elegibilidade por aula e da rota `/members/access`. Demais
+   guardas IDÊNTICAS (destino kids + parede `staff_only` + allowlist,
    autor do header de perfil, capa https-only). Idempotência = `autor:studio-standalone:clientKey`
    (sem curso/cadeia; republicar = post novo). Gateway `hub-showcase-create-studio-standalone` (segmento
    literal distinto de `showcase-thread-studio` — sem colisão de prefixo).
@@ -175,6 +183,30 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    vira LINK p/ o perfil público é o BFF** (expõe o link só quando `authorPublic === true`). É
    SNAPSHOT no create: renomear/trocar a privacidade depois NÃO reescreve posts antigos (histórico
    imutável, como `authorId`).
+
+14. **Full review do Clube dos Criadores (07/2026, EM PRODUÇÃO):** lote de contrato que promove o
+   Clube a fórum kids de 1ª classe — recompensa, cross-link com o Mural e notificações de resposta.
+   - **Snapshot da CONTA no autor (`author_account_id`):** todo tópico/comentário grava no CREATE —
+     além de `authorId`/`authorDisplayName` — o `authorAccountId` (`Actor.accountId`), a **chave de
+     coorte** da gamificação. Nullable (legado/vitrine). É o dono ORIGINAL do conteúdo, necessário
+     porque a recompensa do Clube é dada na APROVAÇÃO (o ator ali é o moderador, não a criança).
+     Domain `Thread`/`Comment` + `CreateThreadInput`/`CreateCommentInput` ganharam `authorAccountId`;
+     `ThreadService.createThread`/`createComment` passam `actor.accountId`.
+   - **Cross-link Mural↔Clube — `playId` no `createThread` ("Mostrar meu jogo no Clube"):**
+     `CreateThreadInput.playId?` + DTO `CreateThreadBody.playId: t.Optional(UUID|Null)`. A criança
+     referencia um `/jogar/<id>` REAL; o `ThreadService.createThread` **VALIDA** via
+     `hasVisibleShowcasePlayId(playId)` (recusa `PostingNotAllowedError`→403 se não for post de
+     vitrine VISÍVEL) e grava em `threads.play_id`. ⚠️ A **fronteira de segurança é o HUB** — a
+     autoria no app é só filtro de UX; NÃO afrouxar a validação.
+   - **Notificações "novas respostas" — `GET /hub/my-threads` (rota de ALUNO, JWT + `x-internal-token`):**
+     `ThreadService.listMyThreads(actor)` → `{items:[{id,title,slug,channelId,commentCount,
+     lastActivityAt,playId}]}`, SÓ do PRÓPRIO autor via `ThreadRepository.listByAuthor(authorId,
+     limit)` (usa `threads_author_status_idx`; NUNCA vaza autor de terceiro). O literal
+     `/hub/my-threads` (2 segmentos) não colide com `/hub/threads/:id`. Gateway `hub-my-threads`.
+     Alimenta o sino "novas respostas nas suas conversas" (o app diffa `commentCount` contra um
+     baseline local).
+   - **Recompensa na APROVAÇÃO (webhook hub→members):** XP/badge do members disparados no
+     `approveThread`/`approveComment` SÓ p/ kids — ver Acesso & integrações.
 
 10. **Teaser "visível mas bloqueado" (06/2026):** `spaces.teaser_when_locked`. Quando ligado, um
    servidor que o aluno NÃO acessa aparece na listagem/detalhe com `locked:true` (só nome/ícone/
@@ -258,7 +290,7 @@ os do gateway (`gateway.config.ts`).
 | GET | `/hub/spaces/:slug` | detalhe do servidor | 300/min |
 | GET | `/hub/spaces/:slug/channels` | canais do servidor (com badge de novidades) | 300/min |
 | GET | `/hub/channels/:id/threads` | tópicos do canal (cursor `?cursor=&limit=`) | 300/min |
-| POST | `/hub/channels/:id/threads` | cria tópico `{title, body}` (pré-moderação) | 60/min · 64KB |
+| POST | `/hub/channels/:id/threads` | cria tópico `{title, body, playId?}` (pré-moderação; `playId` = cross-link Mural↔Clube, valida vitrine visível) | 60/min · 64KB |
 | GET | `/hub/threads/:id` | detalhe do tópico | 300/min |
 | PATCH | `/hub/threads/:id` | edita tópico (autor ou staff) `{body}` | 60/min · 64KB |
 | GET | `/hub/threads/:id/comments` | comentários (cursor cronológico) | 300/min |
@@ -268,6 +300,7 @@ os do gateway (`gateway.config.ts`).
 | POST/DELETE | `/hub/comments/:id/reactions[/:emoji]` | idem comentário | 120/min |
 | POST | `/hub/channels/:id/seen` | marca canal como visto (badge) | 120/min |
 | POST | `/hub/threads/:id/report` · `/hub/comments/:id/report` | denúncia `{reason}` | 120/min |
+| GET | `/hub/my-threads` | minhas conversas (SÓ do próprio autor) → `{items:[{id,title,slug,channelId,commentCount,lastActivityAt,playId}]}` p/ o sino "novas respostas" | 300/min |
 
 **Admin** (`/hub/admin/*` — JWT + RBAC: LEITURA staff+, ESCRITA admin+; `x-internal-token`).
 Estrutura (`admin.routes.ts`): `GET/POST /hub/admin/spaces`, `POST /hub/admin/spaces/reorder`,
@@ -306,12 +339,14 @@ download direto browser↔R2 são mintados pelo BFF (member-shell).
   `postingPolicy members|staff_only`, `requiresApproval` **nullable=herda**, `version`).
 - **`threads`** — tópico (FK→channel, `authorId`, `title`, `slug` único no canal, `body` Markdown,
   `isPinned`, `isLocked`, `status`, `commentCount`, `lastActivityAt`, `version`). Autor (snapshot p/
-  nomes clicáveis): `author_display_name` (1º nome) e **`author_public`** (bool, default `false`).
-  Vitrine: `is_showcase`, `cover_image_url`, `showcase_idempotency_key` (UNIQUE) e
+  nomes clicáveis): `author_display_name` (1º nome), **`author_public`** (bool, default `false`) e
+  **`author_account_id`** (conta do responsável no create — chave de coorte da recompensa do Clube;
+  nullable p/ legado/vitrine). Vitrine: `is_showcase`, `cover_image_url`, `showcase_idempotency_key` (UNIQUE) e
   **`play_id`** (UUID do artefato jogável — só na vitrine do Estúdio; alimenta o "Jogar" público). Índices:
   `(channel,status,lastActivity)` p/ listagem, `(author,status)` p/ "meus pendentes".
 - **`comments`** — comentário (FK→thread, `authorId`, `body`, `status`, `replyToId`, `version`) +
-  snapshot de autor `author_display_name` + `author_public` (bool, default `false`) p/ nome clicável.
+  snapshot de autor `author_display_name` + `author_public` (bool, default `false`) +
+  **`author_account_id`** (nullable — coorte da recompensa do Clube) p/ nome clicável e recompensa.
 - **`attachments`** — metadado UGC (`ownerId`, `threadId`/`commentId` nullable, `kind`,
   `storageRef = r2ugc:<key>` — nunca exposto ao browser, `mime`/`sizeBytes`/dims/`durationSeconds`,
   `status pending_upload|ready`).
@@ -348,6 +383,19 @@ consistência eventual, então não pendura a resposta de "Publicar" se o member
 tem retries internos + timeout e ENGOLE erro, logando `members.showcase_notify_*`; NUNCA lança). O
 members é idempotente por user+curso (notifica mesmo no `deduped`, recuperando uma 1ª falha). Sem
 `hmacSecret` (não setado) = no-op silencioso. Usa as envs JÁ existentes `MEMBERS_BASE_URL` +
+`GATEWAY_HMAC_SECRET` (nenhuma env nova).
+
+⚠️ **Recompensa do Clube na APROVAÇÃO (webhook hub→members, 07/2026):** porta
+`MembersGateway.notifyClubContribution({userId, accountId, audience, kind: 'thread'|'comment',
+contentId})` (impl em `members-http.gateway.ts`, `CLUBE_WEBHOOK_PATH = /members/webhooks/clube`, via
+o `postSignedWebhook` JÁ existente — HMAC canônico, best-effort, **NUNCA lança**). Disparada no
+`ModerationService.approveThread`/`approveComment` **SÓ** para audiência `kids` e conteúdo com
+`authorAccountId` (não-vitrine), **fire-and-forget** (`void`). Por que na APROVAÇÃO e não no create: o
+conteúdo kids nasce `pending` e só "conta" quando um staff libera; o ator da aprovação é o MODERADOR,
+então a recompensa vai para o `authorAccountId` snapshot do post (NÃO para o moderador). XP/badge são
+do MEMBERS (thread **+5 XP**, comment **+3 XP**, badge `clube-primeiro-post`). O `ModerationService`
+passou a receber `communityRead` + `members` **opcionais** (ausentes = no-op — testes que não
+exercitam a recompensa); o `composition-root` os injeta. Reusa `MEMBERS_BASE_URL` +
 `GATEWAY_HMAC_SECRET` (nenhuma env nova).
 
 **R2 (anexos UGC):** o hub só guarda metadado; o presign/upload/HEAD vivem no BFF (member-shell/
@@ -394,6 +442,10 @@ escrita à MÃO, journaled, FALTA aplicar):** `threads.plays_count` int NOT NULL
 NULL` (conserta o seq scan pré-existente do resolve do /jogar) + índice parcial
 `threads_channel_challenge_idx (channel_id, challenge_key)`. ⚠️ O `db:generate` re-emite as linhas de `play_id`
 (0003) e `community_gated` (0002) por DRIFT do snapshot — REMOVA-as do SQL gerado (já aplicadas).
+**`0006_clube_author_account` (full review do Clube, 07/2026 — escrita à MÃO, journaled, APLICADA):**
+`ALTER TABLE hub.threads ADD COLUMN IF NOT EXISTS author_account_id text` + o mesmo em `hub.comments`
+(snapshot da CONTA do responsável no create — chave de coorte da recompensa do Clube na aprovação;
+nullable p/ legado/vitrine).
 `db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
 nova, CONFIRA o journal antes de gerar.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do
@@ -415,6 +467,12 @@ saiu). O seed **RECONCILIA servidores existentes**: re-rodar atualiza o `accessC
 (course_gated) p/ o novo, por servidor (idempotente — só escreve se mudou; esses 2 slugs são infra dona
 do seed). `SEED_PUBLIC=true` deixa públicos p/ smoke test. Postgres é privado → rodar via `railway ssh`
 no serviço hub. Re-rodar é seguro.
+**Canal "Recados da equipe" (staff_only, full review do Clube, 07/2026):** `SpaceSeed.channel` virou
+`channels[]` (idempotente por `(spaceId, slug)`, `sortOrder` = índice); o **Clube** ganhou o canal
+`recados-da-equipe` (`postingPolicy: staff_only`) além do `geral`, e o Mural segue com `parede`. SEM
+migração. **Rodado em local/staging/produção 04/07.** ⚠️ **No container o WORKDIR é a RAIZ do monorepo
+(`/app`)**, então `bun run db:seed-community` falha — rode
+`bun packages/hub/scripts/seed-community-spaces.ts` via `railway ssh -s hub`.
 
 ## Testes (31, `bun test`)
 

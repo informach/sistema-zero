@@ -17,6 +17,12 @@ export interface ShowcaseEligibilityArgs {
   accountId: string
   lessonId: string
   blockId: string
+  /**
+   * Ator é EQUIPE (superadmin/admin/staff — `actor.privileged`)? Repassado ao members
+   * p/ a chave-mestra virtual: equipe publica no Mural p/ TESTAR o fluxo (o papel vem do
+   * gateway; aluno comum é sempre `false`). Ver `internal.routes.ts` do members.
+   */
+  privileged: boolean
 }
 
 /** Conteúdo AUTORITATIVO do projeto + elegibilidade (espelha o `ShowcasePayloadView` do members). */
