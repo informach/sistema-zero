@@ -52,7 +52,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_variable',
     message0: 'valor da variável %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'x' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'x', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Usa o conteúdo de uma variável já criada como valor.',
@@ -343,7 +343,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_array_length',
     message0: 'tamanho da lista %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'lista' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Quantos itens a lista tem.',
@@ -352,7 +352,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     type: 'sz_val_array_map',
     message0: 'transformar lista %1 com cada %2 virando %3',
     args0: [
-      { type: 'field_input', name: 'ARR', text: 'lista' },
+      { type: 'field_name_picker', name: 'ARR', text: 'lista', kind: 'group' },
       { type: 'field_input', name: 'ITEM', text: 'item' },
       { type: 'input_value', name: 'TRANSFORM', check: 'JSValue' },
     ],
@@ -378,7 +378,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     message0: 'item %1 da lista %2',
     args0: [
       { type: 'input_value', name: 'INDEX', check: 'JSValue' },
-      { type: 'field_input', name: 'NAME', text: 'lista' },
+      { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
     ],
     inputsInline: true,
     output: 'JSValue',
@@ -388,7 +388,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_array_last',
     message0: 'último item da lista %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'lista' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'O último item da lista (o mesmo que o item na posição tamanho − 1).',
@@ -397,7 +397,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     type: 'sz_val_array_find',
     message0: 'na lista %1 achar o 1º %2 em que %3',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'lista' },
+      { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
       { type: 'field_input', name: 'ITEM', text: 'item' },
       { type: 'input_value', name: 'COND', check: 'JSValue' },
     ],
@@ -420,7 +420,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_shuffle',
     message0: 'embaralhar a lista %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'lista' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Devolve a lista com os itens em ordem aleatória.',

@@ -14,7 +14,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_array_push',
     message0: 'na lista %1 adicionar %2',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'lista' },
+      { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -27,7 +27,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_array_remove',
     message0: 'na lista %1 remover o %2',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'lista' },
+      { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
       {
         type: 'field_dropdown',
         name: 'END',
@@ -47,7 +47,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_array_splice',
     message0: 'na lista %1 remover %2 item(ns) a partir da posição %3',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'lista' },
+      { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
       { type: 'input_value', name: 'COUNT', check: 'JSValue' },
       { type: 'input_value', name: 'START', check: 'JSValue' },
     ],
@@ -68,7 +68,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_console_log_var',
     message0: 'Mostrar valor da variável %1 no console',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'contador' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -85,7 +85,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_alert_var',
     message0: 'Mostrar aviso com valor da variável %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'contador' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -130,7 +130,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_var_assign',
     message0: 'Alterar variável %1 para %2',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'contador' },
+      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -144,7 +144,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     message0: 'Somar %1 em variável %2',
     args0: [
       { type: 'field_number', name: 'DELTA', value: 1 },
-      { type: 'field_input', name: 'NAME', text: 'contador' },
+      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -279,7 +279,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     message0: 'para cada %1 de %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
-      { type: 'field_input', name: 'NAME', text: 'lista' },
+      { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
     ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
