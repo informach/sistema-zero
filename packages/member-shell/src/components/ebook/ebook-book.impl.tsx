@@ -32,10 +32,13 @@ const BRIGHTNESS_STEP = 0.05
 
 export default function EbookBookImpl({ pdfUrl, title }: { pdfUrl: string; title: string | null }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const pdf = usePdfPages(pdfUrl)
   /** Folhas viradas: 0 = capa fechada … totalSheets = contracapa. */
   const [page, setPage] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  // Em tela cheia (página grande + zoom liberado) as 2 páginas visíveis são
+  // re-renderizadas em ALTA resolução sob demanda — leitura quase igual ao PDF.
+  // Inline a textura base já é super-amostrada (página pequena), então fica off.
+  const pdf = usePdfPages(pdfUrl, { hiRes: isFullscreen })
   /** Brilho de leitura (0.5–1.0) — multiplica as duas luzes da cena. */
   const [brightness, setBrightness] = useState(loadBrightness)
   const totalSheets = Math.ceil(pdf.numPages / 2)
