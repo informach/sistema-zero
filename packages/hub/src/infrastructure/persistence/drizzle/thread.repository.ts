@@ -162,11 +162,15 @@ export class DrizzleThreadRepository implements ThreadRepository {
     return { thread: toThread(existing as ThreadRow), deduped: true }
   }
 
-  async hasVisibleShowcasePlayId(playId: string, countHit = false): Promise<boolean> {
+  async hasVisibleShowcasePlayId(
+    playId: string,
+    countHit = false,
+  ): Promise<{ visible: boolean; authorDisplayName: string | null }> {
     if (countHit) {
       // Hit FUNDIDO no resolve (1 round-trip): o RETURNING responde o "visível?"
-      // e o UPDATE conta a jogada. NÃO bump-a `version` — jogar não é edição (um
-      // play concorrente não pode fazer a moderação/edição dar 409).
+      // (+ o 1º nome do autor p/ a página pública) e o UPDATE conta a jogada. NÃO
+      // bump-a `version` — jogar não é edição (um play concorrente não pode fazer a
+      // moderação/edição dar 409).
       const rows = await this.db
         .update(threads)
         .set({ playsCount: sql`${threads.playsCount} + 1` })
@@ -177,11 +181,11 @@ export class DrizzleThreadRepository implements ThreadRepository {
             eq(threads.status, 'visible'),
           ),
         )
-        .returning({ id: threads.id })
-      return rows.length > 0
+        .returning({ authorDisplayName: threads.authorDisplayName })
+      return { visible: rows.length > 0, authorDisplayName: rows[0]?.authorDisplayName ?? null }
     }
     const [row] = await this.db
-      .select({ id: threads.id })
+      .select({ authorDisplayName: threads.authorDisplayName })
       .from(threads)
       .where(
         and(
@@ -191,7 +195,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
         ),
       )
       .limit(1)
-    return Boolean(row)
+    return { visible: Boolean(row), authorDisplayName: row?.authorDisplayName ?? null }
   }
 
   async listShowcaseByAuthors(

@@ -222,7 +222,10 @@ export class ShowcaseService {
    * `countHit` funde o incremento de `playsCount` na MESMA ida (o BFF já deduplicou
    * por ip:playId — o hub não conhece o IP real de quem joga).
    */
-  async isPlayable(playId: string, countHit = false): Promise<boolean> {
+  async isPlayable(
+    playId: string,
+    countHit = false,
+  ): Promise<{ visible: boolean; authorDisplayName: string | null }> {
     return this.threads.hasVisibleShowcasePlayId(playId, countHit)
   }
 

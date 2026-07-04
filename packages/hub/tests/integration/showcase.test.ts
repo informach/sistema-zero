@@ -356,7 +356,7 @@ describe('vitrine (Mural dos Criadores)', () => {
       }),
     )
     expect(visible.status).toBe(200)
-    expect(await visible.json()).toEqual({ visible: true })
+    expect(await visible.json()).toEqual({ visible: true, authorDisplayName: 'Sofia' })
 
     const { thread } = (await create.json()) as { thread: { id: string } }
     ctx.threadRepo.threads = ctx.threadRepo.threads.map((t) =>
@@ -369,7 +369,7 @@ describe('vitrine (Mural dos Criadores)', () => {
       }),
     )
     expect(hidden.status).toBe(200)
-    expect(await hidden.json()).toEqual({ visible: false })
+    expect(await hidden.json()).toEqual({ visible: false, authorDisplayName: null })
   })
 
   test('studio: mesmo clientIdempotencyKey dedup-a; novo key = post NOVO (republicar)', async () => {
@@ -605,10 +605,16 @@ describe('vitrine (Mural dos Criadores)', () => {
           headers: { 'x-internal-token': INTERNAL },
         }),
       )
-    expect(await (await resolve('?count=1')).json()).toEqual({ visible: true })
-    expect(await (await resolve('?count=1')).json()).toEqual({ visible: true })
+    expect(await (await resolve('?count=1')).json()).toEqual({
+      visible: true,
+      authorDisplayName: 'Sofia',
+    })
+    expect(await (await resolve('?count=1')).json()).toEqual({
+      visible: true,
+      authorDisplayName: 'Sofia',
+    })
     // Sem `count` (revalidações/refetches) NÃO infla o contador.
-    expect(await (await resolve()).json()).toEqual({ visible: true })
+    expect(await (await resolve()).json()).toEqual({ visible: true, authorDisplayName: 'Sofia' })
     const t = ctx.threadRepo.threads.find((x) => x.playId === playId)
     expect(t?.playsCount).toBe(2)
   })

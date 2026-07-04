@@ -420,7 +420,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_prune_old',
     message0: 'Tirar do grupo %1 quem viveu mais de %2 segundos',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'tiros' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' },
       { type: 'input_value', name: 'SECONDS', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -670,7 +670,7 @@ export const gameTwoDBlocks = [
     message0: 'Trazer o sprite %1 para a frente no grupo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_input', name: 'GROUP', text: 'inimigos' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -682,7 +682,7 @@ export const gameTwoDBlocks = [
     message0: 'Mandar o sprite %1 para trás no grupo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_input', name: 'GROUP', text: 'inimigos' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1050,7 +1050,7 @@ export const gameTwoDBlocks = [
     message0:
       'No grupo %1 criar um sprite em x %2 y %3 largura %4 altura %5 cor %6 com vx %7 vy %8',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -1071,7 +1071,7 @@ export const gameTwoDBlocks = [
     message0:
       'No grupo %1 criar um sprite em x %2 y %3 largura %4 altura %5 com imagem %6 vx %7 vy %8',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'inimigos' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -1090,7 +1090,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_update_group',
     message0: 'Atualizar (mover) o grupo %1',
-    args0: [{ type: 'field_input', name: 'GROUP', text: 'asteroides' }],
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1099,7 +1099,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_draw_group',
     message0: 'Desenhar o grupo %1',
-    args0: [{ type: 'field_input', name: 'GROUP', text: 'asteroides' }],
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1110,7 +1110,7 @@ export const gameTwoDBlocks = [
     message0: 'Para cada sprite %1 do grupo %2 fazer %3',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'sprite' },
-      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
       { type: 'input_statement', name: 'BODY' },
     ],
     previousStatement: 'JSStmt',
@@ -1122,7 +1122,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_count_group',
     message0: 'quantos sprites tem no grupo %1',
-    args0: [{ type: 'field_input', name: 'GROUP', text: 'asteroides' }],
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Quantidade de sprites no grupo agora. Use dentro de um "se" ou numa conta.',
@@ -1130,7 +1130,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_clear_group',
     message0: 'Esvaziar o grupo %1',
-    args0: [{ type: 'field_input', name: 'GROUP', text: 'asteroides' }],
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1140,7 +1140,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_prune_offscreen',
     message0: 'Tirar do grupo %1 quem sair da tela — para cada um (chamado %2) fazer %3',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
       { type: 'field_input', name: 'ITEM', text: 'sprite' },
       { type: 'input_statement', name: 'BODY' },
     ],
@@ -1154,8 +1154,8 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_remove_from_group',
     message0: 'Tirar o sprite %1 do grupo %2',
     args0: [
-      { type: 'field_input', name: 'SPRITE', text: 'asteroide' },
-      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'asteroide' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1170,9 +1170,9 @@ export const gameTwoDBlocks = [
     message0:
       'Quando um sprite do grupo %1 (chamado %2) encostar num do grupo %3 (chamado %4) fazer %5',
     args0: [
-      { type: 'field_input', name: 'A', text: 'tiros' },
+      { type: 'field_name_picker', name: 'A', text: 'tiros', kind: 'group' },
       { type: 'field_input', name: 'ANAME', text: 'tiro' },
-      { type: 'field_input', name: 'B', text: 'asteroides' },
+      { type: 'field_name_picker', name: 'B', text: 'asteroides', kind: 'group' },
       { type: 'field_input', name: 'BNAME', text: 'asteroide' },
       { type: 'input_statement', name: 'BODY' },
     ],
@@ -1406,7 +1406,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_spawn_bullet',
     message0: 'Criar tiro no grupo %1 em x %2 y %3 raio %4 cor %5 vx %6 vy %7',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'tiros' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'R', check: 'JSValue' },
@@ -1473,7 +1473,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_spawn_asteroid',
     message0: 'No grupo %1 criar um asteroide em x %2 y %3 tamanho %4 cor %5 com vx %6 vy %7',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'SIZE', check: 'JSValue' },
@@ -1492,7 +1492,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_explode',
     message0: 'Soltar explosão no sprite %1 cor %2',
     args0: [
-      { type: 'field_input', name: 'SPRITE', text: 'asteroide' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'asteroide' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#ffb13b' },
     ],
     previousStatement: 'JSStmt',
@@ -1523,8 +1523,8 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_on_sprite_group_overlap',
     message0: 'Quando o sprite %1 encostar num do grupo %2 (chamado %3) fazer %4',
     args0: [
-      { type: 'field_input', name: 'SPRITE', text: 'nave' },
-      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
       { type: 'field_input', name: 'ANAME', text: 'inimigo' },
       { type: 'input_statement', name: 'BODY' },
     ],
@@ -1587,7 +1587,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_spawn_obstacle',
     message0: 'No grupo %1 criar obstáculo %2 em x %3 tamanho %4 com vx %5',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'obstaculos' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'obstaculos', kind: 'group' },
       {
         type: 'field_dropdown',
         name: 'SHAPE',
@@ -1613,7 +1613,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_spawn_egg',
     message0: 'No grupo %1 criar um ovo (bônus) em x %2 y %3 com vx %4',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'ovos' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'ovos', kind: 'group' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'VX', check: 'JSValue' },
@@ -1750,7 +1750,7 @@ export const gameTwoDBlocks = [
     message0: 'Atirar do sprite %1 para a frente, no grupo %2 — velocidade %3 cor %4',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
-      { type: 'field_input', name: 'GROUP', text: 'tiros' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#9cff57' },
     ],
@@ -1765,7 +1765,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_spawn_asteroid_edge',
     message0: 'No grupo %1 soltar um asteroide de uma borda — tamanho %2 cor %3 velocidade %4',
     args0: [
-      { type: 'field_input', name: 'GROUP', text: 'asteroides' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
       { type: 'input_value', name: 'SIZE', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#8d8f9b' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
@@ -1792,7 +1792,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_draw_city',
     message0: 'Desenhar a cidade %1',
-    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1804,7 +1804,7 @@ export const gameTwoDBlocks = [
     message0: 'Pôr o gorila %1 na cidade %2 no lado %3 cor %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'gorila1' },
-      { type: 'field_input', name: 'CITY', text: 'cidade' },
+      { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' },
       {
         type: 'field_dropdown',
         name: 'SIDE',
@@ -1824,7 +1824,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_new_wind',
     message0: 'Sortear o vento da cidade %1',
-    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1833,7 +1833,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_draw_wind',
     message0: 'Desenhar a seta do vento da cidade %1',
-    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1864,7 +1864,7 @@ export const gameTwoDBlocks = [
     message0: 'Jogar a banana do gorila %1 na cidade %2',
     args0: [
       { type: 'field_sprite_picker', name: 'THROWER', text: 'gorila1' },
-      { type: 'field_input', name: 'CITY', text: 'cidade' },
+      { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1874,7 +1874,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_update_banana',
     message0: 'Mover a banana da cidade %1',
-    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1884,7 +1884,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_draw_banana',
     message0: 'Desenhar a banana da cidade %1',
-    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1894,7 +1894,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_banana_hit_thrower',
     message0: 'a banana da cidade %1 acertou o gorila %2 ?',
     args0: [
-      { type: 'field_input', name: 'CITY', text: 'cidade' },
+      { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' },
       { type: 'field_sprite_picker', name: 'THROWER', text: 'gorila2' },
     ],
     output: 'JSValue',
@@ -1905,7 +1905,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_banana_hit_city',
     message0: 'a banana da cidade %1 bateu num prédio ?',
-    args0: [{ type: 'field_input', name: 'CITY', text: 'cidade' }],
+    args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip:
@@ -1934,7 +1934,7 @@ export const gameTwoDBlocks = [
     message0: 'O robô do gorila %1 joga na cidade %2 mirando no %3',
     args0: [
       { type: 'field_sprite_picker', name: 'THROWER', text: 'gorila2' },
-      { type: 'field_input', name: 'CITY', text: 'cidade' },
+      { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' },
       { type: 'field_sprite_picker', name: 'ENEMY', text: 'gorila1' },
     ],
     previousStatement: 'JSStmt',
@@ -1971,7 +1971,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_update_stickhero',
     message0: 'Atualizar o equilibrista %1',
-    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1981,7 +1981,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_stickhero_score',
     message0: 'pontos do equilibrista %1',
-    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Quantas plataformas o herói já atravessou (acerto perfeito vale 2).',
@@ -1989,7 +1989,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_stickhero_over',
     message0: 'o equilibrista %1 caiu?',
-    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Verdadeiro quando o herói caiu no buraco (fim de jogo). Use num "se".',
@@ -1997,7 +1997,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_restart_stickhero',
     message0: 'Recomeçar o equilibrista %1',
-    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -2022,7 +2022,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_update_balloon',
     message0: 'Atualizar o balão %1',
-    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -2032,7 +2032,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_balloon_score',
     message0: 'metros do balão %1',
-    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'A distância (em metros) que o balão já voou.',
@@ -2040,7 +2040,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_balloon_fuel',
     message0: 'combustível do balão %1',
-    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Quanto combustível resta (0 a 100). Use num "se" para avisar quando estiver baixo.',
@@ -2048,7 +2048,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_balloon_over',
     message0: 'o balão %1 bateu/acabou?',
-    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip:
@@ -2057,7 +2057,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_restart_balloon',
     message0: 'Recomeçar o balão %1',
-    args0: [{ type: 'field_input', name: 'GAME', text: 'jogo' }],
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
