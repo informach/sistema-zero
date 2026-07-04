@@ -1,10 +1,17 @@
 import { Lock } from 'lucide-react'
 import { KidsMascot } from './mascot'
 
+/** Gostinho do que a criança encontra no Pensa quando liberar. */
+const PREVIEW = [
+  { emoji: '💡', text: 'Transforme a sua ideia num plano' },
+  { emoji: '🗺️', text: 'Desenhe as telas e o fluxo do jogo' },
+  { emoji: '✅', text: 'Organize as missões pra construir' },
+] as const
+
 /**
  * Tela do Pensa BLOQUEADO (sem o produto): o item aparece no menu, mas a criança
- * ainda não tem acesso. Recado gentil (sem link de venda — kids não tem funil; o
- * responsável adquire e libera). Espelha o `KidsLockedStudio`.
+ * ainda não tem acesso. Recado gentil + prévia do que tem dentro (sem link de venda;
+ * o responsável adquire e libera). Espelha o `KidsLockedClube`.
  */
 export function KidsLockedPensa() {
   return (
@@ -15,9 +22,27 @@ export function KidsLockedPensa() {
         <Lock className="size-4" /> Ainda não liberado
       </div>
       <p className="mt-4 text-muted-foreground">
-        O Pensa é onde você planeja seu jogo antes de construir: a ideia, as telas, as missões,
-        tudo! 💡✨ Ele ainda não está liberado pra você. Peça pra um responsável dar uma olhada e,
-        quando liberar, ele aparece aqui prontinho pra pensar junto com você.
+        O Pensa é onde você planeja o seu jogo antes de construir: a ideia, as telas e as missões!
+        💡✨
+      </p>
+
+      <ul className="mt-5 flex w-full flex-col gap-2 text-left">
+        {PREVIEW.map((item) => (
+          <li
+            key={item.text}
+            className="flex items-center gap-3 rounded-2xl border-2 border-border bg-card p-3"
+          >
+            <span aria-hidden="true" className="text-2xl leading-none">
+              {item.emoji}
+            </span>
+            <span className="font-medium text-sm">{item.text}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-5 text-muted-foreground text-sm">
+        Peça pra um responsável dar uma olhada. Quando liberar, ele aparece aqui pra pensar junto
+        com você!
       </p>
     </div>
   )
