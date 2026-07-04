@@ -35,11 +35,7 @@ const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   sz_js_var_create: ['NAME'],
   sz_js_const_create: ['NAME'],
   sz_js_var_assign: ['NAME'],
-  // Laços e tratamento de erro introduzem novos nomes.
-  sz_js_for_range: ['VAR'],
-  sz_js_for_of: ['ITEM'],
-  sz_js_for_each: ['ITEM', 'INDEX'],
-  sz_js_try_catch: ['ERR'],
+  // (Laços/tentar introduzem nomes LOCAIS — ver VARIABLE_LOOP_BINDERS abaixo.)
   // Canvas: teclado, imagem e gradiente guardam numa variável.
   sz_canvas_keyboard: ['NAME'],
   sz_js_new_image: ['VAR'],
@@ -61,6 +57,21 @@ const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_stickhero: ['NAME'],
   sz_g2d_create_balloon: ['NAME'],
   sz_g2d_create_city: ['NAME'],
+}
+
+/**
+ * Blocos de laço que dão um NOME LOCAL a uma variável no corpo (o "i" do contar, o
+ * "item"/"posição" do para-cada, o "erro" do tentar). Esses nomes valem só DENTRO do
+ * bloco, então entram no seletor apenas quando o campo está dentro dele (escopo por
+ * ancestral). Os campos que aqui DECLARAM o nome seguem `field_input`.
+ */
+const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
+  sz_js_for_range: ['VAR'],
+  sz_js_for_of: ['ITEM'],
+  sz_js_for_each: ['ITEM', 'INDEX'],
+  sz_js_try_catch: ['ERR'],
+  sz_val_array_map: ['ITEM'],
+  sz_val_array_find: ['ITEM'],
 }
 
 /** Blocos que DECLARAM um grupo de sprites nomeado (Jogo 2D). */
@@ -128,6 +139,32 @@ export function collectVariables(workspace: Blockly.Workspace | null | undefined
 }
 
 /**
+ * Nomes de variável LOCAIS em escopo no ponto do campo: sobe pelos blocos que
+ * ENVOLVEM o bloco do campo (`getSurroundParent`) e coleta os nomes dados por laços
+ * (o "i" do contar, o "item" do para-cada…). Só aparecem dentro do laço que os declara.
+ */
+export function collectScopedVariableNames(block: Blockly.Block | null | undefined): string[] {
+  const seen = new Set<string>()
+  const ordered: string[] = []
+  let cur = block?.getSurroundParent() ?? null
+  while (cur) {
+    const fields = VARIABLE_LOOP_BINDERS[cur.type]
+    if (fields) {
+      for (const f of fields) {
+        if (!cur.getField(f)) continue
+        const name = cur.getFieldValue(f)
+        if (name && !seen.has(name)) {
+          seen.add(name)
+          ordered.push(name)
+        }
+      }
+    }
+    cur = cur.getSurroundParent() ?? null
+  }
+  return ordered
+}
+
+/**
  * Grupos de sprites (Jogo 2D) + listas de verdade (variáveis que guardam um
  * `sz_val_array`), na ordem dos blocos, sem repetir. "Grupo ≡ lista".
  */
@@ -189,8 +226,16 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
   }
 
   protected override showEditor_(): void {
-    const ws = this.getSourceBlock()?.workspace
-    const names = this.kind === 'group' ? collectGroupsAndLists(ws) : collectVariables(ws)
+    const block = this.getSourceBlock()
+    const ws = block?.workspace
+    const globals = this.kind === 'group' ? collectGroupsAndLists(ws) : collectVariables(ws)
+    const globalSet = new Set(globals)
+    // Variáveis LOCAIS em escopo (nome dado por um laço que ENVOLVE este campo). Só o
+    // seletor de variável tem locais — grupos/listas não têm binder de laço.
+    const locals =
+      this.kind === 'variable'
+        ? collectScopedVariableNames(block).filter((n) => !globalSet.has(n))
+        : []
     const ui = KIND_UI[this.kind]
 
     const content = Blockly.DropDownDiv.getContentDiv()
@@ -201,7 +246,7 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
     wrap.style.cssText =
       'padding:8px;width:240px;background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
 
-    if (names.length === 0) {
+    if (globals.length === 0 && locals.length === 0) {
       const empty = document.createElement('div')
       empty.textContent = ui.empty
       empty.style.cssText =
@@ -211,27 +256,38 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       const list = document.createElement('div')
       list.style.cssText =
         'display:flex;flex-direction:column;gap:4px;max-height:200px;overflow:auto;'
-      for (const name of names) {
+      // Uma linha selecionável. `loop` = variável local do laço: swatch 🔁 tracejado +
+      // marca "no laço" (mesma linguagem visual do seletor de sprite).
+      const addRow = (name: string, loop: boolean): void => {
         const btn = document.createElement('button')
         btn.type = 'button'
-        btn.title = name
+        btn.title = loop ? `${name} — variável deste laço (local)` : name
         const selected = name === this.getValue()
         btn.style.cssText = `display:flex;align-items:center;gap:8px;padding:5px 7px;border:1px solid ${selected ? 'var(--color-sz-accent)' : 'var(--color-sz-border)'};border-radius:6px;background:var(--color-sz-bg);cursor:pointer;text-align:left;`
         const icon = document.createElement('span')
-        icon.textContent = ui.icon
-        icon.style.cssText =
-          'flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:15px;'
+        icon.textContent = loop ? '🔁' : ui.icon
+        icon.style.cssText = loop
+          ? 'flex:none;width:22px;height:22px;border-radius:5px;border:1px dashed var(--color-sz-border);display:flex;align-items:center;justify-content:center;font-size:12px;'
+          : 'flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:15px;'
         const label = document.createElement('span')
         label.textContent = name
         label.style.cssText =
-          'font-size:13px;color:var(--color-sz-fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
+          'flex:1;min-width:0;font-size:13px;color:var(--color-sz-fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
         btn.append(icon, label)
+        if (loop) {
+          const tag = document.createElement('span')
+          tag.textContent = 'no laço'
+          tag.style.cssText = 'flex:none;font-size:11px;color:var(--color-sz-fg-soft);'
+          btn.appendChild(tag)
+        }
         btn.addEventListener('click', () => {
           this.setValue(name)
           Blockly.DropDownDiv.hideIfOwner(this)
         })
         list.appendChild(btn)
       }
+      for (const name of globals) addRow(name, false)
+      for (const name of locals) addRow(name, true)
       wrap.appendChild(list)
     }
 

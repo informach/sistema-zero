@@ -4,7 +4,12 @@ import { beforeAll, describe, expect, it } from 'bun:test'
 import { gameTwoDBlocks } from '../../../official-extensions/game-2d/blocks'
 import { registerExtensionBlocks } from '../../blocks'
 import { ensureBlocklyInitialized } from '../../setup'
-import { collectGroupsAndLists, collectVariables, FieldNamePicker } from '../FieldNamePicker'
+import {
+  collectGroupsAndLists,
+  collectScopedVariableNames,
+  collectVariables,
+  FieldNamePicker,
+} from '../FieldNamePicker'
 
 describe('FieldNamePicker', () => {
   beforeAll(() => {
@@ -13,14 +18,21 @@ describe('FieldNamePicker', () => {
   })
 
   describe('collectVariables — nomes das variáveis já criadas', () => {
-    it('reconhece variáveis criadas/declaradas e binders de laço, na ordem dos blocos', () => {
+    it('reconhece variáveis criadas/declaradas (globais), na ordem dos blocos', () => {
       const ws = new Blockly.Workspace()
       ws.newBlock('sz_js_var_create').setFieldValue('contador', 'NAME')
       ws.newBlock('sz_js_const_create').setFieldValue('PI', 'NAME')
       ws.newBlock('sz_js_var_declare').setFieldValue('x', 'NAME')
-      ws.newBlock('sz_js_for_range').setFieldValue('i', 'VAR')
 
-      expect(collectVariables(ws)).toEqual(['contador', 'PI', 'x', 'i'])
+      expect(collectVariables(ws)).toEqual(['contador', 'PI', 'x'])
+    })
+
+    it('NÃO inclui variáveis de laço no global (elas são LOCAIS/escopadas)', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_js_for_range').setFieldValue('i', 'VAR')
+      ws.newBlock('sz_js_for_each') // ITEM='item'
+
+      expect(collectVariables(ws)).toEqual([])
     })
 
     it('reconhece variáveis do Jogo 2D (pontuação e resultado de colisão)', () => {
@@ -48,17 +60,56 @@ describe('FieldNamePicker', () => {
       expect(collectVariables(ws)).toEqual(['contador'])
     })
 
-    it('pula campo vazio (ex.: a posição em branco do "para cada item")', () => {
-      const ws = new Blockly.Workspace()
-      const forEach = ws.newBlock('sz_js_for_each') // ITEM='item', INDEX=''
-      expect(collectVariables(ws)).toEqual(['item'])
-      forEach.setFieldValue('pos', 'INDEX')
-      expect(collectVariables(ws)).toEqual(['item', 'pos'])
-    })
-
     it('workspace vazio → lista vazia', () => {
       expect(collectVariables(new Blockly.Workspace())).toEqual([])
       expect(collectVariables(null)).toEqual([])
+    })
+  })
+
+  describe('collectScopedVariableNames — variáveis LOCAIS do laço-pai em escopo', () => {
+    /** Encaixa `child` num input de statement (ex.: DO) de `parent`. */
+    function nestStmt(parent: Blockly.Block, child: Blockly.Block, input: string): void {
+      parent.getInput(input)?.connection?.connect(child.previousConnection as Blockly.Connection)
+    }
+
+    it('vê a variável do laço "contar" (for_range → VAR)', () => {
+      const ws = new Blockly.Workspace()
+      const loop = ws.newBlock('sz_js_for_range')
+      loop.setFieldValue('i', 'VAR')
+      const inner = ws.newBlock('sz_js_console_log_var')
+      nestStmt(loop, inner, 'DO')
+
+      expect(collectScopedVariableNames(inner)).toEqual(['i'])
+    })
+
+    it('junta laços aninhados e pula a posição em branco do "para cada item"', () => {
+      const ws = new Blockly.Workspace()
+      const outer = ws.newBlock('sz_js_for_range')
+      outer.setFieldValue('linha', 'VAR')
+      const inner = ws.newBlock('sz_js_for_each') // ITEM='item', INDEX=''
+      nestStmt(outer, inner, 'DO')
+      const leaf = ws.newBlock('sz_js_console_log_var')
+      nestStmt(inner, leaf, 'DO')
+
+      // ITEM 'item' (do para-cada) + 'linha' (do contar); INDEX vazio é pulado.
+      expect(collectScopedVariableNames(leaf)).toEqual(['item', 'linha'])
+    })
+
+    it('vê o "item" do "transformar lista" dentro do valor (array_map → ITEM)', () => {
+      const ws = new Blockly.Workspace()
+      const map = ws.newBlock('sz_val_array_map')
+      map.setFieldValue('n', 'ITEM')
+      const inner = ws.newBlock('sz_val_variable')
+      map.getInput('TRANSFORM')?.connection?.connect(inner.outputConnection as Blockly.Connection)
+
+      expect(collectScopedVariableNames(inner)).toEqual(['n'])
+    })
+
+    it('fora de qualquer laço → nenhuma variável local', () => {
+      const ws = new Blockly.Workspace()
+      const solto = ws.newBlock('sz_val_variable')
+      expect(collectScopedVariableNames(solto)).toEqual([])
+      expect(collectScopedVariableNames(null)).toEqual([])
     })
   })
 
