@@ -18,6 +18,7 @@ const toThread = (r: ThreadRow): Thread => ({
   version: r.version,
   channelId: r.channelId,
   authorId: r.authorId,
+  authorAccountId: r.authorAccountId,
   title: r.title,
   slug: r.slug,
   body: r.body,
@@ -42,6 +43,7 @@ const toComment = (r: CommentRow): Comment => ({
   version: r.version,
   threadId: r.threadId,
   authorId: r.authorId,
+  authorAccountId: r.authorAccountId,
   authorDisplayName: r.authorDisplayName,
   authorPublic: r.authorPublic,
   body: r.body,
@@ -81,6 +83,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
             version: 0,
             channelId: input.channelId,
             authorId: input.authorId,
+            authorAccountId: input.authorAccountId,
             authorDisplayName: input.authorDisplayName,
             authorPublic: input.authorPublic,
             title: input.title,
@@ -90,6 +93,8 @@ export class DrizzleThreadRepository implements ThreadRepository {
             isLocked: false,
             status: input.status,
             commentCount: 0,
+            // Referência opcional a um jogo do Mural (já validada pelo service).
+            playId: input.playId ?? null,
             lastActivityAt: input.now,
             createdAt: input.now,
             editedAt: null,
@@ -241,6 +246,19 @@ export class DrizzleThreadRepository implements ThreadRepository {
     return row ? toThread(row) : null
   }
 
+  async listByAuthor(authorId: string, limit: number): Promise<Thread[]> {
+    // Só VISÍVEIS do próprio autor (usa o threads_author_status_idx), mais recentes
+    // primeiro. Alimenta o sino "novas respostas nas suas conversas" — o app diffa o
+    // commentCount contra um baseline local.
+    const rows = await this.db
+      .select()
+      .from(threads)
+      .where(and(eq(threads.authorId, authorId), eq(threads.status, 'visible')))
+      .orderBy(desc(threads.lastActivityAt), desc(threads.id))
+      .limit(limit)
+    return rows.map(toThread)
+  }
+
   async listThreads(
     channelId: string,
     opts: ListThreadsOpts,
@@ -368,6 +386,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
           version: 0,
           threadId: input.threadId,
           authorId: input.authorId,
+          authorAccountId: input.authorAccountId,
           authorDisplayName: input.authorDisplayName,
           authorPublic: input.authorPublic,
           body: input.body,

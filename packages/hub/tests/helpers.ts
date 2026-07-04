@@ -149,7 +149,14 @@ export function buildApp(
     moderation: {
       requireAdminEnabled: opts.requireAdmin ?? false,
       internalToken,
-      moderation: new ModerationService(threadRepo, moderationRepo, clock, opts.studioArtifacts),
+      moderation: new ModerationService(
+        threadRepo,
+        moderationRepo,
+        clock,
+        opts.studioArtifacts,
+        repo,
+        members,
+      ),
     },
     webhooks: {
       access,

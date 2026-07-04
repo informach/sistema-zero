@@ -29,6 +29,15 @@ export interface AvatarRepository {
   /** URL pública do snapshot (a "foto" do avatar 3D) — `null` se nunca tirou foto. */
   getPhotoUrl(userId: string, audience: CourseAudience): Promise<string | null>
   /**
+   * Fotos (snapshot do avatar 3D) de VÁRIOS perfis numa ida (sem N+1) — alimenta o
+   * fórum kids (rosto de cada autor). Só entram os que TÊM foto (map id→url); perfil
+   * sem foto/linha some do mapa (o app cai no boneco padrão). Uma query só.
+   */
+  listPhotoUrlsByProfileIds(
+    profileIds: string[],
+    audience: CourseAudience,
+  ): Promise<Map<string, string>>
+  /**
    * Define a URL do snapshot (upsert): cria a linha com a config default se ainda não
    * existir (a criança pode salvar a foto antes de equipar). `accountId` só no INSERT.
    */

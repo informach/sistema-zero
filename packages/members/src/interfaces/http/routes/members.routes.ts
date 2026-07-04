@@ -3,6 +3,7 @@ import type { AccessCheckService } from '../../../application/access-check/acces
 import type { BuyAvatarPartService } from '../../../application/avatar/buy-avatar-part.service'
 import type { EquipAvatarService } from '../../../application/avatar/equip-avatar.service'
 import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
+import type { GetAvatarsByProfilesService } from '../../../application/avatar/get-avatars-by-profiles.service'
 import type { SetAvatarPhotoService } from '../../../application/avatar/set-avatar-photo.service'
 import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
 import type { BuyStreakFreezeService } from '../../../application/gamification/buy-streak-freeze.service'
@@ -52,6 +53,7 @@ import {
   AvatarConfigBody,
   AvatarPartParams,
   AvatarPhotoBody,
+  AvatarsBatchQuery,
   CertificateParams,
   ChildrenStatsQuery,
   CourseRatingBody,
@@ -116,6 +118,7 @@ export interface MembersRoutesDeps {
   buyAvatarPart: BuyAvatarPartService
   equipAvatar: EquipAvatarService
   setAvatarPhoto: SetAvatarPhotoService
+  getAvatarsByProfiles: GetAvatarsByProfilesService
   getPublicProfile: GetPublicProfileService
   getRoom: GetRoomService
   saveRoom: SaveRoomService
@@ -362,6 +365,19 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         async ({ params, query }) =>
           deps.getPublicProfile.execute(params.profileId, query.audience ?? 'kids'),
         { params: PublicProfileParams, query: AudienceQuery },
+      )
+      // Avatar + NÍVEL em LOTE por profileId (peer-viewable, como o perfil público): o
+      // BFF do Clube/Mural pinta rosto+aura de cada autor numa ida (sem N+1). Só dado
+      // de jogo (foto do boneco 3D + slug do nível); nome/e-mail nunca passam por aqui.
+      .get(
+        '/avatars',
+        async ({ query }) => ({
+          avatars: await deps.getAvatarsByProfiles.execute(
+            parseProfileIds(query.ids),
+            query.audience ?? 'kids',
+          ),
+        }),
+        { query: AvatarsBatchQuery },
       )
       // ── Quarto virtual (decore-do-seu-jeito) — recurso do PRÓPRIO perfil ────
       .get(

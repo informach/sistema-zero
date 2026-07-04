@@ -1,10 +1,17 @@
 import { Lock } from 'lucide-react'
 import { KidsMascot } from './mascot'
 
+/** Gostinho do que a criança encontra no Clube quando liberar. */
+const PREVIEW = [
+  { emoji: '💬', text: 'Converse com a turma e faça amizades' },
+  { emoji: '🎨', text: 'Mostre as suas criações e descobertas' },
+  { emoji: '📣', text: 'Veja os recados e novidades dos professores' },
+] as const
+
 /**
  * Tela do Clube dos Criadores BLOQUEADO (sem o produto): o item aparece no menu, mas a
- * criança ainda não tem acesso. Recado gentil (sem link de venda — kids não tem funil;
- * o responsável adquire e libera). Espelha o `KidsLockedStudio`.
+ * criança ainda não tem acesso. Recado gentil + prévia do que tem dentro (sem link de
+ * venda — kids não tem funil; o responsável adquire e libera). Espelha o `KidsLockedStudio`.
  */
 export function KidsLockedClube() {
   return (
@@ -18,8 +25,25 @@ export function KidsLockedClube() {
       </div>
       <p className="mt-4 text-muted-foreground">
         O Clube dos Criadores é onde a galera troca ideia, mostra os projetos e faz amizade! 💬✨
-        Ele ainda não está liberado pra você — peça pra um responsável dar uma olhada. Quando
-        liberar, ele aparece aqui pra você participar!
+      </p>
+
+      <ul className="mt-5 flex w-full flex-col gap-2 text-left">
+        {PREVIEW.map((item) => (
+          <li
+            key={item.text}
+            className="flex items-center gap-3 rounded-2xl border-2 border-border bg-card p-3"
+          >
+            <span aria-hidden="true" className="text-2xl leading-none">
+              {item.emoji}
+            </span>
+            <span className="font-medium text-sm">{item.text}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-5 text-muted-foreground text-sm">
+        Peça pra um responsável dar uma olhada. Quando liberar, ele aparece aqui pra você
+        participar!
       </p>
     </div>
   )

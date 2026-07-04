@@ -36,6 +36,12 @@ if (!DATABASE_URL) {
 
 const SEED_PUBLIC = process.env.SEED_PUBLIC === 'true' || process.env.SEED_PUBLIC === '1'
 
+interface ChannelSeed {
+  slug: string
+  name: string
+  postingPolicy: 'members' | 'staff_only'
+}
+
 interface SpaceSeed {
   slug: string
   name: string
@@ -45,7 +51,8 @@ interface SpaceSeed {
    * Convenção: = o slug. Casa com o slug do produto de comunidade no catálogo.
    */
   communityRef: string
-  channel: { slug: string; name: string; postingPolicy: 'members' | 'staff_only' }
+  /** Canais do servidor (idempotente por (spaceId, slug) — adicionar um novo é seguro). */
+  channels: ChannelSeed[]
 }
 
 const SEEDS: SpaceSeed[] = [
@@ -54,7 +61,12 @@ const SEEDS: SpaceSeed[] = [
     name: 'Clube dos Criadores',
     description: 'Converse com os colegas e mostre o que você criou! 🎉',
     communityRef: 'clube-dos-criadores',
-    channel: { slug: 'geral', name: 'Geral', postingPolicy: 'members' },
+    channels: [
+      // Papo aberto da turma (a criança posta — pré-moderado).
+      { slug: 'geral', name: 'Geral', postingPolicy: 'members' },
+      // Voz da equipe: só os professores postam; a criança lê e reage (recados/avisos).
+      { slug: 'recados-da-equipe', name: 'Recados da equipe', postingPolicy: 'staff_only' },
+    ],
   },
   {
     slug: 'mural-dos-criadores',
@@ -63,7 +75,7 @@ const SEEDS: SpaceSeed[] = [
     // Produto SEPARADO do Clube (bônus do desafio do 1º jogo) → chave própria.
     communityRef: 'mural-dos-criadores',
     // Canal staff_only: a criança não posta — os projetos são auto-publicados.
-    channel: { slug: 'parede', name: 'Parede', postingPolicy: 'staff_only' },
+    channels: [{ slug: 'parede', name: 'Parede', postingPolicy: 'staff_only' }],
   },
 ]
 
@@ -131,31 +143,35 @@ async function main(): Promise<void> {
         console.log(`+ servidor "${s.slug}" criado (${spaceId})`)
       }
 
-      // Canal — idempotente por (spaceId, slug). Herda o acesso do servidor.
-      const ch = await conn.db
-        .select({ id: channels.id })
-        .from(channels)
-        .where(and(eq(channels.spaceId, spaceId), eq(channels.slug, s.channel.slug)))
-        .limit(1)
-      if (ch[0]) {
-        console.log(`  = canal "${s.channel.slug}" já existe`)
-      } else {
-        await conn.db.insert(channels).values({
-          id: randomUUID(),
-          version: 0,
-          spaceId,
-          slug: s.channel.slug,
-          name: s.channel.name,
-          topic: null,
-          accessConfig: null, // herda do servidor (community_gated pelo produto daquele servidor)
-          postingPolicy: s.channel.postingPolicy,
-          requiresApproval: null, // herda do servidor
-          sortOrder: 0,
-          status: 'active',
-          createdAt: now,
-          updatedAt: now,
-        })
-        console.log(`  + canal "${s.channel.slug}" (${s.channel.postingPolicy}) criado`)
+      // Canais — idempotentes por (spaceId, slug). Herdam o acesso do servidor.
+      // `sortOrder` = índice no array (ordem estável no menu). Adicionar um canal novo
+      // a um servidor existente é seguro: só insere o que falta.
+      for (const [index, channel] of s.channels.entries()) {
+        const ch = await conn.db
+          .select({ id: channels.id })
+          .from(channels)
+          .where(and(eq(channels.spaceId, spaceId), eq(channels.slug, channel.slug)))
+          .limit(1)
+        if (ch[0]) {
+          console.log(`  = canal "${channel.slug}" já existe`)
+        } else {
+          await conn.db.insert(channels).values({
+            id: randomUUID(),
+            version: 0,
+            spaceId,
+            slug: channel.slug,
+            name: channel.name,
+            topic: null,
+            accessConfig: null, // herda do servidor (community_gated pelo produto daquele servidor)
+            postingPolicy: channel.postingPolicy,
+            requiresApproval: null, // herda do servidor
+            sortOrder: index,
+            status: 'active',
+            createdAt: now,
+            updatedAt: now,
+          })
+          console.log(`  + canal "${channel.slug}" (${channel.postingPolicy}) criado`)
+        }
       }
     }
     console.log(

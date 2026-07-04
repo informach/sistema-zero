@@ -9,7 +9,13 @@ import type { BadgeSlug } from './badges'
  */
 
 /** Tipos de evento do ledger que uma missão pode contar (== xp_source_type contáveis). */
-export type MissionGoalType = 'lesson_complete' | 'quiz_passed' | 'studio_passed' | 'unit_complete'
+export type MissionGoalType =
+  | 'lesson_complete'
+  | 'quiz_passed'
+  | 'studio_passed'
+  | 'unit_complete'
+  // Clube: conta `clube_thread` (só APROVADO entra no ledger → não farmável por spam).
+  | 'clube_thread'
 
 export interface MissionDef {
   slug: string
@@ -62,6 +68,15 @@ export const DAILY_MISSIONS: readonly MissionDef[] = [
     rewardXp: 15,
     rewardCoins: 15,
   },
+  {
+    // Comunidade: uma conversa aprovada no Clube (só conta o que a equipe liberou).
+    slug: 'daily-clube',
+    cadence: 'daily',
+    goalType: 'clube_thread',
+    target: 1,
+    rewardXp: 10,
+    rewardCoins: 10,
+  },
 ]
 
 export const WEEKLY_MISSIONS: readonly MissionDef[] = [
@@ -88,6 +103,15 @@ export const WEEKLY_MISSIONS: readonly MissionDef[] = [
     target: 3,
     rewardXp: 75,
     rewardCoins: 80,
+  },
+  {
+    // Comunidade: 3 conversas aprovadas no Clube na semana.
+    slug: 'weekly-clube-3',
+    cadence: 'weekly',
+    goalType: 'clube_thread',
+    target: 3,
+    rewardXp: 40,
+    rewardCoins: 45,
   },
 ]
 

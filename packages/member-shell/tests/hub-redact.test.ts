@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { redactAuthors } from '../src/lib/hub-redact'
+import { attachAuthorAvatars, collectAuthorIds, redactAuthors } from '../src/lib/hub-redact'
 
 const ME = 'user-me'
 const OTHER = 'user-other'
@@ -139,5 +139,77 @@ describe('redactAuthors', () => {
   test('autor público SENDO o próprio viewer → volta intacto (a UI mostra "Você", sem link)', () => {
     const input = { authorId: ME, authorPublic: true, authorDisplayName: 'Eu' }
     expect(redactAuthors(input, ME)).toBe(input)
+  })
+
+  // ── revealNames (Clube kids): 1º nome de TODOS, link ainda gated no opt-in ──
+  test('revealNames: autor NÃO público mantém o 1º nome, mas SEM authorProfileId (link)', () => {
+    const out = redactAuthors(
+      { id: 't1', authorId: OTHER as string | null, authorPublic: false, authorDisplayName: 'Lia' },
+      ME,
+      true,
+    ) as {
+      authorId: string | null
+      authorProfileId?: string | null
+      authorDisplayName?: string | null
+    }
+    expect(out.authorId).toBeNull() // id cru segue redigido
+    expect(out.authorDisplayName).toBe('Lia') // nome revelado (kids)
+    expect(out.authorProfileId).toBeNull() // link ao perfil público SÓ com opt-in
+  })
+
+  test('revealNames: autor público mantém nome E o alvo do link (authorProfileId)', () => {
+    const out = redactAuthors(
+      { id: 't1', authorId: OTHER as string | null, authorPublic: true, authorDisplayName: 'Lia' },
+      ME,
+      true,
+    ) as { authorId: string | null; authorProfileId?: string | null; authorDisplayName?: string }
+    expect(out.authorProfileId).toBe(OTHER)
+    expect(out.authorDisplayName).toBe('Lia')
+  })
+})
+
+describe('collectAuthorIds', () => {
+  test('coleta os authorId CRUS distintos de uma página (ignora null/ausente)', () => {
+    const ids = collectAuthorIds({
+      items: [{ authorId: ME }, { authorId: OTHER }, { authorId: OTHER }, { authorId: null }, {}],
+    })
+    expect([...ids].sort()).toEqual([ME, OTHER].sort())
+  })
+
+  test('item único / envelope de erro / primitivo → não explode', () => {
+    expect([...collectAuthorIds({ authorId: OTHER })]).toEqual([OTHER])
+    expect([...collectAuthorIds({ error: { code: 'X' } })]).toEqual([])
+    expect([...collectAuthorIds(null)]).toEqual([])
+  })
+})
+
+describe('attachAuthorAvatars', () => {
+  const AVATARS = {
+    [ME]: { photoUrl: 'https://r2/me.webp', level: 'god' },
+    [OTHER]: { photoUrl: null, level: 'noob' },
+  }
+
+  test('anexa avatar+nível pelo authorId CRU; sobrevive à redação posterior', () => {
+    const enriched = attachAuthorAvatars({ id: 't', authorId: OTHER }, AVATARS) as {
+      authorAvatarUrl?: string | null
+      authorLevel?: string | null
+    }
+    expect(enriched.authorLevel).toBe('noob')
+    // Depois de redigir, o avatar/nível continuam (são estruturais, `...item`).
+    const redacted = redactAuthors(enriched, ME, true) as {
+      authorId: string | null
+      authorLevel?: string | null
+    }
+    expect(redacted.authorId).toBeNull()
+    expect(redacted.authorLevel).toBe('noob')
+  })
+
+  test('página: enriquece cada item; autor fora do mapa fica intacto', () => {
+    const out = attachAuthorAvatars(
+      { items: [{ authorId: ME }, { authorId: 'desconhecido' }] },
+      AVATARS,
+    ) as { items: { authorAvatarUrl?: string | null; authorLevel?: string | null }[] }
+    expect(out.items[0]?.authorLevel).toBe('god')
+    expect(out.items[1]?.authorLevel).toBeUndefined()
   })
 })

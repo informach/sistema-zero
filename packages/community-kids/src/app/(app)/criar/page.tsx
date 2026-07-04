@@ -41,12 +41,6 @@ const MORE = [
     title: 'Quarto',
     text: 'Decore o seu cantinho com as moedas que você ganhou.',
   },
-  {
-    href: '/clube-dos-criadores',
-    icon: MessagesSquare,
-    title: 'Clube',
-    text: 'Converse com a turma e mostre as suas descobertas.',
-  },
 ] as const
 
 export default function CriarPage() {
@@ -61,6 +55,25 @@ export default function CriarPage() {
           </p>
         </div>
       </div>
+
+      {/* Clube em DESTAQUE (07/2026): a comunidade merece o topo — antes ficava
+          escondida no rodapé "E também". Card grande e caloroso, acima do trio criativo. */}
+      <Link
+        href="/clube-dos-criadores"
+        prefetch={false}
+        className="flex items-center gap-4 rounded-3xl border-2 border-primary bg-(--kids-cyan-tint) p-5 shadow-[0_4px_0_var(--border)] transition-transform active:translate-y-[2px] active:shadow-[0_2px_0_var(--border)]"
+      >
+        <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground">
+          <MessagesSquare className="size-7" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="sz-display block text-xl text-primary">Clube dos Criadores</span>
+          <span className="mt-0.5 block text-muted-foreground text-sm">
+            Converse com a turma, faça amizades e mostre as suas descobertas.
+          </span>
+        </span>
+        <ArrowRight className="size-5 shrink-0 text-primary" />
+      </Link>
 
       <section className="flex flex-col gap-3">
         {JOURNEY.map((item) => {

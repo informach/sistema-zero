@@ -32,6 +32,8 @@ export const BADGE_SLUGS = [
   'pensa-creator-3',
   // 1ª participação no Desafio do mês (game jam — ledger `challenge_entry`). 07/2026.
   'challenge-first',
+  // 1ª conversa aprovada no Clube dos Criadores (ledger `clube_thread`). 07/2026.
+  'clube-primeiro-post',
   'coins-saver-300',
   'coins-saver-1000',
 ] as const

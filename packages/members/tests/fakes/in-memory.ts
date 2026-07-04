@@ -32,6 +32,7 @@ import {
 import {
   advanceStreak,
   challengeBadgeSlugs,
+  clubeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
   pensaCycleBadgeSlugs,
@@ -1479,6 +1480,12 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         badgeCandidates.add(slug)
       }
     }
+    // Clube (mirror do Drizzle — 1ª conversa aprovada = clube-primeiro-post).
+    if (newEvents.some((e) => e.sourceType === 'clube_thread')) {
+      for (const slug of clubeBadgeSlugs(countByType('clube_thread'))) {
+        badgeCandidates.add(slug)
+      }
+    }
 
     const key = this.profileKey(input.userId, input.audience)
     const profile = this.profiles.get(key)
@@ -1744,6 +1751,18 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       if (level && level in result) result[level] += 1
     }
     return result
+  }
+
+  async countQualifyingByLevelForProfiles(
+    profileIds: string[],
+    audience: CourseAudience,
+  ): Promise<Map<string, QualifyingByLevel>> {
+    const map = new Map<string, QualifyingByLevel>()
+    for (const id of new Set(profileIds)) {
+      const q = await this.countQualifyingCoursesByLevel(id, audience)
+      if (q.iniciante || q.intermediario || q.avancado) map.set(id, q)
+    }
+    return map
   }
 
   /**
@@ -2163,6 +2182,18 @@ export class InMemoryAvatarRepository implements AvatarRepository {
 
   async getPhotoUrl(userId: string, audience: CourseAudience): Promise<string | null> {
     return this.photoUrls.get(this.key(userId, audience)) ?? null
+  }
+
+  async listPhotoUrlsByProfileIds(
+    profileIds: string[],
+    audience: CourseAudience,
+  ): Promise<Map<string, string>> {
+    const map = new Map<string, string>()
+    for (const id of new Set(profileIds)) {
+      const url = this.photoUrls.get(this.key(id, audience))
+      if (url) map.set(id, url)
+    }
+    return map
   }
 
   async setPhotoUrl(

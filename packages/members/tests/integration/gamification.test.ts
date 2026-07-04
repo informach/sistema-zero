@@ -1249,3 +1249,64 @@ describe('Desafio do mês (game jam) — webhook /challenge + rota do aluno', ()
     expect((await readJson(await getChallenge(app))).entered).toBe(false)
   })
 })
+
+describe('Clube dos Criadores — webhook /clube (recompensa por aprovação)', () => {
+  const postClube = (app: App, body: object, deliveryId: string = randomUUID()) => {
+    const raw = JSON.stringify(body)
+    return app.handle(
+      new Request('http://localhost/members/webhooks/clube', {
+        method: 'POST',
+        headers: signedWebhookHeaders('/members/webhooks/clube', raw, deliveryId),
+        body: raw,
+      }),
+    )
+  }
+
+  const getMe = (app: App) =>
+    app.handle(
+      new Request('http://localhost/members/gamification/me?audience=kids', {
+        headers: authHeaders,
+      }),
+    )
+
+  test('tópico aprovado: XP 5 + badge clube-primeiro-post', async () => {
+    const { app } = buildApp()
+    const res = await postClube(app, {
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      kind: 'thread',
+      contentId: randomUUID(),
+    })
+    expect(res.status).toBe(200)
+    const me = await readJson(await getMe(app))
+    expect(me.xp).toBe(5)
+    const badge = me.badges.find((b: { slug: string }) => b.slug === 'clube-primeiro-post')
+    expect(badge?.unlockedAt).not.toBeNull()
+  })
+
+  test('comentário aprovado: XP 3, SEM badge (só thread destrava a badge)', async () => {
+    const { app } = buildApp()
+    await postClube(app, {
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      kind: 'comment',
+      contentId: randomUUID(),
+    })
+    const me = await readJson(await getMe(app))
+    expect(me.xp).toBe(3)
+    const badge = me.badges.find((b: { slug: string }) => b.slug === 'clube-primeiro-post')
+    expect(badge?.unlockedAt ?? null).toBeNull()
+  })
+
+  test('re-aprovar o MESMO conteúdo (delivery novo) não duplica o XP (ledger por contentId)', async () => {
+    const { app } = buildApp()
+    const contentId = randomUUID()
+    const body = { userId: USER, accountId: USER, audience: 'kids', kind: 'thread', contentId }
+    await postClube(app, body)
+    await postClube(app, body) // delivery-id novo → passa o dedupe de webhook, mas o ledger dedupe
+    const me = await readJson(await getMe(app))
+    expect(me.xp).toBe(5)
+  })
+})

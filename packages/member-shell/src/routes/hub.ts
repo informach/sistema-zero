@@ -11,10 +11,10 @@ import {
   sanitizeFilename,
   UGC_IMAGE_INPUT_MIME,
 } from '../lib/hub-attachments'
-import { redactAuthors } from '../lib/hub-redact'
+import { attachAuthorAvatars, collectAuthorIds, redactAuthors } from '../lib/hub-redact'
 import { stripImageMarkdown } from '../lib/markdown'
 import type { HubAttachmentKind } from '../lib/types'
-import type { HubClient, MembersClient } from '../server/clients'
+import type { HubClient, MembersAudience, MembersClient } from '../server/clients'
 import type { GatewayResponse } from '../server/gateway'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
@@ -34,6 +34,9 @@ const ATTACHMENT_IDS = z.array(z.string().uuid()).max(HUB_ATTACHMENT_LIMITS.maxP
 const CreateThread = z.object({
   title: z.string().min(1).max(300),
   body: BODY,
+  // Referência opcional a um jogo do Mural ("Mostrar meu jogo no Clube") — o hub valida
+  // que é um /jogar de vitrine visível de verdade.
+  playId: z.string().uuid().nullish(),
   attachmentIds: ATTACHMENT_IDS,
 })
 const CreateComment = z.object({
@@ -95,10 +98,41 @@ export function createHubRoutes(deps: {
   members: MembersClient
   media: MediaModule
   session: SessionModule
+  /** Vitrine do app — `kids` liga rosto+aura+nome de TODOS os autores (ver `okRedactedWithAvatars`). */
+  audience: MembersAudience
 }) {
-  const { hub, members, media, session } = deps
+  const { hub, members, media, session, audience } = deps
+  // Só o Clube/Mural KIDS mostra rosto+aura+nome de todos; o fórum adulto segue com a
+  // redação clássica (nome só quando público, sem avatar).
+  const revealAuthors = audience === 'kids'
   // Id do viewer p/ redigir o autor de terceiros (null = sem sessão → tudo redigido).
   const viewerId = async (): Promise<string | null> => (await session.getSession())?.id ?? null
+
+  /**
+   * Como `okRedacted`, mas na vitrine KIDS enriquece cada tópico/comentário com o
+   * avatar+nível do autor (LOTE ao members, sem N+1) ANTES de redigir o `authorId`, e
+   * revela o 1º nome de todos (`revealAuthors`). Best-effort: falha/ausência de avatar
+   * NUNCA quebra o fórum (cai na redação normal). No app adulto = `okRedacted` puro.
+   */
+  const okRedactedWithAvatars = async (
+    r: GatewayResponse,
+    vid: string | null,
+  ): Promise<NextResponse> => {
+    if (!revealAuthors) return okRedacted(r, vid)
+    const ids = [...collectAuthorIds(r.body)]
+    if (ids.length > 0) {
+      try {
+        const res = await members.listAvatarsByProfileIds(ids)
+        if (res.status === 200 && res.body?.avatars) {
+          const enriched = attachAuthorAvatars(r.body, res.body.avatars)
+          return NextResponse.json(redactAuthors(enriched, vid, true), { status: r.status })
+        }
+      } catch {
+        // best-effort — segue sem avatar (nunca derruba a carga do fórum).
+      }
+    }
+    return NextResponse.json(redactAuthors(r.body, vid, true), { status: r.status })
+  }
 
   const impersonationReadonly = () =>
     NextResponse.json(
@@ -146,7 +180,7 @@ export function createHubRoutes(deps: {
         }),
         viewerId(),
       ])
-      return okRedacted(r, vid)
+      return okRedactedWithAvatars(r, vid)
     },
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const readonly = await requireWritableSession()
@@ -159,10 +193,18 @@ export function createHubRoutes(deps: {
         title: parsed.data.title,
         // Neutraliza imagem externa no corpo de UGC (pixel-rastreador) já na origem.
         body: stripImageMarkdown(parsed.data.body),
+        // Referência a um jogo do Mural ("Mostrar meu jogo") — o hub valida a visibilidade.
+        playId: parsed.data.playId ?? null,
         attachmentIds: parsed.data.attachmentIds,
       })
-      return okRedacted(r, await viewerId())
+      return okRedactedWithAvatars(r, await viewerId())
     },
+  }
+
+  // Sino "novas respostas nas suas conversas": tópicos do PRÓPRIO aluno (sem redação —
+  // são todos dele). O app diffa o `commentCount` contra um baseline local.
+  const hubMyThreads = {
+    GET: async () => ok(await hub.listMyThreads()),
   }
 
   const hubThread = {
@@ -170,7 +212,7 @@ export function createHubRoutes(deps: {
       const id = await idFrom(ctx)
       if (!id) return invalid()
       const [r, vid] = await Promise.all([hub.getThread(id), viewerId()])
-      return okRedacted(r, vid)
+      return okRedactedWithAvatars(r, vid)
     },
     PATCH: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const readonly = await requireWritableSession()
@@ -196,7 +238,7 @@ export function createHubRoutes(deps: {
         }),
         viewerId(),
       ])
-      return okRedacted(r, vid)
+      return okRedactedWithAvatars(r, vid)
     },
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const readonly = await requireWritableSession()
@@ -595,6 +637,7 @@ export function createHubRoutes(deps: {
     hubSpace,
     hubChannels,
     hubChannelThreads,
+    hubMyThreads,
     hubThread,
     hubThreadComments,
     hubComment,

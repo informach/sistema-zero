@@ -38,7 +38,21 @@ const MAX_BODY = 50_000
 export interface CreateThreadCommand {
   title: string
   body: string
+  /** Referência opcional a um jogo do Mural (`play_id`) — o card "Jogar" na conversa do Clube. */
+  playId?: string | null
   attachmentIds?: string[]
+}
+
+/** Item leve dos tópicos do próprio autor (sino "novas respostas nas suas conversas"). */
+export interface MyThreadView {
+  id: string
+  title: string
+  slug: string
+  channelId: string
+  commentCount: number
+  lastActivityAt: string
+  /** Referência a um jogo do Mural, se a conversa apontar p/ um `/jogar/<id>`. */
+  playId: string | null
 }
 export interface CreateCommentCommand {
   body: string
@@ -112,6 +126,16 @@ export class ThreadService {
       throw new PostingNotAllowedError('Título ou conteúdo inválido')
     }
     const owned = await this.validateOwnedPending(actor, cmd.attachmentIds ?? [])
+    // Referência a um jogo do Mural ("Mostrar meu jogo no Clube"): VALIDA que é um post
+    // de vitrine ainda visível — a criança só liga um /jogar público de verdade, nunca
+    // um id arbitrário. Fronteira de segurança no hub (a autoria é só filtro de UX no app).
+    let playId: string | null = null
+    if (cmd.playId) {
+      if (!(await this.threads.hasVisibleShowcasePlayId(cmd.playId))) {
+        throw new PostingNotAllowedError('Jogo indisponível')
+      }
+      playId = cmd.playId
+    }
     const status =
       !actor.privileged && effectiveRequiresApproval(space, channel) ? 'pending' : 'visible'
     const id = this.newId()
@@ -121,6 +145,8 @@ export class ThreadService {
       id,
       channelId,
       authorId: actor.userId,
+      // Conta do responsável (snapshot) — chave de coorte p/ a recompensa dada na aprovação.
+      authorAccountId: actor.accountId,
       // Snapshot do nome + flag pública do AUTOR (confiáveis, do gateway) — o nome vira
       // link p/ o perfil público quando os pais liberaram (`profilePublic`).
       authorDisplayName: actor.displayName,
@@ -129,6 +155,7 @@ export class ThreadService {
       slug: threadSlug(title, id),
       body,
       status,
+      playId,
       attachmentIds: owned.map((a) => a.id),
       now,
     })
@@ -157,6 +184,26 @@ export class ThreadService {
       this.attachments.listByThreadIds(ids),
     ])
     return toThreadPage(items, hasMore, reactions, attachments)
+  }
+
+  /**
+   * Tópicos VISÍVEIS do PRÓPRIO ator (mais recentes) — sino "novas respostas nas suas
+   * conversas". Só os próprios (por `authorId`) → nunca vaza autor de terceiro; o app
+   * compara `commentCount` com um baseline local p/ acender o pontinho.
+   */
+  async listMyThreads(actor: Actor, limit = 30): Promise<{ items: MyThreadView[] }> {
+    const rows = await this.threads.listByAuthor(actor.userId, limit)
+    return {
+      items: rows.map((t) => ({
+        id: t.id,
+        title: t.title,
+        slug: t.slug,
+        channelId: t.channelId,
+        commentCount: t.commentCount,
+        lastActivityAt: t.lastActivityAt.toISOString(),
+        playId: t.playId,
+      })),
+    }
   }
 
   async getThread(actor: Actor, threadId: string): Promise<ThreadView> {
@@ -220,6 +267,7 @@ export class ThreadService {
       id: this.newId(),
       threadId,
       authorId: actor.userId,
+      authorAccountId: actor.accountId,
       authorDisplayName: actor.displayName,
       authorPublic: actor.profilePublic,
       body,

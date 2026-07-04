@@ -18,6 +18,9 @@ const registry = new RouteRegistry([
   r({ id: 'avatar-get', methods: ['GET'], pathPattern: '/members/avatar' }),
   r({ id: 'avatar-equip', methods: ['PUT'], pathPattern: '/members/avatar' }),
   r({ id: 'avatar-buy', methods: ['POST'], pathPattern: '/members/avatar/parts/:partId/buy' }),
+  r({ id: 'avatars-batch', methods: ['GET'], pathPattern: '/members/avatars' }),
+  r({ id: 'hub-thread-get', methods: ['GET'], pathPattern: '/hub/threads/:id' }),
+  r({ id: 'hub-my-threads', methods: ['GET'], pathPattern: '/hub/my-threads' }),
   r({ id: 'room-get', methods: ['GET'], pathPattern: '/members/room' }),
   r({ id: 'room-save', methods: ['PUT'], pathPattern: '/members/room' }),
   r({ id: 'room-buy', methods: ['POST'], pathPattern: '/members/room/items/:itemId/buy' }),
@@ -192,6 +195,19 @@ describe('RouteRegistry', () => {
     expect(buy?.params.partId).toBe('cabelo-cacheado')
     // 2 segmentos (avatar) nunca caem no buy de 4 segmentos.
     expect(registry.resolve('POST', '/members/avatar', 'v1')).toBeUndefined()
+  })
+
+  test('/members/avatars (lote, com "s") é literal distinto de /members/avatar', () => {
+    expect(registry.resolve('GET', '/members/avatars', 'v1')?.route.id).toBe('avatars-batch')
+    // "avatars" ≠ "avatar": o lote nunca é confundido com o get do próprio avatar.
+    expect(registry.resolve('GET', '/members/avatar', 'v1')?.route.id).toBe('avatar-get')
+  })
+
+  test('/hub/my-threads (literal) não colide com /hub/threads/:id', () => {
+    expect(registry.resolve('GET', '/hub/my-threads', 'v1')?.route.id).toBe('hub-my-threads')
+    const t = registry.resolve('GET', '/hub/threads/abc-123', 'v1')
+    expect(t?.route.id).toBe('hub-thread-get')
+    expect(t?.params.id).toBe('abc-123')
   })
 
   test('/members/room resolve por método; /items/:id/buy (4 seg) não colide', () => {

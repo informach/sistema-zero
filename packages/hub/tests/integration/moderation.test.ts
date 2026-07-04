@@ -300,6 +300,51 @@ describe('moderação', () => {
     expect(calls).toHaveLength(0)
   })
 
+  test('aprovar tópico do Clube kids RECOMPENSA a criança (webhook de contribuição)', async () => {
+    const ctx = buildApp()
+    const { channelId } = await seed(ctx, {
+      space: { audience: 'kids', requiresApproval: true },
+    })
+    const kid = randomUUID()
+    const threadId = (
+      (await (await postThread(ctx, channelId, studentHeaders(kid))).json()) as { id: string }
+    ).id
+    // Pendente ainda não rende — só a APROVAÇÃO.
+    expect(ctx.members.clubContributions).toHaveLength(0)
+
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${threadId}/approve`, { headers: adminHeaders() }),
+    )
+    expect(ctx.members.clubContributions).toEqual([
+      { userId: kid, accountId: kid, audience: 'kids', kind: 'thread', contentId: threadId },
+    ])
+  })
+
+  test('rejeitar NÃO recompensa; e servidor ADULTO não recompensa (Clube é kids)', async () => {
+    const ctx = buildApp()
+    const kids = await seed(ctx, { space: { audience: 'kids', requiresApproval: true } })
+    const rejected = (
+      (await (await postThread(ctx, kids.channelId, studentHeaders(randomUUID()))).json()) as {
+        id: string
+      }
+    ).id
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${rejected}/reject`, { headers: adminHeaders() }),
+    )
+    expect(ctx.members.clubContributions).toHaveLength(0)
+
+    const adult = await seed(ctx, { space: { audience: 'adult', requiresApproval: true } })
+    const t2 = (
+      (await (await postThread(ctx, adult.channelId, studentHeaders(randomUUID()))).json()) as {
+        id: string
+      }
+    ).id
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${t2}/approve`, { headers: adminHeaders() }),
+    )
+    expect(ctx.members.clubContributions).toHaveLength(0)
+  })
+
   test('silenciar com expiresAt inválido → 400', async () => {
     const ctx = buildApp()
     const { spaceId } = await seed(ctx)

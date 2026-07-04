@@ -4,6 +4,8 @@ import {
   ThreadNotFoundError,
 } from '../../domain/hub-errors'
 import type { MuteBanKind } from '../../domain/moderation/mute-ban'
+import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
+import type { MembersGateway } from '../../domain/ports/members-gateway.port'
 import type {
   ModerationActionInput,
   ModerationRepository,
@@ -57,7 +59,69 @@ export class ModerationService {
      * `KIDS_BFF_BASE_URL`.
      */
     private readonly studioBff: StudioArtifactGateway = noopStudioArtifactGateway,
+    /**
+     * Leitura de canal/servidor + members — p/ RECOMPENSAR a criança quando o staff
+     * APROVA o conteúdo do Clube (audiência kids). Opcionais: ausentes (testes que não
+     * exercitam a recompensa) → o disparo é no-op. O composition-root injeta os dois.
+     */
+    private readonly community?: CommunityReadRepository,
+    private readonly members?: MembersGateway,
   ) {}
+
+  /** Audiência do servidor dono do canal (`kids`/`adult`) ou `null` se não achou. */
+  private async audienceForChannel(channelId: string): Promise<'adult' | 'kids' | null> {
+    if (!this.community) return null
+    const channel = await this.community.findActiveChannelById(channelId)
+    if (!channel) return null
+    const space = await this.community.findActiveSpaceById(channel.spaceId)
+    return space?.audience ?? null
+  }
+
+  /**
+   * Recompensa a criança por um TÓPICO/COMENTÁRIO aprovado no Clube kids (XP + badge de
+   * comunidade). Só na APROVAÇÃO (rejeitado não rende). Best-effort, fire-and-forget: um
+   * erro aqui NUNCA derruba a moderação. Idempotente no members (ledger por `contentId`).
+   */
+  private async rewardOnApprove(kind: 'thread' | 'comment', contentId: string): Promise<void> {
+    if (!this.community || !this.members) return
+    try {
+      const author =
+        kind === 'thread'
+          ? await this.threads.findThreadById(contentId)
+          : await this.resolveCommentAuthor(contentId)
+      if (!author || author.isShowcase || !author.authorAccountId) return
+      if ((await this.audienceForChannel(author.channelId)) !== 'kids') return
+      void this.members.notifyClubContribution({
+        userId: author.authorId,
+        accountId: author.authorAccountId,
+        audience: 'kids',
+        kind,
+        contentId,
+      })
+    } catch {
+      // best-effort: a decisão de moderação já foi aplicada; a recompensa é eventual.
+    }
+  }
+
+  /** Autor + canal de um comentário (via o tópico-pai) — p/ a recompensa. */
+  private async resolveCommentAuthor(commentId: string): Promise<{
+    authorId: string
+    authorAccountId: string | null
+    channelId: string
+    isShowcase: boolean
+  } | null> {
+    const comment = await this.threads.findCommentById(commentId)
+    if (!comment) return null
+    const thread = await this.threads.findThreadById(comment.threadId)
+    if (!thread) return null
+    return {
+      authorId: comment.authorId,
+      authorAccountId: comment.authorAccountId,
+      channelId: thread.channelId,
+      // Comentário nunca é showcase; herda `false` (o guard do reward é genérico).
+      isShowcase: false,
+    }
+  }
 
   // ── Fila de aprovação ──────────────────────────────────────────────────────
   async listPending(opts: {
@@ -74,6 +138,7 @@ export class ModerationService {
       throw new ThreadNotFoundError()
     }
     await this.log('approve', moderatorId, id)
+    await this.rewardOnApprove('thread', id)
     return { ok: true }
   }
 
@@ -90,6 +155,7 @@ export class ModerationService {
       throw new CommentNotFoundError()
     }
     await this.log('approve', moderatorId, id)
+    await this.rewardOnApprove('comment', id)
     return { ok: true }
   }
 

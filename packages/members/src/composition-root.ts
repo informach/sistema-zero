@@ -7,6 +7,7 @@ import { GetCourseAnalyticsService } from './application/analytics/get-course-an
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
+import { GetAvatarsByProfilesService } from './application/avatar/get-avatars-by-profiles.service'
 import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
@@ -248,6 +249,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const getGamification = new GetGamificationService(gamificationRepo, clock)
   const avatarRepo = new DrizzleAvatarRepository(db)
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
+  const getAvatarsByProfiles = new GetAvatarsByProfilesService(avatarRepo, gamificationRepo)
   const buyAvatarPart = new BuyAvatarPartService(avatarRepo, gamificationRepo, clock)
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
   const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock)
@@ -449,6 +451,7 @@ export async function createApplication(env: Env): Promise<Application> {
       buyAvatarPart,
       equipAvatar,
       setAvatarPhoto,
+      getAvatarsByProfiles,
       getPublicProfile,
       getRoom,
       saveRoom,

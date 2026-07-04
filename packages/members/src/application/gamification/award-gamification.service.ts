@@ -183,6 +183,36 @@ export class AwardGamificationService {
   }
 
   /**
+   * CLUBE dos Criadores (07/2026): a equipe APROVOU um tópico/comentário da criança →
+   * XP (thread 5, comment 3) + badge `clube-primeiro-post` na 1ª thread. Premiar só na
+   * aprovação (não no envio) bloqueia farm/rejeitado. Idempotente pelo `contentId` no
+   * ledger (re-aprovar hide→approve é inerte). XP real → move o streak (voltar ao Clube
+   * conta como dia ativo). `privileged: false` — o webhook do hub não carrega role.
+   */
+  async awardClubeContribution(input: {
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    kind: 'thread' | 'comment'
+    contentId: string
+  }): Promise<GamificationDeltaView | null> {
+    const isThread = input.kind === 'thread'
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [
+        {
+          sourceType: isThread ? 'clube_thread' : 'clube_comment',
+          sourceId: input.contentId,
+          amount: isThread ? XP_VALUES.CLUBE_THREAD : XP_VALUES.CLUBE_COMMENT,
+        },
+      ],
+      false,
+    )
+  }
+
+  /**
    * MARCO `course_showcased` (amount 0): o aluno publicou o projeto do curso no
    * Mural dos Criadores. Idempotente por (user, course). NÃO move XP/streak nem
    * concede badge — só registra o marco que, junto de `course_complete`, qualifica

@@ -61,6 +61,17 @@ export const AvatarPhotoBody = t.Object({
 /** Params de `GET /members/profiles/:profileId/public` (uuid na borda). */
 export const PublicProfileParams = t.Object({ profileId: UUID })
 
+/**
+ * Query de `GET /members/avatars` (aluno, via gateway): avatar+nível em LOTE por
+ * profileId, para o BFF do fórum kids pintar rosto+aura de cada autor de tópico/
+ * comentário numa ida (sem N+1). `ids` = CSV de uuids de perfil (uuid validado + teto
+ * 50 via `parseProfileIds`); `audience` ausente → `kids` (único consumidor é a vitrine kids).
+ */
+export const AvatarsBatchQuery = t.Object({
+  ids: t.String({ minLength: 1, maxLength: 2000 }),
+  audience: t.Optional(AUDIENCE),
+})
+
 // ── Missões + proteção de sequência ──────────────────────────────────────────
 export const MissionSlugParams = t.Object({ slug: AVATAR_SLUG })
 
@@ -260,6 +271,19 @@ export const ChallengeWebhookBody = t.Object({
   accountId: UUID,
   audience: AUDIENCE,
   challengeKey: t.String({ pattern: '^m:\\d{4}-\\d{2}$' }),
+})
+
+/**
+ * Corpo de `POST /members/webhooks/clube` — o HUB avisa que a equipe APROVOU um
+ * tópico/comentário do Clube. Grava XP (thread 5, comment 3) + badge na 1ª thread.
+ * `contentId` = id do conteúdo (chave de idempotência do ledger; re-aprovar é inerte).
+ */
+export const ClubeWebhookBody = t.Object({
+  userId: UUID,
+  accountId: UUID,
+  audience: AUDIENCE,
+  kind: t.Union([t.Literal('thread'), t.Literal('comment')]),
+  contentId: UUID,
 })
 
 /** Corpo de `PUT /members/courses/:slug/lessons/:lessonId/position` (throttled no client). */

@@ -449,6 +449,8 @@ export type BadgeSlug =
   | 'pensa-creator-3'
   // Desafio do mês (07/2026, Fase 5): 1ª participação (ledger `challenge_entry`).
   | 'challenge-first'
+  // Clube dos Criadores (07/2026): 1ª conversa aprovada (ledger `clube_thread`).
+  | 'clube-primeiro-post'
 
 /**
  * Delta de UMA ação (complete/quiz aprovado) — vem NA resposta da ação (a UI
@@ -485,6 +487,31 @@ export interface StudentLevelView {
   next: StudentLevelSlug | null
   /** Quanto falta p/ o próximo, por dificuldade (`null` no topo). */
   remaining: { any: number; iniciante: number; intermediario: number; avancado: number } | null
+}
+
+/** Rosto + aura de um autor do fórum kids (`GET /members/avatars` em lote). */
+export interface ProfileAvatarView {
+  /** Foto do avatar 3D (`null` = boneco padrão). */
+  photoUrl: string | null
+  /** Slug do nível p/ a aura. */
+  level: StudentLevelSlug
+}
+
+/** Resposta de `GET /members/avatars` — mapa profileId → avatar+nível. */
+export interface AvatarsBatchView {
+  avatars: Record<string, ProfileAvatarView>
+}
+
+/** Item leve de `GET /hub/my-threads` — sino "novas respostas nas suas conversas". */
+export interface HubMyThreadView {
+  id: string
+  title: string
+  slug: string
+  channelId: string
+  commentCount: number
+  lastActivityAt: string
+  /** Jogo do Mural referenciado pela conversa (`/jogar/<id>`), se houver. */
+  playId: string | null
 }
 
 /** `GET /members/gamification/me` — widgets (sidebar/home) e vitrine do perfil. */
@@ -997,6 +1024,13 @@ export interface HubThreadView {
   authorDisplayName: string | null
   /** Perfil do autor é público (opt-in dos pais) — a UI decide o link. */
   authorPublic?: boolean
+  /**
+   * Foto do avatar 3D do autor + slug do nível (p/ a aura), resolvidos no BFF em LOTE
+   * (só na vitrine KIDS). Estruturais — sobrevivem à redação de `authorId`; NUNCA PII
+   * (o avatar é um boneco que a criança montou). Ausentes no fórum adulto.
+   */
+  authorAvatarUrl?: string | null
+  authorLevel?: StudentLevelSlug | null
   /** Capa do projeto (URL pública) — só na vitrine. */
   coverImageUrl: string | null
   /**
@@ -1039,6 +1073,9 @@ export interface HubCommentView {
   authorDisplayName?: string | null
   /** Perfil do autor é público (opt-in dos pais) — a UI decide o link. */
   authorPublic?: boolean
+  /** Foto do avatar 3D + slug do nível (aura), em lote pelo BFF — só KIDS. Ver `HubThreadView`. */
+  authorAvatarUrl?: string | null
+  authorLevel?: StudentLevelSlug | null
   body: string
   status: HubContentStatus
   pending: boolean

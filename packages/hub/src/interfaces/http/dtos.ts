@@ -133,6 +133,8 @@ const ATTACHMENT_IDS = t.Optional(t.Array(UUID, { maxItems: 50 }))
 export const CreateThreadBody = t.Object({
   title: t.String({ minLength: 1, maxLength: 300 }),
   body: MARKDOWN_BODY,
+  /** Referência opcional a um jogo do Mural (`play_id`) — o service valida a visibilidade. */
+  playId: t.Optional(t.Union([UUID, t.Null()])),
   attachmentIds: ATTACHMENT_IDS,
 })
 

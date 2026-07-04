@@ -253,6 +253,13 @@
       "when": 1783068754427,
       "tag": "0035_glorious_black_cat",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1783100000000,
+      "tag": "0036_clube_activity",
+      "breakpoints": true
     }
   ]
 }

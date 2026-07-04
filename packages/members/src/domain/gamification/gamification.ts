@@ -12,6 +12,10 @@ export const XP_VALUES = {
   PENSA_STAGE_COMPLETE: 15,
   /** Pensa: ciclo LANÇADO (advance o→done) — vale o prêmio maior, sem acumular com a etapa. */
   PENSA_CYCLE_COMPLETE: 30,
+  /** Clube: tópico APROVADO pela equipe (XP puro, sem moeda — sem torneira p/ farmar). */
+  CLUBE_THREAD: 5,
+  /** Clube: comentário APROVADO pela equipe. */
+  CLUBE_COMMENT: 3,
 } as const
 
 /** XP de um quiz APROVADO: base + bônus proporcional à nota (cap em +10). */
@@ -200,4 +204,9 @@ export function pensaCycleBadgeSlugs(cyclesCompleted: number): BadgeSlug[] {
 /** Badge da 1ª participação no Desafio do mês (ledger `challenge_entry`). */
 export function challengeBadgeSlugs(entries: number): BadgeSlug[] {
   return entries >= 1 ? ['challenge-first'] : []
+}
+
+/** Badge da 1ª conversa aprovada no Clube (contada pelo ledger `clube_thread`). */
+export function clubeBadgeSlugs(approvedThreads: number): BadgeSlug[] {
+  return approvedThreads >= 1 ? ['clube-primeiro-post'] : []
 }
