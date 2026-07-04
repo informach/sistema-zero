@@ -55,11 +55,18 @@ export function buildInputBridgeRuntime(): string {
   // Gamepad virtual: o parent (página /jogar) envia postMessage com teclas simuladas.
   // O iframe sandboxed tem origem opaca (srcdoc) — e.origin será 'null'; verificamos
   // apenas o formato da mensagem para não confundir com outras mensagens.
+  // Despachamos um KeyboardEvent SINTÉTICO no window (não mutamos 'pressed' direto):
+  // os runtimes de extensão (SZGame2D/SZGame3D) e os blocos de evento do aluno têm
+  // listeners keydown/keyup PRÓPRIOS — só um evento real alcança todos eles (inclusive
+  // o listener deste bridge, que atualiza 'pressed' sozinho).
   window.addEventListener('message', function (e) {
     var d = e.data;
     if (!d || d.type !== 'sz:gamepad') return;
-    if (d.action === 'keydown') { pressed[d.key] = true; if (d.code) pressed[d.code] = true; }
-    else if (d.action === 'keyup') { pressed[d.key] = false; if (d.code) pressed[d.code] = false; }
+    var name = d.action === 'keydown' || d.action === 'keyup' ? d.action : null;
+    if (!name || typeof d.key !== 'string') return;
+    try {
+      window.dispatchEvent(new KeyboardEvent(name, { key: d.key, code: d.code || d.key, bubbles: true }));
+    } catch (err) {}
   });
   // Mute/unmute: interceptamos AudioContext criados PELO jogo para suspendr/resumir.
   // Só intercepta se a API existir (segurança: nunca lança).
