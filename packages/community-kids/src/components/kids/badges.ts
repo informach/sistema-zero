@@ -8,6 +8,7 @@ import {
   Lightbulb,
   type LucideIcon,
   Medal,
+  MessagesSquare,
   PiggyBank,
   Rocket,
   Sparkles,
@@ -136,6 +137,11 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     title: 'Desafiante do mês',
     description: 'Você topou o Desafio do mês e mostrou o seu jogo!',
     icon: Swords,
+  },
+  'clube-primeiro-post': {
+    title: 'Voz da turma',
+    description: 'Você começou a sua primeira conversa no Clube dos Criadores!',
+    icon: MessagesSquare,
   },
 }
 

@@ -1183,6 +1183,20 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Avatar + nível em LOTE por profileId — o BFF do Clube/Mural kids pinta rosto+aura
+    // de cada autor de tópico/comentário numa ida (sem N+1). `/members/avatars` (2 seg,
+    // com "s") é literal DISTINTO de `/members/avatar` (get/equip) e `/members/avatar/*`
+    // (buy/photo) — sem colisão no matcher. Peer-viewable como o perfil público.
+    {
+      id: 'members-avatars-batch',
+      methods: ['GET'],
+      pathPattern: '/members/avatars',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
     // Quarto virtual (decore-do-seu-jeito) — recurso do PRÓPRIO perfil (kids). Estado +
     // lojinha (GET), salvar o quarto montado (PUT) e comprar item/tema (POST).
     // `/members/room` (2 seg) não colide; `/members/room/items/:id/buy` (4 seg) idem.
@@ -2190,6 +2204,18 @@ const config: GatewayConfigInput = {
       id: 'hub-my-showcase-stats',
       methods: ['GET'],
       pathPattern: '/hub/my-showcase-stats',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Sino "novas respostas": tópicos do PRÓPRIO aluno (só os dele → sem vazamento).
+    // Literal `/hub/my-threads` (2 seg) não colide com `/hub/threads/:id`.
+    {
+      id: 'hub-my-threads',
+      methods: ['GET'],
+      pathPattern: '/hub/my-threads',
       service: 'hub',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },

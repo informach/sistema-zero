@@ -370,6 +370,10 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // (sourceId = uuid DETERMINÍSTICO do monthKey — `challengeSourceId`; o UNIQUE
   // do ledger deduplica 1 marco/mês). XP real (amount > 0) — move streak.
   'challenge_entry',
+  // Clube dos Criadores (07/2026): tópico/comentário APROVADO pela equipe (sourceId =
+  // id do conteúdo → 1 marco por conteúdo; premiar só na aprovação bloqueia farm).
+  'clube_thread',
+  'clube_comment',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)

@@ -58,7 +58,7 @@ export function createShell(cfg: ShellConfig) {
   const media = createMediaModule({ session, gateway })
   const routes = {
     ...createShellRoutes({ session, gateway, auth, members, payments, profiles, media }),
-    ...createHubRoutes({ hub, members, media, session }),
+    ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
     ...createStudioRoutes({ hub, members, media }),
     ...createCertificateRoutes({ members, session }),
     ...createPensaRoutes({ members, session }),

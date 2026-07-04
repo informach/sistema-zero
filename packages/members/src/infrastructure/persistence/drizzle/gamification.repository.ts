@@ -26,6 +26,7 @@ import {
 import {
   advanceStreak,
   challengeBadgeSlugs,
+  clubeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
   pensaCycleBadgeSlugs,
@@ -230,6 +231,14 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       // `challenge_entry` (1 marco/mês pelo sourceId determinístico do monthKey).
       if (newEvents.some((e) => e.sourceType === 'challenge_entry')) {
         for (const slug of challengeBadgeSlugs(await countByType('challenge_entry'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+
+      // Badge da 1ª conversa aprovada no Clube — ledger `clube_thread` (1 evento por
+      // tópico aprovado). Só thread conta (comentário não destrava badge por ora).
+      if (newEvents.some((e) => e.sourceType === 'clube_thread')) {
+        for (const slug of clubeBadgeSlugs(await countByType('clube_thread'))) {
           badgeCandidates.add(slug)
         }
       }
@@ -732,6 +741,51 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     // descarta uma linha residual sem dificuldade (curso apagado + snapshot legado null).
     for (const row of rows)
       if (row.level && row.level in result) result[row.level] = Number(row.qualifying)
+    return result
+  }
+
+  async countQualifyingByLevelForProfiles(
+    profileIds: string[],
+    audience: CourseAudience,
+  ): Promise<Map<string, QualifyingByLevel>> {
+    // MESMA interseção `course_complete` ∩ `course_showcased` do single-profile, só que
+    // agrupada TAMBÉM por `user_id` (um GROUP BY a mais) e filtrada por `IN (ids)` — 1
+    // query serve a página inteira do fórum. Dificuldade vem do SNAPSHOT do ledger
+    // (fallback `courses.level` p/ legado), como no `countQualifyingCoursesByLevel`.
+    const result = new Map<string, QualifyingByLevel>()
+    if (profileIds.length === 0) return result
+    const showcased = alias(xpEvents, 'sc')
+    const level = sql<CourseLevel>`coalesce(${showcased.sourceLevel}, ${xpEvents.sourceLevel}, ${courses.level})`
+    const rows = await this.db
+      .select({ userId: xpEvents.userId, level, qualifying: countDistinct(xpEvents.sourceId) })
+      .from(xpEvents)
+      .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
+      .innerJoin(
+        showcased,
+        and(
+          eq(showcased.userId, xpEvents.userId),
+          eq(showcased.audience, xpEvents.audience),
+          eq(showcased.sourceType, 'course_showcased'),
+          eq(showcased.sourceId, xpEvents.sourceId),
+        ),
+      )
+      .where(
+        and(
+          inArray(xpEvents.userId, profileIds),
+          eq(xpEvents.audience, audience),
+          eq(xpEvents.sourceType, 'course_complete'),
+        ),
+      )
+      .groupBy(xpEvents.userId, level)
+    for (const row of rows) {
+      if (!row.level) continue
+      let q = result.get(row.userId)
+      if (!q) {
+        q = { iniciante: 0, intermediario: 0, avancado: 0 }
+        result.set(row.userId, q)
+      }
+      if (row.level in q) q[row.level] = Number(row.qualifying)
+    }
     return result
   }
 

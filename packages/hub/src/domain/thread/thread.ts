@@ -6,6 +6,8 @@ export interface Thread {
   version: number
   channelId: string
   authorId: string
+  /** Conta do responsável (snapshot) — chave de coorte p/ a recompensa dada na aprovação. */
+  authorAccountId: string | null
   title: string
   slug: string
   body: string
@@ -38,6 +40,8 @@ export interface Comment {
   version: number
   threadId: string
   authorId: string
+  /** Conta do responsável (snapshot) — chave de coorte p/ a recompensa dada na aprovação. */
+  authorAccountId: string | null
   body: string
   status: ContentStatus
   replyToId: string | null

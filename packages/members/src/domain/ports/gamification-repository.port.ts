@@ -28,6 +28,10 @@ export type XpSourceType =
   // Desafio MENSAL (game jam, 07/2026): publicou no Mural com a tag do mês
   // (sourceId = uuid determinístico do monthKey — `challengeSourceId`). XP real.
   | 'challenge_entry'
+  // Clube dos Criadores (07/2026): tópico/comentário APROVADO pela equipe (sourceId =
+  // id do conteúdo → idempotente; premiar só na aprovação bloqueia farm/rejeitado).
+  | 'clube_thread'
+  | 'clube_comment'
 
 export interface XpEventInput {
   sourceType: XpSourceType
@@ -184,6 +188,16 @@ export interface GamificationRepository {
     userId: string,
     audience: CourseAudience,
   ): Promise<QualifyingByLevel>
+  /**
+   * Versão em LOTE do `countQualifyingCoursesByLevel` — cursos qualificados por
+   * dificuldade de VÁRIOS perfis numa query só (para o BFF derivar o nível/aura de
+   * cada autor do fórum kids sem N+1). Mapa id→qualificados; perfil sem marco algum
+   * some do mapa (o serviço trata como zero → nível Faísca/noob).
+   */
+  countQualifyingByLevelForProfiles(
+    profileIds: string[],
+    audience: CourseAudience,
+  ): Promise<Map<string, QualifyingByLevel>>
   /**
    * Colocação do PERFIL no ranking de XP da VITRINE. Coorte (estilo Netflix) =
    * PERFIS (linhas de `gamification_profiles`, `privileged=false`) cuja CONTA

@@ -17,6 +17,7 @@ import type {
 import type { CommunityReadRepository } from '../../src/domain/ports/community-read-repository.port'
 import type {
   ChallengeEntryArgs,
+  ClubContributionArgs,
   CourseAccessResult,
   MembersGateway,
   ShowcaseEligibilityArgs,
@@ -242,6 +243,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
       version: 0,
       channelId: input.channelId,
       authorId: input.authorId,
+      authorAccountId: input.authorAccountId,
       title: input.title,
       slug: input.slug,
       body: input.body,
@@ -253,7 +255,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
       authorDisplayName: input.authorDisplayName,
       authorPublic: input.authorPublic,
       coverImageUrl: null,
-      playId: null,
+      playId: input.playId ?? null,
       playsCount: 0,
       challengeKey: null,
       lastActivityAt: input.now,
@@ -265,6 +267,13 @@ export class InMemoryThreadRepository implements ThreadRepository {
       this.attachments?.linkMany(input.attachmentIds, { threadId: thread.id })
     }
     return thread
+  }
+
+  async listByAuthor(authorId: string, limit: number): Promise<Thread[]> {
+    return this.threads
+      .filter((t) => t.authorId === authorId && t.status === 'visible')
+      .sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime())
+      .slice(0, limit)
   }
 
   /** Dedupe da vitrine: chave de idempotência → id do tópico (a chave não é do domínio). */
@@ -283,6 +292,8 @@ export class InMemoryThreadRepository implements ThreadRepository {
       version: 0,
       channelId: input.channelId,
       authorId: input.authorId,
+      // Vitrine não recebe recompensa de Clube (usa course_showcased) → sem conta snapshot.
+      authorAccountId: null,
       title: input.title,
       slug: input.slug,
       body: input.body,
@@ -442,6 +453,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
       version: 0,
       threadId: input.threadId,
       authorId: input.authorId,
+      authorAccountId: input.authorAccountId,
       authorDisplayName: input.authorDisplayName,
       authorPublic: input.authorPublic,
       body: input.body,
@@ -895,5 +907,11 @@ export class FakeMembersGateway implements MembersGateway {
   challengeNotifications: ChallengeEntryArgs[] = []
   async notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void> {
     this.challengeNotifications.push(args)
+  }
+
+  /** Registra as recompensas de contribuição no Clube (aprovação) — best-effort. */
+  clubContributions: ClubContributionArgs[] = []
+  async notifyClubContribution(args: ClubContributionArgs): Promise<void> {
+    this.clubContributions.push(args)
   }
 }

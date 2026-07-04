@@ -5,6 +5,8 @@ export interface CreateThreadInput {
   id: string
   channelId: string
   authorId: string
+  /** Conta do responsável (snapshot) — chave de coorte p/ a recompensa dada na aprovação. */
+  authorAccountId: string | null
   /** Primeiro nome do autor (snapshot exibido/clicável) ou `null`. */
   authorDisplayName: string | null
   /** Perfil do autor é público (opt-in dos pais) — snapshot p/ decidir o link do nome. */
@@ -13,6 +15,11 @@ export interface CreateThreadInput {
   slug: string
   body: string
   status: ContentStatus
+  /**
+   * Referência opcional a um jogo do Mural (`play_id`), já VALIDADA pelo service
+   * (`hasVisibleShowcasePlayId`) — o card de "Jogar" aparece dentro da conversa do Clube.
+   */
+  playId?: string | null
   /** Anexos `pending_upload` a vincular NA MESMA transação (atomicidade). */
   attachmentIds: string[]
   now: Date
@@ -47,6 +54,8 @@ export interface CreateCommentInput {
   id: string
   threadId: string
   authorId: string
+  /** Conta do responsável (snapshot) — chave de coorte p/ a recompensa dada na aprovação. */
+  authorAccountId: string | null
   /** Primeiro nome do autor (snapshot exibido/clicável) ou `null`. */
   authorDisplayName: string | null
   /** Perfil do autor é público (opt-in dos pais) — snapshot p/ o link do nome. */
@@ -105,6 +114,12 @@ export interface ThreadRepository {
     to: Date,
   ): Promise<Array<{ authorId: string; title: string; playId: string | null; createdAt: Date }>>
   findThreadById(id: string): Promise<Thread | null>
+  /**
+   * Tópicos VISÍVEIS do autor (mais recentes por `lastActivityAt`) — alimenta o sino
+   * "novas respostas nas suas conversas" (o app compara `commentCount` com um baseline
+   * local). Só os próprios do autor → nunca vaza `authorId` de terceiros.
+   */
+  listByAuthor(authorId: string, limit: number): Promise<Thread[]>
   /** Página de tópicos (pinned primeiro, depois lastActivityAt desc). `hasMore` se veio `limit+1`. */
   listThreads(
     channelId: string,

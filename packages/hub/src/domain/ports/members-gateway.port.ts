@@ -58,6 +58,19 @@ export interface ChallengeEntryArgs {
   challengeKey: string
 }
 
+/** Argumentos da recompensa por CONTRIBUIR no Clube (dado na APROVAÇÃO do conteúdo). */
+export interface ClubContributionArgs {
+  /** PERFIL de criança (dono da gamificação) — o `authorId` do conteúdo. */
+  userId: string
+  /** CONTA do responsável (coorte da gamificação) — snapshot `authorAccountId`. */
+  accountId: string
+  audience: 'adult' | 'kids'
+  /** Tópico ou comentário (define a fonte de XP + o valor). */
+  kind: 'thread' | 'comment'
+  /** Id do conteúdo aprovado — chave de IDEMPOTÊNCIA do ledger (re-aprovar é inerte). */
+  contentId: string
+}
+
 export interface MembersGateway {
   checkAccess(
     userId: string,
@@ -78,4 +91,10 @@ export interface MembersGateway {
    * o members deduplica por mês (sourceId determinístico do monthKey).
    */
   notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void>
+  /**
+   * Avisa o members que um conteúdo do Clube foi APROVADO (staff) → recompensa a
+   * criança (XP + badge de comunidade). Disparado só na aprovação (conteúdo rejeitado
+   * não rende). **Best-effort**: NUNCA lança; o ledger é idempotente pelo `contentId`.
+   */
+  notifyClubContribution(args: ClubContributionArgs): Promise<void>
 }

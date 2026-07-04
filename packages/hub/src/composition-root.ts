@@ -172,6 +172,9 @@ export async function createApplication(env: Env): Promise<Application> {
     moderationRepo,
     () => new Date(),
     studioArtifacts,
+    // Recompensa a criança quando o staff APROVA conteúdo do Clube kids (XP + badge).
+    communityRead,
+    members,
   )
 
   // Readiness (`/readyz`, healthcheck do Railway): só promove a réplica quando o

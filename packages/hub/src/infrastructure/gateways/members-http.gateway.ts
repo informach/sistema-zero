@@ -3,6 +3,7 @@ import type { Logger } from '@sistemazero/core/logging'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type {
   ChallengeEntryArgs,
+  ClubContributionArgs,
   CourseAccessResult,
   MembersGateway,
   ShowcaseEligibilityArgs,
@@ -33,6 +34,7 @@ const DEFAULT_TIMEOUT_MS = 5_000
 /** Paths EXATOS que o members assina/verifica (`<MÉTODO>.<path>.<corpo>`; S2S direta). */
 const SHOWCASE_WEBHOOK_PATH = '/members/webhooks/showcase'
 const CHALLENGE_WEBHOOK_PATH = '/members/webhooks/challenge'
+const CLUBE_WEBHOOK_PATH = '/members/webhooks/clube'
 const SHOWCASE_NOTIFY_ATTEMPTS = 3
 const SHOWCASE_NOTIFY_RETRY_BASE_MS = 100
 
@@ -145,6 +147,16 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
         accountId: args.accountId,
         audience: args.audience,
         challengeKey: args.challengeKey,
+      })
+    },
+
+    async notifyClubContribution(args: ClubContributionArgs): Promise<void> {
+      await postSignedWebhook(CLUBE_WEBHOOK_PATH, 'clube', {
+        userId: args.userId,
+        accountId: args.accountId,
+        audience: args.audience,
+        kind: args.kind,
+        contentId: args.contentId,
       })
     },
   }

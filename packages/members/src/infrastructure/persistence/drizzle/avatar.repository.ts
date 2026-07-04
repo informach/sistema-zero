@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { type AvatarConfig, defaultAvatarConfig } from '../../../domain/avatar/avatar-config'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { AvatarRepository } from '../../../domain/ports/avatar-repository.port'
@@ -74,6 +74,20 @@ export class DrizzleAvatarRepository implements AvatarRepository {
       .where(and(eq(avatarConfigs.userId, userId), eq(avatarConfigs.audience, audience)))
       .limit(1)
     return row?.photoUrl ?? null
+  }
+
+  async listPhotoUrlsByProfileIds(
+    profileIds: string[],
+    audience: CourseAudience,
+  ): Promise<Map<string, string>> {
+    const map = new Map<string, string>()
+    if (profileIds.length === 0) return map
+    const rows = await this.db
+      .select({ userId: avatarConfigs.userId, photoUrl: avatarConfigs.photoUrl })
+      .from(avatarConfigs)
+      .where(and(inArray(avatarConfigs.userId, profileIds), eq(avatarConfigs.audience, audience)))
+    for (const row of rows) if (row.photoUrl) map.set(row.userId, row.photoUrl)
+    return map
   }
 
   async setPhotoUrl(

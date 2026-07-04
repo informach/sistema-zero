@@ -10,6 +10,7 @@ import type { ProcessedWebhookRepository } from '../../../domain/ports/processed
 import { ValidationError } from '../../../domain/shared/errors'
 import {
   ChallengeWebhookBody,
+  ClubeWebhookBody,
   GrantWebhookBody,
   ShowcaseWebhookBody,
   SubscriptionWebhookBody,
@@ -205,5 +206,32 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         return { ok: true }
       },
       { body: ChallengeWebhookBody },
+    )
+    .post(
+      // O hub avisa que a equipe APROVOU um tópico/comentário do Clube → recompensa a
+      // criança (XP + badge de comunidade). Premiar só na aprovação bloqueia farm e
+      // conteúdo rejeitado. Idempotente pelo `contentId` no ledger. Se o award falhar,
+      // NÃO marca a entrega (mantém o retry) — mesma régua do showcase/challenge.
+      '/clube',
+      async ({ headers, body, set }) => {
+        const deliveryId = resolveDeliveryId(headers)
+        if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
+          return { ok: true, deduped: true }
+        }
+        const awarded = await deps.award.awardClubeContribution({
+          userId: body.userId,
+          accountId: body.accountId,
+          audience: body.audience,
+          kind: body.kind,
+          contentId: body.contentId,
+        })
+        if (!awarded) {
+          set.status = 502
+          return { ok: false, error: 'CLUBE_AWARD_FAILED' }
+        }
+        if (deliveryId) await deps.processed.markProcessed(deliveryId, 'clube')
+        return { ok: true }
+      },
+      { body: ClubeWebhookBody },
     )
 }

@@ -43,6 +43,13 @@
       "when": 1786000020000,
       "tag": "0005_plays_challenge",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786000030000,
+      "tag": "0006_clube_author_account",
+      "breakpoints": true
     }
   ]
 }

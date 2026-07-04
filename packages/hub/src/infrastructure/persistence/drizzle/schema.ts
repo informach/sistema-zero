@@ -131,6 +131,10 @@ export const threads = hub.table(
       .notNull()
       .references(() => channels.id, { onDelete: 'cascade' }),
     authorId: uuid('author_id').notNull(),
+    // Conta do RESPONSÁVEL (snapshot no create, como `author_id`/`author_display_name`)
+    // — a chave de coorte da gamificação. Usada quando a recompensa do Clube é dada na
+    // APROVAÇÃO (o moderador é o ator ali, não a criança). Nullable: posts legados/vitrine.
+    authorAccountId: text('author_account_id'),
     title: text('title').notNull(),
     slug: text('slug').notNull(),
     // Corpo em MARKDOWN (renderizado sanitizado no front). Sem HTML cru.
@@ -192,6 +196,9 @@ export const comments = hub.table(
       .notNull()
       .references(() => threads.id, { onDelete: 'cascade' }),
     authorId: uuid('author_id').notNull(),
+    // Conta do responsável (snapshot no create) — chave de coorte p/ a recompensa do
+    // Clube dada na APROVAÇÃO (ver `threads.author_account_id`). Nullable: legado.
+    authorAccountId: text('author_account_id'),
     // Snapshot do primeiro nome + flag pública do autor (exibido/clicável no fórum).
     authorDisplayName: text('author_display_name'),
     authorPublic: boolean('author_public').notNull().default(false),

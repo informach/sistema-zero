@@ -16,7 +16,6 @@ import {
   Flag,
   Gamepad2,
   Hammer,
-  Hash,
   Lock,
   MessageCircle,
   Play,
@@ -28,29 +27,47 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { AvatarWithAura } from '@/components/kids/avatar-with-aura'
 import { KidsAccessUnavailable } from '@/components/kids/kids-access-unavailable'
 import { KidsSpaceSkeleton } from '@/components/kids/kids-space-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type {
   HubChannelView,
   HubCommentView,
+  HubMyThreadView,
   HubPage,
   HubReaction,
   HubSpaceView,
   HubThreadView,
 } from '@/lib/types'
+import { channelPresentation } from './channel-presentation'
+import { ClubeActivityBell } from './clube-activity-bell'
+import { ClubeCombinados } from './clube-combinados'
 import { GameCardDialog } from './game-card-dialog'
 import { KidsLockedSpace } from './kids-locked-space'
+import { KidsMascot } from './mascot'
 import { pickInitialChannel } from './space-channel'
 
 /** Modo de apresentação: fórum (Clube — conversa) ou vitrine (Mural — cards de projeto). */
 export type SpaceViewMode = 'forum' | 'wall'
 
-// Emojis da allowlist kids (o hub recusa fora dela).
-const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉', '⭐']
+// Emojis rápidos (subconjunto da allowlist kids do hub — 07/2026: ampliado de 5 p/ 8
+// p/ dar mais expressão às crianças; o hub aceita estes 12: 👍❤️😂😮😢👏🎉🔥⭐🤩🙌✅).
+const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉', '🔥', '⭐', '🤩', '👏']
 
 // Slugs/ids vêm do servidor (slug/UUID), mas codificamos por consistência/segurança.
 const enc = encodeURIComponent
+
+/**
+ * Sugestões de conversa (chips) que pré-preenchem o composer — a criança em tela branca
+ * trava; um empurrãozinho gentil convida a começar. Só título (o corpo fica pra ela).
+ */
+const SUGGESTION_STARTERS: { chip: string; title: string }[] = [
+  { chip: '🎮 Mostrar meu jogo', title: 'Olha o jogo que eu criei!' },
+  { chip: '🙋 Pedir uma ajuda', title: 'Preciso de uma ajuda com o meu projeto' },
+  { chip: '🕹️ Jogo favorito', title: 'Qual é o seu jogo favorito?' },
+  { chip: '💡 Uma ideia nova', title: 'Tive uma ideia e quero mostrar!' },
+]
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -69,25 +86,30 @@ function postingError(e: ApiError): string {
   return e.message ?? 'Não consegui enviar. Tente de novo!'
 }
 
-/** Item com a identidade redigida do autor (do BFF) p/ o rótulo/link. */
+/** Item com a identidade redigida do autor (do BFF) p/ o rótulo/link + rosto/aura. */
 interface AuthorItem {
   isShowcase?: boolean
   authorDisplayName?: string | null
   authorId: string | null
   /** Id do perfil p/ o link público — presente só quando o autor é PÚBLICO (opt-in dos pais). */
   authorProfileId?: string | null
+  /** Foto do avatar 3D do autor (BFF em lote) — `null`/ausente → boneco padrão. */
+  authorAvatarUrl?: string | null
+  /** Slug do nível do autor (p/ a aura). Ausente → Faísca (aura neutra). */
+  authorLevel?: string | null
 }
 
 /**
  * Rótulo do autor para EXIBIÇÃO: "Você" (próprio), o nome CLICÁVEL → perfil público
- * (`/crianca/[id]`) quando o autor é público, ou texto simples. No fórum, autor
- * não-público vira "Colega"; na vitrine (Mural) o nome aparece sempre ("por …").
+ * (`/crianca/[id]`) quando o autor é público, ou texto simples. Na vitrine (Mural) o
+ * nome aparece como "por …". No Clube kids TODO autor mostra o 1º nome (o BFF revela);
+ * "Colega" só resta quando não há nome (fallback defensivo p/ posts legados).
  */
 function displayAuthor(item: AuthorItem, viewerId: string): ReactNode {
   if (item.authorId === viewerId) return 'Você'
-  const name = item.authorDisplayName
+  const name = item.authorDisplayName?.trim()
+  const text = name ? (item.isShowcase ? `por ${name}` : name) : 'Colega'
   if (item.authorProfileId && name) {
-    const text = item.isShowcase ? `por ${name}` : name
     return (
       <Link
         href={`/crianca/${encodeURIComponent(item.authorProfileId)}`}
@@ -97,19 +119,45 @@ function displayAuthor(item: AuthorItem, viewerId: string): ReactNode {
       </Link>
     )
   }
-  if (item.isShowcase && name) return `por ${name}`
-  return 'Colega'
+  return text
 }
 
 /**
  * Versão TEXTO (sem link) para contextos que já são `<button>` (lista de tópicos,
- * card do Mural) — âncora não pode aninhar em button. Autor público mostra o nome;
- * senão "Colega". O nome vira link DENTRO do post aberto (`displayAuthor`).
+ * card do Mural) — âncora não pode aninhar em button. Mostra o 1º nome (revelado pelo
+ * BFF no kids); sem nome → "Colega". O nome vira link DENTRO do post aberto.
  */
 function authorText(item: AuthorItem, viewerId: string): string {
   if (item.authorId === viewerId) return 'Você'
-  if (item.authorProfileId && item.authorDisplayName) return item.authorDisplayName
-  return 'Colega'
+  return item.authorDisplayName?.trim() || 'Colega'
+}
+
+/**
+ * Rosto + nome do autor lado a lado: `AvatarWithAura` (foto do boneco 3D + aura do
+ * nível, igual ao resto do app) + o `nameNode` (texto na lista/card; link no post
+ * aberto). É o que aquece o Clube — a turma deixa de ser "Colega" sem rosto.
+ */
+function AuthorBadge({
+  item,
+  viewerId,
+  nameNode,
+}: {
+  item: AuthorItem
+  viewerId: string
+  nameNode: ReactNode
+}) {
+  const label = authorText(item, viewerId)
+  return (
+    <span className="inline-flex min-w-0 items-center gap-1.5">
+      <AvatarWithAura
+        photoUrl={item.authorAvatarUrl}
+        levelSlug={item.authorLevel ?? undefined}
+        size="sm"
+        label={`Avatar de ${label}`}
+      />
+      <span className="truncate">{nameNode}</span>
+    </span>
+  )
 }
 
 /** Alterna otimisticamente a reação do viewer no agregado por emoji (sem refetch). */
@@ -189,6 +237,10 @@ export function KidsSpaceViewClient({
   const [newTitle, setNewTitle] = useState('')
   const [newBody, setNewBody] = useState('')
   const [newAttachments, setNewAttachments] = useState<UploadedAttachment[]>([])
+  // "Mostrar meu jogo no Clube": os jogos da própria criança (do Mural) p/ anexar à
+  // conversa + o playId escolhido. Buscados sob demanda (só quando abre o picker).
+  const [myGames, setMyGames] = useState<HubMyThreadView[] | null>(null)
+  const [newPlayId, setNewPlayId] = useState<string | null>(null)
   const [replyBody, setReplyBody] = useState('')
   const [replyAttachments, setReplyAttachments] = useState<UploadedAttachment[]>([])
 
@@ -219,8 +271,12 @@ export function KidsSpaceViewClient({
   threadRef.current = thread
   commentsRef.current = comments
 
+  // Rosto+aura+nome (clicável no post aberto) — o que aquece o Clube. Usado na
+  // assinatura do tópico e em cada resposta.
   const authorLabel = useCallback(
-    (item: AuthorItem): ReactNode => displayAuthor(item, viewerId),
+    (item: AuthorItem): ReactNode => (
+      <AuthorBadge item={item} viewerId={viewerId} nameNode={displayAuthor(item, viewerId)} />
+    ),
     [viewerId],
   )
 
@@ -417,6 +473,18 @@ export function KidsSpaceViewClient({
     }
   }
 
+  // Carrega os jogos da PRÓPRIA criança (publicados no Mural) p/ "Mostrar meu jogo no
+  // Clube" — só quando ela abre o picker (best-effort; sem jogos → lista vazia).
+  async function loadMyGames() {
+    if (myGames) return
+    try {
+      const res = await apiGet<{ items: HubMyThreadView[] }>('/api/hub/my-threads')
+      setMyGames(res.items.filter((t) => t.playId))
+    } catch {
+      setMyGames([])
+    }
+  }
+
   async function createThread() {
     if (!channel || !newTitle.trim() || !newBody.trim()) {
       toast.error('Escreva um título e uma mensagem. ✏️')
@@ -430,6 +498,8 @@ export function KidsSpaceViewClient({
         {
           title: newTitle.trim(),
           body: newBody.trim(),
+          // "Mostrar meu jogo no Clube": referência opcional a um jogo do Mural.
+          playId: newPlayId,
           attachmentIds: newAttachments.map((a) => a.id),
         },
       )
@@ -441,6 +511,7 @@ export function KidsSpaceViewClient({
       setNewTitle('')
       setNewBody('')
       setNewAttachments([])
+      setNewPlayId(null)
       setShowNew(false)
       await loadThreads(channel.id)
     } catch (err) {
@@ -563,11 +634,31 @@ export function KidsSpaceViewClient({
   return (
     <>
       <div className="w-full">
-        <h1 className="mb-1 [font-family:var(--font-display)] font-bold text-2xl">{space.name}</h1>
-        {space.description ? (
-          <p className="mb-4 text-muted-foreground text-sm">{space.description}</p>
+        {!isWall ? (
+          // Cabeçalho acolhedor do Clube: o Zappy dá "oi" e convida a turma; o botão
+          // "Combinados" (e o onboarding de 1ª visita) mora aqui.
+          <div className="mb-4 flex items-center gap-3 rounded-3xl border-2 border-border bg-(--kids-cyan-tint) p-4">
+            <KidsMascot expression="happy" className="size-14 shrink-0 md:size-16" />
+            <div className="min-w-0 flex-1">
+              <h1 className="[font-family:var(--font-display)] font-bold text-2xl">{space.name}</h1>
+              <p className="text-muted-foreground text-sm">
+                {space.description || 'Converse com a turma e mostre o que você criou! 🎉'}
+              </p>
+            </div>
+            <ClubeActivityBell viewerId={viewerId} />
+            <ClubeCombinados viewerId={viewerId} />
+          </div>
         ) : (
-          <div className="mb-4" />
+          <>
+            <h1 className="mb-1 [font-family:var(--font-display)] font-bold text-2xl">
+              {space.name}
+            </h1>
+            {space.description ? (
+              <p className="mb-4 text-muted-foreground text-sm">{space.description}</p>
+            ) : (
+              <div className="mb-4" />
+            )}
+          </>
         )}
 
         <div className={`grid gap-4 ${isWall ? '' : 'md:grid-cols-[200px_1fr]'}`}>
@@ -584,12 +675,14 @@ export function KidsSpaceViewClient({
                       : 'border-transparent text-muted-foreground hover:bg-muted/60'
                   }`}
                 >
-                  {c.postingPolicy === 'staff_only' ? (
-                    <Lock className="size-4 shrink-0" />
-                  ) : (
-                    <Hash className="size-4 shrink-0" />
-                  )}
+                  <span aria-hidden="true" className="shrink-0 text-base leading-none">
+                    {channelPresentation(c.slug).emoji}
+                  </span>
                   <span className="truncate">{c.name}</span>
+                  {/* Canal da equipe: cadeado discreto ("aqui só a equipe escreve"). */}
+                  {c.postingPolicy === 'staff_only' ? (
+                    <Lock className="size-3 shrink-0 opacity-60" />
+                  ) : null}
                   {c.hasUnread ? <span className="ml-auto size-2 rounded-full bg-primary" /> : null}
                 </button>
               ))}
@@ -639,6 +732,19 @@ export function KidsSpaceViewClient({
 
                 {!isWall && showNew ? (
                   <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
+                    {/* Sugestões: um empurrãozinho pra criança que travou na tela branca. */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {SUGGESTION_STARTERS.map((s) => (
+                        <button
+                          type="button"
+                          key={s.chip}
+                          onClick={() => setNewTitle(s.title)}
+                          className="rounded-full border-2 border-border px-2.5 py-1 font-bold text-muted-foreground text-xs transition-colors hover:border-primary hover:text-primary"
+                        >
+                          {s.chip}
+                        </button>
+                      ))}
+                    </div>
                     <input
                       className="w-full rounded-xl border-2 border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
                       placeholder="Sobre o que você quer falar?"
@@ -650,6 +756,13 @@ export function KidsSpaceViewClient({
                       value={newAttachments}
                       onChange={setNewAttachments}
                       disabled={busy}
+                    />
+                    {/* "Mostrar meu jogo no Clube": anexa um jogo do Mural à conversa. */}
+                    <GamePicker
+                      games={myGames}
+                      selectedId={newPlayId}
+                      onOpen={loadMyGames}
+                      onSelect={setNewPlayId}
                     />
                     <div className="flex justify-end gap-2">
                       <button
@@ -672,10 +785,15 @@ export function KidsSpaceViewClient({
                 ) : null}
 
                 {threads.length === 0 ? (
-                  <div className="rounded-2xl border-2 border-border border-dashed p-6 text-center text-muted-foreground text-sm">
-                    {isWall
-                      ? 'Os projetos dos criadores vão aparecer aqui! 🎨'
-                      : 'Nenhuma conversa ainda. Comece a primeira! ✨'}
+                  <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border border-dashed p-6 text-center text-muted-foreground text-sm">
+                    <KidsMascot expression="happy" className="size-16" />
+                    <p>
+                      {isWall
+                        ? 'Os projetos dos criadores vão aparecer aqui! 🎨'
+                        : channel
+                          ? channelPresentation(channel.slug).emptyState
+                          : 'Nenhuma conversa ainda. Comece a primeira! ✨'}
+                    </p>
                   </div>
                 ) : isWall ? (
                   (() => {
@@ -705,6 +823,7 @@ export function KidsSpaceViewClient({
                                 <ShowcaseCard
                                   key={t.id}
                                   thread={t}
+                                  viewerId={viewerId}
                                   onOpen={() => openThread(t)}
                                   onRemix={canRemix ? handleRemix : null}
                                 />
@@ -717,6 +836,7 @@ export function KidsSpaceViewClient({
                             <ShowcaseCard
                               key={t.id}
                               thread={t}
+                              viewerId={viewerId}
                               onOpen={() => openThread(t)}
                               onRemix={canRemix ? handleRemix : null}
                             />
@@ -739,7 +859,11 @@ export function KidsSpaceViewClient({
                         <span className="truncate font-bold">{t.title}</span>
                       </div>
                       <p className="flex items-center gap-3 text-muted-foreground text-xs">
-                        <span>{authorText(t, viewerId)}</span>
+                        <AuthorBadge
+                          item={t}
+                          viewerId={viewerId}
+                          nameNode={authorText(t, viewerId)}
+                        />
                         <span className="inline-flex items-center gap-1">
                           <MessageCircle className="size-3" /> {t.commentCount}
                         </span>
@@ -803,6 +927,78 @@ function Tag({ children }: { children: ReactNode }) {
     <span className="rounded-full bg-muted px-2 py-0.5 font-bold text-[10px] text-muted-foreground uppercase">
       {children}
     </span>
+  )
+}
+
+/**
+ * "Mostrar meu jogo no Clube": anexa um jogo publicado no Mural (da própria criança) à
+ * conversa. Carrega os jogos sob demanda (`onOpen`); escolher um seta o `playId` (o card
+ * "Jogar" aparece na conversa). Sem jogos → recado gentil. Fronteira de segurança é o hub.
+ */
+function GamePicker({
+  games,
+  selectedId,
+  onOpen,
+  onSelect,
+}: {
+  games: HubMyThreadView[] | null
+  selectedId: string | null
+  onOpen: () => void
+  onSelect: (playId: string | null) => void
+}) {
+  const selected = games?.find((g) => g.playId === selectedId) ?? null
+  if (selectedId && selected) {
+    return (
+      <div className="flex items-center justify-between rounded-xl border-2 border-primary bg-(--kids-cyan-tint) px-3 py-2 text-sm">
+        <span className="inline-flex min-w-0 items-center gap-1.5 font-bold text-primary">
+          <Gamepad2 className="size-4 shrink-0" />
+          <span className="truncate">{selected.title}</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => onSelect(null)}
+          className="shrink-0 font-bold text-muted-foreground text-xs hover:text-foreground"
+        >
+          tirar ✕
+        </button>
+      </div>
+    )
+  }
+  if (games === null) {
+    return (
+      <button
+        type="button"
+        onClick={onOpen}
+        className="inline-flex items-center gap-1.5 rounded-xl border-2 border-border px-3 py-2 font-bold text-muted-foreground text-sm transition-colors hover:border-primary hover:text-primary"
+      >
+        <Gamepad2 className="size-4" /> Mostrar meu jogo
+      </button>
+    )
+  }
+  if (games.length === 0) {
+    return (
+      <p className="rounded-xl border-2 border-border border-dashed p-2.5 text-center text-muted-foreground text-xs">
+        Você ainda não publicou nenhum jogo no Mural. Crie um no Estúdio! 🎮
+      </p>
+    )
+  }
+  return (
+    <div className="space-y-1.5 rounded-xl border-2 border-border p-2">
+      <p className="font-bold text-muted-foreground text-xs">Escolha um jogo seu:</p>
+      <div className="flex flex-wrap gap-1.5">
+        {games.map((g) => (
+          <button
+            type="button"
+            key={g.id}
+            onClick={() => g.playId && onSelect(g.playId)}
+            className="inline-flex items-center gap-1 rounded-full border-2 border-border px-2.5 py-1 font-bold text-foreground text-xs transition-colors hover:border-primary hover:text-primary"
+          >
+            <Gamepad2 className="size-3" />{' '}
+            <span className="max-w-[10rem] truncate">{g.title}</span>
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -907,10 +1103,12 @@ function PlayLinkActions({
 
 function ShowcaseCard({
   thread,
+  viewerId,
   onOpen,
   onRemix = null,
 }: {
   thread: HubThreadView
+  viewerId: string
   onOpen: () => void
   onRemix?: ((thread: HubThreadView) => void) | null
 }) {
@@ -936,7 +1134,13 @@ function ShowcaseCard({
           {/* Card é um <button> (abre o post) → não aninhar âncora aqui; o nome vira
               link clicável DENTRO do post aberto (ThreadDetail) e nos comentários. */}
           {thread.authorDisplayName ? (
-            <p className="text-muted-foreground text-xs">por {thread.authorDisplayName}</p>
+            <p className="flex items-center text-muted-foreground text-xs">
+              <AuthorBadge
+                item={thread}
+                viewerId={viewerId}
+                nameNode={`por ${thread.authorDisplayName}`}
+              />
+            </p>
           ) : null}
           {/* `thread.body` aqui é UGC da criança (descrição do projeto), renderizado
               como TEXTO ESCAPADO (React escapa; sem markdown = sem <img> externo nem
@@ -992,7 +1196,7 @@ const ReactionBar = memo(function ReactionBar({
             type="button"
             key={emoji}
             onClick={() => onReact(target, id, emoji, mine)}
-            className={`inline-flex min-h-[36px] items-center gap-1 rounded-full border-2 px-2.5 py-1 text-sm transition-colors ${
+            className={`inline-flex min-h-[36px] items-center gap-1 rounded-full border-2 px-2.5 py-1 text-sm transition-[transform,background-color,border-color] hover:scale-110 active:scale-95 ${
               mine ? 'border-primary bg-(--kids-cyan-tint)' : 'border-border hover:bg-muted/60'
             }`}
           >
@@ -1122,7 +1326,9 @@ function ThreadDetail({
           ) : null}
         </p>
         <div className="lesson-prose">{threadBody}</div>
-        {isWall && thread.playId ? (
+        {/* Card "Jogar": no Mural (vitrine) OU numa conversa do Clube que referencia um
+            jogo ("Mostrar meu jogo no Clube") — o hub garante que o playId é visível. */}
+        {thread.playId ? (
           <PlayLinkActions
             playUrl={`/jogar/${enc(thread.playId)}`}
             title={thread.title}

@@ -22,6 +22,7 @@ import type {
   HubAttachmentKind,
   HubChannelView,
   HubCommentView,
+  HubMyThreadView,
   HubPage,
   HubResolvedAttachment,
   HubSpaceView,
@@ -49,6 +50,7 @@ import type {
   PensaStageView,
   PensaTaskColumn,
   PensaTaskView,
+  AvatarsBatchView,
   ProductAccessView,
   ProfileView,
   PublicProfileGameView,
@@ -506,6 +508,15 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       })
     },
 
+    /**
+     * Avatar (foto) + NÍVEL (aura) de VÁRIOS perfis numa ida — o BFF do Clube/Mural
+     * pinta rosto+aura de cada autor de tópico/comentário sem N+1. Peer-viewable (como
+     * o perfil público); só dado de jogo, nunca PII. Lista vazia → não chama.
+     */
+    listAvatarsByProfileIds(ids: string[]): Promise<GatewayResponse<AvatarsBatchView>> {
+      return gw.gatewayFetch('/members/avatars', { query: { ids: ids.join(','), audience } })
+    },
+
     // ── Quarto virtual ──────────────────────────────────────────────────────
     /** Estado do quarto (montado + catálogo + saldo) — editor/lojinha client-side. */
     getRoom(): Promise<GatewayResponse<RoomEditorView>> {
@@ -957,9 +968,19 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     },
     createThread(
       channelId: string,
-      body: { title: string; body: string; attachmentIds?: string[] },
+      body: {
+        title: string
+        body: string
+        /** Referência opcional a um jogo do Mural ("Mostrar meu jogo no Clube"). */
+        playId?: string | null
+        attachmentIds?: string[]
+      },
     ): Promise<GatewayResponse<HubThreadView>> {
       return gw.gatewayFetch(`/hub/channels/${enc(channelId)}/threads`, { method: 'POST', body })
+    },
+    /** Tópicos do PRÓPRIO aluno (sino "novas respostas") — só os dele, sem redação. */
+    listMyThreads(): Promise<GatewayResponse<{ items: HubMyThreadView[] }>> {
+      return gw.gatewayFetch('/hub/my-threads')
     },
     getThread(id: string): Promise<GatewayResponse<HubThreadView>> {
       return gw.gatewayFetch(`/hub/threads/${enc(id)}`)

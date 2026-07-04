@@ -255,4 +255,72 @@ describe('tópicos e comentários', () => {
     )
     expect(res.status).toBe(404)
   })
+
+  test('GET /hub/my-threads devolve só os tópicos do próprio autor', async () => {
+    const ctx = buildApp()
+    const { channelId } = await seedChannel(ctx)
+    const me = randomUUID()
+    const mine = (
+      (await (
+        await ctx.app.handle(
+          jsonRequest('POST', `/hub/channels/${channelId}/threads`, {
+            headers: studentHeaders(me),
+            body: { title: 'Meu tópico', body: 'oi' },
+          }),
+        )
+      ).json()) as { id: string }
+    ).id
+    // Tópico de OUTRA pessoa não deve entrar.
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/channels/${channelId}/threads`, {
+        headers: studentHeaders(randomUUID()),
+        body: { title: 'De outro', body: 'oi' },
+      }),
+    )
+    const res = await ctx.app.handle(
+      jsonRequest('GET', '/hub/my-threads', { headers: studentHeaders(me) }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: Array<{ id: string; commentCount: number }> }
+    expect(body.items.map((t) => t.id)).toEqual([mine])
+    expect(body.items[0]?.commentCount).toBe(0)
+  })
+
+  test('cross-link: tópico com playId de vitrine VISÍVEL é aceito; playId falso → 403', async () => {
+    const ctx = buildApp()
+    const { channelId } = await seedChannel(ctx, { space: { audience: 'kids' } })
+    const playId = randomUUID()
+    // Publica um jogo de vitrine (visível) → o playId passa a existir.
+    await ctx.threadRepo.createShowcaseThread({
+      id: randomUUID(),
+      channelId,
+      authorId: randomUUID(),
+      authorDisplayName: 'Mika',
+      authorPublic: false,
+      title: 'Meu Jogo',
+      slug: `meu-jogo-${randomUUID().slice(0, 6)}`,
+      body: 'oi',
+      coverImageUrl: null,
+      playId,
+      idempotencyKey: randomUUID(),
+      now: new Date(),
+    })
+    const ok = await ctx.app.handle(
+      jsonRequest('POST', `/hub/channels/${channelId}/threads`, {
+        headers: studentHeaders(randomUUID()),
+        body: { title: 'Olha meu jogo', body: 'joguem!', playId },
+      }),
+    )
+    expect(ok.status).toBe(201)
+    expect(((await ok.json()) as { playId: string | null }).playId).toBe(playId)
+
+    // playId que não é vitrine visível → recusado (não deixa referenciar jogo inexistente).
+    const bad = await ctx.app.handle(
+      jsonRequest('POST', `/hub/channels/${channelId}/threads`, {
+        headers: studentHeaders(randomUUID()),
+        body: { title: 'Jogo falso', body: 'x', playId: randomUUID() },
+      }),
+    )
+    expect(bad.status).toBe(403)
+  })
 })
