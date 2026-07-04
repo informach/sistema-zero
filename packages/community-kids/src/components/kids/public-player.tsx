@@ -2,19 +2,27 @@
 
 import type { Project, StudioProjectPlayerProps } from '@sistemazero/studio'
 import { type ComponentType, useEffect, useState } from 'react'
+import { KidsMascot } from './mascot'
 
 type PlayerComponent = ComponentType<StudioProjectPlayerProps>
+
+// A "Sistema Zero Kids" no rodapé leva à oferta do Desafio do 1º jogo. Por ora,
+// a home do site (a usuária troca pela URL da oferta quando tiver).
+const SITE_URL = 'https://sistemazero.com.br'
 
 /**
  * Player PÚBLICO (sem login) de um projeto compartilhado no Mural. Roda SÓ o jogo
  * (sem editor/código) num iframe sandbox — via o `StudioProjectPlayer` do
  * @sistemazero/studio (subpath `/player`: traz só a cadeia de preview, sem
  * Monaco/Blockly). Busca o projeto na rota mesma-origem `/api/studio/play/:id`
- * (stream do R2). Mostra apenas o jogo + o título — NUNCA o nome da criança.
+ * (stream do R2) + o **primeiro nome** do autor no header `X-Author-Name` (o hub
+ * só guarda o 1º nome — nunca o sobrenome/PII). O palco tem a proporção 800×480
+ * (5:3), a mesma dos jogos, sempre inteiro na tela.
  */
 export function PublicPlayer({ id }: { id: string }) {
   const [Player, setPlayer] = useState<PlayerComponent | null>(null)
   const [project, setProject] = useState<Project | null>(null)
+  const [author, setAuthor] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
 
   useEffect(() => {
@@ -30,8 +38,17 @@ export function PublicPlayer({ id }: { id: string }) {
           setStatus('error')
           return
         }
+        const rawAuthor = res.headers.get('X-Author-Name')
         const proj = (await res.json()) as Project
         if (!active) return
+        // Header URI-encoded (só ASCII em header). Falha de decode → sem nome.
+        if (rawAuthor) {
+          try {
+            setAuthor(decodeURIComponent(rawAuthor))
+          } catch {
+            setAuthor(null)
+          }
+        }
         setPlayer(() => mod.StudioProjectPlayer)
         setProject(proj)
         setStatus('ready')
@@ -47,28 +64,71 @@ export function PublicPlayer({ id }: { id: string }) {
   const title = typeof project?.name === 'string' && project.name.trim() ? project.name : 'Projeto'
 
   return (
-    <main className="flex h-dvh w-full flex-col bg-background text-foreground">
-      <header className="flex shrink-0 items-center justify-between gap-3 border-border border-b-2 px-4 py-3">
-        <span className="truncate font-bold [font-family:var(--font-display)] text-lg">
-          {status === 'ready' ? title : 'Sistema Zero'}
-        </span>
-        <span className="shrink-0 text-muted-foreground text-xs">feito com Sistema Zero</span>
+    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-background text-foreground">
+      {/* Fundo lúdico: dois brilhos suaves da marca (cyan/lime) — o jogo é a estrela. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-70"
+        style={{
+          background:
+            'radial-gradient(60rem 40rem at 12% -10%, color-mix(in oklch, var(--kids-cyan) 22%, transparent), transparent 60%), radial-gradient(50rem 36rem at 100% 110%, color-mix(in oklch, var(--kids-lime) 22%, transparent), transparent 60%)',
+        }}
+      />
+
+      <header className="relative z-10 flex shrink-0 items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <KidsMascot expression="celebrating" className="size-9 shrink-0 kid-float" />
+          <span className="truncate font-bold [font-family:var(--font-display)] text-lg sm:text-xl">
+            {status === 'ready' ? title : 'Sistema Zero'}
+          </span>
+        </div>
+        <p className="shrink-0 text-muted-foreground text-xs sm:text-sm">
+          {author ? (
+            <>
+              feito por <span className="font-bold text-foreground">{author}</span> ·{' '}
+            </>
+          ) : (
+            'feito no '
+          )}
+          <a
+            href={SITE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-(--kids-cyan) underline decoration-2 underline-offset-2 hover:opacity-80 dark:text-(--kids-lime)"
+          >
+            Sistema Zero Kids
+          </a>
+        </p>
       </header>
 
-      <div className="grid min-h-0 flex-1 place-items-center p-2 sm:p-4">
+      <div className="relative z-10 grid min-h-0 flex-1 place-items-center p-3 sm:p-5">
         {status === 'loading' ? (
-          <p className="text-muted-foreground">Carregando o jogo…</p>
+          <div className="flex flex-col items-center gap-3 text-center">
+            <KidsMascot expression="thinking" className="size-16 kid-float" />
+            <p className="font-bold [font-family:var(--font-display)] text-muted-foreground">
+              Preparando o jogo…
+            </p>
+          </div>
         ) : status === 'error' ? (
-          <div className="space-y-1 text-center">
-            <p className="text-3xl">🕹️</p>
-            <p className="font-bold">Não encontramos este jogo.</p>
-            <p className="text-muted-foreground text-sm">
-              O link pode estar errado ou o projeto não está mais disponível.
+          <div className="flex flex-col items-center gap-2 text-center">
+            <KidsMascot expression="sleeping" className="size-16" />
+            <p className="font-bold [font-family:var(--font-display)] text-lg">
+              Não encontramos este jogo.
+            </p>
+            <p className="max-w-xs text-muted-foreground text-sm">
+              O link pode estar errado ou o jogo não está mais disponível.
             </p>
           </div>
         ) : Player && project ? (
-          <div className="h-full w-full max-w-5xl overflow-hidden rounded-2xl border-2 border-border bg-white shadow-sm">
-            <Player project={project} title={title} />
+          // Palco 800×480 (5:3): a largura é limitada para a ALTURA (5:3) caber
+          // inteira na área disponível — o jogo nunca corta nem estica.
+          <div
+            className="kids-unit-cyan w-full"
+            style={{ maxWidth: 'min(56rem, calc((100dvh - 8rem) * 5 / 3))' }}
+          >
+            <div className="aspect-[5/3] w-full overflow-hidden rounded-3xl border-4 border-(--unit) bg-white shadow-[0_8px_0_color-mix(in_oklch,var(--unit)_40%,transparent)]">
+              <Player project={project} title={title} />
+            </div>
           </div>
         ) : null}
       </div>

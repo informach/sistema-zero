@@ -97,10 +97,14 @@ export interface ThreadRepository {
     input: CreateShowcaseThreadInput,
   ): Promise<{ thread: Thread; deduped: boolean }>
   /**
-   * `true` quando o playId pertence a um post de vitrine ainda visível.
+   * `visible: true` quando o playId pertence a um post de vitrine ainda visível,
+   * com o `authorDisplayName` (1º nome snapshot) para a página pública de jogar.
    * `countHit` FUNDE o incremento de `playsCount` na mesma ida (sem bump de version).
    */
-  hasVisibleShowcasePlayId(playId: string, countHit?: boolean): Promise<boolean>
+  hasVisibleShowcasePlayId(
+    playId: string,
+    countHit?: boolean,
+  ): Promise<{ visible: boolean; authorDisplayName: string | null }>
   /** Agregado da carreira: posts de vitrine visíveis do autor + soma das jogadas. */
   showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }>
   /**

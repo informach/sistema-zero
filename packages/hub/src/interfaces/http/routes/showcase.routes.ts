@@ -84,9 +84,13 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
       '/hub/internal/studio-play/:playId',
       async ({ params, query }) => {
         // `count=1` funde o incremento de jogadas no MESMO round-trip (o BFF já
-        // deduplicou por ip:playId — só hits "novos" chegam com count).
-        const visible = await deps.showcase.isPlayable(params.playId, query.count === '1')
-        return { visible }
+        // deduplicou por ip:playId — só hits "novos" chegam com count). Devolve o
+        // 1º nome do autor p/ a página pública mostrar "feito por {nome}".
+        const { visible, authorDisplayName } = await deps.showcase.isPlayable(
+          params.playId,
+          query.count === '1',
+        )
+        return { visible, authorDisplayName }
       },
       { params: PlayIdParams, query: PlayResolveQuery },
     )

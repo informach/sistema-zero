@@ -1115,7 +1115,7 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     resolveStudioPlay(
       playId: string,
       countHit = false,
-    ): Promise<GatewayResponse<{ visible: boolean }>> {
+    ): Promise<GatewayResponse<{ visible: boolean; authorDisplayName?: string | null }>> {
       return gw.gatewayFetch(
         `/hub/internal/studio-play/${enc(playId)}${countHit ? '?count=1' : ''}`,
       )

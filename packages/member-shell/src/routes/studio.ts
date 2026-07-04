@@ -552,14 +552,19 @@ export function createStudioRoutes(deps: {
       if (wouldCount) commitCountPlay(ip, id)
       try {
         const obj = await r2GetObjectPrivate(PLAY_KEY(id))
-        return new NextResponse(obj.body, {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-            'Cache-Control': 'private, no-store',
-            'X-Content-Type-Options': 'nosniff',
-          },
-        })
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'private, no-store',
+          'X-Content-Type-Options': 'nosniff',
+        }
+        // 1º nome do autor (snapshot do hub) p/ a página pública mostrar "feito por
+        // {nome}". Header URI-encoded (só ASCII em header; acentos escapados) — a
+        // MESMA ORIGEM (rota fora do matcher) deixa o browser lê-lo. Ausente = anônimo.
+        const author = playable.body?.authorDisplayName
+        if (typeof author === 'string' && author.trim()) {
+          headers['X-Author-Name'] = encodeURIComponent(author.trim())
+        }
+        return new NextResponse(obj.body, { status: 200, headers })
       } catch {
         // Erro = inexistente/inacessível (404), não vaza detalhe.
         return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })

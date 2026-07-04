@@ -317,12 +317,15 @@ export class InMemoryThreadRepository implements ThreadRepository {
     return { thread, deduped: false }
   }
 
-  async hasVisibleShowcasePlayId(playId: string, countHit = false): Promise<boolean> {
+  async hasVisibleShowcasePlayId(
+    playId: string,
+    countHit = false,
+  ): Promise<{ visible: boolean; authorDisplayName: string | null }> {
     const found = this.threads.find(
       (t) => t.playId === playId && t.isShowcase && t.status === 'visible',
     )
     if (found && countHit) found.playsCount += 1
-    return Boolean(found)
+    return { visible: Boolean(found), authorDisplayName: found?.authorDisplayName ?? null }
   }
 
   async showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }> {

@@ -131,7 +131,7 @@ export class ThreadService {
     // um id arbitrário. Fronteira de segurança no hub (a autoria é só filtro de UX no app).
     let playId: string | null = null
     if (cmd.playId) {
-      if (!(await this.threads.hasVisibleShowcasePlayId(cmd.playId))) {
+      if (!(await this.threads.hasVisibleShowcasePlayId(cmd.playId)).visible) {
         throw new PostingNotAllowedError('Jogo indisponível')
       }
       playId = cmd.playId
