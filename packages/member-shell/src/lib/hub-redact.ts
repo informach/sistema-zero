@@ -85,10 +85,7 @@ export function collectAuthorIds(body: unknown, into: Set<string> = new Set()): 
  * Roda ANTES do `redactAuthors` (que zera o id). Estrutural → os campos sobrevivem à
  * redação (que faz `...item`). Autor sem avatar no mapa → item intacto (boneco padrão).
  */
-export function attachAuthorAvatars<T>(
-  body: T,
-  avatars: Record<string, AuthorAvatarInfo>,
-): T {
+export function attachAuthorAvatars<T>(body: T, avatars: Record<string, AuthorAvatarInfo>): T {
   if (!body || typeof body !== 'object') return body
   if ('items' in body && Array.isArray((body as { items: unknown[] }).items)) {
     const page = body as unknown as { items: unknown[] }

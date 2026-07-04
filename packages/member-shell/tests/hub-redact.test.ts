@@ -147,7 +147,11 @@ describe('redactAuthors', () => {
       { id: 't1', authorId: OTHER as string | null, authorPublic: false, authorDisplayName: 'Lia' },
       ME,
       true,
-    ) as { authorId: string | null; authorProfileId?: string | null; authorDisplayName?: string | null }
+    ) as {
+      authorId: string | null
+      authorProfileId?: string | null
+      authorDisplayName?: string | null
+    }
     expect(out.authorId).toBeNull() // id cru segue redigido
     expect(out.authorDisplayName).toBe('Lia') // nome revelado (kids)
     expect(out.authorProfileId).toBeNull() // link ao perfil público SÓ com opt-in
