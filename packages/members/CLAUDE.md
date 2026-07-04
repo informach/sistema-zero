@@ -74,7 +74,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > **`0034`** (`0034_thick_misty_knight`: `ALTER TYPE xp_source_type ADD VALUE 'challenge_entry'`
 > — Desafio do mês, Fase 5 07/2026) e **`0035`** (`0035_glorious_black_cat`: report semanal dos
 > pais — `parent_reports_sent` UNIQUE (account_id, week_key) + `parent_report_prefs` (account_id
-> PK, `disabled`)) **geradas, FALTA aplicar** (`db:migrate` — 0029–0035 juntas).
+> PK, `disabled`)) **geradas, FALTA aplicar** (`db:migrate` — 0029–0035 juntas) e **`0036`**
+> (`0036_clube_activity`: `ALTER TYPE xp_source_type ADD VALUE 'clube_thread'`/`'clube_comment'`
+> — atividade do Clube dos Criadores, full review 07/2026; espelha a `0032` do Pensa — dois
+> valores idempotentes `IF NOT EXISTS`) **APLICADA — EM PRODUÇÃO**.
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -409,6 +412,19 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `true` (sem tocar matrícula) — é o que destrava o **Estúdio Completo** (`estudio-completo`)
   p/ a equipe testar o Kids sem comprar, espelhando a chave-mestra virtual dos cursos. Travado
   por `tests/integration/privileged-coins.test.ts`.
+- **`GET /members/avatars?ids=<csv>&audience=`** (rota do aluno, JWT + `x-internal-token`;
+  **peer-viewable** como o perfil público — só dado de JOGO, NUNCA PII): avatar + nível em
+  LOTE por perfil. Devolve `{ avatars: { [profileId]: { photoUrl: string|null, level:
+  StudentLevelSlug } } }` (todo id pedido volta no mapa: sem foto → `photoUrl:null`; sem
+  marcos → nível `noob`). Serve o BFF do **Clube/Mural kids** para pintar rosto+aura de cada
+  autor de tópico/comentário numa ida (sem N+1). `GetAvatarsByProfilesService` (avatar +
+  gamification) roda 2 queries em `Promise.all`: `AvatarRepository.listPhotoUrlsByProfileIds
+  (profileIds, audience)` + `GamificationRepository.countQualifyingByLevelForProfiles
+  (profileIds, audience)` (versão em LOTE do `countQualifyingCoursesByLevel` — mesmo self-join
+  de marcos, `GROUP BY user_id`) → `computeStudentLevel` por perfil. DTO `AvatarsBatchQuery`
+  (`ids` csv, cap **50** via `parseProfileIds` — uuid validado na borda; `audience` ausente →
+  **`kids`**, único consumidor é a vitrine kids). **SEM migração** (`avatar_configs.photo_url`
+  já existe, migration `0023`). Gateway: rota `members-avatars-batch`.
 - **`PUT /members/courses/:slug/lessons/:lessonId/position`** (aluno): salva a posição
   do vídeo — body `{positionSeconds: int 0..100000}` (TypeBox), valida matrícula + aula
   pertencer ao curso; upsert em `lesson_progress`. Devolve `{lessonId, positionSeconds,
@@ -528,14 +544,16 @@ user+audience+slug — a "1ª aula" do kids é independente da do adult). Domain
 `effectiveStreak` — timezone FIXA America/Sao_Paulo, cálculo SEMPRE no backend; o "dia"
 vira às 03:00Z). Decisões travadas com o usuário (06/2026): **SEM corações/vidas**;
 XP = aula 10 · quiz aprovado 20 + bônus `round(score/10)` cap +10 · baú de unidade 25;
-**catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, **22** com as expansões: first-lesson,
+**catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, **23** com as expansões: first-lesson,
 **first-showcase** (1º jogo publicado no Mural — universal, ledger `course_showcased`, Fase 5),
 streak-7/30/60/180/365, course-complete/-2/-3, quiz-perfect/-10/-30, **studio-first/
 studio-master-3/studio-master-10** (maestria do Estúdio, ledger `studio_passed`),
 **pensa-first-idea/pensa-first-launch/pensa-creator-3** (Pensa 07/2026, ledgers
 `pensa_stage_complete`/`pensa_cycle_complete` — ver §Pensa), **challenge-first** (1ª
-participação no Desafio do mês, ledger `challenge_entry` — Fase 5) e
-**coins-saver-300/coins-saver-1000** (poupador, por `lifetime_coins_earned`) — sem
+participação no Desafio do mês, ledger `challenge_entry` — Fase 5), **clube-primeiro-post**
+(1ª conversa APROVADA no Clube, ledger `clube_thread` — full review 07/2026; SÓ thread
+destrava, comentário não) e **coins-saver-300/coins-saver-1000** (poupador, por
+`lifetime_coins_earned`) — sem
 tabela/seed: preDeploy de prod roda só `db:migrate` e o catálogo muda junto com o código que
 o detecta). **Marcos são contados pelo LEDGER** (migrations `0010`/`0011`):
 curso 100% gera `course_complete` (sourceId = courseId) e quiz com nota 100 gera
@@ -666,8 +684,9 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   charge-first idempotente, `reason:'spend_room'`). DTO `RoomStateBody` + rota alargados p/ os campos
   novos. Endpoints BFF kids: `GET|PUT /api/members/room` + `POST /api/members/room/items/:id/buy`.
 - **Missões diárias/semanais** (migration `0021`, `mission_claims`): estilo Duolingo,
-  content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS` 5 / `WEEKLY_MISSIONS` 3 em
-  `domain/gamification/missions.ts`; sem seed, igual badges). Atribuição DETERMINÍSTICA por
+  content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS` 6 / `WEEKLY_MISSIONS` 4 em
+  `domain/gamification/missions.ts`; sem seed, igual badges — inclui as de **Clube** da
+  full review 07/2026, ver subseção). Atribuição DETERMINÍSTICA por
   (userId, período) via FNV-1a → embaralho parcial de **Fisher–Yates semeado** (`pick`,
   06/2026: alcança QUALQUER subconjunto — antes a janela contígua só atingia `pool.length`
   trios, p.ex. 5 dos 10 diários; `DAILY_SET_SIZE` 3, `WEEKLY_SET_SIZE` 2; semana começa na
@@ -757,6 +776,36 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   `AUTH_INTERNAL_TOKEN`, `AUTH_REQUEST_TIMEOUT_MS` (8s), `GATEWAY_URL`, `MEMBERS_HMAC_SECRET`
   (= o do consumer `members` no gateway), `KIDS_COMMUNITY_URL`, `PARENT_REPORT_*`.
   Testes: `tests/unit/parent-report.test.ts` (isDue calendário + ciclo/dedupe/opt-out/retry).
+
+### Full review do Clube dos Criadores (07/2026, EM PRODUÇÃO): atividade recompensada
+
+Recompensa a criança por participar do fórum do Clube — mas **só quando a EQUIPE APROVA** o
+tópico/comentário (não no envio): premiar na aprovação bloqueia farm e conteúdo rejeitado.
+A **avaliação de avatar+aura dos autores** do fórum é servida pela rota em lote
+`GET /members/avatars` (ver §rotas acima — mesma leva, mata o N+1 do BFF).
+
+- **Webhook `POST /members/webhooks/clube`** (hub→members, HMAC + dedupe `x-delivery-id` —
+  mesmo padrão de `/showcase` e `/challenge`, canal `'clube'` no `processed_webhooks`): o hub
+  avisa que a equipe aprovou → `awardClubeContribution`. DTO `ClubeWebhookBody { userId,
+  accountId, audience, kind: 'thread'|'comment', contentId }`. **XP puro, SEM moeda** (`XP_VALUES.
+  CLUBE_THREAD` **+5** / `CLUBE_COMMENT` **+3** — não entra em `coin_source_type`: nenhuma
+  torneira de moeda p/ farmar). **Idempotente pelo `contentId`** no ledger (sourceId; re-aprovar
+  hide→approve é INERTE). XP `amount > 0` → **move o streak** (voltar ao Clube conta como dia
+  ativo, regra "só atividade que rende XP conta"). `privileged: false` (o webhook do hub não
+  carrega role → equipe testando pontua; risco aceito v1, como o `/challenge`). Award falhou →
+  **502 `CLUBE_AWARD_FAILED` SEM marcar a entrega** (o hub re-entrega; idempotente).
+- **Badge `clube-primeiro-post`** (1ª conversa APROVADA — **só thread**, comentário NÃO
+  destrava): `clubeBadgeSlugs(approvedThreads)` em `gamification.ts` (conta o ledger
+  `clube_thread`); derivação no `award` do repo, bloco após o `challenge_entry`. Espelhada no
+  member-shell `BadgeSlug` e no community-kids `BADGE_INFO` (título "Voz da turma", ícone
+  `MessagesSquare`) — travada por `community-kids/tests/badge-conformance.test.ts`.
+- **Missões de comunidade** (`missions.ts`): `daily-clube` (1 thread → XP 10 + 10 moedas) e
+  `weekly-clube-3` (3 threads → XP 40 + 45 moedas), `goalType: 'clube_thread'` (NOVO em
+  `MissionGoalType`). Contam o ledger por `xp_source_type` = dependem do source novo, que só
+  entra na APROVAÇÃO → anti-farm por construção (o progresso é derivado na leitura, sem hook).
+- **Migration `0036_clube_activity`** (aplicada, ver enumeração no topo): dois valores no
+  `xp_source_type` — `clube_thread` + `clube_comment` (espelha a `0032` do Pensa; `XpSourceType`
+  port + enum do schema atualizados). SEM tabela/coluna nova.
 
 ## Perfis kids (allowance — fatia 06/2026, PR1)
 

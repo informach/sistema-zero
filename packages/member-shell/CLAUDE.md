@@ -58,10 +58,48 @@ aluno (NÃO regredir):** o BFF **redige o `authorId` de TERCEIROS** nas views de
 (`okRedacted` → `lib/hub-redact`, puro/testado em `tests/hub-redact.test.ts`) — só o id do PRÓPRIO
 viewer chega ao browser (por isso `HubThreadView/HubCommentView.authorId` é `string | null`); os
 apps comparam o id apenas p/ rotular "Você"/"Colega", ninguém EXIBE o id. Por isso
-`createHubRoutes` recebe `{ hub, members, media, session }` (o `session` resolve o viewer p/ a
-redação; `members` é p/ a vitrine — ver abaixo). Os
+`createHubRoutes` recebe `{ hub, members, media, session, audience }` (o `session` resolve o viewer
+p/ a redação; `members` é p/ a vitrine + avatares em lote; **`audience` liga o modo Clube KIDS** —
+ver "Full review do Clube dos Criadores" abaixo). Os
 helpers PUROS de anexo (`lib/hub-attachments`: allowlist de MIME, limites, `sanitizeFilename`,
 `extForMime`, `isInlineKind`) têm cobertura em `tests/hub-attachments.test.ts`.
+
+**Full review do Clube dos Criadores (07/2026 — EM PRODUÇÃO):** o Clube KIDS passou a mostrar
+ROSTO+NOME de todos os autores de tópico/comentário (o fórum ADULTO fica INTACTO). Mudanças de
+contrato (todas testadas + em prod):
+- **`redactAuthors` ganhou `revealNames` (3º arg, default `false`):** LIGADA (só o BFF KIDS passa
+  `true`) preserva o `authorDisplayName` (1º nome) de TODOS os autores — decisão de produto: o
+  avatar é um boneco 3D que a criança MONTA (não a foto real) e o 1º nome sozinho não é sensível,
+  então o Clube mostra rosto+nome de todos. O LINK ao perfil público (`authorProfileId`) segue
+  GATED no opt-in dos pais (inalterado). DESLIGADA (default) = comportamento antigo do fórum
+  adulto (nome só quando público, senão "Colega"). Dois helpers PUROS novos em `lib/hub-redact.ts`:
+  **`collectAuthorIds(body)`** (coleta os `authorId` CRUS de página/item ANTES da redação, que os
+  zera) e **`attachAuthorAvatars(body, avatars)`** (anexa `authorAvatarUrl`/`authorLevel` pelo
+  `authorId` cru, ANTES do redact — estruturais, sobrevivem ao `...item` da redação; autor sem
+  avatar no mapa = item intacto/boneco padrão). Cobertura ampliada em `tests/hub-redact.test.ts`.
+- **`createHubRoutes` agora recebe `audience` (`MembersAudience`)** além de `{ hub, members, media,
+  session }`. Novo helper interno **`okRedactedWithAvatars(r, vid)`**: só na vitrine KIDS
+  (`audience === 'kids'`) coleta os authorId, busca `members.listAvatarsByProfileIds(ids)` em LOTE
+  (sem N+1), `attachAuthorAvatars` e redige com `revealNames=true`; **best-effort** — falha/ausência
+  do members segue sem avatar e NUNCA quebra a carga do fórum (cai na redação normal). No app adulto
+  = `okRedacted` puro. Os 3 GETs de leitura (threads do canal, thread, comentários) usam o novo
+  helper; os writes (editar tópico/comentário, criar comentário) seguem no `okRedacted` cru.
+- **Client novo `members.listAvatarsByProfileIds(ids)`** (`GET /members/avatars?ids=<csv>&audience`)
+  → `AvatarsBatchView`. Tipos novos em `lib/types.ts`: **`ProfileAvatarView {photoUrl, level}`** e
+  **`AvatarsBatchView {avatars: Record<profileId, ProfileAvatarView>}`**. `HubThreadView`/
+  `HubCommentView` ganharam `authorAvatarUrl?`/`authorLevel?` (estruturais, só KIDS, NUNCA PII —
+  sobrevivem à redação; ausentes no adulto).
+- **Cross-link + notificações:** `hub.createThread` aceita **`playId?`** (Zod `CreateThread.playId`
+  `nullish` em `routes/hub.ts`, repassado ao hub; o corpo segue por `stripImageMarkdown`) — é o
+  "Mostrar meu jogo no Clube" (o hub valida que o `/jogar` é de vitrine visível de verdade). Novo
+  client **`hub.listMyThreads()`** (`GET /hub/my-threads`) + handler **`hubMyThreads`**
+  (`GET /api/hub/my-threads` — SEM redação, são só os tópicos DELE) + tipo `HubMyThreadView`.
+  Alimenta o sino "novas respostas nas suas conversas" (o app diffa o `commentCount` contra um
+  baseline local) e o picker "Mostrar meu jogo" do kids.
+- **Badge mirror:** `BadgeSlug` (`lib/types.ts`) ganhou **`'clube-primeiro-post'`** (1ª conversa
+  aprovada no Clube — ledger `clube_thread`). ⚠️ Espelha o members — **manter em LOCKSTEP** com o
+  `BADGE_SLUGS` do members e o `BADGE_INFO` do community-kids, senão a badge SOME (a UI ignora slug
+  desconhecido).
 
 **Markdown de UGC (full review 19/06 — NÃO regredir):** o corpo de tópico/comentário é conteúdo NÃO
 confiável de criança p/ criança. Renderize com **`renderUgcMarkdown`** (`lib/markdown`: modo restrito
@@ -236,6 +274,8 @@ que cada app trata com uma página "aula bloqueada". O gate confiável é o memb
 `HubThreadView` ganhou **`playId`** (sobrevive ao `redactAuthors` — só estrutural; teste em
 `tests/hub-redact.test.ts`) e, na Fase 5 (07/2026), **`playsCount?`** (contador de jogadas do link
 público) e **`challengeKey?`** (tag do Desafio do mês) — ambos estruturais, sobrevivem à redação.
+No Clube (07/2026) ganhou também **`authorAvatarUrl?`/`authorLevel?`** (rosto+aura, só KIDS,
+estruturais/NUNCA PII — ver "Full review do Clube dos Criadores"); idem `HubCommentView`.
 
 **Fase 5 (07/2026) — plays/carreira/desafio/arte no shell:**
 - **Contador de jogadas:** o `studioPlay.GET` (público) deduplica por **`ip:playId`** (TTL 30min,
@@ -375,7 +415,9 @@ opt-in dos pais, snapshot no hub) expõe um **`authorProfileId`** (o id do perfi
 p/ `/crianca/[id]`, preservando o `authorDisplayName`. Perfil não público → sem `authorProfileId`
 (o fórum cai em "Colega"; o Mural mostra o nome sem link). É só estrutural e sobrevive à redação;
 o portão VIVO é o próprio perfil público (404 se desligarem depois). Cobertura em
-`tests/hub-redact.test.ts`.
+`tests/hub-redact.test.ts`. **No Clube kids (07/2026) o 3º arg `revealNames` preserva o 1º nome de
+TODOS os autores (não só dos públicos) e o BFF anexa rosto+aura em lote — ver "Full review do Clube
+dos Criadores".**
 
 > **Fonte da verdade da gamificação** (valores exatos de XP/moedas/marcos, catálogos de avatar/quarto/
 > missões, regras de streak/freeze/férias/ligas, modelo de dados e gotchas): **`../../docs/gamificacao.md`**.

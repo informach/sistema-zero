@@ -246,6 +246,47 @@ no `nav.ts` (sidebar + tab bar). ⚠️ **Corpo é OBRIGATÓRIO** no envio (sche
 `body.min(1)`): o botão "Responder" exige `replyBody.trim()` — não habilitar só com
 anexo (o servidor recusaria).
 
+### Full review do Clube dos Criadores (07/2026, EM PRODUÇÃO)
+
+O Clube virou fórum kids de 1ª classe — aconchegante, com ROSTO, recompensa, professores e
+notificações. **Rosto + áurea do nível + 1º NOME de TODO autor:** o `kids-space-view-client.tsx`
+renderiza um `AuthorBadge` = `AvatarWithAura` (foto do boneco 3D + aura do nível, igual ao resto do
+app) + nome nas linhas de tópico, comentários e cards do Mural; `displayAuthor`/`authorText`
+mostram o 1º nome p/ TODOS ("Colega" só como fallback SEM nome), e o link `/crianca/[id]` segue SÓ
+p/ autor público (opt-in dos pais). Os dados (`authorAvatarUrl`/`authorLevel`) vêm do BFF em LOTE
+(member-shell `GET /members/avatars`, revelado só na vitrine kids via `revealNames` do
+`redactAuthors`). ⚠️ **Decisão registrada:** a URL do avatar embute o profileId no R2 → mostrar
+avatar de não-públicos EXPÕE esse id na string (o `authorId` cru segue redigido) — aceito.
+
+**Aconchego:** cabeçalho acolhedor (mascote Zappy) só no modo fórum; **canais com emoji/cor** via
+novo `channel-presentation.ts` (mapa PURO slug→{emoji,colorVar,emptyState}, padrão de
+`badges.ts`/`room-catalog.ts`; troca o ícone `Hash`); **estados vazios ilustrados** por canal;
+**reações ampliadas** (`QUICK_EMOJIS` 5→8, dentro da allowlist do hub) com "pop" no toque;
+**locked screen** (`kids-locked-clube.tsx`) com prévia do que tem dentro. **Combinados do Clube —
+`clube-combinados.tsx`** (`ClubeCombinados`): modal que ABRE na 1ª visita (gated por `localStorage
+'sz:kids:clube:onboarded:<viewerId>'`, padrão do `level-up-watcher`) + botão "Combinados" sempre no
+cabeçalho (regras gentis, `useModalA11y`/Dialog); **chips de sugestão** no composer
+(`SUGGESTION_STARTERS`) pré-preenchem o título.
+
+**Canal "Recados da equipe" (`staff_only`):** professores postam recados/avisos, a criança só LÊ e
+reage; o `channel-presentation` dá 📣 + empty state próprio e o sidebar mostra o cadeado (seed do
+hub, rodado local/staging/prod 04/07). **Cross-link Mural↔Clube — `GamePicker`** no composer
+("Mostrar meu jogo"): lista os jogos da própria criança (fetch `/api/hub/my-threads`, `playId !=
+null`) e seta `playId` no `createThread`; o `ThreadDetail` passou a mostrar o card
+`PlayLinkActions` ("Jogar") TAMBÉM no Clube (guard relaxado de `isWall && playId` → `playId`); shim
+novo `app/api/hub/my-threads/route.ts`. **Sino "novas respostas" — `clube-activity-bell.tsx`**
+(`ClubeActivityBell`): busca `/api/hub/my-threads`, diffa `commentCount` contra um baseline em
+`localStorage 'sz:kids:clube:seen:<viewerId>'` e mostra pontinho + lista; marcar como visto
+atualiza o baseline (fica no cabeçalho do Clube).
+
+**Recompensa por participar:** badge nova **`clube-primeiro-post`** ("Voz da turma", ícone
+`MessagesSquare`) em `badges.ts` `BADGE_INFO` — 1ª conversa APROVADA (ledger `clube_thread` do
+members). ⚠️ Espelha o members `BADGE_SLUGS` + member-shell `BadgeSlug` (lockstep, travado por
+`tests/badge-conformance.test.ts`). O members também dá XP (thread +5, comment +3) na aprovação e
+as missões `daily-clube`/`weekly-clube-3`. **Prominência no mobile:** `app/(app)/criar/page.tsx` —
+o Clube saiu do rodapé "E também" e virou **card-herói no TOPO** (acima do trio Pensa→Pinta→
+Estúdio), com `MessagesSquare` + copy calorosa.
+
 ## Diferenças deliberadas vs o community (decisões da v1, 06/2026)
 
 1. **Compras só na ÁREA DOS PAIS** (não no menu da criança): NÃO há página `/compras` nem item
@@ -351,7 +392,8 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
 **Onde a UI vive (tudo com tokens da marca + `prefers-reduced-motion`):**
 - `badges.ts` — APRESENTAÇÃO das badges (`BADGE_INFO` título/copy/ícone por `BadgeSlug`); o
   catálogo/detecção é do members. Slug desconhecido → `badgeInfo()` devolve null e a UI ignora
-  (forward-compat).
+  (forward-compat). Inclui a de PARTICIPAÇÃO **`clube-primeiro-post`** ("Voz da turma", `MessagesSquare`
+  — 1ª conversa aprovada no Clube; ver §Full review do Clube dos Criadores).
 - `lesson-celebration.tsx` — overlay ganhou `gamification` (chip +XP, fogo do streak com
   destaque quando `extended`, "abriu o baú da unidade", badges); `xpAwarded: 0`/`null` →
   overlay antigo. O `lesson-player-client` agora LÊ a resposta do complete (estado
