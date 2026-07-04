@@ -23,55 +23,75 @@ import { szTheme } from './theme'
 
 let initialized = false
 
+/** Contrato mínimo de um `Field` do Blockly que este patch toca. */
+type FieldLike = {
+  isFullBlockField: () => boolean
+  getSourceBlock: () => { getSvgRoot?: () => SVGGElement | null } | null
+  borderRect_?: SVGElement | null
+  resizeEditor_?: unknown
+}
+
+/**
+ * Rect AO VIVO (viewport, `getBoundingClientRect`) que o editor de um campo deve
+ * cobrir — correto em posição E tamanho mesmo dentro do overlay `fixed` do **modo
+ * criação guiada** (onde o cálculo nativo do Blockly, por `getPageOffset`, erra o X
+ * ~1 caractere à esquerda). Dois casos:
+ *  - campo **full-block** (nossos sockets OVAIS de valor: `borderRect_` de tamanho
+ *    ZERO) → o editor cobre o BLOCO inteiro → rect do SVG do bloco-fonte;
+ *  - campo de **texto comum** (`FieldInput`: tem `resizeEditor_` + `borderRect_`
+ *    visível — nome de propriedade/variável/método etc.) → o editor cobre a CAIXA do
+ *    campo → rect do `borderRect_`.
+ * Demais campos (dropdown/checkbox/cor/imagem…) → `null` = cálculo nativo intacto
+ * (não abrem `<input>` de texto; seu posicionamento nativo não estava quebrado).
+ * `getBoundingClientRect` == `getPageOffset` quando a janela não rola (o Studio é
+ * layout fixo), então isto NÃO muda o modo normal — só conserta o guiado.
+ */
+function liveEditorRect(field: FieldLike): DOMRect | null {
+  try {
+    if (field.isFullBlockField()) {
+      const r = field.getSourceBlock()?.getSvgRoot?.()?.getBoundingClientRect()
+      return r && r.width > 0 && r.height > 0 ? r : null
+    }
+    if (typeof field.resizeEditor_ === 'function' && field.borderRect_) {
+      const r = field.borderRect_.getBoundingClientRect()
+      return r.width > 0 && r.height > 0 ? r : null
+    }
+  } catch {
+    // Qualquer surpresa cai no cálculo nativo do Blockly.
+  }
+  return null
+}
+
 /**
  * Corrige o ANCORAMENTO do editor de campo (o `<input>` que abre ao clicar num campo
- * de texto/número). Nossos sockets OVAIS de valor são campos "full-block" (o
- * `borderRect_` do campo tem tamanho ZERO) → o Blockly calcula a posição do editor
- * por um caminho que ERRA o X quando o workspace está rolado horizontalmente dentro
- * do overlay `fixed` do **modo criação guiada**: o `<input>` abre deslocado (~1 dígito
- * à esquerda) e se sobrepõe ao número desenhado no SVG — "400" vira um "4000" fantasma,
- * com o contorno de seleção puxado p/ a esquerda. Para um campo full-block o editor
- * deve cobrir o BLOCO INTEIRO (o oval) — usamos o bounding box AO VIVO do SVG do
- * BLOCO-fonte (`getBoundingClientRect`), que é sempre correto em posição E tamanho.
- * Assim o `<input>` preenche todo o campo (como nos outros modos) E fica alinhado.
- * Só para campos full-block (os demais já usam o `borderRect_` ao vivo e ficam
- * intactos). Idempotente (guardado por `initialized`). Ver [[studio-campos-valor-ovais]].
+ * de texto/número) no **modo criação guiada**: dentro do overlay `fixed`, o Blockly
+ * posiciona o editor por um caminho que ERRA o X (~1 caractere à esquerda) → o
+ * `<input>` abre deslocado e se sobrepõe ao texto do SVG ("400" vira "4000" fantasma;
+ * um nome vira um fantasma puxado p/ a esquerda), com o contorno de seleção torto.
+ * Vale para os sockets OVAIS de valor (full-block) E para os campos retangulares de
+ * texto (nome de propriedade/variável/método…) — ver `liveEditorRect`. Idempotente
+ * (guardado por `initialized`). Ver [[studio-campos-valor-ovais]].
  */
 function patchFieldEditorAnchor(): void {
-  // `getScaledBBox`/`isFullBlockField` vivem na base `Field` (o `FieldInput` abstrato
-  // não é exportado em runtime). O gate `isFullBlockField()` restringe a mudança aos
-  // campos que ocupam o bloco inteiro (nossos sockets de valor); os demais seguem
-  // pelo `borderRect_` ao vivo do Blockly, intactos.
-  const proto = Blockly.Field.prototype as unknown as {
+  // `getScaledBBox`/`isFullBlockField` vivem na base `Field`. Sobrescrevemos o bbox
+  // usado pelo posicionador do editor; `liveEditorRect` já decide quais campos tocar.
+  const proto = Blockly.Field.prototype as unknown as FieldLike & {
     getScaledBBox: () => Blockly.utils.Rect
-    isFullBlockField: () => boolean
-    getSourceBlock: () => { getSvgRoot?: () => SVGGElement | null } | null
   }
   const original = proto.getScaledBBox
   proto.getScaledBBox = function (this: typeof proto): Blockly.utils.Rect {
-    try {
-      if (this.isFullBlockField()) {
-        // O campo full-block PREENCHE o bloco: o rect AO VIVO do bloco (o oval) dá a
-        // posição E o tamanho corretos — o editor cobre todo o campo (o SVG do campo
-        // sozinho seria só o texto → editor minúsculo).
-        const rect = this.getSourceBlock()?.getSvgRoot?.()?.getBoundingClientRect()
-        if (rect && rect.width > 0 && rect.height > 0) {
-          return new Blockly.utils.Rect(rect.top, rect.bottom, rect.left, rect.right)
-        }
-      }
-    } catch {
-      // Qualquer surpresa cai no cálculo nativo do Blockly.
-    }
+    const rect = liveEditorRect(this)
+    if (rect) return new Blockly.utils.Rect(rect.top, rect.bottom, rect.left, rect.right)
     return original.call(this)
   }
 
   // Mesmo com o bbox correto, o `resizeEditor_` do Blockly ainda desloca o WidgetDiv
   // uns px à esquerda no overlay `fixed` do modo guiado (a conta interna dele soma um
   // offset de scroll/scale que erra ali). Depois que ele posiciona, ENCAIXAMOS o
-  // WidgetDiv EXATAMENTE sobre o rect ao vivo do bloco (o oval) — para campos
-  // full-block. `WidgetDiv` é absoluto no `document.body` (origem 0,0), então o rect
-  // de viewport do oval é a coordenada certa. `resizeEditor_` roda a cada mudança do
-  // workspace enquanto edita, então o encaixe se mantém.
+  // WidgetDiv EXATAMENTE sobre o rect ao vivo do campo (`liveEditorRect`: o bloco p/
+  // oval, a caixa p/ campo de texto). `WidgetDiv` é absoluto no `document.body`
+  // (origem 0,0), então o rect de viewport é a coordenada certa. `resizeEditor_` roda
+  // a cada mudança do workspace enquanto edita, então o encaixe se mantém.
   // `FieldInput`/`FieldTextInput` não são exportados em runtime; pegamos a classe do
   // campo `field_number` pelo REGISTRY e subimos a cadeia de protótipos até quem
   // DEFINE `resizeEditor_` (o `FieldInput` base). Patch lá vale p/ número E texto.
@@ -85,14 +105,13 @@ function patchFieldEditorAnchor(): void {
     inputProto = Object.getPrototypeOf(inputProto)
   }
   if (inputProto && typeof inputProto.resizeEditor_ === 'function') {
-    const originalResize = inputProto.resizeEditor_ as (this: typeof proto) => void
-    inputProto.resizeEditor_ = function (this: typeof proto): void {
+    const originalResize = inputProto.resizeEditor_ as (this: FieldLike) => void
+    inputProto.resizeEditor_ = function (this: FieldLike): void {
       originalResize.call(this)
       try {
-        if (!this.isFullBlockField()) return
-        const rect = this.getSourceBlock()?.getSvgRoot?.()?.getBoundingClientRect()
+        const rect = liveEditorRect(this)
         const div = Blockly.WidgetDiv.getDiv()
-        if (div && rect && rect.width > 0 && rect.height > 0) {
+        if (div && rect) {
           div.style.left = `${rect.left}px`
           div.style.top = `${rect.top}px`
           div.style.width = `${rect.width}px`
