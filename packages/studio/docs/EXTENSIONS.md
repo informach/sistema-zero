@@ -140,6 +140,16 @@ antes de o código do aluno rodar). Regras:
 - [ ] Blocos de comando da extensão usam `previousStatement`/`nextStatement:
       'JSStmt'` — assim encaixam dentro da área ⚙️ **Comportamento** (modelo de
       blocos-container; ver CLAUDE.md). A geração coleta o que está DENTRO dela.
+- [ ] Campo que REFERENCIA um nome já criado noutro bloco (sprite, cena/mundo,
+      objeto 3D, grupo/enxame, folha de quadros, mapa de tiles, imagem/textura…)
+      usa um **seletor**, não `field_input`: `field_sprite_picker` (sprites, com
+      miniatura), `field_asset_picker` (imagens do projeto) ou `field_name_picker`
+      com o `kind` certo (`scene3d`/`object3d`/`group3d`/`spritesheet`/`tilemap`/…).
+      O valor segue string (round-trip intacto). O bloco que DECLARA o nome fica em
+      `field_input` E precisa estar registrado no `*_DECL_BLOCKS` correspondente em
+      `blockly/fields/FieldNamePicker.ts` (ou `FieldSpritePicker.ts`), senão o
+      seletor lista "nenhum ainda". Ver "Padrões já usados → Seletores de NOME" no
+      CLAUDE.md. (game-2d/game-3d já seguem isto.)
 
 ### 5. Re-registro e remoção (invariante #5)
 

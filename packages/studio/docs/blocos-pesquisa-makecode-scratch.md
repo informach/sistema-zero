@@ -81,7 +81,14 @@ Problemas de usabilidade infantil identificados:
 1. **Esconder o `ctx`**: o runtime é dono de um canvas/contexto único; nenhum bloco de jogo mostra "pincel".
 2. **Eventos em chapéu**: "Quando o jogo começar", "A cada quadro", "Quando apertar a tecla [▾]",
    "Quando [sprite] encostar em [sprite]" — substituem o plumbing de variável de colisão.
-3. **Sprite por menu** (`field_sprite_picker`), com swatch/miniatura; valor continua string (round-trip intacto).
+3. **Escolher, não digitar — para TUDO que já foi nomeado** (generaliza o §2.5 de sprite p/ todo o editor):
+   o campo que REFERENCIA algo já criado noutro bloco vira um pop-up com a lista do que existe + um
+   texto de fallback. `field_sprite_picker` (sprite, com miniatura), `field_asset_picker` (imagem/textura)
+   e `field_name_picker` com `kind` — variável/lista/grupo, classe/função/método/**propriedade** (estes
+   escopados pela classe em contexto), id da tela, folha de quadros, mapa de tiles, e cena/objeto/grupo do
+   Jogo 3D. **Só o CONSUMIDOR** vira menu; quem DECLARA o nome segue digitando (nomeia uma vez). O valor
+   continua string (round-trip intacto). Impl.: `blockly/fields/FieldNamePicker.ts` (+ `classIntrospection.ts`
+   p/ o escopo por classe); detalhe do "como adicionar" no CLAUDE.md → "Padrões já usados → Seletores de NOME".
 4. **Forma = gramática** também aqui: booleanos hexágono (`tecla … apertada?`, `encosta em …?`) que caem
    dentro de `se`; reporters (`posição do clique x/y`, `x/y do sprite`, `pontuação`).
 5. **Cor por domínio**: Sprites, Movimento & Controles, Física & Colisão, Aparência & Efeitos, Som,
