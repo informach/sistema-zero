@@ -160,31 +160,11 @@ export function PublicPlayer({ id }: { id: string }) {
           </div>
         ) : Player && project ? (
           gamepadVisible ? (
-            // Layout com gamepad: jogo em cima, controles embaixo (portrait)
-            // Em landscape (height < 500px via CSS) muda para lado a lado
-            <div className="flex min-h-0 flex-1 flex-col">
-              {/* Palco — ocupa o espaço restante acima dos controles */}
-              <div className="flex min-h-0 flex-1 items-center justify-center p-2">
-                <div
-                  className="kids-unit-cyan w-full"
-                  style={{
-                    // Em portrait: limita pela largura. Em landscape: pela altura.
-                    maxWidth: 'min(100%, calc((100dvh - 200px) * 5 / 3))',
-                  }}
-                >
-                  <div className="aspect-[5/3] w-full overflow-hidden rounded-2xl border-4 border-(--unit) bg-white shadow-[0_6px_0_color-mix(in_oklch,var(--unit)_40%,transparent)]">
-                    <Player key={reloadKey} ref={iframeRef} project={project} title={title} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Gamepad — barra fixa na parte inferior */}
-              <MobileGamepad
-                iframeRef={iframeRef}
-                onRestart={handleRestart}
-                className="shrink-0 rounded-t-2xl bg-black/40 backdrop-blur-sm"
-              />
-            </div>
+            // Layout console: MobileGamepad envolve o jogo como filho —
+            // em portrait empilha (jogo + controles), em landscape coloca lado a lado.
+            <MobileGamepad iframeRef={iframeRef} onRestart={handleRestart}>
+              <Player key={reloadKey} ref={iframeRef} project={project} title={title} />
+            </MobileGamepad>
           ) : (
             // Layout desktop: palco centralizado sem gamepad
             <div className="grid min-h-0 flex-1 place-items-center p-3 sm:p-5">
