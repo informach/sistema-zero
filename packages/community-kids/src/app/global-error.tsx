@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { reportClientError } from '@/lib/report-error'
 
 /**
@@ -8,6 +7,11 @@ import { reportClientError } from '@/lib/report-error'
  * não alcança). Substitui o layout, então traz o seu `<html>`/`<body>` e NÃO recebe
  * o globals.css/fontes do app — daí os estilos inline (cores da marca, tom kids).
  * Último recurso para não cair na tela branca crua do Next numa plataforma infantil.
+ *
+ * ⚠️ Sem `useEffect`: Next.js pré-renderiza `/_global-error` estaticamente em um
+ * contexto sem dispatcher React (sem `useContext`), o que derruba o build. Como
+ * `reportClientError` já tem a guarda `typeof window === 'undefined'`, chamá-la
+ * direto é seguro: no-op no servidor, beacon no cliente.
  */
 export default function GlobalError({
   error,
@@ -16,12 +20,9 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  useEffect(() => {
-    // Erro de render no CLIENTE → fora do `onRequestError`; espelha p/ o Sentry
-    // pelo beacon (mesma origem, sobrevive ao reset via keepalive).
-    console.error(error)
-    reportClientError(error)
-  }, [error])
+  // Espelha p/ o Sentry pelo beacon (keepalive sobrevive ao reset/navegação).
+  console.error(error)
+  reportClientError(error)
 
   return (
     <html lang="pt-BR">

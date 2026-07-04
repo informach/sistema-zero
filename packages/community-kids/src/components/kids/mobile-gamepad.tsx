@@ -1,7 +1,7 @@
 'use client'
 
 import { Camera, Maximize, RefreshCw, Volume2, VolumeX } from 'lucide-react'
-import type { ReactNode, RefObject } from 'react'
+import type { CSSProperties, ReactNode, RefObject } from 'react'
 import { useEffect, useState } from 'react'
 
 // Paleta do console (inspirada no MakeCode Arcade)
@@ -34,6 +34,15 @@ function sendKey(
   iframe?.contentWindow?.postMessage({ type: 'sz:gamepad', action, key, code }, '*')
 }
 
+// Segurar um botão do gamepad não pode abrir menu de contexto/seleção (kids
+// seguram as setas o tempo todo) — aplicado em todo botão de jogo.
+const holdSafe: CSSProperties = {
+  touchAction: 'none',
+  userSelect: 'none',
+  WebkitUserSelect: 'none',
+  WebkitTouchCallout: 'none',
+}
+
 // ─── D-pad ───────────────────────────────────────────────────────────────────
 
 type Dir = 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'
@@ -44,22 +53,6 @@ const DPAD_ARM = 42
 function DPad({ iframeRef }: { iframeRef: RefObject<HTMLIFrameElement | null> }) {
   const S = DPAD_SIZE
   const A = DPAD_ARM
-
-  // Clip-path da cruz: 12 pontos
-  const cross = [
-    `${A}px 0`,
-    `${S - A}px 0`,
-    `${S - A}px ${A}px`,
-    `${S}px ${A}px`,
-    `${S}px ${S - A}px`,
-    `${S - A}px ${S - A}px`,
-    `${S - A}px ${S}px`,
-    `${A}px ${S}px`,
-    `${A}px ${S - A}px`,
-    `0 ${S - A}px`,
-    `0 ${A}px`,
-    `${A}px ${A}px`,
-  ].join(',')
 
   function btn(
     dir: Dir,
@@ -88,13 +81,12 @@ function DPad({ iframeRef }: { iframeRef: RefObject<HTMLIFrameElement | null> })
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          touchAction: 'none',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
           cursor: 'pointer',
-          borderRadius: 4,
+          borderRadius: 14,
           transition: 'filter 60ms',
+          ...holdSafe,
         }}
+        onContextMenu={(e) => e.preventDefault()}
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId)
           e.currentTarget.style.filter = 'brightness(1.6)'
@@ -136,27 +128,57 @@ function DPad({ iframeRef }: { iframeRef: RefObject<HTMLIFrameElement | null> })
     </svg>
   )
 
+  // Barras da cruz com pontas ARREDONDADAS (clip-path deixava os cantos duros).
+  // O gradiente é ancorado no contêiner via backgroundSize/Position — as duas
+  // barras compõem UMA superfície contínua, sem emenda no cruzamento; o
+  // drop-shadow do wrapper segue a silhueta da UNIÃO (sombra 3D única).
+  const barBase: CSSProperties = {
+    position: 'absolute',
+    borderRadius: 14,
+    background: C.dpadGrad,
+    backgroundSize: `${S}px ${S}px`,
+  }
+
   return (
     <div style={{ position: 'relative', width: S, height: S, flexShrink: 0 }}>
-      {/* Corpo da cruz */}
       <div
         aria-hidden
         style={{
           position: 'absolute',
           inset: 0,
-          background: C.dpadGrad,
-          clipPath: `polygon(${cross})`,
-          borderRadius: 6,
-          boxShadow: `0 4px 0 ${C.dpadEdge}, inset 0 1px 0 rgba(255,255,255,0.10)`,
+          filter: `drop-shadow(0 4px 0 ${C.dpadEdge})`,
         }}
-      />
+      >
+        {/* Barra vertical */}
+        <div
+          style={{
+            ...barBase,
+            left: (S - A) / 2,
+            top: 0,
+            width: A,
+            height: S,
+            backgroundPosition: `${-(S - A) / 2}px 0px`,
+          }}
+        />
+        {/* Barra horizontal */}
+        <div
+          style={{
+            ...barBase,
+            left: 0,
+            top: (S - A) / 2,
+            width: S,
+            height: A,
+            backgroundPosition: `0px ${-(S - A) / 2}px`,
+          }}
+        />
+      </div>
       {/* Knob central */}
       <div
         aria-hidden
         style={{
           position: 'absolute',
-          left: A + 4,
-          top: A + 4,
+          left: (S - A) / 2 + 4,
+          top: (S - A) / 2 + 4,
           width: A - 8,
           height: A - 8,
           borderRadius: '50%',
@@ -165,10 +187,10 @@ function DPad({ iframeRef }: { iframeRef: RefObject<HTMLIFrameElement | null> })
         }}
       />
       {/* Botões invisíveis sobre cada braço */}
-      {btn('ArrowUp', 'ArrowUp', A, 0, A, A, arrowUp)}
-      {btn('ArrowDown', 'ArrowDown', A, S - A, A, A, arrowDown)}
-      {btn('ArrowLeft', 'ArrowLeft', 0, A, A, A, arrowLeft)}
-      {btn('ArrowRight', 'ArrowRight', S - A, A, A, A, arrowRight)}
+      {btn('ArrowUp', 'ArrowUp', (S - A) / 2, 0, A, (S - A) / 2, arrowUp)}
+      {btn('ArrowDown', 'ArrowDown', (S - A) / 2, (S + A) / 2, A, (S - A) / 2, arrowDown)}
+      {btn('ArrowLeft', 'ArrowLeft', 0, (S - A) / 2, (S - A) / 2, A, arrowLeft)}
+      {btn('ArrowRight', 'ArrowRight', (S + A) / 2, (S - A) / 2, (S - A) / 2, A, arrowRight)}
     </div>
   )
 }
@@ -206,14 +228,13 @@ function ActionButtons({ iframeRef }: { iframeRef: RefObject<HTMLIFrameElement |
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          touchAction: 'none',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
           cursor: 'pointer',
           fontFamily: 'var(--font-display, sans-serif)',
           letterSpacing: '0.02em',
           transition: 'transform 60ms, box-shadow 60ms, border-bottom-width 60ms',
+          ...holdSafe,
         }}
+        onContextMenu={(e) => e.preventDefault()}
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId)
           e.currentTarget.style.transform = 'translateY(3px)'
@@ -240,8 +261,9 @@ function ActionButtons({ iframeRef }: { iframeRef: RefObject<HTMLIFrameElement |
     )
   }
 
-  // Layout Nintendo: A no canto superior-direito, B no inferior-esquerdo
-  const CONTAINER = 120
+  // Layout Nintendo: A no canto superior-direito, B no inferior-esquerdo (mais
+  // juntos que a 1ª versão — container menor aproxima A de B).
+  const CONTAINER = 106
   return (
     <div style={{ position: 'relative', width: CONTAINER, height: CONTAINER, flexShrink: 0 }}>
       {mkBtn('A', ' ', 'Space', C.btnA, C.btnAEdge, { top: 0, right: 0 })}
@@ -288,18 +310,18 @@ function CtrlBar({
   }
 
   function screenshot() {
-    if (shooting) return
+    if (shooting || !iframeRef.current?.contentWindow) return
     setShooting(true)
-    iframeRef.current?.contentWindow?.postMessage({ type: 'sz:screenshot' }, '*')
+    iframeRef.current.contentWindow.postMessage({ type: 'sz:screenshot' }, '*')
   }
 
-  const btnStyle: React.CSSProperties = {
+  const btnStyle: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 38,
-    height: 38,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     background: C.ctrl,
     border: `1px solid ${C.ctrlBorder}`,
     color: C.ctrlIcon,
@@ -315,22 +337,25 @@ function CtrlBar({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 10,
-        padding: '6px 12px 10px',
+        gap: 12,
+        // marginTop:auto empurra a barra pro PÉ do console — longe do D-pad/A-B,
+        // pra criança não esbarrar nela no meio do jogo.
+        marginTop: 'auto',
+        padding: '10px 14px 12px',
         borderTop: `1px solid ${C.ctrlBorder}`,
       }}
     >
       {[
-        { label: 'Reiniciar', icon: <RefreshCw size={16} />, onClick: onRestart },
-        { label: 'Tela cheia', icon: <Maximize size={16} />, onClick: fullscreen },
+        { label: 'Reiniciar', icon: <RefreshCw size={18} />, onClick: onRestart },
+        { label: 'Tela cheia', icon: <Maximize size={18} />, onClick: fullscreen },
         {
           label: 'Screenshot',
-          icon: <Camera size={16} style={{ opacity: shooting ? 0.4 : 1 }} />,
+          icon: <Camera size={18} style={{ opacity: shooting ? 0.4 : 1 }} />,
           onClick: screenshot,
         },
         {
           label: muted ? 'Ativar som' : 'Silenciar',
-          icon: muted ? <VolumeX size={16} /> : <Volume2 size={16} />,
+          icon: muted ? <VolumeX size={18} /> : <Volume2 size={18} />,
           onClick: toggleMute,
         },
       ].map(({ label, icon, onClick }) => (
@@ -366,41 +391,50 @@ interface MobileGamepadProps {
   iframeRef: RefObject<HTMLIFrameElement | null>
   onRestart: () => void
   /** Tela do jogo — será posicionada dentro do layout do console. */
-  children: React.ReactNode
+  children: ReactNode
 }
 
 /**
- * Layout completo de console móvel: corpo teal + tela embutida + D-pad + A/B +
- * barra de controle. Em portrait a tela fica acima dos controles; em landscape
- * (orientação horizontal com altura < 520px) a tela fica entre D-pad e A/B.
+ * Layout completo de console móvel: corpo teal fechado (arredondado nos 4
+ * cantos, com margem da borda da página) + tela embutida + D-pad + A/B + barra
+ * de controle no pé. Orientação decide o arranjo: retrato = tela em cima e
+ * controles embaixo; paisagem (celular deitado E desktop) = D-pad | tela | A/B,
+ * com a tela limitada pela ALTURA da janela para caber sempre inteira.
  *
  * Comunica-se com o iframe sandboxed via postMessage (sz:gamepad / sz:audio /
- * sz:screenshot) — o inputBridge.ts dentro do iframe ouve e simula teclado.
+ * sz:screenshot) — o inputBridge.ts dentro do iframe despacha KeyboardEvent
+ * sintético (alcança os runtimes 2D/3D e os blocos de evento do aluno).
  */
 export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadProps) {
   const [landscape, setLandscape] = useState(false)
 
   useEffect(() => {
-    const mq = window.matchMedia('(orientation: landscape) and (max-height: 520px)')
+    const mq = window.matchMedia('(orientation: landscape)')
     const update = () => setLandscape(mq.matches)
     update()
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
 
-  // Estilos do corpo do console
-  const body: React.CSSProperties = {
+  // Corpo do console: fechado (raio nos 4 cantos), com margem da página e
+  // centrado — no desktop não vira uma prancha de parede a parede.
+  const body: CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
     minHeight: 0,
+    alignSelf: 'center',
+    width: landscape
+      ? 'min(100% - 20px, calc((100dvh - 140px) * 5 / 3 + 380px))'
+      : 'min(100% - 20px, 640px)',
+    marginBottom: 10,
     background: C.bodyGrad,
-    borderRadius: landscape ? 0 : '18px 18px 0 0',
-    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 ${C.bodyEdge}`,
+    borderRadius: 22,
+    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 ${C.bodyEdge}, 0 6px 18px rgba(0,0,0,0.18)`,
   }
 
   // Moldura da tela
-  const screenWrap: React.CSSProperties = {
+  const screenWrap: CSSProperties = {
     borderRadius: 12,
     overflow: 'hidden',
     background: C.bezel,
@@ -409,7 +443,7 @@ export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadP
   }
 
   if (landscape) {
-    // ── Landscape: D-pad | tela | A/B ── //
+    // ── Paisagem (mobile deitado + desktop): D-pad | tela | A/B ── //
     return (
       <div style={body}>
         <div
@@ -418,23 +452,15 @@ export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadP
             flex: 1,
             minHeight: 0,
             alignItems: 'center',
-            padding: '8px 10px 0',
-            gap: 10,
+            justifyContent: 'center',
+            padding: '10px 16px 8px',
+            gap: 16,
           }}
         >
           {/* D-pad coluna esquerda */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <DPad iframeRef={iframeRef} />
-          </div>
+          <DPad iframeRef={iframeRef} />
 
-          {/* Tela */}
+          {/* Tela — limitada pela altura da janela p/ caber sempre inteira */}
           <div
             style={{
               flex: 1,
@@ -444,20 +470,19 @@ export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadP
               justifyContent: 'center',
             }}
           >
-            <div style={{ ...screenWrap, width: '100%', aspectRatio: '5/3' }}>{children}</div>
+            <div
+              style={{
+                ...screenWrap,
+                width: 'min(100%, calc((100dvh - 140px) * 5 / 3))',
+                aspectRatio: '5/3',
+              }}
+            >
+              {children}
+            </div>
           </div>
 
           {/* A/B coluna direita */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <ActionButtons iframeRef={iframeRef} />
-          </div>
+          <ActionButtons iframeRef={iframeRef} />
         </div>
 
         <CtrlBar iframeRef={iframeRef} onRestart={onRestart} />
@@ -465,76 +490,25 @@ export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadP
     )
   }
 
-  // ── Portrait: tela | controles ── //
+  // ── Retrato: tela | controles | barra ── //
   return (
     <div style={body}>
       {/* Tela */}
-      <div style={{ padding: '12px 14px 8px', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ padding: '14px 14px 10px', display: 'flex', justifyContent: 'center' }}>
         <div style={{ ...screenWrap, width: '100%', aspectRatio: '5/3' }}>{children}</div>
       </div>
 
-      {/* Controles: D-pad + centro + A/B */}
+      {/* Controles: D-pad e A/B puxados pro centro (sem cluster decorativo) */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '6px 16px 4px',
-          gap: 8,
+          justifyContent: 'center',
+          gap: 'clamp(40px, 14vw, 96px)',
+          padding: '10px 16px 22px',
         }}
       >
         <DPad iframeRef={iframeRef} />
-
-        {/* Centro: indicadores + botão start */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 8,
-            flexShrink: 0,
-          }}
-        >
-          {/* LEDs decorativos */}
-          <div style={{ display: 'flex', gap: 5 }}>
-            {['#ff6b6b', '#ffd166', '#06d6a0'].map((col) => (
-              <div
-                key={col}
-                aria-hidden
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  background: col,
-                  boxShadow: `0 0 6px ${col}88`,
-                  opacity: 0.9,
-                }}
-              />
-            ))}
-          </div>
-          {/* Botão SELECT/MENU */}
-          <button
-            type="button"
-            aria-label="Reiniciar jogo"
-            onClick={onRestart}
-            style={{
-              background: 'rgba(0,0,0,0.25)',
-              border: `1px solid ${C.ctrlBorder}`,
-              borderRadius: 20,
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              padding: '4px 10px',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            ↺ Reiniciar
-          </button>
-        </div>
-
         <ActionButtons iframeRef={iframeRef} />
       </div>
 
