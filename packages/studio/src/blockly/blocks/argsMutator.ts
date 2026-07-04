@@ -1,5 +1,13 @@
 import * as Blockly from 'blockly/core'
 import { isWorkspaceLoading } from '../loadFence'
+import {
+  type BlockScanner,
+  classOfInstance,
+  constructorParams,
+  findClass,
+  findFunction,
+  methodParams,
+} from './classIntrospection'
 import { withMutation } from './mutatorEvents'
 import { getParamNames } from './paramsMutator'
 
@@ -58,9 +66,11 @@ interface ArgsMutatorBlock extends Blockly.Block {
  * `sz_js_function`/`sz_js_new_var` é criado/removido: `rebuild_` roda com
  * `Blockly.Events.disable()` e só mexe nos INPUTS do próprio bloco (e numa
  * sombra `sz_val_number`, que não é um dos tipos varridos).
+ *
+ * Os helpers de resolução (`findClass`, `classOfInstance`, `constructorParams`,
+ * `methodParams`, `findFunction`) vivem em `classIntrospection.ts` — compartilhados
+ * com os seletores de propriedade/método/classe/função.
  */
-type BlockScanner = (type: string) => Blockly.Block[]
-
 const signatureScanCache = new WeakMap<Blockly.Events.Abstract, Map<string, Blockly.Block[]>>()
 
 function makeScanner(ws: Blockly.Workspace, event?: Blockly.Events.Abstract | null): BlockScanner {
@@ -78,65 +88,6 @@ function makeScanner(ws: Blockly.Workspace, event?: Blockly.Events.Abstract | nu
     cache.set(type, res)
     return res
   }
-}
-
-/** Acha o bloco de uma classe pelo nome no workspace. */
-function findClass(scan: BlockScanner, name: string): Blockly.Block | null {
-  if (!name) return null
-  for (const b of scan('sz_js_class')) {
-    if (b.getFieldValue('NAME') === name) return b
-  }
-  return null
-}
-
-/** Acha a declaração de uma função (`sz_js_function`) pelo nome no workspace. */
-function findFunction(scan: BlockScanner, name: string): Blockly.Block | null {
-  if (!name) return null
-  for (const b of scan('sz_js_function')) {
-    if (b.getFieldValue('NAME') === name) return b
-  }
-  return null
-}
-
-/** Dado o nome de uma variável de instância, acha a classe (via `criar x = novo Classe`). */
-function classOfInstance(scan: BlockScanner, varName: string): Blockly.Block | null {
-  if (!varName) return null
-  for (const b of scan('sz_js_new_var')) {
-    if (b.getFieldValue('VARNAME') === varName) {
-      return findClass(scan, b.getFieldValue('CLASS') ?? '')
-    }
-  }
-  return null
-}
-
-/** Parâmetros do construtor encaixado no input MEMBERS de uma classe. */
-function constructorParams(classBlock: Blockly.Block): string[] {
-  let cur: Blockly.Block | null = classBlock.getInputTargetBlock('MEMBERS')
-  while (cur) {
-    if (cur.isInsertionMarker()) {
-      cur = cur.getNextBlock()
-      continue
-    }
-    if (cur.type === 'sz_js_constructor') return getParamNames(cur)
-    cur = cur.getNextBlock()
-  }
-  return []
-}
-
-/** Parâmetros de um método (pelo nome) encaixado no input MEMBERS de uma classe. */
-function methodParams(classBlock: Blockly.Block, method: string): string[] | null {
-  let cur: Blockly.Block | null = classBlock.getInputTargetBlock('MEMBERS')
-  while (cur) {
-    if (cur.isInsertionMarker()) {
-      cur = cur.getNextBlock()
-      continue
-    }
-    if (cur.type === 'sz_js_class_method' && cur.getFieldValue('NAME') === method) {
-      return getParamNames(cur)
-    }
-    cur = cur.getNextBlock()
-  }
-  return null
 }
 
 /** Cria a sombra padrão (número editável) e conecta no input de valor. */

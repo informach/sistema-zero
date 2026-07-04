@@ -629,7 +629,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_break_tile_at',
     message0: 'Quebrar o tile do mapa %1 onde está o sprite %2',
     args0: [
-      { type: 'field_input', name: 'MAP', text: 'mapa' },
+      { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
     ],
     previousStatement: 'JSStmt',
@@ -641,7 +641,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_set_tile',
     message0: 'No mapa %1, pôr o tile número %2 onde está o sprite %3',
     args0: [
-      { type: 'field_input', name: 'MAP', text: 'mapa' },
+      { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
       { type: 'input_value', name: 'INDEX', check: 'JSValue' },
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
     ],
@@ -655,7 +655,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_tile_at',
     message0: 'o número do tile do mapa %1 onde está o sprite %2',
     args0: [
-      { type: 'field_input', name: 'MAP', text: 'mapa' },
+      { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
     ],
     output: 'JSValue',
@@ -855,7 +855,7 @@ export const gameTwoDBlocks = [
     message0: 'Animar sprite %1 com a folha de quadros %2, do quadro %3 ao %4 a %5 fps',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
-      { type: 'field_input', name: 'SHEET', text: 'andar' },
+      { type: 'field_name_picker', name: 'SHEET', text: 'andar', kind: 'spritesheet' },
       { type: 'input_value', name: 'FROM', check: 'JSValue' },
       { type: 'input_value', name: 'TO', check: 'JSValue' },
       { type: 'input_value', name: 'FPS', check: 'JSValue' },
@@ -872,7 +872,7 @@ export const gameTwoDBlocks = [
     message0: 'Desenhar quadro %1 da folha de quadros %2 em x %3 y %4 largura %5 altura %6',
     args0: [
       { type: 'input_value', name: 'INDEX', check: 'JSValue' },
-      { type: 'field_input', name: 'SHEET', text: 'andar' },
+      { type: 'field_name_picker', name: 'SHEET', text: 'andar', kind: 'spritesheet' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -1010,7 +1010,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_draw_tilemap',
     message0: 'Desenhar o mapa %1 em x %2 y %3',
     args0: [
-      { type: 'field_input', name: 'MAP', text: 'mapa' },
+      { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
@@ -1025,7 +1025,7 @@ export const gameTwoDBlocks = [
     message0: 'Impedir o sprite %1 de atravessar os tiles sólidos do mapa %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
-      { type: 'field_input', name: 'MAP', text: 'mapa' },
+      { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1960,7 +1960,7 @@ export const gameTwoDBlocks = [
     message0: 'Criar equilibrista %1 no pincel %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'jogo' },
-      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -2011,7 +2011,7 @@ export const gameTwoDBlocks = [
     message0: 'Criar balão %1 no pincel %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'jogo' },
-      { type: 'field_input', name: 'CTX', text: 'ctx' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',

@@ -34,7 +34,7 @@ export const FUNCTION_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_call_function',
     message0: 'chamar função %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'fazerAlgo' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'fazerAlgo', kind: 'function' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -45,7 +45,7 @@ export const FUNCTION_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_call_function',
     message0: 'resultado da função %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'calcular' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'calcular', kind: 'function' }],
     inputsInline: true,
     output: 'JSValue',
     colour: C,

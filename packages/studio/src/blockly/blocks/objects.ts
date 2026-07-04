@@ -62,7 +62,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     type: 'sz_val_member_get',
     message0: 'propriedade %1 de %2',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'x' },
+      { type: 'field_name_picker', name: 'NAME', text: 'x', kind: 'property' },
       { type: 'input_value', name: 'OBJ', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -75,7 +75,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     message0: 'em %1 definir propriedade %2 = %3',
     args0: [
       { type: 'input_value', name: 'OBJ', check: 'JSValue' },
-      { type: 'field_input', name: 'NAME', text: 'x' },
+      { type: 'field_name_picker', name: 'NAME', text: 'x', kind: 'property' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -103,7 +103,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     message0: 'de %1 chamar método %2',
     args0: [
       { type: 'input_value', name: 'OBJ', check: 'JSValue' },
-      { type: 'field_input', name: 'METHOD', text: 'calcular' },
+      { type: 'field_name_picker', name: 'METHOD', text: 'calcular', kind: 'method' },
     ],
     inputsInline: true,
     output: 'JSValue',
@@ -116,7 +116,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     message0: 'de %1 chamar método %2',
     args0: [
       { type: 'input_value', name: 'OBJ', check: 'JSValue' },
-      { type: 'field_input', name: 'METHOD', text: 'desenhar' },
+      { type: 'field_name_picker', name: 'METHOD', text: 'desenhar', kind: 'method' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',

@@ -1,10 +1,16 @@
 'use client'
 
 import type { Project, StudioProjectPlayerProps } from '@sistemazero/studio'
-import { type ComponentType, useEffect, useState } from 'react'
+import { Gamepad2 } from 'lucide-react'
+import { type ComponentType, useCallback, useEffect, useRef, useState } from 'react'
 import { KidsMascot } from './mascot'
+import { MobileGamepad } from './mobile-gamepad'
 
-type PlayerComponent = ComponentType<StudioProjectPlayerProps>
+// O Player importado dinamicamente precisa aceitar ref — usamos forwardRef no lado do Studio.
+// Aqui apenas tipamos o ref como HTMLIFrameElement para o useRef.
+type PlayerComponent = ComponentType<
+  StudioProjectPlayerProps & { ref?: React.Ref<HTMLIFrameElement> }
+>
 
 // A "Sistema Zero Kids" no rodapé leva à oferta do Desafio do 1º jogo. Por ora,
 // a home do site (a usuária troca pela URL da oferta quando tiver).
@@ -24,6 +30,19 @@ export function PublicPlayer({ id }: { id: string }) {
   const [project, setProject] = useState<Project | null>(null)
   const [author, setAuthor] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [reloadKey, setReloadKey] = useState(0)
+  const [showGamepad, setShowGamepad] = useState(false)
+  const [forceGamepad, setForceGamepad] = useState(false)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  const handleRestart = useCallback(() => setReloadKey((k) => k + 1), [])
+
+  // Detecta tela touch após hidratação (evita mismatch de SSR)
+  useEffect(() => {
+    const isTouch = window.matchMedia('(pointer: coarse)').matches
+    const isNarrow = window.innerWidth < 768
+    setShowGamepad(isTouch || isNarrow)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -62,6 +81,7 @@ export function PublicPlayer({ id }: { id: string }) {
   }, [id])
 
   const title = typeof project?.name === 'string' && project.name.trim() ? project.name : 'Projeto'
+  const gamepadVisible = showGamepad || forceGamepad
 
   return (
     <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-background text-foreground">
@@ -75,42 +95,61 @@ export function PublicPlayer({ id }: { id: string }) {
         }}
       />
 
-      <header className="relative z-10 flex shrink-0 items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      {/* Header — compacto quando o gamepad está visível para sobrar espaço ao jogo */}
+      <header className="relative z-10 flex shrink-0 items-center justify-between gap-3 px-4 py-2 sm:py-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-2.5">
-          <KidsMascot expression="celebrating" className="size-9 shrink-0 kid-float" />
-          <span className="truncate font-bold [font-family:var(--font-display)] text-lg sm:text-xl">
+          {/* Mascote fica oculta no mobile com gamepad para poupar altura */}
+          {!gamepadVisible && (
+            <KidsMascot expression="celebrating" className="size-9 shrink-0 kid-float" />
+          )}
+          <span className="truncate font-bold [font-family:var(--font-display)] text-base sm:text-xl">
             {status === 'ready' ? title : 'Sistema Zero'}
           </span>
         </div>
-        <p className="shrink-0 text-muted-foreground text-xs sm:text-sm">
-          {author ? (
-            <>
-              feito por <span className="font-bold text-foreground">{author}</span> ·{' '}
-            </>
-          ) : (
-            'feito no '
+        <div className="flex shrink-0 items-center gap-2">
+          <p className="text-muted-foreground text-xs sm:text-sm">
+            {author ? (
+              <>
+                feito por <span className="font-bold text-foreground">{author}</span> ·{' '}
+              </>
+            ) : (
+              'feito no '
+            )}
+            <a
+              href={SITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-(--kids-cyan) underline decoration-2 underline-offset-2 hover:opacity-80 dark:text-(--kids-lime)"
+            >
+              Sistema Zero Kids
+            </a>
+          </p>
+          {/* Botão para ativar/desativar gamepad manualmente (desktop com touch, etc.) */}
+          {status === 'ready' && (
+            <button
+              type="button"
+              aria-label={gamepadVisible ? 'Ocultar controles' : 'Mostrar controles'}
+              aria-pressed={gamepadVisible}
+              onClick={() => setForceGamepad((v) => !v)}
+              className="ml-1 flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <Gamepad2 size={18} />
+            </button>
           )}
-          <a
-            href={SITE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-bold text-(--kids-cyan) underline decoration-2 underline-offset-2 hover:opacity-80 dark:text-(--kids-lime)"
-          >
-            Sistema Zero Kids
-          </a>
-        </p>
+        </div>
       </header>
 
-      <div className="relative z-10 grid min-h-0 flex-1 place-items-center p-3 sm:p-5">
+      {/* Área do jogo + gamepad */}
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
         {status === 'loading' ? (
-          <div className="flex flex-col items-center gap-3 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
             <KidsMascot expression="thinking" className="size-16 kid-float" />
             <p className="font-bold [font-family:var(--font-display)] text-muted-foreground">
               Preparando o jogo…
             </p>
           </div>
         ) : status === 'error' ? (
-          <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
             <KidsMascot expression="sleeping" className="size-16" />
             <p className="font-bold [font-family:var(--font-display)] text-lg">
               Não encontramos este jogo.
@@ -120,16 +159,45 @@ export function PublicPlayer({ id }: { id: string }) {
             </p>
           </div>
         ) : Player && project ? (
-          // Palco 800×480 (5:3): a largura é limitada para a ALTURA (5:3) caber
-          // inteira na área disponível — o jogo nunca corta nem estica.
-          <div
-            className="kids-unit-cyan w-full"
-            style={{ maxWidth: 'min(56rem, calc((100dvh - 8rem) * 5 / 3))' }}
-          >
-            <div className="aspect-[5/3] w-full overflow-hidden rounded-3xl border-4 border-(--unit) bg-white shadow-[0_8px_0_color-mix(in_oklch,var(--unit)_40%,transparent)]">
-              <Player project={project} title={title} />
+          gamepadVisible ? (
+            // Layout com gamepad: jogo em cima, controles embaixo (portrait)
+            // Em landscape (height < 500px via CSS) muda para lado a lado
+            <div className="flex min-h-0 flex-1 flex-col">
+              {/* Palco — ocupa o espaço restante acima dos controles */}
+              <div className="flex min-h-0 flex-1 items-center justify-center p-2">
+                <div
+                  className="kids-unit-cyan w-full"
+                  style={{
+                    // Em portrait: limita pela largura. Em landscape: pela altura.
+                    maxWidth: 'min(100%, calc((100dvh - 200px) * 5 / 3))',
+                  }}
+                >
+                  <div className="aspect-[5/3] w-full overflow-hidden rounded-2xl border-4 border-(--unit) bg-white shadow-[0_6px_0_color-mix(in_oklch,var(--unit)_40%,transparent)]">
+                    <Player key={reloadKey} ref={iframeRef} project={project} title={title} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Gamepad — barra fixa na parte inferior */}
+              <MobileGamepad
+                iframeRef={iframeRef}
+                onRestart={handleRestart}
+                className="shrink-0 rounded-t-2xl bg-black/40 backdrop-blur-sm"
+              />
             </div>
-          </div>
+          ) : (
+            // Layout desktop: palco centralizado sem gamepad
+            <div className="grid min-h-0 flex-1 place-items-center p-3 sm:p-5">
+              <div
+                className="kids-unit-cyan w-full"
+                style={{ maxWidth: 'min(56rem, calc((100dvh - 8rem) * 5 / 3))' }}
+              >
+                <div className="aspect-[5/3] w-full overflow-hidden rounded-3xl border-4 border-(--unit) bg-white shadow-[0_8px_0_color-mix(in_oklch,var(--unit)_40%,transparent)]">
+                  <Player key={reloadKey} ref={iframeRef} project={project} title={title} />
+                </div>
+              </div>
+            </div>
+          )
         ) : null}
       </div>
     </main>
