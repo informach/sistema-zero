@@ -52,6 +52,41 @@ export function buildInputBridgeRuntime(): string {
   window.addEventListener('pointermove', at, { passive: true });
   window.addEventListener('pointerdown', function (e) { at(e); input.down = true; }, { passive: true });
   window.addEventListener('pointerup', function () { input.down = false; }, { passive: true });
+  // Gamepad virtual: o parent (página /jogar) envia postMessage com teclas simuladas.
+  // O iframe sandboxed tem origem opaca (srcdoc) — e.origin será 'null'; verificamos
+  // apenas o formato da mensagem para não confundir com outras mensagens.
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'sz:gamepad') return;
+    if (d.action === 'keydown') { pressed[d.key] = true; if (d.code) pressed[d.code] = true; }
+    else if (d.action === 'keyup') { pressed[d.key] = false; if (d.code) pressed[d.code] = false; }
+  });
+  // Mute/unmute: interceptamos AudioContext criados PELO jogo para suspendr/resumir.
+  // Só intercepta se a API existir (segurança: nunca lança).
+  var _audioInstances = [];
+  var _OrigAC = window.AudioContext || window.webkitAudioContext;
+  if (_OrigAC) {
+    var _PatchedAC = function () { var ctx = new _OrigAC(); _audioInstances.push(ctx); return ctx; };
+    _PatchedAC.prototype = _OrigAC.prototype;
+    window.AudioContext = _PatchedAC;
+    if (window.webkitAudioContext) window.webkitAudioContext = _PatchedAC;
+  }
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'sz:audio') return;
+    _audioInstances.forEach(function (ctx) {
+      try { d.muted ? ctx.suspend() : ctx.resume(); } catch (err) {}
+    });
+  });
+  // Screenshot: o parent pede, o iframe responde com o dataURL do canvas principal.
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'sz:screenshot') return;
+    var c = getCanvas();
+    var dataUrl = null;
+    try { dataUrl = c ? c.toDataURL('image/png') : null; } catch (err) {}
+    if (e.source) { e.source.postMessage({ type: 'sz:screenshot:result', dataUrl: dataUrl }, '*'); }
+  });
   window.__szInput = input;
 })();`
 }

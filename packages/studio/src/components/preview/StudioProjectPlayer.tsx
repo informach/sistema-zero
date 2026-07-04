@@ -1,5 +1,5 @@
-import type { CSSProperties, JSX } from 'react'
-import { useMemo } from 'react'
+import type { CSSProperties, JSX, Ref } from 'react'
+import { forwardRef, useMemo } from 'react'
 import type { Project } from '#core'
 import { renderProjectToPreviewDoc } from '#preview'
 
@@ -23,34 +23,37 @@ export interface StudioProjectPlayerProps {
  *
  * Renderizar SOMENTE no client (`next/dynamic(..., { ssr:false })`): o doc é
  * montado a partir de `window.location.origin` quando `parentOrigin` é omitido.
+ *
+ * O `ref` encaminhado aponta para o elemento `<iframe>` — útil para o gamepad
+ * virtual (postMessage de teclas) e para `requestFullscreen()`.
  */
-export function StudioProjectPlayer({
-  project,
-  parentOrigin,
-  title,
-  className,
-  style,
-}: StudioProjectPlayerProps): JSX.Element {
-  const doc = useMemo(
-    () =>
-      renderProjectToPreviewDoc(project, {
-        parentOrigin:
-          parentOrigin ?? (typeof window !== 'undefined' ? window.location.origin : undefined),
-      }),
-    [project, parentOrigin],
-  )
+export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPlayerProps>(
+  function StudioProjectPlayer(
+    { project, parentOrigin, title, className, style }: StudioProjectPlayerProps,
+    ref: Ref<HTMLIFrameElement>,
+  ): JSX.Element {
+    const doc = useMemo(
+      () =>
+        renderProjectToPreviewDoc(project, {
+          parentOrigin:
+            parentOrigin ?? (typeof window !== 'undefined' ? window.location.origin : undefined),
+        }),
+      [project, parentOrigin],
+    )
 
-  return (
-    <iframe
-      title={title ?? project.name ?? 'Projeto'}
-      srcDoc={doc}
-      // Mesmo sandbox do preview vivo do editor. NUNCA `allow-same-origin`.
-      sandbox="allow-scripts allow-modals"
-      // Libera a Fullscreen API do jogo (blocos de "tela cheia") no player público.
-      // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
-      allow="fullscreen"
-      className={className}
-      style={{ width: '100%', height: '100%', border: 0, background: '#fff', ...style }}
-    />
-  )
-}
+    return (
+      <iframe
+        ref={ref}
+        title={title ?? project.name ?? 'Projeto'}
+        srcDoc={doc}
+        // Mesmo sandbox do preview vivo do editor. NUNCA `allow-same-origin`.
+        sandbox="allow-scripts allow-modals"
+        // Libera a Fullscreen API do jogo (blocos de "tela cheia") no player público.
+        // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).
+        allow="fullscreen"
+        className={className}
+        style={{ width: '100%', height: '100%', border: 0, background: '#fff', ...style }}
+      />
+    )
+  },
+)
