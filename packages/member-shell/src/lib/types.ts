@@ -551,7 +551,7 @@ export interface GamificationMeView {
 // ── Missões + proteção de sequência — espelham as views do members ──────────
 export interface MissionView {
   slug: string
-  cadence: 'daily' | 'weekly'
+  cadence: 'daily' | 'weekly' | 'monthly'
   goalType: string
   target: number
   progress: number
@@ -564,6 +564,7 @@ export interface MissionView {
 export interface MissionsMeView {
   daily: MissionView[]
   weekly: MissionView[]
+  monthly: MissionView[]
 }
 /** Desafio do MÊS (game jam kids) — mirror do `ChallengeMeView` do members. */
 export interface ChallengeMeView {

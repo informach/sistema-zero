@@ -32,6 +32,16 @@ export type XpSourceType =
   // id do conteúdo → idempotente; premiar só na aprovação bloqueia farm/rejeitado).
   | 'clube_thread'
   | 'clube_comment'
+  // MARCOS de missão (amount 0 — só contam p/ o progresso da missão; o prêmio vem do
+  // claim). Idempotentes pelo sourceId natural (anti-farm): `studio_submitted` (bloco —
+  // entregar ao professor), `course_rated` (curso — classificar), `room_item_buy`/
+  // `avatar_part_buy` (item — comprar cosmético, sem circularidade de moeda) e
+  // `mural_comment` (comentário APROVADO no Mural).
+  | 'studio_submitted'
+  | 'course_rated'
+  | 'room_item_buy'
+  | 'avatar_part_buy'
+  | 'mural_comment'
 
 export interface XpEventInput {
   sourceType: XpSourceType

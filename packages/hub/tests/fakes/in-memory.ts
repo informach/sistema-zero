@@ -20,6 +20,7 @@ import type {
   ClubContributionArgs,
   CourseAccessResult,
   MembersGateway,
+  MuralCommentArgs,
   ShowcaseEligibilityArgs,
   ShowcaseEligibilityResult,
   ShowcasePublishedArgs,
@@ -916,5 +917,11 @@ export class FakeMembersGateway implements MembersGateway {
   clubContributions: ClubContributionArgs[] = []
   async notifyClubContribution(args: ClubContributionArgs): Promise<void> {
     this.clubContributions.push(args)
+  }
+
+  /** Registra os marcos "comentar no Mural" (aprovação) — best-effort. */
+  muralComments: MuralCommentArgs[] = []
+  async notifyMuralComment(args: MuralCommentArgs): Promise<void> {
+    this.muralComments.push(args)
   }
 }

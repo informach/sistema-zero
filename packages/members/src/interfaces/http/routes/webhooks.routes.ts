@@ -12,6 +12,7 @@ import {
   ChallengeWebhookBody,
   ClubeWebhookBody,
   GrantWebhookBody,
+  MuralCommentWebhookBody,
   ShowcaseWebhookBody,
   SubscriptionWebhookBody,
 } from '../dtos'
@@ -233,5 +234,31 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         return { ok: true }
       },
       { body: ClubeWebhookBody },
+    )
+    .post(
+      // O hub avisa que a equipe APROVOU um comentário no MURAL → marco `mural_comment`
+      // (amount 0) que conta p/ a missão "comentar no Mural". Só o aprovado entra →
+      // anti-farm por moderação. Idempotente pelo `commentId`. Award falhou → NÃO marca
+      // a entrega (mantém o retry), mesma régua do clube/showcase.
+      '/mural-comment',
+      async ({ headers, body, set }) => {
+        const deliveryId = resolveDeliveryId(headers)
+        if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
+          return { ok: true, deduped: true }
+        }
+        const awarded = await deps.award.awardMuralComment({
+          userId: body.userId,
+          accountId: body.accountId,
+          audience: body.audience,
+          commentId: body.commentId,
+        })
+        if (!awarded) {
+          set.status = 502
+          return { ok: false, error: 'MURAL_COMMENT_AWARD_FAILED' }
+        }
+        if (deliveryId) await deps.processed.markProcessed(deliveryId, 'mural-comment')
+        return { ok: true }
+      },
+      { body: MuralCommentWebhookBody },
     )
 }

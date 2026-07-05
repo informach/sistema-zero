@@ -523,11 +523,17 @@ A `<Canvas>` precisa de
   descarta sobreposição (sets de células chão/por-parede); helpers puros `rectsOverlap`/`wallToWorld`/
   `worldToWallCell` em `coords.ts` (testados). Catálogo expandido (mesa/escrivaninha/tv/beliche/pufe/globo/
   guitarra/bola + os de parede). ⚠️ arcades no quarto foram DESCARTADOS.
-- **Missões diárias/semanais — `missions-panel.tsx`** (na home): painel estilo Duolingo com as
-  missões do dia ("Hoje") e da semana ("Esta semana"); busca `GET
-  /api/members/gamification/missions/me` e resgata `POST /api/members/gamification/missions/:slug/claim`
-  (idempotente; **o servidor REVALIDA a conclusão** — o cliente nunca decide). Prêmio = XP + Zappy
-  (com teto diário); claim NÃO move streak. Degrada em silêncio se a gamificação estiver indisponível.
+- **Missões diárias/semanais/mensais — `missions-panel.tsx`** (na home): painel estilo Duolingo com
+  TRÊS seções — "Hoje", "Esta semana" e **"Este mês"** (reforma 07/2026); busca `GET
+  /api/members/gamification/missions/me` (`{daily, weekly, monthly}`) e resgata `POST /api/members/
+  gamification/missions/:slug/claim` (idempotente; **o servidor REVALIDA a conclusão** — o cliente nunca
+  decide). Prêmio = XP + Zappy (com teto diário); claim NÃO move streak. Degrada em silêncio se a
+  gamificação estiver indisponível. **Cadências recalibradas (~1 aula/dia)** + novas fontes: `missionLabel`
+  mapeia os goalTypes novos (enviar ao professor `studio_submitted`, publicar jogo `course_showcased`,
+  classificar curso `course_rated`, decorar quarto `room_item_buy`, personalizar avatar `avatar_part_buy`,
+  comentar no Mural `mural_comment`) além de aula/quiz/baú/clube. Missões de **Clube são GATED** no
+  members (só aparecem p/ quem tem o produto). A APRESENTAÇÃO só reflete o que o backend manda (a lógica
+  de cadência/gating/marcos vive no members — ver o CLAUDE.md de lá §Missões).
 - **Proteção de sequência — `streak-protection.tsx`** (no perfil): mostra/gerencia **férias**
   (janela que não exige presença) e **protetores/freezes** (1 grátis por mês + compráveis com Zappy,
   teto 5) — a sequência só QUEBRA quando NEM férias NEM freezes cobrem o gap.

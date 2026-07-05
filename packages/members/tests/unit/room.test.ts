@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { AwardGamificationService } from '../../src/application/gamification/award-gamification.service'
 import { BuyRoomItemService } from '../../src/application/room/buy-room-item.service'
 import { InsufficientCoinsError } from '../../src/domain/gamification/coins.errors'
 import {
@@ -14,7 +15,11 @@ import {
   ROOM_THEMES,
   type RoomState,
 } from '../../src/domain/room/room-catalog'
-import { InMemoryGamificationRepository, InMemoryRoomRepository } from '../fakes/in-memory'
+import {
+  InMemoryGamificationRepository,
+  InMemoryRoomRepository,
+  silentLogger,
+} from '../fakes/in-memory'
 
 describe('room-catalog', () => {
   test('ids únicos; grátis/troféu têm preço 0 e pago tem preço > 0', () => {
@@ -180,12 +185,16 @@ describe('canonicalizeRoomState — campos novos (rot/paredes/piso/luz)', () => 
 })
 
 describe('BuyRoomItemService reconhece piso/luz', () => {
-  const make = () =>
-    new BuyRoomItemService(
+  const make = () => {
+    const clock = () => new Date('2026-06-21T12:00:00Z')
+    const gamification = new InMemoryGamificationRepository()
+    return new BuyRoomItemService(
       new InMemoryRoomRepository(),
-      new InMemoryGamificationRepository(),
-      () => new Date('2026-06-21T12:00:00Z'),
+      gamification,
+      new AwardGamificationService(gamification, clock, silentLogger),
+      clock,
     )
+  }
 
   test('piso grátis → RoomItemFreeError (roomThing acha o piso)', async () => {
     await expect(make().execute('u1', 'kids', 'piso-madeira-clara')).rejects.toBeInstanceOf(

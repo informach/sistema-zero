@@ -6,13 +6,18 @@ import {
 } from '../../domain/gamification/gamification.errors'
 import {
   assignDailyMissions,
+  assignMonthlyMissions,
   assignWeeklyMissions,
+  CLUBE_ACCESS_REF,
   MISSIONS_BY_SLUG,
+  type MissionAccessPredicate,
+  monthlyPeriodKey,
   periodBoundsFor,
   periodKeyFor,
   weeklyPeriodKey,
 } from '../../domain/gamification/missions'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import type { AccessCheckService } from '../access-check/access-check.service'
 import type { MissionClaimView } from '../mappers/views'
 
 /**
@@ -23,24 +28,35 @@ import type { MissionClaimView } from '../mappers/views'
 export class ClaimMissionService {
   constructor(
     private readonly repo: GamificationRepository,
+    private readonly accessCheck: AccessCheckService,
     private readonly clock: () => Date,
   ) {}
 
-  async execute(userId: string, audience: CourseAudience, slug: string): Promise<MissionClaimView> {
+  async execute(
+    userId: string,
+    accountId: string,
+    audience: CourseAudience,
+    slug: string,
+    privileged = false,
+  ): Promise<MissionClaimView> {
     const mission = MISSIONS_BY_SLUG.get(slug)
     if (!mission) throw new MissionNotFoundError()
 
     const today = localDateSaoPaulo(this.clock())
-    // A missão precisa estar ATRIBUÍDA a este perfil no período. O catálogo tem 8 missões,
-    // mas cada aluno só recebe um subconjunto determinístico (3 diárias / 2 semanais — o
-    // `GetMissionsService` só mostra essas). Várias missões compartilham `goalType` com alvos
-    // diferentes (ex.: `daily-aula` alvo 1 e `daily-aulas-3` alvo 3 = `lesson_complete`), então
-    // sem este guard um aluno resgataria, via POST direto, o prêmio de uma missão NUNCA oferecida
-    // cujo alvo ele tenha cumprido — farm de XP (sem teto) e moeda fora do que foi atribuído.
+    // A missão precisa estar ATRIBUÍDA a este perfil no período. O catálogo tem muitas
+    // missões, mas cada aluno só recebe um subconjunto determinístico (o `GetMissionsService`
+    // só mostra essas) — e o pool é PODADO por posse (missão gated de quem não tem o produto
+    // não é atribuída). Várias missões compartilham `goalType` com alvos diferentes (ex.:
+    // `daily-aula` alvo 1 × `weekly-aulas-5` alvo 5 = `lesson_complete`), então sem este guard
+    // um aluno resgataria, via POST direto, o prêmio de uma missão NUNCA oferecida cujo alvo
+    // ele tenha cumprido — farm de XP/moeda fora do atribuído, ou de missão de produto que não tem.
+    const hasAccess = await this.resolveAccess(accountId, privileged)
     const assigned =
       mission.cadence === 'daily'
-        ? assignDailyMissions(userId, today)
-        : assignWeeklyMissions(userId, weeklyPeriodKey(today))
+        ? assignDailyMissions(userId, today, hasAccess)
+        : mission.cadence === 'monthly'
+          ? assignMonthlyMissions(userId, monthlyPeriodKey(today), hasAccess)
+          : assignWeeklyMissions(userId, weeklyPeriodKey(today), hasAccess)
     if (!assigned.some((m) => m.slug === slug)) throw new MissionNotFoundError()
 
     const { from, to } = periodBoundsFor(mission, today)
@@ -69,5 +85,16 @@ export class ClaimMissionService {
       coinsAwarded: result.coinsAwarded,
       coinBalance: result.coinBalance,
     }
+  }
+
+  /** Predicado de posse p/ podar missões GATED (espelha o `GetMissionsService`). */
+  private async resolveAccess(
+    accountId: string,
+    privileged: boolean,
+  ): Promise<MissionAccessPredicate> {
+    if (privileged) return () => true
+    const result = await this.accessCheck.execute(accountId, [CLUBE_ACCESS_REF])
+    const owned = new Set<string>([...result.grants, ...result.communities])
+    return (ref: string) => owned.has(ref)
   }
 }

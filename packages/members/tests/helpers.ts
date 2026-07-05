@@ -145,6 +145,7 @@ export function buildApp(
 
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
+  const accessCheck = new AccessCheckService(entitlements, clock)
   const grant = new GrantEntitlementService({
     catalog,
     entitlements,
@@ -208,7 +209,7 @@ export function buildApp(
       getProgress: new GetCourseProgressService(checkAccess, courses, progress),
       savePosition: new SaveVideoPositionService(checkAccess, courses, progress, positions, clock),
       getCourseRating: new GetCourseRatingService(checkAccess, ratings),
-      saveCourseRating: new SaveCourseRatingService(checkAccess, ratings, clock),
+      saveCourseRating: new SaveCourseRatingService(checkAccess, ratings, awardGamification, clock),
       submitQuiz: new SubmitQuizAttemptService(
         checkAccess,
         courses,
@@ -259,8 +260,8 @@ export function buildApp(
       ),
       getGamification: new GetGamificationService(gamification, clock),
       getChallenge: new GetChallengeService(gamification, clock),
-      getMissions: new GetMissionsService(gamification, clock),
-      claimMission: new ClaimMissionService(gamification, clock),
+      getMissions: new GetMissionsService(gamification, accessCheck, clock),
+      claimMission: new ClaimMissionService(gamification, accessCheck, clock),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
       setVacation: new SetVacationService(gamification, clock),
       getLeague: new GetLeagueService(gamification, clock),
@@ -274,14 +275,14 @@ export function buildApp(
       ),
       parentReportPrefs: new ParentReportPrefsService(parentReports, clock),
       getAvatar: new GetAvatarService(avatar, gamification),
-      buyAvatarPart: new BuyAvatarPartService(avatar, gamification, clock),
+      buyAvatarPart: new BuyAvatarPartService(avatar, gamification, awardGamification, clock),
       equipAvatar: new EquipAvatarService(avatar, clock),
       setAvatarPhoto: new SetAvatarPhotoService(avatar, clock),
       getAvatarsByProfiles: new GetAvatarsByProfilesService(avatar, gamification),
       getPublicProfile: new GetPublicProfileService(gamification, avatar, room, clock),
       getRoom: new GetRoomService(room, gamification),
       saveRoom: new SaveRoomService(room, clock),
-      buyRoomItem: new BuyRoomItemService(room, gamification, clock),
+      buyRoomItem: new BuyRoomItemService(room, gamification, awardGamification, clock),
       internalToken: opts.internalToken,
     },
     pensa: {

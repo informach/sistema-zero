@@ -397,6 +397,13 @@ do MEMBERS (thread **+5 XP**, comment **+3 XP**, badge `clube-primeiro-post`). O
 passou a receber `communityRead` + `members` **opcionais** (ausentes = no-op — testes que não
 exercitam a recompensa); o `composition-root` os injeta. Reusa `MEMBERS_BASE_URL` +
 `GATEWAY_HMAC_SECRET` (nenhuma env nova).
+⚠️ **Comentário no MURAL ≠ Clube (reforma das missões 07/2026):** o `rewardOnApprove` agora RAMIFICA
+pelo tópico-pai — comentário aprovado num post de VITRINE (`thread.isShowcase`) dispara
+`MembersGateway.notifyMuralComment({userId, accountId, audience, commentId})` (`MURAL_COMMENT_WEBHOOK_PATH
+= /members/webhooks/mural-comment`, mesmo `postSignedWebhook`) → marco `mural_comment` (missão universal
+"comentar no Mural"); comentário no fórum do Clube (ou tópico) segue no `notifyClubContribution`. O
+`resolveCommentAuthor` passou a devolver o `isShowcase` REAL do tópico-pai (era `false` fixo → tudo virava
+`clube_comment`). Tópico de vitrine NÃO recompensa (a publicação já rende `course_showcased`).
 
 **R2 (anexos UGC):** o hub só guarda metadado; o presign/upload/HEAD vivem no BFF (member-shell/
 community). Buckets `testes-ugc` (dev) / `comunidade-sistema-zero-ugc` (prod). **Fluxo ainda não

@@ -13,6 +13,7 @@ import {
   ROOM_LIGHTINGS_BY_ID,
   ROOM_THEMES_BY_ID,
 } from '../../domain/room/room-catalog'
+import type { AwardGamificationService } from '../gamification/award-gamification.service'
 
 export interface BuyRoomItemResult {
   alreadyOwned: boolean
@@ -40,6 +41,7 @@ export class BuyRoomItemService {
   constructor(
     private readonly room: RoomRepository,
     private readonly coins: GamificationRepository,
+    private readonly gamification: AwardGamificationService,
     private readonly clock: () => Date,
   ) {}
 
@@ -78,6 +80,15 @@ export class BuyRoomItemService {
       grantInventory: { scope: 'room', itemId },
     })
     if (!spend.ok && spend.code === 'INSUFFICIENT_BALANCE') throw new InsufficientCoinsError()
+    // Marco de missão "decorar o quarto" (amount 0, idempotente por item → sem loop
+    // de moeda: a missão dá só XP no claim, e re-comprar o mesmo item não refarma).
+    await this.gamification.awardRoomItemBuy({
+      userId,
+      accountId: userId,
+      itemId,
+      audience,
+      privileged,
+    })
     return {
       alreadyOwned: false,
       balance: spend.ok ? spend.balanceAfter : spend.balance,

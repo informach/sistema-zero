@@ -89,8 +89,21 @@ export class ModerationService {
         kind === 'thread'
           ? await this.threads.findThreadById(contentId)
           : await this.resolveCommentAuthor(contentId)
-      if (!author || author.isShowcase || !author.authorAccountId) return
+      // TÓPICO de vitrine não recompensa aqui (a publicação já rende `course_showcased`).
+      if (!author?.authorAccountId) return
+      if (kind === 'thread' && author.isShowcase) return
       if ((await this.audienceForChannel(author.channelId)) !== 'kids') return
+      // COMENTÁRIO num post de vitrine = comentar no MURAL → marco `mural_comment`
+      // (missão universal). Comentário no fórum do Clube (ou tópico) → `clube_*` (gated).
+      if (kind === 'comment' && author.isShowcase) {
+        void this.members.notifyMuralComment({
+          userId: author.authorId,
+          accountId: author.authorAccountId,
+          audience: 'kids',
+          commentId: contentId,
+        })
+        return
+      }
       void this.members.notifyClubContribution({
         userId: author.authorId,
         accountId: author.authorAccountId,
@@ -103,7 +116,7 @@ export class ModerationService {
     }
   }
 
-  /** Autor + canal de um comentário (via o tópico-pai) — p/ a recompensa. */
+  /** Autor + canal + se é MURAL de um comentário (via o tópico-pai) — p/ a recompensa. */
   private async resolveCommentAuthor(commentId: string): Promise<{
     authorId: string
     authorAccountId: string | null
@@ -118,8 +131,9 @@ export class ModerationService {
       authorId: comment.authorId,
       authorAccountId: comment.authorAccountId,
       channelId: thread.channelId,
-      // Comentário nunca é showcase; herda `false` (o guard do reward é genérico).
-      isShowcase: false,
+      // O comentário HERDA a natureza do tópico-pai: vitrine (Mural) → mural_comment;
+      // fórum (Clube) → clube_comment. Antes era `false` fixo (tudo virava clube).
+      isShowcase: thread.isShowcase,
     }
   }
 

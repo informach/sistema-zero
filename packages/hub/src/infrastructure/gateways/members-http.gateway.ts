@@ -6,6 +6,7 @@ import type {
   ClubContributionArgs,
   CourseAccessResult,
   MembersGateway,
+  MuralCommentArgs,
   ShowcaseEligibilityArgs,
   ShowcaseEligibilityResult,
   ShowcasePublishedArgs,
@@ -35,6 +36,7 @@ const DEFAULT_TIMEOUT_MS = 5_000
 const SHOWCASE_WEBHOOK_PATH = '/members/webhooks/showcase'
 const CHALLENGE_WEBHOOK_PATH = '/members/webhooks/challenge'
 const CLUBE_WEBHOOK_PATH = '/members/webhooks/clube'
+const MURAL_COMMENT_WEBHOOK_PATH = '/members/webhooks/mural-comment'
 const SHOWCASE_NOTIFY_ATTEMPTS = 3
 const SHOWCASE_NOTIFY_RETRY_BASE_MS = 100
 
@@ -160,6 +162,15 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
         audience: args.audience,
         kind: args.kind,
         contentId: args.contentId,
+      })
+    },
+
+    async notifyMuralComment(args: MuralCommentArgs): Promise<void> {
+      await postSignedWebhook(MURAL_COMMENT_WEBHOOK_PATH, 'mural-comment', {
+        userId: args.userId,
+        accountId: args.accountId,
+        audience: args.audience,
+        commentId: args.commentId,
       })
     },
   }

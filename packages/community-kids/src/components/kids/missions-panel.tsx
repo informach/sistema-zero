@@ -15,10 +15,24 @@ function missionLabel(m: MissionView): string {
       return n === 1 ? 'Conclua 1 aula' : `Conclua ${n} aulas`
     case 'quiz_passed':
       return n === 1 ? 'Acerte 1 quiz' : `Acerte ${n} quizzes`
-    case 'studio_passed':
-      return n === 1 ? 'Crie 1 projeto no Estúdio' : `Crie ${n} projetos no Estúdio`
     case 'unit_complete':
       return n === 1 ? 'Abra 1 baú de unidade' : `Abra ${n} baús`
+    case 'studio_submitted':
+      return n === 1 ? 'Envie uma atividade ao professor' : `Envie ${n} atividades ao professor`
+    case 'studio_passed':
+      return n === 1 ? 'Crie 1 projeto no Estúdio' : `Crie ${n} projetos no Estúdio`
+    case 'course_showcased':
+      return n === 1 ? 'Publique um jogo no Mural' : `Publique ${n} jogos no Mural`
+    case 'course_rated':
+      return n === 1 ? 'Classifique um curso' : `Classifique ${n} cursos`
+    case 'room_item_buy':
+      return n === 1 ? 'Decore seu quarto' : `Ganhe ${n} itens para o quarto`
+    case 'avatar_part_buy':
+      return n === 1 ? 'Personalize seu avatar' : `Ganhe ${n} peças do avatar`
+    case 'mural_comment':
+      return n === 1 ? 'Comente no Mural' : `Comente ${n} vezes no Mural`
+    case 'clube_thread':
+      return n === 1 ? 'Converse no Clube' : `Converse ${n} vezes no Clube`
     default:
       return 'Complete a missão'
   }
@@ -52,11 +66,13 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
         toast.success(`Recompensa! +${body.xpAwarded} XP e +${body.coinsAwarded} moedas 🎉`)
       }
       // Marca como resgatada localmente (sem refetch).
+      const mark = (x: MissionView) => (x.slug === m.slug ? { ...x, claimed: true } : x)
       setData((d) =>
         d
           ? {
-              daily: d.daily.map((x) => (x.slug === m.slug ? { ...x, claimed: true } : x)),
-              weekly: d.weekly.map((x) => (x.slug === m.slug ? { ...x, claimed: true } : x)),
+              daily: d.daily.map(mark),
+              weekly: d.weekly.map(mark),
+              monthly: d.monthly.map(mark),
             }
           : d,
       )
@@ -81,7 +97,7 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
       </section>
     )
   }
-  const all = [...data.daily, ...data.weekly]
+  const all = [...data.daily, ...data.weekly, ...data.monthly]
   if (all.length === 0) return null
 
   return (
@@ -100,6 +116,13 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
         <MissionGroup
           title="Esta semana"
           missions={data.weekly}
+          claiming={claiming}
+          onClaim={claim}
+          label={missionLabel}
+        />
+        <MissionGroup
+          title="Este mês"
+          missions={data.monthly}
           claiming={claiming}
           onClaim={claim}
           label={missionLabel}

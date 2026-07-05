@@ -242,7 +242,7 @@ export interface PublicProfileView {
 /** Uma missão do aluno (`GET /members/gamification/missions/me`). */
 export interface MissionView {
   slug: string
-  cadence: 'daily' | 'weekly'
+  cadence: 'daily' | 'weekly' | 'monthly'
   goalType: string
   target: number
   /** Progresso DERIVADO do ledger no período (limitado ao alvo). */
@@ -252,7 +252,7 @@ export interface MissionView {
   claimed: boolean
   rewardXp: number
   rewardCoins: number
-  /** Chave do período (dia civil SP ou `w:<segunda>`) — o front passa no claim. */
+  /** Chave do período (dia civil SP, `w:<segunda>` ou `m:<YYYY-MM>`) — o front passa no claim. */
   periodKey: string
 }
 
@@ -260,6 +260,7 @@ export interface MissionView {
 export interface MissionsMeView {
   daily: MissionView[]
   weekly: MissionView[]
+  monthly: MissionView[]
 }
 
 /** Uma linha do board da liga — SEM PII (nem userId de terceiro; só `isMe` aponta você). */

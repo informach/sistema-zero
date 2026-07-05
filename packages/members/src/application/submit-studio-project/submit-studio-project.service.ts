@@ -93,6 +93,14 @@ export class SubmitStudioProjectService {
         submittedAt,
         message: note,
       })
+      // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco).
+      await this.gamification.awardStudioSubmitted({
+        userId,
+        accountId: accountId ?? userId,
+        blockId,
+        audience: course.audience,
+        privileged,
+      })
       return { submittedAt: submittedAt.toISOString() }
     }
 
@@ -121,6 +129,17 @@ export class SubmitStudioProjectService {
       },
       { preservePassedAt: true },
     )
+
+    // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco) — SEMPRE
+    // que entrega, independentemente de nota. Distinto do `studio_passed` (XP quando
+    // passa): ambos deduplicam por bloco, então não há XP dobrado.
+    await this.gamification.awardStudioSubmitted({
+      userId,
+      accountId: accountId ?? userId,
+      blockId,
+      audience: course.audience,
+      privileged,
+    })
 
     // Award SÓ quando passou agora (idempotente por bloco no ledger).
     const gamification = grade.passed
