@@ -4,6 +4,7 @@ import type { CourseAudience } from '../../domain/course/course'
 import { InsufficientCoinsError } from '../../domain/gamification/coins.errors'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import type { AwardGamificationService } from '../gamification/award-gamification.service'
 
 export interface BuyAvatarPartResult {
   /** `true` = já possuía (nenhuma cobrança). */
@@ -24,6 +25,7 @@ export class BuyAvatarPartService {
   constructor(
     private readonly avatar: AvatarRepository,
     private readonly coins: GamificationRepository,
+    private readonly gamification: AwardGamificationService,
     private readonly clock: () => Date,
   ) {}
 
@@ -62,6 +64,15 @@ export class BuyAvatarPartService {
       grantInventory: { scope: 'avatar', itemId: partId },
     })
     if (!spend.ok && spend.code === 'INSUFFICIENT_BALANCE') throw new InsufficientCoinsError()
+    // Marco de missão "personalizar o avatar" (amount 0, idempotente por peça → a
+    // missão dá só XP no claim; re-comprar a mesma peça não refarma).
+    await this.gamification.awardAvatarPartBuy({
+      userId,
+      accountId: userId,
+      partId,
+      audience,
+      privileged,
+    })
     return {
       alreadyOwned: false,
       balance: spend.ok ? spend.balanceAfter : spend.balance,

@@ -373,6 +373,10 @@ Clients (`server/clients.ts`, sempre `?audience=<a do app>`) + variantes **`*Rea
 memoizadas por request via `React.cache()` — dedup layout×página, sem refresh de cookie):
 - **Missões:** `getMissions()`/`getMissionsReadonly()` (`GET /members/gamification/missions/me`) +
   `claimMission(slug)` (`POST …/missions/:slug/claim` — idempotente; o members revalida a conclusão).
+  ⚠️ **Reforma 07/2026:** `MissionsMeView` ganhou `monthly: MissionView[]` (cadência MENSAL) e
+  `MissionView.cadence` virou `'daily'|'weekly'|'monthly'` — mirror do members. Passthrough puro (o
+  BFF não mapeia); a cadência/gating/marcos vivem no members (ver o CLAUDE.md de lá §Missões). Só
+  ESTRUTURAL aqui, sem lógica nova.
 - **Proteção de sequência:** `buyStreakFreeze()` (`POST …/streak-freeze/buy` — compra com moedas;
   sem saldo → 402) + `setVacation(from,to)` (`POST …/vacation` — janela de férias; `null/null` limpa).
 - **Liga semanal:** `getLeagueReadonly()` (`GET …/league/me` — board SEM PII, só `position`/`weeklyXp`/

@@ -793,9 +793,11 @@ describe('Missões — progresso derivado + claim', () => {
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     const before = await readJson(await getMissions(app))
-    // Set determinístico do USER em 2026-06-02 (computado): 3 diárias, 2 semanais.
+    // Set determinístico do USER em 2026-06-02 (computado): 3 diárias, 3 semanais, 2 mensais.
+    // O USER não tem o Clube → nenhuma missão gated no pool.
     expect(before.daily.length).toBe(3)
-    expect(before.weekly.length).toBe(2)
+    expect(before.weekly.length).toBe(3)
+    expect(before.monthly.length).toBe(2)
     expect(before.daily.every((m: { completed: boolean }) => !m.completed)).toBe(true)
 
     const blockId = seedQuizBlock(courses, course.lessonIds[0])
@@ -813,6 +815,33 @@ describe('Missões — progresso derivado + claim', () => {
     expect((await readJson(await claimMission(app, 'daily-quiz'))).claimed).toBe(false)
     const final = await readJson(await getMissions(app))
     expect(final.daily.find((m: { slug: string }) => m.slug === 'daily-quiz').claimed).toBe(true)
+  })
+
+  test('marco de missão (studio_submitted) é idempotente por sourceId — reenviar não refarma', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    // O set diário do USER inclui `daily-enviar` (goalType studio_submitted, alvo 1).
+    const blockId = randomUUID()
+    const awardSubmitted = () =>
+      gamification.award({
+        userId: USER,
+        accountId: USER,
+        audience: 'adult',
+        events: [{ sourceType: 'studio_submitted', sourceId: blockId, amount: 0 }],
+        today: '2026-06-02',
+        now: new Date('2026-06-02T12:00:00.000Z'),
+        privileged: false,
+      })
+    // Enviar 3× o MESMO bloco (reenvio) → 1 marco no ledger (UNIQUE por sourceId).
+    await awardSubmitted()
+    await awardSubmitted()
+    await awardSubmitted()
+
+    const missions = await readJson(await getMissions(app))
+    const enviar = missions.daily.find((m: { slug: string }) => m.slug === 'daily-enviar')
+    expect(enviar).toMatchObject({ progress: 1, completed: true })
   })
 
   test('claim de missão que cruza lifetime coins destrava badge de poupador', async () => {

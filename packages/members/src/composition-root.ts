@@ -250,13 +250,18 @@ export async function createApplication(env: Env): Promise<Application> {
   const avatarRepo = new DrizzleAvatarRepository(db)
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
   const getAvatarsByProfiles = new GetAvatarsByProfilesService(avatarRepo, gamificationRepo)
-  const buyAvatarPart = new BuyAvatarPartService(avatarRepo, gamificationRepo, clock)
+  const buyAvatarPart = new BuyAvatarPartService(
+    avatarRepo,
+    gamificationRepo,
+    awardGamification,
+    clock,
+  )
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
   const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock)
   const roomRepo = new DrizzleRoomRepository(db)
   const getRoom = new GetRoomService(roomRepo, gamificationRepo)
   const saveRoom = new SaveRoomService(roomRepo, clock)
-  const buyRoomItem = new BuyRoomItemService(roomRepo, gamificationRepo, clock)
+  const buyRoomItem = new BuyRoomItemService(roomRepo, gamificationRepo, awardGamification, clock)
   const getPublicProfile = new GetPublicProfileService(
     gamificationRepo,
     avatarRepo,
@@ -264,8 +269,8 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const getChallenge = new GetChallengeService(gamificationRepo, clock)
-  const getMissions = new GetMissionsService(gamificationRepo, clock)
-  const claimMission = new ClaimMissionService(gamificationRepo, clock)
+  const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock)
+  const claimMission = new ClaimMissionService(gamificationRepo, accessCheck, clock)
   const buyStreakFreeze = new BuyStreakFreezeService(gamificationRepo, () => randomUUID(), clock)
   const setVacation = new SetVacationService(gamificationRepo, clock)
   const getLeague = new GetLeagueService(gamificationRepo, clock)
@@ -287,7 +292,12 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const getCourseRating = new GetCourseRatingService(checkAccess, ratings)
-  const saveCourseRating = new SaveCourseRatingService(checkAccess, ratings, clock)
+  const saveCourseRating = new SaveCourseRatingService(
+    checkAccess,
+    ratings,
+    awardGamification,
+    clock,
+  )
   const submitQuiz = new SubmitQuizAttemptService(
     checkAccess,
     courses,

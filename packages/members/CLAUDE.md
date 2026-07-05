@@ -77,7 +77,11 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > PK, `disabled`)) **geradas, FALTA aplicar** (`db:migrate` — 0029–0035 juntas) e **`0036`**
 > (`0036_clube_activity`: `ALTER TYPE xp_source_type ADD VALUE 'clube_thread'`/`'clube_comment'`
 > — atividade do Clube dos Criadores, full review 07/2026; espelha a `0032` do Pensa — dois
-> valores idempotentes `IF NOT EXISTS`) **APLICADA — EM PRODUÇÃO**.
+> valores idempotentes `IF NOT EXISTS`) **APLICADA — EM PRODUÇÃO** e **`0037`**
+> (`0037_mission_markers`: `ALTER TYPE xp_source_type ADD VALUE IF NOT EXISTS` de `studio_submitted`/
+> `course_rated`/`room_item_buy`/`avatar_part_buy`/`mural_comment` — reforma das missões 07/2026, novas
+> fontes como MARCOS amount 0; SEM tabela nova, a cadência mensal reusa `mission_claims.period_key` text)
+> **APLICADA em local; falta staging/prod**.
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -687,23 +691,43 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   não-possuído omitidos. Compra via `BuyRoomItemService` (`roomThing` resolve item/tema/piso/luz;
   charge-first idempotente, `reason:'spend_room'`). DTO `RoomStateBody` + rota alargados p/ os campos
   novos. Endpoints BFF kids: `GET|PUT /api/members/room` + `POST /api/members/room/items/:id/buy`.
-- **Missões diárias/semanais** (migration `0021`, `mission_claims`): estilo Duolingo,
-  content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS` 6 / `WEEKLY_MISSIONS` 4 em
-  `domain/gamification/missions.ts`; sem seed, igual badges — inclui as de **Clube** da
-  full review 07/2026, ver subseção). Atribuição DETERMINÍSTICA por
+- **Missões diárias/semanais/mensais** (migration `0021`, `mission_claims`): estilo Duolingo,
+  content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS`/`WEEKLY_MISSIONS`/`MONTHLY_MISSIONS` em
+  `domain/gamification/missions.ts`; sem seed, igual badges). Atribuição DETERMINÍSTICA por
   (userId, período) via FNV-1a → embaralho parcial de **Fisher–Yates semeado** (`pick`,
-  06/2026: alcança QUALQUER subconjunto — antes a janela contígua só atingia `pool.length`
-  trios, p.ex. 5 dos 10 diários; `DAILY_SET_SIZE` 3, `WEEKLY_SET_SIZE` 2; semana começa na
-  SEGUNDA). Progresso é DERIVADO na leitura contando eventos do ledger `xp_events`
+  06/2026: alcança QUALQUER subconjunto; `DAILY_SET_SIZE` 3, `WEEKLY_SET_SIZE` 3, `MONTHLY_SET_SIZE` 2;
+  semana começa na SEGUNDA). Progresso é DERIVADO na leitura contando eventos do ledger `xp_events`
   (`countEventsInPeriod`, SEM hook no award); o prêmio (XP + moedas) é resgatado por
   `claimMission` IDEMPOTENTE (UNIQUE user+audience+slug+período) que **REVALIDA a conclusão no
   servidor** (`count >= target`), credita XP direto no perfil + moedas COM o teto diário, reavalia
   badges de **poupador** se `lifetime_coins_earned` cruzar 300/1000, e **NÃO move o streak**.
-  `GET /members/gamification/missions/me` + `POST …/missions/:slug/claim`. ⚠️ **O claim EXIGE
-  que a missão esteja ATRIBUÍDA ao perfil no período** (`assignDaily/WeeklyMissions`, full review
-  06/2026): o catálogo tem 8 missões mas o aluno só recebe 3+2; sem o guard, várias missões
-  compartilham `goalType` com alvos diferentes (`daily-aula` 1 × `daily-aulas-3` 3) e a não-oferecida
-  cujo alvo o aluno batesse era resgatável por POST direto (farm de XP sem teto) → `MISSION_NOT_FOUND`.
+  `GET /members/gamification/missions/me` (devolve `{daily, weekly, monthly}`) + `POST …/missions/:slug/claim`.
+  ⚠️ **O claim EXIGE que a missão esteja ATRIBUÍDA ao perfil no período** (`assignDaily/Weekly/MonthlyMissions`):
+  o catálogo tem muitas missões mas o aluno só recebe 3+3+2 (podadas por posse), e várias compartilham
+  `goalType` com alvos diferentes — sem o guard, a não-oferecida cujo alvo o aluno batesse era resgatável
+  por POST direto (farm de XP) → `MISSION_NOT_FOUND`.
+  - **Reforma 07/2026 (cadências coerentes + mensal + novas fontes + gating do Clube):** as cadências
+    foram recalibradas pela premissa **~1 aula/dia** — eventos frequentes/repetíveis (aula/quiz/enviar-ao-
+    professor/comentar) são DIÁRIOS; fechar módulo/projeto/publicar/decorar são SEMANAIS; metas grandes
+    (20 aulas/3 projetos/classificar curso) são MENSAIS. Antes "abra um baú"/"crie um projeto" eram
+    DIÁRIAS e ficavam travadas em 0 (eventos one-shot fora da janela do dia). A cadência **mensal**
+    (`m:YYYY-MM`, mês civil SP — reusa a régua do Desafio do mês) NÃO exigiu migração (`mission_claims.
+    period_key` é text). `periodBoundsFor`/`periodKeyFor` ganharam o braço `monthly`
+    (`monthlyPeriodKey`/`monthBoundsUtc`).
+  - **Novos goalTypes = MARCOS (amount 0, migration `0037`):** `studio_submitted` (enviar ao professor —
+    gravado no `SubmitStudioProjectService`, idempotente por bloco; distinto do `studio_passed`, sem XP
+    dobrado), `course_rated` (classificar curso — no `SaveCourseRatingService`, idempotente por curso),
+    `room_item_buy`/`avatar_part_buy` (comprar cosmético — no `Buy{Room,Avatar}…Service`; sourceId = uuid
+    DETERMINÍSTICO do slug via `domain/gamification/source-id.ts`, pois o ledger é uuid; a missão dá SÓ XP
+    p/ não fazer loop de moeda) e `mural_comment` (comentar no Mural — webhook `/members/webhooks/mural-comment`,
+    ver §Clube). `course_showcased` (publicar jogo) reusa o marco já existente. Todos amount 0 → só CONTAM
+    p/ a missão; o prêmio vem do claim (não movem XP/streak, não refarmam).
+  - **Gating de produto (`MissionDef.requiresAccess`):** as missões de Clube (`clube_thread`) só entram
+    no pool de quem tem `clube-dos-criadores` (produto à parte) — `GetMissionsService`/`ClaimMissionService`
+    resolvem a posse pela CONTA via `AccessCheckService` e passam um predicado aos `assign*` (equipe/
+    privileged libera tudo). Antes apareciam travadas em 0 p/ quem não tinha o produto. `requiresAccess`
+    ausente = universal. **Default seguro** dos `assign*` é `() => false` (sem posse informada, missão
+    gated NÃO entra — não vaza produto).
 - **Ligas semanais** (migration `0022`, `league_membership`): coorte competitiva semanal por
   audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.)
 - Sem backfill: histórico anterior ao deploy não gera XP retroativo (script manual se um
@@ -798,15 +822,22 @@ A **avaliação de avatar+aura dos autores** do fórum é servida pela rota em l
   ativo, regra "só atividade que rende XP conta"). `privileged: false` (o webhook do hub não
   carrega role → equipe testando pontua; risco aceito v1, como o `/challenge`). Award falhou →
   **502 `CLUBE_AWARD_FAILED` SEM marcar a entrega** (o hub re-entrega; idempotente).
+- **Webhook `POST /members/webhooks/mural-comment`** (hub→members, reforma das missões 07/2026 —
+  mesmo padrão do `/clube`, canal `'mural-comment'`): o hub avisa que a equipe aprovou um comentário
+  no MURAL (post de vitrine) → `awardMuralComment` = marco `mural_comment` (amount 0, idempotente pelo
+  `commentId`). DTO `MuralCommentWebhookBody { userId, accountId, audience, commentId }`. Só alimenta a
+  missão "comentar no Mural" (o prêmio vem do claim). ⚠️ No hub, o `rewardOnApprove` RAMIFICA pelo
+  tópico-pai: comentário em post `isShowcase` → `mural_comment`; senão → `clube_comment` (antes tudo
+  virava clube). Award falhou → 502 `MURAL_COMMENT_AWARD_FAILED` sem marcar a entrega.
 - **Badge `clube-primeiro-post`** (1ª conversa APROVADA — **só thread**, comentário NÃO
   destrava): `clubeBadgeSlugs(approvedThreads)` em `gamification.ts` (conta o ledger
   `clube_thread`); derivação no `award` do repo, bloco após o `challenge_entry`. Espelhada no
   member-shell `BadgeSlug` e no community-kids `BADGE_INFO` (título "Voz da turma", ícone
   `MessagesSquare`) — travada por `community-kids/tests/badge-conformance.test.ts`.
-- **Missões de comunidade** (`missions.ts`): `daily-clube` (1 thread → XP 10 + 10 moedas) e
-  `weekly-clube-3` (3 threads → XP 40 + 45 moedas), `goalType: 'clube_thread'` (NOVO em
-  `MissionGoalType`). Contam o ledger por `xp_source_type` = dependem do source novo, que só
-  entra na APROVAÇÃO → anti-farm por construção (o progresso é derivado na leitura, sem hook).
+- **Missões de comunidade** (`missions.ts`): `daily-clube` (1 thread), `weekly-clube-3` (3) e
+  `monthly-clube-10` (10), `goalType: 'clube_thread'`. Contam o ledger, que só entra na APROVAÇÃO →
+  anti-farm por construção (progresso derivado na leitura). ⚠️ **GATED por posse** (reforma 07/2026):
+  `requiresAccess: 'clube-dos-criadores'` — só entram no pool de quem tem o produto (ver §Missões).
 - **Migration `0036_clube_activity`** (aplicada, ver enumeração no topo): dois valores no
   `xp_source_type` — `clube_thread` + `clube_comment` (espelha a `0032` do Pensa; `XpSourceType`
   port + enum do schema atualizados). SEM tabela/coluna nova.

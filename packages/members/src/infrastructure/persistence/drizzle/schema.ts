@@ -374,6 +374,14 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // id do conteúdo → 1 marco por conteúdo; premiar só na aprovação bloqueia farm).
   'clube_thread',
   'clube_comment',
+  // MARCOS de missão (amount 0 — só contam p/ o progresso da missão; o prêmio vem
+  // do claim). Idempotentes pelo sourceId natural (anti-farm): bloco (entregar ao
+  // professor) / curso (classificar) / item (comprar cosmético) / comentário (Mural).
+  'studio_submitted',
+  'course_rated',
+  'room_item_buy',
+  'avatar_part_buy',
+  'mural_comment',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)

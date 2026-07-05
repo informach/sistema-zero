@@ -3,6 +3,7 @@ import type { CourseAudience } from '../../domain/course/course'
 import { CHALLENGE_ENTRY_XP, challengeSourceId } from '../../domain/gamification/challenges'
 import { COIN_VALUES, quizPassedCoins } from '../../domain/gamification/coins'
 import { localDateSaoPaulo, quizPassedXp, XP_VALUES } from '../../domain/gamification/gamification'
+import { avatarPartSourceId, roomItemSourceId } from '../../domain/gamification/source-id'
 import { pensaStageSourceId } from '../../domain/pensa/gamification'
 import type { PensaWorkStage } from '../../domain/pensa/pensa'
 import type {
@@ -111,6 +112,104 @@ export class AwardGamificationService {
       },
     ]
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+  }
+
+  /**
+   * MARCOS de MISSÃO (amount 0) — só ALIMENTAM o progresso da missão contando o
+   * ledger; o prêmio (XP/moedas) vem do CLAIM da missão, não do evento. Por serem
+   * amount 0: não movem XP/streak e NÃO tocam `gamification_profiles` (o ramo que
+   * grava privileged/accountId só roda com amount > 0). Idempotentes pelo sourceId
+   * natural (bloco/curso/item/comentário) → refazer a ação não refarma a missão.
+   * Isso elimina XP dobrado (enviar+passar estúdio), loop de moeda (quarto/avatar)
+   * e refarm de rating. Todos fail-open como o resto da gamificação.
+   */
+  async awardStudioSubmitted(input: {
+    userId: string
+    accountId: string
+    /** sourceId do marco = o BLOCO do Estúdio (1 marco por bloco, reenviar não duplica). */
+    blockId: string
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [{ sourceType: 'studio_submitted', sourceId: input.blockId, amount: 0 }],
+      input.privileged,
+    )
+  }
+
+  async awardCourseRated(input: {
+    userId: string
+    accountId: string
+    /** sourceId do marco = o CURSO (1 marco por curso, reclassificar não refarma). */
+    courseId: string
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [{ sourceType: 'course_rated', sourceId: input.courseId, amount: 0 }],
+      input.privileged,
+    )
+  }
+
+  async awardRoomItemBuy(input: {
+    userId: string
+    accountId: string
+    /** id do item do quarto (slug) → uuid determinístico p/ o ledger. */
+    itemId: string
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [{ sourceType: 'room_item_buy', sourceId: roomItemSourceId(input.itemId), amount: 0 }],
+      input.privileged,
+    )
+  }
+
+  async awardAvatarPartBuy(input: {
+    userId: string
+    accountId: string
+    /** id da peça do avatar (slug) → uuid determinístico p/ o ledger. */
+    partId: string
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [{ sourceType: 'avatar_part_buy', sourceId: avatarPartSourceId(input.partId), amount: 0 }],
+      input.privileged,
+    )
+  }
+
+  /**
+   * MARCO `mural_comment` (amount 0): a equipe APROVOU um comentário da criança no
+   * Mural. Disparado pelo webhook hub→members (só o aprovado entra → anti-farm por
+   * moderação, igual ao Clube). `privileged: false` (o webhook não carrega role).
+   */
+  async awardMuralComment(input: {
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    /** sourceId = id do comentário (uuid do hub) → 1 marco por comentário. */
+    commentId: string
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [{ sourceType: 'mural_comment', sourceId: input.commentId, amount: 0 }],
+      false,
+    )
   }
 
   /**

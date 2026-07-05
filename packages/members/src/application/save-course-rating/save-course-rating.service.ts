@@ -5,6 +5,7 @@ import type {
 import { isValidRatingHalf } from '../../domain/rating/course-rating'
 import { ValidationError } from '../../domain/shared/errors'
 import type { CheckAccessService } from '../access/check-access.service'
+import type { AwardGamificationService } from '../gamification/award-gamification.service'
 import { type CourseRatingView, toCourseRatingView } from '../mappers/views'
 
 /**
@@ -15,6 +16,7 @@ export class SaveCourseRatingService {
   constructor(
     private readonly checkAccess: CheckAccessService,
     private readonly ratings: CourseRatingRepository,
+    private readonly gamification: AwardGamificationService,
     private readonly clock: () => Date,
   ) {}
 
@@ -35,6 +37,15 @@ export class SaveCourseRatingService {
       throw new ValidationError('Nota inválida: use 1 a 5 em passos de 0.5')
     }
     const rating = await this.ratings.upsert(userId, course.id, fields, this.clock())
+    // Marco de missão "classificar um curso" (amount 0, idempotente por curso —
+    // reclassificar/reabrir o modal NÃO refarma). Fail-open (não derruba o rating).
+    await this.gamification.awardCourseRated({
+      userId,
+      accountId: accountId ?? userId,
+      courseId: course.id,
+      audience: course.audience,
+      privileged,
+    })
     return toCourseRatingView(rating)
   }
 }

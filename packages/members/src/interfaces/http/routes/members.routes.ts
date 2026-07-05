@@ -250,18 +250,31 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           deps.getChallenge.execute(resolveUserId(headers), query.audience ?? 'kids'),
         { query: AudienceQuery },
       )
-      // ── Missões (diárias/semanais) — recurso do PRÓPRIO perfil ──────────────
+      // ── Missões (diárias/semanais/mensais) — recurso do PRÓPRIO perfil ──────
+      // Progresso pelo PERFIL (userId); a posse que gateia missões (Clube) pela CONTA
+      // (resolveAccountId); equipe (privileged) vê todas as missões gated.
       .get(
         '/gamification/missions/me',
         async ({ headers, query }) =>
-          deps.getMissions.execute(resolveUserId(headers), query.audience ?? 'kids'),
+          deps.getMissions.execute(
+            resolveUserId(headers),
+            resolveAccountId(headers),
+            query.audience ?? 'kids',
+            isPrivilegedActor(headers),
+          ),
         { query: AudienceQuery },
       )
       // Resgata o prêmio (XP+moedas) de uma missão concluída (idempotente; 409 se não concluiu).
       .post(
         '/gamification/missions/:slug/claim',
         async ({ headers, params, query }) =>
-          deps.claimMission.execute(resolveUserId(headers), query.audience ?? 'kids', params.slug),
+          deps.claimMission.execute(
+            resolveUserId(headers),
+            resolveAccountId(headers),
+            query.audience ?? 'kids',
+            params.slug,
+            isPrivilegedActor(headers),
+          ),
         { params: MissionSlugParams, query: AudienceQuery },
       )
       // Compra 1 protetor de sequência com moedas (idempotente; 402 sem saldo; 409 no máximo).

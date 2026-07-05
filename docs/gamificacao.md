@@ -485,36 +485,62 @@ Domínio em `packages/members/src/domain/gamification/missions.ts`; serviços em
 `community-kids/src/components/kids/missions-panel.tsx`. Estilo Duolingo: cada missão conta
 **eventos REAIS do ledger** (`xp_events`) num período. Catálogo EM CÓDIGO (sem seed/tabela).
 
-### Pools
+### Pools (reforma 07/2026 — cadências coerentes + mensal + novas fontes + gating do Clube)
 
-**Diárias (`DAILY_MISSIONS`, 6):**
+Cadência recalibrada pela premissa **~1 aula/dia**: eventos frequentes são DIÁRIOS; fechar
+módulo/projeto/publicar/decorar são SEMANAIS; metas grandes são MENSAIS. Antes "abra um baú"/"crie
+um projeto" eram diárias e ficavam travadas em 0 (eventos one-shot fora da janela do dia).
 
-| slug | meta (`goalType`) | alvo | XP | moedas |
-|---|---|---|---|---|
-| daily-aula | lesson_complete | 1 | 10 | 10 |
-| daily-aulas-3 | lesson_complete | 3 | 20 | 20 |
-| daily-quiz | quiz_passed | 1 | 15 | 15 |
-| daily-estudio | studio_passed | 1 | 20 | 25 |
-| daily-bau | unit_complete | 1 | 15 | 15 |
-| daily-clube (07/2026) | clube_thread | 1 | 10 | 10 |
+**Diárias (`DAILY_MISSIONS`) — `DAILY_SET_SIZE = 3`:**
 
-**Semanais (`WEEKLY_MISSIONS`, 4):**
+| slug | meta (`goalType`) | alvo | XP | moedas | gate |
+|---|---|---|---|---|---|
+| daily-aula | lesson_complete | 1 | 10 | 10 | — |
+| daily-quiz | quiz_passed | 1 | 15 | 15 | — |
+| daily-enviar | studio_submitted | 1 | 15 | 15 | — |
+| daily-comentar | mural_comment | 1 | 10 | 10 | — |
+| daily-clube | clube_thread | 1 | 10 | 10 | clube-dos-criadores |
 
-| slug | meta | alvo | XP | moedas |
-|---|---|---|---|---|
-| weekly-aulas-10 | lesson_complete | 10 | 60 | 75 |
-| weekly-quizzes-5 | quiz_passed | 5 | 50 | 60 |
-| weekly-estudio-3 | studio_passed | 3 | 75 | 80 |
-| weekly-clube-3 (07/2026) | clube_thread | 3 | 40 | 45 |
+**Semanais (`WEEKLY_MISSIONS`) — `WEEKLY_SET_SIZE = 3`:**
 
-Tamanho do set atribuído por criança: `DAILY_SET_SIZE = 3` (vê 3 das 6) e `WEEKLY_SET_SIZE = 2`
-(vê 2 das 4). `MissionGoalType` = `lesson_complete | quiz_passed | studio_passed | unit_complete
-| clube_thread`.
+| slug | meta | alvo | XP | moedas | gate |
+|---|---|---|---|---|---|
+| weekly-aulas-5 | lesson_complete | 5 | 40 | 50 | — |
+| weekly-quizzes-3 | quiz_passed | 3 | 35 | 40 | — |
+| weekly-bau | unit_complete | 1 | 30 | 35 | — |
+| weekly-enviar-2 | studio_submitted | 2 | 40 | 45 | — |
+| weekly-publicar | course_showcased | 1 | 50 | 60 | — |
+| weekly-quarto | room_item_buy | 1 | 30 | **0** | — |
+| weekly-avatar | avatar_part_buy | 1 | 30 | **0** | — |
+| weekly-clube-3 | clube_thread | 3 | 40 | 45 | clube-dos-criadores |
 
-> As missões de **Clube** (07/2026) contam `clube_thread` no ledger — como esse evento só é
-> gravado na APROVAÇÃO pela equipe (§3), a missão só progride com tópico aprovado (anti-farm,
-> mesmo princípio derivado dos demais goals). Elas dão **moedas** (via `claimMission`, com teto
-> diário) mesmo o `clube_thread` do award sendo XP puro — a torneira da missão é o resgate, não o post.
+**Mensais (`MONTHLY_MISSIONS`, NOVA) — `MONTHLY_SET_SIZE = 2`:**
+
+| slug | meta | alvo | XP | moedas | gate |
+|---|---|---|---|---|---|
+| monthly-aulas-20 | lesson_complete | 20 | 120 | 90 | — |
+| monthly-baus-3 | unit_complete | 3 | 100 | 80 | — |
+| monthly-enviar-3 | studio_submitted | 3 | 120 | 90 | — |
+| monthly-publicar-3 | course_showcased | 3 | 150 | 100 | — |
+| monthly-classificar | course_rated | 1 | 60 | 50 | — |
+| monthly-avatar-3 | avatar_part_buy | 3 | 80 | **0** | — |
+| monthly-clube-10 | clube_thread | 10 | 100 | 80 | clube-dos-criadores |
+
+`MissionGoalType` = `lesson_complete | quiz_passed | unit_complete | studio_submitted |
+course_showcased | course_rated | room_item_buy | avatar_part_buy | mural_comment | clube_thread`.
+
+> **Novos goalTypes = MARCOS (amount 0, migration `0037`)** — só CONTAM p/ a missão; o prêmio vem
+> do claim (não movem XP/streak, não refarmam): `studio_submitted` (enviar ao professor, por bloco),
+> `course_rated` (classificar curso, por curso), `room_item_buy`/`avatar_part_buy` (comprar cosmético;
+> sourceId = uuid determinístico do slug, `domain/gamification/source-id.ts` — o ledger é uuid; a missão
+> dá SÓ XP p/ não fazer loop de moeda), `mural_comment` (comentar no Mural, na APROVAÇÃO — webhook
+> hub→members). `course_showcased` reusa o marco de publicar jogo.
+>
+> **Gating de produto (`MissionDef.requiresAccess`):** as missões de Clube (`clube_thread`) só entram
+> no pool de quem tem `clube-dos-criadores` — `Get/ClaimMissionService` resolvem a posse pela CONTA
+> (`AccessCheckService`) e passam um predicado aos `assign*` (equipe libera tudo; default `() => false`
+> não vaza produto). Antes apareciam travadas em 0 p/ quem não tinha o Clube. O `clube_thread`/
+> `mural_comment` só entram no ledger na APROVAÇÃO pela equipe (§3) → anti-farm por moderação.
 
 ### Atribuição determinística
 
@@ -528,7 +554,11 @@ Mudar `fnv1a`/`pick`/a composição da seed **re-embaralha os sets de TODOS os a
 
 Janelas de tempo (ancoradas em 03:00Z, SP fixo): `dayBoundsUtc(dayKey)` = `[dayKey T03:00Z, +1 dia)`;
 `weeklyPeriodKey(dayKey)` = segunda-feira civil SP no formato `w:YYYY-MM-DD` (**semana começa na
-segunda**, `sinceMonday=(dow+6)%7`); `weekBoundsUtc` = `[segunda T03:00Z, +7 dias)`.
+segunda**, `sinceMonday=(dow+6)%7`); `weekBoundsUtc` = `[segunda T03:00Z, +7 dias)`;
+`monthlyPeriodKey(dayKey)` = `m:YYYY-MM` (mês civil SP, mesma régua do Desafio do mês); `monthBoundsUtc`
+= `[dia 1 T03:00Z, dia 1 do mês seguinte T03:00Z)`. `periodBoundsFor`/`periodKeyFor` roteiam por
+`cadence` (`daily`/`weekly`/`monthly`). A cadência mensal NÃO exigiu migração (`mission_claims.period_key`
+é text).
 
 ### Progresso derivado + resgate idempotente
 
@@ -751,10 +781,12 @@ no código (06/2026).
 | `DEFAULT_ROOM_THEME` | aconchego | `room/room-catalog.ts` (+ literal no kids) | Tema padrão |
 | `ROOM_ITEMS` (preços) | ver §7 | `room/room-catalog.ts` | Catálogo + preços dos itens |
 | `ROOM_THEMES` (preços) | aconchego 0,floresta 200,oceano 250,espaco 300,doce 200 | `room/room-catalog.ts` | Catálogo + preços dos temas |
-| `DAILY_MISSIONS` | 6 missões | `gamification/missions.ts` | Pool diário |
-| `WEEKLY_MISSIONS` | 4 missões | `gamification/missions.ts` | Pool semanal |
+| `DAILY_MISSIONS` | 5 missões | `gamification/missions.ts` | Pool diário |
+| `WEEKLY_MISSIONS` | 8 missões | `gamification/missions.ts` | Pool semanal |
+| `MONTHLY_MISSIONS` | 7 missões | `gamification/missions.ts` | Pool mensal (07/2026) |
 | `DAILY_SET_SIZE` | 3 | `gamification/missions.ts` | Missões diárias por criança |
-| `WEEKLY_SET_SIZE` | 2 | `gamification/missions.ts` | Missões semanais por criança |
+| `WEEKLY_SET_SIZE` | 3 | `gamification/missions.ts` | Missões semanais por criança |
+| `MONTHLY_SET_SIZE` | 2 | `gamification/missions.ts` | Missões mensais por criança |
 | `LEAGUE_TIERS` | bronze→diamante | `gamification/league.ts` | Tiers das ligas |
 | `DEFAULT_LEAGUE_TIER` | bronze | `gamification/league.ts` | Tier inicial |
 | `LEAGUE_MIN_PLAYERS` | 5 | `gamification/league.ts` | Massa mínima (abaixo = semana amistosa) |

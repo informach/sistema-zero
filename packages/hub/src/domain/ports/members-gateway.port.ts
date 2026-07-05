@@ -77,6 +77,17 @@ export interface ClubContributionArgs {
   contentId: string
 }
 
+/** Argumentos da missão "comentar no Mural" (marco, dado na APROVAÇÃO do comentário). */
+export interface MuralCommentArgs {
+  /** PERFIL de criança (dono da gamificação) — o `authorId` do comentário. */
+  userId: string
+  /** CONTA do responsável (coorte da gamificação) — snapshot `authorAccountId`. */
+  accountId: string
+  audience: 'adult' | 'kids'
+  /** Id do comentário aprovado — chave de IDEMPOTÊNCIA do ledger (re-aprovar é inerte). */
+  commentId: string
+}
+
 export interface MembersGateway {
   checkAccess(
     userId: string,
@@ -103,4 +114,11 @@ export interface MembersGateway {
    * não rende). **Best-effort**: NUNCA lança; o ledger é idempotente pelo `contentId`.
    */
   notifyClubContribution(args: ClubContributionArgs): Promise<void>
+  /**
+   * Avisa o members que um comentário no MURAL foi APROVADO (staff) → marco
+   * `mural_comment` (missão "comentar no Mural"). **Best-effort**: NUNCA lança; o
+   * ledger é idempotente pelo `commentId`. Distinto do `notifyClubContribution`
+   * (fórum do Clube) — o Mural é universal, o Clube é gated por produto.
+   */
+  notifyMuralComment(args: MuralCommentArgs): Promise<void>
 }

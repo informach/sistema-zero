@@ -290,6 +290,19 @@ export const ClubeWebhookBody = t.Object({
   contentId: UUID,
 })
 
+/**
+ * Corpo de `POST /members/webhooks/mural-comment` — o HUB avisa que a equipe APROVOU
+ * um comentário no Mural dos Criadores. Grava o MARCO `mural_comment` (amount 0, só
+ * conta p/ a missão "comentar no Mural"). `commentId` = id do comentário (idempotência
+ * do ledger; re-aprovar é inerte). Premiar só na aprovação bloqueia farm/rejeitado.
+ */
+export const MuralCommentWebhookBody = t.Object({
+  userId: UUID,
+  accountId: UUID,
+  audience: AUDIENCE,
+  commentId: UUID,
+})
+
 /** Corpo de `PUT /members/courses/:slug/lessons/:lessonId/position` (throttled no client). */
 export const VideoPositionBody = t.Object({
   positionSeconds: t.Integer({ minimum: 0, maximum: 100_000 }),
