@@ -100,7 +100,7 @@ export const MATH_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Funções de trigonometria (seno, cosseno, tangente, etc.). O ângulo é em radianos — use "converter graus → radianos" se precisar.',
+      'Funções de trigonometria (seno, cosseno, tangente, etc.). O ângulo é em radianos. Use "converter graus → radianos" se precisar.',
   },
   {
     type: 'sz_math_atan2',

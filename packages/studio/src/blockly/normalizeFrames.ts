@@ -5,6 +5,7 @@ import {
   FRAME_BEHAVIOR,
   FRAME_STRUCTURE,
 } from './buildIR'
+import { migrateIfElseBlocks } from './migrateIfElse'
 import { migrateLegacyValueFields } from './migrateValueFields'
 import { ensureBlocklyInitialized } from './setup'
 import { buildWorkspaceStateFromIR } from './workspaceState'
@@ -41,7 +42,10 @@ export function normalizeBlocksStateToFrames(state: unknown): unknown {
   // preservando o valor salvo pela criança. Roda SEMPRE — inclusive em projetos já
   // framados (o campo legado pode estar dentro de um frame). Devolve a MESMA referência
   // quando não há nada a migrar (preserva a idempotência abaixo).
-  const migrated = migrateLegacyValueFields(state)
+  // Migra "Se" legado (input ELSE fixo → mutator com `extraState.hasElse`) para não
+  // perder o "senão" da criança ao carregar. Roda SEMPRE (inclusive em já framados;
+  // devolve a MESMA referência quando não há nada a migrar).
+  const migrated = migrateIfElseBlocks(migrateLegacyValueFields(state))
   if (!migrated || blocksStateHasFrame(migrated)) return migrated
   const blocks = (migrated as { blocks?: { blocks?: unknown[] } }).blocks?.blocks
   if (!Array.isArray(blocks) || blocks.length === 0) return migrated

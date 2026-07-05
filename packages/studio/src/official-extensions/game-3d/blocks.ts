@@ -154,11 +154,11 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_animate',
-    message0: 'A cada frame 3D da cena %1, fazer %2',
-    args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
-      { type: 'input_statement', name: 'BODY' },
-    ],
+    message0: 'A cada frame 3D da cena %1',
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -208,7 +208,7 @@ export const gameThreeDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Dá um impulso para cima — só funciona se o objeto estiver no chão. Combine com "se a tecla espaço está apertada".',
+      'Dá um impulso para cima, só funciona se o objeto estiver no chão. Combine com "se a tecla espaço está apertada".',
   },
   {
     type: 'sz_g3d_apply_gravity',
@@ -408,7 +408,7 @@ export const gameThreeDBlocks = [
     output: 'JSValue',
     colour: EVENT_C,
     tooltip:
-      'Verdadeiro se o objeto bate em algum do grupo (caixa real — funciona com modelos como carros). Use num "se".',
+      'Verdadeiro se o objeto bate em algum do grupo (caixa real, funciona com modelos como carros). Use num "se".',
   },
 
   // ---- Kit Travessia (atravessar a rua / Crossy Road) ----
@@ -1447,7 +1447,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
-    tooltip: 'Luz direcional vinda do alto (como o sol) — faz sombras.',
+    tooltip: 'Luz direcional vinda do alto (como o sol), faz sombras.',
   },
   {
     type: 'sz_g3d_add_point_light',
@@ -1545,12 +1545,14 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_for_each_swarm',
-    message0: 'Para cada %1 do enxame %2 %3',
+    message0: 'Para cada %1 do enxame %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
       { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'group3d' },
-      { type: 'input_statement', name: 'BODY' },
     ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: '#f472b6',
@@ -1589,7 +1591,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: '#f472b6',
-    tooltip: 'Limpa do enxame as cópias que passaram dos limites (saíram da tela) — higiene.',
+    tooltip: 'Limpa do enxame as cópias que passaram dos limites (saíram da tela), higiene.',
   },
   {
     type: 'sz_g3d_play_note',

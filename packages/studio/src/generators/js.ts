@@ -46,7 +46,7 @@ export function assertGeneratorDepth(depth: number): void {
 function jsChildBodies(stmt: JSStatement): JSStatement[][] {
   switch (stmt.type) {
     case 'if':
-      return [stmt.then, stmt.else ?? []]
+      return [stmt.then, ...(stmt.elseif ?? []).map((c) => c.then), stmt.else ?? []]
     case 'repeat':
     case 'while':
     case 'doWhile':
@@ -197,6 +197,10 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
       return {
         ...stmt,
         then: extractAnimationLoops(stmt.then, hoisted),
+        elseif: stmt.elseif?.map((c) => ({
+          ...c,
+          then: extractAnimationLoops(c.then, hoisted),
+        })),
         else: stmt.else ? extractAnimationLoops(stmt.else, hoisted) : undefined,
       }
     case 'repeat':
@@ -339,16 +343,29 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, startLine + 1),
       )
-      const ifBlock = `${pad}if (${compileExpr(stmt.cond, 0, identifiers, recAt(base))}) {\n${thenBody}\n${pad}}`
-      const elseBody = stmt.else
-        ? compileStatements(
-            stmt.else,
-            indent + 1,
-            identifiers,
-            childMapContext(mapContext, startLine + countLines(ifBlock)),
-          )
-        : null
-      return elseBody ? `${ifBlock} else {\n${elseBody}\n${pad}}` : ifBlock
+      let out = `${pad}if (${compileExpr(stmt.cond, 0, identifiers, recAt(base))}) {\n${thenBody}\n${pad}}`
+      // Cada "senão se" começa na linha SEGUINTE ao `} else if (…) {` (que fica na
+      // última linha do que já foi montado) — daí `startLine + countLines(out)`.
+      for (const clause of stmt.elseif ?? []) {
+        const body = compileStatements(
+          clause.then,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, startLine + countLines(out)),
+        )
+        out += ` else if (${compileExpr(clause.cond, 0, identifiers, recAt(base))}) {\n${body}\n${pad}}`
+      }
+      if (stmt.else) {
+        const elseBody = compileStatements(
+          stmt.else,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, startLine + countLines(out)),
+        )
+        // Corpo vazio (`else {}`) é no-op: não emite o `else` (round-trip idêntico).
+        if (elseBody) out += ` else {\n${elseBody}\n${pad}}`
+      }
+      return out
     }
     case 'repeat': {
       const body = compileStatements(

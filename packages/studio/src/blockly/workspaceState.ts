@@ -936,13 +936,29 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'if': {
       const cond = exprToValueBlock(stmt.cond)
       if (!cond) return rawJSBlock(stmt)
-      return block(
-        'sz_js_if_else',
-        {},
-        { THEN: statementsToBlocks(stmt.then), ELSE: statementsToBlocks(stmt.else ?? []) },
-        stmt.__id,
-        { COND: cond },
-      )
+      const elseif = stmt.elseif ?? []
+      const valueInputs: Record<string, SerializedBlocklyBlock> = { COND: cond }
+      const stmtInputs: Record<string, SerializedBlocklyBlock[]> = {
+        THEN: statementsToBlocks(stmt.then),
+      }
+      // Condição de algum "senão se" não representável por bloco (ex.: chamada) →
+      // o "Se" inteiro cai em código avançado, igual à condição principal.
+      for (const [i, clause] of elseif.entries()) {
+        const c = exprToValueBlock(clause.cond)
+        if (!c) return rawJSBlock(stmt)
+        valueInputs[`ELSEIF_COND${i}`] = c
+        stmtInputs[`ELSEIF_THEN${i}`] = statementsToBlocks(clause.then)
+      }
+      const hasElse = stmt.else !== undefined
+      if (hasElse) stmtInputs.ELSE = statementsToBlocks(stmt.else ?? [])
+      const b = block('sz_js_if_else', {}, stmtInputs, stmt.__id, valueInputs)
+      if (elseif.length > 0 || hasElse) {
+        b.extraState = {
+          ...(elseif.length > 0 ? { elseIf: elseif.length } : {}),
+          ...(hasElse ? { hasElse: true } : {}),
+        }
+      }
+      return b
     }
     case 'repeat': {
       const times = exprToValueBlock(stmt.times)

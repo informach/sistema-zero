@@ -88,18 +88,23 @@ export const TEXT_SOCKETS: Record<string, Record<string, string>> = {
   sz_canvas_fill_text: { TEXT: 'Olá' },
 }
 
+interface CompareSeed {
+  type: 'sz_val_compare'
+  fields: { OP: string }
+  inputs: { LEFT: SocketShadow; RIGHT: SocketShadow }
+}
+
 /** Sombra de um slot de valor: número/texto editável, seletor de cor, ou comparação. */
 export type SocketShadow =
   | { shadow: { type: 'sz_val_number'; fields: { NUM: number } } }
   | { shadow: { type: 'sz_val_text'; fields: { TEXT: string } } }
   | { shadow: { type: 'sz_val_color'; fields: { COLOR: string } } }
-  | {
-      shadow: {
-        type: 'sz_val_compare'
-        fields: { OP: string }
-        inputs: { LEFT: SocketShadow; RIGHT: SocketShadow }
-      }
-    }
+  | { shadow: CompareSeed }
+  // Comparação como bloco REAL (não sombra): usada nas CONDIÇÕES (Se/enquanto/…).
+  // Um bloco de valor real NÃO pode ser encaixado dentro de um input de SOMBRA
+  // (Blockly proíbe), então uma comparação-sombra travava os operandos LEFT/RIGHT.
+  // Como bloco real, os operandos (sombras) voltam a ser substituíveis um a um.
+  | { block: CompareSeed }
   | { shadow: { type: 'sz_val_variable'; fields: { NAME: string } } }
 
 /**
@@ -131,7 +136,7 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
   },
   sz_js_if_else: {
     COND: {
-      shadow: {
+      block: {
         type: 'sz_val_compare',
         fields: { OP: '>' },
         inputs: {
@@ -144,7 +149,7 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
   // while / do-while: a condição já vem como uma comparação `x > 0` (igual ao "Se").
   sz_js_while: {
     COND: {
-      shadow: {
+      block: {
         type: 'sz_val_compare',
         fields: { OP: '>' },
         inputs: {
@@ -156,7 +161,7 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
   },
   sz_js_do_while: {
     COND: {
-      shadow: {
+      block: {
         type: 'sz_val_compare',
         fields: { OP: '>' },
         inputs: {
@@ -169,7 +174,7 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
   // Ternário: a condição já vem como uma comparação `x > 0` (igual ao "Se").
   sz_val_ternary: {
     COND: {
-      shadow: {
+      block: {
         type: 'sz_val_compare',
         fields: { OP: '>' },
         inputs: {

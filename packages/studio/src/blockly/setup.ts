@@ -10,6 +10,7 @@ import { registerAnimLoopMutator } from './blocks/animLoopMutator'
 import { registerArgsMutator } from './blocks/argsMutator'
 import { registerArrayMutator } from './blocks/arrayMutator'
 import { registerExtendsMutator } from './blocks/extendsMutator'
+import { registerIfElseMutator } from './blocks/ifElseMutator'
 import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
 import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE } from './buildIR'
@@ -32,11 +33,22 @@ type FieldLike = {
   resizeEditor_?: unknown
 }
 
+/** Rect em coordenadas de PÁGINA (top/bottom/left/right + tamanho). */
+type PageRect = {
+  top: number
+  bottom: number
+  left: number
+  right: number
+  width: number
+  height: number
+}
+
 /**
- * Rect AO VIVO (viewport, `getBoundingClientRect`) que o editor de um campo deve
- * cobrir — correto em posição E tamanho mesmo dentro do overlay `fixed` do **modo
- * criação guiada** (onde o cálculo nativo do Blockly, por `getPageOffset`, erra o X
- * ~1 caractere à esquerda). Dois casos:
+ * Rect AO VIVO que o editor de um campo deve cobrir, em coordenadas de **PÁGINA**
+ * (viewport `getBoundingClientRect` + scroll da janela) — correto em posição E tamanho
+ * no overlay `fixed` do **modo criação guiada** (onde o cálculo nativo do Blockly, por
+ * `getPageOffset`, erra o X ~1 caractere à esquerda) E no **modo aula normal**, onde a
+ * PÁGINA inteira rola. Dois casos:
  *  - campo **full-block** (nossos sockets OVAIS de valor: `borderRect_` de tamanho
  *    ZERO) → o editor cobre o BLOCO inteiro → rect do SVG do bloco-fonte;
  *  - campo de **texto comum** (`FieldInput`: tem `resizeEditor_` + `borderRect_`
@@ -44,18 +56,29 @@ type FieldLike = {
  *    campo → rect do `borderRect_`.
  * Demais campos (dropdown/checkbox/cor/imagem…) → `null` = cálculo nativo intacto
  * (não abrem `<input>` de texto; seu posicionamento nativo não estava quebrado).
- * `getBoundingClientRect` == `getPageOffset` quando a janela não rola (o Studio é
- * layout fixo), então isto NÃO muda o modo normal — só conserta o guiado.
+ * O `DropDownDiv`/`WidgetDiv` do Blockly são `position: absolute` no `document.body`
+ * (origem 0,0), então precisam de coords de PÁGINA. Antes usávamos só o viewport
+ * (assumindo janela sem scroll) — isso jogava o pop-up sobre o vídeo no modo aula
+ * normal; somar `scrollX/Y` conserta esse modo SEM mexer no guiado (lá scroll = 0).
  */
-function liveEditorRect(field: FieldLike): DOMRect | null {
+function liveEditorRect(field: FieldLike): PageRect | null {
   try {
+    let r: DOMRect | undefined
     if (field.isFullBlockField()) {
-      const r = field.getSourceBlock()?.getSvgRoot?.()?.getBoundingClientRect()
-      return r && r.width > 0 && r.height > 0 ? r : null
+      r = field.getSourceBlock()?.getSvgRoot?.()?.getBoundingClientRect()
+    } else if (typeof field.resizeEditor_ === 'function' && field.borderRect_) {
+      r = field.borderRect_.getBoundingClientRect()
     }
-    if (typeof field.resizeEditor_ === 'function' && field.borderRect_) {
-      const r = field.borderRect_.getBoundingClientRect()
-      return r.width > 0 && r.height > 0 ? r : null
+    if (!r || r.width <= 0 || r.height <= 0) return null
+    const sx = window.scrollX
+    const sy = window.scrollY
+    return {
+      top: r.top + sy,
+      bottom: r.bottom + sy,
+      left: r.left + sx,
+      right: r.right + sx,
+      width: r.width,
+      height: r.height,
     }
   } catch {
     // Qualquer surpresa cai no cálculo nativo do Blockly.
@@ -91,7 +114,7 @@ function patchFieldEditorAnchor(): void {
   // offset de scroll/scale que erra ali). Depois que ele posiciona, ENCAIXAMOS o
   // WidgetDiv EXATAMENTE sobre o rect ao vivo do campo (`liveEditorRect`: o bloco p/
   // oval, a caixa p/ campo de texto). `WidgetDiv` é absoluto no `document.body`
-  // (origem 0,0), então o rect de viewport é a coordenada certa. `resizeEditor_` roda
+  // (origem 0,0), então o rect de PÁGINA (viewport + scroll) é a coordenada certa. `resizeEditor_` roda
   // a cada mudança do workspace enquanto edita, então o encaixe se mantém.
   // `FieldInput`/`FieldTextInput` não são exportados em runtime; pegamos a classe do
   // campo `field_number` pelo REGISTRY e subimos a cadeia de protótipos até quem
@@ -254,6 +277,7 @@ export function ensureBlocklyInitialized(): void {
   registerObjectMutator()
   registerParamsMutator()
   registerExtendsMutator()
+  registerIfElseMutator()
   registerCoreBlocks()
   // Sobrescreve os textos em inglês da categoria de busca por PT-BR.
   registerPtSearchCategory()

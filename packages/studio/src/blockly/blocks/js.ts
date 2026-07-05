@@ -111,7 +111,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Cria uma variável e guarda nela um valor — número, conta, aleatório, etc.',
+    tooltip: 'Cria uma variável e guarda nela um valor: número, conta, aleatório, etc.',
   },
   {
     type: 'sz_js_const_create',
@@ -151,18 +151,20 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
   },
   {
+    // Os ramos "senão se"/"senão" são criados pelo mutator (+/− estilo MakeCode);
+    // o bloco nasce só com "Se … então [C]". Ver `blocks/ifElseMutator.ts`.
     type: 'sz_js_if_else',
     message0: 'Se %1',
     args0: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
     message1: 'então %1',
     args1: [{ type: 'input_statement', name: 'THEN' }],
-    message2: 'senão %1',
-    args2: [{ type: 'input_statement', name: 'ELSE' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Executa o "então" quando a condição for verdadeira; senão, o "senão".',
+    mutator: 'sz_if_else_mutator',
+    tooltip:
+      'Executa o "então" quando a condição for verdadeira. Use + para juntar "senão se" e "senão".',
   },
   {
     type: 'sz_js_repeat',
@@ -272,7 +274,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'SwitchCase',
     colour: C,
     level: 'avancado',
-    tooltip: 'Um caso do "escolha": se o valor bater, roda o "fazer" (e para — break automático).',
+    tooltip: 'Um caso do "escolha": se o valor bater, roda o "fazer" (e para, break automático).',
   },
   {
     type: 'sz_js_for_of',
@@ -289,7 +291,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
     level: 'intermediario',
     tooltip:
-      'Percorre cada item de uma lista. Sem posição/índice — use "para cada item" se precisar do índice.',
+      'Percorre cada item de uma lista. Sem posição/índice. Use "para cada item" se precisar do índice.',
   },
   {
     type: 'sz_js_for_range',

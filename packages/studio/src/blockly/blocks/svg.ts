@@ -76,7 +76,7 @@ export const SVG_BLOCKS: BlockDefinition[] = [
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Reusa uma forma que tem um id (ex.: um caminho dentro de <defs>), opcionalmente transformada — bom para repetir as pás de um moinho.',
+      'Reusa uma forma que tem um id (ex.: um caminho dentro de <defs>), opcionalmente transformada, bom para repetir as pás de um moinho.',
   },
   {
     type: 'sz_svg_circle',
