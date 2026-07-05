@@ -131,6 +131,8 @@ export interface FunnelDef {
   seoDescription: string
   /** Tema visual (ex.: `'kids'`) → `htmlClass="theme-kids"` no BaseLayout. Default: tema do NCI. */
   theme?: string
+  /** Oferta com acesso vitalício → exibe o disclaimer "vitalício = enquanto a empresa existir". */
+  lifetimeAccess?: boolean
   steps: FunnelSteps
   content: FunnelContent
   /** Oferta de upsell (pós-compra), quando `steps.upsell`. */

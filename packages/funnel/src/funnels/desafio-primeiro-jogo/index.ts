@@ -39,6 +39,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   seoDescription:
     'Trilha guiada de 3 dias para crianças a partir de 9 anos criarem o primeiro jogo jogável, dentro do Sistema Zero Studio. Comunicação dirigida aos pais.',
   theme: 'kids',
+  lifetimeAccess: true,
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
   content: {
     copy: DESAFIO_PRODUTO,

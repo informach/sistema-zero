@@ -2,6 +2,7 @@
 import { getFunnel } from '../../../funnels/registry'
 import Quiz from '../../../islands/Quiz'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { funnelOgImage } from '../../../lib/seo'
 
 // SSR de propósito: página pré-renderizada é servida estática SEM passar pela
 // middleware → ficaria SEM security headers em produção. O shell é trivial; o
@@ -30,6 +31,8 @@ const q1Images =
 
 <BaseLayout
   title={`Quiz · ${f.productName}`}
+  description={f.seoDescription}
+  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
   noindex={true}
   htmlClass={f.theme ? `theme-${f.theme}` : undefined}
 >

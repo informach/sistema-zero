@@ -5,6 +5,7 @@ import { EMPRESA } from '../../../content/legal'
 import { getFunnel } from '../../../funnels/registry'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { clearLeadCookie } from '../../../lib/lead-session'
+import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
 
 // SSR (não estática) só para EXPIRAR o cookie do lead após a compra: assim um novo
@@ -32,6 +33,8 @@ const productName = f.productName
 
 <BaseLayout
   title={`Compra confirmada · ${productName}`}
+  description={f.seoDescription}
+  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
   noindex={true}
   htmlClass={f.theme ? `theme-${f.theme}` : undefined}
 >
@@ -134,7 +137,7 @@ const productName = f.productName
       </p>
     </section>
   </main>
-  <Footer audience={f.audience} />
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess ?? false} />
 </BaseLayout>
 
 <style>

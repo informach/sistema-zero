@@ -7,8 +7,10 @@ import { AVISO_LEGAL_KIDS } from '../content/legal-kids'
 
 interface Props {
   audience?: 'pro' | 'kids'
+  /** Oferta vitalícia → exibe o disclaimer do acesso vitalício (por funil, não por público). */
+  vitalicio?: boolean
 }
-const { audience = 'pro' } = Astro.props
+const { audience = 'pro', vitalicio = false } = Astro.props
 const ano = new Date().getFullYear()
 ---
 
@@ -65,7 +67,20 @@ const ano = new Date().getFullYear()
       )
     }
 
-    <p class={`${audience === 'kids' ? 'mt-4' : 'mt-10'} text-xs leading-relaxed text-muted`}>
+    {
+      vitalicio && (
+        <p
+          class={`${audience === 'kids' ? 'mt-4' : 'mt-10'} max-w-3xl text-xs leading-relaxed text-muted`}
+        >
+          Acesso vitalício significa que você paga uma vez, sem mensalidade nem renovação, e mantém o
+          acesso enquanto a empresa existir e a plataforma estiver no ar.
+        </p>
+      )
+    }
+
+    <p
+      class={`${audience === 'kids' || vitalicio ? 'mt-4' : 'mt-10'} text-xs leading-relaxed text-muted`}
+    >
       © {ano} Informach — Núcleo de Aprendizagem Ltda. · CNPJ 43.588.758/0001-03 · Todos os
       direitos reservados.
     </p>
