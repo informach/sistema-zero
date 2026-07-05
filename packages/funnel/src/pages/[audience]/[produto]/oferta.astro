@@ -26,6 +26,9 @@ const priceLabelShort = formatBRLFromCents(priceCents) // "R$ 37" (botões e cop
 const priceReais = (priceCents / 100).toFixed(2)
 const imagesBase = f.imagesBase
 const perfil = Astro.url.searchParams.get('perfil')
+// Segmento enum não-PII do desejo (P10), vindo do resultado. Só o Desafio o usa; cache
+// por-URL segue seguro (mesma classe do `perfil`: grosso, sem dado pessoal).
+const quer = Astro.url.searchParams.get('quer')
 const ofertaUrl = new URL(`${f.basePath}/oferta`, Astro.site ?? Astro.url).toString()
 
 Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
@@ -43,6 +46,7 @@ const bodyProps = {
   priceReais,
   imagesBase,
   perfil,
+  quer,
   ofertaUrl,
 }
 ---

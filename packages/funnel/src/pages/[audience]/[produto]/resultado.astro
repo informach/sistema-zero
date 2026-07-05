@@ -42,9 +42,19 @@ if (!stored) await repo.updateLead(lead.id, { perfilResultado: perfil })
 
 const bloco = result.profiles[perfil]
 if (!bloco) return Astro.redirect(quizPath)
-const corpo = result.renderCorpo ? result.renderCorpo(bloco.corpo, answers) : bloco.corpo
-const ofertaHref = `${f.basePath}/oferta?perfil=${perfil}`
-const fecho = result.fecho
+const rc = (s: string) => (result.renderCorpo ? result.renderCorpo(s, answers) : s)
+// Diagnóstico em blocos (`secoes`) quando o funil os define; senão, corpo corrido (fallback).
+// Seção que resolve vazia (ex.: bloco de custo condicional omitido) é descartada.
+const secoesRender = bloco.secoes
+  ?.map((s) => ({ rotulo: s.rotulo, texto: rc(s.texto) }))
+  .filter((s) => s.texto.length > 0)
+const secoes = secoesRender && secoesRender.length > 0 ? secoesRender : null
+const corpo = bloco.corpo ? rc(bloco.corpo) : null
+const destaque = result.destaque ? rc(result.destaque) : null
+// Segmento enum não-PII do desejo (P10) p/ a oferta retomar; só quando existe (Desafio).
+const querSeg = typeof answers.o_que_quer === 'string' ? `&quer=${answers.o_que_quer}` : ''
+const ofertaHref = `${f.basePath}/oferta?perfil=${perfil}${querSeg}`
+const fecho = rc(result.fecho)
 ---
 
 <BaseLayout
@@ -77,14 +87,49 @@ const fecho = result.fecho
         {bloco.titulo}
       </h1>
 
-      <div
-        class="reveal-up card mt-8 border-line/80 bg-card-2/60 p-6 sm:p-7"
-        style="animation-delay: 120ms"
-      >
-        <p class="text-base leading-relaxed text-ink/90 sm:text-lg">{corpo}</p>
-      </div>
+      {
+        secoes ? (
+          <div
+            class="reveal-up card mt-8 border-line/80 bg-card-2/60 px-6 sm:px-7"
+            style="animation-delay: 120ms"
+          >
+            {secoes.map((s, i) => (
+              <div class={i > 0 ? 'border-t border-line/60 py-5' : 'py-5'}>
+                <div class="mb-2 flex items-center gap-2">
+                  <span class="h-1.5 w-1.5 rounded-full bg-cyan" />
+                  <span class="text-xs font-bold uppercase tracking-[0.14em] text-cyan">
+                    {s.rotulo}
+                  </span>
+                </div>
+                <p class="text-base leading-relaxed text-ink/90">{s.texto}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            class="reveal-up card mt-8 border-line/80 bg-card-2/60 p-6 sm:p-7"
+            style="animation-delay: 120ms"
+          >
+            <p class="text-base leading-relaxed text-ink/90 sm:text-lg">{corpo}</p>
+          </div>
+        )
+      }
 
-      <p class="reveal-up mt-6 leading-relaxed text-muted" style="animation-delay: 180ms">
+      {
+        destaque && (
+          <div
+            class="reveal-up mt-6 border-l-4 border-cyan bg-cyan/10 py-4 pl-4 pr-4"
+            style="animation-delay: 160ms"
+          >
+            <p class="text-base leading-relaxed text-ink/90">{destaque}</p>
+          </div>
+        )
+      }
+
+      <p
+        class="reveal-up mt-7 text-lg font-semibold leading-snug text-ink"
+        style="animation-delay: 200ms"
+      >
         {fecho}
       </p>
 

@@ -5,6 +5,7 @@
 
 import type { FunnelDef } from '../registry'
 import {
+  DESAFIO_DESTAQUE,
   DESAFIO_FECHO,
   DESAFIO_HERO_PADRAO,
   DESAFIO_HERO_POR_PERFIL,
@@ -36,7 +37,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   byline: 'Helena e Júlio · Sistema Zero',
   seoTitle: 'Desafio do Primeiro Jogo · Seu filho cria o primeiro jogo em 3 dias',
   seoDescription:
-    'Trilha guiada de 3 dias para crianças a partir de 9 anos criarem o primeiro joguinho jogável, dentro do Sistema Zero Studio. Comunicação dirigida aos pais.',
+    'Trilha guiada de 3 dias para crianças a partir de 9 anos criarem o primeiro jogo jogável, dentro do Sistema Zero Studio. Comunicação dirigida aos pais.',
   theme: 'kids',
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
   content: {
@@ -59,6 +60,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
     result: {
       profiles: DESAFIO_RESULT_PROFILES,
       fecho: DESAFIO_FECHO,
+      destaque: DESAFIO_DESTAQUE,
       perfilLabels: DESAFIO_PERFIL_LABELS,
       renderCorpo: desafioRenderCorpo,
     },
