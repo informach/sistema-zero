@@ -50,6 +50,8 @@ export interface FunnelResult {
   /** Diagnóstico por perfil (chaves = perfis do funil). */
   profiles: Record<string, ResultProfile>
   fecho: string
+  /** Bloco em realce acima do fecho (ex.: espelho do desejo). Marcadores resolvidos pelo renderCorpo. Opcional. */
+  destaque?: string
   /** Rótulos legíveis por perfil (aba Perfis do /admin). */
   perfilLabels: Record<string, string>
   /** Renderiza o corpo do perfil resolvendo marcadores com as respostas. Opcional. */

@@ -56,15 +56,21 @@ describe('desafioComputePerfil', () => {
 })
 
 describe('desafioRenderCorpo', () => {
-  test('interpola {resposta_p3}/{resposta_p5}/{resultado} e não deixa marcadores', () => {
-    const corpo = DESAFIO_PRIMEIRO_JOGO.content.result?.profiles.foguete?.corpo ?? ''
-    const out = desafioRenderCorpo(corpo, FULL_ANSWERS)
-    expect(out).toContain('jogos')
-    expect(out).toContain('quase nada disso vira algo criado por ele') // rótulo da P5
-    expect(out).toContain('780') // horas/ano formatado
-    expect(out).not.toContain('{resposta_p3}')
-    expect(out).not.toContain('{resposta_p5}')
-    expect(out).not.toContain('{resultado}')
+  test('interpola P3/P5/P8/P10/resultado nas seções + destaque e não deixa marcadores', () => {
+    const result = DESAFIO_PRIMEIRO_JOGO.content.result
+    const secoes = result?.profiles.foguete?.secoes ?? []
+    const bruto = [...secoes.map((s) => s.texto), result?.destaque ?? '', result?.fecho ?? ''].join(
+      ' ',
+    )
+    const out = desafioRenderCorpo(bruto, FULL_ANSWERS)
+    expect(out).toContain('jogos') // P3
+    expect(out).toContain('quase nada disso vira algo criado por ele') // P5
+    expect(out).toContain('chamando a família') // P8
+    expect(out).toContain('criando as próprias coisas') // P10
+    expect(out).not.toMatch(/\{resposta_p\d+\}|\{resultado\}/)
+  })
+  test('resolve {resultado} (horas/ano formatado) quando presente', () => {
+    expect(desafioRenderCorpo('{resultado} horas', FULL_ANSWERS)).toBe('780 horas')
   })
 })
 

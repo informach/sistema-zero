@@ -61,6 +61,7 @@ export function PerfisClient({
   parentVerified,
   startManaging = false,
   maxProfiles,
+  unlimitedProfiles = false,
 }: {
   initialProfiles: ProfileView[]
   isProfileSession: boolean
@@ -68,6 +69,8 @@ export function PerfisClient({
   startManaging?: boolean
   /** Teto de perfis do plano (matrícula kids). `null` = desconhecido → não trava a UI. */
   maxProfiles: number | null
+  /** Sem teto (equipe interna): não trava e mostra "ilimitado" em vez de "X de Y". */
+  unlimitedProfiles?: boolean
 }) {
   const [profiles, setProfiles] = useState(initialProfiles)
   const [managing, setManaging] = useState(startManaging)
@@ -299,7 +302,9 @@ export function PerfisClient({
       </ul>
 
       {/* Limite do plano: feedback claro na área dos pais (a trava real é o servidor). */}
-      {managing && maxProfiles != null ? (
+      {managing && unlimitedProfiles ? (
+        <p className="text-center text-muted-foreground text-sm">Perfis ilimitados neste acesso.</p>
+      ) : managing && maxProfiles != null ? (
         <p className="text-center text-muted-foreground text-sm">
           {atProfileLimit ? (
             <>

@@ -8,6 +8,10 @@ import { PerfisClient } from './perfis-client'
 
 export const dynamic = 'force-dynamic'
 
+/** Teto máximo de um plano REAL no catálogo (`OfferContent.maxProfiles` 1..50). Acima
+ * disso só existe o sentinela ilimitado da equipe interna (`Number.MAX_SAFE_INTEGER`). */
+const MAX_REAL_PROFILES = 50
+
 /**
  * Grade de perfis (estilo Netflix): a CONTA escolhe qual perfil de criança usar.
  * Fica FORA do grupo `(app)` (sem a sidebar/chrome kids) — é o "quem vai aprender
@@ -31,7 +35,13 @@ export default async function PerfisPage({
           isProfileSession ? session.id : null,
         )
       : []
-  const maxProfiles = allowanceRes.status === 200 ? (allowanceRes.body?.maxProfiles ?? null) : null
+  // O members devolve `Number.MAX_SAFE_INTEGER` como teto p/ a EQUIPE interna (perfis
+  // ilimitados). Planos reais são limitados a 50 pelo catálogo, então qualquer valor
+  // acima disso é o sentinela "sem teto" — não é um número p/ mostrar cru na tela.
+  const rawMaxProfiles =
+    allowanceRes.status === 200 ? (allowanceRes.body?.maxProfiles ?? null) : null
+  const unlimitedProfiles = rawMaxProfiles != null && rawMaxProfiles > MAX_REAL_PROFILES
+  const maxProfiles = unlimitedProfiles ? null : rawMaxProfiles
   // Sessão da conta com o portão já aberto (senha verificada há pouco) → a Área
   // dos pais abre sem re-pedir a senha (ex.: logo após sair de um perfil).
   const parentVerified = !isProfileSession && (await isParentVerifiedFor(session.id))
@@ -46,6 +56,7 @@ export default async function PerfisPage({
       parentVerified={parentVerified}
       startManaging={startManaging}
       maxProfiles={maxProfiles}
+      unlimitedProfiles={unlimitedProfiles}
     />
   )
 }

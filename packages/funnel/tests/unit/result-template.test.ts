@@ -55,9 +55,14 @@ describe('renderTemplate', () => {
 
   test('todos os corpos de perfil resolvem sem marcador cru (com e sem custo)', () => {
     for (const p of Object.values(RESULT_PROFILES)) {
+      // Os perfis do NCI agora usam `secoes` (blocos); falha alto se faltar.
+      const secoes = p.secoes
+      if (!secoes?.length) throw new Error('perfil do NCI sem secoes')
       for (const cents of [0, 250000]) {
-        const out = renderTemplate(p.corpo, { projeto: 'uma ideia', custoMensalCents: cents })
-        expect(out).not.toMatch(/\{\{|\}\}|\[\[|\]\]/)
+        for (const s of secoes) {
+          const out = renderTemplate(s.texto, { projeto: 'uma ideia', custoMensalCents: cents })
+          expect(out).not.toMatch(/\{\{|\}\}|\[\[|\]\]/)
+        }
       }
     }
   })
