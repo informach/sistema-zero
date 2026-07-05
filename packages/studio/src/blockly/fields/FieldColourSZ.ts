@@ -98,7 +98,8 @@ export class FieldColourSZ extends FieldColour {
     row.append(label, input, applyBtn)
     content.appendChild(row)
     Blockly.DropDownDiv.repositionForWindowResize()
-    setTimeout(() => input.focus(), 0)
+    // `preventScroll`: não rolar a página até o input (ver FieldNamePicker).
+    setTimeout(() => input.focus({ preventScroll: true }), 0)
   }
 }
 

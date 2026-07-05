@@ -639,7 +639,9 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
 
     content.appendChild(wrap)
     Blockly.DropDownDiv.showPositionedByField(this, () => {})
-    setTimeout(() => input.focus(), 0)
+    // `preventScroll`: focar um input fora da vista rolaria a PÁGINA até ele (no modo
+    // aula normal a página rola) — o pop-up "pulava" p/ o vídeo. Não rolar nada.
+    setTimeout(() => input.focus({ preventScroll: true }), 0)
   }
 }
 

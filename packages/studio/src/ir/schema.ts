@@ -911,7 +911,14 @@ export type JSStatement =
   // Declaração sem valor inicial (`let x;`).
   | (JSStatementCommon & { type: 'declareVar'; name: string })
   | (JSStatementCommon & { type: 'assign'; name: string; value: JSExpr })
-  | (JSStatementCommon & { type: 'if'; cond: JSExpr; then: JSStatement[]; else?: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'if'
+      cond: JSExpr
+      then: JSStatement[]
+      // Ramos "senão se" (cada um com condição + corpo); estilo MakeCode Arcade.
+      elseif?: Array<{ cond: JSExpr; then: JSStatement[] }>
+      else?: JSStatement[]
+    })
   | (JSStatementCommon & { type: 'repeat'; times: JSExpr; body: JSStatement[] })
   // Laço com condição (`while (cond) { … }`).
   | (JSStatementCommon & { type: 'while'; cond: JSExpr; body: JSStatement[] })
@@ -2099,6 +2106,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('if'),
       cond: JSExprSchema,
       then: z.array(JSStatementSchema),
+      elseif: z
+        .array(z.object({ cond: JSExprSchema, then: z.array(JSStatementSchema) }))
+        .optional(),
       else: z.array(JSStatementSchema).optional(),
       ...idField,
     }),

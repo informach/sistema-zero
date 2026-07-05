@@ -1862,16 +1862,28 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           },
         },
       }
-    case 'sz_js_if_else':
+    case 'sz_js_if_else': {
+      // Ramos "senão se" dinâmicos do mutator: lê ELSEIF_COND{i}/ELSEIF_THEN{i}
+      // enquanto existirem; o "senão" (ELSE) só entra se o input existir.
+      const elseif: Array<{ cond: JSExpr; then: JSStatement[] }> = []
+      for (let i = 0; block.getInput(`ELSEIF_COND${i}`); i += 1) {
+        elseif.push({
+          cond: exprInput(block, `ELSEIF_COND${i}`, { type: 'bool', value: true }),
+          then: getStatementChildren(block, `ELSEIF_THEN${i}`, seen),
+        })
+      }
+      const hasElse = Boolean(block.getInput('ELSE'))
       return {
         kind: 'js',
         value: {
           type: 'if',
           cond: exprInput(block, 'COND', { type: 'bool', value: true }),
           then: getStatementChildren(block, 'THEN', seen),
-          else: getStatementChildren(block, 'ELSE', seen),
+          ...(elseif.length > 0 ? { elseif } : {}),
+          ...(hasElse ? { else: getStatementChildren(block, 'ELSE', seen) } : {}),
         },
       }
+    }
     case 'sz_js_repeat':
       return {
         kind: 'js',

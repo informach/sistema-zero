@@ -262,7 +262,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Faz a página inteira ocupar a tela toda. Só funciona a partir de um clique ou tecla — use dentro de um "Quando clicarem". Vira document.documentElement.requestFullscreen().',
+      'Faz a página inteira ocupar a tela toda. Só funciona a partir de um clique ou tecla. Use dentro de um "Quando clicarem". Vira document.documentElement.requestFullscreen().',
   },
   {
     type: 'sz_js_exit_fullscreen',
@@ -279,7 +279,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga/desliga a tela cheia: entra se estiver normal, sai se já estiver cheia. Ótimo para um botão — use dentro de um "Quando clicarem".',
+      'Liga/desliga a tela cheia: entra se estiver normal, sai se já estiver cheia. Ótimo para um botão. Use dentro de um "Quando clicarem".',
   },
   {
     type: 'sz_val_is_fullscreen',

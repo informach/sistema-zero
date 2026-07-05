@@ -265,7 +265,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Quantos milissegundos se passaram desde que a página abriu (performance.now()). Guarde numa variável e, no quadro seguinte, subtraia para saber quanto tempo passou entre os quadros (delta) — assim o jogo anda igual em telas rápidas e lentas.',
+      'Quantos milissegundos se passaram desde que a página abriu (performance.now()). Guarde numa variável e, no quadro seguinte, subtraia para saber quanto tempo passou entre os quadros (delta), assim o jogo anda igual em telas rápidas e lentas.',
   },
   {
     type: 'sz_val_event_pos',

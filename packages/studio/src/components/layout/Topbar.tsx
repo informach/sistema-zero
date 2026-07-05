@@ -468,25 +468,39 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
           className={cn('ml-auto flex shrink-0 items-center', isCompact ? 'gap-0.5' : 'gap-1.5')}
         >
           {share && (
-            <button
-              type="button"
-              onClick={() => {
-                if (!shareDisabledReason) setShowShare(true)
-              }}
-              disabled={Boolean(shareDisabledReason)}
-              title={shareDisabledReason ?? t('share.action')}
-              aria-label={shareDisabledReason ?? t('share.action')}
-              style={{ touchAction: 'manipulation' }}
-              className={cn(
-                'inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
-                shareDisabledReason
-                  ? 'cursor-not-allowed text-sz-fg-mute opacity-50'
-                  : 'text-sz-accent hover:bg-sz-accent/15',
+            // Wrapper `group` recebe hover/foco MESMO com o botão inerte (botão
+            // `disabled` engole os eventos → a dica nunca aparecia, e nunca no toque).
+            <span className="group relative inline-flex">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!shareDisabledReason) setShowShare(true)
+                }}
+                // Não usar `disabled` nativo: bloqueia só a AÇÃO (guard no onClick) mas
+                // mantém o botão focável/tocável p/ revelar a bolha de dica.
+                aria-disabled={Boolean(shareDisabledReason)}
+                aria-label={shareDisabledReason ?? t('share.action')}
+                style={{ touchAction: 'manipulation' }}
+                className={cn(
+                  'inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+                  shareDisabledReason
+                    ? 'cursor-not-allowed text-sz-fg-mute opacity-50'
+                    : 'text-sz-accent hover:bg-sz-accent/15',
+                )}
+              >
+                <IconShare />
+                {!isCompact && <span className="text-sm font-medium">{t('share.action')}</span>}
+              </button>
+              {shareDisabledReason && (
+                // Bolha visível (não depende do `title` nativo): aparece no hover/foco/toque.
+                <span
+                  role="tooltip"
+                  className="pointer-events-none absolute right-0 top-full z-50 mt-1.5 w-56 rounded-lg border border-sz-border bg-sz-panel px-3 py-2 text-xs font-medium leading-snug text-sz-fg opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
+                >
+                  {shareDisabledReason}
+                </span>
               )}
-            >
-              <IconShare />
-              {!isCompact && <span className="text-sm font-medium">{t('share.action')}</span>}
-            </button>
+            </span>
           )}
           {config.preview && (
             <IconButton

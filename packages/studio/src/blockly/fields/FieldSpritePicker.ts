@@ -231,7 +231,8 @@ export class FieldSpritePicker extends Blockly.FieldTextInput {
 
     content.appendChild(wrap)
     Blockly.DropDownDiv.showPositionedByField(this, () => {})
-    setTimeout(() => input.focus(), 0)
+    // `preventScroll`: não rolar a página até o input (ver FieldNamePicker).
+    setTimeout(() => input.focus({ preventScroll: true }), 0)
   }
 }
 

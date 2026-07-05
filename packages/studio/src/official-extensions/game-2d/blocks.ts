@@ -96,13 +96,14 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_update_each_frame',
-    message0: 'A cada quadro do jogo, fazer %1',
-    args0: [{ type: 'input_statement', name: 'BODY' }],
+    message0: 'A cada quadro do jogo',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Repete o que está dentro a cada quadro (≈60 vezes por segundo) — é o coração do jogo.',
+    tooltip: 'Repete o que está dentro a cada quadro (≈60 vezes por segundo), é o coração do jogo.',
   },
   {
     type: 'sz_g2d_clear',
@@ -594,7 +595,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A câmera centraliza no sprite (mundo maior que a tela), presa às bordas do mundo. Desenhe o HUD DEPOIS do mundo — ele não se move.',
+      'A câmera centraliza no sprite (mundo maior que a tela), presa às bordas do mundo. Desenhe o HUD DEPOIS do mundo. Ele não se move.',
   },
   {
     type: 'sz_g2d_set_camera',
@@ -614,14 +615,14 @@ export const gameTwoDBlocks = [
     message0: 'a posição x da câmera',
     output: 'JSValue',
     colour: C,
-    tooltip: 'Onde a câmera está no eixo x — útil para fundos em parallax.',
+    tooltip: 'Onde a câmera está no eixo x, útil para fundos em parallax.',
   },
   {
     type: 'sz_g2d_camera_y',
     message0: 'a posição y da câmera',
     output: 'JSValue',
     colour: C,
-    tooltip: 'Onde a câmera está no eixo y — útil para fundos em parallax.',
+    tooltip: 'Onde a câmera está no eixo y, útil para fundos em parallax.',
   },
 
   // ---- Tier 2: Mapa destrutível (pela posição de um sprite) ----
@@ -717,12 +718,14 @@ export const gameTwoDBlocks = [
   // ---- Mouse / toque ----
   {
     type: 'sz_g2d_on_pointer',
-    message0: 'Quando clicar/tocar, na posição x %1 y %2 fazer %3',
+    message0: 'Quando clicar/tocar, na posição x %1 y %2',
     args0: [
       { type: 'field_input', name: 'PX', text: 'px' },
       { type: 'field_input', name: 'PY', text: 'py' },
-      { type: 'input_statement', name: 'BODY' },
     ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -732,7 +735,7 @@ export const gameTwoDBlocks = [
   // ---- Eventos "Quando…" (hats) ----
   {
     type: 'sz_g2d_on_key',
-    message0: 'Quando apertar a tecla %1 fazer %2',
+    message0: 'Quando apertar a tecla %1',
     args0: [
       {
         type: 'field_dropdown',
@@ -746,8 +749,10 @@ export const gameTwoDBlocks = [
           ['Enter', 'Enter'],
         ],
       },
-      { type: 'input_statement', name: 'BODY' },
     ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -755,12 +760,14 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_on_overlap',
-    message0: 'Quando o sprite %1 encostar no sprite %2 fazer %3',
+    message0: 'Quando o sprite %1 encostar no sprite %2',
     args0: [
       { type: 'field_sprite_picker', name: 'A', text: 'jogador' },
       { type: 'field_sprite_picker', name: 'B', text: 'inimigo' },
-      { type: 'input_statement', name: 'BODY' },
     ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -889,7 +896,7 @@ export const gameTwoDBlocks = [
   // ---- Movimento (v0.4.0) ----
   {
     type: 'sz_g2d_platformer',
-    message0: 'Mover o sprite %1 estilo plataforma — velocidade %2 pulo %3',
+    message0: 'Mover o sprite %1 estilo plataforma, velocidade %2 pulo %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
@@ -914,7 +921,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Movimento de cima pra baixo (visão de topo) nas 4 direções — a diagonal não fica mais rápida que andar reto.',
+      'Movimento de cima pra baixo (visão de topo) nas 4 direções. A diagonal não fica mais rápida que andar reto.',
   },
   {
     type: 'sz_g2d_follow_pointer',
@@ -1107,12 +1114,14 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_for_each_in_group',
-    message0: 'Para cada sprite %1 do grupo %2 fazer %3',
+    message0: 'Para cada sprite %1 do grupo %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'sprite' },
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
-      { type: 'input_statement', name: 'BODY' },
     ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1138,12 +1147,14 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_prune_offscreen',
-    message0: 'Tirar do grupo %1 quem sair da tela — para cada um (chamado %2) fazer %3',
+    message0: 'Tirar do grupo %1 quem sair da tela, para cada um (chamado %2)',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
       { type: 'field_input', name: 'ITEM', text: 'sprite' },
-      { type: 'input_statement', name: 'BODY' },
     ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1167,15 +1178,16 @@ export const gameTwoDBlocks = [
   // ---- Colisão de grupo + temporizadores (hats/eventos) ----
   {
     type: 'sz_g2d_on_group_overlap',
-    message0:
-      'Quando um sprite do grupo %1 (chamado %2) encostar num do grupo %3 (chamado %4) fazer %5',
+    message0: 'Quando um sprite do grupo %1 (chamado %2) encostar num do grupo %3 (chamado %4)',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'tiros', kind: 'group' },
       { type: 'field_input', name: 'ANAME', text: 'tiro' },
       { type: 'field_name_picker', name: 'B', text: 'asteroides', kind: 'group' },
       { type: 'field_input', name: 'BNAME', text: 'asteroide' },
-      { type: 'input_statement', name: 'BODY' },
     ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -1184,11 +1196,11 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_every_frames',
-    message0: 'A cada %1 quadros fazer %2',
-    args0: [
-      { type: 'input_value', name: 'N', check: 'JSValue' },
-      { type: 'input_statement', name: 'BODY' },
-    ],
+    message0: 'A cada %1 quadros',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -1197,11 +1209,11 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_every_seconds',
-    message0: 'A cada %1 segundos fazer %2',
-    args0: [
-      { type: 'input_value', name: 'SECS', check: 'JSValue' },
-      { type: 'input_statement', name: 'BODY' },
-    ],
+    message0: 'A cada %1 segundos',
+    args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -1370,7 +1382,7 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'A nave acompanha o dedo/mouse no eixo X — ótimo para jogar no celular.',
+    tooltip: 'A nave acompanha o dedo/mouse no eixo X, ótimo para jogar no celular.',
   },
 
   {
@@ -1386,7 +1398,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Atalho para começar: prepara a tela do jogo (largura × altura) para ocupar a janela inteira, mantendo a proporção e se reajustando sozinha, e centralizada. A cor do fundo combina com o jogo — fica no canvas e na sobra ao redor. Use uma vez no começo. Não precisa criar a tela de desenho no HTML.',
+      'Atalho para começar: prepara a tela do jogo (largura × altura) para ocupar a janela inteira, mantendo a proporção e se reajustando sozinha, e centralizada. A cor do fundo combina com o jogo, fica no canvas e na sobra ao redor. Use uma vez no começo. Não precisa criar a tela de desenho no HTML.',
   },
 
   // ---- Kit "Nave & Asteroides": desenhos prontos + efeitos (v0.7.0) ----
@@ -1452,7 +1464,7 @@ export const gameTwoDBlocks = [
 
   {
     type: 'sz_g2d_create_ship',
-    message0: 'Criar nave %1 em x %2 y %3 largura %4 altura %5 — cor do corpo %6 cor das asas %7',
+    message0: 'Criar nave %1 em x %2 y %3 largura %4 altura %5, cor do corpo %6 cor das asas %7',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'nave' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1521,13 +1533,15 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_on_sprite_group_overlap',
-    message0: 'Quando o sprite %1 encostar num do grupo %2 (chamado %3) fazer %4',
+    message0: 'Quando o sprite %1 encostar num do grupo %2 (chamado %3)',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
       { type: 'field_input', name: 'ANAME', text: 'inimigo' },
-      { type: 'input_statement', name: 'BODY' },
     ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
@@ -1538,7 +1552,7 @@ export const gameTwoDBlocks = [
   // ---- Pulo no chão (genérico, Movimento) ----
   {
     type: 'sz_g2d_jump_on_ground',
-    message0: 'Fazer o sprite %1 pular no chão — força do pulo %2',
+    message0: 'Fazer o sprite %1 pular no chão, força do pulo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'dino' },
       { type: 'input_value', name: 'JUMP', check: 'JSValue' },
@@ -1571,7 +1585,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_control_dino',
-    message0: 'Controlar o dinossauro %1 — força do pulo %2',
+    message0: 'Controlar o dinossauro %1, força do pulo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'dino' },
       { type: 'input_value', name: 'JUMP', check: 'JSValue' },
@@ -1661,13 +1675,13 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Duas notinhas alegres (som sintetizado) — ótimo ao pegar o ovo bônus.',
+    tooltip: 'Duas notinhas alegres (som sintetizado), ótimo ao pegar o ovo bônus.',
   },
 
   // ---- Nave clássica: girar + impulsionar na direção apontada (v0.10.0) ----
   {
     type: 'sz_g2d_steer_thrust',
-    message0: 'Controlar o sprite %1 como nave — velocidade %2 giro %3',
+    message0: 'Controlar o sprite %1 como nave, velocidade %2 giro %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
@@ -1747,7 +1761,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_shoot_from',
-    message0: 'Atirar do sprite %1 para a frente, no grupo %2 — velocidade %3 cor %4',
+    message0: 'Atirar do sprite %1 para a frente, no grupo %2, velocidade %3 cor %4',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
       { type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' },
@@ -1763,7 +1777,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_spawn_asteroid_edge',
-    message0: 'No grupo %1 soltar um asteroide de uma borda — tamanho %2 cor %3 velocidade %4',
+    message0: 'No grupo %1 soltar um asteroide de uma borda, tamanho %2 cor %3 velocidade %4',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
       { type: 'input_value', name: 'SIZE', check: 'JSValue' },
@@ -1797,7 +1811,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha o céu, a lua e os prédios com janelas — já com as crateras "furadas". Use no começo do "a cada quadro", depois de limpar a tela.',
+      'Desenha o céu, a lua e os prédios com janelas, já com as crateras "furadas". Use no começo do "a cada quadro", depois de limpar a tela.',
   },
   {
     type: 'sz_g2d_place_thrower',
@@ -1927,7 +1941,7 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Um "bum" curto de explosão (som sintetizado) — ótimo quando a banana acerta.',
+    tooltip: 'Um "bum" curto de explosão (som sintetizado), ótimo quando a banana acerta.',
   },
   {
     type: 'sz_g2d_computer_turn',
@@ -1951,7 +1965,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Mostra no canto o ângulo (graus) e a força do último arremesso/mira — bom para acompanhar o que o robô escolheu.',
+      'Mostra no canto o ângulo (graus) e a força do último arremesso/mira, bom para acompanhar o que o robô escolheu.',
   },
 
   // ---- Kit equilibrista (Stick Hero) (v0.13.0) ----

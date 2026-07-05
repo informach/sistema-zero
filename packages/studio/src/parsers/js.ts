@@ -4713,11 +4713,23 @@ function mapIf(node: Node, source: string, ctx: ParseCtx): JSStatement {
   const cond = toExpr(node.test, ctx)
   if (!isSimpleValue(cond)) return asRaw(source, node)
   const thenBody = bodyOfBlock(node.consequent, source, ctx)
-  const elseBody = node.alternate ? bodyOfBlock(node.alternate, source, ctx) : undefined
+  // Achata a cadeia `else if`: cada `alternate` que é um IfStatement com condição
+  // representável vira um ramo "senão se"; o primeiro `alternate` NÃO-if (ou uma
+  // condição não representável) fecha como "senão" (bloco cru aninhado, sem regredir).
+  const elseif: Array<{ cond: JSExpr; then: JSStatement[] }> = []
+  let alt = node.alternate
+  while (alt?.type === 'IfStatement') {
+    const elifCond = toExpr(alt.test, ctx)
+    if (!isSimpleValue(elifCond)) break
+    elseif.push({ cond: elifCond, then: bodyOfBlock(alt.consequent, source, ctx) })
+    alt = alt.alternate
+  }
+  const elseBody = alt ? bodyOfBlock(alt, source, ctx) : undefined
   return {
     type: 'if',
     cond,
     then: thenBody,
+    ...(elseif.length > 0 ? { elseif } : {}),
     else: elseBody,
   }
 }

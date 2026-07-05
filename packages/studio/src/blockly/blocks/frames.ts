@@ -15,8 +15,8 @@ import type { BlockDefinition } from './types'
 export const FRAME_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_frame_structure',
-    message0: '🧱 Estrutura — a página',
-    message1: 'HTML aqui dentro %1',
+    message0: '🧱 Estrutura: HTML',
+    message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
     colour: CATEGORY_COLORS.html,
     tooltip:
@@ -24,8 +24,8 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_frame_appearance',
-    message0: '🎨 Aparência — o visual',
-    message1: 'CSS aqui dentro %1',
+    message0: '🎨 Aparência: CSS',
+    message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'CSSEntry' }],
     colour: CATEGORY_COLORS.css,
     tooltip:
@@ -33,8 +33,8 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_frame_behavior',
-    message0: '⚙️ Comportamento — o passo a passo',
-    message1: 'código aqui dentro %1',
+    message0: '⚙️ Comportamento: JS',
+    message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'JSStmt' }],
     colour: CATEGORY_COLORS.js,
     tooltip:
