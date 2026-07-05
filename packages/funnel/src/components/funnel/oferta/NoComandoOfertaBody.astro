@@ -2,6 +2,7 @@
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { funnelOgImage } from '../../../lib/seo'
 import CtaButton from '../../CtaButton.astro'
 import Footer from '../../Footer.astro'
 import ImageSlot from '../../ImageSlot.astro'
@@ -39,6 +40,7 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
 <BaseLayout
   title={f.seoTitle}
   description={description}
+  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
   htmlClass={f.theme ? `theme-${f.theme}` : undefined}
 >
   <ProductJsonLd

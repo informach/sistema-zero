@@ -11,6 +11,7 @@ import { desafioDesejoLabel } from '../../../funnels/desafio-primeiro-jogo/quiz'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { funnelOgImage } from '../../../lib/seo'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 
 interface Props {
@@ -56,6 +57,7 @@ const ano = new Date().getFullYear()
 <BaseLayout
   title={f.seoTitle}
   description={description}
+  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
   htmlClass={f.theme ? `theme-${f.theme}` : undefined}
 >
   <ProductJsonLd
@@ -869,10 +871,14 @@ const ano = new Date().getFullYear()
           Criado por Helena e Júlio. Um desafio guiado de 3 dias para crianças a partir de 9 anos
           criarem o primeiro jogo jogável, dentro do Sistema Zero Studio.
         </p>
-        <p class="legal">
-          Acesso vitalício significa que você paga uma vez, sem mensalidade nem renovação, e mantém o
-          acesso enquanto a empresa existir e a plataforma estiver no ar.
-        </p>
+        {
+          f.lifetimeAccess && (
+            <p class="legal">
+              Acesso vitalício significa que você paga uma vez, sem mensalidade nem renovação, e
+              mantém o acesso enquanto a empresa existir e a plataforma estiver no ar.
+            </p>
+          )
+        }
         <p class="legal">{AVISO_LEGAL_KIDS}</p>
         <p class="legal links">
           <a href="/kids/termos">Termos de uso</a> · <a href="/kids/privacidade"
