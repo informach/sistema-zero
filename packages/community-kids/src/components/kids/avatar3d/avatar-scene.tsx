@@ -100,11 +100,16 @@ function SnapshotBridge({
             pc.position.set(c.x, b.max.y - h * 0.12, c.z + h * 0.9)
             pc.lookAt(c.x, b.max.y - h * 0.15, c.z)
           } else {
-            // Corpo inteiro, de FRENTE. Distância p/ a altura `h` ocupar ~80% do QUADRADO central
-            // do recorte → cabeça E pés entram em qualquer proporção de tela.
+            // Corpo inteiro, de FRENTE. A altura `h` deve ocupar ~80% do QUADRADO central do
+            // recorte (cabeça E pés). ⚠️ O personagem TEM PROFUNDIDADE (nariz/cabelo/aba do
+            // chapéu e poses inclinadas ficam À FRENTE do centro): a cabeça, sendo o ponto
+            // mais PRÓXIMO da câmera, é magnificada pela perspectiva e vazava o topo do quadro
+            // com a margem de 10%. Por isso enquadramos a altura no PLANO FRONTAL do personagem
+            // (`b.max.z`, o mais perto da câmera), não no centro — aí a cabeça ganha os 10% de
+            // folga DE VERDADE e nunca é cortada (os pés, mais ao fundo, sobra ainda mais).
             const square = Math.min(cw, ch)
-            const dist = (h * ch) / (2 * Math.tan((45 * Math.PI) / 360) * 0.8 * square)
-            pc.position.set(c.x, c.y, c.z + dist)
+            const fitDist = (h * ch) / (2 * Math.tan((45 * Math.PI) / 360) * 0.8 * square)
+            pc.position.set(c.x, c.y, b.max.z + fitDist)
             pc.lookAt(c.x, c.y, c.z)
           }
           pc.updateMatrixWorld()
