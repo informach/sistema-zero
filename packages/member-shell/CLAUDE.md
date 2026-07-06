@@ -379,8 +379,10 @@ memoizadas por request via `React.cache()` — dedup layout×página, sem refres
   ESTRUTURAL aqui, sem lógica nova.
 - **Proteção de sequência:** `buyStreakFreeze()` (`POST …/streak-freeze/buy` — compra com moedas;
   sem saldo → 402) + `setVacation(from,to)` (`POST …/vacation` — janela de férias; `null/null` limpa).
-- **Liga semanal:** `getLeagueReadonly()` (`GET …/league/me` — board SEM PII, só `position`/`weeklyXp`/
-  `isMe`).
+- **Liga semanal:** `getLeagueReadonly()` (`GET …/league/me`). **Board ENRIQUECIDO na vitrine kids
+  (07/2026):** `LeagueEntryView` ganhou `photoUrl?`/`levelSlug?`/`firstName?`/`profileId?` (mirror do
+  members) — o members hidrata rosto+nível+1º nome de cada colega; `profileId` só p/ perfil PÚBLICO
+  (opt-in) → link p/ `/crianca/[id]` (mesma decisão do Clube/Mural). Passthrough puro (sem lógica no BFF).
 - **Avatar 3D (configurador por categorias):** `getAvatar()`/`getAvatarReadonly()` (`GET /members/avatar`
   — `AvatarStateView` ganhou `equipped` como `slots` cat→`{asset,color?}` + `palettes`/`hideGroups`/
   `removable`/`photoUrl`) + `buyAvatarPart(id)` (`POST …/parts/:id/buy`, idempotente, 402 sem saldo) +

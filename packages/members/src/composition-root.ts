@@ -203,19 +203,25 @@ export async function createApplication(env: Env): Promise<Application> {
   // MEMBERS_HMAC_SECRET configurado (sem eles = no-op, dev).
   const parentReports = new DrizzleParentReportRepository(db)
   const parentReportPrefs = new ParentReportPrefsService(parentReports, clock)
+  // Auth S2S (nomes/flag-público das crianças) — reusado pelo report dos pais E pela
+  // liga kids (rosto+nome dos colegas). `null` (dev/local sem envs) → ambos degradam.
+  const authGateway =
+    env.AUTH_BASE_URL && env.AUTH_INTERNAL_TOKEN
+      ? createAuthHttpGateway({
+          baseUrl: env.AUTH_BASE_URL,
+          internalToken: env.AUTH_INTERNAL_TOKEN,
+          timeoutMs: env.AUTH_REQUEST_TIMEOUT_MS,
+          logger,
+        })
+      : null
   const parentReportSender =
-    env.AUTH_BASE_URL && env.AUTH_INTERNAL_TOKEN && env.GATEWAY_URL && env.MEMBERS_HMAC_SECRET
+    authGateway && env.GATEWAY_URL && env.MEMBERS_HMAC_SECRET
       ? new SendParentReportsService(
           gamificationRepo,
           studioSubmissions,
           childrenStats,
           parentReports,
-          createAuthHttpGateway({
-            baseUrl: env.AUTH_BASE_URL,
-            internalToken: env.AUTH_INTERNAL_TOKEN,
-            timeoutMs: env.AUTH_REQUEST_TIMEOUT_MS,
-            logger,
-          }),
+          authGateway,
           createGatewayMessagingClient({
             gatewayUrl: env.GATEWAY_URL,
             consumerId: 'members',
@@ -273,7 +279,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const claimMission = new ClaimMissionService(gamificationRepo, accessCheck, clock)
   const buyStreakFreeze = new BuyStreakFreezeService(gamificationRepo, () => randomUUID(), clock)
   const setVacation = new SetVacationService(gamificationRepo, clock)
-  const getLeague = new GetLeagueService(gamificationRepo, clock)
+  const getLeague = new GetLeagueService(gamificationRepo, clock, getAvatarsByProfiles, authGateway)
   const markComplete = new MarkLessonCompleteService(
     checkAccess,
     courses,

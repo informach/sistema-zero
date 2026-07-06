@@ -597,11 +597,21 @@ export interface VacationResult {
   vacationTo: string | null
 }
 
-// ── Liga semanal — espelha as views do members (board SEM PII) ──────────────
+// ── Liga semanal — espelha as views do members ──────────────────────────────
+// Na vitrine KIDS cada linha ganha rosto+nível+1º nome do colega (mesma decisão do
+// Clube/Mural); `profileId` só p/ perfil PÚBLICO (opt-in) → link p/ `/crianca/[id]`.
 export interface LeagueEntryView {
   position: number
   weeklyXp: number
   isMe: boolean
+  /** Foto do avatar 3D (`null`/ausente → boneco padrão). */
+  photoUrl?: string | null
+  /** Slug do nível p/ a aura (ausente → Noob/Faísca). */
+  levelSlug?: StudentLevelSlug
+  /** 1º nome do colega (só a vitrine kids revela; ausente → "Colega"). */
+  firstName?: string | null
+  /** id do perfil — SÓ quando público (opt-in) → link p/ `/crianca/[id]`. */
+  profileId?: string
 }
 export interface LeagueMeView {
   tier: string

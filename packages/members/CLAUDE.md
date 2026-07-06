@@ -729,7 +729,16 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
     ausente = universal. **Default seguro** dos `assign*` é `() => false` (sem posse informada, missão
     gated NÃO entra — não vaza produto).
 - **Ligas semanais** (migration `0022`, `league_membership`): coorte competitiva semanal por
-  audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.)
+  audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.) **Board ENRIQUECIDO
+  na vitrine kids (07/2026):** o `GetLeagueService` recebe o `GetAvatarsByProfilesService` + um
+  `AuthGateway | null` e, best-effort, hidrata cada `LeagueEntryView` com `photoUrl`/`levelSlug`
+  (avatar 3D + rank, dos repos LOCAIS) + `firstName` (auth S2S) + `profileId` — este SÓ p/ perfil
+  PÚBLICO (opt-in dos pais) → habilita o link p/ `/crianca/[id]` (mesma decisão do Clube/Mural:
+  rosto+1º nome de TODOS, link só p/ público). Falha do avatar/auth degrada p/ a linha base
+  (`position`/`weeklyXp`/`isMe` — front cai em "Colega"/boneco padrão); sem `AUTH_BASE_URL` (dev)
+  não há nome/link, mas avatar+aura seguem. O `AuthGateway` ganhou **`getProfileIdentities(ids)`**
+  (`Map<id, {firstName, public}>`, superset do `getProfileNames`) sobre o MESMO
+  `POST /auth/internal/profiles/batch` — que agora devolve `publicProfileEnabled` por perfil.
 - Sem backfill: histórico anterior ao deploy não gera XP retroativo (script manual se um
   dia for pedido). Aluno com tudo 100% não tem fonte de XP p/ estender streak ("revisão
   conta?" = decisão futura, fora da v1).

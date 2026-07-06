@@ -3,7 +3,7 @@ import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
-import type { StudentLevel } from '../../domain/gamification/levels'
+import type { StudentLevel, StudentLevelSlug } from '../../domain/gamification/levels'
 import type { AwardResult } from '../../domain/ports/gamification-repository.port'
 import type { CourseProgress } from '../../domain/progress/progress'
 import type { CourseFeedbackAnswers, CourseRating } from '../../domain/rating/course-rating'
@@ -263,11 +263,25 @@ export interface MissionsMeView {
   monthly: MissionView[]
 }
 
-/** Uma linha do board da liga — SEM PII (nem userId de terceiro; só `isMe` aponta você). */
+/**
+ * Uma linha do board da liga. Enriquecida na vitrine kids com rosto+nível+1º nome do
+ * colega (mesma decisão do Clube/Mural — `revealNames`): `photoUrl`/`levelSlug` vêm do
+ * avatar 3D + rank; `firstName` do auth (ausente → o front cai em "Colega"); `profileId`
+ * sai SÓ p/ perfil PÚBLICO (opt-in dos pais) → habilita o link p/ `/crianca/[id]`.
+ * Best-effort: se a hidratação falhar, sobram só `position`/`weeklyXp`/`isMe`.
+ */
 export interface LeagueEntryView {
   position: number
   weeklyXp: number
   isMe: boolean
+  /** Foto do avatar 3D (`null`/ausente → boneco padrão). */
+  photoUrl?: string | null
+  /** Slug do nível p/ a aura (ausente → Noob/Faísca). */
+  levelSlug?: StudentLevelSlug
+  /** 1º nome do colega (só a vitrine kids revela; ausente → "Colega"). */
+  firstName?: string | null
+  /** id do perfil — SÓ quando público (opt-in) → link p/ `/crianca/[id]`. */
+  profileId?: string
 }
 
 /** Liga semanal do aluno (`GET …/league/me`). */

@@ -1,5 +1,9 @@
 import type { Logger } from '@sistemazero/core/logging'
-import type { AccountIdentity, AuthGateway } from '../../domain/ports/auth-gateway.port'
+import type {
+  AccountIdentity,
+  AuthGateway,
+  ProfileIdentity,
+} from '../../domain/ports/auth-gateway.port'
 
 export interface AuthHttpGatewayOptions {
   /** Base do auth (ex.: http://auth.railway.internal:3002). Sem `/auth`. */
@@ -63,6 +67,22 @@ export function createAuthHttpGateway(opts: AuthHttpGatewayOptions): AuthGateway
         if (!p || typeof p !== 'object') continue
         const rec = p as Record<string, unknown>
         if (typeof rec.id === 'string' && typeof rec.name === 'string') out.set(rec.id, rec.name)
+      }
+      return out
+    },
+
+    async getProfileIdentities(ids: string[]): Promise<Map<string, ProfileIdentity>> {
+      if (ids.length === 0) return new Map()
+      const body = (await post('/auth/internal/profiles/batch', ids)) as { profiles?: unknown }
+      const out = new Map<string, ProfileIdentity>()
+      if (!Array.isArray(body.profiles)) return out
+      for (const p of body.profiles) {
+        if (!p || typeof p !== 'object') continue
+        const rec = p as Record<string, unknown>
+        if (typeof rec.id !== 'string' || typeof rec.name !== 'string') continue
+        // 1º nome só (menos identificável) — espelha o `resolveDisplayName` do hub.
+        const firstName = rec.name.trim().split(/\s+/)[0] ?? ''
+        out.set(rec.id, { firstName, public: rec.publicProfileEnabled === true })
       }
       return out
     },
