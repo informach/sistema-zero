@@ -255,9 +255,13 @@ export async function createApplication(env: Env): Promise<Application> {
         select pg_try_advisory_xact_lock(${RETENTION_ADVISORY_LOCK_KEY}::bigint) as locked
       `
       if (!row?.locked) return
+      // ⚠️ Passamos ISO STRING (não `Date`) como parâmetro: no runtime Bun+postgres.js do
+      // container de prod, bindar um `Date` estourava "argument must be of type string …
+      // Received an instance of Date" → `retention.cleanup.failed` a cada ciclo (a poda
+      // NUNCA rodava). Texto ISO vs timestamptz é comparado direto pelo Postgres.
       const cutoff = new Date(Date.now() - env.PROCESSED_WEBHOOKS_RETENTION_DAYS * 86_400_000)
       const deleted = await gate`
-        delete from hub.processed_webhooks where processed_at < ${cutoff}
+        delete from hub.processed_webhooks where processed_at < ${cutoff.toISOString()}
       `
       if (deleted.count > 0) logger.info('retention.pruned', { processedWebhooks: deleted.count })
       // Anexos órfãos (upload abandonado, nunca vinculado a tópico/comentário). O
@@ -265,7 +269,7 @@ export async function createApplication(env: Env): Promise<Application> {
       const orphanCutoff = new Date(Date.now() - env.ATTACHMENT_ORPHAN_RETENTION_HOURS * 3_600_000)
       const orphans = await gate`
         delete from hub.attachments
-        where status = 'pending_upload' and created_at < ${orphanCutoff}
+        where status = 'pending_upload' and created_at < ${orphanCutoff.toISOString()}
       `
       if (orphans.count > 0) logger.info('retention.pruned', { orphanAttachments: orphans.count })
     })

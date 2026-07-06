@@ -23,7 +23,10 @@ interface PendingRow {
   author_id: string
   title: string | null
   body: string
-  created_at: Date
+  // `db.execute(sql)` CRU não passa pelo mapeamento do drizzle → o postgres.js devolve o
+  // timestamptz como STRING (não `Date`). Coagimos no map abaixo — sem isso o mapper
+  // `toPendingItemView` chamava `.toISOString()` numa string e dava 500 (só com fila ≥1).
+  created_at: string | Date
 }
 
 export class DrizzleModerationRepository implements ModerationRepository {
@@ -75,7 +78,8 @@ export class DrizzleModerationRepository implements ModerationRepository {
       authorId: r.author_id,
       title: r.title,
       body: r.body,
-      createdAt: r.created_at,
+      // Normaliza a string do postgres.js (execute cru) para Date — o domínio/mapper esperam Date.
+      createdAt: r.created_at instanceof Date ? r.created_at : new Date(r.created_at),
     }))
     return { items, total: Number(counted?.total ?? 0) }
   }
