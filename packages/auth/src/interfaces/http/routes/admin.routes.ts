@@ -6,6 +6,8 @@ import type { DeleteUserService } from '../../../application/admin/delete-user/d
 import type { GetUserService } from '../../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../../application/admin/list-users/list-users.service'
 import type { ReadAuditLogService } from '../../../application/admin/read-audit-log/read-audit-log.service'
+import type { ResendInviteService } from '../../../application/admin/resend-invite/resend-invite.service'
+import type { SetUserPasswordService } from '../../../application/admin/set-password/set-user-password.service'
 import type { UpdateUserService } from '../../../application/admin/update-user/update-user.service'
 import type { CreateImpersonationTokenService } from '../../../application/impersonation/create-impersonation-token.service'
 import { type PlatformUrls, resolvePlatformUrl } from '../../../application/platform'
@@ -19,6 +21,7 @@ import {
   ListAuditQuery,
   ListUsersQuery,
   PlatformQuery,
+  SetUserPasswordBody,
   UpdateUserBody,
   UserIdParams,
 } from '../dtos'
@@ -31,6 +34,10 @@ export interface AdminRoutesDeps {
   updateUser: UpdateUserService
   deleteUser: DeleteUserService
   batchGetUsers: BatchGetUsersService
+  /** Reenvia o convite (link de 1º acesso) — cliente com link expirado. */
+  resendInvite: ResendInviteService
+  /** Define a senha manualmente (suporte: cliente preso sem senha). */
+  setUserPassword: SetUserPasswordService
   /** Trilha de auditoria de ações administrativas (leitura para o painel). */
   readAuditLog: ReadAuditLogService
   createImpersonationToken: CreateImpersonationTokenService
@@ -195,6 +202,32 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           }
         },
         { params: UserIdParams, query: PlatformQuery },
+      )
+      // Reenviar CONVITE (link de 1º acesso): cliente cujo link expirou / ainda não
+      // definiu a senha. Regenera o token (TTL longo) + reenvia o e-mail welcome.
+      // `?platform=kids` aponta o link p/ o app kids (env ausente → 400, sem token órfão).
+      .post(
+        '/users/:id/resend-invite',
+        async ({ headers, params, query }) => {
+          requireActor(headers, WRITE_ROLES)
+          return deps.resendInvite.execute({ targetId: params.id, platform: query.platform })
+        },
+        { params: UserIdParams, query: PlatformQuery },
+      )
+      // Definir a senha MANUALMENTE (suporte): o operador cria a senha e informa o
+      // cliente. Carimba `passwordSetAt` (destrava login por código + área dos pais)
+      // e revoga as sessões do alvo. O serviço re-checa os guards de papel + não-self.
+      .post(
+        '/users/:id/set-password',
+        async ({ headers, params, body }) => {
+          const actor = requireActor(headers, WRITE_ROLES)
+          return deps.setUserPassword.execute({
+            actor: { id: actor.id, role: actor.role },
+            targetId: params.id,
+            newPassword: body.password,
+          })
+        },
+        { params: UserIdParams, body: SetUserPasswordBody },
       )
       // Perfis (estilo Netflix) de uma conta — o painel hidrata o progresso por perfil
       // do members. LEITURA (staff+). 4 segmentos, literal `profiles` ≠ `impersonate`.

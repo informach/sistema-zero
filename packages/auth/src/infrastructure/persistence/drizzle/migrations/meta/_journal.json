@@ -85,6 +85,13 @@
       "when": 1782756911648,
       "tag": "0011_add_audit_impersonator_id",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1783340653513,
+      "tag": "0012_wandering_outlaw_kid",
+      "breakpoints": true
     }
   ]
 }

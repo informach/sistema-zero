@@ -569,7 +569,15 @@ function GamificationTab({
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Nível" value={data.level.slug} caps />
+        <Stat
+          label="Nível"
+          value={STUDENT_RANK_LABELS[data.level.slug] ?? data.level.slug}
+          hint={
+            data.level.next
+              ? `Próximo: ${STUDENT_RANK_LABELS[data.level.next] ?? data.level.next}`
+              : undefined
+          }
+        />
         <Stat label="XP" value={String(data.xp)} />
         <Stat
           label="Ofensiva"
@@ -592,7 +600,7 @@ function GamificationTab({
                 className="rounded-full bg-[color:var(--primary)]/10 px-2 py-0.5 text-xs"
                 title={b.unlockedAt ? formatDate(b.unlockedAt) : undefined}
               >
-                {b.slug}
+                {BADGE_LABELS[b.slug] ?? b.slug}
               </span>
             ))}
           </div>
@@ -620,6 +628,43 @@ function Stat({
       {hint ? <div className="text-muted-foreground text-xs">{hint}</div> : null}
     </Card>
   )
+}
+
+// Rótulos de apresentação da gamificação — ESPELHAM o community-kids
+// (lib/level-info.ts LEVEL_INFO + components/kids/badges.ts BADGE_INFO).
+// Mudou o rótulo lá? Atualize aqui (o admin não importa do app kids).
+const STUDENT_RANK_LABELS: Record<string, string> = {
+  noob: 'Faísca',
+  coder: 'Construtor(a)',
+  hacker: 'Inventor(a)',
+  elite: 'Mestre dos Jogos',
+  god: 'Lenda',
+}
+
+const BADGE_LABELS: Record<string, string> = {
+  'first-lesson': 'Primeiro passo',
+  'first-showcase': 'Meu primeiro jogo',
+  'streak-7': 'Semana em chamas',
+  'streak-30': 'Mês lendário',
+  'streak-60': '60 dias de fogo',
+  'streak-180': 'Meio ano em chamas',
+  'streak-365': 'Um ano lendário',
+  'course-complete': 'Curso completo',
+  'course-complete-2': 'Dupla de cursos',
+  'course-complete-3': 'Trio de cursos',
+  'quiz-perfect': 'Nota mil',
+  'quiz-perfect-10': '10 notas mil',
+  'quiz-perfect-30': '30 notas mil',
+  'studio-first': 'Criador de jogos',
+  'studio-master-3': 'Oficina de jogos',
+  'studio-master-10': 'Mestre do Estúdio',
+  'coins-saver-300': 'Cofrinho cheio',
+  'coins-saver-1000': 'Magnata Zappy',
+  'pensa-first-idea': 'Ideia brilhante',
+  'pensa-first-launch': 'Grande lançamento',
+  'pensa-creator-3': 'Cabeça de criador',
+  'challenge-first': 'Desafiante do mês',
+  'clube-primeiro-post': 'Voz da turma',
 }
 
 const ACTIVITY_LABELS: Record<MemberActivityItemView['kind'], string> = {

@@ -15,6 +15,8 @@ import { requireInternalToken } from '../internal-auth'
 
 export interface InternalRoutesDeps {
   createPasswordToken: CreatePasswordTokenService
+  /** TTL (min) do token de 1º acesso pós-compra — LONGO (`INVITE_TOKEN_TTL_MINUTES`). */
+  inviteTokenTtlMinutes: number
   ensureBuyer: EnsureBuyerService
   /** Registra ações administrativas na trilha de auditoria (emitido pelo gateway). */
   writeAuditLog: WriteAuditLogService
@@ -40,7 +42,10 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         '/password-tokens',
         async ({ body, headers, set }) => {
           requireInternalToken(headers, deps.internalToken)
-          const issued = await deps.createPasswordToken.execute({ email: body.email })
+          const issued = await deps.createPasswordToken.execute({
+            email: body.email,
+            ttlMinutes: deps.inviteTokenTtlMinutes,
+          })
           // Usuário inexistente/inativo → 404 (S2S; sem risco de enumeração pelo browser).
           if (!issued) throw new UserNotFoundError()
           set.status = 201

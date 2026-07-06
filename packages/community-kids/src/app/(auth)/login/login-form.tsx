@@ -18,6 +18,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   INVALID_OTP: 'Código inválido ou expirado.',
   INACTIVE: 'Conta inativa. Fale com o suporte.',
   INVALID_INPUT: 'Dados inválidos.',
+  // Conta convidada/comprada que ainda não definiu a senha: o login por código é
+  // bloqueado. A saída é criar a senha pelo link de 1º acesso (ou "esqueci a senha").
+  PASSWORD_NOT_SET:
+    'Você ainda não criou sua senha. Toque em "Esqueci minha senha" abaixo para criá-la agora.',
   TOO_MANY_ATTEMPTS: 'Muitas tentativas. Aguarde um minuto e tente novamente.',
   SERVICE_UNAVAILABLE: 'Serviço indisponível no momento. Tente novamente em instantes.',
 }

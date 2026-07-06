@@ -42,7 +42,7 @@ describe('CreateUserService — criação pelo painel (convite)', () => {
       fakeHasher,
       createPasswordToken,
       messaging,
-      { urls: { main: COMMUNITY_URL, kids: KIDS_COMMUNITY_URL } },
+      { urls: { main: COMMUNITY_URL, kids: KIDS_COMMUNITY_URL }, inviteTokenTtlMinutes: 20160 },
       silentLogger,
     )
   })
@@ -79,7 +79,7 @@ describe('CreateUserService — criação pelo painel (convite)', () => {
         ttlMinutes: 60,
       }),
       messaging,
-      { urls: { main: COMMUNITY_URL } },
+      { urls: { main: COMMUNITY_URL }, inviteTokenTtlMinutes: 20160 },
       silentLogger,
     )
     await expect(

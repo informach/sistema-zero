@@ -14,6 +14,7 @@ import {
   BookOpenCheck,
   Flame,
   Gamepad2,
+  LogOut,
   Pencil,
   Plus,
   QrCode,
@@ -88,6 +89,18 @@ export function PerfisClient({
   // Atingiu o teto do plano? (`maxProfiles` nulo = desconhecido → não trava a UI; o
   // servidor segue como rede de segurança, 409 ao salvar.)
   const atProfileLimit = maxProfiles != null && profiles.length >= maxProfiles
+
+  // Sair da conta a partir da grade de perfis: sem isto, quem entra (ex.: por
+  // código) e não sabe a senha da área dos pais fica PRESO aqui (não dá p/ criar
+  // perfil nem sair). Logout normal + navegação de documento (cookies HttpOnly).
+  async function logout() {
+    setBusy(true)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } finally {
+      window.location.replace('/login')
+    }
+  }
 
   // Entrou na gestão pelo `?manage=1` (logo após "Área dos pais" sair de um perfil):
   // limpa o parâmetro da URL p/ um refresh depois de "Concluir" não reabrir sozinho.
@@ -344,6 +357,10 @@ export function PerfisClient({
             Área dos pais
           </Button>
         )}
+        {/* Sempre disponível: evita ficar preso na grade sem saber a senha dos pais. */}
+        <Button variant="ghost" onClick={logout} disabled={busy}>
+          <LogOut className="size-4" /> Sair
+        </Button>
       </div>
 
       {gate ? (

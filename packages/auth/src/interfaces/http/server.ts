@@ -7,6 +7,8 @@ import type { DeleteUserService } from '../../application/admin/delete-user/dele
 import type { GetUserService } from '../../application/admin/get-user/get-user.service'
 import type { ListUsersService } from '../../application/admin/list-users/list-users.service'
 import type { ReadAuditLogService } from '../../application/admin/read-audit-log/read-audit-log.service'
+import type { ResendInviteService } from '../../application/admin/resend-invite/resend-invite.service'
+import type { SetUserPasswordService } from '../../application/admin/set-password/set-user-password.service'
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
 import type { EnsureBuyerService } from '../../application/ensure-buyer/ensure-buyer.service'
 import type { GetMeService } from '../../application/get-me/get-me.service'
@@ -65,6 +67,8 @@ export interface HttpDeps {
   updateUser: UpdateUserService
   deleteUser: DeleteUserService
   batchGetUsers: BatchGetUsersService
+  resendInvite: ResendInviteService
+  setUserPassword: SetUserPasswordService
   writeAuditLog: WriteAuditLogService
   readAuditLog: ReadAuditLogService
   createImpersonationToken: CreateImpersonationTokenService
@@ -152,6 +156,7 @@ export function createServer(deps: HttpDeps) {
     .use(
       internalRoutes({
         createPasswordToken: deps.createPasswordToken,
+        inviteTokenTtlMinutes: deps.env.INVITE_TOKEN_TTL_MINUTES,
         ensureBuyer: deps.ensureBuyer,
         writeAuditLog: deps.writeAuditLog,
         users: deps.users,
@@ -175,6 +180,8 @@ export function createServer(deps: HttpDeps) {
         updateUser: deps.updateUser,
         deleteUser: deps.deleteUser,
         batchGetUsers: deps.batchGetUsers,
+        resendInvite: deps.resendInvite,
+        setUserPassword: deps.setUserPassword,
         readAuditLog: deps.readAuditLog,
         createImpersonationToken: deps.createImpersonationToken,
         listProfiles: deps.profiles.listProfiles,

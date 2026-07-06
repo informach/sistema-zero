@@ -37,6 +37,12 @@ export class CreatePasswordTokenService {
     email: string
     now?: Date
     cooldownSeconds?: number
+    /**
+     * TTL desta emissão (min). Ausente → `opts.ttlMinutes` (reset comum, curto). O
+     * convite/1º-acesso passam o TTL LONGO (`INVITE_TOKEN_TTL_MINUTES`) — o link
+     * precisa sobreviver dias entre a compra e o 1º acesso.
+     */
+    ttlMinutes?: number
   }): Promise<IssuedPasswordToken | null> {
     const email = Email.create(command.email)
     const user = await this.users.findByEmail(email.value)
@@ -44,8 +50,9 @@ export class CreatePasswordTokenService {
 
     const now = command.now ?? new Date()
     const cooldownSeconds = command.cooldownSeconds ?? 0
+    const ttlMinutes = command.ttlMinutes ?? this.opts.ttlMinutes
     const token = randomBytes(32).toString('base64url')
-    const expiresAt = new Date(now.getTime() + this.opts.ttlMinutes * 60_000)
+    const expiresAt = new Date(now.getTime() + ttlMinutes * 60_000)
     const issued = await this.tokens.createReplacingActive(
       {
         id: randomUUID(),

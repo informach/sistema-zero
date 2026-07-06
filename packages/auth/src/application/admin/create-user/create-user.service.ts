@@ -2,7 +2,6 @@ import { randomBytes, randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import { ForbiddenError } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
-import { sha256Hex } from '@sistemazero/core/security'
 import type { MessagingClient } from '../../../domain/ports/messaging-client.port'
 import type { PasswordHasher } from '../../../domain/ports/password-hasher.port'
 import type { UserRepository } from '../../../domain/ports/user-repository.port'
@@ -13,6 +12,7 @@ import { Email } from '../../../domain/value-objects/email'
 import { type AdminUserView, toAdminUserView } from '../../mappers/admin-user-view'
 import type { CreatePasswordTokenService } from '../../password-reset/create-password-token.service'
 import { type PlatformUrls, resolvePlatformUrl } from '../../platform'
+import { sendInviteEmail } from '../send-invite-email'
 import type { CreateUserActor, CreateUserCommand } from './create-user.command'
 
 /** Papéis privilegiados que só `superadmin` pode conceder (espelha o update-user). */
@@ -21,6 +21,8 @@ const PRIVILEGED_ROLES: ReadonlySet<UserRole> = new Set<UserRole>(['admin', 'sup
 export interface CreateUserOptions {
   /** Bases do link de definição de senha por plataforma: `${base}/redefinir-senha?token=...`. */
   urls: PlatformUrls
+  /** TTL (min) do token do convite — LONGO (`INVITE_TOKEN_TTL_MINUTES`, 14 dias). */
+  inviteTokenTtlMinutes: number
 }
 
 export interface CreateUserResult {
@@ -92,20 +94,15 @@ export class CreateUserService {
     return { user: toAdminUserView(user), inviteSent }
   }
 
-  /** Convite (token + e-mail `welcome`) — best-effort, nunca desfaz a criação. */
+  /** Convite (token com TTL LONGO + e-mail `welcome`) — best-effort, nunca desfaz a criação. */
   private async sendInvite(email: string, userId: string, linkBase: string): Promise<boolean> {
     try {
-      const issued = await this.createPasswordToken.execute({ email })
-      if (!issued) return false
-      const link = `${linkBase}/redefinir-senha?token=${issued.token}`
-      await this.messaging.sendEmail({
-        templateKey: 'welcome',
-        recipient: { name: issued.firstName, email: issued.email },
-        variables: { nome: issued.firstName, link },
-        // Idempotência por token emitido (retries do mesmo convite não duplicam).
-        idempotencyKey: `invite-${sha256Hex(issued.token).slice(0, 24)}`,
+      const issued = await this.createPasswordToken.execute({
+        email,
+        ttlMinutes: this.opts.inviteTokenTtlMinutes,
       })
-      return true
+      if (!issued) return false
+      return await sendInviteEmail(this.messaging, this.logger, { issued, linkBase, userId })
     } catch (error) {
       this.logger.error('admin.user.invite_failed', {
         userId,

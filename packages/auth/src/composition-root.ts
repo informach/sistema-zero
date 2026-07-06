@@ -6,6 +6,8 @@ import { DeleteUserService } from './application/admin/delete-user/delete-user.s
 import { GetUserService } from './application/admin/get-user/get-user.service'
 import { ListUsersService } from './application/admin/list-users/list-users.service'
 import { ReadAuditLogService } from './application/admin/read-audit-log/read-audit-log.service'
+import { ResendInviteService } from './application/admin/resend-invite/resend-invite.service'
+import { SetUserPasswordService } from './application/admin/set-password/set-user-password.service'
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from './application/get-me/get-me.service'
@@ -219,7 +221,30 @@ export async function createApplication(env: Env): Promise<Application> {
     hasher,
     createPasswordToken,
     messaging,
-    { urls: { main: env.COMMUNITY_URL, kids: env.KIDS_COMMUNITY_URL } },
+    {
+      urls: { main: env.COMMUNITY_URL, kids: env.KIDS_COMMUNITY_URL },
+      inviteTokenTtlMinutes: env.INVITE_TOKEN_TTL_MINUTES,
+    },
+    logger,
+  )
+  // Reenvio de convite (link expirado) + definição manual de senha (suporte).
+  const resendInvite = new ResendInviteService(
+    users,
+    createPasswordToken,
+    messaging,
+    {
+      urls: { main: env.COMMUNITY_URL, kids: env.KIDS_COMMUNITY_URL },
+      inviteTokenTtlMinutes: env.INVITE_TOKEN_TTL_MINUTES,
+    },
+    logger,
+  )
+  const setUserPassword = new SetUserPasswordService(
+    users,
+    refreshTokens,
+    hasher,
+    {
+      passwordMinLength: env.PASSWORD_MIN_LENGTH,
+    },
     logger,
   )
   const updateUser = new UpdateUserService(users, refreshTokens, logger)
@@ -293,6 +318,8 @@ export async function createApplication(env: Env): Promise<Application> {
     updateUser,
     deleteUser,
     batchGetUsers,
+    resendInvite,
+    setUserPassword,
     writeAuditLog,
     readAuditLog,
     createImpersonationToken,

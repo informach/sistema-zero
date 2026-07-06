@@ -57,6 +57,11 @@ export interface UserView {
   status: string
   phone: string | null
   signupSource: string | null
+  /**
+   * A conta já definiu a própria senha? `false` = convite/compra pendente (senha
+   * aleatória) — a UI destaca "acesso pendente" e oferece reenviar/definir senha.
+   */
+  passwordSet: boolean
   version: number
   createdAt: string
   updatedAt: string

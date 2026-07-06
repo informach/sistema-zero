@@ -26,7 +26,11 @@ e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch
 > Estado: **Fatia 1 — Catálogo** (produtos/ofertas/cupons: listar/criar/editar) + **Fatia 2 —
 > Usuários** (listar com busca/filtros — q/papel/status + **busca avançada 06/2026**: origem do
 > cadastro + janela `createdFrom/createdTo` — + **criar via convite por e-mail** + editar
-> status/papel/perfil, guards hierárquicos e concorrência otimista; ações por linha **Conceder
+> status/papel/perfil, guards hierárquicos e concorrência otimista; **acesso/senha (07/2026)**:
+> badge "Acesso pendente" quando `UserView.passwordSet===false` (convite/compra sem senha) + ação
+> por linha **"Acesso"** (`LockKeyhole`, gated `canEdit && !self`) → dialog com **Reenviar link**
+> (POST `/api/admin/users/:id/resend-invite?platform=`, link de 1º acesso 14 dias) e **Definir senha
+> manual** (POST `/api/admin/users/:id/set-password`); ações por linha **Conceder
 > acesso** — `GrantAccessDialog` compartilhado com pickers de oferta/curso + presets de validade —
 > e **Matrículas**; **ações em LOTE 06/2026**: checkbox por linha + "selecionar todos da página" →
 > barra com **Conceder acesso em lote** (`GrantAccessDialog` com `userIds[]`, itera o POST por
