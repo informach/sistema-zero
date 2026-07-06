@@ -30,7 +30,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
@@ -64,6 +64,55 @@ const ROLE_LABELS: Record<string, string> = {
 function roleVariant(role: string): 'default' | 'outline' | 'muted' {
   if (PRIVILEGED_ROLES.includes(role)) return 'default'
   return role === 'staff' ? 'outline' : 'muted'
+}
+
+/**
+ * Ação por linha da tabela: botão SÓ com ícone + rótulo no hover (a coluna de ações
+ * ficava cortada com 6 rótulos, ainda mais no mobile). Usa o tooltip NATIVO (`title`)
+ * — o navegador o posiciona sozinho, então NUNCA é cortado pelo `overflow-x-auto` da
+ * tabela (um balão CSS acima clipa na 1ª linha) e funciona em qualquer viewport; o
+ * `aria-label` cobre o leitor de tela. `href` → Link; senão Button. Compacto = responsivo.
+ */
+function RowAction({
+  label,
+  icon,
+  onClick,
+  href,
+  disabled,
+  destructive,
+}: {
+  label: string
+  icon: ReactNode
+  onClick?: () => void
+  href?: string
+  disabled?: boolean
+  destructive?: boolean
+}) {
+  if (href) {
+    return (
+      <Link
+        href={href}
+        title={label}
+        aria-label={label}
+        className={buttonVariants({ variant: 'ghost', size: 'icon' })}
+      >
+        {icon}
+      </Link>
+    )
+  }
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      title={label}
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className={destructive ? 'text-destructive hover:text-destructive' : undefined}
+    >
+      {icon}
+    </Button>
+  )
 }
 
 interface FormState {
@@ -687,61 +736,50 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                   </TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(u.createdAt)}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
+                    <div className="flex justify-end gap-0.5">
                       {canWrite ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          title="Conceder acesso a conteúdo (cortesia/teste)"
+                        <RowAction
+                          label="Conceder acesso a conteúdo (cortesia/teste)"
+                          icon={<KeyRound className="size-4" />}
                           onClick={() => setGrantUserId(u.id)}
-                        >
-                          <KeyRound className="size-4" /> Conceder acesso
-                        </Button>
+                        />
                       ) : null}
-                      <Link
+                      <RowAction
+                        label="Ver matrículas do usuário"
+                        icon={<GraduationCap className="size-4" />}
                         href={`/admin/membros/${u.id}`}
-                        title="Ver matrículas do usuário"
-                        className={buttonVariants({ variant: 'ghost', size: 'sm' })}
-                      >
-                        <GraduationCap className="size-4" /> Matrículas
-                      </Link>
+                      />
                       {canImpersonate(currentUser, u) ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          title="Entrar na área do aluno como este usuário (suporte)"
+                        <RowAction
+                          label="Entrar como este usuário (suporte)"
+                          icon={
+                            impersonatingId === u.id ? <Spinner /> : <LogIn className="size-4" />
+                          }
                           disabled={impersonatingId === u.id}
                           onClick={() => impersonate(u)}
-                        >
-                          {impersonatingId === u.id ? <Spinner /> : <LogIn className="size-4" />}{' '}
-                          Entrar como
-                        </Button>
+                        />
                       ) : null}
                       {canEdit(u) && u.id !== currentUser.id ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          title="Reenviar o link de acesso ou definir a senha (cliente preso)"
+                        <RowAction
+                          label="Acesso: reenviar link ou definir a senha"
+                          icon={<LockKeyhole className="size-4" />}
                           onClick={() => openAccess(u)}
-                        >
-                          <LockKeyhole className="size-4" /> Acesso
-                        </Button>
+                        />
                       ) : null}
                       {canEdit(u) ? (
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(u)}>
-                          <Pencil className="size-4" /> Editar
-                        </Button>
+                        <RowAction
+                          label="Editar usuário"
+                          icon={<Pencil className="size-4" />}
+                          onClick={() => openEdit(u)}
+                        />
                       ) : null}
                       {canDelete(u) ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          title="Excluir o usuário e todos os seus dados (irreversível)"
-                          className="text-destructive hover:text-destructive"
+                        <RowAction
+                          label="Excluir o usuário e todos os seus dados (irreversível)"
+                          icon={<Trash2 className="size-4" />}
+                          destructive
                           onClick={() => askDelete(u)}
-                        >
-                          <Trash2 className="size-4" /> Excluir
-                        </Button>
+                        />
                       ) : null}
                     </div>
                   </TableCell>
