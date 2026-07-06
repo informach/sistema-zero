@@ -10,19 +10,29 @@ import {
   resolveTier,
 } from '../../domain/gamification/league'
 import { weekBoundsUtc, weeklyPeriodKey } from '../../domain/gamification/missions'
+import type { AuthGateway, ProfileIdentity } from '../../domain/ports/auth-gateway.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
-import type { LeagueMeView } from '../mappers/views'
+import type {
+  GetAvatarsByProfilesService,
+  ProfileAvatarView,
+} from '../avatar/get-avatars-by-profiles.service'
+import type { LeagueEntryView, LeagueMeView } from '../mappers/views'
 
 /**
  * Liga semanal do aluno. Resolve o tier da semana de forma LAZY (sem cron): se ainda
  * não há membership, fecha a semana anterior (coloca o aluno pela XP da semana na coorte
  * do mesmo tier) e promove/rebaixa. Depois monta o board da semana corrente (XP DERIVADO
- * do ledger). Privacidade: o board NÃO expõe userId de terceiros — só posição/XP + `isMe`.
+ * do ledger). Na vitrine kids, cada linha é HIDRATADA com rosto+nível+1º nome do colega
+ * (decisão do usuário, espelha o Clube/Mural) — best-effort; o link p/ o perfil público
+ * sai só p/ quem é público (opt-in dos pais).
  */
 export class GetLeagueService {
   constructor(
     private readonly repo: GamificationRepository,
     private readonly clock: () => Date,
+    private readonly avatars: GetAvatarsByProfilesService,
+    /** Nome/flag-público via auth S2S; `null` (dev/local sem envs) → sem nome/link. */
+    private readonly auth: AuthGateway | null,
   ) {}
 
   /** Colocação 1-based de `userId` na coorte por XP da semana (empate → competition rank). */
@@ -87,23 +97,56 @@ export class GetLeagueService {
     // mostrava posição DENSA (i+1) e, em semanas com empate, contradizia quem subia/caía.
     let currentRank = 0
     let prevXp: number | null = null
-    const entries = ranked.map((id, i) => {
+    const rows = ranked.map((id, i) => {
       const weeklyXp = xpByUser.get(id) ?? 0
       if (prevXp === null || weeklyXp !== prevXp) {
         currentRank = i + 1
         prevXp = weeklyXp
       }
-      return { position: currentRank, weeklyXp, isMe: id === userId }
+      return { id, position: currentRank, weeklyXp, isMe: id === userId }
     })
-    const myPosition = entries.find((e) => e.isMe)?.position ?? this.rankOf(userId, xpByUser)
+    const myPosition = rows.find((e) => e.isMe)?.position ?? this.rankOf(userId, xpByUser)
 
     return {
       tier,
       weekKey,
       promotionCount: promotionCount(cohort.length),
       relegationCount: relegationCount(cohort.length),
-      entries,
+      entries: await this.hydrate(rows, audience),
       myPosition,
     }
+  }
+
+  /**
+   * Enriquece cada linha com foto+nível (avatar 3D + rank) e 1º nome (auth). BEST-EFFORT:
+   * falha do avatar/auth degrada p/ a linha base (o front cai em "Colega"/boneco padrão).
+   * O `profileId` só sai p/ perfil PÚBLICO (opt-in dos pais) → habilita o link; nunca
+   * expõe o id de um não-público. Coorte é limitada por tier (bem abaixo do teto de 100
+   * do batch do auth) — sem chunking.
+   */
+  private async hydrate(
+    rows: { id: string; position: number; weeklyXp: number; isMe: boolean }[],
+    audience: CourseAudience,
+  ): Promise<LeagueEntryView[]> {
+    const ids = rows.map((r) => r.id)
+    const [avatars, identities] = await Promise.all([
+      this.avatars.execute(ids, audience).catch((): Record<string, ProfileAvatarView> => ({})),
+      this.auth
+        ? this.auth.getProfileIdentities(ids).catch(() => new Map<string, ProfileIdentity>())
+        : Promise.resolve(new Map<string, ProfileIdentity>()),
+    ])
+    return rows.map((r) => {
+      const avatar = avatars[r.id]
+      const identity = identities.get(r.id)
+      return {
+        position: r.position,
+        weeklyXp: r.weeklyXp,
+        isMe: r.isMe,
+        photoUrl: avatar?.photoUrl ?? null,
+        levelSlug: avatar?.level,
+        firstName: identity?.firstName ?? null,
+        profileId: identity?.public ? r.id : undefined,
+      }
+    })
   }
 }

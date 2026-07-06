@@ -83,6 +83,7 @@ import {
 } from '../src/application/validate-certificate/validate-certificate.service'
 import type { CourseAudience, CourseLevel, CourseStatus } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
+import type { AuthGateway } from '../src/domain/ports/auth-gateway.port'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { HubGateway } from '../src/domain/ports/hub-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
@@ -168,6 +169,31 @@ export function buildApp(
     async listShowcaseByAuthors(authorIds) {
       if (!hubShowcaseByAuthors.items) return null
       return hubShowcaseByAuthors.items.filter((i) => authorIds.includes(i.authorId))
+    },
+  }
+
+  // Fake do auth (nomes/flag-público das crianças) p/ a liga kids — semeável por teste
+  // via `authProfiles`. Ausente do mapa → perfil sem nome (a liga cai em "Colega").
+  const authProfiles = new Map<string, { firstName: string; public: boolean }>()
+  const authGateway: AuthGateway = {
+    async getAccountIdentities() {
+      return []
+    },
+    async getProfileNames(ids) {
+      const out = new Map<string, string>()
+      for (const id of ids) {
+        const p = authProfiles.get(id)
+        if (p) out.set(id, p.firstName)
+      }
+      return out
+    },
+    async getProfileIdentities(ids) {
+      const out = new Map<string, { firstName: string; public: boolean }>()
+      for (const id of ids) {
+        const p = authProfiles.get(id)
+        if (p) out.set(id, { ...p })
+      }
+      return out
     },
   }
 
@@ -264,7 +290,12 @@ export function buildApp(
       claimMission: new ClaimMissionService(gamification, accessCheck, clock),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
       setVacation: new SetVacationService(gamification, clock),
-      getLeague: new GetLeagueService(gamification, clock),
+      getLeague: new GetLeagueService(
+        gamification,
+        clock,
+        new GetAvatarsByProfilesService(avatar, gamification),
+        authGateway,
+      ),
       childrenStats: new GetChildrenStatsService(
         gamification,
         courses,
@@ -394,6 +425,7 @@ export function buildApp(
     clockRef,
     hubCalls,
     hubShowcaseByAuthors,
+    authProfiles,
   }
 }
 

@@ -543,7 +543,12 @@ A `<Canvas>` precisa de
   (janela que não exige presença) e **protetores/freezes** (1 grátis por mês + compráveis com Zappy,
   teto 5) — a sequência só QUEBRA quando NEM férias NEM freezes cobrem o gap.
 - **Liga semanal — `league-board.tsx`** (no perfil): ranking da coorte da semana (sobe/desce de
-  divisão), a versão real do antigo backlog "ligas".
+  divisão), a versão real do antigo backlog "ligas". **Rosto+nível+1º nome dos colegas (07/2026):**
+  cada linha usa o `AvatarWithAura` (foto do avatar 3D + aura do nível) + o 1º nome do colega
+  (ausente → "Colega"); "Você" se destaca. Nome vira `<Link>` p/ `/crianca/[id]` SÓ p/ perfil
+  público (opt-in dos pais) — espelha o Clube/Mural. Os dados (`photoUrl`/`levelSlug`/`firstName`/
+  `profileId`) vêm ENRIQUECIDOS do members (`GetLeagueService` hidrata em lote; ver members). Chave
+  da lista = índice (posição empata no competition ranking; `biome-ignore noArrayIndexKey`).
 - **Perfil = "Meu perfil" da CRIANÇA (full review F1, 06/2026):** a página edita o PRÓPRIO
   PERFIL (não a conta). 1 card de identidade — foto CLICÁVEL (único caminho de troca, via
   `/api/profiles/:id/avatar`), nome + telefone do perfil + **colocação no ranking kids**

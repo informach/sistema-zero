@@ -69,6 +69,12 @@ function buildSender(now: Date) {
       if (authCalls.failAlways) throw new Error('auth fora')
       return new Map(ids.filter((id) => id === CHILD).map((id) => [id, 'Lia']))
     },
+    async getProfileIdentities(ids) {
+      if (authCalls.failAlways) throw new Error('auth fora')
+      return new Map(
+        ids.filter((id) => id === CHILD).map((id) => [id, { firstName: 'Lia', public: false }]),
+      )
+    },
   }
 
   const sentEmails: SendEmailInput[] = []

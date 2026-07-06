@@ -110,14 +110,22 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         },
         { body: BatchGetUsersBody },
       )
-      // Nomes das CRIANÇAS por lote de perfis (saudação do e-mail semanal). SÓ
-      // ativos, SÓ id + nome — nunca foto/telefone/nascimento/conta.
+      // Nomes das CRIANÇAS por lote de perfis (saudação do e-mail semanal + rosto/nome
+      // da liga kids). SÓ ativos, SÓ id + nome + flag PÚBLICO (opt-in dos pais) — nunca
+      // foto/telefone/nascimento/conta. O `publicProfileEnabled` deixa o consumidor
+      // decidir o que é clicável (link p/ o perfil público) sem um 2º round-trip.
       .post(
         '/profiles/batch',
         async ({ body, headers }) => {
           requireInternalToken(headers, deps.internalToken)
           const found = await deps.profiles.listActiveByIds([...new Set(body.ids)])
-          return { profiles: found.map((p) => ({ id: p.id, name: p.name })) }
+          return {
+            profiles: found.map((p) => ({
+              id: p.id,
+              name: p.name,
+              publicProfileEnabled: p.publicProfileEnabled,
+            })),
+          }
         },
         { body: BatchGetUsersBody },
       )

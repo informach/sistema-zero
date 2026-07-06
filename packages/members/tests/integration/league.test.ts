@@ -62,7 +62,7 @@ describe('Liga — board e resolução de tier', () => {
     expect(body.tier).toBe('bronze')
     expect(body.weekKey).toBe('w:2026-06-01')
     expect(body.myPosition).toBe(1)
-    expect(body.entries).toEqual([{ position: 1, weeklyXp: 0, isMe: true }])
+    expect(body.entries).toMatchObject([{ position: 1, weeklyXp: 0, isMe: true }])
     // 1 jogador < mínimo → semana amistosa (ninguém sobe/cai).
     expect(body.promotionCount).toBe(0)
     expect(body.relegationCount).toBe(0)
@@ -74,7 +74,7 @@ describe('Liga — board e resolução de tier', () => {
     seedKidsAccess(ctx)
     seedXp(gamification, USER, 40, '2026-06-02T12:00:00.000Z') // dentro de w:2026-06-01
     const body = await readJson(await getLeague(app))
-    expect(body.entries[0]).toEqual({ position: 1, weeklyXp: 40, isMe: true })
+    expect(body.entries[0]).toMatchObject({ position: 1, weeklyXp: 40, isMe: true })
   })
 
   test('fechamento LAZY: 1º numa coorte cheia da semana anterior → sobe p/ prata', async () => {
@@ -165,5 +165,57 @@ describe('Liga — board e resolução de tier', () => {
     // Competition ranking ("1224"): os dois empatados em 50 → posição 1; o de 10 → posição 3.
     expect(body.entries.map((e: { position: number }) => e.position)).toEqual([1, 1, 3])
     expect(body.myPosition).toBe(1)
+  })
+
+  test('vitrine kids: colega ganha foto + nível + 1º nome; link SÓ p/ perfil público', async () => {
+    const ctx = buildApp() // semana corrente w:2026-06-01
+    const { app, gamification, avatar, authProfiles } = ctx
+    const PUB = '22222222-2222-2222-2222-222222222222' // perfil público (opt-in)
+    const PRIV = '33333333-3333-3333-3333-333333333333' // perfil privado
+    seedKidsAccess(ctx, [USER, PUB, PRIV])
+    for (const u of [USER, PUB, PRIV]) {
+      gamification.leagueMemberships.push({
+        userId: u,
+        accountId: u,
+        audience: 'kids',
+        weekKey: 'w:2026-06-01',
+        tier: 'bronze',
+      })
+    }
+    // USER 30 · PUB 20 · PRIV 10 → posições 1/2/3.
+    seedXp(gamification, USER, 30, '2026-06-02T12:00:00.000Z')
+    seedXp(gamification, PUB, 20, '2026-06-02T12:00:00.000Z')
+    seedXp(gamification, PRIV, 10, '2026-06-02T12:00:00.000Z')
+    await avatar.setPhotoUrl(PUB, PUB, 'kids', 'https://cdn.example/pub.png', new Date())
+    authProfiles.set(PUB, { firstName: 'Bia', public: true })
+    authProfiles.set(PRIV, { firstName: 'Theo', public: false })
+
+    const [me, pub, priv] = (await readJson(await getLeague(app))).entries
+
+    expect(me.isMe).toBe(true)
+    // Colega público: foto + 1º nome + nível (aura) + profileId (habilita o link).
+    expect(pub).toMatchObject({
+      position: 2,
+      isMe: false,
+      firstName: 'Bia',
+      photoUrl: 'https://cdn.example/pub.png',
+      profileId: PUB,
+    })
+    expect(typeof pub.levelSlug).toBe('string')
+    // Colega privado: 1º nome + nível, mas SEM profileId (não clicável).
+    expect(priv).toMatchObject({ position: 3, firstName: 'Theo' })
+    expect(priv.profileId).toBeUndefined()
+  })
+
+  test('sem auth configurado (dev): board degrada p/ base + avatar, sem nome/link', async () => {
+    // buildApp injeta um fake de auth; aqui simulamos o gateway ausente esvaziando os
+    // nomes → firstName null e profileId ausente (o front cai em "Colega").
+    const ctx = buildApp()
+    const { app } = ctx
+    seedKidsAccess(ctx)
+    const body = await readJson(await getLeague(app))
+    expect(body.entries[0]).toMatchObject({ position: 1, isMe: true, firstName: null })
+    expect(body.entries[0].profileId).toBeUndefined()
+    expect(body.entries[0]).toHaveProperty('photoUrl') // avatar sempre presente (local)
   })
 })
