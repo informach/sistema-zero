@@ -509,3 +509,16 @@ in-memory das portas em `tests/fakes/in-memory.ts`; montagem via `tests/helpers.
    `resolveProfilePublic` (`x-auth-profile-public === 'true'`) — NUNCA do corpo. Gravado uma vez em
    thread/comment; não reescreve posts antigos. O hub só TRANSPORTA `authorPublic`; o link p/ o perfil
    público é decisão do BFF (só quando `true`) — não vire o snapshot em "fonte do link" no hub.
+9. **⚠️ Datas + `db.execute` cru + Bun/postgres.js (bug 500 do `/hub/admin/pending`, 07/2026):** dois
+   perigos OPOSTOS com `Date` no postgres.js.
+   (a) **LEITURA:** `db.execute(sql\`…\`)` NÃO passa pelo mapeamento de tipo do drizzle → o postgres.js
+   devolve `timestamptz` como **STRING**, não `Date`. O `listPending` (`moderation.repository.ts`)
+   montava `PendingItem.createdAt = r.created_at` (string) e o mapper `toPendingItemView` chamava
+   `.toISOString()` → **500** (só com fila ≥1; fila vazia não entra no `.map`, por isso passou
+   despercebido até o 1º pendente real). Fix: coagir `r.created_at instanceof Date ? … : new Date(…)`
+   no repo. Qualquer `db.execute` cru que devolva timestamp PRECISA coagir.
+   (b) **ESCRITA (param):** bindar um `Date` como parâmetro (`where col < ${date}`) estourava só no
+   runtime do CONTAINER de prod ("argument must be of type string … Received an instance of Date") →
+   `retention.cleanup.failed` a cada 6h (a poda de `processed_webhooks` NUNCA rodava). NÃO reproduz
+   local. Fix: passar `date.toISOString()` (texto ISO vs `timestamptz` é comparado direto). Regra
+   geral: em `db.execute`/`sql` cru, coaja `Date`→ISO na escrita e string→`Date` na leitura.
