@@ -26,8 +26,11 @@ usuário das claims e autoriza por rota). Runtime: **Bun**. Linguagem: **TS (ESM
 > revoga TODAS as famílias, purga em LOTES + índices `expires_at`, revoke preserva
 > timestamp, avatarUrl só http(s), log de login falho, stack no unhandled.
 > Migrations `0000_*` (schema `auth`), `0001_*` (`password_reset_tokens`), `0002_*`
-> (`otp_codes`), `0003_*` (`users.avatar_url`) e `0004_*` (índices `expires_at` da
-> purga) **aplicadas** no Postgres compartilhado local.
+> (`otp_codes`), `0003_*` (`users.avatar_url`), `0004_*` (índices `expires_at` da
+> purga), `0005`–`0011` (impersonação/perfis Netflix/auditoria — ver histórico) e
+> **`0012_*`** (`users.password_set_at` — marco "o dono definiu a própria senha" —
+> **com backfill `created_at` para os existentes**, ver Decisão 13) **aplicadas** no
+> Postgres compartilhado local.
 
 ## Arquitetura (DDD + Hexagonal)
 
@@ -124,8 +127,13 @@ src/
    colunas nullable → claims do token → `user-view`. `signupSource` = app/canal do
    cadastro (funnel/web/mobile/admin).
 8. **Reset/definição de senha (`password_reset_tokens`):** token opaco (32 bytes),
-   guardado **só como sha256**, single-use (`consumed_at`), TTL `RESET_TOKEN_TTL_MINUTES`
-   (60); emitir um novo **consome os pendentes** (1 token vivo/usuário).
+   guardado **só como sha256**, single-use (`consumed_at`); emitir um novo **consome
+   os pendentes** (1 token vivo/usuário). ⚠️ **DOIS TTLs (07/2026):** o "esqueci a
+   senha" público usa `RESET_TOKEN_TTL_MINUTES` (60, CURTO — fluxo sensível); o link
+   de **1º acesso** (convite do admin + welcome pós-compra do funil) usa
+   `INVITE_TOKEN_TTL_MINUTES` (**14 dias**, LONGO — a pessoa compra hoje e pode só
+   acessar dias depois). O `CreatePasswordTokenService.execute` aceita `ttlMinutes`
+   por chamada (default = o do reset); convite/1º-acesso passam o longo.
    `POST /auth/forgot-password` responde **SEMPRE 200** (anti-enumeração) e envia o
    e-mail `password-reset` via **gateway → messaging** (HMAC de borda, consumer `auth`
    — `GATEWAY_URL`+`AUTH_HMAC_SECRET`; timeout por `GATEWAY_REQUEST_TIMEOUT_MS`;
@@ -196,7 +204,12 @@ src/
     código vigente). `POST /auth/otp/verify` = login passwordless (→ tokens);
     `POST /auth/password/reset-otp` consome o código, define a senha nova e
     **revoga TODAS as sessões**. É o fluxo do `/esqueci-senha` do community (o
-    reset por LINK do item 8 continua p/ o 1º acesso pós-compra).
+    reset por LINK do item 8 continua p/ o 1º acesso pós-compra). ⚠️ **O
+    `otp/verify` RECUSA conta sem senha definida (07/2026):** se `!user.isPasswordSet()`
+    (convite/compra pendente — Decisão 13) → **403 `PASSWORD_NOT_SET`** (após casar o
+    código, como o `USER_NOT_ACTIVE`; não consome). Senão a pessoa entraria numa sessão
+    que a área dos pais (valida a senha REAL) nunca deixa passar — beco sem saída. A
+    saída é o link de 1º acesso / "esqueci a senha".
 
 12. **⚠️ Gotcha do drizzle ≥ 0.44 (vale p/ o monorepo):** erros do driver chegam
     ENVELOPADOS em `DrizzleQueryError` — o `PostgresError` original (com
@@ -206,6 +219,19 @@ src/
     `cause`; siga esse padrão em qualquer mapeamento novo de erro do Postgres.
     A busca `q` da listagem admin **escapa `%`/`_`/`\`** antes do ILIKE (busca
     literal, não padrão).
+
+13. **⚠️ `users.password_set_at` — "o dono definiu a própria senha?" (migration `0012`,
+    07/2026):** timestamp NULLABLE. `null` nas contas de **CONVITE** (admin) e **COMPRA**
+    (funil/ensure-buyer), cuja senha é aleatória/dummy; carimbado quando o dono define a
+    senha (`UserAggregate.changePassword` → cobre reset por LINK/OTP e troca logado) e no
+    **cadastro público** (`register` passa `passwordSet: true`). É o sinal que trava o
+    login por CÓDIGO de conta pendente (Decisão 11) e que o painel usa (`AdminUserView.
+    passwordSet`) p/ marcar "acesso pendente" + oferecer reenviar/definir senha. `register`
+    ganhou o flag opcional `passwordSet` (**default `false` — seguro:** criação nova que
+    esqueça de sinalizar nasce "sem senha", travada, nunca o contrário). **Backfill da
+    migration = `created_at` para TODOS os existentes** (nunca travar um usuário legítimo
+    no OTP; contas já convidadas-e-nunca-usadas seguem resolvidas pelo painel). O repo
+    `update` PERSISTE a coluna (senão o carimbo do reset se perderia).
 
 ## Perfis (estilo Netflix) — fatia 06/2026 (PR1)
 
@@ -375,11 +401,26 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
 - **Criação pelo painel (`POST /auth/admin/users`, fluxo CONVITE):**
   `CreateUserService` cria a conta **`active`** com **senha aleatória** de 32 bytes
   hasheada (impossível de usar; `active` é obrigatório — o token de senha exige
-  `isActive()`), `signupSource: 'admin'`, e envia o e-mail **`welcome`** (mesmo
-  template do 1º acesso pós-compra) com link `${COMMUNITY_URL}/redefinir-senha?token=...`
+  `isActive()`; `password_set_at` NULL — Decisão 13), `signupSource: 'admin'`, e envia o
+  e-mail **`welcome`** (mesmo template do 1º acesso pós-compra) com link
+  `${COMMUNITY_URL}/redefinir-senha?token=...` e **TTL de 14 dias** (`INVITE_TOKEN_TTL_MINUTES`)
   — envio **best-effort** (falha NÃO desfaz a criação; resposta `{ user, inviteSent }`
-  sinaliza). Guards: `admin` só cria staff/customer; `superadmin` qualquer papel.
-  E-mail duplicado → 409.
+  sinaliza; o e-mail é montado por `sendInviteEmail`, helper compartilhado com o reenvio).
+  Guards: `admin` só cria staff/customer; `superadmin` qualquer papel. E-mail duplicado → 409.
+- **Reenviar convite (`POST /auth/admin/users/:id/resend-invite`, 07/2026):**
+  `ResendInviteService` regenera o token de 1º acesso (TTL 14 dias) e reenvia o `welcome`
+  — para cliente cujo link expirou / nunca definiu a senha. `?platform=kids` aponta o link
+  p/ o app kids (env ausente → 400). Sem cooldown (ação do operador, não o forgot público).
+  Resposta `{ sent }` (`false` = conta inativa ou messaging indisponível). Gateway:
+  `auth-admin-user-resend-invite` (POST, superadmin/admin + `authInternalTransforms` + `audit`).
+- **Definir senha manual (`POST /auth/admin/users/:id/set-password`, 07/2026):**
+  `SetUserPasswordService` — suporte destrava um cliente PRESO: troca o hash
+  (`changePassword` carimba `password_set_at` → destrava login por código + área dos pais)
+  e **revoga as sessões** do alvo; o operador informa a senha por fora. Guards: **nunca a si
+  mesmo** (400 — use `/auth/me/password`), `admin` não redefine senha de admin/superadmin.
+  Corpo `{ password }` (política validada no serviço). Gateway: `auth-admin-user-set-password`
+  (POST, superadmin/admin + `authInternalTransforms` + `audit`). `AdminUserView` ganhou
+  **`passwordSet`** (bool) p/ o painel marcar "acesso pendente".
 
 ## Dev local
 

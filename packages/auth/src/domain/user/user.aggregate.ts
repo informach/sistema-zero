@@ -16,6 +16,11 @@ export interface UserSnapshot {
   phone: string | null
   signupSource: string | null
   avatarUrl: string | null
+  // Quando o usuário DEFINIU a própria senha (cadastro público, reset ou troca). É
+  // `null` nas contas criadas por CONVITE (admin) ou COMPRA (funil), cuja senha é
+  // aleatória/dummy — elas só ficam utilizáveis quando o dono define a senha pelo
+  // link de 1º acesso. Distingue "conta com senha real" de "conta convidada".
+  passwordSetAt: Date | null
   version: number
   createdAt: Date
   updatedAt: Date
@@ -35,6 +40,14 @@ export interface RegisterUserInput {
   signupSource?: string | null
   /** Opcional: URL pública da foto de perfil. */
   avatarUrl?: string | null
+  /**
+   * A senha do `passwordHash` foi ESCOLHIDA pelo próprio usuário? `true` no cadastro
+   * público (senha real); OMITIR (→ `false`) no convite (admin) e na compra (funil),
+   * cuja senha é aleatória/dummy. Default seguro `false`: uma criação nova que esqueça
+   * de sinalizar nasce "sem senha definida" (travada no login por código), nunca o
+   * contrário. `changePassword` marca depois, quando o dono define a senha.
+   */
+  passwordSet?: boolean
   now?: Date
 }
 
@@ -48,6 +61,7 @@ interface UserProps {
   phone: string | null
   signupSource: string | null
   avatarUrl: string | null
+  passwordSetAt: Date | null
   version: number
   createdAt: Date
   updatedAt: Date
@@ -82,6 +96,9 @@ export class UserAggregate extends AggregateRoot<string> {
       phone: normalizeOptional(input.phone),
       signupSource: normalizeOptional(input.signupSource),
       avatarUrl: normalizeOptional(input.avatarUrl),
+      // Convite/compra criam com `passwordSet` ausente → `null` (senha ainda não é
+      // do dono). Cadastro público passa `true` → carimba `now` (senha real).
+      passwordSetAt: input.passwordSet ? now : null,
       version: 0,
       createdAt: now,
       updatedAt: now,
@@ -104,6 +121,7 @@ export class UserAggregate extends AggregateRoot<string> {
       phone: snapshot.phone,
       signupSource: snapshot.signupSource,
       avatarUrl: snapshot.avatarUrl,
+      passwordSetAt: snapshot.passwordSetAt,
       version: snapshot.version,
       createdAt: snapshot.createdAt,
       updatedAt: snapshot.updatedAt,
@@ -144,6 +162,9 @@ export class UserAggregate extends AggregateRoot<string> {
   get avatarUrl(): string | null {
     return this.props.avatarUrl
   }
+  get passwordSetAt(): Date | null {
+    return this.props.passwordSetAt
+  }
   get version(): number {
     return this.props.version
   }
@@ -157,6 +178,16 @@ export class UserAggregate extends AggregateRoot<string> {
   /** Só contas ativas podem obter/renovar tokens. */
   isActive(): boolean {
     return this.props.status === 'active'
+  }
+
+  /**
+   * O dono já DEFINIU a própria senha? `false` numa conta de convite/compra cuja
+   * senha ainda é a aleatória/dummy. O login por CÓDIGO (OTP) recusa essas contas —
+   * senão a pessoa entra numa sessão que a área dos pais (que valida a senha real)
+   * nunca deixa passar. Ela precisa definir a senha pelo link de 1º acesso.
+   */
+  isPasswordSet(): boolean {
+    return this.props.passwordSetAt !== null
   }
 
   /**
@@ -229,6 +260,10 @@ export class UserAggregate extends AggregateRoot<string> {
    */
   changePassword(newHash: string, now: Date = new Date()): void {
     this.props.passwordHash = newHash
+    // Definir/trocar a senha CARIMBA o marco: a partir daqui a conta tem uma senha
+    // do dono (destrava o login por código + a área dos pais). Cobre o link de 1º
+    // acesso (convite/compra), o reset por código e a troca logado.
+    this.props.passwordSetAt = now
     this.touch(now)
   }
 

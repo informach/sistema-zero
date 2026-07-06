@@ -35,6 +35,18 @@ export class UserNotActiveError extends DomainError {
   }
 }
 
+/**
+ * Conta ainda NÃO definiu a própria senha (convite/compra pendente): o login por
+ * CÓDIGO (OTP) é recusado — senão a pessoa entra numa sessão que a área dos pais
+ * (que valida a senha real) nunca deixa passar. Ela precisa definir a senha pelo
+ * link de 1º acesso (ou "esqueci minha senha"). → 403 */
+export class PasswordNotSetError extends DomainError {
+  readonly code = 'PASSWORD_NOT_SET'
+  constructor() {
+    super('Defina sua senha pelo link de primeiro acesso antes de entrar')
+  }
+}
+
 /** Refresh token ausente, inválido, expirado ou revogado. → 401 */
 export class InvalidRefreshTokenError extends DomainError {
   readonly code = 'INVALID_REFRESH_TOKEN'

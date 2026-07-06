@@ -73,6 +73,15 @@ const EnvSchema = z
 
     // Reset/definição de senha
     RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(60),
+    // TTL do link de PRIMEIRO ACESSO (convite do admin + welcome pós-compra do funil):
+    // muito mais longo que o reset comum porque a pessoa pode comprar hoje e só
+    // acessar dias depois. Default 14 dias (20160 min). O reset "esqueci a senha"
+    // segue curto (RESET_TOKEN_TTL_MINUTES) — é o fluxo sensível de recuperação.
+    INVITE_TOKEN_TTL_MINUTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(14 * 24 * 60),
     // Cooldown POR CONTA entre pedidos de reset público (`/auth/forgot-password`).
     // O rate limit do gateway é por IP — IPs distribuídos ainda conseguiriam
     // bombardear o inbox de UMA vítima e invalidar o token legítimo a cada pedido.

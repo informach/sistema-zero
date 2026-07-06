@@ -118,7 +118,12 @@ conta, pois senha é da CONTA, não do perfil). ⚠️ **Full review 19/06: TODA
 portão** — `PATCH /api/auth/me` (nome/telefone) e `POST /api/me/avatar` (foto da conta) agora são
 `requireParentGate` (antes eram shims pelados → uma criança numa sessão de conta desfigurava a
 identidade do responsável); a troca de senha **FECHA o portão no sucesso** (`withParentClearedOnPasswordChange`);
-`/api/parents/verify` ganhou cooldown por conta (5 erros → 60s). O limite de perfis é do plano (criar acima → 409 no
+`/api/parents/verify` ganhou cooldown por conta (5 erros → 60s). ⚠️ **Botão "Sair" na grade (07/2026):**
+`perfis-client.tsx` tem um `logout()` (POST `/api/auth/logout` + `window.location.replace('/login')`)
+SEMPRE visível na barra de ações — sem ele, quem entra (ex.: por CÓDIGO) e não sabe a senha da área
+dos pais ficava PRESO na grade (não dá p/ criar perfil nem sair). Casa com a trava do login por código
+(o auth recusa OTP de conta sem senha definida → `login-form` mostra "crie sua senha em Esqueci minha
+senha"). O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
 A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edita o PRÓPRIO perfil

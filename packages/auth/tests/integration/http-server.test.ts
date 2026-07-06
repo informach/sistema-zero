@@ -6,6 +6,8 @@ import { DeleteUserService } from '../../src/application/admin/delete-user/delet
 import { GetUserService } from '../../src/application/admin/get-user/get-user.service'
 import { ListUsersService } from '../../src/application/admin/list-users/list-users.service'
 import { ReadAuditLogService } from '../../src/application/admin/read-audit-log/read-audit-log.service'
+import { ResendInviteService } from '../../src/application/admin/resend-invite/resend-invite.service'
+import { SetUserPasswordService } from '../../src/application/admin/set-password/set-user-password.service'
 import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from '../../src/application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from '../../src/application/get-me/get-me.service'
@@ -135,7 +137,21 @@ function buildApp(
     fakeHasher,
     createPasswordToken,
     messaging,
-    { urls: { main: COMMUNITY_URL, kids: KIDS_COMMUNITY_URL } },
+    { urls: { main: COMMUNITY_URL, kids: KIDS_COMMUNITY_URL }, inviteTokenTtlMinutes: 20160 },
+    silentLogger,
+  )
+  const resendInvite = new ResendInviteService(
+    users,
+    createPasswordToken,
+    messaging,
+    { urls: { main: COMMUNITY_URL, kids: KIDS_COMMUNITY_URL }, inviteTokenTtlMinutes: 20160 },
+    silentLogger,
+  )
+  const setUserPassword = new SetUserPasswordService(
+    users,
+    refreshTokens,
+    fakeHasher,
+    { passwordMinLength: 10 },
     silentLogger,
   )
   const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
@@ -210,6 +226,8 @@ function buildApp(
     updateUser,
     deleteUser,
     batchGetUsers,
+    resendInvite,
+    setUserPassword,
     writeAuditLog,
     readAuditLog,
     createImpersonationToken,
@@ -364,6 +382,7 @@ describe('Auth HTTP server', () => {
         passwordHash: 'hashed:senha-super-secreta',
         firstName: 'Sus',
         lastName: 'Pended',
+        passwordSetAt: null,
         role: 'customer',
         status: 'suspended',
         phone: null,
@@ -1074,6 +1093,7 @@ describe('Auth admin routes (/auth/admin/users)', () => {
         passwordHash: 'hashed:x',
         firstName: over.firstName ?? 'First',
         lastName: 'Last',
+        passwordSetAt: null,
         role: over.role ?? 'customer',
         status: over.status ?? 'active',
         phone: null,
@@ -1392,6 +1412,7 @@ describe('Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impers
         passwordHash: 'hashed:x',
         firstName: 'Alvo',
         lastName: 'Teste',
+        passwordSetAt: null,
         role,
         status: 'active',
         phone: null,
@@ -1440,6 +1461,7 @@ describe('Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impers
         passwordHash: 'hashed:x',
         firstName: 'Admin',
         lastName: 'Suporte',
+        passwordSetAt: null,
         role: 'admin',
         status: 'active',
         phone: null,
@@ -1955,6 +1977,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
         passwordHash: 'hashed:x',
         firstName: 'Ana',
         lastName: 'Admin',
+        passwordSetAt: null,
         role: 'admin',
         status: 'active',
         phone: null,

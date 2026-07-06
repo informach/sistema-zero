@@ -61,6 +61,7 @@ describe('UserAggregate', () => {
       phone: '+55',
       signupSource: 'admin',
       avatarUrl: 'https://cdn.example.com/a.webp',
+      passwordSetAt: now,
       createdAt: now,
       updatedAt: now,
     }
@@ -84,6 +85,7 @@ describe('UserAggregate', () => {
         phone: null,
         signupSource: null,
         avatarUrl: null,
+        passwordSetAt: null,
         createdAt: past,
         updatedAt: past,
       })

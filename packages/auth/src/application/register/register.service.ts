@@ -45,6 +45,8 @@ export class RegisterService {
       lastName,
       phone: command.phone,
       signupSource: command.source,
+      // Cadastro público: a senha é do próprio usuário → conta já "com senha definida".
+      passwordSet: true,
     })
 
     await this.users.create(user)

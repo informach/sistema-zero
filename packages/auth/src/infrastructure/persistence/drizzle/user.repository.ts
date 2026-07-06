@@ -71,6 +71,9 @@ export class DrizzleUserRepository implements UserRepository {
         status: s.status,
         phone: s.phone,
         avatarUrl: s.avatarUrl,
+        // Persiste o marco de senha definida (reset/troca/set-password do admin o
+        // carimbam via changePassword) — sem ele o login por código seguiria travado.
+        passwordSetAt: s.passwordSetAt,
         updatedAt: s.updatedAt,
       })
       .where(and(eq(users.id, s.id), eq(users.version, expectedVersion)))
@@ -109,6 +112,7 @@ export class DrizzleUserRepository implements UserRepository {
         phone: s.phone,
         signupSource: s.signupSource,
         avatarUrl: s.avatarUrl,
+        passwordSetAt: s.passwordSetAt,
         createdAt: s.createdAt,
         updatedAt: s.updatedAt,
       })
@@ -156,6 +160,7 @@ function toSnapshot(row: UserRow): UserSnapshot {
     phone: row.phone,
     signupSource: row.signupSource,
     avatarUrl: row.avatarUrl,
+    passwordSetAt: row.passwordSetAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }

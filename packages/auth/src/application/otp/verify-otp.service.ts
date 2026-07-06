@@ -1,7 +1,7 @@
 import { InvalidOtpError } from '../../domain/otp/otp.errors'
 import type { OtpCodeRepository } from '../../domain/ports/otp-code-repository.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
-import { UserNotActiveError } from '../../domain/user/user.errors'
+import { PasswordNotSetError, UserNotActiveError } from '../../domain/user/user.errors'
 import { toUserView, type UserView } from '../mappers/user-view'
 import type { AuthTokenService, AuthTokens } from '../tokens/auth-token.service'
 import { codeMatchesHash } from './otp-code'
@@ -49,6 +49,12 @@ export class VerifyOtpService {
 
     // Código correto, mas conta inativa → não consome (não pode logar mesmo).
     if (!user.isActive()) throw new UserNotActiveError('Conta inativa')
+
+    // Código correto, mas a conta NUNCA definiu a senha (convite/compra pendente):
+    // barra o login por código — senão a pessoa entra numa sessão que a área dos
+    // pais (valida a senha real) nunca deixa passar. Não consome o código (o login
+    // não pode acontecer mesmo); a saída é o link de 1º acesso / "esqueci a senha".
+    if (!user.isPasswordSet()) throw new PasswordNotSetError()
 
     const consumed = await this.otpCodes.consume(record.id, now)
     if (!consumed) throw new InvalidOtpError()

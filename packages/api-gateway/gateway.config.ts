@@ -706,6 +706,32 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       audit: {},
     },
+    // Reenviar CONVITE (link de 1º acesso): cliente cujo link expirou / sem senha.
+    // ESCRITA → superadmin/admin. 4 segmentos, literal `resend-invite` ≠ os demais.
+    {
+      id: 'auth-admin-user-resend-invite',
+      methods: ['POST'],
+      pathPattern: '/auth/admin/users/:id/resend-invite',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    // Definir a senha MANUALMENTE (suporte): o auth re-checa não-self + alvo
+    // não-admin/superadmin. ESCRITA → superadmin/admin. 4 segmentos, `set-password`.
+    {
+      id: 'auth-admin-user-set-password',
+      methods: ['POST'],
+      pathPattern: '/auth/admin/users/:id/set-password',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
     // Perfis (estilo Netflix) de uma conta — o painel de membros hidrata o progresso
     // por perfil. LEITURA staff+. 4 segmentos, literal `profiles` ≠ `impersonate`.
     {

@@ -16,6 +16,11 @@ export interface AdminUserView {
   status: string
   phone: string | null
   signupSource: string | null
+  /**
+   * A conta já DEFINIU a própria senha? `false` = convite/compra pendente (senha
+   * aleatória) — o painel destaca isso e oferece "reenviar acesso"/"definir senha".
+   */
+  passwordSet: boolean
   version: number
   createdAt: string
   updatedAt: string
@@ -31,6 +36,7 @@ export function toAdminUserView(user: UserAggregate): AdminUserView {
     status: user.status,
     phone: user.phone,
     signupSource: user.signupSource,
+    passwordSet: user.isPasswordSet(),
     version: user.version,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),

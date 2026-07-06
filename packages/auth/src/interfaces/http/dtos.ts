@@ -159,6 +159,14 @@ export const CreateUserBody = t.Object({
   platform: t.Optional(platformLiteral),
 })
 
+/**
+ * Corpo de `POST /auth/admin/users/:id/set-password` (definir senha manual pelo
+ * painel — suporte). O mínimo real é a política de senha (o serviço valida).
+ */
+export const SetUserPasswordBody = t.Object({
+  password: t.String({ minLength: 1, maxLength: 200 }),
+})
+
 /** Corpo de `PATCH /auth/admin/users/:id`. Todos os campos são opcionais (edição parcial). */
 export const UpdateUserBody = t.Object({
   role: t.Optional(roleLiteral),

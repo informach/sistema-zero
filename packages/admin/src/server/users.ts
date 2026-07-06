@@ -157,3 +157,36 @@ export function impersonateUser(
     method: 'POST',
   })
 }
+
+/**
+ * Reenvia o CONVITE (link de 1º acesso): `POST /auth/admin/users/:id/resend-invite`.
+ * Regenera o token de definição de senha (TTL longo — 14 dias) e reenvia o e-mail
+ * `welcome`. Para cliente cujo link expirou / ainda não definiu a senha. `platform`
+ * escolhe a base do link (`kids` → app kids). `sent: false` = e-mail não saiu
+ * (conta inativa ou falha do messaging).
+ */
+export function resendInvite(
+  id: string,
+  platform?: 'main' | 'kids',
+): Promise<GatewayResponse<{ sent: boolean }>> {
+  const query = platform === 'kids' ? '?platform=kids' : ''
+  return gatewayFetch(`/auth/admin/users/${encodeURIComponent(id)}/resend-invite${query}`, {
+    method: 'POST',
+  })
+}
+
+/**
+ * Define a senha MANUALMENTE (suporte): `POST /auth/admin/users/:id/set-password`.
+ * O auth troca o hash (carimba `passwordSetAt` → destrava login por código + área
+ * dos pais) e revoga as sessões do alvo. O operador informa a senha ao cliente por
+ * fora. Guards de papel (não-self, alvo não-admin/superadmin) são re-checados no auth.
+ */
+export function setUserPassword(
+  id: string,
+  password: string,
+): Promise<GatewayResponse<{ ok: true }>> {
+  return gatewayFetch(`/auth/admin/users/${encodeURIComponent(id)}/set-password`, {
+    method: 'POST',
+    body: { password },
+  })
+}

@@ -18,7 +18,17 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { GraduationCap, KeyRound, LogIn, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import {
+  GraduationCap,
+  KeyRound,
+  LockKeyhole,
+  LogIn,
+  Mail,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -41,6 +51,8 @@ import {
 } from '@/lib/types'
 
 const LIMIT = 20
+/** Mínimo de senha (client hint; o auth valida de verdade — PASSWORD_MIN_LENGTH). */
+const PASSWORD_MIN = 10
 
 const ROLE_LABELS: Record<string, string> = {
   superadmin: 'Superadmin',
@@ -124,6 +136,13 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
 
   const [grantUserId, setGrantUserId] = useState<string | null>(null)
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
+
+  // Acesso e senha (cliente com link expirado / preso sem senha).
+  const [accessUser, setAccessUser] = useState<UserView | null>(null)
+  const [accessPlatform, setAccessPlatform] = useState('main')
+  const [accessPassword, setAccessPassword] = useState('')
+  const [resending, setResending] = useState(false)
+  const [settingPassword, setSettingPassword] = useState(false)
 
   const isSuper = currentUser.role === 'superadmin'
   const isAdmin = currentUser.role === 'admin'
@@ -301,6 +320,59 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       )
     } finally {
       setImpersonatingId(null)
+    }
+  }
+
+  // ── Acesso e senha ───────────────────────────────────────────────────────
+  // O operador destrava um cliente preso (link de 1º acesso expirado / nunca
+  // definiu a senha) de dois jeitos: reenviando o link (o cliente cria a senha)
+  // ou definindo a senha na mão (e informando o cliente).
+  function openAccess(u: UserView) {
+    setAccessUser(u)
+    setAccessPlatform('main')
+    setAccessPassword('')
+  }
+
+  async function resendAccess() {
+    if (!accessUser) return
+    setResending(true)
+    try {
+      const suffix = accessPlatform === 'kids' ? '?platform=kids' : ''
+      const res = await apiSend<{ sent: boolean }>(
+        `/api/admin/users/${accessUser.id}/resend-invite${suffix}`,
+        'POST',
+        {},
+      )
+      if (res.sent) {
+        toast.success('Link de acesso reenviado por e-mail.')
+      } else {
+        toast.warning('Não foi possível enviar o e-mail (conta inativa ou envio indisponível).')
+      }
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Não foi possível reenviar o link.')
+    } finally {
+      setResending(false)
+    }
+  }
+
+  async function submitSetPassword() {
+    if (!accessUser) return
+    if (accessPassword.trim().length < PASSWORD_MIN) {
+      toast.error(`A senha precisa de pelo menos ${PASSWORD_MIN} caracteres.`)
+      return
+    }
+    setSettingPassword(true)
+    try {
+      await apiSend(`/api/admin/users/${accessUser.id}/set-password`, 'POST', {
+        password: accessPassword,
+      })
+      toast.success('Senha definida. As sessões do cliente foram encerradas.')
+      setAccessUser(null)
+      await load() // reflete "acesso pendente" → definido na listagem.
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Não foi possível definir a senha.')
+    } finally {
+      setSettingPassword(false)
     }
   }
 
@@ -597,6 +669,15 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                       ) : null}
                     </div>
                     <div className="text-xs text-muted-foreground">{u.email}</div>
+                    {u.passwordSet ? null : (
+                      <Badge
+                        variant="outline"
+                        className="mt-1 border-amber-500/50 text-amber-600 dark:text-amber-400"
+                        title="A conta ainda não definiu a senha — o login por código fica bloqueado até o 1º acesso."
+                      >
+                        Acesso pendente
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant={roleVariant(u.role)}>{ROLE_LABELS[u.role] ?? u.role}</Badge>
@@ -634,6 +715,16 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                         >
                           {impersonatingId === u.id ? <Spinner /> : <LogIn className="size-4" />}{' '}
                           Entrar como
+                        </Button>
+                      ) : null}
+                      {canEdit(u) && u.id !== currentUser.id ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title="Reenviar o link de acesso ou definir a senha (cliente preso)"
+                          onClick={() => openAccess(u)}
+                        >
+                          <LockKeyhole className="size-4" /> Acesso
                         </Button>
                       ) : null}
                       {canEdit(u) ? (
@@ -828,6 +919,77 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
               <option value="kids">Kids</option>
             </Select>
           </Field>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={accessUser !== null}
+        onClose={() => setAccessUser(null)}
+        title="Acesso e senha"
+        description={accessUser?.email}
+        footer={
+          <Button variant="outline" onClick={() => setAccessUser(null)}>
+            Fechar
+          </Button>
+        }
+      >
+        <div className="flex flex-col gap-5">
+          {accessUser && !accessUser.passwordSet ? (
+            <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-amber-700 text-xs dark:text-amber-300">
+              Esta conta ainda <strong>não definiu a senha</strong> (convite/compra pendente). O
+              login por código fica bloqueado até o primeiro acesso.
+            </p>
+          ) : (
+            <p className="text-muted-foreground text-xs">Esta conta já definiu a própria senha.</p>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <div className="font-medium text-sm">Reenviar link de acesso</div>
+            <p className="text-muted-foreground text-xs">
+              Gera um novo link de primeiro acesso (vale 14 dias) e reenvia por e-mail. O cliente
+              define a própria senha.
+            </p>
+            <div className="flex items-end gap-2">
+              <Field label="Plataforma" htmlFor="access-platform" className="flex-1">
+                <Select
+                  id="access-platform"
+                  value={accessPlatform}
+                  onChange={(e) => setAccessPlatform(e.target.value)}
+                >
+                  <option value="main">Principal (comunidade)</option>
+                  <option value="kids">Kids</option>
+                </Select>
+              </Field>
+              <Button variant="outline" onClick={resendAccess} disabled={resending}>
+                {resending ? <Spinner /> : <Mail className="size-4" />} Reenviar link
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 border-t pt-4">
+            <div className="font-medium text-sm">Definir senha manualmente</div>
+            <p className="text-muted-foreground text-xs">
+              Você cria a senha e informa o cliente. As sessões atuais dele serão encerradas.
+            </p>
+            <Field label="Nova senha" htmlFor="access-password">
+              <Input
+                id="access-password"
+                type="text"
+                autoComplete="off"
+                value={accessPassword}
+                placeholder={`mínimo ${PASSWORD_MIN} caracteres`}
+                onChange={(e) => setAccessPassword(e.target.value)}
+              />
+            </Field>
+            <div className="flex justify-end">
+              <Button
+                onClick={submitSetPassword}
+                disabled={settingPassword || accessPassword.trim().length < PASSWORD_MIN}
+              >
+                {settingPassword ? <Spinner /> : <LockKeyhole className="size-4" />} Definir senha
+              </Button>
+            </div>
+          </div>
         </div>
       </Dialog>
 
