@@ -21,6 +21,13 @@ export interface LogEntry {
   text: string
   timestamp: number
   errorStack?: string
+  /**
+   * Linha/coluna do erro no script.js do ALUNO — só preenchidas quando o
+   * interceptor confirmou `userCode` (erro de extensão/extra não mapeia para
+   * bloco). O Console usa para o chip "Ver o bloco".
+   */
+  errorLine?: number
+  errorCol?: number
 }
 
 interface LogsStore {
@@ -43,6 +50,13 @@ function truncateErrorStack(stack: string | undefined): string | undefined {
   if (!stack) return undefined
   if (stack.length <= PREVIEW_MAX_ERROR_CHARS) return stack
   return `${stack.slice(0, PREVIEW_MAX_ERROR_CHARS)}... [truncado]`
+}
+
+/** Linha/coluna vêm do iframe (não confiável): só inteiro positivo razoável. */
+function sanitizeLineNumber(value: unknown): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return undefined
+  const n = Math.floor(value)
+  return n >= 1 && n <= 10_000_000 ? n : undefined
 }
 
 export function createLogsStore(): StoreApi<LogsStore> {
@@ -79,12 +93,15 @@ export function createLogsStore(): StoreApi<LogsStore> {
     counter += 1
     const safeParts = m.parts.slice(0, PREVIEW_MAX_LOG_PARTS + 1).map((part) => truncatePart(part))
     const text = truncateLogText(safeParts.join(' '))
+    const line = m.error?.userCode === true ? sanitizeLineNumber(m.error.line) : undefined
     return {
       id: counter,
       kind: m.kind,
       text,
       timestamp: m.timestamp,
       errorStack: truncateErrorStack(m.error?.stack),
+      errorLine: line,
+      errorCol: line !== undefined ? sanitizeLineNumber(m.error?.col) : undefined,
     }
   }
 

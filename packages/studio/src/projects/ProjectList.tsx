@@ -10,9 +10,13 @@ import {
   NewProjectModal,
 } from '../components/projects/NewProjectModal'
 import { ProjectCard } from '../components/projects/ProjectCard'
-import { listAllProjects, type ProjectSummary } from '../state/persistence'
+import {
+  listAllProjects,
+  PROJECT_THUMB_UPDATED_EVENT,
+  type ProjectSummary,
+} from '../state/persistence'
 import { useProjectStore } from '../state/projectStore'
-import { useSettingsStore } from '../state/settingsStore'
+import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
 import { type StudioTheme, StudioThemeProvider } from '../studio/theme'
 import { KitGallery } from './KitGallery'
 
@@ -58,16 +62,30 @@ export function ProjectList({
     void reload()
   }, [reload])
 
+  // A miniatura é gravada em 2º plano DEPOIS que o aluno volta à lista (captura
+  // fire-and-forget do exit) — recarrega quando ela fica pronta.
+  useEffect(() => {
+    const onThumb = () => void reload()
+    window.addEventListener(PROJECT_THUMB_UPDATED_EVENT, onThumb)
+    return () => window.removeEventListener(PROJECT_THUMB_UPDATED_EVENT, onThumb)
+  }, [reload])
+
   useEffect(() => {
     void loadSettings()
   }, [loadSettings])
 
+  const projectSort = useSettingsStore((s) => s.projectSort)
+  const setProjectSort = useSettingsStore((s) => s.setProjectSort)
+
   const filtered = useMemo(() => {
     if (!projects) return null
     const q = search.trim().toLowerCase()
-    if (!q) return projects
-    return projects.filter((p) => p.name.toLowerCase().includes(q))
-  }, [projects, search])
+    const base = q ? projects.filter((p) => p.name.toLowerCase().includes(q)) : projects
+    const sorted = [...base]
+    if (projectSort === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
+    else sorted.sort((a, b) => b.updatedAt - a.updatedAt)
+    return sorted
+  }, [projects, search, projectSort])
 
   const defaultName = useMemo(() => {
     const base = 'Meu projeto'
@@ -77,6 +95,13 @@ export function ProjectList({
     while (used.has(`${base} ${n}`)) n++
     return `${base} ${n}`
   }, [projects])
+
+  const existingNames = useMemo(() => (projects ?? []).map((p) => p.name), [projects])
+  const takenNames = useMemo(() => new Set(existingNames), [existingNames])
+
+  // Referência estável: inline, `listProTemplates()` novo a cada render entraria
+  // nas deps do reset do modal e apagaria o nome enquanto a criança digita.
+  const templates = useMemo(() => (professional ? listProTemplates() : undefined), [professional])
 
   const handleCreate = async (name: string, opts?: NewProjectCreateOptions) => {
     const created =
@@ -114,21 +139,44 @@ export function ProjectList({
 
         <main className="flex-1 overflow-auto px-6 py-6">
           <div className="mx-auto max-w-5xl">
-            <div className="mb-6 flex items-center justify-between gap-4">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <h2 className="text-lg font-semibold">{t('projects.title')}</h2>
-              <input
-                name="project-search"
-                aria-label={t('projects.search')}
-                autoComplete="off"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('projects.search')}
-                className="w-72 rounded-md border border-sz-border bg-sz-panel px-3 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent focus-visible:ring-2 focus-visible:ring-sz-accent/60"
-              />
+              <div className="flex items-center gap-2">
+                <select
+                  name="project-sort"
+                  aria-label={t('projects.sort')}
+                  value={projectSort}
+                  onChange={(e) => void setProjectSort(e.target.value as ProjectSortOrder)}
+                  className="rounded-md border border-sz-border bg-sz-panel px-2 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent"
+                >
+                  <option value="recent">{t('projects.sortRecent')}</option>
+                  <option value="name">{t('projects.sortName')}</option>
+                </select>
+                <input
+                  name="project-search"
+                  aria-label={t('projects.search')}
+                  autoComplete="off"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t('projects.search')}
+                  className="w-72 rounded-md border border-sz-border bg-sz-panel px-3 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent focus-visible:ring-2 focus-visible:ring-sz-accent/60"
+                />
+              </div>
             </div>
 
             {filtered === null ? (
-              <p className="text-sm text-sz-fg-soft">Carregando…</p>
+              // Skeleton na MESMA grade dos cards (h-44): sem layout shift nem
+              // tela "travada" enquanto o IndexedDB responde.
+              <output aria-label="Carregando projetos" className="block">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="h-44 animate-pulse rounded-lg border border-sz-border bg-sz-panel"
+                    />
+                  ))}
+                </div>
+              </output>
             ) : filtered.length === 0 && projects?.length === 0 ? (
               // Primeiro uso: a vitrine É o onboarding (jogo pronto em 1 clique),
               // com o "começar do zero" como alternativa.
@@ -165,6 +213,7 @@ export function ProjectList({
                     <ProjectCard
                       key={summary.id}
                       summary={summary}
+                      takenNames={takenNames}
                       onChanged={() => void reload()}
                       onOpen={() => onOpenProject(summary.id)}
                     />
@@ -181,7 +230,8 @@ export function ProjectList({
           onClose={() => setModalOpen(false)}
           onCreate={handleCreate}
           professionalAvailable={professional}
-          templates={professional ? listProTemplates() : undefined}
+          templates={templates}
+          existingNames={existingNames}
         />
       </div>
     </StudioThemeProvider>

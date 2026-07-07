@@ -58,6 +58,7 @@ export const ptBR: Record<string, string> = {
   'console.empty': 'Sem mensagens. Use console.log para registrar algo.',
   'console.message': '1 mensagem',
   'console.messages': '{count} mensagens',
+  'console.showBlock': 'Ver o bloco que causou o erro',
 
   'ai.placeholder':
     'O ajudante de IA ainda está em construção. Logo ele chega para criar junto com você!',
@@ -78,6 +79,9 @@ export const ptBR: Record<string, string> = {
   'projects.rename': 'Renomear',
   'projects.delete': 'Excluir',
   'projects.search': 'Buscar projeto…',
+  'projects.sort': 'Ordenar projetos',
+  'projects.sortRecent': 'Mais recentes',
+  'projects.sortName': 'Nome (A–Z)',
   'projects.empty': 'Você ainda não tem projetos. Crie o primeiro!',
   'projects.emptySearch': 'Nenhum projeto encontrado para essa busca.',
   'projects.confirmDelete': "Excluir o projeto '{name}'? Esta ação não pode ser desfeita.",
@@ -86,6 +90,7 @@ export const ptBR: Record<string, string> = {
   'projects.newModal.placeholder': 'Meu projeto',
   'projects.newModal.create': 'Criar e abrir',
   'projects.newModal.cancel': 'Cancelar',
+  'projects.newModal.duplicate': 'Já existe um projeto com esse nome. Escolha outro.',
   'projects.importError': 'Não foi possível importar: {reason}',
   'projects.importNotJson':
     'Esse arquivo não parece ser um projeto do Studio. Escolha um arquivo .json que você exportou aqui.',
@@ -98,6 +103,8 @@ export const ptBR: Record<string, string> = {
     '{count} extensão(ões) foram ignoradas (pedem permissões não liberadas).',
   'projects.importWarn.blocks':
     'Os blocos deste projeto usam uma novidade que esta versão ainda não conhece ({reason}), então eles não apareceram. O código continua guardado.',
+  'projects.importWarn.unknownBlocks':
+    'Este projeto usa blocos que ainda não existem aqui: {types}. Por isso os blocos não apareceram — o código continua guardado.',
   'projects.importWarn.program':
     'Parte da programação salva não pôde ser lida e o projeto abriu vazio.',
   'projects.importWarn.proDowngrade':

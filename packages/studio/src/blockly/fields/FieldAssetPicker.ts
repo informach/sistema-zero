@@ -15,6 +15,45 @@ interface AssetAccessor {
 }
 
 /**
+ * Fator de ampliação sugerido para um asset: pixel art pequena (16/32) sobe
+ * para perto de ~48–64px por MÚLTIPLO INTEIRO (nítido com o nearest do
+ * runtime); imagem já grande fica no tamanho real. Um fator só para W e H —
+ * preserva a proporção de assets não-quadrados.
+ */
+export function suggestedSpriteSize(
+  width: number,
+  height: number,
+): { w: number; h: number } | null {
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null
+  const factor = Math.max(1, Math.round(48 / Math.max(width, height)))
+  return { w: width * factor, h: height * factor }
+}
+
+/**
+ * Preenche os soquetes W/H do bloco com o tamanho sugerido do asset escolhido.
+ * SÓ mexe em SHADOW `sz_val_number`: valor que a criança plugou ou editou (o
+ * shadow editado materializa em bloco real) nunca é sobrescrito. Zero impacto
+ * no round-trip — é o mesmo que digitar o número no soquete.
+ */
+function applySuggestedSize(field: Blockly.Field, asset: ProjectAsset): void {
+  if (!asset.width || !asset.height) return
+  const size = suggestedSpriteSize(asset.width, asset.height)
+  if (!size) return
+  const block = field.getSourceBlock()
+  if (!block) return
+  const pairs: Array<[string, number]> = [
+    ['W', size.w],
+    ['H', size.h],
+  ]
+  for (const [inputName, value] of pairs) {
+    const target = block.getInput(inputName)?.connection?.targetBlock()
+    if (target?.isShadow() && target.type === 'sz_val_number') {
+      target.setFieldValue(String(value), 'NUM')
+    }
+  }
+}
+
+/**
  * Reaplica o `data-sz-theme` do root no conteúdo portalado do DropDownDiv (vive
  * sob document.body, fora do escopo de tema). Mesmo padrão do FieldColourSZ.
  */
@@ -71,8 +110,15 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
         label.style.cssText =
           'font-size:9px;max-width:46px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--color-sz-fg);'
         btn.append(im, label)
+        if (a.width && a.height) {
+          const dims = document.createElement('span')
+          dims.textContent = `${a.width}×${a.height}`
+          dims.style.cssText = 'font-size:8px;color:var(--color-sz-fg-soft);'
+          btn.appendChild(dims)
+        }
         btn.addEventListener('click', () => {
           this.setValue(a.name)
+          applySuggestedSize(this, a)
           Blockly.DropDownDiv.hideIfOwner(this)
         })
         grid.appendChild(btn)

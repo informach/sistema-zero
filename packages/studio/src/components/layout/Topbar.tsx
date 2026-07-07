@@ -28,6 +28,7 @@ import {
   type MenuItem,
   type MenuSection,
 } from '#ui'
+import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
 import { exportProjectSource } from '../../export'
 import { downloadProjectAsJSON, triggerDownload } from '../../export/download'
 import { useProjectStore } from '../../state/projectStore'
@@ -151,6 +152,15 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       } catch {
         return
       }
+    }
+    // Miniatura do card: fire-and-forget (iframe próprio no body sobrevive ao
+    // unmount; a gravação exige o meta local existir, então persistence 'none'
+    // vira no-op). Nunca atrasa nem bloqueia a saída.
+    if (persistence.hasAdapter) {
+      const project = stores
+        ? stores.project.getState().project
+        : useProjectStore.getState().project
+      if (project) void captureAndStoreProjectThumb(project)
     }
     onExit()
   }
