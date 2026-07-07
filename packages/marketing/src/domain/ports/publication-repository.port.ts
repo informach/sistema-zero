@@ -49,4 +49,31 @@ export interface PublicationRepository {
     leaseMs: number,
     maxAttempts: number,
   ): Promise<Publication[]>
+  /**
+   * Claim do publisher-worker (ramo AUTO): publicações `auto` agendadas dentro
+   * do LEAD de upload antecipado (`scheduled_at <= now + leadMs`) + presas em
+   * `publishing` com lease vencido (reaper — re-claim incrementa attempts).
+   * A linha claimada vira `publishing` com lease em `next_attempt_at`.
+   */
+  claimDueAutoPublish(input: {
+    now: Date
+    leadMs: number
+    limit: number
+    leaseMs: number
+    maxAttempts: number
+    networks: Network[]
+  }): Promise<Publication[]>
+  /**
+   * Publicações `published` da rede com post externo e coleta de métricas
+   * VENCIDA (nunca coletada ou anterior a `staleBefore`), publicadas depois de
+   * `since` (teto de idade — vídeo antigo sai do radar).
+   */
+  listPublishedForMetrics(input: {
+    network: Network
+    since: Date
+    staleBefore: Date
+    limit: number
+  }): Promise<Publication[]>
+  /** Marca a coleta (não mexe em version — campo operacional do worker). */
+  updateMetricsCollectedAt(ids: string[], at: Date): Promise<void>
 }

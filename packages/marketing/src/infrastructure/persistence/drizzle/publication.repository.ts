@@ -1,9 +1,10 @@
-import { and, asc, count, eq, gte, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import { and, asc, count, eq, gte, inArray, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import type {
   PublicationListItem,
   PublicationRepository,
   PublicationsWindowFilter,
 } from '../../../domain/ports/publication-repository.port'
+import type { Network } from '../../../domain/publication/publication'
 import type { Publication } from '../../../domain/publication/publication-record'
 import type { Database } from './db'
 import { contents, publications } from './schema'
@@ -171,5 +172,113 @@ export class DrizzlePublicationRepository implements PublicationRepository {
         updatedAt: now,
       }))
     })
+  }
+
+  async claimDueAutoPublish(input: {
+    now: Date
+    leadMs: number
+    limit: number
+    leaseMs: number
+    maxAttempts: number
+    networks: Network[]
+  }): Promise<Publication[]> {
+    if (input.networks.length === 0) return []
+    const { now } = input
+    const leadUntil = new Date(now.getTime() + input.leadMs)
+    return this.db.transaction(async (tx) => {
+      const due = await tx
+        .select()
+        .from(publications)
+        .where(
+          and(
+            eq(publications.publishMode, 'auto'),
+            inArray(publications.network, input.networks),
+            or(
+              // Fresca: agendada dentro do LEAD (upload antecipado) e elegível.
+              and(
+                eq(publications.status, 'scheduled'),
+                isNotNull(publications.scheduledAt),
+                lte(publications.scheduledAt, leadUntil),
+                or(isNull(publications.nextAttemptAt), lte(publications.nextAttemptAt, now)),
+                lt(publications.attempts, input.maxAttempts),
+              ),
+              // Reaper: presa em publishing com lease vencido (crash no meio).
+              and(eq(publications.status, 'publishing'), lte(publications.nextAttemptAt, now)),
+            ),
+          ),
+        )
+        .orderBy(asc(publications.scheduledAt), asc(publications.id))
+        .limit(input.limit)
+        .for('update', { skipLocked: true })
+      if (due.length === 0) return []
+      const leaseUntil = new Date(now.getTime() + input.leaseMs)
+      // Re-claim de zumbi (já publishing) incrementa attempts — limita retrabalho
+      // de um claim morto; claim fresco não gasta tentativa (outcomes decidem).
+      const freshIds = due.filter((r) => r.status !== 'publishing').map((r) => r.id)
+      const staleIds = due.filter((r) => r.status === 'publishing').map((r) => r.id)
+      if (freshIds.length > 0) {
+        await tx
+          .update(publications)
+          .set({
+            status: 'publishing',
+            nextAttemptAt: leaseUntil,
+            version: sql`${publications.version} + 1`,
+            updatedAt: now,
+          })
+          .where(inArray(publications.id, freshIds))
+      }
+      if (staleIds.length > 0) {
+        await tx
+          .update(publications)
+          .set({
+            attempts: sql`${publications.attempts} + 1`,
+            nextAttemptAt: leaseUntil,
+            version: sql`${publications.version} + 1`,
+            updatedAt: now,
+          })
+          .where(inArray(publications.id, staleIds))
+      }
+      return due.map((r) => ({
+        ...r,
+        status: 'publishing' as const,
+        attempts: r.status === 'publishing' ? r.attempts + 1 : r.attempts,
+        nextAttemptAt: leaseUntil,
+        version: r.version + 1,
+        updatedAt: now,
+      }))
+    })
+  }
+
+  async listPublishedForMetrics(input: {
+    network: Network
+    since: Date
+    staleBefore: Date
+    limit: number
+  }): Promise<Publication[]> {
+    return this.db
+      .select()
+      .from(publications)
+      .where(
+        and(
+          eq(publications.network, input.network),
+          eq(publications.status, 'published'),
+          isNotNull(publications.externalPostId),
+          gte(publications.publishedAt, input.since),
+          or(
+            isNull(publications.metricsLastCollectedAt),
+            lt(publications.metricsLastCollectedAt, input.staleBefore),
+          ),
+        ),
+      )
+      .orderBy(asc(publications.metricsLastCollectedAt), asc(publications.id))
+      .limit(input.limit)
+  }
+
+  async updateMetricsCollectedAt(ids: string[], at: Date): Promise<void> {
+    if (ids.length === 0) return
+    await this.db
+      .update(publications)
+      .set({ metricsLastCollectedAt: at })
+      .where(inArray(publications.id, ids))
   }
 }

@@ -25,8 +25,10 @@ export interface PublishInput {
   account: SocialAccount
   /** Access token já ABERTO (só em memória — nunca persistir em claro). */
   accessToken: string
-  /** Assets na ordem do carrossel (ou [asset único] p/ vídeo). */
+  /** Assets PRONTOS do conteúdo (o publisher escolhe vídeo/capa por kind/MIME). */
   assets: MediaAsset[]
+  /** Lê um range de bytes do asset (upload em chunks — memória O(chunk)). */
+  assetBytes(asset: MediaAsset, start: number, endInclusive: number): Promise<Uint8Array>
   /** Checkpoint atual (`publications.provider_session`). */
   session: Record<string, unknown>
   /**

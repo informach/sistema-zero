@@ -10,6 +10,7 @@ import { type DriveRoutesDeps, driveRoutes } from './routes/drive.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type IdeasRoutesDeps, ideasRoutes } from './routes/ideas.routes'
 import { type MediaRoutesDeps, mediaRoutes } from './routes/media.routes'
+import { type MetricsRoutesDeps, metricsRoutes } from './routes/metrics.routes'
 import { type OAuthRoutesDeps, oauthRoutes } from './routes/oauth.routes'
 import { type PublicationsRoutesDeps, publicationsRoutes } from './routes/publications.routes'
 
@@ -25,6 +26,7 @@ export interface HttpDeps {
   oauth: OAuthRoutesDeps
   accounts: AccountsRoutesDeps
   drive: DriveRoutesDeps
+  metrics: MetricsRoutesDeps
 }
 
 const OVERSIZE = new WeakSet<Request>()
@@ -91,4 +93,5 @@ export function createServer(deps: HttpDeps) {
     .use(oauthRoutes(deps.oauth))
     .use(accountsRoutes(deps.accounts))
     .use(driveRoutes(deps.drive))
+    .use(metricsRoutes(deps.metrics))
 }

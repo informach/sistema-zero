@@ -6,6 +6,7 @@ import { IdeaService } from '../src/application/ideas/idea.service'
 import { PromoteIdeaService } from '../src/application/ideas/promote-idea.service'
 import { DriveImportService } from '../src/application/media/drive.service'
 import { MediaService } from '../src/application/media/media.service'
+import { MetricsService } from '../src/application/metrics/metrics.service'
 import { PublicationService } from '../src/application/publications/publication.service'
 import type { Network } from '../src/domain/publication/publication'
 import { loadEnv } from '../src/infrastructure/config/env'
@@ -20,6 +21,7 @@ import {
   InMemoryContentRepository,
   InMemoryIdeaRepository,
   InMemoryMediaAssetRepository,
+  InMemoryMetricsRepository,
   InMemoryOAuthStateRepository,
   InMemoryPublicationRepository,
   InMemorySocialAccountRepository,
@@ -47,6 +49,7 @@ export interface TestApp {
     publications: InMemoryPublicationRepository
     accounts: InMemorySocialAccountRepository
     oauthStates: InMemoryOAuthStateRepository
+    metrics: InMemoryMetricsRepository
   }
   store: FakeMediaStore
   provider: FakeOAuthProvider
@@ -91,7 +94,15 @@ export function buildTestApp(
   const ideaService = new IdeaService(ideas, now, idGen)
   const contentService = new ContentService(contents, checklist, comments, publications, now, idGen)
   const promoteService = new PromoteIdeaService(ideaService, contentService)
-  const publicationService = new PublicationService(publications, contentService, now, idGen)
+  const publicationService = new PublicationService(
+    publications,
+    contentService,
+    now,
+    idGen,
+    overrides.autoCapableNetworks
+      ? { accounts, capableNetworks: overrides.autoCapableNetworks }
+      : null,
+  )
   const mediaService = new MediaService(
     assets,
     contents,
@@ -131,6 +142,8 @@ export function buildTestApp(
     now,
     idGen,
   )
+  const metrics = new InMemoryMetricsRepository()
+  const metricsService = new MetricsService(accounts, publications, metrics)
 
   const app = createServer({
     env,
@@ -172,11 +185,26 @@ export function buildTestApp(
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
+    metrics: {
+      metrics: metricsService,
+      internalToken: INTERNAL_TOKEN,
+      requireStaffEnabled: true,
+    },
   })
 
   return {
     app,
-    repos: { ideas, contents, checklist, comments, assets, publications, accounts, oauthStates },
+    repos: {
+      ideas,
+      contents,
+      checklist,
+      comments,
+      assets,
+      publications,
+      accounts,
+      oauthStates,
+      metrics,
+    },
     store,
     provider,
     driveClient,

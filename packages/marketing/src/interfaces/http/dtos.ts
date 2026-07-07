@@ -142,6 +142,8 @@ export const PublicationPatchBody = t.Object({
   coverAssetId: NULLABLE_UUID,
   scheduledAt: NULLABLE_ISO_DATE,
   publishMode: t.Optional(t.Union([t.Literal('auto'), t.Literal('manual')])),
+  // Conta do modo automático (obrigatória quando há mais de uma conta apta).
+  socialAccountId: NULLABLE_UUID,
   version: VERSION,
 })
 

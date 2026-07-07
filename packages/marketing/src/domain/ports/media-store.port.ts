@@ -32,4 +32,10 @@ export interface MediaStore {
     sizeBytes: number
     body: ReadableStream<Uint8Array>
   }): Promise<void>
+  /**
+   * Lê um RANGE do objeto (upload resumable do YouTube em chunks de 8MiB —
+   * memória O(chunk), nunca o vídeo inteiro). `endInclusive` segue a semântica
+   * HTTP Range (`bytes=start-end`).
+   */
+  getRange(input: { key: string; start: number; endInclusive: number }): Promise<Uint8Array>
 }

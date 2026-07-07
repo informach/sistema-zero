@@ -91,6 +91,7 @@ export function publicationsRoutes(deps: PublicationsRoutesDeps) {
           coverAssetId: body.coverAssetId,
           scheduledAt: body.scheduledAt === undefined ? undefined : parseIsoDate(body.scheduledAt),
           publishMode: body.publishMode,
+          socialAccountId: body.socialAccountId,
           version: body.version,
         }),
       { params: IdParams, body: PublicationPatchBody },

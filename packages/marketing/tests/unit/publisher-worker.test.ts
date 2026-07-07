@@ -18,6 +18,7 @@ const CONFIG = {
   maxAttempts: 3,
   retryBaseMs: 60_000,
   retryMaxMs: 30 * 60_000,
+  autoLeadMs: 6 * 60 * 60_000,
 }
 
 function makeContent(): Content {
@@ -86,6 +87,7 @@ function setup(overrides: { phones?: string[]; clockStart?: Date } = {}) {
       recipientName: 'Equipe',
       appUrl: 'http://app.test',
     },
+    auto: null,
     now: () => currentTime,
     logger: silentLogger,
     config: CONFIG,

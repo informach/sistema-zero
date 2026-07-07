@@ -141,6 +141,31 @@ const EnvSchema = z.object({
     .int()
     .positive()
     .default(20 * 60_000),
+
+  // ── YouTube (publisher automático — F2) ─────────────────────────────────────
+  // Upload ANTECIPADO: publicações auto agendadas dentro do lead sobem privadas
+  // com `status.publishAt` nativo (o YouTube publica sozinho no horário).
+  YT_UPLOAD_LEAD_HOURS: z.coerce.number().int().positive().default(6),
+  // Chunk do upload resumable — MÚLTIPLO de 256KB (exigência do protocolo).
+  YT_UPLOAD_CHUNK_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(8 * 1024 * 1024)
+    .refine((v) => v % 262_144 === 0, { message: 'deve ser múltiplo de 262144 (256KB)' }),
+  // Orçamento diário (reset à meia-noite PT). `YT_VIDEOS_INSERT_UNITS=1600` é o
+  // fail-safe p/ projetos no modelo antigo de quota; no modelo novo (insert = 1
+  // unit, cap 100 uploads/dia) sete `=1` após conferir no console do Google.
+  YT_QUOTA_BUDGET_UNITS: z.coerce.number().int().positive().default(9000),
+  YT_VIDEOS_INSERT_UNITS: z.coerce.number().int().positive().default(1600),
+  YT_UPLOAD_DAILY_CAP: z.coerce.number().int().positive().default(20),
+  // Métricas básicas YT (snapshots de canal/publicações).
+  YT_METRICS_INTERVAL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(6 * 60 * 60 * 1000),
+  YT_METRICS_MAX_AGE_DAYS: z.coerce.number().int().positive().default(90),
 })
 
 export type Env = z.infer<typeof EnvSchema>

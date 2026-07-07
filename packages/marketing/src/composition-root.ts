@@ -7,14 +7,20 @@ import { IdeaService } from './application/ideas/idea.service'
 import { PromoteIdeaService } from './application/ideas/promote-idea.service'
 import { DriveImportService } from './application/media/drive.service'
 import { MediaService } from './application/media/media.service'
+import { MetricsService } from './application/metrics/metrics.service'
 import { PublicationService } from './application/publications/publication.service'
+import { YtQuotaGuard } from './application/publications/yt-quota-guard'
 import { MediaNotConfiguredError } from './domain/marketing-errors'
 import type { MediaStore } from './domain/ports/media-store.port'
+import type { SocialPublisher } from './domain/ports/social-publisher.port'
+import type { Network } from './domain/publication/publication'
 import { type Env, googleConfig, r2Config, reminderConfig } from './infrastructure/config/env'
 import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
 import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
 import { R2MediaStore } from './infrastructure/gateways/r2/r2-media-store'
+import { YoutubeClient } from './infrastructure/gateways/youtube/youtube-client'
+import { YoutubePublisher } from './infrastructure/gateways/youtube/youtube-publisher'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleChecklistRepository } from './infrastructure/persistence/drizzle/checklist.repository'
 import { DrizzleCommentRepository } from './infrastructure/persistence/drizzle/comment.repository'
@@ -22,13 +28,16 @@ import { DrizzleContentRepository } from './infrastructure/persistence/drizzle/c
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleIdeaRepository } from './infrastructure/persistence/drizzle/idea.repository'
 import { DrizzleMediaAssetRepository } from './infrastructure/persistence/drizzle/media-asset.repository'
+import { DrizzleMetricsRepository } from './infrastructure/persistence/drizzle/metrics.repository'
 import { DrizzleOAuthStateRepository } from './infrastructure/persistence/drizzle/oauth-state.repository'
 import { DrizzlePublicationRepository } from './infrastructure/persistence/drizzle/publication.repository'
+import { DrizzleQuotaUsageRepository } from './infrastructure/persistence/drizzle/quota-usage.repository'
 import { DrizzleSocialAccountRepository } from './infrastructure/persistence/drizzle/social-account.repository'
 import { createSecretBox } from './infrastructure/security/secret-box'
 import { MediaTransferWorker } from './infrastructure/workers/media-transfer-worker'
 import { PublisherWorker } from './infrastructure/workers/publisher-worker'
 import { TokenRefreshWorker } from './infrastructure/workers/token-refresh-worker'
+import { YtMetricsWorker } from './infrastructure/workers/yt-metrics-worker'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -44,6 +53,8 @@ export interface Application {
  * hub=51020304050607081).
  */
 const RETENTION_ADVISORY_LOCK_KEY = '61120324050607091'
+/** Lock do ciclo de métricas do YouTube (mesma família, chave própria). */
+const YT_METRICS_ADVISORY_LOCK_KEY = '61120324050607092'
 
 /** MediaStore quando o R2 não está configurado: toda chamada vira 503 amigável. */
 const notConfiguredMediaStore: MediaStore = {
@@ -52,6 +63,7 @@ const notConfiguredMediaStore: MediaStore = {
   head: () => Promise.reject(new MediaNotConfiguredError()),
   delete: () => Promise.reject(new MediaNotConfiguredError()),
   put: () => Promise.reject(new MediaNotConfiguredError()),
+  getRange: () => Promise.reject(new MediaNotConfiguredError()),
 }
 
 /**
@@ -137,7 +149,19 @@ export function createApplication(env: Env): Application {
     idGen,
   )
   const promoteService = new PromoteIdeaService(ideaService, contentService)
-  const publicationService = new PublicationService(publicationRepo, contentService, now, idGen)
+  // Publisher automático do YouTube: só monta com Google (OAuth/tokens) E R2
+  // (bytes do vídeo) configurados — ausente = rede segue em modo lembrete.
+  const youtubeEnabled = Boolean(googleDeps && r2)
+  const autoCapableNetworks: ReadonlySet<Network> = new Set(
+    youtubeEnabled ? (['youtube'] as const) : [],
+  )
+  const publicationService = new PublicationService(
+    publicationRepo,
+    contentService,
+    now,
+    idGen,
+    youtubeEnabled ? { accounts: accountRepo, capableNetworks: autoCapableNetworks } : null,
+  )
   const mediaService = new MediaService(
     assetRepo,
     contentRepo,
@@ -150,8 +174,6 @@ export function createApplication(env: Env): Application {
     now,
     idGen,
   )
-  // Redes com publisher automático montado (F2 liga 'youtube' aqui).
-  const autoCapableNetworks = new Set<never>()
   const accountService = new AccountService(
     accountRepo,
     googleDeps ? { provider: googleDeps.provider, secretBox: googleDeps.secretBox } : null,
@@ -177,6 +199,30 @@ export function createApplication(env: Env): Application {
     now,
     idGen,
   )
+  const metricsRepo = new DrizzleMetricsRepository(db)
+  const metricsService = new MetricsService(accountRepo, publicationRepo, metricsRepo)
+
+  // Publisher automático (F2): YouTube com quota guard (reset à meia-noite PT).
+  const quotaGuard = new YtQuotaGuard(
+    new DrizzleQuotaUsageRepository(db),
+    { budgetUnits: env.YT_QUOTA_BUDGET_UNITS, uploadDailyCap: env.YT_UPLOAD_DAILY_CAP },
+    now,
+  )
+  const publishers = new Map<Network, SocialPublisher>()
+  if (youtubeEnabled) {
+    publishers.set(
+      'youtube',
+      new YoutubePublisher({
+        api: new YoutubeClient(),
+        quota: quotaGuard,
+        config: {
+          chunkBytes: env.YT_UPLOAD_CHUNK_BYTES,
+          insertUnits: env.YT_VIDEOS_INSERT_UNITS,
+        },
+        now,
+      }),
+    )
+  }
 
   // Workers (processo único, padrão messaging: claim SKIP LOCKED + lease).
   const publisherWorker = new PublisherWorker({
@@ -190,6 +236,17 @@ export function createApplication(env: Env): Application {
           appUrl: google?.appUrl ?? env.MARKETING_APP_URL ?? '',
         }
       : null,
+    auto:
+      publishers.size > 0
+        ? {
+            publishers,
+            accounts: accountRepo,
+            accountService,
+            assets: assetRepo,
+            store: mediaStore,
+            publicationService,
+          }
+        : null,
     now,
     logger,
     config: {
@@ -199,6 +256,7 @@ export function createApplication(env: Env): Application {
       maxAttempts: env.REMINDER_MAX_ATTEMPTS,
       retryBaseMs: env.REMINDER_RETRY_BASE_MS,
       retryMaxMs: env.REMINDER_RETRY_MAX_MS,
+      autoLeadMs: env.YT_UPLOAD_LEAD_HOURS * 60 * 60_000,
     },
   })
   const mediaTransferWorker = new MediaTransferWorker({
@@ -226,6 +284,34 @@ export function createApplication(env: Env): Application {
       marginMs: env.TOKEN_REFRESH_MARGIN_MS,
     },
   })
+  const ytPublisher = publishers.get('youtube')
+  const ytMetricsWorker =
+    youtubeEnabled && ytPublisher
+      ? new YtMetricsWorker({
+          api: new YoutubeClient(),
+          accounts: accountRepo,
+          accountService,
+          publications: publicationRepo,
+          metrics: metricsRepo,
+          quota: quotaGuard,
+          // Advisory xact-lock: só uma réplica coleta por ciclo (solta no commit).
+          withLock: async (fn) => {
+            await connection.sql.begin(async (gate) => {
+              const [row] = await gate`
+                select pg_try_advisory_xact_lock(${YT_METRICS_ADVISORY_LOCK_KEY}::bigint) as locked
+              `
+              if (!row?.locked) return
+              await fn()
+            })
+          },
+          now,
+          logger,
+          config: {
+            intervalMs: env.YT_METRICS_INTERVAL_MS,
+            maxAgeDays: env.YT_METRICS_MAX_AGE_DAYS,
+          },
+        })
+      : null
 
   // Readiness (`/readyz`, healthcheck do Railway): banco respondendo.
   const readiness = async () => {
@@ -275,6 +361,11 @@ export function createApplication(env: Env): Application {
     },
     drive: {
       drive: driveService,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireStaffEnabled: env.REQUIRE_STAFF,
+    },
+    metrics: {
+      metrics: metricsService,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
     },
@@ -335,6 +426,7 @@ export function createApplication(env: Env): Application {
       publisherWorker.start()
       mediaTransferWorker.start()
       tokenRefreshWorker.start()
+      ytMetricsWorker?.start()
       // `::` = dual-stack — necessário p/ o private networking do Railway (IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
@@ -346,6 +438,7 @@ export function createApplication(env: Env): Application {
         publisherWorker.stop(),
         mediaTransferWorker.stop(),
         tokenRefreshWorker.stop(),
+        ytMetricsWorker?.stop() ?? Promise.resolve(),
       ])
       try {
         await server.stop()

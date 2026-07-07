@@ -99,6 +99,18 @@ export class R2MediaStore implements MediaStore {
     await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }))
   }
 
+  async getRange(input: { key: string; start: number; endInclusive: number }): Promise<Uint8Array> {
+    const result = await this.transferClient.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: input.key,
+        Range: `bytes=${input.start}-${input.endInclusive}`,
+      }),
+    )
+    if (!result.Body) throw new Error('R2 não devolveu corpo no GET por range')
+    return result.Body.transformToByteArray()
+  }
+
   async put(input: {
     key: string
     contentType: string

@@ -21,6 +21,11 @@ import type {
 } from '../../src/domain/ports/media-asset-repository.port'
 import type { HeadResult, MediaStore } from '../../src/domain/ports/media-store.port'
 import type {
+  AccountSnapshot,
+  MetricsRepository,
+  PublicationSnapshot,
+} from '../../src/domain/ports/metrics-repository.port'
+import type {
   AccountIdentity,
   OAuthProvider,
   OAuthTokenSet,
@@ -293,6 +298,76 @@ export class InMemoryPublicationRepository implements PublicationRepository {
     })
     return { items, total: all.length }
   }
+  async claimDueAutoPublish(input: {
+    now: Date
+    leadMs: number
+    limit: number
+    leaseMs: number
+    maxAttempts: number
+    networks: Network[]
+  }): Promise<Publication[]> {
+    const networks = new Set(input.networks)
+    const leadUntil = input.now.getTime() + input.leadMs
+    const due = [...this.rows.values()]
+      .filter((p) => {
+        if (p.publishMode !== 'auto' || !networks.has(p.network)) return false
+        if (p.status === 'scheduled') {
+          return (
+            p.scheduledAt !== null &&
+            p.scheduledAt.getTime() <= leadUntil &&
+            (p.nextAttemptAt === null || p.nextAttemptAt.getTime() <= input.now.getTime()) &&
+            p.attempts < input.maxAttempts
+          )
+        }
+        if (p.status === 'publishing') {
+          return p.nextAttemptAt !== null && p.nextAttemptAt.getTime() <= input.now.getTime()
+        }
+        return false
+      })
+      .sort((a, b) => {
+        const at = a.scheduledAt?.getTime() ?? 0
+        const bt = b.scheduledAt?.getTime() ?? 0
+        return at === bt ? a.id.localeCompare(b.id) : at - bt
+      })
+      .slice(0, input.limit)
+    const leaseUntil = new Date(input.now.getTime() + input.leaseMs)
+    for (const pub of due) {
+      if (pub.status === 'publishing') pub.attempts += 1
+      pub.status = 'publishing'
+      pub.nextAttemptAt = leaseUntil
+      pub.version += 1
+      pub.updatedAt = input.now
+    }
+    return due.map(clone)
+  }
+
+  async listPublishedForMetrics(input: {
+    network: Network
+    since: Date
+    staleBefore: Date
+    limit: number
+  }): Promise<Publication[]> {
+    return [...this.rows.values()]
+      .filter(
+        (p) =>
+          p.network === input.network &&
+          p.status === 'published' &&
+          p.externalPostId !== null &&
+          p.publishedAt !== null &&
+          p.publishedAt >= input.since &&
+          (p.metricsLastCollectedAt === null || p.metricsLastCollectedAt < input.staleBefore),
+      )
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .slice(0, input.limit)
+      .map(clone)
+  }
+  async updateMetricsCollectedAt(ids: string[], at: Date): Promise<void> {
+    for (const id of ids) {
+      const pub = this.rows.get(id)
+      if (pub) pub.metricsLastCollectedAt = at
+    }
+  }
+
   async claimDueManualReminders(
     now: Date,
     limit: number,
@@ -358,6 +433,13 @@ export class FakeMediaStore implements MediaStore {
     this.deleted.push(key)
     this.objects.delete(key)
   }
+  async getRange(input: { key: string; start: number; endInclusive: number }): Promise<Uint8Array> {
+    const size = this.objects.get(input.key)
+    if (size === undefined) throw new Error(`objeto inexistente: ${input.key}`)
+    const end = Math.min(input.endInclusive, size - 1)
+    return new Uint8Array(Math.max(0, end - input.start + 1))
+  }
+
   async put(input: {
     key: string
     contentType: string
@@ -576,6 +658,48 @@ export class FakeReminderNotifier implements ReminderNotifier {
       throw new ReminderSendError('envio falhou', this.failWith === 'permanent')
     }
     this.sent.push(structuredClone(input))
+  }
+}
+
+export class InMemoryMetricsRepository implements MetricsRepository {
+  readonly accountSnapshots: AccountSnapshot[] = []
+  readonly publicationSnapshots: PublicationSnapshot[] = []
+
+  async insertAccountSnapshot(row: AccountSnapshot): Promise<void> {
+    this.accountSnapshots.push(clone(row))
+  }
+  async insertPublicationSnapshots(rows: PublicationSnapshot[]): Promise<void> {
+    for (const row of rows) this.publicationSnapshots.push(clone(row))
+  }
+  async latestAccountSnapshot(socialAccountId: string): Promise<AccountSnapshot | null> {
+    const rows = this.accountSnapshots
+      .filter((r) => r.socialAccountId === socialAccountId)
+      .sort((a, b) => b.capturedAt.getTime() - a.capturedAt.getTime())
+    return rows[0] ? clone(rows[0]) : null
+  }
+  async latestPublicationStats(
+    publicationIds: string[],
+  ): Promise<Map<string, PublicationSnapshot>> {
+    const wanted = new Set(publicationIds)
+    const map = new Map<string, PublicationSnapshot>()
+    for (const row of [...this.publicationSnapshots].sort(
+      (a, b) => b.capturedAt.getTime() - a.capturedAt.getTime(),
+    )) {
+      if (wanted.has(row.publicationId) && !map.has(row.publicationId)) {
+        map.set(row.publicationId, clone(row))
+      }
+    }
+    return map
+  }
+  async listPublicationSnapshots(
+    publicationId: string,
+    limit: number,
+  ): Promise<PublicationSnapshot[]> {
+    return this.publicationSnapshots
+      .filter((r) => r.publicationId === publicationId)
+      .sort((a, b) => b.capturedAt.getTime() - a.capturedAt.getTime())
+      .slice(0, limit)
+      .map(clone)
   }
 }
 

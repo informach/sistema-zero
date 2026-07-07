@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   pgSchema,
+  primaryKey,
   real,
   text,
   timestamp,
@@ -363,6 +364,19 @@ export const metricAccountSnapshots = marketing.table(
   (t) => [index('metric_account_snapshots_idx').on(t.socialAccountId, t.capturedAt)],
 )
 
+// ── Orçamento de quota por provedor (YouTube: reset à meia-noite PT) ─────────
+// `day` = YYYY-MM-DD no fuso do provedor (YouTube: America/Los_Angeles).
+export const providerQuotaUsage = marketing.table(
+  'provider_quota_usage',
+  {
+    provider: text('provider').notNull(),
+    day: text('day').notNull(),
+    units: bigint('units', { mode: 'number' }).notNull().default(0),
+    uploads: integer('uploads').notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.provider, t.day] })],
+)
+
 // ── OAuth: state + PKCE (single-use, TTL curto) ──────────────────────────────
 export const oauthStates = marketing.table(
   'oauth_states',
@@ -391,6 +405,7 @@ export const schema = {
   metricPublicationSnapshots,
   metricAccountSnapshots,
   oauthStates,
+  providerQuotaUsage,
 }
 
 export type IdeaRow = typeof ideas.$inferSelect

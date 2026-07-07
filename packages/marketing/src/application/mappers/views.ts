@@ -142,6 +142,8 @@ export function toPublicationView(pub: Publication) {
     externalPostId: pub.externalPostId,
     externalUrl: pub.externalUrl,
     publishedAt: iso(pub.publishedAt),
+    // O vídeo já subiu ao provedor (metadados congelados; reagendar é resync).
+    hasRemoteVideo: typeof pub.providerSession.videoId === 'string',
     createdAt: pub.createdAt.toISOString(),
     updatedAt: pub.updatedAt.toISOString(),
   }

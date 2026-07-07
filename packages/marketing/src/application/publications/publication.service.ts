@@ -11,6 +11,8 @@ import type {
   PublicationRepository,
   PublicationsWindowFilter,
 } from '../../domain/ports/publication-repository.port'
+import type { SocialAccountRepository } from '../../domain/ports/social-account-repository.port'
+import type { Network } from '../../domain/publication/publication'
 import {
   canCancelPublication,
   canMarkPublished,
@@ -24,6 +26,7 @@ import {
   type PublishMode,
 } from '../../domain/publication/publication'
 import type { Publication } from '../../domain/publication/publication-record'
+import { canAutoPublish } from '../../domain/social-account/social-account'
 import type { Actor } from '../actor'
 import type { ContentService } from '../contents/content.service'
 import {
@@ -49,7 +52,22 @@ export interface UpdatePublicationInput {
   coverAssetId?: string | null
   scheduledAt?: Date | null
   publishMode?: PublishMode
+  /** Conta da publicação automática (obrigatória quando há mais de uma apta). */
+  socialAccountId?: string | null
   version: number
+}
+
+/** Ator de sistema (workers) p/ os stage events derivados. */
+const SYSTEM_ACTOR: Actor = {
+  userId: '00000000-0000-0000-0000-000000000000',
+  displayName: 'Sistema',
+  role: 'system',
+  status: 'active',
+}
+
+/** O vídeo já subiu ao provedor (checkpoint com id salvo)? Metadados congelam. */
+function hasRemoteVideo(pub: Publication): boolean {
+  return typeof pub.providerSession.videoId === 'string'
 }
 
 export class PublicationService {
@@ -58,6 +76,11 @@ export class PublicationService {
     private readonly contentService: ContentService,
     private readonly now: () => Date,
     private readonly idGen: () => string,
+    /** Redes com publisher automático MONTADO (F2: youtube) + contas p/ o binding. */
+    private readonly auto: {
+      accounts: SocialAccountRepository
+      capableNetworks: ReadonlySet<Network>
+    } | null = null,
   ) {}
 
   /** Cria N publicações (cross-post) a partir de um conteúdo APROVADO. */
@@ -147,6 +170,19 @@ export class PublicationService {
     if (!isEditable(pub.status)) {
       throw new InvalidPublicationStateError('Publicação não pode mais ser editada')
     }
+    // PÓS-upload (vídeo já no YouTube): metadados congelam — editar aqui não
+    // mudaria o vídeo remoto e criaria divergência silenciosa.
+    if (
+      hasRemoteVideo(pub) &&
+      (input.caption !== undefined ||
+        input.title !== undefined ||
+        input.tags !== undefined ||
+        input.coverAssetId !== undefined)
+    ) {
+      throw new InvalidPublicationStateError(
+        'O vídeo já subiu ao YouTube. Edite os dados no YouTube Studio, ou cancele e recrie a publicação',
+      )
+    }
     const expectedVersion = input.version
     if (input.caption !== undefined) pub.caption = input.caption
     if (input.title !== undefined) pub.title = input.title
@@ -165,19 +201,46 @@ export class PublicationService {
     }
     if (input.publishMode !== undefined) {
       if (input.publishMode === 'auto') {
-        // Stories nunca têm auto; as demais redes só quando houver conta
-        // conectada + publisher (fases seguintes). Fail-closed por enquanto.
-        throw forcesManualMode(pub.format)
-          ? new AutoPublishUnavailableError('Stories não têm publicação automática (limite da API)')
-          : new AutoPublishUnavailableError()
+        await this.enableAutoMode(pub, input.socialAccountId ?? undefined)
+      } else {
+        pub.publishMode = input.publishMode
       }
-      pub.publishMode = input.publishMode
     }
     pub.version = expectedVersion + 1
     pub.updatedAt = this.now()
     const ok = await this.publications.update(pub, expectedVersion)
     if (!ok) throw new ConcurrencyConflictError()
     return toPublicationView(pub)
+  }
+
+  /**
+   * Liga o modo AUTOMÁTICO: exige publisher montado p/ a rede (F2: youtube) e
+   * conta conectada COM os escopos de publicação; resolve/valida o binding da
+   * conta (única apta = default; várias → o composer precisa indicar).
+   */
+  private async enableAutoMode(pub: Publication, socialAccountId?: string): Promise<void> {
+    if (forcesManualMode(pub.format)) {
+      throw new AutoPublishUnavailableError('Stories não têm publicação automática (limite da API)')
+    }
+    if (!this.auto?.capableNetworks.has(pub.network)) {
+      throw new AutoPublishUnavailableError()
+    }
+    const accounts = await this.auto.accounts.listByNetwork(pub.network)
+    const capable = accounts.filter(canAutoPublish)
+    if (capable.length === 0) {
+      throw new AutoPublishUnavailableError(
+        'Nenhuma conta conectada com os escopos de publicação. Conecte (ou reconecte) em Conexões',
+      )
+    }
+    let account = socialAccountId ? capable.find((a) => a.id === socialAccountId) : undefined
+    if (!account && !socialAccountId && capable.length === 1) account = capable[0]
+    if (!account) {
+      throw socialAccountId
+        ? new AutoPublishUnavailableError('A conta indicada não está apta a publicar')
+        : new ValidationError('Mais de uma conta conectada. Indique a conta da publicação')
+    }
+    pub.publishMode = 'auto'
+    pub.socialAccountId = account.id
   }
 
   /**
@@ -206,6 +269,12 @@ export class PublicationService {
     pub.scheduledAt = scheduledAt
     pub.status = 'scheduled'
     pub.lastError = null
+    // Reagendamento PÓS-upload: o vídeo já está no YouTube com publishAt — o
+    // worker sincroniza o horário nativo via videos.update (fase resync).
+    if (hasRemoteVideo(pub)) {
+      pub.providerSession = { ...pub.providerSession, phase: 'resync_publish_at' }
+      pub.nextAttemptAt = this.now()
+    }
     pub.version = expectedVersion + 1
     pub.updatedAt = this.now()
     const ok = await this.publications.update(pub, expectedVersion)
@@ -222,6 +291,12 @@ export class PublicationService {
     }
     const expectedVersion = pub.version
     pub.status = 'canceled'
+    // Vídeo já enviado (privado, aguardando o publishAt): o cancelamento local
+    // NÃO apaga no provedor — deixa o aviso p/ a limpeza manual no Studio.
+    if (hasRemoteVideo(pub)) {
+      pub.lastError =
+        'O vídeo já está no YouTube (privado). Apague no YouTube Studio se não quiser publicá-lo'
+    }
     pub.version = expectedVersion + 1
     pub.updatedAt = this.now()
     const ok = await this.publications.update(pub, expectedVersion)
@@ -253,6 +328,11 @@ export class PublicationService {
     if (!ok) throw new ConcurrencyConflictError()
     await this.syncContentStage(actor, pub.contentId)
     return toPublicationView(pub)
+  }
+
+  /** Sincronização da etapa derivada disparada pelos WORKERS (ator de sistema). */
+  async syncStageFromWorker(contentId: string): Promise<void> {
+    await this.syncContentStage(SYSTEM_ACTOR, contentId)
   }
 
   /**
