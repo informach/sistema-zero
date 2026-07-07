@@ -1,0 +1,39 @@
+{
+  "name": "@sistemazero/marketing",
+  "version": "0.1.0",
+  "description": "Gerenciamento de marketing digital: pipeline de produção de conteúdo, agendamento/publicação em redes sociais, mídia (R2+Drive) e métricas — DDD + Hexagonal",
+  "type": "module",
+  "private": true,
+  "module": "src/index.ts",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "lint": "biome lint ."
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1032.0",
+    "@aws-sdk/s3-request-presigner": "^3.1032.0",
+    "@elysiajs/swagger": "^1.3.1",
+    "@sentry/bun": "^10.56.0",
+    "@sistemazero/core": "workspace:*",
+    "drizzle-orm": "^0.44.5",
+    "elysia": "^1.4.9",
+    "postgres": "^3.4.7",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.31.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

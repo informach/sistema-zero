@@ -18,6 +18,8 @@ export interface NewProjectModalProps {
   professionalAvailable?: boolean
   /** Templates profissionais oferecidos (quando `professionalAvailable`). */
   templates?: ProTemplate[]
+  /** Nomes já usados — duplicado mostra aviso e desabilita o Criar. */
+  existingNames?: string[]
 }
 
 export function NewProjectModal({
@@ -27,6 +29,7 @@ export function NewProjectModal({
   onCreate,
   professionalAvailable = false,
   templates = [],
+  existingNames,
 }: NewProjectModalProps): JSX.Element | null {
   const [name, setName] = useState(defaultName)
   const [kind, setKind] = useState<'basic' | 'pro'>('basic')
@@ -34,13 +37,18 @@ export function NewProjectModal({
   const [submitting, setSubmitting] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
 
+  // Reseta os campos SÓ na transição fechado→aberto. `defaultName`/`templates`
+  // mudam de REFERÊNCIA a cada render do pai (default `[]`, lista recarregada);
+  // com eles nas deps, o efeito re-disparava a cada tecla e engolia a digitação.
+  const openedRef = useRef(false)
   useEffect(() => {
-    if (open) {
+    if (open && !openedRef.current) {
       setName(defaultName)
       setKind('basic')
       setTemplateId(templates[0]?.id ?? '')
     }
-  }, [open, defaultName, templates])
+    openedRef.current = open
+  })
 
   useEffect(() => {
     if (!open) return
@@ -51,7 +59,8 @@ export function NewProjectModal({
   if (!open) return null
 
   const submit = async () => {
-    if (submitting) return
+    // Guard também aqui: o Enter no input chama submit() sem passar pelo botão.
+    if (submitting || !canSubmit) return
     setSubmitting(true)
     try {
       const opts = kind === 'pro' && templateId ? { kind: 'pro' as const, templateId } : undefined
@@ -61,7 +70,9 @@ export function NewProjectModal({
     }
   }
 
-  const canSubmit = name.trim() && (kind === 'basic' || Boolean(templateId))
+  const trimmed = name.trim()
+  const duplicate = Boolean(trimmed) && (existingNames?.includes(trimmed) ?? false)
+  const canSubmit = trimmed && !duplicate && (kind === 'basic' || Boolean(templateId))
 
   return (
     <Modal
@@ -96,9 +107,15 @@ export function NewProjectModal({
             if (e.key === 'Enter') void submit()
           }}
           placeholder={t('projects.newModal.placeholder')}
+          aria-invalid={duplicate || undefined}
           className="mt-2 w-full rounded border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent focus-visible:ring-2 focus-visible:ring-sz-accent/60"
         />
       </label>
+      {duplicate && (
+        <p role="status" className="mt-2 text-xs text-sz-error">
+          {t('projects.newModal.duplicate')}
+        </p>
+      )}
 
       {professionalAvailable && (
         <fieldset className="mt-4 space-y-2">
