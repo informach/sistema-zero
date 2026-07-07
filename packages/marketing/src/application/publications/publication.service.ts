@@ -7,7 +7,10 @@ import {
   InvalidPublicationStateError,
   PublicationNotFoundError,
 } from '../../domain/marketing-errors'
-import type { PublicationRepository } from '../../domain/ports/publication-repository.port'
+import type {
+  PublicationRepository,
+  PublicationsWindowFilter,
+} from '../../domain/ports/publication-repository.port'
 import {
   canCancelPublication,
   canMarkPublished,
@@ -23,7 +26,15 @@ import {
 import type { Publication } from '../../domain/publication/publication-record'
 import type { Actor } from '../actor'
 import type { ContentService } from '../contents/content.service'
-import { type PublicationView, toPublicationView } from '../mappers/views'
+import {
+  type PublicationListItemView,
+  type PublicationView,
+  toPublicationListItemView,
+  toPublicationView,
+} from '../mappers/views'
+
+/** Janela máxima da listagem por data (3 meses de calendário + folga). */
+const MAX_WINDOW_MS = 92 * 86_400_000
 
 export interface CreatePublicationsInput {
   formats: PublicationFormat[]
@@ -108,6 +119,26 @@ export class PublicationService {
     const pub = await this.publications.byId(id)
     if (!pub) throw new PublicationNotFoundError()
     return toPublicationView(pub)
+  }
+
+  /**
+   * Listagem por janela de `scheduled_at` + filtros (Calendário/Painel). Janela
+   * é OPCIONAL (falhas = só status; atrasadas = só `to`); com from E to, valida
+   * ordem e teto de 92 dias (grade mensal cabe com folga).
+   */
+  async listByWindow(
+    filter: PublicationsWindowFilter,
+  ): Promise<{ items: PublicationListItemView[]; total: number }> {
+    if (filter.from && filter.to) {
+      if (filter.from.getTime() > filter.to.getTime()) {
+        throw new ValidationError('`from` deve ser anterior a `to`')
+      }
+      if (filter.to.getTime() - filter.from.getTime() > MAX_WINDOW_MS) {
+        throw new ValidationError('Janela de datas grande demais (máximo 92 dias)')
+      }
+    }
+    const { items, total } = await this.publications.listByWindow(filter)
+    return { items: items.map(toPublicationListItemView), total }
   }
 
   async update(id: string, input: UpdatePublicationInput): Promise<PublicationView> {

@@ -31,6 +31,18 @@ export class AssetNotFoundError extends DomainError {
     super(message)
   }
 }
+export class AccountNotFoundError extends DomainError {
+  readonly code = 'ACCOUNT_NOT_FOUND'
+  constructor(message = 'Conta social não encontrada') {
+    super(message)
+  }
+}
+export class NetworkNotSupportedError extends DomainError {
+  readonly code = 'NETWORK_NOT_SUPPORTED'
+  constructor(message = 'Rede social não suportada nesta operação') {
+    super(message)
+  }
+}
 
 // ── Validação (400) ──────────────────────────────────────────────────────────
 export class AssetTooLargeError extends DomainError {
@@ -42,6 +54,18 @@ export class AssetTooLargeError extends DomainError {
 export class AssetTypeNotAllowedError extends DomainError {
   readonly code = 'ASSET_TYPE_NOT_ALLOWED'
   constructor(message = 'Tipo de arquivo não permitido') {
+    super(message)
+  }
+}
+export class OAuthStateInvalidError extends DomainError {
+  readonly code = 'OAUTH_STATE_INVALID'
+  constructor(message = 'Autorização inválida ou expirada — comece a conexão de novo') {
+    super(message)
+  }
+}
+export class DriveFileInvalidError extends DomainError {
+  readonly code = 'DRIVE_FILE_INVALID'
+  constructor(message = 'Arquivo do Drive inválido — cole o link do arquivo ou escolha na lista') {
     super(message)
   }
 }
@@ -105,12 +129,26 @@ export class ConcurrencyConflictError extends DomainError {
     super(message)
   }
 }
+export class AccountNotConnectedError extends DomainError {
+  readonly code = 'ACCOUNT_NOT_CONNECTED'
+  constructor(message = 'Nenhuma conta conectada desta rede — conecte em Conexões') {
+    super(message)
+  }
+}
 
 // ── Infra indisponível (503) ─────────────────────────────────────────────────
 export class MediaNotConfiguredError extends DomainError {
   readonly code = 'MEDIA_NOT_CONFIGURED'
   constructor(
     message = 'Armazenamento de mídia não configurado (R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_MARKETING_BUCKET)',
+  ) {
+    super(message)
+  }
+}
+export class OAuthNotConfiguredError extends DomainError {
+  readonly code = 'OAUTH_NOT_CONFIGURED'
+  constructor(
+    message = 'OAuth do Google não configurado (GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET/MARKETING_TOKEN_ENC_KEY/OAUTH_PUBLIC_BASE_URL/MARKETING_APP_URL)',
   ) {
     super(message)
   }

@@ -1,6 +1,7 @@
 import { ValidationError } from '@sistemazero/core/errors'
 import { Elysia } from 'elysia'
 import type { PublicationService } from '../../../application/publications/publication.service'
+import type { PublicationStatus } from '../../../domain/publication/publication'
 import { assertInternalCaller, requireStaff, resolveActor } from '../auth'
 import { parseIsoDate } from '../dates'
 import {
@@ -8,8 +9,35 @@ import {
   MarkPublishedBody,
   PublicationPatchBody,
   PublicationsCreateBody,
+  PublicationsListQuery,
   ScheduleBody,
 } from '../dtos'
+
+const PUB_STATUSES: ReadonlySet<string> = new Set([
+  'draft',
+  'ready',
+  'scheduled',
+  'publishing',
+  'awaiting_manual',
+  'published',
+  'failed',
+  'canceled',
+])
+
+/** CSV de status → array validado (token inválido → 400, nunca filtro silencioso). */
+function parseStatusCsv(csv: string | undefined): PublicationStatus[] | undefined {
+  if (!csv) return undefined
+  const tokens = csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  for (const token of tokens) {
+    if (!PUB_STATUSES.has(token)) {
+      throw new ValidationError(`Status de publicação inválido: "${token}"`)
+    }
+  }
+  return tokens as PublicationStatus[]
+}
 
 export interface PublicationsRoutesDeps {
   publications: PublicationService
@@ -31,6 +59,24 @@ export function publicationsRoutes(deps: PublicationsRoutesDeps) {
         return deps.publications.createForContent(resolveActor(headers), params.id, body)
       },
       { params: IdParams, body: PublicationsCreateBody },
+    )
+    .get(
+      '/marketing/publications',
+      async ({ query }) => {
+        const offset = query.offset ?? 0
+        const page = await deps.publications.listByWindow({
+          from: parseIsoDate(query.from) ?? undefined,
+          to: parseIsoDate(query.to) ?? undefined,
+          statuses: parseStatusCsv(query.status),
+          network: query.network,
+          format: query.format,
+          contentId: query.contentId,
+          limit: query.limit ?? 100,
+          offset,
+        })
+        return { ...page, hasMore: offset + page.items.length < page.total }
+      },
+      { query: PublicationsListQuery },
     )
     .get('/marketing/publications/:id', ({ params }) => deps.publications.get(params.id), {
       params: IdParams,

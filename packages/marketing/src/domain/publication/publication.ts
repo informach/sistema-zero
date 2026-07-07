@@ -41,6 +41,19 @@ export const FORMAT_NETWORK: Record<PublicationFormat, Network> = {
   tt_video: 'tiktok',
 }
 
+/** Rótulos PT dos formatos (mensagens do backend — lembrete/erros). */
+export const FORMAT_LABELS: Record<PublicationFormat, string> = {
+  ig_feed: 'Post no Instagram',
+  ig_carousel: 'Carrossel no Instagram',
+  ig_reels: 'Reels no Instagram',
+  ig_story: 'Story no Instagram',
+  fb_post: 'Post no Facebook',
+  fb_reels: 'Reels no Facebook',
+  yt_video: 'Vídeo no YouTube',
+  yt_short: 'Short no YouTube',
+  tt_video: 'Vídeo no TikTok',
+}
+
 /**
  * Stories não têm API de publicação (em NENHUMA ferramenta) — o formato é
  * SEMPRE `manual` (lembrete na hora + marcar como publicado).

@@ -16,6 +16,7 @@ const PROD_OK: Record<string, string> = {
   FISCAL_HMAC_SECRET: 'fiscal-hmac-secret-16chrs',
   HUB_INTERNAL_TOKEN: 'hub-internal-16-chars-ok',
   MARKETING_INTERNAL_TOKEN: 'marketing-internal-16ch!',
+  MARKETING_HMAC_SECRET: 'marketing-hmac-secret-16',
   PAYMENTS_URL: 'http://payments.railway.internal:3001',
   AUTH_URL: 'http://auth.railway.internal:3002',
   FUNNEL_URL: 'http://funnel.railway.internal:4321',
@@ -73,6 +74,7 @@ describe('loadEnv — fail-fast de produção', () => {
     'FISCAL_HMAC_SECRET',
     'HUB_INTERNAL_TOKEN',
     'MARKETING_INTERNAL_TOKEN',
+    'MARKETING_HMAC_SECRET',
   ])('sem %s → falha (injeção silenciosamente desligada não sobe em prod)', (key) => {
     const source = { ...PROD_OK }
     delete source[key]

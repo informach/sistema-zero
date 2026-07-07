@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream'
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -13,6 +14,8 @@ export interface R2MediaStoreConfig {
   accessKeyId: string
   secretAccessKey: string
   bucket: string
+  /** Timeout do PUT streaming (vídeo de até 2GB — o teto de 30s do client normal o mataria). */
+  transferTimeoutMs?: number
 }
 
 /**
@@ -22,20 +25,32 @@ export interface R2MediaStoreConfig {
  */
 export class R2MediaStore implements MediaStore {
   private readonly client: S3Client
+  /** Client dedicado às TRANSFERÊNCIAS (put streaming): timeout longo próprio. */
+  private readonly transferClient: S3Client
   private readonly bucket: string
 
   constructor(config: R2MediaStoreConfig) {
     this.bucket = config.bucket
-    this.client = new S3Client({
+    const base = {
       region: 'auto',
       endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
       credentials: {
         accessKeyId: config.accessKeyId,
         secretAccessKey: config.secretAccessKey,
       },
+    }
+    this.client = new S3Client({
+      ...base,
       // Sem teto, R2 pendurado = handler pendurado (presign é CPU-only, mas o
       // HEAD/DELETE falam com a rede).
       requestHandler: { connectionTimeout: 5_000, requestTimeout: 30_000 },
+    })
+    this.transferClient = new S3Client({
+      ...base,
+      requestHandler: {
+        connectionTimeout: 5_000,
+        requestTimeout: config.transferTimeoutMs ?? 30 * 60_000,
+      },
     })
   }
 
@@ -82,6 +97,27 @@ export class R2MediaStore implements MediaStore {
 
   async delete(key: string): Promise<void> {
     await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }))
+  }
+
+  async put(input: {
+    key: string
+    contentType: string
+    sizeBytes: number
+    body: ReadableStream<Uint8Array>
+  }): Promise<void> {
+    // PUT único em streaming (Readable.fromWeb + ContentLength conhecido do
+    // metadado do Drive). Teto de upload 2GB < limite de 5GB do PUT do R2 —
+    // multipart (@aws-sdk/lib-storage) fica como fallback documentado se o PUT
+    // único se provar instável no Bun.
+    await this.transferClient.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: input.key,
+        ContentType: input.contentType,
+        ContentLength: input.sizeBytes,
+        Body: Readable.fromWeb(input.body as import('node:stream/web').ReadableStream<Uint8Array>),
+      }),
+    )
   }
 }
 

@@ -1,13 +1,19 @@
 import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { AccountService } from './application/accounts/account.service'
+import { OAuthService } from './application/accounts/oauth.service'
 import { ContentService } from './application/contents/content.service'
 import { IdeaService } from './application/ideas/idea.service'
 import { PromoteIdeaService } from './application/ideas/promote-idea.service'
+import { DriveImportService } from './application/media/drive.service'
 import { MediaService } from './application/media/media.service'
 import { PublicationService } from './application/publications/publication.service'
 import { MediaNotConfiguredError } from './domain/marketing-errors'
 import type { MediaStore } from './domain/ports/media-store.port'
-import { type Env, r2Config } from './infrastructure/config/env'
+import { type Env, googleConfig, r2Config, reminderConfig } from './infrastructure/config/env'
+import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
+import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
+import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
 import { R2MediaStore } from './infrastructure/gateways/r2/r2-media-store'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleChecklistRepository } from './infrastructure/persistence/drizzle/checklist.repository'
@@ -16,7 +22,13 @@ import { DrizzleContentRepository } from './infrastructure/persistence/drizzle/c
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleIdeaRepository } from './infrastructure/persistence/drizzle/idea.repository'
 import { DrizzleMediaAssetRepository } from './infrastructure/persistence/drizzle/media-asset.repository'
+import { DrizzleOAuthStateRepository } from './infrastructure/persistence/drizzle/oauth-state.repository'
 import { DrizzlePublicationRepository } from './infrastructure/persistence/drizzle/publication.repository'
+import { DrizzleSocialAccountRepository } from './infrastructure/persistence/drizzle/social-account.repository'
+import { createSecretBox } from './infrastructure/security/secret-box'
+import { MediaTransferWorker } from './infrastructure/workers/media-transfer-worker'
+import { PublisherWorker } from './infrastructure/workers/publisher-worker'
+import { TokenRefreshWorker } from './infrastructure/workers/token-refresh-worker'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -39,6 +51,7 @@ const notConfiguredMediaStore: MediaStore = {
   presignGet: () => Promise.reject(new MediaNotConfiguredError()),
   head: () => Promise.reject(new MediaNotConfiguredError()),
   delete: () => Promise.reject(new MediaNotConfiguredError()),
+  put: () => Promise.reject(new MediaNotConfiguredError()),
 }
 
 /**
@@ -69,9 +82,49 @@ export function createApplication(env: Env): Application {
   const commentRepo = new DrizzleCommentRepository(db)
   const assetRepo = new DrizzleMediaAssetRepository(db)
   const publicationRepo = new DrizzlePublicationRepository(db)
+  const accountRepo = new DrizzleSocialAccountRepository(db)
+  const oauthStateRepo = new DrizzleOAuthStateRepository(db)
   const r2 = r2Config(env)
-  const mediaStore: MediaStore = r2 ? new R2MediaStore(r2) : notConfiguredMediaStore
+  const mediaStore: MediaStore = r2
+    ? new R2MediaStore({ ...r2, transferTimeoutMs: env.MEDIA_TRANSFER_TIMEOUT_MS })
+    : notConfiguredMediaStore
   if (!r2) logger.warn('media.not_configured', { hint: 'R2_* ausentes — presign responderá 503' })
+
+  // Google (OAuth + Drive) — grupo atômico: incompleto = rotas 503, boot ok.
+  const google = googleConfig(env)
+  const googleDeps = google
+    ? {
+        provider: new GoogleOAuthProvider({
+          clientId: google.clientId,
+          clientSecret: google.clientSecret,
+        }),
+        secretBox: createSecretBox(google.encKeyBase64),
+        redirectBaseUrl: google.redirectBaseUrl,
+        appUrl: google.appUrl,
+      }
+    : null
+  const driveClient = google ? new GoogleDriveClient() : null
+  if (!google) {
+    logger.warn('oauth.not_configured', {
+      hint: 'GOOGLE_*/MARKETING_TOKEN_ENC_KEY/OAUTH_PUBLIC_BASE_URL/MARKETING_APP_URL ausentes — OAuth/Drive responderão 503',
+    })
+  }
+
+  // Lembrete WhatsApp (consumer HMAC do messaging via gateway).
+  const reminder = reminderConfig(env)
+  const reminderNotifier = reminder
+    ? new GatewayMessagingClient({
+        gatewayUrl: reminder.gatewayUrl,
+        consumerId: reminder.consumerId,
+        hmacSecret: reminder.hmacSecret,
+        templateKey: reminder.templateKey,
+      })
+    : null
+  if (!reminder) {
+    logger.warn('reminder.not_configured', {
+      hint: 'MARKETING_HMAC_SECRET ausente — lembrete de publicação manual desligado (o Painel é o fallback)',
+    })
+  }
 
   // Casos de uso
   const ideaService = new IdeaService(ideaRepo, now, idGen)
@@ -97,6 +150,82 @@ export function createApplication(env: Env): Application {
     now,
     idGen,
   )
+  // Redes com publisher automático montado (F2 liga 'youtube' aqui).
+  const autoCapableNetworks = new Set<never>()
+  const accountService = new AccountService(
+    accountRepo,
+    googleDeps ? { provider: googleDeps.provider, secretBox: googleDeps.secretBox } : null,
+    autoCapableNetworks,
+    now,
+    logger,
+  )
+  const oauthService = new OAuthService(
+    oauthStateRepo,
+    accountRepo,
+    googleDeps,
+    { stateTtlMinutes: env.OAUTH_STATE_TTL_MINUTES },
+    now,
+    idGen,
+    logger,
+  )
+  const driveService = new DriveImportService(
+    driveClient,
+    accountService,
+    assetRepo,
+    contentRepo,
+    { maxUploadBytes: env.MARKETING_MAX_UPLOAD_BYTES },
+    now,
+    idGen,
+  )
+
+  // Workers (processo único, padrão messaging: claim SKIP LOCKED + lease).
+  const publisherWorker = new PublisherWorker({
+    publications: publicationRepo,
+    contents: contentRepo,
+    notifier: reminderNotifier,
+    reminder: reminder
+      ? {
+          phones: reminder.phones,
+          recipientName: reminder.recipientName,
+          appUrl: google?.appUrl ?? env.MARKETING_APP_URL ?? '',
+        }
+      : null,
+    now,
+    logger,
+    config: {
+      intervalMs: env.PUBLISHER_POLL_INTERVAL_MS,
+      batchSize: env.PUBLISHER_BATCH_SIZE,
+      claimLeaseMs: env.PUBLISHER_CLAIM_LEASE_MS,
+      maxAttempts: env.REMINDER_MAX_ATTEMPTS,
+      retryBaseMs: env.REMINDER_RETRY_BASE_MS,
+      retryMaxMs: env.REMINDER_RETRY_MAX_MS,
+    },
+  })
+  const mediaTransferWorker = new MediaTransferWorker({
+    assets: assetRepo,
+    store: mediaStore,
+    drive: driveClient,
+    accounts: accountService,
+    now,
+    logger,
+    config: {
+      intervalMs: env.MEDIA_TRANSFER_POLL_INTERVAL_MS,
+      batchSize: env.MEDIA_TRANSFER_BATCH_SIZE,
+      leaseMs: env.MEDIA_TRANSFER_LEASE_MS,
+      maxAttempts: env.MEDIA_TRANSFER_MAX_ATTEMPTS,
+      maxUploadBytes: env.MARKETING_MAX_UPLOAD_BYTES,
+    },
+  })
+  const tokenRefreshWorker = new TokenRefreshWorker({
+    accounts: accountRepo,
+    accountService,
+    now,
+    logger,
+    config: {
+      intervalMs: env.TOKEN_REFRESH_INTERVAL_MS,
+      marginMs: env.TOKEN_REFRESH_MARGIN_MS,
+    },
+  })
 
   // Readiness (`/readyz`, healthcheck do Railway): banco respondendo.
   const readiness = async () => {
@@ -131,6 +260,21 @@ export function createApplication(env: Env): Application {
     },
     media: {
       media: mediaService,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireStaffEnabled: env.REQUIRE_STAFF,
+    },
+    oauth: {
+      oauth: oauthService,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireStaffEnabled: env.REQUIRE_STAFF,
+    },
+    accounts: {
+      accounts: accountService,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireStaffEnabled: env.REQUIRE_STAFF,
+    },
+    drive: {
+      drive: driveService,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
     },
@@ -188,12 +332,21 @@ export function createApplication(env: Env): Application {
           }),
         )
       }, env.RETENTION_CLEANUP_INTERVAL_MS)
+      publisherWorker.start()
+      mediaTransferWorker.start()
+      tokenRefreshWorker.start()
       // `::` = dual-stack — necessário p/ o private networking do Railway (IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)
+      // Workers param ANTES do pool fechar (senão um tick em voo estoura no banco).
+      await Promise.all([
+        publisherWorker.stop(),
+        mediaTransferWorker.stop(),
+        tokenRefreshWorker.stop(),
+      ])
       try {
         await server.stop()
       } catch {

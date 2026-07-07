@@ -13,4 +13,11 @@ export interface MediaAssetRepository {
   update(asset: MediaAsset, expectedVersion: number): Promise<boolean>
   list(filter: ListAssetsFilter): Promise<{ items: MediaAsset[]; total: number }>
   byIds(ids: string[]): Promise<Map<string, MediaAsset>>
+  /**
+   * Claim do media-transfer-worker (import Drive→R2): assets `importing` com
+   * `transfer_next_at` vencido (ou nulo — recém-criado). `FOR UPDATE SKIP
+   * LOCKED`; a linha claimada ganha `transfer_attempts+1` e lease em
+   * `transfer_next_at` — crash devolve à fila no vencimento do lease.
+   */
+  claimDueTransfers(now: Date, limit: number, leaseMs: number): Promise<MediaAsset[]>
 }

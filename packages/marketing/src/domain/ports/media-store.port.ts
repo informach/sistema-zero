@@ -21,4 +21,15 @@ export interface MediaStore {
   presignGet(input: { key: string; expiresInSeconds: number }): Promise<string>
   head(key: string): Promise<HeadResult>
   delete(key: string): Promise<void>
+  /**
+   * Grava um objeto em STREAMING (import Drive→R2 do media-transfer-worker).
+   * `sizeBytes` é o ContentLength declarado (metadado do Drive) — PUT único
+   * (teto de upload 2GB < limite de 5GB do R2), nunca materializa em memória.
+   */
+  put(input: {
+    key: string
+    contentType: string
+    sizeBytes: number
+    body: ReadableStream<Uint8Array>
+  }): Promise<void>
 }

@@ -4,10 +4,13 @@ import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
+import { type AccountsRoutesDeps, accountsRoutes } from './routes/accounts.routes'
 import { type ContentsRoutesDeps, contentsRoutes } from './routes/contents.routes'
+import { type DriveRoutesDeps, driveRoutes } from './routes/drive.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type IdeasRoutesDeps, ideasRoutes } from './routes/ideas.routes'
 import { type MediaRoutesDeps, mediaRoutes } from './routes/media.routes'
+import { type OAuthRoutesDeps, oauthRoutes } from './routes/oauth.routes'
 import { type PublicationsRoutesDeps, publicationsRoutes } from './routes/publications.routes'
 
 export interface HttpDeps {
@@ -19,6 +22,9 @@ export interface HttpDeps {
   contents: ContentsRoutesDeps
   publications: PublicationsRoutesDeps
   media: MediaRoutesDeps
+  oauth: OAuthRoutesDeps
+  accounts: AccountsRoutesDeps
+  drive: DriveRoutesDeps
 }
 
 const OVERSIZE = new WeakSet<Request>()
@@ -82,4 +88,7 @@ export function createServer(deps: HttpDeps) {
     .use(contentsRoutes(deps.contents))
     .use(publicationsRoutes(deps.publications))
     .use(mediaRoutes(deps.media))
+    .use(oauthRoutes(deps.oauth))
+    .use(accountsRoutes(deps.accounts))
+    .use(driveRoutes(deps.drive))
 }

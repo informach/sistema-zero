@@ -6,7 +6,9 @@ import type {
 } from '../../domain/content/content'
 import type { Idea } from '../../domain/idea/idea'
 import type { MediaAsset } from '../../domain/media/media-asset'
+import type { DriveFile } from '../../domain/ports/drive-client.port'
 import type { Publication } from '../../domain/publication/publication-record'
+import type { SocialAccount } from '../../domain/social-account/social-account'
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null)
 
@@ -145,6 +147,67 @@ export function toPublicationView(pub: Publication) {
   }
 }
 export type PublicationView = ReturnType<typeof toPublicationView>
+
+/** Publicação + título/tipo do conteúdo (listagem do Calendário/Painel). */
+export function toPublicationListItemView(input: {
+  publication: Publication
+  contentTitle: string
+  contentType: string
+}) {
+  return {
+    ...toPublicationView(input.publication),
+    contentTitle: input.contentTitle,
+    contentType: input.contentType,
+  }
+}
+export type PublicationListItemView = ReturnType<typeof toPublicationListItemView>
+
+/**
+ * Conta social SEM material de token: `access_token_enc`/`refresh_token_enc`
+ * NUNCA saem daqui (invariante de segurança — teste de integração garante).
+ */
+export function toSocialAccountView(account: SocialAccount, canAutoPublish: boolean) {
+  const metadata = account.metadata as {
+    email?: unknown
+    channelId?: unknown
+    channelTitle?: unknown
+  }
+  return {
+    id: account.id,
+    version: account.version,
+    network: account.network,
+    externalId: account.externalId,
+    displayName: account.displayName,
+    username: account.username,
+    status: account.status,
+    scopes: account.scopes,
+    tokenExpiresAt: iso(account.tokenExpiresAt),
+    refreshExpiresAt: iso(account.refreshExpiresAt),
+    lastRefreshAt: iso(account.lastRefreshAt),
+    lastRefreshError: account.lastRefreshError,
+    metadata: {
+      email: typeof metadata.email === 'string' ? metadata.email : null,
+      channelId: typeof metadata.channelId === 'string' ? metadata.channelId : null,
+      channelTitle: typeof metadata.channelTitle === 'string' ? metadata.channelTitle : null,
+    },
+    connectedBy: account.connectedBy,
+    canAutoPublish,
+    createdAt: account.createdAt.toISOString(),
+    updatedAt: account.updatedAt.toISOString(),
+  }
+}
+export type SocialAccountView = ReturnType<typeof toSocialAccountView>
+
+export function toDriveFileView(file: DriveFile) {
+  return {
+    id: file.id,
+    name: file.name,
+    mimeType: file.mimeType,
+    sizeBytes: file.sizeBytes,
+    modifiedTime: file.modifiedTime,
+  }
+}
+export type DriveFileView = ReturnType<typeof toDriveFileView>
 
 export function toAssetView(asset: MediaAsset) {
   return {

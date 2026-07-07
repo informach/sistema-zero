@@ -300,6 +300,9 @@ export const publications = marketing.table(
     index('publications_lease_idx')
       .on(t.status, t.nextAttemptAt)
       .where(sql`${t.status} = 'publishing'`),
+    // Janela do Calendário/Painel (GET /marketing/publications?from&to) — o
+    // claim_idx não serve janela sem status.
+    index('publications_scheduled_idx').on(t.scheduledAt),
   ],
 )
 

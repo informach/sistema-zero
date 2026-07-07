@@ -29,7 +29,7 @@ export const ALLOWED_MIME_TYPES: ReadonlySet<string> = new Set([
 ])
 
 /** Extensão segura derivada do filename (fallback por MIME). */
-function safeExtension(filename: string, contentType: string): string {
+export function safeExtension(filename: string, contentType: string): string {
   const fromName = filename.toLowerCase().match(/\.([a-z0-9]{1,8})$/)?.[1]
   if (fromName) return fromName
   const byMime: Record<string, string> = {

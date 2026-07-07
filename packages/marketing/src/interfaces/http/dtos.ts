@@ -182,3 +182,62 @@ export const AssetPatchBody = t.Object({
   contentId: NULLABLE_UUID,
   kind: t.Optional(ASSET_KIND),
 })
+
+// ── OAuth / Contas / Drive ───────────────────────────────────────────────────
+export const NetworkParams = t.Object({
+  network: t.String({ minLength: 1, maxLength: 20, pattern: '^[a-z]+$' }),
+})
+
+// O Google anexa params extras (scope/authuser/prompt) — não rejeitar.
+export const OAuthCallbackQuery = t.Object(
+  {
+    code: t.Optional(t.String({ maxLength: 2000 })),
+    state: t.Optional(t.String({ maxLength: 200 })),
+    error: t.Optional(t.String({ maxLength: 200 })),
+  },
+  { additionalProperties: true },
+)
+
+export const DriveFilesQuery = t.Object({
+  q: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+  pageToken: t.Optional(t.String({ maxLength: 1000 })),
+})
+
+export const MediaImportBody = t.Object({
+  driveFileId: t.Optional(t.String({ minLength: 10, maxLength: 200, pattern: '^[A-Za-z0-9_-]+$' })),
+  driveUrl: t.Optional(t.String({ minLength: 10, maxLength: 2000 })),
+  contentId: NULLABLE_UUID,
+  kind: t.Optional(ASSET_KIND),
+})
+
+const PUB_STATUS = t.Union([
+  t.Literal('draft'),
+  t.Literal('ready'),
+  t.Literal('scheduled'),
+  t.Literal('publishing'),
+  t.Literal('awaiting_manual'),
+  t.Literal('published'),
+  t.Literal('failed'),
+  t.Literal('canceled'),
+])
+
+const NETWORK = t.Union([
+  t.Literal('instagram'),
+  t.Literal('facebook'),
+  t.Literal('youtube'),
+  t.Literal('tiktok'),
+])
+
+// `status` chega como CSV (ex.: scheduled,awaiting_manual) — validado na rota
+// token a token contra o enum (CSV inválido → 400, nunca filtro silencioso).
+export const PublicationsListQuery = t.Object({
+  from: t.Optional(t.String({ minLength: 10, maxLength: 40 })),
+  to: t.Optional(t.String({ minLength: 10, maxLength: 40 })),
+  status: t.Optional(t.String({ minLength: 1, maxLength: 120 })),
+  network: t.Optional(NETWORK),
+  format: t.Optional(PUB_FORMAT),
+  contentId: t.Optional(UUID),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 200 })),
+  offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
+})
+export { PUB_STATUS }

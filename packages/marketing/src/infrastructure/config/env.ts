@@ -73,6 +73,74 @@ const EnvSchema = z.object({
     .default(6 * 60 * 60 * 1000),
   METRICS_RETENTION_DAYS: z.coerce.number().int().positive().default(730),
   STAGE_EVENTS_RETENTION_DAYS: z.coerce.number().int().positive().default(365),
+
+  // ── OAuth Google (Drive + YouTube) — grupo ATÔMICO: qualquer um ausente →
+  // OAuth/Drive respondem 503 OAUTH_NOT_CONFIGURED (boot nunca quebra) ─────────
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  // Chave da secret-box (32 bytes em base64) — tokens NUNCA em claro no banco.
+  MARKETING_TOKEN_ENC_KEY: z
+    .string()
+    .optional()
+    .refine((v) => v === undefined || Buffer.from(v, 'base64').length === 32, {
+      message: 'deve ser 32 bytes em base64',
+    }),
+  // Origem PÚBLICA do gateway (monta a redirect_uri fixa do callback OAuth).
+  OAUTH_PUBLIC_BASE_URL: z.string().url().optional(),
+  // URL do marketing-app (destino do 302 pós-callback: /conexoes?connected=…).
+  MARKETING_APP_URL: z.string().url().optional(),
+
+  // ── Lembrete WhatsApp (marketing → gateway → /messaging/send, HMAC) ─────────
+  GATEWAY_URL: z.string().url().default('http://localhost:3000'),
+  MARKETING_CONSUMER_ID: z.string().min(1).default('marketing'),
+  MARKETING_HMAC_SECRET: z
+    .string()
+    .min(16, 'MARKETING_HMAC_SECRET deve ter ao menos 16 caracteres')
+    .optional(),
+  // CSV E.164 com DDI (ex.: 5511999999999,5511888888888). Vazio = lembrete vira
+  // no-op logado (a publicação ainda vai a awaiting_manual; o Painel é o fallback).
+  MARKETING_REMINDER_PHONES: z.string().optional(),
+  MARKETING_REMINDER_RECIPIENT_NAME: z.string().min(1).default('Equipe'),
+  MARKETING_REMINDER_TEMPLATE_KEY: z.string().min(1).default('marketing-reminder'),
+
+  // ── Knobs dos workers (defaults sensatos; ver CLAUDE.md) ─────────────────────
+  PUBLISHER_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(30_000),
+  PUBLISHER_BATCH_SIZE: z.coerce.number().int().positive().default(10),
+  PUBLISHER_CLAIM_LEASE_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(10 * 60_000),
+  REMINDER_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
+  REMINDER_RETRY_BASE_MS: z.coerce.number().int().positive().default(60_000),
+  REMINDER_RETRY_MAX_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(30 * 60_000),
+  MEDIA_TRANSFER_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(15_000),
+  MEDIA_TRANSFER_BATCH_SIZE: z.coerce.number().int().positive().default(2),
+  MEDIA_TRANSFER_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
+  MEDIA_TRANSFER_LEASE_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(30 * 60_000),
+  MEDIA_TRANSFER_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(30 * 60_000),
+  TOKEN_REFRESH_INTERVAL_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(10 * 60_000),
+  TOKEN_REFRESH_MARGIN_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(20 * 60_000),
 })
 
 export type Env = z.infer<typeof EnvSchema>
@@ -97,6 +165,58 @@ export function r2Config(env: Env): {
     accessKeyId: env.R2_ACCESS_KEY_ID,
     secretAccessKey: env.R2_SECRET_ACCESS_KEY,
     bucket: env.R2_MARKETING_BUCKET,
+  }
+}
+
+/** Config do OAuth Google completa ou null (feature desligada — rotas 503). */
+export function googleConfig(env: Env): {
+  clientId: string
+  clientSecret: string
+  encKeyBase64: string
+  /** Origem pública do gateway — a redirect_uri é SEMPRE derivada daqui (nunca de header). */
+  redirectBaseUrl: string
+  /** URL do app (destino dos 302 do callback). */
+  appUrl: string
+} | null {
+  if (
+    !env.GOOGLE_CLIENT_ID ||
+    !env.GOOGLE_CLIENT_SECRET ||
+    !env.MARKETING_TOKEN_ENC_KEY ||
+    !env.OAUTH_PUBLIC_BASE_URL ||
+    !env.MARKETING_APP_URL
+  ) {
+    return null
+  }
+  return {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+    encKeyBase64: env.MARKETING_TOKEN_ENC_KEY,
+    redirectBaseUrl: env.OAUTH_PUBLIC_BASE_URL.replace(/\/$/, ''),
+    appUrl: env.MARKETING_APP_URL.replace(/\/$/, ''),
+  }
+}
+
+/** Config do lembrete (consumer HMAC do messaging) ou null (lembrete desligado). */
+export function reminderConfig(env: Env): {
+  gatewayUrl: string
+  consumerId: string
+  hmacSecret: string
+  phones: string[]
+  recipientName: string
+  templateKey: string
+} | null {
+  if (!env.MARKETING_HMAC_SECRET) return null
+  const phones = (env.MARKETING_REMINDER_PHONES ?? '')
+    .split(',')
+    .map((p) => p.trim().replace(/\D/g, ''))
+    .filter((p) => p.length >= 10)
+  return {
+    gatewayUrl: env.GATEWAY_URL.replace(/\/$/, ''),
+    consumerId: env.MARKETING_CONSUMER_ID,
+    hmacSecret: env.MARKETING_HMAC_SECRET,
+    phones,
+    recipientName: env.MARKETING_REMINDER_RECIPIENT_NAME,
+    templateKey: env.MARKETING_REMINDER_TEMPLATE_KEY,
   }
 }
 

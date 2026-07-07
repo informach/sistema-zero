@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, isNull, lte, or, sql } from 'drizzle-orm'
 import type { MediaAsset } from '../../../domain/media/media-asset'
 import type {
   ListAssetsFilter,
@@ -64,5 +64,48 @@ export class DrizzleMediaAssetRepository implements MediaAssetRepository {
     const rows = await this.db.select().from(mediaAssets).where(inArray(mediaAssets.id, ids))
     for (const row of rows) map.set(row.id, row)
     return map
+  }
+
+  async claimDueTransfers(now: Date, limit: number, leaseMs: number): Promise<MediaAsset[]> {
+    // Claim com lease (padrão messaging): usa o índice parcial
+    // media_assets_transfer_idx; crash entre o claim e o `ready`/backoff devolve
+    // a linha à fila quando o lease em transfer_next_at vence.
+    return this.db.transaction(async (tx) => {
+      const due = await tx
+        .select()
+        .from(mediaAssets)
+        .where(
+          and(
+            eq(mediaAssets.status, 'importing'),
+            or(isNull(mediaAssets.transferNextAt), lte(mediaAssets.transferNextAt, now)),
+          ),
+        )
+        .orderBy(asc(mediaAssets.createdAt), asc(mediaAssets.id))
+        .limit(limit)
+        .for('update', { skipLocked: true })
+      if (due.length === 0) return []
+      const leaseUntil = new Date(now.getTime() + leaseMs)
+      await tx
+        .update(mediaAssets)
+        .set({
+          transferAttempts: sql`${mediaAssets.transferAttempts} + 1`,
+          transferNextAt: leaseUntil,
+          version: sql`${mediaAssets.version} + 1`,
+          updatedAt: now,
+        })
+        .where(
+          inArray(
+            mediaAssets.id,
+            due.map((r) => r.id),
+          ),
+        )
+      return due.map((r) => ({
+        ...r,
+        transferAttempts: r.transferAttempts + 1,
+        transferNextAt: leaseUntil,
+        version: r.version + 1,
+        updatedAt: now,
+      }))
+    })
   }
 }

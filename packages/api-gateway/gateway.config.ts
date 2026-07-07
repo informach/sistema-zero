@@ -114,6 +114,14 @@ const MEMBERS_ALLOWED_CIDRS = (process.env.MEMBERS_ALLOWED_CIDRS ?? '0.0.0.0/0,:
   .split(',')
   .map((c) => c.trim())
   .filter(Boolean)
+// O marketing como consumer HMAC de borda (lembrete de publicação MANUAL via
+// /messaging/send — F1 do app de marketing, 07/2026). Espelha o members. DEVE
+// bater com o MARKETING_HMAC_SECRET do marketing.
+const MARKETING_HMAC_SECRET = process.env.MARKETING_HMAC_SECRET ?? ''
+const MARKETING_ALLOWED_CIDRS = (process.env.MARKETING_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
 // Token interno injetado nas rotas S2S do auth (/auth/internal/*) como defesa em
 // profundidade (igual ao members/messaging). DEVE bater com o AUTH_INTERNAL_TOKEN do auth.
 const AUTH_INTERNAL_TOKEN = process.env.AUTH_INTERNAL_TOKEN ?? ''
@@ -218,6 +226,17 @@ const config: GatewayConfigInput = {
             id: 'members',
             hmacSecret: MEMBERS_HMAC_SECRET,
             allowedCidrs: MEMBERS_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
+    // O marketing como consumer HMAC de borda (lembrete de publicação manual
+    // via /messaging/send). Condicional, igual aos demais.
+    ...(MARKETING_HMAC_SECRET
+      ? [
+          {
+            id: 'marketing',
+            hmacSecret: MARKETING_HMAC_SECRET,
+            allowedCidrs: MARKETING_ALLOWED_CIDRS,
           },
         ]
       : []),
