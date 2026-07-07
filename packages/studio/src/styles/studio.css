@@ -164,6 +164,75 @@
 }
 
 /*
+ * Pop-up do seletor de cor (FieldColourSZ sobre o @blockly/field-colour, que é
+ * um FieldGridDropdown): o plugin injeta o próprio CSS via Blockly.Css.register
+ * com células 20px coladas (grid-gap 0) e sem centralização — e a LARGURA do
+ * pop-up quem dita é a linha HEX (input sem width = ~170px intrínsecos), então a
+ * grade ficava pequena e desalinhada à esquerda. Aqui a grade é centrada, com
+ * células maiores/arredondadas e respiro, casando com o padding da linha HEX
+ * (largura total ~150px). A classe `blocklyFieldColour` vive no MESMO content
+ * div do DropDownDiv que recebe o data-sz-theme (applyThemeScope), por isso o
+ * seletor composto `[data-sz-theme].blocklyFieldColour` — e ele vence o CSS do
+ * plugin por especificidade (sem !important). Ancorar SEMPRE nas classes
+ * internas do colour (blocklyFieldGrid... e blocklyColourSwatch): a classe
+ * blocklyFieldColour fica residual no content div quando outro picker abre.
+ */
+[data-sz-theme].blocklyFieldColour .blocklyFieldGridContainer {
+  padding: 10px 10px 6px;
+}
+[data-sz-theme].blocklyFieldColour .blocklyFieldGrid {
+  grid-gap: 6px;
+  justify-content: center;
+}
+[data-sz-theme].blocklyFieldColour .blocklyFieldGrid .blocklyFieldGridItem {
+  border: 1px solid var(--color-sz-border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+[data-sz-theme].blocklyFieldColour .blocklyColourSwatch {
+  width: 26px;
+  height: 26px;
+}
+[data-sz-theme].blocklyFieldColour
+  .blocklyFieldGrid
+  .blocklyFieldGridItem.blocklyFieldGridItemSelected {
+  outline: 2px solid var(--color-sz-accent);
+  outline-offset: 1px;
+}
+[data-sz-theme].blocklyFieldColour .blocklyFieldGrid .blocklyFieldGridItem:focus {
+  border-color: var(--color-sz-accent);
+  box-shadow: none;
+  border-radius: 7px;
+}
+/*
+ * Botão do CÍRCULO CROMÁTICO na linha HEX do seletor de cor: o <input type=color>
+ * nativo é a prévia da cor atual ("a corzinha") E o botão que abre o seletor livre
+ * do navegador. Os pseudo-elementos do swatch não são estilizáveis por cssText
+ * inline — por isso as regras vivem aqui (a classe sz-hex-input-row é nossa).
+ */
+.sz-hex-input-row input[type="color"] {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--color-sz-border);
+  border-radius: 7px;
+  background: none;
+  cursor: pointer;
+}
+.sz-hex-input-row input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+.sz-hex-input-row input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 5px;
+}
+.sz-hex-input-row input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 5px;
+}
+
+/*
  * Handles de resize do react-resizable-panels — sutil em repouso, claramente
  * arrastável em hover/drag. Usa um track central de 1px mas área de hit
  * generosa (toda a faixa do handle) para facilitar agarrar.

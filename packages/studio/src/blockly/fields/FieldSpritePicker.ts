@@ -98,6 +98,155 @@ export function collectScopedSpriteNames(block: Blockly.Block | null | undefined
   return ordered
 }
 
+/** Visual RESOLVIDO de um sprite para a miniatura: imagem (dataUrl) OU cor sólida. */
+export interface SpriteVisual {
+  image?: string
+  color?: string
+}
+
+/**
+ * Índice nome→visual POR WORKSPACE, com invalidação preguiçosa: reconstruído no
+ * máximo 1× por rodada de refresh (o watcher/assets marcam `dirty`). Sem ele,
+ * cada campo com miniatura pagaria um `collectSprites` O(N blocos) por render —
+ * caro num refresh em lote de um projeto grande.
+ */
+interface SpriteVisualCache {
+  dirty: boolean
+  refreshQueued: boolean
+  map: Map<string, SpriteVisual | null>
+}
+const visualCacheByWs = new WeakMap<Blockly.Workspace, SpriteVisualCache>()
+
+function cacheFor(ws: Blockly.Workspace): SpriteVisualCache {
+  let cache = visualCacheByWs.get(ws)
+  if (!cache) {
+    cache = { dirty: true, refreshQueued: false, map: new Map() }
+    visualCacheByWs.set(ws, cache)
+  }
+  return cache
+}
+
+/**
+ * Resolve o visual da MINIATURA do sprite `name` no workspace: a imagem do asset
+ * (quando o criador é "com imagem" e o asset existe), senão a cor do criador,
+ * senão `null` (nome local de laço/desconhecido/asset apagado sem cor) — e o
+ * campo renderiza como sempre, só texto. Puro sobre o estado do workspace
+ * (testável headless); a UI usa via cache.
+ */
+export function resolveSpriteVisual(
+  name: string | null | undefined,
+  ws: Blockly.Workspace | null | undefined,
+): SpriteVisual | null {
+  if (!name || !ws) return null
+  const cache = cacheFor(ws)
+  if (cache.dirty) {
+    cache.map.clear()
+    const assets = ((ws as unknown as AssetAccessor).__szAssets?.() ?? []).filter(
+      (a) => a && a.kind === 'image',
+    )
+    for (const sprite of collectSprites(ws)) {
+      const dataUrl = sprite.image
+        ? assets.find((a) => a.name === sprite.image)?.dataUrl
+        : undefined
+      const visual: SpriteVisual | null = dataUrl
+        ? { image: dataUrl }
+        : sprite.color
+          ? { color: sprite.color }
+          : null
+      cache.map.set(sprite.name, visual)
+    }
+    cache.dirty = false
+  }
+  return cache.map.get(name) ?? null
+}
+
+/** Campos dos DECLARADORES que mudam nome/visual do sprite (invalidam miniaturas). */
+const SPRITE_VISUAL_FIELDS = new Set(['NAME', 'COLOR', 'IMAGE', 'BODY'])
+
+/** Tipos de bloco presentes num JSON serializado (top + inputs/next, recursivo). */
+function jsonBlockTypes(json: unknown, out: string[] = []): string[] {
+  if (!json || typeof json !== 'object') return out
+  const node = json as {
+    type?: unknown
+    inputs?: Record<string, { block?: unknown; shadow?: unknown }>
+    next?: { block?: unknown; shadow?: unknown }
+  }
+  if (typeof node.type === 'string') out.push(node.type)
+  if (node.inputs && typeof node.inputs === 'object') {
+    for (const input of Object.values(node.inputs)) {
+      jsonBlockTypes(input?.block, out)
+      jsonBlockTypes(input?.shadow, out)
+    }
+  }
+  jsonBlockTypes(node.next?.block, out)
+  jsonBlockTypes(node.next?.shadow, out)
+  return out
+}
+
+/**
+ * O evento do workspace afeta as miniaturas de sprite? (declarador criado/
+ * removido, campo de nome/cor/imagem de um declarador editado, ou o fim de uma
+ * carga — na carga os CONSUMIDORES renderizam antes de os declaradores
+ * existirem, mesmo gotcha do queueRender do objectMutator). Puro: o tipo do
+ * bloco do BLOCK_CHANGE chega por `typeOf` (o watcher passa o lookup do ws).
+ */
+export function isSpriteDeclEvent(
+  e: { type: string } & Record<string, unknown>,
+  typeOf: (blockId: string) => string | undefined,
+): boolean {
+  if (e.type === Blockly.Events.FINISHED_LOADING) return true
+  if (e.type === Blockly.Events.BLOCK_CHANGE) {
+    if (e.element !== 'field' || typeof e.name !== 'string') return false
+    if (!SPRITE_VISUAL_FIELDS.has(e.name)) return false
+    const blockType = typeof e.blockId === 'string' ? typeOf(e.blockId) : undefined
+    return Boolean(blockType && SPRITE_DECL_BLOCKS[blockType])
+  }
+  if (e.type === Blockly.Events.BLOCK_CREATE || e.type === Blockly.Events.BLOCK_DELETE) {
+    const json = e.type === Blockly.Events.BLOCK_CREATE ? e.json : e.oldJson
+    return jsonBlockTypes(json).some((t) => SPRITE_DECL_BLOCKS[t])
+  }
+  return false
+}
+
+/**
+ * Invalida o cache de visuais e re-renderiza TODOS os FieldSpritePicker do
+ * workspace (coalescido num microtask — N eventos numa rodada = 1 varredura).
+ * Também é o gancho para mudanças que NÃO geram evento Blockly (renomear/trocar
+ * asset no painel Imagens): o BlocklyPanel chama ao ver `project.assets` mudar.
+ */
+export function refreshSpriteThumbs(ws: Blockly.Workspace): void {
+  const cache = cacheFor(ws)
+  cache.dirty = true
+  if (cache.refreshQueued) return
+  cache.refreshQueued = true
+  queueMicrotask(() => {
+    cache.refreshQueued = false
+    for (const block of ws.getAllBlocks(false)) {
+      for (const input of block.inputList) {
+        for (const field of input.fieldRow) {
+          if (field instanceof FieldSpritePicker) field.forceRerender()
+        }
+      }
+    }
+  })
+}
+
+/**
+ * Liga o refresh automático das miniaturas no bloco: escuta os eventos do
+ * workspace que afetam declaradores de sprite e agenda o refresh coalescido.
+ * Um watcher POR workspace (multi-instância, nada de global); o retorno
+ * desregistra (chamar no cleanup, antes do dispose).
+ */
+export function attachSpriteThumbWatcher(ws: Blockly.WorkspaceSvg): () => void {
+  const listener = (e: Blockly.Events.Abstract) => {
+    const raw = e as unknown as { type: string } & Record<string, unknown>
+    if (!isSpriteDeclEvent(raw, (id) => ws.getBlockById(id)?.type)) return
+    refreshSpriteThumbs(ws)
+  }
+  ws.addChangeListener(listener)
+  return () => ws.removeChangeListener(listener)
+}
+
 /**
  * Reaplica o `data-sz-theme` do root no conteúdo portalado do DropDownDiv (vive
  * sob document.body, fora do escopo de tema). Mesmo padrão do FieldColourSZ.
@@ -110,9 +259,99 @@ function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
   if (theme) content.setAttribute('data-sz-theme', theme)
 }
 
+/** Lado da miniatura DENTRO do bloco (px) — cabe na altura de campo do zelos. */
+const BLOCK_THUMB_SIZE = 16
+/** Respiro entre a miniatura e o nome do sprite (px). */
+const BLOCK_THUMB_GAP = 5
+
 export class FieldSpritePicker extends Blockly.FieldTextInput {
+  /** Swatch de COR da miniatura no bloco (sprite de cor). */
+  private thumbRect_: SVGRectElement | null = null
+  /** Imagem da miniatura no bloco (sprite com asset de imagem). */
+  private thumbImage_: SVGImageElement | null = null
+  /** Visual resolvido no render_ corrente (lido pelo updateSize_). */
+  private thumbVisual_: SpriteVisual | null = null
+
   static override fromJson(options: Blockly.FieldTextInputFromJsonConfig): FieldSpritePicker {
     return new FieldSpritePicker(`${options.text ?? ''}`)
+  }
+
+  /**
+   * MINIATURA NO BLOCO: além do nome (textElement_ do FieldTextInput), o campo
+   * desenha um <rect> (cor) ou <image> (asset) no próprio fieldGroup_ — a criança
+   * bate o olho e reconhece o sprite sem ler. Elementos extras no fieldGroup_ NÃO
+   * entram na serialização (que só olha getValue()); é o mesmo padrão do
+   * FieldDropdown nativo, que posiciona um <image> ao lado do texto.
+   */
+  override initView(): void {
+    super.initView()
+    if (!this.fieldGroup_) return
+    this.thumbRect_ = Blockly.utils.dom.createSvgElement(
+      Blockly.utils.Svg.RECT,
+      {
+        width: BLOCK_THUMB_SIZE,
+        height: BLOCK_THUMB_SIZE,
+        rx: 3,
+        ry: 3,
+        style: 'display:none',
+      },
+      this.fieldGroup_,
+    )
+    this.thumbImage_ = Blockly.utils.dom.createSvgElement(
+      Blockly.utils.Svg.IMAGE,
+      {
+        width: BLOCK_THUMB_SIZE,
+        height: BLOCK_THUMB_SIZE,
+        preserveAspectRatio: 'xMidYMid meet',
+        style: 'display:none;image-rendering:pixelated',
+      },
+      this.fieldGroup_,
+    )
+  }
+
+  protected override render_(): void {
+    // Resolve ANTES do super: super.render_ → updateSize_, que lê thumbVisual_.
+    // Guardas: RTL (o positionTextElement_ espelha e o deslocamento quebraria) e
+    // full-block (o texto é desenhado sobre o corpo do reporter — sem espaço p/
+    // a miniatura; nenhum bloco atual cai aqui, guarda barata).
+    const block = this.getSourceBlock()
+    this.thumbVisual_ =
+      block?.rendered && !block.RTL && !this.isFullBlockField()
+        ? resolveSpriteVisual(this.getValue(), block.workspace)
+        : null
+    super.render_()
+  }
+
+  protected override updateSize_(margin?: number): void {
+    super.updateSize_(margin)
+    const rect = this.thumbRect_
+    const image = this.thumbImage_
+    if (!rect || !image) return
+    const visual = this.thumbVisual_
+    if (!visual) {
+      rect.style.display = 'none'
+      image.style.display = 'none'
+      return
+    }
+    // O super já mediu o texto e o posicionou no xOffset do renderer: a miniatura
+    // entra NESSE x, o texto desloca à direita e o campo alarga — `size_` é a API
+    // que o layout do bloco consome (único lugar seguro de mudar é aqui dentro).
+    const text = this.getTextElement()
+    const textX = Number(text.getAttribute('x') ?? 0)
+    text.setAttribute('x', String(textX + BLOCK_THUMB_SIZE + BLOCK_THUMB_GAP))
+    this.size_.width += BLOCK_THUMB_SIZE + BLOCK_THUMB_GAP
+    const y = Math.max(0, (this.size_.height - BLOCK_THUMB_SIZE) / 2)
+    const active = visual.image ? image : rect
+    const idle = visual.image ? rect : image
+    idle.style.display = 'none'
+    active.style.display = ''
+    active.setAttribute('x', String(textX))
+    active.setAttribute('y', String(y))
+    // `style.fill` (inline), não o ATRIBUTO fill: o CSS do Blockly pinta rects de
+    // campo editável (fill branco em stylesheet vence atributo de apresentação).
+    if (visual.image) image.setAttribute('href', visual.image)
+    else if (visual.color) rect.style.fill = visual.color
+    this.positionBorderRect_()
   }
 
   protected override showEditor_(): void {
@@ -146,19 +385,29 @@ export class FieldSpritePicker extends Blockly.FieldTextInput {
     } else {
       const list = document.createElement('div')
       list.style.cssText =
-        'display:flex;flex-direction:column;gap:4px;max-height:200px;overflow:auto;'
+        'display:flex;flex-direction:column;gap:4px;max-height:240px;overflow:auto;'
       for (const sprite of sprites) {
         const btn = document.createElement('button')
         btn.type = 'button'
         btn.title = sprite.name
         const selected = sprite.name === this.getValue()
         btn.style.cssText = `display:flex;align-items:center;gap:8px;padding:5px 7px;border:1px solid ${selected ? 'var(--color-sz-accent)' : 'var(--color-sz-border)'};border-radius:6px;background:var(--color-sz-bg);cursor:pointer;text-align:left;`
+        // Miniatura de VERDADE: <img> com object-fit:contain (background cover
+        // cortava sprite não-quadrado) sobre um fundo neutro; sprite de cor
+        // segue como swatch sólido.
         const swatch = document.createElement('span')
         swatch.style.cssText =
-          'flex:none;width:22px;height:22px;border-radius:5px;border:1px solid var(--color-sz-border);background-size:cover;background-position:center;image-rendering:pixelated;'
+          'flex:none;width:36px;height:36px;border-radius:7px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg-soft);display:flex;align-items:center;justify-content:center;overflow:hidden;'
         const url = assetUrl(sprite.image)
-        if (url) swatch.style.backgroundImage = `url("${url}")`
-        else swatch.style.background = sprite.color || '#22d3ee'
+        if (url) {
+          const img = document.createElement('img')
+          img.src = url
+          img.alt = ''
+          img.style.cssText = 'width:100%;height:100%;object-fit:contain;image-rendering:pixelated;'
+          swatch.appendChild(img)
+        } else {
+          swatch.style.background = sprite.color || '#22d3ee'
+        }
         const label = document.createElement('span')
         label.textContent = sprite.name
         label.style.cssText =
@@ -180,7 +429,7 @@ export class FieldSpritePicker extends Blockly.FieldTextInput {
         const swatch = document.createElement('span')
         swatch.textContent = '🔁'
         swatch.style.cssText =
-          'flex:none;width:22px;height:22px;border-radius:5px;border:1px dashed var(--color-sz-border);display:flex;align-items:center;justify-content:center;font-size:12px;'
+          'flex:none;width:36px;height:36px;border-radius:7px;border:1px dashed var(--color-sz-border);display:flex;align-items:center;justify-content:center;font-size:16px;'
         const label = document.createElement('span')
         label.textContent = name
         label.style.cssText =
