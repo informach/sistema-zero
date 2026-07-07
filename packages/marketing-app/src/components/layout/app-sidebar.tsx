@@ -7,10 +7,12 @@ import { NAV_ITEMS } from './nav'
 
 function useIsActive() {
   const pathname = usePathname()
-  return (href: string, match?: string): boolean => {
-    const prefix = match ?? href
-    if (prefix === '/') return pathname === '/'
-    return pathname === prefix || pathname.startsWith(`${prefix}/`)
+  return (href: string, match?: string, matchAlso?: string[]): boolean => {
+    const prefixes = [match ?? href, ...(matchAlso ?? [])]
+    return prefixes.some((prefix) => {
+      if (prefix === '/') return pathname === '/'
+      return pathname === prefix || pathname.startsWith(`${prefix}/`)
+    })
   }
 }
 
@@ -21,7 +23,7 @@ export function AppSidebar() {
   return (
     <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-56 shrink-0 flex-col gap-1 overflow-y-auto border-r border-border p-3 md:flex">
       {NAV_ITEMS.map((item) => {
-        const active = isActive(item.href, item.match)
+        const active = isActive(item.href, item.match, item.matchAlso)
         const Icon = item.icon
         return (
           <Link
@@ -55,7 +57,7 @@ export function MobileNav() {
   return (
     <nav className="flex items-center gap-1 overflow-x-auto border-b border-border px-4 py-1.5 md:hidden">
       {NAV_ITEMS.map((item) => {
-        const active = isActive(item.href, item.match)
+        const active = isActive(item.href, item.match, item.matchAlso)
         return (
           <Link
             key={item.href}

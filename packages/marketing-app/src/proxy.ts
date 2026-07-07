@@ -17,7 +17,15 @@ import { isSameOriginRequest, requiresOriginCheck } from '@/lib/csrf'
  */
 
 // Prefixos das páginas do grupo autenticado `(app)` (o grupo não aparece na URL).
-const APP_PREFIXES = ['/pipeline', '/calendario', '/ideias', '/midia', '/metricas', '/conexoes']
+const APP_PREFIXES = [
+  '/pipeline',
+  '/calendario',
+  '/ideias',
+  '/midia',
+  '/metricas',
+  '/conexoes',
+  '/conteudos',
+]
 
 function isAppPath(pathname: string): boolean {
   if (pathname === '/') return true

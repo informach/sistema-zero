@@ -10,8 +10,10 @@ import { gatewayFetch } from '@/server/gateway'
  * não sai deste app) e o repasse fiel de status/corpo via `forwardUpstream`.
  */
 
-// 1º segmento permitido (espelha as famílias de rotas do serviço; `accounts` e
-// `metrics` já entram p/ as fases seguintes — o gateway decide o RBAC fino).
+// 1º segmento permitido (espelha as famílias de rotas do serviço; o gateway
+// decide o RBAC fino — ex.: oauth/start e accounts-write são admin+ lá).
+// `oauth` cobre só o START (o callback é navegação do Google direto no gateway,
+// nunca passa por aqui); `drive` é o picker de importação.
 const ALLOWED_ROOTS = new Set([
   'ideas',
   'contents',
@@ -20,6 +22,8 @@ const ALLOWED_ROOTS = new Set([
   'checklist',
   'accounts',
   'metrics',
+  'oauth',
+  'drive',
 ])
 
 type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE'

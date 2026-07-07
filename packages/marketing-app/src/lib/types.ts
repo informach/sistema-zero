@@ -6,6 +6,7 @@
 
 import type { PublicationFormat, SocialNetwork } from './networks'
 import type { ContentStage, ContentType } from './pipeline'
+import type { PublicationStatus } from './publications'
 
 export interface SessionUser {
   id: string
@@ -159,7 +160,7 @@ export interface PublicationView {
   coverAssetId: string | null
   scheduledAt: string | null
   publishMode: PublishMode
-  status: string
+  status: PublicationStatus
   attempts: number
   lastError: string | null
   externalPostId: string | null
@@ -167,6 +168,59 @@ export interface PublicationView {
   publishedAt: string | null
   createdAt: string
   updatedAt: string
+}
+
+/** Item de `GET /marketing/publications` (join com o conteúdo — Calendário/Painel). */
+export interface PublicationListItemView extends PublicationView {
+  contentTitle: string
+  contentType: ContentType
+}
+
+// ── Contas sociais (Conexões + toggle auto/lembrete do composer) ──
+
+export const ACCOUNT_STATUSES = ['connected', 'needs_reauth', 'revoked', 'disabled'] as const
+export type AccountStatus = (typeof ACCOUNT_STATUSES)[number]
+
+export interface SocialAccountView {
+  id: string
+  version: number
+  network: SocialNetwork
+  externalId: string
+  displayName: string
+  username: string | null
+  status: AccountStatus
+  scopes: string[]
+  tokenExpiresAt: string | null
+  refreshExpiresAt: string | null
+  lastRefreshAt: string | null
+  lastRefreshError: string | null
+  metadata: { email: string | null; channelId: string | null; channelTitle: string | null }
+  connectedBy: string
+  /** Conta serve pro publisher automático da rede (conectada + escopos). */
+  canAutoPublish: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/** Resposta de `GET /marketing/accounts` (lista + redes com publisher montado). */
+export interface AccountsResponse {
+  items: SocialAccountView[]
+  autoCapableNetworks: SocialNetwork[]
+}
+
+// ── Google Drive (importação → biblioteca) ──
+
+export interface DriveFileView {
+  id: string
+  name: string
+  mimeType: string
+  sizeBytes: number | null
+  modifiedTime: string | null
+}
+
+export interface DriveFilesResponse {
+  files: DriveFileView[]
+  nextPageToken: string | null
 }
 
 // ── Mídia (biblioteca de assets no R2) ──
