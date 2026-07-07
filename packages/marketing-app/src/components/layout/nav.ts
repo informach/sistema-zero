@@ -28,6 +28,6 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Calendário', href: '/calendario', icon: CalendarDays },
   { label: 'Ideias', href: '/ideias', icon: Lightbulb },
   { label: 'Biblioteca', href: '/midia', icon: Images },
-  { label: 'Métricas', href: '/metricas', icon: ChartColumn, soon: true },
-  { label: 'Conexões', href: '/conexoes', icon: Plug, soon: true },
+  { label: 'Métricas', href: '/metricas', icon: ChartColumn },
+  { label: 'Conexões', href: '/conexoes', icon: Plug },
 ]

@@ -1,14 +1,17 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  byteLength,
   captionLimitFor,
   countHashtags,
   FORMAT_LABELS,
   FORMAT_NETWORK,
   hashtagLimitFor,
+  isDescriptionOverLimit,
   isOverLimit,
   NETWORK_LABELS,
   NETWORK_LIMITS,
   PUBLICATION_FORMATS,
+  titleHasForbiddenChars,
 } from '../src/lib/networks'
 
 describe('FORMAT_NETWORK', () => {
@@ -49,6 +52,57 @@ describe('captionLimitFor', () => {
 
   test('título do YouTube tem limite próprio (100)', () => {
     expect(NETWORK_LIMITS.youtube.title).toBe(100)
+  })
+
+  test('tags do YouTube: 500 caracteres no TOTAL (vírgulas inclusas)', () => {
+    expect(NETWORK_LIMITS.youtube.tags).toBe(500)
+  })
+})
+
+describe('byteLength', () => {
+  test('ASCII: 1 byte por caractere', () => {
+    expect(byteLength('abc')).toBe(3)
+    expect(byteLength('')).toBe(0)
+  })
+
+  test('acento conta 2 bytes e emoji conta 4', () => {
+    expect(byteLength('ç')).toBe(2)
+    expect(byteLength('programação')).toBe(13)
+    expect(byteLength('🚀')).toBe(4)
+  })
+})
+
+describe('isDescriptionOverLimit', () => {
+  test('YouTube: reprova por BYTES, não por caracteres', () => {
+    // 2501 cedilhas = 2501 caracteres (< 5000), mas 5002 bytes (> 5000).
+    const accented = 'ç'.repeat(2501)
+    expect(accented.length).toBeLessThan(5000)
+    expect(isDescriptionOverLimit('yt_video', accented)).toBe(true)
+    expect(isDescriptionOverLimit('yt_short', accented)).toBe(true)
+  })
+
+  test('exatamente 5000 bytes ainda passa', () => {
+    expect(isDescriptionOverLimit('yt_video', 'a'.repeat(5000))).toBe(false)
+    expect(isDescriptionOverLimit('yt_video', 'a'.repeat(5001))).toBe(true)
+  })
+
+  test('fora do YouTube é sempre false (limite lá é em caracteres)', () => {
+    expect(isDescriptionOverLimit('ig_feed', 'ç'.repeat(9000))).toBe(false)
+    expect(isDescriptionOverLimit('fb_post', 'ç'.repeat(90000))).toBe(false)
+    expect(isDescriptionOverLimit('tt_video', 'ç'.repeat(9000))).toBe(false)
+  })
+})
+
+describe('titleHasForbiddenChars', () => {
+  test('YouTube recusa < e >', () => {
+    expect(titleHasForbiddenChars('aula 1 <nova>')).toBe(true)
+    expect(titleHasForbiddenChars('a > b')).toBe(true)
+    expect(titleHasForbiddenChars('só o sinal <')).toBe(true)
+  })
+
+  test('título limpo passa', () => {
+    expect(titleHasForbiddenChars('Como programar seu primeiro jogo')).toBe(false)
+    expect(titleHasForbiddenChars('')).toBe(false)
   })
 })
 
@@ -96,6 +150,15 @@ describe('isOverLimit', () => {
 
   test('exatamente no limite ainda passa', () => {
     expect(isOverLimit('ig_feed', 'a'.repeat(2200))).toBe(false)
+  })
+
+  test('YouTube conta BYTES: acentos estouram antes de 5000 caracteres', () => {
+    const accented = 'ç'.repeat(2501) // 5002 bytes
+    expect(isOverLimit('yt_video', accented)).toBe(true)
+    expect(isOverLimit('yt_short', accented)).toBe(true)
+    // O mesmo texto passa onde a régua é de caracteres.
+    expect(isOverLimit('fb_post', accented)).toBe(false)
+    expect(isOverLimit('yt_video', 'a'.repeat(5000))).toBe(false)
   })
 
   test('mais de 30 hashtags reprova SÓ no Instagram', () => {

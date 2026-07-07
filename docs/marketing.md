@@ -123,9 +123,9 @@ marketing-app (Next, :3012)  ── BFF /api/* ──►  api-gateway (:3000)  �
 | Fase | Entrega | Estado |
 |------|---------|--------|
 | 0 | Fundação: pipeline + publicações modo lembrete + mídia R2 + app com login/shell | **FEITA (07/2026)** |
-| 1 | Operação manual completa: telas ricas (kanban, composer, calendário, biblioteca), lembrete por WhatsApp/e-mail, OAuth Google, importar do Drive | próxima |
-| 2 | YouTube automático (agendamento nativo) + tela Conexões | |
-| 3 | Instagram/Facebook automático + coletor de métricas + dashboards | |
+| 1 | Operação manual completa: telas ricas (kanban, detalhe, composer, calendário, biblioteca, painel), lembrete por WhatsApp, OAuth Google, importar do Drive | **FEITA (07/2026)** |
+| 2 | YouTube automático (upload antecipado + agendamento nativo, quota guard) + tela Conexões + métricas básicas YT | **FEITA (07/2026)** |
+| 3 | Instagram/Facebook automático + coletor de métricas completo + dashboards | próxima |
 | 4 | TikTok + arquivamento R2→Drive + melhores horários (heatmap) | |
 | 5 | IA: legenda/roteiro com validação Light Copy/VTSD + hashtags | |
 

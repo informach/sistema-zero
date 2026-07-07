@@ -37,13 +37,15 @@ export const FORMAT_NETWORK: Record<PublicationFormat, SocialNetwork> = {
 /**
  * Limites publicados pelas redes (contagem simples de caracteres — as redes
  * contam grafemas de formas diferentes, então o composer avisa, não trava).
- * No YouTube a "legenda" do composer vira a DESCRIÇÃO (5000) e o título tem
- * limite próprio (100).
+ * No YouTube a "legenda" do composer vira a DESCRIÇÃO e o título tem limite
+ * próprio (100). Números confirmados na API oficial do YouTube: `description`
+ * é em BYTES (não caracteres — acentos contam 2, emoji até 4) e `tags` é o
+ * TOTAL de caracteres somando todas as tags, incluindo as vírgulas separadoras.
  */
 export const NETWORK_LIMITS = {
   instagram: { caption: 2200, hashtags: 30 },
   tiktok: { caption: 2200 },
-  youtube: { title: 100, description: 5000 },
+  youtube: { title: 100, description: 5000, tags: 500 },
   facebook: { caption: 63206 },
 } as const
 
@@ -69,9 +71,34 @@ export function countHashtags(caption: string): number {
   return caption.match(HASHTAG_RE)?.length ?? 0
 }
 
-/** A legenda estoura algum limite do formato (caracteres ou hashtags)? */
+const UTF8 = new TextEncoder()
+
+/** Tamanho da string em BYTES UTF-8 (o YouTube conta a descrição em bytes). */
+export function byteLength(s: string): number {
+  return UTF8.encode(s).length
+}
+
+/**
+ * A legenda estoura o limite da descrição do YouTube (5000 BYTES)? Nas demais
+ * redes o limite é em caracteres — aqui é sempre false.
+ */
+export function isDescriptionOverLimit(format: PublicationFormat, caption: string): boolean {
+  if (FORMAT_NETWORK[format] !== 'youtube') return false
+  return byteLength(caption) > NETWORK_LIMITS.youtube.description
+}
+
+/** O YouTube recusa títulos com `<` ou `>`. */
+export function titleHasForbiddenChars(title: string): boolean {
+  return title.includes('<') || title.includes('>')
+}
+
+/** A legenda estoura algum limite do formato (bytes no YouTube, caracteres nas demais, hashtags)? */
 export function isOverLimit(format: PublicationFormat, caption: string): boolean {
-  if (caption.length > captionLimitFor(format)) return true
+  if (FORMAT_NETWORK[format] === 'youtube') {
+    if (isDescriptionOverLimit(format, caption)) return true
+  } else if (caption.length > captionLimitFor(format)) {
+    return true
+  }
   const hashtagLimit = hashtagLimitFor(format)
   return hashtagLimit !== null && countHashtags(caption) > hashtagLimit
 }

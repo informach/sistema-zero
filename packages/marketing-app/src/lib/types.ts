@@ -165,6 +165,8 @@ export interface PublicationView {
   lastError: string | null
   externalPostId: string | null
   externalUrl: string | null
+  /** O vídeo já subiu ao provedor (metadados congelam; reagendar vira resync). */
+  hasRemoteVideo: boolean
   publishedAt: string | null
   createdAt: string
   updatedAt: string
@@ -206,6 +208,34 @@ export interface SocialAccountView {
 export interface AccountsResponse {
   items: SocialAccountView[]
   autoCapableNetworks: SocialNetwork[]
+}
+
+// ── Métricas (snapshots do YouTube — o worker coleta a cada 6h) ──
+
+/** Resposta de `GET /marketing/metrics/summary` (`account` null = sem snapshot ainda). */
+export interface MetricsSummaryView {
+  account: {
+    displayName: string
+    channelTitle: string | null
+    followers: number
+    capturedAt: string
+  } | null
+  topPublications: Array<{
+    publicationId: string
+    contentId: string
+    contentTitle: string
+    format: PublicationFormat
+    publishedAt: string | null
+    views: number
+    likes: number
+    comments: number
+    capturedAt: string
+  }>
+}
+
+/** Resposta de `GET /marketing/publications/:id/metrics` (histórico por publicação). */
+export interface PublicationMetricsView {
+  snapshots: Array<{ capturedAt: string; views: number; likes: number; comments: number }>
 }
 
 // ── Google Drive (importação → biblioteca) ──

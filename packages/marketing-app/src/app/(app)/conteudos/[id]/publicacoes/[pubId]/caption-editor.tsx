@@ -4,6 +4,7 @@ import { Label } from '@sistemazero/ui/label'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { cn } from '@/lib/cn'
 import {
+  byteLength,
   captionLimitFor,
   countHashtags,
   FORMAT_NETWORK,
@@ -32,8 +33,10 @@ export function CaptionEditor({
   const limit = captionLimitFor(format)
   const hashtagLimit = hashtagLimitFor(format)
   const hashtags = hashtagLimit !== null ? countHashtags(value) : 0
-  const overChars = value.length > limit
-  const nearChars = !overChars && value.length >= limit * 0.9
+  // YouTube limita a descrição em BYTES (acento conta 2) — o contador acompanha.
+  const measured = network === 'youtube' ? byteLength(value) : value.length
+  const overChars = measured > limit
+  const nearChars = !overChars && measured >= limit * 0.9
   const label = network === 'youtube' ? 'Descrição' : 'Legenda'
 
   return (
@@ -46,7 +49,8 @@ export function CaptionEditor({
             overChars ? 'text-destructive' : nearChars ? 'text-chart-5' : 'text-muted-foreground',
           )}
         >
-          {value.length}/{limit}
+          {measured}/{limit}
+          {network === 'youtube' ? ' bytes' : ''}
         </span>
       </div>
       <Textarea

@@ -19,10 +19,17 @@ conexões de contas sociais. **Next.js 16 (App Router) + React 19 + Tailwind v4*
 Molde arquitetural: **`packages/admin`** (BFF via gateway, cookies HttpOnly, réplica única).
 Porta **3012**. Domínio futuro: `marketing.sistemazero.com.br`.
 
-> Estado: **Fase 0 (fundação) COMPLETA** — login staff+ (cookies `sz_mkt_*`), shell com sidebar,
-> Painel com contagens por etapa, BFF catch-all, libs puras testadas (27 testes), build standalone
-> OK. Telas de /pipeline, /calendario, /ideias, /midia, /metricas e /conexoes são STUBS
-> ("em construção") — as telas ricas são a **Fase 1** do plano.
+> Estado: **F0 + F1 + F2 COMPLETAS (07/07/2026)** — TODAS as telas ricas no ar: Painel
+> (contagens + hoje/amanhã/atrasadas/falhas com "marcar como publicada"), Pipeline (kanban
+> dnd-kit, colunas derivadas somente leitura), Ideias (inbox/promover), `/conteudos/[id]`
+> (stepper + abas Roteiro/Checklist/Anexos/Publicações + comentários/timeline), Composer
+> (`/conteudos/[id]/publicacoes/[pubId]` — contador por rede, capa, agendar, toggle
+> auto/lembrete, preview), Biblioteca (upload XHR presigned com progresso + importar do
+> Drive), Calendário (grade custom + drag reagenda), Conexões (OAuth YouTube real, admin+)
+> e Métricas (canal + top publicações YT). Libs puras testadas (50+ testes), build standalone OK.
+> Padrões-chave: 409 CONCURRENCY_CONFLICT → toast + re-GET; etapas derivadas nunca são alvo de
+> drag; PATCH nunca envia scheduledAt (agendar é rota própria); pós-upload do YouTube
+> (`hasRemoteVideo`) congela metadados.
 
 ## Arquitetura (o padrão central — preserve-o)
 
