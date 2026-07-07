@@ -5,6 +5,7 @@
  * índice no array = índice na folha = índice nas células) — o remap dos mapas
  * é persistido direto na galeria (fora do undo do tileset; cross-asset).
  */
+import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { useEffect, useRef } from 'react'
 import { COPY } from '../../core/copy'
@@ -27,7 +28,8 @@ import {
 } from '../../tiles/tilesetOps'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { usePintaApp } from '../appContext'
-import { IconButton } from '../ui/Button'
+import { ToolButton } from '../ui/Button'
+import { BrickWall, Copy, Plus, Trash2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
@@ -73,7 +75,7 @@ function TileThumbButton({
       aria-label={label}
       aria-pressed={selected}
       onClick={onSelect}
-      className={`pin-checkerboard relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+      className={`pin-checkerboard relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 transition ${
         selected ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border'
       }`}
     >
@@ -86,15 +88,18 @@ function TileThumbButton({
         {index}
       </span>
       {solid ? (
-        <span aria-hidden="true" className="absolute right-0 bottom-0 text-xs">
-          🧱
+        <span
+          aria-hidden="true"
+          className="absolute right-0 bottom-0 rounded-tl-lg bg-pin-surface/85 p-0.5 text-pin-text"
+        >
+          <BrickWall className="size-3" />
         </span>
       ) : null}
     </button>
   )
 }
 
-export function TileStrip(): JSX.Element | null {
+export function TileStrip({ className }: { className?: string }): JSX.Element | null {
   const { editor, session } = useEditorStores()
   const { gallery } = usePintaApp()
   const { showToast } = useToast()
@@ -140,7 +145,7 @@ export function TileStrip(): JSX.Element | null {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-3xl border-2 border-pin-border bg-pin-surface p-2">
+    <div className={clsx('pin-panel flex items-center gap-2 p-2', className)}>
       <span className="px-1 text-sm font-bold text-pin-muted">{COPY.tiles.tiles}</span>
       <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1">
         {asset.tiles.map((tile, index) => (
@@ -167,9 +172,9 @@ export function TileStrip(): JSX.Element | null {
         ))}
       </div>
       <div className="flex items-center gap-1">
-        <IconButton
-          aria-label={COPY.tiles.addTile}
-          title={COPY.tiles.addTile}
+        <ToolButton
+          icon={Plus}
+          label={COPY.tiles.addTile}
           onClick={() =>
             mutate((tileset) => ({
               next: addTile(tileset, selectedIndex),
@@ -178,12 +183,10 @@ export function TileStrip(): JSX.Element | null {
               limitToast: COPY.tiles.tileLimit,
             }))
           }
-        >
-          <span aria-hidden="true">＋</span>
-        </IconButton>
-        <IconButton
-          aria-label={COPY.tiles.duplicateTile}
-          title={COPY.tiles.duplicateTile}
+        />
+        <ToolButton
+          icon={Copy}
+          label={COPY.tiles.duplicateTile}
           onClick={() =>
             mutate((tileset) => ({
               next: duplicateTile(tileset, selectedIndex),
@@ -192,12 +195,10 @@ export function TileStrip(): JSX.Element | null {
               limitToast: COPY.tiles.tileLimit,
             }))
           }
-        >
-          <span aria-hidden="true">🧬</span>
-        </IconButton>
-        <IconButton
-          aria-label={COPY.tiles.removeTile}
-          title={COPY.tiles.removeTile}
+        />
+        <ToolButton
+          icon={Trash2}
+          label={COPY.tiles.removeTile}
           disabled={asset.tiles.length <= 1}
           onClick={() =>
             mutate((tileset) => ({
@@ -206,18 +207,13 @@ export function TileStrip(): JSX.Element | null {
               remap: { removedAt: selectedIndex },
             }))
           }
-        >
-          <span aria-hidden="true">🗑️</span>
-        </IconButton>
-        <IconButton
+        />
+        <ToolButton
+          icon={BrickWall}
+          label={COPY.tiles.solid}
           active={asset.solid[selectedIndex] === true}
-          aria-label={COPY.tiles.solid}
-          aria-pressed={asset.solid[selectedIndex] === true}
-          title={COPY.tiles.solid}
           onClick={() => mutate((tileset) => ({ next: toggleSolid(tileset, selectedIndex) }))}
-        >
-          <span aria-hidden="true">🧱</span>
-        </IconButton>
+        />
       </div>
     </div>
   )

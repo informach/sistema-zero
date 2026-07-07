@@ -48,7 +48,7 @@ describe('UI de animação (F2)', () => {
 
   it('nova animação entra na lista com nome sugerido e fica ativa', async () => {
     await openSpriteEditor()
-    fireEvent.click(screen.getByRole('button', { name: `＋ ${COPY.animation.addAnimation}` }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.animation.addAnimation }))
     await waitFor(() => {
       expect(screen.getByText('andar')).toBeTruthy()
     })
@@ -71,7 +71,7 @@ describe('UI de animação (F2)', () => {
 
   it('Baixar abre o diálogo com folha + receita para sprites', async () => {
     await openSpriteEditor()
-    fireEvent.click(screen.getByRole('button', { name: `⬇ ${COPY.editor.download}` }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.download }))
     await waitFor(() => {
       expect(screen.getByText(COPY.exportDialog.spritesheet, { exact: false })).toBeTruthy()
     })

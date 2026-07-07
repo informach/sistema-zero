@@ -259,7 +259,7 @@ export function NewAssetDialog({
             key={s}
             aria-hidden="true"
             className={`h-2.5 w-2.5 rounded-full transition ${
-              i <= stepIndex ? 'bg-pin-accent' : 'bg-pin-border'
+              i <= stepIndex ? '[background-image:var(--pin-gradient)]' : 'bg-pin-border'
             }`}
           />
         ))}
@@ -281,12 +281,12 @@ export function NewAssetDialog({
                 key={s}
                 type="button"
                 onClick={() => pickStyle(s)}
-                className={`flex flex-col items-center gap-2 rounded-2xl border-2 bg-pin-bg p-6 text-center transition hover:shadow-md ${STYLE_RING_CLASSES[s]}`}
+                className={`pin-pop flex flex-col items-center gap-2 rounded-2xl border-2 bg-pin-bg p-6 text-center transition hover:shadow-md ${STYLE_RING_CLASSES[s]}`}
               >
                 <span aria-hidden="true" className="text-5xl">
                   {info.emoji}
                 </span>
-                <span className="block text-lg font-bold">{info.title}</span>
+                <span className="pin-display block text-lg">{info.title}</span>
                 <span className="block text-sm text-pin-muted">{info.description}</span>
               </button>
             )
@@ -316,13 +316,13 @@ export function NewAssetDialog({
                     }
                     setStep('size')
                   }}
-                  className={`flex items-start gap-3 rounded-2xl border-2 bg-pin-bg p-4 text-left transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 ${KIND_RING_CLASSES[k]}`}
+                  className={`pin-pop flex items-start gap-3 rounded-2xl border-2 bg-pin-bg p-4 text-left transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 ${KIND_RING_CLASSES[k]}`}
                 >
                   <span aria-hidden="true" className="text-3xl">
                     {info.emoji}
                   </span>
                   <span>
-                    <span className="block text-base font-bold">{info.title}</span>
+                    <span className="pin-display block text-base">{info.title}</span>
                     <span className="block text-sm text-pin-muted">
                       {disabled ? COPY.newAsset.needTileset : info.description}
                     </span>
@@ -355,7 +355,7 @@ export function NewAssetDialog({
                       type="button"
                       onClick={() => setTilesetId(tileset.id)}
                       aria-pressed={tilesetId === tileset.id}
-                      className={`min-h-11 rounded-2xl border-2 px-4 font-bold transition ${
+                      className={`min-h-11 rounded-xl border-2 px-4 font-bold transition ${
                         tilesetId === tileset.id
                           ? 'border-pin-accent bg-pin-accent text-pin-accent-fg'
                           : 'border-pin-border bg-pin-bg hover:border-pin-accent'
@@ -389,7 +389,7 @@ export function NewAssetDialog({
                   setStep('name')
                 }}
                 aria-pressed={sizeKey === choice.key}
-                className={`flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 p-3 transition ${
+                className={`pin-pop flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 p-3 transition ${
                   sizeKey === choice.key
                     ? 'border-pin-accent bg-pin-accent/10'
                     : 'border-pin-border bg-pin-bg hover:border-pin-accent'
@@ -428,7 +428,7 @@ export function NewAssetDialog({
             aria-label={COPY.newAsset.nameTitle}
             aria-invalid={Boolean(nameError)}
             aria-describedby="pinta-new-asset-name-help"
-            className="min-h-11 rounded-2xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
+            className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
           />
           {/* role=status: o leitor de tela anuncia quando a ajuda vira erro. */}
           <p id="pinta-new-asset-name-help" role="status" className="text-sm text-pin-muted">

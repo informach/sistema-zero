@@ -14,6 +14,7 @@ import { zipGallery } from '../../export/zip'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import { Download, Plus, Sparkles, Upload } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
 import { NewAssetDialog, type NewAssetRole } from './NewAssetDialog'
@@ -149,7 +150,7 @@ export function GalleryScreen(): JSX.Element {
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6">
       <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{COPY.gallery.title}</h1>
+          <h1 className="pin-display text-2xl">{COPY.gallery.title}</h1>
           <p className="text-base text-pin-muted">{COPY.gallery.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -165,15 +166,18 @@ export function GalleryScreen(): JSX.Element {
             }}
           />
           <Button variant="ghost" onClick={() => restoreRef.current?.click()}>
-            ⬆ {COPY.gallery.restore}
+            <Upload aria-hidden="true" className="size-4" />
+            {COPY.gallery.restore}
           </Button>
           {assets.length > 0 ? (
             <Button variant="ghost" disabled={zipping} onClick={() => void handleDownloadAll()}>
-              ⬇ {COPY.gallery.downloadAll}
+              <Download aria-hidden="true" className="size-4" />
+              {COPY.gallery.downloadAll}
             </Button>
           ) : null}
           <Button variant="primary" onClick={() => setCreateOpen(true)}>
-            <span aria-hidden="true">＋</span> {COPY.gallery.create}
+            <Plus aria-hidden="true" className="size-4" />
+            {COPY.gallery.create}
           </Button>
         </div>
       </header>
@@ -198,7 +202,8 @@ export function GalleryScreen(): JSX.Element {
           </span>
           <p className="max-w-md text-base text-pin-muted">{COPY.gallery.empty}</p>
           <Button variant="primary" onClick={() => setCreateOpen(true)}>
-            <span aria-hidden="true">✨</span> {COPY.gallery.emptyCta}
+            <Sparkles aria-hidden="true" className="size-4" />
+            {COPY.gallery.emptyCta}
           </Button>
         </div>
       ) : null}
@@ -212,7 +217,7 @@ export function GalleryScreen(): JSX.Element {
         <div className="flex flex-col gap-6">
           {projectSections.map(([projectId, section]) => (
             <section key={projectId} aria-label={section.name}>
-              <h2 className="mb-2 text-lg font-bold">
+              <h2 className="pin-display mb-2 text-lg">
                 <span aria-hidden="true">🎮 </span>
                 {section.name}
               </h2>
@@ -223,7 +228,9 @@ export function GalleryScreen(): JSX.Element {
           ))}
           {looseAssets.length > 0 ? (
             <section aria-label={COPY.gallery.looseSection}>
-              <h2 className="mb-2 text-lg font-bold text-pin-muted">{COPY.gallery.looseSection}</h2>
+              <h2 className="pin-display mb-2 text-lg text-pin-muted">
+                {COPY.gallery.looseSection}
+              </h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 {looseAssets.map(renderCard)}
               </div>
@@ -298,7 +305,7 @@ export function GalleryScreen(): JSX.Element {
             value={renameValue}
             onChange={(event) => setRenameValue(event.target.value)}
             aria-label={COPY.newAsset.nameTitle}
-            className="min-h-11 rounded-2xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
+            className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
           />
           <p className="text-sm text-pin-muted">{COPY.newAsset.nameHelp}</p>
           <div className="flex justify-end gap-2">

@@ -30,21 +30,34 @@ import {
 } from '../../tiles/tilemapOps'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { usePintaGallery } from '../appContext'
-import { Button, IconButton } from '../ui/Button'
+import { Button, IconButton, ToolButton } from '../ui/Button'
+import {
+  BrickWall,
+  Eraser,
+  Eye,
+  EyeOff,
+  Hand,
+  type LucideIcon,
+  PaintBucket,
+  Pencil,
+  Pipette,
+  Plus,
+  Trash2,
+} from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { ZoomControls } from './ZoomControls'
 
 type MapTool = 'pencil' | 'fill' | 'eraser' | 'picker' | 'pan'
 
-const MAP_TOOLS: Array<{ id: MapTool; emoji: string; label: string }> = [
-  { id: 'pencil', emoji: '✏️', label: COPY.tools.pencil },
-  { id: 'fill', emoji: '🪣', label: COPY.tools.fill },
-  { id: 'eraser', emoji: '🧽', label: COPY.tools.eraser },
-  { id: 'picker', emoji: '💧', label: COPY.tools.picker },
+const MAP_TOOLS: Array<{ id: MapTool; icon: LucideIcon; label: string }> = [
+  { id: 'pencil', icon: Pencil, label: COPY.tools.pencil },
+  { id: 'fill', icon: PaintBucket, label: COPY.tools.fill },
+  { id: 'eraser', icon: Eraser, label: COPY.tools.eraser },
+  { id: 'picker', icon: Pipette, label: COPY.tools.picker },
   // Em touch o palco tem touch-action:none (todo toque pinta) — a Mão é o
   // jeito de navegar um mapa maior que a tela.
-  { id: 'pan', emoji: '🖐️', label: COPY.vector.pan },
+  { id: 'pan', icon: Hand, label: COPY.vector.pan },
 ]
 
 /** Miniatura de UMA peça pixel no picker (canvas 1:1, CSS pixelated). */
@@ -118,8 +131,11 @@ function PickerTile({
         {index}
       </span>
       {tileset.solid[index] === true ? (
-        <span aria-hidden="true" className="absolute right-0 bottom-0 text-[10px]">
-          🧱
+        <span
+          aria-hidden="true"
+          className="absolute right-0 bottom-0 rounded-tl-lg bg-pin-surface/85 p-0.5 text-pin-text"
+        >
+          <BrickWall className="size-3" />
         </span>
       ) : null}
     </button>
@@ -403,21 +419,23 @@ export function TilemapEditor(): JSX.Element | null {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 sm:p-4">
-      <div className="flex min-h-0 flex-1 items-stretch gap-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+      <div className="flex min-h-0 flex-1 items-stretch gap-2">
         {/* Ferramentas do mapa */}
-        <div className="flex flex-col items-center gap-1 rounded-3xl border-2 border-pin-border bg-pin-surface p-2">
+        <div
+          role="toolbar"
+          aria-label="Ferramentas"
+          aria-orientation="vertical"
+          className="pin-panel flex shrink-0 flex-col items-center gap-1 overflow-y-auto p-2"
+        >
           {MAP_TOOLS.map((entry) => (
-            <IconButton
+            <ToolButton
               key={entry.id}
+              icon={entry.icon}
+              label={entry.label}
               active={tool === entry.id}
-              aria-label={entry.label}
-              aria-pressed={tool === entry.id}
-              title={entry.label}
               onClick={() => session.getState().setTool(entry.id)}
-            >
-              <span aria-hidden="true">{entry.emoji}</span>
-            </IconButton>
+            />
           ))}
         </div>
 
@@ -439,11 +457,8 @@ export function TilemapEditor(): JSX.Element | null {
         </div>
 
         {/* Picker de peças + camadas */}
-        <div className="flex w-48 shrink-0 flex-col gap-3 overflow-y-auto">
-          <section
-            aria-label={COPY.tiles.pickTile}
-            className="rounded-3xl border-2 border-pin-border bg-pin-surface p-3"
-          >
+        <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
+          <section aria-label={COPY.tiles.pickTile} className="pin-panel p-3">
             <span className="mb-2 block text-sm font-bold text-pin-muted">
               {COPY.tiles.pickTile}
             </span>
@@ -465,10 +480,7 @@ export function TilemapEditor(): JSX.Element | null {
             </div>
           </section>
 
-          <section
-            aria-label={COPY.tiles.layers}
-            className="rounded-3xl border-2 border-pin-border bg-pin-surface p-3"
-          >
+          <section aria-label={COPY.tiles.layers} className="pin-panel p-3">
             <span className="mb-2 block text-sm font-bold text-pin-muted">{COPY.tiles.layers}</span>
             <div className="flex flex-col gap-1">
               {tilemap.layers.map((l) => {
@@ -479,7 +491,7 @@ export function TilemapEditor(): JSX.Element | null {
                       type="button"
                       aria-pressed={active}
                       onClick={() => setActiveLayerId(l.id)}
-                      className={`min-h-11 flex-1 truncate rounded-2xl border-2 px-3 text-left text-sm font-bold transition ${
+                      className={`min-h-11 flex-1 truncate rounded-xl border-2 px-3 text-left text-sm font-bold transition ${
                         active
                           ? 'border-pin-accent bg-pin-accent/10'
                           : 'border-pin-border hover:border-pin-accent'
@@ -497,7 +509,11 @@ export function TilemapEditor(): JSX.Element | null {
                         state.commit(toggleLayerVisible(state.asset, l.id))
                       }}
                     >
-                      <span aria-hidden="true">{l.visible ? '👁️' : '🙈'}</span>
+                      {l.visible ? (
+                        <Eye aria-hidden="true" className="size-5" />
+                      ) : (
+                        <EyeOff aria-hidden="true" className="size-5" />
+                      )}
                     </IconButton>
                     {tilemap.layers.length > 1 ? (
                       <IconButton
@@ -512,7 +528,7 @@ export function TilemapEditor(): JSX.Element | null {
                           if (l.id === layer?.id) setActiveLayerId(next.layers[0]?.id ?? null)
                         }}
                       >
-                        <span aria-hidden="true">🗑️</span>
+                        <Trash2 aria-hidden="true" className="size-5" />
                       </IconButton>
                     ) : null}
                   </div>
@@ -536,12 +552,13 @@ export function TilemapEditor(): JSX.Element | null {
                 setActiveLayerId(next.layers[next.layers.length - 1]?.id ?? null)
               }}
             >
-              ＋ {COPY.tiles.addLayer}
+              <Plus aria-hidden="true" className="size-4" />
+              {COPY.tiles.addLayer}
             </Button>
           </section>
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-center gap-3">
+      <div className="flex shrink-0 items-center justify-end">
         <ZoomControls />
       </div>
     </div>
