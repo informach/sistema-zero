@@ -1226,51 +1226,6 @@ function describeBlockFailure(
   return null
 }
 
-/**
- * Coleta os TIPOS de bloco fora da allowlist num blocksState (tolerante à
- * forma). Complemento do all-or-nothing do sanitize: o estado inteiro é
- * descartado, mas o aviso ao menos DIZ quais blocos causaram a queda — sem
- * isso a criança/professor só via "os blocos sumiram", sem pista do culpado.
- */
-export function collectUnknownBlockTypes(
-  raw: unknown,
-  installedExtensions: InstalledExtension[],
-): string[] {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return []
-  const blocksSection = (raw as { blocks?: unknown }).blocks
-  if (!blocksSection || !isPlainUnknownRecord(blocksSection)) return []
-  const roots = (blocksSection as { blocks?: unknown }).blocks
-  if (!Array.isArray(roots)) return []
-
-  const allowed = getAllowedBlocklyBlockTypes(installedExtensions)
-  const unknown = new Set<string>()
-  const seen = new WeakSet<object>()
-  const stack: unknown[] = [...roots]
-  while (stack.length > 0) {
-    const block = stack.pop()
-    if (!block || typeof block !== 'object' || Array.isArray(block) || !isPlainRecord(block)) {
-      continue
-    }
-    if (seen.has(block)) continue
-    seen.add(block)
-    const type = (block as { type?: unknown }).type
-    if (typeof type === 'string' && !allowed.has(type)) unknown.add(type)
-    const inputs = (block as { inputs?: unknown }).inputs
-    if (inputs && isPlainUnknownRecord(inputs)) {
-      for (const wrapper of Object.values(inputs)) {
-        const children = getSerializedBlockWrapperChildren(wrapper)
-        if (children) for (const child of children) stack.push(child)
-      }
-    }
-    const next = (block as { next?: unknown }).next
-    if (next != null) {
-      const children = getSerializedBlockWrapperChildren(next)
-      if (children) for (const child of children) stack.push(child)
-    }
-  }
-  return [...unknown].sort()
-}
-
 function formatCaughtError(err: unknown): string {
   if (err instanceof Error) return err.message || err.name
   if (typeof err === 'string') return err
@@ -2132,16 +2087,8 @@ export function createProjectStore(
       const droppedExt = inLen(r.installedExtensions) - installedExtensions.length
       if (droppedExt > 0) warnings.push(t('projects.importWarn.extensions', { count: droppedExt }))
       if (r.blocksState != null && blocksState == null) {
-        // Quando a queda foi por TIPO desconhecido, nomeie os culpados — é o
-        // caso comum (arquivo de uma versão mais nova / extensão diferente) e
-        // "blocos sumiram" sem pista era o pior aviso possível.
-        const unknownTypes = collectUnknownBlockTypes(r.blocksState, installedExtensions)
-        if (unknownTypes.length > 0) {
-          warnings.push(t('projects.importWarn.unknownBlocks', { types: unknownTypes.join(', ') }))
-        } else {
-          const reason = describeBlocklyValidationFailure(r.blocksState, installedExtensions)
-          warnings.push(t('projects.importWarn.blocks', { reason: reason ?? '—' }))
-        }
+        const reason = describeBlocklyValidationFailure(r.blocksState, installedExtensions)
+        warnings.push(t('projects.importWarn.blocks', { reason: reason ?? '—' }))
       } else if (r.ir != null && ir == null && blocksState == null) {
         warnings.push(t('projects.importWarn.program'))
       }

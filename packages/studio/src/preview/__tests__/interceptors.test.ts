@@ -4,7 +4,7 @@ import { buildInterceptorScript } from '../interceptors'
 interface CapturedMessage {
   kind: string
   parts: string[]
-  error?: { message?: string; userCode?: boolean; line?: number }
+  error?: { message?: string }
 }
 
 /**
@@ -91,23 +91,5 @@ describe('interceptor — guarda de loop', () => {
     win.onerror?.('boom', undefined, 1, 1, new Error('boom'))
     expect(captured.some((m) => m.kind === 'runtimeError')).toBe(true)
     expect(captured.some((m) => m.kind === 'loopStopped')).toBe(false)
-  })
-})
-
-describe('interceptor — origem do erro (userCode)', () => {
-  it('marca userCode=true SÓ quando o src termina com a cauda semeada pelo buildPreviewDoc', () => {
-    const { captured, win } = runInterceptor()
-    const w = win as unknown as Record<string, unknown>
-    w.__SZ_USER_JS_TAIL = 'AAAABBBB'
-    try {
-      win.onerror?.('boom', 'data:text/javascript;base64,xxxxAAAABBBB', 3, 7, new Error('boom'))
-      win.onerror?.('boom', 'data:text/javascript;base64,zzzzzzzz', 1, 1, new Error('boom'))
-      const errors = captured.filter((m) => m.kind === 'runtimeError')
-      expect(errors[0]?.error?.userCode).toBe(true)
-      expect(errors[0]?.error?.line).toBe(3)
-      expect(errors[1]?.error?.userCode).toBe(false)
-    } finally {
-      delete w.__SZ_USER_JS_TAIL
-    }
   })
 })

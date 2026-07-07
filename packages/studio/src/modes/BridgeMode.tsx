@@ -4,10 +4,9 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { type InstalledExtension, t } from '#core'
-import type { GeneratedFiles, SourceMap, SourceMappedFile } from '#generators'
+import type { GeneratedFiles, SourceMap } from '#generators'
 import { buildCssSourceMapFromText } from '#generators'
 import { deepEqualIR, irBlockStructureEqual } from '#ir'
-import type { MonacoCursorPosition } from '#monaco'
 import type { ParseProjectDiagnostic } from '#parsers'
 import { extractInlineAssets } from '#parsers'
 import { PREVIEW_MESSAGE_SOURCE } from '#preview'
@@ -92,7 +91,6 @@ export function BridgeMode(): JSX.Element {
   const selectedBlockId = useHighlightStore((s) => s.selectedBlockId)
   const selectionNonce = useHighlightStore((s) => s.selectionNonce)
   const highlightSource = useHighlightStore((s) => s.source)
-  const setCursor = useHighlightStore((s) => s.setCursor)
   const monacoHighlight = useMemo(() => {
     if (highlightSource !== 'blocks' || !selectedBlockId) return null
     const entry = cross.lookupBlock(selectedBlockId)
@@ -106,31 +104,6 @@ export function BridgeMode(): JSX.Element {
       nonce: selectionNonce,
     }
   }, [highlightSource, selectedBlockId, selectionNonce, cross])
-
-  // Código→bloco (o inverso do monacoHighlight acima): publica o cursor do
-  // Monaco no highlightStore com um pequeno debounce (uma rajada de cliques/
-  // setas vira UMA sincronização). O BlocklyPanel resolve linha→bloco pelo
-  // MESMO source map e seleciona o bloco. Só nos 3 arquivos canônicos.
-  const cursorDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  useEffect(
-    () => () => {
-      if (cursorDebounceRef.current) clearTimeout(cursorDebounceRef.current)
-    },
-    [],
-  )
-  const handleCursorChange = useMemo(
-    () => (pos: MonacoCursorPosition) => {
-      // Digitação também move o cursor (reason NotSet) — só gesto explícito.
-      if (!pos.explicit) return
-      if (pos.file !== 'index.html' && pos.file !== 'style.css' && pos.file !== 'script.js') return
-      const file = pos.file as SourceMappedFile
-      if (cursorDebounceRef.current) clearTimeout(cursorDebounceRef.current)
-      cursorDebounceRef.current = setTimeout(() => {
-        setCursor(file, pos.line, pos.column)
-      }, 150)
-    },
-    [setCursor],
-  )
 
   // O efeito que monta o sourcemap vive ABAIXO (depende de `debouncedCss`, que
   // é declarado mais adiante) — ver "Source map (HTML/JS canônico + CSS posicional)".
@@ -535,11 +508,10 @@ export function BridgeMode(): JSX.Element {
           }
         }}
         highlight={monacoHighlight}
-        // Sincronização código→bloco: só em gesto EXPLÍCITO (clique/navegação
-        // — `pos.explicit`), nunca ao digitar. Do outro lado, o BlocklyPanel
-        // apenas seleciona e SÓ recentraliza o canvas se o bloco estiver fora
-        // da viewport, então o acoplamento não sacode a edição.
-        onCursorChange={handleCursorChange}
+        // Sincronização só no sentido bloco→código: selecionar/editar o
+        // texto NÃO seleciona blocos (decisão de UX — evita o canvas pular
+        // e o acoplamento atrapalhar a edição). Por isso não passamos
+        // `onCursorChange` (que publicaria o cursor como fonte 'editor').
       />
     </Suspense>
   )

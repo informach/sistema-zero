@@ -453,9 +453,8 @@ describe('importProjectFromJSON', () => {
     })
 
     expect(imported.blocksState).toBeNull()
-    // O descarte (silencioso antes) vira aviso — e, quando a queda é por TIPO
-    // desconhecido, o aviso NOMEIA o bloco culpado.
-    expect(warnings.some((w) => w.includes('controls_eval'))).toBe(true)
+    // O descarte (silencioso antes) agora vira aviso para a UI mostrar.
+    expect(warnings.some((w) => w.includes('ainda não conhece'))).toBe(true)
   })
 
   it('avisa quando imagens não cabem; importa o resto; sem avisos quando tudo cabe', async () => {

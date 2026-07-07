@@ -33,8 +33,6 @@ export interface PreviewMessage {
     stack?: string
     line?: number
     col?: number
-    /** true = o erro veio do script.js do ALUNO (linha mapeável para bloco). */
-    userCode?: boolean
   }
   timestamp: number
 }
@@ -186,7 +184,6 @@ export function isPreviewMessage(value: unknown): value is PreviewMessage {
     (error.stack == null ||
       (typeof error.stack === 'string' && error.stack.length <= PREVIEW_MAX_ERROR_CHARS)) &&
     (error.line == null || (typeof error.line === 'number' && Number.isFinite(error.line))) &&
-    (error.col == null || (typeof error.col === 'number' && Number.isFinite(error.col))) &&
-    (error.userCode == null || typeof error.userCode === 'boolean')
+    (error.col == null || (typeof error.col === 'number' && Number.isFinite(error.col)))
   )
 }

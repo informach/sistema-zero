@@ -28,7 +28,6 @@ interface FakeModel extends DisposableMonacoModel {
 type CursorListener = (e: {
   position: { lineNumber: number; column: number }
   source?: string
-  reason?: number
 }) => void
 type ModelListener = () => void
 
@@ -66,7 +65,7 @@ const fakeRegistry: MonacoModelRegistry = {
 interface FakeEditor {
   getModel: () => FakeModel | null
   setModelPath: (path: string) => void
-  emitCursor: (line: number, column: number, source?: string, reason?: number) => void
+  emitCursor: (line: number, column: number, source?: string) => void
   onDidChangeCursorPosition: (cb: CursorListener) => { dispose: () => void }
   onDidChangeModel: (cb: ModelListener) => { dispose: () => void }
   createDecorationsCollection: () => { set: () => void; clear: () => void }
@@ -90,9 +89,8 @@ function makeEditor(initialPath: string): FakeEditor {
       getOrCreateModel(path)
       for (const cb of modelListeners) cb()
     },
-    emitCursor(line: number, column: number, source?: string, reason?: number) {
-      for (const cb of cursorListeners)
-        cb({ position: { lineNumber: line, column }, source, reason })
+    emitCursor(line: number, column: number, source?: string) {
+      for (const cb of cursorListeners) cb({ position: { lineNumber: line, column }, source })
     },
     onDidChangeCursorPosition(cb) {
       cursorListeners.add(cb)
@@ -335,29 +333,6 @@ describe('MonacoTabs — nome do arquivo no cursor', () => {
     editor.emitCursor(2, 3, 'api')
 
     expect(events.at(-1)).toBe('script.js')
-  })
-
-  it('marca `explicit` só quando o reason é Explicit (clique/navegação, não digitação)', () => {
-    const files = [{ name: 'index.html', value: '<html></html>' }]
-    const events: boolean[] = []
-
-    render(
-      <MonacoTabs
-        files={files}
-        activeFile="index.html"
-        onChange={() => {}}
-        onCursorChange={(pos) => events.push(pos.explicit)}
-        modelPathPrefix="proj-explicit"
-      />,
-    )
-
-    const editor = currentEditor as NonNullable<typeof currentEditor>
-    // Clique/navegação: CursorChangeReason.Explicit = 3.
-    editor.emitCursor(1, 1, 'mouse', 3)
-    // Digitação: reason NotSet (0)/ausente.
-    editor.emitCursor(1, 2, 'keyboard')
-
-    expect(events).toEqual([true, false])
   })
 
   it('#23 ignora cursor quando o model do editor está fora do prefixo da instância', () => {

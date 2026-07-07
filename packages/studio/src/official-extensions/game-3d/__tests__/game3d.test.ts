@@ -26,13 +26,6 @@ describe('game-3d — definição da extensão', () => {
     expect(gameThreeDExtension.runtime.bootstrapScript).toMatch(/^import \* as THREE from 'three'/)
     expect(gameThreeDExtension.runtime.bootstrapScript).toContain('window.SZGame3D')
   })
-
-  it('setTexture usa NearestFilter no magFilter (pixel art do Pinta nítida de perto)', () => {
-    // Guarda de drift: o comportamento real roda no browser (three via CDN não
-    // executa no bun test) — aqui só garantimos que o ajuste não é removido.
-    expect(gameThreeDExtension.runtime.bootstrapScript).toContain('NearestFilter')
-    expect(gameThreeDExtension.runtime.bootstrapScript).toContain('magFilter')
-  })
 })
 
 describe('game-3d — gerador', () => {

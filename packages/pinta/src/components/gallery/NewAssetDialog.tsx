@@ -64,20 +64,6 @@ const KIND_FOR_ROLE: Record<PintaAssetStyle, Record<NewAssetRole, PintaAssetKind
 
 type Step = 'style' | 'kind' | 'size' | 'name'
 
-/**
- * Pré-seleção da missão de arte: sprite pixel nasce em 32 (chega ao Estúdio com
- * mais resolução sem a criança pensar nisso — 16 segue disponível no passo de
- * tamanho); os demais tipos ficam na 1ª opção, como antes.
- */
-function preferredSizeKeyFor(kind: PintaAssetKind): string {
-  const choices = sizeChoicesFor(kind)
-  if (kind === 'pixel-sprite') {
-    const thirtyTwo = choices.find((c) => c.key === '32')
-    if (thirtyTwo) return thirtyTwo.key
-  }
-  return choices[0]?.key ?? ''
-}
-
 interface SizeChoice {
   key: string
   label: string
@@ -220,7 +206,7 @@ export function NewAssetDialog({
     if (initialRole) {
       const k = KIND_FOR_ROLE[s][initialRole]
       setKind(k)
-      setSizeKey(preferredSizeKeyFor(k))
+      setSizeKey(sizeChoicesFor(k)[0]?.key ?? '')
       setStep('size')
       return
     }

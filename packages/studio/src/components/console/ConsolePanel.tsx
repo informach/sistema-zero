@@ -2,9 +2,7 @@ import type { JSX } from 'react'
 import { memo, useLayoutEffect, useRef } from 'react'
 import { t } from '#core'
 import { Button } from '#ui'
-import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { glossErrorMessage } from '../../state/errorGloss'
-import { useHighlightStore } from '../../state/highlightStore'
 import { type LogEntry, useLogsStore } from '../../state/logsStore'
 
 // Tipos de log que representam ERRO — só neles tentamos a dica em português.
@@ -103,17 +101,6 @@ const LogEntryItem = memo(function LogEntryItem({ entry }: { entry: LogEntry }) 
   // intacta logo acima — a criança aprende a mensagem real e pode colá-la numa
   // IA/busca). `null` quando o padrão não é reconhecido (mostra só o original).
   const gloss = ERROR_KINDS.has(entry.kind) ? glossErrorMessage(entry.text) : null
-  // Erro de execução com linha no script.js do ALUNO: resolve o bloco que gerou
-  // aquela linha (source map canônico) e oferece o chip "Ver o bloco". Clicar
-  // publica o cursor no highlightStore — o BlocklyPanel seleciona/centraliza o
-  // bloco (mesmo caminho do destaque código→bloco da Ponte). Best-effort: sem
-  // match, sem chip. (memo não bloqueia: hooks de store re-renderizam sozinhos.)
-  const cross = useCrossHighlight()
-  const setCursor = useHighlightStore((s) => s.setCursor)
-  const culpritBlockId =
-    entry.kind === 'runtimeError' && entry.errorLine != null
-      ? cross.lookupLine('script.js', entry.errorLine, entry.errorCol ?? undefined)
-      : null
   return (
     <div>
       <div className={`flex gap-2 ${COLORS[entry.kind]}`}>
@@ -125,15 +112,6 @@ const LogEntryItem = memo(function LogEntryItem({ entry }: { entry: LogEntry }) 
         <p className="ml-2 mt-0.5 whitespace-pre-wrap break-words border-l-2 border-sz-accent pl-2 text-sz-fg-soft">
           {gloss}
         </p>
-      )}
-      {culpritBlockId && entry.errorLine != null && (
-        <button
-          type="button"
-          onClick={() => setCursor('script.js', entry.errorLine ?? 1, entry.errorCol ?? undefined)}
-          className="ml-2 mt-1 rounded border border-sz-border px-2 py-0.5 text-[11px] text-sz-fg-soft hover:border-sz-accent hover:text-sz-fg"
-        >
-          <span aria-hidden>🧩</span> {t('console.showBlock')}
-        </button>
       )}
     </div>
   )

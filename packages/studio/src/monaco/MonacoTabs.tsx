@@ -39,18 +39,7 @@ export interface MonacoCursorPosition {
   file: string
   line: number
   column: number
-  /**
-   * true = gesto EXPLÍCITO do aluno (clique/navegação por teclado). Digitar
-   * também move o cursor, mas com reason NotSet — consumidores que sincronizam
-   * seleção (Ponte código→bloco) filtram por isto para não puxar a seleção a
-   * cada tecla.
-   */
-  explicit: boolean
 }
-
-// monaco.editor.CursorChangeReason.Explicit (o enum é valor; o import de
-// 'monaco-editor' aqui é type-only de propósito — não pagar o módulo inteiro).
-const CURSOR_CHANGE_REASON_EXPLICIT = 3
 
 export interface MonacoHighlight {
   file: string
@@ -454,7 +443,6 @@ export function MonacoTabs({
         file: fileName,
         line: e.position.lineNumber,
         column: e.position.column,
-        explicit: e.reason === CURSOR_CHANGE_REASON_EXPLICIT,
       })
     })
     return () => disposable.dispose()

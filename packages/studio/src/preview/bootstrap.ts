@@ -185,19 +185,12 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   let userScript = ''
   if (instrumentedJs) {
     const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentedJs)}`
-    // Marca o script do ALUNO para o interceptor: o window.onerror recebe o
-    // `src` do script que lançou, e comparar a CAUDA da data URL distingue o
-    // script.js do aluno dos runtimes de extensão/extras. É o que permite ao
-    // Console apontar o BLOCO culpado só para erro do código dele (a linha do
-    // onerror é relativa ao script externo, e o instrumentLoops não insere
-    // quebras de linha — o número de linha bate com o script.js exibido).
-    const tagTail = scriptTag(`window.__SZ_USER_JS_TAIL=${JSON.stringify(dataUrl.slice(-64))};`)
     if (jsNeedsModule) {
-      userScript = `${tagTail}\n${scriptTag('', { type: 'module', src: dataUrl })}`
+      userScript = scriptTag('', { type: 'module', src: dataUrl })
     } else if (jsNeedsDeferredClassic) {
-      userScript = `${tagTail}\n${scriptTag('', { defer: '', src: dataUrl })}`
+      userScript = scriptTag('', { defer: '', src: dataUrl })
     } else {
-      userScript = `${tagTail}\n${scriptTag('', { src: dataUrl })}`
+      userScript = scriptTag('', { src: dataUrl })
     }
   }
 

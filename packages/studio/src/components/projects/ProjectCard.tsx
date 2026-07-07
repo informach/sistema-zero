@@ -15,8 +15,6 @@ export interface ProjectCardProps {
   onChanged: () => void
   /** Abre o projeto no editor (navegação é do host/página, não do card). */
   onOpen: () => void
-  /** Nomes de TODOS os projetos da lista — renomear para um já usado é recusado. */
-  takenNames?: ReadonlySet<string>
 }
 
 function formatDate(ts: number): string {
@@ -52,12 +50,7 @@ function positionMenu(trigger: DOMRect): MenuPosition {
   return { left, top }
 }
 
-export function ProjectCard({
-  summary,
-  onChanged,
-  onOpen,
-  takenNames,
-}: ProjectCardProps): JSX.Element {
+export function ProjectCard({ summary, onChanged, onOpen }: ProjectCardProps): JSX.Element {
   const renameProject = useProjectStore((s) => s.renameProject)
   const duplicateProject = useProjectStore((s) => s.duplicateProject)
   const deleteProject = useProjectStore((s) => s.deleteProject)
@@ -150,19 +143,10 @@ export function ProjectCard({
     menuItems()[0]?.focus()
   }, [menuOpen, menuPosition])
 
-  // Duplicado = nome de OUTRO projeto (o próprio nome atual segue permitido).
-  const duplicateDraft =
-    editing && draft.trim() !== summary.name && (takenNames?.has(draft.trim()) ?? false)
-
   const commitRename = async () => {
     setEditing(false)
     const next = draft.trim()
     if (!next || next === summary.name) {
-      setDraft(summary.name)
-      return
-    }
-    if (takenNames?.has(next)) {
-      // Colisão no blur: recusa e volta ao nome atual (o aviso já orientou).
       setDraft(summary.name)
       return
     }
@@ -221,33 +205,24 @@ export function ProjectCard({
         />
         <div className="relative z-10 flex items-start justify-between gap-2">
           {editing ? (
-            <div className="w-full">
-              <input
-                ref={renameInputRef}
-                name="project-card-name"
-                aria-label={`Renomear ${summary.name}`}
-                autoComplete="off"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onBlur={() => void commitRename()}
-                onKeyDown={(e) => {
-                  // Enter com duplicado mantém a edição (o aviso explica o porquê).
-                  if (e.key === 'Enter' && !duplicateDraft) (e.target as HTMLInputElement).blur()
-                  if (e.key === 'Escape') {
-                    setDraft(summary.name)
-                    setEditing(false)
-                  }
-                }}
-                onClick={(e) => e.stopPropagation()}
-                aria-invalid={duplicateDraft || undefined}
-                className="w-full rounded border border-sz-border bg-sz-bg px-2.5 py-1.5 text-sm text-sz-fg"
-              />
-              {duplicateDraft && (
-                <p role="status" className="mt-1 text-xs text-sz-error">
-                  {t('projects.newModal.duplicate')}
-                </p>
-              )}
-            </div>
+            <input
+              ref={renameInputRef}
+              name="project-card-name"
+              aria-label={`Renomear ${summary.name}`}
+              autoComplete="off"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onBlur={() => void commitRename()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                if (e.key === 'Escape') {
+                  setDraft(summary.name)
+                  setEditing(false)
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded border border-sz-border bg-sz-bg px-2.5 py-1.5 text-sm text-sz-fg"
+            />
           ) : (
             <button
               type="button"

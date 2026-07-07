@@ -23,11 +23,6 @@ export interface StudioPayload {
   height: number
 }
 
-// Teto de UM asset no Studio — manter em sincronia com
-// MAX_ASSET_DATA_URL_CHARS de packages/studio/src/core/project.ts (o
-// EditorScreen valida de novo antes de enviar, com a mensagem gentil).
-const STUDIO_MAX_ASSET_CHARS = 800_000
-
 export async function buildStudioPayload(
   asset: PintaAsset,
   findAsset: (id: string) => PintaAsset | null,
@@ -69,14 +64,6 @@ export async function buildStudioPayload(
       }
     }
     case 'vector-background': {
-      // Cenário vetorial vai ×2: upscale vetorial é re-render (sem perda) e o
-      // PNG chega com folga de resolução para cobrir o palco 800×480. É o único
-      // kind SEM receita acoplada (sprite/tileset têm frameW/tileSize — lá o ×1
-      // é contrato). Estouro do teto do Studio ou falha de raster → ×1 de antes.
-      const scaled = await vectorPngDataUrl(asset, 2)
-      if (scaled && scaled.length <= STUDIO_MAX_ASSET_CHARS) {
-        return { dataUrl: scaled, width: asset.width * 2, height: asset.height * 2 }
-      }
       const dataUrl = await vectorPngDataUrl(asset)
       if (!dataUrl) return null
       return { dataUrl, width: asset.width, height: asset.height }
