@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
-import type { HubGateway, ShowcaseByAuthorItem } from '../../domain/ports/hub-gateway.port'
+import type {
+  HubGateway,
+  PlayCheckResult,
+  ShowcaseByAuthorItem,
+} from '../../domain/ports/hub-gateway.port'
 
 export interface HubHttpGatewayOptions {
   /** Base do hub (ex.: http://hub.railway.internal:3010). Sem `/hub`. */
@@ -24,6 +28,7 @@ export interface HubHttpGatewayOptions {
  */
 const GRANT_PATH = '/hub/webhooks/grant'
 const SHOWCASE_BY_AUTHORS_PATH = '/hub/internal/showcase-by-authors'
+const PLAY_CHECK_PATH = '/hub/internal/play-check'
 const DEFAULT_TIMEOUT_MS = 4_000
 
 /**
@@ -122,6 +127,42 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
         return null
       }
     },
+
+    async checkPlay(playId: string): Promise<PlayCheckResult | null> {
+      try {
+        const rawBody = JSON.stringify({ playId })
+        const ts = Math.floor(now().getTime() / 1000)
+        const signature = signHmac(
+          opts.hmacSecret,
+          canonicalHmacMessage({ method: 'POST', path: PLAY_CHECK_PATH, body: rawBody }),
+          ts,
+        )
+        const res = await doFetch(`${base}${PLAY_CHECK_PATH}`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-signature': `t=${ts},v1=${signature}`,
+          },
+          body: rawBody,
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!res.ok) {
+          opts.logger?.warn('hub.play_check_failed', { status: res.status })
+          return null
+        }
+        const body = (await res.json()) as { visible?: unknown; authorId?: unknown }
+        return {
+          visible: body.visible === true,
+          authorId: typeof body.authorId === 'string' ? body.authorId : null,
+        }
+      } catch (error) {
+        // Indisponível → null: o chamador NÃO grava o marco (fail-closed do anti-farm).
+        opts.logger?.warn('hub.play_check_error', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+        return null
+      }
+    },
   }
 }
 
@@ -129,6 +170,9 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
 export const noopHubGateway: HubGateway = {
   async notifyAccessChanged() {},
   async listShowcaseByAuthors() {
+    return null
+  },
+  async checkPlay() {
     return null
   },
 }

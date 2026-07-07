@@ -6,6 +6,13 @@ export interface ShowcaseByAuthorItem {
   createdAt: string
 }
 
+/** Resultado do play-check S2S (validação do REMIX): o post existe/está visível? */
+export interface PlayCheckResult {
+  visible: boolean
+  /** PERFIL autor do post (p/ recusar self-remix). `null` quando `visible: false`. */
+  authorId: string | null
+}
+
 /**
  * Notificação ao HUB (comunidade) de que o acesso de um usuário MUDOU — para o hub
  * invalidar o micro-cache de acesso NA HORA, sem esperar o TTL. É um efeito
@@ -29,4 +36,11 @@ export interface HubGateway {
     from: Date,
     to: Date,
   ): Promise<ShowcaseByAuthorItem[] | null>
+  /**
+   * Valida um `playId` no hub (S2S HMAC direto) — anti-farm do marco de REMIX: sem
+   * isso, um POST direto com uuids aleatórios farmaria a missão semanal. `null` =
+   * hub indisponível (o chamador NÃO grava o marco — melhor perder um marco de
+   * missão que aceitar id não-verificado).
+   */
+  checkPlay(playId: string): Promise<PlayCheckResult | null>
 }

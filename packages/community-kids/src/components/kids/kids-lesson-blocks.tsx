@@ -19,7 +19,8 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { cn } from '@/lib/cn'
 import { renderMarkdown } from '@/lib/markdown'
 import type {
@@ -69,11 +70,38 @@ export function lessonSupportsGuided(blocks: LessonBlockView[]): boolean {
 }
 
 /**
+ * Desktop (≥1024px) vs empilhado, para o split arrastável da criação guiada.
+ * Lê o `matchMedia` já no estado inicial: o `GuidedCreationMode` só monta após
+ * um clique (nunca entra no HTML do SSR), então não há mismatch de hidratação —
+ * mesmo racional do `useReducedMotion` do quarto.
+ */
+function useIsDesktop(): boolean {
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const onChange = () => setIsDesktop(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  return isDesktop
+}
+
+/**
  * MODO CRIAÇÃO GUIADA: tela limpa em overlay — botão "voltar ao modo normal" + o VÍDEO da
  * aula à esquerda e o ESTÚDIO à direita (lado a lado no desktop), pra a criança assistir e ir
  * fazendo junto. Usa o 1º bloco de vídeo + o 1º de estúdio (o estúdio é o MESMO bloco — mesmo
  * rascunho/entrega/Compartilhar). No mobile empilha (vídeo em cima). Renderizado DENTRO do
  * `LessonPlayerProvider` (precisa do contexto do player: viewerId, posição do vídeo etc.).
+ *
+ * No desktop o split é ARRASTÁVEL (react-resizable-panels, o mesmo divisor de dentro do
+ * Estúdio): a criança aumenta o estúdio e encolhe o vídeo (ou o contrário) puxando o
+ * divisor; a posição persiste no localStorage (`autoSaveId`). O estúdio tem piso maior
+ * (minSize 35) — Blockly fica inusável estreito demais. Cruzar o limiar desktop↔mobile
+ * remonta o StudioBlockKids (re-semeia do rascunho local, sem perda — mesmo custo aceito
+ * da alternância guiada↔normal); os DOIS layouts nunca montam juntos (mesma chave de
+ * rascunho no IndexedDB, ver comentário do modo).
  */
 export function GuidedCreationMode({
   blocks,
@@ -84,9 +112,18 @@ export function GuidedCreationMode({
   lessonTitle: string
   onExit: () => void
 }) {
+  const isDesktop = useIsDesktop()
   const videoBlock = blocks.find((b) => b.kind === 'video')
   const studioBlock = blocks.find((b) => b.kind === 'studio')
   if (!videoBlock || !studioBlock) return null
+  const video = <Video content={videoBlock.content as unknown as VideoBlock} />
+  const studio = (
+    <StudioBlockKids
+      block={studioBlock}
+      content={studioBlock.content as unknown as StudioBlock}
+      fillHeight
+    />
+  )
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <div className="flex shrink-0 items-center gap-3 border-border border-b px-3 py-2">
@@ -96,18 +133,26 @@ export function GuidedCreationMode({
         </Button>
         <span className="sz-display truncate text-sm">{lessonTitle}</span>
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 lg:grid-cols-2">
-        <div className="scrollbar-subtle min-h-0 overflow-y-auto">
-          <Video content={videoBlock.content as unknown as VideoBlock} />
+      {isDesktop ? (
+        <PanelGroup
+          direction="horizontal"
+          autoSaveId="kids-guided-creation"
+          className="min-h-0 flex-1 overflow-hidden p-3"
+        >
+          <Panel defaultSize={50} minSize={20}>
+            <div className="scrollbar-subtle h-full min-h-0 overflow-y-auto pr-3">{video}</div>
+          </Panel>
+          <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
+          <Panel defaultSize={50} minSize={35}>
+            <div className="flex h-full min-h-0 flex-col pl-3">{studio}</div>
+          </Panel>
+        </PanelGroup>
+      ) : (
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3">
+          <div className="scrollbar-subtle min-h-0 overflow-y-auto">{video}</div>
+          <div className="flex min-h-0 flex-col">{studio}</div>
         </div>
-        <div className="flex min-h-0 flex-col">
-          <StudioBlockKids
-            block={studioBlock}
-            content={studioBlock.content as unknown as StudioBlock}
-            fillHeight
-          />
-        </div>
-      </div>
+      )}
     </div>
   )
 }

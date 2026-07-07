@@ -228,6 +228,15 @@ export const ShowcaseByAuthorsBody = t.Object({
   to: t.String({ maxLength: 40 }),
 })
 
+/**
+ * `POST /hub/internal/play-check` (members→hub S2S, HMAC — validação do REMIX):
+ * o playId existe/está visível no Mural? Devolve também o `authorId` (perfil) p/ o
+ * members recusar self-remix. Anti-farm do marco `studio_remix`.
+ */
+export const PlayCheckBody = t.Object({
+  playId: UUID,
+})
+
 /** Paginação por cursor opaco (comentários, cronológico). */
 export const CommentListQuery = t.Object({
   after: t.Optional(t.String({ maxLength: 500 })),

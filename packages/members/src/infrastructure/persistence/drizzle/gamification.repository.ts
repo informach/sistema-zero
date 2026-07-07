@@ -31,6 +31,7 @@ import {
   courseBadgeSlugs,
   pensaCycleBadgeSlugs,
   pensaStageBadgeSlugs,
+  playsBadgeSlugs,
   quizPerfectBadgeSlugs,
   showcaseBadgeSlugs,
   streakBadgeSlugs,
@@ -80,6 +81,7 @@ const COIN_TYPE_FOR_XP: Partial<Record<XpSourceType, CoinSourceTypeValue>> = {
   studio_passed: 'studio_passed',
   pensa_stage_complete: 'pensa_stage_complete',
   pensa_cycle_complete: 'pensa_cycle_complete',
+  studio_publish_day: 'studio_publish_day',
 }
 
 function masterAccessType(audience: CourseAudience): 'all_courses' | 'all_kids_courses' {
@@ -239,6 +241,23 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       // tópico aprovado). Só thread conta (comentário não destrava badge por ora).
       if (newEvents.some((e) => e.sourceType === 'clube_thread')) {
         for (const slug of clubeBadgeSlugs(await countByType('clube_thread'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+
+      // Badges de JOGADAS RECEBIDAS: um jogo do autor cruzou 10/100 plays no /jogar
+      // público — ledgers `play_milestone_10/100` (1 marco por playId, do hub). A de
+      // 100 concede o troféu do quarto via TROPHY_FOR_BADGE (bloco abaixo).
+      if (
+        newEvents.some(
+          (e) => e.sourceType === 'play_milestone_10' || e.sourceType === 'play_milestone_100',
+        )
+      ) {
+        const [tens, hundreds] = await Promise.all([
+          countByType('play_milestone_10'),
+          countByType('play_milestone_100'),
+        ])
+        for (const slug of playsBadgeSlugs(tens, hundreds)) {
           badgeCandidates.add(slug)
         }
       }

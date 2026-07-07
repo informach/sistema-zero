@@ -1162,6 +1162,20 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 1024,
     },
+    // Remix de jogo do Mural ("Fazer a minha versão") — marco da missão gated por
+    // estudio-completo (retenção pós-cursos 07/2026). Literal `/gamification/remix`
+    // (2 seg após /members) não colide com me/challenge/missions/vacation.
+    {
+      id: 'members-gamification-remix',
+      methods: ['POST'],
+      pathPattern: '/members/gamification/remix',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
     {
       id: 'members-streak-freeze-buy',
       methods: ['POST'],

@@ -63,6 +63,7 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   'trofeu-medalha-mil': { labelPt: 'Medalha Nota Mil', emoji: '🥇', w: 1, h: 1, mount: 'wall' },
   'trofeu-foguete': { labelPt: 'Foguete do Lançamento', emoji: '🚀', w: 1, h: 2 },
   'trofeu-console': { labelPt: 'Console de Criador', emoji: '🕹️', w: 1, h: 1 },
+  'trofeu-estrela-do-mural': { labelPt: 'Estrela do Mural', emoji: '🌟', w: 1, h: 1 },
 }
 
 /**
@@ -76,6 +77,7 @@ export const TROPHY_HINT: Record<string, string> = {
   'trofeu-medalha-mil': 'Tire nota mil em 10 quizzes!',
   'trofeu-foguete': 'Lance a Versão 1 de um plano no Pensa!',
   'trofeu-console': 'Complete 3 atividades do Estúdio com nota!',
+  'trofeu-estrela-do-mural': 'Tenha um jogo seu jogado 100 vezes!',
 }
 
 /**
@@ -89,6 +91,7 @@ export const TROPHY_BADGE_SLUGS: ReadonlySet<string> = new Set([
   'quiz-perfect-10',
   'pensa-first-launch',
   'studio-master-3',
+  'plays-100',
 ])
 
 interface RoomThemeInfo {

@@ -68,6 +68,12 @@ cadastro CONDICIONAL como auth/fiscal — sem a env o consumer não existe): é 
 e-mail do report via `/messaging/send` (o gateway re-injeta `x-consumer-id: members` autenticado,
 escopo da idempotência).
 
+E o **marketing também é consumer HMAC de borda** (F1 do app de marketing, 07/2026):
+`MARKETING_HMAC_SECRET` + `MARKETING_ALLOWED_CIDRS` (condicional, espelha o members) — é como o
+publisher-worker do marketing envia o lembrete WhatsApp de publicação manual via `/messaging/send`
+(template `marketing-reminder`, idempotência por publicação+fone). `MARKETING_HMAC_SECRET` está em
+`PROD_REQUIRED_SECRETS` (fail-fast em prod).
+
 Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
 
 ---

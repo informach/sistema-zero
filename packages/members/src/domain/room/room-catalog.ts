@@ -121,6 +121,7 @@ export const ROOM_ITEMS: readonly RoomItemDef[] = [
   trophy('trofeu-medalha-mil', 1, 1, 'wall'), // 10 quizzes nota mil (quiz-perfect-10)
   trophy('trofeu-foguete', 1, 2), // 1º ciclo ZERO lançado (pensa-first-launch — bônus Pensa)
   trophy('trofeu-console', 1, 1), // 3 atividades do Estúdio aprovadas (studio-master-3 — bônus)
+  trophy('trofeu-estrela-do-mural', 1, 1), // um jogo seu foi jogado 100× (plays-100 — universal)
 ]
 
 export const ROOM_ITEMS_BY_ID: ReadonlyMap<string, RoomItemDef> = new Map(
@@ -139,6 +140,7 @@ export const TROPHY_FOR_BADGE: Readonly<Partial<Record<BadgeSlug, string>>> = {
   'quiz-perfect-10': 'trofeu-medalha-mil',
   'pensa-first-launch': 'trofeu-foguete',
   'studio-master-3': 'trofeu-console',
+  'plays-100': 'trofeu-estrela-do-mural',
 }
 
 export const ROOM_THEMES: readonly RoomThemeDef[] = [

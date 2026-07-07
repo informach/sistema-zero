@@ -13,7 +13,9 @@ import {
   ClubeWebhookBody,
   GrantWebhookBody,
   MuralCommentWebhookBody,
+  PlaysMilestoneWebhookBody,
   ShowcaseWebhookBody,
+  StandaloneShowcaseWebhookBody,
   SubscriptionWebhookBody,
 } from '../dtos'
 import { getRawBody, isOversizeBody } from '../raw-body'
@@ -260,5 +262,57 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         return { ok: true }
       },
       { body: MuralCommentWebhookBody },
+    )
+    .post(
+      // O hub avisa que a criança publicou um jogo STANDALONE no Mural (posse do
+      // Estúdio já validada lá no publish). Grava o marco `studio_published` (missões)
+      // + o XP diário `studio_publish_day` (1×/dia — streak/liga de quem só cria).
+      // Award falhou → NÃO marca a entrega (retry), mesma régua do showcase.
+      '/showcase-standalone',
+      async ({ headers, body, set }) => {
+        const deliveryId = resolveDeliveryId(headers)
+        if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
+          return { ok: true, deduped: true }
+        }
+        const awarded = await deps.award.awardStudioStandalonePublished({
+          userId: body.userId,
+          accountId: body.accountId,
+          audience: body.audience,
+          playId: body.playId,
+        })
+        if (!awarded) {
+          set.status = 502
+          return { ok: false, error: 'STANDALONE_SHOWCASE_AWARD_FAILED' }
+        }
+        if (deliveryId) await deps.processed.markProcessed(deliveryId, 'showcase-standalone')
+        return { ok: true }
+      },
+      { body: StandaloneShowcaseWebhookBody },
+    )
+    .post(
+      // O hub avisa que um jogo do AUTOR cruzou 10/100 jogadas no /jogar público.
+      // Marco amount 0 → badges plays-10/plays-100 (+ troféu do quarto na de 100).
+      // Idempotente por playId; award falhou → NÃO marca a entrega (retry do hub).
+      '/plays-milestone',
+      async ({ headers, body, set }) => {
+        const deliveryId = resolveDeliveryId(headers)
+        if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
+          return { ok: true, deduped: true }
+        }
+        const awarded = await deps.award.awardPlaysMilestone({
+          userId: body.userId,
+          accountId: body.accountId,
+          audience: body.audience,
+          playId: body.playId,
+          milestone: body.milestone,
+        })
+        if (!awarded) {
+          set.status = 502
+          return { ok: false, error: 'PLAYS_MILESTONE_AWARD_FAILED' }
+        }
+        if (deliveryId) await deps.processed.markProcessed(deliveryId, 'plays-milestone')
+        return { ok: true }
+      },
+      { body: PlaysMilestoneWebhookBody },
     )
 }

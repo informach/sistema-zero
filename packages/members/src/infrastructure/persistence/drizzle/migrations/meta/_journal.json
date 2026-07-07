@@ -267,6 +267,13 @@
       "when": 1783200000000,
       "tag": "0037_mission_markers",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1783300000000,
+      "tag": "0038_studio_retention",
+      "breakpoints": true
     }
   ]
 }

@@ -33,6 +33,11 @@ function missionLabel(m: MissionView): string {
       return n === 1 ? 'Comente no Mural' : `Comente ${n} vezes no Mural`
     case 'clube_thread':
       return n === 1 ? 'Converse no Clube' : `Converse ${n} vezes no Clube`
+    // Estúdio Completo (retenção pós-cursos): publicar standalone + remix do Mural.
+    case 'studio_published':
+      return n === 1 ? 'Lance um jogo seu no Mural' : `Lance ${n} jogos seus no Mural`
+    case 'studio_remix':
+      return n === 1 ? 'Faça sua versão de um jogo do Mural' : `Faça sua versão de ${n} jogos`
     default:
       return 'Complete a missão'
   }

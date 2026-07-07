@@ -221,12 +221,41 @@ export class ShowcaseService {
    * Link público `/jogar/:playId` só vale enquanto o post do Mural segue visível.
    * `countHit` funde o incremento de `playsCount` na MESMA ida (o BFF já deduplicou
    * por ip:playId — o hub não conhece o IP real de quem joga).
+   *
+   * Marco de PLAYS (retenção pós-cursos, 07/2026): quando o hit faz o contador cruzar
+   * EXATAMENTE 10 ou 100 (o UPDATE é atômico — cada hit vê um valor distinto, o
+   * crossing dispara 1 vez), avisa o members em fire-and-forget best-effort → badge
+   * plays-10/plays-100 (+ troféu) para o AUTOR do jogo. Falha do webhook = perda
+   * aceitável de vaidade (o retry interno de 3 tentativas mitiga).
    */
   async isPlayable(
     playId: string,
     countHit = false,
-  ): Promise<{ visible: boolean; authorDisplayName: string | null }> {
-    return this.threads.hasVisibleShowcasePlayId(playId, countHit)
+  ): Promise<{ visible: boolean; authorDisplayName: string | null; authorId: string | null }> {
+    const res = await this.threads.hasVisibleShowcasePlayId(playId, countHit)
+    if (
+      countHit &&
+      res.visible &&
+      res.authorId &&
+      (res.playsCount === 10 || res.playsCount === 100)
+    ) {
+      void this.members.notifyPlaysMilestone({
+        userId: res.authorId,
+        // Vitrines legadas não têm o snapshot da conta → cai no próprio perfil
+        // (inócuo: o marco é amount 0 e nunca toca o perfil de gamificação).
+        accountId: res.authorAccountId ?? res.authorId,
+        audience: 'kids',
+        playId,
+        milestone: res.playsCount,
+      })
+    }
+    // `authorId` alimenta SÓ o play-check S2S (validação do remix) — a rota pública
+    // do /jogar segue expondo apenas visible + 1º nome.
+    return {
+      visible: res.visible,
+      authorDisplayName: res.authorDisplayName,
+      authorId: res.authorId,
+    }
   }
 
   /** Carreira do aluno: quantos jogos publicados (visíveis) + soma das jogadas. */
@@ -436,6 +465,18 @@ export class ShowcaseService {
         accountId: actor.accountId,
         audience: 'kids',
         challengeKey: thread.challengeKey,
+      })
+    }
+    // Retenção pós-cursos: publicar standalone gera gamificação — marco `studio_published`
+    // (missões gated por estudio-completo) + XP diário de publicar (streak/liga de quem
+    // só cria). FIRE-AND-FORGET best-effort (espelha o notifyShowcasePublished); notifica
+    // mesmo no `deduped` (recupera falha anterior; o members é idempotente por playId/dia).
+    if (thread.playId) {
+      void this.members.notifyStandaloneShowcase({
+        userId: actor.userId,
+        accountId: actor.accountId,
+        audience: 'kids',
+        playId: thread.playId,
       })
     }
     return { thread: toThreadView(thread), deduped }

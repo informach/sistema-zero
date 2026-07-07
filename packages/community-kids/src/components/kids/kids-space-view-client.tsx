@@ -296,6 +296,14 @@ export function KidsSpaceViewClient({
         const studio = await import('@sistemazero/studio')
         studio.setStudioStorageNamespace(viewerId)
         await studio.importProjectSnapshot(snapshot, { name: `Remix de ${t.title}` })
+        // Gamificação (retenção pós-cursos): registra o marco da missão de remix.
+        // BEST-EFFORT fire-and-forget — o toast/navegação não esperam; os guards
+        // anti-farm (posse + playId real no hub + não-self) são do members.
+        void fetch('/api/studio/remix', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ playId: t.playId }),
+        }).catch(() => {})
         toast.success('Sua versão foi criada! Abrindo o Estúdio... 🎮')
         router.push('/estudio')
       } catch {

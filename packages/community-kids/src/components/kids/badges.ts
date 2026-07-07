@@ -10,8 +10,10 @@ import {
   Medal,
   MessagesSquare,
   PiggyBank,
+  Play,
   Rocket,
   Sparkles,
+  Star,
   Swords,
   Target,
 } from 'lucide-react'
@@ -37,6 +39,16 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     title: 'Meu primeiro jogo',
     description: 'Você publicou o seu primeiro jogo no Mural! Tem até troféu no seu quarto.',
     icon: Gamepad2,
+  },
+  'plays-10': {
+    title: 'Sucesso do Mural',
+    description: 'Um jogo seu foi jogado 10 vezes!',
+    icon: Play,
+  },
+  'plays-100': {
+    title: 'Estrela do Mural',
+    description: 'Um jogo seu foi jogado 100 vezes! Tem até troféu no seu quarto.',
+    icon: Star,
   },
   'streak-7': {
     title: 'Semana em chamas',

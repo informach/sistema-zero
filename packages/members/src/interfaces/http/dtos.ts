@@ -303,6 +303,40 @@ export const MuralCommentWebhookBody = t.Object({
   commentId: UUID,
 })
 
+/**
+ * Corpo de `POST /members/webhooks/showcase-standalone` — o HUB avisa que a criança
+ * publicou um jogo STANDALONE (do /estudio, fora de curso) no Mural. Grava o MARCO
+ * `studio_published` (amount 0, sourceId = playId — missões gated por estudio-completo)
+ * + o XP DIÁRIO `studio_publish_day` (1×/dia — a âncora de streak de quem só cria).
+ */
+export const StandaloneShowcaseWebhookBody = t.Object({
+  userId: UUID,
+  accountId: UUID,
+  audience: AUDIENCE,
+  playId: UUID,
+})
+
+/**
+ * Corpo de `POST /members/webhooks/plays-milestone` — o HUB avisa que um jogo do
+ * AUTOR cruzou 10/100 jogadas no /jogar público (crossing exato no UPDATE atômico do
+ * plays_count). Marco amount 0 (sourceId = playId) → badges plays-10/plays-100 (+ troféu).
+ */
+export const PlaysMilestoneWebhookBody = t.Object({
+  userId: UUID,
+  accountId: UUID,
+  audience: AUDIENCE,
+  playId: UUID,
+  milestone: t.Union([t.Literal(10), t.Literal(100)]),
+})
+
+/**
+ * Corpo de `POST /members/gamification/remix` — a criança remixou um jogo do Mural
+ * ("Fazer a minha versão"). O service valida posse do Estúdio + o playId no hub.
+ */
+export const StudioRemixBody = t.Object({
+  playId: UUID,
+})
+
 /** Corpo de `PUT /members/courses/:slug/lessons/:lessonId/position` (throttled no client). */
 export const VideoPositionBody = t.Object({
   positionSeconds: t.Integer({ minimum: 0, maximum: 100_000 }),

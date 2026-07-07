@@ -35,6 +35,11 @@ export type MissionGoalType =
   // Clube: conta `clube_thread` (só APROVADO entra no ledger → não farmável por spam).
   // GATED por posse do produto (ver `requiresAccess`).
   | 'clube_thread'
+  // Estúdio Completo (retenção pós-cursos, 07/2026 — AMBAS gated por posse):
+  // publicou jogo standalone no Mural (marco por playId; ancorado no hub) e
+  // remixou jogo de colega (marco por playId do ORIGINAL; validado no hub).
+  | 'studio_published'
+  | 'studio_remix'
 
 export interface MissionDef {
   slug: string
@@ -55,6 +60,9 @@ export interface MissionDef {
 
 /** Ref do produto Clube dos Criadores (vendido à parte) — gate das missões de Clube. */
 export const CLUBE_ACCESS_REF = 'clube-dos-criadores'
+
+/** Ref do produto Estúdio Completo (vendido à parte) — gate das missões de criação. */
+export const ESTUDIO_ACCESS_REF = 'estudio-completo'
 
 export const DAILY_MISSIONS: readonly MissionDef[] = [
   {
@@ -172,6 +180,26 @@ export const WEEKLY_MISSIONS: readonly MissionDef[] = [
     rewardCoins: 45,
     requiresAccess: CLUBE_ACCESS_REF,
   },
+  // Estúdio Completo (retenção pós-cursos): lançar jogo standalone no Mural e
+  // remixar jogo de colega. Valores espelham os pares (publicar 50/60, enviar-2 40/45).
+  {
+    slug: 'weekly-lancar-jogo',
+    cadence: 'weekly',
+    goalType: 'studio_published',
+    target: 1,
+    rewardXp: 50,
+    rewardCoins: 60,
+    requiresAccess: ESTUDIO_ACCESS_REF,
+  },
+  {
+    slug: 'weekly-remix',
+    cadence: 'weekly',
+    goalType: 'studio_remix',
+    target: 1,
+    rewardXp: 40,
+    rewardCoins: 45,
+    requiresAccess: ESTUDIO_ACCESS_REF,
+  },
 ]
 
 export const MONTHLY_MISSIONS: readonly MissionDef[] = [
@@ -231,6 +259,25 @@ export const MONTHLY_MISSIONS: readonly MissionDef[] = [
     rewardXp: 100,
     rewardCoins: 80,
     requiresAccess: CLUBE_ACCESS_REF,
+  },
+  // Estúdio Completo (retenção pós-cursos): metas grandes do mês de quem CRIA.
+  {
+    slug: 'monthly-lancar-2',
+    cadence: 'monthly',
+    goalType: 'studio_published',
+    target: 2,
+    rewardXp: 150,
+    rewardCoins: 100,
+    requiresAccess: ESTUDIO_ACCESS_REF,
+  },
+  {
+    slug: 'monthly-remix-3',
+    cadence: 'monthly',
+    goalType: 'studio_remix',
+    target: 3,
+    rewardXp: 100,
+    rewardCoins: 80,
+    requiresAccess: ESTUDIO_ACCESS_REF,
   },
 ]
 
@@ -304,9 +351,31 @@ function pick(pool: readonly MissionDef[], count: number, seed: number): Mission
 }
 
 /**
+ * Sorteio em DUAS FASES para quem tem o Estúdio Completo: 1 vaga do set é
+ * GARANTIDA para uma missão do estúdio (semente derivada) e o resto sorteia do
+ * pool completo. Sem isso, o Fisher–Yates uniforme podia dar uma semana/mês só
+ * de missões de aula — estruturalmente travadas para quem já terminou os cursos
+ * (o mesmo problema antigo da "missão travada em 0"). Pool sem missão do estúdio
+ * (criança sem o produto) → sorteio uniforme normal. Determinístico e puro.
+ */
+function pickWithGuaranteedStudio(
+  pool: readonly MissionDef[],
+  count: number,
+  seed: number,
+  studioSeed: number,
+): MissionDef[] {
+  const studioPool = pool.filter((m) => m.requiresAccess === ESTUDIO_ACCESS_REF)
+  if (studioPool.length === 0) return pick(pool, count, seed)
+  const [guaranteed] = pick(studioPool, 1, studioSeed)
+  if (!guaranteed) return pick(pool, count, seed)
+  const rest = pool.filter((m) => m.slug !== guaranteed.slug)
+  return [guaranteed, ...pick(rest, count - 1, seed)]
+}
+
+/**
  * Set diário do aluno (estável por dia/criança). `hasAccess` poda o pool por posse
  * de produto ANTES do sorteio — default seguro (`() => false`): sem posse informada,
- * missões gated (Clube) NÃO entram (não vaza produto vendido à parte).
+ * missões gated (Clube/Estúdio) NÃO entram (não vaza produto vendido à parte).
  */
 export function assignDailyMissions(
   userId: string,
@@ -320,29 +389,31 @@ export function assignDailyMissions(
   )
 }
 
-/** Set semanal do aluno (estável por semana/criança). */
+/** Set semanal do aluno (estável por semana/criança; 1 missão do estúdio garantida p/ quem tem). */
 export function assignWeeklyMissions(
   userId: string,
   weekKey: string,
   hasAccess: MissionAccessPredicate = () => false,
 ): MissionDef[] {
-  return pick(
+  return pickWithGuaranteedStudio(
     filterByAccess(WEEKLY_MISSIONS, hasAccess),
     WEEKLY_SET_SIZE,
     fnv1a(`${userId}:${weekKey}`),
+    fnv1a(`${userId}:${weekKey}:studio`),
   )
 }
 
-/** Set mensal do aluno (estável por mês/criança). */
+/** Set mensal do aluno (estável por mês/criança; 1 missão do estúdio garantida p/ quem tem). */
 export function assignMonthlyMissions(
   userId: string,
   monthKey: string,
   hasAccess: MissionAccessPredicate = () => false,
 ): MissionDef[] {
-  return pick(
+  return pickWithGuaranteedStudio(
     filterByAccess(MONTHLY_MISSIONS, hasAccess),
     MONTHLY_SET_SIZE,
     fnv1a(`${userId}:${monthKey}`),
+    fnv1a(`${userId}:${monthKey}:studio`),
   )
 }
 

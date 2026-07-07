@@ -409,6 +409,29 @@ function TrofeuConsole() {
   )
 }
 
+// 5 pontas da estrela no plano XY (uma p/ cima), pré-computadas (graus → rad).
+const STAR_RAYS = [0, 72, 144, 216, 288].map((deg) => (deg * Math.PI) / 180)
+
+function TrofeuEstrelaDoMural() {
+  return (
+    <group>
+      <Cyl s={[0.5, 0.2, 0.5]} p={[0, 0.1, 0]} m="grayDark" />
+      <Cyl s={[0.12, 0.34, 0.12]} p={[0, 0.36, 0]} m="gold" />
+      {/* estrela dourada de frente: núcleo + 5 pontas de cone irradiando no plano XY */}
+      <Ball s={[0.2, 0.2, 0.14]} p={[0, 0.68, 0]} m="gold" />
+      {STAR_RAYS.map((theta) => (
+        <Cone
+          key={theta}
+          s={[0.11, 0.26, 0.11]}
+          p={[-Math.sin(theta) * 0.22, 0.68 + Math.cos(theta) * 0.22, 0]}
+          r={[0, 0, theta]}
+          m="yellow"
+        />
+      ))}
+    </group>
+  )
+}
+
 function FallbackBox({ w, h }: FProps) {
   return <Box s={[w * 0.7, 0.7, h * 0.7]} p={[0, 0.35, 0]} m="gray" />
 }
@@ -482,6 +505,8 @@ export function FurnitureModel({ itemId, w, h }: { itemId: string; w: number; h:
       return <TrofeuFoguete w={w} h={h} />
     case 'trofeu-console':
       return <TrofeuConsole />
+    case 'trofeu-estrela-do-mural':
+      return <TrofeuEstrelaDoMural />
     default:
       return <FallbackBox w={w} h={h} />
   }

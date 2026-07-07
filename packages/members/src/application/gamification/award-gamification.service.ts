@@ -3,7 +3,11 @@ import type { CourseAudience } from '../../domain/course/course'
 import { CHALLENGE_ENTRY_XP, challengeSourceId } from '../../domain/gamification/challenges'
 import { COIN_VALUES, quizPassedCoins } from '../../domain/gamification/coins'
 import { localDateSaoPaulo, quizPassedXp, XP_VALUES } from '../../domain/gamification/gamification'
-import { avatarPartSourceId, roomItemSourceId } from '../../domain/gamification/source-id'
+import {
+  avatarPartSourceId,
+  roomItemSourceId,
+  studioPublishDaySourceId,
+} from '../../domain/gamification/source-id'
 import { pensaStageSourceId } from '../../domain/pensa/gamification'
 import type { PensaWorkStage } from '../../domain/pensa/pensa'
 import type {
@@ -336,6 +340,94 @@ export class AwardGamificationService {
       input.accountId,
       input.audience,
       [{ sourceType: 'course_showcased', sourceId: input.courseId, amount: 0 }],
+      false,
+    )
+  }
+
+  /**
+   * PUBLICOU um jogo standalone no Mural (retenção pós-cursos, 07/2026). Grava DOIS
+   * eventos: o MARCO `studio_published` (amount 0, sourceId = playId do post —
+   * alimenta as missões gated por estudio-completo; republicar = post novo = marco
+   * novo, deliberado) e o XP DIÁRIO `studio_publish_day` (XP 25 + 15 moedas no teto,
+   * sourceId = uuid determinístico do dia civil SP → máx. 1 XP/dia — spam de
+   * republicação não infla XP/streak/liga). É o XP que mantém o streak de quem já
+   * acabou os cursos e só CRIA. Disparado pelo webhook hub→members; fail-open.
+   * `privileged: false` — o webhook não carrega role (risco aceito, como /challenge).
+   */
+  async awardStudioStandalonePublished(input: {
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    /** playId público do post no Mural (uuid do hub). */
+    playId: string
+  }): Promise<GamificationDeltaView | null> {
+    const dayKey = localDateSaoPaulo(this.clock())
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [
+        { sourceType: 'studio_published', sourceId: input.playId, amount: 0 },
+        {
+          sourceType: 'studio_publish_day',
+          sourceId: studioPublishDaySourceId(dayKey),
+          amount: XP_VALUES.STUDIO_PUBLISH_DAY,
+          coins: COIN_VALUES.STUDIO_PUBLISH_DAY,
+        },
+      ],
+      false,
+    )
+  }
+
+  /**
+   * MARCO `studio_remix` (amount 0): a criança remixou um jogo de colega do Mural
+   * ("Fazer a minha versão"). sourceId = playId do jogo ORIGINAL → re-remixar o
+   * mesmo jogo não conta de novo. Sem XP direto (o remix não passa por moderação —
+   * o prêmio vem do claim da missão; decisão reversível). O caller (rota de aluno)
+   * já validou posse do Estúdio + existência do playId no hub + não-self-remix.
+   */
+  async awardStudioRemix(input: {
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    /** playId do jogo ORIGINAL remixado. */
+    playId: string
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [{ sourceType: 'studio_remix', sourceId: input.playId, amount: 0 }],
+      input.privileged,
+    )
+  }
+
+  /**
+   * MARCO `play_milestone_10|100` (amount 0): um jogo do AUTOR cruzou 10/100
+   * jogadas no /jogar público (crossing exato detectado no hub — UPDATE atômico do
+   * plays_count). Destrava as badges plays-10/plays-100 (+ troféu no quarto via
+   * TROPHY_FOR_BADGE). Idempotente por playId; anti-farm natural (o dedupe ip:playId
+   * do BFF + o volume necessário tornam o limiar honesto). Webhook hub→members.
+   */
+  async awardPlaysMilestone(input: {
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    playId: string
+    milestone: 10 | 100
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [
+        {
+          sourceType: input.milestone === 100 ? 'play_milestone_100' : 'play_milestone_10',
+          sourceId: input.playId,
+          amount: 0,
+        },
+      ],
       false,
     )
   }

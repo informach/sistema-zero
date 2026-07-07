@@ -99,12 +99,21 @@ export interface ThreadRepository {
   /**
    * `visible: true` quando o playId pertence a um post de vitrine ainda visível,
    * com o `authorDisplayName` (1º nome snapshot) para a página pública de jogar.
-   * `countHit` FUNDE o incremento de `playsCount` na mesma ida (sem bump de version).
+   * `countHit` FUNDE o incremento de `playsCount` na mesma ida (sem bump de version);
+   * o `playsCount` devolvido é o valor APÓS o hit — o UPDATE é atômico, cada hit vê
+   * um valor distinto, então o crossing exato de 10/100 (marco de plays) é detectável
+   * pelo chamador. `authorId`/`authorAccountId` (snapshots) alimentam o marco.
    */
   hasVisibleShowcasePlayId(
     playId: string,
     countHit?: boolean,
-  ): Promise<{ visible: boolean; authorDisplayName: string | null }>
+  ): Promise<{
+    visible: boolean
+    authorDisplayName: string | null
+    authorId: string | null
+    authorAccountId: string | null
+    playsCount: number
+  }>
   /** Agregado da carreira: posts de vitrine visíveis do autor + soma das jogadas. */
   showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }>
   /**

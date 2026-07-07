@@ -513,6 +513,8 @@ um projeto" eram diárias e ficavam travadas em 0 (eventos one-shot fora da jane
 | weekly-quarto | room_item_buy | 1 | 30 | **0** | — |
 | weekly-avatar | avatar_part_buy | 1 | 30 | **0** | — |
 | weekly-clube-3 | clube_thread | 3 | 40 | 45 | clube-dos-criadores |
+| weekly-lancar-jogo | studio_published | 1 | 50 | 60 | estudio-completo |
+| weekly-remix | studio_remix | 1 | 40 | 45 | estudio-completo |
 
 **Mensais (`MONTHLY_MISSIONS`, NOVA) — `MONTHLY_SET_SIZE = 2`:**
 
@@ -525,9 +527,12 @@ um projeto" eram diárias e ficavam travadas em 0 (eventos one-shot fora da jane
 | monthly-classificar | course_rated | 1 | 60 | 50 | — |
 | monthly-avatar-3 | avatar_part_buy | 3 | 80 | **0** | — |
 | monthly-clube-10 | clube_thread | 10 | 100 | 80 | clube-dos-criadores |
+| monthly-lancar-2 | studio_published | 2 | 150 | 100 | estudio-completo |
+| monthly-remix-3 | studio_remix | 3 | 100 | 80 | estudio-completo |
 
 `MissionGoalType` = `lesson_complete | quiz_passed | unit_complete | studio_submitted |
-course_showcased | course_rated | room_item_buy | avatar_part_buy | mural_comment | clube_thread`.
+course_showcased | course_rated | room_item_buy | avatar_part_buy | mural_comment | clube_thread |
+studio_published | studio_remix`.
 
 > **Novos goalTypes = MARCOS (amount 0, migration `0037`)** — só CONTAM p/ a missão; o prêmio vem
 > do claim (não movem XP/streak, não refarmam): `studio_submitted` (enviar ao professor, por bloco),
@@ -537,10 +542,40 @@ course_showcased | course_rated | room_item_buy | avatar_part_buy | mural_commen
 > hub→members). `course_showcased` reusa o marco de publicar jogo.
 >
 > **Gating de produto (`MissionDef.requiresAccess`):** as missões de Clube (`clube_thread`) só entram
-> no pool de quem tem `clube-dos-criadores` — `Get/ClaimMissionService` resolvem a posse pela CONTA
-> (`AccessCheckService`) e passam um predicado aos `assign*` (equipe libera tudo; default `() => false`
+> no pool de quem tem `clube-dos-criadores`, e as do Estúdio (`studio_published`/`studio_remix`) de quem
+> tem `estudio-completo` — `Get/ClaimMissionService` resolvem a posse pela CONTA (`AccessCheckService`,
+> as DUAS refs numa ida) e passam um predicado aos `assign*` (equipe libera tudo; default `() => false`
 > não vaza produto). Antes apareciam travadas em 0 p/ quem não tinha o Clube. O `clube_thread`/
 > `mural_comment` só entram no ledger na APROVAÇÃO pela equipe (§3) → anti-farm por moderação.
+
+### Retenção pós-cursos (07/2026 — Estúdio Completo, migration `0038`)
+
+Cenário: a criança terminou todos os cursos e precisa de razão para voltar TODO DIA até sair curso
+novo. Fontes novas (todas do fluxo standalone do `/estudio` + Mural):
+
+- **`studio_published`** (MARCO amount 0, sourceId = playId do post): publicou jogo standalone no
+  Mural — alimenta `weekly-lancar-jogo`/`monthly-lancar-2`. Nasce no hub (`createStandaloneShowcase`
+  → webhook `POST /members/webhooks/showcase-standalone`). Republicar = post novo = marco novo
+  (deliberado).
+- **`studio_publish_day`** (XP REAL **25** + **15 moedas** no teto, sourceId = uuid determinístico do
+  DIA civil SP — `studioPublishDaySourceId`): o XP diário de publicar, **máx. 1×/dia** — é o que
+  mantém streak/liga de quem só CRIA (spam de republicação não infla). Mesmo webhook.
+- **`studio_remix`** (MARCO amount 0, sourceId = playId do jogo ORIGINAL): "Fazer a minha versão" no
+  Mural — alimenta `weekly-remix`/`monthly-remix-3`. Rota de aluno `POST /members/gamification/remix`
+  (`RecordStudioRemixService`): exige posse do Estúdio, **valida o playId no hub** (S2S
+  `POST /hub/internal/play-check` → anti-farm de uuid aleatório) e recusa SELF-remix. Sem XP direto
+  (sem moderação — o prêmio vem do claim).
+- **`play_milestone_10`/`play_milestone_100`** (MARCOS amount 0, sourceId = playId): um jogo do AUTOR
+  cruzou 10/100 jogadas no `/jogar` público — badges **`plays-10`/`plays-100`** (universais) e a de
+  100 concede o troféu **`trofeu-estrela-do-mural`** no quarto. Crossing EXATO detectado no hub
+  (RETURNING do UPDATE atômico do plays_count em `isPlayable`) → webhook
+  `POST /members/webhooks/plays-milestone`. Anti-farm natural: dedupe ip:playId do BFF + volume real.
+- **Sorteio 2 fases (`pickWithGuaranteedStudio`):** p/ quem TEM o Estúdio, o set semanal E o mensal
+  têm **1 vaga garantida** de missão do estúdio (semente derivada `userId:periodo:studio`) — sem isso
+  o Fisher–Yates uniforme podia dar uma semana só de missões de aula, estruturalmente travadas p/
+  quem já terminou os cursos. Determinístico; pool sem missão do estúdio → sorteio uniforme normal.
+- **"Jogar jogo de colega" segue FORA** (decisão da dona mantida — play anônimo + TTL 30min do dedupe
+  = farmável); a recompensa de plays é pelo lado de quem RECEBE (limiar por jogo).
 
 ### Atribuição determinística
 

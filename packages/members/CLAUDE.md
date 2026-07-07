@@ -81,7 +81,11 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > (`0037_mission_markers`: `ALTER TYPE xp_source_type ADD VALUE IF NOT EXISTS` de `studio_submitted`/
 > `course_rated`/`room_item_buy`/`avatar_part_buy`/`mural_comment` — reforma das missões 07/2026, novas
 > fontes como MARCOS amount 0; SEM tabela nova, a cadência mensal reusa `mission_claims.period_key` text)
-> **APLICADA em local; falta staging/prod**.
+> **APLICADA em local; falta staging/prod** e **`0038`** (`0038_studio_retention`: `ALTER TYPE
+> xp_source_type ADD VALUE IF NOT EXISTS` de `studio_published`/`studio_publish_day`/`studio_remix`/
+> `play_milestone_10`/`play_milestone_100` + `coin_source_type` + `'studio_publish_day'` — retenção
+> pós-cursos do Estúdio 07/2026, ver §Missões "Retenção pós-cursos"; SEM tabela nova) **APLICADA em
+> local; falta staging/prod**.
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -723,11 +727,26 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
     ver §Clube). `course_showcased` (publicar jogo) reusa o marco já existente. Todos amount 0 → só CONTAM
     p/ a missão; o prêmio vem do claim (não movem XP/streak, não refarmam).
   - **Gating de produto (`MissionDef.requiresAccess`):** as missões de Clube (`clube_thread`) só entram
-    no pool de quem tem `clube-dos-criadores` (produto à parte) — `GetMissionsService`/`ClaimMissionService`
-    resolvem a posse pela CONTA via `AccessCheckService` e passam um predicado aos `assign*` (equipe/
-    privileged libera tudo). Antes apareciam travadas em 0 p/ quem não tinha o produto. `requiresAccess`
-    ausente = universal. **Default seguro** dos `assign*` é `() => false` (sem posse informada, missão
-    gated NÃO entra — não vaza produto).
+    no pool de quem tem `clube-dos-criadores`, e as do Estúdio (`studio_published`/`studio_remix`, ver
+    abaixo) de quem tem `estudio-completo` — `GetMissionsService`/`ClaimMissionService`
+    resolvem a posse pela CONTA via `AccessCheckService` (as DUAS refs numa ida) e passam um predicado
+    aos `assign*` (equipe/privileged libera tudo). Antes apareciam travadas em 0 p/ quem não tinha o
+    produto. `requiresAccess` ausente = universal. **Default seguro** dos `assign*` é `() => false`
+    (sem posse informada, missão gated NÃO entra — não vaza produto).
+  - **Retenção pós-cursos (07/2026, migration `0038` — quem terminou os cursos volta pelo ESTÚDIO):**
+    fontes novas do fluxo standalone — `studio_published` (marco por playId, webhook do hub
+    `/webhooks/showcase-standalone`) + **`studio_publish_day` (XP REAL 25 + 15 moedas, 1×/dia pelo
+    sourceId determinístico do dia SP `studioPublishDaySourceId` — a âncora de streak/liga de quem só
+    cria; spam de republicação não infla)**; `studio_remix` (marco por playId do ORIGINAL — rota de
+    aluno `POST /members/gamification/remix`, `RecordStudioRemixService`: posse + **play-check S2S no
+    hub** `POST /hub/internal/play-check` + recusa self-remix — anti-farm de POST direto);
+    `play_milestone_10/100` (marcos por playId, webhook `/webhooks/plays-milestone` no crossing exato
+    do plays_count) → badges `plays-10`/`plays-100` (universais; a de 100 dá o troféu
+    `trofeu-estrela-do-mural`). Missões novas gated: `weekly-lancar-jogo`/`weekly-remix`/
+    `monthly-lancar-2`/`monthly-remix-3`. **Sorteio 2 fases** (`pickWithGuaranteedStudio`): quem tem o
+    Estúdio SEMPRE recebe ≥1 missão do estúdio no set semanal e no mensal (semente derivada
+    `:studio`) — sem isso o sorteio uniforme dava semana só de missão de aula, travada p/ quem já
+    terminou tudo. Detalhes/tabelas: `docs/gamificacao.md` §8 "Retenção pós-cursos".
 - **Ligas semanais** (migration `0022`, `league_membership`): coorte competitiva semanal por
   audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.) **Board ENRIQUECIDO
   na vitrine kids (07/2026):** o `GetLeagueService` recebe o `GetAvatarsByProfilesService` + um
