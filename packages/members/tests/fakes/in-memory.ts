@@ -37,6 +37,7 @@ import {
   courseBadgeSlugs,
   pensaCycleBadgeSlugs,
   pensaStageBadgeSlugs,
+  playsBadgeSlugs,
   quizPerfectBadgeSlugs,
   showcaseBadgeSlugs,
   streakBadgeSlugs,
@@ -1333,6 +1334,7 @@ const COIN_TYPE_FOR_XP: Partial<Record<XpEventInput['sourceType'], string>> = {
   studio_passed: 'studio_passed',
   pensa_stage_complete: 'pensa_stage_complete',
   pensa_cycle_complete: 'pensa_cycle_complete',
+  studio_publish_day: 'studio_publish_day',
 }
 
 /**
@@ -1483,6 +1485,19 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     // Clube (mirror do Drizzle — 1ª conversa aprovada = clube-primeiro-post).
     if (newEvents.some((e) => e.sourceType === 'clube_thread')) {
       for (const slug of clubeBadgeSlugs(countByType('clube_thread'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    // Jogadas recebidas (mirror do Drizzle — jogo cruzou 10/100 plays no /jogar).
+    if (
+      newEvents.some(
+        (e) => e.sourceType === 'play_milestone_10' || e.sourceType === 'play_milestone_100',
+      )
+    ) {
+      for (const slug of playsBadgeSlugs(
+        countByType('play_milestone_10'),
+        countByType('play_milestone_100'),
+      )) {
         badgeCandidates.add(slug)
       }
     }

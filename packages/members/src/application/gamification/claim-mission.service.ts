@@ -9,6 +9,7 @@ import {
   assignMonthlyMissions,
   assignWeeklyMissions,
   CLUBE_ACCESS_REF,
+  ESTUDIO_ACCESS_REF,
   MISSIONS_BY_SLUG,
   type MissionAccessPredicate,
   monthlyPeriodKey,
@@ -93,7 +94,7 @@ export class ClaimMissionService {
     privileged: boolean,
   ): Promise<MissionAccessPredicate> {
     if (privileged) return () => true
-    const result = await this.accessCheck.execute(accountId, [CLUBE_ACCESS_REF])
+    const result = await this.accessCheck.execute(accountId, [CLUBE_ACCESS_REF, ESTUDIO_ACCESS_REF])
     const owned = new Set<string>([...result.grants, ...result.communities])
     return (ref: string) => owned.has(ref)
   }

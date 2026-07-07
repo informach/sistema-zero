@@ -136,6 +136,18 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
      **NÃO bump-a `version`** (jogar não é edição — um play concorrente não pode 409-ar a
      moderação). O DEDUPE por `ip:playId` (TTL 30min) é do BFF (member-shell) — o hub não
      conhece o IP real. Sem `count` → SELECT puro (revalidações não inflam).
+   - **Gamificação do standalone + marcos de plays (retenção pós-cursos, 07/2026):** o
+     `createStandaloneShowcase` dispara `members.notifyStandaloneShowcase({userId, accountId,
+     audience:'kids', playId})` (fire-and-forget best-effort, `POST /members/webhooks/
+     showcase-standalone` via `postSignedWebhook` — marco `studio_published` + XP diário de
+     publicar no members; notifica mesmo no `deduped`). E o RETURNING do plays_count agora devolve
+     também `playsCount` novo + `authorId`/`authorAccountId` (snapshots): quando o hit CRUZA
+     exatamente **10 ou 100**, o `isPlayable` dispara `members.notifyPlaysMilestone(...)`
+     (`POST /members/webhooks/plays-milestone` → badges plays-10/plays-100 + troféu; crossing 1×
+     garantido pelo UPDATE atômico). Rota S2S nova **`POST /hub/internal/play-check`**
+     (`internal.routes.ts`, HMAC — members→hub): `{playId}` → `{visible, authorId}` — validação
+     anti-farm do marco de REMIX do members (SELECT puro, validar não é jogar; `authorId` NUNCA sai
+     na rota pública do /jogar, que segue projetando só visible+1º nome).
    - **Carreira:** `GET /hub/my-showcase-stats` (rota de ALUNO, JWT no gateway) →
      `{published, plays}` agregado NO banco (`showcaseStatsByAuthor`, usa o
      `threads_author_status_idx`) — "seus jogos já foram jogados N vezes" do kids.

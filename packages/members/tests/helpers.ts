@@ -24,6 +24,7 @@ import { GetChallengeService } from '../src/application/gamification/get-challen
 import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
 import { GetLeagueService } from '../src/application/gamification/get-league.service'
 import { GetMissionsService } from '../src/application/gamification/get-missions.service'
+import { RecordStudioRemixService } from '../src/application/gamification/record-studio-remix.service'
 import { SetVacationService } from '../src/application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
 import { GetCertificateService } from '../src/application/get-certificate/get-certificate.service'
@@ -162,6 +163,9 @@ export function buildApp(
   const hubShowcaseByAuthors: {
     items: { authorId: string; title: string; playId: string | null; createdAt: string }[] | null
   } = { items: null }
+  // Play-check do REMIX, semeável por teste: playId → {visible, authorId}. Ausente
+  // do mapa → null (hub indisponível — o service NÃO grava o marco, fail-closed).
+  const hubPlays = new Map<string, { visible: boolean; authorId: string | null }>()
   const hub: HubGateway = {
     async notifyAccessChanged(userId, event) {
       hubCalls.push({ userId, event })
@@ -169,6 +173,9 @@ export function buildApp(
     async listShowcaseByAuthors(authorIds) {
       if (!hubShowcaseByAuthors.items) return null
       return hubShowcaseByAuthors.items.filter((i) => authorIds.includes(i.authorId))
+    },
+    async checkPlay(playId) {
+      return hubPlays.get(playId) ?? null
     },
   }
 
@@ -288,6 +295,7 @@ export function buildApp(
       getChallenge: new GetChallengeService(gamification, clock),
       getMissions: new GetMissionsService(gamification, accessCheck, clock),
       claimMission: new ClaimMissionService(gamification, accessCheck, clock),
+      recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
       setVacation: new SetVacationService(gamification, clock),
       getLeague: new GetLeagueService(
@@ -425,6 +433,7 @@ export function buildApp(
     clockRef,
     hubCalls,
     hubShowcaseByAuthors,
+    hubPlays,
     authProfiles,
   }
 }

@@ -7,9 +7,11 @@ import type {
   CourseAccessResult,
   MembersGateway,
   MuralCommentArgs,
+  PlaysMilestoneArgs,
   ShowcaseEligibilityArgs,
   ShowcaseEligibilityResult,
   ShowcasePublishedArgs,
+  StandaloneShowcaseArgs,
 } from '../../domain/ports/members-gateway.port'
 
 export interface MembersHttpGatewayOptions {
@@ -37,6 +39,8 @@ const SHOWCASE_WEBHOOK_PATH = '/members/webhooks/showcase'
 const CHALLENGE_WEBHOOK_PATH = '/members/webhooks/challenge'
 const CLUBE_WEBHOOK_PATH = '/members/webhooks/clube'
 const MURAL_COMMENT_WEBHOOK_PATH = '/members/webhooks/mural-comment'
+const STANDALONE_SHOWCASE_WEBHOOK_PATH = '/members/webhooks/showcase-standalone'
+const PLAYS_MILESTONE_WEBHOOK_PATH = '/members/webhooks/plays-milestone'
 const SHOWCASE_NOTIFY_ATTEMPTS = 3
 const SHOWCASE_NOTIFY_RETRY_BASE_MS = 100
 
@@ -173,6 +177,25 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
         commentId: args.commentId,
       })
     },
+
+    async notifyStandaloneShowcase(args: StandaloneShowcaseArgs): Promise<void> {
+      await postSignedWebhook(STANDALONE_SHOWCASE_WEBHOOK_PATH, 'showcase-standalone', {
+        userId: args.userId,
+        accountId: args.accountId,
+        audience: args.audience,
+        playId: args.playId,
+      })
+    },
+
+    async notifyPlaysMilestone(args: PlaysMilestoneArgs): Promise<void> {
+      await postSignedWebhook(PLAYS_MILESTONE_WEBHOOK_PATH, 'plays-milestone', {
+        userId: args.userId,
+        accountId: args.accountId,
+        audience: args.audience,
+        playId: args.playId,
+        milestone: args.milestone,
+      })
+    },
   }
 
   /**
@@ -184,7 +207,7 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
   async function postSignedWebhook(
     path: string,
     kind: string,
-    payload: Record<string, string>,
+    payload: Record<string, string | number>,
   ): Promise<void> {
     if (!opts.hmacSecret) return
     const rawBody = JSON.stringify(payload)

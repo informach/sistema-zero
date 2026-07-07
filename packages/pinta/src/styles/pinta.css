@@ -72,6 +72,77 @@
 }
 
 /*
+ * Linguagem visual do kids, standalone-safe: gradiente da marca (espelho do
+ * --sz-gradient do community-kids), fonte display herdada do HOST via
+ * var(--font-display) com fallback local, e as superfícies/botões "3D" de
+ * sombra dura. Nenhuma var do kids é referenciada sem fallback — o playground
+ * vite continua funcionando sozinho.
+ */
+[data-pinta-theme] {
+  --pin-gradient: linear-gradient(90deg, oklch(0.5 0.14 200), oklch(0.52 0.18 135));
+}
+[data-pinta-theme="dark"] {
+  --pin-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
+}
+
+/* Títulos no tom do kids: Baloo 2 vem do body do host; fallback arredondado. */
+[data-pinta-theme] .pin-display {
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* CTA pill com sombra dura (espelho do .sz-btn-gradient do kids). */
+[data-pinta-theme] .pin-btn-3d {
+  border-radius: 9999px;
+  background-image: var(--pin-gradient);
+  color: var(--color-pin-accent-fg);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--color-pin-accent) 60%, black);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+[data-pinta-theme] .pin-btn-3d:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 5px 0 color-mix(in oklch, var(--color-pin-accent) 60%, black);
+}
+[data-pinta-theme] .pin-btn-3d:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--color-pin-accent) 60%, black);
+}
+/* Estado ativo dos botões de ferramenta: mesma sombra dura, mais rasa. */
+[data-pinta-theme] .pin-tool-active {
+  box-shadow: 0 2px 0 color-mix(in oklch, var(--color-pin-accent) 60%, black);
+}
+
+/* Painel/card com borda 2px + sombra dura discreta (espelho do .kids-card).
+   A cor da borda é sobreponível via --pin-panel-border (o AssetCard pinta a
+   borda com a cor do PAPEL do asset e a sombra acompanha, como o --unit do
+   .kids-card). */
+[data-pinta-theme] .pin-panel {
+  border: 2px solid var(--pin-panel-border, var(--color-pin-border));
+  border-radius: 1rem;
+  background: var(--color-pin-surface);
+  box-shadow: 0 3px 0
+    color-mix(in oklch, var(--pin-panel-border, var(--color-pin-border)) 45%, transparent);
+}
+
+/* Pop de hover dos cards (espelho do .kid-pop). */
+[data-pinta-theme] .pin-pop {
+  transition: transform 0.18s ease-out;
+}
+[data-pinta-theme] .pin-pop:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-pinta-theme] .pin-pop:hover {
+    transform: none;
+  }
+}
+
+/*
  * Xadrez de transparência atrás dos canvases de desenho e miniaturas. CSS puro
  * (conic-gradient), custo zero por frame — o canvas só pinta os pixels opacos.
  */

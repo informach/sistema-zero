@@ -22,6 +22,10 @@ import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from
 import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
+import {
+  attachSpriteThumbWatcher,
+  refreshSpriteThumbs,
+} from '../../blockly/fields/FieldSpritePicker'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
@@ -691,6 +695,18 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     // é estável (store desta instância), então o efeito segue rodando uma vez.
     ;(injected as unknown as { __szAssets?: () => unknown }).__szAssets = () =>
       projectStoreApi.getState().project?.assets ?? []
+    // Miniaturas de sprite NO BLOCO: refresh automático quando um declarador de
+    // sprite muda (watcher de eventos do workspace) e quando os ASSETS do projeto
+    // mudam (renomear/trocar imagem no painel Imagens não gera evento Blockly —
+    // observa a identidade de project.assets no store da instância).
+    const detachSpriteThumbs = attachSpriteThumbWatcher(injected)
+    let prevAssets = projectStoreApi.getState().project?.assets
+    const unsubscribeAssetsWatch = projectStoreApi.subscribe((state) => {
+      const assets = state.project?.assets
+      if (assets === prevAssets) return
+      prevAssets = assets
+      refreshSpriteThumbs(injected)
+    })
     // Sons de encaixar/desconectar/descartar bloco, servidos pelo host (mesma origem).
     preloadBlockSounds(injected)
     setWorkspace(injected)
@@ -719,6 +735,8 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       if (pendingRegenerationWorkspaceRef.current === injected) {
         pendingRegenerationWorkspaceRef.current = null
       }
+      unsubscribeAssetsWatch()
+      detachSpriteThumbs()
       unregisterPasteTarget(injected)
       injected.dispose()
       appliedToolboxRef.current = null

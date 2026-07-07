@@ -950,6 +950,29 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /**
+   * Registra o REMIX de um jogo do Mural ("Fazer a minha versão") — marco da missão
+   * gated por estudio-completo (retenção pós-cursos). Best-effort do cliente kids
+   * (o toast do remix não espera); os guards anti-farm (posse + playId real no hub
+   * + não-self) são do members.
+   */
+  const studioRemix = {
+    POST: async (req: Request) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      let json: unknown
+      try {
+        json = await req.json()
+      } catch {
+        return invalidInput()
+      }
+      const playId = (json as { playId?: unknown })?.playId
+      if (typeof playId !== 'string' || !UUID_RE.test(playId)) return invalidInput()
+      const { status, body } = await members.recordStudioRemix(playId)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
   /** Compra 1 protetor de sequência com moedas (sem saldo → 402; no máximo → 409). */
   const streakFreezeBuy = {
     POST: async () => {
@@ -1380,6 +1403,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     roomBuy,
     missionsGet,
     missionClaim,
+    studioRemix,
     streakFreezeBuy,
     vacationSet,
     childrenStats,

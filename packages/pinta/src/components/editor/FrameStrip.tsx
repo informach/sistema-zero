@@ -5,6 +5,7 @@
  * Serve os DOIS estilos: thumbs pixel pintam num canvas; thumbs vetoriais são
  * SVG inline.
  */
+import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { useEffect, useRef } from 'react'
 import { addFrame, duplicateFrame, moveFrame, removeFrame } from '../../animation/frames'
@@ -19,7 +20,8 @@ import {
 } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
-import { IconButton } from '../ui/Button'
+import { ToolButton } from '../ui/Button'
+import { ChevronLeft, ChevronRight, Copy, Ghost, Plus, Trash2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
@@ -40,7 +42,7 @@ function ThumbButton({
       aria-label={label}
       aria-pressed={selected}
       onClick={onSelect}
-      className={`pin-checkerboard h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+      className={`pin-checkerboard h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 transition ${
         selected ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border'
       }`}
     >
@@ -70,7 +72,7 @@ function PixelFrameThumb({
   )
 }
 
-export function FrameStrip(): JSX.Element | null {
+export function FrameStrip({ className }: { className?: string }): JSX.Element | null {
   const { editor, session } = useEditorStores()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
@@ -102,7 +104,7 @@ export function FrameStrip(): JSX.Element | null {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-3xl border-2 border-pin-border bg-pin-surface p-2">
+    <div className={clsx('pin-panel flex items-center gap-2 p-2', className)}>
       <span className="px-1 text-sm font-bold text-pin-muted">{COPY.animation.frames}</span>
       <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1">
         {animation.frames.map((frame, index) => (
@@ -127,9 +129,9 @@ export function FrameStrip(): JSX.Element | null {
         ))}
       </div>
       <div className="flex items-center gap-1">
-        <IconButton
-          aria-label={COPY.animation.addFrame}
-          title={COPY.animation.addFrame}
+        <ToolButton
+          icon={Plus}
+          label={COPY.animation.addFrame}
           onClick={() =>
             mutate((sprite) => ({
               next: addFrame(sprite, animation.id, selectedIndex),
@@ -137,12 +139,10 @@ export function FrameStrip(): JSX.Element | null {
               limitToast: COPY.animation.frameLimit,
             }))
           }
-        >
-          <span aria-hidden="true">＋</span>
-        </IconButton>
-        <IconButton
-          aria-label={COPY.animation.duplicateFrame}
-          title={COPY.animation.duplicateFrame}
+        />
+        <ToolButton
+          icon={Copy}
+          label={COPY.animation.duplicateFrame}
           onClick={() =>
             mutate((sprite) => ({
               next: duplicateFrame(sprite, animation.id, selectedIndex),
@@ -150,12 +150,10 @@ export function FrameStrip(): JSX.Element | null {
               limitToast: COPY.animation.frameLimit,
             }))
           }
-        >
-          <span aria-hidden="true">🧬</span>
-        </IconButton>
-        <IconButton
-          aria-label={COPY.animation.moveFrameLeft}
-          title={COPY.animation.moveFrameLeft}
+        />
+        <ToolButton
+          icon={ChevronLeft}
+          label={COPY.animation.moveFrameLeft}
           disabled={selectedIndex === 0}
           onClick={() =>
             mutate((sprite) => ({
@@ -163,12 +161,10 @@ export function FrameStrip(): JSX.Element | null {
               selectIndex: selectedIndex - 1,
             }))
           }
-        >
-          <span aria-hidden="true">⬅️</span>
-        </IconButton>
-        <IconButton
-          aria-label={COPY.animation.moveFrameRight}
-          title={COPY.animation.moveFrameRight}
+        />
+        <ToolButton
+          icon={ChevronRight}
+          label={COPY.animation.moveFrameRight}
           disabled={selectedIndex >= animation.frames.length - 1}
           onClick={() =>
             mutate((sprite) => ({
@@ -176,12 +172,10 @@ export function FrameStrip(): JSX.Element | null {
               selectIndex: selectedIndex + 1,
             }))
           }
-        >
-          <span aria-hidden="true">➡️</span>
-        </IconButton>
-        <IconButton
-          aria-label={COPY.animation.removeFrame}
-          title={COPY.animation.removeFrame}
+        />
+        <ToolButton
+          icon={Trash2}
+          label={COPY.animation.removeFrame}
           disabled={animation.frames.length <= 1}
           onClick={() =>
             mutate((sprite) => ({
@@ -189,18 +183,13 @@ export function FrameStrip(): JSX.Element | null {
               selectIndex: Math.max(selectedIndex - 1, 0),
             }))
           }
-        >
-          <span aria-hidden="true">🗑️</span>
-        </IconButton>
-        <IconButton
+        />
+        <ToolButton
+          icon={Ghost}
+          label={COPY.animation.onion}
           active={onion}
-          aria-label={COPY.animation.onion}
-          aria-pressed={onion}
-          title={COPY.animation.onion}
           onClick={() => session.getState().toggleOnion()}
-        >
-          <span aria-hidden="true">👻</span>
-        </IconButton>
+        />
       </div>
     </div>
   )

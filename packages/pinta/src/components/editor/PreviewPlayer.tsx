@@ -14,7 +14,8 @@ import { COPY } from '../../core/copy'
 import { isAnimatedSpriteKind, type PintaBitmap, type VectorFrame } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
-import { IconButton } from '../ui/Button'
+import { ToolButton } from '../ui/Button'
+import { Pause, Play, Repeat } from '../ui/icons'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
 export const FPS_CHOICES = [2, 4, 6, 8, 12, 16, 24] as const
@@ -60,7 +61,7 @@ export function PreviewPlayer(): JSX.Element | null {
   return (
     <section
       aria-label={COPY.animation.preview}
-      className="flex flex-col items-center gap-2 rounded-3xl border-2 border-pin-border bg-pin-surface p-3"
+      className="pin-panel flex flex-col items-center gap-2 p-3"
     >
       <span className="text-sm font-bold text-pin-muted">{COPY.animation.preview}</span>
       <div className="pin-checkerboard rounded-xl border-2 border-pin-border p-1">
@@ -80,26 +81,21 @@ export function PreviewPlayer(): JSX.Element | null {
         )}
       </div>
       <div className="flex items-center gap-1">
-        <IconButton
-          aria-label={playing ? COPY.animation.pause : COPY.animation.play}
-          title={playing ? COPY.animation.pause : COPY.animation.play}
+        <ToolButton
+          icon={playing ? Pause : Play}
+          label={playing ? COPY.animation.pause : COPY.animation.play}
           onClick={() => session.getState().setPlaying(!playing)}
-        >
-          <span aria-hidden="true">{playing ? '⏸️' : '▶️'}</span>
-        </IconButton>
-        <IconButton
+        />
+        <ToolButton
+          icon={Repeat}
+          label={COPY.animation.loop}
           active={animation.loop}
-          aria-label={COPY.animation.loop}
-          aria-pressed={animation.loop}
-          title={COPY.animation.loop}
           onClick={() => {
             const state = editor.getState()
             if (!isAnimatedSpriteKind(state.asset)) return
             state.replace(setAnimationLoop(state.asset, animation.id, !animation.loop))
           }}
-        >
-          <span aria-hidden="true">🔁</span>
-        </IconButton>
+        />
       </div>
       <div className="flex w-full items-center gap-2 px-1">
         <span aria-hidden="true" title={COPY.animation.slow}>

@@ -389,6 +389,26 @@ const seeds = [
         'Você recebeu este e-mail porque há um perfil de criança ativo na sua conta do Sistema Zero.',
     }),
   },
+  // Lembrete de publicação MANUAL do app de marketing (F1, 07/2026) — enviado
+  // pelo MARKETING (consumer HMAC `marketing` no gateway) na hora agendada de
+  // uma publicação em modo lembrete. CONTRATO de variáveis com o marketing
+  // (publisher-worker): NÃO renomear sem mudar o chamador. `horario` já chega
+  // formatado em America/Sao_Paulo; `link` abre o composer da publicação.
+  {
+    key: 'marketing-reminder',
+    channel: 'whatsapp' as const,
+    name: 'Lembrete de publicação (WhatsApp)',
+    variables: ['titulo', 'formato', 'horario', 'link'],
+    body: [
+      '📣 Hora de publicar!',
+      '',
+      '*{{titulo}}*',
+      '{{formato}} — agendado para {{horario}}.',
+      '',
+      'Publique na rede e depois marque como publicada aqui:',
+      '{{link}}',
+    ].join('\n'),
+  },
 ]
 
 // ── Upsert ────────────────────────────────────────────────────────────────────

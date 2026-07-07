@@ -5,6 +5,7 @@ import {
   assignMonthlyMissions,
   assignWeeklyMissions,
   CLUBE_ACCESS_REF,
+  ESTUDIO_ACCESS_REF,
   type MissionAccessPredicate,
   type MissionDef,
   monthlyPeriodKey,
@@ -78,14 +79,14 @@ export class GetMissionsService {
   /**
    * Predicado de posse p/ podar missões GATED do pool. Equipe (privileged) libera
    * tudo (passe livre). Resolve pela CONTA — mesma régua da rota `/members/access`
-   * (grant específico OU comunidade). Hoje só o Clube dos Criadores é gated.
+   * (grant específico OU comunidade) — as DUAS refs gated (Clube + Estúdio) numa ida.
    */
   private async resolveAccess(
     accountId: string,
     privileged: boolean,
   ): Promise<MissionAccessPredicate> {
     if (privileged) return () => true
-    const result = await this.accessCheck.execute(accountId, [CLUBE_ACCESS_REF])
+    const result = await this.accessCheck.execute(accountId, [CLUBE_ACCESS_REF, ESTUDIO_ACCESS_REF])
     const owned = new Set<string>([...result.grants, ...result.communities])
     return (ref: string) => owned.has(ref)
   }

@@ -41,6 +41,38 @@ export const gameTwoDRuntime = `(function () {
   }
 
   /**
+   * Escala física do ctx do palco: com fitScreen o backing store cresce além do
+   * tamanho lógico (devicePixelRatio), então o upscale REAL é maior do que w/h
+   * sugerem. Fora do palco (canvas do aluno) a escala é 1.
+   */
+  function _deviceScale(ctx) {
+    if (ctx && ctx === _stageCtx && _logicalW && _stageCanvas && _stageCanvas.width) {
+      return _stageCanvas.width / _logicalW;
+    }
+    return 1;
+  }
+
+  /**
+   * Desenha com nitidez de pixel art quando AMPLIA (nearest, sem o borrão
+   * bilinear do navegador) e suave quando REDUZ (vetor/foto não serrilham).
+   * Sempre restaura o smoothing: setupStage/_resizeBacking reatribuem c.width
+   * (que reseta o estado do ctx), então o ajuste é POR DESENHO, nunca global.
+   * Devolve false se o desenho lançou (o chamador cai no placeholder).
+   */
+  function _crispDraw(ctx, srcW, dw, draw) {
+    var prev = true, ok = true;
+    try { prev = ctx.imageSmoothingEnabled; } catch (e) {}
+    try {
+      if (typeof srcW === 'number' && srcW > 0 && dw * _deviceScale(ctx) >= srcW) {
+        ctx.imageSmoothingEnabled = false;
+      }
+    } catch (e) {}
+    try { draw(); } catch (e) { ok = false; }
+    try { ctx.imageSmoothingEnabled = prev; } catch (e) {}
+    return ok;
+  }
+
+  /**
    * Carrega uma imagem por NOME do asset (do manifesto) ou por URL/dataUrl direta.
    * Devolve um handle { img, loaded, url } cacheado por URL. Defensivo: nunca lança
    * e nunca bloqueia — "loaded" vira true no onload.
@@ -138,7 +170,7 @@ export const gameTwoDRuntime = `(function () {
     var sy = Math.floor(i / cols) * fh;
     var dw = (typeof w === 'number') ? w : fw;
     var dh = (typeof h === 'number') ? h : fh;
-    try { ctx.drawImage(img, sx, sy, fw, fh, dx, dy, dw, dh); } catch (e) {}
+    _crispDraw(ctx, fw, dw, function () { ctx.drawImage(img, sx, sy, fw, fh, dx, dy, dw, dh); });
   }
 
   /**
@@ -200,8 +232,11 @@ export const gameTwoDRuntime = `(function () {
       return;
     }
     if (sprite.image && sprite.image.loaded && sprite.image.img) {
-      try { ctx.drawImage(sprite.image.img, sprite.x, sprite.y, sprite.w, sprite.h); return; }
-      catch (e) {}
+      var fimg = sprite.image.img;
+      var okDraw = _crispDraw(ctx, fimg.naturalWidth || sprite.w, sprite.w, function () {
+        ctx.drawImage(fimg, sprite.x, sprite.y, sprite.w, sprite.h);
+      });
+      if (okDraw) return;
     }
     // Imagem ainda CARREGANDO: agenda UM redraw para quando ela chegar. Assim um
     // desenho ÚNICO (fora do "a cada frame") também mostra a imagem assim que ela
@@ -212,10 +247,10 @@ export const gameTwoDRuntime = `(function () {
       sprite._imgHooked = true;
       try {
         fixed.img.addEventListener('load', function () {
-          try {
-            ctx.clearRect(sprite.x, sprite.y, sprite.w, sprite.h);
+          try { ctx.clearRect(sprite.x, sprite.y, sprite.w, sprite.h); } catch (e) {}
+          _crispDraw(ctx, fixed.img.naturalWidth || sprite.w, sprite.w, function () {
             ctx.drawImage(fixed.img, sprite.x, sprite.y, sprite.w, sprite.h);
-          } catch (e) {}
+          });
         });
       } catch (e) {}
     }

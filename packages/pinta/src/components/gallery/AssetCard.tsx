@@ -13,6 +13,7 @@ import { paintBitmap } from '../../pixel/render'
 import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
 import type { VectorShape } from '../../vector/model'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
+import { Copy, Pencil, Trash2 } from '../ui/icons'
 
 /** Bitmap "cara" do asset para a miniatura (null = sem prévia raster). */
 export function thumbnailBitmap(asset: PintaAsset): PintaBitmap | null {
@@ -59,6 +60,17 @@ const KIND_CHIP_CLASSES: Record<PintaAsset['kind'], string> = {
   'vector-sprite': 'bg-pin-kind-sprite',
   'vector-background': 'bg-pin-kind-background',
   'vector-tileset': 'bg-pin-kind-tileset',
+}
+
+/** Borda/sombra do card na cor do PAPEL (espelho do --unit do .kids-card). */
+const KIND_PANEL_CLASSES: Record<PintaAsset['kind'], string> = {
+  'pixel-sprite': '[--pin-panel-border:var(--color-pin-kind-sprite)]',
+  'pixel-background': '[--pin-panel-border:var(--color-pin-kind-background)]',
+  tileset: '[--pin-panel-border:var(--color-pin-kind-tileset)]',
+  tilemap: '[--pin-panel-border:var(--color-pin-kind-tilemap)]',
+  'vector-sprite': '[--pin-panel-border:var(--color-pin-kind-sprite)]',
+  'vector-background': '[--pin-panel-border:var(--color-pin-kind-background)]',
+  'vector-tileset': '[--pin-panel-border:var(--color-pin-kind-tileset)]',
 }
 
 function PixelThumb({ asset, bitmap }: { asset: PintaAsset; bitmap: PintaBitmap }): JSX.Element {
@@ -118,7 +130,7 @@ function Thumb({
   const shapesDoc = thumbnailShapes(asset)
 
   return (
-    <div className="pin-checkerboard relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-pin-border">
+    <div className="pin-checkerboard relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border-2 border-pin-border">
       <span aria-hidden="true" className="absolute text-4xl opacity-30">
         {COPY.kinds[asset.kind].emoji}
       </span>
@@ -158,13 +170,13 @@ export function AssetCard({
   const style = assetStyle(asset.kind)
   return (
     <div
-      className={`flex flex-col gap-2 rounded-3xl border-2 border-pin-border bg-pin-surface p-3 shadow-sm ${justCreated ? 'pin-card-pop' : ''}`}
+      className={`pin-panel pin-pop flex flex-col gap-2 p-3 ${KIND_PANEL_CLASSES[asset.kind]} ${justCreated ? 'pin-card-pop' : ''}`}
     >
       <button
         type="button"
         onClick={onOpen}
         aria-label={`Abrir ${asset.name} (${kind.title}${style ? `, ${COPY.styleBadge[style]}` : ''})`}
-        className="rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
+        className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
       >
         <Thumb asset={asset} findAsset={findAsset} />
       </button>
@@ -194,25 +206,25 @@ export function AssetCard({
           type="button"
           onClick={onRename}
           aria-label={`${COPY.gallery.rename} ${asset.name}`}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-2xl text-lg transition hover:bg-pin-border/40"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40"
         >
-          <span aria-hidden="true">✏️</span>
+          <Pencil aria-hidden="true" className="size-4" />
         </button>
         <button
           type="button"
           onClick={onDuplicate}
           aria-label={`${COPY.gallery.duplicate} ${asset.name}`}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-2xl text-lg transition hover:bg-pin-border/40"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40"
         >
-          <span aria-hidden="true">🧬</span>
+          <Copy aria-hidden="true" className="size-4" />
         </button>
         <button
           type="button"
           onClick={onRemove}
           aria-label={`${COPY.gallery.remove} ${asset.name}`}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-2xl text-lg transition hover:bg-pin-danger/20"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-danger/20"
         >
-          <span aria-hidden="true">🗑️</span>
+          <Trash2 aria-hidden="true" className="size-4" />
         </button>
       </div>
     </div>

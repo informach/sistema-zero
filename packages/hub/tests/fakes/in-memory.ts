@@ -21,9 +21,11 @@ import type {
   CourseAccessResult,
   MembersGateway,
   MuralCommentArgs,
+  PlaysMilestoneArgs,
   ShowcaseEligibilityArgs,
   ShowcaseEligibilityResult,
   ShowcasePublishedArgs,
+  StandaloneShowcaseArgs,
 } from '../../src/domain/ports/members-gateway.port'
 import type {
   CreateMuteBanInput,
@@ -321,12 +323,24 @@ export class InMemoryThreadRepository implements ThreadRepository {
   async hasVisibleShowcasePlayId(
     playId: string,
     countHit = false,
-  ): Promise<{ visible: boolean; authorDisplayName: string | null }> {
+  ): Promise<{
+    visible: boolean
+    authorDisplayName: string | null
+    authorId: string | null
+    authorAccountId: string | null
+    playsCount: number
+  }> {
     const found = this.threads.find(
       (t) => t.playId === playId && t.isShowcase && t.status === 'visible',
     )
     if (found && countHit) found.playsCount += 1
-    return { visible: Boolean(found), authorDisplayName: found?.authorDisplayName ?? null }
+    return {
+      visible: Boolean(found),
+      authorDisplayName: found?.authorDisplayName ?? null,
+      authorId: found?.authorId ?? null,
+      authorAccountId: found?.authorAccountId ?? null,
+      playsCount: found?.playsCount ?? 0,
+    }
   }
 
   async showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }> {
@@ -923,5 +937,17 @@ export class FakeMembersGateway implements MembersGateway {
   muralComments: MuralCommentArgs[] = []
   async notifyMuralComment(args: MuralCommentArgs): Promise<void> {
     this.muralComments.push(args)
+  }
+
+  /** Registra as publicações STANDALONE (marco + XP diário de publicar) — best-effort. */
+  standaloneShowcases: StandaloneShowcaseArgs[] = []
+  async notifyStandaloneShowcase(args: StandaloneShowcaseArgs): Promise<void> {
+    this.standaloneShowcases.push(args)
+  }
+
+  /** Registra os marcos de plays (jogo cruzou 10/100 jogadas) — best-effort. */
+  playsMilestones: PlaysMilestoneArgs[] = []
+  async notifyPlaysMilestone(args: PlaysMilestoneArgs): Promise<void> {
+    this.playsMilestones.push(args)
   }
 }

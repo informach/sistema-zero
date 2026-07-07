@@ -165,12 +165,19 @@ export class DrizzleThreadRepository implements ThreadRepository {
   async hasVisibleShowcasePlayId(
     playId: string,
     countHit = false,
-  ): Promise<{ visible: boolean; authorDisplayName: string | null }> {
+  ): Promise<{
+    visible: boolean
+    authorDisplayName: string | null
+    authorId: string | null
+    authorAccountId: string | null
+    playsCount: number
+  }> {
     if (countHit) {
       // Hit FUNDIDO no resolve (1 round-trip): o RETURNING responde o "visível?"
       // (+ o 1º nome do autor p/ a página pública) e o UPDATE conta a jogada. NÃO
       // bump-a `version` — jogar não é edição (um play concorrente não pode fazer a
-      // moderação/edição dar 409).
+      // moderação/edição dar 409). O RETURNING também devolve o count NOVO + os
+      // snapshots do autor: o crossing exato de 10/100 (marco de plays) é do chamador.
       const rows = await this.db
         .update(threads)
         .set({ playsCount: sql`${threads.playsCount} + 1` })
@@ -181,11 +188,28 @@ export class DrizzleThreadRepository implements ThreadRepository {
             eq(threads.status, 'visible'),
           ),
         )
-        .returning({ authorDisplayName: threads.authorDisplayName })
-      return { visible: rows.length > 0, authorDisplayName: rows[0]?.authorDisplayName ?? null }
+        .returning({
+          authorDisplayName: threads.authorDisplayName,
+          authorId: threads.authorId,
+          authorAccountId: threads.authorAccountId,
+          playsCount: threads.playsCount,
+        })
+      const hit = rows[0]
+      return {
+        visible: rows.length > 0,
+        authorDisplayName: hit?.authorDisplayName ?? null,
+        authorId: hit?.authorId ?? null,
+        authorAccountId: hit?.authorAccountId ?? null,
+        playsCount: hit?.playsCount ?? 0,
+      }
     }
     const [row] = await this.db
-      .select({ authorDisplayName: threads.authorDisplayName })
+      .select({
+        authorDisplayName: threads.authorDisplayName,
+        authorId: threads.authorId,
+        authorAccountId: threads.authorAccountId,
+        playsCount: threads.playsCount,
+      })
       .from(threads)
       .where(
         and(
@@ -195,7 +219,13 @@ export class DrizzleThreadRepository implements ThreadRepository {
         ),
       )
       .limit(1)
-    return { visible: Boolean(row), authorDisplayName: row?.authorDisplayName ?? null }
+    return {
+      visible: Boolean(row),
+      authorDisplayName: row?.authorDisplayName ?? null,
+      authorId: row?.authorId ?? null,
+      authorAccountId: row?.authorAccountId ?? null,
+      playsCount: row?.playsCount ?? 0,
+    }
   }
 
   async listShowcaseByAuthors(

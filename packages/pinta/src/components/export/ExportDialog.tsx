@@ -44,6 +44,7 @@ import { vectorToSvg } from '../../vector/svg'
 import { usePintaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import { ClipboardCopy, FileJson, Film, Image, Map as MapIcon, PenTool, Puzzle } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 
 export function ExportDialog({
@@ -152,7 +153,8 @@ export function ExportDialog({
                 downloadDataUrl(tilesetPngDataUrl(tileset, scale), `${asset.name}.tileset.png`)
               }
             >
-              🧩 {COPY.exportDialog.tilesetSheet}
+              <Puzzle aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.tilesetSheet}
             </Button>
             <div className="mt-2 rounded-2xl border-2 border-pin-border bg-pin-bg p-3">
               <p className="mb-1 text-sm font-bold text-pin-muted">
@@ -181,7 +183,8 @@ export function ExportDialog({
                 )
               }
             >
-              🧩 {busy ? COPY.exportDialog.preparing : COPY.exportDialog.tilesetSheet}
+              <Puzzle aria-hidden="true" className="size-4" />
+              {busy ? COPY.exportDialog.preparing : COPY.exportDialog.tilesetSheet}
             </Button>
             <Button
               onClick={() =>
@@ -192,7 +195,8 @@ export function ExportDialog({
                 )
               }
             >
-              ✏️ {COPY.exportDialog.tilesetSheetSvg}
+              <PenTool aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.tilesetSheetSvg}
             </Button>
             <div className="mt-2 rounded-2xl border-2 border-pin-border bg-pin-bg p-3">
               <p className="mb-1 text-sm font-bold text-pin-muted">
@@ -212,14 +216,16 @@ export function ExportDialog({
         {tilemap && mapTileset ? (
           <>
             <Button variant="primary" onClick={() => void copyGrid()}>
-              📋 {COPY.exportDialog.copyGrid}
+              <ClipboardCopy aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.copyGrid}
             </Button>
             <Button
               onClick={() =>
                 downloadText(tilemapToStudioGrid(tilemap), `${asset.name}.grade.txt`, 'text/plain')
               }
             >
-              🗺️ {COPY.exportDialog.tilemapGridFile}
+              <MapIcon aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.tilemapGridFile}
             </Button>
             <Button
               onClick={() =>
@@ -229,7 +235,8 @@ export function ExportDialog({
                 )
               }
             >
-              🧾 {COPY.exportDialog.tilemapJson}
+              <FileJson aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.tilemapJson}
             </Button>
             <Button
               disabled={busy && mapTileset.kind === 'vector-tileset'}
@@ -247,7 +254,7 @@ export function ExportDialog({
                 }
               }}
             >
-              🖼️{' '}
+              <Image aria-hidden="true" className="size-4" />
               {busy && mapTileset?.kind === 'vector-tileset'
                 ? COPY.exportDialog.preparing
                 : COPY.exportDialog.tilemapImage}
@@ -277,14 +284,16 @@ export function ExportDialog({
                 )
               }
             >
-              🖼️ {COPY.exportDialog.spritesheet}
+              <Image aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.spritesheet}
             </Button>
             <Button
               onClick={() =>
                 downloadText(spritesheetMetadata(pack), `${asset.name}.spritesheet.json`)
               }
             >
-              🧾 {COPY.exportDialog.spritesheetJson}
+              <FileJson aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.spritesheetJson}
             </Button>
             <Button
               onClick={() =>
@@ -297,7 +306,8 @@ export function ExportDialog({
                 )
               }
             >
-              🎞️ {COPY.exportDialog.currentFrame}
+              <Film aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.currentFrame}
             </Button>
             <div className="mt-2 rounded-2xl border-2 border-pin-border bg-pin-bg p-3">
               <p className="mb-1 text-sm font-bold text-pin-muted">
@@ -322,7 +332,8 @@ export function ExportDialog({
                 )
               }
             >
-              🖼️ {busy ? COPY.exportDialog.preparing : COPY.exportDialog.spritesheet}
+              <Image aria-hidden="true" className="size-4" />
+              {busy ? COPY.exportDialog.preparing : COPY.exportDialog.spritesheet}
             </Button>
             <Button
               onClick={() =>
@@ -333,14 +344,16 @@ export function ExportDialog({
                 )
               }
             >
-              ✏️ {COPY.exportDialog.spritesheetSvg}
+              <PenTool aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.spritesheetSvg}
             </Button>
             <Button
               onClick={() =>
                 downloadText(spritesheetMetadata(vectorPack), `${asset.name}.spritesheet.json`)
               }
             >
-              🧾 {COPY.exportDialog.spritesheetJson}
+              <FileJson aria-hidden="true" className="size-4" />
+              {COPY.exportDialog.spritesheetJson}
             </Button>
             {activeDoc ? (
               <>
@@ -350,14 +363,16 @@ export function ExportDialog({
                     downloadAsyncPng(vectorPngDataUrl(activeDoc, scale), `${asset.name}.png`)
                   }
                 >
-                  🎞️ {busy ? COPY.exportDialog.preparing : COPY.exportDialog.currentFrame}
+                  <Film aria-hidden="true" className="size-4" />
+                  {busy ? COPY.exportDialog.preparing : COPY.exportDialog.currentFrame}
                 </Button>
                 <Button
                   onClick={() =>
                     downloadText(vectorToSvg(activeDoc), `${asset.name}.svg`, 'image/svg+xml')
                   }
                 >
-                  ✏️ {COPY.exportDialog.currentFrameSvg}
+                  <PenTool aria-hidden="true" className="size-4" />
+                  {COPY.exportDialog.currentFrameSvg}
                 </Button>
               </>
             ) : null}
@@ -379,12 +394,14 @@ export function ExportDialog({
               disabled={busy}
               onClick={() => downloadAsyncPng(vectorPngDataUrl(asset, scale), `${asset.name}.png`)}
             >
-              🖼️ {busy ? COPY.exportDialog.preparing : COPY.exportDialog.image}
+              <Image aria-hidden="true" className="size-4" />
+              {busy ? COPY.exportDialog.preparing : COPY.exportDialog.image}
             </Button>
             <Button
               onClick={() => downloadText(vectorToSvg(asset), `${asset.name}.svg`, 'image/svg+xml')}
             >
-              ✏️ {COPY.vector.svg}
+              <PenTool aria-hidden="true" className="size-4" />
+              {COPY.vector.svg}
             </Button>
           </>
         ) : null}
@@ -402,7 +419,8 @@ export function ExportDialog({
               )
             }
           >
-            🖼️ {COPY.exportDialog.image}
+            <Image aria-hidden="true" className="size-4" />
+            {COPY.exportDialog.image}
           </Button>
         ) : null}
 

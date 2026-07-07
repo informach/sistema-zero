@@ -108,6 +108,8 @@ jobs:
             [community-kids]=fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f
             [hub]=00b27b18-0587-460b-ba90-b6b24c423e45
             [fiscal]=2ea11afd-bdfd-4736-b400-c3db13fd8a0e
+            [marketing]=7b8a87e6-a92f-4a5c-adc1-c4d2fe23b737
+            [marketing-app]=95f3752d-95f7-45ab-a52a-19aa126d77ab
           )
 
           declare -A WANT=()
@@ -135,8 +137,8 @@ jobs:
                 case "$f" in
                   bun.lock|package.json|.dockerignore) add_all ;;
                   railway.json) add payments ;; # o railway.json da RAIZ é do payments
-                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub; do add "$s"; done ;;
-                  packages/ui/*) add admin; add community; add community-kids; add funnel ;;
+                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing; do add "$s"; done ;;
+                  packages/ui/*) add admin; add community; add community-kids; add funnel; add marketing-app ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;
                   packages/catalog/*) add catalog ;;
@@ -150,6 +152,8 @@ jobs:
                   packages/community-kids/*) add community-kids ;;
                   packages/hub/*) add hub ;; # backend da comunidade (Clube/Mural) — serviço próprio
                   packages/fiscal/*) add fiscal ;;
+                  packages/marketing/*) add marketing ;; # ferramenta de marketing (API)
+                  packages/marketing-app/*) add marketing-app ;; # front da ferramenta de marketing
                   packages/studio/*) add community; add community-kids ;; # lib embarcada pelos 2 apps de aluno (editor/player)
                   packages/pensa/*) add community-kids ;; # app de planejamento embarcado (kids v1)
                   packages/pinta/*) add community-kids ;; # editor de assets embarcado (kids v1)

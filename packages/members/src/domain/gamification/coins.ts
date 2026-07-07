@@ -22,6 +22,8 @@ export const COIN_VALUES = {
   PENSA_STAGE_COMPLETE: 5,
   /** Pensa: ciclo LANÇADO (advance o→done) — conta no teto diário. */
   PENSA_CYCLE_COMPLETE: 15,
+  /** Publicou jogo standalone no Mural (1×/dia — o XP diário de publicar). Conta no teto. */
+  STUDIO_PUBLISH_DAY: 15,
 } as const
 
 /** Teto DIÁRIO de GANHO de moeda (dia civil de São Paulo). Limita o ganho, nunca o saldo. */

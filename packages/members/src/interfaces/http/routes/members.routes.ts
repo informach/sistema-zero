@@ -12,6 +12,7 @@ import type { GetChallengeService } from '../../../application/gamification/get-
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetLeagueService } from '../../../application/gamification/get-league.service'
 import type { GetMissionsService } from '../../../application/gamification/get-missions.service'
+import type { RecordStudioRemixService } from '../../../application/gamification/record-studio-remix.service'
 import type { SetVacationService } from '../../../application/gamification/set-vacation.service'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
 import type { GetCertificateService } from '../../../application/get-certificate/get-certificate.service'
@@ -73,6 +74,7 @@ import {
   SlugLessonParams,
   SlugParams,
   StudioCarryoverParams,
+  StudioRemixBody,
   StudioSubmissionBody,
   StudioSubmissionParams,
   splitRequestedRefs,
@@ -109,6 +111,7 @@ export interface MembersRoutesDeps {
   getChallenge: GetChallengeService
   getMissions: GetMissionsService
   claimMission: ClaimMissionService
+  recordRemix: RecordStudioRemixService
   buyStreakFreeze: BuyStreakFreezeService
   setVacation: SetVacationService
   getLeague: GetLeagueService
@@ -276,6 +279,30 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             isPrivilegedActor(headers),
           ),
         { params: MissionSlugParams, query: AudienceQuery },
+      )
+      // Registra o REMIX de um jogo do Mural ("Fazer a minha versão") — marco de missão
+      // gated por estudio-completo. O service valida posse + playId no hub + não-self.
+      // Best-effort do lado do cliente: SELF_REMIX é 200 inerte; hub fora → 503.
+      .post(
+        '/gamification/remix',
+        async ({ headers, body, query, set }) => {
+          const result = await deps.recordRemix.execute({
+            userId: resolveUserId(headers),
+            accountId: resolveAccountId(headers),
+            audience: query.audience ?? 'kids',
+            playId: body.playId,
+            privileged: isPrivilegedActor(headers),
+          })
+          if (!result.recorded && result.reason === 'PLAY_NOT_FOUND') set.status = 404
+          else if (
+            !result.recorded &&
+            (result.reason === 'HUB_UNAVAILABLE' || result.reason === 'AWARD_FAILED')
+          ) {
+            set.status = 503
+          }
+          return result
+        },
+        { body: StudioRemixBody, query: AudienceQuery },
       )
       // Compra 1 protetor de sequência com moedas (idempotente; 402 sem saldo; 409 no máximo).
       .post(

@@ -151,6 +151,7 @@ export const COPY = {
     switchPalette: 'Trocar paleta',
   },
   animation: {
+    panel: 'Prévia e animações',
     preview: 'Prévia',
     play: 'Rodar animação',
     pause: 'Pausar',
@@ -279,7 +280,7 @@ export const COPY = {
     tooBig: 'Esse desenho ficou grande demais para o Estúdio. Tente um tamanho menor.',
     openStudio: 'Abrir o Estúdio',
     sending: 'Enviando...',
-    // Mapa: o 🚀 copia a GRADE (o mapa jogável), não uma figura achatada.
+    // Mapa: o "Usar no Estúdio" copia a GRADE (o mapa jogável), não uma figura.
     mapGridCopied: 'Copiei a grade do mapa! Cole no bloco de mapa do Estúdio (Ctrl+V).',
     mapGridError: 'Não consegui copiar a grade. Abra "Baixar" e use "Copiar a grade do mapa".',
   },
@@ -288,25 +289,25 @@ export const COPY = {
     pixel: {
       title: 'Dicas rápidas',
       tips: [
-        '✏️ Lápis desenha, 🧽 borracha apaga.',
-        '🪣 Balde pinta um espaço todo de uma vez.',
-        '🚀 leva o seu desenho para o Estúdio.',
+        'O Lápis desenha e a Borracha apaga.',
+        'O Balde de tinta pinta um espaço todo de uma vez.',
+        'O foguete leva o seu desenho para o Estúdio.',
       ],
     },
     vector: {
       title: 'Dicas rápidas',
       tips: [
-        'Escolha uma forma ou o 🖌️ pincel e arraste no palco.',
-        '👆 seleciona para mover, girar e trocar a cor.',
-        '✒️ edita os pontos da forma; 🔘 faz degradê.',
+        'Escolha uma forma ou o Pincel e arraste no palco.',
+        '"Selecionar" deixa mover, girar e trocar a cor.',
+        '"Editar os pontos" muda o contorno; o Degradê mistura duas cores.',
       ],
     },
     map: {
       title: 'Dicas rápidas',
       tips: [
         'Escolha uma peça no canto e pinte na grade.',
-        '🪣 preenche uma área toda de uma vez.',
-        '🚀 copia a grade para o bloco de mapa do Estúdio.',
+        'O Balde de tinta preenche uma área toda de uma vez.',
+        'O foguete copia a grade para o bloco de mapa do Estúdio.',
       ],
     },
   },

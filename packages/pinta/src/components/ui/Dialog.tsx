@@ -6,6 +6,7 @@
  */
 import type { JSX, KeyboardEvent, ReactNode } from 'react'
 import { useEffect, useId, useRef } from 'react'
+import { X } from './icons'
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -70,19 +71,19 @@ export function Dialog({
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-full overflow-y-auto rounded-3xl border-2 border-pin-border bg-pin-surface p-6 shadow-xl outline-none`}
+        className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-full overflow-y-auto rounded-2xl border-2 border-pin-border bg-pin-surface p-6 shadow-xl outline-none`}
       >
         <div className="flex items-start justify-between gap-3">
-          <h2 id={titleId} className="text-xl font-bold text-pin-text">
+          <h2 id={titleId} className="pin-display text-xl text-pin-text">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="-mt-1 flex min-h-11 min-w-11 items-center justify-center rounded-2xl text-lg text-pin-muted transition hover:bg-pin-bg hover:text-pin-text"
+            className="-mt-1 flex min-h-11 min-w-11 items-center justify-center rounded-xl text-pin-muted transition hover:bg-pin-bg hover:text-pin-text"
           >
-            <span aria-hidden="true">✕</span>
+            <X aria-hidden="true" className="size-5" />
           </button>
         </div>
         <div className="mt-3">{children}</div>

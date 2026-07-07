@@ -10,6 +10,11 @@ export const BADGE_SLUGS = [
   // 1º jogo publicado no Mural (marco `course_showcased` — UNIVERSAL: todo comprador
   // de curso alcança pelo Compartilhar da última aula). 07/2026, lote troféus.
   'first-showcase',
+  // Um jogo SEU foi jogado 10×/100× no /jogar público (marcos `play_milestone_10/100`
+  // do hub — UNIVERSAIS: publicar pelo curso já gera playId; anti-farm natural, exige
+  // volume real de outras pessoas). Retenção pós-cursos 07/2026; a de 100 dá troféu.
+  'plays-10',
+  'plays-100',
   'streak-7',
   'streak-30',
   'streak-60',

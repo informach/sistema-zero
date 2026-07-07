@@ -771,6 +771,106 @@ describe('vitrine (Mural dos Criadores)', () => {
     })
   })
 
+  // ── Retenção pós-cursos (07/2026): notify standalone + marcos de plays + play-check ──
+
+  describe('gamificação do standalone (retenção pós-cursos)', () => {
+    const flush = () => new Promise((r) => setTimeout(r, 0))
+
+    test('publicar standalone NOTIFICA o members (marco + XP diário) com o playId', async () => {
+      const accountId = randomUUID()
+      ownsStudio(accountId)
+      const playId = randomUUID()
+      const res = await ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers: child(accountId),
+          body: standaloneBody({ playId }),
+        }),
+      )
+      expect(res.status).toBe(200)
+      await flush() // fire-and-forget (`void`) → espera o microtask do notify
+      expect(ctx.members.standaloneShowcases.length).toBe(1)
+      expect(ctx.members.standaloneShowcases[0]).toMatchObject({ playId, audience: 'kids' })
+    })
+
+    test('o hit que CRUZA 10 jogadas dispara o marco de plays (1× — nem antes, nem depois)', async () => {
+      const accountId = randomUUID()
+      ownsStudio(accountId)
+      const playId = randomUUID()
+      await ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers: child(accountId),
+          body: standaloneBody({ playId }),
+        }),
+      )
+      const hit = () =>
+        ctx.app.handle(
+          jsonRequest('GET', `/hub/internal/studio-play/${playId}?count=1`, {
+            headers: { 'x-internal-token': INTERNAL },
+          }),
+        )
+      for (let i = 0; i < 9; i++) await hit()
+      await flush()
+      expect(ctx.members.playsMilestones.length).toBe(0)
+
+      await hit() // 10º play → crossing exato
+      await flush()
+      expect(ctx.members.playsMilestones.length).toBe(1)
+      expect(ctx.members.playsMilestones[0]).toMatchObject({ playId, milestone: 10 })
+
+      await hit() // 11º → sem novo marco
+      await flush()
+      expect(ctx.members.playsMilestones.length).toBe(1)
+    })
+
+    test('play-check (S2S HMAC): visível → {visible, authorId}; oculto → false; sem HMAC → 401', async () => {
+      const PATH = '/hub/internal/play-check'
+      const signedPlayCheck = (bodyStr: string, secret = 'test-gateway-hmac-secret-0001') => {
+        const ts = Math.floor(Date.now() / 1000)
+        const sig = signHmac(
+          secret,
+          canonicalHmacMessage({ method: 'POST', path: PATH, body: bodyStr }),
+          ts,
+        )
+        return new Request(`http://local${PATH}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-signature': `t=${ts},v1=${sig}` },
+          body: bodyStr,
+        })
+      }
+
+      const authorProfile = randomUUID()
+      ctx.members.communitiesByUser.set(authorProfile, new Set(['estudio-completo']))
+      const playId = randomUUID()
+      const create = await ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers: child(authorProfile),
+          body: standaloneBody({ playId }),
+        }),
+      )
+      expect(create.status).toBe(200)
+
+      const ok = await ctx.app.handle(signedPlayCheck(JSON.stringify({ playId })))
+      expect(ok.status).toBe(200)
+      const body = (await ok.json()) as { visible: boolean; authorId: string | null }
+      expect(body.visible).toBe(true)
+      expect(body.authorId).toBe(authorProfile)
+
+      // Oculta o post → play-check nega (e não vaza o autor).
+      const { thread } = (await create.json()) as { thread: { id: string } }
+      ctx.threadRepo.threads = ctx.threadRepo.threads.map((t) =>
+        t.id === thread.id ? { ...t, status: 'hidden' } : t,
+      )
+      const hidden = await ctx.app.handle(signedPlayCheck(JSON.stringify({ playId })))
+      expect(await hidden.json()).toEqual({ visible: false, authorId: null })
+
+      // Assinatura errada → 401.
+      const bad = await ctx.app.handle(
+        signedPlayCheck(JSON.stringify({ playId }), 'segredo-errado-123456'),
+      )
+      expect(bad.status).toBe(401)
+    })
+  })
+
   test('my-showcase-stats agrega SÓ os posts visíveis do próprio autor', async () => {
     const accountId = randomUUID()
     ownsStudio(accountId)

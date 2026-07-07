@@ -143,6 +143,8 @@ describe('PersistenceService', () => {
         'sz:project-blocks:project-1',
         // 4ª partição: assets embutidos (imagens/sprites).
         'sz:project-assets:project-1',
+        // 5ª partição: miniatura do card.
+        'sz:project-thumb:project-1',
         'sz:project:project-1',
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         'sz:game-storage:project-1',
@@ -453,8 +455,9 @@ describe('importProjectFromJSON', () => {
     })
 
     expect(imported.blocksState).toBeNull()
-    // O descarte (silencioso antes) agora vira aviso para a UI mostrar.
-    expect(warnings.some((w) => w.includes('ainda não conhece'))).toBe(true)
+    // O descarte (silencioso antes) vira aviso — e, quando a queda é por TIPO
+    // desconhecido, o aviso NOMEIA o bloco culpado.
+    expect(warnings.some((w) => w.includes('controls_eval'))).toBe(true)
   })
 
   it('avisa quando imagens não cabem; importa o resto; sem avisos quando tudo cabe', async () => {
@@ -1054,9 +1057,14 @@ describe('listAllProjects', () => {
       { id: 'a', name: 'Projeto A', createdAt: 10, updatedAt: 20, mode: 'blocks' },
     ])
     expect(idb.get).not.toHaveBeenCalled()
-    expect(idb.getMany).toHaveBeenCalledTimes(1)
+    // 2 getMany: os metas + as miniaturas (partição própria) — nunca o projeto inteiro.
+    expect(idb.getMany).toHaveBeenCalledTimes(2)
     expect(idb.getMany).toHaveBeenCalledWith(
       ['sz:project-meta:a', 'sz:project-meta:b'],
+      expect.anything(),
+    )
+    expect(idb.getMany).toHaveBeenCalledWith(
+      ['sz:project-thumb:a', 'sz:project-thumb:b'],
       expect.anything(),
     )
   })

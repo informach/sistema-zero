@@ -446,6 +446,17 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         query: { audience },
       })
     },
+    /**
+     * Registra o REMIX de um jogo do Mural ("Fazer a minha versão") — marco da missão
+     * gated por estudio-completo. O members valida posse + playId no hub + não-self.
+     */
+    recordStudioRemix(playId: string): Promise<GatewayResponse<{ recorded: boolean }>> {
+      return gw.gatewayFetch('/members/gamification/remix', {
+        method: 'POST',
+        query: { audience },
+        body: { playId },
+      })
+    },
     /** Compra 1 protetor de sequência com moedas (sem saldo → 402; máximo → 409). */
     buyStreakFreeze(): Promise<GatewayResponse<StreakFreezeResult>> {
       return gw.gatewayFetch('/members/gamification/streak-freeze/buy', {

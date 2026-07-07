@@ -2,7 +2,7 @@ import { PayloadTooLargeError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type { ShowcaseService } from '../../../application/showcase/showcase.service'
 import { ValidationError } from '../../../domain/shared/errors'
-import { ShowcaseByAuthorsBody } from '../dtos'
+import { PlayCheckBody, ShowcaseByAuthorsBody } from '../dtos'
 import { getRawBody, isOversizeBody } from '../raw-body'
 import { assertWebhookSignature } from '../webhook-auth'
 
@@ -47,24 +47,38 @@ export function internalRoutes(deps: InternalRoutesDeps) {
     })
   }
 
-  return new Elysia({ prefix: '/hub/internal' }).onTransform(verify).post(
-    '/showcase-by-authors',
-    async ({ body }) => {
-      const from = parseIsoDate(body.from, 'from')
-      const to = parseIsoDate(body.to, 'to')
-      if (to.getTime() <= from.getTime() || to.getTime() - from.getTime() > MAX_WINDOW_MS) {
-        throw new ValidationError('janela inválida')
-      }
-      const items = await deps.showcase.showcaseByAuthors(body.authorIds, from, to)
-      return {
-        items: items.map((i) => ({
-          authorId: i.authorId,
-          title: i.title,
-          playId: i.playId,
-          createdAt: i.createdAt.toISOString(),
-        })),
-      }
-    },
-    { body: ShowcaseByAuthorsBody },
-  )
+  return new Elysia({ prefix: '/hub/internal' })
+    .onTransform(verify)
+    .post(
+      '/showcase-by-authors',
+      async ({ body }) => {
+        const from = parseIsoDate(body.from, 'from')
+        const to = parseIsoDate(body.to, 'to')
+        if (to.getTime() <= from.getTime() || to.getTime() - from.getTime() > MAX_WINDOW_MS) {
+          throw new ValidationError('janela inválida')
+        }
+        const items = await deps.showcase.showcaseByAuthors(body.authorIds, from, to)
+        return {
+          items: items.map((i) => ({
+            authorId: i.authorId,
+            title: i.title,
+            playId: i.playId,
+            createdAt: i.createdAt.toISOString(),
+          })),
+        }
+      },
+      { body: ShowcaseByAuthorsBody },
+    )
+    .post(
+      // Validação do REMIX (members→hub S2S): o marco `studio_remix` do members só é
+      // gravado p/ um playId REAL e visível — sem isto, POST direto com uuid aleatório
+      // farmaria a missão. Devolve o autor (perfil) p/ o members recusar self-remix.
+      // SELECT puro (sem countHit — validar não é jogar).
+      '/play-check',
+      async ({ body }) => {
+        const res = await deps.showcase.isPlayable(body.playId, false)
+        return { visible: res.visible, authorId: res.visible ? res.authorId : null }
+      },
+      { body: PlayCheckBody },
+    )
 }

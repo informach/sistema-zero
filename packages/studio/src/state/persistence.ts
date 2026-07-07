@@ -12,14 +12,23 @@ const PROJECT_BLOCKS_KEY_PREFIX = 'sz:project-blocks:'
 // mudam POUCO — partição própria para não inchar o autosave debounced de `files`,
 // que reescreve a cada tecla. Ausente em projetos legados (load é tolerante).
 const PROJECT_ASSETS_KEY_PREFIX = 'sz:project-assets:'
+// 5ª partição: MINIATURA do card (capturada ao sair do editor). Partição própria
+// de propósito: o persistProject reescreve o meta a partir do Project em memória
+// (que não conhece a thumb) — no meta, o próximo autosave a apagaria.
+const PROJECT_THUMB_KEY_PREFIX = 'sz:project-thumb:'
 const PROJECT_STORAGE_VERSION = 2
 const MAX_PROJECT_SUMMARY_NAME_CHARS = 200
+/** Teto da miniatura (data URL JPEG ~320×192 fica bem abaixo disso). */
+export const MAX_PROJECT_THUMB_CHARS = 300_000
+/** Evento de janela disparado quando uma miniatura termina de gravar. */
+export const PROJECT_THUMB_UPDATED_EVENT = 'sz:project-thumb-updated'
 const legacyProjectKey = (id: string) => `${LEGACY_PROJECT_KEY_PREFIX}${id}`
 const projectMetaKey = (id: string) => `${PROJECT_META_KEY_PREFIX}${id}`
 const projectFilesKey = (id: string) => `${PROJECT_FILES_KEY_PREFIX}${id}`
 const projectStateKey = (id: string) => `${PROJECT_STATE_KEY_PREFIX}${id}`
 const projectBlocksKey = (id: string) => `${PROJECT_BLOCKS_KEY_PREFIX}${id}`
 const projectAssetsKey = (id: string) => `${PROJECT_ASSETS_KEY_PREFIX}${id}`
+const projectThumbKey = (id: string) => `${PROJECT_THUMB_KEY_PREFIX}${id}`
 
 // Namespace do armazenamento LOCAL (IndexedDB) — isola por PERFIL. Vazio = store HISTÓRICO
 // compartilhado `sistema-zero-studio` (lições, que já se isolam pelo id do projeto; e o adulto,
@@ -262,6 +271,7 @@ export async function deleteProject(id: string): Promise<void> {
         projectStateKey(id),
         projectBlocksKey(id),
         projectAssetsKey(id),
+        projectThumbKey(id),
         legacyProjectKey(id),
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         gameStorageKey(id),
@@ -310,6 +320,36 @@ export interface ProjectSummary {
   updatedAt: number
   /** Modo salvo do projeto — permite abrir o editor já no modo correto. */
   mode: IDEMode
+  /** Miniatura do card (data URL), quando já capturada ao sair do editor. */
+  thumbDataUrl?: string
+}
+
+/**
+ * Grava a miniatura do projeto (best-effort, NUNCA lança). No mesmo mutex de
+ * escrita do id; exige o meta existir — um delete concorrente (que apaga o meta
+ * na mesma cadeia) não é ressuscitado por uma captura que terminou depois.
+ */
+export async function writeProjectThumb(id: string, dataUrl: string): Promise<void> {
+  if (!id || !dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS) return
+  try {
+    await runSerializedWrite(id, async () => {
+      const kvStore = getStore()
+      const meta = await get<unknown>(projectMetaKey(id), kvStore)
+      if (!meta) return
+      await set(projectThumbKey(id), { id, dataUrl }, kvStore)
+    })
+  } catch {
+    // Quota cheia / IndexedDB indisponível: o card só fica sem capa.
+  }
+}
+
+function thumbDataUrlOf(value: unknown): string | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+  const dataUrl = (value as { dataUrl?: unknown }).dataUrl
+  if (typeof dataUrl !== 'string') return undefined
+  if (!dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS)
+    return undefined
+  return dataUrl
 }
 
 function toProjectSummary(id: string, value: unknown): ProjectSummary | null {
@@ -340,6 +380,19 @@ export async function listAllProjects(): Promise<ProjectSummary[]> {
       toProjectSummary(key.slice(PROJECT_META_KEY_PREFIX.length), metaValues[index]),
     )
     .filter((summary): summary is ProjectSummary => Boolean(summary))
+
+  // Anexa as miniaturas (partição própria) aos summaries que têm uma.
+  if (summaries.length > 0) {
+    const thumbValues = await getMany<unknown[]>(
+      summaries.map((summary) => projectThumbKey(summary.id)),
+      kvStore,
+    )
+    for (let index = 0; index < summaries.length; index += 1) {
+      const summary = summaries[index]
+      const thumb = thumbDataUrlOf(thumbValues[index])
+      if (summary && thumb) summary.thumbDataUrl = thumb
+    }
+  }
 
   const indexedIds = new Set(summaries.map((summary) => summary.id))
   const legacyKeys = allKeys.filter(

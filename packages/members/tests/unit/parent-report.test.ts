@@ -45,6 +45,9 @@ function buildSender(now: Date) {
     async listShowcaseByAuthors() {
       return null
     },
+    async checkPlay() {
+      return null
+    },
   }
   const childrenStats = new GetChildrenStatsService(
     gamification,

@@ -382,6 +382,15 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   'room_item_buy',
   'avatar_part_buy',
   'mural_comment',
+  // Estúdio standalone no Mural (retenção pós-cursos, 07/2026): marco por publicação
+  // (sourceId = playId), XP diário de publicar (sourceId = uuid determinístico do dia
+  // civil SP — 1×/dia), marco de remix (sourceId = playId do jogo ORIGINAL) e marcos
+  // de jogadas recebidas (o jogo do autor cruzou 10/100 plays; sourceId = playId).
+  'studio_published',
+  'studio_publish_day',
+  'studio_remix',
+  'play_milestone_10',
+  'play_milestone_100',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)
@@ -404,6 +413,9 @@ export const coinSourceTypeEnum = members.enum('coin_source_type', [
   // reusa o MESMO (sourceType, sourceId) do XP (idempotência alinhada ao ledger).
   'pensa_stage_complete',
   'pensa_cycle_complete',
+  // Publicou jogo standalone no Mural (retenção pós-cursos, 07/2026) — faucet
+  // diário (1×/dia pelo sourceId do dia), dentro do teto DAILY_COIN_CAP.
+  'studio_publish_day',
 ])
 
 // Perfil agregado (1 linha por aluno POR VITRINE — XP/streak kids e adult são

@@ -40,6 +40,7 @@ export function normalizeAIModel(model: string | undefined): string {
 
 export type ThemeName = 'dark' | 'light'
 export type AIApiKeyStorage = 'persistent' | 'session'
+export type ProjectSortOrder = 'recent' | 'name'
 
 export interface PersistedSettings {
   aiApiKey?: string
@@ -49,6 +50,8 @@ export interface PersistedSettings {
   codeFontSize?: number
   /** Aluno revelou blocos avançados na paleta (divulgação progressiva). */
   revealAdvanced?: boolean
+  /** Ordenação da lista de projetos (Recentes | Nome A–Z). */
+  projectSort?: ProjectSortOrder
 }
 
 const MAX_AI_API_KEY_CHARS = 4096
@@ -70,6 +73,10 @@ function normalizeTheme(value: unknown): ThemeName | undefined {
   return value === 'dark' || value === 'light' ? value : undefined
 }
 
+function normalizeProjectSort(value: unknown): ProjectSortOrder | undefined {
+  return value === 'recent' || value === 'name' ? value : undefined
+}
+
 function clampCodeFontSize(n: number): number {
   if (!Number.isFinite(n)) return CODE_FONT_SIZE_DEFAULT
   return Math.max(CODE_FONT_SIZE_MIN, Math.min(CODE_FONT_SIZE_MAX, Math.round(n)))
@@ -89,6 +96,8 @@ function sanitizePersistedSettings(value: unknown): PersistedSettings {
     settings.codeFontSize = clampCodeFontSize(raw.codeFontSize)
   }
   if (typeof raw.revealAdvanced === 'boolean') settings.revealAdvanced = raw.revealAdvanced
+  const projectSort = normalizeProjectSort(raw.projectSort)
+  if (projectSort) settings.projectSort = projectSort
   return settings
 }
 
@@ -120,6 +129,7 @@ interface SettingsState {
   theme: ThemeName
   codeFontSize: number
   revealAdvanced: boolean
+  projectSort: ProjectSortOrder
   loaded: boolean
   load: () => Promise<void>
   setAIApiKey: (k: string, options?: { storage?: AIApiKeyStorage }) => Promise<void>
@@ -132,6 +142,7 @@ interface SettingsState {
   decreaseCodeFontSize: () => Promise<void>
   resetCodeFontSize: () => Promise<void>
   setRevealAdvanced: (v: boolean) => Promise<void>
+  setProjectSort: (v: ProjectSortOrder) => Promise<void>
 }
 
 async function readPersisted(): Promise<PersistedSettings> {
@@ -177,6 +188,7 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   theme: 'light',
   codeFontSize: CODE_FONT_SIZE_DEFAULT,
   revealAdvanced: false,
+  projectSort: 'recent',
   loaded: false,
   load: async () => {
     if (getState().loaded) return
@@ -193,6 +205,7 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
           theme: persisted.theme ?? 'light',
           codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
           revealAdvanced: persisted.revealAdvanced ?? false,
+          projectSort: persisted.projectSort ?? 'recent',
           loaded: true,
         })
         if (aiApiKeyStorage === 'session' && persisted.aiApiKey) {
@@ -267,5 +280,9 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   setRevealAdvanced: async (revealAdvanced) => {
     setState({ revealAdvanced })
     await writeMerge({ revealAdvanced })
+  },
+  setProjectSort: async (projectSort) => {
+    setState({ projectSort })
+    await writeMerge({ projectSort })
   },
 }))

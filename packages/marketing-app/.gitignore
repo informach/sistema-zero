@@ -1,0 +1,24 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files (segredos) — .env já é ignorado no monorepo; reforço local
+.env
+.env*.local
+
+# typescript (auto-gerado pelo Next)
+*.tsbuildinfo
+next-env.d.ts
+
+# misc
+.DS_Store
+*.pem

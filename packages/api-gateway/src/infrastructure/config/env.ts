@@ -80,6 +80,14 @@ const PROD_REQUIRED_SECRETS: ReadonlyArray<{ key: string; why: string }> = [
   { key: 'FISCAL_INTERNAL_TOKEN', why: 'prova ao fiscal que a chamada veio do gateway' },
   { key: 'FISCAL_HMAC_SECRET', why: 'cadastra o fiscal como consumer HMAC da mensageria' },
   { key: 'HUB_INTERNAL_TOKEN', why: 'prova ao hub (comunidade) que a chamada veio do gateway' },
+  {
+    key: 'MARKETING_INTERNAL_TOKEN',
+    why: 'prova ao marketing que a chamada veio do gateway (ferramenta interna staff+)',
+  },
+  {
+    key: 'MARKETING_HMAC_SECRET',
+    why: 'cadastra o marketing como consumer HMAC da mensageria (lembrete de publicação)',
+  },
 ]
 
 const EnvSchema = z
@@ -168,6 +176,7 @@ const EnvSchema = z
     PAYMENTS_INTERNAL_TOKEN: optionalSecret,
     FISCAL_INTERNAL_TOKEN: optionalSecret,
     HUB_INTERNAL_TOKEN: optionalSecret,
+    MARKETING_INTERNAL_TOKEN: optionalSecret,
 
     // Resiliência.
     HEALTH_PROBE_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),
@@ -212,6 +221,10 @@ const EnvSchema = z
     // Consumer HMAC do auth (reset/OTP/convite via /messaging/send).
     AUTH_HMAC_SECRET: optionalSecret,
     AUTH_ALLOWED_CIDRS: z.string().optional(),
+
+    // Consumer HMAC do marketing (lembrete de publicação manual via /messaging/send).
+    MARKETING_HMAC_SECRET: optionalSecret,
+    MARKETING_ALLOWED_CIDRS: z.string().optional(),
   })
   .refine((e) => e.STATE_BACKEND !== 'redis' || Boolean(e.REDIS_URL?.trim()), {
     message: 'REDIS_URL é obrigatória quando STATE_BACKEND=redis',

@@ -16,6 +16,7 @@ import { COPY } from '../../core/copy'
 import { type AnimatedSpriteAsset, isAnimatedSpriteKind } from '../../core/project'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import { Copy, Pencil, Plus, Trash2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
@@ -39,7 +40,7 @@ export function AnimationList(): JSX.Element | null {
   return (
     <section
       aria-label={COPY.animation.animations}
-      className="flex min-h-0 flex-col gap-2 rounded-3xl border-2 border-pin-border bg-pin-surface p-3"
+      className="pin-panel flex min-h-0 flex-col gap-2 p-3"
     >
       <span className="text-sm font-bold text-pin-muted">{COPY.animation.animations}</span>
       <div className="flex min-h-0 flex-col gap-1 overflow-y-auto">
@@ -51,7 +52,7 @@ export function AnimationList(): JSX.Element | null {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => session.getState().selectAnimation(animation.id)}
-                className={`min-h-11 flex-1 truncate rounded-2xl border-2 px-3 text-left text-sm font-bold transition ${
+                className={`min-h-11 flex-1 truncate rounded-xl border-2 px-3 text-left text-sm font-bold transition ${
                   selected
                     ? 'border-pin-accent bg-pin-accent/10'
                     : 'border-pin-border hover:border-pin-accent'
@@ -71,9 +72,9 @@ export function AnimationList(): JSX.Element | null {
                       setRenaming(animation.id)
                       setRenameValue(animation.name)
                     }}
-                    className="flex min-h-11 min-w-11 items-center justify-center rounded-2xl transition hover:bg-pin-border/40"
+                    className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40"
                   >
-                    <span aria-hidden="true">✏️</span>
+                    <Pencil aria-hidden="true" className="size-4" />
                   </button>
                   <button
                     type="button"
@@ -90,9 +91,9 @@ export function AnimationList(): JSX.Element | null {
                         session.getState().selectAnimation(result.animationId)
                       })
                     }
-                    className="flex min-h-11 min-w-11 items-center justify-center rounded-2xl transition hover:bg-pin-border/40"
+                    className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-border/40"
                   >
-                    <span aria-hidden="true">🧬</span>
+                    <Copy aria-hidden="true" className="size-4" />
                   </button>
                   {asset.animations.length > 1 ? (
                     <button
@@ -108,9 +109,9 @@ export function AnimationList(): JSX.Element | null {
                           if (first) session.getState().selectAnimation(first.id)
                         })
                       }
-                      className="flex min-h-11 min-w-11 items-center justify-center rounded-2xl transition hover:bg-pin-danger/20"
+                      className="flex min-h-11 min-w-11 items-center justify-center rounded-xl transition hover:bg-pin-danger/20"
                     >
-                      <span aria-hidden="true">🗑️</span>
+                      <Trash2 aria-hidden="true" className="size-4" />
                     </button>
                   ) : null}
                 </>
@@ -132,7 +133,8 @@ export function AnimationList(): JSX.Element | null {
           })
         }
       >
-        ＋ {COPY.animation.addAnimation}
+        <Plus aria-hidden="true" className="size-4" />
+        {COPY.animation.addAnimation}
       </Button>
 
       <Dialog
@@ -156,7 +158,7 @@ export function AnimationList(): JSX.Element | null {
             value={renameValue}
             onChange={(event) => setRenameValue(event.target.value)}
             aria-label={COPY.animation.renameAnimation}
-            className="min-h-11 rounded-2xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
+            className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
           />
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setRenaming(null)}>

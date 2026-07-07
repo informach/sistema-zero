@@ -294,6 +294,12 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var tex = _texCache[url];
     if (!tex) {
       tex = new THREE.TextureLoader().load(url);
+      // Pixel art do Pinta nítida de perto: só o magFilter (upscale) vira
+      // nearest; minFilter/mipmaps ficam default para não serrilhar de longe.
+      if (THREE.NearestFilter) {
+        tex.magFilter = THREE.NearestFilter;
+        tex.needsUpdate = true;
+      }
       _texCache[url] = tex;
     }
     obj.material.map = tex;

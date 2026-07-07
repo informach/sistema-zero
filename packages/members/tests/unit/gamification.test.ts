@@ -4,12 +4,14 @@ import {
   courseBadgeSlugs,
   effectiveStreak,
   localDateSaoPaulo,
+  playsBadgeSlugs,
   previousDay,
   quizPassedXp,
   quizPerfectBadgeSlugs,
   streakBadgeSlugs,
   XP_VALUES,
 } from '../../src/domain/gamification/gamification'
+import { studioPublishDaySourceId } from '../../src/domain/gamification/source-id'
 
 describe('localDateSaoPaulo', () => {
   test('vira o dia à meia-noite de SÃO PAULO (UTC-3), não de UTC', () => {
@@ -172,5 +174,25 @@ describe('courseBadgeSlugs', () => {
       'course-complete-2',
       'course-complete-3',
     ])
+  })
+})
+
+describe('playsBadgeSlugs (jogadas recebidas — retenção pós-cursos 07/2026)', () => {
+  test('1º jogo com 10 plays → plays-10; 1º com 100 → plays-100; independentes', () => {
+    expect(playsBadgeSlugs(0, 0)).toEqual([])
+    expect(playsBadgeSlugs(1, 0)).toEqual(['plays-10'])
+    expect(playsBadgeSlugs(3, 0)).toEqual(['plays-10'])
+    expect(playsBadgeSlugs(1, 1)).toEqual(['plays-10', 'plays-100'])
+    // Teórico (marco de 100 sem o de 10 no ledger): ainda destrava a de 100.
+    expect(playsBadgeSlugs(0, 1)).toEqual(['plays-100'])
+  })
+})
+
+describe('studioPublishDaySourceId (XP diário de publicar — 1×/dia)', () => {
+  test('determinístico por dia; dias diferentes → ids diferentes; formato uuid', () => {
+    const a = studioPublishDaySourceId('2026-07-07')
+    expect(studioPublishDaySourceId('2026-07-07')).toBe(a)
+    expect(studioPublishDaySourceId('2026-07-08')).not.toBe(a)
+    expect(a).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
   })
 })

@@ -426,6 +426,9 @@ export type BadgeSlug =
   | 'first-lesson'
   // 1º jogo publicado no Mural (07/2026, lote troféus).
   | 'first-showcase'
+  // Um jogo SEU foi jogado 10×/100× no /jogar público (retenção pós-cursos 07/2026).
+  | 'plays-10'
+  | 'plays-100'
   | 'streak-7'
   | 'streak-30'
   | 'streak-60'

@@ -7,6 +7,7 @@ import {
   DAILY_MISSIONS,
   DAILY_SET_SIZE,
   dayBoundsUtc,
+  ESTUDIO_ACCESS_REF,
   MISSIONS_BY_SLUG,
   MONTHLY_MISSIONS,
   MONTHLY_SET_SIZE,
@@ -32,11 +33,16 @@ describe('catálogo de missões', () => {
     expect(MISSIONS_BY_SLUG.size).toBe(all.length)
   })
 
-  test('só as missões de Clube são gated (requiresAccess)', () => {
+  test('gating por produto: Clube e Estúdio, cada goalType com a ref certa', () => {
     const all = [...DAILY_MISSIONS, ...WEEKLY_MISSIONS, ...MONTHLY_MISSIONS]
     for (const m of all) {
-      if (m.requiresAccess) expect(m.requiresAccess).toBe(CLUBE_ACCESS_REF)
+      if (m.requiresAccess) {
+        expect([CLUBE_ACCESS_REF, ESTUDIO_ACCESS_REF]).toContain(m.requiresAccess)
+      }
       if (m.goalType === 'clube_thread') expect(m.requiresAccess).toBe(CLUBE_ACCESS_REF)
+      if (m.goalType === 'studio_published' || m.goalType === 'studio_remix') {
+        expect(m.requiresAccess).toBe(ESTUDIO_ACCESS_REF)
+      }
     }
   })
 })
@@ -90,6 +96,50 @@ describe('gating por posse de produto', () => {
       if (daily.some((m) => m.requiresAccess === CLUBE_ACCESS_REF)) seenGated = true
     }
     expect(seenGated).toBe(true)
+  })
+
+  test('sem posse do Estúdio, missão de criar NUNCA entra no set semanal/mensal', () => {
+    for (let i = 0; i < 100; i++) {
+      const w = assignWeeklyMissions(`u-${i}`, 'w:2026-06-15')
+      const m = assignMonthlyMissions(`u-${i}`, 'm:2026-06')
+      expect([...w, ...m].some((x) => x.requiresAccess === ESTUDIO_ACCESS_REF)).toBe(false)
+    }
+  })
+})
+
+describe('garantia de 1 missão do estúdio (sorteio 2 fases)', () => {
+  const hasEstudio = (ref: string) => ref === ESTUDIO_ACCESS_REF
+
+  test('com posse do Estúdio, TODO set semanal e mensal tem ≥1 missão do estúdio', () => {
+    // Sem a garantia, o Fisher–Yates uniforme daria semanas só de missões de aula —
+    // estruturalmente travadas p/ quem já terminou os cursos. Varre muitos usuários.
+    for (let i = 0; i < 200; i++) {
+      const w = assignWeeklyMissions(`u-${i}`, 'w:2026-06-15', hasEstudio)
+      const m = assignMonthlyMissions(`u-${i}`, 'm:2026-06', hasEstudio)
+      expect(w.some((x) => x.requiresAccess === ESTUDIO_ACCESS_REF)).toBe(true)
+      expect(m.some((x) => x.requiresAccess === ESTUDIO_ACCESS_REF)).toBe(true)
+      // Tamanho e unicidade preservados pela garantia.
+      expect(w.length).toBe(WEEKLY_SET_SIZE)
+      expect(new Set(w.map((x) => x.slug)).size).toBe(w.length)
+      expect(m.length).toBe(MONTHLY_SET_SIZE)
+      expect(new Set(m.map((x) => x.slug)).size).toBe(m.length)
+    }
+  })
+
+  test('determinístico: mesmo (user, período, posse) → mesmo set', () => {
+    const a = assignWeeklyMissions('user-9', 'w:2026-06-15', hasEstudio)
+    const b = assignWeeklyMissions('user-9', 'w:2026-06-15', hasEstudio)
+    expect(a.map((x) => x.slug)).toEqual(b.map((x) => x.slug))
+  })
+
+  test('a vaga garantida varia entre as missões do estúdio (não é sempre a mesma)', () => {
+    const seen = new Set<string>()
+    for (let i = 0; i < 100; i++) {
+      const w = assignWeeklyMissions(`u-${i}`, 'w:2026-06-15', hasEstudio)
+      const studio = w.find((x) => x.requiresAccess === ESTUDIO_ACCESS_REF)
+      if (studio) seen.add(studio.slug)
+    }
+    expect(seen.size).toBeGreaterThan(1)
   })
 })
 

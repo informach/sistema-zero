@@ -1,8 +1,14 @@
 /**
  * Tela do editor de UM asset: cria as stores (editor + sessão), liga o flush
  * do autosave em pagehide/unmount/voltar e monta o layout por tipo de asset.
- * Topbar: ← voltar · nome · desfazer/refazer · badge de salvo · Baixar ·
- * 🚀 Usar no Estúdio (só quando o host dá o callback).
+ * Topbar: voltar · nome · desfazer/refazer · badge de salvo · Baixar ·
+ * Usar no Estúdio (só quando o host dá o callback).
+ *
+ * Layout (desktop, ≥768px): ferramentas à ESQUERDA, palco no centro (flex-1) e
+ * painel DIREITO consolidado (prévia + cores + animações, w-56) — embaixo, UMA
+ * faixa só (quadros/peças + zoom). A cadeia min-h-0 + overflow interno fecha a
+ * altura sem rolagem de página. Em tela estreita o palco domina: rail
+ * horizontal em cima, paleta em linha única e prévia/animações colapsáveis.
  */
 import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
@@ -21,7 +27,8 @@ import {
 } from '../../state/sessionStore'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
-import { Button, IconButton } from '../ui/Button'
+import { Button, IconButton, ToolButton } from '../ui/Button'
+import { ArrowLeft, ChevronDown, Download, Redo2, Rocket, Undo2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AnimationList } from './AnimationList'
 import { CoachMarks } from './CoachMarks'
@@ -55,27 +62,88 @@ function SaveBadge(): JSX.Element {
 }
 
 /**
- * Coluna de prévia + animações do personagem: à DIREITA em tela larga (layout
- * MakeCode) e como FAIXA horizontal rolável abaixo do palco em tela estreita
- * (tablet/celular, 07/2026 — a coluna fixa w-48 espremia o canvas).
+ * Painel DIREITO consolidado (desktop): prévia + cores + animações numa coluna
+ * w-56. Cada seção se auto-remove quando não vale para o asset (PreviewPlayer
+ * e AnimationList devolvem null fora de sprite animado; PaletteBar devolve
+ * null nos kinds vetoriais, que usam cor livre no próprio VectorEditor).
  */
-function SpriteSidePanel({ wide }: { wide: boolean }): JSX.Element {
-  if (wide) {
+function EditorSidePanel(): JSX.Element {
+  return (
+    <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
+      <PreviewPlayer />
+      <PaletteBar />
+      <AnimationList />
+    </div>
+  )
+}
+
+/**
+ * Tela estreita: prévia + animações viram uma seção COLAPSÁVEL abaixo da faixa
+ * de quadros (fechada por padrão — o palco domina; abrir empurra in-flow, o
+ * canvas encolhe via min-h-0, nada de fixed/portal por cima da tab bar do host).
+ */
+function SpritePanelDisclosure(): JSX.Element {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="pin-panel shrink-0 p-2">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl px-2 text-sm font-bold text-pin-text transition hover:bg-pin-border/40"
+      >
+        {COPY.animation.panel}
+        <ChevronDown
+          aria-hidden="true"
+          className={`size-5 transition-transform ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {open ? (
+        <div className="flex gap-2 overflow-x-auto pt-2">
+          <div className="w-44 shrink-0">
+            <PreviewPlayer />
+          </div>
+          <div className="min-w-56 flex-1">
+            <AnimationList />
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * A faixa ÚNICA do rodapé: tira de quadros/peças ocupando a largura + zoom à
+ * direita. Kinds sem tira (cenários) ficam só com o zoom encostado à direita.
+ * Em tela estreita (`stacked`) a tira fica em cima e o zoom embaixo — lado a
+ * lado eles espremeriam as miniaturas a zero.
+ */
+function EditorFooter({
+  asset,
+  stacked = false,
+}: {
+  asset: PintaAsset
+  stacked?: boolean
+}): JSX.Element {
+  const hasFrames = asset.kind === 'pixel-sprite' || asset.kind === 'vector-sprite'
+  const hasTiles = asset.kind === 'tileset' || asset.kind === 'vector-tileset'
+  if (stacked) {
     return (
-      <div className="flex w-48 shrink-0 flex-col gap-3 overflow-y-auto">
-        <PreviewPlayer />
-        <AnimationList />
+      <div className="flex shrink-0 flex-col gap-2">
+        {hasFrames ? <FrameStrip /> : null}
+        {hasTiles ? <TileStrip /> : null}
+        <div className="flex justify-end">
+          <ZoomControls />
+        </div>
       </div>
     )
   }
   return (
-    <div className="flex shrink-0 gap-3 overflow-x-auto">
-      <div className="w-44 shrink-0">
-        <PreviewPlayer />
-      </div>
-      <div className="min-w-56 flex-1">
-        <AnimationList />
-      </div>
+    <div className="flex shrink-0 items-stretch gap-2">
+      {hasFrames ? <FrameStrip className="min-w-0 flex-1" /> : null}
+      {hasTiles ? <TileStrip className="min-w-0 flex-1" /> : null}
+      {!hasFrames && !hasTiles ? <div className="flex-1" /> : null}
+      <ZoomControls />
     </div>
   )
 }
@@ -88,20 +156,25 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
     asset.kind === 'tileset'
   ) {
     const isSprite = asset.kind === 'pixel-sprite'
+    if (wide) {
+      return (
+        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+          <div className="flex min-h-0 flex-1 items-stretch gap-2">
+            <ToolBar />
+            <PixelCanvas />
+            <EditorSidePanel />
+          </div>
+          <EditorFooter asset={asset} />
+        </div>
+      )
+    }
     return (
-      <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 sm:p-4">
-        <div className="flex min-h-0 flex-1 items-stretch gap-3">
-          <ToolBar />
-          <PixelCanvas />
-          {isSprite && wide ? <SpriteSidePanel wide /> : null}
-        </div>
-        {isSprite && !wide ? <SpriteSidePanel wide={false} /> : null}
-        {isSprite ? <FrameStrip /> : null}
-        {asset.kind === 'tileset' ? <TileStrip /> : null}
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <PaletteBar />
-          <ZoomControls />
-        </div>
+      <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+        <ToolBar orientation="horizontal" />
+        <PixelCanvas />
+        <PaletteBar layout="row" />
+        <EditorFooter asset={asset} stacked />
+        {isSprite ? <SpritePanelDisclosure /> : null}
       </div>
     )
   }
@@ -111,16 +184,22 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   // Kinds vetoriais: o MESMO editor de shapes; personagem ganha a coluna de
   // animações + tira de quadros (espelho do pixel), peças ganham a tira de tiles.
   const isVectorSprite = asset.kind === 'vector-sprite'
-  const isVectorTileset = asset.kind === 'vector-tileset'
-  return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 sm:p-4">
-      <div className="flex min-h-0 flex-1 items-stretch gap-3">
-        <VectorEditor />
-        {isVectorSprite && wide ? <SpriteSidePanel wide /> : null}
+  if (wide) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+        <div className="flex min-h-0 flex-1 items-stretch gap-2">
+          <VectorEditor />
+          {isVectorSprite ? <EditorSidePanel /> : null}
+        </div>
+        <EditorFooter asset={asset} />
       </div>
-      {isVectorSprite && !wide ? <SpriteSidePanel wide={false} /> : null}
-      {isVectorSprite ? <FrameStrip /> : null}
-      {isVectorTileset ? <TileStrip /> : null}
+    )
+  }
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+      <VectorEditor />
+      <EditorFooter asset={asset} stacked />
+      {isVectorSprite ? <SpritePanelDisclosure /> : null}
     </div>
   )
 }
@@ -199,8 +278,9 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
   }
 
   /**
-   * Mapa NÃO é uma figura: o 🚀 copia a GRADE jogável (o que o bloco de mapa do
-   * Estúdio consome), não um PNG achatado. A imagem do mapa continua no "Baixar".
+   * Mapa NÃO é uma figura: o "Usar no Estúdio" copia a GRADE jogável (o que o
+   * bloco de mapa do Estúdio consome), não um PNG achatado. A imagem do mapa
+   * continua no "Baixar".
    */
   async function handleSendTilemap(): Promise<void> {
     if (asset.kind !== 'tilemap') return
@@ -216,13 +296,11 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
 
   return (
     <header className="flex flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
-      <IconButton aria-label={COPY.editor.back} title={COPY.editor.back} onClick={onBack}>
-        <span aria-hidden="true">←</span>
-      </IconButton>
+      <ToolButton icon={ArrowLeft} label={COPY.editor.back} onClick={onBack} />
       <span aria-hidden="true" className="text-xl">
         {kind.emoji}
       </span>
-      <span className="mr-2 truncate text-lg font-bold" title={asset.name}>
+      <span className="pin-display mr-2 truncate text-lg" title={asset.name}>
         {asset.name}
       </span>
       <IconButton
@@ -231,7 +309,7 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
         disabled={!canUndo}
         onClick={() => editorState.undo()}
       >
-        <span aria-hidden="true">↩️</span>
+        <Undo2 aria-hidden="true" className="size-5" />
       </IconButton>
       <IconButton
         aria-label={COPY.editor.redo}
@@ -239,18 +317,22 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
         disabled={!canRedo}
         onClick={() => editorState.redo()}
       >
-        <span aria-hidden="true">↪️</span>
+        <Redo2 aria-hidden="true" className="size-5" />
       </IconButton>
       <SaveBadge />
       <div className="ml-auto flex items-center gap-2">
-        <Button onClick={() => setExportOpen(true)}>⬇ {COPY.editor.download}</Button>
+        <Button onClick={() => setExportOpen(true)}>
+          <Download aria-hidden="true" className="size-4" />
+          {COPY.editor.download}
+        </Button>
         {adapter.sendToStudio ? (
           <Button
             variant="primary"
             disabled={sending}
             onClick={() => void (isTilemap ? handleSendTilemap() : handleSendToStudio())}
           >
-            🚀 {sending ? COPY.sendToStudio.sending : COPY.editor.sendToStudio}
+            <Rocket aria-hidden="true" className="size-4" />
+            {sending ? COPY.sendToStudio.sending : COPY.editor.sendToStudio}
           </Button>
         ) : null}
       </div>

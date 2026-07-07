@@ -16,6 +16,13 @@ export const XP_VALUES = {
   CLUBE_THREAD: 5,
   /** Clube: comentário APROVADO pela equipe. */
   CLUBE_COMMENT: 3,
+  /**
+   * Publicou jogo standalone no Mural — XP DIÁRIO (1×/dia pelo sourceId
+   * determinístico do dia civil SP, `studioPublishDaySourceId`): a âncora de
+   * streak/liga de quem já acabou os cursos e só CRIA. Entre o baú (25) e o
+   * desafio do mês (50).
+   */
+  STUDIO_PUBLISH_DAY: 25,
 } as const
 
 /** XP de um quiz APROVADO: base + bônus proporcional à nota (cap em +10). */
@@ -209,4 +216,16 @@ export function challengeBadgeSlugs(entries: number): BadgeSlug[] {
 /** Badge da 1ª conversa aprovada no Clube (contada pelo ledger `clube_thread`). */
 export function clubeBadgeSlugs(approvedThreads: number): BadgeSlug[] {
   return approvedThreads >= 1 ? ['clube-primeiro-post'] : []
+}
+
+/**
+ * Badges de jogadas recebidas: um jogo do autor cruzou 10/100 plays no /jogar
+ * público (ledgers `play_milestone_10`/`play_milestone_100`, 1 marco por playId).
+ * Basta 1 jogo cruzar o limiar — conquista de vaidade, não contagem agregada.
+ */
+export function playsBadgeSlugs(milestones10: number, milestones100: number): BadgeSlug[] {
+  const slugs: BadgeSlug[] = []
+  if (milestones10 >= 1) slugs.push('plays-10')
+  if (milestones100 >= 1) slugs.push('plays-100')
+  return slugs
 }

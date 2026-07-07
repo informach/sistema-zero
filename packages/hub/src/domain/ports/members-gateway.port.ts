@@ -88,6 +88,28 @@ export interface MuralCommentArgs {
   commentId: string
 }
 
+/** Argumentos da notificação "publicou jogo STANDALONE no Mural" (retenção pós-cursos). */
+export interface StandaloneShowcaseArgs {
+  /** PERFIL de criança (dono da gamificação) — `x-auth-user-id`. */
+  userId: string
+  /** CONTA do responsável — `x-auth-account-id ?? userId`. */
+  accountId: string
+  audience: 'adult' | 'kids'
+  /** playId público do post — sourceId do marco `studio_published` no members. */
+  playId: string
+}
+
+/** Argumentos do marco "um jogo do autor cruzou N jogadas" (badges plays-10/100). */
+export interface PlaysMilestoneArgs {
+  /** PERFIL autor do post (dono da gamificação) — snapshot `authorId` da thread. */
+  userId: string
+  /** CONTA do responsável — snapshot `authorAccountId` (legado sem snapshot → userId). */
+  accountId: string
+  audience: 'adult' | 'kids'
+  playId: string
+  milestone: 10 | 100
+}
+
 export interface MembersGateway {
   checkAccess(
     userId: string,
@@ -121,4 +143,16 @@ export interface MembersGateway {
    * (fórum do Clube) — o Mural é universal, o Clube é gated por produto.
    */
   notifyMuralComment(args: MuralCommentArgs): Promise<void>
+  /**
+   * Avisa o members que a criança publicou um jogo STANDALONE no Mural (retenção
+   * pós-cursos) → marco `studio_published` (missões gated) + XP diário de publicar.
+   * **Best-effort**: NUNCA lança; o members deduplica (marco por playId, XP por dia).
+   */
+  notifyStandaloneShowcase(args: StandaloneShowcaseArgs): Promise<void>
+  /**
+   * Avisa o members que um jogo do AUTOR cruzou 10/100 jogadas no /jogar público →
+   * marco `play_milestone_10|100` (badges plays-10/plays-100 + troféu). **Best-effort**:
+   * NUNCA lança; o ledger é idempotente pelo playId.
+   */
+  notifyPlaysMilestone(args: PlaysMilestoneArgs): Promise<void>
 }

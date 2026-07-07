@@ -64,7 +64,13 @@ distingue os dois no toast/botão. **MODO CRIAÇÃO GUIADA (28/06):** quando a a
 **e** um de ESTÚDIO (`lessonSupportsGuided`), um botão "Modo criação guiada" aparece sob o título →
 abre o `GuidedCreationMode` (export do `kids-lesson-blocks`): overlay `fixed inset-0` com o vídeo à
 esquerda e o estúdio à direita (lado a lado no desktop; empilha no mobile) + botão "Voltar ao modo
-normal". O estúdio recebe `fillHeight` (prop nova do `StudioBlockView` → o editor preenche a coluna). É
+normal". **Split ARRASTÁVEL no desktop (07/2026):** `react-resizable-panels` (dep própria do kids —
+mesma lib/handle `.sz-resize-handle--vertical` de dentro do Estúdio), `autoSaveId
+"kids-guided-creation"` persiste a posição; vídeo `minSize 20`, estúdio `minSize 35` (Blockly
+inusável estreito). Gate por `useIsDesktop` (matchMedia 1024px, estado inicial lido direto — o modo
+só monta pós-clique, sem SSR/mismatch); <1024px segue o empilhado. Cruzar o limiar remonta o
+StudioBlockKids (re-semeia do rascunho, custo aceito); os DOIS layouts nunca montam juntos.
+O estúdio recebe `fillHeight` (prop nova do `StudioBlockView` → o editor preenche a coluna). É
 um OU outro (guiada vs layout normal) — renderizar os dois montaria o MESMO bloco de estúdio 2× (mesma
 chave de rascunho no IndexedDB → conflito); alternar remonta e re-semeia do rascunho local (sem perda).
 Renderizado DENTRO do `LessonPlayerProvider` (precisa do contexto do player). Exige `@sistemazero/studio` em transpilePackages + `@source`
@@ -536,9 +542,14 @@ A `<Canvas>` precisa de
   gamificação estiver indisponível. **Cadências recalibradas (~1 aula/dia)** + novas fontes: `missionLabel`
   mapeia os goalTypes novos (enviar ao professor `studio_submitted`, publicar jogo `course_showcased`,
   classificar curso `course_rated`, decorar quarto `room_item_buy`, personalizar avatar `avatar_part_buy`,
-  comentar no Mural `mural_comment`) além de aula/quiz/baú/clube. Missões de **Clube são GATED** no
-  members (só aparecem p/ quem tem o produto). A APRESENTAÇÃO só reflete o que o backend manda (a lógica
-  de cadência/gating/marcos vive no members — ver o CLAUDE.md de lá §Missões).
+  comentar no Mural `mural_comment`, **lançar jogo standalone `studio_published` e remixar
+  `studio_remix` — retenção pós-cursos 07/2026, gated por estudio-completo**) além de
+  aula/quiz/baú/clube. Missões de **Clube e Estúdio são GATED** no
+  members (só aparecem p/ quem tem o produto; quem TEM o Estúdio ganha 1 missão dele GARANTIDA no set
+  semanal e no mensal). Badges novas `plays-10`/`plays-100` ("um jogo seu foi jogado 10×/100×" —
+  universais; a de 100 concede o troféu `trofeu-estrela-do-mural` no quarto) em `badges.ts` +
+  `lib/room-catalog.ts` + case em `furniture-models.tsx`. A APRESENTAÇÃO só reflete o que o backend
+  manda (a lógica de cadência/gating/marcos vive no members — ver o CLAUDE.md de lá §Missões).
 - **Proteção de sequência — `streak-protection.tsx`** (no perfil): mostra/gerencia **férias**
   (janela que não exige presença) e **protetores/freezes** (1 grátis por mês + compráveis com Zappy,
   teto 5) — a sequência só QUEBRA quando NEM férias NEM freezes cobrem o gap.
@@ -590,6 +601,10 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   `KidsSpaceViewClient`; botão "Fazer a minha versão" no `PlayLinkActions` (só com posse do
   Estúdio) → fetch `/api/studio/play/:id` → `setStudioStorageNamespace(viewerId)` →
   `importProjectSnapshot(snapshot, {name: 'Remix de <título>'})` → toast + push `/estudio`.
+  **Gamificado (retenção pós-cursos 07/2026):** após importar, dispara best-effort
+  `POST /api/studio/remix {playId}` (shim novo sobre `shell.routes.studioRemix`, DENTRO do matcher
+  do proxy — JSON pequeno, ganha o anti-CSRF) → marco da missão `weekly-remix`/`monthly-remix-3` no
+  members (que valida posse + playId real no hub + recusa self-remix; o toast não espera).
 - **Projeto transversal Pensa↔Pinta (C):** a página `/pensa` também checa
   `checkPintaAccessReadonly` (best-effort) → `pintaOwned` no `PensaClient`, que SÓ então liga o
   `onOpenPinta` — o intent da missão de arte vai por `sessionStorage sz:pinta:intent`

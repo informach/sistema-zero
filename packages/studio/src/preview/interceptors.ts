@@ -119,6 +119,16 @@ export function buildInterceptorScript(targetOrigin = '*'): string {
   function isLoopGuard(err) {
     return !!(err && typeof err === 'object' && err.__szLoopGuard);
   }
+  // O erro veio do script.js do ALUNO? A cauda da data URL é semeada pelo
+  // buildPreviewDoc (window.__SZ_USER_JS_TAIL) logo antes do script do aluno —
+  // runtimes de extensão/extras têm URLs diferentes e ficam de fora.
+  function isUserSrc(src) {
+    try {
+      var tail = window.__SZ_USER_JS_TAIL;
+      if (!tail || typeof src !== 'string' || src.length < tail.length) return false;
+      return src.slice(-tail.length) === tail;
+    } catch (e) { return false; }
+  }
   var origLog = console.log;
   var origWarn = console.warn;
   var origError = console.error;
@@ -137,7 +147,8 @@ export function buildInterceptorScript(targetOrigin = '*'): string {
       message: truncateErrorText(String(msg)),
       stack: err && err.stack ? truncateErrorText(String(err.stack)) : undefined,
       line: line,
-      col: col
+      col: col,
+      userCode: isUserSrc(src)
     });
     return false;
   };

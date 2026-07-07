@@ -114,6 +114,14 @@ const MEMBERS_ALLOWED_CIDRS = (process.env.MEMBERS_ALLOWED_CIDRS ?? '0.0.0.0/0,:
   .split(',')
   .map((c) => c.trim())
   .filter(Boolean)
+// O marketing como consumer HMAC de borda (lembrete de publicação MANUAL via
+// /messaging/send — F1 do app de marketing, 07/2026). Espelha o members. DEVE
+// bater com o MARKETING_HMAC_SECRET do marketing.
+const MARKETING_HMAC_SECRET = process.env.MARKETING_HMAC_SECRET ?? ''
+const MARKETING_ALLOWED_CIDRS = (process.env.MARKETING_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
 // Token interno injetado nas rotas S2S do auth (/auth/internal/*) como defesa em
 // profundidade (igual ao members/messaging). DEVE bater com o AUTH_INTERNAL_TOKEN do auth.
 const AUTH_INTERNAL_TOKEN = process.env.AUTH_INTERNAL_TOKEN ?? ''
@@ -140,6 +148,29 @@ const hubInternalTransforms = HUB_INTERNAL_TOKEN
       },
     ]
   : []
+
+// Gerenciamento de marketing digital (@sistemazero/marketing): pipeline de
+// produção de conteúdo, publicações em redes sociais, mídia e métricas.
+// Ferramenta INTERNA da equipe (staff+). O gateway injeta o x-internal-token
+// (defesa em profundidade, igual ao hub). DEVE bater com o INTERNAL_API_TOKEN
+// do marketing.
+const MARKETING_URL = process.env.MARKETING_URL ?? 'http://localhost:3011'
+const MARKETING_INTERNAL_TOKEN = process.env.MARKETING_INTERNAL_TOKEN ?? ''
+const marketingInternalTransforms = MARKETING_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': MARKETING_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
+// Sem o token o serviço recusa TUDO com 401 (fail-closed) e o sintoma na UI é um
+// erro genérico — avise alto no boot (em prod nem sobe: PROD_REQUIRED_SECRETS).
+if (!MARKETING_INTERNAL_TOKEN && process.env.NODE_ENV !== 'test') {
+  console.warn(
+    '[gateway] MARKETING_INTERNAL_TOKEN ausente — as rotas /marketing/* responderão 401 (o serviço exige o token interno)',
+  )
+}
 
 const sharedResilience = {
   loadBalancer: 'round-robin' as const,
@@ -195,6 +226,17 @@ const config: GatewayConfigInput = {
             id: 'members',
             hmacSecret: MEMBERS_HMAC_SECRET,
             allowedCidrs: MEMBERS_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
+    // O marketing como consumer HMAC de borda (lembrete de publicação manual
+    // via /messaging/send). Condicional, igual aos demais.
+    ...(MARKETING_HMAC_SECRET
+      ? [
+          {
+            id: 'marketing',
+            hmacSecret: MARKETING_HMAC_SECRET,
+            allowedCidrs: MARKETING_ALLOWED_CIDRS,
           },
         ]
       : []),
@@ -262,6 +304,14 @@ const config: GatewayConfigInput = {
       name: 'hub',
       upstreamGroups: {
         default: [{ url: HUB_URL, healthCheckPath: '/health' }],
+      },
+      ...sharedResilience,
+    },
+    // Marketing digital: pipeline de conteúdo, publicações, mídia e métricas.
+    marketing: {
+      name: 'marketing',
+      upstreamGroups: {
+        default: [{ url: MARKETING_URL, healthCheckPath: '/health' }],
       },
       ...sharedResilience,
     },
@@ -1105,6 +1155,20 @@ const config: GatewayConfigInput = {
       id: 'members-mission-claim',
       methods: ['POST'],
       pathPattern: '/members/gamification/missions/:slug/claim',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
+    // Remix de jogo do Mural ("Fazer a minha versão") — marco da missão gated por
+    // estudio-completo (retenção pós-cursos 07/2026). Literal `/gamification/remix`
+    // (2 seg após /members) não colide com me/challenge/missions/vacation.
+    {
+      id: 'members-gamification-remix',
+      methods: ['POST'],
+      pathPattern: '/members/gamification/remix',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },
@@ -2406,6 +2470,73 @@ const config: GatewayConfigInput = {
       upstreamAuth: 'resign',
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+
+    // ── Marketing (@sistemazero/marketing) — ferramenta INTERNA da equipe ────
+    // Todo o dia a dia (pipeline/composer/agendar/marcar publicado) é staff+;
+    // a APROVAÇÃO é etapa do pipeline (processo), não role. Contas sociais e
+    // OAuth são admin+ (rotas explícitas vencem os wildcards por especificidade,
+    // padrão hub-admin-user-purge).
+    {
+      id: 'marketing-read',
+      methods: ['GET'],
+      pathPattern: '/marketing/*',
+      service: 'marketing',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: marketingInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'marketing-write',
+      methods: ['POST', 'PATCH', 'DELETE'],
+      pathPattern: '/marketing/*',
+      service: 'marketing',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: marketingInternalTransforms,
+      // Roteiros/legendas em markdown são maiores que um login — 512KB.
+      maxBodyBytes: 512 * 1024,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Conectar/desconectar CONTAS SOCIAIS é admin+ e auditado (a rota explícita
+    // vence o wildcard `marketing-write`). Cobre o disable/delete de contas.
+    {
+      id: 'marketing-accounts-write',
+      methods: ['POST', 'PATCH', 'DELETE'],
+      pathPattern: '/marketing/accounts/*',
+      service: 'marketing',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: marketingInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    // Início do fluxo OAuth (gera a URL de autorização) — admin+ e auditado.
+    {
+      id: 'marketing-oauth-start',
+      methods: ['POST'],
+      pathPattern: '/marketing/oauth/:network/start',
+      service: 'marketing',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: marketingInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    // Callback do OAuth (redirect do provedor — Meta/Google/TikTok): PÚBLICA
+    // (o browser chega sem Bearer); o serviço valida o `state` single-use.
+    // Mais específica que o wildcard `marketing-read` → vence por especificidade.
+    {
+      id: 'marketing-oauth-callback',
+      methods: ['GET'],
+      pathPattern: '/marketing/oauth/:network/callback',
+      service: 'marketing',
+      auth: 'public',
+      transforms: marketingInternalTransforms,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
 
     // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────

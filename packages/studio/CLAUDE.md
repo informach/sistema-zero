@@ -358,6 +358,24 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 **Padrões já usados** (clone-os):
 - **Seletores de NOME (escolher, não digitar)** — em vez de a criança redigitar a grafia de algo que já nomeou noutro bloco, o campo CONSUMIDOR abre um pop-up com a lista do que já foi criado (à la Scratch/MakeCode) + um input de texto de fallback. Três campos, TODOS `extends Blockly.FieldTextInput` (o VALOR continua string → IR/round-trip/serialização/allowlist IDÊNTICOS a `field_input`; só troca o EDITOR — **nunca `FieldDropdown`**, que coage nome desconhecido p/ a 1ª opção e PERDE o nome no round-trip): `field_name_picker` (`blockly/fields/FieldNamePicker.ts`, nomes puros por `kind`), `field_sprite_picker` (com miniatura/swatch), `field_asset_picker` (IMAGENS do projeto, `__szAssets`). **Regra de ouro: só CONSUMIDORES viram picker; o campo que DECLARA o nome segue `field_input`** (a criança nomeia uma vez). `FieldNamePicker` tem 12 `kind`: `variable`/`group`(≡lista)/`class`/`function`/`property`/`method`/`canvas`/`spritesheet`/`tilemap`/`scene3d`/`object3d`/`group3d`.
   - **Trocar um campo p/ picker**: `{type:'field_input', name:'X', text:'…'}` → `{type:'field_name_picker', name:'X', text:'…', kind:'…'}` (ou `field_asset_picker`/`field_sprite_picker`). Nada mais muda (nem setup.ts/IR/parser/allowlist).
+  - **Miniatura do sprite NO BLOCO (07/2026):** o `FieldSpritePicker` também desenha a miniatura
+    (cor OU imagem do asset) AO LADO do nome dentro do bloco — view custom (`initView`/`render_`/
+    `updateSize_` deslocam o texto e alargam `size_`; ⚠️ a cor vai em **`rect.style.fill` INLINE** —
+    o CSS que o Blockly injeta pinta rects de campo editável por stylesheet e VENCERIA o atributo
+    `fill`) + `resolveSpriteVisual` (puro, cache `WeakMap` por workspace) +
+    `attachSpriteThumbWatcher` (refresh coalescido em BLOCK_CHANGE/CREATE/DELETE de DECLARADOR +
+    FINISHED_LOADING; registrado no inject do `BlocklyPanel` junto de um subscribe da identidade de
+    `project.assets` — renomear/trocar asset no painel Imagens não gera evento Blockly). Sem visual
+    (nome local de laço 🔁/desconhecido/asset sumido sem cor) → só texto, como antes; a serialização
+    fica INTOCADA (elementos extras no `fieldGroup_` não entram). Pop-up com swatch 36×36
+    (`<img> object-fit:contain` p/ imagem). E o **FieldColourSZ** ganhou o CÍRCULO CROMÁTICO:
+    `<input type=color>` NATIVO na linha HEX — é a prévia da cor atual E o botão que abre o seletor
+    livre do navegador (arrastar preenche o input com o hex ao vivo; confirmar aplica no bloco e
+    fecha; digitar hex válido espelha no swatch). Estilos do swatch em `studio.css`
+    (`.sz-hex-input-row input[type=color]` — pseudo-elementos não entram em cssText); a GRADE da
+    paleta é centrada/espaçada via `[data-sz-theme].blocklyFieldColour …` (vence o CSS do plugin
+    por especificidade; o pop-up encolheu de ~240px e o input tem `min-width:88px` p/ o código
+    `#rrggbb` COMPLETO ficar sempre visível).
   - **Bloco NOVO que declara um nome de um `kind` existente**: adicione-o ao `*_DECL_BLOCKS` correspondente em `FieldNamePicker.ts` (ex.: `VARIABLE_DECL_BLOCKS`, `SCENE3D_DECL_BLOCKS`, `OBJECT3D_DECL_BLOCKS`), senão o picker reporta "nenhum ainda". Sprite/asset têm o seu (`SPRITE_DECL_BLOCKS` no FieldSpritePicker).
   - **`kind` NOVO**: estenda a união `NameKind` + `NAME_KINDS` + `*_DECL_BLOCKS` + um `collect*` + entrada em `KIND_UI` (ícone/placeholder/empty) + um `case` no `collectGlobals`; então troque os campos consumidores.
   - **Nomes LOCAIS de laço** (o "i" do contar, o "item" do enxame): `LOOP_BINDERS_BY_KIND` + `collectScopedNames(block, binders)` sobem por `getSurroundParent` e só aparecem DENTRO do laço (swatch 🔁 "no laço"). Hoje `variable` e `object3d`.

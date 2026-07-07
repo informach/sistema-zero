@@ -7,24 +7,49 @@ import { activeBitmapOf, withActiveBitmap } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import { clearBitmap, flipHorizontal, flipVertical, rotate90 } from '../../pixel/ops'
 import type { PintaSessionTool } from '../../state/sessionStore'
-import { IconButton } from '../ui/Button'
+import { IconButton, ToolButton } from '../ui/Button'
+import {
+  BrushCleaning,
+  Circle,
+  Eraser,
+  FlipHorizontal,
+  FlipHorizontal2,
+  FlipVertical,
+  FlipVertical2,
+  Grid3x3,
+  type LucideIcon,
+  PaintBucket,
+  PaintRoller,
+  Pencil,
+  Pipette,
+  Replace,
+  RotateCw,
+  Slash,
+  Square,
+  SquareDashed,
+} from '../ui/icons'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
-const TOOLS: Array<{ id: PintaSessionTool; emoji: string; label: string }> = [
-  { id: 'pencil', emoji: '✏️', label: COPY.tools.pencil },
-  { id: 'eraser', emoji: '🧽', label: COPY.tools.eraser },
-  { id: 'fill', emoji: '🪣', label: COPY.tools.fill },
-  { id: 'recolor', emoji: '🔁', label: COPY.tools.recolor },
-  { id: 'select', emoji: '🔲', label: COPY.tools.select },
-  { id: 'line', emoji: '📏', label: COPY.tools.line },
-  { id: 'rect', emoji: '⬜', label: COPY.tools.rect },
-  { id: 'ellipse', emoji: '⚪', label: COPY.tools.ellipse },
-  { id: 'picker', emoji: '💧', label: COPY.tools.picker },
+const TOOLS: Array<{ id: PintaSessionTool; icon: LucideIcon; label: string }> = [
+  { id: 'pencil', icon: Pencil, label: COPY.tools.pencil },
+  { id: 'eraser', icon: Eraser, label: COPY.tools.eraser },
+  { id: 'fill', icon: PaintBucket, label: COPY.tools.fill },
+  { id: 'recolor', icon: Replace, label: COPY.tools.recolor },
+  { id: 'select', icon: SquareDashed, label: COPY.tools.select },
+  { id: 'line', icon: Slash, label: COPY.tools.line },
+  { id: 'rect', icon: Square, label: COPY.tools.rect },
+  { id: 'ellipse', icon: Circle, label: COPY.tools.ellipse },
+  { id: 'picker', icon: Pipette, label: COPY.tools.picker },
 ]
 
 const BRUSH_SIZES = [1, 2, 3] as const
 
-export function ToolBar(): JSX.Element {
+export function ToolBar({
+  orientation = 'vertical',
+}: {
+  orientation?: 'vertical' | 'horizontal'
+}): JSX.Element {
+  const vertical = orientation === 'vertical'
   const { editor, session } = useEditorStores()
   const tool = useSession((state) => state.tool)
   const brushSize = useSession((state) => state.brushSize)
@@ -70,115 +95,102 @@ export function ToolBar(): JSX.Element {
     activeBitmap !== null &&
     (asset.kind !== 'pixel-sprite' || activeBitmap.width === activeBitmap.height)
 
+  const divider = vertical ? (
+    <hr className="col-span-2 my-1 w-8 border-pin-border" />
+  ) : (
+    <span aria-hidden="true" className="mx-1 h-8 w-0.5 shrink-0 rounded bg-pin-border" />
+  )
+
   return (
     <div
       role="toolbar"
       aria-label="Ferramentas"
-      aria-orientation="vertical"
-      className="flex flex-col items-center gap-1 overflow-y-auto rounded-3xl border-2 border-pin-border bg-pin-surface p-2"
+      aria-orientation={orientation}
+      className={
+        // Vertical = GRADE de 2 colunas (padrão MakeCode/Piskel): todas as
+        // ferramentas visíveis de uma vez, sem esconder nada atrás de scroll.
+        vertical
+          ? 'pin-panel grid shrink-0 grid-cols-2 content-start justify-items-center gap-1 overflow-y-auto p-2'
+          : 'pin-panel flex shrink-0 items-center gap-1 overflow-x-auto p-2'
+      }
     >
       {TOOLS.map((entry) => (
-        <IconButton
+        <ToolButton
           key={entry.id}
+          icon={entry.icon}
+          label={entry.label}
           active={tool === entry.id}
-          aria-label={entry.label}
-          aria-pressed={tool === entry.id}
-          title={entry.label}
           onClick={() => session.getState().setTool(entry.id)}
+        />
+      ))}
+
+      {divider}
+
+      {BRUSH_SIZES.map((size) => (
+        <IconButton
+          key={size}
+          active={brushSize === size}
+          aria-label={`${COPY.tools.brushSize}: ${size}`}
+          aria-pressed={brushSize === size}
+          title={`${COPY.tools.brushSize}: ${size}`}
+          onClick={() => session.getState().setBrushSize(size)}
         >
-          <span aria-hidden="true">{entry.emoji}</span>
+          <span
+            aria-hidden="true"
+            className="rounded-full bg-current"
+            style={{ width: size * 4 + 2, height: size * 4 + 2 }}
+          />
         </IconButton>
       ))}
 
-      <hr className="my-1 w-8 border-pin-border" />
+      {divider}
 
-      <div className="flex flex-col items-center gap-1">
-        {BRUSH_SIZES.map((size) => (
-          <IconButton
-            key={size}
-            active={brushSize === size}
-            aria-label={`${COPY.tools.brushSize}: ${size}`}
-            aria-pressed={brushSize === size}
-            title={`${COPY.tools.brushSize}: ${size}`}
-            onClick={() => session.getState().setBrushSize(size)}
-          >
-            <span
-              aria-hidden="true"
-              className="rounded-full bg-current"
-              style={{ width: size * 4 + 2, height: size * 4 + 2 }}
-            />
-          </IconButton>
-        ))}
-      </div>
-
-      <hr className="my-1 w-8 border-pin-border" />
-
-      <IconButton
+      <ToolButton
+        icon={FlipHorizontal}
+        label={COPY.tools.mirror}
         active={mirrorX}
-        aria-label={COPY.tools.mirror}
-        aria-pressed={mirrorX}
-        title={COPY.tools.mirror}
         onClick={() => session.getState().toggleMirror()}
-      >
-        <span aria-hidden="true">🦋</span>
-      </IconButton>
-      <IconButton
+      />
+      <ToolButton
+        icon={FlipVertical}
+        label={COPY.tools.mirrorV}
         active={mirrorY}
-        aria-label={COPY.tools.mirrorV}
-        aria-pressed={mirrorY}
-        title={COPY.tools.mirrorV}
         onClick={() => session.getState().toggleMirrorY()}
-      >
-        <span aria-hidden="true">🪞</span>
-      </IconButton>
-      <IconButton
+      />
+      <ToolButton
+        icon={Grid3x3}
+        label={COPY.tools.grid}
         active={showGrid}
-        aria-label={COPY.tools.grid}
-        aria-pressed={showGrid}
-        title={COPY.tools.grid}
         onClick={() => session.getState().toggleGrid()}
-      >
-        <span aria-hidden="true">▦</span>
-      </IconButton>
+      />
       {showFilled ? (
-        <IconButton
+        <ToolButton
+          icon={PaintRoller}
+          label={COPY.tools.filled}
           active={filled}
-          aria-label={COPY.tools.filled}
-          aria-pressed={filled}
-          title={COPY.tools.filled}
           onClick={() => session.getState().toggleFilled()}
-        >
-          <span aria-hidden="true">🎨</span>
-        </IconButton>
+        />
       ) : null}
 
-      <hr className="my-1 w-8 border-pin-border" />
+      {divider}
 
-      <IconButton
-        aria-label={COPY.tools.flipH}
-        title={COPY.tools.flipH}
+      <ToolButton
+        icon={FlipHorizontal2}
+        label={COPY.tools.flipH}
         onClick={() => transformBitmap('flipH')}
-      >
-        <span aria-hidden="true">↔️</span>
-      </IconButton>
-      <IconButton
-        aria-label={COPY.tools.flipV}
-        title={COPY.tools.flipV}
+      />
+      <ToolButton
+        icon={FlipVertical2}
+        label={COPY.tools.flipV}
         onClick={() => transformBitmap('flipV')}
-      >
-        <span aria-hidden="true">↕️</span>
-      </IconButton>
-      <IconButton
-        aria-label={COPY.tools.rotate}
-        title={COPY.tools.rotate}
+      />
+      <ToolButton
+        icon={RotateCw}
+        label={COPY.tools.rotate}
         disabled={!canRotate}
         onClick={() => transformBitmap('rotate')}
-      >
-        <span aria-hidden="true">🔄</span>
-      </IconButton>
-      <IconButton aria-label={COPY.tools.clear} title={COPY.tools.clear} onClick={clearActive}>
-        <span aria-hidden="true">🧹</span>
-      </IconButton>
+      />
+      <ToolButton icon={BrushCleaning} label={COPY.tools.clear} onClick={clearActive} />
     </div>
   )
 }

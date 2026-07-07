@@ -1,18 +1,20 @@
 /**
  * Botão base do Pinta: alvos ≥44px (público kids), variantes por token
- * `pin-*`. Sem dependência externa.
+ * `pin-*`. CTA primário usa a pill "3D" de sombra dura (.pin-btn-3d, espelho
+ * do .sz-btn-gradient do community-kids).
  */
 import { clsx } from 'clsx'
 import type { ButtonHTMLAttributes, JSX } from 'react'
+import type { LucideIcon } from './icons'
 
 export type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline'
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary:
-    'bg-pin-accent text-pin-accent-fg hover:brightness-110 disabled:hover:brightness-100 shadow-sm',
-  ghost: 'text-pin-text hover:bg-pin-border/40',
-  outline: 'border-2 border-pin-border bg-pin-surface text-pin-text hover:border-pin-accent',
-  danger: 'bg-pin-danger text-white hover:brightness-110',
+  primary: 'pin-btn-3d disabled:hover:brightness-100',
+  ghost: 'rounded-xl text-pin-text hover:bg-pin-border/40',
+  outline:
+    'rounded-xl border-2 border-pin-border bg-pin-surface text-pin-text hover:border-pin-accent',
+  danger: 'rounded-full bg-pin-danger text-white hover:brightness-110',
 }
 
 export function Button({
@@ -25,7 +27,7 @@ export function Button({
     <button
       type={type ?? 'button'}
       className={clsx(
-        'inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 text-base font-bold transition',
+        'inline-flex min-h-11 items-center justify-center gap-2 px-4 text-base font-bold transition',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent',
         'disabled:cursor-not-allowed disabled:opacity-50',
         VARIANT_CLASSES[variant],
@@ -47,15 +49,43 @@ export function IconButton({
     <button
       type={type ?? 'button'}
       className={clsx(
-        'inline-flex min-h-11 min-w-11 items-center justify-center rounded-2xl text-xl transition',
+        'inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-xl transition',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent',
         'disabled:cursor-not-allowed disabled:opacity-40',
         active
-          ? 'bg-pin-accent text-pin-accent-fg shadow-sm'
+          ? 'pin-tool-active bg-pin-accent text-pin-accent-fg'
           : 'text-pin-text hover:bg-pin-border/40',
         className,
       )}
       {...props}
     />
+  )
+}
+
+/**
+ * Botão de FERRAMENTA (lucide): o componente único dos rails do pixel, do
+ * vetor e do mapa. `active` liga o visual E o aria-pressed (toggle); ações
+ * pontuais (espelhar bitmap, girar…) simplesmente não passam `active`.
+ */
+export function ToolButton({
+  icon: Icon,
+  label,
+  active,
+  ...props
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'aria-label' | 'title'> & {
+  icon: LucideIcon
+  label: string
+  active?: boolean
+}): JSX.Element {
+  return (
+    <IconButton
+      active={active ?? false}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+      {...props}
+    >
+      <Icon aria-hidden="true" className="size-5" />
+    </IconButton>
   )
 }

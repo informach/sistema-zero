@@ -62,7 +62,16 @@
     "build:kids": "cd packages/community-kids && bun run build",
     "start:kids": "bun run --filter @sistemazero/community-kids start",
     "typecheck:kids": "bun run --filter @sistemazero/community-kids typecheck",
-    "test:kids": "bun run --filter @sistemazero/community-kids test"
+    "test:kids": "bun run --filter @sistemazero/community-kids test",
+    "dev:marketing": "bun run --filter @sistemazero/marketing dev",
+    "test:marketing": "bun run --filter @sistemazero/marketing test",
+    "db:marketing:generate": "bun run --filter @sistemazero/marketing db:generate",
+    "db:marketing:migrate": "bun run --filter @sistemazero/marketing db:migrate",
+    "dev:marketing-app": "bun run --filter @sistemazero/marketing-app dev",
+    "build:marketing-app": "cd packages/marketing-app && bun run build",
+    "start:marketing-app": "bun run --filter @sistemazero/marketing-app start",
+    "typecheck:marketing-app": "bun run --filter @sistemazero/marketing-app typecheck",
+    "test:marketing-app": "bun run --filter @sistemazero/marketing-app test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"

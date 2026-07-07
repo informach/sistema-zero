@@ -44,7 +44,11 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    por URL); `weekly-report` (Fase 5, 07/2026): `nome`+`criancas`+`semana`+`resumo`+`link` — o
    resumo semanal dos pais enviado pelo MEMBERS (consumer HMAC `members` via gateway,
    `idempotencyKey = weekly-report:<accountId>:<weekKey>` — o dedupe absorve o retry do
-   mark-after-send de lá; `resumo` é multilinha, renderizado num bloco `white-space:pre-wrap`).
+   mark-after-send de lá; `resumo` é multilinha, renderizado num bloco `white-space:pre-wrap`);
+   `marketing-reminder` (whatsapp, F1 do app de marketing 07/2026): `titulo`+`formato`+`horario`
+   (já formatado SP)+`link` — lembrete de publicação MANUAL enviado pelo MARKETING (consumer HMAC
+   `marketing` via gateway, `idempotencyKey = marketing-reminder-<publicationId>-<fone>` — retry
+   do publisher-worker nunca duplica).
    `new-access` (e-mail + whatsapp) = aviso de "novo curso liberado" ao comprador
    RECORRENTE (já tem conta) — link p/ `/cursos`, SEM token de senha (≠ do `welcome`, que é 1º acesso).
    NÃO renomeie sem mudar os chamadores. Template novo → re-rode `templates:seed` no deploy.

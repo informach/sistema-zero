@@ -58,7 +58,7 @@ describe('UI de tiles (F4)', () => {
     expect(screen.getByText('Chão')).toBeTruthy()
 
     // Nova camada entra na lista.
-    fireEvent.click(screen.getByRole('button', { name: `＋ ${COPY.tiles.addLayer}` }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addLayer }))
     await waitFor(() => {
       expect(screen.getByText('Camada 2')).toBeTruthy()
     })

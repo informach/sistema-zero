@@ -24,6 +24,7 @@ import { GetChallengeService } from './application/gamification/get-challenge.se
 import { GetGamificationService } from './application/gamification/get-gamification.service'
 import { GetLeagueService } from './application/gamification/get-league.service'
 import { GetMissionsService } from './application/gamification/get-missions.service'
+import { RecordStudioRemixService } from './application/gamification/record-studio-remix.service'
 import { SetVacationService } from './application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from './application/get-attachment-download/get-attachment-download.service'
 import { GetCertificateService } from './application/get-certificate/get-certificate.service'
@@ -277,6 +278,8 @@ export async function createApplication(env: Env): Promise<Application> {
   const getChallenge = new GetChallengeService(gamificationRepo, clock)
   const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock)
   const claimMission = new ClaimMissionService(gamificationRepo, accessCheck, clock)
+  // Remix do Mural (marco de missão gated) — valida posse + playId no hub (anti-farm).
+  const recordRemix = new RecordStudioRemixService(accessCheck, hub, awardGamification)
   const buyStreakFreeze = new BuyStreakFreezeService(gamificationRepo, () => randomUUID(), clock)
   const setVacation = new SetVacationService(gamificationRepo, clock)
   const getLeague = new GetLeagueService(gamificationRepo, clock, getAvatarsByProfiles, authGateway)
@@ -458,6 +461,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getChallenge,
       getMissions,
       claimMission,
+      recordRemix,
       buyStreakFreeze,
       setVacation,
       getLeague,

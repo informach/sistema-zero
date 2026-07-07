@@ -42,6 +42,23 @@ export type XpSourceType =
   | 'room_item_buy'
   | 'avatar_part_buy'
   | 'mural_comment'
+  // Estúdio standalone no Mural (retenção pós-cursos, 07/2026):
+  // `studio_published` = MARCO (amount 0) por publicação standalone (sourceId =
+  // playId do post; republicar = post novo = marco novo, deliberado — alimenta as
+  // missões semanais/mensais gated por estudio-completo). `studio_publish_day` =
+  // XP REAL (move streak/liga — a âncora diária de quem já acabou os cursos e só
+  // CRIA), 1×/dia pelo sourceId determinístico do dia civil SP
+  // (`studioPublishDaySourceId`) — spam de republicação não infla XP.
+  | 'studio_published'
+  | 'studio_publish_day'
+  // MARCO (amount 0): remixou um jogo de colega do Mural ("Fazer a minha versão").
+  // sourceId = playId do jogo ORIGINAL → re-remixar o mesmo jogo não conta de novo.
+  | 'studio_remix'
+  // MARCOS (amount 0): um jogo do AUTOR cruzou 10/100 jogadas no /jogar público
+  // (sourceId = playId; crossing exato detectado no hub). Só destravam as badges
+  // plays-10/plays-100 (+ troféu) — anti-farm natural: exige volume real de outros.
+  | 'play_milestone_10'
+  | 'play_milestone_100'
 
 export interface XpEventInput {
   sourceType: XpSourceType

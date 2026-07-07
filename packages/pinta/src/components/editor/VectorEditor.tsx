@@ -58,11 +58,38 @@ import {
 } from '../../vector/shapes'
 import { smoothStrokeToPathCapped } from '../../vector/smoothing'
 import { GradientDefs, ShapeElement } from '../../vector/VectorFrameSvg'
-import { Button, IconButton } from '../ui/Button'
+import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import {
+  BringToFront,
+  Brush,
+  ChevronsDown,
+  ChevronsUp,
+  Circle,
+  CircleDot,
+  Copy,
+  FlipHorizontal2,
+  FlipVertical2,
+  Group,
+  Hand,
+  Hexagon,
+  type LucideIcon,
+  Maximize,
+  MousePointer2,
+  MoveHorizontal,
+  MoveVertical,
+  PenTool,
+  Pipette,
+  SendToBack,
+  Slash,
+  Square,
+  Star,
+  Trash2,
+  Type,
+  Ungroup,
+} from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
-import { ZoomControls } from './ZoomControls'
 
 type VectorTool =
   | 'select'
@@ -77,18 +104,18 @@ type VectorTool =
   | 'text'
   | 'picker'
 
-const TOOLS: Array<{ id: VectorTool; emoji: string; label: string }> = [
-  { id: 'select', emoji: '👆', label: COPY.vector.select },
-  { id: 'reshape', emoji: '✒️', label: COPY.vector.reshape },
-  { id: 'pan', emoji: '🖐️', label: COPY.vector.pan },
-  { id: 'brush', emoji: '🖌️', label: COPY.vector.brush },
-  { id: 'rect', emoji: '⬜', label: COPY.tools.rect },
-  { id: 'ellipse', emoji: '⚪', label: COPY.tools.ellipse },
-  { id: 'line', emoji: '📏', label: COPY.tools.line },
-  { id: 'polygon', emoji: '🔷', label: COPY.vector.polygon },
-  { id: 'star', emoji: '⭐', label: COPY.vector.star },
-  { id: 'text', emoji: '🔤', label: COPY.vector.text },
-  { id: 'picker', emoji: '💧', label: COPY.tools.picker },
+const TOOLS: Array<{ id: VectorTool; icon: LucideIcon; label: string }> = [
+  { id: 'select', icon: MousePointer2, label: COPY.vector.select },
+  { id: 'reshape', icon: PenTool, label: COPY.vector.reshape },
+  { id: 'pan', icon: Hand, label: COPY.vector.pan },
+  { id: 'brush', icon: Brush, label: COPY.vector.brush },
+  { id: 'rect', icon: Square, label: COPY.tools.rect },
+  { id: 'ellipse', icon: Circle, label: COPY.tools.ellipse },
+  { id: 'line', icon: Slash, label: COPY.tools.line },
+  { id: 'polygon', icon: Hexagon, label: COPY.vector.polygon },
+  { id: 'star', icon: Star, label: COPY.vector.star },
+  { id: 'text', icon: Type, label: COPY.vector.text },
+  { id: 'picker', icon: Pipette, label: COPY.tools.picker },
 ]
 
 /** No máximo de cores personalizadas guardadas na sessão (aparecem como swatches). */
@@ -740,22 +767,27 @@ export function VectorEditor(): JSX.Element | null {
   const stageHeight = Math.max(Math.round(doc.height * zoom), 1)
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
-      <div className="flex min-h-0 flex-1 items-stretch gap-3">
-        {/* Ferramentas */}
-        <div className="flex flex-col items-center gap-1 overflow-y-auto rounded-3xl border-2 border-pin-border bg-pin-surface p-2">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+      <div className="flex min-h-0 flex-1 items-stretch gap-2">
+        {/* Ferramentas em GRADE de 2 colunas (tudo visível, sem scroll); o
+            "Ajustar" mora aqui e o zoom fica no rodapé da tela. */}
+        <div
+          role="toolbar"
+          aria-label="Ferramentas"
+          aria-orientation="vertical"
+          className="pin-panel grid shrink-0 grid-cols-2 content-start justify-items-center gap-1 overflow-y-auto p-2"
+        >
           {TOOLS.map((entry) => (
-            <IconButton
+            <ToolButton
               key={entry.id}
+              icon={entry.icon}
+              label={entry.label}
               active={tool === entry.id}
-              aria-label={entry.label}
-              aria-pressed={tool === entry.id}
-              title={entry.label}
               onClick={() => setTool(entry.id)}
-            >
-              <span aria-hidden="true">{entry.emoji}</span>
-            </IconButton>
+            />
           ))}
+          <hr className="col-span-2 my-1 w-8 border-pin-border" />
+          <ToolButton icon={Maximize} label={COPY.editor.zoomFit} onClick={zoomToFit} />
         </div>
 
         {/* O palco SVG: dimensão DEFINIDA (doc × zoom), centraliza quando menor
@@ -907,8 +939,8 @@ export function VectorEditor(): JSX.Element | null {
         </div>
 
         {/* Propriedades */}
-        <div className="flex w-52 shrink-0 flex-col gap-3 overflow-y-auto">
-          <section className="rounded-3xl border-2 border-pin-border bg-pin-surface p-3">
+        <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
+          <section className="pin-panel p-3">
             <span className="mb-1 block text-sm font-bold text-pin-muted">{COPY.vector.fill}</span>
             <div className="flex flex-wrap gap-1">
               <button
@@ -954,33 +986,24 @@ export function VectorEditor(): JSX.Element | null {
               {COPY.vector.gradient}
             </span>
             <div className="flex flex-wrap items-center gap-1">
-              <IconButton
+              <ToolButton
+                icon={MoveHorizontal}
+                label={COPY.vector.gradientH}
                 active={activeGradient?.type === 'linear' && activeGradient.angle === 0}
-                aria-label={COPY.vector.gradientH}
-                aria-pressed={activeGradient?.type === 'linear' && activeGradient.angle === 0}
-                title={COPY.vector.gradientH}
                 onClick={() => applyGradient({ type: 'linear', angle: 0 })}
-              >
-                <span aria-hidden="true">↔️</span>
-              </IconButton>
-              <IconButton
+              />
+              <ToolButton
+                icon={MoveVertical}
+                label={COPY.vector.gradientV}
                 active={activeGradient?.type === 'linear' && activeGradient.angle === 90}
-                aria-label={COPY.vector.gradientV}
-                aria-pressed={activeGradient?.type === 'linear' && activeGradient.angle === 90}
-                title={COPY.vector.gradientV}
                 onClick={() => applyGradient({ type: 'linear', angle: 90 })}
-              >
-                <span aria-hidden="true">↕️</span>
-              </IconButton>
-              <IconButton
+              />
+              <ToolButton
+                icon={CircleDot}
+                label={COPY.vector.gradientRadial}
                 active={activeGradient?.type === 'radial'}
-                aria-label={COPY.vector.gradientRadial}
-                aria-pressed={activeGradient?.type === 'radial'}
-                title={COPY.vector.gradientRadial}
                 onClick={() => applyGradient({ type: 'radial' })}
-              >
-                <span aria-hidden="true">🔘</span>
-              </IconButton>
+              />
               <input
                 type="color"
                 aria-label={COPY.vector.gradientFrom}
@@ -1084,7 +1107,7 @@ export function VectorEditor(): JSX.Element | null {
           </section>
 
           {tool === 'polygon' || tool === 'star' ? (
-            <section className="rounded-3xl border-2 border-pin-border bg-pin-surface p-3">
+            <section className="pin-panel p-3">
               <label className="block text-sm font-bold text-pin-muted">
                 {tool === 'polygon'
                   ? `${COPY.vector.sides}: ${polygonSides}`
@@ -1107,98 +1130,58 @@ export function VectorEditor(): JSX.Element | null {
           ) : null}
 
           {selected.length > 0 ? (
-            <section className="flex flex-col gap-2 rounded-3xl border-2 border-pin-border bg-pin-surface p-3">
+            <section className="pin-panel flex flex-col gap-2 p-3">
               <div className="flex flex-wrap justify-center gap-1">
-                <IconButton
-                  aria-label={COPY.tools.flipH}
-                  title={COPY.tools.flipH}
+                <ToolButton
+                  icon={FlipHorizontal2}
+                  label={COPY.tools.flipH}
                   onClick={() => flipSelected('h')}
-                >
-                  <span aria-hidden="true">↔️</span>
-                </IconButton>
-                <IconButton
-                  aria-label={COPY.tools.flipV}
-                  title={COPY.tools.flipV}
+                />
+                <ToolButton
+                  icon={FlipVertical2}
+                  label={COPY.tools.flipV}
                   onClick={() => flipSelected('v')}
-                >
-                  <span aria-hidden="true">↕️</span>
-                </IconButton>
-                <IconButton
-                  aria-label={COPY.vector.toFront}
-                  title={COPY.vector.toFront}
+                />
+                <ToolButton
+                  icon={BringToFront}
+                  label={COPY.vector.toFront}
                   disabled={!single}
                   onClick={() => moveOrder('front')}
-                >
-                  <span aria-hidden="true">🔝</span>
-                </IconButton>
-                <IconButton
-                  aria-label={COPY.vector.forward}
-                  title={COPY.vector.forward}
+                />
+                <ToolButton
+                  icon={ChevronsUp}
+                  label={COPY.vector.forward}
                   disabled={!single}
                   onClick={() => moveOrder(1)}
-                >
-                  <span aria-hidden="true">⏫</span>
-                </IconButton>
-                <IconButton
-                  aria-label={COPY.vector.backward}
-                  title={COPY.vector.backward}
+                />
+                <ToolButton
+                  icon={ChevronsDown}
+                  label={COPY.vector.backward}
                   disabled={!single}
                   onClick={() => moveOrder(-1)}
-                >
-                  <span aria-hidden="true">⏬</span>
-                </IconButton>
-                <IconButton
-                  aria-label={COPY.vector.toBack}
-                  title={COPY.vector.toBack}
+                />
+                <ToolButton
+                  icon={SendToBack}
+                  label={COPY.vector.toBack}
                   disabled={!single}
                   onClick={() => moveOrder('back')}
-                >
-                  <span aria-hidden="true">🔙</span>
-                </IconButton>
+                />
                 {selected.length >= 2 ? (
-                  <IconButton
-                    aria-label={COPY.vector.group}
-                    title={COPY.vector.group}
-                    onClick={groupSelected}
-                  >
-                    <span aria-hidden="true">🔗</span>
-                  </IconButton>
+                  <ToolButton icon={Group} label={COPY.vector.group} onClick={groupSelected} />
                 ) : null}
                 {selected.some((s) => s.groupId) ? (
-                  <IconButton
-                    aria-label={COPY.vector.ungroup}
-                    title={COPY.vector.ungroup}
+                  <ToolButton
+                    icon={Ungroup}
+                    label={COPY.vector.ungroup}
                     onClick={ungroupSelected}
-                  >
-                    <span aria-hidden="true">✂️</span>
-                  </IconButton>
+                  />
                 ) : null}
-                <IconButton
-                  aria-label={COPY.vector.duplicate}
-                  title={COPY.vector.duplicate}
-                  onClick={duplicateSelected}
-                >
-                  <span aria-hidden="true">🧬</span>
-                </IconButton>
-                <IconButton
-                  aria-label={COPY.vector.remove}
-                  title={COPY.vector.remove}
-                  onClick={removeSelected}
-                >
-                  <span aria-hidden="true">🗑️</span>
-                </IconButton>
+                <ToolButton icon={Copy} label={COPY.vector.duplicate} onClick={duplicateSelected} />
+                <ToolButton icon={Trash2} label={COPY.vector.remove} onClick={removeSelected} />
               </div>
             </section>
           ) : null}
         </div>
-      </div>
-
-      {/* Zoom do palco */}
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <ZoomControls />
-        <Button variant="ghost" onClick={zoomToFit}>
-          {COPY.editor.zoomFit}
-        </Button>
       </div>
 
       {/* Texto novo */}
@@ -1227,7 +1210,7 @@ export function VectorEditor(): JSX.Element | null {
             onChange={(event) => setTextValue(event.target.value)}
             placeholder={COPY.vector.textPlaceholder}
             aria-label={COPY.vector.textPrompt}
-            className="min-h-11 rounded-2xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
+            className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
           />
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setTextAt(null)}>

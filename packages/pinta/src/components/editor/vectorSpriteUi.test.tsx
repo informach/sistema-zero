@@ -85,7 +85,7 @@ describe('personagem vetorial — paridade com o pixel', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Quadro 2' })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: `＋ ${COPY.animation.addAnimation}` }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.animation.addAnimation }))
     await waitFor(() => {
       expect(screen.getByText('andar')).toBeTruthy()
     })
@@ -93,7 +93,7 @@ describe('personagem vetorial — paridade com o pixel', () => {
 
   it('Baixar abre o diálogo com folha vetorial + receita + dica de upscale', async () => {
     await openVectorSprite()
-    fireEvent.click(screen.getByRole('button', { name: `⬇ ${COPY.editor.download}` }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.download }))
     await waitFor(() => {
       expect(screen.getByText(COPY.exportDialog.spritesheet, { exact: false })).toBeTruthy()
     })

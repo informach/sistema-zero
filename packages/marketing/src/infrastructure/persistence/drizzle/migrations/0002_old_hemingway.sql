@@ -1,0 +1,1 @@
+CREATE INDEX "publications_scheduled_idx" ON "marketing"."publications" USING btree ("scheduled_at");
