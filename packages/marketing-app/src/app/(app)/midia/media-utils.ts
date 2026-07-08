@@ -45,6 +45,8 @@ export const KIND_LABELS: Record<AssetKind, string> = {
 export const ASSET_STATUS_LABELS: Record<string, string> = {
   uploading: 'Enviando',
   importing: 'Importando',
+  archiving: 'Arquivando',
+  archived: 'Arquivado no Drive',
   failed: 'Falhou',
 }
 
