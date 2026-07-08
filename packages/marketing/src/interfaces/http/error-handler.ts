@@ -40,6 +40,8 @@ const DOMAIN_STATUS: Record<string, number> = {
   ACCOUNT_NOT_CONNECTED: 409,
   MEDIA_NOT_CONFIGURED: 503,
   OAUTH_NOT_CONFIGURED: 503,
+  AI_NOT_CONFIGURED: 503,
+  AI_UNAVAILABLE: 502,
 }
 
 /** Traduz qualquer erro num par status + corpo padronizado. */

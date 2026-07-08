@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { AccountService } from '../src/application/accounts/account.service'
 import { OAuthService } from '../src/application/accounts/oauth.service'
+import { AiCopyService } from '../src/application/ai/ai-copy.service'
 import { ContentService } from '../src/application/contents/content.service'
 import { IdeaService } from '../src/application/ideas/idea.service'
 import { PromoteIdeaService } from '../src/application/ideas/promote-idea.service'
@@ -16,6 +17,7 @@ import { loadEnv } from '../src/infrastructure/config/env'
 import { MetaExternalResolver } from '../src/infrastructure/gateways/meta/meta-external-resolver'
 import { YoutubeExternalResolver } from '../src/infrastructure/gateways/youtube/youtube-external-resolver'
 import { createServer } from '../src/interfaces/http/server'
+import { FakeAiCopyClient } from './fakes/ai-copy'
 import {
   FakeDriveClient,
   FakeMediaStore,
@@ -64,6 +66,7 @@ export interface TestApp {
   metaProvider: FakeOAuthProvider
   tiktokProvider: FakeOAuthProvider
   metaApi: FakeMetaApi
+  aiCopyClient: FakeAiCopyClient
   driveClient: FakeDriveClient
   secretBox: FakeSecretBox
   services: { accounts: AccountService }
@@ -171,6 +174,8 @@ export function buildTestApp(
   )
   const metrics = new InMemoryMetricsRepository()
   const metricsService = new MetricsService(accounts, publications, metrics, now)
+  const aiCopyClient = new FakeAiCopyClient()
+  const aiCopyService = new AiCopyService(aiCopyClient, contentService, 8000)
   const metaApi = new FakeMetaApi()
   const externalResolvers = new Map<Network, ExternalPostResolver>([
     ['youtube' as Network, new YoutubeExternalResolver()],
@@ -232,6 +237,11 @@ export function buildTestApp(
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
+    ai: {
+      ai: aiCopyService,
+      internalToken: INTERNAL_TOKEN,
+      requireStaffEnabled: true,
+    },
   })
 
   return {
@@ -253,6 +263,7 @@ export function buildTestApp(
     metaProvider,
     tiktokProvider,
     metaApi,
+    aiCopyClient,
     driveClient,
     secretBox,
     services: { accounts: accountService },

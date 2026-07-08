@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { AccountService } from './application/accounts/account.service'
 import { OAuthService } from './application/accounts/oauth.service'
+import { AiCopyService } from './application/ai/ai-copy.service'
 import { ContentService } from './application/contents/content.service'
 import { IdeaService } from './application/ideas/idea.service'
 import { PromoteIdeaService } from './application/ideas/promote-idea.service'
@@ -19,6 +20,7 @@ import type { OAuthProvider } from './domain/ports/oauth-provider.port'
 import type { SocialPublisher } from './domain/ports/social-publisher.port'
 import type { Network } from './domain/publication/publication'
 import {
+  aiCopyConfig,
   type Env,
   googleConfig,
   metaConfig,
@@ -27,6 +29,7 @@ import {
   reminderConfig,
   tiktokConfig,
 } from './infrastructure/config/env'
+import { OpenRouterCopyClient } from './infrastructure/gateways/ai/openrouter-copy-client'
 import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
 import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
@@ -263,6 +266,19 @@ export function createApplication(env: Env): Application {
   )
   const metricsRepo = new DrizzleMetricsRepository(db)
   const metricsService = new MetricsService(accountRepo, publicationRepo, metricsRepo, now)
+
+  // IA da copy (F5): sem chave, o client responde isConfigured=false e o
+  // serviço devolve 503 — os botões somem no front (nunca quebra o boot).
+  const aiCfg = aiCopyConfig(env)
+  if (!aiCfg) {
+    logger.warn('ai.not_configured', {
+      hint: 'OPENROUTER_API_KEY ausente — a IA da copy fica desligada (o linter passivo segue)',
+    })
+  }
+  const aiCopyClient = new OpenRouterCopyClient(
+    aiCfg ?? { apiKey: '', model: '', referer: null, maxTokens: 1, timeoutMs: 1 },
+  )
+  const aiCopyService = new AiCopyService(aiCopyClient, contentService, env.AI_COPY_MAX_INPUT_CHARS)
 
   // Publisher automático (F2): YouTube com quota guard (reset à meia-noite PT).
   const quotaGuard = new YtQuotaGuard(
@@ -509,6 +525,11 @@ export function createApplication(env: Env): Application {
     },
     metrics: {
       metrics: metricsService,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireStaffEnabled: env.REQUIRE_STAFF,
+    },
+    ai: {
+      ai: aiCopyService,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
     },

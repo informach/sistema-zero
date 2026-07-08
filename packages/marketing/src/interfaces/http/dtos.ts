@@ -263,3 +263,21 @@ export const PublicationsListQuery = t.Object({
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
 export { PUB_STATUS }
+
+// ── IA da copy (F5) ──────────────────────────────────────────────────────────
+const AI_MODE = t.Union([t.Literal('generate'), t.Literal('improve')])
+
+export const AiCaptionBody = t.Object({
+  contentId: t.Optional(UUID),
+  format: PUB_FORMAT,
+  mode: AI_MODE,
+  // Legenda atual (obrigatória no modo improve; validada no serviço).
+  caption: t.Optional(t.String({ maxLength: 10_000 })),
+})
+
+export const AiScriptBody = t.Object({
+  contentId: t.Optional(UUID),
+  mode: AI_MODE,
+  script: t.Optional(t.String({ maxLength: 20_000 })),
+  instruction: t.Optional(t.String({ maxLength: 500 })),
+})

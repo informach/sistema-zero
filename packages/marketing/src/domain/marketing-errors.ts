@@ -161,3 +161,17 @@ export class OAuthNotConfiguredError extends DomainError {
     super(message)
   }
 }
+export class AiNotConfiguredError extends DomainError {
+  readonly code = 'AI_NOT_CONFIGURED'
+  constructor(message = 'IA da copy não configurada neste ambiente (OPENROUTER_API_KEY)') {
+    super(message)
+  }
+}
+
+// ── Upstream falhou (502) ────────────────────────────────────────────────────
+export class AiUnavailableError extends DomainError {
+  readonly code = 'AI_UNAVAILABLE'
+  constructor(message = 'A IA não respondeu agora. Tente de novo em instantes') {
+    super(message)
+  }
+}

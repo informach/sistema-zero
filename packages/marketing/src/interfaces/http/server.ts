@@ -5,6 +5,7 @@ import { Elysia } from 'elysia'
 import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { type AccountsRoutesDeps, accountsRoutes } from './routes/accounts.routes'
+import { type AiRoutesDeps, aiRoutes } from './routes/ai.routes'
 import { type ContentsRoutesDeps, contentsRoutes } from './routes/contents.routes'
 import { type DriveRoutesDeps, driveRoutes } from './routes/drive.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
@@ -27,6 +28,7 @@ export interface HttpDeps {
   accounts: AccountsRoutesDeps
   drive: DriveRoutesDeps
   metrics: MetricsRoutesDeps
+  ai: AiRoutesDeps
 }
 
 const OVERSIZE = new WeakSet<Request>()
@@ -94,4 +96,5 @@ export function createServer(deps: HttpDeps) {
     .use(accountsRoutes(deps.accounts))
     .use(driveRoutes(deps.drive))
     .use(metricsRoutes(deps.metrics))
+    .use(aiRoutes(deps.ai))
 }
