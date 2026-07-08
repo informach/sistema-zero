@@ -38,6 +38,7 @@ import type { SaveCourseRatingService } from '../../../application/save-course-r
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
+import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import { AVATAR_CHAR_STYLE } from '../../../domain/avatar/avatar3d-catalog'
 import type { RoomState } from '../../../domain/room/room-catalog'
 import {
@@ -60,6 +61,7 @@ import {
   CourseRatingBody,
   EbookResolveParams,
   GamificationQuery,
+  IdParams,
   LessonIdParams,
   MissionSlugParams,
   ParentReportPrefsBody,
@@ -78,6 +80,8 @@ import {
   StudioSubmissionBody,
   StudioSubmissionParams,
   splitRequestedRefs,
+  TeacherThreadReplyBody,
+  TeacherThreadsQuery,
   VacationBody,
   VideoPositionBody,
 } from '../dtos'
@@ -101,6 +105,7 @@ export interface MembersRoutesDeps {
   submitStudio: SubmitStudioProjectService
   getStudioCarryover: GetStudioCarryoverService
   getOwnStudioSubmission: GetOwnStudioSubmissionService
+  teacherThreads: TeacherThreadsService
   getShowcasePayload: GetShowcasePayloadService
   profileAllowance: GetProfileAllowanceService
   getCertificate: GetCertificateService
@@ -710,6 +715,63 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           )
         },
         { params: ShowcasePayloadParams },
+      )
+      // ── Conversas com o professor (canal de retorno) ─────────────────────────
+      // Caixa de entrada do aluno + responder + marcar lido + contador do sino. O
+      // aluno só RESPONDE a conversas SUAS (posse checada → 404 sem vazar); INICIAR é
+      // do professor (Entregas/recado) ou do sistema (Mural). Segregado por vitrine.
+      // `unread-count` vem ANTES de `:id` (rota estática não pode cair no param).
+      .get(
+        '/teacher-threads',
+        async ({ headers, query }) => {
+          const userId = resolveUserId(headers)
+          return {
+            threads: await deps.teacherThreads.listForStudent(
+              userId,
+              query.audience ?? 'adult',
+              query.limit ?? 30,
+              query.offset ?? 0,
+            ),
+          }
+        },
+        { query: TeacherThreadsQuery },
+      )
+      .get(
+        '/teacher-threads/unread-count',
+        async ({ headers, query }) => {
+          const userId = resolveUserId(headers)
+          return deps.teacherThreads.unreadCountForStudent(userId, query.audience ?? 'adult')
+        },
+        { query: AudienceQuery },
+      )
+      .get(
+        '/teacher-threads/:id',
+        async ({ headers, params, query }) => {
+          const userId = resolveUserId(headers)
+          return deps.teacherThreads.getForStudent(userId, query.audience ?? 'adult', params.id)
+        },
+        { params: IdParams, query: AudienceQuery },
+      )
+      .post(
+        '/teacher-threads/:id/messages',
+        async ({ headers, params, query, body }) => {
+          const userId = resolveUserId(headers)
+          return deps.teacherThreads.studentReply(
+            userId,
+            query.audience ?? 'adult',
+            params.id,
+            body.body,
+          )
+        },
+        { params: IdParams, query: AudienceQuery, body: TeacherThreadReplyBody },
+      )
+      .post(
+        '/teacher-threads/:id/read',
+        async ({ headers, params }) => {
+          const userId = resolveUserId(headers)
+          return deps.teacherThreads.markReadByStudent(userId, params.id)
+        },
+        { params: IdParams },
       )
       // Estado do bloco certificado p/ a UI (emitir vs baixar): `eligible` (aulas
       // anteriores concluídas) + `issued`/serial/data se já emitido.

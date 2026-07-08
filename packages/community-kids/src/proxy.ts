@@ -26,6 +26,8 @@ export const proxy = createMemberProxy({
     '/pensa',
     // Pinta não tem `/api/pinta` (dados locais ao navegador) — só a página é gateada.
     '/pinta',
+    // Recados (conversas com o professor — canal de retorno).
+    '/recados',
     '/perfis',
   ],
   isRootProtected: true,

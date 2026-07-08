@@ -12,6 +12,7 @@ import type {
   MemberRatingView,
   MemberSummaryView,
   Paginated,
+  TeacherThreadView,
 } from '@/lib/types'
 import { type GatewayResponse, gatewayFetch } from './gateway'
 
@@ -305,4 +306,23 @@ export function getStudioSubmission(
   }>
 > {
   return gatewayFetch(`/members/admin/blocks/${enc(blockId)}/studio-submissions/${enc(userId)}`)
+}
+
+// ── Conversas com o aluno (canal de retorno) ────────────────────────────────
+/** Conversa da Entrega/Mural por CONTEXTO: `GET /members/admin/teacher-threads/by-context`. */
+export function getTeacherThreadByContext(q: {
+  userId: string
+  contextType: string
+  contextRef: string
+}): Promise<GatewayResponse<{ thread: TeacherThreadView | null }>> {
+  const qs = new URLSearchParams({
+    userId: q.userId,
+    contextType: q.contextType,
+    contextRef: q.contextRef,
+  })
+  return gatewayFetch(`/members/admin/teacher-threads/by-context?${qs.toString()}`)
+}
+/** Professor abre/continua uma conversa por CONTEXTO: `POST /members/admin/teacher-threads`. */
+export function postTeacherThread(body: unknown): Promise<GatewayResponse<TeacherThreadView>> {
+  return gatewayFetch('/members/admin/teacher-threads', { method: 'POST', body })
 }

@@ -62,6 +62,8 @@ import type {
   ShowcasePayloadView,
   StreakFreezeResult,
   StudioSubmissionResultView,
+  TeacherThreadSummaryView,
+  TeacherThreadView,
   UserView,
   VacationResult,
 } from '../lib/types'
@@ -310,6 +312,15 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
   const roomReadonlyCached = cache(
     (): Promise<GatewayResponse<RoomEditorView>> =>
       gw.gatewayFetchReadonly('/members/room', { query: { audience } }),
+  )
+  // Recados (conversas com o professor) — caixa de entrada + contador do sino.
+  const teacherThreadsReadonlyCached = cache(
+    (): Promise<GatewayResponse<{ threads: TeacherThreadSummaryView[] }>> =>
+      gw.gatewayFetchReadonly('/members/teacher-threads', { query: { audience } }),
+  )
+  const teacherThreadsUnreadReadonlyCached = cache(
+    (): Promise<GatewayResponse<{ count: number }>> =>
+      gw.gatewayFetchReadonly('/members/teacher-threads/unread-count', { query: { audience } }),
   )
   return {
     /** Cursos com matrícula ativa do aluno logado (vitrine do app). */
@@ -897,6 +908,48 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-submission`,
         { method: 'GET' },
       )
+    },
+
+    // ── Recados (conversas com o professor — canal de retorno) ────────────────
+    /** Caixa de entrada do aluno (Route Handler). */
+    listTeacherThreads(): Promise<GatewayResponse<{ threads: TeacherThreadSummaryView[] }>> {
+      return gw.gatewayFetch('/members/teacher-threads', { query: { audience } })
+    },
+    /** Caixa de entrada do aluno (Server Component). */
+    listTeacherThreadsReadonly(): Promise<
+      GatewayResponse<{ threads: TeacherThreadSummaryView[] }>
+    > {
+      return teacherThreadsReadonlyCached()
+    },
+    /** Contador de conversas não-lidas (badge do sino) — Route Handler. */
+    getTeacherThreadsUnread(): Promise<GatewayResponse<{ count: number }>> {
+      return gw.gatewayFetch('/members/teacher-threads/unread-count', { query: { audience } })
+    },
+    /** Contador de não-lidas (Server Component). */
+    getTeacherThreadsUnreadReadonly(): Promise<GatewayResponse<{ count: number }>> {
+      return teacherThreadsUnreadReadonlyCached()
+    },
+    /** Uma conversa (cabeçalho + turnos). */
+    getTeacherThread(threadId: string): Promise<GatewayResponse<TeacherThreadView>> {
+      return gw.gatewayFetch(`/members/teacher-threads/${enc(threadId)}`, { query: { audience } })
+    },
+    /** Aluno responde a uma conversa sua (devolve a conversa atualizada). */
+    postTeacherMessage(
+      threadId: string,
+      body: string,
+    ): Promise<GatewayResponse<TeacherThreadView>> {
+      return gw.gatewayFetch(`/members/teacher-threads/${enc(threadId)}/messages`, {
+        method: 'POST',
+        query: { audience },
+        body: { body },
+      })
+    },
+    /** Marca a conversa como lida (zera o não-lido do aluno). */
+    markTeacherThreadRead(threadId: string): Promise<GatewayResponse<{ ok: true }>> {
+      return gw.gatewayFetch(`/members/teacher-threads/${enc(threadId)}/read`, {
+        method: 'POST',
+        query: { audience },
+      })
     },
 
     /**

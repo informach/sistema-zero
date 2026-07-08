@@ -74,9 +74,20 @@ export function listPending(p: {
     query: { spaceId: p.spaceId, limit: p.limit, offset: p.offset },
   })
 }
-/** Ação por tópico: approve|reject|hide|delete|pin|unpin|lock|unlock. */
-export function threadAction(id: string, action: string): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/hub/admin/threads/${enc(id)}/${enc(action)}`, { method: 'POST' })
+/**
+ * Ação por tópico: approve|reject|hide|delete|pin|unpin|lock|unlock. Em `hide`/`reject`
+ * um `reason` OPCIONAL vira o RECADO ao aluno quando o post é do Mural kids (canal de
+ * retorno — o hub gateia; ver hub §Motivo da moderação). Ausente = moderação silenciosa.
+ */
+export function threadAction(
+  id: string,
+  action: string,
+  reason?: string,
+): Promise<GatewayResponse<unknown>> {
+  return gatewayFetch(`/hub/admin/threads/${enc(id)}/${enc(action)}`, {
+    method: 'POST',
+    ...(reason ? { body: { reason } } : {}),
+  })
 }
 /** Ação por comentário: approve|reject|hide|delete. */
 export function commentAction(id: string, action: string): Promise<GatewayResponse<unknown>> {

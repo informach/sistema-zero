@@ -1075,6 +1075,56 @@ export interface ShowcasePayloadView {
   audience: 'adult' | 'kids'
 }
 
+// ── Recados (conversas com o professor — canal de retorno) ──────────────────
+export type TeacherThreadContext = 'studio_submission' | 'mural_publication' | 'general'
+export type TeacherMessageRole = 'teacher' | 'student'
+
+/** Um turno da conversa (mirror do members). */
+export interface TeacherMessageView {
+  id: string
+  authorRole: TeacherMessageRole
+  authorId: string | null
+  /** Nome de EXIBIÇÃO do professor; `null` no aluno (a UI mostra "Você"). */
+  authorName: string | null
+  body: string
+  createdAt: string
+}
+
+/** Uma conversa aberta (cabeçalho + turnos). */
+export interface TeacherThreadView {
+  id: string
+  userId: string
+  accountId: string | null
+  audience: 'adult' | 'kids'
+  contextType: TeacherThreadContext
+  contextRef: string | null
+  courseId: string | null
+  lessonId: string | null
+  title: string | null
+  lastMessageAt: string
+  createdAt: string
+  messages: TeacherMessageView[]
+}
+
+/** Resumo p/ a caixa de entrada + badge (mirror do members). */
+export interface TeacherThreadSummaryView {
+  id: string
+  userId: string
+  accountId: string | null
+  audience: 'adult' | 'kids'
+  contextType: TeacherThreadContext
+  contextRef: string | null
+  courseId: string | null
+  lessonId: string | null
+  title: string | null
+  lastMessageAt: string
+  createdAt: string
+  lastMessagePreview: string | null
+  lastMessageRole: TeacherMessageRole | null
+  messageCount: number
+  unread: boolean
+}
+
 export interface HubCommentView {
   id: string
   version: number

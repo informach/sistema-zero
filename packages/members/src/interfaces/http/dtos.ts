@@ -304,6 +304,25 @@ export const MuralCommentWebhookBody = t.Object({
 })
 
 /**
+ * Corpo de `POST /members/webhooks/mural-message` — o HUB avisa que a equipe MODEROU
+ * um jogo publicado (escondeu/recusou) COM um motivo p/ a criança. Vira uma mensagem
+ * `teacher` numa conversa de contexto `mural_publication` (canal de retorno). O
+ * `contextRef` é o id do TÓPICO no hub (texto, NÃO uuid — snapshot de outro serviço);
+ * `accountId` é a conta responsável (snapshot, pode faltar em posts legados).
+ */
+export const MuralMessageWebhookBody = t.Object({
+  userId: UUID,
+  accountId: t.Optional(UUID),
+  audience: AUDIENCE,
+  contextRef: t.String({ minLength: 1, maxLength: 200 }),
+  reason: t.String({ minLength: 1, maxLength: 1000 }),
+  /** Nome de EXIBIÇÃO do moderador (snapshot); ausente → a UI kids mostra "Professor(a)". */
+  moderatorName: t.Optional(t.String({ maxLength: 200 })),
+  /** Título do jogo/curso p/ a caixa renderizar (snapshot). */
+  title: t.Optional(t.String({ maxLength: 200 })),
+})
+
+/**
  * Corpo de `POST /members/webhooks/showcase-standalone` — o HUB avisa que a criança
  * publicou um jogo STANDALONE (do /estudio, fora de curso) no Mural. Grava o MARCO
  * `studio_published` (amount 0, sourceId = playId — missões gated por estudio-completo)
@@ -964,6 +983,55 @@ export const StudioSubmissionBody = t.Object({
   results: t.Optional(t.Array(ClientCheckResultSchema, { maxItems: 50 })),
   /** Recado OPCIONAL do aluno ao professor (modal de envio). Vazio → sem recado. */
   message: t.Optional(t.String({ maxLength: 1000 })),
+})
+
+// ── Conversas professor↔aluno (canal de retorno) ────────────────────────────
+const TEACHER_CONTEXT = t.Union([
+  t.Literal('studio_submission'),
+  t.Literal('mural_publication'),
+  t.Literal('general'),
+])
+/** Corpo de uma mensagem (aluno responde / professor responde a uma conversa por id). */
+export const TeacherThreadReplyBody = t.Object({
+  body: t.String({ minLength: 1, maxLength: 1000 }),
+})
+/** Query da caixa de entrada do ALUNO (`GET /members/teacher-threads`). */
+export const TeacherThreadsQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+  offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
+})
+/** Query de `GET /members/admin/teacher-threads/by-context` — abrir a conversa da Entrega. */
+export const AdminTeacherThreadByContextQuery = t.Object({
+  userId: UUID,
+  contextType: t.Union([t.Literal('studio_submission'), t.Literal('mural_publication')]),
+  contextRef: t.String({ minLength: 1, maxLength: 200 }),
+})
+/** Query da caixa de entrada do PROFESSOR (`GET /members/admin/teacher-threads`). */
+export const AdminTeacherThreadsQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
+  context: t.Optional(TEACHER_CONTEXT),
+  courseId: t.Optional(UUID),
+  unread: t.Optional(t.Literal('true')),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+  offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
+})
+/**
+ * Corpo de `POST /members/admin/teacher-threads` — o professor ABRE/CONTINUA uma
+ * conversa por CONTEXTO (Entrega do Estúdio ou recado geral; o Mural entra por
+ * webhook). `blockId` é o contexto da entrega (obrigatório em `studio_submission`);
+ * os denormalizados (course/lesson/title) são snapshot p/ a caixa renderizar.
+ */
+export const AdminTeacherThreadPostBody = t.Object({
+  userId: UUID,
+  accountId: t.Optional(UUID),
+  audience: AUDIENCE,
+  contextType: t.Union([t.Literal('studio_submission'), t.Literal('general')]),
+  blockId: t.Optional(UUID),
+  courseId: t.Optional(UUID),
+  lessonId: t.Optional(UUID),
+  title: t.Optional(t.String({ maxLength: 200 })),
+  body: t.String({ minLength: 1, maxLength: 1000 }),
 })
 
 /** Corpo de `POST/PATCH /members/admin/...blocks`. */

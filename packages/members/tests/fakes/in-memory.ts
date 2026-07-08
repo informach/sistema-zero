@@ -110,6 +110,15 @@ import type {
   StudioSubmissionState,
   StudioSubmissionSummary,
 } from '../../src/domain/ports/studio-submission-repository.port'
+import type {
+  AdminThreadsFilter,
+  AppendMessageInput,
+  EnsureThreadInput,
+  TeacherMessageRecord,
+  TeacherThreadRecord,
+  TeacherThreadRepository,
+  TeacherThreadSummary,
+} from '../../src/domain/ports/teacher-thread-repository.port'
 import type { VideoPositionRepository } from '../../src/domain/ports/video-position-repository.port'
 import type { CourseRating } from '../../src/domain/rating/course-rating'
 import type { RoomState } from '../../src/domain/room/room-catalog'
@@ -1336,6 +1345,169 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         submittedAt: s.submittedAt,
         message: s.message ?? null,
       }))
+  }
+}
+
+/** Fake das conversas professor↔aluno (mirror do Drizzle: watermark de não-lido). */
+export class InMemoryTeacherThreadRepository implements TeacherThreadRepository {
+  readonly threads: TeacherThreadRecord[] = []
+  readonly messages: TeacherMessageRecord[] = []
+
+  async ensureThread(input: EnsureThreadInput): Promise<string> {
+    if (input.contextType !== 'general' && input.contextRef != null) {
+      const existing = this.threads.find(
+        (t) =>
+          t.userId === input.userId &&
+          t.contextType === input.contextType &&
+          t.contextRef === input.contextRef,
+      )
+      if (existing) return existing.id
+    }
+    const id = randomUUID()
+    this.threads.push({
+      id,
+      userId: input.userId,
+      accountId: input.accountId ?? null,
+      audience: input.audience,
+      contextType: input.contextType,
+      contextRef: input.contextRef ?? null,
+      courseId: input.courseId ?? null,
+      lessonId: input.lessonId ?? null,
+      title: input.title ?? null,
+      lastMessageAt: input.now,
+      studentLastReadAt: null,
+      teacherLastReadAt: null,
+      createdAt: input.now,
+    })
+    return id
+  }
+
+  async appendMessage(input: AppendMessageInput): Promise<TeacherMessageRecord> {
+    // Id determinístico (webhook do Mural) já presente → idempotente (retry não duplica).
+    if (input.messageId) {
+      const dup = this.messages.find((m) => m.id === input.messageId)
+      if (dup) return dup
+    }
+    const record: TeacherMessageRecord = {
+      id: input.messageId ?? randomUUID(),
+      threadId: input.threadId,
+      authorRole: input.authorRole,
+      authorId: input.authorId ?? null,
+      authorName: input.authorName ?? null,
+      body: input.body,
+      createdAt: input.now,
+    }
+    this.messages.push(record)
+    const thread = this.threads.find((t) => t.id === input.threadId)
+    if (thread) {
+      thread.lastMessageAt = input.now
+      if (input.authorRole === 'teacher') thread.teacherLastReadAt = input.now
+      else thread.studentLastReadAt = input.now
+    }
+    return record
+  }
+
+  async findById(id: string): Promise<TeacherThreadRecord | null> {
+    return this.threads.find((t) => t.id === id) ?? null
+  }
+
+  async findByContext(
+    userId: string,
+    contextType: TeacherThreadRecord['contextType'],
+    contextRef: string,
+  ): Promise<TeacherThreadRecord | null> {
+    return (
+      this.threads.find(
+        (t) => t.userId === userId && t.contextType === contextType && t.contextRef === contextRef,
+      ) ?? null
+    )
+  }
+
+  async listMessages(threadId: string): Promise<TeacherMessageRecord[]> {
+    return this.messages
+      .filter((m) => m.threadId === threadId)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+  }
+
+  async listForStudent(
+    userId: string,
+    audience: CourseAudience,
+    limit: number,
+    offset: number,
+  ): Promise<TeacherThreadSummary[]> {
+    return this.threads
+      .filter((t) => t.userId === userId && t.audience === audience)
+      .sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime())
+      .slice(offset, offset + limit)
+      .map((t) => this.toSummary(t, 'student'))
+  }
+
+  async listForAdmin(filter: AdminThreadsFilter): Promise<TeacherThreadSummary[]> {
+    return this.threads
+      .filter((t) => {
+        if (filter.audience && t.audience !== filter.audience) return false
+        if (filter.contextType && t.contextType !== filter.contextType) return false
+        if (filter.courseId && t.courseId !== filter.courseId) return false
+        if (filter.unreadOnly && !this.unreadFor(t, 'teacher')) return false
+        return true
+      })
+      .sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime())
+      .slice(filter.offset, filter.offset + filter.limit)
+      .map((t) => this.toSummary(t, 'teacher'))
+  }
+
+  async countUnreadForStudent(userId: string, audience: CourseAudience): Promise<number> {
+    return this.threads.filter(
+      (t) => t.userId === userId && t.audience === audience && this.unreadFor(t, 'student'),
+    ).length
+  }
+
+  async markReadByStudent(threadId: string, userId: string, now: Date): Promise<void> {
+    const t = this.threads.find((x) => x.id === threadId && x.userId === userId)
+    if (t) t.studentLastReadAt = now
+  }
+
+  async markReadByTeacher(threadId: string, now: Date): Promise<void> {
+    const t = this.threads.find((x) => x.id === threadId)
+    if (t) t.teacherLastReadAt = now
+  }
+
+  private unreadFor(thread: TeacherThreadRecord, side: 'student' | 'teacher'): boolean {
+    const watermark = side === 'student' ? thread.studentLastReadAt : thread.teacherLastReadAt
+    const fromRole = side === 'student' ? 'teacher' : 'student'
+    return this.messages.some(
+      (m) =>
+        m.threadId === thread.id &&
+        m.authorRole === fromRole &&
+        (!watermark || m.createdAt > watermark),
+    )
+  }
+
+  private toSummary(
+    thread: TeacherThreadRecord,
+    side: 'student' | 'teacher',
+  ): TeacherThreadSummary {
+    const msgs = this.messages
+      .filter((m) => m.threadId === thread.id)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+    const last = msgs[msgs.length - 1]
+    return {
+      id: thread.id,
+      userId: thread.userId,
+      accountId: thread.accountId,
+      audience: thread.audience,
+      contextType: thread.contextType,
+      contextRef: thread.contextRef,
+      courseId: thread.courseId,
+      lessonId: thread.lessonId,
+      title: thread.title,
+      lastMessageAt: thread.lastMessageAt,
+      createdAt: thread.createdAt,
+      lastMessagePreview: last ? last.body.slice(0, 140) : null,
+      lastMessageRole: last ? last.authorRole : null,
+      messageCount: msgs.length,
+      unread: this.unreadFor(thread, side),
+    }
   }
 }
 

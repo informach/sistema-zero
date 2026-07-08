@@ -79,6 +79,7 @@ import { SaveVideoPositionService } from './application/save-video-position/save
 import { StudioSubmissionsAdminService } from './application/studio-submissions-admin/studio-submissions-admin.service'
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from './application/submit-studio-project/submit-studio-project.service'
+import { TeacherThreadsService } from './application/teacher-threads/teacher-threads.service'
 import {
   RevokeCertificateService,
   ValidateCertificateService,
@@ -105,6 +106,7 @@ import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
+import { DrizzleTeacherThreadRepository } from './infrastructure/persistence/drizzle/teacher-thread.repository'
 import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
 import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
 import { createServer } from './interfaces/http/server'
@@ -344,6 +346,7 @@ export async function createApplication(env: Env): Promise<Application> {
     studioSubmissions,
   )
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions)
+  const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
   const getCertificate = new GetCertificateService(checkAccess, courses, progress, certificates)
   const issueCertificate = new IssueCertificateService(
     checkAccess,
@@ -452,6 +455,7 @@ export async function createApplication(env: Env): Promise<Application> {
       submitStudio,
       getStudioCarryover,
       getOwnStudioSubmission,
+      teacherThreads,
       getShowcasePayload,
       getCertificate,
       issueCertificate,
@@ -507,6 +511,7 @@ export async function createApplication(env: Env): Promise<Application> {
       processed,
       hub,
       award: awardGamification,
+      teacherThreads,
       webhookSecret: env.GATEWAY_HMAC_SECRET,
       toleranceSeconds: env.HMAC_TOLERANCE_SECONDS,
       now: clock,
@@ -524,6 +529,7 @@ export async function createApplication(env: Env): Promise<Application> {
       analytics,
       grantManual,
       manageEntitlement,
+      teacherThreads,
       revokeCertificate,
       purgeUserData,
       hub,

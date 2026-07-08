@@ -85,7 +85,14 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > xp_source_type ADD VALUE IF NOT EXISTS` de `studio_published`/`studio_publish_day`/`studio_remix`/
 > `play_milestone_10`/`play_milestone_100` + `coin_source_type` + `'studio_publish_day'` — retenção
 > pós-cursos do Estúdio 07/2026, ver §Missões "Retenção pós-cursos"; SEM tabela nova) **APLICADA em
-> local; falta staging/prod**.
+> local; falta staging/prod** e **`0039`** (`0039_needy_rhino`: **canal de retorno professor↔aluno** —
+> enums `teacher_thread_context` [`studio_submission`|`mural_publication`|`general`] +
+> `teacher_message_role` [`teacher`|`student`] + tabelas `teacher_threads` (índice ÚNICO PARCIAL
+> `WHERE context_type <> 'general'` + índices por aluno/vitrine e por data) e `teacher_messages`
+> (FK cascade → threads); ver §Conversas com o professor) **APLICADA em local; falta staging/prod**.
+> ⚠️ Ao gerar a PRÓXIMA migration: o `db:generate` re-adiciona os `ALTER TYPE ADD VALUE` das 0036–0038
+> (hand-authored, SEM snapshot próprio) — o snapshot `0039` já os inclui, então limpe do SQL gerado
+> qualquer `ALTER TYPE` que já exista (mantenha só o DDL novo).
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -1114,6 +1121,49 @@ numerador E denominador sobre publicadas (`countCompletedPublished*` × `countPu
 — conclusão de aula DEPOIS despublicada não conta/infla; o detalhe deriva ambos do outline).
 O ADMIN vê tudo (árvore com rascunhos; `countLessons`/`countCompleted` cruas no member-detail).
 
+## Conversas com o professor (canal de retorno — fatia 07/2026)
+
+O aluno sempre falou com o professor (entrega do Estúdio, publicação no Mural, "avisar
+professor") mas **nada voltava**. Este é o canal de VOLTA: UMA **conversa** (`teacher_threads`)
+entre a EQUIPE e um aluno, com turnos (`teacher_messages`) `teacher`/`student`, ancorada num
+CONTEXTO — `studio_submission` (a Entrega), `mural_publication` (moderação do Mural) ou
+`general` (recado solto). `TeacherThreadsService` (application/teacher-threads) reusa o MESMO
+repo para o aluno, o professor e o webhook do Mural.
+
+- **Tabela À PARTE de `studio_submissions`** (migration `0039`): o upsert da entrega ("último
+  vence") sobrescreve o projeto a cada reenvio — a conversa em tabela própria SOBREVIVE.
+  `context_ref` é **snapshot SEM FK** (blockId / threadId do hub / null no geral) → a conversa
+  sobrevive a apagar o bloco/curso/post (como certificados/xp_events). `title`/`course_id`/
+  `lesson_id` denormalizados renderizam mesmo sem a origem.
+- **Dedup por contexto**: entrega/Mural = 1 conversa por `(user_id, context_type, context_ref)`
+  (índice ÚNICO PARCIAL `WHERE context_type <> 'general'`; `general` fica FORA porque NULL é
+  distinto no UNIQUE do Postgres → cada recado geral é sua própria conversa). `ensureThread`
+  serializa a criação concorrente por advisory lock (padrão do submit do Estúdio).
+- **Não-lido por WATERMARK** (`student_last_read_at`/`teacher_last_read_at`), não flag por
+  mensagem. Aluno: há mensagem `teacher` após o watermark do aluno; professor: há mensagem
+  `student` após o watermark do professor. `appendMessage` toca `last_message_at` E marca o
+  lado do AUTOR como lido na MESMA transação. O resumo da caixa vem de 2 queries + merge em JS
+  (subquery-correlata-no-SELECT do drizzle NÃO correlacionava contra o Postgres real).
+- **Rotas do ALUNO** (`members.routes`, JWT + `x-internal-token`, `?audience`): `GET
+  /members/teacher-threads` (caixa), `GET …/unread-count` (badge do sino — vem ANTES de `:id`),
+  `GET …/:id`, `POST …/:id/messages` (responder), `POST …/:id/read`. O aluno só RESPONDE a
+  conversas SUAS (posse + vitrine conferidas → **404 sem vazar**); INICIAR é do professor/sistema.
+- **Rotas do PROFESSOR** (`admin.routes`, `requireAdmin`): `GET /members/admin/teacher-threads`
+  (filtros audience/context/course/unread), `GET …/by-context` (`?userId&contextType&contextRef` —
+  o viewer da Entrega abre a conversa direto; `{thread:null}` = ainda não há; vem ANTES de `:id`),
+  `POST /members/admin/teacher-threads` (ABRIR/continuar por CONTEXTO — `studio_submission` exige
+  `blockId`; `general` sem ref; o Mural entra por webhook), `GET …/:id`, `POST …/:id/messages`,
+  `POST …/:id/read`. O `author_name` = nome do professor (header do gateway; vazio → a UI kids
+  mostra "Professor(a)").
+- **Webhook do Mural** `POST /members/webhooks/mural-message` (hub→members, HMAC + dedupe
+  `x-delivery-id`, canal `mural-message`): a equipe escondeu/recusou um jogo COM motivo → mensagem
+  `teacher` numa conversa `mural_publication`. `context_ref` = id do tópico no HUB (**texto, NÃO
+  uuid**). **Idempotente** por id determinístico do turno (`deterministicSourceId(namespace,
+  deliveryId)` + `onConflictDoNothing`) — retry da mesma entrega não duplica o recado (o
+  `appendMessage` não é naturalmente idempotente). Falha → NÃO marca a entrega (retry).
+- **Texto CRU**: o members guarda o corpo cru; o front/BFF sanitiza (`renderUgcMarkdown`
+  restrito). Cap 1000 chars (coluna + DTO). Segregado por `audience` em TODA query do aluno.
+
 ## Convenções
 
 - `verbatimModuleSyntax: true` → `import type` para tipos. Imports relativos sem extensão.
@@ -1140,9 +1190,10 @@ migrations `0013`/`0016`/`0026` — `0026` add `account_id` = conta responsável
 user+course + serial — migration `0025`) e a **gamificação**: `gamification_profiles`/`xp_events`/
 `user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`
 (`0019` + `photo_url` no `0023`)/`avatar_inventory` (`0019`), `room_state`/`room_inventory`
-(`0020`), `mission_claims` (`0021`) e `league_membership` (ligas, `0022`), e o **Pensa**
+(`0020`), `mission_claims` (`0021`) e `league_membership` (ligas, `0022`), o **Pensa**
 (`0031`): `pensa_projects`/`pensa_cycles`/`pensa_conversations`/`pensa_artifacts`/
-`pensa_tasks`/`pensa_checklist_items` (ver §Pensa).
+`pensa_tasks`/`pensa_checklist_items` (ver §Pensa), e as **conversas com o professor**
+(`0039`): `teacher_threads`/`teacher_messages` (ver §Conversas com o professor).
 
 ## Sentry (monitoramento de erros)
 

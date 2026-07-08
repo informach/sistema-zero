@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { StudioSubmissionDetailView } from '@/lib/types'
+import { TeacherThreadPanel } from './teacher-thread-panel'
 
 function downloadProjectJson(project: Project): void {
   const name = (project as { name?: string }).name ?? 'projeto'
@@ -35,6 +36,11 @@ interface Props {
   /** Rótulos já resolvidos na lista (evita re-hidratar identidade no viewer). */
   studentName: string
   responsible?: string | null
+  /** Contexto p/ o canal de RETORNO (conversa com o aluno). */
+  audience: 'adult' | 'kids'
+  courseId: string
+  lessonId: string
+  lessonTitle: string
 }
 
 /**
@@ -51,6 +57,10 @@ export function StudioSubmissionViewer({
   userId,
   studentName,
   responsible,
+  audience,
+  courseId,
+  lessonId,
+  lessonTitle,
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<StudioSubmissionDetailView | null>(null)
@@ -124,6 +134,17 @@ export function StudioSubmissionViewer({
               <p className="whitespace-pre-wrap text-sm text-muted-foreground">{detail.message}</p>
             </Card>
           ) : null}
+
+          {/* Canal de RETORNO: responder ao aluno (erro/correção/"resolvido"). */}
+          <TeacherThreadPanel
+            userId={userId}
+            blockId={blockId}
+            audience={audience}
+            courseId={courseId}
+            lessonId={lessonId}
+            title={lessonTitle}
+            studentName={studentName}
+          />
 
           {/* Correção automática (atividade). Sem atividade → score null, omite. */}
           {detail.score !== null ? (

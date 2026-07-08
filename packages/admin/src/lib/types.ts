@@ -510,6 +510,34 @@ export interface StudioSubmissionDetailView {
   message: string | null
 }
 
+// ── Conversas com o aluno (canal de retorno) ────────────────────────────────
+export type TeacherThreadContext = 'studio_submission' | 'mural_publication' | 'general'
+export type TeacherMessageRole = 'teacher' | 'student'
+
+export interface TeacherMessageView {
+  id: string
+  authorRole: TeacherMessageRole
+  authorId: string | null
+  authorName: string | null
+  body: string
+  createdAt: string
+}
+
+export interface TeacherThreadView {
+  id: string
+  userId: string
+  accountId: string | null
+  audience: 'adult' | 'kids'
+  contextType: TeacherThreadContext
+  contextRef: string | null
+  courseId: string | null
+  lessonId: string | null
+  title: string | null
+  lastMessageAt: string
+  createdAt: string
+  messages: TeacherMessageView[]
+}
+
 export interface BlockView {
   id: string
   lessonId: string

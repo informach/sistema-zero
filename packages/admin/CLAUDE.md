@@ -573,7 +573,14 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `studio-submission-viewer.tsx` (reusa o `StudioEmbed` + o detalhe por-bloco existente) com botão
   **maximizar/restaurar** (overlay CSS: `Dialog` vira `w-[98vw] h-[96dvh]`). A hidratação de identidade
   virou helper compartilhado `server/studio-submissions.ts` (`resolveSubmissionIdentities`, reusado pela
-  lista por-bloco e por-curso). **Identidade (kids):** a entrega vem com
+  lista por-bloco e por-curso). **Canal de RETORNO (Recados, 07/2026):** o viewer embute o
+  `teacher-thread-panel.tsx` — o professor RESPONDE ao aluno (erro/correção/"resolvido"), o aluno vê
+  no app dele (`/recados`). Carrega o histórico por CONTEXTO (`GET /api/members/teacher-threads/
+  by-context?userId&contextType=studio_submission&contextRef=<blockId>` → `{thread}`) e envia por
+  `POST /api/members/teacher-threads` (ensure-then-append; adapters `getTeacherThreadByContext`/
+  `postTeacherThread` em `server/members.ts`). ⚠️ Passa a **`audience` do CURSO** (`tree.audience`, via
+  `CourseEditorClient`→`CourseSubmissionsPanel`→viewer) — o recado precisa nascer na vitrine certa,
+  senão o aluno não vê. Contrato: members §Conversas com o professor. **Identidade (kids):** a entrega vem com
   `accountId`, então a rota BFF (`GET /api/members/blocks/:id/studio-submissions`) mostra a CRIANÇA
   (nome do PERFIL via `getUserProfiles` da conta) + o RESPONSÁVEL (conta via `batchGetUsers`) —
   perfil≠conta no kids, iguais no adulto. Requer

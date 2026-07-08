@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import {
   boolean,
   date,
@@ -877,6 +878,78 @@ export const pensaChecklistItems = members.table(
   (t) => [index('pensa_checklist_cycle_idx').on(t.cycleId, t.position)],
 )
 
+// ── Conversas professor↔aluno (canal de retorno — fatia 07/2026) ────────────
+// UMA conversa (thread) entre a EQUIPE (professor) e um ALUNO, opcionalmente
+// ancorada a um CONTEXTO: a entrega do Estúdio, a publicação no Mural ou um recado
+// GERAL. É o canal de VOLTA que faltava (o aluno só falava com o professor; nada
+// voltava): o professor responde "o erro está no bloco X", o aluno responde em
+// texto E reenvia o projeto corrigido. Tabela À PARTE de `studio_submissions` de
+// propósito — o upsert da entrega ("último vence") sobrescreve o projeto a cada
+// reenvio; a conversa em tabela própria SOBREVIVE aos reenvios. `context_ref` é
+// SNAPSHOT SEM FK (blockId da entrega | threadId do hub no Mural | null no geral) —
+// a conversa sobrevive a apagar o bloco/curso/post (como certificados/xp_events).
+// Não-lido por WATERMARK (`*_last_read_at`), não flag por mensagem (mais barato).
+export const teacherThreadContextEnum = members.enum('teacher_thread_context', [
+  'studio_submission',
+  'mural_publication',
+  'general',
+])
+export const teacherMessageRoleEnum = members.enum('teacher_message_role', ['teacher', 'student'])
+
+export const teacherThreads = members.table(
+  'teacher_threads',
+  {
+    id: uuid('id').primaryKey(),
+    /** Aluno dono da conversa (perfil da criança no kids; a conta no adulto). */
+    userId: uuid('user_id').notNull(),
+    /** Conta responsável (kids: o pai; adulto: = user_id). Snapshot; null = legado/sem conta. */
+    accountId: uuid('account_id'),
+    audience: courseAudienceEnum('audience').notNull().default('kids'),
+    contextType: teacherThreadContextEnum('context_type').notNull(),
+    /** Snapshot SEM FK: blockId (entrega) | threadId do hub (Mural) | null (geral). */
+    contextRef: text('context_ref'),
+    // Denormalizados p/ renderizar mesmo se a origem sumir (snapshot).
+    courseId: uuid('course_id'),
+    lessonId: uuid('lesson_id'),
+    title: text('title'),
+    lastMessageAt: timestamp('last_message_at', { withTimezone: true }).notNull(),
+    studentLastReadAt: timestamp('student_last_read_at', { withTimezone: true }),
+    teacherLastReadAt: timestamp('teacher_last_read_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    // Entrega/Mural = 1 conversa por (aluno, contexto, ref). O `general` fica FORA do
+    // UNIQUE (NULL é distinto no índice único do Postgres → cada recado geral é sua
+    // própria conversa). Índice PARCIAL `WHERE context_type <> 'general'`.
+    uniqueIndex('teacher_threads_context_uq')
+      .on(t.userId, t.contextType, t.contextRef)
+      .where(sql`${t.contextType} <> 'general'`),
+    // Caixa de entrada do ALUNO (por vitrine, mais recente primeiro).
+    index('teacher_threads_user_lastmsg_idx').on(t.userId, t.audience, t.lastMessageAt),
+    // Caixa de entrada do PROFESSOR (todas as conversas, mais recente primeiro).
+    index('teacher_threads_lastmsg_idx').on(t.lastMessageAt),
+  ],
+)
+
+export const teacherMessages = members.table(
+  'teacher_messages',
+  {
+    id: uuid('id').primaryKey(),
+    threadId: uuid('thread_id')
+      .notNull()
+      .references(() => teacherThreads.id, { onDelete: 'cascade' }),
+    authorRole: teacherMessageRoleEnum('author_role').notNull(),
+    /** Quem escreveu (staff userId no `teacher`; = user_id no `student`). Null tolerado. */
+    authorId: uuid('author_id'),
+    /** Nome de EXIBIÇÃO no envio (snapshot; renomear a equipe não reescreve o histórico). */
+    authorName: text('author_name'),
+    body: varchar('body', { length: 1000 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  // Cobre o EXISTS de não-lido (thread + papel + data) e a listagem dos turnos.
+  (t) => [index('teacher_messages_thread_idx').on(t.threadId, t.authorRole, t.createdAt)],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table(
   'processed_webhooks',
@@ -919,6 +992,8 @@ export const schema = {
   pensaArtifacts,
   pensaTasks,
   pensaChecklistItems,
+  teacherThreads,
+  teacherMessages,
   processedWebhooks,
 }
 

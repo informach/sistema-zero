@@ -298,6 +298,21 @@ as missões `daily-clube`/`weekly-clube-3`. **Prominência no mobile:** `app/(ap
 o Clube saiu do rodapé "E também" e virou **card-herói no TOPO** (acima do trio Pensa→Pinta→
 Estúdio), com `MessagesSquare` + copy calorosa.
 
+## Recados do professor (canal de retorno — 07/2026)
+
+O aluno sempre falou com o professor (entrega do Estúdio, Mural, "avisar professor") mas nada
+voltava. **Recados** é o canal de VOLTA: o professor responde a atividade travada / avisa que
+resolveu / dá o motivo de esconder um jogo no Mural, e o aluno LÊ e RESPONDE. Item **"Recados"**
+(`Mail`) na sidebar (`nav.ts`) → rota **`/recados`** (`protectedPrefixes`): página lista as
+conversas (`listTeacherThreadsReadonly` no server, "NOVO" no não-lido) e `/recados/[threadId]`
+abre a conversa (`recado-thread-client.tsx`: carrega + marca lida + bolhas professor/"Você" +
+caixa de resposta, tudo client via `apiGet`/`apiSend`). **Sino `recados-bell.tsx`** na
+`MobileTopbar` (a tab bar de 5 não cabe mais um item): busca `/api/members/teacher-threads/
+unread-count` (**server-backed por watermark**, NÃO baseline localStorage como o do Clube) e mostra
+o pontinho + atalho p/ `/recados`. Shims em `app/api/members/teacher-threads/*` (1 linha sobre
+`shell.routes.teacherThreads*`). Texto do aluno é PLAIN (React escapa). Toda a LÓGICA/segurança é do
+member-shell (ver o CLAUDE.md de lá) + members (portão/posse); aqui é só apresentação.
+
 ## Diferenças deliberadas vs o community (decisões da v1, 06/2026)
 
 1. **Compras só na ÁREA DOS PAIS** (não no menu da criança): NÃO há página `/compras` nem item

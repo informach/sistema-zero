@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia'
 import type { ModerationService } from '../../../application/moderation/moderation.service'
-import { assertInternalCaller, requireAdmin, resolveUserId } from '../auth'
+import { assertInternalCaller, requireAdmin, resolveDisplayName, resolveUserId } from '../auth'
 import {
   IdParams,
   MuteBanBody,
@@ -15,6 +15,20 @@ const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 100
 const clampLimit = (l: number | undefined) =>
   l === undefined ? DEFAULT_LIMIT : Math.min(Math.max(1, l), MAX_LIMIT)
+
+/**
+ * Motivo OPCIONAL da moderação (esconder/recusar um jogo do Mural) → vira o recado ao
+ * aluno. Lido do corpo SEM schema (as rotas hoje são POST sem corpo — um schema
+ * obrigatório quebraria os chamadores existentes); trim + teto de 1000 (espelha o
+ * members). Corpo ausente/sem `reason` = moderação silenciosa (comportamento antigo).
+ */
+function reasonFromBody(body: unknown): string | undefined {
+  if (typeof body !== 'object' || body === null) return undefined
+  const raw = (body as { reason?: unknown }).reason
+  if (typeof raw !== 'string') return undefined
+  const trimmed = raw.trim()
+  return trimmed ? trimmed.slice(0, 1000) : undefined
+}
 
 export interface ModerationRoutesDeps {
   requireAdminEnabled: boolean
@@ -61,7 +75,13 @@ export function moderationRoutes(deps: ModerationRoutesDeps) {
       )
       .post(
         '/threads/:id/reject',
-        ({ headers, params }) => m.rejectThread(guardId(headers), params.id),
+        ({ headers, params, body }) =>
+          m.rejectThread(
+            guardId(headers),
+            params.id,
+            reasonFromBody(body),
+            resolveDisplayName(headers),
+          ),
         {
           params: IdParams,
         },
@@ -83,7 +103,13 @@ export function moderationRoutes(deps: ModerationRoutesDeps) {
       // ── Ocultar / apagar ──
       .post(
         '/threads/:id/hide',
-        ({ headers, params }) => m.hideThread(guardId(headers), params.id),
+        ({ headers, params, body }) =>
+          m.hideThread(
+            guardId(headers),
+            params.id,
+            reasonFromBody(body),
+            resolveDisplayName(headers),
+          ),
         {
           params: IdParams,
         },

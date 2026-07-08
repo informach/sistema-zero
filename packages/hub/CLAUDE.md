@@ -417,6 +417,21 @@ pelo tópico-pai — comentário aprovado num post de VITRINE (`thread.isShowcas
 `resolveCommentAuthor` passou a devolver o `isShowcase` REAL do tópico-pai (era `false` fixo → tudo virava
 `clube_comment`). Tópico de vitrine NÃO recompensa (a publicação já rende `course_showcased`).
 
+⚠️ **Motivo da moderação → RECADO ao aluno (canal de retorno, 07/2026):** ao ESCONDER/RECUSAR um jogo
+do Mural COM um motivo, o `ModerationService.hideThread`/`rejectThread` (param novo `reason?` +
+`moderatorName?`) dispara `MembersGateway.notifyMuralModerationMessage({userId, accountId, audience,
+contextRef, reason, moderatorName, title})` (`MURAL_MESSAGE_WEBHOOK_PATH = /members/webhooks/mural-message`,
+mesmo `postSignedWebhook`) → mensagem `teacher` numa conversa `mural_publication` no members (ver
+members §Conversas com o professor). O `maybeNotifyModerationReason` gate: **só post de VITRINE
+(`isShowcase`) kids** (o post de vitrine NÃO guarda `authorAccountId` → a conversa é keyada pelo
+`authorId`/perfil; `accountId` vai como snapshot, pode ser null); `contextRef = thread.id` (id do
+tópico no hub, **texto**); `moderatorName` = `resolveDisplayName(headers)` (1º nome do staff, do
+gateway). SEM `reason` = moderação silenciosa (comportamento antigo). **Best-effort, fire-and-forget,
+NUNCA lança.** O `reason` é lido do corpo SEM schema (`reasonFromBody`) nas rotas `POST /hub/admin/
+threads/:id/{hide,reject}` — POST sem corpo continua válido (não quebra chamadores existentes). O
+members deduplica por id determinístico da entrega. Reusa `MEMBERS_BASE_URL` + `GATEWAY_HMAC_SECRET`
+(nenhuma env nova).
+
 **R2 (anexos UGC):** o hub só guarda metadado; o presign/upload/HEAD vivem no BFF (member-shell/
 community). Buckets `testes-ugc` (dev) / `comunidade-sistema-zero-ugc` (prod). **Fluxo ainda não
 ligado** (ver Estado).

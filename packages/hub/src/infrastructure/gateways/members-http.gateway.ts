@@ -7,6 +7,7 @@ import type {
   CourseAccessResult,
   MembersGateway,
   MuralCommentArgs,
+  MuralModerationMessageArgs,
   PlaysMilestoneArgs,
   ShowcaseEligibilityArgs,
   ShowcaseEligibilityResult,
@@ -41,6 +42,7 @@ const CLUBE_WEBHOOK_PATH = '/members/webhooks/clube'
 const MURAL_COMMENT_WEBHOOK_PATH = '/members/webhooks/mural-comment'
 const STANDALONE_SHOWCASE_WEBHOOK_PATH = '/members/webhooks/showcase-standalone'
 const PLAYS_MILESTONE_WEBHOOK_PATH = '/members/webhooks/plays-milestone'
+const MURAL_MESSAGE_WEBHOOK_PATH = '/members/webhooks/mural-message'
 const SHOWCASE_NOTIFY_ATTEMPTS = 3
 const SHOWCASE_NOTIFY_RETRY_BASE_MS = 100
 
@@ -195,6 +197,20 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
         playId: args.playId,
         milestone: args.milestone,
       })
+    },
+
+    async notifyMuralModerationMessage(args: MuralModerationMessageArgs): Promise<void> {
+      // Campos opcionais só entram quando presentes (o members os aceita ausentes).
+      const payload: Record<string, string> = {
+        userId: args.userId,
+        audience: args.audience,
+        contextRef: args.contextRef,
+        reason: args.reason,
+      }
+      if (args.accountId) payload.accountId = args.accountId
+      if (args.moderatorName) payload.moderatorName = args.moderatorName
+      if (args.title) payload.title = args.title
+      await postSignedWebhook(MURAL_MESSAGE_WEBHOOK_PATH, 'mural-message', payload)
     },
   }
 

@@ -12,13 +12,17 @@ import type { ListMemberCertificatesService } from '../../../application/list-me
 import type { ListMemberRatingsService } from '../../../application/list-member-ratings/list-member-ratings.service'
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
+import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
-import { assertInternalCaller, requireAdmin } from '../auth'
+import { assertInternalCaller, requireAdmin, resolveStudentName, resolveUserId } from '../auth'
 import {
   AdminActivityQuery,
   AdminGamificationQuery,
+  AdminTeacherThreadByContextQuery,
+  AdminTeacherThreadPostBody,
+  AdminTeacherThreadsQuery,
   CourseIdParams,
   GrantEntitlementBody,
   IdParams,
@@ -26,6 +30,7 @@ import {
   ManageEntitlementBody,
   MemberDetailQuery,
   parseProfileIds,
+  TeacherThreadReplyBody,
   UserIdParams,
 } from '../dtos'
 
@@ -45,6 +50,8 @@ export interface AdminRoutesDeps {
   analytics: GetCourseAnalyticsService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
+  /** Canal de retorno professor↔aluno (caixa de entrada + responder). */
+  teacherThreads: TeacherThreadsService
   revokeCertificate: RevokeCertificateService
   /** Purga TODOS os dados do aluno (exclusão de usuário pelo painel, superadmin-only no gateway). */
   purgeUserData: PurgeUserDataService
@@ -151,6 +158,91 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.analytics.funnel(params.courseId)
         },
         { params: CourseIdParams },
+      )
+      // ── Conversas com o aluno (canal de retorno) ─────────────────────────────
+      // Caixa de entrada do professor (todas as conversas, filtros) + abrir/responder
+      // por id + ABRIR por contexto (Entrega/recado — o Mural entra por webhook) +
+      // marcar lido. O nome de EXIBIÇÃO da mensagem é o do professor (header do gateway;
+      // vazio → a UI kids mostra "Professor(a)"). O `authorId` = o staff que respondeu.
+      .get(
+        '/teacher-threads',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return {
+            threads: await deps.teacherThreads.listForAdmin({
+              audience: query.audience,
+              contextType: query.context,
+              courseId: query.courseId,
+              unreadOnly: query.unread === 'true',
+              limit: clampLimit(query.limit),
+              offset: query.offset ?? 0,
+            }),
+          }
+        },
+        { query: AdminTeacherThreadsQuery },
+      )
+      .post(
+        '/teacher-threads',
+        async ({ body, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.teacherThreads.adminPostByContext({
+            userId: body.userId,
+            accountId: body.accountId ?? null,
+            audience: body.audience,
+            contextType: body.contextType,
+            contextRef: body.contextType === 'studio_submission' ? (body.blockId ?? null) : null,
+            courseId: body.courseId ?? null,
+            lessonId: body.lessonId ?? null,
+            title: body.title ?? null,
+            authorId: resolveUserId(headers),
+            authorName: resolveStudentName(headers) || null,
+            body: body.body,
+          })
+        },
+        { body: AdminTeacherThreadPostBody },
+      )
+      // Abrir a conversa da ENTREGA direto do viewer (por contexto) — ANTES de `:id`
+      // (rota estática não pode cair no param). `{ thread: null }` = ainda não há conversa.
+      .get(
+        '/teacher-threads/by-context',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.teacherThreads.getForAdminByContext(
+            query.userId,
+            query.contextType,
+            query.contextRef,
+          )
+        },
+        { query: AdminTeacherThreadByContextQuery },
+      )
+      .get(
+        '/teacher-threads/:id',
+        async ({ params, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.teacherThreads.getForAdmin(params.id)
+        },
+        { params: IdParams },
+      )
+      .post(
+        '/teacher-threads/:id/messages',
+        async ({ params, body, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.teacherThreads.adminReplyToThread(
+            params.id,
+            resolveUserId(headers),
+            resolveStudentName(headers) || null,
+            body.body,
+          )
+        },
+        { params: IdParams, body: TeacherThreadReplyBody },
+      )
+      .post(
+        '/teacher-threads/:id/read',
+        async ({ params, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.teacherThreads.markReadByTeacher(params.id)
+        },
+        { params: IdParams },
       )
       .post(
         '/entitlements',

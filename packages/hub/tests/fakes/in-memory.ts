@@ -21,6 +21,7 @@ import type {
   CourseAccessResult,
   MembersGateway,
   MuralCommentArgs,
+  MuralModerationMessageArgs,
   PlaysMilestoneArgs,
   ShowcaseEligibilityArgs,
   ShowcaseEligibilityResult,
@@ -949,5 +950,11 @@ export class FakeMembersGateway implements MembersGateway {
   playsMilestones: PlaysMilestoneArgs[] = []
   async notifyPlaysMilestone(args: PlaysMilestoneArgs): Promise<void> {
     this.playsMilestones.push(args)
+  }
+
+  /** Registra os recados de moderação do Mural (motivo → recado ao aluno) — best-effort. */
+  moderationMessages: MuralModerationMessageArgs[] = []
+  async notifyMuralModerationMessage(args: MuralModerationMessageArgs): Promise<void> {
+    this.moderationMessages.push(args)
   }
 }
