@@ -538,6 +538,33 @@ export interface TeacherThreadView {
   messages: TeacherMessageView[]
 }
 
+/** Resumo de conversa na caixa de entrada do PROFESSOR (espelha o members). */
+export interface TeacherThreadSummaryView {
+  id: string
+  userId: string
+  accountId: string | null
+  audience: 'adult' | 'kids'
+  contextType: TeacherThreadContext
+  contextRef: string | null
+  courseId: string | null
+  lessonId: string | null
+  title: string | null
+  lastMessageAt: string
+  createdAt: string
+  lastMessagePreview: string | null
+  lastMessageRole: TeacherMessageRole | null
+  messageCount: number
+  /** Há mensagem do ALUNO depois do watermark do professor. */
+  unread: boolean
+}
+
+/** Linha da caixa de entrada com a identidade hidratada do auth (BFF). */
+export interface TeacherThreadRow extends TeacherThreadSummaryView {
+  accountName: string | null
+  accountEmail: string | null
+  childName: string | null
+}
+
 export interface BlockView {
   id: string
   lessonId: string
