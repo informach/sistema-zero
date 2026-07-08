@@ -3,7 +3,12 @@ import { forwardUpstream } from '@/server/forward'
 import { listCourseStudioSubmissions } from '@/server/members'
 import { resolveSubmissionIdentities } from '@/server/studio-submissions'
 
-type Ctx = { params: Promise<{ courseId: string }> }
+// ⚠️ Segmento é `[id]` (não `[courseId]`) p/ casar com os IRMÃOS de
+// `/api/members/courses/` (`[id]/route.ts`, `[id]/modules`…): o Next PROÍBE nomes
+// de slug diferentes no MESMO nível dinâmico — o build passa, mas o server CRASHA
+// no boot ("cannot use different slug names for the same dynamic path"). A URL não
+// muda (o valor continua sendo o id do curso).
+type Ctx = { params: Promise<{ id: string }> }
 
 /**
  * Entregas do Estúdio de TODAS as aulas de um curso (aba "Entregas" por curso). O
@@ -13,8 +18,8 @@ type Ctx = { params: Promise<{ courseId: string }> }
  * por-bloco existente.
  */
 export async function GET(_req: Request, { params }: Ctx) {
-  const { courseId } = await params
-  const { status, body } = await listCourseStudioSubmissions(courseId)
+  const { id } = await params
+  const { status, body } = await listCourseStudioSubmissions(id)
   if (status !== 200) return forwardUpstream({ status, body })
   if (!body || !Array.isArray(body.submissions)) {
     return NextResponse.json(
