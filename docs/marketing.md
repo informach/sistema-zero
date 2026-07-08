@@ -127,7 +127,14 @@ marketing-app (Next, :3012)  ── BFF /api/* ──►  api-gateway (:3000)  �
 | 2 | YouTube automático (upload antecipado + agendamento nativo, quota guard) + tela Conexões + métricas básicas YT | **FEITA (07/2026)** |
 | 3 | Instagram/Facebook automático + coletor de métricas completo + dashboards | **FEITA (07/2026)** |
 | 4 | TikTok + arquivamento R2→Drive + melhores horários (heatmap) | **FEITA (07/2026)** |
-| 5 | IA: legenda/roteiro com validação Light Copy/VTSD + hashtags | próxima |
+| 5 | IA: legenda/roteiro com validação Light Copy/VTSD + hashtags | **FEITA (07/2026)** |
+
+Roadmap COMPLETO. O que a F5 entregou, na prática: no composer e na aba Roteiro, dois botões
+("Gerar com IA" e "Melhorar") escrevem ou reescrevem a legenda e o roteiro no padrão Light Copy
+da casa (as 12 proibições do VTSD), respeitando o limite de cada rede e sugerindo hashtags; a
+pessoa revisa o texto e salva (a IA nunca salva sozinha). Um "linter" passivo marca ao vivo os
+erros mecânicos (travessão, exclamação, pergunta no gancho) enquanto se escreve, sem depender de
+IA. A chave da IA fica no backend; sem ela, os botões somem e o linter continua funcionando.
 
 O que a F4 entregou, na prática: **TikTok automático** (um login conecta a conta do criador; o
 vídeo agendado sobe NA hora marcada — no TikTok, terminar o envio já publica, então nada sobe

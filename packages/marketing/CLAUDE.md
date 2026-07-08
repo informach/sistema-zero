@@ -53,7 +53,13 @@ próximas fases) e **métricas** (snapshots por publicação/conta). Runtime: **
 > nunca `failed`; exige o escopo NOVO `drive.file` — conta antiga precisa RECONECTAR, o worker
 > espera com warn; resolve de arquivado devolve o link do Drive) e **melhores horários**
 > (`GET /metrics/best-times` — bucket dia×hora EM SP). SEM migration. 220 testes.
-> **Fase seguinte:** F5 = IA (Light Copy).
+> **F5 COMPLETA (08/07/2026):** **IA da copy** (OpenRouter) — gera/melhora legenda (rede-aware,
+> com hashtags) e roteiro no padrão **Light Copy** (as 12 proibições do VTSD); a chamada LLM vive
+> no BACKEND (fail-soft: sem `OPENROUTER_API_KEY` os botões somem e a rota responde 503; o linter
+> mecânico segue). `response_format json_schema` strict + Zod + 1 retry só no JSON cortado. As
+> rotas `/marketing/ai/*` NÃO escrevem no banco (compute-only: leem o conteúdo, devolvem
+> sugestão; a pessoa revisa e salva). Rota `marketing-ai` no gateway (staff+, 20/min, 64KB).
+> SEM migration. 238 testes. **Roadmap COMPLETO (F0–F5).**
 
 ## Decisões travadas (não afrouxar)
 
@@ -188,6 +194,13 @@ GET 300/min, escrita 120/min, corpo 512KB):
   [{accountId, network, displayName, points: [{date 'YYYY-MM-DD' (dia SP), followers}]}]}`
   (1 ponto/dia = último snapshot do dia) ·
   `GET /marketing/publications/:id/metrics` → `{snapshots}` (série, 30 últimos)
+- IA da copy (F5, compute-only — não grava nada): `POST /marketing/ai/caption` `{contentId?,
+  format, mode: generate|improve, caption?}` → `{caption, hashtags[], notes[]}` (generate exige
+  contentId → 400 sem material; improve exige `caption`); `POST /marketing/ai/script`
+  `{contentId?, mode, script?, instruction?}` → `{script, notes[]}`; `GET /marketing/ai/status` →
+  `{configured}`. Sem chave → 503 `AI_NOT_CONFIGURED`; upstream falho → 502 `AI_UNAVAILABLE`. O
+  prompt leva a voz sistemazero + as 12 proibições do Light Copy + o teto de legenda/hashtags do
+  formato + os achados do linter mecânico (`domain/copy/light-copy.ts`).
 - Vínculo (F3): `POST /marketing/publications/:id/link-external` `{url}` — exige `published`;
   YouTube extrai o videoId por REGEX; IG casa o shortcode contra `GET /{ig}/media` paginado e FB
   contra `/{page}/posts` (exigem conta conectada → 409 sem conta); sem match → 404
@@ -284,7 +297,14 @@ SELF_ONLY), `TT_UPLOAD_CHUNK_BYTES` (16MiB, clampado 5..64MB). **Arquivador (F4)
 `MEDIA_ARCHIVER_INTERVAL_MS` (1h), `MEDIA_ARCHIVE_AFTER_DAYS` (30) — roda com Google+R2; o
 escopo `drive.file` entrou no GOOGLE_SCOPES (conta conectada antes da F4 → reconectar).
 **Metrics-worker:** `METRICS_WORKER_INTERVAL_MS`/`METRICS_MAX_AGE_DAYS` (fallback
-nos `YT_METRICS_*`), `METRICS_BATCH_SIZE` (50).
+nos `YT_METRICS_*`), `METRICS_BATCH_SIZE` (50). **IA da copy (F5, grupo fail-soft):**
+`OPENROUTER_API_KEY` (pode reusar a do Pensa/member-shell), `OPENROUTER_MODEL` (genérico,
+default gpt-4o-mini), `OPENROUTER_MARKETING_MODEL` (PREFERIDO — modelo capaz p/ copy, o service
+usa este ?? o genérico), `OPENROUTER_REFERER`, `AI_COPY_MAX_TOKENS` (1200)/`AI_COPY_TIMEOUT_MS`
+(60s)/`AI_COPY_MAX_INPUT_CHARS` (8000). Sem a chave, a IA fica desligada (linter passivo segue).
+⚠️ Toda copy gerada segue a VOZ da marca: humana/fluida, SEM travessão, SEM jargão de IA, no
+padrão Light Copy (as 12 proibições vivem em `domain/copy/light-copy-rules.ts`, fonte única do
+prompt e do linter).
 **Lembrete WhatsApp:** `MARKETING_HMAC_SECRET` (≥16; MESMO valor no gateway — ausente = lembrete
 desligado), `MARKETING_REMINDER_PHONES` (CSV E.164 DDI 55; vazio = no-op logado), `GATEWAY_URL`.
 **Knobs** (defaults sensatos, ver .env.example): `PUBLISHER_*`, `REMINDER_*`, `MEDIA_TRANSFER_*`,

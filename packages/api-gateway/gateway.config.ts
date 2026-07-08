@@ -2528,6 +2528,21 @@ const config: GatewayConfigInput = {
       maxBodyBytes: 512 * 1024,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // IA da copy (F5): geração/melhoria de legenda e roteiro. Chamada de LLM
+    // custa dinheiro e é lenta — rate limit menor e corpo pequeno (a rota
+    // explícita vence o wildcard `marketing-write`). Compute-only (não escreve
+    // no banco). O GET /marketing/ai/status cai no `marketing-read`.
+    {
+      id: 'marketing-ai',
+      methods: ['POST'],
+      pathPattern: '/marketing/ai/*',
+      service: 'marketing',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: marketingInternalTransforms,
+      maxBodyBytes: 64 * 1024,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+    },
     // Conectar/desconectar CONTAS SOCIAIS é admin+ e auditado (a rota explícita
     // vence o wildcard `marketing-write`). Cobre o disable/delete de contas.
     {
