@@ -98,6 +98,7 @@ function makeInput(
   publication: Publication,
   assets: MediaAsset[],
   session: Record<string, unknown> = {},
+  orderedAssetIds: string[] = [],
 ): PublishInput & { session: Record<string, unknown> } {
   const network = publication.network as 'instagram' | 'facebook'
   const state = { session: { ...session } }
@@ -106,6 +107,7 @@ function makeInput(
     account: makeAccount(network),
     accessToken: 'page-token',
     assets,
+    orderedAssetIds,
     assetBytes: () => Promise.reject(new Error('não usado pela Meta')),
     assetUrl: async (asset) => `https://r2.example/signed/${asset.id}`,
     get session() {
@@ -303,6 +305,162 @@ describe('MetaPublisher — Facebook (post direto na hora)', () => {
     expect(outcome.kind).toBe('permanent')
     if (outcome.kind === 'permanent') expect(outcome.reason).toContain('Vincular post real')
     expect(api.fbPhotoCalls).toHaveLength(0)
+  })
+})
+
+describe('MetaPublisher — carrossel do IG (filhos na ordem de publication_assets)', () => {
+  function carouselSetup(count: number) {
+    const assets = Array.from({ length: count }, () => makeAsset())
+    const orderedIds = assets.map((a) => a.id)
+    return { assets, orderedIds }
+  }
+
+  it('3 imagens: 3 filhos na ordem + pai CAROUSEL com children CSV → published', async () => {
+    const api = new FakeMetaApi()
+    const { assets, orderedIds } = carouselSetup(3)
+    const input = makeInput(makePublication('ig_carousel'), assets, {}, orderedIds)
+    const outcome = await publisher('instagram', api).publish(input)
+    expect(outcome.kind).toBe('published')
+    expect(api.createCalls).toHaveLength(4)
+    const children = api.createCalls.slice(0, 3)
+    expect(children.every((c) => c.params.is_carousel_item === 'true')).toBe(true)
+    // A ordem dos filhos segue a ordem dos assets da publicação.
+    expect(children.map((c) => c.params.image_url)).toEqual(
+      orderedIds.map((id) => `https://r2.example/signed/${id}`),
+    )
+    const parent = api.createCalls[3]
+    expect(parent?.params.media_type).toBe('CAROUSEL')
+    expect(parent?.params.children).toBe('container-1,container-2,container-3')
+    expect(input.session.childContainerIds).toEqual(['container-1', 'container-2', 'container-3'])
+  })
+
+  it('retomada por ÍNDICE: filho já criado não é recriado no retry', async () => {
+    const api = new FakeMetaApi()
+    const { assets, orderedIds } = carouselSetup(3)
+    const input = makeInput(
+      makePublication('ig_carousel'),
+      assets,
+      { provider: 'meta', childContainerIds: ['filho-salvo'] },
+      orderedIds,
+    )
+    const outcome = await publisher('instagram', api).publish(input)
+    expect(outcome.kind).toBe('published')
+    // Só os 2 filhos que faltavam + o pai (o 1º veio do checkpoint).
+    expect(api.createCalls).toHaveLength(3)
+    expect(api.createCalls[2]?.params.children).toBe('filho-salvo,container-1,container-2')
+  })
+
+  it('menos de 2 imagens selecionadas → permanent com CTA do composer', async () => {
+    const api = new FakeMetaApi()
+    const { assets, orderedIds } = carouselSetup(1)
+    const outcome = await publisher('instagram', api).publish(
+      makeInput(makePublication('ig_carousel'), assets, {}, orderedIds),
+    )
+    expect(outcome.kind).toBe('permanent')
+    if (outcome.kind === 'permanent') expect(outcome.reason).toContain('2 a 10')
+    expect(api.createCalls).toHaveLength(0)
+  })
+
+  it('PNG no meio da lista → permanent apontando o ARQUIVO culpado', async () => {
+    const api = new FakeMetaApi()
+    const jpeg = makeAsset()
+    const png = makeAsset({ contentType: 'image/png', filename: 'capa.png' })
+    const outcome = await publisher('instagram', api).publish(
+      makeInput(makePublication('ig_carousel'), [jpeg, png], {}, [jpeg.id, png.id]),
+    )
+    expect(outcome.kind).toBe('permanent')
+    if (outcome.kind === 'permanent') expect(outcome.reason).toContain('capa.png')
+  })
+
+  it('container EXPIRED derruba o pai E os filhos (recomeça do zero)', async () => {
+    const api = new FakeMetaApi()
+    api.statusScript.set('pai-velho', ['EXPIRED'])
+    const { assets, orderedIds } = carouselSetup(2)
+    const input = makeInput(
+      makePublication('ig_carousel'),
+      assets,
+      { containerId: 'pai-velho', childContainerIds: ['a', 'b'] },
+      orderedIds,
+    )
+    const outcome = await publisher('instagram', api).publish(input)
+    expect(outcome.kind).toBe('retryable')
+    expect(input.session.containerId).toBeNull()
+    expect(input.session.childContainerIds).toEqual([])
+  })
+})
+
+describe('MetaPublisher — Reels do FB (start → upload → finish consultável)', () => {
+  const reelVideo = () => makeAsset({ contentType: 'video/mp4', filename: 'reel.mp4' })
+
+  it('vencido: start → upload por file_url → finish → poll complete → published', async () => {
+    const api = new FakeMetaApi()
+    const input = makeInput(makePublication('fb_reels'), [reelVideo()])
+    const pub = publisher('facebook', api)
+
+    // 1º ciclo: sobe e dispara o finish; o poll fica p/ o próximo ciclo.
+    const first = await pub.publish(input)
+    expect(first.kind).toBe('pending')
+    expect(api.reelStartCalls).toBe(1)
+    expect(api.reelUploadCalls).toHaveLength(1)
+    expect(api.reelFinishCalls).toHaveLength(1)
+
+    // 2º ciclo: fase de publicação completa → published com URL de reel.
+    const second = await pub.publish(input)
+    expect(second.kind).toBe('published')
+    if (second.kind === 'published') {
+      expect(second.externalUrl).toBe(`https://www.facebook.com/reel/${second.externalPostId}`)
+    }
+    expect(api.reelStartCalls).toBe(1) // sessão nunca recriada
+  })
+
+  it('agendado: upload ANTECIPADO no lead, finish segura até a hora', async () => {
+    const api = new FakeMetaApi()
+    const scheduledAt = new Date(NOW.getTime() + 8 * 60_000)
+    const input = makeInput(makePublication('fb_reels', { scheduledAt }), [reelVideo()])
+    const outcome = await publisher('facebook', api).publish(input)
+    expect(outcome).toEqual({ kind: 'pending', repollAt: scheduledAt })
+    expect(api.reelUploadCalls).toHaveLength(1) // vídeo JÁ subiu
+    expect(api.reelFinishCalls).toHaveLength(0) // publicação espera a hora
+  })
+
+  it('retry com upload feito não repete start/upload; finish idempotente por status', async () => {
+    const api = new FakeMetaApi()
+    const input = makeInput(makePublication('fb_reels'), [reelVideo()], {
+      provider: 'meta',
+      videoId: 'reel-salvo',
+      uploadUrl: 'https://rupload.example/x',
+      phase: 'fb_reel_uploaded',
+    })
+    const outcome = await publisher('facebook', api).publish(input)
+    expect(outcome.kind).toBe('pending')
+    expect(api.reelStartCalls).toBe(0)
+    expect(api.reelUploadCalls).toHaveLength(0)
+    expect(api.reelFinishCalls.map((c) => c.videoId)).toEqual(['reel-salvo'])
+  })
+
+  it('crash pós-finish: o status consultável resolve SEM repetir o finish', async () => {
+    const api = new FakeMetaApi()
+    api.reelStatusScript.set('reel-salvo', ['complete'])
+    const input = makeInput(makePublication('fb_reels'), [reelVideo()], {
+      provider: 'meta',
+      videoId: 'reel-salvo',
+      uploadUrl: 'https://rupload.example/x',
+      phase: 'fb_reel_finishing',
+    })
+    const outcome = await publisher('facebook', api).publish(input)
+    expect(outcome.kind).toBe('published')
+    expect(api.reelFinishCalls).toHaveLength(0)
+  })
+
+  it('vídeo que não é MP4/MOV → permanent antes de qualquer side-effect', async () => {
+    const api = new FakeMetaApi()
+    const outcome = await publisher('facebook', api).publish(
+      makeInput(makePublication('fb_reels'), [
+        makeAsset({ contentType: 'video/webm', filename: 'reel.webm' }),
+      ]),
+    )
+    expect(outcome.kind).toBe('permanent')
+    expect(api.reelStartCalls).toBe(0)
   })
 })
 

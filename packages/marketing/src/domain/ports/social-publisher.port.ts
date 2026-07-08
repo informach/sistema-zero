@@ -27,6 +27,8 @@ export interface PublishInput {
   accessToken: string
   /** Assets PRONTOS do conteúdo (o publisher escolhe vídeo/capa por kind/MIME). */
   assets: MediaAsset[]
+  /** Ordem dos assets da PUBLICAÇÃO (carrossel) — vazia fora do ig_carousel. */
+  orderedAssetIds: string[]
   /** Lê um range de bytes do asset (upload em chunks — memória O(chunk)). */
   assetBytes(asset: MediaAsset, start: number, endInclusive: number): Promise<Uint8Array>
   /**

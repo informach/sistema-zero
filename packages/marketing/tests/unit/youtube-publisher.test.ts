@@ -200,6 +200,7 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
       accounts,
       accountService,
       assets,
+      publicationAssets: new InMemoryPublicationAssetRepository(),
       store,
       publicationService,
     },

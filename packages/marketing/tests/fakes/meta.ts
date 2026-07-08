@@ -1,4 +1,5 @@
 import type {
+  FbReelPublishing,
   IgContainerStatus,
   MetaApi,
   MetaApiError,
@@ -83,5 +84,52 @@ export class FakeMetaApi implements MetaApi {
       description: input.description,
     })
     return `video-${++this.seq}`
+  }
+
+  // ── Reels do FB ─────────────────────────────────────────────────────────────
+  reelStartCalls = 0
+  reelUploadCalls: Array<{ uploadUrl: string; fileUrl: string }> = []
+  reelFinishCalls: Array<{ videoId: string; description: string }> = []
+  /** Roteiro por videoId; sem roteiro → complete após o finish, senão not_started. */
+  reelStatusScript = new Map<string, FbReelPublishing[]>()
+
+  async startFbReelUpload(input: {
+    accessToken: string
+    pageId: string
+  }): Promise<{ videoId: string; uploadUrl: string }> {
+    this.reelStartCalls += 1
+    const videoId = `reel-${++this.seq}`
+    return { videoId, uploadUrl: `https://rupload.example/${input.pageId}/${videoId}` }
+  }
+
+  async uploadFbReelByUrl(input: {
+    accessToken: string
+    uploadUrl: string
+    fileUrl: string
+  }): Promise<void> {
+    this.reelUploadCalls.push({ uploadUrl: input.uploadUrl, fileUrl: input.fileUrl })
+  }
+
+  async finishFbReel(input: {
+    accessToken: string
+    pageId: string
+    videoId: string
+    description: string
+  }): Promise<void> {
+    this.reelFinishCalls.push({ videoId: input.videoId, description: input.description })
+  }
+
+  async getFbReelStatus(input: {
+    accessToken: string
+    videoId: string
+  }): Promise<FbReelPublishing> {
+    const script = this.reelStatusScript.get(input.videoId)
+    if (script && script.length > 0) {
+      const status = script.length > 1 ? script.shift() : script[0]
+      return status ?? 'not_started'
+    }
+    return this.reelFinishCalls.some((c) => c.videoId === input.videoId)
+      ? 'complete'
+      : 'not_started'
   }
 }

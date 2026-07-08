@@ -26,6 +26,9 @@ export class MetaApiError extends Error {
 /** `status_code` de um container de mídia do IG (containers valem 24h). */
 export type IgContainerStatus = 'IN_PROGRESS' | 'FINISHED' | 'ERROR' | 'EXPIRED' | 'PUBLISHED'
 
+/** Fase de publicação de um Reel do FB (`status.publishing_phase.status`). */
+export type FbReelPublishing = 'not_started' | 'in_progress' | 'complete' | 'error'
+
 export interface MetaApi {
   // ── Instagram (Content Publishing: container → poll → publish) ─────────────
   /** POST /{ig}/media — devolve o creation_id do container. */
@@ -63,4 +66,26 @@ export interface MetaApi {
     fileUrl: string
     description: string
   }): Promise<string>
+
+  // ── Facebook Reels (start → upload por file_url → finish → poll) ───────────
+  /** POST /{page}/video_reels {upload_phase: start} → sessão de upload. */
+  startFbReelUpload(input: {
+    accessToken: string
+    pageId: string
+  }): Promise<{ videoId: string; uploadUrl: string }>
+  /** POST no rupload com header `file_url` (a Meta baixa o vídeo — sem bytes aqui). */
+  uploadFbReelByUrl(input: {
+    accessToken: string
+    uploadUrl: string
+    fileUrl: string
+  }): Promise<void>
+  /** POST {upload_phase: finish, video_state: PUBLISHED} — publica o reel. */
+  finishFbReel(input: {
+    accessToken: string
+    pageId: string
+    videoId: string
+    description: string
+  }): Promise<void>
+  /** GET /{videoId}?fields=status — fase de publicação (consultável = retry seguro). */
+  getFbReelStatus(input: { accessToken: string; videoId: string }): Promise<FbReelPublishing>
 }

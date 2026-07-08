@@ -294,6 +294,7 @@ export function createApplication(env: Env): Application {
             accounts: accountRepo,
             accountService,
             assets: assetRepo,
+            publicationAssets: publicationAssetRepo,
             store: mediaStore,
             publicationService,
           }

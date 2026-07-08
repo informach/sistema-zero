@@ -6,6 +6,7 @@ import type { MediaAsset } from '../../domain/media/media-asset'
 import type { ContentRepository } from '../../domain/ports/content-repository.port'
 import type { MediaAssetRepository } from '../../domain/ports/media-asset-repository.port'
 import type { MediaStore } from '../../domain/ports/media-store.port'
+import type { PublicationAssetRepository } from '../../domain/ports/publication-asset-repository.port'
 import type { PublicationRepository } from '../../domain/ports/publication-repository.port'
 import { type ReminderNotifier, ReminderSendError } from '../../domain/ports/reminder-notifier.port'
 import type { SocialAccountRepository } from '../../domain/ports/social-account-repository.port'
@@ -36,6 +37,8 @@ export interface AutoPublishDeps {
   accounts: SocialAccountRepository
   accountService: AccountService
   assets: MediaAssetRepository
+  /** Ordem dos assets do carrossel (publication_assets). */
+  publicationAssets: PublicationAssetRepository
   store: MediaStore
   publicationService: PublicationService
 }
@@ -199,11 +202,16 @@ export class PublisherWorker {
       limit: 100,
       offset: 0,
     })
+    const orderedAssetIds =
+      publication.format === 'ig_carousel'
+        ? await auto.publicationAssets.listByPublication(publication.id)
+        : []
     const outcome = await publisher.publish({
       publication,
       account,
       accessToken,
       assets: items,
+      orderedAssetIds,
       assetBytes: (asset: MediaAsset, start: number, endInclusive: number) => {
         if (!asset.r2Key) return Promise.reject(new Error('asset sem r2Key'))
         return auto.store.getRange({ key: asset.r2Key, start, endInclusive })

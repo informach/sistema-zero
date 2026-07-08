@@ -1,4 +1,5 @@
 import {
+  type FbReelPublishing,
   type IgContainerStatus,
   type MetaApi,
   MetaApiError,
@@ -41,6 +42,28 @@ export class MetaClient implements MetaApi {
     return `https://graph.facebook.com/${this.config.graphVersion}${path}`
   }
 
+  /** fetch com timeout + classificação de erro Graph (URLs absolutas — rupload). */
+  private async request<T>(url: string, init: RequestInit, context: string): Promise<T> {
+    const controller = new AbortController()
+    const timer = setTimeout(
+      () => controller.abort(new DOMException('meta timeout', 'TimeoutError')),
+      JSON_TIMEOUT_MS,
+    )
+    let res: Response
+    try {
+      res = await fetch(url, { ...init, signal: controller.signal })
+    } catch (error) {
+      throw new MetaApiError(`${context}: falha de rede ao falar com a Meta`, 'retryable', {
+        cause: error,
+      })
+    } finally {
+      clearTimeout(timer)
+    }
+    const json = (await res.json().catch(() => ({}))) as T & GraphErrorBody
+    if (!res.ok || json.error) throw classifyGraphError(res.status, json, context)
+    return json
+  }
+
   private async call<T>(input: {
     method: 'GET' | 'POST'
     path: string
@@ -57,24 +80,7 @@ export class MetaClient implements MetaApi {
       input.method === 'POST'
         ? new URLSearchParams({ ...input.params, access_token: input.accessToken })
         : undefined
-    const controller = new AbortController()
-    const timer = setTimeout(
-      () => controller.abort(new DOMException('meta timeout', 'TimeoutError')),
-      JSON_TIMEOUT_MS,
-    )
-    let res: Response
-    try {
-      res = await fetch(url.toString(), { method: input.method, body, signal: controller.signal })
-    } catch (error) {
-      throw new MetaApiError(`${input.context}: falha de rede ao falar com a Meta`, 'retryable', {
-        cause: error,
-      })
-    } finally {
-      clearTimeout(timer)
-    }
-    const json = (await res.json().catch(() => ({}))) as T & GraphErrorBody
-    if (!res.ok || json.error) throw classifyGraphError(res.status, json, input.context)
-    return json
+    return this.request<T>(url.toString(), { method: input.method, body }, input.context)
   }
 
   async createIgContainer(input: {
@@ -185,5 +191,81 @@ export class MetaClient implements MetaApi {
     })
     if (!body.id) throw new MetaApiError('vídeo criado sem id', 'retryable')
     return body.id
+  }
+
+  async startFbReelUpload(input: {
+    accessToken: string
+    pageId: string
+  }): Promise<{ videoId: string; uploadUrl: string }> {
+    const body = await this.call<{ video_id?: string; upload_url?: string }>({
+      method: 'POST',
+      path: `/${input.pageId}/video_reels`,
+      accessToken: input.accessToken,
+      params: { upload_phase: 'start' },
+      context: 'fb video_reels (start)',
+    })
+    if (!body.video_id || !body.upload_url) {
+      throw new MetaApiError('start do reel sem video_id/upload_url', 'retryable')
+    }
+    return { videoId: body.video_id, uploadUrl: body.upload_url }
+  }
+
+  async uploadFbReelByUrl(input: {
+    accessToken: string
+    uploadUrl: string
+    fileUrl: string
+  }): Promise<void> {
+    // rupload: POST vazio; a Meta baixa o vídeo do `file_url` (URL presigned).
+    const body = await this.request<{ success?: boolean }>(
+      input.uploadUrl,
+      {
+        method: 'POST',
+        headers: { authorization: `OAuth ${input.accessToken}`, file_url: input.fileUrl },
+      },
+      'fb reel (upload por file_url)',
+    )
+    if (body.success !== true) {
+      throw new MetaApiError('upload do reel sem success=true', 'retryable')
+    }
+  }
+
+  async finishFbReel(input: {
+    accessToken: string
+    pageId: string
+    videoId: string
+    description: string
+  }): Promise<void> {
+    await this.call({
+      method: 'POST',
+      path: `/${input.pageId}/video_reels`,
+      accessToken: input.accessToken,
+      params: {
+        upload_phase: 'finish',
+        video_id: input.videoId,
+        video_state: 'PUBLISHED',
+        description: input.description,
+      },
+      context: 'fb video_reels (finish)',
+    })
+  }
+
+  async getFbReelStatus(input: {
+    accessToken: string
+    videoId: string
+  }): Promise<FbReelPublishing> {
+    const body = await this.call<{
+      status?: { video_status?: string; publishing_phase?: { status?: string } }
+    }>({
+      method: 'GET',
+      path: `/${input.videoId}`,
+      accessToken: input.accessToken,
+      params: { fields: 'status' },
+      context: 'fb reel (status)',
+    })
+    if (body.status?.video_status === 'error') return 'error'
+    const publishing = body.status?.publishing_phase?.status
+    if (publishing === 'complete') return 'complete'
+    if (publishing === 'in_progress') return 'in_progress'
+    return 'not_started'
   }
 }
