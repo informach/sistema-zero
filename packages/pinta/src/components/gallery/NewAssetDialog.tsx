@@ -5,22 +5,28 @@
  * usar (qualquer estilo serve) e fica desabilitado sem nenhum.
  */
 import type { JSX } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import {
+  type AnyTilesetAsset,
   assetStyle,
   BACKGROUND_SIZES,
+  isTilesetKind,
   normalizeAssetName,
   type PintaAsset,
   type PintaAssetKind,
   type PintaAssetStyle,
+  resolveAssetPalette,
   SPRITE_FRAME_SIZES,
   TILE_SIZES,
+  type TilesetAsset,
   VECTOR_SIZES,
   VECTOR_SPRITE_SIZES,
   VECTOR_TILE_SIZES,
 } from '../../core/project'
+import { paintBitmap } from '../../pixel/render'
 import type { NewAssetInput } from '../../state/galleryStore'
+import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 
@@ -159,6 +165,60 @@ function buildInput(
     case 'vector-tileset':
       return { kind, name, tileSize: Number(sizeKey) }
   }
+}
+
+/** Quantas peças a miniatura do card mostra (o resto entra na contagem "N peças"). */
+const TILESET_PREVIEW_TILES = 6
+
+/** Uma peça pixel na miniatura do card (canvas 1:1, CSS pixelated). */
+function PixelTilePreview({
+  tileset,
+  index,
+}: {
+  tileset: TilesetAsset
+  index: number
+}): JSX.Element {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const colors = useMemo(() => resolveAssetPalette(tileset), [tileset])
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const bitmap = tileset.tiles[index]
+    if (canvas && bitmap) paintBitmap(canvas, bitmap, colors)
+  }, [tileset, index, colors])
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pin-pixelated h-full w-full object-contain"
+      style={{ imageRendering: 'pixelated' }}
+    />
+  )
+}
+
+/** Miniatura do CONJUNTO: as primeiras peças do tileset lado a lado (mostra que é uma coleção). */
+function TilesetPreview({ tileset }: { tileset: AnyTilesetAsset }): JSX.Element {
+  const shown = Math.min(tileset.tiles.length, TILESET_PREVIEW_TILES)
+  return (
+    <div className="pin-checkerboard flex w-full gap-0.5 overflow-hidden rounded-lg border-2 border-pin-border p-1">
+      {Array.from({ length: shown }, (_, i) => (
+        <span
+          // biome-ignore lint/suspicious/noArrayIndexKey: as peças não têm id; a ordem É a identidade
+          key={i}
+          className="size-8 shrink-0"
+        >
+          {tileset.kind === 'tileset' ? (
+            <PixelTilePreview tileset={tileset} index={i} />
+          ) : (
+            <VectorFrameSvg
+              width={tileset.tileSize}
+              height={tileset.tileSize}
+              shapes={tileset.tiles[i] ?? []}
+              className="h-full w-full"
+            />
+          )}
+        </span>
+      ))}
+    </div>
+  )
 }
 
 export function NewAssetDialog({
@@ -346,31 +406,44 @@ export function NewAssetDialog({
               <span className="mb-1 block text-sm font-bold text-pin-muted">
                 {COPY.newAsset.chooseTilesetTitle}
               </span>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {tilesets.map((tileset) => {
+                  if (!isTilesetKind(tileset)) return null
                   const tilesetStyle = assetStyle(tileset.kind)
+                  const selected = tilesetId === tileset.id
                   return (
                     <button
                       key={tileset.id}
                       type="button"
                       onClick={() => setTilesetId(tileset.id)}
-                      aria-pressed={tilesetId === tileset.id}
-                      className={`min-h-11 rounded-xl border-2 px-4 font-bold transition ${
-                        tilesetId === tileset.id
-                          ? 'border-pin-accent bg-pin-accent text-pin-accent-fg'
+                      aria-pressed={selected}
+                      className={`pin-pop flex flex-col items-start gap-1 rounded-2xl border-2 p-2 text-left transition ${
+                        selected
+                          ? 'border-pin-accent bg-pin-accent/10'
                           : 'border-pin-border bg-pin-bg hover:border-pin-accent'
                       }`}
                     >
-                      🧩 {tileset.name}
-                      {tilesetStyle ? (
-                        <span
-                          className={`ml-2 rounded-full px-2 py-0.5 text-xs font-bold text-white ${
-                            tilesetStyle === 'pixel' ? 'bg-pin-style-pixel' : 'bg-pin-style-vector'
-                          }`}
-                        >
-                          {COPY.styleBadge[tilesetStyle]}
+                      <TilesetPreview tileset={tileset} />
+                      <span className="flex w-full items-center justify-between gap-1">
+                        <span className="pin-display truncate text-sm" title={tileset.name}>
+                          {tileset.name}
                         </span>
-                      ) : null}
+                        {tilesetStyle ? (
+                          <span
+                            className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white ${
+                              tilesetStyle === 'pixel'
+                                ? 'bg-pin-style-pixel'
+                                : 'bg-pin-style-vector'
+                            }`}
+                          >
+                            {COPY.styleBadge[tilesetStyle]}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="text-xs text-pin-muted">
+                        {COPY.newAsset.tilesetPieces(tileset.tiles.length)} · {tileset.tileSize}×
+                        {tileset.tileSize}
+                      </span>
                     </button>
                   )
                 })}
