@@ -26,31 +26,31 @@ async function openSpriteEditor(): Promise<void> {
 }
 
 describe('UI de animação (F2)', () => {
-  it('sprite abre com prévia, lista de animações e filmstrip', async () => {
+  it('sprite abre com prévia e faixa Spritesheet (com os quadros)', async () => {
     await openSpriteEditor()
     expect(screen.getByText(COPY.animation.preview)).toBeTruthy()
-    expect(screen.getByText(COPY.animation.animations)).toBeTruthy()
-    expect(screen.getByText(COPY.animation.frames)).toBeTruthy()
-    // A animação de nascença.
-    expect(screen.getByText('parado')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Quadro 1' })).toBeTruthy()
+    expect(screen.getByText(COPY.animation.spritesheet)).toBeTruthy()
+    // A animação de nascença aparece (na prévia e na faixa).
+    expect(screen.getAllByText('parado').length).toBeGreaterThan(0)
+    // O primeiro quadro é clicável na faixa (rótulo inclui o nome da animação).
+    expect(screen.getByRole('button', { name: 'parado: quadro 1' })).toBeTruthy()
   })
 
-  it('novo quadro aparece no filmstrip e vira o selecionado', async () => {
+  it('novo quadro aparece na faixa e vira o selecionado', async () => {
     await openSpriteEditor()
     fireEvent.click(screen.getByRole('button', { name: COPY.animation.addFrame }))
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Quadro 2' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'parado: quadro 2' })).toBeTruthy()
     })
-    const second = screen.getByRole('button', { name: 'Quadro 2' })
+    const second = screen.getByRole('button', { name: 'parado: quadro 2' })
     expect(second.getAttribute('aria-pressed')).toBe('true')
   })
 
-  it('nova animação entra na lista com nome sugerido e fica ativa', async () => {
+  it('nova animação entra na faixa com nome sugerido e fica ativa', async () => {
     await openSpriteEditor()
     fireEvent.click(screen.getByRole('button', { name: COPY.animation.addAnimation }))
     await waitFor(() => {
-      expect(screen.getByText('andar')).toBeTruthy()
+      expect(screen.getAllByText('andar').length).toBeGreaterThan(0)
     })
   })
 
@@ -66,7 +66,7 @@ describe('UI de animação (F2)', () => {
       expect(screen.getByText('ceu')).toBeTruthy()
     })
     expect(screen.queryByText(COPY.animation.preview)).toBeNull()
-    expect(screen.queryByText(COPY.animation.frames)).toBeNull()
+    expect(screen.queryByText(COPY.animation.spritesheet)).toBeNull()
   })
 
   it('Baixar abre o diálogo com folha + receita para sprites', async () => {

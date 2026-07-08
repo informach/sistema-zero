@@ -1,27 +1,31 @@
 /**
- * A prévia RODANDO da animação selecionada (requisito-núcleo, layout
- * MakeCode): tocando em loop ao lado do editor, play/pause e o controle de
- * velocidade 🐢→🐇 — o fps gravado é o MESMO que sai no export. Serve os DOIS
- * estilos: pixel pinta num canvas (upscale CSS pixelated), vetor renderiza o
- * quadro como SVG inline (síncrono, sem canvas).
+ * A prévia RODANDO da animação selecionada (requisito-núcleo, layout MakeCode):
+ * a animação toca ao lado do editor, com os botões grandes **Reproduzir**
+ * (assistir rodando) e **Editar** (parar no quadro atual para desenhar). Serve
+ * os DOIS estilos: pixel pinta num canvas (upscale CSS pixelated), vetor
+ * renderiza o quadro como SVG inline (síncrono, sem canvas).
+ *
+ * Os controles de velocidade/repetição/suavização e a duração vivem no
+ * `AnimationDetails` (bloco "Animação selecionada", logo abaixo).
  */
 import type { JSX } from 'react'
 import { useEffect, useRef } from 'react'
-import { setAnimationFps, setAnimationLoop } from '../../animation/frames'
 import { useAnimationPlayer } from '../../animation/player'
 import { activeAnimationOf } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
-import { isAnimatedSpriteKind, type PintaBitmap, type VectorFrame } from '../../core/project'
+import {
+  isAnimatedSpriteKind,
+  type PintaBitmap,
+  resolveAssetPalette,
+  type VectorFrame,
+} from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
-import { ToolButton } from '../ui/Button'
-import { Pause, Play, Repeat } from '../ui/icons'
+import { Button } from '../ui/Button'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
-export const FPS_CHOICES = [2, 4, 6, 8, 12, 16, 24] as const
-
 export function PreviewPlayer(): JSX.Element | null {
-  const { editor, session } = useEditorStores()
+  const { session } = useEditorStores()
   const asset = useEditor((state) => state.asset)
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
@@ -36,6 +40,7 @@ export function PreviewPlayer(): JSX.Element | null {
     fps: animation?.fps ?? 8,
     frameCount: animation?.frames.length ?? 0,
     loop: animation?.loop ?? true,
+    easing: animation?.easing,
   })
 
   // Pausado mostra o quadro EM EDIÇÃO (a criança vê o que está pintando).
@@ -49,21 +54,18 @@ export function PreviewPlayer(): JSX.Element | null {
   useEffect(() => {
     const canvas = canvasRef.current
     if (canvas && shownBitmap && animated?.kind === 'pixel-sprite') {
-      paintBitmap(canvas, shownBitmap, animated.paletteId)
+      paintBitmap(canvas, shownBitmap, resolveAssetPalette(animated))
     }
   }, [shownBitmap, animated])
 
   if (!animated || !animation) return null
-
-  const fpsIndex = FPS_CHOICES.findIndex((f) => f >= animation.fps)
-  const sliderValue = fpsIndex === -1 ? FPS_CHOICES.length - 1 : fpsIndex
 
   return (
     <section
       aria-label={COPY.animation.preview}
       className="pin-panel flex flex-col items-center gap-2 p-3"
     >
-      <span className="text-sm font-bold text-pin-muted">{COPY.animation.preview}</span>
+      <span className="self-start text-sm font-bold text-pin-muted">{COPY.animation.preview}</span>
       <div className="pin-checkerboard rounded-xl border-2 border-pin-border p-1">
         {animated.kind === 'pixel-sprite' ? (
           <canvas
@@ -80,47 +82,28 @@ export function PreviewPlayer(): JSX.Element | null {
           />
         )}
       </div>
-      <div className="flex items-center gap-1">
-        <ToolButton
-          icon={playing ? Pause : Play}
-          label={playing ? COPY.animation.pause : COPY.animation.play}
-          onClick={() => session.getState().setPlaying(!playing)}
-        />
-        <ToolButton
-          icon={Repeat}
-          label={COPY.animation.loop}
-          active={animation.loop}
-          onClick={() => {
-            const state = editor.getState()
-            if (!isAnimatedSpriteKind(state.asset)) return
-            state.replace(setAnimationLoop(state.asset, animation.id, !animation.loop))
-          }}
-        />
-      </div>
-      <div className="flex w-full items-center gap-2 px-1">
-        <span aria-hidden="true" title={COPY.animation.slow}>
-          🐢
-        </span>
-        <input
-          type="range"
-          min={0}
-          max={FPS_CHOICES.length - 1}
-          step={1}
-          value={sliderValue}
-          aria-label={COPY.animation.speed}
-          aria-valuetext={`${animation.fps} quadros por segundo`}
-          onChange={(event) => {
-            const fps = FPS_CHOICES[Number(event.target.value)] ?? 8
-            const state = editor.getState()
-            if (!isAnimatedSpriteKind(state.asset)) return
-            // replace (sem undo): arrastar o slider não deve encher a história.
-            state.replace(setAnimationFps(state.asset, animation.id, fps))
-          }}
-          className="w-full accent-pin-accent"
-        />
-        <span aria-hidden="true" title={COPY.animation.fast}>
-          🐇
-        </span>
+      <span className="flex items-center gap-1.5 text-sm font-bold text-pin-text">
+        <span aria-hidden="true" className="size-2 rounded-full bg-pin-accent" />
+        {animation.name}
+        <span className="font-normal text-pin-muted">{COPY.animation.selectedBadge}</span>
+      </span>
+      <div className="flex w-full gap-2">
+        <Button
+          variant={playing ? 'primary' : 'outline'}
+          className="flex-1"
+          aria-pressed={playing}
+          onClick={() => session.getState().setPlaying(true)}
+        >
+          {COPY.animation.reproduce}
+        </Button>
+        <Button
+          variant={playing ? 'outline' : 'primary'}
+          className="flex-1"
+          aria-pressed={!playing}
+          onClick={() => session.getState().setPlaying(false)}
+        >
+          {COPY.animation.edit}
+        </Button>
       </div>
     </section>
   )

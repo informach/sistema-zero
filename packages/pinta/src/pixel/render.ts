@@ -9,7 +9,7 @@
  * Contexto injetável: happy-dom devolve `getContext() === null` — quem chama
  * guarda contra null e a suíte de componente nunca depende do render real.
  */
-import { getPalette, type PaletteId, TRANSPARENT_INDEX } from '../core/palette'
+import { TRANSPARENT_INDEX } from '../core/palette'
 import type { PintaBitmap } from '../core/project'
 
 /** `#rrggbb` → [r,g,b] (0–255). Entrada inválida vira magenta de debug. */
@@ -22,15 +22,15 @@ export function hexToRgb(hex: string): [number, number, number] {
 
 /**
  * Converte o bitmap indexado em pixels RGBA (row-major, 4 bytes/pixel).
- * Índice 0 (e qualquer índice fora da paleta) sai TRANSPARENTE.
+ * `colors` é a paleta EFETIVA já resolvida (`resolveAssetPalette` — base +
+ * extras). Índice 0 (e qualquer índice fora da paleta) sai TRANSPARENTE.
  */
 export function bitmapToRGBA(
   bitmap: PintaBitmap,
-  paletteId: PaletteId,
+  colors: readonly string[],
 ): Uint8ClampedArray<ArrayBuffer> {
-  const palette = getPalette(paletteId)
-  // Tabela por índice (16 entradas) resolvida UMA vez fora do loop de pixels.
-  const table: Array<[number, number, number] | null> = palette.colors.map((hex, index) =>
+  // Tabela por índice resolvida UMA vez fora do loop de pixels.
+  const table: Array<[number, number, number] | null> = colors.map((hex, index) =>
     index === TRANSPARENT_INDEX || !hex ? null : hexToRgb(hex),
   )
   const out = new Uint8ClampedArray(bitmap.width * bitmap.height * 4)
@@ -53,13 +53,13 @@ export function bitmapToRGBA(
 export function paintBitmap(
   canvas: HTMLCanvasElement,
   bitmap: PintaBitmap,
-  paletteId: PaletteId,
+  colors: readonly string[],
 ): boolean {
   const ctx = canvas.getContext('2d')
   if (!ctx) return false
   if (canvas.width !== bitmap.width) canvas.width = bitmap.width
   if (canvas.height !== bitmap.height) canvas.height = bitmap.height
-  const rgba = bitmapToRGBA(bitmap, paletteId)
+  const rgba = bitmapToRGBA(bitmap, colors)
   ctx.putImageData(new ImageData(rgba, bitmap.width, bitmap.height), 0, 0)
   return true
 }
@@ -71,7 +71,7 @@ export interface ScaledPainter {
    */
   paint(
     bitmap: PintaBitmap,
-    paletteId: PaletteId,
+    colors: readonly string[],
     scale: number,
     under?: { bitmap: PintaBitmap; alpha: number },
   ): void
@@ -90,15 +90,15 @@ export function createScaledPainter(canvas: HTMLCanvasElement): ScaledPainter | 
   const offCtx = offscreen.getContext('2d')
   if (!offCtx) return null
 
-  function blit1to1(bitmap: PintaBitmap, paletteId: PaletteId): void {
+  function blit1to1(bitmap: PintaBitmap, colors: readonly string[]): void {
     if (offscreen.width !== bitmap.width) offscreen.width = bitmap.width
     if (offscreen.height !== bitmap.height) offscreen.height = bitmap.height
-    const rgba = bitmapToRGBA(bitmap, paletteId)
+    const rgba = bitmapToRGBA(bitmap, colors)
     offCtx?.putImageData(new ImageData(rgba, bitmap.width, bitmap.height), 0, 0)
   }
 
   return {
-    paint(bitmap, paletteId, scale, under) {
+    paint(bitmap, colors, scale, under) {
       const w = Math.max(Math.round(bitmap.width * scale), 1)
       const h = Math.max(Math.round(bitmap.height * scale), 1)
       if (canvas.width !== w) canvas.width = w
@@ -106,12 +106,12 @@ export function createScaledPainter(canvas: HTMLCanvasElement): ScaledPainter | 
       ctx.imageSmoothingEnabled = false
       ctx.clearRect(0, 0, w, h)
       if (under) {
-        blit1to1(under.bitmap, paletteId)
+        blit1to1(under.bitmap, colors)
         ctx.globalAlpha = under.alpha
         ctx.drawImage(offscreen, 0, 0, w, h)
         ctx.globalAlpha = 1
       }
-      blit1to1(bitmap, paletteId)
+      blit1to1(bitmap, colors)
       ctx.drawImage(offscreen, 0, 0, w, h)
     },
     dispose() {

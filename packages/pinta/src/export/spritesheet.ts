@@ -14,7 +14,7 @@
  * `packSpritesheet` é PURA (geometria + metadados); a rasterização fica em
  * `png.ts` (composeSheetPngDataUrl).
  */
-import type { PintaBitmap, PixelSpriteAsset } from '../core/project'
+import { type PintaBitmap, type PixelSpriteAsset, resolveAssetPalette } from '../core/project'
 import { composeSheetPngDataUrl } from './png'
 
 export interface SpritesheetAnimationMeta {
@@ -114,7 +114,7 @@ export function spritesheetPngDataUrl(
     cellHeight: pack.frameHeight,
     columns: pack.columns,
     rows: pack.rows,
-    paletteId: asset.paletteId,
+    colors: resolveAssetPalette(asset),
     scale,
   })
 }

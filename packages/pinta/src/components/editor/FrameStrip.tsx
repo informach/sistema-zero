@@ -7,15 +7,15 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { addFrame, duplicateFrame, moveFrame, removeFrame } from '../../animation/frames'
 import { activeAnimationOf } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
-import type { PaletteId } from '../../core/palette'
 import {
   type AnimatedSpriteAsset,
   isAnimatedSpriteKind,
   type PintaBitmap,
+  resolveAssetPalette,
   type VectorFrame,
 } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
@@ -53,16 +53,16 @@ function ThumbButton({
 
 function PixelFrameThumb({
   bitmap,
-  paletteId,
+  colors,
 }: {
   bitmap: PintaBitmap
-  paletteId: PaletteId
+  colors: readonly string[]
 }): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const canvas = canvasRef.current
-    if (canvas) paintBitmap(canvas, bitmap, paletteId)
-  }, [bitmap, paletteId])
+    if (canvas) paintBitmap(canvas, bitmap, colors)
+  }, [bitmap, colors])
   return (
     <canvas
       ref={canvasRef}
@@ -79,6 +79,9 @@ export function FrameStrip({ className }: { className?: string }): JSX.Element |
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
   const onion = useSession((state) => state.onion)
+  // Paleta efetiva (base + extras) memoizada por asset — estável entre
+  // re-renders de sessão (selecionar quadro não repinta os thumbs à toa).
+  const colors = useMemo(() => resolveAssetPalette(asset), [asset])
 
   if (!isAnimatedSpriteKind(asset)) return null
   const animation = activeAnimationOf(asset, { animationId, frameIndex })
@@ -116,7 +119,7 @@ export function FrameStrip({ className }: { className?: string }): JSX.Element |
             onSelect={() => session.getState().selectFrame(index)}
           >
             {asset.kind === 'pixel-sprite' ? (
-              <PixelFrameThumb bitmap={frame as PintaBitmap} paletteId={asset.paletteId} />
+              <PixelFrameThumb bitmap={frame as PintaBitmap} colors={colors} />
             ) : (
               <VectorFrameSvg
                 width={asset.frameWidth}

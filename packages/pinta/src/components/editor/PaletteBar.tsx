@@ -1,35 +1,70 @@
 /**
- * Paleta de 16 cores do asset: o slot 0 é o "apagar" (transparente — vira a
+ * Paleta de cores do asset: o slot 0 é o "apagar" (transparente — vira a
  * borracha) e os demais selecionam a cor E voltam pro lápis se a criança
  * estava com a borracha (fluxo natural: escolher cor = querer pintar).
  *
- * Dois layouts: `panel` (grade 4×4 na coluna direita do editor, desktop) e
- * `row` (uma linha rolável abaixo do palco, tela estreita — o trocador de
- * paleta abre num Dialog para não roubar altura do canvas).
+ * Além das 16 cores base (por `paletteId`), a criança pode ADICIONAR qualquer
+ * cor com o seletor livre ("Nova cor"): ela vira um swatch novo (índice ≥16) e
+ * a arte já feita não muda — o bitmap continua indexado. Ver `resolveAssetPalette`.
  *
- * O TROCADOR de paleta: como o bitmap é indexado, trocar a paleta só troca as
- * 16 cores (os índices ficam) — vira um jeito rápido de repintar tudo. A troca
- * commita no asset (desfazível + autosave).
+ * Dois layouts: `panel` (grade na coluna de cores, desktop) e `row` (uma linha
+ * rolável, tela estreita — o trocador de paleta abre num Dialog para não roubar
+ * altura do canvas).
+ *
+ * O TROCADOR de paleta troca só as 16 cores BASE (os índices ficam) — vira um
+ * jeito rápido de repintar; as cores extras personalizadas são preservadas. A
+ * troca commita no asset (desfazível + autosave).
  */
 import type { JSX } from 'react'
 import { useState } from 'react'
+import { normalizeHex } from '../../core/color'
 import { COPY } from '../../core/copy'
-import { getPalette, PALETTES, TRANSPARENT_INDEX } from '../../core/palette'
-import { ToolButton } from '../ui/Button'
+import { PALETTE_SIZE, PALETTES, TRANSPARENT_INDEX } from '../../core/palette'
+import { PINTA_LIMITS, resolveAssetPalette } from '../../core/project'
+import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { Palette } from '../ui/icons'
+import { Palette, Plus } from '../ui/icons'
+import { useToast } from '../ui/Toast'
+import { ColorPicker } from './ColorPicker'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
 export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): JSX.Element | null {
   const { editor, session } = useEditorStores()
+  const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const color = useSession((state) => state.color)
   const tool = useSession((state) => state.tool)
   const [switcherOpen, setSwitcherOpen] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [draft, setDraft] = useState('#ff8800')
 
   // Só kinds com paleta indexada própria (vetoriais usam cor livre).
   if (!('paletteId' in asset)) return null
-  const palette = getPalette(asset.paletteId)
+  const colors = resolveAssetPalette(asset)
+
+  /** Adiciona a cor do rascunho como swatch novo (ou seleciona se já existir). */
+  function addCustomColor(): void {
+    const norm = normalizeHex(draft)
+    if (!norm) return
+    const current = editor.getState().asset
+    if (!('paletteId' in current)) return
+    const resolved = resolveAssetPalette(current)
+    const found = resolved.indexOf(norm)
+    if (found >= 0) {
+      session.getState().setColor(found)
+    } else if (resolved.length - PALETTE_SIZE >= PINTA_LIMITS.maxExtraColors) {
+      showToast(COPY.palette.colorLimit)
+      setPickerOpen(false)
+      return
+    } else {
+      editor.getState().commit({ ...current, extraColors: [...(current.extraColors ?? []), norm] })
+      // A nova cor entra no fim: o índice dela é o tamanho ANTES de adicionar.
+      session.getState().setColor(resolved.length)
+    }
+    const s = session.getState()
+    if (s.tool === 'eraser' || s.tool === 'picker') s.setTool('pencil')
+    setPickerOpen(false)
+  }
 
   const swatches = (
     <>
@@ -43,7 +78,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
           tool === 'eraser' ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border'
         }`}
       />
-      {palette.colors.map((hex, index) => {
+      {colors.map((hex, index) => {
         if (index === TRANSPARENT_INDEX || !hex) return null
         const selected = color === index && tool !== 'eraser'
         return (
@@ -65,6 +100,15 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
           />
         )
       })}
+      <button
+        type="button"
+        aria-label={COPY.palette.addColor}
+        title={COPY.palette.addColor}
+        onClick={() => setPickerOpen(true)}
+        className="flex size-11 shrink-0 items-center justify-center rounded-xl border-2 border-pin-border border-dashed text-pin-muted transition hover:border-pin-accent hover:text-pin-accent"
+      >
+        <Plus aria-hidden="true" className="size-5" />
+      </button>
     </>
   )
 
@@ -102,6 +146,22 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
       )
     })
 
+  const pickerDialog = (
+    <Dialog
+      open={pickerOpen}
+      onClose={() => setPickerOpen(false)}
+      title={COPY.palette.addColorTitle}
+    >
+      <ColorPicker value={draft} onChange={setDraft} recentColors={asset.extraColors} />
+      <div className="mt-4 flex justify-end gap-2">
+        <Button onClick={() => setPickerOpen(false)}>{COPY.gallery.cancel}</Button>
+        <Button variant="primary" onClick={addCustomColor}>
+          {COPY.palette.add}
+        </Button>
+      </div>
+    </Dialog>
+  )
+
   if (layout === 'row') {
     return (
       <div className="pin-panel flex shrink-0 items-center gap-1 p-2">
@@ -120,6 +180,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
         >
           <div className="flex flex-col gap-2">{paletteChoices(() => setSwitcherOpen(false))}</div>
         </Dialog>
+        {pickerDialog}
       </div>
     )
   }
@@ -129,6 +190,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
       <span className="text-sm font-bold text-pin-muted">{COPY.palette.title}</span>
       <div className="grid grid-cols-4 justify-items-center gap-1">{swatches}</div>
       <div className="flex flex-col gap-1">{paletteChoices()}</div>
+      {pickerDialog}
     </section>
   )
 }

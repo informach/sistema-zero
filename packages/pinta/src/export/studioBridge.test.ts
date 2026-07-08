@@ -8,7 +8,8 @@ import {
   createVectorTilesetAsset,
   type PintaAsset,
 } from '../core/project'
-import { buildStudioPayload } from './studioBridge'
+import { packSpritesheet } from './spritesheet'
+import { buildStudioPayload, spriteMetaFromPack, tilesetMetaFrom } from './studioBridge'
 
 const REF = { animationId: null, frameIndex: 0 }
 
@@ -46,5 +47,26 @@ describe('buildStudioPayload (happy-dom: raster devolve null gracioso)', () => {
     const impostor = createPixelSpriteAsset({ name: 'impostor', frameSize: 8 })
     const tilemap = createTilemapAsset({ name: 'fase', tilesetId: impostor.id, cols: 2, rows: 2 })
     expect(await buildStudioPayload(tilemap, findIn([impostor, tilemap]), REF)).toBeNull()
+  })
+})
+
+// Os metadados (que atravessam a ponte junto do PNG) saem de helpers PUROS —
+// testáveis sem canvas: é o que o Estúdio usa para o seletor de animação/tiles.
+describe('metadados da ponte (puros, sem raster)', () => {
+  it('spriteMetaFromPack traz frameW/H + os índices from/to das animações', () => {
+    const asset = createPixelSpriteAsset({ name: 'heroi', frameSize: 16 })
+    const meta = spriteMetaFromPack(packSpritesheet(asset))
+    expect(meta.frameW).toBe(16)
+    expect(meta.frameH).toBe(16)
+    expect(meta.animations.length).toBeGreaterThan(0)
+    // 1ª animação começa no quadro 0 (row-major na folha inteira).
+    expect(meta.animations[0]?.from).toBe(0)
+    expect(meta.animations[0]?.to).toBeGreaterThanOrEqual(0)
+    expect(typeof meta.animations[0]?.name).toBe('string')
+  })
+
+  it('tilesetMetaFrom mapeia boolean[] paralelo → lista de índices sólidos', () => {
+    expect(tilesetMetaFrom(16, [false, true, false, true])).toEqual({ tileSize: 16, solid: [1, 3] })
+    expect(tilesetMetaFrom(8, [])).toEqual({ tileSize: 8, solid: [] })
   })
 })

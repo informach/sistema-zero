@@ -11,7 +11,7 @@
  * ex.: onion skin).
  */
 import { newId } from '../core/id'
-import type { AnimatedSpriteAsset, VectorFrame } from '../core/project'
+import type { AnimatedSpriteAsset, PintaEasing, VectorFrame } from '../core/project'
 import { createBitmap, PINTA_LIMITS, type PintaBitmap } from '../core/project'
 import { cloneBitmap } from '../pixel/bitmap'
 
@@ -226,4 +226,24 @@ export function setAnimationLoop<A extends AnimatedSpriteAsset>(
   return withAnimation(asset, animationId, (animation) =>
     animation.loop === loop ? animation : { ...animation, loop },
   )
+}
+
+/**
+ * Grava a suavização da PRÉVIA (só dentro do Pinta — não sai no export). Só
+ * `ease` fica gravado; `linear` (o padrão) volta a omitir a chave, mantendo o
+ * asset idêntico ao histórico.
+ */
+export function setAnimationEasing<A extends AnimatedSpriteAsset>(
+  asset: A,
+  animationId: string,
+  easing: PintaEasing,
+): A {
+  return withAnimation(asset, animationId, (animation) => {
+    if ((animation.easing ?? 'linear') === easing) return animation
+    if (easing === 'linear') {
+      const { easing: _drop, ...rest } = animation
+      return rest as typeof animation
+    }
+    return { ...animation, easing }
+  })
 }

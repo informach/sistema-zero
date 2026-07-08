@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'bun:test'
+import { getPalette } from '../core/palette'
 import { bmp } from '../testing/fixtures'
 import { bitmapDominantColor, bitmapToPngDataUrl, dataUrlToBlob } from './png'
+
+const ARCADE = getPalette('arcade').colors
 
 describe('dataUrlToBlob (atob, NUNCA fetch)', () => {
   it('base64 → Blob com mime e tamanho certos', async () => {
@@ -26,17 +29,17 @@ describe('dataUrlToBlob (atob, NUNCA fetch)', () => {
 describe('bitmapDominantColor (puro, sem canvas)', () => {
   it('devolve o hex da cor visível mais frequente', () => {
     const bitmap = bmp(['122', '.22'])
-    expect(bitmapDominantColor(bitmap, 'arcade')).toBe('#ff2121')
+    expect(bitmapDominantColor(bitmap, ARCADE)).toBe('#ff2121')
   })
 
   it('tudo transparente → null', () => {
-    expect(bitmapDominantColor(bmp(['..', '..']), 'arcade')).toBeNull()
+    expect(bitmapDominantColor(bmp(['..', '..']), ARCADE)).toBeNull()
   })
 })
 
 describe('bitmapToPngDataUrl — guarda de ambiente', () => {
   it('sem canvas 2D (happy-dom) devolve null em vez de quebrar', () => {
     // happy-dom: getContext('2d') é null — o guard precisa segurar.
-    expect(bitmapToPngDataUrl(bmp(['1']), 'arcade')).toBeNull()
+    expect(bitmapToPngDataUrl(bmp(['1']), ARCADE)).toBeNull()
   })
 })

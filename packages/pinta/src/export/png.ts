@@ -6,7 +6,7 @@
  * ⚠️ NUNCA `fetch('data:')` para virar Blob — o `connect-src` da CSP do kids
  * bloqueia. A conversão é `atob` → bytes (dataUrlToBlob).
  */
-import { getPalette, type PaletteId, TRANSPARENT_INDEX } from '../core/palette'
+import { TRANSPARENT_INDEX } from '../core/palette'
 import type { PintaBitmap } from '../core/project'
 import { bitmapToRGBA } from '../pixel/render'
 
@@ -26,7 +26,7 @@ function pngOrNull(dataUrl: string): string | null {
  */
 export function bitmapToPngDataUrl(
   bitmap: PintaBitmap,
-  paletteId: PaletteId,
+  colors: readonly string[],
   scale = 1,
 ): string | null {
   const base = document.createElement('canvas')
@@ -34,7 +34,7 @@ export function bitmapToPngDataUrl(
   base.height = bitmap.height
   const baseCtx = base.getContext('2d')
   if (!baseCtx) return null
-  const rgba = bitmapToRGBA(bitmap, paletteId)
+  const rgba = bitmapToRGBA(bitmap, colors)
   baseCtx.putImageData(new ImageData(rgba, bitmap.width, bitmap.height), 0, 0)
   if (scale === 1) return pngOrNull(base.toDataURL('image/png'))
 
@@ -59,7 +59,7 @@ export function composeSheetPngDataUrl(input: {
   cellHeight: number
   columns: number
   rows: number
-  paletteId: PaletteId
+  colors: readonly string[]
   scale?: number
 }): string | null {
   const scale = input.scale ?? 1
@@ -69,7 +69,7 @@ export function composeSheetPngDataUrl(input: {
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
   for (const cell of input.cells) {
-    const rgba = bitmapToRGBA(cell.bitmap, input.paletteId)
+    const rgba = bitmapToRGBA(cell.bitmap, input.colors)
     ctx.putImageData(
       new ImageData(rgba, cell.bitmap.width, cell.bitmap.height),
       cell.col * input.cellWidth,
@@ -110,9 +110,8 @@ export function dataUrlToBlob(dataUrl: string): Blob | null {
  * Cor média VISÍVEL do bitmap (thumb/fallbacks). `null` = tudo transparente.
  * Pura (sem canvas) — útil para cards no happy-dom.
  */
-export function bitmapDominantColor(bitmap: PintaBitmap, paletteId: PaletteId): string | null {
-  const palette = getPalette(paletteId)
-  const counts = new Array<number>(palette.colors.length).fill(0)
+export function bitmapDominantColor(bitmap: PintaBitmap, colors: readonly string[]): string | null {
+  const counts = new Array<number>(colors.length).fill(0)
   for (const index of bitmap.data) {
     if (index !== TRANSPARENT_INDEX && index < counts.length) {
       counts[index] = (counts[index] ?? 0) + 1
@@ -127,5 +126,5 @@ export function bitmapDominantColor(bitmap: PintaBitmap, paletteId: PaletteId): 
       bestCount = count
     }
   }
-  return best >= 1 ? (palette.colors[best] ?? null) : null
+  return best >= 1 ? (colors[best] ?? null) : null
 }

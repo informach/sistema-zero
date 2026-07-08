@@ -14,11 +14,11 @@
  * componente simplesmente não pinta (a lógica de gesto continua testável).
  */
 import type { JSX, PointerEvent } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { activeBitmapOf, previousFrameOf, withActiveBitmap } from '../../core/assetEdit'
 import { TRANSPARENT_INDEX } from '../../core/palette'
 import { safeSetPointerCapture } from '../../core/pointer'
-import { type PintaBitmap, paletteIdOf } from '../../core/project'
+import { type PintaBitmap, resolveAssetPalette } from '../../core/project'
 import type { Vec2 } from '../../pixel/bitmap'
 import {
   createScaledPainter,
@@ -67,7 +67,9 @@ export function PixelCanvas(): JSX.Element {
   const showGrid = useSession((state) => state.showGrid)
   const animationId = useSession((state) => state.animationId)
   const frameIndex = useSession((state) => state.frameIndex)
-  const paletteId = paletteIdOf(asset)
+  // Paleta efetiva (base + extras), estável por asset — pintar uma cor extra
+  // recém-adicionada é uma mudança de asset, então o canvas repinta.
+  const colors = useMemo(() => resolveAssetPalette(asset), [asset])
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const painterRef = useRef<ScaledPainter | null>(null)
@@ -106,12 +108,7 @@ export function PixelCanvas(): JSX.Element {
     if (!painterRef.current) painterRef.current = createScaledPainter(canvas)
     const painter = painterRef.current
     if (!painter) return
-    painter.paint(
-      current,
-      paletteId,
-      zoom,
-      under ? { bitmap: under, alpha: ONION_ALPHA } : undefined,
-    )
+    painter.paint(current, colors, zoom, under ? { bitmap: under, alpha: ONION_ALPHA } : undefined)
     paintPixelGrid(canvas, current, zoom, showGrid)
   }
 
@@ -144,7 +141,7 @@ export function PixelCanvas(): JSX.Element {
     }
     lastBitmapRef.current = bitmap
     if (!gestureRef.current) renderCanvas()
-  }, [bitmap, zoom, onion, under, showGrid, paletteId])
+  }, [bitmap, zoom, onion, under, showGrid, colors])
 
   // Sair da ferramenta seleção CARIMBA o recorte pendente (some sem sumir).
   // biome-ignore lint/correctness/useExhaustiveDependencies: stampPending lê refs; o gatilho é `tool`

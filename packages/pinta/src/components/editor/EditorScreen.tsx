@@ -14,7 +14,7 @@ import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { assetStyle, type PintaAsset } from '../../core/project'
-import { buildStudioPayload } from '../../export/studioBridge'
+import { buildStudioPayload, type StudioPayload } from '../../export/studioBridge'
 import { tilemapToStudioGrid } from '../../export/studioGrid'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
 import { persistAsset } from '../../state/persistence'
@@ -30,13 +30,13 @@ import { ExportDialog } from '../export/ExportDialog'
 import { Button, IconButton, ToolButton } from '../ui/Button'
 import { ArrowLeft, ChevronDown, Download, Redo2, Rocket, Undo2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
-import { AnimationList } from './AnimationList'
+import { AnimationDetails } from './AnimationDetails'
 import { CoachMarks } from './CoachMarks'
 import { PintaEditorProvider, useEditor, useSession } from './editorContext'
-import { FrameStrip } from './FrameStrip'
 import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
+import { SpriteSheetPanel } from './SpriteSheetPanel'
 import { TilemapEditor } from './TilemapEditor'
 import { TileStrip } from './TileStrip'
 import { ToolBar } from './ToolBar'
@@ -62,25 +62,38 @@ function SaveBadge(): JSX.Element {
 }
 
 /**
- * Painel DIREITO consolidado (desktop): prévia + cores + animações numa coluna
- * w-56. Cada seção se auto-remove quando não vale para o asset (PreviewPlayer
- * e AnimationList devolvem null fora de sprite animado; PaletteBar devolve
- * null nos kinds vetoriais, que usam cor livre no próprio VectorEditor).
+ * Coluna ESQUERDA dos kinds PIXEL (desktop): rail de ferramentas + área de
+ * cores logo abaixo (como na imagem-modelo). A PaletteBar se auto-remove nos
+ * kinds sem paleta (nenhum pixel), então serve sprite/cenário/peças igual.
  */
-function EditorSidePanel(): JSX.Element {
+function PixelLeftColumn(): JSX.Element {
   return (
-    <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
-      <PreviewPlayer />
+    <div className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto">
+      <ToolBar />
       <PaletteBar />
-      <AnimationList />
     </div>
   )
 }
 
 /**
- * Tela estreita: prévia + animações viram uma seção COLAPSÁVEL abaixo da faixa
- * de quadros (fechada por padrão — o palco domina; abrir empurra in-flow, o
- * canvas encolhe via min-h-0, nada de fixed/portal por cima da tab bar do host).
+ * Painel DIREITO dos SPRITES (desktop): a prévia rodando + os detalhes da
+ * animação selecionada (Duração/Velocidade/Repetição/Suavização). Ambos se
+ * auto-removem fora de sprite animado.
+ */
+function SpriteRightPanel(): JSX.Element {
+  return (
+    <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
+      <PreviewPlayer />
+      <AnimationDetails />
+    </div>
+  )
+}
+
+/**
+ * Tela estreita: a prévia + os detalhes da animação viram uma seção COLAPSÁVEL
+ * (fechada por padrão — o palco domina; abrir empurra in-flow, o canvas encolhe
+ * via min-h-0, nada de fixed/portal por cima da tab bar do host). A faixa
+ * Spritesheet fica sempre visível no rodapé.
  */
 function SpritePanelDisclosure(): JSX.Element {
   const [open, setOpen] = useState(false)
@@ -104,7 +117,7 @@ function SpritePanelDisclosure(): JSX.Element {
             <PreviewPlayer />
           </div>
           <div className="min-w-56 flex-1">
-            <AnimationList />
+            <AnimationDetails />
           </div>
         </div>
       ) : null}
@@ -113,10 +126,9 @@ function SpritePanelDisclosure(): JSX.Element {
 }
 
 /**
- * A faixa ÚNICA do rodapé: tira de quadros/peças ocupando a largura + zoom à
- * direita. Kinds sem tira (cenários) ficam só com o zoom encostado à direita.
- * Em tela estreita (`stacked`) a tira fica em cima e o zoom embaixo — lado a
- * lado eles espremeriam as miniaturas a zero.
+ * A faixa do rodapé. Sprites (pixel e vetor) ganham a faixa "Spritesheet" (uma
+ * linha por animação, com os quadros inline) + o zoom no cabeçalho dela. Peças
+ * mantêm a tira de tiles; cenários ficam só com o zoom encostado à direita.
  */
 function EditorFooter({
   asset,
@@ -127,10 +139,12 @@ function EditorFooter({
 }): JSX.Element {
   const hasFrames = asset.kind === 'pixel-sprite' || asset.kind === 'vector-sprite'
   const hasTiles = asset.kind === 'tileset' || asset.kind === 'vector-tileset'
+  if (hasFrames) {
+    return <SpriteSheetPanel className="shrink-0" zoomSlot={<ZoomControls />} />
+  }
   if (stacked) {
     return (
       <div className="flex shrink-0 flex-col gap-2">
-        {hasFrames ? <FrameStrip /> : null}
         {hasTiles ? <TileStrip /> : null}
         <div className="flex justify-end">
           <ZoomControls />
@@ -140,9 +154,7 @@ function EditorFooter({
   }
   return (
     <div className="flex shrink-0 items-stretch gap-2">
-      {hasFrames ? <FrameStrip className="min-w-0 flex-1" /> : null}
-      {hasTiles ? <TileStrip className="min-w-0 flex-1" /> : null}
-      {!hasFrames && !hasTiles ? <div className="flex-1" /> : null}
+      {hasTiles ? <TileStrip className="min-w-0 flex-1" /> : <div className="flex-1" />}
       <ZoomControls />
     </div>
   )
@@ -160,9 +172,9 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
       return (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
           <div className="flex min-h-0 flex-1 items-stretch gap-2">
-            <ToolBar />
+            <PixelLeftColumn />
             <PixelCanvas />
-            <EditorSidePanel />
+            {isSprite ? <SpriteRightPanel /> : null}
           </div>
           <EditorFooter asset={asset} />
         </div>
@@ -173,23 +185,24 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
         <ToolBar orientation="horizontal" />
         <PixelCanvas />
         <PaletteBar layout="row" />
-        <EditorFooter asset={asset} stacked />
         {isSprite ? <SpritePanelDisclosure /> : null}
+        <EditorFooter asset={asset} stacked />
       </div>
     )
   }
   if (asset.kind === 'tilemap') {
     return <TilemapEditor />
   }
-  // Kinds vetoriais: o MESMO editor de shapes; personagem ganha a coluna de
-  // animações + tira de quadros (espelho do pixel), peças ganham a tira de tiles.
+  // Kinds vetoriais: o MESMO editor de shapes; personagem ganha o painel de
+  // prévia/detalhes + a faixa Spritesheet (espelho do pixel), peças ganham a
+  // tira de tiles. As cores do vetor vivem dentro do próprio VectorEditor.
   const isVectorSprite = asset.kind === 'vector-sprite'
   if (wide) {
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
         <div className="flex min-h-0 flex-1 items-stretch gap-2">
           <VectorEditor />
-          {isVectorSprite ? <EditorSidePanel /> : null}
+          {isVectorSprite ? <SpriteRightPanel /> : null}
         </div>
         <EditorFooter asset={asset} />
       </div>
@@ -198,8 +211,8 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
       <VectorEditor />
-      <EditorFooter asset={asset} stacked />
       {isVectorSprite ? <SpritePanelDisclosure /> : null}
+      <EditorFooter asset={asset} stacked />
     </div>
   )
 }
@@ -223,11 +236,7 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
    * `export/studioBridge.ts` (sprites enviam a FOLHA inteira; tilesets a folha
    * de peças; tilemap o mapa achatado; vetoriais rasterizam).
    */
-  async function exportForStudio(): Promise<{
-    dataUrl: string
-    width: number
-    height: number
-  } | null> {
+  async function exportForStudio(): Promise<StudioPayload | null> {
     return buildStudioPayload(
       asset,
       (id) => gallery.getState().assets.find((a) => a.id === id) ?? null,
@@ -262,6 +271,9 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
         dataUrl: payload.dataUrl,
         width: payload.width,
         height: payload.height,
+        // Animações/tiles do Pinta viajam junto → o Estúdio oferece o seletor por nome.
+        ...(payload.sprite ? { sprite: payload.sprite } : {}),
+        ...(payload.tileset ? { tileset: payload.tileset } : {}),
       })
       showToast(
         result.ok
