@@ -176,15 +176,22 @@ export class DrizzlePublicationRepository implements PublicationRepository {
 
   async claimDueAutoPublish(input: {
     now: Date
-    leadMs: number
     limit: number
     leaseMs: number
     maxAttempts: number
-    networks: Network[]
+    networks: Array<{ network: Network; leadMs: number }>
   }): Promise<Publication[]> {
     if (input.networks.length === 0) return []
     const { now } = input
-    const leadUntil = new Date(now.getTime() + input.leadMs)
+    // Lead POR REDE: cada rede tem sua janela de antecipação (YouTube horas,
+    // Meta minutos) — o OR abaixo casa a publicação com o lead da SUA rede.
+    const withinLead = input.networks.map((n) =>
+      and(
+        eq(publications.network, n.network),
+        lte(publications.scheduledAt, new Date(now.getTime() + n.leadMs)),
+      ),
+    )
+    const networkNames = input.networks.map((n) => n.network)
     return this.db.transaction(async (tx) => {
       const due = await tx
         .select()
@@ -192,13 +199,13 @@ export class DrizzlePublicationRepository implements PublicationRepository {
         .where(
           and(
             eq(publications.publishMode, 'auto'),
-            inArray(publications.network, input.networks),
+            inArray(publications.network, networkNames),
             or(
-              // Fresca: agendada dentro do LEAD (upload antecipado) e elegível.
+              // Fresca: agendada dentro do LEAD da rede e elegível.
               and(
                 eq(publications.status, 'scheduled'),
                 isNotNull(publications.scheduledAt),
-                lte(publications.scheduledAt, leadUntil),
+                or(...withinLead),
                 or(isNull(publications.nextAttemptAt), lte(publications.nextAttemptAt, now)),
                 lt(publications.attempts, input.maxAttempts),
               ),

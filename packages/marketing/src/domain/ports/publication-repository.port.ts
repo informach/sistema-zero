@@ -51,17 +51,18 @@ export interface PublicationRepository {
   ): Promise<Publication[]>
   /**
    * Claim do publisher-worker (ramo AUTO): publicações `auto` agendadas dentro
-   * do LEAD de upload antecipado (`scheduled_at <= now + leadMs`) + presas em
-   * `publishing` com lease vencido (reaper — re-claim incrementa attempts).
-   * A linha claimada vira `publishing` com lease em `next_attempt_at`.
+   * do LEAD de antecipação DA SUA REDE (`scheduled_at <= now + leadMs[network]`
+   * — YouTube sobe horas antes; Meta só minutos, o container processa na
+   * espera) + presas em `publishing` com lease vencido (reaper — re-claim
+   * incrementa attempts). A linha claimada vira `publishing` com lease em
+   * `next_attempt_at`.
    */
   claimDueAutoPublish(input: {
     now: Date
-    leadMs: number
     limit: number
     leaseMs: number
     maxAttempts: number
-    networks: Network[]
+    networks: Array<{ network: Network; leadMs: number }>
   }): Promise<Publication[]>
   /**
    * Fila do metrics-worker (decaimento): publicadas com post externo e

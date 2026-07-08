@@ -212,7 +212,7 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
       maxAttempts: 3,
       retryBaseMs: 60_000,
       retryMaxMs: 30 * 60_000,
-      autoLeadMs: 6 * 60 * 60_000,
+      leadMsByNetwork: new Map([['youtube' as const, 6 * 60 * 60_000]]),
     },
   })
 

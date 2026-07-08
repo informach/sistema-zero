@@ -302,21 +302,20 @@ export class InMemoryPublicationRepository implements PublicationRepository {
   }
   async claimDueAutoPublish(input: {
     now: Date
-    leadMs: number
     limit: number
     leaseMs: number
     maxAttempts: number
-    networks: Network[]
+    networks: Array<{ network: Network; leadMs: number }>
   }): Promise<Publication[]> {
-    const networks = new Set(input.networks)
-    const leadUntil = input.now.getTime() + input.leadMs
+    const leadByNetwork = new Map(input.networks.map((n) => [n.network, n.leadMs]))
     const due = [...this.rows.values()]
       .filter((p) => {
-        if (p.publishMode !== 'auto' || !networks.has(p.network)) return false
+        const leadMs = leadByNetwork.get(p.network)
+        if (p.publishMode !== 'auto' || leadMs === undefined) return false
         if (p.status === 'scheduled') {
           return (
             p.scheduledAt !== null &&
-            p.scheduledAt.getTime() <= leadUntil &&
+            p.scheduledAt.getTime() <= input.now.getTime() + leadMs &&
             (p.nextAttemptAt === null || p.nextAttemptAt.getTime() <= input.now.getTime()) &&
             p.attempts < input.maxAttempts
           )

@@ -22,8 +22,12 @@ export interface PublisherWorkerConfig {
   maxAttempts: number
   retryBaseMs: number
   retryMaxMs: number
-  /** Lead do upload ANTECIPADO do ramo auto (YouTube publishAt nativo). */
-  autoLeadMs: number
+  /**
+   * Lead de antecipação do ramo auto POR REDE: YouTube sobe o vídeo horas
+   * antes (publishAt nativo); Meta claima minutos antes (container processa
+   * na espera e o publish sai na hora). Rede fora do mapa → lead 0.
+   */
+  leadMsByNetwork: ReadonlyMap<Network, number>
 }
 
 /** Deps do ramo AUTOMÁTICO (F2) — null = ramo desligado (só lembrete manual). */
@@ -130,11 +134,13 @@ export class PublisherWorker {
     if (!auto || auto.publishers.size === 0) return
     const batch = await this.deps.publications.claimDueAutoPublish({
       now: this.deps.now(),
-      leadMs: this.deps.config.autoLeadMs,
       limit: this.deps.config.batchSize,
       leaseMs: this.deps.config.claimLeaseMs,
       maxAttempts: this.deps.config.maxAttempts,
-      networks: [...auto.publishers.keys()],
+      networks: [...auto.publishers.keys()].map((network) => ({
+        network,
+        leadMs: this.deps.config.leadMsByNetwork.get(network) ?? 0,
+      })),
     })
     for (const publication of batch) {
       try {
@@ -201,6 +207,10 @@ export class PublisherWorker {
       assetBytes: (asset: MediaAsset, start: number, endInclusive: number) => {
         if (!asset.r2Key) return Promise.reject(new Error('asset sem r2Key'))
         return auto.store.getRange({ key: asset.r2Key, start, endInclusive })
+      },
+      assetUrl: (asset: MediaAsset, ttlSeconds: number) => {
+        if (!asset.r2Key) return Promise.reject(new Error('asset sem r2Key'))
+        return auto.store.presignGet({ key: asset.r2Key, expiresInSeconds: ttlSeconds })
       },
       session: publication.providerSession,
       saveSession: async (patch) => {

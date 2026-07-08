@@ -27,7 +27,9 @@ import {
 import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
 import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
+import { MetaClient } from './infrastructure/gateways/meta/meta-client'
 import { MetaOAuthProvider } from './infrastructure/gateways/meta/meta-oauth-provider'
+import { MetaPublisher } from './infrastructure/gateways/meta/meta-publisher'
 import { R2MediaStore } from './infrastructure/gateways/r2/r2-media-store'
 import { YoutubeClient } from './infrastructure/gateways/youtube/youtube-client'
 import { YoutubeMetricsSource } from './infrastructure/gateways/youtube/youtube-metrics-source'
@@ -177,19 +179,23 @@ export function createApplication(env: Env): Application {
     idGen,
   )
   const promoteService = new PromoteIdeaService(ideaService, contentService)
-  // Publisher automático do YouTube: só monta com Google (OAuth/tokens) E R2
-  // (bytes do vídeo) configurados — ausente = rede segue em modo lembrete.
+  // Publishers automáticos: cada rede só monta com o OAuth do provedor E o R2
+  // (a mídia sai de lá) configurados — ausente = rede segue em modo lembrete.
   const youtubeEnabled = Boolean(googleEnabled && r2)
-  const autoCapableNetworks: ReadonlySet<Network> = new Set(
-    youtubeEnabled ? (['youtube'] as const) : [],
-  )
+  const metaPublishEnabled = Boolean(oauthCore && metaCfg && r2)
+  const autoCapableNetworks: ReadonlySet<Network> = new Set<Network>([
+    ...(youtubeEnabled ? (['youtube'] as const) : []),
+    ...(metaPublishEnabled ? (['instagram', 'facebook'] as const) : []),
+  ])
   const publicationService = new PublicationService(
     publicationRepo,
     contentService,
     now,
     idGen,
     { links: publicationAssetRepo, media: assetRepo },
-    youtubeEnabled ? { accounts: accountRepo, capableNetworks: autoCapableNetworks } : null,
+    autoCapableNetworks.size > 0
+      ? { accounts: accountRepo, capableNetworks: autoCapableNetworks }
+      : null,
   )
   const mediaService = new MediaService(
     assetRepo,
@@ -255,6 +261,19 @@ export function createApplication(env: Env): Application {
       }),
     )
   }
+  // Meta (F3): mesma API client p/ as duas redes (o page token serve os dois).
+  if (metaPublishEnabled && metaCfg) {
+    const metaApi = new MetaClient({ graphVersion: metaCfg.graphVersion })
+    const metaPublisherConfig = { presignTtlSeconds: env.R2_PRESIGN_GET_TTL_SECONDS }
+    publishers.set(
+      'instagram',
+      new MetaPublisher({ api: metaApi, network: 'instagram', config: metaPublisherConfig, now }),
+    )
+    publishers.set(
+      'facebook',
+      new MetaPublisher({ api: metaApi, network: 'facebook', config: metaPublisherConfig, now }),
+    )
+  }
 
   // Workers (processo único, padrão messaging: claim SKIP LOCKED + lease).
   const publisherWorker = new PublisherWorker({
@@ -288,7 +307,11 @@ export function createApplication(env: Env): Application {
       maxAttempts: env.REMINDER_MAX_ATTEMPTS,
       retryBaseMs: env.REMINDER_RETRY_BASE_MS,
       retryMaxMs: env.REMINDER_RETRY_MAX_MS,
-      autoLeadMs: env.YT_UPLOAD_LEAD_HOURS * 60 * 60_000,
+      leadMsByNetwork: new Map<Network, number>([
+        ['youtube', env.YT_UPLOAD_LEAD_HOURS * 60 * 60_000],
+        ['instagram', env.META_PUBLISH_LEAD_MS],
+        ['facebook', env.META_PUBLISH_LEAD_MS],
+      ]),
     },
   })
   const mediaTransferWorker = new MediaTransferWorker({
