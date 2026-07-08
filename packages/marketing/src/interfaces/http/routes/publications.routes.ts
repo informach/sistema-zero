@@ -7,6 +7,7 @@ import { parseIsoDate } from '../dates'
 import {
   IdParams,
   MarkPublishedBody,
+  PublicationAssetsBody,
   PublicationPatchBody,
   PublicationsCreateBody,
   PublicationsListQuery,
@@ -95,6 +96,11 @@ export function publicationsRoutes(deps: PublicationsRoutesDeps) {
           version: body.version,
         }),
       { params: IdParams, body: PublicationPatchBody },
+    )
+    .put(
+      '/marketing/publications/:id/assets',
+      ({ params, body }) => deps.publications.setAssets(params.id, body.assetIds),
+      { params: IdParams, body: PublicationAssetsBody },
     )
     .post(
       '/marketing/publications/:id/schedule',

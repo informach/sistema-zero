@@ -7,6 +7,8 @@ import {
   InvalidPublicationStateError,
   PublicationNotFoundError,
 } from '../../domain/marketing-errors'
+import type { MediaAssetRepository } from '../../domain/ports/media-asset-repository.port'
+import type { PublicationAssetRepository } from '../../domain/ports/publication-asset-repository.port'
 import type {
   PublicationRepository,
   PublicationsWindowFilter,
@@ -76,12 +78,23 @@ export class PublicationService {
     private readonly contentService: ContentService,
     private readonly now: () => Date,
     private readonly idGen: () => string,
+    /** Ordem dos assets do carrossel + catálogo de mídia p/ validar a lista. */
+    private readonly carousel: {
+      links: PublicationAssetRepository
+      media: MediaAssetRepository
+    },
     /** Redes com publisher automático MONTADO (F2: youtube) + contas p/ o binding. */
     private readonly auto: {
       accounts: SocialAccountRepository
       capableNetworks: ReadonlySet<Network>
     } | null = null,
   ) {}
+
+  /** View de UMA publicação sempre carrega a ordem dos assets (composer). */
+  private async viewOf(pub: Publication): Promise<PublicationView> {
+    const assetIds = await this.carousel.links.listByPublication(pub.id)
+    return toPublicationView(pub, assetIds)
+  }
 
   /** Cria N publicações (cross-post) a partir de um conteúdo APROVADO. */
   async createForContent(
@@ -136,13 +149,45 @@ export class PublicationService {
     }))
     // Insert único (atômico): falha não deixa cross-post pela metade.
     await this.publications.createMany(created)
-    return created.map(toPublicationView)
+    return created.map((p) => toPublicationView(p))
   }
 
   async get(id: string): Promise<PublicationView> {
     const pub = await this.publications.byId(id)
     if (!pub) throw new PublicationNotFoundError()
-    return toPublicationView(pub)
+    return this.viewOf(pub)
+  }
+
+  /**
+   * Substitui a lista ordenada de assets do carrossel (PUT semântico: a lista
+   * enviada É o estado final). Cada asset precisa estar `ready` e pertencer ao
+   * MESMO conteúdo da publicação — mídia de outro conteúdo no post é troca de
+   * arquivo silenciosa, não reordenação.
+   */
+  async setAssets(id: string, assetIds: string[]): Promise<PublicationView> {
+    const pub = await this.publications.byId(id)
+    if (!pub) throw new PublicationNotFoundError()
+    if (!isEditable(pub.status)) {
+      throw new InvalidPublicationStateError('Publicação não pode mais ser editada')
+    }
+    if (assetIds.length === 0 || assetIds.length > 10) {
+      throw new ValidationError('O carrossel aceita de 1 a 10 imagens')
+    }
+    if (new Set(assetIds).size !== assetIds.length) {
+      throw new ValidationError('Há imagens repetidas na lista do carrossel')
+    }
+    const found = await this.carousel.media.byIds(assetIds)
+    for (const assetId of assetIds) {
+      const asset = found.get(assetId)
+      if (!asset || asset.contentId !== pub.contentId) {
+        throw new ValidationError('Todas as imagens precisam ser mídias deste conteúdo')
+      }
+      if (asset.status !== 'ready') {
+        throw new ValidationError(`A mídia "${asset.filename}" ainda não terminou de subir`)
+      }
+    }
+    await this.carousel.links.replaceForPublication(pub.id, assetIds)
+    return toPublicationView(pub, assetIds)
   }
 
   /**
@@ -211,7 +256,7 @@ export class PublicationService {
     pub.updatedAt = this.now()
     const ok = await this.publications.update(pub, expectedVersion)
     if (!ok) throw new ConcurrencyConflictError()
-    return toPublicationView(pub)
+    return this.viewOf(pub)
   }
 
   /**
@@ -281,7 +326,7 @@ export class PublicationService {
     const ok = await this.publications.update(pub, expectedVersion)
     if (!ok) throw new ConcurrencyConflictError()
     await this.syncContentStage(actor, pub.contentId)
-    return toPublicationView(pub)
+    return this.viewOf(pub)
   }
 
   async cancel(actor: Actor, id: string): Promise<PublicationView> {
@@ -303,7 +348,7 @@ export class PublicationService {
     const ok = await this.publications.update(pub, expectedVersion)
     if (!ok) throw new ConcurrencyConflictError()
     await this.syncContentStage(actor, pub.contentId)
-    return toPublicationView(pub)
+    return this.viewOf(pub)
   }
 
   /** Modo lembrete: a pessoa postou na mão e cola o link do post real. */
@@ -330,7 +375,7 @@ export class PublicationService {
     const ok = await this.publications.update(pub, expectedVersion)
     if (!ok) throw new ConcurrencyConflictError()
     await this.syncContentStage(actor, pub.contentId)
-    return toPublicationView(pub)
+    return this.viewOf(pub)
   }
 
   /** Sincronização da etapa derivada disparada pelos WORKERS (ator de sistema). */

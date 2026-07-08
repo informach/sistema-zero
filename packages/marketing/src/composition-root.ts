@@ -42,6 +42,7 @@ import { DrizzleMediaAssetRepository } from './infrastructure/persistence/drizzl
 import { DrizzleMetricsRepository } from './infrastructure/persistence/drizzle/metrics.repository'
 import { DrizzleOAuthStateRepository } from './infrastructure/persistence/drizzle/oauth-state.repository'
 import { DrizzlePublicationRepository } from './infrastructure/persistence/drizzle/publication.repository'
+import { DrizzlePublicationAssetRepository } from './infrastructure/persistence/drizzle/publication-asset.repository'
 import { DrizzleQuotaUsageRepository } from './infrastructure/persistence/drizzle/quota-usage.repository'
 import { DrizzleSocialAccountRepository } from './infrastructure/persistence/drizzle/social-account.repository'
 import { createSecretBox } from './infrastructure/security/secret-box'
@@ -105,6 +106,7 @@ export function createApplication(env: Env): Application {
   const commentRepo = new DrizzleCommentRepository(db)
   const assetRepo = new DrizzleMediaAssetRepository(db)
   const publicationRepo = new DrizzlePublicationRepository(db)
+  const publicationAssetRepo = new DrizzlePublicationAssetRepository(db)
   const accountRepo = new DrizzleSocialAccountRepository(db)
   const oauthStateRepo = new DrizzleOAuthStateRepository(db)
   const r2 = r2Config(env)
@@ -186,6 +188,7 @@ export function createApplication(env: Env): Application {
     contentService,
     now,
     idGen,
+    { links: publicationAssetRepo, media: assetRepo },
     youtubeEnabled ? { accounts: accountRepo, capableNetworks: autoCapableNetworks } : null,
   )
   const mediaService = new MediaService(

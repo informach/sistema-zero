@@ -116,13 +116,13 @@ export function toContentDetailView(input: {
     updatedAt: content.updatedAt.toISOString(),
     checklist: input.checklist.map(toChecklistItemView),
     comments: input.comments.map(toCommentView),
-    publications: input.publications.map(toPublicationView),
+    publications: input.publications.map((p) => toPublicationView(p)),
     stageEvents: input.stageEvents.map(toStageEventView),
   }
 }
 export type ContentDetailView = ReturnType<typeof toContentDetailView>
 
-export function toPublicationView(pub: Publication) {
+export function toPublicationView(pub: Publication, assetIds: string[] = []) {
   return {
     id: pub.id,
     version: pub.version,
@@ -142,6 +142,9 @@ export function toPublicationView(pub: Publication) {
     externalPostId: pub.externalPostId,
     externalUrl: pub.externalUrl,
     publishedAt: iso(pub.publishedAt),
+    // Ordem dos assets do carrossel — SÓ preenchida nas views de UMA publicação
+    // (composer); nas listagens vem vazia (Calendário/Painel não usam).
+    assetIds,
     // O vídeo já subiu ao provedor (metadados congelados; reagendar é resync).
     hasRemoteVideo: typeof pub.providerSession.videoId === 'string',
     createdAt: pub.createdAt.toISOString(),

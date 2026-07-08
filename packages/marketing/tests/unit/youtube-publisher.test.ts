@@ -21,6 +21,7 @@ import {
   InMemoryCommentRepository,
   InMemoryContentRepository,
   InMemoryMediaAssetRepository,
+  InMemoryPublicationAssetRepository,
   InMemoryPublicationRepository,
   InMemorySocialAccountRepository,
 } from '../fakes/in-memory'
@@ -181,10 +182,14 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
     now,
     randomUUID,
   )
-  const publicationService = new PublicationService(publications, contentService, now, randomUUID, {
-    accounts,
-    capableNetworks: new Set<Network>(['youtube']),
-  })
+  const publicationService = new PublicationService(
+    publications,
+    contentService,
+    now,
+    randomUUID,
+    { links: new InMemoryPublicationAssetRepository(), media: assets },
+    { accounts, capableNetworks: new Set<Network>(['youtube']) },
+  )
   const worker = new PublisherWorker({
     publications,
     contents,

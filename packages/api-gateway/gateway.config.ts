@@ -2489,7 +2489,8 @@ const config: GatewayConfigInput = {
     },
     {
       id: 'marketing-write',
-      methods: ['POST', 'PATCH', 'DELETE'],
+      // PUT: lista ordenada de assets do carrossel (PUT /publications/:id/assets).
+      methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
       pathPattern: '/marketing/*',
       service: 'marketing',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },

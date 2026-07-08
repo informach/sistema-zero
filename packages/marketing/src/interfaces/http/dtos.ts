@@ -151,6 +151,11 @@ export const ScheduleBody = t.Object({
   scheduledAt: t.String({ minLength: 10, maxLength: 40 }),
 })
 
+// Carrossel do IG: 1..10 imagens (teto da Graph API), na ordem do post.
+export const PublicationAssetsBody = t.Object({
+  assetIds: t.Array(UUID, { minItems: 1, maxItems: 10 }),
+})
+
 export const MarkPublishedBody = t.Object({
   externalUrl: t.Optional(
     t.Union([t.String({ maxLength: 2000, pattern: '^https?://' }), t.Null()]),

@@ -24,6 +24,7 @@ import {
   InMemoryMediaAssetRepository,
   InMemoryMetricsRepository,
   InMemoryOAuthStateRepository,
+  InMemoryPublicationAssetRepository,
   InMemoryPublicationRepository,
   InMemorySocialAccountRepository,
 } from './fakes/in-memory'
@@ -48,6 +49,7 @@ export interface TestApp {
     comments: InMemoryCommentRepository
     assets: InMemoryMediaAssetRepository
     publications: InMemoryPublicationRepository
+    publicationAssets: InMemoryPublicationAssetRepository
     accounts: InMemorySocialAccountRepository
     oauthStates: InMemoryOAuthStateRepository
     metrics: InMemoryMetricsRepository
@@ -84,6 +86,7 @@ export function buildTestApp(
   const assets = new InMemoryMediaAssetRepository()
   const publications = new InMemoryPublicationRepository()
   publications.contentsRef = contents
+  const publicationAssets = new InMemoryPublicationAssetRepository()
   const store = new FakeMediaStore()
   const accounts = new InMemorySocialAccountRepository()
   const oauthStates = new InMemoryOAuthStateRepository()
@@ -101,6 +104,7 @@ export function buildTestApp(
     contentService,
     now,
     idGen,
+    { links: publicationAssets, media: assets },
     overrides.autoCapableNetworks
       ? { accounts, capableNetworks: overrides.autoCapableNetworks }
       : null,
@@ -215,6 +219,7 @@ export function buildTestApp(
       comments,
       assets,
       publications,
+      publicationAssets,
       accounts,
       oauthStates,
       metrics,

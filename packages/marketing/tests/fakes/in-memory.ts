@@ -37,6 +37,7 @@ import type {
   OAuthStateRecord,
   OAuthStateRepository,
 } from '../../src/domain/ports/oauth-state-repository.port'
+import type { PublicationAssetRepository } from '../../src/domain/ports/publication-asset-repository.port'
 import type {
   PublicationListItem,
   PublicationRepository,
@@ -413,6 +414,18 @@ export class InMemoryPublicationRepository implements PublicationRepository {
       pub.updatedAt = now
     }
     return due.map(clone)
+  }
+}
+
+export class InMemoryPublicationAssetRepository implements PublicationAssetRepository {
+  rows = new Map<string, string[]>()
+
+  async replaceForPublication(publicationId: string, assetIds: string[]): Promise<void> {
+    this.rows.set(publicationId, [...assetIds])
+  }
+
+  async listByPublication(publicationId: string): Promise<string[]> {
+    return [...(this.rows.get(publicationId) ?? [])]
   }
 }
 

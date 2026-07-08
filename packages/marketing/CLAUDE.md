@@ -119,6 +119,11 @@ GET 300/min, escrita 120/min, corpo 512KB):
   cancele ou reagende) · `POST …/:id/schedule` `{scheduledAt}` (janela válida: nada no
   passado ±5min, teto de 2 anos → 400) ·
   `POST …/:id/cancel` · `POST …/:id/mark-published` `{externalUrl?, externalPostId?}`
+- Carrossel (F3): `PUT /marketing/publications/:id/assets` `{assetIds[]}` (1..10, PUT semântico —
+  a lista enviada É o estado final, na ordem do post; cada asset precisa estar `ready` e ser do
+  MESMO conteúdo → 400; publicação não editável → 409). A view de UMA publicação
+  (`GET /publications/:id` e retornos de escrita) traz `assetIds` na ordem; listagens trazem `[]`.
+  ⚠️ gateway: `marketing-write` ganhou o método `PUT`.
 - Publicações (F1/F2): `GET /marketing/publications` (janela `from/to` OPCIONAL sobre
   `scheduled_at` [ambas presentes: from<=to, máx 92d → 400] + `status` CSV validado + `network`/
   `format`/`contentId`, limit 1..200, itens = PublicationView + `contentTitle`/`contentType`) ·
