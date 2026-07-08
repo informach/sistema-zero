@@ -37,6 +37,7 @@ import { MetaOAuthProvider } from './infrastructure/gateways/meta/meta-oauth-pro
 import { MetaPublisher } from './infrastructure/gateways/meta/meta-publisher'
 import { R2MediaStore } from './infrastructure/gateways/r2/r2-media-store'
 import { TikTokClient } from './infrastructure/gateways/tiktok/tiktok-client'
+import { TikTokMetricsSource } from './infrastructure/gateways/tiktok/tiktok-metrics-source'
 import { TikTokOAuthProvider } from './infrastructure/gateways/tiktok/tiktok-oauth-provider'
 import { TikTokPublisher } from './infrastructure/gateways/tiktok/tiktok-publisher'
 import { YoutubeClient } from './infrastructure/gateways/youtube/youtube-client'
@@ -385,6 +386,9 @@ export function createApplication(env: Env): Application {
   if (metaApi) {
     metricsSources.push(new MetaMetricsSource(metaApi, 'instagram'))
     metricsSources.push(new MetaMetricsSource(metaApi, 'facebook'))
+  }
+  if (oauthCore && tiktokCfg) {
+    metricsSources.push(new TikTokMetricsSource(new TikTokClient()))
   }
 
   // Vínculo publicação manual ↔ post real (YouTube por regex; IG/FB pela API).

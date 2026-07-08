@@ -2,6 +2,7 @@ import type {
   TikTokApi,
   TikTokApiError,
   TikTokPublishStatus,
+  TikTokVideoStats,
 } from '../../src/infrastructure/gateways/tiktok/tiktok-api.port'
 
 interface StatusScript {
@@ -79,6 +80,31 @@ export class FakeTikTokApi implements TikTokApi {
     })
     const complete = input.start + input.chunk.byteLength >= input.totalBytes
     return { complete }
+  }
+
+  // ── Métricas (roteirizáveis) ────────────────────────────────────────────────
+  userStats: { followers: number; raw: Record<string, unknown> } = { followers: 0, raw: {} }
+  videoStats = new Map<string, TikTokVideoStats>()
+  videoQueryBatches: string[][] = []
+
+  async getUserStats(): Promise<{ followers: number; raw: Record<string, unknown> }> {
+    return structuredClone(this.userStats)
+  }
+
+  async queryVideoStats(input: {
+    accessToken: string
+    videoIds: string[]
+  }): Promise<Map<string, TikTokVideoStats>> {
+    // Registra os LOTES (o client real fatia em 20 — a source manda inteiro).
+    for (let i = 0; i < input.videoIds.length; i += 20) {
+      this.videoQueryBatches.push(input.videoIds.slice(i, i + 20))
+    }
+    const map = new Map<string, TikTokVideoStats>()
+    for (const id of input.videoIds) {
+      const stats = this.videoStats.get(id)
+      if (stats) map.set(id, stats)
+    }
+    return map
   }
 
   async fetchPublishStatus(input: { accessToken: string; publishId: string }): Promise<{

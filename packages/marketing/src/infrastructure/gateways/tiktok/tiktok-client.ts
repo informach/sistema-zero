@@ -3,6 +3,7 @@ import {
   TikTokApiError,
   type TikTokApiErrorKind,
   type TikTokPublishStatus,
+  type TikTokVideoStats,
 } from './tiktok-api.port'
 
 /**
@@ -12,6 +13,8 @@ import {
 const CREATOR_INFO_URL = 'https://open.tiktokapis.com/v2/post/publish/creator_info/query/'
 const VIDEO_INIT_URL = 'https://open.tiktokapis.com/v2/post/publish/video/init/'
 const STATUS_FETCH_URL = 'https://open.tiktokapis.com/v2/post/publish/status/fetch/'
+const USER_INFO_URL = 'https://open.tiktokapis.com/v2/user/info/'
+const VIDEO_QUERY_URL = 'https://open.tiktokapis.com/v2/video/query/'
 
 const JSON_TIMEOUT_MS = 15_000
 /** Chunk de 16MiB numa rede lenta leva minutos — timeout próprio. */
@@ -166,6 +169,73 @@ export class TikTokClient implements TikTokApi {
       throw new TikTokApiError(`upload de chunk: ${res.status}`, 'retryable')
     }
     throw new TikTokApiError(`upload de chunk: ${res.status}`, 'permanent')
+  }
+
+  async getUserStats(
+    accessToken: string,
+  ): Promise<{ followers: number; raw: Record<string, unknown> }> {
+    const url = new URL(USER_INFO_URL)
+    url.searchParams.set('fields', 'follower_count')
+    const res = await fetchWithTimeout(
+      url.toString(),
+      { headers: { authorization: `Bearer ${accessToken}` } },
+      JSON_TIMEOUT_MS,
+      'user/info (stats)',
+    )
+    const json = (await res.json().catch(() => ({}))) as {
+      data?: { user?: { follower_count?: number } }
+    } & TikTokErrorBody
+    const code = json.error?.code
+    if (!res.ok || (code && code !== 'ok')) {
+      throw new TikTokApiError(
+        `user/info (stats): ${json.error?.message ?? res.status}`,
+        classifyErrorCode(code, res.status),
+      )
+    }
+    return {
+      followers: Number(json.data?.user?.follower_count ?? 0),
+      raw: { ...(json.data?.user ?? {}) },
+    }
+  }
+
+  async queryVideoStats(input: {
+    accessToken: string
+    videoIds: string[]
+  }): Promise<Map<string, TikTokVideoStats>> {
+    const map = new Map<string, TikTokVideoStats>()
+    // Teto da API: 20 ids por chamada.
+    for (let i = 0; i < input.videoIds.length; i += 20) {
+      const batch = input.videoIds.slice(i, i + 20)
+      const url = new URL(VIDEO_QUERY_URL)
+      url.searchParams.set('fields', 'id,view_count,like_count,comment_count,share_count')
+      const body = await this.call<{
+        data?: {
+          videos?: Array<{
+            id?: string
+            view_count?: number
+            like_count?: number
+            comment_count?: number
+            share_count?: number
+          }>
+        }
+      }>({
+        url: url.toString(),
+        accessToken: input.accessToken,
+        body: { filters: { video_ids: batch } },
+        context: 'video/query',
+      })
+      for (const video of body.data?.videos ?? []) {
+        if (!video.id) continue
+        map.set(video.id, {
+          views: Number(video.view_count ?? 0),
+          likes: Number(video.like_count ?? 0),
+          comments: Number(video.comment_count ?? 0),
+          shares: Number(video.share_count ?? 0),
+          raw: { ...video },
+        })
+      }
+    }
+    return map
   }
 
   async fetchPublishStatus(input: { accessToken: string; publishId: string }): Promise<{

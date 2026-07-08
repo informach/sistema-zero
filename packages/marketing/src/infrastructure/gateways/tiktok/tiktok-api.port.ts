@@ -62,4 +62,21 @@ export interface TikTokApi {
     postIds: string[]
     uploadedBytes: number | null
   }>
+
+  // ── Métricas (Display API) ──────────────────────────────────────────────────
+  /** GET /v2/user/info/?fields=follower_count (escopo user.info.stats). */
+  getUserStats(accessToken: string): Promise<{ followers: number; raw: Record<string, unknown> }>
+  /** POST /v2/video/query/ — stats dos PRÓPRIOS vídeos (≤20 ids por chamada). */
+  queryVideoStats(input: {
+    accessToken: string
+    videoIds: string[]
+  }): Promise<Map<string, TikTokVideoStats>>
+}
+
+export interface TikTokVideoStats {
+  views: number
+  likes: number
+  comments: number
+  shares: number
+  raw: Record<string, unknown>
 }
