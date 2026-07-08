@@ -15,7 +15,6 @@ import { TrendingDown } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { MembersTabs } from '@/components/admin/members-tabs'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { CourseAnalyticsView, CourseFunnelView } from '@/lib/types'
@@ -62,10 +61,9 @@ export function AnalisesClient() {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Membros"
+        title="Análises"
         description="Análises de aprendizado: conclusão por curso e onde os alunos travam."
       />
-      <MembersTabs />
 
       <Card>
         <Table>

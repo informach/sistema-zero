@@ -22,7 +22,6 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { MembersTabs } from '@/components/admin/members-tabs'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
@@ -211,7 +210,6 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
           ) : undefined
         }
       />
-      <MembersTabs />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">

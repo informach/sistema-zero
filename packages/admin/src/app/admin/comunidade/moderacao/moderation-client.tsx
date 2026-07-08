@@ -9,7 +9,6 @@ import { Select } from '@sistemazero/ui/select'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { CommunityTabs } from '@/components/admin/community-tabs'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type {
   HubMuteBanView,
@@ -122,10 +121,9 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Comunidade"
+        title="Moderação"
         description="Aprovação de conteúdo, denúncias e silenciamentos/banimentos."
       />
-      <CommunityTabs />
 
       <Field label="Servidor" htmlFor="mod-space">
         <Select id="mod-space" value={spaceId} onChange={(e) => setSpaceId(e.target.value)}>

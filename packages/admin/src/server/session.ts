@@ -86,6 +86,17 @@ export async function getSession(): Promise<SessionUser | null> {
   const access = store.get(ACCESS_COOKIE)?.value
   const refresh = store.get(REFRESH_COOKIE)?.value
   if (!access || !refresh) return null
+  return sessionUserFromToken(access)
+}
+
+/**
+ * O MESMO veredito tolerante-a-exp do `getSession`, mas sobre um token dado —
+ * p/ contextos sem `cookies()` do next/headers (o gate de seção do `proxy.ts`
+ * lê o cookie do request). A tolerância é segura: o jose valida a ASSINATURA
+ * antes do exp, então o decode pós-`JWTExpired` é de um token autêntico. Serve
+ * p/ decisão de UI (qual seção o papel vê) — dados são revalidados no gateway.
+ */
+export async function sessionUserFromToken(access: string): Promise<SessionUser | null> {
   try {
     const { payload } = await jwtVerify(access, verificationKey(), verifyOptions())
     return claimsToUser(payload)
