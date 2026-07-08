@@ -29,8 +29,18 @@ próximas fases) e **métricas** (snapshots por publicação/conta). Runtime: **
 > `publish_mode: 'auto'` p/ youtube (binding de conta) e o yt-metrics-worker (snapshots
 > canal/vídeos + rotas `GET /marketing/metrics/summary` e `GET /marketing/publications/:id/metrics`).
 > Migrations `0000..0003`. 133 testes.
-> **Fases seguintes:** F3 = Meta (container→poll→publish, carrossel) + metrics-worker completo;
-> F4 = TikTok + archiver R2→Drive; F5 = IA (Light Copy).
+> **F3 (backend) COMPLETA (07/07/2026):** OAuth Meta (1 consent no `facebook` → N contas:
+> Página com PAGE token que NÃO expira + IG business com o MESMO page token; user token 60d no
+> refresh, renovado pelo 2º passe do token-refresh-worker), **MetaPublisher** (ig_feed/
+> ig_carousel/ig_reels via container→poll→media_publish NA HORA agendada; fb_post direto;
+> fb_reels start→upload file_url→finish com fase CONSULTÁVEL; JPEG-only no feed; rate → deferred
+> +1h; guard de fase = retry ambíguo vira falha honesta com CTA "Vincular post real"), claim
+> automático com **lead POR REDE** (YouTube 6h, Meta 10min), **metrics-worker genérico com
+> DECAIMENTO** (`metrics_next_collect_at`, <48h→1h · <14d→6h · <90d→24h · depois 7d; fonte por
+> rede: YouTube + MetaMetricsSource — IG fields+insights vivos, FB só fields estáveis),
+> `PUT /publications/:id/assets` (ordem do carrossel), summary EXPANDIDA + followers-series e
+> `POST /publications/:id/link-external`. Migrations `0000..0004`. 191 testes.
+> **Fases seguintes:** F4 = TikTok + archiver R2→Drive; F5 = IA (Light Copy).
 
 ## Decisões travadas (não afrouxar)
 
@@ -132,7 +142,19 @@ GET 300/min, escrita 120/min, corpo 512KB):
   (`provider_session.videoId` presente, view expõe `hasRemoteVideo`): PATCH de metadados → 409
   (Studio ou cancelar/recriar), reagendar → fase `resync_publish_at` (worker sincroniza o
   publishAt via videos.update), cancelar → aviso de limpeza manual no `lastError`
-- Contas/OAuth (F1): `POST /marketing/oauth/:network/start` (só `youtube`; admin+ no gateway) →
+- Vínculo (F3): `POST /marketing/publications/:id/link-external` `{url}` — exige `published`;
+  YouTube extrai o videoId por REGEX; IG casa o shortcode contra `GET /{ig}/media` paginado e
+  FB contra `/{page}/posts` (exigem conta conectada → 409 sem); sem match → 404
+  `EXTERNAL_POST_NOT_FOUND`; match → externalPostId/Url + `metrics_next_collect_at = now`.
+- Métricas (F3): `GET /marketing/metrics/summary` → CONTRATO `{accounts[] (card por conta
+  conectada: followers do último snapshot), networkTotals[] (28d por rede: posts/views/likes/
+  comments), topPublications[] (top 10 por views, 90d, com network)}` ·
+  `GET /marketing/metrics/followers-series?network=&days=30` → `{series: [{accountId, network,
+  displayName, points: [{date 'YYYY-MM-DD' (dia SP), followers}]}]}` (1 ponto/dia = último
+  snapshot do dia) · `GET /marketing/publications/:id/metrics` → `{snapshots}` (série, 30 últimos)
+- Contas/OAuth (F1/F3): `POST /marketing/oauth/:network/start` (`youtube` e `facebook`;
+  `instagram` → 404 orientando conectar pelo Facebook — 1 consent upserta a Página E o IG
+  business vinculado; admin+ no gateway) →
   `{authorizeUrl}` · `GET /marketing/oauth/:network/callback` (pública; state single-use ATÔMICO;
   browser → SEMPRE 302 p/ `MARKETING_APP_URL/conexoes?connected=…|error=<code>`) ·
   `GET /marketing/accounts` → `{items (views SEM _enc, com canAutoPublish), autoCapableNetworks}` ·
@@ -141,9 +163,17 @@ GET 300/min, escrita 120/min, corpo 512KB):
   ACCOUNT_NOT_CONNECTED; OAuth off → 503 OAUTH_NOT_CONFIGURED) · `POST /marketing/media/import`
   `{driveFileId|driveUrl, contentId?, kind?}` (id extraído por REGEX — a URL nunca é fetchada;
   asset nasce `importing`, o media-transfer-worker faz o stream Drive→R2)
-- Métricas (F2): `GET /marketing/metrics/summary` → `{account (último snapshot do canal),
-  topPublications (últimas publicadas + último snapshot, ordenadas por views)}` ·
+- Métricas (F3 — CONTRATO fixo com o front): `GET /marketing/metrics/summary` →
+  `{accounts[] (card por conta conectada: followers do último snapshot), networkTotals[]
+  (28d por rede: posts/views/likes/comments), topPublications[] (top 10 por views, 90d, com
+  network)}` · `GET /marketing/metrics/followers-series?network=&days=30` → `{series:
+  [{accountId, network, displayName, points: [{date 'YYYY-MM-DD' (dia SP), followers}]}]}`
+  (1 ponto/dia = último snapshot do dia) ·
   `GET /marketing/publications/:id/metrics` → `{snapshots}` (série, 30 últimos)
+- Vínculo (F3): `POST /marketing/publications/:id/link-external` `{url}` — exige `published`;
+  YouTube extrai o videoId por REGEX; IG casa o shortcode contra `GET /{ig}/media` paginado e FB
+  contra `/{page}/posts` (exigem conta conectada → 409 sem conta); sem match → 404
+  `EXTERNAL_POST_NOT_FOUND`; match → externalPostId/Url + `metrics_next_collect_at = now`
 - Mídia: `POST /marketing/media/presign` `{filename,contentType,sizeBytes,contentId?,kind?}` →
   `{assetId, uploadUrl, contentType}` (PUT direto browser→R2) · `POST /marketing/media/:id/confirm` ·
   `GET /marketing/media/:id/resolve` → `{url}` (presigned GET) · `GET /marketing/media` ·
@@ -156,20 +186,32 @@ Claim `FOR UPDATE SKIP LOCKED` + lease; shutdown para os workers ANTES de fechar
 1. **publisher-worker** (30s): ramo MANUAL — `scheduled`(manual) vencida → `awaiting_manual` +
    lembrete WhatsApp por fone (`/messaging/send` via gateway, consumer HMAC `marketing`,
    Idempotency-Key `marketing-reminder-<pubId>-<fone>`); teto de tentativas desiste do AVISO mas
-   mantém awaiting_manual (Painel é o fallback). Ramo AUTO (F2) — claim de `auto` agendadas dentro
-   do LEAD (`YT_UPLOAD_LEAD_HOURS`) → `publishing` + publisher da rede; outcomes: published /
-   pending (repoll SEM gastar tentativa — publishAt nativo) / deferred (quota → vira do dia PT) /
-   retryable (backoff) / permanent (failed). **Idempotência**: checkpoint no `provider_session`
-   ANTES/DEPOIS de cada side-effect; com uploadUri salvo o retry consulta a sessão e retoma —
-   `videos.insert` NUNCA é recriado.
+   mantém awaiting_manual (Painel é o fallback). Ramo AUTO (F2/F3) — claim de `auto` agendadas
+   dentro do LEAD **POR REDE** (YouTube `YT_UPLOAD_LEAD_HOURS` 6h — upload antecipado com
+   publishAt nativo; Meta `META_PUBLISH_LEAD_MS` 10min — o container processa na espera e o
+   publish sai NA hora) → `publishing` + publisher da rede; outcomes: published / pending (repoll
+   SEM gastar tentativa) / deferred (quota YT → virada do dia PT; rate Meta → +1h) / retryable
+   (backoff) / permanent (failed). **Idempotência**: checkpoint no `provider_session` ANTES/
+   DEPOIS de cada side-effect; com uploadUri/containerId salvo o retry consulta e retoma — um
+   side-effect com id salvo NUNCA é recriado; passos NÃO-consultáveis (media_publish do IG,
+   create do FB) têm guard de FASE — retry ambíguo vira falha honesta com CTA "Vincular post
+   real", nunca post duplicado. Carrossel: filhos na ordem de `publication_assets`, retomada por
+   ÍNDICE; fb_reels: fase de publicação consultável via `status.publishing_phase`.
 2. **media-transfer-worker** (15s): assets `importing` — token fresco → metadado revalidado →
    stream Drive→R2 (`MediaStore.put`, client S3 com timeout próprio de 30min) → head confere →
    `ready`; 403/404/conta desconectada = failed permanente; transitório = backoff.
 3. **token-refresh-worker** (10min): renova PROATIVAMENTE tokens vencendo em
-   `TOKEN_REFRESH_MARGIN_MS`; `invalid_grant` → `needs_reauth` + log error (Sentry).
-4. **yt-metrics-worker** (6h, advisory lock `61120324050607092`): snapshot do canal
-   (channels.list, 1 unit) + views/likes/comments das publicadas recentes (videos.list, lotes de
-   50 ids = 1 unit) nas tabelas append-only; respeita `metrics_last_collected_at`.
+   `TOKEN_REFRESH_MARGIN_MS`; `invalid_grant` → `needs_reauth` + log error (Sentry). 2º passe
+   (Meta): user token 60d vencendo em `META_TOKEN_RENEW_MARGIN_DAYS` → `renewDerivedTokens`
+   (fb_exchange_token) re-sela TODAS as contas irmãs; falha permanente → `needs_reauth`.
+4. **metrics-worker** (genérico, advisory lock `61120324050607092`): por REDE com fonte
+   registrada (YouTube + Meta ×2) — snapshot de seguidores de TODAS as contas conectadas +
+   coleta das publicações ELEGÍVEIS pelo DECAIMENTO (`metrics_next_collect_at <= now`; função
+   pura `nextCollectDelayMs`: <48h→1h · <14d→6h · <90d→24h · <maxAge→7d · além→sai do radar),
+   agrupadas pela conta DONA do post (na Meta cada Página tem o próprio token). IG: fields +
+   insights VIVOS (views/reach/saved/shares — impressions/plays morreram); FB: SÓ fields
+   estáveis (reactions/comments summary + shares — Page Insights por post deprecado 11/2025).
+   Séries append-only; quota do YouTube fica DENTRO da YoutubeMetricsSource.
 
 Quota do YouTube: `provider_quota_usage (provider, day PT)` + `YtQuotaGuard` — tetos
 `YT_QUOTA_BUDGET_UNITS` (9000) e `YT_UPLOAD_DAILY_CAP` (20); `YT_VIDEOS_INSERT_UNITS` default 1600
@@ -205,6 +247,12 @@ Obrigatórias: `DATABASE_URL`, `INTERNAL_API_TOKEN` (≥16). Opcionais: `DATABAS
 habilitadas; ⚠️ PUBLICAR o app OAuth — em "Testing" o refresh expira em 7 dias),
 `MARKETING_TOKEN_ENC_KEY` (32B base64 — `openssl rand -base64 32`), `OAUTH_PUBLIC_BASE_URL`,
 `MARKETING_APP_URL`. O publisher automático do YouTube exige o grupo Google + R2.
+**OAuth Meta (grupo próprio, fail-soft):** `META_APP_ID`/`META_APP_SECRET` (app Facebook Login
+em LIVE MODE, redirect `<OAUTH_PUBLIC_BASE_URL>/marketing/oauth/facebook/callback`; Página
+vinculada ao IG profissional), `META_GRAPH_VERSION` (v25.0), `META_TOKEN_RENEW_MARGIN_DAYS`
+(10), `META_PUBLISH_LEAD_MS` (10min). Publisher/métricas Meta montam com META_* (+ R2 p/
+publicar). **Metrics-worker:** `METRICS_WORKER_INTERVAL_MS`/`METRICS_MAX_AGE_DAYS` (fallback
+nos `YT_METRICS_*`), `METRICS_BATCH_SIZE` (50).
 **Lembrete WhatsApp:** `MARKETING_HMAC_SECRET` (≥16; MESMO valor no gateway — ausente = lembrete
 desligado), `MARKETING_REMINDER_PHONES` (CSV E.164 DDI 55; vazio = no-op logado), `GATEWAY_URL`.
 **Knobs** (defaults sensatos, ver .env.example): `PUBLISHER_*`, `REMINDER_*`, `MEDIA_TRANSFER_*`,

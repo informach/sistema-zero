@@ -1,6 +1,8 @@
 import {
+  type FbPostStats,
   type FbReelPublishing,
   type IgContainerStatus,
+  type IgMediaStats,
   type MetaApi,
   MetaApiError,
   type MetaApiErrorKind,
@@ -267,5 +269,177 @@ export class MetaClient implements MetaApi {
     if (publishing === 'complete') return 'complete'
     if (publishing === 'in_progress') return 'in_progress'
     return 'not_started'
+  }
+
+  // ── Métricas ────────────────────────────────────────────────────────────────
+
+  async getIgAccountStats(input: {
+    accessToken: string
+    igUserId: string
+  }): Promise<{ followers: number; raw: Record<string, unknown> }> {
+    const body = await this.call<{ followers_count?: number; media_count?: number }>({
+      method: 'GET',
+      path: `/${input.igUserId}`,
+      accessToken: input.accessToken,
+      params: { fields: 'followers_count,media_count' },
+      context: 'ig conta (stats)',
+    })
+    return { followers: Number(body.followers_count ?? 0), raw: { ...body } }
+  }
+
+  async getIgMediaStats(input: {
+    accessToken: string
+    mediaIds: string[]
+  }): Promise<Map<string, IgMediaStats>> {
+    const map = new Map<string, IgMediaStats>()
+    if (input.mediaIds.length === 0) return map
+    // Lote `?ids=` (até 50): fields + insights VIVOS numa única chamada.
+    for (let i = 0; i < input.mediaIds.length; i += 50) {
+      const batch = input.mediaIds.slice(i, i + 50)
+      const body = await this.call<
+        Record<
+          string,
+          {
+            like_count?: number
+            comments_count?: number
+            insights?: { data?: Array<{ name?: string; values?: Array<{ value?: number }> }> }
+          }
+        >
+      >({
+        method: 'GET',
+        path: '/',
+        accessToken: input.accessToken,
+        params: {
+          ids: batch.join(','),
+          fields:
+            'like_count,comments_count,insights.metric(views,reach,saved,shares,total_interactions)',
+        },
+        context: 'ig media (stats em lote)',
+      })
+      for (const id of batch) {
+        const item = body[id]
+        if (!item) continue
+        const insights = new Map<string, number>()
+        for (const metric of item.insights?.data ?? []) {
+          if (metric.name) insights.set(metric.name, Number(metric.values?.[0]?.value ?? 0))
+        }
+        map.set(id, {
+          views: insights.get('views') ?? 0,
+          reach: insights.has('reach') ? (insights.get('reach') ?? 0) : null,
+          likes: Number(item.like_count ?? 0),
+          comments: Number(item.comments_count ?? 0),
+          shares: insights.get('shares') ?? 0,
+          saves: insights.get('saved') ?? 0,
+          raw: { ...item },
+        })
+      }
+    }
+    return map
+  }
+
+  async getFbPageStats(input: {
+    accessToken: string
+    pageId: string
+  }): Promise<{ followers: number; raw: Record<string, unknown> }> {
+    const body = await this.call<{ followers_count?: number }>({
+      method: 'GET',
+      path: `/${input.pageId}`,
+      accessToken: input.accessToken,
+      params: { fields: 'followers_count' },
+      context: 'fb página (stats)',
+    })
+    return { followers: Number(body.followers_count ?? 0), raw: { ...body } }
+  }
+
+  async getFbPostStats(input: {
+    accessToken: string
+    postIds: string[]
+  }): Promise<Map<string, FbPostStats>> {
+    const map = new Map<string, FbPostStats>()
+    if (input.postIds.length === 0) return map
+    for (let i = 0; i < input.postIds.length; i += 50) {
+      const batch = input.postIds.slice(i, i + 50)
+      const body = await this.call<
+        Record<
+          string,
+          {
+            reactions?: { summary?: { total_count?: number } }
+            comments?: { summary?: { total_count?: number } }
+            shares?: { count?: number }
+          }
+        >
+      >({
+        method: 'GET',
+        path: '/',
+        accessToken: input.accessToken,
+        params: {
+          ids: batch.join(','),
+          // SÓ fields estáveis (Page Insights por post foi deprecado em 11/2025).
+          fields: 'reactions.summary(true),comments.summary(true),shares',
+        },
+        context: 'fb posts (stats em lote)',
+      })
+      for (const id of batch) {
+        const item = body[id]
+        if (!item) continue
+        map.set(id, {
+          likes: Number(item.reactions?.summary?.total_count ?? 0),
+          comments: Number(item.comments?.summary?.total_count ?? 0),
+          shares: Number(item.shares?.count ?? 0),
+          raw: { ...item },
+        })
+      }
+    }
+    return map
+  }
+
+  // ── Listagem (link-external) ────────────────────────────────────────────────
+
+  async listIgMedia(input: { accessToken: string; igUserId: string; after?: string }): Promise<{
+    items: Array<{ id: string; permalink: string | null }>
+    nextCursor: string | null
+  }> {
+    const params: Record<string, string> = { fields: 'id,permalink', limit: '50' }
+    if (input.after) params.after = input.after
+    const body = await this.call<{
+      data?: Array<{ id?: string; permalink?: string }>
+      paging?: { cursors?: { after?: string }; next?: string }
+    }>({
+      method: 'GET',
+      path: `/${input.igUserId}/media`,
+      accessToken: input.accessToken,
+      params,
+      context: 'ig media (listagem)',
+    })
+    return {
+      items: (body.data ?? []).flatMap((m) =>
+        m.id ? [{ id: m.id, permalink: m.permalink ?? null }] : [],
+      ),
+      nextCursor: body.paging?.next ? (body.paging?.cursors?.after ?? null) : null,
+    }
+  }
+
+  async listFbPosts(input: { accessToken: string; pageId: string; after?: string }): Promise<{
+    items: Array<{ id: string; permalinkUrl: string | null }>
+    nextCursor: string | null
+  }> {
+    const params: Record<string, string> = { fields: 'id,permalink_url', limit: '50' }
+    if (input.after) params.after = input.after
+    const body = await this.call<{
+      data?: Array<{ id?: string; permalink_url?: string }>
+      paging?: { cursors?: { after?: string }; next?: string }
+    }>({
+      method: 'GET',
+      path: `/${input.pageId}/posts`,
+      accessToken: input.accessToken,
+      params,
+      context: 'fb posts (listagem)',
+    })
+    return {
+      items: (body.data ?? []).flatMap((p) =>
+        p.id ? [{ id: p.id, permalinkUrl: p.permalink_url ?? null }] : [],
+      ),
+      nextCursor: body.paging?.next ? (body.paging?.cursors?.after ?? null) : null,
+    }
   }
 }

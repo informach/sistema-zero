@@ -163,6 +163,11 @@ export const MarkPublishedBody = t.Object({
   externalPostId: t.Optional(t.Union([t.String({ maxLength: 200 }), t.Null()])),
 })
 
+// Vínculo publicação manual ↔ post real (a URL é resolvida por rede no serviço).
+export const LinkExternalBody = t.Object({
+  url: t.String({ minLength: 10, maxLength: 2000, pattern: '^https?://' }),
+})
+
 // ── Mídia ────────────────────────────────────────────────────────────────────
 const ASSET_KIND = t.Union([
   t.Literal('raw'),
@@ -234,6 +239,11 @@ const NETWORK = t.Union([
   t.Literal('youtube'),
   t.Literal('tiktok'),
 ])
+
+export const FollowersSeriesQuery = t.Object({
+  network: t.Optional(NETWORK),
+  days: t.Optional(t.Numeric({ minimum: 1, maximum: 365 })),
+})
 
 // `status` chega como CSV (ex.: scheduled,awaiting_manual) — validado na rota
 // token a token contra o enum (CSV inválido → 400, nunca filtro silencioso).

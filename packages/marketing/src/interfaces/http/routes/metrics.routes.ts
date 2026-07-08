@@ -1,7 +1,8 @@
 import { Elysia } from 'elysia'
 import type { MetricsService } from '../../../application/metrics/metrics.service'
+import type { Network } from '../../../domain/publication/publication'
 import { assertInternalCaller, requireStaff } from '../auth'
-import { IdParams } from '../dtos'
+import { FollowersSeriesQuery, IdParams } from '../dtos'
 
 export interface MetricsRoutesDeps {
   metrics: MetricsService
@@ -9,7 +10,7 @@ export interface MetricsRoutesDeps {
   requireStaffEnabled: boolean
 }
 
-/** Métricas básicas do YouTube (F2). Dashboard completo é a F3. */
+/** Dashboard de métricas (F3): summary por conta/rede + série de seguidores. */
 export function metricsRoutes(deps: MetricsRoutesDeps) {
   return new Elysia()
     .onBeforeHandle(({ headers }) => {
@@ -17,6 +18,15 @@ export function metricsRoutes(deps: MetricsRoutesDeps) {
       requireStaff(headers, deps.requireStaffEnabled)
     })
     .get('/marketing/metrics/summary', () => deps.metrics.summary())
+    .get(
+      '/marketing/metrics/followers-series',
+      ({ query }) =>
+        deps.metrics.followersSeries({
+          network: query.network as Network | undefined,
+          days: query.days ?? 30,
+        }),
+      { query: FollowersSeriesQuery },
+    )
     .get(
       '/marketing/publications/:id/metrics',
       ({ params }) => deps.metrics.publicationSnapshots(params.id),

@@ -43,6 +43,14 @@ export class NetworkNotSupportedError extends DomainError {
     super(message)
   }
 }
+export class ExternalPostNotFoundError extends DomainError {
+  readonly code = 'EXTERNAL_POST_NOT_FOUND'
+  constructor(
+    message = 'Não achei esse post na conta conectada. Confira se o link é do post certo',
+  ) {
+    super(message)
+  }
+}
 
 // ── Validação (400) ──────────────────────────────────────────────────────────
 export class AssetTooLargeError extends DomainError {

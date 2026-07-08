@@ -1,4 +1,18 @@
-import { and, asc, count, eq, gte, inArray, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  or,
+  sql,
+} from 'drizzle-orm'
 import type {
   PublicationListItem,
   PublicationRepository,
@@ -113,6 +127,20 @@ export class DrizzlePublicationRepository implements PublicationRepository {
         .where(where),
     ])
     return { items: rows, total: totalRow?.value ?? 0 }
+  }
+
+  async listRecentPublished(input: { since: Date; limit: number }): Promise<PublicationListItem[]> {
+    return this.db
+      .select({
+        publication: publications,
+        contentTitle: contents.title,
+        contentType: contents.contentType,
+      })
+      .from(publications)
+      .innerJoin(contents, eq(publications.contentId, contents.id))
+      .where(and(eq(publications.status, 'published'), gte(publications.publishedAt, input.since)))
+      .orderBy(desc(publications.publishedAt), asc(publications.id))
+      .limit(input.limit)
   }
 
   async claimDueManualReminders(

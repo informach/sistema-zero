@@ -7,10 +7,14 @@ import { PromoteIdeaService } from '../src/application/ideas/promote-idea.servic
 import { DriveImportService } from '../src/application/media/drive.service'
 import { MediaService } from '../src/application/media/media.service'
 import { MetricsService } from '../src/application/metrics/metrics.service'
+import { LinkExternalService } from '../src/application/publications/link-external.service'
 import { PublicationService } from '../src/application/publications/publication.service'
+import type { ExternalPostResolver } from '../src/domain/ports/external-post-resolver.port'
 import type { OAuthProvider } from '../src/domain/ports/oauth-provider.port'
 import type { Network } from '../src/domain/publication/publication'
 import { loadEnv } from '../src/infrastructure/config/env'
+import { MetaExternalResolver } from '../src/infrastructure/gateways/meta/meta-external-resolver'
+import { YoutubeExternalResolver } from '../src/infrastructure/gateways/youtube/youtube-external-resolver'
 import { createServer } from '../src/interfaces/http/server'
 import {
   FakeDriveClient,
@@ -28,6 +32,7 @@ import {
   InMemoryPublicationRepository,
   InMemorySocialAccountRepository,
 } from './fakes/in-memory'
+import { FakeMetaApi } from './fakes/meta'
 
 export const INTERNAL_TOKEN = 'test-internal-token-1234'
 
@@ -57,6 +62,7 @@ export interface TestApp {
   store: FakeMediaStore
   provider: FakeOAuthProvider
   metaProvider: FakeOAuthProvider
+  metaApi: FakeMetaApi
   driveClient: FakeDriveClient
   secretBox: FakeSecretBox
   services: { accounts: AccountService }
@@ -161,7 +167,21 @@ export function buildTestApp(
     idGen,
   )
   const metrics = new InMemoryMetricsRepository()
-  const metricsService = new MetricsService(accounts, publications, metrics)
+  const metricsService = new MetricsService(accounts, publications, metrics, now)
+  const metaApi = new FakeMetaApi()
+  const externalResolvers = new Map<Network, ExternalPostResolver>([
+    ['youtube' as Network, new YoutubeExternalResolver()],
+    ['instagram' as Network, new MetaExternalResolver(metaApi, 'instagram')],
+    ['facebook' as Network, new MetaExternalResolver(metaApi, 'facebook')],
+  ])
+  const linkExternalService = new LinkExternalService(
+    publications,
+    accounts,
+    accountService,
+    publicationAssets,
+    externalResolvers,
+    now,
+  )
 
   const app = createServer({
     env,
@@ -180,6 +200,7 @@ export function buildTestApp(
     },
     publications: {
       publications: publicationService,
+      linkExternal: linkExternalService,
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
@@ -227,6 +248,7 @@ export function buildTestApp(
     store,
     provider,
     metaProvider,
+    metaApi,
     driveClient,
     secretBox,
     services: { accounts: accountService },

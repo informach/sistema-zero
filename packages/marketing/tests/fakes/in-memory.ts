@@ -342,6 +342,23 @@ export class InMemoryPublicationRepository implements PublicationRepository {
     return due.map(clone)
   }
 
+  async listRecentPublished(input: { since: Date; limit: number }): Promise<PublicationListItem[]> {
+    return [...this.rows.values()]
+      .filter(
+        (p) =>
+          p.status === 'published' &&
+          p.publishedAt !== null &&
+          p.publishedAt.getTime() >= input.since.getTime(),
+      )
+      .sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0))
+      .slice(0, input.limit)
+      .map((p) => ({
+        publication: clone(p),
+        contentTitle: this.contentsRef?.rows.get(p.contentId)?.title ?? 'Conteúdo',
+        contentType: this.contentsRef?.rows.get(p.contentId)?.contentType ?? 'reels',
+      }))
+  }
+
   async listDueForMetrics(input: {
     network: Network
     now: Date
@@ -743,6 +760,24 @@ export class InMemoryMetricsRepository implements MetricsRepository {
       .filter((r) => r.socialAccountId === socialAccountId)
       .sort((a, b) => b.capturedAt.getTime() - a.capturedAt.getTime())
     return rows[0] ? clone(rows[0]) : null
+  }
+  async latestAccountSnapshots(socialAccountIds: string[]): Promise<Map<string, AccountSnapshot>> {
+    const map = new Map<string, AccountSnapshot>()
+    for (const id of socialAccountIds) {
+      const latest = await this.latestAccountSnapshot(id)
+      if (latest) map.set(id, latest)
+    }
+    return map
+  }
+  async listAccountSnapshotsSince(
+    socialAccountIds: string[],
+    since: Date,
+  ): Promise<AccountSnapshot[]> {
+    const wanted = new Set(socialAccountIds)
+    return this.accountSnapshots
+      .filter((r) => wanted.has(r.socialAccountId) && r.capturedAt.getTime() >= since.getTime())
+      .sort((a, b) => a.capturedAt.getTime() - b.capturedAt.getTime())
+      .map(clone)
   }
   async latestPublicationStats(
     publicationIds: string[],

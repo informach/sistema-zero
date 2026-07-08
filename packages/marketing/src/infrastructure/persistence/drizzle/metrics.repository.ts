@@ -1,4 +1,4 @@
-import { desc, eq, inArray } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, inArray } from 'drizzle-orm'
 import type {
   AccountSnapshot,
   MetricsRepository,
@@ -27,6 +27,38 @@ export class DrizzleMetricsRepository implements MetricsRepository {
       .orderBy(desc(metricAccountSnapshots.capturedAt))
       .limit(1)
     return row ?? null
+  }
+
+  async latestAccountSnapshots(socialAccountIds: string[]): Promise<Map<string, AccountSnapshot>> {
+    const map = new Map<string, AccountSnapshot>()
+    if (socialAccountIds.length === 0) return map
+    // Mais recentes primeiro; o primeiro visto por conta vence.
+    const rows = await this.db
+      .select()
+      .from(metricAccountSnapshots)
+      .where(inArray(metricAccountSnapshots.socialAccountId, socialAccountIds))
+      .orderBy(desc(metricAccountSnapshots.capturedAt))
+    for (const row of rows) {
+      if (!map.has(row.socialAccountId)) map.set(row.socialAccountId, row)
+    }
+    return map
+  }
+
+  async listAccountSnapshotsSince(
+    socialAccountIds: string[],
+    since: Date,
+  ): Promise<AccountSnapshot[]> {
+    if (socialAccountIds.length === 0) return []
+    return this.db
+      .select()
+      .from(metricAccountSnapshots)
+      .where(
+        and(
+          inArray(metricAccountSnapshots.socialAccountId, socialAccountIds),
+          gte(metricAccountSnapshots.capturedAt, since),
+        ),
+      )
+      .orderBy(asc(metricAccountSnapshots.capturedAt))
   }
 
   async latestPublicationStats(

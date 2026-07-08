@@ -65,6 +65,11 @@ export interface PublicationRepository {
     networks: Array<{ network: Network; leadMs: number }>
   }): Promise<Publication[]>
   /**
+   * Publicadas RECENTES por `published_at` (dashboard: totais 28d + top 90d).
+   * Ordem published_at DESC; o join com o conteúdo dá o título da tabela.
+   */
+  listRecentPublished(input: { since: Date; limit: number }): Promise<PublicationListItem[]>
+  /**
    * Fila do metrics-worker (decaimento): publicadas com post externo e
    * `metrics_next_collect_at <= now` (NULL = fora do radar, nunca elegível).
    */

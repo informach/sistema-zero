@@ -88,4 +88,56 @@ export interface MetaApi {
   }): Promise<void>
   /** GET /{videoId}?fields=status — fase de publicação (consultável = retry seguro). */
   getFbReelStatus(input: { accessToken: string; videoId: string }): Promise<FbReelPublishing>
+
+  // ── Métricas (só fields/insights VIVOS — deprecação massiva de 11/2025) ────
+  /** GET /{ig}?fields=followers_count,media_count. */
+  getIgAccountStats(input: {
+    accessToken: string
+    igUserId: string
+  }): Promise<{ followers: number; raw: Record<string, unknown> }>
+  /** Lote `?ids=` com fields + insights vivos (views/reach/saved/shares/total_interactions). */
+  getIgMediaStats(input: {
+    accessToken: string
+    mediaIds: string[]
+  }): Promise<Map<string, IgMediaStats>>
+  /** GET /{page}?fields=followers_count. */
+  getFbPageStats(input: {
+    accessToken: string
+    pageId: string
+  }): Promise<{ followers: number; raw: Record<string, unknown> }>
+  /** Lote `?ids=` com os fields ESTÁVEIS (reactions/comments summary + shares). */
+  getFbPostStats(input: {
+    accessToken: string
+    postIds: string[]
+  }): Promise<Map<string, FbPostStats>>
+
+  // ── Listagem p/ o vínculo manual↔post real (link-external) ─────────────────
+  /** GET /{ig}/media?fields=id,permalink (paginado). */
+  listIgMedia(input: {
+    accessToken: string
+    igUserId: string
+    after?: string
+  }): Promise<{ items: Array<{ id: string; permalink: string | null }>; nextCursor: string | null }>
+  /** GET /{page}/posts?fields=id,permalink_url (paginado). */
+  listFbPosts(input: { accessToken: string; pageId: string; after?: string }): Promise<{
+    items: Array<{ id: string; permalinkUrl: string | null }>
+    nextCursor: string | null
+  }>
+}
+
+export interface IgMediaStats {
+  views: number
+  reach: number | null
+  likes: number
+  comments: number
+  shares: number
+  saves: number
+  raw: Record<string, unknown>
+}
+
+export interface FbPostStats {
+  likes: number
+  comments: number
+  shares: number
+  raw: Record<string, unknown>
 }

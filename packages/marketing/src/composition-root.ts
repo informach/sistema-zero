@@ -8,9 +8,11 @@ import { PromoteIdeaService } from './application/ideas/promote-idea.service'
 import { DriveImportService } from './application/media/drive.service'
 import { MediaService } from './application/media/media.service'
 import { MetricsService } from './application/metrics/metrics.service'
+import { LinkExternalService } from './application/publications/link-external.service'
 import { PublicationService } from './application/publications/publication.service'
 import { YtQuotaGuard } from './application/publications/yt-quota-guard'
 import { MediaNotConfiguredError } from './domain/marketing-errors'
+import type { ExternalPostResolver } from './domain/ports/external-post-resolver.port'
 import type { MediaStore } from './domain/ports/media-store.port'
 import type { MetricsSource } from './domain/ports/metrics-source.port'
 import type { OAuthProvider } from './domain/ports/oauth-provider.port'
@@ -28,10 +30,13 @@ import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
 import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
 import { MetaClient } from './infrastructure/gateways/meta/meta-client'
+import { MetaExternalResolver } from './infrastructure/gateways/meta/meta-external-resolver'
+import { MetaMetricsSource } from './infrastructure/gateways/meta/meta-metrics-source'
 import { MetaOAuthProvider } from './infrastructure/gateways/meta/meta-oauth-provider'
 import { MetaPublisher } from './infrastructure/gateways/meta/meta-publisher'
 import { R2MediaStore } from './infrastructure/gateways/r2/r2-media-store'
 import { YoutubeClient } from './infrastructure/gateways/youtube/youtube-client'
+import { YoutubeExternalResolver } from './infrastructure/gateways/youtube/youtube-external-resolver'
 import { YoutubeMetricsSource } from './infrastructure/gateways/youtube/youtube-metrics-source'
 import { YoutubePublisher } from './infrastructure/gateways/youtube/youtube-publisher'
 import { withSentryMirror } from './infrastructure/observability/sentry'
@@ -238,7 +243,7 @@ export function createApplication(env: Env): Application {
     idGen,
   )
   const metricsRepo = new DrizzleMetricsRepository(db)
-  const metricsService = new MetricsService(accountRepo, publicationRepo, metricsRepo)
+  const metricsService = new MetricsService(accountRepo, publicationRepo, metricsRepo, now)
 
   // Publisher automático (F2): YouTube com quota guard (reset à meia-noite PT).
   const quotaGuard = new YtQuotaGuard(
@@ -262,8 +267,10 @@ export function createApplication(env: Env): Application {
     )
   }
   // Meta (F3): mesma API client p/ as duas redes (o page token serve os dois).
-  if (metaPublishEnabled && metaCfg) {
-    const metaApi = new MetaClient({ graphVersion: metaCfg.graphVersion })
+  // Métricas/link-external só precisam do OAuth; o PUBLISHER exige também o R2.
+  const metaApi =
+    oauthCore && metaCfg ? new MetaClient({ graphVersion: metaCfg.graphVersion }) : null
+  if (metaPublishEnabled && metaApi) {
     const metaPublisherConfig = { presignTtlSeconds: env.R2_PRESIGN_GET_TTL_SECONDS }
     publishers.set(
       'instagram',
@@ -346,6 +353,26 @@ export function createApplication(env: Env): Application {
   if (youtubeEnabled) {
     metricsSources.push(new YoutubeMetricsSource(new YoutubeClient(), quotaGuard))
   }
+  if (metaApi) {
+    metricsSources.push(new MetaMetricsSource(metaApi, 'instagram'))
+    metricsSources.push(new MetaMetricsSource(metaApi, 'facebook'))
+  }
+
+  // Vínculo publicação manual ↔ post real (YouTube por regex; IG/FB pela API).
+  const externalResolvers = new Map<Network, ExternalPostResolver>()
+  externalResolvers.set('youtube', new YoutubeExternalResolver())
+  if (metaApi) {
+    externalResolvers.set('instagram', new MetaExternalResolver(metaApi, 'instagram'))
+    externalResolvers.set('facebook', new MetaExternalResolver(metaApi, 'facebook'))
+  }
+  const linkExternalService = new LinkExternalService(
+    publicationRepo,
+    accountRepo,
+    accountService,
+    publicationAssetRepo,
+    externalResolvers,
+    now,
+  )
   const metricsWorker =
     metricsSources.length > 0
       ? new MetricsWorker({
@@ -402,6 +429,7 @@ export function createApplication(env: Env): Application {
     },
     publications: {
       publications: publicationService,
+      linkExternal: linkExternalService,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
     },

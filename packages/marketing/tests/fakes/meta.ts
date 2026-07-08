@@ -1,6 +1,8 @@
 import type {
+  FbPostStats,
   FbReelPublishing,
   IgContainerStatus,
+  IgMediaStats,
   MetaApi,
   MetaApiError,
 } from '../../src/infrastructure/gateways/meta/meta-api.port'
@@ -131,5 +133,67 @@ export class FakeMetaApi implements MetaApi {
     return this.reelFinishCalls.some((c) => c.videoId === input.videoId)
       ? 'complete'
       : 'not_started'
+  }
+
+  // ── Métricas (roteirizáveis por id) ─────────────────────────────────────────
+  igAccountStats: { followers: number; raw: Record<string, unknown> } = { followers: 0, raw: {} }
+  fbPageStats: { followers: number; raw: Record<string, unknown> } = { followers: 0, raw: {} }
+  igMediaStats = new Map<string, IgMediaStats>()
+  fbPostStats = new Map<string, FbPostStats>()
+
+  async getIgAccountStats(): Promise<{ followers: number; raw: Record<string, unknown> }> {
+    return this.igAccountStats
+  }
+
+  async getIgMediaStats(input: {
+    accessToken: string
+    mediaIds: string[]
+  }): Promise<Map<string, IgMediaStats>> {
+    const map = new Map<string, IgMediaStats>()
+    for (const id of input.mediaIds) {
+      const stats = this.igMediaStats.get(id)
+      if (stats) map.set(id, stats)
+    }
+    return map
+  }
+
+  async getFbPageStats(): Promise<{ followers: number; raw: Record<string, unknown> }> {
+    return this.fbPageStats
+  }
+
+  async getFbPostStats(input: {
+    accessToken: string
+    postIds: string[]
+  }): Promise<Map<string, FbPostStats>> {
+    const map = new Map<string, FbPostStats>()
+    for (const id of input.postIds) {
+      const stats = this.fbPostStats.get(id)
+      if (stats) map.set(id, stats)
+    }
+    return map
+  }
+
+  // ── Listagem (link-external) — páginas de 2 itens p/ testar a paginação ────
+  igMediaList: Array<{ id: string; permalink: string | null }> = []
+  fbPostList: Array<{ id: string; permalinkUrl: string | null }> = []
+
+  async listIgMedia(input: { accessToken: string; igUserId: string; after?: string }): Promise<{
+    items: Array<{ id: string; permalink: string | null }>
+    nextCursor: string | null
+  }> {
+    const start = input.after ? Number(input.after) : 0
+    const items = this.igMediaList.slice(start, start + 2)
+    const next = start + 2 < this.igMediaList.length ? String(start + 2) : null
+    return { items, nextCursor: next }
+  }
+
+  async listFbPosts(input: { accessToken: string; pageId: string; after?: string }): Promise<{
+    items: Array<{ id: string; permalinkUrl: string | null }>
+    nextCursor: string | null
+  }> {
+    const start = input.after ? Number(input.after) : 0
+    const items = this.fbPostList.slice(start, start + 2)
+    const next = start + 2 < this.fbPostList.length ? String(start + 2) : null
+    return { items, nextCursor: next }
   }
 }

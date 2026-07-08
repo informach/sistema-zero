@@ -1,11 +1,13 @@
 import { ValidationError } from '@sistemazero/core/errors'
 import { Elysia } from 'elysia'
+import type { LinkExternalService } from '../../../application/publications/link-external.service'
 import type { PublicationService } from '../../../application/publications/publication.service'
 import type { PublicationStatus } from '../../../domain/publication/publication'
 import { assertInternalCaller, requireStaff, resolveActor } from '../auth'
 import { parseIsoDate } from '../dates'
 import {
   IdParams,
+  LinkExternalBody,
   MarkPublishedBody,
   PublicationAssetsBody,
   PublicationPatchBody,
@@ -42,6 +44,7 @@ function parseStatusCsv(csv: string | undefined): PublicationStatus[] | undefine
 
 export interface PublicationsRoutesDeps {
   publications: PublicationService
+  linkExternal: LinkExternalService
   internalToken?: string
   requireStaffEnabled: boolean
 }
@@ -121,5 +124,10 @@ export function publicationsRoutes(deps: PublicationsRoutesDeps) {
       ({ headers, params, body }) =>
         deps.publications.markPublished(resolveActor(headers), params.id, body),
       { params: IdParams, body: MarkPublishedBody },
+    )
+    .post(
+      '/marketing/publications/:id/link-external',
+      ({ params, body }) => deps.linkExternal.link(params.id, body.url),
+      { params: IdParams, body: LinkExternalBody },
     )
 }
