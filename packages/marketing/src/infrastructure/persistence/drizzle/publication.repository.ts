@@ -249,10 +249,9 @@ export class DrizzlePublicationRepository implements PublicationRepository {
     })
   }
 
-  async listPublishedForMetrics(input: {
+  async listDueForMetrics(input: {
     network: Network
-    since: Date
-    staleBefore: Date
+    now: Date
     limit: number
   }): Promise<Publication[]> {
     return this.db
@@ -263,22 +262,25 @@ export class DrizzlePublicationRepository implements PublicationRepository {
           eq(publications.network, input.network),
           eq(publications.status, 'published'),
           isNotNull(publications.externalPostId),
-          gte(publications.publishedAt, input.since),
-          or(
-            isNull(publications.metricsLastCollectedAt),
-            lt(publications.metricsLastCollectedAt, input.staleBefore),
-          ),
+          lte(publications.metricsNextCollectAt, input.now),
         ),
       )
-      .orderBy(asc(publications.metricsLastCollectedAt), asc(publications.id))
+      .orderBy(asc(publications.metricsNextCollectAt), asc(publications.id))
       .limit(input.limit)
   }
 
-  async updateMetricsCollectedAt(ids: string[], at: Date): Promise<void> {
-    if (ids.length === 0) return
-    await this.db
-      .update(publications)
-      .set({ metricsLastCollectedAt: at })
-      .where(inArray(publications.id, ids))
+  async updateMetricsSchedule(
+    items: Array<{ id: string; collectedAt: Date; nextCollectAt: Date | null }>,
+  ): Promise<void> {
+    // Lotes pequenos (≤50/ciclo) — updates individuais são simples e suficientes.
+    for (const item of items) {
+      await this.db
+        .update(publications)
+        .set({
+          metricsLastCollectedAt: item.collectedAt,
+          metricsNextCollectAt: item.nextCollectAt,
+        })
+        .where(eq(publications.id, item.id))
+    }
   }
 }

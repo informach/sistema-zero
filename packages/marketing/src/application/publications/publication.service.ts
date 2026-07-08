@@ -130,6 +130,7 @@ export class PublicationService {
       publishedAt: null,
       reminderSentAt: null,
       metricsLastCollectedAt: null,
+      metricsNextCollectAt: null,
       createdAt: at,
       updatedAt: at,
     }))
@@ -321,6 +322,8 @@ export class PublicationService {
     pub.publishedAt = this.now()
     pub.externalUrl = input.externalUrl ?? pub.externalUrl
     pub.externalPostId = input.externalPostId ?? pub.externalPostId
+    // Com o post real identificado, a coleta de métricas entra no radar já.
+    if (pub.externalPostId) pub.metricsNextCollectAt = pub.publishedAt
     pub.lastError = null
     pub.version = expectedVersion + 1
     pub.updatedAt = pub.publishedAt

@@ -66,6 +66,7 @@ function makePublication(contentId: string, overrides: Partial<Publication> = {}
     publishedAt: null,
     reminderSentAt: null,
     metricsLastCollectedAt: null,
+    metricsNextCollectAt: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,

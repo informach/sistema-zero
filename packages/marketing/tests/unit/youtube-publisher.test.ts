@@ -134,6 +134,7 @@ function makeAutoPublication(
     publishedAt: null,
     reminderSentAt: null,
     metricsLastCollectedAt: null,
+    metricsNextCollectAt: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,

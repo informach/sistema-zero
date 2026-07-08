@@ -23,6 +23,8 @@ export interface Publication {
   publishedAt: Date | null
   reminderSentAt: Date | null
   metricsLastCollectedAt: Date | null
+  /** Próxima coleta de métricas (decaimento por idade). NULL = fora do radar. */
+  metricsNextCollectAt: Date | null
   createdAt: Date
   updatedAt: Date
 }

@@ -159,13 +159,20 @@ const EnvSchema = z.object({
   YT_QUOTA_BUDGET_UNITS: z.coerce.number().int().positive().default(9000),
   YT_VIDEOS_INSERT_UNITS: z.coerce.number().int().positive().default(1600),
   YT_UPLOAD_DAILY_CAP: z.coerce.number().int().positive().default(20),
-  // Métricas básicas YT (snapshots de canal/publicações).
+  // Métricas básicas YT (snapshots de canal/publicações) — LEGADO F2, mantidas
+  // como fallback do metrics-worker genérico (F3).
   YT_METRICS_INTERVAL_MS: z.coerce
     .number()
     .int()
     .positive()
     .default(6 * 60 * 60 * 1000),
   YT_METRICS_MAX_AGE_DAYS: z.coerce.number().int().positive().default(90),
+  // ── Metrics-worker genérico (F3) — decaimento por idade da publicação ──────
+  // Intervalo do TICK (a cadência real por publicação é o decaimento: <48h→1h,
+  // <14d→6h, <90d→24h, depois semanal). Fallback nos YT_* legados.
+  METRICS_WORKER_INTERVAL_MS: z.coerce.number().int().positive().optional(),
+  METRICS_MAX_AGE_DAYS: z.coerce.number().int().positive().optional(),
+  METRICS_BATCH_SIZE: z.coerce.number().int().positive().default(50),
 })
 
 export type Env = z.infer<typeof EnvSchema>

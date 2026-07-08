@@ -12,6 +12,7 @@ import { PublicationService } from './application/publications/publication.servi
 import { YtQuotaGuard } from './application/publications/yt-quota-guard'
 import { MediaNotConfiguredError } from './domain/marketing-errors'
 import type { MediaStore } from './domain/ports/media-store.port'
+import type { MetricsSource } from './domain/ports/metrics-source.port'
 import type { OAuthProvider } from './domain/ports/oauth-provider.port'
 import type { SocialPublisher } from './domain/ports/social-publisher.port'
 import type { Network } from './domain/publication/publication'
@@ -27,6 +28,7 @@ import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oau
 import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
 import { R2MediaStore } from './infrastructure/gateways/r2/r2-media-store'
 import { YoutubeClient } from './infrastructure/gateways/youtube/youtube-client'
+import { YoutubeMetricsSource } from './infrastructure/gateways/youtube/youtube-metrics-source'
 import { YoutubePublisher } from './infrastructure/gateways/youtube/youtube-publisher'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleChecklistRepository } from './infrastructure/persistence/drizzle/checklist.repository'
@@ -42,9 +44,9 @@ import { DrizzleQuotaUsageRepository } from './infrastructure/persistence/drizzl
 import { DrizzleSocialAccountRepository } from './infrastructure/persistence/drizzle/social-account.repository'
 import { createSecretBox } from './infrastructure/security/secret-box'
 import { MediaTransferWorker } from './infrastructure/workers/media-transfer-worker'
+import { MetricsWorker } from './infrastructure/workers/metrics-worker'
 import { PublisherWorker } from './infrastructure/workers/publisher-worker'
 import { TokenRefreshWorker } from './infrastructure/workers/token-refresh-worker'
-import { YtMetricsWorker } from './infrastructure/workers/yt-metrics-worker'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -61,7 +63,7 @@ export interface Application {
  */
 const RETENTION_ADVISORY_LOCK_KEY = '61120324050607091'
 /** Lock do ciclo de métricas do YouTube (mesma família, chave própria). */
-const YT_METRICS_ADVISORY_LOCK_KEY = '61120324050607092'
+const METRICS_ADVISORY_LOCK_KEY = '61120324050607092'
 
 /** MediaStore quando o R2 não está configurado: toda chamada vira 503 amigável. */
 const notConfiguredMediaStore: MediaStore = {
@@ -295,21 +297,24 @@ export function createApplication(env: Env): Application {
       marginMs: env.TOKEN_REFRESH_MARGIN_MS,
     },
   })
-  const ytPublisher = publishers.get('youtube')
-  const ytMetricsWorker =
-    youtubeEnabled && ytPublisher
-      ? new YtMetricsWorker({
-          api: new YoutubeClient(),
+  // Fontes de métricas por rede (YouTube na F2; Instagram/Facebook na F3).
+  const metricsSources: MetricsSource[] = []
+  if (youtubeEnabled) {
+    metricsSources.push(new YoutubeMetricsSource(new YoutubeClient(), quotaGuard))
+  }
+  const metricsWorker =
+    metricsSources.length > 0
+      ? new MetricsWorker({
+          sources: metricsSources,
           accounts: accountRepo,
           accountService,
           publications: publicationRepo,
           metrics: metricsRepo,
-          quota: quotaGuard,
           // Advisory xact-lock: só uma réplica coleta por ciclo (solta no commit).
           withLock: async (fn) => {
             await connection.sql.begin(async (gate) => {
               const [row] = await gate`
-                select pg_try_advisory_xact_lock(${YT_METRICS_ADVISORY_LOCK_KEY}::bigint) as locked
+                select pg_try_advisory_xact_lock(${METRICS_ADVISORY_LOCK_KEY}::bigint) as locked
               `
               if (!row?.locked) return
               await fn()
@@ -318,8 +323,9 @@ export function createApplication(env: Env): Application {
           now,
           logger,
           config: {
-            intervalMs: env.YT_METRICS_INTERVAL_MS,
-            maxAgeDays: env.YT_METRICS_MAX_AGE_DAYS,
+            intervalMs: env.METRICS_WORKER_INTERVAL_MS ?? env.YT_METRICS_INTERVAL_MS,
+            maxAgeDays: env.METRICS_MAX_AGE_DAYS ?? env.YT_METRICS_MAX_AGE_DAYS,
+            batchSize: env.METRICS_BATCH_SIZE,
           },
         })
       : null
@@ -437,7 +443,7 @@ export function createApplication(env: Env): Application {
       publisherWorker.start()
       mediaTransferWorker.start()
       tokenRefreshWorker.start()
-      ytMetricsWorker?.start()
+      metricsWorker?.start()
       // `::` = dual-stack — necessário p/ o private networking do Railway (IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
@@ -449,7 +455,7 @@ export function createApplication(env: Env): Application {
         publisherWorker.stop(),
         mediaTransferWorker.stop(),
         tokenRefreshWorker.stop(),
-        ytMetricsWorker?.stop() ?? Promise.resolve(),
+        metricsWorker?.stop() ?? Promise.resolve(),
       ])
       try {
         await server.stop()

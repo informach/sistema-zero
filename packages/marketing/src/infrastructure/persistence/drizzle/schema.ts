@@ -290,6 +290,9 @@ export const publications = marketing.table(
     publishedAt: timestamp('published_at', { withTimezone: true }),
     reminderSentAt: timestamp('reminder_sent_at', { withTimezone: true }),
     metricsLastCollectedAt: timestamp('metrics_last_collected_at', { withTimezone: true }),
+    // Decaimento de frequência da coleta (F3): próxima coleta calculada pela
+    // idade do post (nextCollectDelayMs). NULL = fora do radar.
+    metricsNextCollectAt: timestamp('metrics_next_collect_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -304,6 +307,10 @@ export const publications = marketing.table(
     // Janela do Calendário/Painel (GET /marketing/publications?from&to) — o
     // claim_idx não serve janela sem status.
     index('publications_scheduled_idx').on(t.scheduledAt),
+    // Fila do metrics-worker (parcial: só publicadas com post externo).
+    index('publications_metrics_due_idx')
+      .on(t.metricsNextCollectAt)
+      .where(sql`${t.status} = 'published' and ${t.externalPostId} is not null`),
   ],
 )
 

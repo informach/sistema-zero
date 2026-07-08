@@ -342,10 +342,9 @@ export class InMemoryPublicationRepository implements PublicationRepository {
     return due.map(clone)
   }
 
-  async listPublishedForMetrics(input: {
+  async listDueForMetrics(input: {
     network: Network
-    since: Date
-    staleBefore: Date
+    now: Date
     limit: number
   }): Promise<Publication[]> {
     return [...this.rows.values()]
@@ -354,18 +353,26 @@ export class InMemoryPublicationRepository implements PublicationRepository {
           p.network === input.network &&
           p.status === 'published' &&
           p.externalPostId !== null &&
-          p.publishedAt !== null &&
-          p.publishedAt >= input.since &&
-          (p.metricsLastCollectedAt === null || p.metricsLastCollectedAt < input.staleBefore),
+          p.metricsNextCollectAt !== null &&
+          p.metricsNextCollectAt.getTime() <= input.now.getTime(),
       )
-      .sort((a, b) => a.id.localeCompare(b.id))
+      .sort((a, b) => {
+        const at = a.metricsNextCollectAt?.getTime() ?? 0
+        const bt = b.metricsNextCollectAt?.getTime() ?? 0
+        return at === bt ? a.id.localeCompare(b.id) : at - bt
+      })
       .slice(0, input.limit)
       .map(clone)
   }
-  async updateMetricsCollectedAt(ids: string[], at: Date): Promise<void> {
-    for (const id of ids) {
-      const pub = this.rows.get(id)
-      if (pub) pub.metricsLastCollectedAt = at
+  async updateMetricsSchedule(
+    items: Array<{ id: string; collectedAt: Date; nextCollectAt: Date | null }>,
+  ): Promise<void> {
+    for (const item of items) {
+      const pub = this.rows.get(item.id)
+      if (pub) {
+        pub.metricsLastCollectedAt = item.collectedAt
+        pub.metricsNextCollectAt = item.nextCollectAt
+      }
     }
   }
 

@@ -219,6 +219,8 @@ export class PublisherWorker {
           externalUrl: outcome.externalUrl,
           lastError: null,
           nextAttemptAt: null,
+          // Post no ar → coleta de métricas entra no radar imediatamente.
+          metricsNextCollectAt: this.deps.now(),
         })
         this.deps.logger.info('publisher.auto.published', {
           publicationId: publication.id,

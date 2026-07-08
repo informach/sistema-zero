@@ -64,16 +64,15 @@ export interface PublicationRepository {
     networks: Network[]
   }): Promise<Publication[]>
   /**
-   * Publicações `published` da rede com post externo e coleta de métricas
-   * VENCIDA (nunca coletada ou anterior a `staleBefore`), publicadas depois de
-   * `since` (teto de idade — vídeo antigo sai do radar).
+   * Fila do metrics-worker (decaimento): publicadas com post externo e
+   * `metrics_next_collect_at <= now` (NULL = fora do radar, nunca elegível).
    */
-  listPublishedForMetrics(input: {
-    network: Network
-    since: Date
-    staleBefore: Date
-    limit: number
-  }): Promise<Publication[]>
-  /** Marca a coleta (não mexe em version — campo operacional do worker). */
-  updateMetricsCollectedAt(ids: string[], at: Date): Promise<void>
+  listDueForMetrics(input: { network: Network; now: Date; limit: number }): Promise<Publication[]>
+  /**
+   * Grava a coleta + a PRÓXIMA (decaimento). Campos operacionais do worker —
+   * não mexe em `version` (não conflita com edições da equipe).
+   */
+  updateMetricsSchedule(
+    items: Array<{ id: string; collectedAt: Date; nextCollectAt: Date | null }>,
+  ): Promise<void>
 }
