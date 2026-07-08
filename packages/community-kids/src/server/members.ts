@@ -25,4 +25,6 @@ export const {
   getRoomReadonly,
   getMissionsReadonly,
   getLeagueReadonly,
+  listTeacherThreadsReadonly,
+  getTeacherThreadsUnreadReadonly,
 } = shell.members

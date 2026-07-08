@@ -444,6 +444,19 @@ família NOVA da conta não é tocada (família distinta), mas o token de perfil
 (ex.: `/perfis`); a própria rota é isenta. O avatar do perfil (`profileAvatar`) reusa a pipeline
 do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (multipart).
 
+**Recados (conversas com o professor — canal de retorno, 07/2026):** o shell é o BFF do
+"Recados" do aluno (o kids renderiza em `/recados`). Client members (`server/clients.ts`,
+`?audience`): `listTeacherThreads`/`listTeacherThreadsReadonly` (caixa), `getTeacherThreadsUnread`/
+`getTeacherThreadsUnreadReadonly` (badge do sino — resposta `{count}`), `getTeacherThread(id)`,
+`postTeacherMessage(id, body)` (resposta do aluno — corpo `{body}`), `markTeacherThreadRead(id)`.
+Handlers em `createShellRoutes` → `routes.teacherThreads{List,Unread}`/`teacherThread{Get,Reply,Read}`
+(`/api/members/teacher-threads*`): GET livres (impersonação PODE ler), `Reply`/`Read` gateados por
+`requireWritableSession` (impersonação read-only) + id validado UUID + Zod `TeacherReplyBody` (≤1000).
+Tipos mirror em `lib/types.ts` (`TeacherThread{,Summary}View`/`TeacherMessageView`/
+`TeacherThreadContext`/`TeacherMessageRole`). O aluno só RESPONDE (não inicia); o texto renderiza
+PLAIN (React escapa — sem markdown de UGC). Contrato do members: ver `../members/CLAUDE.md`
+§Conversas com o professor.
+
 ## Invariantes (NÃO quebrar)
 
 1. **Parametrização é por FACTORY, nunca por config em escopo de módulo**: o Turbopack separa

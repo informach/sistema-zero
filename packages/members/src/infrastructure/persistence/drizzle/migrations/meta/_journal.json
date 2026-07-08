@@ -274,6 +274,13 @@
       "when": 1783300000000,
       "tag": "0038_studio_retention",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1783529828184,
+      "tag": "0039_needy_rhino",
+      "breakpoints": true
     }
   ]
 }

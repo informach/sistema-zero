@@ -6,6 +6,7 @@ import {
   House,
   Images,
   Lightbulb,
+  Mail,
   MessagesSquare,
   Palette,
   Sparkles,
@@ -43,6 +44,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/estudio', label: 'Estúdio', icon: Blocks, match: '/estudio' },
   // O avatar é acessado pelo clique no avatar em /perfil (sem item próprio no menu).
   { href: '/quarto', label: 'Quarto', icon: House },
+  // Conversas com o professor (canal de retorno): recados/correções da entrega + Mural.
+  { href: '/recados', label: 'Recados', icon: Mail, match: '/recados' },
   { href: '/perfil', label: 'Perfil', icon: CircleUserRound },
 ]
 

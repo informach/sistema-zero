@@ -304,7 +304,7 @@ export function CourseEditorClient({
       </div>
 
       {tab === 'entregas' ? (
-        <CourseSubmissionsPanel courseId={courseId} />
+        <CourseSubmissionsPanel courseId={courseId} audience={tree?.audience ?? 'kids'} />
       ) : loading ? (
         <Card className="py-10 text-center text-muted-foreground">
           <Spinner className="mx-auto" />

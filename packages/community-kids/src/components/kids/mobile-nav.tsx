@@ -7,6 +7,7 @@ import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { isNavActive } from './app-sidebar'
 import { KidsLogo } from './kids-logo'
 import { MOBILE_NAV_ITEMS } from './nav'
+import { RecadosBell } from './recados-bell'
 import { StreakWidget } from './streak-widget'
 import { UserMenu } from './user-menu'
 
@@ -31,6 +32,7 @@ export function MobileTopbar({
       </Link>
       <div className="flex items-center gap-3">
         {gamification ? <StreakWidget gamification={gamification} compact /> : null}
+        <RecadosBell />
         <UserMenu user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
       </div>
     </header>

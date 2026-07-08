@@ -78,6 +78,7 @@ import { SaveVideoPositionService } from '../src/application/save-video-position
 import { StudioSubmissionsAdminService } from '../src/application/studio-submissions-admin/studio-submissions-admin.service'
 import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from '../src/application/submit-studio-project/submit-studio-project.service'
+import { TeacherThreadsService } from '../src/application/teacher-threads/teacher-threads.service'
 import {
   RevokeCertificateService,
   ValidateCertificateService,
@@ -104,6 +105,7 @@ import {
   InMemoryQuizAttemptRepository,
   InMemoryRoomRepository,
   InMemoryStudioSubmissionRepository,
+  InMemoryTeacherThreadRepository,
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
@@ -144,6 +146,8 @@ export function buildApp(
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
   const pensa = new InMemoryPensaRepository()
+  const teacherThreadsRepo = new InMemoryTeacherThreadRepository()
+  const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
 
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
@@ -273,6 +277,7 @@ export function buildApp(
         progress,
         studioSubmissions,
       ),
+      teacherThreads,
       getShowcasePayload: new GetShowcasePayloadService(
         checkAccess,
         courses,
@@ -352,6 +357,7 @@ export function buildApp(
       processed,
       hub,
       award: awardGamification,
+      teacherThreads,
       webhookSecret: WEBHOOK_SECRET,
       toleranceSeconds: 300,
       now: clock,
@@ -381,6 +387,7 @@ export function buildApp(
         logger: silentLogger,
       }),
       manageEntitlement: new ManageEntitlementService(entitlements, clock),
+      teacherThreads,
       revokeCertificate: new RevokeCertificateService(certificates, clock),
       // Purga: o fake do banco do membro guarda dados em arrays soltos; aqui só
       // garantimos que a rota responde (a purga real é coberta no Drizzle/DB).
@@ -422,6 +429,7 @@ export function buildApp(
     positions,
     quizAttempts,
     studioSubmissions,
+    teacherThreadsRepo,
     ratings,
     certificates,
     gamification,

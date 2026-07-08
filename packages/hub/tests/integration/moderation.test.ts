@@ -358,3 +358,82 @@ describe('moderação', () => {
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe('VALIDATION_ERROR')
   })
 })
+
+describe('motivo da moderação do Mural → recado ao aluno', () => {
+  const seedShowcase = async (ctx: ReturnType<typeof buildApp>, authorId: string) => {
+    const { channelId } = await seed(ctx, { space: { audience: 'kids' } })
+    const { thread } = await ctx.threadRepo.createShowcaseThread({
+      id: randomUUID(),
+      channelId,
+      authorId,
+      authorDisplayName: 'Bento',
+      authorPublic: false,
+      title: 'Meu jogo de nave',
+      slug: `jogo-${randomUUID().slice(0, 6)}`,
+      body: 'joguinho',
+      coverImageUrl: null,
+      playId: randomUUID(),
+      idempotencyKey: randomUUID(),
+      now: new Date(),
+    })
+    return thread
+  }
+
+  test('esconder um jogo COM motivo notifica o members (recado ao aluno)', async () => {
+    const ctx = buildApp()
+    const kid = randomUUID()
+    const thread = await seedShowcase(ctx, kid)
+
+    const res = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${thread.id}/hide`, {
+        headers: adminHeaders({ 'x-auth-user-name': 'Helena Oliveira' }),
+        body: { reason: 'Escondi porque a capa tinha um palavrão. Troque e publique de novo!' },
+      }),
+    )
+    expect(res.status).toBe(200)
+    expect(ctx.members.moderationMessages).toHaveLength(1)
+    const msg = ctx.members.moderationMessages[0]
+    expect(msg?.userId).toBe(kid)
+    expect(msg?.contextRef).toBe(thread.id)
+    expect(msg?.audience).toBe('kids')
+    expect(msg?.moderatorName).toBe('Helena')
+    expect(msg?.title).toBe('Meu jogo de nave')
+  })
+
+  test('recusar COM motivo também notifica', async () => {
+    const ctx = buildApp()
+    const thread = await seedShowcase(ctx, randomUUID())
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${thread.id}/reject`, {
+        headers: adminHeaders(),
+        body: { reason: 'Este não é seu jogo — publique um que você fez.' },
+      }),
+    )
+    expect(ctx.members.moderationMessages).toHaveLength(1)
+  })
+
+  test('esconder SEM motivo NÃO notifica (comportamento antigo)', async () => {
+    const ctx = buildApp()
+    const thread = await seedShowcase(ctx, randomUUID())
+    const res = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${thread.id}/hide`, { headers: adminHeaders() }),
+    )
+    expect(res.status).toBe(200)
+    expect(ctx.members.moderationMessages).toHaveLength(0)
+  })
+
+  test('post do fórum (não-vitrine) com motivo NÃO gera recado de Mural', async () => {
+    const ctx = buildApp()
+    const { channelId } = await seed(ctx, { space: { audience: 'kids' } })
+    const created = (await (await postThread(ctx, channelId, adminHeaders())).json()) as {
+      id: string
+    }
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${created.id}/hide`, {
+        headers: adminHeaders(),
+        body: { reason: 'oi' },
+      }),
+    )
+    expect(ctx.members.moderationMessages).toHaveLength(0)
+  })
+})

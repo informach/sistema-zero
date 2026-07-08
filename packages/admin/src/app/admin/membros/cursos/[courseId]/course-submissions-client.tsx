@@ -30,7 +30,14 @@ interface LessonGroup {
  * num só lugar (sem drilar Curso→Módulo→Aula→bloco). Agrupa por aula (o backend já
  * ordena por módulo→aula→data) e abre cada entrega no viewer (com tela cheia).
  */
-export function CourseSubmissionsPanel({ courseId }: { courseId: string }) {
+export function CourseSubmissionsPanel({
+  courseId,
+  audience,
+}: {
+  courseId: string
+  /** Vitrine do curso — o recado ao aluno precisa nascer na vitrine certa (canal de retorno). */
+  audience: 'adult' | 'kids'
+}) {
   const [loading, setLoading] = useState(true)
   const [rows, setRows] = useState<StudioSubmissionCourseRow[]>([])
   const [search, setSearch] = useState('')
@@ -172,6 +179,10 @@ export function CourseSubmissionsPanel({ courseId }: { courseId: string }) {
           userId={selected.userId}
           studentName={studentName(selected)}
           responsible={selected.childName ? responsibleLabel(selected) : null}
+          audience={audience}
+          courseId={courseId}
+          lessonId={selected.lessonId}
+          lessonTitle={selected.lessonTitle}
         />
       ) : null}
     </div>

@@ -110,6 +110,26 @@ export interface PlaysMilestoneArgs {
   milestone: 10 | 100
 }
 
+/**
+ * Argumentos do RECADO ao aluno quando a equipe ESCONDE/RECUSA seu jogo no Mural
+ * (canal de retorno professor↔aluno — vira uma mensagem `teacher` no members).
+ */
+export interface MuralModerationMessageArgs {
+  /** PERFIL autor do post — snapshot `authorId` da thread (dono da conversa). */
+  userId: string
+  /** CONTA do responsável — snapshot `authorAccountId` (pode faltar em legado). */
+  accountId: string | null
+  audience: 'adult' | 'kids'
+  /** Id do TÓPICO no hub — `contextRef` da conversa `mural_publication` (texto). */
+  contextRef: string
+  /** O motivo que o moderador escreveu p/ a criança. */
+  reason: string
+  /** Nome de EXIBIÇÃO do moderador (snapshot; ausente → a UI kids mostra "Professor(a)"). */
+  moderatorName?: string | null
+  /** Título do jogo p/ a caixa de entrada renderizar (snapshot). */
+  title?: string | null
+}
+
 export interface MembersGateway {
   checkAccess(
     userId: string,
@@ -155,4 +175,10 @@ export interface MembersGateway {
    * NUNCA lança; o ledger é idempotente pelo playId.
    */
   notifyPlaysMilestone(args: PlaysMilestoneArgs): Promise<void>
+  /**
+   * Avisa o members que a equipe ESCONDEU/RECUSOU um jogo do Mural COM um motivo p/ a
+   * criança → mensagem `teacher` numa conversa `mural_publication` (canal de retorno).
+   * **Best-effort**: NUNCA lança; o members deduplica por id determinístico da entrega.
+   */
+  notifyMuralModerationMessage(args: MuralModerationMessageArgs): Promise<void>
 }

@@ -225,6 +225,9 @@ const ParentReportPrefsBody = z.object({
   disabled: z.boolean(),
 })
 
+/** Resposta do aluno numa conversa com o professor (o members revalida ≤1000 + trim). */
+const TeacherReplyBody = z.object({ body: z.string().trim().min(1).max(1000) })
+
 const QuizAttemptBody = z.object({
   // Espelha o TypeBox do members: ≤100 questões, ≤20 choices/questão, chaves/ids ≤64.
   answers: z
@@ -1171,6 +1174,55 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  // ── Recados (conversas com o professor — canal de retorno) ────────────────
+  /** Caixa de entrada do aluno (suas conversas com o professor). */
+  const teacherThreadsList = {
+    GET: async () => {
+      const { status, body } = await members.listTeacherThreads()
+      return NextResponse.json(body ?? { threads: [] }, { status })
+    },
+  }
+  /** Contador de conversas não-lidas — alimenta o sino. */
+  const teacherThreadsUnread = {
+    GET: async () => {
+      const { status, body } = await members.getTeacherThreadsUnread()
+      return NextResponse.json(body ?? { count: 0 }, { status })
+    },
+  }
+  /** Uma conversa (cabeçalho + turnos). Impersonação PODE ler (só escrita é bloqueada). */
+  const teacherThreadGet = {
+    GET: async (_req: Request, ctx: { params: Promise<{ threadId: string }> }) => {
+      const { threadId } = await ctx.params
+      if (!UUID_RE.test(threadId)) return invalidInput()
+      const { status, body } = await members.getTeacherThread(threadId)
+      return NextResponse.json(body ?? { error: { code: 'NOT_FOUND' } }, { status })
+    },
+  }
+  /** Aluno responde a uma conversa sua (escrita → sessão real; impersonação read-only). */
+  const teacherThreadReply = {
+    POST: async (req: Request, ctx: { params: Promise<{ threadId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { threadId } = await ctx.params
+      if (!UUID_RE.test(threadId)) return invalidInput()
+      const parsed = TeacherReplyBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalidInput()
+      const { status, body } = await members.postTeacherMessage(threadId, parsed.data.body)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+  /** Marca a conversa como lida (zera o não-lido do aluno). */
+  const teacherThreadRead = {
+    POST: async (_req: Request, ctx: { params: Promise<{ threadId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { threadId } = await ctx.params
+      if (!UUID_RE.test(threadId)) return invalidInput()
+      const { status, body } = await members.markTeacherThreadRead(threadId)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
   // ── Payments ──────────────────────────────────────────────────────────────
 
   /** Lista paginada das compras do aluno logado (filtro por e-mail é do backend). */
@@ -1413,6 +1465,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     studioSubmit,
     studioCarryover,
     studioSubmissionGet,
+    teacherThreadsList,
+    teacherThreadsUnread,
+    teacherThreadGet,
+    teacherThreadReply,
+    teacherThreadRead,
     paymentsMy,
     profilesList,
     profileCreate,

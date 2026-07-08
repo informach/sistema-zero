@@ -4,7 +4,9 @@ import { Elysia } from 'elysia'
 import type { AwardGamificationService } from '../../../application/gamification/award-gamification.service'
 import type { GrantEntitlementService } from '../../../application/grant-entitlement/grant-entitlement.service'
 import type { RevokeEntitlementService } from '../../../application/revoke-entitlement/revoke-entitlement.service'
+import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import { currentChallengeKey } from '../../../domain/gamification/challenges'
+import { deterministicSourceId } from '../../../domain/gamification/source-id'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import type { ProcessedWebhookRepository } from '../../../domain/ports/processed-webhook-repository.port'
 import { ValidationError } from '../../../domain/shared/errors'
@@ -13,6 +15,7 @@ import {
   ClubeWebhookBody,
   GrantWebhookBody,
   MuralCommentWebhookBody,
+  MuralMessageWebhookBody,
   PlaysMilestoneWebhookBody,
   ShowcaseWebhookBody,
   StandaloneShowcaseWebhookBody,
@@ -20,6 +23,10 @@ import {
 } from '../dtos'
 import { getRawBody, isOversizeBody } from '../raw-body'
 import { assertWebhookSignature } from '../webhook-auth'
+
+// Namespace FIXO p/ derivar o id determinístico do turno do Mural a partir da
+// entrega (idempotência do webhook). NUNCA mudar — mudaria a chave e reprocessaria.
+const MURAL_MESSAGE_NAMESPACE = 'b7d3e6a1-9c4f-42b8-8e05-1a6f27c930d4'
 
 /**
  * `x-delivery-id` vira PK `text` em `processed_webhooks` — só é alcançável após
@@ -51,6 +58,8 @@ export interface WebhooksRoutesDeps {
   hub: HubGateway
   /** Registra o marco `course_showcased` quando o hub avisa que o aluno publicou no Mural. */
   award: AwardGamificationService
+  /** Canal de retorno: o hub manda o motivo da moderação do Mural → mensagem ao aluno. */
+  teacherThreads: TeacherThreadsService
   webhookSecret: string
   toleranceSeconds: number
   now: () => Date
@@ -314,5 +323,35 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         return { ok: true }
       },
       { body: PlaysMilestoneWebhookBody },
+    )
+    .post(
+      // O hub avisa que a equipe MODEROU (escondeu/recusou) um jogo do Mural COM um
+      // motivo p/ a criança → vira mensagem `teacher` numa conversa `mural_publication`
+      // (canal de retorno). Idempotente por id DETERMINÍSTICO da entrega (retry não
+      // duplica o recado). Falha → NÃO marca a entrega (retry), régua dos demais.
+      '/mural-message',
+      async ({ headers, body }) => {
+        const deliveryId = resolveDeliveryId(headers)
+        if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
+          return { ok: true, deduped: true }
+        }
+        await deps.teacherThreads.systemPostByContext({
+          userId: body.userId,
+          accountId: body.accountId ?? null,
+          audience: body.audience,
+          contextType: 'mural_publication',
+          contextRef: body.contextRef,
+          title: body.title ?? null,
+          authorId: null,
+          authorName: body.moderatorName ?? null,
+          body: body.reason,
+          dedupeId: deliveryId
+            ? deterministicSourceId(MURAL_MESSAGE_NAMESPACE, deliveryId)
+            : undefined,
+        })
+        if (deliveryId) await deps.processed.markProcessed(deliveryId, 'mural-message')
+        return { ok: true }
+      },
+      { body: MuralMessageWebhookBody },
     )
 }

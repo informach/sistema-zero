@@ -116,6 +116,39 @@ export class ModerationService {
     }
   }
 
+  /**
+   * Canal de RETORNO: ao ESCONDER/RECUSAR um jogo do Mural COM um motivo, avisa a
+   * criança (mensagem `teacher` numa conversa `mural_publication` no members). Só p/
+   * posts de VITRINE kids com conta responsável; sem `reason` = silencioso (o
+   * comportamento antigo). Best-effort, fire-and-forget — NUNCA derruba a moderação.
+   */
+  private async maybeNotifyModerationReason(
+    threadId: string,
+    reason: string | null | undefined,
+    moderatorName: string | null | undefined,
+  ): Promise<void> {
+    if (!reason?.trim() || !this.members) return
+    try {
+      const thread = await this.threads.findThreadById(threadId)
+      // Só posts de VITRINE (Mural) kids: o contexto é `mural_publication`. A conversa é
+      // keyada pelo `authorId` (perfil) — a conta responsável é só snapshot (pode faltar
+      // em vitrine; o post de vitrine não guarda `authorAccountId`).
+      if (!thread?.isShowcase) return
+      if ((await this.audienceForChannel(thread.channelId)) !== 'kids') return
+      void this.members.notifyMuralModerationMessage({
+        userId: thread.authorId,
+        accountId: thread.authorAccountId,
+        audience: 'kids',
+        contextRef: thread.id,
+        reason: reason.trim(),
+        moderatorName: moderatorName ?? null,
+        title: thread.title,
+      })
+    } catch {
+      // best-effort: a decisão de moderação já foi aplicada; o recado é eventual.
+    }
+  }
+
   /** Autor + canal + se é MURAL de um comentário (via o tópico-pai) — p/ a recompensa. */
   private async resolveCommentAuthor(commentId: string): Promise<{
     authorId: string
@@ -156,11 +189,17 @@ export class ModerationService {
     return { ok: true }
   }
 
-  async rejectThread(moderatorId: string, id: string): Promise<{ ok: true }> {
+  async rejectThread(
+    moderatorId: string,
+    id: string,
+    reason?: string | null,
+    moderatorName?: string | null,
+  ): Promise<{ ok: true }> {
     if (!(await this.threads.setThreadStatus(id, 'rejected', this.clock()))) {
       throw new ThreadNotFoundError()
     }
     await this.log('reject', moderatorId, id)
+    await this.maybeNotifyModerationReason(id, reason, moderatorName)
     return { ok: true }
   }
 
@@ -182,11 +221,17 @@ export class ModerationService {
   }
 
   // ── Ocultar / apagar ───────────────────────────────────────────────────────
-  async hideThread(moderatorId: string, id: string): Promise<{ ok: true }> {
+  async hideThread(
+    moderatorId: string,
+    id: string,
+    reason?: string | null,
+    moderatorName?: string | null,
+  ): Promise<{ ok: true }> {
     if (!(await this.threads.setThreadStatus(id, 'hidden', this.clock()))) {
       throw new ThreadNotFoundError()
     }
     await this.log('hide', moderatorId, id)
+    await this.maybeNotifyModerationReason(id, reason, moderatorName)
     return { ok: true }
   }
 

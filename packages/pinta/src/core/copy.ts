@@ -46,7 +46,8 @@ export const COPY = {
     next: 'Avançar',
     createButton: 'Começar a desenhar',
     creating: 'Criando...',
-    chooseTilesetTitle: 'Quais peças o mapa vai usar?',
+    chooseTilesetTitle: 'Qual conjunto de peças o mapa vai usar?',
+    tilesetPieces: (count: number) => (count === 1 ? '1 peça' : `${count} peças`),
     needTileset: 'Antes de criar um mapa, crie as suas "Peças do cenário".',
     forProjectPrefix: 'Desenho para o jogo',
     willLookLike: 'Vai ficar assim:',
@@ -81,12 +82,13 @@ export const COPY = {
     tileset: {
       emoji: '🧩',
       title: 'Peças do cenário',
-      description: 'Blocos de chão, parede e decoração para montar mapas.',
+      description:
+        'Um CONJUNTO de peças (chão, parede, decoração). Desenhe VÁRIAS peças aqui e depois monte o mapa com elas.',
     },
     tilemap: {
       emoji: '🗺️',
       title: 'Mapa',
-      description: 'Monte uma fase inteira usando as suas peças.',
+      description: 'Monte uma fase inteira escolhendo um conjunto de peças e pintando com elas.',
     },
     'vector-sprite': {
       emoji: '🧍',
@@ -101,7 +103,8 @@ export const COPY = {
     'vector-tileset': {
       emoji: '🧩',
       title: 'Peças do cenário',
-      description: 'Blocos de chão e parede desenhados com formas.',
+      description:
+        'Um CONJUNTO de peças feitas de formas. Desenhe VÁRIAS peças aqui e monte o mapa com elas.',
     },
   } satisfies Record<PintaAssetKind, { emoji: string; title: string; description: string }>,
   sizes: {
