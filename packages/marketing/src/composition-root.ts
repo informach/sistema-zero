@@ -12,9 +12,16 @@ import { PublicationService } from './application/publications/publication.servi
 import { YtQuotaGuard } from './application/publications/yt-quota-guard'
 import { MediaNotConfiguredError } from './domain/marketing-errors'
 import type { MediaStore } from './domain/ports/media-store.port'
+import type { OAuthProvider } from './domain/ports/oauth-provider.port'
 import type { SocialPublisher } from './domain/ports/social-publisher.port'
 import type { Network } from './domain/publication/publication'
-import { type Env, googleConfig, r2Config, reminderConfig } from './infrastructure/config/env'
+import {
+  type Env,
+  googleConfig,
+  oauthCoreConfig,
+  r2Config,
+  reminderConfig,
+} from './infrastructure/config/env'
 import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
 import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
@@ -102,23 +109,24 @@ export function createApplication(env: Env): Application {
     : notConfiguredMediaStore
   if (!r2) logger.warn('media.not_configured', { hint: 'R2_* ausentes — presign responderá 503' })
 
-  // Google (OAuth + Drive) — grupo atômico: incompleto = rotas 503, boot ok.
-  const google = googleConfig(env)
-  const googleDeps = google
-    ? {
-        provider: new GoogleOAuthProvider({
-          clientId: google.clientId,
-          clientSecret: google.clientSecret,
-        }),
-        secretBox: createSecretBox(google.encKeyBase64),
-        redirectBaseUrl: google.redirectBaseUrl,
-        appUrl: google.appUrl,
-      }
-    : null
-  const driveClient = google ? new GoogleDriveClient() : null
-  if (!google) {
+  // OAuth (núcleo comum + provedores por rede) — grupos atômicos independentes:
+  // incompleto = rotas 503, boot ok.
+  const oauthCore = oauthCoreConfig(env)
+  const secretBox = oauthCore ? createSecretBox(oauthCore.encKeyBase64) : null
+  const oauthProviders = new Map<Network, OAuthProvider>()
+  const googleCfg = googleConfig(env)
+  if (oauthCore && googleCfg) {
+    oauthProviders.set('youtube', new GoogleOAuthProvider(googleCfg))
+  }
+  const googleEnabled = Boolean(oauthCore && googleCfg)
+  const driveClient = googleEnabled ? new GoogleDriveClient() : null
+  if (!oauthCore) {
     logger.warn('oauth.not_configured', {
-      hint: 'GOOGLE_*/MARKETING_TOKEN_ENC_KEY/OAUTH_PUBLIC_BASE_URL/MARKETING_APP_URL ausentes — OAuth/Drive responderão 503',
+      hint: 'MARKETING_TOKEN_ENC_KEY/OAUTH_PUBLIC_BASE_URL/MARKETING_APP_URL ausentes — OAuth/Drive responderão 503',
+    })
+  } else if (!googleCfg) {
+    logger.warn('oauth.google_not_configured', {
+      hint: 'GOOGLE_CLIENT_ID/SECRET ausentes — YouTube/Drive responderão 503',
     })
   }
 
@@ -151,7 +159,7 @@ export function createApplication(env: Env): Application {
   const promoteService = new PromoteIdeaService(ideaService, contentService)
   // Publisher automático do YouTube: só monta com Google (OAuth/tokens) E R2
   // (bytes do vídeo) configurados — ausente = rede segue em modo lembrete.
-  const youtubeEnabled = Boolean(googleDeps && r2)
+  const youtubeEnabled = Boolean(googleEnabled && r2)
   const autoCapableNetworks: ReadonlySet<Network> = new Set(
     youtubeEnabled ? (['youtube'] as const) : [],
   )
@@ -176,7 +184,7 @@ export function createApplication(env: Env): Application {
   )
   const accountService = new AccountService(
     accountRepo,
-    googleDeps ? { provider: googleDeps.provider, secretBox: googleDeps.secretBox } : null,
+    secretBox && oauthProviders.size > 0 ? { providers: oauthProviders, secretBox } : null,
     autoCapableNetworks,
     now,
     logger,
@@ -184,7 +192,10 @@ export function createApplication(env: Env): Application {
   const oauthService = new OAuthService(
     oauthStateRepo,
     accountRepo,
-    googleDeps,
+    oauthCore && secretBox
+      ? { secretBox, redirectBaseUrl: oauthCore.redirectBaseUrl, appUrl: oauthCore.appUrl }
+      : null,
+    oauthProviders,
     { stateTtlMinutes: env.OAUTH_STATE_TTL_MINUTES },
     now,
     idGen,
@@ -233,7 +244,7 @@ export function createApplication(env: Env): Application {
       ? {
           phones: reminder.phones,
           recipientName: reminder.recipientName,
-          appUrl: google?.appUrl ?? env.MARKETING_APP_URL ?? '',
+          appUrl: oauthCore?.appUrl ?? env.MARKETING_APP_URL ?? '',
         }
       : null,
     auto:

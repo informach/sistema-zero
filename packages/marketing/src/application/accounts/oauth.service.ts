@@ -6,14 +6,18 @@ import type { OAuthStateRepository } from '../../domain/ports/oauth-state-reposi
 import type { SecretBox } from '../../domain/ports/secret-box.port'
 import type { SocialAccountRepository } from '../../domain/ports/social-account-repository.port'
 import type { Network } from '../../domain/publication/publication'
-import type { SocialAccount } from '../../domain/social-account/social-account'
 import type { Actor } from '../actor'
+import { buildSocialAccount } from './provider-account'
 
-/** Redes com fluxo OAuth implementado (Meta/TikTok entram nas fases F3/F4). */
-const SUPPORTED_NETWORKS: ReadonlySet<string> = new Set(['youtube'])
+/**
+ * Redes que INICIAM um fluxo OAuth. `instagram` fica de fora DE PROPÓSITO: o
+ * consent da Meta começa em `facebook` e conecta a Página E o Instagram
+ * business juntos (o provider devolve as duas contas).
+ */
+const START_NETWORKS: ReadonlySet<string> = new Set(['youtube', 'facebook'])
 
-export interface GoogleOAuthDeps {
-  provider: OAuthProvider
+/** Config comum do OAuth (independe do provedor). */
+export interface OAuthCoreConfig {
   secretBox: SecretBox
   /** Origem PÚBLICA do gateway — a redirect_uri é derivada SÓ daqui (anti open-redirect). */
   redirectBaseUrl: string
@@ -25,7 +29,9 @@ export class OAuthService {
   constructor(
     private readonly states: OAuthStateRepository,
     private readonly accounts: SocialAccountRepository,
-    private readonly google: GoogleOAuthDeps | null,
+    private readonly core: OAuthCoreConfig | null,
+    /** youtube→Google; facebook E instagram→Meta (o mesmo provider). */
+    private readonly providers: ReadonlyMap<Network, OAuthProvider>,
     private readonly config: { stateTtlMinutes: number },
     private readonly now: () => Date,
     private readonly idGen: () => string,
@@ -33,21 +39,26 @@ export class OAuthService {
   ) {}
 
   private redirectUri(network: Network): string {
-    if (!this.google) throw new OAuthNotConfiguredError()
-    return `${this.google.redirectBaseUrl}/marketing/oauth/${network}/callback`
-  }
-
-  private assertNetwork(network: string): Network {
-    if (!SUPPORTED_NETWORKS.has(network)) throw new NetworkNotSupportedError()
-    return network as Network
+    if (!this.core) throw new OAuthNotConfiguredError()
+    return `${this.core.redirectBaseUrl}/marketing/oauth/${network}/callback`
   }
 
   /** Inicia o fluxo: grava state+PKCE single-use e devolve a authorizeUrl. */
   async start(actor: Actor, networkRaw: string): Promise<{ authorizeUrl: string }> {
-    const network = this.assertNetwork(networkRaw)
-    if (!this.google) throw new OAuthNotConfiguredError()
+    if (!START_NETWORKS.has(networkRaw)) {
+      throw networkRaw === 'instagram'
+        ? new NetworkNotSupportedError(
+            'O Instagram conecta junto com o Facebook. Use Conectar Facebook',
+          )
+        : new NetworkNotSupportedError()
+    }
+    const network = networkRaw as Network
+    const provider = this.providers.get(network)
+    if (!this.core || !provider) throw new OAuthNotConfiguredError()
     const at = this.now()
     const state = randomBytes(32).toString('base64url')
+    // PKCE S256 sempre gerado; provedor que não suporta (Meta) simplesmente
+    // ignora — o state single-use atômico já cobre o CSRF.
     const codeVerifier = randomBytes(32).toString('base64url')
     const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url')
     await this.states.create({
@@ -60,7 +71,7 @@ export class OAuthService {
       createdAt: at,
     })
     return {
-      authorizeUrl: this.google.provider.buildAuthorizeUrl({
+      authorizeUrl: provider.buildAuthorizeUrl({
         state,
         codeChallenge,
         redirectUri: this.redirectUri(network),
@@ -71,15 +82,19 @@ export class OAuthService {
   /**
    * Callback do provedor. É navegação de BROWSER: o resultado é SEMPRE uma URL
    * de redirect (`/conexoes?connected=…` ou `?error=<code>`), nunca JSON.
+   * UM consent pode conectar VÁRIAS contas (Meta: Páginas + IGs) — upsert em loop.
    */
   async handleCallback(
     networkRaw: string,
     query: { code?: string; state?: string; error?: string },
   ): Promise<string> {
-    if (!this.google) throw new OAuthNotConfiguredError()
-    const redirect = (params: string) => `${this.google?.appUrl}/conexoes?${params}`
-    if (!SUPPORTED_NETWORKS.has(networkRaw)) return redirect('error=network_not_supported')
+    if (!this.core) throw new OAuthNotConfiguredError()
+    const appUrl = this.core.appUrl
+    const redirect = (params: string) => `${appUrl}/conexoes?${params}`
+    if (!START_NETWORKS.has(networkRaw)) return redirect('error=network_not_supported')
     const network = networkRaw as Network
+    const provider = this.providers.get(network)
+    if (!provider) return redirect('error=oauth_not_configured')
     if (query.error) return redirect('error=access_denied')
     if (!query.state || !query.code) return redirect('error=state_invalid')
 
@@ -89,40 +104,24 @@ export class OAuthService {
       return redirect('error=state_invalid')
     }
 
-    let account: SocialAccount
     try {
-      const tokens = await this.google.provider.exchangeCode({
+      const tokens = await provider.exchangeCode({
         code: query.code,
         codeVerifier: consumed.codeVerifier,
         redirectUri: this.redirectUri(network),
       })
-      const identity = await this.google.provider.fetchIdentity(tokens.accessToken, tokens.idToken)
-      const at = this.now()
-      account = {
-        id: this.idGen(),
-        version: 0,
-        network,
-        externalId: identity.externalId,
-        displayName: identity.displayName,
-        username: identity.username,
-        accessTokenEnc: this.google.secretBox.seal(tokens.accessToken),
-        refreshTokenEnc: tokens.refreshToken
-          ? this.google.secretBox.seal(tokens.refreshToken)
-          : null,
-        tokenExpiresAt: tokens.expiresInSeconds
-          ? new Date(at.getTime() + tokens.expiresInSeconds * 1000)
-          : null,
-        refreshExpiresAt: tokens.refreshExpiresInSeconds
-          ? new Date(at.getTime() + tokens.refreshExpiresInSeconds * 1000)
-          : null,
-        scopes: tokens.scopes,
-        status: 'connected',
-        metadata: identity.metadata,
-        connectedBy: consumed.createdBy,
-        lastRefreshAt: null,
-        lastRefreshError: null,
-        createdAt: at,
-        updatedAt: at,
+      const providerAccounts = await provider.resolveAccounts(tokens)
+      if (providerAccounts.length === 0) return redirect('error=no_accounts')
+      for (const account of providerAccounts) {
+        await this.accounts.upsertByExternalId(
+          buildSocialAccount({
+            account,
+            secretBox: this.core.secretBox,
+            connectedBy: consumed.createdBy,
+            now: this.now(),
+            id: this.idGen(),
+          }),
+        )
       }
     } catch (error) {
       // Nunca logar code/token — só o motivo.
@@ -132,7 +131,6 @@ export class OAuthService {
       })
       return redirect('error=exchange_failed')
     }
-    await this.accounts.upsertByExternalId(account)
     return redirect(`connected=${network}`)
   }
 }

@@ -167,7 +167,7 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
   })
   const accountService = new AccountService(
     accounts,
-    { provider: new FakeOAuthProvider(), secretBox: new FakeSecretBox() },
+    { providers: new Map([['youtube', new FakeOAuthProvider()]]), secretBox: new FakeSecretBox() },
     new Set(['youtube']),
     now,
     silentLogger,

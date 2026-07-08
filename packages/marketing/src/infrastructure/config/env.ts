@@ -193,32 +193,31 @@ export function r2Config(env: Env): {
   }
 }
 
-/** Config do OAuth Google completa ou null (feature desligada — rotas 503). */
-export function googleConfig(env: Env): {
-  clientId: string
-  clientSecret: string
+/**
+ * Config COMUM do OAuth (independe do provedor): secret-box + URLs de
+ * redirect. Completa ou null (OAuth global desligado — rotas 503).
+ */
+export function oauthCoreConfig(env: Env): {
   encKeyBase64: string
   /** Origem pública do gateway — a redirect_uri é SEMPRE derivada daqui (nunca de header). */
   redirectBaseUrl: string
   /** URL do app (destino dos 302 do callback). */
   appUrl: string
 } | null {
-  if (
-    !env.GOOGLE_CLIENT_ID ||
-    !env.GOOGLE_CLIENT_SECRET ||
-    !env.MARKETING_TOKEN_ENC_KEY ||
-    !env.OAUTH_PUBLIC_BASE_URL ||
-    !env.MARKETING_APP_URL
-  ) {
+  if (!env.MARKETING_TOKEN_ENC_KEY || !env.OAUTH_PUBLIC_BASE_URL || !env.MARKETING_APP_URL) {
     return null
   }
   return {
-    clientId: env.GOOGLE_CLIENT_ID,
-    clientSecret: env.GOOGLE_CLIENT_SECRET,
     encKeyBase64: env.MARKETING_TOKEN_ENC_KEY,
     redirectBaseUrl: env.OAUTH_PUBLIC_BASE_URL.replace(/\/$/, ''),
     appUrl: env.MARKETING_APP_URL.replace(/\/$/, ''),
   }
+}
+
+/** Credenciais do Google (YouTube+Drive) ou null (provedor desligado). */
+export function googleConfig(env: Env): { clientId: string; clientSecret: string } | null {
+  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return null
+  return { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET }
 }
 
 /** Config do lembrete (consumer HMAC do messaging) ou null (lembrete desligado). */

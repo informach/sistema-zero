@@ -43,7 +43,7 @@ function setup() {
   const now = () => new Date()
   const accountService = new AccountService(
     accounts,
-    { provider, secretBox: new FakeSecretBox() },
+    { providers: new Map([['youtube', provider]]), secretBox: new FakeSecretBox() },
     new Set(),
     now,
     silentLogger,

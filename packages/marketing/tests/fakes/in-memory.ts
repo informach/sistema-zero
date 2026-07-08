@@ -29,6 +29,7 @@ import type {
   AccountIdentity,
   OAuthProvider,
   OAuthTokenSet,
+  ProviderAccount,
   RefreshedTokens,
 } from '../../src/domain/ports/oauth-provider.port'
 import { OAuthProviderError } from '../../src/domain/ports/oauth-provider.port'
@@ -600,8 +601,24 @@ export class FakeOAuthProvider implements OAuthProvider {
     this.refreshed.push(refreshToken)
     return structuredClone(this.refreshResult)
   }
-  async fetchIdentity(): Promise<AccountIdentity> {
-    return structuredClone(this.identity)
+  /** Roteirizável: setado = contas devolvidas; senão deriva 1 conta youtube do tokenSet+identity. */
+  accounts: ProviderAccount[] | null = null
+
+  async resolveAccounts(tokens: OAuthTokenSet): Promise<ProviderAccount[]> {
+    if (this.accounts) return structuredClone(this.accounts)
+    return [
+      {
+        network: 'youtube',
+        identity: structuredClone(this.identity),
+        tokens: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresInSeconds: tokens.expiresInSeconds,
+          refreshExpiresInSeconds: tokens.refreshExpiresInSeconds,
+          scopes: tokens.scopes,
+        },
+      },
+    ]
   }
   async revoke(token: string): Promise<void> {
     this.revoked.push(token)

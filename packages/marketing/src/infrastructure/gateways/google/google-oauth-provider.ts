@@ -3,6 +3,7 @@ import {
   type OAuthProvider,
   OAuthProviderError,
   type OAuthTokenSet,
+  type ProviderAccount,
   type RefreshedTokens,
 } from '../../../domain/ports/oauth-provider.port'
 
@@ -164,7 +165,28 @@ export class GoogleOAuthProvider implements OAuthProvider {
     }
   }
 
-  async fetchIdentity(accessToken: string, idToken: string | null): Promise<AccountIdentity> {
+  /** Google: 1 consent = 1 conta (`youtube` — Drive e YouTube da mesma conta). */
+  async resolveAccounts(tokens: OAuthTokenSet): Promise<ProviderAccount[]> {
+    const identity = await this.fetchIdentity(tokens.accessToken, tokens.idToken)
+    return [
+      {
+        network: 'youtube',
+        identity,
+        tokens: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresInSeconds: tokens.expiresInSeconds,
+          refreshExpiresInSeconds: tokens.refreshExpiresInSeconds,
+          scopes: tokens.scopes,
+        },
+      },
+    ]
+  }
+
+  private async fetchIdentity(
+    accessToken: string,
+    idToken: string | null,
+  ): Promise<AccountIdentity> {
     const payload = idToken ? decodeIdTokenPayload(idToken) : null
     const sub = typeof payload?.sub === 'string' ? payload.sub : null
     const email = typeof payload?.email === 'string' ? payload.email : null

@@ -8,6 +8,7 @@ import { DriveImportService } from '../src/application/media/drive.service'
 import { MediaService } from '../src/application/media/media.service'
 import { MetricsService } from '../src/application/metrics/metrics.service'
 import { PublicationService } from '../src/application/publications/publication.service'
+import type { OAuthProvider } from '../src/domain/ports/oauth-provider.port'
 import type { Network } from '../src/domain/publication/publication'
 import { loadEnv } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
@@ -115,9 +116,12 @@ export function buildTestApp(
     now,
     idGen,
   )
+  const oauthProviders = new Map<Network, OAuthProvider>(
+    googleEnabled ? [['youtube' as Network, provider]] : [],
+  )
   const accountService = new AccountService(
     accounts,
-    googleEnabled ? { provider, secretBox } : null,
+    googleEnabled ? { providers: oauthProviders, secretBox } : null,
     overrides.autoCapableNetworks ?? new Set(),
     now,
     silentLogger,
@@ -126,8 +130,9 @@ export function buildTestApp(
     oauthStates,
     accounts,
     googleEnabled
-      ? { provider, secretBox, redirectBaseUrl: 'http://gateway.test', appUrl: TEST_APP_URL }
+      ? { secretBox, redirectBaseUrl: 'http://gateway.test', appUrl: TEST_APP_URL }
       : null,
+    oauthProviders,
     { stateTtlMinutes: 10 },
     now,
     idGen,
