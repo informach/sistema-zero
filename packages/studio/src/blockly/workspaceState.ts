@@ -3117,6 +3117,18 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_center_x', { SPRITE: expr.spriteVar })
     case 'g2d:centerY':
       return block('sz_g2d_center_y', { SPRITE: expr.spriteVar })
+    case 'g2d:spriteVx':
+      return block('sz_g2d_sprite_vx', { SPRITE: expr.spriteVar })
+    case 'g2d:spriteVy':
+      return block('sz_g2d_sprite_vy', { SPRITE: expr.spriteVar })
+    case 'g2d:spriteSpeed':
+      return block('sz_g2d_sprite_speed', { SPRITE: expr.spriteVar })
+    case 'g2d:isMoving':
+      return block('sz_g2d_is_moving', { SPRITE: expr.spriteVar })
+    case 'g2d:isMovingH':
+      return block('sz_g2d_is_moving_h', { SPRITE: expr.spriteVar })
+    case 'g2d:isMovingV':
+      return block('sz_g2d_is_moving_v', { SPRITE: expr.spriteVar })
     case 'g2d:randomBetween': {
       const vs = valueBlocks({ MIN: valueToExpr(expr.min), MAX: valueToExpr(expr.max) })
       return vs === null ? null : block('sz_g2d_random_between', {}, {}, expr.__id, vs)
@@ -3197,6 +3209,12 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3d_get_rot', { OBJ: expr.objVar, AXIS: expr.axis })
     case 'g3d:getScale':
       return block('sz_g3d_get_scale', { OBJ: expr.objVar })
+    case 'g3d:getVel':
+      return block('sz_g3d_get_vel', { OBJ: expr.objVar, AXIS: expr.axis })
+    case 'g3d:getSpeed':
+      return block('sz_g3d_get_speed', { OBJ: expr.objVar })
+    case 'g3d:isMoving':
+      return block('sz_g3d_is_moving', { OBJ: expr.objVar })
     case 'g3d:dt':
       return block('sz_g3d_dt', { WORLD: expr.worldVar })
     case 'g3d:angleTo':

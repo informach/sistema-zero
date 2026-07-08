@@ -62,6 +62,7 @@ Genéricos de movimento/física (SEM lib de física — feita na mão; p/ queda/
 - slideBetween(obj, "x"|"y"|"z", min, max, speed): vaivém num eixo (plataformas que andam).
 - spin(obj, "x"|"y"|"z", speed): rotação contínua (moedas, hélices, planetas).
 - getPos(obj, "x"|"y"|"z") / getRot(obj, "x"|"y"|"z") / getScale(obj): LER posição/giro/tamanho (valores) — base p/ lógica própria (mira, IA, movimento custom).
+- getVel(obj, "x"|"y"|"z") / getSpeed(obj) / isMoving(obj): LER a velocidade por eixo, a total (magnitude) e se o objeto está se movendo (true/false) — a velocidade é a que setVelocity grava.
 - moveBy(obj, dx, dy, dz): mover relativo (soma à posição). rotateBy(obj, "y", radianos): girar relativo.
 - moveTowards(obj, x, y, z, força): aproxima aos poucos (lerp; força 0 a 1). dt(world): segundos do quadro —
   multiplique a velocidade por dt p/ o jogo correr igual em qualquer máquina (o "A cada frame 3D" já passa dt).

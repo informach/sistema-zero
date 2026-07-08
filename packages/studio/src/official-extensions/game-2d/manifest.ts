@@ -17,7 +17,7 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.19.0',
+  version: '0.21.0',
   description:
     'Blocos para criar jogos 2D no Canvas: tela cheia responsiva (com cor de fundo), sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos), Kit gorilas (batalha de bananas por turnos), Kit equilibrista (estica o bastão e atravessa, estilo Stick Hero) e Kit balão (sobe segurando o mouse e economiza combustível).',
   category: 'games',

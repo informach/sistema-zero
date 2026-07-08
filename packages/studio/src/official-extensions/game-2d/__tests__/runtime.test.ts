@@ -54,6 +54,40 @@ describe('gameTwoDRuntime', () => {
     expect(s.vx).toBe(0)
   })
 
+  it('velocidade: spriteVx/Vy/Speed + isMoving(H/V) leem a velocidade do sprite', () => {
+    const sz = api as unknown as {
+      spriteVx: (s: unknown) => number
+      spriteVy: (s: unknown) => number
+      spriteSpeed: (s: unknown) => number
+      isMoving: (s: unknown) => boolean
+      isMovingH: (s: unknown) => boolean
+      isMovingV: (s: unknown) => boolean
+    }
+    const s = api.createSprite({ x: 0, y: 0 })
+
+    s.vx = 3
+    s.vy = -4
+    expect(sz.spriteVx(s)).toBe(3)
+    expect(sz.spriteVy(s)).toBe(-4)
+    expect(sz.spriteSpeed(s)).toBe(5) // hypot(3, 4)
+    expect(sz.isMoving(s)).toBe(true)
+    expect(sz.isMovingH(s)).toBe(true)
+    expect(sz.isMovingV(s)).toBe(true)
+
+    // Só na horizontal.
+    s.vx = 2
+    s.vy = 0
+    expect(sz.isMovingH(s)).toBe(true)
+    expect(sz.isMovingV(s)).toBe(false)
+    expect(sz.isMoving(s)).toBe(true)
+
+    // Parado (resíduo sub-pixel abaixo do limiar não conta como movimento).
+    s.vx = 0.001
+    s.vy = 0
+    expect(sz.isMoving(s)).toBe(false)
+    expect(sz.spriteSpeed(s)).toBeCloseTo(0.001, 5)
+  })
+
   it('isColliding detecta sobreposição AABB', () => {
     const a = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
     const b = api.createSprite({ x: 5, y: 5, w: 10, h: 10 })

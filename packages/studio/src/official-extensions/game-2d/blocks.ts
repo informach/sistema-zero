@@ -484,6 +484,58 @@ export const gameTwoDBlocks = [
       'O y do MEIO do sprite (já soma metade da altura). Ótimo pra atirar/mirar do centro da nave.',
   },
 
+  // ---- Velocidade & movimento do sprite (valores prontos p/ decidir) ----
+  {
+    type: 'sz_g2d_sprite_vx',
+    message0: 'a velocidade x do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A velocidade horizontal (vx) do sprite: positiva = indo pra direita, negativa = pra esquerda, 0 = parado na horizontal.',
+  },
+  {
+    type: 'sz_g2d_sprite_vy',
+    message0: 'a velocidade y do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A velocidade vertical (vy) do sprite: positiva = descendo, negativa = subindo, 0 = parado na vertical.',
+  },
+  {
+    type: 'sz_g2d_sprite_speed',
+    message0: 'a velocidade total do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'O quão rápido o sprite se move (junta vx e vy). É sempre 0 ou positivo.',
+  },
+  {
+    type: 'sz_g2d_is_moving',
+    message0: 'o sprite %1 está se movendo?',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro quando o sprite tem alguma velocidade (na horizontal ou na vertical).',
+  },
+  {
+    type: 'sz_g2d_is_moving_h',
+    message0: 'o sprite %1 está se movendo na horizontal?',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro quando o sprite anda para os lados (vx diferente de zero).',
+  },
+  {
+    type: 'sz_g2d_is_moving_v',
+    message0: 'o sprite %1 está se movendo na vertical?',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro quando o sprite sobe ou desce (vy diferente de zero).',
+  },
+
   // ---- Tier 1: Aparência (espelhar, transparência, tamanho) ----
   {
     type: 'sz_g2d_flip_sprite',
@@ -859,10 +911,11 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_animate_sprite',
-    message0: 'Animar sprite %1 com a folha de quadros %2, do quadro %3 ao %4 a %5 fps',
+    message0: 'Animar sprite %1 com a folha %2 na animação %3, do quadro %4 ao %5 a %6 fps',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
       { type: 'field_name_picker', name: 'SHEET', text: 'andar', kind: 'spritesheet' },
+      { type: 'field_animation_picker', name: 'ANIM', text: '— escolher —' },
       { type: 'input_value', name: 'FROM', check: 'JSValue' },
       { type: 'input_value', name: 'TO', check: 'JSValue' },
       { type: 'input_value', name: 'FPS', check: 'JSValue' },
@@ -872,7 +925,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Faz o sprite percorrer os quadros da folha de quadros (do primeiro ao último). Desenhe o sprite a cada quadro para ver a animação rodar.',
+      'Escolha a animação pelo NOME (vem da sua folha do Pinta) e os quadros/velocidade se preenchem sozinhos. Sem animação nomeada, escreva os números dos quadros (do primeiro ao último).',
   },
   {
     type: 'sz_g2d_draw_frame',
@@ -1003,7 +1056,7 @@ export const gameTwoDBlocks = [
       { type: 'field_input', name: 'NAME', text: 'mapa' },
       { type: 'field_asset_picker', name: 'IMAGE', text: 'tileset' },
       { type: 'input_value', name: 'TILE', check: 'JSValue' },
-      { type: 'field_input', name: 'SOLID', text: '1' },
+      { type: 'field_solid_tiles_picker', name: 'SOLID', text: '1' },
       { type: 'field_input', name: 'GRID', text: '0 0 0 0;0 0 0 0;1 1 1 1' },
     ],
     inputsInline: true,
@@ -1011,7 +1064,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta um mapa de tiles a partir de uma imagem (o tileset, com vários quadros lado a lado). Cada número da GRADE escolhe um quadro do tileset; use ";" para separar as linhas e espaço entre os números. Use "." para uma célula vazia. Em "tiles sólidos", liste (separados por vírgula) os números que barram o jogador.',
+      'Monta um mapa de tiles a partir de uma imagem (o tileset, com vários quadros lado a lado). Cada número da GRADE escolhe um quadro do tileset; use ";" para separar as linhas e espaço entre os números. Use "." para uma célula vazia. Em "tiles sólidos", toque nos tiles que barram o jogador (ou liste os números) — os sólidos do Pinta já vêm sugeridos.',
   },
   {
     type: 'sz_g2d_draw_tilemap',
@@ -2109,6 +2162,18 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_sprite_h',
       'sz_g2d_center_x',
       'sz_g2d_center_y',
+    ],
+  },
+  {
+    name: '💨 Velocidade',
+    colour: '#4c97ff',
+    types: [
+      'sz_g2d_sprite_vx',
+      'sz_g2d_sprite_vy',
+      'sz_g2d_sprite_speed',
+      'sz_g2d_is_moving',
+      'sz_g2d_is_moving_h',
+      'sz_g2d_is_moving_v',
     ],
   },
   {

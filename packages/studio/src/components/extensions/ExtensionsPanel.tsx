@@ -15,6 +15,7 @@ import {
   removeExtensionArtifacts,
 } from '../../state/extensionsAdapter'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useStudioExamplesVisible } from '../../studio/examples-visibility'
 
 export interface ExtensionsPanelProps {
   open: boolean
@@ -32,6 +33,9 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
   )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const projectStoreApi = useProjectStoreApi()
+  // Exemplos prontos são material de teste do admin (podem estar desatualizados):
+  // só aparecem quando o host libera (playground). Ver examples-visibility.ts.
+  const showExamples = useStudioExamplesVisible()
   const [pendingRemoval, setPendingRemoval] = useState<{ id: string; count: number } | null>(null)
 
   if (!hasProject)
@@ -181,7 +185,7 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                     )}
                   </div>
                 </div>
-                {ext.manifest.examples.length > 0 && (
+                {showExamples && ext.manifest.examples.length > 0 && (
                   <div className="mt-2 border-t border-sz-border pt-2">
                     <span className="text-xs uppercase text-sz-fg-mute">
                       {t('extensions.loadExample')}:
@@ -205,7 +209,7 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
           })}
         </ul>
 
-        {CORE_EXAMPLES.length > 0 && (
+        {showExamples && CORE_EXAMPLES.length > 0 && (
           <div className="mt-5">
             <p className="text-xs font-semibold uppercase text-sz-fg-mute">
               Exemplos clássicos (sem extensão)

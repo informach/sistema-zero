@@ -19,6 +19,7 @@ import {
   resolveStudioConfig,
   StudioConfigProvider,
 } from './config'
+import { StudioExamplesVisibleProvider } from './examples-visibility'
 import { StudioShareDisabledProvider, StudioShareProvider } from './share'
 import { StudioThemeProvider } from './theme'
 import type { StudioCoreProps, StudioHandle } from './types'
@@ -73,6 +74,7 @@ function StudioCoreBody({
   share,
   shareDisabledReason,
   onCloudSync,
+  showExamples,
   onChange,
   onSave,
   onError,
@@ -105,6 +107,10 @@ function StudioCoreBody({
   // Callback "Sincronizar com o enviado" — latcha uma vez por instância (igual ao
   // share); o host fornece uma referência estável (useCallback). `null` → sem item.
   const [cloudSyncValue] = useState(() => onCloudSync ?? null)
+
+  // Visibilidade dos exemplos prontos — latcha uma vez por instância. Default
+  // `false`: só o playground/admin de teste liga (ver examples-visibility.ts).
+  const [examplesVisible] = useState(() => showExamples ?? false)
 
   // `features` e `allowedModes` chegam como literais inline do host
   // (`features={{ extensions: false }}`) — nova REFERÊNCIA a cada render, mesmo
@@ -261,33 +267,35 @@ function StudioCoreBody({
     <StudioShareProvider value={shareValue}>
       <StudioCloudSyncProvider value={cloudSyncValue}>
         <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
-          <StudioActivityProvider value={activityValue}>
-            <StudioConfigProvider value={config}>
-              <StudioThemeProvider value={effectiveTheme}>
-                <div
-                  data-sz-theme={effectiveTheme}
-                  className={['h-full min-h-0', className].filter(Boolean).join(' ')}
-                  style={{ fontFamily: 'var(--font-family-sans)', ...style }}
-                >
-                  {sanitized === null ? (
-                    <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-                      <p className="text-sm">
-                        Projeto inválido — confira o initialProject passado ao Studio.
-                      </p>
-                    </div>
-                  ) : hasProject ? (
-                    <ErrorBoundary
-                      fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
-                      resetKeys={[sanitizedId]}
-                      label="Studio"
-                    >
-                      <Shell onExit={onExit} canToggleTheme={theme === undefined} />
-                    </ErrorBoundary>
-                  ) : null}
-                </div>
-              </StudioThemeProvider>
-            </StudioConfigProvider>
-          </StudioActivityProvider>
+          <StudioExamplesVisibleProvider value={examplesVisible}>
+            <StudioActivityProvider value={activityValue}>
+              <StudioConfigProvider value={config}>
+                <StudioThemeProvider value={effectiveTheme}>
+                  <div
+                    data-sz-theme={effectiveTheme}
+                    className={['h-full min-h-0', className].filter(Boolean).join(' ')}
+                    style={{ fontFamily: 'var(--font-family-sans)', ...style }}
+                  >
+                    {sanitized === null ? (
+                      <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+                        <p className="text-sm">
+                          Projeto inválido — confira o initialProject passado ao Studio.
+                        </p>
+                      </div>
+                    ) : hasProject ? (
+                      <ErrorBoundary
+                        fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
+                        resetKeys={[sanitizedId]}
+                        label="Studio"
+                      >
+                        <Shell onExit={onExit} canToggleTheme={theme === undefined} />
+                      </ErrorBoundary>
+                    ) : null}
+                  </div>
+                </StudioThemeProvider>
+              </StudioConfigProvider>
+            </StudioActivityProvider>
+          </StudioExamplesVisibleProvider>
         </StudioShareDisabledProvider>
       </StudioCloudSyncProvider>
     </StudioShareProvider>

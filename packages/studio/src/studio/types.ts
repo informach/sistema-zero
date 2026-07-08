@@ -124,6 +124,15 @@ export interface StudioCommonProps {
    * Estável por instância (latchado, igual à `share`).
    */
   onCloudSync?: () => void
+  /**
+   * Mostra os EXEMPLOS prontos (CORE_EXAMPLES + os `examples` das extensões) no
+   * painel de Extensões. Default `false` — os exemplos são material de TESTE do
+   * admin e podem estar desatualizados/com erro, então ficam escondidos para
+   * clientes; hoje só o playground local liga. Latchado por instância (igual à
+   * `share`). Ver {@link useStudioExamplesVisible}. (A vitrine de kits da
+   * `ProjectList` recebe a mesma flag por prop direta — ela vive fora do núcleo.)
+   */
+  showExamples?: boolean
   /** Classes extras no root. O Studio preenche 100% do container do host. */
   className?: string
   style?: CSSProperties

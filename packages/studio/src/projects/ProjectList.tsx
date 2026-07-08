@@ -32,12 +32,22 @@ export interface ProjectListProps {
    * usuário (settingsStore), com o toggle visível (uso standalone/playground).
    */
   theme?: StudioTheme
+  /**
+   * Mostra a vitrine de "jogos prontos" (KitGallery) — os EXEMPLOS das extensões
+   * + os clássicos. Default `false`: os exemplos são material de teste do admin e
+   * podem estar desatualizados/com erro, então ficam escondidos para clientes; só
+   * o playground local liga. Espelha `showExamples` do editor (a lista vive fora
+   * do StudioCore, então recebe a flag por prop). Sem os kits, o estado vazio
+   * mantém o "criar do zero".
+   */
+  showExamples?: boolean
 }
 
 export function ProjectList({
   onOpenProject,
   professional = false,
   theme: themeProp,
+  showExamples = false,
 }: ProjectListProps): JSX.Element {
   const createProject = useProjectStore((s) => s.createProject)
   const createProProject = useProjectStore((s) => s.createProProject)
@@ -178,14 +188,19 @@ export function ProjectList({
                 </div>
               </output>
             ) : filtered.length === 0 && projects?.length === 0 ? (
-              // Primeiro uso: a vitrine É o onboarding (jogo pronto em 1 clique),
-              // com o "começar do zero" como alternativa.
+              // Primeiro uso: com exemplos liberados (playground) a vitrine É o
+              // onboarding, com o "começar do zero" como alternativa. Para clientes
+              // (sem exemplos), o "criar do zero" vira a ação principal.
               <div className="flex flex-col gap-6 rounded-lg border border-dashed border-sz-border bg-sz-panel/40 p-6">
                 <p className="text-sm text-sz-fg-soft">{t('projects.empty')}</p>
-                <KitGallery onOpenProject={onOpenProject} />
+                {showExamples ? <KitGallery onOpenProject={onOpenProject} /> : null}
                 <div>
-                  <Button variant="ghost" size="sm" onClick={() => setModalOpen(true)}>
-                    + {t('kits.scratch')}
+                  <Button
+                    variant={showExamples ? 'ghost' : 'primary'}
+                    size="sm"
+                    onClick={() => setModalOpen(true)}
+                  >
+                    + {showExamples ? t('kits.scratch') : t('projects.new')}
                   </Button>
                 </div>
               </div>
@@ -193,21 +208,23 @@ export function ProjectList({
               <p className="text-sm text-sz-fg-soft">{t('projects.emptySearch')}</p>
             ) : (
               <div className="flex flex-col gap-6">
-                <div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-expanded={kitsOpen}
-                    onClick={() => setKitsOpen((value) => !value)}
-                  >
-                    <span aria-hidden>🎮</span> {kitsOpen ? t('kits.hide') : t('kits.show')}
-                  </Button>
-                  {kitsOpen ? (
-                    <div className="mt-4 rounded-lg border border-sz-border bg-sz-panel/40 p-4">
-                      <KitGallery onOpenProject={onOpenProject} />
-                    </div>
-                  ) : null}
-                </div>
+                {showExamples ? (
+                  <div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-expanded={kitsOpen}
+                      onClick={() => setKitsOpen((value) => !value)}
+                    >
+                      <span aria-hidden>🎮</span> {kitsOpen ? t('kits.hide') : t('kits.show')}
+                    </Button>
+                    {kitsOpen ? (
+                      <div className="mt-4 rounded-lg border border-sz-border bg-sz-panel/40 p-4">
+                        <KitGallery onOpenProject={onOpenProject} />
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((summary) => (
                     <ProjectCard

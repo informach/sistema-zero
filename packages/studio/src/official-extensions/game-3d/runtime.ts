@@ -636,6 +636,24 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function getScale(obj) {
     return obj && obj.scale ? obj.scale.x : 1;
   }
+  // Velocidade do objeto (por eixo x/y/z) — vive em szData(obj).vx/vy/vz (o mesmo
+  // que "Mudar a velocidade" grava). "Movendo" usa um limiar pequeno.
+  function getVel(obj, axis) {
+    if (!obj) return 0;
+    var s = szData(obj);
+    var a = axis === 'y' ? 'y' : axis === 'z' ? 'z' : 'x';
+    return s['v' + a] || 0;
+  }
+  function getSpeed(obj) {
+    if (!obj) return 0;
+    var s = szData(obj);
+    return Math.sqrt((s.vx || 0) * (s.vx || 0) + (s.vy || 0) * (s.vy || 0) + (s.vz || 0) * (s.vz || 0));
+  }
+  function isMoving(obj) {
+    if (!obj) return false;
+    var s = szData(obj);
+    return (Math.abs(s.vx || 0) + Math.abs(s.vy || 0) + Math.abs(s.vz || 0)) > 0.01;
+  }
   function dt(world) {
     return world && typeof world._dt === 'number' ? world._dt : 0;
   }
@@ -2069,6 +2087,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     getPos: getPos,
     getRot: getRot,
     getScale: getScale,
+    getVel: getVel,
+    getSpeed: getSpeed,
+    isMoving: isMoving,
     dt: dt,
     moveBy: moveBy,
     rotateBy: rotateBy,

@@ -42,6 +42,8 @@ Tier 1 — mira/contas, vida/tempo, aparência, mundo e pausa (v0.15.0):
 - cooldownReady(s, frames): true no máximo a cada N quadros, POR sprite (cadência de tiro) — use em if.
 - spriteX(s)/spriteY(s)/spriteW(s)/spriteH(s): posição (x/y) e tamanho (largura/altura) do sprite, em px.
 - centerX(s)/centerY(s): o MEIO do sprite (x+largura/2, y+altura/2) — atirar/mirar/posicionar pelo centro.
+- spriteVx(s)/spriteVy(s)/spriteSpeed(s): velocidade horizontal/vertical e a total (magnitude) do sprite.
+- isMoving(s)/isMovingH(s)/isMovingV(s): true se o sprite se move (geral/horizontal/vertical) — use em if (limiar 0.01).
 - randomX()/randomY(): posição x/y aleatória NA TELA (0..largura/altura) — fazer um sprite nascer num lugar sorteado (asteroides, estrelas). Evita Math.random()*largura na mão.
 - pruneOld(grupo, segundos): tira do grupo quem viveu mais que o tempo (tiros somem sozinhos).
 - flipSprite(s, 'left'|'right') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): espelhar/transparência/tamanho.

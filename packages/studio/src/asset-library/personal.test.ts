@@ -78,6 +78,26 @@ describe('savePersonalAsset / listPersonalAssets', () => {
     expect(listed[0]?.dataUrl).toBe(`${PNG}BB`)
   })
 
+  it('guarda e devolve os metadados do Pinta (animações/tiles), saneados', async () => {
+    await savePersonalAsset({
+      id: 'a1',
+      name: 'heroi',
+      dataUrl: PNG,
+      sprite: {
+        frameW: 16,
+        frameH: 16,
+        animations: [
+          { name: 'andar', from: 0, to: 3, fps: 8, loop: true },
+          { name: 'ruim', from: 5, to: 2, fps: 8, loop: false }, // to<from → descartada
+        ],
+      },
+      tileset: { tileSize: 0, solid: [1] }, // tileSize inválido → metadado descartado
+    })
+    const [asset] = await listPersonalAssets()
+    expect(asset?.sprite?.animations.map((a) => a.name)).toEqual(['andar'])
+    expect(asset?.tileset).toBeUndefined() // inválido some, mas o desenho fica
+  })
+
   it('colisão de nome com OUTRO desenho ganha sufixo', async () => {
     await savePersonalAsset({ id: 'a1', name: 'heroi', dataUrl: PNG })
     const second = await savePersonalAsset({ id: 'a2', name: 'heroi', dataUrl: PNG })

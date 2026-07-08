@@ -247,6 +247,18 @@ export function compileExpr(
       return `SZGame2D.centerX(${identifiers.get(expr.spriteVar)})`
     case 'g2d:centerY':
       return `SZGame2D.centerY(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteVx':
+      return `SZGame2D.spriteVx(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteVy':
+      return `SZGame2D.spriteVy(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:spriteSpeed':
+      return `SZGame2D.spriteSpeed(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:isMoving':
+      return `SZGame2D.isMoving(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:isMovingH':
+      return `SZGame2D.isMovingH(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:isMovingV':
+      return `SZGame2D.isMovingV(${identifiers.get(expr.spriteVar)})`
     case 'g2d:randomBetween':
       return `SZGame2D.randomBetween(${compileExpr(valueToExpr(expr.min), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.max), 0, identifiers, rec)})`
     case 'g2d:randomChance':
@@ -315,6 +327,12 @@ export function compileExpr(
       return `SZGame3D.getRot(${identifiers.get(expr.objVar)}, ${JSON.stringify(expr.axis)})`
     case 'g3d:getScale':
       return `SZGame3D.getScale(${identifiers.get(expr.objVar)})`
+    case 'g3d:getVel':
+      return `SZGame3D.getVel(${identifiers.get(expr.objVar)}, ${JSON.stringify(expr.axis)})`
+    case 'g3d:getSpeed':
+      return `SZGame3D.getSpeed(${identifiers.get(expr.objVar)})`
+    case 'g3d:isMoving':
+      return `SZGame3D.isMoving(${identifiers.get(expr.objVar)})`
     case 'g3d:dt':
       return `SZGame3D.dt(${identifiers.get(expr.worldVar)})`
     case 'g3d:angleTo':

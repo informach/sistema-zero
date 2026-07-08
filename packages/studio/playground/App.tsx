@@ -112,6 +112,9 @@ function EditorScreen({
       onExit={onExit}
       // Liga o botão "Compartilhar" (publicar no Mural) com um adapter de demo.
       share={shareDemo}
+      // Playground = superfície do admin: mostra os EXEMPLOS prontos (escondidos
+      // para clientes, pois podem estar desatualizados). Ver examples-visibility.ts.
+      showExamples
       // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
       // Projeto profissional força terminal + allowedModes:['code'] via a flag.
       features={isPro ? { professional: true, ai: true } : { terminal: true, ai: true }}
@@ -173,6 +176,10 @@ export function App(): JSX.Element {
   // professional habilita o seletor de template profissional no "Novo projeto"
   // (o dev server do Vite já envia COOP/COEP, exigidos pelo WebContainer).
   return (
-    <ProjectList professional onOpenProject={(id) => navigate({ name: 'editor', projectId: id })} />
+    <ProjectList
+      professional
+      showExamples
+      onOpenProject={(id) => navigate({ name: 'editor', projectId: id })}
+    />
   )
 }
