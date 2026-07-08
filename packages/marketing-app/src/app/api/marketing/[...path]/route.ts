@@ -24,6 +24,7 @@ const ALLOWED_ROOTS = new Set([
   'metrics',
   'oauth',
   'drive',
+  'ai',
 ])
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'

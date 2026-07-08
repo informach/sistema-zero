@@ -265,6 +265,26 @@ export interface FollowersSeriesView {
   }>
 }
 
+// ── IA da copy (F5) ──
+
+/** `GET /marketing/ai/status` — a IA está configurada neste ambiente? */
+export interface AiStatusView {
+  configured: boolean
+}
+
+/** `POST /marketing/ai/caption` — sugestão de legenda + hashtags + o que a IA fez. */
+export interface AiCaptionView {
+  caption: string
+  hashtags: string[]
+  notes: string[]
+}
+
+/** `POST /marketing/ai/script` — sugestão de roteiro + o que a IA fez. */
+export interface AiScriptView {
+  script: string
+  notes: string[]
+}
+
 /** Resposta de `GET /marketing/publications/:id/metrics` (histórico por publicação). */
 export interface PublicationMetricsView {
   snapshots: Array<{ capturedAt: string; views: number; likes: number; comments: number }>

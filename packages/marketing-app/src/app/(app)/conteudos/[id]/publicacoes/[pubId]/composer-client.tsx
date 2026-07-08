@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { useAiStatus } from '@/components/ai/use-ai-status'
 import { EmptyState } from '@/components/shared/empty-state'
 import { MarkPublishedDialog } from '@/components/shared/mark-published-dialog'
 import { NetworkChip } from '@/components/shared/network-chip'
@@ -170,6 +171,7 @@ function ComposerForm({
   onView: (view: PublicationView) => void
   reload: () => Promise<void>
 }) {
+  const aiEnabled = useAiStatus()
   const [caption, setCaption] = useState(view.caption)
   const [title, setTitle] = useState(view.title ?? '')
   const [tags, setTags] = useState<string[]>(view.tags)
@@ -347,10 +349,12 @@ function ComposerForm({
           <Card>
             <CardContent className="space-y-5 p-5">
               <CaptionEditor
+                contentId={contentId}
                 format={view.format}
                 value={caption}
                 onChange={setCaption}
                 disabled={!editable}
+                aiEnabled={aiEnabled}
               />
 
               {isYouTube ? (
