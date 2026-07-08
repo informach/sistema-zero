@@ -157,7 +157,23 @@ export function AssetDetailDialog({
     >
       <div className="space-y-5">
         <div className="flex min-h-40 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted/40">
-          {!ready ? (
+          {asset.status === 'archived' ? (
+            <div className="space-y-2 p-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Este arquivo foi arquivado no Google Drive (o conteúdo já foi publicado).
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  void resolveAssetUrl(asset.id).then((url) => window.open(url, '_blank'))
+                }}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              >
+                <ExternalLink className="size-4" aria-hidden />
+                Abrir no Drive
+              </button>
+            </div>
+          ) : !ready ? (
             <p className="p-6 text-sm text-muted-foreground">
               O arquivo ainda não está pronto. Atualize a biblioteca em instantes.
             </p>

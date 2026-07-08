@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent } from '@sistemazero/ui/card'
 import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
@@ -28,6 +27,7 @@ const OAUTH_ERROR_MESSAGES: Record<string, string> = {
 const CONNECTED_MESSAGES: Record<string, string> = {
   youtube: 'Conta do Google conectada.',
   facebook: 'Facebook e Instagram conectados.',
+  tiktok: 'Conta do TikTok conectada.',
 }
 
 /**
@@ -77,16 +77,19 @@ function OAuthReturnBanner() {
 }
 
 /** Mesma preferência do backend: a conta conectada vence; senão a primeira. */
-function pickYoutubeAccount(items: SocialAccountView[] | undefined): SocialAccountView | null {
-  const youtube = (items ?? []).filter((it) => it.network === 'youtube')
-  return youtube.find((it) => it.status === 'connected') ?? youtube[0] ?? null
+function pickAccount(
+  items: SocialAccountView[] | undefined,
+  network: 'youtube' | 'tiktok',
+): SocialAccountView | null {
+  const filtered = (items ?? []).filter((it) => it.network === network)
+  return filtered.find((it) => it.status === 'connected') ?? filtered[0] ?? null
 }
 
 export function ConexoesClient({ isAdmin }: { isAdmin: boolean }) {
   const [data, setData] = useState<AccountsResponse | null>(null)
   const [failed, setFailed] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
-  const [starting, setStarting] = useState<'youtube' | 'facebook' | null>(null)
+  const [starting, setStarting] = useState<'youtube' | 'facebook' | 'tiktok' | null>(null)
   const [disconnectTarget, setDisconnectTarget] = useState<SocialAccountView | null>(null)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadKey` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
@@ -106,9 +109,10 @@ export function ConexoesClient({ isAdmin }: { isAdmin: boolean }) {
     }
   }, [reloadKey])
 
-  const youtube = pickYoutubeAccount(data?.items)
+  const youtube = pickAccount(data?.items, 'youtube')
+  const tiktok = pickAccount(data?.items, 'tiktok')
 
-  async function startOAuth(network: 'youtube' | 'facebook') {
+  async function startOAuth(network: 'youtube' | 'facebook' | 'tiktok') {
     setStarting(network)
     try {
       const { authorizeUrl } = await apiSend<{ authorizeUrl: string }>(
@@ -192,18 +196,13 @@ export function ConexoesClient({ isAdmin }: { isAdmin: boolean }) {
             onConnect={() => startOAuth('youtube')}
             onDisconnect={setDisconnectTarget}
           />
-          <Card className="opacity-60">
-            <CardContent className="space-y-3 p-5">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Music2 className="size-5 text-muted-foreground" aria-hidden />
-                  <h2 className="font-medium">{NETWORK_LABELS.tiktok}</h2>
-                </div>
-                <Badge variant="muted">em breve</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">Conexão chega na fase 4 do roadmap.</p>
-            </CardContent>
-          </Card>
+          <TikTokCard
+            account={tiktok}
+            isAdmin={isAdmin}
+            starting={starting === 'tiktok'}
+            onConnect={() => startOAuth('tiktok')}
+            onDisconnect={setDisconnectTarget}
+          />
         </div>
       )}
 
@@ -303,6 +302,80 @@ function YoutubeCard({
             ) : null}
           </div>
         ) : null}
+
+        <p className="text-xs text-muted-foreground">
+          A mesma conta cuida do Drive: importar mídia e arquivar o que já foi publicado. Reconectar
+          libera o arquivamento automático no Drive (permissão nova).
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
+function TikTokCard({
+  account,
+  isAdmin,
+  starting,
+  onConnect,
+  onDisconnect,
+}: {
+  account: SocialAccountView | null
+  isAdmin: boolean
+  starting: boolean
+  onConnect: () => void
+  onDisconnect: (account: SocialAccountView) => void
+}) {
+  const needsReconnect = account?.status === 'needs_reauth' || account?.status === 'revoked'
+  const canDisconnect = account !== null && account.status !== 'revoked'
+
+  return (
+    <Card>
+      <CardContent className="space-y-3 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Music2 className="size-5 text-muted-foreground" aria-hidden />
+            <h2 className="font-medium">{NETWORK_LABELS.tiktok}</h2>
+          </div>
+          {account ? <StatusChip status={account.status} /> : null}
+        </div>
+
+        {account ? (
+          <div className="space-y-2">
+            <p className="text-sm">
+              Conectado como{' '}
+              <span className="font-medium">
+                {account.username ? `@${account.username}` : account.displayName}
+              </span>
+            </p>
+            <TokenInfoLine account={account} />
+            <AutoPublishBadge account={account} />
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Nenhuma conta conectada. Conecte a conta do TikTok para publicar e coletar métricas
+            automaticamente.
+          </p>
+        )}
+
+        {isAdmin ? (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {!account || needsReconnect ? (
+              <Button size="sm" onClick={onConnect} disabled={starting}>
+                {starting ? 'Abrindo o TikTok…' : account ? 'Reconectar' : 'Conectar'}
+              </Button>
+            ) : null}
+            {canDisconnect ? (
+              <Button variant="destructive" size="sm" onClick={() => onDisconnect(account)}>
+                Desconectar
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+
+        <p className="text-xs text-muted-foreground">
+          Até a auditoria do app na TikTok, os posts automáticos sobem PRIVADOS (só a conta vê) — dá
+          para torná-los públicos no próprio app. O login se renova sozinho.
+        </p>
       </CardContent>
     </Card>
   )

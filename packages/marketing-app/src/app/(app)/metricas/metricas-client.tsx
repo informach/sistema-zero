@@ -8,13 +8,21 @@ import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { NETWORK_LABELS, SOCIAL_NETWORKS, type SocialNetwork } from '@/lib/networks'
-import type { AccountsResponse, FollowersSeriesView, MetricsSummaryView } from '@/lib/types'
+import type {
+  AccountsResponse,
+  BestTimesView,
+  FollowersSeriesView,
+  MetricsSummaryView,
+} from '@/lib/types'
+import { BestTimesHeatmap } from './best-times-heatmap'
 import { FollowersChart } from './followers-chart'
 import { NetworkCards } from './network-cards'
 import { TopPublicationsTable } from './top-publications-table'
 
 const PERIODS = [7, 30, 90] as const
 type Period = (typeof PERIODS)[number]
+const BEST_TIMES_PERIODS = [90, 180, 365] as const
+type BestTimesPeriod = (typeof BEST_TIMES_PERIODS)[number]
 
 /**
  * Dashboard de métricas (F3): cards por rede (seguidores + totais 28d), série
@@ -30,6 +38,9 @@ export function MetricasClient() {
   const [series, setSeries] = useState<FollowersSeriesView | null>(null)
   const [network, setNetwork] = useState<SocialNetwork | null>(null)
   const [days, setDays] = useState<Period>(30)
+  const [bestTimes, setBestTimes] = useState<BestTimesView | null>(null)
+  const [bestTimesNetwork, setBestTimesNetwork] = useState<SocialNetwork | null>(null)
+  const [bestTimesDays, setBestTimesDays] = useState<BestTimesPeriod>(180)
   const [failed, setFailed] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
 
@@ -70,6 +81,23 @@ export function MetricasClient() {
     }
   }, [network, days])
 
+  // Melhores horários: mesmo padrão (agregado no backend, filtros refazem).
+  useEffect(() => {
+    let alive = true
+    const params = new URLSearchParams({ days: String(bestTimesDays) })
+    if (bestTimesNetwork) params.set('network', bestTimesNetwork)
+    apiGet<BestTimesView>(`/api/marketing/metrics/best-times?${params}`)
+      .then((view) => {
+        if (alive) setBestTimes(view)
+      })
+      .catch(() => {
+        if (alive) setBestTimes({ cells: [], totalPosts: 0 })
+      })
+    return () => {
+      alive = false
+    }
+  }, [bestTimesNetwork, bestTimesDays])
+
   if (failed) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
@@ -83,7 +111,7 @@ export function MetricasClient() {
     )
   }
 
-  if (state === null || series === null) {
+  if (state === null || series === null || bestTimes === null) {
     return (
       <div className="space-y-4" aria-busy="true">
         <span className="sr-only">Carregando métricas</span>
@@ -162,6 +190,38 @@ export function MetricasClient() {
         <div className="rounded-xl border border-border bg-card p-4">
           <FollowersChart view={series} />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-medium">Melhores horários</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            {filterableNetworks.length > 1 ? (
+              <FilterGroup
+                options={[
+                  { key: 'all', label: 'Todas' },
+                  ...filterableNetworks.map((n) => ({ key: n, label: NETWORK_LABELS[n] })),
+                ]}
+                active={bestTimesNetwork ?? 'all'}
+                onSelect={(key) =>
+                  setBestTimesNetwork(key === 'all' ? null : (key as SocialNetwork))
+                }
+              />
+            ) : null}
+            <FilterGroup
+              options={BEST_TIMES_PERIODS.map((p) => ({ key: String(p), label: `${p}d` }))}
+              active={String(bestTimesDays)}
+              onSelect={(key) => setBestTimesDays(Number(key) as BestTimesPeriod)}
+            />
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <BestTimesHeatmap view={bestTimes} />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Cada célula é um horário da semana (fuso de São Paulo). Quanto mais forte a cor, mais
+          views por post as publicações daquele horário somaram no período.
+        </p>
       </div>
 
       <TopPublicationsTable publications={summary.topPublications} />

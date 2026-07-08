@@ -247,6 +247,13 @@ export interface MetricsSummaryView {
   }>
 }
 
+/** Resposta de `GET /marketing/metrics/best-times?network=&days=` (heatmap). */
+export interface BestTimesView {
+  /** Só células COM posts. `dow` 0=domingo..6=sábado; `hour` 0..23 (SP). */
+  cells: Array<{ dow: number; hour: number; posts: number; views: number; likes: number }>
+  totalPosts: number
+}
+
 /** Resposta de `GET /marketing/metrics/followers-series?network=&days=`. */
 export interface FollowersSeriesView {
   series: Array<{
