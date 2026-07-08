@@ -9,8 +9,12 @@ import {
  * (anti-SSRF); só o fileId (validado por regex na borda) entra no path.
  */
 const FILES_URL = 'https://www.googleapis.com/drive/v3/files'
+const UPLOAD_URL = 'https://www.googleapis.com/upload/drive/v3/files'
 const FILE_FIELDS = 'id,name,mimeType,size,modifiedTime'
 const LIST_TIMEOUT_MS = 10_000
+/** PUT do arquivador (vídeo de até 2GB) — timeout longo próprio. */
+const UPLOAD_TIMEOUT_MS = 30 * 60_000
+const FOLDER_MIME = 'application/vnd.google-apps.folder'
 
 async function fetchWithTimeout(
   url: string,
@@ -110,6 +114,121 @@ export class GoogleDriveClient implements DriveClient {
     }
     if (!res.body) throw new DriveClientError('Drive não devolveu corpo', false)
     return res.body as ReadableStream<Uint8Array>
+  }
+
+  /** Find-or-create da pasta do arquivador (escopo drive.file: pasta do app). */
+  async ensureFolder(accessToken: string, name: string): Promise<string> {
+    const url = new URL(FILES_URL)
+    // Aspas simples escapadas fora (name vem de constante nossa, não de input).
+    url.searchParams.set(
+      'q',
+      `mimeType = '${FOLDER_MIME}' and name = '${name.replace(/['\\]/g, ' ')}' and trashed = false`,
+    )
+    url.searchParams.set('fields', 'files(id)')
+    const res = await this.request(url.toString(), accessToken, LIST_TIMEOUT_MS)
+    const body = (await res.json()) as { files?: Array<{ id?: string }> }
+    const existing = body.files?.[0]?.id
+    if (existing) return existing
+
+    let createRes: Response
+    try {
+      createRes = await fetchWithTimeout(
+        FILES_URL,
+        {
+          method: 'POST',
+          headers: {
+            authorization: `Bearer ${accessToken}`,
+            'content-type': 'application/json; charset=UTF-8',
+          },
+          body: JSON.stringify({ name, mimeType: FOLDER_MIME }),
+        },
+        LIST_TIMEOUT_MS,
+      )
+    } catch (error) {
+      throw new DriveClientError('Falha de rede ao criar a pasta no Drive', false, {
+        cause: error,
+      })
+    }
+    if (!createRes.ok) {
+      throw new DriveClientError(
+        `Drive create folder falhou (${createRes.status})`,
+        classifyStatus(createRes.status),
+      )
+    }
+    const created = (await createRes.json()) as { id?: string }
+    if (!created.id) throw new DriveClientError('Drive criou a pasta sem id', false)
+    return created.id
+  }
+
+  /** Upload resumable: init (metadata) → UM PUT com o stream + Content-Length. */
+  async uploadStream(
+    accessToken: string,
+    input: {
+      name: string
+      mimeType: string
+      sizeBytes: number
+      parentFolderId: string
+      body: ReadableStream<Uint8Array>
+    },
+  ): Promise<string> {
+    let initRes: Response
+    try {
+      initRes = await fetchWithTimeout(
+        `${UPLOAD_URL}?uploadType=resumable`,
+        {
+          method: 'POST',
+          headers: {
+            authorization: `Bearer ${accessToken}`,
+            'content-type': 'application/json; charset=UTF-8',
+            'x-upload-content-type': input.mimeType,
+            'x-upload-content-length': String(input.sizeBytes),
+          },
+          body: JSON.stringify({ name: input.name, parents: [input.parentFolderId] }),
+        },
+        LIST_TIMEOUT_MS,
+      )
+    } catch (error) {
+      throw new DriveClientError('Falha de rede ao iniciar o upload no Drive', false, {
+        cause: error,
+      })
+    }
+    if (!initRes.ok) {
+      throw new DriveClientError(
+        `Drive upload init falhou (${initRes.status})`,
+        classifyStatus(initRes.status),
+      )
+    }
+    const sessionUri = initRes.headers.get('location')
+    if (!sessionUri) throw new DriveClientError('Drive upload init sem header Location', false)
+
+    let putRes: Response
+    try {
+      putRes = await fetchWithTimeout(
+        sessionUri,
+        {
+          method: 'PUT',
+          headers: {
+            'content-type': input.mimeType,
+            'content-length': String(input.sizeBytes),
+          },
+          body: input.body as unknown as RequestInit['body'],
+          // fetch com stream de request exige half-duplex.
+          duplex: 'half',
+        } as RequestInit,
+        UPLOAD_TIMEOUT_MS,
+      )
+    } catch (error) {
+      throw new DriveClientError('Falha de rede no upload ao Drive', false, { cause: error })
+    }
+    if (!putRes.ok) {
+      throw new DriveClientError(
+        `Drive upload falhou (${putRes.status})`,
+        classifyStatus(putRes.status),
+      )
+    }
+    const uploaded = (await putRes.json().catch(() => ({}))) as { id?: string }
+    if (!uploaded.id) throw new DriveClientError('Drive upload terminou sem id de arquivo', false)
+    return uploaded.id
   }
 
   private async request(url: string, accessToken: string, timeoutMs: number): Promise<Response> {

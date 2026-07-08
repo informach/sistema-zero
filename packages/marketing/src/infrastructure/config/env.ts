@@ -113,6 +113,11 @@ const EnvSchema = z.object({
     .positive()
     .default(16 * 1024 * 1024),
 
+  // ── Arquivador R2→Drive (F4) — roda quando Google + R2 estão configurados ───
+  MEDIA_ARCHIVER_INTERVAL_MS: z.coerce.number().int().positive().default(3_600_000),
+  // Idade mínima do conteúdo PUBLICADO p/ a mídia sair do R2 (dias).
+  MEDIA_ARCHIVE_AFTER_DAYS: z.coerce.number().int().positive().default(30),
+
   // ── Lembrete WhatsApp (marketing → gateway → /messaging/send, HMAC) ─────────
   GATEWAY_URL: z.string().url().default('http://localhost:3000'),
   MARKETING_CONSUMER_ID: z.string().min(1).default('marketing'),

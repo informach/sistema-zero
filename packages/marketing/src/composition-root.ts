@@ -58,6 +58,7 @@ import { DrizzlePublicationAssetRepository } from './infrastructure/persistence/
 import { DrizzleQuotaUsageRepository } from './infrastructure/persistence/drizzle/quota-usage.repository'
 import { DrizzleSocialAccountRepository } from './infrastructure/persistence/drizzle/social-account.repository'
 import { createSecretBox } from './infrastructure/security/secret-box'
+import { MediaArchiverWorker } from './infrastructure/workers/media-archiver-worker'
 import { MediaTransferWorker } from './infrastructure/workers/media-transfer-worker'
 import { MetricsWorker } from './infrastructure/workers/metrics-worker'
 import { PublisherWorker } from './infrastructure/workers/publisher-worker'
@@ -88,6 +89,7 @@ const notConfiguredMediaStore: MediaStore = {
   delete: () => Promise.reject(new MediaNotConfiguredError()),
   put: () => Promise.reject(new MediaNotConfiguredError()),
   getRange: () => Promise.reject(new MediaNotConfiguredError()),
+  getStream: () => Promise.reject(new MediaNotConfiguredError()),
 }
 
 /**
@@ -367,6 +369,25 @@ export function createApplication(env: Env): Application {
       maxUploadBytes: env.MARKETING_MAX_UPLOAD_BYTES,
     },
   })
+  // Arquivador R2→Drive (F4): precisa do Drive (Google) E do R2 configurados.
+  const mediaArchiverWorker =
+    driveClient && r2
+      ? new MediaArchiverWorker({
+          assets: assetRepo,
+          store: mediaStore,
+          drive: driveClient,
+          accounts: accountService,
+          now,
+          logger,
+          config: {
+            intervalMs: env.MEDIA_ARCHIVER_INTERVAL_MS,
+            batchSize: 2,
+            leaseMs: 30 * 60_000,
+            maxAttempts: 5,
+            afterDays: env.MEDIA_ARCHIVE_AFTER_DAYS,
+          },
+        })
+      : null
   const tokenRefreshWorker = new TokenRefreshWorker({
     accounts: accountRepo,
     accountService,
@@ -547,6 +568,7 @@ export function createApplication(env: Env): Application {
       }, env.RETENTION_CLEANUP_INTERVAL_MS)
       publisherWorker.start()
       mediaTransferWorker.start()
+      mediaArchiverWorker?.start()
       tokenRefreshWorker.start()
       metricsWorker?.start()
       // `::` = dual-stack — necessário p/ o private networking do Railway (IPv6).
@@ -559,6 +581,7 @@ export function createApplication(env: Env): Application {
       await Promise.all([
         publisherWorker.stop(),
         mediaTransferWorker.stop(),
+        mediaArchiverWorker?.stop() ?? Promise.resolve(),
         tokenRefreshWorker.stop(),
         metricsWorker?.stop() ?? Promise.resolve(),
       ])

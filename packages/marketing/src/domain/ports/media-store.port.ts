@@ -38,4 +38,9 @@ export interface MediaStore {
    * HTTP Range (`bytes=start-end`).
    */
   getRange(input: { key: string; start: number; endInclusive: number }): Promise<Uint8Array>
+  /**
+   * Stream do objeto INTEIRO (arquivador R2→Drive) — memória O(chunk), o
+   * consumidor pipa direto pro upload do Drive.
+   */
+  getStream(key: string): Promise<ReadableStream<Uint8Array>>
 }

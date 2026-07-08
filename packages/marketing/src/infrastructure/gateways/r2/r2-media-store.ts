@@ -111,6 +111,14 @@ export class R2MediaStore implements MediaStore {
     return result.Body.transformToByteArray()
   }
 
+  async getStream(key: string): Promise<ReadableStream<Uint8Array>> {
+    const result = await this.transferClient.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+    )
+    if (!result.Body) throw new Error('R2 não devolveu corpo no GET')
+    return result.Body.transformToWebStream() as ReadableStream<Uint8Array>
+  }
+
   async put(input: {
     key: string
     contentType: string

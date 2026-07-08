@@ -27,9 +27,15 @@ export const GOOGLE_SCOPES = [
   'openid',
   'email',
   'https://www.googleapis.com/auth/drive.readonly',
+  // F4: o ARQUIVADOR grava no Drive — drive.file só alcança arquivos/pastas
+  // criados pelo próprio app (mínimo necessário p/ escrever).
+  'https://www.googleapis.com/auth/drive.file',
   'https://www.googleapis.com/auth/youtube.upload',
   'https://www.googleapis.com/auth/youtube',
 ] as const
+
+/** Escopo que o arquivador exige — conta antiga sem ele precisa RECONECTAR. */
+export const DRIVE_FILE_SCOPE = 'https://www.googleapis.com/auth/drive.file'
 
 const DEFAULT_TIMEOUT_MS = 10_000
 

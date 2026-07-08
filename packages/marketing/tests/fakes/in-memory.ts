@@ -237,6 +237,40 @@ export class InMemoryMediaAssetRepository implements MediaAssetRepository {
     }
     return due.map(clone)
   }
+
+  /** Ref opcional p/ o join do arquivador (stage/updatedAt do conteúdo). */
+  contentsRef: InMemoryContentRepository | null = null
+
+  async claimDueArchives(input: {
+    now: Date
+    limit: number
+    leaseMs: number
+    afterDays: number
+  }): Promise<MediaAsset[]> {
+    const cutoff = input.now.getTime() - input.afterDays * 86_400_000
+    const due = [...this.rows.values()]
+      .filter((a) => {
+        if (a.status === 'archiving') {
+          return a.transferNextAt !== null && a.transferNextAt.getTime() <= input.now.getTime()
+        }
+        if (a.status !== 'ready' || !a.r2Key || !a.contentId) return false
+        const content = this.contentsRef?.rows.get(a.contentId)
+        if (content?.stage !== 'published') return false
+        if (content.updatedAt.getTime() > cutoff) return false
+        return a.transferNextAt === null || a.transferNextAt.getTime() <= input.now.getTime()
+      })
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .slice(0, input.limit)
+    const leaseUntil = new Date(input.now.getTime() + input.leaseMs)
+    for (const asset of due) {
+      asset.status = 'archiving'
+      asset.transferAttempts += 1
+      asset.transferNextAt = leaseUntil
+      asset.version += 1
+      asset.updatedAt = input.now
+    }
+    return due.map(clone)
+  }
 }
 
 export class InMemoryPublicationRepository implements PublicationRepository {
@@ -475,6 +509,18 @@ export class FakeMediaStore implements MediaStore {
     if (size === undefined) throw new Error(`objeto inexistente: ${input.key}`)
     const end = Math.min(input.endInclusive, size - 1)
     return new Uint8Array(Math.max(0, end - input.start + 1))
+  }
+
+  async getStream(key: string): Promise<ReadableStream<Uint8Array>> {
+    const size = this.objects.get(key)
+    if (size === undefined) throw new Error(`objeto inexistente: ${key}`)
+    const bytes = new Uint8Array(size)
+    return new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes)
+        controller.close()
+      },
+    })
   }
 
   async put(input: {
@@ -729,6 +775,56 @@ export class FakeDriveClient implements DriveClient {
         controller.close()
       },
     })
+  }
+
+  // ── Arquivador (F4) ─────────────────────────────────────────────────────────
+  readonly folders = new Map<string, string>()
+  readonly uploads: Array<{
+    name: string
+    mimeType: string
+    sizeBytes: number
+    parentFolderId: string
+    driveFileId: string
+  }> = []
+  /** Roteiriza falha no upload: 'permanent' (403/404) ou 'transient'. */
+  failUploadWith: 'permanent' | 'transient' | null = null
+  private uploadSeq = 0
+
+  async ensureFolder(_accessToken: string, name: string): Promise<string> {
+    const existing = this.folders.get(name)
+    if (existing) return existing
+    const id = `folder-${this.folders.size + 1}`
+    this.folders.set(name, id)
+    return id
+  }
+
+  async uploadStream(
+    _accessToken: string,
+    input: {
+      name: string
+      mimeType: string
+      sizeBytes: number
+      parentFolderId: string
+      body: ReadableStream<Uint8Array>
+    },
+  ): Promise<string> {
+    if (this.failUploadWith) {
+      throw new DriveClientError('upload falhou', this.failUploadWith === 'permanent')
+    }
+    // Consome o stream (o worker pipa do R2 — o fake só drena).
+    const reader = input.body.getReader()
+    while (!(await reader.read()).done) {
+      // drena
+    }
+    const driveFileId = `drive-file-${++this.uploadSeq}`
+    this.uploads.push({
+      name: input.name,
+      mimeType: input.mimeType,
+      sizeBytes: input.sizeBytes,
+      parentFolderId: input.parentFolderId,
+      driveFileId,
+    })
+    return driveFileId
   }
 }
 

@@ -20,4 +20,17 @@ export interface MediaAssetRepository {
    * `transfer_next_at` — crash devolve à fila no vencimento do lease.
    */
   claimDueTransfers(now: Date, limit: number, leaseMs: number): Promise<MediaAsset[]>
+  /**
+   * Claim do ARQUIVADOR (F4, R2→Drive): assets `ready` com r2_key cujo CONTEÚDO
+   * está `published` há mais de `afterDays` (contents.updated_at — a etapa é
+   * materializada quando a última publicação sai) + reaper de `archiving` com
+   * lease vencido. Mesmo padrão do claimDueTransfers (SKIP LOCKED + lease em
+   * transfer_next_at; a linha claimada vira `archiving` com attempts+1).
+   */
+  claimDueArchives(input: {
+    now: Date
+    limit: number
+    leaseMs: number
+    afterDays: number
+  }): Promise<MediaAsset[]>
 }

@@ -1,11 +1,11 @@
-import { and, asc, count, desc, eq, inArray, isNull, lte, or, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm'
 import type { MediaAsset } from '../../../domain/media/media-asset'
 import type {
   ListAssetsFilter,
   MediaAssetRepository,
 } from '../../../domain/ports/media-asset-repository.port'
 import type { Database } from './db'
-import { mediaAssets } from './schema'
+import { contents, mediaAssets } from './schema'
 
 export class DrizzleMediaAssetRepository implements MediaAssetRepository {
   constructor(private readonly db: Database) {}
@@ -104,6 +104,65 @@ export class DrizzleMediaAssetRepository implements MediaAssetRepository {
         transferAttempts: r.transferAttempts + 1,
         transferNextAt: leaseUntil,
         version: r.version + 1,
+        updatedAt: now,
+      }))
+    })
+  }
+
+  async claimDueArchives(input: {
+    now: Date
+    limit: number
+    leaseMs: number
+    afterDays: number
+  }): Promise<MediaAsset[]> {
+    const { now } = input
+    const cutoff = new Date(now.getTime() - input.afterDays * 86_400_000)
+    return this.db.transaction(async (tx) => {
+      const due = await tx
+        .select({ asset: mediaAssets })
+        .from(mediaAssets)
+        .innerJoin(contents, eq(mediaAssets.contentId, contents.id))
+        .where(
+          or(
+            // Elegível: pronto, com objeto no R2, conteúdo PUBLICADO há 30d+.
+            and(
+              eq(mediaAssets.status, 'ready'),
+              isNotNull(mediaAssets.r2Key),
+              eq(contents.stage, 'published'),
+              lte(contents.updatedAt, cutoff),
+              or(isNull(mediaAssets.transferNextAt), lte(mediaAssets.transferNextAt, now)),
+            ),
+            // Reaper: preso em `archiving` com lease vencido (crash no meio).
+            and(eq(mediaAssets.status, 'archiving'), lte(mediaAssets.transferNextAt, now)),
+          ),
+        )
+        .orderBy(asc(mediaAssets.createdAt), asc(mediaAssets.id))
+        .limit(input.limit)
+        // Trava SÓ os assets (o join olha contents, mas ninguém disputa a linha).
+        .for('update', { of: mediaAssets, skipLocked: true })
+      if (due.length === 0) return []
+      const leaseUntil = new Date(now.getTime() + input.leaseMs)
+      await tx
+        .update(mediaAssets)
+        .set({
+          status: 'archiving',
+          transferAttempts: sql`${mediaAssets.transferAttempts} + 1`,
+          transferNextAt: leaseUntil,
+          version: sql`${mediaAssets.version} + 1`,
+          updatedAt: now,
+        })
+        .where(
+          inArray(
+            mediaAssets.id,
+            due.map((r) => r.asset.id),
+          ),
+        )
+      return due.map((r) => ({
+        ...r.asset,
+        status: 'archiving' as const,
+        transferAttempts: r.asset.transferAttempts + 1,
+        transferNextAt: leaseUntil,
+        version: r.asset.version + 1,
         updatedAt: now,
       }))
     })

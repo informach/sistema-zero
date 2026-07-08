@@ -31,4 +31,23 @@ export interface DriveClient {
   getFileMetadata(accessToken: string, fileId: string): Promise<DriveFile>
   /** Stream do conteúdo (`files.get?alt=media`) — nunca materializa em memória. */
   downloadStream(accessToken: string, fileId: string): Promise<ReadableStream<Uint8Array>>
+  /**
+   * Acha (ou cria) a pasta do ARQUIVADOR pelo nome — devolve o folderId.
+   * Exige o escopo `drive.file` (a pasta é criada pelo próprio app).
+   */
+  ensureFolder(accessToken: string, name: string): Promise<string>
+  /**
+   * Sobe um arquivo em STREAMING (resumable: init + um PUT com Content-Length
+   * conhecido) — devolve o driveFileId. Arquivador R2→Drive.
+   */
+  uploadStream(
+    accessToken: string,
+    input: {
+      name: string
+      mimeType: string
+      sizeBytes: number
+      parentFolderId: string
+      body: ReadableStream<Uint8Array>
+    },
+  ): Promise<string>
 }
