@@ -36,7 +36,9 @@ import { MetaMetricsSource } from './infrastructure/gateways/meta/meta-metrics-s
 import { MetaOAuthProvider } from './infrastructure/gateways/meta/meta-oauth-provider'
 import { MetaPublisher } from './infrastructure/gateways/meta/meta-publisher'
 import { R2MediaStore } from './infrastructure/gateways/r2/r2-media-store'
+import { TikTokClient } from './infrastructure/gateways/tiktok/tiktok-client'
 import { TikTokOAuthProvider } from './infrastructure/gateways/tiktok/tiktok-oauth-provider'
+import { TikTokPublisher } from './infrastructure/gateways/tiktok/tiktok-publisher'
 import { YoutubeClient } from './infrastructure/gateways/youtube/youtube-client'
 import { YoutubeExternalResolver } from './infrastructure/gateways/youtube/youtube-external-resolver'
 import { YoutubeMetricsSource } from './infrastructure/gateways/youtube/youtube-metrics-source'
@@ -200,9 +202,11 @@ export function createApplication(env: Env): Application {
   // (a mídia sai de lá) configurados — ausente = rede segue em modo lembrete.
   const youtubeEnabled = Boolean(googleEnabled && r2)
   const metaPublishEnabled = Boolean(oauthCore && metaCfg && r2)
+  const tiktokPublishEnabled = Boolean(oauthCore && tiktokCfg && r2)
   const autoCapableNetworks: ReadonlySet<Network> = new Set<Network>([
     ...(youtubeEnabled ? (['youtube'] as const) : []),
     ...(metaPublishEnabled ? (['instagram', 'facebook'] as const) : []),
+    ...(tiktokPublishEnabled ? (['tiktok'] as const) : []),
   ])
   const publicationService = new PublicationService(
     publicationRepo,
@@ -293,6 +297,17 @@ export function createApplication(env: Env): Application {
       new MetaPublisher({ api: metaApi, network: 'facebook', config: metaPublisherConfig, now }),
     )
   }
+  // TikTok (F4): Direct Post por FILE_UPLOAD (bytes saem do R2 em chunks).
+  if (tiktokPublishEnabled) {
+    publishers.set(
+      'tiktok',
+      new TikTokPublisher({
+        api: new TikTokClient(),
+        config: { chunkBytes: env.TT_UPLOAD_CHUNK_BYTES },
+        now,
+      }),
+    )
+  }
 
   // Workers (processo único, padrão messaging: claim SKIP LOCKED + lease).
   const publisherWorker = new PublisherWorker({
@@ -331,6 +346,8 @@ export function createApplication(env: Env): Application {
         ['youtube', env.YT_UPLOAD_LEAD_HOURS * 60 * 60_000],
         ['instagram', env.META_PUBLISH_LEAD_MS],
         ['facebook', env.META_PUBLISH_LEAD_MS],
+        // TikTok publica NA hora (upload = publicar) — lead só acorda o worker.
+        ['tiktok', 60_000],
       ]),
     },
   })
