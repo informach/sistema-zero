@@ -90,6 +90,19 @@ const EnvSchema = z.object({
   // URL do marketing-app (destino do 302 pós-callback: /conexoes?connected=…).
   MARKETING_APP_URL: z.string().url().optional(),
 
+  // ── OAuth Meta (Facebook + Instagram) — grupo atômico c/ o núcleo OAuth ─────
+  META_APP_ID: z.string().optional(),
+  META_APP_SECRET: z.string().optional(),
+  META_GRAPH_VERSION: z.string().min(2).default('v25.0'),
+  // Renova o user token 60d com esta folga (long-lived EXPIRADO = re-login).
+  META_TOKEN_RENEW_MARGIN_DAYS: z.coerce.number().int().positive().default(10),
+  // Lead do claim auto da Meta (container criado pouco antes da hora).
+  META_PUBLISH_LEAD_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(10 * 60_000),
+
   // ── Lembrete WhatsApp (marketing → gateway → /messaging/send, HMAC) ─────────
   GATEWAY_URL: z.string().url().default('http://localhost:3000'),
   MARKETING_CONSUMER_ID: z.string().min(1).default('marketing'),
@@ -225,6 +238,18 @@ export function oauthCoreConfig(env: Env): {
 export function googleConfig(env: Env): { clientId: string; clientSecret: string } | null {
   if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return null
   return { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET }
+}
+
+/** Credenciais da Meta (Facebook+Instagram) ou null (provedor desligado). */
+export function metaConfig(
+  env: Env,
+): { appId: string; appSecret: string; graphVersion: string } | null {
+  if (!env.META_APP_ID || !env.META_APP_SECRET) return null
+  return {
+    appId: env.META_APP_ID,
+    appSecret: env.META_APP_SECRET,
+    graphVersion: env.META_GRAPH_VERSION,
+  }
 }
 
 /** Config do lembrete (consumer HMAC do messaging) ou null (lembrete desligado). */

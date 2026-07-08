@@ -54,6 +54,7 @@ export interface TestApp {
   }
   store: FakeMediaStore
   provider: FakeOAuthProvider
+  metaProvider: FakeOAuthProvider
   driveClient: FakeDriveClient
   secretBox: FakeSecretBox
   services: { accounts: AccountService }
@@ -116,8 +117,16 @@ export function buildTestApp(
     now,
     idGen,
   )
+  const metaProvider = new FakeOAuthProvider()
   const oauthProviders = new Map<Network, OAuthProvider>(
-    googleEnabled ? [['youtube' as Network, provider]] : [],
+    googleEnabled
+      ? [
+          ['youtube' as Network, provider],
+          // Meta: o MESMO provider fake serve facebook e instagram.
+          ['facebook' as Network, metaProvider],
+          ['instagram' as Network, metaProvider],
+        ]
+      : [],
   )
   const accountService = new AccountService(
     accounts,
@@ -212,6 +221,7 @@ export function buildTestApp(
     },
     store,
     provider,
+    metaProvider,
     driveClient,
     secretBox,
     services: { accounts: accountService },

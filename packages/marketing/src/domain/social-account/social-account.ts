@@ -49,8 +49,10 @@ export const AUTO_PUBLISH_SCOPES: Record<Network, readonly string[]> = {
     'https://www.googleapis.com/auth/youtube.upload',
     'https://www.googleapis.com/auth/youtube',
   ],
-  instagram: [],
-  facebook: [],
+  // Meta (F3): o IG publica com o PAGE token — os escopos vêm do consent do
+  // Facebook Login (por isso pages_read_engagement aparece nos dois).
+  instagram: ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement'],
+  facebook: ['pages_show_list', 'pages_read_engagement', 'pages_manage_posts'],
   tiktok: [],
 }
 

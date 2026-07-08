@@ -105,4 +105,21 @@ export class DrizzleSocialAccountRepository implements SocialAccountRepository {
       .orderBy(asc(socialAccounts.tokenExpiresAt), asc(socialAccounts.id))
       .limit(limit)
   }
+
+  async listRefreshExpiring(now: Date, marginMs: number, limit: number): Promise<SocialAccount[]> {
+    const cutoff = new Date(now.getTime() + marginMs)
+    return this.db
+      .select()
+      .from(socialAccounts)
+      .where(
+        and(
+          eq(socialAccounts.status, 'connected'),
+          sql`${socialAccounts.refreshTokenEnc} is not null`,
+          sql`${socialAccounts.refreshExpiresAt} is not null`,
+          lte(socialAccounts.refreshExpiresAt, cutoff),
+        ),
+      )
+      .orderBy(asc(socialAccounts.refreshExpiresAt), asc(socialAccounts.id))
+      .limit(limit)
+  }
 }

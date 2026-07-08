@@ -538,6 +538,20 @@ export class InMemorySocialAccountRepository implements SocialAccountRepository 
       .slice(0, limit)
       .map(clone)
   }
+  async listRefreshExpiring(now: Date, marginMs: number, limit: number): Promise<SocialAccount[]> {
+    const cutoff = now.getTime() + marginMs
+    return [...this.rows.values()]
+      .filter(
+        (a) =>
+          a.status === 'connected' &&
+          a.refreshTokenEnc !== null &&
+          a.refreshExpiresAt !== null &&
+          a.refreshExpiresAt.getTime() <= cutoff,
+      )
+      .sort((a, b) => (a.refreshExpiresAt?.getTime() ?? 0) - (b.refreshExpiresAt?.getTime() ?? 0))
+      .slice(0, limit)
+      .map(clone)
+  }
 }
 
 export class InMemoryOAuthStateRepository implements OAuthStateRepository {
@@ -610,6 +624,8 @@ export class FakeOAuthProvider implements OAuthProvider {
   }
   /** Roteirizável: setado = contas devolvidas; senão deriva 1 conta youtube do tokenSet+identity. */
   accounts: ProviderAccount[] | null = null
+  readonly renewCalls: string[] = []
+  failRenewWith: 'permanent' | 'transient' | null = null
 
   async resolveAccounts(tokens: OAuthTokenSet): Promise<ProviderAccount[]> {
     if (this.accounts) return structuredClone(this.accounts)
@@ -626,6 +642,21 @@ export class FakeOAuthProvider implements OAuthProvider {
         },
       },
     ]
+  }
+  /** Renovação proativa (Meta): devolve as MESMAS contas roteirizadas. */
+  async renewAccounts(userToken: string): Promise<ProviderAccount[]> {
+    if (this.failRenewWith) {
+      throw new OAuthProviderError('renovação falhou', this.failRenewWith === 'permanent')
+    }
+    this.renewCalls.push(userToken)
+    return this.resolveAccounts({
+      accessToken: `renovado-${userToken}`,
+      refreshToken: `renovado-${userToken}`,
+      expiresInSeconds: 60 * 86_400,
+      refreshExpiresInSeconds: 60 * 86_400,
+      scopes: [],
+      idToken: null,
+    })
   }
   async revoke(token: string): Promise<void> {
     this.revoked.push(token)

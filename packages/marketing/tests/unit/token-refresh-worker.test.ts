@@ -53,7 +53,7 @@ function setup() {
     accountService,
     now,
     logger: silentLogger,
-    config: { intervalMs: 1000, marginMs: 20 * 60_000 },
+    config: { intervalMs: 1000, marginMs: 20 * 60_000, renewMarginMs: 10 * 86_400_000 },
   })
   return { accounts, provider, worker }
 }

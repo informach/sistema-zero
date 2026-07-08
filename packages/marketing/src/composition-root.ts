@@ -19,6 +19,7 @@ import type { Network } from './domain/publication/publication'
 import {
   type Env,
   googleConfig,
+  metaConfig,
   oauthCoreConfig,
   r2Config,
   reminderConfig,
@@ -26,6 +27,7 @@ import {
 import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
 import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
+import { MetaOAuthProvider } from './infrastructure/gateways/meta/meta-oauth-provider'
 import { R2MediaStore } from './infrastructure/gateways/r2/r2-media-store'
 import { YoutubeClient } from './infrastructure/gateways/youtube/youtube-client'
 import { YoutubeMetricsSource } from './infrastructure/gateways/youtube/youtube-metrics-source'
@@ -122,14 +124,28 @@ export function createApplication(env: Env): Application {
   }
   const googleEnabled = Boolean(oauthCore && googleCfg)
   const driveClient = googleEnabled ? new GoogleDriveClient() : null
+  // Meta: o MESMO provider serve facebook (Páginas) e instagram (IG business).
+  const metaCfg = metaConfig(env)
+  if (oauthCore && metaCfg) {
+    const metaProvider = new MetaOAuthProvider(metaCfg)
+    oauthProviders.set('facebook', metaProvider)
+    oauthProviders.set('instagram', metaProvider)
+  }
   if (!oauthCore) {
     logger.warn('oauth.not_configured', {
       hint: 'MARKETING_TOKEN_ENC_KEY/OAUTH_PUBLIC_BASE_URL/MARKETING_APP_URL ausentes — OAuth/Drive responderão 503',
     })
-  } else if (!googleCfg) {
-    logger.warn('oauth.google_not_configured', {
-      hint: 'GOOGLE_CLIENT_ID/SECRET ausentes — YouTube/Drive responderão 503',
-    })
+  } else {
+    if (!googleCfg) {
+      logger.warn('oauth.google_not_configured', {
+        hint: 'GOOGLE_CLIENT_ID/SECRET ausentes — YouTube/Drive responderão 503',
+      })
+    }
+    if (!metaCfg) {
+      logger.warn('oauth.meta_not_configured', {
+        hint: 'META_APP_ID/SECRET ausentes — Instagram/Facebook seguem em modo lembrete',
+      })
+    }
   }
 
   // Lembrete WhatsApp (consumer HMAC do messaging via gateway).
@@ -295,6 +311,7 @@ export function createApplication(env: Env): Application {
     config: {
       intervalMs: env.TOKEN_REFRESH_INTERVAL_MS,
       marginMs: env.TOKEN_REFRESH_MARGIN_MS,
+      renewMarginMs: env.META_TOKEN_RENEW_MARGIN_DAYS * 86_400_000,
     },
   })
   // Fontes de métricas por rede (YouTube na F2; Instagram/Facebook na F3).

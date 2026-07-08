@@ -17,4 +17,9 @@ export interface SocialAccountRepository {
   upsertByExternalId(account: SocialAccount): Promise<SocialAccount>
   /** Contas `connected` com access token vencendo dentro da margem (token-refresh-worker). */
   listExpiring(now: Date, marginMs: number, limit: number): Promise<SocialAccount[]>
+  /**
+   * Contas `connected` com o token de RENOVAÇÃO vencendo (Meta: user token 60d
+   * em `refresh_expires_at`) — passe de renovação proativa do worker.
+   */
+  listRefreshExpiring(now: Date, marginMs: number, limit: number): Promise<SocialAccount[]>
 }
