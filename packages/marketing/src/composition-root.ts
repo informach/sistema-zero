@@ -25,6 +25,7 @@ import {
   oauthCoreConfig,
   r2Config,
   reminderConfig,
+  tiktokConfig,
 } from './infrastructure/config/env'
 import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
@@ -35,6 +36,7 @@ import { MetaMetricsSource } from './infrastructure/gateways/meta/meta-metrics-s
 import { MetaOAuthProvider } from './infrastructure/gateways/meta/meta-oauth-provider'
 import { MetaPublisher } from './infrastructure/gateways/meta/meta-publisher'
 import { R2MediaStore } from './infrastructure/gateways/r2/r2-media-store'
+import { TikTokOAuthProvider } from './infrastructure/gateways/tiktok/tiktok-oauth-provider'
 import { YoutubeClient } from './infrastructure/gateways/youtube/youtube-client'
 import { YoutubeExternalResolver } from './infrastructure/gateways/youtube/youtube-external-resolver'
 import { YoutubeMetricsSource } from './infrastructure/gateways/youtube/youtube-metrics-source'
@@ -140,6 +142,11 @@ export function createApplication(env: Env): Application {
     oauthProviders.set('facebook', metaProvider)
     oauthProviders.set('instagram', metaProvider)
   }
+  // TikTok (F4): conta única do criador (open_id).
+  const tiktokCfg = tiktokConfig(env)
+  if (oauthCore && tiktokCfg) {
+    oauthProviders.set('tiktok', new TikTokOAuthProvider(tiktokCfg))
+  }
   if (!oauthCore) {
     logger.warn('oauth.not_configured', {
       hint: 'MARKETING_TOKEN_ENC_KEY/OAUTH_PUBLIC_BASE_URL/MARKETING_APP_URL ausentes — OAuth/Drive responderão 503',
@@ -153,6 +160,11 @@ export function createApplication(env: Env): Application {
     if (!metaCfg) {
       logger.warn('oauth.meta_not_configured', {
         hint: 'META_APP_ID/SECRET ausentes — Instagram/Facebook seguem em modo lembrete',
+      })
+    }
+    if (!tiktokCfg) {
+      logger.warn('oauth.tiktok_not_configured', {
+        hint: 'TIKTOK_CLIENT_KEY/SECRET ausentes — TikTok segue em modo lembrete',
       })
     }
   }

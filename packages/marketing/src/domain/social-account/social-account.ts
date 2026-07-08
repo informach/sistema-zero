@@ -53,7 +53,8 @@ export const AUTO_PUBLISH_SCOPES: Record<Network, readonly string[]> = {
   // Facebook Login (por isso pages_read_engagement aparece nos dois).
   instagram: ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement'],
   facebook: ['pages_show_list', 'pages_read_engagement', 'pages_manage_posts'],
-  tiktok: [],
+  // TikTok (F4): Direct Post exige video.publish (os demais escopos são leitura).
+  tiktok: ['video.publish'],
 }
 
 /** A conta serve para o publisher automático da rede? */

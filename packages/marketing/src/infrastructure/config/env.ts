@@ -103,6 +103,16 @@ const EnvSchema = z.object({
     .positive()
     .default(10 * 60_000),
 
+  // ── OAuth TikTok — grupo atômico c/ o núcleo OAuth ───────────────────────────
+  TIKTOK_CLIENT_KEY: z.string().optional(),
+  TIKTOK_CLIENT_SECRET: z.string().optional(),
+  // Chunk do FILE_UPLOAD do Direct Post (regra da API: 5MB..64MB por chunk).
+  TT_UPLOAD_CHUNK_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(16 * 1024 * 1024),
+
   // ── Lembrete WhatsApp (marketing → gateway → /messaging/send, HMAC) ─────────
   GATEWAY_URL: z.string().url().default('http://localhost:3000'),
   MARKETING_CONSUMER_ID: z.string().min(1).default('marketing'),
@@ -250,6 +260,11 @@ export function metaConfig(
     appSecret: env.META_APP_SECRET,
     graphVersion: env.META_GRAPH_VERSION,
   }
+}
+
+export function tiktokConfig(env: Env): { clientKey: string; clientSecret: string } | null {
+  if (!env.TIKTOK_CLIENT_KEY || !env.TIKTOK_CLIENT_SECRET) return null
+  return { clientKey: env.TIKTOK_CLIENT_KEY, clientSecret: env.TIKTOK_CLIENT_SECRET }
 }
 
 /** Config do lembrete (consumer HMAC do messaging) ou null (lembrete desligado). */

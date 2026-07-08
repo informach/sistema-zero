@@ -14,7 +14,7 @@ import { buildSocialAccount } from './provider-account'
  * consent da Meta começa em `facebook` e conecta a Página E o Instagram
  * business juntos (o provider devolve as duas contas).
  */
-const START_NETWORKS: ReadonlySet<string> = new Set(['youtube', 'facebook'])
+const START_NETWORKS: ReadonlySet<string> = new Set(['youtube', 'facebook', 'tiktok'])
 
 /** Config comum do OAuth (independe do provedor). */
 export interface OAuthCoreConfig {
