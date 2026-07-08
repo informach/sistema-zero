@@ -126,8 +126,18 @@ marketing-app (Next, :3012)  ── BFF /api/* ──►  api-gateway (:3000)  �
 | 1 | Operação manual completa: telas ricas (kanban, detalhe, composer, calendário, biblioteca, painel), lembrete por WhatsApp, OAuth Google, importar do Drive | **FEITA (07/2026)** |
 | 2 | YouTube automático (upload antecipado + agendamento nativo, quota guard) + tela Conexões + métricas básicas YT | **FEITA (07/2026)** |
 | 3 | Instagram/Facebook automático + coletor de métricas completo + dashboards | **FEITA (07/2026)** |
-| 4 | TikTok + arquivamento R2→Drive + melhores horários (heatmap) | próxima |
-| 5 | IA: legenda/roteiro com validação Light Copy/VTSD + hashtags | |
+| 4 | TikTok + arquivamento R2→Drive + melhores horários (heatmap) | **FEITA (07/2026)** |
+| 5 | IA: legenda/roteiro com validação Light Copy/VTSD + hashtags | próxima |
+
+O que a F4 entregou, na prática: **TikTok automático** (um login conecta a conta do criador; o
+vídeo agendado sobe NA hora marcada — no TikTok, terminar o envio já publica, então nada sobe
+antes da hora; até a auditoria do app os posts saem privados e dá para torná-los públicos no
+próprio TikTok); **arquivamento automático**: 30 dias depois de um conteúdo ficar todo
+publicado, a mídia dele sai do R2 (pago) e vai para a pasta "Sistema Zero Marketing — Arquivo"
+no Google Drive — a Biblioteca passa a mostrar "Arquivado no Drive" com o link (é preciso
+RECONECTAR a conta Google uma vez, por causa da permissão nova de escrita); e o mapa de
+**melhores horários** em Métricas: uma grade semana × hora onde a cor mostra quantas views por
+post cada horário rendeu no período.
 
 O que a F3 entregou, na prática: **conectar Facebook e Instagram com UM login** (a Página e o
 Instagram profissional vinculado entram juntos; o token da Página não expira e o login de 60

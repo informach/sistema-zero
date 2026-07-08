@@ -373,7 +373,7 @@ function TikTokCard({
         ) : null}
 
         <p className="text-xs text-muted-foreground">
-          Até a auditoria do app na TikTok, os posts automáticos sobem PRIVADOS (só a conta vê) — dá
+          Até a auditoria do app na TikTok, os posts automáticos sobem privados (só a conta vê). Dá
           para torná-los públicos no próprio app. O login se renova sozinho.
         </p>
       </CardContent>

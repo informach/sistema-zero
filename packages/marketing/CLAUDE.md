@@ -40,7 +40,20 @@ próximas fases) e **métricas** (snapshots por publicação/conta). Runtime: **
 > rede: YouTube + MetaMetricsSource — IG fields+insights vivos, FB só fields estáveis),
 > `PUT /publications/:id/assets` (ordem do carrossel), summary EXPANDIDA + followers-series e
 > `POST /publications/:id/link-external`. Migrations `0000..0004`. 191 testes.
-> **Fases seguintes:** F4 = TikTok + archiver R2→Drive; F5 = IA (Light Copy).
+> **F4 COMPLETA (08/07/2026):** **TikTok automático** (OAuth Login Kit v2 — token form-urlencoded
+> com `client_key`, access 24h + refresh 365d que ROTACIONA [o AccountService re-sela o novo];
+> Direct Post por **FILE_UPLOAD em chunks** [PULL_FROM_URL exigiria verificar o domínio da URL —
+> presigned do R2 não serve]: SEM side-effect antes da hora [upload = publicar], creator_info →
+> privacidade das OPTIONS [sem auditoria = SELF_ONLY com `privacyNote` na sessão] → init →
+> chunks [<5MB inteiro; clampado 5..64MB; resto no último] → poll status/fetch; retry RETOMA de
+> `uploaded_bytes`; TikTokMetricsSource [follower_count + video/query em lotes de 20]),
+> **arquivador R2→Drive** (media-archiver-worker: conteúdo `published` há
+> `MEDIA_ARCHIVE_AFTER_DAYS`=30d → upload resumable no Drive [pasta "Sistema Zero Marketing —
+> Arquivo"] → persiste archived+driveFileId ANTES do delete no R2; falha volta a `ready` +7d,
+> nunca `failed`; exige o escopo NOVO `drive.file` — conta antiga precisa RECONECTAR, o worker
+> espera com warn; resolve de arquivado devolve o link do Drive) e **melhores horários**
+> (`GET /metrics/best-times` — bucket dia×hora EM SP). SEM migration. 220 testes.
+> **Fase seguinte:** F5 = IA (Light Copy).
 
 ## Decisões travadas (não afrouxar)
 
@@ -152,9 +165,14 @@ GET 300/min, escrita 120/min, corpo 512KB):
   `GET /marketing/metrics/followers-series?network=&days=30` → `{series: [{accountId, network,
   displayName, points: [{date 'YYYY-MM-DD' (dia SP), followers}]}]}` (1 ponto/dia = último
   snapshot do dia) · `GET /marketing/publications/:id/metrics` → `{snapshots}` (série, 30 últimos)
-- Contas/OAuth (F1/F3): `POST /marketing/oauth/:network/start` (`youtube` e `facebook`;
-  `instagram` → 404 orientando conectar pelo Facebook — 1 consent upserta a Página E o IG
-  business vinculado; admin+ no gateway) →
+- Métricas (F4): `GET /marketing/metrics/best-times?network=&days=180` → `{cells: [{dow 0-6,
+  hour 0-23, posts, views, likes}] (só células com posts, dia×hora EM SP), totalPosts}` —
+  heatmap 7×24 do front (intensidade/normalização é lá)
+- Mídia (F4): `GET /marketing/media/:id/resolve` de asset `archived` devolve
+  `{url: drive.google.com/file/d/<driveFileId>/view}` (o objeto saiu do R2)
+- Contas/OAuth (F1/F3/F4): `POST /marketing/oauth/:network/start` (`youtube`, `facebook` e
+  `tiktok`; `instagram` → 404 orientando conectar pelo Facebook — 1 consent upserta a Página E o
+  IG business vinculado; admin+ no gateway) →
   `{authorizeUrl}` · `GET /marketing/oauth/:network/callback` (pública; state single-use ATÔMICO;
   browser → SEMPRE 302 p/ `MARKETING_APP_URL/conexoes?connected=…|error=<code>`) ·
   `GET /marketing/accounts` → `{items (views SEM _enc, com canAutoPublish), autoCapableNetworks}` ·
@@ -200,6 +218,14 @@ Claim `FOR UPDATE SKIP LOCKED` + lease; shutdown para os workers ANTES de fechar
 2. **media-transfer-worker** (15s): assets `importing` — token fresco → metadado revalidado →
    stream Drive→R2 (`MediaStore.put`, client S3 com timeout próprio de 30min) → head confere →
    `ready`; 403/404/conta desconectada = failed permanente; transitório = backoff.
+2b. **media-archiver-worker** (1h, F4): assets `ready` com r2_key de conteúdo `published` há
+   `MEDIA_ARCHIVE_AFTER_DAYS` (30d) — claim SKIP LOCKED reusando transfer_next_at/attempts +
+   reaper de `archiving`. Fluxo: pasta find-or-create no Drive → `MediaStore.getStream` →
+   upload resumable (`DriveClient.uploadStream`: init + UM PUT com Content-Length) → persiste
+   `archived`+driveFileId (CHECKPOINT) → delete no R2 → r2DeletedAt. Falha permanente/teto →
+   volta a `ready` + transferError + retry 7d (NUNCA failed); delete falho = warn (órfão
+   documentado). Exige o escopo `drive.file` na conta Google — sem ele espera com warn
+   (`media_archiver.scope_missing` = reconectar em Conexões).
 3. **token-refresh-worker** (10min): renova PROATIVAMENTE tokens vencendo em
    `TOKEN_REFRESH_MARGIN_MS`; `invalid_grant` → `needs_reauth` + log error (Sentry). 2º passe
    (Meta): user token 60d vencendo em `META_TOKEN_RENEW_MARGIN_DAYS` → `renewDerivedTokens`
@@ -251,7 +277,13 @@ habilitadas; ⚠️ PUBLICAR o app OAuth — em "Testing" o refresh expira em 7 
 em LIVE MODE, redirect `<OAUTH_PUBLIC_BASE_URL>/marketing/oauth/facebook/callback`; Página
 vinculada ao IG profissional), `META_GRAPH_VERSION` (v25.0), `META_TOKEN_RENEW_MARGIN_DAYS`
 (10), `META_PUBLISH_LEAD_MS` (10min). Publisher/métricas Meta montam com META_* (+ R2 p/
-publicar). **Metrics-worker:** `METRICS_WORKER_INTERVAL_MS`/`METRICS_MAX_AGE_DAYS` (fallback
+publicar). **OAuth TikTok (grupo próprio, fail-soft):** `TIKTOK_CLIENT_KEY`/`TIKTOK_CLIENT_SECRET`
+(app no TikTok for Developers com Login Kit + Content Posting API; redirect
+`<OAUTH_PUBLIC_BASE_URL>/marketing/oauth/tiktok/callback`; SEM auditoria os posts saem
+SELF_ONLY), `TT_UPLOAD_CHUNK_BYTES` (16MiB, clampado 5..64MB). **Arquivador (F4):**
+`MEDIA_ARCHIVER_INTERVAL_MS` (1h), `MEDIA_ARCHIVE_AFTER_DAYS` (30) — roda com Google+R2; o
+escopo `drive.file` entrou no GOOGLE_SCOPES (conta conectada antes da F4 → reconectar).
+**Metrics-worker:** `METRICS_WORKER_INTERVAL_MS`/`METRICS_MAX_AGE_DAYS` (fallback
 nos `YT_METRICS_*`), `METRICS_BATCH_SIZE` (50).
 **Lembrete WhatsApp:** `MARKETING_HMAC_SECRET` (≥16; MESMO valor no gateway — ausente = lembrete
 desligado), `MARKETING_REMINDER_PHONES` (CSV E.164 DDI 55; vazio = no-op logado), `GATEWAY_URL`.
