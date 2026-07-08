@@ -71,7 +71,16 @@
     "build:marketing-app": "cd packages/marketing-app && bun run build",
     "start:marketing-app": "bun run --filter @sistemazero/marketing-app start",
     "typecheck:marketing-app": "bun run --filter @sistemazero/marketing-app typecheck",
-    "test:marketing-app": "bun run --filter @sistemazero/marketing-app test"
+    "test:marketing-app": "bun run --filter @sistemazero/marketing-app test",
+    "dev:helpdesk": "bun run --filter @sistemazero/helpdesk dev",
+    "test:helpdesk": "bun run --filter @sistemazero/helpdesk test",
+    "db:helpdesk:generate": "bun run --filter @sistemazero/helpdesk db:generate",
+    "db:helpdesk:migrate": "bun run --filter @sistemazero/helpdesk db:migrate",
+    "dev:helpdesk-app": "bun run --filter @sistemazero/helpdesk-app dev",
+    "build:helpdesk-app": "cd packages/helpdesk-app && bun run build",
+    "start:helpdesk-app": "bun run --filter @sistemazero/helpdesk-app start",
+    "typecheck:helpdesk-app": "bun run --filter @sistemazero/helpdesk-app typecheck",
+    "test:helpdesk-app": "bun run --filter @sistemazero/helpdesk-app test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16"

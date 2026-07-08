@@ -1,0 +1,248 @@
+import { sql } from 'drizzle-orm'
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgSchema,
+  real,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core'
+import type { AiClassification } from '../../../domain/ticket/ticket'
+import type { AttachmentMeta } from '../../../domain/ticket/ticket-message'
+
+// Compartilha o MESMO Postgres dos demais serviços, mas é dono do schema
+// `helpdesk` (isolamento por `pgSchema`). Sem FK cross-schema: `created_by`/
+// `assigned_to` etc. são snapshots do auth (equipe), com `*_name` snapshot.
+export const helpdesk = pgSchema('helpdesk')
+
+// ── Enums ────────────────────────────────────────────────────────────────────
+export const connectionStatusEnum = helpdesk.enum('connection_status', [
+  'connected',
+  'needs_reauth',
+  'revoked',
+  'disabled',
+])
+export const ticketStatusEnum = helpdesk.enum('ticket_status', [
+  'new',
+  'open',
+  'waiting',
+  'resolved',
+  'closed',
+])
+export const ticketCategoryEnum = helpdesk.enum('ticket_category', [
+  'curso_acesso',
+  'problema_tecnico',
+  'pagamento_reembolso',
+  'parceria_comercial',
+  'outro',
+])
+export const ticketPriorityEnum = helpdesk.enum('ticket_priority', ['baixa', 'normal', 'alta'])
+export const aiStatusEnum = helpdesk.enum('ai_status', [
+  'idle',
+  'pending',
+  'processing',
+  'done',
+  'failed',
+  'skipped',
+])
+export const autoReplyStateEnum = helpdesk.enum('auto_reply_state', [
+  'none',
+  'sending',
+  'sent',
+  'aborted',
+])
+export const messageKindEnum = helpdesk.enum('message_kind', ['email', 'note'])
+export const messageDirectionEnum = helpdesk.enum('message_direction', ['inbound', 'outbound'])
+export const messageSentViaEnum = helpdesk.enum('message_sent_via', [
+  'customer',
+  'human',
+  'ai',
+  'gmail',
+])
+
+// ── Conexão Gmail (tokens CIFRADOS — AES-256-GCM) ────────────────────────────
+export const gmailConnections = helpdesk.table(
+  'gmail_connections',
+  {
+    id: uuid('id').primaryKey(),
+    version: integer('version').notNull().default(0),
+    emailAddress: text('email_address').notNull(),
+    // `sub` do id_token do Google — identidade estável da conta.
+    externalId: text('external_id').notNull(),
+    // NUNCA em claro: formato versionado `v1.<iv>.<tag>.<ct>` (secret-box).
+    accessTokenEnc: text('access_token_enc'),
+    refreshTokenEnc: text('refresh_token_enc'),
+    tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }),
+    scopes: text('scopes').array().notNull().default([]),
+    status: connectionStatusEnum('status').notNull().default('connected'),
+    // uint64 do Gmail — SEMPRE text (nunca int). Null = próximo tick faz backfill.
+    lastHistoryId: text('last_history_id'),
+    lastSyncAt: timestamp('last_sync_at', { withTimezone: true }),
+    // Claim/lease do gmail-sync-worker (espelha o send-worker do messaging).
+    syncNextAt: timestamp('sync_next_at', { withTimezone: true }).notNull(),
+    syncAttempts: integer('sync_attempts').notNull().default(0),
+    lastSyncError: text('last_sync_error'),
+    connectedBy: uuid('connected_by').notNull(),
+    connectedByName: text('connected_by_name'),
+    metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('gmail_connections_external_uq').on(t.externalId),
+    index('gmail_connections_claim_idx').on(t.status, t.syncNextAt),
+  ],
+)
+
+// ── Tickets (um por thread do Gmail) ─────────────────────────────────────────
+export const tickets = helpdesk.table(
+  'tickets',
+  {
+    id: uuid('id').primaryKey(),
+    version: integer('version').notNull().default(0),
+    gmailThreadId: text('gmail_thread_id').notNull(),
+    subject: text('subject').notNull().default(''),
+    status: ticketStatusEnum('status').notNull().default('new'),
+    // Null = ainda não classificado (nem pela IA nem por humano).
+    category: ticketCategoryEnum('category'),
+    // Categoria escolhida por humano NUNCA é sobrescrita pela IA.
+    categoryManual: boolean('category_manual').notNull().default(false),
+    priority: ticketPriorityEnum('priority'),
+    requesterName: text('requester_name'),
+    requesterEmail: text('requester_email').notNull(),
+    assignedTo: uuid('assigned_to'),
+    assignedToName: text('assigned_to_name'),
+    firstMessageAt: timestamp('first_message_at', { withTimezone: true }).notNull(),
+    lastMessageAt: timestamp('last_message_at', { withTimezone: true }).notNull(),
+    lastInboundAt: timestamp('last_inbound_at', { withTimezone: true }),
+    messageCount: integer('message_count').notNull().default(0),
+    // IA (classificação/resumo/rascunho). `ai_classification` guarda a saída
+    // estruturada completa; category/priority são materializados dela.
+    aiSummary: text('ai_summary'),
+    aiSummaryAt: timestamp('ai_summary_at', { withTimezone: true }),
+    aiDraft: text('ai_draft'),
+    aiDraftAt: timestamp('ai_draft_at', { withTimezone: true }),
+    aiDraftEdited: boolean('ai_draft_edited').notNull().default(false),
+    aiClassification: jsonb('ai_classification').$type<AiClassification>(),
+    // Fila de IA embutida (sem tabela de jobs): claim por SKIP LOCKED.
+    aiStatus: aiStatusEnum('ai_status').notNull().default('idle'),
+    aiNextAttemptAt: timestamp('ai_next_attempt_at', { withTimezone: true }),
+    aiAttempts: integer('ai_attempts').notNull().default(0),
+    aiLastError: text('ai_last_error'),
+    // Guard de fase do envio automático (crash ambíguo → aborted, nunca reenvia).
+    autoReplyState: autoReplyStateEnum('auto_reply_state').notNull().default('none'),
+    autoRepliedAt: timestamp('auto_replied_at', { withTimezone: true }),
+    autoReplyReason: text('auto_reply_reason'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('tickets_gmail_thread_uq').on(t.gmailThreadId),
+    index('tickets_status_last_msg_idx').on(t.status, t.lastMessageAt),
+    index('tickets_requester_idx').on(t.requesterEmail),
+    index('tickets_category_idx').on(t.category),
+    // Fila do ai-worker (parcial: só o que está aguardando/rodando).
+    index('tickets_ai_claim_idx')
+      .on(t.aiStatus, t.aiNextAttemptAt)
+      .where(sql`${t.aiStatus} in ('pending', 'processing')`),
+  ],
+)
+
+// ── Mensagens do ticket (e-mails + notas internas) ───────────────────────────
+export const ticketMessages = helpdesk.table(
+  'ticket_messages',
+  {
+    id: uuid('id').primaryKey(),
+    ticketId: uuid('ticket_id')
+      .notNull()
+      .references(() => tickets.id, { onDelete: 'cascade' }),
+    kind: messageKindEnum('kind').notNull().default('email'),
+    // Dedupe forte da ingestão (unique tolera N nulls — notas internas).
+    gmailMessageId: text('gmail_message_id'),
+    // Header `Message-ID` RFC 2822 — base do In-Reply-To/References da resposta.
+    rfc822MessageId: text('rfc822_message_id'),
+    direction: messageDirectionEnum('direction'),
+    sentVia: messageSentViaEnum('sent_via'),
+    fromEmail: text('from_email'),
+    fromName: text('from_name'),
+    toEmails: text('to_emails').array().notNull().default([]),
+    ccEmails: text('cc_emails').array().notNull().default([]),
+    subject: text('subject'),
+    bodyText: text('body_text').notNull(),
+    bodyHtml: text('body_html'),
+    snippet: text('snippet'),
+    // SÓ metadados (filename/mime/size/gmail_attachment_id) — bytes no Gmail.
+    attachments: jsonb('attachments').$type<AttachmentMeta[]>().notNull().default([]),
+    gmailInternalDate: timestamp('gmail_internal_date', { withTimezone: true }),
+    createdBy: uuid('created_by'),
+    createdByName: text('created_by_name'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('ticket_messages_gmail_uq').on(t.gmailMessageId),
+    index('ticket_messages_ticket_idx').on(t.ticketId, t.createdAt),
+  ],
+)
+
+// ── Base de conhecimento (artigos editáveis; publicados entram no prompt) ────
+export const kbArticles = helpdesk.table(
+  'kb_articles',
+  {
+    id: uuid('id').primaryKey(),
+    version: integer('version').notNull().default(0),
+    title: text('title').notNull(),
+    content: text('content').notNull(),
+    published: boolean('published').notNull().default(false),
+    createdBy: uuid('created_by').notNull(),
+    createdByName: text('created_by_name'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('kb_articles_published_idx').on(t.published, t.updatedAt)],
+)
+
+// ── Configuração (linha única, PK fixo `default`; get-or-create no repo) ─────
+export const settings = helpdesk.table('settings', {
+  id: text('id').primaryKey(),
+  autoReplyEnabled: boolean('auto_reply_enabled').notNull().default(false),
+  // Subconjunto de ticket_category habilitado p/ auto-resposta.
+  autoReplyCategories: text('auto_reply_categories').array().notNull().default([]),
+  autoReplyConfidenceMin: real('auto_reply_confidence_min').notNull().default(0.75),
+  signature: text('signature').notNull().default(''),
+  updatedBy: uuid('updated_by'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }),
+})
+
+// ── OAuth: state + PKCE (single-use, TTL curto) ──────────────────────────────
+export const oauthStates = helpdesk.table(
+  'oauth_states',
+  {
+    state: text('state').primaryKey(),
+    provider: text('provider').notNull().default('google'),
+    codeVerifier: text('code_verifier'),
+    createdBy: uuid('created_by').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('oauth_states_expires_idx').on(t.expiresAt)],
+)
+
+export const schema = {
+  gmailConnections,
+  tickets,
+  ticketMessages,
+  kbArticles,
+  settings,
+  oauthStates,
+}
+
+export type GmailConnectionRow = typeof gmailConnections.$inferSelect
+export type TicketRow = typeof tickets.$inferSelect
+export type TicketMessageRow = typeof ticketMessages.$inferSelect
+export type KbArticleRow = typeof kbArticles.$inferSelect
+export type SettingsRow = typeof settings.$inferSelect

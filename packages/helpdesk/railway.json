@@ -1,0 +1,21 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "packages/helpdesk/Dockerfile",
+    "watchPatterns": [
+      "/packages/helpdesk/**",
+      "/packages/core/**",
+      "/bun.lock",
+      "/package.json",
+      "/.dockerignore"
+    ]
+  },
+  "deploy": {
+    "preDeployCommand": "bun run --filter @sistemazero/helpdesk db:migrate",
+    "startCommand": "bun run --filter @sistemazero/helpdesk start",
+    "healthcheckPath": "/readyz",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}

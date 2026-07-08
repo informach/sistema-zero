@@ -88,6 +88,10 @@ const PROD_REQUIRED_SECRETS: ReadonlyArray<{ key: string; why: string }> = [
     key: 'MARKETING_HMAC_SECRET',
     why: 'cadastra o marketing como consumer HMAC da mensageria (lembrete de publicação)',
   },
+  {
+    key: 'HELPDESK_INTERNAL_TOKEN',
+    why: 'prova ao helpdesk que a chamada veio do gateway (ferramenta interna staff+)',
+  },
 ]
 
 const EnvSchema = z
@@ -177,6 +181,7 @@ const EnvSchema = z
     FISCAL_INTERNAL_TOKEN: optionalSecret,
     HUB_INTERNAL_TOKEN: optionalSecret,
     MARKETING_INTERNAL_TOKEN: optionalSecret,
+    HELPDESK_INTERNAL_TOKEN: optionalSecret,
 
     // Resiliência.
     HEALTH_PROBE_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),
