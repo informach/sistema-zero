@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { TicketAiService } from './application/ai/ticket-ai.service'
 import { ConnectionService } from './application/connection/connection.service'
 import { GmailAccountService } from './application/connection/gmail-account.service'
 import { OAuthService } from './application/connection/oauth.service'
@@ -11,6 +12,7 @@ import { TicketService } from './application/tickets/ticket.service'
 import { aiConfig, type Env, gmailConfig } from './infrastructure/config/env'
 import { GoogleGmailClient } from './infrastructure/gateways/google/gmail-client'
 import { GmailOAuthProvider } from './infrastructure/gateways/google/gmail-oauth-provider'
+import { OpenRouterClient } from './infrastructure/gateways/openrouter/openrouter-client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleConnectionRepository } from './infrastructure/persistence/drizzle/connection.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
@@ -20,6 +22,7 @@ import { DrizzleOAuthStateRepository } from './infrastructure/persistence/drizzl
 import { DrizzleSettingsRepository } from './infrastructure/persistence/drizzle/settings.repository'
 import { DrizzleTicketRepository } from './infrastructure/persistence/drizzle/ticket.repository'
 import { createSecretBox } from './infrastructure/security/secret-box'
+import { AiWorker } from './infrastructure/workers/ai-worker'
 import { GmailSyncWorker } from './infrastructure/workers/gmail-sync-worker'
 import { createServer } from './interfaces/http/server'
 
@@ -59,7 +62,7 @@ export function createApplication(env: Env): Application {
   const idGen = () => randomUUID()
 
   // Adapters
-  const ticketRepo = new DrizzleTicketRepository(db)
+  const ticketRepo = new DrizzleTicketRepository(connection)
   const messageRepo = new DrizzleMessageRepository(db)
   const kbRepo = new DrizzleKbRepository(db)
   const settingsRepo = new DrizzleSettingsRepository(db)
@@ -132,6 +135,25 @@ export function createApplication(env: Env): Application {
     idGen,
     logger,
   )
+  // IA (F3): cliente OpenRouter só quando o grupo IA está configurado (senão as
+  // rotas summarize/regenerate respondem 503; o worker nem monta). KB entra na F4.
+  const llmClient = ai
+    ? new OpenRouterClient({
+        apiKey: ai.apiKey,
+        model: ai.model,
+        referer: ai.referer,
+        maxTokens: 1500,
+        timeoutMs: env.AI_TIMEOUT_MS,
+      })
+    : null
+  const ticketAiService = new TicketAiService(
+    llmClient,
+    ticketRepo,
+    messageRepo,
+    async () => [], // F4: (await kbRepo.listPublished()).map(a => ({ title, content }))
+    { maxThreadChars: env.AI_MAX_THREAD_CHARS },
+    now,
+  )
 
   // Worker de sincronização do Gmail (só monta com o grupo Google configurado).
   const gmailSyncWorker =
@@ -155,6 +177,22 @@ export function createApplication(env: Env): Application {
         })
       : null
 
+  // Worker da IA (só monta com o grupo IA configurado). Consome os tickets que o
+  // ingest marcou `ai_status='pending'`.
+  const aiWorker = llmClient
+    ? new AiWorker({
+        tickets: ticketRepo,
+        ticketAi: ticketAiService,
+        now,
+        logger,
+        config: {
+          intervalMs: env.AI_WORKER_INTERVAL_MS,
+          leaseMs: Math.max(env.AI_TIMEOUT_MS * 3, 120_000),
+          maxAttempts: env.AI_MAX_ATTEMPTS,
+        },
+      })
+    : null
+
   // Readiness (`/readyz`, healthcheck do Railway): banco respondendo.
   const readiness = async () => {
     const checks: Record<string, string> = { db: 'ok' }
@@ -173,6 +211,7 @@ export function createApplication(env: Env): Application {
     tickets: {
       tickets: ticketService,
       reply: replyService,
+      ai: ticketAiService,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
     },
@@ -230,14 +269,15 @@ export function createApplication(env: Env): Application {
         )
       }, env.RETENTION_CLEANUP_INTERVAL_MS)
       gmailSyncWorker?.start()
+      aiWorker?.start()
       // `::` = dual-stack — necessário p/ o private networking do Railway (IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)
-      // Worker para ANTES do pool fechar (senão um tick em voo estoura no banco).
-      await gmailSyncWorker?.stop()
+      // Workers param ANTES do pool fechar (senão um tick em voo estoura no banco).
+      await Promise.all([gmailSyncWorker?.stop(), aiWorker?.stop()])
       try {
         await server.stop()
       } catch {

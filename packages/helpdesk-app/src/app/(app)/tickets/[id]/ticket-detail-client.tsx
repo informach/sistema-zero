@@ -2,15 +2,16 @@
 
 import { Button } from '@sistemazero/ui/button'
 import { Skeleton } from '@sistemazero/ui/skeleton'
-import { ArrowLeft, StickyNote } from 'lucide-react'
+import { ArrowLeft, Sparkles, StickyNote } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import {
   TicketCategoryBadge,
   TicketPriorityBadge,
   TicketStatusBadge,
 } from '@/components/shared/ticket-badges'
-import { apiGet } from '@/lib/api'
+import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format'
 import { splitQuotedReply } from '@/lib/quote'
@@ -93,7 +94,67 @@ function MessageCard({ message }: { message: MessageView }) {
   )
 }
 
-/** Detalhe INTERATIVO do ticket: thread + editor de resposta + controles (F2). */
+/** Resumo da IA + botão Resumir conversa + estado do processamento (F3). */
+function AiSummaryPanel({
+  ticket,
+  onSummarized,
+}: {
+  ticket: TicketView
+  onSummarized: (ticket: TicketView) => void
+}) {
+  const [summarizing, setSummarizing] = useState(false)
+  const processing = ticket.aiStatus === 'pending' || ticket.aiStatus === 'processing'
+
+  async function summarize() {
+    if (summarizing) return
+    setSummarizing(true)
+    try {
+      const updated = await apiSend<TicketView>(
+        `/api/helpdesk/tickets/${ticket.id}/summarize`,
+        'POST',
+      )
+      onSummarized(updated)
+      toast.success('Resumo atualizado.')
+    } catch (error) {
+      const e = error as ApiError
+      if (e.code === 'AI_NOT_CONFIGURED') toast.error('A IA ainda não foi configurada.')
+      else if (e.code === 'AI_UNAVAILABLE')
+        toast.error('A IA está indisponível agora. Tente de novo.')
+      else toast.error('Não foi possível resumir. Tente novamente.')
+    } finally {
+      setSummarizing(false)
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="flex items-center gap-1.5 text-xs font-medium uppercase text-muted-foreground">
+          <Sparkles className="size-3.5" aria-hidden />
+          Resumo da IA
+        </p>
+        <Button variant="ghost" size="sm" onClick={summarize} disabled={summarizing}>
+          {summarizing ? 'Resumindo…' : 'Resumir conversa'}
+        </Button>
+      </div>
+      {processing ? (
+        <p className="mt-1 text-sm text-muted-foreground">
+          A IA está preparando o resumo e o rascunho desta conversa.
+        </p>
+      ) : ticket.aiSummary ? (
+        <p className="mt-1 whitespace-pre-wrap text-sm">{ticket.aiSummary}</p>
+      ) : ticket.aiStatus === 'failed' ? (
+        <p className="mt-1 text-sm text-muted-foreground">
+          A IA não conseguiu processar. Use Resumir conversa para tentar de novo.
+        </p>
+      ) : (
+        <p className="mt-1 text-sm text-muted-foreground">Ainda sem resumo.</p>
+      )}
+    </div>
+  )
+}
+
+/** Detalhe INTERATIVO do ticket: thread + editor com IA + controles (F2/F3). */
 export function TicketDetailClient({ ticketId }: { ticketId: string }) {
   const [data, setData] = useState<TicketDetailResponse | null>(null)
   const [failed, setFailed] = useState(false)
@@ -193,11 +254,8 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
           {ticket.messageCount} {ticket.messageCount === 1 ? 'mensagem' : 'mensagens'}
           {ticket.assignedToName ? ` · Responsável: ${ticket.assignedToName}` : ''}
         </p>
-        {ticket.aiSummary ? (
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs font-medium uppercase text-muted-foreground">Resumo da IA</p>
-            <p className="mt-1 whitespace-pre-wrap text-sm">{ticket.aiSummary}</p>
-          </div>
+        {ticket.aiStatus !== 'skipped' || ticket.aiSummary ? (
+          <AiSummaryPanel ticket={ticket} onSummarized={handleTicketUpdated} />
         ) : null}
       </div>
 
@@ -212,8 +270,10 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
           <ReplyBox
             ticketId={ticketId}
             version={ticket.version}
+            initialDraft={ticket.aiDraft ?? ''}
             onSent={softReload}
             onStale={softReload}
+            onTicketUpdated={handleTicketUpdated}
           />
         </div>
 

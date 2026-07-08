@@ -9,6 +9,7 @@ import {
   UnauthorizedError,
 } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
+import { LlmError } from '../../domain/ports/llm-client.port'
 
 export type { ErrorEnvelope }
 
@@ -45,6 +46,17 @@ export function buildErrorResponse(input: {
 
   if (error instanceof DomainError) {
     return { status: DOMAIN_STATUS[error.code] ?? 400, body: envelope(error.code, error.message) }
+  }
+
+  // IA: sem chave = 503; upstream/JSON inválido = 502 (o ticket segue usável).
+  if (error instanceof LlmError) {
+    if (error.kind === 'not_configured') {
+      return { status: 503, body: envelope('AI_NOT_CONFIGURED', 'IA não configurada') }
+    }
+    return {
+      status: 502,
+      body: envelope('AI_UNAVAILABLE', 'A IA está indisponível no momento. Tente de novo'),
+    }
   }
 
   if (code === 'VALIDATION') {

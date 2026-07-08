@@ -1,4 +1,10 @@
-import type { Ticket, TicketCategory, TicketStatus } from '../ticket/ticket'
+import type {
+  AiClassification,
+  Ticket,
+  TicketCategory,
+  TicketPriority,
+  TicketStatus,
+} from '../ticket/ticket'
 
 export interface ListTicketsFilter {
   status?: TicketStatus
@@ -7,6 +13,15 @@ export interface ListTicketsFilter {
   q?: string
   limit: number
   offset: number
+}
+
+/** Resultado da classificação da IA a persistir (guardas: categoria/prioridade). */
+export interface AiClassificationUpdate {
+  category: TicketCategory
+  priority: TicketPriority
+  classification: AiClassification
+  summary: string
+  at: Date
 }
 
 export interface TicketRepository {
@@ -25,4 +40,22 @@ export interface TicketRepository {
    */
   claimForReply(id: string, expectedVersion: number, at: Date): Promise<boolean>
   list(filter: ListTicketsFilter): Promise<{ items: Ticket[]; total: number }>
+
+  // ── Fila de IA (ai_status/ai_next_attempt_at; sem tocar em `version`) ──
+  /** Claim SKIP LOCKED de um ticket `pending` vencido → `processing` + lease. */
+  claimAiDue(leaseMs: number, at: Date): Promise<Ticket | null>
+  /**
+   * Persiste a classificação: sempre grava summary/classification; a CATEGORIA só
+   * quando não foi escolhida à mão (`category_manual`), a PRIORIDADE só quando
+   * ainda é nula (preserva a escolha humana). NÃO mexe em `version`.
+   */
+  applyClassification(id: string, update: AiClassificationUpdate): Promise<void>
+  /** Persiste o rascunho da IA (ai_draft/ai_draft_at, ai_draft_edited=false). */
+  applyDraft(id: string, draft: string, at: Date): Promise<void>
+  /** ai_status='done', zera erro/tentativas. */
+  markAiDone(id: string, at: Date): Promise<void>
+  /** Falha transitória: volta a `pending` com backoff + erro (attempts já bumpado no claim). */
+  scheduleAiRetry(id: string, nextAt: Date, error: string, at: Date): Promise<void>
+  /** Teto de tentativas: `failed` (o ticket segue 100% usável sem IA). */
+  markAiFailed(id: string, error: string, at: Date): Promise<void>
 }

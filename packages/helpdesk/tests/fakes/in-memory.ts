@@ -9,6 +9,7 @@ import type {
 } from '../../src/domain/ports/oauth-state-repository.port'
 import type { SettingsRepository } from '../../src/domain/ports/settings-repository.port'
 import type {
+  AiClassificationUpdate,
   ListTicketsFilter,
   TicketRepository,
 } from '../../src/domain/ports/ticket-repository.port'
@@ -70,6 +71,71 @@ export class InMemoryTicketRepository implements TicketRepository {
       items: all.slice(filter.offset, filter.offset + filter.limit).map(clone),
       total: all.length,
     }
+  }
+
+  async claimAiDue(leaseMs: number, at: Date): Promise<Ticket | null> {
+    const due = [...this.rows.values()]
+      .filter(
+        (t) =>
+          t.aiStatus === 'pending' &&
+          t.aiNextAttemptAt !== null &&
+          t.aiNextAttemptAt.getTime() <= at.getTime(),
+      )
+      .sort((a, b) => (a.aiNextAttemptAt?.getTime() ?? 0) - (b.aiNextAttemptAt?.getTime() ?? 0))
+    const claimed = due[0]
+    if (!claimed) return null
+    claimed.aiStatus = 'processing'
+    claimed.aiNextAttemptAt = new Date(at.getTime() + leaseMs)
+    claimed.aiAttempts += 1
+    return clone(claimed)
+  }
+
+  async applyClassification(id: string, update: AiClassificationUpdate): Promise<void> {
+    const t = this.rows.get(id)
+    if (!t) return
+    t.aiSummary = update.summary
+    t.aiSummaryAt = update.at
+    t.aiClassification = update.classification
+    if (!t.categoryManual) t.category = update.category
+    if (t.priority === null) t.priority = update.priority
+    t.updatedAt = update.at
+  }
+
+  async applyDraft(id: string, draft: string, at: Date): Promise<void> {
+    const t = this.rows.get(id)
+    if (!t) return
+    t.aiDraft = draft
+    t.aiDraftAt = at
+    t.aiDraftEdited = false
+    t.updatedAt = at
+  }
+
+  async markAiDone(id: string, at: Date): Promise<void> {
+    const t = this.rows.get(id)
+    if (!t) return
+    t.aiStatus = 'done'
+    t.aiLastError = null
+    t.aiNextAttemptAt = null
+    t.aiAttempts = 0
+    t.updatedAt = at
+  }
+
+  async scheduleAiRetry(id: string, nextAt: Date, error: string, at: Date): Promise<void> {
+    const t = this.rows.get(id)
+    if (!t) return
+    t.aiStatus = 'pending'
+    t.aiNextAttemptAt = nextAt
+    t.aiLastError = error
+    t.updatedAt = at
+  }
+
+  async markAiFailed(id: string, error: string, at: Date): Promise<void> {
+    const t = this.rows.get(id)
+    if (!t) return
+    t.aiStatus = 'failed'
+    t.aiLastError = error
+    t.aiNextAttemptAt = null
+    t.updatedAt = at
   }
 }
 

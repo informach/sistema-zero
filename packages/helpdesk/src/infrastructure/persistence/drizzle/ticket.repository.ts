@@ -1,15 +1,20 @@
 import { and, asc, count, desc, eq, ilike, or, sql } from 'drizzle-orm'
 import type {
+  AiClassificationUpdate,
   ListTicketsFilter,
   TicketRepository,
 } from '../../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../../domain/ticket/ticket'
-import type { Database } from './db'
+import type { Database, DbConnection } from './db'
 import { escapeLike } from './pg-errors'
 import { tickets } from './schema'
 
 export class DrizzleTicketRepository implements TicketRepository {
-  constructor(private readonly db: Database) {}
+  private readonly db: Database
+
+  constructor(private readonly connection: DbConnection) {
+    this.db = connection.db
+  }
 
   async create(ticket: Ticket): Promise<void> {
     await this.db.insert(tickets).values(ticket)
@@ -104,5 +109,79 @@ export class DrizzleTicketRepository implements TicketRepository {
       this.db.select({ value: count() }).from(tickets).where(where),
     ])
     return { items, total: totalRow?.value ?? 0 }
+  }
+
+  async claimAiDue(leaseMs: number, at: Date): Promise<Ticket | null> {
+    // Claim atômico da fila de IA (espelha o claimDue da conexão). SKIP LOCKED
+    // deixa réplicas concorrentes pegarem tickets diferentes; NÃO toca em `version`.
+    // ⚠️ Date como param em SQL cru só via .toISOString() (Bun+postgres.js).
+    const nowIso = at.toISOString()
+    const leaseIso = new Date(at.getTime() + leaseMs).toISOString()
+    const rows = await this.connection.sql`
+      update helpdesk.tickets
+      set ai_status = 'processing', ai_next_attempt_at = ${leaseIso}, ai_attempts = ai_attempts + 1
+      where id = (
+        select id from helpdesk.tickets
+        where ai_status = 'pending' and ai_next_attempt_at <= ${nowIso}
+        order by ai_next_attempt_at
+        limit 1
+        for update skip locked
+      )
+      returning id
+    `
+    const claimedId = rows[0]?.id as string | undefined
+    if (!claimedId) return null
+    return this.byId(claimedId)
+  }
+
+  async applyClassification(id: string, update: AiClassificationUpdate): Promise<void> {
+    const at = update.at.toISOString()
+    // Categoria só quando não é manual; prioridade só quando ainda é nula.
+    await this.connection.sql`
+      update helpdesk.tickets set
+        ai_summary = ${update.summary},
+        ai_summary_at = ${at},
+        ai_classification = ${JSON.stringify(update.classification)}::jsonb,
+        category = case when category_manual then category else ${update.category}::helpdesk.ticket_category end,
+        priority = coalesce(priority, ${update.priority}::helpdesk.ticket_priority),
+        updated_at = ${at}
+      where id = ${id}
+    `
+  }
+
+  async applyDraft(id: string, draft: string, at: Date): Promise<void> {
+    const iso = at.toISOString()
+    await this.connection.sql`
+      update helpdesk.tickets set
+        ai_draft = ${draft}, ai_draft_at = ${iso}, ai_draft_edited = false, updated_at = ${iso}
+      where id = ${id}
+    `
+  }
+
+  async markAiDone(id: string, at: Date): Promise<void> {
+    const iso = at.toISOString()
+    await this.connection.sql`
+      update helpdesk.tickets set
+        ai_status = 'done', ai_last_error = null, ai_next_attempt_at = null, ai_attempts = 0, updated_at = ${iso}
+      where id = ${id}
+    `
+  }
+
+  async scheduleAiRetry(id: string, nextAt: Date, error: string, at: Date): Promise<void> {
+    await this.connection.sql`
+      update helpdesk.tickets set
+        ai_status = 'pending', ai_next_attempt_at = ${nextAt.toISOString()},
+        ai_last_error = ${error.slice(0, 500)}, updated_at = ${at.toISOString()}
+      where id = ${id}
+    `
+  }
+
+  async markAiFailed(id: string, error: string, at: Date): Promise<void> {
+    const iso = at.toISOString()
+    await this.connection.sql`
+      update helpdesk.tickets set
+        ai_status = 'failed', ai_last_error = ${error.slice(0, 500)}, ai_next_attempt_at = null, updated_at = ${iso}
+      where id = ${id}
+    `
   }
 }

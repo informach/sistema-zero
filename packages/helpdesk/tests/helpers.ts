@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { TicketAiService } from '../src/application/ai/ticket-ai.service'
 import { ConnectionService } from '../src/application/connection/connection.service'
 import { GmailAccountService } from '../src/application/connection/gmail-account.service'
 import { OAuthService } from '../src/application/connection/oauth.service'
@@ -10,6 +11,7 @@ import type { Ticket } from '../src/domain/ticket/ticket'
 import type { TicketMessage } from '../src/domain/ticket/ticket-message'
 import { loadEnv } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
+import { FakeLlmClient } from './fakes/ai'
 import { FakeGmailClient, FakeGmailOAuthProvider, FakeSecretBox } from './fakes/gmail'
 import {
   InMemoryConnectionRepository,
@@ -45,6 +47,7 @@ export interface TestApp {
   provider: FakeGmailOAuthProvider
   gmailClient: FakeGmailClient
   secretBox: FakeSecretBox
+  llm: FakeLlmClient
 }
 
 /** Monta a app HTTP inteira sobre fakes in-memory (sem banco, sem Gmail real). */
@@ -67,6 +70,7 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
   const provider = new FakeGmailOAuthProvider()
   const gmailClient = new FakeGmailClient()
   const secretBox = new FakeSecretBox()
+  const llm = new FakeLlmClient()
 
   const ticketService = new TicketService(tickets, messages, now, idGen)
   const kbService = new KbService(kb, now, idGen)
@@ -102,6 +106,14 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
     idGen,
     silentLogger,
   )
+  const ticketAiService = new TicketAiService(
+    llm,
+    tickets,
+    messages,
+    async () => [],
+    { maxThreadChars: 24_000 },
+    now,
+  )
 
   const app = createServer({
     env,
@@ -110,6 +122,7 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
     tickets: {
       tickets: ticketService,
       reply: replyService,
+      ai: ticketAiService,
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
@@ -141,6 +154,7 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
     provider,
     gmailClient,
     secretBox,
+    llm,
   }
 }
 
