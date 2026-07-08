@@ -194,13 +194,15 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     // mensagem do PROFESSOR na conversa desta entrega APÓS o último envio — um
     // reenvio do aluno REABRE a pendência (o professor precisa olhar de novo).
     // A conversa é ancorada por contexto (user_id + context_ref = blockId), o
-    // mesmo elo do viewer/`by-context` do teacher-threads.
+    // mesmo elo do viewer/`by-context` do teacher-threads. ⚠️ `context_ref` é
+    // TEXT (snapshot — também guarda ids do hub); o `block_id` uuid precisa do
+    // cast, senão o PG recusa `text = uuid` (achado da QA integrada).
     const answered = sql<boolean>`exists (
       select 1 from ${teacherThreads} tt
       join ${teacherMessages} tm on tm.thread_id = tt.id
       where tt.user_id = ${studioSubmissions.userId}
         and tt.context_type = 'studio_submission'
-        and tt.context_ref = ${studioSubmissions.blockId}
+        and tt.context_ref = ${studioSubmissions.blockId}::text
         and tm.author_role = 'teacher'
         and tm.created_at >= ${studioSubmissions.submittedAt}
     )`
