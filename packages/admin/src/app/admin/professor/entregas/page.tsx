@@ -1,13 +1,7 @@
-import { AdminHeader } from '@/components/admin/admin-header'
+import { EntregasClient } from './entregas-client'
+
+export const dynamic = 'force-dynamic'
 
 export default function EntregasPage() {
-  return (
-    <div className="space-y-6">
-      <AdminHeader
-        title="Entregas"
-        description="Fila unificada de entregas do Estúdio, de todos os cursos."
-      />
-      <p className="text-sm text-muted-foreground">Em construção.</p>
-    </div>
-  )
+  return <EntregasClient />
 }

@@ -1,6 +1,10 @@
+import type { CourseAudience } from '../../domain/course/course'
 import { ContentNotFoundError } from '../../domain/course/course.errors'
 import type { StudioCheckResult } from '../../domain/course/studio-activity'
-import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
+import type {
+  StudioSubmissionGlobalFilter,
+  StudioSubmissionRepository,
+} from '../../domain/ports/studio-submission-repository.port'
 
 export interface StudioSubmissionSummaryView {
   /** Quem entregou (perfil da criança no kids; a conta no adulto). */
@@ -35,6 +39,15 @@ export interface StudioSubmissionCourseView {
   checkedAt: string | null
   passed: boolean
   message: string | null
+}
+
+/** Linha da fila GLOBAL de entregas (todos os cursos) — o curso resolvido + `answered`. */
+export interface StudioSubmissionGlobalView extends StudioSubmissionCourseView {
+  courseId: string
+  courseTitle: string
+  audience: CourseAudience
+  /** Há resposta do professor após o último envio (pendente = `false`). */
+  answered: boolean
 }
 
 export interface StudioSubmissionDetailView {
@@ -86,6 +99,32 @@ export class StudioSubmissionsAdminService {
       passed: r.passed,
       message: r.message,
     }))
+  }
+
+  async listAll(
+    filter: StudioSubmissionGlobalFilter,
+  ): Promise<{ items: StudioSubmissionGlobalView[]; total: number }> {
+    const { items, total } = await this.submissions.listAll(filter)
+    return {
+      items: items.map((r) => ({
+        userId: r.userId,
+        accountId: r.accountId,
+        blockId: r.blockId,
+        lessonId: r.lessonId,
+        lessonTitle: r.lessonTitle,
+        moduleTitle: r.moduleTitle,
+        courseId: r.courseId,
+        courseTitle: r.courseTitle,
+        audience: r.audience,
+        submittedAt: r.submittedAt.toISOString(),
+        score: r.score,
+        checkedAt: r.checkedAt?.toISOString() ?? null,
+        passed: r.passed,
+        message: r.message,
+        answered: r.answered,
+      })),
+      total,
+    }
   }
 
   async getOne(userId: string, blockId: string): Promise<StudioSubmissionDetailView> {

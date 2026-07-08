@@ -510,6 +510,33 @@ export interface StudioSubmissionDetailView {
   message: string | null
 }
 
+/**
+ * Linha da fila GLOBAL de entregas (página "Entregas" da Sala do Professor):
+ * a linha do members (curso resolvido + `answered`) + identidade hidratada.
+ */
+export interface StudioSubmissionQueueRow {
+  userId: string
+  accountId: string | null
+  blockId: string
+  lessonId: string
+  lessonTitle: string
+  moduleTitle: string
+  courseId: string
+  courseTitle: string
+  audience: 'adult' | 'kids'
+  submittedAt: string
+  score: number | null
+  checkedAt: string | null
+  passed: boolean
+  /** Recado opcional do aluno no envio. */
+  message: string | null
+  /** Há resposta do professor após o último envio (pendente = `false`). */
+  answered: boolean
+  accountName: string | null
+  accountEmail: string | null
+  childName: string | null
+}
+
 // ── Conversas com o aluno (canal de retorno) ────────────────────────────────
 export type TeacherThreadContext = 'studio_submission' | 'mural_publication' | 'general'
 export type TeacherMessageRole = 'teacher' | 'student'

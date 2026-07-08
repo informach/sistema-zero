@@ -73,6 +73,17 @@ const registry = new RouteRegistry([
   r({ id: 'tt-read', methods: ['POST'], pathPattern: '/members/teacher-threads/:id/read' }),
   r({ id: 'tt-admin-read', methods: ['GET'], pathPattern: '/members/admin/teacher-threads/*' }),
   r({ id: 'tt-admin-write', methods: ['POST'], pathPattern: '/members/admin/teacher-threads/*' }),
+  // Fila global de entregas (literal 3 seg) + wildcard da autoria p/ provar a não-colisão.
+  r({
+    id: 'studio-subs-global',
+    methods: ['GET'],
+    pathPattern: '/members/admin/studio-submissions',
+  }),
+  r({
+    id: 'members-admin-courses-read',
+    methods: ['GET'],
+    pathPattern: '/members/admin/courses/*',
+  }),
   // Pensa (planejamento guiado) — literal `pensa` no 2º segmento.
   r({ id: 'pensa-projects', methods: ['GET', 'POST'], pathPattern: '/members/pensa/projects' }),
   r({
@@ -275,6 +286,19 @@ describe('RouteRegistry', () => {
       registry.resolve('POST', '/members/admin/teacher-threads/th-1/messages', 'v1')?.route.id,
     ).toBe('tt-admin-write')
     // Não rouba a ficha do aluno (/members/admin/members/:userId).
+    expect(registry.resolve('GET', '/members/admin/members/u-1', 'v1')?.route.id).toBe(
+      'members-member-detail',
+    )
+  })
+
+  test('fila global de entregas: literal vence e não colide com autoria/ficha', () => {
+    expect(registry.resolve('GET', '/members/admin/studio-submissions', 'v1')?.route.id).toBe(
+      'studio-subs-global',
+    )
+    // A autoria segue no wildcard e a ficha do aluno no param.
+    expect(registry.resolve('GET', '/members/admin/courses/c-1', 'v1')?.route.id).toBe(
+      'members-admin-courses-read',
+    )
     expect(registry.resolve('GET', '/members/admin/members/u-1', 'v1')?.route.id).toBe(
       'members-member-detail',
     )

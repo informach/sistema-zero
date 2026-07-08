@@ -68,6 +68,13 @@ cadastro CONDICIONAL como auth/fiscal — sem a env o consumer não existe): é 
 e-mail do report via `/messaging/send` (o gateway re-injeta `x-consumer-id: members` autenticado,
 escopo da idempotência).
 
+**Fila global de entregas do Estúdio (07/2026):** `members-admin-studio-submissions`
+(`GET /members/admin/studio-submissions` — página "Entregas" da Sala do Professor no admin:
+todos os cursos, pendentes primeiro, filtros `courseId/audience/status` + paginação) — JWT +
+RBAC staff+ + `membersInternalTransforms`, 300/min. Literal de 3 segmentos, sem colisão com
+`/members/admin/members/:userId` nem com os wildcards `/members/admin/courses/*` (coberto em
+`route-registry.test.ts`).
+
 **Recados — conversas professor↔aluno (07/2026):** lado do ALUNO em rotas explícitas
 `members-teacher-threads-list`/`-unread-count` (`GET /members/teacher-threads[/unread-count]`,
 300/min — sino do kids busca a cada render), `members-teacher-thread-get` (`GET …/:id`, 300/min;

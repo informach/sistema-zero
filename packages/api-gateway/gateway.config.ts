@@ -1934,6 +1934,20 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       audit: {},
     },
+    // Fila GLOBAL de entregas do Estúdio (página "Entregas" da Sala do Professor):
+    // todos os cursos, pendentes primeiro, filtros + paginação. LEITURA staff+
+    // (mesma régua das demais leituras admin). Literal de 3 segmentos — não colide
+    // com `/members/admin/members/:userId` nem com os wildcards `/courses/*`.
+    {
+      id: 'members-admin-studio-submissions',
+      methods: ['GET'],
+      pathPattern: '/members/admin/studio-submissions',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
     // Recados (conversas professor↔aluno) — lado do PROFESSOR (painel admin).
     // Responder aluno é tarefa diária de professor/staff → LEITURA e ESCRITA
     // staff+. Os wildcards `/*` casam o resto do path — inclusive a cauda vazia
