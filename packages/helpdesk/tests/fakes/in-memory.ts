@@ -137,6 +137,35 @@ export class InMemoryTicketRepository implements TicketRepository {
     t.aiNextAttemptAt = null
     t.updatedAt = at
   }
+
+  async claimAutoReply(id: string, at: Date): Promise<boolean> {
+    const t = this.rows.get(id)
+    if (t?.autoReplyState !== 'none') return false
+    t.autoReplyState = 'sending'
+    t.updatedAt = at
+    return true
+  }
+
+  async finishAutoReply(
+    id: string,
+    state: 'sent' | 'aborted',
+    reason: string | null,
+    at: Date,
+  ): Promise<void> {
+    const t = this.rows.get(id)
+    if (!t) return
+    t.autoReplyState = state
+    t.autoReplyReason = reason
+    if (state === 'sent') t.autoRepliedAt = at
+    t.updatedAt = at
+  }
+
+  async setAutoReplyReason(id: string, reason: string | null, at: Date): Promise<void> {
+    const t = this.rows.get(id)
+    if (!t) return
+    t.autoReplyReason = reason
+    t.updatedAt = at
+  }
 }
 
 export class InMemoryMessageRepository implements MessageRepository {

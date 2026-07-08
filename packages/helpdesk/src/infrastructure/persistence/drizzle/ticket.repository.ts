@@ -184,4 +184,38 @@ export class DrizzleTicketRepository implements TicketRepository {
       where id = ${id}
     `
   }
+
+  async claimAutoReply(id: string, at: Date): Promise<boolean> {
+    const rows = await this.connection.sql`
+      update helpdesk.tickets
+      set auto_reply_state = 'sending', updated_at = ${at.toISOString()}
+      where id = ${id} and auto_reply_state = 'none'
+      returning id
+    `
+    return rows.length > 0
+  }
+
+  async finishAutoReply(
+    id: string,
+    state: 'sent' | 'aborted',
+    reason: string | null,
+    at: Date,
+  ): Promise<void> {
+    const iso = at.toISOString()
+    await this.connection.sql`
+      update helpdesk.tickets set
+        auto_reply_state = ${state}::helpdesk.auto_reply_state,
+        auto_reply_reason = ${reason},
+        auto_replied_at = case when ${state} = 'sent' then ${iso}::timestamptz else auto_replied_at end,
+        updated_at = ${iso}
+      where id = ${id}
+    `
+  }
+
+  async setAutoReplyReason(id: string, reason: string | null, at: Date): Promise<void> {
+    await this.connection.sql`
+      update helpdesk.tickets set auto_reply_reason = ${reason}, updated_at = ${at.toISOString()}
+      where id = ${id}
+    `
+  }
 }

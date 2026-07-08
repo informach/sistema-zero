@@ -34,6 +34,8 @@ export interface TicketMessage {
   bodyHtml: string | null
   snippet: string | null
   attachments: AttachmentMeta[]
+  /** Inbound parece resposta automática (autoresponder/newsletter) — gate da auto-resposta. */
+  isAutoreply: boolean
   gmailInternalDate: Date | null
   createdBy: string | null
   createdByName: string | null

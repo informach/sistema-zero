@@ -149,6 +149,12 @@ export class IngestService {
       bodyHtml: parsed.bodyHtml,
       snippet: parsed.snippet,
       attachments: parsed.attachments,
+      // Autoresponder/newsletter? (Auto-Submitted≠no / X-Autoreply / List-Unsubscribe)
+      // — a auto-resposta nunca responde a estes (anti-loop).
+      isAutoreply:
+        parsed.isAutoreply ||
+        (parsed.autoSubmitted !== null && parsed.autoSubmitted.toLowerCase() !== 'no') ||
+        parsed.listUnsubscribe !== null,
       gmailInternalDate: parsed.internalDate,
       createdBy: null,
       createdByName: null,

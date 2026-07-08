@@ -150,6 +150,16 @@ function AiSummaryPanel({
       ) : (
         <p className="mt-1 text-sm text-muted-foreground">Ainda sem resumo.</p>
       )}
+      {ticket.autoReplyState === 'sent' ? (
+        <span className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-success/15 px-2 py-0.5 text-xs font-medium text-success-foreground">
+          <Sparkles className="size-3.5" aria-hidden />
+          Respondida automaticamente pela IA
+        </span>
+      ) : ticket.autoReplyReason ? (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Auto-resposta em revisão: {ticket.autoReplyReason}
+        </p>
+      ) : null}
     </div>
   )
 }

@@ -177,6 +177,9 @@ export const ticketMessages = helpdesk.table(
     snippet: text('snippet'),
     // SÓ metadados (filename/mime/size/gmail_attachment_id) — bytes no Gmail.
     attachments: jsonb('attachments').$type<AttachmentMeta[]>().notNull().default([]),
+    // Inbound de autoresponder/newsletter (Auto-Submitted/X-Autoreply/List-Unsubscribe)
+    // — gate da auto-resposta (anti-loop).
+    isAutoreply: boolean('is_autoreply').notNull().default(false),
     gmailInternalDate: timestamp('gmail_internal_date', { withTimezone: true }),
     createdBy: uuid('created_by'),
     createdByName: text('created_by_name'),

@@ -58,4 +58,23 @@ export interface TicketRepository {
   scheduleAiRetry(id: string, nextAt: Date, error: string, at: Date): Promise<void>
   /** Teto de tentativas: `failed` (o ticket segue 100% usável sem IA). */
   markAiFailed(id: string, error: string, at: Date): Promise<void>
+
+  // ── Auto-resposta (guard de fase `auto_reply_state`) ──
+  /**
+   * Reserva ATÔMICA da auto-resposta: `none` → `sending`. `false` = já respondida
+   * / em andamento / abortada (nunca envia duas vezes). É o guard de fase.
+   */
+  claimAutoReply(id: string, at: Date): Promise<boolean>
+  /**
+   * Fecha a auto-resposta: `sending` → `sent` (+ auto_replied_at) ou `aborted`
+   * (falha no envio; NUNCA re-tenta). Grava o motivo.
+   */
+  finishAutoReply(
+    id: string,
+    state: 'sent' | 'aborted',
+    reason: string | null,
+    at: Date,
+  ): Promise<void>
+  /** Motivo de NÃO ter auto-respondido (visível na UI); não mexe no state. */
+  setAutoReplyReason(id: string, reason: string | null, at: Date): Promise<void>
 }

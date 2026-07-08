@@ -3,6 +3,7 @@ import type { LlmClient } from '../../domain/ports/llm-client.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
 import type { TicketRepository } from '../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../domain/ticket/ticket'
+import type { TicketMessage } from '../../domain/ticket/ticket-message'
 import type { TicketView } from '../views'
 import { toTicketView } from '../views'
 import {
@@ -25,6 +26,9 @@ export type KbArticlesProvider = () => Promise<{ title: string; content: string 
 export interface AiPipelineResult {
   classification: ClassifyResult
   draft: DraftResult
+  /** Fatos da thread p/ a decisão de auto-resposta do worker (F4). */
+  lastInbound: TicketMessage | null
+  hasOutbound: boolean
 }
 
 /**
@@ -49,7 +53,9 @@ export class TicketAiService {
     const threadText = buildThreadText(ticket.subject, messages, this.config.maxThreadChars)
     const classification = await this.classifyAndPersist(ticket.id, threadText)
     const draft = await this.draftAndPersist(ticket.id, threadText, classification.summary)
-    return { classification, draft }
+    const lastInbound = [...messages].reverse().find((m) => m.direction === 'inbound') ?? null
+    const hasOutbound = messages.some((m) => m.direction === 'outbound')
+    return { classification, draft, lastInbound, hasOutbound }
   }
 
   /** On-demand: só classificar+resumir (rota summarize). Fecha com markAiDone. */

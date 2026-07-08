@@ -79,6 +79,7 @@ export class TicketService {
       bodyHtml: null,
       snippet: null,
       attachments: [],
+      isAutoreply: false,
       gmailInternalDate: null,
       createdBy: actor.userId,
       createdByName: actor.displayName,

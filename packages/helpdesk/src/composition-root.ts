@@ -150,7 +150,9 @@ export function createApplication(env: Env): Application {
     llmClient,
     ticketRepo,
     messageRepo,
-    async () => [], // F4: (await kbRepo.listPublished()).map(a => ({ title, content }))
+    // F4: artigos PUBLICADOS do KB entram no prompt do rascunho (o buildDraftPrompt
+    // injeta o bloco só quando não-vazio).
+    async () => (await kbRepo.listPublished()).map((a) => ({ title: a.title, content: a.content })),
     { maxThreadChars: env.AI_MAX_THREAD_CHARS },
     now,
   )
@@ -183,6 +185,9 @@ export function createApplication(env: Env): Application {
     ? new AiWorker({
         tickets: ticketRepo,
         ticketAi: ticketAiService,
+        // F4: decide + envia a auto-resposta após o pipeline (guard de fase no
+        // ReplyService; sem Gmail conectado, autoReply vira no-op honesto).
+        autoReply: { settings: settingsRepo, sender: replyService },
         now,
         logger,
         config: {

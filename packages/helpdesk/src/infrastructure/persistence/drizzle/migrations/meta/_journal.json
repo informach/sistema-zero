@@ -8,6 +8,13 @@
       "when": 1783502873815,
       "tag": "0000_nostalgic_anthem",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783518353503,
+      "tag": "0001_stale_lila_cheney",
+      "breakpoints": true
     }
   ]
 }

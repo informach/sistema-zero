@@ -1,0 +1,1 @@
+ALTER TABLE "helpdesk"."ticket_messages" ADD COLUMN "is_autoreply" boolean DEFAULT false NOT NULL;

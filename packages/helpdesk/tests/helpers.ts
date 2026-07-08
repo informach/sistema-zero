@@ -256,6 +256,7 @@ export function makeMessage(
     bodyHtml: null,
     snippet: 'Olá, comprei o curso e não consigo acessar.',
     attachments: [],
+    isAutoreply: false,
     gmailInternalDate: at,
     createdBy: null,
     createdByName: null,
