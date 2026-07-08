@@ -60,6 +60,25 @@ export interface StudioSubmissionDetail {
   message: string | null
 }
 
+/**
+ * Uma entrega do Estúdio para o painel POR CURSO (aba "Entregas" do curso): o
+ * mesmo resumo do `listByBlock` + a aula/módulo resolvidos e o `blockId` (o BFF
+ * abre a entrega pelo endpoint por-bloco já existente). Sem o projeto inteiro.
+ */
+export interface StudioSubmissionCourseRow {
+  userId: string
+  accountId: string | null
+  blockId: string
+  lessonId: string
+  lessonTitle: string
+  moduleTitle: string
+  submittedAt: Date
+  score: number | null
+  checkedAt: Date | null
+  passed: boolean
+  message: string | null
+}
+
 /** Uma entrega recente do Estúdio (ficha admin), com a aula/curso resolvidos. */
 export interface RecentStudioSubmission {
   blockId: string
@@ -91,6 +110,12 @@ export interface StudioSubmissionRepository {
   ): Promise<Map<string, StudioSubmissionState>>
   /** Entregas de um bloco (painel do professor): quem entregou + quando + nota. */
   listByBlock(blockId: string): Promise<StudioSubmissionSummary[]>
+  /**
+   * Entregas de TODAS as aulas/blocos de um curso (aba "Entregas" por curso no
+   * admin) — centraliza o acompanhamento sem drilar aula→bloco. Ordenado pela
+   * ordem do curso (módulo → aula) e depois pela data de envio.
+   */
+  listByCourse(courseId: string): Promise<StudioSubmissionCourseRow[]>
   /** Entrega de um aluno num bloco (abrir no Estúdio do professor + correção). */
   getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null>
   /**

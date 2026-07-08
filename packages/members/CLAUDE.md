@@ -159,7 +159,11 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    gate do quiz — ver mark-lesson-complete). A projeção member-facing anexa
    `studioState {submitted, submittedAt, lastScore?, passed?}` (como o `quizState`). Admin
    acompanha em `GET /members/admin/blocks/:id/studio-submissions[/:userId]` (lista + projeto
-   inteiro + nota/resultado p/ abrir no Estúdio do professor). A entrega grava **`account_id`**
+   inteiro + nota/resultado p/ abrir no Estúdio do professor) e, **por CURSO**, em
+   `GET /members/admin/courses/:id/studio-submissions` (07/2026 — aba "Entregas" do curso no admin:
+   TODAS as aulas/blocos num só lugar, `listByCourse` join lessons/modules ordenado por
+   módulo→aula→data + `blockId`/`lessonTitle`/`moduleTitle`; o detalhe reusa a rota por-bloco).
+   A entrega grava **`account_id`**
    (conta responsável; no kids = o pai, ≠ do `user_id` que é o PERFIL da criança — no adulto são
    iguais; migration `0026`) → o BFF do admin hidrata a CRIANÇA (nome do perfil) + o RESPONSÁVEL.
    **AUTO-CORREÇÃO (fase 2, migration `0016`):** o `StudioBlock` ganha `activity?`

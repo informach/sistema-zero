@@ -34,8 +34,12 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { cn } from '@/lib/cn'
 import { slugify } from '@/lib/slug'
 import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
+import { CourseSubmissionsPanel } from './course-submissions-client'
+
+type CourseTab = 'estrutura' | 'entregas'
 
 type Tree = CourseTreeView
 type TreeModule = Tree['modules'][number]
@@ -48,6 +52,11 @@ export function CourseEditorClient({
   currentRole: string
 }) {
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
+
+  // Aba do curso: "Estrutura" (árvore de módulos/aulas) × "Entregas" (entregas do
+  // Estúdio de todas as aulas, centralizadas). Estado local — a sub-rota de aula
+  // vive fora deste componente, então não dá p/ usar layout com abas por rota.
+  const [tab, setTab] = useState<CourseTab>('estrutura')
 
   const [tree, setTree] = useState<Tree | null>(null)
   const [loading, setLoading] = useState(true)
@@ -262,7 +271,7 @@ export function CourseEditorClient({
         title={tree?.title ?? 'Curso'}
         description={tree ? `${tree.slug} · ${tree.status}` : courseId}
         action={
-          canWrite ? (
+          canWrite && tab === 'estrutura' ? (
             <Button onClick={openCreateModule}>
               <Plus className="size-4" /> Novo módulo
             </Button>
@@ -270,7 +279,33 @@ export function CourseEditorClient({
         }
       />
 
-      {loading ? (
+      {/* Abas do curso: Estrutura (árvore) × Entregas (Estúdio, todas as aulas). */}
+      <div className="flex items-center gap-1 border-b border-border">
+        {(
+          [
+            ['estrutura', 'Estrutura'],
+            ['entregas', 'Entregas'],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={cn(
+              '-mb-px border-b-2 px-3 py-2 text-sm transition-colors',
+              tab === key
+                ? 'border-primary font-semibold text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'entregas' ? (
+        <CourseSubmissionsPanel courseId={courseId} />
+      ) : loading ? (
         <Card className="py-10 text-center text-muted-foreground">
           <Spinner className="mx-auto" />
         </Card>

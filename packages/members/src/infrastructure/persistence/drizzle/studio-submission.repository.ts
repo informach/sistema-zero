@@ -3,6 +3,7 @@ import type { CourseAudience } from '../../../domain/course/course'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import type {
   RecentStudioSubmission,
+  StudioSubmissionCourseRow,
   StudioSubmissionDetail,
   StudioSubmissionRecord,
   StudioSubmissionRepository,
@@ -10,7 +11,7 @@ import type {
   StudioSubmissionSummary,
 } from '../../../domain/ports/studio-submission-repository.port'
 import type { Database } from './db'
-import { courses, lessons, studioSubmissions } from './schema'
+import { courses, lessons, modules, studioSubmissions } from './schema'
 
 export class DrizzleStudioSubmissionRepository implements StudioSubmissionRepository {
   constructor(private readonly db: Database) {}
@@ -131,6 +132,44 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     return rows.map((r) => ({
       userId: r.userId,
       accountId: r.accountId ?? null,
+      submittedAt: r.submittedAt,
+      score: r.score ?? null,
+      checkedAt: r.checkedAt ?? null,
+      passed: r.passedAt != null,
+      message: r.message ?? null,
+    }))
+  }
+
+  async listByCourse(courseId: string): Promise<StudioSubmissionCourseRow[]> {
+    // Entregas de TODAS as aulas do curso numa ida (aba "Entregas" do curso).
+    // Joins com lessons/modules para o título da aula/módulo e a ORDEM do curso;
+    // o BFF abre a entrega pelo endpoint por-bloco existente (por isso `blockId`).
+    const rows = await this.db
+      .select({
+        userId: studioSubmissions.userId,
+        accountId: studioSubmissions.accountId,
+        blockId: studioSubmissions.blockId,
+        lessonId: studioSubmissions.lessonId,
+        lessonTitle: lessons.title,
+        moduleTitle: modules.title,
+        submittedAt: studioSubmissions.submittedAt,
+        score: studioSubmissions.score,
+        checkedAt: studioSubmissions.checkedAt,
+        passedAt: studioSubmissions.passedAt,
+        message: studioSubmissions.message,
+      })
+      .from(studioSubmissions)
+      .innerJoin(lessons, eq(lessons.id, studioSubmissions.lessonId))
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
+      .where(eq(studioSubmissions.courseId, courseId))
+      .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(studioSubmissions.submittedAt))
+    return rows.map((r) => ({
+      userId: r.userId,
+      accountId: r.accountId ?? null,
+      blockId: r.blockId,
+      lessonId: r.lessonId,
+      lessonTitle: r.lessonTitle,
+      moduleTitle: r.moduleTitle,
       submittedAt: r.submittedAt,
       score: r.score ?? null,
       checkedAt: r.checkedAt ?? null,

@@ -316,5 +316,16 @@ export function contentRoutes(deps: ContentRoutesDeps) {
         },
         { params: AdminStudioSubmissionParams },
       )
+      // Entregas de TODAS as aulas do curso (aba "Entregas" por curso). Centraliza
+      // o acompanhamento sem drilar aula→bloco; o detalhe reusa a rota por-bloco
+      // acima (as linhas carregam `blockId` + `userId`). `id` = courseId.
+      .get(
+        '/courses/:id/studio-submissions',
+        async ({ params, headers }) => {
+          guard(headers)
+          return { submissions: await deps.studioSubmissions.listByCourse(params.id) }
+        },
+        { params: IdParams },
+      )
   )
 }

@@ -18,6 +18,25 @@ export interface StudioSubmissionSummaryView {
   message: string | null
 }
 
+/**
+ * Resumo de uma entrega para a aba "Entregas" POR CURSO — o mesmo da lista por
+ * bloco + a aula/módulo resolvidos e o `blockId` (o BFF abre a entrega pelo
+ * endpoint por-bloco já existente). Identidade hidratada no BFF (auth).
+ */
+export interface StudioSubmissionCourseView {
+  userId: string
+  accountId: string | null
+  blockId: string
+  lessonId: string
+  lessonTitle: string
+  moduleTitle: string
+  submittedAt: string
+  score: number | null
+  checkedAt: string | null
+  passed: boolean
+  message: string | null
+}
+
 export interface StudioSubmissionDetailView {
   /** Snapshot `Project` do Estúdio enviado pelo aluno — importável no Estúdio do professor. */
   project: unknown
@@ -44,6 +63,23 @@ export class StudioSubmissionsAdminService {
     return rows.map((r) => ({
       userId: r.userId,
       accountId: r.accountId,
+      submittedAt: r.submittedAt.toISOString(),
+      score: r.score,
+      checkedAt: r.checkedAt?.toISOString() ?? null,
+      passed: r.passed,
+      message: r.message,
+    }))
+  }
+
+  async listByCourse(courseId: string): Promise<StudioSubmissionCourseView[]> {
+    const rows = await this.submissions.listByCourse(courseId)
+    return rows.map((r) => ({
+      userId: r.userId,
+      accountId: r.accountId,
+      blockId: r.blockId,
+      lessonId: r.lessonId,
+      lessonTitle: r.lessonTitle,
+      moduleTitle: r.moduleTitle,
       submittedAt: r.submittedAt.toISOString(),
       score: r.score,
       checkedAt: r.checkedAt?.toISOString() ?? null,
