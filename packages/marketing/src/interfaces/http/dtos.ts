@@ -245,6 +245,11 @@ export const FollowersSeriesQuery = t.Object({
   days: t.Optional(t.Numeric({ minimum: 1, maximum: 365 })),
 })
 
+export const BestTimesQuery = t.Object({
+  network: t.Optional(NETWORK),
+  days: t.Optional(t.Numeric({ minimum: 1, maximum: 365 })),
+})
+
 // `status` chega como CSV (ex.: scheduled,awaiting_manual) — validado na rota
 // token a token contra o enum (CSV inválido → 400, nunca filtro silencioso).
 export const PublicationsListQuery = t.Object({

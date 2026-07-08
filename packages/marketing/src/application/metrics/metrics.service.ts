@@ -45,6 +45,13 @@ export interface MetricsSummaryView {
   }>
 }
 
+/** Melhores horários (heatmap 7×24): agregado por dia-da-semana × hora em SP. */
+export interface BestTimesView {
+  /** Só células COM posts. `dow` 0=domingo..6=sábado; `hour` 0..23 (SP). */
+  cells: Array<{ dow: number; hour: number; posts: number; views: number; likes: number }>
+  totalPosts: number
+}
+
 export interface FollowersSeriesView {
   series: Array<{
     accountId: string
@@ -61,6 +68,31 @@ const SP_DAY = new Intl.DateTimeFormat('en-CA', {
   month: '2-digit',
   day: '2-digit',
 })
+
+/** Dia-da-semana + hora em SP (o heatmap fala o fuso da equipe, não UTC). */
+const SP_DOW_HOUR = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Sao_Paulo',
+  weekday: 'short',
+  hour: '2-digit',
+  hour12: false,
+})
+const DOW_INDEX: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+}
+
+function spDowHour(date: Date): { dow: number; hour: number } {
+  const parts = SP_DOW_HOUR.formatToParts(date)
+  const weekday = parts.find((p) => p.type === 'weekday')?.value ?? 'Sun'
+  const hour = parts.find((p) => p.type === 'hour')?.value ?? '0'
+  // `% 24` cobre engines que formatam meia-noite como '24' com hour12:false.
+  return { dow: DOW_INDEX[weekday] ?? 0, hour: Number(hour) % 24 }
+}
 
 /**
  * Leitura das métricas (F3): cards por conta, comparativos por rede (28d),
@@ -153,6 +185,48 @@ export class MetricsService {
       .slice(0, TOP_LIMIT)
 
     return { accounts, networkTotals, topPublications }
+  }
+
+  /**
+   * Melhores horários: publicações PUBLICADAS na janela agrupadas por
+   * (dia-da-semana × hora) em SP, com os totais do último snapshot de cada
+   * uma. A intensidade/normalização do heatmap é do front.
+   */
+  async bestTimes(input: { network?: Network; days: number }): Promise<BestTimesView> {
+    if (input.days < 1 || input.days > 365) {
+      throw new ValidationError('`days` deve estar entre 1 e 365')
+    }
+    const since = new Date(this.now().getTime() - input.days * 86_400_000)
+    const recent = await this.publications.listRecentPublished({ since, limit: 500 })
+    const filtered = recent.filter(
+      (item) =>
+        item.publication.publishedAt !== null &&
+        (!input.network || item.publication.network === input.network),
+    )
+    const stats = await this.metrics.latestPublicationStats(
+      filtered.map((item) => item.publication.id),
+    )
+    const cells = new Map<
+      string,
+      { dow: number; hour: number; posts: number; views: number; likes: number }
+    >()
+    for (const item of filtered) {
+      const publishedAt = item.publication.publishedAt as Date
+      const { dow, hour } = spDowHour(publishedAt)
+      const key = `${dow}:${hour}`
+      const cell = cells.get(key) ?? { dow, hour, posts: 0, views: 0, likes: 0 }
+      cell.posts += 1
+      const stat = stats.get(item.publication.id)
+      if (stat) {
+        cell.views += stat.views
+        cell.likes += stat.likes
+      }
+      cells.set(key, cell)
+    }
+    return {
+      cells: [...cells.values()].sort((a, b) => a.dow - b.dow || a.hour - b.hour),
+      totalPosts: filtered.length,
+    }
   }
 
   /** Série de seguidores: 1 ponto por DIA (SP) por conta = último snapshot do dia. */

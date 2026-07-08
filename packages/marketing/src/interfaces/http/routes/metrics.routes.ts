@@ -2,7 +2,7 @@ import { Elysia } from 'elysia'
 import type { MetricsService } from '../../../application/metrics/metrics.service'
 import type { Network } from '../../../domain/publication/publication'
 import { assertInternalCaller, requireStaff } from '../auth'
-import { FollowersSeriesQuery, IdParams } from '../dtos'
+import { BestTimesQuery, FollowersSeriesQuery, IdParams } from '../dtos'
 
 export interface MetricsRoutesDeps {
   metrics: MetricsService
@@ -26,6 +26,15 @@ export function metricsRoutes(deps: MetricsRoutesDeps) {
           days: query.days ?? 30,
         }),
       { query: FollowersSeriesQuery },
+    )
+    .get(
+      '/marketing/metrics/best-times',
+      ({ query }) =>
+        deps.metrics.bestTimes({
+          network: query.network as Network | undefined,
+          days: query.days ?? 180,
+        }),
+      { query: BestTimesQuery },
     )
     .get(
       '/marketing/publications/:id/metrics',
