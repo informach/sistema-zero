@@ -22,10 +22,13 @@ export function ScheduleSection({
   view,
   onView,
   reload,
+  blockedReason,
 }: {
   view: PublicationView
   onView: (view: PublicationView) => void
   reload: () => Promise<void>
+  /** Motivo que BLOQUEIA o agendar (ex.: carrossel automático sem imagens). */
+  blockedReason?: string | null
 }) {
   const [value, setValue] = useState(view.scheduledAt ? isoToDatetimeLocalSp(view.scheduledAt) : '')
   const [error, setError] = useState<string | null>(null)
@@ -108,6 +111,11 @@ export function ScheduleSection({
             disabled={!allowed}
           />
         </Field>
+        {blockedReason ? (
+          <p className="text-xs text-amber-700 dark:text-amber-400" role="status">
+            {blockedReason}
+          </p>
+        ) : null}
         <div className="flex flex-wrap items-center justify-between gap-2">
           {cancelable ? (
             <Button variant="destructive" size="sm" onClick={() => setCancelOpen(true)}>
@@ -116,7 +124,10 @@ export function ScheduleSection({
           ) : (
             <span />
           )}
-          <Button onClick={schedule} disabled={!allowed || scheduling || !value}>
+          <Button
+            onClick={schedule}
+            disabled={!allowed || scheduling || !value || Boolean(blockedReason)}
+          >
             {scheduling ? 'Agendando…' : view.status === 'scheduled' ? 'Reagendar' : 'Agendar'}
           </Button>
         </div>

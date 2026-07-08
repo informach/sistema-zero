@@ -13,10 +13,13 @@ export function StatusBanner({
   view,
   onReschedule,
   onMarkPublished,
+  onLinkExternal,
 }: {
   view: PublicationView
   onReschedule: () => void
   onMarkPublished: () => void
+  /** Publicada SEM post vinculado: abre o dialog de vincular o post real. */
+  onLinkExternal: () => void
 }) {
   if (view.status === 'failed') {
     return (
@@ -82,6 +85,11 @@ export function StatusBanner({
             Ver post
             <ExternalLink className="size-3.5" aria-hidden />
           </a>
+        ) : null}
+        {!view.externalPostId ? (
+          <Button size="sm" variant="outline" onClick={onLinkExternal}>
+            Vincular post real
+          </Button>
         ) : null}
       </div>
     )

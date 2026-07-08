@@ -15,14 +15,24 @@ import { MarkPublishedDialog } from '@/components/shared/mark-published-dialog'
 import { NetworkChip } from '@/components/shared/network-chip'
 import { PubStatusBadge } from '@/components/shared/pub-status-badge'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { isCarouselReady } from '@/lib/carousel'
 import { cn } from '@/lib/cn'
 import { FORMAT_LABELS, FORMAT_NETWORK, NETWORK_LIMITS } from '@/lib/networks'
 import { canMarkPublished, isEditable } from '@/lib/publications'
-import type { AccountsResponse, PublicationView, PublishMode } from '@/lib/types'
-import { handleConflict } from '../../../shared'
+import type {
+  AccountsResponse,
+  AssetView,
+  MarketingPage,
+  PublicationView,
+  PublishMode,
+} from '@/lib/types'
+import { handleConflict, uploadAsset } from '../../../shared'
 import { CaptionEditor } from './caption-editor'
+import { CarouselPicker } from './carousel-picker'
 import { CoverPicker } from './cover-picker'
+import { LinkExternalDialog } from './link-external-dialog'
 import { PreviewCard } from './preview-card'
+import { PublicationMetricsCard } from './publication-metrics-card'
 import { PublishModeToggle } from './publish-mode-toggle'
 import { ScheduleSection } from './schedule-section'
 import { StatusBanner } from './status-banner'
@@ -166,8 +176,34 @@ function ComposerForm({
   const [tagInput, setTagInput] = useState('')
   const [coverAssetId, setCoverAssetId] = useState<string | null>(view.coverAssetId)
   const [publishMode, setPublishMode] = useState<PublishMode>(view.publishMode)
+  const [socialAccountId, setSocialAccountId] = useState<string | null>(view.socialAccountId)
+  const [assetIds, setAssetIds] = useState<string[]>(view.assetIds)
   const [saving, setSaving] = useState(false)
   const [markOpen, setMarkOpen] = useState(false)
+  const [linkOpen, setLinkOpen] = useState(false)
+
+  // Imagens PRONTAS do conteúdo: UMA busca alimenta a capa E o carrossel.
+  const [images, setImages] = useState<AssetView[] | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  useEffect(() => {
+    let alive = true
+    apiGet<MarketingPage<AssetView>>(`/api/marketing/media?contentId=${contentId}&limit=100`)
+      .then((page) => {
+        if (alive) {
+          setImages(
+            page.items.filter(
+              (asset) => asset.contentType.startsWith('image/') && asset.status === 'ready',
+            ),
+          )
+        }
+      })
+      .catch(() => {
+        if (alive) setImages([])
+      })
+    return () => {
+      alive = false
+    }
+  }, [contentId])
 
   // Re-sincroniza os campos quando a VERSÃO do servidor muda (salvar, agendar,
   // cancelar, marcar publicada, conflito 409). A identidade do objeto muda mais
@@ -181,17 +217,42 @@ function ComposerForm({
     setTags(view.tags)
     setCoverAssetId(view.coverAssetId)
     setPublishMode(view.publishMode)
+    setSocialAccountId(view.socialAccountId)
+    setAssetIds(view.assetIds)
   }, [view])
 
   const network = FORMAT_NETWORK[view.format]
   const isYouTube = network === 'youtube'
+  const isCarousel = view.format === 'ig_carousel'
   const editable = isEditable(view.status)
 
-  const dirty =
+  const assetsDirty = isCarousel && !sameTags(assetIds, view.assetIds)
+  const fieldsDirty =
     caption !== view.caption ||
     coverAssetId !== view.coverAssetId ||
     publishMode !== view.publishMode ||
+    socialAccountId !== view.socialAccountId ||
     (isYouTube && (title.trim() !== (view.title ?? '') || !sameTags(tags, view.tags)))
+  const dirty = fieldsDirty || assetsDirty
+
+  async function uploadImage(file: File) {
+    setUploadProgress(0)
+    try {
+      const asset = await uploadAsset({
+        file,
+        contentId,
+        kind: 'cover',
+        onProgress: setUploadProgress,
+      })
+      setImages((current) => [asset, ...(current ?? [])])
+      setCoverAssetId(asset.id)
+      toast.success('Imagem enviada e selecionada como capa.')
+    } catch (error) {
+      toast.error((error as ApiError).message)
+    } finally {
+      setUploadProgress(null)
+    }
+  }
 
   function addTag() {
     const tag = tagInput.trim()
@@ -204,21 +265,36 @@ function ComposerForm({
     if (!dirty || saving) return
     setSaving(true)
     try {
-      const body: Record<string, unknown> = {
-        caption,
-        coverAssetId,
-        publishMode,
-        version: view.version,
+      // Sequência PATCH → PUT: os campos vão no PATCH (bump de versão); a
+      // ordem do carrossel vai no PUT /assets (não mexe na versão).
+      let updated = view
+      if (fieldsDirty) {
+        const body: Record<string, unknown> = {
+          caption,
+          coverAssetId,
+          publishMode,
+          socialAccountId,
+          version: view.version,
+        }
+        if (isYouTube) {
+          body.title = title.trim() || null
+          body.tags = tags
+        }
+        updated = await apiSend<PublicationView>(
+          `/api/marketing/publications/${view.id}`,
+          'PATCH',
+          body,
+        )
       }
-      if (isYouTube) {
-        body.title = title.trim() || null
-        body.tags = tags
+      if (assetsDirty && assetIds.length > 0) {
+        updated = await apiSend<PublicationView>(
+          `/api/marketing/publications/${view.id}/assets`,
+          'PUT',
+          { assetIds },
+        )
+        // O PUT devolve a view com a versão do PATCH — preserva os campos dele.
+        updated = { ...updated, assetIds: [...assetIds] }
       }
-      const updated = await apiSend<PublicationView>(
-        `/api/marketing/publications/${view.id}`,
-        'PATCH',
-        body,
-      )
       onView(updated)
       toast.success('Publicação salva.')
     } catch (error) {
@@ -263,6 +339,7 @@ function ComposerForm({
         view={view}
         onReschedule={focusSchedule}
         onMarkPublished={() => setMarkOpen(true)}
+        onLinkExternal={() => setLinkOpen(true)}
       />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -346,8 +423,19 @@ function ComposerForm({
                 </>
               ) : null}
 
+              {isCarousel ? (
+                <CarouselPicker
+                  images={images}
+                  selected={assetIds}
+                  onChange={setAssetIds}
+                  disabled={!editable}
+                />
+              ) : null}
+
               <CoverPicker
-                contentId={contentId}
+                images={images}
+                uploadProgress={uploadProgress}
+                onUpload={(file) => void uploadImage(file)}
                 value={coverAssetId}
                 onChange={setCoverAssetId}
                 disabled={!editable}
@@ -357,7 +445,9 @@ function ComposerForm({
                 format={view.format}
                 accounts={accounts}
                 value={publishMode}
+                socialAccountId={socialAccountId}
                 onChange={setPublishMode}
+                onAccountChange={setSocialAccountId}
                 disabled={!editable}
               />
 
@@ -374,21 +464,42 @@ function ComposerForm({
             </CardContent>
           </Card>
 
-          <ScheduleSection view={view} onView={onView} reload={reload} />
+          <ScheduleSection
+            view={view}
+            onView={onView}
+            reload={reload}
+            blockedReason={
+              publishMode === 'auto' && isCarousel && !isCarouselReady(view.assetIds)
+                ? 'O carrossel automático precisa de 2 a 10 imagens salvas. Selecione as imagens e salve antes de agendar'
+                : null
+            }
+          />
         </div>
 
-        <PreviewCard
-          format={view.format}
-          caption={caption}
-          title={isYouTube ? title : null}
-          coverAssetId={coverAssetId}
-        />
+        <div className="space-y-4">
+          <PreviewCard
+            format={view.format}
+            caption={caption}
+            title={isYouTube ? title : null}
+            coverAssetId={coverAssetId}
+            carouselAssetIds={assetIds}
+          />
+          {view.status === 'published' && view.externalPostId ? (
+            <PublicationMetricsCard publicationId={view.id} />
+          ) : null}
+        </div>
       </div>
 
       <MarkPublishedDialog
         publicationId={view.id}
         open={markOpen}
         onClose={() => setMarkOpen(false)}
+        onDone={onView}
+      />
+      <LinkExternalDialog
+        publicationId={view.id}
+        open={linkOpen}
+        onClose={() => setLinkOpen(false)}
         onDone={onView}
       />
     </div>

@@ -26,7 +26,7 @@ const ALLOWED_ROOTS = new Set([
   'drive',
 ])
 
-type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE'
+type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 async function handle(req: Request, params: Promise<{ path: string[] }>): Promise<NextResponse> {
   const { path } = await params
@@ -60,6 +60,10 @@ export async function GET(req: Request, ctx: { params: Promise<{ path: string[] 
 }
 
 export async function POST(req: Request, ctx: { params: Promise<{ path: string[] }> }) {
+  return handle(req, ctx.params)
+}
+
+export async function PUT(req: Request, ctx: { params: Promise<{ path: string[] }> }) {
   return handle(req, ctx.params)
 }
 
