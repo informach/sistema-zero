@@ -3,7 +3,7 @@
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
-import { InfoTooltip } from '@sistemazero/ui/info-tooltip'
+import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Skeleton } from '@sistemazero/ui/skeleton'
@@ -12,7 +12,7 @@ import { Textarea } from '@sistemazero/ui/textarea'
 import { Mail } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { apiGet, apiSend } from '@/lib/api'
+import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { CATEGORY_LABELS, TICKET_CATEGORIES } from '@/lib/categories'
 import { formatDate } from '@/lib/format'
 import type { ConnectionView, SettingsView, TicketCategory } from '@/lib/types'
@@ -26,24 +26,81 @@ export function ConfiguracoesClient() {
   )
 }
 
-/** Estado da conexão Gmail (somente leitura; o OAuth chega na próxima fase). */
+/** Mensagens dos erros que o callback do OAuth pode devolver no `?error=`. */
+const OAUTH_ERROR_LABELS: Record<string, string> = {
+  access_denied: 'Conexão cancelada no Google.',
+  state_invalid: 'A conexão expirou. Tente de novo.',
+  identity_missing: 'O Google não devolveu a identidade da conta. Tente de novo.',
+  exchange_failed: 'Não foi possível concluir a conexão com o Google. Tente de novo.',
+  provider_not_supported: 'Provedor não suportado.',
+}
+
+/** Estado da conexão Gmail + conectar/reconectar/desconectar via OAuth. */
 function ConnectionCard() {
   const [connection, setConnection] = useState<ConnectionView | null>(null)
   const [failed, setFailed] = useState(false)
+  const [connecting, setConnecting] = useState(false)
+  const [disconnecting, setDisconnecting] = useState(false)
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false)
 
-  useEffect(() => {
-    let alive = true
+  function load() {
     apiGet<ConnectionView>('/api/helpdesk/connection')
-      .then((view) => {
-        if (alive) setConnection(view)
-      })
-      .catch(() => {
-        if (alive) setFailed(true)
-      })
-    return () => {
-      alive = false
+      .then(setConnection)
+      .catch(() => setFailed(true))
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: efeito de montagem — roda uma vez.
+  useEffect(() => {
+    load()
+    // Retorno do callback do Google: ?connected=google ou ?error=<code>.
+    const params = new URLSearchParams(window.location.search)
+    const connected = params.get('connected')
+    const error = params.get('error')
+    if (connected) toast.success('Caixa contato@ conectada.')
+    else if (error) toast.error(OAUTH_ERROR_LABELS[error] ?? 'Não foi possível conectar a caixa.')
+    if (connected || error) {
+      window.history.replaceState({}, '', window.location.pathname)
     }
   }, [])
+
+  async function connect() {
+    setConnecting(true)
+    try {
+      const { authorizeUrl } = await apiSend<{ authorizeUrl: string }>(
+        '/api/helpdesk/oauth/google/start',
+        'POST',
+      )
+      window.location.href = authorizeUrl
+    } catch (error) {
+      const apiError = error as ApiError
+      if (apiError.code === 'GMAIL_NOT_CONFIGURED') {
+        toast.error('A integração com o Gmail ainda não foi configurada pela equipe técnica.')
+      } else if (apiError.status === 403) {
+        toast.error('Só admin pode conectar a caixa.')
+      } else {
+        toast.error('Não foi possível iniciar a conexão. Tente novamente.')
+      }
+      setConnecting(false)
+    }
+  }
+
+  async function disconnect() {
+    setDisconnecting(true)
+    try {
+      const view = await apiSend<ConnectionView>('/api/helpdesk/connection', 'DELETE')
+      setConnection(view)
+      toast.success('Caixa desconectada.')
+    } catch (error) {
+      toast.error(
+        (error as ApiError).status === 403
+          ? 'Só admin pode desconectar a caixa.'
+          : 'Não foi possível desconectar. Tente novamente.',
+      )
+    } finally {
+      setDisconnecting(false)
+      setConfirmDisconnect(false)
+    }
+  }
 
   return (
     <Card>
@@ -61,7 +118,7 @@ function ConnectionCard() {
         ) : connection === null ? (
           <Skeleton className="h-14 w-full rounded-lg" />
         ) : connection.connected ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <Mail className="size-4 text-muted-foreground" aria-hidden />
               <p className="text-sm font-medium">{connection.emailAddress}</p>
@@ -80,17 +137,39 @@ function ConnectionCard() {
                 Erro na última sincronização: {connection.lastSyncError}
               </p>
             ) : null}
+            <div className="flex flex-wrap gap-2">
+              {connection.status === 'needs_reauth' ? (
+                <Button onClick={connect} disabled={connecting}>
+                  {connecting ? 'Abrindo…' : 'Reconectar'}
+                </Button>
+              ) : null}
+              <Button
+                variant="outline"
+                onClick={() => setConfirmDisconnect(true)}
+                disabled={disconnecting}
+              >
+                Desconectar
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">Caixa contato@ ainda não conectada</p>
-            <span className="inline-flex items-center gap-1.5">
-              <Button disabled>Conectar</Button>
-              <InfoTooltip text="Disponível na próxima fase" />
-            </span>
+            <Button onClick={connect} disabled={connecting}>
+              {connecting ? 'Abrindo…' : 'Conectar'}
+            </Button>
           </div>
         )}
       </CardContent>
+      <ConfirmDialog
+        open={confirmDisconnect}
+        onClose={() => setConfirmDisconnect(false)}
+        title="Desconectar a caixa?"
+        message="Os tickets já recebidos continuam aqui, mas novos e-mails deixam de entrar até você reconectar."
+        confirmText="Desconectar"
+        confirmVariant="destructive"
+        onConfirm={disconnect}
+      />
     </Card>
   )
 }

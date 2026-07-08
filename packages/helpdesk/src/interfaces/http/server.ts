@@ -7,6 +7,7 @@ import { buildErrorResponse } from './error-handler'
 import { type ConnectionRoutesDeps, connectionRoutes } from './routes/connection.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type KbRoutesDeps, kbRoutes } from './routes/kb.routes'
+import { type OAuthRoutesDeps, oauthRoutes } from './routes/oauth.routes'
 import { type SettingsRoutesDeps, settingsRoutes } from './routes/settings.routes'
 import { type TicketsRoutesDeps, ticketsRoutes } from './routes/tickets.routes'
 
@@ -19,6 +20,7 @@ export interface HttpDeps {
   kb: KbRoutesDeps
   settings: SettingsRoutesDeps
   connection: ConnectionRoutesDeps
+  oauth: OAuthRoutesDeps
 }
 
 const OVERSIZE = new WeakSet<Request>()
@@ -82,4 +84,5 @@ export function createServer(deps: HttpDeps) {
     .use(kbRoutes(deps.kb))
     .use(settingsRoutes(deps.settings))
     .use(connectionRoutes(deps.connection))
+    .use(oauthRoutes(deps.oauth))
 }

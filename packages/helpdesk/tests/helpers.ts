@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { ConnectionService } from '../src/application/connection/connection.service'
+import { OAuthService } from '../src/application/connection/oauth.service'
 import { KbService } from '../src/application/kb/kb.service'
 import { SettingsService } from '../src/application/settings/settings.service'
 import { TicketService } from '../src/application/tickets/ticket.service'
@@ -7,6 +8,7 @@ import type { Ticket } from '../src/domain/ticket/ticket'
 import type { TicketMessage } from '../src/domain/ticket/ticket-message'
 import { loadEnv } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
+import { FakeGmailClient, FakeGmailOAuthProvider, FakeSecretBox } from './fakes/gmail'
 import {
   InMemoryConnectionRepository,
   InMemoryKbRepository,
@@ -25,6 +27,9 @@ const silentLogger = {
   error: () => {},
 }
 
+export const TEST_APP_URL = 'http://app.test'
+export const TEST_GATEWAY_URL = 'http://gateway.test'
+
 export interface TestApp {
   app: { handle: (request: Request) => Promise<Response> }
   repos: {
@@ -35,10 +40,13 @@ export interface TestApp {
     connections: InMemoryConnectionRepository
     oauthStates: InMemoryOAuthStateRepository
   }
+  provider: FakeGmailOAuthProvider
+  gmailClient: FakeGmailClient
+  secretBox: FakeSecretBox
 }
 
-/** Monta a app HTTP inteira sobre fakes in-memory (sem banco, sem Gmail). */
-export function buildTestApp(): TestApp {
+/** Monta a app HTTP inteira sobre fakes in-memory (sem banco, sem Gmail real). */
+export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestApp {
   const env = loadEnv({
     NODE_ENV: 'test',
     DATABASE_URL: 'postgres://unused-in-tests',
@@ -46,6 +54,7 @@ export function buildTestApp(): TestApp {
   })
   const now = () => new Date()
   const idGen = () => randomUUID()
+  const gmailEnabled = overrides.gmailEnabled ?? false
 
   const tickets = new InMemoryTicketRepository()
   const messages = new InMemoryMessageRepository()
@@ -53,11 +62,26 @@ export function buildTestApp(): TestApp {
   const settings = new InMemorySettingsRepository()
   const connections = new InMemoryConnectionRepository()
   const oauthStates = new InMemoryOAuthStateRepository()
+  const provider = new FakeGmailOAuthProvider()
+  const gmailClient = new FakeGmailClient()
+  const secretBox = new FakeSecretBox()
 
   const ticketService = new TicketService(tickets, messages, now)
   const kbService = new KbService(kb, now, idGen)
   const settingsService = new SettingsService(settings, now)
-  const connectionService = new ConnectionService(connections)
+  const revokeDeps = gmailEnabled ? { provider, secretBox } : null
+  const connectionService = new ConnectionService(connections, revokeDeps, now, silentLogger)
+  const oauthService = new OAuthService(
+    oauthStates,
+    connections,
+    gmailEnabled ? { secretBox, redirectBaseUrl: TEST_GATEWAY_URL, appUrl: TEST_APP_URL } : null,
+    gmailEnabled ? provider : null,
+    gmailClient,
+    { stateTtlMinutes: 10 },
+    now,
+    idGen,
+    silentLogger,
+  )
 
   const app = createServer({
     env,
@@ -83,9 +107,20 @@ export function buildTestApp(): TestApp {
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
+    oauth: {
+      oauth: oauthService,
+      internalToken: INTERNAL_TOKEN,
+      requireStaffEnabled: true,
+    },
   })
 
-  return { app, repos: { tickets, messages, kb, settings, connections, oauthStates } }
+  return {
+    app,
+    repos: { tickets, messages, kb, settings, connections, oauthStates },
+    provider,
+    gmailClient,
+    secretBox,
+  }
 }
 
 export const STAFF_USER_ID = '11111111-1111-4111-8111-111111111111'

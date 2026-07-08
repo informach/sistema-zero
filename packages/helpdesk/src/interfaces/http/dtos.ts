@@ -63,6 +63,21 @@ export const KbPatchBody = t.Object({
   version: VERSION,
 })
 
+// ── OAuth / Conexão ──────────────────────────────────────────────────────────
+export const ProviderParams = t.Object({
+  provider: t.String({ minLength: 1, maxLength: 20, pattern: '^[a-z]+$' }),
+})
+
+// O Google anexa params extras (scope/authuser/prompt) — não rejeitar.
+export const OAuthCallbackQuery = t.Object(
+  {
+    code: t.Optional(t.String({ maxLength: 2000 })),
+    state: t.Optional(t.String({ maxLength: 200 })),
+    error: t.Optional(t.String({ maxLength: 200 })),
+  },
+  { additionalProperties: true },
+)
+
 // ── Configurações ────────────────────────────────────────────────────────────
 export const SettingsPatchBody = t.Object({
   autoReplyEnabled: t.Optional(t.Boolean()),

@@ -8,12 +8,16 @@ export interface ConnectionRoutesDeps {
   requireStaffEnabled: boolean
 }
 
-/** Estado da conexão Gmail (a view NUNCA expõe tokens). */
+/** Estado e desconexão da caixa Gmail (a view NUNCA expõe tokens). */
 export function connectionRoutes(deps: ConnectionRoutesDeps) {
-  return new Elysia()
-    .onBeforeHandle(({ headers }) => {
-      assertInternalCaller(headers['x-internal-token'], deps.internalToken)
-      requireStaff(headers, deps.requireStaffEnabled)
-    })
-    .get('/helpdesk/connection', () => deps.connection.status())
+  return (
+    new Elysia()
+      .onBeforeHandle(({ headers }) => {
+        assertInternalCaller(headers['x-internal-token'], deps.internalToken)
+        requireStaff(headers, deps.requireStaffEnabled)
+      })
+      .get('/helpdesk/connection', () => deps.connection.status())
+      // Desconectar é admin+ NO GATEWAY (helpdesk-connection-write, audit).
+      .delete('/helpdesk/connection', () => deps.connection.disconnect())
+  )
 }

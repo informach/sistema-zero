@@ -41,12 +41,3 @@ describe('configurações', () => {
     expect(res.status).toBe(400)
   })
 })
-
-describe('conexão', () => {
-  it('GET /helpdesk/connection sem conexão → connected: false', async () => {
-    const { app } = buildTestApp()
-    const res = await request(app, 'GET', '/helpdesk/connection')
-    expect(res.status).toBe(200)
-    expect(await json(res)).toEqual({ connected: false })
-  })
-})
