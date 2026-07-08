@@ -3,6 +3,7 @@ import {
   type OAuthProvider,
   OAuthProviderError,
   type OAuthTokenSet,
+  type ProviderAccount,
   type RefreshedTokens,
 } from '../../../domain/ports/oauth-provider.port'
 
@@ -26,9 +27,15 @@ export const GOOGLE_SCOPES = [
   'openid',
   'email',
   'https://www.googleapis.com/auth/drive.readonly',
+  // F4: o ARQUIVADOR grava no Drive — drive.file só alcança arquivos/pastas
+  // criados pelo próprio app (mínimo necessário p/ escrever).
+  'https://www.googleapis.com/auth/drive.file',
   'https://www.googleapis.com/auth/youtube.upload',
   'https://www.googleapis.com/auth/youtube',
 ] as const
+
+/** Escopo que o arquivador exige — conta antiga sem ele precisa RECONECTAR. */
+export const DRIVE_FILE_SCOPE = 'https://www.googleapis.com/auth/drive.file'
 
 const DEFAULT_TIMEOUT_MS = 10_000
 
@@ -164,7 +171,28 @@ export class GoogleOAuthProvider implements OAuthProvider {
     }
   }
 
-  async fetchIdentity(accessToken: string, idToken: string | null): Promise<AccountIdentity> {
+  /** Google: 1 consent = 1 conta (`youtube` — Drive e YouTube da mesma conta). */
+  async resolveAccounts(tokens: OAuthTokenSet): Promise<ProviderAccount[]> {
+    const identity = await this.fetchIdentity(tokens.accessToken, tokens.idToken)
+    return [
+      {
+        network: 'youtube',
+        identity,
+        tokens: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresInSeconds: tokens.expiresInSeconds,
+          refreshExpiresInSeconds: tokens.refreshExpiresInSeconds,
+          scopes: tokens.scopes,
+        },
+      },
+    ]
+  }
+
+  private async fetchIdentity(
+    accessToken: string,
+    idToken: string | null,
+  ): Promise<AccountIdentity> {
     const payload = idToken ? decodeIdTokenPayload(idToken) : null
     const sub = typeof payload?.sub === 'string' ? payload.sub : null
     const email = typeof payload?.email === 'string' ? payload.email : null

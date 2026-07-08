@@ -103,6 +103,7 @@ import type {
 import type { RoomRepository } from '../../src/domain/ports/room-repository.port'
 import type {
   RecentStudioSubmission,
+  StudioSubmissionCourseRow,
   StudioSubmissionDetail,
   StudioSubmissionRecord,
   StudioSubmissionRepository,
@@ -1233,6 +1234,39 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         passed: s.passedAt != null,
         message: s.message ?? null,
       }))
+  }
+
+  async listByCourse(courseId: string): Promise<StudioSubmissionCourseRow[]> {
+    const rows = this.submissions
+      .filter((s) => s.courseId === courseId)
+      .map((s) => {
+        const lesson = this.courses?.lessons.find((l) => l.id === s.lessonId)
+        const mod = lesson ? this.courses?.modules.find((m) => m.id === lesson.moduleId) : undefined
+        return {
+          moduleSort: mod?.sortOrder ?? 0,
+          lessonSort: lesson?.sortOrder ?? 0,
+          row: {
+            userId: s.userId,
+            accountId: s.accountId ?? null,
+            blockId: s.blockId,
+            lessonId: s.lessonId,
+            lessonTitle: lesson?.title ?? '',
+            moduleTitle: mod?.title ?? '',
+            submittedAt: s.submittedAt,
+            score: s.score ?? null,
+            checkedAt: s.checkedAt ?? null,
+            passed: s.passedAt != null,
+            message: s.message ?? null,
+          } satisfies StudioSubmissionCourseRow,
+        }
+      })
+    rows.sort(
+      (a, b) =>
+        a.moduleSort - b.moduleSort ||
+        a.lessonSort - b.lessonSort ||
+        a.row.submittedAt.getTime() - b.row.submittedAt.getTime(),
+    )
+    return rows.map((r) => r.row)
   }
 
   async getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null> {

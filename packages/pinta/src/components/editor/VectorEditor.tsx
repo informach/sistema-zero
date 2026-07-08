@@ -89,6 +89,7 @@ import {
   Ungroup,
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
+import { ColorButton } from './ColorPicker'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
 type VectorTool =
@@ -963,21 +964,19 @@ export function VectorEditor(): JSX.Element | null {
                   style={{ backgroundColor: hex }}
                 />
               ))}
-              {/* Seletor de cor livre (abre a roda de cores do sistema). */}
-              <input
-                type="color"
-                aria-label={`${COPY.vector.fill}: ${COPY.vector.customColor}`}
-                title={COPY.vector.customColor}
+              {/* Seletor de cor livre (a roda de cores própria do Pinta). */}
+              <ColorButton
+                label={`${COPY.vector.fill}: ${COPY.vector.customColor}`}
                 value={
                   typeof style.fill === 'string' && style.fill.startsWith('#')
                     ? style.fill
                     : '#000000'
                 }
-                onChange={(event) => {
-                  rememberColor(event.target.value)
-                  applyStyle({ fill: event.target.value })
+                recentColors={customColors}
+                onChange={(hex) => {
+                  rememberColor(hex)
+                  applyStyle({ fill: hex })
                 }}
-                className="h-10 w-10 cursor-pointer rounded-lg border-2 border-pin-border bg-pin-bg p-0.5"
               />
             </div>
 
@@ -1004,27 +1003,23 @@ export function VectorEditor(): JSX.Element | null {
                 active={activeGradient?.type === 'radial'}
                 onClick={() => applyGradient({ type: 'radial' })}
               />
-              <input
-                type="color"
-                aria-label={COPY.vector.gradientFrom}
-                title={COPY.vector.gradientFrom}
+              <ColorButton
+                label={COPY.vector.gradientFrom}
                 value={activeGradient?.from ?? currentGradient().from}
-                onChange={(event) => {
-                  rememberColor(event.target.value)
-                  applyGradient({ from: event.target.value })
+                recentColors={customColors}
+                onChange={(hex) => {
+                  rememberColor(hex)
+                  applyGradient({ from: hex })
                 }}
-                className="h-10 w-10 cursor-pointer rounded-lg border-2 border-pin-border bg-pin-bg p-0.5"
               />
-              <input
-                type="color"
-                aria-label={COPY.vector.gradientTo}
-                title={COPY.vector.gradientTo}
+              <ColorButton
+                label={COPY.vector.gradientTo}
                 value={activeGradient?.to ?? currentGradient().to}
-                onChange={(event) => {
-                  rememberColor(event.target.value)
-                  applyGradient({ to: event.target.value })
+                recentColors={customColors}
+                onChange={(hex) => {
+                  rememberColor(hex)
+                  applyGradient({ to: hex })
                 }}
-                className="h-10 w-10 cursor-pointer rounded-lg border-2 border-pin-border bg-pin-bg p-0.5"
               />
             </div>
 
@@ -1055,18 +1050,14 @@ export function VectorEditor(): JSX.Element | null {
                 />
               ))}
               {/* Seletor de cor livre do contorno. */}
-              <input
-                type="color"
-                aria-label={`${COPY.vector.stroke}: ${COPY.vector.customColor}`}
-                title={COPY.vector.customColor}
+              <ColorButton
+                label={`${COPY.vector.stroke}: ${COPY.vector.customColor}`}
                 value={style.stroke?.color ?? '#000000'}
-                onChange={(event) => {
-                  rememberColor(event.target.value)
-                  applyStyle({
-                    stroke: { color: event.target.value, width: style.stroke?.width ?? 2 },
-                  })
+                recentColors={customColors}
+                onChange={(hex) => {
+                  rememberColor(hex)
+                  applyStyle({ stroke: { color: hex, width: style.stroke?.width ?? 2 } })
                 }}
-                className="h-10 w-10 cursor-pointer rounded-lg border-2 border-pin-border bg-pin-bg p-0.5"
               />
             </div>
 

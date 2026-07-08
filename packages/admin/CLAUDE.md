@@ -565,7 +565,15 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   professor:** botão "Entregas" no bloco → `studio-submissions-dialog.tsx` lista quem entregou +
   abre o projeto do aluno num Estúdio embutido (`…/:userId`, **modal LARGO `max-w-7xl`** p/ caber a
   IDE; lista em `max-w-2xl`) ou baixa o `.szproject.json`. A lista marca "Deixou um recado" e o
-  detalhe mostra o **recado opcional do aluno** (`message` da entrega) quando há. **Identidade (kids):** a entrega vem com
+  detalhe mostra o **recado opcional do aluno** (`message` da entrega) quando há. **Entregas POR CURSO
+  (07/2026):** o editor do curso (`cursos/[courseId]/course-editor-client.tsx`) ganhou uma **aba
+  "Entregas"** (estado client, ao lado de "Estrutura") → `course-submissions-client.tsx` centraliza as
+  entregas de TODAS as aulas (BFF `GET /api/members/courses/[courseId]/studio-submissions` → members
+  `listByCourse`), agrupadas por aula + filtro por aluno/aula; abrir uma entrega usa o
+  `studio-submission-viewer.tsx` (reusa o `StudioEmbed` + o detalhe por-bloco existente) com botão
+  **maximizar/restaurar** (overlay CSS: `Dialog` vira `w-[98vw] h-[96dvh]`). A hidratação de identidade
+  virou helper compartilhado `server/studio-submissions.ts` (`resolveSubmissionIdentities`, reusado pela
+  lista por-bloco e por-curso). **Identidade (kids):** a entrega vem com
   `accountId`, então a rota BFF (`GET /api/members/blocks/:id/studio-submissions`) mostra a CRIANÇA
   (nome do PERFIL via `getUserProfiles` da conta) + o RESPONSÁVEL (conta via `batchGetUsers`) —
   perfil≠conta no kids, iguais no adulto. Requer

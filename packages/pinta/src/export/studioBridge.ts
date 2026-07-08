@@ -7,7 +7,8 @@
  */
 import type { ActiveFrameRef } from '../core/assetEdit'
 import { activeBitmapOf } from '../core/assetEdit'
-import { isTilesetKind, type PintaAsset, paletteIdOf } from '../core/project'
+import { isTilesetKind, type PintaAsset, resolveAssetPalette } from '../core/project'
+import type { PintaSpriteMeta, PintaTilesetMeta } from '../core/types'
 import { packTileset, tilesetPngDataUrl } from '../tiles/packTileset'
 import { packVectorTileset, vectorTilesetPngDataUrl } from '../tiles/packVectorTileset'
 import { tilemapPngDataUrl } from '../tiles/renderTilemap'
@@ -21,6 +22,34 @@ export interface StudioPayload {
   dataUrl: string
   width: number
   height: number
+  /** Só sprites: animações nomeadas p/ o seletor do bloco "Animar sprite" no Estúdio. */
+  sprite?: PintaSpriteMeta
+  /** Só tilesets: tamanho + índices sólidos p/ o seletor de tiles do Estúdio. */
+  tileset?: PintaTilesetMeta
+}
+
+/** Extrai as animações da geometria da folha (mesma p/ pixel e vetor). */
+export function spriteMetaFromPack(pack: {
+  frameWidth: number
+  frameHeight: number
+  animations: ReadonlyArray<{ name: string; from: number; to: number; fps: number; loop: boolean }>
+}): PintaSpriteMeta {
+  return {
+    frameW: pack.frameWidth,
+    frameH: pack.frameHeight,
+    animations: pack.animations.map((a) => ({
+      name: a.name,
+      from: a.from,
+      to: a.to,
+      fps: a.fps,
+      loop: a.loop,
+    })),
+  }
+}
+
+/** Índices SÓLIDOS de um tileset (boolean[] paralelo → lista de índices). */
+export function tilesetMetaFrom(tileSize: number, solid: readonly boolean[]): PintaTilesetMeta {
+  return { tileSize, solid: solid.flatMap((s, i) => (s ? [i] : [])) }
 }
 
 // Teto de UM asset no Studio — manter em sincronia com
@@ -42,6 +71,7 @@ export async function buildStudioPayload(
         dataUrl,
         width: pack.columns * pack.frameWidth,
         height: pack.rows * pack.frameHeight,
+        sprite: spriteMetaFromPack(pack),
       }
     }
     case 'tileset': {
@@ -52,6 +82,7 @@ export async function buildStudioPayload(
         dataUrl,
         width: pack.columns * pack.tileSize,
         height: pack.rows * pack.tileSize,
+        tileset: tilesetMetaFrom(asset.tileSize, asset.solid),
       }
     }
     case 'tilemap': {
@@ -89,6 +120,7 @@ export async function buildStudioPayload(
         dataUrl,
         width: pack.columns * pack.frameWidth,
         height: pack.rows * pack.frameHeight,
+        sprite: spriteMetaFromPack(pack),
       }
     }
     case 'vector-tileset': {
@@ -99,12 +131,13 @@ export async function buildStudioPayload(
         dataUrl,
         width: pack.columns * pack.tileSize,
         height: pack.rows * pack.tileSize,
+        tileset: tilesetMetaFrom(asset.tileSize, asset.solid),
       }
     }
     default: {
       const bitmap = activeBitmapOf(asset, frameRef)
       if (!bitmap) return null
-      const dataUrl = bitmapToPngDataUrl(bitmap, paletteIdOf(asset))
+      const dataUrl = bitmapToPngDataUrl(bitmap, resolveAssetPalette(asset))
       if (!dataUrl) return null
       return { dataUrl, width: bitmap.width, height: bitmap.height }
     }

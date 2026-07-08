@@ -1,19 +1,41 @@
+import { ValidationError } from '@sistemazero/core/errors'
 import { PublicationNotFoundError } from '../../domain/marketing-errors'
 import type { MetricsRepository } from '../../domain/ports/metrics-repository.port'
 import type { PublicationRepository } from '../../domain/ports/publication-repository.port'
 import type { SocialAccountRepository } from '../../domain/ports/social-account-repository.port'
+import type { Network } from '../../domain/publication/publication'
+import type { SocialAccount } from '../../domain/social-account/social-account'
 
+/** Redes com conta conectável hoje (ordem de exibição do dashboard). */
+const NETWORKS: Network[] = ['instagram', 'facebook', 'youtube', 'tiktok']
+
+const TOTALS_WINDOW_DAYS = 28
+const TOP_WINDOW_DAYS = 90
+const TOP_LIMIT = 10
+
+/** CONTRATO do dashboard (fixo entre backend e front — não mudar à toa). */
 export interface MetricsSummaryView {
-  account: {
+  accounts: Array<{
+    accountId: string
+    network: Network
     displayName: string
-    channelTitle: string | null
     followers: number
     capturedAt: string
-  } | null
+  }>
+  /** Totais dos últimos 28 dias por rede (posts publicados + último snapshot). */
+  networkTotals: Array<{
+    network: Network
+    posts: number
+    views: number
+    likes: number
+    comments: number
+  }>
+  /** Top 10 por views na janela de 90 dias. */
   topPublications: Array<{
     publicationId: string
     contentId: string
     contentTitle: string
+    network: Network
     format: string
     publishedAt: string | null
     views: number
@@ -23,44 +45,124 @@ export interface MetricsSummaryView {
   }>
 }
 
+/** Melhores horários (heatmap 7×24): agregado por dia-da-semana × hora em SP. */
+export interface BestTimesView {
+  /** Só células COM posts. `dow` 0=domingo..6=sábado; `hour` 0..23 (SP). */
+  cells: Array<{ dow: number; hour: number; posts: number; views: number; likes: number }>
+  totalPosts: number
+}
+
+export interface FollowersSeriesView {
+  series: Array<{
+    accountId: string
+    network: Network
+    displayName: string
+    points: Array<{ date: string; followers: number }>
+  }>
+}
+
+/** Dia 'YYYY-MM-DD' no fuso de SP (o dia "humano" da equipe). */
+const SP_DAY = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Sao_Paulo',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+/** Dia-da-semana + hora em SP (o heatmap fala o fuso da equipe, não UTC). */
+const SP_DOW_HOUR = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Sao_Paulo',
+  weekday: 'short',
+  hour: '2-digit',
+  hour12: false,
+})
+const DOW_INDEX: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+}
+
+function spDowHour(date: Date): { dow: number; hour: number } {
+  const parts = SP_DOW_HOUR.formatToParts(date)
+  const weekday = parts.find((p) => p.type === 'weekday')?.value ?? 'Sun'
+  const hour = parts.find((p) => p.type === 'hour')?.value ?? '0'
+  // `% 24` cobre engines que formatam meia-noite como '24' com hour12:false.
+  return { dow: DOW_INDEX[weekday] ?? 0, hour: Number(hour) % 24 }
+}
+
 /**
- * Leitura das métricas BÁSICAS do YouTube (F2): último snapshot do canal +
- * desempenho das publicações publicadas. O dashboard completo (comparativos,
- * heatmap 7×24, Meta Insights) é a F3.
+ * Leitura das métricas (F3): cards por conta, comparativos por rede (28d),
+ * top publicações (90d) e a série diária de seguidores. Agregação em JS —
+ * o volume é pequeno (dezenas de publicações, 1 snapshot/dia/conta).
  */
 export class MetricsService {
   constructor(
     private readonly accounts: SocialAccountRepository,
     private readonly publications: PublicationRepository,
     private readonly metrics: MetricsRepository,
+    private readonly now: () => Date = () => new Date(),
   ) {}
 
+  private async connectedAccounts(network?: Network): Promise<SocialAccount[]> {
+    const networks = network ? [network] : NETWORKS
+    const lists = await Promise.all(networks.map((n) => this.accounts.listByNetwork(n)))
+    return lists.flat().filter((a) => a.status === 'connected')
+  }
+
   async summary(): Promise<MetricsSummaryView> {
-    const accounts = await this.accounts.listByNetwork('youtube')
-    const connected = accounts.find((a) => a.status === 'connected') ?? accounts[0] ?? null
-    let account: MetricsSummaryView['account'] = null
-    if (connected) {
-      const snapshot = await this.metrics.latestAccountSnapshot(connected.id)
-      if (snapshot) {
-        const metadata = connected.metadata as { channelTitle?: unknown }
-        account = {
-          displayName: connected.displayName,
-          channelTitle: typeof metadata.channelTitle === 'string' ? metadata.channelTitle : null,
+    const now = this.now()
+    const connected = await this.connectedAccounts()
+    const accountSnapshots = await this.metrics.latestAccountSnapshots(connected.map((a) => a.id))
+    const accounts = connected.flatMap((account) => {
+      const snapshot = accountSnapshots.get(account.id)
+      if (!snapshot) return []
+      return [
+        {
+          accountId: account.id,
+          network: account.network,
+          displayName: account.displayName,
           followers: snapshot.followers,
           capturedAt: snapshot.capturedAt.toISOString(),
-        }
-      }
-    }
-    // Últimas publicadas do YouTube → junta o último snapshot de cada uma e
-    // ordena por views (top posts da fase básica).
-    const { items } = await this.publications.listByWindow({
-      statuses: ['published'],
-      network: 'youtube',
-      limit: 50,
-      offset: 0,
+        },
+      ]
     })
-    const stats = await this.metrics.latestPublicationStats(items.map((i) => i.publication.id))
-    const topPublications = items
+
+    // UMA busca (90d) alimenta os totais (28d) e o top (90d).
+    const since90 = new Date(now.getTime() - TOP_WINDOW_DAYS * 86_400_000)
+    const since28 = new Date(now.getTime() - TOTALS_WINDOW_DAYS * 86_400_000)
+    const recent = await this.publications.listRecentPublished({ since: since90, limit: 300 })
+    const stats = await this.metrics.latestPublicationStats(
+      recent.map((item) => item.publication.id),
+    )
+
+    const totalsByNetwork = new Map<
+      Network,
+      { posts: number; views: number; likes: number; comments: number }
+    >()
+    for (const item of recent) {
+      const publishedAt = item.publication.publishedAt
+      if (!publishedAt || publishedAt.getTime() < since28.getTime()) continue
+      const network = item.publication.network
+      const totals = totalsByNetwork.get(network) ?? { posts: 0, views: 0, likes: 0, comments: 0 }
+      totals.posts += 1
+      const stat = stats.get(item.publication.id)
+      if (stat) {
+        totals.views += stat.views
+        totals.likes += stat.likes
+        totals.comments += stat.comments
+      }
+      totalsByNetwork.set(network, totals)
+    }
+    const networkTotals = NETWORKS.flatMap((network) => {
+      const totals = totalsByNetwork.get(network)
+      return totals ? [{ network, ...totals }] : []
+    })
+
+    const topPublications = recent
       .flatMap((item) => {
         const stat = stats.get(item.publication.id)
         if (!stat) return []
@@ -69,7 +171,8 @@ export class MetricsService {
             publicationId: item.publication.id,
             contentId: item.publication.contentId,
             contentTitle: item.contentTitle,
-            format: item.publication.format,
+            network: item.publication.network,
+            format: item.publication.format as string,
             publishedAt: item.publication.publishedAt?.toISOString() ?? null,
             views: stat.views,
             likes: stat.likes,
@@ -79,8 +182,92 @@ export class MetricsService {
         ]
       })
       .sort((a, b) => b.views - a.views)
-      .slice(0, 10)
-    return { account, topPublications }
+      .slice(0, TOP_LIMIT)
+
+    return { accounts, networkTotals, topPublications }
+  }
+
+  /**
+   * Melhores horários: publicações PUBLICADAS na janela agrupadas por
+   * (dia-da-semana × hora) em SP, com os totais do último snapshot de cada
+   * uma. A intensidade/normalização do heatmap é do front.
+   */
+  async bestTimes(input: { network?: Network; days: number }): Promise<BestTimesView> {
+    if (input.days < 1 || input.days > 365) {
+      throw new ValidationError('`days` deve estar entre 1 e 365')
+    }
+    const since = new Date(this.now().getTime() - input.days * 86_400_000)
+    const recent = await this.publications.listRecentPublished({ since, limit: 500 })
+    const filtered = recent.filter(
+      (item) =>
+        item.publication.publishedAt !== null &&
+        (!input.network || item.publication.network === input.network),
+    )
+    const stats = await this.metrics.latestPublicationStats(
+      filtered.map((item) => item.publication.id),
+    )
+    const cells = new Map<
+      string,
+      { dow: number; hour: number; posts: number; views: number; likes: number }
+    >()
+    for (const item of filtered) {
+      const publishedAt = item.publication.publishedAt as Date
+      const { dow, hour } = spDowHour(publishedAt)
+      const key = `${dow}:${hour}`
+      const cell = cells.get(key) ?? { dow, hour, posts: 0, views: 0, likes: 0 }
+      cell.posts += 1
+      const stat = stats.get(item.publication.id)
+      if (stat) {
+        cell.views += stat.views
+        cell.likes += stat.likes
+      }
+      cells.set(key, cell)
+    }
+    return {
+      cells: [...cells.values()].sort((a, b) => a.dow - b.dow || a.hour - b.hour),
+      totalPosts: filtered.length,
+    }
+  }
+
+  /** Série de seguidores: 1 ponto por DIA (SP) por conta = último snapshot do dia. */
+  async followersSeries(input: { network?: Network; days: number }): Promise<FollowersSeriesView> {
+    if (input.days < 1 || input.days > 365) {
+      throw new ValidationError('`days` deve estar entre 1 e 365')
+    }
+    const connected = await this.connectedAccounts(input.network)
+    if (connected.length === 0) return { series: [] }
+    const since = new Date(this.now().getTime() - input.days * 86_400_000)
+    const snapshots = await this.metrics.listAccountSnapshotsSince(
+      connected.map((a) => a.id),
+      since,
+    )
+    const byAccount = new Map<string, Map<string, number>>()
+    for (const snapshot of snapshots) {
+      const day = SP_DAY.format(snapshot.capturedAt)
+      let days = byAccount.get(snapshot.socialAccountId)
+      if (!days) {
+        days = new Map()
+        byAccount.set(snapshot.socialAccountId, days)
+      }
+      // snapshots vêm em capturedAt ASC — o último do dia vence.
+      days.set(day, snapshot.followers)
+    }
+    return {
+      series: connected.flatMap((account) => {
+        const days = byAccount.get(account.id)
+        if (!days || days.size === 0) return []
+        return [
+          {
+            accountId: account.id,
+            network: account.network,
+            displayName: account.displayName,
+            points: [...days.entries()]
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([date, followers]) => ({ date, followers })),
+          },
+        ]
+      }),
+    }
   }
 
   async publicationSnapshots(publicationId: string): Promise<{

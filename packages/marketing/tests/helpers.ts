@@ -1,16 +1,23 @@
 import { randomUUID } from 'node:crypto'
 import { AccountService } from '../src/application/accounts/account.service'
 import { OAuthService } from '../src/application/accounts/oauth.service'
+import { AiCopyService } from '../src/application/ai/ai-copy.service'
 import { ContentService } from '../src/application/contents/content.service'
 import { IdeaService } from '../src/application/ideas/idea.service'
 import { PromoteIdeaService } from '../src/application/ideas/promote-idea.service'
 import { DriveImportService } from '../src/application/media/drive.service'
 import { MediaService } from '../src/application/media/media.service'
 import { MetricsService } from '../src/application/metrics/metrics.service'
+import { LinkExternalService } from '../src/application/publications/link-external.service'
 import { PublicationService } from '../src/application/publications/publication.service'
+import type { ExternalPostResolver } from '../src/domain/ports/external-post-resolver.port'
+import type { OAuthProvider } from '../src/domain/ports/oauth-provider.port'
 import type { Network } from '../src/domain/publication/publication'
 import { loadEnv } from '../src/infrastructure/config/env'
+import { MetaExternalResolver } from '../src/infrastructure/gateways/meta/meta-external-resolver'
+import { YoutubeExternalResolver } from '../src/infrastructure/gateways/youtube/youtube-external-resolver'
 import { createServer } from '../src/interfaces/http/server'
+import { FakeAiCopyClient } from './fakes/ai-copy'
 import {
   FakeDriveClient,
   FakeMediaStore,
@@ -23,9 +30,11 @@ import {
   InMemoryMediaAssetRepository,
   InMemoryMetricsRepository,
   InMemoryOAuthStateRepository,
+  InMemoryPublicationAssetRepository,
   InMemoryPublicationRepository,
   InMemorySocialAccountRepository,
 } from './fakes/in-memory'
+import { FakeMetaApi } from './fakes/meta'
 
 export const INTERNAL_TOKEN = 'test-internal-token-1234'
 
@@ -47,12 +56,17 @@ export interface TestApp {
     comments: InMemoryCommentRepository
     assets: InMemoryMediaAssetRepository
     publications: InMemoryPublicationRepository
+    publicationAssets: InMemoryPublicationAssetRepository
     accounts: InMemorySocialAccountRepository
     oauthStates: InMemoryOAuthStateRepository
     metrics: InMemoryMetricsRepository
   }
   store: FakeMediaStore
   provider: FakeOAuthProvider
+  metaProvider: FakeOAuthProvider
+  tiktokProvider: FakeOAuthProvider
+  metaApi: FakeMetaApi
+  aiCopyClient: FakeAiCopyClient
   driveClient: FakeDriveClient
   secretBox: FakeSecretBox
   services: { accounts: AccountService }
@@ -82,6 +96,7 @@ export function buildTestApp(
   const assets = new InMemoryMediaAssetRepository()
   const publications = new InMemoryPublicationRepository()
   publications.contentsRef = contents
+  const publicationAssets = new InMemoryPublicationAssetRepository()
   const store = new FakeMediaStore()
   const accounts = new InMemorySocialAccountRepository()
   const oauthStates = new InMemoryOAuthStateRepository()
@@ -99,6 +114,7 @@ export function buildTestApp(
     contentService,
     now,
     idGen,
+    { links: publicationAssets, media: assets },
     overrides.autoCapableNetworks
       ? { accounts, capableNetworks: overrides.autoCapableNetworks }
       : null,
@@ -115,9 +131,22 @@ export function buildTestApp(
     now,
     idGen,
   )
+  const metaProvider = new FakeOAuthProvider()
+  const tiktokProvider = new FakeOAuthProvider()
+  const oauthProviders = new Map<Network, OAuthProvider>(
+    googleEnabled
+      ? [
+          ['youtube' as Network, provider],
+          // Meta: o MESMO provider fake serve facebook e instagram.
+          ['facebook' as Network, metaProvider],
+          ['instagram' as Network, metaProvider],
+          ['tiktok' as Network, tiktokProvider],
+        ]
+      : [],
+  )
   const accountService = new AccountService(
     accounts,
-    googleEnabled ? { provider, secretBox } : null,
+    googleEnabled ? { providers: oauthProviders, secretBox } : null,
     overrides.autoCapableNetworks ?? new Set(),
     now,
     silentLogger,
@@ -126,8 +155,9 @@ export function buildTestApp(
     oauthStates,
     accounts,
     googleEnabled
-      ? { provider, secretBox, redirectBaseUrl: 'http://gateway.test', appUrl: TEST_APP_URL }
+      ? { secretBox, redirectBaseUrl: 'http://gateway.test', appUrl: TEST_APP_URL }
       : null,
+    oauthProviders,
     { stateTtlMinutes: 10 },
     now,
     idGen,
@@ -143,7 +173,23 @@ export function buildTestApp(
     idGen,
   )
   const metrics = new InMemoryMetricsRepository()
-  const metricsService = new MetricsService(accounts, publications, metrics)
+  const metricsService = new MetricsService(accounts, publications, metrics, now)
+  const aiCopyClient = new FakeAiCopyClient()
+  const aiCopyService = new AiCopyService(aiCopyClient, contentService, 8000)
+  const metaApi = new FakeMetaApi()
+  const externalResolvers = new Map<Network, ExternalPostResolver>([
+    ['youtube' as Network, new YoutubeExternalResolver()],
+    ['instagram' as Network, new MetaExternalResolver(metaApi, 'instagram')],
+    ['facebook' as Network, new MetaExternalResolver(metaApi, 'facebook')],
+  ])
+  const linkExternalService = new LinkExternalService(
+    publications,
+    accounts,
+    accountService,
+    publicationAssets,
+    externalResolvers,
+    now,
+  )
 
   const app = createServer({
     env,
@@ -162,6 +208,7 @@ export function buildTestApp(
     },
     publications: {
       publications: publicationService,
+      linkExternal: linkExternalService,
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
@@ -190,6 +237,11 @@ export function buildTestApp(
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
+    ai: {
+      ai: aiCopyService,
+      internalToken: INTERNAL_TOKEN,
+      requireStaffEnabled: true,
+    },
   })
 
   return {
@@ -201,12 +253,17 @@ export function buildTestApp(
       comments,
       assets,
       publications,
+      publicationAssets,
       accounts,
       oauthStates,
       metrics,
     },
     store,
     provider,
+    metaProvider,
+    tiktokProvider,
+    metaApi,
+    aiCopyClient,
     driveClient,
     secretBox,
     services: { accounts: accountService },

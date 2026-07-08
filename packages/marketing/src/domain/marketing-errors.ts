@@ -43,6 +43,14 @@ export class NetworkNotSupportedError extends DomainError {
     super(message)
   }
 }
+export class ExternalPostNotFoundError extends DomainError {
+  readonly code = 'EXTERNAL_POST_NOT_FOUND'
+  constructor(
+    message = 'Não achei esse post na conta conectada. Confira se o link é do post certo',
+  ) {
+    super(message)
+  }
+}
 
 // ── Validação (400) ──────────────────────────────────────────────────────────
 export class AssetTooLargeError extends DomainError {
@@ -150,6 +158,20 @@ export class OAuthNotConfiguredError extends DomainError {
   constructor(
     message = 'OAuth do Google não configurado (GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET/MARKETING_TOKEN_ENC_KEY/OAUTH_PUBLIC_BASE_URL/MARKETING_APP_URL)',
   ) {
+    super(message)
+  }
+}
+export class AiNotConfiguredError extends DomainError {
+  readonly code = 'AI_NOT_CONFIGURED'
+  constructor(message = 'IA da copy não configurada neste ambiente (OPENROUTER_API_KEY)') {
+    super(message)
+  }
+}
+
+// ── Upstream falhou (502) ────────────────────────────────────────────────────
+export class AiUnavailableError extends DomainError {
+  readonly code = 'AI_UNAVAILABLE'
+  constructor(message = 'A IA não respondeu agora. Tente de novo em instantes') {
     super(message)
   }
 }

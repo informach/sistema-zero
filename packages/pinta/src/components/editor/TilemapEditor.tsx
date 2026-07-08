@@ -13,6 +13,7 @@ import {
   type AnyTilesetAsset,
   isTilesetKind,
   type PintaAsset,
+  resolveAssetPalette,
   type TilesetAsset,
   type VectorFrame,
 } from '../../core/project'
@@ -70,18 +71,15 @@ function PixelPickerThumb({
 }): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const bitmap = tileset.tiles[index]
+  const colors = useMemo(() => resolveAssetPalette(tileset), [tileset])
   useEffect(() => {
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx || !bitmap) return
     canvas.width = bitmap.width
     canvas.height = bitmap.height
-    ctx.putImageData(
-      new ImageData(bitmapToRGBA(bitmap, tileset.paletteId), bitmap.width, bitmap.height),
-      0,
-      0,
-    )
-  }, [bitmap, tileset.paletteId])
+    ctx.putImageData(new ImageData(bitmapToRGBA(bitmap, colors), bitmap.width, bitmap.height), 0, 0)
+  }, [bitmap, colors])
   return (
     <canvas
       ref={canvasRef}
@@ -191,6 +189,7 @@ export function TilemapEditor(): JSX.Element | null {
     sheetRef.current = null
     if (tileset.kind === 'tileset') {
       const pack = packTileset(tileset)
+      const colors = resolveAssetPalette(tileset)
       const sheet = document.createElement('canvas')
       sheet.width = pack.columns * pack.tileSize
       sheet.height = pack.rows * pack.tileSize
@@ -198,11 +197,7 @@ export function TilemapEditor(): JSX.Element | null {
       if (!ctx) return
       for (const cell of pack.cells) {
         ctx.putImageData(
-          new ImageData(
-            bitmapToRGBA(cell.bitmap, tileset.paletteId),
-            cell.bitmap.width,
-            cell.bitmap.height,
-          ),
+          new ImageData(bitmapToRGBA(cell.bitmap, colors), cell.bitmap.width, cell.bitmap.height),
           cell.col * pack.tileSize,
           cell.row * pack.tileSize,
         )

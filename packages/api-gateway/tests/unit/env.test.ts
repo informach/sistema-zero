@@ -17,6 +17,7 @@ const PROD_OK: Record<string, string> = {
   HUB_INTERNAL_TOKEN: 'hub-internal-16-chars-ok',
   MARKETING_INTERNAL_TOKEN: 'marketing-internal-16ch!',
   MARKETING_HMAC_SECRET: 'marketing-hmac-secret-16',
+  HELPDESK_INTERNAL_TOKEN: 'helpdesk-internal-16chr!',
   PAYMENTS_URL: 'http://payments.railway.internal:3001',
   AUTH_URL: 'http://auth.railway.internal:3002',
   FUNNEL_URL: 'http://funnel.railway.internal:4321',

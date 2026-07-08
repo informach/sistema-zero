@@ -83,7 +83,7 @@ function setup() {
   let currentTime = new Date()
   const accountService = new AccountService(
     accounts,
-    { provider, secretBox },
+    { providers: new Map([['youtube', provider]]), secretBox },
     new Set(),
     () => currentTime,
     silentLogger,

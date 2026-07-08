@@ -5,6 +5,28 @@
  */
 import type { PintaProjectRef } from './project'
 
+/** Uma animação nomeada da folha (from/to = índices row-major na folha inteira). */
+export interface PintaSpriteAnimMeta {
+  name: string
+  from: number
+  to: number
+  fps: number
+  loop: boolean
+}
+
+/** Metadados de SPRITESHEET que atravessam a ponte (quadro + animações nomeadas). */
+export interface PintaSpriteMeta {
+  frameW: number
+  frameH: number
+  animations: PintaSpriteAnimMeta[]
+}
+
+/** Metadados de TILESET que atravessam a ponte (tamanho + índices sólidos). */
+export interface PintaTilesetMeta {
+  tileSize: number
+  solid: number[]
+}
+
 export interface PintaExportedAsset {
   /** Id do desenho no Pinta — reenvio do mesmo desenho = upsert no destino. */
   id: string
@@ -14,6 +36,14 @@ export interface PintaExportedAsset {
   dataUrl: string
   width: number
   height: number
+  /**
+   * Metadados de SPRITESHEET (quando o asset é um sprite animado): o Estúdio usa
+   * para o SELETOR de animação por nome no bloco "Animar sprite" (a criança escolhe
+   * "andar"/"pular" em vez de digitar os índices). Ausente = fallback manual.
+   */
+  sprite?: PintaSpriteMeta
+  /** Metadados de TILESET (quando o asset é um tileset): seletor de tiles sólidos. */
+  tileset?: PintaTilesetMeta
 }
 
 export interface PintaSendResult {

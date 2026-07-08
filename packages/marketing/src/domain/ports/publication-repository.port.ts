@@ -51,29 +51,34 @@ export interface PublicationRepository {
   ): Promise<Publication[]>
   /**
    * Claim do publisher-worker (ramo AUTO): publicações `auto` agendadas dentro
-   * do LEAD de upload antecipado (`scheduled_at <= now + leadMs`) + presas em
-   * `publishing` com lease vencido (reaper — re-claim incrementa attempts).
-   * A linha claimada vira `publishing` com lease em `next_attempt_at`.
+   * do LEAD de antecipação DA SUA REDE (`scheduled_at <= now + leadMs[network]`
+   * — YouTube sobe horas antes; Meta só minutos, o container processa na
+   * espera) + presas em `publishing` com lease vencido (reaper — re-claim
+   * incrementa attempts). A linha claimada vira `publishing` com lease em
+   * `next_attempt_at`.
    */
   claimDueAutoPublish(input: {
     now: Date
-    leadMs: number
     limit: number
     leaseMs: number
     maxAttempts: number
-    networks: Network[]
+    networks: Array<{ network: Network; leadMs: number }>
   }): Promise<Publication[]>
   /**
-   * Publicações `published` da rede com post externo e coleta de métricas
-   * VENCIDA (nunca coletada ou anterior a `staleBefore`), publicadas depois de
-   * `since` (teto de idade — vídeo antigo sai do radar).
+   * Publicadas RECENTES por `published_at` (dashboard: totais 28d + top 90d).
+   * Ordem published_at DESC; o join com o conteúdo dá o título da tabela.
    */
-  listPublishedForMetrics(input: {
-    network: Network
-    since: Date
-    staleBefore: Date
-    limit: number
-  }): Promise<Publication[]>
-  /** Marca a coleta (não mexe em version — campo operacional do worker). */
-  updateMetricsCollectedAt(ids: string[], at: Date): Promise<void>
+  listRecentPublished(input: { since: Date; limit: number }): Promise<PublicationListItem[]>
+  /**
+   * Fila do metrics-worker (decaimento): publicadas com post externo e
+   * `metrics_next_collect_at <= now` (NULL = fora do radar, nunca elegível).
+   */
+  listDueForMetrics(input: { network: Network; now: Date; limit: number }): Promise<Publication[]>
+  /**
+   * Grava a coleta + a PRÓXIMA (decaimento). Campos operacionais do worker —
+   * não mexe em `version` (não conflita com edições da equipe).
+   */
+  updateMetricsSchedule(
+    items: Array<{ id: string; collectedAt: Date; nextCollectAt: Date | null }>,
+  ): Promise<void>
 }

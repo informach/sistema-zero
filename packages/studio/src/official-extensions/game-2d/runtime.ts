@@ -3028,6 +3028,14 @@ export const gameTwoDRuntime = `(function () {
   function spriteH(s) { return s ? (s.h || 0) : 0; }
   function centerX(s) { return s ? (s.x || 0) + (s.w || 0) / 2 : 0; }
   function centerY(s) { return s ? (s.y || 0) + (s.h || 0) / 2 : 0; }
+  // Velocidade do sprite (vx/vy) — valores prontos p/ ler/decidir. "Movendo" usa um
+  // limiar pequeno (abaixo dele é resíduo sub-pixel do atrito, invisível na tela).
+  function spriteVx(s) { return s ? (s.vx || 0) : 0; }
+  function spriteVy(s) { return s ? (s.vy || 0) : 0; }
+  function spriteSpeed(s) { return s ? Math.sqrt((s.vx || 0) * (s.vx || 0) + (s.vy || 0) * (s.vy || 0)) : 0; }
+  function isMovingH(s) { return !!s && Math.abs(s.vx || 0) > 0.01; }
+  function isMovingV(s) { return !!s && Math.abs(s.vy || 0) > 0.01; }
+  function isMoving(s) { return isMovingH(s) || isMovingV(s); }
   // Posição aleatória NA TELA — DINÂMICO: lê o tamanho REAL do palco a cada chamada
   // (largura lógica do jogo, ou o canvas), nunca um valor fixo. Evita a continha
   // Math.random()*largura na mão. Use no x/y ao criar/spawnar um sprite.
@@ -3228,6 +3236,12 @@ export const gameTwoDRuntime = `(function () {
     spriteH: spriteH,
     centerX: centerX,
     centerY: centerY,
+    spriteVx: spriteVx,
+    spriteVy: spriteVy,
+    spriteSpeed: spriteSpeed,
+    isMoving: isMoving,
+    isMovingH: isMovingH,
+    isMovingV: isMovingV,
     randomX: randomX,
     randomY: randomY,
     hasHealth: hasHealth,

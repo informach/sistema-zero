@@ -906,6 +906,42 @@ export const gameThreeDBlocks = [
     tooltip: 'Lê o tamanho atual do objeto (1 = normal).',
   },
   {
+    type: 'sz_g3d_get_vel',
+    message0: 'velocidade %1 do objeto %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'AXIS',
+        options: [
+          ['x', 'x'],
+          ['y', 'y'],
+          ['z', 'z'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
+    ],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip:
+      'Lê a velocidade do objeto num eixo (a mesma que "Mudar a velocidade" grava). Use numa conta ou num "se".',
+  },
+  {
+    type: 'sz_g3d_get_speed',
+    message0: 'velocidade total do objeto %1',
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip: 'O quão rápido o objeto se move, juntando os três eixos. É sempre 0 ou positivo.',
+  },
+  {
+    type: 'sz_g3d_is_moving',
+    message0: 'o objeto %1 está se movendo?',
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip: 'Verdadeiro quando o objeto tem alguma velocidade em qualquer eixo. Use num "se".',
+  },
+  {
     type: 'sz_g3d_dt',
     message0: 'tempo desde o último quadro (cena %1)',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' }],
@@ -1697,6 +1733,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g3d_get_pos',
       'sz_g3d_get_rot',
       'sz_g3d_get_scale',
+      'sz_g3d_get_vel',
+      'sz_g3d_get_speed',
+      'sz_g3d_is_moving',
       'sz_g3d_dt',
       'sz_g3d_move_by',
       'sz_g3d_rotate_by',

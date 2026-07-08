@@ -165,6 +165,8 @@ export interface PublicationView {
   lastError: string | null
   externalPostId: string | null
   externalUrl: string | null
+  /** Ordem dos assets do carrossel (só na view de UMA publicação; listagens = []). */
+  assetIds: string[]
   /** O vídeo já subiu ao provedor (metadados congelam; reagendar vira resync). */
   hasRemoteVideo: boolean
   publishedAt: string | null
@@ -210,20 +212,32 @@ export interface AccountsResponse {
   autoCapableNetworks: SocialNetwork[]
 }
 
-// ── Métricas (snapshots do YouTube — o worker coleta a cada 6h) ──
+// ── Métricas (dashboard F3 — CONTRATO fixo com o backend) ──
 
-/** Resposta de `GET /marketing/metrics/summary` (`account` null = sem snapshot ainda). */
+/** Resposta de `GET /marketing/metrics/summary`. */
 export interface MetricsSummaryView {
-  account: {
+  /** Card por conta CONECTADA com snapshot (followers = último coletado). */
+  accounts: Array<{
+    accountId: string
+    network: SocialNetwork
     displayName: string
-    channelTitle: string | null
     followers: number
     capturedAt: string
-  } | null
+  }>
+  /** Totais dos últimos 28 dias por rede. */
+  networkTotals: Array<{
+    network: SocialNetwork
+    posts: number
+    views: number
+    likes: number
+    comments: number
+  }>
+  /** Top 10 por views na janela de 90 dias. */
   topPublications: Array<{
     publicationId: string
     contentId: string
     contentTitle: string
+    network: SocialNetwork
     format: PublicationFormat
     publishedAt: string | null
     views: number
@@ -231,6 +245,44 @@ export interface MetricsSummaryView {
     comments: number
     capturedAt: string
   }>
+}
+
+/** Resposta de `GET /marketing/metrics/best-times?network=&days=` (heatmap). */
+export interface BestTimesView {
+  /** Só células COM posts. `dow` 0=domingo..6=sábado; `hour` 0..23 (SP). */
+  cells: Array<{ dow: number; hour: number; posts: number; views: number; likes: number }>
+  totalPosts: number
+}
+
+/** Resposta de `GET /marketing/metrics/followers-series?network=&days=`. */
+export interface FollowersSeriesView {
+  series: Array<{
+    accountId: string
+    network: SocialNetwork
+    displayName: string
+    /** 1 ponto por dia (SP) = último snapshot do dia. */
+    points: Array<{ date: string; followers: number }>
+  }>
+}
+
+// ── IA da copy (F5) ──
+
+/** `GET /marketing/ai/status` — a IA está configurada neste ambiente? */
+export interface AiStatusView {
+  configured: boolean
+}
+
+/** `POST /marketing/ai/caption` — sugestão de legenda + hashtags + o que a IA fez. */
+export interface AiCaptionView {
+  caption: string
+  hashtags: string[]
+  notes: string[]
+}
+
+/** `POST /marketing/ai/script` — sugestão de roteiro + o que a IA fez. */
+export interface AiScriptView {
+  script: string
+  notes: string[]
 }
 
 /** Resposta de `GET /marketing/publications/:id/metrics` (histórico por publicação). */

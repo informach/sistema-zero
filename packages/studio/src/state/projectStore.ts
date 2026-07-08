@@ -23,6 +23,8 @@ import {
   type ProjectTree,
   type ProProjectMeta,
   sanitizeProjectAssets,
+  sanitizeSpriteMeta,
+  sanitizeTilesetMeta,
   t,
 } from '#core'
 import {
@@ -126,6 +128,9 @@ export interface NewAssetInput {
   height?: number
   source?: 'upload' | 'library'
   libId?: string
+  /** Metadados do Pinta (animações/tiles) — saneados no store antes de guardar. */
+  sprite?: unknown
+  tileset?: unknown
 }
 
 function bump<T extends Project>(p: T): T {
@@ -514,6 +519,12 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_sprite_h',
     'sz_g2d_center_x',
     'sz_g2d_center_y',
+    'sz_g2d_sprite_vx',
+    'sz_g2d_sprite_vy',
+    'sz_g2d_sprite_speed',
+    'sz_g2d_is_moving',
+    'sz_g2d_is_moving_h',
+    'sz_g2d_is_moving_v',
     'sz_g2d_has_health',
     'sz_g2d_cooldown_ready',
     'sz_g2d_prune_old',
@@ -703,6 +714,9 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g3d_get_pos',
     'sz_g3d_get_rot',
     'sz_g3d_get_scale',
+    'sz_g3d_get_vel',
+    'sz_g3d_get_speed',
+    'sz_g3d_is_moving',
     'sz_g3d_dt',
     'sz_g3d_move_by',
     'sz_g3d_rotate_by',
@@ -2387,6 +2401,8 @@ export function createProjectStore(
       if (totalChars > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
         return 'As imagens do projeto excedem o tamanho total permitido.'
       }
+      const sprite = sanitizeSpriteMeta(input.sprite)
+      const tileset = sanitizeTilesetMeta(input.tileset)
       const asset: ProjectAsset = {
         id: ulid(),
         name,
@@ -2396,6 +2412,8 @@ export function createProjectStore(
         ...(typeof input.width === 'number' && input.width > 0 ? { width: input.width } : {}),
         ...(typeof input.height === 'number' && input.height > 0 ? { height: input.height } : {}),
         ...(input.source === 'library' && input.libId ? { libId: input.libId } : {}),
+        ...(sprite ? { sprite } : {}),
+        ...(tileset ? { tileset } : {}),
       }
       set({ project: bump({ ...p, assets: [...assets, asset] }), isDirty: true, saveError: null })
       return null

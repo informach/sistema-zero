@@ -172,6 +172,26 @@ if (!MARKETING_INTERNAL_TOKEN && process.env.NODE_ENV !== 'test') {
   )
 }
 
+// Help desk com IA (@sistemazero/helpdesk): tickets a partir do Gmail (contato@),
+// base de conhecimento e auto-resposta. Ferramenta INTERNA da equipe (staff+).
+// O gateway injeta o x-internal-token (defesa em profundidade, igual ao
+// marketing). DEVE bater com o INTERNAL_API_TOKEN do helpdesk.
+const HELPDESK_URL = process.env.HELPDESK_URL ?? 'http://localhost:3013'
+const HELPDESK_INTERNAL_TOKEN = process.env.HELPDESK_INTERNAL_TOKEN ?? ''
+const helpdeskInternalTransforms = HELPDESK_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': HELPDESK_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
+if (!HELPDESK_INTERNAL_TOKEN && process.env.NODE_ENV !== 'test') {
+  console.warn(
+    '[gateway] HELPDESK_INTERNAL_TOKEN ausente — as rotas /helpdesk/* responderão 401 (o serviço exige o token interno)',
+  )
+}
+
 const sharedResilience = {
   loadBalancer: 'round-robin' as const,
   timeoutMs: 15_000,
@@ -312,6 +332,14 @@ const config: GatewayConfigInput = {
       name: 'marketing',
       upstreamGroups: {
         default: [{ url: MARKETING_URL, healthCheckPath: '/health' }],
+      },
+      ...sharedResilience,
+    },
+    // Help desk com IA: tickets do Gmail, base de conhecimento e auto-resposta.
+    helpdesk: {
+      name: 'helpdesk',
+      upstreamGroups: {
+        default: [{ url: HELPDESK_URL, healthCheckPath: '/health' }],
       },
       ...sharedResilience,
     },
@@ -2489,7 +2517,8 @@ const config: GatewayConfigInput = {
     },
     {
       id: 'marketing-write',
-      methods: ['POST', 'PATCH', 'DELETE'],
+      // PUT: lista ordenada de assets do carrossel (PUT /publications/:id/assets).
+      methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
       pathPattern: '/marketing/*',
       service: 'marketing',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
@@ -2498,6 +2527,21 @@ const config: GatewayConfigInput = {
       // Roteiros/legendas em markdown são maiores que um login — 512KB.
       maxBodyBytes: 512 * 1024,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // IA da copy (F5): geração/melhoria de legenda e roteiro. Chamada de LLM
+    // custa dinheiro e é lenta — rate limit menor e corpo pequeno (a rota
+    // explícita vence o wildcard `marketing-write`). Compute-only (não escreve
+    // no banco). O GET /marketing/ai/status cai no `marketing-read`.
+    {
+      id: 'marketing-ai',
+      methods: ['POST'],
+      pathPattern: '/marketing/ai/*',
+      service: 'marketing',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: marketingInternalTransforms,
+      maxBodyBytes: 64 * 1024,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
     },
     // Conectar/desconectar CONTAS SOCIAIS é admin+ e auditado (a rota explícita
     // vence o wildcard `marketing-write`). Cobre o disable/delete de contas.
@@ -2536,6 +2580,86 @@ const config: GatewayConfigInput = {
       service: 'marketing',
       auth: 'public',
       transforms: marketingInternalTransforms,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
+
+    // ── Helpdesk (@sistemazero/helpdesk) — ferramenta INTERNA da equipe ──────
+    // Tickets/base de conhecimento são staff+; CONFIGURAÇÕES (toggle de
+    // auto-resposta), conexão da caixa Gmail e OAuth são admin+ (rotas
+    // explícitas vencem os wildcards por especificidade, padrão marketing).
+    {
+      id: 'helpdesk-read',
+      methods: ['GET'],
+      pathPattern: '/helpdesk/*',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'helpdesk-write',
+      // PUT: salvar edição do rascunho de resposta (PUT /tickets/:id/draft).
+      methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+      pathPattern: '/helpdesk/*',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      // Corpos de e-mail/artigos de conhecimento em markdown — 512KB.
+      maxBodyBytes: 512 * 1024,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Toggle de AUTO-RESPOSTA (e-mail sai sozinho p/ cliente) é admin+ e
+    // auditado — a rota explícita vence o wildcard `helpdesk-write`.
+    {
+      id: 'helpdesk-settings-write',
+      methods: ['PATCH'],
+      pathPattern: '/helpdesk/settings',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    // Conectar/desconectar a caixa do Gmail é admin+ e auditado.
+    {
+      id: 'helpdesk-connection-write',
+      methods: ['POST', 'PATCH', 'DELETE'],
+      pathPattern: '/helpdesk/connection',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    // Início do fluxo OAuth (gera a URL de autorização) — admin+ e auditado.
+    {
+      id: 'helpdesk-oauth-start',
+      methods: ['POST'],
+      pathPattern: '/helpdesk/oauth/:provider/start',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    // Callback do OAuth (redirect do Google): PÚBLICA (o browser chega sem
+    // Bearer); o serviço valida o `state` single-use. Mais específica que o
+    // wildcard `helpdesk-read` → vence por especificidade.
+    {
+      id: 'helpdesk-oauth-callback',
+      methods: ['GET'],
+      pathPattern: '/helpdesk/oauth/:provider/callback',
+      service: 'helpdesk',
+      auth: 'public',
+      transforms: helpdeskInternalTransforms,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
 

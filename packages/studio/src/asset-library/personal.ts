@@ -14,7 +14,14 @@
  * IndexedDB cheia ou ambiente sem IDB nunca derruba o editor.
  */
 import { createStore, del, get, getMany, keys, set } from 'idb-keyval'
-import { isValidAssetDataUrl, normalizeAssetName } from '#core'
+import {
+  isValidAssetDataUrl,
+  normalizeAssetName,
+  type ProjectSpriteMeta,
+  type ProjectTilesetMeta,
+  sanitizeSpriteMeta,
+  sanitizeTilesetMeta,
+} from '#core'
 
 const ASSET_KEY_PREFIX = 'asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
@@ -40,6 +47,10 @@ export interface PersonalAsset {
   dataUrl: string
   width?: number
   height?: number
+  /** Metadados do Pinta (animações da folha) — viajam até o `ProjectAsset` no projeto. */
+  sprite?: ProjectSpriteMeta
+  /** Metadados do Pinta (tiles sólidos do tileset). */
+  tileset?: ProjectTilesetMeta
   updatedAt: number
 }
 
@@ -91,6 +102,8 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
   if (!isValidAssetDataUrl(a.dataUrl)) return null
   const updatedAt =
     typeof a.updatedAt === 'number' && Number.isFinite(a.updatedAt) ? a.updatedAt : 0
+  const sprite = sanitizeSpriteMeta(a.sprite)
+  const tileset = sanitizeTilesetMeta(a.tileset)
   return {
     id: a.id,
     name,
@@ -98,6 +111,8 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
     dataUrl: a.dataUrl,
     width: typeof a.width === 'number' ? a.width : undefined,
     height: typeof a.height === 'number' ? a.height : undefined,
+    ...(sprite ? { sprite } : {}),
+    ...(tileset ? { tileset } : {}),
     updatedAt,
   }
 }
@@ -133,6 +148,9 @@ export async function savePersonalAsset(input: {
   dataUrl: string
   width?: number
   height?: number
+  /** Metadados do Pinta (animações/tiles) — saneados aqui e guardados no registro. */
+  sprite?: unknown
+  tileset?: unknown
 }): Promise<SavePersonalAssetResult> {
   try {
     if (!input.id || input.id.includes(':')) {
@@ -168,6 +186,10 @@ export async function savePersonalAsset(input: {
       }
     }
 
+    // Metadado do Pinta é saneado pelo MESMO portão do projeto (o Studio é dono do
+    // formato); inválido é descartado sem derrubar o salvamento (fail-soft).
+    const sprite = sanitizeSpriteMeta(input.sprite)
+    const tileset = sanitizeTilesetMeta(input.tileset)
     const record: PersonalAsset = {
       id: input.id,
       name,
@@ -175,6 +197,8 @@ export async function savePersonalAsset(input: {
       dataUrl: input.dataUrl,
       width: input.width,
       height: input.height,
+      ...(sprite ? { sprite } : {}),
+      ...(tileset ? { tileset } : {}),
       updatedAt: Date.now(),
     }
     await set(assetKey(input.id), record, getStoreHandle())

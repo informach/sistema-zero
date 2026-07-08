@@ -6,7 +6,7 @@
  * índice row-major NA IMAGEM. `columns = min(count, 8)` (folha larga demais é
  * ruim de olhar; 8 é o padrão confortável).
  */
-import type { PintaBitmap, TilesetAsset } from '../core/project'
+import { type PintaBitmap, resolveAssetPalette, type TilesetAsset } from '../core/project'
 import { composeSheetPngDataUrl } from '../export/png'
 
 export interface TilesetPack {
@@ -36,7 +36,7 @@ export function tilesetPngDataUrl(asset: TilesetAsset, scale = 1): string | null
     cellHeight: pack.tileSize,
     columns: pack.columns,
     rows: pack.rows,
-    paletteId: asset.paletteId,
+    colors: resolveAssetPalette(asset),
     scale,
   })
 }

@@ -3051,6 +3051,12 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g2d:spriteH':
     case 'g2d:centerX':
     case 'g2d:centerY':
+    case 'g2d:spriteVx':
+    case 'g2d:spriteVy':
+    case 'g2d:spriteSpeed':
+    case 'g2d:isMoving':
+    case 'g2d:isMovingH':
+    case 'g2d:isMovingV':
     case 'g2d:hasHealth':
       names.add(expr.spriteVar)
       return

@@ -3,7 +3,12 @@
  * dominante do tile (o canvas cols×rows é esticado por CSS pixelated). Puro e
  * O(células) — barato até no mapa máximo de 100×100.
  */
-import type { AnyTilesetAsset, TilemapAsset, VectorFrame } from '../core/project'
+import {
+  type AnyTilesetAsset,
+  resolveAssetPalette,
+  type TilemapAsset,
+  type VectorFrame,
+} from '../core/project'
 import { bitmapDominantColor } from '../export/png'
 import { isVectorGradient } from '../vector/model'
 import { flattenLayers } from './tilemapOps'
@@ -29,7 +34,10 @@ export function tilemapMinimapColors(
   const flat = flattenLayers(tilemap)
   const tileColors =
     tileset.kind === 'tileset'
-      ? tileset.tiles.map((tile) => bitmapDominantColor(tile, tileset.paletteId))
+      ? (() => {
+          const palette = resolveAssetPalette(tileset)
+          return tileset.tiles.map((tile) => bitmapDominantColor(tile, palette))
+        })()
       : tileset.tiles.map((tile) => vectorTileColor(tile))
   return Array.from(flat, (index) => (index >= 0 ? (tileColors[index] ?? null) : null))
 }

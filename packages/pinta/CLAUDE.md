@@ -96,11 +96,19 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
   paridade com bitmap), rasterizado UMA vez via Blob URL (`svgToPngDataUrl` em
   `vector/rasterize.ts`); tilemap vetorial usa `<symbol>/<use>` (`tiles/renderVectorTilemap.ts`).
   Upscale vetorial = re-render (sem perda).
-- **Ponte "Usar no Estúdio" é ASYNC** (`export/studioBridge.ts buildStudioPayload`): SEMPRE um PNG
-  achatado {id,name,dataUrl,width,height}; sprites enviam a FOLHA inteira (from/to/fps ficam na
-  receita do ExportDialog); guarda de 800k chars ANTES de enviar (sincronizada com
-  `MAX_ASSET_DATA_URL_CHARS` do studio — comentário recíproco nos 2 lados). A trava `sending`
-  arma ANTES da rasterização (anti duplo clique).
+- **Ponte "Usar no Estúdio" é ASYNC** (`export/studioBridge.ts buildStudioPayload`): PNG achatado
+  {id,name,dataUrl,width,height} **+ METADADOS (07/2026)**: sprites levam `sprite: {frameW,frameH,
+  animations:{name,from,to,fps,loop}[]}` (de `packSpritesheet`/`packVectorSpritesheet` — helper puro
+  `spriteMetaFromPack`) e tilesets levam `tileset: {tileSize,solid:number[]}` (`tilesetMetaFrom`:
+  boolean[]→índices). Assim o Estúdio oferece o SELETOR de animação POR NOME (a criança não digita
+  mais os índices) e o de tiles sólidos. O `PintaExportedAsset` ganhou `sprite?`/`tileset?` opcionais;
+  o `EditorScreen` os repassa no `sendToStudio`; o host (community-kids) já encaminha o asset inteiro
+  ao `savePersonalAsset` (sem mudança). O Estúdio é o DONO do formato (sanitiza no `#core`); asset sem
+  metadado → fallback manual no bloco. Guarda de 800k chars (só do `dataUrl`) ANTES de enviar
+  (sincronizada com `MAX_ASSET_DATA_URL_CHARS` do studio — comentário recíproco nos 2 lados). A trava
+  `sending` arma ANTES da rasterização (anti duplo clique). ⚠️ Em happy-dom o raster devolve `null`
+  (sem canvas) → o payload inteiro é `null`; os metadados são testados pelos helpers PUROS
+  (`studioBridge.test.ts`), o resto é QA de browser.
 - **Stores zustand POR INSTÂNCIA** (factories, nunca singleton): `galleryStore` (CRUD + `lastStyle`;
   import religa tilemap→tileset via idMap, tilesets entram PRIMEIRO na quota), `editorStore`
   (history por snapshots com orçamento em bytes — `assetBytes` conta o payload real dos shapes —

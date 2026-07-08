@@ -12,7 +12,12 @@
  *   galeria.pinta.json (o backup completo, re-importável)
  *   LEIA-ME.txt
  */
-import { type AnyTilesetAsset, isTilesetKind, type PintaAsset } from '../core/project'
+import {
+  type AnyTilesetAsset,
+  isTilesetKind,
+  type PintaAsset,
+  resolveAssetPalette,
+} from '../core/project'
 import { tilesetPngDataUrl } from '../tiles/packTileset'
 import { vectorTilesetPngDataUrl, vectorTilesetSvg } from '../tiles/packVectorTileset'
 import { tilemapPngDataUrl } from '../tiles/renderTilemap'
@@ -86,7 +91,7 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
             cellHeight: pack.frameHeight,
             columns: pack.columns,
             rows: pack.rows,
-            paletteId: asset.paletteId,
+            colors: resolveAssetPalette(asset),
           }),
         )
         if (sheet) files[`personagens/${asset.name}/spritesheet.png`] = sheet
@@ -100,7 +105,7 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
               cellHeight: asset.frameHeight,
               columns: animation.frames.length,
               rows: 1,
-              paletteId: asset.paletteId,
+              colors: resolveAssetPalette(asset),
             }),
           )
           if (strip) {
@@ -112,7 +117,7 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
         break
       }
       case 'pixel-background': {
-        const png = await dataUrlBytes(bitmapToPngDataUrl(asset.bitmap, asset.paletteId))
+        const png = await dataUrlBytes(bitmapToPngDataUrl(asset.bitmap, resolveAssetPalette(asset)))
         if (png) files[`cenarios/${asset.name}.png`] = png
         break
       }

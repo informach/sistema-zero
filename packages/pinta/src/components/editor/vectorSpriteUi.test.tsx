@@ -36,14 +36,13 @@ describe('personagem vetorial — paridade com o pixel', () => {
     await openAsset('heroi-v')
   }
 
-  it('abre com prévia, lista de animações, filmstrip E as ferramentas vetoriais', async () => {
+  it('abre com prévia, faixa Spritesheet E as ferramentas vetoriais', async () => {
     await openVectorSprite()
     expect(screen.getByText(COPY.animation.preview)).toBeTruthy()
-    expect(screen.getByText(COPY.animation.animations)).toBeTruthy()
-    expect(screen.getByText(COPY.animation.frames)).toBeTruthy()
-    expect(screen.getByText('parado')).toBeTruthy()
+    expect(screen.getByText(COPY.animation.spritesheet)).toBeTruthy()
+    expect(screen.getAllByText('parado').length).toBeGreaterThan(0)
     expect(screen.getByRole('button', { name: COPY.vector.brush })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Quadro 1' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'parado: quadro 1' })).toBeTruthy()
   })
 
   it('REGRESSÃO: o palco SVG tem width/height DEFINIDOS (doc × zoom)', async () => {
@@ -83,11 +82,11 @@ describe('personagem vetorial — paridade com o pixel', () => {
     await openVectorSprite()
     fireEvent.click(screen.getByRole('button', { name: COPY.animation.addFrame }))
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Quadro 2' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'parado: quadro 2' })).toBeTruthy()
     })
     fireEvent.click(screen.getByRole('button', { name: COPY.animation.addAnimation }))
     await waitFor(() => {
-      expect(screen.getByText('andar')).toBeTruthy()
+      expect(screen.getAllByText('andar').length).toBeGreaterThan(0)
     })
   })
 
@@ -116,7 +115,7 @@ describe('cenário vetorial — palco com dimensão', () => {
     expect(stage.getAttribute('height')).toBe('360')
     // Cenário não tem painéis de sprite.
     expect(screen.queryByText(COPY.animation.preview)).toBeNull()
-    expect(screen.queryByText(COPY.animation.frames)).toBeNull()
+    expect(screen.queryByText(COPY.animation.spritesheet)).toBeNull()
   })
 })
 

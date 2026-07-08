@@ -4,22 +4,50 @@
  * frame do navegador), pausando em `document.hidden`.
  */
 import { useEffect, useRef, useState } from 'react'
+import type { PintaEasing } from '../core/project'
+
+/** Velocidades oferecidas no controle 🐢→🐇 (quadros por segundo). */
+export const FPS_CHOICES = [2, 4, 6, 8, 12, 16, 24] as const
+
+/** Curva suave (ease-in-out) — devagar nas pontas, rápido no meio. */
+function easeInOutQuad(p: number): number {
+  return p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2
+}
+
+/**
+ * Duração total de uma passada da animação em ms (quadros ÷ fps). A suavização
+ * NÃO muda esse total — só redistribui QUANDO cada quadro aparece.
+ */
+export function animationDurationMs(frameCount: number, fps: number): number {
+  const safeFps = Math.min(Math.max(fps, 1), 60)
+  return (Math.max(frameCount, 0) * 1000) / safeFps
+}
 
 /**
  * Índice do quadro em `elapsedMs`. Com `loop` dá a volta; sem loop TRAVA no
- * último quadro (a prévia mostra o fim, não some).
+ * último quadro (a prévia mostra o fim, não some). Com `easing: 'ease'` a
+ * mesma volta segura mais nas pontas (mesma duração total).
  */
 export function frameIndexAt(
   elapsedMs: number,
   fps: number,
   frameCount: number,
   loop: boolean,
+  easing: PintaEasing = 'linear',
 ): number {
   if (frameCount <= 0) return 0
   const safeFps = Math.min(Math.max(fps, 1), 60)
-  const step = Math.floor(Math.max(elapsedMs, 0) / (1000 / safeFps))
-  if (loop) return step % frameCount
-  return Math.min(step, frameCount - 1)
+  if (easing === 'linear') {
+    const step = Math.floor(Math.max(elapsedMs, 0) / (1000 / safeFps))
+    if (loop) return step % frameCount
+    return Math.min(step, frameCount - 1)
+  }
+  // Suave: warp da FASE dentro de uma passada (o total = frameCount/fps não muda).
+  const cycleMs = animationDurationMs(frameCount, fps)
+  if (cycleMs <= 0) return 0
+  const t = Math.max(elapsedMs, 0)
+  const phase = loop ? (t % cycleMs) / cycleMs : Math.min(t / cycleMs, 1)
+  return Math.min(Math.floor(easeInOutQuad(phase) * frameCount), frameCount - 1)
 }
 
 /**
@@ -31,8 +59,9 @@ export function useAnimationPlayer(input: {
   fps: number
   frameCount: number
   loop: boolean
+  easing?: PintaEasing
 }): number {
-  const { playing, fps, frameCount, loop } = input
+  const { playing, fps, frameCount, loop, easing = 'linear' } = input
   const [frame, setFrame] = useState(0)
   const startRef = useRef<number | null>(null)
 
@@ -55,7 +84,7 @@ export function useAnimationPlayer(input: {
         return
       }
       if (startRef.current === null) startRef.current = now
-      const index = frameIndexAt(now - startRef.current, fps, frameCount, loop)
+      const index = frameIndexAt(now - startRef.current, fps, frameCount, loop, easing)
       setFrame((current) => (current === index ? current : index))
       rafId = requestAnimationFrame(tick)
     }
@@ -66,7 +95,7 @@ export function useAnimationPlayer(input: {
       cancelAnimationFrame(rafId)
       startRef.current = null
     }
-  }, [playing, fps, frameCount, loop])
+  }, [playing, fps, frameCount, loop, easing])
 
   return Math.min(frame, Math.max(frameCount - 1, 0))
 }

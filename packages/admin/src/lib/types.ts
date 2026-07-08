@@ -482,6 +482,21 @@ export interface StudioSubmissionRow {
   message: string | null
 }
 
+/**
+ * Uma entrega na aba "Entregas" POR CURSO (todas as aulas): o mesmo resumo
+ * hidratado da lista por bloco + a aula/módulo e o `blockId` (o viewer abre a
+ * entrega pelo endpoint por-bloco `getStudioSubmission`).
+ */
+export interface StudioSubmissionCourseRow extends StudioSubmissionRow {
+  /** Bloco de origem — o viewer abre a entrega por `(blockId, userId)`. */
+  blockId: string
+  lessonId: string
+  /** Título da aula (para agrupar/rotular). */
+  lessonTitle: string
+  /** Título do módulo (para agrupar). */
+  moduleTitle: string
+}
+
 /** Projeto enviado por um aluno (abrir no Estúdio embutido do admin) + correção. */
 export interface StudioSubmissionDetailView {
   project: Project

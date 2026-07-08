@@ -43,7 +43,7 @@ function setup() {
   const now = () => new Date()
   const accountService = new AccountService(
     accounts,
-    { provider, secretBox: new FakeSecretBox() },
+    { providers: new Map([['youtube', provider]]), secretBox: new FakeSecretBox() },
     new Set(),
     now,
     silentLogger,
@@ -53,7 +53,7 @@ function setup() {
     accountService,
     now,
     logger: silentLogger,
-    config: { intervalMs: 1000, marginMs: 20 * 60_000 },
+    config: { intervalMs: 1000, marginMs: 20 * 60_000, renewMarginMs: 10 * 86_400_000 },
   })
   return { accounts, provider, worker }
 }

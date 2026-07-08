@@ -18,7 +18,7 @@ const CONFIG = {
   maxAttempts: 3,
   retryBaseMs: 60_000,
   retryMaxMs: 30 * 60_000,
-  autoLeadMs: 6 * 60 * 60_000,
+  leadMsByNetwork: new Map([['youtube' as const, 6 * 60 * 60_000]]),
 }
 
 function makeContent(): Content {
@@ -66,6 +66,7 @@ function makePublication(contentId: string, overrides: Partial<Publication> = {}
     publishedAt: null,
     reminderSentAt: null,
     metricsLastCollectedAt: null,
+    metricsNextCollectAt: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,

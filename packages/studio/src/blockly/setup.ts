@@ -14,9 +14,11 @@ import { registerIfElseMutator } from './blocks/ifElseMutator'
 import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
 import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE } from './buildIR'
+import { registerFieldAnimationPicker } from './fields/FieldAnimationPicker'
 import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
 import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldNamePicker } from './fields/FieldNamePicker'
+import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
 import { organizeBlocks } from './organize'
 import { exportWorkspaceImage } from './screenshot'
@@ -266,6 +268,11 @@ export function ensureBlocklyInitialized(): void {
   // Campo de seleção de SPRITE (lista os sprites já criados, com miniatura) — mesma
   // exigência de ordem do asset picker: registrado antes dos blocos da extensão.
   registerFieldSpritePicker()
+  // Campo de seleção de ANIMAÇÃO (nomes vindos do Pinta) e de TILES SÓLIDOS (grade
+  // visual) dos blocos de Jogo 2D — mesma exigência de ordem (registrados antes da
+  // definição dos blocos da extensão, que veem esses tipos de campo).
+  registerFieldAnimationPicker()
+  registerFieldSolidTilesPicker()
   // Campo de seleção de NOME (variável / grupo-lista já criados) — mesma exigência de
   // ordem: registrado antes dos blocos do núcleo e da extensão que o usam.
   registerFieldNamePicker()

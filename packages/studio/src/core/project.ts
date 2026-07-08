@@ -23,6 +23,31 @@ export interface InstalledExtension {
   installedAt: number
 }
 
+/** Uma animação nomeada de uma spritesheet (vinda do Pinta). */
+export interface ProjectSpriteAnim {
+  /** Nome escolhido no Pinta (ex.: `andar`, `pular`) — o rótulo do seletor. */
+  name: string
+  /** Índices row-major na folha INTEIRA (os mesmos que o runtime do Jogo 2D usa). */
+  from: number
+  to: number
+  fps: number
+  loop: boolean
+}
+
+/** Metadados de SPRITESHEET de um asset: geometria do quadro + animações nomeadas. */
+export interface ProjectSpriteMeta {
+  frameW: number
+  frameH: number
+  animations: ProjectSpriteAnim[]
+}
+
+/** Metadados de TILESET de um asset: tamanho do tile + tiles sólidos (colisão). */
+export interface ProjectTilesetMeta {
+  tileSize: number
+  /** Índices de tile SÓLIDOS — subconjunto ordenado/deduplicado (colisão do mapa). */
+  solid: number[]
+}
+
 /**
  * Asset embutido no projeto (Fase "Studio rico"). Imagens (e, no futuro, áudio)
  * que o aluno envia do computador ou escolhe da biblioteca. Guardadas como `data:`
@@ -44,6 +69,15 @@ export interface ProjectAsset {
   source: 'upload' | 'library'
   /** Quando veio da biblioteca embutida (starter pack). */
   libId?: string
+  /**
+   * Metadados de SPRITESHEET vindos do Pinta (animações nomeadas com faixa de
+   * quadros/fps). Alimenta o SELETOR de animação por nome no bloco "Animar sprite"
+   * (sem ele a criança digita from/to à mão — fallback). Opcional: asset legado /
+   * de upload / sem metadado não tem. NÃO vai ao preview (só o `dataUrl` roda).
+   */
+  sprite?: ProjectSpriteMeta
+  /** Metadados de TILESET vindos do Pinta (tamanho + tiles sólidos) — seletor de sólidos. */
+  tileset?: ProjectTilesetMeta
 }
 
 /** Teto defensivo de nome (a UI já normaliza; aqui é só anti-lixo). */
@@ -62,9 +96,72 @@ const MAX_ASSET_DATA_URL_CHARS = 800_000
 const MAX_ASSETS_TOTAL_CHARS = 11_200_000
 /** Teto de quantidade de assets por projeto (defesa anti-DoS no load). */
 const MAX_ASSETS_COUNT = 128
+/** Tetos do metadado (anti-DoS; o metadado NÃO conta na cota de `dataUrl`). */
+const MAX_SPRITE_ANIMS = 32
+const MAX_TILESET_SOLID = 64
+const MAX_ANIM_NAME_CHARS = 48
 
 const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 const ASSET_DATA_URL_PREFIX = 'data:image/'
+
+function toPositiveInt(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : null
+}
+function toNonNegativeInt(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
+    ? Math.floor(value)
+    : null
+}
+
+/**
+ * Valida/normaliza os metadados de SPRITESHEET de um asset (vindos do Pinta ou de
+ * um Project não confiável). Metadado inválido → `undefined` (o asset NUNCA cai por
+ * causa dele; o seletor cai no fallback manual). Exportado p/ o Studio ser o dono
+ * do formato — a biblioteca pessoal reusa este mesmo portão.
+ */
+export function sanitizeSpriteMeta(raw: unknown): ProjectSpriteMeta | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const r = raw as Record<string, unknown>
+  const frameW = toPositiveInt(r.frameW)
+  const frameH = toPositiveInt(r.frameH)
+  if (frameW === null || frameH === null || !Array.isArray(r.animations)) return undefined
+  const animations: ProjectSpriteAnim[] = []
+  const seen = new Set<string>()
+  for (const item of r.animations) {
+    if (animations.length >= MAX_SPRITE_ANIMS) break
+    if (!item || typeof item !== 'object') continue
+    const a = item as Record<string, unknown>
+    const name = typeof a.name === 'string' ? a.name.trim().slice(0, MAX_ANIM_NAME_CHARS) : ''
+    if (!name || seen.has(name)) continue
+    const from = toNonNegativeInt(a.from)
+    const to = toNonNegativeInt(a.to)
+    const fps = toPositiveInt(a.fps)
+    if (from === null || to === null || fps === null || to < from) continue
+    seen.add(name)
+    animations.push({ name, from, to, fps, loop: a.loop === true })
+  }
+  if (animations.length === 0) return undefined
+  return { frameW, frameH, animations }
+}
+
+/**
+ * Valida/normaliza os metadados de TILESET de um asset. `undefined` se não houver
+ * tamanho de tile válido; `solid` vazio é VÁLIDO (tileset sem colisão). Índices
+ * deduplicados/ordenados, capados. Exportado (a biblioteca pessoal reusa).
+ */
+export function sanitizeTilesetMeta(raw: unknown): ProjectTilesetMeta | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const r = raw as Record<string, unknown>
+  const tileSize = toPositiveInt(r.tileSize)
+  if (tileSize === null) return undefined
+  const solidSet = new Set<number>()
+  for (const value of Array.isArray(r.solid) ? r.solid : []) {
+    if (solidSet.size >= MAX_TILESET_SOLID) break
+    const n = toNonNegativeInt(value)
+    if (n !== null) solidSet.add(n)
+  }
+  return { tileSize, solid: [...solidSet].sort((a, b) => a - b) }
+}
 
 /**
  * Normaliza um nome de asset para kebab-case ASCII, único e referenciável pelos
@@ -130,6 +227,12 @@ export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
     if (source === 'library' && typeof a.libId === 'string' && a.libId.trim()) {
       asset.libId = a.libId.slice(0, 128)
     }
+    // Metadado do Pinta (animações/tiles) — opcional; inválido é DESCARTADO sem
+    // derrubar o asset. Não entra na cota de `dataUrl` (tetos próprios por campo).
+    const sprite = sanitizeSpriteMeta(a.sprite)
+    if (sprite) asset.sprite = sprite
+    const tileset = sanitizeTilesetMeta(a.tileset)
+    if (tileset) asset.tileset = tileset
     seenNames.add(name)
     totalChars += a.dataUrl.length
     out.push(asset)

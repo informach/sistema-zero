@@ -9,6 +9,7 @@ import {
   removeAnimation,
   removeFrame,
   renameAnimation,
+  setAnimationEasing,
   setAnimationFps,
   setAnimationLoop,
 } from './frames'
@@ -126,5 +127,17 @@ describe('animações', () => {
     // Sem mudança → mesma referência (não suja autosave).
     expect(setAnimationFps(base, animId(base), 8)).toBe(base)
     expect(setAnimationLoop(base, animId(base), false).animations[0]?.loop).toBe(false)
+  })
+
+  it('setAnimationEasing grava "ease" e omite "linear" (ausente = padrão)', () => {
+    const base = sprite()
+    // Padrão é linear (ausente) → setar linear é no-op.
+    expect(setAnimationEasing(base, animId(base), 'linear')).toBe(base)
+    const eased = setAnimationEasing(base, animId(base), 'ease')
+    expect(eased.animations[0]?.easing).toBe('ease')
+    // Voltar para linear REMOVE a chave (asset idêntico ao histórico).
+    const back = setAnimationEasing(eased, animId(eased), 'linear')
+    expect(back.animations[0]?.easing).toBeUndefined()
+    expect('easing' in (back.animations[0] ?? {})).toBe(false)
   })
 })

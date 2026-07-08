@@ -1,4 +1,18 @@
-import { and, asc, count, eq, gte, inArray, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  or,
+  sql,
+} from 'drizzle-orm'
 import type {
   PublicationListItem,
   PublicationRepository,
@@ -115,6 +129,20 @@ export class DrizzlePublicationRepository implements PublicationRepository {
     return { items: rows, total: totalRow?.value ?? 0 }
   }
 
+  async listRecentPublished(input: { since: Date; limit: number }): Promise<PublicationListItem[]> {
+    return this.db
+      .select({
+        publication: publications,
+        contentTitle: contents.title,
+        contentType: contents.contentType,
+      })
+      .from(publications)
+      .innerJoin(contents, eq(publications.contentId, contents.id))
+      .where(and(eq(publications.status, 'published'), gte(publications.publishedAt, input.since)))
+      .orderBy(desc(publications.publishedAt), asc(publications.id))
+      .limit(input.limit)
+  }
+
   async claimDueManualReminders(
     now: Date,
     limit: number,
@@ -176,15 +204,22 @@ export class DrizzlePublicationRepository implements PublicationRepository {
 
   async claimDueAutoPublish(input: {
     now: Date
-    leadMs: number
     limit: number
     leaseMs: number
     maxAttempts: number
-    networks: Network[]
+    networks: Array<{ network: Network; leadMs: number }>
   }): Promise<Publication[]> {
     if (input.networks.length === 0) return []
     const { now } = input
-    const leadUntil = new Date(now.getTime() + input.leadMs)
+    // Lead POR REDE: cada rede tem sua janela de antecipação (YouTube horas,
+    // Meta minutos) — o OR abaixo casa a publicação com o lead da SUA rede.
+    const withinLead = input.networks.map((n) =>
+      and(
+        eq(publications.network, n.network),
+        lte(publications.scheduledAt, new Date(now.getTime() + n.leadMs)),
+      ),
+    )
+    const networkNames = input.networks.map((n) => n.network)
     return this.db.transaction(async (tx) => {
       const due = await tx
         .select()
@@ -192,13 +227,13 @@ export class DrizzlePublicationRepository implements PublicationRepository {
         .where(
           and(
             eq(publications.publishMode, 'auto'),
-            inArray(publications.network, input.networks),
+            inArray(publications.network, networkNames),
             or(
-              // Fresca: agendada dentro do LEAD (upload antecipado) e elegível.
+              // Fresca: agendada dentro do LEAD da rede e elegível.
               and(
                 eq(publications.status, 'scheduled'),
                 isNotNull(publications.scheduledAt),
-                lte(publications.scheduledAt, leadUntil),
+                or(...withinLead),
                 or(isNull(publications.nextAttemptAt), lte(publications.nextAttemptAt, now)),
                 lt(publications.attempts, input.maxAttempts),
               ),
@@ -249,10 +284,9 @@ export class DrizzlePublicationRepository implements PublicationRepository {
     })
   }
 
-  async listPublishedForMetrics(input: {
+  async listDueForMetrics(input: {
     network: Network
-    since: Date
-    staleBefore: Date
+    now: Date
     limit: number
   }): Promise<Publication[]> {
     return this.db
@@ -263,22 +297,25 @@ export class DrizzlePublicationRepository implements PublicationRepository {
           eq(publications.network, input.network),
           eq(publications.status, 'published'),
           isNotNull(publications.externalPostId),
-          gte(publications.publishedAt, input.since),
-          or(
-            isNull(publications.metricsLastCollectedAt),
-            lt(publications.metricsLastCollectedAt, input.staleBefore),
-          ),
+          lte(publications.metricsNextCollectAt, input.now),
         ),
       )
-      .orderBy(asc(publications.metricsLastCollectedAt), asc(publications.id))
+      .orderBy(asc(publications.metricsNextCollectAt), asc(publications.id))
       .limit(input.limit)
   }
 
-  async updateMetricsCollectedAt(ids: string[], at: Date): Promise<void> {
-    if (ids.length === 0) return
-    await this.db
-      .update(publications)
-      .set({ metricsLastCollectedAt: at })
-      .where(inArray(publications.id, ids))
+  async updateMetricsSchedule(
+    items: Array<{ id: string; collectedAt: Date; nextCollectAt: Date | null }>,
+  ): Promise<void> {
+    // Lotes pequenos (≤50/ciclo) — updates individuais são simples e suficientes.
+    for (const item of items) {
+      await this.db
+        .update(publications)
+        .set({
+          metricsLastCollectedAt: item.collectedAt,
+          metricsNextCollectAt: item.nextCollectAt,
+        })
+        .where(eq(publications.id, item.id))
+    }
   }
 }

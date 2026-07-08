@@ -71,6 +71,9 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       height: drawing.height,
       source: 'library',
       libId: `personal:${drawing.id}`,
+      // Leva as animações/tiles do Pinta ao projeto → o seletor por nome funciona.
+      sprite: drawing.sprite,
+      tileset: drawing.tileset,
     })
     if (err) setError(err)
   }

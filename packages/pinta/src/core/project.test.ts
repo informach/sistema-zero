@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import type { VectorShape } from '../vector/model'
+import { getPalette } from './palette'
 import {
   assetRole,
   assetStyle,
@@ -16,6 +17,7 @@ import {
   normalizeAssetName,
   PINTA_LIMITS,
   paletteIdOf,
+  resolveAssetPalette,
   sanitizePintaAsset,
 } from './project'
 
@@ -260,5 +262,52 @@ describe('helpers de estilo/papel', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     const out = sanitizePintaAsset({ ...tileset, solid: [true, true, true] })
     expect(out?.kind === 'tileset' && out.solid).toEqual([true])
+  })
+
+  it('extraColors: normaliza, deduplica e corta no teto; lixo cai', () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const out = sanitizePintaAsset({
+      ...sprite,
+      extraColors: ['#AABBCC', '#aabbcc', '#f80', 'lixo', 42, '#123456'],
+    })
+    // #AABBCC/#aabbcc dedup para uma; #f80 expande; 'lixo'/42 caem.
+    expect(out?.kind === 'pixel-sprite' && out.extraColors).toEqual([
+      '#aabbcc',
+      '#ff8800',
+      '#123456',
+    ])
+  })
+
+  it('extraColors ausente/ inválido → chave omitida (asset histórico intacto)', () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const out = sanitizePintaAsset({ ...sprite, extraColors: ['nada', 7] })
+    expect(out?.kind === 'pixel-sprite' && 'extraColors' in out).toBe(false)
+  })
+
+  it('resolveAssetPalette = 16 base + extras (na ordem)', () => {
+    const base = getPalette('arcade').colors
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    expect(resolveAssetPalette(sprite)).toEqual(base)
+    const withExtra = sanitizePintaAsset({ ...sprite, extraColors: ['#b63f16'] })
+    if (withExtra?.kind !== 'pixel-sprite') throw new Error('sprite esperado')
+    const resolved = resolveAssetPalette(withExtra)
+    expect(resolved).toHaveLength(base.length + 1)
+    expect(resolved[base.length]).toBe('#b63f16')
+  })
+
+  it('easing: "ease" sobrevive; qualquer outro vira linear (omitido)', () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const first = sprite.animations[0]
+    if (!first) throw new Error('animação esperada')
+    const eased = sanitizePintaAsset({
+      ...sprite,
+      animations: [{ ...first, easing: 'ease' }],
+    })
+    expect(eased?.kind === 'pixel-sprite' && eased.animations[0]?.easing).toBe('ease')
+    const linear = sanitizePintaAsset({
+      ...sprite,
+      animations: [{ ...first, easing: 'maluco' }],
+    })
+    expect(linear?.kind === 'pixel-sprite' && linear.animations[0]?.easing).toBeUndefined()
   })
 })

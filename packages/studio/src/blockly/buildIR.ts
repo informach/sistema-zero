@@ -364,6 +364,18 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:centerX', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_center_y':
       return { type: 'g2d:centerY', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_vx':
+      return { type: 'g2d:spriteVx', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_vy':
+      return { type: 'g2d:spriteVy', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_sprite_speed':
+      return { type: 'g2d:spriteSpeed', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_is_moving':
+      return { type: 'g2d:isMoving', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_is_moving_h':
+      return { type: 'g2d:isMovingH', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_is_moving_v':
+      return { type: 'g2d:isMovingV', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_random_between':
       return {
         type: 'g2d:randomBetween',
@@ -448,6 +460,12 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3d:stackGameOver', worldVar: f(block, 'WORLD') }
     case 'sz_g3d_get_pos':
       return { type: 'g3d:getPos', objVar: f(block, 'OBJ'), axis: f(block, 'AXIS') || 'x' }
+    case 'sz_g3d_get_vel':
+      return { type: 'g3d:getVel', objVar: f(block, 'OBJ'), axis: f(block, 'AXIS') || 'x' }
+    case 'sz_g3d_get_speed':
+      return { type: 'g3d:getSpeed', objVar: f(block, 'OBJ') }
+    case 'sz_g3d_is_moving':
+      return { type: 'g3d:isMoving', objVar: f(block, 'OBJ') }
     case 'sz_g3d_get_rot':
       return { type: 'g3d:getRot', objVar: f(block, 'OBJ'), axis: f(block, 'AXIS') || 'x' }
     case 'sz_g3d_get_scale':

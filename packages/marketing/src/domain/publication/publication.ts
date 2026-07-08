@@ -62,6 +62,27 @@ export function forcesManualMode(format: PublicationFormat): boolean {
   return format === 'ig_story'
 }
 
+/**
+ * Teto de legenda por rede (caracteres) e teto de hashtags — usados só p/
+ * orientar a IA da copy (F5). Espelha `marketing-app/src/lib/networks.ts`
+ * (o YouTube conta a descrição em bytes, mas p/ o prompt caractere basta).
+ */
+const CAPTION_LIMIT: Record<Network, number> = {
+  instagram: 2200,
+  tiktok: 2200,
+  youtube: 5000,
+  facebook: 63206,
+}
+
+export function captionLimitFor(format: PublicationFormat): number {
+  return CAPTION_LIMIT[FORMAT_NETWORK[format]]
+}
+
+/** Teto de hashtags do formato, ou null quando a rede não impõe (só o IG impõe: 30). */
+export function hashtagLimitFor(format: PublicationFormat): number | null {
+  return FORMAT_NETWORK[format] === 'instagram' ? 30 : null
+}
+
 /** Estados em que os campos (legenda/capa/horário/título) ainda podem ser editados. */
 const EDITABLE_STATUSES: ReadonlySet<PublicationStatus> = new Set([
   'draft',

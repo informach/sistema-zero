@@ -90,6 +90,45 @@ const EnvSchema = z.object({
   // URL do marketing-app (destino do 302 pós-callback: /conexoes?connected=…).
   MARKETING_APP_URL: z.string().url().optional(),
 
+  // ── OAuth Meta (Facebook + Instagram) — grupo atômico c/ o núcleo OAuth ─────
+  META_APP_ID: z.string().optional(),
+  META_APP_SECRET: z.string().optional(),
+  META_GRAPH_VERSION: z.string().min(2).default('v25.0'),
+  // Renova o user token 60d com esta folga (long-lived EXPIRADO = re-login).
+  META_TOKEN_RENEW_MARGIN_DAYS: z.coerce.number().int().positive().default(10),
+  // Lead do claim auto da Meta (container criado pouco antes da hora).
+  META_PUBLISH_LEAD_MS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(10 * 60_000),
+
+  // ── OAuth TikTok — grupo atômico c/ o núcleo OAuth ───────────────────────────
+  TIKTOK_CLIENT_KEY: z.string().optional(),
+  TIKTOK_CLIENT_SECRET: z.string().optional(),
+  // Chunk do FILE_UPLOAD do Direct Post (regra da API: 5MB..64MB por chunk).
+  TT_UPLOAD_CHUNK_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(16 * 1024 * 1024),
+
+  // ── Arquivador R2→Drive (F4) — roda quando Google + R2 estão configurados ───
+  MEDIA_ARCHIVER_INTERVAL_MS: z.coerce.number().int().positive().default(3_600_000),
+  // Idade mínima do conteúdo PUBLICADO p/ a mídia sair do R2 (dias).
+  MEDIA_ARCHIVE_AFTER_DAYS: z.coerce.number().int().positive().default(30),
+
+  // ── IA da copy (F5, OpenRouter) — grupo fail-soft: sem chave, botões ocultos ─
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_MODEL: z.string().min(1).default('openai/gpt-4o-mini'),
+  // Modelo PREFERIDO da copy (mais capaz) — o service usa este ?? o genérico.
+  OPENROUTER_MARKETING_MODEL: z.string().optional(),
+  OPENROUTER_REFERER: z.string().url().optional(),
+  AI_COPY_MAX_TOKENS: z.coerce.number().int().positive().default(1200),
+  AI_COPY_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+  // Clamp do material que entra no prompt (roteiro grande não estoura o custo).
+  AI_COPY_MAX_INPUT_CHARS: z.coerce.number().int().positive().default(8000),
+
   // ── Lembrete WhatsApp (marketing → gateway → /messaging/send, HMAC) ─────────
   GATEWAY_URL: z.string().url().default('http://localhost:3000'),
   MARKETING_CONSUMER_ID: z.string().min(1).default('marketing'),
@@ -159,13 +198,20 @@ const EnvSchema = z.object({
   YT_QUOTA_BUDGET_UNITS: z.coerce.number().int().positive().default(9000),
   YT_VIDEOS_INSERT_UNITS: z.coerce.number().int().positive().default(1600),
   YT_UPLOAD_DAILY_CAP: z.coerce.number().int().positive().default(20),
-  // Métricas básicas YT (snapshots de canal/publicações).
+  // Métricas básicas YT (snapshots de canal/publicações) — LEGADO F2, mantidas
+  // como fallback do metrics-worker genérico (F3).
   YT_METRICS_INTERVAL_MS: z.coerce
     .number()
     .int()
     .positive()
     .default(6 * 60 * 60 * 1000),
   YT_METRICS_MAX_AGE_DAYS: z.coerce.number().int().positive().default(90),
+  // ── Metrics-worker genérico (F3) — decaimento por idade da publicação ──────
+  // Intervalo do TICK (a cadência real por publicação é o decaimento: <48h→1h,
+  // <14d→6h, <90d→24h, depois semanal). Fallback nos YT_* legados.
+  METRICS_WORKER_INTERVAL_MS: z.coerce.number().int().positive().optional(),
+  METRICS_MAX_AGE_DAYS: z.coerce.number().int().positive().optional(),
+  METRICS_BATCH_SIZE: z.coerce.number().int().positive().default(50),
 })
 
 export type Env = z.infer<typeof EnvSchema>
@@ -193,31 +239,67 @@ export function r2Config(env: Env): {
   }
 }
 
-/** Config do OAuth Google completa ou null (feature desligada — rotas 503). */
-export function googleConfig(env: Env): {
-  clientId: string
-  clientSecret: string
+/**
+ * Config COMUM do OAuth (independe do provedor): secret-box + URLs de
+ * redirect. Completa ou null (OAuth global desligado — rotas 503).
+ */
+export function oauthCoreConfig(env: Env): {
   encKeyBase64: string
   /** Origem pública do gateway — a redirect_uri é SEMPRE derivada daqui (nunca de header). */
   redirectBaseUrl: string
   /** URL do app (destino dos 302 do callback). */
   appUrl: string
 } | null {
-  if (
-    !env.GOOGLE_CLIENT_ID ||
-    !env.GOOGLE_CLIENT_SECRET ||
-    !env.MARKETING_TOKEN_ENC_KEY ||
-    !env.OAUTH_PUBLIC_BASE_URL ||
-    !env.MARKETING_APP_URL
-  ) {
+  if (!env.MARKETING_TOKEN_ENC_KEY || !env.OAUTH_PUBLIC_BASE_URL || !env.MARKETING_APP_URL) {
     return null
   }
   return {
-    clientId: env.GOOGLE_CLIENT_ID,
-    clientSecret: env.GOOGLE_CLIENT_SECRET,
     encKeyBase64: env.MARKETING_TOKEN_ENC_KEY,
     redirectBaseUrl: env.OAUTH_PUBLIC_BASE_URL.replace(/\/$/, ''),
     appUrl: env.MARKETING_APP_URL.replace(/\/$/, ''),
+  }
+}
+
+/** Credenciais do Google (YouTube+Drive) ou null (provedor desligado). */
+export function googleConfig(env: Env): { clientId: string; clientSecret: string } | null {
+  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return null
+  return { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET }
+}
+
+/** Credenciais da Meta (Facebook+Instagram) ou null (provedor desligado). */
+export function metaConfig(
+  env: Env,
+): { appId: string; appSecret: string; graphVersion: string } | null {
+  if (!env.META_APP_ID || !env.META_APP_SECRET) return null
+  return {
+    appId: env.META_APP_ID,
+    appSecret: env.META_APP_SECRET,
+    graphVersion: env.META_GRAPH_VERSION,
+  }
+}
+
+export function tiktokConfig(env: Env): { clientKey: string; clientSecret: string } | null {
+  if (!env.TIKTOK_CLIENT_KEY || !env.TIKTOK_CLIENT_SECRET) return null
+  return { clientKey: env.TIKTOK_CLIENT_KEY, clientSecret: env.TIKTOK_CLIENT_SECRET }
+}
+
+/** Config da IA da copy ou null (feature desligada — botões ocultos, rota 503). */
+export function aiCopyConfig(env: Env): {
+  apiKey: string
+  model: string
+  referer: string | null
+  maxTokens: number
+  timeoutMs: number
+  maxInputChars: number
+} | null {
+  if (!env.OPENROUTER_API_KEY) return null
+  return {
+    apiKey: env.OPENROUTER_API_KEY,
+    model: env.OPENROUTER_MARKETING_MODEL ?? env.OPENROUTER_MODEL,
+    referer: env.OPENROUTER_REFERER ?? null,
+    maxTokens: env.AI_COPY_MAX_TOKENS,
+    timeoutMs: env.AI_COPY_TIMEOUT_MS,
+    maxInputChars: env.AI_COPY_MAX_INPUT_CHARS,
   }
 }
 

@@ -14,6 +14,11 @@ export interface PublicationSnapshot {
   views: number
   likes: number
   comments: number
+  shares: number
+  saves: number
+  reach: number | null
+  watchTimeSeconds: number | null
+  avgWatchRatio: number | null
   raw: Record<string, unknown>
 }
 
@@ -21,6 +26,10 @@ export interface MetricsRepository {
   insertAccountSnapshot(row: AccountSnapshot): Promise<void>
   insertPublicationSnapshots(rows: PublicationSnapshot[]): Promise<void>
   latestAccountSnapshot(socialAccountId: string): Promise<AccountSnapshot | null>
+  /** Último snapshot POR conta (cards do dashboard) — chave = socialAccountId. */
+  latestAccountSnapshots(socialAccountIds: string[]): Promise<Map<string, AccountSnapshot>>
+  /** Snapshots das contas desde `since` (série de seguidores), capturedAt ASC. */
+  listAccountSnapshotsSince(socialAccountIds: string[], since: Date): Promise<AccountSnapshot[]>
   /** Último snapshot POR publicação (cards/tabela de métricas). */
   latestPublicationStats(publicationIds: string[]): Promise<Map<string, PublicationSnapshot>>
   /** Série (mais recentes primeiro) de uma publicação. */

@@ -4,7 +4,12 @@
  * de verdade p/ o bloco). Reusa o compositor de folha do export (as células
  * não se sobrepõem depois do flatten).
  */
-import type { PintaBitmap, TilemapAsset, TilesetAsset } from '../core/project'
+import {
+  type PintaBitmap,
+  resolveAssetPalette,
+  type TilemapAsset,
+  type TilesetAsset,
+} from '../core/project'
 import { composeSheetPngDataUrl } from '../export/png'
 import { flattenLayers } from './tilemapOps'
 
@@ -28,7 +33,7 @@ export function tilemapPngDataUrl(
     cellHeight: tileset.tileSize,
     columns: tilemap.cols,
     rows: tilemap.rows,
-    paletteId: tileset.paletteId,
+    colors: resolveAssetPalette(tileset),
     scale,
   })
 }

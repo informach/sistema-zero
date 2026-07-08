@@ -151,11 +151,21 @@ export const ScheduleBody = t.Object({
   scheduledAt: t.String({ minLength: 10, maxLength: 40 }),
 })
 
+// Carrossel do IG: 1..10 imagens (teto da Graph API), na ordem do post.
+export const PublicationAssetsBody = t.Object({
+  assetIds: t.Array(UUID, { minItems: 1, maxItems: 10 }),
+})
+
 export const MarkPublishedBody = t.Object({
   externalUrl: t.Optional(
     t.Union([t.String({ maxLength: 2000, pattern: '^https?://' }), t.Null()]),
   ),
   externalPostId: t.Optional(t.Union([t.String({ maxLength: 200 }), t.Null()])),
+})
+
+// Vínculo publicação manual ↔ post real (a URL é resolvida por rede no serviço).
+export const LinkExternalBody = t.Object({
+  url: t.String({ minLength: 10, maxLength: 2000, pattern: '^https?://' }),
 })
 
 // ── Mídia ────────────────────────────────────────────────────────────────────
@@ -230,6 +240,16 @@ const NETWORK = t.Union([
   t.Literal('tiktok'),
 ])
 
+export const FollowersSeriesQuery = t.Object({
+  network: t.Optional(NETWORK),
+  days: t.Optional(t.Numeric({ minimum: 1, maximum: 365 })),
+})
+
+export const BestTimesQuery = t.Object({
+  network: t.Optional(NETWORK),
+  days: t.Optional(t.Numeric({ minimum: 1, maximum: 365 })),
+})
+
 // `status` chega como CSV (ex.: scheduled,awaiting_manual) — validado na rota
 // token a token contra o enum (CSV inválido → 400, nunca filtro silencioso).
 export const PublicationsListQuery = t.Object({
@@ -243,3 +263,21 @@ export const PublicationsListQuery = t.Object({
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
 export { PUB_STATUS }
+
+// ── IA da copy (F5) ──────────────────────────────────────────────────────────
+const AI_MODE = t.Union([t.Literal('generate'), t.Literal('improve')])
+
+export const AiCaptionBody = t.Object({
+  contentId: t.Optional(UUID),
+  format: PUB_FORMAT,
+  mode: AI_MODE,
+  // Legenda atual (obrigatória no modo improve; validada no serviço).
+  caption: t.Optional(t.String({ maxLength: 10_000 })),
+})
+
+export const AiScriptBody = t.Object({
+  contentId: t.Optional(UUID),
+  mode: AI_MODE,
+  script: t.Optional(t.String({ maxLength: 20_000 })),
+  instruction: t.Optional(t.String({ maxLength: 500 })),
+})

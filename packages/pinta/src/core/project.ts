@@ -9,8 +9,9 @@
  */
 
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
+import { normalizeHex } from './color'
 import { newId } from './id'
-import { DEFAULT_PALETTE_ID, isPaletteId, type PaletteId } from './palette'
+import { DEFAULT_PALETTE_ID, getPalette, isPaletteId, type PaletteId } from './palette'
 
 export interface PintaBitmap {
   width: number
@@ -83,6 +84,14 @@ interface PintaAssetBase {
 }
 
 /**
+ * Suavização da PRÉVIA da animação (só dentro do Pinta — não vai para a ponte
+ * do Estúdio, que só conhece fps/loop). `linear` = passo constante (o de sempre;
+ * ausência = `linear`); `ease` acelera/desacelera nas pontas de cada ciclo sem
+ * mudar a DURAÇÃO total.
+ */
+export type PintaEasing = 'linear' | 'ease'
+
+/**
  * Uma animação nomeada. Genérica no tipo do QUADRO com default `PintaBitmap`:
  * o código pixel existente não muda; o sprite vetorial usa `VectorFrame`.
  */
@@ -93,6 +102,8 @@ export interface PintaAnimation<TFrame = PintaBitmap> {
   /** Quadros por segundo (1–30) — o MESMO valor que sai no metadado do export. */
   fps: number
   loop: boolean
+  /** Suavização da prévia (opcional; ausente = `linear`). Não sai no export. */
+  easing?: PintaEasing
   frames: TFrame[]
 }
 
@@ -101,11 +112,21 @@ export type VectorFrame = VectorShape[]
 
 export type PintaVectorAnimation = PintaAnimation<VectorFrame>
 
+/**
+ * Cores PERSONALIZADAS que a criança adicionou (via seletor livre), ANEXADAS
+ * depois das 16 da paleta base: o índice de uma cor extra é `16 + posição`. O
+ * bitmap continua indexado (1 byte/pixel, até 256 índices), então adicionar uma
+ * cor nunca repinta a arte existente. Ausente = só as 16 base (comportamento
+ * histórico). Trocar a paleta base preserva estas. Ver `resolveAssetPalette`.
+ */
+export type PintaExtraColors = readonly string[]
+
 export interface PixelSpriteAsset extends PintaAssetBase {
   kind: 'pixel-sprite'
   frameWidth: number
   frameHeight: number
   paletteId: PaletteId
+  extraColors?: PintaExtraColors
   /** Sempre ≥1; a primeira nasce "parado". */
   animations: PintaAnimation[]
 }
@@ -113,6 +134,7 @@ export interface PixelSpriteAsset extends PintaAssetBase {
 export interface PixelBackgroundAsset extends PintaAssetBase {
   kind: 'pixel-background'
   paletteId: PaletteId
+  extraColors?: PintaExtraColors
   bitmap: PintaBitmap
 }
 
@@ -121,6 +143,7 @@ export interface TilesetAsset extends PintaAssetBase {
   /** Tile QUADRADO (o bloco de tilemap do Studio usa um número só). */
   tileSize: number
   paletteId: PaletteId
+  extraColors?: PintaExtraColors
   /** O índice no array É o índice do tile no Studio (empacotamento row-major). */
   tiles: PintaBitmap[]
   /** Paralelo a `tiles`: alimenta a lista de "tiles sólidos" do bloco. */
@@ -206,6 +229,27 @@ export function paletteIdOf(asset: PintaAsset): PaletteId {
 }
 
 /**
+ * Cores extras do asset (se houver), sempre um array (nunca `undefined`).
+ * `tilemap` herda as do tileset na prática, mas ele mesmo não guarda extras.
+ */
+export function extraColorsOf(asset: PintaAsset): PintaExtraColors {
+  return 'extraColors' in asset && asset.extraColors ? asset.extraColors : []
+}
+
+/**
+ * Paleta EFETIVA do asset = 16 cores base (por `paletteId`) + cores extras
+ * personalizadas. É a fronteira única de cor: render, thumbs e export recebem
+ * ESTE array (não mais um `paletteId`), então "qualquer cor" funciona sem
+ * espalhar o conceito de paleta indexada. Índice de pixel fora do array sai
+ * transparente (garantido em `bitmapToRGBA`).
+ */
+export function resolveAssetPalette(asset: PintaAsset): readonly string[] {
+  const base = getPalette(paletteIdOf(asset)).colors
+  const extra = extraColorsOf(asset)
+  return extra.length > 0 ? [...base, ...extra] : base
+}
+
+/**
  * Quotas do modelo — compartilhadas entre criação, edição e o sanitizer do
  * load (subir uma sobe em todos os pontos, sem re-recorte ao reabrir).
  */
@@ -223,6 +267,11 @@ export const PINTA_LIMITS = {
   maxShapes: 500,
   maxNameChars: 48,
   maxAnimationNameChars: 30,
+  /**
+   * Teto de cores EXTRAS por asset (além das 16 base). 16 + 48 = 64 índices no
+   * total, bem abaixo dos 256 que o Uint8Array do bitmap comporta.
+   */
+  maxExtraColors: 48,
 } as const
 
 /** Tamanhos amigáveis oferecidos no passo "tamanho" da criação. */
@@ -485,6 +534,31 @@ export function sanitizeProjectRef(raw: unknown): PintaProjectRef | undefined {
   }
 }
 
+/**
+ * Cores extras vindas do disco/import: cada uma normalizada para `#rrggbb`,
+ * deduplicadas e cortadas no teto. `undefined` (não `[]`) quando não há nenhuma
+ * válida — mantém o asset idêntico ao histórico (a chave nem aparece).
+ */
+function sanitizeExtraColors(raw: unknown): PintaExtraColors | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const value of raw) {
+    if (typeof value !== 'string') continue
+    const hex = normalizeHex(value)
+    if (!hex || seen.has(hex)) continue
+    seen.add(hex)
+    out.push(hex)
+    if (out.length >= PINTA_LIMITS.maxExtraColors) break
+  }
+  return out.length > 0 ? out : undefined
+}
+
+/** Suavização vinda do disco: só `ease` é reconhecido; o resto vira `linear`. */
+function sanitizeEasing(raw: unknown): PintaEasing {
+  return raw === 'ease' ? 'ease' : 'linear'
+}
+
 function sanitizeBase(raw: Record<string, unknown>): PintaAssetBase | null {
   if (typeof raw.id !== 'string' || !raw.id || raw.id.includes(':')) return null
   const name = typeof raw.name === 'string' ? normalizeAssetName(raw.name) : null
@@ -507,12 +581,13 @@ function sanitizeAnimation(
   const fps = typeof a.fps === 'number' && Number.isFinite(a.fps) ? clampInt(a.fps, 1, 30) : 8
   const loop = a.loop !== false
   if (!Array.isArray(a.frames)) return null
+  const easing = sanitizeEasing(a.easing)
   const frames = a.frames
     .slice(0, PINTA_LIMITS.maxFramesPerAnimation)
     .map((f) => sanitizeBitmap(f, frame))
     .filter((f): f is PintaBitmap => f !== null)
   if (frames.length === 0) return null
-  return { id: a.id, name, fps, loop, frames }
+  return { id: a.id, name, fps, loop, frames, ...(easing === 'ease' ? { easing } : {}) }
 }
 
 /** Um quadro vetorial vindo do disco: shapes válidos sobrevivem, o resto cai. */
@@ -537,12 +612,13 @@ function sanitizeVectorAnimation(raw: unknown): PintaVectorAnimation | null {
   if (!Array.isArray(a.frames)) return null
   // Diferente do pixel: um quadro vetorial VAZIO ([]) é válido (quadro em branco);
   // só descartamos o que nem é lista.
+  const easing = sanitizeEasing(a.easing)
   const frames = a.frames
     .slice(0, PINTA_LIMITS.maxFramesPerAnimation)
     .map((f) => sanitizeVectorFrame(f))
     .filter((f): f is VectorFrame => f !== null)
   if (frames.length === 0) return null
-  return { id: a.id, name, fps, loop, frames }
+  return { id: a.id, name, fps, loop, frames, ...(easing === 'ease' ? { easing } : {}) }
 }
 
 /**
@@ -571,19 +647,28 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         .map((a) => sanitizeAnimation(a, frame))
         .filter((a): a is PintaAnimation => a !== null)
       if (animations.length === 0) return null
+      const extraColors = sanitizeExtraColors(record.extraColors)
       return {
         ...base,
         kind: 'pixel-sprite',
         frameWidth: frame.width,
         frameHeight: frame.height,
         paletteId,
+        ...(extraColors ? { extraColors } : {}),
         animations,
       }
     }
     case 'pixel-background': {
       const bitmap = sanitizeBitmap(record.bitmap)
       if (!bitmap) return null
-      return { ...base, kind: 'pixel-background', paletteId, bitmap }
+      const extraColors = sanitizeExtraColors(record.extraColors)
+      return {
+        ...base,
+        kind: 'pixel-background',
+        paletteId,
+        ...(extraColors ? { extraColors } : {}),
+        bitmap,
+      }
     }
     case 'tileset': {
       if (!isFinitePositiveInt(record.tileSize, PINTA_LIMITS.maxFrameSize)) return null
@@ -598,7 +683,16 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (tiles.length === 0) return null
       const rawSolid = Array.isArray(record.solid) ? record.solid : []
       const solid = tiles.map((_, i) => rawSolid[i] === true)
-      return { ...base, kind: 'tileset', tileSize, paletteId, tiles, solid }
+      const extraColors = sanitizeExtraColors(record.extraColors)
+      return {
+        ...base,
+        kind: 'tileset',
+        tileSize,
+        paletteId,
+        ...(extraColors ? { extraColors } : {}),
+        tiles,
+        solid,
+      }
     }
     case 'tilemap': {
       if (typeof record.tilesetId !== 'string' || !record.tilesetId) return null

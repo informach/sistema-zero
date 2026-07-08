@@ -7,13 +7,13 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { COPY } from '../../core/copy'
-import type { PaletteId } from '../../core/palette'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
   type PintaBitmap,
+  resolveAssetPalette,
   type TilemapAsset,
   type VectorFrame,
 } from '../../core/project'
@@ -35,16 +35,16 @@ import { useEditor, useEditorStores, useSession } from './editorContext'
 
 function PixelTileThumb({
   bitmap,
-  paletteId,
+  colors,
 }: {
   bitmap: PintaBitmap
-  paletteId: PaletteId
+  colors: readonly string[]
 }): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const canvas = canvasRef.current
-    if (canvas) paintBitmap(canvas, bitmap, paletteId)
-  }, [bitmap, paletteId])
+    if (canvas) paintBitmap(canvas, bitmap, colors)
+  }, [bitmap, colors])
   return (
     <canvas
       ref={canvasRef}
@@ -105,6 +105,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const frameIndex = useSession((state) => state.frameIndex)
+  const colors = useMemo(() => resolveAssetPalette(asset), [asset])
 
   if (!isTilesetKind(asset)) return null
   const selectedIndex = Math.min(frameIndex, asset.tiles.length - 1)
@@ -159,7 +160,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
             onSelect={() => session.getState().selectFrame(index)}
           >
             {asset.kind === 'tileset' ? (
-              <PixelTileThumb bitmap={tile as PintaBitmap} paletteId={asset.paletteId} />
+              <PixelTileThumb bitmap={tile as PintaBitmap} colors={colors} />
             ) : (
               <VectorFrameSvg
                 width={asset.tileSize}

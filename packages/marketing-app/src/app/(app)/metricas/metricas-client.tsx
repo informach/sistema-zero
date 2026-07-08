@@ -1,38 +1,46 @@
 'use client'
 
 import { Button, buttonVariants } from '@sistemazero/ui/button'
-import { Card, CardContent } from '@sistemazero/ui/card'
-import { InfoTooltip } from '@sistemazero/ui/info-tooltip'
 import { Skeleton } from '@sistemazero/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@sistemazero/ui/table'
 import { Hourglass, Plug } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { NetworkChip } from '@/components/shared/network-chip'
 import { apiGet } from '@/lib/api'
 import { cn } from '@/lib/cn'
-import { formatShortSp } from '@/lib/dates'
-import type { AccountsResponse, MetricsSummaryView } from '@/lib/types'
+import { NETWORK_LABELS, SOCIAL_NETWORKS, type SocialNetwork } from '@/lib/networks'
+import type {
+  AccountsResponse,
+  BestTimesView,
+  FollowersSeriesView,
+  MetricsSummaryView,
+} from '@/lib/types'
+import { BestTimesHeatmap } from './best-times-heatmap'
+import { FollowersChart } from './followers-chart'
+import { NetworkCards } from './network-cards'
+import { TopPublicationsTable } from './top-publications-table'
 
-const NUMBER_FMT = new Intl.NumberFormat('pt-BR')
+const PERIODS = [7, 30, 90] as const
+type Period = (typeof PERIODS)[number]
+const BEST_TIMES_PERIODS = [90, 180, 365] as const
+type BestTimesPeriod = (typeof BEST_TIMES_PERIODS)[number]
 
 /**
- * Métricas básicas do YouTube (F2): último snapshot do canal + top publicações
- * por views. Busca também as contas p/ separar os dois vazios: "nada conectado"
- * (CTA p/ Conexões) e "conectado, aguardando a primeira coleta" (worker de 6h).
+ * Dashboard de métricas (F3): cards por rede (seguidores + totais 28d), série
+ * de seguidores com filtros de rede/período (refetch no backend) e top
+ * publicações multi-rede. Os dois vazios continuam distintos: "nada conectado"
+ * (CTA p/ Conexões) e "conectado, aguardando a primeira coleta".
  */
 export function MetricasClient() {
   const [state, setState] = useState<{
     summary: MetricsSummaryView
     accounts: AccountsResponse
   } | null>(null)
+  const [series, setSeries] = useState<FollowersSeriesView | null>(null)
+  const [network, setNetwork] = useState<SocialNetwork | null>(null)
+  const [days, setDays] = useState<Period>(30)
+  const [bestTimes, setBestTimes] = useState<BestTimesView | null>(null)
+  const [bestTimesNetwork, setBestTimesNetwork] = useState<SocialNetwork | null>(null)
+  const [bestTimesDays, setBestTimesDays] = useState<BestTimesPeriod>(180)
   const [failed, setFailed] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
 
@@ -56,6 +64,40 @@ export function MetricasClient() {
     }
   }, [reloadKey])
 
+  // Série de seguidores refaz a busca ao trocar rede/período (dado do backend).
+  useEffect(() => {
+    let alive = true
+    const params = new URLSearchParams({ days: String(days) })
+    if (network) params.set('network', network)
+    apiGet<FollowersSeriesView>(`/api/marketing/metrics/followers-series?${params}`)
+      .then((view) => {
+        if (alive) setSeries(view)
+      })
+      .catch(() => {
+        if (alive) setSeries({ series: [] })
+      })
+    return () => {
+      alive = false
+    }
+  }, [network, days])
+
+  // Melhores horários: mesmo padrão (agregado no backend, filtros refazem).
+  useEffect(() => {
+    let alive = true
+    const params = new URLSearchParams({ days: String(bestTimesDays) })
+    if (bestTimesNetwork) params.set('network', bestTimesNetwork)
+    apiGet<BestTimesView>(`/api/marketing/metrics/best-times?${params}`)
+      .then((view) => {
+        if (alive) setBestTimes(view)
+      })
+      .catch(() => {
+        if (alive) setBestTimes({ cells: [], totalPosts: 0 })
+      })
+    return () => {
+      alive = false
+    }
+  }, [bestTimesNetwork, bestTimesDays])
+
   if (failed) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
@@ -69,30 +111,32 @@ export function MetricasClient() {
     )
   }
 
-  if (state === null) {
+  if (state === null || series === null || bestTimes === null) {
     return (
       <div className="space-y-4" aria-busy="true">
         <span className="sr-only">Carregando métricas</span>
-        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-72 w-full rounded-xl" />
         <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     )
   }
 
   const { summary, accounts } = state
-  const hasData = summary.account !== null || summary.topPublications.length > 0
-  const hasConnectedYoutube = accounts.items.some(
-    (it) => it.network === 'youtube' && it.status === 'connected',
+  const connectedNetworks = new Set(
+    accounts.items.filter((a) => a.status === 'connected').map((a) => a.network),
   )
+  const hasData = summary.accounts.length > 0 || summary.topPublications.length > 0
 
-  if (!hasData && !hasConnectedYoutube) {
+  if (!hasData && connectedNetworks.size === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-card/50 py-20 text-center">
         <Plug className="size-8 text-muted-foreground" aria-hidden />
         <div className="space-y-1 px-6">
-          <p className="text-sm font-medium">Nenhuma conta do YouTube conectada</p>
+          <p className="text-sm font-medium">Nenhuma conta conectada</p>
           <p className="text-sm text-muted-foreground">
-            As métricas nascem da conta conectada. Conecte o canal para começar a coleta.
+            As métricas nascem das contas conectadas. Conecte o YouTube ou o Facebook e Instagram
+            para começar a coleta.
           </p>
         </div>
         <Link href="/conexoes" className={cn(buttonVariants({ variant: 'outline' }))}>
@@ -104,120 +148,114 @@ export function MetricasClient() {
 
   if (!hasData) {
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-card/50 py-20 text-center">
-          <Hourglass className="size-8 text-muted-foreground" aria-hidden />
-          <div className="space-y-1 px-6">
-            <p className="text-sm font-medium">As primeiras métricas chegam em algumas horas.</p>
-            <p className="text-sm text-muted-foreground">
-              A conta está conectada e a coleta automática roda a cada 6 horas. Volte mais tarde.
-            </p>
-          </div>
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-card/50 py-20 text-center">
+        <Hourglass className="size-8 text-muted-foreground" aria-hidden />
+        <div className="space-y-1 px-6">
+          <p className="text-sm font-medium">As primeiras métricas chegam em algumas horas.</p>
+          <p className="text-sm text-muted-foreground">
+            As contas estão conectadas e a coleta automática já está agendada. Volte mais tarde.
+          </p>
         </div>
-        <NextPhasesCard />
       </div>
     )
   }
 
+  const filterableNetworks = SOCIAL_NETWORKS.filter((n) => connectedNetworks.has(n))
+
   return (
-    <div className="space-y-4">
-      {summary.account ? (
-        <Card>
-          <CardContent className="flex flex-wrap items-end justify-between gap-4 p-5">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Canal</p>
-              <p className="font-medium">
-                {summary.account.channelTitle ?? summary.account.displayName}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Inscritos</p>
-              <p className="text-2xl font-bold tabular-nums">
-                {NUMBER_FMT.format(summary.account.followers)}
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              coletado em {formatShortSp(summary.account.capturedAt)}
-            </p>
-          </CardContent>
-        </Card>
-      ) : null}
+    <div className="space-y-5">
+      <NetworkCards summary={summary} series={series} />
 
-      {summary.topPublications.length > 0 ? (
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5">
-            <h2 className="text-sm font-medium">Top publicações</h2>
-            <InfoTooltip text="Publicações do YouTube ordenadas por views, com o último snapshot coletado de cada uma." />
-          </div>
-          <div className="rounded-xl border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Publicação</TableHead>
-                  <TableHead>Formato</TableHead>
-                  <TableHead>Publicado em</TableHead>
-                  <TableHead className="text-right">Views</TableHead>
-                  <TableHead className="text-right">Likes</TableHead>
-                  <TableHead className="text-right">Comentários</TableHead>
-                  <TableHead>Coletado em</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {summary.topPublications.map((pub) => (
-                  <TableRow key={pub.publicationId}>
-                    <TableCell>
-                      <Link
-                        href={`/conteudos/${pub.contentId}/publicacoes/${pub.publicationId}`}
-                        className="font-medium hover:underline"
-                      >
-                        {pub.contentTitle}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <NetworkChip format={pub.format} />
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {pub.publishedAt ? formatShortSp(pub.publishedAt) : '—'}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {NUMBER_FMT.format(pub.views)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {NUMBER_FMT.format(pub.likes)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {NUMBER_FMT.format(pub.comments)}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {formatShortSp(pub.capturedAt)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-medium">Seguidores</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            {filterableNetworks.length > 1 ? (
+              <FilterGroup
+                options={[
+                  { key: 'all', label: 'Todas' },
+                  ...filterableNetworks.map((n) => ({ key: n, label: NETWORK_LABELS[n] })),
+                ]}
+                active={network ?? 'all'}
+                onSelect={(key) => setNetwork(key === 'all' ? null : (key as SocialNetwork))}
+              />
+            ) : null}
+            <FilterGroup
+              options={PERIODS.map((p) => ({ key: String(p), label: `${p}d` }))}
+              active={String(days)}
+              onSelect={(key) => setDays(Number(key) as Period)}
+            />
           </div>
         </div>
-      ) : (
-        <div className="rounded-xl border border-dashed border-border bg-card/50 px-6 py-10 text-center">
-          <p className="text-sm text-muted-foreground">
-            Nenhuma publicação com métricas ainda. Os números aparecem depois da primeira coleta
-            pós-publicação.
-          </p>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <FollowersChart view={series} />
         </div>
-      )}
+      </div>
 
-      <NextPhasesCard />
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-medium">Melhores horários</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            {filterableNetworks.length > 1 ? (
+              <FilterGroup
+                options={[
+                  { key: 'all', label: 'Todas' },
+                  ...filterableNetworks.map((n) => ({ key: n, label: NETWORK_LABELS[n] })),
+                ]}
+                active={bestTimesNetwork ?? 'all'}
+                onSelect={(key) =>
+                  setBestTimesNetwork(key === 'all' ? null : (key as SocialNetwork))
+                }
+              />
+            ) : null}
+            <FilterGroup
+              options={BEST_TIMES_PERIODS.map((p) => ({ key: String(p), label: `${p}d` }))}
+              active={String(bestTimesDays)}
+              onSelect={(key) => setBestTimesDays(Number(key) as BestTimesPeriod)}
+            />
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <BestTimesHeatmap view={bestTimes} />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Cada célula é um horário da semana (fuso de São Paulo). Quanto mais forte a cor, mais
+          views por post as publicações daquele horário somaram no período.
+        </p>
+      </div>
+
+      <TopPublicationsTable publications={summary.topPublications} />
     </div>
   )
 }
 
-/** Bloco discreto do que vem depois (sem badge: é nota, não stub). */
-function NextPhasesCard() {
+/** Grupo de botões-filtro (pílulas), padrão dos filtros do Painel. */
+function FilterGroup({
+  options,
+  active,
+  onSelect,
+}: {
+  options: Array<{ key: string; label: string }>
+  active: string
+  onSelect: (key: string) => void
+}) {
   return (
-    <Card>
-      <CardContent className="p-4 text-sm text-muted-foreground">
-        O dashboard completo (comparativos por rede, heatmap de horários) chega nas próximas fases.
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-1 rounded-lg border border-border bg-card p-0.5">
+      {options.map((option) => (
+        <button
+          key={option.key}
+          type="button"
+          onClick={() => onSelect(option.key)}
+          className={cn(
+            'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+            option.key === active
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   )
 }

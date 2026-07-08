@@ -29,6 +29,7 @@ import type {
   AccountIdentity,
   OAuthProvider,
   OAuthTokenSet,
+  ProviderAccount,
   RefreshedTokens,
 } from '../../src/domain/ports/oauth-provider.port'
 import { OAuthProviderError } from '../../src/domain/ports/oauth-provider.port'
@@ -36,6 +37,7 @@ import type {
   OAuthStateRecord,
   OAuthStateRepository,
 } from '../../src/domain/ports/oauth-state-repository.port'
+import type { PublicationAssetRepository } from '../../src/domain/ports/publication-asset-repository.port'
 import type {
   PublicationListItem,
   PublicationRepository,
@@ -235,6 +237,40 @@ export class InMemoryMediaAssetRepository implements MediaAssetRepository {
     }
     return due.map(clone)
   }
+
+  /** Ref opcional p/ o join do arquivador (stage/updatedAt do conteúdo). */
+  contentsRef: InMemoryContentRepository | null = null
+
+  async claimDueArchives(input: {
+    now: Date
+    limit: number
+    leaseMs: number
+    afterDays: number
+  }): Promise<MediaAsset[]> {
+    const cutoff = input.now.getTime() - input.afterDays * 86_400_000
+    const due = [...this.rows.values()]
+      .filter((a) => {
+        if (a.status === 'archiving') {
+          return a.transferNextAt !== null && a.transferNextAt.getTime() <= input.now.getTime()
+        }
+        if (a.status !== 'ready' || !a.r2Key || !a.contentId) return false
+        const content = this.contentsRef?.rows.get(a.contentId)
+        if (content?.stage !== 'published') return false
+        if (content.updatedAt.getTime() > cutoff) return false
+        return a.transferNextAt === null || a.transferNextAt.getTime() <= input.now.getTime()
+      })
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .slice(0, input.limit)
+    const leaseUntil = new Date(input.now.getTime() + input.leaseMs)
+    for (const asset of due) {
+      asset.status = 'archiving'
+      asset.transferAttempts += 1
+      asset.transferNextAt = leaseUntil
+      asset.version += 1
+      asset.updatedAt = input.now
+    }
+    return due.map(clone)
+  }
 }
 
 export class InMemoryPublicationRepository implements PublicationRepository {
@@ -300,21 +336,20 @@ export class InMemoryPublicationRepository implements PublicationRepository {
   }
   async claimDueAutoPublish(input: {
     now: Date
-    leadMs: number
     limit: number
     leaseMs: number
     maxAttempts: number
-    networks: Network[]
+    networks: Array<{ network: Network; leadMs: number }>
   }): Promise<Publication[]> {
-    const networks = new Set(input.networks)
-    const leadUntil = input.now.getTime() + input.leadMs
+    const leadByNetwork = new Map(input.networks.map((n) => [n.network, n.leadMs]))
     const due = [...this.rows.values()]
       .filter((p) => {
-        if (p.publishMode !== 'auto' || !networks.has(p.network)) return false
+        const leadMs = leadByNetwork.get(p.network)
+        if (p.publishMode !== 'auto' || leadMs === undefined) return false
         if (p.status === 'scheduled') {
           return (
             p.scheduledAt !== null &&
-            p.scheduledAt.getTime() <= leadUntil &&
+            p.scheduledAt.getTime() <= input.now.getTime() + leadMs &&
             (p.nextAttemptAt === null || p.nextAttemptAt.getTime() <= input.now.getTime()) &&
             p.attempts < input.maxAttempts
           )
@@ -341,10 +376,26 @@ export class InMemoryPublicationRepository implements PublicationRepository {
     return due.map(clone)
   }
 
-  async listPublishedForMetrics(input: {
+  async listRecentPublished(input: { since: Date; limit: number }): Promise<PublicationListItem[]> {
+    return [...this.rows.values()]
+      .filter(
+        (p) =>
+          p.status === 'published' &&
+          p.publishedAt !== null &&
+          p.publishedAt.getTime() >= input.since.getTime(),
+      )
+      .sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0))
+      .slice(0, input.limit)
+      .map((p) => ({
+        publication: clone(p),
+        contentTitle: this.contentsRef?.rows.get(p.contentId)?.title ?? 'Conteúdo',
+        contentType: this.contentsRef?.rows.get(p.contentId)?.contentType ?? 'reels',
+      }))
+  }
+
+  async listDueForMetrics(input: {
     network: Network
-    since: Date
-    staleBefore: Date
+    now: Date
     limit: number
   }): Promise<Publication[]> {
     return [...this.rows.values()]
@@ -353,18 +404,26 @@ export class InMemoryPublicationRepository implements PublicationRepository {
           p.network === input.network &&
           p.status === 'published' &&
           p.externalPostId !== null &&
-          p.publishedAt !== null &&
-          p.publishedAt >= input.since &&
-          (p.metricsLastCollectedAt === null || p.metricsLastCollectedAt < input.staleBefore),
+          p.metricsNextCollectAt !== null &&
+          p.metricsNextCollectAt.getTime() <= input.now.getTime(),
       )
-      .sort((a, b) => a.id.localeCompare(b.id))
+      .sort((a, b) => {
+        const at = a.metricsNextCollectAt?.getTime() ?? 0
+        const bt = b.metricsNextCollectAt?.getTime() ?? 0
+        return at === bt ? a.id.localeCompare(b.id) : at - bt
+      })
       .slice(0, input.limit)
       .map(clone)
   }
-  async updateMetricsCollectedAt(ids: string[], at: Date): Promise<void> {
-    for (const id of ids) {
-      const pub = this.rows.get(id)
-      if (pub) pub.metricsLastCollectedAt = at
+  async updateMetricsSchedule(
+    items: Array<{ id: string; collectedAt: Date; nextCollectAt: Date | null }>,
+  ): Promise<void> {
+    for (const item of items) {
+      const pub = this.rows.get(item.id)
+      if (pub) {
+        pub.metricsLastCollectedAt = item.collectedAt
+        pub.metricsNextCollectAt = item.nextCollectAt
+      }
     }
   }
 
@@ -408,6 +467,18 @@ export class InMemoryPublicationRepository implements PublicationRepository {
   }
 }
 
+export class InMemoryPublicationAssetRepository implements PublicationAssetRepository {
+  rows = new Map<string, string[]>()
+
+  async replaceForPublication(publicationId: string, assetIds: string[]): Promise<void> {
+    this.rows.set(publicationId, [...assetIds])
+  }
+
+  async listByPublication(publicationId: string): Promise<string[]> {
+    return [...(this.rows.get(publicationId) ?? [])]
+  }
+}
+
 /** MediaStore roteirizável: presign devolve URLs falsas; head lê `objects`. */
 export class FakeMediaStore implements MediaStore {
   /** key → tamanho do objeto "no R2" (setado pelo teste após o "upload"). */
@@ -438,6 +509,18 @@ export class FakeMediaStore implements MediaStore {
     if (size === undefined) throw new Error(`objeto inexistente: ${input.key}`)
     const end = Math.min(input.endInclusive, size - 1)
     return new Uint8Array(Math.max(0, end - input.start + 1))
+  }
+
+  async getStream(key: string): Promise<ReadableStream<Uint8Array>> {
+    const size = this.objects.get(key)
+    if (size === undefined) throw new Error(`objeto inexistente: ${key}`)
+    const bytes = new Uint8Array(size)
+    return new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes)
+        controller.close()
+      },
+    })
   }
 
   async put(input: {
@@ -530,6 +613,20 @@ export class InMemorySocialAccountRepository implements SocialAccountRepository 
       .slice(0, limit)
       .map(clone)
   }
+  async listRefreshExpiring(now: Date, marginMs: number, limit: number): Promise<SocialAccount[]> {
+    const cutoff = now.getTime() + marginMs
+    return [...this.rows.values()]
+      .filter(
+        (a) =>
+          a.status === 'connected' &&
+          a.refreshTokenEnc !== null &&
+          a.refreshExpiresAt !== null &&
+          a.refreshExpiresAt.getTime() <= cutoff,
+      )
+      .sort((a, b) => (a.refreshExpiresAt?.getTime() ?? 0) - (b.refreshExpiresAt?.getTime() ?? 0))
+      .slice(0, limit)
+      .map(clone)
+  }
 }
 
 export class InMemoryOAuthStateRepository implements OAuthStateRepository {
@@ -600,8 +697,41 @@ export class FakeOAuthProvider implements OAuthProvider {
     this.refreshed.push(refreshToken)
     return structuredClone(this.refreshResult)
   }
-  async fetchIdentity(): Promise<AccountIdentity> {
-    return structuredClone(this.identity)
+  /** Roteirizável: setado = contas devolvidas; senão deriva 1 conta youtube do tokenSet+identity. */
+  accounts: ProviderAccount[] | null = null
+  readonly renewCalls: string[] = []
+  failRenewWith: 'permanent' | 'transient' | null = null
+
+  async resolveAccounts(tokens: OAuthTokenSet): Promise<ProviderAccount[]> {
+    if (this.accounts) return structuredClone(this.accounts)
+    return [
+      {
+        network: 'youtube',
+        identity: structuredClone(this.identity),
+        tokens: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresInSeconds: tokens.expiresInSeconds,
+          refreshExpiresInSeconds: tokens.refreshExpiresInSeconds,
+          scopes: tokens.scopes,
+        },
+      },
+    ]
+  }
+  /** Renovação proativa (Meta): devolve as MESMAS contas roteirizadas. */
+  async renewAccounts(userToken: string): Promise<ProviderAccount[]> {
+    if (this.failRenewWith) {
+      throw new OAuthProviderError('renovação falhou', this.failRenewWith === 'permanent')
+    }
+    this.renewCalls.push(userToken)
+    return this.resolveAccounts({
+      accessToken: `renovado-${userToken}`,
+      refreshToken: `renovado-${userToken}`,
+      expiresInSeconds: 60 * 86_400,
+      refreshExpiresInSeconds: 60 * 86_400,
+      scopes: [],
+      idToken: null,
+    })
   }
   async revoke(token: string): Promise<void> {
     this.revoked.push(token)
@@ -646,6 +776,56 @@ export class FakeDriveClient implements DriveClient {
       },
     })
   }
+
+  // ── Arquivador (F4) ─────────────────────────────────────────────────────────
+  readonly folders = new Map<string, string>()
+  readonly uploads: Array<{
+    name: string
+    mimeType: string
+    sizeBytes: number
+    parentFolderId: string
+    driveFileId: string
+  }> = []
+  /** Roteiriza falha no upload: 'permanent' (403/404) ou 'transient'. */
+  failUploadWith: 'permanent' | 'transient' | null = null
+  private uploadSeq = 0
+
+  async ensureFolder(_accessToken: string, name: string): Promise<string> {
+    const existing = this.folders.get(name)
+    if (existing) return existing
+    const id = `folder-${this.folders.size + 1}`
+    this.folders.set(name, id)
+    return id
+  }
+
+  async uploadStream(
+    _accessToken: string,
+    input: {
+      name: string
+      mimeType: string
+      sizeBytes: number
+      parentFolderId: string
+      body: ReadableStream<Uint8Array>
+    },
+  ): Promise<string> {
+    if (this.failUploadWith) {
+      throw new DriveClientError('upload falhou', this.failUploadWith === 'permanent')
+    }
+    // Consome o stream (o worker pipa do R2 — o fake só drena).
+    const reader = input.body.getReader()
+    while (!(await reader.read()).done) {
+      // drena
+    }
+    const driveFileId = `drive-file-${++this.uploadSeq}`
+    this.uploads.push({
+      name: input.name,
+      mimeType: input.mimeType,
+      sizeBytes: input.sizeBytes,
+      parentFolderId: input.parentFolderId,
+      driveFileId,
+    })
+    return driveFileId
+  }
 }
 
 /** ReminderNotifier roteirizável: registra envios; falha sob demanda. */
@@ -676,6 +856,24 @@ export class InMemoryMetricsRepository implements MetricsRepository {
       .filter((r) => r.socialAccountId === socialAccountId)
       .sort((a, b) => b.capturedAt.getTime() - a.capturedAt.getTime())
     return rows[0] ? clone(rows[0]) : null
+  }
+  async latestAccountSnapshots(socialAccountIds: string[]): Promise<Map<string, AccountSnapshot>> {
+    const map = new Map<string, AccountSnapshot>()
+    for (const id of socialAccountIds) {
+      const latest = await this.latestAccountSnapshot(id)
+      if (latest) map.set(id, latest)
+    }
+    return map
+  }
+  async listAccountSnapshotsSince(
+    socialAccountIds: string[],
+    since: Date,
+  ): Promise<AccountSnapshot[]> {
+    const wanted = new Set(socialAccountIds)
+    return this.accountSnapshots
+      .filter((r) => wanted.has(r.socialAccountId) && r.capturedAt.getTime() >= since.getTime())
+      .sort((a, b) => a.capturedAt.getTime() - b.capturedAt.getTime())
+      .map(clone)
   }
   async latestPublicationStats(
     publicationIds: string[],

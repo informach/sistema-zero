@@ -25,11 +25,14 @@ export function PreviewCard({
   caption,
   title,
   coverAssetId,
+  carouselAssetIds = [],
 }: {
   format: PublicationFormat
   caption: string
   title: string | null
   coverAssetId: string | null
+  /** Ordem do carrossel (só ig_carousel): a 1ª imagem vira a prévia + contador. */
+  carouselAssetIds?: string[]
 }) {
   const network = FORMAT_NETWORK[format]
   const aspect = aspectFor(format)
@@ -37,6 +40,8 @@ export function PreviewCard({
   const trimmed = caption.trim()
   const truncated = trimmed.length > TRUNCATE_AT
   const shown = truncated ? `${trimmed.slice(0, TRUNCATE_AT).trimEnd()}…` : trimmed
+  const isCarousel = format === 'ig_carousel'
+  const previewAssetId = (isCarousel ? carouselAssetIds[0] : null) ?? coverAssetId
 
   return (
     <aside className="space-y-2">
@@ -55,18 +60,23 @@ export function PreviewCard({
           <NetworkChip format={format} showLabel={false} className="ml-auto" />
         </div>
         <div className={cn('relative flex items-center justify-center bg-muted', aspect)}>
-          {coverAssetId ? (
+          {previewAssetId ? (
             <AssetImage
-              assetId={coverAssetId}
+              assetId={previewAssetId}
               alt="Capa da publicação"
               className="absolute inset-0 h-full w-full"
             />
           ) : (
             <span className="flex flex-col items-center gap-1 text-muted-foreground">
               <FileImage className="size-8" aria-hidden />
-              <span className="text-xs">Sem capa</span>
+              <span className="text-xs">{isCarousel ? 'Sem imagens' : 'Sem capa'}</span>
             </span>
           )}
+          {isCarousel && carouselAssetIds.length > 0 ? (
+            <span className="absolute right-2 top-2 rounded-full bg-background/80 px-2 py-0.5 text-[10px] font-medium">
+              1/{carouselAssetIds.length}
+            </span>
+          ) : null}
         </div>
         <div className="space-y-1 px-3 py-2.5">
           {network === 'youtube' && title?.trim() ? (

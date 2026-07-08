@@ -406,6 +406,28 @@ adulto — deliberado), "Adicionar ao projeto" copia via `addAsset` com `uniqueN
 (`libId: personal:<id>`), "Excluir" é otimista/best-effort; estado vazio orienta "Desenhe no
 Pinta…". Testes em `src/asset-library/personal.test.ts` (mock idb FUNCIONAL Map-por-DB).
 
+**Metadados de spritesheet/tileset (Pinta→Estúdio, 07/2026 — seletor por nome):** o `ProjectAsset`
+ganhou `sprite?: {frameW,frameH,animations:{name,from,to,fps,loop}[]}` e `tileset?: {tileSize,solid:
+number[]}` (os índices `from/to` da animação são os MESMOS que o runtime do Jogo 2D usa — o Pinta
+empacota 1 linha/animação). Fonte da verdade do FORMATO = `core/project.ts` (`sanitizeSpriteMeta`/
+`sanitizeTilesetMeta`, exportados): metadado inválido é DESCARTADO sem derrubar o asset, tetos
+próprios por campo (32 animações / 64 sólidos), NÃO conta na cota de `dataUrl` nem vai ao
+`assetManifest` do preview (é só de editor). O metadado viaja Pinta→ponte (`PintaExportedAsset.sprite/
+tileset`)→`PersonalAsset`→`ProjectAsset` (`addAsset`/`NewAssetInput` + `AssetsPanel.addFromPersonal`),
+todos reusando os sanitizers do `#core`. **Bloco "Animar sprite" (`sz_g2d_animate_sprite`)** ganhou o
+campo **`ANIM` (`field_animation_picker`)**: lista as animações da folha pelo NOME (resolve SHEET→bloco
+"Carregar folha"→IMAGE→`asset.sprite.animations`) e, ao escolher, PREENCHE os soquetes FROM/TO/FPS (só
+shadow `sz_val_number`). ⚠️ É campo de EXIBIÇÃO **não-serializável** — `SERIALIZABLE=false` NÃO basta
+(o Blockly 12 serializa campo EDITÁVEL mesmo assim, só avisa); a trava real é `override isSerializable()
+→ false`. Assim IR/round-trip/parser/allowlist ficam INTOCADOS (FROM/TO/FPS são a fonte da verdade;
+nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLID` p/
+**`field_solid_tiles_picker`** (continua string `"0 1 2"` — serialização idêntica a `field_input`; só
+grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
+(de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
+projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
+extensão. game-2d bump `0.19.0→0.20.0`. Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado).
+
 ## Comandos
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)

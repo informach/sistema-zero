@@ -1,40 +1,39 @@
 'use client'
 
-import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent } from '@sistemazero/ui/card'
 import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { Skeleton } from '@sistemazero/ui/skeleton'
-import {
-  CircleCheck,
-  Facebook,
-  Instagram,
-  type LucideIcon,
-  Music2,
-  TriangleAlert,
-  Youtube,
-  Zap,
-} from 'lucide-react'
+import { CircleCheck, Music2, TriangleAlert, Youtube } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
-import { formatShortSp } from '@/lib/dates'
-import { NETWORK_LABELS, type SocialNetwork } from '@/lib/networks'
-import type { AccountStatus, AccountsResponse, SocialAccountView } from '@/lib/types'
+import { NETWORK_LABELS } from '@/lib/networks'
+import type { AccountsResponse, SocialAccountView } from '@/lib/types'
+import { AutoPublishBadge, StatusChip, TokenInfoLine } from './account-bits'
+import { MetaSection } from './meta-section'
 
-// ── Banner de retorno do OAuth (o callback do Google redireciona pra cá) ──
+// ── Banner de retorno do OAuth (o callback redireciona pra cá) ──
 
 const OAUTH_ERROR_MESSAGES: Record<string, string> = {
   state_invalid: 'A autorização expirou ou já foi usada. Comece de novo.',
-  access_denied: 'Você cancelou a autorização no Google.',
+  access_denied: 'Você cancelou a autorização.',
   exchange_failed: 'Não foi possível concluir a conexão. Tente de novo.',
+  no_accounts:
+    'Nenhuma Página encontrada na conta. Vincule uma Página do Facebook (com Instagram profissional) e tente de novo.',
+}
+
+const CONNECTED_MESSAGES: Record<string, string> = {
+  youtube: 'Conta do Google conectada.',
+  facebook: 'Facebook e Instagram conectados.',
+  tiktok: 'Conta do TikTok conectada.',
 }
 
 /**
- * Lê `?connected=youtube` / `?error=<code>` do retorno do OAuth, guarda a
- * mensagem em estado local e LIMPA a query da URL (um F5 não repete o banner).
- * Componente próprio p/ o `useSearchParams` viver dentro de um Suspense.
+ * Lê `?connected=youtube|facebook` / `?error=<code>` do retorno do OAuth,
+ * guarda a mensagem em estado local e LIMPA a query da URL (um F5 não repete o
+ * banner). Componente próprio p/ o `useSearchParams` viver dentro de um Suspense.
  */
 function OAuthReturnBanner() {
   const searchParams = useSearchParams()
@@ -46,8 +45,9 @@ function OAuthReturnBanner() {
 
   useEffect(() => {
     if (!connected && !errorCode) return
-    if (connected === 'youtube') {
-      setBanner({ kind: 'success', message: 'Conta do Google conectada.' })
+    const success = connected ? CONNECTED_MESSAGES[connected] : undefined
+    if (success) {
+      setBanner({ kind: 'success', message: success })
     } else if (errorCode) {
       setBanner({
         kind: 'error',
@@ -76,40 +76,20 @@ function OAuthReturnBanner() {
   )
 }
 
-// ── Chips de estado da conta ──
-
-const STATUS_CHIPS: Record<AccountStatus, { label: string; className: string }> = {
-  connected: {
-    label: 'Conectada',
-    className: 'border-transparent bg-success/15 text-success-foreground',
-  },
-  needs_reauth: {
-    label: 'Precisa reconectar',
-    className: 'border-transparent bg-amber-500/15 text-amber-700 dark:text-amber-400',
-  },
-  revoked: { label: 'Desconectada', className: 'border-border bg-muted text-muted-foreground' },
-  disabled: { label: 'Desativada', className: 'border-border bg-muted text-muted-foreground' },
-}
-
 /** Mesma preferência do backend: a conta conectada vence; senão a primeira. */
-function pickYoutubeAccount(items: SocialAccountView[] | undefined): SocialAccountView | null {
-  const youtube = (items ?? []).filter((it) => it.network === 'youtube')
-  return youtube.find((it) => it.status === 'connected') ?? youtube[0] ?? null
+function pickAccount(
+  items: SocialAccountView[] | undefined,
+  network: 'youtube' | 'tiktok',
+): SocialAccountView | null {
+  const filtered = (items ?? []).filter((it) => it.network === network)
+  return filtered.find((it) => it.status === 'connected') ?? filtered[0] ?? null
 }
-
-// ── Redes das próximas fases (cards esmaecidos) ──
-
-const SOON_NETWORKS: Array<{ network: SocialNetwork; icon: LucideIcon; note: string }> = [
-  { network: 'instagram', icon: Instagram, note: 'Conexão via Meta chega na fase 3 do roadmap.' },
-  { network: 'facebook', icon: Facebook, note: 'Conexão via Meta chega na fase 3 do roadmap.' },
-  { network: 'tiktok', icon: Music2, note: 'Conexão chega na fase 4 do roadmap.' },
-]
 
 export function ConexoesClient({ isAdmin }: { isAdmin: boolean }) {
   const [data, setData] = useState<AccountsResponse | null>(null)
   const [failed, setFailed] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
-  const [starting, setStarting] = useState(false)
+  const [starting, setStarting] = useState<'youtube' | 'facebook' | 'tiktok' | null>(null)
   const [disconnectTarget, setDisconnectTarget] = useState<SocialAccountView | null>(null)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadKey` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
@@ -129,29 +109,30 @@ export function ConexoesClient({ isAdmin }: { isAdmin: boolean }) {
     }
   }, [reloadKey])
 
-  const youtube = pickYoutubeAccount(data?.items)
+  const youtube = pickAccount(data?.items, 'youtube')
+  const tiktok = pickAccount(data?.items, 'tiktok')
 
-  async function startOAuth() {
-    setStarting(true)
+  async function startOAuth(network: 'youtube' | 'facebook' | 'tiktok') {
+    setStarting(network)
     try {
       const { authorizeUrl } = await apiSend<{ authorizeUrl: string }>(
-        '/api/marketing/oauth/youtube/start',
+        `/api/marketing/oauth/${network}/start`,
         'POST',
       )
-      // Navegação de documento: o consentimento acontece no Google e o callback
-      // volta pra esta tela com `?connected=` ou `?error=`.
+      // Navegação de documento: o consentimento acontece no provedor e o
+      // callback volta pra esta tela com `?connected=` ou `?error=`.
       window.location.href = authorizeUrl
       // `starting` fica ligado de propósito: a página está indo embora.
     } catch (error) {
       const apiError = error as ApiError
       if (apiError.status === 503) {
-        toast.error('OAuth do Google não configurado neste ambiente.')
+        toast.error('OAuth do provedor não configurado neste ambiente.')
       } else if (apiError.status === 403) {
         toast.error('Conectar contas exige perfil de administração.')
       } else {
         toast.error('Não foi possível iniciar a conexão. Tente de novo.')
       }
-      setStarting(false)
+      setStarting(null)
     }
   }
 
@@ -201,27 +182,27 @@ export function ConexoesClient({ isAdmin }: { isAdmin: boolean }) {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
+          <MetaSection
+            accounts={data.items}
+            isAdmin={isAdmin}
+            starting={starting === 'facebook'}
+            onConnect={() => startOAuth('facebook')}
+            onDisconnect={setDisconnectTarget}
+          />
           <YoutubeCard
             account={youtube}
             isAdmin={isAdmin}
-            starting={starting}
-            onConnect={startOAuth}
+            starting={starting === 'youtube'}
+            onConnect={() => startOAuth('youtube')}
             onDisconnect={setDisconnectTarget}
           />
-          {SOON_NETWORKS.map(({ network, icon: Icon, note }) => (
-            <Card key={network} className="opacity-60">
-              <CardContent className="space-y-3 p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Icon className="size-5 text-muted-foreground" aria-hidden />
-                    <h2 className="font-medium">{NETWORK_LABELS[network]}</h2>
-                  </div>
-                  <Badge variant="muted">em breve</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">{note}</p>
-              </CardContent>
-            </Card>
-          ))}
+          <TikTokCard
+            account={tiktok}
+            isAdmin={isAdmin}
+            starting={starting === 'tiktok'}
+            onConnect={() => startOAuth('tiktok')}
+            onDisconnect={setDisconnectTarget}
+          />
         </div>
       )}
 
@@ -237,7 +218,7 @@ export function ConexoesClient({ isAdmin }: { isAdmin: boolean }) {
         title="Desconectar conta"
         message={
           disconnectTarget
-            ? `A conta "${disconnectTarget.displayName}" será desconectada e a publicação automática no YouTube para de funcionar. As publicações agendadas passam a depender do fluxo manual.`
+            ? `A conta "${disconnectTarget.displayName}" (${NETWORK_LABELS[disconnectTarget.network]}) será desconectada e a publicação automática dessa rede para de funcionar. As publicações agendadas passam a depender do fluxo manual.`
             : ''
         }
         confirmText="Desconectar"
@@ -272,11 +253,7 @@ function YoutubeCard({
             <Youtube className="size-5 text-muted-foreground" aria-hidden />
             <h2 className="font-medium">{NETWORK_LABELS.youtube}</h2>
           </div>
-          {account ? (
-            <Badge variant="outline" className={STATUS_CHIPS[account.status].className}>
-              {STATUS_CHIPS[account.status].label}
-            </Badge>
-          ) : null}
+          {account ? <StatusChip status={account.status} /> : null}
         </div>
 
         {account ? (
@@ -296,29 +273,8 @@ function YoutubeCard({
                 </p>
               ) : null}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {[
-                account.tokenExpiresAt
-                  ? `Token válido até ${formatShortSp(account.tokenExpiresAt)}`
-                  : null,
-                account.lastRefreshAt
-                  ? `Último refresh ${formatShortSp(account.lastRefreshAt)}`
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(' · ') || 'Sem informações de token ainda.'}
-            </p>
-            {account.lastRefreshError ? (
-              <p className="text-xs text-destructive" role="alert">
-                Falha no último refresh: {account.lastRefreshError}
-              </p>
-            ) : null}
-            {account.canAutoPublish ? (
-              <Badge variant="success">
-                <Zap className="size-3" aria-hidden />
-                Publicação automática ativa
-              </Badge>
-            ) : null}
+            <TokenInfoLine account={account} />
+            <AutoPublishBadge account={account} />
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
@@ -346,6 +302,80 @@ function YoutubeCard({
             ) : null}
           </div>
         ) : null}
+
+        <p className="text-xs text-muted-foreground">
+          A mesma conta cuida do Drive: importar mídia e arquivar o que já foi publicado. Reconectar
+          libera o arquivamento automático no Drive (permissão nova).
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
+function TikTokCard({
+  account,
+  isAdmin,
+  starting,
+  onConnect,
+  onDisconnect,
+}: {
+  account: SocialAccountView | null
+  isAdmin: boolean
+  starting: boolean
+  onConnect: () => void
+  onDisconnect: (account: SocialAccountView) => void
+}) {
+  const needsReconnect = account?.status === 'needs_reauth' || account?.status === 'revoked'
+  const canDisconnect = account !== null && account.status !== 'revoked'
+
+  return (
+    <Card>
+      <CardContent className="space-y-3 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Music2 className="size-5 text-muted-foreground" aria-hidden />
+            <h2 className="font-medium">{NETWORK_LABELS.tiktok}</h2>
+          </div>
+          {account ? <StatusChip status={account.status} /> : null}
+        </div>
+
+        {account ? (
+          <div className="space-y-2">
+            <p className="text-sm">
+              Conectado como{' '}
+              <span className="font-medium">
+                {account.username ? `@${account.username}` : account.displayName}
+              </span>
+            </p>
+            <TokenInfoLine account={account} />
+            <AutoPublishBadge account={account} />
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Nenhuma conta conectada. Conecte a conta do TikTok para publicar e coletar métricas
+            automaticamente.
+          </p>
+        )}
+
+        {isAdmin ? (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {!account || needsReconnect ? (
+              <Button size="sm" onClick={onConnect} disabled={starting}>
+                {starting ? 'Abrindo o TikTok…' : account ? 'Reconectar' : 'Conectar'}
+              </Button>
+            ) : null}
+            {canDisconnect ? (
+              <Button variant="destructive" size="sm" onClick={() => onDisconnect(account)}>
+                Desconectar
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+
+        <p className="text-xs text-muted-foreground">
+          Até a auditoria do app na TikTok, os posts automáticos sobem privados (só a conta vê). Dá
+          para torná-los públicos no próprio app. O login se renova sozinho.
+        </p>
       </CardContent>
     </Card>
   )

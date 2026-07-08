@@ -6,6 +6,7 @@ import type { MediaAsset } from '../../domain/media/media-asset'
 import type { ContentRepository } from '../../domain/ports/content-repository.port'
 import type { MediaAssetRepository } from '../../domain/ports/media-asset-repository.port'
 import type { MediaStore } from '../../domain/ports/media-store.port'
+import type { PublicationAssetRepository } from '../../domain/ports/publication-asset-repository.port'
 import type { PublicationRepository } from '../../domain/ports/publication-repository.port'
 import { type ReminderNotifier, ReminderSendError } from '../../domain/ports/reminder-notifier.port'
 import type { SocialAccountRepository } from '../../domain/ports/social-account-repository.port'
@@ -22,8 +23,12 @@ export interface PublisherWorkerConfig {
   maxAttempts: number
   retryBaseMs: number
   retryMaxMs: number
-  /** Lead do upload ANTECIPADO do ramo auto (YouTube publishAt nativo). */
-  autoLeadMs: number
+  /**
+   * Lead de antecipação do ramo auto POR REDE: YouTube sobe o vídeo horas
+   * antes (publishAt nativo); Meta claima minutos antes (container processa
+   * na espera e o publish sai na hora). Rede fora do mapa → lead 0.
+   */
+  leadMsByNetwork: ReadonlyMap<Network, number>
 }
 
 /** Deps do ramo AUTOMÁTICO (F2) — null = ramo desligado (só lembrete manual). */
@@ -32,6 +37,8 @@ export interface AutoPublishDeps {
   accounts: SocialAccountRepository
   accountService: AccountService
   assets: MediaAssetRepository
+  /** Ordem dos assets do carrossel (publication_assets). */
+  publicationAssets: PublicationAssetRepository
   store: MediaStore
   publicationService: PublicationService
 }
@@ -130,11 +137,13 @@ export class PublisherWorker {
     if (!auto || auto.publishers.size === 0) return
     const batch = await this.deps.publications.claimDueAutoPublish({
       now: this.deps.now(),
-      leadMs: this.deps.config.autoLeadMs,
       limit: this.deps.config.batchSize,
       leaseMs: this.deps.config.claimLeaseMs,
       maxAttempts: this.deps.config.maxAttempts,
-      networks: [...auto.publishers.keys()],
+      networks: [...auto.publishers.keys()].map((network) => ({
+        network,
+        leadMs: this.deps.config.leadMsByNetwork.get(network) ?? 0,
+      })),
     })
     for (const publication of batch) {
       try {
@@ -193,14 +202,23 @@ export class PublisherWorker {
       limit: 100,
       offset: 0,
     })
+    const orderedAssetIds =
+      publication.format === 'ig_carousel'
+        ? await auto.publicationAssets.listByPublication(publication.id)
+        : []
     const outcome = await publisher.publish({
       publication,
       account,
       accessToken,
       assets: items,
+      orderedAssetIds,
       assetBytes: (asset: MediaAsset, start: number, endInclusive: number) => {
         if (!asset.r2Key) return Promise.reject(new Error('asset sem r2Key'))
         return auto.store.getRange({ key: asset.r2Key, start, endInclusive })
+      },
+      assetUrl: (asset: MediaAsset, ttlSeconds: number) => {
+        if (!asset.r2Key) return Promise.reject(new Error('asset sem r2Key'))
+        return auto.store.presignGet({ key: asset.r2Key, expiresInSeconds: ttlSeconds })
       },
       session: publication.providerSession,
       saveSession: async (patch) => {
@@ -219,6 +237,8 @@ export class PublisherWorker {
           externalUrl: outcome.externalUrl,
           lastError: null,
           nextAttemptAt: null,
+          // Post no ar → coleta de métricas entra no radar imediatamente.
+          metricsNextCollectAt: this.deps.now(),
         })
         this.deps.logger.info('publisher.auto.published', {
           publicationId: publication.id,

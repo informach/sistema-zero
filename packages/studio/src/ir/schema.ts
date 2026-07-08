@@ -85,6 +85,12 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:spriteH'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:centerX'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:centerY'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:spriteVx'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:spriteVy'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:spriteSpeed'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:isMoving'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:isMovingH'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:isMovingV'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:randomBetween'; min: number | JSExpr; max: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:randomChance'; percent: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:hasHealth'; spriteVar: string })
@@ -130,6 +136,9 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3d:getPos'; objVar: string; axis: string })
   | (JSExprCommon & { type: 'g3d:getRot'; objVar: string; axis: string })
   | (JSExprCommon & { type: 'g3d:getScale'; objVar: string })
+  | (JSExprCommon & { type: 'g3d:getVel'; objVar: string; axis: string })
+  | (JSExprCommon & { type: 'g3d:getSpeed'; objVar: string })
+  | (JSExprCommon & { type: 'g3d:isMoving'; objVar: string })
   | (JSExprCommon & { type: 'g3d:dt'; worldVar: string })
   | (JSExprCommon & { type: 'g3d:angleTo'; aVar: string; bVar: string })
   // Game 3D — mira & clique (raycast): seleção, mira à frente, sensor de chão.
@@ -331,6 +340,12 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:spriteH'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:centerX'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:centerY'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:spriteVx'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:spriteVy'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:spriteSpeed'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:isMoving'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:isMovingH'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:isMovingV'), spriteVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:randomBetween'),
       min: z.union([JSExprSchema, z.number()]),
@@ -405,6 +420,9 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g3d:getPos'), objVar: irText(), axis: irText(), ...idField }),
     z.object({ type: z.literal('g3d:getRot'), objVar: irText(), axis: irText(), ...idField }),
     z.object({ type: z.literal('g3d:getScale'), objVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:getVel'), objVar: irText(), axis: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:getSpeed'), objVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:isMoving'), objVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:dt'), worldVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:angleTo'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:pickAtMouse'), worldVar: irText(), ...idField }),

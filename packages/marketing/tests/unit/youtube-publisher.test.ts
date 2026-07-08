@@ -21,6 +21,7 @@ import {
   InMemoryCommentRepository,
   InMemoryContentRepository,
   InMemoryMediaAssetRepository,
+  InMemoryPublicationAssetRepository,
   InMemoryPublicationRepository,
   InMemorySocialAccountRepository,
 } from '../fakes/in-memory'
@@ -134,6 +135,7 @@ function makeAutoPublication(
     publishedAt: null,
     reminderSentAt: null,
     metricsLastCollectedAt: null,
+    metricsNextCollectAt: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,
@@ -167,7 +169,7 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
   })
   const accountService = new AccountService(
     accounts,
-    { provider: new FakeOAuthProvider(), secretBox: new FakeSecretBox() },
+    { providers: new Map([['youtube', new FakeOAuthProvider()]]), secretBox: new FakeSecretBox() },
     new Set(['youtube']),
     now,
     silentLogger,
@@ -180,10 +182,14 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
     now,
     randomUUID,
   )
-  const publicationService = new PublicationService(publications, contentService, now, randomUUID, {
-    accounts,
-    capableNetworks: new Set<Network>(['youtube']),
-  })
+  const publicationService = new PublicationService(
+    publications,
+    contentService,
+    now,
+    randomUUID,
+    { links: new InMemoryPublicationAssetRepository(), media: assets },
+    { accounts, capableNetworks: new Set<Network>(['youtube']) },
+  )
   const worker = new PublisherWorker({
     publications,
     contents,
@@ -194,6 +200,7 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
       accounts,
       accountService,
       assets,
+      publicationAssets: new InMemoryPublicationAssetRepository(),
       store,
       publicationService,
     },
@@ -206,7 +213,7 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
       maxAttempts: 3,
       retryBaseMs: 60_000,
       retryMaxMs: 30 * 60_000,
-      autoLeadMs: 6 * 60 * 60_000,
+      leadMsByNetwork: new Map([['youtube' as const, 6 * 60 * 60_000]]),
     },
   })
 

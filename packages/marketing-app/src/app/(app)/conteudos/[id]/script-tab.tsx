@@ -5,12 +5,15 @@ import { Card, CardContent } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Textarea } from '@sistemazero/ui/textarea'
+import { Sparkles, Wand2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { LightCopyHints } from '@/components/ai/light-copy-hints'
+import { useAiStatus } from '@/components/ai/use-ai-status'
 import { OwnerSelect } from '@/components/shared/owner-select'
 import { type ApiError, apiSend } from '@/lib/api'
 import { dateInputToSaoPauloEndOfDayIso, isoToSaoPauloDayKey } from '@/lib/dates'
-import type { ContentDetailView } from '@/lib/types'
+import type { AiScriptView, ContentDetailView } from '@/lib/types'
 import { handleConflict } from '../shared'
 
 /**
@@ -37,6 +40,34 @@ export function ScriptTab({
   const [titleError, setTitleError] = useState<string | null>(null)
   const [dueError, setDueError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const aiEnabled = useAiStatus()
+  const [aiBusy, setAiBusy] = useState<false | 'generate' | 'improve'>(false)
+  const [aiNotes, setAiNotes] = useState<string[]>([])
+
+  async function runAi(mode: 'generate' | 'improve') {
+    setAiBusy(mode)
+    setAiNotes([])
+    try {
+      const res = await apiSend<AiScriptView>('/api/marketing/ai/script', 'POST', {
+        contentId: detail.id,
+        mode,
+        script: mode === 'improve' ? script : undefined,
+      })
+      setScript(res.script)
+      setAiNotes(res.notes)
+    } catch (error) {
+      const apiError = error as ApiError
+      toast.error(
+        apiError.status === 503
+          ? 'A IA não está configurada neste ambiente.'
+          : apiError.status === 502
+            ? 'A IA não respondeu agora. Tente de novo.'
+            : apiError.message,
+      )
+    } finally {
+      setAiBusy(false)
+    }
+  }
 
   const dirty =
     title !== detail.title ||
@@ -116,6 +147,38 @@ export function ScriptTab({
             placeholder="Escreva o roteiro aqui"
           />
         </Field>
+        {aiEnabled ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => void runAi('generate')}
+              disabled={aiBusy !== false}
+            >
+              <Sparkles className="size-3.5" aria-hidden />
+              {aiBusy === 'generate'
+                ? 'Gerando…'
+                : script.trim()
+                  ? 'Gerar de novo'
+                  : 'Gerar roteiro'}
+            </Button>
+            {script.trim() ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void runAi('improve')}
+                disabled={aiBusy !== false}
+              >
+                <Wand2 className="size-3.5" aria-hidden />
+                {aiBusy === 'improve' ? 'Melhorando…' : 'Melhorar roteiro'}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+        {aiNotes.length > 0 ? (
+          <p className="text-xs text-muted-foreground">A IA: {aiNotes.join(' ')}</p>
+        ) : null}
+        <LightCopyHints text={script} />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Responsável" htmlFor="content-owner">
             <OwnerSelect

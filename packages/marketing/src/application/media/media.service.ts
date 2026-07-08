@@ -150,6 +150,13 @@ export class MediaService {
   async resolve(id: string): Promise<{ url: string; expiresInSeconds: number }> {
     const asset = await this.assets.byId(id)
     if (!asset) throw new AssetNotFoundError()
+    // Arquivado (F4): o objeto saiu do R2 — o destino é o arquivo no Drive.
+    if (asset.status === 'archived' && asset.driveFileId) {
+      return {
+        url: `https://drive.google.com/file/d/${asset.driveFileId}/view`,
+        expiresInSeconds: this.config.presignGetTtlSeconds,
+      }
+    }
     if (!asset.r2Key || (asset.status !== 'ready' && asset.status !== 'archiving')) {
       throw new AssetNotReadyError()
     }

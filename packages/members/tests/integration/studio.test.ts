@@ -307,6 +307,33 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect((await readJson(oneRes)).project.name).toBe('Minha entrega')
   })
 
+  test('admin lista as entregas do CURSO (todas as aulas), com aula/módulo e blockId', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, courseId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    // Blocos de Estúdio em DUAS aulas do curso, ambos com entrega do mesmo aluno.
+    const block1 = seedStudioBlock(courses, lessonIds[0])
+    const block2 = seedStudioBlock(courses, lessonIds[1])
+    await submit(app, lessonIds[0], block1, STUDENT_PROJECT)
+    await submit(app, lessonIds[1], block2, STUDENT_PROJECT)
+
+    const res = await app.handle(
+      new Request(`http://localhost/members/admin/courses/${courseId}/studio-submissions`),
+    )
+    expect(res.status).toBe(200)
+    const { submissions } = await readJson(res)
+    expect(submissions).toHaveLength(2)
+    // Ordenado pela ordem do curso (módulo→aula): aula 1 antes da aula 2.
+    expect(submissions[0]).toMatchObject({
+      userId: USER,
+      blockId: block1,
+      lessonId: lessonIds[0],
+      lessonTitle: 'Aula composta',
+      moduleTitle: 'Módulo 1',
+    })
+    expect(submissions[1]).toMatchObject({ blockId: block2, lessonTitle: 'Aula 2' })
+  })
+
   test('recado opcional ao professor: vem no admin (lista + detalhe); em branco → null', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, lessonIds } = seedSampleCourse(courses)

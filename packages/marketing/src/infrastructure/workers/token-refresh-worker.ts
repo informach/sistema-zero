@@ -4,8 +4,10 @@ import type { SocialAccountRepository } from '../../domain/ports/social-account-
 
 export interface TokenRefreshWorkerConfig {
   intervalMs: number
-  /** Renova tokens que vencem dentro desta margem (refresh PROATIVO). */
+  /** Renova ACCESS tokens que vencem dentro desta margem (refresh PROATIVO). */
   marginMs: number
+  /** Renova tokens de RENOVAÇÃO (user token 60d da Meta) com esta folga. */
+  renewMarginMs: number
 }
 
 export interface TokenRefreshWorkerDeps {
@@ -64,6 +66,25 @@ export class TokenRefreshWorker {
           // needs_reauth já foi marcado/logado pelo AccountService; transitório
           // fica p/ o próximo ciclo (o lastRefreshError aparece em Conexões).
           this.deps.logger.warn('token_refresh.failed', {
+            accountId: account.id,
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
+      }
+
+      // 2º passe (Meta): renovação PROATIVA do user token 60d — re-deriva os
+      // page tokens de TODAS as contas irmãs (o upsert as tira da lista no
+      // próximo ciclo; renovar 2x no mesmo lote é inócuo).
+      const renewDue = await this.deps.accounts.listRefreshExpiring(
+        this.deps.now(),
+        this.deps.config.renewMarginMs,
+        10,
+      )
+      for (const account of renewDue) {
+        try {
+          await this.deps.accountService.renewDerivedTokens(account)
+        } catch (error) {
+          this.deps.logger.warn('token_refresh.renew_failed', {
             accountId: account.id,
             error: error instanceof Error ? error.message : String(error),
           })

@@ -8,7 +8,13 @@
 import type { JSX } from 'react'
 import { useEffect, useRef } from 'react'
 import { COPY } from '../../core/copy'
-import { assetStyle, isTilesetKind, type PintaAsset, type PintaBitmap } from '../../core/project'
+import {
+  assetStyle,
+  isTilesetKind,
+  type PintaAsset,
+  type PintaBitmap,
+  resolveAssetPalette,
+} from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
 import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
 import type { VectorShape } from '../../vector/model'
@@ -81,7 +87,7 @@ function PixelThumb({ asset, bitmap }: { asset: PintaAsset; bitmap: PintaBitmap 
     if (!canvas || !('paletteId' in asset)) return
     // happy-dom: getContext() null → paintBitmap devolve false e a thumb fica
     // no emoji de fundo (nunca quebra).
-    paintBitmap(canvas, bitmap, asset.paletteId)
+    paintBitmap(canvas, bitmap, resolveAssetPalette(asset))
   }, [asset, bitmap])
 
   return (

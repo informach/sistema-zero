@@ -1554,6 +1554,30 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:centerY', spriteVar }
   }
+  if (method === 'spriteVx') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:spriteVx', spriteVar }
+  }
+  if (method === 'spriteVy') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:spriteVy', spriteVar }
+  }
+  if (method === 'spriteSpeed') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:spriteSpeed', spriteVar }
+  }
+  if (method === 'isMoving') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:isMoving', spriteVar }
+  }
+  if (method === 'isMovingH') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:isMovingH', spriteVar }
+  }
+  if (method === 'isMovingV') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:isMovingV', spriteVar }
+  }
   if (method === 'randomBetween') {
     const min = toExpr(args[0], ctx)
     const max = toExpr(args[1], ctx)
@@ -3925,6 +3949,20 @@ function matchGame3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const objVar = identifierName(args[0])
     if (objVar) return { type: 'g3d:getScale', objVar }
   }
+  if (method === 'getVel') {
+    const objVar = identifierName(args[0])
+    if (objVar && args[1]?.type === 'StringLiteral') {
+      return { type: 'g3d:getVel', objVar, axis: args[1].value as string }
+    }
+  }
+  if (method === 'getSpeed') {
+    const objVar = identifierName(args[0])
+    if (objVar) return { type: 'g3d:getSpeed', objVar }
+  }
+  if (method === 'isMoving') {
+    const objVar = identifierName(args[0])
+    if (objVar) return { type: 'g3d:isMoving', objVar }
+  }
   if (method === 'dt') {
     const worldVar = identifierName(args[0])
     if (worldVar) return { type: 'g3d:dt', worldVar }
@@ -5479,6 +5517,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:spriteH':
     case 'g2d:centerX':
     case 'g2d:centerY':
+    case 'g2d:spriteVx':
+    case 'g2d:spriteVy':
+    case 'g2d:spriteSpeed':
+    case 'g2d:isMoving':
+    case 'g2d:isMovingH':
+    case 'g2d:isMovingV':
     case 'g2d:randomBetween':
     case 'g2d:randomChance':
     case 'g2d:hasHealth':
@@ -5513,6 +5557,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3d:getPos':
     case 'g3d:getRot':
     case 'g3d:getScale':
+    case 'g3d:getVel':
+    case 'g3d:getSpeed':
+    case 'g3d:isMoving':
     case 'g3d:dt':
     case 'g3d:angleTo':
     case 'g3d:pickAtMouse':

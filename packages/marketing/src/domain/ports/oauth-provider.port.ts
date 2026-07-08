@@ -1,18 +1,20 @@
+import type { Network } from '../publication/publication'
+
 /**
  * Porta do provedor OAuth de uma rede (Google/Meta/TikTok). Implementações em
- * `infrastructure/gateways/<rede>/` com fetch nativo (convenção do repo).
+ * `infrastructure/gateways/<provedor>/` com fetch nativo (convenção do repo).
  * Datas de expiração são devolvidas em SEGUNDOS relativos (`expiresInSeconds`)
  * — quem transforma em `Date` é o serviço, com o `now()` injetado.
  */
 export interface OAuthTokenSet {
   accessToken: string
-  /** Google só devolve no 1º consent (por isso `prompt=consent`); pode vir nulo. */
+  /** Google só devolve no 1º consent (`prompt=consent`); Meta usa o próprio user token. */
   refreshToken: string | null
   expiresInSeconds: number | null
   refreshExpiresInSeconds: number | null
-  /** Escopos efetivamente concedidos (campo `scope` da resposta). */
+  /** Escopos efetivamente concedidos (Meta: via GET /me/permissions). */
   scopes: string[]
-  /** id_token OIDC (identidade estável via `sub`), quando o escopo `openid` foi pedido. */
+  /** id_token OIDC (identidade estável via `sub`), quando o provedor emite. */
   idToken: string | null
 }
 
@@ -25,12 +27,31 @@ export interface RefreshedTokens {
 }
 
 export interface AccountIdentity {
-  /** Id estável da conta no provedor (Google: `sub` do id_token). */
+  /** Id estável no provedor (Google: `sub`; Meta: pageId/igUserId). */
   externalId: string
   displayName: string
   username: string | null
-  /** Específico por rede (Google: {email, channelId?, channelTitle?}). */
+  /** Específico por rede (Google: {email, channelId?}; Meta: {pageId, igUserId?...}). */
   metadata: Record<string, unknown>
+}
+
+/**
+ * Uma CONTA que o consent conecta. Google: 1 (a conta do canal). Meta: N —
+ * uma `facebook` por Página (token = PAGE token, que não expira) e uma
+ * `instagram` por IG business vinculado (token = o MESMO page token; o
+ * refreshToken carrega o USER token long-lived ~60d p/ a renovação).
+ */
+export interface ProviderAccount {
+  network: Network
+  identity: AccountIdentity
+  tokens: {
+    accessToken: string
+    refreshToken: string | null
+    /** null = token que NÃO expira (page token da Meta). */
+    expiresInSeconds: number | null
+    refreshExpiresInSeconds: number | null
+    scopes: string[]
+  }
 }
 
 /** Erro do provedor: `permanent` (invalid_grant/revogado) exige reauth. */
@@ -52,9 +73,15 @@ export interface OAuthProvider {
     codeVerifier: string
     redirectUri: string
   }): Promise<OAuthTokenSet>
+  /** TODAS as contas que este consent conecta (Google: 1; Meta: Páginas + IGs). */
+  resolveAccounts(tokens: OAuthTokenSet): Promise<ProviderAccount[]>
   refresh(refreshToken: string): Promise<RefreshedTokens>
-  /** Identidade da conta (Google: sub/e-mail do id_token + canal via channels.list best-effort). */
-  fetchIdentity(accessToken: string, idToken: string | null): Promise<AccountIdentity>
+  /**
+   * Renovação PROATIVA das contas derivadas (Meta: fb_exchange_token no user
+   * token ainda válido → re-deriva os page tokens). Provedores sem o conceito
+   * não implementam.
+   */
+  renewAccounts?(userToken: string): Promise<ProviderAccount[]>
   /** Revogação best-effort ao desconectar (falha não impede a desconexão local). */
   revoke(token: string): Promise<void>
 }

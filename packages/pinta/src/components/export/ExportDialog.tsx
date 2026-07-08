@@ -14,7 +14,7 @@ import {
   assetStyle,
   isTilesetKind,
   type PintaAsset,
-  paletteIdOf,
+  resolveAssetPalette,
 } from '../../core/project'
 import { triggerDownload } from '../../export/download'
 import { bitmapToPngDataUrl, dataUrlToBlob, PNG_SCALES } from '../../export/png'
@@ -300,7 +300,9 @@ export function ExportDialog({
                 downloadDataUrl(
                   (() => {
                     const bitmap = activeBitmapOf(asset, frameRef)
-                    return bitmap ? bitmapToPngDataUrl(bitmap, paletteIdOf(asset), scale) : null
+                    return bitmap
+                      ? bitmapToPngDataUrl(bitmap, resolveAssetPalette(asset), scale)
+                      : null
                   })(),
                   `${asset.name}.png`,
                 )
@@ -413,7 +415,9 @@ export function ExportDialog({
               downloadDataUrl(
                 (() => {
                   const bitmap = activeBitmapOf(asset, frameRef)
-                  return bitmap ? bitmapToPngDataUrl(bitmap, paletteIdOf(asset), scale) : null
+                  return bitmap
+                    ? bitmapToPngDataUrl(bitmap, resolveAssetPalette(asset), scale)
+                    : null
                 })(),
                 `${asset.name}.png`,
               )

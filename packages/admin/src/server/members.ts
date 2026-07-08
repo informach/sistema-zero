@@ -263,6 +263,31 @@ export function listStudioSubmissions(blockId: string): Promise<
 > {
   return gatewayFetch(`/members/admin/blocks/${enc(blockId)}/studio-submissions`)
 }
+/**
+ * Entregas de TODAS as aulas de um curso (aba "Entregas" por curso):
+ * `GET /members/admin/courses/:id/studio-submissions`. Cada linha traz a aula/módulo
+ * e o `blockId` — o detalhe reusa a rota por-bloco (`getStudioSubmission`).
+ */
+export function listCourseStudioSubmissions(courseId: string): Promise<
+  GatewayResponse<{
+    submissions: {
+      userId: string
+      accountId: string | null
+      blockId: string
+      lessonId: string
+      lessonTitle: string
+      moduleTitle: string
+      submittedAt: string
+      score: number | null
+      checkedAt: string | null
+      passed: boolean
+      /** Recado opcional do aluno ao professor. `null` = sem recado. */
+      message: string | null
+    }[]
+  }>
+> {
+  return gatewayFetch(`/members/admin/courses/${enc(courseId)}/studio-submissions`)
+}
 /** Projeto + correção de UMA entrega: `GET /members/admin/blocks/:id/studio-submissions/:userId`. */
 export function getStudioSubmission(
   blockId: string,
