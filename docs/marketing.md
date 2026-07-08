@@ -125,9 +125,19 @@ marketing-app (Next, :3012)  ── BFF /api/* ──►  api-gateway (:3000)  �
 | 0 | Fundação: pipeline + publicações modo lembrete + mídia R2 + app com login/shell | **FEITA (07/2026)** |
 | 1 | Operação manual completa: telas ricas (kanban, detalhe, composer, calendário, biblioteca, painel), lembrete por WhatsApp, OAuth Google, importar do Drive | **FEITA (07/2026)** |
 | 2 | YouTube automático (upload antecipado + agendamento nativo, quota guard) + tela Conexões + métricas básicas YT | **FEITA (07/2026)** |
-| 3 | Instagram/Facebook automático + coletor de métricas completo + dashboards | próxima |
-| 4 | TikTok + arquivamento R2→Drive + melhores horários (heatmap) | |
+| 3 | Instagram/Facebook automático + coletor de métricas completo + dashboards | **FEITA (07/2026)** |
+| 4 | TikTok + arquivamento R2→Drive + melhores horários (heatmap) | próxima |
 | 5 | IA: legenda/roteiro com validação Light Copy/VTSD + hashtags | |
+
+O que a F3 entregou, na prática: **conectar Facebook e Instagram com UM login** (a Página e o
+Instagram profissional vinculado entram juntos; o token da Página não expira e o login de 60
+dias se renova sozinho), **publicação automática** de post no feed, carrossel (2 a 10 imagens
+JPEG, na ordem escolhida no composer), Reels do IG, post e Reels da Página — tudo publicando NA
+hora agendada; **métricas por conta e por rede** (o coletor passa em cada post com frequência
+que DECAI com a idade do post) com o dashboard de Métricas de verdade: cards por rede com
+seguidores e totais de 28 dias, gráfico de seguidores por conta e top publicações de 90 dias;
+e o **"Vincular post real"**: uma publicação feita no modo lembrete pode ser ligada ao post que
+foi ao ar (cole o link) e entra na coleta de métricas como as automáticas.
 
 Notas de dependência externa: publicar automático exige app aprovado na Meta (em modo dev já
 publica para as contas administradoras do app, o que cobre uso interno), app OAuth do Google
