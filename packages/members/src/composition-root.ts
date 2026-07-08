@@ -318,12 +318,16 @@ export async function createApplication(env: Env): Promise<Application> {
     () => randomUUID(),
     clock,
   )
+  // Antes do submitStudio: o envio espelha o recado do aluno na conversa (histórico).
+  const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
   const submitStudio = new SubmitStudioProjectService(
     checkAccess,
     courses,
     progress,
     studioSubmissions,
     awardGamification,
+    teacherThreads,
+    logger,
     () => randomUUID(),
     clock,
   )
@@ -346,7 +350,6 @@ export async function createApplication(env: Env): Promise<Application> {
     studioSubmissions,
   )
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions)
-  const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
   const getCertificate = new GetCertificateService(checkAccess, courses, progress, certificates)
   const issueCertificate = new IssueCertificateService(
     checkAccess,

@@ -991,9 +991,13 @@ const TEACHER_CONTEXT = t.Union([
   t.Literal('mural_publication'),
   t.Literal('general'),
 ])
-/** Corpo de uma mensagem (aluno responde / professor responde a uma conversa por id). */
+/**
+ * Corpo de uma mensagem (aluno responde / professor responde a uma conversa por id).
+ * Teto folgado (8000): o professor escreve markdown com print + código; o aluno responde
+ * texto simples (o front kids limita bem abaixo). Espelha a coluna `teacher_messages.body`.
+ */
 export const TeacherThreadReplyBody = t.Object({
-  body: t.String({ minLength: 1, maxLength: 1000 }),
+  body: t.String({ minLength: 1, maxLength: 8000 }),
 })
 /** Query da caixa de entrada do ALUNO (`GET /members/teacher-threads`). */
 export const TeacherThreadsQuery = t.Object({
@@ -1031,7 +1035,8 @@ export const AdminTeacherThreadPostBody = t.Object({
   courseId: t.Optional(UUID),
   lessonId: t.Optional(UUID),
   title: t.Optional(t.String({ maxLength: 200 })),
-  body: t.String({ minLength: 1, maxLength: 1000 }),
+  // Markdown do professor (print + código) — espelha a coluna `teacher_messages.body`.
+  body: t.String({ minLength: 1, maxLength: 8000 }),
 })
 
 /** Corpo de `POST/PATCH /members/admin/...blocks`. */

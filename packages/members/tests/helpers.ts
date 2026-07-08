@@ -262,6 +262,8 @@ export function buildApp(
         progress,
         studioSubmissions,
         awardGamification,
+        teacherThreads,
+        silentLogger,
         () => randomUUID(),
         clock,
       ),

@@ -38,6 +38,34 @@ function getMarkdown(editor: TiptapEditor): string {
 }
 
 /**
+ * Sobe a imagem → R2 (sharp→WebP, mesma rota/contrato do ImageUploader, `scope=block`)
+ * e insere o node Image (serializa p/ `![](url)` no markdown). Usado pelo botão da toolbar
+ * E pelo `handlePaste` (colar print). Módulo-scope p/ os dois compartilharem.
+ */
+async function insertUploadedImage(
+  editor: TiptapEditor,
+  file: File,
+  setUploading: (v: boolean) => void,
+): Promise<void> {
+  if (file.size > MAX_IMAGE_BYTES) {
+    toast.error('Imagem excede o limite de 5 MB.')
+    return
+  }
+  setUploading(true)
+  try {
+    const form = new FormData()
+    form.set('file', file)
+    form.set('scope', 'block')
+    const { url } = await apiUpload<{ url: string }>('/api/media/images', form)
+    editor.chain().focus().setImage({ src: url }).run()
+  } catch (err) {
+    toast.error((err as ApiError).message ?? 'Falha no upload da imagem.')
+  } finally {
+    setUploading(false)
+  }
+}
+
+/**
  * Editor rich-text do bloco `rich_text`. ENTRADA E SAÍDA SÃO MARKDOWN
  * (`tiptap-markdown`) — o renderer do community consome markdown, NUNCA HTML.
  * Carregado via `dynamic({ ssr: false })` no wrapper (TipTap é pesado e não
@@ -53,6 +81,11 @@ export default function RichTextEditorImpl({
   /** Altura mínima menor (campos densos como opções/explicação do quiz). */
   compact?: boolean
 }) {
+  const [uploading, setUploading] = useState(false)
+  // Ref p/ o `handlePaste` alcançar o editor (o config é avaliado antes do editor existir;
+  // no momento do paste o editor já está montado).
+  const editorRef = useRef<TiptapEditor | null>(null)
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -77,8 +110,27 @@ export default function RichTextEditorImpl({
           compact ? 'min-h-20' : 'min-h-40',
         ),
       },
+      // Colar PRINT: intercepta itens de imagem do clipboard e sobe pelo mesmo pipeline
+      // do botão. Sem imagem → devolve false (o TipTap trata o paste de texto normalmente).
+      handlePaste: (_view, event) => {
+        const items = event.clipboardData?.items
+        if (!items) return false
+        for (const item of Array.from(items)) {
+          if (item.type.startsWith('image/')) {
+            const file = item.getAsFile()
+            const ed = editorRef.current
+            if (file && ed) {
+              event.preventDefault()
+              void insertUploadedImage(ed, file, setUploading)
+              return true
+            }
+          }
+        }
+        return false
+      },
     },
   })
+  editorRef.current = editor
 
   // Sincroniza conteúdo EXTERNO (trocar de bloco no mesmo dialog). Em digitação
   // normal `content` === getMarkdown() (o pai guarda a saída do serializer) → no-op.
@@ -93,39 +145,25 @@ export default function RichTextEditorImpl({
 
   return (
     <div className="rounded-lg border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring">
-      <Toolbar editor={editor} />
+      <Toolbar editor={editor} uploading={uploading} setUploading={setUploading} />
       <EditorContent editor={editor} />
     </div>
   )
 }
 
-function Toolbar({ editor }: { editor: TiptapEditor }) {
+function Toolbar({
+  editor,
+  uploading,
+  setUploading,
+}: {
+  editor: TiptapEditor
+  uploading: boolean
+  setUploading: (v: boolean) => void
+}) {
   const fileRef = useRef<HTMLInputElement>(null)
-  const [uploading, setUploading] = useState(false)
   // Modal da plataforma p/ a URL do link (substitui o window.prompt nativo).
   const [linkOpen, setLinkOpen] = useState(false)
   const [linkValue, setLinkValue] = useState('')
-
-  // Upload de imagem → R2 (sharp→WebP, mesma rota/contrato do ImageUploader,
-  // `scope=block`) → insere o node Image, que serializa p/ `![](url)` no markdown.
-  async function uploadImage(file: File) {
-    if (file.size > MAX_IMAGE_BYTES) {
-      toast.error('Imagem excede o limite de 5 MB.')
-      return
-    }
-    setUploading(true)
-    try {
-      const form = new FormData()
-      form.set('file', file)
-      form.set('scope', 'block')
-      const { url } = await apiUpload<{ url: string }>('/api/media/images', form)
-      editor.chain().focus().setImage({ src: url }).run()
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha no upload da imagem.')
-    } finally {
-      setUploading(false)
-    }
-  }
 
   function setLink() {
     const previous = editor.getAttributes('link').href as string | undefined
@@ -241,7 +279,7 @@ function Toolbar({ editor }: { editor: TiptapEditor }) {
         onChange={(e) => {
           const file = e.target.files?.[0]
           e.target.value = ''
-          if (file) void uploadImage(file)
+          if (file) void insertUploadedImage(editor, file, setUploading)
         }}
       />
       <Button

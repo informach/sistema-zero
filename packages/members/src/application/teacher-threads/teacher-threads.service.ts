@@ -11,7 +11,10 @@ import type {
 } from '../../domain/ports/teacher-thread-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 
-const MAX_BODY = 1000
+// Teto do corpo (espelha a coluna `teacher_messages.body`). Folgado o bastante p/ o
+// professor escrever markdown com print (URL de imagem) + trecho de código; o recado
+// CURTO do aluno no envio (≤1000 do DTO da entrega) cabe de sobra.
+const MAX_BODY = 8000
 
 // ── Views (Date→ISO; o front sanitiza o texto na renderização) ──────────────
 export interface TeacherMessageView {
@@ -249,7 +252,7 @@ export class TeacherThreadsService {
 
   /** Professor posta por CONTEXTO (Entregas/geral): cria a conversa se preciso. */
   async adminPostByContext(input: TeacherPostByContextInput): Promise<TeacherThreadView> {
-    const threadId = await this.postByContext(input)
+    const threadId = await this.postByContext(input, 'teacher')
     return this.getForAdmin(threadId)
   }
 
@@ -261,11 +264,25 @@ export class TeacherThreadsService {
   // ── Sistema (Mural — webhook do hub, M3) ────────────────────────────────────
   /** Cria/append de mensagem `teacher` por contexto, sem devolver a conversa (webhook). */
   async systemPostByContext(input: TeacherPostByContextInput): Promise<void> {
-    await this.postByContext(input)
+    await this.postByContext(input, 'teacher')
+  }
+
+  // ── Aluno (envio da atividade — M-Entregas) ─────────────────────────────────
+  /**
+   * O ALUNO anexa o recado do ENVIO da atividade à conversa (cria se preciso), para
+   * o histórico SOBREVIVER ao reenvio — que sobrescreve a linha da entrega. Só o
+   * fluxo de envio (server-side confiável) chama isto; pela BORDA o aluno só RESPONDE
+   * (`studentReply`), nunca inicia. `authorId` = o próprio aluno.
+   */
+  async studentPostByContext(input: Omit<TeacherPostByContextInput, 'authorId'>): Promise<void> {
+    await this.postByContext({ ...input, authorId: input.userId }, 'student')
   }
 
   // ── Interno ──────────────────────────────────────────────────────────────────
-  private async postByContext(input: TeacherPostByContextInput): Promise<string> {
+  private async postByContext(
+    input: TeacherPostByContextInput,
+    authorRole: TeacherMessageRole,
+  ): Promise<string> {
     const body = cleanBody(input.body)
     // Entrega/Mural DEVEM ter a âncora (blockId/threadId) — senão a conversa vira
     // "geral" no ensureThread (NULL fora do UNIQUE) e nunca deduplicaria.
@@ -286,7 +303,7 @@ export class TeacherThreadsService {
     })
     await this.repo.appendMessage({
       threadId,
-      authorRole: 'teacher',
+      authorRole,
       authorId: input.authorId,
       authorName: input.authorName,
       body,

@@ -1,5 +1,6 @@
 'use client'
 
+import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { ArrowLeft, Send } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -14,8 +15,9 @@ const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
 
 /**
  * Conversa com o professor: carrega + marca lida (server), mostra os turnos (professor
- * à esquerda, "Você" à direita) e deixa o aluno responder. Texto é PLAIN (React escapa
- * — sem markdown/HTML de UGC infantil).
+ * à esquerda, "Você" à direita) e deixa o aluno responder. O recado do PROFESSOR é
+ * markdown rico (negrito/listas/print/código — autor confiável, `renderMarkdown`); a
+ * resposta do ALUNO é PLAIN (React escapa — sem markdown/HTML de UGC infantil).
  */
 export function RecadoThreadClient({ threadId }: { threadId: string }) {
   const [thread, setThread] = useState<TeacherThreadView | null>(null)
@@ -114,7 +116,14 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
                     <p className="mb-0.5 font-bold text-[0.7rem] opacity-80">
                       {mine ? 'Você' : m.authorName || 'Professor(a)'}
                     </p>
-                    <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                    {mine ? (
+                      <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                    ) : (
+                      // Recado do professor formatado (negrito/listas/print/código).
+                      <div className="lesson-prose break-words text-sm [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:max-h-72 [&_img]:rounded-lg">
+                        {renderMarkdown(m.body)}
+                      </div>
+                    )}
                   </div>
                 </li>
               )

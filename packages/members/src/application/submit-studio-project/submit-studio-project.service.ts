@@ -1,4 +1,6 @@
 import { PayloadTooLargeError } from '@sistemazero/core/http'
+import type { Logger } from '@sistemazero/core/logging'
+import type { CourseAudience } from '../../domain/course/course'
 import { LessonNotFoundError, StudioBlockNotFoundError } from '../../domain/course/course.errors'
 import { MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
 import {
@@ -13,6 +15,7 @@ import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 import type { GamificationDeltaView } from '../mappers/views'
+import type { TeacherThreadsService } from '../teacher-threads/teacher-threads.service'
 
 export interface StudioSubmissionResultView {
   submittedAt: string
@@ -42,6 +45,8 @@ export class SubmitStudioProjectService {
     private readonly progress: ProgressRepository,
     private readonly submissions: StudioSubmissionRepository,
     private readonly gamification: AwardGamificationService,
+    private readonly teacherThreads: TeacherThreadsService,
+    private readonly logger: Logger,
     private readonly newId: () => string,
     private readonly clock: () => Date,
   ) {}
@@ -55,6 +60,8 @@ export class SubmitStudioProjectService {
     message: string | null = null,
     privileged = false,
     accountId?: string,
+    /** Nome de EXIBIÇÃO do aluno (header confiável do gateway) p/ o turno na conversa. */
+    authorName: string | null = null,
   ): Promise<StudioSubmissionResultView> {
     // Recado do aluno ao professor: trim → vazio vira null (não guarda " ").
     const note = message?.trim() ? message.trim() : null
@@ -93,6 +100,17 @@ export class SubmitStudioProjectService {
         submittedAt,
         message: note,
       })
+      await this.mirrorSubmitNote({
+        note,
+        userId,
+        accountId: accountId ?? userId,
+        audience: course.audience,
+        blockId,
+        courseId: lesson.courseId,
+        lessonId,
+        title: lesson.title,
+        authorName,
+      })
       // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco).
       await this.gamification.awardStudioSubmitted({
         userId,
@@ -130,6 +148,18 @@ export class SubmitStudioProjectService {
       { preservePassedAt: true },
     )
 
+    await this.mirrorSubmitNote({
+      note,
+      userId,
+      accountId: accountId ?? userId,
+      audience: course.audience,
+      blockId,
+      courseId: lesson.courseId,
+      lessonId,
+      title: lesson.title,
+      authorName,
+    })
+
     // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco) — SEMPRE
     // que entrega, independentemente de nota. Distinto do `studio_passed` (XP quando
     // passa): ambos deduplicam por bloco, então não há XP dobrado.
@@ -159,6 +189,47 @@ export class SubmitStudioProjectService {
       passed: grade.passed,
       results: grade.results,
       gamification,
+    }
+  }
+
+  /**
+   * Espelha o recado do ENVIO na conversa professor↔aluno (contexto `studio_submission`,
+   * ref = blockId) para o HISTÓRICO sobreviver ao reenvio — o upsert acima sobrescreve o
+   * `message` da linha da entrega, mas cada recado vira um turno permanente do aluno na
+   * conversa (o professor vê tudo no painel da Entrega). FAIL-OPEN: a conversa NUNCA
+   * derruba a entrega (espelha o award de gamificação). No-op sem recado.
+   */
+  private async mirrorSubmitNote(args: {
+    note: string | null
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    blockId: string
+    courseId: string
+    lessonId: string
+    title: string | null
+    authorName: string | null
+  }): Promise<void> {
+    if (!args.note) return
+    try {
+      await this.teacherThreads.studentPostByContext({
+        userId: args.userId,
+        accountId: args.accountId,
+        audience: args.audience,
+        contextType: 'studio_submission',
+        contextRef: args.blockId,
+        courseId: args.courseId,
+        lessonId: args.lessonId,
+        title: args.title,
+        authorName: args.authorName,
+        body: args.note,
+      })
+    } catch (error) {
+      this.logger.error('teacher_thread.submit_note_failed', {
+        userId: args.userId,
+        blockId: args.blockId,
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 }
