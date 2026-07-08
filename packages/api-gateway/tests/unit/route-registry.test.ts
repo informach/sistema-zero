@@ -65,6 +65,14 @@ const registry = new RouteRegistry([
   r({ id: 'members-purge', methods: ['DELETE'], pathPattern: '/members/admin/users/:id/data' }),
   r({ id: 'hub-admin-write', methods: ['POST', 'PATCH', 'DELETE'], pathPattern: '/hub/admin/*' }),
   r({ id: 'hub-purge', methods: ['DELETE'], pathPattern: '/hub/admin/users/:id/data' }),
+  // Recados (professor↔aluno): rotas do aluno (literais + :id) e wildcards do admin.
+  r({ id: 'tt-list', methods: ['GET'], pathPattern: '/members/teacher-threads' }),
+  r({ id: 'tt-unread', methods: ['GET'], pathPattern: '/members/teacher-threads/unread-count' }),
+  r({ id: 'tt-get', methods: ['GET'], pathPattern: '/members/teacher-threads/:id' }),
+  r({ id: 'tt-reply', methods: ['POST'], pathPattern: '/members/teacher-threads/:id/messages' }),
+  r({ id: 'tt-read', methods: ['POST'], pathPattern: '/members/teacher-threads/:id/read' }),
+  r({ id: 'tt-admin-read', methods: ['GET'], pathPattern: '/members/admin/teacher-threads/*' }),
+  r({ id: 'tt-admin-write', methods: ['POST'], pathPattern: '/members/admin/teacher-threads/*' }),
   // Pensa (planejamento guiado) — literal `pensa` no 2º segmento.
   r({ id: 'pensa-projects', methods: ['GET', 'POST'], pathPattern: '/members/pensa/projects' }),
   r({
@@ -233,6 +241,42 @@ describe('RouteRegistry', () => {
     )
     expect(registry.resolve('GET', '/members/gamification/league/me', 'v1')?.route.id).toBe(
       'league-me',
+    )
+  })
+
+  test('recados do aluno: literal unread-count vence :id; reply/read por sufixo', () => {
+    expect(registry.resolve('GET', '/members/teacher-threads', 'v1')?.route.id).toBe('tt-list')
+    expect(registry.resolve('GET', '/members/teacher-threads/unread-count', 'v1')?.route.id).toBe(
+      'tt-unread',
+    )
+    const get = registry.resolve('GET', '/members/teacher-threads/th-1', 'v1')
+    expect(get?.route.id).toBe('tt-get')
+    expect(get?.params.id).toBe('th-1')
+    expect(registry.resolve('POST', '/members/teacher-threads/th-1/messages', 'v1')?.route.id).toBe(
+      'tt-reply',
+    )
+    expect(registry.resolve('POST', '/members/teacher-threads/th-1/read', 'v1')?.route.id).toBe(
+      'tt-read',
+    )
+  })
+
+  test('recados do professor: wildcard cobre lista/by-context/:id sem colidir com members-admin', () => {
+    // Cauda vazia: o wildcard casa o próprio /teacher-threads (lista + criação).
+    expect(registry.resolve('GET', '/members/admin/teacher-threads', 'v1')?.route.id).toBe(
+      'tt-admin-read',
+    )
+    expect(registry.resolve('POST', '/members/admin/teacher-threads', 'v1')?.route.id).toBe(
+      'tt-admin-write',
+    )
+    expect(
+      registry.resolve('GET', '/members/admin/teacher-threads/by-context', 'v1')?.route.id,
+    ).toBe('tt-admin-read')
+    expect(
+      registry.resolve('POST', '/members/admin/teacher-threads/th-1/messages', 'v1')?.route.id,
+    ).toBe('tt-admin-write')
+    // Não rouba a ficha do aluno (/members/admin/members/:userId).
+    expect(registry.resolve('GET', '/members/admin/members/u-1', 'v1')?.route.id).toBe(
+      'members-member-detail',
     )
   })
 

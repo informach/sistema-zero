@@ -68,6 +68,19 @@ cadastro CONDICIONAL como auth/fiscal — sem a env o consumer não existe): é 
 e-mail do report via `/messaging/send` (o gateway re-injeta `x-consumer-id: members` autenticado,
 escopo da idempotência).
 
+**Recados — conversas professor↔aluno (07/2026):** lado do ALUNO em rotas explícitas
+`members-teacher-threads-list`/`-unread-count` (`GET /members/teacher-threads[/unread-count]`,
+300/min — sino do kids busca a cada render), `members-teacher-thread-get` (`GET …/:id`, 300/min;
+o literal `unread-count` vence o `:id`), `members-teacher-thread-reply` (`POST …/:id/messages`,
+60/min + corpo 64KB) e `members-teacher-thread-read` (`POST …/:id/read`, 120/min) — todas JWT +
+conta ativa + `membersInternalTransforms` (recurso do PRÓPRIO usuário, `?audience=`). Lado do
+PROFESSOR (painel admin): `members-admin-teacher-threads-{read,write}` (`GET|POST
+/members/admin/teacher-threads/*` — wildcard cobre lista/criação (cauda vazia), `by-context`,
+`:id`, `:id/messages` e `:id/read`), **staff+ em leitura E escrita** (responder aluno é tarefa
+diária de professor/staff, diferente da régua ESCRITA→admin+ da autoria), 300/120 por min, POST
+com corpo 64KB. Sem colisão com `/members/admin/members*`/`/members/admin/courses/*` (coberto em
+`route-registry.test.ts`).
+
 E o **marketing também é consumer HMAC de borda** (F1 do app de marketing, 07/2026):
 `MARKETING_HMAC_SECRET` + `MARKETING_ALLOWED_CIDRS` (condicional, espelha o members) — é como o
 publisher-worker do marketing envia o lembrete WhatsApp de publicação manual via `/messaging/send`
