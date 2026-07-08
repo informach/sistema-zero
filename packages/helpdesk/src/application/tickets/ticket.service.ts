@@ -8,6 +8,7 @@ import type {
   TicketStatus,
 } from '../../domain/ticket/ticket'
 import type { TicketMessage } from '../../domain/ticket/ticket-message'
+import type { TicketStats } from '../../domain/ticket/ticket-stats'
 import type { Actor } from '../actor'
 import { type MessageView, type TicketView, toMessageView, toTicketView } from '../views'
 
@@ -31,6 +32,11 @@ export class TicketService {
   async list(filter: ListTicketsFilter): Promise<{ items: TicketView[]; total: number }> {
     const { items, total } = await this.tickets.list(filter)
     return { items: items.map(toTicketView), total }
+  }
+
+  /** Agregados do painel (contagens + resolvidos/auto-respostas + série de volume). */
+  async stats(): Promise<TicketStats> {
+    return this.tickets.stats(this.now())
   }
 
   async byId(id: string): Promise<{ ticket: TicketView; messages: MessageView[] }> {

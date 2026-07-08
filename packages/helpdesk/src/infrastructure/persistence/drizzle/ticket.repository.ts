@@ -5,6 +5,7 @@ import type {
   TicketRepository,
 } from '../../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../../domain/ticket/ticket'
+import { densifyVolume, statsWindows, type TicketStats } from '../../../domain/ticket/ticket-stats'
 import type { Database, DbConnection } from './db'
 import { escapeLike } from './pg-errors'
 import { tickets } from './schema'
@@ -109,6 +110,54 @@ export class DrizzleTicketRepository implements TicketRepository {
       this.db.select({ value: count() }).from(tickets).where(where),
     ])
     return { items, total: totalRow?.value ?? 0 }
+  }
+
+  async stats(now: Date): Promise<TicketStats> {
+    const w = statsWindows(now)
+    // `count(*)` do postgres.js chega como STRING (bigint) → sempre coagir.
+    const num = (v: unknown) => Number(v ?? 0)
+    // Volume agrupado por dia SP: `- interval '3 hours'` reproduz o offset fixo
+    // de São Paulo (UTC-3, sem DST) sem depender do timezone do servidor.
+    const [totalsRows, createdRows, autoRows] = await Promise.all([
+      this.connection.sql`
+        select
+          count(*) filter (where status = 'new') as new_count,
+          count(*) filter (where status = 'open') as open_count,
+          count(*) filter (where status = 'waiting') as waiting_count,
+          count(*) filter (where status in ('resolved', 'closed') and updated_at >= ${w.todayStartIso}) as resolved_today,
+          count(*) filter (where status in ('resolved', 'closed') and updated_at >= ${w.weekStartIso}) as resolved_7d,
+          count(*) filter (where auto_replied_at >= ${w.todayStartIso}) as auto_today,
+          count(*) filter (where auto_replied_at >= ${w.weekStartIso}) as auto_7d
+        from helpdesk.tickets
+      `,
+      this.connection.sql`
+        select to_char(created_at - interval '3 hours', 'YYYY-MM-DD') as day, count(*) as n
+        from helpdesk.tickets
+        where created_at >= ${w.seriesStartIso}
+        group by day
+      `,
+      this.connection.sql`
+        select to_char(auto_replied_at - interval '3 hours', 'YYYY-MM-DD') as day, count(*) as n
+        from helpdesk.tickets
+        where auto_replied_at is not null and auto_replied_at >= ${w.seriesStartIso}
+        group by day
+      `,
+    ])
+    const totals = totalsRows[0] ?? {}
+    const createdByDay = new Map(createdRows.map((r) => [r.day as string, num(r.n)]))
+    const autoByDay = new Map(autoRows.map((r) => [r.day as string, num(r.n)]))
+    return {
+      counts: {
+        new: num(totals.new_count),
+        open: num(totals.open_count),
+        waiting: num(totals.waiting_count),
+      },
+      resolvedToday: num(totals.resolved_today),
+      resolved7d: num(totals.resolved_7d),
+      autoRepliedToday: num(totals.auto_today),
+      autoReplied7d: num(totals.auto_7d),
+      volume: densifyVolume(w.dayKeys, createdByDay, autoByDay),
+    }
   }
 
   async claimAiDue(leaseMs: number, at: Date): Promise<Ticket | null> {

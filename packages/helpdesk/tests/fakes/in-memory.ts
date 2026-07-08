@@ -16,6 +16,12 @@ import type {
 import { DEFAULT_SETTINGS, type HelpdeskSettings } from '../../src/domain/settings/settings'
 import type { Ticket } from '../../src/domain/ticket/ticket'
 import type { TicketMessage } from '../../src/domain/ticket/ticket-message'
+import {
+  densifyVolume,
+  spDayKey,
+  statsWindows,
+  type TicketStats,
+} from '../../src/domain/ticket/ticket-stats'
 
 const clone = <T>(value: T): T => structuredClone(value)
 
@@ -70,6 +76,44 @@ export class InMemoryTicketRepository implements TicketRepository {
     return {
       items: all.slice(filter.offset, filter.offset + filter.limit).map(clone),
       total: all.length,
+    }
+  }
+
+  async stats(now: Date): Promise<TicketStats> {
+    const w = statsWindows(now)
+    const seriesStart = new Date(w.seriesStartIso).getTime()
+    const todayStart = new Date(w.todayStartIso).getTime()
+    const weekStart = new Date(w.weekStartIso).getTime()
+    const all = [...this.rows.values()]
+    const createdByDay = new Map<string, number>()
+    const autoByDay = new Map<string, number>()
+    for (const t of all) {
+      if (t.createdAt.getTime() >= seriesStart) {
+        const k = spDayKey(t.createdAt)
+        createdByDay.set(k, (createdByDay.get(k) ?? 0) + 1)
+      }
+      if (t.autoRepliedAt && t.autoRepliedAt.getTime() >= seriesStart) {
+        const k = spDayKey(t.autoRepliedAt)
+        autoByDay.set(k, (autoByDay.get(k) ?? 0) + 1)
+      }
+    }
+    const resolved = (since: number) =>
+      all.filter(
+        (t) => (t.status === 'resolved' || t.status === 'closed') && t.updatedAt.getTime() >= since,
+      ).length
+    const autoReplied = (since: number) =>
+      all.filter((t) => t.autoRepliedAt !== null && t.autoRepliedAt.getTime() >= since).length
+    return {
+      counts: {
+        new: all.filter((t) => t.status === 'new').length,
+        open: all.filter((t) => t.status === 'open').length,
+        waiting: all.filter((t) => t.status === 'waiting').length,
+      },
+      resolvedToday: resolved(todayStart),
+      resolved7d: resolved(weekStart),
+      autoRepliedToday: autoReplied(todayStart),
+      autoReplied7d: autoReplied(weekStart),
+      volume: densifyVolume(w.dayKeys, createdByDay, autoByDay),
     }
   }
 

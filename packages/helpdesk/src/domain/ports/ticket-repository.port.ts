@@ -5,6 +5,7 @@ import type {
   TicketPriority,
   TicketStatus,
 } from '../ticket/ticket'
+import type { TicketStats } from '../ticket/ticket-stats'
 
 export interface ListTicketsFilter {
   status?: TicketStatus
@@ -40,6 +41,8 @@ export interface TicketRepository {
    */
   claimForReply(id: string, expectedVersion: number, at: Date): Promise<boolean>
   list(filter: ListTicketsFilter): Promise<{ items: Ticket[]; total: number }>
+  /** Agregados do painel (contagens por status + resolvidos/auto-respostas + série). */
+  stats(now: Date): Promise<TicketStats>
 
   // ── Fila de IA (ai_status/ai_next_attempt_at; sem tocar em `version`) ──
   /** Claim SKIP LOCKED de um ticket `pending` vencido → `processing` + lease. */

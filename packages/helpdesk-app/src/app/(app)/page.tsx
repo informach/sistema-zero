@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/shared/page-header'
-import { PainelCards } from './painel-cards'
+import { PainelClient } from './painel-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +10,7 @@ export default function PainelPage() {
         title="Painel"
         description="Visão geral do atendimento. Acompanhe os tickets do contato@."
       />
-      <PainelCards />
+      <PainelClient />
     </div>
   )
 }

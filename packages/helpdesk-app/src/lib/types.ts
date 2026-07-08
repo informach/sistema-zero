@@ -106,6 +106,25 @@ export interface TicketDetailResponse {
   messages: MessageView[]
 }
 
+/** Ponto da série de volume do painel (dia civil SP). */
+export interface DailyVolumePoint {
+  /** `YYYY-MM-DD` (dia de São Paulo). */
+  date: string
+  created: number
+  autoReplied: number
+}
+
+/** Agregados do painel (`GET /helpdesk/tickets/stats`). Espelha o `TicketStats` do backend. */
+export interface TicketStatsView {
+  counts: { new: number; open: number; waiting: number }
+  resolvedToday: number
+  resolved7d: number
+  autoRepliedToday: number
+  autoReplied7d: number
+  /** Série densa dos últimos 14 dias, ascendente. */
+  volume: DailyVolumePoint[]
+}
+
 // ── Base de conhecimento (artigos que alimentam o prompt da IA) ──
 
 export interface KbArticleView {

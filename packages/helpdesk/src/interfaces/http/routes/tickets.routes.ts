@@ -36,6 +36,8 @@ export function ticketsRoutes(deps: TicketsRoutesDeps) {
         },
         { query: TicketsQuery },
       )
+      // ANTES de `/:id` (rota estática vence a paramétrica; o `stats` nunca casa o UUID).
+      .get('/helpdesk/tickets/stats', () => deps.tickets.stats())
       .get('/helpdesk/tickets/:id', ({ params }) => deps.tickets.byId(params.id), {
         params: IdParams,
       })
