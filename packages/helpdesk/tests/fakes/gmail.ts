@@ -94,6 +94,18 @@ export class FakeGmailClient implements GmailClient {
   async getMessage(_accessToken: string, id: string): Promise<ParsedEmail | null> {
     return this.messagesById.get(id) ?? null
   }
+
+  sent: Array<{ raw: string; threadId: string }> = []
+  nextSendId = 'sent-1'
+  sendError: Error | null = null
+  async sendMessage(
+    _accessToken: string,
+    input: { raw: string; threadId: string },
+  ): Promise<{ id: string; threadId: string }> {
+    if (this.sendError) throw this.sendError
+    this.sent.push(input)
+    return { id: this.nextSendId, threadId: input.threadId }
+  }
 }
 
 /** ParsedEmail pronto p/ semear o FakeGmailClient. */

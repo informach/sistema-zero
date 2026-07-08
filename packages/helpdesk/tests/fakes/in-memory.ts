@@ -45,6 +45,14 @@ export class InMemoryTicketRepository implements TicketRepository {
     return true
   }
 
+  async claimForReply(id: string, expectedVersion: number, at: Date): Promise<boolean> {
+    const current = this.rows.get(id)
+    if (!current || current.version !== expectedVersion) return false
+    current.version = expectedVersion + 1
+    current.updatedAt = at
+    return true
+  }
+
   async list(filter: ListTicketsFilter): Promise<{ items: Ticket[]; total: number }> {
     const q = filter.q?.toLowerCase()
     const all = [...this.rows.values()]

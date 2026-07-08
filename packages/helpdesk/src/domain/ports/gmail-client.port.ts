@@ -52,6 +52,12 @@ export interface ParsedEmail {
   isAutoreply: boolean
 }
 
+/** Resultado de users.messages.send (o id volta p/ o dedupe do poller). */
+export interface SentMessage {
+  id: string
+  threadId: string
+}
+
 /**
  * Porta do cliente da Gmail API (REST v1, fetch nativo). O accessToken é passado
  * por chamada (o worker refaz o token fresco a cada tick). Erros inesperados
@@ -71,6 +77,8 @@ export interface GmailClient {
   ): Promise<GmailHistoryPage>
   /** users.messages.get(format=full) já parseado; null se a mensagem sumiu (404). */
   getMessage(accessToken: string, id: string): Promise<ParsedEmail | null>
+  /** users.messages.send: `raw` base64url + `threadId` (mantém a conversa). */
+  sendMessage(accessToken: string, input: { raw: string; threadId: string }): Promise<SentMessage>
 }
 
 /** Erro da Gmail API. `permanent` (401/403 auth) sinaliza reauth; o resto é transitório. */

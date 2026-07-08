@@ -5,6 +5,7 @@ import {
   type GmailMessageIdsPage,
   type GmailProfile,
   type ParsedEmail,
+  type SentMessage,
 } from '../../../domain/ports/gmail-client.port'
 import { type GmailRawMessage, parseGmailMessage } from './mime'
 
@@ -132,5 +133,29 @@ export class GoogleGmailClient implements GmailClient {
     if (!res.ok) throw await this.errorFrom(res, 'getMessage')
     const raw = (await res.json()) as GmailRawMessage
     return parseGmailMessage(raw)
+  }
+
+  async sendMessage(
+    accessToken: string,
+    input: { raw: string; threadId: string },
+  ): Promise<SentMessage> {
+    let res: Response
+    try {
+      res = await fetchWithTimeout(`${BASE}/messages/send`, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          'content-type': 'application/json',
+          accept: 'application/json',
+        },
+        body: JSON.stringify({ raw: input.raw, threadId: input.threadId }),
+      })
+    } catch (error) {
+      throw new GmailApiError('Falha de rede na Gmail API', 0, false, { cause: error })
+    }
+    if (!res.ok) throw await this.errorFrom(res, 'sendMessage')
+    const data = (await res.json()) as { id?: string; threadId?: string }
+    if (!data.id) throw new GmailApiError('sendMessage sem id', res.status, false)
+    return { id: data.id, threadId: data.threadId ?? input.threadId }
   }
 }

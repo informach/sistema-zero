@@ -62,6 +62,8 @@ const EnvSchema = z.object({
   // URL do helpdesk-app (destino do 302 pós-callback: /configuracoes?connected=…).
   HELPDESK_APP_URL: z.string().url().optional(),
   OAUTH_STATE_TTL_MINUTES: z.coerce.number().int().positive().default(10),
+  // Nome de exibição no From das respostas (`From: <nome> <contato@…>`).
+  HELPDESK_FROM_NAME: z.string().min(1).default('Sistema Zero'),
 
   // ── Sync do Gmail (gmail-sync-worker) ────────────────────────────────────────
   GMAIL_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(45_000),

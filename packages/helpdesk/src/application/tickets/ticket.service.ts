@@ -7,6 +7,7 @@ import type {
   TicketPriority,
   TicketStatus,
 } from '../../domain/ticket/ticket'
+import type { TicketMessage } from '../../domain/ticket/ticket-message'
 import type { Actor } from '../actor'
 import { type MessageView, type TicketView, toMessageView, toTicketView } from '../views'
 
@@ -24,6 +25,7 @@ export class TicketService {
     private readonly tickets: TicketRepository,
     private readonly messages: MessageRepository,
     private readonly now: () => Date,
+    private readonly idGen: () => string,
   ) {}
 
   async list(filter: ListTicketsFilter): Promise<{ items: TicketView[]; total: number }> {
@@ -54,6 +56,36 @@ export class TicketService {
     const ok = await this.tickets.update(ticket, input.version)
     if (!ok) throw new ConcurrencyConflictError()
     return toTicketView(ticket)
+  }
+
+  /** Nota INTERNA (não vira e-mail): só aparece na thread para a equipe. */
+  async addNote(actor: Actor, id: string, body: string): Promise<MessageView> {
+    await this.requireTicket(id)
+    const at = this.now()
+    const note: TicketMessage = {
+      id: this.idGen(),
+      ticketId: id,
+      kind: 'note',
+      gmailMessageId: null,
+      rfc822MessageId: null,
+      direction: null,
+      sentVia: null,
+      fromEmail: null,
+      fromName: null,
+      toEmails: [],
+      ccEmails: [],
+      subject: null,
+      bodyText: body.trim(),
+      bodyHtml: null,
+      snippet: null,
+      attachments: [],
+      gmailInternalDate: null,
+      createdBy: actor.userId,
+      createdByName: actor.displayName,
+      createdAt: at,
+    }
+    await this.messages.create(note)
+    return toMessageView(note)
   }
 
   private async requireTicket(id: string): Promise<Ticket> {

@@ -44,6 +44,15 @@ export const TicketPatchBody = t.Object({
   version: VERSION,
 })
 
+export const ReplyBody = t.Object({
+  body: t.String({ minLength: 1, maxLength: 50_000 }),
+  version: VERSION,
+})
+
+export const NoteBody = t.Object({
+  body: t.String({ minLength: 1, maxLength: 10_000 }),
+})
+
 // ── Base de conhecimento ─────────────────────────────────────────────────────
 export const KbQuery = t.Object({
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),

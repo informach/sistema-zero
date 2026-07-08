@@ -6,6 +6,7 @@ import { OAuthService } from './application/connection/oauth.service'
 import { KbService } from './application/kb/kb.service'
 import { SettingsService } from './application/settings/settings.service'
 import { IngestService } from './application/tickets/ingest.service'
+import { ReplyService } from './application/tickets/reply.service'
 import { TicketService } from './application/tickets/ticket.service'
 import { aiConfig, type Env, gmailConfig } from './infrastructure/config/env'
 import { GoogleGmailClient } from './infrastructure/gateways/google/gmail-client'
@@ -87,7 +88,7 @@ export function createApplication(env: Env): Application {
   }
 
   // Casos de uso
-  const ticketService = new TicketService(ticketRepo, messageRepo, now)
+  const ticketService = new TicketService(ticketRepo, messageRepo, now, idGen)
   const kbService = new KbService(kbRepo, now, idGen)
   const settingsService = new SettingsService(settingsRepo, now)
   const revokeDeps = provider && secretBox ? { provider, secretBox } : null
@@ -115,6 +116,18 @@ export function createApplication(env: Env): Application {
     ticketRepo,
     messageRepo,
     { aiEnabled: ai !== null },
+    now,
+    idGen,
+    logger,
+  )
+  const replyService = new ReplyService(
+    ticketRepo,
+    messageRepo,
+    connectionRepo,
+    settingsRepo,
+    gmailAccountService,
+    gmailClient,
+    { fromName: env.HELPDESK_FROM_NAME },
     now,
     idGen,
     logger,
@@ -159,6 +172,7 @@ export function createApplication(env: Env): Application {
     readiness,
     tickets: {
       tickets: ticketService,
+      reply: replyService,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
     },

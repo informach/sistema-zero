@@ -68,6 +68,15 @@ export class DrizzleTicketRepository implements TicketRepository {
     return ok
   }
 
+  async claimForReply(id: string, expectedVersion: number, at: Date): Promise<boolean> {
+    const claimed = await this.db
+      .update(tickets)
+      .set({ version: expectedVersion + 1, updatedAt: at })
+      .where(and(eq(tickets.id, id), eq(tickets.version, expectedVersion)))
+      .returning({ id: tickets.id })
+    return claimed.length > 0
+  }
+
   async list(filter: ListTicketsFilter): Promise<{ items: Ticket[]; total: number }> {
     const conditions = []
     if (filter.status) conditions.push(eq(tickets.status, filter.status))

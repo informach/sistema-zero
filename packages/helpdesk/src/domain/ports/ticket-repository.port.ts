@@ -18,5 +18,11 @@ export interface TicketRepository {
    * atualizadas → false (o chamador traduz em CONCURRENCY_CONFLICT).
    */
   update(ticket: Ticket, expectedVersion: number): Promise<boolean>
+  /**
+   * Reserva ATÔMICA do envio (guard anti-double-send): bump de `version`
+   * condicionado ao valor esperado. `false` = outra resposta venceu a corrida
+   * (duplo-clique/stale) → 409 ANTES de mandar qualquer e-mail.
+   */
+  claimForReply(id: string, expectedVersion: number, at: Date): Promise<boolean>
   list(filter: ListTicketsFilter): Promise<{ items: Ticket[]; total: number }>
 }

@@ -1,15 +1,17 @@
 import { Elysia } from 'elysia'
+import type { ReplyService } from '../../../application/tickets/reply.service'
 import type { TicketService } from '../../../application/tickets/ticket.service'
 import { assertInternalCaller, requireStaff, resolveActor } from '../auth'
-import { IdParams, TicketPatchBody, TicketsQuery } from '../dtos'
+import { IdParams, NoteBody, ReplyBody, TicketPatchBody, TicketsQuery } from '../dtos'
 
 export interface TicketsRoutesDeps {
   tickets: TicketService
+  reply: ReplyService
   internalToken?: string
   requireStaffEnabled: boolean
 }
 
-/** Caixa de entrada: listagem, detalhe (thread completa) e edição do ticket. */
+/** Caixa de entrada: listagem, detalhe (thread), edição, resposta e notas. */
 export function ticketsRoutes(deps: TicketsRoutesDeps) {
   return new Elysia()
     .onBeforeHandle(({ headers }) => {
@@ -38,5 +40,18 @@ export function ticketsRoutes(deps: TicketsRoutesDeps) {
       '/helpdesk/tickets/:id',
       ({ headers, params, body }) => deps.tickets.patch(resolveActor(headers), params.id, body),
       { params: IdParams, body: TicketPatchBody },
+    )
+    .post(
+      '/helpdesk/tickets/:id/reply',
+      ({ headers, params, body }) => deps.reply.reply(resolveActor(headers), params.id, body),
+      { params: IdParams, body: ReplyBody },
+    )
+    .post(
+      '/helpdesk/tickets/:id/notes',
+      async ({ headers, params, body, set }) => {
+        set.status = 201
+        return { message: await deps.tickets.addNote(resolveActor(headers), params.id, body.body) }
+      },
+      { params: IdParams, body: NoteBody },
     )
 }

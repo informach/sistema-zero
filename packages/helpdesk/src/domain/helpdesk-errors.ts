@@ -42,6 +42,14 @@ export class InvalidTicketStateError extends DomainError {
   }
 }
 
+// ── Falha de gateway externo (502) ───────────────────────────────────────────
+export class GmailSendFailedError extends DomainError {
+  readonly code = 'GMAIL_SEND_FAILED'
+  constructor(message = 'Não foi possível enviar o e-mail pelo Gmail. Tente novamente') {
+    super(message)
+  }
+}
+
 // ── Infra indisponível (503) ─────────────────────────────────────────────────
 export class GmailNotConfiguredError extends DomainError {
   readonly code = 'GMAIL_NOT_CONFIGURED'

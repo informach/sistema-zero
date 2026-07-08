@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { ConnectionService } from '../src/application/connection/connection.service'
+import { GmailAccountService } from '../src/application/connection/gmail-account.service'
 import { OAuthService } from '../src/application/connection/oauth.service'
 import { KbService } from '../src/application/kb/kb.service'
 import { SettingsService } from '../src/application/settings/settings.service'
+import { ReplyService } from '../src/application/tickets/reply.service'
 import { TicketService } from '../src/application/tickets/ticket.service'
 import type { Ticket } from '../src/domain/ticket/ticket'
 import type { TicketMessage } from '../src/domain/ticket/ticket-message'
@@ -66,7 +68,7 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
   const gmailClient = new FakeGmailClient()
   const secretBox = new FakeSecretBox()
 
-  const ticketService = new TicketService(tickets, messages, now)
+  const ticketService = new TicketService(tickets, messages, now, idGen)
   const kbService = new KbService(kb, now, idGen)
   const settingsService = new SettingsService(settings, now)
   const revokeDeps = gmailEnabled ? { provider, secretBox } : null
@@ -82,6 +84,24 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
     idGen,
     silentLogger,
   )
+  const gmailAccountService = new GmailAccountService(
+    connections,
+    gmailEnabled ? { provider, secretBox } : null,
+    now,
+    silentLogger,
+  )
+  const replyService = new ReplyService(
+    tickets,
+    messages,
+    connections,
+    settings,
+    gmailAccountService,
+    gmailClient,
+    { fromName: 'Sistema Zero' },
+    now,
+    idGen,
+    silentLogger,
+  )
 
   const app = createServer({
     env,
@@ -89,6 +109,7 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
     readiness: async () => ({ ready: true, checks: { db: 'ok' } }),
     tickets: {
       tickets: ticketService,
+      reply: replyService,
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
