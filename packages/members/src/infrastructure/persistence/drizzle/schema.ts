@@ -943,7 +943,9 @@ export const teacherMessages = members.table(
     authorId: uuid('author_id'),
     /** Nome de EXIBIÇÃO no envio (snapshot; renomear a equipe não reescreve o histórico). */
     authorName: text('author_name'),
-    body: varchar('body', { length: 1000 }).notNull(),
+    // 8000: o professor escreve markdown com print (URL) + trecho de código; o recado curto
+    // do aluno cabe de sobra. Espelha os DTOs `TeacherThreadReplyBody`/`AdminTeacherThreadPostBody`.
+    body: varchar('body', { length: 8000 }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   // Cobre o EXISTS de não-lido (thread + papel + data) e a listagem dos turnos.

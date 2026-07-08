@@ -79,6 +79,28 @@ export interface StudioSubmissionCourseRow {
   message: string | null
 }
 
+/** Filtro da fila GLOBAL de entregas (página "Entregas" da Sala do Professor). */
+export interface StudioSubmissionGlobalFilter {
+  courseId?: string
+  audience?: CourseAudience
+  /**
+   * `pending` = sem resposta do professor APÓS o último envio (um reenvio
+   * reabre a pendência); `answered` = com resposta. Ausente = todas.
+   */
+  status?: 'pending' | 'answered'
+  limit: number
+  offset: number
+}
+
+/** Linha da fila global: a linha por-curso + o curso resolvido e o estado de resposta. */
+export interface StudioSubmissionGlobalRow extends StudioSubmissionCourseRow {
+  courseId: string
+  courseTitle: string
+  audience: CourseAudience
+  /** Há mensagem do PROFESSOR na conversa da entrega após o último envio. */
+  answered: boolean
+}
+
 /** Uma entrega recente do Estúdio (ficha admin), com a aula/curso resolvidos. */
 export interface RecentStudioSubmission {
   blockId: string
@@ -116,6 +138,13 @@ export interface StudioSubmissionRepository {
    * ordem do curso (módulo → aula) e depois pela data de envio.
    */
   listByCourse(courseId: string): Promise<StudioSubmissionCourseRow[]>
+  /**
+   * Fila GLOBAL de entregas (todos os cursos) — página "Entregas" da Sala do
+   * Professor. PENDENTES primeiro, depois mais recentes; paginada com total.
+   */
+  listAll(
+    filter: StudioSubmissionGlobalFilter,
+  ): Promise<{ items: StudioSubmissionGlobalRow[]; total: number }>
   /** Entrega de um aluno num bloco (abrir no Estúdio do professor + correção). */
   getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null>
   /**

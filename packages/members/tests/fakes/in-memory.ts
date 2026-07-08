@@ -105,6 +105,8 @@ import type {
   RecentStudioSubmission,
   StudioSubmissionCourseRow,
   StudioSubmissionDetail,
+  StudioSubmissionGlobalFilter,
+  StudioSubmissionGlobalRow,
   StudioSubmissionRecord,
   StudioSubmissionRepository,
   StudioSubmissionState,
@@ -1276,6 +1278,57 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         a.row.submittedAt.getTime() - b.row.submittedAt.getTime(),
     )
     return rows.map((r) => r.row)
+  }
+
+  /**
+   * Entregas "respondidas" na fila global (`${userId}:${blockId}`). O REAL deriva
+   * de teacher_threads (mensagem do professor após o envio) — no fake o teste
+   * marca explicitamente; a semântica SQL é coberta pela QA integrada.
+   */
+  readonly answeredKeys = new Set<string>()
+
+  async listAll(
+    filter: StudioSubmissionGlobalFilter,
+  ): Promise<{ items: StudioSubmissionGlobalRow[]; total: number }> {
+    const all = this.submissions
+      .map((s) => {
+        const lesson = this.courses?.lessons.find((l) => l.id === s.lessonId)
+        const mod = lesson ? this.courses?.modules.find((m) => m.id === lesson.moduleId) : undefined
+        const course = this.courses?.courses.find((c) => c.id === s.courseId)
+        return {
+          userId: s.userId,
+          accountId: s.accountId ?? null,
+          blockId: s.blockId,
+          lessonId: s.lessonId,
+          lessonTitle: lesson?.title ?? '',
+          moduleTitle: mod?.title ?? '',
+          courseId: s.courseId,
+          courseTitle: course?.title ?? '',
+          audience: course?.audience ?? 'adult',
+          submittedAt: s.submittedAt,
+          score: s.score ?? null,
+          checkedAt: s.checkedAt ?? null,
+          passed: s.passedAt != null,
+          message: s.message ?? null,
+          answered: this.answeredKeys.has(`${s.userId}:${s.blockId}`),
+        } satisfies StudioSubmissionGlobalRow
+      })
+      .filter((r) => !filter.courseId || r.courseId === filter.courseId)
+      .filter((r) => !filter.audience || r.audience === filter.audience)
+      .filter((r) =>
+        filter.status === 'pending'
+          ? !r.answered
+          : filter.status === 'answered'
+            ? r.answered
+            : true,
+      )
+      // Pendentes primeiro, depois as mais recentes (espelha o repo real).
+      .sort(
+        (a, b) =>
+          Number(a.answered) - Number(b.answered) ||
+          b.submittedAt.getTime() - a.submittedAt.getTime(),
+      )
+    return { items: all.slice(filter.offset, filter.offset + filter.limit), total: all.length }
   }
 
   async getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null> {

@@ -1,0 +1,111 @@
+import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
+import { buildApp, seedSampleCourse } from '../helpers'
+
+// Fila GLOBAL de entregas (página "Entregas" da Sala do Professor):
+// GET /members/admin/studio-submissions — pendentes primeiro, filtros, paginação.
+// A semântica SQL do `answered` (mensagem do professor após o envio) é coberta
+// pela QA integrada; aqui o fake marca via `answeredKeys`.
+
+const USER_A = '22222222-2222-2222-2222-222222222222'
+const USER_B = '33333333-3333-3333-3333-333333333333'
+const headers = { 'x-auth-user-id': USER_A, 'content-type': 'application/json' }
+
+const listAll = (app: ReturnType<typeof buildApp>['app'], qs = '') =>
+  app.handle(new Request(`http://localhost/members/admin/studio-submissions${qs}`, { headers }))
+
+const readJson = (res: Response): Promise<any> => res.json()
+
+function seedSubmission(
+  fakes: ReturnType<typeof buildApp>,
+  courseId: string,
+  lessonId: string,
+  userId: string,
+  submittedAt: Date,
+): string {
+  const blockId = randomUUID()
+  fakes.studioSubmissions.submissions.push({
+    id: randomUUID(),
+    userId,
+    accountId: null,
+    blockId,
+    lessonId,
+    courseId,
+    project: { name: 'p', files: {} },
+    submittedAt,
+  })
+  return blockId
+}
+
+describe('GET /members/admin/studio-submissions (fila global)', () => {
+  test('pendentes primeiro, depois mais recentes; total e curso resolvidos', async () => {
+    const fakes = buildApp()
+    const { courseId, lessonIds } = seedSampleCourse(fakes.courses, 'curso-global-1')
+
+    const oldPending = seedSubmission(
+      fakes,
+      courseId,
+      lessonIds[0],
+      USER_A,
+      new Date('2026-07-01T10:00:00Z'),
+    )
+    const newAnswered = seedSubmission(
+      fakes,
+      courseId,
+      lessonIds[0],
+      USER_B,
+      new Date('2026-07-05T10:00:00Z'),
+    )
+    fakes.studioSubmissions.answeredKeys.add(`${USER_B}:${newAnswered}`)
+
+    const res = await listAll(fakes.app)
+    expect(res.status).toBe(200)
+    const body = await readJson(res)
+    expect(body.total).toBe(2)
+    // Pendente vem ANTES mesmo sendo mais antiga.
+    expect(body.items[0].blockId).toBe(oldPending)
+    expect(body.items[0].answered).toBe(false)
+    expect(body.items[1].blockId).toBe(newAnswered)
+    expect(body.items[1].answered).toBe(true)
+    // Curso resolvido na linha (o BFF filtra/mostra sem 2ª ida).
+    expect(body.items[0].courseId).toBe(courseId)
+    expect(body.items[0].courseTitle).toBeTruthy()
+    expect(body.items[0].audience).toBe('adult')
+    expect(body.items[0].lessonTitle).toBeTruthy()
+  })
+
+  test('filtros: status/courseId; courseId inválido → 400 na borda', async () => {
+    const fakes = buildApp()
+    const c1 = seedSampleCourse(fakes.courses, 'curso-global-2')
+    const c2 = seedSampleCourse(fakes.courses, 'curso-global-3')
+    const pending = seedSubmission(fakes, c1.courseId, c1.lessonIds[0], USER_A, new Date())
+    const answered = seedSubmission(fakes, c2.courseId, c2.lessonIds[0], USER_B, new Date())
+    fakes.studioSubmissions.answeredKeys.add(`${USER_B}:${answered}`)
+
+    const pendingRes = await readJson(await listAll(fakes.app, '?status=pending'))
+    expect(pendingRes.total).toBe(1)
+    expect(pendingRes.items[0].blockId).toBe(pending)
+
+    const byCourse = await readJson(await listAll(fakes.app, `?courseId=${c2.courseId}`))
+    expect(byCourse.total).toBe(1)
+    expect(byCourse.items[0].blockId).toBe(answered)
+
+    expect((await listAll(fakes.app, '?courseId=nao-e-uuid')).status).toBe(400)
+  })
+
+  test('paginação: limit/offset com total estável', async () => {
+    const fakes = buildApp()
+    const { courseId, lessonIds } = seedSampleCourse(fakes.courses, 'curso-global-4')
+    for (let i = 0; i < 5; i++) {
+      seedSubmission(fakes, courseId, lessonIds[0], USER_A, new Date(2026, 6, i + 1))
+    }
+    const page1 = await readJson(await listAll(fakes.app, '?limit=2&offset=0'))
+    const page2 = await readJson(await listAll(fakes.app, '?limit=2&offset=2'))
+    expect(page1.total).toBe(5)
+    expect(page1.items).toHaveLength(2)
+    expect(page2.items).toHaveLength(2)
+    const ids1 = page1.items.map((i: { blockId: string }) => i.blockId)
+    const ids2 = page2.items.map((i: { blockId: string }) => i.blockId)
+    for (const id of ids2) expect(ids1).not.toContain(id)
+  })
+})

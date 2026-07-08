@@ -1,6 +1,6 @@
 import { ShieldAlert } from 'lucide-react'
 import { redirect } from 'next/navigation'
-import { AdminTopbar } from '@/components/admin/admin-topbar'
+import { AdminSidebar } from '@/components/admin/admin-sidebar'
 import { LogoutButton } from '@/components/admin/logout-button'
 import { isAdminRole } from '@/lib/types'
 import { getSession } from '@/server/session'
@@ -30,9 +30,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <AdminTopbar user={user} />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 md:px-6">{children}</main>
+    <div className="flex min-h-screen flex-col bg-background md:flex-row">
+      <AdminSidebar user={user} />
+      <main className="min-w-0 flex-1">
+        <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-6">{children}</div>
+      </main>
     </div>
   )
 }

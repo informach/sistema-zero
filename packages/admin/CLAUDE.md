@@ -19,9 +19,32 @@ Painel para o dono operar a plataforma: **usuários, pagamentos, produtos, ofert
 Front-end **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um **BFF agregador** que
 **chama o API Gateway** (NUNCA os serviços direto). Espelha o design do projeto de referência
 `comunidade-sistema-zero` (tokens OKLch dual light/dark, Base UI-like + lucide + sonner; **logo
-dual-theme** `public/logo_dark.svg`⇄`logo_white.svg` na topbar/login — `dark:block`/`dark:hidden` —
+dual-theme** `public/logo_dark.svg`⇄`logo_white.svg` na sidebar/login — `dark:block`/`dark:hidden` —
 e **favicon** completo: `src/app/favicon.ico` + PNGs 16/32/192/512 + apple-touch via
 `metadata.icons`, mesmos assets do community). Porta **3005**.
+
+**Navegação (reorganização 07/2026 — SIDEBAR em 3 áreas por natureza do trabalho):** a topbar
+plana virou sidebar com grupos — **Sala do Professor** (dia a dia: Entregas `/admin/professor/
+entregas` [fila GLOBAL cross-curso, pendentes primeiro], Recados `/admin/professor/recados`
+[caixa de entrada das conversas com alunos], Moderação, Alunos, Análises), **Gestão**
+(Painel/Usuários/Pagamentos/Notas fiscais/Catálogo) e **Configuração** (Cursos-autoria/
+Comunidade-servidores/Auditoria). Fonte única em `components/admin/nav.ts` (`NAV_GROUPS` +
+helpers PUROS testados `activeHref`/`sectionForPath`/`canAccessSection`/`pathIsRoleRestricted`/
+`homeForRole` — item ativo e seção por **longest-prefix**, resolve `/admin/membros` [Alunos,
+professor] × `/admin/membros/cursos` [autoria, config]); render em `admin-sidebar.tsx` (desktop
+= coluna fixa; mobile = topbar fina + drawer com `useModalA11y`; `UserMenu` ganhou
+`dropdownSide='up'`). **As rotas existentes NÃO mudaram de URL** — o agrupamento é do menu; as
+abas `MEMBERS_TABS`/`COMMUNITY_TABS` foram REMOVIDAS (páginas standalone; `CATALOG_TABS`/
+`PAYMENTS_TABS` ficam). **Terreno p/ o futuro papel `professor`:** grupos aceitam `roles`; o
+`proxy.ts` aplica gate por seção (só paga verificação de JWT em path restrito —
+`pathIsRoleRestricted`; negado → redirect p/ `homeForRole`; hoje só Auditoria restringe) e
+`app/admin/professor/layout.tsx` re-checa em profundidade. Ligar o papel depois = adicionar
+`'professor'` a `ADMIN_ROLES` (`lib/types.ts`) + preencher `roles` nos grupos gestao/config.
+BFFs novos: `GET /api/members/teacher-threads` (lista hidratada) + `[id]/{,messages,read}`
+(adapters em `server/teacher-threads.ts` — arquivo PRÓPRIO, não o members.ts) e
+`GET /api/members/studio-submissions` (fila global; adapter em `server/studio-submissions.ts`).
+A página Entregas REUSA o `StudioSubmissionViewer` da aba do curso (import cross-dir; mover p/
+`components/professor/` é limpeza futura). Testes puros da nav em `tests/nav.test.ts`.
 
 > Estado: **Fatia 1 — Catálogo** (produtos/ofertas/cupons: listar/criar/editar) + **Fatia 2 —
 > Usuários** (listar com busca/filtros — q/papel/status + **busca avançada 06/2026**: origem do
@@ -321,7 +344,7 @@ src/
             fulfillment-editor — courseRef = SLUG do curso do members; **o campo "Quantidade de perfis
             (plataforma Kids)" MUDOU p/ o form da OFERTA (28/06)** — vive em `OfferContent.maxProfiles`
             (em `ofertas/offers-client.tsx`, mesclado no `content` sem apagar badge/cta), NÃO mais no
-            produto) · admin/* (topbar/header/tabs/…)
+            produto) · admin/* (sidebar/nav/header/tabs/…)
             ⚠️ Primitivos de UI (button/card/input/table/dialog/badge/select/info-tooltip/…) vivem
             no **`@sistemazero/ui`** (packages/ui, compartilhado com o community) — importe
             `@sistemazero/ui/<componente>`; NÃO recrie cópias locais. O Button espelha as classes

@@ -4,7 +4,14 @@ import { LogOut } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { SessionUser } from '@/lib/types'
 
-export function UserMenu({ user }: { user: SessionUser }) {
+export function UserMenu({
+  user,
+  dropdownSide = 'down',
+}: {
+  user: SessionUser
+  /** `up` p/ gatilhos rentes ao rodapé (footer da sidebar) — o menu abre acima. */
+  dropdownSide?: 'down' | 'up'
+}) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -42,7 +49,11 @@ export function UserMenu({ user }: { user: SessionUser }) {
         {initial}
       </button>
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-lg">
+        <div
+          className={`absolute right-0 z-50 w-56 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-lg ${
+            dropdownSide === 'up' ? 'bottom-full mb-2' : 'mt-2'
+          }`}
+        >
           <div className="border-b border-border px-3 py-2.5">
             <p className="truncate text-sm font-medium">{name}</p>
             <p className="truncate text-xs text-muted-foreground">{user.email}</p>

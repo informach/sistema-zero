@@ -85,7 +85,7 @@ const nextConfig: NextConfig = {
   // externa, justamente p/ não depender do tracing de externos do standalone.)
   serverExternalPackages: ['sharp'],
   // Pacotes workspace com TS cru (componentes compartilhados + editor embarcável) — transpilar junto.
-  transpilePackages: ['@sistemazero/ui', '@sistemazero/studio'],
+  transpilePackages: ['@sistemazero/ui', '@sistemazero/studio', '@sistemazero/member-shell'],
   // Security headers em TODAS as respostas (inclui `/api/media/*`, que fica fora
   // do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
   async headers() {

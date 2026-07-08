@@ -1741,6 +1741,64 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
     },
+    // Recados (conversas professor↔aluno) — caixa de entrada do ALUNO. Mesma régua
+    // das demais rotas do aluno (JWT + conta ativa + `x-internal-token`); recurso do
+    // PRÓPRIO usuário (o members filtra por x-auth-user-id + `?audience=`). Literal
+    // `/members/teacher-threads` (2 seg) não colide com courses/catalog/avatars; a
+    // lista e o `unread-count` alimentam o sino do kids a cada render → teto 300.
+    {
+      id: 'members-teacher-threads-list',
+      methods: ['GET'],
+      pathPattern: '/members/teacher-threads',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-teacher-threads-unread-count',
+      methods: ['GET'],
+      pathPattern: '/members/teacher-threads/unread-count',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    // Literal `unread-count` vence o param `:id` na especificidade do matcher.
+    {
+      id: 'members-teacher-thread-get',
+      methods: ['GET'],
+      pathPattern: '/members/teacher-threads/:id',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-teacher-thread-reply',
+      methods: ['POST'],
+      pathPattern: '/members/teacher-threads/:id/messages',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-teacher-thread-read',
+      methods: ['POST'],
+      pathPattern: '/members/teacher-threads/:id/read',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
     // Concessão/assinatura (funil → gateway → members): HMAC de borda do funil +
     // o gateway re-assina como consumer `gateway` (members verifica com GATEWAY_HMAC_SECRET).
     {
@@ -1875,6 +1933,47 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       audit: {},
+    },
+    // Fila GLOBAL de entregas do Estúdio (página "Entregas" da Sala do Professor):
+    // todos os cursos, pendentes primeiro, filtros + paginação. LEITURA staff+
+    // (mesma régua das demais leituras admin). Literal de 3 segmentos — não colide
+    // com `/members/admin/members/:userId` nem com os wildcards `/courses/*`.
+    {
+      id: 'members-admin-studio-submissions',
+      methods: ['GET'],
+      pathPattern: '/members/admin/studio-submissions',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    // Recados (conversas professor↔aluno) — lado do PROFESSOR (painel admin).
+    // Responder aluno é tarefa diária de professor/staff → LEITURA e ESCRITA
+    // staff+. Os wildcards `/*` casam o resto do path — inclusive a cauda vazia
+    // (lista) — e cobrem `by-context`, `:id`, `:id/messages` e `:id/read` sem
+    // rotas exatas separadas (mesmo padrão da autoria de cursos). Não colidem
+    // com `/members/admin/members*` nem com `/members/admin/courses/*`.
+    {
+      id: 'members-admin-teacher-threads-read',
+      methods: ['GET'],
+      pathPattern: '/members/admin/teacher-threads/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-admin-teacher-threads-write',
+      methods: ['POST'],
+      pathPattern: '/members/admin/teacher-threads/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
     },
 
     // ── Área de membros — Admin de AUTORIA de conteúdo ───────────────────────

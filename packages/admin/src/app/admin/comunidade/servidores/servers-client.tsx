@@ -23,7 +23,6 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { CommunityTabs } from '@/components/admin/community-tabs'
 import { HubAccessFields, PUBLIC_ACCESS } from '@/components/admin/hub-access-fields'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -153,7 +152,6 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
           ) : null
         }
       />
-      <CommunityTabs />
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Carregando…</p>

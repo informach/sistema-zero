@@ -1,5 +1,42 @@
 import 'server-only'
+import { type GatewayResponse, gatewayFetch } from '@/server/gateway'
 import { batchGetUsers, getUserProfiles } from '@/server/users'
+
+/** Linha crua da fila global (members) — identidade hidratada aqui no BFF. */
+export interface RawGlobalSubmission extends RawSubmissionIdentity {
+  blockId: string
+  lessonId: string
+  lessonTitle: string
+  moduleTitle: string
+  courseId: string
+  courseTitle: string
+  audience: 'adult' | 'kids'
+  submittedAt: string
+  score: number | null
+  checkedAt: string | null
+  passed: boolean
+  message: string | null
+  answered: boolean
+}
+
+/** Fila GLOBAL de entregas (todos os cursos): `GET /members/admin/studio-submissions`. */
+export function listAllStudioSubmissions(p: {
+  courseId?: string
+  audience?: string
+  status?: string
+  limit?: number
+  offset?: number
+}): Promise<GatewayResponse<{ items: RawGlobalSubmission[]; total: number }>> {
+  return gatewayFetch('/members/admin/studio-submissions', {
+    query: {
+      courseId: p.courseId,
+      audience: p.audience,
+      status: p.status,
+      limit: p.limit,
+      offset: p.offset,
+    },
+  })
+}
 
 /** Campos mínimos de uma entrega p/ resolver a identidade (quem entregou/responsável). */
 export interface RawSubmissionIdentity {

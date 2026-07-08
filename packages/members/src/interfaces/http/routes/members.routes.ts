@@ -662,6 +662,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             body.message ?? null,
             isPrivilegedActor(headers),
             resolveAccountId(headers),
+            resolveStudentName(headers) || null,
           )
         },
         { body: StudioSubmissionBody, params: StudioSubmissionParams },

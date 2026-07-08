@@ -1,12 +1,17 @@
 'use client'
 
+import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { MessagesSquare, Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadView } from '@/lib/types'
+
+/** Teto do corpo — espelha o DTO do members (`TeacherThreadReplyBody`, ≤8000). */
+const MAX_BODY = 8000
 
 interface Props {
   userId: string
@@ -62,6 +67,10 @@ export function TeacherThreadPanel({
   const send = async () => {
     const body = reply.trim()
     if (!body || sending) return
+    if (body.length > MAX_BODY) {
+      toast.error(`O recado excede ${MAX_BODY} caracteres.`)
+      return
+    }
     setSending(true)
     try {
       const updated = await apiSend<TeacherThreadView>('/api/members/teacher-threads', 'POST', {
@@ -103,7 +112,16 @@ export function TeacherThreadPanel({
                   <p className="mb-0.5 font-medium text-muted-foreground text-xs">
                     {teacher ? (m.authorName ?? 'Você') : studentName}
                   </p>
-                  <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                  {teacher ? (
+                    // Recado do PROFESSOR = markdown rico (negrito/listas/print/código); o
+                    // aluno vê o mesmo formatado no app dele (renderMarkdown, autor confiável).
+                    <div className="rich-text-content break-words text-sm [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:max-h-72 [&_img]:rounded">
+                      {renderMarkdown(m.body)}
+                    </div>
+                  ) : (
+                    // Recado do ALUNO = texto simples (React escapa — conteúdo de criança).
+                    <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                  )}
                 </div>
               </li>
             )
@@ -116,18 +134,15 @@ export function TeacherThreadPanel({
         </p>
       )}
 
-      <div className="flex items-end gap-2">
-        <textarea
-          value={reply}
-          onChange={(e) => setReply(e.target.value)}
-          placeholder={`Recado para ${studentName}…`}
-          maxLength={1000}
-          rows={2}
-          className="flex-1 resize-none rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-primary"
-        />
-        <Button size="sm" onClick={send} disabled={!reply.trim() || sending}>
-          <Send className="size-4" /> Enviar
-        </Button>
+      <div className="space-y-2">
+        {/* Editor rico: negrito/listas/citação, código (inline e bloco) e PRINT (botão de
+            imagem ou colar Ctrl+V) — para o professor explicar bem à criança. Saída markdown. */}
+        <RichTextEditor content={reply} onChange={setReply} compact />
+        <div className="flex justify-end">
+          <Button size="sm" onClick={send} disabled={!reply.trim() || sending}>
+            <Send className="size-4" /> Enviar
+          </Button>
+        </div>
       </div>
     </Card>
   )

@@ -375,6 +375,66 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
       .then(readJson)
     expect(after.message).toBeNull()
   })
+
+  test('recado do envio VIRA histórico na conversa e SOBREVIVE ao reenvio', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+
+    const submitWithMessage = (message: string) =>
+      app.handle(
+        new Request(
+          `http://localhost/members/lessons/${lessonIds[0]}/blocks/${blockId}/studio-submission`,
+          {
+            method: 'POST',
+            headers: authHeaders,
+            body: JSON.stringify({ project: STUDENT_PROJECT, message }),
+          },
+        ),
+      )
+
+    await submitWithMessage('Primeiro recado')
+    // O reenvio SOBRESCREVE o projeto/`message` da entrega, mas o histórico acumula.
+    await submitWithMessage('Segundo recado (reenvio)')
+
+    const { thread } = await app
+      .handle(
+        new Request(
+          `http://localhost/members/admin/teacher-threads/by-context?userId=${USER}&contextType=studio_submission&contextRef=${blockId}`,
+        ),
+      )
+      .then(readJson)
+
+    expect(thread).not.toBeNull()
+    expect(thread.contextType).toBe('studio_submission')
+    expect(thread.messages).toHaveLength(2)
+    expect(thread.messages.map((m: { body: string }) => m.body)).toEqual([
+      'Primeiro recado',
+      'Segundo recado (reenvio)',
+    ])
+    expect(thread.messages.every((m: { authorRole: string }) => m.authorRole === 'student')).toBe(
+      true,
+    )
+  })
+
+  test('envio SEM recado não cria conversa', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+
+    await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)
+
+    const { thread } = await app
+      .handle(
+        new Request(
+          `http://localhost/members/admin/teacher-threads/by-context?userId=${USER}&contextType=studio_submission&contextRef=${blockId}`,
+        ),
+      )
+      .then(readJson)
+    expect(thread).toBeNull()
+  })
 })
 
 // ── Carryover: continuar o projeto da aula contínua anterior (mesma cadeia) ──────

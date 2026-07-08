@@ -185,6 +185,9 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
 
   const [grantUserId, setGrantUserId] = useState<string | null>(null)
   const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
+  // Diálogo "Entrar como": escolher a plataforma (comunidade adulta ou Kids) antes do handoff.
+  const [impersonateUser, setImpersonateUser] = useState<UserView | null>(null)
+  const [impersonatePlatform, setImpersonatePlatform] = useState('main')
 
   // Acesso e senha (cliente com link expirado / preso sem senha).
   const [accessUser, setAccessUser] = useState<UserView | null>(null)
@@ -350,11 +353,15 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
 
   // "Entrar como" (suporte): pede o token de handoff e abre a community em nova aba
   // já logada como o usuário. O token é single-use/60s — a aba precisa abrir na hora.
-  async function impersonate(u: UserView) {
+  // `platform` decide o app do handoff: 'main' = comunidade adulta; 'kids' = Community
+  // Kids (o auth resolve a `communityUrl` de cada uma; o BFF repassa `?platform=kids`).
+  async function impersonate(u: UserView, platform: string) {
     setImpersonatingId(u.id)
+    setImpersonateUser(null)
     try {
+      const suffix = platform === 'kids' ? '?platform=kids' : ''
       const res = await apiSend<{ token: string; expiresAt: string; communityUrl: string }>(
-        `/api/admin/users/${u.id}/impersonate`,
+        `/api/admin/users/${u.id}/impersonate${suffix}`,
         'POST',
         {},
       )
@@ -756,7 +763,10 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                             impersonatingId === u.id ? <Spinner /> : <LogIn className="size-4" />
                           }
                           disabled={impersonatingId === u.id}
-                          onClick={() => impersonate(u)}
+                          onClick={() => {
+                            setImpersonatePlatform('main')
+                            setImpersonateUser(u)
+                          }}
                         />
                       ) : null}
                       {canEdit(u) && u.id !== currentUser.id ? (
@@ -955,6 +965,46 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
             >
               <option value="main">Principal (comunidade)</option>
               <option value="kids">Kids</option>
+            </Select>
+          </Field>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={impersonateUser !== null}
+        onClose={() => setImpersonateUser(null)}
+        title="Entrar como este usuário"
+        description={
+          impersonateUser ? `${impersonateUser.firstName} ${impersonateUser.lastName}` : undefined
+        }
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setImpersonateUser(null)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (impersonateUser) void impersonate(impersonateUser, impersonatePlatform)
+              }}
+            >
+              <LogIn className="size-4" /> Entrar
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-3">
+          <p className="text-muted-foreground text-xs">
+            Abre uma sessão de suporte em nova aba, já logada como o usuário. Escolha a plataforma —
+            o Kids abre na grade de perfis das crianças.
+          </p>
+          <Field label="Plataforma" htmlFor="impersonate-platform">
+            <Select
+              id="impersonate-platform"
+              value={impersonatePlatform}
+              onChange={(e) => setImpersonatePlatform(e.target.value)}
+            >
+              <option value="main">Comunidade (adulto)</option>
+              <option value="kids">Community Kids</option>
             </Select>
           </Field>
         </div>

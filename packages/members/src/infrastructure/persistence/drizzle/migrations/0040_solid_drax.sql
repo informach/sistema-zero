@@ -1,0 +1,1 @@
+ALTER TABLE "members"."teacher_messages" ALTER COLUMN "body" SET DATA TYPE varchar(8000);

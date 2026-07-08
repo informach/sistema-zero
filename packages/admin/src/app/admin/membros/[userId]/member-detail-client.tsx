@@ -5,6 +5,7 @@ import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
+import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import {
   Table,
@@ -88,6 +89,9 @@ export function MemberDetailClient({
   const [tab, setTab] = useState<Tab>('overview')
   const [learnerId, setLearnerId] = useState(userId)
   const [impersonating, setImpersonating] = useState(false)
+  // "Entrar como": escolher a plataforma (comunidade adulta ou Kids) antes do handoff.
+  const [impersonateOpen, setImpersonateOpen] = useState(false)
+  const [impersonatePlatform, setImpersonatePlatform] = useState('main')
 
   const [grantOpen, setGrantOpen] = useState(false)
 
@@ -185,11 +189,15 @@ export function MemberDetailClient({
   }
 
   // "Entrar como" (suporte): pede o handoff e abre a community já logada como o aluno.
-  async function impersonate() {
+  // `platform` escolhe o app: 'main' = comunidade adulta; 'kids' = Community Kids (grade
+  // de perfis das crianças). O BFF repassa `?platform=kids`; o auth resolve a `communityUrl`.
+  async function impersonate(platform: string) {
     setImpersonating(true)
+    setImpersonateOpen(false)
     try {
+      const suffix = platform === 'kids' ? '?platform=kids' : ''
       const res = await apiSend<{ token: string; communityUrl: string }>(
-        `/api/admin/users/${userId}/impersonate`,
+        `/api/admin/users/${userId}/impersonate${suffix}`,
         'POST',
         {},
       )
@@ -238,7 +246,14 @@ export function MemberDetailClient({
         action={
           <div className="flex flex-wrap gap-2">
             {canImpersonateUser ? (
-              <Button variant="outline" onClick={impersonate} disabled={impersonating}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setImpersonatePlatform('main')
+                  setImpersonateOpen(true)
+                }}
+                disabled={impersonating}
+              >
                 {impersonating ? <Spinner /> : <LogIn className="size-4" />} Entrar como
               </Button>
             ) : null}
@@ -330,6 +345,40 @@ export function MemberDetailClient({
         onClose={() => setGrantOpen(false)}
         onGranted={load}
       />
+
+      <Dialog
+        open={impersonateOpen}
+        onClose={() => setImpersonateOpen(false)}
+        title="Entrar como este usuário"
+        description={title}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setImpersonateOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void impersonate(impersonatePlatform)}>
+              <LogIn className="size-4" /> Entrar
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-3">
+          <p className="text-muted-foreground text-xs">
+            Abre uma sessão de suporte em nova aba, já logada como o usuário. Escolha a plataforma —
+            o Kids abre na grade de perfis das crianças.
+          </p>
+          <Field label="Plataforma" htmlFor="impersonate-platform">
+            <Select
+              id="impersonate-platform"
+              value={impersonatePlatform}
+              onChange={(e) => setImpersonatePlatform(e.target.value)}
+            >
+              <option value="main">Comunidade (adulto)</option>
+              <option value="kids">Community Kids</option>
+            </Select>
+          </Field>
+        </div>
+      </Dialog>
 
       <Dialog
         open={extendOpen}

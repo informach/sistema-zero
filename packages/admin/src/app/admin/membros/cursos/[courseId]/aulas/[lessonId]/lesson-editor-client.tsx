@@ -26,7 +26,7 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowLeft, GripVertical, Pencil, Plus, Users } from 'lucide-react'
+import { ArrowLeft, GripVertical, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -54,7 +54,6 @@ import {
 } from '@/lib/types'
 import { ActivityBuilder, EMPTY_ACTIVITY, validateStudioActivity } from './activity-builder'
 import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
-import { StudioSubmissionsDialog } from './studio-submissions-dialog'
 
 const KIND_LABELS: Record<string, string> = {
   rich_text: 'Texto',
@@ -386,7 +385,6 @@ export function LessonEditorClient({
   // Handle do Estúdio embutido na autoria — lido no saveBlock (snapshot do projeto inicial).
   const studioHandleRef = useRef<StudioHandle | null>(null)
   // Bloco cujas ENTREGAS o professor está acompanhando (dialog separado).
-  const [submissionsBlockId, setSubmissionsBlockId] = useState<string | null>(null)
 
   const [attOpen, setAttOpen] = useState(false)
   const [editingAtt, setEditingAtt] = useState<AttachmentView | null>(null)
@@ -681,9 +679,6 @@ export function LessonEditorClient({
                       canWrite={canWrite}
                       onEdit={() => openEditBlock(b)}
                       onDelete={() => deleteBlock(b)}
-                      onSubmissions={
-                        b.kind === 'studio' ? () => setSubmissionsBlockId(b.id) : undefined
-                      }
                     />
                   ))}
                 </SortableContext>
@@ -1316,14 +1311,6 @@ export function LessonEditorClient({
           </div>
         </div>
       </Dialog>
-
-      {submissionsBlockId ? (
-        <StudioSubmissionsDialog
-          blockId={submissionsBlockId}
-          open
-          onClose={() => setSubmissionsBlockId(null)}
-        />
-      ) : null}
     </div>
   )
 }
@@ -1334,14 +1321,11 @@ function SortableBlockItem({
   canWrite,
   onEdit,
   onDelete,
-  onSubmissions,
 }: {
   block: BlockView
   canWrite: boolean
   onEdit: () => void
   onDelete: () => void
-  /** Presente só em blocos de estúdio — abre o acompanhamento de entregas. */
-  onSubmissions?: () => void
 }) {
   const { attributes, listeners, setNodeRef, style } = useSortableItem(block.id)
 
@@ -1363,11 +1347,6 @@ function SortableBlockItem({
         <span className="truncate text-sm text-muted-foreground">{blockSummary(block)}</span>
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        {onSubmissions ? (
-          <Button variant="ghost" size="sm" onClick={onSubmissions}>
-            <Users className="size-4" /> Entregas
-          </Button>
-        ) : null}
         {canWrite ? (
           <>
             <Button variant="ghost" size="sm" onClick={onEdit}>

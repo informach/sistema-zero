@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type {
   AttachmentAdminService,
   BlockAdminService,
@@ -87,6 +87,18 @@ function clampLimit(limit: number | undefined): number {
   if (limit === undefined) return DEFAULT_LIMIT
   return Math.min(Math.max(1, limit), MAX_LIMIT)
 }
+
+// Fila GLOBAL de entregas (Sala do Professor). Local (não em dtos.ts): consumido
+// só por esta rota. `courseId` uuid validado na borda (id lixo → 400, nunca 22P02;
+// mesmo pattern do `UUID` de dtos.ts).
+const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+const GlobalStudioSubmissionsQuery = t.Object({
+  courseId: t.Optional(t.String({ pattern: UUID_PATTERN })),
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
+  status: t.Optional(t.Union([t.Literal('pending'), t.Literal('answered')])),
+  limit: t.Optional(t.Numeric({ minimum: 1 })),
+  offset: t.Optional(t.Numeric({ minimum: 0 })),
+})
 
 /**
  * Rotas ADMIN de AUTORIA de conteúdo (cursos → módulos → aulas → blocos/anexos).
@@ -326,6 +338,24 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           return { submissions: await deps.studioSubmissions.listByCourse(params.id) }
         },
         { params: IdParams },
+      )
+      // Fila GLOBAL de entregas (todos os cursos) — página "Entregas" da Sala do
+      // Professor. Pendentes (sem resposta do professor após o último envio)
+      // primeiro; filtros curso/vitrine/status; paginada com `total`. O detalhe
+      // segue reusando a rota por-bloco (linhas carregam `blockId` + `userId`).
+      .get(
+        '/studio-submissions',
+        async ({ query, headers }) => {
+          guard(headers)
+          return deps.studioSubmissions.listAll({
+            courseId: query.courseId,
+            audience: query.audience,
+            status: query.status,
+            limit: clampLimit(query.limit),
+            offset: query.offset ?? 0,
+          })
+        },
+        { query: GlobalStudioSubmissionsQuery },
       )
   )
 }

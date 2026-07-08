@@ -18,7 +18,6 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { MembersTabs } from '@/components/admin/members-tabs'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
@@ -74,10 +73,9 @@ export function MembersClient() {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Membros"
+        title="Alunos"
         description="Alunos com matrícula. Veja o acesso de cada um, conceda e revogue manualmente."
       />
-      <MembersTabs />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">

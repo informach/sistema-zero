@@ -247,23 +247,6 @@ export function deleteAttachment(id: string): Promise<GatewayResponse<unknown>> 
 }
 
 // ── Entregas do Estúdio (acompanhamento do professor) ──
-/** Lista as entregas de um bloco de estúdio: `GET /members/admin/blocks/:id/studio-submissions`. */
-export function listStudioSubmissions(blockId: string): Promise<
-  GatewayResponse<{
-    submissions: {
-      userId: string
-      accountId: string | null
-      submittedAt: string
-      score: number | null
-      checkedAt: string | null
-      passed: boolean
-      /** Recado opcional do aluno ao professor. `null` = sem recado. */
-      message: string | null
-    }[]
-  }>
-> {
-  return gatewayFetch(`/members/admin/blocks/${enc(blockId)}/studio-submissions`)
-}
 /**
  * Entregas de TODAS as aulas de um curso (aba "Entregas" por curso):
  * `GET /members/admin/courses/:id/studio-submissions`. Cada linha traz a aula/módulo

@@ -169,7 +169,14 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    inteiro + nota/resultado p/ abrir no Estúdio do professor) e, **por CURSO**, em
    `GET /members/admin/courses/:id/studio-submissions` (07/2026 — aba "Entregas" do curso no admin:
    TODAS as aulas/blocos num só lugar, `listByCourse` join lessons/modules ordenado por
-   módulo→aula→data + `blockId`/`lessonTitle`/`moduleTitle`; o detalhe reusa a rota por-bloco).
+   módulo→aula→data + `blockId`/`lessonTitle`/`moduleTitle`; o detalhe reusa a rota por-bloco) e,
+   **GLOBAL**, em `GET /members/admin/studio-submissions` (07/2026 — página "Entregas" da Sala do
+   Professor no admin: fila de TODOS os cursos, `listAll` com join `courses` → `courseId`/
+   `courseTitle`/`audience` + **`answered`** derivado de `teacher_threads` [EXISTS de mensagem
+   `teacher` com `created_at >= submitted_at` no contexto da entrega — um REENVIO do aluno REABRE a
+   pendência], PENDENTES primeiro + `submitted_at desc`, filtros `courseId/audience/status
+   pending|answered`, paginação com `total` e teto 100; query DTO local em `content.routes.ts`;
+   testes HTTP em `tests/integration/studio-global-submissions.test.ts`).
    A entrega grava **`account_id`**
    (conta responsável; no kids = o pai, ≠ do `user_id` que é o PERFIL da criança — no adulto são
    iguais; migration `0026`) → o BFF do admin hidrata a CRIANÇA (nome do perfil) + o RESPONSÁVEL.

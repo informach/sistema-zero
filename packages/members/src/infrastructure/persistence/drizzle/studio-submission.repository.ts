@@ -5,13 +5,22 @@ import type {
   RecentStudioSubmission,
   StudioSubmissionCourseRow,
   StudioSubmissionDetail,
+  StudioSubmissionGlobalFilter,
+  StudioSubmissionGlobalRow,
   StudioSubmissionRecord,
   StudioSubmissionRepository,
   StudioSubmissionState,
   StudioSubmissionSummary,
 } from '../../../domain/ports/studio-submission-repository.port'
 import type { Database } from './db'
-import { courses, lessons, modules, studioSubmissions } from './schema'
+import {
+  courses,
+  lessons,
+  modules,
+  studioSubmissions,
+  teacherMessages,
+  teacherThreads,
+} from './schema'
 
 export class DrizzleStudioSubmissionRepository implements StudioSubmissionRepository {
   constructor(private readonly db: Database) {}
@@ -176,6 +185,92 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       passed: r.passedAt != null,
       message: r.message ?? null,
     }))
+  }
+
+  async listAll(
+    filter: StudioSubmissionGlobalFilter,
+  ): Promise<{ items: StudioSubmissionGlobalRow[]; total: number }> {
+    // Fila GLOBAL (página "Entregas" da Sala do Professor). `answered` = há
+    // mensagem do PROFESSOR na conversa desta entrega APÓS o último envio — um
+    // reenvio do aluno REABRE a pendência (o professor precisa olhar de novo).
+    // A conversa é ancorada por contexto (user_id + context_ref = blockId), o
+    // mesmo elo do viewer/`by-context` do teacher-threads. ⚠️ `context_ref` é
+    // TEXT (snapshot — também guarda ids do hub); o `block_id` uuid precisa do
+    // cast, senão o PG recusa `text = uuid` (achado da QA integrada).
+    const answered = sql<boolean>`exists (
+      select 1 from ${teacherThreads} tt
+      join ${teacherMessages} tm on tm.thread_id = tt.id
+      where tt.user_id = ${studioSubmissions.userId}
+        and tt.context_type = 'studio_submission'
+        and tt.context_ref = ${studioSubmissions.blockId}::text
+        and tm.author_role = 'teacher'
+        and tm.created_at >= ${studioSubmissions.submittedAt}
+    )`
+
+    const where = and(
+      filter.courseId ? eq(studioSubmissions.courseId, filter.courseId) : undefined,
+      filter.audience ? eq(courses.audience, filter.audience) : undefined,
+      filter.status === 'pending' ? sql`not ${answered}` : undefined,
+      filter.status === 'answered' ? answered : undefined,
+    )
+
+    const [rows, [totalRow]] = await Promise.all([
+      this.db
+        .select({
+          userId: studioSubmissions.userId,
+          accountId: studioSubmissions.accountId,
+          blockId: studioSubmissions.blockId,
+          lessonId: studioSubmissions.lessonId,
+          lessonTitle: lessons.title,
+          moduleTitle: modules.title,
+          courseId: studioSubmissions.courseId,
+          courseTitle: courses.title,
+          audience: courses.audience,
+          submittedAt: studioSubmissions.submittedAt,
+          score: studioSubmissions.score,
+          checkedAt: studioSubmissions.checkedAt,
+          passedAt: studioSubmissions.passedAt,
+          message: studioSubmissions.message,
+          answered,
+        })
+        .from(studioSubmissions)
+        .innerJoin(lessons, eq(lessons.id, studioSubmissions.lessonId))
+        .innerJoin(modules, eq(modules.id, lessons.moduleId))
+        .innerJoin(courses, eq(courses.id, studioSubmissions.courseId))
+        .where(where)
+        // Pendentes primeiro (false < true), depois as mais recentes.
+        .orderBy(asc(answered), desc(studioSubmissions.submittedAt))
+        .limit(filter.limit)
+        .offset(filter.offset),
+      this.db
+        .select({ value: count() })
+        .from(studioSubmissions)
+        .innerJoin(lessons, eq(lessons.id, studioSubmissions.lessonId))
+        .innerJoin(modules, eq(modules.id, lessons.moduleId))
+        .innerJoin(courses, eq(courses.id, studioSubmissions.courseId))
+        .where(where),
+    ])
+
+    return {
+      items: rows.map((r) => ({
+        userId: r.userId,
+        accountId: r.accountId ?? null,
+        blockId: r.blockId,
+        lessonId: r.lessonId,
+        lessonTitle: r.lessonTitle,
+        moduleTitle: r.moduleTitle,
+        courseId: r.courseId,
+        courseTitle: r.courseTitle,
+        audience: r.audience,
+        submittedAt: r.submittedAt,
+        score: r.score ?? null,
+        checkedAt: r.checkedAt ?? null,
+        passed: r.passedAt != null,
+        message: r.message ?? null,
+        answered: r.answered,
+      })),
+      total: totalRow?.value ?? 0,
+    }
   }
 
   async getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null> {
