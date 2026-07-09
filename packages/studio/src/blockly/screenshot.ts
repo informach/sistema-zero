@@ -25,6 +25,13 @@ const BG_FALLBACK = '#fef9ef'
 const PIXEL_SCALE = 2
 /** Teto do maior lado do PNG (px): workspaces enormes não estouram a memória. */
 const MAX_SIDE = 6000
+/**
+ * Famílias (por SUBSTRING, minúsculo) das fontes usadas no texto dos blocos — casa
+ * com `FONT_STYLE.family` de `theme.ts` (`'Baloo 2'`/`'Nunito'`). O `next/font` do host
+ * kids registra as fontes sob um nome HASHEADO (ex.: `__Baloo_2_ab12`), então filtrar
+ * por substring captura tanto o nome literal quanto o do next/font.
+ */
+const EMBED_FONT_FAMILIES = ['baloo', 'nunito']
 
 export interface ScreenshotResult {
   /** O PNG foi gerado e o download disparado. */
@@ -42,12 +49,112 @@ export function collectBlocklyCss(): string {
     .join('\n')
 }
 
+// ── Fontes embutidas (fidelidade do texto na imagem) ─────────────────────────
+// O SVG é rasterizado via `<img src="data:image/svg+xml,…">`, que renderiza num
+// contexto ISOLADO: ele NÃO enxerga as web fonts carregadas na página. Os CAMINHOS
+// (fundo) dos blocos foram medidos pelo Blockly com a fonte REAL (Baloo 2); se o
+// texto rasterizar noutra fonte, as métricas divergem e o texto transborda a moldura
+// (corte à direita) e desloca os campos (empurrão à esquerda). Para bater, ESPELHAMOS
+// as regras `@font-face` do documento (nome de família EXATO + `src` como data URI)
+// dentro do SVG — assim a resolução de fonte no contexto isolado é idêntica à da
+// página viva. Best-effort: folha cross-origin/fetch que falha é ignorada.
+
+let embeddedFontCssPromise: Promise<string> | null = null
+
+/** Extrai a 1ª `url(...)` de um `src` de `@font-face` (ignora `data:` já embutido). */
+function firstFontUrl(src: string): string | null {
+  const m = src.match(/url\(\s*(['"]?)([^'")]+)\1\s*\)/)
+  if (!m?.[2]) return null
+  const raw = m[2].trim()
+  if (raw.startsWith('data:')) return null
+  try {
+    return new URL(raw, document.baseURI).href
+  } catch {
+    return null
+  }
+}
+
+function fontMimeFor(url: string): string {
+  if (/\.woff2(\?|#|$)/i.test(url)) return 'font/woff2'
+  if (/\.woff(\?|#|$)/i.test(url)) return 'font/woff'
+  if (/\.ttf(\?|#|$)/i.test(url)) return 'font/ttf'
+  if (/\.otf(\?|#|$)/i.test(url)) return 'font/otf'
+  return 'font/woff2'
+}
+
+function bufferToBase64(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf)
+  let binary = ''
+  const CHUNK = 0x8000
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK))
+  }
+  return btoa(binary)
+}
+
+/** Monta as regras `@font-face` (com `src` em data URI) das fontes do texto dos blocos. */
+async function collectEmbeddedFontFaces(): Promise<string> {
+  if (typeof document === 'undefined' || typeof CSSFontFaceRule === 'undefined') return ''
+  const rules: CSSFontFaceRule[] = []
+  for (const sheet of Array.from(document.styleSheets)) {
+    let cssRules: CSSRuleList | undefined
+    try {
+      cssRules = sheet.cssRules // folha cross-origin lança aqui
+    } catch {
+      continue
+    }
+    if (!cssRules) continue
+    for (const rule of Array.from(cssRules)) {
+      if (!(rule instanceof CSSFontFaceRule)) continue
+      const family = (rule.style.getPropertyValue('font-family') || '').replace(/["']/g, '').trim()
+      if (!family) continue
+      const lower = family.toLowerCase()
+      if (!EMBED_FONT_FAMILIES.some((f) => lower.includes(f))) continue
+      rules.push(rule)
+    }
+  }
+
+  const out: string[] = []
+  for (const rule of rules) {
+    const url = firstFontUrl(rule.style.getPropertyValue('src'))
+    if (!url) continue
+    try {
+      const res = await fetch(url)
+      if (!res.ok) continue
+      const dataUri = `data:${fontMimeFor(url)};base64,${bufferToBase64(await res.arrayBuffer())}`
+      const family = rule.style.getPropertyValue('font-family').replace(/["']/g, '').trim()
+      const weight = rule.style.getPropertyValue('font-weight') || 'normal'
+      const style = rule.style.getPropertyValue('font-style') || 'normal'
+      const range = rule.style.getPropertyValue('unicode-range')
+      out.push(
+        `@font-face{font-family:'${family}';font-style:${style};font-weight:${weight};` +
+          `font-display:block;src:url(${dataUri}) format('${fontMimeFor(url).replace('font/', '')}')` +
+          `${range ? `;unicode-range:${range}` : ''}}`,
+      )
+    } catch {
+      // fetch/CORS falhou — segue sem esta fonte (a imagem sai como hoje).
+    }
+  }
+  return out.join('\n')
+}
+
+/** Aguarda as fontes carregarem (métricas estáveis) — best-effort. */
+async function ensureFontsReady(): Promise<void> {
+  try {
+    await (document as Document & { fonts?: FontFaceSet }).fonts?.ready
+  } catch {
+    // sem a API / rejeitou — segue.
+  }
+}
+
 /**
  * Monta um `<svg>` autônomo (string XML) com TODOS os blocos, enquadrado pela
  * moldura total. Devolve `null` se o workspace estiver vazio (moldura sem área).
  */
 export function buildBlocksSvg(
   workspace: Blockly.WorkspaceSvg,
+  /** CSS extra (ex.: `@font-face` embutidas) injetado ANTES das folhas do Blockly. */
+  extraCss = '',
 ): { svg: string; width: number; height: number } | null {
   const box = workspace.getBlocksBoundingBox()
   const width = box.right - box.left
@@ -68,7 +175,9 @@ export function buildBlocksSvg(
   svg.setAttribute('class', `blocklySvg ${renderer}-renderer ${themeName}-theme`)
 
   const style = document.createElementNS(SVG_NS, 'style')
-  style.textContent = collectBlocklyCss()
+  // As `@font-face` embutidas vêm ANTES das folhas do Blockly (que declaram a
+  // `font-family` do texto) — o texto rasteriza na MESMA fonte medida no editor.
+  style.textContent = `${extraCss}\n${collectBlocklyCss()}`
   svg.appendChild(style)
   svg.appendChild(clone)
 
@@ -138,7 +247,13 @@ export async function exportWorkspaceImage(
   workspace: Blockly.WorkspaceSvg,
   opts: { filename?: string } = {},
 ): Promise<ScreenshotResult> {
-  const built = buildBlocksSvg(workspace)
+  // Fontes prontas + embutidas no SVG p/ o texto rasterizar na MESMA fonte do editor
+  // (senão o texto transborda no fallback → corte à direita / campos empurrados).
+  await ensureFontsReady()
+  if (embeddedFontCssPromise === null) embeddedFontCssPromise = collectEmbeddedFontFaces()
+  const fontCss = await embeddedFontCssPromise
+
+  const built = buildBlocksSvg(workspace, fontCss)
   if (!built) return { downloaded: false, copied: false }
 
   const blobPromise = rasterize(built.svg, built.width, built.height, backgroundColour(workspace))

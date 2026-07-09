@@ -563,6 +563,9 @@ export const gameTwoDRuntime = `(function () {
     if (!sprite || !ctx || !ctx.canvas) return;
     var s = typeof speed === 'number' ? speed : 4;
     var j = typeof jump === 'number' ? jump : 11;
+    // Grava a velocidade horizontal p/ os getters (vx/velocidade/está se movendo) —
+    // o vy já é real (gravidade/pulo abaixo).
+    sprite.vx = (keys.right ? s : 0) - (keys.left ? s : 0);
     if (keys.left) sprite.x -= s;
     if (keys.right) sprite.x += s;
     sprite.vy = (sprite.vy || 0) + 0.6; // gravidade
@@ -580,6 +583,10 @@ export const gameTwoDRuntime = `(function () {
     var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
+    // Grava a velocidade (o passo real deste quadro) p/ os getters de velocidade;
+    // parado → 0 → "está se movendo?" falso.
+    sprite.vx = dx * s;
+    sprite.vy = dy * s;
     sprite.x += dx * s;
     sprite.y += dy * s;
   }
@@ -591,8 +598,12 @@ export const gameTwoDRuntime = `(function () {
     var cx = sprite.x + sprite.w / 2, cy = sprite.y + sprite.h / 2;
     var dx = pointer.x - cx, dy = pointer.y - cy;
     var dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > s) { sprite.x += (dx / dist) * s; sprite.y += (dy / dist) * s; }
-    else { sprite.x = pointer.x - sprite.w / 2; sprite.y = pointer.y - sprite.h / 2; }
+    if (dist > s) {
+      // Grava a velocidade (o passo dado) p/ os getters; ao chegar no ponteiro, para (0).
+      sprite.vx = (dx / dist) * s; sprite.vy = (dy / dist) * s;
+      sprite.x += sprite.vx; sprite.y += sprite.vy;
+    }
+    else { sprite.vx = 0; sprite.vy = 0; sprite.x = pointer.x - sprite.w / 2; sprite.y = pointer.y - sprite.h / 2; }
   }
 
   /** Gruda o sprite nas bordas do canvas (não deixa sair da tela). */
@@ -1035,6 +1046,9 @@ export const gameTwoDRuntime = `(function () {
   function arrowsX(sprite, speed) {
     if (!sprite) return;
     var sp = (typeof speed === 'number') ? speed : 5;
+    // Grava a velocidade horizontal p/ os getters (parado → 0); só mexe no eixo X.
+    sprite.vx = (keys.right ? sp : 0) - (keys.left ? sp : 0);
+    sprite.vy = 0;
     if (keys.left) sprite.x -= sp;
     if (keys.right) sprite.x += sp;
   }

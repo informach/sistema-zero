@@ -88,6 +88,38 @@ describe('gameTwoDRuntime', () => {
     expect(sz.spriteSpeed(s)).toBeCloseTo(0.001, 5)
   })
 
+  it('movers 2D gravam vx/vy → os getters de velocidade refletem o movimento real', () => {
+    const sz = api as unknown as {
+      topDown: (s: unknown, speed?: number) => void
+      arrowsX: (s: unknown, speed?: number) => void
+      spriteVx: (s: unknown) => number
+      spriteVy: (s: unknown) => number
+      isMoving: (s: unknown) => boolean
+    }
+    const s = api.createSprite({ x: 0, y: 0 })
+
+    // "Mover em 4 direções" p/ a direita → vx = velocidade, vy = 0, movendo.
+    api.keys.right = true
+    sz.topDown(s, 3)
+    expect(sz.spriteVx(s)).toBe(3)
+    expect(sz.spriteVy(s)).toBe(0)
+    expect(sz.isMoving(s)).toBe(true)
+
+    // Soltou a tecla → velocidade volta a 0 (parado).
+    api.keys.right = false
+    sz.topDown(s, 3)
+    expect(sz.spriteVx(s)).toBe(0)
+    expect(sz.isMoving(s)).toBe(false)
+
+    // "Mover com as setas ← →" p/ a esquerda → vx negativo, vy zerado.
+    api.keys.left = true
+    sz.arrowsX(s, 5)
+    expect(sz.spriteVx(s)).toBe(-5)
+    expect(sz.spriteVy(s)).toBe(0)
+    expect(sz.isMoving(s)).toBe(true)
+    api.keys.left = false
+  })
+
   it('isColliding detecta sobreposição AABB', () => {
     const a = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
     const b = api.createSprite({ x: 5, y: 5, w: 10, h: 10 })
