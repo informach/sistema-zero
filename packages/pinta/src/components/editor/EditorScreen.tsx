@@ -82,7 +82,7 @@ function PixelLeftColumn(): JSX.Element {
  */
 function SpriteRightPanel(): JSX.Element {
   return (
-    <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
+    <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto overflow-x-hidden">
       <PreviewPlayer />
       <AnimationDetails />
     </div>

@@ -96,7 +96,7 @@ export function ToolBar({
     (asset.kind !== 'pixel-sprite' || activeBitmap.width === activeBitmap.height)
 
   const divider = vertical ? (
-    <hr className="col-span-2 my-1 w-8 border-pin-border" />
+    <hr className="col-span-3 my-1 w-8 border-pin-border" />
   ) : (
     <span aria-hidden="true" className="mx-1 h-8 w-0.5 shrink-0 rounded bg-pin-border" />
   )
@@ -107,10 +107,11 @@ export function ToolBar({
       aria-label="Ferramentas"
       aria-orientation={orientation}
       className={
-        // Vertical = GRADE de 2 colunas (padrão MakeCode/Piskel): todas as
-        // ferramentas visíveis de uma vez, sem esconder nada atrás de scroll.
+        // Vertical = GRADE de 3 colunas (padrão MakeCode/Piskel): as 9 ferramentas
+        // viram um 3×3 e os 3 tamanhos de pincel uma linha só — tudo visível de uma
+        // vez, ocupando bem menos altura (sem scroll).
         vertical
-          ? 'pin-panel grid shrink-0 grid-cols-2 content-start justify-items-center gap-1 overflow-y-auto p-2'
+          ? 'pin-panel grid shrink-0 grid-cols-3 content-start justify-items-center gap-1 overflow-y-auto p-2'
           : 'pin-panel flex shrink-0 items-center gap-1 overflow-x-auto p-2'
       }
     >
