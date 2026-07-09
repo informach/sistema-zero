@@ -167,7 +167,7 @@ export function resolveStudioConfig(
 
 // Default = comportamento do app standalone (tudo ligado, BYOK) — vale para
 // componentes renderizados FORA de um <Studio> (lista do playground, testes).
-const STANDALONE_CONFIG: ResolvedStudioConfig = {
+export const STANDALONE_CONFIG: ResolvedStudioConfig = {
   preview: true,
   console: true,
   extensions: true,

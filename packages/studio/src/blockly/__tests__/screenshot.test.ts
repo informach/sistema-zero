@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { buildBlocksSvg, collectBlocklyCss } from '../screenshot'
+import { buildBlocksSvg, canonicalBlockFontFamily, collectBlocklyCss } from '../screenshot'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
@@ -32,6 +32,24 @@ describe('buildBlocksSvg — imagem de TODOS os blocos', () => {
 
   it('devolve null quando não há blocos (moldura sem área)', () => {
     expect(buildBlocksSvg(fakeWorkspace({ left: 0, top: 0, right: 0, bottom: 0 }))).toBeNull()
+  })
+})
+
+describe('canonicalBlockFontFamily — mapeia o nome hasheado do next/font p/ o literal do texto', () => {
+  it('nomes hasheados do next/font caem no nome LITERAL que o <text> pede', () => {
+    // next/font registra a família com hash; o texto do bloco pede 'Baloo 2'/'Nunito'.
+    expect(canonicalBlockFontFamily('__Baloo_2_ab12ef')).toBe('Baloo 2')
+    expect(canonicalBlockFontFamily('__Baloo_2_Fallback_ab12ef')).toBe('Baloo 2')
+    expect(canonicalBlockFontFamily('__Nunito_9f8c')).toBe('Nunito')
+  })
+
+  it('nome literal permanece o mesmo (host que já usa Baloo 2/Nunito)', () => {
+    expect(canonicalBlockFontFamily('Baloo 2')).toBe('Baloo 2')
+    expect(canonicalBlockFontFamily('Nunito')).toBe('Nunito')
+  })
+
+  it('família sem relação passa direto', () => {
+    expect(canonicalBlockFontFamily('Comic Sans MS')).toBe('Comic Sans MS')
   })
 })
 
