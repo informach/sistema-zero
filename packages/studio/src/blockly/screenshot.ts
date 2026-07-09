@@ -27,9 +27,9 @@ const PIXEL_SCALE = 2
 const MAX_SIDE = 6000
 /**
  * Famílias (por SUBSTRING, minúsculo) das fontes usadas no texto dos blocos — casa
- * com `FONT_STYLE.family` de `theme.ts` (`'Baloo 2'`/`'Nunito'`). O `next/font` do host
- * kids registra as fontes sob um nome HASHEADO (ex.: `__Baloo_2_ab12`), então filtrar
- * por substring captura tanto o nome literal quanto o do next/font.
+ * com `FONT_STYLE.family` de `theme.ts` (`'Baloo 2'`/`'Nunito'`). Filtrar por substring
+ * captura o nome LITERAL que o next/font do Next 16 registra (`"Baloo 2"`) E o nome
+ * HASHEADO de versões antigas do next/font (ex.: `__Baloo_2_ab12`).
  */
 const EMBED_FONT_FAMILIES = ['baloo', 'nunito']
 
@@ -61,12 +61,13 @@ export function collectBlocklyCss(): string {
 
 /**
  * O texto dos blocos referencia SEMPRE os nomes LITERAIS do `theme.ts`
- * (`FONT_STYLE.family` = `'Baloo 2', 'Nunito', …`). Mas o host kids carrega essas
- * fontes via `next/font`, que as registra sob um nome HASHEADO (`__Baloo_2_ab12`).
- * Se embutíssemos a `@font-face` com esse nome hasheado, o `<text>` (que pede
- * `'Baloo 2'`) NUNCA casaria → rasterizava no fallback largo → texto cortado à
- * direita e campos empurrados p/ a esquerda. Então re-emitimos a face sob o nome
- * LITERAL que o texto usa. Fonte sem 'baloo'/'nunito' no nome já foi filtrada antes.
+ * (`FONT_STYLE.family` = `'Baloo 2', 'Nunito', …`). O next/font do Next 16 (host
+ * kids) já registra a família com o nome LITERAL (`"Baloo 2"`) — aí isto é no-op;
+ * versões antigas do next/font usavam um nome HASHEADO (`__Baloo_2_ab12`), que
+ * nunca casaria com o `<text>` — re-emitimos a face sob o nome literal p/ cobrir
+ * esse formato também. Fonte sem 'baloo'/'nunito' no nome já foi filtrada antes.
+ * ⚠️ A causa REAL do print quebrado no kids não era o nome: era a URL RELATIVA da
+ * face resolvida contra a página (ver `firstFontUrl`).
  */
 export function canonicalBlockFontFamily(family: string): string {
   const lower = family.toLowerCase()
@@ -77,17 +78,42 @@ export function canonicalBlockFontFamily(family: string): string {
 
 let embeddedFontCssPromise: Promise<string> | null = null
 
-/** Extrai a 1ª `url(...)` de um `src` de `@font-face` (ignora `data:` já embutido). */
-function firstFontUrl(src: string): string | null {
+/**
+ * Extrai a 1ª `url(...)` de um `src` de `@font-face` (ignora `data:` já embutido).
+ * ⚠️ URL relativa numa `@font-face` é relativa à FOLHA DE ESTILO, não à página: o
+ * next/font (Next 16) emite `src: url("../media/x.woff2")` num CSS servido de
+ * `/_next/static/chunks/…` — resolver contra `document.baseURI` (a página
+ * `/cursos/…/aulas/…`) monta um caminho que NÃO existe, o fetch falha e a imagem
+ * baixada rasteriza no fallback do sistema (mais largo que a Baloo medida →
+ * campos invadidos + corte à direita; era o bug do print no kids). Por isso o
+ * chamador passa `sheetHref` (= `rule.parentStyleSheet.href`); `document.baseURI`
+ * fica só para folha inline (`<style>`, sem href).
+ */
+export function firstFontUrl(src: string, sheetHref?: string | null): string | null {
   const m = src.match(/url\(\s*(['"]?)([^'")]+)\1\s*\)/)
   if (!m?.[2]) return null
   const raw = m[2].trim()
   if (raw.startsWith('data:')) return null
   try {
-    return new URL(raw, document.baseURI).href
+    return new URL(raw, sheetHref || document.baseURI).href
   } catch {
     return null
   }
+}
+
+/**
+ * Assinatura de arquivo de fonte (wOF2/wOFF/OpenType/TrueType). Dev servers SPA
+ * (Vite/Next) respondem 200 com o index.html para caminho inexistente — sem esta
+ * checagem uma URL errada viraria "fonte" de HTML embutida no SVG, e o rasterizador
+ * cairia no fallback do mesmo jeito (só que com o SVG maior).
+ */
+export function looksLikeFontBinary(buf: ArrayBuffer): boolean {
+  if (buf.byteLength < 4) return false
+  const b = new Uint8Array(buf, 0, 4)
+  const tag = String.fromCharCode(b[0] ?? 0, b[1] ?? 0, b[2] ?? 0, b[3] ?? 0)
+  if (tag === 'wOF2' || tag === 'wOFF' || tag === 'OTTO' || tag === 'true') return true
+  // TrueType clássico: 00 01 00 00
+  return b[0] === 0 && b[1] === 1 && b[2] === 0 && b[3] === 0
 }
 
 function fontMimeFor(url: string): string {
@@ -132,12 +158,15 @@ async function collectEmbeddedFontFaces(): Promise<string> {
 
   const out: string[] = []
   for (const rule of rules) {
-    const url = firstFontUrl(rule.style.getPropertyValue('src'))
+    // Base = a folha dona da regra (URL relativa do next/font é relativa a ELA).
+    const url = firstFontUrl(rule.style.getPropertyValue('src'), rule.parentStyleSheet?.href)
     if (!url) continue
     try {
       const res = await fetch(url)
       if (!res.ok) continue
-      const dataUri = `data:${fontMimeFor(url)};base64,${bufferToBase64(await res.arrayBuffer())}`
+      const buf = await res.arrayBuffer()
+      if (!looksLikeFontBinary(buf)) continue
+      const dataUri = `data:${fontMimeFor(url)};base64,${bufferToBase64(buf)}`
       const rawFamily = rule.style.getPropertyValue('font-family').replace(/["']/g, '').trim()
       // Nome LITERAL que o texto do bloco pede (`'Baloo 2'`/`'Nunito'`), não o
       // hasheado do next/font — senão a face embutida não casa (ver o helper).
@@ -271,6 +300,9 @@ export async function exportWorkspaceImage(
   await ensureFontsReady()
   if (embeddedFontCssPromise === null) embeddedFontCssPromise = collectEmbeddedFontFaces()
   const fontCss = await embeddedFontCssPromise
+  // Vazio não fica cacheado: a folha do next/font pode ainda não estar no DOM no 1º
+  // export (ou um fetch soluçou) — o próximo clique re-coleta em vez de herdar o ''.
+  if (!fontCss) embeddedFontCssPromise = null
 
   const built = buildBlocksSvg(workspace, fontCss)
   if (!built) return { downloaded: false, copied: false }
