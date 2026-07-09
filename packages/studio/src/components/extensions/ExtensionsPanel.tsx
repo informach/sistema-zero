@@ -1,8 +1,8 @@
 import type { JSX } from 'react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR } from '#blockly'
-import { type InstalledExtension, t } from '#core'
+import { type InstalledExtension, isCategoryAllowed, type LearningProfile, t } from '#core'
 import type { ExtensionDefinition } from '#extensions'
 import { generateProjectFiles } from '#generators'
 import { OFFICIAL_CATALOG } from '#official-extensions'
@@ -15,6 +15,8 @@ import {
   removeExtensionArtifacts,
 } from '../../state/extensionsAdapter'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useSettingsStore } from '../../state/settingsStore'
+import { useStudioConfig } from '../../studio/config'
 import { useStudioExamplesVisible } from '../../studio/examples-visibility'
 
 export interface ExtensionsPanelProps {
@@ -37,6 +39,23 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
   // só aparecem quando o host libera (playground). Ver examples-visibility.ts.
   const showExamples = useStudioExamplesVisible()
   const [pendingRemoval, setPendingRemoval] = useState<{ id: string; count: number } | null>(null)
+
+  // Nível de aprendizado (mesma fonte da paleta no BlocklyPanel): não adianta
+  // OFERECER p/ instalar uma extensão cujos blocos o nível atual nem mostra —
+  // a criança instalaria o Jogo 3D no iniciante, a categoria viria VAZIA e
+  // pareceria um bug. Some da lista de instalar; se por algum motivo já estiver
+  // instalada (aula/legado), continua visível p/ poder REMOVER.
+  const learning = useStudioConfig().learning
+  const revealAdvanced = useSettingsStore((s) => s.revealAdvanced)
+  const profile = useMemo<LearningProfile>(
+    () => ({
+      level: learning.level,
+      revealed: learning.allowLevelReveal && revealAdvanced,
+      allowBlocks: learning.allowBlocks,
+      allowCategories: learning.allowCategories,
+    }),
+    [learning, revealAdvanced],
+  )
 
   if (!hasProject)
     return (
@@ -141,7 +160,15 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
       >
         <p className="mb-3 text-xs italic text-sz-fg-mute">{t('extensions.officialOnly')}</p>
         <ul className="space-y-3">
-          {OFFICIAL_CATALOG.map((ext) => {
+          {OFFICIAL_CATALOG.filter(
+            (ext) =>
+              installedIds.has(ext.manifest.id) ||
+              isCategoryAllowed(
+                ext.blockly.toolboxCategory.name,
+                ext.minLevel ?? 'intermediario',
+                profile,
+              ),
+          ).map((ext) => {
             const installed = installedIds.has(ext.manifest.id)
             return (
               <li

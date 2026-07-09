@@ -59,6 +59,22 @@ export function collectBlocklyCss(): string {
 // dentro do SVG — assim a resolução de fonte no contexto isolado é idêntica à da
 // página viva. Best-effort: folha cross-origin/fetch que falha é ignorada.
 
+/**
+ * O texto dos blocos referencia SEMPRE os nomes LITERAIS do `theme.ts`
+ * (`FONT_STYLE.family` = `'Baloo 2', 'Nunito', …`). Mas o host kids carrega essas
+ * fontes via `next/font`, que as registra sob um nome HASHEADO (`__Baloo_2_ab12`).
+ * Se embutíssemos a `@font-face` com esse nome hasheado, o `<text>` (que pede
+ * `'Baloo 2'`) NUNCA casaria → rasterizava no fallback largo → texto cortado à
+ * direita e campos empurrados p/ a esquerda. Então re-emitimos a face sob o nome
+ * LITERAL que o texto usa. Fonte sem 'baloo'/'nunito' no nome já foi filtrada antes.
+ */
+export function canonicalBlockFontFamily(family: string): string {
+  const lower = family.toLowerCase()
+  if (lower.includes('baloo')) return 'Baloo 2'
+  if (lower.includes('nunito')) return 'Nunito'
+  return family
+}
+
 let embeddedFontCssPromise: Promise<string> | null = null
 
 /** Extrai a 1ª `url(...)` de um `src` de `@font-face` (ignora `data:` já embutido). */
@@ -122,7 +138,10 @@ async function collectEmbeddedFontFaces(): Promise<string> {
       const res = await fetch(url)
       if (!res.ok) continue
       const dataUri = `data:${fontMimeFor(url)};base64,${bufferToBase64(await res.arrayBuffer())}`
-      const family = rule.style.getPropertyValue('font-family').replace(/["']/g, '').trim()
+      const rawFamily = rule.style.getPropertyValue('font-family').replace(/["']/g, '').trim()
+      // Nome LITERAL que o texto do bloco pede (`'Baloo 2'`/`'Nunito'`), não o
+      // hasheado do next/font — senão a face embutida não casa (ver o helper).
+      const family = canonicalBlockFontFamily(rawFamily)
       const weight = rule.style.getPropertyValue('font-weight') || 'normal'
       const style = rule.style.getPropertyValue('font-style') || 'normal'
       const range = rule.style.getPropertyValue('unicode-range')
