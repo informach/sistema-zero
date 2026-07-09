@@ -25,8 +25,14 @@ export function MainContainer({ children }: { children: ReactNode }) {
     pathname.startsWith('/pensa') ||
     pathname.startsWith('/pinta')
   ) {
+    // App embarcado = altura TRAVADA na viewport (rolagem só nas áreas internas
+    // do app, nunca na janela). No mobile NÃO há sidebar para "fixar" a altura e a
+    // raiz do `(app)` é `min-h-screen` (cresce) → sem uma altura explícita o app
+    // empurraria a página inteira. `100dvh - 3.5rem` desconta a top bar sticky
+    // (h-14); o `pb-24` já reserva a tab bar (fixed). No desktop a sidebar
+    // `h-screen` já trava a linha → volta ao `flex-1`.
     return (
-      <main className="flex min-h-0 w-full flex-1 flex-col px-2 pt-4 pb-24 md:px-4 md:py-4 md:pb-4">
+      <main className="flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col overflow-hidden px-2 pt-4 pb-24 md:h-auto md:flex-1 md:px-4 md:py-4 md:pb-4">
         {children}
       </main>
     )

@@ -82,9 +82,9 @@ export function PreviewPlayer(): JSX.Element | null {
           />
         )}
       </div>
-      <span className="flex items-center gap-1.5 text-sm font-bold text-pin-text">
-        <span aria-hidden="true" className="size-2 rounded-full bg-pin-accent" />
-        {animation.name}
+      <span className="flex max-w-full flex-wrap items-center justify-center gap-1.5 text-center text-sm font-bold text-pin-text">
+        <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-pin-accent" />
+        <span className="min-w-0 max-w-full truncate">{animation.name}</span>
         <span className="font-normal text-pin-muted">{COPY.animation.selectedBadge}</span>
       </span>
       <div className="flex w-full gap-2">

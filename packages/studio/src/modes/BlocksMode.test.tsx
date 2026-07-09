@@ -89,17 +89,9 @@ describe('BlocksMode', () => {
     render(<BlocksMode />)
 
     const state = useProjectStore.getState()
-    // Projeto novo já nasce com os 3 frames-semente; BlocksMode não deriva nada
-    // por cima nem marca o projeto como sujo.
-    expect(state.project?.blocksState).toMatchObject({
-      blocks: {
-        blocks: [
-          { type: 'sz_frame_structure' },
-          { type: 'sz_frame_appearance' },
-          { type: 'sz_frame_behavior' },
-        ],
-      },
-    })
+    // Projeto novo nasce EM BRANCO (sem os frames-semente); BlocksMode não deriva
+    // nada por cima nem marca o projeto como sujo só por criar o workspace vazio.
+    expect(state.project?.blocksState).toMatchObject({ blocks: { blocks: [] } })
     expect(state.isDirty).toBe(false)
   })
 

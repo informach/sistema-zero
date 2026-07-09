@@ -40,7 +40,7 @@ function Segmented({
   return (
     <fieldset
       aria-label={label}
-      className="m-0 flex min-w-0 overflow-hidden rounded-lg border-2 border-pin-border p-0"
+      className="m-0 flex w-full min-w-0 overflow-hidden rounded-lg border-2 border-pin-border p-0"
     >
       {options.map((option) => {
         const active = option.value === value
@@ -50,7 +50,7 @@ function Segmented({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(option.value)}
-            className={`min-h-11 px-3 text-sm font-bold transition ${
+            className={`min-h-10 flex-1 px-2 text-sm font-bold transition ${
               active ? 'bg-pin-accent text-pin-accent-fg' : 'text-pin-muted hover:bg-pin-border/40'
             }`}
           >
@@ -96,7 +96,7 @@ export function AnimationDetails(): JSX.Element | null {
   }
 
   return (
-    <section aria-label={COPY.animation.selected} className="pin-panel flex flex-col gap-3 p-3">
+    <section aria-label={COPY.animation.selected} className="pin-panel flex flex-col gap-2.5 p-3">
       <span className="text-sm font-bold text-pin-muted">{COPY.animation.selected}</span>
 
       <div className="flex items-center justify-between">
@@ -132,7 +132,7 @@ export function AnimationDetails(): JSX.Element | null {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col gap-1">
         <span className="text-sm text-pin-muted">{COPY.animation.repeatLabel}</span>
         <Segmented
           label={COPY.animation.repeatLabel}
@@ -145,7 +145,7 @@ export function AnimationDetails(): JSX.Element | null {
         />
       </div>
 
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col gap-1">
         <span className="text-sm text-pin-muted">{COPY.animation.smoothing}</span>
         <Segmented
           label={COPY.animation.smoothing}
