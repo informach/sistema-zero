@@ -6,6 +6,7 @@ import {
   isCategoryAllowed,
   type LearningProfile,
 } from '#core'
+import { resolveBlockLevel } from './blockLevels'
 import {
   ADVANCED_BLOCKS,
   CANVAS_BLOCKS,
@@ -124,11 +125,11 @@ export interface ToolboxConfiguration {
 
 function toEntries(
   blocks: BlockDefinition[],
-  categoryLevel: BlockLevel,
+  _categoryLevel: BlockLevel,
   profile: LearningProfile,
 ): ToolboxBlockEntry[] {
   return blocks
-    .filter((b) => !b.hidden && isBlockTypeAllowed(b.type, b.level ?? categoryLevel, profile))
+    .filter((b) => !b.hidden && isBlockTypeAllowed(b.type, resolveBlockLevel(b.type), profile))
     .map((b) => {
       const inputs = socketInputsFor(b.type)
       if (!inputs) return { kind: 'block', type: b.type } as const
@@ -152,6 +153,30 @@ function filterToolboxCategory(
       const sub = filterToolboxCategory(c, only)
       if (sub) contents.push(sub)
     } else if (only.has(c.type)) {
+      contents.push(c)
+    }
+  }
+  return contents.length > 0 ? { ...cat, contents } : null
+}
+
+/**
+ * Filtra uma categoria de EXTENSÃO (Jogo 2D/3D) pelo NÍVEL por-bloco do perfil — deixa só
+ * os blocos cujo `resolveBlockLevel` cabe no teto do aluno; sub-categoria vazia some; flyout
+ * dinâmico (`custom`) sai. `null` se nada sobrou. É o análogo por-NÍVEL do `filterToolboxCategory`
+ * (que é por LISTA da aula) — antes as extensões não filtravam por-bloco (só o `minLevel`
+ * da extensão inteira gateava a categoria).
+ */
+function filterToolboxCategoryByLevel(
+  cat: ToolboxCategory,
+  profile: LearningProfile,
+): ToolboxCategory | null {
+  const contents: ToolboxCategory['contents'] = []
+  for (const c of cat.contents) {
+    if (c.kind === 'category') {
+      if ('custom' in c) continue
+      const sub = filterToolboxCategoryByLevel(c, profile)
+      if (sub) contents.push(sub)
+    } else if (isBlockTypeAllowed(c.type, resolveBlockLevel(c.type), profile)) {
       contents.push(c)
     }
   }
@@ -331,7 +356,7 @@ export function buildCoreToolbox(
     if (restrict && !blocks.some((b) => only.has(b.type))) return
     progSubs.push({ kind: 'category', name, colour, custom })
   }
-  pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'iniciante', MATH_BLOCKS)
+  pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'intermediario', MATH_BLOCKS)
   pushSub('Valores', '🔣 Valores', CATEGORY_COLORS.values, 'iniciante', VALUE_BLOCKS)
   // Página: só os blocos de ELEMENTO (os "Quando…" saem para ⚡ Eventos).
   const paginaBlocks = DOM_BLOCKS.filter((b) => !EVENT_LISTENER_TYPES.has(b.type))
@@ -362,7 +387,7 @@ export function buildCoreToolbox(
     'SZ_CLASSES',
     OOP_BLOCKS,
   )
-  pushSub('Objetos', '📦 Objetos', CATEGORY_COLORS.objects, 'intermediario', OBJECT_BLOCKS)
+  pushSub('Objetos', '📦 Objetos', CATEGORY_COLORS.objects, 'avancado', OBJECT_BLOCKS)
   if (progSubs.length > 0) {
     contents.push({
       kind: 'category',
@@ -375,9 +400,12 @@ export function buildCoreToolbox(
   // Canvas: categoria PRÓPRIA (fora da Programação) — desenho, será incrementada.
   pushGrouped('Canvas', CATEGORY_COLORS.canvas, CANVAS_BLOCKS, CANVAS_GROUPS)
   // Extensões: em modo restritivo (lista de blocos), filtra cada categoria p/ só os blocos
-  // LISTADOS (+ drop de vazia); senão entram como vieram (o caller já gateou por minLevel).
+  // LISTADOS; senão filtra por NÍVEL por-bloco (o caller já gateou a categoria por `minLevel`,
+  // mas dentro dela cada bloco respeita o próprio nível). Sub-categoria vazia some nos dois.
   for (const cat of extraCategories) {
-    const filtered = restrict ? filterToolboxCategory(cat, only) : cat
+    const filtered = restrict
+      ? filterToolboxCategory(cat, only)
+      : filterToolboxCategoryByLevel(cat, profile)
     if (filtered) contents.push(filtered)
   }
   pushContent('Avançado', CATEGORY_COLORS.advanced, ADVANCED_BLOCKS)
