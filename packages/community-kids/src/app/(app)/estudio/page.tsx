@@ -1,10 +1,12 @@
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
+import { resolveStudioTier } from '@/lib/studio-tier'
 import {
   checkChallengeAccessReadonly,
   checkStudioAccessReadonly,
   getChallengeReadonly,
+  getGamificationReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
 
@@ -25,14 +27,21 @@ export default async function EstudioPage() {
   // `session.id` = o PERFIL ativo (kids) → isola os projetos do Estúdio por criança no
   // IndexedDB (irmãos no mesmo navegador não compartilham a lista). Resolve junto do gate.
   // A posse do DESAFIO (Clube+Estúdio, best-effort) liga o checkbox do Compartilhar.
-  const [res, session, challengeAccess] = await Promise.all([
+  const [res, session, challengeAccess, gam] = await Promise.all([
     checkStudioAccessReadonly(),
     getSession(),
     checkChallengeAccessReadonly().catch(() => null),
+    // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
+    // React.cache com a da (app)/layout (dedup, sem ida extra). Best-effort.
+    getGamificationReadonly({ withRanking: true }).catch(() => null),
   ])
   if (res.status !== 200) return <KidsStudioUnavailable />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
   if (!hasAccess) return <KidsLockedStudio />
+  // Modos (Blocos/Ponte) + perfil (iniciante/intermediário/avançado) pelo RANK;
+  // admin/staff = Lenda. Soluço/ausência → noob (degrada seguro). Código adiado.
+  const levelSlug = gam?.status === 200 ? (gam.body?.level?.slug ?? 'noob') : 'noob'
+  const tier = resolveStudioTier(levelSlug, session?.role)
   const challengeEligible =
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
@@ -42,5 +51,5 @@ export default async function EstudioPage() {
     challengeRes?.status === 200 && challengeRes.body
       ? { key: challengeRes.body.challenge.key, title: challengeRes.body.challenge.title }
       : null
-  return <StudioFullClient viewerId={session?.id ?? null} challenge={challenge} />
+  return <StudioFullClient viewerId={session?.id ?? null} challenge={challenge} tier={tier} />
 }
