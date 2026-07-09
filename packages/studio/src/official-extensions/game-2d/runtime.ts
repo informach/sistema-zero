@@ -861,15 +861,31 @@ export const gameTwoDRuntime = `(function () {
    */
   function createTileMap(opts) {
     opts = opts || {};
+    // tile = tamanho do tile NA ARTE (para fatiar o tileset). O tamanho NA TELA
+    // (draw) é calculado no desenho: o mapa ENCAIXA no canvas (a arte é ampliada
+    // com nitidez pelo drawFrame). Assim um tile de 16px não fica minúsculo.
     var t = (typeof opts.tile === 'number' && opts.tile > 0) ? opts.tile : 32;
     return {
       tileset: loadSpriteSheet(opts.image, t, t),
       tile: t,
+      draw: 0,
       rows: parseGrid(opts.grid),
       solid: parseSolidList(opts.solid),
       ox: 0,
       oy: 0
     };
+  }
+  /** Nº de colunas do mapa (maior linha). */
+  function tileMapCols(map) {
+    var cols = 0;
+    if (map && map.rows) for (var i = 0; i < map.rows.length; i++) {
+      if (map.rows[i].length > cols) cols = map.rows[i].length;
+    }
+    return cols;
+  }
+  /** Tamanho do tile NA TELA (o efetivo do último desenho; cai no da arte se não desenhou). */
+  function tileScreenSize(map) {
+    return (map && map.draw > 0) ? map.draw : (map ? map.tile : 0);
   }
   /** Verdadeiro se a célula (col,row) tem um índice marcado como sólido. */
   function isSolidCell(map, col, row) {
@@ -882,26 +898,40 @@ export const gameTwoDRuntime = `(function () {
   /** Índice do tile no PIXEL (px,py) do canvas (alinhado a onde o mapa foi desenhado); -1 fora/vazio. */
   function tileAt(map, px, py) {
     if (!map || !map.rows || !map.tile) return -1;
-    var col = Math.floor((px - (map.ox || 0)) / map.tile);
-    var row = Math.floor((py - (map.oy || 0)) / map.tile);
+    var t = tileScreenSize(map);
+    var col = Math.floor((px - (map.ox || 0)) / t);
+    var row = Math.floor((py - (map.oy || 0)) / t);
     if (row < 0 || row >= map.rows.length) return -1;
     var r = map.rows[row];
     if (!r || col < 0 || col >= r.length) return -1;
     return r[col];
   }
-  /** Desenha o tilemap no contexto, com o canto superior esquerdo em (x,y). */
+  /**
+   * Desenha o tilemap ENCAIXANDO no canvas: calcula o maior tile QUADRADO que faz o
+   * mapa inteiro caber (sem distorcer) e centraliza. A arte (map.tile) é ampliada com
+   * nitidez. x/y deslocam por cima (ex.: câmera) — mapa maior que a tela rola com ela.
+   */
   function drawTileMap(ctx, map, x, y) {
     if (!ctx || !map || !map.rows) return;
-    var ox = x || 0, oy = y || 0;
+    var rowsN = map.rows.length;
+    var cols = tileMapCols(map);
+    if (cols === 0 || rowsN === 0) return;
+    var cw = (ctx.canvas && ctx.canvas.width) || 0;
+    var ch = (ctx.canvas && ctx.canvas.height) || 0;
+    var hasCanvas = cw > 0 && ch > 0;
+    var cell = hasCanvas ? Math.max(1, Math.floor(Math.min(cw / cols, ch / rowsN))) : map.tile;
+    map.draw = cell;
+    // Sem tamanho de canvas (contexto atípico): não encaixa nem centraliza (fica em x/y).
+    var ox = (x || 0) + (hasCanvas ? Math.floor((cw - cols * cell) / 2) : 0);
+    var oy = (y || 0) + (hasCanvas ? Math.floor((ch - rowsN * cell) / 2) : 0);
     map.ox = ox;
     map.oy = oy;
-    var t = map.tile;
-    for (var r = 0; r < map.rows.length; r++) {
+    for (var r = 0; r < rowsN; r++) {
       var row = map.rows[r];
       for (var c = 0; c < row.length; c++) {
         var idx = row[c];
         if (idx < 0) continue;
-        drawFrame(ctx, map.tileset, idx, ox + c * t, oy + r * t, t, t);
+        drawFrame(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
       }
     }
   }
@@ -913,7 +943,7 @@ export const gameTwoDRuntime = `(function () {
    */
   function collideTileMap(sprite, map) {
     if (!sprite || !map || !map.rows || !map.tile) return;
-    var t = map.tile, ox = map.ox || 0, oy = map.oy || 0;
+    var t = tileScreenSize(map), ox = map.ox || 0, oy = map.oy || 0;
     var c0 = Math.floor((sprite.x - ox) / t);
     var c1 = Math.floor((sprite.x + sprite.w - 1 - ox) / t);
     var r0 = Math.floor((sprite.y - oy) / t);
@@ -3150,8 +3180,9 @@ export const gameTwoDRuntime = `(function () {
   // ---- Mapa destrutível: muda/quebra/lê o tile na posição de um sprite ----
   function setTileAt(map, px, py, index) {
     if (!map || !map.rows || !map.tile) return;
-    var col = Math.floor((px - (map.ox || 0)) / map.tile);
-    var row = Math.floor((py - (map.oy || 0)) / map.tile);
+    var t = tileScreenSize(map);
+    var col = Math.floor((px - (map.ox || 0)) / t);
+    var row = Math.floor((py - (map.oy || 0)) / t);
     if (row < 0 || row >= map.rows.length) return;
     var r = map.rows[row];
     if (!r || col < 0 || col >= r.length) return;

@@ -1064,7 +1064,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta um mapa de tiles a partir de uma imagem (o tileset, com vários quadros lado a lado). Cada número da GRADE escolhe um quadro do tileset; use ";" para separar as linhas e espaço entre os números. Use "." para uma célula vazia. Em "tiles sólidos", toque nos tiles que barram o jogador (ou liste os números) — os sólidos do Pinta já vêm sugeridos.',
+      'Monta um mapa de tiles a partir de uma imagem (o tileset, com vários quadros lado a lado). O "tamanho do tile" é o tamanho de cada quadro NA ARTE (o Pinta já sugere) — na tela o mapa se AJUSTA sozinho para encaixar no canvas. Cada número da GRADE escolhe um quadro do tileset; use ";" para separar as linhas e espaço entre os números. Use "." para uma célula vazia. Em "tiles sólidos", toque nos tiles que barram o jogador (ou liste os números) — os sólidos do Pinta já vêm sugeridos.',
   },
   {
     type: 'sz_g2d_draw_tilemap',
@@ -1078,7 +1078,8 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Desenha o mapa de tiles na tela, com o canto superior esquerdo em x/y.',
+    tooltip:
+      'Desenha o mapa de tiles: ele ENCAIXA sozinho no tamanho da tela (tiles quadrados, sem distorcer) e fica centralizado. x e y deslocam o mapa — use com a câmera para rolar um mapa maior que a tela.',
   },
   {
     type: 'sz_g2d_tilemap_collide',

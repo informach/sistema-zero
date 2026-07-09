@@ -120,6 +120,45 @@ describe('gameTwoDRuntime', () => {
     api.keys.left = false
   })
 
+  it('mapa de tiles ENCAIXA no canvas (tamanho na tela ≠ tamanho da arte)', () => {
+    const sz = api as unknown as {
+      createTileMap: (o: unknown) => {
+        tile: number
+        draw: number
+        ox: number
+        oy: number
+      }
+      drawTileMap: (ctx: unknown, map: unknown, x?: number, y?: number) => void
+      tileAt: (map: unknown, px: number, py: number) => number
+    }
+    // ctx permissivo: canvas 800×480; qualquer método é no-op (não rasteriza no teste).
+    const canvas = { width: 800, height: 480 }
+    const ctx = new Proxy({ canvas } as Record<string, unknown>, {
+      get(t, p) {
+        if (p in t) return t[p as string]
+        return () => {}
+      },
+      set(t, p, v) {
+        t[p as string] = v
+        return true
+      },
+    })
+
+    const map = sz.createTileMap({ image: 'tiles', tile: 16, grid: '0 0 0 0;0 0 0 0', solid: '1' })
+    expect(map.tile).toBe(16) // tamanho na ARTE (fatiar o tileset)
+    expect(map.draw).toBe(0) // ainda não desenhou
+
+    sz.drawTileMap(ctx, map, 0, 0)
+    // 4 colunas × 2 linhas → cabe: min(800/4=200, 480/2=240) = 200 px por tile NA TELA.
+    expect(map.draw).toBe(200)
+    expect(map.ox).toBe(0) // centralizado: (800 − 4·200)/2 = 0
+    expect(map.oy).toBe(40) // (480 − 2·200)/2 = 40
+
+    // tileAt usa o tamanho NA TELA + offset: pixel (210,250) → col 1, linha 1.
+    expect(sz.tileAt(map, 210, 250)).toBe(0)
+    expect(sz.tileAt(map, -5, -5)).toBe(-1) // fora do mapa
+  })
+
   it('isColliding detecta sobreposição AABB', () => {
     const a = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
     const b = api.createSprite({ x: 5, y: 5, w: 10, h: 10 })
