@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test'
-import { buildBlocksSvg, canonicalBlockFontFamily, collectBlocklyCss } from '../screenshot'
+import {
+  buildBlocksSvg,
+  canonicalBlockFontFamily,
+  collectBlocklyCss,
+  firstFontUrl,
+  looksLikeFontBinary,
+} from '../screenshot'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
@@ -50,6 +56,67 @@ describe('canonicalBlockFontFamily — mapeia o nome hasheado do next/font p/ o 
 
   it('família sem relação passa direto', () => {
     expect(canonicalBlockFontFamily('Comic Sans MS')).toBe('Comic Sans MS')
+  })
+})
+
+describe('firstFontUrl — resolve a url da @font-face contra a FOLHA dona da regra', () => {
+  it('URL relativa resolve contra o href da folha (formato do next/font no Next 16)', () => {
+    // O CSS do next/font vive em /_next/static/chunks/ e aponta ../media/x.woff2.
+    // Resolver contra a PÁGINA (/cursos/…/aulas/…) montava um caminho inexistente —
+    // era o print quebrado do kids (fonte não embutida → fallback largo no PNG).
+    const url = firstFontUrl(
+      'url("../media/abc123.woff2") format("woff2")',
+      'https://kids.sistemazero.com.br/_next/static/chunks/app.css',
+    )
+    expect(url).toBe('https://kids.sistemazero.com.br/_next/static/media/abc123.woff2')
+  })
+
+  it('URL absoluta ignora a base', () => {
+    const url = firstFontUrl(
+      "url(https://fonts.gstatic.com/s/baloo2/v23/x.woff2) format('woff2')",
+      'https://kids.sistemazero.com.br/_next/static/chunks/app.css',
+    )
+    expect(url).toBe('https://fonts.gstatic.com/s/baloo2/v23/x.woff2')
+  })
+
+  it('sem href de folha (style inline) cai no baseURI do documento', () => {
+    // happy-dom nasce em about:blank (base inválida p/ new URL) — o <base> dá a
+    // âncora que uma página real sempre tem.
+    const base = document.createElement('base')
+    base.href = 'http://host.local/aulas/'
+    document.head.appendChild(base)
+    try {
+      expect(firstFontUrl('url(/fonts/x.woff2)', null)).toBe('http://host.local/fonts/x.woff2')
+    } finally {
+      base.remove()
+    }
+  })
+
+  it('data: já embutido e src sem url() devolvem null', () => {
+    expect(firstFontUrl('url(data:font/woff2;base64,AAAA)', null)).toBeNull()
+    expect(firstFontUrl('local(Arial)', null)).toBeNull()
+  })
+})
+
+describe('looksLikeFontBinary — não embute resposta de catch-all como fonte', () => {
+  const tagged = (tag: string) => {
+    const buf = new Uint8Array(8)
+    for (let i = 0; i < 4; i++) buf[i] = tag.charCodeAt(i)
+    return buf.buffer
+  }
+
+  it('aceita wOF2/wOFF/OTTO/TrueType', () => {
+    expect(looksLikeFontBinary(tagged('wOF2'))).toBe(true)
+    expect(looksLikeFontBinary(tagged('wOFF'))).toBe(true)
+    expect(looksLikeFontBinary(tagged('OTTO'))).toBe(true)
+    expect(looksLikeFontBinary(new Uint8Array([0, 1, 0, 0, 9, 9]).buffer)).toBe(true)
+  })
+
+  it('recusa HTML de SPA-fallback (dev server responde 200 com index.html) e vazio', () => {
+    expect(looksLikeFontBinary(new TextEncoder().encode('<!doctype html><html>').buffer)).toBe(
+      false,
+    )
+    expect(looksLikeFontBinary(new ArrayBuffer(0))).toBe(false)
   })
 })
 
