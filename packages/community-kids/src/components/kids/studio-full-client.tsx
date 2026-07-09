@@ -9,6 +9,7 @@ import type { Project, StudioShareAdapter } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { StudioTier } from '@/lib/studio-tier'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
@@ -31,6 +32,7 @@ type EditorState =
 export function StudioFullClient({
   viewerId,
   challenge = null,
+  tier,
 }: {
   viewerId: string | null
   /**
@@ -39,6 +41,8 @@ export function StudioFullClient({
    * no Compartilhar. O gate REAL da tag é o do hub no publish.
    */
   challenge?: { key: string; title: string } | null
+  /** Modos + perfil de blocos derivados do RANK do aluno (ver `resolveStudioTier`). */
+  tier: StudioTier
 }) {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -170,6 +174,7 @@ export function StudioFullClient({
           onExit={backToList}
           share={share}
           theme={studioTheme}
+          tier={tier}
         />
       )}
     </div>
@@ -183,12 +188,14 @@ function EditorScreen({
   onExit,
   share,
   theme,
+  tier,
 }: {
   mod: StudioModule
   projectId: string
   onExit: () => void
   share: StudioShareAdapter
   theme: 'light' | 'dark'
+  tier: StudioTier
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
@@ -238,12 +245,13 @@ function EditorScreen({
       onExit={onExit}
       share={share}
       theme={theme}
-      // Paleta CALMA no editor livre kids (07/2026): nível intermediário mostra
-      // o núcleo + Jogo 2D e esconde Classes/Avançado/Jogo 3D atrás do toggle
-      // "Mostrar blocos avançados" (allowLevelReveal) — antes eram ~500 blocos
-      // de uma vez (DEFAULT_LEARNING_LEVEL 'avancado').
-      level="intermediario"
-      allowLevelReveal
+      // Modos + perfil de blocos pelo RANK do aluno (Faísca→Lenda; admin=Lenda):
+      // noob/coder → só Blocos + iniciante; hacker/elite → Blocos+Ponte +
+      // intermediário; god → Blocos+Ponte + avançado. Sem "Mostrar blocos
+      // avançados" — o rank é o portão estrito. Código (pro/WebContainer) adiado.
+      level={tier.level}
+      allowedModes={tier.allowedModes}
+      allowLevelReveal={tier.allowLevelReveal}
     />
   )
 }

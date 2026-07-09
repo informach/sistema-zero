@@ -18,15 +18,17 @@ export function RecadosClient({ initialThreads }: { initialThreads: TeacherThrea
         Recados do professor
       </h1>
       <p className="mb-6 text-muted-foreground text-sm">
-        Aqui chegam as respostas e correções do seu professor. Você pode responder de volta! 💬
+        De vez em quando o professor deixa um recado pra você aqui — um elogio, uma dica ou uma
+        ajuda. E você pode responder! 💬
       </p>
 
       {initialThreads.length === 0 ? (
         <div className="rounded-2xl border-2 border-border border-dashed bg-card p-8 text-center">
           <Mail className="mx-auto mb-3 size-10 text-muted-foreground" />
-          <p className="font-bold">Nenhum recado ainda</p>
+          <p className="font-bold">Tudo tranquilo por aqui 🎈</p>
           <p className="mt-1 text-muted-foreground text-sm">
-            Quando o professor responder uma entrega ou um jogo seu, aparece aqui.
+            Continue criando e enviando seus projetos! Se o professor quiser te falar alguma coisa,
+            o recado aparece aqui.
           </p>
         </div>
       ) : (

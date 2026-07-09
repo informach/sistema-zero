@@ -88,18 +88,23 @@ export function isCategoryAllowed(
  * de categorias SEM arrastar o editor inteiro pro bundle. A CHAVE é o NOME DE GATING (o que
  * `allowCategories`/`isCategoryAllowed` compara).
  */
+// ⚠️ Estes níveis são o GATE de CATEGORIA (esconde a categoria inteira abaixo do
+// nível) e o fallback do `categoryLevel`. Com a curadoria POR BLOCO
+// (`blockly/blockLevels.ts` → `resolveBlockLevel`), cada valor aqui deve ser o
+// MENOR nível entre os blocos da categoria (senão a categoria some mesmo tendo
+// bloco visível). A `pruneEmptyCategories` remove o que ficou sem bloco no tier.
 export const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
   HTML: 'iniciante',
   SVG: 'iniciante',
   CSS: 'iniciante',
   DOM: 'iniciante',
   JavaScript: 'iniciante',
-  Matemática: 'iniciante',
-  Canvas: 'intermediario',
+  Matemática: 'intermediario',
+  Canvas: 'iniciante',
   Valores: 'iniciante',
   Funções: 'intermediario',
   Classes: 'avancado',
-  Objetos: 'intermediario',
+  Objetos: 'avancado',
   Avançado: 'avancado',
 }
 

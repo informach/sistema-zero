@@ -36,20 +36,27 @@ export function suggestedSpriteSize(
  * no round-trip — é o mesmo que digitar o número no soquete.
  */
 function applySuggestedSize(field: Blockly.Field, asset: ProjectAsset): void {
+  const block = field.getSourceBlock()
+  if (!block) return
+  // Mapa de tiles: preenche o "tamanho do tile" com o tamanho do tile NA ARTE (do
+  // Pinta) — é o que fatia o tileset certo; o tamanho NA TELA é auto (encaixa no canvas).
+  if (block.type === 'sz_g2d_create_tilemap') {
+    const tileSize = asset.tileset?.tileSize
+    if (tileSize && tileSize > 0) setNumberShadow(block, 'TILE', tileSize)
+    return
+  }
   if (!asset.width || !asset.height) return
   const size = suggestedSpriteSize(asset.width, asset.height)
   if (!size) return
-  const block = field.getSourceBlock()
-  if (!block) return
-  const pairs: Array<[string, number]> = [
-    ['W', size.w],
-    ['H', size.h],
-  ]
-  for (const [inputName, value] of pairs) {
-    const target = block.getInput(inputName)?.connection?.targetBlock()
-    if (target?.isShadow() && target.type === 'sz_val_number') {
-      target.setFieldValue(String(value), 'NUM')
-    }
+  setNumberShadow(block, 'W', size.w)
+  setNumberShadow(block, 'H', size.h)
+}
+
+/** Escreve `value` no shadow `sz_val_number` do input, se houver (não sobrescreve bloco real). */
+function setNumberShadow(block: Blockly.Block, inputName: string, value: number): void {
+  const target = block.getInput(inputName)?.connection?.targetBlock()
+  if (target?.isShadow() && target.type === 'sz_val_number') {
+    target.setFieldValue(String(value), 'NUM')
   }
 }
 

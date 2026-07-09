@@ -242,6 +242,12 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   const regenerationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingRegenerationWorkspaceRef = useRef<Blockly.Workspace | null>(null)
   const appliedToolboxRef = useRef<ReturnType<typeof buildCoreToolbox> | null>(null)
+  // Após uma carga de blocosState, pede UM re-render quando o painel ganhar tamanho
+  // real. No Estúdio Completo o workspace injeta ANTES do blocksState chegar (async) e
+  // o render de carga pode rodar num container ainda não dimensionado → blocos
+  // colapsados/invisíveis até alternar de modo. O ResizeObserver dispara o re-render
+  // no 1º tamanho > 0 (o mesmo que a remontagem da Ponte fazia).
+  const needsPostLoadRenderRef = useRef(false)
 
   // Aviso gentil do copiar/colar de blocos entre projetos (toast efêmero).
   const [pasteNotice, setPasteNotice] = useState<string | null>(null)
@@ -441,6 +447,9 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
         // Conserta blocos com filhos que carregaram COLAPSADOS (o mesmo re-render
         // que "Organizar blocos" faz), sem o aluno precisar acionar nada.
         scheduleBlocklyRerender(workspace as Blockly.WorkspaceSvg)
+        // Se o painel ainda não tinha tamanho (inject antes do blocksState async),
+        // repinta quando o ResizeObserver ver o 1º tamanho real.
+        needsPostLoadRenderRef.current = true
         return
       }
       if (event.type === Blockly.Events.BLOCK_DRAG) {
@@ -524,10 +533,22 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   useEffect(() => {
     if (!workspace || !blocklyRef.current) return
     const svgWorkspace = workspace as Blockly.WorkspaceSvg
+    const container = blocklyRef.current
     const observer = new ResizeObserver(() => {
       resizeBlocklyWorkspace(svgWorkspace)
+      // Blocos carregados enquanto o painel tinha tamanho 0 (inject antes do
+      // blocksState async, no Estúdio Completo) desenham colapsados/invisíveis. No
+      // 1º tamanho REAL, repinta uma vez — mesmo efeito da remontagem da Ponte.
+      if (
+        needsPostLoadRenderRef.current &&
+        container.clientWidth > 0 &&
+        container.clientHeight > 0
+      ) {
+        needsPostLoadRenderRef.current = false
+        scheduleBlocklyRerender(svgWorkspace)
+      }
     })
-    observer.observe(blocklyRef.current)
+    observer.observe(container)
     return () => observer.disconnect()
   }, [workspace])
 
@@ -662,6 +683,11 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
           regenerateFromBlocks(workspace, { force: true })
           isApplyingStateRef.current = false
           scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
+          // Fallback sem FINISHED_LOADING: repinta igual ao caminho principal
+          // (senão os blocos com filhos ficam colapsados) + agenda o re-render
+          // pós-tamanho.
+          scheduleBlocklyRerender(workspace as Blockly.WorkspaceSvg)
+          needsPostLoadRenderRef.current = true
         })
       } catch (e) {
         isApplyingStateRef.current = false
