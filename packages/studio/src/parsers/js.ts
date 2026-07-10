@@ -3071,6 +3071,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const mapVar = identifierName(args[1])
       return spriteVar && mapVar ? { type: 'g2d:tileMapCollide', spriteVar, mapVar } : null
     }
+    case 'collideGroup': {
+      // generator: SZGame2D.collideGroup(sprite, group)
+      const spriteVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      return spriteVar && groupVar ? { type: 'g2d:collideGroup', spriteVar, groupVar } : null
+    }
     case 'spawn': {
       // generator: SZGame2D.spawn(g, { x, y, w, h, color|image, vx, vy })
       const groupVar = identifierName(args[0])

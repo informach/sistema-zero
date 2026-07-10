@@ -15,8 +15,9 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 **área de membros** (resolve, no grant, exatamente o que a oferta incluía). Runtime: **Bun**. Linguagem: **TS (ESM)**.
 
 > Estado: **slice completo e testado** (produtos/combos/ofertas + cupons + leitura pública +
-> escrita admin + resolução de entitlements). Migrations `0000`/`0001`/`0002`/`0003` no Postgres
-> compartilhado (cria o **schema `catalog`**; `0003` = enum `product_kind` += `'tool'`). Seed
+> escrita admin + resolução de entitlements). Migrations `0000`/`0001`/`0002`/`0003`/`0004` no Postgres
+> compartilhado (cria o **schema `catalog`**; `0003` = enum `product_kind` += `'tool'`; `0004` =
+> `offers.billing_interval_months` — periodicidade da assinatura, ver Invariantes da oferta). Seed
 > (`scripts/seed.ts`): **No Comando da IA** (ebook, R$37) · **Estúdio Completo** (kids, R$97 —
 > **`kind: 'tool'`/Ferramenta**, entrega `accessType:'community'` courseRef `estudio-completo`; o seed
 > RECONCILIA o kind legado `community`→`tool` de forma idempotente) · **Pensa** (kids, R$97 —
@@ -49,7 +50,7 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > quote, micro-cache TTL das leituras públicas (`PUBLIC_CACHE_TTL_MS`), log próprio do S2S de
 > entitlements. **4º full review (06/2026)**: serviço volta a compilar, oferta ativa exige
 > produto principal ativo + todos os entregáveis ativos com `fulfillment`, preço de oferta > 0,
-> grafo de entitlements profundo demais falha explicitamente, gateway usa `/readyz` — **112 testes**.
+> grafo de entitlements profundo demais falha explicitamente, gateway usa `/readyz` — **~128 testes**.
 
 ## Modelo (decisões de design — leia antes de mexer)
 

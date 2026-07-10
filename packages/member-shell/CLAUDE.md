@@ -216,7 +216,7 @@ passthroughs finos Zod→members, escrita gateada por impersonação-readonly) e
 `event: delta` → **evaluator estruturado** das 5 perguntas (`stage-z-evaluator.ts`, modelo do chat,
 `response_format: json_schema`) → persiste o turno COMPLETO (`pensaAppendTurn`; **abort = nada
 persiste**) → `event: state` + `event: done`; `: ping` a cada 15s (Cloudflare corta conexão ociosa);
-rate-limit in-process por sessão (10/min + 150/dia, `globalThis`/`Symbol.for`, réplica única) — e
+rate-limit in-process por sessão (10/min anti-burst, `globalThis`/`Symbol.for`, réplica única; o teto diário/mensal REAL é a quota durável por CONTA — ver seção Quota de IA) — e
 `pensaGenerateArtifact` (`POST /api/pensa/cycles/:cycleId/artifacts/generate` — TODAS as sínteses:
 idea/friendly_spec/identity(3 steps)/mission_plan/checklist_seed + **`spec_edit`** 07/2026 = edição
 PONTUAL de UMA tela SEM IA: troca só `friendly_spec.screens`, mantém fluxos/PRD e auto-valida). ⚠️ **`GenerateBody` (Zod 4): as 3

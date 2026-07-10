@@ -3636,6 +3636,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           mapVar: f(block, 'MAP'),
         },
       }
+    case 'sz_g2d_collide_group':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:collideGroup',
+          spriteVar: f(block, 'SPRITE'),
+          groupVar: f(block, 'GROUP'),
+        },
+      }
 
     // ---- Grupos de sprites + temporizadores (v0.6.0) ----
     case 'sz_g2d_create_group':

@@ -28,7 +28,7 @@ Runtime: **Bun**. Plano completo: `~/.claude/plans/agora-precisamos-come-ar-a-de
 > suporte a attachments por URL) + CancellationWorker (estorno → cMotivo 2; admin → 9) + alerta
 > diário de expiração do certificado. O composition-root usa o gateway REAL quando há certificado
 > (env) e o FAKE só em dev/teste sem cert (RECUSA `producao`). **47 testes.**
-> FALTA: deploy em staging + e2e (criar serviço Railway, seeds, envs) e deploy em produção.
+> **EM PRODUÇÃO (série 2)** — serviço Railway + seeds + envs feitos; deploy staging + produção concluídos.
 
 ## Endurecimentos do 2º full review (13/06) — **102 testes** (incl. `tests/db/` real)
 
@@ -58,8 +58,8 @@ Achados implementados (correção/fiscal/segurança/concorrência):
   codepoint. Gateway: 403 = erro de cert acionável; `duplicate` carrega a chave (sem 2ª consulta);
   `NFSE_TOTAL_RETRY_BUDGET_MS` aplicado por chamada.
 - **Índices**: pg_trgm GIN na busca `q` do admin (migration `0001`, com `CREATE EXTENSION` à mão).
-- ⚠️ **DEPLOY**: os refines novos EXIGEM no host de prod/staging, ANTES do próximo deploy: séries certas,
-  `GATEWAY_URL`+`FISCAL_HMAC_SECRET` (prod), `PAYMENTS_BASE_URL`/`CATALOG_BASE_URL`/`FISCAL_SELF_URL`
+- ⚠️ **DEPLOY (já feito — manter em qualquer novo deploy)**: os refines EXIGEM no host de prod/staging
+  séries certas, `GATEWAY_URL`+`FISCAL_HMAC_SECRET` (prod), `PAYMENTS_BASE_URL`/`CATALOG_BASE_URL`/`FISCAL_SELF_URL`
   não-localhost — senão o boot falha-rápido. Migration `0001` roda no preDeploy (índices, idempotente).
 
 ## Regra de ambientes (CORAÇÃO do serviço — não relaxar)
@@ -152,9 +152,11 @@ Emissor Web, que usa série própria). O spike queimou os números 1–3 da sér
   `GET /payments/internal/payments/:id` (env `PAYMENTS_INTERNAL_TOKEN` = INTERNAL_API_TOKEN de lá;
   `PAYMENTS_WEBHOOK_HMAC_SECRET` = hmac do consumer).
 - **catalog**: `GET /catalog/offers/{uuid}` (público, aceita UUID desde 06/2026).
-- **Fase 2 (pendente)**: gateway Sefin REAL (código do spike), rotas admin + gateway.config + fatia
-  admin Next.js, Dockerfile/railway.json. **Fase 3**: e-mail (messaging + anexos), CancellationWorker,
+- **Fase 2 (CONCLUÍDA)**: gateway Sefin REAL (código do spike), rotas admin `/fiscal/admin/*` +
+  rotas `fiscal-admin-*` no `api-gateway/gateway.config.ts` + fatia "Notas fiscais" no admin Next.js,
+  Dockerfile/railway.json. **Fase 3 (CONCLUÍDA)**: e-mail (messaging + anexos), CancellationWorker,
   cron do certificado, `/metrics`, testes `tests/db/` contra Postgres real (alocação concorrente).
+  Serviço **EM PRODUÇÃO (série 2)**.
 
 ## Checklist antes de finalizar
 

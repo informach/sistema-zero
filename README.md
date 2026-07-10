@@ -57,10 +57,17 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/community-kids`](packages/community-kids) | 3008 | Área do aluno infantil (Next.js 16, BFF via gateway): redesign Duolingo + gamificação (XP/streak/badges/ranking) |
 | [`@sistemazero/fiscal`](packages/fiscal) | 3009 | Emissão automática de NFS-e pós-garantia (Efí/prefeitura) — DDD/Hexagonal |
 | [`@sistemazero/hub`](packages/hub) | 3010 | Comunidade em fórum: servidores/canais/tópicos/comentários + reações + moderação — DDD/Hexagonal |
+| [`@sistemazero/marketing`](packages/marketing) | 3011 | Marketing (back-end, interno/staff+): pipeline de conteúdo + publicações cross-post (IG/FB/YT/TikTok) + mídia R2 + métricas — DDD/Hexagonal |
+| [`@sistemazero/marketing-app`](packages/marketing-app) | 3012 | Front do marketing (Next.js 16, BFF via gateway): kanban, composer, calendário, biblioteca, conexões, métricas |
+| [`@sistemazero/helpdesk`](packages/helpdesk) | 3013 | Help desk com IA para `contato@` (back-end): ingestão do Gmail por polling, tickets, IA (classifica/resume/rascunha) + auto-resposta — DDD/Hexagonal |
+| [`@sistemazero/helpdesk-app`](packages/helpdesk-app) | 3014 | Front do help desk (Next.js 16, BFF via gateway): painel, caixa de entrada, thread/resposta, base de conhecimento, configurações |
 | [`@sistemazero/funnel`](packages/funnel) | 4321 | Funil de vendas (Astro 6 + ilhas React): quiz → vendas → checkout (Pix/cartão/boleto) → admin |
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
 | [`@sistemazero/member-shell`](packages/member-shell) | — | Shell compartilhado da área do aluno (route handlers, proxy anti-CSRF, componentes de domínio) — consumido por community/community-kids |
 | [`@sistemazero/studio`](packages/studio) | — | IDE educacional embarcável (Blocos/Código/Ponte + preview sandbox + jogos 2D/3D) — lib interna |
+| [`@sistemazero/pensa`](packages/pensa) | — | Planejamento guiado (metodologia ZERO) p/ crianças planejarem jogos antes do Estúdio — lib (TS source) embarcada nos apps |
+| [`@sistemazero/pinta`](packages/pinta) | — | Editor de assets de jogos p/ crianças (pixel art, animações, tiles, vetor) — lib (TS source) embarcada nos apps |
+| [`@sistemazero/studio-aulas`](packages/studio-aulas) | — | Pipeline de produção de aulas (roteiro → voz → avatar → tela do Estúdio → vídeo) — ferramenta isolada (CLI) |
 | [`@sistemazero/ui`](packages/ui) | — | Componentes compartilhados (admin + community) |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
 
@@ -84,6 +91,13 @@ Detalhes, URLs dos dois ambientes e regras: **[docs/ambientes-e-fluxo.md](docs/a
   (curso específico × chave-mestra "todos os cursos"), as 3 formas de bônus e as
   limitações conhecidas. *(O "como funciona por dentro" segue nos `CLAUDE.md` de
   cada pacote.)*
+- **[Gamificação Kids — manual mestre](docs/gamificacao.md)** — visão transversal da
+  gamificação infantil (XP, streak, Zappy Coins, avatar, quarto, missões, proteção de
+  sequência, ligas e perfil público): a ética embutida no código e qual constante mudar,
+  em qual arquivo.
+- **[Marketing digital — manual de conceitos e operação](docs/marketing.md)** — a
+  ferramenta interna da equipe (ideia → produção → aprovação → publicações por rede →
+  agendamento → métricas), os 4 conceitos centrais e o roadmap de fases.
 
 ## Banco de dados (padrão do monorepo)
 
@@ -92,7 +106,8 @@ isolado por `pgSchema` no Drizzle:
 
 - `payments` → schema `payments` · `funnel` → schema `funil` · `auth` → schema `auth` ·
   `catalog` → schema `catalog` · `members` → schema `members` · `messaging` → schema `messaging` ·
-  `fiscal` → schema `fiscal` · `hub` → schema `hub`.
+  `fiscal` → schema `fiscal` · `hub` → schema `hub` · `marketing` → schema `marketing` ·
+  `helpdesk` → schema `helpdesk`.
 - O gateway/admin/community/community-kids/core/tui **não** têm banco (admin/community/
   community-kids são BFFs do gateway; member-shell/studio/ui/core/tui são libs).
 - Cada serviço tem **journal de migrations próprio** (`<serviço>_migrations` no schema
@@ -113,6 +128,8 @@ bun run --filter @sistemazero/members   db:migrate   # depois: db:seed (curso de
 bun run --filter @sistemazero/messaging db:migrate   # depois: templates:seed (welcome + password-reset + otp)
 bun run --filter @sistemazero/fiscal    db:migrate
 bun run --filter @sistemazero/hub       db:migrate
+bun run --filter @sistemazero/marketing db:migrate
+bun run --filter @sistemazero/helpdesk  db:migrate
 ```
 
 ## Setup

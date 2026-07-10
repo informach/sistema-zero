@@ -164,7 +164,7 @@ por px reais.
 
 ## Histórico / status
 
-- **F1–F6 (07/2026, commit 5d5d4bf em staging)**: fundação + pixel, animações + preview
+- **F1–F6 (07/2026, commit 5d5d4bf) — EM PRODUÇÃO (PR #65, main `e1f5ad1`, 09/07/2026)**: fundação + pixel, animações + preview
   (fps 🐢→🐇 gravado = o do export), ponte + plataforma kids (`/pinta` gate 3 estados, produto
   `pinta` R$97 no catalog), tiles com REMAP automático dos mapas, vetorial v1, export completo
   (ZIP organizado + `.pinta.json` + upscale).

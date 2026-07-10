@@ -21,7 +21,7 @@ export const gameTwoDManifest: ExtensionManifest = {
   name: 'Jogo 2D',
   version: '0.23.0',
   description:
-    'Blocos para criar jogos 2D no Canvas: tela cheia responsiva (com cor de fundo), sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos), Kit gorilas (batalha de bananas por turnos), Kit equilibrista (estica o bastão e atravessa, estilo Stick Hero) e Kit balão (sobe segurando o mouse e economiza combustível).',
+    'Blocos para criar jogos 2D no Canvas: sprites (cor, imagem, animação por estado com virada automática) ou desenhados por código, grupos de muitos sprites, inimigos com comportamento (patrulha, perseguidor, voador, saltador, atirador), movimento, física, colisão sólida, efeitos, tiles/tilemaps (do Pinta ou por upload), HUD, telas/cenas, som, e KITS por tema — espaço, dino, gorilas, equilibrista e balão.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -93,6 +93,9 @@ quadros (o **tileset**) — escolha um da aba **Assets** (ex.: \`tileset\`).
 - **Desenhar mapa** — desenha o mapa na tela (use no "a cada frame", antes do sprite).
 - **Impedir de atravessar tiles sólidos** — o sprite pousa no chão e bate nas paredes;
   use a cada frame, depois de mover o sprite.
+- **Impedir de atravessar os sprites de um grupo** (em 📦 Muitos) — mesma colisão, mas
+  contra obstáculos SEM mapa: jogue as pedras/casas (até desenhadas por figura) num grupo
+  e o sprite não atravessa nenhuma delas, deslizando pela beirada.
 
 Enquanto o tileset carrega (ou se faltar), os tiles aparecem como retângulos — o jogo
 nunca quebra por falta de imagem.

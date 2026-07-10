@@ -105,7 +105,9 @@ export function buildApp(opts: BuildAppOptions = {}) {
     updateInstance: new UpdateInstanceService(instances, clock),
     listInstances: new ListInstancesService(instances),
     applyStatus: new ApplyDeliveryStatusService(messages, suppressions, webhookInbox, silentLogger),
-    setConnection: new SetInstanceConnectionService(instances, clock),
+    setConnection: new SetInstanceConnectionService(instances, clock, silentLogger, {
+      laneDisconnected: async () => {},
+    }),
   })
 
   return { app, templates, messages, senders, instances, suppressions, webhookInbox }

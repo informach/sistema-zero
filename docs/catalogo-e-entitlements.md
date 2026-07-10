@@ -61,8 +61,9 @@ ser vendido por N ofertas sem reconfigurar nada:
 
 ```
 Produto "Acesso Total" (entrega: todos os cursos)   ← configurado UMA vez
-   ├── Oferta "Black Friday"       → R$ 497 vitalício
-   ├── Oferta "Assinatura mensal"  → R$ 97/mês (a validade renova a cada ciclo pago)
+   ├── Oferta "Black Friday"       → R$ 497 vitalício  (compra única)
+   ├── Oferta "Assinatura mensal"  → R$ 97/mês   (a validade renova a cada ciclo pago)
+   ├── Oferta "Assinatura anual"   → R$ 970/ano  (mesma entrega, cobra de 12 em 12 meses)
    └── Combo "Comunidade Pro"      → componente do combo (futuro)
 ```
 
@@ -123,14 +124,44 @@ O rascunho é livre (cadastro progressivo). **Ativar** um produto exige ele pron
   entregues pela oferta (componentes do combo + bônus/itens extras) ativos e com
   entrega definida. Oferta em rascunho pode apontar para cadastro incompleto até
   ficar pronta.
+- Oferta de **assinatura** ativa → além do acima, exige o **intervalo de cobrança**
+  (mensal ou anual). Sem ele a ativação é bloqueada (o checkout não teria como montar o
+  plano recorrente no provedor).
 
 O formulário bloqueia com aviso e o backend valida de novo (defesa em profundidade).
 
+## Assinaturas (mensal e anual)
+
+Toda oferta tem um **modo de cobrança**, escolhido no cadastro da oferta:
+
+- **Compra única** — o cliente paga uma vez e a matrícula é **vitalícia** (sem validade).
+  É o padrão.
+- **Assinatura** — cobrança **recorrente**; a matrícula vale por um ciclo e **renova a cada
+  pagamento**. Cancelou, ou a cobrança falhou até o fim da carência → as matrículas daquela
+  assinatura caem juntas (ver "O que acontece na compra").
+
+Na oferta de assinatura você ainda escolhe a **periodicidade**:
+
+- **Mensal** (cobra todo mês) ou **Anual** (cobra a cada 12 meses).
+- A periodicidade é **obrigatória para ativar** a oferta — sem ela o checkout não sabe montar
+  o plano no provedor de pagamento (Efí), então o sistema barra a ativação. O **rascunho** pode
+  ficar sem, para cadastro progressivo.
+
+**Oferecer "mensal OU anual" na mesma página (o alternador do checkout):** cadastre **duas
+ofertas** do mesmo produto — uma mensal e uma anual — e **ligue uma na outra** pelo campo
+**"Oferta irmã / alternador"**, nos **dois sentidos** (a mensal aponta a anual e a anual aponta
+a mensal). No checkout aparece um **alternador** ("Economize no anual") que troca entre os dois
+preços; o funil valida a oferta escolhida contra esse vínculo (anti-forja). O texto do alternador
+é livre — deixe em branco para o padrão por periodicidade. Quem já assinou continua no plano que
+comprou (snapshot congelado): editar ou trocar as ofertas não mexe em assinante ativo.
+
 ## A oferta no funil de vendas (o que muda onde)
 
-O funil é **mono-oferta**: vende a oferta apontada pela env **`CATALOG_OFFER_SLUG`** do host
-do funil. Ele **não tem preço próprio** — busca a oferta no catálogo em runtime (cache ~60s)
-e cobra sempre pela cotação do servidor. Três camadas:
+O funil aponta para **uma oferta "base"** (env **`CATALOG_OFFER_SLUG`** do host do funil) e
+**não tem preço próprio** — busca a oferta no catálogo em runtime (cache ~60s) e cobra sempre
+pela cotação do servidor. Quando a oferta-base tem uma **irmã ligada** (o par mensal↔anual acima),
+o checkout mostra o **alternador** e pode cobrar pela irmã que o cliente escolher; fora esse par,
+o funil vende só a oferta-base. Três camadas:
 
 | Quero mudar… | Onde | Precisa deploy? |
 |---|---|---|

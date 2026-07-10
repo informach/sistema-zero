@@ -2015,6 +2015,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'g2d:collideGroup':
+      return block(
+        'sz_g2d_collide_group',
+        { SPRITE: stmt.spriteVar, GROUP: stmt.groupVar },
+        {},
+        stmt.__id,
+      )
     case 'g2d:createGroup':
       return block('sz_g2d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
     case 'g2d:spawnInGroup': {

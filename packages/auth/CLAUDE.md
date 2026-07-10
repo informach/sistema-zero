@@ -30,7 +30,7 @@ usuário das claims e autoriza por rota). Runtime: **Bun**. Linguagem: **TS (ESM
 > purga), `0005`–`0011` (impersonação/perfis Netflix/auditoria — ver histórico) e
 > **`0012_*`** (`users.password_set_at` — marco "o dono definiu a própria senha" —
 > **com backfill `created_at` para os existentes**, ver Decisão 13) **aplicadas** no
-> Postgres compartilhado local.
+> Postgres compartilhado local + produção.
 
 ## Arquitetura (DDD + Hexagonal)
 

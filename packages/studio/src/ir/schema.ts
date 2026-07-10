@@ -1710,6 +1710,7 @@ export type JSStatement =
       y: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:tileMapCollide'; spriteVar: string; mapVar: string })
+  | (JSStatementCommon & { type: 'g2d:collideGroup'; spriteVar: string; groupVar: string })
   // Grupos de sprites (v0.6.0): MUITOS sprites (tiros, inimigos, estrelas). Um
   // grupo é uma lista gerenciada de sprites. x/y/vx/vy são expressões (aceitam
   // aleatório/contas); w/h números; color/image strings (nomes de asset).
@@ -3371,6 +3372,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       mapVar: irText(),
       ...idField,
     }),
+    z.object({
+      type: z.literal('g2d:collideGroup'),
+      spriteVar: irText(),
+      groupVar: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('g2d:createGroup'), varName: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:spawnInGroup'),
@@ -4596,6 +4603,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:createTileMapFromAsset',
   'g2d:drawTileMap',
   'g2d:tileMapCollide',
+  'g2d:collideGroup',
   'g2d:createGroup',
   'g2d:spawnInGroup',
   'g2d:spawnImageInGroup',

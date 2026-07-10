@@ -644,6 +644,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_create_tilemap',
     'sz_g2d_draw_tilemap',
     'sz_g2d_tilemap_collide',
+    'sz_g2d_collide_group',
     'sz_g2d_create_group',
     'sz_g2d_spawn_in_group',
     'sz_g2d_spawn_image_in_group',

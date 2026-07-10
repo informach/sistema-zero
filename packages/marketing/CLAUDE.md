@@ -17,7 +17,7 @@ edição → capa/legenda → revisão → aprovado), **publicações cross-post
 próximas fases) e **métricas** (snapshots por publicação/conta). Runtime: **Bun**. Framework:
 **Elysia**. Porta **3011**. Schema Postgres próprio **`marketing`**.
 
-> Estado: **F0 + F1 + F2 COMPLETAS e testadas (07/07/2026)** — além da fundação (CRUD +
+> Estado: **F0–F5 COMPLETAS e testadas (roadmap inteiro; 07–08/07/2026)** — além da fundação (CRUD +
 > mídia R2 + mark-published), a F1 trouxe secret-box AES-256-GCM, OAuth Google REAL
 > (network `youtube`, escopos Drive+YouTube), contas (`GET/DELETE /marketing/accounts`),
 > Drive (picker + import → media-transfer-worker Drive→R2), publisher-worker ramo MANUAL
@@ -113,7 +113,7 @@ src/
 │                      #   auth (x-internal-token + X-Auth-User-* fail-closed staff+), error-handler
 ├── composition-root.ts (DI + retenção com advisory lock `61120324050607091`) · index.ts
 tests/  fakes/in-memory.ts · unit/ (stage, publication-rules) · integration/ (auth, ideas,
-        contents, publications, media) — 49 testes via app.handle
+        contents, publications, media) — 238 testes via app.handle
 ```
 
 ## Comandos (de dentro de `packages/marketing`)

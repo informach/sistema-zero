@@ -471,7 +471,7 @@ um fresh DB pulava o enum. Consertado: `0002` virou `ADD VALUE IF NOT EXISTS` (r
 `0004_add_author_display_public` (`ADD COLUMN IF NOT EXISTS` de `comments.author_display_name` +
 `comments.author_public` + `threads.author_public` — snapshot de autor p/ nomes clicáveis; o
 `threads.author_display_name` já vinha da `0001`). **`0005_plays_challenge` (Fase 5, 07/2026 —
-escrita à MÃO, journaled, FALTA aplicar):** `threads.plays_count` int NOT NULL DEFAULT 0 +
+escrita à MÃO, journaled — APLICADA (local+prod, PR #68, 10/07/2026)):** `threads.plays_count` int NOT NULL DEFAULT 0 +
 `threads.challenge_key` text + índice PARCIAL `threads_play_id_idx (play_id) WHERE play_id IS NOT
 NULL` (conserta o seq scan pré-existente do resolve do /jogar) + índice parcial
 `threads_channel_challenge_idx (channel_id, challenge_key)`. ⚠️ O `db:generate` re-emite as linhas de `play_id`

@@ -26,7 +26,7 @@ Porta **3012**. Domínio futuro: `marketing.sistemazero.com.br`.
 > (`/conteudos/[id]/publicacoes/[pubId]` — contador por rede, capa, agendar, toggle
 > auto/lembrete, preview), Biblioteca (upload XHR presigned com progresso + importar do
 > Drive), Calendário (grade custom + drag reagenda), Conexões (OAuth YouTube real, admin+)
-> e Métricas (canal + top publicações YT). Libs puras testadas (50+ testes), build standalone OK.
+> e Métricas (canal + top publicações YT). Libs puras testadas (80 testes), build standalone OK.
 > Padrões-chave: 409 CONCURRENCY_CONFLICT → toast + re-GET; etapas derivadas nunca são alvo de
 > drag; PATCH nunca envia scheduledAt (agendar é rota própria); pós-upload do YouTube
 > (`hasRemoteVideo`) congela metadados.
@@ -86,7 +86,9 @@ src/
     (app)/                     shell autenticado: layout gate + Topbar + AppSidebar
       page.tsx + painel-cards.tsx   Painel (contagens via `/marketing/contents/stage-counts`,
                                     agregadas no banco + estado de erro visível; client fetch — padrão admin)
-      pipeline/ calendario/ ideias/ midia/ metricas/ conexoes/   STUBS (Fase 1)
+      pipeline/ (kanban dnd-kit) · calendario/ (grade custom + drag) · ideias/ (inbox/promover) ·
+      conteudos/[id]/ (stepper + abas + composer) · midia/ (upload presigned + Drive) ·
+      metricas/ (canal/top + heatmap) · conexoes/ (OAuth por rede, admin+)   — telas implementadas
     api/
       auth/{login,logout}/ · healthz/ · team/ · marketing/[...path]/   (BFF)
   server/   session.ts · gateway.ts · forward.ts · sentry.ts (ingestão via fetch, sem SDK)
@@ -96,7 +98,8 @@ src/
   components/ layout/* (sidebar/topbar/user-menu/theme) · shared/{empty-state,page-header} · providers
   proxy.ts · instrumentation.ts
 scripts/boot-check.mjs   (fail-fast de env em prod, em SINCRONIA com instrumentation.ts)
-tests/    networks.test.ts · pipeline.test.ts (27 testes)
+tests/    libs puras: networks · pipeline · calendar · carousel · dates · heatmap · lightcopy ·
+          metrics · publications (80 testes)
 ```
 
 ## Comandos (de dentro de `packages/marketing-app`)

@@ -1182,6 +1182,38 @@ export const gameTwoDRuntime = `(function () {
     }
   }
 
+  /**
+   * Impede o sprite de atravessar os sprites de um GRUPO (obstáculos desenhados à
+   * mão: pedras, casas, paredes). Mesma ideia do collideTileMap, mas contra o
+   * retângulo de cada sprite do grupo: empurra para FORA pelo eixo de menor
+   * sobreposição e zera a velocidade nesse eixo (dá parede E chão + deslizar).
+   * Compara os CENTROS (obstáculos de tamanhos variados) — não o canto.
+   */
+  function collideGroup(sprite, group) {
+    if (!sprite || !group || !group.items) return;
+    for (var i = 0; i < group.items.length; i++) {
+      var o = group.items[i];
+      if (!o || o === sprite) continue;
+      var overlapX = Math.min(sprite.x + sprite.w, o.x + o.w) - Math.max(sprite.x, o.x);
+      var overlapY = Math.min(sprite.y + sprite.h, o.y + o.h) - Math.max(sprite.y, o.y);
+      if (overlapX <= 0 || overlapY <= 0) continue;
+      if (overlapX < overlapY) {
+        var cx = sprite.x + sprite.w / 2, ocx = o.x + o.w / 2;
+        if (cx < ocx) sprite.x -= overlapX; else sprite.x += overlapX;
+        sprite.vx = 0;
+      } else {
+        var cy = sprite.y + sprite.h / 2, ocy = o.y + o.h / 2;
+        if (cy < ocy) {
+          sprite.y -= overlapY;
+          if ((sprite.vy || 0) > 0) { sprite.vy = 0; sprite.onGround = true; }
+        } else {
+          sprite.y += overlapY;
+          if ((sprite.vy || 0) < 0) sprite.vy = 0;
+        }
+      }
+    }
+  }
+
   // ---- Eventos "Quando…" ----
   /** Roda fn toda vez que a tecla é apertada (compara e.key e e.code). */
   function onKey(key, fn) {
@@ -3824,6 +3856,7 @@ export const gameTwoDRuntime = `(function () {
     createTileMapFromAsset: createTileMapFromAsset,
     drawTileMap: _camWrap(drawTileMap),
     collideTileMap: collideTileMap,
+    collideGroup: collideGroup,
     tileAt: tileAt,
     // Grupos de sprites + temporizadores (v0.6.0).
     createGroup: createGroup,

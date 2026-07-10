@@ -388,6 +388,11 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 - **`agora: …`** (`sz_val_date_part` → `new Date().getHours()…`, numérico, p/ relógios); `getFullYear` continua sendo o `now` string (NÃO vira `dateGet`).
 - **Tela cheia** (`sz_js_request/exit/toggle_fullscreen` + `sz_val_is_fullscreen` + evento `fullscreenchange`): ⚠️ exige `allow="fullscreen"` no iframe (`components/preview/PreviewIframe.tsx` + `StudioProjectPlayer.tsx`), senão `requestFullscreen()` rejeita em silêncio.
 - O CSS criativo (variáveis `--x`/`var()`, grid, 3D `rotateX`/`perspective`, pseudo `:hover`/`::before`) JÁ funciona pela "Regra CSS" + "propriedade: valor" genéricas (o parser preserva seletor/propriedade/valor livres); os blocos dedicados são só atalho de UX.
+- **VALOR com CORPO de statements** (ex.: `sz_val_new_promise` → `new Promise((resolve) => {…})`, lote P9): um bloco de VALOR (`output`) com um `input_statement`. Três gotchas: (1) `blockToExprInner` (buildIR de valores) NÃO recebe `seen` — passe `getStatementChildren(block, 'DO', new Set())` (árvore de blocos não cicla); (2) o `generators/expr.ts` é a camada de BAIXO (o `js.ts` importa dele) e NÃO compila statements — o `js.ts` INJETA `compileStatements` via `_setExprStatementCompiler(fn)` no load, e o `compileExpr` do valor lê `rec?.indent` (novo campo de `ExprMapContext`, alimentado pelo `recAt` do `js.ts`) p/ indentar o corpo (o corpo compila SEM source map — os dois compiladores usam tipos de mapContext diferentes); (3) `collectExprIdentifiers` do valor tem que recursar o corpo via `collectStatementIdentifiers`.
+- **Matcher de VALOR que precisa de `bodyOfFn`/`asRaw`** (lê `source`): o `toExpr(node, ctx?)` NÃO recebe `source`. O `ParseCtx` ganhou o campo **`source`** (semeado no construtor do ctx) — use `ctx.source` (ex.: `matchNewPromise` chama `bodyOfFn(arg, ctx.source, ctx)` de dentro do `case 'NewExpression'`).
+- **Comentário** (HTML `<!-- -->` / CSS `/* */`, lote P9): nós `{type:'comment', text}` em `HTMLNode`/`CSSEntry` + blocos `sz_html_comment`/`sz_css_comment`. O parser guarda só o MIOLO (regex `/^\/\*([\s\S]*)\*\/$/` no CSS; `node.textContent` no HTML) e o gerador reconstrói os delimitadores — byte-exato. Antes viravam `rawHTML`/`rawCSS` "avançado" (teste que fixa isso PRECISA ser atualizado p/ o nó `comment`).
+- **⚠️ Colisão de nome de bloco**: ANTES de nomear um bloco novo, `grep` o tipo — o lote P9 quase duplicou `sz_js_on_click` (que JÁ existia = `addEventListener('click')`, target por id-string); o `.onclick = () => {}` virou `sz_js_element_onclick`. Um `case` duplicado no `switch` do buildIR não dá erro de TS (o 1º vence, o 2º vira código morto) — a colisão passa silenciosa.
+- **Flag booleana num bloco existente** (ex.: método `async`, lote P9): `field_checkbox` no `message0` (valor `'TRUE'`/`'FALSE'`; buildIR `f(block,'X') === 'TRUE'`, workspaceState `X: v ? 'TRUE' : 'FALSE'`). ⚠️ Se o bloco tem MUTATOR, confira que o mutator só mexe no PRÓPRIO input (o `sz_params_mutator` gerencia só o `PARAMS_INPUT`, então o checkbox do `message0` sobrevive) — um mutator que reconstrói o bloco via `jsonInit` apagaria o campo.
 
 ## Biblioteca pessoal "Meus desenhos" (ponte Pinta → Estúdio, 07/2026)
 
@@ -426,8 +431,8 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0`. Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
-FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado).
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest HOJE está em **`0.23.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +
 `attachAnimationNameWatcher`, espelho do thumb-watcher; registrado no inject do `BlocklyPanel` + no
@@ -564,6 +569,48 @@ comparado por `cssDeclMap`). **SEM exemplo embutido** (como V9/P6). Fechou:
   `sz_html_comment`; `/* */` → CSSEntry `comment` + `sz_css_comment` (parser casa `/^\/\*([\s\S]*)\*\/$/`,
   guarda só o miolo, gerador reconstrói os delimitadores — byte-exato p/ qualquer sequência de
   comentários). Antes viravam rawHTML/rawCSS "avançado".
+
+## Jogo 2D — lote v0.22.0 → v0.23.0 (10/07/2026)
+
+Extensão `official-extensions/game-2d` (manifest `version` 0.23.0). Full review + 4 blocos de família nova.
+Doc do aluno em `manifest.docs` (⚠️ teto zod **20.000 chars**, hoje ~19.7k — enxugar seção antiga ao
+adicionar) + contexto da IA em `ai.ts`. A allowlist é `EXTENSION_BLOCKLY_BLOCK_TYPES['game-2d']` (tudo-ou-nada).
+
+- **Auditoria genérica** (`__tests__/blockAudit.test.ts`): varre TODOS os `gameTwoDBlocks` e valida def→IR,
+  IR→blocos→IR, IR→JS→runtime (todo `SZGame2D.helper(` emitido existe no export) e JS→IR (Ponte). Bloco g2d
+  novo é coberto automaticamente — rode-a ao mexer na extensão.
+- **Animação por estado + flip automático** (🎬 Animação): `sz_g2d_set_state_anim` (6 estados
+  `G2D_ANIM_STATES`) + `sz_g2d_auto_animate`. Runtime: `autoAnimate(s)` resolve o estado por prioridade
+  (dano>ar>andando>vertical>parado) com **guarda de transição** (`s._animState`, senão `setAnimation` reseta
+  `start` e congela) + flip por sinal de vx. `platformer`/`jumpOnGround`/`collideTileMap` passaram a
+  PERSISTIR `s.onGround`; `changeHealth(<0)` seta `s.hurtFrames`. `FieldAnimationPicker` reusado (Set
+  `ANIM_PICKER_TYPES`). Parser valida o estado contra o enum → rawJS se desconhecido (dropdown coage valor).
+- **Tipos de inimigo** (😈 Inimigos): 10 blocos (`define_enemy_type`/`spawn_enemy`/`update_enemy_type`/
+  `draw_enemy_type`/`on_enemy_defeated`/`on_enemy_shot_hit`/`hurt_by_enemy`/`enemy_damage`/`enemy_type_param`/
+  `enemy_state_anim`). ⭐ o TIPO é um **grupo estendido** `{items, bullets:{items}, config, onDefeat}` → TODOS
+  os blocos de grupo funcionam nele (helpers só leem `.items`); kind `enemytype` no FieldNamePicker + em
+  `GROUP_DECL_BLOCKS`. 6 comportamentos determinísticos; morte varre `hp<=0`. `_camWrap` só no export de
+  `drawEnemyType`; tiros NÃO usam updateGroup (gravidade entortaria).
+- **Tilemap fim-a-fim**: contrato `ProjectAsset.tilemap` (auto-contido: grid+solid+folha embutida,
+  `core/project.ts`); 3 caminhos → (1) `sz_g2d_create_tilemap_from_asset` (1-clique de um desenho de MAPA do
+  Pinta/upload; runtime lê `ASSET_META`), (2) `field_tile_grid` (editor visual de grade no bloco clássico —
+  valor continua a MESMA string), (3) upload cru fatiado (`components/assets/tileSlicer.ts` + ação no
+  AssetsPanel → grava `asset.tileset`/`asset.tilemap`). Meta viaja na ponte de preview via
+  `__SZGAME_ASSET_META` (`assetsBridge`, 5 call sites).
+- **Sprite desenhado por código (figura)** (🎨 Desenho, v0.23.0): `defineShape('nome', fn(ctx))` guarda um
+  desenho; `createShapeSprite`/`setShape` põem `skin={kind:'custom',shape}`; `drawCustomShape` translada o ctx
+  pro canto e roda a fn em coords LOCAIS (ganha giro/flip/piscar do wrapper de graça). Dois caminhos: `paint_*`
+  (rect/circle/ellipse/triangle/line — **ctxVar FIXO 'ctx' no buildIR**, sem campo visível) E os blocos de
+  Canvas do núcleo dentro da figura. `shape_w/h` = tamanho do sprite atual. ⭐ **gotcha central**: o parser de
+  `defineShape` registra o parâmetro `ctx` em `ctx.ctxVars` (hoje só `canvasSetup` populava) — SEM isso os
+  blocos de Canvas dentro da figura viram rawJS. Kind `shape` no FieldNamePicker. Exemplo `codeDrawnExample`.
+- **Colisão sólida sem tilemap**: `sz_g2d_collide_group` (📦 Muitos) → runtime `collideGroup(sprite, group)` =
+  espelho do `collideTileMap` contra o retângulo de cada `group.items` (empurra pelo menor eixo, compara
+  CENTROS, zera vx/vy, seta onGround no pouso → parede+chão+deslizar). Casa com a figura: pedra=figura→sprite→
+  grupo→collideGroup. Ainda NÃO há colisão sólida contra um sprite ÚNICO (só grupo).
+- **Nível dos blocos** (`blockLevels.ts`): kits/inimigos/figura = iniciante (facilitadores); getters
+  (`enemy_damage`, `shape_w/h`) e `enemy_type_param` = intermediário. Só o `spawn_bullet` fica em Muitos (é
+  projétil genérico, não do Kit espaço — decisão da usuária).
 
 ## Comandos
 
