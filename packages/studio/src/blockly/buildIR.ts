@@ -693,6 +693,12 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         method: f(block, 'METHOD'),
         args: getArgs(block),
       }
+    case 'sz_val_new':
+      return {
+        type: 'newExpr',
+        className: f(block, 'CLASS'),
+        args: getArgs(block),
+      }
     case 'sz_val_object_op':
       return {
         type: 'objectOp',

@@ -3523,6 +3523,17 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       if (expr.args.length > 0) b.extraState = { items: expr.args.length }
       return b
     }
+    case 'newExpr': {
+      const valueInputs: Record<string, SerializedBlocklyBlock> = {}
+      for (let i = 0; i < expr.args.length; i += 1) {
+        const vb = exprToValueBlock(expr.args[i] as JSExpr)
+        if (!vb) return null
+        valueInputs[`ARG${i}`] = vb
+      }
+      const b = block('sz_val_new', { CLASS: expr.className }, {}, expr.__id, valueInputs)
+      if (expr.args.length > 0) b.extraState = { items: expr.args.length }
+      return b
+    }
     case 'call': {
       const valueInputs: Record<string, SerializedBlocklyBlock> = {}
       for (let i = 0; i < expr.args.length; i += 1) {

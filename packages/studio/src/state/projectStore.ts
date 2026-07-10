@@ -483,6 +483,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_this_prop',
   'sz_val_get_prop',
   'sz_val_call_method',
+  'sz_val_new',
   'sz_val_object',
   'sz_val_object_op',
   'sz_val_index_get',
@@ -1712,6 +1713,7 @@ function isSupportedBlocklyBlockExtraState(blockType: string, raw: unknown): boo
     case 'sz_val_call_function':
     case 'sz_val_call_method':
     case 'sz_val_method_on':
+    case 'sz_val_new':
     case 'sz_js_new_var':
     case 'sz_js_call_function':
     case 'sz_js_call_method':

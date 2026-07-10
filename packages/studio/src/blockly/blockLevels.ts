@@ -261,6 +261,7 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_js_new_var',
   'sz_js_call_method',
   'sz_val_call_method',
+  'sz_val_new',
   'sz_js_set_this_prop',
   'sz_js_set_prop',
   'sz_val_this_prop',

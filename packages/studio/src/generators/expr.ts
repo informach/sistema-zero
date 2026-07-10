@@ -525,6 +525,12 @@ export function compileExpr(
       const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.method)}(${args})`
     }
+    case 'newExpr': {
+      // `new Classe(args)` como VALOR (espelha o statement `newInstance`); o nome
+      // da classe resolve pela mesma tabela das declarações (getClassReference).
+      const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
+      return `new ${identifiers.getClassReference(expr.className)}(${args})`
+    }
     case 'objectOp':
       return `Object.${expr.op}(${compileExpr(expr.object, 0, identifiers, rec)})`
     case 'assetImage':
@@ -592,6 +598,9 @@ function isPureExpr(expr: JSExpr): boolean {
     case 'mathBinary':
       return isPureExpr(expr.a) && isPureExpr(expr.b)
     case 'arrayMap':
+      return false
+    // Instanciar roda o construtor do aluno (efeitos arbitrários) — impuro.
+    case 'newExpr':
       return false
     case 'distance':
       return isPureExpr(expr.a) && isPureExpr(expr.b)

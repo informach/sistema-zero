@@ -265,6 +265,10 @@ export type JSExpr =
   | (JSExprCommon & { type: 'memberGet'; object: JSExpr; name: string })
   // Chamada de método em forma de valor sobre qualquer objeto (object.metodo(args)).
   | (JSExprCommon & { type: 'memberCallExpr'; object: JSExpr; method: string; args: JSExpr[] })
+  // Instanciar classe em forma de VALOR: new Classe(args) numa tomada (argumento de
+  // push/método, valor de propriedade…). `const x = new C()` continua sendo o
+  // statement `newInstance`.
+  | (JSExprCommon & { type: 'newExpr'; className: string; args: JSExpr[] })
   // Object.keys/values/entries(obj) — a lista de chaves/valores/pares de um objeto.
   | (JSExprCommon & { type: 'objectOp'; op: 'keys' | 'values' | 'entries'; object: JSExpr })
   // Imagem do projeto (asset): gera a FONTE resolvida (dataURL do projeto, com fallback pro nome).
@@ -609,6 +613,12 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       type: z.literal('memberCallExpr'),
       object: JSExprSchema,
       method: irText(),
+      args: z.array(JSExprSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('newExpr'),
+      className: irText(),
       args: z.array(JSExprSchema),
       ...idField,
     }),

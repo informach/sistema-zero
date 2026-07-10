@@ -3033,6 +3033,11 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       collectExprIdentifiers(expr.object, names)
       for (const arg of expr.args) collectExprIdentifiers(arg, names)
       return
+    case 'newExpr':
+      // O nome da CLASSE resolve por getClassReference/reserveClassNames (igual
+      // ao newInstance) — só os argumentos entram na coleta de identificadores.
+      for (const arg of expr.args) collectExprIdentifiers(arg, names)
+      return
     case 'objectOp':
       collectExprIdentifiers(expr.object, names)
       return

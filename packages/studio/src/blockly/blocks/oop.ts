@@ -122,6 +122,17 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     tooltip: 'Chama um método que devolve um valor para usar numa tomada.',
   },
   {
+    type: 'sz_val_new',
+    message0: 'novo objeto da classe %1',
+    args0: [{ type: 'field_name_picker', name: 'CLASS', text: 'Pessoa', kind: 'class' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    mutator: 'sz_args_mutator',
+    tooltip:
+      'Cria um objeto novo da classe para usar numa tomada de valor: como argumento (ex.: adicionar à lista), em "definir minha propriedade"… Vira new Classe(argumentos).',
+  },
+  {
     type: 'sz_js_set_this_prop',
     message0: 'definir minha propriedade %1 = %2',
     args0: [

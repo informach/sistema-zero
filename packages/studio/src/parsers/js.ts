@@ -5171,6 +5171,18 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     // `this` (o elemento atual dentro de um handler).
     case 'ThisExpression':
       return { type: 'thisRef' }
+    // `new Classe(args)` como VALOR (argumento de push/método, propriedade…).
+    // Date/Image ficam de fora: têm fluxos próprios (`agora: …`/matchNow e o par
+    // `new Image()` + src do tryFuseNewImage) que não podem ser capturados aqui.
+    // `const x = new C(...)` também não passa por este caminho (mapDeclarator
+    // resolve ANTES como o statement `newInstance`).
+    case 'NewExpression': {
+      if (node.callee?.type !== 'Identifier') return null
+      if (node.callee.name === 'Date' || node.callee.name === 'Image') return null
+      const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+      if (!args.every(isSimpleValue)) return null
+      return { type: 'newExpr', className: node.callee.name, args: args as JSExpr[] }
+    }
     case 'MemberExpression': {
       // Apelido de evento na BASE do membro (`e.key`, `e.clientX`, `e.target`):
       // normaliza para `event` ANTES dos matchers — vários deles são chaveados
@@ -5824,6 +5836,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return isSimpleValue(expr.object)
     case 'memberCallExpr':
       return isSimpleValue(expr.object) && expr.args.every(isSimpleValue)
+    case 'newExpr':
+      return expr.args.every(isSimpleValue)
     case 'objectOp':
       return isSimpleValue(expr.object)
     case 'assetImage':
