@@ -224,6 +224,14 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
         catchBody: stmt.catchBody ? extractAnimationLoops(stmt.catchBody, hoisted) : undefined,
       }
     case 'event':
+      // O handler de `load` é OPACO: um loop de animação lá dentro fica lá
+      // dentro. Elevar p/ o top-level quebrava o jogo clássico "tudo dentro do
+      // window.addEventListener('load', …)": o loop referencia consts do load
+      // (ctx/canvas/jogo) — no topo viram ReferenceError — e passaria a rodar
+      // ANTES do load. Function declaration aninhada é JS válido e o re-parse
+      // re-funde o loop em qualquer profundidade (fixpoint estável). Os demais
+      // eventos (click etc.) mantêm o hoisting histórico (teste travado).
+      if (stmt.event === 'load') return stmt
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     case 'g3d:forEachInSwarm':
     case 'forEach':
@@ -596,7 +604,11 @@ function compileStatementCode(
     }
     case 'canvasClear': {
       const ctx = identifiers.get(stmt.ctxVar)
-      const canvas = identifiers.getCanvasElement(stmt.canvasVar)
+      // ⚠️ Chavear pelo CTX (igual a canvasSetup/canvasSetSize/canvasDim), NUNCA
+      // por `stmt.canvasVar`: o mapa ctx→elemento já tem a entrada do setup e a
+      // chave divergente criava uma SEGUNDA alocação — o corpo do loop saía
+      // `canvas_2.width` (ReferenceError) e o nome derivava a cada round-trip.
+      const canvas = identifiers.getCanvasElement(stmt.ctxVar)
       return `${pad}${ctx}.clearRect(0, 0, ${canvas}.width, ${canvas}.height);`
     }
     case 'canvasFillStyle':

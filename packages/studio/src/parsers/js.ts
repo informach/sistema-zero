@@ -58,6 +58,7 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
     elementToCtx: new Map(),
     instanceVars: new Set(),
     spriteVars: new Set(),
+    eventParamAliases: [],
   }
   // A descida recursiva também precisa estar protegida: o Babel parseia
   // aninhamentos profundos sem reclamar e só a recursão do mapeamento estoura a
@@ -125,6 +126,17 @@ interface ParseCtx {
    * como dois `memberSet`.
    */
   spriteVars: Set<string>
+  /**
+   * PILHA de apelidos do parâmetro de evento. O gerador SEMPRE emite
+   * `(event) => {…}` e os matchers (`eventProp`, preventDefault…) só reconhecem
+   * o identificador `event` — mas o aluno escreve `e => e.key` no código. Sem o
+   * apelido, `e.key` virava `memberGet(var e)` e o código REGENERADO referenciava
+   * um `e` inexistente (quebra silenciosa). Durante o corpo de um listener com
+   * param `e`, o nome fica empilhado aqui e o `toExpr` o normaliza para `event`.
+   * A segurança (shadowing/escrita/colisão) é checada ANTES de empilhar; caso
+   * inseguro, o listener INTEIRO cai em rawJS verbatim.
+   */
+  eventParamAliases: string[]
 }
 
 const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
@@ -420,10 +432,11 @@ function tryMatchStorageSet(expr: Node, ctx: ParseCtx): JSStatement | null {
 }
 
 /** `event.preventDefault()` / `event.stopPropagation()` → `eventMethod`. */
-function tryMatchEventMethod(expr: Node): JSStatement | null {
+function tryMatchEventMethod(expr: Node, ctx?: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'MemberExpression') return null
   const obj = expr.callee.object
-  if (obj?.type !== 'Identifier' || obj.name !== 'event') return null
+  if (obj?.type !== 'Identifier') return null
+  if (obj.name !== 'event' && !ctx?.eventParamAliases.includes(obj.name)) return null
   const method = expr.callee.property?.name
   if (
     (method === 'preventDefault' || method === 'stopPropagation') &&
@@ -730,6 +743,171 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   return null
 }
 
+/** Sentinela: o callback tem parâmetro que NÃO dá para normalizar com segurança. */
+const UNSAFE_EVENT_PARAM = Symbol('unsafe-event-param')
+
+/**
+ * O nó (subárvore Babel) contém um Identifier com este nome em posição que
+ * inviabiliza o rename (re-declaração, parâmetro de função interna — shadowing —,
+ * escrita) OU uma referência simples (`checkRefs`)? Caminhada genérica sobre o
+ * AST (árvore, sem ciclos); conservador por design.
+ */
+function subtreeBlocksRename(node: Node, name: string, checkRefs: boolean): boolean {
+  if (!node || typeof node !== 'object') return false
+  if (Array.isArray(node)) return node.some((item) => subtreeBlocksRename(item, name, checkRefs))
+  if (typeof node.type === 'string') {
+    if (checkRefs && node.type === 'Identifier' && node.name === name) return true
+    if (node.type === 'VariableDeclarator' && subtreeBlocksRename(node.id, name, true)) return true
+    if (
+      (node.type === 'FunctionDeclaration' ||
+        node.type === 'FunctionExpression' ||
+        node.type === 'ArrowFunctionExpression') &&
+      subtreeBlocksRename(node.params, name, true)
+    ) {
+      return true
+    }
+    if (node.type === 'CatchClause' && subtreeBlocksRename(node.param, name, true)) return true
+    if (
+      node.type === 'AssignmentExpression' &&
+      node.left?.type === 'Identifier' &&
+      node.left.name === name
+    ) {
+      return true
+    }
+    if (
+      node.type === 'UpdateExpression' &&
+      node.argument?.type === 'Identifier' &&
+      node.argument.name === name
+    ) {
+      return true
+    }
+  }
+  for (const key of Object.keys(node)) {
+    if (key === 'loc' || key === 'range' || key === 'leadingComments' || key === 'trailingComments')
+      continue
+    const child = node[key]
+    if (child && typeof child === 'object' && subtreeBlocksRename(child, name, checkRefs)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Decide o apelido do parâmetro do listener:
+ * - sem parâmetro, ou já chamado `event` → null (nada a fazer);
+ * - 1 parâmetro Identifier renomeável com segurança → o nome (empilhar);
+ * - qualquer outro caso → UNSAFE_EVENT_PARAM (listener inteiro vira raw):
+ *   2+ params/destructuring, corpo que re-declara/sombreia/escreve o nome,
+ *   corpo que já usa o identificador `event` (colidiria após o rename) ou que
+ *   referencia um apelido EXTERNO já empilhado (listener aninhado — o rename
+ *   duplo trocaria o binding).
+ */
+function eventParamAlias(fn: Node, ctx: ParseCtx): string | null | typeof UNSAFE_EVENT_PARAM {
+  const params = fn?.params ?? []
+  if (params.length === 0) return null
+  if (params.length > 1 || params[0]?.type !== 'Identifier') return UNSAFE_EVENT_PARAM
+  const name: string = params[0].name
+  if (name === 'event') return null
+  if (subtreeBlocksRename(fn.body, name, false)) return UNSAFE_EVENT_PARAM
+  if (subtreeBlocksRename(fn.body, 'event', true)) return UNSAFE_EVENT_PARAM
+  for (const outer of ctx.eventParamAliases) {
+    if (subtreeBlocksRename(fn.body, outer, true)) return UNSAFE_EVENT_PARAM
+  }
+  return name
+}
+
+type CompoundOp = '+' | '-' | '*' | '/' | '%'
+
+/** Operadores compostos suportados → operador da conta expandida. */
+const COMPOUND_OPS: Record<string, CompoundOp | undefined> = {
+  '+=': '+',
+  '-=': '-',
+  '*=': '*',
+  '/=': '/',
+  '%=': '%',
+}
+
+/**
+ * Expressão SEM efeito colateral que pode ser avaliada DUAS vezes: a expansão de
+ * `obj.prop ⊕= v` em `obj.prop = obj.prop ⊕ v` lê e escreve o MESMO `obj` — se
+ * `obj` fosse `pegaObjeto()`, a chamada rodaria em dobro e divergiria. Cadeias de
+ * variável/this/literal/membro/índice sobre bases puras passam; chamada de
+ * método/função não.
+ */
+function isPureChain(expr: JSExpr | null | undefined): boolean {
+  if (!expr) return false
+  switch (expr.type) {
+    case 'var':
+    case 'thisRef':
+    case 'thisProp':
+    case 'num':
+    case 'str':
+      return true
+    case 'memberGet':
+      return isPureChain(expr.object)
+    case 'index':
+      return isPureChain(expr.index)
+    case 'indexGet':
+      return isPureChain(expr.object) && isPureChain(expr.index)
+    default:
+      return false
+  }
+}
+
+/**
+ * Expande `alvo ⊕= right` (ou `alvo++`) no statement de escrita correspondente
+ * com o valor `alvo ⊕ right`. Devolve null quando o alvo não é representável ou
+ * não é PURO (avaliação dupla mudaria o comportamento) — o chamador cai em raw.
+ * Os nós de LEITURA espelham exatamente o que o re-parse da forma expandida
+ * produz (`index` p/ `arr[i]` com arr variável; `indexGet` p/ objeto-expressão),
+ * garantindo o fixpoint blocos⇄código.
+ */
+function expandCompoundTarget(
+  left: Node,
+  op: CompoundOp,
+  right: JSExpr,
+  ctx: ParseCtx,
+): JSStatement | null {
+  const binop = (read: JSExpr): JSExpr => ({ type: 'binop', op, left: read, right })
+  // x ⊕= v
+  if (left?.type === 'Identifier') {
+    const name: string = left.name
+    return { type: 'assign', name, value: binop({ type: 'var', name }) }
+  }
+  const isMember = left?.type === 'MemberExpression' || left?.type === 'OptionalMemberExpression'
+  if (!isMember || isGlobalObject(left.object)) return null
+  // this.prop ⊕= v
+  if (
+    !left.computed &&
+    left.object?.type === 'ThisExpression' &&
+    left.property?.type === 'Identifier'
+  ) {
+    const name: string = left.property.name
+    return { type: 'setThisProp', name, value: binop({ type: 'thisProp', name }) }
+  }
+  // obj.prop ⊕= v (obj puro: var, this.algo, cadeia de membros…)
+  if (!left.computed && left.property?.type === 'Identifier') {
+    const object = toExpr(left.object, ctx)
+    if (!isSimpleValue(object) || !isPureChain(object)) return null
+    const name: string = left.property.name
+    return { type: 'memberSet', object, name, value: binop({ type: 'memberGet', object, name }) }
+  }
+  // obj[i] ⊕= v (obj e i puros)
+  if (left.computed && left.property) {
+    const object = toExpr(left.object, ctx)
+    const index = toExpr(left.property, ctx)
+    if (!isSimpleValue(object) || !isSimpleValue(index)) return null
+    if (!isPureChain(object) || !isPureChain(index)) return null
+    const read: JSExpr =
+      object.type === 'var'
+        ? { type: 'index', arrayVar: object.name, index }
+        : { type: 'indexGet', object, index }
+    return { type: 'indexSet', object, index, value: binop(read) }
+  }
+  return null
+}
+
 function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSStatement {
   const expr = node.expression
   // console.log(...)
@@ -938,42 +1116,31 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     return asRaw(source, node)
   }
 
-  // x += n / x -= n → assign(x = x ± n). Round-trip do bloco "Somar N".
-  if (
-    expr?.type === 'AssignmentExpression' &&
-    (expr.operator === '+=' || expr.operator === '-=') &&
-    expr.left?.type === 'Identifier'
-  ) {
-    const name: string = expr.left.name
+  // Atribuição composta (⊕=) sobre variável, this.prop, obj.prop e obj[i]:
+  // expande para `alvo = alvo ⊕ v` — os MESMOS nós que os blocos montam
+  // (assign/setThisProp/memberSet/indexSet + conta). O gerador já emite a forma
+  // expandida, então o round-trip é estável a partir do 2º ciclo. Era a maior
+  // fonte de rawJS em jogos com classes ("tiro parado": `this.y -= this.speed`).
+  if (expr?.type === 'AssignmentExpression' && COMPOUND_OPS[expr.operator]) {
+    const op = COMPOUND_OPS[expr.operator] as CompoundOp
     const right = toExpr(expr.right, ctx)
     if (isSimpleValue(right)) {
-      return {
-        type: 'assign',
-        name,
-        value: {
-          type: 'binop',
-          op: expr.operator === '+=' ? '+' : '-',
-          left: { type: 'var', name },
-          right,
-        },
-      }
+      const stmt = expandCompoundTarget(expr.left, op, right, ctx)
+      if (stmt) return stmt
     }
     return asRaw(source, node)
   }
 
-  // x++ / x-- → assign(x = x ± 1).
-  if (expr?.type === 'UpdateExpression' && expr.argument?.type === 'Identifier') {
-    const name: string = expr.argument.name
-    return {
-      type: 'assign',
-      name,
-      value: {
-        type: 'binop',
-        op: expr.operator === '++' ? '+' : '-',
-        left: { type: 'var', name },
-        right: { type: 'num', value: 1 },
-      },
-    }
+  // x++ / x-- (e this.prop++ / obj.prop++ / arr[i]++) → alvo = alvo ± 1.
+  if (expr?.type === 'UpdateExpression') {
+    const stmt = expandCompoundTarget(
+      expr.argument,
+      expr.operator === '++' ? '+' : '-',
+      { type: 'num', value: 1 },
+      ctx,
+    )
+    if (stmt) return stmt
+    return asRaw(source, node)
   }
 
   // document.getElementById('x')?.addEventListener('event', cb)  (ou via variável)
@@ -989,13 +1156,24 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
         handlerName: evt.handlerName,
       }
     }
-    const bodyStmts = bodyOfFn(evt.callback, source, ctx)
-    return {
-      type: 'event',
-      target: evt.target,
-      ...(evt.targetKind ? { targetKind: evt.targetKind } : {}),
-      event: evt.event,
-      body: bodyStmts,
+    // Param do callback com outro nome (`e => e.key`): normaliza p/ `event`
+    // durante o corpo (o gerador SEMPRE emite `(event) =>`). Inseguro
+    // (shadowing/escrita/colisão/2 params) → rawJS verbatim: estritamente mais
+    // correto que o comportamento antigo (blocos que regeneravam `e` órfão).
+    const alias = eventParamAlias(evt.callback, ctx)
+    if (alias === UNSAFE_EVENT_PARAM) return asRaw(source, node)
+    if (alias) ctx.eventParamAliases.push(alias)
+    try {
+      const bodyStmts = bodyOfFn(evt.callback, source, ctx)
+      return {
+        type: 'event',
+        target: evt.target,
+        ...(evt.targetKind ? { targetKind: evt.targetKind } : {}),
+        event: evt.event,
+        body: bodyStmts,
+      }
+    } finally {
+      if (alias) ctx.eventParamAliases.pop()
     }
   }
 
@@ -1004,7 +1182,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   if (storageSet) return storageSet
 
   // event.preventDefault() / event.stopPropagation()
-  const eventMethod = tryMatchEventMethod(expr)
+  const eventMethod = tryMatchEventMethod(expr, ctx)
   if (eventMethod) return eventMethod
 
   // fetch(url).then(r => r.json()).then((dados) => {…}).catch((erro) => {…})
@@ -4934,6 +5112,17 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         const v = node.argument.value as number
         if (Number.isFinite(v)) return { type: 'num', value: -v }
       }
+      // Menos unário sobre NÃO-literal (`-this.width`, `-x`): vira a conta
+      // `0 - X` (numericamente idêntico; a nuance do -0 não aparece em jogos).
+      // Sem isto, `if (this.x < -this.width * 0.5)` inteiro caía em rawJS. O
+      // gerador emite `0 - X` com parênteses por precedência e o re-parse volta
+      // ao MESMO binop — fixpoint estável.
+      if (node.operator === '-') {
+        const inner = toExpr(node.argument, ctx)
+        if (isSimpleValue(inner)) {
+          return { type: 'binop', op: '-', left: { type: 'num', value: 0 }, right: inner }
+        }
+      }
       // Negação booleana `!x` → bloco "não".
       if (node.operator === '!') {
         const inner = toExpr(node.argument, ctx)
@@ -4973,11 +5162,23 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     case 'NullLiteral':
       return { type: 'null' }
     case 'Identifier':
+      // Apelido do parâmetro de evento ativo (`e => …`): toda referência solta
+      // vira `event` — o único nome que o gerador emite no `(event) =>`.
+      if (ctx?.eventParamAliases.includes(node.name)) {
+        return { type: 'var', name: 'event' }
+      }
       return { type: 'var', name: node.name }
     // `this` (o elemento atual dentro de um handler).
     case 'ThisExpression':
       return { type: 'thisRef' }
     case 'MemberExpression': {
+      // Apelido de evento na BASE do membro (`e.key`, `e.clientX`, `e.target`):
+      // normaliza para `event` ANTES dos matchers — vários deles são chaveados
+      // pelo NOME do identificador (eventProp, arrayLength…) e capturariam o
+      // apelido literal, regenerando um `e` órfão. Clone raso; o AST não é mutado.
+      if (node.object?.type === 'Identifier' && ctx?.eventParamAliases.includes(node.object.name)) {
+        node = { ...node, object: { ...node.object, name: 'event' } }
+      }
       // __szInput.x / __szInput.y — posição do mouse/dedo (caminho "na mão").
       if (
         !node.computed &&
