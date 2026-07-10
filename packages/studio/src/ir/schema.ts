@@ -255,6 +255,9 @@ export type JSExpr =
   | (JSExprCommon & { type: 'arrayLast'; arrayVar: string })
   // Achar o 1º item da lista que passa no teste (`lista.find((item) => cond)`).
   | (JSExprCommon & { type: 'arrayFind'; arrayVar: string; itemName: string; cond: JSExpr })
+  // Filtrar lista: NOVA lista só com os itens que passam no teste. `array` é uma
+  // EXPRESSÃO (soquete) — cobre membro (`this.enemies.filter(...)`), não só variável.
+  | (JSExprCommon & { type: 'arrayFilter'; array: JSExpr; itemName: string; cond: JSExpr })
   // Junta listas (`[...a, ...b]`).
   | (JSExprCommon & { type: 'concatArrays'; parts: JSExpr[] })
   // Embaralha uma lista (`arr.sort(() => Math.random() - 0.5)`).
@@ -597,6 +600,13 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({
       type: z.literal('arrayFind'),
       arrayVar: irText(),
+      itemName: irText(),
+      cond: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('arrayFilter'),
+      array: JSExprSchema,
       itemName: irText(),
       cond: JSExprSchema,
       ...idField,

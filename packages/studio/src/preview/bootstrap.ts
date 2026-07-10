@@ -3,6 +3,7 @@ import type { ExtensionPermission } from '#extensions'
 import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
 import { buildAssetsRuntime } from './assetsBridge'
 import { buildPreviewCSPMetaTag } from './csp'
+import { rewriteCssAssetUrls } from './cssAssets'
 import { buildInputBridgeRuntime } from './inputBridge'
 import { buildInterceptorScript } from './interceptors'
 import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
@@ -108,9 +109,16 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     .filter(Boolean)
     .join('\n')
 
+  // `url(<nome-de-asset>)` no CSS resolve para o data:URL do manifest — ANTES do
+  // escapeStyleContent (data URLs são base64/mime, sem `</style`). O CSS
+  // persistido do projeto fica intocado; a troca vive só neste documento.
+  const cssAssets = input.assets ?? {}
   const extraCss = safeExtraFiles
     .filter((f) => f.language === 'css')
-    .map((f) => `<style data-file="${escapeAttr(f.name)}">${escapeStyleContent(f.content)}</style>`)
+    .map(
+      (f) =>
+        `<style data-file="${escapeAttr(f.name)}">${escapeStyleContent(rewriteCssAssetUrls(f.content, cssAssets))}</style>`,
+    )
     .join('\n')
 
   // Extras de script (JS e TS): cada um é transpilado (TS/TSX/JSX → JS via
@@ -153,8 +161,10 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
 
   // O CSS canônico entra como <style> inline para não depender de fetch
   // de style.css (iframe sandbox sem allow-same-origin não consegue resolver
-  // hrefs relativos a parent).
-  const styleTag = input.css ? `<style>${escapeStyleContent(input.css)}</style>` : ''
+  // hrefs relativos a parent). Assets por nome resolvem para data:URL aqui.
+  const styleTag = input.css
+    ? `<style>${escapeStyleContent(rewriteCssAssetUrls(input.css, cssAssets))}</style>`
+    : ''
 
   // O JS canônico vira <script type="module"> APENAS quando o PRÓPRIO código do
   // aluno usa import/export (precisa do importmap dos extras). Senão é clássico,

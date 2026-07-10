@@ -3459,6 +3459,16 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
           })
         : null
     }
+    case 'arrayFilter': {
+      const array = exprToValueBlock(expr.array)
+      const cond = exprToValueBlock(expr.cond)
+      return array && cond
+        ? block('sz_val_array_filter', { ITEM: expr.itemName }, {}, expr.__id, {
+            ARRAY: array,
+            COND: cond,
+          })
+        : null
+    }
     case 'shuffle':
       return block('sz_val_shuffle', { NAME: expr.arrayVar })
     case 'datasetGet':

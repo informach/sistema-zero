@@ -5569,6 +5569,29 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
           return { type: 'arrayFind', arrayVar: node.callee.object.name, itemName, cond }
         }
       }
+      // <lista>.filter((item) => <cond>) → filtrar lista (sz_val_array_filter).
+      // A lista pode ser QUALQUER valor simples (variável, this.enemies, membro…)
+      // — o bloco tem soquete de lista, não campo de nome.
+      if (
+        (node.callee?.type === 'MemberExpression' ||
+          node.callee?.type === 'OptionalMemberExpression') &&
+        !node.callee.computed &&
+        node.callee.property?.type === 'Identifier' &&
+        node.callee.property.name === 'filter' &&
+        node.arguments?.length === 1 &&
+        node.arguments[0]?.type === 'ArrowFunctionExpression' &&
+        node.arguments[0].params?.length === 1 &&
+        node.arguments[0].params[0]?.type === 'Identifier' &&
+        node.arguments[0].body?.type !== 'BlockStatement'
+      ) {
+        const arrow = node.arguments[0]
+        const itemName = arrow.params[0].name as string
+        const array = toExpr(node.callee.object, ctx)
+        const cond = toExpr(arrow.body, ctx)
+        if (isSimpleValue(array) && isSimpleValue(cond)) {
+          return { type: 'arrayFilter', array, itemName, cond }
+        }
+      }
       // <lista>.map((item) => <expr>) → transformar lista (sz_val_array_map).
       if (
         node.callee?.type === 'MemberExpression' &&
@@ -5801,6 +5824,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return true
     case 'arrayFind':
       return isSimpleValue(expr.cond)
+    case 'arrayFilter':
+      return isSimpleValue(expr.array) && isSimpleValue(expr.cond)
     case 'arrayMap':
       return isSimpleValue(expr.transform)
     case 'binop':

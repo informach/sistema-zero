@@ -233,6 +233,7 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_val_array_index',
   'sz_val_array_last',
   'sz_val_array_find',
+  'sz_val_array_filter',
   'sz_val_concat_arrays',
   'sz_val_shuffle',
   'sz_val_join',

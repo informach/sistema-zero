@@ -3119,6 +3119,11 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       names.add(expr.itemName)
       collectExprIdentifiers(expr.cond, names)
       return
+    case 'arrayFilter':
+      names.add(expr.itemName)
+      collectExprIdentifiers(expr.array, names)
+      collectExprIdentifiers(expr.cond, names)
+      return
     case 'g2d:randomBetween':
       collectExprIdentifiers(valueToExpr(expr.min), names)
       collectExprIdentifiers(valueToExpr(expr.max), names)

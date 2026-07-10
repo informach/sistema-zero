@@ -44,6 +44,39 @@ describe('buildClassicFileMap', () => {
     expect(files['public/index.html']).toContain('src="script.js"')
   })
 
+  it('assets viram arquivos binários public/<nome> (url() relativa do CSS resolve)', async () => {
+    // "AAAA" base64 = 3 bytes 0x00 — o suficiente p/ aferir a decodificação.
+    const { files, warnings } = await buildClassicFileMap(
+      classicProject({
+        files: {
+          'index.html': '<!doctype html><html><body></body></html>',
+          'style.css': "#canvas1 { background: url('background.png'); }",
+          'script.js': '',
+        },
+        assets: [
+          {
+            id: 'a1',
+            name: 'background.png',
+            kind: 'image',
+            dataUrl: 'data:image/png;base64,AAAA',
+            width: 1,
+            height: 1,
+            source: 'library',
+          },
+        ],
+      }),
+      identityMinifiers,
+    )
+    const bytes = files['public/background.png']
+    expect(bytes).toBeInstanceOf(Uint8Array)
+    expect((bytes as Uint8Array).length).toBe(3)
+    // O CSS persistido segue com o nome LÓGICO (a troca por data:URL é só do preview).
+    expect(files['public/style.css']).toContain("url('background.png')")
+    // sz-assets.js continua alimentando o __SZGAME_ASSETS dos blocos de imagem.
+    expect(files['public/sz-assets.js']).toBeDefined()
+    expect(warnings).toEqual([])
+  })
+
   it('placement inline (css/js vazios): nao emite arquivos externos vazios', async () => {
     const { files } = await buildClassicFileMap(
       classicProject({

@@ -732,6 +732,13 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         itemName: f(block, 'ITEM'),
         cond: exprInput(block, 'COND', { type: 'bool', value: true }),
       }
+    case 'sz_val_array_filter':
+      return {
+        type: 'arrayFilter',
+        array: exprInput(block, 'ARRAY', { type: 'var', name: 'lista' }),
+        itemName: f(block, 'ITEM'),
+        cond: exprInput(block, 'COND', { type: 'bool', value: true }),
+      }
     case 'sz_val_concat_arrays':
       return { type: 'concatArrays', parts: getArrayItems(block) }
     case 'sz_val_shuffle':

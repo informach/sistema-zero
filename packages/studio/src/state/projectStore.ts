@@ -484,6 +484,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_get_prop',
   'sz_val_call_method',
   'sz_val_new',
+  'sz_val_array_filter',
   'sz_val_object',
   'sz_val_object_op',
   'sz_val_index_get',

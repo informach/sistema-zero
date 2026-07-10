@@ -508,6 +508,9 @@ export function compileExpr(
     }
     case 'arrayFind':
       return `${identifiers.get(expr.arrayVar)}.find((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.cond, 0, identifiers, rec)})`
+    case 'arrayFilter':
+      // A lista é uma EXPRESSÃO (soquete): `this.enemies.filter(...)` funciona.
+      return `${compileExpr(expr.array, MEMBER_PRECEDENCE, identifiers, rec)}.filter((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.cond, 0, identifiers, rec)})`
     case 'concatArrays':
       return `[${expr.parts.map((p) => `...${compileExpr(p, 0, identifiers, rec)}`).join(', ')}]`
     case 'shuffle':
@@ -598,6 +601,7 @@ function isPureExpr(expr: JSExpr): boolean {
     case 'mathBinary':
       return isPureExpr(expr.a) && isPureExpr(expr.b)
     case 'arrayMap':
+    case 'arrayFilter':
       return false
     // Instanciar roda o construtor do aluno (efeitos arbitrários) — impuro.
     case 'newExpr':
