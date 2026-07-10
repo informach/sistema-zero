@@ -74,6 +74,7 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_js_on_event_named',
   'sz_val_is_fullscreen',
   'sz_js_get_element_by_id',
+  'sz_val_get_element',
   'sz_js_query_selector',
   'sz_js_set_property',
   'sz_js_set_style',
@@ -99,6 +100,7 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_canvas_measure_text',
   'sz_canvas_anim_loop',
   'sz_canvas_cancel_anim',
+  'sz_canvas_request_frame',
   'sz_canvas_keyboard',
   'sz_input_key_pressed',
   'sz_input_pointer_x',
@@ -173,6 +175,8 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_g2d_distance',
   'sz_g2d_random_between',
   'sz_g2d_random_chance',
+  // Inimigos: o ajuste fino por parâmetro é sintonia, não o caminho feliz.
+  'sz_g2d_enemy_type_param',
 ])
 
 const AVANCADO: ReadonlySet<string> = new Set<string>([
@@ -263,6 +267,8 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_js_call_method',
   'sz_val_call_method',
   'sz_val_new',
+  'sz_js_super_ctor',
+  'sz_js_super_method',
   'sz_js_set_this_prop',
   'sz_js_set_prop',
   'sz_val_this_prop',

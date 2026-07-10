@@ -16,6 +16,36 @@ const irText = () => z.string().max(MAX_IR_TEXT_CHARS)
  */
 const idField = { __id: z.string().optional() }
 
+/**
+ * Estados da animação automática do Jogo 2D (bloco "Quando o sprite estiver…"
+ * + autoAnimate do runtime). Valores SEM acento — viajam como literal no
+ * código gerado. Consumido pelo dropdown do bloco, pelo zod e pelo parser.
+ */
+export const G2D_ANIM_STATES = [
+  'parado',
+  'andando',
+  'vertical',
+  'pulando',
+  'caindo',
+  'dano',
+] as const
+
+/**
+ * Comportamentos prontos dos TIPOS de inimigo do Jogo 2D (bloco "Criar tipo
+ * de inimigo…"). Valores sem acento — viajam como literal no código gerado.
+ */
+export const G2D_ENEMY_BEHAVIORS = [
+  'patrulha',
+  'perseguidor',
+  'voador',
+  'voador-vertical',
+  'saltador',
+  'atirador',
+] as const
+
+/** Parâmetros ajustáveis por comportamento (bloco "Ajustar no tipo de inimigo…"). */
+export const G2D_ENEMY_PARAMS = ['pulo', 'ritmo', 'alcance', 'cadencia', 'tiro'] as const
+
 // ---------- Expressions ----------
 
 const jsExprBase = z.discriminatedUnion('type', [
@@ -79,6 +109,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:distance'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g2d:angleTo'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g2d:getHealth'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:enemyDamage'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:spriteX'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:spriteY'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:spriteW'; spriteVar: string })
@@ -276,6 +307,9 @@ export type JSExpr =
   | (JSExprCommon & { type: 'objectOp'; op: 'keys' | 'values' | 'entries'; object: JSExpr })
   // Imagem do projeto (asset): gera a FONTE resolvida (dataURL do projeto, com fallback pro nome).
   | (JSExprCommon & { type: 'assetImage'; name: string })
+  // O elemento da página com um id (`document.getElementById('id')`) como VALOR —
+  // ex.: guardar uma <img> numa propriedade p/ desenhar depois no canvas.
+  | (JSExprCommon & { type: 'getElement'; id: string })
   // Acesso por chave/índice computado: obj[chave] / lista[i].
   | (JSExprCommon & { type: 'indexGet'; object: JSExpr; index: JSExpr })
 
@@ -341,6 +375,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:distance'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:angleTo'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:getHealth'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:enemyDamage'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:spriteX'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:spriteY'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:spriteW'), spriteVar: irText(), ...idField }),
@@ -639,6 +674,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('assetImage'), name: irText(), ...idField }),
+    z.object({ type: z.literal('getElement'), id: irText(), ...idField }),
     z.object({
       type: z.literal('indexGet'),
       object: JSExprSchema,
@@ -1437,6 +1473,70 @@ export type JSStatement =
       fps: number | JSExpr
     })
   | (JSStatementCommon & {
+      type: 'g2d:setStateAnim'
+      spriteVar: string
+      state: string
+      sheetVar: string
+      from: number | JSExpr
+      to: number | JSExpr
+      fps: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:autoAnimate'; spriteVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:defineEnemyType'
+      varName: string
+      behavior: string
+      color: string
+      image: string
+      hp: number | JSExpr
+      speed: number | JSExpr
+      dmg: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:enemyStateAnim'
+      typeVar: string
+      state: string
+      sheetVar: string
+      from: number | JSExpr
+      to: number | JSExpr
+      fps: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:setEnemyTypeParam'
+      typeVar: string
+      param: string
+      value: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:spawnEnemy'
+      typeVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:updateEnemyType'
+      typeVar: string
+      ctxVar: string
+      targetVar: string
+    })
+  | (JSStatementCommon & { type: 'g2d:drawEnemyType'; ctxVar: string; typeVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:onEnemyDefeated'
+      typeVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:onEnemyShotHit'
+      spriteVar: string
+      typeVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g2d:hurtByEnemy'; spriteVar: string; enemyVar: string })
+  | (JSStatementCommon & {
       type: 'g2d:drawFrame'
       sheetVar: string
       ctxVar: string
@@ -2101,6 +2201,15 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'imageOnLoad'; target: JSExpr; body: JSStatement[] })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
+  // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
+  | (JSStatementCommon & { type: 'superCall'; args: JSExpr[] })
+  // Chamada de um método da classe-mãe (`super.metodo(args);`).
+  | (JSStatementCommon & { type: 'superMethodCall'; method: string; args: JSExpr[] })
+  // Statement que só AVALIA um valor e descarta (`this.game.gameOver;`). Raro —
+  // usado p/ round-trip fiel de código que lê algo sem usar (bloco oculto).
+  | (JSStatementCommon & { type: 'exprStatement'; value: JSExpr })
+  // Pede o próximo quadro chamando uma função (`requestAnimationFrame(nome);`).
+  | (JSStatementCommon & { type: 'requestFrame'; fn: string })
   // Retorno de um método (`return v;`) ou saída antecipada (`return;`).
   | (JSStatementCommon & { type: 'return'; value?: JSExpr })
   // Função nomeada de topo (`function nome(params) { ... }`).
@@ -2881,6 +2990,92 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       from: z.union([JSExprSchema, z.number()]),
       to: z.union([JSExprSchema, z.number()]),
       fps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setStateAnim'),
+      spriteVar: irText(),
+      state: z.enum(G2D_ANIM_STATES),
+      sheetVar: irText(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:autoAnimate'),
+      spriteVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:defineEnemyType'),
+      varName: irText(),
+      behavior: z.enum(G2D_ENEMY_BEHAVIORS),
+      color: irText(),
+      image: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      dmg: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:enemyStateAnim'),
+      typeVar: irText(),
+      state: z.enum(G2D_ANIM_STATES),
+      sheetVar: irText(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setEnemyTypeParam'),
+      typeVar: irText(),
+      param: z.enum(G2D_ENEMY_PARAMS),
+      value: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:spawnEnemy'),
+      typeVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:updateEnemyType'),
+      typeVar: irText(),
+      ctxVar: irText(),
+      targetVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:drawEnemyType'),
+      ctxVar: irText(),
+      typeVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onEnemyDefeated'),
+      typeVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onEnemyShotHit'),
+      spriteVar: irText(),
+      typeVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:hurtByEnemy'),
+      spriteVar: irText(),
+      enemyVar: irText(),
       ...idField,
     }),
     z.object({
@@ -3907,6 +4102,27 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('superCall'),
+      args: z.array(JSExprSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('superMethodCall'),
+      method: irText(),
+      args: z.array(JSExprSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('exprStatement'),
+      value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('requestFrame'),
+      fn: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('return'),
       value: JSExprSchema.optional(),
       ...idField,
@@ -4101,6 +4317,17 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:setImage',
   'g2d:loadSpritesheet',
   'g2d:animateSprite',
+  'g2d:setStateAnim',
+  'g2d:autoAnimate',
+  'g2d:defineEnemyType',
+  'g2d:enemyStateAnim',
+  'g2d:setEnemyTypeParam',
+  'g2d:spawnEnemy',
+  'g2d:updateEnemyType',
+  'g2d:drawEnemyType',
+  'g2d:onEnemyDefeated',
+  'g2d:onEnemyShotHit',
+  'g2d:hurtByEnemy',
   'g2d:drawFrame',
   'g2d:platformer',
   'g2d:topDown',

@@ -109,6 +109,29 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     tooltip: 'Chama um método de um objeto, como comando.',
   },
   {
+    type: 'sz_js_super_ctor',
+    message0: 'chamar o construtor da classe-mãe',
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    mutator: 'sz_args_mutator',
+    tooltip:
+      'Dentro do construtor de uma classe que herda de outra: roda o construtor da classe-mãe. Use + para passar argumentos. Vira super(argumentos).',
+  },
+  {
+    type: 'sz_js_super_method',
+    message0: 'na classe-mãe chamar método %1',
+    args0: [{ type: 'field_name_picker', name: 'METHOD', text: 'desenhar', kind: 'method' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    mutator: 'sz_args_mutator',
+    tooltip:
+      'Chama um método da classe-mãe (a versão herdada), mesmo que a classe filha tenha um método com o mesmo nome. Vira super.metodo(argumentos).',
+  },
+  {
     type: 'sz_val_call_method',
     message0: 'no objeto %1 chamar método %2',
     args0: [

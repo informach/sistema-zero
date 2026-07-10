@@ -352,6 +352,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:angleTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_g2d_get_health':
       return { type: 'g2d:getHealth', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_enemy_damage':
+      return { type: 'g2d:enemyDamage', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_x':
       return { type: 'g2d:spriteX', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_y':
@@ -745,6 +747,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'shuffle', arrayVar: f(block, 'NAME') }
     case 'sz_val_dataset':
       return { type: 'datasetGet', objectVar: f(block, 'OBJ'), key: f(block, 'KEY') }
+    case 'sz_val_get_element':
+      return { type: 'getElement', id: f(block, 'ID') }
     case 'sz_val_storage_get':
       return {
         type: 'storageGet',
@@ -1021,15 +1025,21 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           attrs: { href: f(block, 'HREF') },
         },
       }
-    case 'sz_html_image':
+    case 'sz_html_image': {
+      const id = f(block, 'ID')
+      const alt = f(block, 'ALT')
       return {
         kind: 'html',
         value: {
           type: 'element',
           tag: 'img',
-          attrs: { src: f(block, 'SRC'), alt: f(block, 'ALT') },
+          ...(id ? { id } : {}),
+          // `alt` vazio NÃO vira atributo (round-trip fiel de `<img src id>` sem
+          // alt); com texto, é preservado.
+          attrs: { src: f(block, 'SRC'), ...(alt ? { alt } : {}) },
         },
       }
+    }
     case 'sz_html_input': {
       const id = f(block, 'ID')
       return {
@@ -2723,6 +2733,20 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           args: getArgs(block),
         },
       }
+    case 'sz_js_super_ctor':
+      return { kind: 'js', value: { type: 'superCall', args: getArgs(block) } }
+    case 'sz_js_super_method':
+      return {
+        kind: 'js',
+        value: { type: 'superMethodCall', method: f(block, 'METHOD'), args: getArgs(block) },
+      }
+    case 'sz_canvas_request_frame':
+      return { kind: 'js', value: { type: 'requestFrame', fn: f(block, 'FN') } }
+    case 'sz_js_expr_statement':
+      return {
+        kind: 'js',
+        value: { type: 'exprStatement', value: exprInput(block, 'VALUE', { type: 'num', value: 0 }) },
+      }
     case 'sz_js_return':
       return {
         kind: 'js',
@@ -3139,6 +3163,129 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
           to: exprInput(block, 'TO', { type: 'num', value: 0 }),
           fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_g2d_set_state_anim':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setStateAnim',
+          spriteVar: f(block, 'SPRITE'),
+          state: f(block, 'STATE'),
+          sheetVar: f(block, 'SHEET'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 3 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_g2d_auto_animate':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:autoAnimate', spriteVar: f(block, 'SPRITE') },
+      }
+    case 'sz_g2d_define_enemy_type':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:defineEnemyType',
+          varName: f(block, 'NAME'),
+          behavior: f(block, 'BEHAVIOR'),
+          color: f(block, 'COLOR'),
+          image: f(block, 'IMAGE'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 3 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 2 }),
+          dmg: exprInput(block, 'DMG', { type: 'num', value: 1 }),
+          w: exprInput(block, 'W', { type: 'num', value: 32 }),
+          h: exprInput(block, 'H', { type: 'num', value: 32 }),
+        },
+      }
+    case 'sz_g2d_enemy_state_anim':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:enemyStateAnim',
+          typeVar: f(block, 'TYPE'),
+          state: f(block, 'STATE'),
+          sheetVar: f(block, 'SHEET'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 3 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_g2d_enemy_type_param':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setEnemyTypeParam',
+          typeVar: f(block, 'TYPE'),
+          param: f(block, 'PARAM'),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_g2d_spawn_enemy':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:spawnEnemy',
+          typeVar: f(block, 'TYPE'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_g2d_update_enemy_type':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:updateEnemyType',
+          typeVar: f(block, 'TYPE'),
+          ctxVar: 'ctx',
+          targetVar: f(block, 'TARGET'),
+        },
+      }
+    case 'sz_g2d_draw_enemy_type':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: f(block, 'TYPE') },
+      }
+    case 'sz_g2d_on_enemy_defeated':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onEnemyDefeated',
+          typeVar: f(block, 'TYPE'),
+          itemName: f(block, 'ANAME') || 'inimigo',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_on_enemy_shot_hit':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onEnemyShotHit',
+          spriteVar: f(block, 'SPRITE'),
+          typeVar: f(block, 'TYPE'),
+          itemName: f(block, 'ANAME') || 'tiro',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_hurt_by_enemy':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:hurtByEnemy',
+          spriteVar: f(block, 'SPRITE'),
+          enemyVar: f(block, 'ENEMY'),
         },
       }
     case 'sz_g2d_draw_frame':

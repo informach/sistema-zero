@@ -1,5 +1,12 @@
 import { type ParserOptions, parse } from '@babel/parser'
-import type { EventKind, JSExpr, JSStatement } from '#ir'
+import {
+  type EventKind,
+  G2D_ANIM_STATES,
+  G2D_ENEMY_BEHAVIORS,
+  G2D_ENEMY_PARAMS,
+  type JSExpr,
+  type JSStatement,
+} from '#ir'
 
 const BABEL_OPTS: ParserOptions = {
   sourceType: 'module',
@@ -1267,6 +1274,60 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   const g3dCall = tryMatchGame3DCall(expr, source, ctx)
   if (g3dCall) return g3dCall
 
+  // super(args) — chama o construtor da classe-mãe (dentro do construtor filho).
+  if (expr?.type === 'CallExpression' && expr.callee?.type === 'Super') {
+    const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+    if (args.every(isSimpleValue)) return { type: 'superCall', args: args as JSExpr[] }
+    return asRaw(source, node)
+  }
+  // super.metodo(args) — chama um método da classe-mãe.
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    !expr.callee.computed &&
+    expr.callee.object?.type === 'Super' &&
+    expr.callee.property?.type === 'Identifier'
+  ) {
+    const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+    if (args.every(isSimpleValue)) {
+      return { type: 'superMethodCall', method: expr.callee.property.name, args: args as JSExpr[] }
+    }
+    return asRaw(source, node)
+  }
+  // requestAnimationFrame(nome) — pede o próximo quadro chamando uma função. ANTES
+  // dos matchers de chamada (o nome está no denylist global e viraria rawJS). A
+  // função é uma REFERÊNCIA (Identifier), não uma chamada.
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.callee.name === 'requestAnimationFrame' &&
+    expr.arguments?.length === 1 &&
+    expr.arguments[0]?.type === 'Identifier'
+  ) {
+    return { type: 'requestFrame', fn: expr.arguments[0].name as string }
+  }
+  // cond ? A : B; (ternário usado como STATEMENT, com atribuições nos ramos) →
+  // if (cond) { A } else { B }. Normalização didática (comportamento idêntico); a
+  // volta produz um bloco Se/senão. Cada ramo é remapeado como statement.
+  if (expr?.type === 'ConditionalExpression') {
+    const cond = toExpr(expr.test, ctx)
+    if (isSimpleValue(cond)) {
+      const branch = (b: Node): JSStatement =>
+        mapExpressionStatement(
+          { type: 'ExpressionStatement', expression: b, ...spanOf(b) },
+          source,
+          ctx,
+        )
+      return {
+        type: 'if',
+        cond: cond as JSExpr,
+        then: [branch(expr.consequent)],
+        else: [branch(expr.alternate)],
+      }
+    }
+    return asRaw(source, node)
+  }
+
   // objeto.metodo(args) — chamada de método de um objeto guardado em variável.
   const methodCall = tryMatchMethodCall(expr, ctx)
   if (methodCall) return methodCall
@@ -1275,7 +1336,30 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   const fnCall = tryMatchFunctionCall(expr, ctx)
   if (fnCall) return fnCall
 
+  // Último recurso ANTES do avançado: um statement que só AVALIA um valor e
+  // descarta (`this.game.gameOver;` — no-op). Bloco OCULTO, só p/ round-trip fiel.
+  if (expr && isExpressionNode(expr)) {
+    const value = toExpr(expr, ctx)
+    if (isSimpleValue(value)) return { type: 'exprStatement', value: value as JSExpr }
+  }
+
   return asRaw(source, node)
+}
+
+/** Posições de origem de um nó Babel (start/end/loc/range) para o span sintético. */
+function spanOf(node: Node): Record<string, unknown> {
+  return { start: node?.start, end: node?.end, loc: node?.loc, range: node?.range }
+}
+
+/** É um nó de EXPRESSÃO (não um statement)? Guarda do `exprStatement` fallback. */
+function isExpressionNode(node: Node): boolean {
+  const t = node?.type
+  return (
+    t === 'MemberExpression' ||
+    t === 'OptionalMemberExpression' ||
+    t === 'Identifier' ||
+    t === 'ThisExpression'
+  )
 }
 
 /** `document.createElement('tag')` → nome da tag; senão `null`. */
@@ -1708,6 +1792,10 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:getHealth', spriteVar }
   }
+  if (method === 'enemyDamage') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:enemyDamage', spriteVar }
+  }
   if (method === 'spriteX') {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:spriteX', spriteVar }
@@ -1992,6 +2080,67 @@ function readShipOptions(
       if (!isSimpleValue(v)) return null
       out[key] = v
     } else if (key === 'body' || key === 'wings') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Opções do createEnemyType (tipo de inimigo): behavior/cor/imagem literais + números simples. */
+function readEnemyTypeOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): {
+  behavior: string
+  color: string
+  image: string
+  hp: JSExpr
+  speed: JSExpr
+  dmg: JSExpr
+  w: JSExpr
+  h: JSExpr
+} | null {
+  const out: {
+    behavior: string
+    color: string
+    image: string
+    hp: JSExpr
+    speed: JSExpr
+    dmg: JSExpr
+    w: JSExpr
+    h: JSExpr
+  } = {
+    behavior: 'patrulha',
+    color: '#e4573d',
+    image: '',
+    hp: { type: 'num', value: 3 },
+    speed: { type: 'num', value: 2 },
+    dmg: { type: 'num', value: 1 },
+    w: { type: 'num', value: 32 },
+    h: { type: 'num', value: 32 },
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'hp' || key === 'speed' || key === 'dmg' || key === 'w' || key === 'h') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'behavior') {
+      // Dropdown no bloco: literal fora do enum NÃO vira bloco (rawJS).
+      if (prop.value?.type !== 'StringLiteral') return null
+      const b = prop.value.value as string
+      if (!(G2D_ENEMY_BEHAVIORS as readonly string[]).includes(b)) return null
+      out.behavior = b
+    } else if (key === 'color' || key === 'image') {
       if (prop.value?.type !== 'StringLiteral') return null
       out[key] = prop.value.value as string
     } else {
@@ -2469,6 +2618,119 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return spriteVar && sheetVar && isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
         ? { type: 'g2d:animateSprite', spriteVar, sheetVar, from, to, fps }
         : null
+    }
+    case 'setStateAnimation': {
+      // generator: SZGame2D.setStateAnimation(sprite, "estado", sheet, from, to, fps).
+      // O estado é um dropdown no bloco: literal FORA do enum não vira bloco
+      // (rawJS) — senão o dropdown coagiria o valor e corromperia o round-trip.
+      const spriteVar = identifierName(args[0])
+      const state = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : null
+      const sheetVar = identifierName(args[2])
+      const from = toExpr(args[3], ctx)
+      const to = toExpr(args[4], ctx)
+      const fps = toExpr(args[5], ctx)
+      return spriteVar &&
+        sheetVar &&
+        state &&
+        (G2D_ANIM_STATES as readonly string[]).includes(state) &&
+        isSimpleValue(from) &&
+        isSimpleValue(to) &&
+        isSimpleValue(fps)
+        ? { type: 'g2d:setStateAnim', spriteVar, state, sheetVar, from, to, fps }
+        : null
+    }
+    case 'autoAnimate': {
+      // generator: SZGame2D.autoAnimate(sprite)
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:autoAnimate', spriteVar } : null
+    }
+    case 'setEnemyStateAnimation': {
+      // generator: SZGame2D.setEnemyStateAnimation(tipo, "estado", sheet, from, to, fps)
+      const typeVar = identifierName(args[0])
+      const state = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : null
+      const sheetVar = identifierName(args[2])
+      const from = toExpr(args[3], ctx)
+      const to = toExpr(args[4], ctx)
+      const fps = toExpr(args[5], ctx)
+      return typeVar &&
+        sheetVar &&
+        state &&
+        (G2D_ANIM_STATES as readonly string[]).includes(state) &&
+        isSimpleValue(from) &&
+        isSimpleValue(to) &&
+        isSimpleValue(fps)
+        ? { type: 'g2d:enemyStateAnim', typeVar, state, sheetVar, from, to, fps }
+        : null
+    }
+    case 'setEnemyTypeParam': {
+      // generator: SZGame2D.setEnemyTypeParam(tipo, "param", valor)
+      const typeVar = identifierName(args[0])
+      const param = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : null
+      const value = toExpr(args[2], ctx)
+      return typeVar &&
+        param &&
+        (G2D_ENEMY_PARAMS as readonly string[]).includes(param) &&
+        isSimpleValue(value)
+        ? { type: 'g2d:setEnemyTypeParam', typeVar, param, value }
+        : null
+    }
+    case 'spawnEnemy': {
+      // generator: SZGame2D.spawnEnemy(tipo, x, y)
+      const typeVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      return typeVar && isSimpleValue(x) && isSimpleValue(y)
+        ? { type: 'g2d:spawnEnemy', typeVar, x, y }
+        : null
+    }
+    case 'updateEnemyType': {
+      // generator: SZGame2D.updateEnemyType(tipo, ctx, alvo)
+      const typeVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      const targetVar = identifierName(args[2])
+      return typeVar && ctxVar && targetVar
+        ? { type: 'g2d:updateEnemyType', typeVar, ctxVar, targetVar }
+        : null
+    }
+    case 'drawEnemyType': {
+      // generator: SZGame2D.drawEnemyType(ctx, tipo)
+      const ctxVar = identifierName(args[0])
+      const typeVar = identifierName(args[1])
+      return ctxVar && typeVar ? { type: 'g2d:drawEnemyType', ctxVar, typeVar } : null
+    }
+    case 'onEnemyDefeated': {
+      // generator: SZGame2D.onEnemyDefeated(tipo, function (inimigo) {…})
+      const typeVar = identifierName(args[0])
+      if (!typeVar || !isFn(args[1])) return null
+      const itemName = identifierName(args[1].params?.[0]) ?? 'inimigo'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onEnemyDefeated',
+        typeVar,
+        itemName,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'overlapEnemyShots': {
+      // generator: SZGame2D.overlapEnemyShots(() => sprite, tipo, function (tiro) {…})
+      const spriteVar = arrowReturnIdentifier(args[0])
+      const typeVar = identifierName(args[1])
+      if (!spriteVar || !typeVar || !isFn(args[2])) return null
+      const itemName = identifierName(args[2].params?.[0]) ?? 'tiro'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onEnemyShotHit',
+        spriteVar,
+        typeVar,
+        itemName,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
+    case 'hurtByEnemy': {
+      // generator: SZGame2D.hurtByEnemy(sprite, inimigo)
+      const spriteVar = identifierName(args[0])
+      const enemyVar = identifierName(args[1])
+      return spriteVar && enemyVar ? { type: 'g2d:hurtByEnemy', spriteVar, enemyVar } : null
     }
     case 'drawFrame': {
       // generator: SZGame2D.drawFrame(ctx, sheet, index, x, y, w, h)
@@ -3075,6 +3337,24 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   if (method === 'createGroup') {
     // generator: const g = SZGame2D.createGroup()
     return { type: 'g2d:createGroup', varName: name }
+  }
+  if (method === 'createEnemyType') {
+    // generator: const zumbi = SZGame2D.createEnemyType({ behavior, color, image, hp, speed, dmg, w, h })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readEnemyTypeOptions(args[0], ctx)
+    if (!o) return null
+    return {
+      type: 'g2d:defineEnemyType',
+      varName: name,
+      behavior: o.behavior,
+      color: o.color,
+      image: o.image,
+      hp: o.hp,
+      speed: o.speed,
+      dmg: o.dmg,
+      w: o.w,
+      h: o.h,
+    }
   }
   if (method === 'createShip') {
     // generator: const nave = SZGame2D.createShip({ x, y, w, h, body, wings })
@@ -5452,6 +5732,10 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     }
     case 'CallExpression':
     case 'OptionalCallExpression': {
+      // document.getElementById('id') como VALOR (ex.: guardar uma <img> numa
+      // propriedade p/ desenhar no canvas). ANTES dos outros matchers de chamada.
+      const elementId = matchGetElementById(node)
+      if (elementId !== null) return { type: 'getElement', id: elementId }
       // localStorage.getItem(chave) / sessionStorage.getItem(chave) → storageGet.
       if (node.type === 'CallExpression' && node.callee?.type === 'MemberExpression') {
         const obj = node.callee.object
@@ -5747,6 +6031,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:distance':
     case 'g2d:angleTo':
     case 'g2d:getHealth':
+    case 'g2d:enemyDamage':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
     case 'g2d:spriteW':
@@ -5866,6 +6151,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'objectOp':
       return isSimpleValue(expr.object)
     case 'assetImage':
+      return true
+    case 'getElement':
       return true
     case 'indexGet':
       return isSimpleValue(expr.object) && isSimpleValue(expr.index)

@@ -235,6 +235,8 @@ export function compileExpr(
       return `SZGame2D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g2d:getHealth':
       return `SZGame2D.getHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:enemyDamage':
+      return `SZGame2D.enemyDamage(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteX':
       return `SZGame2D.spriteX(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteY':
@@ -540,6 +542,8 @@ export function compileExpr(
       // Fonte RESOLVIDA do asset: o dataURL semeado em __SZGAME_ASSETS (ver
       // preview/assetsBridge), com fallback pro nome cru. Usável direto em img.src.
       return `(window.__SZGAME_ASSETS?.[${JSON.stringify(expr.name)}] ?? ${JSON.stringify(expr.name)})`
+    case 'getElement':
+      return `document.getElementById(${JSON.stringify(expr.id)})`
     case 'indexGet':
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}[${compileExpr(expr.index, 0, identifiers, rec)}]`
     default: {

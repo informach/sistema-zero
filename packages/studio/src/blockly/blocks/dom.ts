@@ -303,6 +303,16 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     tooltip: 'Guarda o elemento de um id numa variável.',
   },
   {
+    type: 'sz_val_get_element',
+    message0: 'o elemento com id %1',
+    args0: [{ type: 'field_input', name: 'ID', text: 'canvas1' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O elemento da página com esse id, como valor — ex.: pegar uma imagem (<img id="…">) para desenhar no canvas. Vira document.getElementById("id").',
+  },
+  {
     type: 'sz_js_query_selector',
     message0: 'Pegar elemento via seletor %1 e guardar em %2',
     args0: [

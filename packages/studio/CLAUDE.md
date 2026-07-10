@@ -480,6 +480,32 @@ passa a escrever também em literal REAL `sz_val_number` (não só shadow) — e
   `CoreExample.assets` — fundo estrelado PNG ~540 bytes gerado, NÃO o de 60KB do tutorial) tem drift
   guardado contra o parser atual. Mudou o parser? O drift manda re-embutir a IR.
 
+## Vocabulário de classes/DOM — lote "Lobstermorph V9" (10/07/2026)
+
+Segundo jogo do Franks Laboratory (com HERANÇA e spritesheets) buildável 100% no núcleo. 6 lacunas
+fechadas, **todas em JS** (HTML e CSS já round-tripavam — `<img src id>` vira `sz_html_image`, que
+GANHOU campo `ID` visível + `img` em `ID_FIELD_TAGS`; `alt`/`id` vazios NÃO viram atributo, round-trip
+fiel). Prova: `lobstermorphFixture.test.ts` (0 raw, fixpoint textual + de blocos). ⚠️ NÃO tem exemplo
+embutido: os PNGs do jogo somam ~7,6MB (boss8 = 4MB), muito acima da cota de assets.
+- **`super(...)`** → bloco `sz_js_super_ctor` ("chamar o construtor da classe-mãe", args-mutator);
+  **`super.metodo(...)`** → `sz_js_super_method`. IR `superCall{args}`/`superMethodCall{method,args}`;
+  parser casa `callee.type==='Super'` em `mapExpressionStatement` (ANTES de tryMatchMethodCall). Ambos
+  'avancado' + allowlist + `isSupportedItemsExtraState`. Entram sozinhos na categoria Classes
+  (staticEntries varre OOP_BLOCKS não-ocultos).
+- **`document.getElementById('id')` como VALOR** → bloco `sz_val_get_element` ("o elemento com id %1",
+  'intermediario', DOM). IR `getElement{id}`; `matchGetElementById` fiado no `toExpr` (CallExpression,
+  ANTES dos outros); `isSimpleValue`=true. Usado p/ pegar `<img>` e desenhar com `drawImage` de 9 args
+  (que já round-tripa GENÉRICO — `context` é PARÂMETRO, não ctxVar, então cai em `memberCall`).
+- **`requestAnimationFrame(nome)` SOLTO** (laço à mão com timestamp+delta que a fusão do anim_loop não
+  pega) → bloco `sz_canvas_request_frame` ("pedir o próximo quadro chamando %1", 'intermediario'). IR
+  `requestFrame{fn}`; parser casa ANTES do denylist global (o RAF está no `GLOBAL_CALL_DENYLIST`).
+- **`cond ? a=1 : b=2;`** (ternário como STATEMENT) → normaliza p/ `if/senão` (só parser, reusa o nó
+  `if`; cada ramo é remapeado como statement). Normalização didática aceita.
+- **`this.game.gameOver;`** (statement que só lê um valor e descarta — no-op, bug do autor) → nó
+  `exprStatement{value}` + bloco **OCULTO** `sz_js_expr_statement` ("avaliar %1", `hidden:true` — some
+  da paleta, só existe p/ o round-trip fiel; a criança não precisa dele). Fallback ÚLTIMO no
+  `mapExpressionStatement`, só p/ nós de expressão pura (membro/identificador/this).
+
 ## Comandos
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)

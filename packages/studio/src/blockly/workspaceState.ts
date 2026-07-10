@@ -62,6 +62,7 @@ const ID_FIELD_TAGS = new Set([
   'button',
   'input',
   'textarea',
+  'img',
   'svg',
   'g',
   'path',
@@ -239,7 +240,7 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   if (node.tag === 'img') {
     return block(
       'sz_html_image',
-      { SRC: node.attrs?.src ?? '', ALT: node.attrs?.alt ?? '' },
+      { SRC: node.attrs?.src ?? '', ALT: node.attrs?.alt ?? '', ID: node.id ?? '' },
       {},
       node.__id,
     )
@@ -1707,6 +1708,106 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             { FROM: from, TO: to, FPS: fps },
           )
     }
+    case 'g2d:setStateAnim': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      const fps = exprToValueBlock(valueToExpr(stmt.fps))
+      return from === null || to === null || fps === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_set_state_anim',
+            { SPRITE: stmt.spriteVar, STATE: stmt.state, SHEET: stmt.sheetVar },
+            {},
+            stmt.__id,
+            { FROM: from, TO: to, FPS: fps },
+          )
+    }
+    case 'g2d:autoAnimate':
+      return block('sz_g2d_auto_animate', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+    case 'g2d:defineEnemyType': {
+      const hp = exprToValueBlock(valueToExpr(stmt.hp))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return hp === null || speed === null || dmg === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_define_enemy_type',
+            {
+              NAME: stmt.varName,
+              BEHAVIOR: stmt.behavior,
+              COLOR: stmt.color,
+              IMAGE: stmt.image,
+            },
+            {},
+            stmt.__id,
+            { HP: hp, SPEED: speed, DMG: dmg, W: w, H: h },
+          )
+    }
+    case 'g2d:enemyStateAnim': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      const fps = exprToValueBlock(valueToExpr(stmt.fps))
+      return from === null || to === null || fps === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_enemy_state_anim',
+            { TYPE: stmt.typeVar, STATE: stmt.state, SHEET: stmt.sheetVar },
+            {},
+            stmt.__id,
+            { FROM: from, TO: to, FPS: fps },
+          )
+    }
+    case 'g2d:setEnemyTypeParam': {
+      const value = exprToValueBlock(valueToExpr(stmt.value))
+      return value === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_enemy_type_param',
+            { TYPE: stmt.typeVar, PARAM: stmt.param },
+            {},
+            stmt.__id,
+            { VALUE: value },
+          )
+    }
+    case 'g2d:spawnEnemy': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_spawn_enemy', { TYPE: stmt.typeVar }, {}, stmt.__id, { X: x, Y: y })
+    }
+    case 'g2d:updateEnemyType':
+      return block(
+        'sz_g2d_update_enemy_type',
+        { TYPE: stmt.typeVar, TARGET: stmt.targetVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:drawEnemyType':
+      return block('sz_g2d_draw_enemy_type', { TYPE: stmt.typeVar }, {}, stmt.__id)
+    case 'g2d:onEnemyDefeated':
+      return block(
+        'sz_g2d_on_enemy_defeated',
+        { TYPE: stmt.typeVar, ANAME: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:onEnemyShotHit':
+      return block(
+        'sz_g2d_on_enemy_shot_hit',
+        { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar, ANAME: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:hurtByEnemy':
+      return block(
+        'sz_g2d_hurt_by_enemy',
+        { SPRITE: stmt.spriteVar, ENEMY: stmt.enemyVar },
+        {},
+        stmt.__id,
+      )
     case 'g2d:drawFrame': {
       const index = exprToValueBlock(valueToExpr(stmt.index))
       const x = exprToValueBlock(valueToExpr(stmt.x))
@@ -2931,6 +3032,17 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (stmt.args.length > 0) b.extraState = { items: stmt.args.length }
       return b
     }
+    case 'superCall':
+      return callWithArgs('sz_js_super_ctor', {}, stmt.args, stmt)
+    case 'superMethodCall':
+      return callWithArgs('sz_js_super_method', { METHOD: stmt.method }, stmt.args, stmt)
+    case 'requestFrame':
+      return block('sz_canvas_request_frame', { FN: stmt.fn }, {}, stmt.__id)
+    case 'exprStatement': {
+      const value = exprToValueBlock(stmt.value)
+      if (!value) return rawJSBlock(stmt)
+      return block('sz_js_expr_statement', {}, {}, stmt.__id, { VALUE: value })
+    }
     case 'return': {
       // `return;` (saída antecipada) → bloco sem soquete.
       if (stmt.value === undefined) return block('sz_js_return_void', {}, {}, stmt.__id)
@@ -3129,6 +3241,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_angle_to', { A: expr.aVar, B: expr.bVar })
     case 'g2d:getHealth':
       return block('sz_g2d_get_health', { SPRITE: expr.spriteVar })
+    case 'g2d:enemyDamage':
+      return block('sz_g2d_enemy_damage', { SPRITE: expr.spriteVar })
     case 'g2d:spriteX':
       return block('sz_g2d_sprite_x', { SPRITE: expr.spriteVar })
     case 'g2d:spriteY':
@@ -3473,6 +3587,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_val_shuffle', { NAME: expr.arrayVar })
     case 'datasetGet':
       return block('sz_val_dataset', { KEY: expr.key, OBJ: expr.objectVar })
+    case 'getElement':
+      return block('sz_val_get_element', { ID: expr.id }, {}, expr.__id)
     case 'storageGet':
       // A chave vai num campo de texto: só representável como bloco se for literal.
       return expr.key.type === 'str'

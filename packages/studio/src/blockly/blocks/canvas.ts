@@ -131,6 +131,17 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     tooltip: 'Para a animação, cancelando o id guardado por "A cada frame fazer".',
   },
   {
+    type: 'sz_canvas_request_frame',
+    message0: 'pedir o próximo quadro chamando %1',
+    args0: [{ type: 'field_name_picker', name: 'FN', text: 'animar', kind: 'function' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Agenda a função para rodar no próximo quadro (para fazer o laço do jogo à mão, com o tempo entre quadros). Vira requestAnimationFrame(função).',
+  },
+  {
     type: 'sz_canvas_keyboard',
     message0: 'Ler teclado simples em variável %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'teclas' }],
@@ -818,6 +829,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
     types: [
       'sz_canvas_anim_loop',
       'sz_canvas_cancel_anim',
+      'sz_canvas_request_frame',
       'sz_canvas_keyboard',
       'sz_input_key_pressed',
       'sz_input_pointer_x',

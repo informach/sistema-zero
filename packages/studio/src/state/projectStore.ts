@@ -24,6 +24,7 @@ import {
   type ProProjectMeta,
   sanitizeProjectAssets,
   sanitizeSpriteMeta,
+  sanitizeTilemapMeta,
   sanitizeTilesetMeta,
   t,
 } from '#core'
@@ -150,9 +151,10 @@ export interface NewAssetInput {
   height?: number
   source?: 'upload' | 'library'
   libId?: string
-  /** Metadados do Pinta (animações/tiles) — saneados no store antes de guardar. */
+  /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
+  tilemap?: unknown
 }
 
 function bump<T extends Project>(p: T): T {
@@ -243,6 +245,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_canvas_line_dash',
   'sz_canvas_measure_text',
   'sz_canvas_cancel_anim',
+  'sz_canvas_request_frame',
   'sz_canvas_clear',
   'sz_canvas_draw_image',
   'sz_canvas_fill_rect',
@@ -430,6 +433,9 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_constructor',
   'sz_js_return',
   'sz_js_return_void',
+  'sz_js_super_ctor',
+  'sz_js_super_method',
+  'sz_js_expr_statement',
   'sz_js_set_this_prop',
   'sz_js_set_prop',
   'sz_js_member_set',
@@ -474,6 +480,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_event_pos',
   'sz_val_event_key',
   'sz_val_is_fullscreen',
+  'sz_val_get_element',
   'sz_val_math_pi',
   'sz_val_number',
   'sz_val_random',
@@ -582,6 +589,18 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_set_image',
     'sz_g2d_load_spritesheet',
     'sz_g2d_animate_sprite',
+    'sz_g2d_set_state_anim',
+    'sz_g2d_auto_animate',
+    'sz_g2d_define_enemy_type',
+    'sz_g2d_enemy_state_anim',
+    'sz_g2d_enemy_type_param',
+    'sz_g2d_spawn_enemy',
+    'sz_g2d_update_enemy_type',
+    'sz_g2d_draw_enemy_type',
+    'sz_g2d_on_enemy_defeated',
+    'sz_g2d_on_enemy_shot_hit',
+    'sz_g2d_hurt_by_enemy',
+    'sz_g2d_enemy_damage',
     'sz_g2d_draw_frame',
     'sz_g2d_platformer',
     'sz_g2d_top_down',
@@ -1719,6 +1738,8 @@ function isSupportedBlocklyBlockExtraState(blockType: string, raw: unknown): boo
     case 'sz_js_call_function':
     case 'sz_js_call_method':
     case 'sz_js_method_on':
+    case 'sz_js_super_ctor':
+    case 'sz_js_super_method':
       return isSupportedItemsExtraState(raw)
     // Blocos com mutator de parâmetros (`{ params: [...] }`): construtor de
     // classe, método de classe e declaração de função (esta última estava
@@ -1948,6 +1969,8 @@ function countJSStatement(statement: JSStatement): number {
     case 'g2d:pruneOffscreen':
     case 'g2d:onGroupOverlap':
     case 'g2d:onSpriteGroupOverlap':
+    case 'g2d:onEnemyDefeated':
+    case 'g2d:onEnemyShotHit':
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
     case 'g3d:animate':
@@ -2473,6 +2496,7 @@ export function createProjectStore(
       }
       const sprite = sanitizeSpriteMeta(input.sprite)
       const tileset = sanitizeTilesetMeta(input.tileset)
+      const tilemap = sanitizeTilemapMeta(input.tilemap)
       const asset: ProjectAsset = {
         id: ulid(),
         name,
@@ -2484,6 +2508,7 @@ export function createProjectStore(
         ...(input.source === 'library' && input.libId ? { libId: input.libId } : {}),
         ...(sprite ? { sprite } : {}),
         ...(tileset ? { tileset } : {}),
+        ...(tilemap ? { tilemap } : {}),
       }
       set({ project: bump({ ...p, assets: [...assets, asset] }), isDirty: true, saveError: null })
       return null

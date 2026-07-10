@@ -140,6 +140,21 @@ export const JS_BLOCKS: BlockDefinition[] = [
     tooltip: 'Muda o valor de uma variável que já existe.',
   },
   {
+    // OCULTO (hidden): não aparece na paleta — é só para o round-trip fiel de um
+    // statement que apenas AVALIA um valor e descarta (ex.: `this.game.gameOver;`,
+    // um no-op comum em código copiado). Sem ele, essa linha viraria "código
+    // avançado". A criança não precisa deste bloco para programar.
+    type: 'sz_js_expr_statement',
+    message0: 'avaliar %1',
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    hidden: true,
+    tooltip: 'Calcula um valor e o descarta.',
+  },
+  {
     type: 'sz_js_var_increment',
     message0: 'Somar %1 em variável %2',
     args0: [

@@ -1047,8 +1047,10 @@ document.addEventListener('keyup', (e) => {
     ])
   })
 
-  it('não confunde requestAnimationFrame/alert com chamada de função do aluno', () => {
-    expect(parseJS('requestAnimationFrame(loop);')[0]?.type).toBe('rawJS')
+  it('requestAnimationFrame(nome) SOLTO vira o bloco "pedir o próximo quadro"', () => {
+    // Fora da fusão do laço de animação (função com timestamp+delta chamada à
+    // mão), o RAF solto agora round-tripa como bloco em vez de código avançado.
+    expect(parseJS('requestAnimationFrame(loop);')).toEqual([{ type: 'requestFrame', fn: 'loop' }])
   })
 
   // ---- Fase 2: forEach e setTimeout ----

@@ -263,16 +263,18 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_image',
-    message0: 'Criar imagem de %1 (descrição %2)',
+    message0: 'Criar imagem de %1 (descrição %2, id %3)',
     args0: [
       { type: 'field_input', name: 'SRC', text: 'https://picsum.photos/600/400' },
       { type: 'field_input', name: 'ALT', text: 'imagem' },
+      { type: 'field_input', name: 'ID', text: '' },
     ],
     ...classMsg1,
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria uma imagem. A descrição ajuda na acessibilidade.',
+    tooltip:
+      'Cria uma imagem. A descrição ajuda na acessibilidade; o id (opcional) permite pegar a imagem no código com "o elemento com id …" para desenhar no canvas.',
   },
 
   // ---- Formulário (campos) ----
