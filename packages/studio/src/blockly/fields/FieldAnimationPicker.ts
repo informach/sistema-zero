@@ -46,10 +46,12 @@ export function resolveAnimations(field: Blockly.Field): ProjectSpriteAnim[] {
 }
 
 /**
- * Preenche FROM/TO/FPS a partir da animação escolhida. SÓ SHADOW `sz_val_number`
- * (nunca sobrescreve valor/variável plugada). Zero impacto no round-trip.
+ * Preenche FROM/TO/FPS a partir da animação escolhida. Escreve em SHADOW e em
+ * literal REAL `sz_val_number` (a escolha explícita da criança é inequívoca; um
+ * literal real aparece após um round-trip antigo pela Ponte). Nunca sobrescreve
+ * variável/expressão plugada. Zero impacto no round-trip.
  */
-function fillFrames(field: Blockly.Field, anim: ProjectSpriteAnim): void {
+export function fillFrames(field: Blockly.Field, anim: ProjectSpriteAnim): void {
   const block = field.getSourceBlock()
   if (!block) return
   const pairs: Array<[string, number]> = [
@@ -59,10 +61,157 @@ function fillFrames(field: Blockly.Field, anim: ProjectSpriteAnim): void {
   ]
   for (const [inputName, value] of pairs) {
     const target = block.getInput(inputName)?.connection?.targetBlock()
-    if (target?.isShadow() && target.type === 'sz_val_number') {
+    if (target?.type === 'sz_val_number') {
       target.setFieldValue(String(value), 'NUM')
     }
   }
+}
+
+/** Texto default do campo (bloco recém-criado/reconstruído — nada escolhido). */
+export const ANIM_PLACEHOLDER = '— escolher —'
+
+/**
+ * Lê o literal numérico plugado no soquete (shadow OU bloco real `sz_val_number`).
+ * Variável/expressão → null (não dá para derivar o nome com segurança).
+ */
+function literalNumberAt(block: Blockly.Block, inputName: string): number | null {
+  const target = block.getInput(inputName)?.connection?.targetBlock()
+  if (target?.type !== 'sz_val_number') return null
+  const num = Number(target.getFieldValue('NUM'))
+  return Number.isFinite(num) ? num : null
+}
+
+/**
+ * Deriva o NOME da animação a partir dos soquetes FROM/TO/FPS — a direção
+ * REVERSA do `fillFrames`. É o que restaura a seleção exibida depois de
+ * qualquer reconstrução (reload do blocksState, Ponte→Blocos): o campo é
+ * de exibição não-serializável, então o nome só existe se recalculado dos
+ * números (que são a fonte da verdade). Match EXATO dos três; sem literais ou
+ * sem match → null.
+ */
+export function deriveAnimationName(
+  block: Blockly.Block,
+  anims: ProjectSpriteAnim[],
+): string | null {
+  if (anims.length === 0) return null
+  const from = literalNumberAt(block, 'FROM')
+  const to = literalNumberAt(block, 'TO')
+  const fps = literalNumberAt(block, 'FPS')
+  if (from == null || to == null || fps == null) return null
+  const match = anims.find((anim) => anim.from === from && anim.to === to && anim.fps === fps)
+  return match?.name ?? null
+}
+
+const ANIMATE_SPRITE_TYPE = 'sz_g2d_animate_sprite'
+
+/** Estado de coalescimento do refresh por workspace (espelha o thumb-watcher). */
+const animRefreshQueued = new WeakMap<Blockly.Workspace, boolean>()
+
+/**
+ * Re-deriva o nome exibido de TODOS os blocos "Animar sprite" do workspace
+ * (coalescido num microtask). Regras anti-clobber:
+ * - deriva um nome → exibe-o (se mudou);
+ * - lista de animações resolvida mas números sem match → volta ao placeholder
+ *   SÓ se o campo exibe um nome DESSA lista (números contradizem o rótulo);
+ * - lista vazia/irresolvível (assets ainda não hidratados, folha desconhecida)
+ *   → NUNCA mexe.
+ * Escreve dentro de `Blockly.Events.disable()` — não gera BLOCK_CHANGE, então
+ * não realimenta o próprio watcher nem o regenerate do BlocklyPanel.
+ */
+export function refreshAnimationNames(ws: Blockly.Workspace): void {
+  if (animRefreshQueued.get(ws)) return
+  animRefreshQueued.set(ws, true)
+  queueMicrotask(() => {
+    animRefreshQueued.set(ws, false)
+    const blocks = ws.getAllBlocks(false).filter((b) => b.type === ANIMATE_SPRITE_TYPE)
+    if (blocks.length === 0) return
+    for (const block of blocks) {
+      const field = block.getField('ANIM')
+      if (!field) continue
+      const anims = resolveAnimations(field)
+      if (anims.length === 0) continue
+      const derived = deriveAnimationName(block, anims)
+      const current = String(field.getValue() ?? '')
+      const next =
+        derived ?? (anims.some((anim) => anim.name === current) ? ANIM_PLACEHOLDER : null)
+      if (next == null || next === current) continue
+      Blockly.Events.disable()
+      try {
+        field.setValue(next)
+      } finally {
+        Blockly.Events.enable()
+      }
+    }
+  })
+}
+
+/**
+ * Eventos que podem mudar o nome derivado: fim de carga (reload/Ponte→Blocos),
+ * criar/apagar bloco de animar ou de carregar folha, editar SHEET/NAME/IMAGE ou
+ * um número plugado em FROM/TO/FPS. Filtros baratos primeiro; o refresh em si é
+ * coalescido e varre só os blocos de animar.
+ */
+function isAnimNameEvent(
+  e: { type: string } & Record<string, unknown>,
+  ws: Blockly.Workspace,
+): boolean {
+  if (e.type === Blockly.Events.FINISHED_LOADING) return true
+  if (e.type === Blockly.Events.BLOCK_CREATE || e.type === Blockly.Events.BLOCK_DELETE) {
+    const json = e.type === Blockly.Events.BLOCK_CREATE ? e.json : e.oldJson
+    return jsonHasAnimRelatedType(json)
+  }
+  if (e.type === Blockly.Events.BLOCK_CHANGE) {
+    if (e.element !== 'field' || typeof e.blockId !== 'string') return false
+    const block = ws.getBlockById(e.blockId)
+    if (!block) return false
+    if (block.type === ANIMATE_SPRITE_TYPE) return e.name === 'SHEET'
+    if (block.type === LOAD_SPRITESHEET_TYPE) return e.name === 'NAME' || e.name === 'IMAGE'
+    // Literal numérico plugado num soquete de um bloco de animar (shadow ou real).
+    if (block.type === 'sz_val_number') {
+      let parent = block.getParent()
+      while (parent) {
+        if (parent.type === ANIMATE_SPRITE_TYPE) return true
+        parent = parent.getParent()
+      }
+    }
+    return false
+  }
+  return false
+}
+
+/** A subárvore serializada contém bloco de animar/carregar folha? */
+function jsonHasAnimRelatedType(json: unknown): boolean {
+  if (!json || typeof json !== 'object') return false
+  const node = json as {
+    type?: string
+    inputs?: Record<string, { block?: unknown; shadow?: unknown }>
+    next?: { block?: unknown; shadow?: unknown }
+  }
+  if (node.type === ANIMATE_SPRITE_TYPE || node.type === LOAD_SPRITESHEET_TYPE) return true
+  if (node.inputs) {
+    for (const wrapper of Object.values(node.inputs)) {
+      if (jsonHasAnimRelatedType(wrapper?.block) || jsonHasAnimRelatedType(wrapper?.shadow)) {
+        return true
+      }
+    }
+  }
+  return jsonHasAnimRelatedType(node.next?.block) || jsonHasAnimRelatedType(node.next?.shadow)
+}
+
+/**
+ * Liga a re-derivação automática do nome da animação (espelho do
+ * `attachSpriteThumbWatcher`): um watcher POR workspace; o retorno desregistra.
+ * O BlocklyPanel também chama `refreshAnimationNames` quando `project.assets`
+ * muda (metadado do Pinta chega/atualiza sem evento Blockly).
+ */
+export function attachAnimationNameWatcher(ws: Blockly.WorkspaceSvg): () => void {
+  const listener = (e: Blockly.Events.Abstract) => {
+    const raw = e as unknown as { type: string } & Record<string, unknown>
+    if (!isAnimNameEvent(raw, ws)) return
+    refreshAnimationNames(ws)
+  }
+  ws.addChangeListener(listener)
+  return () => ws.removeChangeListener(listener)
 }
 
 export class FieldAnimationPicker extends Blockly.FieldTextInput {

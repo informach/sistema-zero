@@ -186,6 +186,26 @@ export async function loadProjectShellById(id: string): Promise<Project | null> 
   return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
 }
 
+/**
+ * Lê SÓ o registro de metadados do projeto (partição leve), com fallback ao doc
+ * legado. Usado pelo restore em segundo plano dos blocos para sanitizar a
+ * partição contra os `installedExtensions` REALMENTE persistidos — a lista vinda
+ * do chamador pode estar vazia/defasada (shell ainda hidratando), e sanitizar
+ * um projeto de Jogo 2D contra a allowlist só-núcleo descartaria TODOS os blocos.
+ */
+export async function loadProjectMetaById(id: string): Promise<Record<string, unknown> | null> {
+  const kvStore = getStore()
+  const meta = await get<unknown>(projectMetaKey(id), kvStore)
+  if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
+    return meta as Record<string, unknown>
+  }
+  const legacy = await get<unknown>(legacyProjectKey(id), kvStore)
+  if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
+    return legacy as Record<string, unknown>
+  }
+  return null
+}
+
 export async function loadProjectBlocksById(id: string): Promise<unknown | null> {
   const kvStore = getStore()
   const fromPartition = await get<unknown>(projectBlocksKey(id), kvStore)

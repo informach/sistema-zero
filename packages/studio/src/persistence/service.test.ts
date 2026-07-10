@@ -21,8 +21,12 @@ mock.module('idb-keyval', () => ({
 }))
 
 const { createProjectStore, useProjectStore } = await import('../state/projectStore')
-const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
-  await import('./service')
+const {
+  cancelPendingAutosavesFor,
+  createPersistenceService,
+  setAutosaveDelayForTests,
+  setBlocksHydrationTimeoutForTests,
+} = await import('./service')
 
 // Sem fake timers no bun:test: encurta o debounce do autosave e espera com
 // timers reais (folga de 5x para máquinas lentas/CI).
@@ -249,20 +253,34 @@ describe('PersistenceService — ctx.reason do onChange', () => {
 })
 
 describe('PersistenceService — hidratação pós-load', () => {
+  const storedBlocksState = {
+    blocks: {
+      languageVersion: 0,
+      blocks: [{ type: 'sz_js_console_log_text', x: 320, y: 180 }],
+    },
+  }
+  const liveBlocksState = {
+    blocks: {
+      languageVersion: 0,
+      blocks: [{ type: 'sz_js_console_log_text', x: 10, y: 10 }],
+    },
+  }
+
   afterEach(() => {
-    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    setAutosaveDelayForTests(null)
+    setBlocksHydrationTimeoutForTests(null)
+    useProjectStore.setState({
+      project: null,
+      isDirty: false,
+      saveError: null,
+      blocksHydration: 'idle',
+    })
   })
 
   it('restaura blocksState pesado sem marcar o projeto como sujo', async () => {
-    const blocksState = {
-      blocks: {
-        languageVersion: 0,
-        blocks: [{ type: 'sz_js_console_log_text', x: 320, y: 180 }],
-      },
-    }
     const adapter: StudioPersistenceAdapter = {
       load: async () => null,
-      loadBlocksState: mock(async () => blocksState),
+      loadBlocksState: mock(async () => storedBlocksState),
       save: mock(async () => undefined),
     }
     const service = createPersistenceService(useProjectStore, adapter)
@@ -270,20 +288,16 @@ describe('PersistenceService — hidratação pós-load', () => {
 
     useProjectStore.getState().hydrateProject(project)
     service.hydrateAfterLoad(project)
+    expect(useProjectStore.getState().blocksHydration).toBe('pending')
     await Bun.sleep(0)
 
-    expect(useProjectStore.getState().project?.blocksState).toEqual(blocksState)
+    expect(useProjectStore.getState().project?.blocksState).toEqual(storedBlocksState)
     expect(useProjectStore.getState().isDirty).toBe(false)
+    expect(useProjectStore.getState().blocksHydration).toBe('restored')
     expect(adapter.save).not.toHaveBeenCalled()
   })
 
-  it('não sobrescreve o projeto se ele ficou sujo enquanto blocksState carregava', async () => {
-    const blocksState = {
-      blocks: {
-        languageVersion: 0,
-        blocks: [{ type: 'sz_js_console_log_text', x: 320, y: 180 }],
-      },
-    }
+  it('sujo com blocos VIVOS não-vazios: NÃO sobrescreve a edição viva (discarded)', async () => {
     let resolveBlocks: ((value: Project['blocksState']) => void) | undefined
     const adapter: StudioPersistenceAdapter = {
       load: async () => null,
@@ -298,12 +312,171 @@ describe('PersistenceService — hidratação pós-load', () => {
 
     useProjectStore.getState().hydrateProject(project)
     service.hydrateAfterLoad(project)
-    useProjectStore.getState().setFile('script.js', 'console.log("editado");\n')
-    resolveBlocks?.(blocksState)
+    // O aluno montou blocos DE VERDADE enquanto a partição carregava: o
+    // trabalho vivo vence o layout salvo mais antigo.
+    useProjectStore.getState().setBlocksState(liveBlocksState)
+    resolveBlocks?.(storedBlocksState)
     await Bun.sleep(0)
 
-    expect(useProjectStore.getState().project?.blocksState).toBeNull()
+    expect(useProjectStore.getState().project?.blocksState).toEqual(liveBlocksState)
     expect(useProjectStore.getState().isDirty).toBe(true)
+    expect(useProjectStore.getState().blocksHydration).toBe('discarded')
+  })
+
+  it('sujo mas com blocos vivos VAZIOS (edição foi em arquivo): restaura mesmo assim', async () => {
+    // Mudança deliberada (10/07): antes, QUALQUER sujeira pulava a restauração —
+    // uma edição rápida de código na janela de abertura apagava os blocos para
+    // sempre. Um workspace vazio não codifica trabalho do aluno; a edição de
+    // arquivo é preservada (o patch só troca blocksState).
+    let resolveBlocks: ((value: Project['blocksState']) => void) | undefined
+    const adapter: StudioPersistenceAdapter = {
+      load: async () => null,
+      loadBlocksState: () =>
+        new Promise((resolve) => {
+          resolveBlocks = resolve
+        }),
+      save: mock(async () => undefined),
+    }
+    const service = createPersistenceService(useProjectStore, adapter)
+    const project = { ...createEmptyProject('hydrate-dirty-empty', 'Projeto'), blocksState: null }
+
+    useProjectStore.getState().hydrateProject(project)
+    service.hydrateAfterLoad(project)
+    useProjectStore.getState().setFile('script.js', 'console.log("editado");\n')
+    resolveBlocks?.(storedBlocksState)
+    await Bun.sleep(0)
+
+    const state = useProjectStore.getState()
+    expect(state.project?.blocksState).toEqual(storedBlocksState)
+    expect(state.project?.files['script.js']).toBe('console.log("editado");\n')
+    expect(state.isDirty).toBe(true)
+    expect(state.blocksHydration).toBe('restored')
+  })
+
+  it("partição inexistente (null) vira status 'empty' — definitivo, sem tranca", async () => {
+    const adapter: StudioPersistenceAdapter = {
+      load: async () => null,
+      loadBlocksState: mock(async () => null),
+      save: mock(async () => undefined),
+    }
+    const service = createPersistenceService(useProjectStore, adapter)
+    const project = { ...createEmptyProject('hydrate-empty', 'Projeto'), blocksState: null }
+
+    useProjectStore.getState().hydrateProject(project)
+    service.hydrateAfterLoad(project)
+    await Bun.sleep(0)
+
+    expect(useProjectStore.getState().blocksHydration).toBe('empty')
+    expect(useProjectStore.getState().project?.blocksState).toBeNull()
+  })
+
+  it('adapter SEM loadBlocksState: status fica idle e nada é trancado', async () => {
+    const saved: Project[] = []
+    const adapter: StudioPersistenceAdapter = {
+      load: async () => null,
+      save: async (project) => {
+        saved.push(project)
+      },
+    }
+    const service = createPersistenceService(useProjectStore, adapter)
+    setAutosaveDelayForTests(AUTOSAVE_TEST_DELAY_MS)
+    const detach = service.attach()
+    const project = {
+      ...createEmptyProject('hydrate-no-loader', 'Projeto'),
+      blocksState: liveBlocksState,
+    }
+
+    useProjectStore.getState().hydrateProject(project)
+    service.hydrateAfterLoad(project)
+    expect(useProjectStore.getState().blocksHydration).toBe('idle')
+
+    // Edição real → autosave: o snapshot vai COMPLETO (sem strip).
+    useProjectStore.getState().setBlocksState(liveBlocksState)
+    await waitForAutosave()
+    expect(saved.at(-1)?.blocksState).toEqual(liveBlocksState)
+
+    detach()
+  })
+
+  it('TRANCA: enquanto a partição hidrata, autosave/onChange vão SEM blocksState', async () => {
+    let resolveBlocks: ((value: Project['blocksState']) => void) | undefined
+    const saved: Project[] = []
+    const changed: Project[] = []
+    const adapter: StudioPersistenceAdapter = {
+      load: async () => null,
+      loadBlocksState: () =>
+        new Promise((resolve) => {
+          resolveBlocks = resolve
+        }),
+      save: async (project) => {
+        saved.push(project)
+      },
+    }
+    const service = createPersistenceService(useProjectStore, adapter)
+    service.handlers = { onChange: (project) => changed.push(project) }
+    setAutosaveDelayForTests(AUTOSAVE_TEST_DELAY_MS)
+    const detach = service.attach()
+    const project = { ...createEmptyProject('hydrate-strip', 'Projeto'), blocksState: null }
+
+    useProjectStore.getState().hydrateProject(project)
+    service.hydrateAfterLoad(project)
+    // Reconstrução derivada (ex.: reabrir na Ponte) enquanto a partição real
+    // ainda carrega: o snapshot persistido NÃO pode carregar esse estado.
+    useProjectStore.getState().setBlocksState(liveBlocksState)
+    await waitForAutosave()
+
+    expect(saved.length).toBeGreaterThan(0)
+    expect(saved.at(-1)?.blocksState).toBeNull()
+    expect(changed.at(-1)?.blocksState).toBeNull()
+    // O projeto VIVO segue com os blocos derivados (a tranca é só no write).
+    expect(useProjectStore.getState().project?.blocksState).toEqual(liveBlocksState)
+
+    // Resolvida a hidratação (vivo não-vazio → discarded), os saves voltam ao
+    // normal: o estado vivo passa a ser a verdade e É persistido.
+    resolveBlocks?.(storedBlocksState)
+    await Bun.sleep(0)
+    expect(useProjectStore.getState().blocksHydration).toBe('discarded')
+    await service.save()
+    expect(saved.at(-1)?.blocksState).toEqual(liveBlocksState)
+
+    detach()
+  })
+
+  it("falha na leitura tranca a partição na sessão ('failed'); resolução tardia restaura", async () => {
+    setBlocksHydrationTimeoutForTests(10)
+    let resolveBlocks: ((value: Project['blocksState']) => void) | undefined
+    const saved: Project[] = []
+    const adapter: StudioPersistenceAdapter = {
+      load: async () => null,
+      loadBlocksState: () =>
+        new Promise((resolve) => {
+          resolveBlocks = resolve
+        }),
+      save: async (project) => {
+        saved.push(project)
+      },
+    }
+    const service = createPersistenceService(useProjectStore, adapter)
+    const project = { ...createEmptyProject('hydrate-timeout', 'Projeto'), blocksState: null }
+
+    useProjectStore.getState().hydrateProject(project)
+    service.hydrateAfterLoad(project)
+    // Estoura o timeout: 'pending' → 'failed' (UI destrava, tranca continua).
+    await Bun.sleep(50)
+    expect(useProjectStore.getState().blocksHydration).toBe('failed')
+
+    // Um save durante 'failed' ainda protege a partição.
+    useProjectStore.getState().setBlocksState(liveBlocksState)
+    await service.save()
+    expect(saved.at(-1)?.blocksState).toBeNull()
+
+    // A leitura resolve TARDE: com o vivo não-vazio, vira 'discarded' (trabalho
+    // vivo vence) e a tranca abre.
+    resolveBlocks?.(storedBlocksState)
+    await Bun.sleep(0)
+    expect(useProjectStore.getState().blocksHydration).toBe('discarded')
+    await service.save()
+    expect(saved.at(-1)?.blocksState).toEqual(liveBlocksState)
   })
 })
 

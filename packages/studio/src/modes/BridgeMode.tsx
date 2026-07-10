@@ -75,6 +75,7 @@ export function BridgeMode(): JSX.Element {
         installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
       })),
     )
+  const blocksHydration = useProjectStore((s) => s.blocksHydration)
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const projectStoreApi = useProjectStoreApi()
   const setFiles = useProjectStore((s) => s.setFiles)
@@ -369,12 +370,16 @@ export function BridgeMode(): JSX.Element {
   // reverse-parse cairia no atalho "generated-match" (o IR já bate com os
   // arquivos) e nunca construiria os blocos: o aluno via o código mas não os
   // blocos até recortar/colar. Quando não há IR, o reverse-parse cuida.
+  // ⚠️ Não derivar enquanto a partição real hidrata ('pending'): sujaria o
+  // projeto e descartaria o layout salvo prestes a chegar (mesmo gate do
+  // BlocksMode).
   useEffect(() => {
     if (!hasProject || !ir) return
+    if (blocksHydration === 'pending') return
     if (!isBlocksStateEmpty(blocksState)) return
     if (ir.html.length === 0 && ir.css.length === 0 && ir.js.length === 0) return
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir) })
-  }, [hasProject, blocksState, ir, applyProjectState])
+  }, [hasProject, blocksState, ir, blocksHydration, applyProjectState])
 
   // Centraliza erros de sintaxe no Console — evitamos painel próprio para
   // que todo aviso/erro da IDE viva num só lugar.

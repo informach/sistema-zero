@@ -2530,6 +2530,26 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_random_chance: { PERCENT: numShadow(30) },
   sz_g2d_cooldown_ready: { FRAMES: numShadow(20) },
 }
+
+/**
+ * (só p/ teste de drift) Tipo do literal de SOMBRA por soquete da paleta.
+ * Todo soquete daqui precisa constar em `LEGACY_VALUE_FIELDS` com o kind
+ * casado — é o mapa que restaura a shadow-ness na reconstrução IR→blocos
+ * (`shouldEmitAsShadow`/`restoreShadowLiterals`); faltar = os preenchimentos
+ * automáticos morrem em silêncio depois de uma passada pela Ponte.
+ */
+export const G2D_SOCKET_SHADOW_TYPES: Record<string, Record<string, string>> = Object.fromEntries(
+  Object.entries(G2D_SOCKET_SHADOWS).map(([type, slots]) => [
+    type,
+    Object.fromEntries(
+      Object.entries(slots).map(([slot, wrapper]) => [
+        slot,
+        String((wrapper as { shadow?: { type?: string } }).shadow?.type ?? ''),
+      ]),
+    ),
+  ]),
+)
+
 const toolboxBlock = (type: string) => {
   const inputs = G2D_SOCKET_SHADOWS[type]
   return inputs ? { kind: 'block' as const, type, inputs } : { kind: 'block' as const, type }

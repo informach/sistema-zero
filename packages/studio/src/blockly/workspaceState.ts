@@ -2,6 +2,7 @@ import { compileStatements } from '#generators'
 import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR } from '#ir'
 import { screenTextToExpr, valueToExpr } from '#ir'
 import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE, SHADOW_PRESETS } from './buildIR'
+import { LEGACY_VALUE_FIELDS } from './migrateValueFields'
 
 /** Tags container (têm input CHILDREN) → tipo de bloco. */
 const CONTAINER_BLOCK: Partial<Record<string, string>> = {
@@ -34,7 +35,9 @@ export interface SerializedBlocklyBlock {
   x?: number
   y?: number
   fields?: Record<string, string | number>
-  inputs?: Record<string, { block: SerializedBlocklyBlock }>
+  /** Soquete: bloco real (`block`) e/ou SOMBRA (`shadow` — literal default que os
+   * preenchimentos automáticos podem sobrescrever; ver `restoreShadowLiterals`). */
+  inputs?: Record<string, { block?: SerializedBlocklyBlock; shadow?: SerializedBlocklyBlock }>
   next?: { block: SerializedBlocklyBlock }
   /** Estado extra de mutators (ex.: contagem de argumentos do `sz_args_mutator`). */
   extraState?: unknown
@@ -157,17 +160,10 @@ export function emptyFramesBlocksState(): SerializedBlocklyWorkspace {
   return buildWorkspaceStateFromIR({ html: [], css: [], js: [], extensions: [] })
 }
 
-/**
- * Verdadeiro se o `blocksState` é `null`/inválido OU é uma serialização válida
- * porém sem blocos top-level. Os modos Blocos/Ponte usam para decidir se devem
- * derivar os blocos do IR — sem isso, um `blocksState` vazio (resíduo de algum
- * ciclo anterior, ex.: sanitizer que descartava todo o estado) passava no
- * early-return e o canvas ficava em branco depois do refresh.
- */
-export function isBlocksStateEmpty(state: unknown): boolean {
-  const tops = (state as SerializedBlocklyWorkspace | null | undefined)?.blocks?.blocks
-  return !Array.isArray(tops) || tops.length === 0
-}
+// Implementação num módulo PURO (sem imports) para o PersistenceService poder
+// usá-la sem arrastar Blockly ao chunk do núcleo; re-exportada aqui para os
+// consumidores existentes do barrel `#blockly`.
+export { isBlocksStateEmpty } from './blocksStateShape'
 
 function htmlNodeToBlock(node: SZIR['html'][number]): SerializedBlocklyBlock {
   const built = htmlNodeToBlockInner(node)
@@ -3036,6 +3032,29 @@ function callWithArgs(
   return b
 }
 
+/** Tipo do bloco literal por kind de sombra (espelha `shadowFor` da migração). */
+const SHADOW_LITERAL_BLOCK: Record<'number' | 'text' | 'color', string> = {
+  number: 'sz_val_number',
+  text: 'sz_val_text',
+  color: 'sz_val_color',
+}
+
+/**
+ * O valor deste soquete deve ser emitido como SOMBRA? Verdadeiro quando o bloco
+ * tem preset de sombra para o slot (fonte: `LEGACY_VALUE_FIELDS`) e o filho é o
+ * literal PURO do kind casado. Sem isso, a reconstrução IR→blocos devolvia
+ * FROM/TO/FPS (etc.) como blocos REAIS e os preenchimentos automáticos
+ * (`fillFrames`/`applySuggestedSize`, que só escrevem em `isShadow()`) morriam
+ * em silêncio após uma passada pela Ponte. Getter/expressão nunca vira sombra.
+ */
+function shouldEmitAsShadow(blockType: string, slot: string, child: SerializedBlocklyBlock) {
+  const kind = LEGACY_VALUE_FIELDS[blockType]?.[slot]
+  if (!kind) return false
+  if (child.type !== SHADOW_LITERAL_BLOCK[kind]) return false
+  if (child.inputs && Object.keys(child.inputs).length > 0) return false
+  return !child.next
+}
+
 function block(
   type: string,
   fields: Record<string, string | number> = {},
@@ -3049,9 +3068,14 @@ function block(
       .map(([name, children]) => [name, chain(children)])
       .filter((entry): entry is [string, SerializedBlocklyBlock] => Boolean(entry[1])),
   )
-  const allInputs: Record<string, { block: SerializedBlocklyBlock }> = {
+  const allInputs: NonNullable<SerializedBlocklyBlock['inputs']> = {
     ...Object.fromEntries(Object.entries(serializedInputs).map(([k, v]) => [k, { block: v }])),
-    ...Object.fromEntries(Object.entries(valueInputs).map(([k, v]) => [k, { block: v }])),
+    ...Object.fromEntries(
+      Object.entries(valueInputs).map(([k, v]) => [
+        k,
+        shouldEmitAsShadow(type, k, v) ? { shadow: v } : { block: v },
+      ]),
+    ),
   }
   return {
     type,

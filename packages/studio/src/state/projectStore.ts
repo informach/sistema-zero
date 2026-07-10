@@ -42,6 +42,7 @@ import {
   deleteProject as deleteProjectFromDB,
   loadProjectBlocksById,
   loadProjectById,
+  loadProjectMetaById,
   loadProjectShellById,
   persistProject,
   renameProjectMeta,
@@ -57,10 +58,31 @@ import {
 } from './proTree'
 import { StudioStoresContext } from './storesContext'
 
+/**
+ * Ciclo de vida da restauração em SEGUNDO PLANO do `blocksState` (partição
+ * pesada, omitida pela abertura rápida). Mantido pelo PersistenceService:
+ * - 'idle': nada a restaurar (sem adapter/partição, projeto veio completo, pro).
+ * - 'pending': partição sendo lida — autosaves NÃO gravam a partição de blocos.
+ * - 'restored': partição aplicada ao projeto vivo.
+ * - 'empty': não havia nada salvo (definitivo) — modos podem derivar do código.
+ * - 'failed': leitura falhou/estourou o tempo — partição protegida na sessão.
+ * - 'discarded': havia estado salvo, mas o aluno já tinha blocos vivos editados.
+ */
+export type BlocksHydrationStatus =
+  | 'idle'
+  | 'pending'
+  | 'restored'
+  | 'empty'
+  | 'failed'
+  | 'discarded'
+
 interface ProjectStore {
   project: Project | null
   isDirty: boolean
   saveError: string | null
+  /** Estado da restauração em 2º plano dos blocos (ver BlocksHydrationStatus). */
+  blocksHydration: BlocksHydrationStatus
+  setBlocksHydration: (status: BlocksHydrationStatus) => void
   loadProject: (id: string) => Promise<Project | null>
   /** Hidrata um projeto já sanitizado (host/<Studio>) SEM marcar como sujo. */
   hydrateProject: (p: Project) => void
@@ -1427,7 +1449,20 @@ export async function loadSanitizedProjectBlocksStateById(
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return null
   const record = raw as Record<string, unknown>
   if (record.id != null && record.id !== id) return null
-  return sanitizeStoredBlocksState(record.blocksState, installedExtensions)
+  // Sanitiza contra a UNIÃO das extensões do chamador com as do META persistido:
+  // a lista do chamador pode vir vazia/defasada (shell ainda hidratando noutra
+  // aba, host antigo), e o sanitize é tudo-ou-nada — um projeto de Jogo 2D
+  // avaliado contra a allowlist só-núcleo perderia TODOS os blocos. O meta é a
+  // fonte durável do que está instalado; unir nunca REMOVE uma permissão do
+  // chamador, só re-adiciona as persistidas.
+  const meta = await loadProjectMetaById(id)
+  const metaExtensions = meta ? sanitizeImportedExtensions(meta.installedExtensions) : []
+  const merged = new Map<string, InstalledExtension>()
+  for (const extension of installedExtensions) merged.set(extension.id, extension)
+  for (const extension of metaExtensions) {
+    if (!merged.has(extension.id)) merged.set(extension.id, extension)
+  }
+  return sanitizeStoredBlocksState(record.blocksState, [...merged.values()])
 }
 
 /**
@@ -1990,6 +2025,10 @@ export function createProjectStore(
     project: null,
     isDirty: false,
     saveError: null,
+    blocksHydration: 'idle',
+    // Escrito pelo PersistenceService (dono do ciclo de restauração). Nunca toca
+    // isDirty: status não é edição.
+    setBlocksHydration: (status) => set({ blocksHydration: status }),
     loadProject: async (id) => {
       loadSeq += 1
       const seq = loadSeq
@@ -1999,13 +2038,14 @@ export function createProjectStore(
       // que ESTE load leu para o chamador que o aguardava (sem efeito colateral).
       if (seq !== loadSeq) return existing
       if (!existing) {
-        set({ project: null, isDirty: false, saveError: null })
+        set({ project: null, isDirty: false, saveError: null, blocksHydration: 'idle' })
         return null
       }
-      set({ project: existing, isDirty: false, saveError: null })
+      set({ project: existing, isDirty: false, saveError: null, blocksHydration: 'idle' })
       return existing
     },
-    hydrateProject: (p) => set({ project: p, isDirty: false, saveError: null }),
+    hydrateProject: (p) =>
+      set({ project: p, isDirty: false, saveError: null, blocksHydration: 'idle' }),
     hydrateProjectState: (patch) => {
       const p = get().project
       if (!p) return
@@ -2026,7 +2066,8 @@ export function createProjectStore(
         saveError: null,
       })
     },
-    unloadProject: () => set({ project: null, isDirty: false, saveError: null }),
+    unloadProject: () =>
+      set({ project: null, isDirty: false, saveError: null, blocksHydration: 'idle' }),
     createProject: async (name) => {
       const p = createEmptyProject(ulid(), sanitizeProjectName(name))
       await persistProject(p)
@@ -2163,7 +2204,7 @@ export function createProjectStore(
 
       return { project: imported, warnings }
     },
-    setProject: (p) => set({ project: p, isDirty: true, saveError: null }),
+    setProject: (p) => set({ project: p, isDirty: true, saveError: null, blocksHydration: 'idle' }),
     setMode: (mode) => {
       const p = get().project
       if (!p) return
