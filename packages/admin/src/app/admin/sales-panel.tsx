@@ -10,7 +10,7 @@ import { ChartLine, ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { formatCentsStr } from '@/lib/format'
-import type { DailyPaymentStats, Paginated, ProductView } from '@/lib/types'
+import type { DailyPaymentStats, Paginated, ProductView, SubscriptionStatsView } from '@/lib/types'
 import { SalesChart } from './sales-chart'
 
 const PERIODS = [
@@ -27,6 +27,10 @@ const TOOLTIPS = {
     'Cobranças criadas no período, em qualquer situação (pendentes, pagas, falhas…). Mostra o volume de entrada do funil.',
   cancellations:
     'Estornos/reembolsos no período (dinheiro devolvido ao comprador). Boleto/Pix expirados não contam — nunca houve pagamento.',
+  mrr: 'Receita recorrente mensal: soma do valor mensalizado das assinaturas ATIVAS agora (a anual entra com 1/12 do valor). Não depende do período selecionado.',
+  activeSubs: 'Assinaturas ativas agora, por periodicidade. Não depende do período selecionado.',
+  subsFlow:
+    'Assinaturas criadas e canceladas no período selecionado. Churn = canceladas ÷ (ativas + canceladas).',
 }
 
 function MetricCard({ title, value, tooltip }: { title: string; value: string; tooltip: string }) {
@@ -49,6 +53,7 @@ export function SalesPanel() {
   const [productId, setProductId] = useState('')
   const [period, setPeriod] = useState('30')
   const [data, setData] = useState<DailyPaymentStats | null>(null)
+  const [subs, setSubs] = useState<SubscriptionStatsView | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [chartOpen, setChartOpen] = useState(true)
@@ -86,6 +91,18 @@ export function SalesPanel() {
       })
       .finally(() => {
         if (alive) setLoading(false)
+      })
+    // Recorrência: MRR/ativas são "agora"; novas/canceladas usam a MESMA janela
+    // do período (não filtra por produto — assinatura é do catálogo todo).
+    apiGet<SubscriptionStatsView>(
+      `/api/payments/stats/subscriptions?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
+    )
+      .then((stats) => {
+        if (alive) setSubs(stats)
+      })
+      .catch(() => {
+        // Cards de recorrência somem em falha — o painel de vendas segue útil.
+        if (alive) setSubs(null)
       })
     return () => {
       alive = false
@@ -152,6 +169,26 @@ export function SalesPanel() {
               tooltip={TOOLTIPS.cancellations}
             />
           </div>
+
+          {subs ? (
+            <div className="grid gap-4 sm:grid-cols-3">
+              <MetricCard
+                title="MRR (assinaturas)"
+                value={formatCentsStr(subs.mrrCents)}
+                tooltip={TOOLTIPS.mrr}
+              />
+              <MetricCard
+                title="Assinaturas ativas"
+                value={`${subs.active.total} (${subs.active.monthly} mensais · ${subs.active.annual} anuais)`}
+                tooltip={TOOLTIPS.activeSubs}
+              />
+              <MetricCard
+                title="Novas × canceladas"
+                value={`${subs.newInWindow} × ${subs.canceledInWindow} (churn ${(subs.churnRate * 100).toFixed(1)}%)`}
+                tooltip={TOOLTIPS.subsFlow}
+              />
+            </div>
+          ) : null}
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

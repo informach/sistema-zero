@@ -25,10 +25,19 @@ interface FakeCard {
   installments: number
 }
 
+/** Config por SLUG da oferta falsa (modo/intervalo/alternador — checkout de assinatura). */
+export interface FakeOfferConfig {
+  priceCents?: number
+  pricingMode?: 'one_time' | 'subscription'
+  billingIntervalMonths?: number | null
+  altOffer?: { slug: string; label?: string } | null
+}
+
 export interface FakeGatewayState {
   gateway: GatewayClient
   calls: {
     create: Array<{ input: unknown; idempotencyKey: string }>
+    createSubscription: Array<{ input: unknown; idempotencyKey: string }>
     get: string[]
     ensureBuyer: Array<{ input: RegisterBuyerInput }>
     quote: Array<{ slug: string; couponCode?: string }>
@@ -50,6 +59,10 @@ export interface FakeGatewayState {
   setEnsureBuyerStatus: (status: number, body?: unknown) => void
   /** Preço da oferta ativa (default 3700). */
   setOfferPrice: (priceCents: number) => void
+  /** Config por SLUG (modo/intervalo/altOffer) — checkout de assinatura/alternador. */
+  setOfferConfig: (slug: string, config: FakeOfferConfig) => void
+  /** Sobrescreve a resposta de createSubscription (default 201 ACTIVE + 1º ciclo PAID). */
+  setSubscriptionResult: (status: number, body?: unknown) => void
   /** Cadastra um cupom de desconto FIXO (centavos) reconhecido pelo quote. */
   addCoupon: (code: string, discountCents: number) => void
   /** Sobrescreve o usuário do auth falso (ex.: role `customer` p/ testar 403). */
@@ -79,6 +92,7 @@ export function createFakeGateway(): FakeGatewayState {
   const view = { id: 'pay-1', status: 'PENDING', paidAt: null as string | null }
   const calls: FakeGatewayState['calls'] = {
     create: [],
+    createSubscription: [],
     get: [],
     ensureBuyer: [],
     quote: [],
@@ -93,10 +107,12 @@ export function createFakeGateway(): FakeGatewayState {
   let ensureBuyerBody: unknown = { userId: 'user-1', created: true }
   let grantStatus = 200
   let createResult: { status: number; body: unknown } | null = null
+  let subscriptionResult: { status: number; body: unknown } | null = null
   let passwordTokenStatus = 201
   let sendMessageStatus = 202
   let offerPriceCents = 3700
   const coupons = new Map<string, number>() // code (UPPER) → discountCents
+  const offerConfigs = new Map<string, FakeOfferConfig>() // slug → config (default one_time)
 
   // ── Auth falso (IdP) — login/me/refresh/logout do admin ──────────────────
   const AUTH_PASSWORD = 'segredo'
@@ -145,34 +161,54 @@ export function createFakeGateway(): FakeGatewayState {
       }
     },
     async getOffer(slug): Promise<GatewayResult> {
+      const cfg = offerConfigs.get(slug)
       return {
         status: 200,
         body: {
-          id: 'offer-1',
+          id: `offer-${slug}`,
           slug,
           name: 'Oferta padrão',
-          priceCents: offerPriceCents,
+          priceCents: cfg?.priceCents ?? offerPriceCents,
           compareAtPriceCents: null,
           currency: 'BRL',
           guaranteeDays: 7,
           installmentsMax: 12,
+          pricingMode: cfg?.pricingMode ?? 'one_time',
+          billingIntervalMonths: cfg?.billingIntervalMonths ?? null,
           product: { name: 'No Comando da IA', sku: 'no-comando-da-ia' },
+          content: cfg?.altOffer ? { altOffer: cfg.altOffer } : {},
           includes: [{ name: 'No Comando da IA', isPrimary: true }],
+        },
+      }
+    },
+    async createSubscription(input, idempotencyKey): Promise<GatewayResult> {
+      calls.createSubscription.push({ input, idempotencyKey })
+      if (subscriptionResult) return subscriptionResult
+      const interval = (input as { intervalMonths?: number }).intervalMonths ?? 1
+      return {
+        status: 201,
+        body: {
+          id: 'sub-1',
+          status: 'ACTIVE',
+          intervalMonths: interval,
+          firstPayment: { id: 'pay-sub-1', status: 'PAID' },
         },
       }
     },
     async quoteOffer(slug, couponCode): Promise<GatewayResult> {
       calls.quote.push({ slug, couponCode })
+      const cfg = offerConfigs.get(slug)
+      const price = cfg?.priceCents ?? offerPriceCents
       const base = {
-        offerId: 'offer-1',
+        offerId: `offer-${slug}`,
         offerSlug: slug,
         currency: 'BRL',
-        priceCents: offerPriceCents,
+        priceCents: price,
       }
       if (!couponCode) {
         return {
           status: 200,
-          body: { ...base, discountCents: 0, finalPriceCents: offerPriceCents, coupon: null },
+          body: { ...base, discountCents: 0, finalPriceCents: price, coupon: null },
         }
       }
       const code = couponCode.toUpperCase()
@@ -183,13 +219,13 @@ export function createFakeGateway(): FakeGatewayState {
           body: { error: { code: 'COUPON_NOT_FOUND', message: 'Cupom inválido' } },
         }
       }
-      const discount = Math.min(discountCents, offerPriceCents)
+      const discount = Math.min(discountCents, price)
       return {
         status: 200,
         body: {
           ...base,
           discountCents: discount,
-          finalPriceCents: offerPriceCents - discount,
+          finalPriceCents: price - discount,
           coupon: { code, type: 'fixed', percentOff: null, amountOffCents: discountCents },
         },
       }
@@ -270,6 +306,12 @@ export function createFakeGateway(): FakeGatewayState {
     },
     setOfferPrice: (priceCents: number) => {
       offerPriceCents = priceCents
+    },
+    setOfferConfig: (slug: string, config: FakeOfferConfig) => {
+      offerConfigs.set(slug, config)
+    },
+    setSubscriptionResult: (status: number, body?: unknown) => {
+      subscriptionResult = { status, body: body ?? null }
     },
     addCoupon: (code: string, discountCents: number) => {
       coupons.set(code.toUpperCase(), discountCents)

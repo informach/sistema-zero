@@ -1,5 +1,12 @@
 import { type ParserOptions, parse } from '@babel/parser'
-import type { EventKind, JSExpr, JSStatement } from '#ir'
+import {
+  type EventKind,
+  G2D_ANIM_STATES,
+  G2D_ENEMY_BEHAVIORS,
+  G2D_ENEMY_PARAMS,
+  type JSExpr,
+  type JSStatement,
+} from '#ir'
 
 const BABEL_OPTS: ParserOptions = {
   sourceType: 'module',
@@ -52,12 +59,14 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
   }
 
   const ctx: ParseCtx = {
+    source,
     elementVars: new Map(),
     canvasElementVars: new Set(),
     ctxVars: new Set(),
     elementToCtx: new Map(),
     instanceVars: new Set(),
     spriteVars: new Set(),
+    eventParamAliases: [],
   }
   // A descida recursiva também precisa estar protegida: o Babel parseia
   // aninhamentos profundos sem reclamar e só a recursão do mapeamento estoura a
@@ -90,6 +99,9 @@ type Node = any
  * é mantido apenas como registro/informação do parse.
  */
 interface ParseCtx {
+  /** Fonte JS completa — para `bodyOfFn`/`asRaw` a partir de matchers de VALOR
+   * (ex.: o corpo de `new Promise((resolve) => { ... })` no `toExpr`). */
+  source: string
   elementVars: Map<string, string>
   /**
    * Variáveis de elemento `<canvas>` que foram absorvidas num `canvasSetup`
@@ -125,6 +137,17 @@ interface ParseCtx {
    * como dois `memberSet`.
    */
   spriteVars: Set<string>
+  /**
+   * PILHA de apelidos do parâmetro de evento. O gerador SEMPRE emite
+   * `(event) => {…}` e os matchers (`eventProp`, preventDefault…) só reconhecem
+   * o identificador `event` — mas o aluno escreve `e => e.key` no código. Sem o
+   * apelido, `e.key` virava `memberGet(var e)` e o código REGENERADO referenciava
+   * um `e` inexistente (quebra silenciosa). Durante o corpo de um listener com
+   * param `e`, o nome fica empilhado aqui e o `toExpr` o normaliza para `event`.
+   * A segurança (shadowing/escrita/colisão) é checada ANTES de empilhar; caso
+   * inseguro, o listener INTEIRO cai em rawJS verbatim.
+   */
+  eventParamAliases: string[]
 }
 
 const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
@@ -142,6 +165,8 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'load',
   'resize',
   'fullscreenchange',
+  'contextmenu',
+  'blur',
 ])
 
 function snippet(source: string, node: Node): string {
@@ -307,7 +332,12 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
   // 2ª passada: a classe é representável; agora sim mapeamos os corpos no `ctx`.
   let ctorParams: string[] = []
   let ctorBody: JSStatement[] = []
-  const methods: Array<{ name: string; params: string[]; body: JSStatement[] }> = []
+  const methods: Array<{
+    name: string
+    params: string[]
+    body: JSStatement[]
+    async?: boolean
+  }> = []
   for (const member of members) {
     const params: string[] = member.params.map((p: Node) => p.name)
     if (member.kind === 'constructor') {
@@ -318,6 +348,7 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
         name: member.key.name,
         params,
         body: mapStatementList(member.body?.body ?? [], source, ctx),
+        ...(member.async ? { async: true } : {}),
       })
     }
   }
@@ -420,10 +451,11 @@ function tryMatchStorageSet(expr: Node, ctx: ParseCtx): JSStatement | null {
 }
 
 /** `event.preventDefault()` / `event.stopPropagation()` → `eventMethod`. */
-function tryMatchEventMethod(expr: Node): JSStatement | null {
+function tryMatchEventMethod(expr: Node, ctx?: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'MemberExpression') return null
   const obj = expr.callee.object
-  if (obj?.type !== 'Identifier' || obj.name !== 'event') return null
+  if (obj?.type !== 'Identifier') return null
+  if (obj.name !== 'event' && !ctx?.eventParamAliases.includes(obj.name)) return null
   const method = expr.callee.property?.name
   if (
     (method === 'preventDefault' || method === 'stopPropagation') &&
@@ -730,8 +762,178 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   return null
 }
 
+/** Sentinela: o callback tem parâmetro que NÃO dá para normalizar com segurança. */
+const UNSAFE_EVENT_PARAM = Symbol('unsafe-event-param')
+
+/**
+ * O nó (subárvore Babel) contém um Identifier com este nome em posição que
+ * inviabiliza o rename (re-declaração, parâmetro de função interna — shadowing —,
+ * escrita) OU uma referência simples (`checkRefs`)? Caminhada genérica sobre o
+ * AST (árvore, sem ciclos); conservador por design.
+ */
+function subtreeBlocksRename(node: Node, name: string, checkRefs: boolean): boolean {
+  if (!node || typeof node !== 'object') return false
+  if (Array.isArray(node)) return node.some((item) => subtreeBlocksRename(item, name, checkRefs))
+  if (typeof node.type === 'string') {
+    if (checkRefs && node.type === 'Identifier' && node.name === name) return true
+    if (node.type === 'VariableDeclarator' && subtreeBlocksRename(node.id, name, true)) return true
+    if (
+      (node.type === 'FunctionDeclaration' ||
+        node.type === 'FunctionExpression' ||
+        node.type === 'ArrowFunctionExpression') &&
+      subtreeBlocksRename(node.params, name, true)
+    ) {
+      return true
+    }
+    if (node.type === 'CatchClause' && subtreeBlocksRename(node.param, name, true)) return true
+    if (
+      node.type === 'AssignmentExpression' &&
+      node.left?.type === 'Identifier' &&
+      node.left.name === name
+    ) {
+      return true
+    }
+    if (
+      node.type === 'UpdateExpression' &&
+      node.argument?.type === 'Identifier' &&
+      node.argument.name === name
+    ) {
+      return true
+    }
+  }
+  for (const key of Object.keys(node)) {
+    if (key === 'loc' || key === 'range' || key === 'leadingComments' || key === 'trailingComments')
+      continue
+    const child = node[key]
+    if (child && typeof child === 'object' && subtreeBlocksRename(child, name, checkRefs)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Decide o apelido do parâmetro do listener:
+ * - sem parâmetro, ou já chamado `event` → null (nada a fazer);
+ * - 1 parâmetro Identifier renomeável com segurança → o nome (empilhar);
+ * - qualquer outro caso → UNSAFE_EVENT_PARAM (listener inteiro vira raw):
+ *   2+ params/destructuring, corpo que re-declara/sombreia/escreve o nome,
+ *   corpo que já usa o identificador `event` (colidiria após o rename) ou que
+ *   referencia um apelido EXTERNO já empilhado (listener aninhado — o rename
+ *   duplo trocaria o binding).
+ */
+function eventParamAlias(fn: Node, ctx: ParseCtx): string | null | typeof UNSAFE_EVENT_PARAM {
+  const params = fn?.params ?? []
+  if (params.length === 0) return null
+  if (params.length > 1 || params[0]?.type !== 'Identifier') return UNSAFE_EVENT_PARAM
+  const name: string = params[0].name
+  if (name === 'event') return null
+  if (subtreeBlocksRename(fn.body, name, false)) return UNSAFE_EVENT_PARAM
+  if (subtreeBlocksRename(fn.body, 'event', true)) return UNSAFE_EVENT_PARAM
+  for (const outer of ctx.eventParamAliases) {
+    if (subtreeBlocksRename(fn.body, outer, true)) return UNSAFE_EVENT_PARAM
+  }
+  return name
+}
+
+type CompoundOp = '+' | '-' | '*' | '/' | '%'
+
+/** Operadores compostos suportados → operador da conta expandida. */
+const COMPOUND_OPS: Record<string, CompoundOp | undefined> = {
+  '+=': '+',
+  '-=': '-',
+  '*=': '*',
+  '/=': '/',
+  '%=': '%',
+}
+
+/**
+ * Expressão SEM efeito colateral que pode ser avaliada DUAS vezes: a expansão de
+ * `obj.prop ⊕= v` em `obj.prop = obj.prop ⊕ v` lê e escreve o MESMO `obj` — se
+ * `obj` fosse `pegaObjeto()`, a chamada rodaria em dobro e divergiria. Cadeias de
+ * variável/this/literal/membro/índice sobre bases puras passam; chamada de
+ * método/função não.
+ */
+function isPureChain(expr: JSExpr | null | undefined): boolean {
+  if (!expr) return false
+  switch (expr.type) {
+    case 'var':
+    case 'thisRef':
+    case 'thisProp':
+    case 'num':
+    case 'str':
+      return true
+    case 'memberGet':
+      return isPureChain(expr.object)
+    case 'index':
+      return isPureChain(expr.index)
+    case 'indexGet':
+      return isPureChain(expr.object) && isPureChain(expr.index)
+    default:
+      return false
+  }
+}
+
+/**
+ * Expande `alvo ⊕= right` (ou `alvo++`) no statement de escrita correspondente
+ * com o valor `alvo ⊕ right`. Devolve null quando o alvo não é representável ou
+ * não é PURO (avaliação dupla mudaria o comportamento) — o chamador cai em raw.
+ * Os nós de LEITURA espelham exatamente o que o re-parse da forma expandida
+ * produz (`index` p/ `arr[i]` com arr variável; `indexGet` p/ objeto-expressão),
+ * garantindo o fixpoint blocos⇄código.
+ */
+function expandCompoundTarget(
+  left: Node,
+  op: CompoundOp,
+  right: JSExpr,
+  ctx: ParseCtx,
+): JSStatement | null {
+  const binop = (read: JSExpr): JSExpr => ({ type: 'binop', op, left: read, right })
+  // x ⊕= v
+  if (left?.type === 'Identifier') {
+    const name: string = left.name
+    return { type: 'assign', name, value: binop({ type: 'var', name }) }
+  }
+  const isMember = left?.type === 'MemberExpression' || left?.type === 'OptionalMemberExpression'
+  if (!isMember || isGlobalObject(left.object)) return null
+  // this.prop ⊕= v
+  if (
+    !left.computed &&
+    left.object?.type === 'ThisExpression' &&
+    left.property?.type === 'Identifier'
+  ) {
+    const name: string = left.property.name
+    return { type: 'setThisProp', name, value: binop({ type: 'thisProp', name }) }
+  }
+  // obj.prop ⊕= v (obj puro: var, this.algo, cadeia de membros…)
+  if (!left.computed && left.property?.type === 'Identifier') {
+    const object = toExpr(left.object, ctx)
+    if (!isSimpleValue(object) || !isPureChain(object)) return null
+    const name: string = left.property.name
+    return { type: 'memberSet', object, name, value: binop({ type: 'memberGet', object, name }) }
+  }
+  // obj[i] ⊕= v (obj e i puros)
+  if (left.computed && left.property) {
+    const object = toExpr(left.object, ctx)
+    const index = toExpr(left.property, ctx)
+    if (!isSimpleValue(object) || !isSimpleValue(index)) return null
+    if (!isPureChain(object) || !isPureChain(index)) return null
+    const read: JSExpr =
+      object.type === 'var'
+        ? { type: 'index', arrayVar: object.name, index }
+        : { type: 'indexGet', object, index }
+    return { type: 'indexSet', object, index, value: binop(read) }
+  }
+  return null
+}
+
 function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSStatement {
   const expr = node.expression
+  // `await <valor>;` (statement) — ex.: `await Promise.all([...])` / `await new Promise(...)`.
+  if (expr?.type === 'AwaitExpression') {
+    const value = toExpr(expr.argument, ctx)
+    return value && isSimpleValue(value) ? { type: 'awaitStmt', value } : asRaw(source, node)
+  }
   // console.log(...)
   if (
     expr?.type === 'CallExpression' &&
@@ -752,6 +954,10 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     if (arg.type === 'Identifier') {
       return { type: 'consoleLog', value: { type: 'var', name: arg.name } }
     }
+    // Qualquer OUTRO valor representável (juntar texto `${}`, conta, objeto,
+    // this.prop…) → console.log com soquete de valor. Não-representável → raw.
+    const value = toExpr(arg, ctx)
+    if (isSimpleValue(value)) return { type: 'consoleLog', value: value as JSExpr }
     return asRaw(source, node)
   }
 
@@ -894,6 +1100,43 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       }
       return asRaw(source, node)
     }
+    // <img>.onerror = () => {…} → imageOnError ("se a imagem falhar, fazer …").
+    // Mesma regra do onload: só a arrow/função SEM parâmetros.
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.property?.type === 'Identifier' &&
+      expr.left.property.name === 'onerror' &&
+      (expr.right?.type === 'ArrowFunctionExpression' ||
+        expr.right?.type === 'FunctionExpression') &&
+      (expr.right.params?.length ?? 0) === 0 &&
+      !isGlobalObject(expr.left.object)
+    ) {
+      const target = toExpr(expr.left.object, ctx)
+      if (target && isSimpleValue(target)) {
+        return { type: 'imageOnError', target, body: bodyOfFn(expr.right, source, ctx) }
+      }
+      return asRaw(source, node)
+    }
+    // <el>.onclick = () => {…} → onClickAssign ("quando clicar em <el>, fazer …").
+    // Mesma regra: só arrow/função SEM parâmetros (o gerador re-emite `() =>`);
+    // corpo conciso `() => f()` é normalizado p/ bloco (via bodyOfFn).
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.property?.type === 'Identifier' &&
+      expr.left.property.name === 'onclick' &&
+      (expr.right?.type === 'ArrowFunctionExpression' ||
+        expr.right?.type === 'FunctionExpression') &&
+      (expr.right.params?.length ?? 0) === 0 &&
+      !isGlobalObject(expr.left.object)
+    ) {
+      const target = toExpr(expr.left.object, ctx)
+      if (target && isSimpleValue(target)) {
+        return { type: 'onClickAssign', target, body: bodyOfFn(expr.right, source, ctx) }
+      }
+      return asRaw(source, node)
+    }
     // Geral: <obj>.prop = v sobre qualquer objeto representável. Cobre instância
     // (`p.x = v`) e aninhamento (`this.velocidade.x = v`). Roda DEPOIS dos matchers
     // específicos (fillStyle, dataset, textContent) e dos pares de canvas (consumidos
@@ -938,42 +1181,31 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     return asRaw(source, node)
   }
 
-  // x += n / x -= n → assign(x = x ± n). Round-trip do bloco "Somar N".
-  if (
-    expr?.type === 'AssignmentExpression' &&
-    (expr.operator === '+=' || expr.operator === '-=') &&
-    expr.left?.type === 'Identifier'
-  ) {
-    const name: string = expr.left.name
+  // Atribuição composta (⊕=) sobre variável, this.prop, obj.prop e obj[i]:
+  // expande para `alvo = alvo ⊕ v` — os MESMOS nós que os blocos montam
+  // (assign/setThisProp/memberSet/indexSet + conta). O gerador já emite a forma
+  // expandida, então o round-trip é estável a partir do 2º ciclo. Era a maior
+  // fonte de rawJS em jogos com classes ("tiro parado": `this.y -= this.speed`).
+  if (expr?.type === 'AssignmentExpression' && COMPOUND_OPS[expr.operator]) {
+    const op = COMPOUND_OPS[expr.operator] as CompoundOp
     const right = toExpr(expr.right, ctx)
     if (isSimpleValue(right)) {
-      return {
-        type: 'assign',
-        name,
-        value: {
-          type: 'binop',
-          op: expr.operator === '+=' ? '+' : '-',
-          left: { type: 'var', name },
-          right,
-        },
-      }
+      const stmt = expandCompoundTarget(expr.left, op, right, ctx)
+      if (stmt) return stmt
     }
     return asRaw(source, node)
   }
 
-  // x++ / x-- → assign(x = x ± 1).
-  if (expr?.type === 'UpdateExpression' && expr.argument?.type === 'Identifier') {
-    const name: string = expr.argument.name
-    return {
-      type: 'assign',
-      name,
-      value: {
-        type: 'binop',
-        op: expr.operator === '++' ? '+' : '-',
-        left: { type: 'var', name },
-        right: { type: 'num', value: 1 },
-      },
-    }
+  // x++ / x-- (e this.prop++ / obj.prop++ / arr[i]++) → alvo = alvo ± 1.
+  if (expr?.type === 'UpdateExpression') {
+    const stmt = expandCompoundTarget(
+      expr.argument,
+      expr.operator === '++' ? '+' : '-',
+      { type: 'num', value: 1 },
+      ctx,
+    )
+    if (stmt) return stmt
+    return asRaw(source, node)
   }
 
   // document.getElementById('x')?.addEventListener('event', cb)  (ou via variável)
@@ -989,13 +1221,24 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
         handlerName: evt.handlerName,
       }
     }
-    const bodyStmts = bodyOfFn(evt.callback, source, ctx)
-    return {
-      type: 'event',
-      target: evt.target,
-      ...(evt.targetKind ? { targetKind: evt.targetKind } : {}),
-      event: evt.event,
-      body: bodyStmts,
+    // Param do callback com outro nome (`e => e.key`): normaliza p/ `event`
+    // durante o corpo (o gerador SEMPRE emite `(event) =>`). Inseguro
+    // (shadowing/escrita/colisão/2 params) → rawJS verbatim: estritamente mais
+    // correto que o comportamento antigo (blocos que regeneravam `e` órfão).
+    const alias = eventParamAlias(evt.callback, ctx)
+    if (alias === UNSAFE_EVENT_PARAM) return asRaw(source, node)
+    if (alias) ctx.eventParamAliases.push(alias)
+    try {
+      const bodyStmts = bodyOfFn(evt.callback, source, ctx)
+      return {
+        type: 'event',
+        target: evt.target,
+        ...(evt.targetKind ? { targetKind: evt.targetKind } : {}),
+        event: evt.event,
+        body: bodyStmts,
+      }
+    } finally {
+      if (alias) ctx.eventParamAliases.pop()
     }
   }
 
@@ -1004,7 +1247,7 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   if (storageSet) return storageSet
 
   // event.preventDefault() / event.stopPropagation()
-  const eventMethod = tryMatchEventMethod(expr)
+  const eventMethod = tryMatchEventMethod(expr, ctx)
   if (eventMethod) return eventMethod
 
   // fetch(url).then(r => r.json()).then((dados) => {…}).catch((erro) => {…})
@@ -1073,6 +1316,20 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   const timeout = tryMatchSetTimeout(expr, source, ctx)
   if (timeout) return timeout
 
+  // setTimeout(<fn>, ms) passando uma FUNÇÃO por nome (ex.: setTimeout(resolve, 2000)).
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.callee.name === 'setTimeout' &&
+    expr.arguments?.length === 2 &&
+    expr.arguments[0].type === 'Identifier'
+  ) {
+    const delay = toExpr(expr.arguments[1], ctx)
+    if (delay && isSimpleValue(delay)) {
+      return { type: 'setTimeoutCall', fn: expr.arguments[0].name, delay }
+    }
+  }
+
   // setInterval(() => { … }, ms)
   const interval = tryMatchSetInterval(expr, source, ctx)
   if (interval) return interval
@@ -1089,6 +1346,83 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   const g3dCall = tryMatchGame3DCall(expr, source, ctx)
   if (g3dCall) return g3dCall
 
+  // super(args) — chama o construtor da classe-mãe (dentro do construtor filho).
+  if (expr?.type === 'CallExpression' && expr.callee?.type === 'Super') {
+    const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+    if (args.every(isSimpleValue)) return { type: 'superCall', args: args as JSExpr[] }
+    return asRaw(source, node)
+  }
+  // super.metodo(args) — chama um método da classe-mãe.
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    !expr.callee.computed &&
+    expr.callee.object?.type === 'Super' &&
+    expr.callee.property?.type === 'Identifier'
+  ) {
+    const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+    if (args.every(isSimpleValue)) {
+      return { type: 'superMethodCall', method: expr.callee.property.name, args: args as JSExpr[] }
+    }
+    return asRaw(source, node)
+  }
+  // requestAnimationFrame(nome) — pede o próximo quadro chamando uma função. ANTES
+  // dos matchers de chamada (o nome está no denylist global e viraria rawJS). A
+  // função é uma REFERÊNCIA (Identifier), não uma chamada.
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.callee.name === 'requestAnimationFrame' &&
+    expr.arguments?.length === 1 &&
+    expr.arguments[0]?.type === 'Identifier'
+  ) {
+    return { type: 'requestFrame', fn: expr.arguments[0].name as string }
+  }
+  // requestAnimationFrame((t) => {…}) — corpo inline com o tempo do quadro. Aceita
+  // 0 ou 1 parâmetro Identifier; corpo conciso ou em bloco (bodyOfFn cobre os dois).
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.callee.name === 'requestAnimationFrame' &&
+    expr.arguments?.length === 1 &&
+    (expr.arguments[0]?.type === 'ArrowFunctionExpression' ||
+      expr.arguments[0]?.type === 'FunctionExpression')
+  ) {
+    const fn = expr.arguments[0]
+    const params = fn.params ?? []
+    const paramsOk =
+      params.length === 0 || (params.length === 1 && params[0]?.type === 'Identifier')
+    if (paramsOk) {
+      const param = params.length === 1 ? (params[0].name as string) : undefined
+      return {
+        type: 'requestFrameDo',
+        ...(param ? { param } : {}),
+        body: bodyOfFn(fn, source, ctx),
+      }
+    }
+  }
+  // cond ? A : B; (ternário usado como STATEMENT, com atribuições nos ramos) →
+  // if (cond) { A } else { B }. Normalização didática (comportamento idêntico); a
+  // volta produz um bloco Se/senão. Cada ramo é remapeado como statement.
+  if (expr?.type === 'ConditionalExpression') {
+    const cond = toExpr(expr.test, ctx)
+    if (isSimpleValue(cond)) {
+      const branch = (b: Node): JSStatement =>
+        mapExpressionStatement(
+          { type: 'ExpressionStatement', expression: b, ...spanOf(b) },
+          source,
+          ctx,
+        )
+      return {
+        type: 'if',
+        cond: cond as JSExpr,
+        then: [branch(expr.consequent)],
+        else: [branch(expr.alternate)],
+      }
+    }
+    return asRaw(source, node)
+  }
+
   // objeto.metodo(args) — chamada de método de um objeto guardado em variável.
   const methodCall = tryMatchMethodCall(expr, ctx)
   if (methodCall) return methodCall
@@ -1097,7 +1431,30 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   const fnCall = tryMatchFunctionCall(expr, ctx)
   if (fnCall) return fnCall
 
+  // Último recurso ANTES do avançado: um statement que só AVALIA um valor e
+  // descarta (`this.game.gameOver;` — no-op). Bloco OCULTO, só p/ round-trip fiel.
+  if (expr && isExpressionNode(expr)) {
+    const value = toExpr(expr, ctx)
+    if (isSimpleValue(value)) return { type: 'exprStatement', value: value as JSExpr }
+  }
+
   return asRaw(source, node)
+}
+
+/** Posições de origem de um nó Babel (start/end/loc/range) para o span sintético. */
+function spanOf(node: Node): Record<string, unknown> {
+  return { start: node?.start, end: node?.end, loc: node?.loc, range: node?.range }
+}
+
+/** É um nó de EXPRESSÃO (não um statement)? Guarda do `exprStatement` fallback. */
+function isExpressionNode(node: Node): boolean {
+  const t = node?.type
+  return (
+    t === 'MemberExpression' ||
+    t === 'OptionalMemberExpression' ||
+    t === 'Identifier' ||
+    t === 'ThisExpression'
+  )
 }
 
 /** `document.createElement('tag')` → nome da tag; senão `null`. */
@@ -1530,6 +1887,10 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:getHealth', spriteVar }
   }
+  if (method === 'enemyDamage') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:enemyDamage', spriteVar }
+  }
   if (method === 'spriteX') {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:spriteX', spriteVar }
@@ -1554,6 +1915,8 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:centerY', spriteVar }
   }
+  if (method === 'shapeW' && args.length === 0) return { type: 'g2d:shapeW' }
+  if (method === 'shapeH' && args.length === 0) return { type: 'g2d:shapeH' }
   if (method === 'spriteVx') {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:spriteVx', spriteVar }
@@ -1814,6 +2177,67 @@ function readShipOptions(
       if (!isSimpleValue(v)) return null
       out[key] = v
     } else if (key === 'body' || key === 'wings') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Opções do createEnemyType (tipo de inimigo): behavior/cor/imagem literais + números simples. */
+function readEnemyTypeOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): {
+  behavior: string
+  color: string
+  image: string
+  hp: JSExpr
+  speed: JSExpr
+  dmg: JSExpr
+  w: JSExpr
+  h: JSExpr
+} | null {
+  const out: {
+    behavior: string
+    color: string
+    image: string
+    hp: JSExpr
+    speed: JSExpr
+    dmg: JSExpr
+    w: JSExpr
+    h: JSExpr
+  } = {
+    behavior: 'patrulha',
+    color: '#e4573d',
+    image: '',
+    hp: { type: 'num', value: 3 },
+    speed: { type: 'num', value: 2 },
+    dmg: { type: 'num', value: 1 },
+    w: { type: 'num', value: 32 },
+    h: { type: 'num', value: 32 },
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'hp' || key === 'speed' || key === 'dmg' || key === 'w' || key === 'h') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'behavior') {
+      // Dropdown no bloco: literal fora do enum NÃO vira bloco (rawJS).
+      if (prop.value?.type !== 'StringLiteral') return null
+      const b = prop.value.value as string
+      if (!(G2D_ENEMY_BEHAVIORS as readonly string[]).includes(b)) return null
+      out.behavior = b
+    } else if (key === 'color' || key === 'image') {
       if (prop.value?.type !== 'StringLiteral') return null
       out[key] = prop.value.value as string
     } else {
@@ -2281,6 +2705,107 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
       return { type: 'g2d:setImage', spriteVar, image: args[1].value as string }
     }
+    case 'defineShape': {
+      // generator: SZGame2D.defineShape("nome", function (ctx) {…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      const ctxParam = identifierName(args[1].params?.[0])
+      // O parâmetro é um CONTEXTO 2D — registrar em ctxVars para que os blocos de
+      // Canvas dentro da figura round-trippem (senão viram rawJS).
+      if (ctxParam) ctx.ctxVars.add(ctxParam)
+      return {
+        type: 'g2d:defineShape',
+        shapeName: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'setShape': {
+      // generator: SZGame2D.setShape(sprite, "nome")
+      const spriteVar = identifierName(args[0])
+      if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:setShape', spriteVar, shapeName: args[1].value as string }
+    }
+    case 'paintRect': {
+      // generator: SZGame2D.paintRect(ctx, x, y, w, h, "cor")
+      const ctxVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const w = toExpr(args[3], ctx)
+      const h = toExpr(args[4], ctx)
+      return ctxVar &&
+        args[5]?.type === 'StringLiteral' &&
+        isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(w) &&
+        isSimpleValue(h)
+        ? { type: 'g2d:paintRect', ctxVar, x, y, w, h, color: args[5].value as string }
+        : null
+    }
+    case 'paintCircle': {
+      // generator: SZGame2D.paintCircle(ctx, x, y, r, "cor")
+      const ctxVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const r = toExpr(args[3], ctx)
+      return ctxVar &&
+        args[4]?.type === 'StringLiteral' &&
+        isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(r)
+        ? { type: 'g2d:paintCircle', ctxVar, x, y, r, color: args[4].value as string }
+        : null
+    }
+    case 'paintEllipse': {
+      // generator: SZGame2D.paintEllipse(ctx, x, y, w, h, "cor")
+      const ctxVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const w = toExpr(args[3], ctx)
+      const h = toExpr(args[4], ctx)
+      return ctxVar &&
+        args[5]?.type === 'StringLiteral' &&
+        isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(w) &&
+        isSimpleValue(h)
+        ? { type: 'g2d:paintEllipse', ctxVar, x, y, w, h, color: args[5].value as string }
+        : null
+    }
+    case 'paintTriangle': {
+      // generator: SZGame2D.paintTriangle(ctx, x1,y1, x2,y2, x3,y3, "cor")
+      const ctxVar = identifierName(args[0])
+      const vals = [1, 2, 3, 4, 5, 6].map((i) => toExpr(args[i], ctx))
+      return ctxVar && args[7]?.type === 'StringLiteral' && vals.every((v) => isSimpleValue(v))
+        ? {
+            type: 'g2d:paintTriangle',
+            ctxVar,
+            x1: vals[0] as JSExpr,
+            y1: vals[1] as JSExpr,
+            x2: vals[2] as JSExpr,
+            y2: vals[3] as JSExpr,
+            x3: vals[4] as JSExpr,
+            y3: vals[5] as JSExpr,
+            color: args[7].value as string,
+          }
+        : null
+    }
+    case 'paintLine': {
+      // generator: SZGame2D.paintLine(ctx, x1,y1, x2,y2, "cor", esp)
+      const ctxVar = identifierName(args[0])
+      const x1 = toExpr(args[1], ctx)
+      const y1 = toExpr(args[2], ctx)
+      const x2 = toExpr(args[3], ctx)
+      const y2 = toExpr(args[4], ctx)
+      const width = toExpr(args[6], ctx)
+      return ctxVar &&
+        args[5]?.type === 'StringLiteral' &&
+        isSimpleValue(x1) &&
+        isSimpleValue(y1) &&
+        isSimpleValue(x2) &&
+        isSimpleValue(y2) &&
+        isSimpleValue(width)
+        ? { type: 'g2d:paintLine', ctxVar, x1, y1, x2, y2, color: args[5].value as string, width }
+        : null
+    }
     case 'setAnimation': {
       // generator: SZGame2D.setAnimation(sprite, sheet, from, to, fps)
       const spriteVar = identifierName(args[0])
@@ -2291,6 +2816,119 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return spriteVar && sheetVar && isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
         ? { type: 'g2d:animateSprite', spriteVar, sheetVar, from, to, fps }
         : null
+    }
+    case 'setStateAnimation': {
+      // generator: SZGame2D.setStateAnimation(sprite, "estado", sheet, from, to, fps).
+      // O estado é um dropdown no bloco: literal FORA do enum não vira bloco
+      // (rawJS) — senão o dropdown coagiria o valor e corromperia o round-trip.
+      const spriteVar = identifierName(args[0])
+      const state = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : null
+      const sheetVar = identifierName(args[2])
+      const from = toExpr(args[3], ctx)
+      const to = toExpr(args[4], ctx)
+      const fps = toExpr(args[5], ctx)
+      return spriteVar &&
+        sheetVar &&
+        state &&
+        (G2D_ANIM_STATES as readonly string[]).includes(state) &&
+        isSimpleValue(from) &&
+        isSimpleValue(to) &&
+        isSimpleValue(fps)
+        ? { type: 'g2d:setStateAnim', spriteVar, state, sheetVar, from, to, fps }
+        : null
+    }
+    case 'autoAnimate': {
+      // generator: SZGame2D.autoAnimate(sprite)
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:autoAnimate', spriteVar } : null
+    }
+    case 'setEnemyStateAnimation': {
+      // generator: SZGame2D.setEnemyStateAnimation(tipo, "estado", sheet, from, to, fps)
+      const typeVar = identifierName(args[0])
+      const state = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : null
+      const sheetVar = identifierName(args[2])
+      const from = toExpr(args[3], ctx)
+      const to = toExpr(args[4], ctx)
+      const fps = toExpr(args[5], ctx)
+      return typeVar &&
+        sheetVar &&
+        state &&
+        (G2D_ANIM_STATES as readonly string[]).includes(state) &&
+        isSimpleValue(from) &&
+        isSimpleValue(to) &&
+        isSimpleValue(fps)
+        ? { type: 'g2d:enemyStateAnim', typeVar, state, sheetVar, from, to, fps }
+        : null
+    }
+    case 'setEnemyTypeParam': {
+      // generator: SZGame2D.setEnemyTypeParam(tipo, "param", valor)
+      const typeVar = identifierName(args[0])
+      const param = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : null
+      const value = toExpr(args[2], ctx)
+      return typeVar &&
+        param &&
+        (G2D_ENEMY_PARAMS as readonly string[]).includes(param) &&
+        isSimpleValue(value)
+        ? { type: 'g2d:setEnemyTypeParam', typeVar, param, value }
+        : null
+    }
+    case 'spawnEnemy': {
+      // generator: SZGame2D.spawnEnemy(tipo, x, y)
+      const typeVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      return typeVar && isSimpleValue(x) && isSimpleValue(y)
+        ? { type: 'g2d:spawnEnemy', typeVar, x, y }
+        : null
+    }
+    case 'updateEnemyType': {
+      // generator: SZGame2D.updateEnemyType(tipo, ctx, alvo)
+      const typeVar = identifierName(args[0])
+      const ctxVar = identifierName(args[1])
+      const targetVar = identifierName(args[2])
+      return typeVar && ctxVar && targetVar
+        ? { type: 'g2d:updateEnemyType', typeVar, ctxVar, targetVar }
+        : null
+    }
+    case 'drawEnemyType': {
+      // generator: SZGame2D.drawEnemyType(ctx, tipo)
+      const ctxVar = identifierName(args[0])
+      const typeVar = identifierName(args[1])
+      return ctxVar && typeVar ? { type: 'g2d:drawEnemyType', ctxVar, typeVar } : null
+    }
+    case 'onEnemyDefeated': {
+      // generator: SZGame2D.onEnemyDefeated(tipo, function (inimigo) {…})
+      const typeVar = identifierName(args[0])
+      if (!typeVar || !isFn(args[1])) return null
+      const itemName = identifierName(args[1].params?.[0]) ?? 'inimigo'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onEnemyDefeated',
+        typeVar,
+        itemName,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'overlapEnemyShots': {
+      // generator: SZGame2D.overlapEnemyShots(() => sprite, tipo, function (tiro) {…})
+      const spriteVar = arrowReturnIdentifier(args[0])
+      const typeVar = identifierName(args[1])
+      if (!spriteVar || !typeVar || !isFn(args[2])) return null
+      const itemName = identifierName(args[2].params?.[0]) ?? 'tiro'
+      ctx.spriteVars.add(itemName)
+      return {
+        type: 'g2d:onEnemyShotHit',
+        spriteVar,
+        typeVar,
+        itemName,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
+    case 'hurtByEnemy': {
+      // generator: SZGame2D.hurtByEnemy(sprite, inimigo)
+      const spriteVar = identifierName(args[0])
+      const enemyVar = identifierName(args[1])
+      return spriteVar && enemyVar ? { type: 'g2d:hurtByEnemy', spriteVar, enemyVar } : null
     }
     case 'drawFrame': {
       // generator: SZGame2D.drawFrame(ctx, sheet, index, x, y, w, h)
@@ -2894,9 +3532,44 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     const { x, y, w, h, color } = sprite
     return { type: 'g2d:createSprite', varName: name, x, y, w, h, color }
   }
+  if (method === 'createShapeSprite') {
+    // generator: const p = SZGame2D.createShapeSprite("figura", { x, y, w, h })
+    if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'ObjectExpression') return null
+    const sprite = readSpriteOptions(args[1], ctx)
+    if (!sprite) return null
+    ctx.spriteVars.add(name)
+    const { x, y, w, h } = sprite
+    return {
+      type: 'g2d:createShapeSprite',
+      varName: name,
+      shapeName: args[0].value as string,
+      x,
+      y,
+      w,
+      h,
+    }
+  }
   if (method === 'createGroup') {
     // generator: const g = SZGame2D.createGroup()
     return { type: 'g2d:createGroup', varName: name }
+  }
+  if (method === 'createEnemyType') {
+    // generator: const zumbi = SZGame2D.createEnemyType({ behavior, color, image, hp, speed, dmg, w, h })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readEnemyTypeOptions(args[0], ctx)
+    if (!o) return null
+    return {
+      type: 'g2d:defineEnemyType',
+      varName: name,
+      behavior: o.behavior,
+      color: o.color,
+      image: o.image,
+      hp: o.hp,
+      speed: o.speed,
+      dmg: o.dmg,
+      w: o.w,
+      h: o.h,
+    }
   }
   if (method === 'createShip') {
     // generator: const nave = SZGame2D.createShip({ x, y, w, h, body, wings })
@@ -2966,6 +3639,11 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     const opts = readTileMapOptions(args[0], ctx)
     if (!opts) return null
     return { type: 'g2d:createTileMap', varName: name, ...opts }
+  }
+  if (method === 'createTileMapFromAsset') {
+    // generator: const m = SZGame2D.createTileMapFromAsset("meu-mapa")
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g2d:createTileMapFromAsset', varName: name, image: args[0].value as string }
   }
   return null
 }
@@ -4665,6 +5343,25 @@ function matchGetElementById(node: Node): string | null {
   return node.arguments[0].value as string
 }
 
+/** `document.querySelector[All]('sel')` como VALOR (seletor literal). */
+function matchQuerySelectorValue(node: Node): { selector: string; all: boolean } | null {
+  if (!node || (node.type !== 'CallExpression' && node.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = node.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  if (callee.object?.name !== 'document') return null
+  const prop = callee.property?.name
+  if (prop !== 'querySelector' && prop !== 'querySelectorAll') return null
+  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  return { selector: node.arguments[0].value as string, all: prop === 'querySelectorAll' }
+}
+
 /**
  * Reconhece leitura de propriedade simples — `el.textContent` ou `el.value`
  * (membro normal ou optional), com o alvo resolvido via `extractTarget`
@@ -4934,6 +5631,17 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         const v = node.argument.value as number
         if (Number.isFinite(v)) return { type: 'num', value: -v }
       }
+      // Menos unário sobre NÃO-literal (`-this.width`, `-x`): vira a conta
+      // `0 - X` (numericamente idêntico; a nuance do -0 não aparece em jogos).
+      // Sem isto, `if (this.x < -this.width * 0.5)` inteiro caía em rawJS. O
+      // gerador emite `0 - X` com parênteses por precedência e o re-parse volta
+      // ao MESMO binop — fixpoint estável.
+      if (node.operator === '-') {
+        const inner = toExpr(node.argument, ctx)
+        if (isSimpleValue(inner)) {
+          return { type: 'binop', op: '-', left: { type: 'num', value: 0 }, right: inner }
+        }
+      }
       // Negação booleana `!x` → bloco "não".
       if (node.operator === '!') {
         const inner = toExpr(node.argument, ctx)
@@ -4973,11 +5681,68 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     case 'NullLiteral':
       return { type: 'null' }
     case 'Identifier':
+      // Apelido do parâmetro de evento ativo (`e => …`): toda referência solta
+      // vira `event` — o único nome que o gerador emite no `(event) =>`.
+      if (ctx?.eventParamAliases.includes(node.name)) {
+        return { type: 'var', name: 'event' }
+      }
       return { type: 'var', name: node.name }
     // `this` (o elemento atual dentro de um handler).
     case 'ThisExpression':
       return { type: 'thisRef' }
+    // `new Classe(args)` como VALOR (argumento de push/método, propriedade…).
+    // Date/Image ficam de fora: têm fluxos próprios (`agora: …`/matchNow e o par
+    // `new Image()` + src do tryFuseNewImage) que não podem ser capturados aqui.
+    // `const x = new C(...)` também não passa por este caminho (mapDeclarator
+    // resolve ANTES como o statement `newInstance`).
+    case 'NewExpression': {
+      if (node.callee?.type !== 'Identifier') return null
+      // `new Promise((resolve) => { ... })` → newPromise. O corpo é parseado
+      // (o `resolve()` lá dentro vira callFunction). Arrow/função com 0-1 param.
+      if (node.callee.name === 'Promise' && ctx) {
+        const arg = node.arguments?.[0]
+        if (
+          node.arguments?.length === 1 &&
+          (arg.type === 'ArrowFunctionExpression' || arg.type === 'FunctionExpression') &&
+          (arg.params?.length ?? 0) <= 1 &&
+          (arg.params ?? []).every((p: Node) => p?.type === 'Identifier')
+        ) {
+          return {
+            type: 'newPromise',
+            param: arg.params?.[0]?.name ?? 'resolve',
+            body: bodyOfFn(arg, ctx.source, ctx),
+          }
+        }
+        return null
+      }
+      if (node.callee.name === 'Date' || node.callee.name === 'Image') return null
+      const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+      if (!args.every(isSimpleValue)) return null
+      return { type: 'newExpr', className: node.callee.name, args: args as JSExpr[] }
+    }
+    // `objeto?.prop` — leitura opcional (não estoura se o objeto for null). Só o
+    // caso GERAL (sem os matchers específicos de MemberExpression, que são para
+    // acessos NÃO-opcionais). Ex.: `this.images[name]?.loaded`.
+    case 'OptionalMemberExpression': {
+      if (node.computed || node.property?.type !== 'Identifier') return null
+      if (isGlobalObject(node.object)) return null
+      const object = toExpr(node.object, ctx)
+      if (!isSimpleValue(object)) return null
+      return {
+        type: 'memberGet',
+        object: object as JSExpr,
+        name: node.property.name,
+        ...(node.optional ? { optional: true } : {}),
+      }
+    }
     case 'MemberExpression': {
+      // Apelido de evento na BASE do membro (`e.key`, `e.clientX`, `e.target`):
+      // normaliza para `event` ANTES dos matchers — vários deles são chaveados
+      // pelo NOME do identificador (eventProp, arrayLength…) e capturariam o
+      // apelido literal, regenerando um `e` órfão. Clone raso; o AST não é mutado.
+      if (node.object?.type === 'Identifier' && ctx?.eventParamAliases.includes(node.object.name)) {
+        node = { ...node, object: { ...node.object, name: 'event' } }
+      }
       // __szInput.x / __szInput.y — posição do mouse/dedo (caminho "na mão").
       if (
         !node.computed &&
@@ -5239,6 +6004,23 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     }
     case 'CallExpression':
     case 'OptionalCallExpression': {
+      // document.getElementById('id') como VALOR (ex.: guardar uma <img> numa
+      // propriedade p/ desenhar no canvas). ANTES dos outros matchers de chamada.
+      const elementId = matchGetElementById(node)
+      if (elementId !== null) return { type: 'getElement', id: elementId }
+      // document.querySelector[All]('sel') como VALOR (ex.: iterar com .forEach).
+      const qsv = matchQuerySelectorValue(node)
+      if (qsv) return { type: 'querySelectorValue', selector: qsv.selector, all: qsv.all }
+      // Promise.all([...]) → promiseAll (a lista é um valor, ex.: array literal).
+      if (
+        node.callee?.type === 'MemberExpression' &&
+        node.callee.object?.name === 'Promise' &&
+        node.callee.property?.name === 'all' &&
+        node.arguments?.length === 1
+      ) {
+        const list = toExpr(node.arguments[0], ctx)
+        return list && isSimpleValue(list) ? { type: 'promiseAll', list } : null
+      }
       // localStorage.getItem(chave) / sessionStorage.getItem(chave) → storageGet.
       if (node.type === 'CallExpression' && node.callee?.type === 'MemberExpression') {
         const obj = node.callee.object
@@ -5354,6 +6136,29 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         const cond = toExpr(arrow.body, ctx)
         if (isSimpleValue(cond)) {
           return { type: 'arrayFind', arrayVar: node.callee.object.name, itemName, cond }
+        }
+      }
+      // <lista>.filter((item) => <cond>) → filtrar lista (sz_val_array_filter).
+      // A lista pode ser QUALQUER valor simples (variável, this.enemies, membro…)
+      // — o bloco tem soquete de lista, não campo de nome.
+      if (
+        (node.callee?.type === 'MemberExpression' ||
+          node.callee?.type === 'OptionalMemberExpression') &&
+        !node.callee.computed &&
+        node.callee.property?.type === 'Identifier' &&
+        node.callee.property.name === 'filter' &&
+        node.arguments?.length === 1 &&
+        node.arguments[0]?.type === 'ArrowFunctionExpression' &&
+        node.arguments[0].params?.length === 1 &&
+        node.arguments[0].params[0]?.type === 'Identifier' &&
+        node.arguments[0].body?.type !== 'BlockStatement'
+      ) {
+        const arrow = node.arguments[0]
+        const itemName = arrow.params[0].name as string
+        const array = toExpr(node.callee.object, ctx)
+        const cond = toExpr(arrow.body, ctx)
+        if (isSimpleValue(array) && isSimpleValue(cond)) {
+          return { type: 'arrayFilter', array, itemName, cond }
         }
       }
       // <lista>.map((item) => <expr>) → transformar lista (sz_val_array_map).
@@ -5511,12 +6316,15 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:distance':
     case 'g2d:angleTo':
     case 'g2d:getHealth':
+    case 'g2d:enemyDamage':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
     case 'g2d:spriteW':
     case 'g2d:spriteH':
     case 'g2d:centerX':
     case 'g2d:centerY':
+    case 'g2d:shapeW':
+    case 'g2d:shapeH':
     case 'g2d:spriteVx':
     case 'g2d:spriteVy':
     case 'g2d:spriteSpeed':
@@ -5588,6 +6396,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return true
     case 'arrayFind':
       return isSimpleValue(expr.cond)
+    case 'arrayFilter':
+      return isSimpleValue(expr.array) && isSimpleValue(expr.cond)
     case 'arrayMap':
       return isSimpleValue(expr.transform)
     case 'binop':
@@ -5623,10 +6433,20 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return isSimpleValue(expr.object)
     case 'memberCallExpr':
       return isSimpleValue(expr.object) && expr.args.every(isSimpleValue)
+    case 'newExpr':
+      return expr.args.every(isSimpleValue)
     case 'objectOp':
       return isSimpleValue(expr.object)
     case 'assetImage':
       return true
+    case 'getElement':
+      return true
+    case 'querySelectorValue':
+      return true
+    case 'newPromise':
+      return true
+    case 'promiseAll':
+      return isSimpleValue(expr.list)
     case 'indexGet':
       return isSimpleValue(expr.object) && isSimpleValue(expr.index)
     default:
@@ -5967,9 +6787,14 @@ function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | nul
   // window e document são equivalentes (eventos borbulham); aceitamos os dois e
   // normalizamos para o targetKind correspondente (load/resize são da janela).
   if (callee.object?.type === 'Identifier' && callee.object.name === 'window') {
+    // TECLADO normaliza para `document` JÁ NO PARSE: o bloco "Quando tecla…"
+    // (sz_js_on_key) só emite document — sem isto, o 1º ciclo gerava `window.…`
+    // e o round-trip por BLOCOS trocava para `document.…` (diff espúrio no
+    // fixpoint blocos⇄código). Comportamento idêntico (a tecla borbulha).
+    const isKeyEvent = eventArg.value === 'keydown' || eventArg.value === 'keyup'
     return {
-      target: 'window',
-      targetKind: 'window',
+      target: isKeyEvent ? 'document' : 'window',
+      targetKind: isKeyEvent ? 'document' : 'window',
       event: eventArg.value as EventKind,
       ...handler,
     }

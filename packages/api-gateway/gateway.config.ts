@@ -374,6 +374,20 @@ const config: GatewayConfigInput = {
       // pollando a cada 3s — dimensionado p/ pico de lançamento.
       rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
     },
+    // Assinatura de cartão (checkout recorrente do funil). Mesmo perfil do
+    // `payments-create` (HMAC de borda + resign); o path repassa como está —
+    // o payments serve `POST /subscriptions` direto. Síncrona na Efí (plano +
+    // assinatura + 1ª cobrança) → mesma folga de timeout do create.
+    {
+      id: 'payments-subscriptions-create',
+      methods: ['POST'],
+      pathPattern: '/subscriptions',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      upstreamAuth: 'resign',
+      timeoutMs: 35_000,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // ── Admin de pagamentos (painel @sistemazero/admin) ──────────────────────
     // LEITURA + ações (estorno/cancelar) para o dono operar. JWT + RBAC no gateway
     // (admin/staff); o payments confere os X-Auth-* (requireAdmin, defesa em
@@ -442,6 +456,17 @@ const config: GatewayConfigInput = {
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Recorrência (ativas por intervalo + MRR + churn) — cards do painel.
+    {
+      id: 'payments-admin-stats-subscriptions',
+      methods: ['GET'],
+      pathPattern: '/payments/admin/stats/subscriptions',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'payments-admin-ops',
       methods: ['GET'],
@@ -500,6 +525,30 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    // "Minhas assinaturas" (community /compras + Área dos pais do kids). O
+    // literal `subscriptions` vence o param `/payments/my/:id` (coberto no
+    // route-registry test). Cancelar é MUTANTE → audit.
+    {
+      id: 'payments-my-subscriptions',
+      methods: ['GET'],
+      pathPattern: '/payments/my/subscriptions',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'payments-my-subscription-cancel',
+      methods: ['DELETE'],
+      pathPattern: '/payments/my/subscriptions/:id',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
     },
     // payments → gateway → funil. O gateway valida a assinatura do webhook
     // (verify-webhook), injeta o token interno e reescreve o path para /api/...
@@ -1141,6 +1190,23 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Quota de IA por CONTA: o BFF (member-shell) consome 1 crédito ANTES de cada
+    // ida ao LLM (Pensa chat/sínteses, descrição do Mural). O members resolve a
+    // conta pelos headers confiáveis e devolve `allowed` (recusa é domínio, 200).
+    // Literal `/members/ai-usage/consume` (3 seg) — sem colisão com `/members/access`
+    // nem `/members/avatar*`. 60/min por principal >> teto real (50/dia) — o rate
+    // aqui é só anti-burst; o teto de negócio vive no members.
+    {
+      id: 'members-ai-usage-consume',
+      methods: ['POST'],
+      pathPattern: '/members/ai-usage/consume',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
     },
     // Perfil de gamificação do aluno (XP/streak/badges) — widgets do kids buscam
     // a cada render de página (layout + home), por isso o teto generoso.
@@ -1906,6 +1972,18 @@ const config: GatewayConfigInput = {
       id: 'members-admin-analytics-funnel',
       methods: ['GET'],
       pathPattern: '/members/admin/analytics/courses/:courseId',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Uso de IA por conta (custo da quota) — página "Uso de IA" do painel.
+    // Literal `/members/admin/ai-usage` (3 seg), sem colisão com `/members/admin/members*`.
+    {
+      id: 'members-admin-ai-usage',
+      methods: ['GET'],
+      pathPattern: '/members/admin/ai-usage',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },

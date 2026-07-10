@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import type { SZIR } from '#ir'
+import { invadersNaMaoExample } from '../examples/core'
 import {
   MAX_BLOCKSTATE_BLOCKS,
   sanitizeImportedBlocksState,
@@ -47,6 +48,44 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
     const state = buildWorkspaceStateFromIR(ir)
     // O estado gerado tem extraState (mutators) e campos de parâmetro: não pode
     // ser descartado pelo sanitizador.
+    expect(sanitizeImportedBlocksState(state, [])).not.toBeNull()
+  })
+
+  it('preserva "Se/senão" com extraState do mutator (elseIf + hasElse)', () => {
+    // Regressão do "jogo reabre sem blocos": o mutator do sz_js_if_else grava
+    // `{elseIf, hasElse}`, mas a allowlist de extraState não tinha o caso — o
+    // default `false` derrubava a partição INTEIRA de qualquer projeto com um
+    // "senão" a cada reabertura (o modo Blocos abria vazio até a Ponte
+    // reconstruir do código).
+    const ir: SZIR = {
+      html: [],
+      css: [],
+      extensions: [],
+      js: [
+        {
+          type: 'if',
+          cond: { type: 'bool', value: true },
+          then: [{ type: 'consoleLog', value: { type: 'str', value: 'a' } }],
+          elseif: [
+            {
+              cond: { type: 'bool', value: false },
+              then: [{ type: 'consoleLog', value: { type: 'str', value: 'b' } }],
+            },
+          ],
+          else: [{ type: 'consoleLog', value: { type: 'str', value: 'c' } }],
+        },
+      ],
+    }
+    const state = buildWorkspaceStateFromIR(ir)
+    expect(JSON.stringify(state)).toContain('"hasElse"')
+    expect(sanitizeImportedBlocksState(state, [])).not.toBeNull()
+  })
+
+  it('o estado do exemplo "Invasores do Espaço" INTEIRO passa no sanitizador', () => {
+    // O exemplo cobre o vocabulário novo de uma vez (sz_val_new, filter,
+    // classes, if/else-if/else, eventos no construtor): se qualquer allowlist
+    // regredir, este teste aponta antes de o kit abrir vazio.
+    const state = buildWorkspaceStateFromIR(invadersNaMaoExample.ir)
     expect(sanitizeImportedBlocksState(state, [])).not.toBeNull()
   })
 

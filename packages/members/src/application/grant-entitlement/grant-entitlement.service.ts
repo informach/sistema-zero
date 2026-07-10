@@ -6,7 +6,10 @@ import type { EntitlementRepository } from '../../domain/ports/entitlement-repos
 
 /**
  * Intenção de concessão (normalizada). `subscription` presente → acesso por
- * ASSINATURA (cria/estende, com validade); ausente → compra única (VITALÍCIA).
+ * ASSINATURA (cria/estende, com validade); `accessPeriodMonths` presente →
+ * compra única POR PERÍODO (anual à vista via Pix/boleto: validade fixa +
+ * carência, SEM assinatura — renovar = nova compra = nova matrícula); nenhum
+ * dos dois → compra única VITALÍCIA.
  */
 export interface GrantEntitlementCommand {
   userId: string
@@ -16,6 +19,8 @@ export interface GrantEntitlementCommand {
   paymentId: string
   grantedAt: Date
   subscription?: { subscriptionId: string; intervalMonths: number | null } | null
+  /** Meses de acesso de uma compra única POR PERÍODO (ignorado com `subscription`). */
+  accessPeriodMonths?: number | null
 }
 
 export interface GrantEntitlementDeps {
@@ -69,7 +74,7 @@ export class GrantEntitlementService {
       }
       const applied = cmd.subscription
         ? await this.grantSubscription(cmd, item, snapshot, cmd.subscription)
-        : await this.grantLifetime(cmd, item, snapshot)
+        : await this.grantOneTime(cmd, item, snapshot)
       if (applied) granted += 1
     }
 
@@ -82,12 +87,21 @@ export class GrantEntitlementService {
     return { offerFound: true, granted, itemsResolved: offer.items.length }
   }
 
-  /** Compra única → matrícula VITALÍCIA (`expiresAt = null`). Idempotente por pagamento+produto. */
-  private async grantLifetime(
+  /**
+   * Compra única → matrícula VITALÍCIA (`expiresAt = null`) ou POR PERÍODO
+   * (`accessPeriodMonths` → validade = grant + N meses + carência; ex.: anual à
+   * vista via Pix/boleto — renovar é uma NOVA compra, com paymentId novo → linha
+   * nova, sem tocar esta). Idempotente por pagamento+produto.
+   */
+  private async grantOneTime(
     cmd: GrantEntitlementCommand,
     item: ResolvedOfferItem,
     snapshot: EntitlementSnapshot,
   ): Promise<boolean> {
+    const months = cmd.accessPeriodMonths ?? null
+    const expiresAt =
+      months && months > 0 ? computeExpiry(cmd.grantedAt, months, this.deps.graceDays) : null
+
     const entitlement = EntitlementAggregate.grant({
       id: this.deps.newId(),
       userId: cmd.userId,
@@ -101,7 +115,7 @@ export class GrantEntitlementService {
       sourceId: cmd.paymentId,
       subscriptionId: null,
       grantedAt: cmd.grantedAt,
-      expiresAt: null,
+      expiresAt,
       idempotencyKey: `payment:${cmd.paymentId}:${item.productId}`,
     })
     return this.deps.entitlements.save(entitlement)

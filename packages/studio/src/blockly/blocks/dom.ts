@@ -244,6 +244,42 @@ export const DOM_BLOCKS: BlockDefinition[] = [
       'Roda o "fazer" quando a janela do navegador muda de tamanho. Vira window.addEventListener("resize", (event) => { ... }).',
   },
   {
+    type: 'sz_js_on_context_menu',
+    message0: 'Quando abrir o menu do botão direito',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" quando o menu do botão direito é aberto (útil para zerar o teclado no jogo). Vira window.addEventListener("contextmenu", (event) => { ... }).',
+  },
+  {
+    type: 'sz_js_on_blur',
+    message0: 'Quando a janela perder o foco',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" quando a pessoa sai da janela do jogo (útil para zerar o teclado). Vira window.addEventListener("blur", (event) => { ... }).',
+  },
+  {
+    type: 'sz_js_element_onclick',
+    message0: 'ao clicar no elemento %1 %2 fazer %3',
+    args0: [
+      { type: 'input_value', name: 'TARGET', check: 'JSValue' },
+      { type: 'input_dummy' },
+      { type: 'input_statement', name: 'DO', check: 'JSStmt' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos de dentro quando o elemento for clicado — ex.: um botão (o elemento com id "playBtn"). Vira elemento.onclick = () => { ... }.',
+  },
+  {
     type: 'sz_js_on_fullscreen_change',
     message0: 'Quando a tela cheia mudar',
     message1: 'fazer %1',
@@ -301,6 +337,36 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Guarda o elemento de um id numa variável.',
+  },
+  {
+    type: 'sz_val_get_element',
+    message0: 'o elemento com id %1',
+    args0: [{ type: 'field_input', name: 'ID', text: 'canvas1' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O elemento da página com esse id, como valor — ex.: pegar uma imagem (<img id="…">) para desenhar no canvas. Vira document.getElementById("id").',
+  },
+  {
+    type: 'sz_val_query_select',
+    message0: '%1 que casam com o seletor %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'MODE',
+        options: [
+          ['todos os elementos', 'all'],
+          ['o primeiro elemento', 'one'],
+        ],
+      },
+      { type: 'field_input', name: 'SELECTOR', text: '.painel' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Os elementos da página que casam com um seletor CSS, como valor — ex.: para percorrer com "para cada". Vira document.querySelectorAll("seletor") (ou querySelector para o primeiro).',
   },
   {
     type: 'sz_js_query_selector',

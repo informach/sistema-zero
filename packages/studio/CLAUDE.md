@@ -428,6 +428,142 @@ grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` tam
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
 extensão. game-2d bump `0.19.0→0.20.0`. Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado).
+**Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
+FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +
+`attachAnimationNameWatcher`, espelho do thumb-watcher; registrado no inject do `BlocklyPanel` + no
+subscribe de `project.assets` — assets chegam DEPOIS do blocksState). Sem match com lista resolvida e
+rótulo apontando um nome DA lista → volta ao placeholder; lista irresolvível → NUNCA mexe. `fillFrames`
+passa a escrever também em literal REAL `sz_val_number` (não só shadow) — escolha explícita.
+
+## Reabertura + round-trip: garantias (10/07/2026)
+
+- **Hidratação dos blocos com STATUS** (`blocksHydration` no projectStore: idle/pending/restored/
+  empty/failed/discarded, mantido pelo `PersistenceService`). Regra de merge: a partição salva só
+  restaura para dentro de canvas VIVO VAZIO (⚠️ o sinal NÃO é `isDirty` — autosave chama `markSaved`
+  na janela e a restauração tardia clobraria blocos vivos). **TRANCA anti-perda**: enquanto
+  'pending'/'failed', `snapshotForSave` manda autosave/onChange/onSave SEM `blocksState` → o guard do
+  `persistProject` pula a partição (reabrir na Ponte não reescreve mais a partição real com o estado
+  DERIVADO; timeout 10s destrava a UI e resolução tardia ainda restaura).
+- **Sanitizador da partição** une as extensões do META persistido (`loadProjectMetaById`) às do
+  chamador — lista defasada não descarta mais um jogo inteiro (tudo-ou-nada continua).
+- **BlocksMode tem rede de segurança**: sem IR e sem partição ('empty'/'failed'/'idle'), deriva os
+  blocos do CÓDIGO via `parseProjectFiles` SEM sujar (`hydrateProjectState`) — aula só-Blocos nunca
+  abre em branco com código existente. Ambos os efeitos de derivação (Blocks/Bridge) esperam o
+  'pending'.
+- **Paint pós-load**: `schedulePostLoadRepaint` (double-rAF resize+render) + `scrollCenter` quando
+  NENHUM top-block intersecta a viewport (layout salvo longe da origem "parecia" canvas vazio) +
+  repaint one-shot em `document.fonts.ready` (Blockly media com a fonte de fallback). e2e:
+  `e2e/reopen-blocks.spec.ts` (reabrir núcleo/jogo/lista/longe-da-origem SEM alternar de modo).
+- **Shadow-ness sobrevive à Ponte**: IR→blocos emite `{shadow}` p/ literais em soquetes com preset
+  (fonte: `LEGACY_VALUE_FIELDS`, que também é o mapa de migração — soquete nascido `input_value` pode
+  e deve constar; drift `restoreShadowLiterals.test.ts` × `G2D/G3D_SOCKET_SHADOW_TYPES`) e
+  `restoreShadowLiterals` CURA estados poluídos no load (via `normalizeBlocksStateToFrames`). Sem
+  isso, `fillFrames`/`applySuggestedSize` (só escrevem em shadow) morriam após 1 passada pela Ponte.
+- **Parser mais fiel (jogo de classes 100% núcleo)**: composta em alvo membro/this/indexado expande
+  p/ `setThisProp`/`memberSet`/`indexSet` + conta (gate de PUREZA — objeto impuro segue raw); `*=`
+  `/=` `%=` e `++/--` idem; `-X` não-literal → `0 - X`; param de listener `e => e.key` normaliza p/
+  `event` (pilha `eventParamAliases`; inseguro → listener INTEIRO raw); teclado em `window.…`
+  normaliza p/ `document` JÁ NO PARSE (o bloco on_key só emite document — fixpoint byte-estável);
+  `hoistAnimationLoops` trata o handler de `load` como OPACO (loop fica dentro; consts do load);
+  `canvasClear` resolve o elemento pelo CTX (chave divergente emitia `canvas_2.width` quebrado).
+- **Blocos novos do núcleo**: `sz_val_new` ("novo objeto da classe %1", args-mutator, IR `newExpr`;
+  `const x = new C()` SEGUE sendo `sz_js_new_var`; Date/Image seguem nos fluxos próprios) e
+  `sz_val_array_filter` ("filtrar a lista %1 mantendo cada %2 em que %3" — a lista é SOQUETE, aceita
+  `this.enemies`; IR `arrayFilter{array: JSExpr}`). Ambos 'avancado' + allowlists (+extraState items
+  p/ o sz_val_new).
+- **CSS `url(<asset>)` resolve**: no preview via `rewriteCssAssetUrls` (só nome EXATO do manifest;
+  CSS persistido intocado) e no export cada asset vira ARQUIVO BINÁRIO `public/<nome>`
+  (`convertToPro` PULA binários — árvore pro é só texto; lá seguem via sz-assets.js).
+- **Prova viva**: `spaceInvadersFixture.test.ts` — o Space Invaders do tutorial (classes, pool,
+  filter, compostas, listeners no construtor, loop no load) parseia com **0 raw**, fixpoint textual E
+  de blocos; o exemplo do núcleo **"Invasores do Espaço (na mão)"** (`examples/core.ts`, com
+  `CoreExample.assets` — fundo estrelado PNG ~540 bytes gerado, NÃO o de 60KB do tutorial) tem drift
+  guardado contra o parser atual. Mudou o parser? O drift manda re-embutir a IR.
+
+## Vocabulário de classes/DOM — lote "Lobstermorph V9" (10/07/2026)
+
+Segundo jogo do Franks Laboratory (com HERANÇA e spritesheets) buildável 100% no núcleo. 6 lacunas
+fechadas, **todas em JS** (HTML e CSS já round-tripavam — `<img src id>` vira `sz_html_image`, que
+GANHOU campo `ID` visível + `img` em `ID_FIELD_TAGS`; `alt`/`id` vazios NÃO viram atributo, round-trip
+fiel). Prova: `lobstermorphFixture.test.ts` (0 raw, fixpoint textual + de blocos). ⚠️ NÃO tem exemplo
+embutido: os PNGs do jogo somam ~7,6MB (boss8 = 4MB), muito acima da cota de assets.
+- **`super(...)`** → bloco `sz_js_super_ctor` ("chamar o construtor da classe-mãe", args-mutator);
+  **`super.metodo(...)`** → `sz_js_super_method`. IR `superCall{args}`/`superMethodCall{method,args}`;
+  parser casa `callee.type==='Super'` em `mapExpressionStatement` (ANTES de tryMatchMethodCall). Ambos
+  'avancado' + allowlist + `isSupportedItemsExtraState`. Entram sozinhos na categoria Classes
+  (staticEntries varre OOP_BLOCKS não-ocultos).
+- **`document.getElementById('id')` como VALOR** → bloco `sz_val_get_element` ("o elemento com id %1",
+  'intermediario', DOM). IR `getElement{id}`; `matchGetElementById` fiado no `toExpr` (CallExpression,
+  ANTES dos outros); `isSimpleValue`=true. Usado p/ pegar `<img>` e desenhar com `drawImage` de 9 args
+  (que já round-tripa GENÉRICO — `context` é PARÂMETRO, não ctxVar, então cai em `memberCall`).
+- **`requestAnimationFrame(nome)` SOLTO** (laço à mão com timestamp+delta que a fusão do anim_loop não
+  pega) → bloco `sz_canvas_request_frame` ("pedir o próximo quadro chamando %1", 'intermediario'). IR
+  `requestFrame{fn}`; parser casa ANTES do denylist global (o RAF está no `GLOBAL_CALL_DENYLIST`).
+- **`cond ? a=1 : b=2;`** (ternário como STATEMENT) → normaliza p/ `if/senão` (só parser, reusa o nó
+  `if`; cada ramo é remapeado como statement). Normalização didática aceita.
+- **`this.game.gameOver;`** (statement que só lê um valor e descarta — no-op, bug do autor) → nó
+  `exprStatement{value}` + bloco **OCULTO** `sz_js_expr_statement` ("avaliar %1", `hidden:true` — some
+  da paleta, só existe p/ o round-trip fiel; a criança não precisa dele). Fallback ÚLTIMO no
+  `mapExpressionStatement`, só p/ nós de expressão pura (membro/identificador/this).
+
+## Achatar multi-arquivo — lote "Starter Kit P6" (10/07/2026)
+
+Terceiro jogo do Franks Laboratory (o "JS Game Starter Kit P6") buildável 100% no núcleo. É um projeto
+MULTI-ARQUIVO com ES modules (6 `.js` em core/entities/managers/systems) — o editor de BLOCOS trabalha
+sobre UM `script.js`, então o contrato é sobre o jogo ACHATADO (classes concatenadas, sem import/export;
+comportamento idêntico). 5 lacunas de JS fechadas + normalizações de CSS. Prova:
+`starterKitFixture.test.ts` (0 raw, fixpoint textual + de blocos). ⚠️ SEM exemplo embutido (como o V9): o
+`player.png` carrega via `new Image()` + caminho relativo cru que NÃO resolve no modelo de asset do
+preview (o jogo tem fallback de retângulo, seria vitrine fraca) — o fixture é a prova.
+- **Template literal como argumento** (`` `Image loaded: ${name}` ``) → o console.log agora aceita
+  QUALQUER valor simples (`isSimpleValue`), não só string/número/variável: bloco
+  `sz_js_console_log_value` ("Mostrar no console %1", soquete VALUE). 'iniciante'.
+- **Optional chaining de LEITURA** (`obj?.prop`) → bloco `sz_val_member_get_optional` ("propriedade %1
+  de %2 (se existir)"). IR `memberGet{optional:true}`; parser casa `OptionalMemberExpression`; gerador
+  emite `?.`. 'avancado'.
+- **`img.onerror`** (espelho do `img.onload`) → bloco `sz_js_image_onerror` ("se a imagem %1 falhar…").
+  IR `imageOnError{target,body}`. 'intermediario'.
+- **`requestAnimationFrame((t) => {…})`** com arrow (0 ou 1 param) → bloco `sz_canvas_request_frame_do`
+  ("pedir o próximo quadro, com o tempo em %1…"). IR `requestFrameDo{param?,body}`. (Complementa o
+  `sz_canvas_request_frame` do V9, que é p/ RAF com função NOMEADA solta; este é o corpo INLINE.)
+  'intermediario'.
+- **Eventos `contextmenu`/`blur` na janela** → blocos `sz_js_on_context_menu`/`sz_js_on_blur` (espelho
+  de `on_resize`). Kinds no schema + `KNOWN_EVENT_KINDS` + `EVENT_LISTENER_TYPES`/ordem no toolbox.
+  'iniciante'.
+- **Fix de round-trip `x = x - n`**: o bloco "Somar N" (`sz_js_var_increment`, DELTA negativo p/
+  `x -= n` / `x = x - n`) relia SEMPRE como `x = x + -n`; agora, DELTA<0 relê `x = x - |n|` (buildIR) —
+  a forma canônica do gerador → round-trip de BLOCOS byte-estável (o textual já era).
+- **CSS forward-only reordena**: `justify-content: center`/`align-items: center` viram blocos dedicados
+  (flex) que podem REORDENAR as declarações dentro da regra (dedicadas antes) — lossless (mesma
+  renderização). O fixture prova a igualdade SEMÂNTICA do CSS (mapa seletor→declarações via `cssDeclMap`),
+  não byte-a-byte; JS e HTML seguem byte-exatos. `image-rendering` duplicado (pixelated+crisp-edges)
+  colapsa p/ pixelated (IR de CSS é `Record`).
+
+## Subsistema assíncrono + UI — lote "Starter Kit P9" (10/07/2026)
+
+Quarto jogo do Franks Laboratory (evolução do P6, mesma base multi-arquivo achatada) — agora com
+carregamento ASSÍNCRONO e um menu de UI clicável. A usuária pediu 100% núcleo (via AskUserQuestion,
+"tudo em blocos"). Prova: `starterKitP9Fixture.test.ts` (0 raw, fixpoint textual + de blocos; CSS
+comparado por `cssDeclMap`). **SEM exemplo embutido** (como V9/P6). Fechou:
+- **Async de verdade** (novo paradigma, nível **avancado**, oculto do kids por padrão): método `async`
+  (checkbox `ASYNC` no `sz_js_class_method` — o mutator de params só mexe no `PARAMS_INPUT`, o checkbox
+  do `message0` sobrevive); `await <valor>` → `sz_js_await` (IR `awaitStmt`); `new Promise((resolve) =>
+  {…})` → `sz_val_new_promise` (IR `newPromise{param,body}` — um VALOR com CORPO de statements: o
+  `expr.ts` é a camada de baixo e NÃO compila statements, então `js.ts` INJETA `compileStatements` via
+  `_setExprStatementCompiler` + `ExprMapContext.indent`; `resolve()` dentro reusa o `callFunction`
+  existente); `Promise.all([…])` → `sz_val_promise_all` (IR `promiseAll{list}`, lista = valor);
+  `setTimeout(fn, ms)` com função por NOME → `sz_js_set_timeout_call` (o `sz_js_set_timeout` clássico só
+  casa a forma arrow). ⭐ `ParseCtx` ganhou `source` p/ o `matchNewPromise` chamar `bodyOfFn` de dentro
+  do `toExpr` (que não tinha source).
+- **UI clicável** (nível intermediario): `el.onclick = () => {…}` → **`sz_js_element_onclick`** ("ao
+  clicar no elemento", TARGET = valor) — ⚠️ NÃO confundir com o `sz_js_on_click` PRÉ-EXISTENTE (esse é
+  `addEventListener('click')`, target por id-string); `document.querySelector[All]('sel')` como VALOR →
+  **`sz_val_query_select`** (dropdown todos/primeiro) — destrava o `.forEach` nele; `classList.add/remove`
+  já round-tripava (getElement-valor + memberCall genérico).
+- **Comentários** (nível: HTML intermediario, CSS intermediario): `<!-- -->` → nó HTMLNode `comment` +
+  `sz_html_comment`; `/* */` → CSSEntry `comment` + `sz_css_comment` (parser casa `/^\/\*([\s\S]*)\*\/$/`,
+  guarda só o miolo, gerador reconstrói os delimitadores — byte-exato p/ qualquer sequência de
+  comentários). Antes viravam rawHTML/rawCSS "avançado".
 
 ## Comandos
 

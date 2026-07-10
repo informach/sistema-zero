@@ -66,7 +66,44 @@ nos blocos/código você usa o NOME do asset (string):
 - setImage(sprite, 'nome'): troca a imagem fixa do sprite (cancela a animação).
 - loadSpriteSheet('nome', fw, fh): folha de sprites; fw/fh = tamanho de cada quadro em px.
 - setAnimation(sprite, sheet, from, to, fps): anima o sprite entre os quadros [from..to].
+- setStateAnimation(sprite, 'estado', sheet, from, to, fps): guarda a animação de UM estado do
+  sprite ('parado'|'andando'|'vertical'|'pulando'|'caindo'|'dano'). Configuração: FORA do gameLoop.
+- autoAnimate(sprite): DENTRO do gameLoop; troca a animação sozinho conforme o estado (dano >
+  pulando/caindo > andando > vertical > parado) e vira o sprite (facing) pelo sinal do vx.
+  Estado sem animação cai no parente (caindo->pulando->andando->parado). Perder vida
+  (changeHealth negativo) ou piscar (blink) conta como 'dano'. Pulando/caindo exigem chão
+  (platformer/jumpOnGround/collideTileMap marcam sprite.onGround).
 - drawFrame(ctx, sheet, index, x, y, w, h): desenha um quadro específico (manual).
+
+Figuras: sprite desenhado por código (v0.23.0) — o visual do sprite feito com formas, sem imagem:
+- defineShape('nome', function (ctx) {...}): registra um desenho nomeado. O corpo desenha em
+  coords LOCAIS (0,0 = canto do sprite); pode usar os paint_* OU os blocos de Canvas (ctx é o
+  parâmetro). Configuração: FORA do gameLoop.
+- createShapeSprite('figura', { x, y, w, h }): cria um sprite que usa a figura (anda/gira/vira/
+  colide como qualquer sprite). setShape(sprite, 'figura'): troca a figura de um sprite.
+- paintRect/paintCircle/paintEllipse/paintTriangle/paintLine(ctx, ...coords..., 'cor'): formas
+  simples dentro da figura (recebem o ctx da figura).
+- shapeW()/shapeH(): tamanho do sprite que está sendo desenhado (para centralizar).
+- Gotcha: a figura desenha em coords locais e ganha giro/flip/piscar do sprite de graça.
+
+Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um grupo estendido
+({ items, bullets: {items}, config }), então os helpers de grupo funcionam nele:
+- createEnemyType({ behavior, color, image, hp, speed, dmg, w, h }): behavior em
+  'patrulha'|'perseguidor'|'voador'|'voador-vertical'|'saltador'|'atirador'.
+- spawnEnemy(tipo, x, y): solta um inimigo com a vida/dano/animações do tipo.
+- updateEnemyType(tipo, ctx, alvo): DENTRO do gameLoop; comportamento + autoAnimate + tiros do
+  atirador + remove derrotados (hp<=0 -> particulas + onDefeat). Alvo = quem perseguir/mirar.
+- drawEnemyType(ctx, tipo): desenha inimigos + tiros.
+- onEnemyDefeated(tipo, function (inimigo) {...}): registrar UMA vez, fora do gameLoop.
+- overlapEnemyShots(() => sprite, tipo, function (tiro) {...}): DENTRO do gameLoop; remove o
+  tiro ao acertar.
+- hurtByEnemy(sprite, inimigoOuTiro): tira enemyDamage() da vida + blink(45); piscando =
+  invencivel (nao drena no contato continuo).
+- enemyDamage(inimigoOuTiro): o dano de contato (default 1).
+- setEnemyStateAnimation(tipo, 'estado', sheet, from, to, fps): animação por estado do TIPO.
+- setEnemyTypeParam(tipo, 'pulo'|'ritmo'|'alcance'|'cadencia'|'tiro', valor): sintonia fina.
+- Patrulha em mapa de tiles: collideTileMap zera o vx na parede -> o inimigo vira sozinho
+  (use forEachInGroup(tipo, ...) + collideTileMap dentro do gameLoop).
 - loadImage('nome'): handle { img, loaded } (aceita nome do asset OU url/dataUrl direta).
 
 Movimento e efeitos (v0.4.0) — sempre DENTRO do gameLoop:
@@ -79,6 +116,8 @@ Movimento e efeitos (v0.4.0) — sempre DENTRO do gameLoop:
 - emitParticles(x, y, count, 'cor'): explosão de partículas; drawParticles(ctx) move+desenha a cada frame.
 
 Tiles e tilemaps (v0.5.0) — cenários a partir de um tileset (asset com vários quadros lado a lado):
+- createTileMapFromAsset('meu-mapa'): mapa PRONTO de um desenho de MAPA (Pinta/fatiador — asset
+  com metadado de mapa: grade/peças/sólidos embutidos). Sem metadado -> mapa vazio + aviso.
 - createTileMap({ image: 'tileset', tile: 32, solid: '1', grid: '1 1 1;1 0 1;1 1 1' }): cria o mapa.
   grid = texto da grade (cada número = um quadro do tileset; ';' separa linhas, espaço separa colunas, '.' = vazio);
   solid = índices que barram o sprite (separados por vírgula).

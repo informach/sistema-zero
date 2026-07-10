@@ -32,6 +32,13 @@ export interface OfferContent {
    * mesmo produto podem dar quantidades diferentes.
    */
   maxProfiles?: number
+  /**
+   * OFERTA IRMÃ do alternador do checkout ("economize no anual"): a mensal aponta
+   * a anual e vice-versa. `slug` = a oferta alvo (o funil VALIDA o slug escolhido
+   * contra este link — anti-forja); `label` = o texto do alternador (ausente → o
+   * funil usa um default por intervalo). Autorado no admin, nos DOIS sentidos.
+   */
+  altOffer?: { slug: string; label?: string }
 }
 
 /** Estado serializável da oferta (ida/volta ao banco). */
@@ -47,6 +54,13 @@ export interface OfferSnapshot {
   compareAtPriceCents: number | null
   currency: Currency
   pricingMode: PricingMode
+  /**
+   * Periodicidade da ASSINATURA em meses (mensal = 1, anual = 12). Só faz sentido
+   * com `pricingMode: 'subscription'` (one_time normaliza p/ null); oferta de
+   * assinatura ATIVA exige o valor — é o que o funil manda ao payments como
+   * `intervalMonths` do plano Efí.
+   */
+  billingIntervalMonths: number | null
   installmentsMax: number | null
   trialDays: number | null
   guaranteeDays: number | null
@@ -69,6 +83,7 @@ export interface CreateOfferInput {
   compareAtPriceCents?: number | null
   currency?: Currency
   pricingMode?: PricingMode
+  billingIntervalMonths?: number | null
   installmentsMax?: number | null
   trialDays?: number | null
   guaranteeDays?: number | null
@@ -86,6 +101,7 @@ export interface UpdateOfferDetails {
   priceCents?: number
   compareAtPriceCents?: number | null
   pricingMode?: PricingMode
+  billingIntervalMonths?: number | null
   installmentsMax?: number | null
   trialDays?: number | null
   guaranteeDays?: number | null
@@ -107,6 +123,7 @@ interface OfferProps {
   compareAtPriceCents: number | null
   currency: Currency
   pricingMode: PricingMode
+  billingIntervalMonths: number | null
   installmentsMax: number | null
   trialDays: number | null
   guaranteeDays: number | null
@@ -161,6 +178,10 @@ export class OfferAggregate extends AggregateRoot<string> {
       compareAtPriceCents: input.compareAtPriceCents ?? null,
       currency,
       pricingMode: input.pricingMode ?? DEFAULT_PRICING_MODE,
+      billingIntervalMonths: normalizeBillingInterval(
+        input.pricingMode ?? DEFAULT_PRICING_MODE,
+        input.billingIntervalMonths,
+      ),
       installmentsMax: nullablePositiveInt(input.installmentsMax, 'installmentsMax'),
       trialDays: nullablePositiveInt(input.trialDays, 'trialDays'),
       guaranteeDays: nullablePositiveInt(input.guaranteeDays, 'guaranteeDays'),
@@ -172,6 +193,7 @@ export class OfferAggregate extends AggregateRoot<string> {
       createdAt: now,
       updatedAt: now,
     })
+    assertSubscriptionInterval(offer.props)
     offer.addEvent(
       new OfferCreatedEvent(
         offer.id,
@@ -212,6 +234,19 @@ export class OfferAggregate extends AggregateRoot<string> {
       assertCompareAt(this.props.compareAtPriceCents, this.props.priceCents, this.props.currency)
     }
     if (details.pricingMode !== undefined) this.props.pricingMode = details.pricingMode
+    if (details.billingIntervalMonths !== undefined) {
+      this.props.billingIntervalMonths = nullablePositiveInt(
+        details.billingIntervalMonths,
+        'billingIntervalMonths',
+      )
+    }
+    // Estado consolidado: one_time não carrega intervalo (normaliza); assinatura
+    // ATIVA exige o intervalo (o funil/payments dependem dele p/ o plano Efí).
+    this.props.billingIntervalMonths = normalizeBillingInterval(
+      this.props.pricingMode,
+      this.props.billingIntervalMonths,
+    )
+    assertSubscriptionInterval(this.props)
     if (details.installmentsMax !== undefined)
       this.props.installmentsMax = nullablePositiveInt(details.installmentsMax, 'installmentsMax')
     if (details.trialDays !== undefined)
@@ -245,6 +280,9 @@ export class OfferAggregate extends AggregateRoot<string> {
       )
     }
     this.props.status = status
+    // Ativar uma oferta de assinatura sem periodicidade venderia um plano que o
+    // payments não sabe cobrar — barra na ATIVAÇÃO (rascunho segue livre).
+    assertSubscriptionInterval(this.props)
     this.touch(now)
     this.addEvent(new OfferUpdatedEvent(this.id, `status:${status}`))
   }
@@ -290,6 +328,9 @@ export class OfferAggregate extends AggregateRoot<string> {
   }
   get pricingMode(): PricingMode {
     return this.props.pricingMode
+  }
+  get billingIntervalMonths(): number | null {
+    return this.props.billingIntervalMonths
   }
   get installmentsMax(): number | null {
     return this.props.installmentsMax
@@ -355,6 +396,32 @@ function nullablePositiveInt(value: number | null | undefined, field: string): n
     throw new ValidationError(`${field} deve ser um inteiro positivo`)
   }
   return value
+}
+
+/** `one_time` não carrega periodicidade (normaliza p/ null); assinatura valida ≥1. */
+function normalizeBillingInterval(
+  mode: PricingMode,
+  value: number | null | undefined,
+): number | null {
+  if (mode !== 'subscription') return null
+  return nullablePositiveInt(value, 'billingIntervalMonths')
+}
+
+/**
+ * Oferta de ASSINATURA ativa exige a periodicidade (mensal = 1, anual = 12) — sem
+ * ela o checkout não sabe montar o plano no provedor. Rascunho/pausada segue livre
+ * (cadastro progressivo, régua do `assertCoherent` do produto).
+ */
+function assertSubscriptionInterval(props: OfferProps): void {
+  if (
+    props.status === 'active' &&
+    props.pricingMode === 'subscription' &&
+    props.billingIntervalMonths === null
+  ) {
+    throw new ValidationError(
+      'Oferta de assinatura ativa exige o intervalo de cobrança (mensal = 1, anual = 12)',
+    )
+  }
 }
 
 function normalizeItems(offerProductId: string, items: OfferItem[]): OfferItem[] {

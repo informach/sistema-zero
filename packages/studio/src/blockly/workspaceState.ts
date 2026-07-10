@@ -2,6 +2,7 @@ import { compileStatements } from '#generators'
 import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR } from '#ir'
 import { screenTextToExpr, valueToExpr } from '#ir'
 import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE, SHADOW_PRESETS } from './buildIR'
+import { LEGACY_VALUE_FIELDS } from './migrateValueFields'
 
 /** Tags container (têm input CHILDREN) → tipo de bloco. */
 const CONTAINER_BLOCK: Partial<Record<string, string>> = {
@@ -34,7 +35,9 @@ export interface SerializedBlocklyBlock {
   x?: number
   y?: number
   fields?: Record<string, string | number>
-  inputs?: Record<string, { block: SerializedBlocklyBlock }>
+  /** Soquete: bloco real (`block`) e/ou SOMBRA (`shadow` — literal default que os
+   * preenchimentos automáticos podem sobrescrever; ver `restoreShadowLiterals`). */
+  inputs?: Record<string, { block?: SerializedBlocklyBlock; shadow?: SerializedBlocklyBlock }>
   next?: { block: SerializedBlocklyBlock }
   /** Estado extra de mutators (ex.: contagem de argumentos do `sz_args_mutator`). */
   extraState?: unknown
@@ -59,6 +62,7 @@ const ID_FIELD_TAGS = new Set([
   'button',
   'input',
   'textarea',
+  'img',
   'svg',
   'g',
   'path',
@@ -157,17 +161,10 @@ export function emptyFramesBlocksState(): SerializedBlocklyWorkspace {
   return buildWorkspaceStateFromIR({ html: [], css: [], js: [], extensions: [] })
 }
 
-/**
- * Verdadeiro se o `blocksState` é `null`/inválido OU é uma serialização válida
- * porém sem blocos top-level. Os modos Blocos/Ponte usam para decidir se devem
- * derivar os blocos do IR — sem isso, um `blocksState` vazio (resíduo de algum
- * ciclo anterior, ex.: sanitizer que descartava todo o estado) passava no
- * early-return e o canvas ficava em branco depois do refresh.
- */
-export function isBlocksStateEmpty(state: unknown): boolean {
-  const tops = (state as SerializedBlocklyWorkspace | null | undefined)?.blocks?.blocks
-  return !Array.isArray(tops) || tops.length === 0
-}
+// Implementação num módulo PURO (sem imports) para o PersistenceService poder
+// usá-la sem arrastar Blockly ao chunk do núcleo; re-exportada aqui para os
+// consumidores existentes do barrel `#blockly`.
+export { isBlocksStateEmpty } from './blocksStateShape'
 
 function htmlNodeToBlock(node: SZIR['html'][number]): SerializedBlocklyBlock {
   const built = htmlNodeToBlockInner(node)
@@ -188,6 +185,9 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   }
   if (node.type === 'text') {
     return block('sz_html_text', { TEXT: node.text }, {}, node.__id)
+  }
+  if (node.type === 'comment') {
+    return block('sz_html_comment', { TEXT: node.text }, {}, node.__id)
   }
   if (node.type === 'canvas') {
     // Largura/altura não são mais campos do bloco — só o id. Quando a IR carrega
@@ -243,7 +243,7 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   if (node.tag === 'img') {
     return block(
       'sz_html_image',
-      { SRC: node.attrs?.src ?? '', ALT: node.attrs?.alt ?? '' },
+      { SRC: node.attrs?.src ?? '', ALT: node.attrs?.alt ?? '', ID: node.id ?? '' },
       {},
       node.__id,
     )
@@ -474,6 +474,9 @@ function keyframesToBlock(entry: KeyframesCSS): SerializedBlocklyBlock {
 function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
   if ('type' in entry && entry.type === 'rawCSS') {
     return [block('sz_adv_raw_css', { CODE: entry.code }, {}, entry.__id)]
+  }
+  if ('type' in entry && entry.type === 'comment') {
+    return [block('sz_css_comment', { TEXT: entry.text }, {}, entry.__id)]
   }
   if ('type' in entry && entry.type === 'mediaQuery') {
     const inner = entry.rules.flatMap(cssEntryToBlocks)
@@ -779,6 +782,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         load: 'sz_js_on_load',
         resize: 'sz_js_on_resize',
         fullscreenchange: 'sz_js_on_fullscreen_change',
+        contextmenu: 'sz_js_on_context_menu',
+        blur: 'sz_js_on_blur',
       }
       const globalType = globalMap[stmt.event]
       if (globalType) {
@@ -810,6 +815,9 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (text !== null) return block('sz_js_console_log_text', { VALUE: text }, {}, stmt.__id)
       const name = varExpr(stmt.value)
       if (name) return block('sz_js_console_log_var', { NAME: name }, {}, stmt.__id)
+      // Qualquer outro valor (juntar texto, objeto, conta…) vai no soquete.
+      const value = exprToValueBlock(stmt.value)
+      if (value) return block('sz_js_console_log_value', {}, {}, stmt.__id, { VALUE: value })
       return rawJSBlock(stmt)
     }
     case 'alert': {
@@ -1684,6 +1692,105 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g2d:setImage':
       return block('sz_g2d_set_image', { SPRITE: stmt.spriteVar, IMAGE: stmt.image }, {}, stmt.__id)
+    case 'g2d:defineShape':
+      return block(
+        'sz_g2d_define_shape',
+        { NAME: stmt.shapeName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:createShapeSprite': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return x === null || y === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_create_shape_sprite',
+            { SPRITE: stmt.varName, SHAPE: stmt.shapeName },
+            {},
+            stmt.__id,
+            { X: x, Y: y, W: w, H: h },
+          )
+    }
+    case 'g2d:setShape':
+      return block(
+        'sz_g2d_set_shape',
+        { SPRITE: stmt.spriteVar, SHAPE: stmt.shapeName },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:paintRect': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return x === null || y === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_rect', { COLOR: stmt.color }, {}, stmt.__id, {
+            X: x,
+            Y: y,
+            W: w,
+            H: h,
+          })
+    }
+    case 'g2d:paintCircle': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const r = exprToValueBlock(valueToExpr(stmt.r))
+      return x === null || y === null || r === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_circle', { COLOR: stmt.color }, {}, stmt.__id, { X: x, Y: y, R: r })
+    }
+    case 'g2d:paintEllipse': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return x === null || y === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_ellipse', { COLOR: stmt.color }, {}, stmt.__id, {
+            X: x,
+            Y: y,
+            W: w,
+            H: h,
+          })
+    }
+    case 'g2d:paintTriangle': {
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const y1 = exprToValueBlock(valueToExpr(stmt.y1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const y2 = exprToValueBlock(valueToExpr(stmt.y2))
+      const x3 = exprToValueBlock(valueToExpr(stmt.x3))
+      const y3 = exprToValueBlock(valueToExpr(stmt.y3))
+      return x1 === null || y1 === null || x2 === null || y2 === null || x3 === null || y3 === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_triangle', { COLOR: stmt.color }, {}, stmt.__id, {
+            X1: x1,
+            Y1: y1,
+            X2: x2,
+            Y2: y2,
+            X3: x3,
+            Y3: y3,
+          })
+    }
+    case 'g2d:paintLine': {
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const y1 = exprToValueBlock(valueToExpr(stmt.y1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const y2 = exprToValueBlock(valueToExpr(stmt.y2))
+      const width = exprToValueBlock(valueToExpr(stmt.width))
+      return x1 === null || y1 === null || x2 === null || y2 === null || width === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_line', { COLOR: stmt.color }, {}, stmt.__id, {
+            X1: x1,
+            Y1: y1,
+            X2: x2,
+            Y2: y2,
+            WIDTH: width,
+          })
+    }
     case 'g2d:loadSpritesheet': {
       const fw = exprToValueBlock(valueToExpr(stmt.frameW))
       const fh = exprToValueBlock(valueToExpr(stmt.frameH))
@@ -1711,6 +1818,106 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             { FROM: from, TO: to, FPS: fps },
           )
     }
+    case 'g2d:setStateAnim': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      const fps = exprToValueBlock(valueToExpr(stmt.fps))
+      return from === null || to === null || fps === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_set_state_anim',
+            { SPRITE: stmt.spriteVar, STATE: stmt.state, SHEET: stmt.sheetVar },
+            {},
+            stmt.__id,
+            { FROM: from, TO: to, FPS: fps },
+          )
+    }
+    case 'g2d:autoAnimate':
+      return block('sz_g2d_auto_animate', { SPRITE: stmt.spriteVar }, {}, stmt.__id)
+    case 'g2d:defineEnemyType': {
+      const hp = exprToValueBlock(valueToExpr(stmt.hp))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return hp === null || speed === null || dmg === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_define_enemy_type',
+            {
+              NAME: stmt.varName,
+              BEHAVIOR: stmt.behavior,
+              COLOR: stmt.color,
+              IMAGE: stmt.image,
+            },
+            {},
+            stmt.__id,
+            { HP: hp, SPEED: speed, DMG: dmg, W: w, H: h },
+          )
+    }
+    case 'g2d:enemyStateAnim': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      const fps = exprToValueBlock(valueToExpr(stmt.fps))
+      return from === null || to === null || fps === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_enemy_state_anim',
+            { TYPE: stmt.typeVar, STATE: stmt.state, SHEET: stmt.sheetVar },
+            {},
+            stmt.__id,
+            { FROM: from, TO: to, FPS: fps },
+          )
+    }
+    case 'g2d:setEnemyTypeParam': {
+      const value = exprToValueBlock(valueToExpr(stmt.value))
+      return value === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_enemy_type_param',
+            { TYPE: stmt.typeVar, PARAM: stmt.param },
+            {},
+            stmt.__id,
+            { VALUE: value },
+          )
+    }
+    case 'g2d:spawnEnemy': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_spawn_enemy', { TYPE: stmt.typeVar }, {}, stmt.__id, { X: x, Y: y })
+    }
+    case 'g2d:updateEnemyType':
+      return block(
+        'sz_g2d_update_enemy_type',
+        { TYPE: stmt.typeVar, TARGET: stmt.targetVar },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:drawEnemyType':
+      return block('sz_g2d_draw_enemy_type', { TYPE: stmt.typeVar }, {}, stmt.__id)
+    case 'g2d:onEnemyDefeated':
+      return block(
+        'sz_g2d_on_enemy_defeated',
+        { TYPE: stmt.typeVar, ANAME: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:onEnemyShotHit':
+      return block(
+        'sz_g2d_on_enemy_shot_hit',
+        { TYPE: stmt.typeVar, SPRITE: stmt.spriteVar, ANAME: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:hurtByEnemy':
+      return block(
+        'sz_g2d_hurt_by_enemy',
+        { SPRITE: stmt.spriteVar, ENEMY: stmt.enemyVar },
+        {},
+        stmt.__id,
+      )
     case 'g2d:drawFrame': {
       const index = exprToValueBlock(valueToExpr(stmt.index))
       const x = exprToValueBlock(valueToExpr(stmt.x))
@@ -1787,6 +1994,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             { TILE: tile },
           )
     }
+    case 'g2d:createTileMapFromAsset':
+      return block(
+        'sz_g2d_create_tilemap_from_asset',
+        { NAME: stmt.varName, IMAGE: stmt.image },
+        {},
+        stmt.__id,
+      )
     case 'g2d:drawTileMap': {
       const x = exprToValueBlock(valueToExpr(stmt.x))
       const y = exprToValueBlock(valueToExpr(stmt.y))
@@ -2915,6 +3129,37 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         TARGET: target,
       })
     }
+    case 'imageOnError': {
+      const target = exprToValueBlock(stmt.target)
+      if (!target) return rawJSBlock(stmt)
+      return block('sz_js_image_onerror', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
+        TARGET: target,
+      })
+    }
+    case 'onClickAssign': {
+      const target = exprToValueBlock(stmt.target)
+      if (!target) return rawJSBlock(stmt)
+      return block('sz_js_element_onclick', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
+        TARGET: target,
+      })
+    }
+    case 'awaitStmt': {
+      const value = exprToValueBlock(stmt.value)
+      if (!value) return rawJSBlock(stmt)
+      return block('sz_js_await', {}, {}, stmt.__id, { VALUE: value })
+    }
+    case 'setTimeoutCall': {
+      const ms = exprToValueBlock(stmt.delay)
+      if (!ms) return rawJSBlock(stmt)
+      return block('sz_js_set_timeout_call', { FN: stmt.fn }, {}, stmt.__id, { MS: ms })
+    }
+    case 'requestFrameDo':
+      return block(
+        'sz_canvas_request_frame_do',
+        { PARAM: stmt.param ?? '' },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'indexSet': {
       const obj = exprToValueBlock(stmt.object)
       const index = exprToValueBlock(stmt.index)
@@ -2934,6 +3179,17 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const b = block('sz_js_method_on', { METHOD: stmt.method }, {}, stmt.__id, valueInputs)
       if (stmt.args.length > 0) b.extraState = { items: stmt.args.length }
       return b
+    }
+    case 'superCall':
+      return callWithArgs('sz_js_super_ctor', {}, stmt.args, stmt)
+    case 'superMethodCall':
+      return callWithArgs('sz_js_super_method', { METHOD: stmt.method }, stmt.args, stmt)
+    case 'requestFrame':
+      return block('sz_canvas_request_frame', { FN: stmt.fn }, {}, stmt.__id)
+    case 'exprStatement': {
+      const value = exprToValueBlock(stmt.value)
+      if (!value) return rawJSBlock(stmt)
+      return block('sz_js_expr_statement', {}, {}, stmt.__id, { VALUE: value })
     }
     case 'return': {
       // `return;` (saída antecipada) → bloco sem soquete.
@@ -2983,13 +3239,19 @@ function methodToBlock(m: {
   name: string
   params: string[]
   body: JSStatement[]
+  async?: boolean
 }): SerializedBlocklyBlock {
   const params = new Set(m.params)
   const body = statementsToBlocks(m.body)
   for (const b of body) retypeParamsAsArgs(b, params)
   // Idem ao construtor: passar o `__id` mantém o vínculo entre o bloco no
   // canvas e a entrada de sourcemap após round-trips IR→Blocks.
-  const blk = block('sz_js_class_method', { NAME: m.name }, { BODY: body }, m.__id)
+  const blk = block(
+    'sz_js_class_method',
+    { NAME: m.name, ASYNC: m.async ? 'TRUE' : 'FALSE' },
+    { BODY: body },
+    m.__id,
+  )
   blk.extraState = paramsExtra(m.params)
   return blk
 }
@@ -3036,6 +3298,29 @@ function callWithArgs(
   return b
 }
 
+/** Tipo do bloco literal por kind de sombra (espelha `shadowFor` da migração). */
+const SHADOW_LITERAL_BLOCK: Record<'number' | 'text' | 'color', string> = {
+  number: 'sz_val_number',
+  text: 'sz_val_text',
+  color: 'sz_val_color',
+}
+
+/**
+ * O valor deste soquete deve ser emitido como SOMBRA? Verdadeiro quando o bloco
+ * tem preset de sombra para o slot (fonte: `LEGACY_VALUE_FIELDS`) e o filho é o
+ * literal PURO do kind casado. Sem isso, a reconstrução IR→blocos devolvia
+ * FROM/TO/FPS (etc.) como blocos REAIS e os preenchimentos automáticos
+ * (`fillFrames`/`applySuggestedSize`, que só escrevem em `isShadow()`) morriam
+ * em silêncio após uma passada pela Ponte. Getter/expressão nunca vira sombra.
+ */
+function shouldEmitAsShadow(blockType: string, slot: string, child: SerializedBlocklyBlock) {
+  const kind = LEGACY_VALUE_FIELDS[blockType]?.[slot]
+  if (!kind) return false
+  if (child.type !== SHADOW_LITERAL_BLOCK[kind]) return false
+  if (child.inputs && Object.keys(child.inputs).length > 0) return false
+  return !child.next
+}
+
 function block(
   type: string,
   fields: Record<string, string | number> = {},
@@ -3049,9 +3334,14 @@ function block(
       .map(([name, children]) => [name, chain(children)])
       .filter((entry): entry is [string, SerializedBlocklyBlock] => Boolean(entry[1])),
   )
-  const allInputs: Record<string, { block: SerializedBlocklyBlock }> = {
+  const allInputs: NonNullable<SerializedBlocklyBlock['inputs']> = {
     ...Object.fromEntries(Object.entries(serializedInputs).map(([k, v]) => [k, { block: v }])),
-    ...Object.fromEntries(Object.entries(valueInputs).map(([k, v]) => [k, { block: v }])),
+    ...Object.fromEntries(
+      Object.entries(valueInputs).map(([k, v]) => [
+        k,
+        shouldEmitAsShadow(type, k, v) ? { shadow: v } : { block: v },
+      ]),
+    ),
   }
   return {
     type,
@@ -3105,6 +3395,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_angle_to', { A: expr.aVar, B: expr.bVar })
     case 'g2d:getHealth':
       return block('sz_g2d_get_health', { SPRITE: expr.spriteVar })
+    case 'g2d:enemyDamage':
+      return block('sz_g2d_enemy_damage', { SPRITE: expr.spriteVar })
     case 'g2d:spriteX':
       return block('sz_g2d_sprite_x', { SPRITE: expr.spriteVar })
     case 'g2d:spriteY':
@@ -3117,6 +3409,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_center_x', { SPRITE: expr.spriteVar })
     case 'g2d:centerY':
       return block('sz_g2d_center_y', { SPRITE: expr.spriteVar })
+    case 'g2d:shapeW':
+      return block('sz_g2d_shape_w', {})
+    case 'g2d:shapeH':
+      return block('sz_g2d_shape_h', {})
     case 'g2d:spriteVx':
       return block('sz_g2d_sprite_vx', { SPRITE: expr.spriteVar })
     case 'g2d:spriteVy':
@@ -3435,10 +3731,40 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
           })
         : null
     }
+    case 'arrayFilter': {
+      const array = exprToValueBlock(expr.array)
+      const cond = exprToValueBlock(expr.cond)
+      return array && cond
+        ? block('sz_val_array_filter', { ITEM: expr.itemName }, {}, expr.__id, {
+            ARRAY: array,
+            COND: cond,
+          })
+        : null
+    }
     case 'shuffle':
       return block('sz_val_shuffle', { NAME: expr.arrayVar })
     case 'datasetGet':
       return block('sz_val_dataset', { KEY: expr.key, OBJ: expr.objectVar })
+    case 'getElement':
+      return block('sz_val_get_element', { ID: expr.id }, {}, expr.__id)
+    case 'querySelectorValue':
+      return block(
+        'sz_val_query_select',
+        { MODE: expr.all ? 'all' : 'one', SELECTOR: expr.selector },
+        {},
+        expr.__id,
+      )
+    case 'promiseAll': {
+      const list = exprToValueBlock(expr.list)
+      return list ? block('sz_val_promise_all', {}, {}, expr.__id, { LIST: list }) : null
+    }
+    case 'newPromise':
+      return block(
+        'sz_val_new_promise',
+        { PARAM: expr.param },
+        { DO: statementsToBlocks(expr.body) },
+        expr.__id,
+      )
     case 'storageGet':
       // A chave vai num campo de texto: só representável como bloco se for literal.
       return expr.key.type === 'str'
@@ -3484,7 +3810,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
     case 'memberGet': {
       const obj = exprToValueBlock(expr.object)
       if (!obj) return null
-      return block('sz_val_member_get', { NAME: expr.name }, {}, expr.__id, { OBJ: obj })
+      const type = expr.optional ? 'sz_val_member_get_optional' : 'sz_val_member_get'
+      return block(type, { NAME: expr.name }, {}, expr.__id, { OBJ: obj })
     }
     case 'memberCallExpr': {
       const obj = exprToValueBlock(expr.object)
@@ -3496,6 +3823,17 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
         valueInputs[`ARG${i}`] = vb
       }
       const b = block('sz_val_method_on', { METHOD: expr.method }, {}, expr.__id, valueInputs)
+      if (expr.args.length > 0) b.extraState = { items: expr.args.length }
+      return b
+    }
+    case 'newExpr': {
+      const valueInputs: Record<string, SerializedBlocklyBlock> = {}
+      for (let i = 0; i < expr.args.length; i += 1) {
+        const vb = exprToValueBlock(expr.args[i] as JSExpr)
+        if (!vb) return null
+        valueInputs[`ARG${i}`] = vb
+      }
+      const b = block('sz_val_new', { CLASS: expr.className }, {}, expr.__id, valueInputs)
       if (expr.args.length > 0) b.extraState = { items: expr.args.length }
       return b
     }

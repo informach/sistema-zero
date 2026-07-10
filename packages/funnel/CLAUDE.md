@@ -240,6 +240,44 @@ gateway), 10s no resto. Timeout/rede fora **nunca lançam**: viram `GatewayResul
 GATEWAY_TIMEOUT` / `502 GATEWAY_UNREACHABLE` (os chamadores já tratam por status; antes um gateway
 pendurado segurava o handler e o SSR do checkout p/ sempre).
 
+**ASSINATURAS mensal/anual (07/2026 — migrations `0014`: `leads.subscription_id` +
+`subscription_interval_months` + índice, `lead_payments.access_period_months`):** oferta com
+`pricingMode: 'subscription'` no catálogo muda o checkout:
+- **Alternador mensal↔anual** (`content.altOffer` da oferta principal): o corpo dos handlers
+  aceita `offerSlug?` (a oferta ESCOLHIDA) e `resolveChosenOffer` VALIDA contra
+  `{principal, altOffer}` — slug forjado → **400 `INVALID_OFFER`** (nunca cobra oferta não
+  linkada). A UI (`CheckoutForm`) mostra os dois planos com preço; `?oferta=<slug da irmã>` na
+  URL do checkout (vindo do `/renovar`) pré-seleciona.
+- **Cartão em oferta subscription = SEMPRE recorrente**: `startCard` recusa (**409
+  `USE_SUBSCRIPTION`**); o caminho é `POST /api/checkout/subscription` (`startSubscription` +
+  `SubscriptionChargeSchema`: cartão tokenizado SEM parcelas + contato + **nascimento** +
+  **endereço** — a Efí exige o pagador completo; tokenização com `reuse: true`). Síncrono via
+  gateway `POST /subscriptions` (idempotência `funil-<leadId>-sub-<attemptId>`); a resposta traz
+  `firstPayment` → `setSubscription` + `setPayment` + (ACTIVE/PAID) markPaid + `runPostPayment`.
+  O grant leva `subscription {subscriptionId, intervalMonths}` (members cria/estende com validade).
+- **Anual à VISTA (Pix/boleto)**: permitido SÓ com intervalo 12 (**409 `SUBSCRIPTION_CARD_ONLY`**
+  no mensal); grava `accessPeriodMonths: 12` no `lead_payments` → o grant leva
+  `accessPeriodMonths` (members concede 12 meses + carência, SEM assinatura; renovar = nova compra).
+- **Cupom NÃO se aplica a assinatura** (**422 `COUPON_NOT_ALLOWED`** — o valor cotado viraria o
+  plano de TODOS os ciclos); a UI nem exibe o campo.
+- **Webhook — ramo de RENOVAÇÃO**: `payment.paid` com `subscriptionId` de cobrança DESCONHECIDA →
+  resolve o lead por `findLeadBySubscription` + `linkCyclePayment` (histórico, SEM mover o
+  ponteiro); lead JÁ pago e cobrança ≠ da 1ª → SÓ `extendMembersForCycle` (grant com o `paidAt`
+  DO CICLO — o do lead é a compra original e não moveria a validade; SEM
+  markPaid/fulfill/welcome/cupom; falha → 502 GRANT_RETRY, re-entrega). Lead ainda NÃO pago
+  (resposta da criação perdida) → recovery: repoint + fluxo normal de 1ª compra. Reentrega da 1ª
+  cobrança segue o fluxo normal (backstop dos one-shots).
+- **Dunning**: `payment.failed` com `subscriptionId` → `makeSendChargeFailed`
+  (`server/dunning.ts`): template `subscription-charge-failed` (e-mail + WhatsApp), idempotente
+  por cobrança falha (`dunning-<paymentId>`), best-effort — o acesso expira sozinho no fim do
+  ciclo + carência se o cliente não agir.
+- **`/renovar?oferta=<slug>`** (destino do lembrete de renovação do members): resolve o funil
+  pela oferta (principal por env; irmã via altOffer no catálogo) → 302 p/ o checkout dele
+  (com `?oferta=` quando é a irmã). Slug desconhecido → `/`.
+- ⚠️ `getActiveOffer` agora é OBRIGATÓRIO nos handlers (mode/intervalo): catálogo indisponível →
+  **502 `CATALOG_ERROR`** (sem view não dá p/ saber o modo — cobrar anual como vitalícia seria
+  bug de dinheiro). `clearOfferCache()` é hook de TESTE (cache por slug em módulo).
+
 **Confirmação de pagamento (duas vias):**
 - **Polling** (`PixCheckout` → `GET /api/checkout/:id` via gateway) — UX/fallback.
 - **Webhook** (`payment.paid`: payments → gateway → funil `/api/webhooks/payments`). O gateway valida

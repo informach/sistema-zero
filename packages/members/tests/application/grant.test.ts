@@ -50,6 +50,70 @@ describe('GrantEntitlementService', () => {
     expect(entitlements.byId.size).toBe(1)
   })
 
+  test('compra por PERÍODO (anual à vista): expiresAt = grant + 12 meses + carência, sem assinatura', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-anual', offerWithCourse('offer-anual', 'curso-demo'))
+    const result = await grant.execute({
+      userId: 'u1',
+      offerRef: 'offer-anual',
+      paymentId: 'pay1',
+      grantedAt: T('2026-06-01T00:00:00Z'),
+      accessPeriodMonths: 12,
+    })
+    expect(result.granted).toBe(1)
+    const list = await entitlements.listActiveByUser('u1', T('2026-12-01'))
+    expect(list).toHaveLength(1)
+    expect(list[0]?.expiresAt?.getTime()).toBe(
+      computeExpiry(T('2026-06-01T00:00:00Z'), 12, 3).getTime(),
+    )
+    // SEM assinatura sintética: revogação por subscriptionId nunca a alcança.
+    expect(list[0]?.toSnapshot().subscriptionId).toBeNull()
+    // Expira sozinha depois da validade + carência.
+    expect(await entitlements.listActiveByUser('u1', T('2027-06-10'))).toHaveLength(0)
+  })
+
+  test('compra por período é idempotente pelo pagamento; renovar = compra nova = linha nova', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-anual', offerWithCourse('offer-anual', 'curso-demo'))
+    const cmd = {
+      userId: 'u1',
+      offerRef: 'offer-anual',
+      paymentId: 'pay1',
+      grantedAt: T('2026-06-01T00:00:00Z'),
+      accessPeriodMonths: 12,
+    }
+    await grant.execute(cmd)
+    expect((await grant.execute(cmd)).granted).toBe(0) // replay do webhook
+    expect(entitlements.byId.size).toBe(1)
+
+    // Renovação manual (nova compra, paymentId novo) → nova matrícula; o acesso
+    // efetivo é o mais forte entre as duas (validade mais distante).
+    await grant.execute({ ...cmd, paymentId: 'pay2', grantedAt: T('2027-05-20T00:00:00Z') })
+    expect(entitlements.byId.size).toBe(2)
+    const list = await entitlements.listActiveByUser('u1', T('2027-06-10'))
+    expect(list).toHaveLength(1)
+    expect(list[0]?.expiresAt?.getTime()).toBe(
+      computeExpiry(T('2027-05-20T00:00:00Z'), 12, 3).getTime(),
+    )
+  })
+
+  test('subscription presente vence accessPeriodMonths (nunca chegam juntos do funil)', async () => {
+    const { catalog, entitlements, grant } = setup()
+    catalog.set('offer-sub', offerWithCourse('offer-sub', 'curso-demo'))
+    await grant.execute({
+      userId: 'u1',
+      offerRef: 'offer-sub',
+      paymentId: 'pay1',
+      grantedAt: T('2026-06-01T00:00:00Z'),
+      subscription: { subscriptionId: 'sub1', intervalMonths: 1 },
+      accessPeriodMonths: 12,
+    })
+    const [ent] = await entitlements.listActiveByUser('u1', T('2026-06-15'))
+    // Validade do CICLO (1 mês), não do período — e ligada à assinatura.
+    expect(ent?.expiresAt?.getTime()).toBe(computeExpiry(T('2026-06-01T00:00:00Z'), 1, 3).getTime())
+    expect(ent?.toSnapshot().subscriptionId).toBe('sub1')
+  })
+
   test('assinatura: expiresAt = grant + intervalo + carência; 2º ciclo estende', async () => {
     const { catalog, entitlements, grant } = setup()
     catalog.set('offer-sub', offerWithCourse('offer-sub', 'curso-demo'))

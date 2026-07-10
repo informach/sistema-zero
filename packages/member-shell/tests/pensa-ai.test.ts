@@ -128,29 +128,29 @@ describe('GenerateBody (corpo do /artifacts/generate)', () => {
   })
 })
 
-describe('pensaChatRateLimited (custo/compulsão — por sessão)', () => {
+describe('pensaChatRateLimited (anti-burst por sessão)', () => {
   it('libera 10 por minuto e barra a 11ª; janela nova libera de novo', () => {
     const key = `t-${Math.random()}`
     const t0 = 1_700_000_000_000
     for (let i = 0; i < 10; i += 1) expect(pensaChatRateLimited(key, t0)).toBe(false)
     expect(pensaChatRateLimited(key, t0)).toBe(true)
-    // Janela do minuto virou → libera (o teto diário segue contando).
     expect(pensaChatRateLimited(key, t0 + 61_000)).toBe(false)
   })
 
-  it('teto DIÁRIO barra mesmo com janelas de minuto folgadas', () => {
+  it('NÃO tem teto diário próprio (o teto diário/mensal REAL é a quota por conta no members)', () => {
+    // O antigo CHAT_PER_DAY=150 in-process saiu de propósito: era por PERFIL,
+    // efêmero (zerava no deploy) e por réplica. A quota durável (consumeAiQuota,
+    // 50/dia + 500/mês por CONTA) é consumida no pré-voo de cada chamada — este
+    // rate-limit ficou SÓ como anti-burst local de 10/min.
     const key = `t-${Math.random()}`
     const t0 = 1_700_000_000_000
     let now = t0
     let allowed = 0
     for (let i = 0; i < 200; i += 1) {
       if (!pensaChatRateLimited(key, now)) allowed += 1
-      // Espaça p/ nunca esbarrar no teto do minuto — isola o teto diário.
-      now += 7_000
+      now += 7_000 // espaça p/ nunca esbarrar no teto do minuto
     }
-    expect(allowed).toBe(150)
-    // Dia seguinte zera.
-    expect(pensaChatRateLimited(key, t0 + 26 * 60 * 60 * 1000)).toBe(false)
+    expect(allowed).toBe(200)
   })
 
   it('sessões diferentes não dividem o balde', () => {

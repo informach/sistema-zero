@@ -1,14 +1,25 @@
 import type { JSExpr, JSStatement } from '#ir'
 import { screenTextToExpr, valueToExpr } from '#ir'
 import {
+  _setExprStatementCompiler,
   compileExpr,
   createIdentifierScope,
   type ExprMapContext,
   GeneratorError,
+  type IdentifierResolver,
   type IdentifierScope,
   normalizeIdentifier,
 } from './expr'
 import { countLines, SourceMapBuilder } from './sourceMap'
+
+// Injeta o compilador de statements no `expr.ts` (camada de baixo) — o `newPromise`
+// é um VALOR com corpo de statements e o expr.ts, sozinho, não compila statements.
+// `compileStatements` é function declaration (hoisted), então isto roda no load.
+_setExprStatementCompiler((stmts, indent, identifiers: IdentifierResolver) =>
+  // Na geração real, `identifiers` é SEMPRE um IdentifierScope (compileStatements
+  // repassa o seu ao compileExpr, que o repassa aqui) — cast seguro.
+  compileStatements(stmts as JSStatement[], indent, identifiers as IdentifierScope),
+)
 
 /**
  * Profundidade máxima de aninhamento que os geradores aceitam antes de abortar
@@ -62,6 +73,9 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:pruneOffscreen':
     case 'g2d:onGroupOverlap':
     case 'g2d:onSpriteGroupOverlap':
+    case 'g2d:onEnemyDefeated':
+    case 'g2d:onEnemyShotHit':
+    case 'g2d:defineShape':
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
     case 'g3d:animate':
@@ -69,6 +83,9 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
+    case 'imageOnError':
+    case 'onClickAssign':
+    case 'requestFrameDo':
     case 'setTimeout':
     case 'setInterval':
     case 'setTimeoutSeconds':
@@ -224,6 +241,14 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
         catchBody: stmt.catchBody ? extractAnimationLoops(stmt.catchBody, hoisted) : undefined,
       }
     case 'event':
+      // O handler de `load` é OPACO: um loop de animação lá dentro fica lá
+      // dentro. Elevar p/ o top-level quebrava o jogo clássico "tudo dentro do
+      // window.addEventListener('load', …)": o loop referencia consts do load
+      // (ctx/canvas/jogo) — no topo viram ReferenceError — e passaria a rodar
+      // ANTES do load. Function declaration aninhada é JS válido e o re-parse
+      // re-funde o loop em qualquer profundidade (fixpoint estável). Os demais
+      // eventos (click etc.) mantêm o hoisting histórico (teste travado).
+      if (stmt.event === 'load') return stmt
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     case 'g3d:forEachInSwarm':
     case 'forEach':
@@ -325,7 +350,7 @@ function compileStatementCode(
   // single-line; `recAt(line)` registra cada uma na linha onde foi emitida.
   const base = mapContext?.startLine ?? 1
   const recAt = (line: number): ExprMapContext | undefined =>
-    mapContext ? { map: mapContext.map, line } : undefined
+    mapContext ? { map: mapContext.map, line, indent } : undefined
   switch (stmt.type) {
     case 'var': {
       const keyword = stmt.kind === 'const' ? 'const' : 'let'
@@ -596,7 +621,11 @@ function compileStatementCode(
     }
     case 'canvasClear': {
       const ctx = identifiers.get(stmt.ctxVar)
-      const canvas = identifiers.getCanvasElement(stmt.canvasVar)
+      // ⚠️ Chavear pelo CTX (igual a canvasSetup/canvasSetSize/canvasDim), NUNCA
+      // por `stmt.canvasVar`: o mapa ctx→elemento já tem a entrada do setup e a
+      // chave divergente criava uma SEGUNDA alocação — o corpo do loop saía
+      // `canvas_2.width` (ReferenceError) e o nome derivava a cada round-trip.
+      const canvas = identifiers.getCanvasElement(stmt.ctxVar)
       return `${pad}${ctx}.clearRect(0, 0, ${canvas}.width, ${canvas}.height);`
     }
     case 'canvasFillStyle':
@@ -946,12 +975,75 @@ function compileStatementCode(
     }
     case 'g2d:setImage':
       return `${pad}SZGame2D.setImage(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.image)});`
+    case 'g2d:defineShape': {
+      // A figura é uma função que RECEBE o ctx (transladado para o canto do
+      // sprite). Os blocos de desenho dentro dela usam esse 'ctx'.
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.defineShape(${JSON.stringify(stmt.shapeName)}, function (${identifiers.get('ctx')}) {\n${body}\n${pad}});`
+    }
+    case 'g2d:createShapeSprite': {
+      const v = identifiers.get(stmt.varName)
+      return `${pad}const ${v} = SZGame2D.createShapeSprite(${JSON.stringify(stmt.shapeName)}, { x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))} });`
+    }
+    case 'g2d:setShape':
+      return `${pad}SZGame2D.setShape(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.shapeName)});`
+    case 'g2d:paintRect':
+      return `${pad}SZGame2D.paintRect(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:paintCircle':
+      return `${pad}SZGame2D.paintCircle(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:paintEllipse':
+      return `${pad}SZGame2D.paintEllipse(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:paintTriangle':
+      return `${pad}SZGame2D.paintTriangle(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x3), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y3), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:paintLine':
+      return `${pad}SZGame2D.paintLine(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y2), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
     case 'g2d:loadSpritesheet': {
       const v = identifiers.get(stmt.varName)
       return `${pad}const ${v} = SZGame2D.loadSpriteSheet(${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.frameW), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.frameH), 0, identifiers, recAt(base))});`
     }
     case 'g2d:animateSprite':
       return `${pad}SZGame2D.setAnimation(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
+    case 'g2d:setStateAnim':
+      return `${pad}SZGame2D.setStateAnimation(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.state)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
+    case 'g2d:autoAnimate':
+      return `${pad}SZGame2D.autoAnimate(${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:defineEnemyType':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createEnemyType({ behavior: ${JSON.stringify(stmt.behavior)}, color: ${JSON.stringify(stmt.color)}, image: ${JSON.stringify(stmt.image)}, hp: ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, dmg: ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))} });`
+    case 'g2d:enemyStateAnim':
+      return `${pad}SZGame2D.setEnemyStateAnimation(${identifiers.get(stmt.typeVar)}, ${JSON.stringify(stmt.state)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
+    case 'g2d:setEnemyTypeParam':
+      return `${pad}SZGame2D.setEnemyTypeParam(${identifiers.get(stmt.typeVar)}, ${JSON.stringify(stmt.param)}, ${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))});`
+    case 'g2d:spawnEnemy':
+      return `${pad}SZGame2D.spawnEnemy(${identifiers.get(stmt.typeVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'g2d:updateEnemyType':
+      return `${pad}SZGame2D.updateEnemyType(${identifiers.get(stmt.typeVar)}, ${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.targetVar)});`
+    case 'g2d:drawEnemyType':
+      return `${pad}SZGame2D.drawEnemyType(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.typeVar)});`
+    case 'g2d:onEnemyDefeated': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.onEnemyDefeated(${identifiers.get(stmt.typeVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+    }
+    case 'g2d:onEnemyShotHit': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.overlapEnemyShots(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.typeVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+    }
+    case 'g2d:hurtByEnemy':
+      return `${pad}SZGame2D.hurtByEnemy(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.enemyVar)});`
     case 'g2d:drawFrame':
       return `${pad}SZGame2D.drawFrame(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.index), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
     case 'g2d:platformer':
@@ -974,6 +1066,8 @@ function compileStatementCode(
       const v = identifiers.get(stmt.varName)
       return `${pad}const ${v} = SZGame2D.createTileMap({ image: ${JSON.stringify(stmt.image)}, tile: ${compileExpr(valueToExpr(stmt.tile), 0, identifiers, recAt(base))}, solid: ${JSON.stringify(stmt.solid)}, grid: ${JSON.stringify(stmt.grid)} });`
     }
+    case 'g2d:createTileMapFromAsset':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createTileMapFromAsset(${JSON.stringify(stmt.image)});`
     case 'g2d:drawTileMap':
       return `${pad}SZGame2D.drawTileMap(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
     case 'g2d:tileMapCollide':
@@ -1406,7 +1500,7 @@ function compileStatementCode(
       for (const m of stmt.methods) {
         const params = m.params.map((x) => normalizeIdentifier(x)).join(', ')
         const methodHeaderLine = cursorLine
-        lines.push(`${pad}  ${normalizeIdentifier(m.name)}(${params}) {`)
+        lines.push(`${pad}  ${m.async ? 'async ' : ''}${normalizeIdentifier(m.name)}(${params}) {`)
         cursorLine += 1
         const body = compileStatements(
           m.body,
@@ -1464,6 +1558,20 @@ function compileStatementCode(
       const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.method)}(${args});`
     }
+    case 'superCall': {
+      const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
+      return `${pad}super(${args});`
+    }
+    case 'superMethodCall': {
+      const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
+      return `${pad}super.${normalizeIdentifier(stmt.method)}(${args});`
+    }
+    // Statement que só avalia um valor e descarta (round-trip fiel de um no-op).
+    case 'exprStatement':
+      return `${pad}${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
+    // `requestAnimationFrame(nome)` — a função é uma REFERÊNCIA (nome), não uma chamada.
+    case 'requestFrame':
+      return `${pad}requestAnimationFrame(${identifiers.get(stmt.fn)});`
     case 'indexSet':
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}[${compileExpr(stmt.index, 0, identifiers, recAt(base))}] = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     case 'imageOnLoad': {
@@ -1475,6 +1583,36 @@ function compileStatementCode(
       )
       const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
       return `${pad}${target}.onload = () => {\n${body}\n${pad}};`
+    }
+    case 'imageOnError': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      return `${pad}${target}.onerror = () => {\n${body}\n${pad}};`
+    }
+    case 'onClickAssign': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      return `${pad}${target}.onclick = () => {\n${body}\n${pad}};`
+    }
+    case 'requestFrameDo': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const param = stmt.param ? identifiers.get(stmt.param) : ''
+      return `${pad}requestAnimationFrame((${param}) => {\n${body}\n${pad}});`
     }
     case 'return':
       return stmt.value === undefined
@@ -1495,6 +1633,10 @@ function compileStatementCode(
       const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
       return `${pad}${identifiers.get(stmt.name)}(${args});`
     }
+    case 'awaitStmt':
+      return `${pad}await ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
+    case 'setTimeoutCall':
+      return `${pad}setTimeout(${identifiers.get(stmt.fn)}, ${compileExpr(stmt.delay, 0, identifiers, recAt(base))});`
     case 'forEach': {
       const body = compileStatements(
         stmt.body,
@@ -1660,6 +1802,9 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:pruneOffscreen':
       case 'g2d:onGroupOverlap':
       case 'g2d:onSpriteGroupOverlap':
+      case 'g2d:onEnemyDefeated':
+      case 'g2d:onEnemyShotHit':
+      case 'g2d:defineShape':
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
       case 'g3d:animate':
@@ -1712,6 +1857,9 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:pruneOffscreen':
       case 'g2d:onGroupOverlap':
       case 'g2d:onSpriteGroupOverlap':
+      case 'g2d:onEnemyDefeated':
+      case 'g2d:onEnemyShotHit':
+      case 'g2d:defineShape':
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
       case 'g3d:animate':
@@ -2432,6 +2580,53 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:setImage':
       names.add(stmt.spriteVar)
       return
+    case 'g2d:defineShape':
+      // 'ctx' é o parâmetro da figura (binder) — reservar como o onPointer faz
+      // com px/py, para os paint_* dentro resolverem `ctx` no mesmo escopo.
+      names.add('ctx')
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:createShapeSprite':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'g2d:setShape':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:paintRect':
+    case 'g2d:paintEllipse':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'g2d:paintCircle':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'g2d:paintTriangle':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.y1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.y2), names)
+      collectExprIdentifiers(valueToExpr(stmt.x3), names)
+      collectExprIdentifiers(valueToExpr(stmt.y3), names)
+      return
+    case 'g2d:paintLine':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.y1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.y2), names)
+      collectExprIdentifiers(valueToExpr(stmt.width), names)
+      return
     case 'g2d:loadSpritesheet':
       names.add(stmt.varName)
       collectExprIdentifiers(valueToExpr(stmt.frameW), names)
@@ -2443,6 +2638,64 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.from), names)
       collectExprIdentifiers(valueToExpr(stmt.to), names)
       collectExprIdentifiers(valueToExpr(stmt.fps), names)
+      return
+    case 'g2d:setStateAnim':
+      names.add(stmt.spriteVar)
+      names.add(stmt.sheetVar)
+      collectExprIdentifiers(valueToExpr(stmt.from), names)
+      collectExprIdentifiers(valueToExpr(stmt.to), names)
+      collectExprIdentifiers(valueToExpr(stmt.fps), names)
+      return
+    case 'g2d:autoAnimate':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:defineEnemyType':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.hp), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.dmg), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'g2d:enemyStateAnim':
+      names.add(stmt.typeVar)
+      names.add(stmt.sheetVar)
+      collectExprIdentifiers(valueToExpr(stmt.from), names)
+      collectExprIdentifiers(valueToExpr(stmt.to), names)
+      collectExprIdentifiers(valueToExpr(stmt.fps), names)
+      return
+    case 'g2d:setEnemyTypeParam':
+      names.add(stmt.typeVar)
+      collectExprIdentifiers(valueToExpr(stmt.value), names)
+      return
+    case 'g2d:spawnEnemy':
+      names.add(stmt.typeVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'g2d:updateEnemyType':
+      names.add(stmt.typeVar)
+      names.add(stmt.ctxVar)
+      names.add(stmt.targetVar)
+      return
+    case 'g2d:drawEnemyType':
+      names.add(stmt.ctxVar)
+      names.add(stmt.typeVar)
+      return
+    case 'g2d:onEnemyDefeated':
+      names.add(stmt.typeVar)
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:onEnemyShotHit':
+      names.add(stmt.spriteVar)
+      names.add(stmt.typeVar)
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:hurtByEnemy':
+      names.add(stmt.spriteVar)
+      names.add(stmt.enemyVar)
       return
     case 'g2d:drawFrame':
       names.add(stmt.ctxVar)
@@ -2484,6 +2737,9 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:createTileMap':
       names.add(stmt.varName)
       collectExprIdentifiers(valueToExpr(stmt.tile), names)
+      return
+    case 'g2d:createTileMapFromAsset':
+      names.add(stmt.varName)
       return
     case 'g2d:drawTileMap':
       names.add(stmt.mapVar)
@@ -2875,13 +3131,29 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.object, names)
       for (const arg of stmt.args) collectExprIdentifiers(arg, names)
       return
+    case 'superCall':
+    case 'superMethodCall':
+      for (const arg of stmt.args) collectExprIdentifiers(arg, names)
+      return
+    case 'exprStatement':
+      collectExprIdentifiers(stmt.value, names)
+      return
+    case 'requestFrame':
+      names.add(stmt.fn)
+      return
     case 'indexSet':
       collectExprIdentifiers(stmt.object, names)
       collectExprIdentifiers(stmt.index, names)
       collectExprIdentifiers(stmt.value, names)
       return
     case 'imageOnLoad':
+    case 'imageOnError':
+    case 'onClickAssign':
       collectExprIdentifiers(stmt.target, names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'requestFrameDo':
+      if (stmt.param) names.add(stmt.param)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'return':
@@ -2895,6 +3167,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'callFunction':
       names.add(stmt.name)
       for (const arg of stmt.args) collectExprIdentifiers(arg, names)
+      return
+    case 'awaitStmt':
+      collectExprIdentifiers(stmt.value, names)
+      return
+    case 'setTimeoutCall':
+      names.add(stmt.fn)
+      collectExprIdentifiers(stmt.delay, names)
       return
     case 'forEach':
       collectExprIdentifiers(stmt.arrayExpr, names)
@@ -3021,6 +3300,18 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       collectExprIdentifiers(expr.object, names)
       for (const arg of expr.args) collectExprIdentifiers(arg, names)
       return
+    case 'newExpr':
+      // O nome da CLASSE resolve por getClassReference/reserveClassNames (igual
+      // ao newInstance) — só os argumentos entram na coleta de identificadores.
+      for (const arg of expr.args) collectExprIdentifiers(arg, names)
+      return
+    case 'promiseAll':
+      collectExprIdentifiers(expr.list, names)
+      return
+    case 'newPromise':
+      names.add(expr.param)
+      for (const child of expr.body) collectStatementIdentifiers(child, names)
+      return
     case 'objectOp':
       collectExprIdentifiers(expr.object, names)
       return
@@ -3045,6 +3336,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       names.add(expr.bVar)
       return
     case 'g2d:getHealth':
+    case 'g2d:enemyDamage':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
     case 'g2d:spriteW':
@@ -3100,6 +3392,11 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'arrayFind':
       names.add(expr.arrayVar)
       names.add(expr.itemName)
+      collectExprIdentifiers(expr.cond, names)
+      return
+    case 'arrayFilter':
+      names.add(expr.itemName)
+      collectExprIdentifiers(expr.array, names)
       collectExprIdentifiers(expr.cond, names)
       return
     case 'g2d:randomBetween':

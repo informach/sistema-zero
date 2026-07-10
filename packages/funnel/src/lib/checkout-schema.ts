@@ -71,6 +71,19 @@ export const CheckoutContactSchema = z.object({
 })
 
 /**
+ * Slug da oferta ESCOLHIDA no alternador mensal↔anual (opcional; ausente = a
+ * oferta principal do funil). O servidor VALIDA contra `{principal, altOffer}`
+ * do catálogo — slug forjado → 400 (nunca cobra uma oferta não linkada).
+ */
+export const ChosenOfferSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(140)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Oferta inválida.')
+  .optional()
+
+/**
  * Corpo de `POST /api/checkout/pix`. O Pix NÃO é gerado sem os dados pessoais
  * completos (regra do produto: enviar nome/e-mail/CPF à Efí e não criar
  * transação à toa) — o botão "Gerar código Pix" só habilita com tudo válido.
@@ -78,6 +91,7 @@ export const CheckoutContactSchema = z.object({
 export const PixChargeSchema = z.object({
   contact: CheckoutContactSchema,
   couponCode: CouponCodeSchema,
+  offerSlug: ChosenOfferSchema,
 })
 
 /** Form do boleto (browser) E corpo de `POST /api/checkout/boleto` (servidor). */
@@ -85,6 +99,7 @@ export const BoletoFormSchema = z.object({
   cpf: CpfSchema,
   address: AddressSchema,
   couponCode: CouponCodeSchema,
+  offerSlug: ChosenOfferSchema,
 })
 
 /**
@@ -145,6 +160,40 @@ export const CardChargeSchema = z.object({
   contact: CheckoutContactSchema,
   // Endereço de cobrança OPCIONAL — a Efí aceita cartão sem billing_address.
   address: AddressSchema.optional(),
+  offerSlug: ChosenOfferSchema,
+})
+
+/** Nascimento AAAA-MM-DD (a Efí exige na assinatura de cartão). */
+export const BirthSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data de nascimento inválida (AAAA-MM-DD).')
+  .refine((v) => {
+    const [y, m, d] = v.split('-').map(Number)
+    const date = new Date(Date.UTC(y!, m! - 1, d!))
+    const valid =
+      date.getUTCFullYear() === y && date.getUTCMonth() === m! - 1 && date.getUTCDate() === d
+    return valid && y! >= 1900 && date.getTime() < Date.now()
+  }, 'Data de nascimento inválida.')
+
+/**
+ * Corpo de `POST /api/checkout/subscription` (servidor), APÓS a tokenização no
+ * browser. ASSINATURA de cartão: SEM parcelas (a Efí cobra 1x por ciclo) e SEM
+ * cupom (o valor cotado vira o plano p/ TODOS os ciclos — desconto seria
+ * perpétuo silencioso). A Efí exige o pagador completo: nascimento + endereço.
+ */
+export const SubscriptionChargeSchema = z.object({
+  token: z.string().trim().min(1).max(255),
+  brand: z.enum(CARD_BRANDS, { error: 'Bandeira do cartão inválida.' }),
+  last4: z
+    .string()
+    .trim()
+    .regex(/^\d{4}$/, 'last4 inválido.'),
+  attemptId: z.string().trim().min(1).max(64),
+  contact: CheckoutContactSchema,
+  birth: BirthSchema,
+  address: AddressSchema,
+  offerSlug: ChosenOfferSchema,
 })
 
 export type AddressFormInput = z.infer<typeof AddressSchema>
@@ -153,3 +202,4 @@ export type CardFormInput = z.infer<typeof CardFormSchema>
 export type CardChargeInput = z.infer<typeof CardChargeSchema>
 export type CheckoutContactInput = z.infer<typeof CheckoutContactSchema>
 export type PixChargeInput = z.infer<typeof PixChargeSchema>
+export type SubscriptionChargeInput = z.infer<typeof SubscriptionChargeSchema>

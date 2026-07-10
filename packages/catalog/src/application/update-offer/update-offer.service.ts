@@ -23,6 +23,7 @@ export interface UpdateOfferCommand {
   priceCents?: number
   compareAtPriceCents?: number | null
   pricingMode?: PricingMode
+  billingIntervalMonths?: number | null
   installmentsMax?: number | null
   trialDays?: number | null
   guaranteeDays?: number | null
@@ -53,6 +54,7 @@ export class UpdateOfferService {
       command.priceCents !== undefined ||
       command.compareAtPriceCents !== undefined ||
       command.pricingMode !== undefined ||
+      command.billingIntervalMonths !== undefined ||
       command.installmentsMax !== undefined ||
       command.trialDays !== undefined ||
       command.guaranteeDays !== undefined ||
@@ -66,6 +68,7 @@ export class UpdateOfferService {
         priceCents: command.priceCents,
         compareAtPriceCents: command.compareAtPriceCents,
         pricingMode: command.pricingMode,
+        billingIntervalMonths: command.billingIntervalMonths,
         installmentsMax: command.installmentsMax,
         trialDays: command.trialDays,
         guaranteeDays: command.guaranteeDays,

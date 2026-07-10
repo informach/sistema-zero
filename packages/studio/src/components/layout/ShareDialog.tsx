@@ -44,6 +44,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
   const [description, setDescription] = useState('')
   const [generating, setGenerating] = useState(false)
   const [aiUses, setAiUses] = useState(0)
+  // Teto de IA da CONTA atingido (o host lança AI_QUOTA_EXCEEDED): esconde o
+  // "Gerar" e orienta a escrever à mão — o fluxo manual já existe.
+  const [aiExhausted, setAiExhausted] = useState(false)
   const [cover, setCover] = useState<Cover | null>(null)
   const [capturing, setCapturing] = useState(false)
   const [coverNote, setCoverNote] = useState<string | null>(null)
@@ -68,6 +71,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     setDescription(adapter?.presetDescription?.trim() ?? '')
     setGenerating(false)
     setAiUses(0)
+    setAiExhausted(false)
     setCover(null)
     setCapturing(false)
     setCoverNote(null)
@@ -101,7 +105,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         const clean = (draft ?? '').trim().slice(0, MAX_DESCRIPTION)
         if (clean) setDescription(clean)
       })
-      .catch(() => {})
+      .catch((error: unknown) => {
+        if ((error as { code?: string })?.code === 'AI_QUOTA_EXCEEDED') setAiExhausted(true)
+      })
       .finally(() => setGenerating(false))
   }, [open, adapter, project, title])
 
@@ -110,7 +116,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
 
   const regenerate = () => {
     const generate = adapter.generateDescription
-    if (!generate || generating || aiUses >= MAX_AI_GENERATIONS) return
+    if (!generate || generating || aiExhausted || aiUses >= MAX_AI_GENERATIONS) return
     setGenerating(true)
     setAiUses((n) => n + 1)
     generate({ project, title: title.trim() || project.name })
@@ -118,7 +124,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
         const clean = (draft ?? '').trim().slice(0, MAX_DESCRIPTION)
         if (clean) setDescription(clean)
       })
-      .catch(() => {})
+      .catch((error: unknown) => {
+        if ((error as { code?: string })?.code === 'AI_QUOTA_EXCEEDED') setAiExhausted(true)
+      })
       .finally(() => setGenerating(false))
   }
 
@@ -321,8 +329,9 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
                 {description.length}/{MAX_DESCRIPTION}
               </span>
               {/* Botão de IA SÓ quando o host fornece `generateDescription` (Estúdio
-                  Completo). Na AULA não aparece — o resumo do admin é só editado. */}
-              {adapter.generateDescription ? (
+                  Completo) E a quota de IA da conta não esgotou. Na AULA não aparece —
+                  o resumo do admin é só editado. */}
+              {adapter.generateDescription && !aiExhausted ? (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -343,7 +352,15 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
                 </Button>
               ) : null}
             </div>
-            {adapter.generateDescription && aiUses >= MAX_AI_GENERATIONS && !generating ? (
+            {adapter.generateDescription && aiExhausted ? (
+              <p className="mt-1 text-sz-fg-mute text-xs" role="status">
+                {t('share.ai.quotaExhausted')}
+              </p>
+            ) : null}
+            {adapter.generateDescription &&
+            !aiExhausted &&
+            aiUses >= MAX_AI_GENERATIONS &&
+            !generating ? (
               <p className="mt-1 text-sz-fg-mute text-xs" role="status">
                 {t('share.ai.capped')}
               </p>

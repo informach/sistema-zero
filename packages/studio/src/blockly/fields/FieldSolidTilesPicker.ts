@@ -39,7 +39,23 @@ interface TilesetInfo {
   count: number
 }
 
-/** Resolve o tileset da IMAGEM do bloco + a geometria (cols/count) das dimensões. */
+/**
+ * Lê o valor LITERAL do soquete TILE do bloco (shadow ou `sz_val_number` real).
+ * É a rede de segurança para upload SEM metadado: a criança digita o tamanho do
+ * tile no bloco e os editores visuais (sólidos/grade) já funcionam.
+ */
+function literalTileSizeOf(block: Blockly.Block): number | null {
+  const target = block.getInput('TILE')?.connection?.targetBlock()
+  if (target?.type !== 'sz_val_number') return null
+  const n = Number.parseFloat(`${target.getFieldValue('NUM') ?? ''}`)
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : null
+}
+
+/**
+ * Resolve o tileset da IMAGEM do bloco + a geometria (cols/count) das dimensões.
+ * Tamanho do tile: metadado do asset (Pinta/painel Imagens) → soquete TILE do
+ * próprio bloco (upload cru) → sem visual (fallback de texto).
+ */
 export function resolveTileset(field: Blockly.Field): TilesetInfo | null {
   const block = field.getSourceBlock()
   const ws = block?.workspace as (Blockly.Workspace & AssetAccessor) | undefined
@@ -47,12 +63,13 @@ export function resolveTileset(field: Blockly.Field): TilesetInfo | null {
   const imageName = block.getFieldValue('IMAGE')
   if (!imageName) return null
   const asset = (ws.__szAssets?.() ?? []).find((a) => a.name === imageName)
-  if (!asset?.tileset || !asset.width || !asset.height) return null
-  const tileSize = asset.tileset.tileSize
-  if (tileSize <= 0) return null
+  if (!asset?.width || !asset.height) return null
+  const tileSize =
+    asset.tileset && asset.tileset.tileSize > 0 ? asset.tileset.tileSize : literalTileSizeOf(block)
+  if (!tileSize || tileSize <= 0) return null
   const cols = Math.max(1, Math.floor(asset.width / tileSize))
   const rows = Math.max(1, Math.floor(asset.height / tileSize))
-  return { asset, tileSize, solid: asset.tileset.solid, cols, count: cols * rows }
+  return { asset, tileSize, solid: asset.tileset?.solid ?? [], cols, count: cols * rows }
 }
 
 export class FieldSolidTilesPicker extends Blockly.FieldTextInput {

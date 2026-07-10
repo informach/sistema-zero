@@ -139,7 +139,7 @@ describe('POST /api/checkout/pix', () => {
       metadata: { offerId: string; couponCode: string }
     }
     expect(input.amountInCents).toBe(2700)
-    expect(input.metadata.offerId).toBe('offer-1')
+    expect(input.metadata.offerId).toBe('offer-no-comando-da-ia')
     expect(input.metadata.couponCode).toBe('PROMO10')
     expect(leads.get(id)?.couponCode).toBe('PROMO10')
     // O checkout grava a oferta vendida no lead (fundação multi-oferta).

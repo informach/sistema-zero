@@ -40,6 +40,10 @@ function applySuggestedSize(field: Blockly.Field, asset: ProjectAsset): void {
   if (!block) return
   // Mapa de tiles: preenche o "tamanho do tile" com o tamanho do tile NA ARTE (do
   // Pinta) — é o que fatia o tileset certo; o tamanho NA TELA é auto (encaixa no canvas).
+  // ⚠️ Escolher um asset de MAPA (com metadado tilemap) aqui NÃO auto-preenche
+  // GRID/SOLID de propósito: neste bloco a IMAGE é a FOLHA a fatiar, e o asset de
+  // mapa é o PNG ACHATADO — preencher deixaria a imagem errada sem nenhum erro.
+  // O caminho "mapa pronto" é o bloco "Criar mapa do meu desenho".
   if (block.type === 'sz_g2d_create_tilemap') {
     const tileSize = asset.tileset?.tileSize
     if (tileSize && tileSize > 0) setNumberShadow(block, 'TILE', tileSize)
@@ -73,15 +77,34 @@ function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
 }
 
 export class FieldAssetPicker extends Blockly.FieldTextInput {
-  static override fromJson(options: Blockly.FieldTextInputFromJsonConfig): FieldAssetPicker {
+  /**
+   * Filtro opcional da grade: `'tilemap'` só lista assets com metadado de MAPA
+   * (o bloco "Criar mapa do meu desenho" não deve oferecer imagens comuns).
+   * Vem da DEFINIÇÃO do bloco (`filter` no JSON) — estrutural, não serializa.
+   */
+  private assetFilter?: 'tilemap'
+
+  constructor(text: string, filter?: 'tilemap') {
+    super(text)
+    this.assetFilter = filter
+  }
+
+  static override fromJson(
+    options: Blockly.FieldTextInputFromJsonConfig & { filter?: string },
+  ): FieldAssetPicker {
     // `new this(...)` NÃO é garantido na fromJson herdada (algumas hardcodam a
     // classe base) — sobrescrevemos para garantir a instância correta.
-    return new FieldAssetPicker(`${options.text ?? ''}`)
+    return new FieldAssetPicker(
+      `${options.text ?? ''}`,
+      options.filter === 'tilemap' ? 'tilemap' : undefined,
+    )
   }
 
   protected override showEditor_(): void {
     const ws = this.getSourceBlock()?.workspace as unknown as AssetAccessor | undefined
-    const assets = (ws?.__szAssets?.() ?? []).filter((a) => a && a.kind === 'image')
+    const assets = (ws?.__szAssets?.() ?? []).filter(
+      (a) => a && a.kind === 'image' && (this.assetFilter !== 'tilemap' || Boolean(a.tilemap)),
+    )
 
     const content = Blockly.DropDownDiv.getContentDiv()
     content.textContent = ''
@@ -94,7 +117,9 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
     if (assets.length === 0) {
       const empty = document.createElement('div')
       empty.textContent =
-        'Nenhuma imagem no projeto ainda. Abra "Imagens" na barra de cima para adicionar.'
+        this.assetFilter === 'tilemap'
+          ? 'Nenhum mapa ainda. Desenhe um MAPA no Pinta e toque no foguete "Usar no Estúdio" (ou fatie uma imagem no painel Imagens).'
+          : 'Nenhuma imagem no projeto ainda. Abra "Imagens" na barra de cima para adicionar.'
       empty.style.cssText =
         'font-size:12px;color:var(--color-sz-fg-soft);padding:2px 2px 8px;line-height:1.4;'
       wrap.appendChild(empty)

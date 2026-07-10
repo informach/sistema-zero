@@ -34,6 +34,7 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_html_ul',
   'sz_html_form',
   'sz_html_text',
+  'sz_html_comment',
   // SVG — container + reuso + a 🎨 Aparência (setters por seletor)
   'sz_html_svg',
   'sz_svg_group',
@@ -47,6 +48,7 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   // CSS — setters por seletor (o dia a dia do estilo)
   'sz_css_rule',
   'sz_css_decl',
+  'sz_css_comment',
   'sz_css_text_color',
   'sz_css_background_color',
   'sz_css_gradient',
@@ -74,6 +76,8 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_js_on_event_named',
   'sz_val_is_fullscreen',
   'sz_js_get_element_by_id',
+  'sz_val_get_element',
+  'sz_val_query_select',
   'sz_js_query_selector',
   'sz_js_set_property',
   'sz_js_set_style',
@@ -99,6 +103,8 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_canvas_measure_text',
   'sz_canvas_anim_loop',
   'sz_canvas_cancel_anim',
+  'sz_canvas_request_frame',
+  'sz_canvas_request_frame_do',
   'sz_canvas_keyboard',
   'sz_input_key_pressed',
   'sz_input_pointer_x',
@@ -173,10 +179,20 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_g2d_distance',
   'sz_g2d_random_between',
   'sz_g2d_random_chance',
+  // Inimigos: o ajuste fino por parâmetro é sintonia, não o caminho feliz.
+  'sz_g2d_enemy_type_param',
+  // ...e o dano de contato CRU é um getter (como "a vida do sprite"): o caminho
+  // feliz é "Machucar o sprite com o dano", que já usa o valor por dentro.
+  'sz_g2d_enemy_damage',
 ])
 
 const AVANCADO: ReadonlySet<string> = new Set<string>([
   // ── CORE ──────────────────────────────────────────────────────────────────
+  // ⏳ Assíncrono — promessas/await (concorrência de verdade)
+  'sz_js_await',
+  'sz_val_new_promise',
+  'sz_val_promise_all',
+  'sz_js_set_timeout_call',
   // SVG — caminho (sintaxe "d")
   'sz_svg_path',
   // CSS — recursos avançados (variável, grid, transição, transform, 3D, animação, responsivo)
@@ -221,6 +237,8 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_val_image',
   'sz_js_new_image',
   'sz_js_image_onload',
+  'sz_js_image_onerror',
+  'sz_js_element_onclick',
   // Valores — dados/estruturas + baixo nível
   'sz_val_device_pixel_ratio',
   'sz_val_system_dark',
@@ -233,6 +251,7 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_val_array_index',
   'sz_val_array_last',
   'sz_val_array_find',
+  'sz_val_array_filter',
   'sz_val_concat_arrays',
   'sz_val_shuffle',
   'sz_val_join',
@@ -261,6 +280,9 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_js_new_var',
   'sz_js_call_method',
   'sz_val_call_method',
+  'sz_val_new',
+  'sz_js_super_ctor',
+  'sz_js_super_method',
   'sz_js_set_this_prop',
   'sz_js_set_prop',
   'sz_val_this_prop',
@@ -271,6 +293,7 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_val_object_op',
   'sz_val_index_get',
   'sz_val_member_get',
+  'sz_val_member_get_optional',
   'sz_js_member_set',
   'sz_js_index_set',
   'sz_val_method_on',

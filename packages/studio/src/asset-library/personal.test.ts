@@ -98,6 +98,37 @@ describe('savePersonalAsset / listPersonalAssets', () => {
     expect(asset?.tileset).toBeUndefined() // inválido some, mas o desenho fica
   })
 
+  it('guarda e devolve o metadado de MAPA (tilemap) saneado — round-trip', async () => {
+    await savePersonalAsset({
+      id: 'm1',
+      name: 'meu-mapa',
+      dataUrl: PNG,
+      tilemap: {
+        tileSize: 16,
+        cols: 2,
+        rows: 2,
+        grid: '0 1;. 2',
+        solid: [2, 1],
+        tileset: { dataUrl: PNG, width: 32, height: 16 },
+      },
+    })
+    const [asset] = await listPersonalAssets()
+    expect(asset?.tilemap?.grid).toBe('0 1;. 2')
+    expect(asset?.tilemap?.solid).toEqual([1, 2])
+    expect(asset?.tilemap?.tileset.dataUrl).toBe(PNG)
+    // mapa quebrado (sem folha) não derruba o desenho
+    await savePersonalAsset({
+      id: 'm2',
+      name: 'mapa-quebrado',
+      dataUrl: PNG,
+      tilemap: { tileSize: 16, cols: 2, rows: 2, grid: '0 1' },
+    })
+    const all = await listPersonalAssets()
+    const broken = all.find((a) => a.id === 'm2')
+    expect(broken).toBeTruthy()
+    expect(broken?.tilemap).toBeUndefined()
+  })
+
   it('colisão de nome com OUTRO desenho ganha sufixo', async () => {
     await savePersonalAsset({ id: 'a1', name: 'heroi', dataUrl: PNG })
     const second = await savePersonalAsset({ id: 'a2', name: 'heroi', dataUrl: PNG })

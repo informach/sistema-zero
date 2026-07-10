@@ -1236,6 +1236,29 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /** "Minhas assinaturas" do comprador (mesmo escopo por e-mail das claims). */
+  const paymentsMySubscriptions = {
+    GET: async () => {
+      const { status, body } = await payments.listMySubscriptions()
+      return NextResponse.json(body ?? { items: [] }, { status })
+    },
+  }
+
+  /**
+   * Cancela a PRÓPRIA assinatura (o acesso segue até o fim do ciclo pago +
+   * carência). Escrita → sessão real (impersonação read-only).
+   */
+  const paymentsMySubscriptionCancel = {
+    DELETE: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { id } = await ctx.params
+      if (!UUID_RE.test(id)) return invalidInput()
+      const { status, body } = await payments.cancelMySubscription(id)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
   // ── Perfis (estilo Netflix) ──────────────────────────────────────────────
 
   /**
@@ -1471,6 +1494,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     teacherThreadReply,
     teacherThreadRead,
     paymentsMy,
+    paymentsMySubscriptions,
+    paymentsMySubscriptionCancel,
     profilesList,
     profileCreate,
     profileUpdate,

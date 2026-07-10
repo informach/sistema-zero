@@ -16,6 +16,14 @@ export interface WebhookDeps {
   grantMembers?: (lead: Lead) => Promise<void>
   /** Boas-vindas (e-mail + WhatsApp) + link de definir senha (best-effort; NUNCA lança). Opcional. */
   sendWelcome?: (lead: Lead) => Promise<void>
+  /**
+   * Estende a matrícula por um CICLO de renovação de assinatura (lead JÁ pago;
+   * sem markPaid/welcome). Falha → GrantRetryError → 502 (o gateway re-entrega).
+   */
+  extendMembersForCycle?: (lead: Lead, paymentId: string, paidAtIso?: string) => Promise<void>
+  /** Aviso de FALHA de cobrança de ciclo (dunning) — best-effort, NUNCA lança. */
+  sendChargeFailed?: (lead: Lead, failedPaymentId: string) => Promise<void>
+  log?: (msg: string, meta?: Record<string, unknown>) => void
 }
 
 /**
@@ -30,7 +38,10 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
   }
 
   const raw = await request.text()
-  let payload: { event?: string; data?: { paymentId?: string } }
+  let payload: {
+    event?: string
+    data?: { paymentId?: string; subscriptionId?: string | null; paidAt?: string }
+  }
   try {
     payload = JSON.parse(raw) as typeof payload
   } catch {
@@ -40,6 +51,8 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
   const deliveryId = request.headers.get('x-delivery-id')
   const eventName = payload.event ?? request.headers.get('x-event-type') ?? ''
   const paymentId = payload.data?.paymentId ?? null
+  const subscriptionId =
+    typeof payload.data?.subscriptionId === 'string' ? payload.data.subscriptionId : null
 
   // Dedupe (entrega ≥1 vez): checa ANTES de processar, mas só registra a entrega
   // DEPOIS de processar com sucesso — assim uma falha transitória não faz o retry
@@ -49,15 +62,69 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
     return json({ ok: true, deduped: true })
   }
 
+  // FALHA de cobrança de CICLO de assinatura (dunning): avisa o assinante p/
+  // atualizar o pagamento na carência. Best-effort — o acesso expira sozinho no
+  // fim do ciclo + carência se nada for feito (ninguém estende a matrícula).
+  if (eventName === 'payment.failed' && subscriptionId) {
+    const lead = await deps.repo.findLeadBySubscription(subscriptionId)
+    if (lead && deps.sendChargeFailed && typeof paymentId === 'string' && paymentId) {
+      await deps.sendChargeFailed(lead, paymentId)
+    }
+    if (deliveryId) await deps.repo.markWebhookProcessed(deliveryId, paymentId)
+    return json({ ok: true })
+  }
+
   if (eventName === 'payment.paid') {
     if (typeof paymentId !== 'string' || !paymentId) {
       return jsonError('paymentId ausente.', 400, 'BAD_REQUEST')
     }
     let lead = await deps.repo.findLeadByPayment(paymentId)
+
+    // Cobrança DESCONHECIDA de uma assinatura conhecida = ciclo criado no payments
+    // (renovação — a 1ª notícia é este webhook) OU a 1ª cobrança de uma criação cuja
+    // resposta se perdeu. Resolve o lead pela assinatura e linka a cobrança ao
+    // histórico; a decisão renovação × 1ª compra é UNIFICADA logo abaixo (cobre
+    // também a REENTREGA de um ciclo cujo extend falhou — aí o findLeadByPayment
+    // já o acha pelo histórico e este bloco nem roda).
+    if (!lead && subscriptionId) {
+      const bySub = await deps.repo.findLeadBySubscription(subscriptionId)
+      if (bySub) {
+        await deps.repo.linkCyclePayment(bySub.id, paymentId)
+        lead = bySub
+      }
+    }
+
     if (!lead) {
       // Não marca o delivery como processado: o mapeamento pode aparecer logo
       // depois de uma corrida entre criação da cobrança e entrega do webhook.
       return jsonError('Pagamento ainda não mapeado; reentregar.', 502, 'PAYMENT_NOT_MAPPED')
+    }
+
+    // RENOVAÇÃO: ciclo de assinatura de lead JÁ pago (cobrança ≠ da 1ª compra) →
+    // SÓ estende a matrícula no members. Nada dos one-shots de 1ª compra
+    // (markPaid/fulfill/welcome/cupom); a reentrega do MESMO ciclo é inócua (o
+    // members não move a validade p/ trás). A 1ª cobrança reentregue
+    // (paymentId == lead.paymentId) segue o fluxo normal — é o backstop dos
+    // one-shots (todos idempotentes/gateados).
+    if (
+      subscriptionId &&
+      lead.subscriptionId === subscriptionId &&
+      lead.paidAt &&
+      lead.paymentId !== paymentId
+    ) {
+      if (deps.extendMembersForCycle) {
+        try {
+          await deps.extendMembersForCycle(lead, paymentId, payload.data?.paidAt)
+        } catch (err) {
+          if (err instanceof GrantRetryError) {
+            return jsonError('Extensão do ciclo pendente; reentregar.', 502, 'GRANT_RETRY')
+          }
+          throw err
+        }
+      }
+      deps.log?.('webhook.cycle_extended', { leadId: lead.id, paymentId })
+      if (deliveryId) await deps.repo.markWebhookProcessed(deliveryId, paymentId)
+      return json({ ok: true, renewal: true })
     }
 
     // Cobrança ANTIGA paga (o lead já aponta p/ uma mais nova, ainda não paga):

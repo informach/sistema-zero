@@ -265,6 +265,8 @@ function renderNode(
     rendered = indent(node.html.trimEnd(), indentSpaces)
   } else if (node.type === 'text') {
     rendered = `${pad}${escapeHtml(node.text)}`
+  } else if (node.type === 'comment') {
+    rendered = `${pad}<!--${node.text}-->`
   } else {
     rendered = renderElement(node, indentSpaces, map, startLine)
   }
@@ -331,6 +333,7 @@ function recordHTMLNode(
 /** Renderiza um nó "inline" (sem quebras de linha nem indentação). */
 function renderInline(node: HTMLNode): string {
   if (node.type === 'text') return escapeHtml(node.text)
+  if (node.type === 'comment') return `<!--${node.text}-->`
   if (node.type === 'rawHTML') return node.html.trim()
   if (node.type === 'canvas') {
     return canvasTag(node)

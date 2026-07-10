@@ -149,7 +149,7 @@ const ARGS_MUTATOR_MIXIN = {
     // Compartilha a varredura do workspace com os demais blocos-mutador que
     // respondem AO MESMO evento (coalescing por evento) — ver `makeScanner`.
     const scan = makeScanner(ws, event)
-    if (this.type === 'sz_js_new_var') {
+    if (this.type === 'sz_js_new_var' || this.type === 'sz_val_new') {
       const cls = findClass(scan, this.getFieldValue('CLASS') ?? '')
       return cls ? constructorParams(cls) : null
     }

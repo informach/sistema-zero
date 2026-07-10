@@ -23,6 +23,55 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
   return out
 }
 
+describe('parseJS — figura (sprite desenhado por código)', () => {
+  it('reconhece defineShape com corpo + createShapeSprite (round-trip dos paint_*)', () => {
+    const code = [
+      'SZGame2D.defineShape("heroi", function (ctx) {',
+      '  SZGame2D.paintRect(ctx, 0, 0, 20, 20, "#f00");',
+      '  SZGame2D.paintCircle(ctx, 5, 5, 3, "#0f0");',
+      '});',
+      'const p = SZGame2D.createShapeSprite("heroi", { x: 10, y: 20, w: 30, h: 40 });',
+    ].join('\n')
+    const ir = parseJS(code)
+    const types = collectTypes(ir)
+    expect(types.has('g2d:defineShape')).toBe(true)
+    expect(types.has('g2d:paintRect')).toBe(true)
+    expect(types.has('g2d:paintCircle')).toBe(true)
+    expect(types.has('g2d:createShapeSprite')).toBe(true)
+    expect(types.has('rawJS')).toBe(false)
+  })
+
+  it('CRÍTICO: um bloco de CANVAS dentro da figura round-trippa (ctx do parâmetro vira ctxVar)', () => {
+    // O ctx é o PARÂMETRO da figura; sem registrar em ctxVars, isto viraria rawJS.
+    const code = [
+      'SZGame2D.defineShape("brilho", function (ctx) {',
+      '  ctx.fillStyle = "#ff0";',
+      '  ctx.fillRect(0, 0, 10, 10);',
+      '});',
+    ].join('\n')
+    const ir = parseJS(code)
+    expect(collectTypes(ir).has('rawJS')).toBe(false)
+    // o corpo deve conter statements de canvas reconhecidos, não uma função crua
+    const shape = ir[0] as { type?: string; body?: unknown[] }
+    expect(shape.type).toBe('g2d:defineShape')
+    expect((shape.body ?? []).length).toBeGreaterThan(0)
+  })
+
+  it('a largura/altura da figura viram exprs g2d', () => {
+    expect(parseJS('SZGame2D.paintRect(ctx, SZGame2D.shapeW(), 0, 4, 4, "#000");')).toEqual([
+      {
+        type: 'g2d:paintRect',
+        ctxVar: 'ctx',
+        x: { type: 'g2d:shapeW' },
+        y: { type: 'num', value: 0 },
+        w: { type: 'num', value: 4 },
+        h: { type: 'num', value: 4 },
+        color: '#000',
+      },
+    ])
+  })
+})
+
 describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
   it('reconhece os helpers de uma linha como blocos g2d', () => {
     expect(parseJS('SZGame2D.applyVelocity(bola);')).toEqual([

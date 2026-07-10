@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
 import { SZIRSchema } from '#ir'
-import { CORE_EXAMPLES, gorilasNaMaoExample } from './core'
+import { CORE_EXAMPLES, gorilasNaMaoExample, invadersNaMaoExample } from './core'
 
 function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
   if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
@@ -47,5 +47,43 @@ describe('CORE_EXAMPLES — gorilasNaMaoExample (na mão, sem extensão)', () =>
     const code = compileStatements(gorilasNaMaoExample.ir.js, 0)
     expect(code).toContain('.style.animationDuration')
     expect(code).toContain("matchMedia('(prefers-color-scheme: dark)').matches")
+  })
+})
+
+describe('CORE_EXAMPLES — invadersNaMaoExample (classes 100% núcleo)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(invadersNaMaoExample)
+    expect(invadersNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRSchema.safeParse(invadersNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(invadersNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa o vocabulário de classes do núcleo (o contrato do lote)', () => {
+    const types = collectTypes(invadersNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Player/Projectile/Enemy/Wave/Game
+      'newExpr', // new Player(this) / push(new Projectile())
+      'arrayFilter', // this.enemies.filter(o => !o.markedForDeletion)
+      'setThisProp', // compostas expandidas (this.x = this.x - this.speed)
+      'memberCallExpr', // this.game.getProjetile()… chamadas em valor
+      'event', // keydown/keyup no construtor + load
+      'canvasSetup',
+      'animationLoop',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // O fundo estrelado embutido é PEQUENO (regra do bundle) e o CSS o referencia.
+    const asset = invadersNaMaoExample.assets?.[0]
+    expect(asset?.name).toBe('background.png')
+    expect((asset?.dataUrl.length ?? 0) < 2_000).toBe(true)
+    const css = JSON.stringify(invadersNaMaoExample.ir.css)
+    expect(css).toContain("url('background.png')")
   })
 })

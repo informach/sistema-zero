@@ -1,7 +1,9 @@
-import { and, count, desc, eq, ilike, or, type SQL, sql } from 'drizzle-orm'
+import { and, count, desc, eq, gte, ilike, isNotNull, lte, or, type SQL, sql } from 'drizzle-orm'
 import type {
   AdminSubscriptionListFilters,
   SubscriptionAdminReadRepository,
+  SubscriptionStats,
+  SubscriptionStatsWindow,
 } from '../../../domain/ports/subscription-admin-read.port'
 import { SubscriptionAggregate } from '../../../domain/subscription/subscription.aggregate'
 import type { Database } from './db'
@@ -42,6 +44,55 @@ export class DrizzleSubscriptionAdminReadRepository implements SubscriptionAdmin
     return {
       items: rows.map((row) => SubscriptionAggregate.restore(rowToSnapshot(row))),
       total: totalRow?.v ?? 0,
+    }
+  }
+
+  async stats(window: SubscriptionStatsWindow): Promise<SubscriptionStats> {
+    // Ativas por periodicidade + MRR numa varredura só. A divisão é NUMERIC
+    // (bigint/int truncaria os centavos da anual) e arredonda no fim.
+    const [activeRows, [newRow], [canceledRow]] = await Promise.all([
+      this.db
+        .select({
+          intervalMonths: subscriptions.intervalMonths,
+          n: count(),
+          mrr: sql<string>`coalesce(round(sum(${subscriptions.amountInCents}::numeric / ${subscriptions.intervalMonths})), 0)::text`,
+        })
+        .from(subscriptions)
+        .where(eq(subscriptions.status, 'ACTIVE'))
+        .groupBy(subscriptions.intervalMonths),
+      this.db
+        .select({ v: count() })
+        .from(subscriptions)
+        .where(
+          and(gte(subscriptions.createdAt, window.from), lte(subscriptions.createdAt, window.to)),
+        ),
+      this.db
+        .select({ v: count() })
+        .from(subscriptions)
+        .where(
+          and(
+            isNotNull(subscriptions.canceledAt),
+            gte(subscriptions.canceledAt, window.from),
+            lte(subscriptions.canceledAt, window.to),
+          ),
+        ),
+    ])
+
+    const active = { total: 0, monthly: 0, annual: 0, other: 0 }
+    let mrr = 0n
+    for (const row of activeRows) {
+      active.total += row.n
+      if (row.intervalMonths === 1) active.monthly += row.n
+      else if (row.intervalMonths === 12) active.annual += row.n
+      else active.other += row.n
+      mrr += BigInt(row.mrr)
+    }
+
+    return {
+      active,
+      mrrCents: mrr.toString(),
+      newInWindow: newRow?.v ?? 0,
+      canceledInWindow: canceledRow?.v ?? 0,
     }
   }
 }

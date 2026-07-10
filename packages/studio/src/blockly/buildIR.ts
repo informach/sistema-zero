@@ -352,6 +352,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:angleTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_g2d_get_health':
       return { type: 'g2d:getHealth', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_enemy_damage':
+      return { type: 'g2d:enemyDamage', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_x':
       return { type: 'g2d:spriteX', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_y':
@@ -364,6 +366,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:centerX', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_center_y':
       return { type: 'g2d:centerY', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_shape_w':
+      return { type: 'g2d:shapeW' }
+    case 'sz_g2d_shape_h':
+      return { type: 'g2d:shapeH' }
     case 'sz_g2d_sprite_vx':
       return { type: 'g2d:spriteVx', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_vy':
@@ -686,11 +692,24 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
         name: f(block, 'NAME'),
       }
+    case 'sz_val_member_get_optional':
+      return {
+        type: 'memberGet',
+        object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
+        name: f(block, 'NAME'),
+        optional: true,
+      }
     case 'sz_val_method_on':
       return {
         type: 'memberCallExpr',
         object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
         method: f(block, 'METHOD'),
+        args: getArgs(block),
+      }
+    case 'sz_val_new':
+      return {
+        type: 'newExpr',
+        className: f(block, 'CLASS'),
         args: getArgs(block),
       }
     case 'sz_val_object_op':
@@ -726,12 +745,35 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         itemName: f(block, 'ITEM'),
         cond: exprInput(block, 'COND', { type: 'bool', value: true }),
       }
+    case 'sz_val_array_filter':
+      return {
+        type: 'arrayFilter',
+        array: exprInput(block, 'ARRAY', { type: 'var', name: 'lista' }),
+        itemName: f(block, 'ITEM'),
+        cond: exprInput(block, 'COND', { type: 'bool', value: true }),
+      }
     case 'sz_val_concat_arrays':
       return { type: 'concatArrays', parts: getArrayItems(block) }
     case 'sz_val_shuffle':
       return { type: 'shuffle', arrayVar: f(block, 'NAME') }
     case 'sz_val_dataset':
       return { type: 'datasetGet', objectVar: f(block, 'OBJ'), key: f(block, 'KEY') }
+    case 'sz_val_get_element':
+      return { type: 'getElement', id: f(block, 'ID') }
+    case 'sz_val_query_select':
+      return {
+        type: 'querySelectorValue',
+        selector: f(block, 'SELECTOR'),
+        all: f(block, 'MODE') !== 'one',
+      }
+    case 'sz_val_promise_all':
+      return { type: 'promiseAll', list: exprInput(block, 'LIST', { type: 'array', items: [] }) }
+    case 'sz_val_new_promise':
+      return {
+        type: 'newPromise',
+        param: f(block, 'PARAM'),
+        body: getStatementChildren(block, 'DO', new Set()),
+      }
     case 'sz_val_storage_get':
       return {
         type: 'storageGet',
@@ -830,6 +872,7 @@ function getClassMembers(block: Blockly.Block, seen: Set<string>): ClassMembers 
         name: f(cur, 'NAME'),
         params: getParamNames(cur),
         body: getStatementChildren(cur, 'BODY', seen),
+        ...(f(cur, 'ASYNC') === 'TRUE' ? { async: true } : {}),
       })
     }
     cur = cur.getNextBlock()
@@ -1008,15 +1051,21 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           attrs: { href: f(block, 'HREF') },
         },
       }
-    case 'sz_html_image':
+    case 'sz_html_image': {
+      const id = f(block, 'ID')
+      const alt = f(block, 'ALT')
       return {
         kind: 'html',
         value: {
           type: 'element',
           tag: 'img',
-          attrs: { src: f(block, 'SRC'), alt: f(block, 'ALT') },
+          ...(id ? { id } : {}),
+          // `alt` vazio NÃO vira atributo (round-trip fiel de `<img src id>` sem
+          // alt); com texto, é preservado.
+          attrs: { src: f(block, 'SRC'), ...(alt ? { alt } : {}) },
         },
       }
+    }
     case 'sz_html_input': {
       const id = f(block, 'ID')
       return {
@@ -1056,6 +1105,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     }
     case 'sz_html_text':
       return { kind: 'html', value: { type: 'text', text: f(block, 'TEXT') } }
+    case 'sz_html_comment':
+      return { kind: 'html', value: { type: 'comment', text: f(block, 'TEXT') } }
     case 'sz_html_svg': {
       const id = f(block, 'ID')
       const attrs: Record<string, string> = {}
@@ -1579,6 +1630,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return null
     case 'sz_adv_raw_css':
       return { kind: 'css', value: { type: 'rawCSS', code: f(block, 'CODE'), advanced: true } }
+    case 'sz_css_comment':
+      return { kind: 'css', value: { type: 'comment', text: f(block, 'TEXT') } }
 
     // ---- JS ----
     case 'sz_js_on_click':
@@ -1669,6 +1722,28 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'DO', seen),
         },
       }
+    case 'sz_js_on_context_menu':
+      return {
+        kind: 'js',
+        value: {
+          type: 'event',
+          target: 'window',
+          targetKind: 'window',
+          event: 'contextmenu',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_on_blur':
+      return {
+        kind: 'js',
+        value: {
+          type: 'event',
+          target: 'window',
+          targetKind: 'window',
+          event: 'blur',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
     case 'sz_js_on_fullscreen_change':
       return {
         kind: 'js',
@@ -1723,6 +1798,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return {
         kind: 'js',
         value: { type: 'consoleLog', value: { type: 'var', name: f(block, 'NAME') } },
+      }
+    case 'sz_js_console_log_value':
+      return {
+        kind: 'js',
+        value: { type: 'consoleLog', value: exprInput(block, 'VALUE', { type: 'str', value: '' }) },
       }
     case 'sz_js_alert_text':
       return {
@@ -1866,20 +1946,26 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
         },
       }
-    case 'sz_js_var_increment':
+    case 'sz_js_var_increment': {
+      // DELTA negativo relê como `x = x - |n|` (não `x = x + -n`): é a forma
+      // canônica que o gerador emite p/ `x -= n`/`x = x - n`, então o
+      // round-trip de blocos fica byte-estável com o caminho textual.
+      const delta = fn(block, 'DELTA', 1)
+      const name = f(block, 'NAME')
       return {
         kind: 'js',
         value: {
           type: 'assign',
-          name: f(block, 'NAME'),
+          name,
           value: {
             type: 'binop',
-            op: '+',
-            left: { type: 'var', name: f(block, 'NAME') },
-            right: { type: 'num', value: fn(block, 'DELTA', 1) },
+            op: delta < 0 ? '-' : '+',
+            left: { type: 'var', name },
+            right: { type: 'num', value: delta < 0 ? -delta : delta },
           },
         },
       }
+    }
     case 'sz_js_if_else': {
       // Ramos "senão se" dinâmicos do mutator: lê ELSEIF_COND{i}/ELSEIF_THEN{i}
       // enquanto existirem; o "senão" (ELSE) só entra se o input existir.
@@ -2690,6 +2776,47 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'DO', seen),
         },
       }
+    case 'sz_js_image_onerror':
+      return {
+        kind: 'js',
+        value: {
+          type: 'imageOnError',
+          target: exprInput(block, 'TARGET', { type: 'var', name: 'img' }),
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_element_onclick':
+      return {
+        kind: 'js',
+        value: {
+          type: 'onClickAssign',
+          target: exprInput(block, 'TARGET', { type: 'getElement', id: 'botao' }),
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_await':
+      return {
+        kind: 'js',
+        value: { type: 'awaitStmt', value: exprInput(block, 'VALUE', { type: 'null' }) },
+      }
+    case 'sz_js_set_timeout_call':
+      return {
+        kind: 'js',
+        value: {
+          type: 'setTimeoutCall',
+          fn: f(block, 'FN'),
+          delay: exprInput(block, 'MS', { type: 'num', value: 1000 }),
+        },
+      }
+    case 'sz_canvas_request_frame_do':
+      return {
+        kind: 'js',
+        value: {
+          type: 'requestFrameDo',
+          ...(f(block, 'PARAM') ? { param: f(block, 'PARAM') } : {}),
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
     case 'sz_js_index_set':
       return {
         kind: 'js',
@@ -2708,6 +2835,23 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
           method: f(block, 'METHOD'),
           args: getArgs(block),
+        },
+      }
+    case 'sz_js_super_ctor':
+      return { kind: 'js', value: { type: 'superCall', args: getArgs(block) } }
+    case 'sz_js_super_method':
+      return {
+        kind: 'js',
+        value: { type: 'superMethodCall', method: f(block, 'METHOD'), args: getArgs(block) },
+      }
+    case 'sz_canvas_request_frame':
+      return { kind: 'js', value: { type: 'requestFrame', fn: f(block, 'FN') } }
+    case 'sz_js_expr_statement':
+      return {
+        kind: 'js',
+        value: {
+          type: 'exprStatement',
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
         },
       }
     case 'sz_js_return':
@@ -3103,6 +3247,113 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g2d:setImage', spriteVar: f(block, 'SPRITE'), image: f(block, 'IMAGE') },
       }
+    case 'sz_g2d_define_shape':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:defineShape',
+          shapeName: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_create_shape_sprite':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:createShapeSprite',
+          varName: f(block, 'SPRITE'),
+          shapeName: f(block, 'SHAPE'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          w: exprInput(block, 'W', { type: 'num', value: 32 }),
+          h: exprInput(block, 'H', { type: 'num', value: 32 }),
+        },
+      }
+    case 'sz_g2d_set_shape':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setShape',
+          spriteVar: f(block, 'SPRITE'),
+          shapeName: f(block, 'SHAPE'),
+        },
+      }
+    // paint_*: ctxVar FIXO 'ctx' (o parâmetro da figura) — sem campo visível.
+    case 'sz_g2d_paint_rect':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintRect',
+          ctxVar: 'ctx',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 20 }),
+          h: exprInput(block, 'H', { type: 'num', value: 20 }),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_paint_circle':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintCircle',
+          ctxVar: 'ctx',
+          x: exprInput(block, 'X', { type: 'num', value: 16 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 16 }),
+          r: exprInput(block, 'R', { type: 'num', value: 10 }),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_paint_ellipse':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintEllipse',
+          ctxVar: 'ctx',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 24 }),
+          h: exprInput(block, 'H', { type: 'num', value: 16 }),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_paint_triangle':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintTriangle',
+          ctxVar: 'ctx',
+          x1: exprInput(block, 'X1', { type: 'num', value: 16 }),
+          y1: exprInput(block, 'Y1', { type: 'num', value: 0 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 0 }),
+          y2: exprInput(block, 'Y2', { type: 'num', value: 28 }),
+          x3: exprInput(block, 'X3', { type: 'num', value: 32 }),
+          y3: exprInput(block, 'Y3', { type: 'num', value: 28 }),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_paint_line':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintLine',
+          ctxVar: 'ctx',
+          x1: exprInput(block, 'X1', { type: 'num', value: 0 }),
+          y1: exprInput(block, 'Y1', { type: 'num', value: 0 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 24 }),
+          y2: exprInput(block, 'Y2', { type: 'num', value: 24 }),
+          color: f(block, 'COLOR'),
+          width: exprInput(block, 'WIDTH', { type: 'num', value: 2 }),
+        },
+      }
     case 'sz_g2d_load_spritesheet':
       seen.add('game-2d')
       return {
@@ -3126,6 +3377,129 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
           to: exprInput(block, 'TO', { type: 'num', value: 0 }),
           fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_g2d_set_state_anim':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setStateAnim',
+          spriteVar: f(block, 'SPRITE'),
+          state: f(block, 'STATE'),
+          sheetVar: f(block, 'SHEET'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 3 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_g2d_auto_animate':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:autoAnimate', spriteVar: f(block, 'SPRITE') },
+      }
+    case 'sz_g2d_define_enemy_type':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:defineEnemyType',
+          varName: f(block, 'NAME'),
+          behavior: f(block, 'BEHAVIOR'),
+          color: f(block, 'COLOR'),
+          image: f(block, 'IMAGE'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 3 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 2 }),
+          dmg: exprInput(block, 'DMG', { type: 'num', value: 1 }),
+          w: exprInput(block, 'W', { type: 'num', value: 32 }),
+          h: exprInput(block, 'H', { type: 'num', value: 32 }),
+        },
+      }
+    case 'sz_g2d_enemy_state_anim':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:enemyStateAnim',
+          typeVar: f(block, 'TYPE'),
+          state: f(block, 'STATE'),
+          sheetVar: f(block, 'SHEET'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 3 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_g2d_enemy_type_param':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setEnemyTypeParam',
+          typeVar: f(block, 'TYPE'),
+          param: f(block, 'PARAM'),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_g2d_spawn_enemy':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:spawnEnemy',
+          typeVar: f(block, 'TYPE'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_g2d_update_enemy_type':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:updateEnemyType',
+          typeVar: f(block, 'TYPE'),
+          ctxVar: 'ctx',
+          targetVar: f(block, 'TARGET'),
+        },
+      }
+    case 'sz_g2d_draw_enemy_type':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:drawEnemyType', ctxVar: 'ctx', typeVar: f(block, 'TYPE') },
+      }
+    case 'sz_g2d_on_enemy_defeated':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onEnemyDefeated',
+          typeVar: f(block, 'TYPE'),
+          itemName: f(block, 'ANAME') || 'inimigo',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_on_enemy_shot_hit':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onEnemyShotHit',
+          spriteVar: f(block, 'SPRITE'),
+          typeVar: f(block, 'TYPE'),
+          itemName: f(block, 'ANAME') || 'tiro',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_hurt_by_enemy':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:hurtByEnemy',
+          spriteVar: f(block, 'SPRITE'),
+          enemyVar: f(block, 'ENEMY'),
         },
       }
     case 'sz_g2d_draw_frame':
@@ -3228,6 +3602,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           tile: exprInput(block, 'TILE', { type: 'num', value: 32 }),
           solid: f(block, 'SOLID'),
           grid: f(block, 'GRID'),
+        },
+      }
+    case 'sz_g2d_create_tilemap_from_asset':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:createTileMapFromAsset',
+          varName: f(block, 'NAME'),
+          image: f(block, 'IMAGE'),
         },
       }
     case 'sz_g2d_draw_tilemap':

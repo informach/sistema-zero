@@ -6,7 +6,7 @@ import {
   FRAME_STRUCTURE,
 } from './buildIR'
 import { migrateIfElseBlocks } from './migrateIfElse'
-import { migrateLegacyValueFields } from './migrateValueFields'
+import { migrateLegacyValueFields, restoreShadowLiterals } from './migrateValueFields'
 import { ensureBlocklyInitialized } from './setup'
 import { buildWorkspaceStateFromIR } from './workspaceState'
 
@@ -45,7 +45,10 @@ export function normalizeBlocksStateToFrames(state: unknown): unknown {
   // Migra "Se" legado (input ELSE fixo → mutator com `extraState.hasElse`) para não
   // perder o "senão" da criança ao carregar. Roda SEMPRE (inclusive em já framados;
   // devolve a MESMA referência quando não há nada a migrar).
-  const migrated = migrateIfElseBlocks(migrateLegacyValueFields(state))
+  // `restoreShadowLiterals` CURA estados poluídos pela reconstrução IR→blocos
+  // antiga (literais de preset emitidos como blocos reais → sombras de novo),
+  // reativando fillFrames/applySuggestedSize em projetos já salvos.
+  const migrated = migrateIfElseBlocks(restoreShadowLiterals(migrateLegacyValueFields(state)))
   if (!migrated || blocksStateHasFrame(migrated)) return migrated
   const blocks = (migrated as { blocks?: { blocks?: unknown[] } }).blocks?.blocks
   if (!Array.isArray(blocks) || blocks.length === 0) return migrated

@@ -55,4 +55,27 @@ describe('copy centralizada', () => {
     expect(friendlyErrorMessage(duck)).toContain('acesso')
     expect(friendlyErrorMessage(duck)).not.toContain('403')
   })
+
+  it('AI_QUOTA_EXCEEDED distingue day/month pelo scope (classe E duck-typed)', () => {
+    // Teto DIÁRIO: "volta amanhã". O scope atravessa o transport do host duck-typed
+    // (a classe não cruza o dynamic import) — travar os DOIS formatos.
+    const dayClass = friendlyErrorMessage(
+      new PensaApiError('quota', 429, 'AI_QUOTA_EXCEEDED', 'day'),
+    )
+    expect(dayClass).toContain('Amanhã tem mais')
+    const dayDuck = friendlyErrorMessage(
+      Object.assign(new Error('429'), { status: 429, code: 'AI_QUOTA_EXCEEDED', scope: 'day' }),
+    )
+    expect(dayDuck).toContain('Amanhã tem mais')
+    // Teto MENSAL: "mês que vem".
+    const monthDuck = friendlyErrorMessage(
+      Object.assign(new Error('429'), { status: 429, code: 'AI_QUOTA_EXCEEDED', scope: 'month' }),
+    )
+    expect(monthDuck).toContain('No mês que vem tem mais')
+    // Sem scope (defensivo) → cai no diário.
+    const noScope = friendlyErrorMessage(
+      Object.assign(new Error('429'), { status: 429, code: 'AI_QUOTA_EXCEEDED' }),
+    )
+    expect(noScope).toContain('Amanhã tem mais')
+  })
 })

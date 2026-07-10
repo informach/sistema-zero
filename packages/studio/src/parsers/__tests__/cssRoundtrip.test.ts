@@ -32,11 +32,12 @@ describe('parseCSS — fidelidade do round-trip (5º review)', () => {
     expect(out).toContain('display: grid')
   })
 
-  it('#10: comentário entre regras é preservado verbatim', () => {
+  it('#10: comentário entre regras é preservado verbatim (nó comment)', () => {
     const css = '.a { color: red; }\n/* separador */\n.b { color: blue; }'
     const ir = parseCSS(css)
-    const raws = ir.filter((e) => 'type' in e && e.type === 'rawCSS')
-    expect(raws.some((e) => 'code' in e && e.code.includes('/* separador */'))).toBe(true)
+    // Comentário solto vira um nó `comment` (bloco "comentário CSS") — miolo em `text`.
+    const comments = ir.filter((e) => 'type' in e && e.type === 'comment')
+    expect(comments.some((e) => 'text' in e && e.text.includes('separador'))).toBe(true)
     const out = generateCSS(ir)
     expect(out).toContain('/* separador */')
     expect(out).toContain('.a {')

@@ -105,6 +105,9 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:pruneOffscreen':
     case 'g2d:onGroupOverlap':
     case 'g2d:onSpriteGroupOverlap':
+    case 'g2d:onEnemyDefeated':
+    case 'g2d:onEnemyShotHit':
+    case 'g2d:defineShape':
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
     case 'g3d:animate':

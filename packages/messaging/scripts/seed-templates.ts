@@ -389,6 +389,96 @@ const seeds = [
         'Você recebeu este e-mail porque há um perfil de criança ativo na sua conta do Sistema Zero.',
     }),
   },
+  // Lembrete de RENOVAÇÃO do plano anual à vista (assinaturas, 07/2026) — enviado
+  // pelo MEMBERS (consumer HMAC `members` via gateway) ~7 dias antes da validade
+  // da matrícula vencer. CONTRATO de variáveis com o members
+  // (send-renewal-reminders): NÃO renomear sem mudar o chamador. `data` chega
+  // formatada (dd/mm/aaaa); `link` = /renovar?oferta=<slug> no funil.
+  {
+    key: 'renewal-reminder',
+    channel: 'email' as const,
+    name: 'Lembrete de renovação (e-mail)',
+    subject: 'Seu acesso a {{produto}} vence em breve, {{nome}}',
+    variables: ['nome', 'produto', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'Renove agora e continue com acesso sem interrupção.',
+      title: 'Hora de renovar, {{nome}} ⏰',
+      content: [
+        p(
+          'Seu acesso a <strong>{{produto}}</strong> vale até <strong>{{data}}</strong>. Depois dessa data, a plataforma fica indisponível até a renovação.',
+        ),
+        p('Para continuar sem interrupção, renove agora — leva menos de dois minutos.'),
+        ctaButton('Renovar meu acesso', '{{link}}'),
+        divider,
+        small(
+          'Se você já renovou, pode ignorar este e-mail — o novo período entra em vigor automaticamente.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um plano ativo no Sistema Zero.',
+    }),
+  },
+  {
+    key: 'renewal-reminder',
+    channel: 'whatsapp' as const,
+    name: 'Lembrete de renovação (WhatsApp)',
+    variables: ['nome', 'produto', 'data', 'link'],
+    body: [
+      'Olá, {{nome}}! ⏰',
+      '',
+      'Seu acesso a *{{produto}}* vale até *{{data}}*.',
+      '',
+      'Para continuar sem interrupção, renove agora (leva menos de dois minutos):',
+      '{{link}}',
+      '',
+      '_Se você já renovou, pode ignorar esta mensagem._',
+    ].join('\n'),
+  },
+  // FALHA de cobrança de um ciclo de ASSINATURA (dunning, 07/2026) — enviado pelo
+  // FUNIL (consumer HMAC `funnel` via gateway) quando o `payment.failed` de um
+  // ciclo chega. CONTRATO de variáveis com o funil (server/dunning.ts): NÃO
+  // renomear sem mudar o chamador. `link` = página de compras/assinaturas do app.
+  {
+    key: 'subscription-charge-failed',
+    channel: 'email' as const,
+    name: 'Falha na cobrança da assinatura (e-mail)',
+    subject: 'Não conseguimos renovar sua assinatura, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'A cobrança da sua assinatura não foi aprovada — atualize o pagamento.',
+      title: 'Ops! A cobrança não passou 😕',
+      content: [
+        p(
+          'Tentamos renovar a sua assinatura do <strong>Sistema Zero</strong>, mas a cobrança no cartão não foi aprovada (pode ser limite, vencimento ou bloqueio do banco).',
+        ),
+        p(
+          'Seu acesso continua ativo por alguns dias. Para não perder nada, verifique o cartão com o seu banco — uma nova tentativa de cobrança pode acontecer em breve.',
+        ),
+        ctaButton('Ver minha assinatura', '{{link}}'),
+        divider,
+        small(
+          'Se a cobrança não for aprovada até o fim do período já pago, o acesso é pausado automaticamente — e você pode reativar quando quiser.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem uma assinatura ativa no Sistema Zero.',
+    }),
+  },
+  {
+    key: 'subscription-charge-failed',
+    channel: 'whatsapp' as const,
+    name: 'Falha na cobrança da assinatura (WhatsApp)',
+    variables: ['nome', 'link'],
+    body: [
+      'Olá, {{nome}}! 😕',
+      '',
+      'Tentamos renovar a sua assinatura do *Sistema Zero*, mas a cobrança no cartão não foi aprovada.',
+      '',
+      'Seu acesso continua ativo por alguns dias. Verifique o cartão com o seu banco — uma nova tentativa pode acontecer em breve.',
+      '',
+      'Acompanhe aqui: {{link}}',
+    ].join('\n'),
+  },
   // Lembrete de publicação MANUAL do app de marketing (F1, 07/2026) — enviado
   // pelo MARKETING (consumer HMAC `marketing` no gateway) na hora agendada de
   // uma publicação em modo lembrete. CONTRATO de variáveis com o marketing

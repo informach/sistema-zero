@@ -321,6 +321,10 @@ member-shell (ver o CLAUDE.md de lá) + members (portão/posse); aqui é só apr
    (estrito: a sessão de perfil herda o e-mail do responsável → a criança é RECUSADA, 403) sobre
    `shell.routes.paymentsMy`; UI `PurchasesView` no `perfis-client` (Fase 3b, 06/2026). Antes
    o kids não tinha NADA de compras; agora tem, mas escopado ao responsável.
+   **Assinaturas (07/2026):** a MESMA sub-tela ganhou a seção `ParentSubscriptions` (status,
+   R$X/mês|ano, próxima cobrança derivada, cancelar com confirmação "acesso até o fim do período
+   já pago") — shims `app/api/payments/my/subscriptions[/​[id]]` gateados por
+   `requireParentGateAccountOnly` sobre `shell.routes.paymentsMySubscription*`.
 2. **Classificação do curso INCLUÍDA (decisão do usuário, 06/2026)**: porta kids do fluxo de 5
    modais do community (`course-rating-flow.tsx` próprio, copy em tom kids + mascote; rota shim
    `/api/members/courses/[slug]/rating` compartilhada). Compartilhar usa SÓ `salesPageUrl` do

@@ -309,9 +309,10 @@ export const COPY = {
     tooBig: 'Esse desenho ficou grande demais para o Estúdio. Tente um tamanho menor.',
     openStudio: 'Abrir o Estúdio',
     sending: 'Enviando...',
-    // Mapa: o "Usar no Estúdio" copia a GRADE (o mapa jogável), não uma figura.
-    mapGridCopied: 'Copiei a grade do mapa! Cole no bloco de mapa do Estúdio (Ctrl+V).',
-    mapGridError: 'Não consegui copiar a grade. Abra "Baixar" e use "Copiar a grade do mapa".',
+    // Mapa: viaja como ASSET completo (grade + peças embutidas), não mais só a
+    // grade no clipboard — o caminho de texto continua no "Baixar".
+    mapSuccess: 'Seu mapa já está no Estúdio! Procure o bloco "Criar mapa do meu desenho".',
+    mapSuccessLocked: 'Salvei! Quando o Estúdio for liberado, seu mapa vai estar lá.',
   },
   coach: {
     gotIt: 'Entendi!',

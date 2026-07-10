@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
 import type { PurgeUserDataService } from '../../../application/admin/purge-user-data/purge-user-data.service'
+import type { GetAiUsageStatsService } from '../../../application/ai-usage/get-ai-usage-stats.service'
 import type { GetCourseAnalyticsService } from '../../../application/analytics/get-course-analytics.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetMemberActivityService } from '../../../application/get-member-activity/get-member-activity.service'
@@ -23,6 +24,7 @@ import {
   AdminTeacherThreadByContextQuery,
   AdminTeacherThreadPostBody,
   AdminTeacherThreadsQuery,
+  AiUsageStatsQuery,
   CourseIdParams,
   GrantEntitlementBody,
   IdParams,
@@ -48,6 +50,8 @@ export interface AdminRoutesDeps {
   listMemberRatings: ListMemberRatingsService
   getGamification: GetGamificationService
   analytics: GetCourseAnalyticsService
+  /** Agregados de uso de IA (quota por conta) p/ o painel acompanhar o custo. */
+  aiUsageStats: GetAiUsageStatsService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
   /** Canal de retorno professor↔aluno (caixa de entrada + responder). */
@@ -158,6 +162,18 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.analytics.funnel(params.courseId)
         },
         { params: CourseIdParams },
+      )
+      // Uso de IA por conta (quota): agregados do mês p/ o painel acompanhar o
+      // CUSTO (total/hoje/contas, breakdown por feature, série por dia, top contas
+      // com a flag `privileged` p/ rotular a equipe). `?month=YYYY-MM` (ausente →
+      // mês SP corrente). O painel hidrata os nomes das contas no auth.
+      .get(
+        '/ai-usage',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.aiUsageStats.execute(query.month)
+        },
+        { query: AiUsageStatsQuery },
       )
       // ── Conversas com o aluno (canal de retorno) ─────────────────────────────
       // Caixa de entrada do professor (todas as conversas, filtros) + abrir/responder

@@ -36,14 +36,17 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
   while (index < source.length) {
     const beforeSkip = index
     index = skipWhitespaceAndComments(source, index)
-    // Comentário SOLTO entre regras: preserva verbatim como rawCSS avançado
-    // (igual a rawHTML/rawJS) — senão some no round-trip código→IR→código. O
-    // trecho pulado é só espaço+comentário, então `trim()` devolve o(s) comentário(s).
+    // Comentário SOLTO entre regras vira um nó `comment` (bloco "comentário CSS")
+    // — senão some no round-trip código→IR→código. O trecho pulado é só
+    // espaço+comentário; `trim()` devolve o(s) comentário(s). Um único bloco
+    // `/* ... */` (ou uma sequência deles) casa a regex e guarda só o MIOLO
+    // (delimitadores reconstruídos pelo gerador); o resto cai em rawCSS.
     if (index > beforeSkip) {
-      const skipped = source.slice(beforeSkip, index)
-      if (skipped.includes('/*')) {
-        const code = skipped.trim()
-        if (code) entries.push({ type: 'rawCSS', code, advanced: true })
+      const code = source.slice(beforeSkip, index).trim()
+      if (code.includes('/*')) {
+        const inner = code.match(/^\/\*([\s\S]*)\*\/$/)
+        if (inner) entries.push({ type: 'comment', text: inner[1] ?? '' })
+        else entries.push({ type: 'rawCSS', code, advanced: true })
       }
     }
     if (index >= source.length) break

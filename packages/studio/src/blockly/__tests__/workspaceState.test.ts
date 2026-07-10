@@ -858,7 +858,10 @@ function collectBlocks(blocks: SerializedBlocklyBlock[]): SerializedBlocklyBlock
 function visit(block: SerializedBlocklyBlock, types: string[]): void {
   types.push(block.type)
   if (block.inputs) {
-    for (const input of Object.values(block.inputs)) visit(input.block, types)
+    for (const input of Object.values(block.inputs)) {
+      if (input.block) visit(input.block, types)
+      if (input.shadow) visit(input.shadow, types)
+    }
   }
   if (block.next) visit(block.next.block, types)
 }
@@ -866,7 +869,10 @@ function visit(block: SerializedBlocklyBlock, types: string[]): void {
 function visitBlock(block: SerializedBlocklyBlock, blocks: SerializedBlocklyBlock[]): void {
   blocks.push(block)
   if (block.inputs) {
-    for (const input of Object.values(block.inputs)) visitBlock(input.block, blocks)
+    for (const input of Object.values(block.inputs)) {
+      if (input.block) visitBlock(input.block, blocks)
+      if (input.shadow) visitBlock(input.shadow, blocks)
+    }
   }
   if (block.next) visitBlock(block.next.block, blocks)
 }

@@ -1,5 +1,8 @@
 import type { Project } from '#core'
-import type { ProjectStoreApi } from '../state/projectStore'
+// Import do MÓDULO PURO (não do barrel #blockly): o service vive no chunk do
+// núcleo e não pode arrastar Blockly (workspaceState → buildIR → blockly/core).
+import { isBlocksStateEmpty } from '../blockly/blocksStateShape'
+import type { BlocksHydrationStatus, ProjectStoreApi } from '../state/projectStore'
 import type { StudioPersistenceAdapter } from './types'
 
 const AUTOSAVE_DELAY_DEFAULT = 1000
@@ -11,6 +14,17 @@ let autosaveDelay = AUTOSAVE_DELAY_DEFAULT
  */
 export function setAutosaveDelayForTests(ms: number | null): void {
   autosaveDelay = ms ?? AUTOSAVE_DELAY_DEFAULT
+}
+
+// Teto da restauração em 2º plano dos blocos: passado disso o status vira
+// 'failed' (a UI destrava; a partição salva segue PROTEGIDA até resolver). Uma
+// resolução tardia ainda restaura normalmente — o timeout só solta a espera.
+const BLOCKS_HYDRATION_TIMEOUT_DEFAULT_MS = 10_000
+let blocksHydrationTimeoutMs = BLOCKS_HYDRATION_TIMEOUT_DEFAULT_MS
+
+/** Encurta o timeout da restauração dos blocos em testes (timers reais). */
+export function setBlocksHydrationTimeoutForTests(ms: number | null): void {
+  blocksHydrationTimeoutMs = ms ?? BLOCKS_HYDRATION_TIMEOUT_DEFAULT_MS
 }
 
 /** Contexto do `onChange`: distingue um autosave do debounce de um flush de
@@ -162,6 +176,39 @@ export function createPersistenceService(
     return next
   }
 
+  // Status da restauração em 2º plano dos blocos, POR id (autoritativo desta
+  // instância; o campo espelhado no store é só para a UI reagir). Enquanto
+  // 'pending'/'failed', os saves desta instância NÃO gravam a partição de blocos
+  // — ver `snapshotForSave`.
+  const blocksHydrationById = new Map<string, BlocksHydrationStatus>()
+
+  function setHydrationStatus(projectId: string, status: BlocksHydrationStatus): void {
+    blocksHydrationById.set(projectId, status)
+    const state = store.getState()
+    if (state.project?.id === projectId) state.setBlocksHydration(status)
+  }
+
+  function shouldStripBlocks(projectId: string): boolean {
+    const status = blocksHydrationById.get(projectId)
+    return status === 'pending' || status === 'failed'
+  }
+
+  /**
+   * TRANCA ANTI-PERDA: enquanto a partição de blocos ainda está sendo restaurada
+   * ('pending') — ou falhou em ser lida ('failed') — o snapshot enviado ao
+   * adapter/host vai SEM `blocksState`. O guard existente do `persistProject`
+   * (não grava a partição quando `blocksState == null`) faz o resto: um estado
+   * quase-vazio (workspace recém-limpo) ou DERIVADO (reconstrução da Ponte ao
+   * reabrir) nunca sobrescreve os blocos reais salvos no disco. Depois de
+   * resolver ('restored'/'empty'/'discarded'), os saves voltam ao normal — um
+   * clear deliberado do aluno continua sendo persistido.
+   */
+  function snapshotForSave(project: Project): Project {
+    if (project.blocksState == null) return project
+    if (!shouldStripBlocks(project.id)) return project
+    return { ...project, blocksState: null }
+  }
+
   const internals: ServiceInternals = {
     clearTimerFor(projectId) {
       const entry = pending.get(projectId)
@@ -177,6 +224,7 @@ export function createPersistenceService(
       if (store.getState().project?.id === projectId) {
         store.getState().unloadProject()
       }
+      blocksHydrationById.delete(projectId)
     },
   }
 
@@ -213,25 +261,69 @@ export function createPersistenceService(
   }
 
   function hydrateAfterLoad(project: Project): void {
+    // Mantém no Map só o projeto vivo desta instância: status de projetos já
+    // fechados não interessam mais (um save enfileirado deles carrega blocksState
+    // null em memória, que o guard do persistProject já pula sozinho).
+    for (const id of [...blocksHydrationById.keys()]) {
+      if (id !== project.id) blocksHydrationById.delete(id)
+    }
+    // Elegibilidade (status fica 'idle' — nada é trancado): sem partição a
+    // restaurar (adapter sem loadBlocksState), projeto pro (blocos não se
+    // aplicam) ou o host já entregou o projeto COMPLETO.
     if (!adapter?.loadBlocksState) return
     if (project.kind === 'pro') return
     if (project.blocksState != null) return
+    setHydrationStatus(project.id, 'pending')
+    // O timeout NÃO abandona a leitura: só troca 'pending'→'failed' para a UI
+    // destravar (a tranca continua protegendo a partição). Se a leitura resolver
+    // depois, o `.then` abaixo ainda restaura normalmente.
+    const timeout = setTimeout(() => {
+      if (blocksHydrationById.get(project.id) !== 'pending') return
+      console.warn(
+        '[sz] a restauração dos blocos salvos está demorando — a partição fica protegida até resolver.',
+      )
+      setHydrationStatus(project.id, 'failed')
+    }, blocksHydrationTimeoutMs)
     void adapter
       .loadBlocksState(project)
       .then((blocksState) => {
-        if (blocksState == null) return
+        clearTimeout(timeout)
         const current = store.getState()
-        if (current.project?.id !== project.id) return
-        // Se o aluno editou enquanto a partição pesada vinha do IndexedDB, não
-        // sobrescrevemos a edição viva com um layout salvo mais antigo.
-        if (current.isDirty) return
+        if (current.project?.id !== project.id) {
+          blocksHydrationById.delete(project.id)
+          return
+        }
+        if (blocksState == null) {
+          // Definitivo: não há nada salvo. Os modos podem derivar do código.
+          setHydrationStatus(project.id, 'empty')
+          return
+        }
+        // Restaura SÓ para dentro de um canvas VAZIO. Blocos vivos não-vazios
+        // (o aluno montou algo, ou a Ponte derivou do código) vencem o layout
+        // salvo mais antigo — sobrescrever trabalho em memória com o disco no
+        // meio da sessão nunca é certo. ⚠️ O sinal NÃO é `isDirty`: um autosave
+        // que corra nesta janela chama `markSaved` e limpa o isDirty, e a
+        // restauração tardia clobraria os blocos vivos "salvos". Um canvas vivo
+        // vazio, por outro lado, não codifica trabalho nenhum (edições de
+        // arquivo são preservadas — o patch só troca o blocksState).
+        if (!isBlocksStateEmpty(current.project.blocksState)) {
+          setHydrationStatus(project.id, 'discarded')
+          return
+        }
         current.hydrateProjectState({ blocksState })
+        setHydrationStatus(project.id, 'restored')
       })
       .catch((err) => {
+        clearTimeout(timeout)
         console.warn(
           '[sz] não foi possível restaurar o layout salvo dos blocos:',
           err instanceof Error ? err.message : err,
         )
+        if (store.getState().project?.id === project.id) {
+          setHydrationStatus(project.id, 'failed')
+        } else {
+          blocksHydrationById.delete(project.id)
+        }
       })
   }
 
@@ -246,7 +338,10 @@ export function createPersistenceService(
       // esperava o anterior na fila.
       if (isFenced(project.id)) return
       try {
-        if (adapter) await adapter.save(project)
+        // Tranca anti-perda avaliada NA HORA do write (o status pode ter mudado
+        // enquanto este save aguardava a cadeia). `markSaved` compara a
+        // referência ORIGINAL — o snapshot é só o que vai ao adapter.
+        if (adapter) await adapter.save(snapshotForSave(project))
         // Excluído ENQUANTO o save estava em voo (adapter lento/remoto): aborta
         // sem marcar salvo — o `delMany` do delete já correu, re-persistir
         // ressuscitaria o projeto apagado.
@@ -281,7 +376,10 @@ export function createPersistenceService(
     const timer = setTimeout(() => {
       const entry = pending.get(project.id)
       if (entry?.timer === timer) pending.delete(project.id)
-      emitChange(project, 'autosave')
+      // O host recebe o MESMO snapshot protegido que o adapter: enquanto a
+      // partição de blocos hidrata, um host que persiste via onChange também não
+      // pode gravar um blocksState quase-vazio/derivado por cima do real.
+      emitChange(snapshotForSave(project), 'autosave')
       void persistAndMark(project)
     }, autosaveDelay)
     pending.set(project.id, { timer, project })
@@ -306,7 +404,7 @@ export function createPersistenceService(
       // reason 'flush': fechamento (pagehide/beforeunload/unmount/save). O fetch
       // do adapter remoto será abortado pela navegação, então o host precisa
       // trocar para navigator.sendBeacon / fetch keepalive ao ver este reason.
-      emitChange(project, 'flush')
+      emitChange(snapshotForSave(project), 'flush')
       void persistAndMark(project)
     }
   }
@@ -356,7 +454,7 @@ export function createPersistenceService(
     internals.clearTimerFor(project.id)
     // reason 'flush': o salvar explícito é um ponto de drenagem como o
     // fechamento — se o host usa keepalive no flush, o save manual também o usa.
-    emitChange(project, 'flush')
+    emitChange(snapshotForSave(project), 'flush')
     // O `adapter.save` corre no MESMO mutex por id dos autosaves: um Salvar
     // manual nunca intercala com um autosave em voo do mesmo projeto (o POST
     // antigo não pode confirmar depois do novo). `onSave`, marcação no store e a
@@ -371,8 +469,11 @@ export function createPersistenceService(
       // fila — não persiste de volta o apagado.
       if (isFenced(project.id)) return
       try {
-        if (adapter) await adapter.save(project)
-        await service.handlers.onSave?.(project)
+        // Mesmo snapshot protegido para adapter E host (recalculado na hora do
+        // write — o status pode ter resolvido enquanto o save aguardava a fila).
+        const snapshot = snapshotForSave(project)
+        if (adapter) await adapter.save(snapshot)
+        await service.handlers.onSave?.(snapshot)
         if (store.getState().project === project) {
           store.getState().markSaved()
         }

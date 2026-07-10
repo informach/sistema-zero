@@ -89,6 +89,13 @@ const EnvSchema = z
     // Carência (dias) somada ao fim do ciclo da assinatura ao calcular `expiresAt`.
     SUBSCRIPTION_GRACE_DAYS: z.coerce.number().int().nonnegative().default(3),
 
+    // Quota de IA por CONTA (interações/dia e /mês — Pensa, descrição do Mural e
+    // recursos futuros). Calibrada p/ o cliente não sentir o teto com o custo em
+    // centavos (gpt-4o-mini); ajustável por env sem retrabalho. Equipe é isenta
+    // (grava mas nunca recusa).
+    AI_LIMIT_DAILY: z.coerce.number().int().positive().default(50),
+    AI_LIMIT_MONTHLY: z.coerce.number().int().positive().default(500),
+
     // Retenção do dedupe de webhooks (`processed_webhooks`): linhas mais antigas
     // que isto são apagadas pelo ciclo periódico de limpeza (fora do hot path;
     // advisory lock garante 1 réplica por ciclo). Reprocessar entrega antiga é
@@ -139,6 +146,17 @@ const EnvSchema = z
     PARENT_REPORT_BATCH_LIMIT: z.coerce.number().int().positive().default(200),
     // URL pública do app kids (CTA "Ver na plataforma" do e-mail → /perfis).
     KIDS_COMMUNITY_URL: z.string().url().optional(),
+    // ── Lembrete de RENOVAÇÃO (anual à vista) ───────────────────────────────
+    // Janela (dias antes do vencimento) + ciclo do job + teto por ciclo.
+    RENEWAL_REMINDER_DAYS_BEFORE: z.coerce.number().int().min(1).max(60).default(7),
+    RENEWAL_REMINDER_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(6 * 60 * 60 * 1000),
+    RENEWAL_REMINDER_BATCH_LIMIT: z.coerce.number().int().positive().default(200),
+    // URL pública do FUNIL (base do link /renovar?oferta=<slug> do e-mail).
+    FUNNEL_URL: z.string().url().optional(),
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.INTERNAL_API_TOKEN), {
     message:

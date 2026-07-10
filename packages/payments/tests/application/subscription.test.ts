@@ -96,6 +96,24 @@ describe('CreateSubscriptionService', () => {
     expect(cycle.method.type).toBe('CREDIT_CARD')
     expect(payments.outbox.some((e) => e.eventName === 'payment.paid')).toBe(true)
     expect(subscriptions.outbox.some((e) => e.eventName === 'subscription.activated')).toBe(true)
+
+    // A view da criação expõe o pagamento do 1º ciclo (o funil linka ao lead
+    // sem esperar o webhook) e o `payment.paid` carrega o subscriptionId.
+    expect(view.firstPayment).toEqual({ id: cycle.id, status: 'PAID' })
+    const paidEvent = payments.outbox.find((e) => e.eventName === 'payment.paid')!
+    expect(paidEvent.payload.subscriptionId).toBe(view.id)
+  })
+
+  test('metadata da assinatura (leadId/offerId) propaga ao pagamento do ciclo', async () => {
+    const view = await buildService({ subscriptions, payments, planRegistry, gateway }).execute({
+      ...baseCommand,
+      metadata: { leadId: 'lead-1', offerId: 'offer-1' },
+    })
+
+    const cycle = [...payments.byId.values()][0]!
+    expect(cycle.metadata.leadId).toBe('lead-1')
+    expect(cycle.metadata.offerId).toBe('offer-1')
+    expect(cycle.metadata.subscriptionId).toBe(view.id)
   })
 
   test('reusa o plano para o mesmo (intervalo, repetições)', async () => {
@@ -322,5 +340,17 @@ describe('HandleSubscriptionNotificationService (ciclos)', () => {
     gateway.cardStatus = 'PAID'
     await handler.handleCycle({ subscriptionId: 'sub-desconhecida', chargeId: 'cycle-1' })
     expect(payments.byId.size).toBe(0)
+  })
+
+  test('ciclo FALHO emite payment.failed com o subscriptionId (dunning do funil)', async () => {
+    gateway.cardStatus = 'FAILED'
+    gateway.setCycleChargeAmount('cycle-1', 1000n)
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'cycle-1' })
+
+    const failed = payments.outbox.find((e) => e.eventName === 'payment.failed')
+    expect(failed).toBeDefined()
+    expect(failed!.payload.subscriptionId).toBe(subId)
+    // Um ciclo falho NÃO cancela a assinatura (a Efí pode retentar).
+    expect((await subscriptions.findById(subId))?.status).not.toBe('CANCELED')
   })
 })

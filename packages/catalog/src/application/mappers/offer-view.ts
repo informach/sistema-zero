@@ -16,6 +16,8 @@ export interface OfferView {
   compareAtPriceCents: number | null
   currency: string
   pricingMode: string
+  /** Periodicidade da assinatura em meses (mensal=1, anual=12); null em one_time. */
+  billingIntervalMonths: number | null
   installmentsMax: number | null
   trialDays: number | null
   guaranteeDays: number | null
@@ -46,6 +48,8 @@ export interface OfferListItemView {
   compareAtPriceCents: number | null
   currency: string
   pricingMode: string
+  /** Periodicidade da assinatura em meses (mensal=1, anual=12); null em one_time. */
+  billingIntervalMonths: number | null
   installmentsMax: number | null
   trialDays: number | null
   guaranteeDays: number | null
@@ -76,6 +80,7 @@ export function toOfferListItem(
     compareAtPriceCents: offer.compareAtPriceCents,
     currency: offer.currency,
     pricingMode: offer.pricingMode,
+    billingIntervalMonths: offer.billingIntervalMonths,
     installmentsMax: offer.installmentsMax,
     trialDays: offer.trialDays,
     guaranteeDays: offer.guaranteeDays,
@@ -107,6 +112,7 @@ export function toOfferView(
     compareAtPriceCents: offer.compareAtPriceCents,
     currency: offer.currency,
     pricingMode: offer.pricingMode,
+    billingIntervalMonths: offer.billingIntervalMonths,
     installmentsMax: offer.installmentsMax,
     trialDays: offer.trialDays,
     guaranteeDays: offer.guaranteeDays,

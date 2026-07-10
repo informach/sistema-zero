@@ -28,13 +28,18 @@ const GENERIC_RETRY_DELAY_MS = 4_000
 const IN_PROGRESS_MAX_CYCLES = 8
 const IN_PROGRESS_RETRY_DELAY_MS = 7_000
 
-function pixChargeKey(contact: CheckoutContactInput | null, couponCode?: string): string {
-  if (!contact) return `no-contact|${couponCode ?? ''}`
+function pixChargeKey(
+  contact: CheckoutContactInput | null,
+  couponCode?: string,
+  offerSlug?: string,
+): string {
+  if (!contact) return `no-contact|${couponCode ?? ''}|${offerSlug ?? ''}`
   return [
     contact.nome.trim(),
     contact.email.trim().toLowerCase(),
     contact.cpf.replace(/\D/g, ''),
     couponCode ?? '',
+    offerSlug ?? '',
   ].join('|')
 }
 
@@ -49,11 +54,14 @@ export default function PixCheckout({
   contact,
   couponCode,
   successPath,
+  offerSlug,
 }: {
   contact: CheckoutContactInput | null
   couponCode?: string
   /** Para onde ir quando o pagamento confirmar (próximo passo do funil; obrigatório). */
   successPath: string
+  /** Oferta ESCOLHIDA no alternador mensal↔anual (o servidor valida o link). */
+  offerSlug?: string
 }) {
   const [started, setStarted] = useState(false)
   const [pix, setPix] = useState<Pix | null>(null)
@@ -62,7 +70,10 @@ export default function PixCheckout({
   const [aguardando, setAguardando] = useState(false)
   const [copiado, setCopiado] = useState(false)
   const [expirado, setExpirado] = useState(false)
-  const chargeKey = useMemo(() => pixChargeKey(contact, couponCode), [contact, couponCode])
+  const chargeKey = useMemo(
+    () => pixChargeKey(contact, couponCode, offerSlug),
+    [contact, couponCode, offerSlug],
+  )
   const lastChargeKey = useRef(chargeKey)
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const genericAttempts = useRef(0)
@@ -83,6 +94,7 @@ export default function PixCheckout({
       apiPost<StartResp>('/api/checkout/pix', {
         contact,
         ...(couponCode ? { couponCode } : {}),
+        ...(offerSlug ? { offerSlug } : {}),
       })
         .then((r) => {
           if (lastChargeKey.current !== chargeKey) return
@@ -111,7 +123,7 @@ export default function PixCheckout({
           setErro('Não foi possível gerar o Pix. Tente novamente.')
         })
     },
-    [chargeKey, couponCode, contact],
+    [chargeKey, couponCode, contact, offerSlug],
   )
 
   // Gera (ou re-gera) a cobrança Pix do zero: usado pelo botão "Gerar código

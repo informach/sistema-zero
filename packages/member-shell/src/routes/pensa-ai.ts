@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { sanitizeIconSvg } from '../lib/svg-sanitize'
 import type { PensaChatMessage, PensaZState } from '../lib/types'
+import { aiQuotaMessage, consumeAiQuota } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
 import { generateIcons, suggestIdentity } from '../server/pensa-agents/identity'
 import { synthesizeSpec } from '../server/pensa-agents/stage-e-spec'
@@ -118,13 +119,13 @@ export const GenerateBody = z.discriminatedUnion('type', [
 ])
 
 // ── Rate limit in-process por SESSÃO (réplica única; estado em globalThis) ───
-// Chat: 10 msgs/min + teto diário (custo/compulsão — "o Zappy precisa descansar").
+// Chat: 10 msgs/min como ANTI-BURST local. O teto diário/mensal REAL é a quota
+// por CONTA no members (`consumeAiQuota` — durável, cross-perfil), consumida no
+// pré-voo de cada chamada de LLM.
 const RL_KEY = Symbol.for('@sistemazero/member-shell/pensa-chat-rl')
 interface RlEntry {
   count: number
   resetAt: number
-  dayCount: number
-  dayKey: string
 }
 type RlMap = Map<string, RlEntry>
 const rlSlot = globalThis as Record<symbol, unknown>
@@ -132,7 +133,6 @@ if (!rlSlot[RL_KEY]) rlSlot[RL_KEY] = new Map<string, RlEntry>()
 const rlStore = rlSlot[RL_KEY] as RlMap
 
 const CHAT_PER_MINUTE = 10
-const CHAT_PER_DAY = 150
 /**
  * Janela do prompt: summary + as últimas N mensagens persistidas. Igual à do
  * evaluator (o escritor da resposta não pode enxergar MENOS que o juiz das
@@ -141,19 +141,17 @@ const CHAT_PER_DAY = 150
 const PROMPT_WINDOW = 40
 
 export function pensaChatRateLimited(key: string, now = Date.now()): boolean {
-  const dayKey = new Date(now).toISOString().slice(0, 10)
   let e = rlStore.get(key)
-  if (!e || e.dayKey !== dayKey) {
-    e = { count: 0, resetAt: now + 60_000, dayCount: 0, dayKey }
+  if (!e) {
+    e = { count: 0, resetAt: now + 60_000 }
     rlStore.set(key, e)
   }
   if (e.resetAt <= now) {
     e.count = 0
     e.resetAt = now + 60_000
   }
-  if (e.count >= CHAT_PER_MINUTE || e.dayCount >= CHAT_PER_DAY) return true
+  if (e.count >= CHAT_PER_MINUTE) return true
   e.count += 1
-  e.dayCount += 1
   return false
 }
 
@@ -252,6 +250,23 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
         prevState && typeof prevState === 'object' && 'answered' in prevState
           ? (prevState as PensaZState)
           : null
+
+      // Quota de IA da CONTA (diária + mensal, durável no members) — ÚLTIMO guard
+      // do pré-voo, ANTES de abrir o stream (a recusa sai como JSON limpo, nunca
+      // SSE quebrado). 1 mensagem = 1 crédito. Fail-open dentro do helper.
+      const quota = await consumeAiQuota(members, 'pensa-chat')
+      if (!quota.allowed) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'AI_QUOTA_EXCEEDED',
+              scope: quota.scope,
+              message: aiQuotaMessage(quota.scope),
+            },
+          },
+          { status: 429 },
+        )
+      }
 
       const system = buildStageZSystem({
         mode: 'kids',
@@ -406,9 +421,27 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       if (callsLlm && !pensaLlmAvailable()) {
         return NextResponse.json({ error: { code: 'PENSA_AI_UNAVAILABLE' } }, { status: 503 })
       }
-      // Reusa o teto do chat (síntese também é chamada de IA).
+      // Reusa o anti-burst do chat (síntese também é chamada de IA).
       if (callsLlm && pensaChatRateLimited(user.id)) {
         return NextResponse.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 })
+      }
+      // Quota de IA da CONTA — só nos tipos que chamam LLM (os determinísticos são
+      // grátis). 1 geração = 1 crédito. Trade-off aceito: um 409 posterior
+      // (PENSA_NOT_READY) queima o crédito — raro, a UI gateia os CTAs.
+      if (callsLlm) {
+        const quota = await consumeAiQuota(members, 'pensa-synthesis')
+        if (!quota.allowed) {
+          return NextResponse.json(
+            {
+              error: {
+                code: 'AI_QUOTA_EXCEEDED',
+                scope: quota.scope,
+                message: aiQuotaMessage(quota.scope),
+              },
+            },
+            { status: 429 },
+          )
+        }
       }
 
       /**

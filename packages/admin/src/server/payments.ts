@@ -9,6 +9,7 @@ import type {
   PaymentRow,
   PaymentStats,
   PaymentView,
+  SubscriptionStatsView,
   SubscriptionView,
 } from '@/lib/types'
 import { listOffers } from './catalog'
@@ -165,6 +166,16 @@ export function getPaymentsStats(p: {
 
 export function getPaymentsOps(): Promise<GatewayResponse<PaymentOps>> {
   return gatewayFetch('/payments/admin/ops')
+}
+
+/** Recorrência (ativas por intervalo + MRR + churn na janela) — cards do painel. */
+export function getSubscriptionStats(p: {
+  from?: string
+  to?: string
+}): Promise<GatewayResponse<SubscriptionStatsView>> {
+  return gatewayFetch('/payments/admin/stats/subscriptions', {
+    query: { from: p.from, to: p.to },
+  })
 }
 
 // ── Série diária ("Gestão de vendas") ──

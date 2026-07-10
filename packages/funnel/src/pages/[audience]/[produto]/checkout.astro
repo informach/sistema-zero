@@ -78,10 +78,46 @@ if (!initialContact.email) return Astro.redirect(ofertaPath)
 
 // Preço/nome vêm do catálogo (fonte da verdade); fallback p/ rótulos do funil se fora.
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout/cobrança.
-const offer = await getActiveOffer(gateway, resolveOfferSlug(env, f.key))
+const offerSlug = resolveOfferSlug(env, f.key)
+const offer = await getActiveOffer(gateway, offerSlug)
 const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
 const productName = offer?.productName || f.productName
-const priceLabel = formatBRLFromCents2(priceCents)
+
+// Assinatura: sufixo /mês|/ano no preço + oferta IRMÃ do alternador (catálogo).
+const isSubscription = offer?.pricingMode === 'subscription'
+const interval = isSubscription ? (offer?.billingIntervalMonths ?? null) : null
+const priceSuffix = interval === 1 ? '/mês' : interval === 12 ? '/ano' : ''
+const priceLabel = `${formatBRLFromCents2(priceCents)}${priceSuffix}`
+const priceNote = isSubscription
+  ? interval === 12
+    ? 'Assinatura anual · acesso imediato'
+    : 'Assinatura mensal · acesso imediato'
+  : 'Pagamento único · acesso imediato'
+
+// Oferta irmã (alternador mensal↔anual): busca a view p/ preço/intervalo. Falha
+// do catálogo degrada SEM alternador (o checkout da principal segue funcionando).
+let altOffer: {
+  slug: string
+  label: string | null
+  priceCents: number
+  billingIntervalMonths: number | null
+} | null = null
+if (isSubscription && offer?.altOffer) {
+  const alt = await getActiveOffer(gateway, offer.altOffer.slug)
+  if (alt && alt.pricingMode === 'subscription' && alt.billingIntervalMonths) {
+    altOffer = {
+      slug: alt.slug,
+      label: offer.altOffer.label,
+      priceCents: alt.priceCents,
+      billingIntervalMonths: alt.billingIntervalMonths,
+    }
+  }
+}
+
+// `?oferta=<slug da irmã>` (link /renovar do e-mail de renovação) pré-seleciona
+// o plano no alternador — o servidor segue validando a escolha na cobrança.
+const requestedOffer = (sp.get('oferta') ?? '').trim().toLowerCase()
+const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.slug ? 'alt' : 'main'
 ---
 
 <BaseLayout
@@ -105,7 +141,7 @@ const priceLabel = formatBRLFromCents2(priceCents)
         <h1 class="text-lg font-bold leading-snug text-ink">{productName}</h1>
         <p class="mt-0.5 text-sm text-muted">{f.byline}</p>
         <p class="mt-1.5 text-xl font-extrabold text-lime">{priceLabel}</p>
-        <p class="text-xs text-muted">Pagamento único · acesso imediato</p>
+        <p class="text-xs text-muted">{priceNote}</p>
       </div>
     </div>
 
@@ -119,6 +155,11 @@ const priceLabel = formatBRLFromCents2(priceCents)
         successPath={successPath}
         isKids={f.audience === 'kids'}
         installmentsMax={offer?.installmentsMax ?? null}
+        pricingMode={offer?.pricingMode ?? 'one_time'}
+        billingIntervalMonths={offer?.billingIntervalMonths ?? null}
+        offerSlug={offerSlug}
+        altOffer={altOffer}
+        initialChoice={initialChoice}
       />
     </div>
 

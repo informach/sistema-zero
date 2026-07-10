@@ -11,6 +11,14 @@ const registry = new RouteRegistry([
   r({ id: 'list', methods: ['GET', 'POST'], pathPattern: '/payments' }),
   r({ id: 'my-list', methods: ['GET'], pathPattern: '/payments/my' }),
   r({ id: 'my-get', methods: ['GET'], pathPattern: '/payments/my/:id' }),
+  r({ id: 'my-subscriptions', methods: ['GET'], pathPattern: '/payments/my/subscriptions' }),
+  r({
+    id: 'my-subscription-cancel',
+    methods: ['DELETE'],
+    pathPattern: '/payments/my/subscriptions/:id',
+  }),
+  // Assinaturas do funil (checkout recorrente): literal próprio, fora de /payments.
+  r({ id: 'subscriptions-create', methods: ['POST'], pathPattern: '/subscriptions' }),
   r({ id: 'wild', methods: ['GET'], pathPattern: '/files/*' }),
   r({ id: 'members-courses', methods: ['GET'], pathPattern: '/members/courses' }),
   r({ id: 'members-course-detail', methods: ['GET'], pathPattern: '/members/courses/:slug' }),
@@ -19,6 +27,10 @@ const registry = new RouteRegistry([
   r({ id: 'avatar-equip', methods: ['PUT'], pathPattern: '/members/avatar' }),
   r({ id: 'avatar-buy', methods: ['POST'], pathPattern: '/members/avatar/parts/:partId/buy' }),
   r({ id: 'avatars-batch', methods: ['GET'], pathPattern: '/members/avatars' }),
+  // Quota de IA por conta: consume do aluno (3 seg) + leitura admin (3 seg).
+  r({ id: 'ai-usage-consume', methods: ['POST'], pathPattern: '/members/ai-usage/consume' }),
+  r({ id: 'ai-usage-admin', methods: ['GET'], pathPattern: '/members/admin/ai-usage' }),
+  r({ id: 'members-access', methods: ['GET'], pathPattern: '/members/access' }),
   r({ id: 'hub-thread-get', methods: ['GET'], pathPattern: '/hub/threads/:id' }),
   r({ id: 'hub-my-threads', methods: ['GET'], pathPattern: '/hub/my-threads' }),
   r({ id: 'room-get', methods: ['GET'], pathPattern: '/members/room' }),
@@ -144,6 +156,19 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('GET', '/payments/uuid-qualquer', 'v1')?.route.id).toBe('get')
   })
 
+  test('/payments/my/subscriptions (literal) VENCE /payments/my/:id (param)', () => {
+    // "Minhas assinaturas": sem a precedência, a lista cairia no detalhe de
+    // compra com id "subscriptions" (400 de uuid no serviço).
+    expect(registry.resolve('GET', '/payments/my/subscriptions', 'v1')?.route.id).toBe(
+      'my-subscriptions',
+    )
+    const cancel = registry.resolve('DELETE', '/payments/my/subscriptions/sub-1', 'v1')
+    expect(cancel?.route.id).toBe('my-subscription-cancel')
+    expect(cancel?.params.id).toBe('sub-1')
+    // O GET de detalhe de compra segue funcionando.
+    expect(registry.resolve('GET', '/payments/my/abc-999', 'v1')?.route.id).toBe('my-get')
+  })
+
   test('captura params', () => {
     const m = registry.resolve('GET', '/payments/123', 'v1')
     expect(m?.route.id).toBe('get')
@@ -154,6 +179,13 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('GET', '/payments', 'v1')?.route.id).toBe('list')
     expect(registry.resolve('POST', '/payments', 'v1')?.route.id).toBe('list')
     expect(registry.resolve('DELETE', '/payments', 'v1')).toBeUndefined()
+  })
+
+  test('POST /subscriptions (checkout recorrente) resolve na própria rota', () => {
+    expect(registry.resolve('POST', '/subscriptions', 'v1')?.route.id).toBe('subscriptions-create')
+    // Só o POST é exposto; GET/DELETE de assinatura do consumer não existem na borda.
+    expect(registry.resolve('GET', '/subscriptions', 'v1')).toBeUndefined()
+    expect(registry.resolve('DELETE', '/subscriptions/abc', 'v1')).toBeUndefined()
   })
 
   test('wildcard casa o resto', () => {
@@ -220,6 +252,24 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('GET', '/members/avatars', 'v1')?.route.id).toBe('avatars-batch')
     // "avatars" ≠ "avatar": o lote nunca é confundido com o get do próprio avatar.
     expect(registry.resolve('GET', '/members/avatar', 'v1')?.route.id).toBe('avatar-get')
+  })
+
+  test('quota de IA: /members/ai-usage/consume e /members/admin/ai-usage resolvem certo', () => {
+    expect(registry.resolve('POST', '/members/ai-usage/consume', 'v1')?.route.id).toBe(
+      'ai-usage-consume',
+    )
+    // Literal `ai-usage` não colide com `/members/access` nem `/members/avatar*`.
+    expect(registry.resolve('GET', '/members/access', 'v1')?.route.id).toBe('members-access')
+    // A leitura admin (3 seg) não cai em /members/admin/members/:userId.
+    expect(registry.resolve('GET', '/members/admin/ai-usage', 'v1')?.route.id).toBe(
+      'ai-usage-admin',
+    )
+    expect(registry.resolve('GET', '/members/admin/members/u-1', 'v1')?.route.id).toBe(
+      'members-member-detail',
+    )
+    // Métodos não declarados não são expostos.
+    expect(registry.resolve('GET', '/members/ai-usage/consume', 'v1')).toBeUndefined()
+    expect(registry.resolve('POST', '/members/admin/ai-usage', 'v1')).toBeUndefined()
   })
 
   test('/hub/my-threads (literal) não colide com /hub/threads/:id', () => {

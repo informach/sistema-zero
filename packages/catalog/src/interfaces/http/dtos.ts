@@ -64,6 +64,14 @@ const OfferContentSchema = t.Object({
   // Teto de PERFIS (kids — planos "N perfis") DESTA oferta. Inteiro ≥ 1; injetado no
   // fulfillment resolvido (/entitlements) → o members congela no snapshot da matrícula.
   maxProfiles: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
+  // Oferta IRMÃ do alternador do checkout (mensal ↔ anual). O funil valida o slug
+  // escolhido contra este link (anti-forja); `label` = texto do alternador.
+  altOffer: t.Optional(
+    t.Object({
+      slug: t.String({ minLength: 1, maxLength: 140, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' }),
+      label: t.Optional(t.String({ maxLength: 80 })),
+    }),
+  ),
 })
 
 const OfferItemSchema = t.Object({
@@ -142,6 +150,9 @@ export const CreateOfferBody = t.Object({
   compareAtPriceCents: t.Optional(t.Integer({ minimum: 0, maximum: 2_000_000_000 })),
   currency: t.Optional(t.Literal('BRL')),
   pricingMode: t.Optional(pricingModeSchema),
+  // Periodicidade da assinatura em meses (mensal=1, anual=12) — só com
+  // pricingMode 'subscription' (one_time normaliza p/ null no domínio).
+  billingIntervalMonths: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 24 }), t.Null()])),
   installmentsMax: t.Optional(t.Integer({ minimum: 1, maximum: 36 })),
   trialDays: t.Optional(t.Integer({ minimum: 1, maximum: 365 })),
   guaranteeDays: t.Optional(t.Integer({ minimum: 1, maximum: 365 })),
@@ -198,6 +209,7 @@ export const UpdateOfferBody = t.Object({
     t.Union([t.Integer({ minimum: 0, maximum: 2_000_000_000 }), t.Null()]),
   ),
   pricingMode: t.Optional(pricingModeSchema),
+  billingIntervalMonths: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 24 }), t.Null()])),
   installmentsMax: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 36 }), t.Null()])),
   trialDays: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 365 }), t.Null()])),
   guaranteeDays: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 365 }), t.Null()])),

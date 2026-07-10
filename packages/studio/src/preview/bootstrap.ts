@@ -3,6 +3,7 @@ import type { ExtensionPermission } from '#extensions'
 import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
 import { buildAssetsRuntime } from './assetsBridge'
 import { buildPreviewCSPMetaTag } from './csp'
+import { rewriteCssAssetUrls } from './cssAssets'
 import { buildInputBridgeRuntime } from './inputBridge'
 import { buildInterceptorScript } from './interceptors'
 import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
@@ -54,6 +55,12 @@ export interface BuildPreviewDocInput {
    * game-2d. Ausente/vazio = sem assets (jogos só-fillRect seguem funcionando).
    */
   assets?: Record<string, string>
+  /**
+   * Manifesto de METADADOS de preview dos assets (`assetMetaManifest` do core —
+   * hoje só `tilemap`), semeado em `window.__SZGAME_ASSET_META` no MESMO script
+   * do assetsBridge. Ausente/vazio = saída idêntica à de antes.
+   */
+  assetsMeta?: Record<string, { tilemap: import('#core').ProjectTilemapMeta }>
   /**
    * Módulos ESM de extensões instaladas (`specifier → URL`, ex.:
    * `{ three: 'https://esm.sh/three@0.180.0' }`). Entram no importmap e suas
@@ -108,9 +115,16 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     .filter(Boolean)
     .join('\n')
 
+  // `url(<nome-de-asset>)` no CSS resolve para o data:URL do manifest — ANTES do
+  // escapeStyleContent (data URLs são base64/mime, sem `</style`). O CSS
+  // persistido do projeto fica intocado; a troca vive só neste documento.
+  const cssAssets = input.assets ?? {}
   const extraCss = safeExtraFiles
     .filter((f) => f.language === 'css')
-    .map((f) => `<style data-file="${escapeAttr(f.name)}">${escapeStyleContent(f.content)}</style>`)
+    .map(
+      (f) =>
+        `<style data-file="${escapeAttr(f.name)}">${escapeStyleContent(rewriteCssAssetUrls(f.content, cssAssets))}</style>`,
+    )
     .join('\n')
 
   // Extras de script (JS e TS): cada um é transpilado (TS/TSX/JSX → JS via
@@ -153,8 +167,10 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
 
   // O CSS canônico entra como <style> inline para não depender de fetch
   // de style.css (iframe sandbox sem allow-same-origin não consegue resolver
-  // hrefs relativos a parent).
-  const styleTag = input.css ? `<style>${escapeStyleContent(input.css)}</style>` : ''
+  // hrefs relativos a parent). Assets por nome resolvem para data:URL aqui.
+  const styleTag = input.css
+    ? `<style>${escapeStyleContent(rewriteCssAssetUrls(input.css, cssAssets))}</style>`
+    : ''
 
   // O JS canônico vira <script type="module"> APENAS quando o PRÓPRIO código do
   // aluno usa import/export (precisa do importmap dos extras). Senão é clássico,
@@ -245,7 +261,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // não há assets (mantém o doc enxuto e idêntico para jogos legados só-fillRect).
   const assetsBridgeTag =
     input.assets && Object.keys(input.assets).length > 0
-      ? scriptTag(buildAssetsRuntime(input.assets))
+      ? scriptTag(buildAssetsRuntime(input.assets, input.assetsMeta))
       : ''
 
   return `<!doctype html>

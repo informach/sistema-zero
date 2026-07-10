@@ -1,4 +1,13 @@
-import { boolean, index, jsonb, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgSchema,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core'
 
 // Este package compartilha o MESMO Postgres do payments, mas é dono do schema
 // `funil` (isolamento por `pgSchema`). O DDL gerado fica todo em `funil.*`.
@@ -45,6 +54,13 @@ export const leads = funil.table(
     offerRef: text('offer_ref'),
     paidAt: timestamp('paid_at', { withTimezone: true }),
 
+    // ASSINATURA de cartão (recorrência gerida pela Efí via payments): id + intervalo
+    // (mensal=1, anual=12) gravados na criação. O webhook de um CICLO de renovação
+    // resolve o lead por aqui (o pagamento do ciclo nasce no payments, não no funil)
+    // e o grant estende a matrícula no members.
+    subscriptionId: text('subscription_id'),
+    subscriptionIntervalMonths: integer('subscription_interval_months'),
+
     // Comprador registrado no IdP (@sistemazero/auth) após o pagamento confirmado.
     // Desacoplado de `paidAt` → registro é retryável (elegível: paidAt set & registered null).
     // `ensure-buyer` SEMPRE devolve um `buyer_user_id` (novo OU recorrente).
@@ -75,6 +91,8 @@ export const leads = funil.table(
     index('leads_created_idx').on(t.createdAt),
     // Webhook `payment.paid` resolve o lead pela cobrança (findLeadByPayment).
     index('leads_payment_idx').on(t.paymentId),
+    // Ciclo de RENOVAÇÃO resolve o lead pela assinatura (findLeadBySubscription).
+    index('leads_subscription_idx').on(t.subscriptionId),
   ],
 )
 
@@ -104,6 +122,10 @@ export const leadPayments = funil.table('lead_payments', {
   // ÚLTIMO checkout e ficava obsoleto (re-cotação sem cupom redimia cupom não
   // aplicado; boleto antigo com cupom pago depois não redimia o certo).
   couponCode: text('coupon_code'),
+  // Meses de ACESSO desta cobrança quando é uma compra por período (anual à vista
+  // via Pix/boleto = 12). Null = vitalícia (padrão) ou ciclo de assinatura. O
+  // grant lê daqui p/ conceder com validade em vez de para sempre.
+  accessPeriodMonths: integer('access_period_months'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 

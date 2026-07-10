@@ -6,7 +6,7 @@ import { t } from '#core'
 import { generateProjectFiles } from '#generators'
 import type { SZIR } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
-import { createEmptyProject, type Project } from '../core/project'
+import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
 import { CORE_EXAMPLES } from '../examples/core'
 import { persistProject } from '../state/persistence'
 
@@ -25,6 +25,8 @@ interface KitEntry {
   description: string
   ir: SZIR
   emoji: string
+  /** Assets que o exemplo embute (ex.: imagem de fundo por CSS). */
+  assets?: readonly ProjectAsset[]
 }
 
 /** Emoji decorativo por nome de exemplo (novo/renomeado cai no controle 🎮). */
@@ -51,8 +53,14 @@ const KIT_EMOJI: Record<string, string> = {
   'Cubo girando': '🧊',
 }
 
-function toEntry(prefix: string, name: string, description: string, ir: SZIR): KitEntry {
-  return { key: `${prefix}:${name}`, name, description, ir, emoji: KIT_EMOJI[name] ?? '🎮' }
+function toEntry(
+  prefix: string,
+  name: string,
+  description: string,
+  ir: SZIR,
+  assets?: readonly ProjectAsset[],
+): KitEntry {
+  return { key: `${prefix}:${name}`, name, description, ir, emoji: KIT_EMOJI[name] ?? '🎮', assets }
 }
 
 function buildGroups(): Array<{ label: string; entries: KitEntry[] }> {
@@ -75,7 +83,7 @@ function buildGroups(): Array<{ label: string; entries: KitEntry[] }> {
     groups.push({
       label: t('kits.group.classic'),
       entries: CORE_EXAMPLES.map((example) =>
-        toEntry('core', example.name, example.description, example.ir),
+        toEntry('core', example.name, example.description, example.ir, example.assets),
       ),
     })
   }
@@ -83,12 +91,18 @@ function buildGroups(): Array<{ label: string; entries: KitEntry[] }> {
 }
 
 /** Projeto novo persistido a partir da IR do exemplo (registro independente). */
-async function createProjectFromExample(name: string, ir: SZIR): Promise<Project> {
+async function createProjectFromExample(
+  name: string,
+  ir: SZIR,
+  assets?: readonly ProjectAsset[],
+): Promise<Project> {
   const project: Project = {
     ...createEmptyProject(ulid(), name),
     ir,
     blocksState: buildWorkspaceStateFromIR(ir),
     files: generateProjectFiles({ ir, projectName: name }),
+    // Assets embutidos do exemplo (ex.: fundo por CSS) já nascem no projeto.
+    ...(assets && assets.length > 0 ? { assets: [...assets] } : {}),
     installedExtensions: ir.extensions.map((ext) => ({
       id: ext.extensionId,
       version:
@@ -115,7 +129,7 @@ export function KitGallery({
     setCreating(entry.key)
     setError(null)
     try {
-      const project = await createProjectFromExample(entry.name, entry.ir)
+      const project = await createProjectFromExample(entry.name, entry.ir, entry.assets)
       onOpenProject(project.id)
     } catch {
       setError(t('kits.error'))

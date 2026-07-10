@@ -288,6 +288,7 @@ export class PaymentAggregate extends AggregateRoot<string> {
         providerPaymentId: this.state.providerPaymentId,
         txid: this.state.txid,
         paidAt: this.state.paidAt.toISOString(),
+        subscriptionId: this.state.subscriptionId,
       }),
     )
   }
@@ -298,7 +299,13 @@ export class PaymentAggregate extends AggregateRoot<string> {
     if (this.state.status === PaymentStatus.FAILED) return
     this.transitionTo(PaymentStatus.FAILED)
     this.state.failureReason = reason
-    this.addEvent(new PaymentFailedEvent(this.id, { consumerId: this.state.consumerId, reason }))
+    this.addEvent(
+      new PaymentFailedEvent(this.id, {
+        consumerId: this.state.consumerId,
+        reason,
+        subscriptionId: this.state.subscriptionId,
+      }),
+    )
   }
 
   markExpired(): void {

@@ -1,5 +1,6 @@
 import {
   assetManifest,
+  assetMetaManifest,
   isReservedProjectFileName,
   normalizeExtraFileName,
   normalizeProPath,
@@ -7,6 +8,7 @@ import {
 } from '#core'
 import { findExtension } from '#official-extensions'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
+import { rewriteCssAssetUrlsToAssetNames } from '../preview/cssAssets'
 import { transpileExtra } from '../preview/transpile'
 import type { Minifiers } from './minify'
 import { buildProductionIndexHtml } from './productionHtml'
@@ -49,7 +51,14 @@ export async function buildClassicFileMap(
   let hasExternalJs = rawJs.trim().length > 0
   let jsIsModule = MODULE_RE.test(rawJs)
 
-  if (hasExternalCss) files['public/style.css'] = await minifiers.css(rawCss)
+  // `url(<asset>)` no CSS aponta o NOME REAL do arquivo exportado (a chave do
+  // manifest): `normalizeAssetName` remove pontos, então `url('fundo.png')` de
+  // um tutorial referencia o asset `fundopng` — sem a reescrita o site
+  // publicado dava 404 no fundo.
+  const exportManifest = assetManifest(project.assets)
+  const exportCss = (css: string) => rewriteCssAssetUrlsToAssetNames(css, exportManifest)
+
+  if (hasExternalCss) files['public/style.css'] = await minifiers.css(exportCss(rawCss))
   if (hasExternalJs) files['public/script.js'] = await minifiers.js(rawJs, { module: jsIsModule })
 
   // Extras → arquivos reais. CSS é linkado no <head>; HTML vira fragmento no
@@ -69,7 +78,7 @@ export async function buildClassicFileMap(
         warnings.push(outputCollisionWarning(name, name))
         continue
       }
-      files[destPath] = await minifiers.css(extra.content)
+      files[destPath] = await minifiers.css(exportCss(extra.content))
       extraCssHrefs.push(name)
     } else if (extra.language === 'html') {
       extraHtmlFragments.push(extractBodyFragment(extra.content))
@@ -166,11 +175,25 @@ export async function buildClassicFileMap(
   // Reusa o MESMO runtime do preview (assetsBridge) para garantir paridade. Não
   // minificamos: é quase só um literal JSON gigante (data: URLs) — terser não ganha
   // nada e gastaria tempo mastigando megabytes de base64.
-  const manifest = assetManifest(project.assets)
+  const manifest = exportManifest
   let assetsScriptSrc: string | undefined
   if (Object.keys(manifest).length > 0) {
     assetsScriptSrc = 'sz-assets.js'
-    files['public/sz-assets.js'] = buildAssetsRuntime(manifest)
+    files['public/sz-assets.js'] = buildAssetsRuntime(manifest, assetMetaManifest(project.assets))
+    // Cada asset TAMBÉM vira arquivo real `public/<nome>`: um `background:
+    // url('background.png')` no CSS do aluno resolve RELATIVO no site
+    // publicado/baixado (no preview quem resolve é o rewriteCssAssetUrls).
+    // Mesmo padrão pular+avisar das colisões de nome de saída.
+    for (const [name, dataUrl] of Object.entries(manifest)) {
+      if (!name || name.includes('/') || name.includes('\\') || name.includes('..')) continue
+      const destPath = `public/${name}`
+      if (destPath in files) {
+        warnings.push(outputCollisionWarning(name, name))
+        continue
+      }
+      const bytes = dataUrlToBytes(dataUrl)
+      if (bytes) files[destPath] = bytes
+    }
   }
 
   const indexHtml = buildProductionIndexHtml({
@@ -245,6 +268,24 @@ export function buildProFileMap(project: Project): ProFileMapResult {
 /** Aviso de extra descartado por colidir no NOME DE SAÍDA com outro arquivo. */
 function outputCollisionWarning(inputName: string, outName: string): string {
   return `O arquivo "${inputName}" ficou de fora do site publicado porque o nome de saída "${outName}" já é usado por outro arquivo do projeto (o conteúdo principal foi preservado).`
+}
+
+/** Decodifica um data:URL (base64 ou percent-encoded) em bytes. null = ilegível. */
+function dataUrlToBytes(dataUrl: string): Uint8Array | null {
+  const match = /^data:[^,]*?(;base64)?,([\s\S]*)$/.exec(dataUrl)
+  if (!match) return null
+  const [, isBase64, payload = ''] = match
+  try {
+    if (isBase64) {
+      const binary = atob(payload)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+      return bytes
+    }
+    return new TextEncoder().encode(decodeURIComponent(payload))
+  } catch {
+    return null
+  }
 }
 
 /** Extrai o conteúdo do `<body>` de um extra HTML (ou usa o fragmento inteiro). */

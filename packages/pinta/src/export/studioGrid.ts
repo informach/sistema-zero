@@ -61,7 +61,9 @@ export function tilemapRecipe(tilemap: TilemapAsset, tileset: AnyTilesetAsset): 
   const solid = tilesetSolidList(tileset)
   return [
     `Mapa de ${tilemap.cols} × ${tilemap.rows} peças, cada peça com ${tileset.tileSize} × ${tileset.tileSize}.`,
-    'No Estúdio, use o bloco de tilemap: cole a GRADE no campo de texto,',
+    'Jeito FÁCIL: no Pinta, toque no foguete "Usar no Estúdio" e, no Estúdio,',
+    'use o bloco "Criar mapa do meu desenho" — grade, peças e sólidos vão juntos.',
+    'Ou monte na mão com o bloco "Criar mapa de tiles": cole a GRADE no campo,',
     `use a imagem das peças ("${tileset.name}") e tamanho ${tileset.tileSize}.`,
     solid ? `Peças sólidas (barram o personagem): ${solid}.` : 'Nenhuma peça sólida marcada.',
   ].join('\n')

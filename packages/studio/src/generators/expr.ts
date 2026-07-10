@@ -33,6 +33,22 @@ export class GeneratorError extends Error {
 export interface ExprMapContext {
   map: SourceMapBuilder
   line: number
+  /** Indentação (nível) do statement que hospeda a expressão — usada só por
+   * valores com CORPO de statements (`new Promise((resolve) => { ... })`) para
+   * indentar o corpo. Ausente = nível 0. */
+  indent?: number
+}
+
+/**
+ * Compilador de STATEMENTS injetado por `js.ts` (a camada de cima) — evita
+ * dependência circular (expr.ts é a camada de baixo). Só o `newPromise` (valor
+ * com corpo) precisa dele; enquanto não injetado, o corpo sai vazio.
+ */
+let compileStatementsInjected:
+  | ((stmts: readonly unknown[], indent: number, identifiers: IdentifierResolver) => string)
+  | null = null
+export function _setExprStatementCompiler(fn: typeof compileStatementsInjected): void {
+  compileStatementsInjected = fn
 }
 
 /** Precedência do operador ternário (`?:`): a mais baixa, abaixo de `||`. */
@@ -235,6 +251,8 @@ export function compileExpr(
       return `SZGame2D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g2d:getHealth':
       return `SZGame2D.getHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:enemyDamage':
+      return `SZGame2D.enemyDamage(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteX':
       return `SZGame2D.spriteX(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteY':
@@ -247,6 +265,10 @@ export function compileExpr(
       return `SZGame2D.centerX(${identifiers.get(expr.spriteVar)})`
     case 'g2d:centerY':
       return `SZGame2D.centerY(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:shapeW':
+      return 'SZGame2D.shapeW()'
+    case 'g2d:shapeH':
+      return 'SZGame2D.shapeH()'
     case 'g2d:spriteVx':
       return `SZGame2D.spriteVx(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteVy':
@@ -508,6 +530,9 @@ export function compileExpr(
     }
     case 'arrayFind':
       return `${identifiers.get(expr.arrayVar)}.find((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.cond, 0, identifiers, rec)})`
+    case 'arrayFilter':
+      // A lista é uma EXPRESSÃO (soquete): `this.enemies.filter(...)` funciona.
+      return `${compileExpr(expr.array, MEMBER_PRECEDENCE, identifiers, rec)}.filter((${identifiers.get(expr.itemName)}) => ${compileExpr(expr.cond, 0, identifiers, rec)})`
     case 'concatArrays':
       return `[${expr.parts.map((p) => `...${compileExpr(p, 0, identifiers, rec)}`).join(', ')}]`
     case 'shuffle':
@@ -520,10 +545,16 @@ export function compileExpr(
       return `{ ${parts} }`
     }
     case 'memberGet':
-      return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.name)}`
+      return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}${expr.optional ? '?.' : '.'}${normalizeIdentifier(expr.name)}`
     case 'memberCallExpr': {
       const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.method)}(${args})`
+    }
+    case 'newExpr': {
+      // `new Classe(args)` como VALOR (espelha o statement `newInstance`); o nome
+      // da classe resolve pela mesma tabela das declarações (getClassReference).
+      const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
+      return `new ${identifiers.getClassReference(expr.className)}(${args})`
     }
     case 'objectOp':
       return `Object.${expr.op}(${compileExpr(expr.object, 0, identifiers, rec)})`
@@ -531,6 +562,20 @@ export function compileExpr(
       // Fonte RESOLVIDA do asset: o dataURL semeado em __SZGAME_ASSETS (ver
       // preview/assetsBridge), com fallback pro nome cru. Usável direto em img.src.
       return `(window.__SZGAME_ASSETS?.[${JSON.stringify(expr.name)}] ?? ${JSON.stringify(expr.name)})`
+    case 'getElement':
+      return `document.getElementById(${JSON.stringify(expr.id)})`
+    case 'querySelectorValue':
+      return `document.querySelector${expr.all ? 'All' : ''}(${JSON.stringify(expr.selector)})`
+    case 'promiseAll':
+      return `Promise.all(${compileExpr(expr.list, 0, identifiers, rec)})`
+    case 'newPromise': {
+      const indent = rec?.indent ?? 0
+      const pad = '  '.repeat(indent)
+      const body = compileStatementsInjected
+        ? compileStatementsInjected(expr.body, indent + 1, identifiers)
+        : ''
+      return `new Promise((${normalizeIdentifier(expr.param)}) => {\n${body}\n${pad}})`
+    }
     case 'indexGet':
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}[${compileExpr(expr.index, 0, identifiers, rec)}]`
     default: {
@@ -592,6 +637,10 @@ function isPureExpr(expr: JSExpr): boolean {
     case 'mathBinary':
       return isPureExpr(expr.a) && isPureExpr(expr.b)
     case 'arrayMap':
+    case 'arrayFilter':
+      return false
+    // Instanciar roda o construtor do aluno (efeitos arbitrários) — impuro.
+    case 'newExpr':
       return false
     case 'distance':
       return isPureExpr(expr.a) && isPureExpr(expr.b)

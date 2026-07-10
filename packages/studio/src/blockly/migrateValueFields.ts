@@ -17,6 +17,14 @@
 
 /** Para cada tipo de bloco: quais campos viraram soquete e o tipo da sombra. */
 export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text' | 'color'>> = {
+  // ⚠️ O mapa também é a fonte de "este soquete carrega um literal-sombra" p/ o
+  // round-trip IR→blocos (`shouldEmitAsShadow`) e a cura no load
+  // (`restoreShadowLiterals`). Soquetes nascidos JÁ como input_value (nunca foram
+  // field) podem — e devem — constar aqui: a migração só dispara se houver um
+  // `fields.X` legado no estado salvo, então a entrada é inerte no caminho de
+  // migração e ativa a restauração de sombra. Drift guardado por
+  // `restoreShadowLiterals.test.ts` contra os presets da paleta das extensões.
+  sz_g2d_show_screen: { TITLE: 'text', SUBTITLE: 'text', HINT: 'text' },
   sz_g2d_create_sprite: { X: 'number', Y: 'number', W: 'number', H: 'number' },
   sz_g2d_create_image_sprite: { X: 'number', Y: 'number', W: 'number', H: 'number' },
   sz_g2d_create_ship: { X: 'number', Y: 'number', W: 'number', H: 'number' },
@@ -62,6 +70,30 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g2d_fit_screen: { PERCENT: 'number' },
   sz_g2d_load_spritesheet: { FW: 'number', FH: 'number' },
   sz_g2d_animate_sprite: { FROM: 'number', TO: 'number', FPS: 'number' },
+  sz_g2d_set_state_anim: { FROM: 'number', TO: 'number', FPS: 'number' },
+  sz_g2d_create_shape_sprite: { X: 'number', Y: 'number', W: 'number', H: 'number' },
+  sz_g2d_paint_rect: { X: 'number', Y: 'number', W: 'number', H: 'number' },
+  sz_g2d_paint_circle: { X: 'number', Y: 'number', R: 'number' },
+  sz_g2d_paint_ellipse: { X: 'number', Y: 'number', W: 'number', H: 'number' },
+  sz_g2d_paint_triangle: {
+    X1: 'number',
+    Y1: 'number',
+    X2: 'number',
+    Y2: 'number',
+    X3: 'number',
+    Y3: 'number',
+  },
+  sz_g2d_paint_line: { X1: 'number', Y1: 'number', X2: 'number', Y2: 'number', WIDTH: 'number' },
+  sz_g2d_define_enemy_type: {
+    HP: 'number',
+    SPEED: 'number',
+    DMG: 'number',
+    W: 'number',
+    H: 'number',
+  },
+  sz_g2d_enemy_state_anim: { FROM: 'number', TO: 'number', FPS: 'number' },
+  sz_g2d_enemy_type_param: { VALUE: 'number' },
+  sz_g2d_spawn_enemy: { X: 'number', Y: 'number' },
   sz_g2d_draw_frame: { INDEX: 'number', X: 'number', Y: 'number', W: 'number', H: 'number' },
   sz_g2d_set_tile: { INDEX: 'number' },
   sz_g2d_create_tilemap: { TILE: 'number' },
@@ -93,7 +125,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g3d_move_in_circle: { RADIUS: 'number', SPEED: 'number' },
   sz_g3d_slide_between: { MIN: 'number', MAX: 'number', SPEED: 'number' },
   sz_g3d_spin: { SPEED: 'number' },
-  sz_g3d_move_towards: { FACTOR: 'number' },
+  sz_g3d_move_towards: { X: 'number', Y: 'number', Z: 'number', FACTOR: 'number' },
   sz_g3d_body: { GRAVITY: 'number' },
   sz_g3d_platformer_controls: { SPEED: 'number', JUMP: 'number' },
   sz_g3d_fps_controls: { SPEED: 'number' },
@@ -105,7 +137,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g3d_add_point_light: { INTENSITY: 'number', X: 'number', Y: 'number', Z: 'number' },
   sz_g3d_set_fog: { NEAR: 'number', FAR: 'number' },
   sz_g3d_run_enemies: { EVERY: 'number', SPEED: 'number' },
-  sz_g3d_add_row: { SPEED: 'number' },
+  sz_g3d_add_row: { ROW: 'number', SPEED: 'number' },
   sz_g3d_generate_rows: { COUNT: 'number' },
   sz_g3d_move_across: { SPEED: 'number', MIN: 'number', MAX: 'number' },
   sz_g3d_spawn_in_swarm: { X: 'number', Y: 'number', Z: 'number' },
@@ -206,6 +238,95 @@ export function migrateLegacyValueFields(state: unknown): unknown {
   const cloned = JSON.parse(JSON.stringify(state)) as { blocks?: { blocks?: BlockNode[] } }
   for (const block of cloned.blocks?.blocks ?? []) {
     if (block) migrateBlock(block)
+  }
+  return cloned
+}
+
+// ---------------------------------------------------------------------------
+// Restauração de SHADOW-ness (cura de estados poluídos pela reconstrução IR→blocos)
+// ---------------------------------------------------------------------------
+
+/** Tipo do bloco literal correspondente a cada kind de sombra. */
+const SHADOW_LITERAL_TYPES: Record<'number' | 'text' | 'color', string> = {
+  number: 'sz_val_number',
+  text: 'sz_val_text',
+  color: 'sz_val_color',
+}
+
+/**
+ * Literal PURO do kind esperado: exatamente o bloco `sz_val_*`, sem filhos e sem
+ * cadeia. Getter de variável/expressão que a criança encaixou NUNCA é convertido.
+ */
+function isPureLiteralOfKind(node: BlockNode | undefined, kind: 'number' | 'text' | 'color') {
+  if (!node || node.type !== SHADOW_LITERAL_TYPES[kind]) return false
+  if (node.inputs && Object.keys(node.inputs).length > 0) return false
+  if (node.next) return false
+  return true
+}
+
+/** O bloco (ou descendente) tem literal-em-soquete-de-preset para virar sombra? */
+function blockNeedsShadowRestore(block: BlockNode): boolean {
+  const map = LEGACY_VALUE_FIELDS[block.type ?? '']
+  if (map && block.inputs) {
+    for (const [slot, kind] of Object.entries(map)) {
+      const input = block.inputs[slot]
+      if (input && !input.shadow && isPureLiteralOfKind(input.block, kind)) return true
+    }
+  }
+  if (block.inputs) {
+    for (const input of Object.values(block.inputs)) {
+      if (input.block && blockNeedsShadowRestore(input.block)) return true
+      if (input.shadow && blockNeedsShadowRestore(input.shadow)) return true
+    }
+  }
+  if (block.next?.block && blockNeedsShadowRestore(block.next.block)) return true
+  if (block.next?.shadow && blockNeedsShadowRestore(block.next.shadow)) return true
+  return false
+}
+
+/** Muta o bloco (já clonado) promovendo `{block: literal}` a `{shadow: literal}`. */
+function restoreShadowsInBlock(block: BlockNode): void {
+  const map = LEGACY_VALUE_FIELDS[block.type ?? '']
+  if (map && block.inputs) {
+    for (const [slot, kind] of Object.entries(map)) {
+      const input = block.inputs[slot]
+      // Se já existe sombra por baixo, o encaixe real é escolha da criança —
+      // não mexe. Só promove o literal puro que está SOZINHO no soquete.
+      if (!input || input.shadow || !isPureLiteralOfKind(input.block, kind)) continue
+      input.shadow = input.block
+      delete input.block
+    }
+  }
+  if (block.inputs) {
+    for (const input of Object.values(block.inputs)) {
+      if (input.block) restoreShadowsInBlock(input.block)
+      if (input.shadow) restoreShadowsInBlock(input.shadow)
+    }
+  }
+  if (block.next?.block) restoreShadowsInBlock(block.next.block)
+  if (block.next?.shadow) restoreShadowsInBlock(block.next.shadow)
+}
+
+/**
+ * Restaura a natureza de SOMBRA dos literais nos soquetes com preset (o mapa
+ * `LEGACY_VALUE_FIELDS` é a fonte de "este soquete carrega um literal default").
+ *
+ * Por que existe: a reconstrução IR→blocos emitia TODO valor como `{block:…}`;
+ * depois de UMA passada pela Ponte, FROM/TO/FPS (etc.) viravam blocos reais e os
+ * preenchimentos automáticos (`fillFrames` do seletor de animação,
+ * `applySuggestedSize` do seletor de imagem) — que só escrevem em `isShadow()` —
+ * viravam no-op silencioso. Roda no carregamento (via
+ * `normalizeBlocksStateToFrames`), então também CURA projetos já salvos com o
+ * estado poluído. Idempotente; mesma referência quando não há nada a promover.
+ */
+export function restoreShadowLiterals(state: unknown): unknown {
+  if (!state || typeof state !== 'object') return state
+  const top = (state as { blocks?: { blocks?: BlockNode[] } }).blocks?.blocks
+  if (!Array.isArray(top)) return state
+  if (!top.some((b) => b && blockNeedsShadowRestore(b))) return state
+  const cloned = JSON.parse(JSON.stringify(state)) as { blocks?: { blocks?: BlockNode[] } }
+  for (const block of cloned.blocks?.blocks ?? []) {
+    if (block) restoreShadowsInBlock(block)
   }
   return cloned
 }

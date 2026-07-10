@@ -1954,6 +1954,19 @@ const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3d_aim_ahead: { DIST: numShadow(100) },
 }
 
+/** (só p/ teste de drift) espelho do G2D_SOCKET_SHADOW_TYPES — ver o comentário lá. */
+export const G3D_SOCKET_SHADOW_TYPES: Record<string, Record<string, string>> = Object.fromEntries(
+  Object.entries(G3D_SOCKET_SHADOWS).map(([type, slots]) => [
+    type,
+    Object.fromEntries(
+      Object.entries(slots).map(([slot, wrapper]) => [
+        slot,
+        String((wrapper as { shadow?: { type?: string } }).shadow?.type ?? ''),
+      ]),
+    ),
+  ]),
+)
+
 const toolboxBlock = (type: string) => {
   const inputs = G3D_SOCKET_SHADOWS[type]
   return inputs ? { kind: 'block' as const, type, inputs } : { kind: 'block' as const, type }

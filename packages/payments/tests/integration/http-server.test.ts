@@ -10,16 +10,23 @@ import { HandleBoletoNotificationService } from '../../src/application/handle-bo
 import { HandleProviderWebhookService } from '../../src/application/handle-provider-webhook/handle-provider-webhook.service'
 import { HandleSubscriptionNotificationService } from '../../src/application/handle-subscription-notification/handle-subscription-notification.service'
 import { ListMyPaymentsService } from '../../src/application/list-my-payments/list-my-payments.service'
+import { ListMySubscriptionsService } from '../../src/application/list-my-subscriptions/list-my-subscriptions.service'
 import { ListPaymentsService } from '../../src/application/list-payments/list-payments.service'
 import { ListSubscriptionsService } from '../../src/application/list-subscriptions/list-subscriptions.service'
 import { GetPaymentsOpsService } from '../../src/application/payments-ops/get-payments-ops.service'
 import { GetDailyPaymentsStatsService } from '../../src/application/payments-stats/get-daily-payments-stats.service'
 import { GetPaymentsStatsService } from '../../src/application/payments-stats/get-payments-stats.service'
+import { GetSubscriptionStatsService } from '../../src/application/payments-stats/get-subscription-stats.service'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
 import type { PaymentMyReadRepository } from '../../src/domain/ports/payment-my-read.port'
 import type { SubscriptionAdminReadRepository } from '../../src/domain/ports/subscription-admin-read.port'
+import type { SubscriptionMyReadRepository } from '../../src/domain/ports/subscription-my-read.port'
+import { SubscriptionAggregate } from '../../src/domain/subscription/subscription.aggregate'
+import { Customer } from '../../src/domain/value-objects/customer'
+import { IdempotencyKey } from '../../src/domain/value-objects/idempotency-key'
+import { Money } from '../../src/domain/value-objects/money'
 import type { Env } from '../../src/infrastructure/config/env'
 import { signHmac } from '../../src/infrastructure/security/hmac'
 import { InMemoryRateLimiter } from '../../src/infrastructure/security/rate-limiter'
@@ -125,6 +132,12 @@ function buildApp(opts: BuildOpts = {}) {
   }
   const subscriptionsAdminRead: SubscriptionAdminReadRepository = {
     list: async () => ({ items: [], total: 0 }),
+    stats: async () => ({
+      active: { total: 0, monthly: 0, annual: 0, other: 0 },
+      mrrCents: '0',
+      newInWindow: 0,
+      canceledInWindow: 0,
+    }),
   }
 
   // Leitura "minhas compras" sobre o repositório em memória (espelha o adapter
@@ -141,6 +154,17 @@ function buildApp(opts: BuildOpts = {}) {
     async findByEmailAndId(email, id) {
       const p = repo.byId.get(id)
       return p && emailOf(p) === email.toLowerCase() ? p : null
+    },
+  }
+
+  // Leitura "minhas assinaturas" (mesma régua: escopo por e-mail; id alheio → null).
+  const subscriptionsMyRead: SubscriptionMyReadRepository = {
+    async listByEmail(email) {
+      return [...subscriptionRepo.byId.values()].filter((s) => emailOf(s) === email.toLowerCase())
+    },
+    async findByEmailAndId(email, id) {
+      const s = subscriptionRepo.byId.get(id)
+      return s && emailOf(s) === email.toLowerCase() ? s : null
     },
   }
 
@@ -175,7 +199,12 @@ function buildApp(opts: BuildOpts = {}) {
       silentLogger,
     ),
     getSubscription: new GetSubscriptionService(subscriptionRepo),
-    cancelSubscription: new CancelSubscriptionService(subscriptionRepo, gateway, silentLogger),
+    cancelSubscription: new CancelSubscriptionService(
+      subscriptionRepo,
+      gateway,
+      silentLogger,
+      subscriptionsMyRead,
+    ),
     handleWebhook: new HandleProviderWebhookService(
       repo,
       gateway,
@@ -213,10 +242,12 @@ function buildApp(opts: BuildOpts = {}) {
     getAdminSubscription: new GetAdminSubscriptionService(subscriptionRepo),
     getPaymentsStats: new GetPaymentsStatsService(paymentsAdminRead),
     getDailyPaymentsStats: new GetDailyPaymentsStatsService(paymentsAdminRead),
+    getSubscriptionStats: new GetSubscriptionStatsService(subscriptionsAdminRead),
     getPaymentsOps: new GetPaymentsOpsService(paymentsAdminRead),
     refundPayment: new RefundPaymentService(repo, gateway, silentLogger),
     listMyPayments: new ListMyPaymentsService(paymentsMyRead),
     getMyPayment: new GetMyPaymentService(paymentsMyRead),
+    listMySubscriptions: new ListMySubscriptionsService(subscriptionsMyRead),
   })
 
   return { app, repo, subscriptionRepo, gateway }
@@ -1176,6 +1207,7 @@ describe('Rotas admin (/payments/admin/*)', () => {
       [`/payments/admin/subscriptions/${ID}`, 'GET', 404],
       ['/payments/admin/stats', 'GET', 200],
       ['/payments/admin/stats/daily', 'GET', 200],
+      ['/payments/admin/stats/subscriptions', 'GET', 200],
       ['/payments/admin/ops', 'GET', 200],
       [`/payments/admin/payments/${ID}/refund`, 'POST', 404],
       [`/payments/admin/subscriptions/${ID}`, 'DELETE', 404],
@@ -1207,6 +1239,25 @@ describe('Rotas admin (/payments/admin/*)', () => {
     const res = await app.handle(new Request('http://localhost/payments/admin/stats'))
     expect(res.status).toBe(200)
     expect(await res.json()).toMatchObject({ totalCount: 0, paidCount: 0 })
+  })
+
+  test('GET /payments/admin/stats/subscriptions → 200 (ativas/MRR + churn calculado)', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(new Request('http://localhost/payments/admin/stats/subscriptions'))
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as {
+      active: { total: number }
+      mrrCents: string
+      churnRate: number
+      from: string
+      to: string
+    }
+    expect(body.active.total).toBe(0)
+    expect(body.mrrCents).toBe('0')
+    // Sem ativas nem canceladas o churn é 0 (nunca NaN/divisão por zero).
+    expect(body.churnRate).toBe(0)
+    expect(body.from).toBeTruthy()
+    expect(body.to).toBeTruthy()
   })
 
   test('GET /payments/admin/stats/daily → 200 (janela explícita ecoada + buckets)', async () => {
@@ -1409,6 +1460,106 @@ describe('Minhas compras (/payments/my — self-service do comprador)', () => {
 
     const bad = await app.handle(new Request('http://localhost/payments/my/nao-uuid', { headers }))
     expect(bad.status).toBe(400)
+  })
+})
+
+describe('Minhas assinaturas (/payments/my/subscriptions — self-service do assinante)', () => {
+  /** Semeia uma assinatura ATIVA direto no repositório em memória. */
+  function seedSubscription(
+    subscriptionRepo: ReturnType<typeof buildApp>['subscriptionRepo'],
+    email: string,
+    intervalMonths = 1,
+  ): Promise<string> {
+    const sub = SubscriptionAggregate.create({
+      consumerId: 'sys-a',
+      amount: Money.fromCents(4700),
+      card: { brand: 'visa', last4: '0087' },
+      providerPlanId: 'plan-1',
+      intervalMonths,
+      repeats: null,
+      idempotencyKey: IdempotencyKey.create(`idem-sub-${email}-${intervalMonths}`),
+      customer: Customer.create({
+        name: 'Ana Souza',
+        email,
+        document: '52998224725',
+      }),
+    })
+    sub.registerProviderSubscription('efi-sub-1')
+    sub.activate()
+    return subscriptionRepo.save(sub).then(() => sub.id)
+  }
+
+  test('literal /my/subscriptions VENCE o param /my/:id (não vira 400 de uuid)', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(
+      new Request('http://localhost/payments/my/subscriptions', {
+        headers: { 'x-auth-user-email': 'sem-assinatura@example.com' },
+      }),
+    )
+    expect(res.status).toBe(200)
+    expect(((await res.json()) as { items: unknown[] }).items).toHaveLength(0)
+  })
+
+  test('lista SÓ as assinaturas do e-mail (view pública, sem consumerId/metadata)', async () => {
+    const { app, subscriptionRepo } = buildApp()
+    const mine = await seedSubscription(subscriptionRepo, 'ana@example.com', 12)
+    await seedSubscription(subscriptionRepo, 'outra@example.com')
+
+    const res = await app.handle(
+      new Request('http://localhost/payments/my/subscriptions', {
+        headers: { 'x-auth-user-email': 'Ana@Example.com' }, // case-insensitive
+      }),
+    )
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as { items: Array<Record<string, unknown>> }
+    expect(json.items).toHaveLength(1)
+    expect(json.items[0]?.id).toBe(mine)
+    expect(json.items[0]?.intervalMonths).toBe(12)
+    expect(json.items[0]?.status).toBe('ACTIVE')
+    expect(json.items[0]?.consumerId).toBeUndefined()
+    expect(json.items[0]?.metadata).toBeUndefined()
+    expect(json.items[0]?.providerSubscriptionId).toBeUndefined()
+  })
+
+  test('DELETE cancela a PRÓPRIA assinatura; a de outro e-mail → 404 (anti-IDOR)', async () => {
+    const { app, subscriptionRepo } = buildApp()
+    const mine = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const others = await seedSubscription(subscriptionRepo, 'outra@example.com')
+    const headers = { 'x-auth-user-email': 'ana@example.com' }
+
+    const forbidden = await app.handle(
+      new Request(`http://localhost/payments/my/subscriptions/${others}`, {
+        method: 'DELETE',
+        headers,
+      }),
+    )
+    expect(forbidden.status).toBe(404)
+    expect((await subscriptionRepo.findById(others))?.status).toBe('ACTIVE')
+
+    const ok = await app.handle(
+      new Request(`http://localhost/payments/my/subscriptions/${mine}`, {
+        method: 'DELETE',
+        headers,
+      }),
+    )
+    expect(ok.status).toBe(200)
+    expect(((await ok.json()) as { status: string }).status).toBe('CANCELED')
+    expect((await subscriptionRepo.findById(mine))?.status).toBe('CANCELED')
+
+    // Idempotente: re-cancelar devolve a view cancelada (sem erro).
+    const again = await app.handle(
+      new Request(`http://localhost/payments/my/subscriptions/${mine}`, {
+        method: 'DELETE',
+        headers,
+      }),
+    )
+    expect(again.status).toBe(200)
+  })
+
+  test('sem X-Auth-User-Email → 401', async () => {
+    const { app } = buildApp()
+    const res = await app.handle(new Request('http://localhost/payments/my/subscriptions'))
+    expect(res.status).toBe(401)
   })
 })
 

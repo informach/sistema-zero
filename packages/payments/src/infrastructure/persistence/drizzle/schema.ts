@@ -231,6 +231,9 @@ export const subscriptions = paymentsSchema.table(
       'gin',
       sql`(${t.customer} ->> 'email') gin_trgm_ops`,
     ),
+    // "Minhas assinaturas" (self-service do comprador): escopo por e-mail do
+    // `customer` (jsonb). Consulte SEMPRE com lower() p/ casar o índice.
+    index('subscriptions_customer_email_idx').on(sql`lower((${t.customer} ->> 'email'))`),
   ],
 )
 

@@ -2,6 +2,7 @@ import 'server-only'
 import { cache } from 'react'
 import { getEnv } from '../lib/env'
 import type {
+  AiUsageConsumeView,
   AttachmentDownloadView,
   AvatarConfigInput,
   AvatarEquipResult,
@@ -34,6 +35,7 @@ import type {
   MissionClaimResult,
   MissionsMeView,
   MyCourseView,
+  MySubscriptionView,
   Paginated,
   ParentReportPrefsView,
   PaymentView,
@@ -801,6 +803,20 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     },
 
     /**
+     * Consome 1 crédito de IA da CONTA (quota diária + mensal, keyada no members
+     * pelos headers confiáveis — irmãos da mesma conta kids dividem o teto).
+     * Chamado ANTES de cada ida ao OpenRouter (Pensa chat/sínteses, describe do
+     * Mural). Recusa é DOMÍNIO (200 + `allowed:false`), não erro de transporte.
+     */
+    aiUsageConsume(feature: string): Promise<GatewayResponse<AiUsageConsumeView>> {
+      return gw.gatewayFetch('/members/ai-usage/consume', {
+        method: 'POST',
+        query: { audience },
+        body: { feature },
+      })
+    },
+
+    /**
      * Resumo de progresso dos FILHOS da conta (área dos pais, kids). `profileIds` = os
      * perfis da conta (vindos do auth); a CONTA vem do header confiável no members (não
      * do cliente — uma sessão de perfil volta vazio). Route Handler (atrás do portão de
@@ -1219,6 +1235,19 @@ export function createPaymentsClient(gw: GatewayModule) {
 
     getMyPayment(id: string): Promise<GatewayResponse<PaymentView>> {
       return gw.gatewayFetch(`/payments/my/${enc(id)}`)
+    },
+
+    /** "Minhas assinaturas" (mesmo escopo por e-mail das claims). */
+    listMySubscriptions(): Promise<GatewayResponse<{ items: MySubscriptionView[] }>> {
+      return gw.gatewayFetch('/payments/my/subscriptions')
+    },
+
+    /**
+     * Cancela a PRÓPRIA assinatura (anti-IDOR no payments). O acesso segue até
+     * o fim do ciclo pago + carência — o members expira sozinho.
+     */
+    cancelMySubscription(id: string): Promise<GatewayResponse<MySubscriptionView>> {
+      return gw.gatewayFetch(`/payments/my/subscriptions/${enc(id)}`, { method: 'DELETE' })
     },
   }
 }

@@ -1047,8 +1047,10 @@ document.addEventListener('keyup', (e) => {
     ])
   })
 
-  it('não confunde requestAnimationFrame/alert com chamada de função do aluno', () => {
-    expect(parseJS('requestAnimationFrame(loop);')[0]?.type).toBe('rawJS')
+  it('requestAnimationFrame(nome) SOLTO vira o bloco "pedir o próximo quadro"', () => {
+    // Fora da fusão do laço de animação (função com timestamp+delta chamada à
+    // mão), o RAF solto agora round-tripa como bloco em vez de código avançado.
+    expect(parseJS('requestAnimationFrame(loop);')).toEqual([{ type: 'requestFrame', fn: 'loop' }])
   })
 
   // ---- Fase 2: forEach e setTimeout ----
@@ -1552,13 +1554,16 @@ describe('parseJS — ⚡ Eventos: teclado, mouse, janela e tempo em segundos (r
     ])
   })
 
-  it('ACEITA window.addEventListener para teclado (equivalente a document)', () => {
+  it('ACEITA window.addEventListener para teclado e NORMALIZA para document', () => {
+    // O bloco "Quando tecla…" (sz_js_on_key) só emite document — normalizar já
+    // no parse deixa o fixpoint blocos⇄código byte-estável (a tecla borbulha,
+    // comportamento idêntico). load/resize seguem sendo da janela (teste abaixo).
     const code = `window.addEventListener("keyup", (event) => {\n  let k = event.key;\n});`
     expect(parseJS(code)).toEqual([
       {
         type: 'event',
-        target: 'window',
-        targetKind: 'window',
+        target: 'document',
+        targetKind: 'document',
         event: 'keyup',
         body: [{ type: 'var', name: 'k', value: { type: 'eventProp', prop: 'key' } }],
       },

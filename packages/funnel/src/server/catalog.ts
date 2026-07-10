@@ -19,6 +19,12 @@ export interface CatalogOfferView {
   productName: string
   /** Opt-in (de `offer.content.allowsCoupon`): se o checkout deve exibir o cupom. */
   allowsCoupon: boolean
+  /** `one_time` (pagamento único) ou `subscription` (recorrente). */
+  pricingMode: string
+  /** Periodicidade da assinatura em meses (mensal=1, anual=12); null em one_time. */
+  billingIntervalMonths: number | null
+  /** Oferta IRMÃ do alternador mensal↔anual (de `content.altOffer`); null = sem alternador. */
+  altOffer: { slug: string; label: string | null } | null
   includes: { name: string; isPrimary: boolean }[]
 }
 
@@ -144,6 +150,11 @@ export async function quotePreview(
 // outro funil quando o catálogo falha para um slug específico.
 const offerCache = new Map<string, { view: CatalogOfferView; at: number }>()
 
+/** Limpa o cache da oferta ativa (hook de TESTE — configs por slug mudam entre casos). */
+export function clearOfferCache(): void {
+  offerCache.clear()
+}
+
 /**
  * Busca a oferta ativa (com cache TTL). Em falha do catálogo, serve a última
  * conhecida (stale) ou null — a página de checkout cai para os rótulos do env.
@@ -173,6 +184,11 @@ function mapOffer(body: unknown): CatalogOfferView | null {
   const product = (o.product ?? {}) as Record<string, unknown>
   const content = (o.content ?? {}) as Record<string, unknown>
   const includesRaw = Array.isArray(o.includes) ? (o.includes as Record<string, unknown>[]) : []
+  const altRaw = (content.altOffer ?? null) as Record<string, unknown> | null
+  const altOffer =
+    altRaw && typeof altRaw === 'object' && typeof altRaw.slug === 'string' && altRaw.slug
+      ? { slug: altRaw.slug, label: typeof altRaw.label === 'string' ? altRaw.label : null }
+      : null
   return {
     offerId: o.id,
     slug: typeof o.slug === 'string' ? o.slug : '',
@@ -184,6 +200,10 @@ function mapOffer(body: unknown): CatalogOfferView | null {
     installmentsMax: typeof o.installmentsMax === 'number' ? o.installmentsMax : null,
     productName: typeof product.name === 'string' ? product.name : '',
     allowsCoupon: content.allowsCoupon === true,
+    pricingMode: typeof o.pricingMode === 'string' ? o.pricingMode : 'one_time',
+    billingIntervalMonths:
+      typeof o.billingIntervalMonths === 'number' ? o.billingIntervalMonths : null,
+    altOffer,
     includes: includesRaw.map((i) => ({
       name: typeof i.name === 'string' ? i.name : '',
       isPrimary: i.isPrimary === true,

@@ -11,7 +11,14 @@ import {
   normalizeBrand,
   onlyDigits,
 } from '../lib/card-utils'
-import { CardFormSchema, type CheckoutContactInput, pathErrors } from '../lib/checkout-schema'
+import {
+  type AddressFormInput,
+  AddressSchema,
+  BirthSchema,
+  CardFormSchema,
+  type CheckoutContactInput,
+  pathErrors,
+} from '../lib/checkout-schema'
 import { Field, inputClass } from './checkout-fields'
 
 /** Opção de parcela (subset do `Installment` do payment-token-efi que usamos). */
@@ -36,6 +43,12 @@ interface ChargeResp {
   status: string
   card: { brand: string; last4: string; installments: number } | null
 }
+interface SubscriptionResp {
+  subscriptionId: string
+  status: string
+  paymentId: string | null
+  paymentStatus: string | null
+}
 interface StatusResp {
   status: string
 }
@@ -56,6 +69,9 @@ export default function CardCheckout({
   couponCode,
   successPath,
   installmentsMax,
+  mode = 'payment',
+  offerSlug,
+  intervalMonths = null,
 }: {
   contact: CheckoutContactInput | null
   priceCents: number
@@ -64,13 +80,35 @@ export default function CardCheckout({
   successPath: string
   /** Máximo de parcelas da OFERTA (catálogo). Limita a lista da Efí; `null` = sem teto. */
   installmentsMax?: number | null
+  /**
+   * `payment` = cobrança avulsa (como sempre). `subscription` = ASSINATURA
+   * recorrente: sem parcelas/cupom, pagador completo (nascimento + endereço) e
+   * `POST /api/checkout/subscription` (a Efí cobra o cartão a cada ciclo).
+   */
+  mode?: 'payment' | 'subscription'
+  /** Oferta ESCOLHIDA no alternador mensal↔anual (o servidor valida o link). */
+  offerSlug?: string
+  /** Periodicidade da assinatura (1 = mensal, 12 = anual) — rótulo do botão. */
+  intervalMonths?: number | null
 }) {
+  const isSubscription = mode === 'subscription'
   const [number, setNumber] = useState('')
   const [holderName, setHolderName] = useState('')
   const [expMonth, setExpMonth] = useState('')
   const [expYear, setExpYear] = useState('')
   const [cvv, setCvv] = useState('')
   const [installments, setInstallments] = useState(1)
+  // Pagador completo da ASSINATURA (a Efí exige nascimento + endereço).
+  const [birth, setBirth] = useState('')
+  const [address, setAddress] = useState<AddressFormInput>({
+    street: '',
+    number: '',
+    neighborhood: '',
+    zipcode: '',
+    city: '',
+    state: '',
+    complement: '',
+  })
 
   const [brand, setBrand] = useState<CardBrand | null>(null)
   const [installmentsList, setInstallmentsList] = useState<InstallmentOption[] | null>(null)
@@ -79,6 +117,7 @@ export default function CardCheckout({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [processing, setProcessing] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
   const [paymentId, setPaymentId] = useState<string | null>(null)
 
   // Corrida: só a consulta mais recente pode aplicar estado (o SDK da Efí não
@@ -180,7 +219,8 @@ export default function CardCheckout({
   // contador sem o Effect re-rodar, invalidando a consulta em voo sem nada que
   // restaurasse `loadingInstallments`.
   useEffect(() => {
-    if (!brand || !EFI_ACCOUNT) {
+    // Assinatura NÃO parcela (a Efí cobra 1x por ciclo) — nem consulta a lista.
+    if (!brand || !EFI_ACCOUNT || isSubscription) {
       setInstallmentsList(null)
       setLoadingInstallments(false)
       setInstallments(1)
@@ -223,7 +263,7 @@ export default function CardCheckout({
     return () => {
       ignore = true
     }
-  }, [brand, priceCents, installmentsMax])
+  }, [brand, priceCents, installmentsMax, isSubscription])
 
   // Polling curto caso o cartão volte PENDING (raro — cartão é síncrono).
   useEffect(() => {
@@ -276,6 +316,27 @@ export default function CardCheckout({
       setErrors({ expirationMonth: 'Cartão vencido.' })
       return
     }
+    // Assinatura exige o pagador completo (a Efí valida nascimento + endereço).
+    let subExtras: { birth: string; address: AddressFormInput } | null = null
+    if (isSubscription) {
+      const birthParsed = BirthSchema.safeParse(birth)
+      const addressParsed = AddressSchema.safeParse(address)
+      const extraErrors: Record<string, string> = {}
+      if (!birthParsed.success) {
+        extraErrors.birth = birthParsed.error.issues[0]?.message ?? 'Data inválida.'
+      }
+      if (!addressParsed.success) {
+        for (const issue of addressParsed.error.issues) {
+          const key = `address.${issue.path.join('.')}`
+          if (!extraErrors[key]) extraErrors[key] = issue.message
+        }
+      }
+      if (!birthParsed.success || !addressParsed.success) {
+        setErrors(extraErrors)
+        return
+      }
+      subExtras = { birth: birthParsed.data, address: addressParsed.data }
+    }
     setErrors({})
 
     if (!EFI_ACCOUNT) {
@@ -322,12 +383,41 @@ export default function CardCheckout({
           expirationYear: parsed.data.expirationYear,
           holderName: parsed.data.holderName,
           holderDocument: cpfDigits,
-          reuse: false,
+          // Assinatura: a Efí guarda o cartão p/ cobrar os ciclos (reuse).
+          reuse: isSubscription,
         })
         .getPaymentToken()
 
       if (!('payment_token' in tok)) {
         setErro('Não foi possível validar o cartão. Confira os dados e tente novamente.')
+        return
+      }
+
+      if (isSubscription && subExtras) {
+        const r = await apiPost<SubscriptionResp>('/api/checkout/subscription', {
+          token: tok.payment_token,
+          brand: cardBrand,
+          last4: digits.slice(-4),
+          attemptId: crypto.randomUUID(),
+          contact,
+          birth: subExtras.birth,
+          address: subExtras.address,
+          ...(offerSlug ? { offerSlug } : {}),
+        })
+        if (r.status === 'ACTIVE' && r.paymentStatus === 'PAID') {
+          window.location.href = successPath
+          return
+        }
+        if (r.paymentStatus === 'FAILED') {
+          setErro('Pagamento recusado. Verifique os dados ou use outro cartão.')
+          return
+        }
+        if (r.paymentId) {
+          setPaymentId(r.paymentId) // 1ª cobrança em análise → poll curto
+          return
+        }
+        setErro(null)
+        setInfo('Assinatura em processamento. Você receberá a confirmação por e-mail.')
         return
       }
 
@@ -339,6 +429,7 @@ export default function CardCheckout({
         attemptId: crypto.randomUUID(),
         couponCode,
         contact,
+        ...(offerSlug ? { offerSlug } : {}),
       }
       const r = await apiPost<ChargeResp>('/api/checkout/card', body)
       if (r.status === 'PAID') {
@@ -431,35 +522,127 @@ export default function CardCheckout({
           />
         </Field>
       </div>
-      <Field label="Parcelas">
-        <select
-          className={inputClass}
-          value={installments}
-          onChange={(e) => setInstallments(Number(e.target.value))}
-        >
-          {installmentsList ? (
-            installmentsList.map((i) => (
-              <option key={i.installment} value={i.installment}>
-                {i.installment}x de {brl(i.value)}
-                {i.has_interest ? ' (com juros)' : ' sem juros'}
-              </option>
-            ))
-          ) : (
-            <option value={1}>1x de {brl(priceCents)}</option>
+      {!isSubscription && (
+        <Field label="Parcelas">
+          <select
+            className={inputClass}
+            value={installments}
+            onChange={(e) => setInstallments(Number(e.target.value))}
+          >
+            {installmentsList ? (
+              installmentsList.map((i) => (
+                <option key={i.installment} value={i.installment}>
+                  {i.installment}x de {brl(i.value)}
+                  {i.has_interest ? ' (com juros)' : ' sem juros'}
+                </option>
+              ))
+            ) : (
+              <option value={1}>1x de {brl(priceCents)}</option>
+            )}
+          </select>
+          {loadingInstallments && (
+            <span className="mt-1 block text-xs text-muted">Consultando parcelas…</span>
           )}
-        </select>
-        {loadingInstallments && (
-          <span className="mt-1 block text-xs text-muted">Consultando parcelas…</span>
-        )}
-      </Field>
+        </Field>
+      )}
+      {isSubscription && (
+        <>
+          <Field label="Data de nascimento do titular" error={errors.birth}>
+            <input
+              className={inputClass}
+              type="date"
+              autoComplete="bday"
+              value={birth}
+              onChange={(e) => setBirth(e.target.value)}
+            />
+          </Field>
+          <fieldset className="flex flex-col gap-3 rounded-xl border border-line/60 p-3">
+            <legend className="px-1 text-sm font-semibold text-muted">
+              Endereço de cobrança do cartão
+            </legend>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <Field label="Endereço (rua/avenida)" error={errors['address.street']}>
+                  <input
+                    className={inputClass}
+                    autoComplete="address-line1"
+                    value={address.street}
+                    onChange={(e) => setAddress((a) => ({ ...a, street: e.target.value }))}
+                  />
+                </Field>
+              </div>
+              <Field label="Número" error={errors['address.number']}>
+                <input
+                  className={inputClass}
+                  value={address.number}
+                  onChange={(e) => setAddress((a) => ({ ...a, number: e.target.value }))}
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Bairro" error={errors['address.neighborhood']}>
+                <input
+                  className={inputClass}
+                  value={address.neighborhood}
+                  onChange={(e) => setAddress((a) => ({ ...a, neighborhood: e.target.value }))}
+                />
+              </Field>
+              <Field label="CEP" error={errors['address.zipcode']}>
+                <input
+                  className={inputClass}
+                  inputMode="numeric"
+                  autoComplete="postal-code"
+                  placeholder="00000-000"
+                  value={address.zipcode}
+                  onChange={(e) => setAddress((a) => ({ ...a, zipcode: e.target.value }))}
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <Field label="Cidade" error={errors['address.city']}>
+                  <input
+                    className={inputClass}
+                    autoComplete="address-level2"
+                    value={address.city}
+                    onChange={(e) => setAddress((a) => ({ ...a, city: e.target.value }))}
+                  />
+                </Field>
+              </div>
+              <Field label="UF" error={errors['address.state']}>
+                <input
+                  className={inputClass}
+                  maxLength={2}
+                  placeholder="SP"
+                  value={address.state}
+                  onChange={(e) =>
+                    setAddress((a) => ({ ...a, state: e.target.value.toUpperCase() }))
+                  }
+                />
+              </Field>
+            </div>
+          </fieldset>
+        </>
+      )}
       {erro && <p className="text-center text-sm text-red-400">{erro}</p>}
+      {info && <p className="text-center text-sm text-muted">{info}</p>}
       <button
         type="submit"
         disabled={processing || scriptBlocked || !contact}
         className="btn btn-primary disabled:opacity-60"
       >
-        {processing ? 'Processando…' : `Pagar ${brl(priceCents)}`}
+        {processing
+          ? 'Processando…'
+          : isSubscription
+            ? `Assinar ${brl(priceCents)}${intervalMonths === 12 ? '/ano' : '/mês'}`
+            : `Pagar ${brl(priceCents)}`}
       </button>
+      {isSubscription && (
+        <p className="text-center text-xs text-muted">
+          Renovação automática no cartão. Cancele quando quiser — o acesso continua até o fim do
+          período já pago.
+        </p>
+      )}
       {!contact && (
         <p className="text-center text-xs text-muted">
           Preencha seus dados pessoais acima para pagar com cartão.

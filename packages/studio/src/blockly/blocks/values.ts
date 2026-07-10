@@ -408,6 +408,20 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
       'Percorre a lista e devolve o primeiro item que passa no teste (ou nada, se nenhum passar). Dentro de "em que", use "valor da variável item" ou "campo do item" para testar cada um. Vira lista.find((item) => ...).',
   },
   {
+    type: 'sz_val_array_filter',
+    message0: 'filtrar a lista %1 mantendo cada %2 em que %3',
+    args0: [
+      { type: 'input_value', name: 'ARRAY', check: 'JSValue' },
+      { type: 'field_input', name: 'ITEM', text: 'item' },
+      { type: 'input_value', name: 'COND', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Cria uma NOVA lista só com os itens que passam no teste. A lista é um soquete: encaixe uma variável ou "minha propriedade …". Dentro do "em que", use "valor da variável item" ou "propriedade … de" para testar cada um. Vira lista.filter((item) => ...).',
+  },
+  {
     // Espaços ITEM0.. via `sz_array_mutator`: cada um é uma lista a juntar.
     type: 'sz_val_concat_arrays',
     message0: 'juntar listas',

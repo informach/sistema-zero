@@ -402,15 +402,18 @@ function createPensaTransport(): PensaTransport {
         body: init?.body !== undefined ? JSON.stringify(init.body) : undefined,
       })
       const body = (await res.json().catch(() => null)) as {
-        error?: { code?: string; message?: string }
+        error?: { code?: string; message?: string; scope?: 'day' | 'month' }
       } | null
       if (!res.ok) {
         const err = new Error(body?.error?.message ?? 'Não deu certo agora.') as Error & {
           status: number
           code: string
+          scope?: 'day' | 'month'
         }
         err.status = res.status
         err.code = body?.error?.code ?? 'REQUEST_FAILED'
+        // Teto de IA da conta (AI_QUOTA_EXCEEDED): 'day'|'month' muda a copy do Zappy.
+        err.scope = body?.error?.scope
         throw err
       }
       return body as T
@@ -422,12 +425,22 @@ function createPensaTransport(): PensaTransport {
       const controller = new AbortController()
       void (async () => {
         let finished = false
-        const fail = (message: string, status = 0, code = 'PENSA_AI_UNAVAILABLE') => {
+        const fail = (
+          message: string,
+          status = 0,
+          code = 'PENSA_AI_UNAVAILABLE',
+          scope?: 'day' | 'month',
+        ) => {
           if (finished) return
           finished = true
-          const err = new Error(message) as Error & { status: number; code: string }
+          const err = new Error(message) as Error & {
+            status: number
+            code: string
+            scope?: 'day' | 'month'
+          }
           err.status = status
           err.code = code
+          err.scope = scope
           handlers.onError(err)
         }
         try {
@@ -439,12 +452,13 @@ function createPensaTransport(): PensaTransport {
           })
           if (!res.ok || !res.body) {
             const body = (await res.json().catch(() => null)) as {
-              error?: { code?: string; message?: string }
+              error?: { code?: string; message?: string; scope?: 'day' | 'month' }
             } | null
             fail(
               body?.error?.message ?? 'O Zappy tropeçou aqui. Tente de novo.',
               res.status,
               body?.error?.code ?? 'PENSA_AI_UNAVAILABLE',
+              body?.error?.scope,
             )
             return
           }

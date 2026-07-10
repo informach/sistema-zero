@@ -103,9 +103,17 @@ export function StudioFullClient({
             }),
           })
           if (!res.ok) return ''
-          const body = (await res.json()) as { description?: string }
+          const body = (await res.json()) as { description?: string; quotaExceeded?: boolean }
+          // Teto de IA da conta atingido → o ShareDialog esconde o "Gerar" e cai
+          // no modo manual (o throw com code é duck-typed lá).
+          if (body.quotaExceeded) {
+            throw Object.assign(new Error('quota de IA esgotada'), {
+              code: 'AI_QUOTA_EXCEEDED' as const,
+            })
+          }
           return body.description ?? ''
-        } catch {
+        } catch (error) {
+          if ((error as { code?: string })?.code === 'AI_QUOTA_EXCEEDED') throw error
           return '' // fail-soft: a criança escreve do zero
         }
       },

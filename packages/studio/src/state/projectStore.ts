@@ -24,6 +24,7 @@ import {
   type ProProjectMeta,
   sanitizeProjectAssets,
   sanitizeSpriteMeta,
+  sanitizeTilemapMeta,
   sanitizeTilesetMeta,
   t,
 } from '#core'
@@ -42,6 +43,7 @@ import {
   deleteProject as deleteProjectFromDB,
   loadProjectBlocksById,
   loadProjectById,
+  loadProjectMetaById,
   loadProjectShellById,
   persistProject,
   renameProjectMeta,
@@ -57,10 +59,31 @@ import {
 } from './proTree'
 import { StudioStoresContext } from './storesContext'
 
+/**
+ * Ciclo de vida da restauração em SEGUNDO PLANO do `blocksState` (partição
+ * pesada, omitida pela abertura rápida). Mantido pelo PersistenceService:
+ * - 'idle': nada a restaurar (sem adapter/partição, projeto veio completo, pro).
+ * - 'pending': partição sendo lida — autosaves NÃO gravam a partição de blocos.
+ * - 'restored': partição aplicada ao projeto vivo.
+ * - 'empty': não havia nada salvo (definitivo) — modos podem derivar do código.
+ * - 'failed': leitura falhou/estourou o tempo — partição protegida na sessão.
+ * - 'discarded': havia estado salvo, mas o aluno já tinha blocos vivos editados.
+ */
+export type BlocksHydrationStatus =
+  | 'idle'
+  | 'pending'
+  | 'restored'
+  | 'empty'
+  | 'failed'
+  | 'discarded'
+
 interface ProjectStore {
   project: Project | null
   isDirty: boolean
   saveError: string | null
+  /** Estado da restauração em 2º plano dos blocos (ver BlocksHydrationStatus). */
+  blocksHydration: BlocksHydrationStatus
+  setBlocksHydration: (status: BlocksHydrationStatus) => void
   loadProject: (id: string) => Promise<Project | null>
   /** Hidrata um projeto já sanitizado (host/<Studio>) SEM marcar como sujo. */
   hydrateProject: (p: Project) => void
@@ -99,6 +122,12 @@ interface ProjectStore {
   removeAsset: (id: string) => void
   /** Renomeia um asset. Devolve erro ou null. */
   renameAsset: (id: string, newName: string) => string | null
+  /**
+   * Grava/atualiza metadados de PEÇAS (tileset) ou de MAPA (tilemap) num asset
+   * de imagem — o caminho do UPLOAD virar tileset/mapa sem passar pelo Pinta.
+   * Saneia na entrada (metadado inválido = erro amigável, asset intocado).
+   */
+  updateAssetMeta: (id: string, meta: { tileset?: unknown; tilemap?: unknown }) => string | null
   // --- Modo profissional (project.kind === 'pro') ---
   /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProFile: (path: string) => string | null
@@ -128,9 +157,10 @@ export interface NewAssetInput {
   height?: number
   source?: 'upload' | 'library'
   libId?: string
-  /** Metadados do Pinta (animações/tiles) — saneados no store antes de guardar. */
+  /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
+  tilemap?: unknown
 }
 
 function bump<T extends Project>(p: T): T {
@@ -221,6 +251,8 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_canvas_line_dash',
   'sz_canvas_measure_text',
   'sz_canvas_cancel_anim',
+  'sz_canvas_request_frame',
+  'sz_canvas_request_frame_do',
   'sz_canvas_clear',
   'sz_canvas_draw_image',
   'sz_canvas_fill_rect',
@@ -288,6 +320,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_letter_spacing',
   'sz_css_margin',
   'sz_css_max_width',
+  'sz_css_comment',
   'sz_css_media_query',
   'sz_css_padding',
   'sz_css_rule',
@@ -324,6 +357,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_html_span',
   'sz_html_strong',
   'sz_html_text',
+  'sz_html_comment',
   'sz_html_textarea',
   'sz_html_ul',
   'sz_html_svg',
@@ -342,6 +376,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_class_op',
   'sz_js_console_log_text',
   'sz_js_console_log_var',
+  'sz_js_console_log_value',
   'sz_js_const_create',
   'sz_js_get_element_by_id',
   'sz_js_get_property',
@@ -362,6 +397,8 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_on_load',
   'sz_js_on_resize',
   'sz_js_on_fullscreen_change',
+  'sz_js_on_context_menu',
+  'sz_js_on_blur',
   'sz_js_request_fullscreen',
   'sz_js_exit_fullscreen',
   'sz_js_toggle_fullscreen',
@@ -408,6 +445,9 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_constructor',
   'sz_js_return',
   'sz_js_return_void',
+  'sz_js_super_ctor',
+  'sz_js_super_method',
+  'sz_js_expr_statement',
   'sz_js_set_this_prop',
   'sz_js_set_prop',
   'sz_js_member_set',
@@ -415,6 +455,12 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_js_method_on',
   'sz_js_new_image',
   'sz_js_image_onload',
+  'sz_js_image_onerror',
+  'sz_js_element_onclick',
+  'sz_js_await',
+  'sz_js_set_timeout_call',
+  'sz_val_new_promise',
+  'sz_val_promise_all',
   'sz_js_new_var',
   'sz_js_var_assign',
   'sz_js_var_create',
@@ -452,6 +498,8 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_event_pos',
   'sz_val_event_key',
   'sz_val_is_fullscreen',
+  'sz_val_get_element',
+  'sz_val_query_select',
   'sz_val_math_pi',
   'sz_val_number',
   'sz_val_random',
@@ -461,11 +509,14 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_this_prop',
   'sz_val_get_prop',
   'sz_val_call_method',
+  'sz_val_new',
+  'sz_val_array_filter',
   'sz_val_object',
   'sz_val_object_op',
   'sz_val_index_get',
   'sz_val_image',
   'sz_val_member_get',
+  'sz_val_member_get_optional',
   'sz_val_method_on',
   'sz_val_arg',
   'sz_val_bool',
@@ -556,8 +607,30 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_touches',
     'sz_g2d_create_image_sprite',
     'sz_g2d_set_image',
+    'sz_g2d_define_shape',
+    'sz_g2d_create_shape_sprite',
+    'sz_g2d_set_shape',
+    'sz_g2d_paint_rect',
+    'sz_g2d_paint_circle',
+    'sz_g2d_paint_ellipse',
+    'sz_g2d_paint_triangle',
+    'sz_g2d_paint_line',
+    'sz_g2d_shape_w',
+    'sz_g2d_shape_h',
     'sz_g2d_load_spritesheet',
     'sz_g2d_animate_sprite',
+    'sz_g2d_set_state_anim',
+    'sz_g2d_auto_animate',
+    'sz_g2d_define_enemy_type',
+    'sz_g2d_enemy_state_anim',
+    'sz_g2d_enemy_type_param',
+    'sz_g2d_spawn_enemy',
+    'sz_g2d_update_enemy_type',
+    'sz_g2d_draw_enemy_type',
+    'sz_g2d_on_enemy_defeated',
+    'sz_g2d_on_enemy_shot_hit',
+    'sz_g2d_hurt_by_enemy',
+    'sz_g2d_enemy_damage',
     'sz_g2d_draw_frame',
     'sz_g2d_platformer',
     'sz_g2d_top_down',
@@ -567,6 +640,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_shake',
     'sz_g2d_emit_particles',
     'sz_g2d_draw_particles',
+    'sz_g2d_create_tilemap_from_asset',
     'sz_g2d_create_tilemap',
     'sz_g2d_draw_tilemap',
     'sz_g2d_tilemap_collide',
@@ -1427,7 +1501,20 @@ export async function loadSanitizedProjectBlocksStateById(
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return null
   const record = raw as Record<string, unknown>
   if (record.id != null && record.id !== id) return null
-  return sanitizeStoredBlocksState(record.blocksState, installedExtensions)
+  // Sanitiza contra a UNIÃO das extensões do chamador com as do META persistido:
+  // a lista do chamador pode vir vazia/defasada (shell ainda hidratando noutra
+  // aba, host antigo), e o sanitize é tudo-ou-nada — um projeto de Jogo 2D
+  // avaliado contra a allowlist só-núcleo perderia TODOS os blocos. O meta é a
+  // fonte durável do que está instalado; unir nunca REMOVE uma permissão do
+  // chamador, só re-adiciona as persistidas.
+  const meta = await loadProjectMetaById(id)
+  const metaExtensions = meta ? sanitizeImportedExtensions(meta.installedExtensions) : []
+  const merged = new Map<string, InstalledExtension>()
+  for (const extension of installedExtensions) merged.set(extension.id, extension)
+  for (const extension of metaExtensions) {
+    if (!merged.has(extension.id)) merged.set(extension.id, extension)
+  }
+  return sanitizeStoredBlocksState(record.blocksState, [...merged.values()])
 }
 
 /**
@@ -1677,10 +1764,13 @@ function isSupportedBlocklyBlockExtraState(blockType: string, raw: unknown): boo
     case 'sz_val_call_function':
     case 'sz_val_call_method':
     case 'sz_val_method_on':
+    case 'sz_val_new':
     case 'sz_js_new_var':
     case 'sz_js_call_function':
     case 'sz_js_call_method':
     case 'sz_js_method_on':
+    case 'sz_js_super_ctor':
+    case 'sz_js_super_method':
       return isSupportedItemsExtraState(raw)
     // Blocos com mutator de parâmetros (`{ params: [...] }`): construtor de
     // classe, método de classe e declaração de função (esta última estava
@@ -1692,6 +1782,8 @@ function isSupportedBlocklyBlockExtraState(blockType: string, raw: unknown): boo
       return isSupportedParamsExtraState(raw)
     case 'sz_js_class':
       return isSupportedExtendsExtraState(raw)
+    case 'sz_js_if_else':
+      return isSupportedIfElseExtraState(raw)
     case 'sz_canvas_anim_loop':
       return isSupportedHandleExtraState(raw)
     default:
@@ -1717,6 +1809,30 @@ function isSupportedItemsExtraState(raw: unknown): boolean {
     raw.items >= 0 &&
     raw.items <= MAX_MUTATOR_ITEMS
   )
+}
+
+/**
+ * `sz_js_if_else` (mutator do "Se/senão"): `{ elseIf?: N, hasElse?: true }` —
+ * a forma exata que `workspaceState.ts` emite p/ cadeias senão-se/senão. ⚠️ Sem
+ * este caso, TODO projeto com "senão" caía no default `false` do switch e o
+ * tudo-ou-nada descartava a partição INTEIRA ao reabrir — o modo Blocos abria
+ * vazio até a Ponte reconstruir do código (era A causa de dados do "jogo reabre
+ * sem blocos": jogo quase sempre tem se/senão).
+ */
+function isSupportedIfElseExtraState(raw: unknown): boolean {
+  if (!isPlainUnknownRecord(raw)) return false
+  if (!objectHasOnlyKeys(raw, ['elseIf', 'hasElse'])) return false
+  if (raw.elseIf != null) {
+    if (
+      typeof raw.elseIf !== 'number' ||
+      !Number.isInteger(raw.elseIf) ||
+      raw.elseIf < 0 ||
+      raw.elseIf > MAX_MUTATOR_ITEMS
+    ) {
+      return false
+    }
+  }
+  return raw.hasElse == null || typeof raw.hasElse === 'boolean'
 }
 
 function isSupportedParamsExtraState(raw: unknown): boolean {
@@ -1884,6 +2000,9 @@ function countJSStatement(statement: JSStatement): number {
     case 'g2d:pruneOffscreen':
     case 'g2d:onGroupOverlap':
     case 'g2d:onSpriteGroupOverlap':
+    case 'g2d:onEnemyDefeated':
+    case 'g2d:onEnemyShotHit':
+    case 'g2d:defineShape':
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
     case 'g3d:animate':
@@ -1990,6 +2109,10 @@ export function createProjectStore(
     project: null,
     isDirty: false,
     saveError: null,
+    blocksHydration: 'idle',
+    // Escrito pelo PersistenceService (dono do ciclo de restauração). Nunca toca
+    // isDirty: status não é edição.
+    setBlocksHydration: (status) => set({ blocksHydration: status }),
     loadProject: async (id) => {
       loadSeq += 1
       const seq = loadSeq
@@ -1999,13 +2122,14 @@ export function createProjectStore(
       // que ESTE load leu para o chamador que o aguardava (sem efeito colateral).
       if (seq !== loadSeq) return existing
       if (!existing) {
-        set({ project: null, isDirty: false, saveError: null })
+        set({ project: null, isDirty: false, saveError: null, blocksHydration: 'idle' })
         return null
       }
-      set({ project: existing, isDirty: false, saveError: null })
+      set({ project: existing, isDirty: false, saveError: null, blocksHydration: 'idle' })
       return existing
     },
-    hydrateProject: (p) => set({ project: p, isDirty: false, saveError: null }),
+    hydrateProject: (p) =>
+      set({ project: p, isDirty: false, saveError: null, blocksHydration: 'idle' }),
     hydrateProjectState: (patch) => {
       const p = get().project
       if (!p) return
@@ -2026,7 +2150,8 @@ export function createProjectStore(
         saveError: null,
       })
     },
-    unloadProject: () => set({ project: null, isDirty: false, saveError: null }),
+    unloadProject: () =>
+      set({ project: null, isDirty: false, saveError: null, blocksHydration: 'idle' }),
     createProject: async (name) => {
       const p = createEmptyProject(ulid(), sanitizeProjectName(name))
       await persistProject(p)
@@ -2163,7 +2288,7 @@ export function createProjectStore(
 
       return { project: imported, warnings }
     },
-    setProject: (p) => set({ project: p, isDirty: true, saveError: null }),
+    setProject: (p) => set({ project: p, isDirty: true, saveError: null, blocksHydration: 'idle' }),
     setMode: (mode) => {
       const p = get().project
       if (!p) return
@@ -2403,6 +2528,7 @@ export function createProjectStore(
       }
       const sprite = sanitizeSpriteMeta(input.sprite)
       const tileset = sanitizeTilesetMeta(input.tileset)
+      const tilemap = sanitizeTilemapMeta(input.tilemap)
       const asset: ProjectAsset = {
         id: ulid(),
         name,
@@ -2414,6 +2540,7 @@ export function createProjectStore(
         ...(input.source === 'library' && input.libId ? { libId: input.libId } : {}),
         ...(sprite ? { sprite } : {}),
         ...(tileset ? { tileset } : {}),
+        ...(tilemap ? { tilemap } : {}),
       }
       set({ project: bump({ ...p, assets: [...assets, asset] }), isDirty: true, saveError: null })
       return null
@@ -2424,6 +2551,29 @@ export function createProjectStore(
       const next = p.assets.filter((a) => a.id !== id)
       if (next.length === p.assets.length) return
       set({ project: bump({ ...p, assets: next }), isDirty: true, saveError: null })
+    },
+    updateAssetMeta: (id, meta) => {
+      const p = get().project
+      if (!p?.assets) return 'Sem imagens no projeto.'
+      const target = p.assets.find((a) => a.id === id)
+      if (!target) return 'Imagem não encontrada.'
+      const next: ProjectAsset = { ...target }
+      if ('tileset' in meta) {
+        const tileset = sanitizeTilesetMeta(meta.tileset)
+        if (!tileset) return 'Não consegui usar esse tamanho de peça.'
+        next.tileset = tileset
+      }
+      if ('tilemap' in meta) {
+        const tilemap = sanitizeTilemapMeta(meta.tilemap)
+        if (!tilemap) return 'Não consegui montar o mapa desta imagem.'
+        next.tilemap = tilemap
+      }
+      set({
+        project: bump({ ...p, assets: p.assets.map((a) => (a.id === id ? next : a)) }),
+        isDirty: true,
+        saveError: null,
+      })
+      return null
     },
     renameAsset: (id, newName) => {
       const p = get().project

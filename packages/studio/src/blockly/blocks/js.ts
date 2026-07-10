@@ -74,6 +74,17 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
   },
   {
+    type: 'sz_js_console_log_value',
+    message0: 'Mostrar no console %1',
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Mostra qualquer valor no console (junta texto com "juntar", um objeto, uma conta…). Vira console.log(valor).',
+  },
+  {
     type: 'sz_js_alert_text',
     message0: 'Mostrar aviso com texto %1',
     args0: [{ type: 'field_input', name: 'VALUE', text: 'Olá!' }],
@@ -138,6 +149,21 @@ export const JS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Muda o valor de uma variável que já existe.',
+  },
+  {
+    // OCULTO (hidden): não aparece na paleta — é só para o round-trip fiel de um
+    // statement que apenas AVALIA um valor e descarta (ex.: `this.game.gameOver;`,
+    // um no-op comum em código copiado). Sem ele, essa linha viraria "código
+    // avançado". A criança não precisa deste bloco para programar.
+    type: 'sz_js_expr_statement',
+    message0: 'avaliar %1',
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    hidden: true,
+    tooltip: 'Calcula um valor e o descarta.',
   },
   {
     type: 'sz_js_var_increment',
@@ -394,6 +420,53 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'Repete o "fazer" a cada N segundos. (No código vira N × 1000 ms.)',
   },
+  // ---- ⏳ Assíncrono (avançado) ----
+  {
+    type: 'sz_js_await',
+    message0: 'esperar %1 terminar',
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Espera uma promessa terminar antes de seguir. Só funciona dentro de um método "async". Vira await <valor>.',
+  },
+  {
+    type: 'sz_js_set_timeout_call',
+    message0: 'depois de %1 ms, chamar a função %2',
+    args0: [
+      { type: 'input_value', name: 'MS', check: 'JSValue' },
+      { type: 'field_input', name: 'FN', text: 'resolve' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Espera um tempo e então chama uma função pelo nome. Vira setTimeout(nome, ms).',
+  },
+  {
+    type: 'sz_val_new_promise',
+    message0: 'uma promessa que avisa quando terminar com %1 %2 fazendo %3',
+    args0: [
+      { type: 'field_input', name: 'PARAM', text: 'resolve' },
+      { type: 'input_dummy' },
+      { type: 'input_statement', name: 'DO', check: 'JSStmt' },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Uma promessa: roda o "fazendo" e, quando pronto, chama a função de aviso (ex.: resolve()). Vira new Promise((resolve) => { ... }).',
+  },
+  {
+    type: 'sz_val_promise_all',
+    message0: 'esperar todas as promessas de %1',
+    args0: [{ type: 'input_value', name: 'LIST', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Espera TODAS as promessas de uma lista terminarem. Vira Promise.all([...]).',
+  },
   {
     type: 'sz_js_storage_set',
     message0: 'guardar em %1 a chave %2 com o valor %3',
@@ -492,11 +565,17 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_js_console_log_text',
       'sz_js_console_log_var',
+      'sz_js_console_log_value',
       'sz_js_alert_text',
       'sz_js_alert_var',
     ],
   },
   { name: '💾 Dados & Web', colour: '#b9820a', types: ['sz_js_storage_set', 'sz_js_fetch_json'] },
+  {
+    name: '⏳ Assíncrono',
+    colour: '#a67608',
+    types: ['sz_js_await', 'sz_val_new_promise', 'sz_val_promise_all', 'sz_js_set_timeout_call'],
+  },
 ]
 
 // IDENTIDADE: cada sub-grupo recebe um TOM do ÂMBAR da Programação, derivado

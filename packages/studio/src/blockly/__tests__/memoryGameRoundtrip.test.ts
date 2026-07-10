@@ -117,7 +117,12 @@ function collectTypes(blocks: SerializedBlocklyBlock[]): string[] {
   const out: string[] = []
   const visit = (b: SerializedBlocklyBlock) => {
     out.push(b.type)
-    if (b.inputs) for (const input of Object.values(b.inputs)) visit(input.block)
+    if (b.inputs) {
+      for (const input of Object.values(b.inputs)) {
+        if (input.block) visit(input.block)
+        if (input.shadow) visit(input.shadow)
+      }
+    }
     if (b.next) visit(b.next.block)
   }
   for (const b of blocks) visit(b)

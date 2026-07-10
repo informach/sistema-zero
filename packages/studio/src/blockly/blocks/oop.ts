@@ -50,8 +50,11 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_class_method',
-    message0: 'método %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'falar' }],
+    message0: 'método %1 assíncrono %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'falar' },
+      { type: 'field_checkbox', name: 'ASYNC', checked: false },
+    ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY', check: 'JSStmt' }],
     inputsInline: true,
@@ -59,7 +62,8 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     nextStatement: 'ClassMember',
     colour: C,
     mutator: 'sz_params_mutator',
-    tooltip: 'Um método da classe. Use + para adicionar parâmetros; "retornar" devolve um valor.',
+    tooltip:
+      'Um método da classe. Use + para adicionar parâmetros; "retornar" devolve um valor. Marque "assíncrono" só se usar "esperar…" (await) dentro.',
   },
   {
     type: 'sz_js_return',
@@ -109,6 +113,29 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     tooltip: 'Chama um método de um objeto, como comando.',
   },
   {
+    type: 'sz_js_super_ctor',
+    message0: 'chamar o construtor da classe-mãe',
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    mutator: 'sz_args_mutator',
+    tooltip:
+      'Dentro do construtor de uma classe que herda de outra: roda o construtor da classe-mãe. Use + para passar argumentos. Vira super(argumentos).',
+  },
+  {
+    type: 'sz_js_super_method',
+    message0: 'na classe-mãe chamar método %1',
+    args0: [{ type: 'field_name_picker', name: 'METHOD', text: 'desenhar', kind: 'method' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    mutator: 'sz_args_mutator',
+    tooltip:
+      'Chama um método da classe-mãe (a versão herdada), mesmo que a classe filha tenha um método com o mesmo nome. Vira super.metodo(argumentos).',
+  },
+  {
     type: 'sz_val_call_method',
     message0: 'no objeto %1 chamar método %2',
     args0: [
@@ -120,6 +147,17 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_args_mutator',
     tooltip: 'Chama um método que devolve um valor para usar numa tomada.',
+  },
+  {
+    type: 'sz_val_new',
+    message0: 'novo objeto da classe %1',
+    args0: [{ type: 'field_name_picker', name: 'CLASS', text: 'Pessoa', kind: 'class' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    mutator: 'sz_args_mutator',
+    tooltip:
+      'Cria um objeto novo da classe para usar numa tomada de valor: como argumento (ex.: adicionar à lista), em "definir minha propriedade"… Vira new Classe(argumentos).',
   },
   {
     type: 'sz_js_set_this_prop',

@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import { UGC_IMAGE_INPUT_MIME } from '../lib/hub-attachments'
 import { coverKeyFromPublicUrl, verifyCleanupSignature } from '../lib/studio-cleanup'
+import { consumeAiQuota } from '../server/ai-quota'
 import type { HubClient, MembersClient } from '../server/clients'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
@@ -277,6 +278,16 @@ export function createStudioRoutes(deps: {
       const { files, title } = parsed.data
       const total = (files.html?.length ?? 0) + (files.css?.length ?? 0) + (files.js?.length ?? 0)
       if (total > 80_000) return invalid()
+      // Quota de IA da CONTA (diária + mensal). A recusa MANTÉM o contrato
+      // fail-soft do describe (200 + fallback) — o front esconde o "Gerar" e a
+      // criança escreve a descrição à mão; `quotaExceeded`/`scope` guiam a copy.
+      const quota = await consumeAiQuota(members, 'studio-describe')
+      if (!quota.allowed) {
+        return NextResponse.json(
+          { description: '', fallback: true, quotaExceeded: true, scope: quota.scope },
+          { status: 200 },
+        )
+      }
       // Fail-soft: erro/sem chave → { description:'', fallback:true } (criança escreve).
       const result = await generateProjectDescription({ files, title })
       return NextResponse.json(result, { status: 200 })

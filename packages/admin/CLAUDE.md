@@ -474,6 +474,19 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `<communityUrl>/impersonar?token=...` (`impersonationUrl`) em nova aba — a community troca o
   token pela sessão impersonada (claim `act`, banner, TTL curto). Adapter `impersonateUser` em
   `server/users.ts`.
+- **Recorrência no painel (07/2026):** o "Gestão de vendas" (`sales-panel.tsx`) ganhou 3 cards —
+  MRR (assinaturas ativas mensalizadas), Ativas (mensal × anual) e Novas × canceladas + churn na
+  janela do período — via BFF `GET /api/payments/stats/subscriptions` (`server/payments.ts
+  getSubscriptionStats` → gateway `GET /payments/admin/stats/subscriptions`;
+  `SubscriptionStatsView` em `lib/types.ts`); some em falha (best-effort). O form de OFERTA
+  (`ofertas/offers-client.tsx`) ganhou: Select "Intervalo de cobrança" (Mensal=1/Anual=12, SÓ em
+  subscription, OBRIGATÓRIO no submit), campos da oferta IRMÃ do alternador
+  (`content.altOffer.slug/label`, mesclados sem apagar badge/cta/maxProfiles), parcelas
+  ESCONDIDAS em subscription (PATCH manda `installmentsMax: null`) e sufixo /mês|/ano no preço da
+  listagem. **Uso de IA (07/2026):** página `/admin/ia` (grupo Gestão, ícone Sparkles) — cards
+  mês/hoje/contas + breakdown por feature + top contas (badge "equipe") + seletor de mês; BFF
+  `GET /api/members/ai-usage` (hidrata nomes via batchGetUsers) → gateway
+  `GET /members/admin/ai-usage`.
 - Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
   → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
   (`?q&status&consumerId&limit&offset`) → `Paginated<SubscriptionView>`; `GET /payments/admin/subscriptions/:id`;

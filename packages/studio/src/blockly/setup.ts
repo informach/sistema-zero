@@ -20,6 +20,7 @@ import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldNamePicker } from './fields/FieldNamePicker'
 import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
+import { registerFieldTileGrid } from './fields/FieldTileGrid'
 import { organizeBlocks } from './organize'
 import { exportWorkspaceImage } from './screenshot'
 import { registerPtSearchCategory } from './searchCategory'
@@ -273,6 +274,7 @@ export function ensureBlocklyInitialized(): void {
   // definição dos blocos da extensão, que veem esses tipos de campo).
   registerFieldAnimationPicker()
   registerFieldSolidTilesPicker()
+  registerFieldTileGrid()
   // Campo de seleção de NOME (variável / grupo-lista já criados) — mesma exigência de
   // ordem: registrado antes dos blocos do núcleo e da extensão que o usam.
   registerFieldNamePicker()

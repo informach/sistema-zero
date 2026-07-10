@@ -11,6 +11,7 @@ import {
   ReceiptText,
   ScrollText,
   ShieldCheck,
+  Sparkles,
   TrendingUp,
   Users,
 } from 'lucide-react'
@@ -78,6 +79,7 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Package,
         match: '/admin/catalogo',
       },
+      { label: 'Uso de IA', href: '/admin/ia', icon: Sparkles },
     ],
   },
   {

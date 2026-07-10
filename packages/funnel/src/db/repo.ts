@@ -24,6 +24,8 @@ export interface PaymentSnapshot {
   email?: string | null
   telefone?: string | null
   document?: string | null
+  /** Meses de acesso desta cobrança (anual à vista = 12); ausente = vitalícia. */
+  accessPeriodMonths?: number | null
 }
 
 /** Contexto persistido por `payment_id` em `lead_payments`. */
@@ -92,6 +94,21 @@ export interface FunnelRepo {
   ): Promise<void>
   /** Cupom aplicado na cobrança (histórico `lead_payments`); null = sem cupom. */
   couponForPayment(paymentId: string): Promise<string | null>
+  /**
+   * Grava a ASSINATURA no lead (id + intervalo em meses) na criação do checkout
+   * recorrente. O webhook de renovação resolve o lead por ela.
+   */
+  setSubscription(id: string, subscriptionId: string, intervalMonths: number): Promise<void>
+  /** Lead dono da assinatura (ciclos de renovação chegam sem cobrança conhecida). */
+  findLeadBySubscription(subscriptionId: string): Promise<Lead | null>
+  /**
+   * Linka a cobrança de um CICLO de renovação ao lead no histórico
+   * (`lead_payments`) SEM mover o ponteiro `leads.payment_id` — o ciclo nasce no
+   * payments (a 1ª notícia é o webhook). Idempotente (conflito = no-op).
+   */
+  linkCyclePayment(leadId: string, paymentId: string): Promise<void>
+  /** Meses de acesso da cobrança (compra por período); null = vitalícia/ciclo. */
+  accessPeriodForPayment(paymentId: string): Promise<number | null>
   /** Oferta/comprador congelados por cobrança; null = pagamento fora do histórico. */
   paymentContext(paymentId: string): Promise<PaymentContext | null>
   /** Marca pago se ainda não estava; retorna true se ESTA chamada foi a que pagou. */
@@ -189,6 +206,7 @@ export function createFunnelRepo(db: Database): FunnelRepo {
             customerEmail: snapshot?.email ?? null,
             customerPhone: snapshot?.telefone ?? null,
             customerDocument: snapshot?.document ?? null,
+            accessPeriodMonths: snapshot?.accessPeriodMonths ?? null,
           })
           .onConflictDoNothing({ target: leadPayments.paymentId })
       })
@@ -201,6 +219,38 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         .where(eq(leadPayments.paymentId, paymentId))
         .limit(1)
       return row?.couponCode ?? null
+    },
+
+    async setSubscription(id, subscriptionId, intervalMonths) {
+      await db
+        .update(leads)
+        .set({ subscriptionId, subscriptionIntervalMonths: intervalMonths, updatedAt: new Date() })
+        .where(eq(leads.id, id))
+    },
+
+    async findLeadBySubscription(subscriptionId) {
+      const [row] = await db
+        .select()
+        .from(leads)
+        .where(eq(leads.subscriptionId, subscriptionId))
+        .limit(1)
+      return row ?? null
+    },
+
+    async linkCyclePayment(leadId, paymentId) {
+      await db
+        .insert(leadPayments)
+        .values({ paymentId, leadId })
+        .onConflictDoNothing({ target: leadPayments.paymentId })
+    },
+
+    async accessPeriodForPayment(paymentId) {
+      const [row] = await db
+        .select({ accessPeriodMonths: leadPayments.accessPeriodMonths })
+        .from(leadPayments)
+        .where(eq(leadPayments.paymentId, paymentId))
+        .limit(1)
+      return row?.accessPeriodMonths ?? null
     },
 
     async paymentContext(paymentId) {

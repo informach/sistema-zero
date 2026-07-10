@@ -30,7 +30,9 @@ export function buildCyclePayment(input: {
     method: PaymentMethod.recurringCard(subscription.card),
     idempotencyKey: IdempotencyKey.create(`sub:${subscription.id}:charge:${chargeId}`),
     customer,
-    metadata: { subscriptionId: subscription.id },
+    // Propaga a metadata da ASSINATURA (leadId/offerId do funil) p/ o pagamento do
+    // ciclo — stats por oferta e NFS-e enxergam a recorrência como qualquer venda.
+    metadata: { ...subscription.metadata, subscriptionId: subscription.id },
     subscriptionId: subscription.id,
   })
 

@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   pgSchema,
+  primaryKey,
   smallint,
   text,
   timestamp,
@@ -952,6 +953,53 @@ export const teacherMessages = members.table(
   (t) => [index('teacher_messages_thread_idx').on(t.threadId, t.authorRole, t.createdAt)],
 )
 
+// ── Uso de IA por CONTA (quota diária/mensal — 07/2026) ─────────────────────
+// Contador do uso de IA paga pelo SERVIDOR (Pensa chat/sínteses, descrição do
+// Mural, recursos futuros), keyado pela CONTA (kids: a conta responsável — irmãos
+// da mesma conta dividem o teto; adulto: a própria conta). 1 linha por
+// (conta, dia civil SP, feature); o teto MENSAL é derivado por SUM do mês (≤ ~93
+// linhas/conta/mês — barato). `feature` na PK dá o breakdown de custo por recurso
+// no admin sem tabela extra. Os LIMITES vivem no use case (env AI_LIMIT_*), não
+// no banco — padrão da casa (ver MAX_ACTIVE_PROJECTS do Pensa). `privileged`
+// espelha o snapshot de equipe da gamificação: equipe NUNCA é recusada, mas o
+// consumo fica visível/filtrável no admin.
+export const aiUsageDaily = members.table(
+  'ai_usage_daily',
+  {
+    accountId: uuid('account_id').notNull(),
+    // Dia civil de São Paulo `YYYY-MM-DD` — MESMA régua do streak. ⚠️ mode:'string'
+    // (como `last_activity_date`): mode:'date' deslocaria o dia no round-trip UTC.
+    day: date('day', { mode: 'string' }).notNull(),
+    feature: varchar('feature', { length: 40 }).notNull(),
+    used: integer('used').notNull().default(0),
+    privileged: boolean('privileged').notNull().default(false),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ name: 'ai_usage_daily_pk', columns: [t.accountId, t.day, t.feature] }),
+    // Agregados do admin (totais do dia/mês varrem por `day`, não por conta).
+    index('ai_usage_daily_day_idx').on(t.day),
+  ],
+)
+
+// ── Lembrete de renovação (anual à vista) ───────────────────────────────────
+// Dedupe do e-mail "seu acesso vence em breve": 1 lembrete por (matrícula, data
+// de vencimento). Keyar TAMBÉM na data faz um EXTEND admin (validade nova) gerar
+// um lembrete novo — comportamento desejado. Marcado APÓS o envio (crash-safety;
+// o dedupe do messaging por idempotencyKey absorve o retry).
+export const renewalRemindersSent = members.table(
+  'renewal_reminders_sent',
+  {
+    entitlementId: uuid('entitlement_id').notNull(),
+    // Data (UTC `YYYY-MM-DD`) do vencimento LEMBRADO. mode:'string' (regra da casa).
+    expiresOn: date('expires_on', { mode: 'string' }).notNull(),
+    sentAt: timestamp('sent_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ name: 'renewal_reminders_sent_pk', columns: [t.entitlementId, t.expiresOn] }),
+  ],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table(
   'processed_webhooks',
@@ -996,6 +1044,8 @@ export const schema = {
   pensaChecklistItems,
   teacherThreads,
   teacherMessages,
+  aiUsageDaily,
+  renewalRemindersSent,
   processedWebhooks,
 }
 

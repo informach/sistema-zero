@@ -321,7 +321,12 @@ ligado por `SENTRY_DSN` (ausente = no-op; projeto `sistema-zero-payments` na org
 
 - **Leitura:** `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`),
   `GET /payments/admin/payments/:id`, `GET /payments/admin/subscriptions` (`?q&status&consumerId&limit&offset`),
-  `GET /payments/admin/subscriptions/:id`, `GET /payments/admin/stats` (`?from&to` → receita/contagens),
+  `GET /payments/admin/subscriptions/:id`,
+  **`GET /payments/admin/stats/subscriptions`** (`?from&to`, 07/2026 — recorrência do painel:
+  ativas por periodicidade + **MRR = Σ(amount/intervalMonths) das ativas** [round de NUMERIC,
+  bigint como string] + novas/canceladas na janela + churn = canceladas/(ativas+canceladas);
+  `SubscriptionAdminReadRepository.stats` + `GetSubscriptionStatsService`),
+  `GET /payments/admin/stats` (`?from&to` → receita/contagens),
   `GET /payments/admin/stats/daily` (`?from&to&offerIds` → série diária do painel "Gestão de vendas":
   buckets esparsos por dia civil em `America/Sao_Paulo` com líquido/recebido/estornado/transações/
   estornos; "recebido" agrupa por `paid_at` e INCLUI linhas hoje REFUNDED — o estorno desconta no
@@ -361,6 +366,16 @@ auth com o mesmo e-mail do checkout; o perfil self-service do auth NÃO permite
 trocar e-mail). O literal `/payments/my` vence o param `/payments/:id` tanto no
 matcher do gateway quanto no Elysia (coberto por testes nos dois lados).
 
+**Minhas ASSINATURAS (07/2026, migration `0005` = índice de expressão
+`subscriptions_customer_email_idx` em `lower(customer->>'email')`):**
+`GET /payments/my/subscriptions` (lista, view PÚBLICA `MySubscriptionView` — sem
+consumerId/metadata/providerSubscriptionId) e `DELETE /payments/my/subscriptions/:id`
+(cancela a PRÓPRIA — `CancelSubscriptionService.executeForEmail`, escopado por
+e-mail, anti-IDOR; o acesso segue até o fim do ciclo + carência, o members expira
+sozinho). Port dedicado `subscription-my-read` + `DrizzleSubscriptionMyReadRepository`.
+⚠️ O literal `/payments/my/subscriptions` vence o param `/payments/my/:id` nos DOIS
+matchers (gateway + Elysia — rota declarada ANTES do `/:id` e coberta por teste).
+
 ## Como estender (adicionar um novo método de pagamento)
 
 1. Adicione o método ao port `PaymentGateway` e implemente em `EfiClient` +
@@ -369,25 +384,40 @@ matcher do gateway quanto no Elysia (coberto por testes nos dois lados).
    processa PIX, boleto e cartão. Para um método novo, habilite lá.
 3. Reaproveite agregado/outbox/idempotência. Adicione testes em `tests/`.
 
-### Recorrência (assinaturas de cartão — DONE)
+### Recorrência (assinaturas de cartão — DONE; consumidor real = FUNIL desde 07/2026)
 
 Efí **Cobranças "Assinaturas"**: a Efí gerencia a recorrência (cria-se plano +
 assinatura 1x e ela cobra o cartão guardado a cada ciclo, notificando pelo MESMO
 token model do boleto/cartão) — **não há worker/scheduler de cobrança nosso**.
 - Agregado `SubscriptionAggregate` (PENDING→ACTIVE→CANCELED/EXPIRED); ports
   `subscription-repository` + `subscription-plan-registry`; serviços
-  `create/cancel/get-subscription`; rotas `POST/GET/DELETE /subscriptions`.
+  `create/cancel/get-subscription`; rotas `POST/GET/DELETE /subscriptions`. O funil
+  consome via gateway (rota `payments-subscriptions-create`, HMAC + resign, 35s).
 - **Cada ciclo é uma linha em `payments`** (CREDIT_CARD com `subscription_id`) →
   reaproveita `payment.paid`/outbox/webhook-delivery. `idempotencyKey` sintética
-  `sub:<subId>:charge:<chargeId>`.
+  `sub:<subId>:charge:<chargeId>`. **O ciclo PROPAGA a `metadata` da assinatura**
+  (07/2026 — leadId/offerId do funil: stats por oferta e NFS-e enxergam a
+  recorrência) + `subscriptionId`.
+- **`payment.paid`/`payment.failed` carregam `subscriptionId`** (07/2026, null em
+  avulso) — é o que o webhook do funil usa p/ RAMIFICAR renovação (extend no
+  members, sem welcome) e dunning (e-mail de falha de cobrança).
+- **`SubscriptionView.firstPayment {id, status}`** (07/2026): a CRIAÇÃO expõe o
+  pagamento do 1º ciclo quando a resposta da Efí o traz — o funil linka o
+  `paymentId` ao lead sem esperar o webhook. Ausente/null nas leituras posteriores.
 - Planos são **reutilizáveis** (tabela `subscription_plans`, chave
   `(provider, intervalMonths, repeats_key=repeats??-1)`, get-or-create via ON CONFLICT).
 - Notificação: `HandleBoletoNotificationService` resolve o token 1x e despacha
   entradas com `subscriptionId` → `HandleSubscriptionNotificationService.handleCycle`.
   Um ciclo FALHO **não** cancela a assinatura (a Efí pode retentar).
-- ⚠️ NÃO sandbox-verificado (precisa de `payment_token` de browser). Confirme os
-  shapes via `bun run subscription:create --token <token> [--detail] [--cancel]`.
+- ⚠️ Sandbox-verify PARCIAL (10/07): authorize + `POST /plan` (mensal E anual) +
+  tokenização `reuse:true` OK; o `POST /subscription/one-step` devolveu **504 do
+  PRÓPRIO sandbox da Efí** (3×, isolado com fetch cru — harness em
+  `scratchpad/efi-token/`) → ciclo/notificação/cancelamento seguem não-verificados.
+  Re-verifique via `bun run subscription:create --token <token> [--detail] [--cancel]`;
+  se persistir, validar em PROD com assinatura de R$1 (decisão da usuária).
 - **Pix Automático** (recorrência Pix nativa) é um esforço separado, ainda pendente.
+  Anual "à vista" via Pix/boleto NÃO passa por aqui — é pagamento único que o
+  members converte em acesso de 12 meses (`accessPeriodMonths` no grant do funil).
 
 ## Banco — PADRÃO DO MONOREPO (1 Postgres, 1 schema por serviço)
 

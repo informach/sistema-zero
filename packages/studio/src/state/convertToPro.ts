@@ -49,7 +49,11 @@ export async function convertClassicToProTree(project: Project): Promise<Project
 
   for (const [path, content] of Object.entries(assets)) {
     if (path === `${PUBLIC_PREFIX}index.html`) continue
-    tree[path] = { kind: 'file', content: asString(content) }
+    // Assets BINÁRIOS (imagens como bytes, novos no export) ficam de fora: a
+    // árvore pro só guarda TEXTO (decodá-los como UTF-8 corromperia o PNG). No
+    // pro as imagens seguem chegando pelo sz-assets.js (data:URLs), como antes.
+    if (typeof content !== 'string') continue
+    tree[path] = { kind: 'file', content }
   }
 
   return ensureDirNodes(tree)

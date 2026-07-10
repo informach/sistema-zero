@@ -246,6 +246,15 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'Um pedaço de texto solto. Use dentro de um parágrafo, título, etc.',
   },
+  {
+    type: 'sz_html_comment',
+    message0: 'comentário %1',
+    args0: [{ type: 'field_input', name: 'TEXT', text: ' anotação ' }],
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip: 'Uma anotação que não aparece na página, só no código. Vira <!-- ... -->.',
+  },
 
   // ---- Mídia e links ----
   {
@@ -263,16 +272,18 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_image',
-    message0: 'Criar imagem de %1 (descrição %2)',
+    message0: 'Criar imagem de %1 (descrição %2, id %3)',
     args0: [
       { type: 'field_input', name: 'SRC', text: 'https://picsum.photos/600/400' },
       { type: 'field_input', name: 'ALT', text: 'imagem' },
+      { type: 'field_input', name: 'ID', text: '' },
     ],
     ...classMsg1,
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria uma imagem. A descrição ajuda na acessibilidade.',
+    tooltip:
+      'Cria uma imagem. A descrição ajuda na acessibilidade; o id (opcional) permite pegar a imagem no código com "o elemento com id …" para desenhar no canvas.',
   },
 
   // ---- Formulário (campos) ----
@@ -332,6 +343,7 @@ export const HTML_GROUPS: { name: string; colour: string; types: string[] }[] = 
       'sz_html_strong',
       'sz_html_em',
       'sz_html_text',
+      'sz_html_comment',
     ],
   },
   {

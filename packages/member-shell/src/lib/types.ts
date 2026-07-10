@@ -813,6 +813,19 @@ export interface ParentReportPrefsView {
   disabled: boolean
 }
 
+/**
+ * Resultado do consumo de 1 crédito de IA da CONTA (mirror do members).
+ * `allowed:false` + `scope` = teto diário/mensal atingido (recusa é domínio, não
+ * erro); `unlimited` = equipe (nunca recusada, uso gravado só p/ telemetria).
+ */
+export interface AiUsageConsumeView {
+  allowed: boolean
+  scope?: 'day' | 'month'
+  usedDay: number
+  usedMonth: number
+  unlimited?: boolean
+}
+
 /** Card do filho na área dos pais: stats do members + identidade do perfil (auth). */
 export interface ChildDashboardView extends ChildStatsView {
   name: string
@@ -945,6 +958,44 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   PIX: 'Pix',
   BOLETO: 'Boleto',
   CREDIT_CARD: 'Cartão de crédito',
+}
+
+// ── Assinaturas ("minhas assinaturas" — view PÚBLICA do payments) ───────────
+export interface MySubscriptionView {
+  id: string
+  status: string
+  /** Mensal = 1, anual = 12. */
+  intervalMonths: number
+  repeats: number | null
+  /** Centavos serializados como STRING (bigint) → use `formatCentsStr`. */
+  amountInCents: string
+  currency: string
+  card: { brand: string; last4: string }
+  cyclesCompleted: number
+  lastChargeAt: string | null
+  description: string | null
+  canceledAt: string | null
+  createdAt: string
+}
+
+export const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pendente',
+  ACTIVE: 'Ativa',
+  CANCELED: 'Cancelada',
+  EXPIRED: 'Encerrada',
+}
+
+/**
+ * Próxima cobrança DERIVADA (a Efí não expõe a data): última cobrança (ou a
+ * criação) + intervalo. `null` p/ assinatura não-ativa.
+ */
+export function nextChargeDate(sub: MySubscriptionView): Date | null {
+  if (sub.status !== 'ACTIVE') return null
+  const base = new Date(sub.lastChargeAt ?? sub.createdAt)
+  if (Number.isNaN(base.getTime())) return null
+  const next = new Date(base)
+  next.setMonth(next.getMonth() + sub.intervalMonths)
+  return next
 }
 
 // ── Comunidade (fórum — @sistemazero/hub) ───────────────────────────────────

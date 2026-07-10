@@ -10,11 +10,13 @@ import { HandleBoletoNotificationService } from './application/handle-boleto-not
 import { HandleProviderWebhookService } from './application/handle-provider-webhook/handle-provider-webhook.service'
 import { HandleSubscriptionNotificationService } from './application/handle-subscription-notification/handle-subscription-notification.service'
 import { ListMyPaymentsService } from './application/list-my-payments/list-my-payments.service'
+import { ListMySubscriptionsService } from './application/list-my-subscriptions/list-my-subscriptions.service'
 import { ListPaymentsService } from './application/list-payments/list-payments.service'
 import { ListSubscriptionsService } from './application/list-subscriptions/list-subscriptions.service'
 import { GetPaymentsOpsService } from './application/payments-ops/get-payments-ops.service'
 import { GetDailyPaymentsStatsService } from './application/payments-stats/get-daily-payments-stats.service'
 import { GetPaymentsStatsService } from './application/payments-stats/get-payments-stats.service'
+import { GetSubscriptionStatsService } from './application/payments-stats/get-subscription-stats.service'
 import { ProcessPaymentService } from './application/process-payment/process-payment.service'
 import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
 import type { Env } from './infrastructure/config/env'
@@ -39,6 +41,7 @@ import { DrizzlePaymentMyReadRepository } from './infrastructure/persistence/dri
 import { PgNotificationListener } from './infrastructure/persistence/drizzle/pg-notification-listener'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
+import { DrizzleSubscriptionMyReadRepository } from './infrastructure/persistence/drizzle/subscription-my-read.repository'
 import { DrizzleSubscriptionPlanRegistry } from './infrastructure/persistence/drizzle/subscription-plan-registry.repository'
 import { DrizzleWebhookDeliveryRepository } from './infrastructure/persistence/drizzle/webhook-delivery.repository'
 import { DrizzleWebhookInbox } from './infrastructure/persistence/drizzle/webhook-inbox.repository'
@@ -206,7 +209,15 @@ export function createApplication(env: Env): Application {
     logger,
   )
   const getSubscription = new GetSubscriptionService(subscriptions)
-  const cancelSubscription = new CancelSubscriptionService(subscriptions, gateway, logger)
+  // O 4º dep (leitura por e-mail) habilita o cancelamento SELF-SERVICE do
+  // assinante (executeForEmail — "minhas assinaturas").
+  const subscriptionsMyRead = new DrizzleSubscriptionMyReadRepository(db)
+  const cancelSubscription = new CancelSubscriptionService(
+    subscriptions,
+    gateway,
+    logger,
+    subscriptionsMyRead,
+  )
   const handleWebhook = new HandleProviderWebhookService(payments, gateway, webhookInbox, logger)
   const handleSubscriptionNotification = new HandleSubscriptionNotificationService(
     subscriptions,
@@ -232,6 +243,7 @@ export function createApplication(env: Env): Application {
   const getAdminSubscription = new GetAdminSubscriptionService(subscriptions)
   const getPaymentsStats = new GetPaymentsStatsService(paymentsAdminRead)
   const getDailyPaymentsStats = new GetDailyPaymentsStatsService(paymentsAdminRead)
+  const getSubscriptionStats = new GetSubscriptionStatsService(subscriptionsAdminRead)
   const getPaymentsOps = new GetPaymentsOpsService(paymentsAdminRead)
   const refundPayment = new RefundPaymentService(payments, gateway, logger)
 
@@ -240,6 +252,7 @@ export function createApplication(env: Env): Application {
   const paymentsMyRead = new DrizzlePaymentMyReadRepository(db)
   const listMyPayments = new ListMyPaymentsService(paymentsMyRead)
   const getMyPayment = new GetMyPaymentService(paymentsMyRead)
+  const listMySubscriptions = new ListMySubscriptionsService(subscriptionsMyRead)
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
   // quando o banco responde E o warm-up da Efí TERMINOU (sucesso OU falha — o
@@ -286,10 +299,12 @@ export function createApplication(env: Env): Application {
     getAdminSubscription,
     getPaymentsStats,
     getDailyPaymentsStats,
+    getSubscriptionStats,
     getPaymentsOps,
     refundPayment,
     listMyPayments,
     getMyPayment,
+    listMySubscriptions,
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null

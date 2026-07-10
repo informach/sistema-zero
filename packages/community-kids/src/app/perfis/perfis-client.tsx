@@ -28,18 +28,21 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { GameCardDialog } from '@/components/kids/game-card-dialog'
 import { KidsMascot } from '@/components/kids/mascot'
-import { apiGet } from '@/lib/api'
+import { apiGet, apiSend } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
   type ChildDashboardView,
   type ChildWeekGameView,
   type ChildWeekStatsView,
+  type MySubscriptionView,
+  nextChargeDate,
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
   type Paginated,
   type ParentReportPrefsView,
   type PaymentView,
   type ProfileView,
+  SUBSCRIPTION_STATUS_LABELS,
 } from '@/lib/types'
 
 const JSON_HEADERS = { 'content-type': 'application/json' }
@@ -664,6 +667,8 @@ function PurchasesView({ onBack }: { onBack: () => void }) {
         </p>
       </div>
 
+      <ParentSubscriptions />
+
       {items === null ? (
         <div className="flex flex-col gap-3">
           {[0, 1, 2].map((i) => (
@@ -692,6 +697,118 @@ function PurchasesView({ onBack }: { onBack: () => void }) {
         </Button>
       ) : null}
     </main>
+  )
+}
+
+/**
+ * Assinaturas do RESPONSÁVEL (área dos pais): status, valor por período, próxima
+ * cobrança derivada e cancelamento com confirmação — o acesso continua até o fim
+ * do período já pago (o texto deixa claro). Some quando não há assinaturas.
+ */
+function ParentSubscriptions() {
+  const [subs, setSubs] = useState<MySubscriptionView[]>([])
+  const [confirming, setConfirming] = useState<MySubscriptionView | null>(null)
+  const [canceling, setCanceling] = useState(false)
+
+  const load = useCallback(async () => {
+    try {
+      const data = await apiGet<{ items: MySubscriptionView[] }>('/api/payments/my/subscriptions')
+      setSubs(data.items)
+    } catch {
+      // Sem assinaturas em falha — o histórico de compras segue útil.
+    }
+  }, [])
+
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  async function cancel(sub: MySubscriptionView) {
+    setCanceling(true)
+    try {
+      await apiSend(`/api/payments/my/subscriptions/${sub.id}`, 'DELETE')
+      toast.success('Assinatura cancelada. O acesso continua até o fim do período já pago.')
+      setConfirming(null)
+      await load()
+    } catch {
+      toast.error('Não foi possível cancelar. Tente novamente.')
+    } finally {
+      setCanceling(false)
+    }
+  }
+
+  if (subs.length === 0) return null
+
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="font-semibold text-foreground text-sm">Assinaturas</h2>
+      <ul className="flex flex-col gap-3">
+        {subs.map((sub) => {
+          const next = nextChargeDate(sub)
+          const suffix = sub.intervalMonths === 12 ? '/ano' : sub.intervalMonths === 1 ? '/mês' : ''
+          return (
+            <li
+              key={sub.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-border bg-card p-4"
+            >
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground">{sub.description ?? 'Assinatura'}</p>
+                <p className="mt-0.5 text-muted-foreground text-sm">
+                  <span className="sz-display">
+                    {formatCentsStr(sub.amountInCents)}
+                    {suffix}
+                  </span>
+                  {' · '}
+                  {sub.card.brand.toUpperCase()} •••• {sub.card.last4}
+                  {next ? ` · próxima cobrança ~${formatDate(next.toISOString())}` : null}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`font-semibold text-sm ${sub.status === 'ACTIVE' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  {SUBSCRIPTION_STATUS_LABELS[sub.status] ?? sub.status}
+                </span>
+                {sub.status === 'ACTIVE' ? (
+                  <Button variant="outline" size="sm" onClick={() => setConfirming(sub)}>
+                    Cancelar
+                  </Button>
+                ) : null}
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+
+      {confirming ? (
+        <Dialog
+          open
+          onClose={() => (canceling ? null : setConfirming(null))}
+          title="Cancelar assinatura?"
+          description={confirming.description ?? undefined}
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setConfirming(null)} disabled={canceling}>
+                Manter assinatura
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => void cancel(confirming)}
+                disabled={canceling}
+              >
+                {canceling ? 'Cancelando…' : 'Cancelar assinatura'}
+              </Button>
+            </>
+          }
+        >
+          <p className="text-muted-foreground text-sm">
+            Você não será cobrado de novo, e o{' '}
+            <strong>acesso continua até o fim do período já pago</strong>. Depois disso, a
+            plataforma fica indisponível até uma nova assinatura.
+          </p>
+        </Dialog>
+      ) : null}
+    </section>
   )
 }
 

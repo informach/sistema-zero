@@ -23,6 +23,10 @@ import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import {
+  attachAnimationNameWatcher,
+  refreshAnimationNames,
+} from '../../blockly/fields/FieldAnimationPicker'
+import {
   attachSpriteThumbWatcher,
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
@@ -200,16 +204,87 @@ function scheduleBlocklyResize(workspace: Blockly.WorkspaceSvg): void {
   setTimeout(resize, 0)
 }
 
+/**
+ * Algum bloco top-level INTERSECTA a viewport atual? (Diferente do
+ * `isBlockInView`, que exige o bloco INTEIRO visível — um frame mais alto que a
+ * tela nunca passaria e o recentro dispararia em todo load.) Erro de medição →
+ * false: recentrar é inofensivo; ficar com o canvas "vazio" não é.
+ */
+function isAnyTopBlockInViewport(workspace: Blockly.WorkspaceSvg): boolean {
+  try {
+    const metricsManager = workspace.getMetricsManager?.()
+    if (!metricsManager || typeof metricsManager.getViewMetrics !== 'function') return false
+    const view = metricsManager.getViewMetrics(true)
+    const tops = workspace.getTopBlocks(false) as Blockly.BlockSvg[]
+    for (const top of tops) {
+      if (typeof top.getRelativeToSurfaceXY !== 'function') continue
+      const xy = top.getRelativeToSurfaceXY()
+      const size = top.getHeightWidth()
+      if (
+        xy.x < view.left + view.width &&
+        xy.x + size.width > view.left &&
+        xy.y < view.top + view.height &&
+        xy.y + size.height > view.top
+      ) {
+        return true
+      }
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Traz o conteúdo para a viewport quando NENHUM bloco está visível após um
+ * load. É a raiz do "blocos não renderizam ao reabrir": o x/y salvo é a fonte
+ * da verdade do layout, mas um arranjo salvo longe da origem renderizava FORA
+ * da tela — canvas aparentemente vazio até a Ponte reconstruir perto da origem.
+ * Não é guiado por listener (só pós-load), então não briga com o scroll do
+ * aluno nem entra em loop.
+ */
+function scrollWorkspaceIntoViewIfHidden(workspace: Blockly.WorkspaceSvg): void {
+  try {
+    if (workspace.getTopBlocks(false).length === 0) return
+    if (isAnyTopBlockInViewport(workspace)) return
+    workspace.scrollCenter()
+  } catch {
+    // Workspace descartado entre o agendamento e o scroll.
+  }
+}
+
+/**
+ * Repaint pós-load ROBUSTO: resize + re-render + recentro-se-invisível, agora e
+ * de novo num double-rAF (depois do layout/fonte assentarem). Substitui o par
+ * resize/rerender que era insuficiente quando o container já estava estável
+ * (o ResizeObserver só re-dispara em MUDANÇA de tamanho — nunca após um load
+ * num painel já dimensionado).
+ */
+function schedulePostLoadRepaint(workspace: Blockly.WorkspaceSvg): void {
+  const repaint = () => {
+    resizeBlocklyWorkspace(workspace)
+    rerenderBlocklyWorkspace(workspace)
+    scrollWorkspaceIntoViewIfHidden(workspace)
+  }
+  repaint()
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => requestAnimationFrame(repaint))
+    return
+  }
+  setTimeout(repaint, 0)
+}
+
 export interface BlocklyPanelProps {
   className?: string
 }
 
 export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
-  const { blocksState, installedExtensions, projectMode } = useProjectStore(
+  const { blocksState, installedExtensions, projectMode, blocksHydration } = useProjectStore(
     useShallow((s) => ({
       blocksState: s.project?.blocksState ?? null,
       installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
       projectMode: s.project?.mode ?? 'blocks',
+      blocksHydration: s.blocksHydration,
     })),
   )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
@@ -443,10 +518,10 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
         // edição em blocos. O guard interno de `regenerateFromBlocks` evita
         // sobrescrever files quando a estrutura visual não mudou.
         regenerateFromBlocks(workspace, { force: true })
-        scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
-        // Conserta blocos com filhos que carregaram COLAPSADOS (o mesmo re-render
-        // que "Organizar blocos" faz), sem o aluno precisar acionar nada.
-        scheduleBlocklyRerender(workspace as Blockly.WorkspaceSvg)
+        // Repaint robusto: resize + re-render (conserta filhos COLAPSADOS, o
+        // mesmo que "Organizar blocos" faz) + recentro quando o arranjo salvo
+        // ficou fora da viewport — agora e num double-rAF.
+        schedulePostLoadRepaint(workspace as Blockly.WorkspaceSvg)
         // Se o painel ainda não tinha tamanho (inject antes do blocksState async),
         // repinta quando o ResizeObserver ver o 1º tamanho real.
         needsPostLoadRenderRef.current = true
@@ -682,11 +757,10 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
           // até a primeira edição.
           regenerateFromBlocks(workspace, { force: true })
           isApplyingStateRef.current = false
-          scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
-          // Fallback sem FINISHED_LOADING: repinta igual ao caminho principal
-          // (senão os blocos com filhos ficam colapsados) + agenda o re-render
-          // pós-tamanho.
-          scheduleBlocklyRerender(workspace as Blockly.WorkspaceSvg)
+          // Fallback sem FINISHED_LOADING: mesmo repaint robusto do caminho
+          // principal (resize + re-render + recentro-se-invisível) + agenda o
+          // re-render pós-tamanho.
+          schedulePostLoadRepaint(workspace as Blockly.WorkspaceSvg)
           needsPostLoadRenderRef.current = true
         })
       } catch (e) {
@@ -726,15 +800,42 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     // mudam (renomear/trocar imagem no painel Imagens não gera evento Blockly —
     // observa a identidade de project.assets no store da instância).
     const detachSpriteThumbs = attachSpriteThumbWatcher(injected)
+    // Nome da animação no bloco "Animar sprite": campo de exibição NÃO
+    // serializado — re-derivado de FROM/TO/FPS + metadado do asset a cada
+    // carga/reconstrução (senão a seleção "some" ao reabrir ou voltar da Ponte).
+    const detachAnimNames = attachAnimationNameWatcher(injected)
     let prevAssets = projectStoreApi.getState().project?.assets
     const unsubscribeAssetsWatch = projectStoreApi.subscribe((state) => {
       const assets = state.project?.assets
       if (assets === prevAssets) return
       prevAssets = assets
       refreshSpriteThumbs(injected)
+      // Assets chegam DEPOIS do blocksState (hidratação async): re-deriva os
+      // nomes quando o metadado do Pinta aparecer/mudar.
+      refreshAnimationNames(injected)
     })
     // Sons de encaixar/desconectar/descartar bloco, servidos pelo host (mesma origem).
     preloadBlockSounds(injected)
+    // Corrida de fonte web: o Blockly mede a geometria dos blocos com a fonte
+    // vigente NO RENDER; se Baloo 2/Nunito ainda não aplicaram, o texto mede
+    // errado e os blocos saem tortos/colapsados — e o load da fonte NÃO muda o
+    // tamanho do container, então o ResizeObserver nunca socorre. Um re-render
+    // ÚNICO quando as fontes assentam (mesmo padrão do ensureFontsReady do
+    // screenshot.ts). `.then` único — não loopa.
+    let fontsRepaintDisposed = false
+    const fontsReady = (document as Document & { fonts?: { ready?: Promise<unknown> } }).fonts
+      ?.ready
+    if (fontsReady && typeof fontsReady.then === 'function') {
+      void fontsReady
+        .then(() => {
+          if (fontsRepaintDisposed) return
+          resizeBlocklyWorkspace(injected)
+          rerenderBlocklyWorkspace(injected)
+        })
+        .catch(() => {
+          // Fontes bloqueadas/indisponíveis: segue com a fonte de fallback.
+        })
+    }
     setWorkspace(injected)
 
     // Handlers POR INSTÂNCIA do colar de blocos (os itens de menu são GLOBAIS):
@@ -758,10 +859,12 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     registerPasteTarget(injected, pasteHandlers)
 
     return () => {
+      fontsRepaintDisposed = true
       if (pendingRegenerationWorkspaceRef.current === injected) {
         pendingRegenerationWorkspaceRef.current = null
       }
       unsubscribeAssetsWatch()
+      detachAnimNames()
       detachSpriteThumbs()
       unregisterPasteTarget(injected)
       injected.dispose()
@@ -776,11 +879,24 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     workspace.setTheme(szThemeFor(studioTheme))
   }, [workspace, studioTheme])
 
+  // Enquanto a partição de blocos hidrata em 2º plano (reabertura rápida), o
+  // canvas está VAZIO mas os blocos salvos estão a caminho: cobre com o overlay
+  // BLOQUEANDO interação — uma edição nessa janela viraria "trabalho vivo" e
+  // (se criasse blocos) descartaria a restauração. O timeout do service
+  // ('pending'→'failed' em ~10s) garante que o overlay nunca prende.
+  const isHydrationPending = blocksState == null && blocksHydration === 'pending'
+
   return (
     <div className={['relative h-full w-full', className].filter(Boolean).join(' ')}>
       <div ref={blocklyRef} className="h-full w-full" />
-      {isLoadingWorkspace && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-sz-bg/60">
+      {(isLoadingWorkspace || isHydrationPending) && (
+        <div
+          aria-busy="true"
+          className={[
+            isHydrationPending ? 'pointer-events-auto' : 'pointer-events-none',
+            'absolute inset-0 z-10 flex items-center justify-center bg-sz-bg/60',
+          ].join(' ')}
+        >
           <Spinner />
         </div>
       )}

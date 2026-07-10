@@ -1,0 +1,1 @@
+ALTER TABLE "catalog"."offers" ADD COLUMN "billing_interval_months" integer;
