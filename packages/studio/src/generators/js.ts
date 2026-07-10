@@ -71,6 +71,8 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
+    case 'imageOnError':
+    case 'requestFrameDo':
     case 'setTimeout':
     case 'setInterval':
     case 'setTimeoutSeconds':
@@ -1539,6 +1541,26 @@ function compileStatementCode(
       )
       const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
       return `${pad}${target}.onload = () => {\n${body}\n${pad}};`
+    }
+    case 'imageOnError': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      return `${pad}${target}.onerror = () => {\n${body}\n${pad}};`
+    }
+    case 'requestFrameDo': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const param = stmt.param ? identifiers.get(stmt.param) : ''
+      return `${pad}requestAnimationFrame((${param}) => {\n${body}\n${pad}});`
     }
     case 'return':
       return stmt.value === undefined
@@ -3017,7 +3039,12 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.value, names)
       return
     case 'imageOnLoad':
+    case 'imageOnError':
       collectExprIdentifiers(stmt.target, names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'requestFrameDo':
+      if (stmt.param) names.add(stmt.param)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'return':

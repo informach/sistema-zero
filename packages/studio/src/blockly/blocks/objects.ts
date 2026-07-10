@@ -71,6 +71,19 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     tooltip: 'Lê uma propriedade de um objeto. Encaixe o objeto na tomada.',
   },
   {
+    type: 'sz_val_member_get_optional',
+    message0: 'propriedade %1 de %2 (se existir)',
+    args0: [
+      { type: 'field_name_picker', name: 'NAME', text: 'x', kind: 'property' },
+      { type: 'input_value', name: 'OBJ', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Lê uma propriedade só se o objeto existir (não estoura se ele for nada). Vira objeto?.propriedade.',
+  },
+  {
     type: 'sz_js_member_set',
     message0: 'em %1 definir propriedade %2 = %3',
     args0: [

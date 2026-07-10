@@ -506,6 +506,39 @@ embutido: os PNGs do jogo somam ~7,6MB (boss8 = 4MB), muito acima da cota de ass
   da paleta, só existe p/ o round-trip fiel; a criança não precisa dele). Fallback ÚLTIMO no
   `mapExpressionStatement`, só p/ nós de expressão pura (membro/identificador/this).
 
+## Achatar multi-arquivo — lote "Starter Kit P6" (10/07/2026)
+
+Terceiro jogo do Franks Laboratory (o "JS Game Starter Kit P6") buildável 100% no núcleo. É um projeto
+MULTI-ARQUIVO com ES modules (6 `.js` em core/entities/managers/systems) — o editor de BLOCOS trabalha
+sobre UM `script.js`, então o contrato é sobre o jogo ACHATADO (classes concatenadas, sem import/export;
+comportamento idêntico). 5 lacunas de JS fechadas + normalizações de CSS. Prova:
+`starterKitFixture.test.ts` (0 raw, fixpoint textual + de blocos). ⚠️ SEM exemplo embutido (como o V9): o
+`player.png` carrega via `new Image()` + caminho relativo cru que NÃO resolve no modelo de asset do
+preview (o jogo tem fallback de retângulo, seria vitrine fraca) — o fixture é a prova.
+- **Template literal como argumento** (`` `Image loaded: ${name}` ``) → o console.log agora aceita
+  QUALQUER valor simples (`isSimpleValue`), não só string/número/variável: bloco
+  `sz_js_console_log_value` ("Mostrar no console %1", soquete VALUE). 'iniciante'.
+- **Optional chaining de LEITURA** (`obj?.prop`) → bloco `sz_val_member_get_optional` ("propriedade %1
+  de %2 (se existir)"). IR `memberGet{optional:true}`; parser casa `OptionalMemberExpression`; gerador
+  emite `?.`. 'avancado'.
+- **`img.onerror`** (espelho do `img.onload`) → bloco `sz_js_image_onerror` ("se a imagem %1 falhar…").
+  IR `imageOnError{target,body}`. 'intermediario'.
+- **`requestAnimationFrame((t) => {…})`** com arrow (0 ou 1 param) → bloco `sz_canvas_request_frame_do`
+  ("pedir o próximo quadro, com o tempo em %1…"). IR `requestFrameDo{param?,body}`. (Complementa o
+  `sz_canvas_request_frame` do V9, que é p/ RAF com função NOMEADA solta; este é o corpo INLINE.)
+  'intermediario'.
+- **Eventos `contextmenu`/`blur` na janela** → blocos `sz_js_on_context_menu`/`sz_js_on_blur` (espelho
+  de `on_resize`). Kinds no schema + `KNOWN_EVENT_KINDS` + `EVENT_LISTENER_TYPES`/ordem no toolbox.
+  'iniciante'.
+- **Fix de round-trip `x = x - n`**: o bloco "Somar N" (`sz_js_var_increment`, DELTA negativo p/
+  `x -= n` / `x = x - n`) relia SEMPRE como `x = x + -n`; agora, DELTA<0 relê `x = x - |n|` (buildIR) —
+  a forma canônica do gerador → round-trip de BLOCOS byte-estável (o textual já era).
+- **CSS forward-only reordena**: `justify-content: center`/`align-items: center` viram blocos dedicados
+  (flex) que podem REORDENAR as declarações dentro da regra (dedicadas antes) — lossless (mesma
+  renderização). O fixture prova a igualdade SEMÂNTICA do CSS (mapa seletor→declarações via `cssDeclMap`),
+  não byte-a-byte; JS e HTML seguem byte-exatos. `image-rendering` duplicado (pixelated+crisp-edges)
+  colapsa p/ pixelated (IR de CSS é `Record`).
+
 ## Comandos
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)

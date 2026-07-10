@@ -101,6 +101,7 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_canvas_anim_loop',
   'sz_canvas_cancel_anim',
   'sz_canvas_request_frame',
+  'sz_canvas_request_frame_do',
   'sz_canvas_keyboard',
   'sz_input_key_pressed',
   'sz_input_pointer_x',
@@ -177,6 +178,9 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_g2d_random_chance',
   // Inimigos: o ajuste fino por parâmetro é sintonia, não o caminho feliz.
   'sz_g2d_enemy_type_param',
+  // ...e o dano de contato CRU é um getter (como "a vida do sprite"): o caminho
+  // feliz é "Machucar o sprite com o dano", que já usa o valor por dentro.
+  'sz_g2d_enemy_damage',
 ])
 
 const AVANCADO: ReadonlySet<string> = new Set<string>([
@@ -225,6 +229,7 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_val_image',
   'sz_js_new_image',
   'sz_js_image_onload',
+  'sz_js_image_onerror',
   // Valores — dados/estruturas + baixo nível
   'sz_val_device_pixel_ratio',
   'sz_val_system_dark',
@@ -279,6 +284,7 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_val_object_op',
   'sz_val_index_get',
   'sz_val_member_get',
+  'sz_val_member_get_optional',
   'sz_js_member_set',
   'sz_js_index_set',
   'sz_val_method_on',

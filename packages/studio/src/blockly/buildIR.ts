@@ -688,6 +688,13 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
         name: f(block, 'NAME'),
       }
+    case 'sz_val_member_get_optional':
+      return {
+        type: 'memberGet',
+        object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
+        name: f(block, 'NAME'),
+        optional: true,
+      }
     case 'sz_val_method_on':
       return {
         type: 'memberCallExpr',
@@ -1692,6 +1699,28 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'DO', seen),
         },
       }
+    case 'sz_js_on_context_menu':
+      return {
+        kind: 'js',
+        value: {
+          type: 'event',
+          target: 'window',
+          targetKind: 'window',
+          event: 'contextmenu',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_on_blur':
+      return {
+        kind: 'js',
+        value: {
+          type: 'event',
+          target: 'window',
+          targetKind: 'window',
+          event: 'blur',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
     case 'sz_js_on_fullscreen_change':
       return {
         kind: 'js',
@@ -1746,6 +1775,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return {
         kind: 'js',
         value: { type: 'consoleLog', value: { type: 'var', name: f(block, 'NAME') } },
+      }
+    case 'sz_js_console_log_value':
+      return {
+        kind: 'js',
+        value: { type: 'consoleLog', value: exprInput(block, 'VALUE', { type: 'str', value: '' }) },
       }
     case 'sz_js_alert_text':
       return {
@@ -1889,20 +1923,26 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
         },
       }
-    case 'sz_js_var_increment':
+    case 'sz_js_var_increment': {
+      // DELTA negativo relê como `x = x - |n|` (não `x = x + -n`): é a forma
+      // canônica que o gerador emite p/ `x -= n`/`x = x - n`, então o
+      // round-trip de blocos fica byte-estável com o caminho textual.
+      const delta = fn(block, 'DELTA', 1)
+      const name = f(block, 'NAME')
       return {
         kind: 'js',
         value: {
           type: 'assign',
-          name: f(block, 'NAME'),
+          name,
           value: {
             type: 'binop',
-            op: '+',
-            left: { type: 'var', name: f(block, 'NAME') },
-            right: { type: 'num', value: fn(block, 'DELTA', 1) },
+            op: delta < 0 ? '-' : '+',
+            left: { type: 'var', name },
+            right: { type: 'num', value: delta < 0 ? -delta : delta },
           },
         },
       }
+    }
     case 'sz_js_if_else': {
       // Ramos "senão se" dinâmicos do mutator: lê ELSEIF_COND{i}/ELSEIF_THEN{i}
       // enquanto existirem; o "senão" (ELSE) só entra se o input existir.
@@ -2713,6 +2753,24 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'DO', seen),
         },
       }
+    case 'sz_js_image_onerror':
+      return {
+        kind: 'js',
+        value: {
+          type: 'imageOnError',
+          target: exprInput(block, 'TARGET', { type: 'var', name: 'img' }),
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_canvas_request_frame_do':
+      return {
+        kind: 'js',
+        value: {
+          type: 'requestFrameDo',
+          ...(f(block, 'PARAM') ? { param: f(block, 'PARAM') } : {}),
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
     case 'sz_js_index_set':
       return {
         kind: 'js',
@@ -2745,7 +2803,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_js_expr_statement':
       return {
         kind: 'js',
-        value: { type: 'exprStatement', value: exprInput(block, 'VALUE', { type: 'num', value: 0 }) },
+        value: {
+          type: 'exprStatement',
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
+        },
       }
     case 'sz_js_return':
       return {

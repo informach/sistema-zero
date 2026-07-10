@@ -142,6 +142,20 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
       'Agenda a função para rodar no próximo quadro (para fazer o laço do jogo à mão, com o tempo entre quadros). Vira requestAnimationFrame(função).',
   },
   {
+    type: 'sz_canvas_request_frame_do',
+    message0: 'pedir o próximo quadro, com o tempo em %1 %2 fazer %3',
+    args0: [
+      { type: 'field_input', name: 'PARAM', text: 't' },
+      { type: 'input_dummy' },
+      { type: 'input_statement', name: 'DO', check: 'JSStmt' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" no próximo quadro, guardando o tempo (em milissegundos) na variável escolhida — útil para o laço do jogo à mão. Vira requestAnimationFrame((t) => { ... }).',
+  },
+  {
     type: 'sz_canvas_keyboard',
     message0: 'Ler teclado simples em variável %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'teclas' }],
@@ -204,6 +218,20 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Roda os blocos de dentro quando a imagem termina de carregar (img.onload).',
+  },
+  {
+    // Roda o corpo se a imagem FALHAR ao carregar (`img.onerror = () => {…}`).
+    type: 'sz_js_image_onerror',
+    message0: 'se a imagem %1 falhar %2 fazer %3',
+    args0: [
+      { type: 'input_value', name: 'TARGET', check: 'JSValue' },
+      { type: 'input_dummy' },
+      { type: 'input_statement', name: 'DO', check: 'JSStmt' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Roda os blocos de dentro se a imagem NÃO conseguir carregar (img.onerror).',
   },
   {
     type: 'sz_canvas_save',
@@ -821,7 +849,13 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
   {
     name: '🖼️ Imagem',
     colour: '#1aa870',
-    types: ['sz_val_image', 'sz_js_new_image', 'sz_js_image_onload', 'sz_canvas_draw_image'],
+    types: [
+      'sz_val_image',
+      'sz_js_new_image',
+      'sz_js_image_onload',
+      'sz_js_image_onerror',
+      'sz_canvas_draw_image',
+    ],
   },
   {
     name: '🎞️ Animação & entrada',
@@ -830,6 +864,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
       'sz_canvas_anim_loop',
       'sz_canvas_cancel_anim',
       'sz_canvas_request_frame',
+      'sz_canvas_request_frame_do',
       'sz_canvas_keyboard',
       'sz_input_key_pressed',
       'sz_input_pointer_x',

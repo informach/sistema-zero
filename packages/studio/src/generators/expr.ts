@@ -525,7 +525,7 @@ export function compileExpr(
       return `{ ${parts} }`
     }
     case 'memberGet':
-      return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.name)}`
+      return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}${expr.optional ? '?.' : '.'}${normalizeIdentifier(expr.name)}`
     case 'memberCallExpr': {
       const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.method)}(${args})`

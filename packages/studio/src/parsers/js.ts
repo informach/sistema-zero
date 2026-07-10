@@ -161,6 +161,8 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'load',
   'resize',
   'fullscreenchange',
+  'contextmenu',
+  'blur',
 ])
 
 function snippet(source: string, node: Node): string {
@@ -937,6 +939,10 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     if (arg.type === 'Identifier') {
       return { type: 'consoleLog', value: { type: 'var', name: arg.name } }
     }
+    // Qualquer OUTRO valor representável (juntar texto `${}`, conta, objeto,
+    // this.prop…) → console.log com soquete de valor. Não-representável → raw.
+    const value = toExpr(arg, ctx)
+    if (isSimpleValue(value)) return { type: 'consoleLog', value: value as JSExpr }
     return asRaw(source, node)
   }
 
@@ -1076,6 +1082,24 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       const target = toExpr(expr.left.object, ctx)
       if (target && isSimpleValue(target)) {
         return { type: 'imageOnLoad', target, body: bodyOfFn(expr.right, source, ctx) }
+      }
+      return asRaw(source, node)
+    }
+    // <img>.onerror = () => {…} → imageOnError ("se a imagem falhar, fazer …").
+    // Mesma regra do onload: só a arrow/função SEM parâmetros.
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.property?.type === 'Identifier' &&
+      expr.left.property.name === 'onerror' &&
+      (expr.right?.type === 'ArrowFunctionExpression' ||
+        expr.right?.type === 'FunctionExpression') &&
+      (expr.right.params?.length ?? 0) === 0 &&
+      !isGlobalObject(expr.left.object)
+    ) {
+      const target = toExpr(expr.left.object, ctx)
+      if (target && isSimpleValue(target)) {
+        return { type: 'imageOnError', target, body: bodyOfFn(expr.right, source, ctx) }
       }
       return asRaw(source, node)
     }
@@ -1305,6 +1329,29 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     expr.arguments[0]?.type === 'Identifier'
   ) {
     return { type: 'requestFrame', fn: expr.arguments[0].name as string }
+  }
+  // requestAnimationFrame((t) => {…}) — corpo inline com o tempo do quadro. Aceita
+  // 0 ou 1 parâmetro Identifier; corpo conciso ou em bloco (bodyOfFn cobre os dois).
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.callee.name === 'requestAnimationFrame' &&
+    expr.arguments?.length === 1 &&
+    (expr.arguments[0]?.type === 'ArrowFunctionExpression' ||
+      expr.arguments[0]?.type === 'FunctionExpression')
+  ) {
+    const fn = expr.arguments[0]
+    const params = fn.params ?? []
+    const paramsOk =
+      params.length === 0 || (params.length === 1 && params[0]?.type === 'Identifier')
+    if (paramsOk) {
+      const param = params.length === 1 ? (params[0].name as string) : undefined
+      return {
+        type: 'requestFrameDo',
+        ...(param ? { param } : {}),
+        body: bodyOfFn(fn, source, ctx),
+      }
+    }
   }
   // cond ? A : B; (ternário usado como STATEMENT, com atribuições nos ramos) →
   // if (cond) { A } else { B }. Normalização didática (comportamento idêntico); a
@@ -5462,6 +5509,21 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
       if (!args.every(isSimpleValue)) return null
       return { type: 'newExpr', className: node.callee.name, args: args as JSExpr[] }
+    }
+    // `objeto?.prop` — leitura opcional (não estoura se o objeto for null). Só o
+    // caso GERAL (sem os matchers específicos de MemberExpression, que são para
+    // acessos NÃO-opcionais). Ex.: `this.images[name]?.loaded`.
+    case 'OptionalMemberExpression': {
+      if (node.computed || node.property?.type !== 'Identifier') return null
+      if (isGlobalObject(node.object)) return null
+      const object = toExpr(node.object, ctx)
+      if (!isSimpleValue(object)) return null
+      return {
+        type: 'memberGet',
+        object: object as JSExpr,
+        name: node.property.name,
+        ...(node.optional ? { optional: true } : {}),
+      }
     }
     case 'MemberExpression': {
       // Apelido de evento na BASE do membro (`e.key`, `e.clientX`, `e.target`):

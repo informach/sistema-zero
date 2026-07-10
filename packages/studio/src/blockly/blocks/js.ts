@@ -74,6 +74,17 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
   },
   {
+    type: 'sz_js_console_log_value',
+    message0: 'Mostrar no console %1',
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Mostra qualquer valor no console (junta texto com "juntar", um objeto, uma conta…). Vira console.log(valor).',
+  },
+  {
     type: 'sz_js_alert_text',
     message0: 'Mostrar aviso com texto %1',
     args0: [{ type: 'field_input', name: 'VALUE', text: 'Olá!' }],
@@ -507,6 +518,7 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_js_console_log_text',
       'sz_js_console_log_var',
+      'sz_js_console_log_value',
       'sz_js_alert_text',
       'sz_js_alert_var',
     ],

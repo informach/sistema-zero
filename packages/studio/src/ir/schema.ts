@@ -296,7 +296,8 @@ export type JSExpr =
   // Objeto literal genérico ({ chave: valor, ... }).
   | (JSExprCommon & { type: 'objectLiteral'; entries: Array<{ key: string; value: JSExpr }> })
   // Leitura de propriedade de qualquer valor (objeto = expressão; cobre aninhamento como this.velocidade.x).
-  | (JSExprCommon & { type: 'memberGet'; object: JSExpr; name: string })
+  // `optional` = acesso com `?.` (não estoura se o objeto for null/undefined).
+  | (JSExprCommon & { type: 'memberGet'; object: JSExpr; name: string; optional?: boolean })
   // Chamada de método em forma de valor sobre qualquer objeto (object.metodo(args)).
   | (JSExprCommon & { type: 'memberCallExpr'; object: JSExpr; method: string; args: JSExpr[] })
   // Instanciar classe em forma de VALOR: new Classe(args) numa tomada (argumento de
@@ -653,7 +654,13 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       entries: z.array(z.object({ key: irText(), value: JSExprSchema })),
       ...idField,
     }),
-    z.object({ type: z.literal('memberGet'), object: JSExprSchema, name: irText(), ...idField }),
+    z.object({
+      type: z.literal('memberGet'),
+      object: JSExprSchema,
+      name: irText(),
+      optional: z.boolean().optional(),
+      ...idField,
+    }),
     z.object({
       type: z.literal('memberCallExpr'),
       object: JSExprSchema,
@@ -973,6 +980,10 @@ const eventKindSchema = z.enum([
   'resize',
   // Entrou/saiu da tela cheia (Fullscreen API). Evento global no documento.
   'fullscreenchange',
+  // Menu de contexto (botão direito) e perda de foco da janela — usados para
+  // zerar o estado do teclado em jogos.
+  'contextmenu',
+  'blur',
 ])
 export type EventKind = z.infer<typeof eventKindSchema>
 
@@ -2199,6 +2210,10 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'indexSet'; object: JSExpr; index: JSExpr; value: JSExpr })
   // Roda o corpo quando uma imagem termina de carregar (`img.onload = () => {…}`).
   | (JSStatementCommon & { type: 'imageOnLoad'; target: JSExpr; body: JSStatement[] })
+  // Roda o corpo se a imagem FALHAR ao carregar (`img.onerror = () => {…}`).
+  | (JSStatementCommon & { type: 'imageOnError'; target: JSExpr; body: JSStatement[] })
+  // Pede o próximo quadro rodando um corpo inline com o tempo (`requestAnimationFrame((t) => {…})`).
+  | (JSStatementCommon & { type: 'requestFrameDo'; param?: string; body: JSStatement[] })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -4091,6 +4106,18 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('imageOnLoad'),
       target: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('imageOnError'),
+      target: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('requestFrameDo'),
+      param: irText().optional(),
       body: z.array(JSStatementSchema),
       ...idField,
     }),

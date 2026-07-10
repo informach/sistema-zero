@@ -776,6 +776,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         load: 'sz_js_on_load',
         resize: 'sz_js_on_resize',
         fullscreenchange: 'sz_js_on_fullscreen_change',
+        contextmenu: 'sz_js_on_context_menu',
+        blur: 'sz_js_on_blur',
       }
       const globalType = globalMap[stmt.event]
       if (globalType) {
@@ -807,6 +809,9 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (text !== null) return block('sz_js_console_log_text', { VALUE: text }, {}, stmt.__id)
       const name = varExpr(stmt.value)
       if (name) return block('sz_js_console_log_var', { NAME: name }, {}, stmt.__id)
+      // Qualquer outro valor (juntar texto, objeto, conta…) vai no soquete.
+      const value = exprToValueBlock(stmt.value)
+      if (value) return block('sz_js_console_log_value', {}, {}, stmt.__id, { VALUE: value })
       return rawJSBlock(stmt)
     }
     case 'alert': {
@@ -3012,6 +3017,20 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         TARGET: target,
       })
     }
+    case 'imageOnError': {
+      const target = exprToValueBlock(stmt.target)
+      if (!target) return rawJSBlock(stmt)
+      return block('sz_js_image_onerror', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
+        TARGET: target,
+      })
+    }
+    case 'requestFrameDo':
+      return block(
+        'sz_canvas_request_frame_do',
+        { PARAM: stmt.param ?? '' },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'indexSet': {
       const obj = exprToValueBlock(stmt.object)
       const index = exprToValueBlock(stmt.index)
@@ -3634,7 +3653,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
     case 'memberGet': {
       const obj = exprToValueBlock(expr.object)
       if (!obj) return null
-      return block('sz_val_member_get', { NAME: expr.name }, {}, expr.__id, { OBJ: obj })
+      const type = expr.optional ? 'sz_val_member_get_optional' : 'sz_val_member_get'
+      return block(type, { NAME: expr.name }, {}, expr.__id, { OBJ: obj })
     }
     case 'memberCallExpr': {
       const obj = exprToValueBlock(expr.object)
