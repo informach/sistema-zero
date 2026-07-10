@@ -1730,6 +1730,8 @@ function isSupportedBlocklyBlockExtraState(blockType: string, raw: unknown): boo
       return isSupportedParamsExtraState(raw)
     case 'sz_js_class':
       return isSupportedExtendsExtraState(raw)
+    case 'sz_js_if_else':
+      return isSupportedIfElseExtraState(raw)
     case 'sz_canvas_anim_loop':
       return isSupportedHandleExtraState(raw)
     default:
@@ -1755,6 +1757,30 @@ function isSupportedItemsExtraState(raw: unknown): boolean {
     raw.items >= 0 &&
     raw.items <= MAX_MUTATOR_ITEMS
   )
+}
+
+/**
+ * `sz_js_if_else` (mutator do "Se/senão"): `{ elseIf?: N, hasElse?: true }` —
+ * a forma exata que `workspaceState.ts` emite p/ cadeias senão-se/senão. ⚠️ Sem
+ * este caso, TODO projeto com "senão" caía no default `false` do switch e o
+ * tudo-ou-nada descartava a partição INTEIRA ao reabrir — o modo Blocos abria
+ * vazio até a Ponte reconstruir do código (era A causa de dados do "jogo reabre
+ * sem blocos": jogo quase sempre tem se/senão).
+ */
+function isSupportedIfElseExtraState(raw: unknown): boolean {
+  if (!isPlainUnknownRecord(raw)) return false
+  if (!objectHasOnlyKeys(raw, ['elseIf', 'hasElse'])) return false
+  if (raw.elseIf != null) {
+    if (
+      typeof raw.elseIf !== 'number' ||
+      !Number.isInteger(raw.elseIf) ||
+      raw.elseIf < 0 ||
+      raw.elseIf > MAX_MUTATOR_ITEMS
+    ) {
+      return false
+    }
+  }
+  return raw.hasElse == null || typeof raw.hasElse === 'boolean'
 }
 
 function isSupportedParamsExtraState(raw: unknown): boolean {
