@@ -116,6 +116,9 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:spriteH'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:centerX'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:centerY'; spriteVar: string })
+  // Tamanho do sprite que está sendo desenhado por uma figura (v0.23.0).
+  | (JSExprCommon & { type: 'g2d:shapeW' })
+  | (JSExprCommon & { type: 'g2d:shapeH' })
   | (JSExprCommon & { type: 'g2d:spriteVx'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:spriteVy'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:spriteSpeed'; spriteVar: string })
@@ -391,6 +394,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:spriteH'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:centerX'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:centerY'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:shapeW'), ...idField }),
+    z.object({ type: z.literal('g2d:shapeH'), ...idField }),
     z.object({ type: z.literal('g2d:spriteVx'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:spriteVy'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:spriteSpeed'), spriteVar: irText(), ...idField }),
@@ -1514,6 +1519,66 @@ export type JSStatement =
       image: string
     })
   | (JSStatementCommon & { type: 'g2d:setImage'; spriteVar: string; image: string })
+  // Figuras: sprite desenhado por código (v0.23.0). A figura é um corpo de
+  // desenho nomeado; os paint_* têm ctxVar fixo (o param 'ctx' da figura).
+  | (JSStatementCommon & { type: 'g2d:defineShape'; shapeName: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'g2d:createShapeSprite'
+      varName: string
+      shapeName: string
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:setShape'; spriteVar: string; shapeName: string })
+  | (JSStatementCommon & {
+      type: 'g2d:paintRect'
+      ctxVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:paintCircle'
+      ctxVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      r: number | JSExpr
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:paintEllipse'
+      ctxVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:paintTriangle'
+      ctxVar: string
+      x1: number | JSExpr
+      y1: number | JSExpr
+      x2: number | JSExpr
+      y2: number | JSExpr
+      x3: number | JSExpr
+      y3: number | JSExpr
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:paintLine'
+      ctxVar: string
+      x1: number | JSExpr
+      y1: number | JSExpr
+      x2: number | JSExpr
+      y2: number | JSExpr
+      color: string
+      width: number | JSExpr
+    })
   | (JSStatementCommon & {
       type: 'g2d:loadSpritesheet'
       varName: string
@@ -1634,6 +1699,9 @@ export type JSStatement =
       solid: string
       grid: string
     })
+  // Mapa PRONTO do Pinta/fatiador: tudo (grade/peças/sólidos) vem do metadado
+  // do asset em runtime (__SZGAME_ASSET_META) — o bloco só aponta o desenho.
+  | (JSStatementCommon & { type: 'g2d:createTileMapFromAsset'; varName: string; image: string })
   | (JSStatementCommon & {
       type: 'g2d:drawTileMap'
       mapVar: string
@@ -3045,6 +3113,80 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:defineShape'),
+      shapeName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createShapeSprite'),
+      varName: irText(),
+      shapeName: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setShape'),
+      spriteVar: irText(),
+      shapeName: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:paintRect'),
+      ctxVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:paintCircle'),
+      ctxVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      r: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:paintEllipse'),
+      ctxVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:paintTriangle'),
+      ctxVar: irText(),
+      x1: z.union([JSExprSchema, z.number()]),
+      y1: z.union([JSExprSchema, z.number()]),
+      x2: z.union([JSExprSchema, z.number()]),
+      y2: z.union([JSExprSchema, z.number()]),
+      x3: z.union([JSExprSchema, z.number()]),
+      y3: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:paintLine'),
+      ctxVar: irText(),
+      x1: z.union([JSExprSchema, z.number()]),
+      y1: z.union([JSExprSchema, z.number()]),
+      x2: z.union([JSExprSchema, z.number()]),
+      y2: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      width: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:loadSpritesheet'),
       varName: irText(),
       image: irText(),
@@ -3207,6 +3349,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       tile: z.union([JSExprSchema, z.number()]),
       solid: irText(),
       grid: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:createTileMapFromAsset'),
+      varName: irText(),
+      image: irText(),
       ...idField,
     }),
     z.object({
@@ -4414,6 +4562,14 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:onPointer',
   'g2d:createImageSprite',
   'g2d:setImage',
+  'g2d:defineShape',
+  'g2d:createShapeSprite',
+  'g2d:setShape',
+  'g2d:paintRect',
+  'g2d:paintCircle',
+  'g2d:paintEllipse',
+  'g2d:paintTriangle',
+  'g2d:paintLine',
   'g2d:loadSpritesheet',
   'g2d:animateSprite',
   'g2d:setStateAnim',
@@ -4437,6 +4593,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:emitParticles',
   'g2d:drawParticles',
   'g2d:createTileMap',
+  'g2d:createTileMapFromAsset',
   'g2d:drawTileMap',
   'g2d:tileMapCollide',
   'g2d:createGroup',

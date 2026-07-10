@@ -366,6 +366,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:centerX', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_center_y':
       return { type: 'g2d:centerY', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_shape_w':
+      return { type: 'g2d:shapeW' }
+    case 'sz_g2d_shape_h':
+      return { type: 'g2d:shapeH' }
     case 'sz_g2d_sprite_vx':
       return { type: 'g2d:spriteVx', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_vy':
@@ -3243,6 +3247,113 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g2d:setImage', spriteVar: f(block, 'SPRITE'), image: f(block, 'IMAGE') },
       }
+    case 'sz_g2d_define_shape':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:defineShape',
+          shapeName: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_create_shape_sprite':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:createShapeSprite',
+          varName: f(block, 'SPRITE'),
+          shapeName: f(block, 'SHAPE'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          w: exprInput(block, 'W', { type: 'num', value: 32 }),
+          h: exprInput(block, 'H', { type: 'num', value: 32 }),
+        },
+      }
+    case 'sz_g2d_set_shape':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setShape',
+          spriteVar: f(block, 'SPRITE'),
+          shapeName: f(block, 'SHAPE'),
+        },
+      }
+    // paint_*: ctxVar FIXO 'ctx' (o parâmetro da figura) — sem campo visível.
+    case 'sz_g2d_paint_rect':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintRect',
+          ctxVar: 'ctx',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 20 }),
+          h: exprInput(block, 'H', { type: 'num', value: 20 }),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_paint_circle':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintCircle',
+          ctxVar: 'ctx',
+          x: exprInput(block, 'X', { type: 'num', value: 16 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 16 }),
+          r: exprInput(block, 'R', { type: 'num', value: 10 }),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_paint_ellipse':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintEllipse',
+          ctxVar: 'ctx',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 24 }),
+          h: exprInput(block, 'H', { type: 'num', value: 16 }),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_paint_triangle':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintTriangle',
+          ctxVar: 'ctx',
+          x1: exprInput(block, 'X1', { type: 'num', value: 16 }),
+          y1: exprInput(block, 'Y1', { type: 'num', value: 0 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 0 }),
+          y2: exprInput(block, 'Y2', { type: 'num', value: 28 }),
+          x3: exprInput(block, 'X3', { type: 'num', value: 32 }),
+          y3: exprInput(block, 'Y3', { type: 'num', value: 28 }),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_paint_line':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:paintLine',
+          ctxVar: 'ctx',
+          x1: exprInput(block, 'X1', { type: 'num', value: 0 }),
+          y1: exprInput(block, 'Y1', { type: 'num', value: 0 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 24 }),
+          y2: exprInput(block, 'Y2', { type: 'num', value: 24 }),
+          color: f(block, 'COLOR'),
+          width: exprInput(block, 'WIDTH', { type: 'num', value: 2 }),
+        },
+      }
     case 'sz_g2d_load_spritesheet':
       seen.add('game-2d')
       return {
@@ -3491,6 +3602,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           tile: exprInput(block, 'TILE', { type: 'num', value: 32 }),
           solid: f(block, 'SOLID'),
           grid: f(block, 'GRID'),
+        },
+      }
+    case 'sz_g2d_create_tilemap_from_asset':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:createTileMapFromAsset',
+          varName: f(block, 'NAME'),
+          image: f(block, 'IMAGE'),
         },
       }
     case 'sz_g2d_draw_tilemap':

@@ -56,6 +56,12 @@ export interface BuildPreviewDocInput {
    */
   assets?: Record<string, string>
   /**
+   * Manifesto de METADADOS de preview dos assets (`assetMetaManifest` do core —
+   * hoje só `tilemap`), semeado em `window.__SZGAME_ASSET_META` no MESMO script
+   * do assetsBridge. Ausente/vazio = saída idêntica à de antes.
+   */
+  assetsMeta?: Record<string, { tilemap: import('#core').ProjectTilemapMeta }>
+  /**
    * Módulos ESM de extensões instaladas (`specifier → URL`, ex.:
    * `{ three: 'https://esm.sh/three@0.180.0' }`). Entram no importmap e suas
    * origens são liberadas no `script-src` da CSP.
@@ -255,7 +261,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // não há assets (mantém o doc enxuto e idêntico para jogos legados só-fillRect).
   const assetsBridgeTag =
     input.assets && Object.keys(input.assets).length > 0
-      ? scriptTag(buildAssetsRuntime(input.assets))
+      ? scriptTag(buildAssetsRuntime(input.assets, input.assetsMeta))
       : ''
 
   return `<!doctype html>

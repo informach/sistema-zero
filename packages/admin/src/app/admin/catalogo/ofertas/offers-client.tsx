@@ -38,6 +38,11 @@ const PRICING_MODE_LABELS: Record<string, string> = {
   subscription: 'Assinatura (recorrente)',
 }
 
+const BILLING_INTERVALS = [
+  { value: '1', label: 'Mensal (cobra todo mês)' },
+  { value: '12', label: 'Anual (cobra 1x ao ano)' },
+] as const
+
 interface FormState {
   productId: string
   code: string
@@ -46,6 +51,9 @@ interface FormState {
   price: string
   compareAt: string
   pricingMode: string
+  billingInterval: string
+  altOfferSlug: string
+  altOfferLabel: string
   installmentsMax: string
   guaranteeDays: string
   maxProfiles: string
@@ -61,6 +69,9 @@ const EMPTY_FORM: FormState = {
   price: '',
   compareAt: '',
   pricingMode: 'one_time',
+  billingInterval: '',
+  altOfferSlug: '',
+  altOfferLabel: '',
   installmentsMax: '',
   guaranteeDays: '',
   maxProfiles: '',
@@ -76,13 +87,24 @@ function optInt(v: string): number | null {
   return Number.isFinite(n) && n > 0 ? n : null
 }
 
+/** Slug da oferta irmã do alternador (espelha o pattern do DTO do catálogo). */
+const ALT_OFFER_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
 /**
- * Mescla o `maxProfiles` no `content` existente da oferta SEM apagar os demais campos
- * (badge/cta/cupom). `max` nulo → remove o teto. Objeto vazio → `null`.
+ * Mescla `maxProfiles` e `altOffer` no `content` existente da oferta SEM apagar os
+ * demais campos (badge/cta/cupom). Valor nulo → remove o campo. Objeto vazio → `null`.
  */
-function mergeOfferContent(base: OfferContent | null, max: number | null): OfferContent | null {
-  const { maxProfiles: _drop, ...rest } = base ?? {}
-  const merged: OfferContent = max != null ? { ...rest, maxProfiles: max } : rest
+function mergeOfferContent(
+  base: OfferContent | null,
+  max: number | null,
+  altOffer: { slug: string; label?: string } | null,
+): OfferContent | null {
+  const { maxProfiles: _dropMax, altOffer: _dropAlt, ...rest } = base ?? {}
+  const merged: OfferContent = {
+    ...rest,
+    ...(max != null ? { maxProfiles: max } : {}),
+    ...(altOffer ? { altOffer } : {}),
+  }
   return Object.keys(merged).length > 0 ? merged : null
 }
 
@@ -173,6 +195,9 @@ export function OffersClient() {
       price: (o.priceCents / 100).toFixed(2),
       compareAt: o.compareAtPriceCents != null ? (o.compareAtPriceCents / 100).toFixed(2) : '',
       pricingMode: o.pricingMode,
+      billingInterval: o.billingIntervalMonths != null ? String(o.billingIntervalMonths) : '',
+      altOfferSlug: o.content?.altOffer?.slug ?? '',
+      altOfferLabel: o.content?.altOffer?.label ?? '',
       installmentsMax: o.installmentsMax != null ? String(o.installmentsMax) : '',
       guaranteeDays: o.guaranteeDays != null ? String(o.guaranteeDays) : '',
       maxProfiles: o.content?.maxProfiles != null ? String(o.content.maxProfiles) : '',
@@ -197,6 +222,22 @@ export function OffersClient() {
       return
     }
     const compareAtCents = form.compareAt.trim() ? reaisToCents(form.compareAt) : null
+    const isSubscription = form.pricingMode === 'subscription'
+    // Assinatura exige a periodicidade (o payments monta o plano Efí a partir dela).
+    const billingIntervalMonths = isSubscription ? optInt(form.billingInterval) : null
+    if (isSubscription && billingIntervalMonths == null) {
+      toast.error('Assinatura exige o intervalo de cobrança (mensal ou anual).')
+      return
+    }
+    // Oferta irmã do alternador mensal↔anual (só faz sentido em assinatura).
+    const altSlug = form.altOfferSlug.trim().toLowerCase()
+    if (altSlug && !ALT_OFFER_SLUG_RE.test(altSlug)) {
+      toast.error('Slug da oferta alternativa inválido (use letras minúsculas, números e hífens).')
+      return
+    }
+    const altLabel = form.altOfferLabel.trim()
+    const altOffer =
+      isSubscription && altSlug ? { slug: altSlug, ...(altLabel ? { label: altLabel } : {}) } : null
     // Teto de perfis (kids) da OFERTA, clampado 1..50; mesclado no `content` sem apagar o resto.
     const maxP = optInt(form.maxProfiles)
     const maxProfiles = maxP ? Math.min(maxP, MAX_KIDS_PROFILES) : null
@@ -210,14 +251,17 @@ export function OffersClient() {
           priceCents,
           compareAtPriceCents: compareAtCents,
           pricingMode: form.pricingMode,
-          installmentsMax: optInt(form.installmentsMax),
+          billingIntervalMonths,
+          // Assinatura recorrente não parcela (a Efí cobra 1x por ciclo).
+          installmentsMax: isSubscription ? null : optInt(form.installmentsMax),
           guaranteeDays: optInt(form.guaranteeDays),
-          content: mergeOfferContent(editing.content, maxProfiles),
+          content: mergeOfferContent(editing.content, maxProfiles, altOffer),
           status: form.status,
           items,
         })
         toast.success('Oferta atualizada.')
       } else {
+        const content = mergeOfferContent(null, maxProfiles, altOffer)
         await apiSend('/api/catalog/offers', 'POST', {
           productId: form.productId,
           code: form.code,
@@ -226,11 +270,12 @@ export function OffersClient() {
           priceCents,
           ...(compareAtCents != null ? { compareAtPriceCents: compareAtCents } : {}),
           pricingMode: form.pricingMode,
-          ...(optInt(form.installmentsMax)
+          ...(billingIntervalMonths != null ? { billingIntervalMonths } : {}),
+          ...(!isSubscription && optInt(form.installmentsMax)
             ? { installmentsMax: optInt(form.installmentsMax) }
             : {}),
           ...(optInt(form.guaranteeDays) ? { guaranteeDays: optInt(form.guaranteeDays) } : {}),
-          ...(maxProfiles ? { content: { maxProfiles } } : {}),
+          ...(content ? { content } : {}),
           status: form.status,
           ...(items.length ? { items } : {}),
         })
@@ -317,7 +362,18 @@ export function OffersClient() {
                     <div className="text-xs text-muted-foreground">{o.slug}</div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{o.productName ?? '—'}</TableCell>
-                  <TableCell>{formatCents(o.priceCents, o.currency)}</TableCell>
+                  <TableCell>
+                    {formatCents(o.priceCents, o.currency)}
+                    {o.pricingMode === 'subscription' ? (
+                      <span className="text-xs text-muted-foreground">
+                        {o.billingIntervalMonths === 12
+                          ? '/ano'
+                          : o.billingIntervalMonths === 1
+                            ? '/mês'
+                            : ' (assinatura)'}
+                      </span>
+                    ) : null}
+                  </TableCell>
                   <TableCell>
                     {o.isAvailable ? (
                       <Badge variant="success">Sim</Badge>
@@ -490,19 +546,69 @@ export function OffersClient() {
               </Select>
             </Field>
           </div>
+          {form.pricingMode === 'subscription' ? (
+            <>
+              <Field
+                label="Intervalo de cobrança"
+                htmlFor="billingInterval"
+                tooltip="Periodicidade da assinatura: mensal cobra todo mês, anual cobra 1x ao ano. Obrigatório para vender assinatura."
+              >
+                <Select
+                  id="billingInterval"
+                  value={form.billingInterval}
+                  onChange={(e) => setForm((f) => ({ ...f, billingInterval: e.target.value }))}
+                >
+                  <option value="">Selecione…</option>
+                  {BILLING_INTERVALS.map((i) => (
+                    <option key={i.value} value={i.value}>
+                      {i.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="Oferta alternativa (slug, opcional)"
+                  htmlFor="altOfferSlug"
+                  tooltip="Slug da oferta IRMÃ do alternador mensal↔anual no checkout (ex.: a mensal aponta a anual). Preencha nos DOIS sentidos, um em cada oferta."
+                >
+                  <Input
+                    id="altOfferSlug"
+                    placeholder="ex.: clube-anual"
+                    value={form.altOfferSlug}
+                    onChange={(e) => setForm((f) => ({ ...f, altOfferSlug: e.target.value }))}
+                  />
+                </Field>
+                <Field
+                  label="Texto do alternador (opcional)"
+                  htmlFor="altOfferLabel"
+                  tooltip="Texto exibido no alternador do checkout (ex.: 'Economize no anual'). Vazio = texto padrão."
+                >
+                  <Input
+                    id="altOfferLabel"
+                    placeholder="ex.: Economize no anual"
+                    value={form.altOfferLabel}
+                    onChange={(e) => setForm((f) => ({ ...f, altOfferLabel: e.target.value }))}
+                  />
+                </Field>
+              </div>
+            </>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Máx. parcelas (opcional)"
-              htmlFor="installments"
-              tooltip="Máximo de parcelas no cartão. Vazio = padrão do checkout."
-            >
-              <Input
-                id="installments"
-                inputMode="numeric"
-                value={form.installmentsMax}
-                onChange={(e) => setForm((f) => ({ ...f, installmentsMax: e.target.value }))}
-              />
-            </Field>
+            {form.pricingMode !== 'subscription' ? (
+              <Field
+                label="Máx. parcelas (opcional)"
+                htmlFor="installments"
+                tooltip="Máximo de parcelas no cartão. Vazio = padrão do checkout."
+              >
+                <Input
+                  id="installments"
+                  inputMode="numeric"
+                  value={form.installmentsMax}
+                  onChange={(e) => setForm((f) => ({ ...f, installmentsMax: e.target.value }))}
+                />
+              </Field>
+            ) : null}
             <Field
               label="Garantia (dias, opcional)"
               htmlFor="guarantee"

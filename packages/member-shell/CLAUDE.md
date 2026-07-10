@@ -430,6 +430,26 @@ dos Criadores".**
 > Os tipos/clients/handlers daqui são só o mirror do BFF — qualquer mudança de contrato começa no members
 > e se reflete nesse doc.
 
+**Minhas assinaturas (07/2026):** client payments ganhou `listMySubscriptions()`
+(`GET /payments/my/subscriptions`) + `cancelMySubscription(id)` (`DELETE …/:id` — o acesso segue
+até o fim do ciclo pago + carência); handlers `paymentsMySubscriptions` (GET) e
+`paymentsMySubscriptionCancel` (DELETE, `requireWritableSession` + UUID na borda). Tipos
+`MySubscriptionView` + `SUBSCRIPTION_STATUS_LABELS` + helper `nextChargeDate(sub)` (próxima
+cobrança DERIVADA: última cobrança ?? criação + intervalo; null fora de ACTIVE) em `lib/types.ts`.
+O community monta a seção em `/compras`; o kids gateia os DOIS shims com
+`requireParentGateAccountOnly` (área dos pais).
+
+**Quota de IA por conta (07/2026):** `server/ai-quota.ts` — `consumeAiQuota(members, feature)`
+(features `pensa-chat`/`pensa-synthesis`/`studio-describe`) consome ANTES do OpenRouter via
+`POST /members/ai-usage/consume` (client `members.aiUsageConsume`); **FAIL-OPEN** (members
+fora/5xx → allowed com log — o 10/min in-process fica como anti-burst; o teto in-process de
+150/dia do Pensa SAIU, substituído pela quota durável). Recusa: chat SSE → **429 JSON**
+`{code:'AI_QUOTA_EXCEEDED', scope}` no pré-voo; generate idem (só nos tipos COM LLM);
+`studio/describe` → **200** `{description:'', fallback:true, quotaExceeded:true, scope}`
+(fail-soft, a criança escreve). Copy gentil em `aiQuotaMessage(scope)`; o Pensa propaga o `scope`
+duck-typed até o `friendlyErrorMessage` (pacote pensa) e o ShareDialog do Studio cai no modo
+manual com hint.
+
 **Perfis estilo Netflix (PR5, kids):** o shell expõe o **client de perfis**
 (`createProfilesClient` em `server/clients.ts` → `/auth/profiles*` no auth) e os **route
 handlers** `profilesList`/`profileCreate`/`profileUpdate`/`profileArchive`/`profileSelect`/

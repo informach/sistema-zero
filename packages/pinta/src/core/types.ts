@@ -27,6 +27,22 @@ export interface PintaTilesetMeta {
   solid: number[]
 }
 
+/**
+ * Metadados de MAPA DE TILES que atravessam a ponte: a grade jogável + a folha
+ * de peças EMBUTIDA (auto-contida — a criança pode nunca ter enviado o tileset
+ * separado). Mesmo shape do `ProjectTilemapMeta` do Estúdio (o dono do formato,
+ * que re-sanitiza na chegada).
+ */
+export interface PintaTilemapMeta {
+  tileSize: number
+  cols: number
+  rows: number
+  /** Formato do bloco do Estúdio: células por espaço, linhas por `;`, `.` = vazio. */
+  grid: string
+  solid: number[]
+  tileset: { dataUrl: string; width: number; height: number }
+}
+
 export interface PintaExportedAsset {
   /** Id do desenho no Pinta — reenvio do mesmo desenho = upsert no destino. */
   id: string
@@ -44,6 +60,11 @@ export interface PintaExportedAsset {
   sprite?: PintaSpriteMeta
   /** Metadados de TILESET (quando o asset é um tileset): seletor de tiles sólidos. */
   tileset?: PintaTilesetMeta
+  /**
+   * Metadados de MAPA (quando o asset é um tilemap): grade + folha embutida —
+   * o bloco "Criar mapa do meu desenho" do Estúdio monta tudo sozinho.
+   */
+  tilemap?: PintaTilemapMeta
 }
 
 export interface PintaSendResult {

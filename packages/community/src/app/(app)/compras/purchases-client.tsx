@@ -1,5 +1,7 @@
 'use client'
 
+import { Badge } from '@sistemazero/ui/badge'
+import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Pagination } from '@sistemazero/ui/pagination'
@@ -12,15 +14,135 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { Receipt } from 'lucide-react'
+import { Receipt, RefreshCcw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { StatusBadge } from '@/components/community/status-badge'
-import { apiGet } from '@/lib/api'
+import { apiGet, apiSend } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
-import { PAYMENT_METHOD_LABELS, type Paginated, type PaymentView } from '@/lib/types'
+import {
+  type MySubscriptionView,
+  nextChargeDate,
+  PAYMENT_METHOD_LABELS,
+  type Paginated,
+  type PaymentView,
+  SUBSCRIPTION_STATUS_LABELS,
+} from '@/lib/types'
 
 const LIMIT = 20
+
+/** "R$ X/mês" ou "R$ X/ano" a partir do intervalo da assinatura. */
+function subscriptionPriceLabel(sub: MySubscriptionView): string {
+  const suffix = sub.intervalMonths === 12 ? '/ano' : sub.intervalMonths === 1 ? '/mês' : ''
+  return `${formatCentsStr(sub.amountInCents)}${suffix}`
+}
+
+/** Seção "Minhas assinaturas" — só aparece quando o comprador tem alguma. */
+export function SubscriptionsSection() {
+  const [subs, setSubs] = useState<MySubscriptionView[]>([])
+  const [confirming, setConfirming] = useState<MySubscriptionView | null>(null)
+  const [canceling, setCanceling] = useState(false)
+
+  const load = useCallback(async () => {
+    try {
+      const data = await apiGet<{ items: MySubscriptionView[] }>('/api/payments/my/subscriptions')
+      setSubs(data.items)
+    } catch {
+      // Sem assinaturas visíveis em falha — a lista de compras segue útil.
+    }
+  }, [])
+
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  async function cancel(sub: MySubscriptionView) {
+    setCanceling(true)
+    try {
+      await apiSend(`/api/payments/my/subscriptions/${sub.id}`, 'DELETE')
+      toast.success('Assinatura cancelada. Seu acesso continua até o fim do período já pago.')
+      setConfirming(null)
+      await load()
+    } catch {
+      toast.error('Não foi possível cancelar. Tente novamente.')
+    } finally {
+      setCanceling(false)
+    }
+  }
+
+  if (subs.length === 0) return null
+
+  return (
+    <Card className="flex flex-col gap-4 p-4">
+      <h2 className="flex items-center gap-2 text-sm font-semibold">
+        <RefreshCcw className="size-4 text-muted-foreground" /> Minhas assinaturas
+      </h2>
+      <div className="flex flex-col gap-3">
+        {subs.map((sub) => {
+          const next = nextChargeDate(sub)
+          return (
+            <div
+              key={sub.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3"
+            >
+              <div className="min-w-0">
+                <p className="font-medium">{sub.description ?? 'Assinatura'}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  <span className="sz-display">{subscriptionPriceLabel(sub)}</span>
+                  {' · '}
+                  {sub.card.brand.toUpperCase()} •••• {sub.card.last4}
+                  {next ? ` · próxima cobrança ~${formatDate(next.toISOString())}` : null}
+                  {sub.status === 'CANCELED' && sub.canceledAt
+                    ? ` · cancelada em ${formatDate(sub.canceledAt)}`
+                    : null}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={sub.status === 'ACTIVE' ? 'success' : 'muted'}>
+                  {SUBSCRIPTION_STATUS_LABELS[sub.status] ?? sub.status}
+                </Badge>
+                {sub.status === 'ACTIVE' ? (
+                  <Button variant="outline" size="sm" onClick={() => setConfirming(sub)}>
+                    Cancelar
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {confirming ? (
+        <Dialog
+          open
+          onClose={() => (canceling ? null : setConfirming(null))}
+          title="Cancelar assinatura?"
+          description={confirming.description ?? undefined}
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setConfirming(null)} disabled={canceling}>
+                Manter assinatura
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => void cancel(confirming)}
+                disabled={canceling}
+              >
+                {canceling ? 'Cancelando…' : 'Cancelar assinatura'}
+              </Button>
+            </>
+          }
+        >
+          <p className="text-sm text-muted-foreground">
+            Você não será cobrado de novo, e o seu{' '}
+            <strong>acesso continua até o fim do período já pago</strong>. Depois disso, a
+            plataforma fica indisponível até uma nova assinatura.
+          </p>
+        </Dialog>
+      ) : null}
+    </Card>
+  )
+}
 
 export function PurchasesClient() {
   const [page, setPage] = useState<Paginated<PaymentView> | null>(null)

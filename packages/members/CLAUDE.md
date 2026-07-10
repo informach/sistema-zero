@@ -93,6 +93,20 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > ⚠️ Ao gerar a PRÓXIMA migration: o `db:generate` re-adiciona os `ALTER TYPE ADD VALUE` das 0036–0038
 > (hand-authored, SEM snapshot próprio) — o snapshot `0039` já os inclui, então limpe do SQL gerado
 > qualquer `ALTER TYPE` que já exista (mantenha só o DDL novo).
+> E **`0041`** (`0041_free_wendell_vaughn`: **quota de IA por conta** — tabela `ai_usage_daily`
+> (account_id, day date SP mode:'string', feature varchar(40), used, privileged; PK composto +
+> índice por day); `POST /members/ai-usage/consume` (JWT via gateway, `resolveAccountId` +
+> `isPrivilegedActor` — equipe NUNCA é recusada mas o consumo é GRAVADO com `privileged=true`) →
+> `{allowed, scope?: 'day'|'month', usedDay, usedMonth, unlimited?}` (limites env
+> `AI_LIMIT_DAILY`=50 / `AI_LIMIT_MONTHLY`=500; mês = SUM do mês; transação + advisory lock
+> `'ai-usage:'+accountId`, upsert atômico — provado contra Postgres real em
+> `tests/db/ai-usage-atomicity.test.ts`) + `GET /members/admin/ai-usage?month=` (staff+ — totais,
+> por feature, por dia, top 20 contas); consumidor = member-shell (Pensa chat/sínteses + describe
+> do Mural, FAIL-OPEN lá) **APLICADA em local; falta staging/prod** e **`0042`**
+> (`0042_known_yellowjacket`: `renewal_reminders_sent` — dedupe do lembrete de renovação do anual
+> à vista, ver §Fluxo de integração) **APLICADA em local; falta staging/prod**.
+> ⚠️ As migrations `0029`/`0030` têm 55P04 LATENTE num banco ZERADO (enum ADD VALUE + uso no mesmo
+> lote) — os testes de banco criam o DDL direto em vez de rodar `migrate()` do zero.
 
 ## Conceito central (decisões travadas com o usuário)
 
@@ -390,6 +404,14 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   no parse do gateway do catálogo) → **502 `OFFER_EMPTY`**, mesma régua. `granted:0`
   por idempotência (já concedido) continua sendo **200** (sucesso) — o sinal é
   `offerFound`/`itemsResolved`, não a contagem.
+- **Grant por PERÍODO (`accessPeriodMonths`, 07/2026 — anual à vista Pix/boleto):** o
+  `GrantWebhookBody` aceita `accessPeriodMonths?` (1..120). Presente (e SEM
+  `subscription`) → ramo `grantOneTime` com validade: `expiresAt =
+  computeExpiry(grantedAt, N, graceDays)`, key `payment:<paymentId>:<productId>`,
+  `subscriptionId: null` (NADA de assinatura sintética — a revogação por
+  subscriptionId nunca a alcança; expira sozinha). Renovar = NOVA compra (paymentId
+  novo → linha nova; o acesso efetivo é o mais forte). `subscription` presente VENCE
+  o período (nunca chegam juntos do funil). Ausentes os dois → vitalícia (como sempre).
 - **Extensão de assinatura re-tenta sob conflito otimista** (até 3×, recarregando a
   matrícula): sem isso, a renovação que perdesse a corrida p/ um cancel/ação admin
   respondia 200 e a extensão do ciclo se perdia de vez. Conflito persistente → lança
@@ -533,6 +555,20 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `generateSerial` (domain).
 - Cancelar/expirar assinatura é um **UPDATE atômico set-based** por `subscription_id`
   (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
+- **Lembrete de RENOVAÇÃO do anual à vista (07/2026, migration `0042` =
+  `renewal_reminders_sent(entitlement_id, expires_on)` PK composto):** job periódico
+  (`RENEWAL_REMINDER_INTERVAL_MS`, default 6h) sob advisory xact-lock PRÓPRIO
+  `30792292938117749` — matrícula ATIVA de compra por período (`source_kind='payment'`
+  + `expires_at` + `subscription_id IS NULL`; assinatura recorrente fica FORA, a Efí
+  renova sozinha) vencendo em ≤ `RENEWAL_REMINDER_DAYS_BEFORE` (7) dias → e-mail
+  template `renewal-reminder` (via gateway, consumer HMAC `members` — mesmo
+  quarteto de envs do report dos pais + **`FUNNEL_URL`**, base do link
+  `/renovar?oferta=<slug do snapshot>`). `SendRenewalRemindersService`
+  (`application/renewal-reminder/`) agrupa por (usuário, oferta, vencimento) — 1
+  e-mail por COMPRA, não por item de bônus — e marca APÓS enviar (crash-safety; o
+  dedupe do messaging por `renewal-reminder:<entitlementId>:<expiresOn>` absorve o
+  retry). Keyar na DATA faz um EXTEND admin gerar lembrete novo (desejado). O
+  anti-join do "ainda sem lembrete" é no SQL (`DrizzleRenewalReminderRepository`).
 - **Retenção de `processed_webhooks` roda SOZINHA** (06/2026): `setInterval` no
   composition-root (`RETENTION_CLEANUP_INTERVAL_MS`, default 6h) chama
   `pruneProcessedBefore(now - PROCESSED_WEBHOOKS_RETENTION_DAYS)` gateado por

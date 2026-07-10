@@ -34,6 +34,7 @@ export interface CreateOfferCommand {
   compareAtPriceCents?: number | null
   currency?: Currency
   pricingMode?: PricingMode
+  billingIntervalMonths?: number | null
   installmentsMax?: number | null
   trialDays?: number | null
   guaranteeDays?: number | null
@@ -74,6 +75,7 @@ export class CreateOfferService {
       compareAtPriceCents: command.compareAtPriceCents,
       currency: command.currency,
       pricingMode: command.pricingMode,
+      billingIntervalMonths: command.billingIntervalMonths,
       installmentsMax: command.installmentsMax,
       trialDays: command.trialDays,
       guaranteeDays: command.guaranteeDays,

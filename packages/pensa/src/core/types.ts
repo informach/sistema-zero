@@ -180,16 +180,20 @@ export interface PensaChecklistItemView {
 /**
  * Erro que o transport DEVE lançar quando o servidor responde com erro —
  * carrega o status HTTP e o código de domínio (ex.: PENSA_QUOTA_EXCEEDED).
+ * `scope` acompanha o `AI_QUOTA_EXCEEDED` (teto de IA por conta): 'day' = volta
+ * amanhã, 'month' = volta mês que vem — muda a copy gentil.
  */
 export class PensaApiError extends Error {
   readonly status: number
   readonly code: string
+  readonly scope?: 'day' | 'month'
 
-  constructor(message: string, status: number, code: string) {
+  constructor(message: string, status: number, code: string, scope?: 'day' | 'month') {
     super(message)
     this.name = 'PensaApiError'
     this.status = status
     this.code = code
+    this.scope = scope
   }
 }
 

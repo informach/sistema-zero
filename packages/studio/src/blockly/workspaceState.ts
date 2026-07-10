@@ -1692,6 +1692,105 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g2d:setImage':
       return block('sz_g2d_set_image', { SPRITE: stmt.spriteVar, IMAGE: stmt.image }, {}, stmt.__id)
+    case 'g2d:defineShape':
+      return block(
+        'sz_g2d_define_shape',
+        { NAME: stmt.shapeName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:createShapeSprite': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return x === null || y === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g2d_create_shape_sprite',
+            { SPRITE: stmt.varName, SHAPE: stmt.shapeName },
+            {},
+            stmt.__id,
+            { X: x, Y: y, W: w, H: h },
+          )
+    }
+    case 'g2d:setShape':
+      return block(
+        'sz_g2d_set_shape',
+        { SPRITE: stmt.spriteVar, SHAPE: stmt.shapeName },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:paintRect': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return x === null || y === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_rect', { COLOR: stmt.color }, {}, stmt.__id, {
+            X: x,
+            Y: y,
+            W: w,
+            H: h,
+          })
+    }
+    case 'g2d:paintCircle': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const r = exprToValueBlock(valueToExpr(stmt.r))
+      return x === null || y === null || r === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_circle', { COLOR: stmt.color }, {}, stmt.__id, { X: x, Y: y, R: r })
+    }
+    case 'g2d:paintEllipse': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return x === null || y === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_ellipse', { COLOR: stmt.color }, {}, stmt.__id, {
+            X: x,
+            Y: y,
+            W: w,
+            H: h,
+          })
+    }
+    case 'g2d:paintTriangle': {
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const y1 = exprToValueBlock(valueToExpr(stmt.y1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const y2 = exprToValueBlock(valueToExpr(stmt.y2))
+      const x3 = exprToValueBlock(valueToExpr(stmt.x3))
+      const y3 = exprToValueBlock(valueToExpr(stmt.y3))
+      return x1 === null || y1 === null || x2 === null || y2 === null || x3 === null || y3 === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_triangle', { COLOR: stmt.color }, {}, stmt.__id, {
+            X1: x1,
+            Y1: y1,
+            X2: x2,
+            Y2: y2,
+            X3: x3,
+            Y3: y3,
+          })
+    }
+    case 'g2d:paintLine': {
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const y1 = exprToValueBlock(valueToExpr(stmt.y1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const y2 = exprToValueBlock(valueToExpr(stmt.y2))
+      const width = exprToValueBlock(valueToExpr(stmt.width))
+      return x1 === null || y1 === null || x2 === null || y2 === null || width === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_paint_line', { COLOR: stmt.color }, {}, stmt.__id, {
+            X1: x1,
+            Y1: y1,
+            X2: x2,
+            Y2: y2,
+            WIDTH: width,
+          })
+    }
     case 'g2d:loadSpritesheet': {
       const fw = exprToValueBlock(valueToExpr(stmt.frameW))
       const fh = exprToValueBlock(valueToExpr(stmt.frameH))
@@ -1895,6 +1994,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             { TILE: tile },
           )
     }
+    case 'g2d:createTileMapFromAsset':
+      return block(
+        'sz_g2d_create_tilemap_from_asset',
+        { NAME: stmt.varName, IMAGE: stmt.image },
+        {},
+        stmt.__id,
+      )
     case 'g2d:drawTileMap': {
       const x = exprToValueBlock(valueToExpr(stmt.x))
       const y = exprToValueBlock(valueToExpr(stmt.y))
@@ -3303,6 +3409,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_center_x', { SPRITE: expr.spriteVar })
     case 'g2d:centerY':
       return block('sz_g2d_center_y', { SPRITE: expr.spriteVar })
+    case 'g2d:shapeW':
+      return block('sz_g2d_shape_w', {})
+    case 'g2d:shapeH':
+      return block('sz_g2d_shape_h', {})
     case 'g2d:spriteVx':
       return block('sz_g2d_sprite_vx', { SPRITE: expr.spriteVar })
     case 'g2d:spriteVy':

@@ -1915,6 +1915,8 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:centerY', spriteVar }
   }
+  if (method === 'shapeW' && args.length === 0) return { type: 'g2d:shapeW' }
+  if (method === 'shapeH' && args.length === 0) return { type: 'g2d:shapeH' }
   if (method === 'spriteVx') {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:spriteVx', spriteVar }
@@ -2703,6 +2705,107 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
       return { type: 'g2d:setImage', spriteVar, image: args[1].value as string }
     }
+    case 'defineShape': {
+      // generator: SZGame2D.defineShape("nome", function (ctx) {…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      const ctxParam = identifierName(args[1].params?.[0])
+      // O parâmetro é um CONTEXTO 2D — registrar em ctxVars para que os blocos de
+      // Canvas dentro da figura round-trippem (senão viram rawJS).
+      if (ctxParam) ctx.ctxVars.add(ctxParam)
+      return {
+        type: 'g2d:defineShape',
+        shapeName: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'setShape': {
+      // generator: SZGame2D.setShape(sprite, "nome")
+      const spriteVar = identifierName(args[0])
+      if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:setShape', spriteVar, shapeName: args[1].value as string }
+    }
+    case 'paintRect': {
+      // generator: SZGame2D.paintRect(ctx, x, y, w, h, "cor")
+      const ctxVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const w = toExpr(args[3], ctx)
+      const h = toExpr(args[4], ctx)
+      return ctxVar &&
+        args[5]?.type === 'StringLiteral' &&
+        isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(w) &&
+        isSimpleValue(h)
+        ? { type: 'g2d:paintRect', ctxVar, x, y, w, h, color: args[5].value as string }
+        : null
+    }
+    case 'paintCircle': {
+      // generator: SZGame2D.paintCircle(ctx, x, y, r, "cor")
+      const ctxVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const r = toExpr(args[3], ctx)
+      return ctxVar &&
+        args[4]?.type === 'StringLiteral' &&
+        isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(r)
+        ? { type: 'g2d:paintCircle', ctxVar, x, y, r, color: args[4].value as string }
+        : null
+    }
+    case 'paintEllipse': {
+      // generator: SZGame2D.paintEllipse(ctx, x, y, w, h, "cor")
+      const ctxVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const w = toExpr(args[3], ctx)
+      const h = toExpr(args[4], ctx)
+      return ctxVar &&
+        args[5]?.type === 'StringLiteral' &&
+        isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(w) &&
+        isSimpleValue(h)
+        ? { type: 'g2d:paintEllipse', ctxVar, x, y, w, h, color: args[5].value as string }
+        : null
+    }
+    case 'paintTriangle': {
+      // generator: SZGame2D.paintTriangle(ctx, x1,y1, x2,y2, x3,y3, "cor")
+      const ctxVar = identifierName(args[0])
+      const vals = [1, 2, 3, 4, 5, 6].map((i) => toExpr(args[i], ctx))
+      return ctxVar && args[7]?.type === 'StringLiteral' && vals.every((v) => isSimpleValue(v))
+        ? {
+            type: 'g2d:paintTriangle',
+            ctxVar,
+            x1: vals[0] as JSExpr,
+            y1: vals[1] as JSExpr,
+            x2: vals[2] as JSExpr,
+            y2: vals[3] as JSExpr,
+            x3: vals[4] as JSExpr,
+            y3: vals[5] as JSExpr,
+            color: args[7].value as string,
+          }
+        : null
+    }
+    case 'paintLine': {
+      // generator: SZGame2D.paintLine(ctx, x1,y1, x2,y2, "cor", esp)
+      const ctxVar = identifierName(args[0])
+      const x1 = toExpr(args[1], ctx)
+      const y1 = toExpr(args[2], ctx)
+      const x2 = toExpr(args[3], ctx)
+      const y2 = toExpr(args[4], ctx)
+      const width = toExpr(args[6], ctx)
+      return ctxVar &&
+        args[5]?.type === 'StringLiteral' &&
+        isSimpleValue(x1) &&
+        isSimpleValue(y1) &&
+        isSimpleValue(x2) &&
+        isSimpleValue(y2) &&
+        isSimpleValue(width)
+        ? { type: 'g2d:paintLine', ctxVar, x1, y1, x2, y2, color: args[5].value as string, width }
+        : null
+    }
     case 'setAnimation': {
       // generator: SZGame2D.setAnimation(sprite, sheet, from, to, fps)
       const spriteVar = identifierName(args[0])
@@ -3429,6 +3532,23 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     const { x, y, w, h, color } = sprite
     return { type: 'g2d:createSprite', varName: name, x, y, w, h, color }
   }
+  if (method === 'createShapeSprite') {
+    // generator: const p = SZGame2D.createShapeSprite("figura", { x, y, w, h })
+    if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'ObjectExpression') return null
+    const sprite = readSpriteOptions(args[1], ctx)
+    if (!sprite) return null
+    ctx.spriteVars.add(name)
+    const { x, y, w, h } = sprite
+    return {
+      type: 'g2d:createShapeSprite',
+      varName: name,
+      shapeName: args[0].value as string,
+      x,
+      y,
+      w,
+      h,
+    }
+  }
   if (method === 'createGroup') {
     // generator: const g = SZGame2D.createGroup()
     return { type: 'g2d:createGroup', varName: name }
@@ -3519,6 +3639,11 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     const opts = readTileMapOptions(args[0], ctx)
     if (!opts) return null
     return { type: 'g2d:createTileMap', varName: name, ...opts }
+  }
+  if (method === 'createTileMapFromAsset') {
+    // generator: const m = SZGame2D.createTileMapFromAsset("meu-mapa")
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g2d:createTileMapFromAsset', varName: name, image: args[0].value as string }
   }
   return null
 }
@@ -6198,6 +6323,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:spriteH':
     case 'g2d:centerX':
     case 'g2d:centerY':
+    case 'g2d:shapeW':
+    case 'g2d:shapeH':
     case 'g2d:spriteVx':
     case 'g2d:spriteVy':
     case 'g2d:spriteSpeed':

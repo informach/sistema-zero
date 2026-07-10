@@ -151,6 +151,28 @@ export interface MemberGamificationView {
   level: StudentLevelView
 }
 
+// ── Uso de IA (quota por conta — página "Uso de IA") ─────────────────────────
+/** Top conta do mês, com identidade hidratada do auth pelo BFF (best-effort). */
+export interface AiUsageTopAccountView {
+  accountId: string
+  used: number
+  /** Conta de equipe (nunca recusada; entra nos totais — o rótulo distingue). */
+  privileged: boolean
+  name?: string
+  email?: string
+}
+
+/** Agregados do mês (mirror do members + identidades hidratadas). */
+export interface AiUsageStatsView {
+  month: string
+  monthUsed: number
+  todayUsed: number
+  accounts: number
+  byFeature: { feature: string; used: number }[]
+  days: { day: string; used: number }[]
+  topAccounts: AiUsageTopAccountView[]
+}
+
 export const MEMBER_ACTIVITY_KINDS = [
   'lesson_accessed',
   'lesson_completed',
@@ -663,6 +685,11 @@ export interface OfferContent {
   allowsCoupon?: boolean
   /** Teto de PERFIS (estilo Netflix) DESTA oferta — plataforma Kids. Inteiro 1..50. */
   maxProfiles?: number
+  /**
+   * OFERTA IRMÃ do alternador do checkout (mensal ↔ anual): `slug` = a oferta alvo
+   * (o funil valida o slug escolhido contra este link); `label` = texto do alternador.
+   */
+  altOffer?: { slug: string; label?: string }
 }
 
 /** Componente de um combo (produto `kind=bundle`). */
@@ -706,6 +733,8 @@ export interface OfferListItem {
   compareAtPriceCents: number | null
   currency: string
   pricingMode: string
+  /** Periodicidade da assinatura em meses (mensal=1, anual=12); null em one_time. */
+  billingIntervalMonths: number | null
   installmentsMax: number | null
   trialDays: number | null
   guaranteeDays: number | null
@@ -829,6 +858,22 @@ export interface SubscriptionView {
   providerSubscriptionId: string | null
   canceledAt: string | null
   createdAt: string
+}
+
+/** Recorrência do painel (`GET /payments/admin/stats/subscriptions`). */
+export interface SubscriptionStatsView {
+  /** Assinaturas ATIVAS agora, por periodicidade. */
+  active: { total: number; monthly: number; annual: number; other: number }
+  /** MRR em centavos (Σ amount/intervalo das ativas) — string (bigint). */
+  mrrCents: string
+  /** Criadas na janela. */
+  newInWindow: number
+  /** Canceladas na janela (canceled_at). */
+  canceledInWindow: number
+  /** Churn simples: canceladas / (ativas + canceladas). 0..1. */
+  churnRate: number
+  from: string
+  to: string
 }
 
 export interface PaymentStatusBucket {

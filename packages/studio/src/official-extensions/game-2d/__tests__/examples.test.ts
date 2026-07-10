@@ -4,7 +4,9 @@ import { SZIRSchema } from '#ir'
 import {
   asteroidsExample,
   cameraAdventureExample,
+  codeDrawnExample,
   dinoRunExample,
+  enemyPlatformerExample,
   gorilasExample,
   gorilasVsRobotExample,
   pongExample,
@@ -62,6 +64,53 @@ describe('asteroidsExample (game-2d) — perf do SZIRSchema', () => {
     expect(code).toContain('bola.vx = Math.abs(bola.vx)')
     // A física crua antiga (integração manual da velocidade) sumiu.
     expect(code).not.toContain('bola.x += bola.vx')
+  })
+})
+
+describe('enemyPlatformerExample (game-2d) — tipos de inimigo', () => {
+  it('tem IR válido contra o SZIRSchema', () => {
+    expect(SZIRSchema.safeParse(enemyPlatformerExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
+    expect(collectTypes(enemyPlatformerExample.ir).has('rawJS')).toBe(false)
+  })
+
+  it('gera os três comportamentos, o auto-animar e a compat tipo=grupo', () => {
+    const code = compileStatements(enemyPlatformerExample.ir.js, 0)
+    expect(code).toContain('SZGame2D.createEnemyType({ behavior: "patrulha"')
+    expect(code).toContain('SZGame2D.createEnemyType({ behavior: "saltador"')
+    expect(code).toContain('SZGame2D.createEnemyType({ behavior: "atirador"')
+    expect(code).toContain('SZGame2D.setEnemyTypeParam(canhao, "cadencia", 120)')
+    expect(code).toContain('SZGame2D.updateEnemyType(goomba, ctx, heroi)')
+    expect(code).toContain('SZGame2D.drawEnemyType(ctx, canhao)')
+    expect(code).toContain('SZGame2D.autoAnimate(heroi)')
+    expect(code).toContain('SZGame2D.onEnemyDefeated(goomba, function (inimigo)')
+    expect(code).toContain('SZGame2D.overlapEnemyShots(() => heroi, canhao, function (tiro)')
+    expect(code).toContain('SZGame2D.hurtByEnemy(heroi, inimigo)')
+    // tipo funciona nos blocos de GRUPO: colisão grupo×tipo direto no nome
+    expect(code).toContain('SZGame2D.overlapGroups(tiros, goomba,')
+  })
+})
+
+describe('codeDrawnExample (game-2d) — sprite desenhado por código', () => {
+  it('tem IR válido contra o SZIRSchema', () => {
+    expect(SZIRSchema.safeParse(codeDrawnExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {
+    expect(collectTypes(codeDrawnExample.ir).has('rawJS')).toBe(false)
+  })
+
+  it('NÃO usa nenhuma imagem — o jogo é 100% desenhado por código', () => {
+    const code = compileStatements(codeDrawnExample.ir.js, 0)
+    expect(code).toContain('SZGame2D.defineShape("heroi", function (ctx)')
+    expect(code).toContain('SZGame2D.paintRect(ctx,')
+    expect(code).toContain('SZGame2D.paintCircle(ctx,')
+    expect(code).toContain('SZGame2D.createShapeSprite("heroi",')
+    expect(code).toContain('SZGame2D.createShapeSprite("moeda",')
+    expect(code).not.toContain('createImageSprite')
+    expect(code).not.toContain('setImage')
   })
 })
 

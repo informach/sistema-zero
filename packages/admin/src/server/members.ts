@@ -1,6 +1,7 @@
 import 'server-only'
 import type {
   AdminEntitlementView,
+  AiUsageStatsView,
   CourseAnalyticsView,
   CourseFunnelView,
   CourseTreeView,
@@ -17,6 +18,21 @@ import type {
 import { type GatewayResponse, gatewayFetch } from './gateway'
 
 const enc = encodeURIComponent
+
+/**
+ * Agregados de uso de IA por conta (quota 50/dia + 500/mês): totais do mês,
+ * breakdown por recurso e top contas (o handler hidrata a identidade no auth).
+ * `month` = `YYYY-MM` (ausente → mês corrente em SP).
+ */
+export function getAiUsageStats(
+  month?: string,
+): Promise<GatewayResponse<Omit<AiUsageStatsView, 'topAccounts'> & AiUsageStatsRaw>> {
+  return gatewayFetch('/members/admin/ai-usage', { query: { month } })
+}
+
+interface AiUsageStatsRaw {
+  topAccounts: { accountId: string; used: number; privileged: boolean }[]
+}
 
 export interface ListMembersParams {
   status?: string

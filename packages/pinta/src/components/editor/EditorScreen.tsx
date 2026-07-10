@@ -15,7 +15,6 @@ import { useEffect, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { assetStyle, type PintaAsset } from '../../core/project'
 import { buildStudioPayload, type StudioPayload } from '../../export/studioBridge'
-import { tilemapToStudioGrid } from '../../export/studioGrid'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
 import { persistAsset } from '../../state/persistence'
 import {
@@ -264,6 +263,19 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       showToast(COPY.sendToStudio.tooBig)
       return
     }
+    // Teto da FOLHA de peças embutida no metadado de MAPA — manter em sincronia
+    // com MAX_TILEMAP_SHEET_CHARS de packages/studio/src/core/project.ts (o
+    // sanitizador de lá descartaria o metadado em silêncio; validar AQUI dá a
+    // mensagem gentil).
+    const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
+    if (
+      payload.tilemap &&
+      payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS
+    ) {
+      setSending(false)
+      showToast(COPY.sendToStudio.tooBig)
+      return
+    }
     try {
       const result = await adapter.sendToStudio({
         id: asset.id,
@@ -271,40 +283,26 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
         dataUrl: payload.dataUrl,
         width: payload.width,
         height: payload.height,
-        // Animações/tiles do Pinta viajam junto → o Estúdio oferece o seletor por nome.
+        // Animações/tiles/mapa do Pinta viajam junto → o Estúdio oferece o
+        // seletor por nome e o bloco "Criar mapa do meu desenho".
         ...(payload.sprite ? { sprite: payload.sprite } : {}),
         ...(payload.tileset ? { tileset: payload.tileset } : {}),
+        ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
       })
-      showToast(
-        result.ok
-          ? adapter.studioOwned
-            ? COPY.sendToStudio.success
-            : COPY.sendToStudio.successLocked
-          : (result.error ?? COPY.sendToStudio.error),
-      )
+      const successCopy = payload.tilemap
+        ? adapter.studioOwned
+          ? COPY.sendToStudio.mapSuccess
+          : COPY.sendToStudio.mapSuccessLocked
+        : adapter.studioOwned
+          ? COPY.sendToStudio.success
+          : COPY.sendToStudio.successLocked
+      showToast(result.ok ? successCopy : (result.error ?? COPY.sendToStudio.error))
     } catch {
       showToast(COPY.sendToStudio.error)
     } finally {
       setSending(false)
     }
   }
-
-  /**
-   * Mapa NÃO é uma figura: o "Usar no Estúdio" copia a GRADE jogável (o que o
-   * bloco de mapa do Estúdio consome), não um PNG achatado. A imagem do mapa
-   * continua no "Baixar".
-   */
-  async function handleSendTilemap(): Promise<void> {
-    if (asset.kind !== 'tilemap') return
-    try {
-      await navigator.clipboard.writeText(tilemapToStudioGrid(asset))
-      showToast(COPY.sendToStudio.mapGridCopied)
-    } catch {
-      showToast(COPY.sendToStudio.mapGridError)
-    }
-  }
-
-  const isTilemap = asset.kind === 'tilemap'
 
   return (
     <header className="flex flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
@@ -338,11 +336,7 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
           {COPY.editor.download}
         </Button>
         {adapter.sendToStudio ? (
-          <Button
-            variant="primary"
-            disabled={sending}
-            onClick={() => void (isTilemap ? handleSendTilemap() : handleSendToStudio())}
-          >
+          <Button variant="primary" disabled={sending} onClick={() => void handleSendToStudio()}>
             <Rocket aria-hidden="true" className="size-4" />
             {sending ? COPY.sendToStudio.sending : COPY.editor.sendToStudio}
           </Button>

@@ -3,6 +3,8 @@ import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
 import { PurgeUserDataService } from '../src/application/admin/purge-user-data/purge-user-data.service'
+import { ConsumeAiUsageService } from '../src/application/ai-usage/consume-ai-usage.service'
+import { GetAiUsageStatsService } from '../src/application/ai-usage/get-ai-usage-stats.service'
 import { GetCourseAnalyticsService } from '../src/application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from '../src/application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from '../src/application/avatar/equip-avatar.service'
@@ -90,6 +92,7 @@ import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { HubGateway } from '../src/domain/ports/hub-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
+import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
 import {
   FakeCatalogGateway,
   InMemoryAnalyticsRepository,
@@ -118,6 +121,8 @@ export function buildApp(
     now?: Date
     internalToken?: string
     requireAdmin?: boolean
+    /** Limites da quota de IA (default 50/dia + 500/mês — os de produção). */
+    aiLimits?: { daily: number; monthly: number }
     /** Probe do /readyz (default: pronto). */
     readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
   } = {},
@@ -148,6 +153,13 @@ export function buildApp(
   const pensa = new InMemoryPensaRepository()
   const teacherThreadsRepo = new InMemoryTeacherThreadRepository()
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
+  const aiUsage = new InMemoryAiUsageRepository()
+  const consumeAiUsage = new ConsumeAiUsageService({
+    aiUsage,
+    dailyLimit: opts.aiLimits?.daily ?? 50,
+    monthlyLimit: opts.aiLimits?.monthly ?? 500,
+    clock,
+  })
 
   const checkAccess = new CheckAccessService(courses, entitlements, clock)
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
@@ -289,6 +301,7 @@ export function buildApp(
       profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
         defaultMaxProfiles: 1,
       }),
+      consumeAiUsage,
       getCertificate: new GetCertificateService(checkAccess, courses, progress, certificates),
       issueCertificate: new IssueCertificateService(
         checkAccess,
@@ -380,6 +393,7 @@ export function buildApp(
       listMemberRatings: new ListMemberRatingsService(ratings),
       getGamification: new GetGamificationService(gamification, clock),
       analytics: new GetCourseAnalyticsService(new InMemoryAnalyticsRepository(courses, progress)),
+      aiUsageStats: new GetAiUsageStatsService(aiUsage, clock),
       grantManual: new GrantManualEntitlementService({
         catalog,
         courses,
@@ -445,6 +459,7 @@ export function buildApp(
     hubShowcaseByAuthors,
     hubPlays,
     authProfiles,
+    aiUsage,
   }
 }
 

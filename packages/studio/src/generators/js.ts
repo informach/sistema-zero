@@ -75,6 +75,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:onSpriteGroupOverlap':
     case 'g2d:onEnemyDefeated':
     case 'g2d:onEnemyShotHit':
+    case 'g2d:defineShape':
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
     case 'g3d:animate':
@@ -974,6 +975,33 @@ function compileStatementCode(
     }
     case 'g2d:setImage':
       return `${pad}SZGame2D.setImage(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.image)});`
+    case 'g2d:defineShape': {
+      // A figura é uma função que RECEBE o ctx (transladado para o canto do
+      // sprite). Os blocos de desenho dentro dela usam esse 'ctx'.
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame2D.defineShape(${JSON.stringify(stmt.shapeName)}, function (${identifiers.get('ctx')}) {\n${body}\n${pad}});`
+    }
+    case 'g2d:createShapeSprite': {
+      const v = identifiers.get(stmt.varName)
+      return `${pad}const ${v} = SZGame2D.createShapeSprite(${JSON.stringify(stmt.shapeName)}, { x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))} });`
+    }
+    case 'g2d:setShape':
+      return `${pad}SZGame2D.setShape(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.shapeName)});`
+    case 'g2d:paintRect':
+      return `${pad}SZGame2D.paintRect(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:paintCircle':
+      return `${pad}SZGame2D.paintCircle(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:paintEllipse':
+      return `${pad}SZGame2D.paintEllipse(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:paintTriangle':
+      return `${pad}SZGame2D.paintTriangle(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x3), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y3), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:paintLine':
+      return `${pad}SZGame2D.paintLine(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y2), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
     case 'g2d:loadSpritesheet': {
       const v = identifiers.get(stmt.varName)
       return `${pad}const ${v} = SZGame2D.loadSpriteSheet(${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.frameW), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.frameH), 0, identifiers, recAt(base))});`
@@ -1038,6 +1066,8 @@ function compileStatementCode(
       const v = identifiers.get(stmt.varName)
       return `${pad}const ${v} = SZGame2D.createTileMap({ image: ${JSON.stringify(stmt.image)}, tile: ${compileExpr(valueToExpr(stmt.tile), 0, identifiers, recAt(base))}, solid: ${JSON.stringify(stmt.solid)}, grid: ${JSON.stringify(stmt.grid)} });`
     }
+    case 'g2d:createTileMapFromAsset':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createTileMapFromAsset(${JSON.stringify(stmt.image)});`
     case 'g2d:drawTileMap':
       return `${pad}SZGame2D.drawTileMap(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
     case 'g2d:tileMapCollide':
@@ -1774,6 +1804,7 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:onSpriteGroupOverlap':
       case 'g2d:onEnemyDefeated':
       case 'g2d:onEnemyShotHit':
+      case 'g2d:defineShape':
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
       case 'g3d:animate':
@@ -1828,6 +1859,7 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:onSpriteGroupOverlap':
       case 'g2d:onEnemyDefeated':
       case 'g2d:onEnemyShotHit':
+      case 'g2d:defineShape':
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
       case 'g3d:animate':
@@ -2548,6 +2580,53 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:setImage':
       names.add(stmt.spriteVar)
       return
+    case 'g2d:defineShape':
+      // 'ctx' é o parâmetro da figura (binder) — reservar como o onPointer faz
+      // com px/py, para os paint_* dentro resolverem `ctx` no mesmo escopo.
+      names.add('ctx')
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:createShapeSprite':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'g2d:setShape':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:paintRect':
+    case 'g2d:paintEllipse':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'g2d:paintCircle':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'g2d:paintTriangle':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.y1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.y2), names)
+      collectExprIdentifiers(valueToExpr(stmt.x3), names)
+      collectExprIdentifiers(valueToExpr(stmt.y3), names)
+      return
+    case 'g2d:paintLine':
+      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.y1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.y2), names)
+      collectExprIdentifiers(valueToExpr(stmt.width), names)
+      return
     case 'g2d:loadSpritesheet':
       names.add(stmt.varName)
       collectExprIdentifiers(valueToExpr(stmt.frameW), names)
@@ -2658,6 +2737,9 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:createTileMap':
       names.add(stmt.varName)
       collectExprIdentifiers(valueToExpr(stmt.tile), names)
+      return
+    case 'g2d:createTileMapFromAsset':
+      names.add(stmt.varName)
       return
     case 'g2d:drawTileMap':
       names.add(stmt.mapVar)

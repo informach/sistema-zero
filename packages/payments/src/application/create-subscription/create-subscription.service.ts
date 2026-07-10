@@ -214,7 +214,12 @@ export class CreateSubscriptionService {
       status: subscription.status,
     })
 
-    return toSubscriptionView(subscription)
+    // O funil usa o `firstPayment` p/ linkar o pagamento do 1º ciclo ao lead
+    // na própria resposta do checkout (sem esperar o webhook `payment.paid`).
+    return toSubscriptionView(
+      subscription,
+      cyclePayment ? { id: cyclePayment.id, status: cyclePayment.status } : null,
+    )
   }
 }
 

@@ -48,7 +48,14 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    `marketing-reminder` (whatsapp, F1 do app de marketing 07/2026): `titulo`+`formato`+`horario`
    (já formatado SP)+`link` — lembrete de publicação MANUAL enviado pelo MARKETING (consumer HMAC
    `marketing` via gateway, `idempotencyKey = marketing-reminder-<publicationId>-<fone>` — retry
-   do publisher-worker nunca duplica).
+   do publisher-worker nunca duplica);
+   `renewal-reminder` (e-mail + whatsapp, assinaturas 07/2026): `nome`+`produto`+`data`
+   (dd/mm/aaaa)+`link` (`/renovar?oferta=` do funil) — lembrete do plano ANUAL À VISTA vencendo,
+   enviado pelo MEMBERS (consumer `members`, `idempotencyKey =
+   renewal-reminder:<entitlementId>:<expiresOn>`);
+   `subscription-charge-failed` (e-mail + whatsapp, 07/2026): `nome`+`link` — dunning de ciclo de
+   assinatura recusado, enviado pelo FUNIL (consumer `funnel`, `idempotencyKey =
+   dunning[-wa]-<paymentId>`).
    `new-access` (e-mail + whatsapp) = aviso de "novo curso liberado" ao comprador
    RECORRENTE (já tem conta) — link p/ `/cursos`, SEM token de senha (≠ do `welcome`, que é 1º acesso).
    NÃO renomeie sem mudar os chamadores. Template novo → re-rode `templates:seed` no deploy.

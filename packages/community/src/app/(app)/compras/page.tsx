@@ -1,4 +1,4 @@
-import { PurchasesClient } from './purchases-client'
+import { PurchasesClient, SubscriptionsSection } from './purchases-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,6 +11,7 @@ export default function PurchasesPage() {
           Histórico das suas compras nesta conta.
         </p>
       </div>
+      <SubscriptionsSection />
       <PurchasesClient />
     </div>
   )

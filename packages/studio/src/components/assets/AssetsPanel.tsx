@@ -11,6 +11,7 @@ import {
 } from '../../asset-library/personal'
 import { useProjectStore } from '../../state/projectStore'
 import { fileToAssetDataUrl } from './imageProcessing'
+import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 
 /**
  * Gerenciador de IMAGENS (assets) do projeto. Overlay (espelho do ExtensionsPanel)
@@ -44,6 +45,11 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   const fileRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // "Usar como peças" / "Usar como mapa (fatiar)" — upload vira tileset/mapa sem Pinta.
+  const [tileConfig, setTileConfig] = useState<Pick<
+    TileConfigDialogProps,
+    'asset' | 'mode'
+  > | null>(null)
 
   // "Meus desenhos" (biblioteca pessoal, alimentada pelo Pinta): só existe com
   // namespace de perfil setado — some na aula e no adulto (deliberado). Carrega
@@ -71,9 +77,11 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       height: drawing.height,
       source: 'library',
       libId: `personal:${drawing.id}`,
-      // Leva as animações/tiles do Pinta ao projeto → o seletor por nome funciona.
+      // Leva as animações/tiles/mapa do Pinta ao projeto → seletor por nome e
+      // o bloco "Criar mapa do meu desenho" funcionam.
       sprite: drawing.sprite,
       tileset: drawing.tileset,
+      tilemap: drawing.tilemap,
     })
     if (err) setError(err)
   }
@@ -227,13 +235,39 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                           if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
                         }}
                       />
-                      <button
-                        type="button"
-                        className="self-start text-xs text-red-400 hover:underline"
-                        onClick={() => removeAsset(asset.id)}
-                      >
-                        Excluir
-                      </button>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        {asset.tilemap ? (
+                          <span
+                            className="text-[9px] text-sz-fg-soft"
+                            title={`mapa ${asset.tilemap.cols}×${asset.tilemap.rows}`}
+                          >
+                            🗺️ mapa
+                          </span>
+                        ) : null}
+                        <button
+                          type="button"
+                          title="Definir o tamanho das peças e os tiles sólidos"
+                          className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
+                          onClick={() => setTileConfig({ asset, mode: 'tileset' })}
+                        >
+                          🧩 peças
+                        </button>
+                        <button
+                          type="button"
+                          title="Fatiar esta imagem como um mapa de tiles"
+                          className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
+                          onClick={() => setTileConfig({ asset, mode: 'tilemap' })}
+                        >
+                          🗺️ fatiar
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs text-red-400 hover:underline"
+                          onClick={() => removeAsset(asset.id)}
+                        >
+                          Excluir
+                        </button>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -269,6 +303,14 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                           title={drawing.name}
                         >
                           {drawing.name}
+                          {drawing.tilemap ? (
+                            <span
+                              className="ml-1 text-[9px] text-sz-fg-soft"
+                              title={`mapa ${drawing.tilemap.cols}×${drawing.tilemap.rows}`}
+                            >
+                              🗺️ mapa
+                            </span>
+                          ) : null}
                         </span>
                         <div className="flex items-center gap-2">
                           <button
@@ -323,6 +365,13 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
           </section>
         </div>
       )}
+      {tileConfig ? (
+        <TileConfigDialog
+          asset={tileConfig.asset}
+          mode={tileConfig.mode}
+          onClose={() => setTileConfig(null)}
+        />
+      ) : null}
     </Modal>
   )
 }

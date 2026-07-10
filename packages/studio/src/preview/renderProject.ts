@@ -1,4 +1,4 @@
-import { assetManifest, type Project } from '#core'
+import { assetManifest, assetMetaManifest, type Project } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc } from './bootstrap'
@@ -52,6 +52,7 @@ export function renderProjectToPreviewDoc(
     extensionScripts,
     extraFiles,
     assets: assetManifest(assets),
+    assetsMeta: assetMetaManifest(assets),
     parentOrigin: opts.parentOrigin,
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: opts.fetchAllowedOrigins,

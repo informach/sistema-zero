@@ -122,6 +122,12 @@ interface ProjectStore {
   removeAsset: (id: string) => void
   /** Renomeia um asset. Devolve erro ou null. */
   renameAsset: (id: string, newName: string) => string | null
+  /**
+   * Grava/atualiza metadados de PEÇAS (tileset) ou de MAPA (tilemap) num asset
+   * de imagem — o caminho do UPLOAD virar tileset/mapa sem passar pelo Pinta.
+   * Saneia na entrada (metadado inválido = erro amigável, asset intocado).
+   */
+  updateAssetMeta: (id: string, meta: { tileset?: unknown; tilemap?: unknown }) => string | null
   // --- Modo profissional (project.kind === 'pro') ---
   /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProFile: (path: string) => string | null
@@ -601,6 +607,16 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_touches',
     'sz_g2d_create_image_sprite',
     'sz_g2d_set_image',
+    'sz_g2d_define_shape',
+    'sz_g2d_create_shape_sprite',
+    'sz_g2d_set_shape',
+    'sz_g2d_paint_rect',
+    'sz_g2d_paint_circle',
+    'sz_g2d_paint_ellipse',
+    'sz_g2d_paint_triangle',
+    'sz_g2d_paint_line',
+    'sz_g2d_shape_w',
+    'sz_g2d_shape_h',
     'sz_g2d_load_spritesheet',
     'sz_g2d_animate_sprite',
     'sz_g2d_set_state_anim',
@@ -624,6 +640,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_shake',
     'sz_g2d_emit_particles',
     'sz_g2d_draw_particles',
+    'sz_g2d_create_tilemap_from_asset',
     'sz_g2d_create_tilemap',
     'sz_g2d_draw_tilemap',
     'sz_g2d_tilemap_collide',
@@ -1985,6 +2002,7 @@ function countJSStatement(statement: JSStatement): number {
     case 'g2d:onSpriteGroupOverlap':
     case 'g2d:onEnemyDefeated':
     case 'g2d:onEnemyShotHit':
+    case 'g2d:defineShape':
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
     case 'g3d:animate':
@@ -2533,6 +2551,29 @@ export function createProjectStore(
       const next = p.assets.filter((a) => a.id !== id)
       if (next.length === p.assets.length) return
       set({ project: bump({ ...p, assets: next }), isDirty: true, saveError: null })
+    },
+    updateAssetMeta: (id, meta) => {
+      const p = get().project
+      if (!p?.assets) return 'Sem imagens no projeto.'
+      const target = p.assets.find((a) => a.id === id)
+      if (!target) return 'Imagem não encontrada.'
+      const next: ProjectAsset = { ...target }
+      if ('tileset' in meta) {
+        const tileset = sanitizeTilesetMeta(meta.tileset)
+        if (!tileset) return 'Não consegui usar esse tamanho de peça.'
+        next.tileset = tileset
+      }
+      if ('tilemap' in meta) {
+        const tilemap = sanitizeTilemapMeta(meta.tilemap)
+        if (!tilemap) return 'Não consegui montar o mapa desta imagem.'
+        next.tilemap = tilemap
+      }
+      set({
+        project: bump({ ...p, assets: p.assets.map((a) => (a.id === id ? next : a)) }),
+        isDirty: true,
+        saveError: null,
+      })
+      return null
     },
     renameAsset: (id, newName) => {
       const p = get().project

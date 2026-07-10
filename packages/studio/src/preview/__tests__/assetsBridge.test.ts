@@ -78,3 +78,61 @@ describe('buildPreviewDoc — injeção do manifesto de assets', () => {
     expect(doc.indexOf('__SZGAME_ASSETS')).toBeLessThan(doc.indexOf('__EXT_MARKER__'))
   })
 })
+
+/** Executa o runtime e devolve TAMBÉM o manifesto de metadados semeado. */
+function seededMeta(runtime: string): Record<string, unknown> {
+  const win = {} as { __SZGAME_ASSET_META?: Record<string, unknown> }
+  new Function('window', runtime)(win)
+  return win.__SZGAME_ASSET_META ?? {}
+}
+
+const TILEMAP_META = {
+  tilemap: {
+    tileSize: 16,
+    cols: 2,
+    rows: 1,
+    grid: '0 1',
+    solid: [1],
+    tileset: { dataUrl: PNG, width: 32, height: 16 },
+  },
+}
+
+describe('buildAssetsRuntime — __SZGAME_ASSET_META (mapa de tiles)', () => {
+  it('semeia o metadado quando o asset existe no manifesto', () => {
+    const runtime = buildAssetsRuntime({ 'meu-mapa': PNG }, { 'meu-mapa': TILEMAP_META })
+    const meta = seededMeta(runtime) as Record<string, { tilemap?: { grid?: string } }>
+    expect(meta['meu-mapa']?.tilemap?.grid).toBe('0 1')
+    // e o manifesto de imagens segue intacto
+    expect(seededManifest(runtime)['meu-mapa']).toBe(PNG)
+  })
+
+  it('meta cujo NOME não está nos assets é descartado (meta nunca sem imagem)', () => {
+    const runtime = buildAssetsRuntime({ heroi: PNG }, { fantasma: TILEMAP_META })
+    expect(runtime).not.toContain('__SZGAME_ASSET_META')
+  })
+
+  it('folha embutida que não é data:image/ é descartada (defesa em profundidade)', () => {
+    const mau = {
+      tilemap: {
+        ...TILEMAP_META.tilemap,
+        tileset: { dataUrl: 'http://evil/x', width: 8, height: 8 },
+      },
+    }
+    const runtime = buildAssetsRuntime({ 'meu-mapa': PNG }, { 'meu-mapa': mau })
+    expect(runtime).not.toContain('__SZGAME_ASSET_META')
+    expect(runtime).not.toContain('evil')
+  })
+
+  it('sem meta, a saída é BYTE-IDÊNTICA à assinatura antiga (retrocompat)', () => {
+    expect(buildAssetsRuntime({ heroi: PNG }, {})).toBe(buildAssetsRuntime({ heroi: PNG }))
+    expect(buildAssetsRuntime({ heroi: PNG })).not.toContain('__SZGAME_ASSET_META')
+  })
+
+  it('nome literal __proto__ no meta vira chave PRÓPRIA (doubly-encoded)', () => {
+    // JSON.parse cria chave PRÓPRIA "__proto__" (um literal JS setaria o protótipo).
+    const assets = JSON.parse(`{"__proto__": ${JSON.stringify(PNG)}}`)
+    const meta = JSON.parse(`{"__proto__": ${JSON.stringify(TILEMAP_META)}}`)
+    const runtime = buildAssetsRuntime(assets, meta)
+    expect(Object.hasOwn(seededMeta(runtime), '__proto__')).toBe(true)
+  })
+})

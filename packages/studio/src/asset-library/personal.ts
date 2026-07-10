@@ -18,8 +18,10 @@ import {
   isValidAssetDataUrl,
   normalizeAssetName,
   type ProjectSpriteMeta,
+  type ProjectTilemapMeta,
   type ProjectTilesetMeta,
   sanitizeSpriteMeta,
+  sanitizeTilemapMeta,
   sanitizeTilesetMeta,
 } from '#core'
 
@@ -51,6 +53,8 @@ export interface PersonalAsset {
   sprite?: ProjectSpriteMeta
   /** Metadados do Pinta (tiles sólidos do tileset). */
   tileset?: ProjectTilesetMeta
+  /** Metadados do Pinta (MAPA de tiles: grade + folha embutida). */
+  tilemap?: ProjectTilemapMeta
   updatedAt: number
 }
 
@@ -104,6 +108,7 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
     typeof a.updatedAt === 'number' && Number.isFinite(a.updatedAt) ? a.updatedAt : 0
   const sprite = sanitizeSpriteMeta(a.sprite)
   const tileset = sanitizeTilesetMeta(a.tileset)
+  const tilemap = sanitizeTilemapMeta(a.tilemap)
   return {
     id: a.id,
     name,
@@ -113,6 +118,7 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
     height: typeof a.height === 'number' ? a.height : undefined,
     ...(sprite ? { sprite } : {}),
     ...(tileset ? { tileset } : {}),
+    ...(tilemap ? { tilemap } : {}),
     updatedAt,
   }
 }
@@ -148,9 +154,10 @@ export async function savePersonalAsset(input: {
   dataUrl: string
   width?: number
   height?: number
-  /** Metadados do Pinta (animações/tiles) — saneados aqui e guardados no registro. */
+  /** Metadados do Pinta (animações/tiles/mapa) — saneados aqui e guardados no registro. */
   sprite?: unknown
   tileset?: unknown
+  tilemap?: unknown
 }): Promise<SavePersonalAssetResult> {
   try {
     if (!input.id || input.id.includes(':')) {
@@ -190,6 +197,7 @@ export async function savePersonalAsset(input: {
     // formato); inválido é descartado sem derrubar o salvamento (fail-soft).
     const sprite = sanitizeSpriteMeta(input.sprite)
     const tileset = sanitizeTilesetMeta(input.tileset)
+    const tilemap = sanitizeTilemapMeta(input.tilemap)
     const record: PersonalAsset = {
       id: input.id,
       name,
@@ -199,6 +207,7 @@ export async function savePersonalAsset(input: {
       height: input.height,
       ...(sprite ? { sprite } : {}),
       ...(tileset ? { tileset } : {}),
+      ...(tilemap ? { tilemap } : {}),
       updatedAt: Date.now(),
     }
     await set(assetKey(input.id), record, getStoreHandle())

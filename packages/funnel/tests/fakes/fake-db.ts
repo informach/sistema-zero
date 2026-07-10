@@ -25,6 +25,8 @@ function baseLead(id: string): Lead {
     couponCode: null,
     offerRef: null,
     paidAt: null,
+    subscriptionId: null,
+    subscriptionIntervalMonths: null,
     buyerUserId: null,
     buyerIsNew: null,
     buyerRegisteredAt: null,
@@ -46,7 +48,7 @@ export interface FakeRepoState {
   }>
   processed: Set<string>
   /** Histórico payment_id → contexto da cobrança (espelha funil.lead_payments). */
-  payments: Map<string, { leadId: string } & PaymentContext>
+  payments: Map<string, { leadId: string; accessPeriodMonths: number | null } & PaymentContext>
 }
 
 /** Implementação em memória do FunnelRepo para testes (sem Postgres). */
@@ -54,7 +56,10 @@ export function createFakeRepo(): FakeRepoState {
   const leads = new Map<string, Lead>()
   const events: FakeRepoState['events'] = []
   const processed = new Set<string>()
-  const payments = new Map<string, { leadId: string } & PaymentContext>()
+  const payments = new Map<
+    string,
+    { leadId: string; accessPeriodMonths: number | null } & PaymentContext
+  >()
   let seq = 0
 
   const repo: FunnelRepo = {
@@ -88,12 +93,41 @@ export function createFakeRepo(): FakeRepoState {
             email: snapshot?.email ?? null,
             telefone: snapshot?.telefone ?? null,
             document: snapshot?.document ?? null,
+            accessPeriodMonths: snapshot?.accessPeriodMonths ?? null,
           })
         }
       }
     },
     async couponForPayment(paymentId) {
       return payments.get(paymentId)?.couponCode ?? null
+    },
+    async setSubscription(id, subscriptionId, intervalMonths) {
+      const lead = leads.get(id)
+      if (lead) {
+        lead.subscriptionId = subscriptionId
+        lead.subscriptionIntervalMonths = intervalMonths
+      }
+    },
+    async findLeadBySubscription(subscriptionId) {
+      for (const lead of leads.values()) if (lead.subscriptionId === subscriptionId) return lead
+      return null
+    },
+    async linkCyclePayment(leadId, paymentId) {
+      if (!payments.has(paymentId)) {
+        payments.set(paymentId, {
+          leadId,
+          couponCode: null,
+          offerRef: null,
+          nome: null,
+          email: null,
+          telefone: null,
+          document: null,
+          accessPeriodMonths: null,
+        })
+      }
+    },
+    async accessPeriodForPayment(paymentId) {
+      return payments.get(paymentId)?.accessPeriodMonths ?? null
     },
     async paymentContext(paymentId) {
       const mapped = payments.get(paymentId)

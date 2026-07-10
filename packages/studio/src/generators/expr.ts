@@ -265,6 +265,10 @@ export function compileExpr(
       return `SZGame2D.centerX(${identifiers.get(expr.spriteVar)})`
     case 'g2d:centerY':
       return `SZGame2D.centerY(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:shapeW':
+      return 'SZGame2D.shapeW()'
+    case 'g2d:shapeH':
+      return 'SZGame2D.shapeH()'
     case 'g2d:spriteVx':
       return `SZGame2D.spriteVx(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteVy':

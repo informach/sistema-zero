@@ -115,6 +115,16 @@ do pagamento. BFS pelos componentes armazenados; alcançar o próprio id = 400.
   existente (sem isso, "de R$X por R$Y" invertia — precificação enganosa).
 - **Janela coerente**: `availableUntil > availableFrom` validado no create E no `updateDetails`
   (estado consolidado) — janela invertida tornava a oferta indisponível sem nenhum erro.
+- **Assinatura tem PERIODICIDADE (07/2026, migration `0004`)**: coluna
+  `offers.billing_interval_months` (nullable; mensal = 1, anual = 12) — é o que o funil manda ao
+  payments como `intervalMonths` do plano Efí. `one_time` NORMALIZA p/ null (mesmo se enviado);
+  assinatura **ATIVA exige o intervalo** (invariante na ATIVAÇÃO — create com status active,
+  `setStatus('active')` e `updateDetails` consolidado; rascunho segue livre p/ cadastro
+  progressivo). DTOs aceitam 1..24. Views pública/admin expõem `billingIntervalMonths`.
+- **Alternador mensal↔anual (`OfferContent.altOffer`, 07/2026, JSONB sem migração)**:
+  `{slug, label?}` aponta a oferta IRMÃ (a mensal aponta a anual e vice-versa — autorado no admin
+  nos DOIS sentidos). O funil VALIDA o slug escolhido no checkout contra este link (anti-forja);
+  `label` é o texto do alternador ("Economize no anual").
 
 ## Arquitetura (DDD + Hexagonal — espelha `auth`/`payments`)
 

@@ -49,6 +49,37 @@ export interface ProjectTilesetMeta {
 }
 
 /**
+ * Folha de peças EMBUTIDA no metadado de MAPA — auto-contida de propósito: a
+ * criança pode nunca ter enviado o tileset separado, e referência por nome a
+ * outro asset quebraria com rename/exclusão.
+ */
+export interface ProjectTilemapTilesetMeta {
+  /** `data:image/...` da folha de peças (teto próprio, menor que o do asset). */
+  dataUrl: string
+  width: number
+  height: number
+}
+
+/**
+ * Metadados de MAPA DE TILES de um asset (vindos do Pinta ou do fatiador de
+ * upload): a grade jogável + a folha de peças embutida. Alimenta o bloco
+ * "Criar mapa do meu desenho" — e, ao contrário de `sprite`/`tileset`, VAI ao
+ * preview (via `__SZGAME_ASSET_META`), porque o runtime monta o mapa com ele.
+ * O `dataUrl` do PRÓPRIO asset segue sendo o PNG achatado do mapa (miniatura).
+ */
+export interface ProjectTilemapMeta {
+  /** Tamanho do tile na ARTE, em px (o runtime encaixa na tela sozinho). */
+  tileSize: number
+  cols: number
+  rows: number
+  /** MESMO formato do bloco clássico: células por espaço, linhas por `;`, `.` = vazio. */
+  grid: string
+  /** Índices de tile sólidos (colisão), deduplicados/ordenados. */
+  solid: number[]
+  tileset: ProjectTilemapTilesetMeta
+}
+
+/**
  * Asset embutido no projeto (Fase "Studio rico"). Imagens (e, no futuro, áudio)
  * que o aluno envia do computador ou escolhe da biblioteca. Guardadas como `data:`
  * URL — autossuficientes, offline, sem servidor; passam na CSP do preview
@@ -78,6 +109,12 @@ export interface ProjectAsset {
   sprite?: ProjectSpriteMeta
   /** Metadados de TILESET vindos do Pinta (tamanho + tiles sólidos) — seletor de sólidos. */
   tileset?: ProjectTilesetMeta
+  /**
+   * Metadados de MAPA DE TILES (grade + folha embutida). Diferente dos outros
+   * metas, ESTE vai ao preview (`__SZGAME_ASSET_META`) — o bloco "Criar mapa do
+   * meu desenho" monta o mapa inteiro a partir dele em runtime.
+   */
+  tilemap?: ProjectTilemapMeta
 }
 
 /** Teto defensivo de nome (a UI já normaliza; aqui é só anti-lixo). */
@@ -100,6 +137,19 @@ const MAX_ASSETS_COUNT = 128
 const MAX_SPRITE_ANIMS = 32
 const MAX_TILESET_SOLID = 64
 const MAX_ANIM_NAME_CHARS = 48
+/**
+ * Tetos do metadado de MAPA. A folha embutida tem teto PRÓPRIO (menor que o do
+ * asset): a folha máxima real do Pinta (64 peças × 32 px) fica bem abaixo;
+ * 180k chars ≈ 131 KB de binário dá folga p/ vetor rasterizado.
+ * ⚠️ Manter em sincronia com STUDIO_MAX_TILEMAP_SHEET_CHARS do Pinta
+ * (packages/pinta/src/components/editor/EditorScreen.tsx — valida antes p/ dar
+ * a mensagem gentil).
+ */
+const MAX_TILEMAP_SHEET_CHARS = 180_000
+/** Grade 100×100 do Pinta ≈ 30–40k chars; 60k = folga. */
+const MAX_TILEMAP_GRID_CHARS = 60_000
+/** Colunas/linhas do mapa (o Pinta capa em 100). */
+const MAX_TILEMAP_DIM = 128
 
 const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 const ASSET_DATA_URL_PREFIX = 'data:image/'
@@ -161,6 +211,53 @@ export function sanitizeTilesetMeta(raw: unknown): ProjectTilesetMeta | undefine
     if (n !== null) solidSet.add(n)
   }
   return { tileSize, solid: [...solidSet].sort((a, b) => a - b) }
+}
+
+/**
+ * Valida/normaliza os metadados de MAPA DE TILES. Tudo-ou-nada: sem grade OU sem
+ * folha embutida válida → `undefined` (o asset segue vivo como imagem comum; o
+ * bloco "Criar mapa do meu desenho" simplesmente não o lista). NÃO valida a
+ * consistência grade×cols×rows — o `parseGrid` do runtime é tolerante por
+ * construção. Exportado (biblioteca pessoal e projectStore reusam).
+ */
+export function sanitizeTilemapMeta(raw: unknown): ProjectTilemapMeta | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const r = raw as Record<string, unknown>
+  const tileSize = toPositiveInt(r.tileSize)
+  const cols = toPositiveInt(r.cols)
+  const rows = toPositiveInt(r.rows)
+  if (tileSize === null || cols === null || rows === null) return undefined
+  if (cols > MAX_TILEMAP_DIM || rows > MAX_TILEMAP_DIM) return undefined
+  const grid = typeof r.grid === 'string' ? r.grid.trim() : ''
+  if (!grid || grid.length > MAX_TILEMAP_GRID_CHARS) return undefined
+  const ts = r.tileset
+  if (!ts || typeof ts !== 'object' || Array.isArray(ts)) return undefined
+  const t = ts as Record<string, unknown>
+  const sheetUrl = t.dataUrl
+  if (
+    typeof sheetUrl !== 'string' ||
+    !sheetUrl.startsWith(ASSET_DATA_URL_PREFIX) ||
+    sheetUrl.length > MAX_TILEMAP_SHEET_CHARS
+  ) {
+    return undefined
+  }
+  const sheetW = toPositiveInt(t.width)
+  const sheetH = toPositiveInt(t.height)
+  if (sheetW === null || sheetH === null) return undefined
+  const solidSet = new Set<number>()
+  for (const value of Array.isArray(r.solid) ? r.solid : []) {
+    if (solidSet.size >= MAX_TILESET_SOLID) break
+    const n = toNonNegativeInt(value)
+    if (n !== null) solidSet.add(n)
+  }
+  return {
+    tileSize,
+    cols,
+    rows,
+    grid,
+    solid: [...solidSet].sort((a, b) => a - b),
+    tileset: { dataUrl: sheetUrl, width: sheetW, height: sheetH },
+  }
 }
 
 /**
@@ -233,6 +330,8 @@ export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
     if (sprite) asset.sprite = sprite
     const tileset = sanitizeTilesetMeta(a.tileset)
     if (tileset) asset.tileset = tileset
+    const tilemap = sanitizeTilemapMeta(a.tilemap)
+    if (tilemap) asset.tilemap = tilemap
     seenNames.add(name)
     totalChars += a.dataUrl.length
     out.push(asset)
@@ -258,12 +357,34 @@ export function assetManifest(
   return out
 }
 
+/**
+ * Manifesto `nome → metadados de preview` — irmão do `assetManifest`, mas só com
+ * o que o RUNTIME precisa (hoje: `tilemap`). Semeado em `window.__SZGAME_ASSET_META`
+ * pelos mesmos call sites. Só entra asset com meta presente (objeto vazio = nada
+ * a injetar; o assetsBridge emite saída byte-idêntica à de antes).
+ */
+export function assetMetaManifest(
+  assets: readonly ProjectAsset[] | undefined | null,
+): Record<string, { tilemap: ProjectTilemapMeta }> {
+  const out: Record<string, { tilemap: ProjectTilemapMeta }> = {}
+  if (!assets) return out
+  for (const a of assets) {
+    if (a && a.kind === 'image' && typeof a.name === 'string' && a.tilemap) {
+      out[a.name] = { tilemap: a.tilemap }
+    }
+  }
+  return out
+}
+
 /** Limites públicos dos assets — a UI lê para validar upload e mostrar avisos. */
 export const PROJECT_ASSET_LIMITS = {
   maxAssetDataUrlChars: MAX_ASSET_DATA_URL_CHARS,
   maxAssetsTotalChars: MAX_ASSETS_TOTAL_CHARS,
   maxAssetsCount: MAX_ASSETS_COUNT,
   maxAssetNameChars: MAX_ASSET_NAME_CHARS,
+  maxTilemapSheetChars: MAX_TILEMAP_SHEET_CHARS,
+  maxTilemapGridChars: MAX_TILEMAP_GRID_CHARS,
+  maxTilemapDim: MAX_TILEMAP_DIM,
 } as const
 
 export interface Project {

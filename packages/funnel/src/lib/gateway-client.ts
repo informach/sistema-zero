@@ -93,6 +93,28 @@ export interface GrantMembersInput {
   /** ISO-8601 (opcional; a área de membros usa "agora" se ausente). */
   paidAt?: string
   subscription?: { subscriptionId: string; intervalMonths: number | null }
+  /** Compra por PERÍODO (anual à vista = 12): validade fixa + carência, sem assinatura. */
+  accessPeriodMonths?: number
+}
+
+/** Corpo de `POST /subscriptions` (gateway → payments): assinatura de cartão. */
+export interface CreateSubscriptionInput {
+  amountInCents: number
+  /** Mensal = 1, anual = 12 (da oferta do catálogo). */
+  intervalMonths: number
+  description: string
+  customer: {
+    name: string
+    email: string
+    document: string
+    phone: string
+    /** Nascimento AAAA-MM-DD (a Efí exige na assinatura). */
+    birth: string
+    address: Record<string, string>
+  }
+  /** Cartão TOKENIZADO no browser (PCI) — sem parcelas (a Efí cobra 1x por ciclo). */
+  card: { token: string; brand: string; last4: string }
+  metadata?: Record<string, unknown>
 }
 
 async function readBody(res: Response): Promise<unknown> {
@@ -171,6 +193,28 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     async createPayment(input: unknown, idempotencyKey: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
       const path = '/payments'
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        {
+          method: 'POST',
+          headers: buildHeaders('POST', path, rawBody, idempotencyKey),
+          body: rawBody,
+        },
+        paymentTimeoutMs,
+      )
+    },
+
+    /**
+     * POST /subscriptions (via gateway → payments): cria a ASSINATURA de cartão
+     * (plano Efí + assinatura + 1ª cobrança, síncrono — o payment_token é de vida
+     * curta). Idempotency-Key com nonce por tentativa (recusa pode re-tentar).
+     */
+    async createSubscription(
+      input: CreateSubscriptionInput,
+      idempotencyKey: string,
+    ): Promise<GatewayResult> {
+      const rawBody = JSON.stringify(input)
+      const path = '/subscriptions'
       return requestJson(
         `${opts.baseUrl}${path}`,
         {

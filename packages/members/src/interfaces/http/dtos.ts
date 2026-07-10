@@ -47,6 +47,21 @@ export const GamificationQuery = t.Object({
   ranking: t.Optional(t.Literal('true')),
 })
 
+// ── Uso de IA (quota por conta) ──────────────────────────────────────────────
+/**
+ * `feature` identifica o RECURSO que consome IA (`pensa-chat`/`pensa-synthesis`/
+ * `studio-describe`/futuros) — string kebab validada na borda; recurso novo é só
+ * uma string nova (zero migration). O consumo é sempre de 1 crédito.
+ */
+export const AiUsageConsumeBody = t.Object({
+  feature: t.String({ minLength: 2, maxLength: 40, pattern: '^[a-z0-9][a-z0-9-]{1,39}$' }),
+})
+
+/** `?month=YYYY-MM` (ausente → mês civil SP corrente). Validação semântica no service. */
+export const AiUsageStatsQuery = t.Object({
+  month: t.Optional(t.String({ minLength: 7, maxLength: 7 })),
+})
+
 // ── Avatar (guarda-roupa por camadas) ───────────────────────────────────────
 // `partId`/`parts` são SLUGS do catálogo em código (não uuid): `^[a-z0-9-]+$`.
 const AVATAR_SLUG = t.String({ minLength: 1, maxLength: 64, pattern: '^[a-z0-9-]+$' })
@@ -129,7 +144,9 @@ export const AvatarConfigBody = t.Object({
 
 /**
  * Corpo de `POST /members/webhooks/grant` — concessão de acesso (funil → gateway →
- * members). `subscription` presente = acesso por assinatura; ausente = compra única.
+ * members). `subscription` presente = acesso por assinatura; `accessPeriodMonths`
+ * presente = compra única POR PERÍODO (anual à vista Pix/boleto: validade fixa +
+ * carência, sem assinatura); nenhum dos dois = compra única vitalícia.
  * `userId` vem do auth (ensure-buyer) e é sempre uuid — formato validado na borda.
  */
 export const GrantWebhookBody = t.Object({
@@ -143,6 +160,7 @@ export const GrantWebhookBody = t.Object({
       intervalMonths: t.Union([t.Integer({ minimum: 1, maximum: 120 }), t.Null()]),
     }),
   ),
+  accessPeriodMonths: t.Optional(t.Integer({ minimum: 1, maximum: 120 })),
 })
 
 /**

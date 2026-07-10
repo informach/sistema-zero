@@ -465,7 +465,11 @@ valida e só então importa o `server.js` standalone).
   simples. `player.destroy()` no cleanup (remove o iframe; o React só desmonta o container).
 - Payments: `GET /payments/my` (`?limit&offset`) → `Paginated<PaymentView>` (PÚBLICA, sem dados do
   cliente; o backend filtra pelo e-mail das claims); `GET /payments/my/:id`. Valores em **string**
-  (centavos) → `formatCentsStr`.
+  (centavos) → `formatCentsStr`. **Minhas assinaturas (07/2026):** `GET /payments/my/subscriptions`
+  + `DELETE …/:id` (shims sobre `shell.routes.paymentsMySubscription*`); a `/compras` ganhou a
+  seção `SubscriptionsSection` (status, R$X/mês|ano, próxima cobrança DERIVADA via
+  `nextChargeDate`, cancelar com Dialog deixando claro "acesso até o fim do período já pago").
+  Some quando não há assinaturas.
 
 ## Checklist antes de finalizar
 

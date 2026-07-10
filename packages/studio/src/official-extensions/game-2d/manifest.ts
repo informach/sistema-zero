@@ -5,7 +5,9 @@ import {
   asteroidsExample,
   balloonExample,
   cameraAdventureExample,
+  codeDrawnExample,
   dinoRunExample,
+  enemyPlatformerExample,
   gorilasExample,
   gorilasVsRobotExample,
   platformerExample,
@@ -17,7 +19,7 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.21.0',
+  version: '0.23.0',
   description:
     'Blocos para criar jogos 2D no Canvas: tela cheia responsiva (com cor de fundo), sprites (cor/imagem/animação), grupos de muitos sprites, movimento, física, efeitos, tiles/tilemaps, HUD, telas/cenas, som, e KITS por tema — Kit espaço (nave e asteroides), Kit dino (corrida com obstáculos), Kit gorilas (batalha de bananas por turnos), Kit equilibrista (estica o bastão e atravessa, estilo Stick Hero) e Kit balão (sobe segurando o mouse e economiza combustível).',
   category: 'games',
@@ -171,21 +173,7 @@ Veja o exemplo **"Nave contra Asteroides"** para um jogo de tiro e **"Dino Run"*
 
 ### Kit gorilas: batalha de bananas (v0.11.0)
 
-A categoria **🦍 Kit gorilas** monta um jogo de artilharia por turnos (estilo "Gorillas") para **2 jogadores** no mesmo aparelho — toda a parte difícil (cidade, física, crateras) já vem pronta:
-
-- **Criar cidade de prédios** — sorteia o cenário (prédios com janelas + vento) numa variável; é nela que tudo acontece.
-- **Desenhar a cidade** — desenha céu, lua e prédios, já com as crateras "furadas" (use no começo do "a cada quadro", depois de limpar).
-- **Pôr o gorila … no lado …** — cria um gorila no alto de um prédio da ponta (faça um para cada jogador).
-- **Sortear o vento** / **Desenhar a seta do vento** — o vento empurra a banana; re-sorteie a cada troca de turno.
-- **Mirar arrastando a partir do gorila** — arraste apontando para onde quer jogar (mais longe = mais forte) e veja a trajetória pontilhada; **solte para lançar**. Use no gorila da vez.
-- **soltou a mira do gorila … ?** — verdadeiro no instante em que solta; use num "se" para então **Jogar a banana**.
-- **Mover a banana** / **Desenhar a banana** — a gravidade e o vento entortam a parábola.
-- **a banana acertou o gorila … ?** — acerto no inimigo = vitória. **a banana bateu num prédio ?** — abre a cratera, some com a banana e é a hora de **trocar de turno** (\`vez = 1 - vez\`).
-- **sons** de banana caindo (assobio) e de explosão.
-
-Tem também novos blocos GENÉRICOS de canvas (em ✏️ Traçado) úteis para fazer crateras/máscaras na mão: **adicionar retângulo ao traçado**, **recortar o desenho pelo traçado** (clip) e as perguntas **o ponto x/y está dentro do traçado / na linha do traçado?**. E os eventos **apertar o mouse / soltar o mouse** para mira por arrastar na programação normal.
-
-Veja o exemplo **"Guerra de Gorilas"** — completo, montado só com blocos.
+A categoria **🦍 Kit gorilas** monta um jogo de artilharia por turnos (estilo "Gorillas") para **2 jogadores** no mesmo aparelho — cidade, física e crateras já vêm prontas: **Criar/Desenhar a cidade**, **Pôr o gorila no lado**, **Sortear/Desenhar o vento**, **Mirar arrastando** (mais longe = mais forte) + **soltou a mira?** → **Jogar a banana**, **Mover/Desenhar a banana** (gravidade + vento entortam), **a banana acertou o gorila?** (vitória) / **bateu num prédio?** (abre cratera, troca de turno), e **sons** de queda/explosão. Tem também blocos genéricos de canvas em ✏️ Traçado (retângulo ao traçado, recortar/clip, ponto dentro do traçado?) e os eventos apertar/soltar o mouse. Veja o exemplo **"Guerra de Gorilas"**.
 
 ### Kit gorilas: robô adversário (v0.12.0)
 
@@ -247,7 +235,7 @@ Para mundos maiores que a tela e jogos mais ricos:
   continuam em coordenadas de tela; com câmera, a posição no mundo é tela + câmera.
 - **🗺️ Mapa** (destrutível): **Quebrar o tile** onde está um sprite (mineração/destruição), **pôr um tile**
   e **o número do tile** onde está o sprite (ler/construir em tempo real).
-- **🪐 Muitos (grupos)**: **Trazer para a frente** / **Mandar para trás** — controla quem é desenhado por
+- **📦 Muitos (grupos)**: **Trazer para a frente** / **Mandar para trás** — controla quem é desenhado por
   cima de quem dentro de um grupo.
 - **✨ Aparência** (depuração): **Mostrar a caixa de colisão** de um sprite e **Mostrar os FPS** — para
   enxergar colisões e a performance enquanto cria.
@@ -270,11 +258,65 @@ montar a continha \`Math.random() * largura\` na mão:
 - **um x aleatório na tela** / **um y aleatório na tela** — sorteia uma posição dentro da largura/altura
   da tela. Encaixe no x (ou y) ao **criar** ou **spawnar** um sprite — ex.: asteroides/estrelas nascendo
   em pontos aleatórios. (Para um intervalo específico de números, continua valendo **um número de … a …**.)
+
+### Animação por estado + flip automático (v0.22.0)
+
+Na categoria **🎬 Animação**, o jeito FÁCIL de o personagem trocar de animação sozinho:
+
+- **Quando o sprite estiver … tocar a animação …** — guarda a animação de UM estado do sprite:
+  parado, andando (para os lados), andando (cima/baixo), pulando, caindo ou tomando dano. Use um
+  bloco por estado, FORA do "a cada quadro" (é configuração, roda uma vez). A animação vem da sua
+  folha de quadros — escolha pelo NOME (do Pinta) que os quadros/fps se preenchem sozinhos.
+- **Animar e virar o sprite sozinho** — vai DENTRO do "a cada quadro": ele descobre o estado do
+  sprite (pela velocidade, pelo chão e pela vida) e troca a animação SÓ quando o estado muda.
+  Também VIRA o desenho para a esquerda/direita conforme o sprite anda (flip automático; parado,
+  vale o "Virar o sprite" manual).
+- Estado sem animação registrada cai no parente mais parecido (caindo → pulando → andando →
+  parado) — dá para começar só com "parado" e "andando" e crescer depois.
+- "Tomando dano" liga sozinho por meio segundo quando o sprite PERDE vida (bloco "Mudar a vida…
+  em -1") ou enquanto ele pisca (bloco "Fazer o sprite piscar").
+- "Pulando/caindo" só acontecem em jogos com chão (plataforma/pulo no chão/colisão com mapa) —
+  num jogo de vista de cima, andar para cima/baixo usa "andando (cima/baixo)".
+
+### Mapa pronto do Pinta (v0.22.0)
+
+- **Criar mapa do meu desenho** (🗺️ Mapa) — desenhe o MAPA no Pinta, toque no 🚀 e escolha o
+  desenho neste bloco: grade, peças e sólidos vêm JUNTOS, nada de colar texto.
+- No **Criar mapa de tiles** (o clássico, para montar/editar na mão), a GRADE agora abre um
+  mini-editor visual: escolha uma peça e PINTE as células (borracha apaga, dá para mudar
+  linhas/colunas).
+
+### Tipos de inimigo (v0.22.0)
+
+Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Koopa do Mario):
+
+- **Criar tipo de inimigo** — defina UMA vez comportamento e atributos (vida, velocidade, dano
+  de contato, tamanho, cor OU imagem): patrulha (anda e vira na parede/borda), perseguidor,
+  voador (deitado ou em pé), saltador e atirador (fica no chão e atira no alvo).
+- **Soltar um inimigo do tipo** — solte quantos quiser, cada um nasce com a vida/dano do tipo.
+- **Atualizar os inimigos do tipo** (dentro do "a cada quadro") — move pelo comportamento,
+  anima, atira e REMOVE os derrotados (vida 0 → partículas + "Quando for derrotado").
+- **Desenhar os inimigos do tipo** — todos + os tiros deles.
+- **Quando um tiro acertar o sprite** + **Machucar o sprite com o dano do inimigo** — dano de
+  contato com INVENCIBILIDADE de piscar (não drena a vida no encostão contínuo).
+- O tipo É um grupo: os blocos de **Muitos (grupos)** funcionam nele. Patrulha em mapa de tiles:
+  some o "Impedir de atravessar" num "Para cada" que o inimigo vira sozinho na parede.
+- **Ajustar no tipo de inimigo…** — força/ritmo do pulo, alcance do voo, cadência/velocidade do tiro.
+
+### Desenhar por código (v0.23.0)
+
+Na categoria **🎨 Desenho**, faça o visual do sprite com formas, sem imagem nenhuma:
+
+- **Desenhar a figura … assim** — monte um desenho com **retângulo, círculo, oval, triângulo, linha** e dê um nome. Você desenha DENTRO do quadro do sprite: x/y começam no cantinho (0,0). Dá para usar os blocos de **Canvas** aqui dentro também (gradiente, curvas…).
+- **Criar sprite … com a figura** — cria um sprite que usa esse desenho; ele anda, gira, vira, anima e colide como qualquer outro. **Trocar a figura** muda o desenho de um sprite.
+- **a largura / a altura da figura** — o tamanho do sprite que está sendo desenhado (para centralizar). Veja o exemplo **"Jogo desenhado por código"**.
 `,
   examples: [
     pongExample,
     animatedHeroExample,
     platformerExample,
+    enemyPlatformerExample,
+    codeDrawnExample,
     tilemapExample,
     asteroidsExample,
     asteroidsClassicExample,

@@ -102,7 +102,12 @@ export function deriveAnimationName(
   return match?.name ?? null
 }
 
-const ANIMATE_SPRITE_TYPE = 'sz_g2d_animate_sprite'
+/**
+ * Blocos que usam o picker de animação (campo ANIM + SHEET + soquetes
+ * FROM/TO/FPS — o resolveAnimations/fillFrames é genérico por NOME de campo,
+ * então basta listar o tipo aqui para o watcher re-derivar o nome).
+ */
+const ANIM_PICKER_TYPES = new Set(['sz_g2d_animate_sprite', 'sz_g2d_set_state_anim'])
 
 /** Estado de coalescimento do refresh por workspace (espelha o thumb-watcher). */
 const animRefreshQueued = new WeakMap<Blockly.Workspace, boolean>()
@@ -123,7 +128,7 @@ export function refreshAnimationNames(ws: Blockly.Workspace): void {
   animRefreshQueued.set(ws, true)
   queueMicrotask(() => {
     animRefreshQueued.set(ws, false)
-    const blocks = ws.getAllBlocks(false).filter((b) => b.type === ANIMATE_SPRITE_TYPE)
+    const blocks = ws.getAllBlocks(false).filter((b) => ANIM_PICKER_TYPES.has(b.type))
     if (blocks.length === 0) return
     for (const block of blocks) {
       const field = block.getField('ANIM')
@@ -164,13 +169,13 @@ function isAnimNameEvent(
     if (e.element !== 'field' || typeof e.blockId !== 'string') return false
     const block = ws.getBlockById(e.blockId)
     if (!block) return false
-    if (block.type === ANIMATE_SPRITE_TYPE) return e.name === 'SHEET'
+    if (ANIM_PICKER_TYPES.has(block.type)) return e.name === 'SHEET'
     if (block.type === LOAD_SPRITESHEET_TYPE) return e.name === 'NAME' || e.name === 'IMAGE'
     // Literal numérico plugado num soquete de um bloco de animar (shadow ou real).
     if (block.type === 'sz_val_number') {
       let parent = block.getParent()
       while (parent) {
-        if (parent.type === ANIMATE_SPRITE_TYPE) return true
+        if (ANIM_PICKER_TYPES.has(parent.type)) return true
         parent = parent.getParent()
       }
     }
@@ -187,7 +192,9 @@ function jsonHasAnimRelatedType(json: unknown): boolean {
     inputs?: Record<string, { block?: unknown; shadow?: unknown }>
     next?: { block?: unknown; shadow?: unknown }
   }
-  if (node.type === ANIMATE_SPRITE_TYPE || node.type === LOAD_SPRITESHEET_TYPE) return true
+  if ((node.type && ANIM_PICKER_TYPES.has(node.type)) || node.type === LOAD_SPRITESHEET_TYPE) {
+    return true
+  }
   if (node.inputs) {
     for (const wrapper of Object.values(node.inputs)) {
       if (jsonHasAnimRelatedType(wrapper?.block) || jsonHasAnimRelatedType(wrapper?.shadow)) {

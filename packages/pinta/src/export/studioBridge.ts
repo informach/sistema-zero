@@ -7,8 +7,14 @@
  */
 import type { ActiveFrameRef } from '../core/assetEdit'
 import { activeBitmapOf } from '../core/assetEdit'
-import { isTilesetKind, type PintaAsset, resolveAssetPalette } from '../core/project'
-import type { PintaSpriteMeta, PintaTilesetMeta } from '../core/types'
+import {
+  type AnyTilesetAsset,
+  isTilesetKind,
+  type PintaAsset,
+  resolveAssetPalette,
+  type TilemapAsset,
+} from '../core/project'
+import type { PintaSpriteMeta, PintaTilemapMeta, PintaTilesetMeta } from '../core/types'
 import { packTileset, tilesetPngDataUrl } from '../tiles/packTileset'
 import { packVectorTileset, vectorTilesetPngDataUrl } from '../tiles/packVectorTileset'
 import { tilemapPngDataUrl } from '../tiles/renderTilemap'
@@ -16,6 +22,7 @@ import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
 import { vectorPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
 import { packSpritesheet, spritesheetPngDataUrl } from './spritesheet'
+import { tilemapToStudioGrid } from './studioGrid'
 import { packVectorSpritesheet, vectorSheetPngDataUrl } from './vectorSheet'
 
 export interface StudioPayload {
@@ -26,6 +33,8 @@ export interface StudioPayload {
   sprite?: PintaSpriteMeta
   /** Só tilesets: tamanho + índices sólidos p/ o seletor de tiles do Estúdio. */
   tileset?: PintaTilesetMeta
+  /** Só tilemaps: grade jogável + folha de peças EMBUTIDA (mapa auto-contido). */
+  tilemap?: PintaTilemapMeta
 }
 
 /** Extrai as animações da geometria da folha (mesma p/ pixel e vetor). */
@@ -50,6 +59,25 @@ export function spriteMetaFromPack(pack: {
 /** Índices SÓLIDOS de um tileset (boolean[] paralelo → lista de índices). */
 export function tilesetMetaFrom(tileSize: number, solid: readonly boolean[]): PintaTilesetMeta {
   return { tileSize, solid: solid.flatMap((s, i) => (s ? [i] : [])) }
+}
+
+/**
+ * Metadados de MAPA (puro, testável sem canvas): grade no formato do Estúdio +
+ * sólidos do tileset + a folha de peças já rasterizada (`sheet`).
+ */
+export function tilemapMetaFrom(
+  tilemap: TilemapAsset,
+  tileset: AnyTilesetAsset,
+  sheet: { dataUrl: string; width: number; height: number },
+): PintaTilemapMeta {
+  return {
+    tileSize: tileset.tileSize,
+    cols: tilemap.cols,
+    rows: tilemap.rows,
+    grid: tilemapToStudioGrid(tilemap),
+    solid: tilesetMetaFrom(tileset.tileSize, tileset.solid).solid,
+    tileset: sheet,
+  }
 }
 
 // Teto de UM asset no Studio — manter em sincronia com
@@ -88,15 +116,31 @@ export async function buildStudioPayload(
     case 'tilemap': {
       const tileset = findAsset(asset.tilesetId)
       if (!tileset || !isTilesetKind(tileset)) return null
+      // dataUrl do ASSET = o mapa achatado (miniatura reconhecível na biblioteca).
       const dataUrl =
         tileset.kind === 'tileset'
           ? tilemapPngDataUrl(asset, tileset)
           : await vectorTilemapPngDataUrl(asset, tileset)
       if (!dataUrl) return null
+      // A FOLHA de peças vai EMBUTIDA no metadado (mapa auto-contido): o bloco
+      // "Criar mapa do meu desenho" monta grade + peças + sólidos sozinho.
+      const sheetPack =
+        tileset.kind === 'tileset' ? packTileset(tileset) : packVectorTileset(tileset)
+      const sheetUrl =
+        tileset.kind === 'tileset'
+          ? tilesetPngDataUrl(tileset)
+          : await vectorTilesetPngDataUrl(tileset)
+      if (!sheetUrl) return null
+      const sheet = {
+        dataUrl: sheetUrl,
+        width: sheetPack.columns * tileset.tileSize,
+        height: sheetPack.rows * tileset.tileSize,
+      }
       return {
         dataUrl,
         width: asset.cols * tileset.tileSize,
         height: asset.rows * tileset.tileSize,
+        tilemap: tilemapMetaFrom(asset, tileset, sheet),
       }
     }
     case 'vector-background': {

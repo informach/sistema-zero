@@ -1,7 +1,13 @@
 import type { JSX } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { assetManifest, type ExtraFile, type InstalledExtension, type ProjectAsset } from '#core'
+import {
+  assetManifest,
+  assetMetaManifest,
+  type ExtraFile,
+  type InstalledExtension,
+  type ProjectAsset,
+} from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import {
@@ -267,6 +273,10 @@ export function PreviewIframe(): JSX.Element {
   // orçamento de render: assets são dados PASSIVOS (decode de imagem), não custo de
   // CPU do código do aluno, então não devem disparar o "preview pausado".
   const assetsManifest = useMemo(() => assetManifest(assets), [assets])
+  // Metadados de preview (mapa de tiles do Pinta/fatiador) — mesmo ciclo de vida
+  // do manifesto; ENTRA nas deps do doc: reenviar um mapa alterado tem que
+  // atualizar o preview sem reload manual.
+  const assetsMeta = useMemo(() => assetMetaManifest(assets), [assets])
 
   const previewBudgetInput = useMemo(
     () => ({
@@ -327,6 +337,7 @@ export function PreviewIframe(): JSX.Element {
       // Manifesto de assets: ESTE entra nas deps (adicionar/remover imagem deve
       // reconstruir o doc para o sprite aparecer/sumir no preview).
       assets: assetsManifest,
+      assetsMeta,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -348,6 +359,7 @@ export function PreviewIframe(): JSX.Element {
     installedPermissions,
     extensionImports,
     assetsManifest,
+    assetsMeta,
     previewSecurity,
     renderNonce,
   ])

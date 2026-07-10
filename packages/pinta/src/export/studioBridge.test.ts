@@ -9,7 +9,12 @@ import {
   type PintaAsset,
 } from '../core/project'
 import { packSpritesheet } from './spritesheet'
-import { buildStudioPayload, spriteMetaFromPack, tilesetMetaFrom } from './studioBridge'
+import {
+  buildStudioPayload,
+  spriteMetaFromPack,
+  tilemapMetaFrom,
+  tilesetMetaFrom,
+} from './studioBridge'
 
 const REF = { animationId: null, frameIndex: 0 }
 
@@ -68,5 +73,38 @@ describe('metadados da ponte (puros, sem raster)', () => {
   it('tilesetMetaFrom mapeia boolean[] paralelo → lista de índices sólidos', () => {
     expect(tilesetMetaFrom(16, [false, true, false, true])).toEqual({ tileSize: 16, solid: [1, 3] })
     expect(tilesetMetaFrom(8, [])).toEqual({ tileSize: 8, solid: [] })
+  })
+
+  it('tilemapMetaFrom junta grade (formato do Estúdio) + sólidos + folha embutida', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    tileset.solid[1] = true
+    const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 2 })
+    const layer = tilemap.layers[0]
+    if (!layer) throw new Error('tilemap sem camada')
+    layer.cells.set([0, 1, -1, 1])
+    const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 32, height: 16 }
+    const meta = tilemapMetaFrom(tilemap, tileset, sheet)
+    expect(meta).toEqual({
+      tileSize: 16,
+      cols: 2,
+      rows: 2,
+      grid: '0 1;. 1',
+      solid: [1],
+      tileset: sheet,
+    })
+  })
+
+  it('tilemapMetaFrom é genérico sobre o ESTILO do tileset (vetorial idem)', () => {
+    const tileset = createVectorTilesetAsset({ name: 'pecas-v', tileSize: 16 })
+    tileset.solid[0] = true
+    const tilemap = createTilemapAsset({ name: 'fase-v', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const layer = tilemap.layers[0]
+    if (!layer) throw new Error('tilemap sem camada')
+    layer.cells.set([0, -1])
+    const sheet = { dataUrl: 'data:image/png;base64,BBBB', width: 16, height: 16 }
+    const meta = tilemapMetaFrom(tilemap, tileset, sheet)
+    expect(meta.grid).toBe('0 .')
+    expect(meta.solid).toEqual([0])
+    expect(meta.tileset).toBe(sheet)
   })
 })

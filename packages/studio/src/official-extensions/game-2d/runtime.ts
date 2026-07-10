@@ -32,6 +32,11 @@ export const gameTwoDRuntime = `(function () {
   var ASSETS = (window.__SZGAME_ASSETS && typeof window.__SZGAME_ASSETS === 'object')
     ? window.__SZGAME_ASSETS
     : {};
+  // Metadados de preview por asset (hoje: mapas de tiles do Pinta/fatiador),
+  // semeados pelo mesmo assetsBridge em __SZGAME_ASSET_META.
+  var ASSET_META = (window.__SZGAME_ASSET_META && typeof window.__SZGAME_ASSET_META === 'object')
+    ? window.__SZGAME_ASSET_META
+    : {};
   var imageCache = Object.create(null);
 
   function now() {
@@ -129,7 +134,98 @@ export const gameTwoDRuntime = `(function () {
     if (!sprite) return;
     sprite.image = name ? loadImage(name) : null;
     sprite.anim = null;
+    sprite._animState = null;
     sprite._imgHooked = false;
+  }
+
+  // ---- Figuras: sprite desenhado por codigo (v0.23.0) ----
+  // Uma FIGURA e uma funcao de desenho nomeada. O sprite guarda skin custom
+  // apontando a figura; ao desenhar, o runtime translada o ctx para o canto do
+  // sprite e chama a figura em coords LOCAIS (0,0 = canto). Ganha giro/flip/
+  // piscar/transparencia do wrapper (drawSprite) de graca.
+  var _shapes = Object.create(null);
+  var _shapeW = 0, _shapeH = 0;
+
+  /** Guarda a figura (funcao de desenho) sob um nome. */
+  function defineShape(name, fn) {
+    if (name && typeof name === 'string' && typeof fn === 'function') _shapes[name] = fn;
+  }
+
+  /** Faz o sprite usar uma figura (cancela imagem/animacao — uma coisa por vez). */
+  function setShape(sprite, name) {
+    if (!sprite) return;
+    sprite.skin = { kind: 'custom', shape: name };
+    sprite.image = null;
+    sprite.anim = null;
+    sprite._animState = null;
+  }
+
+  /** Cria um sprite ja com uma figura (mesmo modelo fisico do createSprite). */
+  function createShapeSprite(name, opts) {
+    var s = createSprite(opts);
+    setShape(s, name);
+    return s;
+  }
+
+  /** A largura / altura do sprite que esta sendo desenhado (para centralizar/escalar). */
+  function shapeW() { return _shapeW; }
+  function shapeH() { return _shapeH; }
+
+  /**
+   * Desenha a figura do sprite: translada para o canto do sprite (coords locais)
+   * e roda a funcao da crianca. Sem figura registrada -> retangulo da cor (fallback).
+   */
+  function drawCustomShape(ctx, sprite) {
+    var name = sprite.skin ? sprite.skin.shape : null;
+    var fn = name ? _shapes[name] : null;
+    if (typeof fn !== 'function') {
+      ctx.fillStyle = sprite.color;
+      ctx.fillRect(sprite.x, sprite.y, sprite.w, sprite.h);
+      return;
+    }
+    _shapeW = sprite.w;
+    _shapeH = sprite.h;
+    ctx.save();
+    ctx.translate(sprite.x, sprite.y);
+    try { fn(ctx); } catch (e) { console.error(e && e.message ? e.message : e); }
+    ctx.restore();
+  }
+
+  // Blocos SIMPLES de desenho (coords locais dentro da figura; recebem o ctx da
+  // figura). Cada um e autossuficiente (begin/fill) para nao depender de estado.
+  function paintRect(ctx, x, y, w, h, color) {
+    ctx.fillStyle = color || '#000000';
+    ctx.fillRect(x || 0, y || 0, w || 0, h || 0);
+  }
+  function paintCircle(ctx, x, y, r, color) {
+    ctx.fillStyle = color || '#000000';
+    ctx.beginPath();
+    ctx.arc(x || 0, y || 0, Math.max(0, r || 0), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  function paintEllipse(ctx, x, y, w, h, color) {
+    var rw = Math.max(0, (w || 0) / 2), rh = Math.max(0, (h || 0) / 2);
+    ctx.fillStyle = color || '#000000';
+    ctx.beginPath();
+    ctx.ellipse((x || 0) + rw, (y || 0) + rh, rw, rh, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  function paintTriangle(ctx, x1, y1, x2, y2, x3, y3, color) {
+    ctx.fillStyle = color || '#000000';
+    ctx.beginPath();
+    ctx.moveTo(x1 || 0, y1 || 0);
+    ctx.lineTo(x2 || 0, y2 || 0);
+    ctx.lineTo(x3 || 0, y3 || 0);
+    ctx.closePath();
+    ctx.fill();
+  }
+  function paintLine(ctx, x1, y1, x2, y2, color, width) {
+    ctx.strokeStyle = color || '#000000';
+    ctx.lineWidth = (typeof width === 'number' && width > 0) ? width : 2;
+    ctx.beginPath();
+    ctx.moveTo(x1 || 0, y1 || 0);
+    ctx.lineTo(x2 || 0, y2 || 0);
+    ctx.stroke();
   }
 
   /**
@@ -147,6 +243,80 @@ export const gameTwoDRuntime = `(function () {
       fps: (typeof fps === 'number' && fps > 0) ? fps : 8,
       start: now()
     };
+  }
+
+  // ---- Animação por ESTADO (troca sozinha conforme o sprite se move) ----
+  // "Tomar dano" dura este tanto de quadros depois de perder vida (funciona
+  // mesmo sem o piscar visual; o piscar também conta como dano).
+  var HURT_FRAMES = 30;
+  // Estado sem animação registrada cai para o parente mais próximo, numa ordem
+  // FIXA e previsível (caindo parece pular; pular parece andar; etc.).
+  var ANIM_FALLBACK = {
+    caindo: ['pulando', 'andando', 'parado'],
+    pulando: ['andando', 'parado'],
+    vertical: ['andando', 'parado'],
+    dano: ['andando', 'parado'],
+    andando: ['parado'],
+    parado: []
+  };
+
+  /**
+   * Guarda no sprite a animação de UM estado (parado/andando/vertical/pulando/
+   * caindo/dano). Quem troca sozinho é o autoAnimate, no "a cada quadro".
+   */
+  function setStateAnimation(sprite, state, sheet, from, to, fps) {
+    if (!sprite || !sheet || !state) return;
+    if (!sprite.animStates) sprite.animStates = {};
+    var f = (typeof from === 'number') ? from : 0;
+    var t = (typeof to === 'number') ? to : f;
+    sprite.animStates[state] = {
+      sheet: sheet,
+      from: Math.max(0, Math.floor(f)),
+      to: Math.max(0, Math.floor(t)),
+      fps: (typeof fps === 'number' && fps > 0) ? fps : 8
+    };
+  }
+
+  // Decide o estado do sprite AGORA, por prioridade: dano > no ar (pulando/
+  // caindo, só quando alguém marcou onGround === false) > andando > vertical >
+  // parado. Jogo top-down (sem gravidade) nunca marca onGround, então nunca
+  // entra em pulando/caindo.
+  function _resolveAnimState(s) {
+    if ((s.hurtFrames || 0) > 0 || (s.blinkFrames || 0) > 0) return 'dano';
+    if (s.onGround === false) return ((s.vy || 0) < 0) ? 'pulando' : 'caindo';
+    if (Math.abs(s.vx || 0) > 0.01) return 'andando';
+    if (Math.abs(s.vy || 0) > 0.01) return 'vertical';
+    return 'parado';
+  }
+
+  /**
+   * Troca a animação do sprite sozinho conforme o estado E vira o sprite para
+   * onde ele anda (flip automático). Use DENTRO do "a cada quadro do jogo".
+   * Só re-dispara setAnimation quando o estado RESOLVIDO muda — chamar
+   * setAnimation todo quadro reiniciaria o tempo e congelaria no 1º quadro.
+   */
+  function autoAnimate(s) {
+    if (!s) return;
+    if ((s.hurtFrames || 0) > 0) s.hurtFrames--;
+    // Flip automático: andando p/ a esquerda vira o desenho; parado mantém o
+    // último lado (o "Virar o sprite" manual vale enquanto está parado).
+    var vx = s.vx || 0;
+    if (vx > 0.01) s.facing = 1;
+    else if (vx < -0.01) s.facing = -1;
+    var states = s.animStates;
+    if (!states) return;
+    var want = _resolveAnimState(s);
+    var key = states[want] ? want : null;
+    if (!key) {
+      var chain = ANIM_FALLBACK[want] || [];
+      for (var i = 0; i < chain.length; i++) {
+        if (states[chain[i]]) { key = chain[i]; break; }
+      }
+    }
+    if (!key || s._animState === key) return;
+    s._animState = key;
+    var cfg = states[key];
+    setAnimation(s, cfg.sheet, cfg.from, cfg.to, cfg.fps);
   }
 
   /**
@@ -221,6 +391,7 @@ export const gameTwoDRuntime = `(function () {
       if (sprite.skin.kind === 'obstacle') { drawObstacleSprite(ctx, sprite); return; }
       if (sprite.skin.kind === 'egg') { drawEggSprite(ctx, sprite); return; }
       if (sprite.skin.kind === 'gorilla') { drawGorilla(ctx, sprite); return; }
+      if (sprite.skin.kind === 'custom') { drawCustomShape(ctx, sprite); return; }
     }
     var a = sprite.anim;
     if (a && a.sheet && a.sheet.image && a.sheet.image.loaded) {
@@ -571,9 +742,11 @@ export const gameTwoDRuntime = `(function () {
     sprite.vy = (sprite.vy || 0) + 0.6; // gravidade
     sprite.y += sprite.vy;
     var floor = stageH(ctx) - sprite.h;
-    var onGround = false;
-    if (sprite.y >= floor) { sprite.y = floor; sprite.vy = 0; onGround = true; }
-    if (keys.up && onGround) sprite.vy = -j;
+    // Persiste "no chão" NO sprite: a animação por estado (autoAnimate) e os
+    // jogos leem s.onGround p/ saber se está pulando/caindo.
+    sprite.onGround = false;
+    if (sprite.y >= floor) { sprite.y = floor; sprite.vy = 0; sprite.onGround = true; }
+    if (keys.up && sprite.onGround) sprite.vy = -j;
   }
 
   /** Top-down: 4 direções com diagonal normalizada (diagonal não fica mais rápida). */
@@ -875,6 +1048,44 @@ export const gameTwoDRuntime = `(function () {
       oy: 0
     };
   }
+
+  /**
+   * Cria um tilemap PRONTO a partir de um desenho de MAPA (Pinta ou fatiador):
+   * o metadado do asset traz a grade, o tamanho do tile, os solidos e a FOLHA
+   * de pecas embutida. Sem metadado, devolve um mapa vazio (desenhar/colidir
+   * viram no-op) e avisa no console — o jogo nunca quebra.
+   */
+  function createTileMapFromAsset(name) {
+    var entry = null;
+    if (name && typeof name === 'string' &&
+        Object.prototype.hasOwnProperty.call(ASSET_META, name)) {
+      entry = ASSET_META[name];
+    }
+    var meta = (entry && entry.tilemap && typeof entry.tilemap === 'object') ? entry.tilemap : null;
+    if (!meta || !meta.tileset || typeof meta.tileset.dataUrl !== 'string' ||
+        typeof meta.grid !== 'string') {
+      try {
+        console.warn('O desenho "' + name + '" nao veio com um mapa do Pinta. Envie o MAPA pelo foguete do Pinta (ou use "Criar mapa de tiles" para montar na mao).');
+      } catch (e) {}
+      return createTileMap({ image: '', tile: 32, solid: '', grid: '' });
+    }
+    var solidText = '';
+    if (meta.solid && typeof meta.solid.length === 'number') {
+      for (var i = 0; i < meta.solid.length; i++) {
+        var n = meta.solid[i];
+        if (typeof n === 'number' && n >= 0) {
+          solidText += (solidText === '' ? '' : ' ') + Math.floor(n);
+        }
+      }
+    }
+    // A folha embutida entra como dataUrl direto — loadImage aceita url/dataUrl.
+    return createTileMap({
+      image: meta.tileset.dataUrl,
+      tile: (typeof meta.tileSize === 'number' && meta.tileSize > 0) ? meta.tileSize : 32,
+      solid: solidText,
+      grid: meta.grid
+    });
+  }
   /** Nº de colunas do mapa (maior linha). */
   function tileMapCols(map) {
     var cols = 0;
@@ -959,7 +1170,12 @@ export const gameTwoDRuntime = `(function () {
           if (sprite.x < tx) sprite.x -= overlapX; else sprite.x += overlapX;
           sprite.vx = 0;
         } else {
-          if (sprite.y < ty) { sprite.y -= overlapY; if ((sprite.vy || 0) > 0) sprite.vy = 0; }
+          if (sprite.y < ty) {
+            sprite.y -= overlapY;
+            // Pousou num tile (empurrado p/ CIMA enquanto caía): está no chão.
+            // Nunca seta false — o helper de gravidade do quadro já fez isso.
+            if ((sprite.vy || 0) > 0) { sprite.vy = 0; sprite.onGround = true; }
+          }
           else { sprite.y += overlapY; if ((sprite.vy || 0) < 0) sprite.vy = 0; }
         }
       }
@@ -1383,6 +1599,258 @@ export const gameTwoDRuntime = `(function () {
     }
   }
 
+  // ---- Tipos de inimigo (v0.22.0) ----
+  // Um TIPO de inimigo é um GRUPO estendido: { items, bullets: {items}, config,
+  // onDefeat }. Como todos os helpers de grupo leem só .items, os blocos de
+  // grupo (para cada / contar / colisões / tirar) funcionam direto no tipo.
+  function createEnemyType(opts) {
+    opts = opts || {};
+    return {
+      items: [],
+      bullets: { items: [] },
+      config: {
+        behavior: opts.behavior || 'patrulha',
+        color: opts.color || '#e4573d',
+        image: (typeof opts.image === 'string') ? opts.image : '',
+        hp: (typeof opts.hp === 'number' && opts.hp > 0) ? opts.hp : 3,
+        speed: (typeof opts.speed === 'number') ? opts.speed : 2,
+        dmg: (typeof opts.dmg === 'number') ? opts.dmg : 1,
+        w: (typeof opts.w === 'number' && opts.w > 0) ? opts.w : 32,
+        h: (typeof opts.h === 'number' && opts.h > 0) ? opts.h : 32,
+        // Ajustes finos por comportamento (bloco "Ajustar no tipo de inimigo…").
+        jump: 10,
+        jumpRate: 90,
+        range: 80,
+        rate: 90,
+        shotSpeed: 4,
+        animStates: null
+      },
+      onDefeat: null
+    };
+  }
+
+  /** Guarda a animação de UM estado no TIPO (vale p/ todos os inimigos dele). */
+  function setEnemyStateAnimation(type, state, sheet, from, to, fps) {
+    if (!type || !type.config || !sheet || !state) return;
+    if (!type.config.animStates) type.config.animStates = {};
+    var f = (typeof from === 'number') ? from : 0;
+    var t = (typeof to === 'number') ? to : f;
+    type.config.animStates[state] = {
+      sheet: sheet,
+      from: Math.max(0, Math.floor(f)),
+      to: Math.max(0, Math.floor(t)),
+      fps: (typeof fps === 'number' && fps > 0) ? fps : 8
+    };
+  }
+
+  /** Ajuste fino por comportamento: pulo/ritmo (saltador), alcance (voador), cadencia/tiro (atirador). */
+  function setEnemyTypeParam(type, param, value) {
+    // value !== value = NaN (typeof NaN e 'number'; sem depender de isNaN).
+    if (!type || !type.config || typeof value !== 'number' || value !== value) return;
+    var c = type.config;
+    if (param === 'pulo') c.jump = value;
+    else if (param === 'ritmo') c.jumpRate = Math.max(1, Math.round(value));
+    else if (param === 'alcance') c.range = value;
+    else if (param === 'cadencia') c.rate = Math.max(1, Math.round(value));
+    else if (param === 'tiro') c.shotSpeed = value;
+  }
+
+  /** Solta um inimigo do tipo em x/y (aplica vida, dano e animações do tipo). */
+  function spawnEnemy(type, x, y) {
+    if (!type || !type.items || !type.config) return null;
+    if (type.items.length >= MAX_GROUP) return null;
+    var c = type.config;
+    var s = createSprite({
+      x: (typeof x === 'number') ? x : 0,
+      y: (typeof y === 'number') ? y : 0,
+      w: c.w,
+      h: c.h,
+      color: c.color,
+      image: c.image || null
+    });
+    s.dmg = c.dmg;
+    setHealth(s, c.hp);
+    s._dir = 1;
+    s._homeX = s.x;
+    s._homeY = s.y;
+    if (c.animStates) s.animStates = c.animStates;
+    type.items.push(s);
+    return s;
+  }
+
+  /**
+   * Move TODOS os inimigos do tipo conforme o comportamento, anima (autoAnimate),
+   * atira (atirador), remove os derrotados (vida 0 -> particulas + "quando for
+   * derrotado") e move/poda os tiros. Use DENTRO do "a cada quadro".
+   */
+  function updateEnemyType(type, ctx, target) {
+    if (!type || !type.items || !ctx || !ctx.canvas) return;
+    var c = type.config || {};
+    var w = stageW(ctx), h = stageH(ctx);
+    var g = world.gravity > 0 ? world.gravity : 0.6;
+    for (var i = type.items.length - 1; i >= 0; i--) {
+      var s = type.items[i];
+      if (!s) { type.items.splice(i, 1); continue; }
+      // Animações registradas DEPOIS do spawn ainda alcançam este inimigo.
+      if (c.animStates && !s.animStates) s.animStates = c.animStates;
+      var b = c.behavior;
+      if (b === 'perseguidor') {
+        // Persegue o CENTRO do alvo GRAVANDO vx/vy (flip/animação de graça).
+        if (target) {
+          var dx = (target.x + (target.w || 0) / 2) - (s.x + s.w / 2);
+          var dy = (target.y + (target.h || 0) / 2) - (s.y + s.h / 2);
+          var d = Math.sqrt(dx * dx + dy * dy);
+          if (d > c.speed) { s.vx = (dx / d) * c.speed; s.vy = (dy / d) * c.speed; }
+          else { s.vx = dx; s.vy = dy; }
+          s.x += s.vx;
+          s.y += s.vy;
+        } else { s.vx = 0; s.vy = 0; }
+      } else if (b === 'voador') {
+        // Vai-e-volta voando na horizontal, "alcance" px da posicao de nascenca.
+        if (s.x - s._homeX >= c.range) s._dir = -1;
+        if (s._homeX - s.x >= c.range) s._dir = 1;
+        s.vx = (s._dir || 1) * c.speed;
+        s.vy = 0;
+        s.x += s.vx;
+      } else if (b === 'voador-vertical') {
+        if (s.y - s._homeY >= c.range) s._dir = -1;
+        if (s._homeY - s.y >= c.range) s._dir = 1;
+        s.vy = (s._dir || 1) * c.speed;
+        s.vx = 0;
+        s.y += s.vy;
+      } else if (b === 'saltador') {
+        // Pula de tempos em tempos ("ritmo" quadros), com gravidade e chao.
+        s.vx = 0;
+        s.vy = (s.vy || 0) + g;
+        s.y += s.vy;
+        var floorJ = h - s.h;
+        s.onGround = false;
+        if (s.y >= floorJ) { s.y = floorJ; s.vy = 0; s.onGround = true; }
+        if (typeof s._jcd !== 'number') s._jcd = c.jumpRate;
+        if (s.onGround) {
+          s._jcd -= 1;
+          if (s._jcd <= 0) { s.vy = -c.jump; s.onGround = false; s._jcd = c.jumpRate; }
+        }
+      } else if (b === 'atirador') {
+        // Fica no chao, vira para o alvo e atira a cada "cadencia" quadros.
+        s.vx = 0;
+        s.vy = (s.vy || 0) + g;
+        s.y += s.vy;
+        var floorS = h - s.h;
+        s.onGround = false;
+        if (s.y >= floorS) { s.y = floorS; s.vy = 0; s.onGround = true; }
+        if (target) {
+          s.facing = ((target.x + (target.w || 0) / 2) < (s.x + s.w / 2)) ? -1 : 1;
+          if (typeof s._scd !== 'number') s._scd = c.rate;
+          s._scd -= 1;
+          if (s._scd <= 0) {
+            s._scd = c.rate;
+            var cx = s.x + s.w / 2, cy = s.y + s.h / 2;
+            var tx = target.x + (target.w || 0) / 2, ty = target.y + (target.h || 0) / 2;
+            var ddx = tx - cx, ddy = ty - cy;
+            var dd = Math.sqrt(ddx * ddx + ddy * ddy);
+            if (dd < 0.001) { ddx = (s.facing || 1); ddy = 0; dd = 1; }
+            var shot = spawnBullet(type.bullets, {
+              x: cx,
+              y: cy,
+              radius: 4,
+              color: c.color,
+              vx: (ddx / dd) * c.shotSpeed,
+              vy: (ddy / dd) * c.shotSpeed
+            });
+            if (shot) shot.dmg = c.dmg;
+          }
+        }
+      } else {
+        // patrulha (default): anda na horizontal e VIRA na parede ou na borda.
+        // "Parede" = alguem zerou o vx dele neste meio-tempo (o "Impedir de
+        // atravessar os tiles" zera o vx ao bater) — 1 quadro de latencia, ok.
+        if (s._moved && (s.vx || 0) === 0) s._dir = -(s._dir || 1);
+        if (s.x <= 0) s._dir = 1;
+        if (s.x + s.w >= w) s._dir = -1;
+        s.vx = (s._dir || 1) * c.speed;
+        s.x += s.vx;
+        s.vy = (s.vy || 0) + g;
+        s.y += s.vy;
+        var floorP = h - s.h;
+        s.onGround = false;
+        if (s.y >= floorP) { s.y = floorP; s.vy = 0; s.onGround = true; }
+        s._moved = true;
+      }
+      autoAnimate(s);
+      // Derrotado: some soltando particulas e avisa o "quando for derrotado".
+      if (typeof s.hp === 'number' && s.hp <= 0) {
+        type.items.splice(i, 1);
+        emitParticles(s.x + s.w / 2, s.y + s.h / 2, 12, s.color || c.color);
+        if (typeof type.onDefeat === 'function') {
+          try { type.onDefeat(s); } catch (err) { console.error(err && err.message ? err.message : err); }
+        }
+      }
+    }
+    // Tiros dos atiradores: linha RETA (sem a gravidade do mundo — nao usar
+    // updateGroup aqui) + poda fora da tela (margem 40).
+    var bs = (type.bullets && type.bullets.items) ? type.bullets.items : null;
+    if (bs) {
+      for (var k = bs.length - 1; k >= 0; k--) {
+        var shot2 = bs[k];
+        if (!shot2) { bs.splice(k, 1); continue; }
+        shot2.x += shot2.vx || 0;
+        shot2.y += shot2.vy || 0;
+        if (shot2.x < -40 || shot2.y < -40 || shot2.x > w + 40 || shot2.y > h + 40) bs.splice(k, 1);
+      }
+    }
+  }
+
+  /** Desenha os inimigos do tipo E os tiros deles. */
+  function drawEnemyType(ctx, type) {
+    if (!ctx || !type) return;
+    drawGroup(ctx, type);
+    drawGroup(ctx, type.bullets);
+  }
+
+  /** Registra "quando um inimigo do tipo for derrotado" (roda com o inimigo). */
+  function onEnemyDefeated(type, fn) {
+    if (!type) return;
+    type.onDefeat = (typeof fn === 'function') ? fn : null;
+  }
+
+  /**
+   * Para cada TIRO do tipo que encosta no sprite: REMOVE o tiro e roda fn(tiro).
+   * Varredura por quadro (use no "a cada quadro"), espelho do overlapSpriteGroup.
+   */
+  function overlapEnemyShots(getSprite, type, fn) {
+    if (typeof getSprite !== 'function' || typeof fn !== 'function') return;
+    if (!type || !type.bullets || !type.bullets.items) return;
+    var sprite = null;
+    try { sprite = getSprite(); } catch (e) { return; }
+    if (!sprite) return;
+    var items = type.bullets.items;
+    for (var i = items.length - 1; i >= 0; i--) {
+      var shot = items[i];
+      if (shot && isColliding(sprite, shot)) {
+        items.splice(i, 1);
+        try { fn(shot); } catch (err) { console.error(err && err.message ? err.message : err); }
+      }
+    }
+  }
+
+  /** O dano de contato guardado no inimigo (ou no tiro dele). */
+  function enemyDamage(s) {
+    return (s && typeof s.dmg === 'number') ? s.dmg : 1;
+  }
+
+  /**
+   * Machuca o sprite com o dano do inimigo/tiro e faz piscar. Enquanto pisca,
+   * e INVENCIVEL (nao leva dano de novo) — sem isso, o contato continuo
+   * drenaria a vida a cada quadro.
+   */
+  function hurtByEnemy(s, e) {
+    if (!s || !e) return;
+    if ((s.blinkFrames || 0) > 0) return;
+    changeHealth(s, -enemyDamage(e));
+    blink(s, 45);
+  }
+
   // ---- HUD no canvas: placar, texto, vidas (corações) e barra ----
   /** Escreve "rótulo valor" (ex.: "Pontos: 5") na tela. */
   function drawScore(ctx, label, value, x, y, color, size) {
@@ -1570,12 +2038,13 @@ export const gameTwoDRuntime = `(function () {
     sprite.vy = (sprite.vy || 0) + g;
     sprite.y += sprite.vy;
     var floor = stageH(ctx) - sprite.h;
-    var onGround = false;
-    if (sprite.y >= floor) { sprite.y = floor; sprite.vy = 0; onGround = true; }
+    // Persiste "no chão" NO sprite (mesmo contrato do platformer/autoAnimate).
+    sprite.onGround = false;
+    if (sprite.y >= floor) { sprite.y = floor; sprite.vy = 0; sprite.onGround = true; }
     var tap = pointer.down && !_jumpTapPrev;
     _jumpTapPrev = pointer.down;
     var wantJump = keys.up || keyDown('Space') || tap;
-    if (wantJump && onGround) sprite.vy = -j;
+    if (wantJump && sprite.onGround) sprite.vy = -j;
   }
 
   // Linha do chão do mundo "corrida": fica um pouco acima da base p/ o dino
@@ -3062,6 +3531,9 @@ export const gameTwoDRuntime = `(function () {
     s.hp = (typeof s.hp === 'number' ? s.hp : 0) + d;
     if (s.hp < 0) s.hp = 0;
     if (typeof s.hpMax === 'number' && s.hp > s.hpMax) s.hp = s.hpMax;
+    // Perdeu vida = "tomando dano" por alguns quadros (a animação por estado
+    // lê isto; decrementa no autoAnimate — único leitor).
+    if (d < 0) s.hurtFrames = HURT_FRAMES;
   }
   function getHealth(s) { return s && typeof s.hp === 'number' ? s.hp : 0; }
   function hasHealth(s) { return !!s && typeof s.hp === 'number' && s.hp > 0; }
@@ -3324,6 +3796,20 @@ export const gameTwoDRuntime = `(function () {
     setImage: setImage,
     setAnimation: setAnimation,
     drawFrame: drawFrame,
+    // Animação por estado + flip automático (v0.22.0).
+    setStateAnimation: setStateAnimation,
+    autoAnimate: autoAnimate,
+    // Figuras: sprite desenhado por código (v0.23.0).
+    defineShape: defineShape,
+    setShape: setShape,
+    createShapeSprite: createShapeSprite,
+    shapeW: shapeW,
+    shapeH: shapeH,
+    paintRect: paintRect,
+    paintCircle: paintCircle,
+    paintEllipse: paintEllipse,
+    paintTriangle: paintTriangle,
+    paintLine: paintLine,
     // Movimento + efeitos (v0.4.0).
     platformer: platformer,
     topDown: topDown,
@@ -3335,6 +3821,7 @@ export const gameTwoDRuntime = `(function () {
     drawParticles: _camWrap(drawParticles),
     // Tiles / tilemaps (v0.5.0).
     createTileMap: createTileMap,
+    createTileMapFromAsset: createTileMapFromAsset,
     drawTileMap: _camWrap(drawTileMap),
     collideTileMap: collideTileMap,
     tileAt: tileAt,
@@ -3370,6 +3857,17 @@ export const gameTwoDRuntime = `(function () {
     playShoot: playShoot,
     playExplosion: playExplosion,
     overlapSpriteGroup: overlapSpriteGroup,
+    // Tipos de inimigo (v0.22.0).
+    createEnemyType: createEnemyType,
+    setEnemyStateAnimation: setEnemyStateAnimation,
+    setEnemyTypeParam: setEnemyTypeParam,
+    spawnEnemy: spawnEnemy,
+    updateEnemyType: updateEnemyType,
+    drawEnemyType: _camWrap(drawEnemyType),
+    onEnemyDefeated: onEnemyDefeated,
+    overlapEnemyShots: overlapEnemyShots,
+    enemyDamage: enemyDamage,
+    hurtByEnemy: hurtByEnemy,
     // Nave clássica: girar + impulsionar na direção apontada (v0.10.0).
     rotateSprite: rotateSprite,
     pointSprite: pointSprite,

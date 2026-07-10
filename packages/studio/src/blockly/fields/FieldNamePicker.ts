@@ -48,6 +48,8 @@ export type NameKind =
   | 'canvas'
   | 'spritesheet'
   | 'tilemap'
+  | 'enemytype'
+  | 'shape'
   | 'scene3d'
   | 'object3d'
   | 'group3d'
@@ -62,6 +64,8 @@ const NAME_KINDS: readonly NameKind[] = [
   'canvas',
   'spritesheet',
   'tilemap',
+  'enemytype',
+  'shape',
   'scene3d',
   'object3d',
   'group3d',
@@ -124,7 +128,16 @@ const FUNCTION_DECL_BLOCKS: Record<string, string[]> = { sz_js_function: ['NAME'
 const CANVAS_DECL_BLOCKS: Record<string, string[]> = { sz_html_canvas: ['ID'] }
 /** Folhas de quadros / mapas de tiles do Jogo 2D (fonte dos seletores SHEET/MAP). */
 const SPRITESHEET_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_load_spritesheet: ['NAME'] }
-const TILEMAP_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_create_tilemap: ['NAME'] }
+const TILEMAP_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g2d_create_tilemap: ['NAME'],
+  sz_g2d_create_tilemap_from_asset: ['NAME'],
+}
+
+/** Figuras (desenho por código) do Jogo 2D — fonte do seletor SHAPE. */
+const SHAPE_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_define_shape: ['NAME'] }
+function collectShapes(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, SHAPE_DECL_BLOCKS)
+}
 
 /** Cenas/mundos do Jogo 3D (fonte do seletor WORLD). */
 const SCENE3D_DECL_BLOCKS: Record<string, string[]> = {
@@ -182,9 +195,24 @@ const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
   sz_val_array_find: ['ITEM'],
 }
 
-/** Blocos que DECLARAM um grupo de sprites nomeado (Jogo 2D). */
+/**
+ * Blocos que DECLARAM um grupo de sprites nomeado (Jogo 2D). O TIPO de inimigo
+ * também entra aqui: ele É um grupo estendido (tem .items) — os blocos de grupo
+ * (para cada / contar / colisões / tirar) funcionam direto no tipo.
+ */
 const GROUP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_group: ['NAME'],
+  sz_g2d_define_enemy_type: ['NAME'],
+}
+
+/** Blocos que DECLARAM um TIPO de inimigo nomeado (Jogo 2D). */
+const ENEMYTYPE_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g2d_define_enemy_type: ['NAME'],
+}
+
+/** Tipos de inimigo criados no workspace, na ordem dos blocos, sem repetir. */
+function collectEnemyTypes(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, ENEMYTYPE_DECL_BLOCKS)
 }
 
 /**
@@ -254,6 +282,17 @@ const KIND_UI: Record<NameKind, KindUI> = {
     icon: '🗺️',
     placeholder: 'nome do mapa de tiles',
     empty: 'Nenhum mapa de tiles ainda — crie um ("Criar mapa de tiles") ou digite o nome abaixo.',
+  },
+  shape: {
+    icon: '🎨',
+    placeholder: 'nome da figura',
+    empty: 'Nenhuma figura ainda — crie uma (bloco "Desenhar a figura") ou digite o nome abaixo.',
+  },
+  enemytype: {
+    icon: '😈',
+    placeholder: 'nome do tipo de inimigo',
+    empty:
+      'Nenhum tipo de inimigo ainda — crie um (bloco "Criar tipo de inimigo") ou digite o nome abaixo.',
   },
   scene3d: {
     icon: '🌐',
@@ -506,6 +545,10 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
     switch (this.kind) {
       case 'group':
         return collectGroupsAndLists(ws)
+      case 'enemytype':
+        return collectEnemyTypes(ws)
+      case 'shape':
+        return collectShapes(ws)
       case 'class':
         return collectClassNames(ws)
       case 'function':

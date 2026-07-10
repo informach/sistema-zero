@@ -7,6 +7,7 @@ import type { ListSubscriptionsService } from '../../../application/list-subscri
 import type { GetPaymentsOpsService } from '../../../application/payments-ops/get-payments-ops.service'
 import type { GetDailyPaymentsStatsService } from '../../../application/payments-stats/get-daily-payments-stats.service'
 import type { GetPaymentsStatsService } from '../../../application/payments-stats/get-payments-stats.service'
+import type { GetSubscriptionStatsService } from '../../../application/payments-stats/get-subscription-stats.service'
 import type { RefundPaymentService } from '../../../application/refund-payment/refund-payment.service'
 import { requireAdmin, requireAdminWrite } from '../admin-auth'
 import {
@@ -34,6 +35,7 @@ export interface AdminRoutesDeps {
   getSubscription: GetAdminSubscriptionService
   getStats: GetPaymentsStatsService
   getDailyStats: GetDailyPaymentsStatsService
+  getSubscriptionStats: GetSubscriptionStatsService
   getOps: GetPaymentsOpsService
   // Escrita admin
   refundPayment: RefundPaymentService
@@ -123,6 +125,18 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           })
         },
         { query: PaymentsDailyStatsQuery },
+      )
+      // Recorrência (cards do painel): ativas/MRR agora + fluxo na janela.
+      .get(
+        '/stats/subscriptions',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
+          return deps.getSubscriptionStats.execute({
+            from: parseDate(query.from),
+            to: parseDate(query.to),
+          })
+        },
+        { query: PaymentsStatsQuery },
       )
       .get('/ops', async ({ headers }) => {
         requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)

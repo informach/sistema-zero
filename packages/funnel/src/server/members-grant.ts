@@ -1,5 +1,5 @@
 import type { FunnelRepo, Lead } from '../db/repo'
-import type { GatewayClient } from '../lib/gateway-client'
+import type { GatewayClient, GrantMembersInput } from '../lib/gateway-client'
 
 export interface GrantMembersDeps {
   gateway: GatewayClient
@@ -11,7 +11,7 @@ export interface GrantMembersDeps {
    */
   resolveOffer: (funnel: string | null) => { offerSlug: string }
   /** Marca a concessão concluída (one-shot) — poll repetido após pago não re-chama o members. */
-  repo: Pick<FunnelRepo, 'setMembersGranted'>
+  repo: Pick<FunnelRepo, 'setMembersGranted' | 'accessPeriodForPayment'>
   log?: (msg: string, meta?: Record<string, unknown>) => void
 }
 
@@ -21,6 +21,39 @@ export class GrantRetryError extends Error {
     super(`concessão de acesso falhou (status ${httpStatus})`)
     this.name = 'GrantRetryError'
   }
+}
+
+/**
+ * Monta o corpo do grant RAMIFICADO pelo tipo de compra do lead/cobrança.
+ * `paidAtIso`: `undefined` = usa o `paidAt` do lead (compra original); `null` =
+ * NÃO envia (o members usa "agora"); string = data explícita (ciclo do webhook).
+ */
+async function buildGrantInput(
+  deps: GrantMembersDeps,
+  lead: Lead,
+  paymentId: string,
+  paidAtIso?: string | null,
+): Promise<GrantMembersInput> {
+  const leadPaidAt = lead.paidAt ? lead.paidAt.toISOString() : undefined
+  const input: GrantMembersInput = {
+    userId: lead.buyerUserId as string,
+    // Oferta efetivamente comprada (gravada no checkout); fallback resolve pelo funil.
+    offerRef: lead.offerRef ?? deps.resolveOffer(lead.funnel).offerSlug,
+    paymentId,
+    paidAt: paidAtIso === null ? undefined : (paidAtIso ?? leadPaidAt),
+  }
+  if (lead.subscriptionId) {
+    // ASSINATURA recorrente: o members cria/estende com validade = ciclo + carência.
+    input.subscription = {
+      subscriptionId: lead.subscriptionId,
+      intervalMonths: lead.subscriptionIntervalMonths ?? null,
+    }
+    return input
+  }
+  // Compra por PERÍODO (anual à vista via Pix/boleto): validade fixa + carência.
+  const months = await deps.repo.accessPeriodForPayment(paymentId)
+  if (months && months > 0) input.accessPeriodMonths = months
+  return input
 }
 
 /**
@@ -39,18 +72,37 @@ export function makeGrantMembers(deps: GrantMembersDeps): (lead: Lead) => Promis
   return async (lead: Lead) => {
     if (!lead.buyerUserId || !lead.paymentId) return
     if (lead.membersGrantedAt) return
-    const { status } = await deps.gateway.grantMembersAccess({
-      userId: lead.buyerUserId,
-      // Oferta efetivamente comprada (gravada no checkout); fallback resolve pelo funil.
-      offerRef: lead.offerRef ?? deps.resolveOffer(lead.funnel).offerSlug,
-      paymentId: lead.paymentId,
-      paidAt: lead.paidAt ? lead.paidAt.toISOString() : undefined,
-    })
+    const input = await buildGrantInput(deps, lead, lead.paymentId)
+    const { status } = await deps.gateway.grantMembersAccess(input)
     if (status !== 200 && status !== 201) {
       deps.log?.('grant.failed', { leadId: lead.id, status })
       throw new GrantRetryError(status)
     }
     await deps.repo.setMembersGranted(lead.id, new Date())
     deps.log?.('grant.done', { leadId: lead.id, userId: lead.buyerUserId })
+  }
+}
+
+/**
+ * ESTENDE a matrícula por um CICLO de renovação de assinatura (webhook
+ * `payment.paid` com `subscriptionId` de lead já pago). SEM o gate one-shot
+ * `membersGrantedAt` — cada renovação PRECISA re-chamar o members (que deduplica
+ * pelo ciclo e só move a validade p/ frente). Falha → GrantRetryError (o gateway
+ * re-entrega a delivery).
+ */
+export function makeExtendMembersForCycle(
+  deps: GrantMembersDeps,
+): (lead: Lead, cyclePaymentId: string, cyclePaidAtIso?: string) => Promise<void> {
+  return async (lead, cyclePaymentId, cyclePaidAtIso) => {
+    if (!lead.buyerUserId || !lead.subscriptionId) return
+    // O `paidAt` é o do CICLO (payload do webhook; ausente → o members usa "agora")
+    // — o do lead é a compra ORIGINAL e não moveria a validade da renovação.
+    const input = await buildGrantInput(deps, lead, cyclePaymentId, cyclePaidAtIso ?? null)
+    const { status } = await deps.gateway.grantMembersAccess(input)
+    if (status !== 200 && status !== 201) {
+      deps.log?.('grant.cycle_failed', { leadId: lead.id, status, paymentId: cyclePaymentId })
+      throw new GrantRetryError(status)
+    }
+    deps.log?.('grant.cycle_done', { leadId: lead.id, paymentId: cyclePaymentId })
   }
 }

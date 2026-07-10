@@ -31,6 +31,8 @@ export class PaymentPaidEvent extends DomainEvent {
       providerPaymentId: string | null
       txid: string | null
       paidAt: string
+      /** Assinatura-pai quando o pagamento é um CICLO de recorrência (senão null). */
+      subscriptionId: string | null
     },
   ) {
     super(aggregateId)
@@ -46,7 +48,12 @@ export class PaymentFailedEvent extends DomainEvent {
 
   constructor(
     aggregateId: string,
-    private readonly data: { consumerId: string; reason: string },
+    private readonly data: {
+      consumerId: string
+      reason: string
+      /** Assinatura-pai quando o pagamento é um CICLO de recorrência (senão null). */
+      subscriptionId: string | null
+    },
   ) {
     super(aggregateId)
   }

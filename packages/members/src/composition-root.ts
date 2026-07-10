@@ -3,6 +3,8 @@ import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
 import { PurgeUserDataService } from './application/admin/purge-user-data/purge-user-data.service'
+import { ConsumeAiUsageService } from './application/ai-usage/consume-ai-usage.service'
+import { GetAiUsageStatsService } from './application/ai-usage/get-ai-usage-stats.service'
 import { GetCourseAnalyticsService } from './application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
@@ -70,6 +72,7 @@ import { UpdatePensaTaskService } from './application/pensa/update-task.service'
 import { ValidatePensaArtifactService } from './application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
+import { SendRenewalRemindersService } from './application/renewal-reminder/send-renewal-reminders.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
 import { BuyRoomItemService } from './application/room/buy-room-item.service'
 import { GetRoomService } from './application/room/get-room.service'
@@ -90,6 +93,7 @@ import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http
 import { createGatewayMessagingClient } from './infrastructure/gateways/gateway-messaging-client'
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
+import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
@@ -104,6 +108,7 @@ import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pen
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
+import { DrizzleRenewalReminderRepository } from './infrastructure/persistence/drizzle/renewal-reminder.repository'
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleTeacherThreadRepository } from './infrastructure/persistence/drizzle/teacher-thread.repository'
@@ -131,6 +136,12 @@ const RETENTION_ADVISORY_LOCK_KEY = '30792292938117747'
  * 51020304050607081, auth 1635430504). Só UMA réplica envia por ciclo.
  */
 const PARENT_REPORT_ADVISORY_LOCK_KEY = '30792292938117748'
+
+/**
+ * Chave do advisory lock do LEMBRETE de renovação (report+1 — única no banco
+ * compartilhado). Só UMA réplica envia por ciclo.
+ */
+const RENEWAL_REMINDER_ADVISORY_LOCK_KEY = '30792292938117749'
 
 /**
  * Raiz de composição (injeção de dependências). ÚNICO lugar que instancia adapters
@@ -190,6 +201,15 @@ export async function createApplication(env: Env): Promise<Application> {
   const profileAllowance = new GetProfileAllowanceService(entitlements, clock, {
     defaultMaxProfiles: env.DEFAULT_KIDS_MAX_PROFILES,
   })
+  // Quota de IA por conta (o BFF consome 1 crédito antes de cada ida ao LLM).
+  const aiUsageRepo = new DrizzleAiUsageRepository(db)
+  const consumeAiUsage = new ConsumeAiUsageService({
+    aiUsage: aiUsageRepo,
+    dailyLimit: env.AI_LIMIT_DAILY,
+    monthlyLimit: env.AI_LIMIT_MONTHLY,
+    clock,
+  })
+  const aiUsageStats = new GetAiUsageStatsService(aiUsageRepo, clock)
   // S2S: resumo de progresso dos filhos (consumido pelo BFF da área dos pais, kids).
   // O hub entra p/ os JOGOS da semana no Mural (best-effort — sem HUB_BASE_URL degrada).
   const childrenStats = new GetChildrenStatsService(
@@ -237,6 +257,28 @@ export async function createApplication(env: Env): Promise<Application> {
             hour: env.PARENT_REPORT_HOUR,
             batchLimit: env.PARENT_REPORT_BATCH_LIMIT,
             kidsUrl: env.KIDS_COMMUNITY_URL,
+          },
+        )
+      : null
+
+  // Lembrete de RENOVAÇÃO (anual à vista): mesmo quarteto do report dos pais +
+  // FUNNEL_URL (o link /renovar vive no funil). Sem as envs = no-op (dev).
+  const renewalReminderSender =
+    authGateway && env.GATEWAY_URL && env.MEMBERS_HMAC_SECRET && env.FUNNEL_URL
+      ? new SendRenewalRemindersService(
+          new DrizzleRenewalReminderRepository(db),
+          authGateway,
+          createGatewayMessagingClient({
+            gatewayUrl: env.GATEWAY_URL,
+            consumerId: 'members',
+            hmacSecret: env.MEMBERS_HMAC_SECRET,
+          }),
+          clock,
+          logger,
+          {
+            daysBefore: env.RENEWAL_REMINDER_DAYS_BEFORE,
+            batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
+            funnelUrl: env.FUNNEL_URL,
           },
         )
       : null
@@ -484,6 +526,7 @@ export async function createApplication(env: Env): Promise<Application> {
       saveRoom,
       buyRoomItem,
       profileAllowance,
+      consumeAiUsage,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     pensa: {
@@ -530,6 +573,7 @@ export async function createApplication(env: Env): Promise<Application> {
       listMemberRatings,
       getGamification,
       analytics,
+      aiUsageStats,
       grantManual,
       manageEntitlement,
       teacherThreads,
@@ -558,6 +602,7 @@ export async function createApplication(env: Env): Promise<Application> {
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null
   let parentReportTimer: ReturnType<typeof setInterval> | null = null
+  let renewalReminderTimer: ReturnType<typeof setInterval> | null = null
 
   // Retenção do dedupe de webhooks (fora do hot path): apaga `processed_webhooks`
   // antigos para a tabela não crescer sem limite. O advisory lock garante que SÓ
@@ -589,6 +634,19 @@ export async function createApplication(env: Env): Promise<Application> {
     })
   }
 
+  // Lembrete de renovação (anual à vista): ciclo periódico sob advisory lock
+  // PRÓPRIO (1 réplica) — mesmo desenho do report dos pais.
+  const runRenewalReminderCycle = async () => {
+    if (!renewalReminderSender) return
+    await connection.sql.begin(async (gate) => {
+      const [row] = await gate`
+        select pg_try_advisory_xact_lock(${RENEWAL_REMINDER_ADVISORY_LOCK_KEY}::bigint) as locked
+      `
+      if (!row?.locked) return // outra réplica está enviando neste ciclo
+      await renewalReminderSender.runCycle()
+    })
+  }
+
   return {
     logger,
     async start() {
@@ -608,6 +666,15 @@ export async function createApplication(env: Env): Promise<Application> {
           )
         }, env.PARENT_REPORT_INTERVAL_MS)
       }
+      if (renewalReminderSender) {
+        renewalReminderTimer = setInterval(() => {
+          void runRenewalReminderCycle().catch((error) =>
+            logger.error('renewal_reminder.cycle_failed', {
+              error: error instanceof Error ? error.message : String(error),
+            }),
+          )
+        }, env.RENEWAL_REMINDER_INTERVAL_MS)
+      }
       // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
       // Railway (`members.railway.internal` resolve IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
@@ -616,6 +683,7 @@ export async function createApplication(env: Env): Promise<Application> {
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)
       if (parentReportTimer) clearInterval(parentReportTimer)
+      if (renewalReminderTimer) clearInterval(renewalReminderTimer)
       await server.stop()
       await connection.close()
       logger.info('app.stopped')

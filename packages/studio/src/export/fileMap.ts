@@ -1,5 +1,6 @@
 import {
   assetManifest,
+  assetMetaManifest,
   isReservedProjectFileName,
   normalizeExtraFileName,
   normalizeProPath,
@@ -178,7 +179,7 @@ export async function buildClassicFileMap(
   let assetsScriptSrc: string | undefined
   if (Object.keys(manifest).length > 0) {
     assetsScriptSrc = 'sz-assets.js'
-    files['public/sz-assets.js'] = buildAssetsRuntime(manifest)
+    files['public/sz-assets.js'] = buildAssetsRuntime(manifest, assetMetaManifest(project.assets))
     // Cada asset TAMBÉM vira arquivo real `public/<nome>`: um `background:
     // url('background.png')` no CSS do aluno resolve RELATIVO no site
     // publicado/baixado (no preview quem resolve é o rewriteCssAssetUrls).

@@ -10,11 +10,13 @@ import type { GetSubscriptionService } from '../../application/get-subscription/
 import type { HandleBoletoNotificationService } from '../../application/handle-boleto-notification/handle-boleto-notification.service'
 import type { HandleProviderWebhookService } from '../../application/handle-provider-webhook/handle-provider-webhook.service'
 import type { ListMyPaymentsService } from '../../application/list-my-payments/list-my-payments.service'
+import type { ListMySubscriptionsService } from '../../application/list-my-subscriptions/list-my-subscriptions.service'
 import type { ListPaymentsService } from '../../application/list-payments/list-payments.service'
 import type { ListSubscriptionsService } from '../../application/list-subscriptions/list-subscriptions.service'
 import type { GetPaymentsOpsService } from '../../application/payments-ops/get-payments-ops.service'
 import type { GetDailyPaymentsStatsService } from '../../application/payments-stats/get-daily-payments-stats.service'
 import type { GetPaymentsStatsService } from '../../application/payments-stats/get-payments-stats.service'
+import type { GetSubscriptionStatsService } from '../../application/payments-stats/get-subscription-stats.service'
 import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
 import type { RefundPaymentService } from '../../application/refund-payment/refund-payment.service'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
@@ -61,11 +63,13 @@ export interface HttpDeps {
   getAdminSubscription: GetAdminSubscriptionService
   getPaymentsStats: GetPaymentsStatsService
   getDailyPaymentsStats: GetDailyPaymentsStatsService
+  getSubscriptionStats: GetSubscriptionStatsService
   getPaymentsOps: GetPaymentsOpsService
   refundPayment: RefundPaymentService
   // Self-service do comprador ("minhas compras", app community) — JWT no gateway.
   listMyPayments: ListMyPaymentsService
   getMyPayment: GetMyPaymentService
+  listMySubscriptions: ListMySubscriptionsService
 }
 
 /** Rotas de infraestrutura fora do access log (healthcheck/polling = ruído). */
@@ -199,6 +203,8 @@ export function createServer(deps: HttpDeps) {
       myRoutes({
         listMyPayments: deps.listMyPayments,
         getMyPayment: deps.getMyPayment,
+        listMySubscriptions: deps.listMySubscriptions,
+        cancelSubscription: deps.cancelSubscription,
         internalToken: deps.internalToken,
       }),
     )
@@ -219,6 +225,7 @@ export function createServer(deps: HttpDeps) {
         getSubscription: deps.getAdminSubscription,
         getStats: deps.getPaymentsStats,
         getDailyStats: deps.getDailyPaymentsStats,
+        getSubscriptionStats: deps.getSubscriptionStats,
         getOps: deps.getPaymentsOps,
         refundPayment: deps.refundPayment,
         cancelSubscription: deps.cancelSubscription,

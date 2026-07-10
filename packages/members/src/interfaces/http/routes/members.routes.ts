@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
+import type { ConsumeAiUsageService } from '../../../application/ai-usage/consume-ai-usage.service'
 import type { BuyAvatarPartService } from '../../../application/avatar/buy-avatar-part.service'
 import type { EquipAvatarService } from '../../../application/avatar/equip-avatar.service'
 import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
@@ -50,6 +51,7 @@ import {
 } from '../auth'
 import {
   AccessQuery,
+  AiUsageConsumeBody,
   AttachmentResolveParams,
   AudienceQuery,
   AvatarConfigBody,
@@ -108,6 +110,7 @@ export interface MembersRoutesDeps {
   teacherThreads: TeacherThreadsService
   getShowcasePayload: GetShowcasePayloadService
   profileAllowance: GetProfileAllowanceService
+  consumeAiUsage: ConsumeAiUsageService
   getCertificate: GetCertificateService
   issueCertificate: IssueCertificateService
   getCourseRating: GetCourseRatingService
@@ -230,6 +233,22 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         if (isPrivilegedActor(headers)) return { maxProfiles: Number.MAX_SAFE_INTEGER }
         return deps.profileAllowance.execute(resolveAccountId(headers))
       })
+      // Consome 1 crédito de IA da CONTA (quota diária + mensal — o BFF chama ANTES
+      // de cada ida ao provedor de LLM). Keyado pela CONTA (`resolveAccountId`):
+      // irmãos da mesma conta kids dividem o teto (o custo é por cliente, não por
+      // perfil). Recusa é DOMÍNIO (200 + `allowed:false` + `scope`), não erro —
+      // o BFF decide a UX (recado gentil do Zappy / fallback manual). Equipe
+      // (`isPrivilegedActor`) nunca é recusada, mas o uso é gravado (custo visível).
+      .post(
+        '/ai-usage/consume',
+        async ({ headers, body }) =>
+          deps.consumeAiUsage.execute(
+            resolveAccountId(headers),
+            body.feature,
+            isPrivilegedActor(headers),
+          ),
+        { body: AiUsageConsumeBody },
+      )
       // Perfil de gamificação do aluno NA VITRINE (`?audience=`, default adult —
       // XP/streak/badges são segregados por audiência) — recurso do PRÓPRIO
       // usuário (sem CheckAccess: qualquer conta ativa; sem perfil → zeros).

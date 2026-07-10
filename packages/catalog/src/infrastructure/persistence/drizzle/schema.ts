@@ -103,6 +103,10 @@ export const offers = catalog.table(
     compareAtPriceCents: integer('compare_at_price_cents'),
     currency: text('currency').notNull().default('BRL'),
     pricingMode: pricingModeEnum('pricing_mode').notNull().default('one_time'),
+    // Periodicidade da ASSINATURA em meses (mensal=1, anual=12). Null em one_time;
+    // oferta subscription ATIVA exige o valor (invariante no agregado). É o
+    // `intervalMonths` do plano Efí que o funil manda ao payments.
+    billingIntervalMonths: integer('billing_interval_months'),
     installmentsMax: integer('installments_max'),
     trialDays: integer('trial_days'),
     guaranteeDays: integer('guarantee_days'),

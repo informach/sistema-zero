@@ -1001,6 +1001,15 @@ function domainCode(error: unknown): string | null {
   return null
 }
 
+/** Escopo do teto de IA (`AI_QUOTA_EXCEEDED`) — duck-typed como o `domainCode`. */
+function quotaScope(error: unknown): 'day' | 'month' {
+  if (typeof error === 'object' && error !== null && 'scope' in error) {
+    const { scope } = error as { scope: unknown }
+    if (scope === 'month') return 'month'
+  }
+  return 'day'
+}
+
 /**
  * Mensagem gentil (kids-friendly, serve nos dois modes) para um erro vindo do
  * transport. Cobre os códigos de domínio mais prováveis na Fase 0 e cai num
@@ -1018,6 +1027,11 @@ export function friendlyErrorMessage(error: unknown): string {
       return 'Alguma coisa não ficou certa no que foi enviado. Confira e tente de novo!'
     case 'PENSA_AI_UNAVAILABLE':
       return 'O Zappy foi tomar um lanchinho. Tenta de novo em instantes!'
+    case 'AI_QUOTA_EXCEEDED':
+      // Teto de uso de IA da CONTA (diário/mensal — protege o custo da plataforma).
+      return quotaScope(error) === 'month'
+        ? 'Uau, você usou toda a ajuda do Zappy deste mês! No mês que vem tem mais 🤖'
+        : 'Por hoje a gente já pensou bastante! Amanhã tem mais 🤖'
     case 'PENSA_NOT_READY':
       return 'Ainda faltam algumas respostas antes de criar a carta. Continue a conversa!'
     case 'PENSA_GATE_NOT_READY':

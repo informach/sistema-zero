@@ -12,7 +12,7 @@ export class ListSubscriptionsService {
   async execute(filters: AdminSubscriptionListFilters): Promise<Paginated<SubscriptionView>> {
     const page = await this.subscriptions.list(filters)
     return {
-      items: page.items.map(toSubscriptionView),
+      items: page.items.map((subscription) => toSubscriptionView(subscription)),
       total: page.total,
       limit: filters.limit,
       offset: filters.offset,
