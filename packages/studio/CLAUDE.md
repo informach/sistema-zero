@@ -539,6 +539,32 @@ preview (o jogo tem fallback de retângulo, seria vitrine fraca) — o fixture �
   não byte-a-byte; JS e HTML seguem byte-exatos. `image-rendering` duplicado (pixelated+crisp-edges)
   colapsa p/ pixelated (IR de CSS é `Record`).
 
+## Subsistema assíncrono + UI — lote "Starter Kit P9" (10/07/2026)
+
+Quarto jogo do Franks Laboratory (evolução do P6, mesma base multi-arquivo achatada) — agora com
+carregamento ASSÍNCRONO e um menu de UI clicável. A usuária pediu 100% núcleo (via AskUserQuestion,
+"tudo em blocos"). Prova: `starterKitP9Fixture.test.ts` (0 raw, fixpoint textual + de blocos; CSS
+comparado por `cssDeclMap`). **SEM exemplo embutido** (como V9/P6). Fechou:
+- **Async de verdade** (novo paradigma, nível **avancado**, oculto do kids por padrão): método `async`
+  (checkbox `ASYNC` no `sz_js_class_method` — o mutator de params só mexe no `PARAMS_INPUT`, o checkbox
+  do `message0` sobrevive); `await <valor>` → `sz_js_await` (IR `awaitStmt`); `new Promise((resolve) =>
+  {…})` → `sz_val_new_promise` (IR `newPromise{param,body}` — um VALOR com CORPO de statements: o
+  `expr.ts` é a camada de baixo e NÃO compila statements, então `js.ts` INJETA `compileStatements` via
+  `_setExprStatementCompiler` + `ExprMapContext.indent`; `resolve()` dentro reusa o `callFunction`
+  existente); `Promise.all([…])` → `sz_val_promise_all` (IR `promiseAll{list}`, lista = valor);
+  `setTimeout(fn, ms)` com função por NOME → `sz_js_set_timeout_call` (o `sz_js_set_timeout` clássico só
+  casa a forma arrow). ⭐ `ParseCtx` ganhou `source` p/ o `matchNewPromise` chamar `bodyOfFn` de dentro
+  do `toExpr` (que não tinha source).
+- **UI clicável** (nível intermediario): `el.onclick = () => {…}` → **`sz_js_element_onclick`** ("ao
+  clicar no elemento", TARGET = valor) — ⚠️ NÃO confundir com o `sz_js_on_click` PRÉ-EXISTENTE (esse é
+  `addEventListener('click')`, target por id-string); `document.querySelector[All]('sel')` como VALOR →
+  **`sz_val_query_select`** (dropdown todos/primeiro) — destrava o `.forEach` nele; `classList.add/remove`
+  já round-tripava (getElement-valor + memberCall genérico).
+- **Comentários** (nível: HTML intermediario, CSS intermediario): `<!-- -->` → nó HTMLNode `comment` +
+  `sz_html_comment`; `/* */` → CSSEntry `comment` + `sz_css_comment` (parser casa `/^\/\*([\s\S]*)\*\/$/`,
+  guarda só o miolo, gerador reconstrói os delimitadores — byte-exato p/ qualquer sequência de
+  comentários). Antes viravam rawHTML/rawCSS "avançado".
+
 ## Comandos
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)

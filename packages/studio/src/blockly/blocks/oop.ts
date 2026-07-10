@@ -50,8 +50,11 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_class_method',
-    message0: 'método %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'falar' }],
+    message0: 'método %1 assíncrono %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'falar' },
+      { type: 'field_checkbox', name: 'ASYNC', checked: false },
+    ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY', check: 'JSStmt' }],
     inputsInline: true,
@@ -59,7 +62,8 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     nextStatement: 'ClassMember',
     colour: C,
     mutator: 'sz_params_mutator',
-    tooltip: 'Um método da classe. Use + para adicionar parâmetros; "retornar" devolve um valor.',
+    tooltip:
+      'Um método da classe. Use + para adicionar parâmetros; "retornar" devolve um valor. Marque "assíncrono" só se usar "esperar…" (await) dentro.',
   },
   {
     type: 'sz_js_return',

@@ -59,6 +59,7 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
   }
 
   const ctx: ParseCtx = {
+    source,
     elementVars: new Map(),
     canvasElementVars: new Set(),
     ctxVars: new Set(),
@@ -98,6 +99,9 @@ type Node = any
  * é mantido apenas como registro/informação do parse.
  */
 interface ParseCtx {
+  /** Fonte JS completa — para `bodyOfFn`/`asRaw` a partir de matchers de VALOR
+   * (ex.: o corpo de `new Promise((resolve) => { ... })` no `toExpr`). */
+  source: string
   elementVars: Map<string, string>
   /**
    * Variáveis de elemento `<canvas>` que foram absorvidas num `canvasSetup`
@@ -328,7 +332,12 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
   // 2ª passada: a classe é representável; agora sim mapeamos os corpos no `ctx`.
   let ctorParams: string[] = []
   let ctorBody: JSStatement[] = []
-  const methods: Array<{ name: string; params: string[]; body: JSStatement[] }> = []
+  const methods: Array<{
+    name: string
+    params: string[]
+    body: JSStatement[]
+    async?: boolean
+  }> = []
   for (const member of members) {
     const params: string[] = member.params.map((p: Node) => p.name)
     if (member.kind === 'constructor') {
@@ -339,6 +348,7 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
         name: member.key.name,
         params,
         body: mapStatementList(member.body?.body ?? [], source, ctx),
+        ...(member.async ? { async: true } : {}),
       })
     }
   }
@@ -919,6 +929,11 @@ function expandCompoundTarget(
 
 function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSStatement {
   const expr = node.expression
+  // `await <valor>;` (statement) — ex.: `await Promise.all([...])` / `await new Promise(...)`.
+  if (expr?.type === 'AwaitExpression') {
+    const value = toExpr(expr.argument, ctx)
+    return value && isSimpleValue(value) ? { type: 'awaitStmt', value } : asRaw(source, node)
+  }
   // console.log(...)
   if (
     expr?.type === 'CallExpression' &&
@@ -1103,6 +1118,25 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       }
       return asRaw(source, node)
     }
+    // <el>.onclick = () => {…} → onClickAssign ("quando clicar em <el>, fazer …").
+    // Mesma regra: só arrow/função SEM parâmetros (o gerador re-emite `() =>`);
+    // corpo conciso `() => f()` é normalizado p/ bloco (via bodyOfFn).
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      !expr.left.computed &&
+      expr.left.property?.type === 'Identifier' &&
+      expr.left.property.name === 'onclick' &&
+      (expr.right?.type === 'ArrowFunctionExpression' ||
+        expr.right?.type === 'FunctionExpression') &&
+      (expr.right.params?.length ?? 0) === 0 &&
+      !isGlobalObject(expr.left.object)
+    ) {
+      const target = toExpr(expr.left.object, ctx)
+      if (target && isSimpleValue(target)) {
+        return { type: 'onClickAssign', target, body: bodyOfFn(expr.right, source, ctx) }
+      }
+      return asRaw(source, node)
+    }
     // Geral: <obj>.prop = v sobre qualquer objeto representável. Cobre instância
     // (`p.x = v`) e aninhamento (`this.velocidade.x = v`). Roda DEPOIS dos matchers
     // específicos (fillStyle, dataset, textContent) e dos pares de canvas (consumidos
@@ -1281,6 +1315,20 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // setTimeout(() => { … }, ms)
   const timeout = tryMatchSetTimeout(expr, source, ctx)
   if (timeout) return timeout
+
+  // setTimeout(<fn>, ms) passando uma FUNÇÃO por nome (ex.: setTimeout(resolve, 2000)).
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.callee.name === 'setTimeout' &&
+    expr.arguments?.length === 2 &&
+    expr.arguments[0].type === 'Identifier'
+  ) {
+    const delay = toExpr(expr.arguments[1], ctx)
+    if (delay && isSimpleValue(delay)) {
+      return { type: 'setTimeoutCall', fn: expr.arguments[0].name, delay }
+    }
+  }
 
   // setInterval(() => { … }, ms)
   const interval = tryMatchSetInterval(expr, source, ctx)
@@ -5170,6 +5218,25 @@ function matchGetElementById(node: Node): string | null {
   return node.arguments[0].value as string
 }
 
+/** `document.querySelector[All]('sel')` como VALOR (seletor literal). */
+function matchQuerySelectorValue(node: Node): { selector: string; all: boolean } | null {
+  if (!node || (node.type !== 'CallExpression' && node.type !== 'OptionalCallExpression')) {
+    return null
+  }
+  const callee = node.callee
+  if (
+    !callee ||
+    (callee.type !== 'MemberExpression' && callee.type !== 'OptionalMemberExpression')
+  ) {
+    return null
+  }
+  if (callee.object?.name !== 'document') return null
+  const prop = callee.property?.name
+  if (prop !== 'querySelector' && prop !== 'querySelectorAll') return null
+  if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
+  return { selector: node.arguments[0].value as string, all: prop === 'querySelectorAll' }
+}
+
 /**
  * Reconhece leitura de propriedade simples — `el.textContent` ou `el.value`
  * (membro normal ou optional), com o alvo resolvido via `extractTarget`
@@ -5505,6 +5572,24 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     // resolve ANTES como o statement `newInstance`).
     case 'NewExpression': {
       if (node.callee?.type !== 'Identifier') return null
+      // `new Promise((resolve) => { ... })` → newPromise. O corpo é parseado
+      // (o `resolve()` lá dentro vira callFunction). Arrow/função com 0-1 param.
+      if (node.callee.name === 'Promise' && ctx) {
+        const arg = node.arguments?.[0]
+        if (
+          node.arguments?.length === 1 &&
+          (arg.type === 'ArrowFunctionExpression' || arg.type === 'FunctionExpression') &&
+          (arg.params?.length ?? 0) <= 1 &&
+          (arg.params ?? []).every((p: Node) => p?.type === 'Identifier')
+        ) {
+          return {
+            type: 'newPromise',
+            param: arg.params?.[0]?.name ?? 'resolve',
+            body: bodyOfFn(arg, ctx.source, ctx),
+          }
+        }
+        return null
+      }
       if (node.callee.name === 'Date' || node.callee.name === 'Image') return null
       const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
       if (!args.every(isSimpleValue)) return null
@@ -5798,6 +5883,19 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // propriedade p/ desenhar no canvas). ANTES dos outros matchers de chamada.
       const elementId = matchGetElementById(node)
       if (elementId !== null) return { type: 'getElement', id: elementId }
+      // document.querySelector[All]('sel') como VALOR (ex.: iterar com .forEach).
+      const qsv = matchQuerySelectorValue(node)
+      if (qsv) return { type: 'querySelectorValue', selector: qsv.selector, all: qsv.all }
+      // Promise.all([...]) → promiseAll (a lista é um valor, ex.: array literal).
+      if (
+        node.callee?.type === 'MemberExpression' &&
+        node.callee.object?.name === 'Promise' &&
+        node.callee.property?.name === 'all' &&
+        node.arguments?.length === 1
+      ) {
+        const list = toExpr(node.arguments[0], ctx)
+        return list && isSimpleValue(list) ? { type: 'promiseAll', list } : null
+      }
       // localStorage.getItem(chave) / sessionStorage.getItem(chave) → storageGet.
       if (node.type === 'CallExpression' && node.callee?.type === 'MemberExpression') {
         const obj = node.callee.object
@@ -6216,6 +6314,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return true
     case 'getElement':
       return true
+    case 'querySelectorValue':
+      return true
+    case 'newPromise':
+      return true
+    case 'promiseAll':
+      return isSimpleValue(expr.list)
     case 'indexGet':
       return isSimpleValue(expr.object) && isSimpleValue(expr.index)
     default:

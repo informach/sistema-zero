@@ -420,6 +420,53 @@ export const JS_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'Repete o "fazer" a cada N segundos. (No código vira N × 1000 ms.)',
   },
+  // ---- ⏳ Assíncrono (avançado) ----
+  {
+    type: 'sz_js_await',
+    message0: 'esperar %1 terminar',
+    args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Espera uma promessa terminar antes de seguir. Só funciona dentro de um método "async". Vira await <valor>.',
+  },
+  {
+    type: 'sz_js_set_timeout_call',
+    message0: 'depois de %1 ms, chamar a função %2',
+    args0: [
+      { type: 'input_value', name: 'MS', check: 'JSValue' },
+      { type: 'field_input', name: 'FN', text: 'resolve' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Espera um tempo e então chama uma função pelo nome. Vira setTimeout(nome, ms).',
+  },
+  {
+    type: 'sz_val_new_promise',
+    message0: 'uma promessa que avisa quando terminar com %1 %2 fazendo %3',
+    args0: [
+      { type: 'field_input', name: 'PARAM', text: 'resolve' },
+      { type: 'input_dummy' },
+      { type: 'input_statement', name: 'DO', check: 'JSStmt' },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Uma promessa: roda o "fazendo" e, quando pronto, chama a função de aviso (ex.: resolve()). Vira new Promise((resolve) => { ... }).',
+  },
+  {
+    type: 'sz_val_promise_all',
+    message0: 'esperar todas as promessas de %1',
+    args0: [{ type: 'input_value', name: 'LIST', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Espera TODAS as promessas de uma lista terminarem. Vira Promise.all([...]).',
+  },
   {
     type: 'sz_js_storage_set',
     message0: 'guardar em %1 a chave %2 com o valor %3',
@@ -524,6 +571,11 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   { name: '💾 Dados & Web', colour: '#b9820a', types: ['sz_js_storage_set', 'sz_js_fetch_json'] },
+  {
+    name: '⏳ Assíncrono',
+    colour: '#a67608',
+    types: ['sz_js_await', 'sz_val_new_promise', 'sz_val_promise_all', 'sz_js_set_timeout_call'],
+  },
 ]
 
 // IDENTIDADE: cada sub-grupo recebe um TOM do ÂMBAR da Programação, derivado

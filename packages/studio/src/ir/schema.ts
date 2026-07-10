@@ -311,6 +311,14 @@ export type JSExpr =
   // O elemento da página com um id (`document.getElementById('id')`) como VALOR —
   // ex.: guardar uma <img> numa propriedade p/ desenhar depois no canvas.
   | (JSExprCommon & { type: 'getElement'; id: string })
+  // Os elementos que casam com um seletor CSS como VALOR —
+  // `document.querySelector(sel)` (all:false) / `querySelectorAll(sel)` (all:true).
+  | (JSExprCommon & { type: 'querySelectorValue'; selector: string; all: boolean })
+  // `new Promise((resolve) => { ... })` — uma promessa com corpo (o `resolve` é
+  // chamado via `callFunction`). `param` é o nome do parâmetro (ex.: "resolve").
+  | (JSExprCommon & { type: 'newPromise'; param: string; body: JSStatement[] })
+  // `Promise.all([...])` — espera todas as promessas de uma lista (valor).
+  | (JSExprCommon & { type: 'promiseAll'; list: JSExpr })
   // Acesso por chave/índice computado: obj[chave] / lista[i].
   | (JSExprCommon & { type: 'indexGet'; object: JSExpr; index: JSExpr })
 
@@ -683,6 +691,23 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('assetImage'), name: irText(), ...idField }),
     z.object({ type: z.literal('getElement'), id: irText(), ...idField }),
     z.object({
+      type: z.literal('querySelectorValue'),
+      selector: irText(),
+      all: z.boolean(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('newPromise'),
+      param: irText(),
+      body: z.array(z.lazy(() => JSStatementSchema)),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('promiseAll'),
+      list: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
       type: z.literal('indexGet'),
       object: JSExprSchema,
       index: JSExprSchema,
@@ -757,6 +782,8 @@ export type HTMLNode =
   // container — permite que `<p>© <span></span> texto</p>` (conteúdo misto)
   // vire blocos aninhados em vez de "código avançado".
   | (HTMLNodeCommon & { type: 'text'; text: string })
+  // Comentário HTML `<!-- ... -->` (miolo em `text`).
+  | (HTMLNodeCommon & { type: 'comment'; text: string })
   | (HTMLNodeCommon & { type: 'rawHTML'; html: string; advanced: true })
 
 export const HTMLNodeSchema: z.ZodType<HTMLNode> = z.lazy(() =>
@@ -780,6 +807,11 @@ export const HTMLNodeSchema: z.ZodType<HTMLNode> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('text'),
+      text: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('comment'),
       text: irText(),
       ...idField,
     }),
@@ -888,6 +920,19 @@ export const RawCSSSchema: z.ZodType<RawCSS> = z.object({
   ...idField,
 })
 
+/** Comentário CSS `/* ... *\/` (miolo em `text`). */
+export interface CommentCSS {
+  type: 'comment'
+  text: string
+  __id?: string
+}
+
+export const CommentCSSSchema: z.ZodType<CommentCSS> = z.object({
+  type: z.literal('comment'),
+  text: irText(),
+  ...idField,
+})
+
 /**
  * Media query (`@media (max-width: Npx) { ... }`). Modela só a forma de uma
  * única feature de largura — o caso comum de responsividade. Condições fora
@@ -952,11 +997,12 @@ export const GoogleFontCSSSchema: z.ZodType<GoogleFontCSS> = z.object({
   ...idField,
 })
 
-export type CSSEntry = CSSRule | RawCSS | MediaQueryCSS | KeyframesCSS | GoogleFontCSS
+export type CSSEntry = CSSRule | RawCSS | CommentCSS | MediaQueryCSS | KeyframesCSS | GoogleFontCSS
 
 export const CSSEntrySchema: z.ZodType<CSSEntry> = z.union([
   CSSRuleSchema,
   RawCSSSchema,
+  CommentCSSSchema,
   MediaQueryCSSSchema,
   KeyframesCSSSchema,
   GoogleFontCSSSchema,
@@ -2176,6 +2222,8 @@ export type JSStatement =
         name: string
         params: string[]
         body: JSStatement[]
+        /** Método `async` (habilita `await` no corpo). */
+        async?: boolean
       }>
     })
   | (JSStatementCommon & {
@@ -2210,6 +2258,12 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'indexSet'; object: JSExpr; index: JSExpr; value: JSExpr })
   // Roda o corpo quando uma imagem termina de carregar (`img.onload = () => {…}`).
   | (JSStatementCommon & { type: 'imageOnLoad'; target: JSExpr; body: JSStatement[] })
+  // Roda o corpo quando o elemento for clicado (`el.onclick = () => {…}`).
+  | (JSStatementCommon & { type: 'onClickAssign'; target: JSExpr; body: JSStatement[] })
+  // `await <valor>;` — espera uma promessa terminar (só dentro de método async).
+  | (JSStatementCommon & { type: 'awaitStmt'; value: JSExpr })
+  // `setTimeout(<fn>, <ms>)` passando uma FUNÇÃO por nome (ex.: `setTimeout(resolve, 2000)`).
+  | (JSStatementCommon & { type: 'setTimeoutCall'; fn: string; delay: JSExpr })
   // Roda o corpo se a imagem FALHAR ao carregar (`img.onerror = () => {…}`).
   | (JSStatementCommon & { type: 'imageOnError'; target: JSExpr; body: JSStatement[] })
   // Pede o próximo quadro rodando um corpo inline com o tempo (`requestAnimationFrame((t) => {…})`).
@@ -4050,6 +4104,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
           name: irText(),
           params: z.array(irText()),
           body: z.array(JSStatementSchema),
+          async: z.boolean().optional(),
         }),
       ),
       ...idField,
@@ -4107,6 +4162,23 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('imageOnLoad'),
       target: JSExprSchema,
       body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('onClickAssign'),
+      target: JSExprSchema,
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('awaitStmt'),
+      value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('setTimeoutCall'),
+      fn: irText(),
+      delay: JSExprSchema,
       ...idField,
     }),
     z.object({

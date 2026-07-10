@@ -246,6 +246,15 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'Um pedaço de texto solto. Use dentro de um parágrafo, título, etc.',
   },
+  {
+    type: 'sz_html_comment',
+    message0: 'comentário %1',
+    args0: [{ type: 'field_input', name: 'TEXT', text: ' anotação ' }],
+    previousStatement: 'HTMLNode',
+    nextStatement: 'HTMLNode',
+    colour: C,
+    tooltip: 'Uma anotação que não aparece na página, só no código. Vira <!-- ... -->.',
+  },
 
   // ---- Mídia e links ----
   {
@@ -334,6 +343,7 @@ export const HTML_GROUPS: { name: string; colour: string; types: string[] }[] = 
       'sz_html_strong',
       'sz_html_em',
       'sz_html_text',
+      'sz_html_comment',
     ],
   },
   {

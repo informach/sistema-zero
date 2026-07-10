@@ -33,6 +33,22 @@ export class GeneratorError extends Error {
 export interface ExprMapContext {
   map: SourceMapBuilder
   line: number
+  /** Indentação (nível) do statement que hospeda a expressão — usada só por
+   * valores com CORPO de statements (`new Promise((resolve) => { ... })`) para
+   * indentar o corpo. Ausente = nível 0. */
+  indent?: number
+}
+
+/**
+ * Compilador de STATEMENTS injetado por `js.ts` (a camada de cima) — evita
+ * dependência circular (expr.ts é a camada de baixo). Só o `newPromise` (valor
+ * com corpo) precisa dele; enquanto não injetado, o corpo sai vazio.
+ */
+let compileStatementsInjected:
+  | ((stmts: readonly unknown[], indent: number, identifiers: IdentifierResolver) => string)
+  | null = null
+export function _setExprStatementCompiler(fn: typeof compileStatementsInjected): void {
+  compileStatementsInjected = fn
 }
 
 /** Precedência do operador ternário (`?:`): a mais baixa, abaixo de `||`. */
@@ -544,6 +560,18 @@ export function compileExpr(
       return `(window.__SZGAME_ASSETS?.[${JSON.stringify(expr.name)}] ?? ${JSON.stringify(expr.name)})`
     case 'getElement':
       return `document.getElementById(${JSON.stringify(expr.id)})`
+    case 'querySelectorValue':
+      return `document.querySelector${expr.all ? 'All' : ''}(${JSON.stringify(expr.selector)})`
+    case 'promiseAll':
+      return `Promise.all(${compileExpr(expr.list, 0, identifiers, rec)})`
+    case 'newPromise': {
+      const indent = rec?.indent ?? 0
+      const pad = '  '.repeat(indent)
+      const body = compileStatementsInjected
+        ? compileStatementsInjected(expr.body, indent + 1, identifiers)
+        : ''
+      return `new Promise((${normalizeIdentifier(expr.param)}) => {\n${body}\n${pad}})`
+    }
     case 'indexGet':
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}[${compileExpr(expr.index, 0, identifiers, rec)}]`
     default: {

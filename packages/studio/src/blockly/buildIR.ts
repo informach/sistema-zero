@@ -756,6 +756,20 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'datasetGet', objectVar: f(block, 'OBJ'), key: f(block, 'KEY') }
     case 'sz_val_get_element':
       return { type: 'getElement', id: f(block, 'ID') }
+    case 'sz_val_query_select':
+      return {
+        type: 'querySelectorValue',
+        selector: f(block, 'SELECTOR'),
+        all: f(block, 'MODE') !== 'one',
+      }
+    case 'sz_val_promise_all':
+      return { type: 'promiseAll', list: exprInput(block, 'LIST', { type: 'array', items: [] }) }
+    case 'sz_val_new_promise':
+      return {
+        type: 'newPromise',
+        param: f(block, 'PARAM'),
+        body: getStatementChildren(block, 'DO', new Set()),
+      }
     case 'sz_val_storage_get':
       return {
         type: 'storageGet',
@@ -854,6 +868,7 @@ function getClassMembers(block: Blockly.Block, seen: Set<string>): ClassMembers 
         name: f(cur, 'NAME'),
         params: getParamNames(cur),
         body: getStatementChildren(cur, 'BODY', seen),
+        ...(f(cur, 'ASYNC') === 'TRUE' ? { async: true } : {}),
       })
     }
     cur = cur.getNextBlock()
@@ -1086,6 +1101,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     }
     case 'sz_html_text':
       return { kind: 'html', value: { type: 'text', text: f(block, 'TEXT') } }
+    case 'sz_html_comment':
+      return { kind: 'html', value: { type: 'comment', text: f(block, 'TEXT') } }
     case 'sz_html_svg': {
       const id = f(block, 'ID')
       const attrs: Record<string, string> = {}
@@ -1609,6 +1626,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return null
     case 'sz_adv_raw_css':
       return { kind: 'css', value: { type: 'rawCSS', code: f(block, 'CODE'), advanced: true } }
+    case 'sz_css_comment':
+      return { kind: 'css', value: { type: 'comment', text: f(block, 'TEXT') } }
 
     // ---- JS ----
     case 'sz_js_on_click':
@@ -2760,6 +2779,29 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'imageOnError',
           target: exprInput(block, 'TARGET', { type: 'var', name: 'img' }),
           body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_element_onclick':
+      return {
+        kind: 'js',
+        value: {
+          type: 'onClickAssign',
+          target: exprInput(block, 'TARGET', { type: 'getElement', id: 'botao' }),
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_js_await':
+      return {
+        kind: 'js',
+        value: { type: 'awaitStmt', value: exprInput(block, 'VALUE', { type: 'null' }) },
+      }
+    case 'sz_js_set_timeout_call':
+      return {
+        kind: 'js',
+        value: {
+          type: 'setTimeoutCall',
+          fn: f(block, 'FN'),
+          delay: exprInput(block, 'MS', { type: 'num', value: 1000 }),
         },
       }
     case 'sz_canvas_request_frame_do':

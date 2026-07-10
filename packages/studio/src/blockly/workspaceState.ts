@@ -186,6 +186,9 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   if (node.type === 'text') {
     return block('sz_html_text', { TEXT: node.text }, {}, node.__id)
   }
+  if (node.type === 'comment') {
+    return block('sz_html_comment', { TEXT: node.text }, {}, node.__id)
+  }
   if (node.type === 'canvas') {
     // Largura/altura não são mais campos do bloco — só o id. Quando a IR carrega
     // width/height (ex.: `<canvas width=200 height=100>` vindo do HTML), os
@@ -471,6 +474,9 @@ function keyframesToBlock(entry: KeyframesCSS): SerializedBlocklyBlock {
 function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
   if ('type' in entry && entry.type === 'rawCSS') {
     return [block('sz_adv_raw_css', { CODE: entry.code }, {}, entry.__id)]
+  }
+  if ('type' in entry && entry.type === 'comment') {
+    return [block('sz_css_comment', { TEXT: entry.text }, {}, entry.__id)]
   }
   if ('type' in entry && entry.type === 'mediaQuery') {
     const inner = entry.rules.flatMap(cssEntryToBlocks)
@@ -3024,6 +3030,23 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         TARGET: target,
       })
     }
+    case 'onClickAssign': {
+      const target = exprToValueBlock(stmt.target)
+      if (!target) return rawJSBlock(stmt)
+      return block('sz_js_element_onclick', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, {
+        TARGET: target,
+      })
+    }
+    case 'awaitStmt': {
+      const value = exprToValueBlock(stmt.value)
+      if (!value) return rawJSBlock(stmt)
+      return block('sz_js_await', {}, {}, stmt.__id, { VALUE: value })
+    }
+    case 'setTimeoutCall': {
+      const ms = exprToValueBlock(stmt.delay)
+      if (!ms) return rawJSBlock(stmt)
+      return block('sz_js_set_timeout_call', { FN: stmt.fn }, {}, stmt.__id, { MS: ms })
+    }
     case 'requestFrameDo':
       return block(
         'sz_canvas_request_frame_do',
@@ -3110,13 +3133,19 @@ function methodToBlock(m: {
   name: string
   params: string[]
   body: JSStatement[]
+  async?: boolean
 }): SerializedBlocklyBlock {
   const params = new Set(m.params)
   const body = statementsToBlocks(m.body)
   for (const b of body) retypeParamsAsArgs(b, params)
   // Idem ao construtor: passar o `__id` mantém o vínculo entre o bloco no
   // canvas e a entrada de sourcemap após round-trips IR→Blocks.
-  const blk = block('sz_js_class_method', { NAME: m.name }, { BODY: body }, m.__id)
+  const blk = block(
+    'sz_js_class_method',
+    { NAME: m.name, ASYNC: m.async ? 'TRUE' : 'FALSE' },
+    { BODY: body },
+    m.__id,
+  )
   blk.extraState = paramsExtra(m.params)
   return blk
 }
@@ -3608,6 +3637,24 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_val_dataset', { KEY: expr.key, OBJ: expr.objectVar })
     case 'getElement':
       return block('sz_val_get_element', { ID: expr.id }, {}, expr.__id)
+    case 'querySelectorValue':
+      return block(
+        'sz_val_query_select',
+        { MODE: expr.all ? 'all' : 'one', SELECTOR: expr.selector },
+        {},
+        expr.__id,
+      )
+    case 'promiseAll': {
+      const list = exprToValueBlock(expr.list)
+      return list ? block('sz_val_promise_all', {}, {}, expr.__id, { LIST: list }) : null
+    }
+    case 'newPromise':
+      return block(
+        'sz_val_new_promise',
+        { PARAM: expr.param },
+        { DO: statementsToBlocks(expr.body) },
+        expr.__id,
+      )
     case 'storageGet':
       // A chave vai num campo de texto: só representável como bloco se for literal.
       return expr.key.type === 'str'

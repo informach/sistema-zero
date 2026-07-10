@@ -34,6 +34,7 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_html_ul',
   'sz_html_form',
   'sz_html_text',
+  'sz_html_comment',
   // SVG — container + reuso + a 🎨 Aparência (setters por seletor)
   'sz_html_svg',
   'sz_svg_group',
@@ -47,6 +48,7 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   // CSS — setters por seletor (o dia a dia do estilo)
   'sz_css_rule',
   'sz_css_decl',
+  'sz_css_comment',
   'sz_css_text_color',
   'sz_css_background_color',
   'sz_css_gradient',
@@ -75,6 +77,7 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_val_is_fullscreen',
   'sz_js_get_element_by_id',
   'sz_val_get_element',
+  'sz_val_query_select',
   'sz_js_query_selector',
   'sz_js_set_property',
   'sz_js_set_style',
@@ -185,6 +188,11 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
 
 const AVANCADO: ReadonlySet<string> = new Set<string>([
   // ── CORE ──────────────────────────────────────────────────────────────────
+  // ⏳ Assíncrono — promessas/await (concorrência de verdade)
+  'sz_js_await',
+  'sz_val_new_promise',
+  'sz_val_promise_all',
+  'sz_js_set_timeout_call',
   // SVG — caminho (sintaxe "d")
   'sz_svg_path',
   // CSS — recursos avançados (variável, grid, transição, transform, 3D, animação, responsivo)
@@ -230,6 +238,7 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_js_new_image',
   'sz_js_image_onload',
   'sz_js_image_onerror',
+  'sz_js_element_onclick',
   // Valores — dados/estruturas + baixo nível
   'sz_val_device_pixel_ratio',
   'sz_val_system_dark',

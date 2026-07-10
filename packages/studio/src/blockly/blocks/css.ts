@@ -30,6 +30,15 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     tooltip: 'Uma propriedade CSS. Vai dentro de uma "Regra CSS".',
   },
   {
+    type: 'sz_css_comment',
+    message0: 'comentário %1',
+    args0: [{ type: 'field_input', name: 'TEXT', text: ' anotação ' }],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip: 'Uma anotação que não muda o estilo, só o código. Vira /* ... */.',
+  },
+  {
     type: 'sz_css_body_background',
     message0: 'Cor de fundo do body %1',
     args0: [{ type: 'field_colour_sz', name: 'COLOR', colour: '#0b1020' }],
@@ -546,7 +555,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
  * "CSS é roxo" e ainda dando navegação por cor. Cada bloco herda a cor do grupo.
  */
 export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
-  { name: '🧰 Regra', colour: '#7c4dff', types: ['sz_css_rule', 'sz_css_decl', 'sz_css_var'] },
+  {
+    name: '🧰 Regra',
+    colour: '#7c4dff',
+    types: ['sz_css_rule', 'sz_css_decl', 'sz_css_var', 'sz_css_comment'],
+  },
   {
     name: '🎨 Cores & Fundo',
     colour: '#9466ff',

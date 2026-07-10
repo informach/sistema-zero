@@ -192,11 +192,11 @@ describe('parseHTML', () => {
     expect(ir[0]).toMatchObject({ type: 'rawHTML', advanced: true })
   })
 
-  it('preserva comentário HTML entre blocos no round-trip (não some)', () => {
+  it('preserva comentário HTML entre blocos no round-trip (vira nó comment)', () => {
     const ir = parseHTML('<body><h1>a</h1><!--keep--><p>b</p></body>')
     expect(ir).toEqual([
       { type: 'element', tag: 'h1', text: 'a' },
-      { type: 'rawHTML', html: '<!--keep-->', advanced: true },
+      { type: 'comment', text: 'keep' },
       { type: 'element', tag: 'p', text: 'b' },
     ])
   })
@@ -209,7 +209,7 @@ describe('parseHTML', () => {
       expect(ir[0].text).toBeUndefined()
       expect(ir[0].children).toEqual([
         { type: 'text', text: 'x' },
-        { type: 'rawHTML', html: '<!--c-->', advanced: true },
+        { type: 'comment', text: 'c' },
         { type: 'text', text: 'y' },
       ])
     }
@@ -219,11 +219,7 @@ describe('parseHTML', () => {
     const ir = parseHTML('<div><!--topo--><p>oi</p></div>')
     expect(ir[0]?.type).toBe('element')
     if (ir[0]?.type === 'element') {
-      expect(ir[0].children?.[0]).toEqual({
-        type: 'rawHTML',
-        html: '<!--topo-->',
-        advanced: true,
-      })
+      expect(ir[0].children?.[0]).toEqual({ type: 'comment', text: 'topo' })
       expect(ir[0].children?.[1]).toEqual({ type: 'element', tag: 'p', text: 'oi' })
     }
   })

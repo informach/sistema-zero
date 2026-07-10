@@ -1,14 +1,25 @@
 import type { JSExpr, JSStatement } from '#ir'
 import { screenTextToExpr, valueToExpr } from '#ir'
 import {
+  _setExprStatementCompiler,
   compileExpr,
   createIdentifierScope,
   type ExprMapContext,
   GeneratorError,
+  type IdentifierResolver,
   type IdentifierScope,
   normalizeIdentifier,
 } from './expr'
 import { countLines, SourceMapBuilder } from './sourceMap'
+
+// Injeta o compilador de statements no `expr.ts` (camada de baixo) — o `newPromise`
+// é um VALOR com corpo de statements e o expr.ts, sozinho, não compila statements.
+// `compileStatements` é function declaration (hoisted), então isto roda no load.
+_setExprStatementCompiler((stmts, indent, identifiers: IdentifierResolver) =>
+  // Na geração real, `identifiers` é SEMPRE um IdentifierScope (compileStatements
+  // repassa o seu ao compileExpr, que o repassa aqui) — cast seguro.
+  compileStatements(stmts as JSStatement[], indent, identifiers as IdentifierScope),
+)
 
 /**
  * Profundidade máxima de aninhamento que os geradores aceitam antes de abortar
@@ -72,6 +83,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'forEach':
     case 'imageOnLoad':
     case 'imageOnError':
+    case 'onClickAssign':
     case 'requestFrameDo':
     case 'setTimeout':
     case 'setInterval':
@@ -337,7 +349,7 @@ function compileStatementCode(
   // single-line; `recAt(line)` registra cada uma na linha onde foi emitida.
   const base = mapContext?.startLine ?? 1
   const recAt = (line: number): ExprMapContext | undefined =>
-    mapContext ? { map: mapContext.map, line } : undefined
+    mapContext ? { map: mapContext.map, line, indent } : undefined
   switch (stmt.type) {
     case 'var': {
       const keyword = stmt.kind === 'const' ? 'const' : 'let'
@@ -1458,7 +1470,7 @@ function compileStatementCode(
       for (const m of stmt.methods) {
         const params = m.params.map((x) => normalizeIdentifier(x)).join(', ')
         const methodHeaderLine = cursorLine
-        lines.push(`${pad}  ${normalizeIdentifier(m.name)}(${params}) {`)
+        lines.push(`${pad}  ${m.async ? 'async ' : ''}${normalizeIdentifier(m.name)}(${params}) {`)
         cursorLine += 1
         const body = compileStatements(
           m.body,
@@ -1552,6 +1564,16 @@ function compileStatementCode(
       const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
       return `${pad}${target}.onerror = () => {\n${body}\n${pad}};`
     }
+    case 'onClickAssign': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      return `${pad}${target}.onclick = () => {\n${body}\n${pad}};`
+    }
     case 'requestFrameDo': {
       const body = compileStatements(
         stmt.body,
@@ -1581,6 +1603,10 @@ function compileStatementCode(
       const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
       return `${pad}${identifiers.get(stmt.name)}(${args});`
     }
+    case 'awaitStmt':
+      return `${pad}await ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
+    case 'setTimeoutCall':
+      return `${pad}setTimeout(${identifiers.get(stmt.fn)}, ${compileExpr(stmt.delay, 0, identifiers, recAt(base))});`
     case 'forEach': {
       const body = compileStatements(
         stmt.body,
@@ -3040,6 +3066,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'imageOnLoad':
     case 'imageOnError':
+    case 'onClickAssign':
       collectExprIdentifiers(stmt.target, names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
@@ -3058,6 +3085,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'callFunction':
       names.add(stmt.name)
       for (const arg of stmt.args) collectExprIdentifiers(arg, names)
+      return
+    case 'awaitStmt':
+      collectExprIdentifiers(stmt.value, names)
+      return
+    case 'setTimeoutCall':
+      names.add(stmt.fn)
+      collectExprIdentifiers(stmt.delay, names)
       return
     case 'forEach':
       collectExprIdentifiers(stmt.arrayExpr, names)
@@ -3188,6 +3222,13 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       // O nome da CLASSE resolve por getClassReference/reserveClassNames (igual
       // ao newInstance) — só os argumentos entram na coleta de identificadores.
       for (const arg of expr.args) collectExprIdentifiers(arg, names)
+      return
+    case 'promiseAll':
+      collectExprIdentifiers(expr.list, names)
+      return
+    case 'newPromise':
+      names.add(expr.param)
+      for (const child of expr.body) collectStatementIdentifiers(child, names)
       return
     case 'objectOp':
       collectExprIdentifiers(expr.object, names)

@@ -358,12 +358,12 @@ function mapNode(node: Node, depth: number): HTMLNode | null {
     if (!text.trim()) return null
     return { type: 'rawHTML', html: text, advanced: true }
   }
-  // Comentários HTML são preservados verbatim como "código avançado" (igual a uma
-  // tag desconhecida) — o DOM expõe só o miolo em `data`, então reconstruímos o
-  // `<!-- ... -->`. Sem isso o comentário sumiria no round-trip e, quando inline
-  // entre textos (`<p>x<!--c-->y</p>`), os trechos de texto se fundiriam ("xy").
+  // Comentários HTML `<!-- ... -->` viram um nó `comment` (bloco "comentário
+  // HTML") — o DOM expõe só o miolo em `textContent`. Sem isso o comentário
+  // sumiria no round-trip e, inline entre textos (`<p>x<!--c-->y</p>`), os
+  // trechos de texto se fundiriam ("xy").
   if (node.nodeType === Node.COMMENT_NODE) {
-    return { type: 'rawHTML', html: `<!--${node.textContent ?? ''}-->`, advanced: true }
+    return { type: 'comment', text: node.textContent ?? '' }
   }
   if (node.nodeType !== Node.ELEMENT_NODE) return null
   const el = node as Element

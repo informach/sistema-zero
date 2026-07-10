@@ -53,6 +53,7 @@ const EVENT_LISTENER_TYPES: ReadonlySet<string> = new Set([
   'sz_js_on_fullscreen_change',
   'sz_js_on_context_menu',
   'sz_js_on_blur',
+  'sz_js_element_onclick',
 ])
 
 // Ordem dos blocos DENTRO da subcategoria ⚡ Eventos (teclado → mouse/clique →
@@ -80,6 +81,7 @@ const EVENTOS_TYPE_ORDER: readonly string[] = [
   'sz_js_on_fullscreen_change',
   'sz_js_on_context_menu',
   'sz_js_on_blur',
+  'sz_js_element_onclick',
   // ⏱️ Tempo
   'sz_js_set_timeout',
   'sz_js_set_interval',

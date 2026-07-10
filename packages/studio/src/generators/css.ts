@@ -88,6 +88,10 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
       groups.push({ kind: 'raw', ids: entry.__id ? [entry.__id] : [], code: entry.code.trim() })
       continue
     }
+    if (isCommentCSS(entry)) {
+      groups.push({ kind: 'raw', ids: entry.__id ? [entry.__id] : [], code: `/*${entry.text}*/` })
+      continue
+    }
     if (isMediaQuery(entry)) {
       groups.push({ kind: 'media', entry })
       continue
@@ -301,6 +305,10 @@ function googleFontImport(family: string): string {
 
 function isRawCSS(entry: CSSEntry): entry is Extract<CSSEntry, { type: 'rawCSS' }> {
   return 'type' in entry && entry.type === 'rawCSS'
+}
+
+function isCommentCSS(entry: CSSEntry): entry is Extract<CSSEntry, { type: 'comment' }> {
+  return 'type' in entry && entry.type === 'comment'
 }
 
 function isMediaQuery(entry: CSSEntry): entry is MediaQueryCSS {
