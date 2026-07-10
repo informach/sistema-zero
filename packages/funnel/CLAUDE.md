@@ -457,6 +457,10 @@ histórico (conflito preserva o original — re-aponte do webhook passa sem cupo
 | Checkout sem e-mail (sem contato p/ entregar) | 409 | `NO_CONTACT` |
 | Lead já pago tentando nova cobrança (recompra = lead novo) | 409 | `ALREADY_PAID` |
 | Cobrança ainda em criação (retry durante a reserva de idempotência do payments) | 409 | `PAYMENT_IN_PROGRESS` |
+| Oferta escolhida não é `{principal, altOffer}` do funil (slug forjado no alternador) | 400 | `INVALID_OFFER` |
+| Cartão em oferta subscription (o caminho é `POST /api/checkout/subscription`) | 409 | `USE_SUBSCRIPTION` |
+| Assinatura à vista (Pix/boleto) num intervalo mensal (só anual/12 à vista) | 409 | `SUBSCRIPTION_CARD_ONLY` |
+| Cupom aplicado a oferta subscription (não permitido) | 422 | `COUPON_NOT_ALLOWED` |
 | Rate limit | 429 | `RATE_LIMITED` |
 | Falha no gateway | 502 | `GATEWAY_ERROR` |
 | Gateway pendurado (timeout do `gateway-client`) | — interno | `GATEWAY_TIMEOUT` (504) / `GATEWAY_UNREACHABLE` (502) |
@@ -474,7 +478,10 @@ fechado** `CLIENT_EVENTS` em `server/leads.ts` — marcos server-side como `paga
 NÃO são aceitos de ilha, senão inflariam a conversão), `processed_webhooks` (dedupe; **retenção de
 30 dias** via `db/retention.ts` — ciclo de 6h com advisory lock `47713920114417`, 1 réplica por
 vez; `funnel_events` NÃO é limpa de propósito: é o analytics histórico) e `lead_payments`
-(histórico payment→lead, ver seção de pagamentos).
+(histórico payment→lead, ver seção de pagamentos; além do par payment→lead + `coupon_code` +
+`access_period_months`, guarda o SNAPSHOT de payment-context da migration `0013`: `offer_ref` +
+`customer_name`/`customer_email`/`customer_phone`/`customer_document` — os dados da cobrança no
+momento do checkout).
 Migrations forward-only por `drizzle-kit`, com **journal próprio por pacote**
 (`migrations: { table: 'funil_migrations' }`) no schema `drizzle` — NÃO compartilhe
 `__drizzle_migrations` entre pacotes (a dedupe por `created_at` pularia migrations).

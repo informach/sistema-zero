@@ -1334,6 +1334,19 @@ export const gameTwoDBlocks = [
     tooltip:
       'O sprite não atravessa os tiles marcados como sólidos: ele pousa sobre o chão e bate nas paredes. Use a cada quadro, depois de mover o sprite.',
   },
+  {
+    type: 'sz_g2d_collide_group',
+    message0: 'Impedir o sprite %1 de atravessar os sprites do grupo %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'obstaculos', kind: 'group' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O sprite não atravessa nenhum sprite do grupo (pedras, casas, paredes desenhadas por você): ele é empurrado para fora e desliza pela beirada. Ótimo para obstáculos sem mapa de tiles. Use a cada quadro, depois de mover o sprite.',
+  },
 
   // ---- Grupos de sprites: MUITOS sprites (v0.6.0) ----
   {
@@ -2569,6 +2582,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_spawn_bullet',
       'sz_g2d_update_group',
       'sz_g2d_draw_group',
+      'sz_g2d_collide_group',
       'sz_g2d_for_each_in_group',
       'sz_g2d_count_group',
       'sz_g2d_clear_group',

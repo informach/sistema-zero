@@ -235,6 +235,8 @@ src/
       members/lessons/[lessonId]/{complete,position}/route.ts
       members/lessons/[lessonId]/blocks/[blockId]/quiz-attempts/route.ts
       payments/my/route.ts
+      payments/my/subscriptions/route.ts          Minhas assinaturas (GET lista)
+      payments/my/subscriptions/[id]/route.ts     Cancelar assinatura (DELETE)
   server/   session.ts (getSession exibição · verifyAccessToken ESTRITO p/ autorizar local)
             gateway.ts (forward de x-forwarded-for/x-request-id + timeouts) · auth.ts ·
             members.ts · payments.ts · r2.ts (privado em STREAM + list/delete de avatares +

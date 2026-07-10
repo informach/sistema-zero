@@ -1072,6 +1072,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.drawTileMap(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
     case 'g2d:tileMapCollide':
       return `${pad}SZGame2D.collideTileMap(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.mapVar)});`
+    case 'g2d:collideGroup':
+      return `${pad}SZGame2D.collideGroup(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)});`
     case 'g2d:createGroup':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createGroup();`
     case 'g2d:spawnInGroup':
@@ -2750,6 +2752,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:tileMapCollide':
       names.add(stmt.spriteVar)
       names.add(stmt.mapVar)
+      return
+    case 'g2d:collideGroup':
+      names.add(stmt.spriteVar)
+      names.add(stmt.groupVar)
       return
     case 'g3d:createScene':
     case 'g3d:createFullscreenScene':

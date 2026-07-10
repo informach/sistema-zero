@@ -23,6 +23,14 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
   return out
 }
 
+describe('parseJS — collideGroup (obstáculos sem tilemap)', () => {
+  it('round-trip do "impedir de atravessar os sprites do grupo"', () => {
+    expect(parseJS('SZGame2D.collideGroup(heroi, obstaculos);')).toEqual([
+      { type: 'g2d:collideGroup', spriteVar: 'heroi', groupVar: 'obstaculos' },
+    ])
+  })
+})
+
 describe('parseJS — figura (sprite desenhado por código)', () => {
   it('reconhece defineShape com corpo + createShapeSprite (round-trip dos paint_*)', () => {
     const code = [

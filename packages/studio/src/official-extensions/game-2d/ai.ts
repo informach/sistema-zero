@@ -123,6 +123,9 @@ Tiles e tilemaps (v0.5.0) — cenários a partir de um tileset (asset com vário
   solid = índices que barram o sprite (separados por vírgula).
 - drawTileMap(ctx, map, x, y): desenha o mapa com o canto superior esquerdo em x/y.
 - collideTileMap(sprite, map): impede o sprite de atravessar os tiles sólidos (pousa no chão, bate nas paredes).
+- collideGroup(sprite, group): impede o sprite de atravessar os sprites de um grupo (obstáculos SEM
+  tilemap: pedras/casas/paredes desenhadas à mão, inclusive por figura). Mesma física do collideTileMap
+  (empurra pra fora + desliza). Use no gameLoop, depois de mover o sprite.
 - tileAt(map, px, py): índice do tile no pixel (px,py) — -1 se vazio/fora.
 
 Grupos de sprites (v0.6.0) — para MUITOS sprites (tiros, inimigos, estrelas), sem

@@ -40,7 +40,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > chars no `x-delivery-id`) + **gamificação kids COMPLETA — XP/streak/badges + Zappy Coins
 > + avatar + quarto + missões + streak-freeze/férias + ligas + perfil público/ranking
 > (06/2026, ver §Gamificação; fonte DETALHADA em
-> [`docs/gamificacao.md`](../../docs/gamificacao.md))** — **~317 testes**.
+> [`docs/gamificacao.md`](../../docs/gamificacao.md))** — **~600 testes (57 arquivos)**.
 > Migrations `0000` (schema `members`), `0001` (`lesson_progress`), `0002`
 > (`quiz_attempts`), `0003` (`lessons.is_published`), `0004` (`course_ratings`), `0005`
 > (enum `lesson_block_kind` + `'ebook'`), `0006` (enum `access_type` + `'all_courses'`),
@@ -74,26 +74,28 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > **`0034`** (`0034_thick_misty_knight`: `ALTER TYPE xp_source_type ADD VALUE 'challenge_entry'`
 > — Desafio do mês, Fase 5 07/2026) e **`0035`** (`0035_glorious_black_cat`: report semanal dos
 > pais — `parent_reports_sent` UNIQUE (account_id, week_key) + `parent_report_prefs` (account_id
-> PK, `disabled`)) **geradas, FALTA aplicar** (`db:migrate` — 0029–0035 juntas) e **`0036`**
+> PK, `disabled`)) **APLICADAS — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026; 0029–0035 juntas)** e **`0036`**
 > (`0036_clube_activity`: `ALTER TYPE xp_source_type ADD VALUE 'clube_thread'`/`'clube_comment'`
 > — atividade do Clube dos Criadores, full review 07/2026; espelha a `0032` do Pensa — dois
 > valores idempotentes `IF NOT EXISTS`) **APLICADA — EM PRODUÇÃO** e **`0037`**
 > (`0037_mission_markers`: `ALTER TYPE xp_source_type ADD VALUE IF NOT EXISTS` de `studio_submitted`/
 > `course_rated`/`room_item_buy`/`avatar_part_buy`/`mural_comment` — reforma das missões 07/2026, novas
 > fontes como MARCOS amount 0; SEM tabela nova, a cadência mensal reusa `mission_claims.period_key` text)
-> **APLICADA em local; falta staging/prod** e **`0038`** (`0038_studio_retention`: `ALTER TYPE
+> **APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)** e **`0038`** (`0038_studio_retention`: `ALTER TYPE
 > xp_source_type ADD VALUE IF NOT EXISTS` de `studio_published`/`studio_publish_day`/`studio_remix`/
 > `play_milestone_10`/`play_milestone_100` + `coin_source_type` + `'studio_publish_day'` — retenção
-> pós-cursos do Estúdio 07/2026, ver §Missões "Retenção pós-cursos"; SEM tabela nova) **APLICADA em
-> local; falta staging/prod** e **`0039`** (`0039_needy_rhino`: **canal de retorno professor↔aluno** —
+> pós-cursos do Estúdio 07/2026, ver §Missões "Retenção pós-cursos"; SEM tabela nova) **APLICADA —
+> EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)** e **`0039`** (`0039_needy_rhino`: **canal de retorno professor↔aluno** —
 > enums `teacher_thread_context` [`studio_submission`|`mural_publication`|`general`] +
 > `teacher_message_role` [`teacher`|`student`] + tabelas `teacher_threads` (índice ÚNICO PARCIAL
 > `WHERE context_type <> 'general'` + índices por aluno/vitrine e por data) e `teacher_messages`
-> (FK cascade → threads); ver §Conversas com o professor) **APLICADA em local; falta staging/prod**.
+> (FK cascade → threads); ver §Conversas com o professor) **APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)**.
 > ⚠️ Ao gerar a PRÓXIMA migration: o `db:generate` re-adiciona os `ALTER TYPE ADD VALUE` das 0036–0038
 > (hand-authored, SEM snapshot próprio) — o snapshot `0039` já os inclui, então limpe do SQL gerado
 > qualquer `ALTER TYPE` que já exista (mantenha só o DDL novo).
-> E **`0041`** (`0041_free_wendell_vaughn`: **quota de IA por conta** — tabela `ai_usage_daily`
+> E **`0040`** (`0040_solid_drax`: `teacher_messages.body` alargado p/ `varchar(8000)` — corpo das
+> mensagens do canal professor↔aluno maior que o padrão) **APLICADA — EM PRODUÇÃO (PR #68,
+> `d0eb3ef`, 10/07/2026)** e **`0041`** (`0041_free_wendell_vaughn`: **quota de IA por conta** — tabela `ai_usage_daily`
 > (account_id, day date SP mode:'string', feature varchar(40), used, privileged; PK composto +
 > índice por day); `POST /members/ai-usage/consume` (JWT via gateway, `resolveAccountId` +
 > `isPrivilegedActor` — equipe NUNCA é recusada mas o consumo é GRAVADO com `privileged=true`) →
@@ -102,9 +104,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > `'ai-usage:'+accountId`, upsert atômico — provado contra Postgres real em
 > `tests/db/ai-usage-atomicity.test.ts`) + `GET /members/admin/ai-usage?month=` (staff+ — totais,
 > por feature, por dia, top 20 contas); consumidor = member-shell (Pensa chat/sínteses + describe
-> do Mural, FAIL-OPEN lá) **APLICADA em local; falta staging/prod** e **`0042`**
+> do Mural, FAIL-OPEN lá) **APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)** e **`0042`**
 > (`0042_known_yellowjacket`: `renewal_reminders_sent` — dedupe do lembrete de renovação do anual
-> à vista, ver §Fluxo de integração) **APLICADA em local; falta staging/prod**.
+> à vista, ver §Fluxo de integração) **APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)**.
 > ⚠️ As migrations `0029`/`0030` têm 55P04 LATENTE num banco ZERADO (enum ADD VALUE + uso no mesmo
 > lote) — os testes de banco criam o DDL direto em vez de rodar `migrate()` do zero.
 
@@ -973,7 +975,7 @@ lançamento. Dono = `user_id` (perfil kids); `account_id` = conta responsável (
 INSERT, imutável); tudo segregado por `audience` (`?audience=` como as demais, ausente →
 `adult`; o shell kids SEMPRE manda kids).
 
-- **Migration `0031`** (`0031_aberrant_hannibal_king`, gerada — FALTA aplicar): 6 enums
+- **Migration `0031`** (`0031_aberrant_hannibal_king`, APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)): 6 enums
   `pensa_*` + 6 tabelas — `pensa_projects` (nome/kind/status/`studio_project_id`),
   `pensa_cycles` (UNIQUE project+number; `<etapa>_completed_at`), `pensa_conversations`
   (1 linha/ciclo+etapa, upsert; `message_count` TOTAL histórico não encolhe no trim),
@@ -1021,7 +1023,7 @@ INSERT, imutável); tudo segregado por `audience` (`?audience=` como as demais, 
   (1º `pensa_stage_complete` — a 1ª etapa é sempre a Z = 1ª Carta da Ideia),
   `pensa-first-launch` (1º `pensa_cycle_complete`) e `pensa-creator-3` (3º) — detecção no repo
   pelo count do ledger, como studio-first/-master.
-- **Migration `0032`** (`0032_zippy_runaways`, gerada — FALTA aplicar): `ALTER TYPE … ADD VALUE
+- **Migration `0032`** (`0032_zippy_runaways`, APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)): `ALTER TYPE … ADD VALUE
   'pensa_stage_complete'/'pensa_cycle_complete'` nos DOIS enums (`xp_source_type` E
   `coin_source_type` — a moeda reusa o mesmo (sourceType, sourceId) do XP).
 - **Cotas nos USE CASES (não no banco)**: ≤20 projetos `active`/(user,audience), ≤20
@@ -1031,8 +1033,8 @@ INSERT, imutável); tudo segregado por `audience` (`?audience=` como as demais, 
   artefato `content` ≤262K chars stringificado → 400. **TODA escrita toca
   `pensa_projects.updated_at`** (a lista ordena por ele) — os métodos de escrita do repo
   recebem `projectId` e tocam na MESMA transação.
-- **Estúdio OPCIONAL + snapshot na nuvem (migration `0033` `0033_third_captain_stacy`, gerada —
-  FALTA aplicar):** `pensa_projects` ganhou `build_env` text NULL (`'embedded'|'studio'|'external'`,
+- **Estúdio OPCIONAL + snapshot na nuvem (migration `0033` `0033_third_captain_stacy`, APLICADA —
+  EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)):** `pensa_projects` ganhou `build_env` text NULL (`'embedded'|'studio'|'external'`,
   validado no APP via union do DTO — preferência de UX, não enum pg; `null` = chooser da etapa R
   pendente; o PATCH do projeto aceita `buildEnv`) + `studio_snapshot` jsonb NULL e
   `studio_snapshot_at` timestamptz NULL — backup do jogo do Estúdio atrelado ao projeto do Pensa.
