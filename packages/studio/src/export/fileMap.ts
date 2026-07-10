@@ -7,6 +7,7 @@ import {
 } from '#core'
 import { findExtension } from '#official-extensions'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
+import { rewriteCssAssetUrlsToAssetNames } from '../preview/cssAssets'
 import { transpileExtra } from '../preview/transpile'
 import type { Minifiers } from './minify'
 import { buildProductionIndexHtml } from './productionHtml'
@@ -49,7 +50,14 @@ export async function buildClassicFileMap(
   let hasExternalJs = rawJs.trim().length > 0
   let jsIsModule = MODULE_RE.test(rawJs)
 
-  if (hasExternalCss) files['public/style.css'] = await minifiers.css(rawCss)
+  // `url(<asset>)` no CSS aponta o NOME REAL do arquivo exportado (a chave do
+  // manifest): `normalizeAssetName` remove pontos, então `url('fundo.png')` de
+  // um tutorial referencia o asset `fundopng` — sem a reescrita o site
+  // publicado dava 404 no fundo.
+  const exportManifest = assetManifest(project.assets)
+  const exportCss = (css: string) => rewriteCssAssetUrlsToAssetNames(css, exportManifest)
+
+  if (hasExternalCss) files['public/style.css'] = await minifiers.css(exportCss(rawCss))
   if (hasExternalJs) files['public/script.js'] = await minifiers.js(rawJs, { module: jsIsModule })
 
   // Extras → arquivos reais. CSS é linkado no <head>; HTML vira fragmento no
@@ -69,7 +77,7 @@ export async function buildClassicFileMap(
         warnings.push(outputCollisionWarning(name, name))
         continue
       }
-      files[destPath] = await minifiers.css(extra.content)
+      files[destPath] = await minifiers.css(exportCss(extra.content))
       extraCssHrefs.push(name)
     } else if (extra.language === 'html') {
       extraHtmlFragments.push(extractBodyFragment(extra.content))
@@ -166,7 +174,7 @@ export async function buildClassicFileMap(
   // Reusa o MESMO runtime do preview (assetsBridge) para garantir paridade. Não
   // minificamos: é quase só um literal JSON gigante (data: URLs) — terser não ganha
   // nada e gastaria tempo mastigando megabytes de base64.
-  const manifest = assetManifest(project.assets)
+  const manifest = exportManifest
   let assetsScriptSrc: string | undefined
   if (Object.keys(manifest).length > 0) {
     assetsScriptSrc = 'sz-assets.js'
