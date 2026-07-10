@@ -61,6 +61,9 @@ const EnvSchema = z
     SENDGRID_WEBHOOK_PUBLIC_KEY: z.string().optional(),
     EVOLUTION_URL: z.string().url().optional(),
     EVOLUTION_API_KEY: z.string().optional(),
+    // Destinatário dos ALERTAS operacionais (ex.: WhatsApp/instância desconectou). Vazio
+    // = só loga (Sentry via espelho de ERROR); setado = também manda e-mail de aviso.
+    ALERT_EMAIL: z.string().email().optional(),
     // Segredo `?token=` exigido nos webhooks de status (defesa extra). Ausente = desligado
     // (só em dev — em produção é OBRIGATÓRIO, ver refines no fim).
     MESSAGING_WEBHOOK_TOKEN: optionalSecret('MESSAGING_WEBHOOK_TOKEN'),

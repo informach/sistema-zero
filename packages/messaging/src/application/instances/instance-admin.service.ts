@@ -7,7 +7,9 @@ import {
   WhatsAppInstance,
 } from '../../domain/lane/whatsapp-instance.aggregate'
 import type { Clock } from '../../domain/ports/clock.port'
+import type { InstanceAlerter } from '../../domain/ports/instance-alert.port'
 import type { WhatsAppInstanceRepository } from '../../domain/ports/whatsapp-instance-repository.port'
+import type { Logger } from '../../infrastructure/logging/logger'
 import { type InstanceView, toInstanceView } from '../mappers/instance-view'
 
 export interface CreateInstanceInput {
@@ -66,17 +68,34 @@ export class SetInstanceConnectionService {
   constructor(
     private readonly instances: WhatsAppInstanceRepository,
     private readonly clock: Clock,
+    private readonly logger: Logger,
+    private readonly alerter: InstanceAlerter,
   ) {}
 
-  async execute(instanceName: string, connected: boolean): Promise<void> {
+  async execute(instanceName: string, connected: boolean, detail?: string): Promise<void> {
     const instance = await this.instances.findByInstanceName(instanceName)
     if (!instance) return
     // PAUSED/BANNED são decisões do ADMIN — uma reconexão da Evolution não pode
     // sobrescrevê-las (a lane voltaria a enviar contra a intenção do operador).
     // Só o admin (PATCH) tira a instância desses estados.
     if (instance.status === 'PAUSED' || instance.status === 'BANNED') return
+    const wasConnected = instance.status === 'CONNECTED'
     instance.setStatus(connected ? 'CONNECTED' : 'DISCONNECTED', this.clock.now())
     await this.instances.update(instance)
+
+    // QUEDA de uma lane que estava CONECTADA: alerta (ERROR → espelho Sentry +
+    // e-mail best-effort). Só na TRANSIÇÃO (não repete se já estava caída) — sem
+    // isso, uma desconexão fica invisível e a fila de WhatsApp acumula em silêncio.
+    if (wasConnected && !connected) {
+      this.logger.error('whatsapp.lane.disconnected', {
+        instanceName,
+        phoneNumber: instance.state.phoneNumber,
+        detail,
+      })
+      await this.alerter
+        .laneDisconnected({ instanceName, phoneNumber: instance.state.phoneNumber, detail })
+        .catch(() => {})
+    }
   }
 }
 

@@ -23,6 +23,7 @@ import {
 } from './application/templates/template-admin.service'
 import { systemClock } from './domain/ports/clock.port'
 import { systemRng } from './domain/ports/rng.port'
+import { EmailInstanceAlerter } from './infrastructure/alerts/email-instance-alerter'
 import type { Env } from './infrastructure/config/env'
 import { InProcessEventPublisher } from './infrastructure/events/in-process-event-publisher'
 import { EvolutionWhatsAppGateway } from './infrastructure/gateways/evolution/evolution.gateway'
@@ -198,7 +199,10 @@ export function createApplication(env: Env): Application {
   const updateInstance = new UpdateInstanceService(instances, clock)
   const listInstances = new ListInstancesService(instances)
   const applyStatus = new ApplyDeliveryStatusService(messages, suppressions, webhookInbox, logger)
-  const setConnection = new SetInstanceConnectionService(instances, clock)
+  const instanceAlerter = new EmailInstanceAlerter(emailGateway, senders, logger, {
+    alertEmail: env.ALERT_EMAIL,
+  })
+  const setConnection = new SetInstanceConnectionService(instances, clock, logger, instanceAlerter)
 
   // Readiness: pronto = banco respondendo (healthcheck do deploy aponta p/ /readyz).
   const readiness = async () => {

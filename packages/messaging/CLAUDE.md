@@ -49,10 +49,12 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    (já formatado SP)+`link` — lembrete de publicação MANUAL enviado pelo MARKETING (consumer HMAC
    `marketing` via gateway, `idempotencyKey = marketing-reminder-<publicationId>-<fone>` — retry
    do publisher-worker nunca duplica);
-   `renewal-reminder` (e-mail + whatsapp, assinaturas 07/2026): `nome`+`produto`+`data`
+   `renewal-reminder` (**e-mail SÓ**, assinaturas 07/2026): `nome`+`produto`+`data`
    (dd/mm/aaaa)+`link` (`/renovar?oferta=` do funil) — lembrete do plano ANUAL À VISTA vencendo,
    enviado pelo MEMBERS (consumer `members`, `idempotencyKey =
-   renewal-reminder:<entitlementId>:<expiresOn>`);
+   renewal-reminder:<entitlementId>:<expiresOn>`). ⚠️ **É e-mail só** (o members NÃO carrega
+   telefone — `AccountIdentity` = `{id,email,firstName}` por decisão de privacidade); NÃO existe
+   template/braço whatsapp deste. Para mandar por WhatsApp um dia, precisaria expor o telefone no auth→members;
    `subscription-charge-failed` (e-mail + whatsapp, 07/2026): `nome`+`link` — dunning de ciclo de
    assinatura recusado, enviado pelo FUNIL (consumer `funnel`, `idempotencyKey =
    dunning[-wa]-<paymentId>`).
@@ -126,7 +128,7 @@ tests/    unit/ (render, pacing, message, send-worker, sendgrid-webhook) · inte
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun test` | testes (**sandbox off** — gotcha do monorepo) |
 | `bun run db:generate` / `db:migrate` | migrations (Drizzle; cria o schema `messaging`) |
-| `bun run templates:seed` | **UPSERT** dos templates padrão: `welcome` (e-mail + whatsapp), `new-access` (e-mail + whatsapp — comprador recorrente; `{{nome}}/{{link}}` p/ `/cursos`, sem token), `password-reset` (e-mail), `otp` (e-mail + whatsapp — `{{codigo}}`) e `nfse-emitida` (e-mail — `{{nome}}/{{produto}}/{{valor}}/{{chave}}`, NFS-e anexada em PDF via anexos por URL). É a fonte da verdade versionada do conteúdo — key existente tem subject/body/variables ATUALIZADOS (`active` preservado). E-mails têm layout HTML da marca (tabelas + CSS inline) com **logos EMBUTIDAS** (attachment inline + `cid:`, padrão do comunidade-sistema-zero — a imagem viaja DENTRO do e-mail; sem hospedagem externa/proxy/R2; PNGs PURAS em `assets/logo-sistema-zero-{light,dark}.png`, injetadas no gateway pelo composition-root, anexadas só quando o HTML referencia o `cid:`) e **dark mode** via `@media (prefers-color-scheme: dark)` com o tema dark do community + swap da logo (Apple Mail/Samsung/Outlook iOS; o Gmail que inverte à força mantém a logo de tinta escura — limitação aceita). ⚠️ NUNCA apague asset remoto referenciado por e-mail JÁ ENVIADO (aprendido na marra) |
+| `bun run templates:seed` | **UPSERT** dos templates padrão: `welcome` (e-mail + whatsapp), `new-access` (e-mail + whatsapp — comprador recorrente; `{{nome}}/{{link}}` p/ `/cursos`, sem token), `password-reset` (e-mail), `otp` (e-mail + whatsapp — `{{codigo}}`), `nfse-emitida` (e-mail — `{{nome}}/{{produto}}/{{valor}}/{{chave}}`, NFS-e anexada em PDF via anexos por URL), `weekly-report` (e-mail — report semanal dos pais, `{{nome}}/{{criancas}}/{{semana}}/{{resumo}}/{{link}}`), `marketing-reminder` (whatsapp — lembrete de publicação manual, `{{titulo}}/{{formato}}/{{horario}}/{{link}}`), `renewal-reminder` (**e-mail SÓ** — plano anual à vista vencendo, `{{nome}}/{{produto}}/{{data}}/{{link}}`; o members não tem telefone, ver Decisões §3) e `subscription-charge-failed` (e-mail + whatsapp — dunning de ciclo de assinatura recusado, `{{nome}}/{{link}}`). É a fonte da verdade versionada do conteúdo — key existente tem subject/body/variables ATUALIZADOS (`active` preservado). E-mails têm layout HTML da marca (tabelas + CSS inline) com **logos EMBUTIDAS** (attachment inline + `cid:`, padrão do comunidade-sistema-zero — a imagem viaja DENTRO do e-mail; sem hospedagem externa/proxy/R2; PNGs PURAS em `assets/logo-sistema-zero-{light,dark}.png`, injetadas no gateway pelo composition-root, anexadas só quando o HTML referencia o `cid:`) e **dark mode** via `@media (prefers-color-scheme: dark)` com o tema dark do community + swap da logo (Apple Mail/Samsung/Outlook iOS; o Gmail que inverte à força mantém a logo de tinta escura — limitação aceita). ⚠️ NUNCA apague asset remoto referenciado por e-mail JÁ ENVIADO (aprendido na marra) |
 | `bun run evolution:create-instance <name> <phone>` | cria instância na Evolution (QR) + registra no banco |
 | `bun run webhooks:register <name> <url>` | aponta o webhook da instância p/ o nosso endpoint |
 | `bun run send:test <email\|whatsapp> <templateKey> <contato>` | dispara um envio de teste |
@@ -196,7 +198,7 @@ público = só gateway/payments/evolution-QR). Envs: `DATABASE_URL=${{Postgres.D
 tokens (`MESSAGING_INTERNAL_TOKEN` = o MESMO do gateway, `MESSAGING_WEBHOOK_TOKEN`,
 `METRICS_TOKEN`, `SENTRY_DSN`), `SENDGRID_API_KEY`+`SENDGRID_WEBHOOK_PUBLIC_KEY`,
 `EVOLUTION_URL=http://evolution-api.railway.internal:8080`+`EVOLUTION_API_KEY` (ler do serviço
-evolution-api). Pós-deploy: seed de templates + remetente default via **`railway ssh`** (o Postgres
+evolution-api) e **`ALERT_EMAIL`** (destinatário do aviso de queda do WhatsApp; vazio = só Sentry). Pós-deploy: seed de templates + remetente default via **`railway ssh`** (o Postgres
 de prod é privado — `railway run` local não alcança). Webhook da Evolution usa a URL INTERNA
 (`http://messaging.railway.internal:3006/...`); o Event Webhook da SendGrid só quando o GATEWAY
 (público) subir — até lá e-mails saem mas bounce não suprime.
@@ -223,6 +225,17 @@ RECIPIENT_SUPPRESSED→409, CONCURRENCY_CONFLICT/INVALID_STATE_TRANSITION→409,
   + aquecimento; vira `CONNECTED` pelo webhook `connection.update` (registre:
   `bun run webhooks:register <nome> "<url-do-messaging>/messaging/webhooks/evolution?token=<MESSAGING_WEBHOOK_TOKEN>"`)
   ou manualmente via `PATCH /messaging/admin/whatsapp-instances/:id {status:"CONNECTED"}` (dev sem URL pública).
+- **⚠️ Baileys DESCONECTA (é WhatsApp Web não-oficial):** a sessão cai por `device_removed`/conflito
+  (a linked-device removida no celular, número usado noutro WhatsApp Web) ou expiração (phone offline
+  >14d). Quando cai, **`reserveAvailableLane` para de achar lane** (filtra `status='CONNECTED'`) e o
+  WhatsApp acumula em QUEUED **em silêncio** (o `POST /send` sempre responde 202 — o
+  `NoWhatsAppInstanceAvailableError` existe mas NÃO é lançado; a decisão é async). **ALERTA de queda
+  (07/2026):** o `SetInstanceConnectionService` detecta a transição CONECTADA→caída no
+  `connection.update` e (a) loga `whatsapp.lane.disconnected` em ERROR → **espelho Sentry** e (b) manda
+  um **e-mail** best-effort p/ `ALERT_EMAIL` (via SendGrid, remetente default; vazio = só Sentry).
+  Só na TRANSIÇÃO (não spamma). **Recuperação = re-escanear o QR** (device_removed é terminal p/ auto-
+  reconnect); redundância real = parear ≥2 chips (o pool `whatsapp_instances` já reveza). Estado ao
+  vivo: `GET <evolution>/instance/connectionState/<nome>` (header `apikey`) → `"open"`|`"close"`.
 
 ## Integração com o gateway
 

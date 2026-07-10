@@ -125,7 +125,13 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         const data = asRecord(payload.data)
         const instanceName = str(payload.instance) ?? str(data.instance)
         const state = str(data.state) ?? str(asRecord(data.connection).state)
-        if (instanceName) await deps.setConnection.execute(instanceName, state === 'open')
+        // Detalhe cru p/ o alerta de queda (ex.: "state=close reason=401").
+        const reason = data.statusReason
+        const detail =
+          [state ? `state=${state}` : null, reason != null ? `reason=${String(reason)}` : null]
+            .filter(Boolean)
+            .join(' ') || undefined
+        if (instanceName) await deps.setConnection.execute(instanceName, state === 'open', detail)
         set.status = 200
         return { ok: true }
       }
