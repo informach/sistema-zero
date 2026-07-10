@@ -428,6 +428,57 @@ grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` tam
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
 extensão. game-2d bump `0.19.0→0.20.0`. Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado).
+**Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
+FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +
+`attachAnimationNameWatcher`, espelho do thumb-watcher; registrado no inject do `BlocklyPanel` + no
+subscribe de `project.assets` — assets chegam DEPOIS do blocksState). Sem match com lista resolvida e
+rótulo apontando um nome DA lista → volta ao placeholder; lista irresolvível → NUNCA mexe. `fillFrames`
+passa a escrever também em literal REAL `sz_val_number` (não só shadow) — escolha explícita.
+
+## Reabertura + round-trip: garantias (10/07/2026)
+
+- **Hidratação dos blocos com STATUS** (`blocksHydration` no projectStore: idle/pending/restored/
+  empty/failed/discarded, mantido pelo `PersistenceService`). Regra de merge: a partição salva só
+  restaura para dentro de canvas VIVO VAZIO (⚠️ o sinal NÃO é `isDirty` — autosave chama `markSaved`
+  na janela e a restauração tardia clobraria blocos vivos). **TRANCA anti-perda**: enquanto
+  'pending'/'failed', `snapshotForSave` manda autosave/onChange/onSave SEM `blocksState` → o guard do
+  `persistProject` pula a partição (reabrir na Ponte não reescreve mais a partição real com o estado
+  DERIVADO; timeout 10s destrava a UI e resolução tardia ainda restaura).
+- **Sanitizador da partição** une as extensões do META persistido (`loadProjectMetaById`) às do
+  chamador — lista defasada não descarta mais um jogo inteiro (tudo-ou-nada continua).
+- **BlocksMode tem rede de segurança**: sem IR e sem partição ('empty'/'failed'/'idle'), deriva os
+  blocos do CÓDIGO via `parseProjectFiles` SEM sujar (`hydrateProjectState`) — aula só-Blocos nunca
+  abre em branco com código existente. Ambos os efeitos de derivação (Blocks/Bridge) esperam o
+  'pending'.
+- **Paint pós-load**: `schedulePostLoadRepaint` (double-rAF resize+render) + `scrollCenter` quando
+  NENHUM top-block intersecta a viewport (layout salvo longe da origem "parecia" canvas vazio) +
+  repaint one-shot em `document.fonts.ready` (Blockly media com a fonte de fallback). e2e:
+  `e2e/reopen-blocks.spec.ts` (reabrir núcleo/jogo/lista/longe-da-origem SEM alternar de modo).
+- **Shadow-ness sobrevive à Ponte**: IR→blocos emite `{shadow}` p/ literais em soquetes com preset
+  (fonte: `LEGACY_VALUE_FIELDS`, que também é o mapa de migração — soquete nascido `input_value` pode
+  e deve constar; drift `restoreShadowLiterals.test.ts` × `G2D/G3D_SOCKET_SHADOW_TYPES`) e
+  `restoreShadowLiterals` CURA estados poluídos no load (via `normalizeBlocksStateToFrames`). Sem
+  isso, `fillFrames`/`applySuggestedSize` (só escrevem em shadow) morriam após 1 passada pela Ponte.
+- **Parser mais fiel (jogo de classes 100% núcleo)**: composta em alvo membro/this/indexado expande
+  p/ `setThisProp`/`memberSet`/`indexSet` + conta (gate de PUREZA — objeto impuro segue raw); `*=`
+  `/=` `%=` e `++/--` idem; `-X` não-literal → `0 - X`; param de listener `e => e.key` normaliza p/
+  `event` (pilha `eventParamAliases`; inseguro → listener INTEIRO raw); teclado em `window.…`
+  normaliza p/ `document` JÁ NO PARSE (o bloco on_key só emite document — fixpoint byte-estável);
+  `hoistAnimationLoops` trata o handler de `load` como OPACO (loop fica dentro; consts do load);
+  `canvasClear` resolve o elemento pelo CTX (chave divergente emitia `canvas_2.width` quebrado).
+- **Blocos novos do núcleo**: `sz_val_new` ("novo objeto da classe %1", args-mutator, IR `newExpr`;
+  `const x = new C()` SEGUE sendo `sz_js_new_var`; Date/Image seguem nos fluxos próprios) e
+  `sz_val_array_filter` ("filtrar a lista %1 mantendo cada %2 em que %3" — a lista é SOQUETE, aceita
+  `this.enemies`; IR `arrayFilter{array: JSExpr}`). Ambos 'avancado' + allowlists (+extraState items
+  p/ o sz_val_new).
+- **CSS `url(<asset>)` resolve**: no preview via `rewriteCssAssetUrls` (só nome EXATO do manifest;
+  CSS persistido intocado) e no export cada asset vira ARQUIVO BINÁRIO `public/<nome>`
+  (`convertToPro` PULA binários — árvore pro é só texto; lá seguem via sz-assets.js).
+- **Prova viva**: `spaceInvadersFixture.test.ts` — o Space Invaders do tutorial (classes, pool,
+  filter, compostas, listeners no construtor, loop no load) parseia com **0 raw**, fixpoint textual E
+  de blocos; o exemplo do núcleo **"Invasores do Espaço (na mão)"** (`examples/core.ts`, com
+  `CoreExample.assets` — fundo estrelado PNG ~540 bytes gerado, NÃO o de 60KB do tutorial) tem drift
+  guardado contra o parser atual. Mudou o parser? O drift manda re-embutir a IR.
 
 ## Comandos
 

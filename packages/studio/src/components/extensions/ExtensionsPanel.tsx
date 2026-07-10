@@ -143,6 +143,19 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
       installedExtensions: project.installedExtensions,
       files: generateProjectFiles({ ir: example.ir, projectName: project.name }),
     })
+    // Assets embutidos do exemplo (ex.: fundo por CSS): o patch acima não carrega
+    // `assets`, então entram pelo addAsset. Nome já existente no projeto = já tem
+    // uma imagem com esse nome referenciável pelo CSS — o erro é ignorado.
+    for (const asset of example.assets ?? []) {
+      projectStoreApi.getState().addAsset({
+        name: asset.name,
+        dataUrl: asset.dataUrl,
+        width: asset.width,
+        height: asset.height,
+        source: asset.source,
+        libId: asset.libId,
+      })
+    }
   }
 
   return (

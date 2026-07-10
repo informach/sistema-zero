@@ -1552,13 +1552,16 @@ describe('parseJS — ⚡ Eventos: teclado, mouse, janela e tempo em segundos (r
     ])
   })
 
-  it('ACEITA window.addEventListener para teclado (equivalente a document)', () => {
+  it('ACEITA window.addEventListener para teclado e NORMALIZA para document', () => {
+    // O bloco "Quando tecla…" (sz_js_on_key) só emite document — normalizar já
+    // no parse deixa o fixpoint blocos⇄código byte-estável (a tecla borbulha,
+    // comportamento idêntico). load/resize seguem sendo da janela (teste abaixo).
     const code = `window.addEventListener("keyup", (event) => {\n  let k = event.key;\n});`
     expect(parseJS(code)).toEqual([
       {
         type: 'event',
-        target: 'window',
-        targetKind: 'window',
+        target: 'document',
+        targetKind: 'document',
         event: 'keyup',
         body: [{ type: 'var', name: 'k', value: { type: 'eventProp', prop: 'key' } }],
       },

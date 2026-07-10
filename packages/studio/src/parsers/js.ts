@@ -6207,9 +6207,14 @@ function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | nul
   // window e document são equivalentes (eventos borbulham); aceitamos os dois e
   // normalizamos para o targetKind correspondente (load/resize são da janela).
   if (callee.object?.type === 'Identifier' && callee.object.name === 'window') {
+    // TECLADO normaliza para `document` JÁ NO PARSE: o bloco "Quando tecla…"
+    // (sz_js_on_key) só emite document — sem isto, o 1º ciclo gerava `window.…`
+    // e o round-trip por BLOCOS trocava para `document.…` (diff espúrio no
+    // fixpoint blocos⇄código). Comportamento idêntico (a tecla borbulha).
+    const isKeyEvent = eventArg.value === 'keydown' || eventArg.value === 'keyup'
     return {
-      target: 'window',
-      targetKind: 'window',
+      target: isKeyEvent ? 'document' : 'window',
+      targetKind: isKeyEvent ? 'document' : 'window',
       event: eventArg.value as EventKind,
       ...handler,
     }
