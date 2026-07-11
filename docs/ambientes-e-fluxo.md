@@ -77,7 +77,10 @@ URLs públicas:
 - **Produção**: merge na `main` → o **admin** auto-deploya (trigger armado no
   dashboard); os demais serviços são deployados **manualmente** (GraphQL
   `serviceInstanceDeployV2` com o sha da main, ou dashboard) — deploy de prod
-  deliberado, por escolha.
+  deliberado, por escolha. Atalho que automatiza esse manual (desde 07/2026):
+  `gh workflow run "Deploy produção" --ref staging -f services=all` (ou CSV) —
+  o workflow `deploy-production.yml` resolve o sha da main, deploya pelo mesmo
+  GraphQL e **pula serviço que ainda não estreou em produção** (ex.: hub).
 - ⚠️ Gotcha de build: o Railway **só passa variáveis ao build do Dockerfile quando
   declaradas como `ARG`** (ver o Dockerfile do funnel — envs `PUBLIC_*`/
   `FUNNEL_PUBLIC_URL` são inlined no `astro build`).

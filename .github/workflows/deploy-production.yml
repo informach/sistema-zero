@@ -1,0 +1,120 @@
+# Deploy de PRODUÇÃO sob demanda (workflow_dispatch) — automatiza o "deploy
+# manual deliberado" descrito em docs/ambientes-e-fluxo.md usando o MESMO
+# mecanismo do deploy-staging: GraphQL `serviceInstanceDeployV2` com o sha da
+# MAIN. Segurança: só deploya serviço que JÁ TEM deployment no environment
+# production (nunca "estreia" um serviço sem env configurada — ex.: hub).
+# Uso: gh workflow run "Deploy produção" --ref staging -f services=all
+#      (ou CSV: -f services=funnel,auth)
+name: Deploy produção
+
+on:
+  workflow_dispatch:
+    inputs:
+      services:
+        description: 'Serviços: "all" (tudo que já roda em produção) ou CSV (ex.: funnel,auth)'
+        required: false
+        default: 'all'
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-production:
+    name: deploy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_API: https://backboard.railway.com/graphql/v2
+      PROJECT_ID: 415d5a1c-5f75-432c-8445-b395d0977ce3
+      FORCED: ${{ github.event.inputs.services }}
+    steps:
+      - name: Deployar produção com o sha da main
+        run: |
+          set -euo pipefail
+
+          gql() { curl -sS -X POST -H "Authorization: Bearer $RAILWAY_TOKEN" -H 'content-type: application/json' -d "$1" "$RAILWAY_API"; }
+
+          # ids dos serviços no Railway (não são segredo; espelham o ci.yml)
+          declare -A SVC_ID=(
+            [api-gateway]=2b7748bc-d3e3-4aff-bd94-3f514b53c44f
+            [auth]=8c57d71d-3a8e-48f1-9627-63f1528b9a48
+            [catalog]=0e59f903-6bd8-4c3e-8792-34ea7479c13c
+            [payments]=1d2455ac-05cd-436b-a39d-3f07392713f3
+            [members]=aa282801-ffba-477c-af6d-394b2f4f9af9
+            [messaging]=93fb9f5c-3d08-43da-a3cb-4c0207bd2ee0
+            [funnel]=a617f2d2-6a58-46a2-8669-2eaf192712f0
+            [admin]=e00eca0b-5323-4424-9b58-fdb073cfce82
+            [community]=9df1b493-4cea-4b36-bec8-7299f054c17d
+            [community-kids]=fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f
+            [hub]=00b27b18-0587-460b-ba90-b6b24c423e45
+            [fiscal]=2ea11afd-bdfd-4736-b400-c3db13fd8a0e
+            [marketing]=7b8a87e6-a92f-4a5c-adc1-c4d2fe23b737
+            [marketing-app]=95f3752d-95f7-45ab-a52a-19aa126d77ab
+          )
+
+          # environmentId de production resolvido POR NOME (sem hardcode).
+          Q=$(jq -nc --arg pid "$PROJECT_ID" '{query:"query($pid:String!){environments(projectId:$pid){edges{node{id name}}}}",variables:{pid:$pid}}')
+          ENV_ID=$(gql "$Q" | jq -r '.data.environments.edges[].node | select(.name=="production") | .id')
+          if [ -z "$ENV_ID" ]; then echo "::error::environment production não encontrado"; exit 1; fi
+          echo "environment production: $ENV_ID"
+
+          # sha atual da MAIN (o dispatch pode rodar de qualquer ref).
+          SHA=$(curl -sS -H "Authorization: Bearer ${{ github.token }}" \
+            "https://api.github.com/repos/${{ github.repository }}/commits/main" | jq -r '.sha')
+          if [ -z "$SHA" ] || [ "$SHA" = "null" ]; then echo "::error::não resolvi o sha da main"; exit 1; fi
+          echo "sha da main: $SHA"
+
+          declare -A WANT=()
+          if [ "${FORCED:-all}" = "all" ]; then
+            for s in "${!SVC_ID[@]}"; do WANT[$s]=1; done
+          else
+            IFS=',' read -ra REQ <<< "$FORCED"
+            for s in "${REQ[@]}"; do
+              s="$(echo "$s" | xargs)"
+              [ -n "${SVC_ID[$s]:-}" ] && WANT[$s]=1 || { echo "::error::serviço desconhecido: $s"; exit 1; }
+            done
+          fi
+
+          # Gate de segurança: só redeploya quem JÁ tem deployment em produção.
+          declare -A DEP=()
+          for s in "${!WANT[@]}"; do
+            DQ=$(jq -nc --arg sid "${SVC_ID[$s]}" --arg eid "$ENV_ID" --arg pid "$PROJECT_ID" \
+              '{query:"query($sid:String!,$eid:String!,$pid:String!){deployments(first:1,input:{serviceId:$sid,environmentId:$eid,projectId:$pid}){edges{node{id}}}}",variables:{sid:$sid,eid:$eid,pid:$pid}}')
+            EXISTS=$(gql "$DQ" | jq -r '.data.deployments.edges | length')
+            if [ "$EXISTS" = "0" ]; then
+              echo "  $s: sem deployment em produção — PULADO (serviço ainda não estreou)"
+              continue
+            fi
+            BODY=$(jq -nc --arg sid "${SVC_ID[$s]}" --arg eid "$ENV_ID" --arg sha "$SHA" \
+              '{query:"mutation($s:String!,$e:String!,$c:String){serviceInstanceDeployV2(serviceId:$s,environmentId:$e,commitSha:$c)}",variables:{s:$sid,e:$eid,c:$sha}}')
+            RESP=$(gql "$BODY")
+            ID=$(echo "$RESP" | jq -r '.data.serviceInstanceDeployV2 // empty')
+            if [ -z "$ID" ]; then echo "::error::deploy de $s falhou ao disparar: $(echo "$RESP" | jq -c '.errors // .')"; exit 1; fi
+            DEP[$s]="$ID"
+            echo "  $s → deployment $ID"
+          done
+
+          if [ "${#DEP[@]}" -eq 0 ]; then echo "nenhum serviço a deployar"; exit 0; fi
+
+          # Espera todos chegarem a estado terminal (healthcheck gateia o SUCCESS).
+          FAIL=0; PENDING=1
+          for i in $(seq 1 90); do
+            sleep 20
+            PENDING=0; LINE=""
+            for s in "${!DEP[@]}"; do
+              Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
+              ST=$(gql "$Q" | jq -r '.data.deployment.status // "?"')
+              LINE="$LINE $s=$ST"
+              case "$ST" in
+                SUCCESS) ;;
+                FAILED|CRASHED|REMOVED) FAIL=1 ;;
+                *) PENDING=1 ;;
+              esac
+            done
+            echo "[$i]$LINE"
+            [ "$PENDING" -eq 0 ] && break
+          done
+          if [ "$FAIL" -eq 1 ] || [ "$PENDING" -eq 1 ]; then echo "::error::deploy de produção não convergiu"; exit 1; fi
+          echo "produção atualizada ✅"
