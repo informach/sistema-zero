@@ -1,12 +1,329 @@
 ---
-// Entrada do site → funil KIDS (Desafio do Primeiro Jogo). A entrada de um funil é
-// o quiz quando ele tem; senão, a própria oferta. Referenciamos o funil kids
-// explicitamente (não o DEFAULT_FUNNEL global, que ainda é o PRO e segue como
-// fallback de oferta/lead-scope) → cai em /kids/desafio-primeiro-jogo/quiz.
+// Entrada do site: página "bio" da marca kids (destino do link da bio do
+// Instagram @criecomhelenaejulio). Em vez de redirecionar, apresenta os dois
+// caminhos: o quiz (descobrir o perfil do filho) e a página da oferta do
+// Desafio do Primeiro Jogo. Tema kids claro, com o Zappy e decorações.
+import '@fontsource/material-symbols-rounded/400.css'
+import { EMPRESA } from '../content/legal'
 import { DESAFIO_PRIMEIRO_JOGO } from '../funnels/desafio-primeiro-jogo'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { funnelOgImage } from '../lib/seo'
 
 export const prerender = false
-const home = DESAFIO_PRIMEIRO_JOGO
-const entry = home.steps.quiz ? `${home.basePath}/quiz` : `${home.basePath}/oferta`
-return Astro.redirect(entry, 302)
+
+const f = DESAFIO_PRIMEIRO_JOGO
+const quizUrl = `${f.basePath}/quiz`
+const ofertaUrl = `${f.basePath}/oferta`
+const img = (file: string) => `${f.imagesBase}/${file}`
+const ano = new Date().getFullYear()
+
+const title = 'Crie com Helena e Júlio · Criação de jogos para crianças'
+const description =
+  'O foco intenso do seu filho pode virar criação. Descubra o perfil dele no quiz ou conheça o Desafio do Primeiro Jogo, para crianças a partir de 9 anos criarem o primeiro jogo em 3 dias.'
 ---
+
+<BaseLayout
+  title={title}
+  description={description}
+  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
+  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
+>
+  <div class="bio">
+    <!-- decorações flutuantes -->
+    <svg class="deco flutua" style="top:9%;left:8%;width:44px" viewBox="0 0 24 24" fill="#FFCE3A"
+      ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
+      ></path></svg
+    >
+    <svg
+      class="deco flutua lenta"
+      style="top:16%;right:10%;width:32px"
+      viewBox="0 0 24 24"
+      fill="#F368A6"
+      ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
+      ></path></svg
+    >
+    <svg
+      class="deco flutua inversa"
+      style="bottom:14%;left:12%;width:26px"
+      viewBox="0 0 24 24"
+      fill="#37C871"><circle cx="12" cy="12" r="10"></circle></svg
+    >
+    <svg
+      class="deco flutua lenta inversa"
+      style="bottom:22%;right:8%;width:40px"
+      viewBox="0 0 24 24"
+      fill="#1E88E5"
+      ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
+      ></path></svg
+    >
+    <div class="bolha" style="width:240px;height:240px;background:#cde8ff;top:-70px;left:-70px">
+    </div>
+    <div class="bolha" style="width:190px;height:190px;background:#dff6e6;bottom:-50px;right:-40px">
+    </div>
+
+    <main class="cartao">
+      <figure class="mascote">
+        <img
+          src={img('avatar-helena-julio.webp')}
+          alt="Helena e Júlio, criadores do Crie com Helena e Júlio"
+          width="360"
+          height="360"
+          fetchpriority="high"
+        />
+      </figure>
+
+      <h1>Crie com Helena e Júlio</h1>
+      <p class="arroba">@criecomhelenaejulio</p>
+      <p class="descricao">
+        Aqui, o foco intenso do seu filho vira criação: crianças a partir de 9 anos criando os
+        próprios jogos, guiadas do início ao fim. Escolha por onde começar:
+      </p>
+
+      <nav class="botoes" aria-label="Escolha por onde começar">
+        <a href={quizUrl} class="botao laranja">
+          <span class="material-symbols-rounded" aria-hidden="true">psychology</span>
+          <span class="rotulo">
+            Descubra o perfil do seu filho
+            <small>Quiz gratuito de 2 minutos</small>
+          </span>
+        </a>
+        <a href={ofertaUrl} class="botao azul">
+          <span class="material-symbols-rounded" aria-hidden="true">sports_esports</span>
+          <span class="rotulo">
+            Desafio do Primeiro Jogo
+            <small>O desafio de 3 dias para criar o primeiro jogo</small>
+          </span>
+        </a>
+      </nav>
+    </main>
+
+    <footer class="rodape">
+      <p class="linhas">
+        <a href="/kids/termos">Termos de uso</a> · <a href="/kids/privacidade"
+          >Política de privacidade</a
+        >
+      </p>
+      <p>© {ano} {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj}</p>
+    </footer>
+  </div>
+</BaseLayout>
+
+<style>
+  .material-symbols-rounded {
+    font-family: 'Material Symbols Rounded';
+    font-weight: 500;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .bio {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 48px 22px 34px;
+    /* `clip` nos DOIS eixos: as decorações que sangram nas bordas (bolhas com
+       top/bottom negativos) são cortadas sem esticar a página, senão elas
+       criam barra de rolagem e uma sobra depois do rodapé. */
+    overflow: clip;
+    background: linear-gradient(180deg, #dceeff 0%, var(--color-bg) 55%, #e9f7ef 100%);
+  }
+
+  /* decorações */
+  .deco {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.9;
+    z-index: 0;
+  }
+  .bolha {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(2px);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .flutua {
+    animation: bio-flutua 6s ease-in-out infinite;
+  }
+  .flutua.lenta {
+    animation-duration: 9s;
+  }
+  .flutua.inversa {
+    animation-direction: reverse;
+  }
+  @keyframes bio-flutua {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-14px);
+    }
+  }
+  /* No celular as decorações de baixo cairiam sobre o aviso legal. */
+  @media (max-width: 560px) {
+    .deco.inversa {
+      display: none;
+    }
+  }
+
+  .cartao {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 460px;
+    text-align: center;
+    /* Centraliza o miolo no espaço da tela e empurra o rodapé para o pé. */
+    margin-block: auto;
+  }
+  .mascote {
+    margin: 0 auto 12px;
+    max-width: 176px;
+    animation: bio-flutua 7s ease-in-out infinite;
+  }
+  .mascote img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .cartao h1 {
+    font-size: clamp(1.7rem, 6vw, 2.2rem);
+    font-weight: 700;
+    color: var(--color-ink);
+    margin: 0;
+  }
+  .arroba {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--color-cyan);
+    background: #fff;
+    border: 2px solid #cfe6ff;
+    border-radius: 999px;
+    padding: 5px 16px;
+    box-shadow: 0 8px 22px rgba(28, 48, 90, 0.1);
+  }
+  .descricao {
+    margin: 16px auto 0;
+    max-width: 400px;
+    color: var(--color-muted);
+    font-size: 1.02rem;
+    line-height: 1.55;
+  }
+
+  /* botões empilhados, estilo bio link com o 3D do tema */
+  .botoes {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin-top: 28px;
+  }
+  .botao {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    text-decoration: none;
+    border-radius: 18px;
+    padding: 16px 22px;
+    font-family: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 1.08rem;
+    line-height: 1.2;
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .botao .material-symbols-rounded {
+    font-size: 30px;
+    flex: 0 0 auto;
+  }
+  .botao .rotulo {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .botao .rotulo small {
+    font-family: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    opacity: 0.85;
+  }
+  .botao.laranja {
+    background: linear-gradient(180deg, #ffb53f, #ff9a1f);
+    color: #3a2400;
+    box-shadow:
+      0 7px 0 #d8760a,
+      0 16px 26px rgba(255, 154, 31, 0.32);
+  }
+  .botao.laranja:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 9px 0 #d8760a,
+      0 20px 32px rgba(255, 154, 31, 0.4);
+  }
+  .botao.laranja:active {
+    transform: translateY(4px);
+    box-shadow:
+      0 3px 0 #d8760a,
+      0 8px 14px rgba(255, 154, 31, 0.3);
+  }
+  .botao.azul {
+    background: linear-gradient(180deg, #37a6f5, #1e88e5);
+    color: #fff;
+    box-shadow:
+      0 7px 0 #145aa0,
+      0 16px 26px rgba(30, 136, 229, 0.32);
+  }
+  .botao.azul:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 9px 0 #145aa0,
+      0 20px 32px rgba(30, 136, 229, 0.4);
+  }
+  .botao.azul:active {
+    transform: translateY(4px);
+    box-shadow:
+      0 3px 0 #145aa0,
+      0 8px 14px rgba(30, 136, 229, 0.3);
+  }
+
+  .rodape {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    text-align: center;
+    color: var(--color-muted);
+    font-size: 0.72rem;
+    line-height: 1.5;
+    /* a sombra 3D do último botão ocupa a área logo acima */
+    margin-top: 10px;
+  }
+  .rodape p {
+    margin: 0 0 8px;
+  }
+  .rodape a {
+    color: var(--color-ink);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .rodape a:hover {
+    color: var(--color-cyan);
+  }
+</style>

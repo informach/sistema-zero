@@ -18,7 +18,6 @@ export const prerender = false
 const f = getFunnel(Astro.params.audience, Astro.params.produto)
 if (!f) return new Response(null, { status: 404 })
 
-const ofertaPath = `${f.basePath}/oferta`
 // Pós-pagamento: vai ao upsell (se o funil tiver) ou direto ao obrigado.
 const successPath = f.steps.upsell ? `${f.basePath}/upsell` : `${f.basePath}/obrigado`
 
@@ -46,19 +45,20 @@ const fromQuery = {
 }
 const queryContact = ContactSchema.safeParse(fromQuery)
 
-if (!lead) {
-  // Sem lead E sem contato válido na URL → volta p/ a oferta SEM criar lead.
-  // (Antes o insert rodava antes do guard: bot/crawler batendo em /checkout
-  // inseria uma linha no banco por hit.)
-  if (!queryContact.success) return Astro.redirect(ofertaPath)
-  // Contato válido na URL: cria o lead já com ele persistido (recupera o
-  // telefone p/ cartão/boleto, por exemplo) e a origem do funil.
+// O checkout SEMPRE abre (o pré-checkout é só um facilitador): sem lead e sem
+// contato, o formulário abre vazio e a pessoa preenche tudo aqui, sem perder a
+// venda. Quem cai direto ganha o lead pelo próprio formulário (POST /api/leads
+// no mount, idempotente) — bot/crawler sem JS segue sem inserir linha no banco.
+if (!lead && queryContact.success) {
+  // Contato válido na URL (veio do pré-checkout): cria o lead já com ele
+  // persistido (recupera o telefone p/ cartão/boleto, por exemplo) e a origem
+  // do funil.
   const created = await repo.createLead(f.key)
   leadId = created.id
   Astro.response.headers.append('set-cookie', leadCookie(leadId, env.NODE_ENV === 'production'))
   await repo.updateLead(leadId, queryContact.data)
   lead = await repo.getLead(leadId)
-} else if (!lead.email && queryContact.success) {
+} else if (lead && !lead.email && queryContact.success) {
   // Lead existente ainda sem contato: persiste o da URL.
   await repo.updateLead(lead.id, queryContact.data)
   lead = { ...lead, ...queryContact.data }
@@ -71,10 +71,6 @@ const initialContact = {
   email: lead?.email ?? fromQuery.email,
   cpf: '',
 }
-
-// Sem e-mail não há para quem entregar o produto → volta para a oferta, onde o
-// modal de pré-checkout coleta nome/e-mail/telefone.
-if (!initialContact.email) return Astro.redirect(ofertaPath)
 
 // Preço/nome vêm do catálogo (fonte da verdade); fallback p/ rótulos do funil se fora.
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout/cobrança.
@@ -149,6 +145,7 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
     <div class="mt-6">
       <CheckoutForm
         client:load
+        funnel={f.key}
         initialContact={initialContact}
         priceCents={priceCents}
         allowCoupon={offer?.allowsCoupon === true}

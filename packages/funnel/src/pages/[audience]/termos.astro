@@ -25,6 +25,7 @@ Astro.response.headers.set('cache-control', 'public, max-age=300, stale-while-re
   description={doc.descricao}
   htmlClass={audience === 'kids' ? 'theme-kids' : undefined}
 >
-  <LegalDocument doc={doc} voltarHref={`/${audience}`} />
+  {/* Fallback do kids = a bio da raiz (o /kids redirecionaria pro quiz). */}
+  <LegalDocument doc={doc} voltarHref={audience === 'kids' ? '/' : `/${audience}`} />
   <Footer audience={audience} />
 </BaseLayout>

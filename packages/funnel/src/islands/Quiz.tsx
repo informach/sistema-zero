@@ -132,7 +132,7 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
       {/* Atmosfera: brilho radial sutil no topo (sem header/footer no quiz). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_75%_55%_at_50%_-12%,rgba(196,240,66,0.10),transparent_60%)]"
+        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_75%_55%_at_50%_-12%,color-mix(in_srgb,var(--color-lime)_12%,transparent),transparent_60%)]"
       />
 
       {/* Barra de progresso fixa (presente desde a P1). */}

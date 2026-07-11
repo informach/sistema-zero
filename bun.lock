@@ -242,6 +242,7 @@
         "@astrojs/sitemap": "^3.7.3",
         "@fontsource/fredoka": "^5.2.10",
         "@fontsource/material-symbols-outlined": "^5.2.45",
+        "@fontsource/material-symbols-rounded": "^5.2.45",
         "@fontsource/nunito": "^5.2.7",
         "@fontsource/plus-jakarta-sans": "^5.2.8",
         "@sentry/bun": "^10.56.0",
@@ -1031,6 +1032,8 @@
     "@fontsource/fredoka": ["@fontsource/fredoka@5.2.10", "", {}, "sha512-DyzPCmTf0PkBbAu+gNvnPzfD/dYIXlyp+Zcb76jEQyt/vmRKGZgkH8FFF9W2sICDaA5p+GLk1XGFjWh5PPX+lg=="],
 
     "@fontsource/material-symbols-outlined": ["@fontsource/material-symbols-outlined@5.2.45", "", {}, "sha512-5h50Z51CF8OqakobEgKOetQWpf+kEjGP9Oz7bunyCwqSq0MbfI7Qg1zTagLVz837rY2JaNxZoJ1d0h93J+nqXA=="],
+
+    "@fontsource/material-symbols-rounded": ["@fontsource/material-symbols-rounded@5.2.45", "", {}, "sha512-CXFb9F55qZQMypJYUmHYVdd1BtnLiMDGGWFz5iVaYB5VcDBJTaRJWxvmVWMvdH2LMgm+dUcAEy6Qqb/L0SbXYg=="],
 
     "@fontsource/nunito": ["@fontsource/nunito@5.2.7", "", {}, "sha512-pmtBq0H9ex9nk+RtJYEJOD9pag393iHETnl/PVKleF4i06cd0ttngK5ZCTgYb5eOqR3Xdlrjtev8m7bmgYprew=="],
 

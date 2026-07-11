@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { apiPost } from '../lib/api-fetch'
 import { maskCpf } from '../lib/card-utils'
 import { type CheckoutContactInput, CheckoutContactSchema } from '../lib/checkout-schema'
@@ -50,6 +50,7 @@ interface QuoteResp {
  * atualiza o lead e repassa à Efí (devedor/titular).
  */
 export default function CheckoutForm({
+  funnel,
   initialContact,
   priceCents,
   allowCoupon = false,
@@ -62,6 +63,8 @@ export default function CheckoutForm({
   altOffer = null,
   initialChoice = 'main',
 }: {
+  /** Chave do funil (`audience/produto`) — garante o lead de quem cai DIRETO no checkout. */
+  funnel: string
   initialContact: InitialContact
   priceCents: number
   allowCoupon?: boolean
@@ -84,6 +87,13 @@ export default function CheckoutForm({
   /** Plano pré-selecionado no alternador (`?oferta=` do link /renovar). */
   initialChoice?: 'main' | 'alt'
 }) {
+  // Garante o lead da sessão para quem cai DIRETO no checkout (sem passar pela
+  // oferta/pré-checkout): a cobrança exige lead no cookie. Idempotente: quem já
+  // tem lead válido só o reaproveita; bot sem JS não insere linha no banco.
+  useEffect(() => {
+    apiPost('/api/leads', { funnel }).catch(() => {})
+  }, [funnel])
+
   const [nome, setNome] = useState(initialContact.nome)
   const [email, setEmail] = useState(initialContact.email)
   // Confirmação pré-populada quando o e-mail veio do pré-checkout (acabou de ser
@@ -428,7 +438,7 @@ function PlanCard({
           name="plano"
           checked={checked}
           onChange={onSelect}
-          className="h-4 w-4 accent-[#c4f042]"
+          className="h-4 w-4 accent-lime"
         />
         <span className={`font-semibold ${checked ? 'text-ink' : 'text-muted'}`}>{title}</span>
       </span>
@@ -471,7 +481,7 @@ function MethodCard({
           name="forma-de-pagamento"
           checked={checked}
           onChange={onSelect}
-          className="h-4 w-4 accent-[#c4f042]"
+          className="h-4 w-4 accent-lime"
         />
         <span className={checked ? 'text-lime' : 'text-muted'}>{icon}</span>
         {label}
