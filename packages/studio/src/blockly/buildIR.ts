@@ -3624,6 +3624,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           ctxVar: 'ctx',
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
           y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 0 }),
         },
       }
     case 'sz_g2d_tilemap_collide':

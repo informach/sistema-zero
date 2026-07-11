@@ -2004,9 +2004,15 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'g2d:drawTileMap': {
       const x = exprToValueBlock(valueToExpr(stmt.x))
       const y = exprToValueBlock(valueToExpr(stmt.y))
-      return x === null || y === null
+      // IR antigo não tem "size": vira 0 = encaixar sozinho (comportamento de sempre).
+      const size = exprToValueBlock(valueToExpr(stmt.size ?? 0))
+      return x === null || y === null || size === null
         ? rawJSBlock(stmt)
-        : block('sz_g2d_draw_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id, { X: x, Y: y })
+        : block('sz_g2d_draw_tilemap', { MAP: stmt.mapVar }, {}, stmt.__id, {
+            X: x,
+            Y: y,
+            SIZE: size,
+          })
     }
     case 'g2d:tileMapCollide':
       return block(

@@ -67,8 +67,11 @@ não existir**, lê o conteúdo de `f.content.*` e navega por `f.basePath`. As i
 recebem tudo por prop: `Quiz` (steps/total/landing/funnel/donePath), `PreCheckoutModal`
 (basePath/funnel), `CheckoutForm`→`Pix/Card` (successPath; boleto é só API — `startBoleto` +
 `/api/checkout/boleto`, sem ilha). `[audience]/index.astro`
-= landing de área (redireciona ao produto, ou "em breve" se vazia). `/` → `DEFAULT_FUNNEL`; URLs
-planas antigas → 301 (config `redirects`).
+= landing de área (redireciona ao produto, ou "em breve" se vazia). **`/` (raiz,
+`src/pages/index.astro`) = página "bio" da marca kids** (destino do link da bio do Instagram
+@criecomhelenaejulio): tema kids, Zappy e dois botões 3D — "Descubra o perfil do seu filho" → quiz
+kids e "Desafio do Primeiro Jogo" → oferta kids (não redireciona mais). URLs planas antigas → 301
+(config `redirects`).
 
 **Funil no lead + respostas (`leads.funnel` migration 0010; `leads.quiz_answers` jsonb migrations
 0011 [drop das 12 colunas fixas] + 0012 [add `quiz_answers`]):** o funil é gravado na CRIAÇÃO (a
@@ -100,7 +103,9 @@ perfil é POR FUNIL, não mais o enum global). `FunnelResult` traz `profiles` + 
 `renderCorpo?`. `patchLead` é GENÉRICO: valida a chave/valor pelo `valueSchema` do funil do lead,
 grava em `quiz_answers`, roda `derive`, e só aceita `eventName` que seja um passo do funil
 (anti-forja de marco server-side). `resultado.astro` usa `computePerfil`+`renderCorpo` do funil;
-`oferta.astro` escolhe o hero por `perfil ∈ porPerfil`. O NCI liga scoring/derive/render em
+`oferta.astro` escolhe o hero por `perfil ∈ porPerfil` (só no NCI: no Desafio a oferta é PADRÃO e a
+personalização por perfil vive na tela de resultado, que é o elo quiz→oferta; os `?perfil/?quer` da
+URL seguem repassados para o tracking do `PreCheckoutModal`). O NCI liga scoring/derive/render em
 `src/funnels/no-comando-da-ia/quiz.ts`. **Adicionar o quiz de um produto = só preencher o
 `FunnelQuiz` do módulo dele** (perguntas, validação, e — opcional — diagnóstico/resultado).
 
@@ -117,21 +122,41 @@ server-side — invariante 3); `isQuizComplete` exige campo1/campo2/resultadoKey
 
 **Tema por funil (`FunnelDef.theme`):** `theme:'kids'` → as páginas passam
 `htmlClass={f.theme ? 'theme-'+f.theme : undefined}` ao `BaseLayout` (compatível com o `dark` do
-admin). O escopo `.theme-kids` em `global.css` **redefine os tokens** `--color-*` (navy + ciano +
-laranja) e a `--font-sans` → Nunito (h1–h3 Fredoka, via `@fontsource`). Como as utilitárias
+admin). O escopo `.theme-kids` em `global.css` **redefine os tokens** `--color-*` e a
+`--font-sans` → Nunito (h1–h3 Fredoka, via `@fontsource`). Como as utilitárias
 (`text-lime`/`bg-card`/`border-line`…) são `var(--color-*)`, **todas as páginas/ilhas compartilhadas
-re-skinam sem mudar markup** (quiz, resultado, checkout, obrigado, PreCheckoutModal). No tema kids,
-`--color-lime` = LARANJA (CTA) e `--color-cyan` = ciano.
+re-skinam sem mudar markup** (quiz, resultado, checkout, obrigado, PreCheckoutModal).
+
+**Tema kids = CLARO e colorido (11/07, extraído da página colorida aprovada; é o tema oficial de
+TODO funil kids futuro — basta `theme:'kids'`):** fundo **azul-céu `#E4F2FF`** nas etapas
+compartilhadas (quiz/resultado/checkout/obrigado; a página de vendas usa o creme `#FFF7E9` próprio
+dentro do `.dpj`), cards brancos, tinta `#26314A`, `--color-lime` = **laranja profundo `#EF6C00`**
+(token de TEXTO/acento, legível no claro) e `--color-cyan` = **azul `#1E88E5`**; radius 16/22px. O
+**CTA usa gradiente laranja vivo** (`#FFB53F→#FF9A1F`) com **sombra 3D dura** (`box-shadow: 0 6px 0
+#D8760A` + `:active` afunda) via overrides `.theme-kids .btn/.btn-primary/.card` no fim do
+`global.css` (fora de `@layer`, DEPOIS dos componentes base). Paleta de apoio da página de vendas
+(no `.dpj`): rosa `#F368A6`, verde `#37C871`, amarelo `#FFCE3A`, navy `#0C1E3E`. Textos logo abaixo
+de um CTA 3D pedem **respiro extra** (~26px+, a sombra ocupa a área); num container de altura fixa
+(ex.: a faixa sticky do topo da oferta), compense a sombra com `margin-bottom` igual à sua altura.
+⚠️ `overflow-x` em wrapper que contém um sticky deve ser `clip` (nunca `hidden`, que cria scroll
+container e mata o sticky). O wordmark branco (`img[alt="Sistema Zero"]`) recebe filtro escuro no
+kids. Ilustrações dos personagens: 3D cartoon, geradas com chroma key `#00B140` e recortadas para
+WebP pelo script `preparar-assets-funil-kids.py` do repo de marketing (fluxo-criativo); a capa do
+checkout/OG segue sendo a arte clássica `hero-desafio.webp`.
 
 **Oferta POR FUNIL (`src/pages/[audience]/[produto]/oferta.astro` despacha o body):** a rota resolve
 preço/perfil e renderiza `f.content.sales ? NoComandoOfertaBody : DesafioOfertaBody`. `content.sales`
 (shape `SalesSections`) é **opcional** — funis com layout de vendas próprio (o Desafio) trazem a cópia
 no próprio body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
 preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
-partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida, fiel ao mockup, com o CSS bespoke
+partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida (porte fiel da página colorida
+aprovada: creme + azul + laranja, balões dos personagens, decorações flutuantes), com o CSS bespoke
 num `<style>` Astro escopado por `.dpj` (tokens próprios no wrapper, não no `:root`) e ícones
-**Material Symbols self-hosted** (`@fontsource/material-symbols-outlined`). Os CTAs de compra levam
-`data-checkout-cta` → o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout.
+**Material Symbols self-hosted** (`@fontsource/material-symbols-rounded`; o NCI segue com o
+outlined). ⚠️ Astro escopa somando um atributo por elo do seletor: um override tipo
+`.kid.verde .name` só vence a base `.kid .char .name` se incluir os MESMOS elos (`.kid.verde .char
+.name`). Os CTAs de compra levam `data-checkout-cta` → o `PreCheckoutModal` (mesma ilha do NCI)
+abre o checkout.
 
 **Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 37):** criança 9+ monta um
 jogo de nave em 3 dias; **comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).

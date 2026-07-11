@@ -1,8 +1,10 @@
 ---
-// Rodapé institucional: logo à esquerda, "Recursos" (links legais) à direita,
-// botão voltar-ao-topo e linha de copyright com os dados da empresa. Os links
-// legais e o aviso variam por público (`audience`): no kids apontam para
-// /kids/termos|privacidade e exibem o aviso legal infantil (ECA/CONANDA/LGPD).
+// Rodapé institucional ÚNICO dos funis, em duas colunas: os links legais à
+// esquerda e a marca (Sistema Zero) à direita, com os disclaimers logo abaixo
+// dela (o aviso fica perto da marca, não solto no fim da página). A linha de
+// copyright fecha. Links e aviso variam por público (`audience`): no kids
+// apontam para /kids/termos|privacidade e exibem o aviso legal infantil
+// (ECA/CONANDA/LGPD).
 import { AVISO_LEGAL_KIDS } from '../content/legal-kids'
 
 interface Props {
@@ -14,35 +16,52 @@ const { audience = 'pro', vitalicio = false } = Astro.props
 const ano = new Date().getFullYear()
 ---
 
-<footer class="mt-16 border-t border-line">
+<footer class="border-t border-line">
   <div class="mx-auto max-w-5xl px-4 py-10">
     <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
-      <a href="/" class="inline-flex" aria-label="Sistema Zero">
-        <img
-          src="/img/logo-sistema-zero.svg"
-          alt="Sistema Zero"
-          class="h-2.5 w-auto sm:h-3"
-          loading="lazy"
-          decoding="async"
-        />
-      </a>
+      <nav aria-label="Recursos" class="shrink-0">
+        <p class="text-sm font-bold text-ink">Recursos</p>
+        <ul class="mt-3 flex flex-col gap-2 text-sm">
+          <li>
+            <a href={`/${audience}/privacidade`} class="text-muted transition hover:text-lime">
+              Política de Privacidade
+            </a>
+          </li>
+          <li>
+            <a href={`/${audience}/termos`} class="text-muted transition hover:text-lime">
+              Termos de Uso
+            </a>
+          </li>
+        </ul>
+      </nav>
 
-      <div class="flex items-start gap-8">
-        <nav aria-label="Recursos">
-          <p class="text-sm font-bold text-ink">Recursos</p>
-          <ul class="mt-3 flex flex-col gap-2 text-sm">
-            <li>
-              <a href={`/${audience}/privacidade`} class="text-muted transition hover:text-lime">
-                Política de Privacidade
-              </a>
-            </li>
-            <li>
-              <a href={`/${audience}/termos`} class="text-muted transition hover:text-lime">
-                Termos de Uso
-              </a>
-            </li>
-          </ul>
-        </nav>
+      <div class="flex items-start gap-8 sm:max-w-xl">
+        <div>
+          <a href="/" class="inline-flex" aria-label="Sistema Zero">
+            <img
+              src="/img/logo-sistema-zero.svg"
+              alt="Sistema Zero"
+              class="h-2.5 w-auto sm:h-3"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+
+          {
+            audience === 'kids' && (
+              <p class="mt-4 text-xs leading-relaxed text-muted">{AVISO_LEGAL_KIDS}</p>
+            )
+          }
+
+          {
+            vitalicio && (
+              <p class="mt-3 text-xs leading-relaxed text-muted">
+                Acesso vitalício significa que você paga uma vez, sem mensalidade nem renovação, e
+                mantém o acesso enquanto a empresa existir e a plataforma estiver no ar.
+              </p>
+            )
+          }
+        </div>
 
         <a
           href="#topo"
@@ -61,26 +80,7 @@ const ano = new Date().getFullYear()
       </div>
     </div>
 
-    {
-      audience === 'kids' && (
-        <p class="mt-10 max-w-3xl text-xs leading-relaxed text-muted">{AVISO_LEGAL_KIDS}</p>
-      )
-    }
-
-    {
-      vitalicio && (
-        <p
-          class={`${audience === 'kids' ? 'mt-4' : 'mt-10'} max-w-3xl text-xs leading-relaxed text-muted`}
-        >
-          Acesso vitalício significa que você paga uma vez, sem mensalidade nem renovação, e mantém o
-          acesso enquanto a empresa existir e a plataforma estiver no ar.
-        </p>
-      )
-    }
-
-    <p
-      class={`${audience === 'kids' || vitalicio ? 'mt-4' : 'mt-10'} text-xs leading-relaxed text-muted`}
-    >
+    <p class="mt-8 text-xs leading-relaxed text-muted">
       © {ano} Informach — Núcleo de Aprendizagem Ltda. · CNPJ 43.588.758/0001-03 · Todos os
       direitos reservados.
     </p>

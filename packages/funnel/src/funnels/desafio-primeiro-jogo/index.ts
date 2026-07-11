@@ -32,7 +32,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   productName: 'Desafio do Primeiro Jogo',
   productSku: 'desafio-primeiro-jogo',
   imagesBase: '/img/desafio-primeiro-jogo',
-  // Sem capa dedicada: o checkout usa a MESMA arte do hero da oferta.
+  // Sem capa dedicada: o checkout usa a arte clássica do produto (a mesma de antes).
   checkoutImage: 'hero-desafio.webp',
   byline: 'Helena e Júlio · Sistema Zero',
   seoTitle: 'Desafio do Primeiro Jogo · Seu filho cria o primeiro jogo em 3 dias',

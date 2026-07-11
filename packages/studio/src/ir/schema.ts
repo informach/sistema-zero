@@ -1708,6 +1708,9 @@ export type JSStatement =
       ctxVar: string
       x: number | JSExpr
       y: number | JSExpr
+      // Tamanho do tile NA TELA (px); 0/ausente = encaixar sozinho no canvas.
+      // Opcional para aceitar IR salvo antes do campo existir.
+      size?: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:tileMapCollide'; spriteVar: string; mapVar: string })
   | (JSStatementCommon & { type: 'g2d:collideGroup'; spriteVar: string; groupVar: string })
@@ -3364,6 +3367,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ctxVar: irText(),
       x: z.union([JSExprSchema, z.number()]),
       y: z.union([JSExprSchema, z.number()]),
+      // Opcional: IR salvo antes do campo "tamanho do tile" não o tem.
+      size: z.union([JSExprSchema, z.number()]).optional(),
       ...idField,
     }),
     z.object({

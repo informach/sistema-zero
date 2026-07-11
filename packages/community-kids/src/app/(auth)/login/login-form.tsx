@@ -43,6 +43,12 @@ export function LoginForm() {
   const [codeSent, setCodeSent] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
   const [loading, setLoading] = useState(false)
+  // E-mail cujo responsável ainda NÃO definiu a senha (o auth recusou o código
+  // com PASSWORD_NOT_SET): para ele a opção "entrar com código" some da tela —
+  // só senha (criada pelo "Esqueci minha senha") destrava. Trocar o e-mail
+  // libera o toggle de novo.
+  const [blockedEmail, setBlockedEmail] = useState<string | null>(null)
+  const codeBlocked = blockedEmail !== null && email.trim().toLowerCase() === blockedEmail
 
   function goHome() {
     // Navegação de DOCUMENTO de propósito: o login muda cookies HttpOnly e o
@@ -126,7 +132,18 @@ export function LoginForm() {
     await run(async () => {
       const res = await post('/api/auth/otp/verify', { email, code })
       if (res.ok) return goHome()
-      await toastError(res, 'Não foi possível entrar.')
+      const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
+      const errCode = data?.error?.code ?? ''
+      if (errCode === 'PASSWORD_NOT_SET') {
+        // Trava visual do gate: responsável sem senha não entra com código. A
+        // tela vira para o modo senha e a opção de código some para este e-mail
+        // (o caminho é criá-la pelo "Esqueci minha senha").
+        setBlockedEmail(email.trim().toLowerCase())
+        switchMode('password')
+        toast.error(ERROR_MESSAGES.PASSWORD_NOT_SET)
+        return
+      }
+      toast.error(ERROR_MESSAGES[errCode] ?? 'Não foi possível entrar.')
     })
   }
 
@@ -234,13 +251,15 @@ export function LoginForm() {
         )}
 
         <div className="mt-4 flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={() => switchMode(mode === 'password' ? 'otp' : 'password')}
-            className="text-center text-sm text-interactive hover:text-interactive-hover"
-          >
-            {mode === 'password' ? 'Entrar com código por e-mail' : 'Entrar com senha'}
-          </button>
+          {mode === 'password' && codeBlocked ? null : (
+            <button
+              type="button"
+              onClick={() => switchMode(mode === 'password' ? 'otp' : 'password')}
+              className="text-center text-sm text-interactive hover:text-interactive-hover"
+            >
+              {mode === 'password' ? 'Entrar com código por e-mail' : 'Entrar com senha'}
+            </button>
+          )}
           <p className="text-center text-sm text-muted-foreground">
             <Link href="/esqueci-senha" className="text-interactive hover:text-interactive-hover">
               Esqueci minha senha

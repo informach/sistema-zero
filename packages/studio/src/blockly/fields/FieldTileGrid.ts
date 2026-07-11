@@ -8,7 +8,9 @@ import { resolveTileset } from './FieldSolidTilesPicker'
  * um `field_input`; este campo só troca o EDITOR por um mini-editor de mapa
  * estilo MakeCode: paleta de peças (fatiadas da imagem do campo IMAGE irmão) +
  * grade clicável E arrastável + redimensionar linhas/colunas. Sem tileset
- * resolvível → textarea de texto (o comportamento de sempre, só que multilinha).
+ * resolvível → MODO RASCUNHO: o MESMO editor, com peças numeradas em cores
+ * neutras no lugar da arte (a criança já pinta e redimensiona a grade antes de
+ * escolher a imagem; no jogo os números viram quadrados cinza até ela chegar).
  */
 
 /** Limites de CRESCIMENTO pela UI (grades maiores — coladas — rolam e só travam o +). */
@@ -92,6 +94,20 @@ function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
 const CELL_PX = 26
 const CELL_CANVAS_PX = 24
 
+/** Cores neutras do MODO RASCUNHO (grade sem tileset escolhido): uma por peça. */
+const DRAFT_TILE_COLORS = [
+  '#94a3b8',
+  '#f87171',
+  '#fbbf24',
+  '#4ade80',
+  '#38bdf8',
+  '#a78bfa',
+  '#f472b6',
+  '#fb923c',
+  '#2dd4bf',
+  '#facc15',
+]
+
 export class FieldTileGrid extends Blockly.FieldTextInput {
   static override fromJson(options: Blockly.FieldTextInputFromJsonConfig): FieldTileGrid {
     return new FieldTileGrid(`${options.text ?? ''}`)
@@ -107,13 +123,6 @@ export class FieldTileGrid extends Blockly.FieldTextInput {
     wrap.style.cssText =
       'padding:8px;max-width:min(560px,84vw);background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
 
-    if (!info) {
-      this.renderTextFallback(wrap)
-      content.appendChild(wrap)
-      Blockly.DropDownDiv.showPositionedByField(this, () => {})
-      return
-    }
-
     // Estado do editor: a grade atual (retangularizada) + a peça selecionada.
     const parsed = normalizeRect(parseGridText(`${this.getValue() ?? ''}`))
     let cells = parsed.rows > 0 ? parsed.cells : resizeGrid([], DEFAULT_COLS, DEFAULT_ROWS)
@@ -121,12 +130,21 @@ export class FieldTileGrid extends Blockly.FieldTextInput {
     let painting = false
     let sheetLoaded = false
 
+    // Sem tileset resolvível NÃO cai mais num textarea (a criança ficava sem a
+    // paleta e sem os botões de linhas/colunas — "não consigo dimensionar o
+    // mapa"). Entra o MODO RASCUNHO: mesmas ferramentas, peças numeradas em
+    // cores neutras. A paleta cobre as peças já usadas na grade (mínimo 10).
+    const maxIdx = cells.reduce((m, row) => row.reduce((m2, v) => Math.max(m2, v), m), -1)
+    const pieceCount = info ? info.count : Math.min(30, Math.max(10, maxIdx + 1))
+
     const sheet = new Image()
 
     const help = document.createElement('div')
-    help.textContent = 'Escolha uma peça e PINTE a grade (clique ou arraste). A borracha apaga.'
+    help.textContent = info
+      ? 'Escolha uma peça e PINTE a grade (clique ou arraste). A borracha apaga.'
+      : 'Escolha uma peça numerada e PINTE a grade (clique ou arraste); use − e + para mudar colunas e linhas. Sem a IMAGEM das peças escolhida no bloco, os tiles aparecem no jogo como quadrados cinza; escolha a imagem para ver as peças de verdade.'
     help.style.cssText =
-      'font-size:11px;color:var(--color-sz-fg-soft);padding:0 0 6px;line-height:1.4;'
+      'font-size:11px;color:var(--color-sz-fg-soft);padding:0 0 6px;line-height:1.4;max-width:340px;'
 
     // ---- Paleta de peças (fatiada da imagem do tileset) + borracha ----
     const palette = document.createElement('div')
@@ -157,7 +175,7 @@ export class FieldTileGrid extends Blockly.FieldTextInput {
     })
     paletteButtons.push(eraser)
     palette.appendChild(eraser)
-    for (let idx = 0; idx < info.count; idx += 1) {
+    for (let idx = 0; idx < pieceCount; idx += 1) {
       const btn = makePaletteBtn('', `Peça ${idx}`)
       const canvas = document.createElement('canvas')
       canvas.width = CELL_CANVAS_PX
@@ -183,6 +201,18 @@ export class FieldTileGrid extends Blockly.FieldTextInput {
       if (!ctx || !canvas) return
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       if (idx < 0) return
+      if (!info) {
+        // Modo rascunho: cor neutra + número da peça (a arte chega quando a
+        // criança escolher a IMAGEM do tileset no bloco).
+        ctx.fillStyle = DRAFT_TILE_COLORS[idx % DRAFT_TILE_COLORS.length] ?? '#94a3b8'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.fillStyle = 'rgba(0,0,0,0.65)'
+        ctx.font = 'bold 10px Inter, system-ui, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(String(idx), canvas.width / 2, canvas.height / 2)
+        return
+      }
       if (!sheetLoaded) return
       ctx.imageSmoothingEnabled = false
       const sx = (idx % info.cols) * info.tileSize
@@ -341,53 +371,25 @@ export class FieldTileGrid extends Blockly.FieldTextInput {
     renderGrid()
 
     // Thumbs chegam quando a folha carrega (CSP-safe: new Image() + data URL —
-    // NUNCA fetch('data:')).
-    sheet.onload = () => {
-      sheetLoaded = true
-      paletteButtons.forEach((b, i) => {
-        if (i === 0) return
-        drawTileInto(b.querySelector('canvas'), i - 1)
-      })
-      for (let r = 0; r < cells.length; r += 1) {
-        for (let c = 0; c < (cells[r]?.length ?? 0); c += 1) paintCell(r, c)
+    // NUNCA fetch('data:')). No modo rascunho não há folha para carregar.
+    if (info) {
+      sheet.onload = () => {
+        sheetLoaded = true
+        paletteButtons.forEach((b, i) => {
+          if (i === 0) return
+          drawTileInto(b.querySelector('canvas'), i - 1)
+        })
+        for (let r = 0; r < cells.length; r += 1) {
+          for (let c = 0; c < (cells[r]?.length ?? 0); c += 1) paintCell(r, c)
+        }
       }
+      sheet.src = info.asset.dataUrl
     }
-    sheet.src = info.asset.dataUrl
 
     Blockly.DropDownDiv.showPositionedByField(this, () => {
       window.removeEventListener('pointerup', stopPainting)
       window.removeEventListener('pointercancel', stopPainting)
     })
-  }
-
-  /** Editor de texto (sem tileset resolvível): textarea multilinha + OK. */
-  private renderTextFallback(wrap: HTMLElement): void {
-    const help = document.createElement('div')
-    help.textContent =
-      'Escolha primeiro a IMAGEM das peças (tileset) para pintar a grade — ou edite o texto: espaço separa colunas, ";" separa linhas, "." é vazio.'
-    help.style.cssText =
-      'font-size:11px;color:var(--color-sz-fg-soft);padding:0 0 6px;line-height:1.4;max-width:260px;'
-    const area = document.createElement('textarea')
-    area.value = `${this.getValue() ?? ''}`.split(';').join(';\n')
-    area.rows = 5
-    area.spellcheck = false
-    area.style.cssText =
-      'width:260px;padding:4px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;resize:vertical;'
-    area.addEventListener('keydown', (ev) => {
-      ev.stopPropagation()
-    })
-    const ok = document.createElement('button')
-    ok.type = 'button'
-    ok.textContent = 'OK'
-    ok.style.cssText =
-      'margin-top:6px;padding:3px 12px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
-    ok.addEventListener('click', () => {
-      // Normaliza quebras de linha de volta para ';' (formato canônico do bloco).
-      this.setValue(serializeGrid(normalizeRect(parseGridText(area.value)).cells))
-      Blockly.DropDownDiv.hideIfOwner(this)
-    })
-    wrap.append(help, area, ok)
-    setTimeout(() => area.focus({ preventScroll: true }), 0)
   }
 }
 

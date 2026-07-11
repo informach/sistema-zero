@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, spyOn } from 'bun:test'
 import { gameTwoDRuntime } from '../runtime'
 
 /**
@@ -418,5 +418,60 @@ describe('setEnemyTypeParam', () => {
     api.setEnemyTypeParam(t, 'foguete', 99)
     api.setEnemyTypeParam(t, 'pulo', Number.NaN as unknown as number)
     expect(t.config.jump).toBe(15)
+  })
+})
+
+describe('avisos pedagógicos (tipo sem spawn / criar dentro do laço)', () => {
+  it('update/draw de tipo sem NENHUM spawn avisa uma vez só e cita o bloco Soltar', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({ behavior: 'perseguidor' })
+      api.updateEnemyType(t, ctx, null)
+      api.drawEnemyType(ctx, t)
+      api.updateEnemyType(t, ctx, null)
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(String(warn.mock.calls[0]?.[0])).toContain('Soltar um inimigo do tipo')
+      // Outro tipo que JÁ nasce com spawn não deve gerar aviso novo.
+      const t2 = api.createEnemyType({})
+      api.spawnEnemy(t2, 5, 5)
+      api.updateEnemyType(t2, ctx, null)
+      api.drawEnemyType(ctx, t2)
+      expect(warn).toHaveBeenCalledTimes(1)
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('tipo que já teve spawn não avisa nem com a lista vazia de novo (derrota legítima)', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      const ctx = fakeCtx()
+      const t = api.createEnemyType({ hp: 1 })
+      const s = api.spawnEnemy(t, 10, 10)
+      expect(s).not.toBeNull()
+      if (s) api.changeHealth(s, -1)
+      api.updateEnemyType(t, ctx, null) // remove o derrotado (vida 0)
+      expect(t.items.length).toBe(0)
+      api.drawEnemyType(ctx, t)
+      api.updateEnemyType(t, ctx, null)
+      expect(warn).not.toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('createEnemyType chamado 61+ vezes (sinal de laço) avisa uma única vez', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      for (let i = 0; i < 80; i += 1) api.createEnemyType({})
+      const calls = warn.mock.calls.filter((c) => String(c[0]).includes('Criar tipo de inimigo'))
+      expect(calls.length).toBe(1)
+    } finally {
+      warn.mockRestore()
+    }
   })
 })

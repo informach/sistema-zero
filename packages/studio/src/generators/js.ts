@@ -1069,7 +1069,8 @@ function compileStatementCode(
     case 'g2d:createTileMapFromAsset':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createTileMapFromAsset(${JSON.stringify(stmt.image)});`
     case 'g2d:drawTileMap':
-      return `${pad}SZGame2D.drawTileMap(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+      // size ausente (IR antigo) vira 0 = encaixar sozinho (comportamento de sempre).
+      return `${pad}SZGame2D.drawTileMap(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.mapVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size ?? 0), 0, identifiers, recAt(base))});`
     case 'g2d:tileMapCollide':
       return `${pad}SZGame2D.collideTileMap(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.mapVar)});`
     case 'g2d:collideGroup':
@@ -2748,6 +2749,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.ctxVar)
       collectExprIdentifiers(valueToExpr(stmt.x), names)
       collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size ?? 0), names)
       return
     case 'g2d:tileMapCollide':
       names.add(stmt.spriteVar)

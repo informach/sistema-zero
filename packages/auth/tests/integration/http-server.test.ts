@@ -995,6 +995,52 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     expect(messaging.sent.slice(before)).toHaveLength(0)
   })
 
+  /** Conta de convite/compra que nunca definiu a senha (o gate do login por código). */
+  function seedSemSenha(users: InMemoryUserRepository, email: string): void {
+    const now = new Date()
+    users.seed(
+      UserAggregate.restore({
+        id: crypto.randomUUID(),
+        version: 0,
+        email,
+        passwordHash: 'hashed:x',
+        firstName: 'Convidado',
+        lastName: 'Teste',
+        passwordSetAt: null,
+        role: 'customer',
+        status: 'active',
+        phone: null,
+        signupSource: null,
+        avatarUrl: null,
+        createdAt: now,
+        updatedAt: now,
+      }),
+    )
+  }
+
+  test('conta sem senha definida NÃO recebe código de LOGIN (o verify o recusaria)', async () => {
+    const { app, users, messaging } = buildApp()
+    seedSemSenha(users, 'convidado@example.com')
+
+    const before = messaging.sent.length
+    const res = await app.handle(
+      post('/auth/otp/request', { email: 'convidado@example.com', purpose: 'sign_in' }),
+    )
+
+    // Resposta genérica (anti-enumeração) e nenhum e-mail com código inútil.
+    expect(res.status).toBe(200)
+    expect(messaging.sent.slice(before)).toHaveLength(0)
+  })
+
+  test('conta sem senha definida RECEBE código de password_reset (caminho de criar a senha)', async () => {
+    const { app, users, messaging } = buildApp()
+    seedSemSenha(users, 'convidada@example.com')
+
+    const code = await requestCode(app, messaging, 'convidada@example.com', 'password_reset')
+
+    expect(code).toMatch(/^\d{6}$/)
+  })
+
   test('recuperação por OTP: redefine a senha e o login passa com a nova', async () => {
     const { app, messaging } = buildApp()
     await app.handle(post('/auth/register', REGISTER_BODY))

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import { gameTwoDRuntime } from '../runtime'
 
 interface SZGame2DSurface {
@@ -634,12 +634,13 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
   interface TileApi {
     createTileMap: (o: { image?: string; tile?: number; solid?: string; grid?: string }) => {
       tile: number
+      draw: number
       rows: number[][]
       solid: number[]
       ox: number
       oy: number
     }
-    drawTileMap: (ctx: unknown, map: unknown, x: number, y: number) => void
+    drawTileMap: (ctx: unknown, map: unknown, x: number, y: number, size?: number) => void
     collideTileMap: (sprite: TileSprite, map: unknown) => void
     tileAt: (map: unknown, px: number, py: number) => number
   }
@@ -711,6 +712,31 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     expect(map.ox).toBe(0)
   })
 
+  it('drawTileMap com tamanho manual usa o tamanho pedido; 0 volta ao encaixe automático', () => {
+    const api = load()
+    const map = api.createTileMap({ image: 'tileset', tile: 32, solid: '', grid: '0 0;0 0' })
+    const noop = () => {}
+    const ctx = {
+      canvas: { width: 200, height: 100 },
+      fillRect: noop,
+      drawImage: noop,
+      clearRect: noop,
+    }
+    // Encaixe automático: 2×2 num canvas 200×100 → célula 50, centrado (ox 50, oy 0).
+    api.drawTileMap(ctx, map, 0, 0)
+    expect(map.draw).toBe(50)
+    expect(map.ox).toBe(50)
+    expect(map.oy).toBe(0)
+    // Tamanho manual: célula 20, mapa 40×40 centrado (ox 80, oy 30).
+    api.drawTileMap(ctx, map, 0, 0, 20)
+    expect(map.draw).toBe(20)
+    expect(map.ox).toBe(80)
+    expect(map.oy).toBe(30)
+    // 0 (a sombra padrão do bloco) mantém o encaixe automático de sempre.
+    api.drawTileMap(ctx, map, 0, 0, 0)
+    expect(map.draw).toBe(50)
+  })
+
   it('collideTileMap pousa o sprite sobre o chão sólido e zera a velocidade vertical', () => {
     const api = load()
     // 3 linhas; só a última (índice 1) é sólida → chão a partir de y = 64.
@@ -740,6 +766,20 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     expect(sprite.x).toBe(10)
     expect(sprite.y).toBe(10)
     expect(sprite.vy).toBe(5)
+  })
+
+  it('createTileMap chamado 61+ vezes (sinal de laço no "a cada quadro") avisa uma única vez', () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const api = load()
+      for (let i = 0; i < 80; i += 1) {
+        api.createTileMap({ image: 'tileset', tile: 32, solid: '', grid: '0' })
+      }
+      const calls = warn.mock.calls.filter((c) => String(c[0]).includes('Criar mapa'))
+      expect(calls).toHaveLength(1)
+    } finally {
+      warn.mockRestore()
+    }
   })
 })
 

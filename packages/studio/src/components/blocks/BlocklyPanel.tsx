@@ -858,8 +858,21 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
     }
     registerPasteTarget(injected, pasteHandlers)
 
+    // O Blockly 12 escuta o pointerup do arrasto no DOCUMENTO (sem pointer
+    // capture). Soltar o botão com o cursor sobre o <iframe> do preview (outro
+    // documento) ou fora da janela faz esse pointerup NUNCA chegar aqui — o pan
+    // fica "grudado" no mouse até um clique com o botão direito (que cancela o
+    // gesto pelo menu de contexto). Guarda: movimento SEM nenhum botão apertado
+    // durante um arrasto = o soltar foi perdido → encerra o gesto na posição
+    // atual. Fase de captura para enxergar o evento antes de stopPropagation.
+    const releaseLostPointerUp = (e: PointerEvent) => {
+      if (e.buttons === 0 && injected.isDragging()) injected.cancelCurrentGesture()
+    }
+    document.addEventListener('pointermove', releaseLostPointerUp, true)
+
     return () => {
       fontsRepaintDisposed = true
+      document.removeEventListener('pointermove', releaseLostPointerUp, true)
       if (pendingRegenerationWorkspaceRef.current === injected) {
         pendingRegenerationWorkspaceRef.current = null
       }

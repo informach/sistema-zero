@@ -1308,18 +1308,19 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_tilemap',
-    message0: 'Desenhar o mapa %1 em x %2 y %3',
+    message0: 'Desenhar o mapa %1 em x %2 y %3 com tiles de %4 px (0 = encaixar na tela)',
     args0: [
       { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha o mapa de tiles: ele ENCAIXA sozinho no tamanho da tela (tiles quadrados, sem distorcer) e fica centralizado. x e y deslocam o mapa — use com a câmera para rolar um mapa maior que a tela.',
+      'Desenha o mapa de tiles. Com tiles de 0 px, ele ENCAIXA sozinho no tamanho da tela (tiles quadrados, sem distorcer) e fica centralizado. Escolha um tamanho (ex.: 32) para controlar você mesmo o tamanho dos tiles na tela: o mapa continua centralizado. x e y deslocam o mapa; use com a câmera para rolar um mapa maior que a tela.',
   },
   {
     type: 'sz_g2d_tilemap_collide',
@@ -2987,7 +2988,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   },
   sz_g2d_set_tile: { INDEX: numShadow(1) },
   sz_g2d_create_tilemap: { TILE: numShadow(32) },
-  sz_g2d_draw_tilemap: { X: numShadow(0), Y: numShadow(0) },
+  sz_g2d_draw_tilemap: { X: numShadow(0), Y: numShadow(0), SIZE: numShadow(0) },
   sz_g2d_spawn_in_group: { W: numShadow(24), H: numShadow(24) },
   sz_g2d_spawn_image_in_group: { W: numShadow(32), H: numShadow(32) },
   sz_g2d_spawn_bullet: { R: numShadow(5) },
