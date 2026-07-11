@@ -42,6 +42,12 @@ export class RequestOtpService {
     }
     const user = await this.users.findByEmail(email.value)
     if (!user?.isActive()) return
+    // Conta que nunca definiu a senha não recebe código de LOGIN: o verify o
+    // recusaria (PasswordNotSetError) e a criança receberia um código inútil no
+    // e-mail. No-op silencioso (mesma resposta 200, anti-enumeração). O purpose
+    // `password_reset` segue emitindo — é justamente o caminho de CRIAR a senha
+    // pelo "Esqueci minha senha".
+    if (command.purpose === 'sign_in' && !user.isPasswordSet()) return
 
     const now = new Date()
     const code = generateOtpCode()
