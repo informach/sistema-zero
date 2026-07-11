@@ -74,10 +74,11 @@ URLs públicas:
   `-f services=funnel,auth`). *(O trigger nativo do Railway só pode ser armado
   pelo dashboard — por isso o deploy é dirigido pelo CI, o que de quebra gateia
   o deploy no CI verde.)*
-- **Produção**: merge na `main` → o **admin** auto-deploya (trigger armado no
-  dashboard); os demais serviços são deployados **manualmente** (GraphQL
-  `serviceInstanceDeployV2` com o sha da main, ou dashboard) — deploy de prod
-  deliberado, por escolha. Atalho que automatiza esse manual (desde 07/2026):
+- **Produção**: merge na `main` → **admin, funnel e community** auto-deployam
+  (triggers armados no dashboard; verificado em 11/07/2026); os demais serviços
+  são deployados **manualmente** (GraphQL `serviceInstanceDeployV2` com o sha da
+  main, ou dashboard) — deploy de prod deliberado, por escolha. Atalho que
+  automatiza esse manual (desde 07/2026):
   `gh workflow run "Deploy produção" --ref staging -f services=all` (ou CSV) —
   o workflow `deploy-production.yml` resolve o sha da main, deploya pelo mesmo
   GraphQL e **pula serviço que ainda não estreou em produção** (ex.: hub).
