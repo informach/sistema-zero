@@ -121,7 +121,8 @@ Tiles e tilemaps (v0.5.0) — cenários a partir de um tileset (asset com vário
 - createTileMap({ image: 'tileset', tile: 32, solid: '1', grid: '1 1 1;1 0 1;1 1 1' }): cria o mapa.
   grid = texto da grade (cada número = um quadro do tileset; ';' separa linhas, espaço separa colunas, '.' = vazio);
   solid = índices que barram o sprite (separados por vírgula).
-- drawTileMap(ctx, map, x, y): desenha o mapa com o canto superior esquerdo em x/y.
+- drawTileMap(ctx, map, x, y, size): desenha o mapa. size = tamanho do tile NA TELA (px);
+  0 (ou ausente) = encaixa sozinho no canvas, centralizado. x/y deslocam o mapa (câmera).
 - collideTileMap(sprite, map): impede o sprite de atravessar os tiles sólidos (pousa no chão, bate nas paredes).
 - collideGroup(sprite, group): impede o sprite de atravessar os sprites de um grupo (obstáculos SEM
   tilemap: pedras/casas/paredes desenhadas à mão, inclusive por figura). Mesma física do collideTileMap

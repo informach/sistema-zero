@@ -3056,14 +3056,16 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return ctxVar ? { type: 'g2d:drawParticles', ctxVar } : null
     }
     case 'drawTileMap': {
-      // generator: SZGame2D.drawTileMap(ctx, map, x, y)
+      // generator: SZGame2D.drawTileMap(ctx, map, x, y[, size]) — o 5º argumento
+      // (tamanho do tile na tela) é opcional; código antigo tem só 4.
       const ctxVar = identifierName(args[0])
       const mapVar = identifierName(args[1])
       const x = toExpr(args[2], ctx)
       const y = toExpr(args[3], ctx)
-      return ctxVar && mapVar && isSimpleValue(x) && isSimpleValue(y)
-        ? { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y }
-        : null
+      if (!ctxVar || !mapVar || !isSimpleValue(x) || !isSimpleValue(y)) return null
+      if (args.length < 5) return { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y }
+      const size = toExpr(args[4], ctx)
+      return isSimpleValue(size) ? { type: 'g2d:drawTileMap', ctxVar, mapVar, x, y, size } : null
     }
     case 'collideTileMap': {
       // generator: SZGame2D.collideTileMap(sprite, map)

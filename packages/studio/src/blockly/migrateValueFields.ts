@@ -97,7 +97,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g2d_draw_frame: { INDEX: 'number', X: 'number', Y: 'number', W: 'number', H: 'number' },
   sz_g2d_set_tile: { INDEX: 'number' },
   sz_g2d_create_tilemap: { TILE: 'number' },
-  sz_g2d_draw_tilemap: { X: 'number', Y: 'number' },
+  sz_g2d_draw_tilemap: { X: 'number', Y: 'number', SIZE: 'number' },
   sz_g2d_spawn_in_group: { W: 'number', H: 'number' },
   sz_g2d_spawn_image_in_group: { W: 'number', H: 'number' },
   sz_g2d_spawn_bullet: { R: 'number' },

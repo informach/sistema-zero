@@ -90,7 +90,9 @@ quadros (o **tileset**) — escolha um da aba **Assets** (ex.: \`tileset\`).
   cada número escolhe um quadro do tileset; \`;\` separa as linhas e espaço separa as
   colunas; \`.\` é uma célula vazia. Em **tiles sólidos**, liste os números que barram o
   jogador (ex.: \`1\`).
-- **Desenhar mapa** — desenha o mapa na tela (use no "a cada frame", antes do sprite).
+- **Desenhar mapa** — desenha o mapa na tela (use no "a cada frame", antes do sprite). Com
+  "tiles de 0 px" ele ENCAIXA sozinho no canvas (centralizado, sem distorcer); um valor
+  como \`32\` fixa o tamanho do tile na tela (controle de zoom do mapa).
 - **Impedir de atravessar tiles sólidos** — o sprite pousa no chão e bate nas paredes;
   use a cada frame, depois de mover o sprite.
 - **Impedir de atravessar os sprites de um grupo** (em 📦 Muitos) — mesma colisão, mas

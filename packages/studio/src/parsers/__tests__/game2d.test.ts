@@ -292,6 +292,7 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
         grid: '1 0;0 1',
       },
     ])
+    // Forma antiga (4 args): IR SEM "size" — projetos salvos antes do campo existir.
     expect(parseJS('SZGame2D.drawTileMap(ctx, mapa, 0, 0);')).toEqual([
       {
         type: 'g2d:drawTileMap',
@@ -299,6 +300,17 @@ describe('parseJS — helpers SZGame2D.* (game-2d)', () => {
         mapVar: 'mapa',
         x: { type: 'num', value: 0 },
         y: { type: 'num', value: 0 },
+      },
+    ])
+    // Forma nova (5 args): o tamanho do tile na tela entra como "size".
+    expect(parseJS('SZGame2D.drawTileMap(ctx, mapa, 0, 0, 32);')).toEqual([
+      {
+        type: 'g2d:drawTileMap',
+        ctxVar: 'ctx',
+        mapVar: 'mapa',
+        x: { type: 'num', value: 0 },
+        y: { type: 'num', value: 0 },
+        size: { type: 'num', value: 32 },
       },
     ])
     expect(parseJS('SZGame2D.collideTileMap(heroi, mapa);')).toEqual([

@@ -1032,8 +1032,18 @@ export const gameTwoDRuntime = `(function () {
    * grade; solid = índices que barram o sprite. ox/oy guardam onde o mapa foi
    * desenhado por último (collideTileMap usa para alinhar a colisão ao desenho).
    */
+  // "Criar mapa" DENTRO do "a cada quadro" recria o mapa a cada quadro: além do
+  // desperdício, as edições de tile (quebrar/pôr) somem na hora. O teto detecta
+  // o laço e avisa UMA vez (o jogo segue rodando).
+  var _tileMapCreates = 0;
   function createTileMap(opts) {
     opts = opts || {};
+    _tileMapCreates += 1;
+    if (_tileMapCreates === 61) {
+      console.warn(
+        'SZGame2D: "Criar mapa" está rodando sem parar: ele provavelmente está DENTRO do "A cada quadro do jogo". Monte o bloco de criar o mapa FORA do laço (uma vez só) e deixe dentro do laço apenas o "Desenhar o mapa".'
+      );
+    }
     // tile = tamanho do tile NA ARTE (para fatiar o tileset). O tamanho NA TELA
     // (draw) é calculado no desenho: o mapa ENCAIXA no canvas (a arte é ampliada
     // com nitidez pelo drawFrame). Assim um tile de 16px não fica minúsculo.
@@ -1122,7 +1132,7 @@ export const gameTwoDRuntime = `(function () {
    * mapa inteiro caber (sem distorcer) e centraliza. A arte (map.tile) é ampliada com
    * nitidez. x/y deslocam por cima (ex.: câmera) — mapa maior que a tela rola com ela.
    */
-  function drawTileMap(ctx, map, x, y) {
+  function drawTileMap(ctx, map, x, y, size) {
     if (!ctx || !map || !map.rows) return;
     var rowsN = map.rows.length;
     var cols = tileMapCols(map);
@@ -1130,7 +1140,12 @@ export const gameTwoDRuntime = `(function () {
     var cw = (ctx.canvas && ctx.canvas.width) || 0;
     var ch = (ctx.canvas && ctx.canvas.height) || 0;
     var hasCanvas = cw > 0 && ch > 0;
-    var cell = hasCanvas ? Math.max(1, Math.floor(Math.min(cw / cols, ch / rowsN))) : map.tile;
+    // "size" (opcional) é o tamanho do tile NA TELA escolhido pelo aluno; 0 (ou
+    // vazio) mantém o encaixe automático. Com tamanho manual o mapa continua
+    // centralizado; maior que a tela, transborda igual dos dois lados (a câmera
+    // rola por cima via x/y).
+    var manual = (typeof size === 'number' && size > 0) ? Math.max(1, Math.floor(size)) : 0;
+    var cell = manual || (hasCanvas ? Math.max(1, Math.floor(Math.min(cw / cols, ch / rowsN))) : map.tile);
     map.draw = cell;
     // Sem tamanho de canvas (contexto atípico): não encaixa nem centraliza (fica em x/y).
     var ox = (x || 0) + (hasCanvas ? Math.floor((cw - cols * cell) / 2) : 0);
@@ -1635,8 +1650,19 @@ export const gameTwoDRuntime = `(function () {
   // Um TIPO de inimigo é um GRUPO estendido: { items, bullets: {items}, config,
   // onDefeat }. Como todos os helpers de grupo leem só .items, os blocos de
   // grupo (para cada / contar / colisões / tirar) funcionam direto no tipo.
+  //
+  // "Criar tipo de inimigo" DENTRO do "a cada quadro" recria o tipo (e ZERA a
+  // lista) a cada quadro: os inimigos soltos somem da tela sem pista nenhuma.
+  // O teto de chamadas detecta esse laço e avisa UMA vez (o jogo segue rodando).
+  var _enemyTypeCreates = 0;
   function createEnemyType(opts) {
     opts = opts || {};
+    _enemyTypeCreates += 1;
+    if (_enemyTypeCreates === 61) {
+      console.warn(
+        'SZGame2D: "Criar tipo de inimigo" está rodando sem parar: ele provavelmente está DENTRO do "A cada quadro do jogo". Monte esse bloco FORA do laço (ele roda uma vez só); dentro do laço a lista é recriada a cada quadro e os inimigos soltos somem da tela.'
+      );
+    }
     return {
       items: [],
       bullets: { items: [] },
@@ -1706,6 +1732,9 @@ export const gameTwoDRuntime = `(function () {
     s._homeX = s.x;
     s._homeY = s.y;
     if (c.animStates) s.animStates = c.animStates;
+    // Marca que o tipo JÁ teve inimigo em jogo: desliga o aviso pedagógico do
+    // update/draw (lista vazia DEPOIS disso é derrota legítima, não esquecimento).
+    type._spawned = true;
     type.items.push(s);
     return s;
   }
@@ -1715,7 +1744,23 @@ export const gameTwoDRuntime = `(function () {
    * atira (atirador), remove os derrotados (vida 0 -> particulas + "quando for
    * derrotado") e move/poda os tiros. Use DENTRO do "a cada quadro".
    */
+  /**
+   * Tropeço nº 1 dos inimigos: atualizar/desenhar um tipo em que NUNCA se
+   * soltou inimigo (o "Criar tipo" define só a CLASSE; sem o "Soltar um
+   * inimigo do tipo..." a lista fica vazia e nada aparece na tela). Avisa UMA
+   * vez por tipo; depois do primeiro spawn o aviso não dispara mais.
+   */
+  function warnEnemyTypeEmptyOnce(type) {
+    if (!type || !type.config || type._spawned || type._warnedNoSpawn) return;
+    if (!type.items || type.items.length !== 0) return;
+    type._warnedNoSpawn = true;
+    console.warn(
+      'SZGame2D: o tipo de inimigo foi criado, mas nenhum inimigo foi solto ainda, por isso nada aparece. Use o bloco "Soltar um inimigo do tipo ... em x y" (fora do "A cada quadro"; para ondas, use dentro de "A cada N quadros fazer").'
+    );
+  }
+
   function updateEnemyType(type, ctx, target) {
+    warnEnemyTypeEmptyOnce(type);
     if (!type || !type.items || !ctx || !ctx.canvas) return;
     var c = type.config || {};
     var w = stageW(ctx), h = stageH(ctx);
@@ -1835,6 +1880,7 @@ export const gameTwoDRuntime = `(function () {
 
   /** Desenha os inimigos do tipo E os tiros deles. */
   function drawEnemyType(ctx, type) {
+    warnEnemyTypeEmptyOnce(type);
     if (!ctx || !type) return;
     drawGroup(ctx, type);
     drawGroup(ctx, type.bullets);
