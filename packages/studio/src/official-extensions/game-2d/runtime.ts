@@ -2202,10 +2202,17 @@ export const gameTwoDRuntime = `(function () {
     var jumping = sk.onGround === false;
     var swing = (!ducking && !jumping) ? Math.sin(now() * 0.02) * (h * 0.09) : (jumping ? -h * 0.05 : 0);
     ctx.save();
-    // sombra
-    ctx.fillStyle = 'rgba(32,65,92,0.16)';
+    // sombra: FICA na linha do chão (não sobe com o pulo, como acontecia quando era
+    // desenhada nos pés) e encolhe/clareia conforme o dino ganha altura — dá
+    // profundidade sem "grudar" no dino.
+    var groundY = dinoGround(ctx);
+    var airborne = groundY - (y + h);
+    if (airborne < 0) airborne = 0;
+    var shadowScale = 1 - airborne / 260;
+    if (shadowScale < 0.4) shadowScale = 0.4;
+    ctx.fillStyle = 'rgba(32,65,92,' + (0.16 * shadowScale).toFixed(3) + ')';
     ctx.beginPath();
-    ctx.ellipse(x + w * 0.52, y + h - 1, w * 0.42, h * 0.06, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + w * 0.52, groundY - 1, w * 0.42 * shadowScale, h * 0.06 * shadowScale, 0, 0, Math.PI * 2);
     ctx.fill();
     // cauda
     ctx.fillStyle = col;
