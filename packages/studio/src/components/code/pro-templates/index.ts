@@ -88,7 +88,58 @@ const TSCONFIG = `${JSON.stringify(
   2,
 )}\n`
 
+// Miolo compartilhado da cena 3D (JS puro — vale p/ o template TS e o JS).
+const THREE_MAIN = `import * as THREE from 'three'
+
+const scene = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100)
+camera.position.z = 4
+const renderer = new THREE.WebGLRenderer({ antialias: true })
+renderer.setSize(innerWidth, innerHeight)
+document.body.appendChild(renderer.domElement)
+scene.add(new THREE.AmbientLight(0xffffff, 0.7))
+const cube = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial({ color: 0x22d3ee }))
+scene.add(cube)
+renderer.setAnimationLoop(() => {
+  cube.rotation.x += 0.01
+  cube.rotation.y += 0.01
+  renderer.render(scene, camera)
+})
+`
+
 export const PRO_TEMPLATES: Record<string, ProTemplate> = {
+  // JS puro PRIMEIRO: é o mais simples e vira o template PADRÃO do modal.
+  'vanilla-js': {
+    id: 'vanilla-js',
+    name: 'Vite + JavaScript (simples)',
+    description:
+      'Projeto web com Vite e JavaScript puro, sem TypeScript nem framework. O mais simples para começar.',
+    devScript: 'dev',
+    tree: {
+      'package.json': f(pkg({}, { vite: VITE })),
+      'vite.config.js': f(VITE_CONFIG_VANILLA),
+      'index.html': f(
+        `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Meu app</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <h1 id="app">Olá, Vite + JavaScript!</h1>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+`,
+      ),
+      src: dir,
+      'src/main.js': f(
+        `const app = document.getElementById('app')\nif (app) app.textContent = 'Editado em JavaScript ✨'\n`,
+      ),
+      'src/style.css': f(`body { font-family: system-ui; padding: 2rem; }\n`),
+    },
+  },
   'vanilla-vite': {
     id: 'vanilla-vite',
     name: 'Vanilla + Vite + TypeScript',
@@ -157,6 +208,32 @@ export const PRO_TEMPLATES: Record<string, ProTemplate> = {
       ),
     },
   },
+  'three-js': {
+    id: 'three-js',
+    name: 'Three.js + JavaScript',
+    description: 'Cena 3D com Three.js e Vite, em JavaScript puro — sem TypeScript (npm real).',
+    devScript: 'dev',
+    tree: {
+      'package.json': f(pkg({ three: THREE }, { vite: VITE })),
+      'vite.config.js': f(VITE_CONFIG_VANILLA),
+      'index.html': f(
+        `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cena 3D</title>
+    <style>body { margin: 0; }</style>
+  </head>
+  <body>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+`,
+      ),
+      src: dir,
+      'src/main.js': f(THREE_MAIN),
+    },
+  },
   'three-ts': {
     id: 'three-ts',
     name: 'Three.js + TypeScript',
@@ -183,9 +260,7 @@ export const PRO_TEMPLATES: Record<string, ProTemplate> = {
 `,
       ),
       src: dir,
-      'src/main.ts': f(
-        `import * as THREE from 'three'\n\nconst scene = new THREE.Scene()\nconst camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100)\ncamera.position.z = 4\nconst renderer = new THREE.WebGLRenderer({ antialias: true })\nrenderer.setSize(innerWidth, innerHeight)\ndocument.body.appendChild(renderer.domElement)\nscene.add(new THREE.AmbientLight(0xffffff, 0.7))\nconst cube = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial({ color: 0x22d3ee }))\nscene.add(cube)\nrenderer.setAnimationLoop(() => {\n  cube.rotation.x += 0.01\n  cube.rotation.y += 0.01\n  renderer.render(scene, camera)\n})\n`,
-      ),
+      'src/main.ts': f(THREE_MAIN),
     },
   },
 }

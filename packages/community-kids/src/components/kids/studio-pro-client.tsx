@@ -3,7 +3,6 @@
 // O CSS do Estúdio é gerado pelo `@import` no globals.css (pipeline Tailwind) — ver
 // o comentário no `studio-full-client.tsx`. Aqui só orquestramos o editor PRO.
 import { StudioProEditor } from '@sistemazero/member-shell/components/studio/studio-pro-editor'
-import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback } from 'react'
 
@@ -20,10 +19,11 @@ export function StudioProClient({
   viewerId: string | null
   projectId: string
 }) {
-  const router = useRouter()
   const { resolvedTheme } = useTheme()
   const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
-  const onExit = useCallback(() => router.push('/estudio'), [router])
+  // Carga COMPLETA (não soft-nav): sair da rota PRO larga o cross-origin isolation
+  // (COEP) limpo, evitando que o /estudio clássico herde o COEP do documento isolado.
+  const onExit = useCallback(() => window.location.assign('/estudio'), [])
 
   return (
     <div className="min-h-[34rem] w-full flex-1 overflow-hidden rounded-2xl border-2 border-border bg-card">

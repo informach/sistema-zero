@@ -1,7 +1,7 @@
 'use client'
 
 import { Bell } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import type { HubMyThreadView } from '@/lib/types'
 
@@ -36,13 +36,21 @@ function writeBaseline(viewerId: string, map: Record<string, number>): void {
  */
 export function ClubeActivityBell({
   viewerId,
+  channelIds,
   onOpenThread,
 }: {
   viewerId: string
+  /**
+   * Canais do servidor ATUAL (Clube). O `/my-threads` traz as conversas do aluno de
+   * TODOS os servidores (o mesmo endpoint alimenta o picker "Mostrar meu jogo", que
+   * precisa dos jogos do Mural) — então o sino filtra por estes canais p/ mostrar SÓ
+   * o que é deste servidor. Sem isso, um post do Mural aparecia no sino do Clube.
+   */
+  channelIds: string[]
   /** Abre a conversa clicada (o pai busca o tópico por id e mostra a `ThreadDetail`). */
   onOpenThread: (id: string) => void
 }) {
-  const [threads, setThreads] = useState<HubMyThreadView[]>([])
+  const [allThreads, setAllThreads] = useState<HubMyThreadView[]>([])
   const [fresh, setFresh] = useState<HubMyThreadView[]>([])
   const [open, setOpen] = useState(false)
 
@@ -52,11 +60,7 @@ export function ClubeActivityBell({
     ;(async () => {
       try {
         const res = await apiGet<{ items: HubMyThreadView[] }>('/api/hub/my-threads')
-        if (!alive) return
-        const baseline = readBaseline(viewerId)
-        const grown = res.items.filter((t) => t.commentCount > (baseline[t.id] ?? 0))
-        setThreads(res.items)
-        setFresh(grown)
+        if (alive) setAllThreads(res.items)
       } catch {
         // best-effort — sem sino se o hub soluçar.
       }
@@ -66,10 +70,24 @@ export function ClubeActivityBell({
     }
   }, [viewerId])
 
+  // Só as conversas DESTE servidor (o /my-threads vem de todos).
+  const channelSet = useMemo(() => new Set(channelIds), [channelIds])
+  const threads = useMemo(
+    () => allThreads.filter((t) => channelSet.has(t.channelId)),
+    [allThreads, channelSet],
+  )
+
+  // "Novas respostas" = cresceu desde o último visto (baseline por perfil).
+  useEffect(() => {
+    const baseline = readBaseline(viewerId)
+    setFresh(threads.filter((t) => t.commentCount > (baseline[t.id] ?? 0)))
+  }, [threads, viewerId])
+
   const markSeen = useCallback(() => {
-    const map: Record<string, number> = {}
-    for (const t of threads) map[t.id] = t.commentCount
-    writeBaseline(viewerId, map)
+    // Mescla no baseline existente (não apaga o de outros servidores).
+    const baseline = readBaseline(viewerId)
+    for (const t of threads) baseline[t.id] = t.commentCount
+    writeBaseline(viewerId, baseline)
     setFresh([])
   }, [threads, viewerId])
 
