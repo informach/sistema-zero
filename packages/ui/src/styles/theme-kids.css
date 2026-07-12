@@ -1,0 +1,81 @@
+/*
+ * PRIMITIVOS DO TEMA KIDS — fonte da verdade em código da paleta da linha
+ * kids (funil, comunidade kids, embarcados). Espelha a tabela de referência
+ * do design (design-tema-kids.md no projeto fluxo-criativo).
+ *
+ * Este arquivo define SÓ constantes de marca (--sz-kids-*): nenhum token
+ * semântico, nenhuma classe, nenhum bloco dark. As constantes não mudam
+ * entre temas — o que muda de light p/ dark é QUAL primitivo cada token
+ * semântico do app aponta.
+ *
+ * Consumo:
+ * - Apps (funnel, community-kids): `@import "@sistemazero/ui/theme-kids.css"`
+ *   e apontar os tokens semânticos (--primary, --color-lime, --sz-gradient…)
+ *   para os primitivos. NUNCA renomear os tokens semânticos dos apps — são o
+ *   contrato consumido por ui/member-shell.
+ * - Embarcados (studio/pensa/pinta): referenciam com fallback literal
+ *   (`var(--sz-kids-x, <valor>)`) e SEM depender deste pacote — o playground
+ *   standalone segue funcionando com o fallback; dentro de um host kids o
+ *   valor daqui manda. Fallback desatualizado só aparece FORA de um host.
+ * - SVGs (logos) e packages/studio/src/blockly/theme.ts não leem custom
+ *   properties: são espelhos manuais — manter em sincronia com este arquivo.
+ *
+ * Nomes por PAPEL (não por escala): -texto é AA sobre fundo claro; -profundo
+ * é superfície com texto branco no light; -vivo é fundo/acento no dark ou
+ * fundo de botão.
+ */
+:root {
+  /* ── Fundos ─────────────────────────────────────────────── */
+  --sz-kids-ceu: #e4f2ff; /* fundo das etapas do funil */
+  --sz-kids-ceu-suave: oklch(0.975 0.012 245); /* fundo do app kids (céu diluído) */
+  --sz-kids-creme: #fff7e9; /* fundo da página de vendas */
+  --sz-kids-navy: oklch(0.235 0.05 262); /* #0C1E3E — rodapé, noite do dark kids */
+
+  /* ── Texto neutro da marca (sobre claro) ────────────────── */
+  --sz-kids-tinta: #26314a;
+  --sz-kids-tinta-suave: #5c6b85;
+
+  /* ── Azuis (identidade primária) ────────────────────────── */
+  --sz-kids-azul-vivo: oklch(0.72 0.13 245); /* #37A6F5 — acento claro, apoio no dark */
+  --sz-kids-azul: #1e88e5; /* acento em elementos grandes sobre claro */
+  --sz-kids-azul-texto: oklch(0.52 0.15 252); /* AA sobre claro (texto, primário do app) */
+  --sz-kids-azul-profundo: #1560a8; /* gradientes de logo, cantos escuros */
+
+  /* ── Laranjas (energia/CTA) ─────────────────────────────── */
+  --sz-kids-laranja-clara: #ffb53f; /* ponta clara do CTA vivo */
+  --sz-kids-laranja-viva: oklch(0.8 0.15 70); /* #FF9A1F — fundo de botão, primário dark */
+  --sz-kids-laranja-cta: oklch(0.64 0.16 55); /* sólido do CTA no light (sombra 3D) */
+  --sz-kids-laranja-cta-clara: oklch(0.72 0.15 62); /* sólido do CTA no dark */
+  --sz-kids-laranja-profunda: oklch(0.58 0.15 55); /* superfície c/ texto branco no light */
+  --sz-kids-laranja-texto: oklch(0.6 0.15 55); /* ≈#EF6C00 — laranja como TEXTO sobre claro */
+  --sz-kids-laranja-texto-forte: #e65100; /* hover/ênfase do laranja-texto */
+  --sz-kids-laranja-sombra: #d8760a; /* base dura do botão 3D do funil */
+
+  /* ── Gradientes do CTA ──────────────────────────────────── */
+  /* Hierarquia (diretriz 07/2026): no APP da comunidade a identidade/ação é
+     AZUL; laranja e amarelo são só pontos de alegria. O FUNIL de venda mantém
+     o CTA laranja vivo (referência aprovada da página colorida). */
+  /* Laranja vivo: botão 3D do funil — texto escuro (--sz-kids-cta-tinta). */
+  --sz-kids-grad-cta: linear-gradient(
+    180deg,
+    var(--sz-kids-laranja-clara),
+    var(--sz-kids-laranja-viva)
+  );
+  --sz-kids-cta-tinta: #3a2400; /* texto sobre o gradiente laranja vivo */
+  /* Azul profundo: CTA da comunidade no light — pontas p/ texto BRANCO AA. */
+  --sz-kids-grad-cta-azul: linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255));
+  /* Azul suave: CTA da comunidade no dark — claro, pede texto navy por cima. */
+  --sz-kids-grad-cta-azul-suave: linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248));
+  /* Laranjas 90deg (ponto de alegria em faixas/selos, se precisar). */
+  --sz-kids-grad-cta-profundo: linear-gradient(90deg, oklch(0.68 0.16 60), oklch(0.6 0.16 50));
+  --sz-kids-grad-cta-suave: linear-gradient(90deg, oklch(0.82 0.14 75), oklch(0.74 0.155 62));
+
+  /* ── Acentos lúdicos ────────────────────────────────────── */
+  --sz-kids-rosa: #f368a6; /* decorativo (Debinha, estrelas) */
+  --sz-kids-rosa-funda: oklch(0.6 0.19 356); /* superfície c/ texto branco no light */
+  --sz-kids-rosa-viva: oklch(0.75 0.16 356); /* versão dark */
+  --sz-kids-verde: #37c871; /* decorativo (garantia, preço) */
+  --sz-kids-verde-profundo: oklch(0.55 0.15 152); /* superfície c/ texto branco no light */
+  --sz-kids-verde-vivo: oklch(0.78 0.15 152); /* versão dark */
+  --sz-kids-amarelo: #ffce3a; /* estrelas, decorações */
+}

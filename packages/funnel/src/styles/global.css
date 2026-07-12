@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Primitivos da marca kids (--sz-kids-*) — fonte da verdade da paleta da linha
+   kids, compartilhada com a comunidade kids. O bloco `.theme-kids` aponta p/ eles. */
+@import "@sistemazero/ui/theme-kids.css";
 
 /* Componentes compartilhados (@sistemazero/ui) usados APENAS no /admin — o scanner
    do Tailwind v4 precisa ver as classes deles. */
@@ -132,7 +135,7 @@
 /* ── Tema KIDS (Desafio do Primeiro Jogo) ────────────────────────────────────
    Re-skin do funil para o público kids: REDEFINE os tokens de marca sob
    `.theme-kids` no <html>. Tema CLARO e colorido (creme + azul + laranja CTA,
-   fontes Fredoka/Nunito), extraído da página colorida aprovada pela usuária.
+   fontes Baloo 2/Nunito), extraído da página colorida aprovada pela usuária.
    Como as utilitárias (`text-lime`, `bg-card`…) são `var(--color-*)`, todas as
    páginas/ilhas compartilhadas (quiz/checkout/obrigado/resultado) re-skinam sem
    mudar markup. O funil carrega `theme:'kids'` e as páginas passam o htmlClass.
@@ -143,16 +146,16 @@
 .theme-kids {
   /* Azul-céu (o mesmo da seção de entregáveis da oferta): fundo das etapas
      compartilhadas. A página de vendas usa o creme próprio dentro de `.dpj`. */
-  --color-bg: #e4f2ff;
+  --color-bg: var(--sz-kids-ceu);
   --color-card: #ffffff;
   --color-card-2: #eef3fb;
   /* Laranja profundo para TEXTO e acentos (legível sobre fundo claro);
      o CTA usa o gradiente laranja vivo definido em `.theme-kids .btn-primary`. */
-  --color-lime: #ef6c00;
-  --color-lime-strong: #e65100;
-  --color-cyan: #1e88e5; /* azul = acento secundário */
-  --color-ink: #26314a;
-  --color-muted: #5c6b85;
+  --color-lime: var(--sz-kids-laranja-texto);
+  --color-lime-strong: var(--sz-kids-laranja-texto-forte);
+  --color-cyan: var(--sz-kids-azul); /* azul = acento secundário */
+  --color-ink: var(--sz-kids-tinta);
+  --color-muted: var(--sz-kids-tinta-suave);
   --color-line: #d3e2f4;
   --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --radius-btn: 16px;
@@ -161,7 +164,7 @@
 .theme-kids h1,
 .theme-kids h2,
 .theme-kids h3 {
-  font-family: "Fredoka", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Baloo 2", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -249,27 +252,27 @@ body {
    componentes base) e DEPOIS deles no arquivo. Os textos logo abaixo de um CTA
    precisam de respiro extra: a sombra dura ocupa ~6px visuais abaixo do botão. */
 .theme-kids .btn {
-  font-family: "Fredoka", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Baloo 2", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-weight: 600;
 }
 .theme-kids .btn-primary {
-  background: linear-gradient(180deg, #ffb53f, #ff9a1f);
-  color: #3a2400;
+  background: var(--sz-kids-grad-cta);
+  color: var(--sz-kids-cta-tinta);
   box-shadow:
-    0 6px 0 #d8760a,
+    0 6px 0 var(--sz-kids-laranja-sombra),
     0 14px 24px rgba(255, 154, 31, 0.32);
 }
 .theme-kids .btn-primary:hover {
   filter: none;
   transform: translateY(-2px);
   box-shadow:
-    0 8px 0 #d8760a,
+    0 8px 0 var(--sz-kids-laranja-sombra),
     0 18px 30px rgba(255, 154, 31, 0.4);
 }
 .theme-kids .btn-primary:active {
   transform: translateY(4px);
   box-shadow:
-    0 2px 0 #d8760a,
+    0 2px 0 var(--sz-kids-laranja-sombra),
     0 8px 14px rgba(255, 154, 31, 0.3);
 }
 

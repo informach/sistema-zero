@@ -240,7 +240,7 @@
         "@astrojs/node": "^10.1.2",
         "@astrojs/react": "^5.0.6",
         "@astrojs/sitemap": "^3.7.3",
-        "@fontsource/fredoka": "^5.2.10",
+        "@fontsource/baloo-2": "^5.2.7",
         "@fontsource/material-symbols-outlined": "^5.2.45",
         "@fontsource/material-symbols-rounded": "^5.2.45",
         "@fontsource/nunito": "^5.2.7",
@@ -1029,7 +1029,7 @@
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
 
-    "@fontsource/fredoka": ["@fontsource/fredoka@5.2.10", "", {}, "sha512-DyzPCmTf0PkBbAu+gNvnPzfD/dYIXlyp+Zcb76jEQyt/vmRKGZgkH8FFF9W2sICDaA5p+GLk1XGFjWh5PPX+lg=="],
+    "@fontsource/baloo-2": ["@fontsource/baloo-2@5.2.7", "", {}, "sha512-RllEWCvjw0PqLey6hbNI2M8gdZy2CFCIHXXNIXC4V4xsRQeOgZ3OMx3uQ1u4LjJ16BGytZD6wE/VFU9st0VdDg=="],
 
     "@fontsource/material-symbols-outlined": ["@fontsource/material-symbols-outlined@5.2.45", "", {}, "sha512-5h50Z51CF8OqakobEgKOetQWpf+kEjGP9Oz7bunyCwqSq0MbfI7Qg1zTagLVz837rY2JaNxZoJ1d0h93J+nqXA=="],
 

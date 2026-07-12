@@ -9,12 +9,14 @@ interface KidsLogoProps {
 }
 
 /**
- * Logo do app: wordmark OFICIAL do Sistema Zero (variantes dark/white em
- * `public/logo_dark|white.svg`, intactas) + selo "kids" composto em HTML —
- * SVG via <img> roda em documento isolado e NÃO enxerga as webfonts da
- * página (Baloo 2), então o selo vive no DOM e veste o tema (gradiente +
- * contraste light/dark) sozinho. `public/logo_kids_*.svg` são o fallback
- * estático de marca (letras desenhadas em paths) p/ uso FORA do app.
+ * Logo do app: wordmark do Sistema Zero (variantes dark/white em
+ * `public/logo_dark|white.svg` — cópias LOCAIS re-tematizadas p/ o tema kids:
+ * ZERO azul + faísca laranja; o wordmark lima→ciano segue intacto no adulto)
+ * + selo "kids" composto em HTML — SVG via <img> roda em documento isolado e
+ * NÃO enxerga as webfonts da página (Baloo 2), então o selo vive no DOM e
+ * veste o tema (gradiente + contraste light/dark) sozinho.
+ * `public/logo_kids_*.svg` são o fallback estático de marca (letras
+ * desenhadas em paths) p/ uso FORA do app.
  */
 export function KidsLogo({ size = 'nav', priority = false, className }: KidsLogoProps) {
   const imgClass = size === 'auth' ? 'w-[280px] max-w-full' : 'w-[118px] md:w-[132px]'

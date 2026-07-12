@@ -11,7 +11,7 @@
 <!-- Selo "kids": pílula em gradiente da marca + letras DESENHADAS (strokes
      arredondados) — <text> não carrega webfont quando o SVG vem via <img>. -->
 <rect x="525" y="0" width="112" height="44" rx="22" fill="url(#paint2_kids_dark)"/>
-<g stroke="#0D1117" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<g stroke="#0C1E3E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none">
   <path d="M552 9V31"/>
   <path d="M562 16.5L553 23.5L562 31"/>
   <path d="M571 18V31"/>
@@ -19,19 +19,19 @@
   <path d="M591 9V31"/>
   <path d="M611.5 18.5C609.5 16.3 605.4 15.8 602.8 17C600.2 18.2 600 21 602.6 22.2C604.7 23.2 608.5 23.2 610.5 24.8C612.9 26.6 612 29.6 609.2 30.6C606.3 31.6 602 31 599.9 28.9"/>
 </g>
-<circle cx="571" cy="10.5" r="2.8" fill="#0D1117"/>
+<circle cx="571" cy="10.5" r="2.8" fill="#0C1E3E"/>
 <defs>
 <linearGradient id="paint0_kids_dark" x1="325.238" y1="2.72045" x2="514.385" y2="41.9552" gradientUnits="userSpaceOnUse">
-<stop stop-color="#C4F042"/>
-<stop offset="1" stop-color="#42E8E0"/>
+<stop stop-color="#37A6F5"/>
+<stop offset="1" stop-color="#1E88E5"/>
 </linearGradient>
 <linearGradient id="paint1_kids_dark" x1="487.599" y1="16.5992" x2="498.782" y2="27.7818" gradientUnits="userSpaceOnUse">
-<stop stop-color="#C4F042"/>
-<stop offset="1" stop-color="#42E8E0"/>
+<stop stop-color="#FFB53F"/>
+<stop offset="1" stop-color="#FF9A1F"/>
 </linearGradient>
 <linearGradient id="paint2_kids_dark" x1="525" y1="2" x2="637" y2="42" gradientUnits="userSpaceOnUse">
-<stop stop-color="#C4F042"/>
-<stop offset="1" stop-color="#42E8E0"/>
+<stop stop-color="#74B3EE"/>
+<stop offset="1" stop-color="#4A90E2"/>
 </linearGradient>
 </defs>
 </svg>

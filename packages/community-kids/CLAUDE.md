@@ -6,9 +6,15 @@
 
 Plataforma de cursos **KIDS/infanto-juvenil (8–13 anos)** do Sistema Zero — segundo app de área
 do aluno, irmão do [`@sistemazero/community`](../community/CLAUDE.md). Next.js 16 + React 19 +
-Tailwind v4, porta **3008**. Visual "estilo Duolingo" (redesign 06/2026) com a **PALETA DA MARCA**
-(mesma do comunidade-sistema-zero: light = cyan `oklch(0.52 0.14 200)` sobre off-white; dark =
-lime neon `#C4F042` sobre `#0D1117`; acentos SÓ cyan/lime/vermelho — sem hues novos), radius 1rem,
+Tailwind v4, porta **3008**. Visual "estilo Duolingo" (redesign 06/2026) com a **PALETA DO TEMA
+KIDS** (re-tema 07/2026, a mesma do funil kids — ver `design-tema-kids.md` no fluxo-criativo):
+light = AZUL `oklch(0.52 0.15 252)` primário sobre azul-céu + LARANJA CTA (gradiente 3D
+`--sz-gradient` com pontas escurecidas p/ texto claro AA) + acentos rosa/verde/amarelo; dark =
+navy `#0C1E3E` com laranja claro `oklch(0.8 0.15 70)` primário e azul claro de apoio. ⚠️ Os
+tokens `--brand-lime`/`--brand-cyan`/`--kids-lime`/`--kids-cyan` mantêm os NOMES históricos com
+VALORES novos (lime→laranja, cyan→azul) — **trocar valor é ok, RENOMEAR é proibido** (ui e
+member-shell consomem os nomes; idem `--primary`, `.brand-gradient-text`, `.sz-progress`,
+`button.bg-primary…`). Radius 1rem,
 fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), CTA "botão 3D" (sombra
 dura + afunda no clique), microinterações `kid-pop`/`kid-wiggle`/`kid-float` com
 `prefers-reduced-motion` global. **Layout próprio (≠ community)**: sidebar fixa no desktop + top
@@ -30,7 +36,8 @@ no globals.css). **`/estudio` com paleta calma:** `studio-full-client` passa
 `level="intermediario"` + `allowLevelReveal` ao `StudioEditor` (aceita curadoria desde 07/2026).
 Home com mascote + card-herói "Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
 (`course-trail.tsx` + `trail-layout.ts` puro/testado: módulo = unidade temática
-cyan→lime→gradiente via `unit-theme.ts`, aula = nó circular; com a **trava sequencial** do curso
+cyan→lime→rosa→verde→gradiente via `unit-theme.ts` (nomes históricos; hoje azul→laranja→rosa→
+verde→laranja-gradiente), aula = nó circular; com a **trava sequencial** do curso
 (`sequential_lock`, estilo Duolingo) as aulas posteriores vêm `locked` do members → nó com
 CADEADO, NÃO clicável (estado `'locked'` em `trail-layout`); a mini-trilha lateral e a página da
 aula seguem a mesma regra, e abrir uma aula travada por URL cai no **423** → `KidsLockedLesson`

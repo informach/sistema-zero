@@ -14,9 +14,8 @@
  */
 
 /*
- * Paleta SISTEMA ZERO (espelha o projeto de referência comunidade-sistema-zero,
- * a mesma base do admin/community). Identidade DUAL da marca: o acento é LIME
- * no dark e CYAN no light — exatamente como o --primary da referência.
+ * Paleta SISTEMA ZERO (alinhada ao tema kids novo, o mesmo do Funil Kids).
+ * Identidade DUAL da marca: o acento é LARANJA no dark e AZUL no light.
  * Valores default = tema ESCURO; o claro sobrescreve via [data-sz-theme="light"].
  */
 @theme {
@@ -29,9 +28,14 @@
   --color-sz-fg: oklch(0.975 0.003 255); /* foreground */
   --color-sz-fg-soft: oklch(0.75 0.008 245);
   --color-sz-fg-mute: oklch(0.6 0.012 235); /* muted-foreground */
-  --color-sz-accent: oklch(0.875 0.215 122); /* primary = brand-lime */
-  --color-sz-accent-soft: oklch(0.92 0.2 125); /* link-hover */
-  --color-sz-cyan: oklch(0.84 0.13 192); /* brand-cyan (detalhes) */
+  /* Primitivos --sz-kids-* vêm de @sistemazero/ui/theme-kids.css quando o HOST
+     os importa (kids/funnel); o fallback literal mantém o standalone (playground,
+     admin, community adulta) funcionando sem depender do pacote ui.
+     Hierarquia 07/2026: o acento é AZUL nos dois temas (azul manda; laranja é
+     só ponto de alegria). */
+  --color-sz-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* primary = azul claro */
+  --color-sz-accent-soft: oklch(0.8 0.11 240); /* link-hover */
+  --color-sz-cyan: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro (detalhes) */
   --color-sz-warn: #fbbf24;
   --color-sz-error: oklch(0.64 0.215 27); /* destructive */
   --color-sz-success: #34d399;
@@ -54,9 +58,9 @@
   --color-sz-fg: oklch(0.105 0.01 265);
   --color-sz-fg-soft: oklch(0.5 0.01 255); /* muted-foreground */
   --color-sz-fg-mute: oklch(0.62 0.008 255);
-  --color-sz-accent: oklch(0.52 0.14 200); /* primary = cyan escuro (AA) */
-  --color-sz-accent-soft: oklch(0.44 0.14 210); /* link */
-  --color-sz-cyan: oklch(0.52 0.14 200);
+  --color-sz-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* primary = azul (AA) */
+  --color-sz-accent-soft: oklch(0.46 0.14 255); /* link */
+  --color-sz-cyan: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
   --color-sz-warn: #b45309;
   --color-sz-error: oklch(0.55 0.22 27); /* destructive */
   --color-sz-success: #047857;

@@ -23,7 +23,12 @@
   --color-pz-border: oklch(0.89 0.018 80);
   --color-pz-text: oklch(0.145 0.012 262);
   --color-pz-muted: oklch(0.5 0.012 255);
-  --color-pz-accent: oklch(0.52 0.14 200); /* cyan escuro (AA sobre creme) */
+  /* Primitivo --sz-kids-* vem do host kids (@sistemazero/ui/theme-kids.css);
+     fallback literal mantém o playground standalone. */
+  --color-pz-accent: var(
+    --sz-kids-azul-texto,
+    oklch(0.52 0.15 252)
+  ); /* azul escuro da marca (AA sobre creme) */
   --color-pz-accent-fg: oklch(0.995 0.006 85); /* texto sobre o accent */
   --color-pz-ok: oklch(0.55 0.14 155);
   --color-pz-warn: oklch(0.6 0.14 65);
@@ -43,8 +48,8 @@
   --color-pz-border: oklch(0.32 0.02 262);
   --color-pz-text: oklch(0.965 0.005 250);
   --color-pz-muted: oklch(0.72 0.015 250);
-  --color-pz-accent: oklch(0.91 0.19 122); /* lime #c4f042 */
-  --color-pz-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o lime */
+  --color-pz-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro da marca */
+  --color-pz-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o azul claro */
   --color-pz-ok: oklch(0.8 0.16 155);
   --color-pz-warn: oklch(0.83 0.14 85);
   --color-pz-scrim: oklch(0.08 0.01 262 / 0.6);
