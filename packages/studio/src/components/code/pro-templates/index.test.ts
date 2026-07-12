@@ -5,8 +5,14 @@ import { createProProject, getProTemplate, listProTemplates, PRO_TEMPLATES } fro
 describe('PRO_TEMPLATES', () => {
   const templates = listProTemplates()
 
-  it('tem os três templates esperados', () => {
-    expect(Object.keys(PRO_TEMPLATES).sort()).toEqual(['react-ts', 'three-ts', 'vanilla-vite'])
+  it('tem os cinco templates esperados (TS + JS puro)', () => {
+    expect(Object.keys(PRO_TEMPLATES).sort()).toEqual([
+      'react-ts',
+      'three-js',
+      'three-ts',
+      'vanilla-js',
+      'vanilla-vite',
+    ])
   })
 
   for (const template of listProTemplates()) {
@@ -55,8 +61,10 @@ describe('PRO_TEMPLATES', () => {
   }
 
   it('expõe templates por listagem e lookup', () => {
-    expect(templates.length).toBe(3)
+    expect(templates.length).toBe(5)
     expect(getProTemplate('react-ts')?.id).toBe('react-ts')
+    expect(getProTemplate('vanilla-js')?.id).toBe('vanilla-js')
+    expect(getProTemplate('three-js')?.id).toBe('three-js')
     expect(getProTemplate('inexistente')).toBeUndefined()
   })
 })
