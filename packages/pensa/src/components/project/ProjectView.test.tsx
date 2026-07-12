@@ -114,7 +114,9 @@ describe('ProjectView: fechamento de ciclo (Versão N+1)', () => {
     // Etapa corrente de novo é o Z (convite do Zappy).
     expect(screen.getAllByText('Zerar a Bagunça').length).toBeGreaterThan(0)
     expect(screen.queryByText('Você ZEROU a Versão 1!')).toBeNull()
-  })
+    // Timeout FOLGADO: sob a carga do CI (todos os pacotes em paralelo) o fecho do
+    // dialog acima flusha um frame tarde e estourava o teto padrão de 5s (flake).
+  }, 20000)
 
   it('goal curto demais não envia e mostra o aviso gentil', async () => {
     const transport = createFakeTransport(() => {
