@@ -481,6 +481,8 @@ export function KidsSpaceViewClient({
   // Canal `staff_only` (ex.: Recados da equipe): só a EQUIPE compõe tópico; `geral`
   // e demais canais `members` seguem livres (no Mural o composer nem aparece).
   const canComposeInChannel = channel?.postingPolicy !== 'staff_only' || isStaff
+  // Ids dos canais DESTE servidor → o sino só mostra conversas daqui (não do Mural).
+  const spaceChannelIds = useMemo(() => channels.map((c) => c.id), [channels])
 
   async function loadMoreComments() {
     if (!thread || !commentsCursor || loadingMoreComments) return
@@ -671,7 +673,11 @@ export function KidsSpaceViewClient({
                 {space.description || 'Converse com a turma e mostre o que você criou! 🎉'}
               </p>
             </div>
-            <ClubeActivityBell viewerId={viewerId} onOpenThread={openThreadById} />
+            <ClubeActivityBell
+              viewerId={viewerId}
+              channelIds={spaceChannelIds}
+              onOpenThread={openThreadById}
+            />
             <ClubeCombinados viewerId={viewerId} />
           </div>
         ) : (
