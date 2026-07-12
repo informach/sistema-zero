@@ -51,18 +51,24 @@
   --sz-kids-laranja-texto-forte: #e65100; /* hover/ênfase do laranja-texto */
   --sz-kids-laranja-sombra: #d8760a; /* base dura do botão 3D do funil */
 
-  /* ── Gradientes do CTA (papéis distintos, todos laranja) ── */
-  /* Vivo: botão 3D do funil — texto escuro (--sz-kids-cta-tinta) por cima. */
+  /* ── Gradientes do CTA ──────────────────────────────────── */
+  /* Hierarquia (diretriz 07/2026): no APP da comunidade a identidade/ação é
+     AZUL; laranja e amarelo são só pontos de alegria. O FUNIL de venda mantém
+     o CTA laranja vivo (referência aprovada da página colorida). */
+  /* Laranja vivo: botão 3D do funil — texto escuro (--sz-kids-cta-tinta). */
   --sz-kids-grad-cta: linear-gradient(
     180deg,
     var(--sz-kids-laranja-clara),
     var(--sz-kids-laranja-viva)
   );
-  /* Profundo: CTA da comunidade no light — pontas escurecidas p/ texto BRANCO AA. */
+  --sz-kids-cta-tinta: #3a2400; /* texto sobre o gradiente laranja vivo */
+  /* Azul profundo: CTA da comunidade no light — pontas p/ texto BRANCO AA. */
+  --sz-kids-grad-cta-azul: linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255));
+  /* Azul suave: CTA da comunidade no dark — claro, pede texto navy por cima. */
+  --sz-kids-grad-cta-azul-suave: linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248));
+  /* Laranjas 90deg (ponto de alegria em faixas/selos, se precisar). */
   --sz-kids-grad-cta-profundo: linear-gradient(90deg, oklch(0.68 0.16 60), oklch(0.6 0.16 50));
-  /* Suave: CTA da comunidade no dark — claro, pede texto navy por cima. */
   --sz-kids-grad-cta-suave: linear-gradient(90deg, oklch(0.82 0.14 75), oklch(0.74 0.155 62));
-  --sz-kids-cta-tinta: #3a2400; /* texto sobre o gradiente vivo */
 
   /* ── Acentos lúdicos ────────────────────────────────────── */
   --sz-kids-rosa: #f368a6; /* decorativo (Debinha, estrelas) */

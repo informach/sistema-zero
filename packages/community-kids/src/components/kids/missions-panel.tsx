@@ -1,11 +1,43 @@
 'use client'
 
 import { Gift, Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { type CSSProperties, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import type { MissionsMeView, MissionView } from '@/lib/types'
 import { ZappyCoin } from './zappy-coin'
+
+/** Emoji da missão — identidade visual rápida por tipo de meta (decorativo). */
+function missionEmoji(m: MissionView): string {
+  switch (m.goalType) {
+    case 'lesson_complete':
+      return '📖'
+    case 'quiz_passed':
+      return '🧠'
+    case 'unit_complete':
+      return '🎁'
+    case 'studio_submitted':
+      return '📨'
+    case 'studio_passed':
+      return '🚀'
+    case 'course_showcased':
+    case 'studio_published':
+      return '🌟'
+    case 'course_rated':
+      return '⭐'
+    case 'room_item_buy':
+      return '🏠'
+    case 'avatar_part_buy':
+      return '🧢'
+    case 'mural_comment':
+    case 'clube_thread':
+      return '💬'
+    case 'studio_remix':
+      return '🎮'
+    default:
+      return '✨'
+  }
+}
 
 /** Texto da meta da missão (PT, tom kids) — derivado do goalType + alvo. */
 function missionLabel(m: MissionView): string {
@@ -113,6 +145,7 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
       <div className="space-y-4">
         <MissionGroup
           title="Hoje"
+          unitClass="kids-unit-cyan"
           missions={data.daily}
           claiming={claiming}
           onClaim={claim}
@@ -120,6 +153,7 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
         />
         <MissionGroup
           title="Esta semana"
+          unitClass="kids-unit-rosa"
           missions={data.weekly}
           claiming={claiming}
           onClaim={claim}
@@ -127,6 +161,7 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
         />
         <MissionGroup
           title="Este mês"
+          unitClass="kids-unit-verde"
           missions={data.monthly}
           claiming={claiming}
           onClaim={claim}
@@ -139,12 +174,15 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
 
 function MissionGroup({
   title,
+  unitClass,
   missions,
   claiming,
   onClaim,
   label,
 }: {
   title: string
+  /** Tema kids-unit-* do grupo: pinta borda/sombra dos cards e o chip do título. */
+  unitClass: string
   missions: MissionView[]
   claiming: string | null
   onClaim: (m: MissionView) => void
@@ -152,50 +190,64 @@ function MissionGroup({
 }) {
   if (missions.length === 0) return null
   return (
-    <div className="space-y-2">
-      <p className="font-bold text-muted-foreground text-xs uppercase tracking-wide">{title}</p>
-      <div className="grid gap-2">
+    <div className={cn('space-y-2', unitClass)}>
+      <p className="flex items-center gap-2 font-bold text-muted-foreground text-xs uppercase tracking-wide">
+        <span aria-hidden className="size-2 rounded-full bg-(--unit)" />
+        {title}
+      </p>
+      <div className="grid gap-2.5">
         {missions.map((m) => {
           const pct = m.target > 0 ? Math.min(100, Math.round((m.progress / m.target) * 100)) : 0
+          const ready = m.completed && !m.claimed
           return (
             <div
               key={m.slug}
               className={cn(
-                'rounded-2xl border-2 p-3',
-                m.completed && !m.claimed ? 'border-(--sz-hot)' : 'border-border',
-                m.claimed && 'opacity-60',
+                'kids-card rounded-2xl bg-card p-3.5',
+                m.claimed && 'opacity-60 saturate-50',
               )}
+              // Missão pronta p/ resgatar veste o vermelho "hot" pela MESMA
+              // indireção --unit do kids-card (borda + sombra acompanham).
+              style={ready ? ({ '--unit': 'var(--sz-hot)' } as CSSProperties) : undefined}
             >
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-bold text-sm">{label(m)}</p>
-                <span className="inline-flex shrink-0 items-center gap-1 text-muted-foreground text-xs">
-                  <ZappyCoin className="size-3.5" /> {m.rewardCoins} · {m.rewardXp} XP
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden
+                  className="grid size-10 shrink-0 place-items-center rounded-xl text-xl"
+                  style={{ background: 'color-mix(in oklch, var(--unit) 14%, transparent)' }}
+                >
+                  {missionEmoji(m)}
                 </span>
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary transition-[width]"
-                    style={{ width: `${pct}%` }}
-                  />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-bold text-sm">{label(m)}</p>
+                  <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
+                    <ZappyCoin className="size-3.5" /> {m.rewardCoins} · {m.rewardXp} XP
+                  </span>
                 </div>
                 {m.claimed ? (
-                  <span className="font-bold text-muted-foreground text-xs">Resgatado ✅</span>
+                  <span className="shrink-0 font-bold text-muted-foreground text-xs">
+                    Resgatado ✅
+                  </span>
                 ) : m.completed ? (
                   <button
                     type="button"
                     onClick={() => onClaim(m)}
                     disabled={claiming === m.slug}
-                    className="inline-flex items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1 font-bold text-(--sz-hot-fg) text-xs disabled:opacity-60"
+                    className="kid-pop inline-flex shrink-0 items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1.5 font-bold text-(--sz-hot-fg) text-xs disabled:opacity-60"
                   >
                     <Gift className="size-3.5" /> Resgatar
                   </button>
                 ) : (
-                  <span className="font-semibold text-muted-foreground text-xs tabular-nums">
+                  <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 font-bold text-muted-foreground text-xs tabular-nums">
                     {m.progress}/{m.target}
                   </span>
                 )}
               </div>
+              {!m.claimed && (
+                <div className="sz-progress mt-2.5">
+                  <span style={{ width: `${pct}%` }} />
+                </div>
+              )}
             </div>
           )
         })}

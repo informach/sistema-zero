@@ -30,9 +30,11 @@
   --color-sz-fg-mute: oklch(0.6 0.012 235); /* muted-foreground */
   /* Primitivos --sz-kids-* vêm de @sistemazero/ui/theme-kids.css quando o HOST
      os importa (kids/funnel); o fallback literal mantém o standalone (playground,
-     admin, community adulta) funcionando sem depender do pacote ui. */
-  --color-sz-accent: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70)); /* primary = laranja vivo */
-  --color-sz-accent-soft: oklch(0.85 0.14 75); /* link-hover */
+     admin, community adulta) funcionando sem depender do pacote ui.
+     Hierarquia 07/2026: o acento é AZUL nos dois temas (azul manda; laranja é
+     só ponto de alegria). */
+  --color-sz-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* primary = azul claro */
+  --color-sz-accent-soft: oklch(0.8 0.11 240); /* link-hover */
   --color-sz-cyan: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro (detalhes) */
   --color-sz-warn: #fbbf24;
   --color-sz-error: oklch(0.64 0.215 27); /* destructive */

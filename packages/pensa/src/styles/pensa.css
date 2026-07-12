@@ -48,8 +48,8 @@
   --color-pz-border: oklch(0.32 0.02 262);
   --color-pz-text: oklch(0.965 0.005 250);
   --color-pz-muted: oklch(0.72 0.015 250);
-  --color-pz-accent: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70)); /* laranja vivo da marca */
-  --color-pz-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o laranja */
+  --color-pz-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro da marca */
+  --color-pz-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o azul claro */
   --color-pz-ok: oklch(0.8 0.16 155);
   --color-pz-warn: oklch(0.83 0.14 85);
   --color-pz-scrim: oklch(0.08 0.01 262 / 0.6);

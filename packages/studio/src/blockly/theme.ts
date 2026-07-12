@@ -22,10 +22,10 @@ export const szDarkTheme = Blockly.Theme.defineTheme('sz-dark', {
     flyoutForegroundColour: '#f5f7f9',
     flyoutOpacity: 1,
     scrollbarColour: '#16181d' /* --color-sz-border = oklch(0.21 0.01 265) */,
-    insertionMarkerColour: '#FF9A1F' /* --color-sz-accent (laranja) = oklch(0.8 0.15 70) */,
+    insertionMarkerColour: '#37A6F5' /* --color-sz-accent (azul claro) = oklch(0.72 0.13 245) */,
     insertionMarkerOpacity: 0.5,
-    markerColour: '#FF9A1F',
-    cursorColour: '#FF9A1F',
+    markerColour: '#37A6F5',
+    cursorColour: '#37A6F5',
   },
   fontStyle: FONT_STYLE,
 })

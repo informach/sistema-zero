@@ -58,8 +58,8 @@
   --color-pin-border: oklch(0.32 0.02 262);
   --color-pin-text: oklch(0.965 0.005 250);
   --color-pin-muted: oklch(0.72 0.015 250);
-  --color-pin-accent: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70)); /* laranja vivo da marca */
-  --color-pin-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o laranja */
+  --color-pin-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro da marca */
+  --color-pin-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o azul claro */
   --color-pin-ok: oklch(0.8 0.16 155);
   --color-pin-warn: oklch(0.83 0.14 85);
   --color-pin-danger: oklch(0.72 0.17 25);
@@ -84,22 +84,22 @@
  * vite continua funcionando sozinho.
  */
 [data-pinta-theme] {
-  /* Pontas escurecidas p/ texto claro AA em cima (mesma regra do kids).
-     Primitivos do host quando presentes; fallback = playground standalone. */
+  /* CTA AZUL (hierarquia 07/2026), pontas escurecidas p/ texto claro AA em
+     cima (mesma regra do kids). Primitivos do host quando presentes;
+     fallback = playground standalone. */
   --pin-gradient: var(
-    --sz-kids-grad-cta-profundo,
-    linear-gradient(90deg, oklch(0.68 0.16 60), oklch(0.6 0.16 50))
+    --sz-kids-grad-cta-azul,
+    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
   );
-  /* Base laranja das sombras 3D do CTA (o accent azul não serve de sombra
-     p/ um botão laranja — espelho do --sz-cta do kids). */
-  --pin-cta: var(--sz-kids-laranja-cta, oklch(0.64 0.16 55));
+  /* Base sólida das sombras 3D do CTA (espelho do --sz-cta do kids). */
+  --pin-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
 }
 [data-pinta-theme="dark"] {
   --pin-gradient: var(
-    --sz-kids-grad-cta-suave,
-    linear-gradient(90deg, oklch(0.82 0.14 75), oklch(0.74 0.155 62))
+    --sz-kids-grad-cta-azul-suave,
+    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
   );
-  --pin-cta: var(--sz-kids-laranja-cta-clara, oklch(0.72 0.15 62));
+  --pin-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
 }
 
 /* Títulos no tom do kids: Baloo 2 vem do body do host; fallback arredondado. */

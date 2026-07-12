@@ -30,8 +30,8 @@
 <stop offset="1" stop-color="#FF9A1F"/>
 </linearGradient>
 <linearGradient id="paint2_kids_dark" x1="525" y1="2" x2="637" y2="42" gradientUnits="userSpaceOnUse">
-<stop stop-color="#FFB53F"/>
-<stop offset="1" stop-color="#FF9A1F"/>
+<stop stop-color="#74B3EE"/>
+<stop offset="1" stop-color="#4A90E2"/>
 </linearGradient>
 </defs>
 </svg>

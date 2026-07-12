@@ -11,7 +11,7 @@
 <!-- Selo "kids": pílula em gradiente da marca + letras DESENHADAS (strokes
      arredondados) — <text> não carrega webfont quando o SVG vem via <img>. -->
 <rect x="525" y="0" width="112" height="44" rx="22" fill="url(#paint2_kids_white)"/>
-<g stroke="#0C1E3E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<g stroke="#F8F9FA" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none">
   <path d="M552 9V31"/>
   <path d="M562 16.5L553 23.5L562 31"/>
   <path d="M571 18V31"/>
@@ -30,8 +30,8 @@
 <stop offset="1" stop-color="#FF9A1F"/>
 </linearGradient>
 <linearGradient id="paint2_kids_white" x1="525" y1="2" x2="637" y2="42" gradientUnits="userSpaceOnUse">
-<stop stop-color="#FFB53F"/>
-<stop offset="1" stop-color="#FF9A1F"/>
+<stop stop-color="#1560A8"/>
+<stop offset="1" stop-color="#1E88E5"/>
 </linearGradient>
 </defs>
 </svg>

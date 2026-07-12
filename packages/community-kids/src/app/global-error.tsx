@@ -47,7 +47,8 @@ export default function GlobalError({
             type="button"
             onClick={() => reset()}
             style={{
-              background: '#FF9A1F',
+              // Azul claro da marca (espelho de --sz-kids-azul-vivo; sem tokens aqui).
+              background: '#37A6F5',
               color: '#0C1E3E',
               border: 0,
               borderRadius: '9999px',
