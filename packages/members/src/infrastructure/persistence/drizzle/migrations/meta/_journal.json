@@ -302,6 +302,13 @@
       "when": 1783689304483,
       "tag": "0042_known_yellowjacket",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1783866124122,
+      "tag": "0043_bouncy_the_renegades",
+      "breakpoints": true
     }
   ]
 }

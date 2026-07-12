@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
 import {
   boolean,
+  check,
   date,
   index,
   integer,
@@ -1000,6 +1001,45 @@ export const renewalRemindersSent = members.table(
   ],
 )
 
+// ── Desafio do mês — tema gerenciável pelo admin (07/2026) ──────────────────
+// Biblioteca de temas CUSTOM criados pelo professor + override do tema por mês.
+// Sem override, o tema vem do sorteio determinístico em código (fallback,
+// domain/gamification/challenges.ts). Temas custom NUNCA entram no pool do
+// sorteio (decisão da usuária: o módulo % 12 fica estável).
+export const challengeCustomThemes = members.table('challenge_custom_themes', {
+  id: uuid('id').primaryKey(),
+  emoji: text('emoji').notNull(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  // Obrigatório: o card kids renderiza a dica do kit incondicionalmente.
+  suggestedKit: text('suggested_kit').notNull(),
+  // Arquivado sai da lista de ESCOLHA, mas segue valendo em mês que o referencia.
+  archived: boolean('archived').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+})
+
+export const challengeMonthOverrides = members.table(
+  'challenge_month_overrides',
+  {
+    // `m:YYYY-MM` (mês civil de SP) — a MESMA régua do ledger e do hub.
+    monthKey: text('month_key').primaryKey(),
+    // Snapshot do slug do catálogo EM CÓDIGO (sem FK: o catálogo não é tabela).
+    builtinSlug: text('builtin_slug'),
+    // RESTRICT (default): tema custom referenciado não é deletável — só arquiva.
+    customThemeId: uuid('custom_theme_id').references(() => challengeCustomThemes.id),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    // Auditoria leve (quem definiu por último; o audit do gateway é a trilha real).
+    updatedByUserId: uuid('updated_by_user_id'),
+  },
+  (t) => [
+    check(
+      'challenge_month_overrides_one_theme',
+      sql`(${t.builtinSlug} IS NULL) <> (${t.customThemeId} IS NULL)`,
+    ),
+  ],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table(
   'processed_webhooks',
@@ -1046,6 +1086,8 @@ export const schema = {
   teacherMessages,
   aiUsageDaily,
   renewalRemindersSent,
+  challengeCustomThemes,
+  challengeMonthOverrides,
   processedWebhooks,
 }
 

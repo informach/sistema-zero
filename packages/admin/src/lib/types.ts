@@ -1009,3 +1009,47 @@ export interface DailyPaymentStats {
     cancellations: number
   }
 }
+
+// ── Desafio do mês (espelha as views admin do @sistemazero/members) ─────────
+
+export type ChallengeThemeSource = 'sorteio' | 'definido'
+
+export interface ChallengeThemeView {
+  slug: string
+  emoji: string
+  title: string
+  description: string
+  suggestedKit: string
+}
+
+/** Um mês da janela do painel, com o tema RESOLVIDO (definido ou sorteado). */
+export interface ChallengeMonthAdminView {
+  /** `m:YYYY-MM` (régua interna do desafio). */
+  monthKey: string
+  /** `YYYY-MM` — vai nas URLs do BFF. */
+  month: string
+  /** Mês no ar agora. */
+  current: boolean
+  source: ChallengeThemeSource
+  theme: ChallengeThemeView
+  customThemeId: string | null
+  updatedAt: string | null
+}
+
+export interface ChallengeThemeAdminView {
+  id: string
+  slug: string
+  emoji: string
+  title: string
+  description: string
+  suggestedKit: string
+  archived: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ChallengeThemesAdminView {
+  /** Catálogo fixo em código (read-only; é o pool do sorteio). */
+  builtin: ChallengeThemeView[]
+  custom: ChallengeThemeAdminView[]
+}

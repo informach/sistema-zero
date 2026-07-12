@@ -2,6 +2,7 @@ import { Elysia } from 'elysia'
 import type { PurgeUserDataService } from '../../../application/admin/purge-user-data/purge-user-data.service'
 import type { GetAiUsageStatsService } from '../../../application/ai-usage/get-ai-usage-stats.service'
 import type { GetCourseAnalyticsService } from '../../../application/analytics/get-course-analytics.service'
+import type { ChallengeAdminService } from '../../../application/gamification/challenge-admin.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetMemberActivityService } from '../../../application/get-member-activity/get-member-activity.service'
 import type { GetMemberDetailService } from '../../../application/get-member-detail/get-member-detail.service'
@@ -17,7 +18,13 @@ import type { TeacherThreadsService } from '../../../application/teacher-threads
 import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
-import { assertInternalCaller, requireAdmin, resolveStudentName, resolveUserId } from '../auth'
+import {
+  assertInternalCaller,
+  requireAdmin,
+  resolveOptionalUserId,
+  resolveStudentName,
+  resolveUserId,
+} from '../auth'
 import {
   AdminActivityQuery,
   AdminGamificationQuery,
@@ -25,6 +32,10 @@ import {
   AdminTeacherThreadPostBody,
   AdminTeacherThreadsQuery,
   AiUsageStatsQuery,
+  ChallengeMonthParams,
+  ChallengeOverrideBody,
+  ChallengeThemeBody,
+  ChallengeThemePatchBody,
   CourseIdParams,
   GrantEntitlementBody,
   IdParams,
@@ -56,6 +67,8 @@ export interface AdminRoutesDeps {
   manageEntitlement: ManageEntitlementService
   /** Canal de retorno professor↔aluno (caixa de entrada + responder). */
   teacherThreads: TeacherThreadsService
+  /** Desafio do mês: tema por mês (override) + biblioteca de temas custom. */
+  challengeAdmin: ChallengeAdminService
   revokeCertificate: RevokeCertificateService
   /** Purga TODOS os dados do aluno (exclusão de usuário pelo painel, superadmin-only no gateway). */
   purgeUserData: PurgeUserDataService
@@ -259,6 +272,50 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.teacherThreads.markReadByTeacher(params.id)
         },
         { params: IdParams },
+      )
+      // ── Desafio do mês (Sala do Professor) ────────────────────────────────
+      // Janela de meses com o tema RESOLVIDO (definido pelo professor ou
+      // sorteado como fallback), override por mês e biblioteca de temas custom.
+      .get('/challenge/months', async ({ headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.challengeAdmin.listMonths()
+      })
+      .put(
+        '/challenge/months/:month',
+        async ({ params, body, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.challengeAdmin.setMonth(params.month, body, resolveOptionalUserId(headers))
+        },
+        { params: ChallengeMonthParams, body: ChallengeOverrideBody },
+      )
+      .delete(
+        '/challenge/months/:month',
+        async ({ params, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.challengeAdmin.clearMonth(params.month)
+        },
+        { params: ChallengeMonthParams },
+      )
+      .get('/challenge/themes', async ({ headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.challengeAdmin.listThemes()
+      })
+      .post(
+        '/challenge/themes',
+        async ({ body, headers, set }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          set.status = 201
+          return deps.challengeAdmin.createTheme(body)
+        },
+        { body: ChallengeThemeBody },
+      )
+      .patch(
+        '/challenge/themes/:id',
+        async ({ params, body, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.challengeAdmin.updateTheme(params.id, body)
+        },
+        { params: IdParams, body: ChallengeThemePatchBody },
       )
       .post(
         '/entitlements',

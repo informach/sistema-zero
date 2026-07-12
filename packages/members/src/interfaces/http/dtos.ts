@@ -1059,3 +1059,27 @@ export const AdminTeacherThreadPostBody = t.Object({
 
 /** Corpo de `POST/PATCH /members/admin/...blocks`. */
 export const BlockBody = t.Object({ content: LessonBlockContentSchema })
+
+// ── Desafio do mês — gestão pelo admin ───────────────────────────────────────
+/** Mês SEM o prefixo `m:` (URLs do admin não carregam `:`); vira chave no handler. */
+export const ChallengeMonthParams = t.Object({
+  month: t.String({ pattern: '^\\d{4}-(0[1-9]|1[0-2])$' }),
+})
+/** Exatamente UM dos dois — validado no service (XOR não cabe bem no TypeBox). */
+export const ChallengeOverrideBody = t.Object({
+  builtinSlug: t.Optional(t.String({ minLength: 1, maxLength: 64, pattern: '^[a-z0-9-]+$' })),
+  customThemeId: t.Optional(UUID),
+})
+export const ChallengeThemeBody = t.Object({
+  emoji: t.String({ minLength: 1, maxLength: 16 }),
+  title: t.String({ minLength: 1, maxLength: 80 }),
+  description: t.String({ minLength: 1, maxLength: 300 }),
+  suggestedKit: t.String({ minLength: 1, maxLength: 60 }),
+})
+export const ChallengeThemePatchBody = t.Object({
+  emoji: t.Optional(t.String({ minLength: 1, maxLength: 16 })),
+  title: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
+  description: t.Optional(t.String({ minLength: 1, maxLength: 300 })),
+  suggestedKit: t.Optional(t.String({ minLength: 1, maxLength: 60 })),
+  archived: t.Optional(t.Boolean()),
+})

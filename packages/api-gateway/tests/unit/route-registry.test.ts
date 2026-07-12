@@ -85,6 +85,13 @@ const registry = new RouteRegistry([
   r({ id: 'tt-read', methods: ['POST'], pathPattern: '/members/teacher-threads/:id/read' }),
   r({ id: 'tt-admin-read', methods: ['GET'], pathPattern: '/members/admin/teacher-threads/*' }),
   r({ id: 'tt-admin-write', methods: ['POST'], pathPattern: '/members/admin/teacher-threads/*' }),
+  // Desafio do mês (Sala do Professor): wildcards read/write no literal `challenge`.
+  r({ id: 'challenge-admin-read', methods: ['GET'], pathPattern: '/members/admin/challenge/*' }),
+  r({
+    id: 'challenge-admin-write',
+    methods: ['PUT', 'POST', 'PATCH', 'DELETE'],
+    pathPattern: '/members/admin/challenge/*',
+  }),
   // Fila global de entregas (literal 3 seg) + wildcard da autoria p/ provar a não-colisão.
   r({
     id: 'studio-subs-global',
@@ -336,6 +343,28 @@ describe('RouteRegistry', () => {
       registry.resolve('POST', '/members/admin/teacher-threads/th-1/messages', 'v1')?.route.id,
     ).toBe('tt-admin-write')
     // Não rouba a ficha do aluno (/members/admin/members/:userId).
+    expect(registry.resolve('GET', '/members/admin/members/u-1', 'v1')?.route.id).toBe(
+      'members-member-detail',
+    )
+  })
+
+  test('desafio do mês: wildcard cobre months/themes sem colidir com a ficha do aluno', () => {
+    expect(registry.resolve('GET', '/members/admin/challenge/months', 'v1')?.route.id).toBe(
+      'challenge-admin-read',
+    )
+    expect(registry.resolve('PUT', '/members/admin/challenge/months/2026-08', 'v1')?.route.id).toBe(
+      'challenge-admin-write',
+    )
+    expect(
+      registry.resolve('DELETE', '/members/admin/challenge/months/2026-08', 'v1')?.route.id,
+    ).toBe('challenge-admin-write')
+    expect(registry.resolve('POST', '/members/admin/challenge/themes', 'v1')?.route.id).toBe(
+      'challenge-admin-write',
+    )
+    expect(registry.resolve('PATCH', '/members/admin/challenge/themes/t-1', 'v1')?.route.id).toBe(
+      'challenge-admin-write',
+    )
+    // A ficha do aluno segue no param dela.
     expect(registry.resolve('GET', '/members/admin/members/u-1', 'v1')?.route.id).toBe(
       'members-member-detail',
     )

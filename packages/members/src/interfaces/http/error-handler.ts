@@ -56,6 +56,11 @@ const DOMAIN_STATUS: Record<string, number> = {
   MISSION_NOT_COMPLETED: 409,
   MAX_FREEZES: 409,
   VACATION_INVALID: 400,
+  // Desafio do mês (tema gerenciável pelo admin).
+  CHALLENGE_MONTH_INVALID: 400,
+  CHALLENGE_MONTH_PAST: 400,
+  CHALLENGE_THEME_NOT_FOUND: 404,
+  CHALLENGE_THEME_ARCHIVED: 409,
   // Pensa (planejamento guiado). NOT_FOUND cobre também ownership mismatch
   // (nunca vazar existência); os demais são conflitos de estado/cota.
   PENSA_NOT_FOUND: 404,

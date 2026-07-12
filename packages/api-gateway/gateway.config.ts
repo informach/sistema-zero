@@ -2053,6 +2053,34 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
     },
+    // Desafio do mês (Sala do Professor) — janela de meses (tema definido ou
+    // sorteado), override por mês e biblioteca de temas custom. Gestão é tarefa
+    // de professor → leitura E escrita staff+ (mesmo racional dos recados). O
+    // wildcard cobre `months`, `months/:month`, `themes` e `themes/:id` (cauda
+    // vazia inclusa); não colide com `/members/admin/members*`.
+    {
+      id: 'members-admin-challenge-read',
+      methods: ['GET'],
+      pathPattern: '/members/admin/challenge/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-admin-challenge-write',
+      methods: ['PUT', 'POST', 'PATCH', 'DELETE'],
+      pathPattern: '/members/admin/challenge/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      // Trilha de auditoria: trocar o tema do mês afeta todos os alunos.
+      audit: {},
+    },
 
     // ── Área de membros — Admin de AUTORIA de conteúdo ───────────────────────
     // Cursos → módulos → aulas → blocos/anexos. LEITURA (lista/árvore/conteúdo) →

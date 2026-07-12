@@ -31,3 +31,35 @@ export class VacationInvalidError extends DomainError {
     super(message)
   }
 }
+
+/** Mês do desafio fora da janela editável (corrente + 11 seguintes). → 400. */
+export class ChallengeMonthInvalidError extends DomainError {
+  readonly code = 'CHALLENGE_MONTH_INVALID'
+  constructor(message = 'Mês fora da janela editável do desafio') {
+    super(message)
+  }
+}
+
+/** Tentativa de definir tema para um mês que já passou. → 400. */
+export class ChallengeMonthPastError extends DomainError {
+  readonly code = 'CHALLENGE_MONTH_PAST'
+  constructor(message = 'Não dá para definir tema de um mês que já passou') {
+    super(message)
+  }
+}
+
+/** Tema (fixo ou da biblioteca) inexistente. → 404. */
+export class ChallengeThemeNotFoundError extends DomainError {
+  readonly code = 'CHALLENGE_THEME_NOT_FOUND'
+  constructor(message = 'Tema do desafio não encontrado') {
+    super(message)
+  }
+}
+
+/** Tema arquivado não pode ser escolhido para um mês novo. → 409. */
+export class ChallengeThemeArchivedError extends DomainError {
+  readonly code = 'CHALLENGE_THEME_ARCHIVED'
+  constructor(message = 'Esse tema está arquivado; reative-o para usá-lo') {
+    super(message)
+  }
+}

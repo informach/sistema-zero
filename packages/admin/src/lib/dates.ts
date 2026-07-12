@@ -31,3 +31,26 @@ export function dateInputToSaoPauloStartOfDayIso(value: string): string | null {
   const date = new Date(`${value}T00:00:00.000${SAO_PAULO_UTC_OFFSET}`)
   return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
+
+const MONTH_NAMES_PT = [
+  'janeiro',
+  'fevereiro',
+  'março',
+  'abril',
+  'maio',
+  'junho',
+  'julho',
+  'agosto',
+  'setembro',
+  'outubro',
+  'novembro',
+  'dezembro',
+] as const
+
+/** `YYYY-MM` → "julho de 2026" (rótulo dos meses do Desafio). Inválido → o próprio valor. */
+export function monthLabelPt(month: string): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(month)
+  if (!m) return month
+  const name = MONTH_NAMES_PT[Number(m[2]) - 1]
+  return name ? `${name} de ${m[1]}` : month
+}

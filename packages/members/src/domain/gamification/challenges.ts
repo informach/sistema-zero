@@ -135,6 +135,90 @@ export function challengeForMonth(monthKey: string): ChallengeTheme {
   return CHALLENGE_THEMES[index] as ChallengeTheme
 }
 
+// ── Tema gerenciável pelo admin (07/2026) ────────────────────────────────────
+// O professor pode DEFINIR o tema de um mês (fixo do catálogo acima ou custom
+// criado no admin); sem definição, o sorteio determinístico acima é o FALLBACK
+// que garante tema todo mês. Decisão da usuária: temas custom NUNCA entram no
+// pool do sorteio (o módulo % 12 fica estável); só valem quando definidos.
+
+export type ChallengeThemeSource = 'sorteio' | 'definido'
+
+/** Campos de tema da biblioteca custom que a resolução precisa. */
+export interface ChallengeCustomThemeData {
+  id: string
+  emoji: string
+  title: string
+  description: string
+  suggestedKit: string
+}
+
+/** Override de um mês carregado do banco (exatamente UM dos dois preenchido). */
+export interface ChallengeOverrideTheme {
+  builtinSlug: string | null
+  customTheme: ChallengeCustomThemeData | null
+}
+
+export function builtinThemeBySlug(slug: string): ChallengeTheme | undefined {
+  return CHALLENGE_THEMES.find((t) => t.slug === slug)
+}
+
+/** Slug derivado e estável do tema custom (o shape público do desafio tem slug). */
+export function customChallengeSlug(id: string): string {
+  return `custom-${id.slice(0, 8)}`
+}
+
+/**
+ * Override → tema definido; sem override → sorteio. Um `builtinSlug` que sumiu
+ * do catálogo em código cai DEFENSIVAMENTE no sorteio (o caminho do aluno
+ * nunca quebra por dado velho).
+ */
+export function resolveChallengeTheme(
+  monthKey: string,
+  override: ChallengeOverrideTheme | null,
+): { theme: ChallengeTheme; source: ChallengeThemeSource } {
+  if (override?.customTheme) {
+    const c = override.customTheme
+    return {
+      theme: {
+        slug: customChallengeSlug(c.id),
+        emoji: c.emoji,
+        title: c.title,
+        description: c.description,
+        suggestedKit: c.suggestedKit,
+      },
+      source: 'definido',
+    }
+  }
+  if (override?.builtinSlug) {
+    const builtin = builtinThemeBySlug(override.builtinSlug)
+    if (builtin) return { theme: builtin, source: 'definido' }
+  }
+  return { theme: challengeForMonth(monthKey), source: 'sorteio' }
+}
+
+/** `[corrente, …, corrente+count-1]` em `m:YYYY-MM` (aritmética pura sobre a chave SP). */
+export function monthKeysFrom(now: Date, count: number): string[] {
+  const [y, m] = localDateSaoPaulo(now).slice(0, 7).split('-').map(Number) as [number, number]
+  const keys: string[] = []
+  for (let i = 0; i < count; i += 1) {
+    const total = y * 12 + (m - 1) + i
+    const yy = Math.floor(total / 12)
+    const mm = (total % 12) + 1
+    keys.push(`m:${yy}-${String(mm).padStart(2, '0')}`)
+  }
+  return keys
+}
+
+/** `YYYY-MM` (formato das URLs do admin, sem `:`) → chave `m:YYYY-MM`. */
+export function monthKeyFromMonth(month: string): string {
+  return `m:${month}`
+}
+
+/** Comparação lexicográfica funciona: formato zero-padded com prefixo fixo. */
+export function isPastMonthKey(monthKey: string, now: Date): boolean {
+  return monthKey < currentChallengeKey(now)
+}
+
 /**
  * Namespace FIXO (uuid sorteado uma vez, NUNCA mudar) do source_id do marco
  * `challenge_entry` — `xp_events.source_id` é coluna uuid, então o mês vira um
