@@ -257,6 +257,11 @@ export class ThreadService {
     if (thread.isLocked && !actor.privileged) {
       throw new PostingNotAllowedError('Tópico trancado para novos comentários')
     }
+    // Canal "somente avisos" (ex.: Recados da equipe): só a equipe RESPONDE. EXCEÇÃO:
+    // posts de VITRINE (Mural, também `staff_only`) — ali a criança comenta moderado.
+    if (channel.postingPolicy === 'staff_only' && !thread.isShowcase && !actor.privileged) {
+      throw new PostingNotAllowedError('Apenas a equipe pode responder neste canal')
+    }
     const body = cmd.body.trim()
     if (!body || body.length > MAX_BODY) throw new PostingNotAllowedError('Conteúdo inválido')
     const owned = await this.validateOwnedPending(actor, cmd.attachmentIds ?? [])

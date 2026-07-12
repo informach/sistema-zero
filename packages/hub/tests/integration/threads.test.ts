@@ -102,6 +102,66 @@ describe('tópicos e comentários', () => {
     expect(ok.status).toBe(201)
   })
 
+  test('canal staff_only: aluno não RESPONDE aviso (403); staff responde; vitrine (Mural) é exceção', async () => {
+    const ctx = buildApp()
+    const { channelId } = await seedChannel(ctx, { channel: { postingPolicy: 'staff_only' } })
+
+    // A EQUIPE abre um aviso (tópico normal, não-vitrine).
+    const notice = (await (
+      await ctx.app.handle(
+        jsonRequest('POST', `/hub/channels/${channelId}/threads`, {
+          headers: studentHeaders(randomUUID(), { 'x-auth-user-role': 'admin' }),
+          body: { title: 'Aviso', body: 'Leiam com atenção' },
+        }),
+      )
+    ).json()) as { id: string }
+
+    // Aluno NÃO responde o aviso (403 POSTING_NOT_ALLOWED).
+    const denied = await ctx.app.handle(
+      jsonRequest('POST', `/hub/threads/${notice.id}/comments`, {
+        headers: studentHeaders(randomUUID()),
+        body: { body: 'posso responder?' },
+      }),
+    )
+    expect(denied.status).toBe(403)
+    expect(((await denied.json()) as { error: { code: string } }).error.code).toBe(
+      'POSTING_NOT_ALLOWED',
+    )
+
+    // Staff responde o aviso.
+    const staffReply = await ctx.app.handle(
+      jsonRequest('POST', `/hub/threads/${notice.id}/comments`, {
+        headers: studentHeaders(randomUUID(), { 'x-auth-user-role': 'admin' }),
+        body: { body: 'complemento' },
+      }),
+    )
+    expect(staffReply.status).toBe(201)
+
+    // EXCEÇÃO: post de VITRINE no mesmo canal staff_only → o aluno comenta (Mural).
+    const showcaseId = randomUUID()
+    await ctx.threadRepo.createShowcaseThread({
+      id: showcaseId,
+      channelId,
+      authorId: randomUUID(),
+      authorDisplayName: 'Mika',
+      authorPublic: false,
+      title: 'Meu Jogo',
+      slug: `meu-jogo-${randomUUID().slice(0, 6)}`,
+      body: 'oi',
+      coverImageUrl: null,
+      playId: randomUUID(),
+      idempotencyKey: randomUUID(),
+      now: new Date(),
+    })
+    const muralComment = await ctx.app.handle(
+      jsonRequest('POST', `/hub/threads/${showcaseId}/comments`, {
+        headers: studentHeaders(randomUUID()),
+        body: { body: 'que legal!' },
+      }),
+    )
+    expect(muralComment.status).toBe(201)
+  })
+
   test('pré-moderação: criança posta pendente; some pros colegas, autor vê', async () => {
     const ctx = buildApp()
     const { channelId } = await seedChannel(ctx, {

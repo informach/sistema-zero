@@ -11,6 +11,10 @@ export const dynamic = 'force-dynamic'
  * ("ainda não liberado"); com acesso, entra no fórum. Para vender como produto, o admin
  * põe "Quem vê = Por comunidade" com a chave do produto Clube (ver hub/CLAUDE.md).
  */
+// Papel da EQUIPE (espelha o `PRIVILEGED_ROLES` do hub) — só quem está aqui pode
+// escrever nos canais `staff_only` (ex.: "Recados da equipe"); o resto só lê e reage.
+const STAFF_ROLES = new Set(['superadmin', 'admin', 'staff'])
+
 export default async function ClubePage() {
   const session = await getSession()
   return (
@@ -18,6 +22,7 @@ export default async function ClubePage() {
       slug="clube-dos-criadores"
       viewerId={session?.id ?? ''}
       mode="forum"
+      isStaff={STAFF_ROLES.has(session?.role ?? '')}
       lockedView={<KidsLockedClube />}
       unavailableTitle="Clube dos Criadores"
     />

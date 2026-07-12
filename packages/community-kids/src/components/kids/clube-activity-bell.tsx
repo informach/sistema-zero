@@ -1,7 +1,6 @@
 'use client'
 
 import { Bell } from 'lucide-react'
-import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import type { HubMyThreadView } from '@/lib/types'
@@ -35,7 +34,14 @@ function writeBaseline(viewerId: string, map: Record<string, number>): void {
  * Abrir a lista marca tudo como visto (atualiza o baseline). É o "motivo de voltar" ao
  * Clube — leve, sem tabela de notificação, sem expor autor de terceiros (só as próprias).
  */
-export function ClubeActivityBell({ viewerId }: { viewerId: string }) {
+export function ClubeActivityBell({
+  viewerId,
+  onOpenThread,
+}: {
+  viewerId: string
+  /** Abre a conversa clicada (o pai busca o tópico por id e mostra a `ThreadDetail`). */
+  onOpenThread: (id: string) => void
+}) {
   const [threads, setThreads] = useState<HubMyThreadView[]>([])
   const [fresh, setFresh] = useState<HubMyThreadView[]>([])
   const [open, setOpen] = useState(false)
@@ -101,13 +107,16 @@ export function ClubeActivityBell({ viewerId }: { viewerId: string }) {
           <ul className="flex flex-col">
             {(fresh.length > 0 ? fresh : threads).slice(0, 6).map((t) => (
               <li key={t.id}>
-                <Link
-                  href="/clube-dos-criadores"
-                  onClick={() => setOpen(false)}
-                  className="block truncate rounded-xl px-2 py-1.5 text-sm transition-colors hover:bg-muted/60"
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenThread(t.id)
+                    setOpen(false)
+                  }}
+                  className="block w-full truncate rounded-xl px-2 py-1.5 text-left text-sm transition-colors hover:bg-muted/60"
                 >
                   {t.title}
-                </Link>
+                </button>
               </li>
             ))}
           </ul>
