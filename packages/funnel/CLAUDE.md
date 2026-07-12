@@ -123,7 +123,8 @@ server-side — invariante 3); `isQuizComplete` exige campo1/campo2/resultadoKey
 **Tema por funil (`FunnelDef.theme`):** `theme:'kids'` → as páginas passam
 `htmlClass={f.theme ? 'theme-'+f.theme : undefined}` ao `BaseLayout` (compatível com o `dark` do
 admin). O escopo `.theme-kids` em `global.css` **redefine os tokens** `--color-*` e a
-`--font-sans` → Nunito (h1–h3 Fredoka, via `@fontsource`). Como as utilitárias
+`--font-sans` → Nunito (h1–h3 **Baloo 2**, via `@fontsource` — a MESMA display do
+community-kids, unificada em 07/2026; Fredoka foi removida do pacote). Como as utilitárias
 (`text-lime`/`bg-card`/`border-line`…) são `var(--color-*)`, **todas as páginas/ilhas compartilhadas
 re-skinam sem mudar markup** (quiz, resultado, checkout, obrigado, PreCheckoutModal).
 

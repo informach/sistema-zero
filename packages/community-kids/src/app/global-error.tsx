@@ -34,7 +34,7 @@ export default function GlobalError({
           placeItems: 'center',
           padding: '1.5rem',
           textAlign: 'center',
-          background: '#0D1117',
+          background: '#0C1E3E',
           color: '#ffffff',
           fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
         }}
@@ -47,8 +47,8 @@ export default function GlobalError({
             type="button"
             onClick={() => reset()}
             style={{
-              background: '#C4F042',
-              color: '#0D1117',
+              background: '#FF9A1F',
+              color: '#0C1E3E',
               border: 0,
               borderRadius: '9999px',
               padding: '0.7rem 1.6rem',

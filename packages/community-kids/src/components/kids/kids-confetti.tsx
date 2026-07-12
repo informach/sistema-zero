@@ -3,7 +3,14 @@
 import { type CSSProperties, useEffect, useMemo, useState } from 'react'
 import { useReducedMotion } from './room/use-reduced-motion'
 
-const CONFETTI_COLORS = ['var(--kids-cyan)', 'var(--kids-lime)', 'var(--sz-hot)'] as const
+const CONFETTI_COLORS = [
+  'var(--kids-cyan)',
+  'var(--kids-lime)',
+  'var(--kids-rosa)',
+  'var(--kids-verde)',
+  'var(--level-god)',
+  'var(--sz-hot)',
+] as const
 const CONFETTI_COUNT = 24
 /** Cleanup por TEMPO: reduced-motion zera a animação (animationend não dispara). */
 const CONFETTI_LIFETIME_MS = 3600

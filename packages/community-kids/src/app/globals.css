@@ -69,24 +69,31 @@
 
 /* ============================================================
    SISTEMA ZERO KIDS — LIGHT MODE (default)
-   PALETA DA MARCA (mesma do comunidade-sistema-zero / community):
-   cyan #42E8E0 · lime #C4F042 · vermelho hot — no light o cyan
-   escurecido é primary (AA sobre branco), a lima escurecida é
-   accent; inverte no .dark. A vibe kids (Duolingo×Brilliant) vem
-   do USO: tints, gradientes, sombras duras 3D, radius 1rem.
+   PALETA DA MARCA KIDS (a mesma do Funil Kids, para o aluno sentir
+   que continua no MESMO lugar da oferta → comunidade): azul-céu +
+   azul #1E88E5 · laranja CTA #FF9A1F · acentos rosa/verde/amarelo ·
+   vermelho hot. No light os sólidos são versões ESCURECIDAS (AA
+   sobre branco); os vivos ficam para o .dark. A vibe kids
+   (Duolingo×Brilliant) segue vindo do USO: tints, gradientes,
+   sombras duras 3D, radius 1rem.
    ============================================================ */
 :root {
-  --brand-lime: oklch(0.875 0.215 122); /* #C4F042 */
-  --brand-cyan: oklch(0.84 0.13 192); /* #42E8E0 */
+  --brand-lime: oklch(0.8 0.15 70); /* laranja vivo (#FFB53F) — era a lima */
+  --brand-cyan: oklch(0.72 0.13 245); /* azul claro (#37A6F5) — era o ciano */
 
-  /* Sólidos kids — versões AA p/ texto branco no light (o neon puro
-     L≥0.84 só vira fundo de texto no dark, com texto navy). */
-  --kids-cyan: oklch(0.52 0.14 200);
-  --kids-lime: oklch(0.55 0.17 130);
-  --kids-cyan-tint: oklch(0.52 0.14 200 / 0.1);
-  --kids-lime-tint: oklch(0.55 0.17 130 / 0.12);
+  /* Sólidos kids — versões AA p/ texto branco no light (os vivos
+     L≥0.72 só viram fundo de texto no dark, com texto navy). */
+  --kids-cyan: oklch(0.52 0.15 252); /* azul */
+  --kids-lime: oklch(0.58 0.15 55); /* laranja profundo */
+  --kids-rosa: oklch(0.6 0.19 356); /* rosa */
+  --kids-verde: oklch(0.55 0.15 152); /* verde */
+  --kids-cyan-tint: oklch(0.52 0.15 252 / 0.1);
+  --kids-lime-tint: oklch(0.58 0.15 55 / 0.12);
+  --kids-rosa-tint: oklch(0.6 0.19 356 / 0.1);
+  --kids-verde-tint: oklch(0.55 0.15 152 / 0.1);
 
-  --background: oklch(0.985 0.004 100);
+  /* Fundo com um sopro de azul-céu (o céu do funil, bem diluído). */
+  --background: oklch(0.975 0.012 245);
   --foreground: oklch(0.105 0.01 265);
 
   --card: oklch(1 0 0);
@@ -94,25 +101,25 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.105 0.01 265);
 
-  --primary: oklch(0.52 0.14 200);
+  --primary: oklch(0.52 0.15 252);
   --primary-foreground: oklch(1 0 0);
 
-  --link: oklch(0.44 0.14 210);
-  --link-hover: oklch(0.38 0.15 210);
+  --link: oklch(0.46 0.14 255);
+  --link-hover: oklch(0.4 0.15 255);
   --interactive-text: var(--link);
   --interactive-text-hover: var(--link-hover);
 
-  /* Gradient CTA — cyan → lime no light (texto branco AA via --sz-gradient). */
+  /* Gradiente de TEXTO da marca — azul-claro → azul no light. */
   --brand-gradient-start: var(--brand-cyan);
-  --brand-gradient-end: var(--brand-lime);
+  --brand-gradient-end: var(--kids-cyan);
 
-  --secondary: oklch(0.955 0.004 255);
+  --secondary: oklch(0.955 0.006 250);
   --secondary-foreground: oklch(0.145 0.01 265);
 
-  --muted: oklch(0.955 0.004 255);
+  --muted: oklch(0.955 0.006 250);
   --muted-foreground: oklch(0.5 0.01 255);
 
-  --accent: oklch(0.62 0.18 135);
+  --accent: oklch(0.6 0.15 55);
   --accent-foreground: oklch(1 0 0);
 
   --destructive: oklch(0.55 0.22 27);
@@ -122,13 +129,13 @@
   --success: oklch(0.45 0.13 150);
   --success-foreground: oklch(0.4 0.13 150);
 
-  --border: oklch(0.9 0.005 255);
-  --input: oklch(0.92 0.005 255);
-  --ring: oklch(0.52 0.14 200);
+  --border: oklch(0.9 0.01 250);
+  --input: oklch(0.92 0.01 250);
+  --ring: oklch(0.52 0.15 252);
 
-  --chart-1: oklch(0.52 0.14 200);
-  --chart-2: oklch(0.62 0.18 135);
-  --chart-3: oklch(0.58 0.16 170);
+  --chart-1: oklch(0.52 0.15 252);
+  --chart-2: oklch(0.6 0.15 55);
+  --chart-3: oklch(0.6 0.19 356);
   --chart-4: oklch(0.55 0.22 27);
   --chart-5: oklch(0.5 0.01 255);
 
@@ -143,92 +150,100 @@
   --radius: 1rem;
 
   /* Signature meta-tokens (gradiente CTA, hot badge) — nomes preservados.
-     Gradiente light com pontas ESCURECIDAS (texto branco AA — truque do community). */
-  --sz-primary: oklch(0.52 0.14 200);
+     O CTA agora é LARANJA (o mesmo do funil); pontas ESCURECIDAS no light
+     para o texto branco passar AA (truque do community). `--sz-cta` é a cor
+     sólida representativa do CTA (sombra dura 3D e nó gradiente da trilha). */
+  --sz-primary: oklch(0.52 0.15 252);
   --sz-primary-fg: oklch(1 0 0);
-  --sz-accent: oklch(0.62 0.18 135);
+  --sz-accent: oklch(0.6 0.15 55);
   --sz-hot: oklch(0.55 0.22 27);
   --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
   /* Texto sobre o sólido --sz-hot (botões "Resgatar"/"Tirar"): branco passa AA no
      vermelho escuro do tema claro. No dark o hot é mais claro → texto navy (ver .dark). */
   --sz-hot-fg: oklch(1 0 0);
-  --sz-gradient: linear-gradient(90deg, oklch(0.5 0.14 200), oklch(0.52 0.18 135));
+  --sz-cta: oklch(0.64 0.16 55);
+  --sz-gradient: linear-gradient(90deg, oklch(0.68 0.16 60), oklch(0.6 0.16 50));
 
   /* Níveis do aluno (rank Noob→God) — cor da AURA + insígnia. Versões AA p/ texto
      branco no light; o dark clareia (ver .dark). Cada nível tem sua cor. */
   --level-noob: oklch(0.55 0.02 255); /* cinza neutro (começo) */
-  --level-coder: oklch(0.52 0.14 200); /* cyan da marca */
-  --level-hacker: oklch(0.55 0.17 130); /* lime/verde */
+  --level-coder: oklch(0.52 0.15 252); /* azul da marca */
+  --level-hacker: oklch(0.58 0.15 55); /* laranja */
   --level-elite: oklch(0.5 0.2 300); /* violeta */
   --level-god: oklch(0.66 0.16 75); /* dourado */
 }
 
 /* ============================================================
-   SISTEMA ZERO KIDS — DARK MODE (azul-noite #0D1117, lime neon
-   como primary, cyan como acento; o toggle continua no menu do
-   avatar)
+   SISTEMA ZERO KIDS — DARK MODE (a NOITE do tema kids: navy
+   #0C1E3E do funil, laranja vivo como primary, azul claro como
+   acento; o toggle continua no menu do avatar)
    ============================================================ */
 .dark {
-  /* No dark os sólidos kids SÃO os neons da marca (texto navy por cima). */
+  /* No dark os sólidos kids SÃO os vivos da marca (texto navy por cima). */
   --kids-cyan: var(--brand-cyan);
   --kids-lime: var(--brand-lime);
-  --kids-cyan-tint: oklch(0.84 0.13 192 / 0.15);
-  --kids-lime-tint: oklch(0.875 0.215 122 / 0.15);
+  --kids-rosa: oklch(0.75 0.16 356);
+  --kids-verde: oklch(0.78 0.15 152);
+  --kids-cyan-tint: oklch(0.72 0.13 245 / 0.15);
+  --kids-lime-tint: oklch(0.8 0.15 70 / 0.15);
+  --kids-rosa-tint: oklch(0.75 0.16 356 / 0.15);
+  --kids-verde-tint: oklch(0.78 0.15 152 / 0.15);
 
-  --background: oklch(0.103 0.01 265);
-  --foreground: oklch(0.975 0.003 255);
+  --background: oklch(0.235 0.05 262);
+  --foreground: oklch(0.975 0.005 250);
 
-  --card: oklch(0.14 0.01 265);
-  --card-foreground: oklch(0.975 0.003 255);
-  --popover: oklch(0.17 0.01 265);
-  --popover-foreground: oklch(0.975 0.003 255);
+  --card: oklch(0.28 0.05 260);
+  --card-foreground: oklch(0.975 0.005 250);
+  --popover: oklch(0.31 0.05 260);
+  --popover-foreground: oklch(0.975 0.005 250);
 
   --primary: var(--brand-lime);
-  --primary-foreground: oklch(0.103 0.01 265);
+  --primary-foreground: oklch(0.22 0.05 262);
 
-  --link: oklch(0.875 0.215 122);
-  --link-hover: oklch(0.92 0.2 125);
+  --link: oklch(0.8 0.15 70);
+  --link-hover: oklch(0.85 0.14 75);
   --interactive-text: var(--link);
   --interactive-text-hover: var(--link-hover);
 
   --brand-gradient-start: var(--brand-lime);
   --brand-gradient-end: var(--brand-cyan);
 
-  --secondary: oklch(0.185 0.01 265);
-  --secondary-foreground: oklch(0.975 0.003 255);
+  --secondary: oklch(0.3 0.045 260);
+  --secondary-foreground: oklch(0.975 0.005 250);
 
-  --muted: oklch(0.185 0.01 265);
-  --muted-foreground: oklch(0.6 0.012 235);
+  --muted: oklch(0.3 0.045 260);
+  --muted-foreground: oklch(0.7 0.03 250);
 
-  --accent: oklch(0.21 0.01 265);
-  --accent-foreground: oklch(0.84 0.13 192);
+  --accent: oklch(0.33 0.05 260);
+  --accent-foreground: var(--brand-cyan);
 
   --destructive: oklch(0.64 0.215 27);
-  --destructive-foreground: oklch(0.975 0.003 255);
+  --destructive-foreground: oklch(0.975 0.005 250);
 
-  --success: oklch(0.21 0.01 265);
-  --success-foreground: oklch(0.84 0.13 192);
+  --success: oklch(0.33 0.05 260);
+  --success-foreground: oklch(0.8 0.14 155);
 
-  --border: oklch(0.21 0.01 265);
-  --input: oklch(0.23 0.01 265);
-  --ring: oklch(0.875 0.215 122);
+  --border: oklch(0.34 0.05 260);
+  --input: oklch(0.36 0.05 260);
+  --ring: oklch(0.8 0.15 70);
 
-  --chart-1: oklch(0.875 0.215 122);
-  --chart-2: oklch(0.84 0.13 192);
-  --chart-3: oklch(0.858 0.172 157);
+  --chart-1: oklch(0.8 0.15 70);
+  --chart-2: oklch(0.72 0.13 245);
+  --chart-3: oklch(0.75 0.16 356);
   --chart-4: oklch(0.64 0.215 27);
-  --chart-5: oklch(0.6 0.012 235);
+  --chart-5: oklch(0.65 0.03 250);
 
-  --sz-primary: oklch(0.875 0.215 122);
-  --sz-primary-fg: oklch(0.103 0.01 265);
-  --sz-accent: oklch(0.84 0.13 192);
+  --sz-primary: oklch(0.8 0.15 70);
+  --sz-primary-fg: oklch(0.22 0.05 262);
+  --sz-accent: oklch(0.72 0.13 245);
   --sz-hot: oklch(0.704 0.191 22);
   --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
   /* Hot mais CLARO no dark → texto branco falharia; usa navy escuro (contraste ~5:1). */
-  --sz-hot-fg: oklch(0.16 0.01 265);
-  --sz-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
+  --sz-hot-fg: oklch(0.18 0.04 262);
+  --sz-cta: oklch(0.72 0.15 62);
+  --sz-gradient: linear-gradient(90deg, oklch(0.82 0.14 75), oklch(0.74 0.155 62));
 
-  /* Níveis no dark: neons/claros (a aura aparece sobre o azul-noite). */
+  /* Níveis no dark: vivos/claros (a aura aparece sobre o navy-noite). */
   --level-noob: oklch(0.72 0.02 255);
   --level-coder: var(--brand-cyan);
   --level-hacker: var(--brand-lime);
@@ -289,13 +304,14 @@
     0 0 24px color-mix(in oklch, var(--brand-cyan) 15%, transparent);
 }
 
-/* Button variant="default" vira o CTA "3D" kids (sombra dura + afunda no clique). */
+/* Button variant="default" vira o CTA "3D" kids (sombra dura + afunda no clique).
+   A sombra deriva de --sz-cta (o laranja do gradiente), não do --sz-primary azul. */
 button.bg-primary.text-primary-foreground,
 a.bg-primary.text-primary-foreground {
   background-image: var(--sz-gradient);
   background-color: transparent;
   color: var(--sz-primary-fg);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-primary) 60%, black);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
@@ -305,12 +321,12 @@ button.bg-primary.text-primary-foreground:hover:not(:disabled),
 a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
   transform: translateY(-1px);
   filter: brightness(1.05);
-  box-shadow: 0 5px 0 color-mix(in oklch, var(--sz-primary) 60%, black);
+  box-shadow: 0 5px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
 }
 button.bg-primary.text-primary-foreground:active:not(:disabled),
 a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 color-mix(in oklch, var(--sz-primary) 60%, black);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
 }
 
 /* CTA gradiente standalone — mesmo visual do Button default, fora do Button */
@@ -329,7 +345,7 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   background-image: var(--sz-gradient);
   color: var(--sz-primary-fg);
   cursor: pointer;
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-primary) 60%, black);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
@@ -498,16 +514,30 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   --unit-bg: var(--unit);
   --unit-bg-image: none;
 }
+.kids-unit-rosa {
+  --unit: var(--kids-rosa);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
+.kids-unit-verde {
+  --unit: var(--kids-verde);
+  --unit-fg: oklch(1 0 0);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
 .kids-unit-grad {
-  --unit: var(--sz-primary);
+  --unit: var(--sz-cta);
   --unit-fg: var(--sz-primary-fg);
   --unit-bg: transparent;
   --unit-bg-image: var(--sz-gradient);
 }
-/* No dark os sólidos são neon → texto navy por cima. */
+/* No dark os sólidos são vivos → texto navy por cima. */
 .dark .kids-unit-cyan,
-.dark .kids-unit-lime {
-  --unit-fg: oklch(0.103 0.01 265);
+.dark .kids-unit-lime,
+.dark .kids-unit-rosa,
+.dark .kids-unit-verde {
+  --unit-fg: oklch(0.2 0.04 262);
 }
 
 .kids-unit-banner {

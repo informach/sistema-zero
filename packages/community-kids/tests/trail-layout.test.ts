@@ -101,14 +101,23 @@ describe('buildTrail', () => {
     expect(nodes.every((n) => n.state === 'done')).toBe(true)
   })
 
-  test('temas alternam cyan → lime → grad → cyan por unidade', () => {
+  test('temas alternam cyan → lime → rosa → verde → grad e reiniciam por unidade', () => {
     const c = course([
       moduleOf('m1', [lesson('a', false)]),
       moduleOf('m2', [lesson('b', false)]),
       moduleOf('m3', [lesson('c', false)]),
       moduleOf('m4', [lesson('d', false)]),
+      moduleOf('m5', [lesson('e', false)]),
+      moduleOf('m6', [lesson('f', false)]),
     ])
-    expect(buildTrail(c).map((u) => u.theme)).toEqual(['cyan', 'lime', 'grad', 'cyan'])
+    expect(buildTrail(c).map((u) => u.theme)).toEqual([
+      'cyan',
+      'lime',
+      'rosa',
+      'verde',
+      'grad',
+      'cyan',
+    ])
   })
 })
 

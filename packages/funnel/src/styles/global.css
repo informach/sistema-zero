@@ -132,7 +132,7 @@
 /* ── Tema KIDS (Desafio do Primeiro Jogo) ────────────────────────────────────
    Re-skin do funil para o público kids: REDEFINE os tokens de marca sob
    `.theme-kids` no <html>. Tema CLARO e colorido (creme + azul + laranja CTA,
-   fontes Fredoka/Nunito), extraído da página colorida aprovada pela usuária.
+   fontes Baloo 2/Nunito), extraído da página colorida aprovada pela usuária.
    Como as utilitárias (`text-lime`, `bg-card`…) são `var(--color-*)`, todas as
    páginas/ilhas compartilhadas (quiz/checkout/obrigado/resultado) re-skinam sem
    mudar markup. O funil carrega `theme:'kids'` e as páginas passam o htmlClass.
@@ -161,7 +161,7 @@
 .theme-kids h1,
 .theme-kids h2,
 .theme-kids h3 {
-  font-family: "Fredoka", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Baloo 2", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -249,7 +249,7 @@ body {
    componentes base) e DEPOIS deles no arquivo. Os textos logo abaixo de um CTA
    precisam de respiro extra: a sombra dura ocupa ~6px visuais abaixo do botão. */
 .theme-kids .btn {
-  font-family: "Fredoka", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Baloo 2", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-weight: 600;
 }
 .theme-kids .btn-primary {
