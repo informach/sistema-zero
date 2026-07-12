@@ -39,9 +39,9 @@ export const STUDENT_LEVELS: readonly LevelRequirement[] = [
   NOOB,
   // "Fez o 1º curso e publicou no Mural" → deixa de ser Noob.
   { slug: 'coder', any: 1, iniciante: 0, intermediario: 0, avancado: 0 },
-  { slug: 'hacker', any: 0, iniciante: 5, intermediario: 0, avancado: 0 },
-  { slug: 'elite', any: 0, iniciante: 5, intermediario: 5, avancado: 0 },
-  { slug: 'god', any: 0, iniciante: 5, intermediario: 5, avancado: 5 },
+  { slug: 'hacker', any: 0, iniciante: 6, intermediario: 0, avancado: 0 },
+  { slug: 'elite', any: 0, iniciante: 6, intermediario: 5, avancado: 0 },
+  { slug: 'god', any: 0, iniciante: 6, intermediario: 5, avancado: 5 },
 ] as const
 
 /** O que falta p/ o PRÓXIMO nível, por dimensão (0 = já satisfeito). */

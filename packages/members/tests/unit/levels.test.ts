@@ -9,28 +9,32 @@ describe('computeStudentLevel', () => {
     expect(r.remaining).toEqual({ any: 1, iniciante: 0, intermediario: 0, avancado: 0 })
   })
 
-  test('1 curso qualificado (qualquer nível) → Coder', () => {
+  test('1 curso qualificado (qualquer nível) → Coder; faltam 5 iniciantes p/ Hacker', () => {
     expect(computeStudentLevel({ iniciante: 0, intermediario: 1, avancado: 0 }).slug).toBe('coder')
-    expect(computeStudentLevel({ iniciante: 1, intermediario: 0, avancado: 0 }).slug).toBe('coder')
+    const r = computeStudentLevel({ iniciante: 1, intermediario: 0, avancado: 0 })
+    expect(r.slug).toBe('coder')
+    expect(r.next).toBe('hacker')
+    // Piso do Hacker = 6 iniciantes: feito 1 (virou Coder), faltam 5.
+    expect(r.remaining).toEqual({ any: 0, iniciante: 5, intermediario: 0, avancado: 0 })
   })
 
-  test('5 iniciante → Hacker; falta intermediário p/ Elite', () => {
-    const r = computeStudentLevel({ iniciante: 5, intermediario: 0, avancado: 0 })
+  test('6 iniciante → Hacker; falta intermediário p/ Elite', () => {
+    const r = computeStudentLevel({ iniciante: 6, intermediario: 0, avancado: 0 })
     expect(r.slug).toBe('hacker')
     expect(r.next).toBe('elite')
     expect(r.remaining).toEqual({ any: 0, iniciante: 0, intermediario: 5, avancado: 0 })
   })
 
-  test('4 iniciante (ainda não 5) → Coder, não Hacker', () => {
-    expect(computeStudentLevel({ iniciante: 4, intermediario: 9, avancado: 9 }).slug).toBe('coder')
+  test('5 iniciante (ainda não 6) → Coder, não Hacker', () => {
+    expect(computeStudentLevel({ iniciante: 5, intermediario: 9, avancado: 9 }).slug).toBe('coder')
   })
 
-  test('5 iniciante + 5 intermediário → Elite', () => {
-    expect(computeStudentLevel({ iniciante: 5, intermediario: 5, avancado: 0 }).slug).toBe('elite')
+  test('6 iniciante + 5 intermediário → Elite', () => {
+    expect(computeStudentLevel({ iniciante: 6, intermediario: 5, avancado: 0 }).slug).toBe('elite')
   })
 
-  test('5/5/5 → God (topo, sem próximo)', () => {
-    const r = computeStudentLevel({ iniciante: 5, intermediario: 5, avancado: 5 })
+  test('6/5/5 → God (topo, sem próximo)', () => {
+    const r = computeStudentLevel({ iniciante: 6, intermediario: 5, avancado: 5 })
     expect(r.slug).toBe('god')
     expect(r.next).toBeNull()
     expect(r.remaining).toBeNull()

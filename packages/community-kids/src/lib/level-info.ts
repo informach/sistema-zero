@@ -33,7 +33,7 @@ export const LEVEL_INFO: Record<StudentLevelSlug, LevelInfo> = {
   },
   hacker: {
     label: 'Inventor(a)',
-    blurb: 'Cinco projetos iniciantes no Mural. Mandou bem!',
+    blurb: 'Seis projetos iniciantes no Mural. Mandou bem!',
     colorVar: 'var(--level-hacker)',
     icon: Lightbulb,
   },
