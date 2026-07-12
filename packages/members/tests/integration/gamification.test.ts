@@ -1109,20 +1109,20 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
       audience: 'adult',
     })
 
-    // Qualificado como INICIANTE → Coder; faltam 4 iniciantes p/ Hacker.
+    // Qualificado como INICIANTE → Coder; faltam 5 iniciantes p/ Hacker (piso 6).
     const before = await readJson(await getMe(app))
     expect(before.level.slug).toBe('coder')
-    expect(before.level.remaining.iniciante).toBe(4)
+    expect(before.level.remaining.iniciante).toBe(5)
 
     // O admin re-nivela o curso p/ avançado DEPOIS da qualificação.
     const row = courses.courses.find((c) => c.id === course.courseId)
     if (row) row.level = 'avancado'
 
     // O rank usa o SNAPSHOT congelado no marco: continua contando como iniciante.
-    // Se seguisse o `courses.level` AO VIVO, `remaining.iniciante` viraria 5 (0 qualificados).
+    // Se seguisse o `courses.level` AO VIVO, `remaining.iniciante` viraria 6 (0 qualificados).
     const after = await readJson(await getMe(app))
     expect(after.level.slug).toBe('coder')
-    expect(after.level.remaining.iniciante).toBe(4)
+    expect(after.level.remaining.iniciante).toBe(5)
   })
 
   test('webhook é idempotente por x-delivery-id (replay = no-op)', async () => {
