@@ -20,9 +20,14 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    simplifique as variantes: o contraste por tema (destructive suave, outline `dark:bg-input/30`,
    ring a 50%) vem delas. O variant `default` vira CTA gradiente via override
    `button.bg-primary.text-primary-foreground` no globals.css de cada app.
-3. **Sem CSS próprio**: os componentes usam tokens dos apps (`--primary`, `--success`,
-   `--ring`…). Token novo num componente → defina-o nos DOIS globals.css (admin e community)
-   nos DOIS temas (light/dark).
+3. **Sem CSS próprio nos COMPONENTES**: os componentes usam tokens dos apps (`--primary`,
+   `--success`, `--ring`…). Token novo num componente → defina-o nos DOIS globals.css (admin e
+   community) nos DOIS temas (light/dark). **Exceção única (07/2026):**
+   `src/styles/theme-kids.css` (export `@sistemazero/ui/theme-kids.css`) — arquivo OPT-IN de
+   PRIMITIVOS de marca da linha kids (`--sz-kids-*`, só constantes; nenhuma classe, nenhum token
+   semântico). Importado pelo funnel e pelo community-kids, que apontam seus tokens semânticos
+   para os primitivos; studio/pensa/pinta referenciam com fallback literal (sem dep). Nenhum
+   componente deste pacote referencia `--sz-kids-*` — admin/community adulto não são afetados.
 4. **Sem deps de framework**: react/react-dom são peer; só cva + clsx + tailwind-merge +
    lucide-react. Nada de Next/`server-only` aqui.
 

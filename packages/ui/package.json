@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./cn": "./src/lib/cn.ts",
     "./phone": "./src/lib/phone.ts",
+    "./theme-kids.css": "./src/styles/theme-kids.css",
     "./*": "./src/components/ui/*.tsx"
   },
   "scripts": {

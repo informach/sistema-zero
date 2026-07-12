@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Primitivos da marca kids (--sz-kids-*) — fonte da verdade da paleta, compartilhada
+   com o funil e os embarcados. Os tokens semânticos abaixo APONTAM para eles. */
+@import "@sistemazero/ui/theme-kids.css";
 /* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind do kids: registra as cores
    sz (--color-sz-…) para o @source conseguir GERAR as utilitárias (bg-sz, text-sz,
    border-sz, etc.). Sem este @import (só o @source) as classes do Studio ficam NO-OP
@@ -78,22 +81,22 @@
    sombras duras 3D, radius 1rem.
    ============================================================ */
 :root {
-  --brand-lime: oklch(0.8 0.15 70); /* laranja vivo (#FFB53F) — era a lima */
-  --brand-cyan: oklch(0.72 0.13 245); /* azul claro (#37A6F5) — era o ciano */
+  --brand-lime: var(--sz-kids-laranja-viva); /* laranja vivo — era a lima */
+  --brand-cyan: var(--sz-kids-azul-vivo); /* azul claro — era o ciano */
 
   /* Sólidos kids — versões AA p/ texto branco no light (os vivos
      L≥0.72 só viram fundo de texto no dark, com texto navy). */
-  --kids-cyan: oklch(0.52 0.15 252); /* azul */
-  --kids-lime: oklch(0.58 0.15 55); /* laranja profundo */
-  --kids-rosa: oklch(0.6 0.19 356); /* rosa */
-  --kids-verde: oklch(0.55 0.15 152); /* verde */
+  --kids-cyan: var(--sz-kids-azul-texto); /* azul */
+  --kids-lime: var(--sz-kids-laranja-profunda); /* laranja profundo */
+  --kids-rosa: var(--sz-kids-rosa-funda); /* rosa */
+  --kids-verde: var(--sz-kids-verde-profundo); /* verde */
   --kids-cyan-tint: oklch(0.52 0.15 252 / 0.1);
   --kids-lime-tint: oklch(0.58 0.15 55 / 0.12);
   --kids-rosa-tint: oklch(0.6 0.19 356 / 0.1);
   --kids-verde-tint: oklch(0.55 0.15 152 / 0.1);
 
   /* Fundo com um sopro de azul-céu (o céu do funil, bem diluído). */
-  --background: oklch(0.975 0.012 245);
+  --background: var(--sz-kids-ceu-suave);
   --foreground: oklch(0.105 0.01 265);
 
   --card: oklch(1 0 0);
@@ -101,7 +104,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.105 0.01 265);
 
-  --primary: oklch(0.52 0.15 252);
+  --primary: var(--sz-kids-azul-texto);
   --primary-foreground: oklch(1 0 0);
 
   --link: oklch(0.46 0.14 255);
@@ -119,7 +122,7 @@
   --muted: oklch(0.955 0.006 250);
   --muted-foreground: oklch(0.5 0.01 255);
 
-  --accent: oklch(0.6 0.15 55);
+  --accent: var(--sz-kids-laranja-texto);
   --accent-foreground: oklch(1 0 0);
 
   --destructive: oklch(0.55 0.22 27);
@@ -131,11 +134,11 @@
 
   --border: oklch(0.9 0.01 250);
   --input: oklch(0.92 0.01 250);
-  --ring: oklch(0.52 0.15 252);
+  --ring: var(--sz-kids-azul-texto);
 
-  --chart-1: oklch(0.52 0.15 252);
-  --chart-2: oklch(0.6 0.15 55);
-  --chart-3: oklch(0.6 0.19 356);
+  --chart-1: var(--sz-kids-azul-texto);
+  --chart-2: var(--sz-kids-laranja-texto);
+  --chart-3: var(--sz-kids-rosa-funda);
   --chart-4: oklch(0.55 0.22 27);
   --chart-5: oklch(0.5 0.01 255);
 
@@ -153,22 +156,22 @@
      O CTA agora é LARANJA (o mesmo do funil); pontas ESCURECIDAS no light
      para o texto branco passar AA (truque do community). `--sz-cta` é a cor
      sólida representativa do CTA (sombra dura 3D e nó gradiente da trilha). */
-  --sz-primary: oklch(0.52 0.15 252);
+  --sz-primary: var(--sz-kids-azul-texto);
   --sz-primary-fg: oklch(1 0 0);
-  --sz-accent: oklch(0.6 0.15 55);
+  --sz-accent: var(--sz-kids-laranja-texto);
   --sz-hot: oklch(0.55 0.22 27);
   --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
   /* Texto sobre o sólido --sz-hot (botões "Resgatar"/"Tirar"): branco passa AA no
      vermelho escuro do tema claro. No dark o hot é mais claro → texto navy (ver .dark). */
   --sz-hot-fg: oklch(1 0 0);
-  --sz-cta: oklch(0.64 0.16 55);
-  --sz-gradient: linear-gradient(90deg, oklch(0.68 0.16 60), oklch(0.6 0.16 50));
+  --sz-cta: var(--sz-kids-laranja-cta);
+  --sz-gradient: var(--sz-kids-grad-cta-profundo);
 
   /* Níveis do aluno (rank Noob→God) — cor da AURA + insígnia. Versões AA p/ texto
      branco no light; o dark clareia (ver .dark). Cada nível tem sua cor. */
   --level-noob: oklch(0.55 0.02 255); /* cinza neutro (começo) */
-  --level-coder: oklch(0.52 0.15 252); /* azul da marca */
-  --level-hacker: oklch(0.58 0.15 55); /* laranja */
+  --level-coder: var(--sz-kids-azul-texto); /* azul da marca */
+  --level-hacker: var(--sz-kids-laranja-profunda); /* laranja */
   --level-elite: oklch(0.5 0.2 300); /* violeta */
   --level-god: oklch(0.66 0.16 75); /* dourado */
 }
@@ -182,14 +185,14 @@
   /* No dark os sólidos kids SÃO os vivos da marca (texto navy por cima). */
   --kids-cyan: var(--brand-cyan);
   --kids-lime: var(--brand-lime);
-  --kids-rosa: oklch(0.75 0.16 356);
-  --kids-verde: oklch(0.78 0.15 152);
+  --kids-rosa: var(--sz-kids-rosa-viva);
+  --kids-verde: var(--sz-kids-verde-vivo);
   --kids-cyan-tint: oklch(0.72 0.13 245 / 0.15);
   --kids-lime-tint: oklch(0.8 0.15 70 / 0.15);
   --kids-rosa-tint: oklch(0.75 0.16 356 / 0.15);
   --kids-verde-tint: oklch(0.78 0.15 152 / 0.15);
 
-  --background: oklch(0.235 0.05 262);
+  --background: var(--sz-kids-navy);
   --foreground: oklch(0.975 0.005 250);
 
   --card: oklch(0.28 0.05 260);
@@ -200,7 +203,7 @@
   --primary: var(--brand-lime);
   --primary-foreground: oklch(0.22 0.05 262);
 
-  --link: oklch(0.8 0.15 70);
+  --link: var(--sz-kids-laranja-viva);
   --link-hover: oklch(0.85 0.14 75);
   --interactive-text: var(--link);
   --interactive-text-hover: var(--link-hover);
@@ -225,23 +228,23 @@
 
   --border: oklch(0.34 0.05 260);
   --input: oklch(0.36 0.05 260);
-  --ring: oklch(0.8 0.15 70);
+  --ring: var(--sz-kids-laranja-viva);
 
-  --chart-1: oklch(0.8 0.15 70);
-  --chart-2: oklch(0.72 0.13 245);
-  --chart-3: oklch(0.75 0.16 356);
+  --chart-1: var(--sz-kids-laranja-viva);
+  --chart-2: var(--sz-kids-azul-vivo);
+  --chart-3: var(--sz-kids-rosa-viva);
   --chart-4: oklch(0.64 0.215 27);
   --chart-5: oklch(0.65 0.03 250);
 
-  --sz-primary: oklch(0.8 0.15 70);
+  --sz-primary: var(--sz-kids-laranja-viva);
   --sz-primary-fg: oklch(0.22 0.05 262);
-  --sz-accent: oklch(0.72 0.13 245);
+  --sz-accent: var(--sz-kids-azul-vivo);
   --sz-hot: oklch(0.704 0.191 22);
   --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
   /* Hot mais CLARO no dark → texto branco falharia; usa navy escuro (contraste ~5:1). */
   --sz-hot-fg: oklch(0.18 0.04 262);
-  --sz-cta: oklch(0.72 0.15 62);
-  --sz-gradient: linear-gradient(90deg, oklch(0.82 0.14 75), oklch(0.74 0.155 62));
+  --sz-cta: var(--sz-kids-laranja-cta-clara);
+  --sz-gradient: var(--sz-kids-grad-cta-suave);
 
   /* Níveis no dark: vivos/claros (a aura aparece sobre o navy-noite). */
   --level-noob: oklch(0.72 0.02 255);

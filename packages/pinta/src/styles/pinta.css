@@ -26,7 +26,12 @@
   --color-pin-border: oklch(0.89 0.018 80);
   --color-pin-text: oklch(0.145 0.012 262);
   --color-pin-muted: oklch(0.5 0.012 255);
-  --color-pin-accent: oklch(0.52 0.15 252); /* azul escuro da marca (AA sobre creme) */
+  /* Primitivo --sz-kids-* vem do host kids (@sistemazero/ui/theme-kids.css);
+     fallback literal mantém o playground standalone. */
+  --color-pin-accent: var(
+    --sz-kids-azul-texto,
+    oklch(0.52 0.15 252)
+  ); /* azul escuro da marca (AA sobre creme) */
   --color-pin-accent-fg: oklch(0.995 0.006 85); /* texto sobre o accent */
   --color-pin-ok: oklch(0.55 0.14 155);
   --color-pin-warn: oklch(0.6 0.14 65);
@@ -42,7 +47,7 @@
   /* Selinho de ESTILO (Pixel | Vetor) nos cards e no passo de criação.
      ⚠️ Diferente dos kind-* (só emoji decorativo), estes carregam TEXTO branco:
      manter L ≤ ~0.55 nos DOIS temas para dar contraste AA. */
-  --color-pin-style-pixel: oklch(0.52 0.15 252); /* azul  · Pixel art */
+  --color-pin-style-pixel: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* azul · Pixel art */
   --color-pin-style-vector: oklch(0.53 0.21 350); /* rosa  · Vetor */
 }
 
@@ -53,7 +58,7 @@
   --color-pin-border: oklch(0.32 0.02 262);
   --color-pin-text: oklch(0.965 0.005 250);
   --color-pin-muted: oklch(0.72 0.015 250);
-  --color-pin-accent: oklch(0.8 0.15 70); /* laranja vivo da marca */
+  --color-pin-accent: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70)); /* laranja vivo da marca */
   --color-pin-accent-fg: oklch(0.17 0.014 262); /* texto escuro sobre o laranja */
   --color-pin-ok: oklch(0.8 0.16 155);
   --color-pin-warn: oklch(0.83 0.14 85);
@@ -67,7 +72,7 @@
 
   /* Escuro: os style-* NÃO clareiam (texto branco em cima); a saturação já
      destaca o chip sobre o card escuro. */
-  --color-pin-style-pixel: oklch(0.52 0.15 252);
+  --color-pin-style-pixel: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
   --color-pin-style-vector: oklch(0.53 0.21 350);
 }
 
@@ -79,15 +84,22 @@
  * vite continua funcionando sozinho.
  */
 [data-pinta-theme] {
-  /* Pontas escurecidas p/ texto claro AA em cima (mesma regra do kids). */
-  --pin-gradient: linear-gradient(90deg, oklch(0.68 0.16 60), oklch(0.6 0.16 50));
+  /* Pontas escurecidas p/ texto claro AA em cima (mesma regra do kids).
+     Primitivos do host quando presentes; fallback = playground standalone. */
+  --pin-gradient: var(
+    --sz-kids-grad-cta-profundo,
+    linear-gradient(90deg, oklch(0.68 0.16 60), oklch(0.6 0.16 50))
+  );
   /* Base laranja das sombras 3D do CTA (o accent azul não serve de sombra
      p/ um botão laranja — espelho do --sz-cta do kids). */
-  --pin-cta: oklch(0.64 0.16 55);
+  --pin-cta: var(--sz-kids-laranja-cta, oklch(0.64 0.16 55));
 }
 [data-pinta-theme="dark"] {
-  --pin-gradient: linear-gradient(90deg, oklch(0.82 0.14 75), oklch(0.74 0.155 62));
-  --pin-cta: oklch(0.72 0.15 62);
+  --pin-gradient: var(
+    --sz-kids-grad-cta-suave,
+    linear-gradient(90deg, oklch(0.82 0.14 75), oklch(0.74 0.155 62))
+  );
+  --pin-cta: var(--sz-kids-laranja-cta-clara, oklch(0.72 0.15 62));
 }
 
 /* Títulos no tom do kids: Baloo 2 vem do body do host; fallback arredondado. */
