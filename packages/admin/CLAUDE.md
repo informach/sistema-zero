@@ -45,6 +45,13 @@ BFFs novos: `GET /api/members/teacher-threads` (lista hidratada) + `[id]/{,messa
 `GET /api/members/studio-submissions` (fila global; adapter em `server/studio-submissions.ts`).
 A página Entregas REUSA o `StudioSubmissionViewer` da aba do curso (import cross-dir; mover p/
 `components/professor/` é limpeza futura). Testes puros da nav em `tests/nav.test.ts`.
+**Desafio do mês (07/2026):** `/admin/professor/desafio` (`desafio-client.tsx`) — janela de 12
+meses com o tema RESOLVIDO (badge Sorteado/Definido, mês corrente destacado "No ar agora"),
+dialog Alterar (fixos + custom ativos, aviso inline p/ o mês no ar: trocar tema NÃO afeta a
+participação — a tag é o mês), Voltar ao sorteio via `useConfirm`, e biblioteca de temas custom
+(criar/editar/arquivar/reativar). BFF `/api/members/challenge/{months,months/[month],themes,
+themes/[id]}` (adapters em `server/challenge.ts`, arquivo próprio); `apiSend` ganhou `'PUT'`;
+`monthLabelPt` em `lib/dates.ts` (testado). Views espelhadas em `lib/types.ts`.
 
 > Estado: **Fatia 1 — Catálogo** (produtos/ofertas/cupons: listar/criar/editar) + **Fatia 2 —
 > Usuários** (listar com busca/filtros — q/papel/status + **busca avançada 06/2026**: origem do

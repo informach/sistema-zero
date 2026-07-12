@@ -87,7 +87,10 @@ PROFESSOR (painel admin): `members-admin-teacher-threads-{read,write}` (`GET|POS
 `:id`, `:id/messages` e `:id/read`), **staff+ em leitura E escrita** (responder aluno é tarefa
 diária de professor/staff, diferente da régua ESCRITA→admin+ da autoria), 300/120 por min, POST
 com corpo 64KB. Sem colisão com `/members/admin/members*`/`/members/admin/courses/*` (coberto em
-`route-registry.test.ts`).
+`route-registry.test.ts`). **Desafio do mês (07/2026):** `members-admin-challenge-{read,write}`
+(`GET` | `PUT/POST/PATCH/DELETE` em `/members/admin/challenge/*` — months, months/:month, themes,
+themes/:id), staff+ em leitura E escrita (gestão da game jam é tarefa de professor), 300/120 por
+min, escrita com corpo 64KB e **`audit: {}`** (trocar o tema do mês afeta todos os alunos).
 
 E o **marketing também é consumer HMAC de borda** (F1 do app de marketing, 07/2026):
 `MARKETING_HMAC_SECRET` + `MARKETING_ALLOWED_CIDRS` (condicional, espelha o members) — é como o

@@ -295,6 +295,16 @@ Mural mostra a prateleira do mês (filtro `?challenge=`); a rota do aluno
 (follow-up: destaque via `is_pinned`). ⚠️ Risco aceito v1: o webhook não carrega role →
 equipe testando entra no ranking kids.
 
+**Tema gerenciável pelo admin (07/2026):** o sorteio virou FALLBACK. O professor
+(admin → Sala do Professor → Desafio do mês) vê a janela de 12 meses com o tema RESOLVIDO
+(`sorteio` ou `definido`), define o tema de um mês (fixo do catálogo OU custom da biblioteca
+que ele mesmo cria), volta ao sorteio quando quiser, e mantém a biblioteca (arquivar esconde
+da escolha; mês já definido segue valendo). Sem definição, `challengeForMonth` decide como
+sempre — todo mês tem tema garantido. Temas custom NUNCA entram no pool do sorteio (módulo
+estável). Trocar o tema não afeta participação/XP: hub, webhook e ledger validam só a CHAVE
+do mês. Members: tabelas `challenge_custom_themes` + `challenge_month_overrides` (migração
+`0043`), rotas `/members/admin/challenge/*` (staff+, write com `audit` no gateway).
+
 ---
 
 ## 6. Avatar 3D (configurador de personagem)

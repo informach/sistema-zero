@@ -21,6 +21,7 @@ import {
 } from './application/content-admin/content-admin.service'
 import { AwardGamificationService } from './application/gamification/award-gamification.service'
 import { BuyStreakFreezeService } from './application/gamification/buy-streak-freeze.service'
+import { ChallengeAdminService } from './application/gamification/challenge-admin.service'
 import { ClaimMissionService } from './application/gamification/claim-mission.service'
 import { GetChallengeService } from './application/gamification/get-challenge.service'
 import { GetGamificationService } from './application/gamification/get-gamification.service'
@@ -97,6 +98,7 @@ import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/a
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
+import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/drizzle/challenge-config.repository'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
@@ -174,6 +176,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const studioSubmissions = new DrizzleStudioSubmissionRepository(db)
   const ratings = new DrizzleCourseRatingRepository(db)
   const gamificationRepo = new DrizzleGamificationRepository(db)
+  const challengeConfigRepo = new DrizzleChallengeConfigRepository(db)
   const certificates = new DrizzleCertificateRepository(db)
   const processed = new DrizzleProcessedWebhookRepository(db)
   const catalog = createCatalogHttpGateway({
@@ -319,7 +322,8 @@ export async function createApplication(env: Env): Promise<Application> {
     roomRepo,
     clock,
   )
-  const getChallenge = new GetChallengeService(gamificationRepo, clock)
+  const getChallenge = new GetChallengeService(gamificationRepo, challengeConfigRepo, clock)
+  const challengeAdmin = new ChallengeAdminService(challengeConfigRepo, clock)
   const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock)
   const claimMission = new ClaimMissionService(gamificationRepo, accessCheck, clock)
   // Remix do Mural (marco de missão gated) — valida posse + playId no hub (anti-farm).
@@ -577,6 +581,7 @@ export async function createApplication(env: Env): Promise<Application> {
       grantManual,
       manageEntitlement,
       teacherThreads,
+      challengeAdmin,
       revokeCertificate,
       purgeUserData,
       hub,

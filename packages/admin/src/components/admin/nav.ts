@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Sparkles,
   TrendingUp,
+  Trophy,
   Users,
 } from 'lucide-react'
 
@@ -55,6 +56,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Entregas', href: '/admin/professor/entregas', icon: Inbox },
       { label: 'Recados', href: '/admin/professor/recados', icon: Mail },
+      { label: 'Desafio do mês', href: '/admin/professor/desafio', icon: Trophy },
       { label: 'Moderação', href: '/admin/comunidade/moderacao', icon: ShieldCheck },
       { label: 'Alunos', href: '/admin/membros', icon: GraduationCap },
       { label: 'Análises', href: '/admin/membros/analises', icon: TrendingUp },

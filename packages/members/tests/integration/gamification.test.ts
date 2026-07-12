@@ -1277,6 +1277,33 @@ describe('Desafio do mês (game jam) — webhook /challenge + rota do aluno', ()
     expect((await readJson(res)).ignored).toBe(true)
     expect((await readJson(await getChallenge(app))).entered).toBe(false)
   })
+
+  test('tema DEFINIDO pelo professor não muda o prêmio: webhook premia pela chave do mês', async () => {
+    const { app } = buildApp()
+    const adminHeaders = { 'x-auth-user-role': 'admin', 'x-auth-user-status': 'active' }
+    // Professor troca o tema do mês corrente ANTES da publicação.
+    const put = await app.handle(
+      new Request('http://localhost/members/admin/challenge/months/2026-06', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json', ...adminHeaders },
+        body: JSON.stringify({ builtinSlug: 'neve' }),
+      }),
+    )
+    expect(put.status).toBe(200)
+
+    const res = await postChallenge(app, {
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      challengeKey: MONTH,
+    })
+    expect(res.status).toBe(200)
+
+    const challenge = await readJson(await getChallenge(app))
+    // O aluno vê o tema definido E o `entered` do mesmo mês (trocar tema não reseta).
+    expect(challenge.challenge.title).toBe('Mundo de gelo')
+    expect(challenge.entered).toBe(true)
+  })
 })
 
 describe('Clube dos Criadores — webhook /clube (recompensa por aprovação)', () => {

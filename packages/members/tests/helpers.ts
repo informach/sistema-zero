@@ -21,6 +21,7 @@ import {
 } from '../src/application/content-admin/content-admin.service'
 import { AwardGamificationService } from '../src/application/gamification/award-gamification.service'
 import { BuyStreakFreezeService } from '../src/application/gamification/buy-streak-freeze.service'
+import { ChallengeAdminService } from '../src/application/gamification/challenge-admin.service'
 import { ClaimMissionService } from '../src/application/gamification/claim-mission.service'
 import { GetChallengeService } from '../src/application/gamification/get-challenge.service'
 import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
@@ -93,6 +94,7 @@ import type { HubGateway } from '../src/domain/ports/hub-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
+import { InMemoryChallengeConfigRepository } from './fakes/challenge-config-in-memory'
 import {
   FakeCatalogGateway,
   InMemoryAnalyticsRepository,
@@ -154,6 +156,7 @@ export function buildApp(
   const teacherThreadsRepo = new InMemoryTeacherThreadRepository()
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
   const aiUsage = new InMemoryAiUsageRepository()
+  const challengeConfig = new InMemoryChallengeConfigRepository()
   const consumeAiUsage = new ConsumeAiUsageService({
     aiUsage,
     dailyLimit: opts.aiLimits?.daily ?? 50,
@@ -312,7 +315,7 @@ export function buildApp(
         clock,
       ),
       getGamification: new GetGamificationService(gamification, clock),
-      getChallenge: new GetChallengeService(gamification, clock),
+      getChallenge: new GetChallengeService(gamification, challengeConfig, clock),
       getMissions: new GetMissionsService(gamification, accessCheck, clock),
       claimMission: new ClaimMissionService(gamification, accessCheck, clock),
       recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),
@@ -404,6 +407,7 @@ export function buildApp(
       }),
       manageEntitlement: new ManageEntitlementService(entitlements, clock),
       teacherThreads,
+      challengeAdmin: new ChallengeAdminService(challengeConfig, clock),
       revokeCertificate: new RevokeCertificateService(certificates, clock),
       // Purga: o fake do banco do membro guarda dados em arrays soltos; aqui só
       // garantimos que a rota responde (a purga real é coberta no Drizzle/DB).
@@ -460,6 +464,7 @@ export function buildApp(
     hubPlays,
     authProfiles,
     aiUsage,
+    challengeConfig,
   }
 }
 

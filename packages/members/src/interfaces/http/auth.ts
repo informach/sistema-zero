@@ -65,6 +65,13 @@ export function resolveUserId(headers: Record<string, string | undefined>): stri
   return trimmed
 }
 
+/** Identidade OPCIONAL (auditoria leve, colunas `updated_by`): ausente ou
+ * inválida → null, nunca lança — a operação não depende do ator. */
+export function resolveOptionalUserId(headers: Record<string, string | undefined>): string | null {
+  const id = headers['x-auth-user-id']?.trim()
+  return id && UUID_RE.test(id) ? id : null
+}
+
 /**
  * Conta do responsável para resolver o ACESSO (matrícula/entitlement). Em sessão de
  * PERFIL (estilo Netflix) o gateway injeta `x-auth-account-id` (a conta) ALÉM do

@@ -106,7 +106,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > por feature, por dia, top 20 contas); consumidor = member-shell (Pensa chat/sínteses + describe
 > do Mural, FAIL-OPEN lá) **APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)** e **`0042`**
 > (`0042_known_yellowjacket`: `renewal_reminders_sent` — dedupe do lembrete de renovação do anual
-> à vista, ver §Fluxo de integração) **APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)**.
+> à vista, ver §Fluxo de integração) **APLICADA — EM PRODUÇÃO (PR #68, `d0eb3ef`, 10/07/2026)** e
+> **`0043`** (`0043_bouncy_the_renegades`: `challenge_custom_themes` + `challenge_month_overrides`
+> — Desafio do mês gerenciável pelo admin, ver §Desafio do mês GERENCIÁVEL).
 > ⚠️ As migrations `0029`/`0030` têm 55P04 LATENTE num banco ZERADO (enum ADD VALUE + uso no mesmo
 > lote) — os testes de banco criam o DDL direto em vez de rodar `migrate()` do zero.
 
@@ -846,6 +848,30 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   v1: o webhook não carrega role → `privileged:false` (equipe testando entra no ranking).
 - **`GamificationRepository.hasXpEvent(userId, audience, sourceType, sourceId)`** —
   leitura pontual do ledger (novo, alimenta o `entered`).
+
+### Desafio do mês GERENCIÁVEL pelo admin (07/2026) — sorteio vira fallback
+
+- **Resolução do tema** (`resolveChallengeTheme` em `challenges.ts`): override do mês no
+  banco → tema DEFINIDO (builtin por slug OU custom por FK); sem override → `challengeForMonth`
+  intocado (fallback: todo mês sempre tem tema). `builtinSlug` que sumiu do catálogo em código
+  cai DEFENSIVAMENTE no sorteio (o caminho do aluno nunca 500a por dado velho). Decisão da
+  usuária: temas custom NUNCA entram no pool do sorteio (módulo % 12 estável).
+- **Tabelas (migração `0043_bouncy_the_renegades`)**: `challenge_custom_themes` (biblioteca
+  do professor; `suggested_kit` NOT NULL — o card kids renderiza a dica sempre; `archived`
+  esconde da ESCOLHA mas segue valendo em mês que o referencia) e `challenge_month_overrides`
+  (pk `month_key`, XOR `builtin_slug`/`custom_theme_id` via CHECK, FK RESTRICT → custom não é
+  deletável, só arquivável; `updated_by_user_id` = auditoria leve via `resolveOptionalUserId`,
+  a trilha real é o `audit` do gateway). Port `challenge-config-repository.port.ts` + repo
+  `challenge-config.repository.ts`.
+- **Rotas admin** (`/members/admin/challenge/*`, staff+, `ChallengeAdminService`):
+  `GET /months` (janela corrente+11 com tema RESOLVIDO + `source: sorteio|definido`),
+  `PUT|DELETE /months/:month` (`:month` = `YYYY-MM` SEM o prefixo `m:` — evita `:` na URL;
+  valida janela: passado → `CHALLENGE_MONTH_PAST` 400, além de +11 → `CHALLENGE_MONTH_INVALID`
+  400; tema inexistente → 404; custom arquivado → 409; DELETE idempotente volta ao sorteio),
+  `GET|POST /themes` + `PATCH /themes/:id` (slug do custom é DERIVADO: `custom-<id8>`).
+- **Tela**: admin → Sala do Professor → "Desafio do mês" (`/admin/professor/desafio`).
+- **Invariante**: trocar o tema NÃO afeta participação/XP — hub, webhook e ledger validam só
+  a CHAVE do mês; o tema é apresentação.
 
 ### Fase 5 Lote E (07/2026): report semanal dos pais (tela + e-mail)
 
