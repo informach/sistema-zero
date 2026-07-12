@@ -36,6 +36,12 @@ export {
   StudioProjectPlayer,
   type StudioProjectPlayerProps,
 } from './components/preview/StudioProjectPlayer'
+/**
+ * `true` quando o modo Código (pro/WebContainer) PODE rodar neste ambiente
+ * (página cross-origin isolada — host com COOP/COEP). O host usa p/ gatear a
+ * entrada no editor pro sem montar o runtime pesado. Ver docs/embedding.md.
+ */
+export { canBootWebContainer as canRunProMode } from './components/terminal/webContainerClient'
 export {
   type CaptureCoverOptions,
   captureCoverFromProject,

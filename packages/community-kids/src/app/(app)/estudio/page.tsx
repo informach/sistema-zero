@@ -1,7 +1,7 @@
+import { resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
-import { resolveStudioTier } from '@/lib/studio-tier'
 import {
   checkChallengeAccessReadonly,
   checkStudioAccessReadonly,

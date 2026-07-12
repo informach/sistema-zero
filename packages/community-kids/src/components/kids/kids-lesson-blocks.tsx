@@ -5,6 +5,7 @@ import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook
 import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
 import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
 import { VimeoPlayer } from '@sistemazero/member-shell/components/vimeo-player'
+import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import type { StudioShareResult } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import {
@@ -19,7 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { cn } from '@/lib/cn'
 import { renderMarkdown } from '@/lib/markdown'
@@ -67,25 +68,6 @@ export function KidsLessonBlocks({ blocks }: { blocks: LessonBlockView[] }) {
  */
 export function lessonSupportsGuided(blocks: LessonBlockView[]): boolean {
   return blocks.some((b) => b.kind === 'video') && blocks.some((b) => b.kind === 'studio')
-}
-
-/**
- * Desktop (≥1024px) vs empilhado, para o split arrastável da criação guiada.
- * Lê o `matchMedia` já no estado inicial: o `GuidedCreationMode` só monta após
- * um clique (nunca entra no HTML do SSR), então não há mismatch de hidratação —
- * mesmo racional do `useReducedMotion` do quarto.
- */
-function useIsDesktop(): boolean {
-  const [isDesktop, setIsDesktop] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
-  )
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)')
-    const onChange = () => setIsDesktop(mq.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-  return isDesktop
 }
 
 /**

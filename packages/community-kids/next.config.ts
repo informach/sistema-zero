@@ -23,34 +23,54 @@ const isDev = process.env.NODE_ENV !== 'production'
  * — iframe de vídeo nunca aponta p/ host arbitrário; srcdoc não passa por
  * frame-src). `worker-src blob:` é o pdf.js do livro 3D (worker do bundle).
  */
-const csp = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  // `blob:` p/ o preview/iframe do bloco `studio` (editor embarcável @sistemazero/studio).
-  "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com",
-  // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data: https:",
-  // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
-  "media-src 'self' blob: https:",
-  "style-src 'self' 'unsafe-inline' https:",
-  // `data:` p/ o preview do Estúdio (@sistemazero/studio): o script.js do aluno é
-  // injetado como `<script src="data:text/javascript;base64,…">` dentro do iframe
-  // `srcdoc`, que HERDA esta CSP (só pode RESTRINGIR, nunca relaxar) — sem `data:`
-  // aqui, o preview do bloco/estúdio não executa o código da criança. Risco baixo: já
-  // há `'unsafe-inline'` e não existe sink de HTML cru; o sandbox SEM allow-same-origin
-  // segue sendo a fronteira real.
-  `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`,
-  "connect-src 'self' https:",
-  "worker-src 'self' blob:",
-  ...(isDev ? [] : ['upgrade-insecure-requests']),
-].join('; ')
+/**
+ * Monta a CSP. `pro:true` = a rota ISOLADA do modo Código (`/estudio/pro`), a
+ * ÚNICA que roda o WebContainer: relaxa `script-src` p/ `'unsafe-eval'`/
+ * `'wasm-unsafe-eval'`/`blob:` e libera o iframe do webcontainer em `frame-src`.
+ * Esse afrouxamento fica ESCOPADO nessa rota (ver `headers()`); o resto do app kids
+ * mantém a CSP estrita e SEM WASM. `connect-src https:`/`worker-src blob:` já cobrem.
+ */
+function buildCsp({ pro }: { pro: boolean }): string {
+  const scriptSrc = pro
+    ? "script-src 'self' 'unsafe-inline' data: https: 'unsafe-eval' 'wasm-unsafe-eval' blob:"
+    : `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`
+  // `blob:` p/ o preview/iframe do bloco `studio`; no pro, + o iframe do dev-server do WebContainer.
+  const frameSrc = pro
+    ? "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com https://*.webcontainer-api.io"
+    : "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com"
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    frameSrc,
+    // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data: https:",
+    // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
+    "media-src 'self' blob: https:",
+    "style-src 'self' 'unsafe-inline' https:",
+    // `data:` p/ o preview do Estúdio (@sistemazero/studio): o script.js do aluno é
+    // injetado como `<script src="data:text/javascript;base64,…">` dentro do iframe
+    // `srcdoc`, que HERDA esta CSP (só pode RESTRINGIR, nunca relaxar) — sem `data:`
+    // aqui, o preview do bloco/estúdio não executa o código da criança. Risco baixo: já
+    // há `'unsafe-inline'` e não existe sink de HTML cru; o sandbox SEM allow-same-origin
+    // segue sendo a fronteira real.
+    scriptSrc,
+    "connect-src 'self' https:",
+    "worker-src 'self' blob:",
+    ...(isDev ? [] : ['upgrade-insecure-requests']),
+  ].join('; ')
+}
 
+const strictCsp = buildCsp({ pro: false })
+const proCsp = buildCsp({ pro: true })
+
+// Headers de segurança comuns a TODAS as rotas — SEM a CSP (aplicada por-rota em
+// `headers()`: estrita em tudo, relaxada só em `/estudio/pro`). COOP fica aqui (vale
+// em toda página, inclusive a pro); a COEP é adicionada SÓ na rota pro.
 const securityHeaders = [
-  { key: 'Content-Security-Policy', value: csp },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -58,8 +78,9 @@ const securityHeaders = [
   // Isolamento de janela/recurso (defesa em profundidade numa área infantil). COOP
   // corta a referência de janela de um abridor cross-origin; CORP barra que outra
   // origem embuta as respostas autenticadas como subrecurso (sondagem por timing).
-  // COEP fica OFF de propósito: quebraria os iframes cross-origin de vídeo
-  // (youtube-nocookie/vimeo) e só é preciso p/ SharedArrayBuffer (terminal off).
+  // COEP fica OFF globalmente de propósito (quebraria os iframes cross-origin de vídeo
+  // youtube-nocookie/vimeo) — só a rota `/estudio/pro` a liga (credentialless), onde não
+  // há vídeo e o WebContainer precisa do cross-origin isolation p/ o SharedArrayBuffer.
   { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
   { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
   // Área do aluno é privada: nunca indexável por buscadores (espelha o admin).
@@ -95,18 +116,37 @@ const nextConfig: NextConfig = {
   ],
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,
   // fora do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
+  //
+  // ⚠️ A CSP é aplicada por-rota, NUNCA duas vezes na mesma rota: dois headers CSP =
+  // o navegador enforça a INTERSEÇÃO (a estrita venceria e o WASM do WebContainer
+  // seria bloqueado). Por isso a estrita usa um negative-lookahead que EXCLUI
+  // `/estudio/pro`, e a rota pro recebe a sua própria CSP (relaxada) + COEP. QA em
+  // navegador DEVE confirmar: `/estudio/pro` com COEP + `wasm-unsafe-eval`; todo o
+  // resto com a CSP estrita e SEM COEP (os vídeos das aulas seguem tocando).
   async headers() {
     return [
+      // Comuns a tudo (sem CSP; COOP/CORP/etc.).
+      { source: '/:path*', headers: securityHeaders },
+      // CSP ESTRITA em tudo, EXCETO a rota isolada do modo Código.
       {
-        source: '/:path*',
-        headers: securityHeaders,
+        source: '/((?!estudio/pro).*)',
+        headers: [{ key: 'Content-Security-Policy', value: strictCsp }],
+      },
+      // Rota isolada do modo Código (PRO/WebContainer): CSP relaxada (WASM) + COEP
+      // credentialless — escopados AQUI para não vazar p/ as páginas com vídeo.
+      {
+        source: '/estudio/pro/:path*',
+        headers: [
+          { key: 'Content-Security-Policy', value: proCsp },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+        ],
       },
       {
         // Assets do avatar 3D (~28MB de GLB/PNG) têm nomes estáveis de catálogo, mas NÃO são
         // hashados. Um TTL curto reduz revalidações repetidas sem prender uma correção de arte por
-        // um ano no browser da criança.
+        // um ano no browser da criança. (Segurança + CSP estrita já vêm das regras acima.)
         source: '/avatar3d/:path*',
-        headers: [...securityHeaders, { key: 'Cache-Control', value: 'public, max-age=86400' }],
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
       },
     ]
   },

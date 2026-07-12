@@ -5,11 +5,13 @@
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
 // menus do editor saem sem fundo/cor). Ver o comentário no globals.css.
 import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
+import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import type { Project, StudioShareAdapter } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { StudioTier } from '@/lib/studio-tier'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
@@ -51,6 +53,11 @@ export function StudioFullClient({
   // destoar do app ao redor. `resolvedTheme` é undefined no 1º render → cai em claro.
   const { resolvedTheme } = useTheme()
   const studioTheme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light'
+  // Só a Lenda/admin (tier.pro) E no desktop pode criar projetos PRO (modo Código):
+  // o WebContainer não roda no celular/tablet, então nem oferecemos a escolha lá. É
+  // um PRÉ-FILTRO; o gate real é a capacidade (`canRunProMode`) na rota /estudio/pro.
+  const isDesktop = useIsDesktop()
+  const proAvailable = tier.pro && isDesktop
 
   const loadStudio = useCallback(
     async (isCurrent?: () => boolean) => {
@@ -174,7 +181,11 @@ export function StudioFullClient({
           Carregando o Estúdio…
         </div>
       ) : view.name === 'list' ? (
-        <mod.ProjectList onOpenProject={openProject} theme={studioTheme} />
+        <mod.ProjectList
+          onOpenProject={openProject}
+          theme={studioTheme}
+          professional={proAvailable}
+        />
       ) : (
         <EditorScreen
           mod={mod}
@@ -207,6 +218,7 @@ function EditorScreen({
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
+  const router = useRouter()
 
   useEffect(() => {
     let active = true
@@ -232,6 +244,15 @@ function EditorScreen({
     return () => clearTimeout(timer)
   }, [state.status, onExit])
 
+  // Projeto PRO (modo Código) abre na rota ISOLADA `/estudio/pro/[id]` — a ÚNICA
+  // com COOP/COEP (o WebContainer precisa). Projeto clássico segue no editor local
+  // (Blocos+Ponte). A escolha "Básico/PRO" foi feita na criação; aqui só roteamos.
+  useEffect(() => {
+    if (state.status === 'ready' && state.project.kind === 'pro') {
+      router.push(`/estudio/pro/${state.project.id}`)
+    }
+  }, [state, router])
+
   if (state.status === 'loading') {
     return (
       <div className="grid h-full place-items-center text-muted-foreground text-sm">
@@ -243,6 +264,15 @@ function EditorScreen({
     return (
       <div className="grid h-full place-items-center text-muted-foreground text-sm">
         Projeto não encontrado. Voltando à lista…
+      </div>
+    )
+  }
+  // Projeto PRO: o effect acima já está roteando p/ /estudio/pro — não monta o
+  // editor clássico (ele nem mostraria o modo Código num projeto pro).
+  if (state.project.kind === 'pro') {
+    return (
+      <div className="grid h-full place-items-center text-muted-foreground text-sm">
+        Abrindo o modo Código…
       </div>
     )
   }

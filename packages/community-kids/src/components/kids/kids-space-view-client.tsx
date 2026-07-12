@@ -178,6 +178,7 @@ export function KidsSpaceViewClient({
   slug,
   viewerId,
   mode = 'forum',
+  isStaff = false,
   lockedView,
   unavailableTitle,
   canRemix = false,
@@ -186,6 +187,8 @@ export function KidsSpaceViewClient({
   slug: string
   viewerId: string
   mode?: SpaceViewMode
+  /** Viewer é da EQUIPE (superadmin/admin/staff) → pode escrever nos canais `staff_only`. */
+  isStaff?: boolean
   /**
    * A criança POSSUI o Estúdio Completo → o card do Mural ganha "Fazer a minha
    * versão" (remix: importa o snapshot público como projeto novo no /estudio).
@@ -464,6 +467,21 @@ export function KidsSpaceViewClient({
     await loadComments(t.id, () => commentRequestRef.current === requestId)
   }
 
+  // Abrir uma conversa a partir do SINO (`ClubeActivityBell`): busca o tópico
+  // completo por id (pode ser de outro canal) e reusa o fluxo de `openThread`.
+  async function openThreadById(id: string) {
+    try {
+      const t = await apiGet<HubThreadView>(`/api/hub/threads/${enc(id)}`)
+      await openThread(t)
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Não consegui abrir a conversa.')
+    }
+  }
+
+  // Canal `staff_only` (ex.: Recados da equipe): só a EQUIPE compõe tópico; `geral`
+  // e demais canais `members` seguem livres (no Mural o composer nem aparece).
+  const canComposeInChannel = channel?.postingPolicy !== 'staff_only' || isStaff
+
   async function loadMoreComments() {
     if (!thread || !commentsCursor || loadingMoreComments) return
     setLoadingMoreComments(true)
@@ -653,7 +671,7 @@ export function KidsSpaceViewClient({
                 {space.description || 'Converse com a turma e mostre o que você criou! 🎉'}
               </p>
             </div>
-            <ClubeActivityBell viewerId={viewerId} />
+            <ClubeActivityBell viewerId={viewerId} onOpenThread={openThreadById} />
             <ClubeCombinados viewerId={viewerId} />
           </div>
         ) : (
@@ -717,6 +735,11 @@ export function KidsSpaceViewClient({
                 onReport={report}
                 authorLabel={authorLabel}
                 onRemix={canRemix ? handleRemix : null}
+                canReply={
+                  isStaff ||
+                  thread.isShowcase ||
+                  channels.find((c) => c.id === thread.channelId)?.postingPolicy !== 'staff_only'
+                }
               />
             ) : (
               <div className="space-y-3">
@@ -726,7 +749,9 @@ export function KidsSpaceViewClient({
                     <p className="text-muted-foreground text-sm">
                       {channel ? channel.topic || `#${channel.slug}` : 'Escolha um canal'}
                     </p>
-                    {channel ? (
+                    {/* Canal "somente avisos" (ex.: Recados da equipe): só a equipe abre
+                        conversa — sem o botão, o aluno não pensa que pode escrever. */}
+                    {channel && canComposeInChannel ? (
                       <button
                         type="button"
                         onClick={() => setShowNew((v) => !v)}
@@ -734,11 +759,15 @@ export function KidsSpaceViewClient({
                       >
                         <Plus className="size-4" /> Começar conversa
                       </button>
+                    ) : channel && channel.postingPolicy === 'staff_only' ? (
+                      <span className="text-muted-foreground text-xs">
+                        Aqui só a equipe escreve 💬
+                      </span>
                     ) : null}
                   </div>
                 ) : null}
 
-                {!isWall && showNew ? (
+                {!isWall && showNew && canComposeInChannel ? (
                   <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
                     {/* Sugestões: um empurrãozinho pra criança que travou na tela branca. */}
                     <div className="flex flex-wrap gap-1.5">
@@ -1286,11 +1315,14 @@ function ThreadDetail({
   onReport,
   authorLabel,
   onRemix = null,
+  canReply,
 }: {
   thread: HubThreadView
   comments: HubCommentView[]
   busy: boolean
   isWall: boolean
+  /** Viewer pode responder aqui? `false` = canal `staff_only` sem ser equipe (só lê e reage). */
+  canReply: boolean
   replyBody: string
   setReplyBody: (v: string) => void
   replyAttachments: UploadedAttachment[]
@@ -1384,6 +1416,12 @@ function ThreadDetail({
       {thread.isLocked ? (
         <div className="rounded-2xl border-2 border-border border-dashed p-3 text-center text-muted-foreground text-sm">
           Esta conversa está fechada para novas respostas.
+        </div>
+      ) : !canReply ? (
+        // Canal "somente avisos" (ex.: Recados da equipe) p/ quem não é equipe: sem
+        // caixa de resposta — a criança só lê e reage.
+        <div className="rounded-2xl border-2 border-border border-dashed p-3 text-center text-muted-foreground text-sm">
+          Aqui só a equipe escreve. Você pode reagir! 🙂
         </div>
       ) : (
         <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
