@@ -1,12 +1,13 @@
 import type { WebContainerProcess } from '@webcontainer/api'
 import { type JSX, type ReactNode, useEffect, useRef, useState } from 'react'
 import { Button } from '#ui'
+import { canBootWebContainer } from '../../components/terminal/webContainerClient'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
 import { useProWebContainer } from './ProWebContainerProvider'
 
-type Phase = 'booting' | 'installing' | 'starting' | 'ready' | 'error'
+type Phase = 'booting' | 'installing' | 'starting' | 'ready' | 'error' | 'unsupported'
 
 const PHASE_LABEL: Partial<Record<Phase, string>> = {
   booting: 'Iniciando o ambiente (WebContainer)…',
@@ -67,6 +68,14 @@ export function ProPreview(): JSX.Element {
       setError(null)
       setUrl(null)
       setLogTail([])
+
+      // Gate de capacidade ANTES do import pesado do runtime: sem cross-origin
+      // isolation (host sem COOP/COEP) o boot é fútil. Mostra uma mensagem
+      // amigável em vez do erro cru / do download de megabytes à toa.
+      if (!canBootWebContainer()) {
+        setPhase('unsupported')
+        return
+      }
 
       const wc = await ensureMounted()
       if (cancelled) return
@@ -220,6 +229,21 @@ export function ProPreview(): JSX.Element {
           className="h-full w-full border-0"
         />
       </div>
+    )
+  }
+
+  if (phase === 'unsupported') {
+    return (
+      <ProPreviewOverlay>
+        <p className="text-sz-fg-soft">
+          O modo Código roda um servidor de verdade dentro do navegador, e isso precisa de um
+          computador com um navegador compatível (Chrome ou Edge no desktop).
+        </p>
+        <p className="max-w-md text-sz-fg-mute">
+          Abra este projeto no computador para programar no modo Código. No celular ou tablet você
+          ainda pode usar os projetos de blocos.
+        </p>
+      </ProPreviewOverlay>
     )
   }
 
