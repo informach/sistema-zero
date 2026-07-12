@@ -9,7 +9,6 @@ import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import type { Project, StudioShareAdapter } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -218,7 +217,6 @@ function EditorScreen({
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
-  const router = useRouter()
 
   useEffect(() => {
     let active = true
@@ -245,13 +243,16 @@ function EditorScreen({
   }, [state.status, onExit])
 
   // Projeto PRO (modo Código) abre na rota ISOLADA `/estudio/pro/[id]` — a ÚNICA
-  // com COOP/COEP (o WebContainer precisa). Projeto clássico segue no editor local
-  // (Blocos+Ponte). A escolha "Básico/PRO" foi feita na criação; aqui só roteamos.
+  // com COOP/COEP (o WebContainer precisa do cross-origin isolation). ⚠️ Precisa ser
+  // navegação com CARGA COMPLETA (`window.location`), NÃO `router.push`: os headers
+  // COEP só são aplicados numa requisição HTTP nova do documento; um soft-nav do Next
+  // manteria o documento atual (/estudio, SEM COEP) → `crossOriginIsolated` false →
+  // o WebContainer se recusaria a bootar ("modo Código pede um computador").
   useEffect(() => {
     if (state.status === 'ready' && state.project.kind === 'pro') {
-      router.push(`/estudio/pro/${state.project.id}`)
+      window.location.assign(`/estudio/pro/${state.project.id}`)
     }
-  }, [state, router])
+  }, [state])
 
   if (state.status === 'loading') {
     return (
