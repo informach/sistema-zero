@@ -20,7 +20,12 @@ import { PREVIEW_MESSAGE_SOURCE, sanitizePreviewStorageData } from './types'
  *  - `local` (localStorage, "permanente"): semeado por `localSnapshot` no boot e,
  *    a cada mutação, espelhado ao parent por postMessage. O parent persiste por
  *    projeto (IndexedDB) e re-semeia no próximo build → sobrevive a "Atualizar",
- *    Play/Parar e ao recarregar a IDE inteira.
+ *    Play/Parar e ao recarregar a IDE inteira. E, para sobreviver a um
+ *    `location.reload()` disparado DE DENTRO do jogo (ex.: `SZGame2D.restart()`,
+ *    que não passa pelo parent e re-semearia do SEED estático do build), o store é
+ *    também espelhado em `window.name` (namespaced por `projectId`) — o único canal
+ *    síncrono que sobrevive ao reload no mesmo browsing-context — e o boot PREFERE
+ *    esse valor ao SEED quando o projeto bate.
  *  - `session` (sessionStorage, "só nesta sessão"): efêmero, vive só na memória
  *    do sandbox e zera a cada execução — não vai ao parent. Funciona (não lança),
  *    mas não persiste, mantendo o contraste didático local×session.
@@ -67,6 +72,33 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
   // estourar (semântica do localStorage real — também didático).
   var MAX_KEYS = 500;
   var MAX_TOTAL_CHARS = 1000000;
+  // Canal de reload: window.name é o ÚNICO armazenamento síncrono que sobrevive a
+  // um location.reload() DENTRO deste iframe de origem opaca (o mesmo
+  // browsing-context é reusado; localStorage/sessionStorage reais lançam). O jogo
+  // do aluno pode chamar location.reload() (ex.: SZGame2D.restart()), e nesse caso
+  // o srcdoc é re-parseado com o SEED ESTÁTICO do build — sem o window.name, tudo
+  // que o aluno salvou desde o último build sumiria. Então espelhamos o store
+  // "local" em window.name (namespaced por PROJECT_ID) e, no boot, PREFERIMOS ele
+  // ao SEED quando o projeto bate. Leituras síncronas do aluno (getItem no topo do
+  // script) rodam antes de qualquer postMessage chegar, por isso precisa ser
+  // síncrono. Só ativo com PROJECT_ID (editor); o player público não semeia storage.
+  function readNameSeed() {
+    if (!PROJECT_ID) return null;
+    try {
+      var raw = window.name;
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.__szStorage && parsed.__szStorage.p === PROJECT_ID) {
+        var d = parsed.__szStorage.d;
+        if (d && typeof d === 'object') return d;
+      }
+    } catch (e) {}
+    return null;
+  }
+  function writeName(out) {
+    if (!PROJECT_ID) return;
+    try { window.name = JSON.stringify({ __szStorage: { p: PROJECT_ID, d: out } }); } catch (e) {}
+  }
   function makeStore(initial, persistKind) {
     var data = Object.create(null);
     if (initial) {
@@ -76,14 +108,18 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
     }
     function notify() {
       if (!persistKind) return;
-      // Sem origem conhecida da app, NÃO espelhamos o estado salvo do aluno (não
-      // vazamos o snapshot a '*'). O store local segue funcionando dentro do
+      // Null-proto: preserva uma chave própria "__proto__" no snapshot.
+      var out = Object.create(null);
+      for (var k in data) { if (Object.prototype.hasOwnProperty.call(data, k)) out[k] = data[k]; }
+      // Espelho de reload (window.name) é INDEPENDENTE do mirror do parent: roda
+      // mesmo sem TARGET (é no-op sem PROJECT_ID). Assim o reload interno sobrevive
+      // até no player, se um dia ele semear storage.
+      writeName(out);
+      // Sem origem conhecida da app, NÃO espelhamos o estado salvo do aluno ao parent
+      // (não vazamos o snapshot a '*'). O store local segue funcionando dentro do
       // sandbox; só a persistência no parent fica desligada.
       if (TARGET === null) return;
       try {
-        // Null-proto: preserva uma chave própria "__proto__" no snapshot postado.
-        var out = Object.create(null);
-        for (var k in data) { if (Object.prototype.hasOwnProperty.call(data, k)) out[k] = data[k]; }
         parent.postMessage({ source: SRC, kind: 'storageWrite', store: persistKind, projectId: PROJECT_ID, data: out, timestamp: Date.now() }, TARGET);
       } catch (e) {}
     }
@@ -145,7 +181,7 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
       try { window[name] = store; } catch (e2) {}
     }
   }
-  install('localStorage', makeStore(SEED, 'local'));
+  install('localStorage', makeStore(readNameSeed() || SEED, 'local'));
   install('sessionStorage', makeStore(null, null));
 })();`
 }

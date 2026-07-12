@@ -17,22 +17,33 @@ interface CapturedMessage {
   origin: string
 }
 
+type FakeWindow = { localStorage: Storage; sessionStorage: Storage; name: string }
+
 /**
  * Executa o IIFE do bridge num `window`/`parent` falsos (params sombreiam os
  * globais) e devolve o window resultante + as mensagens postadas ao parent.
+ * `initialName` semeia `window.name` (canal de reload); começa vazio por padrão.
  */
-function runBridge(runtime: string): {
-  win: { localStorage: Storage; sessionStorage: Storage }
+function runBridge(
+  runtime: string,
+  initialName = '',
+): {
+  win: FakeWindow
   posted: CapturedMessage[]
 } {
   const posted: CapturedMessage[] = []
-  const win = {} as { localStorage: Storage; sessionStorage: Storage }
+  const win = { name: initialName } as FakeWindow
   const parent = {
     postMessage: (msg: CapturedMessage['msg'], origin: string) => posted.push({ msg, origin }),
   }
   // eslint-disable-next-line no-new-func
   new Function('window', 'parent', runtime)(win, parent)
   return { win, posted }
+}
+
+/** Monta o envelope que o bridge grava em `window.name` (namespaced por projeto). */
+function nameEnvelope(projectId: string, data: Record<string, string>): string {
+  return JSON.stringify({ __szStorage: { p: projectId, d: data } })
 }
 
 describe('buildStorageBridgeRuntime', () => {
@@ -208,5 +219,74 @@ describe('buildStorageBridgeRuntime', () => {
     const mirror = posted.at(-1)?.msg.data ?? {}
     expect(Object.hasOwn(mirror, '__proto__')).toBe(true)
     expect(JSON.stringify(mirror)).toContain('"__proto__":"pol"')
+  })
+
+  // --- Canal de reload (window.name): sobrevive a location.reload() interno ---
+
+  it('espelha o store local em window.name (namespaced por projectId)', () => {
+    const { win } = runBridge(
+      buildStorageBridgeRuntime({ projectId: 'proj-42', parentOrigin: 'https://app.exemplo.com' }),
+    )
+    win.localStorage.setItem('recorde', '150')
+    expect(win.name).toBe(nameEnvelope('proj-42', { recorde: '150' }))
+  })
+
+  it('no boot PREFERE window.name ao SEED quando o projeto bate (simula reload)', () => {
+    // Simula um location.reload(): o srcdoc reabre com o SEED estático do build
+    // ({recorde:'0'}), mas window.name guarda a gravação fresca da sessão.
+    const { win } = runBridge(
+      buildStorageBridgeRuntime({ projectId: 'proj-42', localSnapshot: { recorde: '0' } }),
+      nameEnvelope('proj-42', { recorde: '150' }),
+    )
+    expect(win.localStorage.getItem('recorde')).toBe('150')
+  })
+
+  it('ignora window.name de OUTRO projeto e cai no SEED (anti cross-project)', () => {
+    const { win } = runBridge(
+      buildStorageBridgeRuntime({ projectId: 'proj-NOVO', localSnapshot: { recorde: '0' } }),
+      nameEnvelope('proj-ANTIGO', { recorde: '999' }),
+    )
+    expect(win.localStorage.getItem('recorde')).toBe('0')
+  })
+
+  it('window.name corrompido/estranho é ignorado (cai no SEED, sem quebrar)', () => {
+    const { win } = runBridge(
+      buildStorageBridgeRuntime({ projectId: 'proj-42', localSnapshot: { recorde: '0' } }),
+      'não é json {{{',
+    )
+    expect(win.localStorage.getItem('recorde')).toBe('0')
+  })
+
+  it('SEM projectId (player público) NÃO lê nem escreve window.name', () => {
+    // O envelope existente NÃO é usado como seed...
+    const { win } = runBridge(
+      buildStorageBridgeRuntime({ localSnapshot: { recorde: '0' } }),
+      nameEnvelope('proj-42', { recorde: '150' }),
+    )
+    expect(win.localStorage.getItem('recorde')).toBe('0')
+    // ...e uma mutação NÃO reescreve window.name (fica intacto).
+    const before = win.name
+    win.localStorage.setItem('recorde', '5')
+    expect(win.name).toBe(before)
+  })
+
+  it('removeItem e clear atualizam window.name (store reduzido/vazio)', () => {
+    const { win } = runBridge(
+      buildStorageBridgeRuntime({ projectId: 'proj-42', localSnapshot: { a: '1', b: '2' } }),
+    )
+    win.localStorage.removeItem('a')
+    expect(win.name).toBe(nameEnvelope('proj-42', { b: '2' }))
+    win.localStorage.clear()
+    expect(win.name).toBe(nameEnvelope('proj-42', {}))
+  })
+
+  it('espelha em window.name mesmo SEM parentOrigin (independe do mirror do parent)', () => {
+    const { win, posted } = runBridge(
+      buildStorageBridgeRuntime({ projectId: 'proj-42', localSnapshot: { recorde: '0' } }),
+    )
+    win.localStorage.setItem('recorde', '9')
+    // Sem parentOrigin: nada postado ao parent, mas window.name atualiza.
+    expect(posted).toHaveLength(0)
+    expect(win.name).toBe(nameEnvelope('proj-42', { recorde: '9' }))
   })
 })
