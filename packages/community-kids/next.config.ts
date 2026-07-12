@@ -34,9 +34,13 @@ function buildCsp({ pro }: { pro: boolean }): string {
   const scriptSrc = pro
     ? "script-src 'self' 'unsafe-inline' data: https: 'unsafe-eval' 'wasm-unsafe-eval' blob:"
     : `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`
-  // `blob:` p/ o preview/iframe do bloco `studio`; no pro, + o iframe do dev-server do WebContainer.
+  // `blob:` p/ o preview/iframe do bloco `studio`; no pro, + os iframes do WebContainer:
+  // o dev-server (`*.webcontainer-api.io`) E o iframe de BOOT (`stackblitz.com`/
+  // `*.staticblitz.com`) — sem este último o WebContainer nunca boota (o console
+  // acusa "Framing 'https://stackblitz.com/' violates frame-src"). A doc do Studio
+  // (embedding.md) listava só o webcontainer-api.io; o boot real usa o stackblitz.
   const frameSrc = pro
-    ? "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com https://*.webcontainer-api.io"
+    ? "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com https://*.webcontainer-api.io https://stackblitz.com https://*.staticblitz.com"
     : "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com"
   return [
     "default-src 'self'",
