@@ -14,6 +14,7 @@ import { PREVIEW_MESSAGE_SOURCE } from '#preview'
 import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
 import { FontSizeControls } from '../components/code/FontSizeControls'
 import { MonacoTabs } from '../components/code/LazyMonacoTabs'
+import { useFormatIssueLogger } from '../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
@@ -84,6 +85,7 @@ export function BridgeMode(): JSX.Element {
   const { isNarrow } = useStudioLayout()
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
+  const onFormatIssue = useFormatIssueLogger()
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
   const studioTheme = useStudioTheme()
   const [parseDiagnostics, setParseDiagnostics] = useState<ParseProjectDiagnostic[]>([])
@@ -533,6 +535,7 @@ export function BridgeMode(): JSX.Element {
         theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
         fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
         formatLabel={t('editor.format')}
+        onFormatIssue={onFormatIssue}
         tabsRightSlot={<FontSizeControls />}
         onChange={(name, value) => {
           if (files && (name === 'index.html' || name === 'style.css' || name === 'script.js')) {

@@ -590,13 +590,14 @@ describe('MonacoTabs — Formatar', () => {
 
   const files = [{ name: 'script.js', value: 'const a=1' }]
 
-  function renderWithFormat(): HTMLButtonElement {
+  function renderWithFormat(onFormatIssue?: (issue: string) => void): HTMLButtonElement {
     render(
       <MonacoTabs
         files={files}
         onChange={() => {}}
         modelPathPrefix="proj-fmt"
         formatLabel="Formatar"
+        onFormatIssue={onFormatIssue}
       />,
     )
     return screen.getByRole('button', { name: 'Formatar' }) as HTMLButtonElement
@@ -669,33 +670,37 @@ describe('MonacoTabs — Formatar', () => {
     await waitFor(() => expect(formatCallLog).toContain('run'))
   })
 
-  it('provider nunca registra: avisa no console e NÃO roda a ação', async () => {
+  it('provider nunca registra: avisa no console, reporta a issue e NÃO roda a ação', async () => {
     await withWarnCapture(async (warns) => {
+      const issues: string[] = []
       currentFormatAction = {
         isSupported: () => false,
         run: async () => {
           formatCallLog.push('run')
         },
       }
-      fireEvent.click(renderWithFormat())
+      fireEvent.click(renderWithFormat((issue) => issues.push(issue)))
       await waitFor(() =>
         expect(warns.some((w) => w.includes('nenhum provider de formatação'))).toBe(true),
       )
       expect(formatCallLog).not.toContain('run')
+      expect(issues).toEqual(['no-provider'])
     })
   })
 
-  it('serviços rejeitam: avisa, não resolve a ação e libera o busy', async () => {
+  it('serviços rejeitam: avisa, reporta a issue, não resolve a ação e libera o busy', async () => {
     await withWarnCapture(async (warns) => {
+      const issues: string[] = []
       loadLanguageServicesImpl = async () => {
         throw new Error('chunk falhou')
       }
-      const button = renderWithFormat()
+      const button = renderWithFormat((issue) => issues.push(issue))
       fireEvent.click(button)
       await waitFor(() =>
         expect(warns.some((w) => w.includes('serviços de linguagem não carregaram'))).toBe(true),
       )
       expect(formatCallLog.some((c) => c.startsWith('getAction'))).toBe(false)
+      expect(issues).toEqual(['services-failed'])
       await waitFor(() => expect(button.disabled).toBe(false))
     })
   })

@@ -6,6 +6,7 @@ import { type ProjectTree, t } from '#core'
 import { FontSizeControls } from '../../components/code/FontSizeControls'
 import { MonacoTabs } from '../../components/code/LazyMonacoTabs'
 import { ProFileTree } from '../../components/code/ProFileTree'
+import { useFormatIssueLogger } from '../../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { NarrowPanels } from '../../components/layout/NarrowPanels'
 import { useProjectStore } from '../../state/projectStore'
@@ -44,6 +45,7 @@ export function ProCodeMode(): JSX.Element {
 
   const [openFiles, setOpenFiles] = useState<string[]>([])
   const [activeFile, setActiveFile] = useState<string>('')
+  const onFormatIssue = useFormatIssueLogger()
 
   // Auto-abre o arquivo padrão UMA VEZ por carga de projeto. Antes o efeito
   // disparava sempre que `openFiles.length === 0`, então fechar a última aba
@@ -113,6 +115,7 @@ export function ProCodeMode(): JSX.Element {
         theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
         fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
         formatLabel={t('editor.format')}
+        onFormatIssue={onFormatIssue}
         tabsRightSlot={<FontSizeControls />}
         canCloseFile={() => true}
         onCloseFile={handleCloseFile}

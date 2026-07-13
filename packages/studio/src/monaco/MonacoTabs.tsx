@@ -77,6 +77,13 @@ const FORMATTABLE_LANGUAGES: ReadonlySet<string> = new Set([
   'json',
 ])
 
+/**
+ * Por que uma formatação pedida não aconteceu — consumido pelos modos para dar
+ * feedback VISÍVEL ao aluno (Console da IDE); os `console.warn` internos ficam
+ * como diagnóstico de DevTools.
+ */
+export type MonacoFormatIssue = 'services-failed' | 'action-missing' | 'no-provider' | 'run-failed'
+
 export interface MonacoHighlight {
   file: string
   startLine: number
@@ -110,6 +117,13 @@ export interface MonacoTabsProps {
    * independentemente deste botão.
    */
   formatLabel?: string
+  /**
+   * Chamado quando uma formatação pedida NÃO acontece (serviços falharam,
+   * provider ausente após a espera, ação indisponível ou erro ao rodar). Os
+   * modos usam para avisar o aluno no Console da IDE — sem isto a falha só
+   * aparece em `console.warn` (invisível sem DevTools).
+   */
+  onFormatIssue?: (issue: MonacoFormatIssue) => void
   /**
    * Decide se uma aba pode ser fechada (mostra o "×"). Fechar é só de UI: o
    * arquivo continua existindo; quem o reabre é o componente pai. Os arquivos
@@ -231,6 +245,7 @@ export function MonacoTabs({
   className,
   tabsRightSlot,
   formatLabel,
+  onFormatIssue,
   canCloseFile,
   onCloseFile,
   modelPathPrefix,
@@ -369,6 +384,11 @@ export function MonacoTabs({
   // reentrância pelo ref (o state só pinta; o guard não pode depender de render).
   const [formatBusy, setFormatBusy] = useState(false)
   const formatBusyRef = useRef(false)
+  // Espelha onChangeRef: mantém o handleFormat estável sem perder o callback vivo.
+  const onFormatIssueRef = useRef(onFormatIssue)
+  useEffect(() => {
+    onFormatIssueRef.current = onFormatIssue
+  }, [onFormatIssue])
 
   const handleFormat = useCallback(async () => {
     const editor = editorRef.current
@@ -382,11 +402,13 @@ export function MonacoTabs({
         await loadLanguageServices()
       } catch (err) {
         console.warn('[studio] Formatar: serviços de linguagem não carregaram', err)
+        onFormatIssueRef.current?.('services-failed')
         return
       }
       const action = editor.getAction('editor.action.formatDocument')
       if (!action) {
         console.warn('[studio] Formatar: ação editor.action.formatDocument indisponível')
+        onFormatIssueRef.current?.('action-missing')
         return
       }
       // O provider registra assíncrono (onLanguage → chunk do modo, logo após o
@@ -400,12 +422,14 @@ export function MonacoTabs({
         console.warn(
           '[studio] Formatar: nenhum provider de formatação registrado para a linguagem atual',
         )
+        onFormatIssueRef.current?.('no-provider')
         return
       }
       try {
         await action.run()
       } catch (err) {
         console.warn('[studio] Formatar falhou ao rodar', err)
+        onFormatIssueRef.current?.('run-failed')
       }
     } finally {
       formatBusyRef.current = false

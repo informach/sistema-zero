@@ -125,6 +125,9 @@ export const ptBR: Record<string, string> = {
   'editor.fontSize.decrease': 'Diminuir fonte do editor',
   'editor.fontSize.reset': 'Restaurar tamanho padrão',
   'editor.format': 'Formatar código',
+  'editor.formatIssue.noProvider':
+    'Formatar: o formatador desta linguagem ainda não terminou de carregar. Tente de novo em instantes.',
+  'editor.formatIssue.failed': 'Formatar: não deu para formatar este arquivo agora.',
 
   'bridge.advancedNotice':
     'Esse pedaço do código ainda não tem um bloco igual a ele, então virou um cartão de "Código avançado". Ele continua funcionando, e você pode editar no editor de código.',
