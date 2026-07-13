@@ -1,7 +1,7 @@
 import Editor, { type OnChange, type OnMount } from '@monaco-editor/react'
 import type * as monacoNs from 'monaco-editor'
 import type { JSX } from 'react'
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useMeasuredWidth } from '../hooks/useMeasuredWidth'
 import { inferLanguage } from './languages'
 import {
@@ -286,6 +286,12 @@ export function MonacoTabs({
     if (fallback !== internalActive) setInternalActive(fallback)
   }, [activeFile, files, internalActive])
   const editorRef = useRef<monacoNs.editor.IStandaloneCodeEditor | null>(null)
+  // View state (cursor/scroll) POR ABA, por INSTÂNCIA. O `saveViewState` do
+  // @monaco-editor/react fica `false` de propósito (o Map global dele não tem
+  // .delete e vazaria um estado por projeto pela vida da aba do navegador);
+  // este Map morre com o componente e devolve o "lugar onde eu estava" ao
+  // revisitar um arquivo na mesma sessão.
+  const viewStatesRef = useRef(new Map<string, monacoNs.editor.ICodeEditorViewState | null>())
   const decorationsRef = useRef<monacoNs.editor.IEditorDecorationsCollection | null>(null)
   const activeHighlightRef = useRef<MonacoHighlight | null>(null)
   // Último `nonce` cuja SELEÇÃO já foi aplicada — evita re-selecionar (e roubar o
@@ -441,6 +447,35 @@ export function MonacoTabs({
     editorRef.current = editor
     setMountedEditor(editor)
   }, [])
+
+  // Salva o view state da aba que está SAINDO. É layout effect de propósito: a
+  // troca de model do <Editor> acontece num efeito PASSIVO do
+  // @monaco-editor/react, então neste ponto o editor ainda exibe o model
+  // anterior — `saveViewState()` captura o cursor/scroll certo sob a chave certa.
+  const activeModelPath = file ? buildMonacoModelPath(saltedPrefix, file.name) : ''
+  const prevModelPathRef = useRef(activeModelPath)
+  useLayoutEffect(() => {
+    const prev = prevModelPathRef.current
+    if (prev === activeModelPath) return
+    prevModelPathRef.current = activeModelPath
+    const editor = editorRef.current
+    if (editor && prev) viewStatesRef.current.set(prev, editor.saveViewState())
+  }, [activeModelPath])
+
+  // Restaura cursor/scroll ao entrar num model já visitado. Registrado ANTES do
+  // efeito de highlight (ordem de inscrição): com realce pendente, o reveal dele
+  // roda depois e vence a rolagem restaurada. O evento de cursor emitido pela
+  // restauração tem reason ≠ Explicit — não dispara a sincronização código→bloco.
+  useEffect(() => {
+    if (!mountedEditor) return
+    const disposable = mountedEditor.onDidChangeModel(() => {
+      const model = mountedEditor.getModel()
+      if (!model) return
+      const saved = viewStatesRef.current.get(getMonacoModelPath(model))
+      if (saved) mountedEditor.restoreViewState(saved)
+    })
+    return () => disposable.dispose()
+  }, [mountedEditor])
 
   // Opções memoizadas: todo campo é constante MENOS `fontSize`. Com um literal
   // inline, @monaco-editor/react chamava editor.updateOptions() a CADA render (o
@@ -675,8 +710,9 @@ export function MonacoTabs({
           // Cada projeto/instância recebe um path de model salgado e NUNCA reusado, então
           // a restauração de view-state entre projetos nunca casa. Com o default `true`, o
           // Map interno (global, sem .delete) do @monaco-editor/react acumularia um
-          // view-state por projeto aberto pela vida da aba. `false` corta esse vazamento
-          // sem perder nada funcional (os models por arquivo já são estáveis na sessão).
+          // view-state por projeto aberto pela vida da aba. `false` corta esse vazamento;
+          // o cursor/scroll por aba é restaurado pelo Map POR INSTÂNCIA acima
+          // (`viewStatesRef`), que morre com o componente.
           saveViewState={false}
           options={editorOptions}
         />

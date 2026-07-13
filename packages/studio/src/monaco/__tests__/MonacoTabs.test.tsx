@@ -75,6 +75,13 @@ const formatCallLog: string[] = []
 // Implementação trocável do mock de loadLanguageServices (default: resolve).
 let loadLanguageServicesImpl: () => Promise<void> = async () => {}
 
+// View states falsos: saveViewState devolve um token com o path do model
+// corrente; restoreViewState registra o que foi aplicado e sobre qual model.
+interface FakeViewState {
+  forPath: string
+}
+const restoreViewStateCalls: Array<{ applied: string; on: string }> = []
+
 // Editor único exposto pelo <Editor> mockado, capturado para dirigir eventos
 // (cursor / troca de model) a partir do teste.
 interface FakeEditor {
@@ -87,6 +94,8 @@ interface FakeEditor {
   revealRangeInCenterIfOutsideViewport: () => void
   setSelection: (range: { startLineNumber: number; endLineNumber: number }) => void
   getAction: (id: string) => FakeAction | null
+  saveViewState: () => FakeViewState
+  restoreViewState: (state: FakeViewState) => void
 }
 
 let currentEditor: FakeEditor | null = null
@@ -127,6 +136,10 @@ function makeEditor(initialPath: string): FakeEditor {
     getAction: (id: string) => {
       formatCallLog.push(`getAction:${id}`)
       return currentFormatAction
+    },
+    saveViewState: () => ({ forPath: modelPath }),
+    restoreViewState: (state: FakeViewState) => {
+      restoreViewStateCalls.push({ applied: state.forPath, on: modelPath })
     },
   }
   return editor
@@ -193,6 +206,7 @@ function resetWorld(): void {
   selectionCalls.length = 0
   currentFormatAction = null
   formatCallLog.length = 0
+  restoreViewStateCalls.length = 0
   loadLanguageServicesImpl = async () => {}
 }
 
@@ -578,6 +592,56 @@ describe('MonacoTabs — seleção do realce (bloco→código)', () => {
     )
     expect(selectionCalls).toHaveLength(2)
     expect(selectionCalls[1]).toEqual({ startLineNumber: 9, endLineNumber: 9 })
+  })
+})
+
+describe('MonacoTabs — view state por aba', () => {
+  beforeEach(resetWorld)
+  afterEach(() => {
+    cleanup()
+    resetWorld()
+  })
+
+  it('restaura cursor/scroll ao revisitar uma aba na mesma sessão', () => {
+    const files = [
+      { name: 'index.html', value: '<html></html>' },
+      { name: 'script.js', value: 'const a = 1' },
+    ]
+    const prefix = 'proj-vs'
+    const { rerender } = render(
+      <MonacoTabs
+        files={files}
+        activeFile="index.html"
+        onChange={() => {}}
+        modelPathPrefix={prefix}
+      />,
+    )
+
+    // index.html → script.js: salva o estado do index.html; script.js é a 1ª
+    // visita (nada a restaurar).
+    rerender(
+      <MonacoTabs
+        files={files}
+        activeFile="script.js"
+        onChange={() => {}}
+        modelPathPrefix={prefix}
+      />,
+    )
+    expect(restoreViewStateCalls).toHaveLength(0)
+
+    // script.js → index.html: restaura o estado salvo DO index.html sobre o
+    // model do index.html (o fake registra o par aplicado/corrente).
+    rerender(
+      <MonacoTabs
+        files={files}
+        activeFile="index.html"
+        onChange={() => {}}
+        modelPathPrefix={prefix}
+      />,
+    )
+    expect(restoreViewStateCalls).toHaveLength(1)
+    expect(restoreViewStateCalls[0]?.applied.endsWith('/index.html')).toBe(true)
+    expect(restoreViewStateCalls[0]?.on.endsWith('/index.html')).toBe(true)
   })
 })
 
