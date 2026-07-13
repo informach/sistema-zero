@@ -63,6 +63,14 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // Espelha community/community-kids: COOP isola o browsing-context group (um
+  // popup cross-origin não retém window.opener) e CORP impede outros sites de
+  // carregarem respostas autenticadas do painel como subrecurso (sondagem por
+  // timing). `same-site` preserva os subdomínios *.sistemazero.com.br. COEP
+  // fica OFF de propósito — só seria preciso p/ SharedArrayBuffer e quebraria
+  // iframes/imagens cross-origin (player do Vimeo na autoria).
+  { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
   // Painel administrativo: nunca indexável por buscadores.
   { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
   // HSTS só em produção (TLS termina na borda do Railway; dev local é http).
