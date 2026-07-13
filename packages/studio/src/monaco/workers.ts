@@ -141,6 +141,12 @@ export function configureMonacoWorkers(): void {
  * duplicaria avisos e marcaria falso-positivos em globais do aluno. Acessar
  * `monaco.languages.typescript` é seguro em escopo síncrono porque a contribution
  * do TS é import ESTÁTICO deste módulo (ver comentário nos imports).
+ *
+ * ⚠️ Trade-off aceito: `javascriptDefaults` é GLOBAL por página — os `.js` da
+ * árvore PRO (que não têm o Babel da Ponte) ficam SEM diagnóstico de sintaxe
+ * também. Não há default por model no Monaco, e a rota /dual pode ter Ponte e
+ * PRO convivendo. Quem quer erro educativo no PRO usa `.ts` (validação LIGADA
+ * abaixo).
  */
 function configureLanguageDefaults(): void {
   const ts = monaco.languages.typescript
