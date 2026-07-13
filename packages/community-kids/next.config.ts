@@ -145,6 +145,19 @@ const nextConfig: NextConfig = {
           { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
         ],
       },
+      // Workers do Monaco DENTRO da rota PRO: uma página com COEP só cria um
+      // dedicated worker se o SCRIPT do worker também vier com COEP (check de
+      // compatibilidade de embedder policy do HTML spec). Os workers saem de
+      // `/_next/static/chunks/…` — sem o header aqui, o `new Worker(...)` falha
+      // com um error event e o Monaco cai no fallback de MAIN THREAD ("Could not
+      // create web worker(s)…" no console; o compilador do TS ~11MB congelando a
+      // UI). COEP em subrecurso que nunca é documento é INERTE nas demais
+      // páginas (só documentos e worker scripts consultam o header) — os vídeos
+      // das aulas seguem intactos.
+      {
+        source: '/_next/static/:path*',
+        headers: [{ key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' }],
+      },
       {
         // Assets do avatar 3D (~28MB de GLB/PNG) têm nomes estáveis de catálogo, mas NÃO são
         // hashados. Um TTL curto reduz revalidações repetidas sem prender uma correção de arte por
