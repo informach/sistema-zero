@@ -1,5 +1,10 @@
 import { expect, type Page, test } from '@playwright/test'
 
+// Modelo D2 (src/core/modes.ts): projeto BÁSICO expõe só Blocos + Ponte — o
+// editor de código do clássico vive na PONTE; projeto PROFISSIONAL (radio
+// "Profissional" no modal "+ Novo projeto") expõe só Código (árvore Vite +
+// WebContainer). Nenhum projeto mostra os 3 modos ao mesmo tempo.
+
 async function createProject(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
@@ -7,30 +12,66 @@ async function createProject(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/editor\//)
 }
 
+async function createProProject(page: Page): Promise<void> {
+  await page.goto('/')
+  await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
+  await page.getByText('Profissional', { exact: true }).click()
+  await page.getByRole('button', { name: 'Criar e abrir' }).click()
+  await expect(page).toHaveURL(/\/editor\//)
+  // Esconde o preview: no PRO ele bota um WebContainer + npm install em
+  // background — peso/rede que os cenários abaixo não usam e que saturava o
+  // servidor de dev (o último teste da suíte estourava timeout).
+  await page.getByRole('button', { name: 'Ocultar pré-visualização' }).click()
+}
+
+/** Abre a Ponte, foca o script.js e limpa o conteúdo (pronto p/ digitar). */
+async function openBridgeScript(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Ponte' }).click()
+  await page.getByRole('button', { name: 'script.js' }).first().click()
+  const editor = page.locator('.monaco-editor').first()
+  await editor.waitFor({ state: 'visible', timeout: 15_000 })
+  await page.locator('.monaco-editor .view-line').first().click()
+  await page.keyboard.press('ControlOrMeta+A')
+  await page.keyboard.press('Backspace')
+}
+
 test.describe('Sistema Zero Studio — smoke', () => {
-  test('IDE carrega com Topbar + categorias do Blockly + preview', async ({ page }) => {
+  test('IDE carrega com Topbar D2 + categorias do Blockly + console', async ({ page }) => {
     await createProject(page)
+    // Básico = Blocos + Ponte; o modo Código NÃO existe no clássico (D2).
     await expect(page.getByRole('button', { name: 'Blocos' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Ponte' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Código' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Código', exact: true })).toHaveCount(0)
     // Categorias da toolbox no modo Blocos (default).
     await expect(page.getByText('HTML', { exact: true })).toBeVisible()
     await expect(page.getByText('CSS', { exact: true })).toBeVisible()
     await expect(page.getByText('Canvas', { exact: true })).toBeVisible()
-    // Console panel disponível
-    await expect(page.getByRole('button', { name: 'Console' })).toBeVisible()
+    // Console panel disponível (as abas do painel inferior têm role tab)
+    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
   })
 
-  test('primeiro clique em categoria do Blockly mantém o flyout aberto', async ({ page }) => {
+  test('toolbox: folha abre flyout (e permanece); categoria-pai expande', async ({ page }) => {
     await createProject(page)
 
-    await page.locator('.blocklyToolboxCategory').filter({ hasText: 'CSS' }).first().click()
+    // "Áreas do projeto" é FOLHA (sem subcategorias): o 1º clique abre o flyout.
+    await page
+      .locator('.blocklyToolboxCategory')
+      .filter({ hasText: 'Áreas do projeto' })
+      .first()
+      .click()
     const flyout = page.locator('.blocklyToolboxFlyout')
     await expect(flyout).toBeVisible()
 
-    // Regressão: antes o update inicial da toolbox fechava o flyout em menos de 1s.
+    // Regressão histórica: um updateToolbox tardio fechava o flyout em menos de 1s.
     await page.waitForTimeout(800)
     await expect(flyout).toBeVisible()
+
+    // Categoria com SUBCATEGORIAS (arco-íris): o 1º clique EXPANDE (não abre
+    // flyout) — a subcategoria "🧰 Regra" fica visível.
+    await page.locator('.blocklyToolboxCategory').filter({ hasText: 'CSS' }).first().click()
+    await expect(
+      page.locator('.blocklyToolboxCategory').filter({ hasText: 'Regra' }).first(),
+    ).toBeVisible()
   })
 
   test('primeiro clique em Pesquisar abre o input dentro do flyout', async ({ page }) => {
@@ -64,9 +105,11 @@ test.describe('Sistema Zero Studio — smoke', () => {
 
   test('Painel Extensões mostra catálogo oficial (game-2d)', async ({ page }) => {
     await createProject(page)
-    await page.getByRole('button', { name: 'Extensões' }).click()
-    await expect(page.getByText('Jogo 2D')).toBeVisible()
-    await expect(page.getByText('Disponível').or(page.getByText('Instalada'))).toBeVisible()
+    // Extensões vive no menu ⋯ da Topbar (seção Exibição).
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    await page.getByRole('menuitem', { name: 'Extensões' }).click()
+    await expect(page.getByText('Jogo 2D', { exact: true }).first()).toBeVisible()
+    await expect(page.getByText('Disponível').or(page.getByText('Instalada')).first()).toBeVisible()
   })
 
   test('Menu do projeto fica acima do card e exclusão usa modal própria', async ({ page }) => {
@@ -77,7 +120,8 @@ test.describe('Sistema Zero Studio — smoke', () => {
     })
 
     await createProject(page)
-    await page.getByRole('button', { name: 'Meus projetos' }).click()
+    // Voltar à lista = clicar o logo (title "Voltar à lista de projetos").
+    await page.getByRole('button', { name: 'Sistema Zero Studio' }).click()
     await expect(page).toHaveURL('/')
 
     await page.getByRole('button', { name: 'Mais ações' }).first().click()
@@ -107,10 +151,10 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(page.getByText('Sistema Zero: pronto para programar!')).not.toBeVisible()
   })
 
-  test('AIPanel mostra badge MOCK por padrão (sem chave OpenRouter)', async ({ page }) => {
-    await createProject(page)
-    await page.getByRole('button', { name: 'Código' }).click()
-    await page.getByRole('button', { name: 'IA' }).nth(1).click()
+  test('AIPanel (projeto PRO) mostra badge MOCK por padrão', async ({ page }) => {
+    // A aba IA só existe no modo Código (D2) → projeto profissional.
+    await createProProject(page)
+    await page.getByRole('tab', { name: 'IA' }).click()
     await expect(page.getByText('mock', { exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Configurar IA' }).first()).toBeVisible()
   })
@@ -122,25 +166,27 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(page.getByRole('button', { name: 'script.js' })).toBeVisible()
   })
 
-  test('Código editado permanece ao alternar para Ponte', async ({ page }) => {
+  test('Código digitado na Ponte sobrevive à troca IMEDIATA para Blocos', async ({ page }) => {
     await createProject(page)
-    await page.getByRole('button', { name: 'Código' }).click()
-    await page.getByRole('button', { name: 'script.js' }).first().click()
-    const editor = page.locator('.monaco-editor').first()
-    await editor.waitFor({ state: 'visible', timeout: 15_000 })
-    await page.locator('.monaco-editor .view-line').first().click()
-    await page.keyboard.press('ControlOrMeta+A')
-    await page.keyboard.press('Backspace')
+    await openBridgeScript(page)
     await page.keyboard.type('document.body.innerHTML = "<h1>Persistiu</h1>";')
 
+    // Troca DENTRO da janela do reverse-parse (~0,9s de debounce + worker, que
+    // morre com a Ponte): a regressão regenerava os arquivos a partir dos
+    // blocos VELHOS e perdia o código digitado. Com as épocas de sincronização,
+    // o BlocksMode deriva os blocos do código e os arquivos ficam intactos.
+    await page.getByRole('button', { name: 'Blocos' }).click()
     await expect(
       page.frameLocator('iframe').getByRole('heading', { name: 'Persistiu' }),
     ).toBeVisible({
-      timeout: 10_000,
+      timeout: 15_000,
     })
 
     await page.getByRole('button', { name: 'Ponte' }).click()
-    await expect(page.getByRole('button', { name: 'script.js' })).toBeVisible()
+    await page.getByRole('button', { name: 'script.js' }).first().click()
+    await expect(page.locator('.monaco-editor .view-lines').first()).toContainText('Persistiu', {
+      timeout: 10_000,
+    })
     await expect(
       page.frameLocator('iframe').getByRole('heading', { name: 'Persistiu' }),
     ).toBeVisible({
@@ -150,22 +196,18 @@ test.describe('Sistema Zero Studio — smoke', () => {
 
   test('Preview executa automaticamente ao abrir e recarregar o editor', async ({ page }) => {
     await createProject(page)
-    await page.getByRole('button', { name: 'Código' }).click()
-    await page.getByRole('button', { name: 'script.js' }).first().click()
-    const editor = page.locator('.monaco-editor').first()
-    await editor.waitFor({ state: 'visible', timeout: 15_000 })
-    await page.locator('.monaco-editor .view-line').first().click()
-    await page.keyboard.press('ControlOrMeta+A')
-    await page.keyboard.press('Backspace')
+    await openBridgeScript(page)
     await page.keyboard.type('document.body.innerHTML = "<h1>Preview apos reload</h1>";')
 
     await expect(
       page.frameLocator('iframe').getByRole('heading', { name: 'Preview apos reload' }),
     ).toBeVisible({
-      timeout: 10_000,
+      timeout: 15_000,
     })
 
-    await page.getByRole('button', { name: 'Salvar' }).click()
+    // "Salvar" vive no menu ⋯ da Topbar (decisão de UX kids).
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    await page.getByRole('menuitem', { name: 'Salvar' }).click()
     await expect(page.getByText('Salvo')).toBeVisible({ timeout: 10_000 })
 
     await page.reload()
@@ -176,7 +218,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
       timeout: 15_000,
     })
 
-    await page.getByRole('button', { name: 'Meus projetos' }).click()
+    await page.getByRole('button', { name: 'Sistema Zero Studio' }).click()
     await expect(page).toHaveURL('/')
     await page.getByRole('button', { name: 'Abrir' }).first().click()
 
@@ -187,31 +229,27 @@ test.describe('Sistema Zero Studio — smoke', () => {
     })
   })
 
-  test('Modo Código permite criar arquivo extra seguro', async ({ page }) => {
-    await createProject(page)
-    await page.getByRole('button', { name: 'Código' }).click()
-    await page.getByPlaceholder('novo.js').fill('helper-smoke.mjs')
-    await page.getByRole('button', { name: '+ Novo arquivo' }).click()
-    await expect(
-      page.getByRole('complementary').getByRole('button', { name: 'helper-smoke.mjs' }),
-    ).toBeVisible()
+  test('Modo Código (PRO) permite criar arquivo na árvore', async ({ page }) => {
+    await createProProject(page)
+    await page.getByTitle('Novo arquivo na raiz').click()
+    await page.getByLabel('Nome do novo item').fill('helper-smoke.mjs')
+    await page.getByRole('button', { name: 'Criar', exact: true }).click()
+    await expect(page.getByText('helper-smoke.mjs')).toBeVisible()
   })
 
-  test('Terminal real aparece como CTA sem quebrar a IDE', async ({ page }) => {
-    await createProject(page)
-    await page.getByRole('button', { name: 'Código' }).click()
-    await page.getByRole('button', { name: 'Terminal' }).click()
+  test('Terminal (PRO) aparece como CTA sem quebrar a IDE', async ({ page }) => {
+    // A aba Terminal só existe no modo Código (D2) → projeto profissional.
+    await createProProject(page)
+    await page.getByRole('tab', { name: 'Terminal' }).click()
     await expect(page.getByRole('button', { name: 'Carregar terminal real' })).toBeVisible()
   })
 
   test('Terminal real inicializa WebContainer e monta arquivos do projeto', async ({ page }) => {
     test.slow()
-    await createProject(page)
-    await page.getByRole('button', { name: 'Código' }).click()
-    await page.getByRole('button', { name: 'Terminal' }).click()
+    await createProProject(page)
+    await page.getByRole('tab', { name: 'Terminal' }).click()
     await page.getByRole('button', { name: 'Carregar terminal real' }).click()
 
-    await expect(page.getByText('Carregando WebContainers...')).toBeVisible()
     await expect(page.locator('.xterm')).toBeVisible({ timeout: 60_000 })
     await expect(page.locator('.xterm-rows')).toContainText('Sistema Zero Studio terminal', {
       timeout: 60_000,

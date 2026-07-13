@@ -7,9 +7,31 @@ import 'monaco-editor/esm/vs/basic-languages/css/css.contribution.js'
 import 'monaco-editor/esm/vs/basic-languages/html/html.contribution.js'
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution.js'
 // TypeScript (.ts/.tsx) no modo Código: colorização do Monaco. O language
-// service do TS é carregado em loadLanguageServices; o preview transpila via
+// service do TS entra pela contribution abaixo; o preview transpila via
 // Sucrase (o Monaco só edita/checa).
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution.js'
+// Contribuições dos SERVIÇOS de linguagem (CSS/HTML/TS+JS) — ESTÁTICAS de
+// propósito, e a ORDEM é o ponto: elas se inscrevem via
+// `monaco.languages.onLanguage`, que é um listener de um evento que dispara UMA
+// única vez por linguagem, no PRIMEIRO model criado com ela (o ctor do TextModel
+// chama `requestRichLanguageFeatures`; NÃO há replay para inscritos tardios).
+// Carregá-las DEPOIS dos models — como o antigo `loadLanguageServices` dinâmico
+// fazia no idle — perdia o evento para sempre: nenhum provider
+// (formatação/completions/hover/diagnóstico/worker) registrava e o Formatar
+// virava no-op silencioso. São leves (~20 KB somadas); o que pesa continua lazy:
+// os modos main-thread (tsMode/cssMode/htmlMode, 43–70 KB) carregam via
+// `onLanguage → getMode()` quando o 1º model da linguagem nasce (logo após o
+// mount do editor — trade-off aceito: era idle, mas idle-sem-provider era o bug),
+// e o compilador do TS (~11 MB) vive no chunk do WORKER, sob demanda.
+import 'monaco-editor/esm/vs/language/css/monaco.contribution.js'
+import 'monaco-editor/esm/vs/language/html/monaco.contribution.js'
+import 'monaco-editor/esm/vs/language/typescript/monaco.contribution.js'
+// JSON: a contribution registra o PRÓPRIO id 'json' (não tem basic-language) e
+// dá validação+formatação de package.json etc. na árvore PRO.
+import 'monaco-editor/esm/vs/language/json/monaco.contribution.js'
+// Markdown/XML (README.md, .svg da árvore PRO): só colorização, sem formatador.
+import 'monaco-editor/esm/vs/basic-languages/markdown/markdown.contribution.js'
+import 'monaco-editor/esm/vs/basic-languages/xml/xml.contribution.js'
 // Algumas contribuições do editor precisam registrar ações/serviços antes de o
 // editor ser instanciado. Elas ficam no chunk lazy do Monaco, não na listagem.
 import 'monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestController.js'
@@ -96,6 +118,7 @@ export function configureMonacoWorkers(): void {
   configured = true
   loader.config({ monaco })
   defineMonacoThemes()
+  configureLanguageDefaults()
   ;(self as unknown as { MonacoEnvironment: unknown }).MonacoEnvironment = {
     getWorker(_workerId: string, label: string) {
       if (label === 'css' || label === 'scss' || label === 'less')
@@ -104,9 +127,51 @@ export function configureMonacoWorkers(): void {
         return new Worker(new URL('./workers/html.worker.ts', import.meta.url), { type: 'module' })
       if (label === 'typescript' || label === 'javascript')
         return new Worker(new URL('./workers/ts.worker.ts', import.meta.url), { type: 'module' })
+      if (label === 'json')
+        return new Worker(new URL('./workers/json.worker.ts', import.meta.url), { type: 'module' })
       return new Worker(new URL('./workers/editor.worker.ts', import.meta.url), { type: 'module' })
     },
   }
+}
+
+/**
+ * Defaults do JavaScript — autocomplete "limpo": completa globais do browser
+ * (document, querySelector, canvas…) mas SEM sublinhar erros. No modo Ponte quem
+ * reporta erros de sintaxe é o parser (Babel); ligar a validação do TS aqui só
+ * duplicaria avisos e marcaria falso-positivos em globais do aluno. Acessar
+ * `monaco.languages.typescript` é seguro em escopo síncrono porque a contribution
+ * do TS é import ESTÁTICO deste módulo (ver comentário nos imports).
+ *
+ * ⚠️ Trade-off aceito: `javascriptDefaults` é GLOBAL por página — os `.js` da
+ * árvore PRO (que não têm o Babel da Ponte) ficam SEM diagnóstico de sintaxe
+ * também. Não há default por model no Monaco, e a rota /dual pode ter Ponte e
+ * PRO convivendo. Quem quer erro educativo no PRO usa `.ts` (validação LIGADA
+ * abaixo).
+ */
+function configureLanguageDefaults(): void {
+  const ts = monaco.languages.typescript
+  ts.javascriptDefaults.setCompilerOptions({
+    target: ts.ScriptTarget.ESNext,
+    allowNonTsExtensions: true,
+    allowJs: true,
+    checkJs: false,
+    lib: ['esnext', 'dom', 'dom.iterable'],
+  })
+  ts.javascriptDefaults.setDiagnosticsOptions({
+    noSemanticValidation: true,
+    noSyntaxValidation: true,
+  })
+  ts.javascriptDefaults.setEagerModelSync(true)
+  // TypeScript (.ts/.tsx) no modo Código: aqui os erros de TIPO são educativos
+  // (diferente do JS), então deixamos a validação LIGADA (default do
+  // typescriptDefaults). jsx ligado para .tsx.
+  ts.typescriptDefaults.setCompilerOptions({
+    target: ts.ScriptTarget.ESNext,
+    allowNonTsExtensions: true,
+    jsx: ts.JsxEmit.ReactJSX,
+    lib: ['esnext', 'dom', 'dom.iterable'],
+  })
+  ts.typescriptDefaults.setEagerModelSync(true)
 }
 
 export function getMonacoModelRegistry(): MonacoModelRegistry {
@@ -136,74 +201,29 @@ export function prewarmEditorModels(
   }
 }
 
-let languageServicesPromise: Promise<void> | null = null
-
 /**
- * Carrega SOB DEMANDA os serviços de linguagem do Monaco. São módulos
- * main-thread que registram providers que conversam com os workers e — no caso
- * do TypeScript — expõem o namespace `monaco.languages.typescript`. Importar só
- * os `*.worker` NÃO basta.
- *
- * Ficam FORA do escopo de módulo (que é avaliado de forma síncrona quando o
- * chunk do editor é avaliado) para não travar a main thread: o
- * `typescript/monaco.contribution` puxa o compilador do TS (~6 MB). Carregando
- * aqui, de forma assíncrona e idempotente, o editor abre na hora e o
- * IntelliSense "acende" logo depois.
+ * Compat. As contribuições de linguagem eram importadas AQUI, sob demanda — o
+ * que perdia o evento one-shot `onLanguage` de toda linguagem que já tivesse um
+ * model (criado no mount, ANTES do idle) e deixava o editor sem NENHUM provider:
+ * Formatar no-op, IntelliSense só word-based, zero diagnóstico. Hoje as
+ * contribuições são imports ESTÁTICOS e os defaults são configurados em
+ * `configureMonacoWorkers` (ver comentário nos imports do topo); esta função só
+ * garante a configuração. Continua exportada porque warmup/handleFormat (e os
+ * mocks de teste) aguardam sua promise.
  */
 export function loadLanguageServices(): Promise<void> {
-  if (languageServicesPromise) return languageServicesPromise
   configureMonacoWorkers()
-  languageServicesPromise = Promise.all([
-    import('monaco-editor/esm/vs/language/css/monaco.contribution.js'),
-    import('monaco-editor/esm/vs/language/html/monaco.contribution.js'),
-    import('monaco-editor/esm/vs/language/typescript/monaco.contribution.js'),
-  ])
-    .then(() => {
-      // Defaults do JavaScript — autocomplete "limpo": completa globais do
-      // browser (document, querySelector, canvas…) mas SEM sublinhar erros. No
-      // modo Ponte quem reporta erros de sintaxe é o parser (Babel); ligar a
-      // validação do TS aqui só duplicaria avisos e marcaria falso-positivos em
-      // globais do aluno. Só é seguro acessar `monaco.languages.typescript`
-      // DEPOIS de a contribution acima ter sido importada.
-      const ts = monaco.languages.typescript
-      ts.javascriptDefaults.setCompilerOptions({
-        target: ts.ScriptTarget.ESNext,
-        allowNonTsExtensions: true,
-        allowJs: true,
-        checkJs: false,
-        lib: ['esnext', 'dom', 'dom.iterable'],
-      })
-      ts.javascriptDefaults.setDiagnosticsOptions({
-        noSemanticValidation: true,
-        noSyntaxValidation: true,
-      })
-      ts.javascriptDefaults.setEagerModelSync(true)
-      // TypeScript (.ts/.tsx) no modo Código: aqui os erros de TIPO são
-      // educativos (diferente do JS), então deixamos a validação LIGADA (default
-      // do typescriptDefaults). jsx ligado para .tsx.
-      ts.typescriptDefaults.setCompilerOptions({
-        target: ts.ScriptTarget.ESNext,
-        allowNonTsExtensions: true,
-        jsx: ts.JsxEmit.ReactJSX,
-        lib: ['esnext', 'dom', 'dom.iterable'],
-      })
-      ts.typescriptDefaults.setEagerModelSync(true)
-    })
-    .catch((err) => {
-      // Permite nova tentativa numa próxima montagem do editor.
-      languageServicesPromise = null
-      throw err
-    })
-  return languageServicesPromise
+  return Promise.resolve()
 }
 
 let warmedUp = false
 
 /**
- * Pré-aquece os serviços de linguagem do Monaco em segundo plano. Além de
- * carregar as contribuições (via `loadLanguageServices`), força o worker do
- * TypeScript a inicializar (compilador + libs do DOM) com uma consulta efêmera,
- * para que o autocomplete de JS apareça na hora quando o aluno começar a digitar.
+ * Pré-aquece o worker do TypeScript em segundo plano: força o chunk do WORKER
+ * (compilador do TS ~11 MB + libs do DOM, off-main-thread) a inicializar com uma
+ * consulta efêmera, para que o autocomplete de JS apareça na hora quando o aluno
+ * começar a digitar — sem o warmup, o 1º gatilho de completions pagaria essa
+ * inicialização.
  *
  * É best-effort e idempotente. Deve ser chamado durante `idle` para não
  * competir com o render inicial do editor.

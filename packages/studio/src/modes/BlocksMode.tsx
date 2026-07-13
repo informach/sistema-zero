@@ -28,6 +28,11 @@ export function BlocksMode(): JSX.Element {
   )
   const blocksHydration = useProjectStore((s) => s.blocksHydration)
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
+  // Blocos DEFASADOS: o aluno editou código na Ponte e trocou p/ cá antes de o
+  // reverse-parse assentar (o worker morre com a Ponte). Ver o recovery abaixo.
+  const filesAheadOfBlocks = useProjectStore(
+    (s) => s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch,
+  )
   const projectStoreApi = useProjectStoreApi()
   const studioConfig = useStudioConfig()
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
@@ -50,19 +55,64 @@ export function BlocksMode(): JSX.Element {
     }
   }, [ir, js, projectName, setSourceMap])
 
+  // RECOVERY da corrida da Ponte: o aluno digitou código e trocou p/ Blocos
+  // dentro da janela do reverse-parse (~0,9s de debounce + worker, que morre
+  // com a Ponte). Os blocos no store estão DEFASADOS — a fonte mais nova é o
+  // CÓDIGO, então derivamos os blocos dele (parse no main thread, import
+  // dinâmico como a rede de segurança abaixo). Enquanto a época não fecha, o
+  // BlocklyPanel PULA o force do FINISHED_LOADING (não regenera arquivos de
+  // blocos velhos) e os dois efeitos de derivação abaixo ficam dormentes.
+  // Parse falhou (código quebrado no meio da digitação)? Mantém blocos antigos
+  // e a trava: os arquivos ficam intactos; uma edição REAL de blocos retoma a
+  // autoridade deles (mesma precedência de sempre).
+  const recoveringRef = useRef(false)
+  useEffect(() => {
+    if (!hasProject || !filesAheadOfBlocks) return
+    if (recoveringRef.current) return
+    const project = projectStoreApi.getState().project
+    if (!project) return
+    recoveringRef.current = true
+    let cancelled = false
+    void import('#parsers')
+      .then(({ parseProjectFiles }) => {
+        if (cancelled) return
+        const state = projectStoreApi.getState()
+        const current = state.project
+        if (!current || current.id !== project.id) return
+        if (state.bridgeCodeEditEpoch <= state.bridgeBlocksSyncedEpoch) return
+        // Época capturada ANTES do parse: no modo Blocos não há editor de
+        // código, então nenhuma edição avança a época durante o parse.
+        const epoch = state.bridgeCodeEditEpoch
+        const derived = parseProjectFiles(current.files)
+        state.applyProjectState({ ir: derived, blocksState: buildWorkspaceStateFromIR(derived) })
+        state.markBridgeBlocksSynced(epoch)
+      })
+      .catch((err) => {
+        console.warn('[sz] não foi possível derivar os blocos do código digitado:', err)
+      })
+      .finally(() => {
+        recoveringRef.current = false
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [hasProject, filesAheadOfBlocks, projectStoreApi])
+
   // Projetos antigos ou vindos do modo Código podem ter IR salvo, mas ainda não
   // ter a serialização do Blockly — ou ter um `blocksState` VAZIO (sobra de um
   // ciclo anterior). Em ambos os casos, deriva os blocos do IR para abrir direto
   // com blocos visíveis. A Ponte faz a mesma derivação por simetria.
   // ⚠️ NUNCA enquanto a partição real hidrata ('pending'): derivar aqui marcaria
-  // o projeto sujo e descartaria o layout salvo prestes a chegar.
+  // o projeto sujo e descartaria o layout salvo prestes a chegar. Nem com blocos
+  // DEFASADOS: o IR também está velho — o recovery acima deriva do código.
   useEffect(() => {
     if (!hasProject || !ir) return
     if (blocksHydration === 'pending') return
+    if (filesAheadOfBlocks) return
     if (!isBlocksStateEmpty(blocksState)) return
     if (ir.html.length === 0 && ir.css.length === 0 && ir.js.length === 0) return
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir) })
-  }, [hasProject, blocksState, ir, blocksHydration, applyProjectState])
+  }, [hasProject, blocksState, ir, blocksHydration, filesAheadOfBlocks, applyProjectState])
 
   // REDE DE SEGURANÇA da aula só-Blocos (e recuperação de partição
   // descartada/ausente): sem IR e sem blocksState, mas COM código nos arquivos,
@@ -75,6 +125,9 @@ export function BlocksMode(): JSX.Element {
   const derivedFromCodeRef = useRef<string | null>(null)
   useEffect(() => {
     if (!hasProject || ir) return
+    // Blocos defasados = o recovery acima já deriva do código (e MARCA a época);
+    // rodar as duas derivações em paralelo desperdiçaria um parse.
+    if (filesAheadOfBlocks) return
     if (!isBlocksStateEmpty(blocksState)) return
     if (blocksHydration !== 'empty' && blocksHydration !== 'failed' && blocksHydration !== 'idle') {
       return
@@ -108,7 +161,7 @@ export function BlocksMode(): JSX.Element {
     return () => {
       cancelled = true
     }
-  }, [hasProject, blocksState, ir, blocksHydration, projectStoreApi])
+  }, [hasProject, blocksState, ir, blocksHydration, filesAheadOfBlocks, projectStoreApi])
 
   if (isNarrow) {
     return (

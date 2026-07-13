@@ -11,4 +11,22 @@ describe('inferLanguage', () => {
     expect(inferLanguage('tipos.ts')).toBe('typescript')
     expect(inferLanguage('App.tsx')).toBe('typescript')
   })
+
+  it('mantém as variantes de JS da árvore PRO no language service de JS', () => {
+    expect(inferLanguage('util.cjs')).toBe('javascript')
+    expect(inferLanguage('App.jsx')).toBe('javascript')
+  })
+
+  it('mapeia json/markdown/xml da árvore PRO para as linguagens certas', () => {
+    expect(inferLanguage('package.json')).toBe('json')
+    expect(inferLanguage('README.md')).toBe('markdown')
+    expect(inferLanguage('logo.svg')).toBe('xml')
+    expect(inferLanguage('config.xml')).toBe('xml')
+  })
+
+  it('desconhecido vira texto puro, nunca javascript', () => {
+    expect(inferLanguage('notas.txt')).toBe('plaintext')
+    expect(inferLanguage('sem-extensao')).toBe('plaintext')
+    expect(inferLanguage('.gitignore')).toBe('plaintext')
+  })
 })

@@ -84,6 +84,23 @@ interface ProjectStore {
   /** Estado da restauração em 2º plano dos blocos (ver BlocksHydrationStatus). */
   blocksHydration: BlocksHydrationStatus
   setBlocksHydration: (status: BlocksHydrationStatus) => void
+  /**
+   * Épocas da sincronização código⇄blocos da Ponte (sessão, não persistem).
+   * `bridgeCodeEditEpoch` incrementa a cada edição de CÓDIGO na Ponte
+   * (setFiles/setFile com mode 'bridge'); `bridgeBlocksSyncedEpoch` marca até
+   * QUAL época os blocos/IR refletem os arquivos (o reverse-parse captura a
+   * época no POST e marca ao aplicar; edição real de blocos marca a época
+   * corrente — blocos viram a autoridade). `code > synced` ⇒ os blocos estão
+   * DEFASADOS: nenhuma carga pode regenerar arquivos a partir deles (o
+   * BlocklyPanel pula o force do FINISHED_LOADING) e o BlocksMode deriva os
+   * blocos do código ao entrar. Sem isso, digitar na Ponte e trocar de modo
+   * dentro da janela do reverse-parse (~0,9s de debounce + worker, que MORRE
+   * com a Ponte) regenerava os arquivos dos blocos velhos e PERDIA o código.
+   */
+  bridgeCodeEditEpoch: number
+  bridgeBlocksSyncedEpoch: number
+  /** Marca que os blocos refletem os arquivos ATÉ a época dada (monotônico). */
+  markBridgeBlocksSynced: (epoch: number) => void
   loadProject: (id: string) => Promise<Project | null>
   /** Hidrata um projeto já sanitizado (host/<Studio>) SEM marcar como sujo. */
   hydrateProject: (p: Project) => void
@@ -2114,6 +2131,10 @@ export function createProjectStore(
     // Escrito pelo PersistenceService (dono do ciclo de restauração). Nunca toca
     // isDirty: status não é edição.
     setBlocksHydration: (status) => set({ blocksHydration: status }),
+    bridgeCodeEditEpoch: 0,
+    bridgeBlocksSyncedEpoch: 0,
+    markBridgeBlocksSynced: (epoch) =>
+      set((s) => ({ bridgeBlocksSyncedEpoch: Math.max(s.bridgeBlocksSyncedEpoch, epoch) })),
     loadProject: async (id) => {
       loadSeq += 1
       const seq = loadSeq
@@ -2126,11 +2147,25 @@ export function createProjectStore(
         set({ project: null, isDirty: false, saveError: null, blocksHydration: 'idle' })
         return null
       }
-      set({ project: existing, isDirty: false, saveError: null, blocksHydration: 'idle' })
+      set({
+        project: existing,
+        isDirty: false,
+        saveError: null,
+        blocksHydration: 'idle',
+        bridgeCodeEditEpoch: 0,
+        bridgeBlocksSyncedEpoch: 0,
+      })
       return existing
     },
     hydrateProject: (p) =>
-      set({ project: p, isDirty: false, saveError: null, blocksHydration: 'idle' }),
+      set({
+        project: p,
+        isDirty: false,
+        saveError: null,
+        blocksHydration: 'idle',
+        bridgeCodeEditEpoch: 0,
+        bridgeBlocksSyncedEpoch: 0,
+      }),
     hydrateProjectState: (patch) => {
       const p = get().project
       if (!p) return
@@ -2152,7 +2187,14 @@ export function createProjectStore(
       })
     },
     unloadProject: () =>
-      set({ project: null, isDirty: false, saveError: null, blocksHydration: 'idle' }),
+      set({
+        project: null,
+        isDirty: false,
+        saveError: null,
+        blocksHydration: 'idle',
+        bridgeCodeEditEpoch: 0,
+        bridgeBlocksSyncedEpoch: 0,
+      }),
     createProject: async (name) => {
       const p = createEmptyProject(ulid(), sanitizeProjectName(name))
       await persistProject(p)
@@ -2289,7 +2331,15 @@ export function createProjectStore(
 
       return { project: imported, warnings }
     },
-    setProject: (p) => set({ project: p, isDirty: true, saveError: null, blocksHydration: 'idle' }),
+    setProject: (p) =>
+      set({
+        project: p,
+        isDirty: true,
+        saveError: null,
+        blocksHydration: 'idle',
+        bridgeCodeEditEpoch: 0,
+        bridgeBlocksSyncedEpoch: 0,
+      }),
     setMode: (mode) => {
       const p = get().project
       if (!p) return
@@ -2349,7 +2399,14 @@ export function createProjectStore(
         set({ saveError: limitError })
         return
       }
-      set({ project: bump({ ...p, files: nextFiles }), isDirty: true, saveError: null })
+      set((s) => ({
+        project: bump({ ...p, files: nextFiles }),
+        isDirty: true,
+        saveError: null,
+        // Edição de CÓDIGO na Ponte: os blocos ficam para trás até o
+        // reverse-parse (que captura esta época no post) alcançá-la.
+        ...(p.mode === 'bridge' ? { bridgeCodeEditEpoch: s.bridgeCodeEditEpoch + 1 } : {}),
+      }))
     },
     setFile: (name, value) => {
       const p = get().project
@@ -2361,7 +2418,12 @@ export function createProjectStore(
         set({ saveError: limitError })
         return
       }
-      set({ project: bump({ ...p, files: nextFiles }), isDirty: true, saveError: null })
+      set((s) => ({
+        project: bump({ ...p, files: nextFiles }),
+        isDirty: true,
+        saveError: null,
+        ...(p.mode === 'bridge' ? { bridgeCodeEditEpoch: s.bridgeCodeEditEpoch + 1 } : {}),
+      }))
     },
     setIR: (ir) => {
       const p = get().project

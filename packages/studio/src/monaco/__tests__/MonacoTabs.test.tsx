@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useEffect, useRef } from 'react'
 import type { DisposableMonacoModel, MonacoModelRegistry } from '../modelPaths'
 
@@ -8,9 +8,10 @@ import type { DisposableMonacoModel, MonacoModelRegistry } from '../modelPaths'
 // próximos arquivos da suíte.
 const realEditorReact = { ...(await import('@monaco-editor/react')) }
 // `../workers` fica mockado SEM restore (como os mocks de idb-keyval): o módulo
-// real importa `monaco-editor/esm/...` (compilador do TS, ~6 MB + contribuições
-// que tocam globais do DOM), pesado/instável no happy-dom — e nenhum outro
-// arquivo da suíte importa `../workers`, então o stub não vaza para ninguém.
+// real importa `monaco-editor/esm/...` estático (editor.api + contribuições de
+// linguagem, que registram serviços/emitters e tocam globais do DOM),
+// pesado/instável no happy-dom — e nenhum outro arquivo da suíte importa
+// `../workers`, então o stub não vaza para ninguém.
 
 // ----------------------------------------------------------------------------
 // Mundo Monaco falso: um registro GLOBAL de models por `path` (espelha o
@@ -61,6 +62,26 @@ const fakeRegistry: MonacoModelRegistry = {
   getModels: () => Array.from(fakeModels.values()),
 }
 
+// Ação de formatação falsa, controlada por teste (o handleFormat consome
+// isSupported/run). `currentFormatAction = null` reproduz "ação inexistente".
+interface FakeAction {
+  isSupported: () => boolean
+  run: () => Promise<void>
+}
+let currentFormatAction: FakeAction | null = null
+// Trilha de chamadas do fluxo de formatação ('services' | 'getAction:<id>' |
+// 'run') — os testes asseveram a ORDEM (services antes de getAction antes de run).
+const formatCallLog: string[] = []
+// Implementação trocável do mock de loadLanguageServices (default: resolve).
+let loadLanguageServicesImpl: () => Promise<void> = async () => {}
+
+// View states falsos: saveViewState devolve um token com o path do model
+// corrente; restoreViewState registra o que foi aplicado e sobre qual model.
+interface FakeViewState {
+  forPath: string
+}
+const restoreViewStateCalls: Array<{ applied: string; on: string }> = []
+
 // Editor único exposto pelo <Editor> mockado, capturado para dirigir eventos
 // (cursor / troca de model) a partir do teste.
 interface FakeEditor {
@@ -72,7 +93,9 @@ interface FakeEditor {
   createDecorationsCollection: () => { set: () => void; clear: () => void }
   revealRangeInCenterIfOutsideViewport: () => void
   setSelection: (range: { startLineNumber: number; endLineNumber: number }) => void
-  getAction: () => null
+  getAction: (id: string) => FakeAction | null
+  saveViewState: () => FakeViewState
+  restoreViewState: (state: FakeViewState) => void
 }
 
 let currentEditor: FakeEditor | null = null
@@ -110,7 +133,14 @@ function makeEditor(initialPath: string): FakeEditor {
         endLineNumber: range.endLineNumber,
       })
     },
-    getAction: () => null,
+    getAction: (id: string) => {
+      formatCallLog.push(`getAction:${id}`)
+      return currentFormatAction
+    },
+    saveViewState: () => ({ forPath: modelPath }),
+    restoreViewState: (state: FakeViewState) => {
+      restoreViewStateCalls.push({ applied: state.forPath, on: modelPath })
+    },
   }
   return editor
 }
@@ -154,6 +184,7 @@ mock.module('../workers', () => ({
   configureMonacoWorkers: () => {},
   getMonacoModelRegistry: () => fakeRegistry,
   warmupMonacoLanguageServices: async () => {},
+  loadLanguageServices: () => loadLanguageServicesImpl(),
   prewarmEditorModels: () => {},
   monacoThemeName: (theme: string) => (theme === 'light' ? 'sz-monaco-light' : 'sz-monaco-dark'),
 }))
@@ -164,12 +195,19 @@ afterAll(() => {
 
 // Import DEPOIS dos mocks: o módulo chama configureMonacoWorkers() no topo e
 // importa o <Editor>.
-const { MonacoTabs } = await import('../MonacoTabs')
+const { MonacoTabs, setFormatWaitForTests } = await import('../MonacoTabs')
+
+// Sem fake timers na suíte (regra 6): encurta o poll do Formatar p/ os testes.
+setFormatWaitForTests(1, 30)
 
 function resetWorld(): void {
   fakeModels.clear()
   currentEditor = null
   selectionCalls.length = 0
+  currentFormatAction = null
+  formatCallLog.length = 0
+  restoreViewStateCalls.length = 0
+  loadLanguageServicesImpl = async () => {}
 }
 
 describe('MonacoTabs — ciclo de vida dos models', () => {
@@ -554,5 +592,194 @@ describe('MonacoTabs — seleção do realce (bloco→código)', () => {
     )
     expect(selectionCalls).toHaveLength(2)
     expect(selectionCalls[1]).toEqual({ startLineNumber: 9, endLineNumber: 9 })
+  })
+})
+
+describe('MonacoTabs — view state por aba', () => {
+  beforeEach(resetWorld)
+  afterEach(() => {
+    cleanup()
+    resetWorld()
+  })
+
+  it('restaura cursor/scroll ao revisitar uma aba na mesma sessão', () => {
+    const files = [
+      { name: 'index.html', value: '<html></html>' },
+      { name: 'script.js', value: 'const a = 1' },
+    ]
+    const prefix = 'proj-vs'
+    const { rerender } = render(
+      <MonacoTabs
+        files={files}
+        activeFile="index.html"
+        onChange={() => {}}
+        modelPathPrefix={prefix}
+      />,
+    )
+
+    // index.html → script.js: salva o estado do index.html; script.js é a 1ª
+    // visita (nada a restaurar).
+    rerender(
+      <MonacoTabs
+        files={files}
+        activeFile="script.js"
+        onChange={() => {}}
+        modelPathPrefix={prefix}
+      />,
+    )
+    expect(restoreViewStateCalls).toHaveLength(0)
+
+    // script.js → index.html: restaura o estado salvo DO index.html sobre o
+    // model do index.html (o fake registra o par aplicado/corrente).
+    rerender(
+      <MonacoTabs
+        files={files}
+        activeFile="index.html"
+        onChange={() => {}}
+        modelPathPrefix={prefix}
+      />,
+    )
+    expect(restoreViewStateCalls).toHaveLength(1)
+    expect(restoreViewStateCalls[0]?.applied.endsWith('/index.html')).toBe(true)
+    expect(restoreViewStateCalls[0]?.on.endsWith('/index.html')).toBe(true)
+  })
+})
+
+describe('MonacoTabs — Formatar', () => {
+  beforeEach(resetWorld)
+  afterEach(() => {
+    cleanup()
+    resetWorld()
+  })
+
+  const files = [{ name: 'script.js', value: 'const a=1' }]
+
+  function renderWithFormat(onFormatIssue?: (issue: string) => void): HTMLButtonElement {
+    render(
+      <MonacoTabs
+        files={files}
+        onChange={() => {}}
+        modelPathPrefix="proj-fmt"
+        formatLabel="Formatar"
+        onFormatIssue={onFormatIssue}
+      />,
+    )
+    return screen.getByRole('button', { name: 'Formatar' }) as HTMLButtonElement
+  }
+
+  /** Captura console.warn durante `fn` (sem spy do bun p/ não vazar entre arquivos). */
+  async function withWarnCapture(fn: (warns: string[]) => Promise<void>): Promise<void> {
+    const warns: string[] = []
+    const realWarn = console.warn
+    console.warn = (...args: unknown[]) => {
+      warns.push(args.map(String).join(' '))
+    }
+    try {
+      await fn(warns)
+    } finally {
+      console.warn = realWarn
+    }
+  }
+
+  it('o botão só existe quando formatLabel é passado', () => {
+    render(<MonacoTabs files={files} onChange={() => {}} modelPathPrefix="proj-fmt" />)
+    expect(screen.queryByRole('button', { name: 'Formatar' })).toBeNull()
+    cleanup()
+    renderWithFormat()
+    expect(screen.getByRole('button', { name: 'Formatar' })).toBeTruthy()
+  })
+
+  it('desabilita o botão quando a linguagem da aba não tem formatador (.md)', () => {
+    render(
+      <MonacoTabs
+        files={[{ name: 'README.md', value: '# oi' }]}
+        onChange={() => {}}
+        modelPathPrefix="proj-fmt"
+        formatLabel="Formatar"
+      />,
+    )
+    const button = screen.getByRole('button', { name: 'Formatar' }) as HTMLButtonElement
+    expect(button.disabled).toBe(true)
+  })
+
+  it('clique aguarda os serviços ANTES de resolver a ação, e roda', async () => {
+    loadLanguageServicesImpl = async () => {
+      formatCallLog.push('services')
+    }
+    currentFormatAction = {
+      isSupported: () => true,
+      run: async () => {
+        formatCallLog.push('run')
+      },
+    }
+    fireEvent.click(renderWithFormat())
+    await waitFor(() =>
+      expect(formatCallLog).toEqual(['services', 'getAction:editor.action.formatDocument', 'run']),
+    )
+  })
+
+  it('espera o provider registrar (isSupported false→true) e então roda', async () => {
+    let supported = false
+    currentFormatAction = {
+      isSupported: () => supported,
+      run: async () => {
+        formatCallLog.push('run')
+      },
+    }
+    fireEvent.click(renderWithFormat())
+    // O provider "registra" no meio da janela do poll (1ms/30ms nos testes).
+    setTimeout(() => {
+      supported = true
+    }, 5)
+    await waitFor(() => expect(formatCallLog).toContain('run'))
+  })
+
+  it('provider nunca registra: avisa no console, reporta a issue e NÃO roda a ação', async () => {
+    await withWarnCapture(async (warns) => {
+      const issues: string[] = []
+      currentFormatAction = {
+        isSupported: () => false,
+        run: async () => {
+          formatCallLog.push('run')
+        },
+      }
+      fireEvent.click(renderWithFormat((issue) => issues.push(issue)))
+      await waitFor(() =>
+        expect(warns.some((w) => w.includes('nenhum provider de formatação'))).toBe(true),
+      )
+      expect(formatCallLog).not.toContain('run')
+      expect(issues).toEqual(['no-provider'])
+    })
+  })
+
+  it('serviços rejeitam: avisa, reporta a issue, não resolve a ação e libera o busy', async () => {
+    await withWarnCapture(async (warns) => {
+      const issues: string[] = []
+      loadLanguageServicesImpl = async () => {
+        throw new Error('chunk falhou')
+      }
+      const button = renderWithFormat((issue) => issues.push(issue))
+      fireEvent.click(button)
+      await waitFor(() =>
+        expect(warns.some((w) => w.includes('serviços de linguagem não carregaram'))).toBe(true),
+      )
+      expect(formatCallLog.some((c) => c.startsWith('getAction'))).toBe(false)
+      expect(issues).toEqual(['services-failed'])
+      await waitFor(() => expect(button.disabled).toBe(false))
+    })
+  })
+
+  it('fica busy (desabilitado) durante a formatação e reabilita ao fim', async () => {
+    let release!: () => void
+    loadLanguageServicesImpl = () =>
+      new Promise<void>((resolve) => {
+        release = resolve
+      })
+    currentFormatAction = { isSupported: () => true, run: async () => {} }
+    const button = renderWithFormat()
+    fireEvent.click(button)
+    await waitFor(() => expect(button.disabled).toBe(true))
+    release()
+    await waitFor(() => expect(button.disabled).toBe(false))
   })
 })

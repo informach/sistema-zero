@@ -41,6 +41,8 @@ describe('BlocksMode', () => {
       isDirty: false,
       saveError: null,
       blocksHydration: 'idle',
+      bridgeCodeEditEpoch: 0,
+      bridgeBlocksSyncedEpoch: 0,
     })
   })
 
@@ -51,6 +53,8 @@ describe('BlocksMode', () => {
       isDirty: false,
       saveError: null,
       blocksHydration: 'idle',
+      bridgeCodeEditEpoch: 0,
+      bridgeBlocksSyncedEpoch: 0,
     })
   })
 
@@ -158,6 +162,50 @@ describe('BlocksMode', () => {
     const state = useProjectStore.getState()
     expect(state.project?.blocksState).toBeNull()
     expect(state.isDirty).toBe(false)
+  })
+
+  it('recovery da corrida da Ponte: blocos DEFASADOS são derivados do CÓDIGO, nunca o contrário', async () => {
+    // O aluno digitou na Ponte e trocou p/ Blocos dentro da janela do
+    // reverse-parse (o worker morre com a Ponte): files têm o código NOVO,
+    // ir/blocksState estão velhos e a época de código está à frente. O recovery
+    // deriva os blocos do código e FECHA a época — os arquivos ficam intactos.
+    const base = createEmptyProject('project-race', 'Corrida da Ponte')
+    const typed = 'console.log("sobrevivi");\n'
+    useProjectStore.setState({
+      project: {
+        ...base,
+        files: { ...base.files, 'script.js': typed },
+        // ir/blocksState VELHOS: o seed vazio de projeto novo (pré-digitação).
+      },
+      isDirty: false,
+      saveError: null,
+      blocksHydration: 'restored',
+      bridgeCodeEditEpoch: 1,
+      bridgeBlocksSyncedEpoch: 0,
+    })
+
+    render(<BlocksMode />)
+
+    await waitFor(() => {
+      const state = useProjectStore.getState()
+      // Blocos derivados do código digitado (o console.log entra no ⚙️).
+      expect(state.project?.blocksState).toMatchObject({
+        blocks: {
+          blocks: [
+            { type: 'sz_frame_structure' },
+            { type: 'sz_frame_appearance' },
+            {
+              type: 'sz_frame_behavior',
+              inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
+            },
+          ],
+        },
+      })
+      // Época fechada: os blocos agora refletem os arquivos.
+      expect(state.bridgeBlocksSyncedEpoch).toBe(1)
+      // O código digitado NUNCA é regenerado por cima.
+      expect(state.project?.files['script.js']).toBe(typed)
+    })
   })
 
   it('rede de segurança: sem IR e sem partição (empty), deriva os blocos do CÓDIGO sem sujar', async () => {

@@ -42,6 +42,14 @@ export function resolveModelPathPrefix(prefix: string | undefined, instanceId: s
   return project ? `${project}__${instance}` : instance
 }
 
+/**
+ * ⚠️ Contrato: `prefix` deve ser um prefixo JÁ SANEADO por
+ * `resolveModelPathPrefix` (o MonacoTabs faz isso). Esta função NÃO sanitiza de
+ * propósito — sanitizar aqui e não nas COMPARAÇÕES (`isModelInPathPrefix`/
+ * `disposeModelsForPathPrefix`, que recebem o mesmo prefixo cru) divergiria as
+ * chaves. Um call site novo que passe prefixo cru com `:` reabre o bug do
+ * esquema de URI (`monaco.Uri.parse` engole tudo antes do 1º `:`).
+ */
 export function buildMonacoModelPath(prefix: string | undefined, fileName: string): string {
   const safePrefix = (prefix ?? '').trim()
   return safePrefix ? `${safePrefix}/${fileName}` : fileName

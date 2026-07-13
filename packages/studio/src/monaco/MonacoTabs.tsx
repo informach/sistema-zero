@@ -1,7 +1,7 @@
 import Editor, { type OnChange, type OnMount } from '@monaco-editor/react'
 import type * as monacoNs from 'monaco-editor'
 import type { JSX } from 'react'
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useMeasuredWidth } from '../hooks/useMeasuredWidth'
 import { inferLanguage } from './languages'
 import {
@@ -14,6 +14,7 @@ import {
 import {
   configureMonacoWorkers,
   getMonacoModelRegistry,
+  loadLanguageServices,
   monacoThemeName,
   prewarmEditorModels,
   warmupMonacoLanguageServices,
@@ -52,6 +53,37 @@ export interface MonacoCursorPosition {
 // 'monaco-editor' aqui é type-only de propósito — não pagar o módulo inteiro).
 const CURSOR_CHANGE_REASON_EXPLICIT = 3
 
+// Espera do Formatar pelo provider: o registro é ASSÍNCRONO mesmo com as
+// contribuições estáticas (onLanguage → import do chunk do modo). Não há evento
+// público de "provider registrado" no Monaco standalone, então o handleFormat
+// faz poll da API pública `action.isSupported()` (reflete a precondição
+// `editorHasDocumentFormattingProvider` do model ativo) dentro desta janela.
+let formatWaitIntervalMs = 100
+let formatWaitTimeoutMs = 4000
+
+/** Encurta a espera do Formatar nos testes (a suíte não usa fake timers). */
+export function setFormatWaitForTests(intervalMs: number, timeoutMs: number): void {
+  formatWaitIntervalMs = intervalMs
+  formatWaitTimeoutMs = timeoutMs
+}
+
+// Linguagens cujo language service registra provider de formatação (JSON entra
+// pelo serviço próprio; markdown/xml/plaintext são só colorização/texto).
+const FORMATTABLE_LANGUAGES: ReadonlySet<string> = new Set([
+  'html',
+  'css',
+  'javascript',
+  'typescript',
+  'json',
+])
+
+/**
+ * Por que uma formatação pedida não aconteceu — consumido pelos modos para dar
+ * feedback VISÍVEL ao aluno (Console da IDE); os `console.warn` internos ficam
+ * como diagnóstico de DevTools.
+ */
+export type MonacoFormatIssue = 'services-failed' | 'action-missing' | 'no-provider' | 'run-failed'
+
 export interface MonacoHighlight {
   file: string
   startLine: number
@@ -85,6 +117,13 @@ export interface MonacoTabsProps {
    * independentemente deste botão.
    */
   formatLabel?: string
+  /**
+   * Chamado quando uma formatação pedida NÃO acontece (serviços falharam,
+   * provider ausente após a espera, ação indisponível ou erro ao rodar). Os
+   * modos usam para avisar o aluno no Console da IDE — sem isto a falha só
+   * aparece em `console.warn` (invisível sem DevTools).
+   */
+  onFormatIssue?: (issue: MonacoFormatIssue) => void
   /**
    * Decide se uma aba pode ser fechada (mostra o "×"). Fechar é só de UI: o
    * arquivo continua existindo; quem o reabre é o componente pai. Os arquivos
@@ -166,8 +205,10 @@ function scheduleLanguageServicesLoad(): () => void {
 
   const run = () => {
     if (cancelled) return
-    // Aquece os serviços de linguagem E força o worker do TS (compilador ~6 MB) a
-    // inicializar AGORA, no idle — não na 1ª vez que o aluno abre o script.js.
+    // Força o worker do TS (chunk do WORKER com o compilador, ~11 MB,
+    // off-main-thread) a inicializar AGORA, no idle — não na 1ª vez que o aluno
+    // pede autocomplete no script.js. Os providers em si já registram no mount
+    // (contribuições estáticas em ./workers).
     void warmupMonacoLanguageServices().catch(() => {})
   }
 
@@ -204,6 +245,7 @@ export function MonacoTabs({
   className,
   tabsRightSlot,
   formatLabel,
+  onFormatIssue,
   canCloseFile,
   onCloseFile,
   modelPathPrefix,
@@ -244,6 +286,12 @@ export function MonacoTabs({
     if (fallback !== internalActive) setInternalActive(fallback)
   }, [activeFile, files, internalActive])
   const editorRef = useRef<monacoNs.editor.IStandaloneCodeEditor | null>(null)
+  // View state (cursor/scroll) POR ABA, por INSTÂNCIA. O `saveViewState` do
+  // @monaco-editor/react fica `false` de propósito (o Map global dele não tem
+  // .delete e vazaria um estado por projeto pela vida da aba do navegador);
+  // este Map morre com o componente e devolve o "lugar onde eu estava" ao
+  // revisitar um arquivo na mesma sessão.
+  const viewStatesRef = useRef(new Map<string, monacoNs.editor.ICodeEditorViewState | null>())
   const decorationsRef = useRef<monacoNs.editor.IEditorDecorationsCollection | null>(null)
   const activeHighlightRef = useRef<MonacoHighlight | null>(null)
   // Último `nonce` cuja SELEÇÃO já foi aplicada — evita re-selecionar (e roubar o
@@ -337,14 +385,97 @@ export function MonacoTabs({
     if (name !== undefined) onChangeRef.current(name, value ?? '')
   }, [])
 
-  const handleFormat = useCallback(() => {
-    editorRef.current?.getAction('editor.action.formatDocument')?.run()
+  // Busy do Formatar: desabilita o botão enquanto roda (feedback visível — sem
+  // ele, latência/falha silenciosa é indistinguível de "quebrado") e barra
+  // reentrância pelo ref (o state só pinta; o guard não pode depender de render).
+  const [formatBusy, setFormatBusy] = useState(false)
+  const formatBusyRef = useRef(false)
+  // Espelha onChangeRef: mantém o handleFormat estável sem perder o callback vivo.
+  const onFormatIssueRef = useRef(onFormatIssue)
+  useEffect(() => {
+    onFormatIssueRef.current = onFormatIssue
+  }, [onFormatIssue])
+
+  const handleFormat = useCallback(async () => {
+    const editor = editorRef.current
+    if (!editor || formatBusyRef.current) return
+    formatBusyRef.current = true
+    setFormatBusy(true)
+    try {
+      // As contribuições de linguagem são estáticas (ver ./workers); o aguardo
+      // fica como cinto de segurança barato e ponto de injeção dos testes.
+      try {
+        await loadLanguageServices()
+      } catch (err) {
+        console.warn('[studio] Formatar: serviços de linguagem não carregaram', err)
+        onFormatIssueRef.current?.('services-failed')
+        return
+      }
+      const action = editor.getAction('editor.action.formatDocument')
+      if (!action) {
+        console.warn('[studio] Formatar: ação editor.action.formatDocument indisponível')
+        onFormatIssueRef.current?.('action-missing')
+        return
+      }
+      // O provider registra assíncrono (onLanguage → chunk do modo, logo após o
+      // mount). Se o aluno clicar dentro dessa janela, `run()` no-oparia em
+      // silêncio pela precondição — aguarda o registro com poll curto.
+      const deadline = Date.now() + formatWaitTimeoutMs
+      while (!action.isSupported() && Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, formatWaitIntervalMs))
+      }
+      if (!action.isSupported()) {
+        console.warn(
+          '[studio] Formatar: nenhum provider de formatação registrado para a linguagem atual',
+        )
+        onFormatIssueRef.current?.('no-provider')
+        return
+      }
+      try {
+        await action.run()
+      } catch (err) {
+        console.warn('[studio] Formatar falhou ao rodar', err)
+        onFormatIssueRef.current?.('run-failed')
+      }
+    } finally {
+      formatBusyRef.current = false
+      setFormatBusy(false)
+    }
   }, [])
 
   const handleMount: OnMount = useCallback((editor) => {
     editorRef.current = editor
     setMountedEditor(editor)
   }, [])
+
+  // Salva o view state da aba que está SAINDO. É layout effect de propósito: a
+  // troca de model do <Editor> acontece num efeito PASSIVO do
+  // @monaco-editor/react, então neste ponto o editor ainda exibe o model
+  // anterior — `saveViewState()` captura o cursor/scroll certo sob a chave certa.
+  const activeModelPath = file ? buildMonacoModelPath(saltedPrefix, file.name) : ''
+  const prevModelPathRef = useRef(activeModelPath)
+  useLayoutEffect(() => {
+    const prev = prevModelPathRef.current
+    if (prev === activeModelPath) return
+    prevModelPathRef.current = activeModelPath
+    const editor = editorRef.current
+    if (editor && prev) viewStatesRef.current.set(prev, editor.saveViewState())
+  }, [activeModelPath])
+
+  // Restaura cursor/scroll ao entrar num model já visitado. Registrado ANTES do
+  // efeito de highlight (ordem de inscrição): com realce pendente, o reveal dele
+  // roda depois e vence a rolagem restaurada. O evento de cursor emitido pela
+  // restauração tem reason ≠ Explicit — não dispara a sincronização código→bloco.
+  useEffect(() => {
+    if (!mountedEditor) return
+    const disposable = mountedEditor.onDidChangeModel(() => {
+      const model = mountedEditor.getModel()
+      if (!model) return
+      const saved = viewStatesRef.current.get(getMonacoModelPath(model))
+      if (saved) mountedEditor.restoreViewState(saved)
+    })
+    return () => disposable.dispose()
+  }, [mountedEditor])
 
   // Opções memoizadas: todo campo é constante MENOS `fontSize`. Com um literal
   // inline, @monaco-editor/react chamava editor.updateOptions() a CADA render (o
@@ -497,6 +628,10 @@ export function MonacoTabs({
     return <div className={className}>Nenhum arquivo.</div>
   }
 
+  // Aba ativa sem provider de formatação (README.md, .svg, texto puro) → botão
+  // desabilitado, em vez de aguardar o teto do poll e falhar em silêncio.
+  const canFormat = FORMATTABLE_LANGUAGES.has(inferLanguage(file.name))
+
   return (
     <div
       ref={rootRef}
@@ -549,9 +684,11 @@ export function MonacoTabs({
             <button
               type="button"
               onClick={handleFormat}
+              disabled={formatBusy || !canFormat}
+              aria-busy={formatBusy}
               title={`${formatLabel} (Shift+Alt+F)`}
               aria-label={formatLabel}
-              className="inline-flex items-center rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg"
+              className="inline-flex items-center rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg disabled:opacity-50 disabled:hover:bg-transparent"
             >
               {compact ? <FormatGlyph /> : formatLabel}
             </button>
@@ -573,8 +710,9 @@ export function MonacoTabs({
           // Cada projeto/instância recebe um path de model salgado e NUNCA reusado, então
           // a restauração de view-state entre projetos nunca casa. Com o default `true`, o
           // Map interno (global, sem .delete) do @monaco-editor/react acumularia um
-          // view-state por projeto aberto pela vida da aba. `false` corta esse vazamento
-          // sem perder nada funcional (os models por arquivo já são estáveis na sessão).
+          // view-state por projeto aberto pela vida da aba. `false` corta esse vazamento;
+          // o cursor/scroll por aba é restaurado pelo Map POR INSTÂNCIA acima
+          // (`viewStatesRef`), que morre com o componente.
           saveViewState={false}
           options={editorOptions}
         />
