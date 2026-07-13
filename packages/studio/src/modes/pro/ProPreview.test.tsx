@@ -133,6 +133,60 @@ describe('ProPreview — install órfão no cancelamento', () => {
     })
   })
 
+  it('⏻ Reiniciar: mata o dev atual e re-roda o ciclo até um novo server-ready', async () => {
+    useProjectStore.setState({
+      project: {
+        id: 'pro-3',
+        name: 'Pro Restart',
+        mode: 'code',
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+      } as never,
+    })
+
+    const { container } = render(<Harness />)
+    await waitFor(() => {
+      expect(installSpawned).toBe(true)
+    })
+    act(() => {
+      resolveInstallExit(0)
+    })
+    await waitFor(() => {
+      expect(screen.getByText(/Subindo o servidor/)).toBeTruthy()
+    })
+    await act(async () => {
+      fireServerReady('http://fake-um.dev/')
+    })
+    await waitFor(() => {
+      expect(container.querySelector('iframe')?.getAttribute('src')).toBe('http://fake-um.dev/')
+    })
+
+    // Reiniciar: a cleanup do efeito mata o dev-server atual e o ciclo
+    // recomeça — install de novo (morno é rápido e pega deps novas) → dev →
+    // um NOVO server-ready, possivelmente noutra porta/URL.
+    installSpawned = false
+    installKill.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Reiniciar o servidor' }))
+
+    await waitFor(() => {
+      // O processo antigo (dev) foi morto pela cleanup…
+      expect(installKill).toHaveBeenCalled()
+      // …e um novo npm install entrou no ciclo.
+      expect(installSpawned).toBe(true)
+    })
+    act(() => {
+      resolveInstallExit(0)
+    })
+    await waitFor(() => {
+      expect(screen.getByText(/Subindo o servidor/)).toBeTruthy()
+    })
+    await act(async () => {
+      fireServerReady('http://fake-dois.dev/')
+    })
+    await waitFor(() => {
+      expect(container.querySelector('iframe')?.getAttribute('src')).toBe('http://fake-dois.dev/')
+    })
+  })
+
   it('mata o npm install se a instância desmontar antes da corrida resolver', async () => {
     // Projeto pro mínimo na store default (o ProPreview só lê id + devScript).
     useProjectStore.setState({

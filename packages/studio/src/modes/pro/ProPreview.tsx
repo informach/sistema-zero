@@ -65,8 +65,13 @@ export function ProPreview(): JSX.Element {
   const toolbarWidth = useMeasuredWidth(toolbarRef)
   const compactToolbar = toolbarWidth > 0 && toolbarWidth < PRO_TOOLBAR_COMPACT_MAX_PX
 
-  // `attempt` é dep PROPOSITAL: o botão "Tentar de novo" o incrementa para
-  // re-disparar o boot/install/dev. O biome não vê o uso (só `setAttempt`).
+  // `attempt` é dep PROPOSITAL: "Tentar de novo" (fase de erro) e "⏻ Reiniciar"
+  // (barra do ready) o incrementam para re-disparar o boot/install/dev — a
+  // cleanup mata o dev-server atual e o ciclo recomeça. O Reiniciar NÃO pula o
+  // `npm install` de propósito: morno (node_modules já populado) ele é rápido e
+  // é o que garante que uma dependência recém-adicionada ao package.json entre
+  // no ar; a URL pode mudar de porta e o `server-ready` cuida disso. O biome
+  // não vê o uso (só `setAttempt`).
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-trigger manual via attempt
   useEffect(() => {
     if (!projectId) return
@@ -250,6 +255,15 @@ export function ProPreview(): JSX.Element {
             aria-label="Atualizar o preview"
           >
             {compactToolbar ? '⟳' : '⟳ Atualizar'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setAttempt((a) => a + 1)}
+            title="Reiniciar o servidor de desenvolvimento (npm install + dev de novo)"
+            aria-label="Reiniciar o servidor"
+          >
+            {compactToolbar ? '⏻' : '⏻ Reiniciar'}
           </Button>
           {projectName && (
             // Nome do PROJETO, não o <title> vivo do app: o iframe do dev-server
