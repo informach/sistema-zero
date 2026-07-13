@@ -242,6 +242,12 @@ export function BridgeMode(): JSX.Element {
   // dropa o resultado se o epoch avançou (edição de bloco concorrente venceu).
   const stateEpoch = useRef(0)
   const epochAtPost = useRef(0)
+  // Época de edição de CÓDIGO (store) vigente quando o pedido foi postado: ao
+  // aplicar o resultado, os blocos passam a refletir os arquivos ATÉ esta época
+  // (`markBridgeBlocksSynced`). Teclas digitadas DURANTE o parse avançam a época
+  // no store e mantêm os blocos marcados como defasados — trocar de modo nesse
+  // meio-tempo não pode regenerar arquivos deles.
+  const bridgeCodeEpochAtPost = useRef(0)
   const syntaxError = parseDiagnostics.find((diagnostic) => diagnostic.kind === 'syntaxError')
 
   // Inscreve no store e avança o `stateEpoch` sempre que `ir` OU `blocksState`
@@ -313,11 +319,20 @@ export function BridgeMode(): JSX.Element {
 
       const result = message.result
       setParseDiagnostics(result.diagnostics)
+      // Todo desfecho de SUCESSO abaixo significa "os blocos/IR refletem os
+      // arquivos até a época capturada no post" — inclusive os atalhos que não
+      // tocam o store (IR igual / generated-match): a igualdade É a prova da
+      // sincronia. Falha de parse (branch de erro acima) NÃO marca: os blocos
+      // seguem defasados e a trava anti-regeneração continua de pé.
+      const markSynced = () =>
+        projectStoreApi.getState().markBridgeBlocksSynced(bridgeCodeEpochAtPost.current)
       // O sourcemap é responsabilidade do efeito acima (derivado do `ir` do
       // store): quando este handler adota um novo `ir`, o efeito regenera o
       // sourcemap com as chaves certas. Nos atalhos abaixo o `ir` exibido não
       // muda, então o sourcemap atual continua válido.
       if (result.kind !== 'parsed' || !result.ir) {
+        // 'generated-match': os arquivos já batem com o que o IR gera.
+        if (result.kind === 'generated-match') markSynced()
         return
       }
       // Lê o `ir`/`blocksState` FRESCOS do store (closure obsoleta dropava o
@@ -325,6 +340,7 @@ export function BridgeMode(): JSX.Element {
       const currentProject = projectStoreApi.getState().project
       const currentIR = currentProject?.ir ?? null
       if (deepEqualIR(result.ir, currentIR)) {
+        markSynced()
         return
       }
       // Mudança só na casca (head/doctype) ou nos ids — os blocos não representam
@@ -332,6 +348,7 @@ export function BridgeMode(): JSX.Element {
       // do aluno (ex.: colunas separadas de JS) em edições cosméticas no código.
       if (currentIR && irBlockStructureEqual(result.ir, currentIR)) {
         applyProjectStateRef.current({ ir: { ...currentIR, htmlShell: result.ir.htmlShell } })
+        markSynced()
         return
       }
       // Modelo CONTAINER: o reverse-parse reconstrói os 3 frames (🧱 Estrutura /
@@ -341,6 +358,7 @@ export function BridgeMode(): JSX.Element {
         ir: result.ir,
         blocksState: buildWorkspaceStateFromIR(result.ir),
       })
+      markSynced()
     }
     worker.onerror = (event) => {
       // Worker falhou: também libera o single-flight, senão um erro travaria os
@@ -496,6 +514,7 @@ export function BridgeMode(): JSX.Element {
     // Memoriza o epoch vigente: o handler dropa o resultado se uma edição de
     // bloco avançar o epoch enquanto este reparse está no worker.
     epochAtPost.current = stateEpoch.current
+    bridgeCodeEpochAtPost.current = projectStoreApi.getState().bridgeCodeEditEpoch
     // O handler (onmessage/onerror) é PERSISTENTE — instalado uma vez na criação
     // do worker — e despacha por `requestId`. Aqui só postamos o pedido.
     worker.postMessage({

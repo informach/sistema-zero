@@ -399,6 +399,18 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   // programática, senão sobrescreveria o código escrito à mão.
   const regenerateFromBlocks = useCallback(
     (workspace: Blockly.Workspace, options: { force?: boolean } = {}) => {
+      // Blocos DEFASADOS em relação aos arquivos (o aluno editou CÓDIGO na Ponte
+      // e o reverse-parse não assentou — trocou de modo dentro da janela, e o
+      // worker morre com a Ponte): uma CARGA (force) nunca pode regenerar
+      // arquivos/IR a partir deles — perderia o código digitado. O BlocksMode
+      // deriva os blocos do código (recovery) e o reload subsequente re-dispara
+      // este force já com blocos frescos. Edição REAL de bloco (sem force) segue
+      // valendo: o aluno agiu — os blocos viram a autoridade (semântica de
+      // precedência já documentada no epoch do BridgeMode).
+      {
+        const s = projectStoreApi.getState()
+        if (options.force && s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch) return
+      }
       const state = Blockly.serialization.workspaces.save(workspace)
       const serialized = JSON.stringify(state)
       if (!options.force && serialized === lastSerializedRef.current) return
@@ -450,6 +462,10 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       }
       applyProjectState({ ir, blocksState: state, files })
       setSourceMap(sourceMap)
+      // Os arquivos acabaram de ser gerados DESTES blocos — eles refletem a
+      // época corrente de edição de código (autoridade retomada).
+      const storeState = projectStoreApi.getState()
+      storeState.markBridgeBlocksSynced(storeState.bridgeCodeEditEpoch)
     },
     [applyProjectState, setSourceMap, projectStoreApi],
   )

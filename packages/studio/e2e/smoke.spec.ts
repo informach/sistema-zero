@@ -166,27 +166,27 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(page.getByRole('button', { name: 'script.js' })).toBeVisible()
   })
 
-  test('Código digitado na Ponte permanece ao alternar para Blocos e voltar', async ({ page }) => {
+  test('Código digitado na Ponte sobrevive à troca IMEDIATA para Blocos', async ({ page }) => {
     await createProject(page)
     await openBridgeScript(page)
     await page.keyboard.type('document.body.innerHTML = "<h1>Persistiu</h1>";')
 
+    // Troca DENTRO da janela do reverse-parse (~0,9s de debounce + worker, que
+    // morre com a Ponte): a regressão regenerava os arquivos a partir dos
+    // blocos VELHOS e perdia o código digitado. Com as épocas de sincronização,
+    // o BlocksMode deriva os blocos do código e os arquivos ficam intactos.
+    await page.getByRole('button', { name: 'Blocos' }).click()
     await expect(
       page.frameLocator('iframe').getByRole('heading', { name: 'Persistiu' }),
     ).toBeVisible({
       timeout: 15_000,
     })
 
-    // Espera o reverse-parse assentar (debounce 900ms + worker) ANTES de trocar
-    // de modo. Trocar no meio da janela dispara uma corrida REAL que perde o
-    // código digitado (regeneração parte dos blocos velhos) — bug rastreado à
-    // parte; este smoke cobre o fluxo suportado.
-    await page.waitForTimeout(2500)
-
-    // Round-trip D2: os blocos derivam do código digitado; o texto é preservado.
-    await page.getByRole('button', { name: 'Blocos' }).click()
     await page.getByRole('button', { name: 'Ponte' }).click()
-    await expect(page.getByRole('button', { name: 'script.js' })).toBeVisible()
+    await page.getByRole('button', { name: 'script.js' }).first().click()
+    await expect(page.locator('.monaco-editor .view-lines').first()).toContainText('Persistiu', {
+      timeout: 10_000,
+    })
     await expect(
       page.frameLocator('iframe').getByRole('heading', { name: 'Persistiu' }),
     ).toBeVisible({
