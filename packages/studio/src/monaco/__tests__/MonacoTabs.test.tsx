@@ -8,9 +8,10 @@ import type { DisposableMonacoModel, MonacoModelRegistry } from '../modelPaths'
 // próximos arquivos da suíte.
 const realEditorReact = { ...(await import('@monaco-editor/react')) }
 // `../workers` fica mockado SEM restore (como os mocks de idb-keyval): o módulo
-// real importa `monaco-editor/esm/...` (compilador do TS, ~6 MB + contribuições
-// que tocam globais do DOM), pesado/instável no happy-dom — e nenhum outro
-// arquivo da suíte importa `../workers`, então o stub não vaza para ninguém.
+// real importa `monaco-editor/esm/...` estático (editor.api + contribuições de
+// linguagem, que registram serviços/emitters e tocam globais do DOM),
+// pesado/instável no happy-dom — e nenhum outro arquivo da suíte importa
+// `../workers`, então o stub não vaza para ninguém.
 
 // ----------------------------------------------------------------------------
 // Mundo Monaco falso: um registro GLOBAL de models por `path` (espelha o

@@ -67,6 +67,7 @@ export default defineConfig({
       'monaco-editor/esm/vs/basic-languages/css/css.contribution.js',
       'monaco-editor/esm/vs/basic-languages/html/html.contribution.js',
       'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution.js',
+      'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution.js',
       'monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestController.js',
       'monaco-editor/esm/vs/editor/contrib/snippet/browser/snippetController2.js',
       'monaco-editor/esm/vs/editor/contrib/format/browser/formatActions.js',

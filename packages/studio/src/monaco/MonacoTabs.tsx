@@ -167,8 +167,10 @@ function scheduleLanguageServicesLoad(): () => void {
 
   const run = () => {
     if (cancelled) return
-    // Aquece os serviços de linguagem E força o worker do TS (compilador ~6 MB) a
-    // inicializar AGORA, no idle — não na 1ª vez que o aluno abre o script.js.
+    // Força o worker do TS (chunk do WORKER com o compilador, ~11 MB,
+    // off-main-thread) a inicializar AGORA, no idle — não na 1ª vez que o aluno
+    // pede autocomplete no script.js. Os providers em si já registram no mount
+    // (contribuições estáticas em ./workers).
     void warmupMonacoLanguageServices().catch(() => {})
   }
 
