@@ -53,6 +53,20 @@ export interface MonacoCursorPosition {
 // 'monaco-editor' aqui é type-only de propósito — não pagar o módulo inteiro).
 const CURSOR_CHANGE_REASON_EXPLICIT = 3
 
+// Espera do Formatar pelo provider: o registro é ASSÍNCRONO mesmo com as
+// contribuições estáticas (onLanguage → import do chunk do modo). Não há evento
+// público de "provider registrado" no Monaco standalone, então o handleFormat
+// faz poll da API pública `action.isSupported()` (reflete a precondição
+// `editorHasDocumentFormattingProvider` do model ativo) dentro desta janela.
+let formatWaitIntervalMs = 100
+let formatWaitTimeoutMs = 4000
+
+/** Encurta a espera do Formatar nos testes (a suíte não usa fake timers). */
+export function setFormatWaitForTests(intervalMs: number, timeoutMs: number): void {
+  formatWaitIntervalMs = intervalMs
+  formatWaitTimeoutMs = timeoutMs
+}
+
 export interface MonacoHighlight {
   file: string
   startLine: number
@@ -340,30 +354,52 @@ export function MonacoTabs({
     if (name !== undefined) onChangeRef.current(name, value ?? '')
   }, [])
 
+  // Busy do Formatar: desabilita o botão enquanto roda (feedback visível — sem
+  // ele, latência/falha silenciosa é indistinguível de "quebrado") e barra
+  // reentrância pelo ref (o state só pinta; o guard não pode depender de render).
+  const [formatBusy, setFormatBusy] = useState(false)
+  const formatBusyRef = useRef(false)
+
   const handleFormat = useCallback(async () => {
     const editor = editorRef.current
-    if (!editor) return
-    // Os PROVIDERS de formatação (HTML/CSS/JS) só existem depois que as
-    // contribuições de linguagem carregam. O `warmupMonacoLanguageServices` roda no
-    // mount, mas é ASSÍNCRONO (e pesado: o compilador do TS) — se o aluno clica
-    // Formatar antes de concluir (ou o warmup falhou no build), a ação vira no-op
-    // silencioso. Aguardar aqui garante os providers registrados antes de formatar.
+    if (!editor || formatBusyRef.current) return
+    formatBusyRef.current = true
+    setFormatBusy(true)
     try {
-      await loadLanguageServices()
-    } catch (err) {
-      // Sem os serviços não há formatador — loga p/ diagnóstico e desiste.
-      console.warn('[studio] Formatar: serviços de linguagem não carregaram', err)
-      return
-    }
-    const action = editor.getAction('editor.action.formatDocument')
-    if (!action) {
-      console.warn('[studio] Formatar: ação editor.action.formatDocument indisponível')
-      return
-    }
-    try {
-      await action.run()
-    } catch (err) {
-      console.warn('[studio] Formatar falhou ao rodar', err)
+      // As contribuições de linguagem são estáticas (ver ./workers); o aguardo
+      // fica como cinto de segurança barato e ponto de injeção dos testes.
+      try {
+        await loadLanguageServices()
+      } catch (err) {
+        console.warn('[studio] Formatar: serviços de linguagem não carregaram', err)
+        return
+      }
+      const action = editor.getAction('editor.action.formatDocument')
+      if (!action) {
+        console.warn('[studio] Formatar: ação editor.action.formatDocument indisponível')
+        return
+      }
+      // O provider registra assíncrono (onLanguage → chunk do modo, logo após o
+      // mount). Se o aluno clicar dentro dessa janela, `run()` no-oparia em
+      // silêncio pela precondição — aguarda o registro com poll curto.
+      const deadline = Date.now() + formatWaitTimeoutMs
+      while (!action.isSupported() && Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, formatWaitIntervalMs))
+      }
+      if (!action.isSupported()) {
+        console.warn(
+          '[studio] Formatar: nenhum provider de formatação registrado para a linguagem atual',
+        )
+        return
+      }
+      try {
+        await action.run()
+      } catch (err) {
+        console.warn('[studio] Formatar falhou ao rodar', err)
+      }
+    } finally {
+      formatBusyRef.current = false
+      setFormatBusy(false)
     }
   }, [])
 
@@ -575,9 +611,11 @@ export function MonacoTabs({
             <button
               type="button"
               onClick={handleFormat}
+              disabled={formatBusy}
+              aria-busy={formatBusy}
               title={`${formatLabel} (Shift+Alt+F)`}
               aria-label={formatLabel}
-              className="inline-flex items-center rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg"
+              className="inline-flex items-center rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg disabled:opacity-50 disabled:hover:bg-transparent"
             >
               {compact ? <FormatGlyph /> : formatLabel}
             </button>
