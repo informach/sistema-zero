@@ -1,10 +1,11 @@
 ---
 // Entrada do site: página "bio" da marca kids (destino do link da bio do
-// Instagram @criecomhelenaejulio). Em vez de redirecionar, apresenta os dois
-// caminhos: o quiz (descobrir o perfil do filho) e a página da oferta do
-// Desafio do Primeiro Jogo. Tema kids claro, com o Zappy e decorações.
+// Instagram @criecomhelenaejulio). Em vez de redirecionar, apresenta os
+// caminhos: o quiz (descobrir o perfil do filho), a oferta do Desafio do
+// Primeiro Jogo e a assinatura da Comunidade dos Criadores. Tema kids claro.
 import '@fontsource/material-symbols-rounded/400.css'
 import { EMPRESA } from '../content/legal'
+import { COMUNIDADE_DOS_CRIADORES } from '../funnels/comunidade-dos-criadores'
 import { DESAFIO_PRIMEIRO_JOGO } from '../funnels/desafio-primeiro-jogo'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { funnelOgImage } from '../lib/seo'
@@ -14,6 +15,7 @@ export const prerender = false
 const f = DESAFIO_PRIMEIRO_JOGO
 const quizUrl = `${f.basePath}/quiz`
 const ofertaUrl = `${f.basePath}/oferta`
+const comunidadeUrl = `${COMUNIDADE_DOS_CRIADORES.basePath}/oferta`
 const img = (file: string) => `${f.imagesBase}/${file}`
 const ano = new Date().getFullYear()
 
@@ -92,6 +94,13 @@ const description =
           <span class="rotulo">
             Desafio do Primeiro Jogo
             <small>O desafio de 3 dias para criar o primeiro jogo</small>
+          </span>
+        </a>
+        <a href={comunidadeUrl} class="botao verde">
+          <span class="material-symbols-rounded" aria-hidden="true">stadia_controller</span>
+          <span class="rotulo">
+            Comunidade dos Criadores
+            <small>A assinatura da plataforma inteira de criar jogos</small>
           </span>
         </a>
       </nav>
@@ -302,6 +311,25 @@ const description =
     box-shadow:
       0 3px 0 #145aa0,
       0 8px 14px rgba(30, 136, 229, 0.3);
+  }
+  .botao.verde {
+    background: linear-gradient(180deg, #4cd888, #37c871);
+    color: #0b3a20;
+    box-shadow:
+      0 7px 0 #1f8f4d,
+      0 16px 26px rgba(55, 200, 113, 0.32);
+  }
+  .botao.verde:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 9px 0 #1f8f4d,
+      0 20px 32px rgba(55, 200, 113, 0.4);
+  }
+  .botao.verde:active {
+    transform: translateY(4px);
+    box-shadow:
+      0 3px 0 #1f8f4d,
+      0 8px 14px rgba(55, 200, 113, 0.3);
   }
 
   .rodape {

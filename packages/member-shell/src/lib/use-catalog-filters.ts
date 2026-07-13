@@ -2,10 +2,12 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { applyCatalogSort, type CatalogSort } from './catalog-sort'
 import type { CatalogCourseView, CourseLevelSlug } from './types'
 
 export type CatalogAccessFilter = 'todos' | 'liberados' | 'bloqueados'
-export type CatalogSort = 'padrao' | 'az' | 'za'
+/** Ordenação do catálogo — tipo/aplicação no helper PURO `catalog-sort.ts` (testado). */
+export type { CatalogSort } from './catalog-sort'
 /** Filtro por dificuldade do curso (`todos` = sem filtro). */
 export type CatalogLevelFilter = 'todos' | CourseLevelSlug
 
@@ -16,7 +18,7 @@ export interface CatalogFilters {
   ordem: CatalogSort
 }
 
-const DEFAULTS: CatalogFilters = { q: '', acesso: 'todos', nivel: 'todos', ordem: 'padrao' }
+const DEFAULTS: CatalogFilters = { q: '', acesso: 'todos', nivel: 'todos', ordem: 'antigos' }
 
 /** Atraso do espelho da busca na URL — digitação contínua só navega ao parar. */
 const Q_DEBOUNCE_MS = 350
@@ -26,7 +28,8 @@ function parseAccess(v: string | null): CatalogAccessFilter {
 }
 
 function parseSort(v: string | null): CatalogSort {
-  return v === 'az' || v === 'za' ? v : 'padrao'
+  // `padrao` (legado em URL compartilhada antiga) cai no default novo (`antigos`).
+  return v === 'az' || v === 'za' || v === 'recentes' || v === 'antigos' ? v : 'antigos'
 }
 
 function parseLevel(v: string | null): CatalogLevelFilter {
@@ -119,9 +122,7 @@ export function useCatalogFilters(courses: CatalogCourseView[]) {
     if (filters.acesso === 'liberados') list = list.filter((c) => c.hasAccess)
     if (filters.acesso === 'bloqueados') list = list.filter((c) => !c.hasAccess)
     if (filters.nivel !== 'todos') list = list.filter((c) => c.level === filters.nivel)
-    if (filters.ordem === 'az') list = [...list].sort((a, b) => a.title.localeCompare(b.title))
-    if (filters.ordem === 'za') list = [...list].sort((a, b) => b.title.localeCompare(a.title))
-    return list
+    return applyCatalogSort(list, filters.ordem)
   }, [courses, filters.q, filters.acesso, filters.nivel, filters.ordem])
 
   return { filters, filtered, setFilter, clearFilters, hasActiveFilters }

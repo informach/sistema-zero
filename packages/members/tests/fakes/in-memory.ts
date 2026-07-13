@@ -376,7 +376,9 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
 
   async findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]> {
     const set = new Set(slugs)
-    return this.courses.filter((c) => set.has(c.slug) && isCourseAccessible(c.status))
+    return this.courses
+      .filter((c) => set.has(c.slug) && isCourseAccessible(c.status))
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
   async findCoursesBySlugs(slugs: string[]): Promise<Course[]> {
@@ -385,9 +387,10 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   }
 
   async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
+    // Espelha o Drizzle: ordem PADRÃO das vitrines = criação (mais antigos primeiro).
     return this.courses
       .filter((c) => c.status === 'published' && c.audience === audience)
-      .sort((a, b) => a.title.localeCompare(b.title))
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
   async findOutline(

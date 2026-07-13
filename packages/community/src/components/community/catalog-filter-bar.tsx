@@ -43,9 +43,10 @@ export function CatalogFilterBar({ filters, onChange, onClear, hasActiveFilters 
           value={filters.ordem}
           onChange={(e) => onChange('ordem', e.target.value)}
           aria-label="Ordenar"
-          className="w-32"
+          className="w-44"
         >
-          <option value="padrao">Padrão</option>
+          <option value="antigos">Mais antigos primeiro</option>
+          <option value="recentes">Mais recentes primeiro</option>
           <option value="az">A → Z</option>
           <option value="za">Z → A</option>
         </Select>

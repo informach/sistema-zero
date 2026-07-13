@@ -16,6 +16,10 @@ export interface PreCheckoutModalProps {
 
 export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalProps) {
   const [open, setOpen] = useState(false)
+  // Oferta ESCOLHIDA no CTA que abriu o modal (`data-checkout-oferta="<slug>"`,
+  // opcional — usado pelos funis de assinatura pra pré-selecionar o plano no
+  // checkout via `?oferta=`). CTAs sem o atributo seguem na oferta principal.
+  const [oferta, setOferta] = useState<string | null>(null)
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [telefone, setTelefone] = useState('')
@@ -57,6 +61,7 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
       if (el) {
         e.preventDefault()
         lastFocusedRef.current = document.activeElement as HTMLElement | null
+        setOferta(el.getAttribute('data-checkout-oferta'))
         setOpen(true)
         apiPost('/api/events', { eventName: 'abriu_checkout' }).catch(() => {})
       }
@@ -105,6 +110,9 @@ export default function PreCheckoutModal({ basePath, funnel }: PreCheckoutModalP
         email: parsed.data.email,
         telefone: parsed.data.telefone,
       })
+      // Plano escolhido no CTA → o checkout pré-seleciona (validado no servidor
+      // contra {principal, altOffer} — slug forjado dá 400 INVALID_OFFER).
+      if (oferta) q.set('oferta', oferta)
       // Marca o redirecionamento antes de sair da página (best-effort, aguardado).
       await apiPost('/api/events', { eventName: 'redirecionou_checkout' }).catch(() => {})
       window.location.href = `${basePath}/checkout?${q.toString()}`

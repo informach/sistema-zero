@@ -55,6 +55,18 @@ const MURAL_SKU = 'mural-dos-criadores'
 const DESAFIO_SKU = 'desafio-primeiro-jogo'
 const DESAFIO_OFFER_SLUG = 'desafio-primeiro-jogo'
 
+// Comunidade dos Criadores (kids) — a ASSINATURA da plataforma inteira, vendida pelo
+// funil `/kids/comunidade-dos-criadores` (env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES`
+// = oferta MENSAL; a anual é a irmã via `content.altOffer`). O produto é um COMBO
+// (`kind: 'bundle'`) cujos componentes espalham o acesso: chave-mestra dos cursos kids
+// (produto-folha `todos-os-cursos-kids`, abaixo) + Clube + Mural + Estúdio Completo +
+// Pensa + Pinta. O Desafio do Mês destrava sozinho (exige clube+estúdio); Quarto 3D,
+// Carreira, missões-núcleo e Recados são núcleo GRÁTIS (nenhum grant além destes).
+const TODOS_CURSOS_KIDS_SKU = 'todos-os-cursos-kids'
+const COMUNIDADE_SKU = 'comunidade-dos-criadores'
+const COMUNIDADE_OFFER_MENSAL_SLUG = 'comunidade-dos-criadores-mensal'
+const COMUNIDADE_OFFER_ANUAL_SLUG = 'comunidade-dos-criadores-anual'
+
 const env = loadEnv()
 const logger = createLogger({ level: 'info', pretty: env.NODE_ENV !== 'production' })
 const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
@@ -300,7 +312,7 @@ async function main(): Promise<void> {
   }
 
   // ── Comunidade kids: Clube + Mural (produtos `community`, SEPARADOS) ──────
-  await ensureCommunityProduct({
+  const clubeProductId = await ensureCommunityProduct({
     sku: CLUBE_SKU,
     name: 'Clube dos Criadores',
     description:
@@ -358,6 +370,122 @@ async function main(): Promise<void> {
       content: { badge: 'Crie seu primeiro jogo', ctaLabel: 'Topar o desafio' },
       // Mural dos Criadores entra como BÔNUS desta oferta (item extra entregue junto).
       items: [{ productId: muralProductId }],
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  // ── Comunidade dos Criadores (kids): ASSINATURA da plataforma inteira ─────
+  // Chave-mestra kids: produto-FOLHA não vendável sozinho (`sellable: false`) que
+  // libera TODOS os cursos kids publicados, atuais e futuros (`all_kids_courses`,
+  // sem courseRef — invariante do assertCoherent). Só entra na mão do aluno via combo.
+  let todosCursosKids = await products.findBySku(TODOS_CURSOS_KIDS_SKU)
+  if (todosCursosKids) {
+    logger.info('seed.product_exists', { id: todosCursosKids.id, sku: todosCursosKids.sku })
+  } else {
+    const view = await createProduct.execute({
+      sku: TODOS_CURSOS_KIDS_SKU,
+      slug: TODOS_CURSOS_KIDS_SKU,
+      name: 'Todos os cursos kids',
+      kind: 'course',
+      status: 'active',
+      sellable: false,
+      description:
+        'Chave-mestra da trilha kids: libera todos os cursos infantis publicados, os de hoje e os que ainda vão entrar. Entregue apenas dentro da Comunidade dos Criadores.',
+      fulfillment: { accessType: 'all_kids_courses', release: { mode: 'immediate' } },
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    todosCursosKids = await products.findById(view.id)
+  }
+  if (!todosCursosKids) throw new Error('Chave-mestra kids não encontrada após a criação')
+
+  // O COMBO: `bundle` sem entrega própria (invariante — a entrega vem dos componentes).
+  // A chave-mestra é o componente PRIMÁRIO: é nela que o `maxProfiles` da oferta é
+  // injetado no grant (GetOfferService.getEntitlements → snapshot do members).
+  let comunidade = await products.findBySku(COMUNIDADE_SKU)
+  if (comunidade) {
+    logger.info('seed.product_exists', { id: comunidade.id, sku: comunidade.sku })
+  } else {
+    const view = await createProduct.execute({
+      sku: COMUNIDADE_SKU,
+      slug: COMUNIDADE_SKU,
+      name: 'Comunidade dos Criadores',
+      kind: 'bundle',
+      status: 'active',
+      sellable: true,
+      description:
+        'A assinatura da plataforma kids inteira: todos os cursos com professor acompanhando, o Clube e o Mural dos Criadores, e o kit de criação livre (Estúdio Completo, Pensa e Pinta).',
+      components: [
+        { componentProductId: todosCursosKids.id, isPrimary: true, sortOrder: 0 },
+        { componentProductId: clubeProductId, sortOrder: 1 },
+        { componentProductId: muralProductId, sortOrder: 2 },
+        { componentProductId: studio.id, sortOrder: 3 },
+        { componentProductId: pensa.id, sortOrder: 4 },
+        { componentProductId: pinta.id, sortOrder: 5 },
+      ],
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    comunidade = await products.findById(view.id)
+  }
+  if (!comunidade) throw new Error('Produto da Comunidade não encontrado após a criação')
+
+  // Duas ofertas IRMÃS de assinatura (mensal 1 / anual 12), ligadas por `content.altOffer`
+  // nos DOIS sentidos — é o link que o alternador do checkout valida (anti-forja).
+  // Sem `allowsCoupon` (cupom é rejeitado em assinatura) e sem `installmentsMax`
+  // (assinatura não parcela). `maxProfiles: 2` = teto de perfis kids por conta.
+  const existingComunidadeMensal = await offers.findBySlug(COMUNIDADE_OFFER_MENSAL_SLUG)
+  if (existingComunidadeMensal) {
+    logger.info('seed.offer_exists', {
+      id: existingComunidadeMensal.id,
+      slug: existingComunidadeMensal.slug,
+    })
+  } else {
+    const view = await createOffer.execute({
+      productId: comunidade.id,
+      code: 'comunidade-mensal',
+      slug: COMUNIDADE_OFFER_MENSAL_SLUG,
+      name: 'Comunidade dos Criadores — Assinatura mensal',
+      priceCents: 9700,
+      currency: 'BRL',
+      pricingMode: 'subscription',
+      billingIntervalMonths: 1,
+      guaranteeDays: 7,
+      status: 'active',
+      content: {
+        badge: 'A plataforma inteira numa assinatura',
+        ctaLabel: 'Quero que meu filho comece a criar',
+        maxProfiles: 2,
+        altOffer: { slug: COMUNIDADE_OFFER_ANUAL_SLUG, label: 'Economize no anual' },
+      },
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
+  const existingComunidadeAnual = await offers.findBySlug(COMUNIDADE_OFFER_ANUAL_SLUG)
+  if (existingComunidadeAnual) {
+    logger.info('seed.offer_exists', {
+      id: existingComunidadeAnual.id,
+      slug: existingComunidadeAnual.slug,
+    })
+  } else {
+    const view = await createOffer.execute({
+      productId: comunidade.id,
+      code: 'comunidade-anual',
+      slug: COMUNIDADE_OFFER_ANUAL_SLUG,
+      name: 'Comunidade dos Criadores — Assinatura anual',
+      priceCents: 79700,
+      // Âncora "de/por": 12 × R$ 97 = R$ 1.164 (o que o mensal custaria no ano).
+      compareAtPriceCents: 116400,
+      currency: 'BRL',
+      pricingMode: 'subscription',
+      billingIntervalMonths: 12,
+      guaranteeDays: 7,
+      status: 'active',
+      content: {
+        badge: 'A plataforma inteira numa assinatura',
+        ctaLabel: 'Garantir 1 ano de criação',
+        maxProfiles: 2,
+        altOffer: { slug: COMUNIDADE_OFFER_MENSAL_SLUG, label: 'Prefiro começar no mensal' },
+      },
     })
     logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
   }

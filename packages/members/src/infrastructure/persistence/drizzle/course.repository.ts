@@ -103,6 +103,8 @@ export class DrizzleCourseRepository implements CourseRepository {
       .where(
         and(inArray(courses.slug, slugs), inArray(courses.status, [...ACCESSIBLE_COURSE_STATUSES])),
       )
+      // Mesma régua da vitrine: mais antigos primeiro (antes era ordem indefinida).
+      .orderBy(asc(courses.createdAt))
     return rows.map(toCourse)
   }
 
@@ -117,7 +119,9 @@ export class DrizzleCourseRepository implements CourseRepository {
       .select()
       .from(courses)
       .where(and(eq(courses.status, 'published'), eq(courses.audience, audience)))
-      .orderBy(asc(courses.title))
+      // Ordem PADRÃO das vitrines: jornada de criação (mais antigos primeiro) —
+      // decisão da usuária 13/07. A→Z virou opção do seletor no front.
+      .orderBy(asc(courses.createdAt))
     return rows.map(toCourse)
   }
 
