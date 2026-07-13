@@ -197,8 +197,10 @@ afterAll(() => {
 // importa o <Editor>.
 const { MonacoTabs, setFormatWaitForTests } = await import('../MonacoTabs')
 
-// Sem fake timers na suíte (regra 6): encurta o poll do Formatar p/ os testes.
-setFormatWaitForTests(1, 30)
+// Sem fake timers na suíte (regra 6): encurta o poll do Formatar p/ os testes
+// (intervalo, teto do provider, teto do run — as actions fake resolvem na hora,
+// então o teto de 40ms só morde no teste do run pendurado).
+setFormatWaitForTests(1, 30, 40)
 
 function resetWorld(): void {
   fakeModels.clear()
@@ -766,6 +768,24 @@ describe('MonacoTabs — Formatar', () => {
       expect(formatCallLog.some((c) => c.startsWith('getAction'))).toBe(false)
       expect(issues).toEqual(['services-failed'])
       await waitFor(() => expect(button.disabled).toBe(false))
+    })
+  })
+
+  it('run() pendurado (worker morto): solta o busy no teto e reporta a issue', async () => {
+    await withWarnCapture(async (warns) => {
+      const issues: string[] = []
+      currentFormatAction = {
+        isSupported: () => true,
+        // Nunca resolve — reproduz o provider com o worker de linguagem morto
+        // (ex.: COEP sem header no chunk → fallback de main thread quebrado).
+        run: () => new Promise<void>(() => {}),
+      }
+      const button = renderWithFormat((issue) => issues.push(issue))
+      fireEvent.click(button)
+      // Sem o teto, o busy prendia o botão PARA SEMPRE ("só deixa clicar uma vez").
+      await waitFor(() => expect(button.disabled).toBe(false))
+      expect(warns.some((w) => w.includes('não respondeu a tempo'))).toBe(true)
+      expect(issues).toEqual(['run-failed'])
     })
   })
 
