@@ -7,6 +7,7 @@ import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
 import { useProWebContainer } from './ProWebContainerProvider'
+import { buildProConsoleBridgeScript, isProConsoleMessage } from './proConsoleBridge'
 
 type Phase = 'booting' | 'installing' | 'starting' | 'ready' | 'error' | 'unsupported'
 
@@ -59,6 +60,9 @@ export function ProPreview(): JSX.Element {
   // cross-origin (*.webcontainer-api.io) — não dá para chamar location.reload()
   // lá dentro; trocar a `key` remonta o iframe e o navegador refaz a navegação.
   const [reloadNonce, setReloadNonce] = useState(0)
+  // Origem do dev-server CORRENTE (setada no server-ready): o listener de
+  // console só aceita mensagens vindas exatamente dela.
+  const previewOriginRef = useRef<string | null>(null)
   // A barra compacta conforme o PRÓPRIO contêiner (padrão do preview clássico):
   // em split apertado o botão vira só ícone e o título ganha o espaço.
   const toolbarRef = useRef<HTMLDivElement>(null)
@@ -88,6 +92,8 @@ export function ProPreview(): JSX.Element {
       setError(null)
       setUrl(null)
       setLogTail([])
+      // Origem antiga não autoriza mais nada (troca de projeto/reinício).
+      previewOriginRef.current = null
 
       // Gate de capacidade ANTES do import pesado do runtime: sem cross-origin
       // isolation (host sem COOP/COEP) o boot é fútil. Mostra uma mensagem
@@ -114,6 +120,17 @@ export function ProPreview(): JSX.Element {
         return
       }
 
+      // Ponte de console do app → Console da IDE (ver proConsoleBridge.ts):
+      // injetada em toda página que o dev-server servir DEPOIS deste ponto —
+      // o iframe só carrega no server-ready, então chega a tempo. Best-effort:
+      // sem a ponte o preview segue funcionando (só o console fica mudo).
+      try {
+        await wc.setPreviewScript(buildProConsoleBridgeScript(window.location.origin))
+      } catch (err) {
+        console.warn('[studio] preview PRO: ponte de console não pôde ser injetada', err)
+      }
+      if (cancelled) return
+
       // Marca que o dev-server chegou a 'pronto': desarma o monitor de saída
       // prematura abaixo (um dev-server vivo PODE encerrar/reiniciar depois sem ser
       // erro de boot).
@@ -121,6 +138,12 @@ export function ProPreview(): JSX.Element {
       const unsubReady = wc.on('server-ready', (_port, readyUrl) => {
         if (cancelled) return
         serverReady = true
+        // Origem autorizada do console: SÓ o dev-server corrente.
+        try {
+          previewOriginRef.current = new URL(readyUrl).origin
+        } catch {
+          previewOriginRef.current = null
+        }
         setUrl(readyUrl)
         setPhase('ready')
       })
@@ -239,6 +262,26 @@ export function ProPreview(): JSX.Element {
       cleanup()
     }
   }, [projectId, attempt, ensureMounted, devScript, pushLog, mountError, installTimeoutMs])
+
+  // Recebe o console espelhado pelo bridge (postMessage do iframe do
+  // dev-server) e o encaminha ao Console da IDE. Dupla validação: a ORIGEM tem
+  // que ser exatamente a do dev-server corrente e a FORMA passa pelo guard —
+  // o logsStore ainda trunca cada parte e aplica o rate limit.
+  useEffect(() => {
+    const handler = (event: MessageEvent) => {
+      const allowed = previewOriginRef.current
+      if (!allowed || event.origin !== allowed) return
+      if (!isProConsoleMessage(event.data)) return
+      pushLog({
+        source: 'sz-preview',
+        kind: event.data.kind,
+        parts: event.data.parts,
+        timestamp: Date.now(),
+      })
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [pushLog])
 
   if (phase === 'ready' && url) {
     return (

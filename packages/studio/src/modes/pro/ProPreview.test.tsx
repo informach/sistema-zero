@@ -14,9 +14,12 @@ const installKill = mock(() => undefined)
 // Dispara o `server-ready` do container falso (capturado no wc.on) — leva o
 // ProPreview à fase 'ready' nos testes do cabeçalho.
 let fireServerReady: (url: string) => void = () => {}
+// Ponte de console: o ProPreview injeta o script via setPreviewScript.
+const setPreviewScript = mock(async (_script: string) => undefined)
 
 function makeFakeContainer() {
   return {
+    setPreviewScript,
     on: (event: string, cb: (...args: unknown[]) => void) => {
       if (event === 'server-ready') {
         fireServerReady = (url: string) => cb(5173, url)
@@ -55,6 +58,7 @@ mock.module('./ProWebContainerProvider', () => ({
 
 const { ProPreview } = await import('./ProPreview')
 const { useProjectStore } = await import('../../state/projectStore')
+const { useLogsStore } = await import('../../state/logsStore')
 const { resolveStudioConfig, resolvePreviewSecurity, resolveLearning, StudioConfigProvider } =
   await import('../../studio/config')
 
@@ -82,10 +86,12 @@ describe('ProPreview — install órfão no cancelamento', () => {
   afterEach(() => {
     cleanup()
     installKill.mockClear()
+    setPreviewScript.mockClear()
     installSpawned = false
     resolveInstallExit = () => {}
     fireServerReady = () => {}
     useProjectStore.setState({ project: null })
+    useLogsStore.getState().clear()
   })
 
   it('fase ready: cabeçalho com o nome do projeto + Atualizar que REMONTA o iframe', async () => {
@@ -130,6 +136,64 @@ describe('ProPreview — install órfão no cancelamento', () => {
       expect(after).not.toBeNull()
       expect(after).not.toBe(before)
       expect(after?.getAttribute('src')).toBe('http://fake.webcontainer.dev/')
+    })
+  })
+
+  it('espelha o console do app no Console da IDE — só da origem do dev-server', async () => {
+    useProjectStore.setState({
+      project: {
+        id: 'pro-4',
+        name: 'Pro Console',
+        mode: 'code',
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+      } as never,
+    })
+
+    render(<Harness />)
+    await waitFor(() => {
+      expect(installSpawned).toBe(true)
+    })
+    // A ponte foi injetada com o marker + targetOrigin do HOST (via JSON).
+    await waitFor(() => {
+      expect(setPreviewScript).toHaveBeenCalled()
+    })
+    const script = setPreviewScript.mock.calls[0]?.[0] as string
+    expect(script).toContain('sz-pro-console')
+    expect(script).toContain(JSON.stringify(window.location.origin))
+
+    act(() => {
+      resolveInstallExit(0)
+    })
+    await waitFor(() => {
+      expect(screen.getByText(/Subindo o servidor/)).toBeTruthy()
+    })
+    await act(async () => {
+      fireServerReady('http://fake-um.dev/')
+    })
+
+    // Origem ERRADA (mesma forma): ignorada em silêncio.
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { source: 'sz-pro-console', kind: 'log', parts: ['intruso'] },
+          origin: 'http://malicioso.dev',
+        }),
+      )
+    })
+    // Origem do dev-server corrente: vira entrada do Console da IDE.
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: { source: 'sz-pro-console', kind: 'log', parts: ['olá do main.js'] },
+          origin: 'http://fake-um.dev',
+        }),
+      )
+    })
+
+    await waitFor(() => {
+      const texts = useLogsStore.getState().entries.map((e) => e.text)
+      expect(texts.some((t) => t.includes('olá do main.js'))).toBe(true)
+      expect(texts.some((t) => t.includes('intruso'))).toBe(false)
     })
   })
 
