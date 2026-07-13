@@ -342,7 +342,15 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   // preservar onde o aluno deixou os blocos quando a Ponte reconstrói o estado.
   const preservedPositionsRef = useRef<Map<string, [number, number]> | null>(null)
 
-  const installedIds = useMemo(() => installedExtensions.map((e) => e.id), [installedExtensions])
+  // Chave PRIMITIVA (conteúdo, não identidade — padrão do `allowedModesKey` do
+  // StudioCore): a hidratação/sanitização do projeto recria o array
+  // `installedExtensions` sem mudar o conteúdo. Keiar a toolbox pela identidade
+  // fazia `updateToolbox` re-rodar segundos após o load e FECHAVA o flyout que o
+  // aluno tinha acabado de abrir (regressão guardada no e2e/smoke).
+  const installedIdsKey = useMemo(
+    () => installedExtensions.map((e) => e.id).join('\n'),
+    [installedExtensions],
+  )
 
   // Registra os blocos das extensões instaladas ANTES de qualquer
   // `workspaces.load(blocksState)`. Síncrono (este componente já está no chunk do
@@ -371,7 +379,8 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   )
 
   const toolbox = useMemo(() => {
-    const extras = installedIds
+    const ids = installedIdsKey === '' ? [] : installedIdsKey.split('\n')
+    const extras = ids
       .map((id) => findExtension(id))
       .filter((e): e is NonNullable<ReturnType<typeof findExtension>> => Boolean(e))
       // Gateia a categoria da extensão pelo seu `minLevel` (Kits de Jogo facilitam →
@@ -382,7 +391,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       )
       .map((e) => e.blockly.toolboxCategory)
     return buildCoreToolbox(extras, profile)
-  }, [installedIds, profile])
+  }, [installedIdsKey, profile])
   initialToolboxRef.current ??= toolbox
 
   // Regenera arquivos/IR a partir dos blocos. Só deve ser chamada para edições
