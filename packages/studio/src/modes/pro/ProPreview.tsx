@@ -2,12 +2,17 @@ import type { WebContainerProcess } from '@webcontainer/api'
 import { type JSX, type ReactNode, useEffect, useRef, useState } from 'react'
 import { Button } from '#ui'
 import { canBootWebContainer } from '../../components/terminal/webContainerClient'
+import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
 import { useProWebContainer } from './ProWebContainerProvider'
 
 type Phase = 'booting' | 'installing' | 'starting' | 'ready' | 'error' | 'unsupported'
+
+// Espelha o limiar do preview clássico (responsividade POR SEÇÃO, não pela
+// página): abaixo disto o botão da barra vira só ícone.
+const PRO_TOOLBAR_COMPACT_MAX_PX = 400
 
 const PHASE_LABEL: Partial<Record<Phase, string>> = {
   booting: 'Iniciando o ambiente (WebContainer)…',
@@ -39,6 +44,7 @@ export function ProPreview(): JSX.Element {
   const mountStateRef = useRef(mountState)
   mountStateRef.current = mountState
   const projectId = useProjectStore((s) => s.project?.id ?? null)
+  const projectName = useProjectStore((s) => s.project?.name ?? '')
   const devScript = useProjectStore((s) => s.project?.proMeta?.devScript ?? 'dev')
   const pushLog = useLogsStore((s) => s.push)
   const installTimeoutMs = useStudioConfig().previewSecurity.terminalProcessTimeoutMs
@@ -49,6 +55,15 @@ export function ProPreview(): JSX.Element {
   const [logTail, setLogTail] = useState<string[]>([])
   const [attempt, setAttempt] = useState(0)
   const devProcessRef = useRef<WebContainerProcess | null>(null)
+  // Recarrega o APP sem tocar no servidor: o iframe do dev-server é
+  // cross-origin (*.webcontainer-api.io) — não dá para chamar location.reload()
+  // lá dentro; trocar a `key` remonta o iframe e o navegador refaz a navegação.
+  const [reloadNonce, setReloadNonce] = useState(0)
+  // A barra compacta conforme o PRÓPRIO contêiner (padrão do preview clássico):
+  // em split apertado o botão vira só ícone e o título ganha o espaço.
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const toolbarWidth = useMeasuredWidth(toolbarRef)
+  const compactToolbar = toolbarWidth > 0 && toolbarWidth < PRO_TOOLBAR_COMPACT_MAX_PX
 
   // `attempt` é dep PROPOSITAL: o botão "Tentar de novo" o incrementa para
   // re-disparar o boot/install/dev. O biome não vê o uso (só `setAttempt`).
@@ -222,12 +237,40 @@ export function ProPreview(): JSX.Element {
 
   if (phase === 'ready' && url) {
     return (
-      <div className="h-full w-full bg-white">
-        <iframe
-          src={url}
-          title="Pré-visualização (dev-server)"
-          className="h-full w-full border-0"
-        />
+      <div className="flex h-full w-full flex-col bg-sz-bg">
+        <div
+          ref={toolbarRef}
+          className="flex items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1"
+        >
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setReloadNonce((n) => n + 1)}
+            title="Recarregar o app (o servidor continua rodando)"
+            aria-label="Atualizar o preview"
+          >
+            {compactToolbar ? '⟳' : '⟳ Atualizar'}
+          </Button>
+          {projectName && (
+            // Nome do PROJETO, não o <title> vivo do app: o iframe do dev-server
+            // é cross-origin — diferente do srcdoc clássico, o título de dentro
+            // não é legível daqui.
+            <span
+              className="ml-2 min-w-0 flex-1 truncate text-xs font-medium text-sz-fg-soft"
+              title={projectName}
+            >
+              {projectName}
+            </span>
+          )}
+        </div>
+        <div className="min-h-0 flex-1 bg-white">
+          <iframe
+            key={reloadNonce}
+            src={url}
+            title="Pré-visualização (dev-server)"
+            className="h-full w-full border-0"
+          />
+        </div>
       </div>
     )
   }
