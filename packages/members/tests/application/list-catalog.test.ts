@@ -34,17 +34,18 @@ function build() {
 }
 
 describe('ListCatalogService (catálogo "Todos os cursos")', () => {
-  test('lista só cursos published, ordenados por título', async () => {
+  test('lista só cursos published, dos mais antigos aos mais novos (ordem de criação)', async () => {
     const { courses, service } = build()
     courses.courses.push(
-      makeCourse({ slug: 'zeta', title: 'Zeta' }),
-      makeCourse({ slug: 'alfa', title: 'Alfa' }),
+      // Título de propósito na ordem INVERSA da criação: a ordem padrão é a data.
+      makeCourse({ slug: 'zeta', title: 'Zeta', createdAt: new Date('2026-01-01T00:00:00Z') }),
+      makeCourse({ slug: 'alfa', title: 'Alfa', createdAt: new Date('2026-03-01T00:00:00Z') }),
       makeCourse({ slug: 'rascunho', title: 'Rascunho', status: 'draft' }),
       makeCourse({ slug: 'arquivado', title: 'Arquivado', status: 'archived' }),
     )
 
     const views = await service.execute('user-1')
-    expect(views.map((v) => v.courseSlug)).toEqual(['alfa', 'zeta'])
+    expect(views.map((v) => v.courseSlug)).toEqual(['zeta', 'alfa'])
   })
 
   test('hasAccess reflete matrícula ativa de curso; expirada não conta', async () => {
@@ -112,6 +113,7 @@ describe('ListCatalogService (catálogo "Todos os cursos")', () => {
       level: 'iniciante',
       hasAccess: true,
       salesPageUrl: null,
+      createdAt: '2026-06-01T00:00:00.000Z',
     })
   })
 })

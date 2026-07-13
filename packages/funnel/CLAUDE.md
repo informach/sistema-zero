@@ -146,18 +146,27 @@ WebP pelo script `preparar-assets-funil-kids.py` do repo de marketing (fluxo-cri
 checkout/OG segue sendo a arte clássica `hero-desafio.webp`.
 
 **Oferta POR FUNIL (`src/pages/[audience]/[produto]/oferta.astro` despacha o body):** a rota resolve
-preço/perfil e renderiza `f.content.sales ? NoComandoOfertaBody : DesafioOfertaBody`. `content.sales`
-(shape `SalesSections`) é **opcional** — funis com layout de vendas próprio (o Desafio) trazem a cópia
-no próprio body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
+preço/perfil e despacha em 3 vias: `f.content.sales ? NoComandoOfertaBody : f.key ===
+COMUNIDADE_DOS_CRIADORES.key ? ComunidadeOfertaBody : DesafioOfertaBody` (um 4º body bespoke →
+promover a um map local `Record<funnelKey, Component>`). `content.sales` (shape `SalesSections`) é
+**opcional** — funis com layout de vendas próprio (Desafio, Comunidade) trazem a cópia no próprio
+body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
 preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
 partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida (porte fiel da página colorida
 aprovada: creme + azul + laranja, balões dos personagens, decorações flutuantes), com o CSS bespoke
 num `<style>` Astro escopado por `.dpj` (tokens próprios no wrapper, não no `:root`) e ícones
 **Material Symbols self-hosted** (`@fontsource/material-symbols-rounded`; o NCI segue com o
-outlined). ⚠️ Astro escopa somando um atributo por elo do seletor: um override tipo
-`.kid.verde .name` só vence a base `.kid .char .name` se incluir os MESMOS elos (`.kid.verde .char
-.name`). Os CTAs de compra levam `data-checkout-cta` → o `PreCheckoutModal` (mesma ilha do NCI)
-abre o checkout.
+outlined); `ComunidadeOfertaBody.astro` = idem, escopado por `.cdc`. ⚠️ Astro escopa somando um
+atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
+se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `data-checkout-cta` →
+o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout; opcionalmente levam também
+**`data-checkout-oferta="<slug>"`** (o modal anexa `?oferta=` ao redirect e o checkout PRÉ-SELECIONA
+o plano — validado no servidor contra `{principal, altOffer}`, slug forjado → 400 INVALID_OFFER).
+Para ASSINATURA, a rota da oferta também resolve a IRMÃ do alternador (`offer.altOffer` →
+`getActiveOffer`) e passa `plans {main, alt}` ao body próprio (o Comunidade normaliza mensal/anual
+por `billingIntervalMonths`, sem assumir qual é a principal da env). ⚠️ O fallback de preço da rota
+(`env.PRODUCT_PRICE_CENTS`) é o do NCI — body de outro funil com catálogo fora deve usar o SEU
+fallback (`COMUNIDADE_PRECO_FALLBACK`).
 
 **Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 37):** criança 9+ monta um
 jogo de nave em 3 dias; **comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
@@ -171,6 +180,21 @@ Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): perfil = a
 responsável… o perfil da criança você cria depois, na plataforma") e rotula os campos
 "… do responsável". Evita o pai preencher os dados da criança no pré-checkout (o perfil da
 criança nasce depois, na área kids).
+
+**Funil kids "Comunidade dos Criadores" (`kids/comunidade-dos-criadores`, ASSINATURA mensal R$ 97 /
+anual R$ 797, 07/2026):** a assinatura da plataforma kids inteira; **SEM quiz** (steps todos false →
+quiz/resultado 404; o funil é oferta → checkout → obrigado). Módulo em
+`src/funnels/comunidade-dos-criadores/` (index/content — sem quiz.ts); `lifetimeAccess: false`
+(rodapé sem o disclaimer de vitalício; copy usa "cancele quando quiser", NUNCA "pagamento
+único"/"vitalício"). A oferta principal da env é a MENSAL (`comunidade-dos-criadores-mensal` no
+catálogo, criada pelo SEED do catalog junto com a irmã anual + o combo); os cards de plano da
+página levam `data-checkout-oferta` com o slug de cada oferta. Registrado DEPOIS do Desafio no
+`FUNNELS` — a landing `/kids` redireciona ao 1º funil kids do map (ordem pinada por teste).
+`FunnelCopy.artigo?: 'o'|'a'` = gênero do nome do produto p/ frases montadas (a /obrigado monta
+"acesso AO Desafio" × "acesso À Comunidade"). Imagens em `public/img/comunidade-dos-criadores/`
+(capa do checkout = `checkout-capa.webp`, arte "Corre, Dino!"; hero/ilustras começaram como cópias
+dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A página bio da raiz
+(`/`) tem o 3º botão (verde) apontando pra oferta.
 
 **Admin por funil (`/admin`):** seletor de funil no topo filtra as 3 abas. `adminLeads/adminFunnel/
 adminPerfis` aceitam `?funnel=` (repo filtra por `leads.funnel`; `eventCounts` junta ao lead).

@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
+import type { Env } from '../../src/lib/env'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import { clearOfferCache } from '../../src/server/catalog'
 import { startCard, startPix, startSubscription } from '../../src/server/checkout'
 import { makeSendChargeFailed } from '../../src/server/dunning'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeExtendMembersForCycle, makeGrantMembers } from '../../src/server/members-grant'
+import { makeResolveOffer } from '../../src/server/offer'
 import { handlePaymentWebhook } from '../../src/server/webhook'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
@@ -316,6 +318,108 @@ describe('grant ramificado (anual à vista)', () => {
     }
     expect(input.accessPeriodMonths).toBe(12)
     expect(input.subscription).toBeUndefined()
+  })
+})
+
+describe('fiação do funil kids/comunidade-dos-criadores (env → mensal + irmã anual)', () => {
+  // Exercita a cadeia REAL: lead com o funil novo → makeResolveOffer (registry +
+  // env) → oferta mensal do catálogo → alternador pra irmã anual. A mecânica
+  // genérica de assinatura já está coberta acima; aqui é a fiação do funil.
+  const CDC_MENSAL = 'comunidade-dos-criadores-mensal'
+  const CDC_ANUAL = 'comunidade-dos-criadores-anual'
+  const cdcEnv = {
+    offerByFunnel: {
+      'pro/no-comando-da-ia': 'oferta-nci',
+      'kids/comunidade-dos-criadores': CDC_MENSAL,
+    },
+  } as unknown as Env
+
+  function cdcGateway() {
+    const gw = createFakeGateway()
+    gw.setOfferConfig(CDC_MENSAL, {
+      priceCents: 9700,
+      pricingMode: 'subscription',
+      billingIntervalMonths: 1,
+      altOffer: { slug: CDC_ANUAL, label: 'Economize no anual' },
+    })
+    gw.setOfferConfig(CDC_ANUAL, {
+      priceCents: 79700,
+      pricingMode: 'subscription',
+      billingIntervalMonths: 12,
+      altOffer: { slug: CDC_MENSAL },
+    })
+    return gw
+  }
+
+  function cdcDeps(
+    repo: ReturnType<typeof createFakeRepo>['repo'],
+    gw: ReturnType<typeof createFakeGateway>,
+  ) {
+    const resolveOffer = makeResolveOffer(cdcEnv)
+    return {
+      repo,
+      gateway: gw.gateway,
+      resolveOffer,
+      fulfill: makeFulfill({ repo, gateway: gw.gateway }),
+      grantMembers: makeGrantMembers({ gateway: gw.gateway, resolveOffer, repo }),
+    }
+  }
+
+  async function cdcLead(repo: ReturnType<typeof createFakeRepo>['repo']) {
+    const { id } = await repo.createLead('kids/comunidade-dos-criadores')
+    await repo.updateLead(id, {
+      nome: 'Ana Souza',
+      email: 'ana@example.com',
+      telefone: '11999998888',
+    })
+    return id
+  }
+
+  test('assinatura mensal: a env do funil resolve a oferta e cobra 9700 no intervalo 1', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = cdcGateway()
+    const id = await cdcLead(repo)
+
+    const res = await startSubscription(req(cookieFor(id), SUB_CARD), cdcDeps(repo, gw))
+    expect(res.status).toBe(200)
+    const input = gw.calls.createSubscription[0]?.input as {
+      amountInCents: number
+      intervalMonths: number
+    }
+    expect(input.amountInCents).toBe(9700)
+    expect(input.intervalMonths).toBe(1)
+    expect(leads.get(id)?.subscriptionIntervalMonths).toBe(1)
+  })
+
+  test('CTA do plano ANUAL (offerSlug da irmã) cobra 79700 no intervalo 12', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = cdcGateway()
+    const id = await cdcLead(repo)
+
+    const res = await startSubscription(
+      req(cookieFor(id), { ...SUB_CARD, offerSlug: CDC_ANUAL }),
+      cdcDeps(repo, gw),
+    )
+    expect(res.status).toBe(200)
+    const input = gw.calls.createSubscription[0]?.input as {
+      amountInCents: number
+      intervalMonths: number
+    }
+    expect(input.amountInCents).toBe(79700)
+    expect(input.intervalMonths).toBe(12)
+    expect(leads.get(id)?.offerRef).toBe(CDC_ANUAL)
+  })
+
+  test('Pix no plano mensal → 409 SUBSCRIPTION_CARD_ONLY (só o anual tem à vista)', async () => {
+    const { repo } = createFakeRepo()
+    const gw = cdcGateway()
+    const id = await cdcLead(repo)
+
+    const res = await startPix(req(cookieFor(id), { contact: CONTACT }), cdcDeps(repo, gw))
+    expect(res.status).toBe(409)
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      'SUBSCRIPTION_CARD_ONLY',
+    )
   })
 })
 

@@ -410,6 +410,8 @@ export interface CatalogCourseView {
   hasAccess: boolean
   /** URL da página de vendas (funil) — de `course.metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
+  /** Criação do curso (ISO) — alimenta o seletor de ordem por data do catálogo. */
+  createdAt: string
 }
 
 export function toCatalogCourseView(course: Course, hasAccess: boolean): CatalogCourseView {
@@ -422,6 +424,7 @@ export function toCatalogCourseView(course: Course, hasAccess: boolean): Catalog
     level: course.level,
     hasAccess,
     salesPageUrl: resolveSalesPageUrl(course),
+    createdAt: course.createdAt.toISOString(),
   }
 }
 

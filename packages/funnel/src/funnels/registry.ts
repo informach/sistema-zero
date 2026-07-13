@@ -12,6 +12,7 @@ import type { HeroVariacao } from '../content/hero-perfil'
 import type { QuizStep } from '../content/quiz-config'
 import type { ResultProfile } from '../content/result-profiles'
 import type { SalesSections } from '../content/sales-sections'
+import { COMUNIDADE_DOS_CRIADORES } from './comunidade-dos-criadores'
 import { DESAFIO_PRIMEIRO_JOGO } from './desafio-primeiro-jogo'
 import { NO_COMANDO_DA_IA } from './no-comando-da-ia'
 
@@ -24,6 +25,11 @@ export type QuizAnswers = Record<string, string | number>
 export interface FunnelCopy {
   nome: string
   precoLabel: string
+  /**
+   * Gênero gramatical do nome do produto p/ frases montadas ("acesso AO Desafio"
+   * × "acesso À Comunidade"). Ausente → 'o' (compat com os funis existentes).
+   */
+  artigo?: 'o' | 'a'
 }
 export interface FunnelLanding {
   h1: string
@@ -153,6 +159,9 @@ export function funnelKey(audience: string, produto: string): string {
 export const FUNNELS: Record<string, FunnelDef> = {
   [NO_COMANDO_DA_IA.key]: NO_COMANDO_DA_IA,
   [DESAFIO_PRIMEIRO_JOGO.key]: DESAFIO_PRIMEIRO_JOGO,
+  // DEPOIS do Desafio: a landing /kids redireciona ao PRIMEIRO funil kids do map
+  // ([audience]/index.astro) — a ordem preserva o destino atual do tráfego.
+  [COMUNIDADE_DOS_CRIADORES.key]: COMUNIDADE_DOS_CRIADORES,
 }
 
 /** Chaves válidas de funil (p/ validar `{ funnel }` recebido do cliente em /api/leads). */

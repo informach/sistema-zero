@@ -34,7 +34,19 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > `kind: 'course'`, entrega `course` courseRef `desafio-primeiro-jogo`) **+ oferta ativa R$37 com o
 > Mural como item de BÔNUS** (`items`) — é a oferta que o funil `/kids/desafio-primeiro-jogo` vende
 > (env `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO=desafio-primeiro-jogo`). O **Clube** fica SEM oferta no
-> seed (preço/venda no painel). ⚠️ A CHAVE de comunidade (= slug) casa com o `accessConfig`
+> seed (preço/venda no painel) · **Todos os cursos kids** (`todos-os-cursos-kids`, 07/2026 — a
+> chave-mestra kids como produto-FOLHA: `kind:'course'`, **`sellable:false`**, entrega
+> `all_kids_courses` SEM courseRef; só chega ao aluno dentro do combo) · **Comunidade dos
+> Criadores** (`comunidade-dos-criadores`, 07/2026 — o 1º COMBO real do seed: `kind:'bundle'`,
+> fulfillment null, componentes = chave-mestra **`isPrimary`** + Clube + Mural + Estúdio Completo +
+> Pensa + Pinta → a compra espalha os 6 entitlements; o Desafio do Mês destrava sozinho
+> [clube+estúdio] e Quarto/Carreira/Recados são núcleo grátis do kids) **+ 2 ofertas IRMÃS de
+> ASSINATURA ativas**: `comunidade-dos-criadores-mensal` (R$ 97, `billingIntervalMonths: 1`) e
+> `comunidade-dos-criadores-anual` (R$ 797, intervalo 12, compareAt R$ 1.164 = 12× o mensal),
+> ligadas por `content.altOffer` nos DOIS sentidos, ambas com `maxProfiles: 2` + `guaranteeDays: 7`
+> e SEM cupom/parcelas — a MENSAL é a oferta do funil `/kids/comunidade-dos-criadores`
+> (env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES`); o `maxProfiles` é injetado no fulfillment do
+> componente PRIMÁRIO (a chave-mestra) pelo `getEntitlements`. ⚠️ A CHAVE de comunidade (= slug) casa com o `accessConfig`
 > `community_gated` do servidor homônimo no hub e com o `/members/access`. **`tool` é só TAXONOMIA do
 > produto** — a entrega/acesso segue por `fulfillment.accessType`, NÃO há accessType `tool` no members.
 > ⚠️ Os CURSOS (`no-comando-da-ia`, `desafio-primeiro-jogo`) NÃO são seedados (members é DEV-only) —

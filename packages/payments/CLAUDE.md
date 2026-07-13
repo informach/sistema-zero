@@ -22,9 +22,10 @@ recorrente) via **Efí Pay**. Runtime: **Bun**. Linguagem: **TypeScript (ESM)**.
 > webhook/notificação → evento `payment.paid`), validados com cobrança real no
 > sandbox. **Cartão** (avulso) e **assinaturas de cartão** (recorrência via
 > Cobranças Efí) também implementados — domínio + aplicação + rotas
-> (`POST/GET/DELETE /subscriptions`); as assinaturas ainda **não** foram
-> verificadas em sandbox (exigem `payment_token` de browser). **Pix Automático**
-> (recorrência Pix nativa) é o próximo passo.
+> (`POST/GET/DELETE /subscriptions`). **Assinaturas VERIFICADAS em sandbox
+> (13/07/2026):** plano + `one-step` (ACTIVE + 1ª cobrança) + detalhe + cancelamento
+> ponta a ponta — ver §Recorrência. **Pix Automático** (recorrência Pix nativa) é o
+> próximo passo.
 
 ## Arquitetura (DDD + Hexagonal)
 
@@ -409,12 +410,16 @@ token model do boleto/cartão) — **não há worker/scheduler de cobrança noss
 - Notificação: `HandleBoletoNotificationService` resolve o token 1x e despacha
   entradas com `subscriptionId` → `HandleSubscriptionNotificationService.handleCycle`.
   Um ciclo FALHO **não** cancela a assinatura (a Efí pode retentar).
-- ⚠️ Sandbox-verify PARCIAL (10/07): authorize + `POST /plan` (mensal E anual) +
-  tokenização `reuse:true` OK; o `POST /subscription/one-step` devolveu **504 do
-  PRÓPRIO sandbox da Efí** (3×, isolado com fetch cru — harness em
-  `scratchpad/efi-token/`) → ciclo/notificação/cancelamento seguem não-verificados.
-  Re-verifique via `bun run subscription:create --token <token> [--detail] [--cancel]`;
-  se persistir, validar em PROD com assinatura de R$1 (decisão da usuária).
+- ✅ **Sandbox-verify COMPLETO (13/07): o `one-step` VOLTOU a funcionar** (o 504/500 de 10/07
+  era instabilidade do sandbox da Efí, não nossa). `bun run subscription:create --token <tok>
+  --amount 300 --detail --cancel`: `POST /plan` (70475) → `POST /subscription/one-step`
+  (subscription **107051 ACTIVE** + 1ª cobrança **44986280**) → `GET /subscription/:id`
+  (active, next_execution) → `PUT /:id/cancel` (200). Os parsers do mapper batem com a resposta
+  REAL. ⚠️ **mínimo de cartão R$ 3,00** (R$1 → "valor inferior ao limite"). A 1ª cobrança fica
+  `waiting` e vira `paid` pela notificação (não forçável numa sessão — coberto por fakes/integração).
+  O `payment_token` é de BROWSER (vida curta): tokenizador local com `payment-token-efi`
+  (`setAccount(<PUBLIC_EFI_ACCOUNT_IDENTIFIER>).setEnvironment('sandbox').setCreditCardData({...,
+  reuse:true}).getPaymentToken()`, cartão aprovado `4485785674290087`).
 - **Pix Automático** (recorrência Pix nativa) é um esforço separado, ainda pendente.
   Anual "à vista" via Pix/boleto NÃO passa por aqui — é pagamento único que o
   members converte em acesso de 12 meses (`accessPeriodMonths` no grant do funil).

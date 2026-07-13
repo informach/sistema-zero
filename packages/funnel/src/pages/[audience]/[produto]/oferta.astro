@@ -1,9 +1,11 @@
 ---
+import ComunidadeOfertaBody from '../../../components/funnel/oferta/ComunidadeOfertaBody.astro'
 import DesafioOfertaBody from '../../../components/funnel/oferta/DesafioOfertaBody.astro'
 import NoComandoOfertaBody from '../../../components/funnel/oferta/NoComandoOfertaBody.astro'
+import { COMUNIDADE_DOS_CRIADORES } from '../../../funnels/comunidade-dos-criadores'
 import { getFunnel } from '../../../funnels/registry'
 import { formatBRLFromCents, formatBRLFromCents2 } from '../../../lib/money'
-import { getActiveOffer } from '../../../server/catalog'
+import { getActiveOffer, type OfferPlans } from '../../../server/catalog'
 import { getDeps } from '../../../server/deps'
 import { resolveOfferSlug } from '../../../server/offer'
 
@@ -18,7 +20,8 @@ if (!f) return new Response(null, { status: 404 })
 
 const { env, gateway } = getDeps()
 // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout.
-const offer = await getActiveOffer(gateway, resolveOfferSlug(env, f.key))
+const offerSlug = resolveOfferSlug(env, f.key)
+const offer = await getActiveOffer(gateway, offerSlug)
 const productName = offer?.productName || f.productName
 const priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
 const priceLabel = formatBRLFromCents2(priceCents) // "R$ 37,00" (boxes de preço)
@@ -31,13 +34,43 @@ const perfil = Astro.url.searchParams.get('perfil')
 const quer = Astro.url.searchParams.get('quer')
 const ofertaUrl = new URL(`${f.basePath}/oferta`, Astro.site ?? Astro.url).toString()
 
+// Assinatura: resolve também a oferta IRMÃ do alternador (mesmo padrão do
+// checkout.astro) pra página exibir os DOIS planos (mensal + anual) com preço
+// vivo. `plans === null` = oferta one_time OU catálogo fora do ar (o body de
+// assinatura degrada pro fallback próprio, sem `data-checkout-oferta`).
+let plans: OfferPlans | null = null
+if (offer && offer.pricingMode === 'subscription') {
+  let alt: OfferPlans['alt'] = null
+  if (offer.altOffer) {
+    const sibling = await getActiveOffer(gateway, offer.altOffer.slug)
+    if (sibling && sibling.pricingMode === 'subscription' && sibling.billingIntervalMonths) {
+      alt = {
+        slug: sibling.slug,
+        priceCents: sibling.priceCents,
+        intervalMonths: sibling.billingIntervalMonths,
+        label: offer.altOffer.label,
+      }
+    }
+  }
+  plans = {
+    main: {
+      slug: offer.slug,
+      priceCents: offer.priceCents,
+      intervalMonths: offer.billingIntervalMonths,
+      label: null,
+    },
+    alt,
+  }
+}
+
 Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
 
-// O corpo da oferta é POR FUNIL: o Desafio tem layout próprio (DesafioOfertaBody);
-// os demais usam o template padrão a partir de `content.sales` (NoComandoOfertaBody).
-// Cada body monta o seu próprio <BaseLayout> (título/tema/JSON-LD), por isso a rota
-// não envolve um layout aqui — só resolve os dados e despacha.
-const useDesafioBody = !f.content.sales
+// O corpo da oferta é POR FUNIL: funis com layout PRÓPRIO despacham pela chave
+// (Comunidade) ou pela ausência de `sales` (Desafio); os demais usam o template
+// padrão a partir de `content.sales` (NoComandoOfertaBody). Cada body monta o seu
+// próprio <BaseLayout> (título/tema/JSON-LD), por isso a rota não envolve um
+// layout aqui — só resolve os dados e despacha. (Um 4º body bespoke? Promova o
+// ternário a um map local `Record<funnelKey, Component>`.)
 const bodyProps = {
   f,
   productName,
@@ -51,4 +84,12 @@ const bodyProps = {
 }
 ---
 
-{useDesafioBody ? <DesafioOfertaBody {...bodyProps} /> : <NoComandoOfertaBody {...bodyProps} />}
+{
+  f.content.sales ? (
+    <NoComandoOfertaBody {...bodyProps} />
+  ) : f.key === COMUNIDADE_DOS_CRIADORES.key ? (
+    <ComunidadeOfertaBody {...bodyProps} plans={plans} />
+  ) : (
+    <DesafioOfertaBody {...bodyProps} />
+  )
+}

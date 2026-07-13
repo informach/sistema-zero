@@ -28,6 +28,22 @@ export interface CatalogOfferView {
   includes: { name: string; isPrimary: boolean }[]
 }
 
+/**
+ * Plano de assinatura exibido na PÁGINA DE VENDAS (principal + irmã do alternador,
+ * já resolvidos pela rota da oferta). `intervalMonths` 1 = mensal, 12 = anual; o
+ * body normaliza por intervalo (sem assumir qual das duas é a principal da env).
+ */
+export interface OfferPlan {
+  slug: string
+  priceCents: number
+  intervalMonths: number | null
+  label: string | null
+}
+export interface OfferPlans {
+  main: OfferPlan
+  alt: OfferPlan | null
+}
+
 export type ChargeResolution =
   | { ok: true; amountInCents: number; offerId: string; couponCode: string | null }
   | { ok: false; status: number; code: string; message: string }

@@ -39,6 +39,7 @@ export default defineConfig({
       customPages: [
         `${site}/pro/no-comando-da-ia/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
+        `${site}/kids/comunidade-dos-criadores/oferta`,
         // Páginas legais por público (rotas dinâmicas não são enumeradas sozinhas).
         `${site}/pro/termos`,
         `${site}/pro/privacidade`,

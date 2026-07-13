@@ -441,8 +441,12 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   dev/local, **OBRIGATÓRIO em produção** — boot falha sem ele). **Timeout por chamada**
   (`CATALOG_REQUEST_TIMEOUT_MS`, default 10s) — catálogo travado não pendura o webhook.
 - **`GET /members/catalog`** (rota do aluno, JWT + `x-internal-token`): "Todos os
-  cursos" — TODO curso `published` (ordenado por título) com `hasAccess` (matrícula
-  ativa de curso do `x-auth-user-id`) e `salesPageUrl` (de `course.metadata.salesPageUrl`,
+  cursos" — TODO curso `published` (**ordenado por CRIAÇÃO, mais antigos primeiro** —
+  decisão da usuária 13/07; era por título. O `listPublishedCourses` e o
+  `findAccessibleCoursesBySlugs` usam `asc(created_at)`, então "meus cursos" segue a
+  mesma régua; A→Z virou opção do seletor no front) com `hasAccess` (matrícula
+  ativa de curso do `x-auth-user-id`), `createdAt` (ISO — alimenta o seletor por data
+  do catálogo) e `salesPageUrl` (de `course.metadata.salesPageUrl`,
   string não-vazia; senão `null` → o community cai no fallback `FUNNEL_URL`). Sem
   progresso (catálogo é descoberta/venda). `ListCatalogService` (2 queries, sem N+1).
   O `salesPageUrl` é editável pela autoria admin (06/2026): `CourseBody` aceita

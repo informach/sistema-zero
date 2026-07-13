@@ -109,6 +109,8 @@ export interface CatalogCourseView {
   level?: CourseLevelSlug
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
   salesPageUrl: string | null
+  /** Criação do curso (ISO) — ordena o seletor por data; opcional p/ members antigo. */
+  createdAt?: string
 }
 
 /**
