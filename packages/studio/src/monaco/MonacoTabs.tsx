@@ -14,6 +14,7 @@ import {
 import {
   configureMonacoWorkers,
   getMonacoModelRegistry,
+  loadLanguageServices,
   monacoThemeName,
   prewarmEditorModels,
   warmupMonacoLanguageServices,
@@ -337,8 +338,31 @@ export function MonacoTabs({
     if (name !== undefined) onChangeRef.current(name, value ?? '')
   }, [])
 
-  const handleFormat = useCallback(() => {
-    editorRef.current?.getAction('editor.action.formatDocument')?.run()
+  const handleFormat = useCallback(async () => {
+    const editor = editorRef.current
+    if (!editor) return
+    // Os PROVIDERS de formatação (HTML/CSS/JS) só existem depois que as
+    // contribuições de linguagem carregam. O `warmupMonacoLanguageServices` roda no
+    // mount, mas é ASSÍNCRONO (e pesado: o compilador do TS) — se o aluno clica
+    // Formatar antes de concluir (ou o warmup falhou no build), a ação vira no-op
+    // silencioso. Aguardar aqui garante os providers registrados antes de formatar.
+    try {
+      await loadLanguageServices()
+    } catch (err) {
+      // Sem os serviços não há formatador — loga p/ diagnóstico e desiste.
+      console.warn('[studio] Formatar: serviços de linguagem não carregaram', err)
+      return
+    }
+    const action = editor.getAction('editor.action.formatDocument')
+    if (!action) {
+      console.warn('[studio] Formatar: ação editor.action.formatDocument indisponível')
+      return
+    }
+    try {
+      await action.run()
+    } catch (err) {
+      console.warn('[studio] Formatar falhou ao rodar', err)
+    }
   }, [])
 
   const handleMount: OnMount = useCallback((editor) => {

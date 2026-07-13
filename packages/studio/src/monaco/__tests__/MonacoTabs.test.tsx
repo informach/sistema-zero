@@ -154,6 +154,7 @@ mock.module('../workers', () => ({
   configureMonacoWorkers: () => {},
   getMonacoModelRegistry: () => fakeRegistry,
   warmupMonacoLanguageServices: async () => {},
+  loadLanguageServices: async () => {},
   prewarmEditorModels: () => {},
   monacoThemeName: (theme: string) => (theme === 'light' ? 'sz-monaco-light' : 'sz-monaco-dark'),
 }))
