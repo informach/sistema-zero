@@ -80,6 +80,15 @@ export default defineConfig({
       'monaco-editor/esm/vs/language/json/monaco.contribution.js',
       'monaco-editor/esm/vs/basic-languages/markdown/markdown.contribution.js',
       'monaco-editor/esm/vs/basic-languages/xml/xml.contribution.js',
+      // Grafo dos WORKERS do Monaco (src/monaco/workers/*.worker.ts). O 1º spawn
+      // (1ª formatação/completion) descobria estes deep imports fora do
+      // pré-bundle e o Vite re-otimizava com FULL RELOAD no meio da edição —
+      // o editor "voltava sozinho" para a 1ª aba.
+      'monaco-editor/esm/vs/editor/editor.worker.js',
+      'monaco-editor/esm/vs/language/css/css.worker.js',
+      'monaco-editor/esm/vs/language/html/html.worker.js',
+      'monaco-editor/esm/vs/language/typescript/ts.worker.js',
+      'monaco-editor/esm/vs/language/json/json.worker.js',
     ],
   },
   worker: {
