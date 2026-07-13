@@ -143,15 +143,9 @@ const nextConfig: NextConfig = {
         headers: [
           { key: 'Content-Security-Policy', value: proCsp },
           { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
-          // ⚠️ TEMPORÁRIO (cura de cache — remover após ~1 semana em produção):
-          // navegadores que abriram a rota PRO ANTES do COEP nos chunks guardaram
-          // o bootstrap de worker do Turbopack (`turbopack-worker-*.js`) com
-          // `immutable` de 1 ano e SEM o header — e a URL nunca muda (a parte
-          // variável vai no #fragment, fora da chave de cache). Sem isto, o
-          // `new Worker()` do Monaco continua falhando nesses navegadores para
-          // sempre. Limpa SÓ o cache HTTP da origem (aspas fazem parte do valor;
-          // NUNCA usar "storage" — apagaria o IndexedDB com os projetos).
-          { key: 'Clear-Site-Data', value: '"cache"' },
+          // (Um `Clear-Site-Data: "cache"` TEMPORÁRIO viveu aqui em 13/07/2026
+          // para curar navegadores com o bootstrap de worker do Turbopack
+          // cacheado sem COEP — ver o comentário da regra de /_next/static.)
         ],
       },
       // Workers do Monaco DENTRO da rota PRO: uma página com COEP só cria um
