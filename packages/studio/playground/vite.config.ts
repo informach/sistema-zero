@@ -77,6 +77,9 @@ export default defineConfig({
       'monaco-editor/esm/vs/language/css/monaco.contribution.js',
       'monaco-editor/esm/vs/language/html/monaco.contribution.js',
       'monaco-editor/esm/vs/language/typescript/monaco.contribution.js',
+      'monaco-editor/esm/vs/language/json/monaco.contribution.js',
+      'monaco-editor/esm/vs/basic-languages/markdown/markdown.contribution.js',
+      'monaco-editor/esm/vs/basic-languages/xml/xml.contribution.js',
     ],
   },
   worker: {

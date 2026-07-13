@@ -67,6 +67,16 @@ export function setFormatWaitForTests(intervalMs: number, timeoutMs: number): vo
   formatWaitTimeoutMs = timeoutMs
 }
 
+// Linguagens cujo language service registra provider de formatação (JSON entra
+// pelo serviço próprio; markdown/xml/plaintext são só colorização/texto).
+const FORMATTABLE_LANGUAGES: ReadonlySet<string> = new Set([
+  'html',
+  'css',
+  'javascript',
+  'typescript',
+  'json',
+])
+
 export interface MonacoHighlight {
   file: string
   startLine: number
@@ -559,6 +569,10 @@ export function MonacoTabs({
     return <div className={className}>Nenhum arquivo.</div>
   }
 
+  // Aba ativa sem provider de formatação (README.md, .svg, texto puro) → botão
+  // desabilitado, em vez de aguardar o teto do poll e falhar em silêncio.
+  const canFormat = FORMATTABLE_LANGUAGES.has(inferLanguage(file.name))
+
   return (
     <div
       ref={rootRef}
@@ -611,7 +625,7 @@ export function MonacoTabs({
             <button
               type="button"
               onClick={handleFormat}
-              disabled={formatBusy}
+              disabled={formatBusy || !canFormat}
               aria-busy={formatBusy}
               title={`${formatLabel} (Shift+Alt+F)`}
               aria-label={formatLabel}

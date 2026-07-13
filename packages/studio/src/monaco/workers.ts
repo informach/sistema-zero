@@ -26,6 +26,12 @@ import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution.
 import 'monaco-editor/esm/vs/language/css/monaco.contribution.js'
 import 'monaco-editor/esm/vs/language/html/monaco.contribution.js'
 import 'monaco-editor/esm/vs/language/typescript/monaco.contribution.js'
+// JSON: a contribution registra o PRÓPRIO id 'json' (não tem basic-language) e
+// dá validação+formatação de package.json etc. na árvore PRO.
+import 'monaco-editor/esm/vs/language/json/monaco.contribution.js'
+// Markdown/XML (README.md, .svg da árvore PRO): só colorização, sem formatador.
+import 'monaco-editor/esm/vs/basic-languages/markdown/markdown.contribution.js'
+import 'monaco-editor/esm/vs/basic-languages/xml/xml.contribution.js'
 // Algumas contribuições do editor precisam registrar ações/serviços antes de o
 // editor ser instanciado. Elas ficam no chunk lazy do Monaco, não na listagem.
 import 'monaco-editor/esm/vs/editor/contrib/suggest/browser/suggestController.js'
@@ -121,6 +127,8 @@ export function configureMonacoWorkers(): void {
         return new Worker(new URL('./workers/html.worker.ts', import.meta.url), { type: 'module' })
       if (label === 'typescript' || label === 'javascript')
         return new Worker(new URL('./workers/ts.worker.ts', import.meta.url), { type: 'module' })
+      if (label === 'json')
+        return new Worker(new URL('./workers/json.worker.ts', import.meta.url), { type: 'module' })
       return new Worker(new URL('./workers/editor.worker.ts', import.meta.url), { type: 'module' })
     },
   }
