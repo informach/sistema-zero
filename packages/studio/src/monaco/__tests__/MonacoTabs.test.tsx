@@ -624,6 +624,19 @@ describe('MonacoTabs — Formatar', () => {
     expect(screen.getByRole('button', { name: 'Formatar' })).toBeTruthy()
   })
 
+  it('desabilita o botão quando a linguagem da aba não tem formatador (.md)', () => {
+    render(
+      <MonacoTabs
+        files={[{ name: 'README.md', value: '# oi' }]}
+        onChange={() => {}}
+        modelPathPrefix="proj-fmt"
+        formatLabel="Formatar"
+      />,
+    )
+    const button = screen.getByRole('button', { name: 'Formatar' }) as HTMLButtonElement
+    expect(button.disabled).toBe(true)
+  })
+
   it('clique aguarda os serviços ANTES de resolver a ação, e roda', async () => {
     loadLanguageServicesImpl = async () => {
       formatCallLog.push('services')
