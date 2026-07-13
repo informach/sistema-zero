@@ -2,12 +2,18 @@ import type { WebContainerProcess } from '@webcontainer/api'
 import { type JSX, type ReactNode, useEffect, useRef, useState } from 'react'
 import { Button } from '#ui'
 import { canBootWebContainer } from '../../components/terminal/webContainerClient'
+import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
 import { useProWebContainer } from './ProWebContainerProvider'
+import { buildProConsoleBridgeScript, isProConsoleMessage } from './proConsoleBridge'
 
 type Phase = 'booting' | 'installing' | 'starting' | 'ready' | 'error' | 'unsupported'
+
+// Espelha o limiar do preview clássico (responsividade POR SEÇÃO, não pela
+// página): abaixo disto o botão da barra vira só ícone.
+const PRO_TOOLBAR_COMPACT_MAX_PX = 400
 
 const PHASE_LABEL: Partial<Record<Phase, string>> = {
   booting: 'Iniciando o ambiente (WebContainer)…',
@@ -39,6 +45,7 @@ export function ProPreview(): JSX.Element {
   const mountStateRef = useRef(mountState)
   mountStateRef.current = mountState
   const projectId = useProjectStore((s) => s.project?.id ?? null)
+  const projectName = useProjectStore((s) => s.project?.name ?? '')
   const devScript = useProjectStore((s) => s.project?.proMeta?.devScript ?? 'dev')
   const pushLog = useLogsStore((s) => s.push)
   const installTimeoutMs = useStudioConfig().previewSecurity.terminalProcessTimeoutMs
@@ -49,9 +56,26 @@ export function ProPreview(): JSX.Element {
   const [logTail, setLogTail] = useState<string[]>([])
   const [attempt, setAttempt] = useState(0)
   const devProcessRef = useRef<WebContainerProcess | null>(null)
+  // Recarrega o APP sem tocar no servidor: o iframe do dev-server é
+  // cross-origin (*.webcontainer-api.io) — não dá para chamar location.reload()
+  // lá dentro; trocar a `key` remonta o iframe e o navegador refaz a navegação.
+  const [reloadNonce, setReloadNonce] = useState(0)
+  // Origem do dev-server CORRENTE (setada no server-ready): o listener de
+  // console só aceita mensagens vindas exatamente dela.
+  const previewOriginRef = useRef<string | null>(null)
+  // A barra compacta conforme o PRÓPRIO contêiner (padrão do preview clássico):
+  // em split apertado o botão vira só ícone e o título ganha o espaço.
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const toolbarWidth = useMeasuredWidth(toolbarRef)
+  const compactToolbar = toolbarWidth > 0 && toolbarWidth < PRO_TOOLBAR_COMPACT_MAX_PX
 
-  // `attempt` é dep PROPOSITAL: o botão "Tentar de novo" o incrementa para
-  // re-disparar o boot/install/dev. O biome não vê o uso (só `setAttempt`).
+  // `attempt` é dep PROPOSITAL: "Tentar de novo" (fase de erro) e "⏻ Reiniciar"
+  // (barra do ready) o incrementam para re-disparar o boot/install/dev — a
+  // cleanup mata o dev-server atual e o ciclo recomeça. O Reiniciar NÃO pula o
+  // `npm install` de propósito: morno (node_modules já populado) ele é rápido e
+  // é o que garante que uma dependência recém-adicionada ao package.json entre
+  // no ar; a URL pode mudar de porta e o `server-ready` cuida disso. O biome
+  // não vê o uso (só `setAttempt`).
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-trigger manual via attempt
   useEffect(() => {
     if (!projectId) return
@@ -68,6 +92,8 @@ export function ProPreview(): JSX.Element {
       setError(null)
       setUrl(null)
       setLogTail([])
+      // Origem antiga não autoriza mais nada (troca de projeto/reinício).
+      previewOriginRef.current = null
 
       // Gate de capacidade ANTES do import pesado do runtime: sem cross-origin
       // isolation (host sem COOP/COEP) o boot é fútil. Mostra uma mensagem
@@ -94,6 +120,17 @@ export function ProPreview(): JSX.Element {
         return
       }
 
+      // Ponte de console do app → Console da IDE (ver proConsoleBridge.ts):
+      // injetada em toda página que o dev-server servir DEPOIS deste ponto —
+      // o iframe só carrega no server-ready, então chega a tempo. Best-effort:
+      // sem a ponte o preview segue funcionando (só o console fica mudo).
+      try {
+        await wc.setPreviewScript(buildProConsoleBridgeScript(window.location.origin))
+      } catch (err) {
+        console.warn('[studio] preview PRO: ponte de console não pôde ser injetada', err)
+      }
+      if (cancelled) return
+
       // Marca que o dev-server chegou a 'pronto': desarma o monitor de saída
       // prematura abaixo (um dev-server vivo PODE encerrar/reiniciar depois sem ser
       // erro de boot).
@@ -101,6 +138,12 @@ export function ProPreview(): JSX.Element {
       const unsubReady = wc.on('server-ready', (_port, readyUrl) => {
         if (cancelled) return
         serverReady = true
+        // Origem autorizada do console: SÓ o dev-server corrente.
+        try {
+          previewOriginRef.current = new URL(readyUrl).origin
+        } catch {
+          previewOriginRef.current = null
+        }
         setUrl(readyUrl)
         setPhase('ready')
       })
@@ -220,14 +263,71 @@ export function ProPreview(): JSX.Element {
     }
   }, [projectId, attempt, ensureMounted, devScript, pushLog, mountError, installTimeoutMs])
 
+  // Recebe o console espelhado pelo bridge (postMessage do iframe do
+  // dev-server) e o encaminha ao Console da IDE. Dupla validação: a ORIGEM tem
+  // que ser exatamente a do dev-server corrente e a FORMA passa pelo guard —
+  // o logsStore ainda trunca cada parte e aplica o rate limit.
+  useEffect(() => {
+    const handler = (event: MessageEvent) => {
+      const allowed = previewOriginRef.current
+      if (!allowed || event.origin !== allowed) return
+      if (!isProConsoleMessage(event.data)) return
+      pushLog({
+        source: 'sz-preview',
+        kind: event.data.kind,
+        parts: event.data.parts,
+        timestamp: Date.now(),
+      })
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [pushLog])
+
   if (phase === 'ready' && url) {
     return (
-      <div className="h-full w-full bg-white">
-        <iframe
-          src={url}
-          title="Pré-visualização (dev-server)"
-          className="h-full w-full border-0"
-        />
+      <div className="flex h-full w-full flex-col bg-sz-bg">
+        <div
+          ref={toolbarRef}
+          className="flex items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1"
+        >
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setReloadNonce((n) => n + 1)}
+            title="Recarregar o app (o servidor continua rodando)"
+            aria-label="Atualizar o preview"
+          >
+            {compactToolbar ? '⟳' : '⟳ Atualizar'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setAttempt((a) => a + 1)}
+            title="Reiniciar o servidor de desenvolvimento (npm install + dev de novo)"
+            aria-label="Reiniciar o servidor"
+          >
+            {compactToolbar ? '⏻' : '⏻ Reiniciar'}
+          </Button>
+          {projectName && (
+            // Nome do PROJETO, não o <title> vivo do app: o iframe do dev-server
+            // é cross-origin — diferente do srcdoc clássico, o título de dentro
+            // não é legível daqui.
+            <span
+              className="ml-2 min-w-0 flex-1 truncate text-xs font-medium text-sz-fg-soft"
+              title={projectName}
+            >
+              {projectName}
+            </span>
+          )}
+        </div>
+        <div className="min-h-0 flex-1 bg-white">
+          <iframe
+            key={reloadNonce}
+            src={url}
+            title="Pré-visualização (dev-server)"
+            className="h-full w-full border-0"
+          />
+        </div>
       </div>
     )
   }

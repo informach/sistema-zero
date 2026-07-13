@@ -34,7 +34,12 @@ migra o legado `'code'` (quando o básico tinha Código standalone, pré-D2) par
 interseca `modesForKind(kind)` com o `allowedModes` do host. O preview profissional
 (`src/modes/pro/ProPreview.tsx`) NÃO é srcdoc: aponta para o **dev-server do Vite rodando DENTRO do
 WebContainer** (mount → `npm install` → `npm run dev` → `server-ready` → iframe; exceções cross-origin
-chegam por `preview-message` ao Console). O sync host→container é um `FsDiff` (`src/modes/pro/fsDiff.ts`
+chegam por `preview-message` ao Console). Na fase ready há a **barra** (nome do projeto — o `<title>`
+vivo não é legível, iframe cross-origin — + "⟳ Atualizar" que REMONTA o iframe via key + "⏻ Reiniciar"
+= attempt++, mata o dev e re-roda install morno+dev). O **console.log do app chega ao Console da IDE**
+via `proConsoleBridge.ts`: script STRING PURA injetado em toda página pelo `setPreviewScript` do
+WebContainer (embrulha console.*, postMessage com targetOrigin do HOST — nunca `'*'`); o ProPreview
+valida ORIGEM (a do dev-server corrente) + forma (`isProConsoleMessage`) antes do logsStore. O sync host→container é um `FsDiff` (`src/modes/pro/fsDiff.ts`
 + `useWebContainerSync.ts`): diff puro entre dois snapshots planos que calcula writes/removes/**mkdirs/
 rmdirs** e o **conflito arquivo↔diretório** (`removeFirstPaths`, removido RECURSIVAMENTE ANTES de
 mkdir/write — senão a colisão trava o sync). Ordem fixa: removeFirst → mkdir → write → remove → rmdir.

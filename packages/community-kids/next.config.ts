@@ -143,7 +143,29 @@ const nextConfig: NextConfig = {
         headers: [
           { key: 'Content-Security-Policy', value: proCsp },
           { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+          // ⚠️ TEMPORÁRIO (cura de cache — remover após ~1 semana em produção):
+          // navegadores que abriram a rota PRO ANTES do COEP nos chunks guardaram
+          // o bootstrap de worker do Turbopack (`turbopack-worker-*.js`) com
+          // `immutable` de 1 ano e SEM o header — e a URL nunca muda (a parte
+          // variável vai no #fragment, fora da chave de cache). Sem isto, o
+          // `new Worker()` do Monaco continua falhando nesses navegadores para
+          // sempre. Limpa SÓ o cache HTTP da origem (aspas fazem parte do valor;
+          // NUNCA usar "storage" — apagaria o IndexedDB com os projetos).
+          { key: 'Clear-Site-Data', value: '"cache"' },
         ],
+      },
+      // Workers do Monaco DENTRO da rota PRO: uma página com COEP só cria um
+      // dedicated worker se o SCRIPT do worker também vier com COEP (check de
+      // compatibilidade de embedder policy do HTML spec). Os workers saem de
+      // `/_next/static/chunks/…` — sem o header aqui, o `new Worker(...)` falha
+      // com um error event e o Monaco cai no fallback de MAIN THREAD ("Could not
+      // create web worker(s)…" no console; o compilador do TS ~11MB congelando a
+      // UI). COEP em subrecurso que nunca é documento é INERTE nas demais
+      // páginas (só documentos e worker scripts consultam o header) — os vídeos
+      // das aulas seguem intactos.
+      {
+        source: '/_next/static/:path*',
+        headers: [{ key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' }],
       },
       {
         // Assets do avatar 3D (~28MB de GLB/PNG) têm nomes estáveis de catálogo, mas NÃO são

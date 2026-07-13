@@ -60,11 +60,22 @@ const CURSOR_CHANGE_REASON_EXPLICIT = 3
 // `editorHasDocumentFormattingProvider` do model ativo) dentro desta janela.
 let formatWaitIntervalMs = 100
 let formatWaitTimeoutMs = 4000
+// Teto do PRÓPRIO `action.run()`: com o worker de linguagem morto (ex.: COEP
+// sem header no chunk do worker → fallback de main thread quebrado), o pedido
+// de formatação NUNCA resolve — sem o teto, o `finally` não roda e o busy
+// prende o botão para sempre ("só deixa clicar uma vez"). O run atrasado que
+// eventualmente resolver ainda formata (inofensivo); o teto só solta a UI.
+let formatRunTimeoutMs = 10_000
 
-/** Encurta a espera do Formatar nos testes (a suíte não usa fake timers). */
-export function setFormatWaitForTests(intervalMs: number, timeoutMs: number): void {
+/** Encurta as esperas do Formatar nos testes (a suíte não usa fake timers). */
+export function setFormatWaitForTests(
+  intervalMs: number,
+  timeoutMs: number,
+  runTimeoutMs = formatRunTimeoutMs,
+): void {
   formatWaitIntervalMs = intervalMs
   formatWaitTimeoutMs = timeoutMs
+  formatRunTimeoutMs = runTimeoutMs
 }
 
 // Linguagens cujo language service registra provider de formatação (JSON entra
@@ -432,7 +443,23 @@ export function MonacoTabs({
         return
       }
       try {
-        await action.run()
+        // Race com teto: um provider pendurado (worker morto) deixaria o run()
+        // pendente PARA SEMPRE e o finally nunca soltaria o busy. O run que
+        // resolver depois do teto ainda aplica a formatação — só a UI destrava.
+        let timedOut = false
+        await Promise.race([
+          action.run(),
+          new Promise<void>((resolve) => {
+            setTimeout(() => {
+              timedOut = true
+              resolve()
+            }, formatRunTimeoutMs)
+          }),
+        ])
+        if (timedOut) {
+          console.warn('[studio] Formatar: a formatação não respondeu a tempo')
+          onFormatIssueRef.current?.('run-failed')
+        }
       } catch (err) {
         console.warn('[studio] Formatar falhou ao rodar', err)
         onFormatIssueRef.current?.('run-failed')
