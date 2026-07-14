@@ -9,7 +9,12 @@ import {
 // CPF de teste com dígitos verificadores válidos (gerado pelo algoritmo mod 11).
 const VALID_CPF = '529.982.247-25'
 
-const validContact = { nome: 'Fulano de Tal', email: 'fulano@example.com', cpf: VALID_CPF }
+const validContact = {
+  nome: 'Fulano de Tal',
+  email: 'fulano@example.com',
+  cpf: VALID_CPF,
+  telefone: '(11) 98888-7777',
+}
 
 const validForm = {
   number: '4242 4242 4242 4242',

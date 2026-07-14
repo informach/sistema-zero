@@ -12,7 +12,12 @@ import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
 const WEBHOOK_TOKEN = 'token-interno-do-gateway'
-const CONTACT = { nome: 'Ana Souza', email: 'ana@example.com', cpf: '529.982.247-25' }
+const CONTACT = {
+  nome: 'Ana Souza',
+  email: 'ana@example.com',
+  cpf: '529.982.247-25',
+  telefone: '(11) 98888-7777',
+}
 const ADDRESS = {
   street: 'Rua das Flores',
   number: '100',
@@ -149,6 +154,24 @@ describe('POST /api/checkout/subscription', () => {
       subscription?: { subscriptionId: string; intervalMonths: number | null }
     }
     expect(grant.subscription).toEqual({ subscriptionId: 'sub-1', intervalMonths: 1 })
+  })
+
+  test('lead SEM telefone finaliza a assinatura pelo form (telefone vem do checkout, não 409)', async () => {
+    const { repo, leads } = createFakeRepo()
+    const gw = subscriptionGateway()
+    // Lead sem telefone (ex.: pré-checkout que não capturou o número). ANTES o handler
+    // devolvia 409 "Telefone é obrigatório" e o form nem tinha o campo p/ corrigir.
+    const { id } = await repo.createLead()
+    await repo.updateLead(id, { nome: 'Ana Souza', email: 'ana@example.com' })
+
+    const res = await startSubscription(req(cookieFor(id), SUB_CARD), deps(repo, gw))
+    expect(res.status).toBe(200)
+
+    // Telefone do FORM (fonte da verdade) grava no lead (mascarado, como o pré-checkout)...
+    expect(leads.get(id)?.telefone).toBe('(11) 98888-7777')
+    // ...e vai à Efí como dígitos, no customer da assinatura.
+    const input = gw.calls.createSubscription[0]?.input as { customer: { phone: string } }
+    expect(input.customer.phone).toBe('11988887777')
   })
 
   test('alternador: offerSlug da irmã ANUAL cobra a anual (12 meses)', async () => {

@@ -180,8 +180,21 @@ async function applyContact(
   contact: CheckoutContactInput,
 ): Promise<Lead> {
   const document = contact.cpf.replace(/\D/g, '')
-  await deps.repo.updateLead(lead.id, { nome: contact.nome, email: contact.email, document })
-  return { ...lead, nome: contact.nome, email: contact.email, document }
+  // O checkout é a FONTE DA VERDADE do contato: grava nome/e-mail/telefone/CPF do
+  // form no lead a cada envio (preenche o que estava em branco e corrige o resto).
+  await deps.repo.updateLead(lead.id, {
+    nome: contact.nome,
+    email: contact.email,
+    telefone: contact.telefone,
+    document,
+  })
+  return {
+    ...lead,
+    nome: contact.nome,
+    email: contact.email,
+    telefone: contact.telefone,
+    document,
+  }
 }
 
 /** Resposta 400 com os erros de validação achatados por caminho (`contact.cpf`…). */
@@ -335,8 +348,8 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
       name: c.contact.nome,
       email: c.contact.email,
       document: c.contact.cpf.replace(/\D/g, ''),
-      // Telefone vem do pré-checkout (não é coletado de novo aqui); opcional no Pix.
-      ...(lead.telefone ? { phone: lead.telefone.replace(/\D/g, '') } : {}),
+      // Telefone vem do FORMULÁRIO do checkout (fonte da verdade), já gravado no lead.
+      phone: c.contact.telefone.replace(/\D/g, ''),
     },
     metadata: leadMetadata(lead, productSku, charge),
   }
@@ -473,12 +486,12 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
   let lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
   if (lead.paidAt) return jsonError('Esta compra já foi confirmada.', 409, 'ALREADY_PAID')
-  if (!lead.telefone) return jsonError('Telefone é obrigatório para cartão.', 409, 'NO_CONTACT')
-  const phoneDigits = lead.telefone.replace(/\D/g, '')
 
   const parsed = CardChargeSchema.safeParse(await safeJson(request))
   if (!parsed.success) return invalidBody(parsed.error)
   const c = parsed.data
+  // Telefone vem do FORMULÁRIO (obrigatório no schema) — fonte da verdade, não o lead.
+  const phoneDigits = c.contact.telefone.replace(/\D/g, '')
   lead = await applyContact(deps, lead, c.contact)
 
   const chosen = await resolveChosenOffer(deps, lead.funnel, c.offerSlug)
@@ -577,12 +590,12 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
   let lead = await deps.repo.getLead(leadId)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
   if (lead.paidAt) return jsonError('Esta compra já foi confirmada.', 409, 'ALREADY_PAID')
-  if (!lead.telefone) return jsonError('Telefone é obrigatório para cartão.', 409, 'NO_CONTACT')
-  const phoneDigits = lead.telefone.replace(/\D/g, '')
 
   const parsed = SubscriptionChargeSchema.safeParse(await safeJson(request))
   if (!parsed.success) return invalidBody(parsed.error)
   const c = parsed.data
+  // Telefone vem do FORMULÁRIO (obrigatório no schema) — fonte da verdade, não o lead.
+  const phoneDigits = c.contact.telefone.replace(/\D/g, '')
   lead = await applyContact(deps, lead, c.contact)
 
   const chosen = await resolveChosenOffer(deps, lead.funnel, c.offerSlug)
