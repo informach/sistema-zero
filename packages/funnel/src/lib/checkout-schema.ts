@@ -60,14 +60,18 @@ export const CouponCodeSchema = z.string().trim().max(60).optional()
 
 /**
  * Dados pessoais do checkout ("Dados pessoais", estilo Hotmart): compartilhados
- * entre Pix e cartão. Vão no corpo de `POST /api/checkout/{pix,card}` — o handler
- * atualiza o lead e monta o `customer` da cobrança (Pix vira `devedor` na Efí).
+ * entre Pix e cartão. Vão no corpo de `POST /api/checkout/{pix,card,subscription}`
+ * — o handler atualiza o lead e monta o `customer` da cobrança (Pix vira `devedor`
+ * na Efí). O **telefone** é OBRIGATÓRIO aqui (a Efí exige na assinatura de cartão e
+ * ele alimenta a conta do comprador): a FONTE DA VERDADE é o formulário do checkout,
+ * não o lead — o handler usa `contact.telefone` e grava no lead (não o contrário).
  * A CONFIRMAÇÃO de e-mail é validação só do browser (não vai ao servidor).
  */
 export const CheckoutContactSchema = z.object({
   nome: ContactSchema.shape.nome,
   email: ContactSchema.shape.email,
   cpf: CpfSchema,
+  telefone: ContactSchema.shape.telefone,
 })
 
 /**

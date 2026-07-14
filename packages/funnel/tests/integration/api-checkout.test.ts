@@ -20,7 +20,12 @@ const WEBHOOK_TOKEN = 'token-interno-do-gateway'
 const CPF = '52998224725'
 // Dados pessoais do checkout (corpo de pix/cartão) — o handler atualiza o lead
 // e monta o `customer` da cobrança a partir deles.
-const CONTACT = { nome: 'Ana Souza', email: 'ana@example.com', cpf: '529.982.247-25' }
+const CONTACT = {
+  nome: 'Ana Souza',
+  email: 'ana@example.com',
+  cpf: '529.982.247-25',
+  telefone: '(11) 98888-7777',
+}
 const ADDRESS = {
   street: 'Rua das Flores',
   number: '100',
@@ -106,7 +111,8 @@ describe('POST /api/checkout/pix', () => {
       name: 'Ana Souza',
       email: 'ana@example.com',
       document: CPF,
-      phone: '11999998888',
+      // Telefone vem do FORM (contact), não do lead — fonte da verdade do checkout.
+      phone: '11988887777',
     })
 
     // O lead é atualizado com o contato enviado (incl. CPF sem máscara).
@@ -193,10 +199,12 @@ describe('POST /api/checkout/pix', () => {
     expect(gw.calls.ensureBuyer[0]?.input).toMatchObject({
       email: 'ana@example.com',
       firstName: 'Ana',
-      phone: '11999998888',
+      phone: '11988887777',
     })
     expect(leads.get(id)?.email).toBe('ana@example.com')
-    expect(leads.get(id)?.telefone).toBe('11999998888')
+    // O lead guarda o telefone COMO DIGITADO (mascarado), igual ao pré-checkout; quem
+    // usa (ensureBuyer/Efí) normaliza p/ dígitos. A fonte é o `contact` do form.
+    expect(leads.get(id)?.telefone).toBe('(11) 98888-7777')
   })
 
   test('400 sem os dados pessoais no corpo (Pix não é gerado sem contato)', async () => {
@@ -418,7 +426,7 @@ describe('POST /api/checkout/card', () => {
     expect(input.customer).toMatchObject({
       name: 'Ana Souza',
       document: CPF,
-      phone: '11999998888',
+      phone: '11988887777',
     })
     expect(leads.get(id)?.document).toBe(CPF)
     expect(leads.get(id)?.paidAt).not.toBeNull()

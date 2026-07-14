@@ -1,3 +1,4 @@
+import { formatTelefone } from '@sistemazero/ui/phone'
 import { useEffect, useMemo, useState } from 'react'
 import { apiPost } from '../lib/api-fetch'
 import { maskCpf } from '../lib/card-utils'
@@ -15,6 +16,8 @@ export interface InitialContact {
   nome: string
   email: string
   cpf: string
+  /** Telefone pré-preenchido do lead/pré-checkout (editável; obrigatório no envio). */
+  telefone: string
 }
 
 /** Oferta IRMÃ do alternador mensal↔anual (dados vindos do catálogo, via página). */
@@ -100,6 +103,9 @@ export default function CheckoutForm({
   // digitado lá); quem editar o e-mail aqui precisa confirmar de novo.
   const [emailConfirm, setEmailConfirm] = useState(initialContact.email)
   const [cpf, setCpf] = useState(maskCpf(initialContact.cpf))
+  // Telefone: fonte da verdade do checkout (a Efí exige na assinatura). Pré-preenche
+  // do lead/pré-checkout, mas é editável e SEMPRE enviado no `contact`.
+  const [telefone, setTelefone] = useState(formatTelefone(initialContact.telefone))
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   // Alternador mensal↔anual: qual das duas ofertas irmãs está escolhida.
@@ -139,8 +145,8 @@ export default function CheckoutForm({
   // Validação contínua: os botões de pagar só habilitam com tudo válido; os
   // erros por campo só aparecem depois que o campo foi tocado (blur).
   const parsed = useMemo(
-    () => CheckoutContactSchema.safeParse({ nome, email, cpf }),
-    [nome, email, cpf],
+    () => CheckoutContactSchema.safeParse({ nome, email, cpf, telefone }),
+    [nome, email, cpf, telefone],
   )
   const schemaErrors = useMemo(() => (parsed.success ? {} : fieldErrors(parsed.error)), [parsed])
   const emailsMatch = email.trim().toLowerCase() === emailConfirm.trim().toLowerCase()
@@ -155,7 +161,7 @@ export default function CheckoutForm({
   function touch(field: string) {
     setTouched((p) => ({ ...p, [field]: true }))
   }
-  function errorFor(field: 'nome' | 'email' | 'cpf'): string | undefined {
+  function errorFor(field: 'nome' | 'email' | 'cpf' | 'telefone'): string | undefined {
     return touched[field] ? schemaErrors[field] : undefined
   }
 
@@ -314,6 +320,18 @@ export default function CheckoutForm({
               value={cpf}
               onChange={(e) => setCpf(maskCpf(e.target.value))}
               onBlur={() => touch('cpf')}
+            />
+          </Field>
+          <Field label="Telefone / WhatsApp" error={errorFor('telefone')}>
+            <input
+              className={inputClass}
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="(11) 99999-9999"
+              value={telefone}
+              onChange={(e) => setTelefone(formatTelefone(e.target.value))}
+              onBlur={() => touch('telefone')}
             />
           </Field>
         </div>

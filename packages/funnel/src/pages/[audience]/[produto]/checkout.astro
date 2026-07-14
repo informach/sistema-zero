@@ -58,10 +58,19 @@ if (!lead && queryContact.success) {
   Astro.response.headers.append('set-cookie', leadCookie(leadId, env.NODE_ENV === 'production'))
   await repo.updateLead(leadId, queryContact.data)
   lead = await repo.getLead(leadId)
-} else if (lead && !lead.email && queryContact.success) {
-  // Lead existente ainda sem contato: persiste o da URL.
-  await repo.updateLead(lead.id, queryContact.data)
-  lead = { ...lead, ...queryContact.data }
+} else if (lead && queryContact.success) {
+  // Lead pré-existente pode estar sem ALGUM dado (ex.: telefone do pré-checkout que
+  // não chegou a persistir): preenche só o que está EM BRANCO com o contato da URL,
+  // sem sobrescrever o que já existe.
+  const c = queryContact.data
+  const patch: { nome?: string; email?: string; telefone?: string } = {}
+  if (!lead.nome) patch.nome = c.nome
+  if (!lead.email) patch.email = c.email
+  if (!lead.telefone) patch.telefone = c.telefone
+  if (Object.keys(patch).length > 0) {
+    await repo.updateLead(lead.id, patch)
+    lead = { ...lead, ...patch }
+  }
 }
 
 // CPF NUNCA é pré-preenchido (decisão do usuário): dado sensível, digitado a cada
@@ -70,6 +79,8 @@ const initialContact = {
   nome: lead?.nome ?? fromQuery.nome,
   email: lead?.email ?? fromQuery.email,
   cpf: '',
+  // Telefone pré-preenchido (lead ou pré-checkout); editável e reenviado no checkout.
+  telefone: lead?.telefone ?? fromQuery.telefone,
 }
 
 // Preço/nome vêm do catálogo (fonte da verdade); fallback p/ rótulos do funil se fora.
