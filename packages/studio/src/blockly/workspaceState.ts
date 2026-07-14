@@ -3227,6 +3227,18 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_gk_start_spawner', { MOLD: stmt.mold }, {}, stmt.__id, { SEC: sec })
     }
+    case 'gk:stopSpawner':
+      return block('sz_gk_stop_spawner', { MOLD: stmt.mold }, {}, stmt.__id)
+    case 'gk:spawnNamed': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_spawn_named', { NAME: stmt.varName, MOLD: stmt.mold }, {}, stmt.__id, {
+            X: x,
+            Y: y,
+          })
+    }
     case 'gk:forEachActive':
       return block(
         'sz_gk_for_each_active',
@@ -3244,13 +3256,21 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_gk_recycle', { WHO: stmt.charVar }, {}, stmt.__id)
     case 'gk:drawActive':
       return block('sz_gk_draw_active', { MOLD: stmt.mold }, {}, stmt.__id)
-    case 'gk:defineLook':
-      return block(
-        'sz_gk_define_look',
-        { NAME: stmt.name, CTX: stmt.ctxName },
-        { BODY: statementsToBlocks(stmt.body) },
-        stmt.__id,
-      )
+    case 'gk:defineLook': {
+      // IR v0.2 (sem tamanho-base) normaliza p/ 40×40 — o default do runtime;
+      // o shouldEmitAsShadow marca os literais como SOMBRA (preset editável).
+      const baseW = exprToValueBlock(valueToExpr(stmt.baseW ?? 40))
+      const baseH = exprToValueBlock(valueToExpr(stmt.baseH ?? 40))
+      return baseW === null || baseH === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_define_look',
+            { NAME: stmt.name, CTX: stmt.ctxName },
+            { BODY: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            { W: baseW, H: baseH },
+          )
+    }
     case 'gk:drawLook': {
       const x = exprToValueBlock(valueToExpr(stmt.x))
       const y = exprToValueBlock(valueToExpr(stmt.y))
@@ -3849,12 +3869,16 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_char_y', { CHAR: expr.charVar })
     case 'gk:keyDown':
       return block('sz_gk_key_down', { KEY: expr.key })
+    case 'gk:keyPressed':
+      return block('sz_gk_key_pressed', { KEY: expr.key })
     case 'gk:countActive':
       return block('sz_gk_count_active', { MOLD: expr.mold })
     case 'gk:touchCircle':
       return block('sz_gk_touching_circle', { A: expr.aVar, B: expr.bVar })
     case 'gk:isDead':
       return block('sz_gk_is_dead', { CHAR: expr.charVar })
+    case 'gk:isInvincible':
+      return block('sz_gk_is_invincible', { CHAR: expr.charVar })
     case 'gk:healthOf':
       return block('sz_gk_health_of', { CHAR: expr.charVar })
     case 'gk:timeSurvived':

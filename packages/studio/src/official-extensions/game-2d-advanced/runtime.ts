@@ -61,6 +61,8 @@ export const gameKitRuntime = `(function () {
   var playTime = 0;
   var killCount = 0;
   var PUSHBACK_DECAY = 800;
+  var justPressed = {};                  // teclas apertadas NESTE quadro (edge)
+  var debugOverlay = false;              // tecla de crase desenha os círculos de colisão
 
   // Manifesto de imagens do projeto, semeado pelo assetsBridge.
   var ASSETS = (window.__SZGAME_ASSETS && typeof window.__SZGAME_ASSETS === 'object')
@@ -81,6 +83,8 @@ export const gameKitRuntime = `(function () {
   }
 
   function num(v, fallback) {
+    // Number(null)/Number('') seriam 0 — aqui ausente/vazio cai no fallback.
+    if (v == null || v === '') return fallback;
     var n = Number(v);
     return (typeof n === 'number' && isFinite(n)) ? n : fallback;
   }
@@ -163,11 +167,13 @@ export const gameKitRuntime = `(function () {
     return entry;
   }
 
-  /** Botão dentro de um painel; o clique roda fn protegido. */
+  /** Botão dentro de um painel; o clique roda fn protegido (+ som de clique, P24). */
   function makeButton(entry, label, fn) {
     var btn = document.createElement('button');
     btn.textContent = label;
     btn.onclick = function () {
+      resumeAudio();
+      try { playEffect('click'); } catch (e) {}
       try { fn(); } catch (e) { warn('erro no clique do botão "' + label + '": ' + e); }
     };
     entry.el.appendChild(btn);
@@ -198,8 +204,12 @@ export const gameKitRuntime = `(function () {
       stageEl.appendChild(canvasEl);
       document.body.appendChild(stageEl);
       ctx2d = canvasEl.getContext('2d');
+      // Pixel art nítida por padrão (P24 seta no ctor do RenderSystem). O resize
+      // recria o backing store e reseta o ctx — o resizeCanvas re-aplica.
+      try { ctx2d.imageSmoothingEnabled = false; } catch (e) {}
 
-      // As 4 telas PRONTAS do kit, com textos default em português.
+      // As 5 telas PRONTAS, com textos default em português (P24 tem gameOver E
+      // missionComplete SEPARADAS — aqui: 'fim' = derrota, 'vitoria' = missão).
       var menu = makeScreen('menu', 'h1', 'Meu Jogo', 'WASD ou setas para andar');
       makeButton(menu, 'Jogar', function () { api.setState('jogando'); });
       var pausa = makeScreen('pausa', 'h2', 'Pausa', '');
@@ -208,6 +218,10 @@ export const gameKitRuntime = `(function () {
       makeScreen('carregando', 'h2', 'Carregando...', 'Preparando os pixels...');
       var fim = makeScreen('fim', 'h2', 'Fim de jogo', '');
       makeButton(fim, 'Jogar de novo', function () { api.setState('jogando'); });
+      makeButton(fim, 'Sair para o menu', function () { api.returnToMenu(); });
+      var vitoria = makeScreen('vitoria', 'h2', 'Missão cumprida!', 'Você venceu!');
+      makeButton(vitoria, 'Jogar de novo', function () { api.setState('jogando'); });
+      makeButton(vitoria, 'Sair para o menu', function () { api.returnToMenu(); });
 
       shellReady = true;
       return true;
@@ -230,19 +244,20 @@ export const gameKitRuntime = `(function () {
     var key = text(name, '');
     var entry = screens[key];
     if (!entry) {
-      warn('a tela "' + key + '" não existe — crie com "Criar a tela" (prontas: menu, pausa, carregando, fim)');
+      warn('a tela "' + key + '" não existe — crie com "Criar a tela" (prontas: menu, pausa, carregando, fim, vitoria)');
       return;
     }
     hideScreens();
     entry.el.classList.add('szgk-active');
   }
 
-  /** Telas automáticas por estado (menu/pausado/fim/carregando); resto esconde. */
+  /** Telas automáticas por estado (menu/pausado/fim/vitoria/carregando); resto esconde. */
   function applyStateScreens(name) {
     if (!shellReady) return;
     if (name === 'menu') showScreen('menu');
     else if (name === 'pausado') showScreen('pausa');
     else if (name === 'fim') showScreen('fim');
+    else if (name === 'vitoria') showScreen('vitoria');
     else if (name === 'carregando') showScreen('carregando');
     else hideScreens();
   }
@@ -266,6 +281,13 @@ export const gameKitRuntime = `(function () {
       for (var pk in pools) releaseAll(pools[pk]);
       for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
       particles.active.length = 0;
+      // Cura os combatentes ANTES de esquecer a lista — sem isso um herói que
+      // morreu piscando ficava com _iFrames congelado (invencível p/ sempre).
+      for (var ci = 0; ci < combatants.length; ci++) {
+        combatants[ci]._iFrames = 0;
+        combatants[ci]._pushX = 0;
+        combatants[ci]._pushY = 0;
+      }
       combatants.length = 0;
     }
     var hooks = enterStateHooks[n];
@@ -280,12 +302,18 @@ export const gameKitRuntime = `(function () {
 
   function bindInput() {
     window.addEventListener('keydown', function (e) {
+      resumeAudio();
       var k = String(e.key).toLowerCase();
       keys[k] = true;
+      justPressed[k] = true;
       if (k === config.pauseKey) {
         if (state === 'jogando') setState('pausado');
         else if (state === 'pausado') setState('jogando');
       }
+      // Tecla de crase (u0060) liga/desliga o overlay de depuração (círculos de
+      // colisão — P24). No ABNT2 a crase é dead key (e.key 'Dead'): aceitamos as
+      // duas formas. O escape existe porque crase crua quebraria o template.
+      if (k === '\\u0060' || k === 'dead') debugOverlay = !debugOverlay;
     });
     window.addEventListener('keyup', function (e) {
       keys[String(e.key).toLowerCase()] = false;
@@ -386,6 +414,29 @@ export const gameKitRuntime = `(function () {
     // jogando/pausado/fim/estados custom: os ganchos de desenho são donos do
     // quadro (na pausa nada ATUALIZA, então a imagem congela — como no kit).
     runHooks(drawHooks, ctx2d, 'Desenhar o jogo');
+    if (debugOverlay) drawDebugOverlay();
+  }
+
+  /** Tecla de crase: círculos de colisão de pools + combatentes (debug do P24). */
+  function drawDebugOverlay() {
+    if (!ctx2d) return;
+    ctx2d.save();
+    ctx2d.lineWidth = 2;
+    ctx2d.strokeStyle = '#22c55e';
+    function circleOf(e) {
+      if (!e || e._active === false) return;
+      var r = num(e.radius, Math.min(num(e.w, 0), num(e.h, 0)) / 2);
+      if (!(r > 0)) return;
+      ctx2d.beginPath();
+      ctx2d.arc(num(e.x, 0) + num(e.w, 0) / 2, num(e.y, 0) + num(e.h, 0) / 2, r, 0, Math.PI * 2);
+      ctx2d.stroke();
+    }
+    for (var pk in pools) {
+      var act = pools[pk].active;
+      for (var i = 0; i < act.length; i++) circleOf(act[i]);
+    }
+    for (var c = 0; c < combatants.length; c++) circleOf(combatants[c]);
+    ctx2d.restore();
   }
 
   function gameLoop(timestamp) {
@@ -396,9 +447,13 @@ export const gameKitRuntime = `(function () {
     currentDt = dt;
     if (state === 'jogando') {
       stepSystems(dt);
-      runHooks(updateHooks, dt, 'A cada quadro');
+      // A missão pode ter mudado o estado NESTE quadro (vitória) — não rodar o
+      // update da criança num jogo que acabou de terminar (paridade P24).
+      if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
     }
     render();
+    // Limpa o edge de "apertada AGORA" no fim do quadro (padrão Input do RPG kit).
+    justPressed = {};
     requestAnimationFrame(gameLoop);
   }
 
@@ -414,8 +469,13 @@ export const gameKitRuntime = `(function () {
         spawnAtEdge(sp.mold);
       }
     }
-    for (var c = 0; c < combatants.length; c++) {
+    for (var c = combatants.length - 1; c >= 0; c--) {
       var e = combatants[c];
+      // Poda entidades recicladas — sem isso a lista acumula e move mortos à toa.
+      if (e._active === false) {
+        combatants.splice(c, 1);
+        continue;
+      }
       if (e._iFrames > 0) e._iFrames = Math.max(0, e._iFrames - dt);
       if (e._pushX || e._pushY) {
         e.x += e._pushX * dt;
@@ -429,8 +489,11 @@ export const gameKitRuntime = `(function () {
     if (mission && !missionDone) {
       if (playTime >= mission.seconds || killCount >= mission.killCount) {
         missionDone = true;
+        // Vitória tem tela PRÓPRIA (P24: MISSION_COMPLETE ≠ GAME_OVER). O estado
+        // muda ANTES do aviso — um ouvinte de 'missao:completa' pode sobrescrever
+        // (trocar texto, mostrar tela custom) sem ser atropelado.
+        setState('vitoria');
         api.emit('missao:completa');
-        setState('fim');
       }
     }
   }
@@ -497,7 +560,8 @@ export const gameKitRuntime = `(function () {
     var blinking = c._iFrames > 0;
     if (blinking) {
       try { prevAlpha = ctx2d.globalAlpha; } catch (e) {}
-      try { ctx2d.globalAlpha = 0.1 + 0.8 * Math.abs(Math.sin(c._iFrames * 20)); } catch (e) {}
+      // FLASH_SPEED 10 do P24 (0.1 + 0.8·|sin|).
+      try { ctx2d.globalAlpha = 0.1 + 0.8 * Math.abs(Math.sin(c._iFrames * 10)); } catch (e) {}
     }
     var flip = c._facingLeft === true;
     if (flip) {
@@ -507,19 +571,24 @@ export const gameKitRuntime = `(function () {
     }
     var lx = flip ? 0 : c.x;
     var ly = flip ? 0 : c.y;
-    var lookFn = looks[c.look];
+    var look = looks[c.look];
     var drew = false;
-    if (typeof lookFn === 'function') {
+    if (look && typeof look.fn === 'function') {
       ctx2d.save();
       ctx2d.translate(lx, ly);
-      try { lookFn(ctx2d); drew = true; } catch (e) {}
+      // A aparência é autoral num quadro-base (baseW×baseH) e ESCALA ao tamanho
+      // da entidade — mesmo look serve p/ moldes grandes e pequenos.
+      try {
+        ctx2d.scale(num(c.w, look.baseW) / look.baseW, num(c.h, look.baseH) / look.baseH);
+        look.fn(ctx2d);
+        drew = true;
+      } catch (e) {}
       ctx2d.restore();
     }
     if (!drew) {
       var entry = images[c.image];
       if (entry && entry.loaded && entry.img) {
         try {
-          ctx2d.imageSmoothingEnabled = false;
           ctx2d.drawImage(entry.img, lx, ly, c.w, c.h);
           drew = true;
         } catch (e) {}
@@ -582,12 +651,25 @@ export const gameKitRuntime = `(function () {
   function emit(name) {
     var list = listeners[text(name, '')];
     if (!list) return;
+    // Repassa argumentos extras aos ouvintes (EventEmitter do P24 carrega payload;
+    // os blocos de hoje ignoram, mas a semântica fica pronta).
+    var extra = Array.prototype.slice.call(arguments, 1);
     for (var i = 0; i < list.length; i++) {
-      try { list[i](); } catch (e) { warn('erro no "quando chegar o aviso": ' + e); }
+      try { list[i].apply(null, extra); } catch (e) { warn('erro no "quando chegar o aviso": ' + e); }
     }
   }
 
   // ---- 👾 Moldes, pools e spawner (data-driven + ObjectPooler do P24) ----
+  /** Entidade nova com TODAS as propriedades (hidden class estável p/ o pool). */
+  function blankEntity() {
+    return {
+      x: 0, y: 0, w: 0, h: 0,
+      speed: 0, damage: 0, color: '', image: '', look: '', radius: 0,
+      health: 0, maxHealth: 0,
+      _active: false, _facingLeft: false, _iFrames: 0,
+      _pushX: 0, _pushY: 0, _driftAngle: null, _mold: ''
+    };
+  }
   function defineMold(name, opts) {
     var k = text(name, '');
     if (!k) { warn('"Criar o molde" precisa de um nome'); return; }
@@ -603,15 +685,19 @@ export const gameKitRuntime = `(function () {
       look: text(o.look, ''),
       radius: Math.min(w, h) / 2
     };
-    if (!pools[k]) pools[k] = { active: [], free: [] };
+    if (!pools[k]) pools[k] = { active: [], free: [], _sweeping: false };
+    // Pré-aquece o pool (P24 pré-cria 10): as primeiras ondas não alocam no loop.
+    while (pools[k].free.length + pools[k].active.length < 8) {
+      pools[k].free.push(blankEntity());
+    }
   }
   function spawnFromMold(name, x, y) {
     var k = text(name, '');
     var m = molds[k];
     if (!m) { warn('molde "' + k + '" não existe — crie com "Criar o molde"'); return null; }
-    var pool = pools[k] || (pools[k] = { active: [], free: [] });
+    var pool = pools[k] || (pools[k] = { active: [], free: [], _sweeping: false });
     var e = pool.free.pop();
-    if (!e) e = {};
+    if (!e) e = blankEntity();
     e.x = num(x, 0); e.y = num(y, 0);
     e.w = m.w; e.h = m.h;
     e.speed = m.speed; e.damage = m.damage; e.color = m.color;
@@ -623,22 +709,33 @@ export const gameKitRuntime = `(function () {
     return e;
   }
   function spawnAtEdge(name) {
+    // Margem de nascimento 100 = ENEMY_SPAWN_MARGIN do P24.
     var edge = Math.floor(Math.random() * 4);
     var x, y;
-    if (edge === 0) { x = Math.random() * config.w; y = -80; }
-    else if (edge === 1) { x = config.w + 80; y = Math.random() * config.h; }
-    else if (edge === 2) { x = Math.random() * config.w; y = config.h + 80; }
-    else { x = -80; y = Math.random() * config.h; }
+    if (edge === 0) { x = Math.random() * config.w; y = -100; }
+    else if (edge === 1) { x = config.w + 100; y = Math.random() * config.h; }
+    else if (edge === 2) { x = Math.random() * config.w; y = config.h + 100; }
+    else { x = -100; y = Math.random() * config.h; }
     return spawnFromMold(name, x, y);
   }
   function recycle(e) {
     if (!e || typeof e !== 'object') return;
+    if (!e._mold) {
+      warn('só personagens nascidos de um molde podem ser recolhidos');
+      return;
+    }
     e._active = false;
     var pool = pools[e._mold];
-    // A remoção real do "active" acontece na varredura reversa (forEachActive/cull);
-    // aqui só marcamos. Mas se veio de fora do laço, guardamos direto.
-    if (pool && pool.active.indexOf(e) === -1) {
-      // já não está ativo — nada a fazer
+    if (!pool) return;
+    // Dentro de uma varredura (forEachActive/cull), a compactação reversa cuida
+    // da devolução. FORA dela (botão, aviso, quando-entrar), devolvemos AGORA —
+    // senão a entidade ficava em active[] para sempre (nunca reusada).
+    if (!pool._sweeping) {
+      var idx = pool.active.indexOf(e);
+      if (idx > -1) {
+        pool.active.splice(idx, 1);
+        pool.free.push(e);
+      }
     }
   }
   function compact(pool) {
@@ -653,8 +750,12 @@ export const gameKitRuntime = `(function () {
   }
   function releaseAll(pool) {
     for (var i = 0; i < pool.active.length; i++) {
-      pool.active[i]._active = false;
-      pool.free.push(pool.active[i]);
+      var e = pool.active[i];
+      e._active = false;
+      e._iFrames = 0;
+      e._pushX = 0;
+      e._pushY = 0;
+      pool.free.push(e);
     }
     pool.active.length = 0;
   }
@@ -662,21 +763,36 @@ export const gameKitRuntime = `(function () {
     var pool = pools[text(name, '')];
     if (!pool || typeof fn !== 'function') return;
     // Ordem REVERSA: recolher/remover durante o laço é seguro.
+    pool._sweeping = true;
+    var warned = false;
     for (var i = pool.active.length - 1; i >= 0; i--) {
       var e = pool.active[i];
       if (!e._active) continue;
-      try { fn(e); } catch (err) { warn('erro no "para cada vivo": ' + err); }
+      try {
+        fn(e);
+      } catch (err) {
+        // Avisa UMA vez por chamada (o laço roda por quadro × N vivos — sem isso
+        // um erro no corpo afoga o Console com 60·n avisos/s).
+        if (!warned) {
+          warned = true;
+          warn('erro no "para cada vivo": ' + err);
+        }
+      }
     }
+    pool._sweeping = false;
     compact(pool);
   }
   function cullOffscreen(name, margin) {
     var pool = pools[text(name, '')];
     if (!pool) return;
-    var m = num(margin, 120);
+    // Default 200 = margem de despawn do P24 (spawn nas bordas usa 100).
+    var m = num(margin, 200);
+    pool._sweeping = true;
     for (var i = 0; i < pool.active.length; i++) {
       var e = pool.active[i];
       if (e.x < -m || e.x > config.w + m || e.y < -m || e.y > config.h + m) e._active = false;
     }
+    pool._sweeping = false;
     compact(pool);
   }
   function drawActive(name) {
@@ -688,7 +804,12 @@ export const gameKitRuntime = `(function () {
   }
   function countActive(name) {
     var pool = pools[text(name, '')];
-    return pool ? pool.active.length : 0;
+    if (!pool) return 0;
+    var n = 0;
+    for (var i = 0; i < pool.active.length; i++) {
+      if (pool.active[i]._active) n++;
+    }
+    return n;
   }
 
   // ---- 🎯 Comportamentos (Seek/Drift/facing do P24) ----
@@ -744,7 +865,10 @@ export const gameKitRuntime = `(function () {
   }
   function drawHealthBar(who, max) {
     if (!ctx2d || !who || typeof who !== 'object') return;
-    var full = num(max, num(who.maxHealth, 100));
+    // 0 (ou vazio) = automático: usa a vida cheia do próprio personagem/molde
+    // (P24 usa data.health — assim a barra do molde de vida 20 mostra 20/20).
+    var full = num(max, 0);
+    if (full <= 0) full = num(who.maxHealth, 100);
     if (full <= 0) return;
     var pct = Math.max(0, Math.min(1, num(who.health, full) / full));
     var x = num(who.x, 0), y = num(who.y, 0) - 8, w = num(who.w, 0);
@@ -776,10 +900,13 @@ export const gameKitRuntime = `(function () {
       gravity: num(o.gravity, 300)
     };
   }
+  var MAX_PARTICLES = 1000;
   function burst(name, x, y) {
     var e = effects[text(name, '')];
     if (!e) { warn('efeito "' + text(name, '') + '" não existe — crie com "Criar o efeito"'); return; }
     for (var i = 0; i < e.count; i++) {
+      // Teto GLOBAL: burst por quadro sem gate não acumula milhares de fillRect.
+      if (particles.active.length >= MAX_PARTICLES) break;
       var p = particles.free.pop() || {};
       var ang = Math.random() * Math.PI * 2;
       var sp = e.speed * (0.4 + Math.random() * 0.6);
@@ -791,12 +918,16 @@ export const gameKitRuntime = `(function () {
   }
   function drawEffects() {
     if (!ctx2d) return;
-    var dt = currentDt;
+    // Fora de 'jogando' as faíscas CONGELAM (a pausa não atualiza nada — kit).
+    var dt = (state === 'jogando') ? currentDt : 0;
     for (var i = particles.active.length - 1; i >= 0; i--) {
       var p = particles.active[i];
       p.life -= dt;
       if (p.life <= 0) {
-        particles.active.splice(i, 1);
+        // swap-com-o-último + pop: remoção O(1) (morte em massa não vira O(n²)).
+        var last = particles.active.length - 1;
+        particles.active[i] = particles.active[last];
+        particles.active.pop();
         particles.free.push(p);
         continue;
       }
@@ -812,17 +943,26 @@ export const gameKitRuntime = `(function () {
   }
 
   // ---- 🎨 Aparências (looks) ----
-  function defineLook(name, fn) {
+  function defineLook(name, fn, baseW, baseH) {
     var k = text(name, '');
-    if (k && typeof fn === 'function') looks[k] = fn;
+    if (!k || typeof fn !== 'function') return;
+    // Tamanho-base do quadro autoral: drawEntity/drawLook ESCALAM a partir dele.
+    looks[k] = {
+      fn: fn,
+      baseW: Math.max(1, num(baseW, 40)),
+      baseH: Math.max(1, num(baseH, 40))
+    };
   }
   function drawLook(name, x, y, w, h) {
     if (!ctx2d) return;
-    var fn = looks[text(name, '')];
-    if (typeof fn !== 'function') return;
+    var look = looks[text(name, '')];
+    if (!look || typeof look.fn !== 'function') return;
     ctx2d.save();
     ctx2d.translate(num(x, 0), num(y, 0));
-    try { fn(ctx2d, num(w, 0), num(h, 0)); } catch (e) {}
+    try {
+      ctx2d.scale(num(w, look.baseW) / look.baseW, num(h, look.baseH) / look.baseH);
+      look.fn(ctx2d);
+    } catch (e) {}
     ctx2d.restore();
   }
 
@@ -832,10 +972,12 @@ export const gameKitRuntime = `(function () {
     var mins = Math.floor(playTime / 60);
     var secs = Math.floor(playTime % 60);
     var label = mins + ':' + (secs < 10 ? '0' + secs : '' + secs);
+    ctx2d.save();
     ctx2d.fillStyle = config.accent;
     ctx2d.font = '28px "Courier New", monospace';
     try { ctx2d.textAlign = 'left'; } catch (e) {}
     ctx2d.fillText(label, num(x, 20), num(y, 40));
+    ctx2d.restore();
   }
 
   // ---- 🔊 Som (importado via new Audio + sintetizado) ----
@@ -847,14 +989,15 @@ export const gameKitRuntime = `(function () {
     if (!src) { warn('o som "' + a + '" não está no projeto (importe em "Imagens e sons")'); return; }
     pending.push(new Promise(function (resolve) {
       try {
+        // fallback: se nunca disparar canplaythrough, não travar o start
+        var timer = setTimeout(resolve, 3000);
+        var done = function () { clearTimeout(timer); resolve(); };
         var audio = new Audio();
         audio.preload = 'auto';
-        audio.oncanplaythrough = function () { resolve(); };
-        audio.onerror = function () { warn('o som "' + key + '" falhou ao carregar'); resolve(); };
+        audio.oncanplaythrough = done;
+        audio.onerror = function () { warn('o som "' + key + '" falhou ao carregar'); done(); };
         audio.src = src;
         sounds[key] = audio;
-        // fallback: se nunca disparar canplaythrough, não travar o start
-        setTimeout(resolve, 3000);
       } catch (e) { resolve(); }
     }));
   }
@@ -872,9 +1015,20 @@ export const gameKitRuntime = `(function () {
     } catch (e) { _audioCtx = null; }
     return _audioCtx;
   }
+  /**
+   * Acorda o áudio no primeiro GESTO (tecla/clique). Sem isto, um AudioContext
+   * criado antes do gesto fica 'suspended' p/ sempre = todos os tons MUDOS
+   * (Safari/iPad exige resume DENTRO do gesto).
+   */
+  function resumeAudio() {
+    try {
+      if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
+    } catch (e) {}
+  }
   function playTone(freq, ms) {
     var ac = ensureAudioCtx();
     if (!ac) return;
+    try { if (ac.state === 'suspended') ac.resume(); } catch (e) {}
     try {
       var osc = ac.createOscillator();
       var gain = ac.createGain();
@@ -957,7 +1111,7 @@ export const gameKitRuntime = `(function () {
       if (!ensureShell()) return;
       var entry = screens[text(screen, '')];
       if (!entry) {
-        warn('tela pronta desconhecida: "' + text(screen, '') + '" (use menu, pausa, carregando ou fim)');
+        warn('tela pronta desconhecida: "' + text(screen, '') + '" (use menu, pausa, carregando, fim ou vitoria)');
         return;
       }
       var t = text(title, '');
@@ -975,8 +1129,15 @@ export const gameKitRuntime = `(function () {
         return;
       }
       if (screens[key]) {
-        // Já existe (pronta ou criada de novo): só atualiza os textos.
-        api.setScreenText(key, title, textBody, '');
+        // Já existe (pronta ou re-criada): a criança ASSUME a tela — os botões
+        // default saem (senão "Jogar de novo" duplicava na vitoria/fim) e os
+        // textos passam a ser dela. Para SÓ trocar textos use setScreenText.
+        var entry = screens[key];
+        var btns = entry.el.querySelectorAll('button');
+        for (var i = 0; i < btns.length; i++) entry.el.removeChild(btns[i]);
+        entry.mainBtn = null;
+        entry.title.textContent = text(title, key);
+        entry.text.textContent = text(textBody, '');
         return;
       }
       makeScreen(key, 'h2', text(title, key), text(textBody, ''));
@@ -1044,6 +1205,7 @@ export const gameKitRuntime = `(function () {
     charX: guard('charX', function (c) { return (c && typeof c === 'object') ? num(c.x, 0) : 0; }),
     charY: guard('charY', function (c) { return (c && typeof c === 'object') ? num(c.y, 0) : 0; }),
     keyDown: guard('keyDown', function (k) { return keys[normKey(k)] === true; }),
+    keyPressed: guard('keyPressed', function (k) { return justPressed[normKey(k)] === true; }),
     setPauseKey: guard('setPauseKey', function (k) {
       var key = normKey(k);
       if (key) config.pauseKey = key;
@@ -1056,7 +1218,22 @@ export const gameKitRuntime = `(function () {
     startSpawner: guard('startSpawner', function (mold, seconds) {
       var k = text(mold, '');
       if (!k) return;
+      // Dedupe por molde: re-ligar SUBSTITUI o intervalo (senão o bloco dentro de
+      // "quando entrar em jogando" DOBRAVA a taxa a cada "Jogar de novo").
+      for (var i = 0; i < spawners.length; i++) {
+        if (spawners[i].mold === k) {
+          spawners[i].interval = Math.max(0.05, num(seconds, 1.5));
+          spawners[i].timer = 0;
+          return;
+        }
+      }
       spawners.push({ mold: k, interval: Math.max(0.05, num(seconds, 1.5)), timer: 0 });
+    }),
+    stopSpawner: guard('stopSpawner', function (mold) {
+      var k = text(mold, '');
+      for (var i = spawners.length - 1; i >= 0; i--) {
+        if (spawners[i].mold === k) spawners.splice(i, 1);
+      }
     }),
     forEachActive: guard('forEachActive', forEachActive),
     cullOffscreen: guard('cullOffscreen', cullOffscreen),
@@ -1074,6 +1251,11 @@ export const gameKitRuntime = `(function () {
     touchCircle: guard('touchCircle', touchCircle),
     isDead: guard('isDead', function (c) {
       return !!(c && typeof c === 'object') && num(c.health, 1) <= 0;
+    }),
+    isInvincible: guard('isInvincible', function (c) {
+      // O gate do P24 (o "if (applied)") em forma de pergunta: "se encostou E NÃO
+      // está invencível: machucar + empurrar + som" — só o hit VÁLIDO reage.
+      return !!(c && typeof c === 'object') && num(c._iFrames, 0) > 0;
     }),
     healthOf: guard('healthOf', function (c) {
       return (c && typeof c === 'object') ? num(c.health, 0) : 0;

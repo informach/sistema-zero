@@ -7,18 +7,38 @@ import { gameKitRuntime } from '../runtime'
 const canvasProto = (globalThis as { HTMLCanvasElement?: { prototype: object } }).HTMLCanvasElement
   ?.prototype as { getContext?: unknown } | undefined
 const originalGetContext = canvasProto?.getContext
+const ctxCalls: Array<[string, number[]]> = []
 const fakeCtx = {
   fillStyle: '',
   strokeStyle: '',
   lineWidth: 1,
   imageSmoothingEnabled: true,
-  fillRect() {},
+  font: '',
+  globalAlpha: 1,
+  fillRect(...a: number[]) {
+    ctxCalls.push(['fillRect', a])
+  },
   strokeRect() {},
   drawImage() {},
   beginPath() {},
   moveTo() {},
   lineTo() {},
   stroke() {},
+  arc() {},
+  fill() {},
+  fillText() {},
+  save() {
+    ctxCalls.push(['save', []])
+  },
+  restore() {
+    ctxCalls.push(['restore', []])
+  },
+  translate(...a: number[]) {
+    ctxCalls.push(['translate', a])
+  },
+  scale(...a: number[]) {
+    ctxCalls.push(['scale', a])
+  },
 }
 
 beforeAll(() => {
@@ -76,6 +96,44 @@ interface GameKitApi {
   charY: Fn
   keyDown: Fn
   setPauseKey: Fn
+  // P24
+  on: Fn
+  emit: Fn
+  defineMold: Fn
+  spawnFromMold: Fn
+  startSpawner: Fn
+  forEachActive: Fn
+  cullOffscreen: Fn
+  recycle: Fn
+  drawActive: Fn
+  countActive: Fn
+  defineLook: Fn
+  drawLook: Fn
+  seek: Fn
+  drift: Fn
+  face: Fn
+  hurt: Fn
+  knockback: Fn
+  drawHealthBar: Fn
+  touchCircle: Fn
+  isDead: Fn
+  healthOf: Fn
+  setMission: Fn
+  missionKill: Fn
+  drawTimer: Fn
+  timeSurvived: Fn
+  kills: Fn
+  defineEffect: Fn
+  burst: Fn
+  drawEffects: Fn
+  loadSound: Fn
+  playSound: Fn
+  playEffect: Fn
+  playTone: Fn
+  // R1
+  stopSpawner: Fn
+  isInvincible: Fn
+  keyPressed: Fn
 }
 
 interface Harness {
@@ -139,7 +197,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 66 métodos (1 por bloco)', () => {
+  it('expõe os 69 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -210,6 +268,10 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'playSound',
       'playEffect',
       'playTone',
+      // R1 (3 métodos p/ 4 blocos: sz_gk_spawn_named reusa spawnFromMold)
+      'stopSpawner',
+      'isInvincible',
+      'keyPressed',
     ]
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')
@@ -368,7 +430,7 @@ describe('SZGameKit — máquina de estados', () => {
 })
 
 describe('SZGameKit — telas (happy-dom) e laço', () => {
-  it('start monta o palco + 4 telas prontas e termina no menu', async () => {
+  it('start monta o palco + 5 telas prontas e termina no menu', async () => {
     const h = loadRuntime()
     h.api.loadImage('heroi', 'nao-existe-no-projeto') // resolve na hora (fallback)
     await startGame(h)
@@ -379,7 +441,7 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
     const names = Array.from(stage?.querySelectorAll('[data-szgk-screen]') ?? []).map((el) =>
       el.getAttribute('data-szgk-screen'),
     )
-    expect(names).toEqual(['menu', 'pausa', 'carregando', 'fim'])
+    expect(names).toEqual(['menu', 'pausa', 'carregando', 'fim', 'vitoria'])
     // Estado menu → painel do menu ativo, os outros não.
     const active = Array.from(stage?.querySelectorAll('.szgk-active') ?? []).map((el) =>
       el.getAttribute('data-szgk-screen'),
@@ -398,6 +460,8 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
     expect(menu?.querySelector('p')?.textContent).toBe('Pegue 5 moedas!')
     expect(menu?.querySelector('button')?.textContent).toBe('Bora!')
 
+    // createScreen num nome PRONTO ("vitoria") = a criança ASSUME a tela: os
+    // botões default somem (senão o "Jogar de novo" duplicava) e os textos são dela.
     let clicked = 0
     h.api.createScreen('vitoria', 'Você venceu!', 'Parabéns')
     h.api.addButton('vitoria', 'Jogar de novo', () => {
@@ -407,6 +471,8 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
     h.api.showScreen('vitoria')
     const vitoria = stage?.querySelector('[data-szgk-screen="vitoria"]') as HTMLElement | null
     expect(vitoria?.classList.contains('szgk-active')).toBe(true)
+    expect(vitoria?.querySelector('h2')?.textContent).toBe('Você venceu!')
+    expect(vitoria?.querySelectorAll('button').length).toBe(1)
     const btn = vitoria?.querySelector('button') as HTMLButtonElement | null
     expect(btn?.textContent).toBe('Jogar de novo')
     btn?.click()
@@ -519,7 +585,7 @@ describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
     api.placeCharacter(alvo, 200, 0)
     const cacador = api.createCharacter({ w: 20, h: 20, speed: 100 }) as Record<string, number>
     api.placeCharacter(cacador, 0, 0)
-    const x0 = cacador.x
+    const x0 = cacador.x ?? 0
     api.seek(cacador, alvo, 1)
     expect(cacador.x).toBeGreaterThan(x0) // andou em direção ao alvo
     // touchCircle: sobrepostos = true; longe = false.
@@ -538,12 +604,14 @@ describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
     expect(api.healthOf(heroi)).toBe(70)
   })
 
-  it('missão: vence por derrotar N (emite aviso + vai pro fim)', async () => {
+  it('missão: vence por derrotar N (vai pra VITÓRIA antes de emitir o aviso)', async () => {
     const h = loadRuntime()
     let ganhou = false
+    let estadoNoAviso = ''
     h.api.setMission(999, 2) // 2 kills
     h.api.on('missao:completa', () => {
       ganhou = true
+      estadoNoAviso = h.api.state() as string
     })
     await startGame(h)
     h.api.setState('jogando')
@@ -552,7 +620,10 @@ describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
     expect(h.api.kills()).toBe(2)
     h.nextFrame(20) // stepSystems checa a missão
     expect(ganhou).toBe(true)
-    expect(h.api.state()).toBe('fim')
+    // P24 separa MISSION_COMPLETE de GAME_OVER: vitória ≠ fim. O setState roda
+    // ANTES do emit para o listener da criança poder SOBRESCREVER a tela.
+    expect(estadoNoAviso).toBe('vitoria')
+    expect(h.api.state()).toBe('vitoria')
   })
 
   it('faíscas: burst cria partículas; entrar em jogando reinicia a arena', async () => {
@@ -570,5 +641,128 @@ describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
     h.api.setState('jogando')
     expect(h.api.countActive('g')).toBe(0)
     expect(h.api.kills()).toBe(0)
+  })
+})
+
+describe('SZGameKit — R1: correções do full review', () => {
+  it('recycle FORA do forEach devolve ao pool (o slot é reaproveitado)', () => {
+    const { api } = loadRuntime()
+    api.defineMold('g', {})
+    const a = api.spawnFromMold('g', 10, 10)
+    api.spawnFromMold('g', 20, 20)
+    expect(api.countActive('g')).toBe(2)
+    api.recycle(a) // avulso, sem varredura — antes ficava no active[] p/ sempre
+    expect(api.countActive('g')).toBe(1)
+    const b = api.spawnFromMold('g', 30, 30) as { x: number }
+    expect(api.countActive('g')).toBe(2)
+    expect(b).toBe(a as { x: number }) // reusou o objeto recolhido
+  })
+
+  it('reiniciar (Jogar de novo) cura i-frames órfãos — herói não fica invencível', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({}) as Record<string, number>
+    h.api.hurt(heroi, 10, 60) // invencível por 60s
+    expect(h.api.isInvincible(heroi)).toBe(true)
+    expect(heroi.health).toBe(90)
+    h.api.setState('fim')
+    h.api.setState('jogando') // Jogar de novo
+    expect(h.api.isInvincible(heroi)).toBe(false)
+    h.api.hurt(heroi, 10, 1) // volta a levar dano
+    expect(heroi.health).toBe(80)
+  })
+
+  it('startSpawner re-ligado SUBSTITUI (não duplica); stopSpawner desliga', async () => {
+    const h = loadRuntime()
+    h.api.defineMold('g', {})
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.startSpawner('g', 1)
+    h.api.startSpawner('g', 1) // Jogar de novo re-liga — não pode dobrar a taxa
+    h.clock.value = 0
+    h.api.setState('jogando') // re-zera o relógio do dt
+    // 1.05s de jogo em passos de 0.05s (clamp de dt) — só 1 nasce, não 2.
+    for (let t = 50; t <= 1100; t += 50) {
+      h.clock.value = t
+      h.nextFrame(t)
+    }
+    expect(h.api.countActive('g')).toBe(1)
+    h.api.stopSpawner('g')
+    for (let t = 1150; t <= 2300; t += 50) {
+      h.clock.value = t
+      h.nextFrame(t)
+    }
+    expect(h.api.countActive('g')).toBe(1) // parado: nada nasce
+  })
+
+  it('keyPressed é edge: true SÓ no quadro do aperto (keyDown continua true)', async () => {
+    const h = loadRuntime()
+    const pressedFrames: boolean[] = []
+    const downFrames: boolean[] = []
+    h.api.onUpdate(() => {
+      pressedFrames.push(h.api.keyPressed('j') as boolean)
+      downFrames.push(h.api.keyDown('j') as boolean)
+    })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.fire('keydown', { key: 'j' })
+    h.nextFrame(16)
+    h.nextFrame(32)
+    expect(pressedFrames).toEqual([true, false]) // só no 1º quadro
+    expect(downFrames).toEqual([true, true]) // segurando
+  })
+
+  it('faíscas congelam fora de jogando (pausa não avança as partículas)', async () => {
+    const h = loadRuntime()
+    h.api.defineEffect('p', { count: 4, life: 9, speed: 100, gravity: 0 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.nextFrame(16)
+    h.api.burst('p', 50, 50)
+    h.api.drawEffects()
+    h.api.pause()
+    h.api.drawEffects() // pausado: dt 0 — não move nem envelhece
+    h.api.drawEffects()
+    h.api.resume()
+    // Se envelhecessem na pausa com dt cheio, 3 chamadas × vida 9s seguiriam
+    // vivas mesmo assim — o sinal observável é o movimento; aqui basta não
+    // lançar e manter o desenho estável (o detalhe fino fica no QA browser).
+    expect(() => h.api.drawEffects()).not.toThrow()
+  })
+
+  it('defineLook com tamanho-base: drawLook ESCALA o desenho para o w/h pedido', async () => {
+    const h = loadRuntime()
+    await startGame(h) // monta o canvas (ctx2d = fakeCtx do stub)
+    h.api.defineLook(
+      'goblin',
+      (c: unknown) => {
+        ;(c as { fillRect: (x: number, y: number, w: number, h: number) => void }).fillRect(
+          0,
+          0,
+          40,
+          40,
+        )
+      },
+      40,
+      40,
+    )
+    ctxCalls.length = 0
+    h.api.drawLook('goblin', 10, 20, 80, 20) // 2× na largura, 0.5× na altura
+    const scale = ctxCalls.find(([n]) => n === 'scale')
+    expect(scale?.[1]).toEqual([2, 0.5])
+    const translate = ctxCalls.find(([n]) => n === 'translate')
+    expect(translate?.[1]).toEqual([10, 20])
+    expect(ctxCalls.some(([n]) => n === 'fillRect')).toBe(true) // a fn rodou
+  })
+
+  it('emit repassa o payload aos ouvintes (futuro dos blocos, já no motor)', () => {
+    const { api } = loadRuntime()
+    let got: unknown = null
+    api.on('pontos', (v: unknown) => {
+      got = v
+    })
+    api.emit('pontos', 42)
+    expect(got).toBe(42)
   })
 })

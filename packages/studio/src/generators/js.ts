@@ -1575,6 +1575,12 @@ function compileStatementCode(
       return `${pad}SZGameKit.spawnFromMold(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
     case 'gk:startSpawner':
       return `${pad}SZGameKit.startSpawner(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
+    case 'gk:stopSpawner':
+      return `${pad}SZGameKit.stopSpawner(${JSON.stringify(stmt.mold)});`
+    case 'gk:spawnNamed': {
+      const v = identifiers.get(stmt.varName)
+      return `${pad}const ${v} = SZGameKit.spawnFromMold(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    }
     case 'gk:forEachActive': {
       const body = compileStatements(
         stmt.body,
@@ -1597,7 +1603,14 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.defineLook(${JSON.stringify(stmt.name)}, function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}});`
+      // baseW/baseH viraram args do runtime (drawLook escala do tamanho-base);
+      // IR v0.2 sem eles emite a forma antiga de 2 args (o runtime assume 40).
+      const baseLine = base + 1 + countLines(body)
+      const size =
+        stmt.baseW !== undefined && stmt.baseH !== undefined
+          ? `, ${compileExpr(valueToExpr(stmt.baseW), 0, identifiers, recAt(baseLine))}, ${compileExpr(valueToExpr(stmt.baseH), 0, identifiers, recAt(baseLine))}`
+          : ''
+      return `${pad}SZGameKit.defineLook(${JSON.stringify(stmt.name)}, function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}}${size});`
     }
     case 'gk:drawLook':
       return `${pad}SZGameKit.drawLook(${JSON.stringify(stmt.look)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
@@ -3355,6 +3368,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:startSpawner':
       collectExprIdentifiers(valueToExpr(stmt.seconds), names)
       return
+    case 'gk:stopSpawner':
+      return
+    case 'gk:spawnNamed':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
     case 'gk:forEachActive':
       names.add(stmt.itemName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
@@ -3367,6 +3387,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'gk:defineLook':
       names.add(stmt.ctxName)
+      if (stmt.baseW !== undefined) collectExprIdentifiers(valueToExpr(stmt.baseW), names)
+      if (stmt.baseH !== undefined) collectExprIdentifiers(valueToExpr(stmt.baseH), names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'gk:drawLook':
@@ -3723,6 +3745,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       names.add(expr.bVar)
       return
     case 'gk:isDead':
+    case 'gk:isInvincible':
     case 'gk:healthOf':
       names.add(expr.charVar)
       return

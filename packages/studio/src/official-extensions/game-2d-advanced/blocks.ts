@@ -80,6 +80,7 @@ export const gameKitBlocks = [
           ['pausa', 'pausa'],
           ['carregando', 'carregando'],
           ['fim', 'fim'],
+          ['vitória', 'vitoria'],
         ],
       },
       { type: 'input_value', name: 'TITLE', check: 'JSValue' },
@@ -91,13 +92,13 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Personaliza uma tela que já vem pronta (menu, pausa, carregando ou fim): o título grande, o texto de apoio e o texto do primeiro botão. Deixe em branco o que não quiser mudar.',
+      'Personaliza uma tela que já vem pronta (menu, pausa, carregando, fim ou vitória): o título grande, o texto de apoio e o texto do primeiro botão. Deixe em branco o que não quiser mudar.',
   },
   {
     type: 'sz_gk_create_screen',
     message0: 'Criar a tela %1 com título %2 e texto %3',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'vitoria' },
+      { type: 'field_input', name: 'NAME', text: 'loja' },
       { type: 'input_value', name: 'TITLE', check: 'JSValue' },
       { type: 'input_value', name: 'TEXT', check: 'JSValue' },
     ],
@@ -106,7 +107,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma tela SUA (ex.: vitória, loja, instruções), no mesmo estilo das prontas. Ela começa escondida — use "Mostrar a tela" quando quiser. Dá para pôr botões nela.',
+      'Cria uma tela SUA (ex.: loja, instruções), no mesmo estilo das prontas. Ela começa escondida — use "Mostrar a tela" quando quiser. Dá para pôr botões nela. Usar o nome de uma tela pronta (ex.: vitoria) faz você ASSUMIR a tela: os botões dela saem e os textos passam a ser os seus.',
   },
   {
     type: 'sz_gk_add_button',
@@ -389,6 +390,15 @@ export const gameKitBlocks = [
       'Verdadeiro enquanto a tecla está sendo segurada. Escreva a letra (w, a, s, d…), ArrowUp/ArrowDown para setas, ou espaço. Use dentro do "A cada quadro".',
   },
   {
+    type: 'sz_gk_key_pressed',
+    message0: 'a tecla %1 acabou de ser apertada ?',
+    args0: [{ type: 'field_input', name: 'KEY', text: 'j' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro SÓ no quadro em que a tecla desceu (segurar não repete). Perfeito para golpe/tiro: um aperto = uma ação. Use dentro do "A cada quadro".',
+  },
+  {
     type: 'sz_gk_set_pause_key',
     message0: 'Usar a tecla %1 para pausar e continuar',
     args0: [{ type: 'field_input', name: 'KEY', text: 'Escape' }],
@@ -462,6 +472,22 @@ export const gameKitBlocks = [
       'Faz nascer 1 personagem do molde nessa posição. O motor reaproveita personagens recolhidos (pooling) — rápido mesmo com muitos.',
   },
   {
+    type: 'sz_gk_spawn_named',
+    message0: 'Nascer 1 do molde %1 em x %2 y %3 e chamar de %4',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'tiro', kind: 'mold' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_input', name: 'NAME', text: 'chefe' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como o "Nascer 1", mas dá um APELIDO ao que nasceu — aí você pode mexer nele nos blocos de personagem (perseguir, empurrar, machucar…). Perfeito para tiro mirado e chefão.',
+  },
+  {
     type: 'sz_gk_start_spawner',
     message0: 'A cada %1 s, nascer 1 do molde %2 numa borda da tela',
     args0: [
@@ -473,7 +499,17 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga uma "fábrica" que faz nascer um do molde a cada tantos segundos, entrando por uma das 4 bordas. É assim que jogos de sobrevivência soltam inimigos sem parar.',
+      'Liga uma "fábrica" que faz nascer um do molde a cada tantos segundos, entrando por uma das 4 bordas. É assim que jogos de sobrevivência soltam inimigos sem parar. Ligar de novo só TROCA o ritmo (não duplica).',
+  },
+  {
+    type: 'sz_gk_stop_spawner',
+    message0: 'Parar a fábrica do molde %1',
+    args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desliga a fábrica desse molde — nada mais nasce dele (os vivos continuam). Bom para fases, chefões e fim de onda.',
   },
   {
     type: 'sz_gk_for_each_active',
@@ -537,9 +573,11 @@ export const gameKitBlocks = [
   // ---- 🎨 Desenho (aparência vetorial) ----
   {
     type: 'sz_gk_define_look',
-    message0: 'Criar a aparência %1, desenhando com o pincel %2 assim:',
+    message0: 'Criar a aparência %1 (tamanho-base %2 × %3), desenhando com o pincel %4 assim:',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'inimigo' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'field_input', name: 'CTX', text: 'ctx' },
     ],
     message1: 'fazer %1',
@@ -549,7 +587,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha uma aparência com formas (retângulo, círculo, linha…) e dá um nome a ela — do cantinho (0,0) para dentro. Um molde pode usá-la, e aí TODOS do enxame ganham esse visual (vetor). Dá para usar os blocos de Canvas aqui dentro.',
+      'Desenha uma aparência com formas (retângulo, círculo, linha…) e dá um nome a ela — do cantinho (0,0) para dentro, no tamanho-base. Quem usar a aparência num tamanho diferente vê o desenho ESTICADO na proporção. Dá para usar os blocos de Canvas aqui dentro.',
   },
   {
     type: 'sz_gk_draw_look',
@@ -653,7 +691,8 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Desenha uma barrinha de vida em cima do personagem. Use dentro do "Desenhar o jogo".',
+    tooltip:
+      'Desenha uma barrinha de vida em cima do personagem. Vida cheia 0 = usa a vida máxima dele sozinho. Use dentro do "Desenhar o jogo".',
   },
   {
     type: 'sz_gk_touching_circle',
@@ -674,6 +713,15 @@ export const gameKitBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip: 'Verdadeiro quando a vida do personagem chegou a zero. Use dentro de um "se".',
+  },
+  {
+    type: 'sz_gk_is_invincible',
+    message0: '%1 está invencível ?',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro enquanto o personagem pisca depois de um dano. O padrão profissional: "se encostou E NÃO está invencível → machucar + empurrar + som" — assim o som e o empurrão só acontecem no dano de verdade.',
   },
   {
     type: 'sz_gk_health_of',
@@ -917,7 +965,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '⌨️ Teclas',
     colour: C,
-    types: ['sz_gk_key_down', 'sz_gk_set_pause_key'],
+    types: ['sz_gk_key_down', 'sz_gk_key_pressed', 'sz_gk_set_pause_key'],
   },
   {
     name: '📢 Avisos',
@@ -930,7 +978,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_gk_define_mold',
       'sz_gk_spawn_from_mold',
+      'sz_gk_spawn_named',
       'sz_gk_start_spawner',
+      'sz_gk_stop_spawner',
       'sz_gk_for_each_active',
       'sz_gk_cull_offscreen',
       'sz_gk_recycle',
@@ -957,6 +1007,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_draw_health_bar',
       'sz_gk_touching_circle',
       'sz_gk_is_dead',
+      'sz_gk_is_invincible',
       'sz_gk_health_of',
     ],
   },
@@ -1012,8 +1063,8 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     BTN: txtShadow('Jogar'),
   },
   sz_gk_create_screen: {
-    TITLE: txtShadow('Você venceu!'),
-    TEXT: txtShadow('Parabéns!'),
+    TITLE: txtShadow('Minha loja'),
+    TEXT: txtShadow('Bem-vindo!'),
   },
   sz_gk_add_button: { LABEL: txtShadow('Jogar de novo') },
   sz_gk_create_character: { W: numShadow(64), H: numShadow(64), SPEED: numShadow(300) },
@@ -1028,12 +1079,17 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     DAMAGE: numShadow(10),
   },
   sz_gk_spawn_from_mold: { X: numShadow(100), Y: numShadow(100) },
+  sz_gk_spawn_named: { X: numShadow(100), Y: numShadow(100) },
   sz_gk_start_spawner: { SEC: numShadow(1.5) },
-  sz_gk_cull_offscreen: { MARGIN: numShadow(120) },
+  // 200 = o despawn do P24 (2× a margem de spawn de 100 — quem nasce na borda
+  // não é recolhido no quadro seguinte).
+  sz_gk_cull_offscreen: { MARGIN: numShadow(200) },
+  sz_gk_define_look: { W: numShadow(40), H: numShadow(40) },
   sz_gk_draw_look: { X: numShadow(100), Y: numShadow(100), W: numShadow(40), H: numShadow(40) },
   sz_gk_hurt: { AMOUNT: numShadow(10), IFRAMES: numShadow(1) },
   sz_gk_knockback: { FORCE: numShadow(400) },
-  sz_gk_draw_health_bar: { MAX: numShadow(100) },
+  // 0 = automático (usa a vida máxima do personagem — o runtime resolve).
+  sz_gk_draw_health_bar: { MAX: numShadow(0) },
   sz_gk_set_mission: { SEC: numShadow(30), KILLS: numShadow(10) },
   sz_gk_draw_timer: { X: numShadow(20), Y: numShadow(40) },
   sz_gk_define_effect: {

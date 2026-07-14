@@ -386,12 +386,16 @@ export function compileExpr(
       return `SZGameKit.charY(${identifiers.get(expr.charVar)})`
     case 'gk:keyDown':
       return `SZGameKit.keyDown(${JSON.stringify(expr.key)})`
+    case 'gk:keyPressed':
+      return `SZGameKit.keyPressed(${JSON.stringify(expr.key)})`
     case 'gk:countActive':
       return `SZGameKit.countActive(${JSON.stringify(expr.mold)})`
     case 'gk:touchCircle':
       return `SZGameKit.touchCircle(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'gk:isDead':
       return `SZGameKit.isDead(${identifiers.get(expr.charVar)})`
+    case 'gk:isInvincible':
+      return `SZGameKit.isInvincible(${identifiers.get(expr.charVar)})`
     case 'gk:healthOf':
       return `SZGameKit.healthOf(${identifiers.get(expr.charVar)})`
     case 'gk:timeSurvived':

@@ -4,7 +4,7 @@ import { arenaGoblinsExample, cacaMoedasExample } from './examples'
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.2.0',
+  version: '0.3.0',
   description:
     'A base de um jogo 2D profissional, pronta para você inventar as regras. Máquina de estados, laço com delta-time (dt), telas de UI, personagens, e a arquitetura de verdade: avisos (eventos), moldes e enxames de inimigos que nascem sozinhos, comportamentos (perseguir/vaguear), combate (vida, dano, empurrão), faíscas, missão e som importado. O motor pronto fica no runtime; a mecânica você escreve nos ganchos, com os blocos — igual a quem programa jogos na unha.',
   category: 'games',
@@ -23,16 +23,18 @@ dos ganchos, com blocos de matemática, "se", variáveis e Canvas.
 O que o motor já faz por você:
 
 - **Máquina de estados** — o jogo vive em UM estado por vez: \`menu\`,
-  \`jogando\`, \`pausado\`, \`fim\`… ou estados que você inventar (\`loja\`,
-  \`vitoria\`). As telas prontas aparecem sozinhas no estado certo.
+  \`jogando\`, \`pausado\`, \`fim\` (derrota), \`vitoria\` (missão cumprida)… ou
+  estados que você inventar (\`loja\`). As telas prontas aparecem sozinhas no
+  estado certo.
 - **Laço com delta-time (dt)** — o "A cada quadro" recebe quanto tempo durou o
   último quadro, em segundos. Multiplicando a velocidade por \`dt\`, o jogo anda
   igual em qualquer computador (rápido ou lento). É assim que os profissionais
   fazem.
 - **Carregamento com tela de espera** — as imagens carregam ANTES do jogo
   começar, com a tela de "carregando" na frente.
-- **Telas de UI** — menu, pausa, carregando e fim já vêm prontas (personalize
-  título, texto e botão). Dá para criar telas SUAS com botões que rodam blocos.
+- **Telas de UI** — menu, pausa, carregando, fim e vitória já vêm prontas
+  (personalize título, texto e botão). Dá para criar telas SUAS com botões que
+  rodam blocos.
 - **Canvas responsivo com resolução fixa** — a tela do jogo tem SEMPRE a mesma
   resolução por dentro (ex.: 1280×720) e se ajusta sozinha à janela, mantendo a
   proporção. Suas contas nunca mudam com o tamanho da janela.
@@ -71,10 +73,11 @@ O que o motor já faz por você:
 ### Telas
 
 - **Personalizar a tela pronta…** — muda título, texto e botão de
-  menu/pausa/carregando/fim. Deixe em branco o que não quiser mudar.
+  menu/pausa/carregando/fim/vitória. Deixe em branco o que não quiser mudar.
 - **Criar a tela… / Botão… na tela… / Mostrar a tela / Esconder todas** — telas
-  novas (vitória, loja, instruções) no mesmo estilo, com botões que rodam os
-  seus blocos ao clicar.
+  novas (loja, instruções) no mesmo estilo, com botões que rodam os seus blocos
+  ao clicar. Criar com o nome de uma tela pronta faz você ASSUMIR a tela: os
+  botões dela saem e os textos passam a ser os seus.
 
 ### Personagens
 
@@ -97,6 +100,9 @@ O personagem é um objeto comum: quem já conhece Objetos pode ler e mudar
 - **a tecla … está apertada?** — verdadeiro enquanto segura. Escreva a letra
   (\`w\`, \`a\`…), \`ArrowUp\`/\`ArrowDown\`/\`ArrowLeft\`/\`ArrowRight\` para as
   setas, ou \`espaço\`.
+- **a tecla … acabou de ser apertada?** — verdadeiro SÓ no quadro do aperto
+  (segurar não repete). O jeito certo de fazer golpe e tiro: um aperto, uma
+  ação.
 - **Usar a tecla … para pausar** — troca a tecla de pausa (padrão: Esc).
 
 ### Dicas de quem faz jogo de verdade
@@ -129,8 +135,11 @@ ponto e toca um som. Assim o código não vira um nó.
 
 - **Criar o molde** — os DADOS de um tipo de personagem (inimigo, moeda, tiro):
   tamanho, vida, velocidade, dano, cor/imagem/aparência. Defina UMA vez.
-- **Nascer 1 do molde** / **A cada N s, nascer numa borda** — faça quantos quiser;
-  o "spawner" solta inimigos sem parar (jogos de sobrevivência).
+- **Nascer 1 do molde** / **…e chamar de** — faça quantos quiser; a versão "e
+  chamar de" dá um APELIDO ao que nasceu, e aí os blocos de personagem
+  funcionam nele (perfeito para tiro mirado e chefão).
+- **A cada N s, nascer numa borda** / **Parar a fábrica** — o "spawner" solta
+  inimigos sem parar (jogos de sobrevivência); pare-o entre fases ou no chefão.
 - **Para cada vivo do molde… fazer** — repete para todos do enxame (mover, testar
   colisão). "item" é o da vez.
 - **Recolher** / **Recolher quem saiu da tela** — guarda personagens para
@@ -146,14 +155,19 @@ quadro" — é o mesmo cálculo que se faz à mão (ir na direção × velocidad
 ### ❤️ Combate
 
 **Machucar** (tira vida e deixa piscando e invencível um tempinho), **empurrar**
-(solavanco que diminui sozinho), **barra de vida**, **encostou (círculo)**, **a
-vida acabou?** e **a vida de**. O combate de jogo de ação, montável por você.
+(solavanco que diminui sozinho), **barra de vida** (vida cheia 0 = automática),
+**encostou (círculo)**, **a vida acabou?**, **está invencível?** e **a vida
+de**. O padrão profissional de dano: *se encostou E NÃO está invencível →
+machucar + empurrar + som* — assim o som e o empurrão só acontecem no dano de
+verdade. E a morte do inimigo: *se a vida de item acabou → faíscas + recolher +
+avisar*.
 
 ### 🖥️ HUD & Missão
 
 **Vencer quando sobreviver X s ou derrotar N** define a missão (ganhou → tela de
-fim + aviso \`missao:completa\`). **Contar +1 inimigo derrotado**, **cronômetro**,
-**tempo jogando** e **quantos derrotei** completam o placar.
+VITÓRIA pronta + aviso \`missao:completa\`; derrota é o "Terminar o jogo", tela
+de fim). **Contar +1 inimigo derrotado**, **cronômetro**, **tempo jogando** e
+**quantos derrotei** completam o placar.
 
 ### ✨ Faíscas
 
@@ -165,8 +179,9 @@ efeitos.
 ### 🎨 Aparência (desenho vetorial)
 
 **Criar a aparência** desenha um personagem com formas (do cantinho 0,0 para
-dentro) e dá um nome. Um molde pode usá-la — aí TODO o enxame ganha esse visual
-vetorial. Ou use **Desenhar a aparência** em qualquer lugar (ex.: o herói).
+dentro, no tamanho-base que você declarar) e dá um nome. Um molde pode usá-la —
+aí TODO o enxame ganha esse visual vetorial, esticado para o tamanho do molde.
+Ou use **Desenhar a aparência** em qualquer lugar e tamanho (ex.: o herói).
 
 ### 🔊 Som
 

@@ -512,12 +512,16 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:charY', charVar: f(block, 'CHAR') }
     case 'sz_gk_key_down':
       return { type: 'gk:keyDown', key: f(block, 'KEY') || 'w' }
+    case 'sz_gk_key_pressed':
+      return { type: 'gk:keyPressed', key: f(block, 'KEY') || 'j' }
     case 'sz_gk_count_active':
       return { type: 'gk:countActive', mold: f(block, 'MOLD') }
     case 'sz_gk_touching_circle':
       return { type: 'gk:touchCircle', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_gk_is_dead':
       return { type: 'gk:isDead', charVar: f(block, 'CHAR') }
+    case 'sz_gk_is_invincible':
+      return { type: 'gk:isInvincible', charVar: f(block, 'CHAR') }
     case 'sz_gk_health_of':
       return { type: 'gk:healthOf', charVar: f(block, 'CHAR') }
     case 'sz_gk_time_survived':
@@ -5299,6 +5303,21 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           seconds: exprInput(block, 'SEC', { type: 'num', value: 1.5 }),
         },
       }
+    case 'sz_gk_stop_spawner':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:stopSpawner', mold: f(block, 'MOLD') } }
+    case 'sz_gk_spawn_named':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:spawnNamed',
+          varName: f(block, 'NAME'),
+          mold: f(block, 'MOLD'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+        },
+      }
     case 'sz_gk_for_each_active':
       seen.add('game-2d-advanced')
       return {
@@ -5334,6 +5353,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'gk:defineLook',
           name: f(block, 'NAME'),
           ctxName: f(block, 'CTX') || 'ctx',
+          baseW: exprInput(block, 'W', { type: 'num', value: 40 }),
+          baseH: exprInput(block, 'H', { type: 'num', value: 40 }),
           body: getStatementChildren(block, 'BODY', seen),
         },
       }

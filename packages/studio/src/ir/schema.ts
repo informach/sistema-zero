@@ -197,10 +197,14 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:charX'; charVar: string })
   | (JSExprCommon & { type: 'gk:charY'; charVar: string })
   | (JSExprCommon & { type: 'gk:keyDown'; key: string })
+  // Edge-trigger: true SÓ no quadro do aperto (tiro 1-por-aperto sem flag manual).
+  | (JSExprCommon & { type: 'gk:keyPressed'; key: string })
   // Jogo 2D Avançado (P24) — valores: enxame, combate, HUD/missão.
   | (JSExprCommon & { type: 'gk:countActive'; mold: string })
   | (JSExprCommon & { type: 'gk:touchCircle'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'gk:isDead'; charVar: string })
+  // O gate do P24 ("if (applied)") em forma de pergunta — protege o dano.
+  | (JSExprCommon & { type: 'gk:isInvincible'; charVar: string })
   | (JSExprCommon & { type: 'gk:healthOf'; charVar: string })
   | (JSExprCommon & { type: 'gk:timeSurvived' })
   | (JSExprCommon & { type: 'gk:kills' })
@@ -533,9 +537,11 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:charX'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:charY'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:keyDown'), key: irText(), ...idField }),
+    z.object({ type: z.literal('gk:keyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('gk:countActive'), mold: irText(), ...idField }),
     z.object({ type: z.literal('gk:touchCircle'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isDead'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:isInvincible'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:healthOf'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:timeSurvived'), ...idField }),
     z.object({ type: z.literal('gk:kills'), ...idField }),
@@ -2407,6 +2413,16 @@ export type JSStatement =
       y: number | JSExpr
     })
   | (JSStatementCommon & { type: 'gk:startSpawner'; mold: string; seconds: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:stopSpawner'; mold: string })
+  // `const NOME = SZGameKit.spawnFromMold(...)` — nasce 1 com apelido (tiro
+  // mirado/boss configurável), padrão do createCharacter.
+  | (JSStatementCommon & {
+      type: 'gk:spawnNamed'
+      varName: string
+      mold: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
   | (JSStatementCommon & {
       type: 'gk:forEachActive'
       mold: string
@@ -2418,10 +2434,14 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'gk:drawActive'; mold: string })
   // 🎨 Desenho (aparência vetorial reutilizável). O corpo desenha em coords LOCAIS
   // (0,0 = canto), pincel `ctxName` bound — Canvas do núcleo funciona dentro.
+  // `baseW/baseH` = tamanho-base do desenho: drawLook/drawActive ESCALAM dele
+  // p/ o tamanho pedido (opcionais p/ IR v0.2 já salva — ausente = 40×40).
   | (JSStatementCommon & {
       type: 'gk:defineLook'
       name: string
       ctxName: string
+      baseW?: number | JSExpr
+      baseH?: number | JSExpr
       body: JSStatement[]
     })
   | (JSStatementCommon & {
@@ -4584,6 +4604,15 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       seconds: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({ type: z.literal('gk:stopSpawner'), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:spawnNamed'),
+      varName: irText(),
+      mold: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({
       type: z.literal('gk:forEachActive'),
       mold: irText(),
@@ -4603,6 +4632,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('gk:defineLook'),
       name: irText(),
       ctxName: irText(),
+      baseW: z.union([JSExprSchema, z.number()]).optional(),
+      baseH: z.union([JSExprSchema, z.number()]).optional(),
       body: z.array(JSStatementSchema),
       ...idField,
     }),
@@ -5243,6 +5274,8 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:defineMold',
   'gk:spawnFromMold',
   'gk:startSpawner',
+  'gk:stopSpawner',
+  'gk:spawnNamed',
   'gk:forEachActive',
   'gk:cullOffscreen',
   'gk:recycle',

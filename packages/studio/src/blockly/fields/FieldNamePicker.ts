@@ -156,7 +156,10 @@ function collectShapes(workspace: Blockly.Workspace | null | undefined): string[
 }
 
 /** Personagens do Jogo 2D Avançado — fonte dos seletores CHAR/A/B. */
-const CHARACTER_DECL_BLOCKS: Record<string, string[]> = { sz_gk_create_character: ['NAME'] }
+const CHARACTER_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_create_character: ['NAME'],
+  sz_gk_spawn_named: ['NAME'],
+}
 function collectCharacters(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, CHARACTER_DECL_BLOCKS)
 }
@@ -164,11 +167,11 @@ function collectCharacters(workspace: Blockly.Workspace | null | undefined): str
 const CHARACTER_LOOP_BINDERS: Record<string, string[]> = { sz_gk_for_each_active: ['ITEM'] }
 
 /**
- * Telas do Jogo 2D Avançado: as 4 PRONTAS (sempre existem no runtime) + as que a
+ * Telas do Jogo 2D Avançado: as 5 PRONTAS (sempre existem no runtime) + as que a
  * criança criou com "Criar a tela". A semente vem primeiro — são as telas que o
  * kit garante mesmo sem nenhum bloco de criação.
  */
-const GK_BUILTIN_SCREENS = ['menu', 'pausa', 'carregando', 'fim'] as const
+const GK_BUILTIN_SCREENS = ['menu', 'pausa', 'carregando', 'fim', 'vitoria'] as const
 const SCREEN_DECL_BLOCKS: Record<string, string[]> = { sz_gk_create_screen: ['NAME'] }
 function collectScreens(workspace: Blockly.Workspace | null | undefined): string[] {
   const declared = collectDeclaredNames(workspace, SCREEN_DECL_BLOCKS)
@@ -177,11 +180,11 @@ function collectScreens(workspace: Blockly.Workspace | null | undefined): string
 }
 
 /**
- * Estados do Jogo 2D Avançado: os 4 FIXOS (com comportamento automático) + os que
+ * Estados do Jogo 2D Avançado: os 5 FIXOS (com comportamento automático) + os que
  * a criança inventou. Um estado "existe" por USO — os próprios campos de estado
  * (mudar/quando entrar/é?) são a fonte da lista.
  */
-const GK_BUILTIN_STATES = ['menu', 'jogando', 'pausado', 'fim'] as const
+const GK_BUILTIN_STATES = ['menu', 'jogando', 'pausado', 'fim', 'vitoria'] as const
 const GAMESTATE_DECL_BLOCKS: Record<string, string[]> = {
   sz_gk_set_state: ['STATE'],
   sz_gk_on_enter_state: ['STATE'],
@@ -285,9 +288,10 @@ const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
   sz_val_array_map: ['ITEM'],
   sz_val_array_find: ['ITEM'],
   // Ganchos do Jogo 2D Avançado: o tempo (dt) e o pincel (ctx) são nomes LOCAIS
-  // dos corpos "A cada quadro"/"Desenhar o jogo".
+  // dos corpos "A cada quadro"/"Desenhar o jogo"/"Criar a aparência".
   sz_gk_on_update: ['DT'],
   sz_gk_on_draw: ['PARAM'],
+  sz_gk_define_look: ['CTX'],
 }
 
 /**
