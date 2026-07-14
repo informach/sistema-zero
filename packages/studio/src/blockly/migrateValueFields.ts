@@ -154,6 +154,31 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_gk_create_character: { W: 'number', H: 'number', SPEED: 'number' },
   sz_gk_place_character: { X: 'number', Y: 'number' },
   sz_gk_set_speed_multiplier: { FACTOR: 'number' },
+  sz_gk_define_mold: {
+    W: 'number',
+    H: 'number',
+    HEALTH: 'number',
+    SPEED: 'number',
+    DAMAGE: 'number',
+  },
+  sz_gk_spawn_from_mold: { X: 'number', Y: 'number' },
+  sz_gk_start_spawner: { SEC: 'number' },
+  sz_gk_cull_offscreen: { MARGIN: 'number' },
+  sz_gk_draw_look: { X: 'number', Y: 'number', W: 'number', H: 'number' },
+  sz_gk_hurt: { AMOUNT: 'number', IFRAMES: 'number' },
+  sz_gk_knockback: { FORCE: 'number' },
+  sz_gk_draw_health_bar: { MAX: 'number' },
+  sz_gk_set_mission: { SEC: 'number', KILLS: 'number' },
+  sz_gk_draw_timer: { X: 'number', Y: 'number' },
+  sz_gk_define_effect: {
+    COUNT: 'number',
+    SIZE: 'number',
+    LIFE: 'number',
+    SPEED: 'number',
+    GRAVITY: 'number',
+  },
+  sz_gk_burst: { X: 'number', Y: 'number' },
+  sz_gk_play_tone: { FREQ: 'number', MS: 'number' },
 }
 
 interface BlockNode {

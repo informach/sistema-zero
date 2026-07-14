@@ -139,9 +139,10 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 33 métodos (1 por bloco)', () => {
+  it('expõe os 66 métodos (1 por bloco)', () => {
     const { api } = loadRuntime()
     const expected = [
+      // v1 (33)
       'setup',
       'start',
       'width',
@@ -175,6 +176,40 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'charY',
       'keyDown',
       'setPauseKey',
+      // P24 (33)
+      'on',
+      'emit',
+      'defineMold',
+      'spawnFromMold',
+      'startSpawner',
+      'forEachActive',
+      'cullOffscreen',
+      'recycle',
+      'drawActive',
+      'countActive',
+      'defineLook',
+      'drawLook',
+      'seek',
+      'drift',
+      'face',
+      'hurt',
+      'knockback',
+      'drawHealthBar',
+      'touchCircle',
+      'isDead',
+      'healthOf',
+      'setMission',
+      'missionKill',
+      'drawTimer',
+      'timeSurvived',
+      'kills',
+      'defineEffect',
+      'burst',
+      'drawEffects',
+      'loadSound',
+      'playSound',
+      'playEffect',
+      'playTone',
     ]
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')
@@ -416,5 +451,110 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
       h.nextFrame(7064)
     }).not.toThrow()
     expect(dts.length).toBe(4)
+  })
+})
+
+describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
+  it('event bus: emit chama os ouvintes de on (desacoplado)', () => {
+    const { api } = loadRuntime()
+    const heard: string[] = []
+    api.on('inimigo:morreu', () => heard.push('a'))
+    api.on('inimigo:morreu', () => heard.push('b'))
+    api.on('outro', () => heard.push('x'))
+    api.emit('inimigo:morreu')
+    expect(heard).toEqual(['a', 'b'])
+    api.emit('nao-existe') // sem ouvintes: no-op
+    expect(heard).toEqual(['a', 'b'])
+  })
+
+  it('molde → spawn → forEach (reverso, recolhe) → count; pool reaproveita', () => {
+    const { api } = loadRuntime()
+    api.setup({ width: 800, height: 600 })
+    api.defineMold('goblin', { w: 40, h: 40, health: 5, speed: 100 })
+    const a = api.spawnFromMold('goblin', 10, 10) as { health: number }
+    api.spawnFromMold('goblin', 20, 20)
+    api.spawnFromMold('goblin', 30, 30)
+    expect(api.countActive('goblin')).toBe(3)
+    expect(a.health).toBe(5)
+    // Recolher o do meio durante o forEach; count cai; reaproveita no próximo spawn.
+    let seen = 0
+    api.forEachActive('goblin', (item: { x: number }) => {
+      seen += 1
+      if (item.x === 20) api.recycle(item)
+    })
+    expect(seen).toBe(3)
+    expect(api.countActive('goblin')).toBe(2)
+    api.spawnFromMold('goblin', 40, 40)
+    expect(api.countActive('goblin')).toBe(3)
+  })
+
+  it('cullOffscreen recolhe quem saiu da tela', () => {
+    const { api } = loadRuntime()
+    api.setup({ width: 400, height: 300 })
+    api.defineMold('bicho', {})
+    api.spawnFromMold('bicho', 100, 100) // dentro
+    api.spawnFromMold('bicho', 999, 100) // bem fora
+    expect(api.countActive('bicho')).toBe(2)
+    api.cullOffscreen('bicho', 120)
+    expect(api.countActive('bicho')).toBe(1)
+  })
+
+  it('seek aproxima do alvo; touchCircle por raio; hurt respeita i-frames', () => {
+    const { api } = loadRuntime()
+    const alvo = api.createCharacter({ w: 20, h: 20 }) as Record<string, number>
+    api.placeCharacter(alvo, 200, 0)
+    const cacador = api.createCharacter({ w: 20, h: 20, speed: 100 }) as Record<string, number>
+    api.placeCharacter(cacador, 0, 0)
+    const x0 = cacador.x
+    api.seek(cacador, alvo, 1)
+    expect(cacador.x).toBeGreaterThan(x0) // andou em direção ao alvo
+    // touchCircle: sobrepostos = true; longe = false.
+    api.placeCharacter(cacador, 200, 0)
+    expect(api.touchCircle(cacador, alvo)).toBe(true)
+    api.placeCharacter(cacador, 900, 0)
+    expect(api.touchCircle(cacador, alvo)).toBe(false)
+    // hurt tira vida e dá invencibilidade; um 2º hurt imediato não tira mais.
+    const heroi = api.createCharacter({}) as Record<string, number>
+    heroi.health = 100
+    api.hurt(heroi, 30, 1)
+    expect(heroi.health).toBe(70)
+    expect(api.isDead(heroi)).toBe(false)
+    api.hurt(heroi, 30, 1) // ainda invencível
+    expect(heroi.health).toBe(70)
+    expect(api.healthOf(heroi)).toBe(70)
+  })
+
+  it('missão: vence por derrotar N (emite aviso + vai pro fim)', async () => {
+    const h = loadRuntime()
+    let ganhou = false
+    h.api.setMission(999, 2) // 2 kills
+    h.api.on('missao:completa', () => {
+      ganhou = true
+    })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.missionKill()
+    h.api.missionKill()
+    expect(h.api.kills()).toBe(2)
+    h.nextFrame(20) // stepSystems checa a missão
+    expect(ganhou).toBe(true)
+    expect(h.api.state()).toBe('fim')
+  })
+
+  it('faíscas: burst cria partículas; entrar em jogando reinicia a arena', async () => {
+    const h = loadRuntime()
+    h.api.defineMold('g', {})
+    h.api.defineEffect('poeira', { count: 8 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.spawnFromMold('g', 10, 10)
+    expect(h.api.countActive('g')).toBe(1)
+    h.api.burst('poeira', 50, 50)
+    h.api.drawEffects() // move/desenha (com o ctx stub)
+    // Reentrar em jogando (Jogar de novo) zera pools e contadores.
+    h.api.setState('menu')
+    h.api.setState('jogando')
+    expect(h.api.countActive('g')).toBe(0)
+    expect(h.api.kills()).toBe(0)
   })
 })

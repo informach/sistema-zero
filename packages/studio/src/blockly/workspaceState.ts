@@ -3188,6 +3188,167 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'gk:setPauseKey':
       return block('sz_gk_set_pause_key', { KEY: stmt.key }, {}, stmt.__id)
+    // ----- game-2d-advanced P24 -----
+    case 'gk:onEvent':
+      return block(
+        'sz_gk_on_event',
+        { NAME: stmt.event },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:emit':
+      return block('sz_gk_emit', { NAME: stmt.event }, {}, stmt.__id)
+    case 'gk:defineMold': {
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      const health = exprToValueBlock(valueToExpr(stmt.health))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      const damage = exprToValueBlock(valueToExpr(stmt.damage))
+      return w === null || h === null || health === null || speed === null || damage === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_define_mold',
+            { NAME: stmt.name, COLOR: stmt.color, IMAGE: stmt.image, LOOK: stmt.look },
+            {},
+            stmt.__id,
+            { W: w, H: h, HEALTH: health, SPEED: speed, DAMAGE: damage },
+          )
+    }
+    case 'gk:spawnFromMold': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_spawn_from_mold', { MOLD: stmt.mold }, {}, stmt.__id, { X: x, Y: y })
+    }
+    case 'gk:startSpawner': {
+      const sec = exprToValueBlock(valueToExpr(stmt.seconds))
+      return sec === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_start_spawner', { MOLD: stmt.mold }, {}, stmt.__id, { SEC: sec })
+    }
+    case 'gk:forEachActive':
+      return block(
+        'sz_gk_for_each_active',
+        { MOLD: stmt.mold, ITEM: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:cullOffscreen': {
+      const margin = exprToValueBlock(valueToExpr(stmt.margin))
+      return margin === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cull_offscreen', { MOLD: stmt.mold }, {}, stmt.__id, { MARGIN: margin })
+    }
+    case 'gk:recycle':
+      return block('sz_gk_recycle', { WHO: stmt.charVar }, {}, stmt.__id)
+    case 'gk:drawActive':
+      return block('sz_gk_draw_active', { MOLD: stmt.mold }, {}, stmt.__id)
+    case 'gk:defineLook':
+      return block(
+        'sz_gk_define_look',
+        { NAME: stmt.name, CTX: stmt.ctxName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:drawLook': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return x === null || y === null || w === null || h === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_draw_look', { LOOK: stmt.look }, {}, stmt.__id, { X: x, Y: y, W: w, H: h })
+    }
+    case 'gk:seek':
+      return block(
+        'sz_gk_seek',
+        { WHO: stmt.charVar, TARGET: stmt.targetVar, DT: stmt.dtVar },
+        {},
+        stmt.__id,
+      )
+    case 'gk:drift':
+      return block('sz_gk_drift', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id)
+    case 'gk:face':
+      return block('sz_gk_face', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
+    case 'gk:hurt': {
+      const amount = exprToValueBlock(valueToExpr(stmt.amount))
+      const iframes = exprToValueBlock(valueToExpr(stmt.iframes))
+      return amount === null || iframes === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_hurt', { WHO: stmt.charVar }, {}, stmt.__id, {
+            AMOUNT: amount,
+            IFRAMES: iframes,
+          })
+    }
+    case 'gk:knockback': {
+      const force = exprToValueBlock(valueToExpr(stmt.force))
+      return force === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_knockback', { WHO: stmt.charVar, FROM: stmt.fromVar }, {}, stmt.__id, {
+            FORCE: force,
+          })
+    }
+    case 'gk:drawHealthBar': {
+      const max = exprToValueBlock(valueToExpr(stmt.max))
+      return max === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_draw_health_bar', { WHO: stmt.charVar }, {}, stmt.__id, { MAX: max })
+    }
+    case 'gk:setMission': {
+      const sec = exprToValueBlock(valueToExpr(stmt.seconds))
+      const kills = exprToValueBlock(valueToExpr(stmt.killCount))
+      return sec === null || kills === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_set_mission', {}, {}, stmt.__id, { SEC: sec, KILLS: kills })
+    }
+    case 'gk:missionKill':
+      return block('sz_gk_mission_kill', {}, {}, stmt.__id)
+    case 'gk:drawTimer': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_draw_timer', {}, {}, stmt.__id, { X: x, Y: y })
+    }
+    case 'gk:defineEffect': {
+      const count = exprToValueBlock(valueToExpr(stmt.count))
+      const size = exprToValueBlock(valueToExpr(stmt.size))
+      const life = exprToValueBlock(valueToExpr(stmt.life))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
+      return count === null || size === null || life === null || speed === null || gravity === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_define_effect', { NAME: stmt.name, COLOR: stmt.color }, {}, stmt.__id, {
+            COUNT: count,
+            SIZE: size,
+            LIFE: life,
+            SPEED: speed,
+            GRAVITY: gravity,
+          })
+    }
+    case 'gk:burst': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_burst', { EFFECT: stmt.effect }, {}, stmt.__id, { X: x, Y: y })
+    }
+    case 'gk:drawEffects':
+      return block('sz_gk_draw_effects', {}, {}, stmt.__id)
+    case 'gk:loadSound':
+      return block('sz_gk_load_sound', { NAME: stmt.name, SOUND: stmt.asset }, {}, stmt.__id)
+    case 'gk:playSound':
+      return block('sz_gk_play_sound', { NAME: stmt.name }, {}, stmt.__id)
+    case 'gk:playEffect':
+      return block('sz_gk_play_effect', { FX: stmt.fx }, {}, stmt.__id)
+    case 'gk:playTone': {
+      const freq = exprToValueBlock(valueToExpr(stmt.freq))
+      const ms = exprToValueBlock(valueToExpr(stmt.ms))
+      return freq === null || ms === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_play_tone', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
+    }
     case 'classDecl': {
       const members: SerializedBlocklyBlock[] = []
       // Construtor só vira bloco se há parâmetros ou corpo (espelha o gerador).
@@ -3688,6 +3849,18 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_char_y', { CHAR: expr.charVar })
     case 'gk:keyDown':
       return block('sz_gk_key_down', { KEY: expr.key })
+    case 'gk:countActive':
+      return block('sz_gk_count_active', { MOLD: expr.mold })
+    case 'gk:touchCircle':
+      return block('sz_gk_touching_circle', { A: expr.aVar, B: expr.bVar })
+    case 'gk:isDead':
+      return block('sz_gk_is_dead', { CHAR: expr.charVar })
+    case 'gk:healthOf':
+      return block('sz_gk_health_of', { CHAR: expr.charVar })
+    case 'gk:timeSurvived':
+      return block('sz_gk_time_survived', {})
+    case 'gk:kills':
+      return block('sz_gk_kills', {})
     case 'inputKeyPressed':
       return block('sz_input_key_pressed', { KEY: expr.key })
     case 'inputPointer':

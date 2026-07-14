@@ -84,6 +84,9 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:onEnterState':
     case 'gk:onUpdate':
     case 'gk:onDraw':
+    case 'gk:onEvent':
+    case 'gk:forEachActive':
+    case 'gk:defineLook':
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
@@ -1554,6 +1557,82 @@ function compileStatementCode(
       return `${pad}SZGameKit.setSpeedMultiplier(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.factor), 0, identifiers, recAt(base))});`
     case 'gk:setPauseKey':
       return `${pad}SZGameKit.setPauseKey(${JSON.stringify(stmt.key)});`
+    // ----- game-2d-advanced P24: arquitetura de jogo real -----
+    case 'gk:onEvent': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.on(${JSON.stringify(stmt.event)}, function () {\n${body}\n${pad}});`
+    }
+    case 'gk:emit':
+      return `${pad}SZGameKit.emit(${JSON.stringify(stmt.event)});`
+    case 'gk:defineMold':
+      return `${pad}SZGameKit.defineMold(${JSON.stringify(stmt.name)}, { w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, health: ${compileExpr(valueToExpr(stmt.health), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, damage: ${compileExpr(valueToExpr(stmt.damage), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)}, image: ${JSON.stringify(stmt.image)}, look: ${JSON.stringify(stmt.look)} });`
+    case 'gk:spawnFromMold':
+      return `${pad}SZGameKit.spawnFromMold(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'gk:startSpawner':
+      return `${pad}SZGameKit.startSpawner(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
+    case 'gk:forEachActive': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.forEachActive(${JSON.stringify(stmt.mold)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+    }
+    case 'gk:cullOffscreen':
+      return `${pad}SZGameKit.cullOffscreen(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.margin), 0, identifiers, recAt(base))});`
+    case 'gk:recycle':
+      return `${pad}SZGameKit.recycle(${identifiers.get(stmt.charVar)});`
+    case 'gk:drawActive':
+      return `${pad}SZGameKit.drawActive(${JSON.stringify(stmt.mold)});`
+    case 'gk:defineLook': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.defineLook(${JSON.stringify(stmt.name)}, function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}});`
+    }
+    case 'gk:drawLook':
+      return `${pad}SZGameKit.drawLook(${JSON.stringify(stmt.look)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
+    case 'gk:seek':
+      return `${pad}SZGameKit.seek(${identifiers.get(stmt.charVar)}, ${identifiers.get(stmt.targetVar)}, ${identifiers.get(stmt.dtVar)});`
+    case 'gk:drift':
+      return `${pad}SZGameKit.drift(${identifiers.get(stmt.charVar)}, ${identifiers.get(stmt.dtVar)});`
+    case 'gk:face':
+      return `${pad}SZGameKit.face(${identifiers.get(stmt.charVar)}, ${identifiers.get(stmt.targetVar)});`
+    case 'gk:hurt':
+      return `${pad}SZGameKit.hurt(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.iframes), 0, identifiers, recAt(base))});`
+    case 'gk:knockback':
+      return `${pad}SZGameKit.knockback(${identifiers.get(stmt.charVar)}, ${identifiers.get(stmt.fromVar)}, ${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'gk:drawHealthBar':
+      return `${pad}SZGameKit.drawHealthBar(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.max), 0, identifiers, recAt(base))});`
+    case 'gk:setMission':
+      return `${pad}SZGameKit.setMission(${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.killCount), 0, identifiers, recAt(base))});`
+    case 'gk:missionKill':
+      return `${pad}SZGameKit.missionKill();`
+    case 'gk:drawTimer':
+      return `${pad}SZGameKit.drawTimer(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'gk:defineEffect':
+      return `${pad}SZGameKit.defineEffect(${JSON.stringify(stmt.name)}, { count: ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)}, size: ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, life: ${compileExpr(valueToExpr(stmt.life), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, gravity: ${compileExpr(valueToExpr(stmt.gravity), 0, identifiers, recAt(base))} });`
+    case 'gk:burst':
+      return `${pad}SZGameKit.burst(${JSON.stringify(stmt.effect)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'gk:drawEffects':
+      return `${pad}SZGameKit.drawEffects();`
+    case 'gk:loadSound':
+      return `${pad}SZGameKit.loadSound(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.asset)});`
+    case 'gk:playSound':
+      return `${pad}SZGameKit.playSound(${JSON.stringify(stmt.name)});`
+    case 'gk:playEffect':
+      return `${pad}SZGameKit.playEffect(${JSON.stringify(stmt.fx)});`
+    case 'gk:playTone':
+      return `${pad}SZGameKit.playTone(${compileExpr(valueToExpr(stmt.freq), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.ms), 0, identifiers, recAt(base))});`
     case 'classDecl': {
       const className = identifiers.declareClassName(classKey(stmt), stmt.name)
       const superClause = stmt.superClass
@@ -3249,6 +3328,103 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.charVar)
       collectExprIdentifiers(valueToExpr(stmt.factor), names)
       return
+    // ----- game-2d-advanced P24 -----
+    case 'gk:emit':
+    case 'gk:drawActive':
+    case 'gk:missionKill':
+    case 'gk:drawEffects':
+    case 'gk:playEffect':
+    case 'gk:playSound':
+    case 'gk:loadSound':
+      // Nomes de aviso/molde/efeito/som são STRING (JSON.stringify), não identifier.
+      return
+    case 'gk:onEvent':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:defineMold':
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      collectExprIdentifiers(valueToExpr(stmt.health), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.damage), names)
+      return
+    case 'gk:spawnFromMold':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'gk:startSpawner':
+      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
+      return
+    case 'gk:forEachActive':
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:cullOffscreen':
+      collectExprIdentifiers(valueToExpr(stmt.margin), names)
+      return
+    case 'gk:recycle':
+      names.add(stmt.charVar)
+      return
+    case 'gk:defineLook':
+      names.add(stmt.ctxName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:drawLook':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'gk:seek':
+      names.add(stmt.charVar)
+      names.add(stmt.targetVar)
+      names.add(stmt.dtVar)
+      return
+    case 'gk:drift':
+      names.add(stmt.charVar)
+      names.add(stmt.dtVar)
+      return
+    case 'gk:face':
+      names.add(stmt.charVar)
+      names.add(stmt.targetVar)
+      return
+    case 'gk:hurt':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.amount), names)
+      collectExprIdentifiers(valueToExpr(stmt.iframes), names)
+      return
+    case 'gk:knockback':
+      names.add(stmt.charVar)
+      names.add(stmt.fromVar)
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      return
+    case 'gk:drawHealthBar':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.max), names)
+      return
+    case 'gk:setMission':
+      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
+      collectExprIdentifiers(valueToExpr(stmt.killCount), names)
+      return
+    case 'gk:drawTimer':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'gk:defineEffect':
+      collectExprIdentifiers(valueToExpr(stmt.count), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      collectExprIdentifiers(valueToExpr(stmt.life), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.gravity), names)
+      return
+    case 'gk:burst':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'gk:playTone':
+      collectExprIdentifiers(valueToExpr(stmt.freq), names)
+      collectExprIdentifiers(valueToExpr(stmt.ms), names)
+      return
     case 'classDecl':
       for (const param of stmt.ctorParams ?? []) names.add(param)
       for (const child of stmt.ctorBody) collectStatementIdentifiers(child, names)
@@ -3541,6 +3717,19 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:charX':
     case 'gk:charY':
       names.add(expr.charVar)
+      return
+    case 'gk:touchCircle':
+      names.add(expr.aVar)
+      names.add(expr.bVar)
+      return
+    case 'gk:isDead':
+    case 'gk:healthOf':
+      names.add(expr.charVar)
+      return
+    case 'gk:countActive':
+    case 'gk:timeSurvived':
+    case 'gk:kills':
+      // mold é STRING; timeSurvived/kills não têm refs.
       return
     case 'canvasMeasureText':
       collectExprIdentifiers(expr.text, names)

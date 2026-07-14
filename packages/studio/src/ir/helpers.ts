@@ -115,6 +115,9 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:onEnterState':
     case 'gk:onUpdate':
     case 'gk:onDraw':
+    case 'gk:onEvent':
+    case 'gk:forEachActive':
+    case 'gk:defineLook':
     case 'funcDecl':
     case 'forEach':
     case 'setTimeout':

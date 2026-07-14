@@ -97,9 +97,11 @@ describe('game-2d-advanced — IR no schema', () => {
     expect(parsed.success).toBe(true)
   })
 
-  it('GK_STATEMENT_TYPES espelha exatamente os statements exercitados', () => {
-    const exercised = new Set<string>(GK_STATEMENTS.map((s) => s.type))
-    expect(exercised).toEqual(GK_STATEMENT_TYPES)
+  it('os statements exercitados (v1) são todos tipos gk: reconhecidos', () => {
+    // A completude 1:1 (todo bloco ↔ tipo IR ↔ runtime) é garantida pelo
+    // blockAudit; aqui só checamos que os exemplares v1 pertencem ao Set.
+    for (const s of GK_STATEMENTS) expect(GK_STATEMENT_TYPES.has(s.type)).toBe(true)
+    expect(GK_STATEMENT_TYPES.size).toBeGreaterThanOrEqual(GK_STATEMENTS.length)
   })
 
   it('statementIsExtension discrimina gk: como game-2d-advanced', () => {

@@ -397,6 +397,459 @@ export const gameKitBlocks = [
     colour: C,
     tooltip: 'Troca a tecla que alterna pausa (o padrão é Esc). Use antes de começar o jogo.',
   },
+
+  // ---- 📢 Avisos (event bus) ----
+  {
+    type: 'sz_gk_on_event',
+    message0: 'Quando chegar o aviso %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'inimigo:morreu', kind: 'event' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O jeito profissional de ligar as partes do jogo: roda o "fazer" toda vez que alguém "avisar" esse aviso. Quem avisa não precisa conhecer quem escuta.',
+  },
+  {
+    type: 'sz_gk_emit',
+    message0: 'Avisar todo mundo: %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'inimigo:morreu', kind: 'event' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Dispara um aviso. Todos os blocos "Quando chegar o aviso" com esse nome rodam. Invente o nome que quiser (ex.: inimigo:morreu, ponto:feito).',
+  },
+
+  // ---- 👾 Moldes & enxames ----
+  {
+    type: 'sz_gk_define_mold',
+    message0:
+      'Criar o molde %1: tamanho %2 × %3, vida %4, velocidade %5, dano %6, cor %7, imagem %8, aparência %9',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'inimigo' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'HEALTH', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'DAMAGE', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#e94f4f' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'field_name_picker', name: 'LOOK', text: '', kind: 'look' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um MOLDE são os DADOS de um tipo de personagem (inimigo, moeda, tiro…). Defina uma vez; depois faça quantos quiser dele. É como os jogos profissionais organizam muitos personagens iguais. A imagem (pixel) ou a aparência (vetor) são opcionais; sem elas, sai um retângulo da cor.',
+  },
+  {
+    type: 'sz_gk_spawn_from_mold',
+    message0: 'Nascer 1 do molde %1 em x %2 y %3',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Faz nascer 1 personagem do molde nessa posição. O motor reaproveita personagens recolhidos (pooling) — rápido mesmo com muitos.',
+  },
+  {
+    type: 'sz_gk_start_spawner',
+    message0: 'A cada %1 s, nascer 1 do molde %2 numa borda da tela',
+    args0: [
+      { type: 'input_value', name: 'SEC', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga uma "fábrica" que faz nascer um do molde a cada tantos segundos, entrando por uma das 4 bordas. É assim que jogos de sobrevivência soltam inimigos sem parar.',
+  },
+  {
+    type: 'sz_gk_for_each_active',
+    message0: 'Para cada %1 vivo do molde %2',
+    args0: [
+      { type: 'field_input', name: 'ITEM', text: 'item' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Repete o "fazer" para CADA personagem vivo desse molde — dentro, "item" é o da vez. Use no "A cada quadro" para mover/testar todos (ex.: perseguir o herói, ver se encostou).',
+  },
+  {
+    type: 'sz_gk_cull_offscreen',
+    message0: 'Recolher do molde %1 quem saiu %2 px da tela',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' },
+      { type: 'input_value', name: 'MARGIN', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Recolhe (guarda de volta) os personagens que foram longe demais da tela — o segredo de otimização para o jogo não ficar pesado. Use no "A cada quadro".',
+  },
+  {
+    type: 'sz_gk_recycle',
+    message0: 'Recolher %1 (volta pro molde)',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Tira este personagem do jogo e guarda para reaproveitar depois (ex.: quando o inimigo morre). Melhor que "apagar" — não desperdiça.',
+  },
+  {
+    type: 'sz_gk_draw_active',
+    message0: 'Desenhar todos vivos do molde %1',
+    args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha de uma vez todos os personagens vivos desse molde (com a aparência, imagem ou retângulo dele). Use dentro do "Desenhar o jogo".',
+  },
+  {
+    type: 'sz_gk_count_active',
+    message0: 'quantos vivos do molde %1',
+    args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantos personagens desse molde estão vivos agora. Use numa conta ou num "se".',
+  },
+
+  // ---- 🎨 Desenho (aparência vetorial) ----
+  {
+    type: 'sz_gk_define_look',
+    message0: 'Criar a aparência %1, desenhando com o pincel %2 assim:',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'inimigo' },
+      { type: 'field_input', name: 'CTX', text: 'ctx' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha uma aparência com formas (retângulo, círculo, linha…) e dá um nome a ela — do cantinho (0,0) para dentro. Um molde pode usá-la, e aí TODOS do enxame ganham esse visual (vetor). Dá para usar os blocos de Canvas aqui dentro.',
+  },
+  {
+    type: 'sz_gk_draw_look',
+    message0: 'Desenhar a aparência %1 em x %2 y %3 tamanho %4 × %5',
+    args0: [
+      { type: 'field_name_picker', name: 'LOOK', text: 'inimigo', kind: 'look' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha uma aparência criada por você nessa posição e tamanho. Bom para o herói ou qualquer coisa fora de um molde.',
+  },
+
+  // ---- 🎯 Comportamentos ----
+  {
+    type: 'sz_gk_seek',
+    message0: 'Fazer %1 perseguir %2 usando o tempo %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Comportamento pronto de "caçador": faz um personagem andar em direção a outro. Use dentro do "para cada vivo" no "A cada quadro". É o mesmo cálculo que os programadores fazem à mão (ir na direção do alvo × velocidade × tempo).',
+  },
+  {
+    type: 'sz_gk_drift',
+    message0: 'Fazer %1 vaguear usando o tempo %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Comportamento de "vagar": o personagem anda para um lado ao acaso e muda de direção de vez em quando. Bom para inimigos bobos ou bichinhos soltos.',
+  },
+  {
+    type: 'sz_gk_face',
+    message0: 'Fazer %1 virar para o lado de %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'heroi', kind: 'character' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Espelha o desenho do personagem para ele "olhar" na direção do alvo (esquerda/direita).',
+  },
+
+  // ---- ❤️ Combate ----
+  {
+    type: 'sz_gk_hurt',
+    message0: 'Machucar %1 tirando %2 de vida (invencível por %3 s)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'IFRAMES', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Tira vida de um personagem e o deixa piscando e invencível por um tempinho (para não perder tudo de uma vez). É o "dano com invencibilidade" dos jogos de ação.',
+  },
+  {
+    type: 'sz_gk_knockback',
+    message0: 'Empurrar %1 para longe de %2 com força %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'FROM', text: 'item', kind: 'character' },
+      { type: 'input_value', name: 'FORCE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Dá um empurrão no personagem para longe do outro, que vai diminuindo sozinho. Dá aquele "solavanco" gostoso quando toma dano.',
+  },
+  {
+    type: 'sz_gk_draw_health_bar',
+    message0: 'Desenhar a barra de vida de %1 (vida cheia = %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha uma barrinha de vida em cima do personagem. Use dentro do "Desenhar o jogo".',
+  },
+  {
+    type: 'sz_gk_touching_circle',
+    message0: '%1 e %2 se encostam (círculo) ?',
+    args0: [
+      { type: 'field_name_picker', name: 'A', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'B', text: 'item', kind: 'character' },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro quando os dois se tocam medindo por CÍRCULO (mais justo que caixa para bichos redondos). Use dentro de um "se".',
+  },
+  {
+    type: 'sz_gk_is_dead',
+    message0: 'a vida de %1 acabou ?',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro quando a vida do personagem chegou a zero. Use dentro de um "se".',
+  },
+  {
+    type: 'sz_gk_health_of',
+    message0: 'a vida de %1',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quanto de vida o personagem tem agora. Use numa conta ou na barra de vida.',
+  },
+
+  // ---- 🖥️ HUD & Missão ----
+  {
+    type: 'sz_gk_set_mission',
+    message0: 'Vencer quando sobreviver %1 s ou derrotar %2 inimigos',
+    args0: [
+      { type: 'input_value', name: 'SEC', check: 'JSValue' },
+      { type: 'input_value', name: 'KILLS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Define a MISSÃO: o jogo termina em vitória (estado "fim" + aviso "missao:completa") quando a criança sobreviver esse tempo OU derrotar essa quantidade. Use "Contar +1 inimigo derrotado" quando um cair.',
+  },
+  {
+    type: 'sz_gk_mission_kill',
+    message0: 'Contar +1 inimigo derrotado',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Soma 1 na conta de inimigos derrotados (para a missão e para o placar).',
+  },
+  {
+    type: 'sz_gk_draw_timer',
+    message0: 'Desenhar o cronômetro em x %1 y %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Escreve o tempo de jogo (min:seg) nessa posição. Use dentro do "Desenhar o jogo".',
+  },
+  {
+    type: 'sz_gk_time_survived',
+    message0: 'há quantos segundos estou jogando',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantos segundos se passaram desde que a partida começou.',
+  },
+  {
+    type: 'sz_gk_kills',
+    message0: 'quantos inimigos derrotei',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantos inimigos você já derrotou nesta partida (a conta do "Contar +1").',
+  },
+
+  // ---- ✨ Faíscas (partículas) ----
+  {
+    type: 'sz_gk_define_effect',
+    message0:
+      'Criar o efeito %1: %2 faíscas, cor %3, tamanho %4, vida %5 s, velocidade %6, gravidade %7',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'explosao' },
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ffd166' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'input_value', name: 'LIFE', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'GRAVITY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um efeito é a RECEITA de uma explosão de faíscas (feita de dados: quantas, cor, tamanho, quanto duram, velocidade, gravidade). Defina uma vez; solte quantas quiser. "Menos código, mais efeitos".',
+  },
+  {
+    type: 'sz_gk_burst',
+    message0: 'Soltar o efeito %1 em x %2 y %3',
+    args0: [
+      { type: 'field_name_picker', name: 'EFFECT', text: 'explosao', kind: 'effect' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Estoura uma explosão de faíscas do efeito nessa posição (ex.: quando um inimigo morre).',
+  },
+  {
+    type: 'sz_gk_draw_effects',
+    message0: 'Desenhar todas as faíscas',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Atualiza e desenha todas as faíscas soltas (elas caem com a gravidade e somem sozinhas). Use dentro do "Desenhar o jogo".',
+  },
+
+  // ---- 🔊 Som ----
+  {
+    type: 'sz_gk_load_sound',
+    message0: 'Carregar o som %1 chamando de %2',
+    args0: [
+      { type: 'field_sound_picker', name: 'SOUND', text: '' },
+      { type: 'field_input', name: 'NAME', text: 'explosao' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Prepara um som que você importou (em "Imagens e sons"). Dê um nome; é ele que você usa em "Tocar o som". Use no comecinho, antes de "Começar o jogo".',
+  },
+  {
+    type: 'sz_gk_play_sound',
+    message0: 'Tocar o som %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'explosao', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca um som que você carregou. Combina com os avisos: "Quando chegar o aviso inimigo:morreu, tocar o som explosao".',
+  },
+  {
+    type: 'sz_gk_play_effect',
+    message0: 'Tocar o som pronto %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'FX',
+        options: [
+          ['moeda', 'coin'],
+          ['batida', 'hit'],
+          ['explosão', 'explosion'],
+          ['pulo', 'jump'],
+          ['laser', 'laser'],
+          ['dano', 'hurt'],
+          ['poder', 'powerup'],
+          ['vitória', 'win'],
+          ['fim de jogo', 'gameover'],
+          ['clique', 'click'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca um efeito sonoro já pronto (feito na hora pelo computador, sem precisar importar arquivo). Ótimo para testar rápido.',
+  },
+  {
+    type: 'sz_gk_play_tone',
+    message0: 'Tocar um som de %1 Hz por %2 ms',
+    args0: [
+      { type: 'input_value', name: 'FREQ', check: 'JSValue' },
+      { type: 'input_value', name: 'MS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Toca uma notinha: quanto maior o Hz, mais agudo. Junte várias para uma melodia.',
+  },
 ]
 
 /**
@@ -466,6 +919,68 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: C,
     types: ['sz_gk_key_down', 'sz_gk_set_pause_key'],
   },
+  {
+    name: '📢 Avisos',
+    colour: C,
+    types: ['sz_gk_on_event', 'sz_gk_emit'],
+  },
+  {
+    name: '👾 Moldes & enxames',
+    colour: C,
+    types: [
+      'sz_gk_define_mold',
+      'sz_gk_spawn_from_mold',
+      'sz_gk_start_spawner',
+      'sz_gk_for_each_active',
+      'sz_gk_cull_offscreen',
+      'sz_gk_recycle',
+      'sz_gk_draw_active',
+      'sz_gk_count_active',
+    ],
+  },
+  {
+    name: '🎨 Desenho',
+    colour: C,
+    types: ['sz_gk_define_look', 'sz_gk_draw_look'],
+  },
+  {
+    name: '🎯 Comportamentos',
+    colour: C,
+    types: ['sz_gk_seek', 'sz_gk_drift', 'sz_gk_face'],
+  },
+  {
+    name: '❤️ Combate',
+    colour: C,
+    types: [
+      'sz_gk_hurt',
+      'sz_gk_knockback',
+      'sz_gk_draw_health_bar',
+      'sz_gk_touching_circle',
+      'sz_gk_is_dead',
+      'sz_gk_health_of',
+    ],
+  },
+  {
+    name: '🖥️ HUD & Missão',
+    colour: C,
+    types: [
+      'sz_gk_set_mission',
+      'sz_gk_mission_kill',
+      'sz_gk_draw_timer',
+      'sz_gk_time_survived',
+      'sz_gk_kills',
+    ],
+  },
+  {
+    name: '✨ Faíscas',
+    colour: C,
+    types: ['sz_gk_define_effect', 'sz_gk_burst', 'sz_gk_draw_effects'],
+  },
+  {
+    name: '🔊 Som',
+    colour: C,
+    types: ['sz_gk_load_sound', 'sz_gk_play_sound', 'sz_gk_play_effect', 'sz_gk_play_tone'],
+  },
 ]
 
 // Cada sub-categoria recebe um TOM do teal da categoria (claro→escuro).
@@ -504,6 +1019,32 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_create_character: { W: numShadow(64), H: numShadow(64), SPEED: numShadow(300) },
   sz_gk_place_character: { X: numShadow(100), Y: numShadow(100) },
   sz_gk_set_speed_multiplier: { FACTOR: numShadow(2) },
+  // P24
+  sz_gk_define_mold: {
+    W: numShadow(40),
+    H: numShadow(40),
+    HEALTH: numShadow(20),
+    SPEED: numShadow(120),
+    DAMAGE: numShadow(10),
+  },
+  sz_gk_spawn_from_mold: { X: numShadow(100), Y: numShadow(100) },
+  sz_gk_start_spawner: { SEC: numShadow(1.5) },
+  sz_gk_cull_offscreen: { MARGIN: numShadow(120) },
+  sz_gk_draw_look: { X: numShadow(100), Y: numShadow(100), W: numShadow(40), H: numShadow(40) },
+  sz_gk_hurt: { AMOUNT: numShadow(10), IFRAMES: numShadow(1) },
+  sz_gk_knockback: { FORCE: numShadow(400) },
+  sz_gk_draw_health_bar: { MAX: numShadow(100) },
+  sz_gk_set_mission: { SEC: numShadow(30), KILLS: numShadow(10) },
+  sz_gk_draw_timer: { X: numShadow(20), Y: numShadow(40) },
+  sz_gk_define_effect: {
+    COUNT: numShadow(16),
+    SIZE: numShadow(4),
+    LIFE: numShadow(0.6),
+    SPEED: numShadow(200),
+    GRAVITY: numShadow(300),
+  },
+  sz_gk_burst: { X: numShadow(100), Y: numShadow(100) },
+  sz_gk_play_tone: { FREQ: numShadow(440), MS: numShadow(200) },
 }
 
 /**

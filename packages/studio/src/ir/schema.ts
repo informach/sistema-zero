@@ -197,6 +197,13 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:charX'; charVar: string })
   | (JSExprCommon & { type: 'gk:charY'; charVar: string })
   | (JSExprCommon & { type: 'gk:keyDown'; key: string })
+  // Jogo 2D Avançado (P24) — valores: enxame, combate, HUD/missão.
+  | (JSExprCommon & { type: 'gk:countActive'; mold: string })
+  | (JSExprCommon & { type: 'gk:touchCircle'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'gk:isDead'; charVar: string })
+  | (JSExprCommon & { type: 'gk:healthOf'; charVar: string })
+  | (JSExprCommon & { type: 'gk:timeSurvived' })
+  | (JSExprCommon & { type: 'gk:kills' })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -526,6 +533,12 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:charX'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:charY'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:keyDown'), key: irText(), ...idField }),
+    z.object({ type: z.literal('gk:countActive'), mold: irText(), ...idField }),
+    z.object({ type: z.literal('gk:touchCircle'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:isDead'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:healthOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:timeSurvived'), ...idField }),
+    z.object({ type: z.literal('gk:kills'), ...idField }),
     z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
     z.object({ type: z.literal('isFullscreen'), ...idField }),
@@ -2370,6 +2383,104 @@ export type JSStatement =
       factor: number | JSExpr
     })
   | (JSStatementCommon & { type: 'gk:setPauseKey'; key: string })
+  // Jogo 2D Avançado (P24) — arquitetura de jogo real.
+  // 📢 Avisos (event bus): quem avisa não conhece quem reage.
+  | (JSStatementCommon & { type: 'gk:onEvent'; event: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:emit'; event: string })
+  // 👾 Moldes & enxames (tipo data-driven + pool + spawner + cull).
+  | (JSStatementCommon & {
+      type: 'gk:defineMold'
+      name: string
+      w: number | JSExpr
+      h: number | JSExpr
+      health: number | JSExpr
+      speed: number | JSExpr
+      damage: number | JSExpr
+      color: string
+      image: string
+      look: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:spawnFromMold'
+      mold: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:startSpawner'; mold: string; seconds: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:forEachActive'
+      mold: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'gk:cullOffscreen'; mold: string; margin: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:recycle'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:drawActive'; mold: string })
+  // 🎨 Desenho (aparência vetorial reutilizável). O corpo desenha em coords LOCAIS
+  // (0,0 = canto), pincel `ctxName` bound — Canvas do núcleo funciona dentro.
+  | (JSStatementCommon & {
+      type: 'gk:defineLook'
+      name: string
+      ctxName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'gk:drawLook'
+      look: string
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  // 🎯 Comportamentos (steering: perseguir/vaguear/virar).
+  | (JSStatementCommon & { type: 'gk:seek'; charVar: string; targetVar: string; dtVar: string })
+  | (JSStatementCommon & { type: 'gk:drift'; charVar: string; dtVar: string })
+  | (JSStatementCommon & { type: 'gk:face'; charVar: string; targetVar: string })
+  // ❤️ Combate (dano com i-frames, empurrão, barra de vida).
+  | (JSStatementCommon & {
+      type: 'gk:hurt'
+      charVar: string
+      amount: number | JSExpr
+      iframes: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:knockback'
+      charVar: string
+      fromVar: string
+      force: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:drawHealthBar'; charVar: string; max: number | JSExpr })
+  // 🖥️ HUD & Missão.
+  | (JSStatementCommon & {
+      type: 'gk:setMission'
+      seconds: number | JSExpr
+      killCount: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:missionKill' })
+  | (JSStatementCommon & { type: 'gk:drawTimer'; x: number | JSExpr; y: number | JSExpr })
+  // ✨ Faíscas (partículas data-driven pooled).
+  | (JSStatementCommon & {
+      type: 'gk:defineEffect'
+      name: string
+      count: number | JSExpr
+      color: string
+      size: number | JSExpr
+      life: number | JSExpr
+      speed: number | JSExpr
+      gravity: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:burst'
+      effect: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:drawEffects' })
+  // 🔊 Som (importado + sintetizado).
+  | (JSStatementCommon & { type: 'gk:loadSound'; name: string; asset: string })
+  | (JSStatementCommon & { type: 'gk:playSound'; name: string })
+  | (JSStatementCommon & { type: 'gk:playEffect'; fx: string })
+  | (JSStatementCommon & { type: 'gk:playTone'; freq: number | JSExpr; ms: number | JSExpr })
   // Orientação a objetos
   | (JSStatementCommon & {
       type: 'classDecl'
@@ -4441,6 +4552,140 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('gk:setPauseKey'), key: irText(), ...idField }),
     z.object({
+      type: z.literal('gk:onEvent'),
+      event: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:emit'), event: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:defineMold'),
+      name: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      health: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      damage: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      image: irText(),
+      look: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:spawnFromMold'),
+      mold: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:startSpawner'),
+      mold: irText(),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:forEachActive'),
+      mold: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cullOffscreen'),
+      mold: irText(),
+      margin: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:recycle'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:drawActive'), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:defineLook'),
+      name: irText(),
+      ctxName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawLook'),
+      look: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:seek'),
+      charVar: irText(),
+      targetVar: irText(),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:drift'), charVar: irText(), dtVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:face'), charVar: irText(), targetVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:hurt'),
+      charVar: irText(),
+      amount: z.union([JSExprSchema, z.number()]),
+      iframes: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:knockback'),
+      charVar: irText(),
+      fromVar: irText(),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawHealthBar'),
+      charVar: irText(),
+      max: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setMission'),
+      seconds: z.union([JSExprSchema, z.number()]),
+      killCount: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:missionKill'), ...idField }),
+    z.object({
+      type: z.literal('gk:drawTimer'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:defineEffect'),
+      name: irText(),
+      count: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      size: z.union([JSExprSchema, z.number()]),
+      life: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      gravity: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:burst'),
+      effect: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:drawEffects'), ...idField }),
+    z.object({ type: z.literal('gk:loadSound'), name: irText(), asset: irText(), ...idField }),
+    z.object({ type: z.literal('gk:playSound'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:playEffect'), fx: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:playTone'),
+      freq: z.union([JSExprSchema, z.number()]),
+      ms: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:updateEachFrame'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -4993,6 +5238,33 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:resetCharacter',
   'gk:setSpeedMultiplier',
   'gk:setPauseKey',
+  'gk:onEvent',
+  'gk:emit',
+  'gk:defineMold',
+  'gk:spawnFromMold',
+  'gk:startSpawner',
+  'gk:forEachActive',
+  'gk:cullOffscreen',
+  'gk:recycle',
+  'gk:drawActive',
+  'gk:defineLook',
+  'gk:drawLook',
+  'gk:seek',
+  'gk:drift',
+  'gk:face',
+  'gk:hurt',
+  'gk:knockback',
+  'gk:drawHealthBar',
+  'gk:setMission',
+  'gk:missionKill',
+  'gk:drawTimer',
+  'gk:defineEffect',
+  'gk:burst',
+  'gk:drawEffects',
+  'gk:loadSound',
+  'gk:playSound',
+  'gk:playEffect',
+  'gk:playTone',
 ])
 
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {

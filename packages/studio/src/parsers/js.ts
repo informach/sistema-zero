@@ -3888,6 +3888,24 @@ function matchGameKitExpr(node: Node): JSExpr | null {
   if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
     return { type: 'gk:keyDown', key: args[0].value as string }
   }
+  if (method === 'countActive' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:countActive', mold: args[0].value as string }
+  }
+  if (method === 'touchCircle') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'gk:touchCircle', aVar, bVar }
+  }
+  if (method === 'isDead') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:isDead', charVar }
+  }
+  if (method === 'healthOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:healthOf', charVar }
+  }
+  if (method === 'timeSurvived' && args.length === 0) return { type: 'gk:timeSurvived' }
+  if (method === 'kills' && args.length === 0) return { type: 'gk:kills' }
   return null
 }
 
@@ -3959,8 +3977,102 @@ function readGameKitCharacterOptions(
   return result
 }
 
+/** Opções do `SZGameKit.defineMold("x", { w, h, health, speed, damage, color, image, look })`. */
+function readGameKitMoldOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): {
+  w: JSExpr
+  h: JSExpr
+  health: JSExpr
+  speed: JSExpr
+  damage: JSExpr
+  color: string
+  image: string
+  look: string
+} | null {
+  const result = {
+    w: { type: 'num', value: 40 } as JSExpr,
+    h: { type: 'num', value: 40 } as JSExpr,
+    health: { type: 'num', value: 20 } as JSExpr,
+    speed: { type: 'num', value: 120 } as JSExpr,
+    damage: { type: 'num', value: 10 } as JSExpr,
+    color: '#e94f4f',
+    image: '',
+    look: '',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'w' || key === 'h' || key === 'health' || key === 'speed' || key === 'damage') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      result[key] = v
+    } else if (key === 'color' || key === 'image' || key === 'look') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** Opções do `SZGameKit.defineEffect("x", { count, color, size, life, speed, gravity })`. */
+function readGameKitEffectOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): {
+  count: JSExpr
+  color: string
+  size: JSExpr
+  life: JSExpr
+  speed: JSExpr
+  gravity: JSExpr
+} | null {
+  const result = {
+    count: { type: 'num', value: 16 } as JSExpr,
+    color: '#ffd166',
+    size: { type: 'num', value: 4 } as JSExpr,
+    life: { type: 'num', value: 0.6 } as JSExpr,
+    speed: { type: 'num', value: 200 } as JSExpr,
+    gravity: { type: 'num', value: 300 } as JSExpr,
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (
+      key === 'count' ||
+      key === 'size' ||
+      key === 'life' ||
+      key === 'speed' ||
+      key === 'gravity'
+    ) {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      result[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
 /**
- * SZGameKit.* como statement: setup/start/telas/estados/ganchos/personagens.
+ * SZGameKit.* como statement: setup/start/telas/estados/ganchos/personagens + P24.
  * ANTES do método genérico — senão viram memberCall.
  */
 function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
@@ -4115,6 +4227,174 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'setPauseKey': {
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'gk:setPauseKey', key: args[0].value as string }
+    }
+    // ----- P24 -----
+    case 'on': {
+      // generator: SZGameKit.on("aviso", function () {…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'gk:onEvent',
+        event: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'emit': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:emit', event: args[0].value as string }
+    }
+    case 'defineMold': {
+      // generator: SZGameKit.defineMold("x", { w, h, health, speed, damage, color, image, look })
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'ObjectExpression') return null
+      const o = readGameKitMoldOptions(args[1], ctx)
+      return o ? { type: 'gk:defineMold', name: args[0].value as string, ...o } : null
+    }
+    case 'spawnFromMold': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(y)
+        ? { type: 'gk:spawnFromMold', mold: args[0].value as string, x, y }
+        : null
+    }
+    case 'startSpawner': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const seconds = toExpr(args[1], ctx)
+      return isSimpleValue(seconds)
+        ? { type: 'gk:startSpawner', mold: args[0].value as string, seconds }
+        : null
+    }
+    case 'forEachActive': {
+      // generator: SZGameKit.forEachActive("x", function (item) {…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'gk:forEachActive',
+        mold: args[0].value as string,
+        itemName: identifierName(args[1].params?.[0]) ?? 'item',
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'cullOffscreen': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const margin = toExpr(args[1], ctx)
+      return isSimpleValue(margin)
+        ? { type: 'gk:cullOffscreen', mold: args[0].value as string, margin }
+        : null
+    }
+    case 'recycle': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:recycle', charVar } : null
+    }
+    case 'drawActive': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:drawActive', mold: args[0].value as string }
+    }
+    case 'defineLook': {
+      // generator: SZGameKit.defineLook("x", function (ctx) {…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      const ctxParam = identifierName(args[1].params?.[0])
+      // O parâmetro é um CONTEXTO 2D — registrar em ctxVars p/ os blocos de Canvas
+      // dentro da aparência round-trippem (gêmeo do defineShape/onDraw).
+      if (ctxParam) ctx.ctxVars.add(ctxParam)
+      return {
+        type: 'gk:defineLook',
+        name: args[0].value as string,
+        ctxName: ctxParam ?? 'ctx',
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'drawLook': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const w = toExpr(args[3], ctx)
+      const h = toExpr(args[4], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(w) && isSimpleValue(h)
+        ? { type: 'gk:drawLook', look: args[0].value as string, x, y, w, h }
+        : null
+    }
+    case 'seek': {
+      const charVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      const dtVar = identifierName(args[2])
+      return charVar && targetVar && dtVar ? { type: 'gk:seek', charVar, targetVar, dtVar } : null
+    }
+    case 'drift': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[1])
+      return charVar && dtVar ? { type: 'gk:drift', charVar, dtVar } : null
+    }
+    case 'face': {
+      const charVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      return charVar && targetVar ? { type: 'gk:face', charVar, targetVar } : null
+    }
+    case 'hurt': {
+      const charVar = identifierName(args[0])
+      const amount = toExpr(args[1], ctx)
+      const iframes = toExpr(args[2], ctx)
+      return charVar && isSimpleValue(amount) && isSimpleValue(iframes)
+        ? { type: 'gk:hurt', charVar, amount, iframes }
+        : null
+    }
+    case 'knockback': {
+      const charVar = identifierName(args[0])
+      const fromVar = identifierName(args[1])
+      const force = toExpr(args[2], ctx)
+      return charVar && fromVar && isSimpleValue(force)
+        ? { type: 'gk:knockback', charVar, fromVar, force }
+        : null
+    }
+    case 'drawHealthBar': {
+      const charVar = identifierName(args[0])
+      const max = toExpr(args[1], ctx)
+      return charVar && isSimpleValue(max) ? { type: 'gk:drawHealthBar', charVar, max } : null
+    }
+    case 'setMission': {
+      const seconds = toExpr(args[0], ctx)
+      const killCount = toExpr(args[1], ctx)
+      return isSimpleValue(seconds) && isSimpleValue(killCount)
+        ? { type: 'gk:setMission', seconds, killCount }
+        : null
+    }
+    case 'missionKill':
+      return args.length === 0 ? { type: 'gk:missionKill' } : null
+    case 'drawTimer': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'gk:drawTimer', x, y } : null
+    }
+    case 'defineEffect': {
+      // generator: SZGameKit.defineEffect("x", { count, color, size, life, speed, gravity })
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'ObjectExpression') return null
+      const o = readGameKitEffectOptions(args[1], ctx)
+      return o ? { type: 'gk:defineEffect', name: args[0].value as string, ...o } : null
+    }
+    case 'burst': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(y)
+        ? { type: 'gk:burst', effect: args[0].value as string, x, y }
+        : null
+    }
+    case 'drawEffects':
+      return args.length === 0 ? { type: 'gk:drawEffects' } : null
+    case 'loadSound': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:loadSound', name: args[0].value as string, asset: args[1].value as string }
+    }
+    case 'playSound': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:playSound', name: args[0].value as string }
+    }
+    case 'playEffect': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:playEffect', fx: args[0].value as string }
+    }
+    case 'playTone': {
+      const freq = toExpr(args[0], ctx)
+      const ms = toExpr(args[1], ctx)
+      return isSimpleValue(freq) && isSimpleValue(ms) ? { type: 'gk:playTone', freq, ms } : null
     }
     default:
       return null
@@ -6706,6 +6986,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:charX':
     case 'gk:charY':
     case 'gk:keyDown':
+    case 'gk:countActive':
+    case 'gk:touchCircle':
+    case 'gk:isDead':
+    case 'gk:healthOf':
+    case 'gk:timeSurvived':
+    case 'gk:kills':
     case 'inputKeyPressed':
     case 'inputPointer':
     case 'isFullscreen':

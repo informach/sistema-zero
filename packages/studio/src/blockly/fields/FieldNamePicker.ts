@@ -56,6 +56,11 @@ export type NameKind =
   | 'character'
   | 'screen'
   | 'gamestate'
+  | 'mold'
+  | 'effect'
+  | 'event'
+  | 'look'
+  | 'sound'
 
 const NAME_KINDS: readonly NameKind[] = [
   'variable',
@@ -75,6 +80,11 @@ const NAME_KINDS: readonly NameKind[] = [
   'character',
   'screen',
   'gamestate',
+  'mold',
+  'effect',
+  'event',
+  'look',
+  'sound',
 ]
 
 /** Coage o `kind` cru da definição do bloco para um `NameKind` válido (default variável). */
@@ -150,6 +160,8 @@ const CHARACTER_DECL_BLOCKS: Record<string, string[]> = { sz_gk_create_character
 function collectCharacters(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, CHARACTER_DECL_BLOCKS)
 }
+/** O "item" do "para cada vivo do molde" é um personagem LOCAL (escopo por ancestral). */
+const CHARACTER_LOOP_BINDERS: Record<string, string[]> = { sz_gk_for_each_active: ['ITEM'] }
 
 /**
  * Telas do Jogo 2D Avançado: as 4 PRONTAS (sempre existem no runtime) + as que a
@@ -179,6 +191,43 @@ function collectGameStates(workspace: Blockly.Workspace | null | undefined): str
   const used = collectDeclaredNames(workspace, GAMESTATE_DECL_BLOCKS)
   const seen = new Set<string>(GK_BUILTIN_STATES)
   return [...GK_BUILTIN_STATES, ...used.filter((n) => !seen.has(n))]
+}
+
+/** Moldes do Jogo 2D Avançado (tipo data-driven) — fonte do seletor MOLD. */
+const MOLD_DECL_BLOCKS: Record<string, string[]> = { sz_gk_define_mold: ['NAME'] }
+function collectMolds(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, MOLD_DECL_BLOCKS)
+}
+
+/** Efeitos de faísca (partículas data-driven) — fonte do seletor EFFECT. */
+const EFFECT_DECL_BLOCKS: Record<string, string[]> = { sz_gk_define_effect: ['NAME'] }
+function collectEffects(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, EFFECT_DECL_BLOCKS)
+}
+
+/** Aparências vetoriais (o look de um molde) — fonte do seletor LOOK. */
+const LOOK_DECL_BLOCKS: Record<string, string[]> = { sz_gk_define_look: ['NAME'] }
+function collectLooks(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, LOOK_DECL_BLOCKS)
+}
+
+/** Sons importados (carregados por nome) — fonte do seletor de som a TOCAR. */
+const SOUND_DECL_BLOCKS: Record<string, string[]> = { sz_gk_load_sound: ['NAME'] }
+function collectSounds(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, SOUND_DECL_BLOCKS)
+}
+
+/**
+ * Avisos do event bus: "existem por USO" — tanto quem AVISA (emit) quanto quem
+ * OUVE (quando chegar o aviso) são a fonte da lista. Sem builtins; o fallback de
+ * texto cobre o primeiro uso.
+ */
+const EVENT_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_on_event: ['NAME'],
+  sz_gk_emit: ['NAME'],
+}
+function collectEvents(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, EVENT_DECL_BLOCKS)
 }
 
 /** Cenas/mundos do Jogo 3D (fonte do seletor WORLD). */
@@ -374,12 +423,41 @@ const KIND_UI: Record<NameKind, KindUI> = {
     empty:
       'Os estados prontos são menu, jogando, pausado e fim — ou invente o seu (ex.: loja) digitando abaixo.',
   },
+  mold: {
+    icon: '👾',
+    placeholder: 'nome do molde',
+    empty: 'Nenhum molde ainda — crie um (bloco "Criar o molde") ou digite o nome abaixo.',
+  },
+  effect: {
+    icon: '✨',
+    placeholder: 'nome do efeito',
+    empty: 'Nenhum efeito ainda — crie um (bloco "Criar o efeito") ou digite o nome abaixo.',
+  },
+  event: {
+    icon: '📢',
+    placeholder: 'nome do aviso',
+    empty:
+      'Nenhum aviso ainda — invente um nome (ex.: inimigo:morreu) aqui; quem "avisa" e quem "ouve" usam o mesmo.',
+  },
+  look: {
+    icon: '🎨',
+    placeholder: 'nome da aparência',
+    empty:
+      'Nenhuma aparência ainda — crie uma (bloco "Criar a aparência") ou digite o nome abaixo.',
+  },
+  sound: {
+    icon: '🔊',
+    placeholder: 'nome do som',
+    empty:
+      'Nenhum som carregado ainda — use "Carregar o som" (importe em "Imagens e sons") ou digite o nome abaixo.',
+  },
 }
 
 /** Laços que introduzem nomes LOCAIS, por `kind` de seletor (escopo por ancestral). */
 const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, Record<string, string[]>>> = {
   variable: VARIABLE_LOOP_BINDERS,
   object3d: OBJECT3D_LOOP_BINDERS,
+  character: CHARACTER_LOOP_BINDERS,
 }
 
 /** Anda o workspace e coleta os nomes declarados nos campos do registro, sem repetir. */
@@ -635,6 +713,16 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectScreens(ws)
       case 'gamestate':
         return collectGameStates(ws)
+      case 'mold':
+        return collectMolds(ws)
+      case 'effect':
+        return collectEffects(ws)
+      case 'event':
+        return collectEvents(ws)
+      case 'look':
+        return collectLooks(ws)
+      case 'sound':
+        return collectSounds(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)

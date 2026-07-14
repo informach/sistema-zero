@@ -46,9 +46,28 @@ export const gameKitRuntime = `(function () {
   var lastTime = 0;
   var currentDt = 0;
 
+  // ---- P24: arquitetura de jogo real ----
+  var listeners = Object.create(null);   // aviso -> [fn]  (event bus)
+  var molds = Object.create(null);       // nome -> data do molde
+  var pools = Object.create(null);       // nome do molde -> { active:[], free:[] }
+  var spawners = [];                     // { mold, interval, timer }
+  var looks = Object.create(null);       // nome -> fn(ctx)  (aparência vetorial)
+  var combatants = [];                   // personagens com vida/i-frames/empurrão
+  var effects = Object.create(null);     // nome -> receita de faísca
+  var particles = { active: [], free: [] };
+  var sounds = Object.create(null);      // nome -> HTMLAudioElement
+  var mission = null;                    // { seconds, killCount }
+  var missionDone = false;
+  var playTime = 0;
+  var killCount = 0;
+  var PUSHBACK_DECAY = 800;
+
   // Manifesto de imagens do projeto, semeado pelo assetsBridge.
   var ASSETS = (window.__SZGAME_ASSETS && typeof window.__SZGAME_ASSETS === 'object')
     ? window.__SZGAME_ASSETS
+    : {};
+  var SOUNDS = (window.__SZGAME_SOUNDS && typeof window.__SZGAME_SOUNDS === 'object')
+    ? window.__SZGAME_SOUNDS
     : {};
 
   function warn(msg) {
@@ -236,8 +255,19 @@ export const gameKitRuntime = `(function () {
     var prev = state;
     state = n;
     applyStateScreens(n);
-    // Entrou em "jogando": zera o relógio p/ o dt não dar um salto (startGame do kit).
-    if (n === 'jogando' && prev !== 'jogando') lastTime = now();
+    // Entrou em "jogando": zera o relógio p/ o dt não dar um salto (startGame do kit)
+    // e RECOMEÇA a arena (recolhe todos os enxames, zera missão/contadores e faíscas)
+    // ANTES dos ganchos "quando entrar" da criança — assim "Jogar de novo" funciona.
+    if (n === 'jogando' && prev !== 'jogando') {
+      lastTime = now();
+      missionDone = false;
+      playTime = 0;
+      killCount = 0;
+      for (var pk in pools) releaseAll(pools[pk]);
+      for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
+      particles.active.length = 0;
+      combatants.length = 0;
+    }
     var hooks = enterStateHooks[n];
     if (hooks) {
       for (var i = 0; i < hooks.length; i++) {
@@ -364,9 +394,45 @@ export const gameKitRuntime = `(function () {
     if (dt > 0.1) dt = 0.1; // clamp do kit: aba em segundo plano não teleporta o jogo
     lastTime = timestamp;
     currentDt = dt;
-    if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
+    if (state === 'jogando') {
+      stepSystems(dt);
+      runHooks(updateHooks, dt, 'A cada quadro');
+    }
     render();
     requestAnimationFrame(gameLoop);
+  }
+
+  // Os "managers" do P24 rodando por quadro (só enquanto joga): spawners por tempo,
+  // decaimento de i-frames/empurrão do combate, e a missão (sobreviver/derrotar).
+  function stepSystems(dt) {
+    playTime += dt;
+    for (var i = 0; i < spawners.length; i++) {
+      var sp = spawners[i];
+      sp.timer += dt;
+      while (sp.timer >= sp.interval && sp.interval > 0) {
+        sp.timer -= sp.interval;
+        spawnAtEdge(sp.mold);
+      }
+    }
+    for (var c = 0; c < combatants.length; c++) {
+      var e = combatants[c];
+      if (e._iFrames > 0) e._iFrames = Math.max(0, e._iFrames - dt);
+      if (e._pushX || e._pushY) {
+        e.x += e._pushX * dt;
+        e.y += e._pushY * dt;
+        var spd = Math.sqrt(e._pushX * e._pushX + e._pushY * e._pushY);
+        var decay = PUSHBACK_DECAY * dt;
+        if (spd <= decay) { e._pushX = 0; e._pushY = 0; }
+        else { var r = (spd - decay) / spd; e._pushX *= r; e._pushY *= r; }
+      }
+    }
+    if (mission && !missionDone) {
+      if (playTime >= mission.seconds || killCount >= mission.killCount) {
+        missionDone = true;
+        api.emit('missao:completa');
+        setState('fim');
+      }
+    }
   }
 
   // ---- Personagens (Player do kit, generalizado p/ N nomeados) ----
@@ -413,21 +479,55 @@ export const gameKitRuntime = `(function () {
     c.y = Math.max(0, Math.min(config.h - num(c.h, 0), num(c.y, 0)));
   }
 
-  function drawCharacter(c) {
+  // Desenha 1 personagem: aparência (look) > imagem > retângulo. Herda de graça o
+  // piscar (i-frames) e a virada (facingLeft) — como o RenderSystem do P24.
+  function drawEntity(c) {
     if (!ctx2d || !c || typeof c !== 'object') return;
-    var entry = images[c.image];
-    if (entry && entry.loaded && entry.img) {
-      try {
-        ctx2d.imageSmoothingEnabled = false;
-        ctx2d.drawImage(entry.img, c.x, c.y, c.w, c.h);
-        return;
-      } catch (e) {}
+    var prevAlpha = 1;
+    var blinking = c._iFrames > 0;
+    if (blinking) {
+      try { prevAlpha = ctx2d.globalAlpha; } catch (e) {}
+      try { ctx2d.globalAlpha = 0.1 + 0.8 * Math.abs(Math.sin(c._iFrames * 20)); } catch (e) {}
     }
-    // Fallback do kit: retângulo da cor com contorno branco.
-    ctx2d.fillStyle = text(c.color, '#4a9eff');
-    ctx2d.fillRect(c.x, c.y, c.w, c.h);
-    ctx2d.strokeStyle = 'white';
-    ctx2d.strokeRect(c.x, c.y, c.w, c.h);
+    var flip = c._facingLeft === true;
+    if (flip) {
+      ctx2d.save();
+      ctx2d.translate(c.x + c.w, c.y);
+      ctx2d.scale(-1, 1);
+    }
+    var lx = flip ? 0 : c.x;
+    var ly = flip ? 0 : c.y;
+    var lookFn = looks[c.look];
+    var drew = false;
+    if (typeof lookFn === 'function') {
+      ctx2d.save();
+      ctx2d.translate(lx, ly);
+      try { lookFn(ctx2d); drew = true; } catch (e) {}
+      ctx2d.restore();
+    }
+    if (!drew) {
+      var entry = images[c.image];
+      if (entry && entry.loaded && entry.img) {
+        try {
+          ctx2d.imageSmoothingEnabled = false;
+          ctx2d.drawImage(entry.img, lx, ly, c.w, c.h);
+          drew = true;
+        } catch (e) {}
+      }
+    }
+    if (!drew) {
+      // Fallback do kit: retângulo da cor com contorno branco.
+      ctx2d.fillStyle = text(c.color, '#4a9eff');
+      ctx2d.fillRect(lx, ly, c.w, c.h);
+      ctx2d.strokeStyle = 'white';
+      ctx2d.strokeRect(lx, ly, c.w, c.h);
+    }
+    if (flip) ctx2d.restore();
+    if (blinking) { try { ctx2d.globalAlpha = prevAlpha; } catch (e) {} }
+  }
+
+  function drawCharacter(c) {
+    drawEntity(c);
   }
 
   function drawBackground(color, grid) {
@@ -458,6 +558,334 @@ export const gameKitRuntime = `(function () {
       num(a.y, 0) < num(b.y, 0) + num(b.h, 0) &&
       num(a.y, 0) + num(a.h, 0) > num(b.y, 0)
     );
+  }
+
+  function centerX(c) { return num(c.x, 0) + num(c.w, 0) / 2; }
+  function centerY(c) { return num(c.y, 0) + num(c.h, 0) / 2; }
+
+  // ---- 📢 Event bus (EventEmitter do P24) ----
+  function onEvent(name, fn) {
+    var k = text(name, '');
+    if (!k || typeof fn !== 'function') return;
+    (listeners[k] || (listeners[k] = [])).push(fn);
+  }
+  function emit(name) {
+    var list = listeners[text(name, '')];
+    if (!list) return;
+    for (var i = 0; i < list.length; i++) {
+      try { list[i](); } catch (e) { warn('erro no "quando chegar o aviso": ' + e); }
+    }
+  }
+
+  // ---- 👾 Moldes, pools e spawner (data-driven + ObjectPooler do P24) ----
+  function defineMold(name, opts) {
+    var k = text(name, '');
+    if (!k) { warn('"Criar o molde" precisa de um nome'); return; }
+    var o = (opts && typeof opts === 'object') ? opts : {};
+    var w = num(o.w, 40), h = num(o.h, 40);
+    molds[k] = {
+      w: w, h: h,
+      health: num(o.health, 20),
+      speed: num(o.speed, 120),
+      damage: num(o.damage, 10),
+      color: text(o.color, '#e94f4f'),
+      image: text(o.image, ''),
+      look: text(o.look, ''),
+      radius: Math.min(w, h) / 2
+    };
+    if (!pools[k]) pools[k] = { active: [], free: [] };
+  }
+  function spawnFromMold(name, x, y) {
+    var k = text(name, '');
+    var m = molds[k];
+    if (!m) { warn('molde "' + k + '" não existe — crie com "Criar o molde"'); return null; }
+    var pool = pools[k] || (pools[k] = { active: [], free: [] });
+    var e = pool.free.pop();
+    if (!e) e = {};
+    e.x = num(x, 0); e.y = num(y, 0);
+    e.w = m.w; e.h = m.h;
+    e.speed = m.speed; e.damage = m.damage; e.color = m.color;
+    e.image = m.image; e.look = m.look; e.radius = m.radius;
+    e.health = m.health; e.maxHealth = m.health;
+    e._active = true; e._facingLeft = false; e._iFrames = 0;
+    e._pushX = 0; e._pushY = 0; e._driftAngle = null; e._mold = k;
+    pool.active.push(e);
+    return e;
+  }
+  function spawnAtEdge(name) {
+    var edge = Math.floor(Math.random() * 4);
+    var x, y;
+    if (edge === 0) { x = Math.random() * config.w; y = -80; }
+    else if (edge === 1) { x = config.w + 80; y = Math.random() * config.h; }
+    else if (edge === 2) { x = Math.random() * config.w; y = config.h + 80; }
+    else { x = -80; y = Math.random() * config.h; }
+    return spawnFromMold(name, x, y);
+  }
+  function recycle(e) {
+    if (!e || typeof e !== 'object') return;
+    e._active = false;
+    var pool = pools[e._mold];
+    // A remoção real do "active" acontece na varredura reversa (forEachActive/cull);
+    // aqui só marcamos. Mas se veio de fora do laço, guardamos direto.
+    if (pool && pool.active.indexOf(e) === -1) {
+      // já não está ativo — nada a fazer
+    }
+  }
+  function compact(pool) {
+    // Move os inativos do active[] para o free[] (varredura reversa, estilo P24).
+    for (var i = pool.active.length - 1; i >= 0; i--) {
+      if (!pool.active[i]._active) {
+        var dead = pool.active[i];
+        pool.active.splice(i, 1);
+        pool.free.push(dead);
+      }
+    }
+  }
+  function releaseAll(pool) {
+    for (var i = 0; i < pool.active.length; i++) {
+      pool.active[i]._active = false;
+      pool.free.push(pool.active[i]);
+    }
+    pool.active.length = 0;
+  }
+  function forEachActive(name, fn) {
+    var pool = pools[text(name, '')];
+    if (!pool || typeof fn !== 'function') return;
+    // Ordem REVERSA: recolher/remover durante o laço é seguro.
+    for (var i = pool.active.length - 1; i >= 0; i--) {
+      var e = pool.active[i];
+      if (!e._active) continue;
+      try { fn(e); } catch (err) { warn('erro no "para cada vivo": ' + err); }
+    }
+    compact(pool);
+  }
+  function cullOffscreen(name, margin) {
+    var pool = pools[text(name, '')];
+    if (!pool) return;
+    var m = num(margin, 120);
+    for (var i = 0; i < pool.active.length; i++) {
+      var e = pool.active[i];
+      if (e.x < -m || e.x > config.w + m || e.y < -m || e.y > config.h + m) e._active = false;
+    }
+    compact(pool);
+  }
+  function drawActive(name) {
+    var pool = pools[text(name, '')];
+    if (!pool) return;
+    for (var i = 0; i < pool.active.length; i++) {
+      if (pool.active[i]._active) drawEntity(pool.active[i]);
+    }
+  }
+  function countActive(name) {
+    var pool = pools[text(name, '')];
+    return pool ? pool.active.length : 0;
+  }
+
+  // ---- 🎯 Comportamentos (Seek/Drift/facing do P24) ----
+  function seek(who, target, dt) {
+    if (!who || !target || typeof who !== 'object' || typeof target !== 'object') return;
+    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
+    var dx = centerX(target) - centerX(who);
+    var dy = centerY(target) - centerY(who);
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (len > 0) {
+      who.x += (dx / len) * num(who.speed, 0) * d;
+      who.y += (dy / len) * num(who.speed, 0) * d;
+      who._facingLeft = dx < 0;
+    }
+  }
+  function drift(who, dt) {
+    if (!who || typeof who !== 'object') return;
+    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
+    if (who._driftAngle == null) who._driftAngle = Math.random() * Math.PI * 2;
+    who._driftTimer = (who._driftTimer || 0) + d;
+    if (who._driftTimer >= 2) { who._driftAngle = Math.random() * Math.PI * 2; who._driftTimer = 0; }
+    var dx = Math.cos(who._driftAngle);
+    who.x += dx * num(who.speed, 0) * d;
+    who.y += Math.sin(who._driftAngle) * num(who.speed, 0) * d;
+    who._facingLeft = dx < 0;
+  }
+  function face(who, target) {
+    if (!who || !target || typeof who !== 'object' || typeof target !== 'object') return;
+    who._facingLeft = centerX(target) < centerX(who);
+  }
+
+  // ---- ❤️ Combate (takeDamage + i-frames + knockback do P24) ----
+  function trackCombatant(c) {
+    if (combatants.indexOf(c) === -1) combatants.push(c);
+  }
+  function hurt(who, amount, iframes) {
+    if (!who || typeof who !== 'object') return;
+    if (who._iFrames > 0) return;
+    if (who.health == null) who.health = 1;
+    who.health = Math.max(0, num(who.health, 0) - num(amount, 0));
+    who._iFrames = Math.max(0, num(iframes, 1));
+    trackCombatant(who);
+  }
+  function knockback(who, from, force) {
+    if (!who || !from || typeof who !== 'object' || typeof from !== 'object') return;
+    var dx = centerX(who) - centerX(from);
+    var dy = centerY(who) - centerY(from);
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var f = num(force, 400);
+    who._pushX = (dx / len) * f;
+    who._pushY = (dy / len) * f;
+    trackCombatant(who);
+  }
+  function drawHealthBar(who, max) {
+    if (!ctx2d || !who || typeof who !== 'object') return;
+    var full = num(max, num(who.maxHealth, 100));
+    if (full <= 0) return;
+    var pct = Math.max(0, Math.min(1, num(who.health, full) / full));
+    var x = num(who.x, 0), y = num(who.y, 0) - 8, w = num(who.w, 0);
+    ctx2d.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx2d.fillRect(x, y, w, 4);
+    ctx2d.fillStyle = '#ff5f6d';
+    ctx2d.fillRect(x, y, Math.ceil(w * pct), 4);
+  }
+  function touchCircle(a, b) {
+    if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+    var ra = num(a.radius, num(a.w, 0) / 2);
+    var rb = num(b.radius, num(b.w, 0) / 2);
+    var dx = centerX(a) - centerX(b);
+    var dy = centerY(a) - centerY(b);
+    return dx * dx + dy * dy < (ra + rb) * (ra + rb);
+  }
+
+  // ---- ✨ Faíscas (partículas data-driven pooled — o vídeo dos efeitos) ----
+  function defineEffect(name, opts) {
+    var k = text(name, '');
+    if (!k) { warn('"Criar o efeito" precisa de um nome'); return; }
+    var o = (opts && typeof opts === 'object') ? opts : {};
+    effects[k] = {
+      count: Math.max(0, Math.min(200, Math.floor(num(o.count, 16)))),
+      color: text(o.color, '#ffd166'),
+      size: num(o.size, 4),
+      life: num(o.life, 0.6),
+      speed: num(o.speed, 200),
+      gravity: num(o.gravity, 300)
+    };
+  }
+  function burst(name, x, y) {
+    var e = effects[text(name, '')];
+    if (!e) { warn('efeito "' + text(name, '') + '" não existe — crie com "Criar o efeito"'); return; }
+    for (var i = 0; i < e.count; i++) {
+      var p = particles.free.pop() || {};
+      var ang = Math.random() * Math.PI * 2;
+      var sp = e.speed * (0.4 + Math.random() * 0.6);
+      p.x = num(x, 0); p.y = num(y, 0);
+      p.vx = Math.cos(ang) * sp; p.vy = Math.sin(ang) * sp;
+      p.life = e.life; p.max = e.life; p.size = e.size; p.color = e.color; p.gravity = e.gravity;
+      particles.active.push(p);
+    }
+  }
+  function drawEffects() {
+    if (!ctx2d) return;
+    var dt = currentDt;
+    for (var i = particles.active.length - 1; i >= 0; i--) {
+      var p = particles.active[i];
+      p.life -= dt;
+      if (p.life <= 0) {
+        particles.active.splice(i, 1);
+        particles.free.push(p);
+        continue;
+      }
+      p.vy += p.gravity * dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      var prev = 1;
+      try { prev = ctx2d.globalAlpha; ctx2d.globalAlpha = Math.max(0, p.life / p.max); } catch (e) {}
+      ctx2d.fillStyle = p.color;
+      ctx2d.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+      try { ctx2d.globalAlpha = prev; } catch (e) {}
+    }
+  }
+
+  // ---- 🎨 Aparências (looks) ----
+  function defineLook(name, fn) {
+    var k = text(name, '');
+    if (k && typeof fn === 'function') looks[k] = fn;
+  }
+  function drawLook(name, x, y, w, h) {
+    if (!ctx2d) return;
+    var fn = looks[text(name, '')];
+    if (typeof fn !== 'function') return;
+    ctx2d.save();
+    ctx2d.translate(num(x, 0), num(y, 0));
+    try { fn(ctx2d, num(w, 0), num(h, 0)); } catch (e) {}
+    ctx2d.restore();
+  }
+
+  // ---- 🖥️ HUD & Missão ----
+  function drawTimer(x, y) {
+    if (!ctx2d) return;
+    var mins = Math.floor(playTime / 60);
+    var secs = Math.floor(playTime % 60);
+    var label = mins + ':' + (secs < 10 ? '0' + secs : '' + secs);
+    ctx2d.fillStyle = config.accent;
+    ctx2d.font = '28px "Courier New", monospace';
+    try { ctx2d.textAlign = 'left'; } catch (e) {}
+    ctx2d.fillText(label, num(x, 20), num(y, 40));
+  }
+
+  // ---- 🔊 Som (importado via new Audio + sintetizado) ----
+  function loadSound(name, asset) {
+    var key = text(name, '') || text(asset, '');
+    if (!key) { warn('"Carregar o som" precisa de um nome'); return; }
+    var a = text(asset, '');
+    var src = SOUNDS[a] || (a.indexOf('data:audio/') === 0 ? a : null);
+    if (!src) { warn('o som "' + a + '" não está no projeto (importe em "Imagens e sons")'); return; }
+    pending.push(new Promise(function (resolve) {
+      try {
+        var audio = new Audio();
+        audio.preload = 'auto';
+        audio.oncanplaythrough = function () { resolve(); };
+        audio.onerror = function () { warn('o som "' + key + '" falhou ao carregar'); resolve(); };
+        audio.src = src;
+        sounds[key] = audio;
+        // fallback: se nunca disparar canplaythrough, não travar o start
+        setTimeout(resolve, 3000);
+      } catch (e) { resolve(); }
+    }));
+  }
+  function playSound(name) {
+    var a = sounds[text(name, '')];
+    if (!a) return;
+    try { a.currentTime = 0; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
+  }
+  var _audioCtx = null;
+  function ensureAudioCtx() {
+    if (_audioCtx) return _audioCtx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) _audioCtx = new AC();
+    } catch (e) { _audioCtx = null; }
+    return _audioCtx;
+  }
+  function playTone(freq, ms) {
+    var ac = ensureAudioCtx();
+    if (!ac) return;
+    try {
+      var osc = ac.createOscillator();
+      var gain = ac.createGain();
+      osc.type = 'square';
+      osc.frequency.value = num(freq, 440);
+      gain.gain.value = 0.06;
+      osc.connect(gain); gain.connect(ac.destination);
+      var dur = num(ms, 200) / 1000;
+      osc.start();
+      gain.gain.setTargetAtTime(0, ac.currentTime + dur * 0.6, 0.05);
+      osc.stop(ac.currentTime + dur);
+    } catch (e) {}
+  }
+  var FX_TONES = {
+    coin: [880, 90], hit: [180, 80], explosion: [90, 260], jump: [520, 120],
+    laser: [1200, 90], hurt: [140, 160], powerup: [700, 200], win: [990, 300],
+    gameover: [120, 400], click: [440, 50]
+  };
+  function playEffect(fx) {
+    var t = FX_TONES[text(fx, '')] || FX_TONES.hit;
+    playTone(t[0], t[1]);
   }
 
   // ---- Começar (Game.init do kit: carregar -> menu -> input -> resize -> loop) ----
@@ -604,7 +1032,52 @@ export const gameKitRuntime = `(function () {
     setPauseKey: guard('setPauseKey', function (k) {
       var key = normKey(k);
       if (key) config.pauseKey = key;
-    })
+    }),
+    // ----- P24 -----
+    on: guard('on', onEvent),
+    emit: guard('emit', emit),
+    defineMold: guard('defineMold', defineMold),
+    spawnFromMold: guard('spawnFromMold', spawnFromMold),
+    startSpawner: guard('startSpawner', function (mold, seconds) {
+      var k = text(mold, '');
+      if (!k) return;
+      spawners.push({ mold: k, interval: Math.max(0.05, num(seconds, 1.5)), timer: 0 });
+    }),
+    forEachActive: guard('forEachActive', forEachActive),
+    cullOffscreen: guard('cullOffscreen', cullOffscreen),
+    recycle: guard('recycle', recycle),
+    drawActive: guard('drawActive', drawActive),
+    countActive: guard('countActive', countActive),
+    defineLook: guard('defineLook', defineLook),
+    drawLook: guard('drawLook', drawLook),
+    seek: guard('seek', seek),
+    drift: guard('drift', drift),
+    face: guard('face', face),
+    hurt: guard('hurt', hurt),
+    knockback: guard('knockback', knockback),
+    drawHealthBar: guard('drawHealthBar', drawHealthBar),
+    touchCircle: guard('touchCircle', touchCircle),
+    isDead: guard('isDead', function (c) {
+      return !!(c && typeof c === 'object') && num(c.health, 1) <= 0;
+    }),
+    healthOf: guard('healthOf', function (c) {
+      return (c && typeof c === 'object') ? num(c.health, 0) : 0;
+    }),
+    setMission: guard('setMission', function (seconds, killGoal) {
+      mission = { seconds: num(seconds, 30), killCount: num(killGoal, 10) };
+      missionDone = false;
+    }),
+    missionKill: guard('missionKill', function () { killCount += 1; }),
+    drawTimer: guard('drawTimer', drawTimer),
+    timeSurvived: guard('timeSurvived', function () { return playTime; }),
+    kills: guard('kills', function () { return killCount; }),
+    defineEffect: guard('defineEffect', defineEffect),
+    burst: guard('burst', burst),
+    drawEffects: guard('drawEffects', drawEffects),
+    loadSound: guard('loadSound', loadSound),
+    playSound: guard('playSound', playSound),
+    playEffect: guard('playEffect', playEffect),
+    playTone: guard('playTone', playTone)
   };
 
   window.SZGameKit = api;
