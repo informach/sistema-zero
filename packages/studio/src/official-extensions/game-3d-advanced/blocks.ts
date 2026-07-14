@@ -843,7 +843,8 @@ export const gameKit3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Liga o jorro contínuo desse emissor num ponto fixo do mundo (uma fogueira, uma tocha na parede). Fica jorrando até você desligar.',
+    tooltip:
+      'Liga o jorro contínuo desse emissor num ponto fixo do mundo (uma fogueira, uma tocha na parede). Fica jorrando até você desligar.',
   },
   {
     type: 'sz_g3k_emitter_on',
@@ -855,7 +856,8 @@ export const gameKit3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Liga o jorro contínuo seguindo uma entidade — o rastro de fogo da nave, a fumaça do carro, a aura mágica do herói. Ele acompanha a entidade por onde ela for.',
+    tooltip:
+      'Liga o jorro contínuo seguindo uma entidade — o rastro de fogo da nave, a fumaça do carro, a aura mágica do herói. Ele acompanha a entidade por onde ela for.',
   },
   {
     type: 'sz_g3k_stop_emitter',
@@ -864,7 +866,8 @@ export const gameKit3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Para de jorrar novas partículas (as que já estão no ar terminam sozinhas). Apagar a fogueira, desligar o rastro.',
+    tooltip:
+      'Para de jorrar novas partículas (as que já estão no ar terminam sozinhas). Apagar a fogueira, desligar o rastro.',
   },
   {
     type: 'sz_g3k_add_attractor',
@@ -923,7 +926,8 @@ export const gameKit3DBlocks = [
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Verdadeiro quando a entidade está pisando no chão ou numa plataforma. Use para o pulo.',
+    tooltip:
+      'Verdadeiro quando a entidade está pisando no chão ou numa plataforma. Use para o pulo.',
   },
   {
     type: 'sz_g3k_make_solid',
@@ -1029,7 +1033,8 @@ export const gameKit3DBlocks = [
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'ela', kind: 'entity3d' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Verdadeiro quando o ponteiro está em cima dessa entidade — para brilhar ao passar o mouse, mostrar dica, etc.',
+    tooltip:
+      'Verdadeiro quando o ponteiro está em cima dessa entidade — para brilhar ao passar o mouse, mostrar dica, etc.',
   },
   {
     type: 'sz_g3k_ground_point',

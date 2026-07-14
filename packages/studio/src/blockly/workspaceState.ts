@@ -3754,7 +3754,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block(
             'sz_g3k_part',
-            { SHAPE: stmt.shape, MATERIAL: stmt.material, COLOR: stmt.color, TEXTURE: stmt.texture },
+            {
+              SHAPE: stmt.shape,
+              MATERIAL: stmt.material,
+              COLOR: stmt.color,
+              TEXTURE: stmt.texture,
+            },
             {},
             stmt.__id,
             { W: w, H: h, D: d, X: x, Y: y, Z: z },
@@ -4102,7 +4107,11 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const z = exprToValueBlock(valueToExpr(stmt.z))
       return x === null || y === null || z === null
         ? rawJSBlock(stmt)
-        : block('sz_g3k_start_emitter', { EFFECT: stmt.effect }, {}, stmt.__id, { X: x, Y: y, Z: z })
+        : block('sz_g3k_start_emitter', { EFFECT: stmt.effect }, {}, stmt.__id, {
+            X: x,
+            Y: y,
+            Z: z,
+          })
     }
     case 'g3k:emitterOn':
       return block('sz_g3k_emitter_on', { EFFECT: stmt.effect, WHO: stmt.charVar }, {}, stmt.__id)

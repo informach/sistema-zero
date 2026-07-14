@@ -2875,7 +2875,12 @@ export type JSStatement =
       z: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3k:setDrag'; charVar: string; drag: number | JSExpr })
-  | (JSStatementCommon & { type: 'g3k:setEntityValue'; charVar: string; key: string; value: JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3k:setEntityValue'
+      charVar: string
+      key: string
+      value: JSExpr
+    })
   | (JSStatementCommon & { type: 'g3k:lookAt'; charVar: string; targetVar: string })
   | (JSStatementCommon & { type: 'g3k:moveForward'; charVar: string; speed: number | JSExpr })
   // 🏃 Física: gravidade/pulo/plataforma + molde sólido (parede/chão).
