@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { useProjectStore } from '../../state/projectStore'
@@ -91,5 +91,38 @@ describe('ExtensionsPanel — extensões para instalar gated por nível', () => 
     )
     expect(screen.getByText(ext2d.manifest.name)).not.toBeNull()
     expect(screen.getByText(ext3d.manifest.name)).not.toBeNull()
+  })
+})
+
+describe('ExtensionsPanel — "Saiba mais" expande a docs do manifest', () => {
+  afterEach(() => {
+    cleanup()
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  it('a docs fica oculta até expandir; expandir renderiza o markdown; um por vez', () => {
+    seedProject()
+    render(<ExtensionsPanel open onClose={() => {}} />)
+    // Um TÍTULO interno da docs do gk (### vira h5) — só existe após expandir.
+    // (O 1º ## repete o NOME da extensão, que já está no card — não serve.)
+    const gk = OFFICIAL_CATALOG.find((e) => e.manifest.id === 'game-2d-advanced')
+    if (!gk) throw new Error('fixture: esperava o game-2d-advanced no catálogo')
+    const heading = 'Começando (a receita)'
+    expect(gk.manifest.docs).toContain(`### ${heading}`)
+    expect(screen.queryByText(heading)).toBeNull()
+    const toggles = screen.getAllByText('📖 Saiba mais')
+    expect(toggles.length).toBeGreaterThan(1) // um por card com docs
+    const gkCard = screen.getByText(gk.manifest.name).closest('li')
+    const gkToggle = gkCard?.querySelector('[aria-expanded]') as HTMLElement
+    fireEvent.click(gkToggle)
+    expect(screen.getByText(heading)).not.toBeNull()
+    expect(gkToggle.textContent).toBe('Esconder detalhes')
+    // Abrir OUTRO card fecha o primeiro (acordeão — o modal fica curto).
+    const other = screen.getAllByText('📖 Saiba mais')[0] as HTMLElement
+    fireEvent.click(other)
+    expect(screen.queryByText(heading)).toBeNull()
+    // Fechar o aberto volta ao estado inicial.
+    fireEvent.click(screen.getByText('Esconder detalhes'))
+    expect(screen.queryByText('Esconder detalhes')).toBeNull()
   })
 })

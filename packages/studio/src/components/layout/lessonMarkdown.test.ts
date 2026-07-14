@@ -63,4 +63,15 @@ describe('renderLessonMarkdown', () => {
     expect(out).not.toContain('"b](') // foi escapado/transformado, não cru
     expect(out).toContain('&quot;')
   })
+
+  it('citação (> …) vira blockquote com inline renderizado', () => {
+    const out = renderLessonMarkdown('> ⚠️ Use **um** por projeto')
+    expect(out).toContain('<blockquote')
+    expect(out).toContain('<strong>um</strong>')
+    expect(out).not.toContain('&gt; ⚠️') // o marcador não vaza como texto
+    // Multi-linha: as linhas do bloco viram <br> dentro da MESMA citação.
+    const multi = renderLessonMarkdown('> linha 1\n> linha 2')
+    expect(multi.match(/<blockquote/g)?.length).toBe(1)
+    expect(multi).toContain('linha 1<br>linha 2')
+  })
 })

@@ -65,6 +65,12 @@ export function renderLessonMarkdown(src: string): string {
       html.push(`<ul class="list-disc pl-5">${items}</ul>`)
       continue
     }
+    // Citação/aviso: TODAS as linhas começam com "> " (após o escape, "&gt; ").
+    if (lines.every((l) => /^&gt;\s+/.test(l))) {
+      const inner = lines.map((l) => renderInline(l.replace(/^&gt;\s+/, ''))).join('<br>')
+      html.push(`<blockquote class="border-l-2 border-sz-accent pl-3 italic">${inner}</blockquote>`)
+      continue
+    }
     // Título: bloco de UMA linha começando com #, ##, ### (escapado vira &#35;? não:
     // `#` não é caractere especial de HTML, então sobrevive ao escape).
     const heading = lines.length === 1 ? (lines[0] ?? '').match(/^(#{1,3})\s+(.*)$/) : null

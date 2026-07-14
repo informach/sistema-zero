@@ -18,6 +18,7 @@ import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioExamplesVisible } from '../../studio/examples-visibility'
+import { renderLessonMarkdown } from '../layout/lessonMarkdown'
 
 export interface ExtensionsPanelProps {
   open: boolean
@@ -39,6 +40,9 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
   // só aparecem quando o host libera (playground). Ver examples-visibility.ts.
   const showExamples = useStudioExamplesVisible()
   const [pendingRemoval, setPendingRemoval] = useState<{ id: string; count: number } | null>(null)
+  // "📖 Saiba mais": a docs rica do manifest (nunca era exibida) abre num
+  // expander por card — UM aberto por vez mantém o modal curto.
+  const [docsOpenId, setDocsOpenId] = useState<string | null>(null)
 
   // Nível de aprendizado (mesma fonte da paleta no BlocklyPanel): não adianta
   // OFERECER p/ instalar uma extensão cujos blocos o nível atual nem mostra —
@@ -183,33 +187,22 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
               ),
           ).map((ext) => {
             const installed = installedIds.has(ext.manifest.id)
+            const docsOpen = docsOpenId === ext.manifest.id
             return (
               <li
                 key={ext.manifest.id}
                 className="rounded-md border border-sz-border bg-sz-panel-soft p-3"
               >
+                {/* Linha única: identidade à esquerda, ação à direita (card enxuto). */}
                 <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <strong className="text-sm text-sz-fg">{ext.manifest.name}</strong>
-                      <span className="text-xs text-sz-fg-mute">v{ext.manifest.version}</span>
-                      <Badge tone={installed ? 'success' : 'neutral'}>
-                        {installed ? t('extensions.installed') : t('extensions.available')}
-                      </Badge>
-                    </div>
-                    <p className="mt-1 text-xs text-sz-fg-soft">{ext.manifest.description}</p>
-                    <div className="mt-1.5 flex flex-wrap gap-1">
-                      <span className="text-xs uppercase text-sz-fg-mute">
-                        {t('extensions.permissions')}:
-                      </span>
-                      {ext.manifest.permissions.map((p) => (
-                        <Badge key={p} tone="accent">
-                          {p}
-                        </Badge>
-                      ))}
-                    </div>
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <strong className="truncate text-sm text-sz-fg">{ext.manifest.name}</strong>
+                    <span className="shrink-0 text-xs text-sz-fg-mute">
+                      v{ext.manifest.version}
+                    </span>
+                    {installed && <Badge tone="success">{t('extensions.installed')}</Badge>}
                   </div>
-                  <div className="flex shrink-0 flex-col gap-1">
+                  <div className="shrink-0">
                     {installed ? (
                       <Button
                         variant="danger"
@@ -225,23 +218,51 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                     )}
                   </div>
                 </div>
+                <p className="mt-1 line-clamp-2 text-xs text-sz-fg-soft">
+                  {ext.manifest.description}
+                </p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                  <span className="text-[10px] uppercase tracking-wide text-sz-fg-mute">
+                    {t('extensions.permissions')}:
+                  </span>
+                  {ext.manifest.permissions.map((p) => (
+                    <Badge key={p} tone="accent">
+                      {p}
+                    </Badge>
+                  ))}
+                  {ext.manifest.docs.trim().length > 0 && (
+                    <button
+                      type="button"
+                      aria-expanded={docsOpen}
+                      className="ml-auto shrink-0 text-xs font-medium text-sz-accent hover:underline"
+                      onClick={() => setDocsOpenId(docsOpen ? null : ext.manifest.id)}
+                    >
+                      {docsOpen ? t('extensions.docsHide') : t('extensions.docsShow')}
+                    </button>
+                  )}
+                </div>
+                {docsOpen && (
+                  <div
+                    className="mt-2 flex max-h-[40vh] flex-col gap-2 overflow-y-auto rounded border border-sz-border bg-sz-panel p-3 text-xs text-sz-fg-soft"
+                    // biome-ignore lint/security/noDangerouslySetInnerHtml: HTML saneado por renderLessonMarkdown (escape-first + subconjunto seguro)
+                    dangerouslySetInnerHTML={{ __html: renderLessonMarkdown(ext.manifest.docs) }}
+                  />
+                )}
                 {showExamples && ext.manifest.examples.length > 0 && (
-                  <div className="mt-2 border-t border-sz-border pt-2">
-                    <span className="text-xs uppercase text-sz-fg-mute">
+                  <div className="mt-2 flex flex-wrap items-center gap-1 border-t border-sz-border pt-2">
+                    <span className="text-[10px] uppercase tracking-wide text-sz-fg-mute">
                       {t('extensions.loadExample')}:
                     </span>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {ext.manifest.examples.map((example, i) => (
-                        <Button
-                          key={example.name}
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleLoadExample(ext, i)}
-                        >
-                          {example.name}
-                        </Button>
-                      ))}
-                    </div>
+                    {ext.manifest.examples.map((example, i) => (
+                      <Button
+                        key={example.name}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleLoadExample(ext, i)}
+                      >
+                        {example.name}
+                      </Button>
+                    ))}
                   </div>
                 )}
               </li>
