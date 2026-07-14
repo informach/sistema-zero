@@ -134,6 +134,22 @@ interface GameKitApi {
   stopSpawner: Fn
   isInvincible: Fn
   keyPressed: Fn
+  // R2
+  setSheet: Fn
+  playAnim: Fn
+  cameraFollow: Fn
+  cameraStop: Fn
+  cameraX: Fn
+  cameraY: Fn
+  onDrawHud: Fn
+  launchTowards: Fn
+  moveByVelocity: Fn
+  setAngle: Fn
+  mouseX: Fn
+  mouseY: Fn
+  mouseDown: Fn
+  onGameClick: Fn
+  drawBar: Fn
 }
 
 interface Harness {
@@ -197,7 +213,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 69 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 84 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -272,6 +288,22 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'stopSpawner',
       'isInvincible',
       'keyPressed',
+      // R2 (15): animação de folha, câmera+HUD, velocidade/tiro, mouse, giro, barra
+      'setSheet',
+      'playAnim',
+      'cameraFollow',
+      'cameraStop',
+      'cameraX',
+      'cameraY',
+      'onDrawHud',
+      'launchTowards',
+      'moveByVelocity',
+      'setAngle',
+      'mouseX',
+      'mouseY',
+      'mouseDown',
+      'onGameClick',
+      'drawBar',
     ]
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')
@@ -764,5 +796,91 @@ describe('SZGameKit — R1: correções do full review', () => {
     })
     api.emit('pontos', 42)
     expect(got).toBe(42)
+  })
+})
+
+describe('SZGameKit — R2: câmera, velocidade, animação, mouse, barra', () => {
+  it('câmera segue o alvo e TRAVA nas bordas do mundo', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 800, height: 600 })
+    await startGame(h)
+    h.api.setState('jogando') // no menu o render sai cedo (câmera não atualiza)
+    const heroi = h.api.createCharacter({ w: 40, h: 40 }) as Record<string, number>
+    h.api.cameraFollow(heroi, 2000, 1500)
+    // Canto superior esquerdo: trava em 0,0 (não mostra "fora" do mundo).
+    h.api.placeCharacter(heroi, 0, 0)
+    h.nextFrame(16)
+    expect(h.api.cameraX()).toBe(0)
+    expect(h.api.cameraY()).toBe(0)
+    // Meio do mundo: centraliza no alvo.
+    h.api.placeCharacter(heroi, 980, 730) // centro 1000, 750
+    h.nextFrame(32)
+    expect(h.api.cameraX()).toBe(600) // 1000 - 800/2
+    expect(h.api.cameraY()).toBe(450) // 750 - 600/2
+    // Canto inferior direito: trava em mundo - tela.
+    h.api.placeCharacter(heroi, 1960, 1460)
+    h.nextFrame(48)
+    expect(h.api.cameraX()).toBe(1200)
+    expect(h.api.cameraY()).toBe(900)
+    // keepOnScreen com câmera: o limite vira o MUNDO, não a tela.
+    h.api.placeCharacter(heroi, 5000, 5000)
+    h.api.keepOnScreen(heroi)
+    expect(heroi.x).toBe(1960) // 2000 - 40
+    expect(heroi.y).toBe(1460)
+    h.api.cameraStop()
+    expect(h.api.cameraX()).toBe(0)
+    h.api.keepOnScreen(heroi)
+    expect(heroi.x).toBe(760) // sem câmera: volta ao limite da tela (800 - 40)
+  })
+
+  it('launchTowards mira uma vez (vetor normalizado × v); moveByVelocity aplica × dt', () => {
+    const { api } = loadRuntime()
+    const tiro = api.createCharacter({ w: 10, h: 10 }) as Record<string, number>
+    const alvo = api.createCharacter({ w: 10, h: 10 }) as Record<string, number>
+    api.placeCharacter(tiro, 0, 0)
+    api.placeCharacter(alvo, 300, 400) // 3-4-5: direção (0.6, 0.8)
+    api.launchTowards(tiro, alvo, 500)
+    expect(tiro.vx).toBeCloseTo(300)
+    expect(tiro.vy).toBeCloseTo(400)
+    api.moveByVelocity(tiro, 0.5)
+    expect(tiro.x).toBeCloseTo(150)
+    expect(tiro.y).toBeCloseTo(200)
+  })
+
+  it('playAnim re-tocado NÃO reinicia (guarda de transição); setSheet configura o recorte', () => {
+    const { api } = loadRuntime()
+    const c = api.createCharacter({ w: 32, h: 32 }) as Record<string, unknown>
+    api.setSheet(c, 'folha', 16, 16)
+    expect(c._sheetImg).toBe('folha')
+    expect(c._sheetFw).toBe(16)
+    api.playAnim(c, 2, 5, 8)
+    const start = c._animStart
+    api.playAnim(c, 2, 5, 8) // mesmo trio: não reinicia
+    expect(c._animStart).toBe(start)
+    api.playAnim(c, 6, 9, 8) // trocou: reinicia
+    expect(c._animFrom).toBe(6)
+  })
+
+  it('setAngle guarda o giro; drawBar desenha fundo + preenchimento + contorno', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    const c = h.api.createCharacter({}) as Record<string, number>
+    h.api.setAngle(c, 90)
+    expect(c._angle).toBe(90)
+    ctxCalls.length = 0
+    h.api.drawBar(50, 100, 20, 20, 200, 16, '#22c55e')
+    const fills = ctxCalls.filter(([n]) => n === 'fillRect')
+    expect(fills.length).toBe(2)
+    expect(fills[1]?.[1]).toEqual([20, 20, 100, 16]) // 50% de 200
+  })
+
+  it('mouseDown/mouseX/mouseY começam zerados; onGameClick registra o gancho', () => {
+    const { api } = loadRuntime()
+    expect(api.mouseDown()).toBe(false)
+    expect(api.mouseX()).toBe(0)
+    expect(api.mouseY()).toBe(0)
+    // O gancho é chamado pelo pointerdown do canvas (verificado no QA browser —
+    // o happy-dom não produz getBoundingClientRect com tamanho real).
+    expect(() => api.onGameClick(() => {})).not.toThrow()
   })
 })

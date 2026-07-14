@@ -247,7 +247,20 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tudo o que aparece no jogo é desenhado aqui, a cada quadro: pinte o fundo, desenhe os personagens e o placar. Os blocos de Canvas funcionam aqui dentro, usando esse pincel.',
+      'Tudo o que aparece no jogo é desenhado aqui, a cada quadro: pinte o fundo, desenhe os personagens e o placar. Os blocos de Canvas funcionam aqui dentro, usando esse pincel. Com a câmera ligada, este desenho é do MUNDO (anda com a câmera).',
+  },
+  {
+    type: 'sz_gk_on_draw_hud',
+    message0: 'Desenhar por cima (HUD) com o pincel %1',
+    args0: [{ type: 'field_input', name: 'PARAM', text: 'ctx' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha DEPOIS de tudo, preso na TELA (a câmera não mexe aqui): placar, barras, avisos. É o jeito profissional de separar o mundo do painel (HUD).',
   },
   {
     type: 'sz_gk_draw_background',
@@ -648,6 +661,163 @@ export const gameKitBlocks = [
     tooltip:
       'Espelha o desenho do personagem para ele "olhar" na direção do alvo (esquerda/direita).',
   },
+  {
+    type: 'sz_gk_launch_towards',
+    message0: 'Lançar %1 na direção de %2 com velocidade %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'tiro', kind: 'character' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'V', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Mira UMA vez: guarda no personagem a velocidade na direção do alvo (a conta do tiro de todo jogo). Depois use "Mover pela velocidade" a cada quadro — o tiro segue RETO mesmo se o alvo sair do lugar.',
+  },
+  {
+    type: 'sz_gk_move_by_velocity',
+    message0: 'Mover %1 pela velocidade dele usando o tempo %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'tiro', kind: 'character' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Anda o que o "Lançar" mandou: soma a velocidade guardada × o tempo do quadro. Use no "A cada quadro" (ou dentro do "para cada vivo" com o item).',
+  },
+  {
+    type: 'sz_gk_set_angle',
+    message0: 'Girar %1 para %2 graus',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Gira o desenho do personagem em volta do centro (0 = normal, 90 = deitado). Bom para naves, setas e rodinhas.',
+  },
+
+  // ---- 🎞️ Folha de quadros (animação de pixel art) ----
+  {
+    type: 'sz_gk_set_sheet',
+    message0: 'Usar a folha de quadros %1 em %2 (cada quadro tem %3 × %4)',
+    args0: [
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'FW', check: 'JSValue' },
+      { type: 'input_value', name: 'FH', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cola uma folha de quadros (spritesheet do Pinta ou baixada) no personagem: em vez da imagem inteira, ele mostra UM quadro de cada vez. Carregue a imagem antes com "Carregar a imagem" (mesmo nome).',
+  },
+  {
+    type: 'sz_gk_play_anim',
+    message0: 'Tocar em %1 a animação %2 dos quadros %3 a %4 (%5 por segundo)',
+    args0: [
+      { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
+      { type: 'field_animation_picker', name: 'ANIM', text: '— escolher —' },
+      { type: 'input_value', name: 'FROM', check: 'JSValue' },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+      { type: 'input_value', name: 'FPS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca uma faixa de quadros da folha, em loop. Pode rodar TODO quadro sem medo: repetir a mesma animação não a reinicia (guarda de transição, como os profissionais fazem). Desenhou no Pinta? O seletor lista as animações da folha.',
+  },
+
+  // ---- 🎥 Câmera ----
+  {
+    type: 'sz_gk_camera_follow',
+    message0: 'Fazer a câmera seguir %1 num mundo de %2 × %3',
+    args0: [
+      { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga a câmera: o mundo fica MAIOR que a tela e a câmera acompanha o personagem (presa nas bordas do mundo, como nos jogos de aventura). "Manter dentro da tela" passa a valer o MUNDO.',
+  },
+  {
+    type: 'sz_gk_camera_stop',
+    message0: 'Parar a câmera (tela fixa)',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desliga a câmera: a tela volta a ser fixa (coordenadas do jogo = da tela).',
+  },
+  {
+    type: 'sz_gk_camera_x',
+    message0: 'o canto x da câmera',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Onde começa o pedaço do mundo que aparece na tela (canto esquerdo). Some ao desenhar algo "preso na tela" dentro do "Desenhar o jogo" — ou desenhe no HUD, que já é preso.',
+  },
+  {
+    type: 'sz_gk_camera_y',
+    message0: 'o canto y da câmera',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Onde começa o pedaço visível do mundo (canto de cima). Par do "canto x da câmera".',
+  },
+
+  // ---- 🖱️ Mouse ----
+  {
+    type: 'sz_gk_mouse_x',
+    message0: 'o mouse x',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Onde o mouse (ou o dedo) está, na largura — já convertido para as coordenadas do JOGO (e do mundo, se a câmera segue).',
+  },
+  {
+    type: 'sz_gk_mouse_y',
+    message0: 'o mouse y',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Onde o mouse (ou o dedo) está, na altura — em coordenadas do JOGO.',
+  },
+  {
+    type: 'sz_gk_mouse_down',
+    message0: 'o mouse está apertado ?',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro enquanto o botão do mouse (ou o dedo) está pressionado no jogo.',
+  },
+  {
+    type: 'sz_gk_on_game_click',
+    message0: 'Quando clicar no jogo, na posição x %1 y %2',
+    args0: [
+      { type: 'field_input', name: 'PX', text: 'px' },
+      { type: 'field_input', name: 'PY', text: 'py' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" a cada clique/toque no jogo, com a posição já nas coordenadas do JOGO (px e py). É a base de tower defense, point-and-click e botões desenhados.',
+  },
 
   // ---- ❤️ Combate ----
   {
@@ -768,6 +938,25 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Escreve o tempo de jogo (min:seg) nessa posição. Use dentro do "Desenhar o jogo".',
+  },
+  {
+    type: 'sz_gk_draw_bar',
+    message0: 'Desenhar uma barra de %1 / %2 em x %3 y %4 tamanho %5 × %6 cor %7',
+    args0: [
+      { type: 'input_value', name: 'CUR', check: 'JSValue' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#4a9eff' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma barra que enche na proporção atual/máximo: vida grande do herói, energia, progresso da fase. Fica ótima no "Desenhar por cima (HUD)".',
   },
   {
     type: 'sz_gk_time_survived',
@@ -944,7 +1133,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🔁 A cada quadro',
     colour: C,
-    types: ['sz_gk_on_update', 'sz_gk_on_draw', 'sz_gk_draw_background'],
+    types: ['sz_gk_on_update', 'sz_gk_on_draw', 'sz_gk_on_draw_hud', 'sz_gk_draw_background'],
   },
   {
     name: '🧍 Personagens',
@@ -996,7 +1185,29 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎯 Comportamentos',
     colour: C,
-    types: ['sz_gk_seek', 'sz_gk_drift', 'sz_gk_face'],
+    types: [
+      'sz_gk_seek',
+      'sz_gk_drift',
+      'sz_gk_face',
+      'sz_gk_launch_towards',
+      'sz_gk_move_by_velocity',
+      'sz_gk_set_angle',
+    ],
+  },
+  {
+    name: '🎞️ Quadros & animação',
+    colour: C,
+    types: ['sz_gk_set_sheet', 'sz_gk_play_anim'],
+  },
+  {
+    name: '🎥 Câmera',
+    colour: C,
+    types: ['sz_gk_camera_follow', 'sz_gk_camera_stop', 'sz_gk_camera_x', 'sz_gk_camera_y'],
+  },
+  {
+    name: '🖱️ Mouse',
+    colour: C,
+    types: ['sz_gk_on_game_click', 'sz_gk_mouse_x', 'sz_gk_mouse_y', 'sz_gk_mouse_down'],
   },
   {
     name: '❤️ Combate',
@@ -1018,6 +1229,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_set_mission',
       'sz_gk_mission_kill',
       'sz_gk_draw_timer',
+      'sz_gk_draw_bar',
       'sz_gk_time_survived',
       'sz_gk_kills',
     ],
@@ -1088,6 +1300,20 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_draw_look: { X: numShadow(100), Y: numShadow(100), W: numShadow(40), H: numShadow(40) },
   sz_gk_hurt: { AMOUNT: numShadow(10), IFRAMES: numShadow(1) },
   sz_gk_knockback: { FORCE: numShadow(400) },
+  // R2
+  sz_gk_set_sheet: { FW: numShadow(32), FH: numShadow(32) },
+  sz_gk_play_anim: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },
+  sz_gk_camera_follow: { W: numShadow(1920), H: numShadow(1080) },
+  sz_gk_launch_towards: { V: numShadow(400) },
+  sz_gk_set_angle: { DEG: numShadow(0) },
+  sz_gk_draw_bar: {
+    CUR: numShadow(50),
+    MAX: numShadow(100),
+    X: numShadow(20),
+    Y: numShadow(20),
+    W: numShadow(200),
+    H: numShadow(16),
+  },
   // 0 = automático (usa a vida máxima do personagem — o runtime resolve).
   sz_gk_draw_health_bar: { MAX: numShadow(0) },
   sz_gk_set_mission: { SEC: numShadow(30), KILLS: numShadow(10) },

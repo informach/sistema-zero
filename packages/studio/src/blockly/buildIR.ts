@@ -528,6 +528,16 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:timeSurvived' }
     case 'sz_gk_kills':
       return { type: 'gk:kills' }
+    case 'sz_gk_camera_x':
+      return { type: 'gk:cameraX' }
+    case 'sz_gk_camera_y':
+      return { type: 'gk:cameraY' }
+    case 'sz_gk_mouse_x':
+      return { type: 'gk:mouseX' }
+    case 'sz_gk_mouse_y':
+      return { type: 'gk:mouseY' }
+    case 'sz_gk_mouse_down':
+      return { type: 'gk:mouseDown' }
     case 'sz_input_key_pressed':
       return { type: 'inputKeyPressed', key: f(block, 'KEY') || 'ArrowRight' }
     case 'sz_input_pointer_x':
@@ -5182,6 +5192,107 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'gk:onDraw',
           ctxName: f(block, 'PARAM') || 'ctx',
           body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_on_draw_hud':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:onDrawHud',
+          ctxName: f(block, 'PARAM') || 'ctx',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_on_game_click':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:onGameClick',
+          xName: f(block, 'PX') || 'px',
+          yName: f(block, 'PY') || 'py',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_set_sheet':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setSheet',
+          charVar: f(block, 'CHAR'),
+          image: f(block, 'IMAGE'),
+          fw: exprInput(block, 'FW', { type: 'num', value: 32 }),
+          fh: exprInput(block, 'FH', { type: 'num', value: 32 }),
+        },
+      }
+    case 'sz_gk_play_anim':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:playAnim',
+          charVar: f(block, 'CHAR'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 3 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_gk_camera_follow':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:cameraFollow',
+          charVar: f(block, 'CHAR'),
+          w: exprInput(block, 'W', { type: 'num', value: 1920 }),
+          h: exprInput(block, 'H', { type: 'num', value: 1080 }),
+        },
+      }
+    case 'sz_gk_camera_stop':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:cameraStop' } }
+    case 'sz_gk_launch_towards':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:launchTowards',
+          charVar: f(block, 'WHO'),
+          targetVar: f(block, 'TARGET'),
+          speed: exprInput(block, 'V', { type: 'num', value: 400 }),
+        },
+      }
+    case 'sz_gk_move_by_velocity':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:moveByVelocity', charVar: f(block, 'WHO'), dtVar: f(block, 'DT') },
+      }
+    case 'sz_gk_set_angle':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setAngle',
+          charVar: f(block, 'WHO'),
+          degrees: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_draw_bar':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:drawBar',
+          current: exprInput(block, 'CUR', { type: 'num', value: 50 }),
+          max: exprInput(block, 'MAX', { type: 'num', value: 100 }),
+          x: exprInput(block, 'X', { type: 'num', value: 20 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 20 }),
+          w: exprInput(block, 'W', { type: 'num', value: 200 }),
+          h: exprInput(block, 'H', { type: 'num', value: 16 }),
+          color: f(block, 'COLOR') || '#4a9eff',
         },
       }
     case 'sz_gk_draw_background':

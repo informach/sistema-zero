@@ -63,6 +63,12 @@ export const gameKitRuntime = `(function () {
   var PUSHBACK_DECAY = 800;
   var justPressed = {};                  // teclas apertadas NESTE quadro (edge)
   var debugOverlay = false;              // tecla de crase desenha os círculos de colisão
+  // Câmera que segue um personagem num MUNDO maior que a tela (main.js do RPG kit:
+  // translate -> mundo -> restore -> HUD). Desligada = tela fixa (coords iguais).
+  var camera = { on: false, target: null, x: 0, y: 0, worldW: 0, worldH: 0 };
+  var hudHooks = [];                     // desenham DEPOIS do restore (sem câmera)
+  var mouse = { x: 0, y: 0, down: false };
+  var gameClickHooks = [];               // fn(x, y) em coords do JOGO (letterbox convertido)
 
   // Manifesto de imagens do projeto, semeado pelo assetsBridge.
   var ASSETS = (window.__SZGAME_ASSETS && typeof window.__SZGAME_ASSETS === 'object')
@@ -321,7 +327,49 @@ export const gameKitRuntime = `(function () {
     // Menu de contexto / perder o foco: solta todas as teclas (evita a tecla
     // "presa" quando o navegador engole o keyup).
     window.addEventListener('contextmenu', function () { keys = {}; });
-    window.addEventListener('blur', function () { keys = {}; });
+    window.addEventListener('blur', function () { keys = {}; mouse.down = false; });
+    bindMouse();
+  }
+
+  /**
+   * Mouse/toque em coords do JOGO: desfaz o letterbox (CSS estica o canvas) e,
+   * com câmera ligada, soma o deslocamento — o clique cai no MUNDO, onde estão
+   * os personagens. Pointer events cobrem mouse E toque (tablet dos kids).
+   */
+  function toGameCoords(ev) {
+    if (!canvasEl) return null;
+    var rect = canvasEl.getBoundingClientRect();
+    if (!(rect.width > 0) || !(rect.height > 0)) return null;
+    var x = (ev.clientX - rect.left) * (config.w / rect.width);
+    var y = (ev.clientY - rect.top) * (config.h / rect.height);
+    if (camera.on) { x += camera.x; y += camera.y; }
+    return { x: x, y: y };
+  }
+  function bindMouse() {
+    if (!canvasEl) return;
+    canvasEl.addEventListener('pointermove', function (ev) {
+      var p = toGameCoords(ev);
+      if (p) { mouse.x = p.x; mouse.y = p.y; }
+    });
+    canvasEl.addEventListener('pointerdown', function (ev) {
+      resumeAudio();
+      var p = toGameCoords(ev);
+      if (!p) return;
+      mouse.x = p.x;
+      mouse.y = p.y;
+      mouse.down = true;
+      for (var i = 0; i < gameClickHooks.length; i++) {
+        var fn = gameClickHooks[i];
+        try { fn(p.x, p.y); } catch (e) {
+          if (!fn.__szgkWarned) {
+            fn.__szgkWarned = true;
+            warn('erro no "Quando clicar no jogo": ' + e);
+          }
+        }
+      }
+    });
+    canvasEl.addEventListener('pointerup', function () { mouse.down = false; });
+    canvasEl.addEventListener('pointercancel', function () { mouse.down = false; });
   }
 
   // ---- Canvas responsivo (Game.resizeCanvas do kit, ratio derivado de w/h) ----
@@ -403,6 +451,34 @@ export const gameKitRuntime = `(function () {
     }
   }
 
+  // ---- 🎥 Câmera (Camera do RPG kit: segue o alvo, presa nas bordas do mundo) ----
+
+  function updateCamera() {
+    if (!camera.on || !camera.target) return;
+    var tx = centerX(camera.target) - config.w / 2;
+    var ty = centerY(camera.target) - config.h / 2;
+    camera.x = Math.max(0, Math.min(camera.worldW - config.w, tx));
+    camera.y = Math.max(0, Math.min(camera.worldH - config.h, ty));
+  }
+  function cameraFollow(target, worldW, worldH) {
+    if (!target || typeof target !== 'object') {
+      warn('"Fazer a câmera seguir" precisa de um personagem');
+      return;
+    }
+    camera.on = true;
+    camera.target = target;
+    // O mundo nunca é menor que a tela (senão a trava das bordas inverte).
+    camera.worldW = Math.max(config.w, num(worldW, config.w));
+    camera.worldH = Math.max(config.h, num(worldH, config.h));
+    updateCamera();
+  }
+  function cameraStop() {
+    camera.on = false;
+    camera.target = null;
+    camera.x = 0;
+    camera.y = 0;
+  }
+
   function render() {
     if (!ctx2d) return;
     if (state === 'menu' || state === 'carregando') {
@@ -413,8 +489,19 @@ export const gameKitRuntime = `(function () {
     }
     // jogando/pausado/fim/estados custom: os ganchos de desenho são donos do
     // quadro (na pausa nada ATUALIZA, então a imagem congela — como no kit).
+    // Com a câmera ligada, o MUNDO desenha transladado (main.js do RPG kit:
+    // translate -> mundo -> restore -> HUD); o overlay de debug é world-space.
+    updateCamera();
+    var cam = camera.on;
+    if (cam) {
+      ctx2d.save();
+      ctx2d.translate(-Math.round(camera.x), -Math.round(camera.y));
+    }
     runHooks(drawHooks, ctx2d, 'Desenhar o jogo');
     if (debugOverlay) drawDebugOverlay();
+    if (cam) ctx2d.restore();
+    // HUD: por cima de tudo, SEM câmera (placar/barras ficam presos na tela).
+    runHooks(hudHooks, ctx2d, 'Desenhar por cima (HUD)');
   }
 
   /** Tecla de crase: círculos de colisão de pools + combatentes (debug do P24). */
@@ -519,10 +606,17 @@ export const gameKitRuntime = `(function () {
       health: hp,
       maxHealth: hp,
       radius: Math.min(w, h) / 2,
+      // Velocidade própria (tiro/deriva): "Lançar na direção" seta, "Mover pela
+      // velocidade" aplica × dt.
+      vx: 0,
+      vy: 0,
       _iFrames: 0,
       _pushX: 0,
       _pushY: 0,
-      _facingLeft: false
+      _facingLeft: false,
+      _angle: 0,
+      _sheetImg: '', _sheetFw: 0, _sheetFh: 0,
+      _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0
     };
     return c;
   }
@@ -548,12 +642,17 @@ export const gameKitRuntime = `(function () {
 
   function keepOnScreen(c) {
     if (!c || typeof c !== 'object') return;
-    c.x = Math.max(0, Math.min(config.w - num(c.w, 0), num(c.x, 0)));
-    c.y = Math.max(0, Math.min(config.h - num(c.h, 0), num(c.y, 0)));
+    // Com câmera ligada, "a tela" vira o MUNDO — o personagem anda até as
+    // bordas do mundo e a câmera o acompanha.
+    var bw = camera.on ? camera.worldW : config.w;
+    var bh = camera.on ? camera.worldH : config.h;
+    c.x = Math.max(0, Math.min(bw - num(c.w, 0), num(c.x, 0)));
+    c.y = Math.max(0, Math.min(bh - num(c.h, 0), num(c.y, 0)));
   }
 
-  // Desenha 1 personagem: aparência (look) > imagem > retângulo. Herda de graça o
-  // piscar (i-frames) e a virada (facingLeft) — como o RenderSystem do P24.
+  // Desenha 1 personagem: folha de quadros > aparência (look) > imagem >
+  // retângulo. Herda de graça o piscar (i-frames), a virada (facingLeft) e o
+  // giro (_angle) — como o RenderSystem do P24.
   function drawEntity(c) {
     if (!ctx2d || !c || typeof c !== 'object') return;
     var prevAlpha = 1;
@@ -563,6 +662,14 @@ export const gameKitRuntime = `(function () {
       // FLASH_SPEED 10 do P24 (0.1 + 0.8·|sin|).
       try { ctx2d.globalAlpha = 0.1 + 0.8 * Math.abs(Math.sin(c._iFrames * 10)); } catch (e) {}
     }
+    // Giro em volta do CENTRO (o wrapper mais externo — flip e desenho rodam juntos).
+    var ang = num(c._angle, 0);
+    if (ang) {
+      ctx2d.save();
+      ctx2d.translate(centerX(c), centerY(c));
+      ctx2d.rotate(ang * Math.PI / 180);
+      ctx2d.translate(-centerX(c), -centerY(c));
+    }
     var flip = c._facingLeft === true;
     if (flip) {
       ctx2d.save();
@@ -571,9 +678,30 @@ export const gameKitRuntime = `(function () {
     }
     var lx = flip ? 0 : c.x;
     var ly = flip ? 0 : c.y;
-    var look = looks[c.look];
     var drew = false;
-    if (look && typeof look.fn === 'function') {
+    // Folha de quadros (spritesheet): recorta o quadro da vez (pixel art viva).
+    if (c._sheetImg) {
+      var sheet = images[c._sheetImg];
+      if (sheet && sheet.loaded && sheet.img) {
+        var fw = Math.max(1, num(c._sheetFw, 32));
+        var fh = Math.max(1, num(c._sheetFh, 32));
+        var cols = Math.max(1, Math.floor(num(sheet.img.width, fw) / fw));
+        var idx = num(c._animFrom, 0);
+        var span = num(c._animTo, 0) - idx + 1;
+        if (num(c._animFps, 0) > 0 && span > 0) {
+          var el = Math.max(0, playTime - num(c._animStart, 0));
+          idx += Math.floor(el * c._animFps) % span;
+        }
+        var sx = (idx % cols) * fw;
+        var sy = Math.floor(idx / cols) * fh;
+        try {
+          ctx2d.drawImage(sheet.img, sx, sy, fw, fh, lx, ly, c.w, c.h);
+          drew = true;
+        } catch (e) {}
+      }
+    }
+    var look = looks[c.look];
+    if (!drew && look && typeof look.fn === 'function') {
       ctx2d.save();
       ctx2d.translate(lx, ly);
       // A aparência é autoral num quadro-base (baseW×baseH) e ESCALA ao tamanho
@@ -602,6 +730,7 @@ export const gameKitRuntime = `(function () {
       ctx2d.strokeRect(lx, ly, c.w, c.h);
     }
     if (flip) ctx2d.restore();
+    if (ang) ctx2d.restore();
     if (blinking) { try { ctx2d.globalAlpha = prevAlpha; } catch (e) {} }
   }
 
@@ -609,21 +738,50 @@ export const gameKitRuntime = `(function () {
     drawEntity(c);
   }
 
+  // ---- 🎞️ Folha de quadros (Sprite + Animations do RPG kit, simplificado) ----
+
+  function setSheet(c, imageName, fw, fh) {
+    if (!c || typeof c !== 'object') return;
+    c._sheetImg = text(imageName, '');
+    c._sheetFw = Math.max(1, num(fw, num(c.w, 32)));
+    c._sheetFh = Math.max(1, num(fh, num(c.h, 32)));
+    c._animFrom = 0; c._animTo = 0; c._animFps = 0; c._animStart = 0;
+  }
+  function playAnim(c, from, to, fps) {
+    if (!c || typeof c !== 'object') return;
+    var f = Math.max(0, Math.floor(num(from, 0)));
+    var t = Math.max(f, Math.floor(num(to, f)));
+    var r = Math.max(1, num(fps, 8));
+    // Guarda de transição (padrão g2d): re-tocar a MESMA animação todo quadro
+    // NÃO reinicia — senão o 1º quadro congela para sempre.
+    if (c._animFrom === f && c._animTo === t && c._animFps === r) return;
+    c._animFrom = f;
+    c._animTo = t;
+    c._animFps = r;
+    // O relógio é o playTime (só anda em 'jogando') — a animação PAUSA junto.
+    c._animStart = playTime;
+  }
+
   function drawBackground(color, grid) {
     if (!ctx2d) return;
+    // Cobre o retângulo VISÍVEL (com câmera, o ctx está transladado — pintar em
+    // camera.x/y cobre a tela). A grade fica em coords do MUNDO: ela "anda"
+    // quando a câmera segue, dando a sensação de mundo de graça.
+    var ox = camera.on ? camera.x : 0;
+    var oy = camera.on ? camera.y : 0;
     ctx2d.fillStyle = text(color, config.bg);
-    ctx2d.fillRect(0, 0, config.w, config.h);
+    ctx2d.fillRect(ox, oy, config.w, config.h);
     if (grid) {
       ctx2d.strokeStyle = 'rgba(255, 255, 255, 0.2)';
       ctx2d.lineWidth = 1;
       ctx2d.beginPath();
-      for (var i = 0; i < config.w; i += 40) {
-        ctx2d.moveTo(i, 0);
-        ctx2d.lineTo(i, config.h);
+      for (var i = Math.floor(ox / 40) * 40; i < ox + config.w; i += 40) {
+        ctx2d.moveTo(i, oy);
+        ctx2d.lineTo(i, oy + config.h);
       }
-      for (var j = 0; j < config.h; j += 40) {
-        ctx2d.moveTo(0, j);
-        ctx2d.lineTo(config.w, j);
+      for (var j = Math.floor(oy / 40) * 40; j < oy + config.h; j += 40) {
+        ctx2d.moveTo(ox, j);
+        ctx2d.lineTo(ox + config.w, j);
       }
       ctx2d.stroke();
     }
@@ -666,8 +824,12 @@ export const gameKitRuntime = `(function () {
       x: 0, y: 0, w: 0, h: 0,
       speed: 0, damage: 0, color: '', image: '', look: '', radius: 0,
       health: 0, maxHealth: 0,
+      vx: 0, vy: 0,
       _active: false, _facingLeft: false, _iFrames: 0,
-      _pushX: 0, _pushY: 0, _driftAngle: null, _mold: ''
+      _pushX: 0, _pushY: 0, _driftAngle: null, _mold: '',
+      _angle: 0,
+      _sheetImg: '', _sheetFw: 0, _sheetFh: 0,
+      _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0
     };
   }
   function defineMold(name, opts) {
@@ -705,17 +867,23 @@ export const gameKitRuntime = `(function () {
     e.health = m.health; e.maxHealth = m.health;
     e._active = true; e._facingLeft = false; e._iFrames = 0;
     e._pushX = 0; e._pushY = 0; e._driftAngle = null; e._mold = k;
+    e.vx = 0; e.vy = 0; e._angle = 0;
+    e._sheetImg = ''; e._sheetFw = 0; e._sheetFh = 0;
+    e._animFrom = 0; e._animTo = 0; e._animFps = 0; e._animStart = 0;
     pool.active.push(e);
     return e;
   }
   function spawnAtEdge(name) {
-    // Margem de nascimento 100 = ENEMY_SPAWN_MARGIN do P24.
+    // Margem de nascimento 100 = ENEMY_SPAWN_MARGIN do P24. Com câmera, nasce
+    // nas bordas do retângulo VISÍVEL (o inimigo sempre entra "por perto").
+    var ox = camera.on ? camera.x : 0;
+    var oy = camera.on ? camera.y : 0;
     var edge = Math.floor(Math.random() * 4);
     var x, y;
-    if (edge === 0) { x = Math.random() * config.w; y = -100; }
-    else if (edge === 1) { x = config.w + 100; y = Math.random() * config.h; }
-    else if (edge === 2) { x = Math.random() * config.w; y = config.h + 100; }
-    else { x = -100; y = Math.random() * config.h; }
+    if (edge === 0) { x = ox + Math.random() * config.w; y = oy - 100; }
+    else if (edge === 1) { x = ox + config.w + 100; y = oy + Math.random() * config.h; }
+    else if (edge === 2) { x = ox + Math.random() * config.w; y = oy + config.h + 100; }
+    else { x = ox - 100; y = oy + Math.random() * config.h; }
     return spawnFromMold(name, x, y);
   }
   function recycle(e) {
@@ -785,12 +953,17 @@ export const gameKitRuntime = `(function () {
   function cullOffscreen(name, margin) {
     var pool = pools[text(name, '')];
     if (!pool) return;
-    // Default 200 = margem de despawn do P24 (spawn nas bordas usa 100).
+    // Default 200 = margem de despawn do P24 (spawn nas bordas usa 100). Com a
+    // câmera ligada, "tela" = o retângulo VISÍVEL (senão o mundo inteiro sumia).
     var m = num(margin, 200);
+    var ox = camera.on ? camera.x : 0;
+    var oy = camera.on ? camera.y : 0;
     pool._sweeping = true;
     for (var i = 0; i < pool.active.length; i++) {
       var e = pool.active[i];
-      if (e.x < -m || e.x > config.w + m || e.y < -m || e.y > config.h + m) e._active = false;
+      if (e.x < ox - m || e.x > ox + config.w + m || e.y < oy - m || e.y > oy + config.h + m) {
+        e._active = false;
+      }
     }
     pool._sweeping = false;
     compact(pool);
@@ -839,6 +1012,30 @@ export const gameKitRuntime = `(function () {
   function face(who, target) {
     if (!who || !target || typeof who !== 'object' || typeof target !== 'object') return;
     who._facingLeft = centerX(target) < centerX(who);
+  }
+  // Tiro/velocidade própria: "lançar" mira UMA vez (seta vx/vy pelo vetor
+  // normalizado × velocidade — a conta do Projectile de todo jogo); "mover pela
+  // velocidade" aplica × dt a cada quadro. Juntos com "Nascer e chamar de"
+  // fecham tiro reto E mirado.
+  function launchTowards(who, target, speed) {
+    if (!who || !target || typeof who !== 'object' || typeof target !== 'object') return;
+    var v = num(speed, 400);
+    var dx = centerX(target) - centerX(who);
+    var dy = centerY(target) - centerY(who);
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (!(len > 0)) { who.vx = v; who.vy = 0; return; }
+    who.vx = (dx / len) * v;
+    who.vy = (dy / len) * v;
+  }
+  function moveByVelocity(who, dt) {
+    if (!who || typeof who !== 'object') return;
+    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
+    who.x = num(who.x, 0) + num(who.vx, 0) * d;
+    who.y = num(who.y, 0) + num(who.vy, 0) * d;
+  }
+  function setAngle(who, degrees) {
+    if (!who || typeof who !== 'object') return;
+    who._angle = num(degrees, 0);
   }
 
   // ---- ❤️ Combate (takeDamage + i-frames + knockback do P24) ----
@@ -967,6 +1164,26 @@ export const gameKitRuntime = `(function () {
   }
 
   // ---- 🖥️ HUD & Missão ----
+  /** Barra genérica (vida grande, mana, progresso): fundo + preenchimento + contorno. */
+  function drawBar(current, max, x, y, w, h, color) {
+    if (!ctx2d) return;
+    var m = num(max, 100);
+    if (!(m > 0)) m = 100;
+    var frac = Math.max(0, Math.min(1, num(current, 0) / m));
+    var bx = num(x, 20);
+    var by = num(y, 20);
+    var bw = Math.max(1, num(w, 200));
+    var bh = Math.max(1, num(h, 16));
+    ctx2d.save();
+    ctx2d.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx2d.fillRect(bx, by, bw, bh);
+    ctx2d.fillStyle = text(color, config.accent);
+    ctx2d.fillRect(bx, by, bw * frac, bh);
+    ctx2d.strokeStyle = 'white';
+    ctx2d.lineWidth = 2;
+    ctx2d.strokeRect(bx, by, bw, bh);
+    ctx2d.restore();
+  }
   function drawTimer(x, y) {
     if (!ctx2d) return;
     var mins = Math.floor(playTime / 60);
@@ -1176,6 +1393,9 @@ export const gameKitRuntime = `(function () {
     onDraw: guard('onDraw', function (fn) {
       if (typeof fn === 'function') drawHooks.push(fn);
     }),
+    onDrawHud: guard('onDrawHud', function (fn) {
+      if (typeof fn === 'function') hudHooks.push(fn);
+    }),
     drawBackground: guard('drawBackground', drawBackground),
     createCharacter: guard('createCharacter', createCharacter),
     moveWithKeys: guard('moveWithKeys', moveWithKeys),
@@ -1210,6 +1430,23 @@ export const gameKitRuntime = `(function () {
       var key = normKey(k);
       if (key) config.pauseKey = key;
     }),
+    // ----- R2: fundamentos -----
+    setSheet: guard('setSheet', setSheet),
+    playAnim: guard('playAnim', playAnim),
+    cameraFollow: guard('cameraFollow', cameraFollow),
+    cameraStop: guard('cameraStop', cameraStop),
+    cameraX: guard('cameraX', function () { return camera.x; }),
+    cameraY: guard('cameraY', function () { return camera.y; }),
+    launchTowards: guard('launchTowards', launchTowards),
+    moveByVelocity: guard('moveByVelocity', moveByVelocity),
+    setAngle: guard('setAngle', setAngle),
+    mouseX: guard('mouseX', function () { return mouse.x; }),
+    mouseY: guard('mouseY', function () { return mouse.y; }),
+    mouseDown: guard('mouseDown', function () { return mouse.down === true; }),
+    onGameClick: guard('onGameClick', function (fn) {
+      if (typeof fn === 'function') gameClickHooks.push(fn);
+    }),
+    drawBar: guard('drawBar', drawBar),
     // ----- P24 -----
     on: guard('on', onEvent),
     emit: guard('emit', emit),

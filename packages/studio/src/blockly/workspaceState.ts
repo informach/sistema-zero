@@ -3142,6 +3142,94 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'gk:onDrawHud':
+      return block(
+        'sz_gk_on_draw_hud',
+        { PARAM: stmt.ctxName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:onGameClick':
+      return block(
+        'sz_gk_on_game_click',
+        { PX: stmt.xName, PY: stmt.yName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:setSheet': {
+      const fw = exprToValueBlock(valueToExpr(stmt.fw))
+      const fh = exprToValueBlock(valueToExpr(stmt.fh))
+      return fw === null || fh === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_set_sheet', { CHAR: stmt.charVar, IMAGE: stmt.image }, {}, stmt.__id, {
+            FW: fw,
+            FH: fh,
+          })
+    }
+    case 'gk:playAnim': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      const fps = exprToValueBlock(valueToExpr(stmt.fps))
+      return from === null || to === null || fps === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_play_anim', { CHAR: stmt.charVar }, {}, stmt.__id, {
+            FROM: from,
+            TO: to,
+            FPS: fps,
+          })
+    }
+    case 'gk:cameraFollow': {
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return w === null || h === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_camera_follow', { CHAR: stmt.charVar }, {}, stmt.__id, { W: w, H: h })
+    }
+    case 'gk:cameraStop':
+      return block('sz_gk_camera_stop', {}, {}, stmt.__id)
+    case 'gk:launchTowards': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_launch_towards',
+            { WHO: stmt.charVar, TARGET: stmt.targetVar },
+            {},
+            stmt.__id,
+            { V: speed },
+          )
+    }
+    case 'gk:moveByVelocity':
+      return block('sz_gk_move_by_velocity', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id)
+    case 'gk:setAngle': {
+      const degrees = exprToValueBlock(valueToExpr(stmt.degrees))
+      return degrees === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_set_angle', { WHO: stmt.charVar }, {}, stmt.__id, { DEG: degrees })
+    }
+    case 'gk:drawBar': {
+      const current = exprToValueBlock(valueToExpr(stmt.current))
+      const max = exprToValueBlock(valueToExpr(stmt.max))
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return current === null ||
+        max === null ||
+        x === null ||
+        y === null ||
+        w === null ||
+        h === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_draw_bar', { COLOR: stmt.color }, {}, stmt.__id, {
+            CUR: current,
+            MAX: max,
+            X: x,
+            Y: y,
+            W: w,
+            H: h,
+          })
+    }
     case 'gk:drawBackground':
       return block(
         'sz_gk_draw_background',
@@ -3885,6 +3973,16 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_time_survived', {})
     case 'gk:kills':
       return block('sz_gk_kills', {})
+    case 'gk:cameraX':
+      return block('sz_gk_camera_x', {})
+    case 'gk:cameraY':
+      return block('sz_gk_camera_y', {})
+    case 'gk:mouseX':
+      return block('sz_gk_mouse_x', {})
+    case 'gk:mouseY':
+      return block('sz_gk_mouse_y', {})
+    case 'gk:mouseDown':
+      return block('sz_gk_mouse_down', {})
     case 'inputKeyPressed':
       return block('sz_input_key_pressed', { KEY: expr.key })
     case 'inputPointer':

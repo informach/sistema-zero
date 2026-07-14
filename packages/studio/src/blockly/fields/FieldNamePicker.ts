@@ -287,10 +287,12 @@ const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
   sz_js_try_catch: ['ERR'],
   sz_val_array_map: ['ITEM'],
   sz_val_array_find: ['ITEM'],
-  // Ganchos do Jogo 2D Avançado: o tempo (dt) e o pincel (ctx) são nomes LOCAIS
-  // dos corpos "A cada quadro"/"Desenhar o jogo"/"Criar a aparência".
+  // Ganchos do Jogo 2D Avançado: o tempo (dt), o pincel (ctx) e a posição do
+  // clique (px/py) são nomes LOCAIS dos corpos dos ganchos.
   sz_gk_on_update: ['DT'],
   sz_gk_on_draw: ['PARAM'],
+  sz_gk_on_draw_hud: ['PARAM'],
+  sz_gk_on_game_click: ['PX', 'PY'],
   sz_gk_define_look: ['CTX'],
 }
 

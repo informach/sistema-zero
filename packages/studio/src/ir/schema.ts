@@ -208,6 +208,12 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:healthOf'; charVar: string })
   | (JSExprCommon & { type: 'gk:timeSurvived' })
   | (JSExprCommon & { type: 'gk:kills' })
+  // R2: câmera (canto visível do mundo) e mouse em coords do JOGO.
+  | (JSExprCommon & { type: 'gk:cameraX' })
+  | (JSExprCommon & { type: 'gk:cameraY' })
+  | (JSExprCommon & { type: 'gk:mouseX' })
+  | (JSExprCommon & { type: 'gk:mouseY' })
+  | (JSExprCommon & { type: 'gk:mouseDown' })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -545,6 +551,11 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:healthOf'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:timeSurvived'), ...idField }),
     z.object({ type: z.literal('gk:kills'), ...idField }),
+    z.object({ type: z.literal('gk:cameraX'), ...idField }),
+    z.object({ type: z.literal('gk:cameraY'), ...idField }),
+    z.object({ type: z.literal('gk:mouseX'), ...idField }),
+    z.object({ type: z.literal('gk:mouseY'), ...idField }),
+    z.object({ type: z.literal('gk:mouseDown'), ...idField }),
     z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
     z.object({ type: z.literal('isFullscreen'), ...idField }),
@@ -2362,7 +2373,60 @@ export type JSStatement =
   // Canvas do núcleo funcionam dentro, como na figura do Jogo 2D).
   | (JSStatementCommon & { type: 'gk:onUpdate'; dtName: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:onDraw'; ctxName: string; body: JSStatement[] })
+  // HUD: desenha DEPOIS do mundo, SEM a câmera (placar/barras presos na tela).
+  | (JSStatementCommon & { type: 'gk:onDrawHud'; ctxName: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:drawBackground'; color: string; grid: boolean })
+  // 🎞️ Folha de quadros: recorte fw×fh + animação por faixa de quadros (guarda
+  // de transição no runtime — re-tocar a mesma não reinicia).
+  | (JSStatementCommon & {
+      type: 'gk:setSheet'
+      charVar: string
+      image: string
+      fw: number | JSExpr
+      fh: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:playAnim'
+      charVar: string
+      from: number | JSExpr
+      to: number | JSExpr
+      fps: number | JSExpr
+    })
+  // 🎥 Câmera que segue um personagem num mundo maior que a tela.
+  | (JSStatementCommon & {
+      type: 'gk:cameraFollow'
+      charVar: string
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:cameraStop' })
+  // ➡️ Velocidade própria (tiro reto/mirado) e giro.
+  | (JSStatementCommon & {
+      type: 'gk:launchTowards'
+      charVar: string
+      targetVar: string
+      speed: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:moveByVelocity'; charVar: string; dtVar: string })
+  | (JSStatementCommon & { type: 'gk:setAngle'; charVar: string; degrees: number | JSExpr })
+  // 🖱️ Clique no jogo em coords internas (letterbox e câmera resolvidos).
+  | (JSStatementCommon & {
+      type: 'gk:onGameClick'
+      xName: string
+      yName: string
+      body: JSStatement[]
+    })
+  // 📊 Barra genérica (vida grande/mana/progresso) — o HUD do P24 em canvas.
+  | (JSStatementCommon & {
+      type: 'gk:drawBar'
+      current: number | JSExpr
+      max: number | JSExpr
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+      color: string
+    })
   | (JSStatementCommon & {
       type: 'gk:createCharacter'
       varName: string
@@ -4533,6 +4597,73 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:onDrawHud'),
+      ctxName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setSheet'),
+      charVar: irText(),
+      image: irText(),
+      fw: z.union([JSExprSchema, z.number()]),
+      fh: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:playAnim'),
+      charVar: irText(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cameraFollow'),
+      charVar: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:cameraStop'), ...idField }),
+    z.object({
+      type: z.literal('gk:launchTowards'),
+      charVar: irText(),
+      targetVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:moveByVelocity'),
+      charVar: irText(),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setAngle'),
+      charVar: irText(),
+      degrees: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:onGameClick'),
+      xName: irText(),
+      yName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawBar'),
+      current: z.union([JSExprSchema, z.number()]),
+      max: z.union([JSExprSchema, z.number()]),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:drawBackground'),
       color: irText(),
       grid: z.boolean(),
@@ -5260,6 +5391,16 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:endGame',
   'gk:onUpdate',
   'gk:onDraw',
+  'gk:onDrawHud',
+  'gk:setSheet',
+  'gk:playAnim',
+  'gk:cameraFollow',
+  'gk:cameraStop',
+  'gk:launchTowards',
+  'gk:moveByVelocity',
+  'gk:setAngle',
+  'gk:onGameClick',
+  'gk:drawBar',
   'gk:drawBackground',
   'gk:createCharacter',
   'gk:moveWithKeys',

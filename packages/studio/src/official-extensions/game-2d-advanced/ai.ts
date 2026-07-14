@@ -95,6 +95,23 @@ API global injetada como window.SZGameKit:
   "hurt"|"powerup"|"win"|"gameover"|"click") tons sintetizados prontos;
   playTone(freqHz, ms) synth cru. Áudio "acorda" no 1º gesto (clique/tecla) —
   automático.
+- 🎞️ Folha de quadros: setSheet(c, "imagem", fw, fh) cola a spritesheet
+  (carregada por loadImage) no personagem; playAnim(c, de, até, fps) toca a
+  faixa em loop — PODE rodar todo quadro (guarda de transição: repetir a mesma
+  não reinicia). A folha VENCE a imagem estática no desenho.
+- 🎥 Câmera: cameraFollow(c, mundoW, mundoH) liga o mundo maior (onDraw vira
+  world-space; keepOnScreen/spawner/cull passam a valer o mundo/retângulo
+  visível); cameraStop(); cameraX()/cameraY() = canto visível.
+  onDrawHud(fn(ctx)) desenha DEPOIS, SEM câmera (placar/barras presos na tela).
+- ➡️ Tiro: launchTowards(quem, alvo, v) mira UMA vez (seta vx/vy pelo vetor
+  normalizado × v); moveByVelocity(quem, dt) aplica × dt a cada quadro. Com
+  const tiro = spawnFromMold(...) fecha tiro reto E mirado. setAngle(c, graus)
+  gira o desenho em volta do centro.
+- 🖱️ Mouse/toque (coords do JOGO, letterbox e câmera resolvidos):
+  onGameClick(fn(px, py)) roda a cada clique/toque no canvas; mouseX()/
+  mouseY()/mouseDown() para mirar e arrastar.
+- 📊 drawBar(atual, max, x, y, w, h, cor): barra proporcional (vida/mana/
+  progresso) — ideal dentro do onDrawHud.
 
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.

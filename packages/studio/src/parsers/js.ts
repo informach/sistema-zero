@@ -3913,6 +3913,11 @@ function matchGameKitExpr(node: Node): JSExpr | null {
   }
   if (method === 'timeSurvived' && args.length === 0) return { type: 'gk:timeSurvived' }
   if (method === 'kills' && args.length === 0) return { type: 'gk:kills' }
+  if (method === 'cameraX' && args.length === 0) return { type: 'gk:cameraX' }
+  if (method === 'cameraY' && args.length === 0) return { type: 'gk:cameraY' }
+  if (method === 'mouseX' && args.length === 0) return { type: 'gk:mouseX' }
+  if (method === 'mouseY' && args.length === 0) return { type: 'gk:mouseY' }
+  if (method === 'mouseDown' && args.length === 0) return { type: 'gk:mouseDown' }
   return null
 }
 
@@ -4189,6 +4194,92 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ctxName: ctxParam ?? 'ctx',
         body: bodyOfFn(args[0], source, ctx),
       }
+    }
+    case 'onDrawHud': {
+      // generator: SZGameKit.onDrawHud(function (ctx) {…}) — HUD sem câmera.
+      if (!isFn(args[0])) return null
+      const ctxParam = identifierName(args[0].params?.[0])
+      if (ctxParam) ctx.ctxVars.add(ctxParam)
+      return {
+        type: 'gk:onDrawHud',
+        ctxName: ctxParam ?? 'ctx',
+        body: bodyOfFn(args[0], source, ctx),
+      }
+    }
+    case 'onGameClick': {
+      // generator: SZGameKit.onGameClick(function (px, py) {…})
+      if (!isFn(args[0])) return null
+      return {
+        type: 'gk:onGameClick',
+        xName: identifierName(args[0].params?.[0]) ?? 'px',
+        yName: identifierName(args[0].params?.[1]) ?? 'py',
+        body: bodyOfFn(args[0], source, ctx),
+      }
+    }
+    case 'setSheet': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const fw = toExpr(args[2], ctx)
+      const fh = toExpr(args[3], ctx)
+      return isSimpleValue(fw) && isSimpleValue(fh)
+        ? { type: 'gk:setSheet', charVar, image: args[1].value as string, fw, fh }
+        : null
+    }
+    case 'playAnim': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const from = toExpr(args[1], ctx)
+      const to = toExpr(args[2], ctx)
+      const fps = toExpr(args[3], ctx)
+      return isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
+        ? { type: 'gk:playAnim', charVar, from, to, fps }
+        : null
+    }
+    case 'cameraFollow': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const w = toExpr(args[1], ctx)
+      const h = toExpr(args[2], ctx)
+      return isSimpleValue(w) && isSimpleValue(h)
+        ? { type: 'gk:cameraFollow', charVar, w, h }
+        : null
+    }
+    case 'cameraStop':
+      return { type: 'gk:cameraStop' }
+    case 'launchTowards': {
+      const charVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      if (!charVar || !targetVar) return null
+      const speed = toExpr(args[2], ctx)
+      return isSimpleValue(speed) ? { type: 'gk:launchTowards', charVar, targetVar, speed } : null
+    }
+    case 'moveByVelocity': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[1])
+      return charVar && dtVar ? { type: 'gk:moveByVelocity', charVar, dtVar } : null
+    }
+    case 'setAngle': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const degrees = toExpr(args[1], ctx)
+      return isSimpleValue(degrees) ? { type: 'gk:setAngle', charVar, degrees } : null
+    }
+    case 'drawBar': {
+      const current = toExpr(args[0], ctx)
+      const max = toExpr(args[1], ctx)
+      const x = toExpr(args[2], ctx)
+      const y = toExpr(args[3], ctx)
+      const w = toExpr(args[4], ctx)
+      const h = toExpr(args[5], ctx)
+      if (args[6]?.type !== 'StringLiteral') return null
+      return isSimpleValue(current) &&
+        isSimpleValue(max) &&
+        isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(w) &&
+        isSimpleValue(h)
+        ? { type: 'gk:drawBar', current, max, x, y, w, h, color: args[6].value as string }
+        : null
     }
     case 'drawBackground': {
       // generator: SZGameKit.drawBackground("#0f3460", true)
@@ -7019,6 +7110,11 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:healthOf':
     case 'gk:timeSurvived':
     case 'gk:kills':
+    case 'gk:cameraX':
+    case 'gk:cameraY':
+    case 'gk:mouseX':
+    case 'gk:mouseY':
+    case 'gk:mouseDown':
     case 'inputKeyPressed':
     case 'inputPointer':
     case 'isFullscreen':

@@ -84,6 +84,8 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:onEnterState':
     case 'gk:onUpdate':
     case 'gk:onDraw':
+    case 'gk:onDrawHud':
+    case 'gk:onGameClick':
     case 'gk:onEvent':
     case 'gk:forEachActive':
     case 'gk:defineLook':
@@ -1537,6 +1539,40 @@ function compileStatementCode(
       )
       return `${pad}SZGameKit.onDraw(function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}});`
     }
+    case 'gk:onDrawHud': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onDrawHud(function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}});`
+    }
+    case 'gk:onGameClick': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onGameClick(function (${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) {\n${body}\n${pad}});`
+    }
+    case 'gk:setSheet':
+      return `${pad}SZGameKit.setSheet(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.fw), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fh), 0, identifiers, recAt(base))});`
+    case 'gk:playAnim':
+      return `${pad}SZGameKit.playAnim(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
+    case 'gk:cameraFollow':
+      return `${pad}SZGameKit.cameraFollow(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
+    case 'gk:cameraStop':
+      return `${pad}SZGameKit.cameraStop();`
+    case 'gk:launchTowards':
+      return `${pad}SZGameKit.launchTowards(${identifiers.get(stmt.charVar)}, ${identifiers.get(stmt.targetVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'gk:moveByVelocity':
+      return `${pad}SZGameKit.moveByVelocity(${identifiers.get(stmt.charVar)}, ${identifiers.get(stmt.dtVar)});`
+    case 'gk:setAngle':
+      return `${pad}SZGameKit.setAngle(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.degrees), 0, identifiers, recAt(base))});`
+    case 'gk:drawBar':
+      return `${pad}SZGameKit.drawBar(${compileExpr(valueToExpr(stmt.current), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.max), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
     case 'gk:drawBackground':
       return `${pad}SZGameKit.drawBackground(${JSON.stringify(stmt.color)}, ${stmt.grid ? 'true' : 'false'});`
     case 'gk:createCharacter': {
@@ -3314,8 +3350,53 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'gk:onDraw':
+    case 'gk:onDrawHud':
       names.add(stmt.ctxName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:onGameClick':
+      names.add(stmt.xName)
+      names.add(stmt.yName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:setSheet':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.fw), names)
+      collectExprIdentifiers(valueToExpr(stmt.fh), names)
+      return
+    case 'gk:playAnim':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.from), names)
+      collectExprIdentifiers(valueToExpr(stmt.to), names)
+      collectExprIdentifiers(valueToExpr(stmt.fps), names)
+      return
+    case 'gk:cameraFollow':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'gk:cameraStop':
+      return
+    case 'gk:launchTowards':
+      names.add(stmt.charVar)
+      names.add(stmt.targetVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'gk:moveByVelocity':
+      names.add(stmt.charVar)
+      names.add(stmt.dtVar)
+      return
+    case 'gk:setAngle':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.degrees), names)
+      return
+    case 'gk:drawBar':
+      collectExprIdentifiers(valueToExpr(stmt.current), names)
+      collectExprIdentifiers(valueToExpr(stmt.max), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
       return
     case 'gk:createCharacter':
       names.add(stmt.varName)

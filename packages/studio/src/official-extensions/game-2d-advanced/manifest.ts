@@ -4,7 +4,7 @@ import { arenaGoblinsExample, cacaMoedasExample } from './examples'
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.3.0',
+  version: '0.4.0',
   description:
     'A base de um jogo 2D profissional, pronta para você inventar as regras. Máquina de estados, laço com delta-time (dt), telas de UI, personagens, e a arquitetura de verdade: avisos (eventos), moldes e enxames de inimigos que nascem sozinhos, comportamentos (perseguir/vaguear), combate (vida, dano, empurrão), faíscas, missão e som importado. O motor pronto fica no runtime; a mecânica você escreve nos ganchos, com os blocos — igual a quem programa jogos na unha.',
   category: 'games',
@@ -182,6 +182,41 @@ efeitos.
 dentro, no tamanho-base que você declarar) e dá um nome. Um molde pode usá-la —
 aí TODO o enxame ganha esse visual vetorial, esticado para o tamanho do molde.
 Ou use **Desenhar a aparência** em qualquer lugar e tamanho (ex.: o herói).
+
+### 🎞️ Quadros & animação (pixel art viva)
+
+**Usar a folha de quadros** cola uma spritesheet (do Pinta ou baixada) no
+personagem, dizendo o tamanho de cada quadro. **Tocar a animação** roda uma
+faixa de quadros em loop — pode chamar TODO quadro ("se andando, tocar andar;
+senão, tocar parado"): repetir a mesma não reinicia. Desenhou no Pinta? O
+seletor lista as animações da folha e preenche os números.
+
+### 🎥 Câmera (mundos maiores que a tela)
+
+**Fazer a câmera seguir** liga um mundo maior: a tela vira uma janela que
+acompanha o personagem, presa nas bordas do mundo. O "Desenhar o jogo" passa a
+desenhar o MUNDO; **Desenhar por cima (HUD)** desenha DEPOIS, preso na tela
+(placar, barras) — a separação profissional entre mundo e painel. **o canto
+x/y da câmera** dizem que pedaço do mundo aparece.
+
+### ➡️ Tiro e giro
+
+**Lançar na direção** mira UMA vez (guarda a velocidade no personagem);
+**Mover pela velocidade** anda com ela a cada quadro — com o "Nascer 1 e
+chamar de", isso é o tiro reto e o tiro mirado dos jogos de nave. **Girar
+para X graus** roda o desenho em volta do centro.
+
+### 🖱️ Mouse e toque
+
+**Quando clicar no jogo** roda os blocos com a posição já nas coordenadas do
+JOGO (o esticado da tela e a câmera são resolvidos por você não se
+preocupar). **o mouse x/y** e **o mouse está apertado?** completam: tower
+defense, point-and-click, desenhar com o dedo.
+
+### 📊 Barra
+
+**Desenhar uma barra de atual/máximo** — vida grande, energia, progresso.
+Combine com "a vida de" e ponha no HUD.
 
 ### 🔊 Som
 

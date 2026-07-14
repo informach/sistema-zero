@@ -400,6 +400,16 @@ export function compileExpr(
       return `SZGameKit.healthOf(${identifiers.get(expr.charVar)})`
     case 'gk:timeSurvived':
       return 'SZGameKit.timeSurvived()'
+    case 'gk:cameraX':
+      return 'SZGameKit.cameraX()'
+    case 'gk:cameraY':
+      return 'SZGameKit.cameraY()'
+    case 'gk:mouseX':
+      return 'SZGameKit.mouseX()'
+    case 'gk:mouseY':
+      return 'SZGameKit.mouseY()'
+    case 'gk:mouseDown':
+      return 'SZGameKit.mouseDown()'
     case 'gk:kills':
       return 'SZGameKit.kills()'
     case 'inputKeyPressed':
