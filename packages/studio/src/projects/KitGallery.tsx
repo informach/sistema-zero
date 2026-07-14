@@ -44,6 +44,7 @@ const KIT_EMOJI: Record<string, string> = {
   Balão: '🎈',
   'Aventura com câmera': '🎥',
   'Caça-moedas profissional': '🪙',
+  'Arena dos Goblins': '👹',
   'Boneco de formas': '🪆',
   'Noite enevoada': '🌙',
   'Enxame que gira': '🐝',

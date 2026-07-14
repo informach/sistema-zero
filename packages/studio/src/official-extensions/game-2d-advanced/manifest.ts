@@ -1,17 +1,17 @@
 import type { ExtensionManifest } from '#extensions'
-import { cacaMoedasExample } from './examples'
+import { arenaGoblinsExample, cacaMoedasExample } from './examples'
 
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.1.0',
+  version: '0.2.0',
   description:
-    'A base de um jogo 2D profissional, pronta para você inventar as regras: máquina de estados (menu, jogando, pausado, fim… e os seus), laço com delta-time (dt), carregamento de imagens com tela de espera, telas de UI personalizáveis com botões, personagens nomeados e canvas responsivo com resolução fixa. O motor pronto fica no runtime; a mecânica do jogo é você quem escreve, nos ganchos "A cada quadro" e "Desenhar o jogo", com os blocos do núcleo.',
+    'A base de um jogo 2D profissional, pronta para você inventar as regras. Máquina de estados, laço com delta-time (dt), telas de UI, personagens, e a arquitetura de verdade: avisos (eventos), moldes e enxames de inimigos que nascem sozinhos, comportamentos (perseguir/vaguear), combate (vida, dano, empurrão), faíscas, missão e som importado. O motor pronto fica no runtime; a mecânica você escreve nos ganchos, com os blocos — igual a quem programa jogos na unha.',
   category: 'games',
   official: true,
   enabledByDefault: false,
-  // mouse: os botões das telas de UI são clicáveis.
-  permissions: ['canvas', 'keyboard', 'mouse'],
+  // mouse: os botões das telas de UI são clicáveis. audio: sons e efeitos.
+  permissions: ['canvas', 'keyboard', 'mouse', 'audio'],
   docs: `## Jogo 2D Avançado
 
 Esta extensão te dá a **base de um jogo profissional de verdade** — a mesma
@@ -112,6 +112,68 @@ O personagem é um objeto comum: quem já conhece Objetos pode ler e mudar
 
 > ⚠️ Use o Jogo 2D Avançado **ou** o Jogo 2D no mesmo projeto — os dois criam a
 > própria tela e podem brigar pelo canvas.
+
+## A arquitetura de verdade (como o Frank monta)
+
+Estes blocos são as PEÇAS que os programadores de jogo usam de verdade. Você as
+liga do seu jeito — é assim que se aprende a construir jogos grandes.
+
+### 📢 Avisos (eventos)
+
+O jeito profissional de ligar as partes do jogo sem elas se conhecerem: uma parte
+"avisa" que algo aconteceu, e outra "escuta". Ex.: quando um inimigo morre, avise
+\`inimigo:morreu\`; em outro canto, "Quando chegar o aviso inimigo:morreu" some 1
+ponto e toca um som. Assim o código não vira um nó.
+
+### 👾 Moldes & enxames
+
+- **Criar o molde** — os DADOS de um tipo de personagem (inimigo, moeda, tiro):
+  tamanho, vida, velocidade, dano, cor/imagem/aparência. Defina UMA vez.
+- **Nascer 1 do molde** / **A cada N s, nascer numa borda** — faça quantos quiser;
+  o "spawner" solta inimigos sem parar (jogos de sobrevivência).
+- **Para cada vivo do molde… fazer** — repete para todos do enxame (mover, testar
+  colisão). "item" é o da vez.
+- **Recolher** / **Recolher quem saiu da tela** — guarda personagens para
+  reaproveitar (pooling) — o segredo para o jogo não engasgar com muitos.
+- **Desenhar todos vivos** / **quantos vivos** — desenha e conta o enxame.
+
+### 🎯 Comportamentos
+
+Movimentos prontos que os inimigos usam: **perseguir** o herói, **vaguear** ao
+acaso, **virar** para o lado do alvo. Use dentro do "Para cada vivo" no "A cada
+quadro" — é o mesmo cálculo que se faz à mão (ir na direção × velocidade × tempo).
+
+### ❤️ Combate
+
+**Machucar** (tira vida e deixa piscando e invencível um tempinho), **empurrar**
+(solavanco que diminui sozinho), **barra de vida**, **encostou (círculo)**, **a
+vida acabou?** e **a vida de**. O combate de jogo de ação, montável por você.
+
+### 🖥️ HUD & Missão
+
+**Vencer quando sobreviver X s ou derrotar N** define a missão (ganhou → tela de
+fim + aviso \`missao:completa\`). **Contar +1 inimigo derrotado**, **cronômetro**,
+**tempo jogando** e **quantos derrotei** completam o placar.
+
+### ✨ Faíscas
+
+**Criar o efeito** é a RECEITA de uma explosão de faíscas (feita de dados: quantas,
+cor, tamanho, duração, velocidade, gravidade). **Soltar o efeito** estoura uma;
+**Desenhar todas as faíscas** as anima (caem e somem). Poucos blocos, muitos
+efeitos.
+
+### 🎨 Aparência (desenho vetorial)
+
+**Criar a aparência** desenha um personagem com formas (do cantinho 0,0 para
+dentro) e dá um nome. Um molde pode usá-la — aí TODO o enxame ganha esse visual
+vetorial. Ou use **Desenhar a aparência** em qualquer lugar (ex.: o herói).
+
+### 🔊 Som
+
+Importe sons em **"Imagens e sons"** (efeitos ou música que você baixou/gravou),
+**Carregue o som** dando um nome, e **Toque o som** por esse nome — combina com os
+avisos ("Quando chegar o aviso inimigo:morreu, tocar o som explosao"). Sem
+importar nada, **Tocar o som pronto** (moeda/batida/explosão…) já funciona.
 `,
-  examples: [cacaMoedasExample],
+  examples: [cacaMoedasExample, arenaGoblinsExample],
 }
