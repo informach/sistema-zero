@@ -63,22 +63,26 @@ export function Modal({
           onClose()
         }}
       >
+        {/* max-h + corpo rolável: conteúdo comprido (ex.: extensões) rola por
+            dentro com header/footer fixos — antes transbordava e cortava. */}
         <div
           className={cn(
-            'w-full max-w-[640px] min-w-[320px] rounded-lg border border-sz-border bg-sz-panel shadow-2xl',
+            'flex max-h-[85vh] w-full max-w-[640px] min-w-[320px] flex-col rounded-lg border border-sz-border bg-sz-panel shadow-2xl',
             className,
           )}
           role="document"
         >
           <header
             id={titleId}
-            className="border-b border-sz-border px-5 py-3.5 text-sm font-semibold text-sz-fg"
+            className="shrink-0 border-b border-sz-border px-5 py-3.5 text-sm font-semibold text-sz-fg"
           >
             {title}
           </header>
-          <div className="px-5 py-4 text-sm text-sz-fg-soft">{children}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 text-sm text-sz-fg-soft">
+            {children}
+          </div>
           {footer && (
-            <footer className="flex justify-end gap-2 border-t border-sz-border px-5 py-3.5">
+            <footer className="flex shrink-0 justify-end gap-2 border-t border-sz-border px-5 py-3.5">
               {footer}
             </footer>
           )}

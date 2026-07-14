@@ -26,7 +26,9 @@ const CLIPBOARD_VERSION = 1
 /** Rótulos amigáveis das extensões oficiais para os avisos ao colar. */
 const EXTENSION_LABELS: Record<string, string> = {
   'game-2d': 'Jogo 2D',
+  'game-2d-advanced': 'Jogo 2D Avançado',
   'game-3d': 'Jogo 3D',
+  'game-3d-advanced': 'Jogo 3D Avançado',
 }
 
 export interface BlockClipboardPayload {
@@ -61,7 +63,9 @@ export interface PasteTargetHandlers {
 /** Mapeia o prefixo do `type` do bloco para o id da extensão oficial. */
 function extensionIdForBlockType(type: string): string | null {
   if (type.startsWith('sz_g2d_')) return 'game-2d'
+  if (type.startsWith('sz_g3k_')) return 'game-3d-advanced'
   if (type.startsWith('sz_g3d_')) return 'game-3d'
+  if (type.startsWith('sz_gk_')) return 'game-2d-advanced'
   return null
 }
 

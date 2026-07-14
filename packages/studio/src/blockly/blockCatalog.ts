@@ -1,5 +1,7 @@
 import { gameTwoDBlocks } from '../official-extensions/game-2d/blocks'
+import { gameKitBlocks } from '../official-extensions/game-2d-advanced/blocks'
 import { gameThreeDBlocks } from '../official-extensions/game-3d/blocks'
+import { gameKit3DBlocks } from '../official-extensions/game-3d-advanced/blocks'
 import { ADVANCED_BLOCKS } from './blocks/advanced'
 import { CANVAS_BLOCKS } from './blocks/canvas'
 import { CSS_BLOCKS } from './blocks/css'
@@ -91,7 +93,9 @@ const GROUPS: readonly [string, readonly BlockLike[]][] = [
   ['Classes', OOP_BLOCKS],
   ['Avançado', ADVANCED_BLOCKS],
   ['Jogo 2D', gameTwoDBlocks],
+  ['Jogo 2D Avançado', gameKitBlocks],
   ['Jogo 3D', gameThreeDBlocks],
+  ['Jogo 3D Avançado', gameKit3DBlocks],
 ]
 
 /**

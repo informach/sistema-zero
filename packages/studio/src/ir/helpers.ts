@@ -111,6 +111,33 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
     case 'g3d:animate':
+    case 'gk:addButton':
+    case 'gk:onEnterState':
+    case 'gk:onUpdate':
+    case 'gk:onDraw':
+    case 'gk:onEvent':
+    case 'gk:onDrawHud':
+    case 'gk:onGameClick':
+    case 'gk:rpgOnTalk':
+    case 'gk:rpgOnMap':
+    case 'gk:rpgOnBattleEnd':
+    case 'gk:rpgCutscene':
+    case 'gk:rpgOnStep':
+    case 'gk:rpgMenu':
+    case 'gk:rpgOption':
+    case 'gk:forEachActive':
+    case 'gk:defineLook':
+    case 'g3k:defineMold':
+    case 'g3k:forEachAlive':
+    case 'g3k:onUpdate':
+    case 'g3k:onEnterEntityState':
+    case 'g3k:onEntityStateUpdate':
+    case 'g3k:onExitEntityState':
+    case 'g3k:forEachNear':
+    case 'g3k:onEntityDeath':
+    case 'g3k:addButton':
+    case 'g3k:onEnterState':
+    case 'g3k:onEvent':
     case 'funcDecl':
     case 'forEach':
     case 'setTimeout':

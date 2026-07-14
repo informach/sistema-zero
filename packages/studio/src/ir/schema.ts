@@ -186,6 +186,67 @@ export type JSExpr =
     })
   | (JSExprCommon & { type: 'g3d:onGround'; worldVar: string; objVar: string })
   | (JSExprCommon & { type: 'g3d:groundHeight'; worldVar: string; objVar: string })
+  // Jogo 2D Avançado (extensão game-2d-advanced) — valores: dimensões internas
+  // do jogo, estado atual da máquina, personagens (posição/encosto AABB) e
+  // tecla apertada (mapa lowercase do kit).
+  | (JSExprCommon & { type: 'gk:gameWidth' })
+  | (JSExprCommon & { type: 'gk:gameHeight' })
+  | (JSExprCommon & { type: 'gk:gameState' })
+  | (JSExprCommon & { type: 'gk:stateIs'; name: string })
+  | (JSExprCommon & { type: 'gk:charactersTouch'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'gk:charX'; charVar: string })
+  | (JSExprCommon & { type: 'gk:charY'; charVar: string })
+  | (JSExprCommon & { type: 'gk:keyDown'; key: string })
+  // Edge-trigger: true SÓ no quadro do aperto (tiro 1-por-aperto sem flag manual).
+  | (JSExprCommon & { type: 'gk:keyPressed'; key: string })
+  // Jogo 2D Avançado (P24) — valores: enxame, combate, HUD/missão.
+  | (JSExprCommon & { type: 'gk:countActive'; mold: string })
+  | (JSExprCommon & { type: 'gk:touchCircle'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'gk:isDead'; charVar: string })
+  // O gate do P24 ("if (applied)") em forma de pergunta — protege o dano.
+  | (JSExprCommon & { type: 'gk:isInvincible'; charVar: string })
+  | (JSExprCommon & { type: 'gk:healthOf'; charVar: string })
+  | (JSExprCommon & { type: 'gk:timeSurvived' })
+  | (JSExprCommon & { type: 'gk:kills' })
+  // R2: câmera (canto visível do mundo) e mouse em coords do JOGO.
+  | (JSExprCommon & { type: 'gk:cameraX' })
+  | (JSExprCommon & { type: 'gk:cameraY' })
+  | (JSExprCommon & { type: 'gk:mouseX' })
+  | (JSExprCommon & { type: 'gk:mouseY' })
+  | (JSExprCommon & { type: 'gk:mouseDown' })
+  // 🧙 Kit RPG — valores: célula→px, flags, itens e resultado da batalha.
+  | (JSExprCommon & { type: 'gk:rpgCell'; n: number | JSExpr })
+  | (JSExprCommon & { type: 'gk:rpgHasFlag'; flag: string })
+  | (JSExprCommon & { type: 'gk:rpgHasItem'; item: string })
+  | (JSExprCommon & { type: 'gk:rpgBattleWon' })
+  | (JSExprCommon & { type: 'gk:rpgHasSave' })
+  | (JSExprCommon & { type: 'gk:rpgLevel' })
+  | (JSExprCommon & { type: 'gk:rpgXp' })
+  // 🥷 Ação em tempo real: "o golpe de A acertou B?" (caixa de golpe à frente).
+  | (JSExprCommon & { type: 'gk:didHit'; aVar: string; bVar: string })
+  // Jogo 3D Avançado (extensão game-3d-advanced) — valores: mundo, enxames,
+  // teclas, posição/vida/estado da entidade, mira e colisão por distância.
+  | (JSExprCommon & { type: 'g3k:worldSize' })
+  | (JSExprCommon & { type: 'g3k:countAlive'; mold: string })
+  | (JSExprCommon & { type: 'g3k:keyDown'; key: string })
+  | (JSExprCommon & { type: 'g3k:keyPressed'; key: string })
+  | (JSExprCommon & { type: 'g3k:posOf'; axis: string; charVar: string })
+  // "Ainda está no jogo?" — o teste de alvo válido (pode ter sido derrotado).
+  | (JSExprCommon & { type: 'g3k:exists'; charVar: string })
+  | (JSExprCommon & { type: 'g3k:entityStateIs'; charVar: string; state: string })
+  // O "dot > 0.999" da torre do curso em forma de pergunta (mirar → atirar).
+  | (JSExprCommon & { type: 'g3k:isAimingAt'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'g3k:touches'; aVar: string; bVar: string; dist: number | JSExpr })
+  | (JSExprCommon & { type: 'g3k:healthOf'; charVar: string })
+  | (JSExprCommon & { type: 'g3k:stateIs'; name: string })
+  | (JSExprCommon & { type: 'g3k:gameState' })
+  // Gaveta de dados por entidade (cronômetro/alvo/contador) + segundos no estado.
+  | (JSExprCommon & { type: 'g3k:entityValue'; key: string; charVar: string })
+  | (JSExprCommon & { type: 'g3k:stateTime'; charVar: string })
+  | (JSExprCommon & { type: 'g3k:onGround'; charVar: string })
+  // Mira/clique no mundo: mouse sobre a entidade (bool) e ponto do chão (núm).
+  | (JSExprCommon & { type: 'g3k:pointerOver'; charVar: string })
+  | (JSExprCommon & { type: 'g3k:groundPoint'; axis: 'x' | 'y' | 'z' })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -502,6 +563,72 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       objVar: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('gk:gameWidth'), ...idField }),
+    z.object({ type: z.literal('gk:gameHeight'), ...idField }),
+    z.object({ type: z.literal('gk:gameState'), ...idField }),
+    z.object({ type: z.literal('gk:stateIs'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:charactersTouch'),
+      aVar: irText(),
+      bVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:charX'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:charY'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:keyDown'), key: irText(), ...idField }),
+    z.object({ type: z.literal('gk:keyPressed'), key: irText(), ...idField }),
+    z.object({ type: z.literal('gk:countActive'), mold: irText(), ...idField }),
+    z.object({ type: z.literal('gk:touchCircle'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:isDead'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:isInvincible'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:healthOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:timeSurvived'), ...idField }),
+    z.object({ type: z.literal('gk:kills'), ...idField }),
+    z.object({ type: z.literal('gk:cameraX'), ...idField }),
+    z.object({ type: z.literal('gk:cameraY'), ...idField }),
+    z.object({ type: z.literal('gk:mouseX'), ...idField }),
+    z.object({ type: z.literal('gk:mouseY'), ...idField }),
+    z.object({ type: z.literal('gk:mouseDown'), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgCell'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgHasFlag'), flag: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgHasItem'), item: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgBattleWon'), ...idField }),
+    z.object({ type: z.literal('gk:rpgHasSave'), ...idField }),
+    z.object({ type: z.literal('gk:rpgLevel'), ...idField }),
+    z.object({ type: z.literal('gk:rpgXp'), ...idField }),
+    z.object({ type: z.literal('gk:didHit'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:worldSize'), ...idField }),
+    z.object({ type: z.literal('g3k:countAlive'), mold: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:keyDown'), key: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:keyPressed'), key: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:posOf'), axis: irText(), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:exists'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:entityStateIs'),
+      charVar: irText(),
+      state: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:isAimingAt'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:touches'),
+      aVar: irText(),
+      bVar: irText(),
+      dist: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:healthOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:stateIs'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:gameState'), ...idField }),
+    z.object({ type: z.literal('g3k:entityValue'), key: irText(), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:stateTime'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:onGround'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:pointerOver'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:groundPoint'), axis: z.enum(['x', 'y', 'z']), ...idField }),
     z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
     z.object({ type: z.literal('isFullscreen'), ...idField }),
@@ -2272,6 +2399,675 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3d:playNote'; freq: number | JSExpr; ms: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:playEffect'; kind: string })
+  // Jogo 2D Avançado (extensão game-2d-advanced): esqueleto de jogo profissional
+  // (kit P9) — máquina de estados, loop com delta-time, telas de UI injetadas
+  // por JS e personagens nomeados. Config no setup; a mecânica a criança escreve
+  // nos ganchos (onUpdate/onDraw) com blocos do núcleo.
+  | (JSStatementCommon & {
+      type: 'gk:setup'
+      w: number | JSExpr
+      h: number | JSExpr
+      bg: string
+      accent: string
+    })
+  | (JSStatementCommon & { type: 'gk:start' })
+  // `name` = como o jogo chama a imagem; `asset` = nome do desenho no projeto.
+  | (JSStatementCommon & { type: 'gk:loadImage'; name: string; asset: string })
+  // `screen` das telas PRONTAS é um dos fixos: menu | pausa | carregando | fim.
+  | (JSStatementCommon & {
+      type: 'gk:setScreenText'
+      screen: string
+      title: ScreenText
+      text: ScreenText
+      button: ScreenText
+    })
+  | (JSStatementCommon & {
+      type: 'gk:createScreen'
+      name: string
+      title: ScreenText
+      text: ScreenText
+    })
+  | (JSStatementCommon & {
+      type: 'gk:addButton'
+      screen: string
+      label: ScreenText
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'gk:showScreen'; name: string })
+  | (JSStatementCommon & { type: 'gk:hideScreens' })
+  | (JSStatementCommon & { type: 'gk:setState'; name: string })
+  | (JSStatementCommon & { type: 'gk:onEnterState'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:pause' })
+  | (JSStatementCommon & { type: 'gk:resume' })
+  | (JSStatementCommon & { type: 'gk:returnToMenu' })
+  | (JSStatementCommon & { type: 'gk:endGame' })
+  // Ganchos do loop: o corpo do update recebe o delta-time (nome escolhido no
+  // bloco, padrão `dt`); o do draw recebe o pincel (padrão `ctx` — os blocos de
+  // Canvas do núcleo funcionam dentro, como na figura do Jogo 2D).
+  | (JSStatementCommon & { type: 'gk:onUpdate'; dtName: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:onDraw'; ctxName: string; body: JSStatement[] })
+  // HUD: desenha DEPOIS do mundo, SEM a câmera (placar/barras presos na tela).
+  | (JSStatementCommon & { type: 'gk:onDrawHud'; ctxName: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:drawBackground'; color: string; grid: boolean })
+  // 🎞️ Folha de quadros: recorte fw×fh + animação por faixa de quadros (guarda
+  // de transição no runtime — re-tocar a mesma não reinicia).
+  | (JSStatementCommon & {
+      type: 'gk:setSheet'
+      charVar: string
+      image: string
+      fw: number | JSExpr
+      fh: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:playAnim'
+      charVar: string
+      from: number | JSExpr
+      to: number | JSExpr
+      fps: number | JSExpr
+    })
+  // 🎥 Câmera que segue um personagem num mundo maior que a tela.
+  | (JSStatementCommon & {
+      type: 'gk:cameraFollow'
+      charVar: string
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:cameraStop' })
+  // ➡️ Velocidade própria (tiro reto/mirado) e giro.
+  | (JSStatementCommon & {
+      type: 'gk:launchTowards'
+      charVar: string
+      targetVar: string
+      speed: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:moveByVelocity'; charVar: string; dtVar: string })
+  | (JSStatementCommon & { type: 'gk:setAngle'; charVar: string; degrees: number | JSExpr })
+  // 🖱️ Clique no jogo em coords internas (letterbox e câmera resolvidos).
+  | (JSStatementCommon & {
+      type: 'gk:onGameClick'
+      xName: string
+      yName: string
+      body: JSStatement[]
+    })
+  // 📊 Barra genérica (vida grande/mana/progresso) — o HUD do P24 em canvas.
+  | (JSStatementCommon & {
+      type: 'gk:drawBar'
+      current: number | JSExpr
+      max: number | JSExpr
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+      color: string
+    })
+  // 🧙 Kit RPG (Canvas RPG Kit em blocos): grade+paredes, NPC+fala typewriter,
+  // flags de história, inventário, mapas com portas e batalha por turnos com
+  // menu PRONTO do motor (Atacar/Defender/Fugir).
+  | (JSStatementCommon & {
+      type: 'gk:rpgMoveGrid'
+      charVar: string
+      cell: number | JSExpr
+      dtVar: string
+    })
+  | (JSStatementCommon & { type: 'gk:rpgBlockCell'; cx: number | JSExpr; cy: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:rpgCreateNpc'
+      name: string
+      cx: number | JSExpr
+      cy: number | JSExpr
+      image: string
+      look: string
+    })
+  | (JSStatementCommon & { type: 'gk:rpgDrawNpcs' })
+  | (JSStatementCommon & { type: 'gk:rpgOnTalk'; npc: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:rpgSay'; text: number | JSExpr; speaker: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:rpgAddFlag'; flag: string })
+  | (JSStatementCommon & { type: 'gk:rpgGiveItem'; item: string; image: string })
+  | (JSStatementCommon & { type: 'gk:rpgRemoveItem'; item: string })
+  | (JSStatementCommon & {
+      type: 'gk:rpgDrawInventory'
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:rpgGoMap'; map: string })
+  | (JSStatementCommon & { type: 'gk:rpgOnMap'; map: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'gk:rpgCreateDoor'
+      cx: number | JSExpr
+      cy: number | JSExpr
+      map: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:rpgBattleStats'
+      hp: number | JSExpr
+      str: number | JSExpr
+      def: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:rpgBattleStart'
+      name: string
+      hp: number | JSExpr
+      str: number | JSExpr
+      def: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:rpgOnBattleEnd'; body: JSStatement[] })
+  // ⚔️ Batalha rica (progressão): golpe especial (energia), poção, XP e status.
+  | (JSStatementCommon & {
+      type: 'gk:rpgSetSpecial'
+      name: string
+      dmg: number | JSExpr
+      cost: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:rpgGivePotion'; name: string; heal: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:rpgBattleReward'; xp: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:rpgInflict'
+      who: string
+      status: string
+      turns: number | JSExpr
+    })
+  // 🎬 Cenas & NPCs vivos: folha de andar direcional + cutscene por gravação +
+  // NPC que anda/vagueia + gatilho ao pisar numa célula.
+  | (JSStatementCommon & {
+      type: 'gk:setWalkSheet'
+      charVar: string
+      image: string
+      fw: number | JSExpr
+      fh: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:rpgCutscene'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:rpgWait'; seconds: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:rpgFace'; npc: string; dir: string })
+  | (JSStatementCommon & {
+      type: 'gk:rpgNpcWalkTo'
+      npc: string
+      cx: number | JSExpr
+      cy: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:rpgNpcWander'; npc: string })
+  | (JSStatementCommon & {
+      type: 'gk:rpgOnStep'
+      cx: number | JSExpr
+      cy: number | JSExpr
+      body: JSStatement[]
+    })
+  // 💬 Menu de escolha (container + opções) + 💾 salvar/continuar.
+  | (JSStatementCommon & { type: 'gk:rpgMenu'; title: number | JSExpr; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:rpgOption'; label: number | JSExpr; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:rpgSave' })
+  | (JSStatementCommon & { type: 'gk:rpgLoad' })
+  // 🗺️ Mundo de tiles + profundidade: mapa em camadas (chão/topos), sólidos,
+  // Y-sort (quem está mais embaixo desenha por último), sombra e tremor da câmera.
+  | (JSStatementCommon & { type: 'gk:loadTilemap'; name: string; asset: string })
+  | (JSStatementCommon & { type: 'gk:drawTilemap'; name: string; layer: string })
+  | (JSStatementCommon & { type: 'gk:tilemapSolid'; name: string })
+  | (JSStatementCommon & { type: 'gk:drawShadow'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:drawByDepth'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:cameraShake'
+      intensity: number | JSExpr
+      seconds: number | JSExpr
+    })
+  // 🥷 Ação em tempo real (Zelda): golpe na direção + inimigo que patrulha + corações.
+  | (JSStatementCommon & {
+      type: 'gk:attackFacing'
+      charVar: string
+      range: number | JSExpr
+      duration: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:patrolAround'
+      charVar: string
+      ox: number | JSExpr
+      oy: number | JSExpr
+      radius: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:drawHearts'
+      x: number | JSExpr
+      y: number | JSExpr
+      current: number | JSExpr
+      max: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:createCharacter'
+      varName: string
+      image: string
+      w: number | JSExpr
+      h: number | JSExpr
+      speed: number | JSExpr
+      color: string
+    })
+  // `dtVar` = nome da variável de delta-time em escopo (o binder do onUpdate).
+  | (JSStatementCommon & { type: 'gk:moveWithKeys'; charVar: string; dtVar: string })
+  | (JSStatementCommon & { type: 'gk:keepOnScreen'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:drawCharacter'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:placeCharacter'
+      charVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:resetCharacter'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:setSpeedMultiplier'
+      charVar: string
+      factor: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:setPauseKey'; key: string })
+  // Jogo 2D Avançado (P24) — arquitetura de jogo real.
+  // 📢 Avisos (event bus): quem avisa não conhece quem reage.
+  | (JSStatementCommon & { type: 'gk:onEvent'; event: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:emit'; event: string })
+  // 👾 Moldes & enxames (tipo data-driven + pool + spawner + cull).
+  | (JSStatementCommon & {
+      type: 'gk:defineMold'
+      name: string
+      w: number | JSExpr
+      h: number | JSExpr
+      health: number | JSExpr
+      speed: number | JSExpr
+      damage: number | JSExpr
+      color: string
+      image: string
+      look: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:spawnFromMold'
+      mold: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:startSpawner'; mold: string; seconds: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:stopSpawner'; mold: string })
+  // `const NOME = SZGameKit.spawnFromMold(...)` — nasce 1 com apelido (tiro
+  // mirado/boss configurável), padrão do createCharacter.
+  | (JSStatementCommon & {
+      type: 'gk:spawnNamed'
+      varName: string
+      mold: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:forEachActive'
+      mold: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'gk:cullOffscreen'; mold: string; margin: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:recycle'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:drawActive'; mold: string })
+  // 🎨 Desenho (aparência vetorial reutilizável). O corpo desenha em coords LOCAIS
+  // (0,0 = canto), pincel `ctxName` bound — Canvas do núcleo funciona dentro.
+  // `baseW/baseH` = tamanho-base do desenho: drawLook/drawActive ESCALAM dele
+  // p/ o tamanho pedido (opcionais p/ IR v0.2 já salva — ausente = 40×40).
+  | (JSStatementCommon & {
+      type: 'gk:defineLook'
+      name: string
+      ctxName: string
+      baseW?: number | JSExpr
+      baseH?: number | JSExpr
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'gk:drawLook'
+      look: string
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  // 🎯 Comportamentos (steering: perseguir/vaguear/virar).
+  | (JSStatementCommon & { type: 'gk:seek'; charVar: string; targetVar: string; dtVar: string })
+  | (JSStatementCommon & { type: 'gk:drift'; charVar: string; dtVar: string })
+  | (JSStatementCommon & { type: 'gk:face'; charVar: string; targetVar: string })
+  // ❤️ Combate (dano com i-frames, empurrão, barra de vida).
+  | (JSStatementCommon & {
+      type: 'gk:hurt'
+      charVar: string
+      amount: number | JSExpr
+      iframes: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:knockback'
+      charVar: string
+      fromVar: string
+      force: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:drawHealthBar'; charVar: string; max: number | JSExpr })
+  // 🖥️ HUD & Missão.
+  | (JSStatementCommon & {
+      type: 'gk:setMission'
+      seconds: number | JSExpr
+      killCount: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:missionKill' })
+  | (JSStatementCommon & { type: 'gk:drawTimer'; x: number | JSExpr; y: number | JSExpr })
+  // ✨ Faíscas (partículas data-driven pooled).
+  | (JSStatementCommon & {
+      type: 'gk:defineEffect'
+      name: string
+      count: number | JSExpr
+      color: string
+      size: number | JSExpr
+      life: number | JSExpr
+      speed: number | JSExpr
+      gravity: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:burst'
+      effect: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:drawEffects' })
+  // 🔊 Som (importado + sintetizado).
+  | (JSStatementCommon & { type: 'gk:loadSound'; name: string; asset: string })
+  | (JSStatementCommon & { type: 'gk:playSound'; name: string })
+  | (JSStatementCommon & { type: 'gk:playEffect'; fx: string })
+  | (JSStatementCommon & { type: 'gk:playTone'; freq: number | JSExpr; ms: number | JSExpr })
+  // Jogo 3D Avançado (extensão game-3d-advanced): base de engine 3D
+  // profissional (curso SimonDev) achatada num facade — mundo pronto, moldes
+  // montados de peças, enxames com pool, FSM POR ENTIDADE (parado → mirar →
+  // atirar → recarregar), grade espacial, mira por slerp, combate e telas.
+  | (JSStatementCommon & {
+      type: 'g3k:setup'
+      w: number | JSExpr
+      h: number | JSExpr
+      world: number | JSExpr
+      sky: string
+      ground: string
+    })
+  | (JSStatementCommon & { type: 'g3k:scatterDecor'; count: number | JSExpr })
+  // 🎬 Efeitos de cinema (pós-processamento próprio: sombras/bloom/vinheta).
+  | (JSStatementCommon & {
+      type: 'g3k:setEffects'
+      shadows: boolean
+      bloom: boolean
+      strength: number | JSExpr
+      vignette: boolean
+    })
+  | (JSStatementCommon & { type: 'g3k:start' })
+  // 🧊 Molde: o corpo monta as peças (roda 1x na definição, molde implícito).
+  | (JSStatementCommon & {
+      type: 'g3k:defineMold'
+      name: string
+      health: number | JSExpr
+      speed: number | JSExpr
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g3k:part'
+      shape: string
+      material: string
+      color: string
+      texture: string
+      w: number | JSExpr
+      h: number | JSExpr
+      d: number | JSExpr
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+    })
+  // 👾 Enxames com pool. `spawnNamed` = `const NOME = SZGameKit3D.spawn(...)`.
+  | (JSStatementCommon & {
+      type: 'g3k:spawn'
+      mold: string
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g3k:spawnNamed'
+      varName: string
+      mold: string
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+    })
+  // Nasce no lugar de outra entidade, virado igual (o tiro da torre).
+  | (JSStatementCommon & { type: 'g3k:spawnFrom'; mold: string; fromVar: string })
+  // `where`: 'edge' (beirada do mundo) | 'anywhere' (qualquer lugar do chão).
+  | (JSStatementCommon & {
+      type: 'g3k:startSpawner'
+      mold: string
+      seconds: number | JSExpr
+      where: string
+    })
+  | (JSStatementCommon & { type: 'g3k:stopSpawner'; mold: string })
+  | (JSStatementCommon & {
+      type: 'g3k:forEachAlive'
+      mold: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g3k:recycle'; charVar: string })
+  | (JSStatementCommon & { type: 'g3k:recycleAll'; mold: string })
+  | (JSStatementCommon & { type: 'g3k:cullFar'; mold: string; dist: number | JSExpr })
+  // 🕹️ Laço e teclas (o dt de moveWithKeys é interno — menos um campo de erro).
+  | (JSStatementCommon & { type: 'g3k:onUpdate'; dtName: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g3k:moveWithKeys'; charVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & { type: 'g3k:setPauseKey'; key: string })
+  // 🎥 Câmera viva (um modo por vez).
+  | (JSStatementCommon & {
+      type: 'g3k:cameraFollow'
+      charVar: string
+      dist: number | JSExpr
+      height: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:cameraOrbit'; dist: number | JSExpr })
+  | (JSStatementCommon & { type: 'g3k:cameraTop'; height: number | JSExpr })
+  // 🤖 Entidades (transform + velocidade integrada pelo motor).
+  | (JSStatementCommon & {
+      type: 'g3k:place'
+      charVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:setYaw'; charVar: string; degrees: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3k:setVelocity'
+      charVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:setDrag'; charVar: string; drag: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3k:setEntityValue'
+      charVar: string
+      key: string
+      value: JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:lookAt'; charVar: string; targetVar: string })
+  | (JSStatementCommon & { type: 'g3k:moveForward'; charVar: string; speed: number | JSExpr })
+  // 🏃 Física: gravidade/pulo/plataforma + molde sólido (parede/chão).
+  | (JSStatementCommon & { type: 'g3k:fall'; charVar: string; g: number | JSExpr })
+  | (JSStatementCommon & { type: 'g3k:jump'; charVar: string; force: number | JSExpr })
+  | (JSStatementCommon & { type: 'g3k:makeSolid'; mold: string })
+  | (JSStatementCommon & {
+      type: 'g3k:platformerKeys'
+      charVar: string
+      speed: number | JSExpr
+      jump: number | JSExpr
+    })
+  // 💡 Luz & céu (atmosfera).
+  | (JSStatementCommon & {
+      type: 'g3k:addLight'
+      color: string
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+      intensity: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:setAmbient'; intensity: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3k:setFog'
+      color: string
+      near: number | JSExpr
+      far: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:setSky'; top: string; bottom: string })
+  // 🖱️ Mira/clique no mundo: guardar a entidade sob o mouse + câmera 1ª pessoa.
+  | (JSStatementCommon & { type: 'g3k:pick'; varName: string; mold: string })
+  | (JSStatementCommon & { type: 'g3k:cameraFps'; charVar: string })
+  | (JSStatementCommon & { type: 'g3k:moveFps'; charVar: string; speed: number | JSExpr })
+  // 🌊 Emissores contínuos + atratores (partículas data-driven do curso).
+  | (JSStatementCommon & {
+      type: 'g3k:defineEmitter'
+      name: string
+      colorFrom: string
+      colorTo: string
+      sizeFrom: number | JSExpr
+      sizeTo: number | JSExpr
+      rate: number | JSExpr
+      speed: number | JSExpr
+      cone: number | JSExpr
+      gravity: number | JSExpr
+      glow: boolean
+    })
+  | (JSStatementCommon & {
+      type: 'g3k:startEmitter'
+      effect: string
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:emitterOn'; effect: string; charVar: string })
+  | (JSStatementCommon & { type: 'g3k:stopEmitter'; effect: string })
+  | (JSStatementCommon & {
+      type: 'g3k:addAttractor'
+      effect: string
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+      intensity: number | JSExpr
+      radius: number | JSExpr
+    })
+  // 🚥 FSM por MOLDE: ganchos de entrar/ficar/sair + transição por tempo.
+  | (JSStatementCommon & {
+      type: 'g3k:onEnterEntityState'
+      mold: string
+      state: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g3k:onEntityStateUpdate'
+      mold: string
+      state: string
+      itemName: string
+      dtName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g3k:onExitEntityState'
+      mold: string
+      state: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g3k:setEntityState'; charVar: string; state: string })
+  | (JSStatementCommon & {
+      type: 'g3k:stateTimer'
+      mold: string
+      state: string
+      sec: number | JSExpr
+      next: string
+    })
+  // 🎯 Comportamentos (a matemática do curso: seek e slerp de mira).
+  | (JSStatementCommon & { type: 'g3k:seek'; charVar: string; targetVar: string })
+  | (JSStatementCommon & {
+      type: 'g3k:aimAt'
+      charVar: string
+      targetVar: string
+      smooth: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:faceVelocity'; charVar: string })
+  // 🕸️ Vizinhança pela grade espacial (nunca O(n²)).
+  | (JSStatementCommon & {
+      type: 'g3k:forEachNear'
+      charVar: string
+      mold: string
+      radius: number | JSExpr
+      itemName: string
+      body: JSStatement[]
+    })
+  // `const NOME = SZGameKit3D.nearest('molde', ent)` — a mira da torre.
+  | (JSStatementCommon & {
+      type: 'g3k:storeNearest'
+      varName: string
+      mold: string
+      charVar: string
+    })
+  // ❤️ Combate: i-frames internos; a derrota roda os ganchos e recolhe sozinha.
+  | (JSStatementCommon & { type: 'g3k:hurt'; charVar: string; amount: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3k:onEntityDeath'
+      mold: string
+      itemName: string
+      body: JSStatement[]
+    })
+  // 💥 Faíscas 3D (partículas data-driven: rampas de 2 chaves cor/tamanho).
+  | (JSStatementCommon & {
+      type: 'g3k:defineEffect'
+      name: string
+      count: number | JSExpr
+      colorFrom: string
+      colorTo: string
+      spread: number | JSExpr
+      sizeFrom: number | JSExpr
+      sizeTo: number | JSExpr
+      life: number | JSExpr
+      gravity: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g3k:burstAt'
+      effect: string
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:burstOn'; effect: string; charVar: string })
+  // 🖼️ Telas & HUD (DOM injetado por JS, padrão gk).
+  | (JSStatementCommon & {
+      type: 'g3k:setScreenText'
+      screen: string
+      title: ScreenText
+      text: ScreenText
+      button: ScreenText
+    })
+  | (JSStatementCommon & {
+      type: 'g3k:createScreen'
+      name: string
+      title: ScreenText
+      text: ScreenText
+    })
+  | (JSStatementCommon & {
+      type: 'g3k:addButton'
+      screen: string
+      label: ScreenText
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g3k:showScreen'; name: string })
+  | (JSStatementCommon & { type: 'g3k:hideScreens' })
+  // `slot`: top-left | top-center | top-right | bottom-left | bottom-right.
+  | (JSStatementCommon & { type: 'g3k:hudText'; slot: string; text: ScreenText })
+  // 🚦 Estados do jogo (entrar em 'jogando' fora da pausa RECOMEÇA a arena).
+  | (JSStatementCommon & { type: 'g3k:setState'; name: string })
+  | (JSStatementCommon & { type: 'g3k:onEnterState'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g3k:returnToMenu' })
+  | (JSStatementCommon & { type: 'g3k:endGame' })
+  // 📢 Avisos (event bus).
+  | (JSStatementCommon & { type: 'g3k:onEvent'; event: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g3k:emit'; event: string })
+  // 🔊 Som (importado + sintetizado).
+  | (JSStatementCommon & { type: 'g3k:loadSound'; name: string; asset: string })
+  | (JSStatementCommon & { type: 'g3k:playSound'; name: string })
+  | (JSStatementCommon & { type: 'g3k:playEffect'; fx: string })
+  | (JSStatementCommon & { type: 'g3k:playTone'; freq: number | JSExpr; ms: number | JSExpr })
   // Orientação a objetos
   | (JSStatementCommon & {
       type: 'classDecl'
@@ -4247,6 +5043,925 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g3d:playEffect'), kind: irText(), ...idField }),
     z.object({
+      type: z.literal('gk:setup'),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      bg: irText(),
+      accent: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:start'), ...idField }),
+    z.object({ type: z.literal('gk:loadImage'), name: irText(), asset: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:setScreenText'),
+      screen: irText(),
+      title: z.union([JSExprSchema, irText()]),
+      text: z.union([JSExprSchema, irText()]),
+      button: z.union([JSExprSchema, irText()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:createScreen'),
+      name: irText(),
+      title: z.union([JSExprSchema, irText()]),
+      text: z.union([JSExprSchema, irText()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:addButton'),
+      screen: irText(),
+      label: z.union([JSExprSchema, irText()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:showScreen'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:hideScreens'), ...idField }),
+    z.object({ type: z.literal('gk:setState'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:onEnterState'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:pause'), ...idField }),
+    z.object({ type: z.literal('gk:resume'), ...idField }),
+    z.object({ type: z.literal('gk:returnToMenu'), ...idField }),
+    z.object({ type: z.literal('gk:endGame'), ...idField }),
+    z.object({
+      type: z.literal('gk:onUpdate'),
+      dtName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:onDraw'),
+      ctxName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:onDrawHud'),
+      ctxName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setSheet'),
+      charVar: irText(),
+      image: irText(),
+      fw: z.union([JSExprSchema, z.number()]),
+      fh: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:playAnim'),
+      charVar: irText(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cameraFollow'),
+      charVar: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:cameraStop'), ...idField }),
+    z.object({
+      type: z.literal('gk:launchTowards'),
+      charVar: irText(),
+      targetVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:moveByVelocity'),
+      charVar: irText(),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setAngle'),
+      charVar: irText(),
+      degrees: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:onGameClick'),
+      xName: irText(),
+      yName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawBar'),
+      current: z.union([JSExprSchema, z.number()]),
+      max: z.union([JSExprSchema, z.number()]),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgMoveGrid'),
+      charVar: irText(),
+      cell: z.union([JSExprSchema, z.number()]),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgBlockCell'),
+      cx: z.union([JSExprSchema, z.number()]),
+      cy: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgCreateNpc'),
+      name: irText(),
+      cx: z.union([JSExprSchema, z.number()]),
+      cy: z.union([JSExprSchema, z.number()]),
+      image: irText(),
+      look: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgDrawNpcs'), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgOnTalk'),
+      npc: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgSay'),
+      text: z.union([JSExprSchema, z.number()]),
+      speaker: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgAddFlag'), flag: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgGiveItem'), item: irText(), image: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgRemoveItem'), item: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgDrawInventory'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgGoMap'), map: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgOnMap'),
+      map: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgCreateDoor'),
+      cx: z.union([JSExprSchema, z.number()]),
+      cy: z.union([JSExprSchema, z.number()]),
+      map: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgBattleStats'),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      def: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgBattleStart'),
+      name: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      def: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgSetSpecial'),
+      name: irText(),
+      dmg: z.union([JSExprSchema, z.number()]),
+      cost: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgGivePotion'),
+      name: irText(),
+      heal: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgBattleReward'),
+      xp: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgInflict'),
+      who: irText(),
+      status: irText(),
+      turns: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgOnBattleEnd'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setWalkSheet'),
+      charVar: irText(),
+      image: irText(),
+      fw: z.union([JSExprSchema, z.number()]),
+      fh: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgCutscene'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgWait'),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgFace'), npc: irText(), dir: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgNpcWalkTo'),
+      npc: irText(),
+      cx: z.union([JSExprSchema, z.number()]),
+      cy: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgNpcWander'), npc: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgOnStep'),
+      cx: z.union([JSExprSchema, z.number()]),
+      cy: z.union([JSExprSchema, z.number()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgMenu'),
+      title: z.union([JSExprSchema, z.number()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgOption'),
+      label: z.union([JSExprSchema, z.number()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgSave'), ...idField }),
+    z.object({ type: z.literal('gk:rpgLoad'), ...idField }),
+    z.object({
+      type: z.literal('gk:loadTilemap'),
+      name: irText(),
+      asset: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawTilemap'),
+      name: irText(),
+      layer: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:tilemapSolid'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:drawShadow'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:drawByDepth'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:cameraShake'),
+      intensity: z.union([JSExprSchema, z.number()]),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:attackFacing'),
+      charVar: irText(),
+      range: z.union([JSExprSchema, z.number()]),
+      duration: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:patrolAround'),
+      charVar: irText(),
+      ox: z.union([JSExprSchema, z.number()]),
+      oy: z.union([JSExprSchema, z.number()]),
+      radius: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawHearts'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      current: z.union([JSExprSchema, z.number()]),
+      max: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawBackground'),
+      color: irText(),
+      grid: z.boolean(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:createCharacter'),
+      varName: irText(),
+      image: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:moveWithKeys'),
+      charVar: irText(),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:keepOnScreen'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:drawCharacter'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:placeCharacter'),
+      charVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:resetCharacter'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:setSpeedMultiplier'),
+      charVar: irText(),
+      factor: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:setPauseKey'), key: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:onEvent'),
+      event: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:emit'), event: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:defineMold'),
+      name: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      health: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      damage: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      image: irText(),
+      look: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:spawnFromMold'),
+      mold: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:startSpawner'),
+      mold: irText(),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:stopSpawner'), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:spawnNamed'),
+      varName: irText(),
+      mold: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:forEachActive'),
+      mold: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cullOffscreen'),
+      mold: irText(),
+      margin: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:recycle'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:drawActive'), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:defineLook'),
+      name: irText(),
+      ctxName: irText(),
+      baseW: z.union([JSExprSchema, z.number()]).optional(),
+      baseH: z.union([JSExprSchema, z.number()]).optional(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawLook'),
+      look: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:seek'),
+      charVar: irText(),
+      targetVar: irText(),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:drift'), charVar: irText(), dtVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:face'), charVar: irText(), targetVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:hurt'),
+      charVar: irText(),
+      amount: z.union([JSExprSchema, z.number()]),
+      iframes: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:knockback'),
+      charVar: irText(),
+      fromVar: irText(),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawHealthBar'),
+      charVar: irText(),
+      max: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setMission'),
+      seconds: z.union([JSExprSchema, z.number()]),
+      killCount: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:missionKill'), ...idField }),
+    z.object({
+      type: z.literal('gk:drawTimer'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:defineEffect'),
+      name: irText(),
+      count: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      size: z.union([JSExprSchema, z.number()]),
+      life: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      gravity: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:burst'),
+      effect: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:drawEffects'), ...idField }),
+    z.object({ type: z.literal('gk:loadSound'), name: irText(), asset: irText(), ...idField }),
+    z.object({ type: z.literal('gk:playSound'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:playEffect'), fx: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:playTone'),
+      freq: z.union([JSExprSchema, z.number()]),
+      ms: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setup'),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      world: z.union([JSExprSchema, z.number()]),
+      sky: irText(),
+      ground: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:scatterDecor'),
+      count: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setEffects'),
+      shadows: z.boolean(),
+      bloom: z.boolean(),
+      strength: z.union([JSExprSchema, z.number()]),
+      vignette: z.boolean(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:start'), ...idField }),
+    z.object({
+      type: z.literal('g3k:defineMold'),
+      name: irText(),
+      health: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:part'),
+      shape: irText(),
+      material: irText(),
+      color: irText(),
+      texture: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      d: z.union([JSExprSchema, z.number()]),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:spawn'),
+      mold: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:spawnNamed'),
+      varName: irText(),
+      mold: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:spawnFrom'),
+      mold: irText(),
+      fromVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:startSpawner'),
+      mold: irText(),
+      seconds: z.union([JSExprSchema, z.number()]),
+      where: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:stopSpawner'), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:forEachAlive'),
+      mold: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:recycle'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:recycleAll'), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:cullFar'),
+      mold: irText(),
+      dist: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:onUpdate'),
+      dtName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:moveWithKeys'),
+      charVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:setPauseKey'), key: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:cameraFollow'),
+      charVar: irText(),
+      dist: z.union([JSExprSchema, z.number()]),
+      height: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:cameraOrbit'),
+      dist: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:cameraTop'),
+      height: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:place'),
+      charVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setYaw'),
+      charVar: irText(),
+      degrees: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setVelocity'),
+      charVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setDrag'),
+      charVar: irText(),
+      drag: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setEntityValue'),
+      charVar: irText(),
+      key: irText(),
+      value: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:lookAt'),
+      charVar: irText(),
+      targetVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:moveForward'),
+      charVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:fall'),
+      charVar: irText(),
+      g: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:jump'),
+      charVar: irText(),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:makeSolid'), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:platformerKeys'),
+      charVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      jump: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:addLight'),
+      color: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      intensity: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setAmbient'),
+      intensity: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setFog'),
+      color: irText(),
+      near: z.union([JSExprSchema, z.number()]),
+      far: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:setSky'), top: irText(), bottom: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:pick'), varName: irText(), mold: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:cameraFps'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:moveFps'),
+      charVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:defineEmitter'),
+      name: irText(),
+      colorFrom: irText(),
+      colorTo: irText(),
+      sizeFrom: z.union([JSExprSchema, z.number()]),
+      sizeTo: z.union([JSExprSchema, z.number()]),
+      rate: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      cone: z.union([JSExprSchema, z.number()]),
+      gravity: z.union([JSExprSchema, z.number()]),
+      glow: z.boolean(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:startEmitter'),
+      effect: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:emitterOn'), effect: irText(), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:stopEmitter'), effect: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:addAttractor'),
+      effect: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      intensity: z.union([JSExprSchema, z.number()]),
+      radius: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:onEnterEntityState'),
+      mold: irText(),
+      state: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:onEntityStateUpdate'),
+      mold: irText(),
+      state: irText(),
+      itemName: irText(),
+      dtName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:onExitEntityState'),
+      mold: irText(),
+      state: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setEntityState'),
+      charVar: irText(),
+      state: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:stateTimer'),
+      mold: irText(),
+      state: irText(),
+      sec: z.union([JSExprSchema, z.number()]),
+      next: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:seek'),
+      charVar: irText(),
+      targetVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:aimAt'),
+      charVar: irText(),
+      targetVar: irText(),
+      smooth: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:faceVelocity'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:forEachNear'),
+      charVar: irText(),
+      mold: irText(),
+      radius: z.union([JSExprSchema, z.number()]),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:storeNearest'),
+      varName: irText(),
+      mold: irText(),
+      charVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:hurt'),
+      charVar: irText(),
+      amount: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:onEntityDeath'),
+      mold: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:defineEffect'),
+      name: irText(),
+      count: z.union([JSExprSchema, z.number()]),
+      colorFrom: irText(),
+      colorTo: irText(),
+      spread: z.union([JSExprSchema, z.number()]),
+      sizeFrom: z.union([JSExprSchema, z.number()]),
+      sizeTo: z.union([JSExprSchema, z.number()]),
+      life: z.union([JSExprSchema, z.number()]),
+      gravity: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:burstAt'),
+      effect: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:burstOn'),
+      effect: irText(),
+      charVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setScreenText'),
+      screen: irText(),
+      title: z.union([JSExprSchema, irText()]),
+      text: z.union([JSExprSchema, irText()]),
+      button: z.union([JSExprSchema, irText()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:createScreen'),
+      name: irText(),
+      title: z.union([JSExprSchema, irText()]),
+      text: z.union([JSExprSchema, irText()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:addButton'),
+      screen: irText(),
+      label: z.union([JSExprSchema, irText()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:showScreen'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:hideScreens'), ...idField }),
+    z.object({
+      type: z.literal('g3k:hudText'),
+      slot: irText(),
+      text: z.union([JSExprSchema, irText()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:setState'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:onEnterState'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:returnToMenu'), ...idField }),
+    z.object({ type: z.literal('g3k:endGame'), ...idField }),
+    z.object({
+      type: z.literal('g3k:onEvent'),
+      event: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:emit'), event: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:loadSound'), name: irText(), asset: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:playSound'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:playEffect'), fx: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:playTone'),
+      freq: z.union([JSExprSchema, z.number()]),
+      ms: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:updateEachFrame'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -4773,8 +6488,195 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:playEffect',
 ])
 
+export const GK_STATEMENT_TYPES = new Set([
+  'gk:setup',
+  'gk:start',
+  'gk:loadImage',
+  'gk:setScreenText',
+  'gk:createScreen',
+  'gk:addButton',
+  'gk:showScreen',
+  'gk:hideScreens',
+  'gk:setState',
+  'gk:onEnterState',
+  'gk:pause',
+  'gk:resume',
+  'gk:returnToMenu',
+  'gk:endGame',
+  'gk:onUpdate',
+  'gk:onDraw',
+  'gk:onDrawHud',
+  'gk:setSheet',
+  'gk:playAnim',
+  'gk:cameraFollow',
+  'gk:cameraStop',
+  'gk:launchTowards',
+  'gk:moveByVelocity',
+  'gk:setAngle',
+  'gk:onGameClick',
+  'gk:drawBar',
+  'gk:rpgMoveGrid',
+  'gk:rpgBlockCell',
+  'gk:rpgCreateNpc',
+  'gk:rpgDrawNpcs',
+  'gk:rpgOnTalk',
+  'gk:rpgSay',
+  'gk:rpgAddFlag',
+  'gk:rpgGiveItem',
+  'gk:rpgRemoveItem',
+  'gk:rpgDrawInventory',
+  'gk:rpgGoMap',
+  'gk:rpgOnMap',
+  'gk:rpgCreateDoor',
+  'gk:rpgBattleStats',
+  'gk:rpgBattleStart',
+  'gk:rpgOnBattleEnd',
+  'gk:rpgSetSpecial',
+  'gk:rpgGivePotion',
+  'gk:rpgBattleReward',
+  'gk:rpgInflict',
+  'gk:setWalkSheet',
+  'gk:rpgCutscene',
+  'gk:rpgWait',
+  'gk:rpgFace',
+  'gk:rpgNpcWalkTo',
+  'gk:rpgNpcWander',
+  'gk:rpgOnStep',
+  'gk:rpgMenu',
+  'gk:rpgOption',
+  'gk:rpgSave',
+  'gk:rpgLoad',
+  'gk:loadTilemap',
+  'gk:drawTilemap',
+  'gk:tilemapSolid',
+  'gk:drawShadow',
+  'gk:drawByDepth',
+  'gk:cameraShake',
+  'gk:attackFacing',
+  'gk:patrolAround',
+  'gk:drawHearts',
+  'gk:drawBackground',
+  'gk:createCharacter',
+  'gk:moveWithKeys',
+  'gk:keepOnScreen',
+  'gk:drawCharacter',
+  'gk:placeCharacter',
+  'gk:resetCharacter',
+  'gk:setSpeedMultiplier',
+  'gk:setPauseKey',
+  'gk:onEvent',
+  'gk:emit',
+  'gk:defineMold',
+  'gk:spawnFromMold',
+  'gk:startSpawner',
+  'gk:stopSpawner',
+  'gk:spawnNamed',
+  'gk:forEachActive',
+  'gk:cullOffscreen',
+  'gk:recycle',
+  'gk:drawActive',
+  'gk:defineLook',
+  'gk:drawLook',
+  'gk:seek',
+  'gk:drift',
+  'gk:face',
+  'gk:hurt',
+  'gk:knockback',
+  'gk:drawHealthBar',
+  'gk:setMission',
+  'gk:missionKill',
+  'gk:drawTimer',
+  'gk:defineEffect',
+  'gk:burst',
+  'gk:drawEffects',
+  'gk:loadSound',
+  'gk:playSound',
+  'gk:playEffect',
+  'gk:playTone',
+])
+
+export const G3K_STATEMENT_TYPES = new Set([
+  'g3k:setup',
+  'g3k:setEffects',
+  'g3k:scatterDecor',
+  'g3k:start',
+  'g3k:defineMold',
+  'g3k:part',
+  'g3k:spawn',
+  'g3k:spawnNamed',
+  'g3k:spawnFrom',
+  'g3k:startSpawner',
+  'g3k:stopSpawner',
+  'g3k:forEachAlive',
+  'g3k:recycle',
+  'g3k:recycleAll',
+  'g3k:cullFar',
+  'g3k:onUpdate',
+  'g3k:moveWithKeys',
+  'g3k:setPauseKey',
+  'g3k:cameraFollow',
+  'g3k:cameraOrbit',
+  'g3k:cameraTop',
+  'g3k:place',
+  'g3k:setYaw',
+  'g3k:setVelocity',
+  'g3k:setDrag',
+  'g3k:setEntityValue',
+  'g3k:lookAt',
+  'g3k:moveForward',
+  'g3k:fall',
+  'g3k:jump',
+  'g3k:makeSolid',
+  'g3k:platformerKeys',
+  'g3k:addLight',
+  'g3k:setAmbient',
+  'g3k:setFog',
+  'g3k:setSky',
+  'g3k:pick',
+  'g3k:cameraFps',
+  'g3k:moveFps',
+  'g3k:defineEmitter',
+  'g3k:startEmitter',
+  'g3k:emitterOn',
+  'g3k:stopEmitter',
+  'g3k:addAttractor',
+  'g3k:onEnterEntityState',
+  'g3k:onEntityStateUpdate',
+  'g3k:onExitEntityState',
+  'g3k:setEntityState',
+  'g3k:stateTimer',
+  'g3k:seek',
+  'g3k:aimAt',
+  'g3k:faceVelocity',
+  'g3k:forEachNear',
+  'g3k:storeNearest',
+  'g3k:hurt',
+  'g3k:onEntityDeath',
+  'g3k:defineEffect',
+  'g3k:burstAt',
+  'g3k:burstOn',
+  'g3k:setScreenText',
+  'g3k:createScreen',
+  'g3k:addButton',
+  'g3k:showScreen',
+  'g3k:hideScreens',
+  'g3k:hudText',
+  'g3k:setState',
+  'g3k:onEnterState',
+  'g3k:returnToMenu',
+  'g3k:endGame',
+  'g3k:onEvent',
+  'g3k:emit',
+  'g3k:loadSound',
+  'g3k:playSound',
+  'g3k:playEffect',
+  'g3k:playTone',
+])
+
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {
   if (extensionId === 'game-2d') return stmt.type.startsWith('g2d:')
   if (extensionId === 'game-3d') return stmt.type.startsWith('g3d:')
+  if (extensionId === 'game-2d-advanced') return stmt.type.startsWith('gk:')
+  if (extensionId === 'game-3d-advanced') return stmt.type.startsWith('g3k:')
   return false
 }

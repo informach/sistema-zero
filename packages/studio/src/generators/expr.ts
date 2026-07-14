@@ -369,6 +369,100 @@ export function compileExpr(
       return `SZGame3D.onGround(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
     case 'g3d:groundHeight':
       return `SZGame3D.groundHeight(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
+    // ----- game-2d-advanced (kit profissional) -----
+    case 'gk:gameWidth':
+      return 'SZGameKit.width()'
+    case 'gk:gameHeight':
+      return 'SZGameKit.height()'
+    case 'gk:gameState':
+      return 'SZGameKit.state()'
+    case 'gk:stateIs':
+      return `SZGameKit.stateIs(${JSON.stringify(expr.name)})`
+    case 'gk:charactersTouch':
+      return `SZGameKit.touching(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'gk:charX':
+      return `SZGameKit.charX(${identifiers.get(expr.charVar)})`
+    case 'gk:charY':
+      return `SZGameKit.charY(${identifiers.get(expr.charVar)})`
+    case 'gk:keyDown':
+      return `SZGameKit.keyDown(${JSON.stringify(expr.key)})`
+    case 'gk:keyPressed':
+      return `SZGameKit.keyPressed(${JSON.stringify(expr.key)})`
+    case 'gk:countActive':
+      return `SZGameKit.countActive(${JSON.stringify(expr.mold)})`
+    case 'gk:touchCircle':
+      return `SZGameKit.touchCircle(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'gk:didHit':
+      return `SZGameKit.didHit(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'gk:isDead':
+      return `SZGameKit.isDead(${identifiers.get(expr.charVar)})`
+    case 'gk:isInvincible':
+      return `SZGameKit.isInvincible(${identifiers.get(expr.charVar)})`
+    case 'gk:healthOf':
+      return `SZGameKit.healthOf(${identifiers.get(expr.charVar)})`
+    case 'gk:timeSurvived':
+      return 'SZGameKit.timeSurvived()'
+    case 'gk:cameraX':
+      return 'SZGameKit.cameraX()'
+    case 'gk:cameraY':
+      return 'SZGameKit.cameraY()'
+    case 'gk:mouseX':
+      return 'SZGameKit.mouseX()'
+    case 'gk:mouseY':
+      return 'SZGameKit.mouseY()'
+    case 'gk:mouseDown':
+      return 'SZGameKit.mouseDown()'
+    case 'gk:rpgCell':
+      return `SZGameKit.rpgCell(${compileExpr(valueToExpr(expr.n), 0, identifiers, rec)})`
+    case 'gk:rpgHasFlag':
+      return `SZGameKit.rpgHasFlag(${JSON.stringify(expr.flag)})`
+    case 'gk:rpgHasItem':
+      return `SZGameKit.rpgHasItem(${JSON.stringify(expr.item)})`
+    case 'gk:rpgBattleWon':
+      return 'SZGameKit.rpgBattleWon()'
+    case 'gk:rpgHasSave':
+      return 'SZGameKit.rpgHasSave()'
+    case 'gk:rpgLevel':
+      return 'SZGameKit.rpgLevel()'
+    case 'gk:rpgXp':
+      return 'SZGameKit.rpgXp()'
+    case 'gk:kills':
+      return 'SZGameKit.kills()'
+    // ---- Jogo 3D Avançado (game-3d-advanced) ----
+    case 'g3k:worldSize':
+      return 'SZGameKit3D.worldSize()'
+    case 'g3k:countAlive':
+      return `SZGameKit3D.countAlive(${JSON.stringify(expr.mold)})`
+    case 'g3k:keyDown':
+      return `SZGameKit3D.keyDown(${JSON.stringify(expr.key)})`
+    case 'g3k:keyPressed':
+      return `SZGameKit3D.keyPressed(${JSON.stringify(expr.key)})`
+    case 'g3k:posOf':
+      return `SZGameKit3D.posOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.axis)})`
+    case 'g3k:exists':
+      return `SZGameKit3D.exists(${identifiers.get(expr.charVar)})`
+    case 'g3k:entityStateIs':
+      return `SZGameKit3D.entityStateIs(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.state)})`
+    case 'g3k:isAimingAt':
+      return `SZGameKit3D.isAimingAt(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3k:touches':
+      return `SZGameKit3D.touches(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
+    case 'g3k:healthOf':
+      return `SZGameKit3D.healthOf(${identifiers.get(expr.charVar)})`
+    case 'g3k:entityValue':
+      return `SZGameKit3D.entityValue(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.key)})`
+    case 'g3k:stateTime':
+      return `SZGameKit3D.stateTime(${identifiers.get(expr.charVar)})`
+    case 'g3k:onGround':
+      return `SZGameKit3D.onGround(${identifiers.get(expr.charVar)})`
+    case 'g3k:pointerOver':
+      return `SZGameKit3D.pointerOver(${identifiers.get(expr.charVar)})`
+    case 'g3k:groundPoint':
+      return `SZGameKit3D.groundPoint(${JSON.stringify(expr.axis)})`
+    case 'g3k:stateIs':
+      return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
+    case 'g3k:gameState':
+      return 'SZGameKit3D.state()'
     case 'inputKeyPressed':
       return `__szInput.key(${JSON.stringify(expr.key)})`
     case 'inputPointer':

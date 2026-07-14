@@ -63,4 +63,24 @@ describe('renderLessonMarkdown', () => {
     expect(out).not.toContain('"b](') // foi escapado/transformado, não cru
     expect(out).toContain('&quot;')
   })
+
+  it('lista com linha de CONTINUAÇÃO indentada junta no mesmo item', () => {
+    const out = renderLessonMarkdown(
+      '- **Estados** — o jogo vive em UM\n  estado por vez\n- outro item',
+    )
+    expect(out.match(/<li>/g)?.length).toBe(2)
+    expect(out).toContain('UM estado por vez')
+    expect(out).not.toContain('- **') // o marcador não vaza como texto
+  })
+
+  it('citação (> …) vira blockquote com inline renderizado', () => {
+    const out = renderLessonMarkdown('> ⚠️ Use **um** por projeto')
+    expect(out).toContain('<blockquote')
+    expect(out).toContain('<strong>um</strong>')
+    expect(out).not.toContain('&gt; ⚠️') // o marcador não vaza como texto
+    // Multi-linha: as linhas do bloco viram <br> dentro da MESMA citação.
+    const multi = renderLessonMarkdown('> linha 1\n> linha 2')
+    expect(multi.match(/<blockquote/g)?.length).toBe(1)
+    expect(multi).toContain('linha 1<br>linha 2')
+  })
 })

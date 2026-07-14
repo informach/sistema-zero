@@ -15,6 +15,10 @@ interface AssetAccessor {
 }
 
 const LOAD_SPRITESHEET_TYPE = 'sz_g2d_load_spritesheet'
+// Jogo 2D Avançado (gk): a folha é COLADA no personagem por "Usar a folha de
+// quadros" — a resolução vai por CHAR (não por SHEET nomeada como no g2d).
+const GK_PLAY_ANIM_TYPE = 'sz_gk_play_anim'
+const GK_SET_SHEET_TYPE = 'sz_gk_set_sheet'
 
 /** Reaplica o data-sz-theme do root no DropDownDiv portalado (mesmo do FieldAssetPicker). */
 function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
@@ -34,12 +38,23 @@ export function resolveAnimations(field: Blockly.Field): ProjectSpriteAnim[] {
   const block = field.getSourceBlock()
   const ws = block?.workspace as (Blockly.Workspace & AssetAccessor) | undefined
   if (!block || !ws) return []
-  const sheetName = block.getFieldValue('SHEET')
-  if (!sheetName) return []
-  const loader = ws
-    .getAllBlocks(false)
-    .find((b) => b.type === LOAD_SPRITESHEET_TYPE && b.getFieldValue('NAME') === sheetName)
-  const imageName = loader?.getFieldValue('IMAGE')
+  let imageName: string | undefined
+  if (block.type === GK_PLAY_ANIM_TYPE) {
+    // gk: CHAR → bloco "Usar a folha de quadros" do MESMO personagem → IMAGE.
+    const charName = block.getFieldValue('CHAR')
+    if (!charName) return []
+    const setter = ws
+      .getAllBlocks(false)
+      .find((b) => b.type === GK_SET_SHEET_TYPE && b.getFieldValue('CHAR') === charName)
+    imageName = setter?.getFieldValue('IMAGE')
+  } else {
+    const sheetName = block.getFieldValue('SHEET')
+    if (!sheetName) return []
+    const loader = ws
+      .getAllBlocks(false)
+      .find((b) => b.type === LOAD_SPRITESHEET_TYPE && b.getFieldValue('NAME') === sheetName)
+    imageName = loader?.getFieldValue('IMAGE')
+  }
   if (!imageName) return []
   const asset = (ws.__szAssets?.() ?? []).find((a) => a.name === imageName)
   return asset?.sprite?.animations ?? []
@@ -107,7 +122,11 @@ export function deriveAnimationName(
  * FROM/TO/FPS — o resolveAnimations/fillFrames é genérico por NOME de campo,
  * então basta listar o tipo aqui para o watcher re-derivar o nome).
  */
-const ANIM_PICKER_TYPES = new Set(['sz_g2d_animate_sprite', 'sz_g2d_set_state_anim'])
+const ANIM_PICKER_TYPES = new Set([
+  'sz_g2d_animate_sprite',
+  'sz_g2d_set_state_anim',
+  GK_PLAY_ANIM_TYPE,
+])
 
 /** Estado de coalescimento do refresh por workspace (espelha o thumb-watcher). */
 const animRefreshQueued = new WeakMap<Blockly.Workspace, boolean>()
@@ -169,8 +188,10 @@ function isAnimNameEvent(
     if (e.element !== 'field' || typeof e.blockId !== 'string') return false
     const block = ws.getBlockById(e.blockId)
     if (!block) return false
+    if (block.type === GK_PLAY_ANIM_TYPE) return e.name === 'CHAR'
     if (ANIM_PICKER_TYPES.has(block.type)) return e.name === 'SHEET'
     if (block.type === LOAD_SPRITESHEET_TYPE) return e.name === 'NAME' || e.name === 'IMAGE'
+    if (block.type === GK_SET_SHEET_TYPE) return e.name === 'CHAR' || e.name === 'IMAGE'
     // Literal numérico plugado num soquete de um bloco de animar (shadow ou real).
     if (block.type === 'sz_val_number') {
       let parent = block.getParent()
@@ -192,7 +213,11 @@ function jsonHasAnimRelatedType(json: unknown): boolean {
     inputs?: Record<string, { block?: unknown; shadow?: unknown }>
     next?: { block?: unknown; shadow?: unknown }
   }
-  if ((node.type && ANIM_PICKER_TYPES.has(node.type)) || node.type === LOAD_SPRITESHEET_TYPE) {
+  if (
+    (node.type && ANIM_PICKER_TYPES.has(node.type)) ||
+    node.type === LOAD_SPRITESHEET_TYPE ||
+    node.type === GK_SET_SHEET_TYPE
+  ) {
     return true
   }
   if (node.inputs) {

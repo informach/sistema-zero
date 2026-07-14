@@ -20,6 +20,28 @@
 import { PROJECT_ASSET_LIMITS, type ProjectTilemapMeta } from '#core'
 
 const ASSET_DATA_URL_PREFIX = 'data:image/'
+const AUDIO_DATA_URL_PREFIX = 'data:audio/'
+
+/**
+ * Clampa um manifesto `nome → dataUrl` a chaves próprias (null-proto anti-`__proto__`),
+ * ao prefixo esperado e aos tetos de quantidade/total — espelha `sanitizeProjectAssets`.
+ * Usado tanto para imagens (`data:image/`) quanto para sons (`data:audio/`).
+ */
+function clampManifest(entries: Record<string, string>, prefix: string): Record<string, string> {
+  const safe: Record<string, string> = Object.create(null)
+  let count = 0
+  let totalChars = 0
+  for (const [name, url] of Object.entries(entries)) {
+    if (count >= PROJECT_ASSET_LIMITS.maxAssetsCount) break
+    if (typeof name === 'string' && typeof url === 'string' && url.startsWith(prefix)) {
+      if (totalChars + name.length + url.length > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) continue
+      safe[name] = url
+      totalChars += name.length + url.length
+      count++
+    }
+  }
+  return safe
+}
 
 /** Entrada de metadado de preview de UM asset (hoje só `tilemap`). */
 export interface AssetPreviewMeta {
@@ -77,32 +99,17 @@ function safeMetaManifest(
  * 2º parâmetro OPCIONAL (`meta`): manifesto de METADADOS de preview
  * (`assetMetaManifest` do core) semeado em `window.__SZGAME_ASSET_META` no MESMO
  * script — o bloco "Criar mapa do meu desenho" monta o mapa a partir dele.
- * Sem meta, a saída é BYTE-IDÊNTICA à assinatura antiga (docs de projetos sem
- * mapa não mudam — retrocompat e caches preservados).
+ * 3º parâmetro OPCIONAL (`sounds`): manifesto `nome → dataUrl` de ÁUDIO
+ * (`soundManifest` do core) semeado em `window.__SZGAME_SOUNDS` — o runtime toca
+ * com `new Audio(dataUrl)` (a CSP libera `media-src data:`). Sem meta E sem sons,
+ * a saída é BYTE-IDÊNTICA à assinatura antiga (retrocompat e caches preservados).
  */
 export function buildAssetsRuntime(
   assets: Record<string, string> = {},
   meta: Record<string, AssetPreviewMeta> = {},
+  sounds: Record<string, string> = {},
 ): string {
-  // null-proto: um nome literal `__proto__` vira chave própria (nunca protótipo).
-  const safe: Record<string, string> = Object.create(null)
-  let count = 0
-  let totalChars = 0
-  for (const [name, url] of Object.entries(assets)) {
-    if (count >= PROJECT_ASSET_LIMITS.maxAssetsCount) break
-    if (
-      typeof name === 'string' &&
-      typeof url === 'string' &&
-      url.startsWith(ASSET_DATA_URL_PREFIX)
-    ) {
-      // Conta nome + dataUrl no orçamento total; pula o que estouraria (sem cortar
-      // um dataUrl ao meio — uma imagem truncada não decodificaria de qualquer jeito).
-      if (totalChars + name.length + url.length > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) continue
-      safe[name] = url
-      totalChars += name.length + url.length
-      count++
-    }
-  }
+  const safe = clampManifest(assets, ASSET_DATA_URL_PREFIX)
   // Doubly-encoded: o seed entra como STRING JSON + JSON.parse em runtime (não como
   // objeto literal), criando chaves PRÓPRIAS mesmo para um nome literal `__proto__`
   // (que num literal redefiniria o protótipo). Idêntico ao storageBridge.
@@ -119,6 +126,18 @@ export function buildAssetsRuntime(
     try { window.__SZGAME_ASSET_META = META; } catch (e2) {}
   }`
       : ''
+  const safeSounds = clampManifest(sounds, AUDIO_DATA_URL_PREFIX)
+  const soundsBlock =
+    Object.keys(safeSounds).length > 0
+      ? `
+  var SOUNDS;
+  try { SOUNDS = JSON.parse(${JSON.stringify(JSON.stringify(safeSounds))}); } catch (e) { SOUNDS = {}; }
+  try {
+    Object.defineProperty(window, '__SZGAME_SOUNDS', { value: SOUNDS, writable: false, configurable: true });
+  } catch (e) {
+    try { window.__SZGAME_SOUNDS = SOUNDS; } catch (e2) {}
+  }`
+      : ''
   return `(function () {
   var ASSETS;
   try { ASSETS = JSON.parse(${seedLiteral}); } catch (e) { ASSETS = {}; }
@@ -126,6 +145,6 @@ export function buildAssetsRuntime(
     Object.defineProperty(window, '__SZGAME_ASSETS', { value: ASSETS, writable: false, configurable: true });
   } catch (e) {
     try { window.__SZGAME_ASSETS = ASSETS; } catch (e2) {}
-  }${metaBlock}
+  }${metaBlock}${soundsBlock}
 })();`
 }

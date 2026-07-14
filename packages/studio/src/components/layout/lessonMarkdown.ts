@@ -59,10 +59,27 @@ export function renderLessonMarkdown(src: string): string {
   const html: string[] = []
   for (const block of blocks) {
     const lines = block.split('\n')
-    // Lista não-ordenada: TODAS as linhas começam com "- " ou "* ".
-    if (lines.every((l) => /^[-*]\s+/.test(l))) {
-      const items = lines.map((l) => `<li>${renderInline(l.replace(/^[-*]\s+/, ''))}</li>`).join('')
-      html.push(`<ul class="list-disc pl-5">${items}</ul>`)
+    // Lista não-ordenada: linhas começando com "- "/"* " abrem itens; linhas
+    // INDENTADAS continuam o item anterior (markdown quebrado a ~80 colunas —
+    // o formato das docs de extensão).
+    if (
+      /^[-*]\s+/.test(lines[0] ?? '') &&
+      lines.every((l) => /^[-*]\s+/.test(l) || /^\s+\S/.test(l))
+    ) {
+      const items: string[] = []
+      for (const l of lines) {
+        if (/^[-*]\s+/.test(l)) items.push(l.replace(/^[-*]\s+/, ''))
+        else if (items.length > 0) items[items.length - 1] += ` ${l.trim()}`
+      }
+      html.push(
+        `<ul class="list-disc pl-5">${items.map((i) => `<li>${renderInline(i)}</li>`).join('')}</ul>`,
+      )
+      continue
+    }
+    // Citação/aviso: TODAS as linhas começam com "> " (após o escape, "&gt; ").
+    if (lines.every((l) => /^&gt;\s+/.test(l))) {
+      const inner = lines.map((l) => renderInline(l.replace(/^&gt;\s+/, ''))).join('<br>')
+      html.push(`<blockquote class="border-l-2 border-sz-accent pl-3 italic">${inner}</blockquote>`)
       continue
     }
     // Título: bloco de UMA linha começando com #, ##, ### (escapado vira &#35;? não:

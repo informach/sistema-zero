@@ -7,6 +7,7 @@ import {
   type ExtraFile,
   type InstalledExtension,
   type ProjectAsset,
+  soundManifest,
 } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
@@ -277,6 +278,8 @@ export function PreviewIframe(): JSX.Element {
   // do manifesto; ENTRA nas deps do doc: reenviar um mapa alterado tem que
   // atualizar o preview sem reload manual.
   const assetsMeta = useMemo(() => assetMetaManifest(assets), [assets])
+  // Manifesto de sons (nome → dataUrl de áudio) — mesmo ciclo de vida do de imagem.
+  const soundsManifest = useMemo(() => soundManifest(assets), [assets])
 
   const previewBudgetInput = useMemo(
     () => ({
@@ -338,6 +341,7 @@ export function PreviewIframe(): JSX.Element {
       // reconstruir o doc para o sprite aparecer/sumir no preview).
       assets: assetsManifest,
       assetsMeta,
+      sounds: soundsManifest,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -360,6 +364,7 @@ export function PreviewIframe(): JSX.Element {
     extensionImports,
     assetsManifest,
     assetsMeta,
+    soundsManifest,
     previewSecurity,
     renderNonce,
   ])

@@ -53,6 +53,22 @@ export type NameKind =
   | 'scene3d'
   | 'object3d'
   | 'group3d'
+  | 'character'
+  | 'screen'
+  | 'gamestate'
+  | 'mold'
+  | 'effect'
+  | 'event'
+  | 'look'
+  | 'sound'
+  | 'npc'
+  | 'flag'
+  | 'item'
+  | 'map'
+  | 'entity3d'
+  | 'mold3d'
+  | 'effect3d'
+  | 'entitystate'
 
 const NAME_KINDS: readonly NameKind[] = [
   'variable',
@@ -69,6 +85,22 @@ const NAME_KINDS: readonly NameKind[] = [
   'scene3d',
   'object3d',
   'group3d',
+  'character',
+  'screen',
+  'gamestate',
+  'mold',
+  'effect',
+  'event',
+  'look',
+  'sound',
+  'npc',
+  'flag',
+  'item',
+  'map',
+  'entity3d',
+  'mold3d',
+  'effect3d',
+  'entitystate',
 ]
 
 /** Coage o `kind` cru da definição do bloco para um `NameKind` válido (default variável). */
@@ -131,12 +163,185 @@ const SPRITESHEET_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_load_spritesh
 const TILEMAP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_tilemap: ['NAME'],
   sz_g2d_create_tilemap_from_asset: ['NAME'],
+  // Jogo 2D Avançado (Kit): "Carregar mapa … do meu desenho" também declara um nome de mapa.
+  sz_gk_load_tilemap: ['NAME'],
 }
 
 /** Figuras (desenho por código) do Jogo 2D — fonte do seletor SHAPE. */
 const SHAPE_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_define_shape: ['NAME'] }
 function collectShapes(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, SHAPE_DECL_BLOCKS)
+}
+
+/** Personagens do Jogo 2D Avançado — fonte dos seletores CHAR/A/B. */
+const CHARACTER_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_create_character: ['NAME'],
+  sz_gk_spawn_named: ['NAME'],
+}
+function collectCharacters(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, CHARACTER_DECL_BLOCKS)
+}
+/** O "item" do "para cada vivo do molde" é um personagem LOCAL (escopo por ancestral). */
+const CHARACTER_LOOP_BINDERS: Record<string, string[]> = { sz_gk_for_each_active: ['ITEM'] }
+
+/**
+ * Telas do Jogo 2D Avançado: as 5 PRONTAS (sempre existem no runtime) + as que a
+ * criança criou com "Criar a tela". A semente vem primeiro — são as telas que o
+ * kit garante mesmo sem nenhum bloco de criação.
+ */
+const GK_BUILTIN_SCREENS = ['menu', 'pausa', 'carregando', 'fim', 'vitoria'] as const
+const SCREEN_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_create_screen: ['NAME'],
+  // Jogo 3D Avançado: mesmas telas prontas, mesma semântica — o kind é compartilhado.
+  sz_g3k_create_screen: ['NAME'],
+}
+function collectScreens(workspace: Blockly.Workspace | null | undefined): string[] {
+  const declared = collectDeclaredNames(workspace, SCREEN_DECL_BLOCKS)
+  const seen = new Set<string>(GK_BUILTIN_SCREENS)
+  return [...GK_BUILTIN_SCREENS, ...declared.filter((n) => !seen.has(n))]
+}
+
+/**
+ * Estados do Jogo 2D Avançado: os 5 FIXOS (com comportamento automático) + os que
+ * a criança inventou. Um estado "existe" por USO — os próprios campos de estado
+ * (mudar/quando entrar/é?) são a fonte da lista.
+ */
+const GK_BUILTIN_STATES = ['menu', 'jogando', 'pausado', 'fim', 'vitoria'] as const
+const GAMESTATE_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_set_state: ['STATE'],
+  sz_gk_on_enter_state: ['STATE'],
+  sz_gk_state_is: ['STATE'],
+  // Jogo 3D Avançado: mesmos estados fixos do jogo (kind compartilhado).
+  sz_g3k_set_state: ['STATE'],
+  sz_g3k_on_enter_state: ['STATE'],
+  sz_g3k_state_is: ['STATE'],
+}
+function collectGameStates(workspace: Blockly.Workspace | null | undefined): string[] {
+  const used = collectDeclaredNames(workspace, GAMESTATE_DECL_BLOCKS)
+  const seen = new Set<string>(GK_BUILTIN_STATES)
+  return [...GK_BUILTIN_STATES, ...used.filter((n) => !seen.has(n))]
+}
+
+/** Moldes do Jogo 2D Avançado (tipo data-driven) — fonte do seletor MOLD. */
+const MOLD_DECL_BLOCKS: Record<string, string[]> = { sz_gk_define_mold: ['NAME'] }
+function collectMolds(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, MOLD_DECL_BLOCKS)
+}
+
+/** Efeitos de faísca (partículas data-driven) — fonte do seletor EFFECT. */
+const EFFECT_DECL_BLOCKS: Record<string, string[]> = { sz_gk_define_effect: ['NAME'] }
+function collectEffects(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, EFFECT_DECL_BLOCKS)
+}
+
+/** Aparências vetoriais (o look de um molde) — fonte do seletor LOOK. */
+const LOOK_DECL_BLOCKS: Record<string, string[]> = { sz_gk_define_look: ['NAME'] }
+function collectLooks(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, LOOK_DECL_BLOCKS)
+}
+
+/** Sons importados (carregados por nome) — fonte do seletor de som a TOCAR. */
+const SOUND_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_load_sound: ['NAME'],
+  sz_g3k_load_sound: ['NAME'],
+}
+function collectSounds(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, SOUND_DECL_BLOCKS)
+}
+
+/**
+ * Avisos do event bus: "existem por USO" — tanto quem AVISA (emit) quanto quem
+ * OUVE (quando chegar o aviso) são a fonte da lista. Sem builtins; o fallback de
+ * texto cobre o primeiro uso.
+ */
+const EVENT_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_on_event: ['NAME'],
+  sz_gk_emit: ['NAME'],
+  sz_g3k_on_event: ['NAME'],
+  sz_g3k_emit: ['NAME'],
+}
+function collectEvents(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, EVENT_DECL_BLOCKS)
+}
+
+/** 🧙 Kit RPG: NPCs (declarados por "Criar o NPC") — fonte do seletor NPC. */
+const NPC_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_create_npc: ['NAME'] }
+function collectNpcs(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, NPC_DECL_BLOCKS)
+}
+/** Flags de história "existem por USO" (marcar OU perguntar), como os avisos. */
+const FLAG_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_rpg_add_flag: ['FLAG'],
+  sz_gk_rpg_has_flag: ['FLAG'],
+}
+function collectFlags(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, FLAG_DECL_BLOCKS)
+}
+/** Itens: quem DECLARA é o "Ganhar o item" (os demais consomem). */
+const ITEM_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_give_item: ['NAME'] }
+function collectItems(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, ITEM_DECL_BLOCKS)
+}
+/** Mapas: quem DECLARA é o "Quando chegar no mapa" (go_map/porta consomem). */
+const MAP_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_on_map: ['MAP'] }
+function collectMaps(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, MAP_DECL_BLOCKS)
+}
+
+/**
+ * Jogo 3D Avançado — entidades NOMEADAS (o "Nascer… chamando de" e o "Guardar em
+ * … quem está mais perto" declaram; os pickers CHAR/WHO/TARGET/A/B consomem).
+ */
+const ENTITY3D_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g3k_spawn_named: ['NAME'],
+  sz_g3k_store_nearest: ['NAME'],
+  sz_g3k_pick: ['NAME'],
+}
+function collectEntities3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, ENTITY3D_DECL_BLOCKS)
+}
+/** O "item"/"ela"/"vizinho" dos ganchos do kit 3D é uma entidade LOCAL (escopo por ancestral). */
+const ENTITY3D_LOOP_BINDERS: Record<string, string[]> = {
+  sz_g3k_for_each_alive: ['ITEM'],
+  sz_g3k_for_each_near: ['ITEM'],
+  sz_g3k_on_enter_entity_state: ['ITEM'],
+  sz_g3k_on_entity_state_update: ['ITEM'],
+  sz_g3k_on_exit_entity_state: ['ITEM'],
+  sz_g3k_on_entity_death: ['ITEM'],
+}
+
+/** Moldes 3D (a receita de peças) — fonte do seletor MOLD do kit 3D. */
+const MOLD3D_DECL_BLOCKS: Record<string, string[]> = { sz_g3k_define_mold: ['NAME'] }
+function collectMolds3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, MOLD3D_DECL_BLOCKS)
+}
+
+/** Efeitos 3D (faíscas data-driven) — fonte do seletor EFFECT do kit 3D. */
+const EFFECT3D_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g3k_define_effect: ['NAME'],
+  sz_g3k_define_emitter: ['NAME'],
+}
+function collectEffects3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, EFFECT3D_DECL_BLOCKS)
+}
+
+/**
+ * Estados de ENTIDADE do kit 3D (a FSM do curso): existem por USO — todos os
+ * campos de estado são a fonte da lista. Semente: toda entidade nasce 'parado'.
+ */
+const G3K_BUILTIN_ENTITY_STATES = ['parado'] as const
+const ENTITYSTATE_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g3k_set_entity_state: ['STATE'],
+  sz_g3k_entity_state_is: ['STATE'],
+  sz_g3k_on_enter_entity_state: ['STATE'],
+  sz_g3k_on_entity_state_update: ['STATE'],
+  sz_g3k_on_exit_entity_state: ['STATE'],
+  sz_g3k_state_timer: ['STATE', 'NEXT'],
+}
+function collectEntityStates(workspace: Blockly.Workspace | null | undefined): string[] {
+  const used = collectDeclaredNames(workspace, ENTITYSTATE_DECL_BLOCKS)
+  const seen = new Set<string>(G3K_BUILTIN_ENTITY_STATES)
+  return [...G3K_BUILTIN_ENTITY_STATES, ...used.filter((n) => !seen.has(n))]
 }
 
 /** Cenas/mundos do Jogo 3D (fonte do seletor WORLD). */
@@ -193,6 +398,16 @@ const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
   sz_js_try_catch: ['ERR'],
   sz_val_array_map: ['ITEM'],
   sz_val_array_find: ['ITEM'],
+  // Ganchos do Jogo 2D Avançado: o tempo (dt), o pincel (ctx) e a posição do
+  // clique (px/py) são nomes LOCAIS dos corpos dos ganchos.
+  sz_gk_on_update: ['DT'],
+  sz_gk_on_draw: ['PARAM'],
+  sz_gk_on_draw_hud: ['PARAM'],
+  sz_gk_on_game_click: ['PX', 'PY'],
+  sz_gk_define_look: ['CTX'],
+  // Ganchos do Jogo 3D Avançado: o tempo (dt) é nome LOCAL do corpo.
+  sz_g3k_on_update: ['DT'],
+  sz_g3k_on_entity_state_update: ['DT'],
 }
 
 /**
@@ -310,12 +525,103 @@ const KIND_UI: Record<NameKind, KindUI> = {
     empty:
       'Nenhum grupo ou enxame 3D ainda — crie um ("Criar grupo/enxame") ou digite o nome abaixo.',
   },
+  character: {
+    icon: '🧍',
+    placeholder: 'nome do personagem',
+    empty:
+      'Nenhum personagem ainda — crie um (bloco "Criar o personagem") ou digite o nome abaixo.',
+  },
+  screen: {
+    icon: '🖼️',
+    placeholder: 'nome da tela',
+    empty:
+      'As telas prontas são menu, pausa, carregando e fim — ou crie a sua ("Criar a tela") e digite o nome abaixo.',
+  },
+  gamestate: {
+    icon: '🚦',
+    placeholder: 'nome do estado',
+    empty:
+      'Os estados prontos são menu, jogando, pausado e fim — ou invente o seu (ex.: loja) digitando abaixo.',
+  },
+  mold: {
+    icon: '👾',
+    placeholder: 'nome do molde',
+    empty: 'Nenhum molde ainda — crie um (bloco "Criar o molde") ou digite o nome abaixo.',
+  },
+  effect: {
+    icon: '✨',
+    placeholder: 'nome do efeito',
+    empty: 'Nenhum efeito ainda — crie um (bloco "Criar o efeito") ou digite o nome abaixo.',
+  },
+  event: {
+    icon: '📢',
+    placeholder: 'nome do aviso',
+    empty:
+      'Nenhum aviso ainda — invente um nome (ex.: inimigo:morreu) aqui; quem "avisa" e quem "ouve" usam o mesmo.',
+  },
+  look: {
+    icon: '🎨',
+    placeholder: 'nome da aparência',
+    empty:
+      'Nenhuma aparência ainda — crie uma (bloco "Criar a aparência") ou digite o nome abaixo.',
+  },
+  sound: {
+    icon: '🔊',
+    placeholder: 'nome do som',
+    empty:
+      'Nenhum som carregado ainda — use "Carregar o som" (importe em "Imagens e sons") ou digite o nome abaixo.',
+  },
+  npc: {
+    icon: '🧙',
+    placeholder: 'nome do NPC',
+    empty: 'Nenhum NPC ainda — crie um (bloco "Criar o NPC") ou digite o nome abaixo.',
+  },
+  flag: {
+    icon: '🚩',
+    placeholder: 'nome do acontecimento',
+    empty:
+      'Nenhuma marca da história ainda — use "Marcar que … aconteceu" ou digite o nome abaixo.',
+  },
+  item: {
+    icon: '🎒',
+    placeholder: 'nome do item',
+    empty: 'Nenhum item ainda — use "Ganhar o item" ou digite o nome abaixo.',
+  },
+  map: {
+    icon: '🗺️',
+    placeholder: 'nome do mapa',
+    empty: 'Nenhum mapa ainda — crie um ("Quando chegar no mapa") ou digite o nome abaixo.',
+  },
+  entity3d: {
+    icon: '🤖',
+    placeholder: 'nome da entidade',
+    empty:
+      'Nenhuma entidade nomeada ainda — use "Nascer… chamando de" ou "Guardar em… quem está mais perto", ou digite o nome abaixo.',
+  },
+  mold3d: {
+    icon: '🧊',
+    placeholder: 'nome do molde 3D',
+    empty: 'Nenhum molde 3D ainda — crie um (bloco "Criar o molde 3D") ou digite o nome abaixo.',
+  },
+  effect3d: {
+    icon: '💥',
+    placeholder: 'nome do efeito 3D',
+    empty: 'Nenhum efeito 3D ainda — crie um (bloco "Criar o efeito 3D") ou digite o nome abaixo.',
+  },
+  entitystate: {
+    icon: '🚥',
+    placeholder: 'nome do estado da entidade',
+    empty:
+      'Toda entidade nasce no estado "parado" — invente os seus (mirar, atirar, recarregar) digitando abaixo.',
+  },
 }
 
 /** Laços que introduzem nomes LOCAIS, por `kind` de seletor (escopo por ancestral). */
 const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, Record<string, string[]>>> = {
   variable: VARIABLE_LOOP_BINDERS,
   object3d: OBJECT3D_LOOP_BINDERS,
+  character: CHARACTER_LOOP_BINDERS,
+  entity3d: ENTITY3D_LOOP_BINDERS,
 }
 
 /** Anda o workspace e coleta os nomes declarados nos campos do registro, sem repetir. */
@@ -565,6 +871,38 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectObjects3d(ws)
       case 'group3d':
         return collectGroups3d(ws)
+      case 'character':
+        return collectCharacters(ws)
+      case 'screen':
+        return collectScreens(ws)
+      case 'gamestate':
+        return collectGameStates(ws)
+      case 'mold':
+        return collectMolds(ws)
+      case 'effect':
+        return collectEffects(ws)
+      case 'event':
+        return collectEvents(ws)
+      case 'look':
+        return collectLooks(ws)
+      case 'sound':
+        return collectSounds(ws)
+      case 'npc':
+        return collectNpcs(ws)
+      case 'flag':
+        return collectFlags(ws)
+      case 'item':
+        return collectItems(ws)
+      case 'map':
+        return collectMaps(ws)
+      case 'entity3d':
+        return collectEntities3d(ws)
+      case 'mold3d':
+        return collectMolds3d(ws)
+      case 'effect3d':
+        return collectEffects3d(ws)
+      case 'entitystate':
+        return collectEntityStates(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)
