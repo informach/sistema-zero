@@ -441,6 +441,7 @@ export const gameKitRuntime = `(function () {
     var o = (opts && typeof opts === 'object') ? opts : {};
     var w = num(o.w, 64);
     var h = num(o.h, 64);
+    var hp = num(o.health, 100);
     var c = {
       x: (config.w - w) / 2,
       y: (config.h - h) / 2,
@@ -449,7 +450,16 @@ export const gameKitRuntime = `(function () {
       speed: num(o.speed, 300),
       speedMultiplier: 1,
       image: text(o.image, ''),
-      color: text(o.color, '#4a9eff')
+      color: text(o.color, '#4a9eff'),
+      look: text(o.look, ''),
+      // Vida p/ o combate funcionar no personagem (herói leva vários hits, não 1).
+      health: hp,
+      maxHealth: hp,
+      radius: Math.min(w, h) / 2,
+      _iFrames: 0,
+      _pushX: 0,
+      _pushY: 0,
+      _facingLeft: false
     };
     return c;
   }
@@ -1020,6 +1030,11 @@ export const gameKitRuntime = `(function () {
       c.x = (config.w - num(c.w, 0)) / 2;
       c.y = (config.h - num(c.h, 0)) / 2;
       c.speedMultiplier = 1;
+      // Recupera a vida cheia e limpa dano/empurrão (para "Jogar de novo").
+      if (c.maxHealth != null) c.health = c.maxHealth;
+      c._iFrames = 0;
+      c._pushX = 0;
+      c._pushY = 0;
     }),
     setSpeedMultiplier: guard('setSpeedMultiplier', function (c, factor) {
       if (!c || typeof c !== 'object') return;

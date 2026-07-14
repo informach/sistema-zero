@@ -231,13 +231,27 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
     expect(c.speedMultiplier).toBe(1)
   })
 
-  it('createCharacter preenche defaults do kit (64×64, 300 px/s)', () => {
+  it('createCharacter preenche defaults do kit (64×64, 300 px/s, vida 100)', () => {
     const { api } = loadRuntime()
     const c = api.createCharacter({}) as Record<string, unknown>
     expect(c.w).toBe(64)
     expect(c.h).toBe(64)
     expect(c.speed).toBe(300)
     expect(c.color).toBe('#4a9eff')
+    // Vida por padrão → o herói aguenta vários hits (não morre no primeiro).
+    expect(c.health).toBe(100)
+    expect(c.maxHealth).toBe(100)
+  })
+
+  it('herói com vida não morre no primeiro hit; resetCharacter cura', () => {
+    const { api } = loadRuntime()
+    const heroi = api.createCharacter({}) as Record<string, number>
+    api.hurt(heroi, 10, 1)
+    expect(heroi.health).toBe(90)
+    expect(api.isDead(heroi)).toBe(false)
+    heroi.health = 5
+    api.resetCharacter(heroi)
+    expect(heroi.health).toBe(100) // "Jogar de novo" cura
   })
 
   it('moveWithKeys: diagonal normalizada × velocidade × turbo × dt', () => {
