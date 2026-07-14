@@ -518,6 +518,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:countActive', mold: f(block, 'MOLD') }
     case 'sz_gk_touching_circle':
       return { type: 'gk:touchCircle', aVar: f(block, 'A'), bVar: f(block, 'B') }
+    case 'sz_gk_did_hit':
+      return { type: 'gk:didHit', aVar: f(block, 'WHO'), bVar: f(block, 'TARGET') }
     case 'sz_gk_is_dead':
       return { type: 'gk:isDead', charVar: f(block, 'CHAR') }
     case 'sz_gk_is_invincible':
@@ -546,6 +548,12 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:rpgHasItem', item: f(block, 'NAME') }
     case 'sz_gk_rpg_battle_won':
       return { type: 'gk:rpgBattleWon' }
+    case 'sz_gk_rpg_has_save':
+      return { type: 'gk:rpgHasSave' }
+    case 'sz_gk_rpg_level':
+      return { type: 'gk:rpgLevel' }
+    case 'sz_gk_rpg_xp':
+      return { type: 'gk:rpgXp' }
     case 'sz_g3k_world_size':
       return { type: 'g3k:worldSize' }
     case 'sz_g3k_count_alive':
@@ -558,6 +566,16 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3k:posOf', axis: f(block, 'AXIS') || 'x', charVar: f(block, 'CHAR') }
     case 'sz_g3k_exists':
       return { type: 'g3k:exists', charVar: f(block, 'CHAR') }
+    case 'sz_g3k_on_ground':
+      return { type: 'g3k:onGround', charVar: f(block, 'CHAR') }
+    case 'sz_g3k_pointer_over':
+      return { type: 'g3k:pointerOver', charVar: f(block, 'CHAR') }
+    case 'sz_g3k_ground_point':
+      return { type: 'g3k:groundPoint', axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z' }
+    case 'sz_g3k_entity_value':
+      return { type: 'g3k:entityValue', key: f(block, 'KEY'), charVar: f(block, 'CHAR') }
+    case 'sz_g3k_state_time':
+      return { type: 'g3k:stateTime', charVar: f(block, 'CHAR') }
     case 'sz_g3k_entity_state_is':
       return {
         type: 'g3k:entityStateIs',
@@ -5447,6 +5465,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'gk:rpgBattleStats',
           hp: exprInput(block, 'HP', { type: 'num', value: 30 }),
           str: exprInput(block, 'STR', { type: 'num', value: 7 }),
+          def: exprInput(block, 'DEF', { type: 'num', value: 0 }),
         },
       }
     case 'sz_gk_rpg_battle_start':
@@ -5458,6 +5477,48 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           name: f(block, 'NAME'),
           hp: exprInput(block, 'HP', { type: 'num', value: 20 }),
           str: exprInput(block, 'STR', { type: 'num', value: 5 }),
+          def: exprInput(block, 'DEF', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_rpg_set_special':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgSetSpecial',
+          name: f(block, 'NAME'),
+          dmg: exprInput(block, 'DMG', { type: 'num', value: 12 }),
+          cost: exprInput(block, 'COST', { type: 'num', value: 4 }),
+        },
+      }
+    case 'sz_gk_rpg_give_potion':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgGivePotion',
+          name: f(block, 'NAME'),
+          heal: exprInput(block, 'HEAL', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_gk_rpg_battle_reward':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgBattleReward',
+          xp: exprInput(block, 'XP', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_gk_rpg_inflict':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgInflict',
+          who: f(block, 'WHO'),
+          status: 'veneno', // só veneno por ora (o bloco não tem campo de status)
+          turns: exprInput(block, 'TURNS', { type: 'num', value: 3 }),
         },
       }
     case 'sz_gk_rpg_on_battle_end':
@@ -5465,6 +5526,156 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return {
         kind: 'js',
         value: { type: 'gk:rpgOnBattleEnd', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_gk_set_walk_sheet':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setWalkSheet',
+          charVar: f(block, 'CHAR'),
+          image: f(block, 'IMAGE'),
+          fw: exprInput(block, 'FW', { type: 'num', value: 16 }),
+          fh: exprInput(block, 'FH', { type: 'num', value: 16 }),
+        },
+      }
+    case 'sz_gk_rpg_cutscene':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:rpgCutscene', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_gk_rpg_wait':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgWait',
+          seconds: exprInput(block, 'SECONDS', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_gk_rpg_face':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:rpgFace', npc: f(block, 'NPC'), dir: f(block, 'DIR') },
+      }
+    case 'sz_gk_rpg_npc_walk_to':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgNpcWalkTo',
+          npc: f(block, 'NPC'),
+          cx: exprInput(block, 'CX', { type: 'num', value: 0 }),
+          cy: exprInput(block, 'CY', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_rpg_npc_wander':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgNpcWander', npc: f(block, 'NPC') } }
+    case 'sz_gk_rpg_on_step':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgOnStep',
+          cx: exprInput(block, 'CX', { type: 'num', value: 0 }),
+          cy: exprInput(block, 'CY', { type: 'num', value: 0 }),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_rpg_menu':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgMenu',
+          title: exprInput(block, 'TITLE', { type: 'str', value: 'O que fazer?' }),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_rpg_option':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgOption',
+          label: exprInput(block, 'LABEL', { type: 'str', value: 'Opção' }),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_rpg_save':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgSave' } }
+    case 'sz_gk_rpg_load':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgLoad' } }
+    case 'sz_gk_load_tilemap':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:loadTilemap', name: f(block, 'NAME'), asset: f(block, 'IMAGE') },
+      }
+    case 'sz_gk_draw_tilemap':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:drawTilemap', name: f(block, 'MAP'), layer: f(block, 'LAYER') },
+      }
+    case 'sz_gk_tilemap_solid':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:tilemapSolid', name: f(block, 'MAP') } }
+    case 'sz_gk_draw_shadow':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:drawShadow', charVar: f(block, 'CHAR') } }
+    case 'sz_gk_draw_by_depth':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:drawByDepth', charVar: f(block, 'CHAR') } }
+    case 'sz_gk_camera_shake':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:cameraShake',
+          intensity: exprInput(block, 'INT', { type: 'num', value: 8 }),
+          seconds: exprInput(block, 'SEC', { type: 'num', value: 0.3 }),
+        },
+      }
+    case 'sz_gk_attack_facing':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:attackFacing',
+          charVar: f(block, 'WHO'),
+          range: exprInput(block, 'RANGE', { type: 'num', value: 40 }),
+          duration: exprInput(block, 'DUR', { type: 'num', value: 0.3 }),
+        },
+      }
+    case 'sz_gk_patrol_around':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:patrolAround',
+          charVar: f(block, 'WHO'),
+          ox: exprInput(block, 'OX', { type: 'num', value: 400 }),
+          oy: exprInput(block, 'OY', { type: 'num', value: 300 }),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 80 }),
+        },
+      }
+    case 'sz_gk_draw_hearts':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:drawHearts',
+          current: exprInput(block, 'CUR', { type: 'num', value: 3 }),
+          max: exprInput(block, 'MAX', { type: 'num', value: 3 }),
+          x: exprInput(block, 'X', { type: 'num', value: 20 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 20 }),
+        },
       }
     case 'sz_gk_draw_background':
       seen.add('game-2d-advanced')
@@ -5840,7 +6051,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g3k:part',
           shape: f(block, 'SHAPE') || 'box',
+          material: f(block, 'MATERIAL') || 'normal',
           color: f(block, 'COLOR') || '#22d3ee',
+          texture: f(block, 'TEXTURE') || '',
           w: exprInput(block, 'W', { type: 'num', value: 1 }),
           h: exprInput(block, 'H', { type: 'num', value: 1 }),
           d: exprInput(block, 'D', { type: 'num', value: 1 }),
@@ -6017,6 +6230,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           drag: exprInput(block, 'DRAG', { type: 'num', value: 3 }),
         },
       }
+    case 'sz_g3k_set_entity_value':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:setEntityValue',
+          charVar: f(block, 'CHAR'),
+          key: f(block, 'KEY'),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
+        },
+      }
     case 'sz_g3k_look_at':
       seen.add('game-3d-advanced')
       return {
@@ -6030,6 +6254,102 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g3k:moveForward',
           charVar: f(block, 'WHO'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_g3k_fall':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:fall',
+          charVar: f(block, 'CHAR'),
+          g: exprInput(block, 'G', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_g3k_jump':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:jump',
+          charVar: f(block, 'CHAR'),
+          force: exprInput(block, 'FORCE', { type: 'num', value: 9 }),
+        },
+      }
+    case 'sz_g3k_make_solid':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:makeSolid', mold: f(block, 'MOLD') } }
+    case 'sz_g3k_platformer_keys':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:platformerKeys',
+          charVar: f(block, 'CHAR'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 8 }),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 9 }),
+        },
+      }
+    case 'sz_g3k_add_light':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:addLight',
+          color: f(block, 'COLOR') || '#fff1b8',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 6 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          intensity: exprInput(block, 'INTENSITY', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_g3k_set_ambient':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:setAmbient',
+          intensity: exprInput(block, 'INTENSITY', { type: 'num', value: 0.4 }),
+        },
+      }
+    case 'sz_g3k_set_fog':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:setFog',
+          color: f(block, 'COLOR') || '#9ca3af',
+          near: exprInput(block, 'NEAR', { type: 'num', value: 8 }),
+          far: exprInput(block, 'FAR', { type: 'num', value: 60 }),
+        },
+      }
+    case 'sz_g3k_set_sky':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:setSky',
+          top: f(block, 'TOP') || '#0b1026',
+          bottom: f(block, 'BOTTOM') || '#93c5fd',
+        },
+      }
+    case 'sz_g3k_pick':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'g3k:pick', varName: f(block, 'NAME'), mold: f(block, 'MOLD') },
+      }
+    case 'sz_g3k_camera_fps':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:cameraFps', charVar: f(block, 'CHAR') } }
+    case 'sz_g3k_move_fps':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:moveFps',
+          charVar: f(block, 'CHAR'),
           speed: exprInput(block, 'SPEED', { type: 'num', value: 6 }),
         },
       }
@@ -6191,6 +6511,59 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return {
         kind: 'js',
         value: { type: 'g3k:burstOn', effect: f(block, 'EFFECT'), charVar: f(block, 'WHO') },
+      }
+    case 'sz_g3k_define_emitter':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:defineEmitter',
+          name: f(block, 'NAME'),
+          colorFrom: f(block, 'C1') || '#fde047',
+          colorTo: f(block, 'C2') || '#7f1d1d',
+          sizeFrom: exprInput(block, 'S1', { type: 'num', value: 0.5 }),
+          sizeTo: exprInput(block, 'S2', { type: 'num', value: 0 }),
+          rate: exprInput(block, 'RATE', { type: 'num', value: 30 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 3 }),
+          cone: exprInput(block, 'CONE', { type: 'num', value: 20 }),
+          gravity: exprInput(block, 'GRAVITY', { type: 'num', value: 2 }),
+          glow: f(block, 'GLOW') === 'TRUE',
+        },
+      }
+    case 'sz_g3k_start_emitter':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:startEmitter',
+          effect: f(block, 'EFFECT'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 1 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_g3k_emitter_on':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'g3k:emitterOn', effect: f(block, 'EFFECT'), charVar: f(block, 'WHO') },
+      }
+    case 'sz_g3k_stop_emitter':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:stopEmitter', effect: f(block, 'EFFECT') } }
+    case 'sz_g3k_add_attractor':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:addAttractor',
+          effect: f(block, 'EFFECT'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 3 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          intensity: exprInput(block, 'INT', { type: 'num', value: 20 }),
+          radius: exprInput(block, 'RAD', { type: 'num', value: 5 }),
+        },
       }
     case 'sz_g3k_set_screen_text':
       seen.add('game-3d-advanced')

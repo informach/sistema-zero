@@ -15,8 +15,10 @@ API global (cada método corresponde a exatamente 1 bloco):
   scatterDecor(n); setEffects({shadows, bloom, strength, vignette}) — efeitos
   de cinema (pós-processamento), tudo ligado por padrão.
 - Moldes: defineMold('nome', {health, speed}, function () { ...part()... });
-  part({shape: 'box'|'sphere'|'cylinder'|'cone', color, w, h, d, x, y, z}) —
-  o part SÓ funciona dentro do defineMold.
+  part({shape: 'box'|'sphere'|'cylinder'|'cone'|'plane'|'torus'|'pyramid',
+  material: 'normal'|'metal'|'vidro'|'brilho', color, texture, w, h, d, x, y,
+  z}) — o part SÓ funciona dentro do defineMold; 'brilho' acende no bloom;
+  texture é o nome de uma imagem do projeto (opcional).
 - Enxames: spawn('molde', x, y, z) devolve a entidade (use const nome = ...
   para apelidar); spawnFrom('molde', ent) nasce no lugar e virado igual (o
   tiro da torre); startSpawner('molde', segundos, 'edge'|'anywhere');
@@ -25,7 +27,18 @@ API global (cada método corresponde a exatamente 1 bloco):
 - Laço/teclas: onUpdate(function (dt) {}) — roda só no estado 'jogando';
   moveWithKeys(ent, velocidade) — WASD/setas no chão, dt embutido;
   keyDown('w'); keyPressed('j'); setPauseKey('Escape').
-- Câmera: cameraFollow(ent, dist, altura); cameraOrbit(dist); cameraTop(alt).
+- Câmera: cameraFollow(ent, dist, altura); cameraOrbit(dist); cameraTop(alt);
+  cameraFps(ent) — 1a pessoa, olhar com o mouse (clique captura o ponteiro).
+- Fisica (plataforma): fall(ent, gravidade) — liga a queda; jump(ent, forca) —
+  so no chao; onGround(ent); makeSolid('molde') — vira parede/chao solido;
+  platformerKeys(ent, velocidade, pulo) — controle pronto WASD + espaco;
+  moveFps(ent, velocidade) — anda para onde a camera de 1a pessoa olha.
+- Luz & ceu: addLight(cor, x, y, z, forca) — luz pontual; setAmbient(forca) —
+  luz do ambiente (0 escuro, 1 claro); setFog(cor, perto, longe) — nevoa;
+  setSky(topo, horizonte) — troca o ceu em runtime.
+- Mira/clique (raycast): const alvo = pick('molde') — a entidade do molde sob o
+  mouse (point-and-click/RTS); pointerOver(ent) — o mouse esta sobre ela?;
+  groundPoint('x'|'y'|'z') — o ponto do chao sob o mouse.
 - Entidades: place(ent, x, y, z); setYaw(ent, graus); setVelocity(ent, x, y,
   z); setDrag(ent, n); lookAt(a, b); moveForward(ent, vel); posOf(ent,
   'x'|'y'|'z'); exists(ent) — sempre pergunte antes de usar um alvo guardado.
@@ -43,8 +56,14 @@ API global (cada método corresponde a exatamente 1 bloco):
 - Combate: hurt(ent, dano) — i-frames de 0.5s embutidos; healthOf(ent);
   onEntityDeath('molde', function (ela) {}) — recolhe sozinho depois.
 - Faíscas 3D (partículas data-driven): defineEffect('nome', {count, colorFrom,
-  colorTo, spread, sizeFrom, sizeTo, life, gravity}); burstAt('nome', x, y, z);
-  burstOn('nome', ent) — combine com onEntityDeath.
+  colorTo, spread, sizeFrom, sizeTo, life, gravity}) — EXPLOSAO; burstAt('nome',
+  x, y, z); burstOn('nome', ent) — combine com onEntityDeath.
+- Emissores CONTINUOS + atratores: defineEmitter('nome', {colorFrom, colorTo,
+  sizeFrom, sizeTo, rate, speed, cone, gravity, glow}) — fogo/fumaca/rastro
+  (cone em graus: 0 reto, 180 esfera; glow true=fogo, false=fumaca ordenada);
+  startEmitter('nome', x, y, z) — jorra num ponto; emitterOn('nome', ent) —
+  jorra seguindo a entidade; stopEmitter('nome'); addAttractor('nome', x, y, z,
+  forca, alcance) — ima que puxa as particulas (vortice).
 - Telas/HUD: setScreenText('menu'|'pausa'|'carregando'|'fim'|'vitoria',
   titulo, texto, botao); createScreen('nome', titulo, texto);
   addButton('tela', 'rotulo', function () {}); showScreen('nome');

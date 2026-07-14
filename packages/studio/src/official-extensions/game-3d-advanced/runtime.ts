@@ -35,6 +35,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     h: 720,
     world: 80,
     sky: '#0b1026',
+    skyBottom: '',
     ground: '#14532d',
     accent: '#22d3ee',
     pauseKey: 'escape',
@@ -66,12 +67,13 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var hudEls = Object.create(null);      // canto -> div
   var sounds = Object.create(null);      // nome -> HTMLAudioElement
   var molds = Object.create(null);       // nome -> { health, speed, template, radius }
-  var pools = Object.create(null);       // nome -> { active:[], free:[], _sweeping }
+  var pools = Object.create(null);       // nome -> { active:[], free:[], _sweeping } (contador de profundidade)
   var spawners = [];                     // { mold, interval, timer, where }
   var fsmHooks = Object.create(null);    // mold -> estado -> { enter:[], step:[], exit:[] }
   var stateTimers = [];                  // { mold, state, sec, next }
   var deathHooks = Object.create(null);  // mold -> [fn]
   var effects = Object.create(null);     // nome -> receita + Points + buffers (faíscas)
+  var emitters = Object.create(null);    // efeito -> jorro contínuo vivo (ponto/entidade)
   var composer = null;                   // mini-composer próprio (bloom + vinheta + ACES)
   var composerFailed = false;            // WebGL/targets falharam -> render direto p/ sempre
   var spriteTex = null;                  // círculo suave compartilhado (CanvasTexture)
@@ -83,6 +85,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var scene = null;
   var camera = null;
   var groundMesh = null;
+  var ambientLight = null;                // luz do ambiente (setAmbient muda a força)
+  var sunLight = null;                    // sol direcional (initWorld)
+  var extraLights = [];                   // luzes pontuais adicionadas (addLight)
   var decor = [];
   var currentDt = 0;
   var playTime = 0;
@@ -102,10 +107,28 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   // que ocupa e só re-insere quando os índices mudam.
   var GRID_DIM = 16;
   var gridCells = Object.create(null);
+  // Dedup da consulta por CARIMBO (sem alloc + sem indexOf O(k²)); buffer de
+  // resultado reusado (o chamador consome antes da próxima consulta). Scratch
+  // de faixa evita alocar um array por entidade/quadro na sincronização.
+  var gridStamp = 0;
+  var gridResults = [];
+  var _rangeScratch = [0, 0, 0, 0];
+  var _rangeQScratch = [0, 0, 0, 0];
 
   var SOUNDS = (typeof window !== 'undefined' && window.__SZGAME_SOUNDS && typeof window.__SZGAME_SOUNDS === 'object')
     ? window.__SZGAME_SOUNDS
     : {};
+  // Imagens do projeto (data:URL) para textura de peça — semeado pelo assetsBridge.
+  var ASSETS = (typeof window !== 'undefined' && window.__SZGAME_ASSETS && typeof window.__SZGAME_ASSETS === 'object')
+    ? window.__SZGAME_ASSETS
+    : {};
+  var _texCache = null;
+  // Raycast (mira/clique no mundo) e câmera 1ª pessoa — tudo LAZY (o Raycaster
+  // só nasce ao usar; ambientes de teste sem ele seguem sem quebrar).
+  var _ray = null;                       // THREE.Raycaster (mira pelo mouse)
+  var _mouse = null;                     // { x, y } em coords normalizadas (-1..1)
+  var _pickWired = false;                // rastreio do ponteiro já ligado?
+  var _fpsWired = false;                 // pointer-lock/olhar do FPS já ligado?
 
   function warn(msg) {
     try { console.warn('SZGameKit3D: ' + msg); } catch (e) {}
@@ -128,8 +151,19 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (h.length === 3) {
       h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
     }
+    // Rejeita hex malformado ANTES do parseInt (senão '12xy56' vira parse parcial
+    // 18 e devolveria uma cor errada em silêncio em vez de null). Sem regex (o
+    // arquivo vive num template literal): checa os 6 dígitos na mão.
+    if (h.length !== 6) return null;
+    for (var ci = 0; ci < 6; ci++) {
+      var cc = h.charCodeAt(ci);
+      var okDigit = cc >= 48 && cc <= 57;
+      var okLower = cc >= 97 && cc <= 102;
+      var okUpper = cc >= 65 && cc <= 70;
+      if (!okDigit && !okLower && !okUpper) return null;
+    }
     var n = parseInt(h, 16);
-    if (!isFinite(n) || h.length !== 6) return null;
+    if (!isFinite(n)) return null;
     return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
   }
 
@@ -341,6 +375,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     // assim "Jogar de novo" funciona. Despausar NÃO reseta.
     if (n === 'jogando' && prev !== 'jogando' && prev !== 'pausado') {
       playTime = 0;
+      entityLimitWarned = false;
       for (var pk in pools) releaseAll(pools[pk]);
       for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
       resetParticles();
@@ -419,8 +454,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
       camera = new THREE.PerspectiveCamera(60, config.w / config.h, 0.1, Math.max(1000, config.world * 6));
 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+      ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+      scene.add(ambientLight);
       var sun = new THREE.DirectionalLight(0xffffff, 1.0);
+      sunLight = sun;
       sun.position.set(config.world * 0.35, config.world * 0.55, config.world * 0.25);
       sun.castShadow = true;
       if (sun.shadow && sun.shadow.camera) {
@@ -468,7 +505,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       }
       var grad = g.createLinearGradient(0, 0, 0, 256);
       grad.addColorStop(0, config.sky);
-      grad.addColorStop(1, lighten(config.sky, 0.55));
+      // Horizonte: cor explícita (setSky com 2 cores) ou um tom mais claro do topo.
+      grad.addColorStop(1, config.skyBottom ? config.skyBottom : lighten(config.sky, 0.55));
       g.fillStyle = grad;
       g.fillRect(0, 0, 2, 256);
       var old = scene.background;
@@ -479,6 +517,30 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- 💡 Luz & céu (atmosfera) — mexer depois do start ----
+
+  function addLight(color, x, y, z, intensity) {
+    if (!worldReady && !initWorldLater('Pôr uma luz')) return;
+    if (!THREE.PointLight) return;
+    var p = new THREE.PointLight(text(color, '#ffffff'), Math.max(0, num(intensity, 1)), 0);
+    p.position.set(num(x, 0), num(y, 5), num(z, 0));
+    scene.add(p);
+    extraLights.push(p);
+  }
+  function setFog(color, near, far) {
+    if (!worldReady && !initWorldLater('Névoa')) return;
+    if (!THREE.Fog) return;
+    scene.fog = new THREE.Fog(text(color, '#9ca3af'), num(near, 8), num(far, config.world));
+  }
+  function setSkyRuntime(top, bottom) {
+    config.sky = text(top, config.sky);
+    if (bottom != null) config.skyBottom = text(bottom, '');
+    if (worldReady) applySky();
+  }
+  function setAmbient(intensity) {
+    if (ambientLight) ambientLight.intensity = Math.max(0, num(intensity, 0.55));
+  }
+
   /** Enfeites procedurais (pedras cinzas + cristais na cor de destaque). */
   function scatterDecor(count) {
     if (!worldReady && !initWorldLater('Espalhar enfeites')) return;
@@ -486,14 +548,18 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     for (var d = 0; d < decor.length; d++) {
       var old = decor[d];
       if (old.parent) old.parent.remove(old);
-      if (old.geometry && old.geometry.dispose) { try { old.geometry.dispose(); } catch (e) {} }
+      // A geometria é COMPARTILHADA (UNIT_GEOS) — não dispor aqui; só o material.
       if (old.material && old.material.dispose) { try { old.material.dispose(); } catch (e) {} }
     }
     decor.length = 0;
     var radius = config.world * 0.45;
+    // Geometrias-unidade COMPARTILHADAS pelos enfeites (antes cada um alocava a
+    // sua — até 64 geometrias à toa). São liberadas no disposeAll (UNIT_GEOS).
+    var rockGeo = unitGeo('rock');
+    var crystalGeo = unitGeo('crystal');
     for (var i = 0; i < n; i++) {
       var isRock = i % 2 === 0;
-      var geo = isRock ? new THREE.IcosahedronGeometry(0.5, 0) : new THREE.OctahedronGeometry(0.5, 0);
+      var geo = isRock ? rockGeo : crystalGeo;
       var mat;
       if (isRock) {
         var shade = 90 + Math.floor(Math.random() * 60);
@@ -536,8 +602,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     return i >= GRID_DIM ? GRID_DIM - 1 : i;
   }
 
-  function gridRange(x, z, half) {
-    return [gridIndex(x - half), gridIndex(z - half), gridIndex(x + half), gridIndex(z + half)];
+  function gridRangeInto(out, x, z, half) {
+    out[0] = gridIndex(x - half);
+    out[1] = gridIndex(z - half);
+    out[2] = gridIndex(x + half);
+    out[3] = gridIndex(z + half);
+    return out;
   }
 
   function gridInsert(e, range) {
@@ -564,32 +634,42 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     e._gi = null;
   }
 
-  /** Recalcula a faixa de células; só re-insere se os índices mudaram. */
+  /** Recalcula a faixa de células; só re-insere (e ALOCA) se os índices mudaram. */
   function gridSync(e) {
     var m = molds[e._mold];
     var half = m ? Math.max(0.5, m.radius) : 0.5;
     var p = e.mesh.position;
-    var r = gridRange(p.x, p.z, half);
+    var r = gridRangeInto(_rangeScratch, p.x, p.z, half);
     var old = e._gi;
     if (old && old[0] === r[0] && old[1] === r[1] && old[2] === r[2] && old[3] === r[3]) return;
     gridRemove(e);
-    gridInsert(e, r);
+    // Copia o scratch num array estável guardado na entidade (só quando muda).
+    gridInsert(e, [r[0], r[1], r[2], r[3]]);
   }
 
-  /** Vizinhos brutos num raio (broad-phase) — o chamador refina por distância. */
+  /**
+   * Vizinhos brutos num raio (broad-phase) — o chamador refina por distância.
+   * Dedup por carimbo (_stamp); devolve o BUFFER reusado gridResults (o
+   * chamador consome antes da próxima consulta; nested = snapshot em array local).
+   */
   function gridQuery(x, z, radius) {
-    var r = gridRange(x, z, radius);
-    var seen = [];
+    gridStamp++;
+    gridResults.length = 0;
+    var r = gridRangeInto(_rangeQScratch, x, z, radius);
     for (var gx = r[0]; gx <= r[2]; gx++) {
       for (var gz = r[1]; gz <= r[3]; gz++) {
         var cell = gridCells[gx + ',' + gz];
         if (!cell) continue;
         for (var i = 0; i < cell.length; i++) {
-          if (seen.indexOf(cell[i]) === -1) seen.push(cell[i]);
+          var c = cell[i];
+          if (c._stamp !== gridStamp) {
+            c._stamp = gridStamp;
+            gridResults.push(c);
+          }
         }
       }
     }
-    return seen;
+    return gridResults;
   }
 
   // ---- Moldes (aparência por composição de peças) + pool + spawner ----
@@ -602,9 +682,33 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (shape === 'sphere') g = new THREE.SphereGeometry(0.5, 20, 14);
     else if (shape === 'cylinder') g = new THREE.CylinderGeometry(0.5, 0.5, 1, 20);
     else if (shape === 'cone') g = new THREE.ConeGeometry(0.5, 1, 20);
+    // Plano deitado no chão (para pisos/paredes); rosca (donut) e pirâmide.
+    else if (shape === 'plane') g = new THREE.PlaneGeometry(1, 1);
+    else if (shape === 'torus') g = new THREE.TorusGeometry(0.35, 0.15, 12, 24);
+    else if (shape === 'pyramid') g = new THREE.ConeGeometry(0.5, 1, 4);
+    // Enfeites do cenário (facetados) — compartilhados pelo scatterDecor.
+    else if (shape === 'rock') g = new THREE.IcosahedronGeometry(0.5, 0);
+    else if (shape === 'crystal') g = new THREE.OctahedronGeometry(0.5, 0);
     else g = new THREE.BoxGeometry(1, 1, 1);
     UNIT_GEOS[shape] = g;
     return g;
+  }
+
+  /** Textura de imagem do projeto (data:URL) → cache global + pixel-nítida. */
+  function moldTexture(asset) {
+    var a = text(asset, '');
+    if (!a || !THREE.TextureLoader) return null;
+    var url = ASSETS[a] || (a.indexOf('data:') === 0 ? a : null);
+    if (!url) return null;
+    if (!_texCache) _texCache = {};
+    if (_texCache[url]) return _texCache[url];
+    var tex = new THREE.TextureLoader().load(url);
+    if (THREE.NearestFilter) {
+      tex.magFilter = THREE.NearestFilter;
+      tex.needsUpdate = true;
+    }
+    _texCache[url] = tex;
+    return tex;
   }
 
   function defineMold(name, opts, buildFn) {
@@ -623,10 +727,14 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       speed: num(o.speed, 3),
       template: group,
       parts: 0,
-      radius: 0.5
+      radius: 0.5,
+      // Caixa (AABB) do molde para colisão sólida — origem = pés (y=0). Cada peça
+      // maximiza estes; o auto-cubo (molde sem peças) garante um valor sensato.
+      hw: 0, hd: 0, top: 0,
+      solid: false
     };
     molds[k] = mold;
-    if (!pools[k]) pools[k] = { active: [], free: [], _sweeping: false };
+    if (!pools[k]) pools[k] = { active: [], free: [], _sweeping: 0 };
     // O corpo de blocos roda AGORA, com o molde corrente implícito (as peças
     // se montam nele) — mesmo padrão do defineShape/defineLook do 2D.
     if (typeof buildFn === 'function') {
@@ -661,8 +769,28 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     var y = num(o.y, 0.5);
     var z = num(o.z, 0);
     try {
-      var mat = new THREE.MeshStandardMaterial({ color: text(o.color, config.accent) });
+      var color = text(o.color, config.accent);
+      var mat = new THREE.MeshStandardMaterial({ color: color });
+      // Acabamento da peça. 'brilho' = emissivo → o bloom pega e a peça ACENDE
+      // (é o controle explícito do neon que faltava; antes só os cristais brilhavam).
+      var kind = text(o.material, 'normal');
+      if (kind === 'metal') {
+        mat.metalness = 1;
+        mat.roughness = 0.25;
+      } else if (kind === 'vidro') {
+        mat.transparent = true;
+        mat.opacity = 0.4;
+        mat.roughness = 0;
+      } else if (kind === 'brilho') {
+        if (mat.emissive && mat.emissive.set) mat.emissive.set(color);
+        mat.emissiveIntensity = 1.4;
+      }
+      // Textura de imagem do projeto (opcional): a peça ganha o desenho.
+      var tex = o.texture ? moldTexture(o.texture) : null;
+      if (tex) mat.map = tex;
       var mesh = new THREE.Mesh(unitGeo(shape), mat);
+      // Plano nasce deitado no chão (deita a folha em XZ) — piso/parede útil.
+      if (shape === 'plane') mesh.rotation.x = -Math.PI / 2;
       mesh.scale.set(w, h, d);
       mesh.position.set(x, y, z);
       mesh.castShadow = true;
@@ -672,6 +800,14 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       // Raio de colisão/grade: alcance horizontal da peça mais afastada.
       var reach = Math.max(Math.abs(x), Math.abs(z)) + Math.max(w, d) / 2;
       if (reach > mold.radius) mold.radius = reach;
+      // Caixa AABB do molde (colisão sólida). Origem = pés; a peça vai de
+      // (x±w/2, z±d/2) e o topo até y+h/2.
+      var hwP = Math.abs(x) + w / 2;
+      var hdP = Math.abs(z) + d / 2;
+      var topP = y + h / 2;
+      if (hwP > mold.hw) mold.hw = hwP;
+      if (hdP > mold.hd) mold.hd = hdP;
+      if (topP > mold.top) mold.top = topP;
     } catch (e) {
       warn('não consegui criar a peça: ' + e);
     }
@@ -687,10 +823,21 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       health: 0, maxHealth: 0,
       state: '',
       stateTime: 0,
+      // Física: gravidade própria (0 = desligada) e se está pisando em algo.
+      gravity: 0,
+      grounded: false,
+      // A "gaveta" de dados da criança (cronômetro/alvo/contador por entidade).
+      // Zerada a cada nascimento — nunca vaza de uma vida anterior do slot do pool.
+      data: null,
       _alive: false,
       _mold: '',
       _iFrames: 0,
-      _gi: null
+      // Geração: incrementa a cada nascimento. Um handle guardado de uma entidade
+      // reciclada-e-reusada tem _gen antigo → os métodos o tratam como "não é mais ela".
+      _gen: 0,
+      _gi: null,
+      // Carimbo da última consulta de grade que já viu esta entidade (dedup O(1)).
+      _stamp: 0
     };
   }
 
@@ -712,7 +859,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       }
       return null;
     }
-    var pool = pools[k] || (pools[k] = { active: [], free: [], _sweeping: false });
+    var pool = pools[k] || (pools[k] = { active: [], free: [], _sweeping: 0 });
     var e = pool.free.pop();
     if (!e) {
       e = blankEntity();
@@ -724,6 +871,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         return null;
       }
       scene.add(e.mesh);
+      // Ponte mesh→entidade para o raycast (clicar/mirar devolve a entidade).
+      if (e.mesh.userData) e.mesh.userData.szEntity = e;
+      else e.mesh.userData = { szEntity: e };
     }
     e.mesh.visible = true;
     e.mesh.position.set(num(x, 0), num(y, 0), num(z, 0));
@@ -735,9 +885,15 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     e.health = m.health;
     e.maxHealth = m.health;
     e.stateTime = 0;
+    e.gravity = 0;
+    e.grounded = false;
+    // Gaveta de dados NOVA a cada nascimento — nunca herda o lixo do slot reusado
+    // do pool (era o vazamento de campo custom entre vidas).
+    e.data = {};
     e._alive = true;
     e._mold = k;
     e._iFrames = 0;
+    e._gen = (e._gen || 0) + 1;
     e._gi = null;
     pool.active.push(e);
     totalAlive += 1;
@@ -777,9 +933,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     totalAlive = Math.max(0, totalAlive - 1);
     var pool = pools[e._mold];
     if (!pool) return;
-    // Dentro de uma varredura, a compactação reversa devolve ao free[]; fora
-    // dela, devolvemos agora (senão a entidade ficava presa no active[]).
-    if (!pool._sweeping) {
+    // Dentro de uma varredura (contador > 0), a compactação no fim devolve ao
+    // free[]; fora dela, devolvemos agora (senão ficava presa no active[]).
+    if (pool._sweeping === 0) {
       var idx = pool.active.indexOf(e);
       if (idx > -1) {
         pool.active.splice(idx, 1);
@@ -819,22 +975,24 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   function forEachAlive(name, fn) {
     var pool = pools[text(name, '')];
     if (!pool || typeof fn !== 'function') return;
-    pool._sweeping = true;
-    var warned = false;
+    // Contador de profundidade: varreduras ANINHADAS (ex.: forEachNear no mesmo
+    // molde dentro de um gancho de step) não podem compactar no meio da externa.
+    pool._sweeping++;
     for (var i = pool.active.length - 1; i >= 0; i--) {
       var e = pool.active[i];
-      if (!e._alive) continue;
+      if (!e || !e._alive) continue;
       try {
         fn(e);
       } catch (err) {
-        if (!warned) {
-          warned = true;
+        // Avisa UMA vez por CALLBACK (flag persistente na fn) — senão 60×/s afoga.
+        if (!fn.__szg3kWarned) {
+          fn.__szg3kWarned = true;
           warn('erro no "para cada vivo": ' + err);
         }
       }
     }
-    pool._sweeping = false;
-    compact(pool);
+    pool._sweeping--;
+    if (pool._sweeping === 0) compact(pool);
   }
 
   function countAlive(name) {
@@ -852,15 +1010,15 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (!pool) return;
     var d = Math.max(1, num(dist, 60));
     var d2 = d * d;
-    pool._sweeping = true;
+    pool._sweeping++;
     for (var i = 0; i < pool.active.length; i++) {
       var e = pool.active[i];
-      if (!e._alive || !e.mesh) continue;
+      if (!e || !e._alive || !e.mesh) continue;
       var p = e.mesh.position;
       if (p.x * p.x + p.y * p.y + p.z * p.z > d2) recycle(e);
     }
-    pool._sweeping = false;
-    compact(pool);
+    pool._sweeping--;
+    if (pool._sweeping === 0) compact(pool);
   }
 
   function startSpawner(mold, seconds, where) {
@@ -948,6 +1106,71 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     stateTimers.push({ mold: m, state: s, sec: Math.max(0.05, num(sec, 1.5)), next: n });
   }
 
+  // ---- Física sólida (gravidade + chão + colisão AABB de molde sólido) ----
+
+  var anySolid = false;                  // liga a resolução de sólidos só quando há algum
+  var _boxA = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
+  var _boxB = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
+
+  function entBox(e, out) {
+    var m = molds[e._mold];
+    var hw = m ? m.hw : 0.5;
+    var hd = m ? m.hd : 0.5;
+    var top = m ? m.top : 1;
+    var p = e.mesh.position;
+    out.minX = p.x - hw; out.maxX = p.x + hw;
+    out.minY = p.y;      out.maxY = p.y + top;
+    out.minZ = p.z - hd; out.maxZ = p.z + hd;
+  }
+
+  /** Pisa no chão-base (y=0): os pés do molde são a origem. */
+  function resolveGround(e) {
+    var p = e.mesh.position;
+    if (p.y <= 0) {
+      p.y = 0;
+      if (e.vy < 0) e.vy = 0;
+      e.grounded = true;
+    }
+  }
+
+  /** Empurra para fora dos moldes SÓLIDOS (paredes/plataformas), menor penetração. */
+  function resolveSolids(e) {
+    var p = e.mesh.position;
+    var m = molds[e._mold];
+    if (!m) return;
+    var reach = Math.max(m.hw, m.hd) + 2;
+    var list = gridQuery(p.x, p.z, reach);
+    entBox(e, _boxA);
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      if (s === e || !s._alive) continue;
+      var sm = molds[s._mold];
+      if (!sm || !sm.solid) continue;
+      entBox(s, _boxB);
+      var ox = Math.min(_boxA.maxX, _boxB.maxX) - Math.max(_boxA.minX, _boxB.minX);
+      var oy = Math.min(_boxA.maxY, _boxB.maxY) - Math.max(_boxA.minY, _boxB.minY);
+      var oz = Math.min(_boxA.maxZ, _boxB.maxZ) - Math.max(_boxA.minZ, _boxB.minZ);
+      if (ox <= 0 || oy <= 0 || oz <= 0) continue;
+      if (ox <= oy && ox <= oz) {
+        p.x += ((_boxA.minX + _boxA.maxX) < (_boxB.minX + _boxB.maxX)) ? -ox : ox;
+        e.vx = 0;
+      } else if (oz <= ox && oz <= oy) {
+        p.z += ((_boxA.minZ + _boxA.maxZ) < (_boxB.minZ + _boxB.maxZ)) ? -oz : oz;
+        e.vz = 0;
+      } else {
+        if ((_boxA.minY + _boxA.maxY) > (_boxB.minY + _boxB.maxY)) {
+          p.y += oy;
+          if (e.vy < 0) e.vy = 0;
+          e.grounded = true;
+        } else {
+          p.y -= oy;
+          if (e.vy > 0) e.vy = 0;
+        }
+      }
+      entBox(e, _boxA);
+    }
+  }
+
   // ---- Física da entidade (arrasto exponencial + integração + i-frames) ----
 
   function stepEntity(e, dt) {
@@ -967,7 +1190,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         break;
       }
     }
-    // 2. Arrasto exponencial (estável para qualquer dt) + integração.
+    // 2. Gravidade própria (se ligada): puxa antes de integrar (semi-implícito).
+    if (e.gravity) {
+      e.grounded = false;
+      e.vy += e.gravity * dt;
+    }
+    // 3. Arrasto exponencial (estável para qualquer dt) + integração.
     if (e.drag > 0) {
       var f = Math.exp(-e.drag * dt);
       e.vx *= f; e.vy *= f; e.vz *= f;
@@ -977,7 +1205,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       e.mesh.position.y += e.vy * dt;
       e.mesh.position.z += e.vz * dt;
     }
-    // 3. Invencibilidade: decai e pisca a 10 Hz.
+    // 4. Colisão sólida: pousa no chão (y=0) e nas paredes/plataformas sólidas.
+    if (e.gravity) resolveGround(e);
+    if (e.gravity && anySolid) resolveSolids(e);
+    // 5. Invencibilidade: decai e pisca a 10 Hz.
     if (e._iFrames > 0) {
       e._iFrames = Math.max(0, e._iFrames - dt);
       e.mesh.visible = e._iFrames <= 0 || Math.floor(e._iFrames * 10) % 2 === 0;
@@ -1008,6 +1239,52 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- 🏃 Física jogável (gravidade/pulo/plataforma) ----
+
+  function fall(e, g) {
+    if (!isEntity(e)) return;
+    // Gravidade para BAIXO (o valor é a força; negativo interno).
+    e.gravity = -Math.abs(num(g, 20));
+  }
+  function jump(e, force) {
+    if (!isEntity(e)) return;
+    if (e.grounded) {
+      e.vy = Math.abs(num(force, 8));
+      e.grounded = false;
+    }
+  }
+  function makeSolid(mold) {
+    var m = molds[text(mold, '')];
+    if (m) {
+      m.solid = true;
+      anySolid = true;
+    }
+  }
+  /** Plataforma pronta: WASD/setas no plano (preserva a queda) + pulo com espaço. */
+  function platformerKeys(e, speed, jumpForce) {
+    if (!isEntity(e)) return;
+    if (!e.gravity) e.gravity = -20;
+    var sp = num(speed, 8);
+    var dx = 0;
+    var dz = 0;
+    if (keys.w || keys.arrowup) dz -= 1;
+    if (keys.s || keys.arrowdown) dz += 1;
+    if (keys.a || keys.arrowleft) dx -= 1;
+    if (keys.d || keys.arrowright) dx += 1;
+    if (dx || dz) {
+      var len = Math.sqrt(dx * dx + dz * dz);
+      e.vx = (dx / len) * sp;
+      e.vz = (dz / len) * sp;
+    } else {
+      e.vx = 0;
+      e.vz = 0;
+    }
+    if ((keys[' '] || justPressed[' ']) && e.grounded) {
+      e.vy = Math.abs(num(jumpForce, 9));
+      e.grounded = false;
+    }
+  }
+
   function seek(who, target) {
     if (!isEntity(who) || !isEntity(target)) return;
     var dx = target.mesh.position.x - who.mesh.position.x;
@@ -1029,7 +1306,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (!(_tv1.lengthSq() > 0.000001)) return;
     _tv1.normalize();
     _tq1.setFromUnitVectors(_tv2.set(0, 0, 1), _tv1);
-    var lambda = Math.max(0.1, num(smooth, 5));
+    // λ default 8 (o curso usa 10 na torre; a criança pode subir a suavidade).
+    var lambda = Math.max(0.1, num(smooth, 8));
     var t = 1 - Math.exp(-lambda * currentDt);
     who.mesh.quaternion.slerp(_tq1, t);
   }
@@ -1095,32 +1373,29 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       var dz = other.mesh.position.z - e.mesh.position.z;
       if (dx * dx + dy * dy + dz * dz <= r2) hits.push(other);
     }
-    pool._sweeping = true;
-    var warned = false;
+    pool._sweeping++;
     for (var hI = 0; hI < hits.length; hI++) {
       if (!hits[hI]._alive) continue;
       try {
         fn(hits[hI]);
       } catch (err) {
-        if (!warned) {
-          warned = true;
+        if (!fn.__szg3kWarned) {
+          fn.__szg3kWarned = true;
           warn('erro no "para cada vizinho": ' + err);
         }
       }
     }
-    pool._sweeping = false;
-    compact(pool);
+    pool._sweeping--;
+    if (pool._sweeping === 0) compact(pool);
   }
 
-  function nearest(mold, e) {
-    if (!isEntity(e)) return null;
-    var pool = pools[text(mold, '')];
-    if (!pool) return null;
+  /** O mais próximo desse molde. Menor distância dentro do buffer da grade. */
+  function nearestOfList(list, e, k) {
     var best = null;
     var bestD = Infinity;
-    for (var i = 0; i < pool.active.length; i++) {
-      var other = pool.active[i];
-      if (!other._alive || other === e) continue;
+    for (var i = 0; i < list.length; i++) {
+      var other = list[i];
+      if (!other._alive || other === e || other._mold !== k) continue;
       var dx = other.mesh.position.x - e.mesh.position.x;
       var dy = other.mesh.position.y - e.mesh.position.y;
       var dz = other.mesh.position.z - e.mesh.position.z;
@@ -1128,6 +1403,30 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       if (d < bestD) { bestD = d; best = other; }
     }
     return best;
+  }
+
+  /**
+   * Mais próximo do molde — USA A GRADE (a razão de ela existir). Raio dobrando:
+   * acha rápido quando o alvo está por perto (o caso comum torre→inimigo); só cai
+   * na varredura do pool inteiro quando não há ninguém por perto (raro).
+   */
+  function nearest(mold, e) {
+    if (!isEntity(e)) return null;
+    var k = text(mold, '');
+    var pool = pools[k];
+    if (!pool) return null;
+    var cellSize = config.world / GRID_DIM;
+    var px = e.mesh.position.x;
+    var pz = e.mesh.position.z;
+    for (var mult = 2; mult <= GRID_DIM; mult += mult) {
+      var r = cellSize * mult;
+      // gridQuery devolve o buffer compartilhado; consumido AQUI antes de re-usar.
+      var best = nearestOfList(gridQuery(px, pz, r), e, k);
+      if (best) return best;
+      if (r >= config.world) break;
+    }
+    // Fallback: nenhum vizinho na grade — varre o pool (raro, e correto).
+    return nearestOfList(pool.active, e, k);
   }
 
   function touches(a, b, dist) {
@@ -1172,14 +1471,19 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var MAX_PARTICLES_PER_EFFECT = 300;
   var MAX_BURST = 120;
 
+  // particleData = (fração da vida 0→1, id aleatório do grão). O id + o tempo +
+  // spinSpeed giram o sprite (o "Data-Driven Particles" do curso). O ramo aditivo
+  // pré-multiplica (glow); o normal usa alfa reto (fumaça/névoa com sort por câmera).
   var PARTICLE_VSH = [
-    'attribute float particleLife;',
+    'attribute vec2 particleData;',
     'varying float vLife;',
+    'varying float vId;',
     'uniform float sizeFrom;',
     'uniform float sizeTo;',
     'uniform float scaleFactor;',
     'void main() {',
-    '  vLife = particleLife;',
+    '  vLife = particleData.x;',
+    '  vId = particleData.y;',
     '  vec3 mv = (modelViewMatrix * vec4(position, 1.0)).xyz;',
     '  gl_Position = projectionMatrix * vec4(mv, 1.0);',
     '  float size = mix(sizeFrom, sizeTo, vLife);',
@@ -1191,12 +1495,22 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     'uniform sampler2D map;',
     'uniform vec3 colorFrom;',
     'uniform vec3 colorTo;',
+    'uniform float spinSpeed;',
+    'uniform float time;',
+    'uniform float additive;',
     'varying float vLife;',
+    'varying float vId;',
     'void main() {',
-    '  vec4 texel = texture2D(map, gl_PointCoord.xy);',
+    '  float ang = spinSpeed * time + vId * 6.2831853;',
+    '  float c = cos(ang);',
+    '  float s = sin(ang);',
+    '  vec2 uv = gl_PointCoord.xy - 0.5;',
+    '  uv = vec2(uv.x * c - uv.y * s, uv.x * s + uv.y * c) + 0.5;',
+    '  vec4 texel = texture2D(map, uv);',
     '  vec3 col = mix(colorFrom, colorTo, vLife);',
     '  float alpha = texel.a * (1.0 - vLife);',
-    '  gl_FragColor = vec4(col * alpha, alpha);',
+    '  if (additive > 0.5) gl_FragColor = vec4(col * alpha, alpha);',
+    '  else gl_FragColor = vec4(col, alpha);',
     '}'
   ].join(' ');
 
@@ -1222,66 +1536,144 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  /**
+   * Constrói o efeito (Points + buffers + material) a partir de uma config já
+   * resolvida. É o coração comum de "efeito de explosão" (burst) e "emissor
+   * contínuo": mudam só os números (taxa, cone, giro, brilho, variâncias).
+   */
+  function buildEffect(k, cfg) {
+    var geometry = new THREE.BufferGeometry();
+    var positions = new Float32Array(MAX_PARTICLES_PER_EFFECT * 3);
+    var dataArr = new Float32Array(MAX_PARTICLES_PER_EFFECT * 2);
+    var posAttr = new THREE.BufferAttribute(positions, 3);
+    var dataAttr = new THREE.BufferAttribute(dataArr, 2);
+    if (THREE.DynamicDrawUsage != null) {
+      posAttr.setUsage(THREE.DynamicDrawUsage);
+      dataAttr.setUsage(THREE.DynamicDrawUsage);
+    }
+    geometry.setAttribute('position', posAttr);
+    geometry.setAttribute('particleData', dataAttr);
+    // Esfera de recorte fixa e generosa: nunca recalcular por quadro (curso).
+    geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1000);
+    geometry.setDrawRange(0, 0);
+    var cf = new THREE.Color(cfg.colorFrom);
+    var ct = new THREE.Color(cfg.colorTo);
+    var material = new THREE.ShaderMaterial({
+      uniforms: {
+        map: { value: ensureSpriteTex() },
+        colorFrom: { value: new THREE.Vector3(cf.r, cf.g, cf.b) },
+        colorTo: { value: new THREE.Vector3(ct.r, ct.g, ct.b) },
+        sizeFrom: { value: Math.max(0.01, cfg.sizeFrom) },
+        sizeTo: { value: Math.max(0, cfg.sizeTo) },
+        scaleFactor: { value: config.h * 0.42 },
+        spinSpeed: { value: cfg.spin },
+        time: { value: 0 },
+        additive: { value: cfg.glow ? 1 : 0 }
+      },
+      vertexShader: PARTICLE_VSH,
+      fragmentShader: PARTICLE_FSH,
+      transparent: true,
+      depthWrite: false,
+      blending: cfg.glow ? THREE.AdditiveBlending : THREE.NormalBlending
+    });
+    var points = new THREE.Points(geometry, material);
+    points.frustumCulled = false;
+    var fx = {
+      // Emissão em rajada (burst): quantas soltar por estouro.
+      count: cfg.count,
+      // Emissão contínua: grãos por segundo (0 = só burst).
+      emissionRate: cfg.emissionRate,
+      life: cfg.life,
+      lifeVar: cfg.lifeVar,
+      speed: cfg.speed,
+      speedVar: cfg.speedVar,
+      cone: cfg.cone,               // meia-abertura do cone em radianos (π = esfera)
+      volume: cfg.volume,           // raio de nascimento (positionRadiusVariance)
+      gravity: cfg.gravity,
+      gravityStrength: cfg.gravityStrength,
+      drag: cfg.drag,
+      spin: cfg.spin,
+      glow: cfg.glow,
+      attractors: [],
+      geometry: geometry,
+      material: material,
+      points: points,
+      positions: positions,
+      dataArr: dataArr,
+      particles: [],
+      free: []
+    };
+    if (worldReady && scene) scene.add(points);
+    return fx;
+  }
+
   function defineEffect(name, opts) {
     var k = text(name, '');
     if (!k) { warn('"Criar o efeito 3D" precisa de um nome'); return; }
     var o = (opts && typeof opts === 'object') ? opts : {};
-    var old = effects[k];
-    if (old) disposeEffect(old);
-    var fx;
+    if (effects[k]) disposeEffect(effects[k]);
     try {
-      var geometry = new THREE.BufferGeometry();
-      var positions = new Float32Array(MAX_PARTICLES_PER_EFFECT * 3);
-      var lifeArr = new Float32Array(MAX_PARTICLES_PER_EFFECT);
-      var posAttr = new THREE.BufferAttribute(positions, 3);
-      var lifeAttr = new THREE.BufferAttribute(lifeArr, 1);
-      if (THREE.DynamicDrawUsage != null) {
-        posAttr.setUsage(THREE.DynamicDrawUsage);
-        lifeAttr.setUsage(THREE.DynamicDrawUsage);
-      }
-      geometry.setAttribute('position', posAttr);
-      geometry.setAttribute('particleLife', lifeAttr);
-      // Esfera de recorte fixa e generosa: nunca recalcular por quadro (curso).
-      geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1000);
-      geometry.setDrawRange(0, 0);
-      var cf = new THREE.Color(text(o.colorFrom, '#fb923c'));
-      var ct = new THREE.Color(text(o.colorTo, '#451a03'));
-      var material = new THREE.ShaderMaterial({
-        uniforms: {
-          map: { value: ensureSpriteTex() },
-          colorFrom: { value: new THREE.Vector3(cf.r, cf.g, cf.b) },
-          colorTo: { value: new THREE.Vector3(ct.r, ct.g, ct.b) },
-          sizeFrom: { value: Math.max(0.01, num(o.sizeFrom, 0.5)) },
-          sizeTo: { value: Math.max(0, num(o.sizeTo, 0)) },
-          scaleFactor: { value: config.h * 0.42 }
-        },
-        vertexShader: PARTICLE_VSH,
-        fragmentShader: PARTICLE_FSH,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending
-      });
-      var points = new THREE.Points(geometry, material);
-      points.frustumCulled = false;
-      fx = {
+      // Explosão: esfera cheia, aditivo (glow), sem emissão contínua, sem giro.
+      effects[k] = buildEffect(k, {
         count: Math.max(1, Math.min(MAX_BURST, Math.floor(num(o.count, 24)))),
+        emissionRate: 0,
+        colorFrom: text(o.colorFrom, '#fb923c'),
+        colorTo: text(o.colorTo, '#451a03'),
+        sizeFrom: num(o.sizeFrom, 0.5),
+        sizeTo: num(o.sizeTo, 0),
         life: Math.max(0.05, num(o.life, 0.8)),
-        spread: Math.max(0.1, num(o.spread, 6)),
+        lifeVar: 0.3,
+        speed: Math.max(0.1, num(o.spread, 6)) * 0.7,
+        speedVar: 0.43,
+        cone: Math.PI,
+        volume: 0,
         gravity: num(o.gravity, -9),
-        geometry: geometry,
-        material: material,
-        points: points,
-        positions: positions,
-        lifeArr: lifeArr,
-        particles: [],
-        free: []
-      };
-      if (worldReady && scene) scene.add(points);
+        gravityStrength: 1,
+        drag: 0.5,
+        spin: 0,
+        glow: true
+      });
     } catch (e) {
       warn('não consegui criar o efeito "' + k + '": ' + e);
-      return;
     }
-    effects[k] = fx;
+  }
+
+  /**
+   * Emissor CONTÍNUO (fogo/fumaça/rastro/magia): jorra grãos por segundo num
+   * cone, com giro do sprite e brilho opcional. Reusa todo o motor de partículas
+   * — só liga a emissão contínua (emissionRate) e o cone/giro. As variâncias
+   * (vida/velocidade/volume) são derivadas para o efeito parecer vivo.
+   */
+  function defineEmitter(name, opts) {
+    var k = text(name, '');
+    if (!k) { warn('"Criar o emissor 3D" precisa de um nome'); return; }
+    var o = (opts && typeof opts === 'object') ? opts : {};
+    if (effects[k]) disposeEffect(effects[k]);
+    try {
+      var coneDeg = Math.max(0, Math.min(180, num(o.cone, 20)));
+      var glow = o.glow == null ? true : (o.glow !== false && o.glow !== 'FALSE');
+      effects[k] = buildEffect(k, {
+        count: 1,
+        emissionRate: Math.max(1, num(o.rate, 30)),
+        colorFrom: text(o.colorFrom, '#fde047'),
+        colorTo: text(o.colorTo, '#7f1d1d'),
+        sizeFrom: num(o.sizeFrom, 0.5),
+        sizeTo: num(o.sizeTo, 0),
+        life: Math.max(0.05, num(o.life, 1)),
+        lifeVar: 0.4,
+        speed: Math.max(0, num(o.speed, 3)),
+        speedVar: 0.3,
+        cone: coneDeg * Math.PI / 180,
+        volume: Math.max(0, num(o.volume, 0.15)),
+        gravity: num(o.gravity, 2),
+        gravityStrength: 1,
+        drag: 0.5,
+        spin: num(o.spin, 1.5),
+        glow: glow
+      });
+    } catch (e) {
+      warn('não consegui criar o emissor "' + k + '": ' + e);
+    }
   }
 
   function disposeEffect(fx) {
@@ -1300,6 +1692,35 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  /**
+   * Nasce UM grão no efeito, num cone em torno de +Y (fx.cone = meia-abertura;
+   * π = esfera cheia do burst), com variâncias de vida/velocidade e volume de
+   * nascimento. É o emitParticle do curso — compartilhado por burst e emissor.
+   */
+  function emitOne(fx, ox, oy, oz) {
+    if (fx.particles.length >= MAX_PARTICLES_PER_EFFECT) return;
+    var p = fx.free.pop() || { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, id: 0 };
+    // Posição no volume (positionRadiusVariance) — grãos não saem de um ponto só.
+    var pphi = Math.random() * Math.PI * 2;
+    var ptheta = Math.random() * Math.PI;
+    var prad = Math.random() * fx.volume;
+    p.x = ox + Math.sin(ptheta) * Math.cos(pphi) * prad;
+    p.y = oy + Math.cos(ptheta) * prad;
+    p.z = oz + Math.sin(ptheta) * Math.sin(pphi) * prad;
+    // Direção no cone: theta ∈ [0, cone] em volta de +Y.
+    var dphi = Math.random() * Math.PI * 2;
+    var dtheta = Math.random() * fx.cone;
+    var speed = fx.speed * (1 + (Math.random() * 2 - 1) * fx.speedVar);
+    p.vx = Math.sin(dtheta) * Math.cos(dphi) * speed;
+    p.vy = Math.cos(dtheta) * speed;
+    p.vz = Math.sin(dtheta) * Math.sin(dphi) * speed;
+    p.life = 0;
+    p.maxLife = fx.life * (1 + (Math.random() * 2 - 1) * fx.lifeVar);
+    if (p.maxLife < 0.05) p.maxLife = 0.05;
+    p.id = Math.random();
+    fx.particles.push(p);
+  }
+
   function burstAt(name, x, y, z) {
     var fx = effects[text(name, '')];
     if (!fx) {
@@ -1309,21 +1730,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     var bx = num(x, 0);
     var by = num(y, 1);
     var bz = num(z, 0);
-    for (var i = 0; i < fx.count; i++) {
-      if (fx.particles.length >= MAX_PARTICLES_PER_EFFECT) break;
-      var p = fx.free.pop() || { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1 };
-      // Direção aleatória na esfera (o ExplosionShape do curso) × espalhamento.
-      var phi = Math.random() * Math.PI * 2;
-      var theta = Math.random() * Math.PI;
-      var speed = fx.spread * (0.4 + Math.random() * 0.6);
-      p.x = bx; p.y = by; p.z = bz;
-      p.vx = Math.sin(theta) * Math.cos(phi) * speed;
-      p.vy = Math.cos(theta) * speed;
-      p.vz = Math.sin(theta) * Math.sin(phi) * speed;
-      p.life = 0;
-      p.maxLife = fx.life * (0.7 + Math.random() * 0.6);
-      fx.particles.push(p);
-    }
+    for (var i = 0; i < fx.count; i++) emitOne(fx, bx, by, bz);
   }
 
   function burstOn(name, e) {
@@ -1331,12 +1738,88 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     burstAt(name, e.mesh.position.x, e.mesh.position.y + 0.5, e.mesh.position.z);
   }
 
+  /** Liga um jorro CONTÍNUO do efeito num ponto fixo do mundo. */
+  function startEmitter(effect, x, y, z) {
+    var k = text(effect, '');
+    var fx = effects[k];
+    if (!fx) {
+      warn('o efeito "' + k + '" não existe — crie com "Criar o emissor 3D"');
+      return;
+    }
+    emitters[k] = { fx: fx, entity: null, x: num(x, 0), y: num(y, 1), z: num(z, 0), t: 0, active: true };
+  }
+
+  /** Liga um jorro CONTÍNUO do efeito seguindo uma entidade (tocha/nave/rastro). */
+  function emitterOn(effect, e) {
+    var k = text(effect, '');
+    var fx = effects[k];
+    if (!fx) {
+      warn('o efeito "' + k + '" não existe — crie com "Criar o emissor 3D"');
+      return;
+    }
+    if (!isEntity(e)) return;
+    emitters[k] = { fx: fx, entity: e, x: 0, y: 0, z: 0, t: 0, active: true };
+  }
+
+  function stopEmitter(effect) {
+    var em = emitters[text(effect, '')];
+    if (em) em.active = false;
+  }
+
+  /** Puxa as faíscas do efeito para um ponto (inverso do quadrado, como o curso). */
+  function addAttractor(effect, x, y, z, intensity, radius) {
+    var fx = effects[text(effect, '')];
+    if (!fx) return;
+    fx.attractors.push({
+      x: num(x, 0), y: num(y, 0), z: num(z, 0),
+      intensity: num(intensity, 20),
+      radius: Math.max(0.1, num(radius, 5))
+    });
+  }
+
+  /** A cada quadro: cada jorro ativo solta grãos conforme a sua taxa. */
+  function stepEmitters(dt) {
+    for (var k in emitters) {
+      var em = emitters[k];
+      if (!em.active) continue;
+      var fx = em.fx;
+      if (!fx || fx.emissionRate <= 0) continue;
+      var ox, oy, oz;
+      if (em.entity) {
+        if (!em.entity._alive) { em.active = false; continue; }
+        ox = em.entity.mesh.position.x;
+        oy = em.entity.mesh.position.y + 0.5;
+        oz = em.entity.mesh.position.z;
+      } else {
+        ox = em.x; oy = em.y; oz = em.z;
+      }
+      em.t += dt;
+      var per = 1 / fx.emissionRate;
+      var guard = 0;
+      while (em.t >= per && guard < MAX_PARTICLES_PER_EFFECT) {
+        em.t -= per;
+        emitOne(fx, ox, oy, oz);
+        guard++;
+      }
+    }
+  }
+
   /** Integra e reescreve os buffers (sem alocação por quadro; swap-pop O(1)). */
   function stepParticles(dt) {
     for (var k in effects) {
       var fx = effects[k];
       var list = fx.particles;
-      if (list.length === 0) continue;
+      if (fx.material && fx.material.uniforms && fx.material.uniforms.time) {
+        fx.material.uniforms.time.value = playTime;
+      }
+      if (list.length === 0) {
+        if (fx.geometry.drawRange && fx.geometry.drawRange.count !== 0) {
+          try { fx.geometry.setDrawRange(0, 0); } catch (e) {}
+        }
+        continue;
+      }
+      var atts = fx.attractors;
+      var dragF = Math.exp(-fx.drag * dt);
       for (var i = list.length - 1; i >= 0; i--) {
         var p = list[i];
         p.life += dt;
@@ -1347,9 +1830,21 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
           fx.free.push(p);
           continue;
         }
-        p.vy += fx.gravity * dt;
-        var dragF = Math.exp(-0.5 * dt);
+        // Gravidade (× força) + arrasto exponencial.
+        p.vy += fx.gravity * fx.gravityStrength * dt;
         p.vx *= dragF; p.vy *= dragF; p.vz *= dragF;
+        // Atratores: puxão inverso-do-quadrado para cada ponto (curso).
+        for (var a = 0; a < atts.length; a++) {
+          var at = atts[a];
+          var ax = at.x - p.x, ay = at.y - p.y, az = at.z - p.z;
+          var d = Math.sqrt(ax * ax + ay * ay + az * az);
+          if (d > 0.0001) {
+            var rr = d / at.radius;
+            var f = at.intensity / (1 + rr * rr);
+            var inv = f * dt / d;
+            p.vx += ax * inv; p.vy += ay * inv; p.vz += az * inv;
+          }
+        }
         p.x += p.vx * dt;
         p.y += p.vy * dt;
         p.z += p.vz * dt;
@@ -1360,24 +1855,40 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   function writeParticles(fx) {
     var list = fx.particles;
+    // Fumaça/névoa (não-aditivo) precisa desenhar do fundo para a frente —
+    // ordena por distância à câmera (o depth-sort do curso). Glow (aditivo) não.
+    if (!fx.glow && camera && camera.position && list.length > 1) {
+      var cx = camera.position.x, cy = camera.position.y, cz = camera.position.z;
+      for (var s = 0; s < list.length; s++) {
+        var q = list[s];
+        var ddx = q.x - cx, ddy = q.y - cy, ddz = q.z - cz;
+        q._sf = ddx * ddx + ddy * ddy + ddz * ddz;
+      }
+      list.sort(sortByDepth);
+    }
     for (var i = 0; i < list.length; i++) {
       var p = list[i];
       fx.positions[i * 3] = p.x;
       fx.positions[i * 3 + 1] = p.y;
       fx.positions[i * 3 + 2] = p.z;
-      fx.lifeArr[i] = p.maxLife > 0 ? p.life / p.maxLife : 1;
+      fx.dataArr[i * 2] = p.maxLife > 0 ? p.life / p.maxLife : 1;
+      fx.dataArr[i * 2 + 1] = p.id;
     }
     try {
       fx.geometry.attributes.position.needsUpdate = true;
-      fx.geometry.attributes.particleLife.needsUpdate = true;
+      fx.geometry.attributes.particleData.needsUpdate = true;
       fx.geometry.setDrawRange(0, list.length);
     } catch (e) {}
   }
 
+  function sortByDepth(a, b) { return b._sf - a._sf; }
+
   function resetParticles() {
+    for (var ek in emitters) delete emitters[ek];
     for (var k in effects) {
       var fx = effects[k];
       while (fx.particles.length > 0) fx.free.push(fx.particles.pop());
+      fx.attractors.length = 0;
       try { fx.geometry.setDrawRange(0, 0); } catch (e) {}
     }
   }
@@ -1513,8 +2024,24 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     '  v = remap(v, 0.0, 1.0, intensity, 1.0);',
     '  return v;',
     '}',
-    'vec3 aces(vec3 x) {',
-    '  return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);',
+    /* ACES EXATO do three.js (RRTAndODTFit + matrizes in/out, com /0.6 de
+       exposição) — a MESMA curva do ACESFilmicToneMapping do caminho direto e do
+       OutputPass do curso. Assim ligar/desligar bloom/vinheta NÃO desloca a cor
+       da imagem inteira (o furo de consistência do review). mat3 é column-major:
+       cada trinca é uma COLUNA, igual ao three. */
+    'vec3 RRTAndODTFit(vec3 v) {',
+    '  vec3 a = v * (v + 0.0245786) - 0.000090537;',
+    '  vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;',
+    '  return a / b;',
+    '}',
+    'vec3 aces(vec3 color) {',
+    '  mat3 mIn = mat3(0.59719, 0.07600, 0.02840, 0.35458, 0.90834, 0.13383, 0.04823, 0.01566, 0.83777);',
+    '  mat3 mOut = mat3(1.60475, -0.10208, -0.00327, -0.53108, 1.10813, -0.07276, -0.07367, -0.00605, 1.07602);',
+    '  color *= 1.0 / 0.6;',
+    '  color = mIn * color;',
+    '  color = RRTAndODTFit(color);',
+    '  color = mOut * color;',
+    '  return clamp(color, 0.0, 1.0);',
     '}',
     'void main() {',
     '  vec4 texel = texture2D(tDiffuse, vUvs);',
@@ -1733,8 +2260,161 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     orbit.dist = camMode.dist;
   }
 
+  // ---- Mira & clique no mundo (raycast) + câmera 1ª pessoa ----
+  function ensureRay() {
+    if (_ray) return true;
+    if (!THREE.Raycaster || !THREE.Vector3) return false;
+    _ray = new THREE.Raycaster();
+    return true;
+  }
+  /** Rastreia o ponteiro em coordenadas normalizadas (-1..1) sobre o canvas. */
+  function ensurePointer() {
+    if (_pickWired) return;
+    _pickWired = true;
+    _mouse = { x: 0, y: 0 };
+    var upd = function (ev) {
+      var rect = canvasEl && canvasEl.getBoundingClientRect
+        ? canvasEl.getBoundingClientRect()
+        : { left: 0, top: 0, width: 1, height: 1 };
+      var cx = typeof ev.clientX === 'number' ? ev.clientX : 0;
+      var cy = typeof ev.clientY === 'number' ? ev.clientY : 0;
+      _mouse.x = ((cx - rect.left) / (rect.width || 1)) * 2 - 1;
+      _mouse.y = -((cy - rect.top) / (rect.height || 1)) * 2 + 1;
+    };
+    window.addEventListener('pointermove', upd);
+    window.addEventListener('pointerdown', upd);
+  }
+  /** Sobe pelos pais do objeto atingido até achar a entidade viva dona dele. */
+  function entityOfMesh(obj) {
+    var o = obj;
+    while (o) {
+      if (o.userData && o.userData.szEntity && o.userData.szEntity._alive === true) {
+        return o.userData.szEntity;
+      }
+      o = o.parent;
+    }
+    return null;
+  }
+  /** Sem o loop rodando, matrixWorld fica defasado — atualiza antes de mirar. */
+  function syncMatrices() {
+    if (camera && camera.updateMatrixWorld) camera.updateMatrixWorld();
+    if (scene && scene.updateMatrixWorld) scene.updateMatrixWorld(true);
+  }
+  /** A entidade (do molde, se dado) sob o mouse — ou null. */
+  function pickAtMouse(mold) {
+    if (!worldReady || !camera || !ensureRay()) return null;
+    ensurePointer();
+    syncMatrices();
+    _ray.setFromCamera(_mouse, camera);
+    var hits = _ray.intersectObjects(scene.children, true);
+    var want = text(mold, '');
+    for (var i = 0; i < hits.length; i++) {
+      var e = entityOfMesh(hits[i].object);
+      if (e && (!want || e._mold === want)) return e;
+    }
+    return null;
+  }
+  /** O mouse está sobre esta entidade? */
+  function pointerOverEntity(e) {
+    if (!isEntity(e) || !worldReady || !camera || !ensureRay()) return false;
+    ensurePointer();
+    syncMatrices();
+    _ray.setFromCamera(_mouse, camera);
+    var hits = _ray.intersectObjects([e.mesh], true);
+    return hits.length > 0;
+  }
+  /** O ponto do chão (plano y=0) sob o mouse, no eixo pedido. */
+  function groundPoint(axis) {
+    if (!worldReady || !camera || !ensureRay()) return 0;
+    ensurePointer();
+    syncMatrices();
+    _ray.setFromCamera(_mouse, camera);
+    var ro = _ray.ray && _ray.ray.origin;
+    var rd = _ray.ray && _ray.ray.direction;
+    if (!ro || !rd || Math.abs(rd.y) < 0.000001) return 0;
+    var t = -ro.y / rd.y;
+    if (t < 0) return 0;
+    var a = text(axis, 'x');
+    if (a === 'y') return ro.y + rd.y * t;
+    if (a === 'z') return ro.z + rd.z * t;
+    return ro.x + rd.x * t;
+  }
+  /** Câmera em 1ª pessoa presa à entidade; olhar com o mouse (pointer-lock). */
+  function cameraFps(e, height) {
+    if (!isEntity(e)) {
+      warn('"Câmera em 1ª pessoa" precisa de uma entidade');
+      return;
+    }
+    var h = num(height, 1.4);
+    camMode = {
+      kind: 'fps',
+      target: e,
+      dist: 0,
+      height: h,
+      yaw: e.mesh ? e.mesh.rotation.y : 0,
+      pitch: 0
+    };
+    ensureFpsLook();
+  }
+  function ensureFpsLook() {
+    if (_fpsWired) return;
+    _fpsWired = true;
+    if (canvasEl && canvasEl.addEventListener) {
+      canvasEl.addEventListener('click', function () {
+        if (camMode.kind === 'fps' && canvasEl.requestPointerLock) {
+          try { canvasEl.requestPointerLock(); } catch (err) {}
+        }
+      });
+    }
+    window.addEventListener('mousemove', function (ev) {
+      if (camMode.kind !== 'fps') return;
+      if (typeof document !== 'undefined' && document.pointerLockElement !== canvasEl) return;
+      camMode.yaw -= (ev.movementX || 0) * 0.0025;
+      camMode.pitch -= (ev.movementY || 0) * 0.0025;
+      if (camMode.pitch > 1.4) camMode.pitch = 1.4;
+      if (camMode.pitch < -1.4) camMode.pitch = -1.4;
+      // O corpo vira junto no eixo Y — mover em 1ª pessoa e o olhar batem.
+      if (isEntity(camMode.target) && camMode.target.mesh) {
+        camMode.target.mesh.rotation.y = camMode.yaw;
+      }
+    });
+  }
+  /** Anda a entidade em 1ª pessoa: WASD/setas relativos ao olhar. */
+  function moveFps(e, speed) {
+    if (!isEntity(e)) return;
+    var yaw = camMode.kind === 'fps' ? camMode.yaw : (e.mesh ? e.mesh.rotation.y : 0);
+    var sp = num(speed, 6);
+    var fx = -Math.sin(yaw);
+    var fz = -Math.cos(yaw);
+    var rx = Math.cos(yaw);
+    var rz = -Math.sin(yaw);
+    var mf = 0;
+    var mr = 0;
+    if (keys.w || keys.arrowup) mf += 1;
+    if (keys.s || keys.arrowdown) mf -= 1;
+    if (keys.d || keys.arrowright) mr += 1;
+    if (keys.a || keys.arrowleft) mr -= 1;
+    e.vx = (fx * mf + rx * mr) * sp;
+    e.vz = (fz * mf + rz * mr) * sp;
+  }
+
   function updateCamera(dt) {
     if (!camera) return;
+    if (camMode.kind === 'fps') {
+      var f = camMode.target;
+      if (!isEntity(f)) return;
+      var px = f.mesh.position.x;
+      var py = f.mesh.position.y + camMode.height;
+      var pz = f.mesh.position.z;
+      camera.position.set(px, py, pz);
+      var cp = Math.cos(camMode.pitch);
+      camera.lookAt(
+        px + -Math.sin(camMode.yaw) * cp,
+        py + Math.sin(camMode.pitch),
+        pz + -Math.cos(camMode.yaw) * cp
+      );
+      return;
+    }
     if (camMode.kind === 'orbit' && orbit) {
       var ce = Math.cos(orbit.el);
       camera.position.set(
@@ -1794,7 +2474,16 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (dt > 1 / 30) dt = 1 / 30;
     currentDt = dt;
     if (state === 'jogando') {
-      stepSystems(dt);
+      // stepSystems também dentro de try/catch (como o renderFrame): um erro
+      // fora dos ganchos guardados não pode escapar do gameLoop e congelar o rAF.
+      try {
+        stepSystems(dt);
+      } catch (e) {
+        if (!stepSystems.__szg3kWarned) {
+          stepSystems.__szg3kWarned = true;
+          warn('erro nos sistemas do jogo: ' + e);
+        }
+      }
       // Um gancho pode ter terminado o jogo NESTE quadro — não rodar o update
       // da criança num jogo que acabou de acabar.
       if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
@@ -1821,16 +2510,18 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     }
     for (var pk in pools) {
       var pool = pools[pk];
-      pool._sweeping = true;
+      pool._sweeping++;
       for (var eI = pool.active.length - 1; eI >= 0; eI--) {
         var e = pool.active[eI];
-        if (!e._alive) continue;
+        // Tolera encolhimento: uma varredura aninhada do gancho pôde compactar.
+        if (!e || !e._alive) continue;
         stepEntity(e, dt);
       }
-      pool._sweeping = false;
-      compact(pool);
+      pool._sweeping--;
+      if (pool._sweeping === 0) compact(pool);
     }
     // As faíscas só andam em 'jogando' — a pausa congela tudo, como no curso.
+    stepEmitters(dt);
     stepParticles(dt);
   }
 
@@ -2000,6 +2691,16 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       for (var fk in effects) disposeEffect(effects[fk]);
       if (spriteTex && spriteTex.dispose) { try { spriteTex.dispose(); } catch (e) {} }
       spriteTex = null;
+      for (var li = 0; li < extraLights.length; li++) {
+        if (extraLights[li] && extraLights[li].dispose) { try { extraLights[li].dispose(); } catch (e) {} }
+      }
+      extraLights.length = 0;
+      if (_texCache) {
+        for (var tk in _texCache) {
+          if (_texCache[tk] && _texCache[tk].dispose) { try { _texCache[tk].dispose(); } catch (e) {} }
+        }
+        _texCache = null;
+      }
       disposeComposer();
       if (stageEl && stageEl.parentNode) { try { stageEl.parentNode.removeChild(stageEl); } catch (e) {} }
       if (styleEl && styleEl.parentNode) { try { styleEl.parentNode.removeChild(styleEl); } catch (e) {} }
@@ -2007,6 +2708,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     renderer = null;
     scene = null;
     camera = null;
+    _ray = null;
+    emitters = Object.create(null);
     gridCells = Object.create(null);
   }
 
@@ -2053,6 +2756,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       if (o.bloom != null) config.bloom = o.bloom !== false;
       if (o.strength != null) config.bloomStrength = Math.max(0, Math.min(4, num(o.strength, 1.2)));
       if (o.vignette != null) config.vignette = o.vignette !== false;
+      // Desligou TUDO depois do start: o composer fica órfão — libere os render
+      // targets (senão ~20MB de GPU presos até o disposeAll).
+      if (!config.bloom && !config.vignette && composer) disposeComposer();
     }),
     // 🧊 Moldes & peças
     defineMold: guard('defineMold', defineMold),
@@ -2112,13 +2818,44 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     }),
     lookAt: guard('lookAt', lookAt),
     moveForward: guard('moveForward', moveForward),
+    // 🏃 Física
+    fall: guard('fall', fall),
+    jump: guard('jump', jump),
+    onGround: guard('onGround', function (e) { return isEntity(e) && e.grounded === true; }),
+    makeSolid: guard('makeSolid', makeSolid),
+    platformerKeys: guard('platformerKeys', platformerKeys),
+    // 💡 Luz & céu
+    addLight: guard('addLight', addLight),
+    setFog: guard('setFog', setFog),
+    setSky: guard('setSky', setSkyRuntime),
+    setAmbient: guard('setAmbient', setAmbient),
+    // 🖱️ Mira & clique no mundo (raycast) + câmera 1ª pessoa
+    pick: guard('pick', pickAtMouse),
+    pointerOver: guard('pointerOver', pointerOverEntity),
+    groundPoint: guard('groundPoint', groundPoint),
+    cameraFps: guard('cameraFps', cameraFps),
+    moveFps: guard('moveFps', moveFps),
     posOf: guard('posOf', function (e, axis) {
       var a = text(axis, 'x');
       if (a !== 'x' && a !== 'y' && a !== 'z') a = 'x';
       return posAxis(e, a);
     }),
     exists: guard('exists', function (e) { return isEntity(e); }),
-    // 🚥 Estados da entidade (FSM)
+    // Gaveta de dados POR ENTIDADE (cronômetro/alvo/contador próprio — como os
+    // campos privados de State no curso). Zerada a cada nascimento (sem vazamento).
+    setEntityValue: guard('setEntityValue', function (e, key, value) {
+      if (!isEntity(e)) return;
+      if (!e.data) e.data = {};
+      e.data[text(key, '')] = value;
+    }),
+    entityValue: guard('entityValue', function (e, key) {
+      if (!isEntity(e) || !e.data) return undefined;
+      return e.data[text(key, '')];
+    }),
+    stateTime: guard('stateTime', function (e) {
+      return isEntity(e) ? num(e.stateTime, 0) : 0;
+    }),
+    // 🧠 Cérebro da entidade (FSM)
     onEnterEntityState: guard('onEnterEntityState', function (mold, stateName, fn) {
       var bucket = fsmBucket(mold, stateName);
       if (bucket && typeof fn === 'function') bucket.enter.push(fn);
@@ -2215,6 +2952,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     defineEffect: guard('defineEffect', defineEffect),
     burstAt: guard('burstAt', burstAt),
     burstOn: guard('burstOn', burstOn),
+    // 🌊 Emissores contínuos + atratores (partículas data-driven do curso)
+    defineEmitter: guard('defineEmitter', defineEmitter),
+    startEmitter: guard('startEmitter', startEmitter),
+    emitterOn: guard('emitterOn', emitterOn),
+    stopEmitter: guard('stopEmitter', stopEmitter),
+    addAttractor: guard('addAttractor', addAttractor),
     // 📢 Avisos
     on: guard('on', onEvent),
     emit: guard('emit', emit),

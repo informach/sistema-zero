@@ -392,6 +392,8 @@ export function compileExpr(
       return `SZGameKit.countActive(${JSON.stringify(expr.mold)})`
     case 'gk:touchCircle':
       return `SZGameKit.touchCircle(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'gk:didHit':
+      return `SZGameKit.didHit(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'gk:isDead':
       return `SZGameKit.isDead(${identifiers.get(expr.charVar)})`
     case 'gk:isInvincible':
@@ -418,6 +420,12 @@ export function compileExpr(
       return `SZGameKit.rpgHasItem(${JSON.stringify(expr.item)})`
     case 'gk:rpgBattleWon':
       return 'SZGameKit.rpgBattleWon()'
+    case 'gk:rpgHasSave':
+      return 'SZGameKit.rpgHasSave()'
+    case 'gk:rpgLevel':
+      return 'SZGameKit.rpgLevel()'
+    case 'gk:rpgXp':
+      return 'SZGameKit.rpgXp()'
     case 'gk:kills':
       return 'SZGameKit.kills()'
     // ---- Jogo 3D Avançado (game-3d-advanced) ----
@@ -441,6 +449,16 @@ export function compileExpr(
       return `SZGameKit3D.touches(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
     case 'g3k:healthOf':
       return `SZGameKit3D.healthOf(${identifiers.get(expr.charVar)})`
+    case 'g3k:entityValue':
+      return `SZGameKit3D.entityValue(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.key)})`
+    case 'g3k:stateTime':
+      return `SZGameKit3D.stateTime(${identifiers.get(expr.charVar)})`
+    case 'g3k:onGround':
+      return `SZGameKit3D.onGround(${identifiers.get(expr.charVar)})`
+    case 'g3k:pointerOver':
+      return `SZGameKit3D.pointerOver(${identifiers.get(expr.charVar)})`
+    case 'g3k:groundPoint':
+      return `SZGameKit3D.groundPoint(${JSON.stringify(expr.axis)})`
     case 'g3k:stateIs':
       return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
     case 'g3k:gameState':

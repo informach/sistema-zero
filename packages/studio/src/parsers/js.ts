@@ -3906,6 +3906,11 @@ function matchGameKitExpr(node: Node): JSExpr | null {
     const bVar = identifierName(args[1])
     if (aVar && bVar) return { type: 'gk:touchCircle', aVar, bVar }
   }
+  if (method === 'didHit') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'gk:didHit', aVar, bVar }
+  }
   if (method === 'isDead') {
     const charVar = identifierName(args[0])
     if (charVar) return { type: 'gk:isDead', charVar }
@@ -3944,6 +3949,9 @@ function matchGameKitRpgExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     return { type: 'gk:rpgHasItem', item: args[0].value as string }
   }
   if (method === 'rpgBattleWon' && args.length === 0) return { type: 'gk:rpgBattleWon' }
+  if (method === 'rpgHasSave' && args.length === 0) return { type: 'gk:rpgHasSave' }
+  if (method === 'rpgLevel' && args.length === 0) return { type: 'gk:rpgLevel' }
+  if (method === 'rpgXp' && args.length === 0) return { type: 'gk:rpgXp' }
   return null
 }
 
@@ -4401,19 +4409,175 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'rpgBattleStats': {
       const hp = toExpr(args[0], ctx)
       const str = toExpr(args[1], ctx)
-      return isSimpleValue(hp) && isSimpleValue(str) ? { type: 'gk:rpgBattleStats', hp, str } : null
+      const def = toExpr(args[2], ctx)
+      return isSimpleValue(hp) && isSimpleValue(str) && isSimpleValue(def)
+        ? { type: 'gk:rpgBattleStats', hp, str, def }
+        : null
     }
     case 'rpgBattleStart': {
       if (args[0]?.type !== 'StringLiteral') return null
       const hp = toExpr(args[1], ctx)
       const str = toExpr(args[2], ctx)
-      return isSimpleValue(hp) && isSimpleValue(str)
-        ? { type: 'gk:rpgBattleStart', name: args[0].value as string, hp, str }
+      const def = toExpr(args[3], ctx)
+      return isSimpleValue(hp) && isSimpleValue(str) && isSimpleValue(def)
+        ? { type: 'gk:rpgBattleStart', name: args[0].value as string, hp, str, def }
+        : null
+    }
+    case 'rpgSetSpecial': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const dmg = toExpr(args[1], ctx)
+      const cost = toExpr(args[2], ctx)
+      return isSimpleValue(dmg) && isSimpleValue(cost)
+        ? { type: 'gk:rpgSetSpecial', name: args[0].value as string, dmg, cost }
+        : null
+    }
+    case 'rpgGivePotion': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const heal = toExpr(args[1], ctx)
+      return isSimpleValue(heal)
+        ? { type: 'gk:rpgGivePotion', name: args[0].value as string, heal }
+        : null
+    }
+    case 'rpgBattleReward': {
+      const xp = toExpr(args[0], ctx)
+      return isSimpleValue(xp) ? { type: 'gk:rpgBattleReward', xp } : null
+    }
+    case 'rpgInflict': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const turns = toExpr(args[2], ctx)
+      return isSimpleValue(turns)
+        ? {
+            type: 'gk:rpgInflict',
+            who: args[0].value as string,
+            status: args[1].value as string,
+            turns,
+          }
         : null
     }
     case 'rpgOnBattleEnd': {
       if (!isFn(args[0])) return null
       return { type: 'gk:rpgOnBattleEnd', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'setWalkSheet': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const fw = toExpr(args[2], ctx)
+      const fh = toExpr(args[3], ctx)
+      return isSimpleValue(fw) && isSimpleValue(fh)
+        ? { type: 'gk:setWalkSheet', charVar, image: args[1].value as string, fw, fh }
+        : null
+    }
+    case 'rpgCutscene': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:rpgCutscene', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'rpgWait': {
+      const seconds = toExpr(args[0], ctx)
+      return isSimpleValue(seconds) ? { type: 'gk:rpgWait', seconds } : null
+    }
+    case 'rpgFace': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgFace', npc: args[0].value as string, dir: args[1].value as string }
+    }
+    case 'rpgNpcWalkTo': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const cx = toExpr(args[1], ctx)
+      const cy = toExpr(args[2], ctx)
+      return isSimpleValue(cx) && isSimpleValue(cy)
+        ? { type: 'gk:rpgNpcWalkTo', npc: args[0].value as string, cx, cy }
+        : null
+    }
+    case 'rpgNpcWander': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgNpcWander', npc: args[0].value as string }
+    }
+    case 'rpgOnStep': {
+      if (!isFn(args[2])) return null
+      const cx = toExpr(args[0], ctx)
+      const cy = toExpr(args[1], ctx)
+      return isSimpleValue(cx) && isSimpleValue(cy)
+        ? { type: 'gk:rpgOnStep', cx, cy, body: bodyOfFn(args[2], source, ctx) }
+        : null
+    }
+    case 'rpgMenu': {
+      if (!isFn(args[1])) return null
+      const title = toExpr(args[0], ctx)
+      return isSimpleValue(title)
+        ? { type: 'gk:rpgMenu', title, body: bodyOfFn(args[1], source, ctx) }
+        : null
+    }
+    case 'rpgOption': {
+      if (!isFn(args[1])) return null
+      const label = toExpr(args[0], ctx)
+      return isSimpleValue(label)
+        ? { type: 'gk:rpgOption', label, body: bodyOfFn(args[1], source, ctx) }
+        : null
+    }
+    case 'rpgSave':
+      return { type: 'gk:rpgSave' }
+    case 'rpgLoad':
+      return { type: 'gk:rpgLoad' }
+    case 'loadTilemap': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'gk:loadTilemap',
+        name: args[0].value as string,
+        asset: args[1].value as string,
+      }
+    }
+    case 'drawTilemap': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const layer = args[1].value as string
+      // O dropdown só tem "chão"/"topos" — camada desconhecida cai em rawJS.
+      if (layer !== 'chão' && layer !== 'topos') return null
+      return { type: 'gk:drawTilemap', name: args[0].value as string, layer }
+    }
+    case 'tilemapSolid': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:tilemapSolid', name: args[0].value as string }
+    }
+    case 'drawShadow': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:drawShadow', charVar } : null
+    }
+    case 'drawByDepth': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:drawByDepth', charVar } : null
+    }
+    case 'cameraShake': {
+      const intensity = toExpr(args[0], ctx)
+      const seconds = toExpr(args[1], ctx)
+      return isSimpleValue(intensity) && isSimpleValue(seconds)
+        ? { type: 'gk:cameraShake', intensity, seconds }
+        : null
+    }
+    case 'attackFacing': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const range = toExpr(args[1], ctx)
+      const duration = toExpr(args[2], ctx)
+      return isSimpleValue(range) && isSimpleValue(duration)
+        ? { type: 'gk:attackFacing', charVar, range, duration }
+        : null
+    }
+    case 'patrolAround': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const ox = toExpr(args[1], ctx)
+      const oy = toExpr(args[2], ctx)
+      const radius = toExpr(args[3], ctx)
+      return isSimpleValue(ox) && isSimpleValue(oy) && isSimpleValue(radius)
+        ? { type: 'gk:patrolAround', charVar, ox, oy, radius }
+        : null
+    }
+    case 'drawHearts': {
+      const current = toExpr(args[0], ctx)
+      const max = toExpr(args[1], ctx)
+      const x = toExpr(args[2], ctx)
+      const y = toExpr(args[3], ctx)
+      return isSimpleValue(current) && isSimpleValue(max) && isSimpleValue(x) && isSimpleValue(y)
+        ? { type: 'gk:drawHearts', current, max, x, y }
+        : null
     }
     case 'drawBackground': {
       // generator: SZGameKit.drawBackground("#0f3460", true)
@@ -4696,7 +4860,8 @@ const G3K_HUD_SLOTS = new Set([
   'bottom-left',
   'bottom-right',
 ])
-const G3K_PART_SHAPES = new Set(['box', 'sphere', 'cylinder', 'cone'])
+const G3K_PART_SHAPES = new Set(['box', 'sphere', 'cylinder', 'cone', 'plane', 'torus', 'pyramid'])
+const G3K_PART_MATERIALS = new Set(['normal', 'metal', 'vidro', 'brilho'])
 const G3K_SPAWNER_WHERE = new Set(['edge', 'anywhere'])
 const G3K_POS_AXES = new Set(['x', 'y', 'z'])
 
@@ -4753,6 +4918,30 @@ function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const charVar = identifierName(args[0])
     if (charVar) return { type: 'g3k:healthOf', charVar }
   }
+  if (method === 'entityValue') {
+    const charVar = identifierName(args[0])
+    if (charVar && args[1]?.type === 'StringLiteral') {
+      return { type: 'g3k:entityValue', key: args[1].value as string, charVar }
+    }
+  }
+  if (method === 'stateTime') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'g3k:stateTime', charVar }
+  }
+  if (method === 'onGround') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'g3k:onGround', charVar }
+  }
+  if (method === 'pointerOver') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'g3k:pointerOver', charVar }
+  }
+  if (method === 'groundPoint') {
+    if (args[0]?.type === 'StringLiteral') {
+      const axis = args[0].value as string
+      if (axis === 'x' || axis === 'y' || axis === 'z') return { type: 'g3k:groundPoint', axis }
+    }
+  }
   return null
 }
 
@@ -4798,7 +4987,9 @@ function readGameKit3DPartOptions(
   ctx: ParseCtx,
 ): {
   shape: string
+  material: string
   color: string
+  texture: string
   w: JSExpr
   h: JSExpr
   d: JSExpr
@@ -4808,7 +4999,9 @@ function readGameKit3DPartOptions(
 } | null {
   const result = {
     shape: 'box',
+    material: 'normal',
     color: '#22d3ee',
+    texture: '',
     w: { type: 'num', value: 1 } as JSExpr,
     h: { type: 'num', value: 1 } as JSExpr,
     d: { type: 'num', value: 1 } as JSExpr,
@@ -4833,9 +5026,17 @@ function readGameKit3DPartOptions(
       const shape = prop.value.value as string
       if (!G3K_PART_SHAPES.has(shape)) return null
       result.shape = shape
+    } else if (key === 'material') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      const material = prop.value.value as string
+      if (!G3K_PART_MATERIALS.has(material)) return null
+      result.material = material
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
       result.color = prop.value.value as string
+    } else if (key === 'texture') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.texture = prop.value.value as string
     } else {
       return null
     }
@@ -4922,6 +5123,64 @@ function readGameKit3DFxOptions(
     } else if (key === 'colorFrom' || key === 'colorTo') {
       if (prop.value?.type !== 'StringLiteral') return null
       result[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** Opções do `SZGameKit3D.defineEmitter("x", { colorFrom, ..., glow })`. */
+function readGameKit3DEmitterOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): {
+  colorFrom: string
+  colorTo: string
+  sizeFrom: JSExpr
+  sizeTo: JSExpr
+  rate: JSExpr
+  speed: JSExpr
+  cone: JSExpr
+  gravity: JSExpr
+  glow: boolean
+} | null {
+  const result = {
+    colorFrom: '#fde047',
+    colorTo: '#7f1d1d',
+    sizeFrom: { type: 'num', value: 0.5 } as JSExpr,
+    sizeTo: { type: 'num', value: 0 } as JSExpr,
+    rate: { type: 'num', value: 30 } as JSExpr,
+    speed: { type: 'num', value: 3 } as JSExpr,
+    cone: { type: 'num', value: 20 } as JSExpr,
+    gravity: { type: 'num', value: 2 } as JSExpr,
+    glow: true,
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (
+      key === 'sizeFrom' ||
+      key === 'sizeTo' ||
+      key === 'rate' ||
+      key === 'speed' ||
+      key === 'cone' ||
+      key === 'gravity'
+    ) {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      result[key] = v
+    } else if (key === 'colorFrom' || key === 'colorTo') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result[key] = prop.value.value as string
+    } else if (key === 'glow') {
+      if (prop.value?.type !== 'BooleanLiteral') return null
+      result.glow = prop.value.value as boolean
     } else {
       return null
     }
@@ -5026,6 +5285,58 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       const charVar = identifierName(args[1])
       return charVar ? { type: 'g3k:burstOn', effect: args[0].value as string, charVar } : null
     }
+    case 'defineEmitter': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'ObjectExpression') return null
+      const o = readGameKit3DEmitterOptions(args[1], ctx)
+      return o
+        ? {
+            type: 'g3k:defineEmitter',
+            name: args[0].value as string,
+            colorFrom: o.colorFrom,
+            colorTo: o.colorTo,
+            sizeFrom: o.sizeFrom,
+            sizeTo: o.sizeTo,
+            rate: o.rate,
+            speed: o.speed,
+            cone: o.cone,
+            gravity: o.gravity,
+            glow: o.glow,
+          }
+        : null
+    }
+    case 'startEmitter': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(z)
+        ? { type: 'g3k:startEmitter', effect: args[0].value as string, x, y, z }
+        : null
+    }
+    case 'emitterOn': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const charVar = identifierName(args[1])
+      return charVar ? { type: 'g3k:emitterOn', effect: args[0].value as string, charVar } : null
+    }
+    case 'stopEmitter': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:stopEmitter', effect: args[0].value as string }
+    }
+    case 'addAttractor': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      const intensity = toExpr(args[4], ctx)
+      const radius = toExpr(args[5], ctx)
+      return isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(z) &&
+        isSimpleValue(intensity) &&
+        isSimpleValue(radius)
+        ? { type: 'g3k:addAttractor', effect: args[0].value as string, x, y, z, intensity, radius }
+        : null
+    }
     case 'start':
       return args.length === 0 ? { type: 'g3k:start' } : null
     case 'defineMold': {
@@ -5050,7 +5361,9 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
         ? {
             type: 'g3k:part',
             shape: o.shape,
+            material: o.material,
             color: o.color,
+            texture: o.texture,
             w: o.w,
             h: o.h,
             d: o.d,
@@ -5181,6 +5494,14 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       const drag = toExpr(args[1], ctx)
       return isSimpleValue(drag) ? { type: 'g3k:setDrag', charVar, drag } : null
     }
+    case 'setEntityValue': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const value = toExpr(args[2], ctx)
+      return isSimpleValue(value)
+        ? { type: 'g3k:setEntityValue', charVar, key: args[1].value as string, value }
+        : null
+    }
     case 'lookAt': {
       const charVar = identifierName(args[0])
       const targetVar = identifierName(args[1])
@@ -5191,6 +5512,67 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       if (!charVar) return null
       const speed = toExpr(args[1], ctx)
       return isSimpleValue(speed) ? { type: 'g3k:moveForward', charVar, speed } : null
+    }
+    case 'fall': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const g = toExpr(args[1], ctx)
+      return isSimpleValue(g) ? { type: 'g3k:fall', charVar, g } : null
+    }
+    case 'jump': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const force = toExpr(args[1], ctx)
+      return isSimpleValue(force) ? { type: 'g3k:jump', charVar, force } : null
+    }
+    case 'makeSolid': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:makeSolid', mold: args[0].value as string }
+    }
+    case 'platformerKeys': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const speed = toExpr(args[1], ctx)
+      const jump = toExpr(args[2], ctx)
+      return isSimpleValue(speed) && isSimpleValue(jump)
+        ? { type: 'g3k:platformerKeys', charVar, speed, jump }
+        : null
+    }
+    case 'addLight': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      const intensity = toExpr(args[4], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(z) && isSimpleValue(intensity)
+        ? { type: 'g3k:addLight', color: args[0].value as string, x, y, z, intensity }
+        : null
+    }
+    case 'setAmbient': {
+      const intensity = toExpr(args[0], ctx)
+      return isSimpleValue(intensity) ? { type: 'g3k:setAmbient', intensity } : null
+    }
+    case 'setFog': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const near = toExpr(args[1], ctx)
+      const far = toExpr(args[2], ctx)
+      return isSimpleValue(near) && isSimpleValue(far)
+        ? { type: 'g3k:setFog', color: args[0].value as string, near, far }
+        : null
+    }
+    case 'setSky': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:setSky', top: args[0].value as string, bottom: args[1].value as string }
+    }
+    case 'cameraFps': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'g3k:cameraFps', charVar } : null
+    }
+    case 'moveFps': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const speed = toExpr(args[1], ctx)
+      return isSimpleValue(speed) ? { type: 'g3k:moveFps', charVar, speed } : null
     }
     case 'onEnterEntityState':
     case 'onExitEntityState': {
@@ -5408,6 +5790,10 @@ function tryMatchGameKit3DVarInit(name: string, init: Node, ctx: ParseCtx): JSSt
     return charVar
       ? { type: 'g3k:storeNearest', varName: name, mold: args[0].value as string, charVar }
       : null
+  }
+  if (method === 'pick') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    return { type: 'g3k:pick', varName: name, mold: args[0].value as string }
   }
   return null
 }
@@ -7984,6 +8370,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:keyPressed':
     case 'gk:countActive':
     case 'gk:touchCircle':
+    case 'gk:didHit':
     case 'gk:isDead':
     case 'gk:isInvincible':
     case 'gk:healthOf':
@@ -7997,6 +8384,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:rpgHasFlag':
     case 'gk:rpgHasItem':
     case 'gk:rpgBattleWon':
+    case 'gk:rpgHasSave':
+    case 'gk:rpgLevel':
+    case 'gk:rpgXp':
     case 'g3k:worldSize':
     case 'g3k:countAlive':
     case 'g3k:keyDown':
@@ -8006,6 +8396,11 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3k:entityStateIs':
     case 'g3k:isAimingAt':
     case 'g3k:healthOf':
+    case 'g3k:entityValue':
+    case 'g3k:stateTime':
+    case 'g3k:onGround':
+    case 'g3k:pointerOver':
+    case 'g3k:groundPoint':
     case 'g3k:stateIs':
     case 'g3k:gameState':
     case 'inputKeyPressed':

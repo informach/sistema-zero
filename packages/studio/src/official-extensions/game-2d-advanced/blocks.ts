@@ -352,7 +352,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_speed_multiplier',
-    message0: 'Deixar o personagem %1 %2 × mais rápido (turbo)',
+    message0: 'Mudar a velocidade do personagem %1 para %2 × (1 = normal, 2 = dobro, 0.5 = metade)',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
       { type: 'input_value', name: 'FACTOR', check: 'JSValue' },
@@ -366,7 +366,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_characters_touch',
-    message0: 'o personagem %1 encostou em %2 ?',
+    message0: 'o personagem %1 e %2 se encostam ?',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'heroi', kind: 'character' },
       { type: 'field_name_picker', name: 'B', text: 'moeda', kind: 'character' },
@@ -737,6 +737,22 @@ export const gameKitBlocks = [
     colour: C,
     tooltip:
       'Toca uma faixa de quadros da folha, em loop. Pode rodar TODO quadro sem medo: repetir a mesma animação não a reinicia (guarda de transição, como os profissionais fazem). Desenhou no Pinta? O seletor lista as animações da folha.',
+  },
+  {
+    type: 'sz_gk_set_walk_sheet',
+    message0: 'Usar a folha de ANDAR %1 em %2 (cada quadro tem %3 × %4)',
+    args0: [
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'FW', check: 'JSValue' },
+      { type: 'input_value', name: 'FH', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cola uma folha de ANDAR no personagem: 4 linhas (baixo, cima, esquerda, direita), cada uma com os quadros do passo. O motor escolhe a linha pela direção que ele olha e anima quando anda (parado = 1º quadro). É o personagem de RPG vivo, andando em qualquer direção.',
   },
 
   // ---- 🎥 Câmera ----
@@ -1161,32 +1177,109 @@ export const gameKitBlocks = [
   // ---- ⚔️ Kit RPG: batalha por turnos ----
   {
     type: 'sz_gk_rpg_battle_stats',
-    message0: 'Meus pontos de batalha: vida %1 e força %2',
+    message0: 'Meus pontos de batalha: vida %1 , força %2 e defesa %3',
     args0: [
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'STR', check: 'JSValue' },
+      { type: 'input_value', name: 'DEF', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Define a vida e a força do SEU lado nas batalhas (cada batalha começa com a vida cheia). Use uma vez, no começo.',
+      'Define a vida, a força e a DEFESA do SEU lado nas batalhas (a defesa reduz o dano recebido). Cada batalha começa com a vida e a energia cheias. Use uma vez, no começo — é o seu nível 1.',
   },
   {
     type: 'sz_gk_rpg_battle_start',
-    message0: 'Começar a batalha contra %1 com vida %2 e força %3',
+    message0: 'Começar a batalha contra %1 com vida %2 , força %3 e defesa %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Dragão' },
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'STR', check: 'JSValue' },
+      { type: 'input_value', name: 'DEF', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a batalha por TURNOS com o menu pronto: Atacar (dano = força ± 20%), Defender (o próximo dano cai pela metade) e Fugir (50% de chance). O mundo espera a batalha acabar.',
+      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). O mundo espera a batalha acabar.',
+  },
+  {
+    type: 'sz_gk_rpg_set_special',
+    message0: 'Golpe especial %1 com dano %2 e custo de energia %3',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Bola de fogo' },
+      { type: 'input_value', name: 'DMG', check: 'JSValue' },
+      { type: 'input_value', name: 'COST', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Ensina um golpe ESPECIAL: dano forte que gasta energia (a energia começa cheia e recupera um pouco a cada turno). O botão "Especial" aparece na batalha. Use uma vez, no começo.',
+  },
+  {
+    type: 'sz_gk_rpg_give_potion',
+    message0: 'Ganhar a poção %1 que cura %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Poção' },
+      { type: 'input_value', name: 'HEAL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe uma poção no estoque de batalha (empilha). Na luta, o botão "Item" usa uma e recupera vida.',
+  },
+  {
+    type: 'sz_gk_rpg_battle_reward',
+    message0: 'Ganhar %1 de experiência (XP)',
+    args0: [{ type: 'input_value', name: 'XP', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Dá XP ao herói (ex.: no "quando a batalha terminar", se venceu). Juntando XP suficiente, ele SOBE DE NÍVEL: mais vida, força e defesa, e o aviso "subiu:nivel". A cara da progressão de RPG.',
+  },
+  {
+    type: 'sz_gk_rpg_inflict',
+    message0: 'Envenenar %1 por %2 turnos',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'WHO',
+        options: [
+          ['o inimigo', 'inimigo'],
+          ['eu (herói)', 'heroi'],
+        ],
+      },
+      { type: 'input_value', name: 'TURNS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Aplica VENENO: quem está envenenado perde vida no fim de cada turno, por alguns turnos. Use na batalha (ex.: dentro de um golpe especial de veneno).',
+  },
+  {
+    type: 'sz_gk_rpg_level',
+    message0: 'meu nível',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'O nível atual do herói (sobe ganhando XP). Use no HUD ou num "se".',
+  },
+  {
+    type: 'sz_gk_rpg_xp',
+    message0: 'meu XP',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quanta experiência o herói já juntou para o próximo nível.',
   },
   {
     type: 'sz_gk_rpg_on_battle_end',
@@ -1206,6 +1299,148 @@ export const gameKitBlocks = [
     colour: C,
     tooltip:
       'Verdadeiro se a ÚLTIMA batalha terminou em vitória. Use no "quando a batalha terminar".',
+  },
+
+  // ---- 🎬 Cenas (cutscene) & NPCs vivos ----
+  {
+    type: 'sz_gk_rpg_cutscene',
+    message0: 'Fazer a cena:',
+    message1: 'passo a passo %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma cena de história: os passos acontecem UM DE CADA VEZ (falar, esperar, o NPC andar, ir para outro mapa, começar uma batalha). O motor espera cada passo terminar antes do próximo, e o herói fica parado até a cena acabar. É o jeito profissional de contar história.',
+  },
+  {
+    type: 'sz_gk_rpg_wait',
+    message0: 'Esperar %1 segundos',
+    args0: [{ type: 'input_value', name: 'SECONDS', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma pausa na cena — o próximo passo espera esses segundos. Use DENTRO de "Fazer a cena".',
+  },
+  {
+    type: 'sz_gk_rpg_npc_walk_to',
+    message0: 'Fazer o NPC %1 andar até a célula %2 , %3',
+    args0: [
+      { type: 'field_name_picker', name: 'NPC', text: 'ferreiro', kind: 'npc' },
+      { type: 'input_value', name: 'CX', check: 'JSValue' },
+      { type: 'input_value', name: 'CY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O NPC caminha (célula a célula, desviando de paredes) até a célula-alvo. Ótimo dentro de "Fazer a cena": a cena espera ele chegar antes do próximo passo.',
+  },
+  {
+    type: 'sz_gk_rpg_face',
+    message0: 'Virar o NPC %1 para %2',
+    args0: [
+      { type: 'field_name_picker', name: 'NPC', text: 'ferreiro', kind: 'npc' },
+      {
+        type: 'field_dropdown',
+        name: 'DIR',
+        options: [
+          ['baixo', 'down'],
+          ['cima', 'up'],
+          ['esquerda', 'left'],
+          ['direita', 'right'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Faz o NPC olhar para um lado (baixo/cima/esquerda/direita).',
+  },
+  {
+    type: 'sz_gk_rpg_npc_wander',
+    message0: 'Fazer o NPC %1 vaguear pela vila',
+    args0: [{ type: 'field_name_picker', name: 'NPC', text: 'ferreiro', kind: 'npc' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O NPC anda sozinho por células vizinhas livres, de vez em quando — dá vida à vila. (Não use dentro de uma cena.)',
+  },
+  {
+    type: 'sz_gk_rpg_on_step',
+    message0: 'Quando o herói pisar na célula %1 , %2',
+    args0: [
+      { type: 'input_value', name: 'CX', check: 'JSValue' },
+      { type: 'input_value', name: 'CY', check: 'JSValue' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda quando o herói ENCAIXA nessa célula: encontro com inimigo, armadilha, começar uma cena automática. Monte dentro de "Quando chegar no mapa".',
+  },
+
+  // ---- 💬 Escolhas & 💾 Salvar ----
+  {
+    type: 'sz_gk_rpg_menu',
+    message0: 'Menu de escolha %1',
+    args0: [{ type: 'input_value', name: 'TITLE', check: 'JSValue' }],
+    message1: 'opções %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Mostra uma pergunta com opções (setas escolhem, espaço ou clique confirma) e roda a opção escolhida. É a árvore de diálogo, a loja, o sim/não. Ponha blocos "Opção" dentro. Ótimo no "Quando conversar" ou numa cena.',
+  },
+  {
+    type: 'sz_gk_rpg_option',
+    message0: 'Opção %1',
+    args0: [{ type: 'input_value', name: 'LABEL', check: 'JSValue' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma escolha do menu: o texto que aparece + o que acontece se a criança escolher. Use DENTRO de "Menu de escolha".',
+  },
+  {
+    type: 'sz_gk_rpg_save',
+    message0: 'Salvar o jogo',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Guarda o progresso (flags da história, itens, mapa atual, posição e atributos) — continua salvo mesmo fechando e abrindo o jogo.',
+  },
+  {
+    type: 'sz_gk_rpg_load',
+    message0: 'Continuar o jogo salvo',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Volta o progresso que você salvou e vai para o mapa onde parou. Ligue ao botão "Continuar" (só quando "tem jogo salvo?" for verdadeiro).',
+  },
+  {
+    type: 'sz_gk_rpg_has_save',
+    message0: 'tem jogo salvo ?',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro se existe um jogo salvo. Use para só mostrar o "Continuar" quando fizer sentido.',
   },
   {
     type: 'sz_gk_time_survived',
@@ -1336,23 +1571,175 @@ export const gameKitBlocks = [
     colour: C,
     tooltip: 'Toca uma notinha: quanto maior o Hz, mais agudo. Junte várias para uma melodia.',
   },
+
+  // ---- 🗺️ Mundo de tiles & profundidade ----
+  {
+    type: 'sz_gk_load_tilemap',
+    message0: 'Carregar o mapa %1 do meu desenho %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'mundo' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: 'meu-mapa', filter: 'tilemap' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta um mapa de tiles que você desenhou no Pinta (a grade, as peças e os sólidos já vêm juntos no desenho). Dê um nome ao mapa; é ele que você usa em "Desenhar o mapa". Use no comecinho, antes de "Começar o jogo".',
+  },
+  {
+    type: 'sz_gk_draw_tilemap',
+    message0: 'Desenhar o mapa %1 (camada %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
+      {
+        type: 'field_dropdown',
+        name: 'LAYER',
+        options: [
+          ['chão (o fundo, por baixo)', 'chão'],
+          ['topos (árvores/telhados, por cima)', 'topos'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha o mapa. Desenhe o "chão" ANTES dos personagens e os "topos" (árvores, telhados, muros) DEPOIS, dentro do "Desenhar o jogo" — assim o herói passa por trás das copas das árvores e a cena ganha profundidade. O mapa encaixa sozinho na tela.',
+  },
+  {
+    type: 'sz_gk_tilemap_solid',
+    message0: 'Deixar sólidas as peças do mapa %1',
+    args0: [{ type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Transforma as peças sólidas do mapa (as que você marcou no Pinta) em paredes: o herói e os NPCs da grade não conseguem atravessá-las. Use uma vez, depois de carregar o mapa.',
+  },
+  {
+    type: 'sz_gk_draw_shadow',
+    message0: 'Desenhar a sombra de %1',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha uma sombrinha suave embaixo do personagem (ele "gruda" no chão em vez de flutuar). Use ANTES de desenhar o personagem, dentro do "Desenhar o jogo".',
+  },
+  {
+    type: 'sz_gk_draw_by_depth',
+    message0: 'Desenhar %1 e os personagens por profundidade',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha o herói e todos os NPCs na ordem certa de profundidade: quem está mais embaixo na tela aparece na FRENTE de quem está mais em cima (como na vida real). Troca o "Desenhar o personagem" + "Desenhar os NPCs" por um só, já ordenado.',
+  },
+  {
+    type: 'sz_gk_camera_shake',
+    message0: 'Tremer a câmera com força %1 por %2 s',
+    args0: [
+      { type: 'input_value', name: 'INT', check: 'JSValue' },
+      { type: 'input_value', name: 'SEC', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Dá um tremor na tela por alguns instantes (impacto, explosão, o chefe pisando). A "força" é o quanto sacode em pixels. Funciona com a câmera ligada ou desligada.',
+  },
+
+  // ---- 🥷 Ação em tempo real (estilo Zelda) ----
+  {
+    type: 'sz_gk_attack_facing',
+    message0: 'Fazer %1 golpear na frente (alcance %2, por %3 s)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'RANGE', check: 'JSValue' },
+      { type: 'input_value', name: 'DUR', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Dá um golpe na direção que o personagem olha: cria uma área de acerto na frente dele por um tempinho. Combina com "o golpe acertou?" para machucar o inimigo. Chame quando o jogador apertar o botão de ataque (ex.: "se a tecla espaço foi apertada").',
+  },
+  {
+    type: 'sz_gk_did_hit',
+    message0: 'o golpe de %1 acertou %2 ?',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'inimigo', kind: 'character' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro quando a área do golpe encosta no alvo — e só UMA vez por golpe (não machuca 60 vezes por segundo). Padrão: "se o golpe de heroi acertou inimigo: machucar o inimigo".',
+  },
+  {
+    type: 'sz_gk_patrol_around',
+    message0: 'Fazer %1 patrulhar em volta de x %2 y %3 (raio %4)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'inimigo', kind: 'character' },
+      { type: 'input_value', name: 'OX', check: 'JSValue' },
+      { type: 'input_value', name: 'OY', check: 'JSValue' },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O inimigo vagueia sozinho por perto do posto (x, y): anda para pontos aleatórios dentro do raio e nunca se afasta demais. Use no "A cada quadro". A velocidade é a do próprio personagem.',
+  },
+  {
+    type: 'sz_gk_draw_hearts',
+    message0: 'Desenhar corações: %1 de %2, em x %3 y %4',
+    args0: [
+      { type: 'input_value', name: 'CUR', check: 'JSValue' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha uma fileira de corações (os cheios = vida atual, os apagados = vida que falta). É a "vidinha" dos jogos de aventura. Fica ótimo no "Desenhar por cima (HUD)".',
+  },
 ]
 
 /**
- * Sub-categorias da paleta (a cor de cada uma é um TOM do teal, derivado
- * abaixo). A ordem segue o fluxo mental do kit: preparar → carregar → telas →
- * estados → o laço do jogo → personagens → teclas.
+ * Sub-categorias da paleta (a cor de cada uma é um TOM do teal, derivado abaixo).
+ *
+ * REGRA de organização: o motor GERAL (faz qualquer jogo, inclusive um RPG na
+ * unha) vem PRIMEIRO; o 🧙 Kit RPG (o atalho facilitado, SÓ para RPG — acoplado
+ * ao mundo `rpg.*`) vem por ÚLTIMO, com todas as suas categorias prefixadas
+ * "Kit RPG:". O que é genérico (tiles/profundidade, ação em tempo real) fica FORA
+ * do Kit RPG. A ordem geral segue o fluxo mental: preparar/carregar → telas →
+ * estados → laço → personagens → entrada (teclas/mouse) → arquitetura (avisos/
+ * moldes/aparência/comportamentos/animação/câmera/mundo) → combate/ação → HUD →
+ * faíscas → som.
  */
 const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
+    // "Carregar" (só load_image) foi fundido aqui: preparar + carregar imagens.
     name: '🧰 O jogo',
     colour: C,
-    types: ['sz_gk_setup', 'sz_gk_start', 'sz_gk_game_width', 'sz_gk_game_height'],
-  },
-  {
-    name: '⏳ Carregar',
-    colour: C,
-    types: ['sz_gk_load_image'],
+    types: [
+      'sz_gk_setup',
+      'sz_gk_start',
+      'sz_gk_load_image',
+      'sz_gk_game_width',
+      'sz_gk_game_height',
+    ],
   },
   {
     name: '🖼️ Telas',
@@ -1406,6 +1793,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_gk_key_down', 'sz_gk_key_pressed', 'sz_gk_set_pause_key'],
   },
   {
+    // Junto das Teclas: teclado e mouse são a MESMA ideia (entrada do jogador).
+    name: '🖱️ Mouse',
+    colour: C,
+    types: ['sz_gk_on_game_click', 'sz_gk_mouse_x', 'sz_gk_mouse_y', 'sz_gk_mouse_down'],
+  },
+  {
     name: '📢 Avisos',
     colour: C,
     types: ['sz_gk_on_event', 'sz_gk_emit'],
@@ -1427,7 +1820,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '🎨 Desenho',
+    // "Aparência" (não "Desenho"): a aparência VETORIAL de um molde/personagem —
+    // bate com os docs e não confunde com draw_character/draw_background/Canvas.
+    name: '🎨 Aparência',
     colour: C,
     types: ['sz_gk_define_look', 'sz_gk_draw_look'],
   },
@@ -1446,19 +1841,32 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎞️ Quadros & animação',
     colour: C,
-    types: ['sz_gk_set_sheet', 'sz_gk_play_anim'],
+    types: ['sz_gk_set_sheet', 'sz_gk_play_anim', 'sz_gk_set_walk_sheet'],
   },
   {
     name: '🎥 Câmera',
     colour: C,
-    types: ['sz_gk_camera_follow', 'sz_gk_camera_stop', 'sz_gk_camera_x', 'sz_gk_camera_y'],
+    types: [
+      'sz_gk_camera_follow',
+      'sz_gk_camera_stop',
+      'sz_gk_camera_shake',
+      'sz_gk_camera_x',
+      'sz_gk_camera_y',
+    ],
   },
   {
-    name: '🖱️ Mouse',
+    name: '🗺️ Mundo & profundidade',
     colour: C,
-    types: ['sz_gk_on_game_click', 'sz_gk_mouse_x', 'sz_gk_mouse_y', 'sz_gk_mouse_down'],
+    types: [
+      'sz_gk_load_tilemap',
+      'sz_gk_draw_tilemap',
+      'sz_gk_tilemap_solid',
+      'sz_gk_draw_shadow',
+      'sz_gk_draw_by_depth',
+    ],
   },
   {
+    // Combate ANTES de Ação: a ação em tempo real usa hurt/i-frames/knockback.
     name: '❤️ Combate',
     colour: C,
     types: [
@@ -1470,6 +1878,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_is_invincible',
       'sz_gk_health_of',
     ],
+  },
+  {
+    // GERAL (não Kit RPG): golpe/hitbox/patrulha valem em qualquer jogo de ação.
+    name: '🥷 Ação em tempo real',
+    colour: C,
+    types: ['sz_gk_attack_facing', 'sz_gk_did_hit', 'sz_gk_patrol_around', 'sz_gk_draw_hearts'],
   },
   {
     name: '🖥️ HUD & Missão',
@@ -1493,9 +1907,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: C,
     types: ['sz_gk_load_sound', 'sz_gk_play_sound', 'sz_gk_play_effect', 'sz_gk_play_tone'],
   },
-  // KITS: açúcar por gênero sobre o MESMO motor (padrão dos kits do game-2d).
+  // ---- 🧙 KIT RPG (o kit facilitado, SÓ para montar um RPG) ----
+  // Tudo aqui é acoplado ao mundo `rpg.*` (grade/NPCs/diálogo/batalha) — por isso
+  // é o "Kit RPG", separado do motor geral acima. Todas as 6 categorias levam o
+  // prefixo "Kit RPG:" para a criança ver que andam juntas e exigem esse mundo.
   {
-    name: '🧙 Kit RPG',
+    name: '🧙 Kit RPG: mundo',
     colour: C,
     types: [
       'sz_gk_rpg_on_map',
@@ -1504,10 +1921,17 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_rpg_move_grid',
       'sz_gk_rpg_block_cell',
       'sz_gk_rpg_cell',
-      'sz_gk_rpg_create_npc',
-      'sz_gk_rpg_draw_npcs',
-      'sz_gk_rpg_on_talk',
-      'sz_gk_rpg_say',
+    ],
+  },
+  {
+    name: '💬 Kit RPG: conversa',
+    colour: C,
+    types: ['sz_gk_rpg_create_npc', 'sz_gk_rpg_draw_npcs', 'sz_gk_rpg_on_talk', 'sz_gk_rpg_say'],
+  },
+  {
+    name: '🎒 Kit RPG: história & itens',
+    colour: C,
+    types: [
       'sz_gk_rpg_add_flag',
       'sz_gk_rpg_has_flag',
       'sz_gk_rpg_give_item',
@@ -1517,13 +1941,42 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    name: '🎬 Kit RPG: cenas',
+    colour: C,
+    types: [
+      'sz_gk_rpg_cutscene',
+      'sz_gk_rpg_wait',
+      'sz_gk_rpg_npc_walk_to',
+      'sz_gk_rpg_face',
+      'sz_gk_rpg_npc_wander',
+      'sz_gk_rpg_on_step',
+    ],
+  },
+  {
+    name: '🗳️ Kit RPG: escolhas & salvar',
+    colour: C,
+    types: [
+      'sz_gk_rpg_menu',
+      'sz_gk_rpg_option',
+      'sz_gk_rpg_save',
+      'sz_gk_rpg_load',
+      'sz_gk_rpg_has_save',
+    ],
+  },
+  {
     name: '⚔️ Kit RPG: batalha',
     colour: C,
     types: [
       'sz_gk_rpg_battle_stats',
       'sz_gk_rpg_battle_start',
+      'sz_gk_rpg_set_special',
+      'sz_gk_rpg_give_potion',
+      'sz_gk_rpg_battle_reward',
+      'sz_gk_rpg_inflict',
       'sz_gk_rpg_on_battle_end',
       'sz_gk_rpg_battle_won',
+      'sz_gk_rpg_level',
+      'sz_gk_rpg_xp',
     ],
   },
 ]
@@ -1617,8 +2070,25 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_say: { TEXT: txtShadow('Olá, viajante!'), NAME: txtShadow('Ferreiro') },
   sz_gk_rpg_draw_inventory: { X: numShadow(20), Y: numShadow(20) },
   sz_gk_rpg_create_door: { CX: numShadow(5), CY: numShadow(5) },
-  sz_gk_rpg_battle_stats: { HP: numShadow(30), STR: numShadow(7) },
-  sz_gk_rpg_battle_start: { HP: numShadow(20), STR: numShadow(5) },
+  sz_gk_rpg_battle_stats: { HP: numShadow(30), STR: numShadow(7), DEF: numShadow(3) },
+  sz_gk_rpg_battle_start: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(2) },
+  sz_gk_rpg_set_special: { DMG: numShadow(14), COST: numShadow(4) },
+  sz_gk_rpg_give_potion: { HEAL: numShadow(20) },
+  sz_gk_rpg_battle_reward: { XP: numShadow(20) },
+  sz_gk_rpg_inflict: { TURNS: numShadow(3) },
+  // 🎬 V6 — cenas & NPCs vivos
+  sz_gk_set_walk_sheet: { FW: numShadow(16), FH: numShadow(16) },
+  sz_gk_rpg_wait: { SECONDS: numShadow(1) },
+  sz_gk_rpg_npc_walk_to: { CX: numShadow(5), CY: numShadow(5) },
+  sz_gk_rpg_on_step: { CX: numShadow(5), CY: numShadow(5) },
+  sz_gk_rpg_menu: { TITLE: txtShadow('O que fazer?') },
+  sz_gk_rpg_option: { LABEL: txtShadow('Sim') },
+  // 🗺️ V9 — mundo de tiles & profundidade
+  sz_gk_camera_shake: { INT: numShadow(8), SEC: numShadow(0.3) },
+  // 🥷 V10 — ação em tempo real
+  sz_gk_attack_facing: { RANGE: numShadow(40), DUR: numShadow(0.3) },
+  sz_gk_patrol_around: { OX: numShadow(400), OY: numShadow(300), RADIUS: numShadow(80) },
+  sz_gk_draw_hearts: { CUR: numShadow(3), MAX: numShadow(3), X: numShadow(20), Y: numShadow(20) },
 }
 
 /**

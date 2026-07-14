@@ -171,6 +171,39 @@ interface GameKitApi {
   rpgBattleStart: Fn
   rpgOnBattleEnd: Fn
   rpgBattleWon: Fn
+  // V6 — cenas & NPCs vivos
+  setWalkSheet: Fn
+  rpgCutscene: Fn
+  rpgWait: Fn
+  rpgFace: Fn
+  rpgNpcWalkTo: Fn
+  rpgNpcWander: Fn
+  rpgOnStep: Fn
+  // V7 — escolhas & salvar
+  rpgMenu: Fn
+  rpgOption: Fn
+  rpgSave: Fn
+  rpgLoad: Fn
+  rpgHasSave: Fn
+  // V8 — batalha rica
+  rpgSetSpecial: Fn
+  rpgGivePotion: Fn
+  rpgBattleReward: Fn
+  rpgInflict: Fn
+  rpgLevel: Fn
+  rpgXp: Fn
+  // V9 — mapa de tiles + profundidade
+  cameraShake: Fn
+  loadTilemap: Fn
+  drawTilemap: Fn
+  tilemapSolid: Fn
+  drawShadow: Fn
+  drawByDepth: Fn
+  // V10 — ação em tempo real (Zelda)
+  attackFacing: Fn
+  didHit: Fn
+  patrolAround: Fn
+  drawHearts: Fn
 }
 
 interface Harness {
@@ -180,12 +213,15 @@ interface Harness {
   clock: { value: number }
   nextFrame: (ts: number) => void
   rafCount: () => number
+  /** O Map por trás do `localStorage` do runtime — p/ injetar um save corrompido. */
+  store: Map<string, string>
 }
 
 function loadRuntime(): Harness {
   const listeners: Record<string, Listener[]> = {}
   const clock = { value: 0 }
   const rafQueue: Array<(ts: number) => void> = []
+  const store = new Map<string, string>()
   const win = {
     addEventListener(name: string, fn: Listener) {
       listeners[name] ??= []
@@ -194,6 +230,17 @@ function loadRuntime(): Harness {
     performance: { now: () => clock.value },
     innerWidth: 1200,
     innerHeight: 700,
+    // localStorage funcional (o preview injeta um shim; aqui um Map basta p/
+    // testar salvar/continuar do Kit RPG).
+    localStorage: {
+      getItem: (k: string) => (store.has(k) ? store.get(k) : null),
+      setItem: (k: string, v: string) => {
+        store.set(k, String(v))
+      },
+      removeItem: (k: string) => {
+        store.delete(k)
+      },
+    },
     SZGameKit: undefined,
   } as unknown as Record<string, unknown>
   const raf = (cb: (ts: number) => void) => {
@@ -216,6 +263,7 @@ function loadRuntime(): Harness {
       cb(ts)
     },
     rafCount: () => rafQueue.length,
+    store,
   }
 }
 
@@ -234,7 +282,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 104 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 132 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -346,6 +394,39 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgBattleStart',
       'rpgOnBattleEnd',
       'rpgBattleWon',
+      // V6 — cenas & NPCs vivos (7)
+      'setWalkSheet',
+      'rpgCutscene',
+      'rpgWait',
+      'rpgFace',
+      'rpgNpcWalkTo',
+      'rpgNpcWander',
+      'rpgOnStep',
+      // V7 — escolhas & salvar (5)
+      'rpgMenu',
+      'rpgOption',
+      'rpgSave',
+      'rpgLoad',
+      'rpgHasSave',
+      // V8 — batalha rica (6)
+      'rpgSetSpecial',
+      'rpgGivePotion',
+      'rpgBattleReward',
+      'rpgInflict',
+      'rpgLevel',
+      'rpgXp',
+      // V9 — mapa de tiles + profundidade (6)
+      'cameraShake',
+      'loadTilemap',
+      'drawTilemap',
+      'tilemapSolid',
+      'drawShadow',
+      'drawByDepth',
+      // V10 — ação em tempo real (4)
+      'attackFacing',
+      'didHit',
+      'patrolAround',
+      'drawHearts',
     ]
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')
@@ -1034,7 +1115,7 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     const scr = document.querySelector('[data-szgk-screen="batalha"]') as HTMLElement
     expect(scr).not.toBeNull()
     const botoes = Array.from(scr.querySelectorAll('button')).map((b) => b.textContent)
-    expect(botoes).toEqual(['Atacar', 'Defender', 'Fugir'])
+    expect(botoes).toEqual(['Atacar', 'Especial', 'Item', 'Defender', 'Fugir'])
     ;(scr.querySelector('button') as HTMLButtonElement).click() // Atacar
     expect(h.api.state()).toBe('jogando')
     expect(h.api.rpgBattleWon()).toBe(true)
@@ -1057,5 +1138,462 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     h.api.endGame()
     h.api.setState('jogando')
     expect(h.api.countActive('g')).toBe(0)
+  })
+})
+
+describe('SZGameKit — V6: cenas & NPCs vivos', () => {
+  it('cutscene: passos ENFILEIRAM e tocam em ordem; herói TRAVADO durante a cena', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
+    h.api.placeCharacter(heroi, 0, 0)
+    h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(heroi, 64, dt))
+    h.api.rpgCutscene(() => {
+      h.api.rpgWait(0.3)
+      h.api.rpgAddFlag('meio')
+      h.api.rpgWait(0.3)
+      h.api.rpgAddFlag('fim')
+    })
+    // ENFILEIRADO: nada rodou ainda (nem a 1ª flag).
+    expect(h.api.rpgHasFlag('meio')).toBe(false)
+    // Herói travado enquanto a cena toca: apertar direita não move.
+    h.fire('keydown', { key: 'd' })
+    h.nextFrame(16)
+    h.nextFrame(120)
+    expect(heroi.x).toBe(0)
+    h.fire('keyup', { key: 'd' })
+    // ~0.3s de espera → a 1ª flag entra (passo instantâneo encadeia); a 2ª espera.
+    for (let t = 220; t <= 460; t += 100) h.nextFrame(t)
+    expect(h.api.rpgHasFlag('meio')).toBe(true)
+    expect(h.api.rpgHasFlag('fim')).toBe(false)
+    // + ~0.3s → a 2ª flag e a cena termina (herói volta a andar).
+    for (let t = 560; t <= 900; t += 100) h.nextFrame(t)
+    expect(h.api.rpgHasFlag('fim')).toBe(true)
+    h.fire('keydown', { key: 'd' })
+    h.nextFrame(1000)
+    h.nextFrame(1016)
+    expect(heroi.x).toBeGreaterThan(0) // cena acabou: anda de novo
+  })
+
+  it('NPC anda até a célula (walk_to) e fica sólido no destino; libera a origem', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgOnMap('vila', () => {
+      h.api.rpgCreateNpc('bob', 2, 5, '', '')
+    })
+    h.api.rpgGoMap('vila')
+    h.api.rpgNpcWalkTo('bob', 6, 5) // anda 4 células para a direita (passa por 5,5)
+    for (let t = 100; t <= 3000; t += 100) h.nextFrame(t) // ~3s: chega em 6,5
+    // Observável pelo herói: a célula-alvo do NPC virou PAREDE, a de origem liberou.
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 64 }) as Record<string, number>
+    h.api.placeCharacter(heroi, 5 * 64, 5 * 64) // ao lado esquerdo do NPC (5,5)
+    h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(heroi, 64, dt))
+    h.fire('keydown', { key: 'd' })
+    for (let t = 3100; t <= 6000; t += 100) h.nextFrame(t)
+    h.fire('keyup', { key: 'd' })
+    expect(Math.round((heroi.x ?? 0) / 64)).toBe(5) // barrado pelo NPC agora em 6,5
+    // A origem (2,5) ficou livre: o herói caminha por ela sem barreira.
+    h.api.placeCharacter(heroi, 1 * 64, 5 * 64)
+    h.fire('keydown', { key: 'd' })
+    for (let t = 6100; t <= 6600; t += 100) h.nextFrame(t)
+    h.fire('keyup', { key: 'd' })
+    expect(Math.round((heroi.x ?? 0) / 64)).toBe(2) // entrou na antiga célula do NPC
+  })
+
+  it('reserva de intenção: o herói NÃO entra na célula que o NPC reservou', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 64 }) as Record<string, number>
+    h.api.rpgOnMap('sala', () => {
+      h.api.rpgCreateNpc('guarda', 3, 0, '', '')
+    })
+    h.api.rpgGoMap('sala')
+    h.api.placeCharacter(heroi, 64, 0) // célula 1,0; guarda em 3,0
+    h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(heroi, 64, dt))
+    // O guarda é sólido em 3,0 — o herói andando para a direita para em 2,0.
+    h.fire('keydown', { key: 'd' })
+    for (let t = 100; t <= 3000; t += 100) h.nextFrame(t)
+    h.fire('keyup', { key: 'd' })
+    expect(Math.round((heroi.x ?? 0) / 64)).toBe(2) // parou ao lado do guarda (não atravessou)
+  })
+
+  it('gatilho ao pisar: roda quando o herói ENCAIXA na célula', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
+    let pisou = 0
+    h.api.rpgOnMap('mapa', () => {
+      h.api.rpgOnStep(1, 0, () => {
+        pisou += 1
+      })
+    })
+    h.api.rpgGoMap('mapa')
+    h.api.placeCharacter(heroi, 0, 0)
+    h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(heroi, 64, dt))
+    h.fire('keydown', { key: 'd' })
+    for (let t = 100; t <= 400; t += 50) h.nextFrame(t)
+    h.fire('keyup', { key: 'd' })
+    expect(pisou).toBe(1) // pisou na célula 1,0 uma vez
+  })
+
+  it('mover pelas teclas define a direção (folha de andar direcional)', () => {
+    const { api } = loadRuntime()
+    const c = api.createCharacter({ w: 32, h: 32, speed: 100 }) as Record<string, unknown>
+    api.setWalkSheet(c, 'folha', 16, 16)
+    expect(c._walkImg).toBe('folha')
+    // Sem tecla: fica na direção default 'down'.
+    expect(c._facingDir).toBe('down')
+  })
+})
+
+describe('SZGameKit — V7: escolhas & salvar', () => {
+  it('menu de escolha: navega, escolhe com espaço e roda o corpo da opção', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
+    h.api.placeCharacter(heroi, 0, 0)
+    h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(heroi, 64, dt))
+    let escolha = ''
+    h.api.rpgMenu('O que fazer?', () => {
+      h.api.rpgOption('Lutar', () => {
+        escolha = 'lutar'
+      })
+      h.api.rpgOption('Fugir', () => {
+        escolha = 'fugir'
+      })
+    })
+    // Menu aberto: o herói fica travado (apertar direita não move).
+    h.fire('keydown', { key: 'd' })
+    h.nextFrame(16)
+    expect(heroi.x).toBe(0)
+    h.fire('keyup', { key: 'd' })
+    // ↓ move a seleção para "Fugir"; espaço escolhe.
+    h.fire('keydown', { key: 'arrowdown' })
+    h.nextFrame(32)
+    h.fire('keyup', { key: 'arrowdown' })
+    h.fire('keydown', { key: ' ' })
+    h.nextFrame(48)
+    h.fire('keyup', { key: ' ' })
+    expect(escolha).toBe('fugir')
+    // Menu fechou: o herói anda de novo.
+    h.fire('keydown', { key: 'd' })
+    h.nextFrame(64)
+    h.nextFrame(80)
+    expect(heroi.x).toBeGreaterThan(0)
+  })
+
+  it('salvar → continuar: flags, itens e atributos voltam (localStorage)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgOnMap('vila', () => {})
+    h.api.rpgGoMap('vila')
+    // Estado de história.
+    h.api.rpgAddFlag('achou-a-espada')
+    h.api.rpgGiveItem('espada', '')
+    h.api.rpgBattleStats(50, 12) // vida/força
+    expect(h.api.rpgHasSave()).toBe(false)
+    h.api.rpgSave()
+    expect(h.api.rpgHasSave()).toBe(true)
+    // "Recomeçar" apaga a história em memória.
+    h.api.setState('menu')
+    h.api.setState('jogando') // rpgNewGame zera flags/itens
+    expect(h.api.rpgHasFlag('achou-a-espada')).toBe(false)
+    expect(h.api.rpgHasItem('espada')).toBe(false)
+    // Continuar do save: tudo volta.
+    h.api.rpgLoad()
+    expect(h.api.rpgHasFlag('achou-a-espada')).toBe(true)
+    expect(h.api.rpgHasItem('espada')).toBe(true)
+  })
+})
+
+describe('SZGameKit — V8: batalha rica (progressão)', () => {
+  it('XP + subir de nível: acumula, sobe e sobra o resto', () => {
+    const { api } = loadRuntime()
+    api.rpgBattleStats(30, 7, 0) // base + nível 1, maxXp 20
+    expect(api.rpgLevel()).toBe(1)
+    expect(api.rpgXp()).toBe(0)
+    api.rpgBattleReward(25) // 25 ≥ 20 → nível 2, sobra 5 (maxXp vira 28)
+    expect(api.rpgLevel()).toBe(2)
+    expect(api.rpgXp()).toBe(5)
+    api.rpgBattleReward(30) // 5+30=35 ≥ 28 → nível 3, sobra 7
+    expect(api.rpgLevel()).toBe(3)
+    expect(api.rpgXp()).toBe(7)
+  })
+
+  it('golpe especial (gasta energia) vence a batalha; menu tem 5 botões', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(30, 7, 0)
+    h.api.rpgSetSpecial('Raio', 1000, 4) // dano enorme, custo 4 (energia começa 10)
+    let ended = 0
+    h.api.rpgOnBattleEnd(() => {
+      ended += 1
+    })
+    h.api.rpgBattleStart('Slime', 10, 3, 5) // inimigo com defesa 5 (o raio ainda mata)
+    const scr = document.querySelector('[data-szgk-screen="batalha"]') as HTMLElement
+    const btns = Array.from(scr.querySelectorAll('button'))
+    expect(btns.map((b) => b.textContent)).toEqual([
+      'Atacar',
+      'Especial',
+      'Item',
+      'Defender',
+      'Fugir',
+    ])
+    ;(btns[1] as HTMLButtonElement).click() // Especial
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.rpgBattleWon()).toBe(true)
+    expect(ended).toBe(1)
+  })
+
+  it('veneno: o inimigo perde vida por turno (morre sem eu atacar)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(30, 7, 5) // defesa alta: o inimigo fraco quase não me arranha
+    h.api.rpgBattleStart('Cobra', 6, 2, 0)
+    h.api.rpgInflict('inimigo', 'veneno', 3) // 3 turnos de veneno (3 de dano/turno)
+    const scr = document.querySelector('[data-szgk-screen="batalha"]') as HTMLElement
+    const defender = Array.from(scr.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Defender',
+    ) as HTMLButtonElement
+    defender.click() // fim do turno: veneno 6 → 3 (ainda vivo)
+    expect(h.api.state()).toBe('batalha')
+    defender.click() // veneno 3 → 0: o inimigo morre do próprio veneno
+    expect(h.api.rpgBattleWon()).toBe(true)
+    expect(h.api.state()).toBe('jogando')
+  })
+})
+
+describe('SZGameKit — V9: mapa de tiles + profundidade', () => {
+  it('Y-sort: desenha herói e NPCs por profundidade (quem está embaixo, por último)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 64, h: 64 }) as Record<string, number>
+    h.api.placeCharacter(heroi, 0, 200) // y 200 (mais embaixo → desenha por ÚLTIMO)
+    h.api.rpgCreateNpc('bob', 0, 1, '', '') // célula (0,1) → y 64 (mais em cima)
+    ctxCalls.length = 0
+    h.api.drawByDepth(heroi)
+    const rects = ctxCalls.filter(
+      ([n, a]) => n === 'fillRect' && a[2] === 64 && a[3] === 64,
+    ) as Array<[string, number[]]>
+    expect(rects.length).toBe(2)
+    // O de y menor (NPC, mais atrás) desenha ANTES do de y maior (herói, na frente).
+    expect(rects[0]?.[1][1] ?? 0).toBeLessThan(rects[1]?.[1][1] ?? 0)
+  })
+
+  it('carregar mapa sem metadado do Pinta avisa e não quebra', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    expect(() => {
+      h.api.loadTilemap('mundo', 'nao-existe')
+      h.api.drawTilemap('mundo', 'chão') // mapa vazio: no-op
+      h.api.tilemapSolid('mundo')
+    }).not.toThrow()
+  })
+
+  it('tremor da câmera e sombra não quebram (efeitos visuais)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 64, h: 64 })
+    expect(() => {
+      h.api.cameraShake(10, 0.3)
+      h.api.drawShadow(heroi)
+      h.nextFrame(16) // um quadro com o tremor ativo
+    }).not.toThrow()
+  })
+})
+
+describe('SZGameKit — V10: ação em tempo real (Zelda)', () => {
+  it('golpe na direção acerta o alvo à frente UMA vez por golpe (trava)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 32, h: 32 }) as Record<string, unknown>
+    h.api.placeCharacter(heroi, 100, 100)
+    ;(heroi as { _facingDir?: string })._facingDir = 'right'
+    // Inimigo colado à direita do herói (dentro do alcance de 40).
+    const inimigo = h.api.createCharacter({ w: 32, h: 32 }) as Record<string, unknown>
+    h.api.placeCharacter(inimigo, 140, 100)
+    // Sem golpe: não acerta.
+    expect(h.api.didHit(heroi, inimigo)).toBe(false)
+    h.api.attackFacing(heroi, 40, 0.3)
+    // 1º toque do golpe acerta; toques seguintes no MESMO golpe, não.
+    expect(h.api.didHit(heroi, inimigo)).toBe(true)
+    expect(h.api.didHit(heroi, inimigo)).toBe(false)
+    // Alvo fora do alcance (à esquerda) não é atingido.
+    const atras = h.api.createCharacter({ w: 32, h: 32 }) as Record<string, unknown>
+    h.api.placeCharacter(atras, 20, 100)
+    expect(h.api.didHit(heroi, atras)).toBe(false)
+  })
+
+  it('o golpe expira com o tempo e um novo golpe acerta de novo', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 32, h: 32 }) as Record<string, unknown>
+    h.api.placeCharacter(heroi, 100, 100)
+    ;(heroi as { _facingDir?: string })._facingDir = 'right'
+    const inimigo = h.api.createCharacter({ w: 32, h: 32 }) as Record<string, unknown>
+    h.api.placeCharacter(inimigo, 140, 100)
+    h.api.attackFacing(heroi, 40, 0.1)
+    expect(h.api.didHit(heroi, inimigo)).toBe(true)
+    // Roda ~0.3s de quadros para o golpe expirar (decai em stepSystems).
+    h.clock.value = 0
+    h.nextFrame(0)
+    for (let t = 16; t <= 320; t += 16) {
+      h.clock.value = t
+      h.nextFrame(t)
+    }
+    expect(h.api.didHit(heroi, inimigo)).toBe(false) // golpe acabou
+    h.api.attackFacing(heroi, 40, 0.3) // novo golpe
+    expect(h.api.didHit(heroi, inimigo)).toBe(true)
+  })
+
+  it('patrulha mantém o inimigo perto do posto (anel em volta da origem)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const bicho = h.api.createCharacter({ w: 24, h: 24, speed: 80 }) as Record<string, number>
+    h.api.placeCharacter(bicho, 300, 300)
+    h.api.onUpdate(() => h.api.patrolAround(bicho, 312, 312, 60))
+    h.clock.value = 0
+    h.nextFrame(0)
+    for (let t = 16; t <= 3000; t += 16) {
+      h.clock.value = t
+      h.nextFrame(t)
+    }
+    // Centro do bicho nunca foge muito além do raio (+ margem do passo) do posto.
+    const cx = (bicho.x ?? 0) + 12
+    const cy = (bicho.y ?? 0) + 12
+    const dist = Math.sqrt((cx - 312) ** 2 + (cy - 312) ** 2)
+    expect(dist).toBeLessThan(120)
+  })
+
+  it('desenhar corações não quebra (HUD de vidinha)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    expect(() => h.api.drawHearts(20, 20, 2, 3)).not.toThrow()
+  })
+})
+
+describe('SZGameKit — R6: correções de bugs', () => {
+  it('C1: tremor da câmera com a câmera DESLIGADA mantém save/restore balanceados', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.onDraw(() => {})
+    h.api.cameraShake(12, 0.3) // sem cameraFollow → câmera OFF
+    ctxCalls.length = 0
+    h.clock.value = 16
+    h.nextFrame(16) // um quadro com o tremor ativo
+    const saves = ctxCalls.filter(([n]) => n === 'save').length
+    const restores = ctxCalls.filter(([n]) => n === 'restore').length
+    expect(saves).toBe(restores) // sem vazar o translate/pilha do canvas
+  })
+
+  it('M4: missão com tempo 0 NÃO vence no 1º quadro (0 = desligado)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.setMission(0, 5) // tempo desligado; meta = 5 inimigos
+    h.clock.value = 0
+    h.nextFrame(0)
+    h.clock.value = 16
+    h.nextFrame(16)
+    expect(h.api.state()).toBe('jogando') // não pulou pra 'vitoria'
+  })
+
+  it('M5: "quando entrar em jogando" NÃO re-dispara ao despausar', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    let count = 0
+    h.api.onEnterState('jogando', () => {
+      count += 1
+    })
+    h.api.setState('jogando') // entrada REAL
+    expect(count).toBe(1)
+    h.api.setState('pausado')
+    h.api.setState('jogando') // despausar — NÃO conta
+    expect(count).toBe(1)
+  })
+
+  it('M7: auto-repeat do teclado (e.repeat) não conta como "apertou agora"', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.fire('keydown', { key: 'y', repeat: true }) // repetição do SO
+    expect(h.api.keyPressed('y')).toBe(false)
+    h.fire('keydown', { key: 'z', repeat: false }) // 1º aperto de verdade
+    expect(h.api.keyPressed('z')).toBe(true)
+  })
+
+  it('M8: efeito inexistente avisa UMA vez (não afoga o console 60x/s)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const warns: string[] = []
+    const orig = console.warn
+    console.warn = ((m: unknown) => {
+      warns.push(String(m))
+    }) as typeof console.warn
+    try {
+      h.api.burst('nao-existe', 0, 0)
+      h.api.burst('nao-existe', 0, 0)
+      h.api.burst('nao-existe', 0, 0)
+    } finally {
+      console.warn = orig
+    }
+    expect(warns.filter((w) => w.includes('nao-existe')).length).toBe(1)
+  })
+
+  it('H3: cutscene com NPC bloqueado completa por timeout (não trava a cena)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBlockCell(2, 0) // parede em (2,0) — bloqueia o caminho reto
+    h.api.rpgCreateNpc('bob', 0, 0, '', '')
+    h.api.rpgCutscene(() => {
+      h.api.rpgNpcWalkTo('bob', 5, 0) // caminho passa por (2,0) → nunca chega
+      h.api.rpgAddFlag('cena_terminou')
+    })
+    expect(h.api.rpgHasFlag('cena_terminou')).toBe(false) // ainda tocando a cena
+    h.clock.value = 0
+    h.nextFrame(0)
+    for (let t = 100; t <= 6400; t += 100) {
+      h.clock.value = t
+      h.nextFrame(t)
+    }
+    expect(h.api.rpgHasFlag('cena_terminou')).toBe(true) // timeout liberou a cena
+  })
+
+  it('L14: rpgLoad ignora item malformado (save editado) sem quebrar', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    // Injeta um save corrompido no localStorage do runtime: um item sem name.
+    const bad = JSON.stringify({ flags: {}, items: [{ image: 'x' }, { name: 'chave' }], map: '' })
+    h.store.set('szgk-rpg-save', bad)
+    expect(() => {
+      h.api.rpgLoad()
+      h.api.rpgDrawInventory(10, 10) // estouraria se o item sem name passasse
+    }).not.toThrow()
+    expect(h.api.rpgHasItem('chave')).toBe(true) // o item válido sobreviveu
   })
 })

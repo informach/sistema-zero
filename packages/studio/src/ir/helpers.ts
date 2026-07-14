@@ -121,6 +121,10 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:rpgOnTalk':
     case 'gk:rpgOnMap':
     case 'gk:rpgOnBattleEnd':
+    case 'gk:rpgCutscene':
+    case 'gk:rpgOnStep':
+    case 'gk:rpgMenu':
+    case 'gk:rpgOption':
     case 'gk:forEachActive':
     case 'gk:defineLook':
     case 'g3k:defineMold':

@@ -129,6 +129,49 @@ API global injetada como window.SZGameKit:
   no onTalk do chefe → rpgBattleStart; no rpgOnBattleEnd → "se ganhei:
   setState('vitoria') senão endGame()". Recomeçar o jogo zera flags/itens e
   volta ao 1º mapa.
+- 🎬 Cenas & NPCs vivos (Pizza Legends): rpgCutscene(fn) grava o corpo (cada
+  passo ENFILEIRA) e toca a fila com esperas — o herói fica TRAVADO até acabar.
+  Passos: rpgWait(seg), rpgSay, rpgNpcWalkTo("npc", cx, cy) (anda célula a
+  célula; a cena espera chegar), rpgFace("npc", "down"|"up"|"left"|"right"),
+  rpgAddFlag, rpgGoMap, rpgBattleStart — na ordem montada. Fora de cena:
+  rpgNpcWander("npc") (mila pela vila) e rpgOnStep(cx, cy, fn) (roda ao herói
+  PISAR na célula — encontros/armadilhas/cenas automáticas; montar no rpgOnMap).
+  Abertura única: no rpgOnMap, "se NÃO tem a flag intro: rpgCutscene(...);
+  rpgAddFlag('intro')". Reserva de intenção: herói e NPC não entram na mesma
+  célula. setWalkSheet(c, "folha", fw, fh) = folha de ANDAR de 4 linhas
+  (baixo/cima/esquerda/direita) animada pela direção + movimento.
+- 💬 Escolhas & 💾 salvar: rpgMenu(titulo, fn) abre um menu no canvas (setas +
+  espaço/clique) e roda a opção escolhida; DENTRO do fn use rpgOption(label,
+  optFn) por escolha — árvore de diálogo/loja/sim-não (bom no rpgOnTalk ou numa
+  cena). rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/célula/
+  atributos no localStorage (sobrevive a reabrir). Padrão: no rpgOnTalk do
+  lojista → rpgMenu("Comprar?", () => { rpgOption("Sim", () => {...});
+  rpgOption("Não", () => {}); }). Continuar: "se rpgHasSave(): rpgLoad()".
+- ⚔️ Batalha RICA (progressão, TurnCycle/Combatant do Pizza, 1v1): rpgBattleStats(
+  vida, força, DEFESA) 1x no começo (nível 1); rpgBattleStart(nome, vida, força,
+  defesa) — dano = força ± 20% − defesa/2; menu Atacar/Especial/Item/Defender/
+  Fugir. rpgSetSpecial(nome, dano, custo) = golpe que gasta ENERGIA (começa cheia,
+  +2/turno); rpgGivePotion(nome, cura) abastece o botão Item; rpgBattleReward(xp)
+  no rpgOnBattleEnd (se ganhou) → sobe de nível (+vida/força/defesa, aviso
+  "subiu:nivel"); rpgLevel()/rpgXp() getters; rpgInflict("inimigo"|"heroi",
+  "veneno", turnos) tira 3 de vida/turno. Padrão: rpgOnBattleEnd → "se
+  rpgBattleWon(): rpgBattleReward(20); setState('vitoria') senão endGame()".
+- 🗺️ Mundo de tiles + profundidade (Ninja Adventure; GERAL, vale fora do RPG):
+  loadTilemap(nome, assetDeMapa) lê um MAPA do Pinta (grade+peças+sólidos juntos,
+  via ASSET_META). No onDraw, drawTilemap(nome, "chão") ANTES dos personagens e
+  drawTilemap(nome, "topos") DEPOIS = profundidade (herói passa atrás das copas).
+  tilemapSolid(nome) marca as peças sólidas como paredes (1x, após carregar).
+  drawByDepth(heroi) desenha herói + NPCs por Y (quem está mais embaixo, na frente)
+  — substitui drawCharacter+rpgDrawNpcs. drawShadow(c) = sombrinha sob o personagem
+  (antes de desenhá-lo). cameraShake(força, segundos) treme a tela (impacto), com
+  câmera ligada ou não.
+- 🥷 Ação em tempo real (Zelda; Ninja Adventure): attackFacing(quem, alcance,
+  duracao) cria uma caixa de golpe NA FRENTE (pela direção que olha) por ~0.3s, com
+  trava de 1 acerto por golpe; didHit(quem, alvo) = a caixa encostou no alvo NESTE
+  golpe (padrão: "se didHit(heroi, inimigo): hurt(inimigo)"). patrolAround(quem, ox,
+  oy, raio) = inimigo vagueia perto do posto (no onUpdate). drawHearts(atual, max,
+  x, y) = HUD de corações. Combate de AÇÃO usa createCharacter + moveWithKeys +
+  hurt/isInvincible (não a batalha por turnos do RPG).
 
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.

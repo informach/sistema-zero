@@ -7,8 +7,9 @@ import { GK_STATEMENT_TYPES, SZIRSchema, statementIsExtension } from '#ir'
  * discriminatedUnion andam juntas) e os Sets/discriminadores enxergam o prefixo.
  */
 
-// Um exemplar de CADA statement gk: (25). Novo statement na extensão = entrada
-// nova aqui (o teste de igualdade com GK_STATEMENT_TYPES abaixo cobra).
+// AMOSTRA dos statements gk: (os ~25 do v1) — só p/ um smoke test do schema zod.
+// NÃO é um exemplar de cada tipo (hoje há 104 statements gk:); a completude 1:1
+// (todo bloco ↔ tipo IR ↔ runtime) é garantida pelo blockAudit, não por aqui.
 const GK_STATEMENTS: JSStatement[] = [
   { type: 'gk:setup', w: 1280, h: 720, bg: '#1a1a2e', accent: '#4a9eff' },
   { type: 'gk:start' },
@@ -64,7 +65,7 @@ const GK_STATEMENTS: JSStatement[] = [
   { type: 'gk:setPauseKey', key: 'Escape' },
 ]
 
-// Um exemplar de CADA valor gk: (8).
+// AMOSTRA dos valores gk: (os 8 do v1) — smoke test do schema, não um de cada.
 const GK_EXPRS: JSExpr[] = [
   { type: 'gk:gameWidth' },
   { type: 'gk:gameHeight' },

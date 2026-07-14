@@ -65,6 +65,10 @@ export type NameKind =
   | 'flag'
   | 'item'
   | 'map'
+  | 'entity3d'
+  | 'mold3d'
+  | 'effect3d'
+  | 'entitystate'
 
 const NAME_KINDS: readonly NameKind[] = [
   'variable',
@@ -93,6 +97,10 @@ const NAME_KINDS: readonly NameKind[] = [
   'flag',
   'item',
   'map',
+  'entity3d',
+  'mold3d',
+  'effect3d',
+  'entitystate',
 ]
 
 /** Coage o `kind` cru da definição do bloco para um `NameKind` válido (default variável). */
@@ -155,6 +163,8 @@ const SPRITESHEET_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_load_spritesh
 const TILEMAP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_tilemap: ['NAME'],
   sz_g2d_create_tilemap_from_asset: ['NAME'],
+  // Jogo 2D Avançado (Kit): "Carregar mapa … do meu desenho" também declara um nome de mapa.
+  sz_gk_load_tilemap: ['NAME'],
 }
 
 /** Figuras (desenho por código) do Jogo 2D — fonte do seletor SHAPE. */
@@ -285,6 +295,7 @@ function collectMaps(workspace: Blockly.Workspace | null | undefined): string[] 
 const ENTITY3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3k_spawn_named: ['NAME'],
   sz_g3k_store_nearest: ['NAME'],
+  sz_g3k_pick: ['NAME'],
 }
 function collectEntities3d(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, ENTITY3D_DECL_BLOCKS)
@@ -306,7 +317,10 @@ function collectMolds3d(workspace: Blockly.Workspace | null | undefined): string
 }
 
 /** Efeitos 3D (faíscas data-driven) — fonte do seletor EFFECT do kit 3D. */
-const EFFECT3D_DECL_BLOCKS: Record<string, string[]> = { sz_g3k_define_effect: ['NAME'] }
+const EFFECT3D_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g3k_define_effect: ['NAME'],
+  sz_g3k_define_emitter: ['NAME'],
+}
 function collectEffects3d(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, EFFECT3D_DECL_BLOCKS)
 }
@@ -578,6 +592,28 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do mapa',
     empty: 'Nenhum mapa ainda — crie um ("Quando chegar no mapa") ou digite o nome abaixo.',
   },
+  entity3d: {
+    icon: '🤖',
+    placeholder: 'nome da entidade',
+    empty:
+      'Nenhuma entidade nomeada ainda — use "Nascer… chamando de" ou "Guardar em… quem está mais perto", ou digite o nome abaixo.',
+  },
+  mold3d: {
+    icon: '🧊',
+    placeholder: 'nome do molde 3D',
+    empty: 'Nenhum molde 3D ainda — crie um (bloco "Criar o molde 3D") ou digite o nome abaixo.',
+  },
+  effect3d: {
+    icon: '💥',
+    placeholder: 'nome do efeito 3D',
+    empty: 'Nenhum efeito 3D ainda — crie um (bloco "Criar o efeito 3D") ou digite o nome abaixo.',
+  },
+  entitystate: {
+    icon: '🚥',
+    placeholder: 'nome do estado da entidade',
+    empty:
+      'Toda entidade nasce no estado "parado" — invente os seus (mirar, atirar, recarregar) digitando abaixo.',
+  },
 }
 
 /** Laços que introduzem nomes LOCAIS, por `kind` de seletor (escopo por ancestral). */
@@ -585,6 +621,7 @@ const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, Record<string, string[]>>> 
   variable: VARIABLE_LOOP_BINDERS,
   object3d: OBJECT3D_LOOP_BINDERS,
   character: CHARACTER_LOOP_BINDERS,
+  entity3d: ENTITY3D_LOOP_BINDERS,
 }
 
 /** Anda o workspace e coleta os nomes declarados nos campos do registro, sem repetir. */
@@ -858,6 +895,14 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectItems(ws)
       case 'map':
         return collectMaps(ws)
+      case 'entity3d':
+        return collectEntities3d(ws)
+      case 'mold3d':
+        return collectMolds3d(ws)
+      case 'effect3d':
+        return collectEffects3d(ws)
+      case 'entitystate':
+        return collectEntityStates(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)

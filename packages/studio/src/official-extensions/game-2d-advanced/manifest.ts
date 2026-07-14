@@ -1,10 +1,15 @@
 import type { ExtensionManifest } from '#extensions'
-import { arenaGoblinsExample, cacaMoedasExample, vilaDoDragaoExample } from './examples'
+import {
+  arenaGoblinsExample,
+  cacaMoedasExample,
+  florestaNinjaExample,
+  vilaDoDragaoExample,
+} from './examples'
 
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.5.0',
+  version: '0.11.0',
   description:
     'A base de um jogo 2D profissional, pronta para você inventar as regras. Máquina de estados, laço com delta-time (dt), telas de UI, personagens, e a arquitetura de verdade: avisos (eventos), moldes e enxames de inimigos que nascem sozinhos, comportamentos (perseguir/vaguear), combate (vida, dano, empurrão), faíscas, missão e som importado. O motor pronto fica no runtime; a mecânica você escreve nos ganchos, com os blocos — igual a quem programa jogos na unha.',
   category: 'games',
@@ -197,7 +202,9 @@ seletor lista as animações da folha e preenche os números.
 acompanha o personagem, presa nas bordas do mundo. O "Desenhar o jogo" passa a
 desenhar o MUNDO; **Desenhar por cima (HUD)** desenha DEPOIS, preso na tela
 (placar, barras) — a separação profissional entre mundo e painel. **o canto
-x/y da câmera** dizem que pedaço do mundo aparece.
+x/y da câmera** dizem que pedaço do mundo aparece. **Tremer a câmera** dá um
+abalo de impacto (explosão, o chefe pisando) — funciona com a câmera ligada ou
+desligada.
 
 ### ➡️ Tiro e giro
 
@@ -218,10 +225,54 @@ defense, point-and-click, desenhar com o dedo.
 **Desenhar uma barra de atual/máximo** — vida grande, energia, progresso.
 Combine com "a vida de" e ponha no HUD.
 
+### 🗺️ Mundo & profundidade
+
+Para o mundo ter cara de jogo de verdade (vale para QUALQUER jogo, não só RPG):
+
+- **Carregar o mapa … do meu desenho** — monta um mapa de peças (tiles) que você
+  desenhou no Pinta (a grade, as peças e os sólidos já vêm juntos). Dê um nome ao
+  mapa e use no comecinho.
+- **Desenhar o mapa … (camada chão / topos)** — o segredo da profundidade: desenhe
+  o **chão** ANTES dos personagens e os **topos** (árvores, telhados, muros)
+  DEPOIS. Assim o herói passa POR TRÁS das copas das árvores. Tudo dentro do
+  "Desenhar o jogo".
+- **Deixar sólidas as peças do mapa** — as peças que você marcou como sólidas viram
+  paredes: o herói e os NPCs da grade não atravessam.
+- **Desenhar … e os personagens por profundidade** (Y-sort) — desenha o herói e os
+  NPCs na ordem certa: quem está mais embaixo na tela aparece na FRENTE. Troca o
+  "Desenhar o personagem" + "Desenhar os NPCs" por um só, já ordenado.
+- **Desenhar a sombra de …** — uma sombrinha embaixo do personagem (ele gruda no
+  chão em vez de flutuar). Use antes de desenhar o personagem.
+
+### 🥷 Ação em tempo real
+
+O jeito de lutar sem turnos, no mapa aberto (aventura, beat-em-up — geral):
+
+- **Fazer … golpear na frente (alcance, por … s)** — um golpe na direção que o
+  personagem olha (uma área de acerto na frente por um tempinho). Chame quando o
+  jogador apertar o botão (ex.: "se a tecla espaço foi apertada").
+- **o golpe de … acertou … ?** — verdadeiro quando o golpe encosta no alvo, e só
+  UMA vez por golpe (não machuca 60 vezes por segundo). Padrão: "se o golpe de
+  heroi acertou inimigo: machucar o inimigo".
+- **Fazer … patrulhar em volta de x y (raio)** — o inimigo vagueia sozinho perto
+  do posto e nunca se afasta demais. Use no "A cada quadro".
+- **Desenhar corações: … de …** — a "vidinha" dos jogos de aventura (cheios = vida
+  atual). Fica ótima no HUD.
+
+### 🔊 Som
+
+Importe sons em **"Imagens e sons"** (efeitos ou música que você baixou/gravou),
+**Carregue o som** dando um nome, e **Toque o som** por esse nome — combina com os
+avisos ("Quando chegar o aviso inimigo:morreu, tocar o som explosao"). Sem
+importar nada, **Tocar o som pronto** (moeda/batida/explosão…) já funciona.
+
 ## 🧙 Kit RPG
 
-Um KIT para jogos de aventura estilo Zelda/Pokémon antigo, com as mecânicas
-prontas — sobre o MESMO motor (telas, estados, avisos e personagens valem aqui).
+O atalho AINDA MAIS FACILITADO, só para montar um RPG (aventura estilo
+Zelda/Pokémon antigo): grade, NPCs, conversa, história, itens, cenas, escolhas,
+salvar e batalha por turnos já vêm PRONTOS. Tudo aqui vive no mundo do RPG — os
+blocos gerais lá de cima (telas, estados, avisos, personagens, câmera, mundo de
+tiles) continuam valendo e se combinam com o kit.
 
 ### Mundo em grade
 
@@ -253,19 +304,43 @@ prontas — sobre o MESMO motor (telas, estados, avisos e personagens valem aqui
 
 ### ⚔️ Batalha por turnos
 
-- **Meus pontos de batalha** (vida/força, 1x no começo) e **Começar a batalha
-  contra…** — abre o menu PRONTO do motor: **Atacar** (dano = força ± 20%),
-  **Defender** (o próximo dano cai pela metade) e **Fugir** (50%). O inimigo
-  revida sozinho; o mundo espera.
+- **Meus pontos de batalha** (vida/força/**defesa**, 1x no começo) e **Começar a
+  batalha contra…** (o inimigo também tem defesa) — abre o menu PRONTO: **Atacar**
+  (força ± 20% − defesa/2), **Especial** (gasta energia), **Item** (usa poção),
+  **Defender** (dano pela metade) e **Fugir** (50%). O inimigo revida sozinho.
+- **Golpe especial** (dano forte que gasta energia; a energia recupera por turno)
+  + **Ganhar a poção** (cura, usada pelo botão Item) — as armas do RPG.
+- **Ganhar XP** (no "quando a batalha terminar", se venceu) → o herói **sobe de
+  nível** (mais vida/força/defesa + aviso \`subiu:nivel\`); **meu nível** / **meu
+  XP** mostram a progressão. **Envenenar** tira vida por turno.
 - **Quando a batalha terminar / ganhei a batalha?** — decida o rumo: vitória →
-  tela de vitória, derrota → fim de jogo, fuga → tentar de novo.
+  tela de vitória (+ XP), derrota → fim de jogo, fuga → tentar de novo.
 
-### 🔊 Som
+### 🎬 Cenas (cutscene) & NPCs vivos
 
-Importe sons em **"Imagens e sons"** (efeitos ou música que você baixou/gravou),
-**Carregue o som** dando um nome, e **Toque o som** por esse nome — combina com os
-avisos ("Quando chegar o aviso inimigo:morreu, tocar o som explosao"). Sem
-importar nada, **Tocar o som pronto** (moeda/batida/explosão…) já funciona.
+O jeito profissional de contar história:
+
+- **Fazer a cena** — os passos acontecem UM DE CADA VEZ: o motor espera cada um
+  terminar antes do próximo, e o herói fica parado até a cena acabar. Dentro
+  dela use **Esperar N segundos**, **Mostrar a fala**, **Fazer o NPC andar até a
+  célula**, **Virar o NPC**, **Marcar flag**, **Ir para o mapa** e **Começar a
+  batalha** — na ordem que você montar.
+- **Fazer o NPC andar até a célula** — o NPC caminha (desviando de paredes) até o
+  lugar; dois personagens nunca entram na mesma célula (reserva de intenção).
+- **Fazer o NPC vaguear** — ele anda sozinho pela vila (fora de cenas).
+- **Quando o herói pisar na célula… fazer** — encontro, armadilha ou cena
+  automática ao encaixar naquela célula. Monte no "Quando chegar no mapa".
+- **Usar a folha de ANDAR** (🎞️) — 4 linhas (baixo/cima/esquerda/direita): o
+  motor anima o personagem na direção certa quando ele anda. O RPG vivo.
+
+### 💬 Escolhas & 💾 Salvar
+
+- **Menu de escolha** + **Opção** — mostra uma pergunta com opções (setas
+  escolhem, espaço ou clique confirma) e roda a opção escolhida. É a árvore de
+  diálogo, a loja, o sim/não. Perfeito no "Quando conversar" ou numa cena.
+- **Salvar o jogo** / **Continuar o jogo salvo** / **tem jogo salvo?** — guarda
+  o progresso (flags, itens, mapa, posição, atributos) e continua de onde parou,
+  mesmo fechando e reabrindo. Ligue o "Continuar" só quando "tem jogo salvo?".
 `,
-  examples: [cacaMoedasExample, arenaGoblinsExample, vilaDoDragaoExample],
+  examples: [cacaMoedasExample, arenaGoblinsExample, vilaDoDragaoExample, florestaNinjaExample],
 }

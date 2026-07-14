@@ -65,7 +65,8 @@ export const gameKitRuntime = `(function () {
   var debugOverlay = false;              // tecla de crase desenha os círculos de colisão
   // Câmera que segue um personagem num MUNDO maior que a tela (main.js do RPG kit:
   // translate -> mundo -> restore -> HUD). Desligada = tela fixa (coords iguais).
-  var camera = { on: false, target: null, x: 0, y: 0, worldW: 0, worldH: 0 };
+  var camera = { on: false, target: null, x: 0, y: 0, worldW: 0, worldH: 0, shakeT: 0, shakeMag: 0 };
+  var tilemaps = Object.create(null);    // nome -> {rows, artTile, imgKey, solid Set}
   var hudHooks = [];                     // desenham DEPOIS do restore (sem câmera)
   var mouse = { x: 0, y: 0, down: false };
   var gameClickHooks = [];               // fn(x, y) em coords do JOGO (letterbox convertido)
@@ -77,9 +78,21 @@ export const gameKitRuntime = `(function () {
   var SOUNDS = (window.__SZGAME_SOUNDS && typeof window.__SZGAME_SOUNDS === 'object')
     ? window.__SZGAME_SOUNDS
     : {};
+  // Metadados dos assets do Pinta (mapas de tiles): mesmo canal do game-2d.
+  var ASSET_META = (window.__SZGAME_ASSET_META && typeof window.__SZGAME_ASSET_META === 'object')
+    ? window.__SZGAME_ASSET_META
+    : {};
 
   function warn(msg) {
     try { console.warn('SZGameKit: ' + msg); } catch (e) {}
+  }
+  // Aviso DEDUPADO por chave: para mensagens que sairiam de dentro do laço (nome
+  // de molde/efeito errado chamado a cada quadro) — senão afoga o console 60×/s.
+  var warnedOnce = Object.create(null);
+  function warnOnce(key, msg) {
+    if (warnedOnce[key]) return;
+    warnedOnce[key] = true;
+    warn(msg);
   }
 
   function now() {
@@ -210,8 +223,9 @@ export const gameKitRuntime = `(function () {
       stageEl.appendChild(canvasEl);
       document.body.appendChild(stageEl);
       ctx2d = canvasEl.getContext('2d');
-      // Pixel art nítida por padrão (P24 seta no ctor do RenderSystem). O resize
-      // recria o backing store e reseta o ctx — o resizeCanvas re-aplica.
+      // Pixel art nítida por padrão (P24 seta no ctor do RenderSystem). Atribuir
+      // canvas.width/height reseta o ctx — por isso o resizeCanvas RE-APLICA isto
+      // a cada resize (senão o smoothing volta a true e borra os sprites).
       try { ctx2d.imageSmoothingEnabled = false; } catch (e) {}
 
       // As 5 telas PRONTAS, com textos default em português (P24 tem gameOver E
@@ -298,11 +312,19 @@ export const gameKitRuntime = `(function () {
           combatants[ci]._pushY = 0;
         }
         combatants.length = 0;
+        // Zera os golpes de ação em voo (senão um golpe do jogo anterior "toca").
+        for (var wi = 0; wi < swinging.length; wi++) swinging[wi]._swingT = 0;
+        swinging.length = 0;
         rpgNewGame();
       }
     }
+    // Despausar / fechar batalha é "voltar ao meio do jogo", NÃO uma entrada NOVA
+    // em 'jogando' — os hooks de "quando entrar em jogando" (criar inimigos, tocar
+    // música) NÃO devem re-disparar aí. Em toda transição REAL (inclusive estados
+    // custom), os hooks rodam normalmente.
+    var isMidResume = (n === 'jogando' && (prev === 'pausado' || prev === 'batalha'));
     var hooks = enterStateHooks[n];
-    if (hooks) {
+    if (hooks && !isMidResume) {
       for (var i = 0; i < hooks.length; i++) {
         try { hooks[i](); } catch (e) { warn('erro no "quando entrar no estado ' + n + '": ' + e); }
       }
@@ -316,7 +338,9 @@ export const gameKitRuntime = `(function () {
       resumeAudio();
       var k = String(e.key).toLowerCase();
       keys[k] = true;
-      justPressed[k] = true;
+      // Só o 1º keydown é "apertou AGORA": o auto-repeat do SO (tecla segurada)
+      // NÃO conta como edge, senão avança fala/menu várias vezes por segundo.
+      if (!e.repeat) justPressed[k] = true;
       if (k === config.pauseKey) {
         if (state === 'jogando') setState('pausado');
         else if (state === 'pausado') setState('jogando');
@@ -363,6 +387,22 @@ export const gameKitRuntime = `(function () {
       mouse.x = p.x;
       mouse.y = p.y;
       mouse.down = true;
+      // Menu de escolha aberto: clicar numa opção escolhe (coords SEM câmera — o
+      // menu é UI do motor, desenhado em coords de tela; toGameCoords soma a
+      // câmera, então desfazemos aqui).
+      if (rpg.menu) {
+        var mx = p.x - (camera.on ? camera.x : 0);
+        var my = p.y - (camera.on ? camera.y : 0);
+        for (var mi = 0; mi < rpg.menuRects.length; mi++) {
+          var r = rpg.menuRects[mi];
+          if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) {
+            rpg.menu.index = r.index;
+            selectMenu();
+            return;
+          }
+        }
+        return;
+      }
       for (var i = 0; i < gameClickHooks.length; i++) {
         var fn = gameClickHooks[i];
         try { fn(p.x, p.y); } catch (e) {
@@ -400,6 +440,9 @@ export const gameKitRuntime = `(function () {
     canvasEl.height = config.h;
     canvasEl.style.width = w + 'px';
     canvasEl.style.height = h + 'px';
+    // Atribuir canvas.width/height RESETA o estado do ctx (volta smoothing=true) —
+    // re-aplicar aqui é o que mantém o pixel art nítido a cada resize.
+    if (ctx2d) { try { ctx2d.imageSmoothingEnabled = false; } catch (e) {} }
   }
 
   // ---- Carregamento (ImageManager do kit, lendo os desenhos do projeto) ----
@@ -483,6 +526,121 @@ export const gameKitRuntime = `(function () {
     camera.x = 0;
     camera.y = 0;
   }
+  /** Treme a câmera (impacto/explosão): intensidade em px, por N segundos. */
+  function cameraShake(intensity, seconds) {
+    camera.shakeMag = Math.max(0, num(intensity, 8));
+    camera.shakeT = Math.max(0, num(seconds, 0.4));
+  }
+
+  // ---- 🗺️ Mapa de tiles (camadas + profundidade) — Tiled do Ninja Adventure ----
+  // Lê o MAPA do Pinta (ASSET_META[asset].tilemap): grade de índices + folha de
+  // peças embutida + sólidos. Desenha alinhado à GRADE do RPG (célula = cellSize).
+  function parseTileGrid(str) {
+    var rows = [];
+    if (typeof str !== 'string') return rows;
+    var row = [];
+    var token = '';
+    function pushToken() {
+      if (token === '') return;
+      if (token === '.' || token === '-') row.push(-1);
+      else { var n = parseInt(token, 10); row.push(isNaN(n) ? -1 : n); }
+      token = '';
+    }
+    function pushRow() { pushToken(); if (row.length > 0) rows.push(row); row = []; }
+    for (var i = 0; i < str.length; i++) {
+      var ch = str.charAt(i);
+      var code = str.charCodeAt(i);
+      if (ch === ';' || code === 10 || code === 13) pushRow();
+      else if (code === 32 || code === 9 || ch === ',') pushToken();
+      else token += ch;
+    }
+    pushRow();
+    return rows;
+  }
+  function loadTilemap(name, assetName) {
+    var nm = text(name, '');
+    var an = text(assetName, '');
+    if (!nm) { warn('"Carregar o mapa" precisa de um nome'); return; }
+    var entry = Object.prototype.hasOwnProperty.call(ASSET_META, an) ? ASSET_META[an] : null;
+    var meta = (entry && entry.tilemap && typeof entry.tilemap === 'object') ? entry.tilemap : null;
+    if (!meta || !meta.tileset || typeof meta.tileset.dataUrl !== 'string' || typeof meta.grid !== 'string') {
+      warn('o desenho "' + an + '" não veio com um MAPA do Pinta — envie o MAPA pelo foguete do Pinta');
+      return;
+    }
+    var solid = Object.create(null);
+    if (meta.solid && typeof meta.solid.length === 'number') {
+      for (var i = 0; i < meta.solid.length; i++) {
+        var s = meta.solid[i];
+        if (typeof s === 'number' && s >= 0) solid[Math.floor(s)] = true;
+      }
+    }
+    var imgKey = '__tm_' + nm;
+    loadImage(imgKey, meta.tileset.dataUrl); // a folha embutida entra por dataUrl
+    tilemaps[nm] = {
+      rows: parseTileGrid(meta.grid),
+      artTile: (typeof meta.tileSize === 'number' && meta.tileSize > 0) ? meta.tileSize : 32,
+      imgKey: imgKey, solid: solid
+    };
+  }
+  /** Desenha o mapa alinhado à grade. layer: 'chão' = tudo; 'topos' = só sólidos
+   * (árvores/telhados desenhados POR CIMA do herói — o front-render do Ninja). */
+  function drawTilemap(name, layer) {
+    if (!ctx2d) return;
+    var m = tilemaps[text(name, '')];
+    if (!m) return;
+    var sheet = images[m.imgKey];
+    if (!sheet || !sheet.loaded || !sheet.img) return;
+    var at = m.artTile;
+    var cols = Math.max(1, Math.floor(num(sheet.img.width, at) / at));
+    var cell = rpg.cellSize;
+    var onlyTops = (text(layer, 'chão') === 'topos');
+    for (var r = 0; r < m.rows.length; r++) {
+      var rowArr = m.rows[r];
+      for (var c = 0; c < rowArr.length; c++) {
+        var idx = rowArr[c];
+        if (idx < 0) continue;
+        if (onlyTops && !m.solid[idx]) continue;
+        var sx = (idx % cols) * at;
+        var sy = Math.floor(idx / cols) * at;
+        try { ctx2d.drawImage(sheet.img, sx, sy, at, at, c * cell, r * cell, cell, cell); } catch (e) {}
+      }
+    }
+  }
+  /** Marca os tiles sólidos do mapa como PAREDES da grade (colisão do RPG). */
+  function tilemapSolid(name) {
+    var m = tilemaps[text(name, '')];
+    if (!m) return;
+    for (var r = 0; r < m.rows.length; r++) {
+      var rowArr = m.rows[r];
+      for (var c = 0; c < rowArr.length; c++) {
+        if (rowArr[c] >= 0 && m.solid[rowArr[c]]) { rpg.walls[c + ',' + r] = true; rpg.terrain[c + ',' + r] = true; }
+      }
+    }
+  }
+  /** Sombra suave sob um personagem (useShadow do Pizza) — dá volume no top-down. */
+  function drawShadow(c) {
+    if (!ctx2d || !c || typeof c !== 'object') return;
+    ctx2d.save();
+    ctx2d.fillStyle = 'rgba(0, 0, 0, 0.28)';
+    ctx2d.beginPath();
+    var rx = Math.max(4, num(c.w, 40) * 0.35);
+    ctx2d.ellipse(centerX(c), num(c.y, 0) + num(c.h, 0) - 4, rx, rx * 0.4, 0, 0, Math.PI * 2);
+    ctx2d.fill();
+    ctx2d.restore();
+  }
+  /** Desenha o herói + os NPCs em ordem de PROFUNDIDADE (quem está mais embaixo
+   * fica na frente) — o Y-sort do Pizza (painter's algorithm). */
+  // Lista e comparador REUSÁVEIS (roda a cada quadro): evita alocar array + closure
+  // 60×/s (GC em celular fraco).
+  var depthList = [];
+  function depthCmp(a, b) { return (num(a.y, 0) + num(a.h, 0)) - (num(b.y, 0) + num(b.h, 0)); }
+  function drawByDepth(hero) {
+    depthList.length = 0;
+    if (hero && typeof hero === 'object') depthList.push(hero);
+    for (var k in rpg.npcs) depthList.push(rpg.npcs[k]);
+    depthList.sort(depthCmp);
+    for (var i = 0; i < depthList.length; i++) drawEntity(depthList[i]);
+  }
 
   function render() {
     if (!ctx2d) return;
@@ -497,18 +655,38 @@ export const gameKitRuntime = `(function () {
     // Com a câmera ligada, o MUNDO desenha transladado (main.js do RPG kit:
     // translate -> mundo -> restore -> HUD); o overlay de debug é world-space.
     updateCamera();
+    // Tremor da câmera (impacto): desloca o mundo aleatoriamente enquanto dura.
+    var shx = 0;
+    var shy = 0;
+    if (camera.shakeT > 0 && camera.shakeMag > 0) {
+      shx = (Math.random() * 2 - 1) * camera.shakeMag;
+      shy = (Math.random() * 2 - 1) * camera.shakeMag;
+    }
     var cam = camera.on;
-    if (cam) {
+    // O tremor desloca o mundo mesmo SEM câmera — então o save/restore precisa
+    // casar pela MESMA condição (pushed), senão um tremor sem câmera vaza o
+    // translate (HUD/menus deslocam) e empilha save() sem restore().
+    var pushed = cam || shx !== 0 || shy !== 0;
+    if (pushed) {
       ctx2d.save();
-      ctx2d.translate(-Math.round(camera.x), -Math.round(camera.y));
+      ctx2d.translate(-Math.round(camera.x) + Math.round(shx), -Math.round(camera.y) + Math.round(shy));
     }
     runHooks(drawHooks, ctx2d, 'Desenhar o jogo');
     if (debugOverlay) drawDebugOverlay();
-    if (cam) ctx2d.restore();
+    if (pushed) ctx2d.restore();
     // HUD: por cima de tudo, SEM câmera (placar/barras ficam presos na tela).
     runHooks(hudHooks, ctx2d, 'Desenhar por cima (HUD)');
-    // A caixa de fala do RPG é UI do MOTOR (como as telas DOM): sempre no topo.
+    // Transição de mapa: um preto por cima decaindo (o mapa surge do escuro).
+    if (rpg.fade > 0) {
+      ctx2d.save();
+      try { ctx2d.globalAlpha = Math.min(1, rpg.fade); } catch (e) {}
+      ctx2d.fillStyle = '#000000';
+      ctx2d.fillRect(0, 0, config.w, config.h);
+      ctx2d.restore();
+    }
+    // A caixa de fala e o menu de escolha são UI do MOTOR: sempre no topo.
     drawDialog();
+    drawMenu();
   }
 
   /** Tecla de crase: círculos de colisão de pools + combatentes (debug do P24). */
@@ -555,6 +733,9 @@ export const gameKitRuntime = `(function () {
   // decaimento de i-frames/empurrão do combate, e a missão (sobreviver/derrotar).
   function stepSystems(dt) {
     playTime += dt;
+    if (camera.shakeT > 0) camera.shakeT = Math.max(0, camera.shakeT - dt); // decai o tremor
+    stepSwings(dt); // decai o tempo dos golpes de ação (🥷)
+    stepRpg(dt); // NPCs que andam + motor de cena + transição de mapa (Kit RPG)
     for (var i = 0; i < spawners.length; i++) {
       var sp = spawners[i];
       sp.timer += dt;
@@ -621,9 +802,13 @@ export const gameKitRuntime = `(function () {
       _pushX: 0,
       _pushY: 0,
       _facingLeft: false,
+      _facingDir: 'down',   // 4 direções p/ a folha de andar + conversa do RPG
       _angle: 0,
       _sheetImg: '', _sheetFw: 0, _sheetFh: 0,
-      _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0
+      _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0,
+      // Folha de andar por DIREÇÃO (4 linhas) + detecção de movimento p/ animar.
+      _walkImg: '', _walkFw: 0, _walkFh: 0, _walkFrames: 0, _walkFps: 6,
+      _lastX: 0, _lastY: 0, _moving: false
     };
     return c;
   }
@@ -644,6 +829,10 @@ export const gameKitRuntime = `(function () {
       dy /= len;
       c.x += dx * num(c.speed, 0) * num(c.speedMultiplier, 1) * d;
       c.y += dy * num(c.speed, 0) * num(c.speedMultiplier, 1) * d;
+      // Direção dominante → linha da folha de andar (baixo/cima/esquerda/direita).
+      if (Math.abs(dx) >= Math.abs(dy)) c._facingDir = dx < 0 ? 'left' : 'right';
+      else c._facingDir = dy < 0 ? 'up' : 'down';
+      c._facingLeft = (c._facingDir === 'left');
     }
   }
 
@@ -662,6 +851,11 @@ export const gameKitRuntime = `(function () {
   // giro (_angle) — como o RenderSystem do P24.
   function drawEntity(c) {
     if (!ctx2d || !c || typeof c !== 'object') return;
+    // Anda? = mudou de posição desde o último quadro (serve p/ grade, teclas e
+    // velocidade). Alimenta a folha de andar direcional.
+    c._moving = (Math.abs(num(c.x, 0) - num(c._lastX, 0)) > 0.01 ||
+                 Math.abs(num(c.y, 0) - num(c._lastY, 0)) > 0.01);
+    c._lastX = c.x; c._lastY = c.y;
     var prevAlpha = 1;
     var blinking = c._iFrames > 0;
     if (blinking) {
@@ -677,7 +871,8 @@ export const gameKitRuntime = `(function () {
       ctx2d.rotate(ang * Math.PI / 180);
       ctx2d.translate(-centerX(c), -centerY(c));
     }
-    var flip = c._facingLeft === true;
+    // A folha de ANDAR tem uma linha por direção (esquerda ≠ espelho): NÃO vira.
+    var flip = c._facingLeft === true && !c._walkImg;
     if (flip) {
       ctx2d.save();
       ctx2d.translate(c.x + c.w, c.y);
@@ -686,8 +881,28 @@ export const gameKitRuntime = `(function () {
     var lx = flip ? 0 : c.x;
     var ly = flip ? 0 : c.y;
     var drew = false;
+    // Folha de ANDAR direcional (4 linhas: baixo/cima/esquerda/direita): linha pela
+    // direção, coluna anima quando anda, 1º quadro quando parado (top-down vivo).
+    if (!drew && c._walkImg) {
+      var wsheet = images[c._walkImg];
+      if (wsheet && wsheet.loaded && wsheet.img) {
+        var wfw = Math.max(1, num(c._walkFw, 16));
+        var wfh = Math.max(1, num(c._walkFh, 16));
+        var wcols = Math.max(1, Math.floor(num(wsheet.img.width, wfw) / wfw));
+        var wmaxRow = Math.max(0, Math.floor(num(wsheet.img.height, wfh) / wfh) - 1);
+        var wrow = DIR_ROW[c._facingDir || 'down'];
+        if (wrow == null || wrow > wmaxRow) wrow = 0;
+        var wframes = num(c._walkFrames, 0) > 0 ? Math.min(c._walkFrames, wcols) : wcols;
+        var wcol = 0;
+        if (c._moving && wframes > 1) wcol = Math.floor(playTime * num(c._walkFps, 6)) % wframes;
+        try {
+          ctx2d.drawImage(wsheet.img, wcol * wfw, wrow * wfh, wfw, wfh, lx, ly, c.w, c.h);
+          drew = true;
+        } catch (e) {}
+      }
+    }
     // Folha de quadros (spritesheet): recorta o quadro da vez (pixel art viva).
-    if (c._sheetImg) {
+    if (!drew && c._sheetImg) {
       var sheet = images[c._sheetImg];
       if (sheet && sheet.loaded && sheet.img) {
         var fw = Math.max(1, num(c._sheetFw, 32));
@@ -739,6 +954,18 @@ export const gameKitRuntime = `(function () {
     if (flip) ctx2d.restore();
     if (ang) ctx2d.restore();
     if (blinking) { try { ctx2d.globalAlpha = prevAlpha; } catch (e) {} }
+    // 🥷 Rastro do golpe (ação): enquanto golpeando, pinta a caixa de acerto à
+    // frente — feedback visual de graça em qualquer "Desenhar o personagem".
+    if (num(c._swingT, 0) > 0) {
+      try {
+        var sb = swingBox(c);
+        var pa = ctx2d.globalAlpha;
+        ctx2d.globalAlpha = 0.45 * Math.min(1, c._swingT / 0.3);
+        ctx2d.fillStyle = 'white';
+        ctx2d.fillRect(sb.x, sb.y, sb.w, sb.h);
+        ctx2d.globalAlpha = pa;
+      } catch (e) {}
+    }
   }
 
   function drawCharacter(c) {
@@ -767,6 +994,19 @@ export const gameKitRuntime = `(function () {
     c._animFps = r;
     // O relógio é o playTime (só anda em 'jogando') — a animação PAUSA junto.
     c._animStart = playTime;
+  }
+
+  // Folha de ANDAR direcional (personagem de topo estilo RPGMaker): a folha tem 4
+  // LINHAS na ordem baixo/cima/esquerda/direita, cada uma com N quadros. O
+  // drawEntity escolhe a linha pela direção que o personagem olha e anima a coluna
+  // quando ele anda (parado = 1º quadro). Espelha o walk/idle por direção do
+  // Sprite.animations do Pizza Legends, mas por FOLHA em vez de col,row autoral.
+  function setWalkSheet(c, imageName, fw, fh) {
+    if (!c || typeof c !== 'object') return;
+    c._walkImg = text(imageName, '');
+    c._walkFw = Math.max(1, num(fw, num(c.w, 16)));
+    c._walkFh = Math.max(1, num(fh, num(c.h, 16)));
+    c._walkFrames = 0; // 0 = usar todas as colunas da folha
   }
 
   function drawBackground(color, grid) {
@@ -832,11 +1072,14 @@ export const gameKitRuntime = `(function () {
       speed: 0, damage: 0, color: '', image: '', look: '', radius: 0,
       health: 0, maxHealth: 0,
       vx: 0, vy: 0,
-      _active: false, _facingLeft: false, _iFrames: 0,
+      _active: false, _facingLeft: false, _facingDir: 'down', _iFrames: 0,
       _pushX: 0, _pushY: 0, _driftAngle: null, _mold: '',
       _angle: 0,
       _sheetImg: '', _sheetFw: 0, _sheetFh: 0,
-      _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0
+      _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0,
+      _walkImg: '', _walkFw: 0, _walkFh: 0, _walkFrames: 0, _walkFps: 6,
+      _lastX: 0, _lastY: 0, _moving: false,
+      _swingT: 0, _swingRange: 0, _swingId: 0, _hitBySwing: 0
     };
   }
   function defineMold(name, opts) {
@@ -863,7 +1106,7 @@ export const gameKitRuntime = `(function () {
   function spawnFromMold(name, x, y) {
     var k = text(name, '');
     var m = molds[k];
-    if (!m) { warn('molde "' + k + '" não existe — crie com "Criar o molde"'); return null; }
+    if (!m) { warnOnce('mold:' + k, 'molde "' + k + '" não existe — crie com "Criar o molde"'); return null; }
     var pool = pools[k] || (pools[k] = { active: [], free: [], _sweeping: false });
     var e = pool.free.pop();
     if (!e) e = blankEntity();
@@ -872,11 +1115,15 @@ export const gameKitRuntime = `(function () {
     e.speed = m.speed; e.damage = m.damage; e.color = m.color;
     e.image = m.image; e.look = m.look; e.radius = m.radius;
     e.health = m.health; e.maxHealth = m.health;
-    e._active = true; e._facingLeft = false; e._iFrames = 0;
+    e._active = true; e._facingLeft = false; e._facingDir = 'down'; e._iFrames = 0;
     e._pushX = 0; e._pushY = 0; e._driftAngle = null; e._mold = k;
     e.vx = 0; e.vy = 0; e._angle = 0;
     e._sheetImg = ''; e._sheetFw = 0; e._sheetFh = 0;
     e._animFrom = 0; e._animTo = 0; e._animFps = 0; e._animStart = 0;
+    e._walkImg = ''; e._walkFw = 0; e._walkFh = 0; e._walkFrames = 0; e._walkFps = 6;
+    e._lastX = e.x; e._lastY = e.y; e._moving = false;
+    // Zera o golpe de ação (senão uma entidade reciclada carrega o rastro/latch).
+    e._swingT = 0; e._swingRange = 0; e._swingId = 0; e._hitBySwing = 0;
     pool.active.push(e);
     return e;
   }
@@ -1090,6 +1337,110 @@ export const gameKitRuntime = `(function () {
     return dx * dx + dy * dy < (ra + rb) * (ra + rb);
   }
 
+  // ---- 🥷 Ação em tempo real (Zelda) — golpe na direção + patrulha (Ninja Adventure) ----
+  // O golpe cria uma caixa de acerto NA FRENTE do personagem (pela direção que
+  // olha) por alguns instantes, com trava de 1 acerto por golpe e por alvo (o
+  // hasHitThisSwing do attackBox do Ninja). "o golpe acertou?" pergunta a caixa.
+  var swingId = 0;
+  var swinging = []; // entidades golpeando agora (p/ decair o tempo do golpe)
+  // Caixa de acerto à frente de quem golpeia (pela direção que olha). Escreve num
+  // objeto REUSÁVEL (chamado por quadro em didHit/drawEntity) — o chamador usa na
+  // hora, nunca guarda a referência, então reciclar é seguro e evita lixo/quadro.
+  var swingRect = { x: 0, y: 0, w: 0, h: 0 };
+  function swingBox(c) {
+    var range = Math.max(1, num(c._swingRange, 40));
+    var w = num(c.w, 0), h = num(c.h, 0);
+    var x = num(c.x, 0), y = num(c.y, 0);
+    var dir = c._facingDir || (c._facingLeft ? 'left' : 'right');
+    if (dir === 'left') { swingRect.x = x - range; swingRect.y = y; swingRect.w = range; swingRect.h = h; }
+    else if (dir === 'up') { swingRect.x = x; swingRect.y = y - range; swingRect.w = w; swingRect.h = range; }
+    else if (dir === 'down') { swingRect.x = x; swingRect.y = y + h; swingRect.w = w; swingRect.h = range; }
+    else { swingRect.x = x + w; swingRect.y = y; swingRect.w = range; swingRect.h = h; } // right
+    return swingRect;
+  }
+  function attackFacing(who, range, duration) {
+    if (!who || typeof who !== 'object') return;
+    if (num(who._swingT, 0) > 0) return; // já golpeando: espera o golpe acabar
+    who._swingRange = Math.max(1, num(range, 40));
+    who._swingT = Math.max(0.05, num(duration, 0.3));
+    who._swingId = ++swingId; // marca este golpe (trava de 1 acerto por alvo)
+    if (swinging.indexOf(who) === -1) swinging.push(who);
+  }
+  function stepSwings(dt) {
+    for (var i = swinging.length - 1; i >= 0; i--) {
+      var w = swinging[i];
+      w._swingT = num(w._swingT, 0) - dt;
+      if (w._swingT <= 0) { w._swingT = 0; swinging.splice(i, 1); }
+    }
+  }
+  function didHit(who, target) {
+    if (!who || !target || typeof who !== 'object' || typeof target !== 'object') return false;
+    if (!(num(who._swingT, 0) > 0)) return false; // não está golpeando
+    if (!touching(swingBox(who), target)) return false;
+    if (target._hitBySwing === who._swingId) return false; // já acertou neste golpe
+    target._hitBySwing = who._swingId;
+    return true;
+  }
+  // Inimigo que patrulha/vagueia em ANEL em volta do posto (Monster.setVelocity):
+  // escolhe um ponto aleatório dentro do raio da origem e vai até ele; ao chegar
+  // (ou de tempos em tempos) escolhe outro. Fica sempre por perto do posto.
+  function patrolAround(who, ox, oy, radius) {
+    if (!who || typeof who !== 'object') return;
+    var d = currentDt;
+    var r = Math.max(1, num(radius, 80));
+    var homeX = num(ox, centerX(who)), homeY = num(oy, centerY(who));
+    who._patrolTimer = num(who._patrolTimer, 0) - d;
+    var needTarget = who._patrolTX == null || who._patrolTimer <= 0;
+    if (!needTarget) {
+      var ddx = who._patrolTX - centerX(who);
+      var ddy = who._patrolTY - centerY(who);
+      if (ddx * ddx + ddy * ddy < 16) needTarget = true; // chegou pertinho
+    }
+    if (needTarget) {
+      var a = Math.random() * Math.PI * 2;
+      var dist = Math.sqrt(Math.random()) * r; // distribuição uniforme no disco
+      who._patrolTX = homeX + Math.cos(a) * dist;
+      who._patrolTY = homeY + Math.sin(a) * dist;
+      who._patrolTimer = 1 + Math.random() * 1.5;
+    }
+    var dx = who._patrolTX - centerX(who);
+    var dy = who._patrolTY - centerY(who);
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (len > 0.5) {
+      var sp = num(who.speed, 60);
+      who.x = num(who.x, 0) + (dx / len) * sp * d;
+      who.y = num(who.y, 0) + (dy / len) * sp * d;
+      if (Math.abs(dx) >= Math.abs(dy)) { who._facingDir = dx < 0 ? 'left' : 'right'; }
+      else { who._facingDir = dy < 0 ? 'up' : 'down'; }
+      who._facingLeft = (who._facingDir === 'left');
+    }
+  }
+  // ❤️ HUD de corações (cheios/vazios) — o Heart.js do Ninja. Alternativa
+  // "de vidinha" à barra contínua: fica ótimo preso na tela (HUD).
+  function heartPath(cx, cy, s) {
+    ctx2d.beginPath();
+    ctx2d.moveTo(cx, cy + s * 0.3);
+    ctx2d.lineTo(cx - s * 0.5, cy - s * 0.15);
+    ctx2d.arc(cx - s * 0.25, cy - s * 0.15, s * 0.25, Math.PI, 0);
+    ctx2d.arc(cx + s * 0.25, cy - s * 0.15, s * 0.25, Math.PI, 0);
+    ctx2d.lineTo(cx, cy + s * 0.3);
+    ctx2d.closePath();
+  }
+  function drawHearts(x, y, current, max) {
+    if (!ctx2d) return;
+    var total = Math.max(0, Math.floor(num(max, 3)));
+    var cur = Math.max(0, Math.min(total, Math.floor(num(current, 0))));
+    var s = 22, gap = 6, bx = num(x, 20), by = num(y, 20);
+    for (var i = 0; i < total; i++) {
+      var cx = bx + i * (s + gap) + s / 2;
+      var cy = by + s / 2;
+      heartPath(cx, cy, s);
+      if (i < cur) { ctx2d.fillStyle = '#ff5f6d'; ctx2d.fill(); }
+      else { ctx2d.fillStyle = 'rgba(0,0,0,0.35)'; ctx2d.fill(); }
+      ctx2d.strokeStyle = 'white'; ctx2d.lineWidth = 2; ctx2d.stroke();
+    }
+  }
+
   // ---- ✨ Faíscas (partículas data-driven pooled — o vídeo dos efeitos) ----
   function defineEffect(name, opts) {
     var k = text(name, '');
@@ -1107,7 +1458,7 @@ export const gameKitRuntime = `(function () {
   var MAX_PARTICLES = 1000;
   function burst(name, x, y) {
     var e = effects[text(name, '')];
-    if (!e) { warn('efeito "' + text(name, '') + '" não existe — crie com "Criar o efeito"'); return; }
+    if (!e) { warnOnce('effect:' + text(name, ''), 'efeito "' + text(name, '') + '" não existe — crie com "Criar o efeito"'); return; }
     for (var i = 0; i < e.count; i++) {
       // Teto GLOBAL: burst por quadro sem gate não acumula milhares de fillRect.
       if (particles.active.length >= MAX_PARTICLES) break;
@@ -1210,10 +1561,13 @@ export const gameKitRuntime = `(function () {
   // portas (Levels/Exits) e batalha por turnos com menu PRONTO do motor.
   var rpg = {
     cellSize: 64,
-    walls: {},            // 'cx,cy' -> true (paredes do mapa CORRENTE)
+    walls: {},            // 'cx,cy' -> true (ocupação do mapa CORRENTE: terreno + NPCs)
+    terrain: {},          // 'cx,cy' -> true SÓ do terreno fixo (block_cell/tilemap) —
+                          // o NPC nunca "libera" essas ao andar (senão furava o mapa)
     npcs: {},             // nome -> entidade (sólida na grade)
     npcTalk: {},          // nome -> [fns do "quando conversar"]
     doors: {},            // 'cx,cy' -> nome do mapa
+    stepHandlers: {},     // 'cx,cy' -> [fns do "quando pisar" — footstep cutscenes]
     flags: {},            // StoryFlags: nome -> true
     items: [],            // inventário: {name, image}
     maps: {},             // nome -> [fns de montagem]
@@ -1221,15 +1575,35 @@ export const gameKitRuntime = `(function () {
     currentMap: '',
     hero: null,           // quem usa a grade (a fala/porta/NPC olham ele)
     dialog: null,         // {queue, text, name, start}
-    battle: null,         // {name, hp, max, str, defending}
-    playerHp: 30, playerMax: 30, playerStr: 7,
+    battle: null,         // {name, hp, max, str, def, defending, poison}
+    // Atributos do herói na batalha (Combatant do Pizza): vida/força/defesa + XP/
+    // nível + energia (mana p/ o golpe especial). base* = valores iniciais (o
+    // "Recomeçar" volta a eles); os correntes sobem com o nível.
+    playerHp: 30, playerMax: 30, playerStr: 7, playerDef: 0,
+    baseMax: 30, baseStr: 7, baseDef: 0,
+    playerXp: 0, playerLevel: 1, playerMaxXp: 20,
+    playerEnergy: 10, playerMaxEnergy: 10, playerPoison: 0,
+    special: null,        // {name, dmg, cost} — golpe especial que gasta energia
+    potions: [],          // [{name, heal}] — poções usáveis na luta (empilham)
     battleWon: false,
-    onBattleEnd: []
+    onBattleEnd: [],
+    // 🎬 Motor de cena (cutscene) por GRAVAÇÃO: o container liga recording,
+    // roda o corpo (cada passo se ENFILEIRA), e a fila toca com esperas.
+    recording: false,     // enfileirando os passos do corpo da cena?
+    sceneSteps: [],       // fila em montagem enquanto grava
+    scene: null,          // {steps, i} tocando; herói TRAVADO enquanto ≠ null
+    fade: 0,              // transição de cena: preto por cima decaindo (1 -> 0)
+    // 💬 Menu de escolha (KeyboardMenu do Pizza) no canvas: ↑/↓/espaço + clique.
+    menu: null,           // {title, options:[{label, fn}], index} — herói TRAVADO
+    menuBuilding: null,   // coletando as opções (montagem do menu)
+    menuRects: []         // retângulos das opções p/ o clique (recalculado no draw)
   };
+  var SAVE_KEY = 'szgk-rpg-save'; // localStorage do preview (persiste por projeto)
   var DIALOG_CPS = 30; // velocidade do typewriter (chars/segundo)
+  var DIR_ROW = { down: 0, up: 1, left: 2, right: 3 }; // linha da folha por direção
 
   function cellKey(cx, cy) { return Math.round(num(cx, 0)) + ',' + Math.round(num(cy, 0)); }
-  function rpgBlockCell(cx, cy) { rpg.walls[cellKey(cx, cy)] = true; }
+  function rpgBlockCell(cx, cy) { var k = cellKey(cx, cy); rpg.walls[k] = true; rpg.terrain[k] = true; }
   function rpgCellPx(n) { return num(n, 0) * rpg.cellSize; }
 
   /** Recomeço de partida: a HISTÓRIA zera (flags/itens/batalha) e volta ao 1º mapa. */
@@ -1239,7 +1613,18 @@ export const gameKitRuntime = `(function () {
     rpg.dialog = null;
     rpg.battle = null;
     rpg.battleWon = false;
+    // Volta os atributos ao BASE (o "Recomeçar" reinicia a progressão).
+    rpg.playerLevel = 1; rpg.playerXp = 0; rpg.playerMaxXp = 20;
+    rpg.playerMax = rpg.baseMax; rpg.playerStr = rpg.baseStr; rpg.playerDef = rpg.baseDef;
     rpg.playerHp = rpg.playerMax;
+    rpg.playerEnergy = rpg.playerMaxEnergy; rpg.playerPoison = 0;
+    rpg.potions = [];
+    rpg.scene = null;
+    rpg.recording = false;
+    rpg.sceneSteps = [];
+    rpg.fade = 0;
+    rpg.menu = null;
+    rpg.menuBuilding = null;
     if (rpg.mapOrder.length > 0) rpgGoMap(rpg.mapOrder[0]);
   }
 
@@ -1252,9 +1637,14 @@ export const gameKitRuntime = `(function () {
       x: Math.round(num(cx, 0)) * s, y: Math.round(num(cy, 0)) * s,
       w: s, h: s,
       image: text(image, ''), look: text(look, ''), color: '#a78bfa',
-      _iFrames: 0, _facingLeft: false, _angle: 0,
+      // Anda como o herói: destino na grade, direção, velocidade e patrulha.
+      speed: s * 2.4, _gridDest: null, _walkTarget: null, _wander: false, _wanderT: 0,
+      _iFrames: 0, _facingLeft: false, _facingDir: 'down', _angle: 0,
       _sheetImg: '', _sheetFw: 0, _sheetFh: 0,
-      _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0
+      _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0,
+      _walkImg: '', _walkFw: 0, _walkFh: 0, _walkFrames: 0, _walkFps: 6,
+      _lastX: 0, _lastY: 0, _moving: false,
+      _reservedCell: cellKey(cx, cy) // a célula que ESTE NPC ocupa (p/ só ele liberar)
     };
     rpg.walls[cellKey(cx, cy)] = true; // sólido: bloqueia a grade
   }
@@ -1275,6 +1665,8 @@ export const gameKitRuntime = `(function () {
 
   // Fala com typewriter: trava o herói; Espaço completa/avança/fecha.
   function rpgSay(textStr, speaker) {
+    // Dentro de uma cena (gravando), a fala vira um PASSO da fila (toca na vez).
+    if (rpg.recording) { rpg.sceneSteps.push({ type: 'say', text: text(textStr, ''), speaker: text(speaker, '') }); return; }
     var entry = { text: text(textStr, ''), name: text(speaker, '') };
     if (!entry.text) return;
     if (rpg.dialog) { rpg.dialog.queue.push(entry); return; }
@@ -1315,12 +1707,17 @@ export const gameKitRuntime = `(function () {
     if (d.name) { ctx2d.fillText(d.name, bx + 16, ty); ty += 26; }
     ctx2d.font = '18px "Courier New", monospace';
     ctx2d.fillStyle = '#ffffff';
-    // Quebra de linha simples por contagem (Courier ~11px/char a 18px).
+    // Quebra por PALAVRA (Courier ~11px/char a 18px): não parte a palavra no meio.
     var perLine = Math.max(10, Math.floor((bw - 32) / 11));
-    for (var i = 0; i < visible.length; i += perLine) {
-      ctx2d.fillText(visible.slice(i, i + perLine), bx + 16, ty);
-      ty += 24;
+    var words = visible.split(' ');
+    var line = '';
+    for (var wi = 0; wi < words.length; wi++) {
+      var tryLine = line ? line + ' ' + words[wi] : words[wi];
+      if (tryLine.length > perLine && line) {
+        ctx2d.fillText(line, bx + 16, ty); ty += 24; line = words[wi];
+      } else { line = tryLine; }
     }
+    if (line) ctx2d.fillText(line, bx + 16, ty);
     if (shown >= d.text.length) {
       ctx2d.fillStyle = config.accent;
       ctx2d.fillText('[espaço]', bx + bw - 110, by + boxH - 12);
@@ -1336,10 +1733,18 @@ export const gameKitRuntime = `(function () {
     rpg.cellSize = s;
     rpg.hero = c;
     var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
+    // Menu de escolha aberto: ↑/↓ navegam, espaço/enter escolhe. Herói TRAVADO.
+    if (rpg.menu) {
+      var mo = rpg.menu.options;
+      if (justPressed.arrowup || justPressed.w) rpg.menu.index = (rpg.menu.index - 1 + mo.length) % mo.length;
+      if (justPressed.arrowdown || justPressed.s) rpg.menu.index = (rpg.menu.index + 1) % mo.length;
+      if (justPressed[' '] || justPressed.enter) selectMenu();
+      return;
+    }
     if (justPressed[' ']) {
       if (rpg.dialog) {
         advanceDialog();
-      } else if (!rpg.battle && c._gridDest == null) {
+      } else if (!rpg.battle && !rpg.scene && c._gridDest == null) {
         var fcx = Math.round(num(c.x, 0) / s);
         var fcy = Math.round(num(c.y, 0) / s);
         var dir = c._facingDir || 'down';
@@ -1349,6 +1754,8 @@ export const gameKitRuntime = `(function () {
         else fcy += 1;
         var npc = npcAtCell(fcx, fcy);
         if (npc) {
+          npc._facingDir = oppositeDir(dir); // o NPC vira para o herói (faceHero)
+          npc._facingLeft = (npc._facingDir === 'left');
           var fns = rpg.npcTalk[npc.name] || [];
           for (var i = 0; i < fns.length; i++) {
             try { fns[i](); } catch (e) { warn('erro no "quando conversar com ' + npc.name + '": ' + e); }
@@ -1356,8 +1763,8 @@ export const gameKitRuntime = `(function () {
         }
       }
     }
-    // Fala/batalha aberta: herói TRAVADO (como o RPG kit trava no diálogo).
-    if (rpg.dialog || rpg.battle) return;
+    // Fala/batalha/CENA aberta: herói TRAVADO (como o RPG kit trava no diálogo).
+    if (rpg.dialog || rpg.battle || rpg.scene) return;
     if (c._gridDest == null) {
       var dx = 0;
       var dy = 0;
@@ -1383,15 +1790,26 @@ export const gameKitRuntime = `(function () {
       c.y = c._gridDest.y;
       c._gridDest = null;
       var dk = Math.round(c.x / s) + ',' + Math.round(c.y / s);
+      // Gatilho ao PISAR (footstep cutscene) ANTES da porta: encontro/armadilha/cena.
+      var steppers = rpg.stepHandlers[dk];
+      if (steppers) {
+        for (var si = 0; si < steppers.length; si++) {
+          try { steppers[si](); } catch (e) { warn('erro no "quando pisar na célula": ' + e); }
+        }
+      }
       if (rpg.doors[dk]) rpgGoMap(rpg.doors[dk]);
     } else {
       c.x += (gx / dist) * step;
       c.y += (gy / dist) * step;
     }
   }
+  function oppositeDir(d) {
+    return d === 'left' ? 'right' : d === 'right' ? 'left' : d === 'up' ? 'down' : 'up';
+  }
 
   // Flags de história (StoryFlags) + inventário.
   function rpgAddFlag(name) {
+    if (rpg.recording) { rpg.sceneSteps.push({ type: 'flag', name: text(name, '') }); return; }
     var k = text(name, '');
     if (k) rpg.flags[k] = true;
   }
@@ -1450,11 +1868,14 @@ export const gameKitRuntime = `(function () {
     rpg.maps[k].push(fn);
   }
   function rpgGoMap(name) {
+    if (rpg.recording) { rpg.sceneSteps.push({ type: 'goMap', name: text(name, '') }); return; }
     var k = text(name, '');
     if (!k) return;
     rpg.walls = {};
+    rpg.terrain = {};
     rpg.npcs = {};
     rpg.doors = {};
+    rpg.stepHandlers = {};   // gatilhos de pisar são por-mapa (montados de novo)
     if (rpg.hero) rpg.hero._gridDest = null;
     rpg.currentMap = k;
     var hooks = rpg.maps[k];
@@ -1465,6 +1886,7 @@ export const gameKitRuntime = `(function () {
         try { hooks[i](); } catch (e) { warn('erro ao montar o mapa "' + k + '": ' + e); }
       }
     }
+    rpg.fade = 1; // transição: o mapa novo aparece surgindo do preto (SceneTransition)
     emit('mapa:' + k);
   }
   function rpgCreateDoor(cx, cy, map) {
@@ -1472,40 +1894,361 @@ export const gameKitRuntime = `(function () {
     if (!k) return;
     rpg.doors[cellKey(cx, cy)] = k;
   }
+  // Gatilho ao PISAR numa célula (footstep cutscene do Pizza): roda quando o herói
+  // ENCAIXA nessa célula. Encontros aleatórios, armadilhas, cenas automáticas.
+  function rpgOnStep(cx, cy, fn) {
+    if (typeof fn !== 'function') return;
+    var kk = cellKey(cx, cy);
+    (rpg.stepHandlers[kk] || (rpg.stepHandlers[kk] = [])).push(fn);
+  }
 
-  // ⚔️ Batalha por turnos com MENU PRONTO (telas do motor): Atacar/Defender/Fugir.
-  // Dano = força ± 20%; defender corta o próximo dano pela metade; fugir = 50%.
+  // ---- 🎬 Motor de cena (cutscene) + NPCs que andam ----
+
+  var FACE_DIRS = { down: 1, up: 1, left: 1, right: 1 };
+  /** Vira um personagem (herói ou NPC) para uma direção nomeada. */
+  function rpgFace(who, dir) {
+    var d = text(dir, 'down');
+    if (rpg.recording) { rpg.sceneSteps.push({ type: 'face', who: who, dir: d }); return; }
+    var c = resolveActor(who);
+    if (!c || !FACE_DIRS[d]) return;
+    c._facingDir = d;
+    c._facingLeft = (d === 'left');
+  }
+  /** who pode ser o objeto-personagem OU o NOME de um NPC. */
+  function resolveActor(who) {
+    if (who && typeof who === 'object') return who;
+    var nm = text(who, '');
+    return nm ? rpg.npcs[nm] : null;
+  }
+  /** Faz um NPC caminhar (célula a célula) até a célula-alvo, desviando de paredes. */
+  function rpgNpcWalkTo(npcName, cx, cy) {
+    var nm = text(npcName, '');
+    var tx = Math.round(num(cx, 0));
+    var ty = Math.round(num(cy, 0));
+    if (rpg.recording) { rpg.sceneSteps.push({ type: 'npcWalk', npc: nm, cx: tx, cy: ty }); return; }
+    var n = rpg.npcs[nm];
+    if (!n) { warn('o NPC "' + nm + '" não existe neste mapa'); return; }
+    n._walkTarget = { cx: tx, cy: ty };
+  }
+  /** NPC vagueia por células vizinhas livres (vida de vila). */
+  function rpgNpcWander(npcName) {
+    var n = rpg.npcs[text(npcName, '')];
+    if (n) n._wander = true;
+  }
+  /** Passo de cena "esperar N segundos" — só faz sentido gravando. */
+  function rpgWait(seconds) {
+    if (rpg.recording) rpg.sceneSteps.push({ type: 'wait', seconds: Math.max(0, num(seconds, 1)) });
+  }
+  /**
+   * Cutscene por GRAVAÇÃO: liga recording, roda o corpo (cada passo se ENFILEIRA
+   * em vez de executar), desliga, e toca a fila com esperas. Espelha o
+   * OverworldMap.startCutscene + OverworldEvent (uma Promise por passo).
+   */
+  function rpgCutscene(fn) {
+    if (typeof fn !== 'function') return;
+    if (rpg.scene || rpg.recording) { warn('uma cena já está tocando — espere ela acabar'); return; }
+    rpg.recording = true;
+    rpg.sceneSteps = [];
+    try { fn(); } catch (e) { warn('erro ao montar a cena: ' + e); }
+    rpg.recording = false;
+    if (rpg.sceneSteps.length > 0) rpg.scene = { steps: rpg.sceneSteps, i: 0 };
+    rpg.sceneSteps = [];
+  }
+  /** Começa o passo corrente da cena (chama a função pública com recording OFF). */
+  function startSceneStep() {
+    var st = rpg.scene.steps[rpg.scene.i];
+    if (!st) { rpg.scene = null; return; }
+    st._started = true;
+    st._instant = false;
+    if (st.type === 'say') rpgSay(st.text, st.speaker);
+    else if (st.type === 'wait') st._t = 0;
+    else if (st.type === 'npcWalk') { rpgNpcWalkTo(st.npc, st.cx, st.cy); st._t = 0; }
+    else if (st.type === 'face') { rpgFace(st.who, st.dir); st._instant = true; }
+    else if (st.type === 'flag') { rpgAddFlag(st.name); st._instant = true; }
+    else if (st.type === 'goMap') { rpgGoMap(st.name); st._instant = true; }
+    else if (st.type === 'battle') rpgBattleStart(st.name, st.hp, st.str, st.def);
+    else if (st.type === 'menu') {
+      if (st.options.length > 0) rpg.menu = { title: st.title, options: st.options, index: 0 };
+      else st._instant = true;
+    }
+    else st._instant = true;
+  }
+  /** O passo corrente terminou? (fala fechada / timer / NPC chegou / batalha/menu). */
+  function sceneStepDone(st, dt) {
+    if (st._instant) return true;
+    if (st.type === 'say') return rpg.dialog == null;
+    if (st.type === 'wait') { st._t = num(st._t, 0) + dt; return st._t >= st.seconds; }
+    if (st.type === 'npcWalk') {
+      var n = rpg.npcs[st.npc];
+      if (!n) return true;
+      // Trava de segurança: caminho em L bloqueado por parede não pode pendurar a
+      // cena (e travar o herói) para sempre — desiste depois de 6 s.
+      st._t = num(st._t, 0) + dt;
+      if (st._t > 6) return true;
+      var s = rpg.cellSize;
+      return n._gridDest == null && n._walkTarget == null &&
+        Math.round(n.x / s) === st.cx && Math.round(n.y / s) === st.cy;
+    }
+    if (st.type === 'battle') return rpg.battle == null;
+    if (st.type === 'menu') return rpg.menu == null;
+    return true;
+  }
+
+  /** Uma célula está OCUPADA (parede/NPC/herói) — reserva de intenção do Pizza. */
+  function cellOccupied(cx, cy) {
+    if (rpg.walls[cx + ',' + cy]) return true;
+    var s = rpg.cellSize;
+    if (rpg.hero) {
+      if (Math.round(rpg.hero.x / s) === cx && Math.round(rpg.hero.y / s) === cy) return true;
+      if (rpg.hero._gridDest) {
+        if (Math.round(rpg.hero._gridDest.x / s) === cx && Math.round(rpg.hero._gridDest.y / s) === cy) return true;
+      }
+    }
+    return false;
+  }
+  /** Move 1 NPC por quadro: destino da grade (moveTowards) + patrulha/andar-para. */
+  function moveNpc(n, dt) {
+    var s = rpg.cellSize;
+    if (n._gridDest == null) {
+      var cx = Math.round(num(n.x, 0) / s);
+      var cy = Math.round(num(n.y, 0) / s);
+      var dx = 0;
+      var dy = 0;
+      if (n._walkTarget) {
+        var tx = n._walkTarget.cx;
+        var ty = n._walkTarget.cy;
+        if (cx === tx && cy === ty) { n._walkTarget = null; return; }
+        // Reduz primeiro o eixo maior (caminho simples em L — basta p/ cenas).
+        if (cx !== tx) dx = tx > cx ? 1 : -1;
+        else dy = ty > cy ? 1 : -1;
+      } else if (n._wander) {
+        n._wanderT = num(n._wanderT, 0) - dt;
+        if (n._wanderT > 0) return;
+        n._wanderT = 1 + Math.random() * 2;
+        var pick = Math.floor(Math.random() * 4);
+        dx = pick === 0 ? 1 : pick === 1 ? -1 : 0;
+        dy = pick === 2 ? 1 : pick === 3 ? -1 : 0;
+        if (!dx && !dy) return;
+      } else return;
+      var nx = cx + dx;
+      var ny = cy + dy;
+      if (cellOccupied(nx, ny)) return; // bloqueado (parede/NPC/herói): espera
+      // Reserva de intenção: libera SÓ a célula que ESTE NPC reservou (nunca uma
+      // parede de terreno) e reserva a de destino ENQUANTO anda (o herói e outros
+      // NPCs veem o NPC ocupando o destino).
+      if (n._reservedCell && !rpg.terrain[n._reservedCell]) delete rpg.walls[n._reservedCell];
+      rpg.walls[nx + ',' + ny] = true;
+      n._reservedCell = nx + ',' + ny;
+      n._facingDir = dx < 0 ? 'left' : dx > 0 ? 'right' : dy < 0 ? 'up' : 'down';
+      n._facingLeft = (n._facingDir === 'left');
+      n._gridDest = { x: nx * s, y: ny * s };
+    }
+    var step = Math.max(1, num(n.speed, s * 2.4)) * dt;
+    var gx = n._gridDest.x - num(n.x, 0);
+    var gy = n._gridDest.y - num(n.y, 0);
+    var dist = Math.sqrt(gx * gx + gy * gy);
+    if (dist <= step) { n.x = n._gridDest.x; n.y = n._gridDest.y; n._gridDest = null; }
+    else { n.x += (gx / dist) * step; n.y += (gy / dist) * step; }
+  }
+  /** Toca a fila da cena: começa o passo, e passos INSTANTÂNEOS encadeiam no mesmo
+   * quadro (o "flag" entre duas falas não custa um quadro à toa). */
+  function advanceScene(dt) {
+    var guard = 0;
+    while (rpg.scene && guard++ < 128) {
+      var st = rpg.scene.steps[rpg.scene.i];
+      if (!st) { rpg.scene = null; return; }
+      if (!st._started) startSceneStep();
+      if (!sceneStepDone(st, dt)) return; // ainda tocando: espera o próximo quadro
+      rpg.scene.i += 1;
+      if (rpg.scene.i >= rpg.scene.steps.length) { rpg.scene = null; return; }
+      dt = 0; // os próximos passos deste quadro não consomem mais tempo
+    }
+  }
+  /** Sistemas do RPG por quadro (só em 'jogando'): NPCs, cena e transição. */
+  function stepRpg(dt) {
+    for (var k in rpg.npcs) moveNpc(rpg.npcs[k], dt);
+    if (rpg.scene) advanceScene(dt);
+    if (rpg.fade > 0) rpg.fade = Math.max(0, rpg.fade - dt * 2.5); // fade-in ~0.4s
+  }
+
+  // ---- 💬 Menu de escolha (KeyboardMenu do Pizza, no canvas) ----
+
+  /** Coleta as opções do corpo do menu (cada "Opção" empilha {label, fn}). */
+  function collectMenuOptions(fn) {
+    var prev = rpg.menuBuilding;
+    rpg.menuBuilding = [];
+    try { fn(); } catch (e) { warn('erro ao montar o menu: ' + e); }
+    var opts = rpg.menuBuilding;
+    rpg.menuBuilding = prev;
+    return opts;
+  }
+  function rpgOption(label, fn) {
+    if (!rpg.menuBuilding) { warn('"Opção" só vale DENTRO de "Menu de escolha"'); return; }
+    rpg.menuBuilding.push({ label: text(label, 'Opção'), fn: (typeof fn === 'function' ? fn : function () {}) });
+  }
+  function rpgMenu(title, fn) {
+    if (typeof fn !== 'function') return;
+    // Dentro de uma cena: vira um PASSO (as opções ficam guardadas p/ tocar na vez).
+    if (rpg.recording) {
+      rpg.sceneSteps.push({ type: 'menu', title: text(title, ''), options: collectMenuOptions(fn) });
+      return;
+    }
+    var opts = collectMenuOptions(fn);
+    if (opts.length > 0) rpg.menu = { title: text(title, ''), options: opts, index: 0 };
+  }
+  /** Escolhe a opção destacada: roda o corpo dela e fecha o menu. */
+  function selectMenu() {
+    var m = rpg.menu;
+    if (!m) return;
+    var opt = m.options[m.index];
+    rpg.menu = null; // fecha ANTES de rodar (a opção pode abrir fala/outro menu)
+    if (opt) { try { opt.fn(); } catch (e) { warn('erro na opção "' + opt.label + '": ' + e); } }
+    emit('menu:escolha');
+  }
+  function drawMenu() {
+    if (!ctx2d || !rpg.menu) return;
+    var m = rpg.menu;
+    var pad = 16;
+    var lineH = 34;
+    var bw = Math.min(config.w - 40, 420);
+    var titleH = m.title ? 34 : 8;
+    var bh = titleH + m.options.length * lineH + pad;
+    var bx = (config.w - bw) / 2;
+    var by = (config.h - bh) / 2;
+    ctx2d.save();
+    ctx2d.fillStyle = 'rgba(0, 0, 0, 0.82)';
+    ctx2d.fillRect(bx, by, bw, bh);
+    ctx2d.strokeStyle = config.accent;
+    ctx2d.lineWidth = 3;
+    ctx2d.strokeRect(bx, by, bw, bh);
+    var ty = by + pad;
+    if (m.title) {
+      ctx2d.font = 'bold 18px "Courier New", monospace';
+      ctx2d.fillStyle = config.accent;
+      ctx2d.fillText(m.title, bx + pad, ty + 14);
+      ty += titleH;
+    }
+    rpg.menuRects = [];
+    ctx2d.font = '18px "Courier New", monospace';
+    for (var i = 0; i < m.options.length; i++) {
+      var oy = ty + i * lineH;
+      var sel = (i === m.index);
+      if (sel) {
+        ctx2d.fillStyle = config.accent;
+        ctx2d.fillRect(bx + 8, oy, bw - 16, lineH - 6);
+      }
+      ctx2d.fillStyle = sel ? '#101020' : '#ffffff';
+      ctx2d.fillText((sel ? '> ' : '  ') + m.options[i].label, bx + pad, oy + 20);
+      rpg.menuRects.push({ x: bx + 8, y: oy, w: bw - 16, h: lineH - 6, index: i });
+    }
+    ctx2d.restore();
+  }
+
+  // ---- 💾 Salvar / Continuar (Progress do Pizza, via localStorage do preview) ----
+  function rpgSave() {
+    try {
+      var s = rpg.cellSize;
+      var data = {
+        flags: rpg.flags, items: rpg.items, map: rpg.currentMap,
+        hx: rpg.hero ? Math.round(num(rpg.hero.x, 0) / s) : 0,
+        hy: rpg.hero ? Math.round(num(rpg.hero.y, 0) / s) : 0,
+        hp: rpg.playerHp, max: rpg.playerMax, str: rpg.playerStr, def: rpg.playerDef,
+        lvl: rpg.playerLevel, xp: rpg.playerXp, maxXp: rpg.playerMaxXp
+      };
+      window.localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    } catch (e) { warn('não consegui salvar o jogo: ' + e); }
+  }
+  function rpgHasSave() {
+    try { return !!window.localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
+  }
+  function rpgLoad() {
+    try {
+      var raw = window.localStorage.getItem(SAVE_KEY);
+      if (!raw) { warn('não há jogo salvo'); return; }
+      var data = JSON.parse(raw) || {};
+      rpg.flags = (data.flags && typeof data.flags === 'object') ? data.flags : {};
+      // localStorage é editável pela criança/inspetor — um item sem name string
+      // faria rpgDrawInventory/rpgHasItem estourar. Filtra os malformados.
+      rpg.items = Array.isArray(data.items)
+        ? data.items.filter(function (it) { return it && typeof it === 'object' && typeof it.name === 'string'; })
+        : [];
+      rpg.playerMax = num(data.max, rpg.playerMax);
+      rpg.playerHp = num(data.hp, rpg.playerMax);
+      rpg.playerStr = num(data.str, rpg.playerStr);
+      rpg.playerDef = num(data.def, rpg.playerDef);
+      rpg.playerLevel = num(data.lvl, rpg.playerLevel);
+      rpg.playerXp = num(data.xp, rpg.playerXp);
+      rpg.playerMaxXp = num(data.maxXp, rpg.playerMaxXp);
+      rpg.scene = null; rpg.recording = false; rpg.menu = null; rpg.battle = null; rpg.dialog = null;
+      if (data.map) {
+        rpgGoMap(data.map);
+        if (rpg.hero) {
+          rpg.hero.x = num(data.hx, 0) * rpg.cellSize;
+          rpg.hero.y = num(data.hy, 0) * rpg.cellSize;
+          rpg.hero._gridDest = null;
+        }
+      }
+    } catch (e) { warn('não consegui carregar o jogo: ' + e); }
+  }
+
+  // ⚔️ Batalha por turnos RICA (Combatant/TurnCycle do Pizza, 1v1): Atacar/
+  // Especial (energia)/Item (poção)/Defender/Fugir; defesa reduz o dano; XP sobe
+  // de nível; veneno tira vida por turno. Dano = força ± 20% − defesa/2.
   function ensureBattleScreen() {
     if (screens.batalha) return screens.batalha;
     var scr = makeScreen('batalha', 'h2', 'Batalha!', '');
     makeButton(scr, 'Atacar', function () { battleAction('atacar'); });
+    makeButton(scr, 'Especial', function () { battleAction('especial'); });
+    makeButton(scr, 'Item', function () { battleAction('item'); });
     makeButton(scr, 'Defender', function () { battleAction('defender'); });
     makeButton(scr, 'Fugir', function () { battleAction('fugir'); });
     return scr;
   }
-  function rollDamage(strength) {
-    return Math.max(1, Math.round(strength * (0.8 + Math.random() * 0.4)));
+  function rollDamage(strength, targetDef) {
+    var raw = Math.round(num(strength, 1) * (0.8 + Math.random() * 0.4));
+    return Math.max(1, raw - Math.floor(num(targetDef, 0) / 2));
   }
   function updateBattleText(msg) {
     var scr = screens.batalha;
     var b = rpg.battle;
     if (!scr || !b) return;
     scr.text.textContent =
-      'Você: ' + Math.max(0, rpg.playerHp) + '/' + rpg.playerMax +
+      'Você Nv' + rpg.playerLevel + ': ' + Math.max(0, rpg.playerHp) + '/' + rpg.playerMax +
+      ' ⚡' + Math.max(0, rpg.playerEnergy) +
       ' | ' + b.name + ': ' + Math.max(0, b.hp) + '/' + b.max + ' — ' + msg;
   }
-  function rpgBattleStats(hp, str) {
-    rpg.playerMax = Math.max(1, num(hp, 30));
+  function rpgBattleStats(hp, str, def) {
+    rpg.baseMax = Math.max(1, num(hp, 30));
+    rpg.baseStr = Math.max(1, num(str, 7));
+    rpg.baseDef = Math.max(0, num(def, 0));
+    rpg.playerMax = rpg.baseMax;
+    rpg.playerStr = rpg.baseStr;
+    rpg.playerDef = rpg.baseDef;
     rpg.playerHp = rpg.playerMax;
-    rpg.playerStr = Math.max(1, num(str, 7));
+    rpg.playerLevel = 1;
+    rpg.playerXp = 0;
+    rpg.playerMaxXp = 20;
   }
-  function rpgBattleStart(name, hp, str) {
+  function rpgSetSpecial(name, dmg, cost) {
+    rpg.special = { name: text(name, 'Especial'), dmg: Math.max(1, num(dmg, 12)), cost: Math.max(0, num(cost, 4)) };
+  }
+  function rpgGivePotion(name, heal) {
+    rpg.potions.push({ name: text(name, 'Poção'), heal: Math.max(1, num(heal, 20)) });
+  }
+  function rpgBattleStart(name, hp, str, def) {
+    if (rpg.recording) { rpg.sceneSteps.push({ type: 'battle', name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0) }); return; }
     if (!ensureShell()) return;
     if (rpg.battle) return;
     ensureBattleScreen();
     var max = Math.max(1, num(hp, 20));
-    rpg.battle = { name: text(name, 'Inimigo'), hp: max, max: max, str: Math.max(0, num(str, 5)), defending: false };
-    rpg.playerHp = rpg.playerMax; // cada batalha começa com a vida cheia
+    rpg.battle = {
+      name: text(name, 'Inimigo'), hp: max, max: max,
+      str: Math.max(0, num(str, 5)), def: Math.max(0, num(def, 0)),
+      defending: false, poison: 0
+    };
+    rpg.playerHp = rpg.playerMax;     // cada batalha começa com a vida cheia
+    rpg.playerEnergy = rpg.playerMaxEnergy; // e a energia cheia
+    rpg.playerPoison = 0;
     var scr = screens.batalha;
     scr.title.textContent = 'Batalha contra ' + rpg.battle.name + '!';
     updateBattleText('Sua vez! O que você faz?');
@@ -1525,25 +2268,66 @@ export const gameKitRuntime = `(function () {
       enemyTurn('Você se defendeu.');
       return;
     }
-    var dmg = rollDamage(rpg.playerStr);
+    if (kind === 'especial') {
+      if (!rpg.special) { updateBattleText('Você não tem golpe especial.'); return; }
+      if (rpg.playerEnergy < rpg.special.cost) { updateBattleText('Sem energia para o ' + rpg.special.name + '!'); return; }
+      rpg.playerEnergy -= rpg.special.cost;
+      var sdmg = rollDamage(rpg.special.dmg, b.def);
+      b.hp -= sdmg;
+      if (b.hp <= 0) { endBattle(true); return; }
+      enemyTurn(rpg.special.name + ' causou ' + sdmg + '!');
+      return;
+    }
+    if (kind === 'item') {
+      if (rpg.potions.length === 0) { updateBattleText('Você não tem poções.'); return; }
+      var p = rpg.potions.shift();
+      rpg.playerHp = Math.min(rpg.playerMax, rpg.playerHp + p.heal);
+      enemyTurn('Usou ' + p.name + ' (+' + p.heal + ' de vida)!');
+      return;
+    }
+    // atacar
+    var dmg = rollDamage(rpg.playerStr, b.def);
     b.hp -= dmg;
     if (b.hp <= 0) { endBattle(true); return; }
     enemyTurn('Você causou ' + dmg + '!');
   }
   function enemyTurn(prefix) {
     var b = rpg.battle;
-    var dmg = rollDamage(b.str);
-    if (b.defending) {
-      dmg = Math.max(1, Math.round(dmg / 2));
-      b.defending = false;
-    }
+    var dmg = rollDamage(b.str, rpg.playerDef);
+    if (b.defending) { dmg = Math.max(1, Math.round(dmg / 2)); b.defending = false; }
     rpg.playerHp -= dmg;
-    if (rpg.playerHp <= 0) {
-      rpg.playerHp = 0;
-      endBattle(false);
-      return;
+    var extra = '';
+    // Fim do turno: veneno tira vida de quem está envenenado (status do Pizza).
+    if (b.poison > 0) { b.hp -= 3; b.poison -= 1; extra += ' ' + b.name + ' sofre 3 de veneno.'; }
+    if (rpg.playerPoison > 0) { rpg.playerHp -= 3; rpg.playerPoison -= 1; extra += ' Você sofre 3 de veneno.'; }
+    rpg.playerEnergy = Math.min(rpg.playerMaxEnergy, rpg.playerEnergy + 2); // regen de energia
+    if (b.hp <= 0) { endBattle(true); return; }
+    if (rpg.playerHp <= 0) { rpg.playerHp = 0; endBattle(false); return; }
+    updateBattleText(prefix + ' ' + b.name + ' devolveu ' + dmg + '.' + extra + ' Sua vez!');
+  }
+  /** Ganhar XP (após a batalha): sobe de nível, aumenta atributos e cura. */
+  function rpgBattleReward(xp) {
+    rpg.playerXp += Math.max(0, num(xp, 0));
+    var subiu = false;
+    while (rpg.playerXp >= rpg.playerMaxXp) {
+      rpg.playerXp -= rpg.playerMaxXp;
+      rpg.playerLevel += 1;
+      rpg.playerMax += 8; rpg.playerStr += 2; rpg.playerDef += 1;
+      rpg.playerMaxXp = Math.round(rpg.playerMaxXp * 1.4);
+      subiu = true;
     }
-    updateBattleText(prefix + ' ' + b.name + ' devolveu ' + dmg + '. Sua vez!');
+    if (subiu) {
+      rpg.playerHp = rpg.playerMax; // curou ao subir de nível
+      emit('subiu:nivel');
+    }
+  }
+  /** Envenenar (status): who = 'inimigo' ou 'heroi'; perde 3 de vida por turno. */
+  function rpgInflict(who, status, turns) {
+    var t = Math.max(1, Math.round(num(turns, 3)));
+    var w = text(who, 'inimigo');
+    if (text(status, 'veneno') !== 'veneno') return; // só veneno por ora
+    if (w === 'heroi' || w === 'herói') rpg.playerPoison = t;
+    else if (rpg.battle) rpg.battle.poison = t;
   }
   function endBattle(won) {
     rpg.battleWon = won === true;
@@ -1805,6 +2589,14 @@ export const gameKitRuntime = `(function () {
       if (typeof fn === 'function') gameClickHooks.push(fn);
     }),
     drawBar: guard('drawBar', drawBar),
+    setWalkSheet: guard('setWalkSheet', setWalkSheet),
+    // ----- 🗺️ V9: mapa de tiles + profundidade -----
+    cameraShake: guard('cameraShake', cameraShake),
+    loadTilemap: guard('loadTilemap', loadTilemap),
+    drawTilemap: guard('drawTilemap', drawTilemap),
+    tilemapSolid: guard('tilemapSolid', tilemapSolid),
+    drawShadow: guard('drawShadow', drawShadow),
+    drawByDepth: guard('drawByDepth', drawByDepth),
     // ----- 🧙 Kit RPG -----
     rpgMoveGrid: guard('rpgMoveGrid', rpgMoveGrid),
     rpgBlockCell: guard('rpgBlockCell', rpgBlockCell),
@@ -1828,6 +2620,26 @@ export const gameKitRuntime = `(function () {
       if (typeof fn === 'function') rpg.onBattleEnd.push(fn);
     }),
     rpgBattleWon: guard('rpgBattleWon', function () { return rpg.battleWon === true; }),
+    // ----- ⚔️ V8: batalha rica (progressão) -----
+    rpgSetSpecial: guard('rpgSetSpecial', rpgSetSpecial),
+    rpgGivePotion: guard('rpgGivePotion', rpgGivePotion),
+    rpgBattleReward: guard('rpgBattleReward', rpgBattleReward),
+    rpgInflict: guard('rpgInflict', rpgInflict),
+    rpgLevel: guard('rpgLevel', function () { return rpg.playerLevel; }),
+    rpgXp: guard('rpgXp', function () { return rpg.playerXp; }),
+    // ----- 🎬 V6: cenas & NPCs vivos -----
+    rpgCutscene: guard('rpgCutscene', rpgCutscene),
+    rpgWait: guard('rpgWait', rpgWait),
+    rpgFace: guard('rpgFace', rpgFace),
+    rpgNpcWalkTo: guard('rpgNpcWalkTo', rpgNpcWalkTo),
+    rpgNpcWander: guard('rpgNpcWander', rpgNpcWander),
+    rpgOnStep: guard('rpgOnStep', rpgOnStep),
+    // ----- 💬 V7: escolhas & 💾 salvar -----
+    rpgMenu: guard('rpgMenu', rpgMenu),
+    rpgOption: guard('rpgOption', rpgOption),
+    rpgSave: guard('rpgSave', rpgSave),
+    rpgLoad: guard('rpgLoad', rpgLoad),
+    rpgHasSave: guard('rpgHasSave', rpgHasSave),
     // ----- P24 -----
     on: guard('on', onEvent),
     emit: guard('emit', emit),
@@ -1878,8 +2690,18 @@ export const gameKitRuntime = `(function () {
     healthOf: guard('healthOf', function (c) {
       return (c && typeof c === 'object') ? num(c.health, 0) : 0;
     }),
+    // ----- 🥷 V10: ação em tempo real (Zelda) -----
+    attackFacing: guard('attackFacing', attackFacing),
+    didHit: guard('didHit', didHit),
+    patrolAround: guard('patrolAround', patrolAround),
+    drawHearts: guard('drawHearts', drawHearts),
     setMission: guard('setMission', function (seconds, killGoal) {
-      mission = { seconds: num(seconds, 30), killCount: num(killGoal, 10) };
+      // 0 (ou negativo) = condição DESLIGADA (Infinity), senão "0 s" venceria no
+      // 1º quadro (o win é OR). A criança pode querer "só por tempo" ou "só por
+      // inimigos" zerando o outro.
+      var sec = num(seconds, 30);
+      var kills = num(killGoal, 10);
+      mission = { seconds: sec > 0 ? sec : Infinity, killCount: kills > 0 ? kills : Infinity };
       missionDone = false;
     }),
     missionKill: guard('missionKill', function () { killCount += 1; }),
