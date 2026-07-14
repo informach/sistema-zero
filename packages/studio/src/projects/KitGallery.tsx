@@ -43,6 +43,7 @@ const KIT_EMOJI: Record<string, string> = {
   Equilibrista: '🌉',
   Balão: '🎈',
   'Aventura com câmera': '🎥',
+  'Caça-moedas profissional': '🪙',
   'Boneco de formas': '🪆',
   'Noite enevoada': '🌙',
   'Enxame que gira': '🐝',

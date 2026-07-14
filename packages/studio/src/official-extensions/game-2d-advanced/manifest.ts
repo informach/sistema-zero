@@ -1,4 +1,5 @@
 import type { ExtensionManifest } from '#extensions'
+import { cacaMoedasExample } from './examples'
 
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
@@ -112,5 +113,5 @@ O personagem é um objeto comum: quem já conhece Objetos pode ler e mudar
 > ⚠️ Use o Jogo 2D Avançado **ou** o Jogo 2D no mesmo projeto — os dois criam a
 > própria tela e podem brigar pelo canvas.
 `,
-  examples: [],
+  examples: [cacaMoedasExample],
 }
