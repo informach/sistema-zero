@@ -136,3 +136,31 @@ describe('buildAssetsRuntime — __SZGAME_ASSET_META (mapa de tiles)', () => {
     expect(Object.hasOwn(seededMeta(runtime), '__proto__')).toBe(true)
   })
 })
+
+describe('buildAssetsRuntime — __SZGAME_SOUNDS (áudio importado)', () => {
+  const MP3 = 'data:audio/mpeg;base64,CCCC'
+
+  function seededSounds(runtime: string): Record<string, string> {
+    const win = {} as { __SZGAME_SOUNDS?: Record<string, string> }
+    new Function('window', runtime)(win)
+    return win.__SZGAME_SOUNDS ?? {}
+  }
+
+  it('semeia window.__SZGAME_SOUNDS só com data:audio/ (imagem no meio é ignorada)', () => {
+    const runtime = buildAssetsRuntime({ heroi: PNG }, {}, { explosao: MP3, mau: PNG })
+    const sounds = seededSounds(runtime)
+    expect(sounds).toEqual({ explosao: MP3 })
+    // o manifesto de imagens segue intacto no MESMO script
+    expect(seededManifest(runtime).heroi).toBe(PNG)
+  })
+
+  it('sem sons, a saída é BYTE-IDÊNTICA à assinatura antiga (retrocompat)', () => {
+    expect(buildAssetsRuntime({ heroi: PNG }, {}, {})).toBe(buildAssetsRuntime({ heroi: PNG }))
+    expect(buildAssetsRuntime({ heroi: PNG })).not.toContain('__SZGAME_SOUNDS')
+  })
+
+  it('projeto SÓ com sons (sem imagem) ainda semeia __SZGAME_SOUNDS', () => {
+    const runtime = buildAssetsRuntime({}, {}, { moeda: MP3 })
+    expect(seededSounds(runtime).moeda).toBe(MP3)
+  })
+})

@@ -170,6 +170,8 @@ interface ProjectStatePatch {
 export interface NewAssetInput {
   name: string
   dataUrl: string
+  /** `'image'` (padrão) ou `'audio'` (som/música importado). */
+  kind?: 'image' | 'audio'
   width?: number
   height?: number
   source?: 'upload' | 'library'
@@ -2611,30 +2613,38 @@ export function createProjectStore(
     addAsset: (input) => {
       const p = get().project
       if (!p) return 'Nenhum projeto carregado.'
+      const kind: ProjectAsset['kind'] = input.kind === 'audio' ? 'audio' : 'image'
+      const isAudio = kind === 'audio'
+      const noun = isAudio ? 'som' : 'imagem'
       const name = normalizeAssetName(input.name)
       if (!name) return 'Use um nome simples (letras, números e hífen).'
-      // A UI já reduziu/comprimiu; aqui revalidamos o teto e o esquema data:image/.
-      if (!isValidAssetDataUrl(input.dataUrl)) return 'Imagem inválida ou grande demais.'
+      // A UI já validou; aqui revalidamos o teto e o esquema data:image/ | data:audio/.
+      if (!isValidAssetDataUrl(input.dataUrl, kind)) return `${noun} inválido ou grande demais.`
       const assets = p.assets ?? []
       if (assets.length >= PROJECT_ASSET_LIMITS.maxAssetsCount) {
-        return `Limite de ${PROJECT_ASSET_LIMITS.maxAssetsCount} imagens por projeto.`
+        return `Limite de ${PROJECT_ASSET_LIMITS.maxAssetsCount} arquivos por projeto.`
       }
-      if (assets.some((a) => a.name === name)) return 'Já existe uma imagem com esse nome.'
+      if (assets.some((a) => a.name === name)) return `Já existe um asset com o nome "${name}".`
       const totalChars = assets.reduce((sum, a) => sum + a.dataUrl.length, 0) + input.dataUrl.length
       if (totalChars > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
-        return 'As imagens do projeto excedem o tamanho total permitido.'
+        return 'Os assets do projeto excedem o tamanho total permitido.'
       }
-      const sprite = sanitizeSpriteMeta(input.sprite)
-      const tileset = sanitizeTilesetMeta(input.tileset)
-      const tilemap = sanitizeTilemapMeta(input.tilemap)
+      // Metadados do Pinta só valem p/ imagem; áudio nunca os tem.
+      const sprite = isAudio ? undefined : sanitizeSpriteMeta(input.sprite)
+      const tileset = isAudio ? undefined : sanitizeTilesetMeta(input.tileset)
+      const tilemap = isAudio ? undefined : sanitizeTilemapMeta(input.tilemap)
       const asset: ProjectAsset = {
         id: ulid(),
         name,
-        kind: 'image',
+        kind,
         dataUrl: input.dataUrl,
         source: input.source === 'library' ? 'library' : 'upload',
-        ...(typeof input.width === 'number' && input.width > 0 ? { width: input.width } : {}),
-        ...(typeof input.height === 'number' && input.height > 0 ? { height: input.height } : {}),
+        ...(!isAudio && typeof input.width === 'number' && input.width > 0
+          ? { width: input.width }
+          : {}),
+        ...(!isAudio && typeof input.height === 'number' && input.height > 0
+          ? { height: input.height }
+          : {}),
         ...(input.source === 'library' && input.libId ? { libId: input.libId } : {}),
         ...(sprite ? { sprite } : {}),
         ...(tileset ? { tileset } : {}),

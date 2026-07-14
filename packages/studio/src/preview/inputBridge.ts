@@ -68,7 +68,7 @@ export function buildInputBridgeRuntime(): string {
       window.dispatchEvent(new KeyboardEvent(name, { key: d.key, code: d.code || d.key, bubbles: true }));
     } catch (err) {}
   });
-  // Mute/unmute: interceptamos AudioContext criados PELO jogo para suspendr/resumir.
+  // Mute/unmute: interceptamos AudioContext criados PELO jogo para suspender/resumir.
   // Só intercepta se a API existir (segurança: nunca lança).
   var _audioInstances = [];
   var _OrigAC = window.AudioContext || window.webkitAudioContext;
@@ -78,11 +78,31 @@ export function buildInputBridgeRuntime(): string {
     window.AudioContext = _PatchedAC;
     if (window.webkitAudioContext) window.webkitAudioContext = _PatchedAC;
   }
+  // Sons IMPORTADOS tocam via new Audio(dataUrl) (HTMLAudioElement), que o patch
+  // de AudioContext acima NAO alcanca. Rastreamos as instancias e as silenciamos
+  // com .muted (novas nascem ja mudas se o jogo estiver mudo).
+  var _mediaEls = [];
+  var _muted = false;
+  var _OrigAudio = window.Audio;
+  if (_OrigAudio) {
+    var _PatchedAudio = function (src) {
+      var el = src !== undefined ? new _OrigAudio(src) : new _OrigAudio();
+      try { el.muted = _muted; } catch (err) {}
+      _mediaEls.push(el);
+      return el;
+    };
+    _PatchedAudio.prototype = _OrigAudio.prototype;
+    window.Audio = _PatchedAudio;
+  }
   window.addEventListener('message', function (e) {
     var d = e.data;
     if (!d || d.type !== 'sz:audio') return;
+    _muted = !!d.muted;
     _audioInstances.forEach(function (ctx) {
       try { d.muted ? ctx.suspend() : ctx.resume(); } catch (err) {}
+    });
+    _mediaEls.forEach(function (el) {
+      try { el.muted = _muted; } catch (err) {}
     });
   });
   // Screenshot: o parent pede, o iframe responde com o dataURL do canvas principal.

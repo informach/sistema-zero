@@ -91,9 +91,12 @@ export interface ProjectAsset {
   id: string
   /** Nome único amigável, kebab-case, referenciado pelos blocos (ex.: `heroi`). */
   name: string
-  /** Por ora só imagem; o modelo já prevê `'audio'` numa fase futura. */
-  kind: 'image'
-  /** `data:image/...;base64,...` — validado: precisa começar com `data:image/`. */
+  /** Imagem (desenho/sprite) ou áudio (som/música importado). */
+  kind: 'image' | 'audio'
+  /**
+   * `data:image/...;base64,...` (imagem) ou `data:audio/...;base64,...` (áudio) —
+   * validado: o prefixo precisa casar com o `kind` (ver `isValidAssetDataUrl`).
+   */
   dataUrl: string
   width?: number
   height?: number
@@ -129,8 +132,16 @@ const MAX_ASSET_NAME_CHARS = 48
  * faria o Pinta recusar o que o Estúdio aceitaria (ou vice-versa).
  */
 const MAX_ASSET_DATA_URL_CHARS = 800_000
-/** Orçamento total de assets do projeto (~8 MB de binário inflado em base64). */
-const MAX_ASSETS_TOTAL_CHARS = 11_200_000
+/**
+ * Teto do `dataUrl` de UM asset de ÁUDIO (som/música importado). ~7 mi chars ≈
+ * 5 MB de binário — cobre efeitos curtos E uma música inteira. Bem maior que o
+ * de imagem porque áudio não tem downscale (o arquivo entra como veio). Áudio
+ * não passa pelo Pinta, então não há sincronia a manter.
+ */
+const MAX_AUDIO_DATA_URL_CHARS = 7_000_000
+/** Orçamento total de assets do projeto (~24 MB de binário inflado em base64;
+ * subido de ~8 MB em 2026-07 p/ caber sons importados de até ~5 MB). */
+const MAX_ASSETS_TOTAL_CHARS = 33_000_000
 /** Teto de quantidade de assets por projeto (defesa anti-DoS no load). */
 const MAX_ASSETS_COUNT = 128
 /** Tetos do metadado (anti-DoS; o metadado NÃO conta na cota de `dataUrl`). */
@@ -153,6 +164,7 @@ const MAX_TILEMAP_DIM = 128
 
 const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 const ASSET_DATA_URL_PREFIX = 'data:image/'
+const AUDIO_DATA_URL_PREFIX = 'data:audio/'
 
 function toPositiveInt(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : null
@@ -278,20 +290,28 @@ export function normalizeAssetName(input: string): string | null {
   return ASSET_NAME_PATTERN.test(trimmed) ? trimmed : null
 }
 
-/** `data:` URL de imagem dentro do teto de tamanho. Recusa qualquer outro esquema. */
-export function isValidAssetDataUrl(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.startsWith(ASSET_DATA_URL_PREFIX) &&
-    value.length <= MAX_ASSET_DATA_URL_CHARS
-  )
+/**
+ * `data:` URL de imagem OU áudio dentro do teto de tamanho do seu tipo. Recusa
+ * qualquer outro esquema. `kind` opcional: `'image'`/`'audio'` exige aquele
+ * prefixo; ausente aceita imagem OU áudio (cada um no seu teto).
+ */
+export function isValidAssetDataUrl(value: unknown, kind?: 'image' | 'audio'): value is string {
+  if (typeof value !== 'string') return false
+  const isImage = value.startsWith(ASSET_DATA_URL_PREFIX)
+  const isAudio = value.startsWith(AUDIO_DATA_URL_PREFIX)
+  if (kind === 'image') return isImage && value.length <= MAX_ASSET_DATA_URL_CHARS
+  if (kind === 'audio') return isAudio && value.length <= MAX_AUDIO_DATA_URL_CHARS
+  if (isImage) return value.length <= MAX_ASSET_DATA_URL_CHARS
+  if (isAudio) return value.length <= MAX_AUDIO_DATA_URL_CHARS
+  return false
 }
 
 /**
  * Valida/normaliza `assets` vindos de um Project não confiável (disco, host,
- * import). Descarta asset com `dataUrl` inválido (não-`data:image/`) ou nome
- * inválido em vez de quebrar; deduplica por nome e respeita o orçamento total e o
- * teto de quantidade. Retorna sempre um array (vazio se nada válido).
+ * import). Descarta asset com `dataUrl` inválido (prefixo `data:image/`/`data:audio/`
+ * que não casa com o `kind`, ou fora do teto) ou nome inválido em vez de quebrar;
+ * deduplica por nome e respeita o orçamento total e o teto de quantidade. Retorna
+ * sempre um array (vazio se nada válido).
  */
 export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
   if (!Array.isArray(raw)) return []
@@ -302,8 +322,9 @@ export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
     if (out.length >= MAX_ASSETS_COUNT) break
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const a = item as Record<string, unknown>
-    if (a.kind !== 'image') continue
-    if (!isValidAssetDataUrl(a.dataUrl)) continue
+    const kind: ProjectAsset['kind'] = a.kind === 'audio' ? 'audio' : 'image'
+    if (a.kind !== 'image' && a.kind !== 'audio') continue
+    if (!isValidAssetDataUrl(a.dataUrl, kind)) continue
     const name = typeof a.name === 'string' ? normalizeAssetName(a.name) : null
     if (!name || seenNames.has(name)) continue
     if (totalChars + a.dataUrl.length > MAX_ASSETS_TOTAL_CHARS) continue
@@ -311,7 +332,7 @@ export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
     const asset: ProjectAsset = {
       id: typeof a.id === 'string' && a.id.trim() ? a.id.slice(0, 64) : name,
       name,
-      kind: 'image',
+      kind,
       dataUrl: a.dataUrl,
       source,
     }
@@ -358,6 +379,24 @@ export function assetManifest(
 }
 
 /**
+ * Manifesto `nome → dataUrl` só dos assets de ÁUDIO — irmão do `assetManifest`,
+ * semeado no preview em `window.__SZGAME_SOUNDS` (separado das imagens). O runtime
+ * toca com `new Audio(dataUrl)` (a CSP libera `media-src data:`).
+ */
+export function soundManifest(
+  assets: readonly ProjectAsset[] | undefined | null,
+): Record<string, string> {
+  const out: Record<string, string> = {}
+  if (!assets) return out
+  for (const a of assets) {
+    if (a && a.kind === 'audio' && typeof a.name === 'string' && typeof a.dataUrl === 'string') {
+      out[a.name] = a.dataUrl
+    }
+  }
+  return out
+}
+
+/**
  * Manifesto `nome → metadados de preview` — irmão do `assetManifest`, mas só com
  * o que o RUNTIME precisa (hoje: `tilemap`). Semeado em `window.__SZGAME_ASSET_META`
  * pelos mesmos call sites. Só entra asset com meta presente (objeto vazio = nada
@@ -379,6 +418,7 @@ export function assetMetaManifest(
 /** Limites públicos dos assets — a UI lê para validar upload e mostrar avisos. */
 export const PROJECT_ASSET_LIMITS = {
   maxAssetDataUrlChars: MAX_ASSET_DATA_URL_CHARS,
+  maxAudioDataUrlChars: MAX_AUDIO_DATA_URL_CHARS,
   maxAssetsTotalChars: MAX_ASSETS_TOTAL_CHARS,
   maxAssetsCount: MAX_ASSETS_COUNT,
   maxAssetNameChars: MAX_ASSET_NAME_CHARS,

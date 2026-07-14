@@ -10,7 +10,7 @@ import {
   removePersonalAsset,
 } from '../../asset-library/personal'
 import { useProjectStore } from '../../state/projectStore'
-import { fileToAssetDataUrl } from './imageProcessing'
+import { fileToAssetDataUrl, fileToAudioAssetDataUrl } from './imageProcessing'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 
 /**
@@ -43,8 +43,13 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
 
   const fileInputId = useId()
   const fileRef = useRef<HTMLInputElement>(null)
+  const soundRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Imagens (desenhos/sprites) e sons (áudio importado) vivem na mesma lista de
+  // assets; separamos só para exibir em seções distintas.
+  const images = assets.filter((a) => a.kind !== 'audio')
+  const sounds = assets.filter((a) => a.kind === 'audio')
   // "Usar como peças" / "Usar como mapa (fatiar)" — upload vira tileset/mapa sem Pinta.
   const [tileConfig, setTileConfig] = useState<Pick<
     TileConfigDialogProps,
@@ -133,6 +138,31 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     }
   }
 
+  const handleAudioFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setError(null)
+    setBusy(true)
+    const taken = new Set(assets.map((a) => a.name))
+    try {
+      for (const file of Array.from(files)) {
+        const { dataUrl } = await fileToAudioAssetDataUrl(file)
+        const base = file.name.replace(/\.[^.]+$/, '')
+        const name = uniqueName(base, taken)
+        const err = addAsset({ name, dataUrl, kind: 'audio', source: 'upload' })
+        if (err) {
+          setError(err)
+          break
+        }
+        taken.add(name)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao processar o som.')
+    } finally {
+      setBusy(false)
+      if (soundRef.current) soundRef.current.value = ''
+    }
+  }
+
   const addFromLibrary = (lib: LibraryAsset) => {
     setError(null)
     const taken = new Set(assets.map((a) => a.name))
@@ -159,7 +189,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     <Modal
       open={open}
       onClose={onClose}
-      title="Imagens"
+      title="Imagens e sons"
       className="w-[680px] max-w-[92vw]"
       footer={
         <Button variant="ghost" size="sm" onClick={onClose}>
@@ -168,7 +198,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       }
     >
       {!hasProject ? (
-        <p className="text-sm text-sz-fg-soft">Abra um projeto para gerenciar imagens.</p>
+        <p className="text-sm text-sz-fg-soft">Abra um projeto para gerenciar imagens e sons.</p>
       ) : (
         <div className="flex flex-col gap-4">
           {allowUpload && (
@@ -182,16 +212,32 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                 className="hidden"
                 onChange={(e) => void handleFiles(e.target.files)}
               />
+              <input
+                ref={soundRef}
+                type="file"
+                accept="audio/*"
+                multiple
+                className="hidden"
+                onChange={(e) => void handleAudioFiles(e.target.files)}
+              />
               <Button
                 variant="primary"
                 size="sm"
                 disabled={busy}
                 onClick={() => fileRef.current?.click()}
               >
-                {busy ? 'Processando…' : 'Enviar do computador'}
+                {busy ? 'Processando…' : 'Enviar imagem'}
+              </Button>
+              <Button
+                variant="subtle"
+                size="sm"
+                disabled={busy}
+                onClick={() => soundRef.current?.click()}
+              >
+                🔊 Enviar som
               </Button>
               <span className="text-xs text-sz-fg-soft">
-                {assets.length}/{PROJECT_ASSET_LIMITS.maxAssetsCount} imagens · {budgetPct}% do
+                {assets.length}/{PROJECT_ASSET_LIMITS.maxAssetsCount} arquivos · {budgetPct}% do
                 espaço
               </span>
             </div>
@@ -207,13 +253,13 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
               No projeto
             </h3>
-            {assets.length === 0 ? (
+            {images.length === 0 ? (
               <p className="text-sm text-sz-fg-soft">
                 Nenhuma imagem ainda. Envie do computador ou escolha uma da biblioteca abaixo.
               </p>
             ) : (
               <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {assets.map((asset) => (
+                {images.map((asset) => (
                   <li
                     key={asset.id}
                     className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
@@ -274,6 +320,50 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
               </ul>
             )}
           </section>
+
+          {sounds.length > 0 ? (
+            <section>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
+                Sons no projeto
+              </h3>
+              <ul className="flex flex-col gap-2">
+                {sounds.map((asset) => (
+                  <li
+                    key={asset.id}
+                    className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
+                  >
+                    <span className="text-lg" aria-hidden>
+                      🔊
+                    </span>
+                    <input
+                      defaultValue={asset.name}
+                      spellCheck={false}
+                      aria-label={`Nome do som ${asset.name}`}
+                      className="min-w-0 flex-1 rounded border border-sz-border bg-sz-bg px-1.5 py-0.5 font-mono text-xs text-sz-fg outline-none focus:border-sz-accent"
+                      onBlur={(e) => handleRename(asset, e.target.value.trim())}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                      }}
+                    />
+                    {/* biome-ignore lint/a11y/useMediaCaption: efeito sonoro de jogo, sem fala/legenda */}
+                    <audio
+                      src={asset.dataUrl}
+                      controls
+                      preload="none"
+                      className="h-8 max-w-[46%]"
+                    />
+                    <button
+                      type="button"
+                      className="text-xs text-red-400 hover:underline"
+                      onClick={() => removeAsset(asset.id)}
+                    >
+                      Excluir
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
           {personalNamespace ? (
             <section>

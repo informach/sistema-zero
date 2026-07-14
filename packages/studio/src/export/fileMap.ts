@@ -5,6 +5,7 @@ import {
   normalizeExtraFileName,
   normalizeProPath,
   type Project,
+  soundManifest,
 } from '#core'
 import { findExtension } from '#official-extensions'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
@@ -176,15 +177,20 @@ export async function buildClassicFileMap(
   // minificamos: é quase só um literal JSON gigante (data: URLs) — terser não ganha
   // nada e gastaria tempo mastigando megabytes de base64.
   const manifest = exportManifest
+  const soundsExport = soundManifest(project.assets)
   let assetsScriptSrc: string | undefined
-  if (Object.keys(manifest).length > 0) {
+  if (Object.keys(manifest).length > 0 || Object.keys(soundsExport).length > 0) {
     assetsScriptSrc = 'sz-assets.js'
-    files['public/sz-assets.js'] = buildAssetsRuntime(manifest, assetMetaManifest(project.assets))
-    // Cada asset TAMBÉM vira arquivo real `public/<nome>`: um `background:
-    // url('background.png')` no CSS do aluno resolve RELATIVO no site
+    files['public/sz-assets.js'] = buildAssetsRuntime(
+      manifest,
+      assetMetaManifest(project.assets),
+      soundsExport,
+    )
+    // Cada asset (imagem OU som) TAMBÉM vira arquivo real `public/<nome>`: um
+    // `background: url('background.png')` no CSS do aluno resolve RELATIVO no site
     // publicado/baixado (no preview quem resolve é o rewriteCssAssetUrls).
     // Mesmo padrão pular+avisar das colisões de nome de saída.
-    for (const [name, dataUrl] of Object.entries(manifest)) {
+    for (const [name, dataUrl] of Object.entries({ ...manifest, ...soundsExport })) {
       if (!name || name.includes('/') || name.includes('\\') || name.includes('..')) continue
       const destPath = `public/${name}`
       if (destPath in files) {

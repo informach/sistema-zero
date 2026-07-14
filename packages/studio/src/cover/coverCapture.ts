@@ -1,4 +1,4 @@
-import { assetManifest, assetMetaManifest, type Project } from '#core'
+import { assetManifest, assetMetaManifest, type Project, soundManifest } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc } from '#preview'
@@ -86,6 +86,7 @@ function runCapture(
     // sairia sem os sprites — semeamos os assets também na captura.
     assets: assetManifest(project.assets),
     assetsMeta: assetMetaManifest(project.assets),
+    sounds: soundManifest(project.assets),
     parentOrigin,
     installedPermissions: ctx.permissions,
     fetchAllowedOrigins: opts.fetchAllowedOrigins,

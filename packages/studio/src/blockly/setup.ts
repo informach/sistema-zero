@@ -19,6 +19,7 @@ import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
 import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldNamePicker } from './fields/FieldNamePicker'
 import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
+import { registerFieldSoundPicker } from './fields/FieldSoundPicker'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
 import { registerFieldTileGrid } from './fields/FieldTileGrid'
 import { organizeBlocks } from './organize'
@@ -266,6 +267,9 @@ export function ensureBlocklyInitialized(): void {
   // definição dos blocos da extensão (que rodam na instalação) — senão Blockly
   // falha ao ver o tipo `field_asset_picker`.
   registerFieldAssetPicker()
+  // Campo de seleção de SOM (asset de áudio, com ▶ para ouvir) — mesma exigência
+  // de ordem do asset picker: registrado antes dos blocos da extensão.
+  registerFieldSoundPicker()
   // Campo de seleção de SPRITE (lista os sprites já criados, com miniatura) — mesma
   // exigência de ordem do asset picker: registrado antes dos blocos da extensão.
   registerFieldSpritePicker()

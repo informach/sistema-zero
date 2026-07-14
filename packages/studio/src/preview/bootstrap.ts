@@ -62,6 +62,12 @@ export interface BuildPreviewDocInput {
    */
   assetsMeta?: Record<string, { tilemap: import('#core').ProjectTilemapMeta }>
   /**
+   * Manifesto `nome → dataUrl` dos assets de ÁUDIO (`soundManifest` do core),
+   * semeado em `window.__SZGAME_SOUNDS` no MESMO script do assetsBridge. O runtime
+   * toca com `new Audio(dataUrl)`. Ausente/vazio = saída idêntica à de antes.
+   */
+  sounds?: Record<string, string>
+  /**
    * Módulos ESM de extensões instaladas (`specifier → URL`, ex.:
    * `{ three: 'https://esm.sh/three@0.180.0' }`). Entram no importmap e suas
    * origens são liberadas no `script-src` da CSP.
@@ -259,9 +265,11 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // aluno para que os blocos de imagem (runtime SZGame2D) já o enxerguem. Semeadura
   // one-way (igual ao storageBridge): sem postMessage/targetOrigin. Omitido quando
   // não há assets (mantém o doc enxuto e idêntico para jogos legados só-fillRect).
+  const hasAssets = input.assets && Object.keys(input.assets).length > 0
+  const hasSounds = input.sounds && Object.keys(input.sounds).length > 0
   const assetsBridgeTag =
-    input.assets && Object.keys(input.assets).length > 0
-      ? scriptTag(buildAssetsRuntime(input.assets, input.assetsMeta))
+    hasAssets || hasSounds
+      ? scriptTag(buildAssetsRuntime(input.assets, input.assetsMeta, input.sounds))
       : ''
 
   return `<!doctype html>

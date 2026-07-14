@@ -60,6 +60,25 @@ export async function fileToAssetDataUrl(
   return { dataUrl, width, height }
 }
 
+/**
+ * Lê um arquivo de ÁUDIO (mp3/wav/ogg…) como `data:audio/...;base64,...` SEM
+ * recodificar (áudio não rasteriza no canvas): só valida o tipo e o teto. Um som
+ * grande demais falha com mensagem gentil (não há downscale como na imagem).
+ */
+export async function fileToAudioAssetDataUrl(file: File): Promise<{ dataUrl: string }> {
+  if (!file.type.startsWith('audio/')) {
+    throw new Error('Selecione um arquivo de som (mp3, wav, ogg…).')
+  }
+  const dataUrl = await readAsDataUrl(file)
+  if (!dataUrl.startsWith('data:audio/')) {
+    throw new Error('Som inválido ou em formato não suportado.')
+  }
+  if (dataUrl.length > PROJECT_ASSET_LIMITS.maxAudioDataUrlChars) {
+    throw new Error('O som é grande demais. Tente um arquivo mais curto ou mais leve.')
+  }
+  return { dataUrl }
+}
+
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
