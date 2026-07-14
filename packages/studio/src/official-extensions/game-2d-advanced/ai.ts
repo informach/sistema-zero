@@ -112,6 +112,23 @@ API global injetada como window.SZGameKit:
   mouseY()/mouseDown() para mirar e arrastar.
 - 📊 drawBar(atual, max, x, y, w, h, cor): barra proporcional (vida/mana/
   progresso) — ideal dentro do onDrawHud.
+- 🧙 Kit RPG (Canvas RPG Kit em blocos; mecânicas PRONTAS sobre o mesmo motor):
+  rpgMoveGrid(heroi, cellPx, dt) — andar por CÉLULAS c/ paredes, portas e o
+  ESPAÇO conversando com o NPC à frente (use no onUpdate; a fala/batalha travam
+  o herói sozinhas); rpgBlockCell(cx, cy) parede; rpgCell(n) célula→px;
+  rpgCreateNpc(nome, cx, cy, img, look) NPC sólido + rpgDrawNpcs() no onDraw +
+  rpgOnTalk(nome, fn); rpgSay(texto, quem) caixa typewriter (fila; emite
+  "fala:terminada"); rpgAddFlag/rpgHasFlag (story flags — conversa condicionada);
+  rpgGiveItem(nome, img)/rpgHasItem/rpgRemoveItem/rpgDrawInventory(x, y);
+  rpgOnMap(nome, fn) monta o mapa (1º registrado = inicial; trocar limpa
+  paredes/NPCs/portas e REMONTA — reposicione o herói na montagem!) +
+  rpgGoMap(nome) + rpgCreateDoor(cx, cy, mapa); batalha por TURNOS com menu
+  PRONTO: rpgBattleStats(vida, força) 1x + rpgBattleStart(nome, vida, força)
+  (Atacar = força ± 20%, Defender = ½ do próximo dano, Fugir = 50%; o mundo
+  congela SEM resetar) + rpgOnBattleEnd(fn) + rpgBattleWon(). Padrão canônico:
+  no onTalk do chefe → rpgBattleStart; no rpgOnBattleEnd → "se ganhei:
+  setState('vitoria') senão endGame()". Recomeçar o jogo zera flags/itens e
+  volta ao 1º mapa.
 
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.

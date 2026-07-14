@@ -538,6 +538,14 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:mouseY' }
     case 'sz_gk_mouse_down':
       return { type: 'gk:mouseDown' }
+    case 'sz_gk_rpg_cell':
+      return { type: 'gk:rpgCell', n: exprInput(block, 'N', { type: 'num', value: 3 }) }
+    case 'sz_gk_rpg_has_flag':
+      return { type: 'gk:rpgHasFlag', flag: f(block, 'FLAG') }
+    case 'sz_gk_rpg_has_item':
+      return { type: 'gk:rpgHasItem', item: f(block, 'NAME') }
+    case 'sz_gk_rpg_battle_won':
+      return { type: 'gk:rpgBattleWon' }
     case 'sz_input_key_pressed':
       return { type: 'inputKeyPressed', key: f(block, 'KEY') || 'ArrowRight' }
     case 'sz_input_pointer_x':
@@ -5294,6 +5302,136 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           h: exprInput(block, 'H', { type: 'num', value: 16 }),
           color: f(block, 'COLOR') || '#4a9eff',
         },
+      }
+    case 'sz_gk_rpg_move_grid':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgMoveGrid',
+          charVar: f(block, 'CHAR'),
+          cell: exprInput(block, 'CELL', { type: 'num', value: 64 }),
+          dtVar: f(block, 'DT'),
+        },
+      }
+    case 'sz_gk_rpg_block_cell':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgBlockCell',
+          cx: exprInput(block, 'CX', { type: 'num', value: 0 }),
+          cy: exprInput(block, 'CY', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_rpg_create_npc':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgCreateNpc',
+          name: f(block, 'NAME'),
+          cx: exprInput(block, 'CX', { type: 'num', value: 3 }),
+          cy: exprInput(block, 'CY', { type: 'num', value: 3 }),
+          image: f(block, 'IMAGE'),
+          look: f(block, 'LOOK'),
+        },
+      }
+    case 'sz_gk_rpg_draw_npcs':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgDrawNpcs' } }
+    case 'sz_gk_rpg_on_talk':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgOnTalk',
+          npc: f(block, 'NPC'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_rpg_say':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgSay',
+          text: exprInput(block, 'TEXT', { type: 'str', value: 'Olá!' }),
+          speaker: exprInput(block, 'NAME', { type: 'str', value: '' }),
+        },
+      }
+    case 'sz_gk_rpg_add_flag':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgAddFlag', flag: f(block, 'FLAG') } }
+    case 'sz_gk_rpg_give_item':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:rpgGiveItem', item: f(block, 'NAME'), image: f(block, 'IMAGE') },
+      }
+    case 'sz_gk_rpg_remove_item':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgRemoveItem', item: f(block, 'NAME') } }
+    case 'sz_gk_rpg_draw_inventory':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgDrawInventory',
+          x: exprInput(block, 'X', { type: 'num', value: 20 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_gk_rpg_go_map':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgGoMap', map: f(block, 'MAP') } }
+    case 'sz_gk_rpg_on_map':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgOnMap',
+          map: f(block, 'MAP'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_rpg_create_door':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgCreateDoor',
+          cx: exprInput(block, 'CX', { type: 'num', value: 5 }),
+          cy: exprInput(block, 'CY', { type: 'num', value: 5 }),
+          map: f(block, 'MAP'),
+        },
+      }
+    case 'sz_gk_rpg_battle_stats':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgBattleStats',
+          hp: exprInput(block, 'HP', { type: 'num', value: 30 }),
+          str: exprInput(block, 'STR', { type: 'num', value: 7 }),
+        },
+      }
+    case 'sz_gk_rpg_battle_start':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgBattleStart',
+          name: f(block, 'NAME'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 20 }),
+          str: exprInput(block, 'STR', { type: 'num', value: 5 }),
+        },
+      }
+    case 'sz_gk_rpg_on_battle_end':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:rpgOnBattleEnd', body: getStatementChildren(block, 'BODY', seen) },
       }
     case 'sz_gk_draw_background':
       seen.add('game-2d-advanced')

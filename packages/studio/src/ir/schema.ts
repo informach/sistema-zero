@@ -214,6 +214,11 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:mouseX' })
   | (JSExprCommon & { type: 'gk:mouseY' })
   | (JSExprCommon & { type: 'gk:mouseDown' })
+  // 🧙 Kit RPG — valores: célula→px, flags, itens e resultado da batalha.
+  | (JSExprCommon & { type: 'gk:rpgCell'; n: number | JSExpr })
+  | (JSExprCommon & { type: 'gk:rpgHasFlag'; flag: string })
+  | (JSExprCommon & { type: 'gk:rpgHasItem'; item: string })
+  | (JSExprCommon & { type: 'gk:rpgBattleWon' })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -556,6 +561,14 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:mouseX'), ...idField }),
     z.object({ type: z.literal('gk:mouseY'), ...idField }),
     z.object({ type: z.literal('gk:mouseDown'), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgCell'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgHasFlag'), flag: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgHasItem'), item: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgBattleWon'), ...idField }),
     z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
     z.object({ type: z.literal('isFullscreen'), ...idField }),
@@ -2427,6 +2440,55 @@ export type JSStatement =
       h: number | JSExpr
       color: string
     })
+  // 🧙 Kit RPG (Canvas RPG Kit em blocos): grade+paredes, NPC+fala typewriter,
+  // flags de história, inventário, mapas com portas e batalha por turnos com
+  // menu PRONTO do motor (Atacar/Defender/Fugir).
+  | (JSStatementCommon & {
+      type: 'gk:rpgMoveGrid'
+      charVar: string
+      cell: number | JSExpr
+      dtVar: string
+    })
+  | (JSStatementCommon & { type: 'gk:rpgBlockCell'; cx: number | JSExpr; cy: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:rpgCreateNpc'
+      name: string
+      cx: number | JSExpr
+      cy: number | JSExpr
+      image: string
+      look: string
+    })
+  | (JSStatementCommon & { type: 'gk:rpgDrawNpcs' })
+  | (JSStatementCommon & { type: 'gk:rpgOnTalk'; npc: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:rpgSay'; text: number | JSExpr; speaker: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:rpgAddFlag'; flag: string })
+  | (JSStatementCommon & { type: 'gk:rpgGiveItem'; item: string; image: string })
+  | (JSStatementCommon & { type: 'gk:rpgRemoveItem'; item: string })
+  | (JSStatementCommon & {
+      type: 'gk:rpgDrawInventory'
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:rpgGoMap'; map: string })
+  | (JSStatementCommon & { type: 'gk:rpgOnMap'; map: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'gk:rpgCreateDoor'
+      cx: number | JSExpr
+      cy: number | JSExpr
+      map: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:rpgBattleStats'
+      hp: number | JSExpr
+      str: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:rpgBattleStart'
+      name: string
+      hp: number | JSExpr
+      str: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:rpgOnBattleEnd'; body: JSStatement[] })
   | (JSStatementCommon & {
       type: 'gk:createCharacter'
       varName: string
@@ -4664,6 +4726,82 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:rpgMoveGrid'),
+      charVar: irText(),
+      cell: z.union([JSExprSchema, z.number()]),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgBlockCell'),
+      cx: z.union([JSExprSchema, z.number()]),
+      cy: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgCreateNpc'),
+      name: irText(),
+      cx: z.union([JSExprSchema, z.number()]),
+      cy: z.union([JSExprSchema, z.number()]),
+      image: irText(),
+      look: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgDrawNpcs'), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgOnTalk'),
+      npc: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgSay'),
+      text: z.union([JSExprSchema, z.number()]),
+      speaker: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgAddFlag'), flag: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgGiveItem'), item: irText(), image: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgRemoveItem'), item: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgDrawInventory'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgGoMap'), map: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgOnMap'),
+      map: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgCreateDoor'),
+      cx: z.union([JSExprSchema, z.number()]),
+      cy: z.union([JSExprSchema, z.number()]),
+      map: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgBattleStats'),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgBattleStart'),
+      name: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgOnBattleEnd'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:drawBackground'),
       color: irText(),
       grid: z.boolean(),
@@ -5401,6 +5539,22 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:setAngle',
   'gk:onGameClick',
   'gk:drawBar',
+  'gk:rpgMoveGrid',
+  'gk:rpgBlockCell',
+  'gk:rpgCreateNpc',
+  'gk:rpgDrawNpcs',
+  'gk:rpgOnTalk',
+  'gk:rpgSay',
+  'gk:rpgAddFlag',
+  'gk:rpgGiveItem',
+  'gk:rpgRemoveItem',
+  'gk:rpgDrawInventory',
+  'gk:rpgGoMap',
+  'gk:rpgOnMap',
+  'gk:rpgCreateDoor',
+  'gk:rpgBattleStats',
+  'gk:rpgBattleStart',
+  'gk:rpgOnBattleEnd',
   'gk:drawBackground',
   'gk:createCharacter',
   'gk:moveWithKeys',

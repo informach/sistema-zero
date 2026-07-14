@@ -61,6 +61,10 @@ export type NameKind =
   | 'event'
   | 'look'
   | 'sound'
+  | 'npc'
+  | 'flag'
+  | 'item'
+  | 'map'
 
 const NAME_KINDS: readonly NameKind[] = [
   'variable',
@@ -85,6 +89,10 @@ const NAME_KINDS: readonly NameKind[] = [
   'event',
   'look',
   'sound',
+  'npc',
+  'flag',
+  'item',
+  'map',
 ]
 
 /** Coage o `kind` cru da definição do bloco para um `NameKind` válido (default variável). */
@@ -231,6 +239,30 @@ const EVENT_DECL_BLOCKS: Record<string, string[]> = {
 }
 function collectEvents(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, EVENT_DECL_BLOCKS)
+}
+
+/** 🧙 Kit RPG: NPCs (declarados por "Criar o NPC") — fonte do seletor NPC. */
+const NPC_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_create_npc: ['NAME'] }
+function collectNpcs(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, NPC_DECL_BLOCKS)
+}
+/** Flags de história "existem por USO" (marcar OU perguntar), como os avisos. */
+const FLAG_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_rpg_add_flag: ['FLAG'],
+  sz_gk_rpg_has_flag: ['FLAG'],
+}
+function collectFlags(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, FLAG_DECL_BLOCKS)
+}
+/** Itens: quem DECLARA é o "Ganhar o item" (os demais consomem). */
+const ITEM_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_give_item: ['NAME'] }
+function collectItems(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, ITEM_DECL_BLOCKS)
+}
+/** Mapas: quem DECLARA é o "Quando chegar no mapa" (go_map/porta consomem). */
+const MAP_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_on_map: ['MAP'] }
+function collectMaps(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, MAP_DECL_BLOCKS)
 }
 
 /** Cenas/mundos do Jogo 3D (fonte do seletor WORLD). */
@@ -456,6 +488,27 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do som',
     empty:
       'Nenhum som carregado ainda — use "Carregar o som" (importe em "Imagens e sons") ou digite o nome abaixo.',
+  },
+  npc: {
+    icon: '🧙',
+    placeholder: 'nome do NPC',
+    empty: 'Nenhum NPC ainda — crie um (bloco "Criar o NPC") ou digite o nome abaixo.',
+  },
+  flag: {
+    icon: '🚩',
+    placeholder: 'nome do acontecimento',
+    empty:
+      'Nenhuma marca da história ainda — use "Marcar que … aconteceu" ou digite o nome abaixo.',
+  },
+  item: {
+    icon: '🎒',
+    placeholder: 'nome do item',
+    empty: 'Nenhum item ainda — use "Ganhar o item" ou digite o nome abaixo.',
+  },
+  map: {
+    icon: '🗺️',
+    placeholder: 'nome do mapa',
+    empty: 'Nenhum mapa ainda — crie um ("Quando chegar no mapa") ou digite o nome abaixo.',
   },
 }
 
@@ -729,6 +782,14 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectLooks(ws)
       case 'sound':
         return collectSounds(ws)
+      case 'npc':
+        return collectNpcs(ws)
+      case 'flag':
+        return collectFlags(ws)
+      case 'item':
+        return collectItems(ws)
+      case 'map':
+        return collectMaps(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)

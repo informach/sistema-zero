@@ -9,7 +9,7 @@ import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
 import { gameKitBlocks } from '../blocks'
-import { arenaGoblinsExample, cacaMoedasExample } from '../examples'
+import { arenaGoblinsExample, cacaMoedasExample, vilaDoDragaoExample } from '../examples'
 import { gameKitExtension } from '../index'
 
 /**
@@ -88,6 +88,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
     expect(gameKitExtension.manifest.examples.map((e) => e.name)).toEqual([
       'Caça-moedas profissional',
       'Arena dos Goblins',
+      'Vila do Dragão',
     ])
     expect(gameKitExtension.minLevel).toBe('intermediario')
   })
@@ -257,6 +258,139 @@ describe('game-2d-advanced — exemplo Arena dos Goblins (P24)', () => {
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(arenaGoblinsExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_VILA = `SZGameKit.setup({ width: 960, height: 640, background: "#1c1330", accent: "#fbbf24" });
+SZGameKit.setScreenText("menu", "Vila do Dragão", "Setas andam - espaço conversa - derrote o dragão!", "Começar a aventura");
+SZGameKit.setScreenText("vitoria", "Vila salva!", "O dragão foi derrotado. Você é uma lenda!", "");
+SZGameKit.defineLook("ferreiro", function (ctx) {
+  ctx.fillStyle = "#8b5a2b";
+  ctx.fillRect(12, 24, 40, 40);
+  ctx.fillStyle = "#f3c78a";
+  ctx.fillRect(20, 8, 24, 20);
+}, 64, 64);
+SZGameKit.defineLook("dragao", function (ctx) {
+  ctx.fillStyle = "#2f9e44";
+  ctx.fillRect(8, 16, 48, 40);
+  ctx.fillStyle = "#b2f2bb";
+  ctx.fillRect(16, 24, 10, 10);
+  ctx.fillStyle = "#e03131";
+  ctx.fillRect(40, 24, 8, 8);
+}, 64, 64);
+SZGameKit.rpgBattleStats(30, 8);
+const heroi = SZGameKit.createCharacter({ image: "", w: 64, h: 64, speed: 260, color: "#4a9eff" });
+SZGameKit.rpgOnMap("vila", function () {
+  SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(2));
+  SZGameKit.rpgBlockCell(5, 1);
+  SZGameKit.rpgBlockCell(5, 2);
+  SZGameKit.rpgCreateNpc("ferreiro", 7, 3, "", "ferreiro");
+  if (SZGameKit.rpgHasItem("chave")) {
+    SZGameKit.rpgCreateDoor(9, 6, "caverna");
+  }
+});
+SZGameKit.rpgOnMap("caverna", function () {
+  SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(1), SZGameKit.rpgCell(5));
+  SZGameKit.rpgCreateNpc("dragao", 8, 2, "", "dragao");
+  SZGameKit.rpgCreateDoor(0, 5, "vila");
+});
+SZGameKit.rpgOnTalk("ferreiro", function () {
+  if (SZGameKit.rpgHasFlag("aceitou-missao")) {
+    SZGameKit.rpgSay("A caverna fica no canto de baixo. Boa sorte!", "Ferreiro");
+  } else {
+    SZGameKit.rpgSay("O dragão roubou o ouro da vila!", "Ferreiro");
+    SZGameKit.rpgSay("Tome a chave da caverna. Só você pode nos salvar!", "Ferreiro");
+    SZGameKit.rpgGiveItem("chave", "");
+    SZGameKit.rpgAddFlag("aceitou-missao");
+    SZGameKit.rpgCreateDoor(9, 6, "caverna");
+  }
+});
+SZGameKit.rpgOnTalk("dragao", function () {
+  SZGameKit.rpgBattleStart("Dragão", 40, 6);
+});
+SZGameKit.rpgOnBattleEnd(function () {
+  if (SZGameKit.rpgBattleWon()) {
+    SZGameKit.setState("vitoria");
+  } else {
+    SZGameKit.endGame();
+  }
+});
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.rpgMoveGrid(heroi, 64, dt);
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#2a1f45", true);
+  SZGameKit.rpgDrawNpcs();
+  SZGameKit.drawCharacter(heroi);
+});
+SZGameKit.onDrawHud(function (ctx) {
+  SZGameKit.rpgDrawInventory(20, 20);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Vila do Dragão (Kit RPG)', () => {
+  it('o manifest registra os 3 exemplos', () => {
+    expect(gameKitExtension.manifest.examples.map((e) => e.name)).toEqual([
+      'Caça-moedas profissional',
+      'Arena dos Goblins',
+      'Vila do Dragão',
+    ])
+  })
+
+  it('IR embutida é válida, sem rawJS, e usa o Kit RPG inteiro', () => {
+    const parsed = SZIRSchema.safeParse(vilaDoDragaoExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(vilaDoDragaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:rpgOnMap',
+      'gk:rpgCreateDoor',
+      'gk:rpgBlockCell',
+      'gk:rpgCell',
+      'gk:rpgCreateNpc',
+      'gk:rpgDrawNpcs',
+      'gk:rpgOnTalk',
+      'gk:rpgSay',
+      'gk:rpgAddFlag',
+      'gk:rpgHasFlag',
+      'gk:rpgGiveItem',
+      'gk:rpgHasItem',
+      'gk:rpgDrawInventory',
+      'gk:rpgMoveGrid',
+      'gk:rpgBattleStats',
+      'gk:rpgBattleStart',
+      'gk:rpgOnBattleEnd',
+      'gk:rpgBattleWon',
+      'gk:onDrawHud', // HUD do R2 no exemplo (inventário preso na tela)
+      'gk:defineLook', // NPCs vetoriais (asset-free)
+      'if', // conversa condicionada pela história
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_VILA))).toEqual(vilaDoDragaoExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
+    const code1 = compileStatements(vilaDoDragaoExample.ir.js, 0)
+    const code2 = compileStatements(stripIds(parseJS(code1)), 0)
+    expect(code2).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR → workspace → IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      vilaDoDragaoExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(vilaDoDragaoExample.ir.js)
     } finally {
       ws.dispose()
     }

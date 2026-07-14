@@ -3230,6 +3230,103 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             H: h,
           })
     }
+    case 'gk:rpgMoveGrid': {
+      const cell = exprToValueBlock(valueToExpr(stmt.cell))
+      return cell === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_move_grid', { CHAR: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
+            CELL: cell,
+          })
+    }
+    case 'gk:rpgBlockCell': {
+      const cx = exprToValueBlock(valueToExpr(stmt.cx))
+      const cy = exprToValueBlock(valueToExpr(stmt.cy))
+      return cx === null || cy === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_block_cell', {}, {}, stmt.__id, { CX: cx, CY: cy })
+    }
+    case 'gk:rpgCreateNpc': {
+      const cx = exprToValueBlock(valueToExpr(stmt.cx))
+      const cy = exprToValueBlock(valueToExpr(stmt.cy))
+      return cx === null || cy === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_rpg_create_npc',
+            { NAME: stmt.name, IMAGE: stmt.image, LOOK: stmt.look },
+            {},
+            stmt.__id,
+            { CX: cx, CY: cy },
+          )
+    }
+    case 'gk:rpgDrawNpcs':
+      return block('sz_gk_rpg_draw_npcs', {}, {}, stmt.__id)
+    case 'gk:rpgOnTalk':
+      return block(
+        'sz_gk_rpg_on_talk',
+        { NPC: stmt.npc },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:rpgSay': {
+      const textValue = exprToValueBlock(valueToExpr(stmt.text))
+      const speaker = exprToValueBlock(valueToExpr(stmt.speaker))
+      return textValue === null || speaker === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_say', {}, {}, stmt.__id, { TEXT: textValue, NAME: speaker })
+    }
+    case 'gk:rpgAddFlag':
+      return block('sz_gk_rpg_add_flag', { FLAG: stmt.flag }, {}, stmt.__id)
+    case 'gk:rpgGiveItem':
+      return block('sz_gk_rpg_give_item', { NAME: stmt.item, IMAGE: stmt.image }, {}, stmt.__id)
+    case 'gk:rpgRemoveItem':
+      return block('sz_gk_rpg_remove_item', { NAME: stmt.item }, {}, stmt.__id)
+    case 'gk:rpgDrawInventory': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_draw_inventory', {}, {}, stmt.__id, { X: x, Y: y })
+    }
+    case 'gk:rpgGoMap':
+      return block('sz_gk_rpg_go_map', { MAP: stmt.map }, {}, stmt.__id)
+    case 'gk:rpgOnMap':
+      return block(
+        'sz_gk_rpg_on_map',
+        { MAP: stmt.map },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:rpgCreateDoor': {
+      const cx = exprToValueBlock(valueToExpr(stmt.cx))
+      const cy = exprToValueBlock(valueToExpr(stmt.cy))
+      return cx === null || cy === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_create_door', { MAP: stmt.map }, {}, stmt.__id, { CX: cx, CY: cy })
+    }
+    case 'gk:rpgBattleStats': {
+      const hp = exprToValueBlock(valueToExpr(stmt.hp))
+      const str = exprToValueBlock(valueToExpr(stmt.str))
+      return hp === null || str === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_battle_stats', {}, {}, stmt.__id, { HP: hp, STR: str })
+    }
+    case 'gk:rpgBattleStart': {
+      const hp = exprToValueBlock(valueToExpr(stmt.hp))
+      const str = exprToValueBlock(valueToExpr(stmt.str))
+      return hp === null || str === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_battle_start', { NAME: stmt.name }, {}, stmt.__id, {
+            HP: hp,
+            STR: str,
+          })
+    }
+    case 'gk:rpgOnBattleEnd':
+      return block(
+        'sz_gk_rpg_on_battle_end',
+        {},
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'gk:drawBackground':
       return block(
         'sz_gk_draw_background',
@@ -3983,6 +4080,16 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_mouse_y', {})
     case 'gk:mouseDown':
       return block('sz_gk_mouse_down', {})
+    case 'gk:rpgCell': {
+      const n = exprToValueBlock(valueToExpr(expr.n))
+      return n === null ? null : block('sz_gk_rpg_cell', {}, {}, expr.__id, { N: n })
+    }
+    case 'gk:rpgHasFlag':
+      return block('sz_gk_rpg_has_flag', { FLAG: expr.flag })
+    case 'gk:rpgHasItem':
+      return block('sz_gk_rpg_has_item', { NAME: expr.item })
+    case 'gk:rpgBattleWon':
+      return block('sz_gk_rpg_battle_won', {})
     case 'inputKeyPressed':
       return block('sz_input_key_pressed', { KEY: expr.key })
     case 'inputPointer':

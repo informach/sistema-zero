@@ -1,10 +1,10 @@
 import type { ExtensionManifest } from '#extensions'
-import { arenaGoblinsExample, cacaMoedasExample } from './examples'
+import { arenaGoblinsExample, cacaMoedasExample, vilaDoDragaoExample } from './examples'
 
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.4.0',
+  version: '0.5.0',
   description:
     'A base de um jogo 2D profissional, pronta para você inventar as regras. Máquina de estados, laço com delta-time (dt), telas de UI, personagens, e a arquitetura de verdade: avisos (eventos), moldes e enxames de inimigos que nascem sozinhos, comportamentos (perseguir/vaguear), combate (vida, dano, empurrão), faíscas, missão e som importado. O motor pronto fica no runtime; a mecânica você escreve nos ganchos, com os blocos — igual a quem programa jogos na unha.',
   category: 'games',
@@ -218,6 +218,48 @@ defense, point-and-click, desenhar com o dedo.
 **Desenhar uma barra de atual/máximo** — vida grande, energia, progresso.
 Combine com "a vida de" e ponha no HUD.
 
+## 🧙 Kit RPG
+
+Um KIT para jogos de aventura estilo Zelda/Pokémon antigo, com as mecânicas
+prontas — sobre o MESMO motor (telas, estados, avisos e personagens valem aqui).
+
+### Mundo em grade
+
+- **Mover pela grade** — o andar de RPG: uma célula por vez (setas/WASD),
+  parando encaixado. Paredes e NPCs bloqueiam; pisar numa porta troca o mapa; o
+  ESPAÇO conversa com quem está na frente. Use no "A cada quadro".
+- **Bloquear a célula** — paredes do cenário. **a célula N** converte célula em
+  pixels ("Colocar em x: a célula 3").
+
+### NPCs e conversa
+
+- **Criar o NPC** — um morador parado numa célula (sólido), com imagem ou
+  aparência. **Desenhar os NPCs** no "Desenhar o jogo".
+- **Quando conversar com o NPC… fazer** — roda no ESPAÇO olhando para ele.
+- **Mostrar a fala… de…** — caixa de fala com máquina de escrever (o herói
+  espera; ESPAÇO completa e avança). Falas seguidas viram conversa; no fim sai
+  o aviso \`fala:terminada\`.
+
+### História, itens e mapas
+
+- **Marcar que … aconteceu / já aconteceu …?** — a MEMÓRIA da história (story
+  flags): a conversa muda conforme o que você já fez.
+- **Ganhar/Perder o item / tenho o item…? / Desenhar o inventário** — a chave
+  que abre a porta, a poção, o tesouro. O inventário fica ótimo no HUD.
+- **Quando chegar no mapa… montar** — o cenário de CADA mapa (paredes, NPCs,
+  portas, posição do herói). O primeiro mapa criado é onde o jogo começa;
+  trocar de mapa limpa o anterior e monta o novo. **Ir para o mapa** troca na
+  hora; **Criar a porta** troca ao pisar.
+
+### ⚔️ Batalha por turnos
+
+- **Meus pontos de batalha** (vida/força, 1x no começo) e **Começar a batalha
+  contra…** — abre o menu PRONTO do motor: **Atacar** (dano = força ± 20%),
+  **Defender** (o próximo dano cai pela metade) e **Fugir** (50%). O inimigo
+  revida sozinho; o mundo espera.
+- **Quando a batalha terminar / ganhei a batalha?** — decida o rumo: vitória →
+  tela de vitória, derrota → fim de jogo, fuga → tentar de novo.
+
 ### 🔊 Som
 
 Importe sons em **"Imagens e sons"** (efeitos ou música que você baixou/gravou),
@@ -225,5 +267,5 @@ Importe sons em **"Imagens e sons"** (efeitos ou música que você baixou/gravou
 avisos ("Quando chegar o aviso inimigo:morreu, tocar o som explosao"). Sem
 importar nada, **Tocar o som pronto** (moeda/batida/explosão…) já funciona.
 `,
-  examples: [cacaMoedasExample, arenaGoblinsExample],
+  examples: [cacaMoedasExample, arenaGoblinsExample, vilaDoDragaoExample],
 }

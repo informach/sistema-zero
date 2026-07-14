@@ -410,6 +410,14 @@ export function compileExpr(
       return 'SZGameKit.mouseY()'
     case 'gk:mouseDown':
       return 'SZGameKit.mouseDown()'
+    case 'gk:rpgCell':
+      return `SZGameKit.rpgCell(${compileExpr(valueToExpr(expr.n), 0, identifiers, rec)})`
+    case 'gk:rpgHasFlag':
+      return `SZGameKit.rpgHasFlag(${JSON.stringify(expr.flag)})`
+    case 'gk:rpgHasItem':
+      return `SZGameKit.rpgHasItem(${JSON.stringify(expr.item)})`
+    case 'gk:rpgBattleWon':
+      return 'SZGameKit.rpgBattleWon()'
     case 'gk:kills':
       return 'SZGameKit.kills()'
     case 'inputKeyPressed':

@@ -624,3 +624,566 @@ export const arenaGoblinsExample: ExtensionExample = {
     ],
   },
 }
+
+/**
+ * Exemplo bundlado: "Vila do Dragão" — o 🧙 Kit RPG inteiro numa mini-aventura
+ * SEM assets (NPCs por aparência vetorial): vila em GRADE (andar célula a
+ * célula, paredes), NPC com conversa que MUDA pela história (flags), item
+ * (chave) que abre a PORTA da caverna (mapas), e batalha por TURNOS contra o
+ * dragão com o menu pronto (Atacar/Defender/Fugir) — vitória na tela pronta.
+ * Também prova o rpgCell dentro de soquete e o inventário no HUD.
+ *
+ * ⚠️ IR GERADA pelo parser real (o mesmo código vive no drift test) — se o
+ * parser mudar a saída, re-embutir aqui.
+ */
+export const vilaDoDragaoExample: ExtensionExample = {
+  name: 'Vila do Dragão',
+  description:
+    'Uma aventura de RPG: fale com o ferreiro (espaço), ganhe a chave, atravesse a porta da caverna e vença o dragão na batalha por turnos. Grade, NPCs, história e mapas — tudo em blocos.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'game-2d-advanced' }],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 960,
+        },
+        h: {
+          type: 'num',
+          value: 640,
+        },
+        bg: '#1c1330',
+        accent: '#fbbf24',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Vila do Dragão',
+        },
+        text: {
+          type: 'str',
+          value: 'Setas andam - espaço conversa - derrote o dragão!',
+        },
+        button: {
+          type: 'str',
+          value: 'Começar a aventura',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'Vila salva!',
+        },
+        text: {
+          type: 'str',
+          value: 'O dragão foi derrotado. Você é uma lenda!',
+        },
+        button: {
+          type: 'str',
+          value: '',
+        },
+      },
+      {
+        type: 'gk:defineLook',
+        name: 'ferreiro',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#8b5a2b',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 12,
+            },
+            y: {
+              type: 'num',
+              value: 24,
+            },
+            w: {
+              type: 'num',
+              value: 40,
+            },
+            h: {
+              type: 'num',
+              value: 40,
+            },
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#f3c78a',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 20,
+            },
+            y: {
+              type: 'num',
+              value: 8,
+            },
+            w: {
+              type: 'num',
+              value: 24,
+            },
+            h: {
+              type: 'num',
+              value: 20,
+            },
+          },
+        ],
+        baseW: {
+          type: 'num',
+          value: 64,
+        },
+        baseH: {
+          type: 'num',
+          value: 64,
+        },
+      },
+      {
+        type: 'gk:defineLook',
+        name: 'dragao',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#2f9e44',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 8,
+            },
+            y: {
+              type: 'num',
+              value: 16,
+            },
+            w: {
+              type: 'num',
+              value: 48,
+            },
+            h: {
+              type: 'num',
+              value: 40,
+            },
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#b2f2bb',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 16,
+            },
+            y: {
+              type: 'num',
+              value: 24,
+            },
+            w: {
+              type: 'num',
+              value: 10,
+            },
+            h: {
+              type: 'num',
+              value: 10,
+            },
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#e03131',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 40,
+            },
+            y: {
+              type: 'num',
+              value: 24,
+            },
+            w: {
+              type: 'num',
+              value: 8,
+            },
+            h: {
+              type: 'num',
+              value: 8,
+            },
+          },
+        ],
+        baseW: {
+          type: 'num',
+          value: 64,
+        },
+        baseH: {
+          type: 'num',
+          value: 64,
+        },
+      },
+      {
+        type: 'gk:rpgBattleStats',
+        hp: {
+          type: 'num',
+          value: 30,
+        },
+        str: {
+          type: 'num',
+          value: 8,
+        },
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'heroi',
+        image: '',
+        w: {
+          type: 'num',
+          value: 64,
+        },
+        h: {
+          type: 'num',
+          value: 64,
+        },
+        speed: {
+          type: 'num',
+          value: 260,
+        },
+        color: '#4a9eff',
+      },
+      {
+        type: 'gk:rpgOnMap',
+        map: 'vila',
+        body: [
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'heroi',
+            x: {
+              type: 'gk:rpgCell',
+              n: {
+                type: 'num',
+                value: 2,
+              },
+            },
+            y: {
+              type: 'gk:rpgCell',
+              n: {
+                type: 'num',
+                value: 2,
+              },
+            },
+          },
+          {
+            type: 'gk:rpgBlockCell',
+            cx: {
+              type: 'num',
+              value: 5,
+            },
+            cy: {
+              type: 'num',
+              value: 1,
+            },
+          },
+          {
+            type: 'gk:rpgBlockCell',
+            cx: {
+              type: 'num',
+              value: 5,
+            },
+            cy: {
+              type: 'num',
+              value: 2,
+            },
+          },
+          {
+            type: 'gk:rpgCreateNpc',
+            name: 'ferreiro',
+            cx: {
+              type: 'num',
+              value: 7,
+            },
+            cy: {
+              type: 'num',
+              value: 3,
+            },
+            image: '',
+            look: 'ferreiro',
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:rpgHasItem',
+              item: 'chave',
+            },
+            then: [
+              {
+                type: 'gk:rpgCreateDoor',
+                cx: {
+                  type: 'num',
+                  value: 9,
+                },
+                cy: {
+                  type: 'num',
+                  value: 6,
+                },
+                map: 'caverna',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnMap',
+        map: 'caverna',
+        body: [
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'heroi',
+            x: {
+              type: 'gk:rpgCell',
+              n: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            y: {
+              type: 'gk:rpgCell',
+              n: {
+                type: 'num',
+                value: 5,
+              },
+            },
+          },
+          {
+            type: 'gk:rpgCreateNpc',
+            name: 'dragao',
+            cx: {
+              type: 'num',
+              value: 8,
+            },
+            cy: {
+              type: 'num',
+              value: 2,
+            },
+            image: '',
+            look: 'dragao',
+          },
+          {
+            type: 'gk:rpgCreateDoor',
+            cx: {
+              type: 'num',
+              value: 0,
+            },
+            cy: {
+              type: 'num',
+              value: 5,
+            },
+            map: 'vila',
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnTalk',
+        npc: 'ferreiro',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:rpgHasFlag',
+              flag: 'aceitou-missao',
+            },
+            then: [
+              {
+                type: 'gk:rpgSay',
+                text: {
+                  type: 'str',
+                  value: 'A caverna fica no canto de baixo. Boa sorte!',
+                },
+                speaker: {
+                  type: 'str',
+                  value: 'Ferreiro',
+                },
+              },
+            ],
+            else: [
+              {
+                type: 'gk:rpgSay',
+                text: {
+                  type: 'str',
+                  value: 'O dragão roubou o ouro da vila!',
+                },
+                speaker: {
+                  type: 'str',
+                  value: 'Ferreiro',
+                },
+              },
+              {
+                type: 'gk:rpgSay',
+                text: {
+                  type: 'str',
+                  value: 'Tome a chave da caverna. Só você pode nos salvar!',
+                },
+                speaker: {
+                  type: 'str',
+                  value: 'Ferreiro',
+                },
+              },
+              {
+                type: 'gk:rpgGiveItem',
+                item: 'chave',
+                image: '',
+              },
+              {
+                type: 'gk:rpgAddFlag',
+                flag: 'aceitou-missao',
+              },
+              {
+                type: 'gk:rpgCreateDoor',
+                cx: {
+                  type: 'num',
+                  value: 9,
+                },
+                cy: {
+                  type: 'num',
+                  value: 6,
+                },
+                map: 'caverna',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnTalk',
+        npc: 'dragao',
+        body: [
+          {
+            type: 'gk:rpgBattleStart',
+            name: 'Dragão',
+            hp: {
+              type: 'num',
+              value: 40,
+            },
+            str: {
+              type: 'num',
+              value: 6,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnBattleEnd',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:rpgBattleWon',
+            },
+            then: [
+              {
+                type: 'gk:setState',
+                name: 'vitoria',
+              },
+            ],
+            else: [
+              {
+                type: 'gk:endGame',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'gk:rpgMoveGrid',
+            charVar: 'heroi',
+            cell: {
+              type: 'num',
+              value: 64,
+            },
+            dtVar: 'dt',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawBackground',
+            color: '#2a1f45',
+            grid: true,
+          },
+          {
+            type: 'gk:rpgDrawNpcs',
+          },
+          {
+            type: 'gk:drawCharacter',
+            charVar: 'heroi',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDrawHud',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:rpgDrawInventory',
+            x: {
+              type: 'num',
+              value: 20,
+            },
+            y: {
+              type: 'num',
+              value: 20,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ],
+  },
+}

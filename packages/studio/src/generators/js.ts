@@ -87,6 +87,9 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:onDrawHud':
     case 'gk:onGameClick':
     case 'gk:onEvent':
+    case 'gk:rpgOnTalk':
+    case 'gk:rpgOnMap':
+    case 'gk:rpgOnBattleEnd':
     case 'gk:forEachActive':
     case 'gk:defineLook':
     case 'funcDecl':
@@ -1573,6 +1576,59 @@ function compileStatementCode(
       return `${pad}SZGameKit.setAngle(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.degrees), 0, identifiers, recAt(base))});`
     case 'gk:drawBar':
       return `${pad}SZGameKit.drawBar(${compileExpr(valueToExpr(stmt.current), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.max), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'gk:rpgMoveGrid':
+      return `${pad}SZGameKit.rpgMoveGrid(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.cell), 0, identifiers, recAt(base))}, ${identifiers.get(stmt.dtVar)});`
+    case 'gk:rpgBlockCell':
+      return `${pad}SZGameKit.rpgBlockCell(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))});`
+    case 'gk:rpgCreateNpc':
+      return `${pad}SZGameKit.rpgCreateNpc(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.image)}, ${JSON.stringify(stmt.look)});`
+    case 'gk:rpgDrawNpcs':
+      return `${pad}SZGameKit.rpgDrawNpcs();`
+    case 'gk:rpgOnTalk': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.rpgOnTalk(${JSON.stringify(stmt.npc)}, function () {\n${body}\n${pad}});`
+    }
+    case 'gk:rpgSay':
+      return `${pad}SZGameKit.rpgSay(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speaker), 0, identifiers, recAt(base))});`
+    case 'gk:rpgAddFlag':
+      return `${pad}SZGameKit.rpgAddFlag(${JSON.stringify(stmt.flag)});`
+    case 'gk:rpgGiveItem':
+      return `${pad}SZGameKit.rpgGiveItem(${JSON.stringify(stmt.item)}, ${JSON.stringify(stmt.image)});`
+    case 'gk:rpgRemoveItem':
+      return `${pad}SZGameKit.rpgRemoveItem(${JSON.stringify(stmt.item)});`
+    case 'gk:rpgDrawInventory':
+      return `${pad}SZGameKit.rpgDrawInventory(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'gk:rpgGoMap':
+      return `${pad}SZGameKit.rpgGoMap(${JSON.stringify(stmt.map)});`
+    case 'gk:rpgOnMap': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.rpgOnMap(${JSON.stringify(stmt.map)}, function () {\n${body}\n${pad}});`
+    }
+    case 'gk:rpgCreateDoor':
+      return `${pad}SZGameKit.rpgCreateDoor(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.map)});`
+    case 'gk:rpgBattleStats':
+      return `${pad}SZGameKit.rpgBattleStats(${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))});`
+    case 'gk:rpgBattleStart':
+      return `${pad}SZGameKit.rpgBattleStart(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))});`
+    case 'gk:rpgOnBattleEnd': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.rpgOnBattleEnd(function () {\n${body}\n${pad}});`
+    }
     case 'gk:drawBackground':
       return `${pad}SZGameKit.drawBackground(${JSON.stringify(stmt.color)}, ${stmt.grid ? 'true' : 'false'});`
     case 'gk:createCharacter': {
@@ -3398,6 +3454,51 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.w), names)
       collectExprIdentifiers(valueToExpr(stmt.h), names)
       return
+    case 'gk:rpgMoveGrid':
+      names.add(stmt.charVar)
+      names.add(stmt.dtVar)
+      collectExprIdentifiers(valueToExpr(stmt.cell), names)
+      return
+    case 'gk:rpgBlockCell':
+      collectExprIdentifiers(valueToExpr(stmt.cx), names)
+      collectExprIdentifiers(valueToExpr(stmt.cy), names)
+      return
+    case 'gk:rpgCreateNpc':
+      collectExprIdentifiers(valueToExpr(stmt.cx), names)
+      collectExprIdentifiers(valueToExpr(stmt.cy), names)
+      return
+    case 'gk:rpgDrawNpcs':
+    case 'gk:rpgAddFlag':
+    case 'gk:rpgGiveItem':
+    case 'gk:rpgRemoveItem':
+    case 'gk:rpgGoMap':
+      // Nomes de flag/item/mapa/NPC são STRING (JSON.stringify), não identifier.
+      return
+    case 'gk:rpgOnTalk':
+    case 'gk:rpgOnMap':
+    case 'gk:rpgOnBattleEnd':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:rpgSay':
+      collectExprIdentifiers(valueToExpr(stmt.text), names)
+      collectExprIdentifiers(valueToExpr(stmt.speaker), names)
+      return
+    case 'gk:rpgDrawInventory':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'gk:rpgCreateDoor':
+      collectExprIdentifiers(valueToExpr(stmt.cx), names)
+      collectExprIdentifiers(valueToExpr(stmt.cy), names)
+      return
+    case 'gk:rpgBattleStats':
+      collectExprIdentifiers(valueToExpr(stmt.hp), names)
+      collectExprIdentifiers(valueToExpr(stmt.str), names)
+      return
+    case 'gk:rpgBattleStart':
+      collectExprIdentifiers(valueToExpr(stmt.hp), names)
+      collectExprIdentifiers(valueToExpr(stmt.str), names)
+      return
     case 'gk:createCharacter':
       names.add(stmt.varName)
       collectExprIdentifiers(valueToExpr(stmt.w), names)
@@ -3833,7 +3934,13 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:countActive':
     case 'gk:timeSurvived':
     case 'gk:kills':
-      // mold é STRING; timeSurvived/kills não têm refs.
+    case 'gk:rpgHasFlag':
+    case 'gk:rpgHasItem':
+    case 'gk:rpgBattleWon':
+      // mold/flag/item são STRING; timeSurvived/kills/battleWon não têm refs.
+      return
+    case 'gk:rpgCell':
+      collectExprIdentifiers(valueToExpr(expr.n), names)
       return
     case 'canvasMeasureText':
       collectExprIdentifiers(expr.text, names)

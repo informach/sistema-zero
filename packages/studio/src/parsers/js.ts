@@ -3921,6 +3921,25 @@ function matchGameKitExpr(node: Node): JSExpr | null {
   return null
 }
 
+/** SZGameKit.rpg* em posição de VALOR (célula→px, flags, itens, batalha). */
+function matchGameKitRpgExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
+  const call = asSZGameKitCall(node)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'rpgCell') {
+    const n = toExpr(args[0], ctx)
+    return isSimpleValue(n) ? { type: 'gk:rpgCell', n } : null
+  }
+  if (method === 'rpgHasFlag' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:rpgHasFlag', flag: args[0].value as string }
+  }
+  if (method === 'rpgHasItem' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:rpgHasItem', item: args[0].value as string }
+  }
+  if (method === 'rpgBattleWon' && args.length === 0) return { type: 'gk:rpgBattleWon' }
+  return null
+}
+
 /** Opções do `SZGameKit.setup({ width, height, background, accent })`. */
 function readGameKitSetupOptions(
   obj: Node,
@@ -4280,6 +4299,114 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         isSimpleValue(h)
         ? { type: 'gk:drawBar', current, max, x, y, w, h, color: args[6].value as string }
         : null
+    }
+    case 'rpgMoveGrid': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[2])
+      if (!charVar || !dtVar) return null
+      const cell = toExpr(args[1], ctx)
+      return isSimpleValue(cell) ? { type: 'gk:rpgMoveGrid', charVar, cell, dtVar } : null
+    }
+    case 'rpgBlockCell': {
+      const cx = toExpr(args[0], ctx)
+      const cy = toExpr(args[1], ctx)
+      return isSimpleValue(cx) && isSimpleValue(cy) ? { type: 'gk:rpgBlockCell', cx, cy } : null
+    }
+    case 'rpgCreateNpc': {
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        args[3]?.type !== 'StringLiteral' ||
+        args[4]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      const cx = toExpr(args[1], ctx)
+      const cy = toExpr(args[2], ctx)
+      return isSimpleValue(cx) && isSimpleValue(cy)
+        ? {
+            type: 'gk:rpgCreateNpc',
+            name: args[0].value as string,
+            cx,
+            cy,
+            image: args[3].value as string,
+            look: args[4].value as string,
+          }
+        : null
+    }
+    case 'rpgDrawNpcs':
+      return { type: 'gk:rpgDrawNpcs' }
+    case 'rpgOnTalk': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'gk:rpgOnTalk',
+        npc: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'rpgSay': {
+      const textValue = toExpr(args[0], ctx)
+      const speaker = toExpr(args[1], ctx)
+      return isSimpleValue(textValue) && isSimpleValue(speaker)
+        ? { type: 'gk:rpgSay', text: textValue, speaker }
+        : null
+    }
+    case 'rpgAddFlag': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgAddFlag', flag: args[0].value as string }
+    }
+    case 'rpgGiveItem': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'gk:rpgGiveItem',
+        item: args[0].value as string,
+        image: args[1].value as string,
+      }
+    }
+    case 'rpgRemoveItem': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgRemoveItem', item: args[0].value as string }
+    }
+    case 'rpgDrawInventory': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'gk:rpgDrawInventory', x, y } : null
+    }
+    case 'rpgGoMap': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgGoMap', map: args[0].value as string }
+    }
+    case 'rpgOnMap': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'gk:rpgOnMap',
+        map: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'rpgCreateDoor': {
+      if (args[2]?.type !== 'StringLiteral') return null
+      const cx = toExpr(args[0], ctx)
+      const cy = toExpr(args[1], ctx)
+      return isSimpleValue(cx) && isSimpleValue(cy)
+        ? { type: 'gk:rpgCreateDoor', cx, cy, map: args[2].value as string }
+        : null
+    }
+    case 'rpgBattleStats': {
+      const hp = toExpr(args[0], ctx)
+      const str = toExpr(args[1], ctx)
+      return isSimpleValue(hp) && isSimpleValue(str) ? { type: 'gk:rpgBattleStats', hp, str } : null
+    }
+    case 'rpgBattleStart': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const hp = toExpr(args[1], ctx)
+      const str = toExpr(args[2], ctx)
+      return isSimpleValue(hp) && isSimpleValue(str)
+        ? { type: 'gk:rpgBattleStart', name: args[0].value as string, hp, str }
+        : null
+    }
+    case 'rpgOnBattleEnd': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:rpgOnBattleEnd', body: bodyOfFn(args[0], source, ctx) }
     }
     case 'drawBackground': {
       // generator: SZGameKit.drawBackground("#0f3460", true)
@@ -6786,6 +6913,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // SZGameKit.keyDown / touching / width / state… → valores do kit profissional.
       const gkExpr = matchGameKitExpr(node)
       if (gkExpr) return gkExpr
+      // SZGameKit.rpg* → valores do Kit RPG (célula, flags, itens, batalha).
+      const gkRpgExpr = matchGameKitRpgExpr(node, ctx)
+      if (gkRpgExpr) return gkRpgExpr
       // ctx.isPointInPath(x, y) / ctx.isPointInStroke(x, y) → perguntas de traçado.
       if (
         ctx &&
@@ -7115,6 +7245,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:mouseX':
     case 'gk:mouseY':
     case 'gk:mouseDown':
+    case 'gk:rpgHasFlag':
+    case 'gk:rpgHasItem':
+    case 'gk:rpgBattleWon':
     case 'inputKeyPressed':
     case 'inputPointer':
     case 'isFullscreen':
@@ -7127,6 +7260,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'shuffle':
     case 'thisRef':
       return true
+    case 'gk:rpgCell':
+      return typeof expr.n === 'number' || isSimpleValue(expr.n)
     case 'concat':
     case 'concatArrays':
       return expr.parts.every(isSimpleValue)

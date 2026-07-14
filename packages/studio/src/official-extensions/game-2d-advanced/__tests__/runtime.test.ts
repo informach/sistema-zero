@@ -150,6 +150,27 @@ interface GameKitApi {
   mouseDown: Fn
   onGameClick: Fn
   drawBar: Fn
+  // R3 — Kit RPG
+  rpgMoveGrid: Fn
+  rpgBlockCell: Fn
+  rpgCell: Fn
+  rpgCreateNpc: Fn
+  rpgDrawNpcs: Fn
+  rpgOnTalk: Fn
+  rpgSay: Fn
+  rpgAddFlag: Fn
+  rpgHasFlag: Fn
+  rpgGiveItem: Fn
+  rpgHasItem: Fn
+  rpgRemoveItem: Fn
+  rpgDrawInventory: Fn
+  rpgGoMap: Fn
+  rpgOnMap: Fn
+  rpgCreateDoor: Fn
+  rpgBattleStats: Fn
+  rpgBattleStart: Fn
+  rpgOnBattleEnd: Fn
+  rpgBattleWon: Fn
 }
 
 interface Harness {
@@ -213,7 +234,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 84 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 104 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -304,6 +325,27 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'mouseDown',
       'onGameClick',
       'drawBar',
+      // R3 — Kit RPG (20): grade, NPC, fala, flags, inventário, mapas, batalha
+      'rpgMoveGrid',
+      'rpgBlockCell',
+      'rpgCell',
+      'rpgCreateNpc',
+      'rpgDrawNpcs',
+      'rpgOnTalk',
+      'rpgSay',
+      'rpgAddFlag',
+      'rpgHasFlag',
+      'rpgGiveItem',
+      'rpgHasItem',
+      'rpgRemoveItem',
+      'rpgDrawInventory',
+      'rpgGoMap',
+      'rpgOnMap',
+      'rpgCreateDoor',
+      'rpgBattleStats',
+      'rpgBattleStart',
+      'rpgOnBattleEnd',
+      'rpgBattleWon',
     ]
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')
@@ -882,5 +924,138 @@ describe('SZGameKit — R2: câmera, velocidade, animação, mouse, barra', () =
     // O gancho é chamado pelo pointerdown do canvas (verificado no QA browser —
     // o happy-dom não produz getBoundingClientRect com tamanho real).
     expect(() => api.onGameClick(() => {})).not.toThrow()
+  })
+})
+
+describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () => {
+  it('grade: anda célula a célula, parede bloqueia, porta troca de mapa', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
+    let montouCaverna = 0
+    h.api.rpgOnMap('vila', () => {
+      h.api.rpgBlockCell(1, 0) // parede à direita da origem
+      h.api.rpgCreateDoor(0, 1, 'caverna')
+    })
+    h.api.rpgOnMap('caverna', () => {
+      montouCaverna += 1
+    })
+    h.api.rpgGoMap('vila')
+    h.api.placeCharacter(heroi, 0, 0)
+    // Direita: parede — não anda, só vira.
+    h.fire('keydown', { key: 'd' })
+    h.api.rpgMoveGrid(heroi, 64, 0.05)
+    expect(heroi.x).toBe(0)
+    h.fire('keyup', { key: 'd' })
+    // Baixo: livre — anda 1 célula (speed alto encaixa num passo) e cai na PORTA.
+    h.fire('keydown', { key: 's' })
+    h.api.rpgMoveGrid(heroi, 64, 0.05)
+    h.fire('keyup', { key: 's' })
+    expect(heroi.y).toBe(64)
+    expect(montouCaverna).toBe(1) // porta levou pra caverna
+    expect(h.api.rpgCell(3)).toBe(192)
+  })
+
+  it('fala: trava o herói; espaço completa, avança a fila e fecha com aviso', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
+    h.api.placeCharacter(heroi, 0, 0)
+    let terminou = false
+    h.api.on('fala:terminada', () => {
+      terminou = true
+    })
+    h.api.rpgSay('Olá, viajante!', 'Ferreiro')
+    h.api.rpgSay('Boa sorte!', 'Ferreiro')
+    // Com a fala aberta, o movimento fica travado.
+    h.fire('keydown', { key: 's' })
+    h.api.rpgMoveGrid(heroi, 64, 0.05)
+    expect(heroi.y).toBe(0)
+    h.fire('keyup', { key: 's' })
+    // Espaço 1: completa o typewriter; 2: próxima fala; 3: completa; 4: fecha.
+    for (let i = 0; i < 4; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.api.rpgMoveGrid(heroi, 64, 0)
+      h.nextFrame(16 * (i + 1)) // limpa o justPressed no fim do quadro
+      h.fire('keyup', { key: ' ' })
+    }
+    expect(terminou).toBe(true)
+  })
+
+  it('NPC: sólido na grade; espaço olhando pra ele conversa', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
+    h.api.placeCharacter(heroi, 0, 0)
+    h.api.rpgCreateNpc('ferreiro', 1, 0, '', '')
+    let conversou = 0
+    h.api.rpgOnTalk('ferreiro', () => {
+      conversou += 1
+    })
+    // NPC bloqueia a célula (não atravessa), mas o herói VIRA para ele.
+    h.fire('keydown', { key: 'd' })
+    h.api.rpgMoveGrid(heroi, 64, 0.05)
+    expect(heroi.x).toBe(0)
+    h.fire('keyup', { key: 'd' })
+    h.fire('keydown', { key: ' ' })
+    h.api.rpgMoveGrid(heroi, 64, 0)
+    expect(conversou).toBe(1)
+  })
+
+  it('flags e inventário: marcar/perguntar; ganhar sem duplicar/perder', () => {
+    const { api } = loadRuntime()
+    expect(api.rpgHasFlag('falou')).toBe(false)
+    api.rpgAddFlag('falou')
+    expect(api.rpgHasFlag('falou')).toBe(true)
+    api.rpgGiveItem('chave', '')
+    api.rpgGiveItem('chave', '') // não duplica
+    expect(api.rpgHasItem('chave')).toBe(true)
+    api.rpgRemoveItem('chave')
+    expect(api.rpgHasItem('chave')).toBe(false)
+  })
+
+  it('batalha: menu pronto, atacar vence, volta pra jogando SEM resetar o mundo', async () => {
+    const h = loadRuntime()
+    h.api.defineMold('g', {})
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.spawnFromMold('g', 10, 10)
+    let terminouBatalha = 0
+    h.api.rpgOnBattleEnd(() => {
+      terminouBatalha += 1
+    })
+    h.api.rpgBattleStats(30, 999) // força alta: vence no 1º golpe
+    h.api.rpgBattleStart('Dragão', 20, 5, '', '')
+    expect(h.api.state()).toBe('batalha')
+    const scr = document.querySelector('[data-szgk-screen="batalha"]') as HTMLElement
+    expect(scr).not.toBeNull()
+    const botoes = Array.from(scr.querySelectorAll('button')).map((b) => b.textContent)
+    expect(botoes).toEqual(['Atacar', 'Defender', 'Fugir'])
+    ;(scr.querySelector('button') as HTMLButtonElement).click() // Atacar
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.rpgBattleWon()).toBe(true)
+    expect(terminouBatalha).toBe(1)
+    // Voltar da batalha NÃO recomeçou a arena (o goblin segue vivo).
+    expect(h.api.countActive('g')).toBe(1)
+  })
+
+  it('REGRESSÃO: despausar não recomeça a arena (enxame sobrevive à pausa)', async () => {
+    const h = loadRuntime()
+    h.api.defineMold('g', {})
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.spawnFromMold('g', 10, 10)
+    expect(h.api.countActive('g')).toBe(1)
+    h.api.pause()
+    h.api.resume()
+    expect(h.api.countActive('g')).toBe(1) // antes: o unpause APAGAVA o enxame
+    // "Jogar de novo" de verdade (vindo do fim) segue resetando.
+    h.api.endGame()
+    h.api.setState('jogando')
+    expect(h.api.countActive('g')).toBe(0)
   })
 })

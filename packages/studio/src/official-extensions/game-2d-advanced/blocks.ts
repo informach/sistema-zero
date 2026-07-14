@@ -958,6 +958,255 @@ export const gameKitBlocks = [
     tooltip:
       'Uma barra que enche na proporção atual/máximo: vida grande do herói, energia, progresso da fase. Fica ótima no "Desenhar por cima (HUD)".',
   },
+
+  // ---- 🧙 Kit RPG: mundo em grade ----
+  {
+    type: 'sz_gk_rpg_move_grid',
+    message0: 'Mover %1 pela grade (célula de %2 px) usando o tempo %3',
+    args0: [
+      { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'CELL', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O andar de RPG: uma célula por vez (setas/WASD), parando ENCAIXADO na grade. Paredes e NPCs bloqueiam; portas levam a outro mapa; o ESPAÇO conversa com o NPC à frente. Use no "A cada quadro".',
+  },
+  {
+    type: 'sz_gk_rpg_block_cell',
+    message0: 'Bloquear a célula %1 , %2 (parede)',
+    args0: [
+      { type: 'input_value', name: 'CX', check: 'JSValue' },
+      { type: 'input_value', name: 'CY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Marca uma célula da grade como parede — ninguém atravessa. Monte o cenário dentro do "Quando chegar no mapa" (trocar de mapa limpa as paredes).',
+  },
+  {
+    type: 'sz_gk_rpg_cell',
+    message0: 'a célula %1 (em px)',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Converte número de células em pixels (célula × tamanho da grade). Útil para posicionar na grade: "Colocar em x: a célula 3".',
+  },
+
+  // ---- 🧙 Kit RPG: NPCs e fala ----
+  {
+    type: 'sz_gk_rpg_create_npc',
+    message0: 'Criar o NPC %1 na célula %2 , %3 com imagem %4 ou aparência %5',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'ferreiro' },
+      { type: 'input_value', name: 'CX', check: 'JSValue' },
+      { type: 'input_value', name: 'CY', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'field_name_picker', name: 'LOOK', text: '', kind: 'look' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um morador do mundo: fica parado na célula (sólido — bloqueia o caminho) e conversa quando o herói aperta ESPAÇO olhando para ele. Sem imagem/aparência sai um retângulo lilás.',
+  },
+  {
+    type: 'sz_gk_rpg_draw_npcs',
+    message0: 'Desenhar os NPCs',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha todos os NPCs do mapa atual. Use dentro do "Desenhar o jogo".',
+  },
+  {
+    type: 'sz_gk_rpg_on_talk',
+    message0: 'Quando conversar com o NPC %1',
+    args0: [{ type: 'field_name_picker', name: 'NPC', text: 'ferreiro', kind: 'npc' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda quando o herói aperta ESPAÇO olhando para esse NPC. Combine com flags para a conversa MUDAR conforme a história ("se já aconteceu…, falar outra coisa").',
+  },
+  {
+    type: 'sz_gk_rpg_say',
+    message0: 'Mostrar a fala %1 de %2',
+    args0: [
+      { type: 'input_value', name: 'TEXT', check: 'JSValue' },
+      { type: 'input_value', name: 'NAME', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Abre a caixa de fala com efeito de máquina de escrever (o herói fica parado). ESPAÇO completa e avança; várias falas seguidas viram uma conversa. Ao acabar, sai o aviso "fala:terminada".',
+  },
+
+  // ---- 🧙 Kit RPG: história e inventário ----
+  {
+    type: 'sz_gk_rpg_add_flag',
+    message0: 'Marcar que %1 aconteceu',
+    args0: [{ type: 'field_name_picker', name: 'FLAG', text: 'falou-com-ferreiro', kind: 'flag' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Anota um acontecimento da história (story flag). É como os RPGs lembram o que você já fez — a conversa e as portas mudam conforme as marcas.',
+  },
+  {
+    type: 'sz_gk_rpg_has_flag',
+    message0: 'já aconteceu %1 ?',
+    args0: [{ type: 'field_name_picker', name: 'FLAG', text: 'falou-com-ferreiro', kind: 'flag' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro se essa marca da história já foi feita. Use num "se".',
+  },
+  {
+    type: 'sz_gk_rpg_give_item',
+    message0: 'Ganhar o item %1 com imagem %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'chave' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe um item no inventário (sem duplicar). Sem imagem, o inventário mostra a inicial do nome.',
+  },
+  {
+    type: 'sz_gk_rpg_has_item',
+    message0: 'tenho o item %1 ?',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'chave', kind: 'item' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro se o item está no inventário. "Se tenho a chave: abrir a porta…".',
+  },
+  {
+    type: 'sz_gk_rpg_remove_item',
+    message0: 'Perder o item %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'chave', kind: 'item' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Tira o item do inventário (gastou/entregou).',
+  },
+  {
+    type: 'sz_gk_rpg_draw_inventory',
+    message0: 'Desenhar o inventário em x %1 y %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desenha os itens em fila (ícones). Fica ótimo no "Desenhar por cima (HUD)".',
+  },
+
+  // ---- 🧙 Kit RPG: mapas ----
+  {
+    type: 'sz_gk_rpg_on_map',
+    message0: 'Quando chegar no mapa %1',
+    args0: [{ type: 'field_input', name: 'MAP', text: 'vila' }],
+    message1: 'montar %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta o cenário do mapa: paredes, NPCs, portas e a posição do herói. O PRIMEIRO mapa criado é onde o jogo começa. Trocar de mapa limpa o anterior e roda esta montagem.',
+  },
+  {
+    type: 'sz_gk_rpg_go_map',
+    message0: 'Ir para o mapa %1',
+    args0: [{ type: 'field_name_picker', name: 'MAP', text: 'vila', kind: 'map' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Troca de mapa agora (limpa paredes/NPCs/portas e monta o destino). Também sai o aviso "mapa:<nome>".',
+  },
+  {
+    type: 'sz_gk_rpg_create_door',
+    message0: 'Criar a porta na célula %1 , %2 para o mapa %3',
+    args0: [
+      { type: 'input_value', name: 'CX', check: 'JSValue' },
+      { type: 'input_value', name: 'CY', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'MAP', text: 'caverna', kind: 'map' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Pisou na célula → vai para o outro mapa. Lembre de posicionar o herói na montagem do mapa de destino.',
+  },
+
+  // ---- ⚔️ Kit RPG: batalha por turnos ----
+  {
+    type: 'sz_gk_rpg_battle_stats',
+    message0: 'Meus pontos de batalha: vida %1 e força %2',
+    args0: [
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'STR', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Define a vida e a força do SEU lado nas batalhas (cada batalha começa com a vida cheia). Use uma vez, no começo.',
+  },
+  {
+    type: 'sz_gk_rpg_battle_start',
+    message0: 'Começar a batalha contra %1 com vida %2 e força %3',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Dragão' },
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'STR', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Abre a batalha por TURNOS com o menu pronto: Atacar (dano = força ± 20%), Defender (o próximo dano cai pela metade) e Fugir (50% de chance). O mundo espera a batalha acabar.',
+  },
+  {
+    type: 'sz_gk_rpg_on_battle_end',
+    message0: 'Quando a batalha terminar',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda quando qualquer batalha fecha (vitória, derrota ou fuga). Pergunte "ganhei a batalha?" para decidir o que acontece.',
+  },
+  {
+    type: 'sz_gk_rpg_battle_won',
+    message0: 'ganhei a batalha ?',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro se a ÚLTIMA batalha terminou em vitória. Use no "quando a batalha terminar".',
+  },
   {
     type: 'sz_gk_time_survived',
     message0: 'há quantos segundos estou jogando',
@@ -1244,6 +1493,39 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: C,
     types: ['sz_gk_load_sound', 'sz_gk_play_sound', 'sz_gk_play_effect', 'sz_gk_play_tone'],
   },
+  // KITS: açúcar por gênero sobre o MESMO motor (padrão dos kits do game-2d).
+  {
+    name: '🧙 Kit RPG',
+    colour: C,
+    types: [
+      'sz_gk_rpg_on_map',
+      'sz_gk_rpg_go_map',
+      'sz_gk_rpg_create_door',
+      'sz_gk_rpg_move_grid',
+      'sz_gk_rpg_block_cell',
+      'sz_gk_rpg_cell',
+      'sz_gk_rpg_create_npc',
+      'sz_gk_rpg_draw_npcs',
+      'sz_gk_rpg_on_talk',
+      'sz_gk_rpg_say',
+      'sz_gk_rpg_add_flag',
+      'sz_gk_rpg_has_flag',
+      'sz_gk_rpg_give_item',
+      'sz_gk_rpg_has_item',
+      'sz_gk_rpg_remove_item',
+      'sz_gk_rpg_draw_inventory',
+    ],
+  },
+  {
+    name: '⚔️ Kit RPG: batalha',
+    colour: C,
+    types: [
+      'sz_gk_rpg_battle_stats',
+      'sz_gk_rpg_battle_start',
+      'sz_gk_rpg_on_battle_end',
+      'sz_gk_rpg_battle_won',
+    ],
+  },
 ]
 
 // Cada sub-categoria recebe um TOM do teal da categoria (claro→escuro).
@@ -1327,6 +1609,16 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   },
   sz_gk_burst: { X: numShadow(100), Y: numShadow(100) },
   sz_gk_play_tone: { FREQ: numShadow(440), MS: numShadow(200) },
+  // 🧙 Kit RPG
+  sz_gk_rpg_move_grid: { CELL: numShadow(64) },
+  sz_gk_rpg_block_cell: { CX: numShadow(0), CY: numShadow(0) },
+  sz_gk_rpg_cell: { N: numShadow(3) },
+  sz_gk_rpg_create_npc: { CX: numShadow(3), CY: numShadow(3) },
+  sz_gk_rpg_say: { TEXT: txtShadow('Olá, viajante!'), NAME: txtShadow('Ferreiro') },
+  sz_gk_rpg_draw_inventory: { X: numShadow(20), Y: numShadow(20) },
+  sz_gk_rpg_create_door: { CX: numShadow(5), CY: numShadow(5) },
+  sz_gk_rpg_battle_stats: { HP: numShadow(30), STR: numShadow(7) },
+  sz_gk_rpg_battle_start: { HP: numShadow(20), STR: numShadow(5) },
 }
 
 /**
