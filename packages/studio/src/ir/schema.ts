@@ -186,6 +186,17 @@ export type JSExpr =
     })
   | (JSExprCommon & { type: 'g3d:onGround'; worldVar: string; objVar: string })
   | (JSExprCommon & { type: 'g3d:groundHeight'; worldVar: string; objVar: string })
+  // Jogo 2D Avançado (extensão game-2d-advanced) — valores: dimensões internas
+  // do jogo, estado atual da máquina, personagens (posição/encosto AABB) e
+  // tecla apertada (mapa lowercase do kit).
+  | (JSExprCommon & { type: 'gk:gameWidth' })
+  | (JSExprCommon & { type: 'gk:gameHeight' })
+  | (JSExprCommon & { type: 'gk:gameState' })
+  | (JSExprCommon & { type: 'gk:stateIs'; name: string })
+  | (JSExprCommon & { type: 'gk:charactersTouch'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'gk:charX'; charVar: string })
+  | (JSExprCommon & { type: 'gk:charY'; charVar: string })
+  | (JSExprCommon & { type: 'gk:keyDown'; key: string })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -502,6 +513,19 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       objVar: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('gk:gameWidth'), ...idField }),
+    z.object({ type: z.literal('gk:gameHeight'), ...idField }),
+    z.object({ type: z.literal('gk:gameState'), ...idField }),
+    z.object({ type: z.literal('gk:stateIs'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:charactersTouch'),
+      aVar: irText(),
+      bVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:charX'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:charY'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:keyDown'), key: irText(), ...idField }),
     z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
     z.object({ type: z.literal('isFullscreen'), ...idField }),
@@ -2272,6 +2296,80 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3d:playNote'; freq: number | JSExpr; ms: number | JSExpr })
   | (JSStatementCommon & { type: 'g3d:playEffect'; kind: string })
+  // Jogo 2D Avançado (extensão game-2d-advanced): esqueleto de jogo profissional
+  // (kit P9) — máquina de estados, loop com delta-time, telas de UI injetadas
+  // por JS e personagens nomeados. Config no setup; a mecânica a criança escreve
+  // nos ganchos (onUpdate/onDraw) com blocos do núcleo.
+  | (JSStatementCommon & {
+      type: 'gk:setup'
+      w: number | JSExpr
+      h: number | JSExpr
+      bg: string
+      accent: string
+    })
+  | (JSStatementCommon & { type: 'gk:start' })
+  // `name` = como o jogo chama a imagem; `asset` = nome do desenho no projeto.
+  | (JSStatementCommon & { type: 'gk:loadImage'; name: string; asset: string })
+  // `screen` das telas PRONTAS é um dos fixos: menu | pausa | carregando | fim.
+  | (JSStatementCommon & {
+      type: 'gk:setScreenText'
+      screen: string
+      title: ScreenText
+      text: ScreenText
+      button: ScreenText
+    })
+  | (JSStatementCommon & {
+      type: 'gk:createScreen'
+      name: string
+      title: ScreenText
+      text: ScreenText
+    })
+  | (JSStatementCommon & {
+      type: 'gk:addButton'
+      screen: string
+      label: ScreenText
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'gk:showScreen'; name: string })
+  | (JSStatementCommon & { type: 'gk:hideScreens' })
+  | (JSStatementCommon & { type: 'gk:setState'; name: string })
+  | (JSStatementCommon & { type: 'gk:onEnterState'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:pause' })
+  | (JSStatementCommon & { type: 'gk:resume' })
+  | (JSStatementCommon & { type: 'gk:returnToMenu' })
+  | (JSStatementCommon & { type: 'gk:endGame' })
+  // Ganchos do loop: o corpo do update recebe o delta-time (nome escolhido no
+  // bloco, padrão `dt`); o do draw recebe o pincel (padrão `ctx` — os blocos de
+  // Canvas do núcleo funcionam dentro, como na figura do Jogo 2D).
+  | (JSStatementCommon & { type: 'gk:onUpdate'; dtName: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:onDraw'; ctxName: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:drawBackground'; color: string; grid: boolean })
+  | (JSStatementCommon & {
+      type: 'gk:createCharacter'
+      varName: string
+      image: string
+      w: number | JSExpr
+      h: number | JSExpr
+      speed: number | JSExpr
+      color: string
+    })
+  // `dtVar` = nome da variável de delta-time em escopo (o binder do onUpdate).
+  | (JSStatementCommon & { type: 'gk:moveWithKeys'; charVar: string; dtVar: string })
+  | (JSStatementCommon & { type: 'gk:keepOnScreen'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:drawCharacter'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:placeCharacter'
+      charVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:resetCharacter'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:setSpeedMultiplier'
+      charVar: string
+      factor: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:setPauseKey'; key: string })
   // Orientação a objetos
   | (JSStatementCommon & {
       type: 'classDecl'
@@ -4247,6 +4345,102 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g3d:playEffect'), kind: irText(), ...idField }),
     z.object({
+      type: z.literal('gk:setup'),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      bg: irText(),
+      accent: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:start'), ...idField }),
+    z.object({ type: z.literal('gk:loadImage'), name: irText(), asset: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:setScreenText'),
+      screen: irText(),
+      title: z.union([JSExprSchema, irText()]),
+      text: z.union([JSExprSchema, irText()]),
+      button: z.union([JSExprSchema, irText()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:createScreen'),
+      name: irText(),
+      title: z.union([JSExprSchema, irText()]),
+      text: z.union([JSExprSchema, irText()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:addButton'),
+      screen: irText(),
+      label: z.union([JSExprSchema, irText()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:showScreen'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:hideScreens'), ...idField }),
+    z.object({ type: z.literal('gk:setState'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:onEnterState'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:pause'), ...idField }),
+    z.object({ type: z.literal('gk:resume'), ...idField }),
+    z.object({ type: z.literal('gk:returnToMenu'), ...idField }),
+    z.object({ type: z.literal('gk:endGame'), ...idField }),
+    z.object({
+      type: z.literal('gk:onUpdate'),
+      dtName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:onDraw'),
+      ctxName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawBackground'),
+      color: irText(),
+      grid: z.boolean(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:createCharacter'),
+      varName: irText(),
+      image: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:moveWithKeys'),
+      charVar: irText(),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:keepOnScreen'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:drawCharacter'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:placeCharacter'),
+      charVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:resetCharacter'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:setSpeedMultiplier'),
+      charVar: irText(),
+      factor: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:setPauseKey'), key: irText(), ...idField }),
+    z.object({
       type: z.literal('g2d:updateEachFrame'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -4773,8 +4967,37 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:playEffect',
 ])
 
+export const GK_STATEMENT_TYPES = new Set([
+  'gk:setup',
+  'gk:start',
+  'gk:loadImage',
+  'gk:setScreenText',
+  'gk:createScreen',
+  'gk:addButton',
+  'gk:showScreen',
+  'gk:hideScreens',
+  'gk:setState',
+  'gk:onEnterState',
+  'gk:pause',
+  'gk:resume',
+  'gk:returnToMenu',
+  'gk:endGame',
+  'gk:onUpdate',
+  'gk:onDraw',
+  'gk:drawBackground',
+  'gk:createCharacter',
+  'gk:moveWithKeys',
+  'gk:keepOnScreen',
+  'gk:drawCharacter',
+  'gk:placeCharacter',
+  'gk:resetCharacter',
+  'gk:setSpeedMultiplier',
+  'gk:setPauseKey',
+])
+
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {
   if (extensionId === 'game-2d') return stmt.type.startsWith('g2d:')
   if (extensionId === 'game-3d') return stmt.type.startsWith('g3d:')
+  if (extensionId === 'game-2d-advanced') return stmt.type.startsWith('gk:')
   return false
 }

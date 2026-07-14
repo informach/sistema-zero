@@ -3061,6 +3061,133 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g3d:playEffect':
       return block('sz_g3d_play_effect', { KIND: stmt.kind }, {}, stmt.__id)
+    // ----- game-2d-advanced (kit profissional) -----
+    case 'gk:setup': {
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      return w === null || h === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_setup', { BG: stmt.bg, ACCENT: stmt.accent }, {}, stmt.__id, { W: w, H: h })
+    }
+    case 'gk:start':
+      return block('sz_gk_start', {}, {}, stmt.__id)
+    case 'gk:loadImage':
+      return block('sz_gk_load_image', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+    case 'gk:setScreenText': {
+      const title = exprToValueBlock(valueToExpr(stmt.title))
+      const text = exprToValueBlock(valueToExpr(stmt.text))
+      const button = exprToValueBlock(valueToExpr(stmt.button))
+      return title === null || text === null || button === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_set_screen_text', { SCREEN: stmt.screen }, {}, stmt.__id, {
+            TITLE: title,
+            TEXT: text,
+            BTN: button,
+          })
+    }
+    case 'gk:createScreen': {
+      const title = exprToValueBlock(valueToExpr(stmt.title))
+      const text = exprToValueBlock(valueToExpr(stmt.text))
+      return title === null || text === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_create_screen', { NAME: stmt.name }, {}, stmt.__id, {
+            TITLE: title,
+            TEXT: text,
+          })
+    }
+    case 'gk:addButton': {
+      const label = exprToValueBlock(valueToExpr(stmt.label))
+      return label === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_add_button',
+            { SCREEN: stmt.screen },
+            { BODY: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            { LABEL: label },
+          )
+    }
+    case 'gk:showScreen':
+      return block('sz_gk_show_screen', { SCREEN: stmt.name }, {}, stmt.__id)
+    case 'gk:hideScreens':
+      return block('sz_gk_hide_screens', {}, {}, stmt.__id)
+    case 'gk:setState':
+      return block('sz_gk_set_state', { STATE: stmt.name }, {}, stmt.__id)
+    case 'gk:onEnterState':
+      return block(
+        'sz_gk_on_enter_state',
+        { STATE: stmt.name },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:pause':
+      return block('sz_gk_pause', {}, {}, stmt.__id)
+    case 'gk:resume':
+      return block('sz_gk_resume', {}, {}, stmt.__id)
+    case 'gk:returnToMenu':
+      return block('sz_gk_return_to_menu', {}, {}, stmt.__id)
+    case 'gk:endGame':
+      return block('sz_gk_end_game', {}, {}, stmt.__id)
+    case 'gk:onUpdate':
+      return block(
+        'sz_gk_on_update',
+        { DT: stmt.dtName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:onDraw':
+      return block(
+        'sz_gk_on_draw',
+        { PARAM: stmt.ctxName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:drawBackground':
+      return block(
+        'sz_gk_draw_background',
+        { COLOR: stmt.color, GRID: stmt.grid ? 'TRUE' : 'FALSE' },
+        {},
+        stmt.__id,
+      )
+    case 'gk:createCharacter': {
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return w === null || h === null || speed === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_create_character',
+            { NAME: stmt.varName, IMAGE: stmt.image, COLOR: stmt.color },
+            {},
+            stmt.__id,
+            { W: w, H: h, SPEED: speed },
+          )
+    }
+    case 'gk:moveWithKeys':
+      return block('sz_gk_move_with_keys', { CHAR: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id)
+    case 'gk:keepOnScreen':
+      return block('sz_gk_keep_on_screen', { CHAR: stmt.charVar }, {}, stmt.__id)
+    case 'gk:drawCharacter':
+      return block('sz_gk_draw_character', { CHAR: stmt.charVar }, {}, stmt.__id)
+    case 'gk:placeCharacter': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_place_character', { CHAR: stmt.charVar }, {}, stmt.__id, { X: x, Y: y })
+    }
+    case 'gk:resetCharacter':
+      return block('sz_gk_reset_character', { CHAR: stmt.charVar }, {}, stmt.__id)
+    case 'gk:setSpeedMultiplier': {
+      const factor = exprToValueBlock(valueToExpr(stmt.factor))
+      return factor === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_set_speed_multiplier', { CHAR: stmt.charVar }, {}, stmt.__id, {
+            FACTOR: factor,
+          })
+    }
+    case 'gk:setPauseKey':
+      return block('sz_gk_set_pause_key', { KEY: stmt.key }, {}, stmt.__id)
     case 'classDecl': {
       const members: SerializedBlocklyBlock[] = []
       // Construtor só vira bloco se há parâmetros ou corpo (espelha o gerador).
@@ -3544,6 +3671,23 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3d_on_ground', { WORLD: expr.worldVar, OBJ: expr.objVar })
     case 'g3d:groundHeight':
       return block('sz_g3d_ground_height', { WORLD: expr.worldVar, OBJ: expr.objVar })
+    // ----- game-2d-advanced (kit profissional) -----
+    case 'gk:gameWidth':
+      return block('sz_gk_game_width', {})
+    case 'gk:gameHeight':
+      return block('sz_gk_game_height', {})
+    case 'gk:gameState':
+      return block('sz_gk_game_state', {})
+    case 'gk:stateIs':
+      return block('sz_gk_state_is', { STATE: expr.name })
+    case 'gk:charactersTouch':
+      return block('sz_gk_characters_touch', { A: expr.aVar, B: expr.bVar })
+    case 'gk:charX':
+      return block('sz_gk_char_x', { CHAR: expr.charVar })
+    case 'gk:charY':
+      return block('sz_gk_char_y', { CHAR: expr.charVar })
+    case 'gk:keyDown':
+      return block('sz_gk_key_down', { KEY: expr.key })
     case 'inputKeyPressed':
       return block('sz_input_key_pressed', { KEY: expr.key })
     case 'inputPointer':

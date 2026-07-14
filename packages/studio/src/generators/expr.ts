@@ -369,6 +369,23 @@ export function compileExpr(
       return `SZGame3D.onGround(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
     case 'g3d:groundHeight':
       return `SZGame3D.groundHeight(${identifiers.get(expr.worldVar)}, ${identifiers.get(expr.objVar)})`
+    // ----- game-2d-advanced (kit profissional) -----
+    case 'gk:gameWidth':
+      return 'SZGameKit.width()'
+    case 'gk:gameHeight':
+      return 'SZGameKit.height()'
+    case 'gk:gameState':
+      return 'SZGameKit.state()'
+    case 'gk:stateIs':
+      return `SZGameKit.stateIs(${JSON.stringify(expr.name)})`
+    case 'gk:charactersTouch':
+      return `SZGameKit.touching(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'gk:charX':
+      return `SZGameKit.charX(${identifiers.get(expr.charVar)})`
+    case 'gk:charY':
+      return `SZGameKit.charY(${identifiers.get(expr.charVar)})`
+    case 'gk:keyDown':
+      return `SZGameKit.keyDown(${JSON.stringify(expr.key)})`
     case 'inputKeyPressed':
       return `__szInput.key(${JSON.stringify(expr.key)})`
     case 'inputPointer':

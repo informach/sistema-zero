@@ -495,6 +495,23 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3d:onGround', worldVar: f(block, 'WORLD'), objVar: f(block, 'OBJ') }
     case 'sz_g3d_ground_height':
       return { type: 'g3d:groundHeight', worldVar: f(block, 'WORLD'), objVar: f(block, 'OBJ') }
+    // ----- game-2d-advanced (kit profissional) -----
+    case 'sz_gk_game_width':
+      return { type: 'gk:gameWidth' }
+    case 'sz_gk_game_height':
+      return { type: 'gk:gameHeight' }
+    case 'sz_gk_game_state':
+      return { type: 'gk:gameState' }
+    case 'sz_gk_state_is':
+      return { type: 'gk:stateIs', name: f(block, 'STATE') || 'jogando' }
+    case 'sz_gk_characters_touch':
+      return { type: 'gk:charactersTouch', aVar: f(block, 'A'), bVar: f(block, 'B') }
+    case 'sz_gk_char_x':
+      return { type: 'gk:charX', charVar: f(block, 'CHAR') }
+    case 'sz_gk_char_y':
+      return { type: 'gk:charY', charVar: f(block, 'CHAR') }
+    case 'sz_gk_key_down':
+      return { type: 'gk:keyDown', key: f(block, 'KEY') || 'w' }
     case 'sz_input_key_pressed':
       return { type: 'inputKeyPressed', key: f(block, 'KEY') || 'ArrowRight' }
     case 'sz_input_pointer_x':
@@ -5043,6 +5060,181 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g3d:playEffect', kind: f(block, 'KIND') || 'coin' },
       }
+
+    // ----- game-2d-advanced (kit profissional) -----
+    case 'sz_gk_setup':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setup',
+          w: exprInput(block, 'W', { type: 'num', value: 1280 }),
+          h: exprInput(block, 'H', { type: 'num', value: 720 }),
+          bg: f(block, 'BG') || '#1a1a2e',
+          accent: f(block, 'ACCENT') || '#4a9eff',
+        },
+      }
+    case 'sz_gk_start':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:start' } }
+    case 'sz_gk_load_image':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:loadImage', name: f(block, 'NAME'), asset: f(block, 'ASSET') },
+      }
+    case 'sz_gk_set_screen_text':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setScreenText',
+          screen: f(block, 'SCREEN') || 'menu',
+          title: exprInput(block, 'TITLE', { type: 'str', value: '' }),
+          text: exprInput(block, 'TEXT', { type: 'str', value: '' }),
+          button: exprInput(block, 'BTN', { type: 'str', value: '' }),
+        },
+      }
+    case 'sz_gk_create_screen':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:createScreen',
+          name: f(block, 'NAME'),
+          title: exprInput(block, 'TITLE', { type: 'str', value: '' }),
+          text: exprInput(block, 'TEXT', { type: 'str', value: '' }),
+        },
+      }
+    case 'sz_gk_add_button':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:addButton',
+          screen: f(block, 'SCREEN'),
+          label: exprInput(block, 'LABEL', { type: 'str', value: 'Botão' }),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_show_screen':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:showScreen', name: f(block, 'SCREEN') } }
+    case 'sz_gk_hide_screens':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:hideScreens' } }
+    case 'sz_gk_set_state':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:setState', name: f(block, 'STATE') || 'jogando' } }
+    case 'sz_gk_on_enter_state':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:onEnterState',
+          name: f(block, 'STATE') || 'jogando',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_pause':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:pause' } }
+    case 'sz_gk_resume':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:resume' } }
+    case 'sz_gk_return_to_menu':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:returnToMenu' } }
+    case 'sz_gk_end_game':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:endGame' } }
+    case 'sz_gk_on_update':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:onUpdate',
+          dtName: f(block, 'DT') || 'dt',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_on_draw':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:onDraw',
+          ctxName: f(block, 'PARAM') || 'ctx',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_draw_background':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:drawBackground',
+          color: f(block, 'COLOR') || '#0f3460',
+          grid: f(block, 'GRID') === 'TRUE',
+        },
+      }
+    case 'sz_gk_create_character':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:createCharacter',
+          varName: f(block, 'NAME'),
+          image: f(block, 'IMAGE'),
+          w: exprInput(block, 'W', { type: 'num', value: 64 }),
+          h: exprInput(block, 'H', { type: 'num', value: 64 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 300 }),
+          color: f(block, 'COLOR') || '#4a9eff',
+        },
+      }
+    case 'sz_gk_move_with_keys':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:moveWithKeys',
+          charVar: f(block, 'CHAR'),
+          dtVar: f(block, 'DT') || 'dt',
+        },
+      }
+    case 'sz_gk_keep_on_screen':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:keepOnScreen', charVar: f(block, 'CHAR') } }
+    case 'sz_gk_draw_character':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:drawCharacter', charVar: f(block, 'CHAR') } }
+    case 'sz_gk_place_character':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:placeCharacter',
+          charVar: f(block, 'CHAR'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_gk_reset_character':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:resetCharacter', charVar: f(block, 'CHAR') } }
+    case 'sz_gk_set_speed_multiplier':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setSpeedMultiplier',
+          charVar: f(block, 'CHAR'),
+          factor: exprInput(block, 'FACTOR', { type: 'num', value: 2 }),
+        },
+      }
+    case 'sz_gk_set_pause_key':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:setPauseKey', key: f(block, 'KEY') || 'Escape' } }
 
     default:
       // Bloco desconhecido — não devemos chegar aqui em uso normal. Loga e ignora.

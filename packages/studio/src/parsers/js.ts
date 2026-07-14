@@ -735,6 +735,9 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   // / const bola = SZGame3D.createSphere(cena, {...}). Também antes do cascade de literais.
   const g3dVar = tryMatchGame3DVarInit(name, init, ctx)
   if (g3dVar) return [g3dVar]
+  // game-2d-advanced: const heroi = SZGameKit.createCharacter({...}).
+  const gkVar = tryMatchGameKitVarInit(name, init, ctx)
+  if (gkVar) return [gkVar]
   if (init == null) {
     // `let x;` — declaração sem valor inicial (sz_js_var_declare).
     return [{ type: 'declareVar', name }]
@@ -1345,6 +1348,11 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // método genérico — senão viram memberCall.
   const g3dCall = tryMatchGame3DCall(expr, source, ctx)
   if (g3dCall) return g3dCall
+
+  // game-2d-advanced: SZGameKit.setup/start/telas/estados/ganchos/personagens.
+  // Idem: ANTES do método genérico.
+  const gkCall = tryMatchGameKitCall(expr, source, ctx)
+  if (gkCall) return gkCall
 
   // super(args) — chama o construtor da classe-mãe (dentro do construtor filho).
   if (expr?.type === 'CallExpression' && expr.callee?.type === 'Super') {
@@ -3831,6 +3839,310 @@ function readBlockOptions(
   return result
 }
 
+// ---------- game-2d-advanced: reverse-parse dos helpers SZGameKit.* ----------
+// O gerador emite `SZGameKit.setup({...})`, `SZGameKit.onUpdate(function (dt) {…})`
+// etc. Estes matchers reconhecem esse código de volta nos nós gk:* (modo Ponte).
+// Espelham generators/js.ts — mudou a assinatura lá, reflita aqui.
+
+/** `SZGameKit.<metodo>(args)` → `{ method, args }` se o objeto for exatamente SZGameKit. */
+function asSZGameKitCall(expr: Node): { method: string; args: Node[] } | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== 'SZGameKit') return null
+  if (callee.property?.type !== 'Identifier') return null
+  return { method: callee.property.name as string, args: expr.arguments ?? [] }
+}
+
+/**
+ * Telas PRONTAS do kit (o dropdown do bloco "Personalizar a tela pronta").
+ * O parser valida o enum: tela desconhecida → null → rawJS (um dropdown coagiria
+ * o valor para a 1ª opção e o round-trip mentiria — padrão do set_state_anim).
+ */
+const GK_FIXED_SCREENS = new Set(['menu', 'pausa', 'carregando', 'fim'])
+
+/** SZGameKit.keyDown("w") / touching(a, b) / width() … em posição de VALOR. */
+function matchGameKitExpr(node: Node): JSExpr | null {
+  const call = asSZGameKitCall(node)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'width' && args.length === 0) return { type: 'gk:gameWidth' }
+  if (method === 'height' && args.length === 0) return { type: 'gk:gameHeight' }
+  if (method === 'state' && args.length === 0) return { type: 'gk:gameState' }
+  if (method === 'stateIs' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:stateIs', name: args[0].value as string }
+  }
+  if (method === 'touching') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'gk:charactersTouch', aVar, bVar }
+  }
+  if (method === 'charX') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:charX', charVar }
+  }
+  if (method === 'charY') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:charY', charVar }
+  }
+  if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:keyDown', key: args[0].value as string }
+  }
+  return null
+}
+
+/** Opções do `SZGameKit.setup({ width, height, background, accent })`. */
+function readGameKitSetupOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { w: JSExpr; h: JSExpr; bg: string; accent: string } | null {
+  const result: { w: JSExpr; h: JSExpr; bg: string; accent: string } = {
+    w: { type: 'num', value: 1280 },
+    h: { type: 'num', value: 720 },
+    bg: '#1a1a2e',
+    accent: '#4a9eff',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'width' || key === 'height') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      if (key === 'width') result.w = v
+      else result.h = v
+    } else if (key === 'background' || key === 'accent') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result[key === 'background' ? 'bg' : 'accent'] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** Opções do `SZGameKit.createCharacter({ image, w, h, speed, color })`. */
+function readGameKitCharacterOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { image: string; w: JSExpr; h: JSExpr; speed: JSExpr; color: string } | null {
+  const result: { image: string; w: JSExpr; h: JSExpr; speed: JSExpr; color: string } = {
+    image: '',
+    w: { type: 'num', value: 64 },
+    h: { type: 'num', value: 64 },
+    speed: { type: 'num', value: 300 },
+    color: '#4a9eff',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'w' || key === 'h' || key === 'speed') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      result[key] = v
+    } else if (key === 'image' || key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/**
+ * SZGameKit.* como statement: setup/start/telas/estados/ganchos/personagens.
+ * ANTES do método genérico — senão viram memberCall.
+ */
+function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  const call = asSZGameKitCall(expr)
+  if (!call) return null
+  const { method, args } = call
+  const isFn = (n: Node) =>
+    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+
+  switch (method) {
+    case 'setup': {
+      // generator: SZGameKit.setup({ width, height, background, accent })
+      if (args[0]?.type !== 'ObjectExpression') return null
+      const o = readGameKitSetupOptions(args[0], ctx)
+      return o ? { type: 'gk:setup', w: o.w, h: o.h, bg: o.bg, accent: o.accent } : null
+    }
+    case 'start':
+      return args.length === 0 ? { type: 'gk:start' } : null
+    case 'loadImage': {
+      // generator: SZGameKit.loadImage("nome", "asset")
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'gk:loadImage',
+        name: args[0].value as string,
+        asset: args[1].value as string,
+      }
+    }
+    case 'setScreenText': {
+      // generator: SZGameKit.setScreenText("menu", titulo, texto, botao)
+      if (args[0]?.type !== 'StringLiteral') return null
+      const screen = args[0].value as string
+      if (!GK_FIXED_SCREENS.has(screen)) return null
+      const title = toExpr(args[1], ctx)
+      const text = toExpr(args[2], ctx)
+      const button = toExpr(args[3], ctx)
+      return isSimpleValue(title) && isSimpleValue(text) && isSimpleValue(button)
+        ? { type: 'gk:setScreenText', screen, title, text, button }
+        : null
+    }
+    case 'createScreen': {
+      // generator: SZGameKit.createScreen("nome", titulo, texto)
+      if (args[0]?.type !== 'StringLiteral') return null
+      const title = toExpr(args[1], ctx)
+      const text = toExpr(args[2], ctx)
+      return isSimpleValue(title) && isSimpleValue(text)
+        ? { type: 'gk:createScreen', name: args[0].value as string, title, text }
+        : null
+    }
+    case 'addButton': {
+      // generator: SZGameKit.addButton("tela", rotulo, function () {…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[2])) return null
+      const label = toExpr(args[1], ctx)
+      return isSimpleValue(label)
+        ? {
+            type: 'gk:addButton',
+            screen: args[0].value as string,
+            label,
+            body: bodyOfFn(args[2], source, ctx),
+          }
+        : null
+    }
+    case 'showScreen': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:showScreen', name: args[0].value as string }
+    }
+    case 'hideScreens':
+      return args.length === 0 ? { type: 'gk:hideScreens' } : null
+    case 'setState': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:setState', name: args[0].value as string }
+    }
+    case 'onEnterState': {
+      // generator: SZGameKit.onEnterState("jogando", function () {…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'gk:onEnterState',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'pause':
+      return args.length === 0 ? { type: 'gk:pause' } : null
+    case 'resume':
+      return args.length === 0 ? { type: 'gk:resume' } : null
+    case 'returnToMenu':
+      return args.length === 0 ? { type: 'gk:returnToMenu' } : null
+    case 'endGame':
+      return args.length === 0 ? { type: 'gk:endGame' } : null
+    case 'onUpdate': {
+      // generator: SZGameKit.onUpdate(function (dt) {…})
+      if (!isFn(args[0])) return null
+      return {
+        type: 'gk:onUpdate',
+        dtName: identifierName(args[0].params?.[0]) ?? 'dt',
+        body: bodyOfFn(args[0], source, ctx),
+      }
+    }
+    case 'onDraw': {
+      // generator: SZGameKit.onDraw(function (ctx) {…})
+      if (!isFn(args[0])) return null
+      const ctxParam = identifierName(args[0].params?.[0])
+      // O parâmetro é um CONTEXTO 2D — registrar em ctxVars para que os blocos de
+      // Canvas dentro do gancho round-trippem (gêmeo do defineShape do Jogo 2D).
+      if (ctxParam) ctx.ctxVars.add(ctxParam)
+      return {
+        type: 'gk:onDraw',
+        ctxName: ctxParam ?? 'ctx',
+        body: bodyOfFn(args[0], source, ctx),
+      }
+    }
+    case 'drawBackground': {
+      // generator: SZGameKit.drawBackground("#0f3460", true)
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'BooleanLiteral') return null
+      return {
+        type: 'gk:drawBackground',
+        color: args[0].value as string,
+        grid: args[1].value as boolean,
+      }
+    }
+    case 'moveWithKeys': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[1])
+      return charVar && dtVar ? { type: 'gk:moveWithKeys', charVar, dtVar } : null
+    }
+    case 'keepOnScreen': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:keepOnScreen', charVar } : null
+    }
+    case 'drawCharacter': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:drawCharacter', charVar } : null
+    }
+    case 'placeCharacter': {
+      const charVar = identifierName(args[0])
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      return charVar && isSimpleValue(x) && isSimpleValue(y)
+        ? { type: 'gk:placeCharacter', charVar, x, y }
+        : null
+    }
+    case 'resetCharacter': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:resetCharacter', charVar } : null
+    }
+    case 'setSpeedMultiplier': {
+      const charVar = identifierName(args[0])
+      const factor = toExpr(args[1], ctx)
+      return charVar && isSimpleValue(factor)
+        ? { type: 'gk:setSpeedMultiplier', charVar, factor }
+        : null
+    }
+    case 'setPauseKey': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:setPauseKey', key: args[0].value as string }
+    }
+    default:
+      return null
+  }
+}
+
+/** `const heroi = SZGameKit.createCharacter({...})` → gk:createCharacter. */
+function tryMatchGameKitVarInit(name: string, init: Node, ctx: ParseCtx): JSStatement | null {
+  const call = asSZGameKitCall(init)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'createCharacter') {
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readGameKitCharacterOptions(args[0], ctx)
+    if (!o) return null
+    return {
+      type: 'gk:createCharacter',
+      varName: name,
+      image: o.image,
+      w: o.w,
+      h: o.h,
+      speed: o.speed,
+      color: o.color,
+    }
+  }
+  return null
+}
+
 /**
  * SZGame3D.* como statement: setBackground/setCameraPosition/setPosition/setRotation/animate
  * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/cameraFollow/runEnemies/stop).
@@ -6075,6 +6387,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // SZGame3D.keyDown / collides / hitAny → perguntas 3D (booleanos).
       const g3dExpr = matchGame3DExpr(node, ctx)
       if (g3dExpr) return g3dExpr
+      // SZGameKit.keyDown / touching / width / state… → valores do kit profissional.
+      const gkExpr = matchGameKitExpr(node)
+      if (gkExpr) return gkExpr
       // ctx.isPointInPath(x, y) / ctx.isPointInStroke(x, y) → perguntas de traçado.
       if (
         ctx &&
@@ -6383,6 +6698,14 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3d:aimAhead':
     case 'g3d:onGround':
     case 'g3d:groundHeight':
+    case 'gk:gameWidth':
+    case 'gk:gameHeight':
+    case 'gk:gameState':
+    case 'gk:stateIs':
+    case 'gk:charactersTouch':
+    case 'gk:charX':
+    case 'gk:charY':
+    case 'gk:keyDown':
     case 'inputKeyPressed':
     case 'inputPointer':
     case 'isFullscreen':

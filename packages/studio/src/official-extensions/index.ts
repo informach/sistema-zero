@@ -1,5 +1,6 @@
 import type { ExtensionDefinition } from '#extensions'
 import { gameTwoDExtension } from './game-2d'
+import { gameKitExtension } from './game-2d-advanced'
 import { gameThreeDExtension } from './game-3d'
 
 /**
@@ -10,6 +11,7 @@ import { gameThreeDExtension } from './game-3d'
  */
 export const OFFICIAL_CATALOG: readonly ExtensionDefinition[] = Object.freeze([
   gameTwoDExtension,
+  gameKitExtension,
   gameThreeDExtension,
 ])
 
@@ -18,4 +20,5 @@ export function findExtension(id: string): ExtensionDefinition | undefined {
 }
 
 export * from './game-2d'
+export * from './game-2d-advanced'
 export * from './game-3d'

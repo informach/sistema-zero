@@ -111,6 +111,10 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
     case 'g3d:animate':
+    case 'gk:addButton':
+    case 'gk:onEnterState':
+    case 'gk:onUpdate':
+    case 'gk:onDraw':
     case 'funcDecl':
     case 'forEach':
     case 'setTimeout':

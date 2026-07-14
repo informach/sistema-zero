@@ -80,6 +80,10 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:everySeconds':
     case 'g3d:animate':
     case 'g3d:forEachInSwarm':
+    case 'gk:addButton':
+    case 'gk:onEnterState':
+    case 'gk:onUpdate':
+    case 'gk:onDraw':
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
@@ -1469,6 +1473,87 @@ function compileStatementCode(
       return `${pad}SZGame3D.playNote(${compileExpr(valueToExpr(stmt.freq), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.ms), 0, identifiers, recAt(base))});`
     case 'g3d:playEffect':
       return `${pad}SZGame3D.playEffect(${JSON.stringify(stmt.kind)});`
+    // ----- game-2d-advanced (kit profissional) -----
+    case 'gk:setup':
+      return `${pad}SZGameKit.setup({ width: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, height: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, background: ${JSON.stringify(stmt.bg)}, accent: ${JSON.stringify(stmt.accent)} });`
+    case 'gk:start':
+      return `${pad}SZGameKit.start();`
+    case 'gk:loadImage':
+      return `${pad}SZGameKit.loadImage(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.asset)});`
+    case 'gk:setScreenText':
+      return `${pad}SZGameKit.setScreenText(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.title), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.button), 0, identifiers, recAt(base))});`
+    case 'gk:createScreen':
+      return `${pad}SZGameKit.createScreen(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.title), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))});`
+    case 'gk:addButton': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+    }
+    case 'gk:showScreen':
+      return `${pad}SZGameKit.showScreen(${JSON.stringify(stmt.name)});`
+    case 'gk:hideScreens':
+      return `${pad}SZGameKit.hideScreens();`
+    case 'gk:setState':
+      return `${pad}SZGameKit.setState(${JSON.stringify(stmt.name)});`
+    case 'gk:onEnterState': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onEnterState(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'gk:pause':
+      return `${pad}SZGameKit.pause();`
+    case 'gk:resume':
+      return `${pad}SZGameKit.resume();`
+    case 'gk:returnToMenu':
+      return `${pad}SZGameKit.returnToMenu();`
+    case 'gk:endGame':
+      return `${pad}SZGameKit.endGame();`
+    case 'gk:onUpdate': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onUpdate(function (${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+    }
+    case 'gk:onDraw': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onDraw(function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}});`
+    }
+    case 'gk:drawBackground':
+      return `${pad}SZGameKit.drawBackground(${JSON.stringify(stmt.color)}, ${stmt.grid ? 'true' : 'false'});`
+    case 'gk:createCharacter': {
+      const v = identifiers.get(stmt.varName)
+      return `${pad}const ${v} = SZGameKit.createCharacter({ image: ${JSON.stringify(stmt.image)}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
+    }
+    case 'gk:moveWithKeys':
+      return `${pad}SZGameKit.moveWithKeys(${identifiers.get(stmt.charVar)}, ${identifiers.get(stmt.dtVar)});`
+    case 'gk:keepOnScreen':
+      return `${pad}SZGameKit.keepOnScreen(${identifiers.get(stmt.charVar)});`
+    case 'gk:drawCharacter':
+      return `${pad}SZGameKit.drawCharacter(${identifiers.get(stmt.charVar)});`
+    case 'gk:placeCharacter':
+      return `${pad}SZGameKit.placeCharacter(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'gk:resetCharacter':
+      return `${pad}SZGameKit.resetCharacter(${identifiers.get(stmt.charVar)});`
+    case 'gk:setSpeedMultiplier':
+      return `${pad}SZGameKit.setSpeedMultiplier(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.factor), 0, identifiers, recAt(base))});`
+    case 'gk:setPauseKey':
+      return `${pad}SZGameKit.setPauseKey(${JSON.stringify(stmt.key)});`
     case 'classDecl': {
       const className = identifiers.declareClassName(classKey(stmt), stmt.name)
       const superClause = stmt.superClass
@@ -3100,6 +3185,70 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.freq), names)
       collectExprIdentifiers(valueToExpr(stmt.ms), names)
       return
+    case 'gk:setup':
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'gk:start':
+    case 'gk:loadImage':
+    case 'gk:showScreen':
+    case 'gk:hideScreens':
+    case 'gk:setState':
+    case 'gk:pause':
+    case 'gk:resume':
+    case 'gk:returnToMenu':
+    case 'gk:endGame':
+    case 'gk:drawBackground':
+    case 'gk:setPauseKey':
+      return
+    case 'gk:setScreenText':
+      collectExprIdentifiers(valueToExpr(stmt.title), names)
+      collectExprIdentifiers(valueToExpr(stmt.text), names)
+      collectExprIdentifiers(valueToExpr(stmt.button), names)
+      return
+    case 'gk:createScreen':
+      collectExprIdentifiers(valueToExpr(stmt.title), names)
+      collectExprIdentifiers(valueToExpr(stmt.text), names)
+      return
+    case 'gk:addButton':
+      collectExprIdentifiers(valueToExpr(stmt.label), names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:onEnterState':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:onUpdate':
+      names.add(stmt.dtName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:onDraw':
+      names.add(stmt.ctxName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:createCharacter':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'gk:moveWithKeys':
+      names.add(stmt.charVar)
+      names.add(stmt.dtVar)
+      return
+    case 'gk:keepOnScreen':
+    case 'gk:drawCharacter':
+    case 'gk:resetCharacter':
+      names.add(stmt.charVar)
+      return
+    case 'gk:placeCharacter':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'gk:setSpeedMultiplier':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.factor), names)
+      return
     case 'classDecl':
       for (const param of stmt.ctorParams ?? []) names.add(param)
       for (const child of stmt.ctorBody) collectStatementIdentifiers(child, names)
@@ -3384,6 +3533,14 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       return
     case 'g2d:bananaHitCity':
       names.add(expr.cityVar)
+      return
+    case 'gk:charactersTouch':
+      names.add(expr.aVar)
+      names.add(expr.bVar)
+      return
+    case 'gk:charX':
+    case 'gk:charY':
+      names.add(expr.charVar)
       return
     case 'canvasMeasureText':
       collectExprIdentifiers(expr.text, names)

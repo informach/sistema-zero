@@ -145,6 +145,15 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g3d_play_note: { FREQ: 'number', MS: 'number' },
   sz_g3d_is_near: { DIST: 'number' },
   sz_g3d_aim_ahead: { DIST: 'number' },
+  // Jogo 2D Avançado (soquetes nascidos input_value — entradas inertes na
+  // migração, ativas na restauração de sombra).
+  sz_gk_setup: { W: 'number', H: 'number' },
+  sz_gk_set_screen_text: { TITLE: 'text', TEXT: 'text', BTN: 'text' },
+  sz_gk_create_screen: { TITLE: 'text', TEXT: 'text' },
+  sz_gk_add_button: { LABEL: 'text' },
+  sz_gk_create_character: { W: 'number', H: 'number', SPEED: 'number' },
+  sz_gk_place_character: { X: 'number', Y: 'number' },
+  sz_gk_set_speed_multiplier: { FACTOR: 'number' },
 }
 
 interface BlockNode {

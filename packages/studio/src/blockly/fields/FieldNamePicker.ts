@@ -53,6 +53,9 @@ export type NameKind =
   | 'scene3d'
   | 'object3d'
   | 'group3d'
+  | 'character'
+  | 'screen'
+  | 'gamestate'
 
 const NAME_KINDS: readonly NameKind[] = [
   'variable',
@@ -69,6 +72,9 @@ const NAME_KINDS: readonly NameKind[] = [
   'scene3d',
   'object3d',
   'group3d',
+  'character',
+  'screen',
+  'gamestate',
 ]
 
 /** Coage o `kind` cru da definição do bloco para um `NameKind` válido (default variável). */
@@ -139,6 +145,42 @@ function collectShapes(workspace: Blockly.Workspace | null | undefined): string[
   return collectDeclaredNames(workspace, SHAPE_DECL_BLOCKS)
 }
 
+/** Personagens do Jogo 2D Avançado — fonte dos seletores CHAR/A/B. */
+const CHARACTER_DECL_BLOCKS: Record<string, string[]> = { sz_gk_create_character: ['NAME'] }
+function collectCharacters(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, CHARACTER_DECL_BLOCKS)
+}
+
+/**
+ * Telas do Jogo 2D Avançado: as 4 PRONTAS (sempre existem no runtime) + as que a
+ * criança criou com "Criar a tela". A semente vem primeiro — são as telas que o
+ * kit garante mesmo sem nenhum bloco de criação.
+ */
+const GK_BUILTIN_SCREENS = ['menu', 'pausa', 'carregando', 'fim'] as const
+const SCREEN_DECL_BLOCKS: Record<string, string[]> = { sz_gk_create_screen: ['NAME'] }
+function collectScreens(workspace: Blockly.Workspace | null | undefined): string[] {
+  const declared = collectDeclaredNames(workspace, SCREEN_DECL_BLOCKS)
+  const seen = new Set<string>(GK_BUILTIN_SCREENS)
+  return [...GK_BUILTIN_SCREENS, ...declared.filter((n) => !seen.has(n))]
+}
+
+/**
+ * Estados do Jogo 2D Avançado: os 4 FIXOS (com comportamento automático) + os que
+ * a criança inventou. Um estado "existe" por USO — os próprios campos de estado
+ * (mudar/quando entrar/é?) são a fonte da lista.
+ */
+const GK_BUILTIN_STATES = ['menu', 'jogando', 'pausado', 'fim'] as const
+const GAMESTATE_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_set_state: ['STATE'],
+  sz_gk_on_enter_state: ['STATE'],
+  sz_gk_state_is: ['STATE'],
+}
+function collectGameStates(workspace: Blockly.Workspace | null | undefined): string[] {
+  const used = collectDeclaredNames(workspace, GAMESTATE_DECL_BLOCKS)
+  const seen = new Set<string>(GK_BUILTIN_STATES)
+  return [...GK_BUILTIN_STATES, ...used.filter((n) => !seen.has(n))]
+}
+
 /** Cenas/mundos do Jogo 3D (fonte do seletor WORLD). */
 const SCENE3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_scene: ['NAME'],
@@ -193,6 +235,10 @@ const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
   sz_js_try_catch: ['ERR'],
   sz_val_array_map: ['ITEM'],
   sz_val_array_find: ['ITEM'],
+  // Ganchos do Jogo 2D Avançado: o tempo (dt) e o pincel (ctx) são nomes LOCAIS
+  // dos corpos "A cada quadro"/"Desenhar o jogo".
+  sz_gk_on_update: ['DT'],
+  sz_gk_on_draw: ['PARAM'],
 }
 
 /**
@@ -309,6 +355,24 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do grupo / enxame',
     empty:
       'Nenhum grupo ou enxame 3D ainda — crie um ("Criar grupo/enxame") ou digite o nome abaixo.',
+  },
+  character: {
+    icon: '🧍',
+    placeholder: 'nome do personagem',
+    empty:
+      'Nenhum personagem ainda — crie um (bloco "Criar o personagem") ou digite o nome abaixo.',
+  },
+  screen: {
+    icon: '🖼️',
+    placeholder: 'nome da tela',
+    empty:
+      'As telas prontas são menu, pausa, carregando e fim — ou crie a sua ("Criar a tela") e digite o nome abaixo.',
+  },
+  gamestate: {
+    icon: '🚦',
+    placeholder: 'nome do estado',
+    empty:
+      'Os estados prontos são menu, jogando, pausado e fim — ou invente o seu (ex.: loja) digitando abaixo.',
   },
 }
 
@@ -565,6 +629,12 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectObjects3d(ws)
       case 'group3d':
         return collectGroups3d(ws)
+      case 'character':
+        return collectCharacters(ws)
+      case 'screen':
+        return collectScreens(ws)
+      case 'gamestate':
+        return collectGameStates(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)
