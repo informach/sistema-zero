@@ -420,6 +420,31 @@ export function compileExpr(
       return 'SZGameKit.rpgBattleWon()'
     case 'gk:kills':
       return 'SZGameKit.kills()'
+    // ---- Jogo 3D Avançado (game-3d-advanced) ----
+    case 'g3k:worldSize':
+      return 'SZGameKit3D.worldSize()'
+    case 'g3k:countAlive':
+      return `SZGameKit3D.countAlive(${JSON.stringify(expr.mold)})`
+    case 'g3k:keyDown':
+      return `SZGameKit3D.keyDown(${JSON.stringify(expr.key)})`
+    case 'g3k:keyPressed':
+      return `SZGameKit3D.keyPressed(${JSON.stringify(expr.key)})`
+    case 'g3k:posOf':
+      return `SZGameKit3D.posOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.axis)})`
+    case 'g3k:exists':
+      return `SZGameKit3D.exists(${identifiers.get(expr.charVar)})`
+    case 'g3k:entityStateIs':
+      return `SZGameKit3D.entityStateIs(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.state)})`
+    case 'g3k:isAimingAt':
+      return `SZGameKit3D.isAimingAt(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3k:touches':
+      return `SZGameKit3D.touches(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
+    case 'g3k:healthOf':
+      return `SZGameKit3D.healthOf(${identifiers.get(expr.charVar)})`
+    case 'g3k:stateIs':
+      return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
+    case 'g3k:gameState':
+      return 'SZGameKit3D.state()'
     case 'inputKeyPressed':
       return `__szInput.key(${JSON.stringify(expr.key)})`
     case 'inputPointer':

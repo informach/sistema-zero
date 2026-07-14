@@ -123,6 +123,17 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:rpgOnBattleEnd':
     case 'gk:forEachActive':
     case 'gk:defineLook':
+    case 'g3k:defineMold':
+    case 'g3k:forEachAlive':
+    case 'g3k:onUpdate':
+    case 'g3k:onEnterEntityState':
+    case 'g3k:onEntityStateUpdate':
+    case 'g3k:onExitEntityState':
+    case 'g3k:forEachNear':
+    case 'g3k:onEntityDeath':
+    case 'g3k:addButton':
+    case 'g3k:onEnterState':
+    case 'g3k:onEvent':
     case 'funcDecl':
     case 'forEach':
     case 'setTimeout':

@@ -738,6 +738,9 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   // game-2d-advanced: const heroi = SZGameKit.createCharacter({...}).
   const gkVar = tryMatchGameKitVarInit(name, init, ctx)
   if (gkVar) return [gkVar]
+  // game-3d-advanced: const heroi = SZGameKit3D.spawn(...) / nearest(...).
+  const g3kVar = tryMatchGameKit3DVarInit(name, init, ctx)
+  if (g3kVar) return [g3kVar]
   if (init == null) {
     // `let x;` — declaração sem valor inicial (sz_js_var_declare).
     return [{ type: 'declareVar', name }]
@@ -1353,6 +1356,10 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   // Idem: ANTES do método genérico.
   const gkCall = tryMatchGameKitCall(expr, source, ctx)
   if (gkCall) return gkCall
+
+  // game-3d-advanced: SZGameKit3D.* (mundo/moldes/FSM/telas). ANTES do genérico.
+  const g3kCall = tryMatchGameKit3DCall(expr, source, ctx)
+  if (g3kCall) return g3kCall
 
   // super(args) — chama o construtor da classe-mãe (dentro do construtor filho).
   if (expr?.type === 'CallExpression' && expr.callee?.type === 'Super') {
@@ -4666,6 +4673,745 @@ function tryMatchGameKitVarInit(name: string, init: Node, ctx: ParseCtx): JSStat
   return null
 }
 
+// =====================================================================
+// Jogo 3D Avançado (game-3d-advanced) — window.SZGameKit3D
+// =====================================================================
+
+function asSZGameKit3DCall(expr: Node): { method: string; args: Node[] } | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== 'SZGameKit3D') return null
+  if (callee.property?.type !== 'Identifier') return null
+  return { method: callee.property.name as string, args: expr.arguments ?? [] }
+}
+
+/** Enums fixos dos dropdowns — valor desconhecido → null → rawJS (o dropdown
+ * coagiria para a 1ª opção e o round-trip mentiria; padrão do gk). */
+const G3K_FIXED_SCREENS = new Set(['menu', 'pausa', 'carregando', 'fim', 'vitoria'])
+const G3K_HUD_SLOTS = new Set([
+  'top-left',
+  'top-center',
+  'top-right',
+  'bottom-left',
+  'bottom-right',
+])
+const G3K_PART_SHAPES = new Set(['box', 'sphere', 'cylinder', 'cone'])
+const G3K_SPAWNER_WHERE = new Set(['edge', 'anywhere'])
+const G3K_POS_AXES = new Set(['x', 'y', 'z'])
+
+/** SZGameKit3D.keyDown("w") / touches(a, b, d) / worldSize() … em posição de VALOR. */
+function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
+  const call = asSZGameKit3DCall(node)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'worldSize' && args.length === 0) return { type: 'g3k:worldSize' }
+  if (method === 'state' && args.length === 0) return { type: 'g3k:gameState' }
+  if (method === 'stateIs' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g3k:stateIs', name: args[0].value as string }
+  }
+  if (method === 'countAlive' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g3k:countAlive', mold: args[0].value as string }
+  }
+  if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g3k:keyDown', key: args[0].value as string }
+  }
+  if (method === 'keyPressed' && args[0]?.type === 'StringLiteral') {
+    return { type: 'g3k:keyPressed', key: args[0].value as string }
+  }
+  if (method === 'posOf') {
+    const charVar = identifierName(args[0])
+    if (charVar && args[1]?.type === 'StringLiteral') {
+      const axis = args[1].value as string
+      if (G3K_POS_AXES.has(axis)) return { type: 'g3k:posOf', axis, charVar }
+    }
+  }
+  if (method === 'exists') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'g3k:exists', charVar }
+  }
+  if (method === 'entityStateIs') {
+    const charVar = identifierName(args[0])
+    if (charVar && args[1]?.type === 'StringLiteral') {
+      return { type: 'g3k:entityStateIs', charVar, state: args[1].value as string }
+    }
+  }
+  if (method === 'isAimingAt') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g3k:isAimingAt', aVar, bVar }
+  }
+  if (method === 'touches') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) {
+      const dist = toExpr(args[2], ctx)
+      if (isSimpleValue(dist)) return { type: 'g3k:touches', aVar, bVar, dist }
+    }
+  }
+  if (method === 'healthOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'g3k:healthOf', charVar }
+  }
+  return null
+}
+
+/** Opções do `SZGameKit3D.setup({ width, height, world, sky, ground })`. */
+function readGameKit3DSetupOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { w: JSExpr; h: JSExpr; world: JSExpr; sky: string; ground: string } | null {
+  const result: { w: JSExpr; h: JSExpr; world: JSExpr; sky: string; ground: string } = {
+    w: { type: 'num', value: 1280 },
+    h: { type: 'num', value: 720 },
+    world: { type: 'num', value: 80 },
+    sky: '#0b1026',
+    ground: '#14532d',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'width' || key === 'height' || key === 'world') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      if (key === 'width') result.w = v
+      else if (key === 'height') result.h = v
+      else result.world = v
+    } else if (key === 'sky' || key === 'ground') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** Opções do `SZGameKit3D.part({ shape, color, w, h, d, x, y, z })`. */
+function readGameKit3DPartOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): {
+  shape: string
+  color: string
+  w: JSExpr
+  h: JSExpr
+  d: JSExpr
+  x: JSExpr
+  y: JSExpr
+  z: JSExpr
+} | null {
+  const result = {
+    shape: 'box',
+    color: '#22d3ee',
+    w: { type: 'num', value: 1 } as JSExpr,
+    h: { type: 'num', value: 1 } as JSExpr,
+    d: { type: 'num', value: 1 } as JSExpr,
+    x: { type: 'num', value: 0 } as JSExpr,
+    y: { type: 'num', value: 0.5 } as JSExpr,
+    z: { type: 'num', value: 0 } as JSExpr,
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'w' || key === 'h' || key === 'd' || key === 'x' || key === 'y' || key === 'z') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      result[key] = v
+    } else if (key === 'shape') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      const shape = prop.value.value as string
+      if (!G3K_PART_SHAPES.has(shape)) return null
+      result.shape = shape
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** Opções do `SZGameKit3D.setEffects({ shadows, bloom, strength, vignette })`. */
+function readGameKit3DEffectsOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { shadows: boolean; bloom: boolean; strength: JSExpr; vignette: boolean } | null {
+  const result = {
+    shadows: true,
+    bloom: true,
+    strength: { type: 'num', value: 1.2 } as JSExpr,
+    vignette: true,
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'shadows' || key === 'bloom' || key === 'vignette') {
+      if (prop.value?.type !== 'BooleanLiteral') return null
+      result[key] = prop.value.value as boolean
+    } else if (key === 'strength') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      result.strength = v
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** Opções do `SZGameKit3D.defineEffect("x", { count, colorFrom, ... })`. */
+function readGameKit3DFxOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): {
+  count: JSExpr
+  colorFrom: string
+  colorTo: string
+  spread: JSExpr
+  sizeFrom: JSExpr
+  sizeTo: JSExpr
+  life: JSExpr
+  gravity: JSExpr
+} | null {
+  const result = {
+    count: { type: 'num', value: 24 } as JSExpr,
+    colorFrom: '#fb923c',
+    colorTo: '#451a03',
+    spread: { type: 'num', value: 6 } as JSExpr,
+    sizeFrom: { type: 'num', value: 0.5 } as JSExpr,
+    sizeTo: { type: 'num', value: 0 } as JSExpr,
+    life: { type: 'num', value: 0.8 } as JSExpr,
+    gravity: { type: 'num', value: -9 } as JSExpr,
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (
+      key === 'count' ||
+      key === 'spread' ||
+      key === 'sizeFrom' ||
+      key === 'sizeTo' ||
+      key === 'life' ||
+      key === 'gravity'
+    ) {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      result[key] = v
+    } else if (key === 'colorFrom' || key === 'colorTo') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result[key] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/** Opções do `SZGameKit3D.defineMold("x", { health, speed }, fn)`. */
+function readGameKit3DMoldOptions(
+  obj: Node,
+  ctx: ParseCtx,
+): { health: JSExpr; speed: JSExpr } | null {
+  const result = {
+    health: { type: 'num', value: 30 } as JSExpr,
+    speed: { type: 'num', value: 3 } as JSExpr,
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'health' || key === 'speed') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      result[key] = v
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
+/**
+ * SZGameKit3D.* como statement: mundo/moldes/enxames/FSM/comportamentos/telas.
+ * ANTES do método genérico — senão viram memberCall.
+ */
+function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  const call = asSZGameKit3DCall(expr)
+  if (!call) return null
+  const { method, args } = call
+  const isFn = (n: Node) =>
+    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+
+  switch (method) {
+    case 'setup': {
+      // generator: SZGameKit3D.setup({ width, height, world, sky, ground })
+      if (args[0]?.type !== 'ObjectExpression') return null
+      const o = readGameKit3DSetupOptions(args[0], ctx)
+      return o
+        ? { type: 'g3k:setup', w: o.w, h: o.h, world: o.world, sky: o.sky, ground: o.ground }
+        : null
+    }
+    case 'scatterDecor': {
+      const count = toExpr(args[0], ctx)
+      return isSimpleValue(count) ? { type: 'g3k:scatterDecor', count } : null
+    }
+    case 'setEffects': {
+      if (args[0]?.type !== 'ObjectExpression') return null
+      const o = readGameKit3DEffectsOptions(args[0], ctx)
+      return o
+        ? {
+            type: 'g3k:setEffects',
+            shadows: o.shadows,
+            bloom: o.bloom,
+            strength: o.strength,
+            vignette: o.vignette,
+          }
+        : null
+    }
+    case 'defineEffect': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'ObjectExpression') return null
+      const o = readGameKit3DFxOptions(args[1], ctx)
+      return o
+        ? {
+            type: 'g3k:defineEffect',
+            name: args[0].value as string,
+            count: o.count,
+            colorFrom: o.colorFrom,
+            colorTo: o.colorTo,
+            spread: o.spread,
+            sizeFrom: o.sizeFrom,
+            sizeTo: o.sizeTo,
+            life: o.life,
+            gravity: o.gravity,
+          }
+        : null
+    }
+    case 'burstAt': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(z)
+        ? { type: 'g3k:burstAt', effect: args[0].value as string, x, y, z }
+        : null
+    }
+    case 'burstOn': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const charVar = identifierName(args[1])
+      return charVar ? { type: 'g3k:burstOn', effect: args[0].value as string, charVar } : null
+    }
+    case 'start':
+      return args.length === 0 ? { type: 'g3k:start' } : null
+    case 'defineMold': {
+      // generator: SZGameKit3D.defineMold("nome", { health, speed }, function () {…})
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'ObjectExpression') return null
+      if (!isFn(args[2])) return null
+      const o = readGameKit3DMoldOptions(args[1], ctx)
+      return o
+        ? {
+            type: 'g3k:defineMold',
+            name: args[0].value as string,
+            health: o.health,
+            speed: o.speed,
+            body: bodyOfFn(args[2], source, ctx),
+          }
+        : null
+    }
+    case 'part': {
+      if (args[0]?.type !== 'ObjectExpression') return null
+      const o = readGameKit3DPartOptions(args[0], ctx)
+      return o
+        ? {
+            type: 'g3k:part',
+            shape: o.shape,
+            color: o.color,
+            w: o.w,
+            h: o.h,
+            d: o.d,
+            x: o.x,
+            y: o.y,
+            z: o.z,
+          }
+        : null
+    }
+    case 'spawn': {
+      // generator (sem const): SZGameKit3D.spawn("molde", x, y, z)
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(z)
+        ? { type: 'g3k:spawn', mold: args[0].value as string, x, y, z }
+        : null
+    }
+    case 'spawnFrom': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const fromVar = identifierName(args[1])
+      return fromVar ? { type: 'g3k:spawnFrom', mold: args[0].value as string, fromVar } : null
+    }
+    case 'startSpawner': {
+      if (args[0]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') return null
+      const where = args[2].value as string
+      if (!G3K_SPAWNER_WHERE.has(where)) return null
+      const seconds = toExpr(args[1], ctx)
+      return isSimpleValue(seconds)
+        ? { type: 'g3k:startSpawner', mold: args[0].value as string, seconds, where }
+        : null
+    }
+    case 'stopSpawner': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:stopSpawner', mold: args[0].value as string }
+    }
+    case 'forEachAlive': {
+      // generator: SZGameKit3D.forEachAlive("molde", function (item) {…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'g3k:forEachAlive',
+        mold: args[0].value as string,
+        itemName: identifierName(args[1].params?.[0]) ?? 'item',
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'recycle': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'g3k:recycle', charVar } : null
+    }
+    case 'recycleAll': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:recycleAll', mold: args[0].value as string }
+    }
+    case 'cullFar': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const dist = toExpr(args[1], ctx)
+      return isSimpleValue(dist)
+        ? { type: 'g3k:cullFar', mold: args[0].value as string, dist }
+        : null
+    }
+    case 'onUpdate': {
+      // generator: SZGameKit3D.onUpdate(function (dt) {…})
+      if (!isFn(args[0])) return null
+      return {
+        type: 'g3k:onUpdate',
+        dtName: identifierName(args[0].params?.[0]) ?? 'dt',
+        body: bodyOfFn(args[0], source, ctx),
+      }
+    }
+    case 'moveWithKeys': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const speed = toExpr(args[1], ctx)
+      return isSimpleValue(speed) ? { type: 'g3k:moveWithKeys', charVar, speed } : null
+    }
+    case 'setPauseKey': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:setPauseKey', key: args[0].value as string }
+    }
+    case 'cameraFollow': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const dist = toExpr(args[1], ctx)
+      const height = toExpr(args[2], ctx)
+      return isSimpleValue(dist) && isSimpleValue(height)
+        ? { type: 'g3k:cameraFollow', charVar, dist, height }
+        : null
+    }
+    case 'cameraOrbit': {
+      const dist = toExpr(args[0], ctx)
+      return isSimpleValue(dist) ? { type: 'g3k:cameraOrbit', dist } : null
+    }
+    case 'cameraTop': {
+      const height = toExpr(args[0], ctx)
+      return isSimpleValue(height) ? { type: 'g3k:cameraTop', height } : null
+    }
+    case 'place': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(z)
+        ? { type: 'g3k:place', charVar, x, y, z }
+        : null
+    }
+    case 'setYaw': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const degrees = toExpr(args[1], ctx)
+      return isSimpleValue(degrees) ? { type: 'g3k:setYaw', charVar, degrees } : null
+    }
+    case 'setVelocity': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(z)
+        ? { type: 'g3k:setVelocity', charVar, x, y, z }
+        : null
+    }
+    case 'setDrag': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const drag = toExpr(args[1], ctx)
+      return isSimpleValue(drag) ? { type: 'g3k:setDrag', charVar, drag } : null
+    }
+    case 'lookAt': {
+      const charVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      return charVar && targetVar ? { type: 'g3k:lookAt', charVar, targetVar } : null
+    }
+    case 'moveForward': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const speed = toExpr(args[1], ctx)
+      return isSimpleValue(speed) ? { type: 'g3k:moveForward', charVar, speed } : null
+    }
+    case 'onEnterEntityState':
+    case 'onExitEntityState': {
+      // generator: SZGameKit3D.onEnterEntityState("molde", "estado", function (ela) {…})
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      if (!isFn(args[2])) return null
+      return {
+        type: method === 'onEnterEntityState' ? 'g3k:onEnterEntityState' : 'g3k:onExitEntityState',
+        mold: args[0].value as string,
+        state: args[1].value as string,
+        itemName: identifierName(args[2].params?.[0]) ?? 'ela',
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
+    case 'onEntityStateUpdate': {
+      // generator: SZGameKit3D.onEntityStateUpdate("molde", "estado", function (ela, dt) {…})
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      if (!isFn(args[2])) return null
+      return {
+        type: 'g3k:onEntityStateUpdate',
+        mold: args[0].value as string,
+        state: args[1].value as string,
+        itemName: identifierName(args[2].params?.[0]) ?? 'ela',
+        dtName: identifierName(args[2].params?.[1]) ?? 'dt',
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
+    case 'setEntityState': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:setEntityState', charVar, state: args[1].value as string }
+    }
+    case 'stateTimer': {
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        args[1]?.type !== 'StringLiteral' ||
+        args[3]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      const sec = toExpr(args[2], ctx)
+      return isSimpleValue(sec)
+        ? {
+            type: 'g3k:stateTimer',
+            mold: args[0].value as string,
+            state: args[1].value as string,
+            sec,
+            next: args[3].value as string,
+          }
+        : null
+    }
+    case 'seek': {
+      const charVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      return charVar && targetVar ? { type: 'g3k:seek', charVar, targetVar } : null
+    }
+    case 'aimAt': {
+      const charVar = identifierName(args[0])
+      const targetVar = identifierName(args[1])
+      if (!charVar || !targetVar) return null
+      const smooth = toExpr(args[2], ctx)
+      return isSimpleValue(smooth) ? { type: 'g3k:aimAt', charVar, targetVar, smooth } : null
+    }
+    case 'faceVelocity': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'g3k:faceVelocity', charVar } : null
+    }
+    case 'forEachNear': {
+      // generator: SZGameKit3D.forEachNear(ent, "molde", raio, function (vizinho) {…})
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral' || !isFn(args[3])) return null
+      const radius = toExpr(args[2], ctx)
+      return isSimpleValue(radius)
+        ? {
+            type: 'g3k:forEachNear',
+            charVar,
+            mold: args[1].value as string,
+            radius,
+            itemName: identifierName(args[3].params?.[0]) ?? 'vizinho',
+            body: bodyOfFn(args[3], source, ctx),
+          }
+        : null
+    }
+    case 'hurt': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const amount = toExpr(args[1], ctx)
+      return isSimpleValue(amount) ? { type: 'g3k:hurt', charVar, amount } : null
+    }
+    case 'onEntityDeath': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'g3k:onEntityDeath',
+        mold: args[0].value as string,
+        itemName: identifierName(args[1].params?.[0]) ?? 'ela',
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'setScreenText': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const screen = args[0].value as string
+      if (!G3K_FIXED_SCREENS.has(screen)) return null
+      const title = toExpr(args[1], ctx)
+      const text = toExpr(args[2], ctx)
+      const button = toExpr(args[3], ctx)
+      return isSimpleValue(title) && isSimpleValue(text) && isSimpleValue(button)
+        ? { type: 'g3k:setScreenText', screen, title, text, button }
+        : null
+    }
+    case 'createScreen': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const title = toExpr(args[1], ctx)
+      const text = toExpr(args[2], ctx)
+      return isSimpleValue(title) && isSimpleValue(text)
+        ? { type: 'g3k:createScreen', name: args[0].value as string, title, text }
+        : null
+    }
+    case 'addButton': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[2])) return null
+      const label = toExpr(args[1], ctx)
+      return isSimpleValue(label)
+        ? {
+            type: 'g3k:addButton',
+            screen: args[0].value as string,
+            label,
+            body: bodyOfFn(args[2], source, ctx),
+          }
+        : null
+    }
+    case 'showScreen': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:showScreen', name: args[0].value as string }
+    }
+    case 'hideScreens':
+      return args.length === 0 ? { type: 'g3k:hideScreens' } : null
+    case 'setHud': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const slot = args[0].value as string
+      if (!G3K_HUD_SLOTS.has(slot)) return null
+      const text = toExpr(args[1], ctx)
+      return isSimpleValue(text) ? { type: 'g3k:hudText', slot, text } : null
+    }
+    case 'setState': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:setState', name: args[0].value as string }
+    }
+    case 'onEnterState': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'g3k:onEnterState',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'returnToMenu':
+      return args.length === 0 ? { type: 'g3k:returnToMenu' } : null
+    case 'endGame':
+      return args.length === 0 ? { type: 'g3k:endGame' } : null
+    case 'on': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'g3k:onEvent',
+        event: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'emit': {
+      if (args[0]?.type !== 'StringLiteral' || args.length !== 1) return null
+      return { type: 'g3k:emit', event: args[0].value as string }
+    }
+    case 'loadSound': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'g3k:loadSound',
+        name: args[0].value as string,
+        asset: args[1].value as string,
+      }
+    }
+    case 'playSound': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:playSound', name: args[0].value as string }
+    }
+    case 'playEffect': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:playEffect', fx: args[0].value as string }
+    }
+    case 'playTone': {
+      const freq = toExpr(args[0], ctx)
+      const ms = toExpr(args[1], ctx)
+      return isSimpleValue(freq) && isSimpleValue(ms) ? { type: 'g3k:playTone', freq, ms } : null
+    }
+    default:
+      return null
+  }
+}
+
+/** `const heroi = SZGameKit3D.spawn("m", x, y, z)` → g3k:spawnNamed;
+ *  `const alvo = SZGameKit3D.nearest("m", ent)` → g3k:storeNearest. */
+function tryMatchGameKit3DVarInit(name: string, init: Node, ctx: ParseCtx): JSStatement | null {
+  const call = asSZGameKit3DCall(init)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'spawn') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    const x = toExpr(args[1], ctx)
+    const y = toExpr(args[2], ctx)
+    const z = toExpr(args[3], ctx)
+    return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(z)
+      ? { type: 'g3k:spawnNamed', varName: name, mold: args[0].value as string, x, y, z }
+      : null
+  }
+  if (method === 'nearest') {
+    if (args[0]?.type !== 'StringLiteral') return null
+    const charVar = identifierName(args[1])
+    return charVar
+      ? { type: 'g3k:storeNearest', varName: name, mold: args[0].value as string, charVar }
+      : null
+  }
+  return null
+}
+
 /**
  * SZGame3D.* como statement: setBackground/setCameraPosition/setPosition/setRotation/animate
  * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/cameraFollow/runEnemies/stop).
@@ -6916,6 +7662,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // SZGameKit.rpg* → valores do Kit RPG (célula, flags, itens, batalha).
       const gkRpgExpr = matchGameKitRpgExpr(node, ctx)
       if (gkRpgExpr) return gkRpgExpr
+      // SZGameKit3D.* → valores do Jogo 3D Avançado (mundo/entidades/FSM).
+      const g3kExpr = matchGameKit3DExpr(node, ctx)
+      if (g3kExpr) return g3kExpr
       // ctx.isPointInPath(x, y) / ctx.isPointInStroke(x, y) → perguntas de traçado.
       if (
         ctx &&
@@ -7248,6 +7997,17 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:rpgHasFlag':
     case 'gk:rpgHasItem':
     case 'gk:rpgBattleWon':
+    case 'g3k:worldSize':
+    case 'g3k:countAlive':
+    case 'g3k:keyDown':
+    case 'g3k:keyPressed':
+    case 'g3k:posOf':
+    case 'g3k:exists':
+    case 'g3k:entityStateIs':
+    case 'g3k:isAimingAt':
+    case 'g3k:healthOf':
+    case 'g3k:stateIs':
+    case 'g3k:gameState':
     case 'inputKeyPressed':
     case 'inputPointer':
     case 'isFullscreen':
@@ -7262,6 +8022,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return true
     case 'gk:rpgCell':
       return typeof expr.n === 'number' || isSimpleValue(expr.n)
+    case 'g3k:touches':
+      return typeof expr.dist === 'number' || isSimpleValue(expr.dist)
     case 'concat':
     case 'concatArrays':
       return expr.parts.every(isSimpleValue)

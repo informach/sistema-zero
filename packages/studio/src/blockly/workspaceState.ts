@@ -3554,6 +3554,391 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_gk_play_tone', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
     }
+    // ---- Jogo 3D Avançado (game-3d-advanced) ----
+    case 'g3k:setup': {
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      const world = exprToValueBlock(valueToExpr(stmt.world))
+      return w === null || h === null || world === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_setup', { SKY: stmt.sky, GROUND: stmt.ground }, {}, stmt.__id, {
+            W: w,
+            H: h,
+            SIZE: world,
+          })
+    }
+    case 'g3k:scatterDecor': {
+      const count = exprToValueBlock(valueToExpr(stmt.count))
+      return count === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_scatter_decor', {}, {}, stmt.__id, { COUNT: count })
+    }
+    case 'g3k:setEffects': {
+      const strength = exprToValueBlock(valueToExpr(stmt.strength))
+      return strength === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g3k_set_effects',
+            {
+              SHADOWS: stmt.shadows ? 'TRUE' : 'FALSE',
+              BLOOM: stmt.bloom ? 'TRUE' : 'FALSE',
+              VIGNETTE: stmt.vignette ? 'TRUE' : 'FALSE',
+            },
+            {},
+            stmt.__id,
+            { STRENGTH: strength },
+          )
+    }
+    case 'g3k:start':
+      return block('sz_g3k_start', {}, {}, stmt.__id)
+    case 'g3k:defineMold': {
+      const health = exprToValueBlock(valueToExpr(stmt.health))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return health === null || speed === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g3k_define_mold',
+            { NAME: stmt.name },
+            { BODY: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            { HEALTH: health, SPEED: speed },
+          )
+    }
+    case 'g3k:part': {
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      const d = exprToValueBlock(valueToExpr(stmt.d))
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return w === null || h === null || d === null || x === null || y === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_part', { SHAPE: stmt.shape, COLOR: stmt.color }, {}, stmt.__id, {
+            W: w,
+            H: h,
+            D: d,
+            X: x,
+            Y: y,
+            Z: z,
+          })
+    }
+    case 'g3k:spawn': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || y === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_spawn', { MOLD: stmt.mold }, {}, stmt.__id, { X: x, Y: y, Z: z })
+    }
+    case 'g3k:spawnNamed': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || y === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_spawn_named', { NAME: stmt.varName, MOLD: stmt.mold }, {}, stmt.__id, {
+            X: x,
+            Y: y,
+            Z: z,
+          })
+    }
+    case 'g3k:spawnFrom':
+      return block('sz_g3k_spawn_from', { MOLD: stmt.mold, FROM: stmt.fromVar }, {}, stmt.__id)
+    case 'g3k:startSpawner': {
+      const sec = exprToValueBlock(valueToExpr(stmt.seconds))
+      return sec === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_start_spawner', { MOLD: stmt.mold, WHERE: stmt.where }, {}, stmt.__id, {
+            SEC: sec,
+          })
+    }
+    case 'g3k:stopSpawner':
+      return block('sz_g3k_stop_spawner', { MOLD: stmt.mold }, {}, stmt.__id)
+    case 'g3k:forEachAlive':
+      return block(
+        'sz_g3k_for_each_alive',
+        { MOLD: stmt.mold, ITEM: stmt.itemName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:recycle':
+      return block('sz_g3k_recycle', { WHO: stmt.charVar }, {}, stmt.__id)
+    case 'g3k:recycleAll':
+      return block('sz_g3k_recycle_all', { MOLD: stmt.mold }, {}, stmt.__id)
+    case 'g3k:cullFar': {
+      const dist = exprToValueBlock(valueToExpr(stmt.dist))
+      return dist === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_cull_far', { MOLD: stmt.mold }, {}, stmt.__id, { DIST: dist })
+    }
+    case 'g3k:onUpdate':
+      return block(
+        'sz_g3k_on_update',
+        { DT: stmt.dtName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:moveWithKeys': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_move_with_keys', { CHAR: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
+    }
+    case 'g3k:setPauseKey':
+      return block('sz_g3k_set_pause_key', { KEY: stmt.key }, {}, stmt.__id)
+    case 'g3k:cameraFollow': {
+      const dist = exprToValueBlock(valueToExpr(stmt.dist))
+      const height = exprToValueBlock(valueToExpr(stmt.height))
+      return dist === null || height === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_camera_follow', { CHAR: stmt.charVar }, {}, stmt.__id, {
+            DIST: dist,
+            HEIGHT: height,
+          })
+    }
+    case 'g3k:cameraOrbit': {
+      const dist = exprToValueBlock(valueToExpr(stmt.dist))
+      return dist === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_camera_orbit', {}, {}, stmt.__id, { DIST: dist })
+    }
+    case 'g3k:cameraTop': {
+      const height = exprToValueBlock(valueToExpr(stmt.height))
+      return height === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_camera_top', {}, {}, stmt.__id, { HEIGHT: height })
+    }
+    case 'g3k:place': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || y === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_place', { CHAR: stmt.charVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
+    }
+    case 'g3k:setYaw': {
+      const deg = exprToValueBlock(valueToExpr(stmt.degrees))
+      return deg === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_set_yaw', { CHAR: stmt.charVar }, {}, stmt.__id, { DEG: deg })
+    }
+    case 'g3k:setVelocity': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || y === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_set_velocity', { CHAR: stmt.charVar }, {}, stmt.__id, { X: x, Y: y, Z: z })
+    }
+    case 'g3k:setDrag': {
+      const drag = exprToValueBlock(valueToExpr(stmt.drag))
+      return drag === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_set_drag', { CHAR: stmt.charVar }, {}, stmt.__id, { DRAG: drag })
+    }
+    case 'g3k:lookAt':
+      return block('sz_g3k_look_at', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
+    case 'g3k:moveForward': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_move_forward', { WHO: stmt.charVar }, {}, stmt.__id, { SPEED: speed })
+    }
+    case 'g3k:onEnterEntityState':
+      return block(
+        'sz_g3k_on_enter_entity_state',
+        { ITEM: stmt.itemName, MOLD: stmt.mold, STATE: stmt.state },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:onEntityStateUpdate':
+      return block(
+        'sz_g3k_on_entity_state_update',
+        { ITEM: stmt.itemName, MOLD: stmt.mold, STATE: stmt.state, DT: stmt.dtName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:onExitEntityState':
+      return block(
+        'sz_g3k_on_exit_entity_state',
+        { ITEM: stmt.itemName, MOLD: stmt.mold, STATE: stmt.state },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:setEntityState':
+      return block(
+        'sz_g3k_set_entity_state',
+        { CHAR: stmt.charVar, STATE: stmt.state },
+        {},
+        stmt.__id,
+      )
+    case 'g3k:stateTimer': {
+      const sec = exprToValueBlock(valueToExpr(stmt.sec))
+      return sec === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g3k_state_timer',
+            { MOLD: stmt.mold, STATE: stmt.state, NEXT: stmt.next },
+            {},
+            stmt.__id,
+            { SEC: sec },
+          )
+    }
+    case 'g3k:seek':
+      return block('sz_g3k_seek', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
+    case 'g3k:aimAt': {
+      const smooth = exprToValueBlock(valueToExpr(stmt.smooth))
+      return smooth === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_aim_at', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id, {
+            SMOOTH: smooth,
+          })
+    }
+    case 'g3k:faceVelocity':
+      return block('sz_g3k_face_velocity', { WHO: stmt.charVar }, {}, stmt.__id)
+    case 'g3k:forEachNear': {
+      const radius = exprToValueBlock(valueToExpr(stmt.radius))
+      return radius === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g3k_for_each_near',
+            { ITEM: stmt.itemName, MOLD: stmt.mold, CHAR: stmt.charVar },
+            { BODY: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            { RADIUS: radius },
+          )
+    }
+    case 'g3k:storeNearest':
+      return block(
+        'sz_g3k_store_nearest',
+        { NAME: stmt.varName, MOLD: stmt.mold, CHAR: stmt.charVar },
+        {},
+        stmt.__id,
+      )
+    case 'g3k:hurt': {
+      const amount = exprToValueBlock(valueToExpr(stmt.amount))
+      return amount === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_hurt', { WHO: stmt.charVar }, {}, stmt.__id, { AMOUNT: amount })
+    }
+    case 'g3k:onEntityDeath':
+      return block(
+        'sz_g3k_on_entity_death',
+        { ITEM: stmt.itemName, MOLD: stmt.mold },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:defineEffect': {
+      const count = exprToValueBlock(valueToExpr(stmt.count))
+      const spread = exprToValueBlock(valueToExpr(stmt.spread))
+      const s1 = exprToValueBlock(valueToExpr(stmt.sizeFrom))
+      const s2 = exprToValueBlock(valueToExpr(stmt.sizeTo))
+      const life = exprToValueBlock(valueToExpr(stmt.life))
+      const gravity = exprToValueBlock(valueToExpr(stmt.gravity))
+      return count === null ||
+        spread === null ||
+        s1 === null ||
+        s2 === null ||
+        life === null ||
+        gravity === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g3k_define_effect',
+            { NAME: stmt.name, C1: stmt.colorFrom, C2: stmt.colorTo },
+            {},
+            stmt.__id,
+            { COUNT: count, SPREAD: spread, S1: s1, S2: s2, LIFE: life, GRAVITY: gravity },
+          )
+    }
+    case 'g3k:burstAt': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || y === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_burst_at', { EFFECT: stmt.effect }, {}, stmt.__id, { X: x, Y: y, Z: z })
+    }
+    case 'g3k:burstOn':
+      return block('sz_g3k_burst_on', { EFFECT: stmt.effect, WHO: stmt.charVar }, {}, stmt.__id)
+    case 'g3k:setScreenText': {
+      const title = exprToValueBlock(valueToExpr(stmt.title))
+      const text = exprToValueBlock(valueToExpr(stmt.text))
+      const button = exprToValueBlock(valueToExpr(stmt.button))
+      return title === null || text === null || button === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_set_screen_text', { SCREEN: stmt.screen }, {}, stmt.__id, {
+            TITLE: title,
+            TEXT: text,
+            BTN: button,
+          })
+    }
+    case 'g3k:createScreen': {
+      const title = exprToValueBlock(valueToExpr(stmt.title))
+      const text = exprToValueBlock(valueToExpr(stmt.text))
+      return title === null || text === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_create_screen', { NAME: stmt.name }, {}, stmt.__id, {
+            TITLE: title,
+            TEXT: text,
+          })
+    }
+    case 'g3k:addButton': {
+      const label = exprToValueBlock(valueToExpr(stmt.label))
+      return label === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_g3k_add_button',
+            { SCREEN: stmt.screen },
+            { BODY: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            { LABEL: label },
+          )
+    }
+    case 'g3k:showScreen':
+      return block('sz_g3k_show_screen', { SCREEN: stmt.name }, {}, stmt.__id)
+    case 'g3k:hideScreens':
+      return block('sz_g3k_hide_screens', {}, {}, stmt.__id)
+    case 'g3k:hudText': {
+      const text = exprToValueBlock(valueToExpr(stmt.text))
+      return text === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_hud_text', { SLOT: stmt.slot }, {}, stmt.__id, { TEXT: text })
+    }
+    case 'g3k:setState':
+      return block('sz_g3k_set_state', { STATE: stmt.name }, {}, stmt.__id)
+    case 'g3k:onEnterState':
+      return block(
+        'sz_g3k_on_enter_state',
+        { STATE: stmt.name },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:returnToMenu':
+      return block('sz_g3k_return_to_menu', {}, {}, stmt.__id)
+    case 'g3k:endGame':
+      return block('sz_g3k_end_game', {}, {}, stmt.__id)
+    case 'g3k:onEvent':
+      return block(
+        'sz_g3k_on_event',
+        { NAME: stmt.event },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:emit':
+      return block('sz_g3k_emit', { NAME: stmt.event }, {}, stmt.__id)
+    case 'g3k:loadSound':
+      return block('sz_g3k_load_sound', { SOUND: stmt.asset, NAME: stmt.name }, {}, stmt.__id)
+    case 'g3k:playSound':
+      return block('sz_g3k_play_sound', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g3k:playEffect':
+      return block('sz_g3k_play_effect', { FX: stmt.fx }, {}, stmt.__id)
+    case 'g3k:playTone': {
+      const freq = exprToValueBlock(valueToExpr(stmt.freq))
+      const ms = exprToValueBlock(valueToExpr(stmt.ms))
+      return freq === null || ms === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_play_tone', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
+    }
     case 'classDecl': {
       const members: SerializedBlocklyBlock[] = []
       // Construtor só vira bloco se há parâmetros ou corpo (espelha o gerador).
@@ -4090,6 +4475,35 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_rpg_has_item', { NAME: expr.item })
     case 'gk:rpgBattleWon':
       return block('sz_gk_rpg_battle_won', {})
+    // ---- Jogo 3D Avançado (game-3d-advanced) ----
+    case 'g3k:worldSize':
+      return block('sz_g3k_world_size', {})
+    case 'g3k:countAlive':
+      return block('sz_g3k_count_alive', { MOLD: expr.mold })
+    case 'g3k:keyDown':
+      return block('sz_g3k_key_down', { KEY: expr.key })
+    case 'g3k:keyPressed':
+      return block('sz_g3k_key_pressed', { KEY: expr.key })
+    case 'g3k:posOf':
+      return block('sz_g3k_pos_of', { AXIS: expr.axis, CHAR: expr.charVar })
+    case 'g3k:exists':
+      return block('sz_g3k_exists', { CHAR: expr.charVar })
+    case 'g3k:entityStateIs':
+      return block('sz_g3k_entity_state_is', { CHAR: expr.charVar, STATE: expr.state })
+    case 'g3k:isAimingAt':
+      return block('sz_g3k_is_aiming_at', { A: expr.aVar, B: expr.bVar })
+    case 'g3k:touches': {
+      const dist = exprToValueBlock(valueToExpr(expr.dist))
+      return dist === null
+        ? null
+        : block('sz_g3k_touches', { A: expr.aVar, B: expr.bVar }, {}, expr.__id, { DIST: dist })
+    }
+    case 'g3k:healthOf':
+      return block('sz_g3k_health_of', { CHAR: expr.charVar })
+    case 'g3k:stateIs':
+      return block('sz_g3k_state_is', { STATE: expr.name })
+    case 'g3k:gameState':
+      return block('sz_g3k_game_state', {})
     case 'inputKeyPressed':
       return block('sz_input_key_pressed', { KEY: expr.key })
     case 'inputPointer':

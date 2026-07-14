@@ -3,6 +3,7 @@ import type { SZIR } from '#ir'
 import { G2D_SOCKET_SHADOW_TYPES } from '../../official-extensions/game-2d/blocks'
 import { GK_SOCKET_SHADOW_TYPES } from '../../official-extensions/game-2d-advanced/blocks'
 import { G3D_SOCKET_SHADOW_TYPES } from '../../official-extensions/game-3d/blocks'
+import { G3K_SOCKET_SHADOW_TYPES } from '../../official-extensions/game-3d-advanced/blocks'
 import { LEGACY_VALUE_FIELDS, restoreShadowLiterals } from '../migrateValueFields'
 import { buildWorkspaceStateFromIR, type SerializedBlocklyBlock } from '../workspaceState'
 
@@ -189,6 +190,7 @@ describe('drift: presets de sombra das extensões × LEGACY_VALUE_FIELDS', () =>
     ['game-2d', G2D_SOCKET_SHADOW_TYPES],
     ['game-2d-advanced', GK_SOCKET_SHADOW_TYPES],
     ['game-3d', G3D_SOCKET_SHADOW_TYPES],
+    ['game-3d-advanced', G3K_SOCKET_SHADOW_TYPES],
   ]
   for (const [label, map] of cases) {
     it(`todo soquete de sombra do ${label} está em LEGACY_VALUE_FIELDS com o kind casado`, () => {

@@ -366,6 +366,9 @@ export function resolveBlockLevel(type: string): BlockLevel {
   // Jogo 2D Avançado: TODOS os blocos são intermediários (decisão de produto —
   // apesar do nome, é a ponte entre o Jogo 2D facilitado e o código puro).
   if (type.startsWith('sz_gk_')) return 'intermediario'
+  // Jogo 3D Avançado: TODOS os blocos são AVANÇADOS (decisão de produto —
+  // é a base de engine profissional: FSM por entidade, pooling, grade espacial).
+  if (type.startsWith('sz_g3k_')) return 'avancado'
   return 'iniciante'
 }
 

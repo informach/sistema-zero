@@ -45,6 +45,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Aventura com câmera': '🎥',
   'Caça-moedas profissional': '🪙',
   'Arena dos Goblins': '👹',
+  'Defesa da Torre': '🏰',
   'Vila do Dragão': '👑',
   'Boneco de formas': '🪆',
   'Noite enevoada': '🌙',
