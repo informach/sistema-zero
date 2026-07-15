@@ -69,8 +69,14 @@ export type NameKind =
   | 'mold3d'
   | 'effect3d'
   | 'entitystate'
+  | 'region'
+  | 'pkmcreature'
+  | 'pkmtype'
 
 const NAME_KINDS: readonly NameKind[] = [
+  'region',
+  'pkmcreature',
+  'pkmtype',
   'variable',
   'group',
   'class',
@@ -181,8 +187,29 @@ const CHARACTER_DECL_BLOCKS: Record<string, string[]> = {
 function collectCharacters(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, CHARACTER_DECL_BLOCKS)
 }
-/** O "item" do "para cada vivo do molde" é um personagem LOCAL (escopo por ancestral). */
-const CHARACTER_LOOP_BINDERS: Record<string, string[]> = { sz_gk_for_each_active: ['ITEM'] }
+/** O "item" do "para cada vivo do molde" — e o par do "para cada que encostar" —
+ * são personagens LOCAIS (escopo por ancestral). */
+/** 👾 Kit Monstrinhos. ⭐ O tipo é TEXTO LIVRE (é o ponto: gelo, doce, dinossauro
+ * — não só os da Nintendo). Sem o seletor, a criança escreve "Fogo" na criatura e
+ * "fogo" na tabela → a vantagem NUNCA dispara, sem erro e sem aviso, e o jogo só
+ * fica "estranho". O runtime ainda normaliza (trim+minúsculas) como 2ª defesa. */
+const PKM_CREATURE_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_pkm_creature: ['NAME'],
+}
+const PKM_TYPE_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_pkm_creature: ['TYPE'],
+  sz_gk_pkm_move: ['TYPE'],
+  sz_gk_pkm_type_chart: ['A', 'B'],
+}
+/** 🧭 As regiões (R15). */
+const REGION_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_define_region: ['NAME'],
+}
+
+const CHARACTER_LOOP_BINDERS: Record<string, string[]> = {
+  sz_gk_for_each_active: ['ITEM'],
+  sz_gk_overlap_groups: ['A_NAME', 'B_NAME'],
+}
 
 /**
  * Telas do Jogo 2D Avançado: as 5 PRONTAS (sempre existem no runtime) + as que a
@@ -248,6 +275,15 @@ const SOUND_DECL_BLOCKS: Record<string, string[]> = {
 function collectSounds(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, SOUND_DECL_BLOCKS)
 }
+function collectRegions(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, REGION_DECL_BLOCKS)
+}
+function collectPkmCreatures(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, PKM_CREATURE_DECL_BLOCKS)
+}
+function collectPkmTypes(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, PKM_TYPE_DECL_BLOCKS)
+}
 
 /**
  * Avisos do event bus: "existem por USO" — tanto quem AVISA (emit) quanto quem
@@ -308,6 +344,8 @@ const ENTITY3D_LOOP_BINDERS: Record<string, string[]> = {
   sz_g3k_on_entity_state_update: ['ITEM'],
   sz_g3k_on_exit_entity_state: ['ITEM'],
   sz_g3k_on_entity_death: ['ITEM'],
+  // A zona e quem encostou nela são entidades LOCAIS do gancho de sobreposição.
+  sz_g3k_on_overlap: ['ZONE', 'WHO'],
 }
 
 /** Moldes 3D (a receita de peças) — fonte do seletor MOLD do kit 3D. */
@@ -448,6 +486,22 @@ interface KindUI {
 }
 
 const KIND_UI: Record<NameKind, KindUI> = {
+  region: {
+    icon: '🧭',
+    placeholder: 'nome da região',
+    empty: 'Nenhuma região ainda — crie uma com "Criar a região" (a grama alta, a porta…).',
+  },
+  pkmcreature: {
+    icon: '👾',
+    placeholder: 'nome da criatura',
+    empty: 'Nenhuma criatura ainda — crie uma com o bloco "Criatura".',
+  },
+  pkmtype: {
+    icon: '🔥',
+    placeholder: 'tipo (fogo, água…)',
+    empty:
+      'Nenhum tipo ainda — o tipo é INVENTADO por você: escreva o que quiser (fogo, gelo, doce, dinossauro) numa Criatura ou num golpe.',
+  },
   variable: {
     icon: '🔤',
     placeholder: 'nome da variável',
@@ -887,6 +941,12 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectLooks(ws)
       case 'sound':
         return collectSounds(ws)
+      case 'region':
+        return collectRegions(ws)
+      case 'pkmcreature':
+        return collectPkmCreatures(ws)
+      case 'pkmtype':
+        return collectPkmTypes(ws)
       case 'npc':
         return collectNpcs(ws)
       case 'flag':

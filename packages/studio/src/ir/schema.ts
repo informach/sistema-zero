@@ -224,6 +224,32 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:rpgXp' })
   // 🥷 Ação em tempo real: "o golpe de A acertou B?" (caixa de golpe à frente).
   | (JSExprCommon & { type: 'gk:didHit'; aVar: string; bVar: string })
+  // ⚙️ Física geral (R11): valores que o jogo INTEIRO precisa poder ler.
+  | (JSExprCommon & { type: 'gk:isOnGround'; charVar: string })
+  // 🧭 R15 — primitivos gerais
+  | (JSExprCommon & { type: 'gk:isInside'; charVar: string; region: string })
+  | (JSExprCommon & { type: 'gk:overlapPercent'; charVar: string; region: string })
+  | (JSExprCommon & { type: 'gk:chance'; percent: number | JSExpr })
+  | (JSExprCommon & { type: 'gk:distanceBetween'; a: string; b: string })
+  | (JSExprCommon & { type: 'gk:pointIn'; x: number | JSExpr; y: number | JSExpr; charVar: string })
+  | (JSExprCommon & { type: 'gk:opacityOf'; charVar: string })
+  | (JSExprCommon & { type: 'gk:savedValue'; name: string })
+  // 👾 R16 — Kit Monstrinhos
+  | (JSExprCommon & { type: 'gk:pkmLevelOf'; creature: string })
+  | (JSExprCommon & { type: 'gk:pkmHas'; creature: string })
+  | (JSExprCommon & { type: 'gk:pkmTeamSize' })
+  | (JSExprCommon & { type: 'gk:pkmBallCount' })
+  | (JSExprCommon & { type: 'gk:pkmCaught' })
+  | (JSExprCommon & { type: 'gk:velocityOf'; charVar: string; axis: string })
+  | (JSExprCommon & { type: 'gk:propertyOf'; charVar: string; prop: string })
+  | (JSExprCommon & { type: 'gk:facingOf'; charVar: string })
+  | (JSExprCommon & { type: 'gk:cooldownReady'; charVar: string; seconds: number | JSExpr })
+  | (JSExprCommon & {
+      type: 'gk:tileAt'
+      map: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
   // Jogo 3D Avançado (extensão game-3d-advanced) — valores: mundo, enxames,
   // teclas, posição/vida/estado da entidade, mira e colisão por distância.
   | (JSExprCommon & { type: 'g3k:worldSize' })
@@ -244,6 +270,10 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3k:entityValue'; key: string; charVar: string })
   | (JSExprCommon & { type: 'g3k:stateTime'; charVar: string })
   | (JSExprCommon & { type: 'g3k:onGround'; charVar: string })
+  | (JSExprCommon & { type: 'g3k:velocityOf'; charVar: string; axis: 'x' | 'y' | 'z' })
+  | (JSExprCommon & { type: 'g3k:distanceBetween'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'g3k:maxHealthOf'; charVar: string })
+  | (JSExprCommon & { type: 'g3k:stateOf'; charVar: string })
   // Mira/clique no mundo: mouse sobre a entidade (bool) e ponto do chão (núm).
   | (JSExprCommon & { type: 'g3k:pointerOver'; charVar: string })
   | (JSExprCommon & { type: 'g3k:groundPoint'; axis: 'x' | 'y' | 'z' })
@@ -601,6 +631,50 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:rpgLevel'), ...idField }),
     z.object({ type: z.literal('gk:rpgXp'), ...idField }),
     z.object({ type: z.literal('gk:didHit'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:isOnGround'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:isInside'), charVar: irText(), region: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:overlapPercent'),
+      charVar: irText(),
+      region: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:chance'),
+      percent: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:distanceBetween'), a: irText(), b: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:pointIn'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      charVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:opacityOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:savedValue'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:pkmLevelOf'), creature: irText(), ...idField }),
+    z.object({ type: z.literal('gk:pkmHas'), creature: irText(), ...idField }),
+    z.object({ type: z.literal('gk:pkmTeamSize'), ...idField }),
+    z.object({ type: z.literal('gk:pkmBallCount'), ...idField }),
+    z.object({ type: z.literal('gk:pkmCaught'), ...idField }),
+    z.object({ type: z.literal('gk:velocityOf'), charVar: irText(), axis: irText(), ...idField }),
+    z.object({ type: z.literal('gk:propertyOf'), charVar: irText(), prop: irText(), ...idField }),
+    z.object({ type: z.literal('gk:facingOf'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:cooldownReady'),
+      charVar: irText(),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:tileAt'),
+      map: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({ type: z.literal('g3k:worldSize'), ...idField }),
     z.object({ type: z.literal('g3k:countAlive'), mold: irText(), ...idField }),
     z.object({ type: z.literal('g3k:keyDown'), key: irText(), ...idField }),
@@ -627,6 +701,20 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g3k:entityValue'), key: irText(), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:stateTime'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:onGround'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:velocityOf'),
+      charVar: irText(),
+      axis: z.enum(['x', 'y', 'z']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:distanceBetween'),
+      aVar: irText(),
+      bVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:maxHealthOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:stateOf'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:pointerOver'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:groundPoint'), axis: z.enum(['x', 'y', 'z']), ...idField }),
     z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
@@ -2608,6 +2696,275 @@ export type JSStatement =
       intensity: number | JSExpr
       seconds: number | JSExpr
     })
+  // ⚙️ Física GERAL (R11): gravidade/pulo/chão, colisão sólida, bordas, tempo,
+  // peça por célula, propriedade da entidade e tween. Fora de todo kit.
+  | (JSStatementCommon & {
+      type: 'gk:applyGravity'
+      charVar: string
+      g: number | JSExpr
+      dtVar: string
+    })
+  | (JSStatementCommon & { type: 'gk:jump'; charVar: string; force: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:setVelocity'
+      charVar: string
+      vx: number | JSExpr
+      vy: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:setTerminalVelocity'
+      charVar: string
+      max: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:bounceOnEdges'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:wrapEdges'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:collideTilemap'; charVar: string; map: string })
+  | (JSStatementCommon & { type: 'gk:collideGroup'; charVar: string; mold: string })
+  | (JSStatementCommon & {
+      type: 'gk:overlapGroups'
+      aName: string
+      moldA: string
+      bName: string
+      moldB: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'gk:everySeconds'
+      seconds: number | JSExpr
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'gk:setTileSize'; px: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:setTileAt'
+      map: string
+      x: number | JSExpr
+      y: number | JSExpr
+      index: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:breakTileAt'; map: string; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:setProperty'
+      charVar: string
+      prop: string
+      value: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:setFacingDir'; charVar: string; dir: string })
+  | (JSStatementCommon & {
+      type: 'gk:tweenTo'
+      charVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      seconds: number | JSExpr
+    })
+  // 🏃 Kit Plataforma: o atalho do gênero (Mario/Celeste/Sunnyland) — herói
+  // tudo-em-um com feel, plataformas, pisar no inimigo, escada, wall jump.
+  | (JSStatementCommon & {
+      type: 'gk:platformerHero'
+      charVar: string
+      speed: number | JSExpr
+      force: number | JSExpr
+      dtVar: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:setJumpFeel'
+      coyote: number | JSExpr
+      buffer: number | JSExpr
+      hold: number | JSExpr
+      gravity: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:doubleJump'
+      charVar: string
+      force: number | JSExpr
+      times: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:wallSlide'; charVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:wallJump'
+      charVar: string
+      forceX: number | JSExpr
+      forceY: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:climbLadder'
+      charVar: string
+      map: string
+      tile: number | JSExpr
+      speed: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:oneWayPlatform'
+      charVar: string
+      mold: string
+      dtVar: string
+    })
+  | (JSStatementCommon & { type: 'gk:dropThrough'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:movingPlatform'
+      charVar: string
+      x1: number | JSExpr
+      y1: number | JSExpr
+      x2: number | JSExpr
+      y2: number | JSExpr
+      seconds: number | JSExpr
+      dtVar: string
+    })
+  | (JSStatementCommon & { type: 'gk:rideOn'; charVar: string; mold: string })
+  | (JSStatementCommon & {
+      type: 'gk:stompKill'
+      charVar: string
+      mold: string
+      bounce: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:patrolTurnAtWall'; charVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:setCheckpoint'; x: number | JSExpr; y: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:respawn'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:platStateFrames'
+      charVar: string
+      state: string
+      from: number | JSExpr
+      to: number | JSExpr
+      fps: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:platformerAnim'; charVar: string })
+  // 🧭 R15 — primitivos gerais (fora de todo kit)
+  | (JSStatementCommon & {
+      type: 'gk:defineRegion'
+      name: string
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:launchToPoint'
+      charVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      speed: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:setVelocityAngle'
+      charVar: string
+      degrees: number | JSExpr
+      force: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:setOpacity'; charVar: string; percent: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:fadeTo'
+      charVar: string
+      percent: number | JSExpr
+      seconds: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:tweenProperty'
+      charVar: string
+      prop: string
+      to: number | JSExpr
+      seconds: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:setHitbox'
+      charVar: string
+      ox: number | JSExpr
+      oy: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:fadeScreen'
+      color: string
+      seconds: number | JSExpr
+      toDark: boolean
+    })
+  | (JSStatementCommon & { type: 'gk:flashScreen'; color: string; times: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:saveValue'; name: string; value: JSExpr })
+  | (JSStatementCommon & { type: 'gk:playMusic'; sound: string })
+  | (JSStatementCommon & { type: 'gk:stopSound'; sound: string })
+  | (JSStatementCommon & { type: 'gk:setVolume'; sound: string; level: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:createEmptyTilemap'
+      name: string
+      cols: number | JSExpr
+      rows: number | JSExpr
+      fill: number | JSExpr
+      asset: string
+    })
+  // 👾 R16 — Kit Monstrinhos (o atalho do gênero "pegue e treine bichinhos")
+  | (JSStatementCommon & {
+      type: 'gk:pkmCreature'
+      name: string
+      creatureType: string
+      hp: number | JSExpr
+      str: number | JSExpr
+      def: number | JSExpr
+      spd: number | JSExpr
+      image: string
+      look: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:pkmMove'
+      move: string
+      creature: string
+      moveType: string
+      dmg: number | JSExpr
+      acc: number | JSExpr
+      fx: string
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:pkmTypeChart'
+      atk: string
+      def: string
+      mult: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:pkmEvolve'
+      from: string
+      to: string
+      level: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:pkmCatchDifficulty'; creature: string; level: string })
+  | (JSStatementCommon & { type: 'gk:pkmGive'; creature: string; level: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:pkmGiveBall'
+      count: number | JSExpr
+      power: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:pkmHealTeam' })
+  | (JSStatementCommon & { type: 'gk:pkmDrawTeam'; x: number | JSExpr; y: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:pkmGrassCells'
+      x1: number | JSExpr
+      y1: number | JSExpr
+      x2: number | JSExpr
+      y2: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:pkmGrassTiles'; index: number | JSExpr; map: string })
+  | (JSStatementCommon & {
+      type: 'gk:pkmWild'
+      creature: string
+      min: number | JSExpr
+      max: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:pkmEncounterRate'; percent: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:pkmBattleWild'; creature: string; level: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:pkmBattleTrainer'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'gk:pkmTrainerCreature'
+      creature: string
+      level: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:moveWithCustomKeys'
+      charVar: string
+      up: string
+      down: string
+      left: string
+      right: string
+      dtVar: string
+    })
   // 🥷 Ação em tempo real (Zelda): golpe na direção + inimigo que patrulha + corações.
   | (JSStatementCommon & {
       type: 'gk:attackFacing'
@@ -2803,6 +3160,7 @@ export type JSStatement =
       material: string
       color: string
       texture: string
+      model: string
       w: number | JSExpr
       h: number | JSExpr
       d: number | JSExpr
@@ -2893,6 +3251,19 @@ export type JSStatement =
       speed: number | JSExpr
       jump: number | JSExpr
     })
+  | (JSStatementCommon & { type: 'g3k:setCollider'; mold: string; shape: string })
+  | (JSStatementCommon & { type: 'g3k:passThrough'; charVar: string; ghost: boolean })
+  | (JSStatementCommon & { type: 'g3k:makeTrigger'; mold: string })
+  | (JSStatementCommon & { type: 'g3k:setSeed'; seed: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3k:onOverlap'
+      mold: string
+      zoneName: string
+      whoName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g3k:setBounce'; mold: string; amount: number | JSExpr })
+  | (JSStatementCommon & { type: 'g3k:setFriction'; mold: string; amount: number | JSExpr })
   // 💡 Luz & céu (atmosfera).
   | (JSStatementCommon & {
       type: 'g3k:addLight'
@@ -2910,6 +3281,7 @@ export type JSStatement =
       far: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3k:setSky'; top: string; bottom: string })
+  | (JSStatementCommon & { type: 'g3k:setSkyPhoto'; photo: string })
   // 🖱️ Mira/clique no mundo: guardar a entidade sob o mouse + câmera 1ª pessoa.
   | (JSStatementCommon & { type: 'g3k:pick'; varName: string; mold: string })
   | (JSStatementCommon & { type: 'g3k:cameraFps'; charVar: string })
@@ -2927,6 +3299,7 @@ export type JSStatement =
       cone: number | JSExpr
       gravity: number | JSExpr
       glow: boolean
+      curve: string
     })
   | (JSStatementCommon & {
       type: 'g3k:startEmitter'
@@ -5339,6 +5712,382 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:applyGravity'),
+      charVar: irText(),
+      g: z.union([JSExprSchema, z.number()]),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:jump'),
+      charVar: irText(),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setVelocity'),
+      charVar: irText(),
+      vx: z.union([JSExprSchema, z.number()]),
+      vy: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setTerminalVelocity'),
+      charVar: irText(),
+      max: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:bounceOnEdges'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:wrapEdges'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:collideTilemap'),
+      charVar: irText(),
+      map: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:collideGroup'), charVar: irText(), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:overlapGroups'),
+      aName: irText(),
+      moldA: irText(),
+      bName: irText(),
+      moldB: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:everySeconds'),
+      seconds: z.union([JSExprSchema, z.number()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setTileSize'),
+      px: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setTileAt'),
+      map: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      index: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:breakTileAt'), map: irText(), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:setProperty'),
+      charVar: irText(),
+      prop: irText(),
+      value: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:setFacingDir'), charVar: irText(), dir: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:tweenTo'),
+      charVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    // 🏃 Kit Plataforma
+    z.object({
+      type: z.literal('gk:platformerHero'),
+      charVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      force: z.union([JSExprSchema, z.number()]),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setJumpFeel'),
+      coyote: z.union([JSExprSchema, z.number()]),
+      buffer: z.union([JSExprSchema, z.number()]),
+      hold: z.union([JSExprSchema, z.number()]),
+      gravity: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:doubleJump'),
+      charVar: irText(),
+      force: z.union([JSExprSchema, z.number()]),
+      times: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:wallSlide'),
+      charVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:wallJump'),
+      charVar: irText(),
+      forceX: z.union([JSExprSchema, z.number()]),
+      forceY: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:climbLadder'),
+      charVar: irText(),
+      map: irText(),
+      tile: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:oneWayPlatform'),
+      charVar: irText(),
+      mold: irText(),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:dropThrough'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:movingPlatform'),
+      charVar: irText(),
+      x1: z.union([JSExprSchema, z.number()]),
+      y1: z.union([JSExprSchema, z.number()]),
+      x2: z.union([JSExprSchema, z.number()]),
+      y2: z.union([JSExprSchema, z.number()]),
+      seconds: z.union([JSExprSchema, z.number()]),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rideOn'), charVar: irText(), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:stompKill'),
+      charVar: irText(),
+      mold: irText(),
+      bounce: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:patrolTurnAtWall'),
+      charVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setCheckpoint'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:respawn'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:platStateFrames'),
+      charVar: irText(),
+      state: irText(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:platformerAnim'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:defineRegion'),
+      name: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:launchToPoint'),
+      charVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setVelocityAngle'),
+      charVar: irText(),
+      degrees: z.union([JSExprSchema, z.number()]),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setOpacity'),
+      charVar: irText(),
+      percent: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:fadeTo'),
+      charVar: irText(),
+      percent: z.union([JSExprSchema, z.number()]),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:tweenProperty'),
+      charVar: irText(),
+      prop: irText(),
+      to: z.union([JSExprSchema, z.number()]),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setHitbox'),
+      charVar: irText(),
+      ox: z.union([JSExprSchema, z.number()]),
+      oy: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:fadeScreen'),
+      color: irText(),
+      seconds: z.union([JSExprSchema, z.number()]),
+      toDark: z.boolean(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:flashScreen'),
+      color: irText(),
+      times: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:saveValue'), name: irText(), value: JSExprSchema, ...idField }),
+    z.object({ type: z.literal('gk:playMusic'), sound: irText(), ...idField }),
+    z.object({ type: z.literal('gk:stopSound'), sound: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:setVolume'),
+      sound: irText(),
+      level: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:createEmptyTilemap'),
+      name: irText(),
+      cols: z.union([JSExprSchema, z.number()]),
+      rows: z.union([JSExprSchema, z.number()]),
+      fill: z.union([JSExprSchema, z.number()]),
+      asset: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmCreature'),
+      name: irText(),
+      creatureType: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      def: z.union([JSExprSchema, z.number()]),
+      spd: z.union([JSExprSchema, z.number()]),
+      image: irText(),
+      look: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmMove'),
+      move: irText(),
+      creature: irText(),
+      moveType: irText(),
+      dmg: z.union([JSExprSchema, z.number()]),
+      acc: z.union([JSExprSchema, z.number()]),
+      fx: irText(),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmTypeChart'),
+      atk: irText(),
+      def: irText(),
+      mult: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmEvolve'),
+      from: irText(),
+      to: irText(),
+      level: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmCatchDifficulty'),
+      creature: irText(),
+      level: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmGive'),
+      creature: irText(),
+      level: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmGiveBall'),
+      count: z.union([JSExprSchema, z.number()]),
+      power: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:pkmHealTeam'), ...idField }),
+    z.object({
+      type: z.literal('gk:pkmDrawTeam'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmGrassCells'),
+      x1: z.union([JSExprSchema, z.number()]),
+      y1: z.union([JSExprSchema, z.number()]),
+      x2: z.union([JSExprSchema, z.number()]),
+      y2: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmGrassTiles'),
+      index: z.union([JSExprSchema, z.number()]),
+      map: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmWild'),
+      creature: irText(),
+      min: z.union([JSExprSchema, z.number()]),
+      max: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmEncounterRate'),
+      percent: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmBattleWild'),
+      creature: irText(),
+      level: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmBattleTrainer'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pkmTrainerCreature'),
+      creature: irText(),
+      level: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:moveWithCustomKeys'),
+      charVar: irText(),
+      up: irText(),
+      down: irText(),
+      left: irText(),
+      right: irText(),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:attackFacing'),
       charVar: irText(),
       range: z.union([JSExprSchema, z.number()]),
@@ -5582,6 +6331,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       material: irText(),
       color: irText(),
       texture: irText(),
+      model: irText(),
       w: z.union([JSExprSchema, z.number()]),
       h: z.union([JSExprSchema, z.number()]),
       d: z.union([JSExprSchema, z.number()]),
@@ -5733,6 +6483,39 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       jump: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({ type: z.literal('g3k:setCollider'), mold: irText(), shape: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:passThrough'),
+      charVar: irText(),
+      ghost: z.boolean(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:makeTrigger'), mold: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:setSeed'),
+      seed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:onOverlap'),
+      mold: irText(),
+      zoneName: irText(),
+      whoName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setBounce'),
+      mold: irText(),
+      amount: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:setFriction'),
+      mold: irText(),
+      amount: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g3k:addLight'),
       color: irText(),
@@ -5755,6 +6538,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g3k:setSky'), top: irText(), bottom: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:setSkyPhoto'), photo: irText(), ...idField }),
     z.object({ type: z.literal('g3k:pick'), varName: irText(), mold: irText(), ...idField }),
     z.object({ type: z.literal('g3k:cameraFps'), charVar: irText(), ...idField }),
     z.object({
@@ -5775,6 +6559,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       cone: z.union([JSExprSchema, z.number()]),
       gravity: z.union([JSExprSchema, z.number()]),
       glow: z.boolean(),
+      curve: irText(),
       ...idField,
     }),
     z.object({
@@ -6552,6 +7337,69 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:drawShadow',
   'gk:drawByDepth',
   'gk:cameraShake',
+  'gk:applyGravity',
+  'gk:jump',
+  'gk:setVelocity',
+  'gk:setTerminalVelocity',
+  'gk:bounceOnEdges',
+  'gk:wrapEdges',
+  'gk:collideTilemap',
+  'gk:collideGroup',
+  'gk:overlapGroups',
+  'gk:everySeconds',
+  'gk:setTileSize',
+  'gk:setTileAt',
+  'gk:breakTileAt',
+  'gk:setProperty',
+  'gk:setFacingDir',
+  'gk:tweenTo',
+  'gk:platformerHero',
+  'gk:setJumpFeel',
+  'gk:doubleJump',
+  'gk:wallSlide',
+  'gk:wallJump',
+  'gk:climbLadder',
+  'gk:oneWayPlatform',
+  'gk:dropThrough',
+  'gk:movingPlatform',
+  'gk:rideOn',
+  'gk:stompKill',
+  'gk:patrolTurnAtWall',
+  'gk:setCheckpoint',
+  'gk:respawn',
+  'gk:platStateFrames',
+  'gk:platformerAnim',
+  'gk:defineRegion',
+  'gk:launchToPoint',
+  'gk:setVelocityAngle',
+  'gk:setOpacity',
+  'gk:fadeTo',
+  'gk:tweenProperty',
+  'gk:setHitbox',
+  'gk:fadeScreen',
+  'gk:flashScreen',
+  'gk:saveValue',
+  'gk:playMusic',
+  'gk:stopSound',
+  'gk:setVolume',
+  'gk:createEmptyTilemap',
+  'gk:moveWithCustomKeys',
+  'gk:pkmCreature',
+  'gk:pkmMove',
+  'gk:pkmTypeChart',
+  'gk:pkmEvolve',
+  'gk:pkmCatchDifficulty',
+  'gk:pkmGive',
+  'gk:pkmGiveBall',
+  'gk:pkmHealTeam',
+  'gk:pkmDrawTeam',
+  'gk:pkmGrassCells',
+  'gk:pkmGrassTiles',
+  'gk:pkmWild',
+  'gk:pkmEncounterRate',
+  'gk:pkmBattleWild',
+  'gk:pkmBattleTrainer',
+  'gk:pkmTrainerCreature',
   'gk:attackFacing',
   'gk:patrolAround',
   'gk:drawHearts',
@@ -6628,10 +7476,18 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:jump',
   'g3k:makeSolid',
   'g3k:platformerKeys',
+  'g3k:setCollider',
+  'g3k:passThrough',
+  'g3k:makeTrigger',
+  'g3k:setSeed',
+  'g3k:onOverlap',
+  'g3k:setBounce',
+  'g3k:setFriction',
   'g3k:addLight',
   'g3k:setAmbient',
   'g3k:setFog',
   'g3k:setSky',
+  'g3k:setSkyPhoto',
   'g3k:pick',
   'g3k:cameraFps',
   'g3k:moveFps',

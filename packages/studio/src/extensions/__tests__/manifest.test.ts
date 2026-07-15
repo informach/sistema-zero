@@ -36,7 +36,10 @@ describe('ExtensionManifestSchema', () => {
   })
 
   it('rejeita docs absurdamente grande', () => {
-    expect(() => validateManifest({ ...validManifest, docs: 'x'.repeat(20_001) })).toThrow()
+    // O teto subiu 20k → 32k: DUAS extensões oficiais já batiam nele, e aí cada
+    // kit novo custava enxugar seção antiga em vez de explicar melhor.
+    expect(() => validateManifest({ ...validManifest, docs: 'x'.repeat(32_001) })).toThrow()
+    expect(() => validateManifest({ ...validManifest, docs: 'x'.repeat(32_000) })).not.toThrow()
   })
 
   it('valida ExtensionManifestSchema parse de raw object', () => {

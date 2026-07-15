@@ -394,6 +394,43 @@ export function compileExpr(
       return `SZGameKit.touchCircle(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'gk:didHit':
       return `SZGameKit.didHit(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'gk:isOnGround':
+      return `SZGameKit.isOnGround(${identifiers.get(expr.charVar)})`
+    case 'gk:isInside':
+      return `SZGameKit.isInside(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.region)})`
+    case 'gk:overlapPercent':
+      return `SZGameKit.overlapPercent(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.region)})`
+    case 'gk:chance':
+      return `SZGameKit.chance(${compileExpr(valueToExpr(expr.percent), 0, identifiers, rec)})`
+    case 'gk:distanceBetween':
+      return `SZGameKit.distanceBetween(${identifiers.get(expr.a)}, ${identifiers.get(expr.b)})`
+    case 'gk:pointIn':
+      return `SZGameKit.pointIn(${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)}, ${identifiers.get(expr.charVar)})`
+    case 'gk:opacityOf':
+      return `SZGameKit.opacityOf(${identifiers.get(expr.charVar)})`
+    case 'gk:savedValue':
+      return `SZGameKit.savedValue(${JSON.stringify(expr.name)})`
+    // 👾 R16
+    case 'gk:pkmLevelOf':
+      return `SZGameKit.pkmLevelOf(${JSON.stringify(expr.creature)})`
+    case 'gk:pkmHas':
+      return `SZGameKit.pkmHas(${JSON.stringify(expr.creature)})`
+    case 'gk:pkmTeamSize':
+      return 'SZGameKit.pkmTeamSize()'
+    case 'gk:pkmBallCount':
+      return 'SZGameKit.pkmBallCount()'
+    case 'gk:pkmCaught':
+      return 'SZGameKit.pkmCaught()'
+    case 'gk:velocityOf':
+      return `SZGameKit.velocityOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.axis)})`
+    case 'gk:propertyOf':
+      return `SZGameKit.propertyOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.prop)})`
+    case 'gk:facingOf':
+      return `SZGameKit.facingOf(${identifiers.get(expr.charVar)})`
+    case 'gk:cooldownReady':
+      return `SZGameKit.cooldownReady(${identifiers.get(expr.charVar)}, ${compileExpr(valueToExpr(expr.seconds), 0, identifiers, rec)})`
+    case 'gk:tileAt':
+      return `SZGameKit.tileAt(${JSON.stringify(expr.map)}, ${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)})`
     case 'gk:isDead':
       return `SZGameKit.isDead(${identifiers.get(expr.charVar)})`
     case 'gk:isInvincible':
@@ -455,6 +492,14 @@ export function compileExpr(
       return `SZGameKit3D.stateTime(${identifiers.get(expr.charVar)})`
     case 'g3k:onGround':
       return `SZGameKit3D.onGround(${identifiers.get(expr.charVar)})`
+    case 'g3k:velocityOf':
+      return `SZGameKit3D.velocityOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.axis)})`
+    case 'g3k:distanceBetween':
+      return `SZGameKit3D.distanceBetween(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3k:maxHealthOf':
+      return `SZGameKit3D.maxHealthOf(${identifiers.get(expr.charVar)})`
+    case 'g3k:stateOf':
+      return `SZGameKit3D.stateOf(${identifiers.get(expr.charVar)})`
     case 'g3k:pointerOver':
       return `SZGameKit3D.pointerOver(${identifiers.get(expr.charVar)})`
     case 'g3k:groundPoint':

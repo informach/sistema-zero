@@ -1653,6 +1653,1192 @@ export const gameKitBlocks = [
       'Dá um tremor na tela por alguns instantes (impacto, explosão, o chefe pisando). A "força" é o quanto sacode em pixels. Funciona com a câmera ligada ou desligada.',
   },
 
+  // ==========================================================================
+  // ⚙️ FÍSICA GERAL + 🧱 COLISÃO + ⏱️ TEMPO + 🗺️ PEÇAS + 🔧 PROPRIEDADES
+  // Primitivos que valem em QUALQUER jogo — ficam FORA de todo kit. É com eles
+  // que se faz plataforma/quicar/arco "na unha", com mais blocos e mais lógica.
+  // ==========================================================================
+  {
+    type: 'sz_gk_apply_gravity',
+    message0: 'Aplicar a gravidade em %1 com força %2 usando o tempo %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'G', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Puxa o personagem para baixo a cada quadro (2160 é o padrão dos jogos). É o PASSO 1 da receita: gravidade → mover pela velocidade → colidir. Este bloco também DESLIGA o "está no chão" — só o pouso da colisão liga de volta.',
+  },
+  {
+    type: 'sz_gk_jump',
+    message0: 'Fazer %1 pular com força %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'FORCE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Só funciona se o personagem estiver NO CHÃO — é isso que impede o pulo infinito (o erro nº 1 dos tutoriais de jogo).',
+  },
+  {
+    type: 'sz_gk_is_on_ground',
+    message0: '%1 está no chão?',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro no quadro em que o personagem pousou. Quem liga é o bloco de colidir; quem desliga é a gravidade.',
+  },
+  {
+    type: 'sz_gk_set_velocity',
+    message0: 'Definir a velocidade de %1: x %2 y %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'VX', check: 'JSValue' },
+      { type: 'input_value', name: 'VY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escreve para onde o personagem vai (em pixels por segundo). Depois use "Mover pela velocidade" para ele andar de verdade.',
+  },
+  {
+    type: 'sz_gk_velocity_of',
+    message0: 'a velocidade %2 de %1',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'AXIS',
+        options: [
+          ['x', 'x'],
+          ['y', 'y'],
+        ],
+      },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'LÊ a velocidade. É o que destrava o resto: "se a velocidade y de heroi > 0, tocar a animação de cair", quicar, saber para que lado o tiro vai.',
+  },
+  {
+    type: 'sz_gk_set_terminal_velocity',
+    message0: 'Velocidade máxima de queda de %1: %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O limite da queda livre (padrão 900). Existe nos jogos de verdade e também impede o personagem de atravessar o chão numa queda muito longa.',
+  },
+  {
+    type: 'sz_gk_bounce_on_edges',
+    message0: 'Fazer %1 quicar nas bordas',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'bola', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Bateu na borda, volta — a bolinha do pong e do breakout.',
+  },
+  {
+    type: 'sz_gk_wrap_edges',
+    message0: 'Fazer %1 atravessar para o outro lado',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Saiu por um lado, aparece no outro — o Pac-Man e o Asteroids.',
+  },
+  {
+    type: 'sz_gk_collide_tilemap',
+    message0: 'Fazer %1 colidir com o mapa %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O personagem PARA nas peças sólidas do mapa (chão, parede, teto). Empurra pelo lado de menor sobreposição, zera a velocidade daquele eixo e marca "no chão" ao pousar. É o PASSO 3 da receita — ponha depois de mover.',
+  },
+  {
+    type: 'sz_gk_collide_group',
+    message0: 'Fazer %1 colidir com o enxame %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'chao', kind: 'mold' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O mesmo que colidir com o mapa, mas contra os vivos de um molde (plataformas, caixas, pedras) — sem precisar de mapa nenhum.',
+  },
+  {
+    type: 'sz_gk_overlap_groups',
+    message0: 'Para cada %1 do molde %2 que encostar em %3 do molde %4, fazer %5',
+    args0: [
+      { type: 'field_input', name: 'A_NAME', text: 'tiro' },
+      { type: 'field_name_picker', name: 'MOLD_A', text: 'tiro', kind: 'mold' },
+      { type: 'field_input', name: 'B_NAME', text: 'alvo' },
+      { type: 'field_name_picker', name: 'MOLD_B', text: 'inimigo', kind: 'mold' },
+      { type: 'input_statement', name: 'BODY', check: 'JSStmt' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos para o PAR que se tocou (tiro × inimigo, herói × moeda). Pode recolher os dois lá dentro com segurança.',
+  },
+  {
+    type: 'sz_gk_every_seconds',
+    message0: 'A cada %1 s, fazer %2',
+    args0: [
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+      { type: 'input_statement', name: 'BODY', check: 'JSStmt' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Repete de tempo em tempo (nascer inimigo, piscar). Conta o tempo do JOGO: se pausar, para de contar — um relógio de parede erraria.',
+  },
+  {
+    type: 'sz_gk_cooldown_ready',
+    message0: '%1 pode agir de novo (a cada %2 s)?',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O "recarregando" do tiro e do golpe: verdadeiro só quando o tempo passou — e já reinicia a contagem sozinho.',
+  },
+  {
+    type: 'sz_gk_tile_at',
+    message0: 'a peça do mapa %1 em x %2 y %3',
+    args0: [
+      { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Que peça está naquele ponto do mundo (-1 = vazio). Ex.: "se a peça em x/y é 3 (espinho), machucar".',
+  },
+  {
+    type: 'sz_gk_set_tile_at',
+    message0: 'Trocar a peça do mapa %1 em x %2 y %3 para %4',
+    args0: [
+      { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Muda o mapa em jogo: a porta que abre, o bloco que vira escada, o chão que racha.',
+  },
+  {
+    type: 'sz_gk_break_tile_at',
+    message0: 'Quebrar a peça do mapa %1 onde %2 está',
+    args0: [
+      { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Apaga a peça que está no centro do personagem — o mundo destrutível (cavar, minerar).',
+  },
+  {
+    type: 'sz_gk_set_tile_size',
+    message0: 'Tamanho da peça do mapa: %1',
+    args0: [{ type: 'input_value', name: 'PX', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'A escala do mapa em pixels (padrão 64). Vale para desenhar, colidir e ler as peças.',
+  },
+  {
+    type: 'sz_gk_property_of',
+    message0: 'a propriedade %2 de %1',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'PROP',
+        options: [
+          ['x', 'x'],
+          ['y', 'y'],
+          ['velocidade x', 'vx'],
+          ['velocidade y', 'vy'],
+          ['velocidade', 'speed'],
+          ['largura', 'w'],
+          ['altura', 'h'],
+          ['vida', 'health'],
+        ],
+      },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Lê qualquer coisa do personagem. É a chave-mestra: o que não tem bloco pronto, sai daqui.',
+  },
+  {
+    type: 'sz_gk_set_property',
+    message0: 'Mudar a propriedade %2 de %1 para %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'PROP',
+        options: [
+          ['x', 'x'],
+          ['y', 'y'],
+          ['velocidade x', 'vx'],
+          ['velocidade y', 'vy'],
+          ['velocidade', 'speed'],
+          ['largura', 'w'],
+          ['altura', 'h'],
+          ['vida', 'health'],
+        ],
+      },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escreve qualquer coisa do personagem. Mudar x/y aqui é um TELEPORTE (porta, cano) — o motor cuida para a colisão não arrastar de volta.',
+  },
+  {
+    type: 'sz_gk_set_facing',
+    message0: 'Fazer %1 olhar para %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'DIR',
+        options: [
+          ['baixo', 'down'],
+          ['cima', 'up'],
+          ['esquerda', 'left'],
+          ['direita', 'right'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A direção move DUAS coisas de uma vez: a linha da folha de andar e a caixa do golpe. Por isso existe um bloco só para ela.',
+  },
+  {
+    type: 'sz_gk_facing_of',
+    message0: '%1 está olhando para onde?',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Devolve "baixo", "cima", "esquerda" ou "direita".',
+  },
+  {
+    type: 'sz_gk_tween_to',
+    message0: 'Mover %1 suavemente até x %2 y %3 em %4 s',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desliza o personagem até o ponto, começando e terminando devagarzinho (não é um teleporte). Ótimo para trocar peças de lugar, mover a plataforma, animar o menu. Chame UMA vez.',
+  },
+  // ==========================================================================
+  // 🏃 Kit Plataforma — o atalho do gênero. Pela REGRA: o que é geral (gravidade,
+  // colidir, pular, tiles) mora FORA, em ⚙️ Física / 🧱 Colisão; aqui só entra o
+  // que SÓ existe em jogo de plataforma.
+  // ==========================================================================
+  {
+    type: 'sz_gk_plat_hero',
+    message0: 'Herói de plataforma %1 velocidade %2 pulo %3 usando o tempo %4',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'JUMP', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Tudo-em-um do plataforma: gravidade + andar com as setas (ou A/D) + pular (espaço, W ou ↑) + mover — com o pulo GOSTOSO já embutido (coyote, buffer e pulo variável). Ponha no "A cada quadro" e, LOGO DEPOIS, o bloco de colidir com o mapa (ou com o enxame): é a ordem de verdade.',
+  },
+  {
+    type: 'sz_gk_plat_jump_feel',
+    message0: 'Regular o pulo: coyote %1 s, buffer %2 s, segurar %3 s, gravidade %4',
+    args0: [
+      { type: 'input_value', name: 'COYOTE', check: 'JSValue' },
+      { type: 'input_value', name: 'BUFFER', check: 'JSValue' },
+      { type: 'input_value', name: 'HOLD', check: 'JSValue' },
+      { type: 'input_value', name: 'GRAVITY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Os botõezinhos do "pulo gostoso". COYOTE: quanto tempo ainda dá para pular depois de sair da beirada. BUFFER: apertar antes de pousar continua valendo. SEGURAR: até quanto tempo segurar deixa o pulo mais alto. GRAVIDADE: 2160 é o normal; menos = Lua.',
+  },
+  {
+    type: 'sz_gk_plat_double_jump',
+    message0: 'Deixar %1 pular no ar (força %2, até %3 vezes)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'FORCE', check: 'JSValue' },
+      { type: 'input_value', name: 'TIMES', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O pulo duplo: mais pulos enquanto está no AR, e pousar devolve todos. Ponha LOGO DEPOIS do "Herói de plataforma".',
+  },
+  {
+    type: 'sz_gk_plat_wall_slide',
+    message0: 'Fazer %1 deslizar na parede (velocidade %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Encostado numa parede e caindo, o herói escorrega devagarzinho em vez de despencar. Ponha depois do "Herói de plataforma" — e o bloco de colidir é quem descobre a parede.',
+  },
+  {
+    type: 'sz_gk_plat_wall_jump',
+    message0: 'Deixar %1 pular da parede (para o lado %2, para cima %3)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'FX', check: 'JSValue' },
+      { type: 'input_value', name: 'FY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O pulo de parede do Celeste: apertar pulo encostado numa parede joga o herói para LONGE dela. O empurrão manda por um tiquinho (a seta não apaga ele) e a parede devolve o pulo no ar.',
+  },
+  {
+    type: 'sz_gk_plat_ladder',
+    message0: 'Deixar %1 subir a escada (peça %3 do mapa %2) na velocidade %4',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
+      { type: 'input_value', name: 'TILE', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Em cima da peça de escada, ↑ e ↓ sobem e descem, a gravidade não vale e parar deixa pendurado. O espaço pula da escada. Ponha depois do "Herói de plataforma" e ANTES de colidir.',
+  },
+  {
+    type: 'sz_gk_plat_one_way',
+    message0: 'Fazer %1 pousar nas plataformas do molde %2 (atravessa por baixo) usando o tempo %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'tabua', kind: 'mold' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A tábua clássica: subindo, o herói passa DIRETO por baixo; caindo, ele POUSA em cima. Não fura nem numa queda rápida.',
+  },
+  {
+    type: 'sz_gk_plat_drop_through',
+    message0: 'Deixar %1 descer da plataforma com ↓ e pulo',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Segurar ↓ (ou S) e apertar pulo faz o herói cair pela tábua em que está. Ponha ANTES do "pousar nas plataformas".',
+  },
+  {
+    type: 'sz_gk_plat_moving',
+    message0: 'Fazer a plataforma %1 ir de x %2 y %3 até x %4 y %5 em %6 s, usando o tempo %7',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'plataforma', kind: 'character' },
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Y1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Y2', check: 'JSValue' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A plataforma vai e volta sozinha entre os dois pontos, devagarzinho nas pontas. Use com o "pegar carona" para o herói andar junto em vez de escorregar dela.',
+  },
+  {
+    type: 'sz_gk_plat_ride_on',
+    message0: 'Fazer %1 pegar carona nas plataformas do molde %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'movel', kind: 'mold' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Quem está EM CIMA de uma plataforma que anda vai junto com ela. Sem isso o herói fica parado no lugar e a plataforma escorrega debaixo dele.',
+  },
+  {
+    type: 'sz_gk_plat_stomp',
+    message0: 'Fazer %1 derrotar o molde %2 pisando (quicar %3)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' },
+      { type: 'input_value', name: 'BOUNCE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O pulo na cabeça do Mario: se o herói estiver CAINDO mais rápido que o inimigo, o inimigo é derrotado, o herói quica e sai o aviso "plataforma:pisou". Comparar a velocidade (e não o lado) é o segredo de funcionar em qualquer ângulo.',
+  },
+  {
+    type: 'sz_gk_plat_patrol_wall',
+    message0: 'Fazer %1 patrulhar virando na parede (velocidade %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O inimigo anda para um lado e VIRA ao bater numa parede — quem manda virar é a colisão, então ele nunca trava na quina. Use dentro do "para cada vivo", com o bloco de colidir logo depois.',
+  },
+  {
+    type: 'sz_gk_plat_checkpoint',
+    message0: 'Marcar o ponto de renascer em x %1 y %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A bandeirinha da fase: guarda onde o herói volta quando morrer. Chame quando ele encostar na bandeira.',
+  },
+  {
+    type: 'sz_gk_plat_respawn',
+    message0: 'Fazer %1 renascer',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Volta o herói para o último ponto marcado (ou para onde ele nasceu, se não marcou nenhum) e zera a queda. Use quando ele cair no buraco ou encostar no espinho.',
+  },
+  {
+    type: 'sz_gk_plat_state_frames',
+    message0: 'Quando %1 estiver %2, usar os quadros %3 a %4 (fps %5)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'STATE',
+        options: [
+          ['parado', 'parado'],
+          ['andando', 'andando'],
+          ['pulando', 'pulando'],
+          ['caindo', 'caindo'],
+        ],
+      },
+      { type: 'input_value', name: 'FROM', check: 'JSValue' },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+      { type: 'input_value', name: 'FPS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Diz quais quadros da folha valem para cada estado do herói. Faça um destes por estado, no comecinho — depois o "Animar o herói" troca sozinho.',
+  },
+  {
+    type: 'sz_gk_plat_anim',
+    message0: 'Animar o herói %1 pelo que ele está fazendo',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Olha a FÍSICA (está no chão? está indo para os lados? subindo ou caindo?) e toca a animação certa sozinho: parado, andando, pulando ou caindo. Chame todo quadro, depois de mover.',
+  },
+  // ==========================================================================
+  // 🧭 R15 — primitivos GERAIS (fora de todo kit): região, sorte, mira, música,
+  // memória, opacidade, transição. É o "lado de fora" que faz qualquer gênero.
+  // ==========================================================================
+  {
+    type: 'sz_gk_define_region',
+    message0: 'Criar a região %1 em x %2 y %3, largura %4 altura %5',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'grama' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um retângulo com NOME no mundo: a grama alta, a porta, a zona de dano, a área segura, a bandeirinha. Crie no comecinho e depois pergunte quem está lá dentro.',
+  },
+  {
+    type: 'sz_gk_is_inside',
+    message0: '%1 está dentro da região %2?',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'REGION', text: 'grama', kind: 'region' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro se o personagem encostar na região (nem que seja um pouquinho).',
+  },
+  {
+    type: 'sz_gk_overlap_percent',
+    message0: 'quanto de %1 está dentro da região %2 (em %)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'REGION', text: 'grama', kind: 'region' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'De 0 a 100. É o segredo do encontro na grama alta: "se MAIS DA METADE do herói estiver no mato". Só encostar a quina não conta — e é isso que faz o jogo parecer justo.',
+  },
+  {
+    type: 'sz_gk_chance',
+    message0: 'com chance de %1 %',
+    args0: [{ type: 'input_value', name: 'PCT', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Um sorteio: verdadeiro nessa porcentagem das vezes. 0 = nunca, 100 = sempre.',
+  },
+  {
+    type: 'sz_gk_distance_between',
+    message0: 'a distância entre %1 e %2',
+    args0: [
+      { type: 'field_name_picker', name: 'A', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'B', text: 'inimigo', kind: 'character' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Em pixels, de centro a centro. É a conta central do stealth (raio de detecção), da torre (alcance) e do inimigo que "só persegue se estiver perto".',
+  },
+  {
+    type: 'sz_gk_point_in',
+    message0: 'o ponto x %1 y %2 está dentro de %3?',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'WHO', text: 'carta', kind: 'character' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Para saber se o clique caiu NAQUELE personagem: junte com "o mouse x/y". É o que destrava point-and-click, cartas, match-3 e tower defense.',
+  },
+  {
+    type: 'sz_gk_launch_to_point',
+    message0: 'Lançar %1 até o ponto x %2 y %3 com velocidade %4',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'tiro', kind: 'character' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Mira num PONTO (o "Lançar na direção" só mira em personagem). Junte com "o mouse x/y" e o tiro vai onde você clicar. Depois use "Mover pela velocidade".',
+  },
+  {
+    type: 'sz_gk_set_velocity_angle',
+    message0: 'Fazer %1 andar no ângulo %2 graus com força %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+      { type: 'input_value', name: 'FORCE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O par do "Girar para X graus" — aquele só vira o DESENHO, este faz ANDAR de verdade. Use os dois com o mesmo ângulo e você tem o tanque, a nave, o Asteroids.',
+  },
+  {
+    type: 'sz_gk_set_opacity',
+    message0: 'Deixar %1 com %2 % de opacidade',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'PCT', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: '100 = normal, 0 = invisível. O fantasma, o escudo, o que está desligado.',
+  },
+  {
+    type: 'sz_gk_opacity_of',
+    message0: 'a opacidade de %1',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'De 0 a 100.',
+  },
+  {
+    type: 'sz_gk_fade_to',
+    message0: 'Fazer %1 sumir até %2 % em %3 s',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'inimigo', kind: 'character' },
+      { type: 'input_value', name: 'PCT', check: 'JSValue' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Some (ou aparece) devagarzinho. O jeito clássico de o inimigo derrotado desaparecer. Chame UMA vez.',
+  },
+  {
+    type: 'sz_gk_tween_property',
+    message0: 'Deslizar a propriedade %2 de %1 até %3 em %4 s',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'PROP',
+        options: [
+          ['x', 'x'],
+          ['y', 'y'],
+          ['velocidade x', 'vx'],
+          ['velocidade y', 'vy'],
+          ['velocidade', 'speed'],
+          ['largura', 'w'],
+          ['altura', 'h'],
+          ['vida', 'health'],
+          ['opacidade', 'opacity'],
+        ],
+      },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Muda QUALQUER propriedade suavemente (crescer, encolher, drenar a vida, sumir). Ao terminar sai o aviso "deslizou:chegou" — dá para encadear um movimento no outro.',
+  },
+  {
+    type: 'sz_gk_set_hitbox',
+    message0: 'Caixa de colisão de %1: deslocada x %2 y %3, largura %4 altura %5',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'OX', check: 'JSValue' },
+      { type: 'input_value', name: 'OY', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A caixa que COLIDE não precisa ser o desenho todo. Num personagem alto, deixe só os PÉS colidirem (ex.: y 52, altura 16) — senão ele encosta nas paredes com a cabeça. Largura/altura 0 = usar o desenho inteiro.',
+  },
+  {
+    type: 'sz_gk_fade_screen',
+    message0: 'Tela: %1 na cor %2 em %3 s',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'DIR',
+        options: [
+          ['escurecer', 'escurecer'],
+          ['clarear', 'clarear'],
+        ],
+      },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#000000' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A tela vai ficando preta (ou volta). O truque de todo jogo: ESCONDER a troca de cena atrás do escuro — escureça, troque tudo, clareie.',
+  },
+  {
+    type: 'sz_gk_flash_screen',
+    message0: 'Piscar a tela %2 vezes na cor %1',
+    args0: [
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
+      { type: 'input_value', name: 'TIMES', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'O susto: a tela pisca. Perfeito para "apareceu um inimigo!" e para o dano grande.',
+  },
+  {
+    type: 'sz_gk_save_value',
+    message0: 'Guardar o valor %2 com o nome %1',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'recorde' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Guarda de verdade: fechar o jogo e abrir de novo, o valor continua lá. O recorde, a fase destravada, o nome do jogador.',
+  },
+  {
+    type: 'sz_gk_saved_value',
+    message0: 'o valor guardado %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'recorde' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Lê o que você guardou. Nunca guardou nada com esse nome? Devolve 0.',
+  },
+  {
+    type: 'sz_gk_play_music',
+    message0: 'Tocar a música %1 sem parar',
+    args0: [{ type: 'field_name_picker', name: 'SOUND', text: 'trilha', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca em LOOP (acabou, começa de novo) — é a trilha do jogo. Chamar de novo NÃO reinicia. Use "Parar o som" para trocar de música.',
+  },
+  {
+    type: 'sz_gk_stop_sound',
+    message0: 'Parar o som %1',
+    args0: [{ type: 'field_name_picker', name: 'SOUND', text: 'trilha', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Para e volta ao começo. Use antes de tocar outra música.',
+  },
+  {
+    type: 'sz_gk_set_volume',
+    message0: 'Volume do som %1: %2',
+    args0: [
+      { type: 'field_name_picker', name: 'SOUND', text: 'trilha', kind: 'sound' },
+      { type: 'input_value', name: 'LEVEL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'De 0 (mudo) a 1 (máximo). A música costuma ficar baixinha (0.2) atrás dos efeitos.',
+  },
+  {
+    type: 'sz_gk_create_empty_tilemap',
+    message0: 'Criar o mapa vazio %1: %2 colunas × %3 linhas, peça %4, folha %5',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'masmorra' },
+      { type: 'input_value', name: 'COLS', check: 'JSValue' },
+      { type: 'input_value', name: 'ROWS', check: 'JSValue' },
+      { type: 'input_value', name: 'FILL', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'ASSET', text: '' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um mapa feito por CÓDIGO, não desenhado — é assim que se faz masmorra sorteada e mundo gerado. Depois use "Trocar a peça" num laço para cavar os corredores. Peça -1 = vazio.',
+  },
+  {
+    type: 'sz_gk_move_with_custom_keys',
+    message0: 'Mover %1 com as teclas: cima %2 baixo %3 esquerda %4 direita %5, usando o tempo %6',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'jogador2', kind: 'character' },
+      { type: 'field_input', name: 'UP', text: 'i' },
+      { type: 'field_input', name: 'DOWN', text: 'k' },
+      { type: 'field_input', name: 'LEFT', text: 'j' },
+      { type: 'field_input', name: 'RIGHT', text: 'l' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O "Mover pelas teclas" usa WASD E as setas no MESMO personagem — com este você escolhe as teclas e tem DOIS jogadores. Ganha a diagonal certinha de graça.',
+  },
+  // ==========================================================================
+  // 👾 KIT MONSTRINHOS — o atalho do gênero "pegue e treine bichinhos".
+  // ⭐ A TESE: este jogo É um jogo do Kit RPG com OUTRA batalha. O mundo (grade,
+  // NPC, fala, mapa, flags, salvar) JÁ existe — aqui só entram as criaturas, os
+  // encontros e a batalha criatura-vs-criatura.
+  // ==========================================================================
+  {
+    type: 'sz_gk_pkm_creature',
+    message0:
+      'Criatura %1 do tipo %2: vida %3, força %4, defesa %5, velocidade %6, imagem %7, aparência %8',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Fogoso' },
+      { type: 'field_name_picker', name: 'TYPE', text: 'fogo', kind: 'pkmtype' },
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'STR', check: 'JSValue' },
+      { type: 'input_value', name: 'DEF', check: 'JSValue' },
+      { type: 'input_value', name: 'SPD', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'field_name_picker', name: 'LOOK', text: '', kind: 'look' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Os DADOS de uma espécie — os pontos são do NÍVEL 1; cada nível dá +8 de vida, +2 de força e +1 de defesa. O TIPO você inventa (fogo, gelo, doce, dinossauro…). Sem imagem nem aparência, vira um retângulo. Use uma vez por bicho.',
+  },
+  {
+    type: 'sz_gk_pkm_move',
+    message0: 'Ensinar o golpe %1 para %2: tipo %3, dano %4, acerto %5 %, efeito %6 na cor %7',
+    args0: [
+      { type: 'field_input', name: 'MOVE', text: 'Brasa' },
+      { type: 'field_name_picker', name: 'CREATURE', text: 'Fogoso', kind: 'pkmcreature' },
+      { type: 'field_name_picker', name: 'TYPE', text: 'fogo', kind: 'pkmtype' },
+      { type: 'input_value', name: 'DMG', check: 'JSValue' },
+      { type: 'input_value', name: 'ACC', check: 'JSValue' },
+      {
+        type: 'field_dropdown',
+        name: 'FX',
+        options: [
+          ['investida', 'investida'],
+          ['bola', 'bola'],
+          ['raio', 'raio'],
+          ['onda', 'onda'],
+        ],
+      },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ff8800' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um golpe da criatura (até 4 por bicho). O TIPO dele é quem enfrenta a tabela de tipos. Acerto 100 = nunca erra; 70 = erra às vezes — golpe forte com acerto baixo é o risco que vale a pena. O efeito é a animação.',
+  },
+  {
+    type: 'sz_gk_pkm_type_chart',
+    message0: 'Tabela de tipos: %1 contra %2 causa %3 × de dano',
+    args0: [
+      { type: 'field_name_picker', name: 'A', text: 'fogo', kind: 'pkmtype' },
+      { type: 'field_name_picker', name: 'B', text: 'planta', kind: 'pkmtype' },
+      { type: 'input_value', name: 'MULT', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'VOCÊ inventa a regra: 2 = super efetivo, 0.5 = fraquinho, 0 = não teve efeito. Três destes fazem o triângulo clássico (fogo > planta > água > fogo) — e aí a batalha vira ESCOLHER o golpe certo, que é a graça do gênero. Sem tabela, todo golpe vale 1×.',
+  },
+  {
+    type: 'sz_gk_pkm_evolve',
+    message0: '%1 evolui para %2 no nível %3',
+    args0: [
+      { type: 'field_name_picker', name: 'FROM', text: 'Fogoso', kind: 'pkmcreature' },
+      { type: 'field_name_picker', name: 'TO', text: 'Fogozão', kind: 'pkmcreature' },
+      { type: 'input_value', name: 'LEVEL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Ao subir para esse nível, a criatura VIRA outra espécie — mantendo o nível e a experiência dela. O jogo anuncia "está evoluindo!" sozinho.',
+  },
+  {
+    type: 'sz_gk_pkm_catch_difficulty',
+    message0: '%1 é %2 de pegar',
+    args0: [
+      { type: 'field_name_picker', name: 'NAME', text: 'Fogoso', kind: 'pkmcreature' },
+      {
+        type: 'field_dropdown',
+        name: 'LEVEL',
+        options: [
+          ['fácil', 'fácil'],
+          ['normal', 'normal'],
+          ['difícil', 'difícil'],
+          ['raríssimo', 'raríssimo'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'O lendário. Sem este bloco, toda criatura é "normal".',
+  },
+  {
+    type: 'sz_gk_pkm_level_of',
+    message0: 'o nível de %1',
+    args0: [{ type: 'field_name_picker', name: 'CREATURE', text: 'Fogoso', kind: 'pkmcreature' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'O nível da SUA criatura (0 se você não tem essa). Bom p/ portões: "se o nível ≥ 10".',
+  },
+  {
+    type: 'sz_gk_pkm_give',
+    message0: 'Ganhar a criatura %1 no nível %2',
+    args0: [
+      { type: 'field_name_picker', name: 'CREATURE', text: 'Fogoso', kind: 'pkmcreature' },
+      { type: 'input_value', name: 'LEVEL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Entra no seu time (até 6). O inicial que a professora dá, o presente, o ovo que chocou. Pendure num "Quando conversar com…".',
+  },
+  {
+    type: 'sz_gk_pkm_give_ball',
+    message0: 'Ganhar %1 bola(s) de captura de força %2 %',
+    args0: [
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'POWER', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A força é a chance base de pegar. 60 é a bola comum; 100 é a bola mestra (pega quase sempre). Bola melhor = recompensa/loja = progressão.',
+  },
+  {
+    type: 'sz_gk_pkm_heal_team',
+    message0: 'Curar todas as minhas criaturas',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'O Centro de Cura inteiro num bloco: pendure num "Quando conversar com a enfermeira".',
+  },
+  {
+    type: 'sz_gk_pkm_has',
+    message0: 'eu tenho a criatura %1?',
+    args0: [{ type: 'field_name_picker', name: 'CREATURE', text: 'Fogoso', kind: 'pkmcreature' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'O portão da coleção: "se eu tenho o Fogoso, o guarda deixa passar".',
+  },
+  {
+    type: 'sz_gk_pkm_team_size',
+    message0: 'quantas criaturas eu tenho',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'De 0 a 6. Vira a condição de vitória: "se eu tenho 3, ganhei!".',
+  },
+  {
+    type: 'sz_gk_pkm_ball_count',
+    message0: 'quantas bolas eu tenho',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Sem bolas, o botão "Bola" nem aparece na batalha.',
+  },
+  {
+    type: 'sz_gk_pkm_draw_team',
+    message0: 'Desenhar o meu time em x %1 y %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Nome, nível e barrinha de vida de cada uma. Fica ótimo no "Desenhar por cima (HUD)".',
+  },
+  {
+    type: 'sz_gk_pkm_grass_cells',
+    message0: 'Grama alta da célula %1 , %2 até %3 , %4',
+    args0: [
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Y1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Y2', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O retângulo de mato onde os bichos aparecem, em CÉLULAS da grade (como o "Bloquear a célula"). Monte dentro do "Quando chegar no mapa" e cada mapa tem a sua grama.',
+  },
+  {
+    type: 'sz_gk_pkm_grass_tiles',
+    message0: 'Grama alta: a peça %1 do mapa %2',
+    args0: [
+      { type: 'input_value', name: 'INDEX', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenhou o mato no Pinta? Diga QUAL peça é grama e ela vira mato em todo o mapa — sem marcar célula por célula.',
+  },
+  {
+    type: 'sz_gk_pkm_wild',
+    message0: 'Na grama alta pode aparecer %1 do nível %2 ao %3',
+    args0: [
+      { type: 'field_name_picker', name: 'CREATURE', text: 'Folhinha', kind: 'pkmcreature' },
+      { type: 'input_value', name: 'MIN', check: 'JSValue' },
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um destes por bicho = a tabela de encontros (todos com a mesma chance). Monte no "Quando chegar no mapa" e cada rota tem os bichos dela.',
+  },
+  {
+    type: 'sz_gk_pkm_encounter_rate',
+    message0: 'Chance de encontro na grama: %1 % (a cada passo)',
+    args0: [{ type: 'input_value', name: 'PCT', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O sorteio é por PASSO na grama (é como o jogo de verdade faz — e dá para sentir). 20% é o normal; 100% é para testar.',
+  },
+  {
+    type: 'sz_gk_pkm_battle_wild',
+    message0: 'Começar a batalha contra a criatura selvagem %1 no nível %2',
+    args0: [
+      { type: 'field_name_picker', name: 'CREATURE', text: 'Folhinha', kind: 'pkmcreature' },
+      { type: 'input_value', name: 'LEVEL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A grama chama isto sozinha — use direto para o LENDÁRIO ou dentro de uma cena. Quem luta é a sua criatura, não você.',
+  },
+  {
+    type: 'sz_gk_pkm_battle_trainer',
+    message0: 'Começar a batalha contra o treinador %1, com o time dele %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Rival' },
+      { type: 'input_statement', name: 'BODY', check: 'JSStmt' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O rival e o ginásio: ele troca de criatura sozinho quando a dele cai, e não dá para fugir nem jogar bola. Ponha "Criatura do treinador" lá dentro, uma por bicho.',
+  },
+  {
+    type: 'sz_gk_pkm_trainer_creature',
+    message0: 'Criatura do treinador: %1 no nível %2',
+    args0: [
+      { type: 'field_name_picker', name: 'CREATURE', text: 'Folhinha', kind: 'pkmcreature' },
+      { type: 'input_value', name: 'LEVEL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Vai DENTRO do "batalha contra o treinador". A ordem é a ordem que ele manda.',
+  },
+  {
+    type: 'sz_gk_pkm_caught',
+    message0: 'peguei a criatura?',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro se a última batalha terminou com uma captura. Use no "Quando a batalha terminar" (o mesmo do Kit RPG).',
+  },
   // ---- 🥷 Ação em tempo real (estilo Zelda) ----
   {
     type: 'sz_gk_attack_facing',
@@ -1753,13 +2939,21 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    // GERAL, apesar do prefixo `rpg` nos types (renomear type quebra projeto
+    // salvo): o motor desenha a fala e o menu no canvas e navega neles em
+    // QUALQUER jogo — o stepUiInput roda no stepSystems, fora do Kit RPG.
+    name: '💬 Fala & escolhas',
+    colour: C,
+    types: ['sz_gk_rpg_say', 'sz_gk_rpg_menu', 'sz_gk_rpg_option'],
+  },
+  {
     name: '🚦 Estados',
     colour: C,
     types: [
       'sz_gk_set_state',
       'sz_gk_on_enter_state',
-      'sz_gk_state_is',
       'sz_gk_game_state',
+      'sz_gk_state_is',
       'sz_gk_pause',
       'sz_gk_resume',
       'sz_gk_return_to_menu',
@@ -1772,6 +2966,10 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_gk_on_update', 'sz_gk_on_draw', 'sz_gk_on_draw_hud', 'sz_gk_draw_background'],
   },
   {
+    // Era a única categoria inchada (14). Ficou com o CICLO DE VIDA do
+    // personagem: criar, mover, posicionar, desenhar — e o renascer, que veio do
+    // Kit Plataforma (o runtime dele não tem NADA de plataforma: é "guardar um
+    // ponto" + teleporte, e vale em RPG, top-down, corrida, bullet hell).
     name: '🧍 Personagens',
     colour: C,
     types: [
@@ -1783,20 +2981,41 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_reset_character',
       'sz_gk_set_speed_multiplier',
       'sz_gk_characters_touch',
-      'sz_gk_char_x',
-      'sz_gk_char_y',
+      'sz_gk_plat_checkpoint',
+      'sz_gk_plat_respawn',
     ],
   },
   {
-    name: '⌨️ Teclas',
+    // A "chave-mestra": ler/escrever qualquer coisa do personagem. Saiu de 🧍
+    // porque é outro assunto (a doc já tratava como seção separada) e porque é o
+    // que a criança procura quando o bloco pronto não existe.
+    name: '🔧 Propriedades & direção',
     colour: C,
-    types: ['sz_gk_key_down', 'sz_gk_key_pressed', 'sz_gk_set_pause_key'],
+    types: [
+      'sz_gk_char_x',
+      'sz_gk_char_y',
+      'sz_gk_property_of',
+      'sz_gk_set_property',
+      'sz_gk_set_facing',
+      'sz_gk_facing_of',
+      'sz_gk_set_hitbox',
+    ],
   },
   {
-    // Junto das Teclas: teclado e mouse são a MESMA ideia (entrada do jogador).
-    name: '🖱️ Mouse',
+    // Teclado e mouse são a MESMA ideia (a entrada do jogador) — viviam
+    // separados em 3+4 blocos.
+    name: '🎮 Controles',
     colour: C,
-    types: ['sz_gk_on_game_click', 'sz_gk_mouse_x', 'sz_gk_mouse_y', 'sz_gk_mouse_down'],
+    types: [
+      'sz_gk_key_down',
+      'sz_gk_key_pressed',
+      'sz_gk_set_pause_key',
+      'sz_gk_on_game_click',
+      'sz_gk_mouse_x',
+      'sz_gk_mouse_y',
+      'sz_gk_mouse_down',
+      'sz_gk_move_with_custom_keys',
+    ],
   },
   {
     name: '📢 Avisos',
@@ -1820,11 +3039,17 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    // "Aparência" (não "Desenho"): a aparência VETORIAL de um molde/personagem —
-    // bate com os docs e não confunde com draw_character/draw_background/Canvas.
-    name: '🎨 Aparência',
+    // "Aparência" (não "Desenho"): o visual VETORIAL + a folha de quadros. As
+    // duas respondem "com o que esse personagem se parece" (viviam em 2+3).
+    name: '🎨 Aparência & animação',
     colour: C,
-    types: ['sz_gk_define_look', 'sz_gk_draw_look'],
+    types: [
+      'sz_gk_define_look',
+      'sz_gk_draw_look',
+      'sz_gk_set_sheet',
+      'sz_gk_play_anim',
+      'sz_gk_set_walk_sheet',
+    ],
   },
   {
     name: '🎯 Comportamentos',
@@ -1836,12 +3061,10 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_launch_towards',
       'sz_gk_move_by_velocity',
       'sz_gk_set_angle',
+      'sz_gk_launch_to_point',
+      'sz_gk_set_velocity_angle',
+      'sz_gk_tween_to',
     ],
-  },
-  {
-    name: '🎞️ Quadros & animação',
-    colour: C,
-    types: ['sz_gk_set_sheet', 'sz_gk_play_anim', 'sz_gk_set_walk_sheet'],
   },
   {
     name: '🎥 Câmera',
@@ -1855,15 +3078,48 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    // GERAIS: carregar/desenhar o mapa, profundidade, sombra e as peças por
+    // célula valem em qualquer jogo. (O "deixar sólidas as peças" alimenta a
+    // GRADE do RPG — por isso vive no Kit RPG; fora dele a colisão é a do 🧱.)
     name: '🗺️ Mundo & profundidade',
     colour: C,
     types: [
       'sz_gk_load_tilemap',
       'sz_gk_draw_tilemap',
-      'sz_gk_tilemap_solid',
       'sz_gk_draw_shadow',
       'sz_gk_draw_by_depth',
+      'sz_gk_set_tile_size',
+      'sz_gk_tile_at',
+      'sz_gk_set_tile_at',
+      'sz_gk_break_tile_at',
+      'sz_gk_create_empty_tilemap',
     ],
+  },
+  {
+    // ⚙️ GERAL: a física que faz plataforma/corrida/flappy/breakout existirem.
+    // A receita é sempre: gravidade → mover pela velocidade → colidir.
+    name: '⚙️ Física',
+    colour: C,
+    types: [
+      'sz_gk_apply_gravity',
+      'sz_gk_jump',
+      'sz_gk_is_on_ground',
+      'sz_gk_set_velocity',
+      'sz_gk_velocity_of',
+      'sz_gk_set_terminal_velocity',
+      'sz_gk_bounce_on_edges',
+      'sz_gk_wrap_edges',
+    ],
+  },
+  {
+    name: '🧱 Colisão sólida',
+    colour: C,
+    types: ['sz_gk_collide_tilemap', 'sz_gk_collide_group', 'sz_gk_overlap_groups'],
+  },
+  {
+    name: '⏱️ Tempo',
+    colour: C,
+    types: ['sz_gk_every_seconds', 'sz_gk_cooldown_ready'],
   },
   {
     // Combate ANTES de Ação: a ação em tempo real usa hurt/i-frames/knockback.
@@ -1883,9 +3139,11 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     // GERAL (não Kit RPG): golpe/hitbox/patrulha valem em qualquer jogo de ação.
     name: '🥷 Ação em tempo real',
     colour: C,
-    types: ['sz_gk_attack_facing', 'sz_gk_did_hit', 'sz_gk_patrol_around', 'sz_gk_draw_hearts'],
+    types: ['sz_gk_attack_facing', 'sz_gk_did_hit', 'sz_gk_patrol_around'],
   },
   {
+    // Os 3 jeitos de mostrar a vida moram JUNTOS aqui (a barra automática em
+    // cima do personagem fica no ❤️ Combate, que é onde a vida muda).
     name: '🖥️ HUD & Missão',
     colour: C,
     types: [
@@ -1893,6 +3151,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_mission_kill',
       'sz_gk_draw_timer',
       'sz_gk_draw_bar',
+      'sz_gk_draw_hearts',
       'sz_gk_time_survived',
       'sz_gk_kills',
     ],
@@ -1905,12 +3164,81 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🔊 Som',
     colour: C,
-    types: ['sz_gk_load_sound', 'sz_gk_play_sound', 'sz_gk_play_effect', 'sz_gk_play_tone'],
+    types: [
+      'sz_gk_load_sound',
+      'sz_gk_play_sound',
+      'sz_gk_play_music',
+      'sz_gk_stop_sound',
+      'sz_gk_set_volume',
+      'sz_gk_play_effect',
+      'sz_gk_play_tone',
+    ],
+  },
+  {
+    // Um retângulo com nome no mundo. É o gatilho de TODO gênero (grama alta,
+    // porta, zona de dano, área segura) — e o "quanto está dentro" é a joia que
+    // faz o encontro na grama parecer justo.
+    name: '🧭 Regiões',
+    colour: C,
+    types: ['sz_gk_define_region', 'sz_gk_is_inside', 'sz_gk_overlap_percent'],
+  },
+  {
+    name: '🎲 Sorte & medida',
+    colour: C,
+    types: ['sz_gk_chance', 'sz_gk_distance_between', 'sz_gk_point_in'],
+  },
+  {
+    name: '🌫️ Sumir & transição',
+    colour: C,
+    types: [
+      'sz_gk_set_opacity',
+      'sz_gk_opacity_of',
+      'sz_gk_fade_to',
+      'sz_gk_tween_property',
+      'sz_gk_fade_screen',
+      'sz_gk_flash_screen',
+    ],
+  },
+  {
+    name: '💾 Memória',
+    colour: C,
+    types: ['sz_gk_save_value', 'sz_gk_saved_value'],
+  },
+  // ---- 🏃 KIT PLATAFORMA (o atalho do gênero) ----
+  // Pela REGRA: só o ESPECÍFICO de plataforma mora aqui. Gravidade, colidir,
+  // pular, tiles e o renascer são GERAIS e vivem lá em cima.
+  {
+    name: '🏃 Kit Plataforma: herói',
+    colour: C,
+    types: [
+      'sz_gk_plat_hero',
+      'sz_gk_plat_jump_feel',
+      'sz_gk_plat_double_jump',
+      'sz_gk_plat_wall_slide',
+      'sz_gk_plat_wall_jump',
+      'sz_gk_plat_ladder',
+      'sz_gk_plat_state_frames',
+      'sz_gk_plat_anim',
+    ],
+  },
+  {
+    name: '🧗 Kit Plataforma: mundo',
+    colour: C,
+    types: [
+      'sz_gk_plat_one_way',
+      'sz_gk_plat_drop_through',
+      'sz_gk_plat_moving',
+      'sz_gk_plat_ride_on',
+      // Os inimigos eram uma categoria de 2 — nome próprio custa mais navegação
+      // do que economiza.
+      'sz_gk_plat_stomp',
+      'sz_gk_plat_patrol_wall',
+    ],
   },
   // ---- 🧙 KIT RPG (o kit facilitado, SÓ para montar um RPG) ----
-  // Tudo aqui é acoplado ao mundo `rpg.*` (grade/NPCs/diálogo/batalha) — por isso
-  // é o "Kit RPG", separado do motor geral acima. Todas as 6 categorias levam o
-  // prefixo "Kit RPG:" para a criança ver que andam juntas e exigem esse mundo.
+  // Tudo aqui é acoplado ao mundo `rpg.*` (grade/NPCs/mapas/batalha) — por isso
+  // as categorias levam o prefixo "Kit RPG:". A FALA e o MENU saíram para o
+  // geral (💬 Fala & escolhas): o motor os desenha em qualquer jogo.
   {
     name: '🧙 Kit RPG: mundo',
     colour: C,
@@ -1920,13 +3248,17 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_rpg_create_door',
       'sz_gk_rpg_move_grid',
       'sz_gk_rpg_block_cell',
+      // Alimenta a GRADE do RPG (rpg.walls) — só o "Mover pela grade" lê isso,
+      // por isso é RPG e não geral. O type mantém o nome antigo (renomear
+      // quebraria projeto salvo); só a categoria mudou.
+      'sz_gk_tilemap_solid',
       'sz_gk_rpg_cell',
     ],
   },
   {
-    name: '💬 Kit RPG: conversa',
+    name: '💬 Kit RPG: NPCs',
     colour: C,
-    types: ['sz_gk_rpg_create_npc', 'sz_gk_rpg_draw_npcs', 'sz_gk_rpg_on_talk', 'sz_gk_rpg_say'],
+    types: ['sz_gk_rpg_create_npc', 'sz_gk_rpg_draw_npcs', 'sz_gk_rpg_on_talk'],
   },
   {
     name: '🎒 Kit RPG: história & itens',
@@ -1953,14 +3285,52 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '🗳️ Kit RPG: escolhas & salvar',
+    // Só o SALVAR fica no kit: ele serializa o estado do RPG (flags/itens/mapa/
+    // atributos). O menu de escolha saiu p/ o geral (💬 Fala & escolhas).
+    name: '💾 Kit RPG: salvar',
+    colour: C,
+    types: ['sz_gk_rpg_save', 'sz_gk_rpg_load', 'sz_gk_rpg_has_save'],
+  },
+  // ---- 👾 KIT MONSTRINHOS (o atalho do gênero "pegue e treine bichinhos") ----
+  // ⭐ É um jogo do Kit RPG com OUTRA batalha: o mundo (grade/NPC/fala/mapa/
+  // flags/salvar) vem de lá. Aqui só o que é do gênero.
+  {
+    name: '👾 Kit Monstrinhos: criaturas',
     colour: C,
     types: [
-      'sz_gk_rpg_menu',
-      'sz_gk_rpg_option',
-      'sz_gk_rpg_save',
-      'sz_gk_rpg_load',
-      'sz_gk_rpg_has_save',
+      'sz_gk_pkm_creature',
+      'sz_gk_pkm_move',
+      'sz_gk_pkm_type_chart',
+      'sz_gk_pkm_evolve',
+      'sz_gk_pkm_catch_difficulty',
+      'sz_gk_pkm_level_of',
+    ],
+  },
+  {
+    name: '🎒 Kit Monstrinhos: meu time',
+    colour: C,
+    types: [
+      'sz_gk_pkm_give',
+      'sz_gk_pkm_give_ball',
+      'sz_gk_pkm_heal_team',
+      'sz_gk_pkm_has',
+      'sz_gk_pkm_team_size',
+      'sz_gk_pkm_ball_count',
+      'sz_gk_pkm_draw_team',
+    ],
+  },
+  {
+    name: '🌿 Kit Monstrinhos: encontros & batalha',
+    colour: C,
+    types: [
+      'sz_gk_pkm_grass_cells',
+      'sz_gk_pkm_grass_tiles',
+      'sz_gk_pkm_wild',
+      'sz_gk_pkm_encounter_rate',
+      'sz_gk_pkm_battle_wild',
+      'sz_gk_pkm_battle_trainer',
+      'sz_gk_pkm_trainer_creature',
+      'sz_gk_pkm_caught',
     ],
   },
   {
@@ -2085,6 +3455,85 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_option: { LABEL: txtShadow('Sim') },
   // 🗺️ V9 — mundo de tiles & profundidade
   sz_gk_camera_shake: { INT: numShadow(8), SEC: numShadow(0.3) },
+  // ⚙️ R11 — física geral
+  sz_gk_apply_gravity: { G: numShadow(2160) },
+  sz_gk_jump: { FORCE: numShadow(660) },
+  sz_gk_set_velocity: { VX: numShadow(0), VY: numShadow(0) },
+  sz_gk_set_terminal_velocity: { MAX: numShadow(900) },
+  sz_gk_every_seconds: { SECS: numShadow(1) },
+  sz_gk_cooldown_ready: { SECS: numShadow(0.5) },
+  sz_gk_tile_at: { X: numShadow(0), Y: numShadow(0) },
+  sz_gk_set_tile_at: { X: numShadow(0), Y: numShadow(0), INDEX: numShadow(0) },
+  sz_gk_set_tile_size: { PX: numShadow(64) },
+  sz_gk_set_property: { VALUE: numShadow(0) },
+  sz_gk_tween_to: { X: numShadow(100), Y: numShadow(100), SECS: numShadow(0.5) },
+  // 👾 R16 — Kit Monstrinhos
+  sz_gk_pkm_creature: {
+    HP: numShadow(30),
+    STR: numShadow(8),
+    DEF: numShadow(4),
+    SPD: numShadow(5),
+  },
+  sz_gk_pkm_move: { DMG: numShadow(20), ACC: numShadow(100) },
+  sz_gk_pkm_type_chart: { MULT: numShadow(2) },
+  sz_gk_pkm_evolve: { LEVEL: numShadow(8) },
+  sz_gk_pkm_give: { LEVEL: numShadow(5) },
+  sz_gk_pkm_give_ball: { COUNT: numShadow(5), POWER: numShadow(60) },
+  sz_gk_pkm_draw_team: { X: numShadow(10), Y: numShadow(10) },
+  sz_gk_pkm_grass_cells: {
+    X1: numShadow(5),
+    Y1: numShadow(6),
+    X2: numShadow(13),
+    Y2: numShadow(10),
+  },
+  sz_gk_pkm_grass_tiles: { INDEX: numShadow(3) },
+  sz_gk_pkm_wild: { MIN: numShadow(3), MAX: numShadow(6) },
+  sz_gk_pkm_encounter_rate: { PCT: numShadow(20) },
+  sz_gk_pkm_battle_wild: { LEVEL: numShadow(5) },
+  sz_gk_pkm_trainer_creature: { LEVEL: numShadow(5) },
+  // 🧭 R15 — primitivos gerais
+  sz_gk_define_region: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    W: numShadow(200),
+    H: numShadow(200),
+  },
+  sz_gk_chance: { PCT: numShadow(50) },
+  sz_gk_point_in: { X: numShadow(0), Y: numShadow(0) },
+  sz_gk_launch_to_point: { X: numShadow(0), Y: numShadow(0), SPEED: numShadow(400) },
+  sz_gk_set_velocity_angle: { DEG: numShadow(0), FORCE: numShadow(200) },
+  sz_gk_set_opacity: { PCT: numShadow(100) },
+  sz_gk_fade_to: { PCT: numShadow(0), SECS: numShadow(0.5) },
+  sz_gk_tween_property: { TO: numShadow(100), SECS: numShadow(0.5) },
+  sz_gk_set_hitbox: { OX: numShadow(0), OY: numShadow(0), W: numShadow(0), H: numShadow(0) },
+  sz_gk_fade_screen: { SECS: numShadow(0.4) },
+  sz_gk_flash_screen: { TIMES: numShadow(3) },
+  sz_gk_save_value: { VALUE: numShadow(0) },
+  sz_gk_set_volume: { LEVEL: numShadow(1) },
+  sz_gk_create_empty_tilemap: { COLS: numShadow(20), ROWS: numShadow(15), FILL: numShadow(-1) },
+  // 🏃 R12 — Kit Plataforma
+  sz_gk_plat_hero: { SPEED: numShadow(240), JUMP: numShadow(660) },
+  sz_gk_plat_jump_feel: {
+    COYOTE: numShadow(0.1),
+    BUFFER: numShadow(0.1),
+    HOLD: numShadow(0.3),
+    GRAVITY: numShadow(2160),
+  },
+  sz_gk_plat_double_jump: { FORCE: numShadow(600), TIMES: numShadow(1) },
+  sz_gk_plat_wall_slide: { SPEED: numShadow(90) },
+  sz_gk_plat_wall_jump: { FX: numShadow(300), FY: numShadow(660) },
+  sz_gk_plat_ladder: { TILE: numShadow(2), SPEED: numShadow(160) },
+  sz_gk_plat_moving: {
+    X1: numShadow(100),
+    Y1: numShadow(300),
+    X2: numShadow(400),
+    Y2: numShadow(300),
+    SECS: numShadow(2),
+  },
+  sz_gk_plat_stomp: { BOUNCE: numShadow(400) },
+  sz_gk_plat_patrol_wall: { SPEED: numShadow(60) },
+  sz_gk_plat_checkpoint: { X: numShadow(100), Y: numShadow(100) },
+  sz_gk_plat_state_frames: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },
   // 🥷 V10 — ação em tempo real
   sz_gk_attack_facing: { RANGE: numShadow(40), DUR: numShadow(0.3) },
   sz_gk_patrol_around: { OX: numShadow(400), OY: numShadow(300), RADIUS: numShadow(80) },

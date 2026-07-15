@@ -520,6 +520,58 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:touchCircle', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_gk_did_hit':
       return { type: 'gk:didHit', aVar: f(block, 'WHO'), bVar: f(block, 'TARGET') }
+    case 'sz_gk_is_on_ground':
+      return { type: 'gk:isOnGround', charVar: f(block, 'WHO') }
+    // 👾 R16 — Kit Monstrinhos
+    case 'sz_gk_pkm_level_of':
+      return { type: 'gk:pkmLevelOf', creature: f(block, 'CREATURE') }
+    case 'sz_gk_pkm_has':
+      return { type: 'gk:pkmHas', creature: f(block, 'CREATURE') }
+    case 'sz_gk_pkm_team_size':
+      return { type: 'gk:pkmTeamSize' }
+    case 'sz_gk_pkm_ball_count':
+      return { type: 'gk:pkmBallCount' }
+    case 'sz_gk_pkm_caught':
+      return { type: 'gk:pkmCaught' }
+    // 🧭 R15 — primitivos gerais
+    case 'sz_gk_is_inside':
+      return { type: 'gk:isInside', charVar: f(block, 'WHO'), region: f(block, 'REGION') }
+    case 'sz_gk_overlap_percent':
+      return { type: 'gk:overlapPercent', charVar: f(block, 'WHO'), region: f(block, 'REGION') }
+    case 'sz_gk_chance':
+      return { type: 'gk:chance', percent: exprInput(block, 'PCT', { type: 'num', value: 50 }) }
+    case 'sz_gk_distance_between':
+      return { type: 'gk:distanceBetween', a: f(block, 'A'), b: f(block, 'B') }
+    case 'sz_gk_point_in':
+      return {
+        type: 'gk:pointIn',
+        x: exprInput(block, 'X', { type: 'num', value: 0 }),
+        y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        charVar: f(block, 'WHO'),
+      }
+    case 'sz_gk_opacity_of':
+      return { type: 'gk:opacityOf', charVar: f(block, 'WHO') }
+    case 'sz_gk_saved_value':
+      return { type: 'gk:savedValue', name: f(block, 'NAME') }
+    case 'sz_gk_velocity_of':
+      return { type: 'gk:velocityOf', charVar: f(block, 'WHO'), axis: f(block, 'AXIS') }
+    case 'sz_gk_property_of':
+      return { type: 'gk:propertyOf', charVar: f(block, 'WHO'), prop: f(block, 'PROP') }
+    case 'sz_gk_facing_of':
+      return { type: 'gk:facingOf', charVar: f(block, 'WHO') }
+    case 'sz_gk_cooldown_ready':
+      return {
+        type: 'gk:cooldownReady',
+        charVar: f(block, 'WHO'),
+        seconds: exprInput(block, 'SECS', { type: 'num', value: 0.5 }),
+      }
+    case 'sz_gk_tile_at':
+      return {
+        type: 'gk:tileAt',
+        map: f(block, 'MAP'),
+        x: exprInput(block, 'X', { type: 'num', value: 0 }),
+        y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+      }
     case 'sz_gk_is_dead':
       return { type: 'gk:isDead', charVar: f(block, 'CHAR') }
     case 'sz_gk_is_invincible':
@@ -568,6 +620,18 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3k:exists', charVar: f(block, 'CHAR') }
     case 'sz_g3k_on_ground':
       return { type: 'g3k:onGround', charVar: f(block, 'CHAR') }
+    case 'sz_g3k_velocity_of':
+      return {
+        type: 'g3k:velocityOf',
+        charVar: f(block, 'CHAR'),
+        axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z',
+      }
+    case 'sz_g3k_distance_between':
+      return { type: 'g3k:distanceBetween', aVar: f(block, 'A'), bVar: f(block, 'B') }
+    case 'sz_g3k_max_health_of':
+      return { type: 'g3k:maxHealthOf', charVar: f(block, 'CHAR') }
+    case 'sz_g3k_state_of':
+      return { type: 'g3k:stateOf', charVar: f(block, 'CHAR') }
     case 'sz_g3k_pointer_over':
       return { type: 'g3k:pointerOver', charVar: f(block, 'CHAR') }
     case 'sz_g3k_ground_point':
@@ -5642,6 +5706,622 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           seconds: exprInput(block, 'SEC', { type: 'num', value: 0.3 }),
         },
       }
+    case 'sz_gk_apply_gravity':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:applyGravity',
+          charVar: f(block, 'WHO'),
+          g: exprInput(block, 'G', { type: 'num', value: 2160 }),
+          dtVar: f(block, 'DT'),
+        },
+      }
+    case 'sz_gk_jump':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:jump',
+          charVar: f(block, 'WHO'),
+          force: exprInput(block, 'FORCE', { type: 'num', value: 660 }),
+        },
+      }
+    case 'sz_gk_set_velocity':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setVelocity',
+          charVar: f(block, 'WHO'),
+          vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
+          vy: exprInput(block, 'VY', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_set_terminal_velocity':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setTerminalVelocity',
+          charVar: f(block, 'WHO'),
+          max: exprInput(block, 'MAX', { type: 'num', value: 900 }),
+        },
+      }
+    case 'sz_gk_bounce_on_edges':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:bounceOnEdges', charVar: f(block, 'WHO') } }
+    case 'sz_gk_wrap_edges':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:wrapEdges', charVar: f(block, 'WHO') } }
+    case 'sz_gk_collide_tilemap':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:collideTilemap', charVar: f(block, 'WHO'), map: f(block, 'MAP') },
+      }
+    case 'sz_gk_collide_group':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:collideGroup', charVar: f(block, 'WHO'), mold: f(block, 'MOLD') },
+      }
+    case 'sz_gk_overlap_groups':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:overlapGroups',
+          aName: f(block, 'A_NAME'),
+          moldA: f(block, 'MOLD_A'),
+          bName: f(block, 'B_NAME'),
+          moldB: f(block, 'MOLD_B'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_every_seconds':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:everySeconds',
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 1 }),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_set_tile_size':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:setTileSize', px: exprInput(block, 'PX', { type: 'num', value: 64 }) },
+      }
+    case 'sz_gk_set_tile_at':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setTileAt',
+          map: f(block, 'MAP'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          index: exprInput(block, 'INDEX', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_break_tile_at':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:breakTileAt', map: f(block, 'MAP'), charVar: f(block, 'WHO') },
+      }
+    case 'sz_gk_set_property':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setProperty',
+          charVar: f(block, 'WHO'),
+          prop: f(block, 'PROP'),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_set_facing':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:setFacingDir', charVar: f(block, 'WHO'), dir: f(block, 'DIR') },
+      }
+    // 🏃 Kit Plataforma
+    case 'sz_gk_plat_hero':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:platformerHero',
+          charVar: f(block, 'WHO'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 240 }),
+          force: exprInput(block, 'JUMP', { type: 'num', value: 660 }),
+          dtVar: f(block, 'DT'),
+        },
+      }
+    case 'sz_gk_plat_jump_feel':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setJumpFeel',
+          coyote: exprInput(block, 'COYOTE', { type: 'num', value: 0.1 }),
+          buffer: exprInput(block, 'BUFFER', { type: 'num', value: 0.1 }),
+          hold: exprInput(block, 'HOLD', { type: 'num', value: 0.3 }),
+          gravity: exprInput(block, 'GRAVITY', { type: 'num', value: 2160 }),
+        },
+      }
+    case 'sz_gk_plat_double_jump':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:doubleJump',
+          charVar: f(block, 'WHO'),
+          force: exprInput(block, 'FORCE', { type: 'num', value: 600 }),
+          times: exprInput(block, 'TIMES', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_gk_plat_wall_slide':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:wallSlide',
+          charVar: f(block, 'WHO'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 90 }),
+        },
+      }
+    case 'sz_gk_plat_wall_jump':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:wallJump',
+          charVar: f(block, 'WHO'),
+          forceX: exprInput(block, 'FX', { type: 'num', value: 300 }),
+          forceY: exprInput(block, 'FY', { type: 'num', value: 660 }),
+        },
+      }
+    case 'sz_gk_plat_ladder':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:climbLadder',
+          charVar: f(block, 'WHO'),
+          map: f(block, 'MAP'),
+          tile: exprInput(block, 'TILE', { type: 'num', value: 2 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 160 }),
+        },
+      }
+    case 'sz_gk_plat_one_way':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:oneWayPlatform',
+          charVar: f(block, 'WHO'),
+          mold: f(block, 'MOLD'),
+          dtVar: f(block, 'DT'),
+        },
+      }
+    case 'sz_gk_plat_drop_through':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:dropThrough', charVar: f(block, 'WHO') } }
+    case 'sz_gk_plat_moving':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:movingPlatform',
+          charVar: f(block, 'WHO'),
+          x1: exprInput(block, 'X1', { type: 'num', value: 100 }),
+          y1: exprInput(block, 'Y1', { type: 'num', value: 300 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 400 }),
+          y2: exprInput(block, 'Y2', { type: 'num', value: 300 }),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 2 }),
+          dtVar: f(block, 'DT'),
+        },
+      }
+    case 'sz_gk_plat_ride_on':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:rideOn', charVar: f(block, 'WHO'), mold: f(block, 'MOLD') },
+      }
+    case 'sz_gk_plat_stomp':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:stompKill',
+          charVar: f(block, 'WHO'),
+          mold: f(block, 'MOLD'),
+          bounce: exprInput(block, 'BOUNCE', { type: 'num', value: 400 }),
+        },
+      }
+    case 'sz_gk_plat_patrol_wall':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:patrolTurnAtWall',
+          charVar: f(block, 'WHO'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 60 }),
+        },
+      }
+    case 'sz_gk_plat_checkpoint':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setCheckpoint',
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_gk_plat_respawn':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:respawn', charVar: f(block, 'WHO') } }
+    case 'sz_gk_plat_state_frames':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:platStateFrames',
+          charVar: f(block, 'WHO'),
+          state: f(block, 'STATE'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 3 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_gk_plat_anim':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:platformerAnim', charVar: f(block, 'WHO') } }
+    // 👾 R16 — Kit Monstrinhos
+    case 'sz_gk_pkm_creature':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmCreature',
+          name: f(block, 'NAME'),
+          creatureType: f(block, 'TYPE'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 30 }),
+          str: exprInput(block, 'STR', { type: 'num', value: 8 }),
+          def: exprInput(block, 'DEF', { type: 'num', value: 4 }),
+          spd: exprInput(block, 'SPD', { type: 'num', value: 5 }),
+          image: f(block, 'IMAGE'),
+          look: f(block, 'LOOK'),
+        },
+      }
+    case 'sz_gk_pkm_move':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmMove',
+          move: f(block, 'MOVE'),
+          creature: f(block, 'CREATURE'),
+          moveType: f(block, 'TYPE'),
+          dmg: exprInput(block, 'DMG', { type: 'num', value: 20 }),
+          acc: exprInput(block, 'ACC', { type: 'num', value: 100 }),
+          fx: f(block, 'FX'),
+          color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_gk_pkm_type_chart':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmTypeChart',
+          atk: f(block, 'A'),
+          def: f(block, 'B'),
+          mult: exprInput(block, 'MULT', { type: 'num', value: 2 }),
+        },
+      }
+    case 'sz_gk_pkm_evolve':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmEvolve',
+          from: f(block, 'FROM'),
+          to: f(block, 'TO'),
+          level: exprInput(block, 'LEVEL', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_gk_pkm_catch_difficulty':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmCatchDifficulty',
+          creature: f(block, 'NAME'),
+          level: f(block, 'LEVEL'),
+        },
+      }
+    case 'sz_gk_pkm_give':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmGive',
+          creature: f(block, 'CREATURE'),
+          level: exprInput(block, 'LEVEL', { type: 'num', value: 5 }),
+        },
+      }
+    case 'sz_gk_pkm_give_ball':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmGiveBall',
+          count: exprInput(block, 'COUNT', { type: 'num', value: 5 }),
+          power: exprInput(block, 'POWER', { type: 'num', value: 60 }),
+        },
+      }
+    case 'sz_gk_pkm_heal_team':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:pkmHealTeam' } }
+    case 'sz_gk_pkm_draw_team':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmDrawTeam',
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_gk_pkm_grass_cells':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmGrassCells',
+          x1: exprInput(block, 'X1', { type: 'num', value: 5 }),
+          y1: exprInput(block, 'Y1', { type: 'num', value: 6 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 13 }),
+          y2: exprInput(block, 'Y2', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_gk_pkm_grass_tiles':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmGrassTiles',
+          index: exprInput(block, 'INDEX', { type: 'num', value: 3 }),
+          map: f(block, 'MAP'),
+        },
+      }
+    case 'sz_gk_pkm_wild':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmWild',
+          creature: f(block, 'CREATURE'),
+          min: exprInput(block, 'MIN', { type: 'num', value: 3 }),
+          max: exprInput(block, 'MAX', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_gk_pkm_encounter_rate':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmEncounterRate',
+          percent: exprInput(block, 'PCT', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_gk_pkm_battle_wild':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmBattleWild',
+          creature: f(block, 'CREATURE'),
+          level: exprInput(block, 'LEVEL', { type: 'num', value: 5 }),
+        },
+      }
+    case 'sz_gk_pkm_battle_trainer':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmBattleTrainer',
+          name: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_pkm_trainer_creature':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pkmTrainerCreature',
+          creature: f(block, 'CREATURE'),
+          level: exprInput(block, 'LEVEL', { type: 'num', value: 5 }),
+        },
+      }
+    // 🧭 R15 — primitivos gerais
+    case 'sz_gk_define_region':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:defineRegion',
+          name: f(block, 'NAME'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          w: exprInput(block, 'W', { type: 'num', value: 200 }),
+          h: exprInput(block, 'H', { type: 'num', value: 200 }),
+        },
+      }
+    case 'sz_gk_launch_to_point':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:launchToPoint',
+          charVar: f(block, 'WHO'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 400 }),
+        },
+      }
+    case 'sz_gk_set_velocity_angle':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setVelocityAngle',
+          charVar: f(block, 'WHO'),
+          degrees: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+          force: exprInput(block, 'FORCE', { type: 'num', value: 200 }),
+        },
+      }
+    case 'sz_gk_set_opacity':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setOpacity',
+          charVar: f(block, 'WHO'),
+          percent: exprInput(block, 'PCT', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_gk_fade_to':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:fadeTo',
+          charVar: f(block, 'WHO'),
+          percent: exprInput(block, 'PCT', { type: 'num', value: 0 }),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 0.5 }),
+        },
+      }
+    case 'sz_gk_tween_property':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:tweenProperty',
+          charVar: f(block, 'WHO'),
+          prop: f(block, 'PROP'),
+          to: exprInput(block, 'TO', { type: 'num', value: 100 }),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 0.5 }),
+        },
+      }
+    case 'sz_gk_set_hitbox':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setHitbox',
+          charVar: f(block, 'WHO'),
+          ox: exprInput(block, 'OX', { type: 'num', value: 0 }),
+          oy: exprInput(block, 'OY', { type: 'num', value: 0 }),
+          w: exprInput(block, 'W', { type: 'num', value: 0 }),
+          h: exprInput(block, 'H', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_fade_screen':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:fadeScreen',
+          color: f(block, 'COLOR'),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 0.4 }),
+          toDark: f(block, 'DIR') === 'escurecer',
+        },
+      }
+    case 'sz_gk_flash_screen':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:flashScreen',
+          color: f(block, 'COLOR'),
+          times: exprInput(block, 'TIMES', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_gk_save_value':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:saveValue',
+          name: f(block, 'NAME'),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_play_music':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:playMusic', sound: f(block, 'SOUND') } }
+    case 'sz_gk_stop_sound':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:stopSound', sound: f(block, 'SOUND') } }
+    case 'sz_gk_set_volume':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setVolume',
+          sound: f(block, 'SOUND'),
+          level: exprInput(block, 'LEVEL', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_gk_create_empty_tilemap':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:createEmptyTilemap',
+          name: f(block, 'NAME'),
+          cols: exprInput(block, 'COLS', { type: 'num', value: 20 }),
+          rows: exprInput(block, 'ROWS', { type: 'num', value: 15 }),
+          fill: exprInput(block, 'FILL', { type: 'num', value: -1 }),
+          asset: f(block, 'ASSET'),
+        },
+      }
+    case 'sz_gk_move_with_custom_keys':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:moveWithCustomKeys',
+          charVar: f(block, 'WHO'),
+          up: f(block, 'UP'),
+          down: f(block, 'DOWN'),
+          left: f(block, 'LEFT'),
+          right: f(block, 'RIGHT'),
+          dtVar: f(block, 'DT'),
+        },
+      }
+    case 'sz_gk_tween_to':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:tweenTo',
+          charVar: f(block, 'WHO'),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 0.5 }),
+        },
+      }
     case 'sz_gk_attack_facing':
       seen.add('game-2d-advanced')
       return {
@@ -6054,6 +6734,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           material: f(block, 'MATERIAL') || 'normal',
           color: f(block, 'COLOR') || '#22d3ee',
           texture: f(block, 'TEXTURE') || '',
+          model: f(block, 'MODEL') || '',
           w: exprInput(block, 'W', { type: 'num', value: 1 }),
           h: exprInput(block, 'H', { type: 'num', value: 1 }),
           d: exprInput(block, 'D', { type: 'num', value: 1 }),
@@ -6291,6 +6972,67 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           jump: exprInput(block, 'JUMP', { type: 'num', value: 9 }),
         },
       }
+    case 'sz_g3k_set_collider':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:setCollider',
+          mold: f(block, 'MOLD'),
+          shape: f(block, 'SHAPE') || 'box',
+        },
+      }
+    case 'sz_g3k_pass_through':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:passThrough',
+          charVar: f(block, 'CHAR'),
+          ghost: f(block, 'GHOST') === 'TRUE',
+        },
+      }
+    case 'sz_g3k_set_seed':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'g3k:setSeed', seed: exprInput(block, 'SEED', { type: 'num', value: 42 }) },
+      }
+    case 'sz_g3k_make_trigger':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:makeTrigger', mold: f(block, 'MOLD') } }
+    case 'sz_g3k_on_overlap':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:onOverlap',
+          mold: f(block, 'MOLD'),
+          zoneName: f(block, 'ZONE') || 'zona',
+          whoName: f(block, 'WHO') || 'quem',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g3k_set_bounce':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:setBounce',
+          mold: f(block, 'MOLD'),
+          amount: exprInput(block, 'AMOUNT', { type: 'num', value: 0.5 }),
+        },
+      }
+    case 'sz_g3k_set_friction':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:setFriction',
+          mold: f(block, 'MOLD'),
+          amount: exprInput(block, 'AMOUNT', { type: 'num', value: 0.5 }),
+        },
+      }
     case 'sz_g3k_add_light':
       seen.add('game-3d-advanced')
       return {
@@ -6334,6 +7076,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           bottom: f(block, 'BOTTOM') || '#93c5fd',
         },
       }
+    case 'sz_g3k_set_sky_photo':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:setSkyPhoto', photo: f(block, 'PHOTO') } }
     case 'sz_g3k_pick':
       seen.add('game-3d-advanced')
       return {
@@ -6528,6 +7273,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           cone: exprInput(block, 'CONE', { type: 'num', value: 20 }),
           gravity: exprInput(block, 'GRAVITY', { type: 'num', value: 2 }),
           glow: f(block, 'GLOW') === 'TRUE',
+          curve: f(block, 'CURVE') || 'suave',
         },
       }
     case 'sz_g3k_start_emitter':

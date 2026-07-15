@@ -3867,9 +3867,24 @@ function asSZGameKitCall(expr: Node): { method: string; args: Node[] } | null {
  * o valor para a 1ª opção e o round-trip mentiria — padrão do set_state_anim).
  */
 const GK_FIXED_SCREENS = new Set(['menu', 'pausa', 'carregando', 'fim', 'vitoria'])
+/** Enums dos dropdowns da física (R11) — valor fora da lista vira rawJS, senão o
+ * dropdown coagiria p/ a 1ª opção e a criança perderia o que escreveu. */
+const GK_ENTITY_PROPS = new Set(['x', 'y', 'vx', 'vy', 'speed', 'w', 'h', 'health'])
+const GK_FACING_DIRS = new Set(['left', 'right', 'up', 'down'])
+const GK_AXES = new Set(['x', 'y'])
+/** Os 4 estados do herói de plataforma — espelha o PLAT_STATES do runtime e o
+ * dropdown do bloco. Estado desconhecido → rawJS (o dropdown coage valor). */
+const GK_PLAT_STATES = new Set(['parado', 'andando', 'pulando', 'caindo'])
+/** O que o "deslizar a propriedade" aceita — espelha o ENTITY_PROPS do runtime
+ * mais a opacidade (que não é uma propriedade de física). */
+/** As 4 coreografias de golpe (espelha o dropdown do bloco). */
+const GK_PKM_FX = new Set(['investida', 'bola', 'raio', 'onda'])
+/** Os 4 níveis de dificuldade de captura (espelha o dropdown). */
+const GK_PKM_DIFF = new Set(['fácil', 'normal', 'difícil', 'raríssimo'])
+const GK_TWEEN_PROPS = new Set(['x', 'y', 'vx', 'vy', 'speed', 'w', 'h', 'health', 'opacity'])
 
 /** SZGameKit.keyDown("w") / touching(a, b) / width() … em posição de VALOR. */
-function matchGameKitExpr(node: Node): JSExpr | null {
+function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   const call = asSZGameKitCall(node)
   if (!call) return null
   const { method, args } = call
@@ -3910,6 +3925,79 @@ function matchGameKitExpr(node: Node): JSExpr | null {
     const aVar = identifierName(args[0])
     const bVar = identifierName(args[1])
     if (aVar && bVar) return { type: 'gk:didHit', aVar, bVar }
+  }
+  if (method === 'isOnGround') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:isOnGround', charVar }
+  }
+  // 🧭 R15
+  if (method === 'isInside' || method === 'overlapPercent') {
+    const charVar = identifierName(args[0])
+    if (charVar && args[1]?.type === 'StringLiteral') {
+      const region = args[1].value as string
+      return method === 'isInside'
+        ? { type: 'gk:isInside', charVar, region }
+        : { type: 'gk:overlapPercent', charVar, region }
+    }
+  }
+  if (method === 'chance') {
+    const percent = toExpr(args[0], ctx)
+    if (isSimpleValue(percent)) return { type: 'gk:chance', percent }
+  }
+  if (method === 'distanceBetween') {
+    const a = identifierName(args[0])
+    const b = identifierName(args[1])
+    if (a && b) return { type: 'gk:distanceBetween', a, b }
+  }
+  if (method === 'pointIn') {
+    const charVar = identifierName(args[2])
+    const x = toExpr(args[0], ctx)
+    const y = toExpr(args[1], ctx)
+    if (charVar && isSimpleValue(x) && isSimpleValue(y))
+      return { type: 'gk:pointIn', x, y, charVar }
+  }
+  if (method === 'opacityOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:opacityOf', charVar }
+  }
+  if (method === 'savedValue' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:savedValue', name: args[0].value as string }
+  }
+  // 👾 R16
+  if ((method === 'pkmLevelOf' || method === 'pkmHas') && args[0]?.type === 'StringLiteral') {
+    const creature = args[0].value as string
+    return method === 'pkmLevelOf'
+      ? { type: 'gk:pkmLevelOf', creature }
+      : { type: 'gk:pkmHas', creature }
+  }
+  if (method === 'pkmTeamSize' && args.length === 0) return { type: 'gk:pkmTeamSize' }
+  if (method === 'pkmBallCount' && args.length === 0) return { type: 'gk:pkmBallCount' }
+  if (method === 'pkmCaught' && args.length === 0) return { type: 'gk:pkmCaught' }
+  if (method === 'facingOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:facingOf', charVar }
+  }
+  if (method === 'velocityOf' && args[1]?.type === 'StringLiteral') {
+    const charVar = identifierName(args[0])
+    const axis = args[1].value as string
+    if (charVar && GK_AXES.has(axis)) return { type: 'gk:velocityOf', charVar, axis }
+  }
+  if (method === 'propertyOf' && args[1]?.type === 'StringLiteral') {
+    const charVar = identifierName(args[0])
+    const prop = args[1].value as string
+    if (charVar && GK_ENTITY_PROPS.has(prop)) return { type: 'gk:propertyOf', charVar, prop }
+  }
+  if (method === 'cooldownReady') {
+    const charVar = identifierName(args[0])
+    const seconds = toExpr(args[1], ctx)
+    if (charVar && isSimpleValue(seconds)) return { type: 'gk:cooldownReady', charVar, seconds }
+  }
+  if (method === 'tileAt' && args[0]?.type === 'StringLiteral') {
+    const x = toExpr(args[1], ctx)
+    const y = toExpr(args[2], ctx)
+    if (isSimpleValue(x) && isSimpleValue(y)) {
+      return { type: 'gk:tileAt', map: args[0].value as string, x, y }
+    }
   }
   if (method === 'isDead') {
     const charVar = identifierName(args[0])
@@ -4551,6 +4639,503 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ? { type: 'gk:cameraShake', intensity, seconds }
         : null
     }
+    case 'applyGravity': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[2])
+      if (!charVar || !dtVar) return null
+      const g = toExpr(args[1], ctx)
+      return isSimpleValue(g) ? { type: 'gk:applyGravity', charVar, g, dtVar } : null
+    }
+    case 'jump': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const force = toExpr(args[1], ctx)
+      return isSimpleValue(force) ? { type: 'gk:jump', charVar, force } : null
+    }
+    case 'setVelocity': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const vx = toExpr(args[1], ctx)
+      const vy = toExpr(args[2], ctx)
+      return isSimpleValue(vx) && isSimpleValue(vy)
+        ? { type: 'gk:setVelocity', charVar, vx, vy }
+        : null
+    }
+    case 'setTerminalVelocity': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const max = toExpr(args[1], ctx)
+      return isSimpleValue(max) ? { type: 'gk:setTerminalVelocity', charVar, max } : null
+    }
+    case 'bounceOnEdges': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:bounceOnEdges', charVar } : null
+    }
+    case 'wrapEdges': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:wrapEdges', charVar } : null
+    }
+    case 'collideTilemap': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:collideTilemap', charVar, map: args[1].value as string }
+    }
+    case 'collideGroup': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:collideGroup', charVar, mold: args[1].value as string }
+    }
+    case 'overlapGroups': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      if (!isFn(args[2])) return null
+      const aName = identifierName(args[2].params?.[0])
+      const bName = identifierName(args[2].params?.[1])
+      if (!aName || !bName) return null
+      return {
+        type: 'gk:overlapGroups',
+        aName,
+        moldA: args[0].value as string,
+        bName,
+        moldB: args[1].value as string,
+        body: bodyOfFn(args[2], source, ctx),
+      }
+    }
+    case 'setTileSize': {
+      const px = toExpr(args[0], ctx)
+      return isSimpleValue(px) ? { type: 'gk:setTileSize', px } : null
+    }
+    case 'setTileAt': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const index = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(index)
+        ? { type: 'gk:setTileAt', map: args[0].value as string, x, y, index }
+        : null
+    }
+    case 'breakTileAt': {
+      const charVar = identifierName(args[1])
+      if (args[0]?.type !== 'StringLiteral' || !charVar) return null
+      return { type: 'gk:breakTileAt', map: args[0].value as string, charVar }
+    }
+    case 'setProperty': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const prop = args[1].value as string
+      if (!GK_ENTITY_PROPS.has(prop)) return null // dropdown coage: desconhecido → rawJS
+      const value = toExpr(args[2], ctx)
+      return isSimpleValue(value) ? { type: 'gk:setProperty', charVar, prop, value } : null
+    }
+    case 'setFacingDir': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const dir = args[1].value as string
+      if (!GK_FACING_DIRS.has(dir)) return null
+      return { type: 'gk:setFacingDir', charVar, dir }
+    }
+    // 🏃 Kit Plataforma
+    case 'platformerHero': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[3])
+      if (!charVar || !dtVar) return null
+      const speed = toExpr(args[1], ctx)
+      const force = toExpr(args[2], ctx)
+      return isSimpleValue(speed) && isSimpleValue(force)
+        ? { type: 'gk:platformerHero', charVar, speed, force, dtVar }
+        : null
+    }
+    case 'setJumpFeel': {
+      const coyote = toExpr(args[0], ctx)
+      const buffer = toExpr(args[1], ctx)
+      const hold = toExpr(args[2], ctx)
+      const gravity = toExpr(args[3], ctx)
+      return isSimpleValue(coyote) &&
+        isSimpleValue(buffer) &&
+        isSimpleValue(hold) &&
+        isSimpleValue(gravity)
+        ? { type: 'gk:setJumpFeel', coyote, buffer, hold, gravity }
+        : null
+    }
+    case 'doubleJump': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const force = toExpr(args[1], ctx)
+      const times = toExpr(args[2], ctx)
+      return isSimpleValue(force) && isSimpleValue(times)
+        ? { type: 'gk:doubleJump', charVar, force, times }
+        : null
+    }
+    case 'wallSlide': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const speed = toExpr(args[1], ctx)
+      return isSimpleValue(speed) ? { type: 'gk:wallSlide', charVar, speed } : null
+    }
+    case 'wallJump': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const forceX = toExpr(args[1], ctx)
+      const forceY = toExpr(args[2], ctx)
+      return isSimpleValue(forceX) && isSimpleValue(forceY)
+        ? { type: 'gk:wallJump', charVar, forceX, forceY }
+        : null
+    }
+    case 'climbLadder': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const tile = toExpr(args[2], ctx)
+      const speed = toExpr(args[3], ctx)
+      return isSimpleValue(tile) && isSimpleValue(speed)
+        ? { type: 'gk:climbLadder', charVar, map: args[1].value as string, tile, speed }
+        : null
+    }
+    case 'oneWayPlatform': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[2])
+      if (!charVar || !dtVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:oneWayPlatform', charVar, mold: args[1].value as string, dtVar }
+    }
+    case 'dropThrough': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:dropThrough', charVar } : null
+    }
+    case 'movingPlatform': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[6])
+      if (!charVar || !dtVar) return null
+      const x1 = toExpr(args[1], ctx)
+      const y1 = toExpr(args[2], ctx)
+      const x2 = toExpr(args[3], ctx)
+      const y2 = toExpr(args[4], ctx)
+      const seconds = toExpr(args[5], ctx)
+      return isSimpleValue(x1) &&
+        isSimpleValue(y1) &&
+        isSimpleValue(x2) &&
+        isSimpleValue(y2) &&
+        isSimpleValue(seconds)
+        ? { type: 'gk:movingPlatform', charVar, x1, y1, x2, y2, seconds, dtVar }
+        : null
+    }
+    case 'rideOn': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rideOn', charVar, mold: args[1].value as string }
+    }
+    case 'stompKill': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const bounce = toExpr(args[2], ctx)
+      return isSimpleValue(bounce)
+        ? { type: 'gk:stompKill', charVar, mold: args[1].value as string, bounce }
+        : null
+    }
+    case 'patrolTurnAtWall': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const speed = toExpr(args[1], ctx)
+      return isSimpleValue(speed) ? { type: 'gk:patrolTurnAtWall', charVar, speed } : null
+    }
+    case 'setCheckpoint': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'gk:setCheckpoint', x, y } : null
+    }
+    case 'respawn': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:respawn', charVar } : null
+    }
+    case 'platStateFrames': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const state = args[1].value as string
+      if (!GK_PLAT_STATES.has(state)) return null
+      const from = toExpr(args[2], ctx)
+      const to = toExpr(args[3], ctx)
+      const fps = toExpr(args[4], ctx)
+      return isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
+        ? { type: 'gk:platStateFrames', charVar, state, from, to, fps }
+        : null
+    }
+    case 'platformerAnim': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:platformerAnim', charVar } : null
+    }
+    // 👾 R16 — Kit Monstrinhos
+    case 'pkmCreature': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      if (args[6]?.type !== 'StringLiteral' || args[7]?.type !== 'StringLiteral') return null
+      const hp = toExpr(args[2], ctx)
+      const st = toExpr(args[3], ctx)
+      const df = toExpr(args[4], ctx)
+      const sp = toExpr(args[5], ctx)
+      return isSimpleValue(hp) && isSimpleValue(st) && isSimpleValue(df) && isSimpleValue(sp)
+        ? {
+            type: 'gk:pkmCreature',
+            name: args[0].value as string,
+            creatureType: args[1].value as string,
+            hp,
+            str: st,
+            def: df,
+            spd: sp,
+            image: args[6].value as string,
+            look: args[7].value as string,
+          }
+        : null
+    }
+    case 'pkmMove': {
+      const strs = [args[0], args[1], args[2], args[5], args[6]]
+      if (strs.some((a) => a?.type !== 'StringLiteral')) return null
+      const dmg = toExpr(args[3], ctx)
+      const acc = toExpr(args[4], ctx)
+      if (!isSimpleValue(dmg) || !isSimpleValue(acc)) return null
+      const fx = (strs[3] as { value: string }).value
+      if (!GK_PKM_FX.has(fx)) return null
+      return {
+        type: 'gk:pkmMove',
+        move: (strs[0] as { value: string }).value,
+        creature: (strs[1] as { value: string }).value,
+        moveType: (strs[2] as { value: string }).value,
+        dmg,
+        acc,
+        fx,
+        color: (strs[4] as { value: string }).value,
+      }
+    }
+    case 'pkmTypeChart': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const mult = toExpr(args[2], ctx)
+      return isSimpleValue(mult)
+        ? {
+            type: 'gk:pkmTypeChart',
+            atk: args[0].value as string,
+            def: args[1].value as string,
+            mult,
+          }
+        : null
+    }
+    case 'pkmEvolve': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const level = toExpr(args[2], ctx)
+      return isSimpleValue(level)
+        ? {
+            type: 'gk:pkmEvolve',
+            from: args[0].value as string,
+            to: args[1].value as string,
+            level,
+          }
+        : null
+    }
+    case 'pkmCatchDifficulty': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const lv = args[1].value as string
+      if (!GK_PKM_DIFF.has(lv)) return null
+      return { type: 'gk:pkmCatchDifficulty', creature: args[0].value as string, level: lv }
+    }
+    case 'pkmGive':
+    case 'pkmBattleWild':
+    case 'pkmTrainerCreature': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const level = toExpr(args[1], ctx)
+      if (!isSimpleValue(level)) return null
+      const creature = args[0].value as string
+      if (method === 'pkmGive') return { type: 'gk:pkmGive', creature, level }
+      if (method === 'pkmBattleWild') return { type: 'gk:pkmBattleWild', creature, level }
+      return { type: 'gk:pkmTrainerCreature', creature, level }
+    }
+    case 'pkmGiveBall': {
+      const count = toExpr(args[0], ctx)
+      const power = toExpr(args[1], ctx)
+      return isSimpleValue(count) && isSimpleValue(power)
+        ? { type: 'gk:pkmGiveBall', count, power }
+        : null
+    }
+    case 'pkmHealTeam':
+      return { type: 'gk:pkmHealTeam' }
+    case 'pkmDrawTeam': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'gk:pkmDrawTeam', x, y } : null
+    }
+    case 'pkmGrassCells': {
+      const x1 = toExpr(args[0], ctx)
+      const y1 = toExpr(args[1], ctx)
+      const x2 = toExpr(args[2], ctx)
+      const y2 = toExpr(args[3], ctx)
+      return isSimpleValue(x1) && isSimpleValue(y1) && isSimpleValue(x2) && isSimpleValue(y2)
+        ? { type: 'gk:pkmGrassCells', x1, y1, x2, y2 }
+        : null
+    }
+    case 'pkmGrassTiles': {
+      if (args[1]?.type !== 'StringLiteral') return null
+      const index = toExpr(args[0], ctx)
+      return isSimpleValue(index)
+        ? { type: 'gk:pkmGrassTiles', index, map: args[1].value as string }
+        : null
+    }
+    case 'pkmWild': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const min = toExpr(args[1], ctx)
+      const max = toExpr(args[2], ctx)
+      return isSimpleValue(min) && isSimpleValue(max)
+        ? { type: 'gk:pkmWild', creature: args[0].value as string, min, max }
+        : null
+    }
+    case 'pkmEncounterRate': {
+      const percent = toExpr(args[0], ctx)
+      return isSimpleValue(percent) ? { type: 'gk:pkmEncounterRate', percent } : null
+    }
+    case 'pkmBattleTrainer': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const body = bodyOfFn(args[1], ctx.source, ctx)
+      return body ? { type: 'gk:pkmBattleTrainer', name: args[0].value as string, body } : null
+    }
+    // 🧭 R15 — primitivos gerais
+    case 'defineRegion': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const w = toExpr(args[3], ctx)
+      const h = toExpr(args[4], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(w) && isSimpleValue(h)
+        ? { type: 'gk:defineRegion', name: args[0].value as string, x, y, w, h }
+        : null
+    }
+    case 'launchToPoint': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const speed = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(speed)
+        ? { type: 'gk:launchToPoint', charVar, x, y, speed }
+        : null
+    }
+    case 'setVelocityAngle': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const degrees = toExpr(args[1], ctx)
+      const force = toExpr(args[2], ctx)
+      return isSimpleValue(degrees) && isSimpleValue(force)
+        ? { type: 'gk:setVelocityAngle', charVar, degrees, force }
+        : null
+    }
+    case 'setOpacity': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const percent = toExpr(args[1], ctx)
+      return isSimpleValue(percent) ? { type: 'gk:setOpacity', charVar, percent } : null
+    }
+    case 'fadeTo': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const percent = toExpr(args[1], ctx)
+      const seconds = toExpr(args[2], ctx)
+      return isSimpleValue(percent) && isSimpleValue(seconds)
+        ? { type: 'gk:fadeTo', charVar, percent, seconds }
+        : null
+    }
+    case 'tweenProperty': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const prop = args[1].value as string
+      if (!GK_TWEEN_PROPS.has(prop)) return null
+      const to = toExpr(args[2], ctx)
+      const seconds = toExpr(args[3], ctx)
+      return isSimpleValue(to) && isSimpleValue(seconds)
+        ? { type: 'gk:tweenProperty', charVar, prop, to, seconds }
+        : null
+    }
+    case 'setHitbox': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const ox = toExpr(args[1], ctx)
+      const oy = toExpr(args[2], ctx)
+      const w = toExpr(args[3], ctx)
+      const h = toExpr(args[4], ctx)
+      return isSimpleValue(ox) && isSimpleValue(oy) && isSimpleValue(w) && isSimpleValue(h)
+        ? { type: 'gk:setHitbox', charVar, ox, oy, w, h }
+        : null
+    }
+    case 'fadeScreen': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const seconds = toExpr(args[1], ctx)
+      const dark = args[2]
+      if (dark?.type !== 'BooleanLiteral') return null
+      return isSimpleValue(seconds)
+        ? { type: 'gk:fadeScreen', color: args[0].value as string, seconds, toDark: dark.value }
+        : null
+    }
+    case 'flashScreen': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const times = toExpr(args[1], ctx)
+      return isSimpleValue(times)
+        ? { type: 'gk:flashScreen', color: args[0].value as string, times }
+        : null
+    }
+    case 'saveValue': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const value = toExpr(args[1], ctx)
+      return isSimpleValue(value)
+        ? { type: 'gk:saveValue', name: args[0].value as string, value }
+        : null
+    }
+    case 'playMusic': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:playMusic', sound: args[0].value as string }
+    }
+    case 'stopSound': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:stopSound', sound: args[0].value as string }
+    }
+    case 'setVolume': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const level = toExpr(args[1], ctx)
+      return isSimpleValue(level)
+        ? { type: 'gk:setVolume', sound: args[0].value as string, level }
+        : null
+    }
+    case 'createEmptyTilemap': {
+      if (args[0]?.type !== 'StringLiteral' || args[4]?.type !== 'StringLiteral') return null
+      const cols = toExpr(args[1], ctx)
+      const rows = toExpr(args[2], ctx)
+      const fill = toExpr(args[3], ctx)
+      return isSimpleValue(cols) && isSimpleValue(rows) && isSimpleValue(fill)
+        ? {
+            type: 'gk:createEmptyTilemap',
+            name: args[0].value as string,
+            cols,
+            rows,
+            fill,
+            asset: args[4].value as string,
+          }
+        : null
+    }
+    case 'moveWithCustomKeys': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[5])
+      if (!charVar || !dtVar) return null
+      const ks = [args[1], args[2], args[3], args[4]]
+      if (ks.some((k) => k?.type !== 'StringLiteral')) return null
+      return {
+        type: 'gk:moveWithCustomKeys',
+        charVar,
+        up: (ks[0] as { value: string }).value,
+        down: (ks[1] as { value: string }).value,
+        left: (ks[2] as { value: string }).value,
+        right: (ks[3] as { value: string }).value,
+        dtVar,
+      }
+    }
+    case 'tweenTo': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const seconds = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(seconds)
+        ? { type: 'gk:tweenTo', charVar, x, y, seconds }
+        : null
+    }
     case 'attackFacing': {
       const charVar = identifierName(args[0])
       if (!charVar) return null
@@ -4860,7 +5445,21 @@ const G3K_HUD_SLOTS = new Set([
   'bottom-left',
   'bottom-right',
 ])
-const G3K_PART_SHAPES = new Set(['box', 'sphere', 'cylinder', 'cone', 'plane', 'torus', 'pyramid'])
+// ⚠️ Espelha o dropdown SHAPE do `sz_g3k_part`. Valor de forma que exista no
+// bloco mas falte aqui faz o `part()` INTEIRO cair em rawJS na Ponte — silencioso
+// e global (não só o molde da forma nova).
+const G3K_PART_SHAPES = new Set([
+  'box',
+  'sphere',
+  'cylinder',
+  'cone',
+  'plane',
+  'torus',
+  'pyramid',
+  'rampa',
+])
+const G3K_COLLIDER_SHAPES = new Set(['box', 'sphere', 'capsule'])
+const G3K_CURVES = new Set(['linear', 'suave', 'pulso', 'fogo'])
 const G3K_PART_MATERIALS = new Set(['normal', 'metal', 'vidro', 'brilho'])
 const G3K_SPAWNER_WHERE = new Set(['edge', 'anywhere'])
 const G3K_POS_AXES = new Set(['x', 'y', 'z'])
@@ -4936,6 +5535,27 @@ function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const charVar = identifierName(args[0])
     if (charVar) return { type: 'g3k:pointerOver', charVar }
   }
+  if (method === 'velocityOf') {
+    const charVar = identifierName(args[0])
+    if (charVar && args[1]?.type === 'StringLiteral') {
+      const axis = args[1].value as string
+      if (G3K_POS_AXES.has(axis))
+        return { type: 'g3k:velocityOf', charVar, axis: axis as 'x' | 'y' | 'z' }
+    }
+  }
+  if (method === 'distanceBetween') {
+    const aVar = identifierName(args[0])
+    const bVar = identifierName(args[1])
+    if (aVar && bVar) return { type: 'g3k:distanceBetween', aVar, bVar }
+  }
+  if (method === 'maxHealthOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'g3k:maxHealthOf', charVar }
+  }
+  if (method === 'stateOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'g3k:stateOf', charVar }
+  }
   if (method === 'groundPoint') {
     if (args[0]?.type === 'StringLiteral') {
       const axis = args[0].value as string
@@ -4990,6 +5610,7 @@ function readGameKit3DPartOptions(
   material: string
   color: string
   texture: string
+  model: string
   w: JSExpr
   h: JSExpr
   d: JSExpr
@@ -5002,6 +5623,7 @@ function readGameKit3DPartOptions(
     material: 'normal',
     color: '#22d3ee',
     texture: '',
+    model: '',
     w: { type: 'num', value: 1 } as JSExpr,
     h: { type: 'num', value: 1 } as JSExpr,
     d: { type: 'num', value: 1 } as JSExpr,
@@ -5034,9 +5656,9 @@ function readGameKit3DPartOptions(
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
       result.color = prop.value.value as string
-    } else if (key === 'texture') {
+    } else if (key === 'texture' || key === 'model') {
       if (prop.value?.type !== 'StringLiteral') return null
-      result.texture = prop.value.value as string
+      result[key] = prop.value.value as string
     } else {
       return null
     }
@@ -5144,6 +5766,7 @@ function readGameKit3DEmitterOptions(
   cone: JSExpr
   gravity: JSExpr
   glow: boolean
+  curve: string
 } | null {
   const result = {
     colorFrom: '#fde047',
@@ -5155,6 +5778,7 @@ function readGameKit3DEmitterOptions(
     cone: { type: 'num', value: 20 } as JSExpr,
     gravity: { type: 'num', value: 2 } as JSExpr,
     glow: true,
+    curve: 'suave',
   }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
@@ -5181,6 +5805,12 @@ function readGameKit3DEmitterOptions(
     } else if (key === 'glow') {
       if (prop.value?.type !== 'BooleanLiteral') return null
       result.glow = prop.value.value as boolean
+    } else if (key === 'curve') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      const curve = prop.value.value as string
+      // Dropdown coage desconhecido p/ a 1ª opção — recusa aqui e cai em rawJS.
+      if (!G3K_CURVES.has(curve)) return null
+      result.curve = curve
     } else {
       return null
     }
@@ -5301,6 +5931,7 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
             cone: o.cone,
             gravity: o.gravity,
             glow: o.glow,
+            curve: o.curve,
           }
         : null
     }
@@ -5364,6 +5995,7 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
             material: o.material,
             color: o.color,
             texture: o.texture,
+            model: o.model,
             w: o.w,
             h: o.h,
             d: o.d,
@@ -5529,6 +6161,46 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'g3k:makeSolid', mold: args[0].value as string }
     }
+    case 'setSeed': {
+      const seed = toExpr(args[0], ctx)
+      return isSimpleValue(seed) ? { type: 'g3k:setSeed', seed } : null
+    }
+    case 'makeTrigger': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:makeTrigger', mold: args[0].value as string }
+    }
+    case 'setCollider': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const shape = args[1].value as string
+      // Dropdown coage valor desconhecido p/ a 1ª opção — recusa aqui e cai em rawJS.
+      if (!G3K_COLLIDER_SHAPES.has(shape)) return null
+      return { type: 'g3k:setCollider', mold: args[0].value as string, shape }
+    }
+    case 'passThrough': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'BooleanLiteral') return null
+      return { type: 'g3k:passThrough', charVar, ghost: args[1].value as boolean }
+    }
+    case 'onOverlap': {
+      // generator: SZGameKit3D.onOverlap("molde", function (zona, quem) {…})
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'g3k:onOverlap',
+        mold: args[0].value as string,
+        zoneName: identifierName(args[1].params?.[0]) ?? 'zona',
+        whoName: identifierName(args[1].params?.[1]) ?? 'quem',
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'setBounce':
+    case 'setFriction': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const amount = toExpr(args[1], ctx)
+      if (!isSimpleValue(amount)) return null
+      return method === 'setBounce'
+        ? { type: 'g3k:setBounce', mold: args[0].value as string, amount }
+        : { type: 'g3k:setFriction', mold: args[0].value as string, amount }
+    }
     case 'platformerKeys': {
       const charVar = identifierName(args[0])
       if (!charVar) return null
@@ -5559,6 +6231,10 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       return isSimpleValue(near) && isSimpleValue(far)
         ? { type: 'g3k:setFog', color: args[0].value as string, near, far }
         : null
+    }
+    case 'setSkyPhoto': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:setSkyPhoto', photo: args[0].value as string }
     }
     case 'setSky': {
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
@@ -7394,6 +8070,13 @@ function matchGetAttribute(
  */
 function tryMatchEvery(node: Node, source: string, ctx: ParseCtx): JSStatement | null {
   if (node.alternate) return null
+  // Espelho do Jogo 2D para o Jogo 2D Avançado: `if (SZGameKit.everySeconds(k, N))`.
+  const gkCall = asSZGameKitCall(node.test)
+  if (gkCall && gkCall.method === 'everySeconds') {
+    const seconds = toExpr(gkCall.args[1], ctx)
+    if (!isSimpleValue(seconds)) return null
+    return { type: 'gk:everySeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
+  }
   const call = asSZGame2DCall(node.test)
   if (!call) return null
   if (call.method === 'everyFrames') {
@@ -8043,7 +8726,7 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       const g3dExpr = matchGame3DExpr(node, ctx)
       if (g3dExpr) return g3dExpr
       // SZGameKit.keyDown / touching / width / state… → valores do kit profissional.
-      const gkExpr = matchGameKitExpr(node)
+      const gkExpr = matchGameKitExpr(node, ctx)
       if (gkExpr) return gkExpr
       // SZGameKit.rpg* → valores do Kit RPG (célula, flags, itens, batalha).
       const gkRpgExpr = matchGameKitRpgExpr(node, ctx)
@@ -8371,6 +9054,26 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:countActive':
     case 'gk:touchCircle':
     case 'gk:didHit':
+    case 'gk:isOnGround':
+    case 'gk:velocityOf':
+    case 'gk:propertyOf':
+    case 'gk:facingOf':
+    case 'gk:cooldownReady':
+    case 'gk:tileAt':
+    // 🧭 R15 — sem estar AQUI, o statement que os usa vira rawJS inteiro
+    case 'gk:isInside':
+    case 'gk:overlapPercent':
+    case 'gk:chance':
+    case 'gk:distanceBetween':
+    case 'gk:pointIn':
+    case 'gk:opacityOf':
+    case 'gk:savedValue':
+    // 👾 R16 — sem estar aqui, o statement que os usa vira rawJS inteiro
+    case 'gk:pkmLevelOf':
+    case 'gk:pkmHas':
+    case 'gk:pkmTeamSize':
+    case 'gk:pkmBallCount':
+    case 'gk:pkmCaught':
     case 'gk:isDead':
     case 'gk:isInvincible':
     case 'gk:healthOf':
@@ -8401,6 +9104,10 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3k:onGround':
     case 'g3k:pointerOver':
     case 'g3k:groundPoint':
+    case 'g3k:velocityOf':
+    case 'g3k:distanceBetween':
+    case 'g3k:maxHealthOf':
+    case 'g3k:stateOf':
     case 'g3k:stateIs':
     case 'g3k:gameState':
     case 'inputKeyPressed':

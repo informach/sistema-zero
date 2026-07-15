@@ -8,7 +8,7 @@ import { buildIRFromWorkspace, FRAME_BEHAVIOR } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
-import { gameKitBlocks } from '../blocks'
+import { gameKitBlocks, gameKitToolboxCategory } from '../blocks'
 import { gameKitRuntime } from '../runtime'
 
 /**
@@ -118,9 +118,51 @@ beforeAll(() => {
 describe('Auditoria Jogo 2D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
-    expect(gameKitBlocks.length).toBe(133)
+    expect(gameKitBlocks.length).toBe(214)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
+  })
+
+  // A toolbox é montada a partir do array SUBCATS, que é uma lista de STRINGS
+  // paralela aos defs — nada garantia que as duas casam. Um typo em SUBCATS
+  // enviaria um item de toolbox apontando p/ um bloco inexistente, e um bloco
+  // esquecido cairia no grupo genérico "Mais" sem ninguém perceber.
+  it('a toolbox cobre TODOS os blocos, exatamente 1× (sem fantasma, sem "Mais")', () => {
+    const inToolbox: string[] = []
+    const walk = (node: unknown): void => {
+      if (Array.isArray(node)) {
+        for (const n of node) walk(n)
+        return
+      }
+      if (!node || typeof node !== 'object') return
+      const o = node as { kind?: string; type?: string; contents?: unknown }
+      if (o.kind === 'block' && typeof o.type === 'string') inToolbox.push(o.type)
+      if (o.contents) walk(o.contents)
+    }
+    walk(gameKitToolboxCategory.contents)
+
+    const defTypes = gameKitBlocks.map((d) => d.type)
+    const counts = new Map<string, number>()
+    for (const t of inToolbox) counts.set(t, (counts.get(t) ?? 0) + 1)
+
+    // Nenhum bloco da toolbox que não exista como def (typo em SUBCATS).
+    expect([...counts.keys()].filter((t) => !defTypes.includes(t))).toEqual([])
+    // Nenhum def fora da toolbox (cairia no "Mais").
+    expect(defTypes.filter((t) => !counts.has(t))).toEqual([])
+    // Nenhum bloco em DUAS categorias.
+    expect([...counts.entries()].filter(([, n]) => n > 1).map(([t]) => t)).toEqual([])
+
+    // ⭐ A asserção que FALTAVA — e é a que dá nome ao teste. As de cima só olham
+    // "está em ALGUM lugar da toolbox", e o "Mais" É um lugar da toolbox: 4 blocos
+    // de peça ficaram nele por 2 versões, com a doc jurando que estavam em 🗺️
+    // Mundo & profundidade. Todo bloco tem que estar numa categoria de VERDADE.
+    const named = new Set<string>()
+    for (const cat of gameKitToolboxCategory.contents) {
+      const c = cat as { kind?: string; name?: string; contents?: { type?: string }[] }
+      if (c.kind !== 'category' || c.name === 'Mais') continue
+      for (const b of c.contents ?? []) if (b.type) named.add(b.type)
+    }
+    expect(defTypes.filter((t) => !named.has(t))).toEqual([])
   })
 })
 

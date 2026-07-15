@@ -84,7 +84,7 @@ API global injetada como window.SZGameKit:
   hit VÁLIDO empurra e toca som). knockback(c, de, força) empurra com
   decaimento; touchCircle(a, b) colisão por círculo; isDead(c) vida <= 0;
   healthOf(c); drawHealthBar(c, max) barrinha em cima (max 0 = usa maxHealth).
-- 🖥️ Missão & HUD: setMission(segundos, kills) — cumpriu (sobreviveu OU
+- 🖥️ HUD & Missão: setMission(segundos, kills) — cumpriu (sobreviveu OU
   derrotou) → estado "vitoria" (tela pronta) + emit("missao:completa");
   missionKill() soma 1 kill; kills() / timeSurvived(); drawTimer(x, y) mm:ss.
 - ✨ Faíscas (partículas data-driven pooled): defineEffect(nome, { count,
@@ -103,7 +103,7 @@ API global injetada como window.SZGameKit:
   world-space; keepOnScreen/spawner/cull passam a valer o mundo/retângulo
   visível); cameraStop(); cameraX()/cameraY() = canto visível.
   onDrawHud(fn(ctx)) desenha DEPOIS, SEM câmera (placar/barras presos na tela).
-- ➡️ Tiro: launchTowards(quem, alvo, v) mira UMA vez (seta vx/vy pelo vetor
+- ➡️ Tiro e giro (na cat 🎯 Comportamentos): launchTowards(quem, alvo, v) mira UMA vez (seta vx/vy pelo vetor
   normalizado × v); moveByVelocity(quem, dt) aplica × dt a cada quadro. Com
   const tiro = spawnFromMold(...) fecha tiro reto E mirado. setAngle(c, graus)
   gira o desenho em volta do centro.
@@ -112,6 +112,32 @@ API global injetada como window.SZGameKit:
   mouseY()/mouseDown() para mirar e arrastar.
 - 📊 drawBar(atual, max, x, y, w, h, cor): barra proporcional (vida/mana/
   progresso) — ideal dentro do onDrawHud.
+- 👾 Kit Monstrinhos (o gênero "pegue e treine bichinhos"). ⭐ TESE: é um jogo do
+  Kit RPG com OUTRA batalha — o mundo (rpgMoveGrid/NPC/rpgSay/rpgOnMap/flags/
+  rpgSave) vem de lá; NÃO duplique nada disso. Dados: pkmCreature(nome, tipo, vida,
+  força, defesa, veloc, imagem, aparência) — os pontos são do NÍVEL 1 (+8 vida/+2
+  força/+1 def por nível); ⭐ o TIPO é TEXTO LIVRE (fogo, gelo, doce, dinossauro —
+  não só os clássicos). pkmMove(golpe, criatura, tipo, dano, acerto, efeito, cor) —
+  até 4 por bicho, e ⭐ o menu da batalha é MONTADO desta lista; efeito ∈
+  investida|bola|raio|onda. ⭐ pkmTypeChart(atacante, defensor, mult) — a criança
+  ESCREVE a regra (2 = super efetivo, 0.5 = fraco, 0 = nada); 3 blocos = o triângulo
+  fogo>planta>água>fogo. SEM tabela, tudo vale 1× (nada de mágica implícita).
+  pkmEvolve(de, para, nível) · pkmCatchDifficulty(nome, "fácil|normal|difícil|
+  raríssimo"). Time: pkmGive(espécie, nível) (até 6) · pkmGiveBall(qtd, força%) ·
+  pkmHealTeam() (o Centro de Cura num bloco) · pkmHas/pkmTeamSize/pkmBallCount/
+  pkmLevelOf/pkmDrawTeam(x, y). Encontros: pkmGrassCells(x1,y1,x2,y2) ou
+  pkmGrassTiles(peça, mapa) + pkmWild(espécie, min, max) (um por bicho = a tabela) +
+  pkmEncounterRate(%) — ⭐ o sorteio é por PASSO do rpgMoveGrid (não por quadro).
+  Monte tudo no rpgOnMap e cada rota ganha os bichos dela. Batalha:
+  pkmBattleWild(espécie, nível) (o lendário/cena; a grama chama sozinha) ·
+  pkmBattleTrainer(nome, fn) + pkmTrainerCreature(espécie, nível) DENTRO (rival/
+  ginásio: troca sozinho, sem bola nem fuga) · pkmCaught(). ⭐ REUSE
+  rpgOnBattleEnd/rpgBattleWon (é o MESMO conceito — não existe pkmOnBattleEnd). O
+  XP/nível/evolução são automáticos e ANUNCIADOS; o rpgSave leva o time junto.
+  ⚠️ Um kit OU o outro: pkmBattleWild com a batalha do Kit RPG aberta avisa e sai.
+  Padrão canônico: rpgOnMap("rota") → rpgBlockCell/rpgCreateNpc/pkmGrassCells/
+  pkmWild; rpgOnTalk("professora") → pkmGive+pkmGiveBall; rpgOnTalk("enfermeira") →
+  pkmHealTeam; rpgOnBattleEnd → "se pkmCaught() e pkmTeamSize() >= 3: vitoria".
 - 🧙 Kit RPG (Canvas RPG Kit em blocos; mecânicas PRONTAS sobre o mesmo motor):
   rpgMoveGrid(heroi, cellPx, dt) — andar por CÉLULAS c/ paredes, portas e o
   ESPAÇO conversando com o NPC à frente (use no onUpdate; a fala/batalha travam
@@ -140,13 +166,16 @@ API global injetada como window.SZGameKit:
   rpgAddFlag('intro')". Reserva de intenção: herói e NPC não entram na mesma
   célula. setWalkSheet(c, "folha", fw, fh) = folha de ANDAR de 4 linhas
   (baixo/cima/esquerda/direita) animada pela direção + movimento.
-- 💬 Escolhas & 💾 salvar: rpgMenu(titulo, fn) abre um menu no canvas (setas +
-  espaço/clique) e roda a opção escolhida; DENTRO do fn use rpgOption(label,
-  optFn) por escolha — árvore de diálogo/loja/sim-não (bom no rpgOnTalk ou numa
-  cena). rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/célula/
-  atributos no localStorage (sobrevive a reabrir). Padrão: no rpgOnTalk do
+- 💬 Fala & escolhas (GERAL — o motor desenha e navega em QUALQUER jogo, apesar do
+  prefixo rpg no nome): rpgSay(texto, quem) = caixa typewriter (fila; ESPAÇO avança;
+  emite "fala:terminada"). rpgMenu(titulo, fn) abre um menu no canvas (setas +
+  espaço/clique) e roda a opção escolhida; DENTRO do fn use rpgOption(label, optFn)
+  por escolha — árvore de diálogo/loja/sim-não/quiz. Padrão: no rpgOnTalk do
   lojista → rpgMenu("Comprar?", () => { rpgOption("Sim", () => {...});
-  rpgOption("Não", () => {}); }). Continuar: "se rpgHasSave(): rpgLoad()".
+  rpgOption("Não", () => {}); }).
+- 💾 Salvar (Kit RPG): rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/
+  célula/atributos/poções/especial no localStorage (sobrevive a reabrir).
+  Continuar: "se rpgHasSave(): rpgLoad()".
 - ⚔️ Batalha RICA (progressão, TurnCycle/Combatant do Pizza, 1v1): rpgBattleStats(
   vida, força, DEFESA) 1x no começo (nível 1); rpgBattleStart(nome, vida, força,
   defesa) — dano = força ± 20% − defesa/2; menu Atacar/Especial/Item/Defender/
@@ -160,11 +189,85 @@ API global injetada como window.SZGameKit:
   loadTilemap(nome, assetDeMapa) lê um MAPA do Pinta (grade+peças+sólidos juntos,
   via ASSET_META). No onDraw, drawTilemap(nome, "chão") ANTES dos personagens e
   drawTilemap(nome, "topos") DEPOIS = profundidade (herói passa atrás das copas).
-  tilemapSolid(nome) marca as peças sólidas como paredes (1x, após carregar).
-  drawByDepth(heroi) desenha herói + NPCs por Y (quem está mais embaixo, na frente)
-  — substitui drawCharacter+rpgDrawNpcs. drawShadow(c) = sombrinha sob o personagem
-  (antes de desenhá-lo). cameraShake(força, segundos) treme a tela (impacto), com
-  câmera ligada ou não.
+  drawByDepth(quem) desenha por Y (quem está mais embaixo, na frente) o personagem
+  passado + TODOS os enxames vivos + os NPCs do RPG (se houver) — substitui
+  drawCharacter+rpgDrawNpcs. drawShadow(c) = sombrinha sob o personagem (antes de
+  desenhá-lo). cameraShake(força, segundos) treme a tela (impacto), com câmera
+  ligada ou não.
+  ⚠️ tilemapSolid(nome) NÃO é geral: ele só alimenta a GRADE do RPG (rpg.walls),
+  que apenas o rpgMoveGrid lê. Num jogo de movimento LIVRE ele não faz nada — não
+  emita tilemapSolid fora do Kit RPG.
+- ⚙️ Física GERAL (primitivos soltos, FORA de todo kit — é com eles que se faz
+  plataforma/quicar/arco "na unha"): applyGravity(quem, forca, dt) puxa p/ baixo
+  (padrão 2160 px/s²) e DESLIGA onGround; setVelocity(quem, vx, vy) e
+  velocityOf(quem, "x"|"y") escrevem E LEEM (ler destrava "se velocityOf(h,'y') >
+  0: tocar cair"); jump(quem, forca) só age NO CHÃO (padrão 660; é o que impede
+  pulo infinito); isOnGround(quem); setTerminalVelocity(quem, max) limita a queda
+  (padrão 900); bounceOnEdges(quem)/wrapEdges(quem).
+  ⭐ ORDEM OBRIGATÓRIA no onUpdate, nesta sequência: applyGravity → moveByVelocity
+  → collide*. A gravidade zera onGround; SÓ o pouso da colisão (vy > 0) liga de
+  volta. Fora dessa ordem o personagem vibra ou atravessa o chão.
+- 🧱 Colisão sólida (GERAL, sem RPG): collideTilemap(quem, mapa) para o
+  personagem nas peças SÓLIDAS do mapa (empurra pelo eixo de MENOR sobreposição,
+  zera a velocidade do eixo, seta onGround no pouso) — é o que o plataforma usa,
+  NÃO o tilemapSolid do RPG; collideGroup(quem, molde) = o mesmo contra os vivos
+  de um molde (plataformas/caixas/pedras, sem mapa); overlapGroups(moldeA, moldeB,
+  fn(a, b)) roda o par que se tocou (tiro × inimigo, herói × moeda) — pode
+  recycle() os dois lá dentro com segurança.
+- ⏱️ Tempo: everySeconds("chave", s) dentro de um "se" repete de tempo em tempo
+  (acumula o dt do JOGO — pausou, para de contar; NÃO usa relógio de parede);
+  cooldownReady(quem, s) = o "recarregando" do tiro/golpe (true só quando o tempo
+  passou, e JÁ reinicia a contagem).
+- 🧍 Propriedades/direção (GERAL): propertyOf(quem, "x"|"y"|"vx"|"vy"|"speed"|"w"|
+  "h") e setProperty(quem, prop, v) = a chave-mestra p/ o que não tem bloco
+  pronto. setFacingDir(quem, "down"|"up"|"left"|"right")/facingOf(quem) — a
+  direção move DOIS sistemas: a folha de andar e a caixa do attackFacing.
+- 🗺️ Peças por célula: tileAt(mapa, x, y), setTileAt(mapa, x, y, peca),
+  breakTileAt(mapa, quem) (mundo destrutível/cavar), setTileSize(px) (padrão 64).
+- ✨ tweenTo(quem, x, y, s) desliza suave até um ponto (porta/plataforma/cutscene)
+  — chame UMA vez, não todo quadro.
+- 🧭 R15 — primitivos GERAIS (fora de todo kit; é com eles que se inventa gênero):
+  defineRegion(nome, x, y, w, h) = retângulo com NOME (grama, porta, zona de dano,
+  área segura) + isInside(quem, regiao) + ⭐ overlapPercent(quem, regiao) 0..100 —
+  o gate honesto: "se overlapPercent(heroi,'grama') > 50 E chance(20)". Só encostar
+  a quina NÃO conta (a área é clampada em 0 sem toque). chance(pct) = sorteio.
+  distanceBetween(a, b) = a conta central de stealth/torre/IA-que-só-persegue-perto.
+  pointIn(x, y, quem) + mouseX()/mouseY() = clicou NAQUELE objeto (point&click,
+  cartas, match-3, tower defense). ⭐ launchToPoint(quem, x, y, vel) mira num PONTO
+  (o launchTowards exige um OBJETO, e o mouse dá números) · setVelocityAngle(quem,
+  graus, forca) MOVE no ângulo (o setAngle só gira o DESENHO — use os dois juntos:
+  tanque/nave/Asteroids). setOpacity(quem, pct)/opacityOf/fadeTo(quem, pct, s) =
+  sumir (o "faint"). tweenProperty(quem, prop, ate, s) = deslizar QUALQUER
+  propriedade (x/y/vx/vy/speed/w/h/health/opacity); ao chegar emite
+  "deslizou:chegou" (dá p/ encadear). setHitbox(quem, ox, oy, w, h) = a caixa que
+  COLIDE ≠ o desenho (num personagem alto, só os PÉS — senão colide com a cabeça);
+  w/h 0 = o desenho todo. fadeScreen(cor, s, escuro)/flashScreen(cor, vezes) =
+  ESCONDER a troca de cena atrás do preto. saveValue(nome, v)/savedValue(nome) =
+  guardar de verdade (recorde/fase destravada) — o rpgSave é SÓ do Kit RPG.
+  ⭐ playMusic(nome) = LOOP (o playSound NÃO repete; re-chamar não reinicia) ·
+  stopSound(nome) · setVolume(nome, 0..1). createEmptyTilemap(nome, cols, linhas,
+  peca, folha) = mapa por CÓDIGO (masmorra sorteada) → setTileAt num laço.
+  moveWithCustomKeys(quem, cima, baixo, esq, dir, dt) = 2º jogador (o moveWithKeys
+  tem WASD E setas no MESMO personagem).
+- 🏃 Kit Plataforma (Mario/Celeste/Sunnyland — o ATALHO do gênero; o "na unha"
+  segue possível só com ⚙️ Física): platformerHero(quem, vel, pulo, dt) =
+  gravidade + A/D-setas + pulo + mover, TUDO-EM-UM, com o feel embutido (coyote
+  0.1s, buffer 0.1s, pulo variável 0.3s, speedBoost do Mario). ⚠️ a COLISÃO fica
+  FORA de propósito: emita collideGroup/collideTilemap LOGO DEPOIS dele.
+  setJumpFeel(coyote, buffer, segurar, gravidade) regula (gravidade 2160 = normal).
+  doubleJump(quem, força, vezes) · wallSlide(quem, vel) · wallJump(quem, fx, fy)
+  (o pouso e a parede devolvem os pulos do ar) · climbLadder(quem, mapa, peça,
+  vel) — DEPOIS do herói e ANTES de colidir; na escada ↑ SOBE (não pula).
+  oneWayPlatform(quem, molde, dt) = tábua (sobe por baixo, pousa em cima) ·
+  dropThrough(quem) = ↓+pulo atravessa · movingPlatform(quem, x1,y1, x2,y2, s, dt)
+  + rideOn(quem, molde) — SEMPRE pareados, senão a plataforma escorrega debaixo do
+  herói. stompKill(quem, molde, quique) = pisar (compara VELOCIDADE; emite
+  "plataforma:pisou") · patrolTurnAtWall(quem, vel) (dirigido por colisão: use
+  dentro do forEachActive + collideGroup) · setCheckpoint(x, y) + respawn(quem) ·
+  platStateFrames(quem, "parado"|"andando"|"pulando"|"caindo", de, até, fps) 1x
+  por estado + platformerAnim(quem) todo quadro (a animação sai da física).
+  Ordem canônica no onUpdate: platformerHero → dropThrough → collideGroup(chao) →
+  oneWayPlatform → rideOn → stompKill → platformerAnim.
 - 🥷 Ação em tempo real (Zelda; Ninja Adventure): attackFacing(quem, alcance,
   duracao) cria uma caixa de golpe NA FRENTE (pela direção que olha) por ~0.3s, com
   trava de 1 acerto por golpe; didHit(quem, alvo) = a caixa encostou no alvo NESTE

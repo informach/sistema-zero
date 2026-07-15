@@ -115,7 +115,12 @@ const BoundedExampleIRSchema = z
 const MAX_NAME_CHARS = 80
 const MAX_DESCRIPTION_CHARS = 500
 const MAX_CATEGORY_CHARS = 60
-const MAX_DOCS_CHARS = 20_000
+// A `docs` é o manual do ALUNO (markdown renderizado no "Saiba mais", um modal
+// com scroll) — o teto é só uma trava de sanidade, não um limite de UI, e não
+// entra no contexto da IA (esse é o `promptContext`, separado). Subiu de 20k
+// porque DUAS extensões oficiais já batiam nele (game-2d e game-2d-advanced), e
+// aí cada kit novo custava enxugar seção antiga em vez de explicar melhor.
+const MAX_DOCS_CHARS = 32_000
 const MAX_EXAMPLES = 50
 
 export const ExtensionExampleSchema = z.object({
