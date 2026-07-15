@@ -15,10 +15,16 @@ API global (cada método corresponde a exatamente 1 bloco):
   scatterDecor(n); setEffects({shadows, bloom, strength, vignette}) — efeitos
   de cinema (pós-processamento), tudo ligado por padrão.
 - Moldes: defineMold('nome', {health, speed}, function () { ...part()... });
-  part({shape: 'box'|'sphere'|'cylinder'|'cone'|'plane'|'torus'|'pyramid',
-  material: 'normal'|'metal'|'vidro'|'brilho', color, texture, w, h, d, x, y,
-  z}) — o part SÓ funciona dentro do defineMold; 'brilho' acende no bloom;
-  texture é o nome de uma imagem do projeto (opcional).
+  part({shape: 'box'|'sphere'|'cylinder'|'cone'|'plane'|'torus'|'pyramid'|
+  'rampa'|'modelo', material: 'normal'|'metal'|'vidro'|'brilho', color, texture,
+  model, w, h, d, x, y, z}) — o part SÓ funciona dentro do defineMold; 'brilho'
+  acende no bloom; texture = nome de imagem do projeto; shape 'modelo' + model =
+  nome de um .glb do projeto (o colisor segue sendo a caixa w/h/d).
+- Céu de foto: setSkyPhoto('nome') — um .hdr do projeto vira o céu 360 e ilumina
+  a cena. GLB/HDR carregam por parse() de um ArrayBuffer (a rede é bloqueada no
+  preview); KTX2/Draco NÃO existem (precisariam de WASM).
+- Valores da entidade: posOf(ent, 'x'|'y'|'z'); velocityOf(ent, eixo);
+  distanceBetween(a, b); healthOf(ent); maxHealthOf(ent); stateOf(ent).
 - Enxames: spawn('molde', x, y, z) devolve a entidade (use const nome = ...
   para apelidar); spawnFrom('molde', ent) nasce no lugar e virado igual (o
   tiro da torre); startSpawner('molde', segundos, 'edge'|'anywhere');
@@ -29,10 +35,20 @@ API global (cada método corresponde a exatamente 1 bloco):
   keyDown('w'); keyPressed('j'); setPauseKey('Escape').
 - Câmera: cameraFollow(ent, dist, altura); cameraOrbit(dist); cameraTop(alt);
   cameraFps(ent) — 1a pessoa, olhar com o mouse (clique captura o ponteiro).
-- Fisica (plataforma): fall(ent, gravidade) — liga a queda; jump(ent, forca) —
-  so no chao; onGround(ent); makeSolid('molde') — vira parede/chao solido;
-  platformerKeys(ent, velocidade, pulo) — controle pronto WASD + espaco;
-  moveFps(ent, velocidade) — anda para onde a camera de 1a pessoa olha.
+- Fisica (na unha, sem lib): fall(ent, gravidade) — liga a queda; jump(ent,
+  forca) — so no chao; onGround(ent); makeSolid('molde') — vira parede/chao
+  solido e PARA TUDO que nao seja fantasma (⚠️ v0.3.0: antes so parava quem
+  tinha gravidade, entao tiro atravessava parede); passThrough(ent, true) —
+  fantasma, o escape hatch; platformerKeys(ent, velocidade, pulo) — WASD +
+  espaco; moveFps(ent, velocidade); setCollider('molde', 'box'|'sphere'|
+  'capsule') — capsula nao engancha em quina e sobe rampa liso;
+  makeTrigger('molde') — zona que nao empurra; onOverlap('molde', function
+  (zona, quem) {}) — dispara ao ENTRAR, 1x por entrada; setBounce('molde',
+  0..1); setFriction('molde', 0..1).
+  Rampa = FORMA de peca (part shape 'rampa'), nao bloco. Plataforma que anda =
+  makeSolid + setVelocity: ela CARREGA quem esta em cima, sem bloco novo.
+  Tiro rapido nao tunela (o motor parte o passo do quadro em substeps).
+- Acaso: setSeed(n) — a MESMA semente da a MESMA partida (0 = acaso de verdade).
 - Luz & ceu: addLight(cor, x, y, z, forca) — luz pontual; setAmbient(forca) —
   luz do ambiente (0 escuro, 1 claro); setFog(cor, perto, longe) — nevoa;
   setSky(topo, horizonte) — troca o ceu em runtime.
@@ -63,7 +79,8 @@ API global (cada método corresponde a exatamente 1 bloco):
   (cone em graus: 0 reto, 180 esfera; glow true=fogo, false=fumaca ordenada);
   startEmitter('nome', x, y, z) — jorra num ponto; emitterOn('nome', ent) —
   jorra seguindo a entidade; stopEmitter('nome'); addAttractor('nome', x, y, z,
-  forca, alcance) — ima que puxa as particulas (vortice).
+  forca, alcance) — ima que puxa as particulas (vortice). O defineEmitter aceita
+  curve: 'linear'|'suave'|'pulso'|'fogo' (curva de vida assada numa textura).
 - Telas/HUD: setScreenText('menu'|'pausa'|'carregando'|'fim'|'vitoria',
   titulo, texto, botao); createScreen('nome', titulo, texto);
   addButton('tela', 'rotulo', function () {}); showScreen('nome');

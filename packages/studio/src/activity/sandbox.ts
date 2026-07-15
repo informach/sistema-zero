@@ -1,4 +1,10 @@
-import { assetManifest, assetMetaManifest, type Project, soundManifest } from '#core'
+import {
+  asset3DManifest,
+  assetManifest,
+  assetMetaManifest,
+  type Project,
+  soundManifest,
+} from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, isCheckResultMessage } from '#preview'
@@ -61,6 +67,7 @@ export async function runSandboxChecks(
     assets: assetManifest(project.assets),
     assetsMeta: assetMetaManifest(project.assets),
     sounds: soundManifest(project.assets),
+    models3d: asset3DManifest(project.assets),
     parentOrigin,
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: security.fetchAllowedOrigins,

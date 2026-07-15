@@ -42,6 +42,17 @@ export const gameKit3DBlocks = [
       'Liga/desliga os efeitos que dão cara de cinema: sombras, brilho (as coisas claras "vazam" luz — bloom) e vinheta (os cantos escurecem). Tudo já vem LIGADO; desligue para ganhar velocidade num computador fraco (modo turbo).',
   },
   {
+    type: 'sz_g3k_set_seed',
+    message0: 'Usar a semente %1 para o acaso',
+    args0: [{ type: 'input_value', name: 'SEED', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Trava o acaso do jogo numa semente: a MESMA semente dá exatamente a MESMA partida — os enfeites nascem no mesmo lugar, os inimigos vêm na mesma ordem, as faíscas voam igual. Ótimo para testar (o bug acontece de novo!) e para fazer um desafio idêntico para todo mundo. Semente 0 = acaso de verdade (cada partida diferente).',
+  },
+  {
     type: 'sz_g3k_scatter_decor',
     message0: 'Espalhar %1 enfeites pelo chão (pedras e cristais)',
     args0: [{ type: 'input_value', name: 'COUNT', check: 'JSValue' }],
@@ -104,6 +115,8 @@ export const gameKit3DBlocks = [
           ['plano', 'plane'],
           ['rosca', 'torus'],
           ['pirâmide', 'pyramid'],
+          ['rampa', 'rampa'],
+          ['modelo importado', 'modelo'],
         ],
       },
       {
@@ -121,19 +134,20 @@ export const gameKit3DBlocks = [
       { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'input_value', name: 'D', check: 'JSValue' },
     ],
-    message1: 'deslocada para x %1 y %2 z %3, textura %4',
+    message1: 'deslocada para x %1 y %2 z %3, textura %4, modelo %5',
     args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
       { type: 'field_asset_picker', name: 'TEXTURE', text: '' },
+      { type: 'field_input', name: 'MODEL', text: '' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma peça do molde: a forma, o acabamento (normal, metal, vidro ou BRILHO — que acende com o efeito de brilho/bloom), a cor, o tamanho (largura × altura × profundidade) e onde ela fica em relação ao centro do molde. O y 0.5 senta um cubo de altura 1 no chão. Só funciona DENTRO de "Criar o molde 3D".',
+      'Uma peça do molde: a forma, o acabamento (normal, metal, vidro ou BRILHO — que acende com o efeito de brilho/bloom), a cor, o tamanho (largura × altura × profundidade) e onde ela fica em relação ao centro do molde. O y 0.5 senta um cubo de altura 1 no chão. Com a forma "modelo importado", escreva no campo modelo o nome do arquivo .glb que você trouxe para o projeto — aí a peça vira o modelo de verdade (a caixa que colide continua sendo o tamanho que você deu). Só funciona DENTRO de "Criar o molde 3D".',
   },
 
   // ---- 👾 Nascer & enxames ----
@@ -823,6 +837,19 @@ export const gameKit3DBlocks = [
       { type: 'input_value', name: 'GRAVITY', check: 'JSValue' },
       { type: 'field_checkbox', name: 'GLOW', checked: true },
     ],
+    message2: 'jeito de nascer e morrer: %1',
+    args2: [
+      {
+        type: 'field_dropdown',
+        name: 'CURVE',
+        options: [
+          ['suave (incha e some)', 'suave'],
+          ['linear (some devagar)', 'linear'],
+          ['pulso (estoura e murcha)', 'pulso'],
+          ['fogo (clarão e escurece)', 'fogo'],
+        ],
+      },
+    ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -955,6 +982,96 @@ export const gameKit3DBlocks = [
       'Controle de plataforma pronto: anda no chão com WASD/setas e pula com o espaço (liga a gravidade sozinho). Use dentro do "A cada quadro".',
   },
 
+  {
+    type: 'sz_g3k_set_collider',
+    message0: 'Fazer o molde %1 colidir como %2',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'heroi', kind: 'mold3d' },
+      {
+        type: 'field_dropdown',
+        name: 'SHAPE',
+        options: [
+          ['caixa', 'box'],
+          ['bola', 'sphere'],
+          ['cápsula (gente)', 'capsule'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Muda o formato INVISÍVEL que colide (não muda o desenho). "caixa" é o padrão. "bola" é boa para bolas e tiros. "cápsula" é a melhor para gente e bicho: não engancha em quina e sobe rampa lisinho.',
+  },
+  {
+    type: 'sz_g3k_pass_through',
+    message0: 'Fazer %1 atravessar as paredes %2',
+    args0: [
+      { type: 'field_name_picker', name: 'CHAR', text: 'tiro', kind: 'entity3d' },
+      { type: 'field_checkbox', name: 'GHOST', checked: true },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Ligado, essa entidade vira FANTASMA e passa através de tudo que é sólido — bom para tiro mágico, fantasma, ou uma câmera que entra na parede. Desligado, ela volta a bater nas paredes.',
+  },
+  {
+    type: 'sz_g3k_make_trigger',
+    message0: 'Fazer o molde %1 ser uma zona (dá para atravessar)',
+    args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'moeda', kind: 'mold3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A zona NÃO empurra ninguém: dá para passar por dentro. Mas o motor avisa quem entrou, com o bloco "Quando alguém encostar". Boa para moeda, porta, armadilha e linha de chegada.',
+  },
+  {
+    type: 'sz_g3k_on_overlap',
+    message0: 'Quando alguém encostar em %1 do molde %2',
+    args0: [
+      { type: 'field_input', name: 'ZONE', text: 'zona' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'moeda', kind: 'mold3d' },
+    ],
+    message1: 'quem encostou é %1',
+    args1: [{ type: 'field_input', name: 'WHO', text: 'quem' }],
+    message2: 'fazer %1',
+    args2: [{ type: 'input_statement', name: 'BODY', check: 'JSStmt' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" na hora em que alguém ENTRA na zona — uma vez por entrada, não a cada quadro. "zona" é a moeda/porta que foi encostada e "quem" é quem encostou nela.',
+  },
+  {
+    type: 'sz_g3k_set_bounce',
+    message0: 'Fazer o molde %1 quicar %2',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'trampolim', kind: 'mold3d' },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Quem bater nesse molde sólido volta. 0 = não quica (é o normal), 0.5 = volta com metade da força, 1 = volta com tudo. Faz trampolim e bola pula-pula.',
+  },
+  {
+    type: 'sz_g3k_set_friction',
+    message0: 'Fazer o molde %1 ter atrito %2',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'gelo', kind: 'mold3d' },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O quanto esse chão SEGURA quem está pisando em cima. 0 = escorrega feito gelo (é o normal), 1 = gruda e para rápido. Só vale enquanto a entidade está no chão.',
+  },
+
   // ---- 💡 Luz & céu ----
   {
     type: 'sz_g3k_add_light',
@@ -1000,6 +1117,16 @@ export const gameKit3DBlocks = [
       'Enche o ar de névoa: o que está longe some na cor escolhida. Dá mistério e esconde a borda do mundo.',
   },
   {
+    type: 'sz_g3k_set_sky_photo',
+    message0: 'Usar o céu de foto %1',
+    args0: [{ type: 'field_input', name: 'PHOTO', text: 'ceu' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Troca o céu por uma FOTO 360° de verdade (arquivo .hdr que você trouxe para o projeto). Além de aparecer no fundo, ela ilumina a cena inteira — é o que faz o metal refletir o ambiente. Escreva o nome do arquivo sem o .hdr.',
+  },
+  {
     type: 'sz_g3k_set_sky',
     message0: 'Trocar o céu: de %1 no alto até %2 no horizonte',
     args0: [
@@ -1010,6 +1137,58 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Muda o degradê do céu em qualquer momento (dia, pôr do sol, noite).',
+  },
+
+  {
+    type: 'sz_g3k_velocity_of',
+    message0: 'a velocidade de %1 no eixo %2',
+    args0: [
+      { type: 'field_name_picker', name: 'CHAR', text: 'ela', kind: 'entity3d' },
+      {
+        type: 'field_dropdown',
+        name: 'AXIS',
+        options: [
+          ['↔ x', 'x'],
+          ['↕ y', 'y'],
+          ['⤢ z', 'z'],
+        ],
+      },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O quanto ela está andando por segundo naquele eixo. y negativo = está caindo; y positivo = está subindo. Serve para saber se caiu longe demais, se está parada, ou para animar pelo movimento.',
+  },
+  {
+    type: 'sz_g3k_distance_between',
+    message0: 'a distância de %1 até %2',
+    args0: [
+      { type: 'field_name_picker', name: 'A', text: 'heroi', kind: 'entity3d' },
+      { type: 'field_name_picker', name: 'B', text: 'alvo', kind: 'entity3d' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Quantos metros separam as duas entidades. Diferente de "encostou", que só responde sim/não, aqui você tem o NÚMERO — dá para fazer o inimigo correr mais quando está longe, o som ficar mais alto perto, etc.',
+  },
+  {
+    type: 'sz_g3k_max_health_of',
+    message0: 'a vida MÁXIMA de %1',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'ela', kind: 'entity3d' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A vida com que esse molde nasce. Junto com "a vida de", dá para desenhar a barra de vida na proporção certa (vida ÷ vida máxima).',
+  },
+  {
+    type: 'sz_g3k_state_of',
+    message0: 'o estado de %1',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'ela', kind: 'entity3d' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O NOME do estado em que ela está agora (parado, mirar, atirar…). O bloco "está no estado?" só responde sim/não para um estado; este devolve o nome, bom para mostrar no HUD ou comparar.',
   },
 
   // ---- 🖱️ Mira & clique (raycast) + 1ª pessoa ----
@@ -1346,6 +1525,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g3k_setup',
       'sz_g3k_set_effects',
+      'sz_g3k_set_seed',
       'sz_g3k_scatter_decor',
       'sz_g3k_start',
       'sz_g3k_world_size',
@@ -1405,10 +1585,17 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g3k_look_at',
       'sz_g3k_move_forward',
       'sz_g3k_pos_of',
+      'sz_g3k_velocity_of',
+      'sz_g3k_distance_between',
       'sz_g3k_exists',
-      'sz_g3k_set_entity_value',
-      'sz_g3k_entity_value',
     ],
+  },
+  {
+    // A "gaveta" é a VARIÁVEL da criança presa à entidade — outro conceito que
+    // transform/movimento. Estava afogada em 🤖 Entidades, que fazia 3 trabalhos.
+    name: '🗄️ Dados da entidade',
+    colour: C,
+    types: ['sz_g3k_set_entity_value', 'sz_g3k_entity_value'],
   },
   {
     name: '🧠 Cérebro da entidade',
@@ -1421,6 +1608,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g3k_entity_state_is',
       'sz_g3k_state_timer',
       'sz_g3k_state_time',
+      'sz_g3k_state_of',
     ],
   },
   {
@@ -1437,12 +1625,24 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g3k_on_ground',
       'sz_g3k_make_solid',
       'sz_g3k_platformer_keys',
+      'sz_g3k_set_collider',
+      'sz_g3k_pass_through',
+      'sz_g3k_make_trigger',
+      'sz_g3k_on_overlap',
+      'sz_g3k_set_bounce',
+      'sz_g3k_set_friction',
     ],
   },
   {
     name: '💡 Luz & céu',
     colour: C,
-    types: ['sz_g3k_add_light', 'sz_g3k_set_ambient', 'sz_g3k_set_fog', 'sz_g3k_set_sky'],
+    types: [
+      'sz_g3k_add_light',
+      'sz_g3k_set_ambient',
+      'sz_g3k_set_fog',
+      'sz_g3k_set_sky',
+      'sz_g3k_set_sky_photo',
+    ],
   },
   {
     name: '🖱️ Mira & 1ª pessoa',
@@ -1463,15 +1663,19 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '❤️ Combate',
     colour: C,
-    types: ['sz_g3k_hurt', 'sz_g3k_health_of', 'sz_g3k_on_entity_death'],
+    types: ['sz_g3k_hurt', 'sz_g3k_health_of', 'sz_g3k_max_health_of', 'sz_g3k_on_entity_death'],
   },
   {
     name: '💥 Faíscas 3D',
     colour: C,
+    types: ['sz_g3k_define_effect', 'sz_g3k_burst_at', 'sz_g3k_burst_on'],
+  },
+  {
+    // Rajada (estoura e acaba) e jorro contínuo (liga e fica) são famílias
+    // diferentes — o próprio runtime já as separa nos comentários da API.
+    name: '🌊 Emissores & atratores',
+    colour: C,
     types: [
-      'sz_g3k_define_effect',
-      'sz_g3k_burst_at',
-      'sz_g3k_burst_on',
       'sz_g3k_define_emitter',
       'sz_g3k_start_emitter',
       'sz_g3k_emitter_on',
@@ -1539,6 +1743,7 @@ const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields:
 export const G3K_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3k_setup: { W: numShadow(1280), H: numShadow(720), SIZE: numShadow(80) },
   sz_g3k_set_effects: { STRENGTH: numShadow(1.2) },
+  sz_g3k_set_seed: { SEED: numShadow(42) },
   sz_g3k_scatter_decor: { COUNT: numShadow(16) },
   sz_g3k_define_mold: { HEALTH: numShadow(30), SPEED: numShadow(3) },
   // O y 0.5 senta um cubo unitário no chão (peças são autoradas do chão para cima).
@@ -1569,6 +1774,8 @@ export const G3K_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3k_fall: { G: numShadow(20) },
   sz_g3k_jump: { FORCE: numShadow(9) },
   sz_g3k_platformer_keys: { SPEED: numShadow(8), JUMP: numShadow(9) },
+  sz_g3k_set_bounce: { AMOUNT: numShadow(0.5) },
+  sz_g3k_set_friction: { AMOUNT: numShadow(0.5) },
   sz_g3k_add_light: {
     X: numShadow(0),
     Y: numShadow(6),

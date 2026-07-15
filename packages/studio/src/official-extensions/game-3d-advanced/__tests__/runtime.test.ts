@@ -162,6 +162,36 @@ function makeFakeThree() {
       this.disposed = true
     }
   }
+  /** A rampa (wedgeGeo) monta a geometria na mão — o stub precisa acompanhar. */
+  class BufferGeo extends Geo {
+    attributes: Record<string, unknown> = {}
+    index: unknown = null
+    boundingSphere: unknown = null
+    drawRange = { start: 0, count: 0 }
+    setAttribute(name: string, attr: unknown) {
+      this.attributes[name] = attr
+      return this
+    }
+    setIndex(idx: unknown) {
+      this.index = idx
+      return this
+    }
+    computeVertexNormals() {}
+    setDrawRange(start: number, count: number) {
+      this.drawRange = { start, count }
+    }
+  }
+  class BufferAttr {
+    constructor(
+      public array: unknown,
+      public itemSize?: number,
+    ) {}
+    needsUpdate = false
+    setUsage() {
+      return this
+    }
+    copyArray() {}
+  }
   class Material {
     emissiveIntensity = 0
     emissive = { set() {} }
@@ -210,6 +240,20 @@ function makeFakeThree() {
       isTexture = true
       dispose() {}
     },
+    // A curva de vida das partículas é assada numa DataTexture (toTexture do curso).
+    DataTexture: class {
+      isTexture = true
+      needsUpdate = false
+      constructor(
+        public data?: unknown,
+        public width?: number,
+        public height?: number,
+      ) {}
+      dispose() {}
+    },
+    RGBAFormat: 1023,
+    LinearFilter: 1006,
+    ClampToEdgeWrapping: 1001,
     PerspectiveCamera: class extends Object3D {
       constructor(
         public fov?: number,
@@ -231,6 +275,9 @@ function makeFakeThree() {
     ConeGeometry: Geo,
     IcosahedronGeometry: Geo,
     OctahedronGeometry: Geo,
+    TorusGeometry: Geo,
+    BufferGeometry: BufferGeo,
+    Float32BufferAttribute: BufferAttr,
     MeshStandardMaterial: Material,
   }
   return { THREE, renderers }
@@ -258,6 +305,23 @@ interface KitApi {
   healthOf(e: unknown): number
   onEntityDeath(mold: string, fn: (e: unknown) => void): void
   keyDown(key: string): boolean
+  posOf(e: unknown, axis: string): number
+  fall(e: unknown, g: number): void
+  jump(e: unknown, force: number): void
+  onGround(e: unknown): boolean
+  makeSolid(mold: string): void
+  setVelocity(e: unknown, x: number, y: number, z: number): void
+  setDrag(e: unknown, amount: number): void
+  place(e: unknown, x: number, y: number, z: number): void
+  setCollider(mold: string, shape: string): void
+  passThrough(e: unknown, on: boolean): void
+  makeTrigger(mold: string): void
+  onOverlap(mold: string, fn: (zone: unknown, who: unknown) => void): void
+  setBounce(mold: string, amount: number): void
+  setFriction(mold: string, amount: number): void
+  setSeed(n: number): void
+  forEachAlive(mold: string, fn: (e: unknown) => void): void
+  startSpawner(mold: string, seconds: number, where: string): void
 }
 
 async function loadStartedKit(): Promise<{
@@ -420,5 +484,340 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     window.dispatchEvent(new Event('pagehide'))
     expect(renderers[0]?.disposeCalls).toBe(1)
     expect(renderers[0]?.forceContextLossCalls).toBe(1)
+  })
+})
+
+/**
+ * Física. A v0.2.0 foi para produção com o motor de colisão SEM NENHUM teste de
+ * runtime — foi o que deixou os 14 defeitos passarem. Esta suíte é a rede.
+ */
+describe('SZGameKit3D — física', () => {
+  /** Monta o molde `chao` do exemplo "Salto nas Nuvens", byte a byte. */
+  function definePlatform(api: KitApi) {
+    api.defineMold('chao', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#334155', w: 4, h: 0.6, d: 4, x: 0, y: 0, z: 0 })
+    })
+  }
+  /** Molde do herói do exemplo (caixa 0.9×1.1 em y=0.55 + cabeça). */
+  function defineHero(api: KitApi) {
+    api.defineMold('heroi', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#38bdf8', w: 0.9, h: 1.1, d: 0.9, x: 0, y: 0.55, z: 0 })
+      api.part({ shape: 'sphere', color: '#e0f2fe', w: 0.7, h: 0.7, d: 0.7, x: 0, y: 1.3, z: 0 })
+    })
+  }
+
+  // ---- CONTRATO com o exemplo em produção (teste #1 do plano) ----
+  it('CONTRATO: o herói de "Salto nas Nuvens" ainda pousa exatamente em y=1.8', async () => {
+    const { api, step } = await loadStartedKit()
+    definePlatform(api)
+    defineHero(api)
+    api.makeSolid('chao')
+    api.setState('jogando')
+    api.spawn('chao', 0, 1.5, 0)
+    const heroi = api.spawn('heroi', 0, 3, 0)
+    api.fall(heroi, 20)
+    step(40)
+    // A plataforma nasce em y=1.5 e tem meia-altura 0.3 → topo em 1.8. Os pés do
+    // herói são a origem do molde, então ele PARA com p.y = 1.8. Se a caixa
+    // min/max tivesse mudado o topo, este número mudaria — e o exemplo que já
+    // está no ar mudaria junto.
+    expect(api.posOf(heroi, 'y')).toBeCloseTo(1.8, 5)
+    expect(api.onGround(heroi)).toBe(true)
+  })
+
+  it('CONTRATO: molde centrado tem a MESMA caixa de antes (hw/hd simétricos)', async () => {
+    const { api, step } = await loadStartedKit()
+    // Todas as peças dos 2 exemplos em produção estão em x=0,z=0 → a caixa
+    // min/max é simétrica e idêntica ao hw/hd antigo. Prova indireta: o herói
+    // encosta na parede exatamente a 0.45+0.5 = 0.95 do centro dela.
+    api.defineMold('parede', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 4, d: 1, x: 0, y: 2, z: 0 })
+    })
+    defineHero(api)
+    api.makeSolid('parede')
+    api.setState('jogando')
+    api.spawn('parede', 5, 0, 0)
+    const h = api.spawn('heroi', 0, 0, 0)
+    api.setVelocity(h, 8, 0, 0)
+    step(60)
+    expect(api.posOf(h, 'x')).toBeCloseTo(5 - 0.5 - 0.45, 2)
+  })
+
+  // ---- Defeito 1: o gate da gravidade ----
+  it('⭐ tiro SEM gravidade agora PARA na parede sólida (antes atravessava)', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('parede', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 4, d: 1, x: 0, y: 2, z: 0 })
+    })
+    api.defineMold('tiro', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#ff0', w: 0.35, h: 0.35, d: 0.35, x: 0, y: 0, z: 0 })
+    })
+    api.makeSolid('parede')
+    api.setState('jogando')
+    api.spawn('parede', 5, 0, 0)
+    const t = api.spawn('tiro', 0, 2, 0)
+    api.setVelocity(t, 10, 0, 0) // sem gravidade nenhuma
+    step(60)
+    expect(api.posOf(t, 'x')).toBeLessThan(5)
+  })
+
+  it('fantasma (pass_through) volta a atravessar — o escape hatch', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('parede', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 4, d: 1, x: 0, y: 2, z: 0 })
+    })
+    api.defineMold('tiro', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#ff0', w: 0.35, h: 0.35, d: 0.35, x: 0, y: 0, z: 0 })
+    })
+    api.makeSolid('parede')
+    api.setState('jogando')
+    api.spawn('parede', 5, 0, 0)
+    const t = api.spawn('tiro', 0, 2, 0)
+    api.passThrough(t, true)
+    api.setVelocity(t, 10, 0, 0)
+    step(60)
+    expect(api.posOf(t, 'x')).toBeGreaterThan(6)
+  })
+
+  it('chão-base (y=0) segue SÓ para quem tem gravidade (drone não é preso)', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('drone', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.setState('jogando')
+    const d = api.spawn('drone', 0, 5, 0)
+    api.setVelocity(d, 0, -2, 0) // desce por vontade própria, sem gravidade
+    step(120)
+    expect(api.posOf(d, 'y')).toBeLessThan(0)
+  })
+
+  // ---- Defeito 2: tunelamento ----
+  it('⭐ tiro rápido NÃO atravessa parede fina (substepping)', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('parede', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 4, d: 1, x: 0, y: 2, z: 0 })
+    })
+    api.defineMold('tiro', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#ff0', w: 0.35, h: 0.35, d: 0.35, x: 0, y: 0, z: 0 })
+    })
+    api.makeSolid('parede')
+    api.setState('jogando')
+    api.spawn('parede', 5, 0, 0)
+    const t = api.spawn('tiro', 0, 2, 0)
+    // 60 u/s com dt=1/30 = 2 unidades por quadro, contra parede de 1 → o modelo
+    // antigo (integra e testa depois) passava direto.
+    api.setVelocity(t, 60, 0, 0)
+    step(30)
+    expect(api.posOf(t, 'x')).toBeLessThan(5)
+  })
+
+  // ---- Defeito 7 + MIN_THICK: a regressão que o próprio fix cria ----
+  it('⭐ piso de PLANO sólido não é atravessado (MIN_THICK)', async () => {
+    const { api, step } = await loadStartedKit()
+    // O plano tem espessura ZERO de verdade. Corrigir a caixa honestamente daria
+    // um colisor sem volume — o MIN_THICK é o que segura.
+    api.defineMold('piso', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'plane', color: '#888', w: 10, h: 10, d: 1, x: 0, y: 0, z: 0 })
+    })
+    defineHero(api)
+    api.makeSolid('piso')
+    api.setState('jogando')
+    api.spawn('piso', 0, 2, 0)
+    const h = api.spawn('heroi', 0, 5, 0)
+    api.fall(h, 20)
+    step(60)
+    expect(api.posOf(h, 'y')).toBeGreaterThan(1.9)
+  })
+
+  // ---- Defeito 5: molde descentrado ----
+  it('peça fora do centro não infla a caixa para o lado oposto', async () => {
+    const { api, step } = await loadStartedKit()
+    // Peça só em x=+5: a caixa vai de 4.5 a 5.5, NÃO de -5.5 a +5.5.
+    api.defineMold('torto', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 4, d: 1, x: 5, y: 2, z: 0 })
+    })
+    defineHero(api)
+    api.makeSolid('torto')
+    api.setState('jogando')
+    api.spawn('torto', 0, 0, 0)
+    const h = api.spawn('heroi', -3, 0, 0)
+    api.setVelocity(h, -4, 0, 0) // anda para LONGE da peça
+    step(30)
+    // Antes: a caixa simétrica ±5.5 pegava o herói em x=-3 e o empurrava.
+    expect(api.posOf(h, 'x')).toBeLessThan(-3)
+  })
+
+  // ---- Plataforma móvel ----
+  it('⭐ plataforma que anda CARREGA quem está em cima', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('plat', { health: 1, speed: 1 }, () => {
+      api.part({ shape: 'box', color: '#334155', w: 4, h: 0.6, d: 4, x: 0, y: 0, z: 0 })
+    })
+    defineHero(api)
+    api.makeSolid('plat')
+    api.setState('jogando')
+    const plat = api.spawn('plat', 0, 1.5, 0)
+    const h = api.spawn('heroi', 0, 3, 0)
+    api.fall(h, 20)
+    step(40) // pousa
+    expect(api.onGround(h)).toBe(true)
+    const x0 = api.posOf(h, 'x')
+    api.setVelocity(plat, 3, 0, 0)
+    step(30)
+    // Sem a carona o herói ficaria parado enquanto a plataforma sai debaixo dele.
+    expect(api.posOf(h, 'x') - x0).toBeGreaterThan(1)
+  })
+
+  // ---- Zonas ----
+  it('⭐ zona dispara ao ENTRAR (uma vez), não a cada quadro', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('moeda', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#fde047', w: 0.7, h: 0.7, d: 0.7, x: 0, y: 0, z: 0 })
+    })
+    defineHero(api)
+    api.makeTrigger('moeda')
+    api.setState('jogando')
+    api.spawn('moeda', 3, 0.5, 0)
+    const h = api.spawn('heroi', 0, 0, 0)
+    let hits = 0
+    api.onOverlap('moeda', () => {
+      hits += 1
+    })
+    api.setVelocity(h, 2, 0, 0)
+    step(60) // atravessa a moeda inteira
+    expect(hits).toBe(1)
+  })
+
+  it('zona NÃO empurra: dá para atravessar', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('moeda', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#fde047', w: 0.7, h: 0.7, d: 0.7, x: 0, y: 0, z: 0 })
+    })
+    defineHero(api)
+    api.makeTrigger('moeda')
+    api.setState('jogando')
+    api.spawn('moeda', 3, 0.5, 0)
+    const h = api.spawn('heroi', 0, 0, 0)
+    api.setVelocity(h, 3, 0, 0)
+    step(60)
+    expect(api.posOf(h, 'x')).toBeGreaterThan(4)
+  })
+
+  // ---- Quique ----
+  it('quique: bounce=0 é o comportamento de hoje; bounce>0 devolve a bola', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('tramp', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#0f0', w: 6, h: 0.6, d: 6, x: 0, y: 0, z: 0 })
+    })
+    api.defineMold('bola', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.makeSolid('tramp')
+    api.setBounce('tramp', 0.9)
+    api.setState('jogando')
+    api.spawn('tramp', 0, 1.5, 0)
+    const b = api.spawn('bola', 0, 8, 0)
+    api.fall(b, 20)
+    step(40) // cai e bate
+    step(10)
+    // Com quique, depois de bater a bola sobe: vy passa a ser positiva.
+    expect(api.posOf(b, 'y')).toBeGreaterThan(1.8)
+  })
+
+  // ---- Defeito 11: arrasto ----
+  it('arrasto do ar não briga mais com a gravidade (só X/Z)', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('cx', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.setState('jogando')
+    const a = api.spawn('cx', 0, 50, 0)
+    api.fall(a, 20)
+    api.setDrag(a, 5) // arrasto ALTO: antes segurava a queda (flutuava)
+    step(60)
+    expect(api.posOf(a, 'y')).toBeLessThan(30)
+  })
+
+  // ---- Cápsula / bola ----
+  it('⭐ cápsula não engancha na quina: escorrega em vez de travar', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('quina', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 2, h: 2, d: 2, x: 0, y: 1, z: 0 })
+    })
+    defineHero(api)
+    api.makeSolid('quina')
+    api.setCollider('heroi', 'capsule')
+    api.setState('jogando')
+    api.spawn('quina', 0, 0, 0)
+    // Mira DE RASPÃO na quina do cubo (diagonal): a caixa engata, a cápsula
+    // desliza pelo canto arredondado e segue.
+    const h = api.spawn('heroi', -4, 0, -1.6)
+    api.setVelocity(h, 4, 0, 0)
+    step(60)
+    expect(api.posOf(h, 'x')).toBeGreaterThan(2)
+  })
+
+  it('bola: colisor esférico empurra pelo raio (sem quina)', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('parede', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 4, h: 4, d: 1, x: 0, y: 2, z: 0 })
+    })
+    api.defineMold('bola', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.makeSolid('parede')
+    api.setCollider('bola', 'sphere')
+    api.setState('jogando')
+    api.spawn('parede', 0, 0, 5)
+    const b = api.spawn('bola', 0, 0, 0)
+    api.setVelocity(b, 0, 0, 6)
+    step(60)
+    // Para encostando: face da parede em z=4.5, menos o raio 0.5 da bola.
+    expect(api.posOf(b, 'z')).toBeCloseTo(4.0, 1)
+  })
+
+  // ---- Semente (determinismo do curso) ----
+  it('⭐ a MESMA semente dá a MESMA partida (e sementes diferentes, partidas diferentes)', async () => {
+    async function runWithSeed(seed: number): Promise<number[]> {
+      const { api, step } = await loadStartedKit()
+      api.defineMold('bicho', { health: 1, speed: 0 }, () => {
+        api.part({ shape: 'box', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+      })
+      api.setSeed(seed)
+      api.setState('jogando')
+      // O nascedouro "em qualquer lugar" sorteia ângulo e distância — é acaso puro.
+      api.startSpawner('bicho', 0.05, 'anywhere')
+      step(20)
+      const out: number[] = []
+      api.forEachAlive('bicho', (e) => {
+        out.push(Math.round(api.posOf(e, 'x') * 1000) / 1000)
+      })
+      return out.sort((a, b) => a - b)
+    }
+    const a = await runWithSeed(42)
+    const b = await runWithSeed(42)
+    const c = await runWithSeed(7)
+    expect(a.length).toBeGreaterThan(0)
+    expect(a).toEqual(b) // mesma semente → partida idêntica
+    expect(a).not.toEqual(c) // semente diferente → outra partida
+  })
+
+  // ---- Rampa ----
+  it('⭐ rampa: o herói sobe a inclinação em vez de bater nela', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('rampa', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'rampa', color: '#888', w: 4, h: 2, d: 8, x: 0, y: 0, z: 0 })
+    })
+    defineHero(api)
+    api.makeSolid('rampa')
+    api.setState('jogando')
+    api.spawn('rampa', 0, 0, 0)
+    const h = api.spawn('heroi', 0, 1, -3)
+    api.fall(h, 20)
+    step(20)
+    const y0 = api.posOf(h, 'y')
+    api.setVelocity(h, 0, 0, 3) // anda subindo a rampa (+Z)
+    step(40)
+    expect(api.posOf(h, 'y')).toBeGreaterThan(y0)
   })
 })

@@ -1,10 +1,10 @@
 import type { ExtensionManifest } from '#extensions'
-import { defesaDaTorreExample, saltoNasNuvensExample } from './examples'
+import { defesaDaTorreExample, parkourDoVulcaoExample, saltoNasNuvensExample } from './examples'
 
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.2.0',
+  version: '0.3.0',
   description:
     'A base de um jogo 3D profissional, portada de um curso de engine — agora um SANDBOX 3D completo. Entidades com máquina de estados própria, física de verdade (gravidade, pulo, plataformas sólidas), formas/texturas por peça, luzes e névoa, clique/mira no mundo (raycast) e câmera em 1ª pessoa, partículas data-driven (explosões + fogo/fumaça contínuos + atratores), enxames com pool, vizinhança por grade espacial, combate, telas, HUD e som. O motor faz o que nunca muda; as regras são suas.',
   category: 'games',
@@ -83,23 +83,47 @@ não faz nada (proteção dos jogos de verdade).
 
 ### Física & mundo sólido (🏃 Física)
 
-O mesmo motor de entidade agora tem física de plataforma:
+O motor de entidade tem física de verdade — feita à mão, sem biblioteca:
 
 - **Fazer … cair com gravidade** liga a queda numa entidade — ela passa a cair
   e a POUSAR no chão e nas plataformas sólidas.
-- **Fazer o molde … ser sólido** transforma as caixas daquele molde em
-  paredes/chãos: quem cai não atravessa, para em cima e pode pular delas.
+- **Fazer o molde … ser sólido** transforma aquele molde em parede/chão: ele
+  para **tudo** que não for fantasma. ⚠️ Mudou na v0.3.0: antes só quem tinha
+  gravidade era parado, então **tiro atravessava parede**. Agora ser sólido é
+  consequência de EXISTIR; se você QUER que algo atravesse, use "Fazer …
+  atravessar as paredes".
 - **Fazer … pular** dá um impulso para cima, mas só quando está no chão (nada
   de voar segurando o pulo). **… está no chão?** conta o pulo.
 - **Mover … como plataforma** é o controle pronto: WASD/setas no plano + pulo
   com espaço (liga a gravidade sozinho). Use dentro do "A cada quadro".
+- **Fazer o molde … colidir como** troca o formato invisível que bate: caixa
+  (padrão), bola ou **cápsula** — a melhor para gente e bicho, porque não
+  engancha em quina e sobe rampa lisinho.
+- **Rampa** é uma FORMA de peça: arraste uma peça "rampa" e o molde vira uma
+  ladeira que dá para subir (o desenho e a colisão casam sozinhos).
+- **Plataforma que anda** não precisa de bloco novo: um molde sólido + "Definir
+  velocidade" já CARREGA quem está em cima dele.
+- **Fazer o molde … ser uma zona** cria uma área que não empurra ninguém, mas
+  avisa: **Quando alguém encostar em … do molde …** roda na hora em que a
+  entidade ENTRA (uma vez por entrada, não a cada quadro). É a moeda, a porta,
+  a armadilha, a linha de chegada.
+- **Quicar** (trampolim, bola pula-pula) e **atrito** (0 = gelo, 1 = gruda)
+  são propriedades do molde em que você pisa.
+- Um tiro rápido **não atravessa** mais parede fina: o motor parte o passo do
+  quadro em pedaços quando a entidade anda mais que a própria espessura.
 
-### Formas, texturas & luz (🧱 peças, 💡 Luz & céu)
+### Formas, modelos, texturas & luz (🧱 peças, 💡 Luz & céu)
 
-- As **peças** dos moldes agora vêm em mais formas (caixa, bola, cilindro,
-  cone, **plano, rosca, pirâmide**), com **material** (fosco, metal, vidro,
+- As **peças** dos moldes vêm em muitas formas (caixa, bola, cilindro, cone,
+  **plano, rosca, pirâmide, rampa**), com **material** (fosco, metal, vidro,
   brilho — o "brilho" acende o bloom) e uma **textura** (uma imagem do projeto
   estampada na peça).
+- **Modelo importado**: escolha a forma "modelo importado" e escreva o nome de
+  um arquivo **.glb** que você trouxe para o projeto — a peça vira o modelo 3D
+  de verdade (feito no Blender, baixado de um site de modelos…). A caixa que
+  colide continua sendo o tamanho que você deu, então o jogo não muda de
+  comportamento. **Céu de foto**: um arquivo **.hdr** vira o céu 360° E ilumina
+  a cena inteira (é o que faz o metal refletir o ambiente).
 - **Pôr uma luz** acende uma luz colorida num ponto (tocha, fogueira);
   **Luz do ambiente** deixa o mundo mais claro ou escuro (modo noturno/caverna);
   **Névoa** faz o longe sumir numa cor (mistério); **Trocar o céu** muda o
@@ -134,6 +158,14 @@ O mesmo motor de entidade agora tem física de plataforma:
   claras "vazam" luz, como o tiro amarelo) e vinheta (cantos escuros). Num
   computador fraco, desligue no bloco "Efeitos de cinema" (modo turbo).
 
+### Acaso com semente (jogo que se repete igual)
+
+**Usar a semente … para o acaso** trava todo o sorteio do jogo: a MESMA semente
+dá exatamente a MESMA partida — os enfeites nascem no mesmo lugar, os inimigos
+vêm na mesma ordem, as faíscas voam igual. Serve para testar (o bug acontece de
+novo, do mesmo jeito!) e para dar o mesmo desafio para todo mundo. Semente 0
+volta ao acaso de verdade.
+
 ### Dicas
 
 - Unidades são METROS do mundo 3D: um boneco tem ~1–2 de altura, velocidades
@@ -146,5 +178,5 @@ O mesmo motor de entidade agora tem física de plataforma:
 > ⚠️ Use APENAS UMA extensão de jogo por projeto (Jogo 2D, Jogo 2D Avançado,
 > Jogo 3D ou esta) — cada uma cria a própria tela e elas brigam pelo canvas.
 `,
-  examples: [defesaDaTorreExample, saltoNasNuvensExample],
+  examples: [defesaDaTorreExample, saltoNasNuvensExample, parkourDoVulcaoExample],
 }

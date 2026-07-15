@@ -100,6 +100,7 @@ export const defesaDaTorreExample: ExtensionExample = {
             shape: 'box',
             material: 'normal',
             texture: '',
+            model: '',
             color: '#0e7490',
             w: {
               type: 'num',
@@ -131,6 +132,7 @@ export const defesaDaTorreExample: ExtensionExample = {
             shape: 'cone',
             material: 'normal',
             texture: '',
+            model: '',
             color: '#22d3ee',
             w: {
               type: 'num',
@@ -176,6 +178,7 @@ export const defesaDaTorreExample: ExtensionExample = {
             shape: 'cylinder',
             material: 'normal',
             texture: '',
+            model: '',
             color: '#64748b',
             w: {
               type: 'num',
@@ -207,6 +210,7 @@ export const defesaDaTorreExample: ExtensionExample = {
             shape: 'box',
             material: 'normal',
             texture: '',
+            model: '',
             color: '#94a3b8',
             w: {
               type: 'num',
@@ -252,6 +256,7 @@ export const defesaDaTorreExample: ExtensionExample = {
             shape: 'sphere',
             material: 'normal',
             texture: '',
+            model: '',
             color: '#ef4444',
             w: {
               type: 'num',
@@ -283,6 +288,7 @@ export const defesaDaTorreExample: ExtensionExample = {
             shape: 'cone',
             material: 'normal',
             texture: '',
+            model: '',
             color: '#7f1d1d',
             w: {
               type: 'num',
@@ -328,6 +334,7 @@ export const defesaDaTorreExample: ExtensionExample = {
             shape: 'sphere',
             material: 'normal',
             texture: '',
+            model: '',
             color: '#fde047',
             w: {
               type: 'num',
@@ -988,6 +995,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
             material: 'normal',
             color: '#38bdf8',
             texture: '',
+            model: '',
             w: {
               type: 'num',
               value: 0.9,
@@ -1019,6 +1027,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
             material: 'normal',
             color: '#e0f2fe',
             texture: '',
+            model: '',
             w: {
               type: 'num',
               value: 0.7,
@@ -1064,6 +1073,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
             material: 'normal',
             color: '#334155',
             texture: '',
+            model: '',
             w: {
               type: 'num',
               value: 4,
@@ -1109,6 +1119,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
             material: 'brilho',
             color: '#fde047',
             texture: '',
+            model: '',
             w: {
               type: 'num',
               value: 0.7,
@@ -1170,6 +1181,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
           value: -3,
         },
         glow: true,
+        curve: 'suave',
       },
       {
         type: 'g3k:defineEffect',
@@ -1564,6 +1576,975 @@ export const saltoNasNuvensExample: ExtensionExample = {
                   name: 'moedas',
                 },
               },
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:start',
+      },
+    ],
+  },
+}
+
+/**
+ * Exemplo da vitrine "Parkour do Vulcão" — o SANDBOX de física da v0.3.0 num
+ * jogo só: colisor de CÁPSULA (não engancha em quina), RAMPA que se sobe,
+ * ELEVADOR sólido que anda e CARREGA o herói, TRAMPOLIM que quica, chão com
+ * ATRITO, GEMAS como zona (dispara ao encostar, sem empurrar), emissor de
+ * poeira NÃO-brilhante seguindo o herói (fumaça com curva assada) e semente
+ * fixa (a partida é sempre igual). 100% asset-free.
+ *
+ * ⚠️ IR GERADA pelo parser real (fonte em __tests__/parkourExample.test.ts).
+ */
+export const parkourDoVulcaoExample: ExtensionExample = {
+  name: 'Parkour do Vulcão',
+  description:
+    'Um parkour 3D com física de verdade: suba a rampa, pegue carona no elevador, quique no trampolim e junte as 3 gemas. Mostra cápsula, rampa, plataforma móvel, quique, atrito e zonas.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'game-3d-advanced' }],
+    js: [
+      {
+        type: 'g3k:setup',
+        w: {
+          type: 'num',
+          value: 1280,
+        },
+        h: {
+          type: 'num',
+          value: 720,
+        },
+        world: {
+          type: 'num',
+          value: 60,
+        },
+        sky: '#0b1026',
+        ground: '#1e293b',
+      },
+      {
+        type: 'g3k:setEffects',
+        shadows: true,
+        bloom: true,
+        strength: {
+          type: 'num',
+          value: 1.1,
+        },
+        vignette: true,
+      },
+      {
+        type: 'g3k:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Parkour do Vulcão',
+        },
+        text: {
+          type: 'str',
+          value:
+            'Suba a rampa, pegue carona no elevador e junte as 3 gemas. O trampolim te joga longe!',
+        },
+        button: {
+          type: 'str',
+          value: 'Escalar',
+        },
+      },
+      {
+        type: 'g3k:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'Você pegou todas!',
+        },
+        text: {
+          type: 'str',
+          value: 'Que parkour!',
+        },
+        button: {
+          type: 'str',
+          value: 'Escalar de novo',
+        },
+      },
+      {
+        type: 'g3k:defineMold',
+        name: 'heroi',
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        body: [
+          {
+            type: 'g3k:part',
+            shape: 'box',
+            material: 'normal',
+            color: '#38bdf8',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 0.9,
+            },
+            h: {
+              type: 'num',
+              value: 1.1,
+            },
+            d: {
+              type: 'num',
+              value: 0.9,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0.55,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:part',
+            shape: 'sphere',
+            material: 'normal',
+            color: '#e0f2fe',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 0.7,
+            },
+            h: {
+              type: 'num',
+              value: 0.7,
+            },
+            d: {
+              type: 'num',
+              value: 0.7,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 1.3,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:defineMold',
+        name: 'chao',
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        body: [
+          {
+            type: 'g3k:part',
+            shape: 'box',
+            material: 'normal',
+            color: '#334155',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 8,
+            },
+            h: {
+              type: 'num',
+              value: 0.6,
+            },
+            d: {
+              type: 'num',
+              value: 8,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:defineMold',
+        name: 'rampa',
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        body: [
+          {
+            type: 'g3k:part',
+            shape: 'rampa',
+            material: 'normal',
+            color: '#475569',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 4,
+            },
+            h: {
+              type: 'num',
+              value: 3,
+            },
+            d: {
+              type: 'num',
+              value: 8,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:defineMold',
+        name: 'elevador',
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 2,
+        },
+        body: [
+          {
+            type: 'g3k:part',
+            shape: 'box',
+            material: 'metal',
+            color: '#64748b',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 3,
+            },
+            h: {
+              type: 'num',
+              value: 0.5,
+            },
+            d: {
+              type: 'num',
+              value: 3,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:defineMold',
+        name: 'trampolim',
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        body: [
+          {
+            type: 'g3k:part',
+            shape: 'box',
+            material: 'brilho',
+            color: '#22c55e',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 2.5,
+            },
+            h: {
+              type: 'num',
+              value: 0.4,
+            },
+            d: {
+              type: 'num',
+              value: 2.5,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:defineMold',
+        name: 'gema',
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        body: [
+          {
+            type: 'g3k:part',
+            shape: 'torus',
+            material: 'brilho',
+            color: '#fde047',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 0.8,
+            },
+            h: {
+              type: 'num',
+              value: 0.8,
+            },
+            d: {
+              type: 'num',
+              value: 0.4,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:setCollider',
+        mold: 'heroi',
+        shape: 'capsule',
+      },
+      {
+        type: 'g3k:makeSolid',
+        mold: 'chao',
+      },
+      {
+        type: 'g3k:makeSolid',
+        mold: 'rampa',
+      },
+      {
+        type: 'g3k:makeSolid',
+        mold: 'elevador',
+      },
+      {
+        type: 'g3k:makeSolid',
+        mold: 'trampolim',
+      },
+      {
+        type: 'g3k:setBounce',
+        mold: 'trampolim',
+        amount: {
+          type: 'num',
+          value: 0.9,
+        },
+      },
+      {
+        type: 'g3k:setFriction',
+        mold: 'chao',
+        amount: {
+          type: 'num',
+          value: 0.3,
+        },
+      },
+      {
+        type: 'g3k:makeTrigger',
+        mold: 'gema',
+      },
+      {
+        type: 'g3k:defineEmitter',
+        name: 'poeira',
+        colorFrom: '#e0f2fe',
+        colorTo: '#64748b',
+        sizeFrom: {
+          type: 'num',
+          value: 0.3,
+        },
+        sizeTo: {
+          type: 'num',
+          value: 0,
+        },
+        rate: {
+          type: 'num',
+          value: 14,
+        },
+        speed: {
+          type: 'num',
+          value: 1.2,
+        },
+        cone: {
+          type: 'num',
+          value: 45,
+        },
+        gravity: {
+          type: 'num',
+          value: -2,
+        },
+        glow: false,
+        curve: 'suave',
+      },
+      {
+        type: 'g3k:defineEffect',
+        name: 'brilho',
+        count: {
+          type: 'num',
+          value: 18,
+        },
+        colorFrom: '#fde047',
+        colorTo: '#f97316',
+        spread: {
+          type: 'num',
+          value: 4,
+        },
+        sizeFrom: {
+          type: 'num',
+          value: 0.4,
+        },
+        sizeTo: {
+          type: 'num',
+          value: 0,
+        },
+        life: {
+          type: 'num',
+          value: 0.5,
+        },
+        gravity: {
+          type: 'num',
+          value: 2,
+        },
+      },
+      {
+        type: 'var',
+        name: 'gemas',
+        value: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'g3k:onEnterState',
+        name: 'jogando',
+        body: [
+          {
+            type: 'assign',
+            name: 'gemas',
+            value: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:setSeed',
+            seed: {
+              type: 'num',
+              value: 7,
+            },
+          },
+          {
+            type: 'g3k:setAmbient',
+            intensity: {
+              type: 'num',
+              value: 0.45,
+            },
+          },
+          {
+            type: 'g3k:addLight',
+            color: '#fca5a5',
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 14,
+            },
+            z: {
+              type: 'num',
+              value: -10,
+            },
+            intensity: {
+              type: 'num',
+              value: 1.4,
+            },
+          },
+          {
+            type: 'g3k:setFog',
+            color: '#0b1026',
+            near: {
+              type: 'num',
+              value: 30,
+            },
+            far: {
+              type: 'num',
+              value: 90,
+            },
+          },
+          {
+            type: 'g3k:spawn',
+            mold: 'chao',
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:spawn',
+            mold: 'rampa',
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0.3,
+            },
+            z: {
+              type: 'num',
+              value: 8,
+            },
+          },
+          {
+            type: 'g3k:spawn',
+            mold: 'trampolim',
+            x: {
+              type: 'num',
+              value: -8,
+            },
+            y: {
+              type: 'num',
+              value: 0.5,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:spawn',
+            mold: 'gema',
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 4.5,
+            },
+            z: {
+              type: 'num',
+              value: 12,
+            },
+          },
+          {
+            type: 'g3k:spawn',
+            mold: 'gema',
+            x: {
+              type: 'num',
+              value: -8,
+            },
+            y: {
+              type: 'num',
+              value: 7,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:spawn',
+            mold: 'gema',
+            x: {
+              type: 'num',
+              value: 9,
+            },
+            y: {
+              type: 'num',
+              value: 5,
+            },
+            z: {
+              type: 'num',
+              value: -6,
+            },
+          },
+          {
+            type: 'g3k:spawnNamed',
+            varName: 'elevador',
+            mold: 'elevador',
+            x: {
+              type: 'num',
+              value: 9,
+            },
+            y: {
+              type: 'num',
+              value: 2,
+            },
+            z: {
+              type: 'num',
+              value: -6,
+            },
+          },
+          {
+            type: 'g3k:setVelocity',
+            charVar: 'elevador',
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0,
+            },
+            z: {
+              type: 'num',
+              value: 2,
+            },
+          },
+          {
+            type: 'g3k:spawnNamed',
+            varName: 'heroi',
+            mold: 'heroi',
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 2,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:cameraFollow',
+            charVar: 'heroi',
+            dist: {
+              type: 'num',
+              value: 12,
+            },
+            height: {
+              type: 'num',
+              value: 6,
+            },
+          },
+          {
+            type: 'g3k:emitterOn',
+            effect: 'poeira',
+            charVar: 'heroi',
+          },
+        ],
+      },
+      {
+        type: 'g3k:onEntityStateUpdate',
+        mold: 'elevador',
+        state: 'parado',
+        itemName: 'ela',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>',
+              left: {
+                type: 'g3k:posOf',
+                axis: 'z',
+                charVar: 'ela',
+              },
+              right: {
+                type: 'num',
+                value: 2,
+              },
+            },
+            then: [
+              {
+                type: 'g3k:setVelocity',
+                charVar: 'ela',
+                x: {
+                  type: 'num',
+                  value: 0,
+                },
+                y: {
+                  type: 'num',
+                  value: 0,
+                },
+                z: {
+                  type: 'num',
+                  value: -2,
+                },
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '<',
+              left: {
+                type: 'g3k:posOf',
+                axis: 'z',
+                charVar: 'ela',
+              },
+              right: {
+                type: 'num',
+                value: -10,
+              },
+            },
+            then: [
+              {
+                type: 'g3k:setVelocity',
+                charVar: 'ela',
+                x: {
+                  type: 'num',
+                  value: 0,
+                },
+                y: {
+                  type: 'num',
+                  value: 0,
+                },
+                z: {
+                  type: 'num',
+                  value: 2,
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'g3k:onEntityStateUpdate',
+        mold: 'gema',
+        state: 'parado',
+        itemName: 'ela',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'g3k:setYaw',
+            charVar: 'ela',
+            degrees: {
+              type: 'binop',
+              op: '*',
+              left: {
+                type: 'g3k:stateTime',
+                charVar: 'ela',
+              },
+              right: {
+                type: 'num',
+                value: 90,
+              },
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:onOverlap',
+        mold: 'gema',
+        zoneName: 'zona',
+        whoName: 'quem',
+        body: [
+          {
+            type: 'g3k:burstOn',
+            effect: 'brilho',
+            charVar: 'zona',
+          },
+          {
+            type: 'g3k:playEffect',
+            fx: 'coin',
+          },
+          {
+            type: 'g3k:recycle',
+            charVar: 'zona',
+          },
+          {
+            type: 'assign',
+            name: 'gemas',
+            value: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'var',
+                name: 'gemas',
+              },
+              right: {
+                type: 'num',
+                value: 1,
+              },
+            },
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>=',
+              left: {
+                type: 'var',
+                name: 'gemas',
+              },
+              right: {
+                type: 'num',
+                value: 3,
+              },
+            },
+            then: [
+              {
+                type: 'g3k:setState',
+                name: 'vitoria',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'g3k:onEntityStateUpdate',
+        mold: 'heroi',
+        state: 'parado',
+        itemName: 'ela',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'g3k:platformerKeys',
+            charVar: 'ela',
+            speed: {
+              type: 'num',
+              value: 8,
+            },
+            jump: {
+              type: 'num',
+              value: 11,
+            },
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '<',
+              left: {
+                type: 'g3k:posOf',
+                axis: 'y',
+                charVar: 'ela',
+              },
+              right: {
+                type: 'num',
+                value: -12,
+              },
+            },
+            then: [
+              {
+                type: 'g3k:setState',
+                name: 'menu',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'g3k:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'g3k:hudText',
+            slot: 'top-left',
+            text: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Gemas: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'gemas',
+                },
+              },
+              right: {
+                type: 'str',
+                value: '/3',
+              },
+            },
+          },
+          {
+            type: 'g3k:hudText',
+            slot: 'top-right',
+            text: {
+              type: 'str',
+              value: 'WASD anda, espaço pula',
             },
           },
         ],

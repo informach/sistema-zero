@@ -2,6 +2,7 @@ import type { JSX } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import {
+  asset3DManifest,
   assetManifest,
   assetMetaManifest,
   type ExtraFile,
@@ -280,6 +281,8 @@ export function PreviewIframe(): JSX.Element {
   const assetsMeta = useMemo(() => assetMetaManifest(assets), [assets])
   // Manifesto de sons (nome → dataUrl de áudio) — mesmo ciclo de vida do de imagem.
   const soundsManifest = useMemo(() => soundManifest(assets), [assets])
+  // Binários 3D (modelo GLB / céu HDR) — canal próprio (o de imagem os filtraria).
+  const models3dManifest = useMemo(() => asset3DManifest(assets), [assets])
 
   const previewBudgetInput = useMemo(
     () => ({
@@ -342,6 +345,7 @@ export function PreviewIframe(): JSX.Element {
       assets: assetsManifest,
       assetsMeta,
       sounds: soundsManifest,
+      models3d: models3dManifest,
     })
     // O botão "Atualizar" muda `renderNonce`. Embutimos o nonce no próprio documento
     // para que o `srcDoc` mude e o iframe recarregue (re-executando o código) mesmo
@@ -365,6 +369,7 @@ export function PreviewIframe(): JSX.Element {
     assetsManifest,
     assetsMeta,
     soundsManifest,
+    models3dManifest,
     previewSecurity,
     renderNonce,
   ])
