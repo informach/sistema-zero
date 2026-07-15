@@ -50,7 +50,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Trava o acaso do jogo numa semente: a MESMA semente dá exatamente a MESMA partida — os enfeites nascem no mesmo lugar, os inimigos vêm na mesma ordem, as faíscas voam igual. Ótimo para testar (o bug acontece de novo!) e para fazer um desafio idêntico para todo mundo. Semente 0 = acaso de verdade (cada partida diferente).',
+      'Trava o acaso do jogo numa semente: a MESMA semente dá exatamente a MESMA partida — os enfeites nascem no mesmo lugar, os inimigos vêm na mesma ordem, as faíscas voam igual. Ótimo para testar (o bug acontece de novo!) e para fazer um desafio idêntico para todo mundo. Semente 0 = acaso de verdade. ⚠️ Vale para o acaso do MOTOR e para os blocos "sortear" DESTE kit — o bloco "número aleatório" comum não obedece à semente.',
   },
   {
     type: 'sz_g3k_scatter_decor',
@@ -381,6 +381,92 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Vista aérea do mundo inteiro — perfeita para tower defense e jogos de estratégia.',
+  },
+  {
+    type: 'sz_g3k_camera_angle',
+    message0: 'Câmera: girar para %1 ° e inclinar %2 °',
+    args0: [
+      { type: 'input_value', name: 'AZ', check: 'JSValue' },
+      { type: 'input_value', name: 'EL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Gira a câmera de órbita por CÓDIGO (sem esperar o mouse): dá para abrir a fase mostrando o mundo, virar para o chefão ou girar devagarinho a cada quadro. Girar = em volta; inclinar = de quase rente ao chão (5°) até quase de cima (80°).',
+  },
+  {
+    type: 'sz_g3k_camera_distance',
+    message0: 'Câmera: afastar %1',
+    args0: [{ type: 'input_value', name: 'DIST', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Aproxima ou afasta a câmera. Vale tanto para a de órbita quanto para a que segue alguém — dá para aproximar numa conversa e afastar na luta.',
+  },
+  {
+    type: 'sz_g3k_camera_shake',
+    message0: 'Tremer a câmera com força %1 por %2 s',
+    args0: [
+      { type: 'input_value', name: 'STRENGTH', check: 'JSValue' },
+      { type: 'input_value', name: 'SECONDS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O tremor de impacto do cinema: use na explosão, no tiro grande, no chefão pisando. O tremor vai sumindo sozinho até acabar. Force baixo (0.2) = sustinho; alto (1) = terremoto.',
+  },
+  {
+    type: 'sz_g3k_camera_lens',
+    message0: 'Câmera: lente de %1 °',
+    args0: [{ type: 'input_value', name: 'FOV', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O quanto a câmera enxerga de uma vez (o normal é 60°). Diminuir (30°) é dar ZOOM, como uma luneta de mira. Aumentar (100°) alarga tudo e dá sensação de velocidade.',
+  },
+  {
+    type: 'sz_g3k_camera_look_at',
+    message0: 'Câmera: olhar para %1',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Faz a câmera de órbita/de cima girar em volta DELA em vez do meio do mundo. Sem este bloco a câmera olha sempre para o centro — num mundo grande, é o que te deixa acompanhar o herói ou o chefão.',
+  },
+  {
+    type: 'sz_g3k_camera_look_at_point',
+    message0: 'Câmera: olhar para o ponto x %1 y %2 z %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como o "olhar para", mas para um lugar fixo do mundo (a porta, a base, o portal). Ponto 0,0,0 volta a olhar para o meio do mundo.',
+  },
+  {
+    type: 'sz_g3k_camera_smooth',
+    message0: 'Câmera: suavidade do seguir %1',
+    args0: [{ type: 'input_value', name: 'LAMBDA', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O quanto a câmera que segue gruda em quem ela segue. Baixo (1) = ela vem preguiçosa, de longe, com cara de cinema. Alto (10) = colada, sem atraso nenhum. O normal é 3.',
   },
 
   // ---- 🤖 Entidades ----
@@ -982,6 +1068,185 @@ export const gameKit3DBlocks = [
       'Controle de plataforma pronto: anda no chão com WASD/setas e pula com o espaço (liga a gravidade sozinho). Use dentro do "A cada quadro".',
   },
 
+  // ---- 🕺 Animação do modelo ----
+  {
+    type: 'sz_g3k_state_anim',
+    message0: 'No molde %1, no estado %2, tocar a animação %3',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'heroi', kind: 'mold3d' },
+      { type: 'field_input', name: 'STATE', text: 'parado' },
+      { type: 'field_input', name: 'CLIP', text: 'Idle' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Amarra uma animação do modelo a um estado do cérebro. Você põe isso UMA vez e o boneco se anima sozinho: quando ele muda para o estado, a animação troca junto (com uma passagem suave). É o jeito profissional — o personagem do jogo não pede para animar, ele só muda de estado. O nome da animação é o que vem dentro do .glb (Idle, Run, Walk… cada site nomeia do seu jeito).',
+  },
+  {
+    type: 'sz_g3k_play_anim',
+    message0: 'Tocar a animação %1 em %2 %3',
+    args0: [
+      { type: 'field_input', name: 'CLIP', text: 'Idle' },
+      { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
+      {
+        type: 'field_dropdown',
+        name: 'LOOP',
+        options: [
+          ['repetindo', 'LOOP'],
+          ['uma vez só', 'ONCE'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca uma animação do modelo importado nessa entidade, na hora. "repetindo" é para andar/parado; "uma vez só" é para pular/atacar (fica no último quadro no fim). Pedir a animação que já está tocando não recomeça do zero.',
+  },
+  {
+    type: 'sz_g3k_stop_anim',
+    message0: 'Parar a animação de %1',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Congela o boneco no lugar (ele para de se mexer por dentro).',
+  },
+
+  // ---- 🎲 Sorteio + ⏱️ Tempo ----
+  {
+    type: 'sz_g3k_random_between',
+    message0: 'sortear de %1 a %2',
+    args0: [
+      { type: 'input_value', name: 'FROM', check: 'JSValue' },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Um número sorteado entre os dois (pode sair com vírgula). ⚠️ Use ESTE, e não o "número aleatório" comum: só o sorteio do kit obedece à semente — com ele, a mesma semente dá exatamente a mesma partida.',
+  },
+  {
+    type: 'sz_g3k_random_chance',
+    message0: 'sortear com %1 % de chance',
+    args0: [{ type: 'input_value', name: 'PERCENT', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro em N% das vezes: 100 é sempre, 0 é nunca, 30 é "às vezes". Bom para o inimigo que às vezes solta um item. Obedece à semente, como o "sortear de … a …".',
+  },
+  {
+    type: 'sz_g3k_start_timer',
+    message0: 'Começar a contagem de %1 s',
+    args0: [{ type: 'input_value', name: 'SECONDS', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga o relógio da partida: corrida contra o tempo, bomba, tempo da fase. Ele só corre no estado jogando — na pausa CONGELA, e recomeçar a partida zera.',
+  },
+  {
+    type: 'sz_g3k_time_left',
+    message0: 'tempo que falta',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantos segundos faltam na contagem (0 quando acabou). Bom no HUD.',
+  },
+  {
+    type: 'sz_g3k_stop_timer',
+    message0: 'Parar a contagem',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Congela o relógio onde está (a criança pegou o item que dá tempo, por exemplo).',
+  },
+  {
+    type: 'sz_g3k_on_timer_end',
+    message0: 'Quando o tempo acabar',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda UMA vez, no instante em que a contagem chega a zero. É onde você acaba o jogo, abre a porta, solta o chefão.',
+  },
+
+  // ---- 💬 Caixa de fala ----
+  {
+    type: 'sz_g3k_say',
+    message0: '%1 diz %2 por %3 s',
+    args0: [
+      { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
+      { type: 'input_value', name: 'TEXT', check: 'JSValue' },
+      { type: 'input_value', name: 'SECONDS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um balão de fala em cima da cabeça dela, que ACOMPANHA ela pela tela e some sozinho no fim do tempo. É o que faz o jogo contar história. Uma fala por vez em cada entidade (falar de novo troca a fala).',
+  },
+  {
+    type: 'sz_g3k_hide_say',
+    message0: 'Fechar a fala de %1',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Some com o balão antes do tempo acabar.',
+  },
+
+  // ---- 🔊 Música ----
+  {
+    type: 'sz_g3k_play_music',
+    message0: 'Tocar a música %1 sem parar',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'musica', kind: 'sound' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A música de fundo: toca em repetição até você mandar parar. Carregue o som primeiro com "Carregar o som". Só toca UMA música por vez — pedir outra troca.',
+  },
+  {
+    type: 'sz_g3k_stop_music',
+    message0: 'Parar a música',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Silencia a música de fundo (os efeitos continuam).',
+  },
+
+  {
+    type: 'sz_g3k_set_physics',
+    message0: 'Fazer o molde %1 ter física de %2',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'bola', kind: 'mold3d' },
+      {
+        type: 'field_dropdown',
+        name: 'KIND',
+        options: [
+          ['🏀 bola', 'bola'],
+          ['📦 caixa', 'caixa'],
+          ['🧍 personagem', 'personagem'],
+          ['🧊 gelo', 'gelo'],
+          ['🪶 flutuante', 'flutuante'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um bloco só e o molde já se comporta como a COISA que ele é: formato que colide, quique, atrito e queda, tudo combinando. 🏀 bola quica e rola pelo chão. 📦 caixa quase não quica e freia. 🧍 personagem NÃO quica em chão nenhum e não engancha em quina. 🧊 gelo escorrega. 🪶 flutuante não cai. Depois dá para afinar cada coisa com os blocos de quique, atrito e colidir como.',
+  },
+
   {
     type: 'sz_g3k_set_collider',
     message0: 'Fazer o molde %1 colidir como %2',
@@ -1537,6 +1802,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_g3k_define_mold', 'sz_g3k_part'],
   },
   {
+    // O molde desenha o boneco; esta categoria faz ele se MEXER por dentro.
+    name: '🕺 Animação do modelo',
+    colour: C,
+    types: ['sz_g3k_state_anim', 'sz_g3k_play_anim', 'sz_g3k_stop_anim'],
+  },
+  {
     name: '👾 Nascer & fábricas',
     colour: C,
     types: [
@@ -1564,6 +1835,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g3k_on_update',
       'sz_g3k_move_with_keys',
+      'sz_g3k_move_fps',
       'sz_g3k_key_down',
       'sz_g3k_key_pressed',
       'sz_g3k_set_pause_key',
@@ -1572,7 +1844,20 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎥 Câmera',
     colour: C,
-    types: ['sz_g3k_camera_follow', 'sz_g3k_camera_orbit', 'sz_g3k_camera_top'],
+    types: [
+      // Os modos primeiro (escolher a câmera), depois os ajustes (mexer nela).
+      'sz_g3k_camera_follow',
+      'sz_g3k_camera_orbit',
+      'sz_g3k_camera_top',
+      'sz_g3k_camera_fps',
+      'sz_g3k_camera_angle',
+      'sz_g3k_camera_distance',
+      'sz_g3k_camera_look_at',
+      'sz_g3k_camera_look_at_point',
+      'sz_g3k_camera_lens',
+      'sz_g3k_camera_smooth',
+      'sz_g3k_camera_shake',
+    ],
   },
   {
     name: '🤖 Entidades',
@@ -1625,6 +1910,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g3k_on_ground',
       'sz_g3k_make_solid',
       'sz_g3k_platformer_keys',
+      // O preset vem ANTES dos ajustes finos: é o atalho ("é uma bola") de onde a
+      // criança parte; colidir como/quique/atrito são para afinar depois.
+      'sz_g3k_set_physics',
       'sz_g3k_set_collider',
       'sz_g3k_pass_through',
       'sz_g3k_make_trigger',
@@ -1645,15 +1933,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '🖱️ Mira & 1ª pessoa',
+    name: '🖱️ Mira & clique',
     colour: C,
-    types: [
-      'sz_g3k_pick',
-      'sz_g3k_pointer_over',
-      'sz_g3k_ground_point',
-      'sz_g3k_camera_fps',
-      'sz_g3k_move_fps',
-    ],
+    types: ['sz_g3k_pick', 'sz_g3k_pointer_over', 'sz_g3k_ground_point'],
   },
   {
     name: '🕸️ Vizinhança',
@@ -1708,6 +1990,25 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    // O sorteio DO KIT (semeado) + o relógio da criança. O bloco de acaso do
+    // núcleo NÃO obedece à semente — por isso o kit tem o seu.
+    name: '🎲 Sorteio & tempo',
+    colour: C,
+    types: [
+      'sz_g3k_random_between',
+      'sz_g3k_random_chance',
+      'sz_g3k_start_timer',
+      'sz_g3k_time_left',
+      'sz_g3k_stop_timer',
+      'sz_g3k_on_timer_end',
+    ],
+  },
+  {
+    name: '💬 Fala',
+    colour: C,
+    types: ['sz_g3k_say', 'sz_g3k_hide_say'],
+  },
+  {
     name: '📢 Avisos',
     colour: C,
     types: ['sz_g3k_on_event', 'sz_g3k_emit'],
@@ -1715,7 +2016,14 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🔊 Som',
     colour: C,
-    types: ['sz_g3k_load_sound', 'sz_g3k_play_sound', 'sz_g3k_play_effect', 'sz_g3k_play_tone'],
+    types: [
+      'sz_g3k_load_sound',
+      'sz_g3k_play_music',
+      'sz_g3k_stop_music',
+      'sz_g3k_play_sound',
+      'sz_g3k_play_effect',
+      'sz_g3k_play_tone',
+    ],
   },
 ]
 
@@ -1763,6 +2071,12 @@ export const G3K_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3k_camera_follow: { DIST: numShadow(8), HEIGHT: numShadow(4) },
   sz_g3k_camera_orbit: { DIST: numShadow(25) },
   sz_g3k_camera_top: { HEIGHT: numShadow(40) },
+  sz_g3k_camera_angle: { AZ: numShadow(40), EL: numShadow(28) },
+  sz_g3k_camera_distance: { DIST: numShadow(25) },
+  sz_g3k_camera_shake: { STRENGTH: numShadow(0.5), SECONDS: numShadow(0.3) },
+  sz_g3k_camera_lens: { FOV: numShadow(60) },
+  sz_g3k_camera_look_at_point: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
+  sz_g3k_camera_smooth: { LAMBDA: numShadow(3) },
   sz_g3k_place: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
   sz_g3k_set_yaw: { DEG: numShadow(0) },
   sz_g3k_set_velocity: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },

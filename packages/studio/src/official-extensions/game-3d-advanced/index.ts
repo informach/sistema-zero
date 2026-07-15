@@ -29,6 +29,10 @@ const THREE_CDN = 'https://esm.sh/three@0.180.0'
  */
 const GLTF_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/GLTFLoader.js?external=three`
 const RGBE_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/RGBELoader.js?external=three`
+// SkeletonUtils.clone REAMARRA o esqueleto do clone aos ossos dele — o clone comum
+// do Object3D deixa o boneco preso ao esqueleto do original. É a mesma troca que o
+// curso fez ao passar a animar personagens.
+const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?external=three`
 
 export const gameKit3DExtension: ExtensionDefinition = {
   manifest: gameKit3DManifest,
@@ -46,6 +50,7 @@ export const gameKit3DExtension: ExtensionDefinition = {
       three: THREE_CDN,
       'three/addons/loaders/GLTFLoader.js': GLTF_LOADER_CDN,
       'three/addons/loaders/RGBELoader.js': RGBE_LOADER_CDN,
+      'three/addons/utils/SkeletonUtils.js': SKELETON_UTILS_CDN,
     },
   },
   ai: {

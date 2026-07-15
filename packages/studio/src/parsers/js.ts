@@ -5459,6 +5459,8 @@ const G3K_PART_SHAPES = new Set([
   'rampa',
 ])
 const G3K_COLLIDER_SHAPES = new Set(['box', 'sphere', 'capsule'])
+/** Espelha o dropdown de "ter física de" — valor fora daqui cai em rawJS. */
+const G3K_PHYS_KINDS = new Set(['bola', 'caixa', 'personagem', 'gelo', 'flutuante'])
 const G3K_CURVES = new Set(['linear', 'suave', 'pulso', 'fogo'])
 const G3K_PART_MATERIALS = new Set(['normal', 'metal', 'vidro', 'brilho'])
 const G3K_SPAWNER_WHERE = new Set(['edge', 'anywhere'])
@@ -5547,6 +5549,18 @@ function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const aVar = identifierName(args[0])
     const bVar = identifierName(args[1])
     if (aVar && bVar) return { type: 'g3k:distanceBetween', aVar, bVar }
+  }
+  if (method === 'randomBetween') {
+    const from = toExpr(args[0], ctx)
+    const to = toExpr(args[1], ctx)
+    if (isSimpleValue(from) && isSimpleValue(to)) return { type: 'g3k:randomBetween', from, to }
+  }
+  if (method === 'randomChance') {
+    const percent = toExpr(args[0], ctx)
+    if (isSimpleValue(percent)) return { type: 'g3k:randomChance', percent }
+  }
+  if (method === 'timeLeft' && args.length === 0) {
+    return { type: 'g3k:timeLeft' }
   }
   if (method === 'maxHealthOf') {
     const charVar = identifierName(args[0])
@@ -6094,6 +6108,42 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       const height = toExpr(args[0], ctx)
       return isSimpleValue(height) ? { type: 'g3k:cameraTop', height } : null
     }
+    case 'cameraAngle': {
+      const az = toExpr(args[0], ctx)
+      const el = toExpr(args[1], ctx)
+      return isSimpleValue(az) && isSimpleValue(el) ? { type: 'g3k:cameraAngle', az, el } : null
+    }
+    case 'cameraDistance': {
+      const dist = toExpr(args[0], ctx)
+      return isSimpleValue(dist) ? { type: 'g3k:cameraDistance', dist } : null
+    }
+    case 'cameraShake': {
+      const strength = toExpr(args[0], ctx)
+      const seconds = toExpr(args[1], ctx)
+      return isSimpleValue(strength) && isSimpleValue(seconds)
+        ? { type: 'g3k:cameraShake', strength, seconds }
+        : null
+    }
+    case 'cameraLens': {
+      const fov = toExpr(args[0], ctx)
+      return isSimpleValue(fov) ? { type: 'g3k:cameraLens', fov } : null
+    }
+    case 'cameraLookAt': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'g3k:cameraLookAt', charVar } : null
+    }
+    case 'cameraLookAtPoint': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(z)
+        ? { type: 'g3k:cameraLookAtPoint', x, y, z }
+        : null
+    }
+    case 'cameraSmooth': {
+      const lambda = toExpr(args[0], ctx)
+      return isSimpleValue(lambda) ? { type: 'g3k:cameraSmooth', lambda } : null
+    }
     case 'place': {
       const charVar = identifierName(args[0])
       if (!charVar) return null
@@ -6175,6 +6225,71 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       // Dropdown coage valor desconhecido p/ a 1ª opção — recusa aqui e cai em rawJS.
       if (!G3K_COLLIDER_SHAPES.has(shape)) return null
       return { type: 'g3k:setCollider', mold: args[0].value as string, shape }
+    }
+    case 'setPhysics': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const kind = args[1].value as string
+      // Dropdown coage valor desconhecido p/ a 1ª opção — recusa aqui e cai em rawJS.
+      if (!G3K_PHYS_KINDS.has(kind)) return null
+      return { type: 'g3k:setPhysics', mold: args[0].value as string, kind }
+    }
+    case 'playAnim': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const loopArg = args[2]
+      if (loopArg && loopArg.type !== 'BooleanLiteral') return null
+      return {
+        type: 'g3k:playAnim',
+        charVar,
+        clip: args[1].value as string,
+        loop: loopArg ? (loopArg.value as boolean) : true,
+      }
+    }
+    case 'stopAnim': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'g3k:stopAnim', charVar } : null
+    }
+    case 'setStateAnim': {
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        args[1]?.type !== 'StringLiteral' ||
+        args[2]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return {
+        type: 'g3k:setStateAnim',
+        mold: args[0].value as string,
+        state: args[1].value as string,
+        clip: args[2].value as string,
+      }
+    }
+    case 'playMusic': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g3k:playMusic', name: args[0].value as string }
+    }
+    case 'stopMusic':
+      return args.length === 0 ? { type: 'g3k:stopMusic' } : null
+    case 'startTimer': {
+      const seconds = toExpr(args[0], ctx)
+      return isSimpleValue(seconds) ? { type: 'g3k:startTimer', seconds } : null
+    }
+    case 'stopTimer':
+      return args.length === 0 ? { type: 'g3k:stopTimer' } : null
+    case 'onTimerEnd': {
+      if (!isFn(args[0])) return null
+      return { type: 'g3k:onTimerEnd', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'say': {
+      const charVar = identifierName(args[0])
+      const textValue = toExpr(args[1], ctx)
+      const seconds = toExpr(args[2], ctx)
+      if (!charVar || !isSimpleValue(textValue) || !isSimpleValue(seconds)) return null
+      return { type: 'g3k:say', charVar, text: textValue, seconds }
+    }
+    case 'hideSay': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'g3k:hideSay', charVar } : null
     }
     case 'passThrough': {
       const charVar = identifierName(args[0])
@@ -9105,6 +9220,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3k:pointerOver':
     case 'g3k:groundPoint':
     case 'g3k:velocityOf':
+    case 'g3k:randomBetween':
+    case 'g3k:randomChance':
+    case 'g3k:timeLeft':
     case 'g3k:distanceBetween':
     case 'g3k:maxHealthOf':
     case 'g3k:stateOf':

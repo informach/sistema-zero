@@ -1,12 +1,18 @@
 import type { ExtensionManifest } from '#extensions'
-import { defesaDaTorreExample, parkourDoVulcaoExample, saltoNasNuvensExample } from './examples'
+import {
+  defesaDaTorreExample,
+  guardiaoDoPortalExample,
+  parkourDoVulcaoExample,
+  quadraMalucaExample,
+  saltoNasNuvensExample,
+} from './examples'
 
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.3.0',
+  version: '0.5.0',
   description:
-    'A base de um jogo 3D profissional, portada de um curso de engine — agora um SANDBOX 3D completo. Entidades com máquina de estados própria, física de verdade (gravidade, pulo, plataformas sólidas), formas/texturas por peça, luzes e névoa, clique/mira no mundo (raycast) e câmera em 1ª pessoa, partículas data-driven (explosões + fogo/fumaça contínuos + atratores), enxames com pool, vizinhança por grade espacial, combate, telas, HUD e som. O motor faz o que nunca muda; as regras são suas.',
+    'A base de um jogo 3D profissional, portada de um curso de engine — um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha a cada estado; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com girar, zoom e tremor, e o WASD sempre relativo a ela; partículas; enxames com pool; vizinhança por grade; combate, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -85,6 +91,17 @@ não faz nada (proteção dos jogos de verdade).
 
 O motor de entidade tem física de verdade — feita à mão, sem biblioteca:
 
+- **Fazer o molde … ter física de** é o atalho: escolha 🏀 bola, 📦 caixa,
+  🧍 personagem, 🧊 gelo ou 🪶 flutuante e o molde já ganha, de uma vez, o
+  formato que colide, o quique, o atrito e a queda combinando entre si. Depois
+  dá para afinar cada coisa com os blocos abaixo.
+- **Quique é da COISA e do CHÃO — o maior manda.** Uma 🏀 bola quica em
+  qualquer chão, até no chão comum do mundo; um 🧍 personagem não quica em chão
+  nenhum; mas se o personagem cair num trampolim (quique alto), o trampolim
+  ganha e joga ele para cima. ⚠️ Mudou na v0.4.0: antes o quique era só do chão,
+  então uma bola era OBRIGADA a não quicar no chão comum.
+- **Atrito é o contrário: o mais escorregadio manda.** Chão de gelo escorrega
+  todo mundo; um disco de gelo escorrega em qualquer chão.
 - **Fazer … cair com gravidade** liga a queda numa entidade — ela passa a cair
   e a POUSAR no chão e nas plataformas sólidas.
 - **Fazer o molde … ser sólido** transforma aquele molde em parede/chão: ele
@@ -108,7 +125,8 @@ O motor de entidade tem física de verdade — feita à mão, sem biblioteca:
   entidade ENTRA (uma vez por entrada, não a cada quadro). É a moeda, a porta,
   a armadilha, a linha de chegada.
 - **Quicar** (trampolim, bola pula-pula) e **atrito** (0 = gelo, 1 = gruda)
-  são propriedades do molde em que você pisa.
+  valem tanto para a coisa que cai quanto para o chão — veja a regra do "maior
+  manda" lá em cima.
 - Um tiro rápido **não atravessa** mais parede fina: o motor parte o passo do
   quadro em pedaços quando a entidade anda mais que a própria espessura.
 
@@ -128,6 +146,35 @@ O motor de entidade tem física de verdade — feita à mão, sem biblioteca:
   **Luz do ambiente** deixa o mundo mais claro ou escuro (modo noturno/caverna);
   **Névoa** faz o longe sumir numa cor (mistério); **Trocar o céu** muda o
   degradê em runtime (dia → pôr do sol → noite).
+
+### A câmera (🎥) — e por que o WASD sempre acerta
+
+⭐ **Andar com as teclas é SEMPRE relativo à câmera**: o W entra na tela, o S
+volta, o A e o D andam para os lados DA TELA — não importa se a câmera está de
+cima, seguindo alguém, em 1ª pessoa, ou se você girou a órbita com o mouse. É
+assim que os jogos 3D de verdade funcionam, e é o que faz o controle "acertar"
+sem você pensar nisso. (⚠️ Mudou na v0.4.0: antes o WASD andava por um eixo fixo
+do mundo, então com a câmera atrás do herói ele corria **ao contrário**.)
+
+A **frente** de tudo no 3D é o lado +Z do molde: é para lá que aponta o "Mover
+para a frente", é isso que o "Encarar" e o "Fazer mirar" alinham, e é assim que
+os modelos **.glb** já vêm feitos. Ponha o nariz/cano das peças em z positivo.
+
+Escolha a câmera — **seguir** alguém, **girar em volta** (órbita, arrastável),
+**ver de cima** ou **1ª pessoa** — e depois mande nela por código:
+
+- **Girar para … ° e inclinar … °** move a órbita sem esperar o mouse (abertura
+  de fase, virar para o chefão, girar devagar a cada quadro).
+- **Afastar** aproxima/afasta (na órbita E no seguir): perto na conversa, longe
+  na luta. **Lente de … °** é o zoom de verdade (60 é o normal; 30 = luneta de
+  mira; 100 = alarga tudo e dá sensação de velocidade).
+- **Olhar para …** faz a órbita/a de cima girarem em volta de uma ENTIDADE ou de
+  um ponto, em vez do meio do mundo — num mundo grande, é o que deixa você
+  acompanhar o herói. (Antes era cravado no centro.)
+- **Tremer a câmera** é o impacto do cinema: explosão, tiro grande, chefão
+  pisando. Some sozinho.
+- **Suavidade do seguir**: baixo (1) = preguiçosa, cara de cinema; alto (10) =
+  colada.
 
 ### Mira, clique & 1ª pessoa (🖱️)
 
@@ -158,13 +205,46 @@ O motor de entidade tem física de verdade — feita à mão, sem biblioteca:
   claras "vazam" luz, como o tiro amarelo) e vinheta (cantos escuros). Num
   computador fraco, desligue no bloco "Efeitos de cinema" (modo turbo).
 
+### 🕺 O boneco importado ganha VIDA (animação do modelo)
+
+Um **.glb** não traz só o desenho: traz as **animações** que fizeram nele (andar,
+pular, atacar). O motor lê todas.
+
+- ⭐ **No molde …, no estado …, tocar a animação …** é o jeito profissional, e o
+  mesmo do curso: você amarra UMA vez e pronto — quando o cérebro da entidade
+  muda de estado, a animação troca junto, com uma passagem suave. O personagem
+  não "pede para animar": ele só muda de estado, e o corpo acompanha.
+- **Tocar a animação … em …** serve para a hora exata (o pulo, o golpe): escolha
+  *repetindo* (andar/parado) ou *uma vez só* (fica no último quadro no fim).
+- O NOME da animação é o que vem dentro do arquivo — cada site nomeia do seu
+  jeito (Idle, Run, Walk…). Nome que não existe = aviso, o jogo não quebra.
+
+### 🎲 Sorteio & ⏱️ tempo
+
+- **Sortear de … a …** e **sortear com …% de chance** são o acaso DO KIT.
+  ⚠️ Use estes, não o "número aleatório" comum: **só o sorteio do kit obedece à
+  semente**.
+- **Começar a contagem de … s** + **tempo que falta** + **Quando o tempo acabar**
+  são a corrida contra o relógio, a bomba, o tempo da fase. O relógio só corre
+  no estado jogando: na pausa ele CONGELA, e recomeçar a partida zera.
+
+### 💬 Fala & 🎵 música
+
+- **… diz … por … s** põe um balão em cima da cabeça da entidade que ACOMPANHA
+  ela pela tela e some sozinho. É o que faz o jogo contar história (o HUD dos
+  cantos não conversa com ninguém).
+- **Tocar a música … sem parar** é a música de fundo, em repetição (uma por vez).
+  Carregue antes com "Carregar o som".
+
 ### Acaso com semente (jogo que se repete igual)
 
-**Usar a semente … para o acaso** trava todo o sorteio do jogo: a MESMA semente
-dá exatamente a MESMA partida — os enfeites nascem no mesmo lugar, os inimigos
-vêm na mesma ordem, as faíscas voam igual. Serve para testar (o bug acontece de
-novo, do mesmo jeito!) e para dar o mesmo desafio para todo mundo. Semente 0
-volta ao acaso de verdade.
+**Usar a semente … para o acaso** trava o sorteio do jogo: a MESMA semente dá
+exatamente a MESMA partida — os enfeites nascem no mesmo lugar, os inimigos vêm
+na mesma ordem, as faíscas voam igual. Serve para testar (o bug acontece de novo,
+do mesmo jeito!) e para dar o mesmo desafio para todo mundo. Semente 0 volta ao
+acaso de verdade. ⚠️ Vale para o acaso do MOTOR (enfeites, faíscas, fábricas) e
+para os blocos **sortear** deste kit — o bloco "número aleatório" comum NÃO
+obedece à semente.
 
 ### Dicas
 
@@ -178,5 +258,11 @@ volta ao acaso de verdade.
 > ⚠️ Use APENAS UMA extensão de jogo por projeto (Jogo 2D, Jogo 2D Avançado,
 > Jogo 3D ou esta) — cada uma cria a própria tela e elas brigam pelo canvas.
 `,
-  examples: [defesaDaTorreExample, saltoNasNuvensExample, parkourDoVulcaoExample],
+  examples: [
+    defesaDaTorreExample,
+    saltoNasNuvensExample,
+    parkourDoVulcaoExample,
+    quadraMalucaExample,
+    guardiaoDoPortalExample,
+  ],
 }

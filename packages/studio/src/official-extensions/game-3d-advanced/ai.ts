@@ -34,7 +34,19 @@ API global (cada método corresponde a exatamente 1 bloco):
   moveWithKeys(ent, velocidade) — WASD/setas no chão, dt embutido;
   keyDown('w'); keyPressed('j'); setPauseKey('Escape').
 - Câmera: cameraFollow(ent, dist, altura); cameraOrbit(dist); cameraTop(alt);
-  cameraFps(ent) — 1a pessoa, olhar com o mouse (clique captura o ponteiro).
+  cameraFps(ent) — 1a pessoa, olhar com o mouse (clique captura o ponteiro);
+  cameraAngle(azGraus, elGraus) — gira/inclina a órbita por código;
+  cameraDistance(d) — vale p/ órbita E seguir; cameraLens(graus) — FOV (60 =
+  normal, 30 = zoom de mira); cameraLookAt(ent) / cameraLookAtPoint(x, y, z) —
+  o PIVÔ da órbita/de-cima (antes era cravado na origem do mundo);
+  cameraShake(forca, seg) — tremor de impacto, decai sozinho, usa a semente;
+  cameraSmooth(lambda) — suavidade do seguir (3 = padrão).
+- ⭐ CONVENÇÃO DE FRENTE: a frente do molde é +Z (a do curso e a dos .glb) —
+  moveForward/lookAt/faceVelocity/aimAt/isAimingAt todos usam +Z. Ponha o
+  nariz/cano das peças em z POSITIVO.
+- ⭐ WASD é RELATIVO À CÂMERA (moveWithKeys/platformerKeys/moveFps): W entra na
+  tela em qualquer modo de câmera, inclusive na órbita arrastada. Não gere
+  código que ande por eixo fixo do mundo esperando que "W = -Z".
 - Fisica (na unha, sem lib): fall(ent, gravidade) — liga a queda; jump(ent,
   forca) — so no chao; onGround(ent); makeSolid('molde') — vira parede/chao
   solido e PARA TUDO que nao seja fantasma (⚠️ v0.3.0: antes so parava quem
@@ -45,10 +57,33 @@ API global (cada método corresponde a exatamente 1 bloco):
   makeTrigger('molde') — zona que nao empurra; onOverlap('molde', function
   (zona, quem) {}) — dispara ao ENTRAR, 1x por entrada; setBounce('molde',
   0..1); setFriction('molde', 0..1).
+  setPhysics('molde', 'bola'|'caixa'|'personagem'|'gelo'|'flutuante') — preset
+  coerente (colisor + quique + atrito + gravidade-padrao do molde, aplicada no
+  spawn). E o atalho: prefira-o a afinar 4 blocos na mao.
+  ⭐ Quique e atrito valem dos DOIS lados: quique = o MAIOR dos dois (bola quica
+  em qualquer chao, inclusive no piso-base; personagem nao quica em chao nenhum,
+  mas o trampolim ainda o arremessa); atrito = o mais ESCORREGADIO dos dois.
   Rampa = FORMA de peca (part shape 'rampa'), nao bloco. Plataforma que anda =
   makeSolid + setVelocity: ela CARREGA quem esta em cima, sem bloco novo.
   Tiro rapido nao tunela (o motor parte o passo do quadro em substeps).
-- Acaso: setSeed(n) — a MESMA semente da a MESMA partida (0 = acaso de verdade).
+- Anima o modelo (.glb): setStateAnim('molde', 'estado', 'Clipe') — ⭐ AMARRA a
+  animação ao estado da FSM (o setEntityState troca o clipe sozinho, com
+  crossfade); playAnim(ent, 'Clipe', loop) — na hora (loop=false fica no último
+  quadro); stopAnim(ent). O nome do clipe vem de DENTRO do .glb (Idle/Run/Walk —
+  cada site nomeia do seu jeito); clipe inexistente = aviso, nunca exceção. O
+  mixer é POR ENTIDADE (nasce no spawn, não no part) e o clone usa SkeletonUtils
+  (o clone comum não reamarra o esqueleto). Molde só de peças não tem animação.
+- ⭐ Acaso: setSeed(n) — a MESMA semente da a MESMA partida (0 = acaso de verdade).
+  randomBetween(a, b) e randomChance(percent) sao o sorteio DO KIT e obedecem a
+  semente. NUNCA gere Math.random() nem o bloco "numero aleatorio" do nucleo
+  dentro de um jogo 3D que use setSeed: eles IGNORAM a semente e quebram a
+  reprodutibilidade.
+- Tempo: startTimer(seg); timeLeft(); stopTimer(); onTimerEnd(fn) — o relogio da
+  crianca (so corre em 'jogando'; a pausa congela; recomecar zera).
+- Fala: say(ent, 'texto', seg) — balao ancorado NA entidade, acompanha ela na
+  tela e some sozinho (1 por entidade); hideSay(ent).
+- Musica: playMusic('nome') — em loop, UMA por vez; stopMusic(). O playSound e
+  tiro-e-esquece (efeito), o playMusic e a trilha.
 - Luz & ceu: addLight(cor, x, y, z, forca) — luz pontual; setAmbient(forca) —
   luz do ambiente (0 escuro, 1 claro); setFog(cor, perto, longe) — nevoa;
   setSky(topo, horizonte) — troca o ceu em runtime.

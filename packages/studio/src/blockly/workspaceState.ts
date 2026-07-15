@@ -4325,6 +4325,48 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_g3k_camera_top', {}, {}, stmt.__id, { HEIGHT: height })
     }
+    case 'g3k:cameraAngle': {
+      const az = exprToValueBlock(valueToExpr(stmt.az))
+      const el = exprToValueBlock(valueToExpr(stmt.el))
+      return az === null || el === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_camera_angle', {}, {}, stmt.__id, { AZ: az, EL: el })
+    }
+    case 'g3k:cameraDistance': {
+      const dist = exprToValueBlock(valueToExpr(stmt.dist))
+      return dist === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_camera_distance', {}, {}, stmt.__id, { DIST: dist })
+    }
+    case 'g3k:cameraShake': {
+      const strength = exprToValueBlock(valueToExpr(stmt.strength))
+      const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
+      return strength === null || seconds === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_camera_shake', {}, {}, stmt.__id, { STRENGTH: strength, SECONDS: seconds })
+    }
+    case 'g3k:cameraLens': {
+      const fov = exprToValueBlock(valueToExpr(stmt.fov))
+      return fov === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_camera_lens', {}, {}, stmt.__id, { FOV: fov })
+    }
+    case 'g3k:cameraLookAt':
+      return block('sz_g3k_camera_look_at', { CHAR: stmt.charVar }, {}, stmt.__id)
+    case 'g3k:cameraLookAtPoint': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || y === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_camera_look_at_point', {}, {}, stmt.__id, { X: x, Y: y, Z: z })
+    }
+    case 'g3k:cameraSmooth': {
+      const lambda = exprToValueBlock(valueToExpr(stmt.lambda))
+      return lambda === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_camera_smooth', {}, {}, stmt.__id, { LAMBDA: lambda })
+    }
     case 'g3k:place': {
       const x = exprToValueBlock(valueToExpr(stmt.x))
       const y = exprToValueBlock(valueToExpr(stmt.y))
@@ -4393,6 +4435,50 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_g3k_make_trigger', { MOLD: stmt.mold }, {}, stmt.__id)
     case 'g3k:setCollider':
       return block('sz_g3k_set_collider', { MOLD: stmt.mold, SHAPE: stmt.shape }, {}, stmt.__id)
+    case 'g3k:setPhysics':
+      return block('sz_g3k_set_physics', { MOLD: stmt.mold, KIND: stmt.kind }, {}, stmt.__id)
+    case 'g3k:playAnim':
+      return block(
+        'sz_g3k_play_anim',
+        { CHAR: stmt.charVar, CLIP: stmt.clip, LOOP: stmt.loop ? 'LOOP' : 'ONCE' },
+        {},
+        stmt.__id,
+      )
+    case 'g3k:stopAnim':
+      return block('sz_g3k_stop_anim', { CHAR: stmt.charVar }, {}, stmt.__id)
+    case 'g3k:setStateAnim':
+      return block(
+        'sz_g3k_state_anim',
+        { MOLD: stmt.mold, STATE: stmt.state, CLIP: stmt.clip },
+        {},
+        stmt.__id,
+      )
+    case 'g3k:playMusic':
+      return block('sz_g3k_play_music', { NAME: stmt.name }, {}, stmt.__id)
+    case 'g3k:stopMusic':
+      return block('sz_g3k_stop_music', {}, {}, stmt.__id)
+    case 'g3k:startTimer': {
+      const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
+      return seconds === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_start_timer', {}, {}, stmt.__id, { SECONDS: seconds })
+    }
+    case 'g3k:stopTimer':
+      return block('sz_g3k_stop_timer', {}, {}, stmt.__id)
+    case 'g3k:onTimerEnd':
+      return block('sz_g3k_on_timer_end', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'g3k:say': {
+      const textValue = exprToValueBlock(valueToExpr(stmt.text))
+      const seconds = exprToValueBlock(valueToExpr(stmt.seconds))
+      return textValue === null || seconds === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_say', { CHAR: stmt.charVar }, {}, stmt.__id, {
+            TEXT: textValue,
+            SECONDS: seconds,
+          })
+    }
+    case 'g3k:hideSay':
+      return block('sz_g3k_hide_say', { CHAR: stmt.charVar }, {}, stmt.__id)
     case 'g3k:passThrough':
       return block(
         'sz_g3k_pass_through',
@@ -5358,6 +5444,21 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3k_velocity_of', { CHAR: expr.charVar, AXIS: expr.axis })
     case 'g3k:distanceBetween':
       return block('sz_g3k_distance_between', { A: expr.aVar, B: expr.bVar })
+    case 'g3k:randomBetween': {
+      const from = exprToValueBlock(valueToExpr(expr.from))
+      const to = exprToValueBlock(valueToExpr(expr.to))
+      return from === null || to === null
+        ? null
+        : block('sz_g3k_random_between', {}, {}, undefined, { FROM: from, TO: to })
+    }
+    case 'g3k:randomChance': {
+      const percent = exprToValueBlock(valueToExpr(expr.percent))
+      return percent === null
+        ? null
+        : block('sz_g3k_random_chance', {}, {}, undefined, { PERCENT: percent })
+    }
+    case 'g3k:timeLeft':
+      return block('sz_g3k_time_left', {})
     case 'g3k:maxHealthOf':
       return block('sz_g3k_max_health_of', { CHAR: expr.charVar })
     case 'g3k:stateOf':

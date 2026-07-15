@@ -496,6 +496,12 @@ export function compileExpr(
       return `SZGameKit3D.velocityOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.axis)})`
     case 'g3k:distanceBetween':
       return `SZGameKit3D.distanceBetween(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3k:randomBetween':
+      return `SZGameKit3D.randomBetween(${compileExpr(valueToExpr(expr.from), 0, identifiers)}, ${compileExpr(valueToExpr(expr.to), 0, identifiers)})`
+    case 'g3k:randomChance':
+      return `SZGameKit3D.randomChance(${compileExpr(valueToExpr(expr.percent), 0, identifiers)})`
+    case 'g3k:timeLeft':
+      return 'SZGameKit3D.timeLeft()'
     case 'g3k:maxHealthOf':
       return `SZGameKit3D.maxHealthOf(${identifiers.get(expr.charVar)})`
     case 'g3k:stateOf':

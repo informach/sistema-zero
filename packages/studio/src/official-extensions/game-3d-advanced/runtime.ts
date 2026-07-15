@@ -96,12 +96,21 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var entityLimitWarned = false;
   var _currentMold = null;               // contexto de montagem do defineMold
   // Câmera viva: um MODO por vez (órbita arrastável / seguir / topo).
-  var camMode = { kind: 'orbit', target: null, dist: 25, height: 4 };
-  var orbit = null;                      // { az, el, dist, dragging, px, py }
+  var camMode = { kind: 'orbit', target: null, dist: 25, height: 4, pivot: null };
+  var orbit = null;
+  var camSmooth = 3;   // suavidade do seguir (era literal); maior = mais colada
+  var _shakeT = 0;     // segundos restantes de tremor
+  var _shakeAmp = 0;   // força do tremor, em metros
+  var _shakeMax = 1;   // duração pedida (para o tremor decair até zero)                      // { az, el, dist, dragging, px, py }
   // Vetores/quaternions temporários (alocados no initWorld — nunca no top-level).
   var _tv1 = null;
   var _tv2 = null;
   var _tq1 = null;
+  // Base do WASD: frente/direita da CÂMERA achatadas no chão. Vetores PRÓPRIOS
+  // (não reusam _tv1/_tv2) porque quem chama a base também chama moveForward e
+  // companhia — aliasing aqui seria um bug invisível.
+  var _camF = null;
+  var _camR = null;
 
   // Grade espacial (plano XZ): a resposta do curso ao "getNearbyEntities O(n)".
   // Células esparsas por chave 'x,z'; cada entidade guarda a faixa de células
@@ -133,6 +142,17 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   function warn(msg) {
     try { console.warn('SZGameKit3D: ' + msg); } catch (e) {}
+  }
+
+  /**
+   * Aviso UMA vez por chave. Coisa chamada a cada quadro (tocar animação, por
+   * exemplo) com um nome errado entupiria o console a 60/s e esconderia o resto.
+   */
+  var _warned = {};
+  function warnOnce(key, msg) {
+    if (_warned[key]) return;
+    _warned[key] = true;
+    warn(msg);
   }
 
   /**
@@ -242,6 +262,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       '.szg3k-hud-top-right { top: 0; right: 0; text-align: right; }' +
       '.szg3k-hud-bottom-left { bottom: 0; left: 0; }' +
       '.szg3k-hud-bottom-right { bottom: 0; right: 0; text-align: right; }' +
+      // Balão de fala: ancorado no MUNDO (o say projeta a posição da entidade a
+      // cada quadro). translate(-50%,-100%) põe a ponta do balão na cabeça dela.
+      '.szg3k-say { position: absolute; max-width: 40%; padding: 8px 12px; border-radius: 14px; ' +
+      'background: rgba(255,255,255,0.95); color: #0f172a; font-size: 16px; font-weight: 600; ' +
+      'line-height: 1.3; pointer-events: none; transform: translate(-50%, -100%); ' +
+      'box-shadow: 0 4px 14px rgba(0,0,0,0.35); white-space: pre-wrap; }' +
       '.szg3k-panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); ' +
         'background: rgba(2, 4, 12, 0.55); backdrop-filter: blur(10px); ' +
         'border: 3px solid ' + config.accent + '; padding: 30px; border-radius: 15px; text-align: center; ' +
@@ -407,6 +433,11 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       for (var pk in pools) releaseAll(pools[pk]);
       for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
       resetParticles();
+      // Recomeço limpa o que sobrou da partida anterior: balão de fala pendurado
+      // e cronômetro correndo atravessariam para o jogo novo.
+      clearSays();
+      _timer.on = false;
+      _timer.left = 0;
     }
     var hooks = enterStateHooks[n];
     if (hooks) {
@@ -466,6 +497,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       _tv1 = new THREE.Vector3();
       _tv2 = new THREE.Vector3();
       _tq1 = new THREE.Quaternion();
+      _camF = new THREE.Vector3(0, 0, -1);
+      _camR = new THREE.Vector3(1, 0, 0);
 
       renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
       // Resolução interna FIXA (as contas do aluno nunca mudam com a janela).
@@ -764,8 +797,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     : {};
   var _gltfMod = null;       // módulo do GLTFLoader (import dinâmico)
   var _rgbeMod = null;
-  var _modelCache = null;    // nome -> Group já parseado (clonado a cada uso)
-  var _modelPending = null;  // nome -> true (import/parse em voo)
+  var _skelMod = null;       // SkeletonUtils: clone que REAMARRA o esqueleto
+  var _modelCache = null;    // nome -> { scene, clips } já parseado (clonado a cada uso)
+  var _modelPending = null;  // nome -> FILA de callbacks (import/parse em voo)
 
   /** data: URL base64 -> ArrayBuffer, sem tocar na rede. */
   function dataUrlToBuffer(url) {
@@ -788,13 +822,125 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
    * criança vê um cubo e o modelo aparece quando fica pronto — nunca uma cena
    * quebrada). Chamado do part(), que roda no defineMold (antes do start).
    */
+  /**
+   * Clona um modelo importado. ⭐ O clone comum do Object3D NÃO reamarra o esqueleto aos
+   * ossos do clone — o boneco clonado fica preso ao esqueleto do original e a
+   * animação sai deformada. É por isso que o próprio curso trocou o clone comum
+   * pelo SkeletonUtils.clone (cached-asset-streamer.js:135-136). Sem o addon
+   * carregado, cai no clone comum: peça estática continua certa, e só o boneco
+   * animado é que perderia — por isso o aviso vive no caminho da animação.
+   */
+  function cloneModel(root) {
+    if (_skelMod && _skelMod.clone) {
+      try { return _skelMod.clone(root); } catch (e) {}
+    }
+    return root.clone();
+  }
+
+  // ---- 🕺 Animação do modelo (a lição do AnimatedObjectComponent do curso) ----
+
+  /**
+   * Monta o mixer DA ENTIDADE. ⚠️ Aqui é o spawn, não o part: as peças são do
+   * MOLDE (uma vez), mas a animação é de cada boneco (cada um no seu tempo). Foi
+   * exatamente confundir esses dois tempos que gerou o bug do cubo.
+   */
+  function attachMixer(e, m) {
+    if (!m.model || !THREE.AnimationMixer) return;
+    var hit = _modelCache && _modelCache[m.model];
+    if (!hit || !hit.clips || !hit.clips.length) return;
+    try {
+      e._mixer = new THREE.AnimationMixer(e.mesh);
+      e._clips = hit.clips;
+      e._action = null;
+    } catch (err) {
+      e._mixer = null;
+    }
+  }
+
+  /** Acha o clipe pelo nome (o .glb de cada site nomeia do seu jeito). */
+  function clipByName(e, name) {
+    if (!e._clips) return null;
+    var k = text(name, '');
+    for (var i = 0; i < e._clips.length; i++) {
+      if (e._clips[i] && e._clips[i].name === k) return e._clips[i];
+    }
+    return null;
+  }
+
+  /**
+   * Toca um clipe com uma passagem CURTA de um para o outro. O curso só faz
+   * .play() (e quebra num .glb sem "Idle"); o crossfade é o mínimo para o boneco
+   * não picotar ao trocar de estado, e o aviso gentil é o mínimo para um nome
+   * errado não derrubar o jogo.
+   */
+  function playAnim(e, name, loop) {
+    if (!isEntity(e) || !e._mixer) return;
+    var clip = clipByName(e, name);
+    if (!clip) {
+      warnOnce('anim:' + e._mold + ':' + text(name, ''),
+        'o modelo do molde "' + e._mold + '" não tem a animação "' + text(name, '') + '"');
+      return;
+    }
+    try {
+      var next = e._mixer.clipAction(clip);
+      if (e._action === next) return; // já é essa: não reinicia (idempotente como a FSM)
+      var once = loop === false;
+      next.reset();
+      // Constantes do THREE, não os números (2200/2201) — número cravado é o tipo
+      // de coisa que some sem avisar quando a lib mexe na tabela.
+      next.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, once ? 1 : Infinity);
+      next.clampWhenFinished = once;
+      next.fadeIn(0.2);
+      next.play();
+      if (e._action) e._action.fadeOut(0.2);
+      e._action = next;
+    } catch (err) {}
+  }
+
+  function stopAnim(e) {
+    if (!isEntity(e) || !e._mixer) return;
+    try { e._mixer.stopAllAction(); } catch (err) {}
+    e._action = null;
+  }
+
+  /**
+   * Aquece o modelo — a lição do cached-asset-streamer do curso (compileAsync +
+   * initTexture). Sem isto, o PRIMEIRO inimigo que nasce compila o shader e sobe a
+   * textura NO MEIO do quadro, e o jogo engasga bem na hora da ação. Best-effort:
+   * o compileAsync não existe em toda versão, e aquecer é otimização — nunca pode
+   * derrubar o carregamento.
+   */
+  function warmModel(root) {
+    if (!root || !renderer || !scene || !camera) return;
+    try {
+      // Compila CONTRA a cena real: a permutação do shader depende de luz/névoa/
+      // sombra, então aquecer noutra cena aqueceria o programa errado.
+      if (renderer.compileAsync) renderer.compileAsync(root, camera, scene);
+      else if (renderer.compile) renderer.compile(scene, camera);
+    } catch (e) {}
+    try {
+      root.traverse(function (o) {
+        if (!o.isMesh || !o.material || !renderer.initTexture) return;
+        for (var key in o.material) {
+          var t = o.material[key];
+          if (t && t.isTexture) { try { renderer.initTexture(t); } catch (e) {} }
+        }
+      });
+    } catch (e) {}
+  }
+
   function loadModel(name, onReady) {
     var k = text(name, '');
     if (!k) return null;
     if (!_modelCache) _modelCache = {};
     if (_modelCache[k]) return _modelCache[k];
     if (!_modelPending) _modelPending = {};
-    if (_modelPending[k]) return null;
+    // Carga JÁ em voo: entra na FILA. Antes devolvia null e DESCARTAVA o onReady —
+    // dois moldes com o MESMO .glb e o segundo ficava com o cubo para sempre.
+    if (_modelPending[k]) {
+      if (typeof onReady === 'function') _modelPending[k].push(onReady);
+      return null;
+    }
     var entry = MODELS3D[k];
     if (!entry || entry.kind !== 'model3d') {
       warn('o modelo "' + k + '" não está no projeto — a peça fica com a forma de reserva');
@@ -802,34 +948,66 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     }
     var buf = dataUrlToBuffer(entry.dataUrl);
     if (!buf) return null;
-    _modelPending[k] = true;
+    _modelPending[k] = typeof onReady === 'function' ? [onReady] : [];
+    // ⭐ O start() ESPERA esta promessa (o MESMO array dos sons, com a tela de
+    // "carregando" que já existe). É o que garante que o template está remendado
+    // ANTES do primeiro spawn — senão toda entidade nascida durante o parse ficava
+    // com o cubo para sempre, porque o spawn CLONA o template. Nunca REJEITA: um
+    // modelo quebrado não pode travar a criança na tela de carregando.
+    var release = null;
+    pending.push(new Promise(function (resolve) { release = resolve; }));
+    var flush = function (hit) {
+      var queue = _modelPending[k] || [];
+      _modelPending[k] = null;
+      if (hit) {
+        for (var i = 0; i < queue.length; i++) {
+          try { queue[i](hit); } catch (e) {}
+        }
+      }
+      if (release) release();
+    };
     var finish = function (mod) {
       _gltfMod = mod;
       try {
         new mod.GLTFLoader().parse(buf, '', function (gltf) {
-          _modelPending[k] = false;
           if (gltf && gltf.scene) {
-            _modelCache[k] = gltf.scene;
-            if (typeof onReady === 'function') { try { onReady(gltf.scene); } catch (e) {} }
+            // Guarda os CLIPES junto: são eles que dão vida ao boneco (a lição do
+            // AnimatedObjectComponent do curso). Antes o gltf.animations ia no lixo.
+            _modelCache[k] = { scene: gltf.scene, clips: gltf.animations || [] };
+            warmModel(gltf.scene);
+            flush(_modelCache[k]);
+          } else {
+            warn('o modelo "' + k + '" veio vazio — a peça fica com a forma de reserva');
+            flush(null);
           }
         }, function (err) {
-          _modelPending[k] = false;
           warn('não consegui abrir o modelo "' + k + '": ' + err);
+          flush(null);
         });
       } catch (e) {
-        _modelPending[k] = false;
         warn('não consegui abrir o modelo "' + k + '": ' + e);
+        flush(null);
       }
     };
     if (_gltfMod) { finish(_gltfMod); return null; }
     try {
-      import('three/addons/loaders/GLTFLoader.js').then(finish, function (e) {
-        _modelPending[k] = false;
+      // Os DOIS addons antes de parsear. O SkeletonUtils é opcional (catch -> null):
+      // sem ele o clone não reamarra o esqueleto e só a ANIMAÇÃO se perde — a peça
+      // estática continua certa. Esperar os dois evita a corrida de clonar o
+      // template antes de o SkeletonUtils chegar.
+      Promise.all([
+        import('three/addons/loaders/GLTFLoader.js'),
+        import('three/addons/utils/SkeletonUtils.js').catch(function () { return null; })
+      ]).then(function (mods) {
+        if (mods[1] && mods[1].clone) _skelMod = mods[1];
+        finish(mods[0]);
+      }, function (e) {
         warn('não consegui carregar o leitor de modelos: ' + e);
+        flush(null);
       });
     } catch (e) {
-      _modelPending[k] = false;
       warn('não consegui carregar o leitor de modelos: ' + e);
+      flush(null);
     }
     return null;
   }
@@ -921,8 +1099,22 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       hw: 0, hd: 0, top: 0,
       solid: false,
       trigger: false,
+      // Quique: 0 = não quica. Vale como COISA QUE CAI e como SUPERFÍCIE — o maior
+      // dos dois manda (ver contact).
       bounce: 0,
-      friction: 0
+      // Atrito: -1 = "não definido". Precisa do sentinela porque o mesmo campo
+      // serve a dois papéis com defaults OPOSTOS: como SUPERFÍCIE, não-definido
+      // vale 0 (gelo — sempre foi assim); como COISA QUE ANDA, vale 1 (sem
+      // opinião, quem manda é o chão). Fora isso, o mais escorregadio vence.
+      friction: -1,
+      // Gravidade-padrão do molde (só quem chama "ter física de" define): o spawn
+      // aplica por entidade. 0 = o molde não opina, a criança usa "cair com".
+      gravity: 0,
+      // Nome do .glb de que este molde é feito ('' = só peças). O spawn usa para
+      // montar o mixer da entidade; o "no estado X, tocar Y" usa para achar os
+      // clipes.
+      model: '',
+      stateAnims: null
     };
     molds[k] = mold;
     if (!pools[k]) pools[k] = { active: [], free: [], _sweeping: 0 };
@@ -1056,13 +1248,16 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         // lugar quando fica pronto — a cena nunca aparece quebrada.
         mesh = new THREE.Group();
         var holder = mesh;
-        var ready = loadModel(o.model, function (root) {
+        // O molde ANOTA de qual modelo ele é feito: o spawn precisa saber para
+        // clonar com esqueleto (SkeletonUtils) e montar o mixer da entidade.
+        mold.model = text(o.model, '');
+        var ready = loadModel(o.model, function (hit) {
           try {
             while (holder.children.length) holder.remove(holder.children[0]);
-            holder.add(root.clone());
+            holder.add(cloneModel(hit.scene));
           } catch (e) {}
         });
-        if (ready) holder.add(ready.clone());
+        if (ready) holder.add(cloneModel(ready.scene));
         else holder.add(new THREE.Mesh(unitGeo('box'), mat));
       } else {
         mesh = new THREE.Mesh(unitGeo(shape), mat);
@@ -1137,6 +1332,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       _alive: false,
       _mold: '',
       _iFrames: 0,
+      // Animação do modelo: mixer/clipes/ação são POR ENTIDADE (o mesh é dela).
+      // Declarados aqui só para o objeto nascer com a forma final — trocar a forma
+      // depois faz o motor de JS re-otimizar o slot do pool.
+      _mixer: null,
+      _clips: null,
+      _action: null,
       // Geração: incrementa a cada nascimento. Um handle guardado de uma entidade
       // reciclada-e-reusada tem _gen antigo → os métodos o tratam como "não é mais ela".
       _gen: 0,
@@ -1190,7 +1391,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     e.health = m.health;
     e.maxHealth = m.health;
     e.stateTime = 0;
-    e.gravity = 0;
+    // Gravidade-padrão do molde ("ter física de bola/caixa/…"). Molde que não
+    // opina nasce em 0, exatamente como antes — "fazer cair com" segue mandando.
+    e.gravity = m.gravity ? -Math.abs(m.gravity) : 0;
     e.grounded = false;
     // Higiene do pool: tudo que a vida anterior do slot pôde sujar volta ao zero
     // (mesmo motivo do data = {} logo abaixo).
@@ -1206,6 +1409,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     e._alive = true;
     e._mold = k;
     e._iFrames = 0;
+    // Mixer POR ENTIDADE (cada boneco anima no tempo dele). Slot reusado do pool
+    // já tem o seu — não remonta, só rebobina.
+    if (!e._mixer) attachMixer(e, m);
+    else e._action = null;
     e._gen = (e._gen || 0) + 1;
     e._gi = null;
     pool.active.push(e);
@@ -1239,6 +1446,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   function recycle(e) {
     if (!e || typeof e !== 'object' || !e._mold) return;
     if (!e._alive) return;
+    // Para a animação ANTES de baixar o _alive: o stopAnim passa pelo isEntity, que
+    // exige entidade viva — invertido, ele saía calado e a ação seguia mexendo nos
+    // ossos de um boneco invisível até o slot ser reusado.
+    if (e._mixer) stopAnim(e);
     e._alive = false;
     e._iFrames = 0;
     if (e.mesh) e.mesh.visible = false;
@@ -1384,8 +1595,25 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (oldBucket) runEntityHooks(oldBucket.exit, e, 'quando sair do estado ' + e.state);
     e.state = next;
     e.stateTime = 0;
+    // ⭐ A animação amarrada ao ESTADO: é o casamento da lição do curso (mixer por
+    // personagem) com o coração do kit (FSM por entidade). A criança amarra uma
+    // vez e o boneco se anima sozinho conforme o cérebro dele muda — o mesmo que o
+    // autoAnimate do Jogo 2D faz lá.
+    var mold = molds[e._mold];
+    if (mold && mold.stateAnims && e._mixer) {
+      var clipName = mold.stateAnims[next];
+      if (clipName) playAnim(e, clipName, true);
+    }
     var newBucket = perMold ? perMold[next] : null;
     if (newBucket) runEntityHooks(newBucket.enter, e, 'quando entrar no estado ' + next);
+  }
+
+  /** "No molde X, no estado Y, tocar a animação Z." */
+  function setStateAnim(mold, state, clip) {
+    var m = molds[text(mold, '')];
+    if (!m) return;
+    if (!m.stateAnims) m.stateAnims = {};
+    m.stateAnims[text(state, '')] = text(clip, '');
   }
 
   function runEntityHooks(list, e, label) {
@@ -1514,8 +1742,17 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     // matar a velocidade de quem já está SAINDO da parede (o antigo grudava).
     var vn = e.vx * nx + e.vy * ny + e.vz * nz;
     if (vn < 0) {
+      // ⭐ O quique é dos DOIS lados, e o MAIOR manda. Antes só a superfície
+      // contava — e o piso-base chega aqui com solidEnt null, então NADA quicava
+      // nele. Resultado: a bola era obrigada a não quicar no chão comum e o
+      // humano era obrigado a quicar no trampolim. Com o máximo: a bola quica em
+      // qualquer chão, o humano não quica em chão nenhum, e o trampolim continua
+      // arremessando o humano (0.9 vence o 0 dele).
       var m = solidEnt ? molds[solidEnt._mold] : null;
+      var em = molds[e._mold];
       var b = m ? m.bounce : 0;
+      var eb = em ? em.bounce : 0;
+      if (eb > b) b = eb;
       var j = (1 + b) * vn;
       if (b > 0 && Math.abs(vn) < BOUNCE_MIN) j = vn;
       e.vx -= j * nx; e.vy -= j * ny; e.vz -= j * nz;
@@ -1752,6 +1989,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       if (bucket) runEntityHooks(bucket.step, e, 'enquanto estiver no estado ' + e.state);
     }
     if (!e._alive) return; // o gancho pode ter recolhido a entidade
+    // 1b. O boneco anima. Só quem TEM mixer paga (o curso roda o mixer.update com
+    // o mesmo dt clampado). Vem antes do split estático/dinâmico logo abaixo: um
+    // boneco parado no lugar ainda respira.
+    if (e._mixer) {
+      try { e._mixer.update(dt); } catch (err) {}
+    }
     e.stateTime += dt;
     for (var t = 0; t < stateTimers.length; t++) {
       var timer = stateTimers[t];
@@ -1816,11 +2059,18 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       if (e.gravity) resolveGround(e);
       // 7. Grude no chão ao descer rampa/degrau (senão a descida vira trampolim).
       if (wasGrounded && !e.grounded && e.vy <= 0 && anySolid) snapDown(e);
-      // 8. Atrito da superfície onde pousou.
+      // 8. Atrito: o mais ESCORREGADIO dos dois manda — gelo no chão OU no disco
+      //    e escorrega igual. Não-definido (-1) vale 0 na superfície (gelo, o de
+      //    sempre) e 1 em quem anda (sem opinião) → min = a superfície decide,
+      //    exatamente como antes de existir atrito por entidade.
       if (e.grounded && e._ride) {
         var rm = molds[e._ride._mold];
-        if (rm && rm.friction > 0) {
-          var ff = Math.exp(-rm.friction * 8 * dt);
+        var fm = molds[e._mold];
+        var sfr = rm ? (rm.friction < 0 ? 0 : rm.friction) : 0;
+        var mfr = fm ? (fm.friction < 0 ? 1 : fm.friction) : 1;
+        var fr = sfr < mfr ? sfr : mfr;
+        if (fr > 0) {
+          var ff = Math.exp(-fr * 8 * dt);
           e.vx *= ff; e.vz *= ff;
         }
       }
@@ -1845,23 +2095,60 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   // ---- Comportamentos (a matemática do curso pronta em blocos) ----
 
-  function moveWithKeys(e, speed) {
-    if (!isEntity(e)) return;
-    var sp = num(speed, 8);
-    var dx = 0;
-    var dz = 0;
-    if (keys.w || keys.arrowup) dz -= 1;
-    if (keys.s || keys.arrowdown) dz += 1;
-    if (keys.a || keys.arrowleft) dx -= 1;
-    if (keys.d || keys.arrowright) dx += 1;
-    if (dx || dz) {
-      var len = Math.sqrt(dx * dx + dz * dz);
+  /**
+   * A base do WASD: para onde a CÂMERA olha, achatado no plano do chão.
+   *
+   * ⭐ É o que faz "W entra na tela" valer em TODOS os modos de câmera, que é
+   * como todo jogo 3D de verdade funciona (Mario 64, Zelda). Antes o WASD andava
+   * por eixo FIXO do mundo (W = -Z sempre): certo por acidente na câmera de cima,
+   * torto 40° na de órbita e EXATAMENTE ao contrário na que segue — porque a
+   * câmera que segue fica ATRÁS do alvo, olhando para +Z.
+   *
+   * Lê a orientação REAL da câmera (não o modo), então já nasce certo para
+   * qualquer câmera futura, e o amortecimento do seguir suaviza a base de graça.
+   */
+  function camBasisXZ() {
+    _camF.set(0, 0, -1);
+    if (camera) {
+      camera.getWorldDirection(_camF);
+      _camF.y = 0;
+      // Olhando reto para baixo (câmera de cima): o topo da tela é -Z.
+      if (_camF.lengthSq() < 0.000000000001) _camF.set(0, 0, -1);
+      else _camF.normalize();
+    }
+    // A direita da tela = cross(cima, -frente), achatada.
+    _camR.set(-_camF.z, 0, _camF.x);
+  }
+
+  /** Anda no chão pela base da câmera (o miolo do WASD e do 1ª pessoa). */
+  function moveOnCamBasis(e, sp) {
+    var mf = 0;
+    var mr = 0;
+    if (keys.w || keys.arrowup) mf += 1;
+    if (keys.s || keys.arrowdown) mf -= 1;
+    if (keys.d || keys.arrowright) mr += 1;
+    if (keys.a || keys.arrowleft) mr -= 1;
+    if (!mf && !mr) {
+      e.vx = 0;
+      e.vz = 0;
+      return;
+    }
+    camBasisXZ();
+    var dx = _camF.x * mf + _camR.x * mr;
+    var dz = _camF.z * mf + _camR.z * mr;
+    var len = Math.sqrt(dx * dx + dz * dz);
+    if (len > 0.000001) {
       e.vx = (dx / len) * sp;
       e.vz = (dz / len) * sp;
     } else {
       e.vx = 0;
       e.vz = 0;
     }
+  }
+
+  function moveWithKeys(e, speed) {
+    if (!isEntity(e)) return;
+    moveOnCamBasis(e, num(speed, 8));
   }
 
   // ---- 🏃 Física jogável (gravidade/pulo/plataforma) ----
@@ -1924,6 +2211,29 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     var m = molds[text(mold, '')];
     if (m) m.friction = Math.max(0, Math.min(1, num(amount, 0)));
   }
+  /**
+   * Tipos de física prontos: um bloco só e o molde se comporta como a COISA que
+   * ele é. É o atalho por cima dos ajustes finos (colisor/quique/atrito/cair),
+   * que continuam valendo para quem quiser afinar.
+   */
+  var PHYS_TYPES = {
+    bola:       { col: 1, bounce: 0.7,  friction: 0.4,  g: 20 },
+    caixa:      { col: 0, bounce: 0.1,  friction: 0.7,  g: 20 },
+    personagem: { col: 2, bounce: 0,    friction: 0.9,  g: 20 },
+    gelo:       { col: 0, bounce: 0.05, friction: 0.02, g: 20 },
+    flutuante:  { col: 1, bounce: 0.3,  friction: 0.1,  g: 0 }
+  };
+  function setPhysics(mold, type) {
+    var m = molds[text(mold, '')];
+    if (!m) return;
+    var t = PHYS_TYPES[text(type, 'caixa')];
+    if (!t) t = PHYS_TYPES.caixa;
+    m.col.kind = t.col;
+    m.bounce = t.bounce;
+    m.friction = t.friction;
+    m.gravity = t.g;
+    refreshSolidGates();
+  }
   /** Formato invisível que colide: caixa (padrão) · bola · cápsula. */
   function setCollider(mold, shape) {
     var m = molds[text(mold, '')];
@@ -1942,21 +2252,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   function platformerKeys(e, speed, jumpForce) {
     if (!isEntity(e)) return;
     if (!e.gravity) e.gravity = -20;
-    var sp = num(speed, 8);
-    var dx = 0;
-    var dz = 0;
-    if (keys.w || keys.arrowup) dz -= 1;
-    if (keys.s || keys.arrowdown) dz += 1;
-    if (keys.a || keys.arrowleft) dx -= 1;
-    if (keys.d || keys.arrowright) dx += 1;
-    if (dx || dz) {
-      var len = Math.sqrt(dx * dx + dz * dz);
-      e.vx = (dx / len) * sp;
-      e.vz = (dz / len) * sp;
-    } else {
-      e.vx = 0;
-      e.vz = 0;
-    }
+    moveOnCamBasis(e, num(speed, 8));
     if ((keys[' '] || justPressed[' ']) && e.grounded) {
       e.vy = Math.abs(num(jumpForce, 9));
       e.grounded = false;
@@ -3013,7 +3309,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   // ---- Câmera viva (um modo por vez) ----
 
   function setOrbit(dist) {
-    camMode = { kind: 'orbit', target: null, dist: Math.max(2, num(dist, 25)), height: 0 };
+    camMode = { kind: 'orbit', target: null, dist: Math.max(2, num(dist, 25)), height: 0, pivot: camMode.pivot };
     if (!orbit) {
       var st = { az: 0.7, el: 0.5, dist: camMode.dist, dragging: false, px: 0, py: 0 };
       orbit = st;
@@ -3045,6 +3341,82 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       }
     }
     orbit.dist = camMode.dist;
+  }
+
+  // ---- 🎥 A câmera na mão da criança (girar/afastar/tremer/lente/olhar) ----
+
+  /** Gira e inclina a órbita POR CÓDIGO (antes só o arrastar do mouse mexia). */
+  function cameraAngle(azDeg, elDeg) {
+    if (!orbit) setOrbit(camMode.dist);
+    if (!orbit) return;
+    orbit.az = num(azDeg, 40) * Math.PI / 180;
+    var el = num(elDeg, 28) * Math.PI / 180;
+    // Mesmos limites do arrastar: nem por baixo do chão, nem no zênite (onde a
+    // câmera perde a noção de "para cima" e a base do WASD degenera).
+    if (el > 1.4) el = 1.4;
+    if (el < 0.08) el = 0.08;
+    orbit.el = el;
+  }
+  /** Afasta/aproxima — vale para a órbita E para a que segue. */
+  function cameraDistance(d) {
+    var v = Math.max(1, num(d, 25));
+    camMode.dist = v;
+    if (orbit) orbit.dist = v;
+  }
+  /** Tremor de impacto: força em metros, por N segundos. */
+  function cameraShake(strength, seconds) {
+    _shakeAmp = Math.max(0, num(strength, 0.5));
+    _shakeT = Math.max(0, num(seconds, 0.3));
+    _shakeMax = _shakeT || 1;
+  }
+  /** Lente: campo de visão em graus (era o literal 60). */
+  function cameraLens(deg) {
+    if (!camera) return;
+    camera.fov = Math.max(15, Math.min(120, num(deg, 60)));
+    if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
+  }
+  /**
+   * Para onde a órbita/a de cima OLHAM. Antes era o (0,0,0) do mundo, cravado:
+   * num mundo grande, a criança não tinha como olhar para longe da origem.
+   */
+  function cameraLookAt(target) {
+    if (isEntity(target)) { camMode.pivot = target; return; }
+    camMode.pivot = null;
+  }
+  function cameraLookAtPoint(x, y, z) {
+    camMode.pivot = { x: num(x, 0), y: num(y, 0), z: num(z, 0) };
+  }
+  /** Suavidade do seguir (era a constante 3): maior = mais colada. */
+  function cameraSmooth(lambda) {
+    camSmooth = Math.max(0.1, num(lambda, 3));
+  }
+
+  /** O ponto que a câmera olha: entidade viva, ponto fixo, ou a origem. */
+  function pivotInto(v) {
+    var p = camMode.pivot;
+    if (p && p.mesh) {
+      if (isEntity(p)) { v.set(p.mesh.position.x, p.mesh.position.y, p.mesh.position.z); return; }
+      camMode.pivot = null; // o alvo morreu: volta à origem
+      v.set(0, 0, 0);
+      return;
+    }
+    if (p) { v.set(p.x, p.y, p.z); return; }
+    v.set(0, 0, 0);
+  }
+
+  /**
+   * Tremor: offset DEPOIS de posicionar, para não corromper o camMode (senão o
+   * lerp do seguir perseguiria a própria tremedeira). Usa rand(), então a semente
+   * continua valendo — mesma partida, mesmo tremor.
+   */
+  function applyShake(dt) {
+    if (_shakeT <= 0) return;
+    _shakeT -= dt;
+    if (_shakeT < 0) _shakeT = 0;
+    var k = _shakeAmp * (_shakeT / _shakeMax); // decai até sumir
+    camera.position.x += (rand() * 2 - 1) * k;
+    camera.position.y += (rand() * 2 - 1) * k;
+    camera.position.z += (rand() * 2 - 1) * k;
   }
 
   // ---- Mira & clique no mundo (raycast) + câmera 1ª pessoa ----
@@ -3166,23 +3538,16 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       }
     });
   }
-  /** Anda a entidade em 1ª pessoa: WASD/setas relativos ao olhar. */
+  /**
+   * Anda a entidade em 1ª pessoa: WASD/setas relativos ao olhar.
+   *
+   * É a MESMA base do WASD comum — em 1ª pessoa a câmera são os olhos dela, então
+   * "para onde a câmera olha" e "para onde ela olha" são a mesma coisa. Achatar em
+   * XZ é de propósito: olhar para cima e andar não faz ninguém voar.
+   */
   function moveFps(e, speed) {
     if (!isEntity(e)) return;
-    var yaw = camMode.kind === 'fps' ? camMode.yaw : (e.mesh ? e.mesh.rotation.y : 0);
-    var sp = num(speed, 6);
-    var fx = -Math.sin(yaw);
-    var fz = -Math.cos(yaw);
-    var rx = Math.cos(yaw);
-    var rz = -Math.sin(yaw);
-    var mf = 0;
-    var mr = 0;
-    if (keys.w || keys.arrowup) mf += 1;
-    if (keys.s || keys.arrowdown) mf -= 1;
-    if (keys.d || keys.arrowright) mr += 1;
-    if (keys.a || keys.arrowleft) mr -= 1;
-    e.vx = (fx * mf + rx * mr) * sp;
-    e.vz = (fz * mf + rz * mr) * sp;
+    moveOnCamBasis(e, num(speed, 6));
   }
 
   function updateCamera(dt) {
@@ -3195,26 +3560,37 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       var pz = f.mesh.position.z;
       camera.position.set(px, py, pz);
       var cp = Math.cos(camMode.pitch);
+      // Olha ao longo do +Z do corpo (o ensureFpsLook escreve rotation.y = yaw).
+      // Era -sin/-cos: a câmera olhava para um lado e o corpo apontava para o
+      // outro, então o tiro de spawnFrom+moveForward saía PELAS COSTAS.
       camera.lookAt(
-        px + -Math.sin(camMode.yaw) * cp,
+        px + Math.sin(camMode.yaw) * cp,
         py + Math.sin(camMode.pitch),
-        pz + -Math.cos(camMode.yaw) * cp
+        pz + Math.cos(camMode.yaw) * cp
       );
+      applyShake(dt);
       return;
     }
     if (camMode.kind === 'orbit' && orbit) {
       var ce = Math.cos(orbit.el);
+      pivotInto(_tv2);
       camera.position.set(
-        orbit.dist * ce * Math.sin(orbit.az),
-        orbit.dist * Math.sin(orbit.el),
-        orbit.dist * ce * Math.cos(orbit.az)
+        _tv2.x + orbit.dist * ce * Math.sin(orbit.az),
+        _tv2.y + orbit.dist * Math.sin(orbit.el),
+        _tv2.z + orbit.dist * ce * Math.cos(orbit.az)
       );
-      camera.lookAt(0, 0, 0);
+      camera.lookAt(_tv2.x, _tv2.y, _tv2.z);
+      applyShake(dt);
       return;
     }
     if (camMode.kind === 'top') {
-      camera.position.set(0, camMode.height, camMode.height * 0.001 + 0.01);
-      camera.lookAt(0, 0, 0);
+      pivotInto(_tv2);
+      // O epsilon em Z tira a câmera do zênite exato: sem ele o "para cima" da
+      // câmera fica indefinido (gimbal) e a base do WASD não teria para onde
+      // apontar. É ele que faz o topo da tela ser -Z.
+      camera.position.set(_tv2.x, _tv2.y + camMode.height, _tv2.z + camMode.height * 0.001 + 0.01);
+      camera.lookAt(_tv2.x, _tv2.y, _tv2.z);
+      applyShake(dt);
       return;
     }
     if (camMode.kind === 'follow') {
@@ -3228,9 +3604,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       _tv2.copy(t.mesh.position)
         .addScaledVector(_tv1, -camMode.dist);
       _tv2.y = t.mesh.position.y + camMode.height;
-      var a = 1 - Math.exp(-3 * (dt > 0 ? dt : 0.016));
+      var a = 1 - Math.exp(-camSmooth * (dt > 0 ? dt : 0.016));
       camera.position.lerp(_tv2, a);
       camera.lookAt(t.mesh.position.x, t.mesh.position.y + 1, t.mesh.position.z);
+      applyShake(dt);
     }
   }
 
@@ -3276,6 +3653,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
     }
     updateCamera(state === 'jogando' ? dt : 0);
+    // Depois da câmera (a projeção precisa dela já posicionada) e com dt=0 fora do
+    // jogo: na pausa o balão FICA na tela, mas não gasta o tempo dele.
+    stepSays(state === 'jogando' ? dt : 0);
     try {
       renderFrame();
     } catch (e) {
@@ -3287,6 +3667,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   function stepSystems(dt) {
     playTime += dt;
+    stepTimer(dt);
     for (var i = 0; i < spawners.length; i++) {
       var sp = spawners[i];
       sp.timer += dt;
@@ -3332,6 +3713,103 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- 💬 Caixa de fala (o balão ancorado na entidade) ----
+
+  /**
+   * Fala presa a uma entidade. É a primeira coisa do kit que mistura DOM com o
+   * mundo 3D: o balão é um div e a entidade é um ponto no espaço, então a posição
+   * dela é PROJETADA na tela a cada quadro (senão o balão não acompanha a câmera).
+   * Sem isso, um RPG/aventura 3D não conta história — só dava HUD nos cantos.
+   */
+  var says = [];
+  function say(e, textValue, seconds) {
+    if (!isEntity(e) || !ensureShell()) return;
+    hideSay(e); // uma fala por entidade: a nova troca a antiga
+    var el = document.createElement('div');
+    el.className = 'szg3k-say';
+    el.textContent = text(textValue, '');
+    hudLayer.appendChild(el);
+    says.push({ e: e, gen: e._gen, el: el, left: Math.max(0.1, num(seconds, 2)) });
+  }
+  function hideSay(e) {
+    for (var i = says.length - 1; i >= 0; i--) {
+      if (says[i].e !== e) continue;
+      if (says[i].el.parentNode) says[i].el.parentNode.removeChild(says[i].el);
+      says.splice(i, 1);
+    }
+  }
+  function clearSays() {
+    for (var i = 0; i < says.length; i++) {
+      if (says[i].el.parentNode) says[i].el.parentNode.removeChild(says[i].el);
+    }
+    says.length = 0;
+  }
+  /** Projeta a cabeça da entidade na tela e move o balão para lá. */
+  function stepSays(dt) {
+    if (!says.length || !camera || !canvasEl) return;
+    var m = null;
+    for (var i = says.length - 1; i >= 0; i--) {
+      var s = says[i];
+      s.left -= dt;
+      // Entidade recolhida (ou o slot reusado por outra): o balão vai junto.
+      if (s.left <= 0 || !s.e._alive || s.e._gen !== s.gen) {
+        if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
+        says.splice(i, 1);
+        continue;
+      }
+      m = molds[s.e._mold];
+      _tv1.set(s.e.mesh.position.x, s.e.mesh.position.y + (m ? m.top : 1) + 0.4, s.e.mesh.position.z);
+      _tv1.project(camera);
+      // Atrás da câmera (z>1): esconde em vez de desenhar espelhado na frente.
+      if (_tv1.z > 1) { s.el.style.display = 'none'; continue; }
+      s.el.style.display = '';
+      s.el.style.left = ((_tv1.x * 0.5 + 0.5) * 100) + '%';
+      s.el.style.top = ((-_tv1.y * 0.5 + 0.5) * 100) + '%';
+    }
+  }
+
+  // ---- 🎲 Sorteio (semeado) + ⏱️ Cronômetro ----
+
+  /**
+   * ⭐ O sorteio DO KIT — passa pelo rand(), então a semente vale de verdade.
+   * O kit não tinha sorteio nenhum: a criança usava o bloco do NÚCLEO, que emite
+   * Math.random() puro e IGNORA a semente. Ou seja, o "mesma semente = mesma
+   * partida" que o setSeed promete só era verdade para o acaso interno (enfeites,
+   * partículas, fábricas). Com estes dois a promessa fecha.
+   */
+  function randomBetween(a, b) {
+    var lo = num(a, 0);
+    var hi = num(b, 1);
+    if (lo > hi) { var t = lo; lo = hi; hi = t; }
+    return lo + rand() * (hi - lo);
+  }
+  function randomChance(percent) {
+    return rand() * 100 < num(percent, 50);
+  }
+
+  // Cronômetro da criança (corrida contra o tempo, bomba, tempo de fase). O de
+  // dentro do motor (stateTimer/fábrica) é outro — este é dela.
+  var _timer = { left: 0, on: false };
+  var timerHooks = [];
+  function startTimer(seconds) {
+    _timer.left = Math.max(0, num(seconds, 30));
+    _timer.on = _timer.left > 0;
+  }
+  function timeLeft() { return _timer.left; }
+  function stopTimer() { _timer.on = false; }
+  function onTimerEnd(fn) {
+    if (typeof fn === 'function') timerHooks.push(fn);
+  }
+  /** Só corre em 'jogando' (o stepSystems), então a pausa CONGELA — como o resto. */
+  function stepTimer(dt) {
+    if (!_timer.on) return;
+    _timer.left -= dt;
+    if (_timer.left > 0) return;
+    _timer.left = 0;
+    _timer.on = false;
+    runHooks(timerHooks, 0, 'quando o tempo acabar');
+  }
+
   // ---- 📢 Event bus ----
 
   function onEvent(name, fn) {
@@ -3375,6 +3853,33 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     var a = sounds[text(name, '')];
     if (!a) return;
     try { a.currentTime = 0; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
+  }
+
+  /**
+   * 🎵 Música de fundo. O motor não tinha UM .loop sequer — só efeito de
+   * tiro-e-esquece —, então música de fundo era literalmente impossível. Toca UMA
+   * de cada vez (pedir outra troca), que é o que a criança espera de "a música do
+   * jogo".
+   */
+  var _music = null;
+  function playMusic(name) {
+    var k = text(name, '');
+    var a = sounds[k];
+    if (!a) { warnOnce('mus:' + k, 'a música "' + k + '" não está no projeto (importe em "Imagens e sons")'); return; }
+    if (_music === a) return; // já é esta: não recomeça do zero
+    stopMusic();
+    _music = a;
+    try {
+      a.loop = true;
+      a.currentTime = 0;
+      var pr = a.play();
+      if (pr && pr.catch) pr.catch(function () {});
+    } catch (e) {}
+  }
+  function stopMusic() {
+    if (!_music) return;
+    try { _music.pause(); _music.currentTime = 0; _music.loop = false; } catch (e) {}
+    _music = null;
   }
 
   var _audioCtx = null;
@@ -3603,11 +4108,18 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         warn('"Câmera: seguir" precisa de uma entidade');
         return;
       }
-      camMode = { kind: 'follow', target: e, dist: Math.max(1, num(dist, 8)), height: num(height, 4) };
+      camMode = { kind: 'follow', target: e, dist: Math.max(1, num(dist, 8)), height: num(height, 4), pivot: camMode.pivot };
     }),
     cameraOrbit: guard('cameraOrbit', function (dist) { setOrbit(dist); }),
+    cameraAngle: guard('cameraAngle', cameraAngle),
+    cameraDistance: guard('cameraDistance', cameraDistance),
+    cameraShake: guard('cameraShake', cameraShake),
+    cameraLens: guard('cameraLens', cameraLens),
+    cameraLookAt: guard('cameraLookAt', cameraLookAt),
+    cameraLookAtPoint: guard('cameraLookAtPoint', cameraLookAtPoint),
+    cameraSmooth: guard('cameraSmooth', cameraSmooth),
     cameraTop: guard('cameraTop', function (height) {
-      camMode = { kind: 'top', target: null, dist: 0, height: Math.max(4, num(height, 40)) };
+      camMode = { kind: 'top', target: null, dist: 0, height: Math.max(4, num(height, 40)), pivot: camMode.pivot };
     }),
     // 🤖 Entidades
     place: guard('place', function (e, x, y, z) {
@@ -3638,6 +4150,20 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     makeSolid: guard('makeSolid', makeSolid),
     platformerKeys: guard('platformerKeys', platformerKeys),
     setSeed: guard('setSeed', setSeed),
+    randomBetween: guard('randomBetween', randomBetween),
+    randomChance: guard('randomChance', randomChance),
+    playMusic: guard('playMusic', playMusic),
+    stopMusic: guard('stopMusic', stopMusic),
+    startTimer: guard('startTimer', startTimer),
+    timeLeft: guard('timeLeft', timeLeft),
+    stopTimer: guard('stopTimer', stopTimer),
+    onTimerEnd: guard('onTimerEnd', onTimerEnd),
+    say: guard('say', say),
+    hideSay: guard('hideSay', hideSay),
+    playAnim: guard('playAnim', function (e, name, loop) { playAnim(e, name, loop !== false); }),
+    stopAnim: guard('stopAnim', stopAnim),
+    setStateAnim: guard('setStateAnim', setStateAnim),
+    setPhysics: guard('setPhysics', setPhysics),
     setCollider: guard('setCollider', setCollider),
     passThrough: guard('passThrough', passThrough),
     makeTrigger: guard('makeTrigger', makeTrigger),

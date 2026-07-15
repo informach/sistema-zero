@@ -628,6 +628,19 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       }
     case 'sz_g3k_distance_between':
       return { type: 'g3k:distanceBetween', aVar: f(block, 'A'), bVar: f(block, 'B') }
+    case 'sz_g3k_random_between':
+      return {
+        type: 'g3k:randomBetween',
+        from: exprInput(block, 'FROM', { type: 'num', value: 1 }),
+        to: exprInput(block, 'TO', { type: 'num', value: 10 }),
+      }
+    case 'sz_g3k_random_chance':
+      return {
+        type: 'g3k:randomChance',
+        percent: exprInput(block, 'PERCENT', { type: 'num', value: 50 }),
+      }
+    case 'sz_g3k_time_left':
+      return { type: 'g3k:timeLeft' }
     case 'sz_g3k_max_health_of':
       return { type: 'g3k:maxHealthOf', charVar: f(block, 'CHAR') }
     case 'sz_g3k_state_of':
@@ -6867,6 +6880,64 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           height: exprInput(block, 'HEIGHT', { type: 'num', value: 40 }),
         },
       }
+    case 'sz_g3k_camera_angle':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:cameraAngle',
+          az: exprInput(block, 'AZ', { type: 'num', value: 40 }),
+          el: exprInput(block, 'EL', { type: 'num', value: 28 }),
+        },
+      }
+    case 'sz_g3k_camera_distance':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:cameraDistance',
+          dist: exprInput(block, 'DIST', { type: 'num', value: 25 }),
+        },
+      }
+    case 'sz_g3k_camera_shake':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:cameraShake',
+          strength: exprInput(block, 'STRENGTH', { type: 'num', value: 0.5 }),
+          seconds: exprInput(block, 'SECONDS', { type: 'num', value: 0.3 }),
+        },
+      }
+    case 'sz_g3k_camera_lens':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'g3k:cameraLens', fov: exprInput(block, 'FOV', { type: 'num', value: 60 }) },
+      }
+    case 'sz_g3k_camera_look_at':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:cameraLookAt', charVar: f(block, 'CHAR') } }
+    case 'sz_g3k_camera_look_at_point':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:cameraLookAtPoint',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_g3k_camera_smooth':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:cameraSmooth',
+          lambda: exprInput(block, 'LAMBDA', { type: 'num', value: 3 }),
+        },
+      }
     case 'sz_g3k_place':
       seen.add('game-3d-advanced')
       return {
@@ -6982,6 +7053,79 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           shape: f(block, 'SHAPE') || 'box',
         },
       }
+    case 'sz_g3k_set_physics':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:setPhysics',
+          mold: f(block, 'MOLD'),
+          kind: f(block, 'KIND') || 'caixa',
+        },
+      }
+    case 'sz_g3k_play_anim':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:playAnim',
+          charVar: f(block, 'CHAR'),
+          clip: f(block, 'CLIP'),
+          loop: f(block, 'LOOP') !== 'ONCE',
+        },
+      }
+    case 'sz_g3k_stop_anim':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:stopAnim', charVar: f(block, 'CHAR') } }
+    case 'sz_g3k_state_anim':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:setStateAnim',
+          mold: f(block, 'MOLD'),
+          state: f(block, 'STATE'),
+          clip: f(block, 'CLIP'),
+        },
+      }
+    case 'sz_g3k_play_music':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:playMusic', name: f(block, 'NAME') } }
+    case 'sz_g3k_stop_music':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:stopMusic' } }
+    case 'sz_g3k_start_timer':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:startTimer',
+          seconds: exprInput(block, 'SECONDS', { type: 'num', value: 30 }),
+        },
+      }
+    case 'sz_g3k_stop_timer':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:stopTimer' } }
+    case 'sz_g3k_on_timer_end':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'g3k:onTimerEnd', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_g3k_say':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:say',
+          charVar: f(block, 'CHAR'),
+          text: exprInput(block, 'TEXT', { type: 'str', value: 'Oi!' }),
+          seconds: exprInput(block, 'SECONDS', { type: 'num', value: 2 }),
+        },
+      }
+    case 'sz_g3k_hide_say':
+      seen.add('game-3d-advanced')
+      return { kind: 'js', value: { type: 'g3k:hideSay', charVar: f(block, 'CHAR') } }
     case 'sz_g3k_pass_through':
       seen.add('game-3d-advanced')
       return {

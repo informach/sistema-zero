@@ -1,355 +1,8 @@
 import { describe, expect, it } from 'bun:test'
-import { gameKit3DRuntime } from '../runtime'
+import { type KitApi, loadStartedKit, runtimeBody } from './kitHarness'
 
-/**
- * Testa o COMPORTAMENTO do motor SZGameKit3D executando a IIFE com um stub de
- * THREE (receita do game-3d: strip da linha `import` + new Function). O DOM é o
- * happy-dom do preload; o `window` injetado é o global (tem addEventListener,
- * innerWidth e KeyboardEvent de verdade).
- */
-
-const runtimeBody = gameKit3DRuntime.replace(/^import \* as THREE from 'three';\n/, '')
-
-interface FakeRenderer {
-  disposeCalls: number
-  forceContextLossCalls: number
-  loop: ((t: number) => void) | null
-  shadowMap: { enabled: boolean; type: number }
-  toneMapping: number
-  setPixelRatio: (n: number) => void
-  setSize: (w: number, h: number, updateStyle: boolean) => void
-  setAnimationLoop: (fn: ((t: number) => void) | null) => void
-  setRenderTarget: (t: unknown) => void
-  render: () => void
-  dispose: () => void
-  forceContextLoss: () => void
-}
-
-function makeFakeThree() {
-  const renderers: FakeRenderer[] = []
-
-  class Vec3 {
-    x = 0
-    y = 0
-    z = 0
-    set(x: number, y: number, z: number) {
-      this.x = x
-      this.y = y
-      this.z = z
-      return this
-    }
-    copy(v: Vec3) {
-      this.x = v.x
-      this.y = v.y
-      this.z = v.z
-      return this
-    }
-    sub(v: Vec3) {
-      this.x -= v.x
-      this.y -= v.y
-      this.z -= v.z
-      return this
-    }
-    lengthSq() {
-      return this.x * this.x + this.y * this.y + this.z * this.z
-    }
-    normalize() {
-      const len = Math.sqrt(this.lengthSq()) || 1
-      this.x /= len
-      this.y /= len
-      this.z /= len
-      return this
-    }
-    applyQuaternion() {
-      return this
-    }
-    addScaledVector(v: Vec3, s: number) {
-      this.x += v.x * s
-      this.y += v.y * s
-      this.z += v.z * s
-      return this
-    }
-    lerp(v: Vec3, a: number) {
-      this.x += (v.x - this.x) * a
-      this.y += (v.y - this.y) * a
-      this.z += (v.z - this.z) * a
-      return this
-    }
-    dot(v: Vec3) {
-      return this.x * v.x + this.y * v.y + this.z * v.z
-    }
-  }
-
-  class Euler {
-    x = 0
-    y = 0
-    z = 0
-    set(x: number, y: number, z: number) {
-      this.x = x
-      this.y = y
-      this.z = z
-      return this
-    }
-  }
-
-  class Quat {
-    setFromUnitVectors() {
-      return this
-    }
-    slerp() {
-      return this
-    }
-    copy() {
-      return this
-    }
-  }
-
-  class Object3D {
-    position = new Vec3()
-    rotation = new Euler()
-    scale = new Vec3().set(1, 1, 1)
-    quaternion = new Quat()
-    visible = true
-    castShadow = false
-    receiveShadow = false
-    children: Object3D[] = []
-    parent: Object3D | null = null
-    add(child: Object3D) {
-      child.parent = this
-      this.children.push(child)
-      return this
-    }
-    remove(child: Object3D) {
-      const i = this.children.indexOf(child)
-      if (i !== -1) this.children.splice(i, 1)
-      return this
-    }
-    lookAt() {}
-    traverse(fn: (o: Object3D) => void) {
-      fn(this)
-      for (const c of this.children) c.traverse(fn)
-    }
-    clone(): Object3D {
-      const copy = new (this.constructor as new () => Object3D)()
-      for (const c of this.children) copy.add(c.clone())
-      return copy
-    }
-  }
-
-  class Group extends Object3D {}
-  class Mesh extends Object3D {
-    constructor(
-      public geometry?: unknown,
-      public material?: unknown,
-    ) {
-      super()
-    }
-    override clone(): Object3D {
-      const copy = new Mesh(this.geometry, this.material)
-      copy.position.copy(this.position)
-      copy.scale.copy(this.scale)
-      for (const c of this.children) copy.add(c.clone())
-      return copy
-    }
-  }
-  class Scene extends Object3D {
-    background: unknown = null
-  }
-
-  class Geo {
-    disposed = false
-    dispose() {
-      this.disposed = true
-    }
-  }
-  /** A rampa (wedgeGeo) monta a geometria na mão — o stub precisa acompanhar. */
-  class BufferGeo extends Geo {
-    attributes: Record<string, unknown> = {}
-    index: unknown = null
-    boundingSphere: unknown = null
-    drawRange = { start: 0, count: 0 }
-    setAttribute(name: string, attr: unknown) {
-      this.attributes[name] = attr
-      return this
-    }
-    setIndex(idx: unknown) {
-      this.index = idx
-      return this
-    }
-    computeVertexNormals() {}
-    setDrawRange(start: number, count: number) {
-      this.drawRange = { start, count }
-    }
-  }
-  class BufferAttr {
-    constructor(
-      public array: unknown,
-      public itemSize?: number,
-    ) {}
-    needsUpdate = false
-    setUsage() {
-      return this
-    }
-    copyArray() {}
-  }
-  class Material {
-    emissiveIntensity = 0
-    emissive = { set() {} }
-    disposed = false
-    constructor(public opts?: unknown) {}
-    dispose() {
-      this.disposed = true
-    }
-  }
-
-  const THREE = {
-    // biome-ignore lint/complexity/useArrowFunction: construtor (chamado com `new`)
-    WebGLRenderer: function () {
-      const r: FakeRenderer = {
-        disposeCalls: 0,
-        forceContextLossCalls: 0,
-        loop: null,
-        shadowMap: { enabled: false, type: 0 },
-        toneMapping: 0,
-        setPixelRatio: () => {},
-        setSize: () => {},
-        setAnimationLoop: (fn) => {
-          r.loop = fn
-        },
-        setRenderTarget: () => {},
-        render: () => {},
-        dispose: () => {
-          r.disposeCalls += 1
-        },
-        forceContextLoss: () => {
-          r.forceContextLossCalls += 1
-        },
-      }
-      renderers.push(r)
-      return r
-    } as unknown as new () => FakeRenderer,
-    PCFSoftShadowMap: 1,
-    ACESFilmicToneMapping: 2,
-    Scene,
-    Group,
-    Mesh,
-    Color: class {
-      constructor(public value: unknown) {}
-    },
-    CanvasTexture: class {
-      isTexture = true
-      dispose() {}
-    },
-    // A curva de vida das partículas é assada numa DataTexture (toTexture do curso).
-    DataTexture: class {
-      isTexture = true
-      needsUpdate = false
-      constructor(
-        public data?: unknown,
-        public width?: number,
-        public height?: number,
-      ) {}
-      dispose() {}
-    },
-    RGBAFormat: 1023,
-    LinearFilter: 1006,
-    ClampToEdgeWrapping: 1001,
-    PerspectiveCamera: class extends Object3D {
-      constructor(
-        public fov?: number,
-        public aspect?: number,
-      ) {
-        super()
-      }
-    },
-    AmbientLight: class extends Object3D {},
-    DirectionalLight: class extends Object3D {
-      shadow = { camera: {} as Record<string, number>, mapSize: { set() {} } }
-    },
-    Vector3: Vec3,
-    Quaternion: Quat,
-    PlaneGeometry: Geo,
-    BoxGeometry: Geo,
-    SphereGeometry: Geo,
-    CylinderGeometry: Geo,
-    ConeGeometry: Geo,
-    IcosahedronGeometry: Geo,
-    OctahedronGeometry: Geo,
-    TorusGeometry: Geo,
-    BufferGeometry: BufferGeo,
-    Float32BufferAttribute: BufferAttr,
-    MeshStandardMaterial: Material,
-  }
-  return { THREE, renderers }
-}
-
-/** Só o que os testes chamam — o inventário completo é auditado no blockAudit. */
-interface KitApi {
-  setup(opts: Record<string, unknown>): void
-  start(): void
-  setState(name: string): void
-  defineMold(name: string, opts: Record<string, unknown>, fn: () => void): void
-  part(opts: Record<string, unknown>): void
-  spawn(mold: string, x: number, y: number, z: number): unknown
-  recycle(e: unknown): void
-  exists(e: unknown): boolean
-  countAlive(mold: string): number
-  nearest(mold: string, e: unknown): unknown
-  forEachNear(e: unknown, mold: string, radius: number, fn: (o: unknown) => void): void
-  onEnterEntityState(mold: string, state: string, fn: (e: unknown) => void): void
-  onExitEntityState(mold: string, state: string, fn: (e: unknown) => void): void
-  setEntityState(e: unknown, state: string): void
-  entityStateIs(e: unknown, state: string): boolean
-  stateTimer(mold: string, state: string, sec: number, next: string): void
-  hurt(e: unknown, amount: number): void
-  healthOf(e: unknown): number
-  onEntityDeath(mold: string, fn: (e: unknown) => void): void
-  keyDown(key: string): boolean
-  posOf(e: unknown, axis: string): number
-  fall(e: unknown, g: number): void
-  jump(e: unknown, force: number): void
-  onGround(e: unknown): boolean
-  makeSolid(mold: string): void
-  setVelocity(e: unknown, x: number, y: number, z: number): void
-  setDrag(e: unknown, amount: number): void
-  place(e: unknown, x: number, y: number, z: number): void
-  setCollider(mold: string, shape: string): void
-  passThrough(e: unknown, on: boolean): void
-  makeTrigger(mold: string): void
-  onOverlap(mold: string, fn: (zone: unknown, who: unknown) => void): void
-  setBounce(mold: string, amount: number): void
-  setFriction(mold: string, amount: number): void
-  setSeed(n: number): void
-  forEachAlive(mold: string, fn: (e: unknown) => void): void
-  startSpawner(mold: string, seconds: number, where: string): void
-}
-
-async function loadStartedKit(): Promise<{
-  api: KitApi
-  renderers: FakeRenderer[]
-  step: (frames: number) => void
-}> {
-  const { THREE, renderers } = makeFakeThree()
-  const win = globalThis.window as unknown as Record<string, unknown>
-  new Function('THREE', 'window', runtimeBody)(THREE, win)
-  const api = win.SZGameKit3D as KitApi
-  api.setup({ width: 640, height: 360, world: 100 })
-  api.start()
-  // O start espera Promise.all(pending) antes de ligar o loop.
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  let now = 0
-  const step = (frames: number) => {
-    const loop = renderers[0]?.loop
-    if (!loop) throw new Error('loop não ligado')
-    for (let i = 0; i < frames; i++) {
-      now += 33.4
-      loop(now)
-    }
-  }
-  // Primeiro tick fixa o _lastT (dt = 0).
-  step(1)
-  return { api, renderers, step }
-}
+/** Comportamento do motor: pool, FSM, vizinhança, combate e FÍSICA. A
+ *  orientação/câmera vive em `direction.test.ts`; a bancada é a mesma. */
 
 describe('SZGameKit3D — montagem', () => {
   it('monta a API pública sem THREE real e sem DOM no top-level', () => {
@@ -722,6 +375,184 @@ describe('SZGameKit3D — física', () => {
     step(10)
     // Com quique, depois de bater a bola sobe: vy passa a ser positiva.
     expect(api.posOf(b, 'y')).toBeGreaterThan(1.8)
+  })
+
+  // ---- Material dos DOIS lados: "uma bola quica, mas um humano não" ----
+  // O pedido da usuária. Antes era INEXPRIMÍVEL: o quique era só da superfície e
+  // o piso-base (solidEnt null) não quicava nada — a bola era obrigada a não
+  // quicar no chão comum e o humano era obrigado a quicar no trampolim.
+  async function kitBolaEHumano() {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('bola', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.defineMold('humano', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#0af', w: 1, h: 1.8, d: 1, x: 0, y: 0.9, z: 0 })
+    })
+    api.setState('jogando')
+    return { api, step }
+  }
+
+  it('⭐ a bola quica no PISO-BASE (antes: nada quicava nele)', async () => {
+    const { api, step } = await kitBolaEHumano()
+    api.setBounce('bola', 0.8)
+    const b = api.spawn('bola', 0, 9, 0)
+    api.fall(b, 20)
+    step(45) // cai, bate no chão do mundo e volta
+    let maisAlto = 0
+    for (let i = 0; i < 40; i++) {
+      step(1)
+      maisAlto = Math.max(maisAlto, api.posOf(b, 'y'))
+    }
+    // Voltou a subir bem acima do repouso (o pé do molde é y=0 → repouso ~0).
+    expect(maisAlto).toBeGreaterThan(1.5)
+  })
+
+  it('⭐ o humano NÃO quica no mesmo piso', async () => {
+    const { api, step } = await kitBolaEHumano()
+    const h = api.spawn('humano', 0, 9, 0)
+    api.fall(h, 20)
+    step(45)
+    const pousou = api.posOf(h, 'y')
+    for (let i = 0; i < 40; i++) step(1)
+    // Pousou e ficou: sem subir de volta.
+    expect(api.posOf(h, 'y')).toBeCloseTo(pousou, 2)
+    expect(api.onGround(h)).toBe(true)
+  })
+
+  it('⭐ mas o humano continua sendo arremessado pelo trampolim (o Parkour)', async () => {
+    const { api, step } = await kitBolaEHumano()
+    api.defineMold('tramp', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#0f0', w: 6, h: 0.6, d: 6, x: 0, y: 0, z: 0 })
+    })
+    api.makeSolid('tramp')
+    api.setBounce('tramp', 0.9) // o trampolim manda: max(0 do humano, 0.9) = 0.9
+    api.spawn('tramp', 0, 1.5, 0)
+    const h = api.spawn('humano', 0, 9, 0)
+    api.fall(h, 20)
+    step(40)
+    step(10)
+    expect(api.posOf(h, 'y')).toBeGreaterThan(2.5)
+  })
+
+  it('atrito: o mais escorregadio manda (disco de gelo em piso comum)', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('piso', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#333', w: 40, h: 1, d: 40, x: 0, y: 0, z: 0 })
+    })
+    api.defineMold('caixa', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.defineMold('disco', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#0ff', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.makeSolid('piso')
+    api.setFriction('piso', 0.9) // piso GRUDENTO
+    api.setFriction('disco', 0.02) // o disco é de gelo
+    api.setState('jogando')
+    api.spawn('piso', 0, 0, 0)
+    const cx = api.spawn('caixa', -5, 1.5, 0)
+    const dc = api.spawn('disco', 5, 1.5, 0)
+    api.fall(cx, 20)
+    api.fall(dc, 20)
+    step(20) // pousam
+    api.setVelocity(cx, 10, 0, 0)
+    api.setVelocity(dc, 10, 0, 0)
+    step(30)
+    // A caixa é freada pelo piso grudento; o disco de gelo desliza muito mais.
+    expect(api.velocityOf(dc, 'x')).toBeGreaterThan(api.velocityOf(cx, 'x') + 3)
+  })
+
+  it('"ter física de": bola/personagem/flutuante saem coerentes de um bloco só', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('bola', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.defineMold('balao', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#ff0', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.setPhysics('bola', 'bola')
+    api.setPhysics('balao', 'flutuante')
+    api.setState('jogando')
+    const b = api.spawn('bola', 0, 9, 0)
+    const g = api.spawn('balao', 4, 9, 0)
+    // O preset da bola liga a queda E o quique de um bloco só — sem "fazer cair
+    // com" e sem "quicar". Acompanha a trajetória inteira: cai até o chão e
+    // VOLTA a subir.
+    let fundo = 9
+    for (let i = 0; i < 30; i++) {
+      step(1)
+      fundo = Math.min(fundo, api.posOf(b, 'y'))
+    }
+    expect(fundo).toBeLessThan(1) // caiu (a gravidade veio do preset)
+    let apice = 0
+    for (let i = 0; i < 25; i++) {
+      step(1)
+      apice = Math.max(apice, api.posOf(b, 'y'))
+    }
+    expect(apice).toBeGreaterThan(2) // quicou (o quique veio do preset)
+    // ...e o flutuante NÃO cai.
+    expect(api.posOf(g, 'y')).toBeCloseTo(9, 5)
+  })
+
+  // ---- 🎲 O sorteio do kit: a semente PRECISA valer (o setSeed prometia) ----
+  it('⭐ mesma semente = mesma sequência de sorteios (a promessa do setSeed)', async () => {
+    const { api } = await loadStartedKit()
+    const roll = () => {
+      api.setSeed(42)
+      return [
+        api.randomBetween(0, 100),
+        api.randomBetween(0, 100),
+        api.randomBetween(0, 100),
+        api.randomChance(50),
+      ]
+    }
+    const a = roll()
+    const b = roll()
+    expect(b).toEqual(a) // reprodutível: é o que faz "o bug acontece de novo"
+    // Semente diferente = partida diferente.
+    api.setSeed(7)
+    const c = [api.randomBetween(0, 100), api.randomBetween(0, 100)]
+    expect(c).not.toEqual([a[0], a[1]])
+  })
+
+  it('sortear respeita o intervalo (e aceita invertido)', async () => {
+    const { api } = await loadStartedKit()
+    api.setSeed(3)
+    for (let i = 0; i < 60; i++) {
+      const v = api.randomBetween(10, 20)
+      expect(v).toBeGreaterThanOrEqual(10)
+      expect(v).toBeLessThanOrEqual(20)
+      const inv = api.randomBetween(20, 10) // de trás para a frente: mesmo intervalo
+      expect(inv).toBeGreaterThanOrEqual(10)
+      expect(inv).toBeLessThanOrEqual(20)
+    }
+    expect(api.randomChance(100)).toBe(true)
+    expect(api.randomChance(0)).toBe(false)
+  })
+
+  // ---- ⏱️ Cronômetro ----
+  it('cronômetro conta em jogando, CONGELA na pausa e avisa no fim', async () => {
+    const { api, step } = await loadStartedKit()
+    let acabou = 0
+    api.onTimerEnd(() => {
+      acabou += 1
+    })
+    api.setState('jogando')
+    api.startTimer(1)
+    step(15) // ~0.5s
+    const meio = api.timeLeft()
+    expect(meio).toBeLessThan(1)
+    expect(meio).toBeGreaterThan(0.2)
+    api.setState('pausado')
+    step(20)
+    expect(api.timeLeft()).toBeCloseTo(meio, 5) // congelou
+    api.setState('jogando') // despausar NÃO reseta a arena
+    step(30)
+    expect(api.timeLeft()).toBe(0)
+    expect(acabou).toBe(1) // avisa UMA vez, não a cada quadro
+    step(10)
+    expect(acabou).toBe(1)
   })
 
   // ---- Defeito 11: arrasto ----

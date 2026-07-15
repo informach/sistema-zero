@@ -272,6 +272,9 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3k:onGround'; charVar: string })
   | (JSExprCommon & { type: 'g3k:velocityOf'; charVar: string; axis: 'x' | 'y' | 'z' })
   | (JSExprCommon & { type: 'g3k:distanceBetween'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'g3k:randomBetween'; from: number | JSExpr; to: number | JSExpr })
+  | (JSExprCommon & { type: 'g3k:randomChance'; percent: number | JSExpr })
+  | (JSExprCommon & { type: 'g3k:timeLeft' })
   | (JSExprCommon & { type: 'g3k:maxHealthOf'; charVar: string })
   | (JSExprCommon & { type: 'g3k:stateOf'; charVar: string })
   // Mira/clique no mundo: mouse sobre a entidade (bool) e ponto do chão (núm).
@@ -707,6 +710,18 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       axis: z.enum(['x', 'y', 'z']),
       ...idField,
     }),
+    z.object({
+      type: z.literal('g3k:randomBetween'),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:randomChance'),
+      percent: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:timeLeft'), ...idField }),
     z.object({
       type: z.literal('g3k:distanceBetween'),
       aVar: irText(),
@@ -3216,6 +3231,22 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3k:cameraOrbit'; dist: number | JSExpr })
   | (JSStatementCommon & { type: 'g3k:cameraTop'; height: number | JSExpr })
+  | (JSStatementCommon & { type: 'g3k:cameraAngle'; az: number | JSExpr; el: number | JSExpr })
+  | (JSStatementCommon & { type: 'g3k:cameraDistance'; dist: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3k:cameraShake'
+      strength: number | JSExpr
+      seconds: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:cameraLens'; fov: number | JSExpr })
+  | (JSStatementCommon & { type: 'g3k:cameraLookAt'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'g3k:cameraLookAtPoint'
+      x: number | JSExpr
+      y: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:cameraSmooth'; lambda: number | JSExpr })
   // 🤖 Entidades (transform + velocidade integrada pelo motor).
   | (JSStatementCommon & {
       type: 'g3k:place'
@@ -3252,6 +3283,22 @@ export type JSStatement =
       jump: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3k:setCollider'; mold: string; shape: string })
+  | (JSStatementCommon & { type: 'g3k:setPhysics'; mold: string; kind: string })
+  | (JSStatementCommon & { type: 'g3k:playAnim'; charVar: string; clip: string; loop: boolean })
+  | (JSStatementCommon & { type: 'g3k:stopAnim'; charVar: string })
+  | (JSStatementCommon & { type: 'g3k:setStateAnim'; mold: string; state: string; clip: string })
+  | (JSStatementCommon & { type: 'g3k:playMusic'; name: string })
+  | (JSStatementCommon & { type: 'g3k:stopMusic' })
+  | (JSStatementCommon & { type: 'g3k:startTimer'; seconds: number | JSExpr })
+  | (JSStatementCommon & { type: 'g3k:stopTimer' })
+  | (JSStatementCommon & { type: 'g3k:onTimerEnd'; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'g3k:say'
+      charVar: string
+      text: string | JSExpr
+      seconds: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g3k:hideSay'; charVar: string })
   | (JSStatementCommon & { type: 'g3k:passThrough'; charVar: string; ghost: boolean })
   | (JSStatementCommon & { type: 'g3k:makeTrigger'; mold: string })
   | (JSStatementCommon & { type: 'g3k:setSeed'; seed: number | JSExpr })
@@ -6417,6 +6464,41 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g3k:cameraAngle'),
+      az: z.union([JSExprSchema, z.number()]),
+      el: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:cameraDistance'),
+      dist: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:cameraShake'),
+      strength: z.union([JSExprSchema, z.number()]),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:cameraLens'),
+      fov: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:cameraLookAt'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:cameraLookAtPoint'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:cameraSmooth'),
+      lambda: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g3k:place'),
       charVar: irText(),
       x: z.union([JSExprSchema, z.number()]),
@@ -6484,6 +6566,39 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g3k:setCollider'), mold: irText(), shape: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:setPhysics'), mold: irText(), kind: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:playAnim'),
+      charVar: irText(),
+      clip: irText(),
+      loop: z.boolean(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:stopAnim'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3k:setStateAnim'),
+      mold: irText(),
+      state: irText(),
+      clip: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:playMusic'), name: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:stopMusic'), ...idField }),
+    z.object({
+      type: z.literal('g3k:startTimer'),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:stopTimer'), ...idField }),
+    z.object({ type: z.literal('g3k:onTimerEnd'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
+      type: z.literal('g3k:say'),
+      charVar: irText(),
+      text: z.union([JSExprSchema, z.string()]),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3k:hideSay'), charVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3k:passThrough'),
       charVar: irText(),
@@ -7465,6 +7580,13 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:cameraFollow',
   'g3k:cameraOrbit',
   'g3k:cameraTop',
+  'g3k:cameraAngle',
+  'g3k:cameraDistance',
+  'g3k:cameraShake',
+  'g3k:cameraLens',
+  'g3k:cameraLookAt',
+  'g3k:cameraLookAtPoint',
+  'g3k:cameraSmooth',
   'g3k:place',
   'g3k:setYaw',
   'g3k:setVelocity',
@@ -7477,6 +7599,17 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:makeSolid',
   'g3k:platformerKeys',
   'g3k:setCollider',
+  'g3k:setPhysics',
+  'g3k:playAnim',
+  'g3k:stopAnim',
+  'g3k:setStateAnim',
+  'g3k:playMusic',
+  'g3k:stopMusic',
+  'g3k:startTimer',
+  'g3k:stopTimer',
+  'g3k:onTimerEnd',
+  'g3k:say',
+  'g3k:hideSay',
   'g3k:passThrough',
   'g3k:makeTrigger',
   'g3k:setSeed',
