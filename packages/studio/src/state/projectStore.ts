@@ -170,8 +170,12 @@ interface ProjectStatePatch {
 export interface NewAssetInput {
   name: string
   dataUrl: string
-  /** `'image'` (padrão) ou `'audio'` (som/música importado). */
-  kind?: 'image' | 'audio'
+  /** `'image'` (padrão), `'audio'` (som/música), `'model3d'` (.glb) ou
+   *  `'environment3d'` (céu .hdr). */
+  kind?: 'image' | 'audio' | 'model3d' | 'environment3d'
+  /** Nome do arquivo original — OBRIGATÓRIO nos 3D (a validação cruza a
+   *  extensão com o MIME e a assinatura binária). */
+  originalFileName?: string
   width?: number
   height?: number
   source?: 'upload' | 'library'
@@ -1043,6 +1047,23 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_gk_nave_invasion_line',
     'sz_gk_nave_starfield',
     'sz_gk_nave_bomb',
+    'sz_gk_define_path',
+    'sz_gk_path_point',
+    'sz_gk_follow_path',
+    'sz_gk_path_progress',
+    'sz_gk_pick_active',
+    'sz_gk_parallax_layer',
+    'sz_gk_sheet_burst',
+    // 🏰 R26 — Kit Defesa de Torre
+    'sz_gk_td_slot',
+    'sz_gk_td_draw_slots',
+    'sz_gk_td_on_buy',
+    'sz_gk_td_free_slot',
+    'sz_gk_td_draw_range',
+    'sz_gk_td_wave',
+    'sz_gk_td_set_coins',
+    'sz_gk_td_add_coins',
+    'sz_gk_td_coins',
     'sz_gk_count_item',
     'sz_gk_fade_screen',
     'sz_gk_flash_screen',
@@ -2973,13 +2994,30 @@ export function createProjectStore(
     addAsset: (input) => {
       const p = get().project
       if (!p) return 'Nenhum projeto carregado.'
-      const kind: ProjectAsset['kind'] = input.kind === 'audio' ? 'audio' : 'image'
-      const isAudio = kind === 'audio'
-      const noun = isAudio ? 'som' : 'imagem'
+      const kind: ProjectAsset['kind'] =
+        input.kind === 'audio' || input.kind === 'model3d' || input.kind === 'environment3d'
+          ? input.kind
+          : 'image'
+      const isImage = kind === 'image'
+      const is3D = kind === 'model3d' || kind === 'environment3d'
+      const noun =
+        kind === 'audio'
+          ? 'som'
+          : kind === 'model3d'
+            ? 'modelo 3D'
+            : kind === 'environment3d'
+              ? 'céu (.hdr)'
+              : 'imagem'
       const name = normalizeAssetName(input.name)
       if (!name) return 'Use um nome simples (letras, números e hífen).'
-      // A UI já validou; aqui revalidamos o teto e o esquema data:image/ | data:audio/.
-      if (!isValidAssetDataUrl(input.dataUrl, kind)) return `${noun} inválido ou grande demais.`
+      // A UI já validou; aqui revalidamos o teto e o esquema do data: URL. Nos 3D
+      // o nome do arquivo faz parte do contrato (extensão × MIME × assinatura
+      // binária) — sem ele, ou com bytes que não batem, recusa na porta.
+      const fileName3D =
+        is3D && typeof input.originalFileName === 'string' ? input.originalFileName : undefined
+      if (!isValidAssetDataUrl(input.dataUrl, kind, fileName3D)) {
+        return `${noun} inválido ou grande demais.`
+      }
       const assets = p.assets ?? []
       if (assets.length >= PROJECT_ASSET_LIMITS.maxAssetsCount) {
         return `Limite de ${PROJECT_ASSET_LIMITS.maxAssetsCount} arquivos por projeto.`
@@ -2989,23 +3027,25 @@ export function createProjectStore(
       if (totalChars > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
         return 'Os assets do projeto excedem o tamanho total permitido.'
       }
-      // Metadados do Pinta só valem p/ imagem; áudio nunca os tem.
-      const sprite = isAudio ? undefined : sanitizeSpriteMeta(input.sprite)
-      const tileset = isAudio ? undefined : sanitizeTilesetMeta(input.tileset)
-      const tilemap = isAudio ? undefined : sanitizeTilemapMeta(input.tilemap)
+      // Metadados do Pinta (e dimensões) só valem p/ IMAGEM; som e 3D nunca os têm.
+      const sprite = isImage ? sanitizeSpriteMeta(input.sprite) : undefined
+      const tileset = isImage ? sanitizeTilesetMeta(input.tileset) : undefined
+      const tilemap = isImage ? sanitizeTilemapMeta(input.tilemap) : undefined
       const asset: ProjectAsset = {
         id: ulid(),
         name,
         kind,
         dataUrl: input.dataUrl,
         source: input.source === 'library' ? 'library' : 'upload',
-        ...(!isAudio && typeof input.width === 'number' && input.width > 0
+        ...(isImage && typeof input.width === 'number' && input.width > 0
           ? { width: input.width }
           : {}),
-        ...(!isAudio && typeof input.height === 'number' && input.height > 0
+        ...(isImage && typeof input.height === 'number' && input.height > 0
           ? { height: input.height }
           : {}),
         ...(input.source === 'library' && input.libId ? { libId: input.libId } : {}),
+        // O sanitizer do load exige o fileName nos 3D — gravar é parte do contrato.
+        ...(fileName3D ? { originalFileName: fileName3D.slice(0, 128) } : {}),
         ...(sprite ? { sprite } : {}),
         ...(tileset ? { tileset } : {}),
         ...(tilemap ? { tilemap } : {}),

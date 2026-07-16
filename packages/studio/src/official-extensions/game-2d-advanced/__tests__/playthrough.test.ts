@@ -157,6 +157,29 @@ interface Api {
   rpgLevel: () => number
   rpgXp: () => number
   placeCharacterAlias?: Fn
+  // 🏰 R26 — playthrough Kit Defesa de Torre
+  definePath: Fn
+  pathPoint: Fn
+  tdSlot: Fn
+  tdFreeSlot: Fn
+  tdSetCoins: Fn
+  tdAddCoins: Fn
+  tdCoins: () => number
+  tdOnBuy: Fn
+  tdWave: Fn
+  tdDrawSlots: Fn
+  tdDrawRange: Fn
+  pickActive: (mold: string, mode: string, prop: string) => unknown
+  pathProgress: (c: unknown) => number
+  charX: (c: unknown) => number
+  charY: (c: unknown) => number
+  cooldownReady: Fn
+  launchTowards: Fn
+  distanceBetween: (a: unknown, b: unknown) => number
+  overlapGroups: Fn
+  hurt: Fn
+  isDead: (c: unknown) => boolean
+  drawActive: Fn
 }
 
 interface Harness {
@@ -531,7 +554,19 @@ describe('gk — JOGAR uma luta inteira do Kit Luta (a lição do R17)', () => {
     h.api.lutaAI(p1, 'difícil')
     h.api.lutaAI(p2, 'difícil')
     h.api.onUpdate(() => {})
-    quadros(h, 400)
+    // ⚠️ A decisão da IA sorteia (defender/pular via `chance()` → Math.random): SEM
+    // semente, os dois 'difícil' — que MANTÊM distância e defendem 85% — às vezes
+    // dançam 400 quadros sem um golpe conectar (flaky ~1/3, saldo 200 = 0×0). Fixo
+    // o sorteio ALTO só aqui: nunca defende (85) nem pula (25), então os dois
+    // APROXIMAM e ATACAM de verdade. A autonomia (jogar e ferir sozinho) é o que
+    // ESTE teste prova; defesa/pulo têm testes próprios. Determinístico: 0 flaky.
+    const realRandom = Math.random
+    Math.random = () => 0.99
+    try {
+      quadros(h, 400)
+    } finally {
+      Math.random = realRandom
+    }
     // Os dois se acharam e se bateram: alguém perdeu vida sem nenhum teclado.
     expect(p1.health + p2.health).toBeLessThan(200)
   })
@@ -1145,5 +1180,149 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     expect(h.api.rpgLevel()).toBe(2)
     expect(h.api.rpgXp()).toBe(5)
     void heroi
+  })
+})
+
+describe('gk — JOGAR uma partida inteira do 🏰 Kit Defesa de Torre (R26)', () => {
+  interface Inv {
+    x: number
+    y: number
+    w: number
+    h: number
+  }
+
+  /** O caminho é uma trilha em L: entra pela esquerda (y=120, p/ +x) e sai pela
+   *  direita (x~1000). Os moldes são o invasor (com vida), a torre e o tiro. */
+  async function arenaTd(h: Harness) {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('invasor', { w: 34, h: 34, health: 30, color: '#e0526a' })
+    h.api.defineMold('torre', { w: 40, h: 40, health: 1, color: '#4a9eff' })
+    h.api.defineMold('tiro', { w: 10, h: 10, health: 1, color: '#ffe066' })
+    h.api.definePath('trilha', () => {
+      h.api.pathPoint(-40, 120)
+      h.api.pathPoint(300, 120)
+      h.api.pathPoint(300, 400)
+      h.api.pathPoint(660, 400)
+      h.api.pathPoint(660, 200)
+      h.api.pathPoint(1000, 200)
+    })
+    await startGame(h)
+    h.api.setState('jogando')
+  }
+
+  function vivos(h: Harness, mold: string): Inv[] {
+    const out: Inv[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Inv))
+    return out
+  }
+
+  /** Dispara um clique REAL no canvas (o pointerdown vive no elemento, não no
+   *  window). Rect 0×0 no headless → toGameCoords cai no fallback escala 1, então
+   *  clientX/Y = coord do jogo (é o que o fix do toGameCoords do R26 destrava). */
+  function clickAt(x: number, y: number) {
+    const canvas = document.querySelector('#szgk-canvas')
+    if (!canvas) throw new Error('sem canvas para clicar')
+    const ev = new MouseEvent('pointerdown', { clientX: x, clientY: y, bubbles: true })
+    canvas.dispatchEvent(ev)
+  }
+
+  it('⭐ a onda ENTRA pelo caminho, MARCHA ponto a ponto e o vazamento avisa', async () => {
+    const h = loadRuntime()
+    await arenaTd(h)
+    let passou = 0
+    h.api.on('invasor:passou', () => {
+      passou += 1
+    })
+    h.api.tdWave('trilha', 3, 'invasor', 150, 90)
+    expect(h.api.countActive('invasor')).toBe(3)
+    // o líder é o da frente (maior x no 1º trecho horizontal p/ +x)
+    const lider = vivos(h, 'invasor').reduce((a, b) => (a.x >= b.x ? a : b))
+    const x0 = lider.x
+    for (let i = 1; i <= 20; i++) h.nextFrame(i * 50)
+    expect(lider.x).toBeGreaterThan(x0) // andou o caminho
+    // deixa TODOS chegarem ao fim (saem pela direita) → vazam e são recolhidos
+    for (let i = 21; i <= 800 && h.api.countActive('invasor') > 0; i++) h.nextFrame(i * 50)
+    expect(passou).toBeGreaterThanOrEqual(1)
+    expect(h.api.countActive('invasor')).toBe(0)
+  })
+
+  it('⭐ comprar: paga e ocupa o lugar; clicar de novo no MESMO lugar não faz nada', async () => {
+    const h = loadRuntime()
+    await arenaTd(h)
+    h.api.tdSetCoins(100)
+    h.api.tdSlot(300, 220, 60)
+    h.api.tdOnBuy(50, (lugarX: unknown, lugarY: unknown) => {
+      h.api.spawnFromMold('torre', (lugarX as number) - 20, (lugarY as number) - 20)
+    })
+    expect(h.api.tdCoins()).toBe(100)
+    clickAt(300, 220)
+    expect(h.api.countActive('torre')).toBe(1)
+    expect(h.api.tdCoins()).toBe(50) // pagou 50
+    clickAt(300, 220) // lugar ocupado → nada
+    expect(h.api.countActive('torre')).toBe(1)
+    expect(h.api.tdCoins()).toBe(50)
+  })
+
+  it('⭐ sem moedas: a compra é NEGADA (avisa) e nada nasce', async () => {
+    const h = loadRuntime()
+    await arenaTd(h)
+    h.api.tdSetCoins(30) // menos que o custo de 50
+    h.api.tdSlot(300, 220, 60)
+    let negada = 0
+    h.api.on('compra:negada', () => {
+      negada += 1
+    })
+    h.api.tdOnBuy(50, () => {
+      h.api.spawnFromMold('torre', 280, 200)
+    })
+    clickAt(300, 220)
+    expect(negada).toBe(1)
+    expect(h.api.countActive('torre')).toBe(0)
+    expect(h.api.tdCoins()).toBe(30) // não gastou
+  })
+
+  it('⭐ a torre mira o invasor MAIS avançado no caminho (pickActive maior/progresso)', async () => {
+    const h = loadRuntime()
+    await arenaTd(h)
+    h.api.tdWave('trilha', 3, 'invasor', 150, 90)
+    for (let i = 1; i <= 40; i++) h.nextFrame(i * 50) // espalha os progressos
+    const invs = vivos(h, 'invasor')
+    const alvo = h.api.pickActive('invasor', 'maior', 'pathProgress')
+    expect(alvo).not.toBeNull()
+    // o alvo é o de MAIOR progresso na trilha (o líder) — a trilha vira, então
+    // NÃO dá p/ comparar por x: comparo pelo MESMO medidor de progresso do motor.
+    const maxProg = Math.max(...invs.map((e) => h.api.pathProgress(e)))
+    expect(h.api.pathProgress(alvo)).toBeCloseTo(maxProg)
+    expect(maxProg).toBeGreaterThan(0) // andaram mesmo
+  })
+
+  it('⭐ onda:limpa ao esvaziar; "Jogar de novo" devolve moedas e libera os lugares', async () => {
+    const h = loadRuntime()
+    await arenaTd(h)
+    let limpa = 0
+    h.api.on('onda:limpa', () => {
+      limpa += 1
+    })
+    h.api.tdSetCoins(100)
+    h.api.tdSlot(300, 220, 60)
+    h.api.tdOnBuy(50, (lugarX: unknown, lugarY: unknown) => {
+      h.api.spawnFromMold('torre', (lugarX as number) - 20, (lugarY as number) - 20)
+    })
+    h.api.tdWave('trilha', 2, 'invasor', 150, 90)
+    h.nextFrame(50)
+    expect(limpa).toBe(0)
+    h.api.forEachActive('invasor', (e: unknown) => h.api.recycle(e))
+    h.nextFrame(100) // o stepTd vê a onda vazia
+    expect(limpa).toBe(1)
+    clickAt(300, 220) // compra uma torre, gasta 50
+    expect(h.api.tdCoins()).toBe(50)
+    expect(h.api.countActive('torre')).toBe(1)
+    // "Jogar de novo" passa por outro estado (o gate do reset é prev !== jogando)
+    h.api.setState('fim')
+    h.api.setState('jogando')
+    expect(h.api.tdCoins()).toBe(100) // moedas voltam ao inicial
+    expect(h.api.countActive('torre')).toBe(0) // o reset recolheu a torre antiga
+    clickAt(300, 220) // o lugar liberou: comprar de novo cobra de novo
+    expect(h.api.tdCoins()).toBe(50)
   })
 })

@@ -3902,6 +3902,11 @@ const GK_LUTA_SPEEDS = new Set(['rápido', 'médio', 'pesado'])
 const GK_LUTA_LEVELS = new Set(['fácil', 'normal', 'difícil'])
 // 🚀 Kit Nave: espelha o dropdown do sz_gk_nave_powerup (fora do Set → rawJS).
 const GK_NAVE_POWERS = new Set(['metralhadora', 'leque'])
+// 🎲 R25: espelha os dropdowns do "o vivo com maior/menor …" (fora → rawJS).
+const GK_PICK_MODES = new Set(['maior', 'menor'])
+const GK_PICK_PROPS = new Set([...GK_ENTITY_PROPS, 'pathProgress'])
+// 🌿 R25: espelha o dropdown de status do rpgInflict (veneno é o default).
+const GK_RPG_STATUS = new Set(['veneno', 'regenera', 'atrapalha'])
 const GK_ENTITY_STATES = new Set([
   'parado',
   'andando',
@@ -4090,6 +4095,26 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const charVar = identifierName(args[0])
     if (charVar) return { type: 'gk:navePowerOf', charVar }
   }
+  if (method === 'pathProgress') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:pathProgress', charVar }
+  }
+  if (
+    method === 'pickActive' &&
+    args[0]?.type === 'StringLiteral' &&
+    args[1]?.type === 'StringLiteral' &&
+    args[2]?.type === 'StringLiteral' &&
+    GK_PICK_MODES.has(args[1].value as string) &&
+    GK_PICK_PROPS.has(args[2].value as string)
+  ) {
+    return {
+      type: 'gk:pickActive',
+      mold: args[0].value as string,
+      mode: args[1].value as string,
+      prop: args[2].value as string,
+    }
+  }
+  if (method === 'tdCoins' && args.length === 0) return { type: 'gk:tdCoins' }
   if (method === 'rpgCountItem' && args[0]?.type === 'StringLiteral') {
     return { type: 'gk:countItem', name: args[0].value as string }
   }
@@ -4614,6 +4639,8 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     }
     case 'rpgInflict': {
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      // R25: status desconhecido → rawJS (o dropdown coage; não engolir calado).
+      if (!GK_RPG_STATUS.has(args[1].value as string)) return null
       const turns = toExpr(args[2], ctx)
       return isSimpleValue(turns)
         ? {
@@ -5245,6 +5272,110 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
             target: args[2].value as string,
           }
         : null
+    }
+    // 🛤️ R25 — caminhos + paralaxe + explosão por folha
+    case 'definePath': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'gk:definePath',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'pathPoint': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'gk:pathPoint', x, y } : null
+    }
+    case 'followPath': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[3])
+      if (!charVar || args[1]?.type !== 'StringLiteral' || !dtVar) return null
+      const speed = toExpr(args[2], ctx)
+      return isSimpleValue(speed)
+        ? { type: 'gk:followPath', charVar, path: args[1].value as string, speed, dtVar }
+        : null
+    }
+    case 'parallaxLayer': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const fx = toExpr(args[1], ctx)
+      const fy = toExpr(args[2], ctx)
+      return isSimpleValue(fx) && isSimpleValue(fy)
+        ? { type: 'gk:parallaxLayer', image: args[0].value as string, fx, fy }
+        : null
+    }
+    case 'sheetBurst': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const frames = toExpr(args[1], ctx)
+      const fps = toExpr(args[2], ctx)
+      const x = toExpr(args[3], ctx)
+      const y = toExpr(args[4], ctx)
+      const size = toExpr(args[5], ctx)
+      return isSimpleValue(frames) &&
+        isSimpleValue(fps) &&
+        isSimpleValue(x) &&
+        isSimpleValue(y) &&
+        isSimpleValue(size)
+        ? { type: 'gk:sheetBurst', image: args[0].value as string, frames, fps, x, y, size }
+        : null
+    }
+    // 🏰 R26 — Kit Defesa de Torre
+    case 'tdWave': {
+      if (args[0]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') return null
+      const count = toExpr(args[1], ctx)
+      const gap = toExpr(args[3], ctx)
+      const speed = toExpr(args[4], ctx)
+      return isSimpleValue(count) && isSimpleValue(gap) && isSimpleValue(speed)
+        ? {
+            type: 'gk:tdWave',
+            path: args[0].value as string,
+            count,
+            mold: args[2].value as string,
+            gap,
+            speed,
+          }
+        : null
+    }
+    case 'tdSlot': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      const size = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(size)
+        ? { type: 'gk:tdSlot', x, y, size }
+        : null
+    }
+    case 'tdDrawSlots':
+      return { type: 'gk:tdDrawSlots' }
+    case 'tdOnBuy': {
+      // generator: SZGameKit.tdOnBuy(<cost>, function (lugarX, lugarY) {…})
+      const cost = toExpr(args[0], ctx)
+      if (!isSimpleValue(cost) || !isFn(args[1])) return null
+      return {
+        type: 'gk:tdOnBuy',
+        cost,
+        xName: identifierName(args[1].params?.[0]) ?? 'lugarX',
+        yName: identifierName(args[1].params?.[1]) ?? 'lugarY',
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'tdFreeSlot': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'gk:tdFreeSlot', x, y } : null
+    }
+    case 'tdDrawRange': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const radius = toExpr(args[1], ctx)
+      return isSimpleValue(radius) ? { type: 'gk:tdDrawRange', charVar, radius } : null
+    }
+    case 'tdSetCoins': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:tdSetCoins', n } : null
+    }
+    case 'tdAddCoins': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:tdAddCoins', n } : null
     }
     case 'setOpacity': {
       const charVar = identifierName(args[0])
@@ -9604,6 +9735,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:nearestActive':
     case 'gk:randomActive':
     case 'gk:navePowerOf':
+    case 'gk:pathProgress':
+    case 'gk:pickActive':
+    case 'gk:tdCoins':
     case 'gk:countItem':
     case 'gk:timeSurvived':
     case 'gk:kills':

@@ -226,6 +226,12 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:randomActive'; mold: string })
   // 🚀 R22 — Kit Nave: o poder de tiro valendo ('normal'|'metralhadora'|'leque').
   | (JSExprCommon & { type: 'gk:navePowerOf'; charVar: string })
+  // 🛤️ R25 — o progresso 0..100 de uma entidade no caminho; e o vivo com
+  // maior/menor de uma propriedade (generaliza nearest/random).
+  | (JSExprCommon & { type: 'gk:pathProgress'; charVar: string })
+  | (JSExprCommon & { type: 'gk:pickActive'; mold: string; mode: string; prop: string })
+  // 🏰 R26 — as moedas da carteira do Kit Defesa de Torre.
+  | (JSExprCommon & { type: 'gk:tdCoins' })
   | (JSExprCommon & { type: 'gk:countItem'; name: string })
   | (JSExprCommon & { type: 'gk:timeSurvived' })
   | (JSExprCommon & { type: 'gk:kills' })
@@ -664,6 +670,15 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('gk:randomActive'), mold: irText(), ...idField }),
     z.object({ type: z.literal('gk:navePowerOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:pathProgress'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:pickActive'),
+      mold: irText(),
+      mode: irText(),
+      prop: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:tdCoins'), ...idField }),
     z.object({ type: z.literal('gk:countItem'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:timeSurvived'), ...idField }),
     z.object({ type: z.literal('gk:kills'), ...idField }),
@@ -3004,6 +3019,59 @@ export type JSStatement =
       radius: number | JSExpr
       target: string
     })
+  // 🛤️ R25 — caminhos (container+filho, como o rpgMenu), seguir, paralaxe presa
+  // à câmera e explosão por FOLHA one-shot; e o status estendido do rpgInflict.
+  | (JSStatementCommon & { type: 'gk:definePath'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:pathPoint'; x: number | JSExpr; y: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:followPath'
+      charVar: string
+      path: string
+      speed: number | JSExpr
+      dtVar: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:parallaxLayer'
+      image: string
+      fx: number | JSExpr
+      fy: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:sheetBurst'
+      image: string
+      frames: number | JSExpr
+      fps: number | JSExpr
+      x: number | JSExpr
+      y: number | JSExpr
+      size: number | JSExpr
+    })
+  // 🏰 R26 — Kit Defesa de Torre
+  | (JSStatementCommon & {
+      type: 'gk:tdWave'
+      path: string
+      count: number | JSExpr
+      mold: string
+      gap: number | JSExpr
+      speed: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:tdSlot'
+      x: number | JSExpr
+      y: number | JSExpr
+      size: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:tdDrawSlots' })
+  | (JSStatementCommon & {
+      type: 'gk:tdOnBuy'
+      cost: number | JSExpr
+      xName: string
+      yName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'gk:tdFreeSlot'; x: number | JSExpr; y: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:tdDrawRange'; charVar: string; radius: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:tdSetCoins'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:tdAddCoins'; n: number | JSExpr })
   | (JSStatementCommon & { type: 'gk:setOpacity'; charVar: string; percent: number | JSExpr })
   | (JSStatementCommon & {
       type: 'gk:fadeTo'
@@ -6289,6 +6357,91 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:definePath'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pathPoint'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:followPath'),
+      charVar: irText(),
+      path: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:parallaxLayer'),
+      image: irText(),
+      fx: z.union([JSExprSchema, z.number()]),
+      fy: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:sheetBurst'),
+      image: irText(),
+      frames: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      size: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    // 🏰 R26 — Kit Defesa de Torre
+    z.object({
+      type: z.literal('gk:tdWave'),
+      path: irText(),
+      count: z.union([JSExprSchema, z.number()]),
+      mold: irText(),
+      gap: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:tdSlot'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      size: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:tdDrawSlots'), ...idField }),
+    z.object({
+      type: z.literal('gk:tdOnBuy'),
+      cost: z.union([JSExprSchema, z.number()]),
+      xName: irText(),
+      yName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:tdFreeSlot'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:tdDrawRange'),
+      charVar: irText(),
+      radius: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:tdSetCoins'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:tdAddCoins'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:setOpacity'),
       charVar: irText(),
       percent: z.union([JSExprSchema, z.number()]),
@@ -7956,6 +8109,19 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:naveInvasionLine',
   'gk:naveStarfield',
   'gk:naveBomb',
+  'gk:definePath',
+  'gk:pathPoint',
+  'gk:followPath',
+  'gk:parallaxLayer',
+  'gk:sheetBurst',
+  'gk:tdWave',
+  'gk:tdSlot',
+  'gk:tdDrawSlots',
+  'gk:tdOnBuy',
+  'gk:tdFreeSlot',
+  'gk:tdDrawRange',
+  'gk:tdSetCoins',
+  'gk:tdAddCoins',
   'gk:setOpacity',
   'gk:fadeTo',
   'gk:tweenProperty',
