@@ -722,6 +722,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'w3d:raceTime' }
     case 'sz_w3d_race_best':
       return { type: 'w3d:raceBest' }
+    case 'sz_w3d_pins_down':
+      return { type: 'w3d:pinsDown' }
+    case 'sz_w3d_knocked_count':
+      return { type: 'w3d:knockedCount' }
     case 'sz_g3k_entity_value':
       return { type: 'g3k:entityValue', key: f(block, 'KEY'), charVar: f(block, 'CHAR') }
     case 'sz_g3k_state_time':
@@ -8754,6 +8758,38 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return {
         kind: 'js',
         value: { type: 'w3d:raceOnFinish', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_bowling_create':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:bowlingCreate',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 25 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_bowling_reset':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:bowlingReset' } }
+    case 'sz_w3d_bowling_on_strike':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:bowlingOnStrike', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_stack':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:stack',
+          n: exprInput(block, 'N', { type: 'num', value: 5 }),
+          thing: f(block, 'THING') || 'caixas',
+          x: exprInput(block, 'X', { type: 'num', value: 15 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+        },
       }
     case 'sz_w3d_grass':
       seen.add('world-3d')

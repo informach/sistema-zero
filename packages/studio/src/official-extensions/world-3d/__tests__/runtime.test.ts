@@ -46,6 +46,12 @@ interface Api {
   raceOnFinish: (fn?: unknown) => unknown
   raceTime: () => number
   raceBest: () => number
+  bowlingCreate: (x?: unknown, z?: unknown, yaw?: unknown) => unknown
+  bowlingReset: () => unknown
+  bowlingOnStrike: (fn?: unknown) => unknown
+  pinsDown: () => number
+  stack: (n?: unknown, thing?: unknown, x?: unknown, z?: unknown) => unknown
+  knockedCount: () => number
   scatter: (n?: unknown, thing?: unknown) => unknown
   scatterModel: (n?: unknown, name?: unknown, s?: unknown) => unknown
   placeThing: (thing?: unknown, x?: unknown, z?: unknown, s?: unknown) => unknown
@@ -115,6 +121,12 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'raceOnFinish',
       'raceTime',
       'raceBest',
+      'bowlingCreate',
+      'bowlingReset',
+      'bowlingOnStrike',
+      'pinsDown',
+      'stack',
+      'knockedCount',
       'scatter',
       'scatterModel',
       'placeThing',
@@ -255,6 +267,18 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     // checkpoint antes de criar a corrida avisa e não lança
     const api2 = boot()
     expect(() => api2.raceCheckpoint(0, 0, 0)).not.toThrow()
+  })
+
+  it('boliche/derrubar: cria, empilha, ganchos e contadores — puros, sem lançar', () => {
+    const api = boot()
+    expect(api.pinsDown()).toBe(0)
+    expect(api.knockedCount()).toBe(0)
+    expect(() => api.bowlingCreate(0, 25, 0)).not.toThrow()
+    expect(() => api.bowlingReset()).not.toThrow()
+    expect(() => api.bowlingOnStrike(() => {})).not.toThrow()
+    expect(() => api.bowlingOnStrike('não é função' as unknown)).not.toThrow()
+    expect(() => api.stack(5, 'caixas', 15, 0)).not.toThrow()
+    expect(() => api.stack(3, 'latas', -10, 5)).not.toThrow()
   })
 
   it('flatten muda a altura do terreno para o valor do centro', () => {

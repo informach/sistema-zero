@@ -569,6 +569,10 @@ export function compileExpr(
       return 'SZWorld3D.raceTime()'
     case 'w3d:raceBest':
       return 'SZWorld3D.raceBest()'
+    case 'w3d:pinsDown':
+      return 'SZWorld3D.pinsDown()'
+    case 'w3d:knockedCount':
+      return 'SZWorld3D.knockedCount()'
     case 'g3k:stateIs':
       return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
     case 'g3k:gameState':

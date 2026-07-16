@@ -124,6 +124,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   // 🏁 Corrida: máquina idle→correndo→fim, checkpoints EM ORDEM, recorde no shim.
   var race = null;             // { x, z, yaw, laps, checkpoints:[], state, time, lap, next, portal, hooks }
   var raceHooks = { start: [], checkpoint: [], finish: [] };
+  // 🎳 Boliche/derrubar: objetos TOMBÁVEIS (pinos/caixas) — física arcade sem solver.
+  var knockables = [];         // { mesh, x, z, r, h, vx, vz, vy, y, tilt, down, home:{x,z} }
+  var bowling = null;          // { x, z, pins:[], strikeHooks:[] }
   // Carrinho: config (dos blocos) + estado físico + peças visuais.
   var carCfg = null;            // { style, color, speed, turn, jump }
   var carState = null;          // { x, y, z, yaw, speed, vy, airborne, steerVis, pitch, pitchV, roll, rollV }
@@ -2257,6 +2260,173 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- 🎳 Kit Boliche / derrubar (knockdown arcade, sem solver de física) ----
+
+  /** Cria um corpo tombável (pino/caixa/lata) na cena, guardando o "home". */
+  function makeKnockable(x, z, kind, s) {
+    if (!scene) return null;
+    var gy = heightAt(x, z);
+    var mesh, r, h;
+    if (kind === 'caixa') {
+      var sz = 0.8 * s;
+      mesh = new THREE.Mesh(new THREE.BoxGeometry(sz, sz, sz), toonMaterial({ color: '#b7791f' }));
+      r = sz * 0.6; h = sz;
+      mesh.position.set(x, gy + sz / 2, z);
+    } else if (kind === 'lata') {
+      r = 0.28 * s; h = 0.7 * s;
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 10), toonMaterial({ color: '#a0aec0' }));
+      mesh.position.set(x, gy + h / 2, z);
+    } else {
+      // pino (boliche): cilindro branco afunilado.
+      r = 0.22 * s; h = 0.9 * s;
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.6, r, h, 10), toonMaterial({ color: '#fefefe' }));
+      mesh.position.set(x, gy + h / 2, z);
+    }
+    mesh.castShadow = true;
+    ensureDecorGroup().add(mesh);
+    var k = {
+      mesh: mesh, x: x, z: z, y: gy, baseY: gy, r: r, h: h,
+      vx: 0, vz: 0, vy: 0, tilt: 0, tiltAxis: 0, down: false, home: { x: x, z: z, kind: kind, s: s }
+    };
+    knockables.push(k);
+    return k;
+  }
+
+  function knockableHit(k, fromX, fromZ, power) {
+    if (k.down) return;
+    var dx = k.x - fromX;
+    var dz = k.z - fromZ;
+    var d = Math.sqrt(dx * dx + dz * dz) || 0.001;
+    var push = Math.min(14, power);
+    k.vx += (dx / d) * push;
+    k.vz += (dz / d) * push;
+    k.vy += Math.min(4, push * 0.3);
+    k.tiltAxis = Math.atan2(dz, dx);
+  }
+
+  function stepKnockables(dt) {
+    if (!knockables.length) return;
+    var cx = carState ? carState.x : 0;
+    var cz = carState ? carState.z : 0;
+    var cspd = carState ? Math.abs(carState.speed) : 0;
+    for (var i = 0; i < knockables.length; i++) {
+      var k = knockables[i];
+      // Carro encosta? impulso proporcional à velocidade.
+      if (!k.down && carState) {
+        var ddx = k.x - cx;
+        var ddz = k.z - cz;
+        var rr = k.r + 1.2;
+        if (ddx * ddx + ddz * ddz < rr * rr && cspd > 2) {
+          knockableHit(k, cx, cz, cspd);
+        }
+      }
+      var moving = Math.abs(k.vx) + Math.abs(k.vz) + Math.abs(k.vy) > 0.05 || k.y > k.baseY + 0.01;
+      if (!moving && !k.down) continue;
+      // Integra velocidade + gravidade + quique no chão.
+      k.vy -= 22 * dt;
+      k.x += k.vx * dt;
+      k.z += k.vz * dt;
+      k.y += k.vy * dt;
+      var gy = heightAt(k.x, k.z);
+      if (k.y < gy) {
+        k.y = gy;
+        k.vy = k.down ? 0 : -k.vy * 0.3;
+        k.vx *= 0.6;
+        k.vz *= 0.6;
+      }
+      // Atrito no chão.
+      k.vx *= (1 - Math.min(1, 2 * dt));
+      k.vz *= (1 - Math.min(1, 2 * dt));
+      var speed = Math.sqrt(k.vx * k.vx + k.vz * k.vz);
+      // Tomba quando levou pancada (velocidade alta) — lerp do 0 (em pé) a PI/2.
+      if (!k.down && (speed > 2.5 || k.tilt > 0.02)) {
+        k.tilt += (Math.PI / 2 - k.tilt) * Math.min(1, 4 * dt);
+        if (k.tilt > 1.3) {
+          k.down = true;
+          onKnockDown();
+        }
+      }
+      // Propaga para vizinhos próximos (pino bate em pino).
+      if (speed > 1.5) {
+        for (var j = 0; j < knockables.length; j++) {
+          if (j === i) continue;
+          var o = knockables[j];
+          if (o.down) continue;
+          var nx = o.x - k.x;
+          var nz = o.z - k.z;
+          if (nx * nx + nz * nz < (k.r + o.r + 0.15) * (k.r + o.r + 0.15)) {
+            knockableHit(o, k.x, k.z, speed * 0.8);
+          }
+        }
+      }
+      // Aplica no visual.
+      if (k.mesh) {
+        k.mesh.position.set(k.x, k.y + k.h / 2, k.z);
+        k.mesh.rotation.set(Math.sin(k.tiltAxis) * k.tilt, 0, -Math.cos(k.tiltAxis) * k.tilt);
+      }
+    }
+  }
+
+  function onKnockDown() {
+    if (!bowling) return;
+    var allDown = true;
+    for (var i = 0; i < bowling.pins.length; i++) {
+      if (!bowling.pins[i].down) { allDown = false; break; }
+    }
+    if (allDown && bowling.pins.length > 0) {
+      for (var h = 0; h < bowling.strikeHooks.length; h++) {
+        try { bowling.strikeHooks[h](); } catch (e) {
+          warnOnce('hook-strike-' + h, 'erro no "Quando derrubar todos os pinos": ' + e);
+        }
+      }
+    }
+  }
+
+  function knockedCount() {
+    var n = 0;
+    for (var i = 0; i < knockables.length; i++) if (knockables[i].down) n++;
+    return n;
+  }
+
+  function resetKnockables() {
+    for (var i = 0; i < knockables.length; i++) {
+      var k = knockables[i];
+      k.x = k.home.x;
+      k.z = k.home.z;
+      k.y = k.baseY;
+      k.vx = k.vz = k.vy = 0;
+      k.tilt = 0;
+      k.down = false;
+      if (k.mesh) {
+        k.mesh.position.set(k.x, k.baseY + k.h / 2, k.z);
+        k.mesh.rotation.set(0, 0, 0);
+      }
+    }
+  }
+
+  /** Pista de boliche: 10 pinos em triângulo na frente da posição dada. */
+  function buildBowling(x, z, yaw) {
+    if (!scene) return;
+    bowling = { x: num(x, 0), z: num(z, 0), pins: [], strikeHooks: [] };
+    var a = num(yaw, 0) * Math.PI / 180;
+    var fx = Math.sin(a);
+    var fz = Math.cos(a);
+    var rx = Math.cos(a);
+    var rz = -Math.sin(a);
+    var spacing = 0.8;
+    var idx = 0;
+    for (var row = 0; row < 4; row++) {
+      for (var col = 0; col <= row; col++) {
+        var off = (col - row / 2) * spacing;
+        var px = bowling.x + fx * row * spacing + rx * off;
+        var pz = bowling.z + fz * row * spacing + rz * off;
+        var pin = makeKnockable(px, pz, 'pino', 1);
+        if (pin) bowling.pins.push(pin);
+        idx++;
+      }
+    }
+  }
+
   /** Constrói TODAS as receitas de decoração em ordem (chamado no initWorld). */
   function buildDecor() {
     for (var i = 0; i < decorRecipes.length; i++) {
@@ -2267,6 +2437,26 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'totemImage') buildTotemImage(r.x, r.z, r.image, r.w);
       else if (r.kind === 'galleryCreate') buildGalleryBase(r.x, r.z, r.title);
       else if (r.kind === 'galleryAdd') galleryAdd(r.image, r.caption);
+      else if (r.kind === 'bowling') buildBowling(r.x, r.z, r.yaw);
+      else if (r.kind === 'stack') buildStack(r.n, r.thing, r.x, r.z);
+    }
+  }
+
+  /** Empilha N caixas/latas numa coluna que o carro derruba. */
+  function buildStack(n, thing, x, z) {
+    if (!scene) return;
+    var kind = thing === 'latas' ? 'lata' : 'caixa';
+    var count = Math.floor(clamp(num(n, 3), 1, 30));
+    var step = kind === 'lata' ? 0.72 : 0.82;
+    var baseGy = heightAt(num(x, 0), num(z, 0));
+    for (var i = 0; i < count; i++) {
+      var k = makeKnockable(num(x, 0), num(z, 0), kind, 1);
+      if (k) {
+        // Empilha acima do chão (a base guarda a altura da pilha).
+        k.baseY = baseGy + i * step;
+        k.y = k.baseY;
+        if (k.mesh) k.mesh.position.y = k.baseY + k.h / 2;
+      }
     }
   }
 
@@ -2908,6 +3098,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     updateSun();
     stepInteractions();
     stepRace(dt);
+    stepKnockables(dt);
     stepSay();
     if (waterMat) waterMat.uniforms.uTime.value = playTime;
     if (grassMat) {
@@ -3026,6 +3217,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     _decorGroup = null;
     _imgTexCache = null;
     race = null;
+    knockables = [];
+    bowling = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -3419,6 +3612,36 @@ export const world3DRuntime = `import * as THREE from 'three';
     }),
     raceBest: guard('raceBest', function () {
       return race ? race.best || 0 : 0;
+    }),
+
+    // 🎳 Kit Boliche
+    bowlingCreate: guard('bowlingCreate', function (x, z, yaw) {
+      if (worldReady) buildBowling(x, z, yaw);
+      else decorRecipes.push({ kind: 'bowling', x: num(x, 0), z: num(z, 0), yaw: num(yaw, 0) });
+    }),
+    bowlingReset: guard('bowlingReset', function () {
+      resetKnockables();
+    }),
+    bowlingOnStrike: guard('bowlingOnStrike', function (fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando derrubar todos os pinos" precisa de blocos de fazer dentro');
+        return;
+      }
+      if (!bowling) bowling = { x: 0, z: 0, pins: [], strikeHooks: [] };
+      bowling.strikeHooks.push(fn);
+    }),
+    pinsDown: guard('pinsDown', function () {
+      if (!bowling) return 0;
+      var n = 0;
+      for (var i = 0; i < bowling.pins.length; i++) if (bowling.pins[i].down) n++;
+      return n;
+    }),
+    stack: guard('stack', function (n, thing, x, z) {
+      if (worldReady) buildStack(n, thing, x, z);
+      else decorRecipes.push({ kind: 'stack', n: num(n, 3), thing: text(thing, 'caixas'), x: num(x, 0), z: num(z, 0) });
+    }),
+    knockedCount: guard('knockedCount', function () {
+      return knockedCount();
     }),
 
     onUpdate: guard('onUpdate', function (fn) {

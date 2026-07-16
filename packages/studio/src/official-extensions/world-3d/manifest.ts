@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '0.7.0',
+  version: '0.8.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -156,6 +156,15 @@ O que o motor já faz por você:
   corrida** — os ganchos da corrida (largada, cada anel, e a vitória — solte
   fogos!). O recorde é salvo sozinho entre as jogadas.
 - **o tempo da corrida / o recorde da corrida** — em segundos, para o HUD.
+
+### 🎳 Kit Boliche
+
+- **Criar a pista de boliche em …** — 10 pinos em triângulo. Dirija contra
+  eles: tombam e batem uns nos outros!
+- **Arrumar os pinos de novo** — levanta tudo para jogar outra vez.
+- **Quando derrubar todos os pinos** — STRIKE! Solte os fogos.
+- **Empilhar … caixas/latas em …** — uma torre para o carrinho desabar.
+- **quantos pinos caíram / quantas coisas derrubadas** — para o placar.
 
 ### 🎥 Câmera & efeitos
 

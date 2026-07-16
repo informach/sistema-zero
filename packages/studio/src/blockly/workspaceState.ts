@@ -5714,6 +5714,31 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     case 'w3d:raceOnFinish':
       return block('sz_w3d_race_on_finish', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'w3d:bowlingCreate': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const deg = exprToValueBlock(valueToExpr(stmt.deg))
+      return x === null || z === null || deg === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_bowling_create', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+    }
+    case 'w3d:bowlingReset':
+      return block('sz_w3d_bowling_reset', {}, {}, stmt.__id)
+    case 'w3d:bowlingOnStrike':
+      return block(
+        'sz_w3d_bowling_on_strike',
+        {},
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'w3d:stack': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return n === null || x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_stack', { THING: stmt.thing }, {}, stmt.__id, { N: n, X: x, Z: z })
+    }
     case 'w3d:carStats': {
       const speed = exprToValueBlock(valueToExpr(stmt.speed))
       const turn = exprToValueBlock(valueToExpr(stmt.turn))
@@ -6579,6 +6604,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_w3d_race_time', {})
     case 'w3d:raceBest':
       return block('sz_w3d_race_best', {})
+    case 'w3d:pinsDown':
+      return block('sz_w3d_pins_down', {})
+    case 'w3d:knockedCount':
+      return block('sz_w3d_knocked_count', {})
     case 'g3k:stateIs':
       return block('sz_g3k_state_is', { STATE: expr.name })
     case 'g3k:gameState':

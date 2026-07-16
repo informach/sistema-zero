@@ -91,6 +91,10 @@ SZWorld3D.start(); // SEMPRE por último
   \`raceOnStart/raceOnCheckpoint/raceOnFinish(function(){})\` +
   \`raceTime()\`/\`raceBest()\` (segundos; recorde persiste no localStorage).
   Cronômetro e contador i/N no HUD são automáticos.
+- 🎳 Boliche: \`SZWorld3D.bowlingCreate(x, z, graus)\` (10 pinos) +
+  \`bowlingReset()\` + \`bowlingOnStrike(function(){})\` + \`pinsDown()\` +
+  \`SZWorld3D.stack(n, 'caixas'|'latas', x, z)\` (torre) + \`knockedCount()\`.
+  Objetos tombam de verdade quando o carro bate (knockdown arcade).
 - \`SZWorld3D.onUpdate(function (dt) { ... })\` — gancho por quadro; dt em
   segundos, clampado em 1/30.
 - \`SZWorld3D.keyDown(tecla)\` / \`SZWorld3D.keyPressed(tecla)\` → boolean.
@@ -102,7 +106,6 @@ SZWorld3D.start(); // SEMPRE por último
   runtime parseia o ArrayBuffer; nada de carregar por URL).
 - Sem Rapier/física de biblioteca: o carro é arcade na unha do motor.
 - Sem menu/pausa/vidas: não é um jogo de fases, é um mundo.
-- Boliche chega em versão futura da extensão — se os blocos não estão na
-  paleta, o método não existe ainda.
+- Joystick mobile e modos de câmera chegam na próxima versão.
 - Use APENAS UMA extensão de jogo/mundo por projeto (brigam pelo canvas).
 `

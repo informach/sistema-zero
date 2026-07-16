@@ -6085,6 +6085,8 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'timeOfDay' && args.length === 0) return { type: 'w3d:timeOfDay' }
   if (method === 'raceTime' && args.length === 0) return { type: 'w3d:raceTime' }
   if (method === 'raceBest' && args.length === 0) return { type: 'w3d:raceBest' }
+  if (method === 'pinsDown' && args.length === 0) return { type: 'w3d:pinsDown' }
+  if (method === 'knockedCount' && args.length === 0) return { type: 'w3d:knockedCount' }
   if (method === 'carPos' && args[0]?.type === 'StringLiteral') {
     const axis = args[0].value as string
     if (W3D_POS_AXES.has(axis)) return { type: 'w3d:carPos', axis: axis as 'x' | 'y' | 'z' }
@@ -6310,6 +6312,29 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'raceOnFinish': {
       if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
       return { type: 'w3d:raceOnFinish', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'bowlingCreate': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const deg = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(deg)
+        ? { type: 'w3d:bowlingCreate', x, z, deg }
+        : null
+    }
+    case 'bowlingReset':
+      return args.length === 0 ? { type: 'w3d:bowlingReset' } : null
+    case 'bowlingOnStrike': {
+      if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
+      return { type: 'w3d:bowlingOnStrike', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'stack': {
+      if (args[1]?.type !== 'StringLiteral') return null
+      const n = toExpr(args[0], ctx)
+      const x = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      return isSimpleValue(n) && isSimpleValue(x) && isSimpleValue(z)
+        ? { type: 'w3d:stack', n, thing: args[1].value as string, x, z }
+        : null
     }
     case 'car': {
       // generator: SZWorld3D.car({ style, color })
@@ -10355,6 +10380,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'w3d:timeOfDay':
     case 'w3d:raceTime':
     case 'w3d:raceBest':
+    case 'w3d:pinsDown':
+    case 'w3d:knockedCount':
     case 'inputKeyPressed':
     case 'inputPointer':
     case 'isFullscreen':

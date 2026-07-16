@@ -458,6 +458,8 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_w3d_gallery_create: { X: 'number', Z: 'number' },
   sz_w3d_race_create: { X: 'number', Z: 'number', DEG: 'number', LAPS: 'number' },
   sz_w3d_race_checkpoint: { X: 'number', Z: 'number', DEG: 'number' },
+  sz_w3d_bowling_create: { X: 'number', Z: 'number', DEG: 'number' },
+  sz_w3d_stack: { N: 'number', X: 'number', Z: 'number' },
 }
 
 interface BlockNode {

@@ -118,6 +118,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'w3d:raceOnStart':
     case 'w3d:raceOnCheckpoint':
     case 'w3d:raceOnFinish':
+    case 'w3d:bowlingOnStrike':
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
@@ -2527,6 +2528,21 @@ ${pad}});`
       )
       return `${pad}SZWorld3D.raceOnFinish(function () {\n${body}\n${pad}});`
     }
+    case 'w3d:bowlingCreate':
+      return `${pad}SZWorld3D.bowlingCreate(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:bowlingReset':
+      return `${pad}SZWorld3D.bowlingReset();`
+    case 'w3d:bowlingOnStrike': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.bowlingOnStrike(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:stack':
+      return `${pad}SZWorld3D.stack(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.thing)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
     case 'w3d:carStats':
       return `${pad}SZWorld3D.carStats(${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.turn), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'w3d:carPlace':
@@ -5419,7 +5435,20 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:raceOnStart':
     case 'w3d:raceOnCheckpoint':
     case 'w3d:raceOnFinish':
+    case 'w3d:bowlingOnStrike':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:bowlingCreate':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:bowlingReset':
+      return
+    case 'w3d:stack':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
       return
     case 'w3d:carStats':
       collectExprIdentifiers(valueToExpr(stmt.speed), names)
@@ -5915,6 +5944,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:timeOfDay':
     case 'w3d:raceTime':
     case 'w3d:raceBest':
+    case 'w3d:pinsDown':
+    case 'w3d:knockedCount':
       return
     case 'w3d:groundHeight':
       collectExprIdentifiers(valueToExpr(expr.x), names)

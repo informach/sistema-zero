@@ -672,6 +672,84 @@ export const world3DBlocks = [
       'O melhor tempo já feito nesta corrida (fica salvo entre uma jogada e outra). 0 se ninguém completou ainda.',
   },
 
+  // ---- 🎳 Kit Boliche ----
+  {
+    type: 'sz_w3d_bowling_create',
+    message0: 'Criar a pista de boliche em x %1 z %2 (girada %3 graus)',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta 10 pinos de boliche em triângulo. Dirija o carrinho contra eles para derrubar — eles tombam e batem uns nos outros! Derrube todos para o "Quando derrubar todos os pinos".',
+  },
+  {
+    type: 'sz_w3d_bowling_reset',
+    message0: 'Arrumar os pinos de novo',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Levanta todos os pinos (e as pilhas) de volta ao lugar, em pé. Para jogar de novo.',
+  },
+  {
+    type: 'sz_w3d_bowling_on_strike',
+    message0: 'Quando derrubar todos os pinos',
+    args0: [],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos de dentro quando o carrinho derruba TODOS os 10 pinos — STRIKE! Solte fogos, mostre "Strike!", comemore.',
+  },
+  {
+    type: 'sz_w3d_pins_down',
+    message0: 'quantos pinos caíram',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantos pinos de boliche já foram derrubados (0 a 10). Bom para o placar.',
+  },
+  {
+    type: 'sz_w3d_stack',
+    message0: 'Empilhar %1 %2 em x %3 z %4',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      {
+        type: 'field_dropdown',
+        name: 'THING',
+        options: [
+          ['📦 caixas', 'caixas'],
+          ['🥫 latas', 'latas'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Empilha uma torre de caixas ou latas num lugar do mundo. Dirija contra ela e veja tudo desabar! Ótimo para uma missão de "derrube tudo".',
+  },
+  {
+    type: 'sz_w3d_knocked_count',
+    message0: 'quantas coisas derrubadas',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Quantas coisas tombáveis (pinos, caixas, latas) já foram derrubadas no mundo todo. Para contar a bagunça!',
+  },
+
   // ---- 🎥 Câmera & efeitos ----
   {
     type: 'sz_w3d_effects',
@@ -897,6 +975,18 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    name: '🎳 Kit Boliche',
+    colour: C,
+    types: [
+      'sz_w3d_bowling_create',
+      'sz_w3d_bowling_reset',
+      'sz_w3d_bowling_on_strike',
+      'sz_w3d_pins_down',
+      'sz_w3d_stack',
+      'sz_w3d_knocked_count',
+    ],
+  },
+  {
     name: '🎥 Câmera & efeitos',
     colour: C,
     types: ['sz_w3d_effects'],
@@ -973,6 +1063,8 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_gallery_create: { X: numShadow(0), Z: numShadow(-30) },
   sz_w3d_race_create: { X: numShadow(0), Z: numShadow(0), DEG: numShadow(0), LAPS: numShadow(1) },
   sz_w3d_race_checkpoint: { X: numShadow(20), Z: numShadow(20), DEG: numShadow(0) },
+  sz_w3d_bowling_create: { X: numShadow(0), Z: numShadow(25), DEG: numShadow(0) },
+  sz_w3d_stack: { N: numShadow(5), X: numShadow(15), Z: numShadow(0) },
 }
 
 /**
