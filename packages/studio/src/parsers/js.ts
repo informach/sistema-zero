@@ -280,6 +280,33 @@ function mapStatement(
       return mapClass(node, source, ctx)
     case 'FunctionDeclaration':
       return mapFunction(node, source, ctx)
+    case 'ImportDeclaration': {
+      const specs = node.specifiers ?? []
+      const mod = node.source?.type === 'StringLiteral' ? (node.source.value as string) : null
+      if (!mod) return asRaw(source, node)
+      // `import * as NOME from 'modulo'` → importStar (bloco de lib 3D).
+      if (specs.length === 1 && specs[0]?.type === 'ImportNamespaceSpecifier') {
+        const name = identifierName(specs[0].local)
+        if (name) return { type: 'importStar', name, module: mod }
+      }
+      // `import { A, B } from 'modulo'` (SEM alias/default) → importNamed. É o
+      // `import { GLTFLoader } from 'three/addons/…'` da Fase 2. Alias (`X as Y`)
+      // ou default junto seguem como código avançado.
+      if (
+        specs.length > 0 &&
+        specs.every(
+          (s: Node) =>
+            s?.type === 'ImportSpecifier' &&
+            s.imported?.type === 'Identifier' &&
+            s.local?.type === 'Identifier' &&
+            s.imported.name === s.local.name,
+        )
+      ) {
+        const names = specs.map((s: Node) => s.imported.name as string)
+        return { type: 'importNamed', names, module: mod }
+      }
+      return asRaw(source, node)
+    }
     case 'ReturnStatement': {
       // `return;` (saída antecipada) → return sem valor (sz_js_return_void).
       if (!node.argument) return { type: 'return' }
@@ -706,24 +733,27 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   if (attr) {
     return [{ type: 'getAttribute', ...attr, varName: name }]
   }
-  // newInstance: const x = new Classe(args). Date/Image têm tratamento próprio.
-  if (
-    init?.type === 'NewExpression' &&
-    init.callee?.type === 'Identifier' &&
-    init.callee.name !== 'Date' &&
-    init.callee.name !== 'Image'
-  ) {
-    const args = (init.arguments ?? []).map((a: Node) => toExpr(a, ctx))
-    if (args.every(isSimpleValue)) {
-      ctx.instanceVars.add(name)
-      return [
-        {
-          type: 'newInstance',
-          varName: name,
-          className: init.callee.name,
-          args: args as JSExpr[],
-        },
-      ]
+  // newInstance: const x = new Classe(args) OU const x = new THREE.Classe(args)
+  // (construtor de biblioteca importada). Date/Image têm tratamento próprio.
+  if (init?.type === 'NewExpression') {
+    const ctor = namespacedCtor(init.callee)
+    if (
+      ctor &&
+      !(ctor.namespace === undefined && (ctor.className === 'Date' || ctor.className === 'Image'))
+    ) {
+      const args = (init.arguments ?? []).map((a: Node) => toExpr(a, ctx))
+      if (args.every(isSimpleValue)) {
+        ctx.instanceVars.add(name)
+        return [
+          {
+            type: 'newInstance',
+            varName: name,
+            className: ctor.className,
+            args: args as JSExpr[],
+            ...(ctor.namespace ? { namespace: ctor.namespace } : {}),
+          },
+        ]
+      }
     }
     return null
   }
@@ -985,6 +1015,60 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       return { type: 'alert', value: { type: 'var', name: arg.name } }
     }
     return asRaw(source, node)
+  }
+
+  // Canvas 3D: `document.body.appendChild(renderer.domElement);` → mountRenderer.
+  // (`document.body` é global denylistado, então NÃO cai no memberCall genérico;
+  // sem este matcher vira "código avançado". Só a forma exata `<var>.domElement`.)
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    !expr.callee.computed &&
+    expr.callee.property?.name === 'appendChild' &&
+    expr.callee.object?.type === 'MemberExpression' &&
+    !expr.callee.object.computed &&
+    expr.callee.object.object?.type === 'Identifier' &&
+    expr.callee.object.object.name === 'document' &&
+    expr.callee.object.property?.name === 'body' &&
+    expr.arguments?.length === 1
+  ) {
+    const arg = expr.arguments[0]
+    if (
+      arg?.type === 'MemberExpression' &&
+      !arg.computed &&
+      arg.object?.type === 'Identifier' &&
+      arg.property?.name === 'domElement'
+    ) {
+      return { type: 'mountRenderer', renderer: arg.object.name as string }
+    }
+  }
+
+  // Canvas 3D: `loader.load(url, (modelo) => { … });` → loaderLoad (carregar um
+  // recurso async: modelo GLTF, textura, HDR…). Forma exata: 2 args, o 2º um
+  // arrow/função com 1 parâmetro. (GLTFLoader.load com onProgress/onError — 4
+  // args — segue como código avançado.)
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    !expr.callee.computed &&
+    expr.callee.object?.type === 'Identifier' &&
+    expr.callee.property?.name === 'load' &&
+    expr.arguments?.length === 2 &&
+    (expr.arguments[1]?.type === 'ArrowFunctionExpression' ||
+      expr.arguments[1]?.type === 'FunctionExpression')
+  ) {
+    const url = toExpr(expr.arguments[0], ctx)
+    const fn = expr.arguments[1]
+    const params = fn.params ?? []
+    if (isSimpleValue(url) && params.length === 1 && params[0]?.type === 'Identifier') {
+      return {
+        type: 'loaderLoad',
+        loaderVar: expr.callee.object.name as string,
+        url: url as JSExpr,
+        param: params[0].name as string,
+        body: bodyOfFn(fn, source, ctx),
+      }
+    }
   }
 
   if (expr?.type === 'AssignmentExpression' && expr.operator === '=') {
@@ -1836,6 +1920,25 @@ function tryMatchMethodCall(expr: Node, ctx: ParseCtx): JSStatement | null {
 /** Nome de um `Identifier`; senão null. */
 function identifierName(node: Node): string | null {
   return node?.type === 'Identifier' ? (node.name as string) : null
+}
+
+/**
+ * O construtor de um `new`: `new Classe()` → `{ className }` (classe do aluno)
+ * ou `new THREE.Classe()` → `{ namespace, className }` (biblioteca importada, um
+ * nível). `new a.b.C()` (namespace aninhado), `new arr[i]()` etc. → null (fora do
+ * escopo: caem em rawJS). Único ponto que decide "é um new capturável".
+ */
+function namespacedCtor(callee: Node): { namespace?: string; className: string } | null {
+  if (callee?.type === 'Identifier') return { className: callee.name as string }
+  if (
+    callee?.type === 'MemberExpression' &&
+    !callee.computed &&
+    callee.object?.type === 'Identifier' &&
+    callee.property?.type === 'Identifier'
+  ) {
+    return { namespace: callee.object.name as string, className: callee.property.name as string }
+  }
+  return null
 }
 
 /** `() => x` (arrow com corpo de identificador) → 'x'; senão null. */
@@ -8998,10 +9101,9 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     // `const x = new C(...)` também não passa por este caminho (mapDeclarator
     // resolve ANTES como o statement `newInstance`).
     case 'NewExpression': {
-      if (node.callee?.type !== 'Identifier') return null
       // `new Promise((resolve) => { ... })` → newPromise. O corpo é parseado
       // (o `resolve()` lá dentro vira callFunction). Arrow/função com 0-1 param.
-      if (node.callee.name === 'Promise' && ctx) {
+      if (node.callee?.type === 'Identifier' && node.callee.name === 'Promise' && ctx) {
         const arg = node.arguments?.[0]
         if (
           node.arguments?.length === 1 &&
@@ -9017,10 +9119,24 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
         }
         return null
       }
-      if (node.callee.name === 'Date' || node.callee.name === 'Image') return null
+      // `new Classe(args)` (aluno) ou `new THREE.Classe(args)` (biblioteca).
+      // Date/Image ficam de fora (fluxos próprios: agora/newImage).
+      const ctor = namespacedCtor(node.callee)
+      if (!ctor) return null
+      if (
+        ctor.namespace === undefined &&
+        (ctor.className === 'Date' || ctor.className === 'Image')
+      ) {
+        return null
+      }
       const args = (node.arguments ?? []).map((a: Node) => toExpr(a, ctx))
       if (!args.every(isSimpleValue)) return null
-      return { type: 'newExpr', className: node.callee.name, args: args as JSExpr[] }
+      return {
+        type: 'newExpr',
+        className: ctor.className,
+        args: args as JSExpr[],
+        ...(ctor.namespace ? { namespace: ctor.namespace } : {}),
+      }
     }
     // `objeto?.prop` — leitura opcional (não estoura se o objeto for null). Só o
     // caso GERAL (sem os matchers específicos de MemberExpression, que são para

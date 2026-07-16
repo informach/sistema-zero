@@ -8,6 +8,7 @@ import {
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc } from './bootstrap'
+import { withCoreImports } from './coreImports'
 
 export interface RenderProjectOptions {
   /** Origem do host (targetOrigin dos interceptors — defesa em profundidade). */
@@ -65,6 +66,8 @@ export function renderProjectToPreviewDoc(
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
     loopBudgetMs: opts.loopBudgetMs,
-    extensionImports,
+    // + os imports do NÚCLEO (three.js) se o código os usa — lazy: 2D devolve o
+    // mesmo objeto, sem importmap.
+    extensionImports: withCoreImports(extensionImports, files['script.js']),
   })
 }

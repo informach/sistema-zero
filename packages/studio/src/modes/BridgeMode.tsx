@@ -351,12 +351,14 @@ export function BridgeMode(): JSX.Element {
         markSynced()
         return
       }
-      // Modelo CONTAINER: o reverse-parse reconstrói os 3 frames (🧱 Estrutura /
+      // Modelo CONTAINER: o reverse-parse reconstrói os frames (🧱 Estrutura /
       // 🎨 Aparência / ⚙️ Comportamento) a partir da IR. Blocos soltos (rascunho)
       // não estão na IR, então não voltam — esperado ao sincronizar pelo código.
+      // `omitEmptyAuxFrames`: HTML/CSS vazios NÃO ressuscitam num projeto só-JS
+      // (ex.: Canvas 3D) a cada ida-e-volta pela Ponte.
       applyProjectStateRef.current({
         ir: result.ir,
-        blocksState: buildWorkspaceStateFromIR(result.ir),
+        blocksState: buildWorkspaceStateFromIR(result.ir, { omitEmptyAuxFrames: true }),
       })
       markSynced()
     }
@@ -398,7 +400,7 @@ export function BridgeMode(): JSX.Element {
     if (blocksHydration === 'pending') return
     if (!isBlocksStateEmpty(blocksState)) return
     if (ir.html.length === 0 && ir.css.length === 0 && ir.js.length === 0) return
-    applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir) })
+    applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, applyProjectState])
 
   // Centraliza erros de sintaxe no Console — evitamos painel próprio para

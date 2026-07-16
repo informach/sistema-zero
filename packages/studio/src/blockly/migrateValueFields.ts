@@ -416,6 +416,18 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g3k_add_button: { LABEL: 'text' },
   sz_g3k_hud_text: { TEXT: 'text' },
   sz_g3k_play_tone: { FREQ: 'number', MS: 'number' },
+  // Canvas 3D — facilitadores do three.js (soquetes nascidos input_value: entradas
+  // inertes na migração, ativas na restauração de sombra + shouldEmitAsShadow).
+  sz_t3d_set_position: { X: 'number', Y: 'number', Z: 'number' },
+  sz_t3d_set_rotation: { X: 'number', Y: 'number', Z: 'number' },
+  sz_t3d_rotate_axis: { DELTA: 'number' },
+  sz_t3d_set_scale: { X: 'number', Y: 'number', Z: 'number' },
+  sz_t3d_look_at: { X: 'number', Y: 'number', Z: 'number' },
+  sz_t3d_set_color: { COLOR: 'color' },
+  sz_t3d_set_background: { COLOR: 'color' },
+  sz_t3d_set_intensity: { N: 'number' },
+  sz_t3d_renderer_size: { W: 'number', H: 'number' },
+  sz_t3d_load_model: { URL: 'text' },
 }
 
 interface BlockNode {

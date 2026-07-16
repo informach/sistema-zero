@@ -32,6 +32,9 @@ describe('isSupportedBlocklyBlockExtraState — cobertura por tipo', () => {
     ['sz_js_call_function', { items: 1 }],
     ['sz_js_call_method', { items: 3 }],
     ['sz_js_method_on', { items: 1 }],
+    // Canvas 3D: `new THREE.X(args)` (statement e valor) — mesmo mutator de itens.
+    ['sz_t3d_new_var', { items: 4 }],
+    ['sz_t3d_new', { items: 3 }],
     // Params (mutator de parâmetros nomeados): construtor, método, função.
     ['sz_js_constructor', { params: [{ name: 'a', id: 'p0' }] }],
     ['sz_js_class_method', { params: [{ name: 'a', id: 'p0' }] }],

@@ -158,7 +158,7 @@ API global injetada como window.SZGameKit:
   no onTalk do chefe → rpgBattleStart; no rpgOnBattleEnd → "se ganhei:
   setState('vitoria') senão endGame()". Recomeçar o jogo zera flags/itens e
   volta ao 1º mapa.
-- 🎬 Kit RPG: cenas (& NPCs vivos — Pizza Legends): rpgCutscene(fn) grava o corpo (cada
+- 🎬 cenas (& NPCs vivos — Pizza Legends): rpgCutscene(fn) grava o corpo (cada
   passo ENFILEIRA) e toca a fila com esperas — o herói fica TRAVADO até acabar.
   Passos: rpgWait(seg), rpgSay, rpgNpcWalkTo("npc", cx, cy) (anda célula a
   célula; a cena espera chegar), rpgFace("npc", "down"|"up"|"left"|"right"),
@@ -176,10 +176,10 @@ API global injetada como window.SZGameKit:
   por escolha — árvore de diálogo/loja/sim-não/quiz. Padrão: no rpgOnTalk do
   lojista → rpgMenu("Comprar?", () => { rpgOption("Sim", () => {...});
   rpgOption("Não", () => {}); }).
-- 💾 Kit RPG: salvar — rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/
+- 💾 salvar: rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/
   célula/atributos/poções/especial no localStorage (sobrevive a reabrir).
   Continuar: "se rpgHasSave(): rpgLoad()".
-- ⚔️ Kit RPG: batalha (a RICA — progressão, TurnCycle/Combatant do Pizza, 1v1): rpgBattleStats(
+- ⚔️ batalha (a RICA — progressão, TurnCycle/Combatant do Pizza, 1v1): rpgBattleStats(
   vida, força, DEFESA) 1x no começo (nível 1); rpgBattleStart(nome, vida, força,
   defesa) — dano = força ± 20% − defesa/2; menu Atacar/Especial/Item/Defender/
   Fugir. rpgSetSpecial(nome, dano, custo) = golpe que gasta ENERGIA (começa cheia,

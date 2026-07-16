@@ -75,14 +75,12 @@ describe('BlocksMode', () => {
 
     await waitFor(() => {
       const state = useProjectStore.getState()
-      // Modelo CONTAINER: a IR é embrulhada nos 3 frames; o console.log vai DENTRO
-      // do ⚙️ Comportamento.
+      // Projeto só-JS: as áreas de HTML/CSS vazias são OMITIDAS (omitEmptyAuxFrames)
+      // — só o ⚙️ Comportamento, com o console.log dentro. Sem frames vazios.
       expect(state.project?.blocksState).toMatchObject({
         blocks: {
           languageVersion: 0,
           blocks: [
-            { type: 'sz_frame_structure' },
-            { type: 'sz_frame_appearance' },
             {
               type: 'sz_frame_behavior',
               inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
@@ -188,12 +186,11 @@ describe('BlocksMode', () => {
 
     await waitFor(() => {
       const state = useProjectStore.getState()
-      // Blocos derivados do código digitado (o console.log entra no ⚙️).
+      // Blocos derivados do código digitado (só-JS → só o ⚙️ Comportamento; as
+      // áreas de HTML/CSS vazias não ressuscitam).
       expect(state.project?.blocksState).toMatchObject({
         blocks: {
           blocks: [
-            { type: 'sz_frame_structure' },
-            { type: 'sz_frame_appearance' },
             {
               type: 'sz_frame_behavior',
               inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
@@ -231,8 +228,6 @@ describe('BlocksMode', () => {
       expect(state.project?.blocksState).toMatchObject({
         blocks: {
           blocks: [
-            { type: 'sz_frame_structure' },
-            { type: 'sz_frame_appearance' },
             {
               type: 'sz_frame_behavior',
               inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },

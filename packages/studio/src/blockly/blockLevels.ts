@@ -369,6 +369,9 @@ export function resolveBlockLevel(type: string): BlockLevel {
   // Jogo 3D Avançado: TODOS os blocos são AVANÇADOS (decisão de produto —
   // é a base de engine profissional: FSM por entidade, pooling, grade espacial).
   if (type.startsWith('sz_g3k_')) return 'avancado'
+  // Canvas 3D (three.js cru, núcleo): TODOS avançados — é programar a lib de
+  // verdade na unha (construtores, cadeias de método, matemática de vetores).
+  if (type.startsWith('sz_t3d_')) return 'avancado'
   return 'iniciante'
 }
 

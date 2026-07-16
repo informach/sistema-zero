@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
 import { SZIRSchema } from '#ir'
-import { CORE_EXAMPLES, gorilasNaMaoExample, invadersNaMaoExample } from './core'
+import {
+  CORE_EXAMPLES,
+  defesaDaTorreNaMaoExample,
+  dueloNaMaoExample,
+  gorilasNaMaoExample,
+  invadersNaMaoExample,
+  plataformaVerticalNaMaoExample,
+  portasDoCasteloNaMaoExample,
+} from './core'
 
 function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
   if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
@@ -85,5 +93,143 @@ describe('CORE_EXAMPLES — invadersNaMaoExample (classes 100% núcleo)', () => 
     expect((asset?.dataUrl.length ?? 0) < 2_000).toBe(true)
     const css = JSON.stringify(invadersNaMaoExample.ir.css)
     expect(css).toContain("url('background.png')")
+  })
+})
+
+describe('CORE_EXAMPLES — plataformaVerticalNaMaoExample (plataforma 100% núcleo)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(plataformaVerticalNaMaoExample)
+    expect(plataformaVerticalNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRSchema.safeParse(plataformaVerticalNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(plataformaVerticalNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa o vocabulário de física/câmera do núcleo (sem asset)', () => {
+    const types = collectTypes(plataformaVerticalNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Block/Platform/Player
+      'funcDecl', // overlap (colisão AABB) + updateCamera + animate
+      'forRange', // varre blocos/plataformas
+      'requestFrame', // o laço de quadro na mão
+      'canvasSetup',
+      'canvasFillRect', // herói e blocos são retângulos (asset-free)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(plataformaVerticalNaMaoExample.assets ?? []).toEqual([])
+    // a câmera na mão (scale + translate) sobrevive no código gerado
+    const code = compileStatements(plataformaVerticalNaMaoExample.ir.js, 0)
+    expect(code).toContain('ctx.scale(scale, scale)')
+    expect(code).toContain('ctx.translate(0 - camera.x, 0 - camera.y)')
+  })
+})
+
+describe('CORE_EXAMPLES — portasDoCasteloNaMaoExample (platformer + passagem de fase)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(portasDoCasteloNaMaoExample)
+    expect(portasDoCasteloNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRSchema.safeParse(portasDoCasteloNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(portasDoCasteloNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa a física + o fade de passagem de fase na mão (globalAlpha), sem asset', () => {
+    const types = collectTypes(portasDoCasteloNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Block/Player
+      'funcDecl', // overlap + loadLevel + animate
+      'requestFrame',
+      'canvasSetup',
+      'canvasFillRect',
+      'canvasGlobalAlpha', // o fade preto por cima, na mão (no lugar do gsap)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    expect(portasDoCasteloNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(portasDoCasteloNaMaoExample.ir.js, 0)
+    expect(code).toContain('ctx.globalAlpha = fade')
+    expect(code).toContain('loadLevel(nextLevel)')
+  })
+})
+
+describe('CORE_EXAMPLES — defesaDaTorreNaMaoExample (tower defense na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(defesaDaTorreNaMaoExample)
+    expect(defesaDaTorreNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRSchema.safeParse(defesaDaTorreNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(defesaDaTorreNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa a mira por distância + o caminho desenhado, sem asset', () => {
+    const types = collectTypes(defesaDaTorreNaMaoExample.ir)
+    for (const expected of [
+      'classDecl',
+      'funcDecl',
+      'requestFrame',
+      'canvasSetup',
+      'canvasStroke',
+      'event',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    expect(defesaDaTorreNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(defesaDaTorreNaMaoExample.ir.js, 0)
+    expect(code).toContain('Math.hypot(ax - bx, ay - by)')
+    expect(code).toContain('Math.atan2(target.y - this.y, target.x - this.x)')
+  })
+})
+
+describe('CORE_EXAMPLES — dueloNaMaoExample (luta 2 jogadores na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(dueloNaMaoExample)
+    expect(dueloNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRSchema.safeParse(dueloNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(dueloNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa a caixa de golpe + barras de vida no canvas, sem asset', () => {
+    const types = collectTypes(dueloNaMaoExample.ir)
+    for (const expected of [
+      'classDecl',
+      'funcDecl',
+      'requestFrame',
+      'canvasSetup',
+      'canvasFillRect',
+      'canvasFillText',
+      'event',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    expect(dueloNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(dueloNaMaoExample.ir.js, 0)
+    expect(code).toContain('p2.health = p2.health - 15')
   })
 })

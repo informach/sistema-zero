@@ -430,8 +430,15 @@ export type JSExpr =
   | (JSExprCommon & { type: 'memberCallExpr'; object: JSExpr; method: string; args: JSExpr[] })
   // Instanciar classe em forma de VALOR: new Classe(args) numa tomada (argumento de
   // push/método, valor de propriedade…). `const x = new C()` continua sendo o
-  // statement `newInstance`.
-  | (JSExprCommon & { type: 'newExpr'; className: string; args: JSExpr[] })
+  // statement `newInstance`. `namespace` = construtor de uma biblioteca importada
+  // (`new THREE.Scene()` → namespace 'THREE', className 'Scene'); ausente = classe
+  // do aluno (resolvida por getClassReference).
+  | (JSExprCommon & {
+      type: 'newExpr'
+      className: string
+      args: JSExpr[]
+      namespace?: string
+    })
   // Object.keys/values/entries(obj) — a lista de chaves/valores/pares de um objeto.
   | (JSExprCommon & { type: 'objectOp'; op: 'keys' | 'values' | 'entries'; object: JSExpr })
   // Imagem do projeto (asset): gera a FONTE resolvida (dataURL do projeto, com fallback pro nome).
@@ -983,6 +990,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       type: z.literal('newExpr'),
       className: irText(),
       args: z.array(JSExprSchema),
+      namespace: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -1362,6 +1370,12 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'break' })
   // Pula para a próxima volta do laço (`continue;`).
   | (JSStatementCommon & { type: 'continue' })
+  // `import * as NOME from 'modulo'` — importa uma biblioteca inteira sob um nome
+  // (ex.: `import * as THREE from 'three'`). O gerador eleva ao TOPO do arquivo.
+  | (JSStatementCommon & { type: 'importStar'; name: string; module: string })
+  // Import nomeado (`import { GLTFLoader } from 'three/addons/…'`), sem alias.
+  // Também elevado ao topo. `names` = os identificadores importados.
+  | (JSStatementCommon & { type: 'importNamed'; names: string[]; module: string })
   // Itera os itens de uma lista (`for (const item of lista) { … }`). Distinto de
   // `forEach` (sem índice) — preserva a escolha do aluno no round-trip.
   | (JSStatementCommon & {
@@ -3816,6 +3830,8 @@ export type JSStatement =
       className: string
       /** Argumentos passados ao construtor (`new Classe(args)`). */
       args?: JSExpr[]
+      /** Namespace de biblioteca (`const s = new THREE.Scene()` → 'THREE'). */
+      namespace?: string
     })
   | (JSStatementCommon & {
       type: 'callMethod'
@@ -3852,6 +3868,15 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'imageOnError'; target: JSExpr; body: JSStatement[] })
   // Pede o próximo quadro rodando um corpo inline com o tempo (`requestAnimationFrame((t) => {…})`).
   | (JSStatementCommon & { type: 'requestFrameDo'; param?: string; body: JSStatement[] })
+  // Canvas 3D: carregar um recurso async (`loader.load(url, (modelo) => { … })`).
+  // `loaderVar` = a var do carregador; `param` = o nome do recurso no corpo.
+  | (JSStatementCommon & {
+      type: 'loaderLoad'
+      loaderVar: string
+      url: JSExpr
+      param: string
+      body: JSStatement[]
+    })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -3863,6 +3888,9 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'exprStatement'; value: JSExpr })
   // Pede o próximo quadro chamando uma função (`requestAnimationFrame(nome);`).
   | (JSStatementCommon & { type: 'requestFrame'; fn: string })
+  // Canvas 3D: monta a tela do renderizador no corpo da página
+  // (`document.body.appendChild(renderer.domElement);`). `renderer` = nome da var.
+  | (JSStatementCommon & { type: 'mountRenderer'; renderer: string })
   // Retorno de um método (`return v;`) ou saída antecipada (`return;`).
   | (JSStatementCommon & { type: 'return'; value?: JSExpr })
   // Função nomeada de topo (`function nome(params) { ... }`).
@@ -3932,6 +3960,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('break'), ...idField }),
     z.object({ type: z.literal('continue'), ...idField }),
+    z.object({ type: z.literal('importStar'), name: irText(), module: irText(), ...idField }),
+    z.object({
+      type: z.literal('importNamed'),
+      names: z.array(irText()),
+      module: irText(),
+      ...idField,
+    }),
     z.object({
       type: z.literal('forOf'),
       itemName: irText(),
@@ -7497,6 +7532,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       varName: irText(),
       className: irText(),
       args: z.array(JSExprSchema).optional(),
+      namespace: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -7577,6 +7613,14 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('loaderLoad'),
+      loaderVar: irText(),
+      url: JSExprSchema,
+      param: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('memberCall'),
       object: JSExprSchema,
       method: irText(),
@@ -7602,6 +7646,11 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('requestFrame'),
       fn: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('mountRenderer'),
+      renderer: irText(),
       ...idField,
     }),
     z.object({

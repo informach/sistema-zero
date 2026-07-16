@@ -194,6 +194,67 @@ export function buildAssetsRuntime(
     try { window.__SZGAME_ASSETS_3D = MODELS3D; } catch (e2) {}
   }`
       : ''
+  // Resolvedor LOCAL de assets do projeto para os loaders que usam fetch
+  // (GLTFLoader→.glb, RGBELoader→.hdr passam por THREE.FileLoader→fetch). É a
+  // ponte da categoria Canvas 3D: `carregador.load('modelo.glb', …)` — o código
+  // REAL do three.js, idêntico ao que roda no deploy — não rodava no preview
+  // porque a CSP `connect-src 'none'` barra todo fetch. Este shim NÃO abre a rede:
+  // só devolve os bytes de um asset JÁ embutido na página (o manifesto 3D/imagens),
+  // casando pelo NOME do arquivo pedido; QUALQUER outra URL cai no fetch anterior
+  // (bloqueado pelo permissionGuard → throw). Sem vetor de rede/exfil: lê dado que
+  // a página já tem e não envia nada. Instalado DEPOIS do permissionGuard (ordem
+  // do bootstrap), então envolve o fetch já bloqueado. Só entra quando há 3D.
+  const assetFetchBlock =
+    Object.keys(safe3D).length > 0
+      ? `
+  (function () {
+    var stripExt = function (n) { return n.replace(/\\.[^.]+$/, ''); };
+    var lookup = function (u) {
+      var s = typeof u === 'string' ? u : (u && u.url) || '';
+      if (!s) return null;
+      var name;
+      try { name = decodeURIComponent(s.split('?')[0].split('#')[0].split('/').pop() || ''); }
+      catch (e) { name = ''; }
+      if (!name) return null;
+      var m3d = window.__SZGAME_ASSETS_3D || {};
+      var bare = stripExt(name);
+      for (var k in m3d) {
+        if (!Object.prototype.hasOwnProperty.call(m3d, k)) continue;
+        var e3 = m3d[k];
+        if (e3 && e3.dataUrl && (k === name || k === bare || e3.fileName === name)) return e3.dataUrl;
+      }
+      var imgs = window.__SZGAME_ASSETS || {};
+      if (typeof imgs[name] === 'string') return imgs[name];
+      if (typeof imgs[bare] === 'string') return imgs[bare];
+      return null;
+    };
+    var toResponse = function (dataUrl) {
+      var comma = dataUrl.indexOf(',');
+      var meta = comma >= 0 ? dataUrl.slice(5, comma) : '';
+      var mime = meta.split(';')[0] || 'application/octet-stream';
+      var payload = comma >= 0 ? dataUrl.slice(comma + 1) : '';
+      var body;
+      if (/;base64/i.test(meta)) {
+        var bin = atob(payload);
+        var arr = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        body = arr;
+      } else {
+        try { body = decodeURIComponent(payload); } catch (e) { body = payload; }
+      }
+      return new Response(body, { status: 200, headers: { 'Content-Type': mime } });
+    };
+    var prevFetch = window.fetch;
+    try {
+      window.fetch = function (input) {
+        var dataUrl = lookup(input);
+        if (dataUrl) return Promise.resolve(toResponse(dataUrl));
+        if (prevFetch) return prevFetch.apply(this, arguments);
+        return Promise.reject(new Error('Acesso à rede bloqueado neste preview (fetch).'));
+      };
+    } catch (e) {}
+  })();`
+      : ''
   return `(function () {
   var ASSETS;
   try { ASSETS = JSON.parse(${seedLiteral}); } catch (e) { ASSETS = {}; }
@@ -201,6 +262,6 @@ export function buildAssetsRuntime(
     Object.defineProperty(window, '__SZGAME_ASSETS', { value: ASSETS, writable: false, configurable: true });
   } catch (e) {
     try { window.__SZGAME_ASSETS = ASSETS; } catch (e2) {}
-  }${metaBlock}${soundsBlock}${models3dBlock}
+  }${metaBlock}${soundsBlock}${models3dBlock}${assetFetchBlock}
 })();`
 }

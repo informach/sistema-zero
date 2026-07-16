@@ -11,6 +11,8 @@ import {
   ADVANCED_BLOCKS,
   CANVAS_BLOCKS,
   CANVAS_GROUPS,
+  CANVAS3D_BLOCKS,
+  CANVAS3D_GROUPS,
   CSS_BLOCKS,
   CSS_GROUPS,
   DOM_BLOCKS,
@@ -405,6 +407,9 @@ export function buildCoreToolbox(
 
   // Canvas: categoria PRÓPRIA (fora da Programação) — desenho, será incrementada.
   pushGrouped('Canvas', CATEGORY_COLORS.canvas, CANVAS_BLOCKS, CANVAS_GROUPS)
+  // Canvas 3D: three.js CRU (não é extensão) — a lib de verdade, na unha. Toda
+  // avançada (CORE_CATEGORY_LEVELS) → só aparece p/ quem vê blocos avançados.
+  pushGrouped('Canvas 3D', CATEGORY_COLORS.canvas3d, CANVAS3D_BLOCKS, CANVAS3D_GROUPS)
   // Extensões: em modo restritivo (lista de blocos), filtra cada categoria p/ só os blocos
   // LISTADOS; senão filtra por NÍVEL por-bloco (o caller já gateou a categoria por `minLevel`,
   // mas dentro dela cada bloco respeita o próprio nível). Sub-categoria vazia some nos dois.

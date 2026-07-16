@@ -84,7 +84,11 @@ export function BlocksMode(): JSX.Element {
         // código, então nenhuma edição avança a época durante o parse.
         const epoch = state.bridgeCodeEditEpoch
         const derived = parseProjectFiles(current.files)
-        state.applyProjectState({ ir: derived, blocksState: buildWorkspaceStateFromIR(derived) })
+        state.applyProjectState({
+          ir: derived,
+          // HTML/CSS vazios não ressuscitam num projeto só-JS (ver BridgeMode).
+          blocksState: buildWorkspaceStateFromIR(derived, { omitEmptyAuxFrames: true }),
+        })
         state.markBridgeBlocksSynced(epoch)
       })
       .catch((err) => {
@@ -111,7 +115,7 @@ export function BlocksMode(): JSX.Element {
     if (filesAheadOfBlocks) return
     if (!isBlocksStateEmpty(blocksState)) return
     if (ir.html.length === 0 && ir.css.length === 0 && ir.js.length === 0) return
-    applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir) })
+    applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, filesAheadOfBlocks, applyProjectState])
 
   // REDE DE SEGURANÇA da aula só-Blocos (e recuperação de partição
@@ -153,7 +157,10 @@ export function BlocksMode(): JSX.Element {
         if (state.blocksHydration === 'pending' || state.blocksHydration === 'restored') return
         const derived = parseProjectFiles(current.files)
         if (derived.html.length === 0 && derived.css.length === 0 && derived.js.length === 0) return
-        state.hydrateProjectState({ ir: derived, blocksState: buildWorkspaceStateFromIR(derived) })
+        state.hydrateProjectState({
+          ir: derived,
+          blocksState: buildWorkspaceStateFromIR(derived, { omitEmptyAuxFrames: true }),
+        })
       })
       .catch((err) => {
         console.warn('[sz] não foi possível derivar os blocos do código:', err)

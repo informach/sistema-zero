@@ -354,6 +354,17 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_text_transform',
   'sz_css_width',
   'sz_css_width_percent',
+  // 🎮 Posição & jogo (propriedades que os jogos mais usam)
+  'sz_css_position',
+  'sz_css_offset',
+  'sz_css_display',
+  'sz_css_overflow',
+  'sz_css_cursor',
+  'sz_css_image_rendering',
+  'sz_css_object_fit',
+  'sz_css_opacity',
+  'sz_css_z_index',
+  'sz_css_background_image',
   // Blocos-CONTAINER (frames): 🧱 Estrutura / 🎨 Aparência / ⚙️ Comportamento.
   'sz_frame_appearance',
   'sz_frame_behavior',
@@ -533,6 +544,27 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_get_prop',
   'sz_val_call_method',
   'sz_val_new',
+  'sz_t3d_import',
+  'sz_t3d_import_named',
+  'sz_t3d_new_var',
+  'sz_t3d_new',
+  'sz_t3d_load_model',
+  // Canvas 3D — facilitadores (rótulo amigável sobre memberCall/memberSet).
+  'sz_t3d_set_position',
+  'sz_t3d_set_rotation',
+  'sz_t3d_rotate_axis',
+  'sz_t3d_set_scale',
+  'sz_t3d_look_at',
+  'sz_t3d_set_visible',
+  'sz_t3d_add_to',
+  'sz_t3d_set_color',
+  'sz_t3d_set_background',
+  'sz_t3d_set_shadow',
+  'sz_t3d_set_intensity',
+  'sz_t3d_renderer_size',
+  'sz_t3d_enable_shadows',
+  'sz_t3d_mount_renderer',
+  'sz_t3d_render',
   'sz_val_array_filter',
   'sz_val_object',
   'sz_val_object_op',
@@ -2207,6 +2239,12 @@ function isSupportedBlocklyBlockExtraState(blockType: string, raw: unknown): boo
     case 'sz_js_method_on':
     case 'sz_js_super_ctor':
     case 'sz_js_super_method':
+    // Canvas 3D — `new THREE.X(args)` nas duas formas (statement e valor). Usam
+    // o mesmo `sz_args_mutator` (`{ items: N }`); sem estes casos o sanitizer
+    // tudo-ou-nada derrubava a partição inteira quando o projeto tinha um `new
+    // THREE.…` (o layout dos blocos caía para os defaults). Pego no QA em browser.
+    case 'sz_t3d_new_var':
+    case 'sz_t3d_new':
       return isSupportedItemsExtraState(raw)
     // Blocos com mutator de parâmetros (`{ params: [...] }`): construtor de
     // classe, método de classe e declaração de função (esta última estava

@@ -56,6 +56,76 @@ describe('buildAssetsRuntime', () => {
   })
 })
 
+/**
+ * Resolvedor LOCAL de fetch de asset (Canvas 3D Fase 2b): faz `GLTFLoader.load(
+ * 'modelo.glb')` — que passa por THREE.FileLoader→fetch — funcionar no preview
+ * servindo os bytes do asset EMBUTIDO, sem abrir a rede (a CSP `connect-src 'none'`
+ * barra o fetch de verdade). Só entra quando há modelo 3D; toda URL não-asset cai
+ * no fetch anterior (bloqueado). ⚠️ é STRING pura injetada no iframe — o
+ * comportamento fino vale em BROWSER real; aqui rodamos o IIFE num window falso.
+ */
+// GLB mínimo válido p/ o clamp: prefixo `data:model/gltf-binary;base64,` + "glTF".
+const GLB = 'data:model/gltf-binary;base64,Z2xURgIAAAA'
+
+function runInWindow(runtime: string, win: Record<string, unknown>): void {
+  // eslint-disable-next-line no-new-func
+  new Function('window', runtime)(win)
+}
+
+describe('assetsBridge — resolvedor de fetch de asset (Canvas 3D 3D)', () => {
+  it('serve o modelo 3D por NOME (exato, sem-extensão e por fileName), sem rede', async () => {
+    const runtime = buildAssetsRuntime(
+      {},
+      {},
+      {},
+      {
+        modelo: { kind: 'model3d', dataUrl: GLB, fileName: 'meu-modelo.glb' },
+      },
+    )
+    expect(runtime).toContain('window.fetch =')
+    const blocked = () => {
+      throw new Error('rede bloqueada')
+    }
+    const win: Record<string, unknown> = { fetch: blocked }
+    runInWindow(runtime, win)
+    const fetchFn = win.fetch as (u: string) => Promise<Response>
+    // por nome exato da chave do manifesto
+    const r1 = await fetchFn('modelo')
+    expect(r1.status).toBe(200)
+    const bytes = new Uint8Array(await r1.arrayBuffer())
+    expect(Array.from(bytes.slice(0, 4))).toEqual([0x67, 0x6c, 0x54, 0x46]) // "glTF"
+    // com extensão (loader.load('modelo.glb')) → tira a extensão e casa a chave
+    expect((await fetchFn('modelo.glb')).status).toBe(200)
+    // pelo nome ORIGINAL do arquivo
+    expect((await fetchFn('meu-modelo.glb')).status).toBe(200)
+    // caminho resolvido (about:srcdoc/modelo.glb) → casa pelo último segmento
+    expect((await fetchFn('about:srcdoc/modelo.glb')).status).toBe(200)
+  })
+
+  it('URL que NÃO é asset delega ao fetch anterior (rede segue bloqueada)', () => {
+    const runtime = buildAssetsRuntime(
+      {},
+      {},
+      {},
+      {
+        modelo: { kind: 'model3d', dataUrl: GLB, fileName: 'modelo.glb' },
+      },
+    )
+    const blocked = () => {
+      throw new Error('rede bloqueada')
+    }
+    const win: Record<string, unknown> = { fetch: blocked }
+    runInWindow(runtime, win)
+    const fetchFn = win.fetch as (u: string) => Promise<Response>
+    expect(() => fetchFn('https://evil.example/roubar')).toThrow('rede bloqueada')
+  })
+
+  it('NÃO instala o resolvedor quando não há asset 3D (só imagens usam img.src)', () => {
+    const runtime = buildAssetsRuntime({ heroi: PNG })
+    expect(runtime).not.toContain('window.fetch =')
+  })
+})
+
 describe('buildPreviewDoc — injeção do manifesto de assets', () => {
   const base = { html: '<canvas></canvas>', css: '', js: 'const x = 1;' }
 

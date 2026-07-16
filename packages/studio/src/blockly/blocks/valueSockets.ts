@@ -63,6 +63,16 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_js_repeat: { TIMES: 5 },
   // Armazenamento do navegador: o valor a guardar é uma tomada.
   sz_js_storage_set: { VALUE: 0 },
+  // Canvas 3D — facilitadores do three.js (rótulo amigável sobre memberCall/
+  // memberSet genérico; ver blocks/canvas3d.ts). Os defaults espelham o idioma
+  // comum: escala nasce em 1 (tamanho normal), giro por quadro em 0.01, tela 800×600.
+  sz_t3d_set_position: { X: 0, Y: 0, Z: 0 },
+  sz_t3d_set_rotation: { X: 0, Y: 0, Z: 0 },
+  sz_t3d_rotate_axis: { DELTA: 0.01 },
+  sz_t3d_set_scale: { X: 1, Y: 1, Z: 1 },
+  sz_t3d_look_at: { X: 0, Y: 0, Z: 0 },
+  sz_t3d_set_intensity: { N: 1 },
+  sz_t3d_renderer_size: { W: 800, H: 600 },
 }
 
 /**
@@ -77,6 +87,9 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   // o aluno não mexe na cor.
   sz_canvas_stroke_style: { COLOR: '#000000' },
   sz_canvas_shadow: { COLOR: '#000000' },
+  // Canvas 3D: cor de um material e cor de fundo da cena.
+  sz_t3d_set_color: { COLOR: '#ff8844' },
+  sz_t3d_set_background: { COLOR: '#101830' },
 }
 
 /**
@@ -86,6 +99,8 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
  */
 export const TEXT_SOCKETS: Record<string, Record<string, string>> = {
   sz_canvas_fill_text: { TEXT: 'Olá' },
+  // Canvas 3D: o caminho do modelo a carregar (ex.: "modelo.glb").
+  sz_t3d_load_model: { URL: 'modelo.glb' },
 }
 
 interface CompareSeed {
@@ -129,6 +144,9 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
   sz_js_member_set: { OBJ: OBJ_VAR_SHADOW },
   sz_val_method_on: { OBJ: OBJ_VAR_SHADOW },
   sz_js_method_on: { OBJ: OBJ_VAR_SHADOW },
+  // Canvas 3D "adicionar %1 em cena": o objeto a adicionar vem como uma variável
+  // por padrão (substituível por "novo THREE.Mesh(…)" ou qualquer valor).
+  sz_t3d_add_to: { OBJ: OBJ_VAR_SHADOW },
   // Distância: os dois objetos vêm como variáveis "player" e "enemy" por padrão.
   sz_val_distance: {
     OBJ1: { shadow: { type: 'sz_val_variable', fields: { NAME: 'player' } } },

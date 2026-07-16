@@ -39,12 +39,18 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       assets: s.project?.assets ?? EMPTY_ASSETS,
-      // Só o Jogo 3D Avançado consome .glb/.hdr — sem ele o upload seria peso
-      // morto na cota (a SEÇÃO de modelos continua sem gate: gerenciar/excluir
-      // um órfão nunca depende da extensão estar instalada).
-      has3DExtension: (s.project?.installedExtensions ?? []).some(
-        (e) => e.id === 'game-3d-advanced',
-      ),
+      // Quem CONSOME .glb/.hdr: a extensão Jogo 3D Avançado OU a categoria de
+      // núcleo Canvas 3D (que carrega o modelo por `loader.load('modelo.glb')`).
+      // Sem nenhum dos dois o upload seria peso morto na cota (a SEÇÃO de modelos
+      // continua sem gate: gerenciar/excluir um órfão nunca depende disso). O
+      // sinal do Canvas 3D é o import do three no código gerado (ou um bloco
+      // `sz_t3d_` no blocksState, para o projeto novo em Blocos antes da geração).
+      has3DExtension:
+        (s.project?.installedExtensions ?? []).some((e) => e.id === 'game-3d-advanced') ||
+        /from\s+['"]three(['"]|\/)/.test(s.project?.files?.['script.js'] ?? '') ||
+        (s.project?.blocksState
+          ? JSON.stringify(s.project.blocksState).includes('sz_t3d_')
+          : false),
     })),
   )
   const addAsset = useProjectStore((s) => s.addAsset)

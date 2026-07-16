@@ -14,7 +14,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.24.0',
+  version: '0.24.1',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E cinco atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial) e 🚀 nave (a invasão que marcha, desce e acelera).',
   category: 'games',
@@ -621,7 +621,7 @@ leva o time junto: nenhum bloco novo.
 
 ## 🥊 Kit Luta
 
-### 🥊 Kit Luta: a partida
+### 🥊 a partida
 
 O atalho do jogo de luta — dois lutadores, rounds, e um amigo (ou o computador)
 do outro lado. O que NÃO é só de luta vem do motor geral: gravidade, pulo (o
@@ -641,7 +641,7 @@ TEMPO. Quer diferente? "Desenhar a barra" + "a vida de" — o caminho na unha.
 resto. Os avisos **luta:round**, **luta:acertou**, **luta:defendeu**, **luta:ko**
 e **luta:acabou** ligam som, tremor e a tela de fim.
 
-### 🥊 Kit Luta: os lutadores
+### 🥊 os lutadores
 
 **Lutador — andar a d, pular w, agachar s, defender f** faz TUDO num bloco:
 gravidade, andar, pular, agachar, defender, e virar de frente para o outro. Cada
@@ -654,7 +654,7 @@ amigo. No fácil ele quase não defende; no difícil defende quase sempre, mant�
 distância, espera você errar e usa o especial na hora. Quer a SUA IA? "distância
 entre", "sorte de %" e "o estado de" estão no geral.
 
-### 🥊 Kit Luta: golpes & combo
+### 🥊 golpes & combo
 
 **Golpe "soco" de jogador1 — rápido, dano 8, alcance 45.** Você escolhe uma
 PALAVRA, e ela decide o ritmo inteiro do golpe: o **rápido** sai quase na hora
@@ -715,7 +715,7 @@ tiles) continuam valendo e se combinam com o kit.
   trocar de mapa limpa o anterior e monta o novo. **Ir para o mapa** troca na
   hora; **Criar a porta** troca ao pisar.
 
-### ⚔️ Batalha por turnos (em ⚔️ Kit RPG: batalha)
+### ⚔️ Batalha por turnos (em ⚔️ batalha)
 
 - **Meus pontos de batalha** (vida/força/**defesa**, 1x no começo) e **Começar a
   batalha contra…** (o inimigo também tem defesa) — abre o menu PRONTO: **Atacar**
@@ -731,7 +731,7 @@ tiles) continuam valendo e se combinam com o kit.
 - **Quando a batalha terminar / ganhei a batalha?** — decida o rumo: vitória →
   tela de vitória (+ XP), derrota → fim de jogo, fuga → tentar de novo.
 
-### 🎬 Cenas & NPCs vivos (em 🎬 Kit RPG: cenas)
+### 🎬 Cenas & NPCs vivos (em 🎬 cenas)
 
 O jeito profissional de contar história:
 
@@ -747,7 +747,7 @@ O jeito profissional de contar história:
 - **Usar a folha de ANDAR** (🎞️) — 4 linhas (baixo/cima/esquerda/direita): o
   motor anima na direção certa quando anda. O RPG vivo.
 
-### 💾 Salvar (em 💾 Kit RPG: salvar)
+### 💾 Salvar (em 💾 salvar)
 
 **Salvar o jogo** / **Continuar o jogo salvo** / **tem jogo salvo?** — guarda o
 progresso do RPG (flags, itens, mapa, posição, atributos, poções, golpe especial) e
@@ -763,7 +763,7 @@ nascer + velocidade), a colisão ("Quando se tocarem"), o placar, o dano com
 invencibilidade, o som e as telas. O kit traz o que SÓ existe no gênero — e a
 joia é a formação que marcha em BLOCO, impossível de montar peça por peça.
 
-### 🚀 Kit Nave: a nave
+### 🚀 a nave
 
 **Pilotar a nave** anda só de lado (setas ou A/D), preso na tela, já com a
 inclinação de curva. Use no "A cada quadro" — e o tiro é seu: *"se apertou
@@ -774,7 +774,7 @@ espaço E recarregou: Atirar um leque de 1"*.
 "Atirar um leque" de 5. Na hora de atirar, pergunte **o poder de tiro de …** —
 é o galho do "se". Solte o poder como prêmio: *"ao derrotar, com chance de 8%"*.
 
-### 🛸 Kit Nave: a invasão
+### 🛸 a invasão
 
 **Invadir: onda do molde …** cria a formação (colunas × linhas) e o MOTOR marcha
 o bloco inteiro: bate na borda → todo mundo DESCE um passo e ACELERA. Se a grade
@@ -796,7 +796,7 @@ tiro é tiro, do kit ou seu.
 **Marcar a linha de invasão** é a derrota clássica: a formação DESCEU até ali →
 aviso \`onda:invadiu\` → *"Quando o aviso chegar: Terminar o jogo"*.
 
-### 🌌 Kit Nave: o espaço
+### 🌌 o espaço
 
 **Desenhar o céu de estrelas** — o espaço rolando para sempre (primeira linha do
 "Desenhar o jogo"). Para fundo com IMAGEM, o geral "Pintar o fundo rolando" faz
@@ -831,7 +831,7 @@ kits, o que NÃO é só do gênero vem do motor geral e é você quem monta: o
 valida moeda e lugar, a **onda** que nasce espaçada e marcha o caminho, e a
 **carteira** de moedas.
 
-### 🏰 Kit Defesa de Torre: as torres
+### 🏰 as torres
 
 **Marcar um lugar de torre em x … y …** põe um quadrado onde a criança pode
 comprar (faça no "Preparar"). Marque vários flanqueando o caminho.
@@ -852,7 +852,7 @@ destruída), deixando comprar de novo ali.
 **Desenhar o alcance de … (raio …)** pinta um círculo suave sob a torre — bom
 para desenhar sob a torre que o mouse está tocando.
 
-### 👹 Kit Defesa de Torre: a invasão & as moedas
+### 👹 a invasão & as moedas
 
 **Invadir pelo caminho …: … inimigos do molde …** solta uma fila de inimigos
 entrando pelo começo do caminho, espaçados, marchando até o fim. Chegou algum ao

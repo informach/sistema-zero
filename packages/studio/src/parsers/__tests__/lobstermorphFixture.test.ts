@@ -741,6 +741,22 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
   return out
 }
 
+/** Mapa seletor→declarações (funde regras do mesmo seletor) — compara CSS sem
+ * depender da ORDEM das declarações (reordenar é lossless). */
+function cssDeclMap(css: string): Record<string, Record<string, string>> {
+  const map: Record<string, Record<string, string>> = {}
+  for (const m of css.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
+    const sel = (m[1] ?? '').trim()
+    const decls: Record<string, string> = map[sel] ?? {}
+    map[sel] = decls
+    for (const d of (m[2] ?? '').split(';')) {
+      const i = d.indexOf(':')
+      if (i > 0) decls[d.slice(0, i).trim()] = d.slice(i + 1).trim()
+    }
+  }
+  return map
+}
+
 describe('Lobstermorph V9 (Franks Laboratory) — 100% blocos do núcleo', () => {
   it('parseia os 3 arquivos SEM raw e sem diagnóstico', () => {
     const { ir, diagnostics } = parseProjectFilesWithDiagnostics(GAME_FILES)
@@ -805,7 +821,10 @@ describe('Lobstermorph V9 (Franks Laboratory) — 100% blocos do núcleo', () =>
         projectName: 'Lobstermorph',
       })
       expect(filesFromBlocks['script.js']).toBe(files1['script.js'])
-      expect(filesFromBlocks['style.css']).toBe(files1['style.css'])
+      // CSS: comparação SEMÂNTICA (mapa seletor→declarações). Os blocos dedicados
+      // de posição/jogo extraem declarações da regra, o que REORDENA o CSS —
+      // reordenar é lossless. JS e HTML seguem byte-a-byte.
+      expect(cssDeclMap(filesFromBlocks['style.css'])).toEqual(cssDeclMap(files1['style.css']))
       expect(filesFromBlocks['index.html']).toBe(files1['index.html'])
     } finally {
       ws.dispose()
