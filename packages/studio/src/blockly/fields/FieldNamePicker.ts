@@ -73,9 +73,11 @@ export type NameKind =
   | 'pkmcreature'
   | 'pkmtype'
   | 'path'
+  | 'w3dpoint'
 
 const NAME_KINDS: readonly NameKind[] = [
   'path',
+  'w3dpoint',
   'region',
   'pkmcreature',
   'pkmtype',
@@ -362,6 +364,14 @@ const ENTITY3D_LOOP_BINDERS: Record<string, string[]> = {
 
 /** Moldes 3D (a receita de peças) — fonte do seletor MOLD do kit 3D. */
 const MOLD3D_DECL_BLOCKS: Record<string, string[]> = { sz_g3k_define_mold: ['NAME'] }
+/** Pontos interativos + áreas do Mundo 3D — fonte dos seletores de "Quando E/entrar". */
+const W3DPOINT_DECL_BLOCKS: Record<string, string[]> = {
+  sz_w3d_point: ['NAME'],
+  sz_w3d_zone: ['NAME'],
+}
+function collectW3dPoints(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, W3DPOINT_DECL_BLOCKS)
+}
 function collectMolds3d(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, MOLD3D_DECL_BLOCKS)
 }
@@ -685,6 +695,12 @@ const KIND_UI: Record<NameKind, KindUI> = {
     empty:
       'Toda entidade nasce no estado "parado" — invente os seus (mirar, atirar, recarregar) digitando abaixo.',
   },
+  w3dpoint: {
+    icon: '📍',
+    placeholder: 'nome do ponto ou área',
+    empty:
+      'Nenhum ponto ou área ainda — crie um ("Criar o ponto interativo" ou "Criar a área mágica") ou digite o nome abaixo.',
+  },
 }
 
 /** Laços que introduzem nomes LOCAIS, por `kind` de seletor (escopo por ancestral). */
@@ -982,6 +998,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectEffects3d(ws)
       case 'entitystate':
         return collectEntityStates(ws)
+      case 'w3dpoint':
+        return collectW3dPoints(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)

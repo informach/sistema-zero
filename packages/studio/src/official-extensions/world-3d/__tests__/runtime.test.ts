@@ -31,6 +31,14 @@ interface Api {
   stopMusic: () => unknown
   hud: (t?: unknown, corner?: unknown) => unknown
   say: (t?: unknown, secs?: unknown) => unknown
+  point: (name?: unknown, x?: unknown, z?: unknown) => unknown
+  onPoint: (name?: unknown, fn?: unknown) => unknown
+  zone: (name?: unknown, x?: unknown, z?: unknown, r?: unknown) => unknown
+  onZone: (name?: unknown, fn?: unknown) => unknown
+  totemText: (x?: unknown, z?: unknown, title?: unknown, body?: unknown) => unknown
+  totemImage: (x?: unknown, z?: unknown, image?: unknown, w?: unknown) => unknown
+  galleryCreate: (x?: unknown, z?: unknown, title?: unknown) => unknown
+  galleryAdd: (image?: unknown, caption?: unknown) => unknown
   scatter: (n?: unknown, thing?: unknown) => unknown
   scatterModel: (n?: unknown, name?: unknown, s?: unknown) => unknown
   placeThing: (thing?: unknown, x?: unknown, z?: unknown, s?: unknown) => unknown
@@ -85,6 +93,14 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'stopMusic',
       'hud',
       'say',
+      'point',
+      'onPoint',
+      'zone',
+      'onZone',
+      'totemText',
+      'totemImage',
+      'galleryCreate',
+      'galleryAdd',
       'scatter',
       'scatterModel',
       'placeThing',
@@ -195,6 +211,21 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(() => api.stopMusic()).not.toThrow()
     expect(() => api.hud('Pontos: 5', 'topo-direita')).not.toThrow()
     expect(() => api.say('Oi!', 2)).not.toThrow()
+  })
+
+  it('pontos/áreas/totens/galeria: config pura antes do start, sem lançar', () => {
+    const api = boot()
+    expect(() => api.point('placa', 10, 10)).not.toThrow()
+    expect(() => api.onPoint('placa', () => {})).not.toThrow()
+    expect(() => api.onPoint('placa', 'não é função' as unknown)).not.toThrow()
+    expect(() => api.zone('area', 0, 30, 8)).not.toThrow()
+    expect(() => api.onZone('area', () => {})).not.toThrow()
+    expect(() => api.totemText(0, 8, 'Bem-vindo', 'Ao meu mundo')).not.toThrow()
+    expect(() => api.totemImage(0, 8, 'foto', 3)).not.toThrow()
+    expect(() => api.galleryCreate(0, -30, 'Projetos')).not.toThrow()
+    expect(() => api.galleryAdd('img1', 'Meu jogo')).not.toThrow()
+    // galleryAdd sem galleryCreate antes do start só grava a receita (sem lançar)
+    expect(() => api.galleryAdd('solto', 'x')).not.toThrow()
   })
 
   it('flatten muda a altura do terreno para o valor do centro', () => {

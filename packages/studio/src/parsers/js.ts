@@ -6206,6 +6206,80 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const secs = toExpr(args[1], ctx)
       return isSimpleValue(t) && isSimpleValue(secs) ? { type: 'w3d:say', text: t, secs } : null
     }
+    case 'point': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z)
+        ? { type: 'w3d:point', name: args[0].value as string, x, z }
+        : null
+    }
+    case 'onPoint': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1]) || (args[1].params ?? []).length > 0)
+        return null
+      return {
+        type: 'w3d:onPoint',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'zone': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const r = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(r)
+        ? { type: 'w3d:zone', name: args[0].value as string, x, z, r }
+        : null
+    }
+    case 'onZone': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1]) || (args[1].params ?? []).length > 0)
+        return null
+      return {
+        type: 'w3d:onZone',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'totemText': {
+      if (args[2]?.type !== 'StringLiteral' || args[3]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z)
+        ? {
+            type: 'w3d:totemText',
+            x,
+            z,
+            title: args[2].value as string,
+            body: args[3].value as string,
+          }
+        : null
+    }
+    case 'totemImage': {
+      if (args[2]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const w = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(w)
+        ? { type: 'w3d:totemImage', x, z, image: args[2].value as string, w }
+        : null
+    }
+    case 'galleryCreate': {
+      if (args[2]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z)
+        ? { type: 'w3d:galleryCreate', x, z, title: args[2].value as string }
+        : null
+    }
+    case 'galleryAdd': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'w3d:galleryAdd',
+        image: args[0].value as string,
+        caption: args[1].value as string,
+      }
+    }
     case 'car': {
       // generator: SZWorld3D.car({ style, color })
       if (args[0]?.type !== 'ObjectExpression') return null

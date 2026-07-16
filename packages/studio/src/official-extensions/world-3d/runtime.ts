@@ -108,6 +108,19 @@ export const world3DRuntime = `import * as THREE from 'three';
   var sayEl = null;
   var sayUntil = 0;
   var lastSafe = { x: 0, z: 0, yaw: 0 };   // último ponto seco (para respawn)
+  // Pontos interativos ("aperte E"), áreas de gatilho, totens e galeria.
+  var points = [];             // { name, x, z, r, hooks:[], marker (mesh) }
+  var zones = [];              // { name, x, z, r, hooks:[], inside }
+  var pointHooks = Object.create(null);  // name -> [fn]  (aperte E no ponto)
+  var zoneHooks = Object.create(null);   // name -> [fn]  (entrou na área)
+  var promptEl = null;         // badge "E" flutuante do ponto mais perto
+  var galleryEl = null;        // overlay de zoom da galeria (imagem grande)
+  var galleries = [];          // { x, z, angle, count } — arco de quadros
+  var _decorGroup = null;      // totens/placas/galeria (raiz)
+  // Receitas de decoração (pontos/áreas/totens/galeria): gravadas antes do start,
+  // construídas EM ORDEM no initWorld (a cena só existe lá). Depois do start,
+  // constroem na hora.
+  var decorRecipes = [];
   // Carrinho: config (dos blocos) + estado físico + peças visuais.
   var carCfg = null;            // { style, color, speed, turn, jump }
   var carState = null;          // { x, y, z, yaw, speed, vy, airborne, steerVis, pitch, pitchV, roll, rollV }
@@ -144,6 +157,9 @@ export const world3DRuntime = `import * as THREE from 'three';
     : {};
   var SOUNDS = (typeof window !== 'undefined' && window.__SZGAME_SOUNDS && typeof window.__SZGAME_SOUNDS === 'object')
     ? window.__SZGAME_SOUNDS
+    : {};
+  var ASSETS = (typeof window !== 'undefined' && window.__SZGAME_ASSETS && typeof window.__SZGAME_ASSETS === 'object')
+    ? window.__SZGAME_ASSETS
     : {};
   var _gltfMod = null;
   var _modelCache = null;       // nome -> { scene } já parseado
@@ -1789,6 +1805,301 @@ export const world3DRuntime = `import * as THREE from 'three';
   }
   var _proj = null;
 
+  // ---- 📍 Pontos interativos, áreas, totens e galeria ----
+
+  function ensureDecorGroup() {
+    if (!_decorGroup && scene) {
+      _decorGroup = new THREE.Group();
+      scene.add(_decorGroup);
+    }
+    return _decorGroup;
+  }
+
+  /** CanvasTexture de um cartaz (título + linhas de texto), fundo claro. */
+  function makeSignTexture(title, body) {
+    try {
+      var cv = document.createElement('canvas');
+      cv.width = 256;
+      cv.height = 256;
+      var g = cv.getContext('2d');
+      if (!g) return null;
+      g.fillStyle = '#fdf6e3';
+      g.fillRect(0, 0, 256, 256);
+      g.fillStyle = '#8a6d3b';
+      g.fillRect(0, 0, 256, 10);
+      g.fillRect(0, 246, 256, 10);
+      g.fillStyle = '#3a2f1b';
+      g.font = 'bold 26px system-ui, sans-serif';
+      g.textAlign = 'center';
+      g.fillText(text(title, ''), 128, 48, 240);
+      g.font = '18px system-ui, sans-serif';
+      var words = text(body, '').split(' ');
+      var line = '';
+      var y = 92;
+      for (var i = 0; i < words.length; i++) {
+        var test = line ? line + ' ' + words[i] : words[i];
+        if (g.measureText(test).width > 224 && line) {
+          g.fillText(line, 128, y, 240);
+          line = words[i];
+          y += 26;
+          if (y > 232) break;
+        } else {
+          line = test;
+        }
+      }
+      if (line && y <= 232) g.fillText(line, 128, y, 240);
+      return new THREE.CanvasTexture(cv);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function buildTotemText(x, z, title, body) {
+    if (!scene) return;
+    var group = ensureDecorGroup();
+    var gy = heightAt(x, z);
+    // Poste.
+    var post = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.12, 2.4, 6),
+      toonMaterial({ color: '#6b4226' })
+    );
+    post.position.set(x, gy + 1.2, z);
+    post.castShadow = true;
+    group.add(post);
+    // Placa (dois lados com a mesma textura).
+    var tex = makeSignTexture(title, body);
+    var mat = tex ? new THREE.MeshBasicMaterial({ map: tex }) : toonMaterial({ color: '#fdf6e3' });
+    var sign = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 0.12), mat);
+    sign.position.set(x, gy + 3.1, z);
+    sign.castShadow = true;
+    group.add(sign);
+  }
+
+  function buildTotemImage(x, z, imageName, w) {
+    if (!scene) return;
+    var group = ensureDecorGroup();
+    var gy = heightAt(x, z);
+    var width = clamp(num(w, 3), 0.5, 20);
+    var height = width * 0.7;
+    var post = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.14, 0.14, gy > -100 ? 2 : 2, 6),
+      toonMaterial({ color: '#5a4632' })
+    );
+    post.position.set(x, gy + 1, z);
+    post.castShadow = true;
+    group.add(post);
+    var frame = new THREE.Mesh(
+      new THREE.BoxGeometry(width + 0.3, height + 0.3, 0.16),
+      toonMaterial({ color: '#3a2f1b' })
+    );
+    frame.position.set(x, gy + 2 + height / 2, z);
+    frame.castShadow = true;
+    group.add(frame);
+    var tex = imageTexture(imageName);
+    var mat = tex
+      ? new THREE.MeshBasicMaterial({ map: tex })
+      : toonMaterial({ color: '#8892a0' });
+    var pic = new THREE.Mesh(new THREE.PlaneGeometry(width, height), mat);
+    pic.position.set(x, gy + 2 + height / 2, z + 0.1);
+    group.add(pic);
+    return { x: x, z: z, image: imageName };
+  }
+
+  /** Textura de imagem do projeto (data:URL), via <img>. Rede morta ⇒ img.src. */
+  var _imgTexCache = null;
+  function imageTexture(name) {
+    var key = text(name, '');
+    if (!key) return null;
+    if (!_imgTexCache) _imgTexCache = {};
+    if (_imgTexCache[key]) return _imgTexCache[key];
+    var url = ASSETS[key];
+    if (!url) {
+      warnOnce('img:' + key, 'a imagem "' + key + '" não está no projeto');
+      return null;
+    }
+    try {
+      var tex = new THREE.Texture();
+      var img = new Image();
+      img.onload = function () {
+        tex.image = img;
+        tex.needsUpdate = true;
+      };
+      img.src = url;
+      if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+      _imgTexCache[key] = tex;
+      return tex;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function addPoint(name, x, z) {
+    var p = { name: text(name, ''), x: num(x, 0), z: num(z, 0), r: 4 };
+    points.push(p);
+    if (!scene) return;
+    // Pilar-marcador brilhante (bloom pega nele).
+    var group = ensureDecorGroup();
+    var gy = heightAt(p.x, p.z);
+    var mat = toonMaterial({ color: '#22d3ee' });
+    if (mat.emissive) { try { mat.emissive.set('#0891b2'); } catch (e) {} }
+    var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 1.6, 7), mat);
+    pole.position.set(p.x, gy + 0.8, z);
+    group.add(pole);
+    p.marker = pole;
+  }
+
+  function addZone(name, x, z, r) {
+    zones.push({ name: text(name, ''), x: num(x, 0), z: num(z, 0), r: clamp(num(r, 6), 0.5, 200), inside: false });
+  }
+
+  function firePoint(name) {
+    var hooks = pointHooks[name] || [];
+    for (var i = 0; i < hooks.length; i++) {
+      try { hooks[i](); } catch (e) {
+        warnOnce('hook-point-' + name + '-' + i, 'erro no "Quando apertar E no ponto ' + name + '": ' + e);
+      }
+    }
+  }
+
+  function fireZone(name) {
+    var hooks = zoneHooks[name] || [];
+    for (var i = 0; i < hooks.length; i++) {
+      try { hooks[i](); } catch (e) {
+        warnOnce('hook-zone-' + name + '-' + i, 'erro no "Quando entrar na área ' + name + '": ' + e);
+      }
+    }
+  }
+
+  /** A cada quadro: badge "E" no ponto mais perto, gatilho de E e de zona. */
+  function stepInteractions() {
+    if (!carState) return;
+    var cx = carState.x;
+    var cz = carState.z;
+    // Ponto mais próximo dentro do raio.
+    var best = null;
+    var bestD = Infinity;
+    for (var i = 0; i < points.length; i++) {
+      var p = points[i];
+      var dx = cx - p.x;
+      var dz = cz - p.z;
+      var d = dx * dx + dz * dz;
+      if (d < p.r * p.r && d < bestD) { bestD = d; best = p; }
+      if (p.marker) p.marker.rotation.y += currentDt * 1.5;
+    }
+    updatePrompt(best);
+    if (best && isJust('e')) firePoint(best.name);
+    // Zonas: dispara na ENTRADA (estava fora, agora dentro).
+    for (var z = 0; z < zones.length; z++) {
+      var zn = zones[z];
+      var zdx = cx - zn.x;
+      var zdz = cz - zn.z;
+      var now = zdx * zdx + zdz * zdz < zn.r * zn.r;
+      if (now && !zn.inside) fireZone(zn.name);
+      zn.inside = now;
+    }
+  }
+
+  function updatePrompt(p) {
+    if (!p) {
+      if (promptEl) promptEl.style.display = 'none';
+      return;
+    }
+    if (!ensureShell()) return;
+    if (!promptEl) {
+      promptEl = document.createElement('div');
+      promptEl.setAttribute('style', 'position:absolute;padding:4px 10px;border-radius:10px;background:#22d3ee;color:#04252b;font:800 15px system-ui,sans-serif;transform:translate(-50%,-100%);pointer-events:none;z-index:7;box-shadow:0 3px 10px rgba(0,0,0,.35)');
+      promptEl.textContent = 'E';
+      frameEl.appendChild(promptEl);
+    }
+    if (!camera || !renderer || !_proj) return;
+    _proj.set(p.x, heightAt(p.x, p.z) + 2.4, p.z);
+    _proj.project(camera);
+    if (_proj.z >= 1) { promptEl.style.display = 'none'; return; }
+    var rect = canvasEl.getBoundingClientRect();
+    promptEl.style.left = (_proj.x * 0.5 + 0.5) * rect.width + 'px';
+    promptEl.style.top = (-_proj.y * 0.5 + 0.5) * rect.height + 'px';
+    promptEl.style.display = 'block';
+  }
+
+  /** Reserva o terreno da praça (SÓ dados — seguro antes do start). */
+  function reserveGallery(x, z) {
+    terrainMods.push({ kind: 'flatten', x: num(x, 0), z: num(z, 0), r: 14, y: baseHeightAt(num(x, 0), num(z, 0)) });
+    exclusions.push({ x: num(x, 0), z: num(z, 0), r: 16 });
+  }
+
+  // Galeria: praça + arco de quadros. Cada quadro é um totem-imagem + um ponto
+  // "E: ver" que abre o overlay de zoom. (O terreno já foi reservado no record.)
+  function buildGalleryBase(x, z, title) {
+    if (!scene) return;
+    if (worldReady) {
+      // Chamada AO VIVO (depois do start): reserva + reconstrói o terreno agora.
+      reserveGallery(x, z);
+      buildTerrain();
+      if (grassMat) buildGrassHeightTex();
+    }
+    galleries.push({ x: num(x, 0), z: num(z, 0), count: 0 });
+    buildTotemText(num(x, 0), num(z, 0) - 10, text(title, 'Galeria'), '');
+  }
+
+  function galleryAdd(imageName, caption) {
+    if (!galleries.length) {
+      warn('crie a galeria antes com "Criar a galeria de projetos"');
+      return;
+    }
+    var gal = galleries[galleries.length - 1];
+    // Arco de até 8 quadros ao redor do centro (raio 11).
+    var idx = gal.count;
+    gal.count++;
+    var ang = -Math.PI / 2 + (idx - 3.5) * 0.32;
+    var px = gal.x + Math.cos(ang) * 11;
+    var pz = gal.z + Math.sin(ang) * 11;
+    buildTotemImage(px, pz, imageName, 3.4);
+    // Ponto "E: ver" que abre o zoom.
+    var pname = '__galeria_' + galleries.length + '_' + idx;
+    addPoint(pname, px, pz + 2);
+    pointHooks[pname] = [function () { openGallery(imageName, caption); }];
+  }
+
+  function openGallery(imageName, caption) {
+    if (!ensureShell()) return;
+    if (!galleryEl) {
+      galleryEl = document.createElement('div');
+      galleryEl.setAttribute('style', 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(6,10,16,.82);z-index:9;cursor:pointer');
+      galleryEl.addEventListener('click', function () { galleryEl.style.display = 'none'; });
+      frameEl.appendChild(galleryEl);
+    }
+    var url = ASSETS[text(imageName, '')];
+    galleryEl.innerHTML = '';
+    if (url) {
+      var im = document.createElement('img');
+      im.src = url;
+      im.setAttribute('style', 'max-width:80%;max-height:70%;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.6)');
+      galleryEl.appendChild(im);
+    }
+    var cap = document.createElement('div');
+    cap.setAttribute('style', 'color:#fff;font:600 20px system-ui,sans-serif;text-align:center');
+    cap.textContent = text(caption, '');
+    galleryEl.appendChild(cap);
+    var hint = document.createElement('div');
+    hint.setAttribute('style', 'color:#9fb;opacity:.7;font:400 13px system-ui,sans-serif');
+    hint.textContent = 'clique para fechar';
+    galleryEl.appendChild(hint);
+    galleryEl.style.display = 'flex';
+  }
+
+  /** Constrói TODAS as receitas de decoração em ordem (chamado no initWorld). */
+  function buildDecor() {
+    for (var i = 0; i < decorRecipes.length; i++) {
+      var r = decorRecipes[i];
+      if (r.kind === 'point') addPoint(r.name, r.x, r.z);
+      else if (r.kind === 'zone') addZone(r.name, r.x, r.z, r.r);
+      else if (r.kind === 'totemText') buildTotemText(r.x, r.z, r.title, r.body);
+      else if (r.kind === 'totemImage') buildTotemImage(r.x, r.z, r.image, r.w);
+      else if (r.kind === 'galleryCreate') buildGalleryBase(r.x, r.z, r.title);
+      else if (r.kind === 'galleryAdd') galleryAdd(r.image, r.caption);
+    }
+  }
+
   // ---- Teclas (com apelidos em português) ----
 
   var KEY_ALIASES = {
@@ -1969,6 +2280,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (waterCfg) buildWater();
       if (carCfg) buildCar();
       buildNature();
+      buildDecor();
       if (grassCfg) buildGrass();
 
       worldReady = true;
@@ -2423,6 +2735,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
     updateCamera(dt);
     updateSun();
+    stepInteractions();
     stepSay();
     if (waterMat) waterMat.uniforms.uTime.value = playTime;
     if (grassMat) {
@@ -2535,6 +2848,11 @@ export const world3DRuntime = `import * as THREE from 'three';
     engineFilter = null;
     _audioCtx = null;
     music = null;
+    points = [];
+    zones = [];
+    galleries = [];
+    _decorGroup = null;
+    _imgTexCache = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -2859,6 +3177,54 @@ export const world3DRuntime = `import * as THREE from 'three';
     say: guard('say', function (txt, secs) {
       showSay(txt, secs);
     }),
+
+    // 📍 Pontos & placas
+    point: guard('point', function (name, x, z) {
+      if (worldReady) addPoint(name, x, z);
+      else decorRecipes.push({ kind: 'point', name: text(name, ''), x: num(x, 0), z: num(z, 0) });
+    }),
+    onPoint: guard('onPoint', function (name, fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando apertar E no ponto" precisa de blocos de fazer dentro');
+        return;
+      }
+      var key = text(name, '');
+      (pointHooks[key] || (pointHooks[key] = [])).push(fn);
+    }),
+    zone: guard('zone', function (name, x, z, r) {
+      if (worldReady) addZone(name, x, z, r);
+      else decorRecipes.push({ kind: 'zone', name: text(name, ''), x: num(x, 0), z: num(z, 0), r: num(r, 6) });
+    }),
+    onZone: guard('onZone', function (name, fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando o carrinho entrar na área" precisa de blocos de fazer dentro');
+        return;
+      }
+      var key = text(name, '');
+      (zoneHooks[key] || (zoneHooks[key] = [])).push(fn);
+    }),
+    totemText: guard('totemText', function (x, z, title, body) {
+      if (worldReady) buildTotemText(num(x, 0), num(z, 0), title, body);
+      else decorRecipes.push({ kind: 'totemText', x: num(x, 0), z: num(z, 0), title: text(title, ''), body: text(body, '') });
+    }),
+    totemImage: guard('totemImage', function (x, z, image, w) {
+      if (worldReady) buildTotemImage(num(x, 0), num(z, 0), image, w);
+      else decorRecipes.push({ kind: 'totemImage', x: num(x, 0), z: num(z, 0), image: text(image, ''), w: num(w, 3) });
+    }),
+    galleryCreate: guard('galleryCreate', function (x, z, title) {
+      if (worldReady) {
+        buildGalleryBase(x, z, title);
+      } else {
+        // Reserva o terreno JÁ (dados) para o buildTerrain do start enxergar.
+        reserveGallery(x, z);
+        decorRecipes.push({ kind: 'galleryCreate', x: num(x, 0), z: num(z, 0), title: text(title, 'Galeria') });
+      }
+    }),
+    galleryAdd: guard('galleryAdd', function (image, caption) {
+      if (worldReady) galleryAdd(image, caption);
+      else decorRecipes.push({ kind: 'galleryAdd', image: text(image, ''), caption: text(caption, '') });
+    }),
+
     onUpdate: guard('onUpdate', function (fn) {
       if (typeof fn !== 'function') {
         warn('"A cada quadro" precisa de um bloco de fazer dentro');

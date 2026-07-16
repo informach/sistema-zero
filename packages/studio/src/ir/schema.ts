@@ -3847,6 +3847,42 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'w3d:stopMusic' })
   | (JSStatementCommon & { type: 'w3d:hud'; text: number | JSExpr; corner: string })
   | (JSStatementCommon & { type: 'w3d:say'; text: number | JSExpr; secs: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'w3d:point'
+      name: string
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:onPoint'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'w3d:zone'
+      name: string
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:onZone'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'w3d:totemText'
+      x: number | JSExpr
+      z: number | JSExpr
+      title: string
+      body: string
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:totemImage'
+      x: number | JSExpr
+      z: number | JSExpr
+      image: string
+      w: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:galleryCreate'
+      x: number | JSExpr
+      z: number | JSExpr
+      title: string
+    })
+  | (JSStatementCommon & { type: 'w3d:galleryAdd'; image: string; caption: string })
   | (JSStatementCommon & { type: 'w3d:car'; style: string; color: string })
   | (JSStatementCommon & {
       type: 'w3d:carStats'
@@ -7662,6 +7698,62 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('w3d:point'),
+      name: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:onPoint'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:zone'),
+      name: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      r: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:onZone'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:totemText'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      title: irText(),
+      body: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:totemImage'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      image: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:galleryCreate'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      title: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:galleryAdd'),
+      image: irText(),
+      caption: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('w3d:carStats'),
       speed: z.union([JSExprSchema, z.number()]),
       turn: z.union([JSExprSchema, z.number()]),
@@ -8623,6 +8715,14 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:stopMusic',
   'w3d:hud',
   'w3d:say',
+  'w3d:point',
+  'w3d:onPoint',
+  'w3d:zone',
+  'w3d:onZone',
+  'w3d:totemText',
+  'w3d:totemImage',
+  'w3d:galleryCreate',
+  'w3d:galleryAdd',
   'w3d:grass',
   'w3d:scatter',
   'w3d:scatterModel',

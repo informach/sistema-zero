@@ -8622,6 +8622,94 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           secs: exprInput(block, 'SECS', { type: 'num', value: 2 }),
         },
       }
+    case 'sz_w3d_point':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:point',
+          name: f(block, 'NAME'),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_on_point':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onPoint',
+          name: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_zone':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:zone',
+          name: f(block, 'NAME'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 30 }),
+          r: exprInput(block, 'R', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_w3d_on_zone':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onZone',
+          name: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_totem_text':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:totemText',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 8 }),
+          title: f(block, 'TITLE'),
+          body: f(block, 'BODY'),
+        },
+      }
+    case 'sz_w3d_totem_image':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:totemImage',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 8 }),
+          image: f(block, 'IMAGE'),
+          w: exprInput(block, 'W', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_w3d_gallery_create':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:galleryCreate',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: -30 }),
+          title: f(block, 'TITLE'),
+        },
+      }
+    case 'sz_w3d_gallery_add':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:galleryAdd',
+          image: f(block, 'IMAGE'),
+          caption: f(block, 'CAPTION'),
+        },
+      }
     case 'sz_w3d_grass':
       seen.add('world-3d')
       return {

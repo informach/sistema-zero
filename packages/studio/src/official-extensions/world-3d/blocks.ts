@@ -466,6 +466,126 @@ export const world3DBlocks = [
       'A hora do relógio do mundo, de 0 a 24 (12 = meio-dia). Use para inventar as suas regras de horário: "se a hora > 20, …".',
   },
 
+  // ---- 📍 Pontos & placas ----
+  {
+    type: 'sz_w3d_point',
+    message0: 'Criar o ponto interativo %1 em x %2 z %3',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'placa' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Marca um lugar do mundo com um pilar brilhante e um apelido. Quando o carrinho chega perto, aparece um "E" na tela — aperte E para acontecer algo (veja "Quando apertar E").',
+  },
+  {
+    type: 'sz_w3d_on_point',
+    message0: 'Quando apertar E no ponto %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'placa', kind: 'w3dpoint' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos de dentro quando o carrinho está perto do ponto e a criança aperta E. O jeito clássico de "conversar" com um lugar: abrir uma placa, ganhar um item, começar a corrida.',
+  },
+  {
+    type: 'sz_w3d_zone',
+    message0: 'Criar a área mágica %1 em x %2 z %3 com raio %4',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'area' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um círculo invisível no chão com um apelido. Diferente do ponto (que espera o E), a área dispara sozinha quando o carrinho ENTRA nela (veja "Quando entrar na área").',
+  },
+  {
+    type: 'sz_w3d_on_zone',
+    message0: 'Quando o carrinho entrar na área %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'area', kind: 'w3dpoint' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos de dentro no momento em que o carrinho ENTRA na área (uma vez por entrada). Ótimo para armadilhas, checkpoints, mensagens de boas-vindas.',
+  },
+  {
+    type: 'sz_w3d_totem_text',
+    message0: 'Pôr um totem em x %1 z %2 com o título %3 e o texto %4',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'field_input', name: 'TITLE', text: 'Bem-vindo' },
+      { type: 'field_input', name: 'BODY', text: 'Ao meu mundo!' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Levanta uma placa de madeira com um título e um textinho — a apresentação do seu mundo, uma dica, o seu nome. O texto vira uma imagem na placa.',
+  },
+  {
+    type: 'sz_w3d_totem_image',
+    message0: 'Pôr um quadro em x %1 z %2 com a imagem %3 (largura %4 )',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '', kind: 'image' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Pendura um quadro com uma imagem do projeto (envie em "Imagens") numa moldura, em pé no mundo. A sua foto, o seu desenho, a capa do seu jogo.',
+  },
+
+  // ---- 🖼️ Galeria ----
+  {
+    type: 'sz_w3d_gallery_create',
+    message0: 'Criar a galeria de projetos em x %1 z %2 com o título %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'field_input', name: 'TITLE', text: 'Meus Projetos' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma praça de exposição (aplaina o chão e põe um totem com o título). Depois pendure as imagens com "Pendurar a imagem" — elas ficam num arco em volta, e chegando perto a criança aperta E para ver grande.',
+  },
+  {
+    type: 'sz_w3d_gallery_add',
+    message0: 'Pendurar a imagem %1 com a legenda %2',
+    args0: [
+      { type: 'field_asset_picker', name: 'IMAGE', text: '', kind: 'image' },
+      { type: 'field_input', name: 'CAPTION', text: 'Meu projeto' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Pendura mais uma imagem na galeria (na ordem que você chamar). Cada quadro ganha um ponto "E: ver" que abre a imagem grande com a legenda. Use depois de "Criar a galeria".',
+  },
+
   // ---- 🎥 Câmera & efeitos ----
   {
     type: 'sz_w3d_effects',
@@ -661,6 +781,23 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    name: '📍 Pontos & placas',
+    colour: C,
+    types: [
+      'sz_w3d_point',
+      'sz_w3d_on_point',
+      'sz_w3d_zone',
+      'sz_w3d_on_zone',
+      'sz_w3d_totem_text',
+      'sz_w3d_totem_image',
+    ],
+  },
+  {
+    name: '🖼️ Galeria',
+    colour: C,
+    types: ['sz_w3d_gallery_create', 'sz_w3d_gallery_add'],
+  },
+  {
     name: '🎥 Câmera & efeitos',
     colour: C,
     types: ['sz_w3d_effects'],
@@ -730,6 +867,11 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_car_boost: { FORCE: numShadow(1) },
   sz_w3d_hud: { TEXT: txtShadow('Pontos: 0') },
   sz_w3d_say: { TEXT: txtShadow('Oi!'), SECS: numShadow(2) },
+  sz_w3d_point: { X: numShadow(10), Z: numShadow(10) },
+  sz_w3d_zone: { X: numShadow(0), Z: numShadow(30), R: numShadow(8) },
+  sz_w3d_totem_text: { X: numShadow(0), Z: numShadow(8) },
+  sz_w3d_totem_image: { X: numShadow(0), Z: numShadow(8), W: numShadow(3) },
+  sz_w3d_gallery_create: { X: numShadow(0), Z: numShadow(-30) },
 }
 
 /**

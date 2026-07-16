@@ -5625,6 +5625,67 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_w3d_say', {}, {}, stmt.__id, { TEXT: t, SECS: secs })
     }
+    case 'w3d:point': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_point', { NAME: stmt.name }, {}, stmt.__id, { X: x, Z: z })
+    }
+    case 'w3d:onPoint':
+      return block(
+        'sz_w3d_on_point',
+        { NAME: stmt.name },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'w3d:zone': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const r = exprToValueBlock(valueToExpr(stmt.r))
+      return x === null || z === null || r === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_zone', { NAME: stmt.name }, {}, stmt.__id, { X: x, Z: z, R: r })
+    }
+    case 'w3d:onZone':
+      return block(
+        'sz_w3d_on_zone',
+        { NAME: stmt.name },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'w3d:totemText': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_totem_text', { TITLE: stmt.title, BODY: stmt.body }, {}, stmt.__id, {
+            X: x,
+            Z: z,
+          })
+    }
+    case 'w3d:totemImage': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      return x === null || z === null || w === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_totem_image', { IMAGE: stmt.image }, {}, stmt.__id, { X: x, Z: z, W: w })
+    }
+    case 'w3d:galleryCreate': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_gallery_create', { TITLE: stmt.title }, {}, stmt.__id, { X: x, Z: z })
+    }
+    case 'w3d:galleryAdd':
+      return block(
+        'sz_w3d_gallery_add',
+        { IMAGE: stmt.image, CAPTION: stmt.caption },
+        {},
+        stmt.__id,
+      )
     case 'w3d:carStats': {
       const speed = exprToValueBlock(valueToExpr(stmt.speed))
       const turn = exprToValueBlock(valueToExpr(stmt.turn))

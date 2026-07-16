@@ -113,6 +113,8 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'w3d:onUpdate':
     case 'w3d:onCrash':
     case 'w3d:onDayNight':
+    case 'w3d:onPoint':
+    case 'w3d:onZone':
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
@@ -2461,6 +2463,36 @@ ${pad}});`
       return `${pad}SZWorld3D.hud(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.corner)});`
     case 'w3d:say':
       return `${pad}SZWorld3D.say(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))});`
+    case 'w3d:point':
+      return `${pad}SZWorld3D.point(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:onPoint': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onPoint(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:zone':
+      return `${pad}SZWorld3D.zone(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:onZone': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onZone(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:totemText':
+      return `${pad}SZWorld3D.totemText(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.title)}, ${JSON.stringify(stmt.body)});`
+    case 'w3d:totemImage':
+      return `${pad}SZWorld3D.totemImage(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))});`
+    case 'w3d:galleryCreate':
+      return `${pad}SZWorld3D.galleryCreate(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.title)});`
+    case 'w3d:galleryAdd':
+      return `${pad}SZWorld3D.galleryAdd(${JSON.stringify(stmt.image)}, ${JSON.stringify(stmt.caption)});`
     case 'w3d:carStats':
       return `${pad}SZWorld3D.carStats(${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.turn), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'w3d:carPlace':
@@ -5310,6 +5342,34 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:say':
       collectExprIdentifiers(valueToExpr(stmt.text), names)
       collectExprIdentifiers(valueToExpr(stmt.secs), names)
+      return
+    case 'w3d:point':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:zone':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:onPoint':
+    case 'w3d:onZone':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:totemText':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:totemImage':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      return
+    case 'w3d:galleryCreate':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:galleryAdd':
       return
     case 'w3d:carStats':
       collectExprIdentifiers(valueToExpr(stmt.speed), names)
