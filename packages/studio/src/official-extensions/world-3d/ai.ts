@@ -72,6 +72,9 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.setEffects('ligados'|'desligados', brilho)\` — bloom + vinheta
   (composer próprio, ACES). Default LIGADO com brilho 1; brilho 0–3. O modo
   turbo (FPS < 45 nos primeiros segundos) desliga sozinho e reduz a grama.
+- \`SZWorld3D.cameraMode('seguir'|'topo'|'cinema')\` — modo da câmera (seguir
+  por trás / vista de cima / órbita cinema). \`SZWorld3D.cameraShake(forca, segundos)\`
+  — tremor. (Joystick mobile aparece sozinho em toque; não tem método.)
 - \`SZWorld3D.onCrash(function () { ... })\` — trombada forte do carro em coisa
   sólida (tem respiro de 0.4 s entre disparos).
 - \`SZWorld3D.loadSound(apelido, asset)\` / \`playSound(apelido)\` / \`playMusic(apelido)\` (loop) / \`stopMusic()\` — sons/música do projeto.
