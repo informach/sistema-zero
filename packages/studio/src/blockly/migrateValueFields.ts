@@ -362,6 +362,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g3k_set_fog: { NEAR: 'number', FAR: 'number' },
   sz_g3k_move_fps: { SPEED: 'number' },
   sz_g3k_state_timer: { SEC: 'number' },
+  sz_g3k_seek_point: { X: 'number', Z: 'number' },
   sz_g3k_aim_at: { SMOOTH: 'number' },
   sz_g3k_for_each_near: { RADIUS: 'number' },
   sz_g3k_touches: { DIST: 'number' },

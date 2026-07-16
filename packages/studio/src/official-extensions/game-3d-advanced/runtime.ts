@@ -74,7 +74,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var deathHooks = Object.create(null);  // mold -> [fn]
   var overlapHooks = Object.create(null); // mold da ZONA -> [fn(zona, quem)]
   var effects = Object.create(null);     // nome -> receita + Points + buffers (faíscas)
-  var emitters = Object.create(null);    // efeito -> jorro contínuo vivo (ponto/entidade)
+  // Jorros contínuos VIVOS (lista, não mapa por efeito: várias tochas da mesma
+  // receita convivem — o mapa antigo fazia o 2º jorro apagar o 1º em silêncio).
+  var jets = [];
   var composer = null;                   // mini-composer próprio (bloom + vinheta + ACES)
   var composerFailed = false;            // WebGL/targets falharam -> render direto p/ sempre
   var spriteTex = null;                  // círculo suave compartilhado (CanvasTexture)
@@ -138,6 +140,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   // só nasce ao usar; ambientes de teste sem ele seguem sem quebrar).
   var _ray = null;                       // THREE.Raycaster (mira pelo mouse)
   var _mouse = null;                     // { x, y } em coords normalizadas (-1..1)
+  var mouseHeld = false;                 // botão/dedo apertado agora
+  var mouseJust = false;                 // apertou NESTE quadro (limpa com justPressed)
   var _pickWired = false;                // rastreio do ponteiro já ligado?
   var _fpsWired = false;                 // pointer-lock/olhar do FPS já ligado?
 
@@ -284,7 +288,13 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         'cursor: pointer; font-family: inherit; border-radius: 8px; transition: all 0.3s; ' +
         'box-shadow: 0 0 15px ' + rgba(config.accent, 0.2) + '; }' +
       '.szg3k-panel button:hover { background: ' + config.accent + '; ' +
-        'box-shadow: 0 0 25px ' + glowStrong + '; transform: translateY(-2px); }';
+        'box-shadow: 0 0 25px ' + glowStrong + '; transform: translateY(-2px); }' +
+      // Barra de vida flutuante: mesma mecânica do balão de fala (projetada por
+      // quadro), um tico abaixo dele para os dois conviverem na mesma cabeça.
+      '.szg3k-bar { position: absolute; width: 52px; height: 8px; border-radius: 5px; ' +
+        'background: rgba(2, 4, 12, 0.72); border: 1px solid rgba(255,255,255,0.35); ' +
+        'transform: translate(-50%, -100%); pointer-events: none; z-index: 450; }' +
+      '.szg3k-bar i { display: block; height: 100%; border-radius: 4px; background: #4ade80; }';
   }
 
   function makeScreen(name, titleTag, titleText, bodyText) {
@@ -437,6 +447,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       // Recomeço limpa o que sobrou da partida anterior: balão de fala pendurado,
       // cronômetro correndo e tremor pendente atravessariam para o jogo novo.
       clearSays();
+      clearBars();
       _timer.on = false;
       _timer.left = 0;
       _shakeT = 0;
@@ -465,8 +476,20 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     window.addEventListener('keyup', function (e) {
       keys[String(e.key).toLowerCase()] = false;
     });
+    // O clique do mouse/dedo, no MESMO contrato das teclas: mouseDown = segurando,
+    // mouseJust = só no quadro do aperto (limpo junto do justPressed). Sem isto o
+    // "pick" só enxergava o cursor PARADO — point-and-click não tinha o CLIQUE.
+    window.addEventListener('pointerdown', function () {
+      resumeAudio();
+      mouseHeld = true;
+      mouseJust = true;
+    });
+    window.addEventListener('pointerup', function () { mouseHeld = false; });
     window.addEventListener('contextmenu', function () { keys = {}; });
-    window.addEventListener('blur', function () { keys = {}; });
+    window.addEventListener('blur', function () { keys = {}; mouseHeld = false; });
+    // Rastreia o ponteiro desde o COMEÇO (não só no 1º pick): senão o primeiro
+    // clique da partida mirava o centro da tela, não onde a criança clicou.
+    ensurePointer();
   }
 
   // ---- Canvas responsivo (resolução interna fixa + letterbox por CSS) ----
@@ -532,6 +555,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         sun.shadow.camera.top = half;
         sun.shadow.camera.bottom = -half;
         if (sun.shadow.mapSize && sun.shadow.mapSize.set) sun.shadow.mapSize.set(1024, 1024);
+        // Anti-acne do curso. Aqui importa AINDA MAIS que lá: o nosso ortho cobre
+        // o mundo inteiro com um mapa menor (texel de sombra maior) — sem o bias,
+        // superfícies rasantes ficam listradas.
+        sun.shadow.normalBias = 0.05;
       }
       scene.add(sun);
 
@@ -1075,6 +1102,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       tex.magFilter = THREE.NearestFilter;
       tex.needsUpdate = true;
     }
+    // Imagem de COR entra como sRGB (o curso faz o mesmo no loadTexture): sem
+    // isto o pipeline ACES amostra o albedo como linear e a estampa escurece.
+    if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
     _texCache[url] = tex;
     return tex;
   }
@@ -1114,6 +1144,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       hw: 0, hd: 0, top: 0,
       solid: false,
       trigger: false,
+      // Barra de vida flutuante sobre cada entidade viva deste molde (showHealthBar).
+      healthBar: false,
       // Quique: 0 = não quica. Vale como COISA QUE CAI e como SUPERFÍCIE — o maior
       // dos dois manda (ver contact).
       bounce: 0,
@@ -1339,6 +1371,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       nx: 0, ny: 0, nz: 0,
       // Plataforma que está me carregando (+ geração, contra slot reciclado).
       _ride: null, _rideGen: 0,
+      // Geração da barra de vida já criada (stepBars recria quando difere).
+      _barGen: 0,
       // Deslocamento DESTA entidade neste quadro (o passageiro soma o da
       // plataforma). Sai de pos - _l, então captura integração E teleporte por
       // place() — velocidade sozinha perderia o segundo.
@@ -1411,6 +1445,11 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     // filho que já está lá é no-op, então nascer de novo sem recolher é seguro.
     if (scene && e.mesh.parent !== scene) scene.add(e.mesh);
     e.mesh.visible = true;
+    // ⭐ Re-arma o auto-update: uma vida ESTÁTICA anterior congelou a matriz
+    // (matrixAutoUpdate=false) e o ramo estático só re-assa quando o flag está
+    // ligado — sem isto, o renascido do pool RENDERIZAVA (e recebia raycast) no
+    // lugar da vida passada, com o .position já no lugar novo. Fantasma.
+    e.mesh.matrixAutoUpdate = true;
     e.mesh.position.set(num(x, 0), num(y, 0), num(z, 0));
     e.mesh.rotation.set(0, 0, 0);
     e.mesh.scale.set(1, 1, 1);
@@ -1464,6 +1503,16 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   function isEntity(e) {
     return !!(e && typeof e === 'object' && e.mesh && e._alive === true);
+  }
+
+  /**
+   * "Quem é você?" — o filtro de identidade das zonas e dos vizinhos. É o
+   * isValidTarget do curso em forma de pergunta: o "quem" do gancho de zona
+   * pode ser QUALQUER corpo que entrou (herói, bola, tiro), e sem perguntar o
+   * molde a moeda conta ponto para o tiro perdido que passou por ela.
+   */
+  function isMold(e, mold) {
+    return isEntity(e) && e._mold === text(mold, '');
   }
 
   function posAxis(e, axis) {
@@ -1924,11 +1973,22 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     return true;
   }
 
-  /** Empurra para fora de TODOS os sólidos candidatos (sequencial). */
+  /**
+   * Empurra para fora de TODOS os sólidos candidatos (sequencial). Os candidatos
+   * incluem as ZONAS (o broadphase é um só para colisão e gatilho) — e zona
+   * AVISA, não empurra: sem o filtro de solid, qualquer mundo com UM sólido
+   * ligava o empurrão também nas zonas — a gema/moeda virava parede em que se
+   * pisa, e o gatilho (que confere a sobreposição DEPOIS do empurrão) nunca
+   * disparava. O teste antigo de zona não via porque o mundo dele não tinha
+   * sólido nenhum, e o resolveSolids só roda sob anySolid.
+   */
   function resolveSolids(e) {
     for (var i = 0; i < _candN; i++) {
       var s = _cand[i];
-      if (s && s._alive) resolveOne(e, s);
+      if (!s || !s._alive) continue;
+      var sm = molds[s._mold];
+      if (!sm || !sm.solid) continue;
+      resolveOne(e, s);
     }
   }
 
@@ -2317,6 +2377,23 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     who.vz = (dz / len) * sp;
   }
 
+  /**
+   * Irmão do seek para um PONTO do mundo: anda rumo a x/z na velocidade do
+   * molde, SÓ no plano — o Y continua da gravidade (um patrulheiro com física
+   * de personagem segue pisando no chão). Perto o bastante do destino, para de
+   * empurrar (senão a entidade vibra em cima do ponto para sempre).
+   */
+  function seekPoint(who, x, z) {
+    if (!isEntity(who)) return;
+    var dx = num(x, 0) - who.mesh.position.x;
+    var dz = num(z, 0) - who.mesh.position.z;
+    var len = Math.sqrt(dx * dx + dz * dz);
+    if (!(len > 0.05)) { who.vx = 0; who.vz = 0; return; }
+    var sp = num(who.speed, 3);
+    who.vx = (dx / len) * sp;
+    who.vz = (dz / len) * sp;
+  }
+
   /** Mira suave da torre do curso: slerp com t = 1 - exp(-suavidade · dt). */
   function aimAt(who, target, smooth) {
     if (!isEntity(who) || !isEntity(target) || !_tv1) return;
@@ -2558,8 +2635,11 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     // Saída SEMPRE premultiplicada (col*alpha) para casar com o CustomBlending
     // do curso (One / OneMinusSrcAlpha). O que separa fogo de fumaça é o ALPHA
     // de saída, não o material: alpha=0 -> src + dst (soma pura, o glow);
-    // alpha>0 -> src + dst*(1-alpha) (cobre o que está atrás, a fumaça).
-    '  float outA = additive > 0.5 ? 0.0 : alpha;',
+    // alpha>0 -> src + dst*(1-alpha) (cobre o que está atrás, a fumaça). O
+    // canal B da curva faz o meio-termo AO LONGO DA VIDA (fogo nasce luz e
+    // morre fumaça) — é o "a *= (1 - vAdditive)" do curso.
+    '  float addLife = texture2D(curve, vec2(vLife, 0.75)).b;',
+    '  float outA = alpha * (1.0 - additive * addLife);',
     '  gl_FragColor = vec4(col * alpha, outA);',
     '}'
   ].join(' ');
@@ -2571,19 +2651,28 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
    * para os casos que a criança pede pelo NOME (ela não vai autorar curva).
    * O valor 0.5 é o neutro (o shader multiplica por 2).
    */
+  // A rampa "add" é o additiveOverLife do curso: quanto do grão é LUZ PURA
+  // (soma, glow) em cada ponto da vida — o resto cobre como fumaça (alpha). Só
+  // vale com o brilho LIGADO; constante 1 = o comportamento binário de antes.
   var CURVES = {
     // Linear: some devagar, tamanho constante. É a rampa de 2 chaves de antes.
-    linear: { shape: [[0, 0.5], [1, 0.5]], fade: [[0, 1], [1, 0]], tint: [[0, 0.5], [1, 0.5]] },
+    linear: { shape: [[0, 0.5], [1, 0.5]], fade: [[0, 1], [1, 0]], tint: [[0, 0.5], [1, 0.5]], add: [[0, 1], [1, 1]] },
     // Suave: nasce pequeno, incha e some — a faísca "respirando".
-    suave: { shape: [[0, 0.15], [0.3, 0.5], [1, 0.05]], fade: [[0, 0], [0.15, 1], [1, 0]], tint: [[0, 0.5], [1, 0.5]] },
+    suave: { shape: [[0, 0.15], [0.3, 0.5], [1, 0.05]], fade: [[0, 0], [0.15, 1], [1, 0]], tint: [[0, 0.5], [1, 0.5]], add: [[0, 1], [1, 1]] },
     // Pulso: estoura grande na hora e murcha rápido (impacto/explosão).
-    pulso: { shape: [[0, 0.6], [0.12, 0.5], [1, 0]], fade: [[0, 1], [0.6, 0.7], [1, 0]], tint: [[0, 0.5], [1, 0.5]] },
-    // Fogo: clarão no nascimento e escurece morrendo — o brilho vem da COR
-    // (tint>0.5 estoura o bloom no começo e apaga no fim).
-    fogo: { shape: [[0, 0.35], [0.25, 0.5], [1, 0.1]], fade: [[0, 1], [0.7, 0.5], [1, 0]], tint: [[0, 0.95], [0.4, 0.55], [1, 0.1]] }
+    pulso: { shape: [[0, 0.6], [0.12, 0.5], [1, 0]], fade: [[0, 1], [0.6, 0.7], [1, 0]], tint: [[0, 0.5], [1, 0.5]], add: [[0, 1], [1, 1]] },
+    // Fogo: clarão no nascimento que MORRE EM FUMAÇA — cor apaga (tint) e a luz
+    // vira alpha (add 1→0), o visual-assinatura do fogo do curso numa draw só.
+    fogo: { shape: [[0, 0.35], [0.25, 0.5], [1, 0.1]], fade: [[0, 1], [0.7, 0.5], [1, 0]], tint: [[0, 0.95], [0.4, 0.55], [1, 0.1]], add: [[0, 1], [0.45, 0.85], [1, 0]] }
   };
   var CURVE_W = 32;
   var _curveCache = null;
+
+  /** A curva pelo nome, com fallback (o mesmo saneamento do bakeCurve). */
+  function curveOf(name) {
+    var k = text(name, 'linear');
+    return CURVES[k] || CURVES.linear;
+  }
 
   /** Lê a rampa de chaves na posição t (0..1), interpolando linearmente. */
   function sampleKeys(keys, t) {
@@ -2624,10 +2713,11 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         data[row0 + 1] = Math.round(tint * 255);
         data[row0 + 2] = Math.round(tint * 255);
         data[row0 + 3] = 255;
-        var row1 = (CURVE_W + x) * 4;      // linha 1: TAMANHO (R) + OPACIDADE (G)
+        var add = Math.max(0, Math.min(1, sampleKeys(c.add, t)));
+        var row1 = (CURVE_W + x) * 4;      // linha 1: TAMANHO (R) + OPACIDADE (G) + LUZ-PURA (B)
         data[row1] = Math.round(shape * 255);
         data[row1 + 1] = Math.round(fade * 255);
-        data[row1 + 2] = 0;
+        data[row1 + 2] = Math.round(add * 255);
         data[row1 + 3] = 255;
       }
       var tex = new THREE.DataTexture(data, CURVE_W, 2);
@@ -2735,6 +2825,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       drag: cfg.drag,
       spin: cfg.spin,
       glow: cfg.glow,
+      // Fumaça ordena por profundidade; e o glow cuja curva TERMINA em alpha
+      // (cauda do fogo) também — o fim dele cobre o que está atrás.
+      needsSort: !cfg.glow || sampleKeys(curveOf(cfg.curve).add, 1) < 0.999,
       attractors: [],
       geometry: geometry,
       material: material,
@@ -2881,7 +2974,31 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     burstAt(name, e.mesh.position.x, e.mesh.position.y + 0.5, e.mesh.position.z);
   }
 
-  /** Liga um jorro CONTÍNUO do efeito num ponto fixo do mundo. */
+  /** Quantos jorros da MESMA receita podem viver juntos (teto de custo). */
+  var MAX_JETS_PER_EFFECT = 8;
+
+  function addJet(fx, name, jet) {
+    var alive = 0;
+    for (var i = 0; i < jets.length; i++) {
+      if (jets[i].active && jets[i].fx === fx) alive++;
+    }
+    if (alive >= MAX_JETS_PER_EFFECT) {
+      // Estourar o teto AVISA (uma vez) — a doença antiga era sumir em silêncio.
+      if (!fx._jetsWarned) {
+        fx._jetsWarned = true;
+        warn('o efeito "' + name + '" já tem ' + MAX_JETS_PER_EFFECT + ' jorros ligados — desligue algum antes de ligar outro');
+      }
+      return;
+    }
+    jets.push(jet);
+  }
+
+  /**
+   * Liga um jorro CONTÍNUO do efeito num ponto fixo do mundo. Vários jorros da
+   * MESMA receita convivem (duas tochas na parede!); religar no MESMO ponto não
+   * duplica, então pode chamar de um gancho que repete. Para um jorro que ANDA,
+   * prenda-o numa entidade ("Ligar o jorro em cima de …").
+   */
   function startEmitter(effect, x, y, z) {
     var k = text(effect, '');
     var fx = effects[k];
@@ -2889,10 +3006,17 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       warn('o efeito "' + k + '" não existe — crie com "Criar o emissor 3D"');
       return;
     }
-    emitters[k] = { fx: fx, entity: null, x: num(x, 0), y: num(y, 1), z: num(z, 0), t: 0, active: true };
+    var bx = num(x, 0);
+    var by = num(y, 1);
+    var bz = num(z, 0);
+    for (var i = 0; i < jets.length; i++) {
+      var j = jets[i];
+      if (j.active && j.fx === fx && !j.entity && j.x === bx && j.y === by && j.z === bz) return;
+    }
+    addJet(fx, k, { fx: fx, entity: null, gen: 0, x: bx, y: by, z: bz, t: 0, active: true });
   }
 
-  /** Liga um jorro CONTÍNUO do efeito seguindo uma entidade (tocha/nave/rastro). */
+  /** Liga um jorro CONTÍNUO seguindo uma entidade (um por entidade — rastro em N naves). */
   function emitterOn(effect, e) {
     var k = text(effect, '');
     var fx = effects[k];
@@ -2901,12 +3025,20 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       return;
     }
     if (!isEntity(e)) return;
-    emitters[k] = { fx: fx, entity: e, x: 0, y: 0, z: 0, t: 0, active: true };
+    for (var i = 0; i < jets.length; i++) {
+      var j = jets[i];
+      if (j.active && j.fx === fx && j.entity === e && j.gen === e._gen) return;
+    }
+    addJet(fx, k, { fx: fx, entity: e, gen: e._gen, x: 0, y: 0, z: 0, t: 0, active: true });
   }
 
+  /** Desliga TODOS os jorros dessa receita (os de ponto e os presos em entidade). */
   function stopEmitter(effect) {
-    var em = emitters[text(effect, '')];
-    if (em) em.active = false;
+    var fx = effects[text(effect, '')];
+    if (!fx) return;
+    for (var i = 0; i < jets.length; i++) {
+      if (jets[i].fx === fx) jets[i].active = false;
+    }
   }
 
   /** Puxa as faíscas do efeito para um ponto (inverso do quadrado, como o curso). */
@@ -2922,14 +3054,19 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   /** A cada quadro: cada jorro ativo solta grãos conforme a sua taxa. */
   function stepEmitters(dt) {
-    for (var k in emitters) {
-      var em = emitters[k];
-      if (!em.active) continue;
+    for (var i = jets.length - 1; i >= 0; i--) {
+      var em = jets[i];
       var fx = em.fx;
-      if (!fx || fx.emissionRate <= 0) continue;
+      // Sai da lista: jorro desligado, receita sem taxa, entidade recolhida OU
+      // slot RECICLADO (a marca de geração — sem ela o rastro grudava no
+      // estranho que reusou o slot; o mesmo latch da câmera e da fala).
+      if (!em.active || !fx || fx.emissionRate <= 0 ||
+          (em.entity && (!em.entity._alive || em.entity._gen !== em.gen))) {
+        jets.splice(i, 1);
+        continue;
+      }
       var ox, oy, oz;
       if (em.entity) {
-        if (!em.entity._alive) { em.active = false; continue; }
         ox = em.entity.mesh.position.x;
         oy = em.entity.mesh.position.y + 0.5;
         oz = em.entity.mesh.position.z;
@@ -2999,8 +3136,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   function writeParticles(fx) {
     var list = fx.particles;
     // Fumaça/névoa (não-aditivo) precisa desenhar do fundo para a frente —
-    // ordena por distância à câmera (o depth-sort do curso). Glow (aditivo) não.
-    if (!fx.glow && camera && camera.position && list.length > 1) {
+    // ordena por distância à câmera (o depth-sort do curso). Glow puro não;
+    // glow com cauda alpha na curva (fogo) volta a precisar.
+    if (fx.needsSort && camera && camera.position && list.length > 1) {
       var cx = camera.position.x, cy = camera.position.y, cz = camera.position.z;
       for (var s = 0; s < list.length; s++) {
         var q = list[s];
@@ -3027,7 +3165,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   function sortByDepth(a, b) { return b._sf - a._sf; }
 
   function resetParticles() {
-    for (var ek in emitters) delete emitters[ek];
+    jets.length = 0;
     for (var k in effects) {
       var fx = effects[k];
       while (fx.particles.length > 0) fx.free.push(fx.particles.pop());
@@ -3037,12 +3175,16 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   }
 
   // ---- 🎬 Mini-composer próprio (bloom dual-filter do curso + vinheta + ACES) ----
-  // O esm.sh embute uma SEGUNDA cópia de three nos addons (instanceof quebra),
-  // então nada de EffectComposer/Pass: o quad de tela cheia e o ping-pong de
-  // render targets são nossos. Shaders do BloomPass do curso (downsample Karis +
-  // upsample tent + composite) portados sem a matriz de cor; o passe final faz
-  // vinheta + ACES (Narkowicz) + conversão sRGB — com o composer ligado a cena
-  // renderiza LINEAR (NoToneMapping) em HalfFloat.
+  // Por que não o EffectComposer dos addons: ele MEXE em estado interno do
+  // renderer (autoClear/targets), difícil de casar com o nosso fallback
+  // silencioso. (A velha justificativa "esm.sh duplica o three e o instanceof
+  // quebra" foi REFUTADA por spike em browser real — addons com ?external=three
+  // dedupam; é por isso que os LOADERS de addon podem ser usados.) O quad de
+  // tela cheia e o ping-pong de render targets são nossos. Shaders do BloomPass
+  // do curso (downsample Karis + upsample tent + composite) portados sem a
+  // matriz de cor; o passe final faz vinheta + ACES (Narkowicz) + conversão
+  // sRGB — com o composer ligado a cena renderiza LINEAR (NoToneMapping) em
+  // HalfFloat.
   var BLOOM_LEVELS = 4;
 
   var QUAD_VSH = [
@@ -3737,6 +3879,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     // segue contando e some — senão uma fala em andamento na hora da morte
     // ficava pendurada para sempre na tela de game over.
     stepSays(state === 'pausado' ? 0 : dt);
+    // As barras não têm relógio — só acompanham quem está vivo (a morte e o
+    // reset as recolhem sozinhas via geração).
+    stepBars();
     try {
       renderFrame();
     } catch (e) {
@@ -3744,6 +3889,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       renderer.setAnimationLoop(null);
     }
     justPressed = {};
+    mouseJust = false;
   }
 
   function stepSystems(dt) {
@@ -3846,6 +3992,75 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       s.el.style.display = '';
       s.el.style.left = ((_tv1.x * 0.5 + 0.5) * 100) + '%';
       s.el.style.top = ((-_tv1.y * 0.5 + 0.5) * 100) + '%';
+    }
+  }
+
+  // ---- ❤️ Barra de vida flutuante (por MOLDE, projetada como o balão) ----
+
+  /**
+   * Uma barrinha por entidade viva dos moldes marcados. Mesma técnica do say
+   * (DOM projetado por quadro), mas SEM relógio: a barra vive enquanto a
+   * entidade vive. A lista se cura sozinha — slot reciclado (gen), molde
+   * desmarcado ou morte tiram a barra no quadro seguinte.
+   */
+  var bars = [];
+  function showHealthBar(mold, on) {
+    var m = molds[text(mold, '')];
+    if (!m) return;
+    m.healthBar = on !== false;
+  }
+  function clearBars() {
+    for (var i = 0; i < bars.length; i++) {
+      if (bars[i].el.parentNode) bars[i].el.parentNode.removeChild(bars[i].el);
+    }
+    bars.length = 0;
+  }
+  function makeBar(e) {
+    var el = document.createElement('div');
+    el.className = 'szg3k-bar';
+    var fill = document.createElement('i');
+    el.appendChild(fill);
+    hudLayer.appendChild(el);
+    bars.push({ e: e, gen: e._gen, el: el, fill: fill, pct: -1 });
+    e._barGen = e._gen;
+  }
+  function stepBars() {
+    if (!shellReady || !camera) return;
+    // Nascimentos: molde marcado + entidade viva sem barra desta geração.
+    for (var pk in pools) {
+      var m = molds[pk];
+      if (!m || !m.healthBar) continue;
+      var act = pools[pk].active;
+      for (var ai = 0; ai < act.length; ai++) {
+        var a = act[ai];
+        if (a && a._alive && a._barGen !== a._gen) makeBar(a);
+      }
+    }
+    if (!bars.length) return;
+    for (var i = bars.length - 1; i >= 0; i--) {
+      var b = bars[i];
+      var bm = molds[b.e._mold];
+      if (!b.e._alive || b.e._gen !== b.gen || !bm || !bm.healthBar) {
+        if (b.el.parentNode) b.el.parentNode.removeChild(b.el);
+        bars.splice(i, 1);
+        continue;
+      }
+      var pct = b.e.maxHealth > 0 ? b.e.health / b.e.maxHealth : 0;
+      if (pct < 0) pct = 0;
+      if (pct > 1) pct = 1;
+      // Só reescreve o style quando a vida MUDA (50 barras × 60 fps é DOM demais).
+      var step = Math.round(pct * 100);
+      if (step !== b.pct) {
+        b.pct = step;
+        b.fill.style.width = step + '%';
+        b.fill.style.background = pct > 0.5 ? '#4ade80' : (pct > 0.25 ? '#fbbf24' : '#f87171');
+      }
+      _tv1.set(b.e.mesh.position.x, b.e.mesh.position.y + (bm.top || 1) + 0.15, b.e.mesh.position.z);
+      _tv1.project(camera);
+      if (_tv1.z > 1) { b.el.style.display = 'none'; continue; }
+      b.el.style.display = '';
+      b.el.style.left = ((_tv1.x * 0.5 + 0.5) * 100) + '%';
+      b.el.style.top = ((-_tv1.y * 0.5 + 0.5) * 100) + '%';
     }
   }
 
@@ -4118,8 +4333,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     scene = null;
     camera = null;
     _ray = null;
-    emitters = Object.create(null);
+    jets.length = 0;
     gridCells = Object.create(null);
+    bars.length = 0;
   }
 
   window.addEventListener('pagehide', disposeAll);
@@ -4189,6 +4405,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     moveWithKeys: guard('moveWithKeys', moveWithKeys),
     keyDown: guard('keyDown', function (k) { return keys[normKey(k)] === true; }),
     keyPressed: guard('keyPressed', function (k) { return justPressed[normKey(k)] === true; }),
+    mouseDown: guard('mouseDown', function () { return mouseHeld; }),
+    mousePressed: guard('mousePressed', function () { return mouseJust; }),
     setPauseKey: guard('setPauseKey', function (k) {
       var key = normKey(k);
       if (key) config.pauseKey = key;
@@ -4259,6 +4477,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     setPhysics: guard('setPhysics', setPhysics),
     setCollider: guard('setCollider', setCollider),
     passThrough: guard('passThrough', passThrough),
+    showHealthBar: guard('showHealthBar', showHealthBar),
     makeTrigger: guard('makeTrigger', makeTrigger),
     onOverlap: guard('onOverlap', onOverlap),
     setBounce: guard('setBounce', setBounce),
@@ -4281,6 +4500,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       return posAxis(e, a);
     }),
     exists: guard('exists', function (e) { return isEntity(e); }),
+    isMold: guard('isMold', isMold),
     // Valores que faltavam para a criança escrever a PRÓPRIA regra (o kit tinha
     // muito comando e pouco valor — sem eles, "se a velocidade for..." ou "se a
     // distância for..." não dava para montar).
@@ -4333,6 +4553,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     stateTimer: guard('stateTimer', stateTimer),
     // 🎯 Comportamentos
     seek: guard('seek', seek),
+    seekPoint: guard('seekPoint', seekPoint),
     aimAt: guard('aimAt', aimAt),
     faceVelocity: guard('faceVelocity', faceVelocity),
     isAimingAt: guard('isAimingAt', isAimingAt),

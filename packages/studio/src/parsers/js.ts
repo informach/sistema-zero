@@ -5860,6 +5860,8 @@ function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'keyPressed' && args[0]?.type === 'StringLiteral') {
     return { type: 'g3k:keyPressed', key: args[0].value as string }
   }
+  if (method === 'mouseDown' && args.length === 0) return { type: 'g3k:mouseDown' }
+  if (method === 'mousePressed' && args.length === 0) return { type: 'g3k:mousePressed' }
   if (method === 'posOf') {
     const charVar = identifierName(args[0])
     if (charVar && args[1]?.type === 'StringLiteral') {
@@ -5875,6 +5877,12 @@ function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const charVar = identifierName(args[0])
     if (charVar && args[1]?.type === 'StringLiteral') {
       return { type: 'g3k:entityStateIs', charVar, state: args[1].value as string }
+    }
+  }
+  if (method === 'isMold') {
+    const charVar = identifierName(args[0])
+    if (charVar && args[1]?.type === 'StringLiteral') {
+      return { type: 'g3k:isMold', charVar, mold: args[1].value as string }
     }
   }
   if (method === 'isAimingAt') {
@@ -6671,6 +6679,14 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       if (!charVar || args[1]?.type !== 'BooleanLiteral') return null
       return { type: 'g3k:passThrough', charVar, ghost: args[1].value as boolean }
     }
+    case 'showHealthBar': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'BooleanLiteral') return null
+      return {
+        type: 'g3k:showHealthBar',
+        mold: args[0].value as string,
+        on: args[1].value as boolean,
+      }
+    }
     case 'onOverlap': {
       // generator: SZGameKit3D.onOverlap("molde", function (zona, quem) {…})
       if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
@@ -6794,6 +6810,13 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       const charVar = identifierName(args[0])
       const targetVar = identifierName(args[1])
       return charVar && targetVar ? { type: 'g3k:seek', charVar, targetVar } : null
+    }
+    case 'seekPoint': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'g3k:seekPoint', charVar, x, z } : null
     }
     case 'aimAt': {
       const charVar = identifierName(args[0])
@@ -9599,9 +9622,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3k:countAlive':
     case 'g3k:keyDown':
     case 'g3k:keyPressed':
+    case 'g3k:mouseDown':
+    case 'g3k:mousePressed':
     case 'g3k:posOf':
     case 'g3k:exists':
     case 'g3k:entityStateIs':
+    case 'g3k:isMold':
     case 'g3k:isAimingAt':
     case 'g3k:healthOf':
     case 'g3k:entityValue':

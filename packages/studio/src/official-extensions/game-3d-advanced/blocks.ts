@@ -527,7 +527,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga o arrasto: a velocidade da entidade vai morrendo sozinha (quanto maior o número, mais rápido freia). Bom para empurrões e derrapadas.',
+      'Liga o arrasto: a velocidade da entidade vai morrendo sozinha (quanto maior o número, mais rápido freia). Bom para empurrões e derrapadas. Freia só no PLANO (x/z) — a queda continua com a gravidade.',
   },
   {
     type: 'sz_g3k_look_at',
@@ -583,6 +583,18 @@ export const gameKit3DBlocks = [
     colour: C,
     tooltip:
       'Verdadeiro se a entidade existe e está viva (não foi recolhida). Use antes de mexer num alvo guardado — ele pode já ter sido derrotado.',
+  },
+  {
+    type: 'sz_g3k_is_mold',
+    message0: '%1 é do molde %2 ?',
+    args0: [
+      { type: 'field_name_picker', name: 'CHAR', text: 'quem', kind: 'entity3d' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'heroi', kind: 'mold3d' },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Pergunta a IDENTIDADE de uma entidade. É o filtro das zonas: o "quem" do "Quando alguém encostar" pode ser qualquer coisa que entrou (herói, bola, tiro) — pergunte o molde antes de contar o ponto, como os jogos de verdade filtram os alvos.',
   },
   {
     type: 'sz_g3k_set_entity_value',
@@ -728,6 +740,21 @@ export const gameKit3DBlocks = [
       'Comportamento de caçador: aponta a velocidade da entidade para o alvo, usando a velocidade do molde dela. Use a cada quadro (no cérebro do estado).',
   },
   {
+    type: 'sz_g3k_seek_point',
+    message0: 'Fazer %1 andar rumo ao ponto x %2 z %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'ela', kind: 'entity3d' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Anda rumo a um LUGAR do mundo (não a uma entidade), na velocidade do molde, e para ao chegar. Só empurra no chão — a altura continua da gravidade. Com "sortear de … a …" vira passeio; com uma lista de pontos vira patrulha.',
+  },
+  {
     type: 'sz_g3k_aim_at',
     message0: 'Fazer %1 mirar em %2 (suavidade %3)',
     args0: [
@@ -835,6 +862,19 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip: 'Quanto de vida a entidade tem agora. Bom para o placar da tela.',
+  },
+  {
+    type: 'sz_g3k_show_health_bar',
+    message0: 'Mostrar a barra de vida do molde %1 %2',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'chefao', kind: 'mold3d' },
+      { type: 'field_checkbox', name: 'ON', checked: true },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cada entidade viva desse molde ganha uma barrinha de vida flutuando sobre a cabeça, que acompanha ela pela tela e muda de cor conforme a vida cai. Ligue no chefão e nos inimigos de RPG; desligue para esconder de novo.',
   },
   {
     type: 'sz_g3k_on_entity_death',
@@ -1500,6 +1540,24 @@ export const gameKit3DBlocks = [
       'Onde no chão do mundo o mouse está apontando (x, y ou z). Use para mover algo até o clique, mirar no chão ou construir onde a criança apontar.',
   },
   {
+    type: 'sz_g3k_mouse_pressed',
+    message0: 'o mouse foi clicado agora ?',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro SÓ no quadro do clique/toque — o gatilho do point-and-click: "se o mouse foi clicado agora, guardar quem está sob o mouse". O irmão do "a tecla foi apertada agora?".',
+  },
+  {
+    type: 'sz_g3k_mouse_down',
+    message0: 'o mouse está apertado ?',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro enquanto o botão do mouse (ou o dedo) está SEGURADO. Bom para carregar um tiro, arrastar mirando ou regar uma plantinha sem soltar.',
+  },
+  {
     type: 'sz_g3k_camera_fps',
     message0: 'Câmera em 1ª pessoa em %1 (olhar com o mouse)',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
@@ -1873,6 +1931,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g3k_velocity_of',
       'sz_g3k_distance_between',
       'sz_g3k_exists',
+      'sz_g3k_is_mold',
     ],
   },
   {
@@ -1899,7 +1958,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎯 Comportamentos',
     colour: C,
-    types: ['sz_g3k_seek', 'sz_g3k_aim_at', 'sz_g3k_face_velocity', 'sz_g3k_is_aiming_at'],
+    types: [
+      'sz_g3k_seek',
+      'sz_g3k_seek_point',
+      'sz_g3k_aim_at',
+      'sz_g3k_face_velocity',
+      'sz_g3k_is_aiming_at',
+    ],
   },
   {
     name: '🏃 Física',
@@ -1935,7 +2000,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🖱️ Mira & clique',
     colour: C,
-    types: ['sz_g3k_pick', 'sz_g3k_pointer_over', 'sz_g3k_ground_point'],
+    types: [
+      'sz_g3k_pick',
+      'sz_g3k_pointer_over',
+      'sz_g3k_ground_point',
+      'sz_g3k_mouse_pressed',
+      'sz_g3k_mouse_down',
+    ],
   },
   {
     name: '🕸️ Vizinhança',
@@ -1945,7 +2016,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '❤️ Combate',
     colour: C,
-    types: ['sz_g3k_hurt', 'sz_g3k_health_of', 'sz_g3k_max_health_of', 'sz_g3k_on_entity_death'],
+    types: [
+      'sz_g3k_hurt',
+      'sz_g3k_health_of',
+      'sz_g3k_max_health_of',
+      'sz_g3k_show_health_bar',
+      'sz_g3k_on_entity_death',
+    ],
   },
   {
     name: '💥 Faíscas 3D',
@@ -2084,6 +2161,7 @@ export const G3K_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3k_set_entity_value: { VALUE: numShadow(0) },
   sz_g3k_move_forward: { SPEED: numShadow(6) },
   sz_g3k_state_timer: { SEC: numShadow(1.5) },
+  sz_g3k_seek_point: { X: numShadow(0), Z: numShadow(0) },
   sz_g3k_aim_at: { SMOOTH: numShadow(5) },
   sz_g3k_fall: { G: numShadow(20) },
   sz_g3k_jump: { FORCE: numShadow(9) },

@@ -502,12 +502,18 @@ export function compileExpr(
       return `SZGameKit3D.keyDown(${JSON.stringify(expr.key)})`
     case 'g3k:keyPressed':
       return `SZGameKit3D.keyPressed(${JSON.stringify(expr.key)})`
+    case 'g3k:mouseDown':
+      return 'SZGameKit3D.mouseDown()'
+    case 'g3k:mousePressed':
+      return 'SZGameKit3D.mousePressed()'
     case 'g3k:posOf':
       return `SZGameKit3D.posOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.axis)})`
     case 'g3k:exists':
       return `SZGameKit3D.exists(${identifiers.get(expr.charVar)})`
     case 'g3k:entityStateIs':
       return `SZGameKit3D.entityStateIs(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.state)})`
+    case 'g3k:isMold':
+      return `SZGameKit3D.isMold(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.mold)})`
     case 'g3k:isAimingAt':
       return `SZGameKit3D.isAimingAt(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g3k:touches':

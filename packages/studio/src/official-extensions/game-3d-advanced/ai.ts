@@ -89,10 +89,14 @@ API global (cada método corresponde a exatamente 1 bloco):
   setSky(topo, horizonte) — troca o ceu em runtime.
 - Mira/clique (raycast): const alvo = pick('molde') — a entidade do molde sob o
   mouse (point-and-click/RTS); pointerOver(ent) — o mouse esta sobre ela?;
-  groundPoint('x'|'y'|'z') — o ponto do chao sob o mouse.
+  groundPoint('x'|'y'|'z') — o ponto do chao sob o mouse; mousePressed() — o
+  clique ACONTECEU neste quadro (o gatilho do point-and-click: if
+  (mousePressed()) { const alvo = pick('molde'); ... }); mouseDown() — segurando.
 - Entidades: place(ent, x, y, z); setYaw(ent, graus); setVelocity(ent, x, y,
-  z); setDrag(ent, n); lookAt(a, b); moveForward(ent, vel); posOf(ent,
-  'x'|'y'|'z'); exists(ent) — sempre pergunte antes de usar um alvo guardado.
+  z); setDrag(ent, n) — freia so no plano x/z; lookAt(a, b); moveForward(ent,
+  vel); posOf(ent, 'x'|'y'|'z'); exists(ent) — sempre pergunte antes de usar um
+  alvo guardado; isMold(ent, 'molde') — a identidade (o filtro do 'quem' das
+  zonas: em onOverlap, confira isMold(quem, 'heroi') antes de contar o ponto).
 - FSM por entidade (o coração): toda entidade nasce no estado 'parado'.
   onEnterEntityState('molde', 'estado', function (ela) {});
   onEntityStateUpdate('molde', 'estado', function (ela, dt) {});
@@ -100,12 +104,17 @@ API global (cada método corresponde a exatamente 1 bloco):
   setEntityState(ent, 'estado') — idempotente; entityStateIs(ent, 'estado');
   stateTimer('molde', 'estado', segundos, 'proximo') — transição por tempo.
 - Comportamentos: seek(quem, alvo) — persegue com a velocidade do molde;
-  aimAt(quem, alvo, suavidade) — giro suave de torre (slerp);
-  faceVelocity(ent); isAimingAt(a, b) — hora de atirar.
+  seekPoint(quem, x, z) — anda rumo a um PONTO do mundo (waypoint/patrulha; so
+  no plano, para ao chegar); aimAt(quem, alvo, suavidade) — giro suave de torre
+  (slerp); faceVelocity(ent); isAimingAt(a, b) — hora de atirar.
 - Vizinhança (grade espacial): forEachNear(ent, 'molde', raio, function
   (vizinho) {}); const alvo = nearest('molde', ent); touches(a, b, dist).
 - Combate: hurt(ent, dano) — i-frames de 0.5s embutidos; healthOf(ent);
-  onEntityDeath('molde', function (ela) {}) — recolhe sozinho depois.
+  onEntityDeath('molde', function (ela) {}) — recolhe sozinho depois;
+  showHealthBar('molde', true) — barrinha de vida flutuante sobre cada entidade
+  viva do molde (verde -> vermelha; chefao/RPG). Morte dramatica (cair antes de
+  sumir): NAO use hurt no golpe final — vida numa gaveta + estado 'morrendo'
+  (fall + stateTimer) + recycle no estado seguinte.
 - Faíscas 3D (partículas data-driven): defineEffect('nome', {count, colorFrom,
   colorTo, spread, sizeFrom, sizeTo, life, gravity}) — EXPLOSAO; burstAt('nome',
   x, y, z); burstOn('nome', ent) — combine com onEntityDeath.
@@ -113,9 +122,13 @@ API global (cada método corresponde a exatamente 1 bloco):
   sizeFrom, sizeTo, rate, speed, cone, gravity, glow}) — fogo/fumaca/rastro
   (cone em graus: 0 reto, 180 esfera; glow true=fogo, false=fumaca ordenada);
   startEmitter('nome', x, y, z) — jorra num ponto; emitterOn('nome', ent) —
-  jorra seguindo a entidade; stopEmitter('nome'); addAttractor('nome', x, y, z,
-  forca, alcance) — ima que puxa as particulas (vortice). O defineEmitter aceita
-  curve: 'linear'|'suave'|'pulso'|'fogo' (curva de vida assada numa textura).
+  jorra seguindo a entidade; stopEmitter('nome') — apaga TODOS os jorros da
+  receita; addAttractor('nome', x, y, z, forca, alcance) — ima que puxa as
+  particulas (vortice). Varios jorros da MESMA receita convivem (2 tochas,
+  rastro em N naves; ate 8 por efeito; religar no mesmo alvo nao duplica). O
+  defineEmitter aceita curve: 'linear'|'suave'|'pulso'|'fogo' (curva de vida
+  assada numa textura; 'fogo' + glow nasce luz pura e morre fumaca — o
+  additiveOverLife do curso).
 - Telas/HUD: setScreenText('menu'|'pausa'|'carregando'|'fim'|'vitoria',
   titulo, texto, botao); createScreen('nome', titulo, texto);
   addButton('tela', 'rotulo', function () {}); showScreen('nome');
