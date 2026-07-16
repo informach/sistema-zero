@@ -318,6 +318,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'w3d:carSpeed' })
   | (JSExprCommon & { type: 'w3d:keyDown'; key: string })
   | (JSExprCommon & { type: 'w3d:keyPressed'; key: string })
+  | (JSExprCommon & { type: 'w3d:timeOfDay' })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -774,6 +775,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('w3d:carSpeed'), ...idField }),
     z.object({ type: z.literal('w3d:keyDown'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:keyPressed'), key: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:timeOfDay'), ...idField }),
     z.object({ type: z.literal('g3k:posOf'), axis: irText(), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:exists'), charVar: irText(), ...idField }),
     z.object({
@@ -3866,6 +3868,11 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'w3d:onCrash'; body: JSStatement[] })
   | (JSStatementCommon & { type: 'w3d:effects'; on: boolean; strength: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:dayNight'; minutes: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:setTime'; time: string })
+  | (JSStatementCommon & { type: 'w3d:weather'; kind: string })
+  | (JSStatementCommon & { type: 'w3d:wind'; force: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:onDayNight'; when: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'w3d:onUpdate'; dtName: string; body: JSStatement[] })
   // Orientação a objetos
   | (JSStatementCommon & {
@@ -7647,6 +7654,24 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('w3d:dayNight'),
+      minutes: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:setTime'), time: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:weather'), kind: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:wind'),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:onDayNight'),
+      when: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('w3d:onUpdate'),
       dtName: irText(),
       body: z.array(JSStatementSchema),
@@ -8528,6 +8553,11 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:clearArea',
   'w3d:onCrash',
   'w3d:effects',
+  'w3d:dayNight',
+  'w3d:setTime',
+  'w3d:weather',
+  'w3d:wind',
+  'w3d:onDayNight',
   'w3d:onUpdate',
 ])
 

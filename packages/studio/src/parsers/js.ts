@@ -1057,14 +1057,21 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     (expr.arguments[1]?.type === 'ArrowFunctionExpression' ||
       expr.arguments[1]?.type === 'FunctionExpression')
   ) {
-    const url = toExpr(expr.arguments[0], ctx)
+    // URL só STRING literal (é o NOME do asset no campo seletor do bloco). Um url
+    // variável/expressão segue como código avançado (o bloco é um seletor, não
+    // aceita expressão) — round-trip fiel com o `field_asset_picker`.
+    const urlArg = expr.arguments[0]
     const fn = expr.arguments[1]
     const params = fn.params ?? []
-    if (isSimpleValue(url) && params.length === 1 && params[0]?.type === 'Identifier') {
+    if (
+      urlArg?.type === 'StringLiteral' &&
+      params.length === 1 &&
+      params[0]?.type === 'Identifier'
+    ) {
       return {
         type: 'loaderLoad',
         loaderVar: expr.callee.object.name as string,
-        url: url as JSExpr,
+        url: { type: 'str', value: urlArg.value as string },
         param: params[0].name as string,
         body: bodyOfFn(fn, source, ctx),
       }
@@ -6055,6 +6062,9 @@ const W3D_CAR_STYLES = new Set(['passeio', 'jipe', 'corrida'])
 const W3D_THINGS = new Set(['arvores', 'pinheiros', 'pedras', 'flores', 'cogumelos', 'cactos'])
 const W3D_GRASS_AMOUNTS = new Set(['pouca', 'media', 'muita'])
 const W3D_EFFECTS_ON = new Set(['ligados', 'desligados'])
+const W3D_TIMES = new Set(['manha', 'meiodia', 'entardecer', 'noite'])
+const W3D_WEATHER = new Set(['limpo', 'chuva', 'neve', 'folhas'])
+const W3D_DAY_PHASES = new Set(['dia', 'noite'])
 const W3D_POS_AXES = new Set(['x', 'y', 'z'])
 
 /** Chave de ObjectProperty não-computada (Identifier ou string). */
@@ -6072,6 +6082,7 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   const { method, args } = call
   if (method === 'worldSize' && args.length === 0) return { type: 'w3d:worldSize' }
   if (method === 'carSpeed' && args.length === 0) return { type: 'w3d:carSpeed' }
+  if (method === 'timeOfDay' && args.length === 0) return { type: 'w3d:timeOfDay' }
   if (method === 'carPos' && args[0]?.type === 'StringLiteral') {
     const axis = args[0].value as string
     if (W3D_POS_AXES.has(axis)) return { type: 'w3d:carPos', axis: axis as 'x' | 'y' | 'z' }
@@ -6228,6 +6239,32 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       return isSimpleValue(strength)
         ? { type: 'w3d:effects', on: on === 'ligados', strength }
         : null
+    }
+    case 'dayNight': {
+      const minutes = toExpr(args[0], ctx)
+      return isSimpleValue(minutes) ? { type: 'w3d:dayNight', minutes } : null
+    }
+    case 'setTime': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const time = args[0].value as string
+      return W3D_TIMES.has(time) ? { type: 'w3d:setTime', time } : null
+    }
+    case 'weather': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const kind = args[0].value as string
+      return W3D_WEATHER.has(kind) ? { type: 'w3d:weather', kind } : null
+    }
+    case 'setWind': {
+      const force = toExpr(args[0], ctx)
+      return isSimpleValue(force) ? { type: 'w3d:wind', force } : null
+    }
+    case 'onDayNight': {
+      // generator: SZWorld3D.onDayNight('noite', function () {…})
+      if (args[0]?.type !== 'StringLiteral') return null
+      const when = args[0].value as string
+      if (!W3D_DAY_PHASES.has(when)) return null
+      if (!isFn(args[1]) || (args[1].params ?? []).length > 0) return null
+      return { type: 'w3d:onDayNight', when, body: bodyOfFn(args[1], source, ctx) }
     }
     case 'onUpdate': {
       // generator: SZWorld3D.onUpdate(function (dt) {…})
@@ -10113,6 +10150,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'w3d:carSpeed':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
+    case 'w3d:timeOfDay':
     case 'inputKeyPressed':
     case 'inputPointer':
     case 'isFullscreen':

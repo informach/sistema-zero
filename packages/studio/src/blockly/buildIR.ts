@@ -716,6 +716,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'w3d:keyDown', key: f(block, 'KEY') || 'e' }
     case 'sz_w3d_key_pressed':
       return { type: 'w3d:keyPressed', key: f(block, 'KEY') || 'e' }
+    case 'sz_w3d_time_of_day':
+      return { type: 'w3d:timeOfDay' }
     case 'sz_g3k_entity_value':
       return { type: 'g3k:entityValue', key: f(block, 'KEY'), charVar: f(block, 'CHAR') }
     case 'sz_g3k_state_time':
@@ -3262,13 +3264,14 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       // (document.body é denylistado no parser genérico).
       return { kind: 'js', value: { type: 'mountRenderer', renderer: f(block, 'R') } }
     case 'sz_t3d_load_model':
-      // `carregador.load(url, (modelo) => { … })` — carregamento async (GLTF/HDR/…).
+      // `carregador.load('nome', (modelo) => { … })` — carregamento async (GLTF/HDR).
+      // URL é o NOME do asset 3D (campo seletor), vira string literal.
       return {
         kind: 'js',
         value: {
           type: 'loaderLoad',
           loaderVar: f(block, 'LOADER'),
-          url: exprInput(block, 'URL', { type: 'str', value: 'modelo.glb' }),
+          url: { type: 'str', value: f(block, 'URL') },
           param: f(block, 'PARAM') || 'modelo',
           body: getStatementChildren(block, 'DO', seen),
         },
@@ -8541,6 +8544,34 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'w3d:effects',
           on: (f(block, 'ON') || 'ligados') !== 'desligados',
           strength: exprInput(block, 'STRENGTH', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_daynight':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:dayNight', minutes: exprInput(block, 'MIN', { type: 'num', value: 4 }) },
+      }
+    case 'sz_w3d_set_time':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:setTime', time: f(block, 'TIME') || 'meiodia' } }
+    case 'sz_w3d_weather':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:weather', kind: f(block, 'W') || 'limpo' } }
+    case 'sz_w3d_wind':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:wind', force: exprInput(block, 'F', { type: 'num', value: 1 }) },
+      }
+    case 'sz_w3d_on_daynight':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onDayNight',
+          when: f(block, 'WHEN') || 'noite',
+          body: getStatementChildren(block, 'BODY', seen),
         },
       }
     case 'sz_w3d_on_update':

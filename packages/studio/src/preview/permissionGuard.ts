@@ -92,7 +92,12 @@ export function buildPermissionGuardRuntime(options: PermissionGuardOptions = {}
       };
     }
   } else {
-    window.fetch = blocked('fetch');
+    // fetch REJEITA (não lança síncrono): é a semântica correta do fetch p/ erro
+    // de rede — assim os loaders (GLTFLoader/RGBELoader → FileLoader) tratam no
+    // .catch/onError em vez de estourar um "Uncaught Error" no console.
+    window.fetch = function () {
+      return Promise.reject(new Error('Acesso à rede bloqueado neste preview (fetch). Peça ao professor para liberar o domínio ou use o modo profissional.'));
+    };
     if (window.XMLHttpRequest) {
       window.XMLHttpRequest = function () { throw new Error('Acesso à rede bloqueado neste preview (XMLHttpRequest). Peça ao professor para liberar o domínio ou use o modo profissional.'); };
     }

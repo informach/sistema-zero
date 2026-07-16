@@ -427,7 +427,6 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_t3d_set_background: { COLOR: 'color' },
   sz_t3d_set_intensity: { N: 'number' },
   sz_t3d_renderer_size: { W: 'number', H: 'number' },
-  sz_t3d_load_model: { URL: 'text' },
   // Mundo 3D (world-3d) — soquetes nascidos input_value (inertes na migração,
   // ativos na restauração de sombra + shouldEmitAsShadow).
   sz_w3d_setup: { WORLD: 'number' },
@@ -441,6 +440,8 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_w3d_place_model: { X: 'number', Z: 'number', S: 'number', DEG: 'number' },
   sz_w3d_clear_area: { X: 'number', Z: 'number', R: 'number' },
   sz_w3d_effects: { STRENGTH: 'number' },
+  sz_w3d_daynight: { MIN: 'number' },
+  sz_w3d_wind: { F: 'number' },
 }
 
 interface BlockNode {

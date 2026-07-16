@@ -5,9 +5,22 @@ describe('buildPermissionGuardRuntime', () => {
   it('por padrão (sem rede) bloqueia fetch/XHR/WebSocket', () => {
     const rt = buildPermissionGuardRuntime()
     expect(rt).not.toBe('')
-    expect(rt).toContain("window.fetch = blocked('fetch')")
+    // fetch REJEITA (não lança) — semântica correta; os loaders 3D tratam no .catch.
+    expect(rt).toContain('window.fetch = function')
+    expect(rt).toContain('return Promise.reject(new Error')
     expect(rt).toContain("blocked('WebSocket')")
     expect(rt).toContain('var ALLOW = null;')
+  })
+
+  it('fetch bloqueado devolve Promise REJEITADA (não estoura síncrono)', async () => {
+    const rt = buildPermissionGuardRuntime()
+    const win: Record<string, unknown> = {}
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    new Function('window', 'location', rt)(win, { href: 'about:srcdoc' })
+    const fetchFn = win.fetch as (u: string) => Promise<unknown>
+    const p = fetchFn('modelo.glb')
+    expect(p).toBeInstanceOf(Promise)
+    await expect(p).rejects.toThrow(/rede bloqueado/i)
   })
 
   it('com fetchAllowedOrigins, envolve fetch validando a origem', () => {

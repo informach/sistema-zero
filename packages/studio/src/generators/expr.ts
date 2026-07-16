@@ -563,6 +563,8 @@ export function compileExpr(
       return `SZWorld3D.keyDown(${JSON.stringify(expr.key)})`
     case 'w3d:keyPressed':
       return `SZWorld3D.keyPressed(${JSON.stringify(expr.key)})`
+    case 'w3d:timeOfDay':
+      return 'SZWorld3D.timeOfDay()'
     case 'g3k:stateIs':
       return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
     case 'g3k:gameState':

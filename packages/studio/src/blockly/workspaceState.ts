@@ -5595,6 +5595,29 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             STRENGTH: strength,
           })
     }
+    case 'w3d:dayNight': {
+      const minutes = exprToValueBlock(valueToExpr(stmt.minutes))
+      return minutes === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_daynight', {}, {}, stmt.__id, { MIN: minutes })
+    }
+    case 'w3d:setTime':
+      return block('sz_w3d_set_time', { TIME: stmt.time }, {}, stmt.__id)
+    case 'w3d:weather':
+      return block('sz_w3d_weather', { W: stmt.kind }, {}, stmt.__id)
+    case 'w3d:wind': {
+      const force = exprToValueBlock(valueToExpr(stmt.force))
+      return force === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_wind', {}, {}, stmt.__id, { F: force })
+    }
+    case 'w3d:onDayNight':
+      return block(
+        'sz_w3d_on_daynight',
+        { WHEN: stmt.when },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'w3d:onUpdate':
       return block(
         'sz_w3d_on_update',
@@ -5769,14 +5792,14 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'mountRenderer':
       return block('sz_t3d_mount_renderer', { R: stmt.renderer }, {}, stmt.__id)
     case 'loaderLoad': {
-      const url = exprToValueBlock(stmt.url)
-      if (!url) return rawJSBlock(stmt)
+      // URL é o NOME do asset (campo seletor) — sempre string (o parser só casa
+      // literal de string). Round-trip fiel com o `field_asset_picker`.
+      const url = stmt.url.type === 'str' ? stmt.url.value : ''
       return block(
         'sz_t3d_load_model',
-        { LOADER: stmt.loaderVar, PARAM: stmt.param },
+        { LOADER: stmt.loaderVar, PARAM: stmt.param, URL: url },
         { DO: statementsToBlocks(stmt.body) },
         stmt.__id,
-        { URL: url },
       )
     }
     case 'exprStatement': {
@@ -6360,6 +6383,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_w3d_key_down', { KEY: expr.key })
     case 'w3d:keyPressed':
       return block('sz_w3d_key_pressed', { KEY: expr.key })
+    case 'w3d:timeOfDay':
+      return block('sz_w3d_time_of_day', {})
     case 'g3k:stateIs':
       return block('sz_g3k_state_is', { STATE: expr.name })
     case 'g3k:gameState':

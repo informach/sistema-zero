@@ -249,9 +249,50 @@ export function buildAssetsRuntime(
       window.fetch = function (input) {
         var dataUrl = lookup(input);
         if (dataUrl) return Promise.resolve(toResponse(dataUrl));
+        // Não é asset: delega ao fetch anterior (o permissionGuard já rejeita com
+        // a mensagem certa — arquivo local que falta OU rede bloqueada).
         if (prevFetch) return prevFetch.apply(this, arguments);
         return Promise.reject(new Error('Acesso à rede bloqueado neste preview (fetch).'));
       };
+    } catch (e) {}
+  })();`
+      : ''
+  // Resolvedor de NOME de asset em `<img>.src` — o `TextureLoader` do three (e o
+  // `ImageLoader`) carregam a textura por `image.src`, NÃO por fetch, então o
+  // resolvedor de fetch acima não os alcança. Aqui um shim do setter de `src`:
+  // se o valor for um NOME/caminho LOCAL que casa uma imagem do projeto, troca
+  // pelo dataUrl embutido; data:/blob:/http(s) passam DIRETO (sem interferir nos
+  // jogos 2D, que já setam dataUrl, nem em imagens externas). Só entra com imagens.
+  const imageSrcBlock =
+    Object.keys(safe).length > 0
+      ? `
+  (function () {
+    var proto = window.HTMLImageElement && window.HTMLImageElement.prototype;
+    var desc = proto && Object.getOwnPropertyDescriptor(proto, 'src');
+    if (!desc || !desc.set) return;
+    var IMG = window.__SZGAME_ASSETS || {};
+    var stripExt = function (n) { return n.replace(/\\.[^.]+$/, ''); };
+    var nameOf = function (v) {
+      try { return decodeURIComponent(String(v).split('?')[0].split('#')[0].split('/').pop() || ''); }
+      catch (e) { return ''; }
+    };
+    var origSet = desc.set;
+    try {
+      Object.defineProperty(proto, 'src', {
+        configurable: true,
+        enumerable: desc.enumerable,
+        get: desc.get,
+        set: function (v) {
+          var s = v == null ? '' : String(v);
+          if (s && !/^(https?|data|blob):/i.test(s)) {
+            var name = nameOf(s);
+            var hit = name && typeof IMG[name] === 'string' ? IMG[name]
+              : name && typeof IMG[stripExt(name)] === 'string' ? IMG[stripExt(name)] : null;
+            if (hit) { origSet.call(this, hit); return; }
+          }
+          origSet.call(this, v);
+        },
+      });
     } catch (e) {}
   })();`
       : ''
@@ -262,6 +303,6 @@ export function buildAssetsRuntime(
     Object.defineProperty(window, '__SZGAME_ASSETS', { value: ASSETS, writable: false, configurable: true });
   } catch (e) {
     try { window.__SZGAME_ASSETS = ASSETS; } catch (e2) {}
-  }${metaBlock}${soundsBlock}${models3dBlock}${assetFetchBlock}
+  }${metaBlock}${soundsBlock}${models3dBlock}${assetFetchBlock}${imageSrcBlock}
 })();`
 }

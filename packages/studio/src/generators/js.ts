@@ -112,6 +112,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'g3k:onEvent':
     case 'w3d:onUpdate':
     case 'w3d:onCrash':
+    case 'w3d:onDayNight':
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
@@ -2465,6 +2466,23 @@ ${pad}});`
     }
     case 'w3d:effects':
       return `${pad}SZWorld3D.setEffects(${JSON.stringify(stmt.on ? 'ligados' : 'desligados')}, ${compileExpr(valueToExpr(stmt.strength), 0, identifiers, recAt(base))});`
+    case 'w3d:dayNight':
+      return `${pad}SZWorld3D.dayNight(${compileExpr(valueToExpr(stmt.minutes), 0, identifiers, recAt(base))});`
+    case 'w3d:setTime':
+      return `${pad}SZWorld3D.setTime(${JSON.stringify(stmt.time)});`
+    case 'w3d:weather':
+      return `${pad}SZWorld3D.weather(${JSON.stringify(stmt.kind)});`
+    case 'w3d:wind':
+      return `${pad}SZWorld3D.setWind(${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'w3d:onDayNight': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onDayNight(${JSON.stringify(stmt.when)}, function () {\n${body}\n${pad}});`
+    }
     case 'w3d:onUpdate': {
       const body = compileStatements(
         stmt.body,
@@ -5280,6 +5298,18 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:effects':
       collectExprIdentifiers(valueToExpr(stmt.strength), names)
       return
+    case 'w3d:dayNight':
+      collectExprIdentifiers(valueToExpr(stmt.minutes), names)
+      return
+    case 'w3d:setTime':
+    case 'w3d:weather':
+      return
+    case 'w3d:wind':
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      return
+    case 'w3d:onDayNight':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'w3d:onUpdate':
       names.add(stmt.dtName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
@@ -5720,6 +5750,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:carSpeed':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
+    case 'w3d:timeOfDay':
       return
     case 'w3d:groundHeight':
       collectExprIdentifiers(valueToExpr(expr.x), names)

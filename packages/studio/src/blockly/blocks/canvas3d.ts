@@ -362,7 +362,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'com o carregador %1 carregar o modelo %2',
     args0: [
       { type: 'field_name_picker', name: 'LOADER', text: 'carregador', kind: 'variable' },
-      { type: 'input_value', name: 'URL', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'URL', text: 'modelo', kind: '3d' },
     ],
     message1: 'quando pronto, com o modelo em %1, fazer %2',
     args1: [
@@ -374,7 +374,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Carrega um modelo 3D (.glb) e, quando terminar, roda os blocos de dentro com o modelo pronto (ex.: "adicionar modelo.scene em cena"). Vira "carregador.load(url, (modelo) => { … })".',
+      'Carrega um modelo 3D (.glb) que você enviou em "Imagens" e, quando terminar, roda os blocos de dentro com o modelo pronto (ex.: "adicionar modelo.scene em cena"). Vira "carregador.load(\'nome\', (modelo) => { … })".',
   },
 ]
 
