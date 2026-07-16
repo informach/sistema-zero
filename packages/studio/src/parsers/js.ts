@@ -6083,6 +6083,8 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'worldSize' && args.length === 0) return { type: 'w3d:worldSize' }
   if (method === 'carSpeed' && args.length === 0) return { type: 'w3d:carSpeed' }
   if (method === 'timeOfDay' && args.length === 0) return { type: 'w3d:timeOfDay' }
+  if (method === 'raceTime' && args.length === 0) return { type: 'w3d:raceTime' }
+  if (method === 'raceBest' && args.length === 0) return { type: 'w3d:raceBest' }
   if (method === 'carPos' && args[0]?.type === 'StringLiteral') {
     const axis = args[0].value as string
     if (W3D_POS_AXES.has(axis)) return { type: 'w3d:carPos', axis: axis as 'x' | 'y' | 'z' }
@@ -6279,6 +6281,35 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
         image: args[0].value as string,
         caption: args[1].value as string,
       }
+    }
+    case 'raceCreate': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const deg = toExpr(args[2], ctx)
+      const laps = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(deg) && isSimpleValue(laps)
+        ? { type: 'w3d:raceCreate', x, z, deg, laps }
+        : null
+    }
+    case 'raceCheckpoint': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const deg = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(deg)
+        ? { type: 'w3d:raceCheckpoint', x, z, deg }
+        : null
+    }
+    case 'raceOnStart': {
+      if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
+      return { type: 'w3d:raceOnStart', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'raceOnCheckpoint': {
+      if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
+      return { type: 'w3d:raceOnCheckpoint', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'raceOnFinish': {
+      if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
+      return { type: 'w3d:raceOnFinish', body: bodyOfFn(args[0], source, ctx) }
     }
     case 'car': {
       // generator: SZWorld3D.car({ style, color })
@@ -10322,6 +10353,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':
+    case 'w3d:raceTime':
+    case 'w3d:raceBest':
     case 'inputKeyPressed':
     case 'inputPointer':
     case 'isFullscreen':

@@ -319,6 +319,8 @@ export type JSExpr =
   | (JSExprCommon & { type: 'w3d:keyDown'; key: string })
   | (JSExprCommon & { type: 'w3d:keyPressed'; key: string })
   | (JSExprCommon & { type: 'w3d:timeOfDay' })
+  | (JSExprCommon & { type: 'w3d:raceTime' })
+  | (JSExprCommon & { type: 'w3d:raceBest' })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -776,6 +778,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('w3d:keyDown'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:keyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:timeOfDay'), ...idField }),
+    z.object({ type: z.literal('w3d:raceTime'), ...idField }),
+    z.object({ type: z.literal('w3d:raceBest'), ...idField }),
     z.object({ type: z.literal('g3k:posOf'), axis: irText(), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:exists'), charVar: irText(), ...idField }),
     z.object({
@@ -3883,6 +3887,22 @@ export type JSStatement =
       title: string
     })
   | (JSStatementCommon & { type: 'w3d:galleryAdd'; image: string; caption: string })
+  | (JSStatementCommon & {
+      type: 'w3d:raceCreate'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+      laps: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:raceCheckpoint'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:raceOnStart'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:raceOnCheckpoint'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:raceOnFinish'; body: JSStatement[] })
   | (JSStatementCommon & { type: 'w3d:car'; style: string; color: string })
   | (JSStatementCommon & {
       type: 'w3d:carStats'
@@ -7754,6 +7774,28 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('w3d:raceCreate'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      deg: z.union([JSExprSchema, z.number()]),
+      laps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:raceCheckpoint'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      deg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:raceOnStart'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
+      type: z.literal('w3d:raceOnCheckpoint'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:raceOnFinish'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
       type: z.literal('w3d:carStats'),
       speed: z.union([JSExprSchema, z.number()]),
       turn: z.union([JSExprSchema, z.number()]),
@@ -8723,6 +8765,11 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:totemImage',
   'w3d:galleryCreate',
   'w3d:galleryAdd',
+  'w3d:raceCreate',
+  'w3d:raceCheckpoint',
+  'w3d:raceOnStart',
+  'w3d:raceOnCheckpoint',
+  'w3d:raceOnFinish',
   'w3d:grass',
   'w3d:scatter',
   'w3d:scatterModel',

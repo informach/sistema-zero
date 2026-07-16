@@ -586,6 +586,92 @@ export const world3DBlocks = [
       'Pendura mais uma imagem na galeria (na ordem que você chamar). Cada quadro ganha um ponto "E: ver" que abre a imagem grande com a legenda. Use depois de "Criar a galeria".',
   },
 
+  // ---- 🏁 Kit Corrida ----
+  {
+    type: 'sz_w3d_race_create',
+    message0: 'Criar a corrida: largada em x %1 z %2 (virada %3 graus, %4 voltas)',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+      { type: 'input_value', name: 'LAPS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta uma corrida: um portal de largada onde você marcar e quantas voltas dá. O cronômetro e o contador de checkpoints aparecem sozinhos no canto. Ponha os checkpoints depois — a ORDEM dos blocos é a ordem da pista.',
+  },
+  {
+    type: 'sz_w3d_race_checkpoint',
+    message0: 'Pôr um checkpoint em x %1 z %2 (girado %3 graus)',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe um anel de checkpoint na pista. A criança precisa passar por eles NA ORDEM em que você criou (o próximo brilha mais). Depois do último, cruze a largada de novo para fechar a volta.',
+  },
+  {
+    type: 'sz_w3d_race_on_start',
+    message0: 'Quando a corrida começar',
+    args0: [],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos de dentro no momento em que a corrida começa (o carrinho cruzou a largada depois de se afastar). Bom para tocar um "3, 2, 1, JÁ!".',
+  },
+  {
+    type: 'sz_w3d_race_on_checkpoint',
+    message0: 'Quando passar por um checkpoint',
+    args0: [],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos de dentro cada vez que o carrinho passa por um checkpoint na ordem certa. Toque um "bip", mostre um balão.',
+  },
+  {
+    type: 'sz_w3d_race_on_finish',
+    message0: 'Quando completar a corrida',
+    args0: [],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos de dentro quando a criança completa todas as voltas. Solte fogos, mostre o tempo, comemore! O recorde é salvo sozinho.',
+  },
+  {
+    type: 'sz_w3d_race_time',
+    message0: 'o tempo da corrida (segundos)',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantos segundos se passaram desde a largada (0 antes de começar). Bom para o HUD.',
+  },
+  {
+    type: 'sz_w3d_race_best',
+    message0: 'o recorde da corrida (segundos)',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O melhor tempo já feito nesta corrida (fica salvo entre uma jogada e outra). 0 se ninguém completou ainda.',
+  },
+
   // ---- 🎥 Câmera & efeitos ----
   {
     type: 'sz_w3d_effects',
@@ -798,6 +884,19 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_w3d_gallery_create', 'sz_w3d_gallery_add'],
   },
   {
+    name: '🏁 Kit Corrida',
+    colour: C,
+    types: [
+      'sz_w3d_race_create',
+      'sz_w3d_race_checkpoint',
+      'sz_w3d_race_on_start',
+      'sz_w3d_race_on_checkpoint',
+      'sz_w3d_race_on_finish',
+      'sz_w3d_race_time',
+      'sz_w3d_race_best',
+    ],
+  },
+  {
     name: '🎥 Câmera & efeitos',
     colour: C,
     types: ['sz_w3d_effects'],
@@ -872,6 +971,8 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_totem_text: { X: numShadow(0), Z: numShadow(8) },
   sz_w3d_totem_image: { X: numShadow(0), Z: numShadow(8), W: numShadow(3) },
   sz_w3d_gallery_create: { X: numShadow(0), Z: numShadow(-30) },
+  sz_w3d_race_create: { X: numShadow(0), Z: numShadow(0), DEG: numShadow(0), LAPS: numShadow(1) },
+  sz_w3d_race_checkpoint: { X: numShadow(20), Z: numShadow(20), DEG: numShadow(0) },
 }
 
 /**

@@ -718,6 +718,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'w3d:keyPressed', key: f(block, 'KEY') || 'e' }
     case 'sz_w3d_time_of_day':
       return { type: 'w3d:timeOfDay' }
+    case 'sz_w3d_race_time':
+      return { type: 'w3d:raceTime' }
+    case 'sz_w3d_race_best':
+      return { type: 'w3d:raceBest' }
     case 'sz_g3k_entity_value':
       return { type: 'g3k:entityValue', key: f(block, 'KEY'), charVar: f(block, 'CHAR') }
     case 'sz_g3k_state_time':
@@ -8709,6 +8713,47 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           image: f(block, 'IMAGE'),
           caption: f(block, 'CAPTION'),
         },
+      }
+    case 'sz_w3d_race_create':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:raceCreate',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+          laps: exprInput(block, 'LAPS', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_race_checkpoint':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:raceCheckpoint',
+          x: exprInput(block, 'X', { type: 'num', value: 20 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_race_on_start':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:raceOnStart', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_race_on_checkpoint':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:raceOnCheckpoint', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_race_on_finish':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:raceOnFinish', body: getStatementChildren(block, 'BODY', seen) },
       }
     case 'sz_w3d_grass':
       seen.add('world-3d')

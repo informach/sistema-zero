@@ -115,6 +115,9 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'w3d:onDayNight':
     case 'w3d:onPoint':
     case 'w3d:onZone':
+    case 'w3d:raceOnStart':
+    case 'w3d:raceOnCheckpoint':
+    case 'w3d:raceOnFinish':
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
@@ -2493,6 +2496,37 @@ ${pad}});`
       return `${pad}SZWorld3D.galleryCreate(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.title)});`
     case 'w3d:galleryAdd':
       return `${pad}SZWorld3D.galleryAdd(${JSON.stringify(stmt.image)}, ${JSON.stringify(stmt.caption)});`
+    case 'w3d:raceCreate':
+      return `${pad}SZWorld3D.raceCreate(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.laps), 0, identifiers, recAt(base))});`
+    case 'w3d:raceCheckpoint':
+      return `${pad}SZWorld3D.raceCheckpoint(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:raceOnStart': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.raceOnStart(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:raceOnCheckpoint': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.raceOnCheckpoint(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:raceOnFinish': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.raceOnFinish(function () {\n${body}\n${pad}});`
+    }
     case 'w3d:carStats':
       return `${pad}SZWorld3D.carStats(${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.turn), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'w3d:carPlace':
@@ -5371,6 +5405,22 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'w3d:galleryAdd':
       return
+    case 'w3d:raceCreate':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      collectExprIdentifiers(valueToExpr(stmt.laps), names)
+      return
+    case 'w3d:raceCheckpoint':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:raceOnStart':
+    case 'w3d:raceOnCheckpoint':
+    case 'w3d:raceOnFinish':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'w3d:carStats':
       collectExprIdentifiers(valueToExpr(stmt.speed), names)
       collectExprIdentifiers(valueToExpr(stmt.turn), names)
@@ -5863,6 +5913,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':
+    case 'w3d:raceTime':
+    case 'w3d:raceBest':
       return
     case 'w3d:groundHeight':
       collectExprIdentifiers(valueToExpr(expr.x), names)

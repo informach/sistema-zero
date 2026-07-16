@@ -121,6 +121,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   // construídas EM ORDEM no initWorld (a cena só existe lá). Depois do start,
   // constroem na hora.
   var decorRecipes = [];
+  // 🏁 Corrida: máquina idle→correndo→fim, checkpoints EM ORDEM, recorde no shim.
+  var race = null;             // { x, z, yaw, laps, checkpoints:[], state, time, lap, next, portal, hooks }
+  var raceHooks = { start: [], checkpoint: [], finish: [] };
   // Carrinho: config (dos blocos) + estado físico + peças visuais.
   var carCfg = null;            // { style, color, speed, turn, jump }
   var carState = null;          // { x, y, z, yaw, speed, vy, airborne, steerVis, pitch, pitchV, roll, rollV }
@@ -2087,6 +2090,173 @@ export const world3DRuntime = `import * as THREE from 'three';
     galleryEl.style.display = 'flex';
   }
 
+  // ---- 🏁 Kit Corrida (largada + checkpoints em ordem + cronômetro + recorde) ----
+
+  function raceKey() {
+    return 'w3d-recorde-' + (config.style || 'x');
+  }
+
+  function loadBest() {
+    try {
+      var v = window.localStorage ? window.localStorage.getItem(raceKey()) : null;
+      var n = v == null ? 0 : Number(v);
+      return isFinite(n) && n > 0 ? n : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function saveBest(t) {
+    try {
+      if (window.localStorage) window.localStorage.setItem(raceKey(), String(t));
+    } catch (e) {}
+  }
+
+  /** Portal-arco na largada + faixa (só visual). */
+  function buildRacePortal(x, z, yaw) {
+    if (!scene) return null;
+    var group = new THREE.Group();
+    var mat = toonMaterial({ color: '#f59e0b' });
+    var gy = heightAt(x, z);
+    var left = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 5, 8), mat);
+    left.position.set(-4, 2.5, 0);
+    left.castShadow = true;
+    var right = left.clone();
+    right.position.set(4, 2.5, 0);
+    var top = new THREE.Mesh(new THREE.BoxGeometry(9, 0.8, 0.8), mat);
+    top.position.set(0, 5, 0);
+    group.add(left);
+    group.add(right);
+    group.add(top);
+    group.position.set(x, gy, z);
+    group.rotation.y = yaw * Math.PI / 180;
+    ensureDecorGroup().add(group);
+    return group;
+  }
+
+  /** Anel de checkpoint (torus em pé) que pulsa quando é o PRÓXIMO. */
+  function buildCheckpointRing(x, z, yaw) {
+    if (!scene) return null;
+    var gy = heightAt(x, z);
+    var mat = toonMaterial({ color: '#22d3ee' });
+    if (mat.emissive) { try { mat.emissive.set('#0e7490'); } catch (e) {} }
+    var geo = THREE.TorusGeometry ? new THREE.TorusGeometry(3, 0.35, 8, 20) : new THREE.CylinderGeometry(3, 3, 0.4, 16);
+    var ring = new THREE.Mesh(geo, mat);
+    ring.position.set(x, gy + 3, z);
+    ring.rotation.y = yaw * Math.PI / 180;
+    ensureDecorGroup().add(ring);
+    return { x: x, z: z, mesh: ring, mat: mat };
+  }
+
+  function fireRace(kind) {
+    var hooks = raceHooks[kind] || [];
+    for (var i = 0; i < hooks.length; i++) {
+      try { hooks[i](); } catch (e) {
+        warnOnce('hook-race-' + kind + '-' + i, 'erro no gancho da corrida "' + kind + '": ' + e);
+      }
+    }
+  }
+
+  function createRace(x, z, yaw, laps) {
+    race = {
+      x: num(x, 0), z: num(z, 0), yaw: num(yaw, 0),
+      laps: Math.max(1, Math.floor(num(laps, 1))),
+      checkpoints: [], state: 'idle', time: 0, lap: 1, next: 0,
+      best: loadBest(), armed: false
+    };
+    if (worldReady) race.portal = buildRacePortal(race.x, race.z, race.yaw);
+  }
+
+  /** Constrói o visual da corrida (portal + anéis) no start, se ainda faltarem. */
+  function buildRace() {
+    if (!race || !scene) return;
+    if (!race.portal) race.portal = buildRacePortal(race.x, race.z, race.yaw);
+    for (var i = 0; i < race.checkpoints.length; i++) {
+      var cp = race.checkpoints[i];
+      if (!cp.mesh) {
+        var built = buildCheckpointRing(cp.x, cp.z, 0);
+        if (built) { cp.mesh = built.mesh; cp.mat = built.mat; }
+      }
+    }
+    pulseRings();
+  }
+
+  function addCheckpoint(x, z, yaw) {
+    if (!race) {
+      warn('crie a corrida antes com "Criar a corrida"');
+      return;
+    }
+    var cp = worldReady ? buildCheckpointRing(num(x, 0), num(z, 0), num(yaw, 0)) : { x: num(x, 0), z: num(z, 0), mesh: null, mat: null };
+    race.checkpoints.push(cp);
+  }
+
+  function stepRace(dt) {
+    if (!race || !carState) return;
+    var cx = carState.x;
+    var cz = carState.z;
+    // Largada: cruzar perto do portal ARMA e inicia (idle→correndo).
+    var ddx = cx - race.x;
+    var ddz = cz - race.z;
+    var nearStart = ddx * ddx + ddz * ddz < 36;  // raio 6
+    if (race.state === 'idle') {
+      // Só começa quando o carro se AFASTA e volta (evita começar parado nele).
+      if (!nearStart) race.armed = true;
+      if (race.armed && nearStart && race.checkpoints.length > 0) {
+        race.state = 'correndo';
+        race.time = 0;
+        race.lap = 1;
+        race.next = 0;
+        pulseRings();
+        fireRace('start');
+      }
+    } else if (race.state === 'correndo') {
+      race.time += dt;
+      // Checkpoint atual: passou perto do anel na ORDEM?
+      var cp = race.checkpoints[race.next];
+      if (cp) {
+        var cdx = cx - cp.x;
+        var cdz = cz - cp.z;
+        if (cdx * cdx + cdz * cdz < 16) {  // raio 4
+          race.next++;
+          fireRace('checkpoint');
+          if (race.next >= race.checkpoints.length) {
+            // Volta completa: cruzar a largada de novo fecha a volta.
+            race.next = 0;
+            if (race.lap >= race.laps) {
+              race.state = 'fim';
+              if (!race.best || race.time < race.best) {
+                race.best = race.time;
+                saveBest(race.time);
+              }
+              fireRace('finish');
+            } else {
+              race.lap++;
+            }
+          }
+          pulseRings();
+        }
+      }
+      // Pulso do próximo anel.
+      var glow = race.checkpoints[race.next];
+      for (var i = 0; i < race.checkpoints.length; i++) {
+        var r = race.checkpoints[i];
+        if (r.mesh) r.mesh.scale.setScalar(r === glow ? 1 + Math.sin(playTime * 4) * 0.08 : 1);
+      }
+      // HUD automático.
+      setHud('topo-esquerda', 'Tempo ' + race.time.toFixed(1) + 's  \\u00b7  ponto ' + Math.min(race.next + 1, race.checkpoints.length) + '/' + race.checkpoints.length + '  \\u00b7  volta ' + race.lap + '/' + race.laps);
+    }
+  }
+
+  function pulseRings() {
+    if (!race) return;
+    for (var i = 0; i < race.checkpoints.length; i++) {
+      var r = race.checkpoints[i];
+      if (r.mat) {
+        try { r.mat.color.set(i === race.next ? '#22d3ee' : '#0891b2'); } catch (e) {}
+      }
+    }
+  }
+
   /** Constrói TODAS as receitas de decoração em ordem (chamado no initWorld). */
   function buildDecor() {
     for (var i = 0; i < decorRecipes.length; i++) {
@@ -2281,6 +2451,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (carCfg) buildCar();
       buildNature();
       buildDecor();
+      buildRace();
       if (grassCfg) buildGrass();
 
       worldReady = true;
@@ -2736,6 +2907,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     updateCamera(dt);
     updateSun();
     stepInteractions();
+    stepRace(dt);
     stepSay();
     if (waterMat) waterMat.uniforms.uTime.value = playTime;
     if (grassMat) {
@@ -2853,6 +3025,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     galleries = [];
     _decorGroup = null;
     _imgTexCache = null;
+    race = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -3223,6 +3396,29 @@ export const world3DRuntime = `import * as THREE from 'three';
     galleryAdd: guard('galleryAdd', function (image, caption) {
       if (worldReady) galleryAdd(image, caption);
       else decorRecipes.push({ kind: 'galleryAdd', image: text(image, ''), caption: text(caption, '') });
+    }),
+
+    // 🏁 Kit Corrida
+    raceCreate: guard('raceCreate', function (x, z, yaw, laps) {
+      createRace(x, z, yaw, laps);
+    }),
+    raceCheckpoint: guard('raceCheckpoint', function (x, z, yaw) {
+      addCheckpoint(x, z, yaw);
+    }),
+    raceOnStart: guard('raceOnStart', function (fn) {
+      if (typeof fn === 'function') raceHooks.start.push(fn);
+    }),
+    raceOnCheckpoint: guard('raceOnCheckpoint', function (fn) {
+      if (typeof fn === 'function') raceHooks.checkpoint.push(fn);
+    }),
+    raceOnFinish: guard('raceOnFinish', function (fn) {
+      if (typeof fn === 'function') raceHooks.finish.push(fn);
+    }),
+    raceTime: guard('raceTime', function () {
+      return race ? race.time : 0;
+    }),
+    raceBest: guard('raceBest', function () {
+      return race ? race.best || 0 : 0;
     }),
 
     onUpdate: guard('onUpdate', function (fn) {

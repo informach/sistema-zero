@@ -39,6 +39,13 @@ interface Api {
   totemImage: (x?: unknown, z?: unknown, image?: unknown, w?: unknown) => unknown
   galleryCreate: (x?: unknown, z?: unknown, title?: unknown) => unknown
   galleryAdd: (image?: unknown, caption?: unknown) => unknown
+  raceCreate: (x?: unknown, z?: unknown, deg?: unknown, laps?: unknown) => unknown
+  raceCheckpoint: (x?: unknown, z?: unknown, deg?: unknown) => unknown
+  raceOnStart: (fn?: unknown) => unknown
+  raceOnCheckpoint: (fn?: unknown) => unknown
+  raceOnFinish: (fn?: unknown) => unknown
+  raceTime: () => number
+  raceBest: () => number
   scatter: (n?: unknown, thing?: unknown) => unknown
   scatterModel: (n?: unknown, name?: unknown, s?: unknown) => unknown
   placeThing: (thing?: unknown, x?: unknown, z?: unknown, s?: unknown) => unknown
@@ -101,6 +108,13 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'totemImage',
       'galleryCreate',
       'galleryAdd',
+      'raceCreate',
+      'raceCheckpoint',
+      'raceOnStart',
+      'raceOnCheckpoint',
+      'raceOnFinish',
+      'raceTime',
+      'raceBest',
       'scatter',
       'scatterModel',
       'placeThing',
@@ -226,6 +240,21 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(() => api.galleryAdd('img1', 'Meu jogo')).not.toThrow()
     // galleryAdd sem galleryCreate antes do start só grava a receita (sem lançar)
     expect(() => api.galleryAdd('solto', 'x')).not.toThrow()
+  })
+
+  it('corrida: cria, checkpoints, ganchos e recorde — puros, sem lançar', () => {
+    const api = boot()
+    expect(api.raceTime()).toBe(0)
+    expect(api.raceBest()).toBe(0) // sem localStorage no teste: 0
+    expect(() => api.raceCreate(0, 0, 0, 2)).not.toThrow()
+    expect(() => api.raceCheckpoint(20, 20, 0)).not.toThrow()
+    expect(() => api.raceCheckpoint(-20, 20, 90)).not.toThrow()
+    expect(() => api.raceOnStart(() => {})).not.toThrow()
+    expect(() => api.raceOnCheckpoint(() => {})).not.toThrow()
+    expect(() => api.raceOnFinish(() => {})).not.toThrow()
+    // checkpoint antes de criar a corrida avisa e não lança
+    const api2 = boot()
+    expect(() => api2.raceCheckpoint(0, 0, 0)).not.toThrow()
   })
 
   it('flatten muda a altura do terreno para o valor do centro', () => {

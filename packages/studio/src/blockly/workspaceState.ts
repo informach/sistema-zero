@@ -5686,6 +5686,34 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'w3d:raceCreate': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const deg = exprToValueBlock(valueToExpr(stmt.deg))
+      const laps = exprToValueBlock(valueToExpr(stmt.laps))
+      return x === null || z === null || deg === null || laps === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_race_create', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg, LAPS: laps })
+    }
+    case 'w3d:raceCheckpoint': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const deg = exprToValueBlock(valueToExpr(stmt.deg))
+      return x === null || z === null || deg === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_race_checkpoint', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+    }
+    case 'w3d:raceOnStart':
+      return block('sz_w3d_race_on_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'w3d:raceOnCheckpoint':
+      return block(
+        'sz_w3d_race_on_checkpoint',
+        {},
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'w3d:raceOnFinish':
+      return block('sz_w3d_race_on_finish', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
     case 'w3d:carStats': {
       const speed = exprToValueBlock(valueToExpr(stmt.speed))
       const turn = exprToValueBlock(valueToExpr(stmt.turn))
@@ -6547,6 +6575,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_w3d_key_pressed', { KEY: expr.key })
     case 'w3d:timeOfDay':
       return block('sz_w3d_time_of_day', {})
+    case 'w3d:raceTime':
+      return block('sz_w3d_race_time', {})
+    case 'w3d:raceBest':
+      return block('sz_w3d_race_best', {})
     case 'g3k:stateIs':
       return block('sz_g3k_state_is', { STATE: expr.name })
     case 'g3k:gameState':

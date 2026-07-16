@@ -86,6 +86,11 @@ SZWorld3D.start(); // SEMPRE por último
   projeto.
 - \`SZWorld3D.galleryCreate(x, z, titulo)\` + \`SZWorld3D.galleryAdd(nomeDaImagem, legenda)\`
   — praça de exposição; cada quadro abre num overlay de zoom com 'E: ver'.
+- 🏁 Corrida: \`SZWorld3D.raceCreate(x, z, graus, voltas)\` +
+  \`SZWorld3D.raceCheckpoint(x, z, graus)\` (na ORDEM da pista) +
+  \`raceOnStart/raceOnCheckpoint/raceOnFinish(function(){})\` +
+  \`raceTime()\`/\`raceBest()\` (segundos; recorde persiste no localStorage).
+  Cronômetro e contador i/N no HUD são automáticos.
 - \`SZWorld3D.onUpdate(function (dt) { ... })\` — gancho por quadro; dt em
   segundos, clampado em 1/30.
 - \`SZWorld3D.keyDown(tecla)\` / \`SZWorld3D.keyPressed(tecla)\` → boolean.
@@ -97,7 +102,7 @@ SZWorld3D.start(); // SEMPRE por último
   runtime parseia o ArrayBuffer; nada de carregar por URL).
 - Sem Rapier/física de biblioteca: o carro é arcade na unha do motor.
 - Sem menu/pausa/vidas: não é um jogo de fases, é um mundo.
-- Corrida e boliche chegam em versões futuras da extensão — se os blocos não
-  estão na paleta, o método não existe ainda.
+- Boliche chega em versão futura da extensão — se os blocos não estão na
+  paleta, o método não existe ainda.
 - Use APENAS UMA extensão de jogo/mundo por projeto (brigam pelo canvas).
 `

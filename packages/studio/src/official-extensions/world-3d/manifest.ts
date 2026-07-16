@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '0.6.0',
+  version: '0.7.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -144,6 +144,18 @@ O que o motor já faz por você:
   e põe um totem-título).
 - **Pendurar a imagem … com a legenda …** — pendura as imagens num arco;
   cada quadro ganha um "E: ver" que abre a imagem grande.
+
+### 🏁 Kit Corrida
+
+- **Criar a corrida: largada em … (virada …, … voltas)** — monta um portal de
+  largada e o cronômetro (aparece sozinho no canto). Depois ponha os
+  checkpoints; a ORDEM dos blocos é a ordem da pista.
+- **Pôr um checkpoint em …** — um anel na pista; passe por eles NA ORDEM (o
+  próximo brilha). Depois do último, cruze a largada para fechar a volta.
+- **Quando a corrida começar / passar por um checkpoint / completar a
+  corrida** — os ganchos da corrida (largada, cada anel, e a vitória — solte
+  fogos!). O recorde é salvo sozinho entre as jogadas.
+- **o tempo da corrida / o recorde da corrida** — em segundos, para o HUD.
 
 ### 🎥 Câmera & efeitos
 
