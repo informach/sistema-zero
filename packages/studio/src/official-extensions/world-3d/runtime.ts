@@ -1098,7 +1098,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     '  float ca = cos(ang);',
     '  float sa = sin(ang);',
     '  vec3 pos = position;',
-    '  float h = 0.75 + aRand * 0.6;',
+    // Altura de CANELA (o look do folio): grama alta demais engolia o carrinho.
+    '  float h = 0.42 + aRand * 0.35;',
     '  pos.y *= h;',
     '  pos = vec3(pos.x * ca, pos.y, pos.x * sa);',
     '  float sway = sin(uTime * 1.6 + wp.x * 0.35 + wp.y * 0.27 + aRand * 6.28) * (0.1 + uWind * 0.22);',
