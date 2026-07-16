@@ -4177,7 +4177,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   // Pela REGRA: só o ESPECÍFICO de plataforma mora aqui. Gravidade, colidir,
   // pular, tiles e o renascer são GERAIS e vivem lá em cima.
   {
-    name: '🏃 Kit Plataforma: herói',
+    name: '🏃 herói',
     kit: '🏃 Kit Plataforma',
     colour: C,
     types: [
@@ -4192,7 +4192,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '🧗 Kit Plataforma: mundo',
+    name: '🧗 mundo',
     kit: '🏃 Kit Plataforma',
     colour: C,
     types: [
@@ -4217,7 +4217,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // enxame". Um bloco "Chão da luta em y N" seria exatamente o position.y = 330
     // hard-coded da base, e chão não é de luta — é de todo jogo de lado. O Kit
     // Plataforma também não tem chão próprio.
-    name: '🥊 Kit Luta: a partida',
+    name: '🥊 a partida',
     kit: '🥊 Kit Luta',
     colour: C,
     types: [
@@ -4229,7 +4229,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '🥊 Kit Luta: os lutadores',
+    name: '🥊 os lutadores',
     kit: '🥊 Kit Luta',
     colour: C,
     types: ['sz_gk_luta_fighter', 'sz_gk_luta_ai', 'sz_gk_luta_is_guarding'],
@@ -4240,7 +4240,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // que leva para você se recuperar — sobra uma frestinha, e a criança DESCOBRE
     // que chute→soco encaixa. E o agarrão é um checkbox ("atravessa a defesa"):
     // o que o agarrão FAZ no jogo é uma coisa só — vencer quem só defende.
-    name: '🥊 Kit Luta: golpes & combo',
+    name: '🥊 golpes & combo',
     kit: '🥊 Kit Luta',
     colour: C,
     types: [
@@ -4257,7 +4257,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   // geral (💬 Fala & escolhas), e os ITENS para 🎒 Itens (gerais): o motor os
   // serve em qualquer jogo.
   {
-    name: '🧙 Kit RPG: mundo',
+    name: '🧙 mundo',
     kit: '🧙 Kit RPG',
     colour: C,
     types: [
@@ -4274,13 +4274,13 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '💬 Kit RPG: NPCs',
+    name: '💬 NPCs',
     kit: '🧙 Kit RPG',
     colour: C,
     types: ['sz_gk_rpg_create_npc', 'sz_gk_rpg_draw_npcs', 'sz_gk_rpg_on_talk'],
   },
   {
-    name: '🎬 Kit RPG: cenas',
+    name: '🎬 cenas',
     kit: '🧙 Kit RPG',
     colour: C,
     types: [
@@ -4295,7 +4295,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   {
     // Só o SALVAR fica no kit: ele serializa o estado do RPG (flags/itens/mapa/
     // atributos). O menu de escolha saiu p/ o geral (💬 Fala & escolhas).
-    name: '💾 Kit RPG: salvar',
+    name: '💾 salvar',
     kit: '🧙 Kit RPG',
     colour: C,
     types: ['sz_gk_rpg_save', 'sz_gk_rpg_load', 'sz_gk_rpg_has_save'],
@@ -4304,7 +4304,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // A batalha fecha o cluster do RPG DE PROPÓSITO: o Kit Monstrinhos (logo
     // abaixo) é "um jogo do Kit RPG com OUTRA batalha" — a vizinhança conta a
     // história. (Ela morava órfã no FIM do array, depois do Monstrinhos inteiro.)
-    name: '⚔️ Kit RPG: batalha',
+    name: '⚔️ batalha',
     kit: '🧙 Kit RPG',
     colour: C,
     types: [
@@ -4324,7 +4324,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   // ⭐ É um jogo do Kit RPG com OUTRA batalha: o mundo (grade/NPC/fala/mapa/
   // flags/salvar) vem de lá. Aqui só o que é do gênero.
   {
-    name: '👾 Kit Monstrinhos: criaturas',
+    name: '👾 criaturas',
     kit: '👾 Kit Monstrinhos',
     colour: C,
     types: [
@@ -4337,7 +4337,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '🎒 Kit Monstrinhos: meu time',
+    name: '🎒 meu time',
     kit: '👾 Kit Monstrinhos',
     colour: C,
     types: [
@@ -4351,7 +4351,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '🌿 Kit Monstrinhos: encontros & batalha',
+    name: '🌿 encontros & batalha',
     kit: '👾 Kit Monstrinhos',
     colour: C,
     types: [
@@ -4369,19 +4369,19 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   // A formação que marcha em bloco é o coração intransferível do Space Invaders;
   // tiro do jogador/colisão/placar/som são GERAIS — o kit chama, não copia.
   {
-    name: '🚀 Kit Nave: a nave',
+    name: '🚀 a nave',
     kit: '🚀 Kit Nave',
     colour: C,
     types: ['sz_gk_nave_ship', 'sz_gk_nave_powerup', 'sz_gk_nave_power_of'],
   },
   {
-    name: '🛸 Kit Nave: a invasão',
+    name: '🛸 a invasão',
     kit: '🚀 Kit Nave',
     colour: C,
     types: ['sz_gk_nave_wave', 'sz_gk_nave_wave_shooter', 'sz_gk_nave_invasion_line'],
   },
   {
-    name: '🌌 Kit Nave: o espaço',
+    name: '🌌 o espaço',
     kit: '🚀 Kit Nave',
     colour: C,
     types: ['sz_gk_nave_starfield', 'sz_gk_nave_bomb'],
@@ -4390,7 +4390,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   // & as moedas (onda pelo caminho + carteira). O tiro, a barra de vida, os
   // corações e a explosão saem de blocos GERAIS (receita nas docs).
   {
-    name: '🏰 Kit Defesa de Torre: as torres',
+    name: '🏰 as torres',
     kit: '🏰 Kit Defesa de Torre',
     colour: C,
     types: [
@@ -4402,7 +4402,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '👹 Kit Defesa de Torre: a invasão & as moedas',
+    name: '👹 a invasão & as moedas',
     kit: '🏰 Kit Defesa de Torre',
     colour: C,
     types: ['sz_gk_td_wave', 'sz_gk_td_set_coins', 'sz_gk_td_add_coins', 'sz_gk_td_coins'],
