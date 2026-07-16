@@ -5506,6 +5506,102 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_g3k_play_tone', {}, {}, stmt.__id, { FREQ: freq, MS: ms })
     }
+    // ---- Mundo 3D (world-3d) ----
+    case 'w3d:setup': {
+      const world = exprToValueBlock(valueToExpr(stmt.world))
+      return world === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_setup', { STYLE: stmt.style }, {}, stmt.__id, { WORLD: world })
+    }
+    case 'w3d:terrain': {
+      const h = exprToValueBlock(valueToExpr(stmt.h))
+      const s = exprToValueBlock(valueToExpr(stmt.s))
+      return h === null || s === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_terrain', {}, {}, stmt.__id, { H: h, S: s })
+    }
+    case 'w3d:start':
+      return block('sz_w3d_start', {}, {}, stmt.__id)
+    case 'w3d:car':
+      return block('sz_w3d_car', { STYLE: stmt.style, COLOR: stmt.color }, {}, stmt.__id)
+    case 'w3d:carStats': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      const turn = exprToValueBlock(valueToExpr(stmt.turn))
+      const jump = exprToValueBlock(valueToExpr(stmt.jump))
+      return speed === null || turn === null || jump === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_car_stats', {}, {}, stmt.__id, { SPEED: speed, TURN: turn, JUMP: jump })
+    }
+    case 'w3d:carPlace': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const deg = exprToValueBlock(valueToExpr(stmt.deg))
+      return x === null || z === null || deg === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_car_place', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+    }
+    case 'w3d:grass':
+      return block('sz_w3d_grass', { AMOUNT: stmt.amount }, {}, stmt.__id)
+    case 'w3d:scatter': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_scatter', { THING: stmt.thing }, {}, stmt.__id, { N: n })
+    }
+    case 'w3d:scatterModel': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      const s = exprToValueBlock(valueToExpr(stmt.s))
+      return n === null || s === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_scatter_model', { MODEL: stmt.model }, {}, stmt.__id, { N: n, S: s })
+    }
+    case 'w3d:placeThing': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const s = exprToValueBlock(valueToExpr(stmt.s))
+      return x === null || z === null || s === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_place_thing', { THING: stmt.thing }, {}, stmt.__id, { X: x, Z: z, S: s })
+    }
+    case 'w3d:placeModel': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const s = exprToValueBlock(valueToExpr(stmt.s))
+      const deg = exprToValueBlock(valueToExpr(stmt.deg))
+      return x === null || z === null || s === null || deg === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_place_model', { MODEL: stmt.model }, {}, stmt.__id, {
+            X: x,
+            Z: z,
+            S: s,
+            DEG: deg,
+          })
+    }
+    case 'w3d:clearArea': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const r = exprToValueBlock(valueToExpr(stmt.r))
+      return x === null || z === null || r === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_clear_area', {}, {}, stmt.__id, { X: x, Z: z, R: r })
+    }
+    case 'w3d:onCrash':
+      return block('sz_w3d_on_crash', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'w3d:effects': {
+      const strength = exprToValueBlock(valueToExpr(stmt.strength))
+      return strength === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_effects', { ON: stmt.on ? 'ligados' : 'desligados' }, {}, stmt.__id, {
+            STRENGTH: strength,
+          })
+    }
+    case 'w3d:onUpdate':
+      return block(
+        'sz_w3d_on_update',
+        { DT: stmt.dtName },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'classDecl': {
       const members: SerializedBlocklyBlock[] = []
       // Construtor só vira bloco se há parâmetros ou corpo (espelha o gerador).
@@ -6246,6 +6342,24 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3k_pointer_over', { CHAR: expr.charVar })
     case 'g3k:groundPoint':
       return block('sz_g3k_ground_point', { AXIS: expr.axis })
+    // ---- Mundo 3D (world-3d) — valores ----
+    case 'w3d:worldSize':
+      return block('sz_w3d_world_size', {})
+    case 'w3d:groundHeight': {
+      const x = exprToValueBlock(valueToExpr(expr.x))
+      const z = exprToValueBlock(valueToExpr(expr.z))
+      return x === null || z === null
+        ? null
+        : block('sz_w3d_ground_height', {}, {}, undefined, { X: x, Z: z })
+    }
+    case 'w3d:carPos':
+      return block('sz_w3d_car_pos', { AXIS: expr.axis })
+    case 'w3d:carSpeed':
+      return block('sz_w3d_car_speed', {})
+    case 'w3d:keyDown':
+      return block('sz_w3d_key_down', { KEY: expr.key })
+    case 'w3d:keyPressed':
+      return block('sz_w3d_key_pressed', { KEY: expr.key })
     case 'g3k:stateIs':
       return block('sz_g3k_state_is', { STATE: expr.name })
     case 'g3k:gameState':

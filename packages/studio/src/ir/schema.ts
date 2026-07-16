@@ -311,6 +311,13 @@ export type JSExpr =
   // Mira/clique no mundo: mouse sobre a entidade (bool) e ponto do chão (núm).
   | (JSExprCommon & { type: 'g3k:pointerOver'; charVar: string })
   | (JSExprCommon & { type: 'g3k:groundPoint'; axis: 'x' | 'y' | 'z' })
+  // Mundo 3D (extensão world-3d) — valores: mundo/terreno, carrinho e teclas.
+  | (JSExprCommon & { type: 'w3d:worldSize' })
+  | (JSExprCommon & { type: 'w3d:groundHeight'; x: number | JSExpr; z: number | JSExpr })
+  | (JSExprCommon & { type: 'w3d:carPos'; axis: 'x' | 'y' | 'z' })
+  | (JSExprCommon & { type: 'w3d:carSpeed' })
+  | (JSExprCommon & { type: 'w3d:keyDown'; key: string })
+  | (JSExprCommon & { type: 'w3d:keyPressed'; key: string })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -756,6 +763,17 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g3k:mouseDown'), ...idField }),
     z.object({ type: z.literal('g3k:mousePressed'), ...idField }),
     z.object({ type: z.literal('g3k:keyPressed'), key: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:worldSize'), ...idField }),
+    z.object({
+      type: z.literal('w3d:groundHeight'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:carPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
+    z.object({ type: z.literal('w3d:carSpeed'), ...idField }),
+    z.object({ type: z.literal('w3d:keyDown'), key: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:keyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('g3k:posOf'), axis: irText(), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:exists'), charVar: irText(), ...idField }),
     z.object({
@@ -3798,6 +3816,57 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3k:playSound'; name: string })
   | (JSStatementCommon & { type: 'g3k:playEffect'; fx: string })
   | (JSStatementCommon & { type: 'g3k:playTone'; freq: number | JSExpr; ms: number | JSExpr })
+  // Mundo 3D (extensão world-3d): mundo aberto dirigível estilo folio —
+  // terreno por ruído com altura consultável, carrinho arcade com molejo,
+  // natureza instanciada com colisores, grama ao vento e efeitos de cinema.
+  | (JSStatementCommon & { type: 'w3d:setup'; style: string; world: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:terrain'; h: number | JSExpr; s: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:start' })
+  | (JSStatementCommon & { type: 'w3d:car'; style: string; color: string })
+  | (JSStatementCommon & {
+      type: 'w3d:carStats'
+      speed: number | JSExpr
+      turn: number | JSExpr
+      jump: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:carPlace'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:grass'; amount: string })
+  | (JSStatementCommon & { type: 'w3d:scatter'; n: number | JSExpr; thing: string })
+  | (JSStatementCommon & {
+      type: 'w3d:scatterModel'
+      n: number | JSExpr
+      model: string
+      s: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:placeThing'
+      thing: string
+      x: number | JSExpr
+      z: number | JSExpr
+      s: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:placeModel'
+      model: string
+      x: number | JSExpr
+      z: number | JSExpr
+      s: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:clearArea'
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:onCrash'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:effects'; on: boolean; strength: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:onUpdate'; dtName: string; body: JSStatement[] })
   // Orientação a objetos
   | (JSStatementCommon & {
       type: 'classDecl'
@@ -7505,6 +7574,85 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('w3d:setup'),
+      style: irText(),
+      world: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:terrain'),
+      h: z.union([JSExprSchema, z.number()]),
+      s: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:start'), ...idField }),
+    z.object({ type: z.literal('w3d:car'), style: irText(), color: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:carStats'),
+      speed: z.union([JSExprSchema, z.number()]),
+      turn: z.union([JSExprSchema, z.number()]),
+      jump: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:carPlace'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      deg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:grass'), amount: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:scatter'),
+      n: z.union([JSExprSchema, z.number()]),
+      thing: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:scatterModel'),
+      n: z.union([JSExprSchema, z.number()]),
+      model: irText(),
+      s: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:placeThing'),
+      thing: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      s: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:placeModel'),
+      model: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      s: z.union([JSExprSchema, z.number()]),
+      deg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:clearArea'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      r: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:onCrash'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
+      type: z.literal('w3d:effects'),
+      on: z.boolean(),
+      strength: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:onUpdate'),
+      dtName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:updateEachFrame'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -8364,10 +8512,30 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:playTone',
 ])
 
+/** Statements do Mundo 3D (extensão world-3d) — espelho do Set da g3k. */
+export const W3D_STATEMENT_TYPES = new Set([
+  'w3d:setup',
+  'w3d:terrain',
+  'w3d:start',
+  'w3d:car',
+  'w3d:carStats',
+  'w3d:carPlace',
+  'w3d:grass',
+  'w3d:scatter',
+  'w3d:scatterModel',
+  'w3d:placeThing',
+  'w3d:placeModel',
+  'w3d:clearArea',
+  'w3d:onCrash',
+  'w3d:effects',
+  'w3d:onUpdate',
+])
+
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {
   if (extensionId === 'game-2d') return stmt.type.startsWith('g2d:')
   if (extensionId === 'game-3d') return stmt.type.startsWith('g3d:')
   if (extensionId === 'game-2d-advanced') return stmt.type.startsWith('gk:')
   if (extensionId === 'game-3d-advanced') return stmt.type.startsWith('g3k:')
+  if (extensionId === 'world-3d') return stmt.type.startsWith('w3d:')
   return false
 }

@@ -699,6 +699,23 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3k:pointerOver', charVar: f(block, 'CHAR') }
     case 'sz_g3k_ground_point':
       return { type: 'g3k:groundPoint', axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z' }
+    // ---- Mundo 3D (world-3d) — valores ----
+    case 'sz_w3d_world_size':
+      return { type: 'w3d:worldSize' }
+    case 'sz_w3d_ground_height':
+      return {
+        type: 'w3d:groundHeight',
+        x: exprInput(block, 'X', { type: 'num', value: 0 }),
+        z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+      }
+    case 'sz_w3d_car_pos':
+      return { type: 'w3d:carPos', axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z' }
+    case 'sz_w3d_car_speed':
+      return { type: 'w3d:carSpeed' }
+    case 'sz_w3d_key_down':
+      return { type: 'w3d:keyDown', key: f(block, 'KEY') || 'e' }
+    case 'sz_w3d_key_pressed':
+      return { type: 'w3d:keyPressed', key: f(block, 'KEY') || 'e' }
     case 'sz_g3k_entity_value':
       return { type: 'g3k:entityValue', key: f(block, 'KEY'), charVar: f(block, 'CHAR') }
     case 'sz_g3k_state_time':
@@ -8388,6 +8405,152 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3k:playTone',
           freq: exprInput(block, 'FREQ', { type: 'num', value: 440 }),
           ms: exprInput(block, 'MS', { type: 'num', value: 200 }),
+        },
+      }
+
+    // ---- Mundo 3D (world-3d): mundo aberto dirigível ----
+    case 'sz_w3d_setup':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:setup',
+          style: f(block, 'STYLE') || 'floresta',
+          world: exprInput(block, 'WORLD', { type: 'num', value: 160 }),
+        },
+      }
+    case 'sz_w3d_terrain':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:terrain',
+          h: exprInput(block, 'H', { type: 'num', value: 4 }),
+          s: exprInput(block, 'S', { type: 'num', value: 5 }),
+        },
+      }
+    case 'sz_w3d_start':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:start' } }
+    case 'sz_w3d_car':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:car',
+          style: f(block, 'STYLE') || 'passeio',
+          color: f(block, 'COLOR') || '#ef4444',
+        },
+      }
+    case 'sz_w3d_car_stats':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:carStats',
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 24 }),
+          turn: exprInput(block, 'TURN', { type: 'num', value: 110 }),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 7 }),
+        },
+      }
+    case 'sz_w3d_car_place':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:carPlace',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_grass':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:grass', amount: f(block, 'AMOUNT') || 'media' },
+      }
+    case 'sz_w3d_scatter':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:scatter',
+          n: exprInput(block, 'N', { type: 'num', value: 300 }),
+          thing: f(block, 'THING') || 'arvores',
+        },
+      }
+    case 'sz_w3d_scatter_model':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:scatterModel',
+          n: exprInput(block, 'N', { type: 'num', value: 30 }),
+          model: f(block, 'MODEL'),
+          s: exprInput(block, 'S', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_place_thing':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:placeThing',
+          thing: f(block, 'THING') || 'arvores',
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+          s: exprInput(block, 'S', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_place_model':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:placeModel',
+          model: f(block, 'MODEL'),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+          s: exprInput(block, 'S', { type: 'num', value: 1 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_clear_area':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:clearArea',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          r: exprInput(block, 'R', { type: 'num', value: 15 }),
+        },
+      }
+    case 'sz_w3d_on_crash':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:onCrash', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_effects':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:effects',
+          on: (f(block, 'ON') || 'ligados') !== 'desligados',
+          strength: exprInput(block, 'STRENGTH', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_on_update':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onUpdate',
+          dtName: f(block, 'DT') || 'dt',
+          body: getStatementChildren(block, 'BODY', seen),
         },
       }
 

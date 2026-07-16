@@ -550,6 +550,19 @@ export function compileExpr(
       return `SZGameKit3D.pointerOver(${identifiers.get(expr.charVar)})`
     case 'g3k:groundPoint':
       return `SZGameKit3D.groundPoint(${JSON.stringify(expr.axis)})`
+    // ---- Mundo 3D (world-3d) ----
+    case 'w3d:worldSize':
+      return 'SZWorld3D.worldSize()'
+    case 'w3d:groundHeight':
+      return `SZWorld3D.groundHeight(${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.z), 0, identifiers, rec)})`
+    case 'w3d:carPos':
+      return `SZWorld3D.carPos(${JSON.stringify(expr.axis)})`
+    case 'w3d:carSpeed':
+      return 'SZWorld3D.carSpeed()'
+    case 'w3d:keyDown':
+      return `SZWorld3D.keyDown(${JSON.stringify(expr.key)})`
+    case 'w3d:keyPressed':
+      return `SZWorld3D.keyPressed(${JSON.stringify(expr.key)})`
     case 'g3k:stateIs':
       return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
     case 'g3k:gameState':

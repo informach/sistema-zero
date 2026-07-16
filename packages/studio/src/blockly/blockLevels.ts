@@ -372,6 +372,9 @@ export function resolveBlockLevel(type: string): BlockLevel {
   // Canvas 3D (three.js cru, núcleo): TODOS avançados — é programar a lib de
   // verdade na unha (construtores, cadeias de método, matemática de vetores).
   if (type.startsWith('sz_t3d_')) return 'avancado'
+  // Mundo 3D: TODOS intermediários (decisão de produto — blocos "mágicos" de
+  // alto nível, 1 bloco = 1 resultado; o oposto da base de engine da g3k).
+  if (type.startsWith('sz_w3d_')) return 'intermediario'
   return 'iniciante'
 }
 

@@ -110,6 +110,8 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'g3k:onEnterState':
     case 'g3k:onTimerEnd':
     case 'g3k:onEvent':
+    case 'w3d:onUpdate':
+    case 'w3d:onCrash':
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
@@ -2427,6 +2429,51 @@ ${pad}});`
       return `${pad}SZGameKit3D.playEffect(${JSON.stringify(stmt.fx)});`
     case 'g3k:playTone':
       return `${pad}SZGameKit3D.playTone(${compileExpr(valueToExpr(stmt.freq), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.ms), 0, identifiers, recAt(base))});`
+    // ---- Mundo 3D (world-3d) ----
+    case 'w3d:setup':
+      return `${pad}SZWorld3D.setup({ style: ${JSON.stringify(stmt.style)}, world: ${compileExpr(valueToExpr(stmt.world), 0, identifiers, recAt(base))} });`
+    case 'w3d:terrain':
+      return `${pad}SZWorld3D.terrain(${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
+    case 'w3d:start':
+      return `${pad}SZWorld3D.start();`
+    case 'w3d:car':
+      return `${pad}SZWorld3D.car({ style: ${JSON.stringify(stmt.style)}, color: ${JSON.stringify(stmt.color)} });`
+    case 'w3d:carStats':
+      return `${pad}SZWorld3D.carStats(${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.turn), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
+    case 'w3d:carPlace':
+      return `${pad}SZWorld3D.carPlace(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:grass':
+      return `${pad}SZWorld3D.grass(${JSON.stringify(stmt.amount)});`
+    case 'w3d:scatter':
+      return `${pad}SZWorld3D.scatter(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.thing)});`
+    case 'w3d:scatterModel':
+      return `${pad}SZWorld3D.scatterModel(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.model)}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
+    case 'w3d:placeThing':
+      return `${pad}SZWorld3D.placeThing(${JSON.stringify(stmt.thing)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
+    case 'w3d:placeModel':
+      return `${pad}SZWorld3D.placeModel(${JSON.stringify(stmt.model)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:clearArea':
+      return `${pad}SZWorld3D.clearArea(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:onCrash': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onCrash(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:effects':
+      return `${pad}SZWorld3D.setEffects(${JSON.stringify(stmt.on ? 'ligados' : 'desligados')}, ${compileExpr(valueToExpr(stmt.strength), 0, identifiers, recAt(base))});`
+    case 'w3d:onUpdate': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onUpdate(function (${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+    }
     case 'classDecl': {
       const className = identifiers.declareClassName(classKey(stmt), stmt.name)
       const superClause = stmt.superClass
@@ -5182,6 +5229,61 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.freq), names)
       collectExprIdentifiers(valueToExpr(stmt.ms), names)
       return
+    // ---- Mundo 3D (world-3d) ----
+    case 'w3d:setup':
+      collectExprIdentifiers(valueToExpr(stmt.world), names)
+      return
+    case 'w3d:terrain':
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      return
+    case 'w3d:start':
+    case 'w3d:car':
+    case 'w3d:grass':
+      return
+    case 'w3d:carStats':
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.turn), names)
+      collectExprIdentifiers(valueToExpr(stmt.jump), names)
+      return
+    case 'w3d:carPlace':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:scatter':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'w3d:scatterModel':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      return
+    case 'w3d:placeThing':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      return
+    case 'w3d:placeModel':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:clearArea':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:onCrash':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:effects':
+      collectExprIdentifiers(valueToExpr(stmt.strength), names)
+      return
+    case 'w3d:onUpdate':
+      names.add(stmt.dtName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'classDecl':
       for (const param of stmt.ctorParams ?? []) names.add(param)
       for (const child of stmt.ctorBody) collectStatementIdentifiers(child, names)
@@ -5613,6 +5715,15 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g3k:stateIs':
     case 'g3k:gameState':
     case 'g3k:groundPoint':
+    case 'w3d:worldSize':
+    case 'w3d:carPos':
+    case 'w3d:carSpeed':
+    case 'w3d:keyDown':
+    case 'w3d:keyPressed':
+      return
+    case 'w3d:groundHeight':
+      collectExprIdentifiers(valueToExpr(expr.x), names)
+      collectExprIdentifiers(valueToExpr(expr.z), names)
       return
     case 'canvasMeasureText':
       collectExprIdentifiers(expr.text, names)

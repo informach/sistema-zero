@@ -1445,6 +1445,10 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   const g3kCall = tryMatchGameKit3DCall(expr, source, ctx)
   if (g3kCall) return g3kCall
 
+  // world-3d: SZWorld3D.* (mundo aberto/carrinho/natureza). ANTES do genérico.
+  const w3dCall = tryMatchWorld3DCall(expr, source, ctx)
+  if (w3dCall) return w3dCall
+
   // super(args) — chama o construtor da classe-mãe (dentro do construtor filho).
   if (expr?.type === 'CallExpression' && expr.callee?.type === 'Super') {
     const args = (expr.arguments ?? []).map((a: Node) => toExpr(a, ctx))
@@ -6032,6 +6036,214 @@ function tryMatchGameKitVarInit(name: string, init: Node, ctx: ParseCtx): JSStat
 }
 
 // =====================================================================
+// Mundo 3D (world-3d) — window.SZWorld3D
+// =====================================================================
+
+function asSZWorld3DCall(expr: Node): { method: string; args: Node[] } | null {
+  if (expr?.type !== 'CallExpression') return null
+  const callee = expr.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.object?.type !== 'Identifier' || callee.object.name !== 'SZWorld3D') return null
+  if (callee.property?.type !== 'Identifier') return null
+  return { method: callee.property.name as string, args: expr.arguments ?? [] }
+}
+
+/** Enums fixos dos dropdowns do Mundo 3D — valor desconhecido → null → rawJS
+ * (o dropdown coagiria para a 1ª opção e o round-trip mentiria). */
+const W3D_STYLES = new Set(['floresta', 'praia', 'neve', 'deserto', 'primavera'])
+const W3D_CAR_STYLES = new Set(['passeio', 'jipe', 'corrida'])
+const W3D_THINGS = new Set(['arvores', 'pinheiros', 'pedras', 'flores', 'cogumelos', 'cactos'])
+const W3D_GRASS_AMOUNTS = new Set(['pouca', 'media', 'muita'])
+const W3D_EFFECTS_ON = new Set(['ligados', 'desligados'])
+const W3D_POS_AXES = new Set(['x', 'y', 'z'])
+
+/** Chave de ObjectProperty não-computada (Identifier ou string). */
+function w3dPropKey(prop: Node): string | null {
+  if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+  if (prop.key?.type === 'Identifier') return prop.key.name as string
+  if (prop.key?.type === 'StringLiteral') return prop.key.value as string
+  return null
+}
+
+/** SZWorld3D.keyDown("e") / groundHeight(x, z) / worldSize() … em posição de VALOR. */
+function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
+  const call = asSZWorld3DCall(node)
+  if (!call) return null
+  const { method, args } = call
+  if (method === 'worldSize' && args.length === 0) return { type: 'w3d:worldSize' }
+  if (method === 'carSpeed' && args.length === 0) return { type: 'w3d:carSpeed' }
+  if (method === 'carPos' && args[0]?.type === 'StringLiteral') {
+    const axis = args[0].value as string
+    if (W3D_POS_AXES.has(axis)) return { type: 'w3d:carPos', axis: axis as 'x' | 'y' | 'z' }
+  }
+  if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
+    return { type: 'w3d:keyDown', key: args[0].value as string }
+  }
+  if (method === 'keyPressed' && args[0]?.type === 'StringLiteral') {
+    return { type: 'w3d:keyPressed', key: args[0].value as string }
+  }
+  if (method === 'groundHeight' && args.length === 2) {
+    const x = toExpr(args[0], ctx)
+    const z = toExpr(args[1], ctx)
+    if (isSimpleValue(x) && isSimpleValue(z)) return { type: 'w3d:groundHeight', x, z }
+  }
+  return null
+}
+
+/**
+ * SZWorld3D.* como statement: mundo/carrinho/natureza/efeitos.
+ * ANTES do método genérico — senão viram memberCall.
+ */
+function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  const call = asSZWorld3DCall(expr)
+  if (!call) return null
+  const { method, args } = call
+  const isFn = (n: Node) =>
+    n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
+
+  switch (method) {
+    case 'setup': {
+      // generator: SZWorld3D.setup({ style, world })
+      if (args[0]?.type !== 'ObjectExpression') return null
+      let style = 'floresta'
+      let world: JSExpr = { type: 'num', value: 160 }
+      for (const prop of args[0].properties ?? []) {
+        const key = w3dPropKey(prop)
+        if (key === 'style') {
+          if (prop.value?.type !== 'StringLiteral') return null
+          if (!W3D_STYLES.has(prop.value.value as string)) return null
+          style = prop.value.value as string
+        } else if (key === 'world') {
+          const v = toExpr(prop.value, ctx)
+          if (!isSimpleValue(v)) return null
+          world = v
+        } else {
+          return null
+        }
+      }
+      return { type: 'w3d:setup', style, world }
+    }
+    case 'terrain': {
+      const h = toExpr(args[0], ctx)
+      const s = toExpr(args[1], ctx)
+      return isSimpleValue(h) && isSimpleValue(s) ? { type: 'w3d:terrain', h, s } : null
+    }
+    case 'start':
+      return args.length === 0 ? { type: 'w3d:start' } : null
+    case 'car': {
+      // generator: SZWorld3D.car({ style, color })
+      if (args[0]?.type !== 'ObjectExpression') return null
+      let style = 'passeio'
+      let color = '#ef4444'
+      for (const prop of args[0].properties ?? []) {
+        const key = w3dPropKey(prop)
+        if (key === 'style') {
+          if (prop.value?.type !== 'StringLiteral') return null
+          if (!W3D_CAR_STYLES.has(prop.value.value as string)) return null
+          style = prop.value.value as string
+        } else if (key === 'color') {
+          if (prop.value?.type !== 'StringLiteral') return null
+          color = prop.value.value as string
+        } else {
+          return null
+        }
+      }
+      return { type: 'w3d:car', style, color }
+    }
+    case 'carStats': {
+      const speed = toExpr(args[0], ctx)
+      const turn = toExpr(args[1], ctx)
+      const jump = toExpr(args[2], ctx)
+      return isSimpleValue(speed) && isSimpleValue(turn) && isSimpleValue(jump)
+        ? { type: 'w3d:carStats', speed, turn, jump }
+        : null
+    }
+    case 'carPlace': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const deg = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(deg)
+        ? { type: 'w3d:carPlace', x, z, deg }
+        : null
+    }
+    case 'grass': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const amount = args[0].value as string
+      return W3D_GRASS_AMOUNTS.has(amount) ? { type: 'w3d:grass', amount } : null
+    }
+    case 'scatter': {
+      if (args[1]?.type !== 'StringLiteral') return null
+      const thing = args[1].value as string
+      if (!W3D_THINGS.has(thing)) return null
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'w3d:scatter', n, thing } : null
+    }
+    case 'scatterModel': {
+      if (args[1]?.type !== 'StringLiteral') return null
+      const n = toExpr(args[0], ctx)
+      const s = toExpr(args[2], ctx)
+      return isSimpleValue(n) && isSimpleValue(s)
+        ? { type: 'w3d:scatterModel', n, model: args[1].value as string, s }
+        : null
+    }
+    case 'placeThing': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const thing = args[0].value as string
+      if (!W3D_THINGS.has(thing)) return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const s = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(s)
+        ? { type: 'w3d:placeThing', thing, x, z, s }
+        : null
+    }
+    case 'placeModel': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const s = toExpr(args[3], ctx)
+      const deg = toExpr(args[4], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(s) && isSimpleValue(deg)
+        ? { type: 'w3d:placeModel', model: args[0].value as string, x, z, s, deg }
+        : null
+    }
+    case 'clearArea': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const r = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(r)
+        ? { type: 'w3d:clearArea', x, z, r }
+        : null
+    }
+    case 'onCrash': {
+      // generator: SZWorld3D.onCrash(function () {…})
+      if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
+      return { type: 'w3d:onCrash', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'setEffects': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const on = args[0].value as string
+      if (!W3D_EFFECTS_ON.has(on)) return null
+      const strength = toExpr(args[1], ctx)
+      return isSimpleValue(strength)
+        ? { type: 'w3d:effects', on: on === 'ligados', strength }
+        : null
+    }
+    case 'onUpdate': {
+      // generator: SZWorld3D.onUpdate(function (dt) {…})
+      if (!isFn(args[0])) return null
+      return {
+        type: 'w3d:onUpdate',
+        dtName: identifierName(args[0].params?.[0]) ?? 'dt',
+        body: bodyOfFn(args[0], source, ctx),
+      }
+    }
+    default:
+      return null
+  }
+}
+
+// =====================================================================
 // Jogo 3D Avançado (game-3d-advanced) — window.SZGameKit3D
 // =====================================================================
 
@@ -9494,6 +9706,8 @@ function toExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       // SZGameKit3D.* → valores do Jogo 3D Avançado (mundo/entidades/FSM).
       const g3kExpr = matchGameKit3DExpr(node, ctx)
       if (g3kExpr) return g3kExpr
+      const w3dExpr = matchWorld3DExpr(node, ctx)
+      if (w3dExpr) return w3dExpr
       // ctx.isPointInPath(x, y) / ctx.isPointInStroke(x, y) → perguntas de traçado.
       if (
         ctx &&
