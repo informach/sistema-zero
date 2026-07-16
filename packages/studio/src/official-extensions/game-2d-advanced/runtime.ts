@@ -322,6 +322,9 @@ export const gameKitRuntime = `(function () {
         // Zera os golpes de ação em voo (senão um golpe do jogo anterior "toca").
         for (var wi = 0; wi < swinging.length; wi++) swinging[wi]._swingT = 0;
         swinging.length = 0;
+        // ⚠️ R18: um "Esperar 30 s → nasce o chefe" da partida ANTERIOR dispararia
+        // no meio da partida nova. É o mesmo erro do checkpoint/tweens abaixo.
+        waits.length = 0;
         // ⚠️ TODO global de jogo entra AQUI. Os 3 abaixo escaparam quando nasceram:
         // · checkpoint — a criança marca o ponto numa bandeira no meio da fase (uso
         //   natural do bloco); sem zerar, "Jogar de novo" NASCE no meio da fase da
@@ -794,6 +797,7 @@ export const gameKitRuntime = `(function () {
     stepTweens(dt); // movimentos suaves em curso (✨ mover suave até)
     stepParticles(dt); // física das faíscas (o drawEffects só DESENHA)
     stepSwings(dt); // decai o tempo dos golpes de ação (🥷)
+    stepWaits(); // "Esperar N s, fazer" (⏱️ Tempo) — one-shot no relógio do jogo
     stepRpg(dt); // NPCs que andam + motor de cena + transição de mapa (Kit RPG)
     for (var i = 0; i < spawners.length; i++) {
       var sp = spawners[i];
@@ -1052,7 +1056,10 @@ export const gameKitRuntime = `(function () {
     if (blinking) { try { ctx2d.globalAlpha = prevAlpha; } catch (e) {} }
     // 🥷 Rastro do golpe (ação): enquanto golpeando, pinta a caixa de acerto à
     // frente — feedback visual de graça em qualquer "Desenhar o personagem".
-    if (num(c._swingT, 0) > 0) {
+    // ⭐ Pinta só enquanto o golpe MACHUCA — no recuo a caixa existe e não aparece.
+    // É frame data ensinada a uma criança de 10 anos sem uma palavra: "o retângulo
+    // branco é o momento em que dói".
+    if (inSwingWindow(c)) {
       ctxSave();
       try {
         var sb = swingBox(c);
@@ -1097,6 +1104,137 @@ export const gameKitRuntime = `(function () {
   // drawEntity escolhe a linha pela direção que o personagem olha e anima a coluna
   // quando ele anda (parado = 1º quadro). Espelha o walk/idle por direção do
   // Sprite.animations do Pizza Legends, mas por FOLHA em vez de col,row autoral.
+  /**
+   * Tocar uma animacao UMA VEZ e travar no ultimo quadro (em vez de repetir).
+   * Complementa o "Tocar a animacao" comum, que repete para sempre.
+   */
+  function playAnimOnce(c, from, to, fps) {
+    if (!c || typeof c !== 'object') return;
+    var f = Math.max(0, Math.floor(num(from, 0)));
+    var t = Math.max(f, Math.floor(num(to, f)));
+    var r = Math.max(1, num(fps, 8));
+    if (c._animFrom === f && c._animTo === t && c._animFps === r && c._animOnce) return;
+    c._animFrom = f; c._animTo = t; c._animFps = r; c._animOnce = true;
+    c._animStart = playTime;
+  }
+  /** "Ja tocou tudo?" - puro, sai da conta do playTime: sem lista, sem passo, sem
+   * reset. Vale para animacao de uma vez so (a que repete nunca "acaba"). */
+  function animEnded(c) {
+    if (!c || typeof c !== 'object') return true;
+    var span = num(c._animTo, 0) - num(c._animFrom, 0) + 1;
+    var fps = num(c._animFps, 0);
+    if (!(fps > 0) || !(span > 0)) return true;
+    return (playTime - num(c._animStart, 0)) * fps >= span;
+  }
+
+  // ---- ANIMACAO POR ESTADO (a trava) ----
+  // A TRAVA pertence ao ESTADO, nao a animacao - e por isso que ela serve aos TRES
+  // sistemas de animacao (folha manual, folha de andar, quadros por fisica) e
+  // tambem ao vetorial, que nao tem quadro nenhum para "terminar".
+  //
+  // Sem ela, a crianca manda golpear e a animacao de ANDAR apaga o golpe no quadro
+  // seguinte. A base de luta resolve com uma cadeia de prioridade fixa dentro do
+  // switchSprite; aqui a prioridade e constante do motor (ninguem quer "andar
+  // atropela morrer") e o que a crianca responde e o que muda o jogo: se aquela
+  // animacao pode ou nao ser interrompida.
+  var STATE_FALLBACK = {
+    morte: [],
+    golpe: ['parado'],
+    dano: ['parado'],
+    caindo: ['pulando', 'andando', 'parado'],
+    pulando: ['andando', 'parado'],
+    andando: ['parado'],
+    parado: []
+  };
+  var STATE_NAMES = { parado: 1, andando: 1, pulando: 1, caindo: 1, dano: 1, golpe: 1, morte: 1 };
+  var STATE_LIST = 'use parado, andando, pulando, caindo, dano, golpe ou morte';
+
+  /** Poe a entidade num estado por N segundos - e e a TRAVA: enquanto durar, o
+   * autoAnimate nao deixa a fisica roubar a animacao. secs <= 0 = ate a animacao
+   * declarada do estado acabar. */
+  function setEntityState(who, name, secs) {
+    if (!who || typeof who !== 'object') return;
+    var st = text(name, '');
+    if (!STATE_NAMES[st]) { warnOnce('estado:' + st, 'o estado "' + st + '" nao existe (' + STATE_LIST + ')'); return; }
+    who._state = st;
+    who._stateUntil = playTime + Math.max(0, num(secs, 0));
+  }
+  function entityState(who) {
+    if (!who || typeof who !== 'object') return 'parado';
+    if (who._state && playTime < num(who._stateUntil, 0)) return who._state;
+    return derivedState(who);
+  }
+  /** Declara a animacao de UM estado (1x no comeco). O autoAnimate troca sozinho. */
+  function stateAnim(who, name, from, to, fps, once) {
+    if (!who || typeof who !== 'object') return;
+    var st = text(name, '');
+    if (!STATE_NAMES[st]) { warnOnce('stateanim:' + st, 'o estado "' + st + '" nao existe (' + STATE_LIST + ')'); return; }
+    if (!who._stateAnims) who._stateAnims = {};
+    var f = Math.max(0, Math.floor(num(from, 0)));
+    var t = Math.max(f, Math.floor(num(to, f)));
+    who._stateAnims[st] = { from: f, to: t, fps: Math.max(1, num(fps, 8)), once: !!once };
+  }
+  /** O caminho VETORIAL do mesmo contrato: a aparencia de um estado (sem folha). */
+  function stateLook(who, name, lookName) {
+    if (!who || typeof who !== 'object') return;
+    var st = text(name, '');
+    if (!STATE_NAMES[st]) { warnOnce('statelook:' + st, 'o estado "' + st + '" nao existe (' + STATE_LIST + ')'); return; }
+    if (!who._stateLooks) who._stateLooks = {};
+    who._stateLooks[st] = text(lookName, '');
+  }
+  /** Deriva o estado pela FISICA, na ordem fixa da base de luta (que esta certa):
+   * morte > golpe > dano > no ar > andando > parado. */
+  function derivedState(c) {
+    if (num(c.maxHealth, 0) > 0 && num(c.health, 0) <= 0) return 'morte';
+    if (num(c._swingT, 0) > 0) return 'golpe';
+    if (num(c._iFrames, 0) > 0) return 'dano';
+    if (c.onGround === false) return num(c.vy, 0) < 0 ? 'pulando' : 'caindo';
+    if (Math.abs(num(c.vx, 0)) > 0.01) return 'andando';
+    return 'parado';
+  }
+  /**
+   * Anima sozinho pelo que a entidade esta FAZENDO. Use todo quadro.
+   * Nada declarado = no-op: quem nao usa nao paga nada.
+   */
+  function autoAnimate(who) {
+    if (!who || typeof who !== 'object') return;
+    // 1) estado TRAVADO vence a fisica (e a trava)
+    var st = (who._state && playTime < num(who._stateUntil, 0)) ? who._state : derivedState(who);
+    // 2) flip pelo sinal de vx - so se NAO houver folha de andar (essa tem uma
+    //    linha por direcao e se vira sozinha).
+    if (!text(who._walkImg, '')) {
+      var vx = num(who.vx, 0);
+      if (vx > 0.01) { who._facingDir = 'right'; who._facingLeft = false; }
+      else if (vx < -0.01) { who._facingDir = 'left'; who._facingLeft = true; }
+    }
+    // 3) o estado sem visual declarado cai no parente mais proximo, numa ordem FIXA
+    //    e previsivel (caindo parece pular; pular parece andar; golpe parece parado).
+    var anims = who._stateAnims;
+    var looks = who._stateLooks;
+    var key = null;
+    var chain = [st].concat(STATE_FALLBACK[st] || []);
+    for (var i = 0; i < chain.length; i++) {
+      if ((anims && anims[chain[i]]) || (looks && looks[chain[i]])) { key = chain[i]; break; }
+    }
+    if (!key) return; // nada declarado p/ este estado nem p/ os parentes: no-op
+    if (looks && looks[key]) who.look = looks[key];
+    if (anims && anims[key]) {
+      var a = anims[key];
+      if (a.once) {
+        // fps ESTICADO p/ a animacao durar exatamente a trava: e isto que faz
+        // "pular quadro" nao quebrar nada - a mecanica manda, a animacao obedece.
+        var dur = num(who._stateUntil, 0) - playTime;
+        var span = a.to - a.from + 1;
+        var fps = (who._state === key && dur > 0.01) ? span / dur : a.fps;
+        if (who._animState !== key) playAnimOnce(who, a.from, a.to, fps);
+      } else if (who._animState !== key) {
+        who._animOnce = false;
+        playAnim(who, a.from, a.to, a.fps);
+      }
+    }
+    who._animState = key;
+  }
+
   function setWalkSheet(c, imageName, fw, fh) {
     if (!c || typeof c !== 'object') return;
     c._walkImg = text(imageName, '');
@@ -1224,7 +1362,14 @@ export const gameKitRuntime = `(function () {
       // propósito desta função: toda entidade que anda mudava de shape.
       _driftTimer: 0, _patrolTX: 0, _patrolTY: 0, _patrolTimer: 0,
       // 🌫️ R15: opacidade (1 = opaco) e a caixa que COLIDE (0 = usa o desenho).
-      opacity: 1, _hbX: 0, _hbY: 0, _hbW: 0, _hbH: 0
+      opacity: 1, _hbX: 0, _hbY: 0, _hbW: 0, _hbH: 0,
+      // 🥷 R18: a janela do golpe (recuo/ativo em segundos; 0/0 = o golpe inteiro
+      // machuca, que é o comportamento de sempre) e o ESTADO com a trava de
+      // animação. Reciclar sem zerar deixaria o inimigo novo nascer "golpeando",
+      // ou travado no estado de morte do anterior.
+      _swingStart: 0, _swingActive: 0, _swingDur: 0,
+      _animOnce: false, _animState: '',
+      _state: '', _stateUntil: 0, _stateAnims: null, _stateLooks: null
     };
   }
   function defineMold(name, opts) {
@@ -1277,6 +1422,10 @@ export const gameKitRuntime = `(function () {
     e._lastX = e.x; e._lastY = e.y; e._moving = false; e._moveFrame = -1;
     // Zera o golpe de ação (senão uma entidade reciclada carrega o rastro/latch).
     e._swingT = 0; e._swingRange = 0; e._swingId = 0; e._hitBySwing = 0;
+    // R18: janela do golpe + estado/trava de animação (ver blankEntity).
+    e._swingStart = 0; e._swingActive = 0; e._swingDur = 0;
+    e._animOnce = false; e._animState = '';
+    e._state = ''; e._stateUntil = 0; e._stateAnims = null; e._stateLooks = null;
     // ⚙️ Física: reciclado NÃO pode nascer "no chão" nem com recarga/varredura velhas.
     e.onGround = false; e._maxFall = 0; e._cd = 0; e._prevX = e.x; e._prevY = e.y;
     e._bornX = e.x; e._bornY = e.y;
@@ -1392,6 +1541,27 @@ export const gameKitRuntime = `(function () {
     for (var i = 0; i < pool.active.length; i++) {
       if (pool.active[i]._active) drawEntity(pool.active[i]);
     }
+  }
+  /**
+   * O vivo do molde MAIS PERTO de um ponto (ou null). Nao havia acumulador de
+   * minimo: a torre que escolhe o alvo (tower defense) e a IA de horda eram
+   * inexprimiveis - a crianca so conseguia "o primeiro que encostar".
+   */
+  function nearestActive(moldName, x, y) {
+    var k = text(moldName, '');
+    var pool = pools[k];
+    if (!pool) { warnOnce('nearest:' + k, 'o molde "' + k + '" não existe — crie com "Criar o molde"'); return null; }
+    var px = num(x, 0), py = num(y, 0);
+    var best = null, bestD = Infinity;
+    var act = pool.active;
+    for (var i = 0; i < act.length; i++) {
+      var e = act[i];
+      if (!e || e._active === false) continue;
+      var dx = centerX(e) - px, dy = centerY(e) - py;
+      var d = dx * dx + dy * dy; // sem sqrt: comparar quadrados basta e e mais rapido
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    return best;
   }
   function countActive(name) {
     var pool = pools[text(name, '')];
@@ -1696,6 +1866,27 @@ export const gameKitRuntime = `(function () {
 
   // ---- ⏱️ Tempo (acumulador de dt — NÃO relógio de parede: pausa tem que pausar) ----
   var secondTimers = Object.create(null);
+  // Esperas de UMA VEZ em curso. Objeto sem prototipo nao serve aqui (e lista).
+  var waits = [];
+  /**
+   * Fazer algo DEPOIS de N segundos, UMA vez. O buraco mais barato e mais
+   * universal que faltava: "o chefe aparece aos 30s", "a mensagem some em 2s", o
+   * combo, o ritmo. O "A cada N segundos" REPETE, e o unico "esperar" que existia
+   * era o do Kit RPG, que so vale dentro de uma cena.
+   * Anda no relogio do JOGO: pausou, para de contar.
+   */
+  function waitThen(secs, fn) {
+    if (typeof fn !== 'function') return;
+    waits.push({ at: playTime + Math.max(0, num(secs, 1)), fn: fn });
+  }
+  function stepWaits() {
+    for (var i = waits.length - 1; i >= 0; i--) {
+      if (playTime < waits[i].at) continue;
+      var f = waits[i].fn;
+      waits.splice(i, 1); // tira ANTES de rodar: um "Esperar" dentro do corpo
+      try { f(); } catch (e) { warn('erro no "Esperar": ' + e); }
+    }
+  }
   function everySeconds(key, secs) {
     var k = text(key, 't');
     var period = Math.max(0.01, num(secs, 1));
@@ -1971,6 +2162,47 @@ export const gameKitRuntime = `(function () {
     who.vx = (dx / len) * v;
     who.vy = (dy / len) * v;
     setFacing(who, dx, dy);
+  }
+  /**
+   * O angulo de quem (em graus). O setAngle so ESCREVE - nao havia como LER, e sem
+   * ler nao existe "girar ate mirar": torre que acompanha, nave, tanque, stealth.
+   * (Zero atan2 no arquivo inteiro antes disto.)
+   */
+  function angleOf(who) {
+    return (who && typeof who === 'object') ? num(who._angle, 0) : 0;
+  }
+  /** O angulo de A para B (graus, 0 = direita, cresce no sentido horario). */
+  function angleTo(a, b) {
+    if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return 0;
+    return Math.atan2(centerY(b) - centerY(a), centerX(b) - centerX(a)) * 180 / Math.PI;
+  }
+  /**
+   * EMPURRA no angulo, SOMANDO a velocidade (inercia). O setVelocityAngle
+   * SOBRESCREVE o vx/vy - e sem somar nao existe Asteroids, nave com impulso, nem
+   * carro. (A doc da IA prometia "tanque/nave/Asteroids" com o setVelocityAngle:
+   * era mentira, e este bloco e o que a torna verdade.)
+   */
+  function thrust(who, deg, force) {
+    if (!who || typeof who !== 'object') return;
+    var r = num(deg, 0) * Math.PI / 180;
+    var f = num(force, 100);
+    who.vx = num(who.vx, 0) + Math.cos(r) * f;
+    who.vy = num(who.vy, 0) + Math.sin(r) * f;
+  }
+  /**
+   * Atrito: freia a velocidade por quadro. fator 0..1 por SEGUNDO (0.9 = perde 90%
+   * da velocidade em 1s), independente do fps - por isso o Math.pow com o dt.
+   * Nao havia atrito nenhum no runtime: corrida, gelo, hoquei, Asteroids.
+   */
+  function applyFriction(who, factor, dt) {
+    if (!who || typeof who !== 'object') return;
+    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
+    var f = Math.max(0, Math.min(1, num(factor, 0.9)));
+    var k = Math.pow(1 - f, d);
+    who.vx = num(who.vx, 0) * k;
+    who.vy = num(who.vy, 0) * k;
+    if (Math.abs(who.vx) < 0.5) who.vx = 0; // senao fica deslizando para sempre
+    if (Math.abs(who.vy) < 0.5) who.vy = 0;
   }
   function setVelocityAngle(who, degrees, force) {
     if (!who || typeof who !== 'object') return;
@@ -3081,13 +3313,45 @@ export const gameKitRuntime = `(function () {
     else { swingRect.x = x + w; swingRect.y = y; swingRect.w = range; swingRect.h = h; } // right
     return swingRect;
   }
+  /**
+   * ⭐ Regular o RECUO e a JANELA ATIVA do golpe (em SEGUNDOS).
+   *
+   * Sem isto o didHit vale desde o 1º quadro do golpe: quem aperta primeiro SEMPRE
+   * ganha, e aí não há leitura, não há espaçamento, não há punir o golpe errado —
+   * não há jogo de luta (nem espadada de Zelda que se possa desviar).
+   *
+   * ⚠️ Em SEGUNDOS de propósito, NÃO no "quadro N da animação". O jeito da base de
+   * luta ("só acerta em framesCurrent === 4") quebra sozinho: um quadro pulado num
+   * computador lento = o golpe NUNCA acerta. Aqui a mecânica manda e a animação é
+   * esticada para caber nela (ver stateAnim), então pular quadro não quebra nada.
+   *
+   * Padrão 0/0 = o comportamento de sempre (a caixa vale o golpe inteiro).
+   */
+  function setSwingWindow(who, start, active) {
+    if (!who || typeof who !== 'object') return;
+    who._swingStart = Math.max(0, num(start, 0));
+    who._swingActive = Math.max(0, num(active, 0));
+  }
+  /** true enquanto a caixa de golpe MACHUCA (dentro da janela ativa). */
+  function inSwingWindow(who) {
+    if (!(num(who._swingT, 0) > 0)) return false;
+    var act = num(who._swingActive, 0);
+    if (!(act > 0)) return true; // sem janela declarada: o golpe inteiro machuca
+    var el = num(who._swingDur, 0) - num(who._swingT, 0); // quanto já correu
+    var ini = num(who._swingStart, 0);
+    return el >= ini && el <= ini + act;
+  }
   function attackFacing(who, range, duration) {
     if (!who || typeof who !== 'object') return;
     if (num(who._swingT, 0) > 0) return; // já golpeando: espera o golpe acabar
     who._swingRange = Math.max(1, num(range, 40));
-    who._swingT = Math.max(0.05, num(duration, 0.3));
+    who._swingDur = Math.max(0.05, num(duration, 0.3));
+    who._swingT = who._swingDur;
     who._swingId = ++swingId; // marca este golpe (trava de 1 acerto por alvo)
     if (swinging.indexOf(who) === -1) swinging.push(who);
+    // A animação de golpe trava sozinha: quem usa só os blocos GERAIS de ação já
+    // ganha a trava sem saber que ela existe (ver autoAnimate).
+    setEntityState(who, 'golpe', who._swingDur);
   }
   function stepSwings(dt) {
     for (var i = swinging.length - 1; i >= 0; i--) {
@@ -3098,7 +3362,7 @@ export const gameKitRuntime = `(function () {
   }
   function didHit(who, target) {
     if (!who || !target || typeof who !== 'object' || typeof target !== 'object') return false;
-    if (!(num(who._swingT, 0) > 0)) return false; // não está golpeando
+    if (!inSwingWindow(who)) return false; // não está golpeando, ou está no recuo
     if (!touching(swingBox(who), target)) return false;
     if (target._hitBySwing === who._swingId) return false; // já acertou neste golpe
     target._hitBySwing = who._swingId;
@@ -3385,6 +3649,9 @@ export const gameKitRuntime = `(function () {
       // Anda como o herói: destino na grade, direção, velocidade e patrulha.
       speed: s * 2.4, _gridDest: null, _walkTarget: null, _wander: false, _wanderT: 0,
       _iFrames: 0, _facingLeft: false, _facingDir: 'down', _angle: 0,
+      _swingStart: 0, _swingActive: 0, _swingDur: 0,
+      _animOnce: false, _animState: '',
+      _state: '', _stateUntil: 0, _stateAnims: null, _stateLooks: null,
       _sheetImg: '', _sheetFw: 0, _sheetFh: 0,
       _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0,
       _walkImg: '', _walkFw: 0, _walkFh: 0, _walkFrames: 0, _walkFps: 6,
@@ -3580,8 +3847,22 @@ export const gameKitRuntime = `(function () {
   function rpgGiveItem(name, image) {
     var k = text(name, '');
     if (!k) return;
-    if (rpgHasItem(k)) return; // sem duplicar
-    rpg.items.push({ name: k, image: text(image, '') });
+    var it = rpgFindItem(k);
+    if (it) { it.qty = num(it.qty, 1) + 1; return; } // ja tem: soma QUANTIDADE
+    rpg.items.push({ name: k, image: text(image, ''), qty: 1 });
+  }
+  function rpgFindItem(k) {
+    for (var i = 0; i < rpg.items.length; i++) if (rpg.items[i].name === k) return rpg.items[i];
+    return null;
+  }
+  /**
+   * QUANTOS de um item (0 = nenhum). O "Ganhar o item" DEDUPAVA sem contar: sem
+   * quantidade nao existe crafting ("3 madeiras"), loja, nem coleta - so
+   * chave-e-porta. Agora ele soma, e isto le.
+   */
+  function rpgCountItem(name) {
+    var it = rpgFindItem(text(name, ''));
+    return it ? num(it.qty, 1) : 0;
   }
   function rpgHasItem(name) {
     var k = text(name, '');
@@ -4390,6 +4671,13 @@ export const gameKitRuntime = `(function () {
     // ----- R2: fundamentos -----
     setSheet: guard('setSheet', setSheet),
     playAnim: guard('playAnim', playAnim),
+    playAnimOnce: guard('playAnimOnce', playAnimOnce),
+    animEnded: guard('animEnded', animEnded),
+    setEntityState: guard('setEntityState', setEntityState),
+    entityState: guard('entityState', entityState),
+    stateAnim: guard('stateAnim', stateAnim),
+    stateLook: guard('stateLook', stateLook),
+    autoAnimate: guard('autoAnimate', autoAnimate),
     cameraFollow: guard('cameraFollow', cameraFollow),
     cameraStop: guard('cameraStop', cameraStop),
     cameraX: guard('cameraX', function () { return camera.x; }),
@@ -4424,6 +4712,7 @@ export const gameKitRuntime = `(function () {
     rpgHasFlag: guard('rpgHasFlag', rpgHasFlag),
     rpgGiveItem: guard('rpgGiveItem', rpgGiveItem),
     rpgHasItem: guard('rpgHasItem', rpgHasItem),
+    rpgCountItem: guard('rpgCountItem', rpgCountItem),
     rpgRemoveItem: guard('rpgRemoveItem', rpgRemoveItem),
     rpgDrawInventory: guard('rpgDrawInventory', rpgDrawInventory),
     rpgGoMap: guard('rpgGoMap', rpgGoMap),
@@ -4485,6 +4774,7 @@ export const gameKitRuntime = `(function () {
     recycle: guard('recycle', recycle),
     drawActive: guard('drawActive', drawActive),
     countActive: guard('countActive', countActive),
+    nearestActive: guard('nearestActive', nearestActive),
     defineLook: guard('defineLook', defineLook),
     drawLook: guard('drawLook', drawLook),
     seek: guard('seek', seek),
@@ -4518,6 +4808,7 @@ export const gameKitRuntime = `(function () {
     bounceOnEdges: guard('bounceOnEdges', bounceOnEdges),
     wrapEdges: guard('wrapEdges', wrapEdges),
     everySeconds: guard('everySeconds', everySeconds),
+    waitThen: guard('waitThen', waitThen),
     cooldownReady: guard('cooldownReady', cooldownReady),
     tileAt: guard('tileAt', tileAt),
     setTileAt: guard('setTileAt', setTileAt),
@@ -4537,6 +4828,10 @@ export const gameKitRuntime = `(function () {
     pointIn: guard('pointIn', pointIn),
     launchToPoint: guard('launchToPoint', launchToPoint),
     setVelocityAngle: guard('setVelocityAngle', setVelocityAngle),
+    angleOf: guard('angleOf', angleOf),
+    angleTo: guard('angleTo', angleTo),
+    thrust: guard('thrust', thrust),
+    applyFriction: guard('applyFriction', applyFriction),
     setOpacity: guard('setOpacity', setOpacity),
     opacityOf: guard('opacityOf', opacityOf),
     fadeTo: guard('fadeTo', fadeTo),
@@ -4592,6 +4887,7 @@ export const gameKitRuntime = `(function () {
     platformerAnim: guard('platformerAnim', platformerAnim),
     // ----- 🥷 V10: ação em tempo real (Zelda) -----
     attackFacing: guard('attackFacing', attackFacing),
+    setSwingWindow: guard('setSwingWindow', setSwingWindow),
     didHit: guard('didHit', didHit),
     patrolAround: guard('patrolAround', patrolAround),
     drawHearts: guard('drawHearts', drawHearts),

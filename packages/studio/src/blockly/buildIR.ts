@@ -576,6 +576,23 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:isDead', charVar: f(block, 'CHAR') }
     case 'sz_gk_is_invincible':
       return { type: 'gk:isInvincible', charVar: f(block, 'CHAR') }
+    case 'sz_gk_anim_ended':
+      return { type: 'gk:animEnded', charVar: f(block, 'WHO') }
+    case 'sz_gk_entity_state':
+      return { type: 'gk:entityState', charVar: f(block, 'WHO') }
+    case 'sz_gk_angle_of':
+      return { type: 'gk:angleOf', charVar: f(block, 'WHO') }
+    case 'sz_gk_angle_to':
+      return { type: 'gk:angleTo', charVar: f(block, 'WHO'), targetVar: f(block, 'TARGET') }
+    case 'sz_gk_nearest_active':
+      return {
+        type: 'gk:nearestActive',
+        mold: f(block, 'MOLD'),
+        x: exprInput(block, 'X', { type: 'num', value: 0 }),
+        y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+      }
+    case 'sz_gk_count_item':
+      return { type: 'gk:countItem', name: f(block, 'NAME') }
     case 'sz_gk_health_of':
       return { type: 'gk:healthOf', charVar: f(block, 'CHAR') }
     case 'sz_gk_time_survived':
@@ -6234,6 +6251,100 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           prop: f(block, 'PROP'),
           to: exprInput(block, 'TO', { type: 'num', value: 100 }),
           seconds: exprInput(block, 'SECS', { type: 'num', value: 0.5 }),
+        },
+      }
+    case 'sz_gk_swing_window':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setSwingWindow',
+          charVar: f(block, 'WHO'),
+          start: exprInput(block, 'START', { type: 'num', value: 0 }),
+          active: exprInput(block, 'ACTIVE', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_play_anim_once':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:playAnimOnce',
+          charVar: f(block, 'WHO'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 3 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_gk_set_entity_state':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setEntityState',
+          charVar: f(block, 'WHO'),
+          state: f(block, 'STATE'),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 0.3 }),
+        },
+      }
+    case 'sz_gk_state_anim':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:stateAnim',
+          charVar: f(block, 'WHO'),
+          state: f(block, 'STATE'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 3 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 8 }),
+          once: f(block, 'ONCE') === 'TRUE',
+        },
+      }
+    case 'sz_gk_state_look':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:stateLook',
+          charVar: f(block, 'WHO'),
+          state: f(block, 'STATE'),
+          look: f(block, 'LOOK'),
+        },
+      }
+    case 'sz_gk_auto_animate':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:autoAnimate', charVar: f(block, 'WHO') } }
+    case 'sz_gk_thrust':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:thrust',
+          charVar: f(block, 'WHO'),
+          degrees: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+          force: exprInput(block, 'FORCE', { type: 'num', value: 200 }),
+        },
+      }
+    case 'sz_gk_apply_friction':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:applyFriction',
+          charVar: f(block, 'WHO'),
+          factor: exprInput(block, 'FACTOR', { type: 'num', value: 0.9 }),
+          dtVar: f(block, 'DT'),
+        },
+      }
+    case 'sz_gk_wait':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:waitThen',
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 1 }),
+          body: getStatementChildren(block, 'DO', seen),
         },
       }
     case 'sz_gk_set_hitbox':

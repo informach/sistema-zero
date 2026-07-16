@@ -2904,6 +2904,226 @@ export const gameKitBlocks = [
     tooltip:
       'Desenha uma fileira de corações (os cheios = vida atual, os apagados = vida que falta). É a "vidinha" dos jogos de aventura. Fica ótimo no "Desenhar por cima (HUD)".',
   },
+  // ---- 🥷 Ação: a JANELA do golpe (recuo + ativo) ----
+  {
+    type: 'sz_gk_swing_window',
+    message0: 'Regular o golpe de %1: recuo %2 s, acerta por %3 s',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'START', check: 'JSValue' },
+      { type: 'input_value', name: 'ACTIVE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'O golpe não machuca no instante em que você aperta: primeiro vem o RECUO (o braço indo) e só depois a janela em que ele acerta. Sem isso, quem aperta primeiro sempre ganha. O retângulo branco aparece só enquanto machuca. 0 e 0 = machuca o golpe inteiro.',
+  },
+  // ---- 🎬 Animação ----
+  {
+    type: 'sz_gk_play_anim_once',
+    message0: 'Tocar a animação de %1: quadros %2 a %3, %4 por segundo, uma vez só',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'FROM', check: 'JSValue' },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+      { type: 'input_value', name: 'FPS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Toca e PARA no último quadro, em vez de repetir. Bom para golpe, morrer, abrir o baú.',
+  },
+  {
+    type: 'sz_gk_anim_ended',
+    message0: 'a animação de %1 acabou?',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    output: 'JSValue',
+    tooltip:
+      'Verdadeiro quando a animação de "uma vez só" já tocou tudo. (A que repete nunca acaba.)',
+  },
+  {
+    type: 'sz_gk_set_entity_state',
+    message0: 'Pôr %1 no estado %2 por %3 s',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'STATE',
+        options: [
+          ['parado', 'parado'],
+          ['andando', 'andando'],
+          ['pulando', 'pulando'],
+          ['caindo', 'caindo'],
+          ['levando dano', 'dano'],
+          ['golpeando', 'golpe'],
+          ['morrendo', 'morte'],
+        ],
+      },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Trava o estado por um tempo: enquanto durar, o "Animar sozinho" NÃO deixa a física roubar a animação. É o que impede a animação de andar de apagar o seu golpe.',
+  },
+  {
+    type: 'sz_gk_entity_state',
+    message0: 'o estado de %1',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    output: 'JSValue',
+    tooltip:
+      'O que ele está fazendo agora: parado, andando, pulando, caindo, dano, golpe ou morte.',
+  },
+  {
+    type: 'sz_gk_state_anim',
+    message0: 'Animação de %1 no estado %2: quadros %3 a %4, %5 por segundo %6',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'STATE',
+        options: [
+          ['parado', 'parado'],
+          ['andando', 'andando'],
+          ['pulando', 'pulando'],
+          ['caindo', 'caindo'],
+          ['levando dano', 'dano'],
+          ['golpeando', 'golpe'],
+          ['morrendo', 'morte'],
+        ],
+      },
+      { type: 'input_value', name: 'FROM', check: 'JSValue' },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+      { type: 'input_value', name: 'FPS', check: 'JSValue' },
+      { type: 'field_checkbox', name: 'ONCE', checked: false },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Diga uma vez qual animação é de cada estado; o "Animar sozinho" troca na hora certa. Marque a caixinha para ela NÃO poder ser interrompida (golpe, morrer).',
+  },
+  {
+    type: 'sz_gk_state_look',
+    message0: 'Aparência de %1 no estado %2 é %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'STATE',
+        options: [
+          ['parado', 'parado'],
+          ['andando', 'andando'],
+          ['pulando', 'pulando'],
+          ['caindo', 'caindo'],
+          ['levando dano', 'dano'],
+          ['golpeando', 'golpe'],
+          ['morrendo', 'morte'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'LOOK', text: 'parado', kind: 'look' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'O mesmo que a animação por estado, mas com DESENHO (sem folha de imagens).',
+  },
+  {
+    type: 'sz_gk_auto_animate',
+    message0: 'Animar %1 sozinho (pelo que ele está fazendo)',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Use todo quadro. Escolhe a animação pela ordem morte > golpe > dano > no ar > andando > parado, e vira o desenho para o lado que ele anda. Sem nada declarado, não faz nada.',
+  },
+  // ---- 🔧 Propriedades & direção: LER o ângulo ----
+  {
+    type: 'sz_gk_angle_of',
+    message0: 'o ângulo de %1',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
+    output: 'JSValue',
+    tooltip: 'Para onde ele está apontando, em graus (0 = direita).',
+  },
+  {
+    type: 'sz_gk_angle_to',
+    message0: 'o ângulo de %1 até %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'torre', kind: 'character' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'inimigo', kind: 'character' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    tooltip:
+      'O ângulo que aponta de um para o outro. Junte com "Girar" para a torre acompanhar o alvo.',
+  },
+  // ---- ⚙️ Física: inércia e atrito ----
+  {
+    type: 'sz_gk_thrust',
+    message0: 'Empurrar %1 no ângulo %2 com força %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+      { type: 'input_value', name: 'FORCE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'SOMA velocidade no ângulo, em vez de trocar — é isso que dá INÉRCIA: a nave continua andando depois que você solta. (O "Mover no ângulo" apaga a velocidade de antes.)',
+  },
+  {
+    type: 'sz_gk_apply_friction',
+    message0: 'Frear %1 com atrito %2 usando o tempo %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
+      { type: 'input_value', name: 'FACTOR', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Vai tirando a velocidade aos poucos. 0.9 = perde quase tudo em 1 segundo (chão normal); 0.1 = escorrega muito (gelo).',
+  },
+  // ---- ⏱️ Tempo: esperar UMA vez ----
+  {
+    type: 'sz_gk_wait',
+    message0: 'Esperar %1 segundos e então',
+    args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
+    message1: '%1',
+    args1: [{ type: 'input_statement', name: 'DO', check: 'JSStmt' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Faz o que estiver dentro DEPOIS do tempo, uma vez só. ("A cada N segundos" repete para sempre.) Conta no relógio do jogo: se pausar, para de contar.',
+  },
+  // ---- 👾 Moldes & enxames: o mais perto ----
+  {
+    type: 'sz_gk_nearest_active',
+    message0: 'o mais perto de x %2 y %3 no molde %1',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    tooltip:
+      'O vivo do molde que está mais perto daquele ponto. É como a torre escolhe em quem atirar.',
+  },
+  // ---- 🎒 Itens: quantos ----
+  {
+    type: 'sz_gk_count_item',
+    message0: 'quantos %1 eu tenho',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'madeira' }],
+    output: 'JSValue',
+    tooltip:
+      'A quantidade daquele item (0 = nenhum). "Ganhar o item" soma de um em um, então dá para pedir 3 madeiras para construir.',
+  },
 ]
 
 /**
@@ -3003,6 +3223,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_set_facing',
       'sz_gk_facing_of',
       'sz_gk_set_hitbox',
+      'sz_gk_angle_of',
+      'sz_gk_angle_to',
     ],
   },
   {
@@ -3040,19 +3262,35 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_recycle',
       'sz_gk_draw_active',
       'sz_gk_count_active',
+      'sz_gk_nearest_active',
     ],
   },
   {
     // "Aparência" (não "Desenho"): o visual VETORIAL + a folha de quadros. As
     // duas respondem "com o que esse personagem se parece" (viviam em 2+3).
-    name: '🎨 Aparência & animação',
+    name: '🎨 Aparência',
+    colour: C,
+    types: ['sz_gk_define_look', 'sz_gk_draw_look', 'sz_gk_set_sheet', 'sz_gk_set_walk_sheet'],
+  },
+  {
+    // ⭐ Categoria NOVA (R18). A animação era um apêndice da aparência com 5
+    // blocos; com a TRAVA por estado ela virou assunto próprio (e iria a 12 num
+    // chip só, acima do teto de 10).
+    //
+    // ⚠️ A trava é o que faltava nos TRÊS sistemas de animação da extensão (folha
+    // manual · folha de andar · quadros por física): sem ela a criança manda
+    // golpear e a animação de andar apaga o golpe no quadro seguinte.
+    name: '🎬 Animação',
     colour: C,
     types: [
-      'sz_gk_define_look',
-      'sz_gk_draw_look',
-      'sz_gk_set_sheet',
       'sz_gk_play_anim',
-      'sz_gk_set_walk_sheet',
+      'sz_gk_play_anim_once',
+      'sz_gk_anim_ended',
+      'sz_gk_state_anim',
+      'sz_gk_state_look',
+      'sz_gk_auto_animate',
+      'sz_gk_set_entity_state',
+      'sz_gk_entity_state',
     ],
   },
   {
@@ -3111,6 +3349,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_set_velocity',
       'sz_gk_velocity_of',
       'sz_gk_set_terminal_velocity',
+      'sz_gk_thrust',
+      'sz_gk_apply_friction',
       'sz_gk_bounce_on_edges',
       'sz_gk_wrap_edges',
     ],
@@ -3123,7 +3363,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '⏱️ Tempo',
     colour: C,
-    types: ['sz_gk_every_seconds', 'sz_gk_cooldown_ready'],
+    types: ['sz_gk_every_seconds', 'sz_gk_wait', 'sz_gk_cooldown_ready'],
   },
   {
     // Combate ANTES de Ação: a ação em tempo real usa hurt/i-frames/knockback.
@@ -3143,7 +3383,18 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     // GERAL (não Kit RPG): golpe/hitbox/patrulha valem em qualquer jogo de ação.
     name: '🥷 Ação em tempo real',
     colour: C,
-    types: ['sz_gk_attack_facing', 'sz_gk_did_hit', 'sz_gk_patrol_around'],
+    types: [
+      'sz_gk_attack_facing',
+      'sz_gk_swing_window',
+      'sz_gk_did_hit',
+      'sz_gk_patrol_around',
+      // ⭐ HONRAR A REGRA: o "virar na parede" não tem NADA de plataforma — não lê
+      // onGround, nem gravidade, nem plat.*: lê "meu vx zerou depois de eu andar =
+      // bati". Funciona igual num dungeon de topo ou num Frogger, e o irmão
+      // "patrulhar em volta" já era geral. Kit = o atalho de UM gênero; isto é de
+      // todos.
+      'sz_gk_plat_patrol_wall',
+    ],
   },
   {
     // Os 3 jeitos de mostrar a vida moram JUNTOS aqui (a barra automática em
@@ -3206,7 +3457,17 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '💾 Memória',
     colour: C,
-    types: ['sz_gk_save_value', 'sz_gk_saved_value'],
+    types: [
+      'sz_gk_save_value',
+      'sz_gk_saved_value',
+      // ⭐ HONRAR A REGRA: uma flag de história é um BOOLEANO COM NOME ("já viu a
+      // intro", "destravou a fase 2"). Não tem grade, NPC nem parede: nada de RPG.
+      // Ficam coladas aqui, e o contraste vive no tooltip — a flag morre com a
+      // partida; o "valor guardado" sobrevive a fechar o jogo. Criança nenhuma
+      // adivinha essa diferença sozinha.
+      'sz_gk_rpg_add_flag',
+      'sz_gk_rpg_has_flag',
+    ],
   },
   // ---- 🏃 KIT PLATAFORMA (o atalho do gênero) ----
   // Pela REGRA: só o ESPECÍFICO de plataforma mora aqui. Gravidade, colidir,
@@ -3236,7 +3497,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       // Os inimigos eram uma categoria de 2 — nome próprio custa mais navegação
       // do que economiza.
       'sz_gk_plat_stomp',
-      'sz_gk_plat_patrol_wall',
     ],
   },
   // ---- 🧙 KIT RPG (o kit facilitado, SÓ para montar um RPG) ----
@@ -3265,13 +3525,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_gk_rpg_create_npc', 'sz_gk_rpg_draw_npcs', 'sz_gk_rpg_on_talk'],
   },
   {
-    name: '🎒 Kit RPG: história & itens',
+    name: '🎒 Itens',
     colour: C,
     types: [
-      'sz_gk_rpg_add_flag',
-      'sz_gk_rpg_has_flag',
       'sz_gk_rpg_give_item',
       'sz_gk_rpg_has_item',
+      'sz_gk_count_item',
       'sz_gk_rpg_remove_item',
       'sz_gk_rpg_draw_inventory',
     ],
@@ -3510,6 +3769,14 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_fade_to: { PCT: numShadow(0), SECS: numShadow(0.5) },
   sz_gk_tween_property: { TO: numShadow(100), SECS: numShadow(0.5) },
   sz_gk_set_hitbox: { OX: numShadow(0), OY: numShadow(0), W: numShadow(0), H: numShadow(0) },
+  sz_gk_swing_window: { START: numShadow(0.08), ACTIVE: numShadow(0.08) },
+  sz_gk_play_anim_once: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(10) },
+  sz_gk_set_entity_state: { SECS: numShadow(0.3) },
+  sz_gk_state_anim: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },
+  sz_gk_thrust: { DEG: numShadow(0), FORCE: numShadow(200) },
+  sz_gk_apply_friction: { FACTOR: numShadow(0.9) },
+  sz_gk_wait: { SECS: numShadow(1) },
+  sz_gk_nearest_active: { X: numShadow(0), Y: numShadow(0) },
   sz_gk_fade_screen: { SECS: numShadow(0.4) },
   sz_gk_flash_screen: { TIMES: numShadow(3) },
   sz_gk_save_value: { VALUE: numShadow(0) },

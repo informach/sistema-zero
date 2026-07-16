@@ -1855,6 +1855,35 @@ function compileStatementCode(
       return `${pad}SZGameKit.fadeTo(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
     case 'gk:tweenProperty':
       return `${pad}SZGameKit.tweenProperty(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.prop)}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
+    case 'gk:setSwingWindow':
+      return `${pad}SZGameKit.setSwingWindow(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.start), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.active), 0, identifiers, recAt(base))});`
+    case 'gk:playAnimOnce':
+      return `${pad}SZGameKit.playAnimOnce(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
+    case 'gk:setEntityState':
+      return `${pad}SZGameKit.setEntityState(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.state)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
+    case 'gk:stateAnim':
+      return `${pad}SZGameKit.stateAnim(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.state)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))}, ${stmt.once});`
+    case 'gk:stateLook':
+      return `${pad}SZGameKit.stateLook(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.state)}, ${JSON.stringify(stmt.look)});`
+    case 'gk:autoAnimate':
+      return `${pad}SZGameKit.autoAnimate(${identifiers.get(stmt.charVar)});`
+    case 'gk:thrust':
+      return `${pad}SZGameKit.thrust(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.degrees), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'gk:applyFriction':
+      return `${pad}SZGameKit.applyFriction(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.factor), 0, identifiers, recAt(base))}, ${identifiers.get(stmt.dtVar)});`
+    case 'gk:waitThen': {
+      const espera = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return [
+        `${pad}SZGameKit.waitThen(${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, function () {`,
+        espera,
+        `${pad}});`,
+      ].join('\n')
+    }
     case 'gk:setHitbox':
       return `${pad}SZGameKit.setHitbox(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.ox), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.oy), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
     case 'gk:fadeScreen':
@@ -4237,6 +4266,46 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.oy), names)
       collectExprIdentifiers(valueToExpr(stmt.w), names)
       collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'gk:setSwingWindow':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.start), names)
+      collectExprIdentifiers(valueToExpr(stmt.active), names)
+      return
+    case 'gk:playAnimOnce':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.from), names)
+      collectExprIdentifiers(valueToExpr(stmt.to), names)
+      collectExprIdentifiers(valueToExpr(stmt.fps), names)
+      return
+    case 'gk:setEntityState':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
+      return
+    case 'gk:stateAnim':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.from), names)
+      collectExprIdentifiers(valueToExpr(stmt.to), names)
+      collectExprIdentifiers(valueToExpr(stmt.fps), names)
+      return
+    case 'gk:stateLook':
+    case 'gk:autoAnimate':
+      names.add(stmt.charVar)
+      return
+    case 'gk:thrust':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.degrees), names)
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      return
+    case 'gk:applyFriction':
+      names.add(stmt.charVar)
+      names.add(stmt.dtVar) // o "usando o tempo" é uma VARIÁVEL, não um valor
+      collectExprIdentifiers(valueToExpr(stmt.factor), names)
+      return
+    case 'gk:waitThen':
+      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
+      // ⚠️ o corpo é por-statement: sem o laço, a variável criada lá dentro some
+      for (const s of stmt.body) collectStatementIdentifiers(s, names)
       return
     case 'gk:fadeScreen':
       collectExprIdentifiers(valueToExpr(stmt.seconds), names)

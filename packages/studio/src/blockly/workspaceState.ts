@@ -3832,6 +3832,80 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             SECS: s2,
           })
     }
+    case 'gk:setSwingWindow': {
+      const start = exprToValueBlock(valueToExpr(stmt.start))
+      const active = exprToValueBlock(valueToExpr(stmt.active))
+      return start === null || active === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_swing_window', { WHO: stmt.charVar }, {}, stmt.__id, {
+            START: start,
+            ACTIVE: active,
+          })
+    }
+    case 'gk:playAnimOnce': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      const fps = exprToValueBlock(valueToExpr(stmt.fps))
+      return from === null || to === null || fps === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_play_anim_once', { WHO: stmt.charVar }, {}, stmt.__id, {
+            FROM: from,
+            TO: to,
+            FPS: fps,
+          })
+    }
+    case 'gk:setEntityState': {
+      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+      return secs === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_set_entity_state', { WHO: stmt.charVar, STATE: stmt.state }, {}, stmt.__id, {
+            SECS: secs,
+          })
+    }
+    case 'gk:stateAnim': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      const fps = exprToValueBlock(valueToExpr(stmt.fps))
+      return from === null || to === null || fps === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_state_anim',
+            { WHO: stmt.charVar, STATE: stmt.state, ONCE: stmt.once ? 'TRUE' : 'FALSE' },
+            {},
+            stmt.__id,
+            { FROM: from, TO: to, FPS: fps },
+          )
+    }
+    case 'gk:stateLook':
+      return block(
+        'sz_gk_state_look',
+        { WHO: stmt.charVar, STATE: stmt.state, LOOK: stmt.look },
+        {},
+        stmt.__id,
+      )
+    case 'gk:autoAnimate':
+      return block('sz_gk_auto_animate', { WHO: stmt.charVar }, {}, stmt.__id)
+    case 'gk:thrust': {
+      const deg = exprToValueBlock(valueToExpr(stmt.degrees))
+      const force = exprToValueBlock(valueToExpr(stmt.force))
+      return deg === null || force === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_thrust', { WHO: stmt.charVar }, {}, stmt.__id, { DEG: deg, FORCE: force })
+    }
+    case 'gk:applyFriction': {
+      const factor = exprToValueBlock(valueToExpr(stmt.factor))
+      return factor === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_apply_friction', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
+            FACTOR: factor,
+          })
+    }
+    case 'gk:waitThen': {
+      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+      return secs === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_wait', {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id, { SECS: secs })
+    }
     case 'gk:setHitbox': {
       const ox = exprToValueBlock(valueToExpr(stmt.ox))
       const oy = exprToValueBlock(valueToExpr(stmt.oy))
@@ -5379,6 +5453,23 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_is_invincible', { CHAR: expr.charVar })
     case 'gk:healthOf':
       return block('sz_gk_health_of', { CHAR: expr.charVar })
+    case 'gk:animEnded':
+      return block('sz_gk_anim_ended', { WHO: expr.charVar })
+    case 'gk:entityState':
+      return block('sz_gk_entity_state', { WHO: expr.charVar })
+    case 'gk:angleOf':
+      return block('sz_gk_angle_of', { WHO: expr.charVar })
+    case 'gk:angleTo':
+      return block('sz_gk_angle_to', { WHO: expr.charVar, TARGET: expr.targetVar })
+    case 'gk:nearestActive': {
+      const x = exprToValueBlock(valueToExpr(expr.x))
+      const y = exprToValueBlock(valueToExpr(expr.y))
+      return x === null || y === null
+        ? null
+        : block('sz_gk_nearest_active', { MOLD: expr.mold }, {}, expr.__id, { X: x, Y: y })
+    }
+    case 'gk:countItem':
+      return block('sz_gk_count_item', { NAME: expr.name })
     case 'gk:timeSurvived':
       return block('sz_gk_time_survived', {})
     case 'gk:kills':

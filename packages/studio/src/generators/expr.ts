@@ -437,6 +437,18 @@ export function compileExpr(
       return `SZGameKit.isInvincible(${identifiers.get(expr.charVar)})`
     case 'gk:healthOf':
       return `SZGameKit.healthOf(${identifiers.get(expr.charVar)})`
+    case 'gk:animEnded':
+      return `SZGameKit.animEnded(${identifiers.get(expr.charVar)})`
+    case 'gk:entityState':
+      return `SZGameKit.entityState(${identifiers.get(expr.charVar)})`
+    case 'gk:angleOf':
+      return `SZGameKit.angleOf(${identifiers.get(expr.charVar)})`
+    case 'gk:angleTo':
+      return `SZGameKit.angleTo(${identifiers.get(expr.charVar)}, ${identifiers.get(expr.targetVar)})`
+    case 'gk:nearestActive':
+      return `SZGameKit.nearestActive(${JSON.stringify(expr.mold)}, ${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)})`
+    case 'gk:countItem':
+      return `SZGameKit.rpgCountItem(${JSON.stringify(expr.name)})`
     case 'gk:timeSurvived':
       return 'SZGameKit.timeSurvived()'
     case 'gk:cameraX':

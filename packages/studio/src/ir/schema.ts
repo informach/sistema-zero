@@ -206,6 +206,17 @@ export type JSExpr =
   // O gate do P24 ("if (applied)") em forma de pergunta — protege o dano.
   | (JSExprCommon & { type: 'gk:isInvincible'; charVar: string })
   | (JSExprCommon & { type: 'gk:healthOf'; charVar: string })
+  | (JSExprCommon & { type: 'gk:animEnded'; charVar: string })
+  | (JSExprCommon & { type: 'gk:entityState'; charVar: string })
+  | (JSExprCommon & { type: 'gk:angleOf'; charVar: string })
+  | (JSExprCommon & { type: 'gk:angleTo'; charVar: string; targetVar: string })
+  | (JSExprCommon & {
+      type: 'gk:nearestActive'
+      mold: string
+      x: number | JSExpr
+      y: number | JSExpr
+    })
+  | (JSExprCommon & { type: 'gk:countItem'; name: string })
   | (JSExprCommon & { type: 'gk:timeSurvived' })
   | (JSExprCommon & { type: 'gk:kills' })
   // R2: câmera (canto visível do mundo) e mouse em coords do JOGO.
@@ -615,6 +626,23 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:isDead'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isInvincible'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:healthOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:animEnded'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:entityState'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:angleOf'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:angleTo'),
+      charVar: irText(),
+      targetVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:nearestActive'),
+      mold: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:countItem'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:timeSurvived'), ...idField }),
     z.object({ type: z.literal('gk:kills'), ...idField }),
     z.object({ type: z.literal('gk:cameraX'), ...idField }),
@@ -2879,6 +2907,49 @@ export type JSStatement =
       to: number | JSExpr
       seconds: number | JSExpr
     })
+  | (JSStatementCommon & {
+      type: 'gk:setSwingWindow'
+      charVar: string
+      start: number | JSExpr
+      active: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:playAnimOnce'
+      charVar: string
+      from: number | JSExpr
+      to: number | JSExpr
+      fps: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:setEntityState'
+      charVar: string
+      state: string
+      seconds: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:stateAnim'
+      charVar: string
+      state: string
+      from: number | JSExpr
+      to: number | JSExpr
+      fps: number | JSExpr
+      once: boolean
+    })
+  | (JSStatementCommon & { type: 'gk:stateLook'; charVar: string; state: string; look: string })
+  | (JSStatementCommon & { type: 'gk:autoAnimate'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:thrust'
+      charVar: string
+      degrees: number | JSExpr
+      force: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:applyFriction'
+      charVar: string
+      factor: number | JSExpr
+      dtVar: string
+    })
+  | (JSStatementCommon & { type: 'gk:waitThen'; seconds: number | JSExpr; body: JSStatement[] })
   | (JSStatementCommon & {
       type: 'gk:setHitbox'
       charVar: string
@@ -5979,6 +6050,66 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:setSwingWindow'),
+      charVar: irText(),
+      start: z.union([JSExprSchema, z.number()]),
+      active: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:playAnimOnce'),
+      charVar: irText(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setEntityState'),
+      charVar: irText(),
+      state: irText(),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:stateAnim'),
+      charVar: irText(),
+      state: irText(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      once: z.boolean(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:stateLook'),
+      charVar: irText(),
+      state: irText(),
+      look: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:autoAnimate'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:thrust'),
+      charVar: irText(),
+      degrees: z.union([JSExprSchema, z.number()]),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:applyFriction'),
+      charVar: irText(),
+      factor: z.union([JSExprSchema, z.number()]),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:waitThen'),
+      seconds: z.union([JSExprSchema, z.number()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:setHitbox'),
       charVar: irText(),
       ox: z.union([JSExprSchema, z.number()]),
@@ -7491,6 +7622,15 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:fadeTo',
   'gk:tweenProperty',
   'gk:setHitbox',
+  'gk:setSwingWindow',
+  'gk:playAnimOnce',
+  'gk:setEntityState',
+  'gk:stateAnim',
+  'gk:stateLook',
+  'gk:autoAnimate',
+  'gk:thrust',
+  'gk:applyFriction',
+  'gk:waitThen',
   'gk:fadeScreen',
   'gk:flashScreen',
   'gk:saveValue',

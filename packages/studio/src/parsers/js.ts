@@ -3895,6 +3895,17 @@ const GK_PLAT_STATES = new Set(['parado', 'andando', 'pulando', 'caindo'])
 const GK_PKM_FX = new Set(['investida', 'bola', 'raio', 'onda'])
 /** Os 4 níveis de dificuldade de captura (espelha o dropdown). */
 const GK_PKM_DIFF = new Set(['fácil', 'normal', 'difícil', 'raríssimo'])
+// Espelha o STATE_NAMES do runtime da extensão e os dropdowns de estado do
+// blocks.ts — divergir vira rawJS.
+const GK_ENTITY_STATES = new Set([
+  'parado',
+  'andando',
+  'pulando',
+  'caindo',
+  'dano',
+  'golpe',
+  'morte',
+])
 const GK_TWEEN_PROPS = new Set(['x', 'y', 'vx', 'vy', 'speed', 'w', 'h', 'health', 'opacity'])
 
 /** SZGameKit.keyDown("w") / touching(a, b) / width() … em posição de VALOR. */
@@ -4024,6 +4035,33 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'healthOf') {
     const charVar = identifierName(args[0])
     if (charVar) return { type: 'gk:healthOf', charVar }
+  }
+  if (method === 'animEnded') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:animEnded', charVar }
+  }
+  if (method === 'entityState') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:entityState', charVar }
+  }
+  if (method === 'angleOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:angleOf', charVar }
+  }
+  if (method === 'angleTo') {
+    const charVar = identifierName(args[0])
+    const targetVar = identifierName(args[1])
+    if (charVar && targetVar) return { type: 'gk:angleTo', charVar, targetVar }
+  }
+  if (method === 'nearestActive' && args[0]?.type === 'StringLiteral') {
+    const x = toExpr(args[1], ctx)
+    const y = toExpr(args[2], ctx)
+    if (isSimpleValue(x) && isSimpleValue(y)) {
+      return { type: 'gk:nearestActive', mold: args[0].value as string, x, y }
+    }
+  }
+  if (method === 'rpgCountItem' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:countItem', name: args[0].value as string }
   }
   if (method === 'timeSurvived' && args.length === 0) return { type: 'gk:timeSurvived' }
   if (method === 'kills' && args.length === 0) return { type: 'gk:kills' }
@@ -5057,6 +5095,82 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const seconds = toExpr(args[3], ctx)
       return isSimpleValue(to) && isSimpleValue(seconds)
         ? { type: 'gk:tweenProperty', charVar, prop, to, seconds }
+        : null
+    }
+    case 'setSwingWindow': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const start = toExpr(args[1], ctx)
+      const active = toExpr(args[2], ctx)
+      return isSimpleValue(start) && isSimpleValue(active)
+        ? { type: 'gk:setSwingWindow', charVar, start, active }
+        : null
+    }
+    case 'playAnimOnce': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const from = toExpr(args[1], ctx)
+      const to = toExpr(args[2], ctx)
+      const fps = toExpr(args[3], ctx)
+      return isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
+        ? { type: 'gk:playAnimOnce', charVar, from, to, fps }
+        : null
+    }
+    case 'setEntityState': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const state = args[1].value as string
+      if (!GK_ENTITY_STATES.has(state)) return null // dropdown coage: outro -> rawJS
+      const seconds = toExpr(args[2], ctx)
+      return isSimpleValue(seconds) ? { type: 'gk:setEntityState', charVar, state, seconds } : null
+    }
+    case 'stateAnim': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const state = args[1].value as string
+      if (!GK_ENTITY_STATES.has(state)) return null
+      const from = toExpr(args[2], ctx)
+      const to = toExpr(args[3], ctx)
+      const fps = toExpr(args[4], ctx)
+      if (args[5]?.type !== 'BooleanLiteral') return null
+      return isSimpleValue(from) && isSimpleValue(to) && isSimpleValue(fps)
+        ? { type: 'gk:stateAnim', charVar, state, from, to, fps, once: args[5].value }
+        : null
+    }
+    case 'stateLook': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') {
+        return null
+      }
+      const state = args[1].value as string
+      if (!GK_ENTITY_STATES.has(state)) return null
+      return { type: 'gk:stateLook', charVar, state, look: args[2].value as string }
+    }
+    case 'autoAnimate': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:autoAnimate', charVar } : null
+    }
+    case 'thrust': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const degrees = toExpr(args[1], ctx)
+      const force = toExpr(args[2], ctx)
+      return isSimpleValue(degrees) && isSimpleValue(force)
+        ? { type: 'gk:thrust', charVar, degrees, force }
+        : null
+    }
+    case 'applyFriction': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[2])
+      if (!charVar || !dtVar) return null
+      const factor = toExpr(args[1], ctx)
+      return isSimpleValue(factor) ? { type: 'gk:applyFriction', charVar, factor, dtVar } : null
+    }
+    case 'waitThen': {
+      if (!isFn(args[1])) return null
+      const seconds = toExpr(args[0], ctx)
+      return isSimpleValue(seconds)
+        ? { type: 'gk:waitThen', seconds, body: bodyOfFn(args[1], source, ctx) }
         : null
     }
     case 'setHitbox': {
@@ -9206,6 +9320,13 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:isDead':
     case 'gk:isInvincible':
     case 'gk:healthOf':
+    // R18 — sem estar aqui, o statement que os usa vira rawJS inteiro
+    case 'gk:animEnded':
+    case 'gk:entityState':
+    case 'gk:angleOf':
+    case 'gk:angleTo':
+    case 'gk:nearestActive':
+    case 'gk:countItem':
     case 'gk:timeSurvived':
     case 'gk:kills':
     case 'gk:cameraX':

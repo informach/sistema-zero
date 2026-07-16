@@ -378,7 +378,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 213 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 228 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -608,6 +608,30 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'didHit',
       'patrolAround',
       'drawHearts',
+      // R18 — a janela do golpe (recuo/ativo em SEGUNDOS): sem ela quem aperta
+      // primeiro sempre ganha, e nao ha leitura nem espacamento.
+      'setSwingWindow',
+      // R18 — animacao de UMA vez + a TRAVA por estado (serve aos 3 sistemas de
+      // animacao, inclusive ao vetorial, que nao tem quadro p/ "terminar").
+      'playAnimOnce',
+      'animEnded',
+      'setEntityState',
+      'entityState',
+      'stateAnim',
+      'stateLook',
+      'autoAnimate',
+      // R18 — o angulo era WRITE-ONLY (zero atan2 no arquivo) e nao havia inercia
+      // nem atrito: torre que mira, nave, Asteroids, gelo, corrida.
+      'angleOf',
+      'angleTo',
+      'thrust',
+      'applyFriction',
+      // R18 — esperar UMA vez (o "A cada N s" repete; o do Kit RPG so vale em cena)
+      'waitThen',
+      // R18 — o mais perto de (tower defense, IA de horda)
+      'nearestActive',
+      // R18 — quantos itens (o "Ganhar o item" dedupava: sem crafting nem loja)
+      'rpgCountItem',
     ]
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')

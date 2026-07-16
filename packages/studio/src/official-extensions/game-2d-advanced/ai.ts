@@ -221,6 +221,34 @@ API global injetada como window.SZGameKit:
   (acumula o dt do JOGO — pausou, para de contar; NÃO usa relógio de parede);
   cooldownReady(quem, s) = o "recarregando" do tiro/golpe (true só quando o tempo
   passou, e JÁ reinicia a contagem).
+- 🎬 Animação (GERAL — a TRAVA): os 3 sistemas de animação deixavam qualquer
+  chamada atropelar a anterior (golpeia e a animação de andar apaga o golpe).
+  ⭐ setEntityState(quem, "parado"|"andando"|"pulando"|"caindo"|"dano"|"golpe"|
+  "morte", segundos) TRAVA o estado; stateAnim(quem, estado, de, ate, fps, umaVez)
+  / stateLook(quem, estado, aparencia) declaram o visual 1x; autoAnimate(quem) todo
+  quadro resolve por prioridade FIXA (morte > golpe > dano > no ar > andando >
+  parado) + flip por vx + fallback (caindo→pulando→andando→parado). playAnimOnce +
+  animEnded = tocar e parar no último quadro. entityState(quem) LÊ o estado.
+  ⚠️ o attackFacing/hurt já chamam setEntityState sozinhos: quem usa só os blocos
+  gerais de ação ganha a trava sem saber que ela existe. NÃO existe "quadro atual
+  da animação" DE PROPÓSITO — "acerta no quadro 4" quebra quando um quadro é
+  pulado; a janela é em SEGUNDOS e a animação é esticada p/ caber nela.
+- 🥷 setSwingWindow(quem, recuo, ativo) em SEGUNDOS = o golpe não machuca no
+  quadro do aperto. Sem isto quem aperta primeiro SEMPRE ganha (sem leitura, sem
+  espaçamento, sem punir). O rastro branco do drawEntity pinta só na janela ATIVA.
+  Golpe pesado que trava mais tempo do que leva p/ recuperar = COMBO emergente.
+- 🚀 thrust(quem, graus, forca) SOMA velocidade (INÉRCIA: nave/Asteroids/carro; o
+  setVelocityAngle SOBRESCREVE e por isso nunca desliza) · applyFriction(quem,
+  fator, dt) = atrito (0.9 chão, 0.1 gelo) · angleOf(quem)/angleTo(a, b) = LER o
+  ângulo (torre que gira até mirar, leque de tiros, stealth).
+- ⏱️ waitThen(segundos, fn) = esperar UMA vez, no relógio do jogo (o everySeconds
+  REPETE; o rpgWait só vale dentro de "Fazer a cena").
+- 👾 nearestActive(molde, x, y) = o vivo mais perto de um ponto (tower defense, IA
+  de horda que escolhe alvo).
+- 🎒 Itens (GERAL, saiu do Kit RPG): rpgGiveItem SOMA quantidade (antes dedupava) e
+  rpgCountItem(nome) LÊ — crafting ("3 madeiras"), loja, coleta. As FLAGS
+  (rpgAddFlag/rpgHasFlag) também são gerais e vivem coladas na 💾 Memória: a flag
+  morre com a partida, o valor guardado sobrevive a fechar o jogo.
 - 🔧 Propriedades & direção (GERAL): propertyOf(quem, "x"|"y"|"vx"|"vy"|"speed"|"w"|
   "h"|"health"|"maxHealth"|"damage") e setProperty(quem, prop, v) = a chave-mestra
   p/ o que não tem bloco
@@ -240,8 +268,8 @@ API global injetada como window.SZGameKit:
   pointIn(x, y, quem) + mouseX()/mouseY() = clicou NAQUELE objeto (point&click,
   cartas, match-3, tower defense). ⭐ launchToPoint(quem, x, y, vel) mira num PONTO
   (o launchTowards exige um OBJETO, e o mouse dá números) · setVelocityAngle(quem,
-  graus, forca) MOVE no ângulo (o setAngle só gira o DESENHO — use os dois juntos:
-  tanque/nave/Asteroids). setOpacity(quem, pct)/opacityOf/fadeTo(quem, pct, s) =
+  graus, forca) MOVE no ângulo (o setAngle só gira o DESENHO). ⚠️ ele SOBRESCREVE o
+  vx/vy: p/ nave/Asteroids/tanque com inércia use o thrust (⚙️ Física), que SOMA. setOpacity(quem, pct)/opacityOf/fadeTo(quem, pct, s) =
   sumir (o "faint"). tweenProperty(quem, prop, ate, s) = deslizar QUALQUER
   propriedade (x/y/vx/vy/speed/w/h/health/opacity); ao chegar emite
   "deslizou:chegou" (dá p/ encadear). setHitbox(quem, ox, oy, w, h) = a caixa que

@@ -11,7 +11,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.17.1',
+  version: '0.18.0',
   description:
     'A base de um jogo 2D profissional, pronta para você inventar as regras. Máquina de estados, laço com delta-time (dt), telas de UI, personagens, e a arquitetura de verdade: avisos (eventos), moldes e enxames de inimigos que nascem sozinhos, comportamentos (perseguir/vaguear), combate (vida, dano, empurrão), faíscas, missão e som importado. O motor pronto fica no runtime; a mecânica você escreve nos ganchos, com os blocos — igual a quem programa jogos na unha.',
   category: 'games',
@@ -150,6 +150,13 @@ Movimentos prontos que os inimigos usam: **perseguir** o herói, **vaguear** ao
 acaso, **virar** para o lado do alvo. Use dentro do "Para cada vivo" no "A cada
 quadro" — é o mesmo cálculo que se faz à mão (ir na direção × velocidade × tempo).
 
+### ⏱️ Esperar (em ⏱️ Tempo)
+
+**Esperar N segundos e então…** faz o que estiver dentro DEPOIS do tempo, uma vez
+só — "o chefe aparece aos 30 s", "a mensagem some em 2 s", o próximo golpe do
+combo. ("A cada N segundos" repete para sempre; este acontece uma vez.) Conta no
+relógio do jogo: se pausar, para de contar.
+
 ### ❤️ Combate
 
 **Machucar** (tira vida e deixa piscando e invencível um tempinho), **empurrar**,
@@ -172,20 +179,46 @@ de fim). **Contar +1 inimigo derrotado**, **cronômetro**, **tempo jogando** e
 duração, velocidade, gravidade). **Soltar o efeito** estoura uma; **Desenhar
 todas as faíscas** as anima. Poucos blocos, muitos efeitos.
 
-### 🎨 Aparência & animação
+### 🎯 O mais perto (em 👾 Moldes & enxames)
+
+**o mais perto de x … y … no molde …** devolve o vivo do enxame mais próximo
+daquele ponto. É como a torre escolhe em quem atirar, e como o inimigo decide
+quem perseguir quando há vários.
+
+### 🎨 Aparência
 
 **Criar a aparência** desenha um personagem com formas (do cantinho 0,0 para
 dentro, no tamanho-base que você declarar) e dá um nome. Um molde pode usá-la —
 aí TODO o enxame ganha esse visual vetorial, esticado para o tamanho do molde.
 Ou use **Desenhar a aparência** em qualquer lugar e tamanho (ex.: o herói).
-
-**Pixel art viva:**
-
 **Usar a folha de quadros** cola uma spritesheet (do Pinta ou baixada) no
-personagem, dizendo o tamanho de cada quadro. **Tocar a animação** roda uma
-faixa de quadros em loop — pode chamar TODO quadro ("se andando, tocar andar;
-senão, tocar parado"): repetir a mesma não reinicia. Desenhou no Pinta? O
-seletor lista as animações da folha e preenche os números.
+personagem, dizendo o tamanho de cada quadro.
+
+### 🎬 Animação
+
+**Tocar a animação** roda uma faixa de quadros em loop — pode chamar TODO quadro
+("se andando, tocar andar; senão, tocar parado"): repetir a mesma não reinicia.
+Desenhou no Pinta? O seletor lista as animações da folha e preenche os números.
+
+**O problema que aparece quando o jogo cresce:** você manda golpear, e no quadro
+seguinte a animação de andar apaga o golpe. Toda animação atropela a anterior. A
+saída é dizer que aquela animação **não pode ser interrompida**:
+
+- **Tocar a animação … uma vez só** toca e PARA no último quadro (golpe, morrer,
+  abrir o baú), e **a animação de … acabou?** diz quando terminou.
+- **Pôr … no estado … por N s** é a TRAVA: enquanto durar, nada rouba a animação.
+- **Animação de … no estado …** (marque a caixinha para não poder interromper) e
+  **Aparência de … no estado …** dizem, UMA vez, qual visual é de cada estado —
+  com folha de quadros ou com desenho.
+- **Animar … sozinho** faz o resto, todo quadro: escolhe o estado pelo que ele
+  está fazendo (a ordem é morte > golpe > dano > no ar > andando > parado) e vira
+  o desenho para o lado que ele anda. Estado sem visual declarado usa o parente
+  mais próximo (caindo parece pular; pular parece andar).
+- **o estado de …** conta o que ele está fazendo agora, para o resto do jogo.
+
+Quem usa "Atacar na direção" ganha a trava de graça: o golpe já se põe no estado
+"golpe" sozinho, e a animação dele é esticada para durar exatamente o golpe — por
+isso um quadro pulado num computador lento não estraga nada.
 
 ### 🎥 Câmera (mundos maiores que a tela)
 
@@ -203,6 +236,18 @@ desligada.
 **Mover pela velocidade** anda com ela a cada quadro — com o "Nascer 1 e
 chamar de", isso é o tiro reto e o tiro mirado dos jogos de nave. **Girar
 para X graus** roda o desenho em volta do centro.
+
+### 🥷 A janela do golpe (em 🥷 Ação em tempo real)
+
+**Regular o golpe de … : recuo N s, acerta por N s.** Sem isto o golpe machuca
+desde o instante em que você aperta — e aí quem aperta primeiro sempre ganha,
+sempre. Não dá para ler o outro, nem para desviar, nem para punir quem errou.
+
+Com o recuo, o golpe tem três partes, como nos jogos de verdade: o braço indo (o
+recuo), o momento em que machuca (o retângulo branco aparece só aqui!), e a volta.
+Golpe rápido sai antes mas machuca pouco; golpe pesado demora, mas se acertar o
+outro fica travado tempo suficiente para você emendar outro. **Isso é o combo.**
+Deixe 0 e 0 para o golpe inteiro machucar, como antes.
 
 ### 📊 Barra (em 🖥️ HUD & Missão)
 
@@ -246,6 +291,20 @@ primitivos: você liga do seu jeito, na ordem de verdade.
   impede atravessar o chão numa queda longa.
 - **Fazer … quicar nas bordas** / **… atravessar para o outro lado** — a bolinha
   do pong e o Pac-Man saindo pela lateral.
+
+### 🚀 Inércia e atrito (em ⚙️ Física)
+
+**Empurrar … no ângulo … com força …** SOMA velocidade em vez de trocar: a nave
+continua andando depois que você solta o botão. É o que faz um Asteroids —
+"Mover no ângulo" apaga a velocidade de antes e o resultado nunca desliza.
+**Frear … com atrito …** tira a velocidade aos poucos: 0.9 = chão normal, 0.1 =
+gelo. Com os dois, você tem carro, hóquei, nave e patinação.
+
+### 🎯 Mirar de verdade (em 🔧 Propriedades & direção)
+
+**o ângulo de …** e **o ângulo de … até …** deixam você LER a direção — antes só
+dava para escrever. Com eles a torre gira até mirar no inimigo, o inimigo só
+atira se estiver de frente, e o leque de tiros vira uma conta simples.
 
 ### 🧱 Colisão sólida
 
