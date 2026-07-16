@@ -289,6 +289,15 @@ interface GameKitApi {
   didHit: Fn
   patrolAround: Fn
   drawHearts: Fn
+  // R21 — primitivos gerais (review do Space Invaders)
+  randomActive: Fn
+  floatText: Fn
+  trailOn: Fn
+  trailOff: Fn
+  shockwave: Fn
+  scrollImage: Fn
+  leanOnMove: Fn
+  fanShot: Fn
 }
 
 interface Harness {
@@ -378,7 +387,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 241 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 249 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -632,6 +641,17 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'nearestActive',
       // R18 — quantos itens (o "Ganhar o item" dedupava: sem crafting nem loja)
       'rpgCountItem',
+      // R21 — primitivos gerais do review do Space Invaders: sorteio no pool,
+      // texto flutuante, rastro contínuo, onda de choque, fundo que rola,
+      // inclinação ao andar e leque de tiros.
+      'randomActive',
+      'floatText',
+      'trailOn',
+      'trailOff',
+      'shockwave',
+      'scrollImage',
+      'leanOnMove',
+      'fanShot',
       // 🥊 R19 — Kit Luta. Só o ESPECÍFICO de luta: gravidade/pulo/caixa de
       // golpe/dano/empurrão/telas vêm do motor geral, que o kit CHAMA.
       'lutaMatch',
@@ -3013,5 +3033,110 @@ describe('SZGameKit — R16: 👾 Kit Monstrinhos', () => {
       console.warn = real
     }
     expect(warns.some((w) => w.includes('kit'))).toBe(true)
+  })
+})
+
+describe('SZGameKit — R21: primitivos gerais (sorteio, leque, rastro, lean)', () => {
+  interface Corpo {
+    x: number
+    y: number
+    vx: number
+    vy: number
+    _prevX: number
+    _trailOn: boolean
+    _trailRate: number
+    _trailLife: number
+    _trailAcc: number
+    _leanMax: number
+    _leanNow: number
+  }
+
+  async function arena(h: Harness) {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('inimigo', { w: 40, h: 40, color: '#f00' })
+    h.api.defineMold('tiro', { w: 6, h: 16, color: '#ff0' })
+    await startGame(h)
+    h.api.setState('jogando')
+  }
+
+  it('um vivo qualquer: null sem pool/sem vivo, e NUNCA devolve reciclado', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    expect(h.api.randomActive('nao-existe')).toBe(null)
+    expect(h.api.randomActive('inimigo')).toBe(null) // pool existe, zero vivos
+    const a = h.api.spawnFromMold('inimigo', 100, 100)
+    const b = h.api.spawnFromMold('inimigo', 200, 100)
+    const c = h.api.spawnFromMold('inimigo', 300, 100)
+    h.api.recycle(a)
+    h.api.recycle(c)
+    // Sobrou só o b: o sorteio tem que devolver ELE, todas as vezes (o active[]
+    // ainda guarda os reciclados até a próxima varredura — a lição do R13).
+    for (let i = 0; i < 20; i++) expect(h.api.randomActive('inimigo')).toBe(b)
+  })
+
+  it('leque: N tiros no arco, o do meio reto, os lados simétricos, varredura zerada', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const nave = h.api.createCharacter({ w: 40, h: 40, color: '#00f' }) as Corpo
+    h.api.fanShot(nave, 'tiro', 3, 30, -90, 600)
+    expect(h.api.countActive('tiro')).toBe(3)
+    const tiros: Corpo[] = []
+    h.api.forEachActive('tiro', (t: unknown) => tiros.push(t as Corpo))
+    // rumo -90 = para cima: o do meio sobe reto…
+    const meio = tiros.find((t) => Math.abs(t.vx) < 0.001)
+    expect(meio).toBeDefined()
+    expect((meio as Corpo).vy).toBeCloseTo(-600)
+    // …e as pontas abrem simétricas (±15°).
+    const vxs = tiros.map((t) => t.vx).sort((p, q) => p - q)
+    expect(vxs[0]).toBeCloseTo(-(vxs[2] as number))
+    for (const t of tiros) expect(t._prevX).toBe(t.x) // nasceu ali: sem varredura
+  })
+
+  it('rastro: clamps de taxa/vida, desligar apaga, e o POOL zera no respawn', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const e = h.api.spawnFromMold('inimigo', 100, 100) as Corpo
+    h.api.trailOn(e, '#0ff', 3, 500, 99)
+    expect(e._trailOn).toBe(true)
+    expect(e._trailRate).toBe(60) // clamp: 500/s engoliria o teto global de faíscas
+    expect(e._trailLife).toBe(3)
+    h.api.trailOff(e)
+    expect(e._trailOn).toBe(false)
+    // O contrato do pool: reciclar e renascer NÃO ressuscita o rastro/lean.
+    h.api.trailOn(e, '#0ff', 3, 30, 0.4)
+    h.api.leanOnMove(e, 15)
+    e._trailAcc = 0.7
+    h.api.recycle(e)
+    const e2 = h.api.spawnFromMold('inimigo', 300, 300) as Corpo
+    expect(e2).toBe(e) // o pool reusa o MESMO objeto (free é LIFO)
+    expect(e2._trailOn).toBe(false)
+    expect(e2._trailAcc).toBe(0)
+    expect(e2._leanMax).toBe(0)
+    expect(e2._leanNow).toBe(0)
+  })
+
+  it('inclinar ao andar: liga por personagem e 0 desliga', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const nave = h.api.createCharacter({ w: 40, h: 40, color: '#00f' }) as Corpo
+    h.api.leanOnMove(nave, 12)
+    expect(nave._leanMax).toBe(12)
+    h.api.leanOnMove(nave, 0)
+    expect(nave._leanMax).toBe(0)
+  })
+
+  it('fundo que rola sem imagem carregada avisa e não quebra', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const warns: string[] = []
+    const real = console.warn
+    console.warn = (...a: unknown[]) => warns.push(a.join(' '))
+    try {
+      h.api.scrollImage('nao-carregada', 0, 20)
+      h.api.scrollImage('nao-carregada', 0, 20) // warnOnce: avisa UMA vez
+    } finally {
+      console.warn = real
+    }
+    expect(warns.filter((w) => w.includes('nao-carregada')).length).toBe(1)
   })
 })

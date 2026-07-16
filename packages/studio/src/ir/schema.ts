@@ -222,6 +222,8 @@ export type JSExpr =
       x: number | JSExpr
       y: number | JSExpr
     })
+  // R21: um vivo QUALQUER do pool (o atirador aleatório do Space Invaders).
+  | (JSExprCommon & { type: 'gk:randomActive'; mold: string })
   | (JSExprCommon & { type: 'gk:countItem'; name: string })
   | (JSExprCommon & { type: 'gk:timeSurvived' })
   | (JSExprCommon & { type: 'gk:kills' })
@@ -654,6 +656,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       y: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({ type: z.literal('gk:randomActive'), mold: irText(), ...idField }),
     z.object({ type: z.literal('gk:countItem'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:timeSurvived'), ...idField }),
     z.object({ type: z.literal('gk:kills'), ...idField }),
@@ -2904,6 +2907,48 @@ export type JSStatement =
       charVar: string
       degrees: number | JSExpr
       force: number | JSExpr
+    })
+  // 🖥️/✨/🔁/🎨/🎯 R21 — primitivos gerais (review do Space Invaders)
+  | (JSStatementCommon & {
+      type: 'gk:floatText'
+      text: string | JSExpr
+      x: number | JSExpr
+      y: number | JSExpr
+      color: string
+      size: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:trailOn'
+      charVar: string
+      color: string
+      size: number | JSExpr
+      rate: number | JSExpr
+      life: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:trailOff'; charVar: string })
+  | (JSStatementCommon & {
+      type: 'gk:shockwave'
+      x: number | JSExpr
+      y: number | JSExpr
+      radius: number | JSExpr
+      seconds: number | JSExpr
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:scrollImage'
+      image: string
+      vx: number | JSExpr
+      vy: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:leanOnMove'; charVar: string; degrees: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:fanShot'
+      charVar: string
+      mold: string
+      count: number | JSExpr
+      arc: number | JSExpr
+      degrees: number | JSExpr
+      speed: number | JSExpr
     })
   | (JSStatementCommon & { type: 'gk:setOpacity'; charVar: string; percent: number | JSExpr })
   | (JSStatementCommon & {
@@ -6078,6 +6123,57 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:floatText'),
+      text: z.union([JSExprSchema, z.string()]),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      size: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:trailOn'),
+      charVar: irText(),
+      color: irText(),
+      size: z.union([JSExprSchema, z.number()]),
+      rate: z.union([JSExprSchema, z.number()]),
+      life: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:trailOff'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:shockwave'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      radius: z.union([JSExprSchema, z.number()]),
+      seconds: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:scrollImage'),
+      image: irText(),
+      vx: z.union([JSExprSchema, z.number()]),
+      vy: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:leanOnMove'),
+      charVar: irText(),
+      degrees: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:fanShot'),
+      charVar: irText(),
+      mold: irText(),
+      count: z.union([JSExprSchema, z.number()]),
+      arc: z.union([JSExprSchema, z.number()]),
+      degrees: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:setOpacity'),
       charVar: irText(),
       percent: z.union([JSExprSchema, z.number()]),
@@ -7718,6 +7814,13 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:defineRegion',
   'gk:launchToPoint',
   'gk:setVelocityAngle',
+  'gk:floatText',
+  'gk:trailOn',
+  'gk:trailOff',
+  'gk:shockwave',
+  'gk:scrollImage',
+  'gk:leanOnMove',
+  'gk:fanShot',
   'gk:setOpacity',
   'gk:fadeTo',
   'gk:tweenProperty',

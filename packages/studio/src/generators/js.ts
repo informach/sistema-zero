@@ -1849,6 +1849,21 @@ function compileStatementCode(
       return `${pad}SZGameKit.launchToPoint(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'gk:setVelocityAngle':
       return `${pad}SZGameKit.setVelocityAngle(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.degrees), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    // R21 — primitivos gerais
+    case 'gk:floatText':
+      return `${pad}SZGameKit.floatText(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
+    case 'gk:trailOn':
+      return `${pad}SZGameKit.trailOn(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rate), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.life), 0, identifiers, recAt(base))});`
+    case 'gk:trailOff':
+      return `${pad}SZGameKit.trailOff(${identifiers.get(stmt.charVar)});`
+    case 'gk:shockwave':
+      return `${pad}SZGameKit.shockwave(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'gk:scrollImage':
+      return `${pad}SZGameKit.scrollImage(${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.vx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.vy), 0, identifiers, recAt(base))});`
+    case 'gk:leanOnMove':
+      return `${pad}SZGameKit.leanOnMove(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.degrees), 0, identifiers, recAt(base))});`
+    case 'gk:fanShot':
+      return `${pad}SZGameKit.fanShot(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.arc), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.degrees), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'gk:setOpacity':
       return `${pad}SZGameKit.setOpacity(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'gk:fadeTo':
@@ -4260,6 +4275,43 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.degrees), names)
       collectExprIdentifiers(valueToExpr(stmt.force), names)
       return
+    // R21 — primitivos gerais
+    case 'gk:floatText':
+      collectExprIdentifiers(valueToExpr(stmt.text), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      return
+    case 'gk:trailOn':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      collectExprIdentifiers(valueToExpr(stmt.rate), names)
+      collectExprIdentifiers(valueToExpr(stmt.life), names)
+      return
+    case 'gk:trailOff':
+      names.add(stmt.charVar)
+      return
+    case 'gk:shockwave':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.radius), names)
+      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
+      return
+    case 'gk:scrollImage':
+      collectExprIdentifiers(valueToExpr(stmt.vx), names)
+      collectExprIdentifiers(valueToExpr(stmt.vy), names)
+      return
+    case 'gk:leanOnMove':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.degrees), names)
+      return
+    case 'gk:fanShot':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.count), names)
+      collectExprIdentifiers(valueToExpr(stmt.arc), names)
+      collectExprIdentifiers(valueToExpr(stmt.degrees), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
     case 'gk:setOpacity':
       names.add(stmt.charVar)
       collectExprIdentifiers(valueToExpr(stmt.percent), names)
@@ -5242,6 +5294,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:countItem':
     case 'gk:lutaWinner':
     case 'gk:lutaRound':
+    case 'gk:randomActive':
       return
     case 'gk:isDead':
     case 'gk:isInvincible':

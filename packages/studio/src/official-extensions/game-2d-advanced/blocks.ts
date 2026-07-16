@@ -3125,6 +3125,120 @@ export const gameKitBlocks = [
       'A quantidade daquele item (0 = nenhum). "Ganhar o item" soma de um em um, então dá para pedir 3 madeiras para construir.',
   },
   // ==========================================================================
+  // R21 — primitivos GERAIS (do review do Space Invaders; fora de todo kit)
+  // ==========================================================================
+  {
+    // O "um invasor ALEATÓRIO atira" do Space Invaders, generalizado: sorteio
+    // num pool é de qualquer gênero (loot, horda, surpresa) — irmão do
+    // "o mais perto de", por isso mora na 🎲 Sorte & medida.
+    type: 'sz_gk_random_active',
+    message0: 'um vivo qualquer do molde %1',
+    args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' }],
+    output: 'JSValue',
+    tooltip:
+      'Sorteia um dos vivos do molde (ou nada, se não houver nenhum). É como o jogo de nave escolhe qual inimigo atira — e serve para prêmio surpresa e horda.',
+  },
+  {
+    type: 'sz_gk_float_text',
+    message0: 'Soltar o texto %1 em x %2 y %3, cor %4, tamanho %5',
+    args0: [
+      { type: 'input_value', name: 'TEXT', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Um texto que sobe e some sozinho — o "+100" de todo arcade. Solte na posição de quem morreu; para pontos, junte "+" com a variável.',
+  },
+  {
+    type: 'sz_gk_trail_on',
+    message0: 'Ligar o rastro de %1: cor %2, tamanho %3, %4 por segundo, dura %5 s',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'input_value', name: 'RATE', check: 'JSValue' },
+      { type: 'input_value', name: 'LIFE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Faíscas contínuas saindo de quem anda: jato da nave, cauda de cometa, escapamento. Ligue UMA vez; "Desligar o rastro" para. (O "Explodir faíscas" é um estouro único.)',
+  },
+  {
+    type: 'sz_gk_trail_off',
+    message0: 'Desligar o rastro de %1',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Para o rastro contínuo daquele personagem.',
+  },
+  {
+    type: 'sz_gk_shockwave',
+    message0: 'Soltar uma onda de choque em x %1 y %2: até o raio %3 em %4 s, cor %5',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Um círculo que cresce e some — a cara de explosão grande. É SÓ desenho: para machucar, use "para cada vivo" + "a distância entre" + "machucar" (a regra é sua).',
+  },
+  {
+    type: 'sz_gk_scroll_image',
+    message0: 'Pintar o fundo rolando: imagem %1, velocidade x %2 y %3',
+    args0: [
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'input_value', name: 'VX', check: 'JSValue' },
+      { type: 'input_value', name: 'VY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Repete a imagem cobrindo a tela e rola na velocidade dada (px/s). Use no "Desenhar o jogo", como primeira camada; duas imagens em velocidades diferentes = paralaxe.',
+  },
+  {
+    type: 'sz_gk_lean_on_move',
+    message0: 'Inclinar %1 ao andar de lado (até %2 graus)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'O desenho tomba suavemente na direção do movimento — a nave que "deita" ao desviar, o peixe, o carro. Ligue UMA vez; 0 graus desliga.',
+  },
+  {
+    type: 'sz_gk_fan_shot',
+    message0: 'Atirar de %1 um leque do molde %2: %3 tiros num arco de %4 °, rumo %5 °, a %6 px/s',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'tiro', kind: 'mold' },
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'ARC', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Nascem N tiros do molde em leque, já com velocidade. Rumo -90 = para cima (como o "Mover no ângulo"). Depois mova-os com "Mover pela velocidade" + "Recolher quem saiu".',
+  },
+  // ==========================================================================
   // KIT LUTA — o atalho do gênero
   // ==========================================================================
   {
@@ -3353,7 +3467,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🔁 A cada quadro',
     colour: C,
-    types: ['sz_gk_on_update', 'sz_gk_on_draw', 'sz_gk_on_draw_hud', 'sz_gk_draw_background'],
+    types: [
+      'sz_gk_on_update',
+      'sz_gk_on_draw',
+      'sz_gk_on_draw_hud',
+      'sz_gk_draw_background',
+      'sz_gk_scroll_image',
+    ],
   },
   {
     // Era a única categoria inchada (14). Ficou com o CICLO DE VIDA do
@@ -3436,7 +3556,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     // duas respondem "com o que esse personagem se parece" (viviam em 2+3).
     name: '🎨 Aparência',
     colour: C,
-    types: ['sz_gk_define_look', 'sz_gk_draw_look', 'sz_gk_set_sheet', 'sz_gk_set_walk_sheet'],
+    types: [
+      'sz_gk_define_look',
+      'sz_gk_draw_look',
+      'sz_gk_set_sheet',
+      'sz_gk_set_walk_sheet',
+      'sz_gk_lean_on_move',
+    ],
   },
   {
     // ⭐ Categoria NOVA (R18). A animação era um apêndice da aparência com 5
@@ -3471,6 +3597,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_set_angle',
       'sz_gk_launch_to_point',
       'sz_gk_set_velocity_angle',
+      'sz_gk_fan_shot',
       'sz_gk_tween_to',
     ],
   },
@@ -3573,6 +3700,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_draw_timer',
       'sz_gk_draw_bar',
       'sz_gk_draw_hearts',
+      'sz_gk_float_text',
       'sz_gk_time_survived',
       'sz_gk_kills',
     ],
@@ -3580,7 +3708,14 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '✨ Faíscas',
     colour: C,
-    types: ['sz_gk_define_effect', 'sz_gk_burst', 'sz_gk_draw_effects'],
+    types: [
+      'sz_gk_define_effect',
+      'sz_gk_burst',
+      'sz_gk_draw_effects',
+      'sz_gk_trail_on',
+      'sz_gk_trail_off',
+      'sz_gk_shockwave',
+    ],
   },
   {
     name: '🔊 Som',
@@ -3606,7 +3741,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎲 Sorte & medida',
     colour: C,
-    types: ['sz_gk_chance', 'sz_gk_distance_between', 'sz_gk_point_in'],
+    types: ['sz_gk_chance', 'sz_gk_distance_between', 'sz_gk_point_in', 'sz_gk_random_active'],
   },
   {
     name: '🌫️ Sumir & transição',
@@ -3998,6 +4133,28 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_apply_friction: { FACTOR: numShadow(0.9) },
   sz_gk_wait: { SECS: numShadow(1) },
   sz_gk_nearest_active: { X: numShadow(0), Y: numShadow(0) },
+  // R21 — primitivos gerais
+  sz_gk_float_text: {
+    TEXT: txtShadow('+100'),
+    X: numShadow(100),
+    Y: numShadow(100),
+    SIZE: numShadow(24),
+  },
+  sz_gk_trail_on: { SIZE: numShadow(3), RATE: numShadow(30), LIFE: numShadow(0.4) },
+  sz_gk_shockwave: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    RADIUS: numShadow(200),
+    SECS: numShadow(0.4),
+  },
+  sz_gk_scroll_image: { VX: numShadow(0), VY: numShadow(20) },
+  sz_gk_lean_on_move: { DEG: numShadow(10) },
+  sz_gk_fan_shot: {
+    COUNT: numShadow(3),
+    ARC: numShadow(30),
+    DEG: numShadow(-90),
+    SPEED: numShadow(600),
+  },
   sz_gk_fade_screen: { SECS: numShadow(0.4) },
   sz_gk_flash_screen: { TIMES: numShadow(3) },
   sz_gk_save_value: { VALUE: numShadow(0) },

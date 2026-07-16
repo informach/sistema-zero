@@ -11,7 +11,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.19.1',
+  version: '0.20.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E quatro atalhos prontos para começar rápido: 🏃 plataforma (pulo gostoso, plataformas, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, tipos, capturar, evoluir) e 🥊 luta (dois jogadores, rounds, combo, especial).',
   category: 'games',
@@ -150,6 +150,11 @@ Movimentos prontos que os inimigos usam: **perseguir** o herói, **vaguear** ao
 acaso, **virar** para o lado do alvo. Use dentro do "Para cada vivo" no "A cada
 quadro" — é o mesmo cálculo que se faz à mão (ir na direção × velocidade × tempo).
 
+**Atirar um leque** solta N tiros do molde num arco (rumo −90 = para cima): o
+tiro triplo, a shotgun, o cone do mago, a chuva do chefe. Os tiros nascem com
+velocidade — mova-os com "Mover pela velocidade" e recolha com "Recolher quem
+saiu da tela", como qualquer tiro.
+
 ### ⏱️ Esperar (em ⏱️ Tempo)
 
 **Esperar N segundos e então…** faz o que estiver dentro DEPOIS do tempo, uma vez
@@ -176,11 +181,27 @@ VITÓRIA pronta + aviso \`missao:completa\`; derrota é o "Terminar o jogo", tel
 de fim). **Contar +1 inimigo derrotado**, **cronômetro**, **tempo jogando** e
 **quantos derrotei** completam o placar.
 
+**Soltar o texto …** é o "+100" que sobe e some sozinho — solte na posição de
+quem morreu e pronto: o motor anima e apaga (0,75 s, como nos arcades). Para
+mostrar os pontos, junte o texto \`"+"\` com a variável. Funciona para "PERDEU!",
+"CRÍTICO", combo… qualquer aviso rapidinho no meio do jogo.
+
 ### ✨ Faíscas
 
 **Criar o efeito** é a RECEITA de uma explosão (dados: quantas, cor, tamanho,
 duração, velocidade, gravidade). **Soltar o efeito** estoura uma; **Desenhar
 todas as faíscas** as anima. Poucos blocos, muitos efeitos.
+
+**Ligar o rastro** é o efeito CONTÍNUO: o jato da nave, a cauda do cometa, o
+escapamento do carro — faíscas saem de quem anda, na taxa que você escolher, até
+o **Desligar o rastro**. (O "Soltar o efeito" é um estouro único; o rastro é uma
+torneira.)
+
+**Soltar uma onda de choque** desenha o círculo que cresce e some — a cara da
+explosão GRANDE. É só desenho, de propósito: para machucar quem está no raio, a
+regra é sua — *"para cada vivo do molde: se a distância entre ele e a bomba <
+raio → machucar"*. Assim explosão de fogo, pulso de cura e ímã usam o MESMO
+bloco.
 
 ### 🎯 O mais perto (em 👾 Moldes & enxames)
 
@@ -196,6 +217,10 @@ aí TODO o enxame ganha esse visual vetorial, esticado para o tamanho do molde.
 Ou use **Desenhar a aparência** em qualquer lugar e tamanho (ex.: o herói).
 **Usar a folha de quadros** cola uma spritesheet (do Pinta ou baixada) no
 personagem, dizendo o tamanho de cada quadro.
+
+**Inclinar … ao andar de lado** faz o desenho tombar suave na direção do
+movimento — a nave que "deita" ao desviar, o peixe, a moto. Ligue UMA vez (0
+desliga); convive com o "Girar" (um soma no outro).
 
 ### 🎬 Animação
 
@@ -395,6 +420,19 @@ raro, o crítico. **a distância entre … e …** é a conta central do stealth
 detecção), da torre (alcance) e do inimigo que só persegue se estiver perto. **o
 ponto x y está dentro de …?** junta com "o mouse x/y" e você tem point-and-click,
 cartas, match-3 e tower defense.
+
+**um vivo qualquer do molde …** sorteia UM dos vivos do enxame (irmão do "o mais
+perto de"): é como o jogo de nave escolhe qual invasor atira, quem ganha o
+power-up, qual inimigo vira o elite. Sem nenhum vivo, devolve nada — teste antes
+de usar.
+
+### 🌌 Fundo que rola (em 🔁 A cada quadro)
+
+**Pintar o fundo rolando** repete uma imagem cobrindo a tela e a desloca na
+velocidade dada — o céu que passa, a estrada infinita. Use como a PRIMEIRA linha
+do "Desenhar o jogo"; duas camadas com velocidades diferentes = paralaxe (o
+fundo longe anda devagar, o perto anda rápido — profundidade de graça). Congela
+na pausa, como tudo.
 
 ### 🌫️ Sumir & transição
 

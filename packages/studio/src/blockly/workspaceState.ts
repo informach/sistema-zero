@@ -3809,6 +3809,76 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             FORCE: f2,
           })
     }
+    // R21 — primitivos gerais
+    case 'gk:floatText': {
+      const t = exprToValueBlock(valueToExpr(stmt.text))
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const sz = exprToValueBlock(valueToExpr(stmt.size))
+      return t === null || x === null || y === null || sz === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_float_text', { COLOR: stmt.color }, {}, stmt.__id, {
+            TEXT: t,
+            X: x,
+            Y: y,
+            SIZE: sz,
+          })
+    }
+    case 'gk:trailOn': {
+      const sz = exprToValueBlock(valueToExpr(stmt.size))
+      const rt = exprToValueBlock(valueToExpr(stmt.rate))
+      const lf = exprToValueBlock(valueToExpr(stmt.life))
+      return sz === null || rt === null || lf === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_trail_on', { WHO: stmt.charVar, COLOR: stmt.color }, {}, stmt.__id, {
+            SIZE: sz,
+            RATE: rt,
+            LIFE: lf,
+          })
+    }
+    case 'gk:trailOff':
+      return block('sz_gk_trail_off', { WHO: stmt.charVar }, {}, stmt.__id)
+    case 'gk:shockwave': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const r = exprToValueBlock(valueToExpr(stmt.radius))
+      const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
+      return x === null || y === null || r === null || s2 === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_shockwave', { COLOR: stmt.color }, {}, stmt.__id, {
+            X: x,
+            Y: y,
+            RADIUS: r,
+            SECS: s2,
+          })
+    }
+    case 'gk:scrollImage': {
+      const vx = exprToValueBlock(valueToExpr(stmt.vx))
+      const vy = exprToValueBlock(valueToExpr(stmt.vy))
+      return vx === null || vy === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_scroll_image', { IMAGE: stmt.image }, {}, stmt.__id, { VX: vx, VY: vy })
+    }
+    case 'gk:leanOnMove': {
+      const d = exprToValueBlock(valueToExpr(stmt.degrees))
+      return d === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_lean_on_move', { WHO: stmt.charVar }, {}, stmt.__id, { DEG: d })
+    }
+    case 'gk:fanShot': {
+      const c = exprToValueBlock(valueToExpr(stmt.count))
+      const a = exprToValueBlock(valueToExpr(stmt.arc))
+      const d = exprToValueBlock(valueToExpr(stmt.degrees))
+      const sp = exprToValueBlock(valueToExpr(stmt.speed))
+      return c === null || a === null || d === null || sp === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_fan_shot', { WHO: stmt.charVar, MOLD: stmt.mold }, {}, stmt.__id, {
+            COUNT: c,
+            ARC: a,
+            DEG: d,
+            SPEED: sp,
+          })
+    }
     case 'gk:setOpacity': {
       const p = exprToValueBlock(valueToExpr(stmt.percent))
       return p === null
@@ -5540,6 +5610,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
         ? null
         : block('sz_gk_nearest_active', { MOLD: expr.mold }, {}, expr.__id, { X: x, Y: y })
     }
+    case 'gk:randomActive':
+      return block('sz_gk_random_active', { MOLD: expr.mold })
     case 'gk:countItem':
       return block('sz_gk_count_item', { NAME: expr.name })
     case 'gk:timeSurvived':

@@ -4081,6 +4081,9 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       return { type: 'gk:nearestActive', mold: args[0].value as string, x, y }
     }
   }
+  if (method === 'randomActive' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:randomActive', mold: args[0].value as string }
+  }
   if (method === 'rpgCountItem' && args[0]?.type === 'StringLiteral') {
     return { type: 'gk:countItem', name: args[0].value as string }
   }
@@ -5090,6 +5093,69 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const force = toExpr(args[2], ctx)
       return isSimpleValue(degrees) && isSimpleValue(force)
         ? { type: 'gk:setVelocityAngle', charVar, degrees, force }
+        : null
+    }
+    // R21 — primitivos gerais
+    case 'floatText': {
+      if (args[3]?.type !== 'StringLiteral') return null
+      const text = toExpr(args[0], ctx)
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      const size = toExpr(args[4], ctx)
+      return isSimpleValue(text) && isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(size)
+        ? { type: 'gk:floatText', text, x, y, color: args[3].value as string, size }
+        : null
+    }
+    case 'trailOn': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const size = toExpr(args[2], ctx)
+      const rate = toExpr(args[3], ctx)
+      const life = toExpr(args[4], ctx)
+      return isSimpleValue(size) && isSimpleValue(rate) && isSimpleValue(life)
+        ? { type: 'gk:trailOn', charVar, color: args[1].value as string, size, rate, life }
+        : null
+    }
+    case 'trailOff': {
+      const charVar = identifierName(args[0])
+      return charVar ? { type: 'gk:trailOff', charVar } : null
+    }
+    case 'shockwave': {
+      if (args[4]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      const radius = toExpr(args[2], ctx)
+      const seconds = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(radius) && isSimpleValue(seconds)
+        ? { type: 'gk:shockwave', x, y, radius, seconds, color: args[4].value as string }
+        : null
+    }
+    case 'scrollImage': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const vx = toExpr(args[1], ctx)
+      const vy = toExpr(args[2], ctx)
+      return isSimpleValue(vx) && isSimpleValue(vy)
+        ? { type: 'gk:scrollImage', image: args[0].value as string, vx, vy }
+        : null
+    }
+    case 'leanOnMove': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const degrees = toExpr(args[1], ctx)
+      return isSimpleValue(degrees) ? { type: 'gk:leanOnMove', charVar, degrees } : null
+    }
+    case 'fanShot': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const count = toExpr(args[2], ctx)
+      const arc = toExpr(args[3], ctx)
+      const degrees = toExpr(args[4], ctx)
+      const speed = toExpr(args[5], ctx)
+      return isSimpleValue(count) &&
+        isSimpleValue(arc) &&
+        isSimpleValue(degrees) &&
+        isSimpleValue(speed)
+        ? { type: 'gk:fanShot', charVar, mold: args[1].value as string, count, arc, degrees, speed }
         : null
     }
     case 'setOpacity': {
@@ -9425,6 +9491,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:angleOf':
     case 'gk:angleTo':
     case 'gk:nearestActive':
+    case 'gk:randomActive':
     case 'gk:countItem':
     case 'gk:timeSurvived':
     case 'gk:kills':

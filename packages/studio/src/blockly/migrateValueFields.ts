@@ -248,6 +248,13 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_gk_apply_friction: { FACTOR: 'number' },
   sz_gk_wait: { SECS: 'number' },
   sz_gk_nearest_active: { X: 'number', Y: 'number' },
+  // R21 — primitivos gerais
+  sz_gk_float_text: { TEXT: 'text', X: 'number', Y: 'number', SIZE: 'number' },
+  sz_gk_trail_on: { SIZE: 'number', RATE: 'number', LIFE: 'number' },
+  sz_gk_shockwave: { X: 'number', Y: 'number', RADIUS: 'number', SECS: 'number' },
+  sz_gk_scroll_image: { VX: 'number', VY: 'number' },
+  sz_gk_lean_on_move: { DEG: 'number' },
+  sz_gk_fan_shot: { COUNT: 'number', ARC: 'number', DEG: 'number', SPEED: 'number' },
   sz_gk_fade_screen: { SECS: 'number' },
   sz_gk_flash_screen: { TIMES: 'number' },
   sz_gk_save_value: { VALUE: 'number' },

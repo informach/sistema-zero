@@ -62,6 +62,17 @@ export const gameKitRuntime = `(function () {
   var combatants = [];                   // personagens com vida/i-frames/empurrão
   var effects = Object.create(null);     // nome -> receita de faísca
   var particles = { active: [], free: [] };
+  // 🖥️ R21: textos flutuantes ("+100" que sobe e some) — o MOTOR desenha (como a
+  // fala do RPG); pooled com swap-pop, teto proprio.
+  var floaties = { active: [], free: [] };
+  var MAX_FLOATIES = 60;
+  // ✨ R21: aneis da onda de choque (a explosao da Bomb do Chris Courses).
+  var shockwaves = { active: [], free: [] };
+  var MAX_SHOCKWAVES = 16;
+  // ✨ R21: entidades com rastro ligado (varrida reversa, como combatants).
+  var trailed = [];
+  // 🔁 R21: offsets do fundo que rola, por nome de imagem (parallax = N camadas).
+  var scrolls = Object.create(null);
   var sounds = Object.create(null);      // nome -> HTMLAudioElement
   var mission = null;                    // { seconds, killCount }
   var missionDone = false;
@@ -311,6 +322,11 @@ export const gameKitRuntime = `(function () {
         for (var pk in pools) releaseAll(pools[pk]);
         for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
         particles.active.length = 0;
+        // R21: sobras visuais da partida anterior ("+100" no ar, onda no meio).
+        // Os RASTROS ficam: o do herói (persistente) deve sobreviver ao "Jogar de
+        // novo", e o de entidade reciclada o stepTrails varre sozinho.
+        while (floaties.active.length) floaties.free.push(floaties.active.pop());
+        while (shockwaves.active.length) shockwaves.free.push(shockwaves.active.pop());
         // Cura os combatentes ANTES de esquecer a lista — sem isso um herói que
         // morreu piscando ficava com _iFrames congelado (invencível p/ sempre).
         for (var ci = 0; ci < combatants.length; ci++) {
@@ -715,6 +731,11 @@ export const gameKitRuntime = `(function () {
     }
     runHooks(drawHooks, ctx2d, 'Desenhar o jogo');
     if (debugOverlay) drawDebugOverlay();
+    // R21: onda de choque + textos flutuantes são do MUNDO (dentro do translate,
+    // acompanham a câmera) e o MOTOR os desenha — por cima do desenho da criança,
+    // por baixo de HUD/fala/transição.
+    drawShockwaves();
+    drawFloaties();
     if (pushed) ctx2d.restore();
     // HUD: por cima de tudo, SEM câmera (placar/barras ficam presos na tela).
     runHooks(hudHooks, ctx2d, 'Desenhar por cima (HUD)');
@@ -798,6 +819,9 @@ export const gameKitRuntime = `(function () {
     stepUiInput(); // fala + menu de escolha: UI do motor, vale em QUALQUER jogo
     stepTweens(dt); // movimentos suaves em curso (✨ mover suave até)
     stepParticles(dt); // física das faíscas (o drawEffects só DESENHA)
+    stepTrails(dt); // ✨ R21: rastros contínuos alimentam o pool de faíscas
+    stepFloaties(dt); // 🖥️ R21: os "+100" sobem e somem no relógio do jogo
+    stepShockwaves(dt); // ✨ R21: anéis da onda de choque crescem e somem
     stepSwings(dt); // decai o tempo dos golpes de ação (🥷)
     stepWaits(); // "Esperar N s, fazer" (⏱️ Tempo) — one-shot no relógio do jogo
     stepLuta(dt); // 🥊 Kit Luta: rounds/fases (travam só os lutadores, sem estado novo)
@@ -889,7 +913,10 @@ export const gameKitRuntime = `(function () {
       _platFrames: null,
       _driftTimer: 0, _patrolTX: 0, _patrolTY: 0, _patrolTimer: 0,
       // 🌫️ R15: opacidade (1 = opaco) e a caixa que COLIDE (0 = usa o desenho).
-      opacity: 1, _hbX: 0, _hbY: 0, _hbW: 0, _hbH: 0
+      opacity: 1, _hbX: 0, _hbY: 0, _hbW: 0, _hbH: 0,
+      // ✨/🎨 R21: rastro contínuo e inclinação ao andar (mesmo shape do pool).
+      _trailOn: false, _trailColor: '', _trailSize: 3, _trailRate: 30,
+      _trailLife: 0.4, _trailAcc: 0, _trailFrame: -1, _leanMax: 0, _leanNow: 0
     };
     c._bornX = c.x;
     c._bornY = c.y;
@@ -953,6 +980,15 @@ export const gameKitRuntime = `(function () {
       c._moveFrame = frameCount;
       c._moving = (Math.abs(num(c.x, 0) - num(c._lastX, 0)) > 0.01 ||
                    Math.abs(num(c.y, 0) - num(c._lastY, 0)) > 0.01);
+      // 🎨 R21: inclinacao ao andar de lado (le o dx ANTES de sobrescrever _lastX;
+      // roda 1x por quadro pelo mesmo carimbo — desenhar 2x nao dobra o tombo).
+      if (num(c._leanMax, 0)) {
+        var ldx = num(c.x, 0) - num(c._lastX, 0);
+        var lTarget = ldx > 0.01 ? num(c._leanMax, 0) : ldx < -0.01 ? -num(c._leanMax, 0) : 0;
+        c._leanNow = num(c._leanNow, 0) + (lTarget - num(c._leanNow, 0)) * Math.min(1, 12 * currentDt);
+      } else if (num(c._leanNow, 0)) {
+        c._leanNow = 0;
+      }
       c._lastX = c.x; c._lastY = c.y;
     }
     var prevAlpha = 1;
@@ -967,7 +1003,8 @@ export const gameKitRuntime = `(function () {
       try { ctx2d.globalAlpha = flash * ownAlpha; } catch (e) {}
     }
     // Giro em volta do CENTRO (o wrapper mais externo — flip e desenho rodam juntos).
-    var ang = num(c._angle, 0);
+    // O lean do R21 SOMA no giro da criança (girar + inclinar convivem).
+    var ang = num(c._angle, 0) + num(c._leanNow, 0);
     if (ang) {
       ctx2d.save();
       ctx2d.translate(centerX(c), centerY(c));
@@ -1379,6 +1416,10 @@ export const gameKitRuntime = `(function () {
       _driftTimer: 0, _patrolTX: 0, _patrolTY: 0, _patrolTimer: 0,
       // 🌫️ R15: opacidade (1 = opaco) e a caixa que COLIDE (0 = usa o desenho).
       opacity: 1, _hbX: 0, _hbY: 0, _hbW: 0, _hbH: 0,
+      // ✨/🎨 R21: rastro contínuo e inclinação ao andar (reciclar sem zerar
+      // deixaria o inimigo novo nascer soltando o jato do anterior, tombado).
+      _trailOn: false, _trailColor: '', _trailSize: 3, _trailRate: 30,
+      _trailLife: 0.4, _trailAcc: 0, _trailFrame: -1, _leanMax: 0, _leanNow: 0,
       // 🥷 R18: a janela do golpe (recuo/ativo em segundos; 0/0 = o golpe inteiro
       // machuca, que é o comportamento de sempre) e o ESTADO com a trava de
       // animação. Reciclar sem zerar deixaria o inimigo novo nascer "golpeando",
@@ -1451,6 +1492,9 @@ export const gameKitRuntime = `(function () {
     e._platFrames = null;
     e._driftTimer = 0; e._patrolTX = 0; e._patrolTY = 0; e._patrolTimer = 0;
     e.opacity = 1; e._hbX = 0; e._hbY = 0; e._hbW = 0; e._hbH = 0;
+    // R21: rastro/lean (ver blankEntity — o contrato exige o par).
+    e._trailOn = false; e._trailColor = ''; e._trailSize = 3; e._trailRate = 30;
+    e._trailLife = 0.4; e._trailAcc = 0; e._trailFrame = -1; e._leanMax = 0; e._leanNow = 0;
     pool.active.push(e);
     return e;
   }
@@ -1578,6 +1622,31 @@ export const gameKitRuntime = `(function () {
       if (d < bestD) { bestD = d; best = e; }
     }
     return best;
+  }
+  /**
+   * 🎲 R21: um vivo QUALQUER do molde (ou null). E o "um invasor aleatorio atira"
+   * do Space Invaders — e loot/IA de horda em qualquer genero. Sorteio em duas
+   * passadas (conta -> k-esimo), zero alocacao.
+   */
+  function randomActive(moldName) {
+    var k = text(moldName, '');
+    var pool = pools[k];
+    if (!pool) { warnOnce('random:' + k, 'o molde "' + k + '" não existe — crie com "Criar o molde"'); return null; }
+    var act = pool.active;
+    var n = 0;
+    var i;
+    for (i = 0; i < act.length; i++) {
+      if (act[i] && act[i]._active !== false) n++;
+    }
+    if (!n) return null;
+    var pick = Math.floor(Math.random() * n);
+    for (i = 0; i < act.length; i++) {
+      var e = act[i];
+      if (!e || e._active === false) continue;
+      if (pick === 0) return e;
+      pick--;
+    }
+    return null;
   }
   function countActive(name) {
     var pool = pools[text(name, '')];
@@ -2178,6 +2247,32 @@ export const gameKitRuntime = `(function () {
     who.vx = (dx / len) * v;
     who.vy = (dy / len) * v;
     setFacing(who, dx, dy);
+  }
+  /**
+   * 🎯 R21: LEQUE de tiros — N nascem do molde num arco centrado no rumo (graus;
+   * -90 = para cima, como o setVelocityAngle). E o spread-shot/shotgun/cone de
+   * mago: a conta de offsets de angulo e o que crianca nao compoe sozinha.
+   */
+  function fanShot(who, moldName, count, arcDeg, dirDeg, speed) {
+    if (!who || typeof who !== 'object') return;
+    var n = Math.max(1, Math.min(64, Math.round(num(count, 3))));
+    var arc = num(arcDeg, 30);
+    var dir = num(dirDeg, -90);
+    var v = num(speed, 600);
+    var cx = centerX(who);
+    var cy = centerY(who);
+    for (var i = 0; i < n; i++) {
+      var a = n === 1 ? dir : dir - arc / 2 + (arc * i) / (n - 1);
+      var e = spawnFromMold(moldName, 0, 0);
+      if (!e) return; // molde inexistente/lotado: o spawnFromMold ja avisou
+      e.x = cx - e.w / 2;
+      e.y = cy - e.h / 2;
+      e._prevX = e.x; e._prevY = e.y; // nasceu AQUI: zera a varredura
+      var r = a * Math.PI / 180;
+      e.vx = Math.cos(r) * v;
+      e.vy = Math.sin(r) * v;
+      setFacing(e, e.vx, e.vy);
+    }
   }
   /**
    * O angulo de quem (em graus). O setAngle so ESCREVE - nao havia como LER, e sem
@@ -3925,6 +4020,206 @@ export const gameKitRuntime = `(function () {
     }
   }
 
+  // ---- 🖥️/✨/🔁 R21: primitivos gerais de "juice" (o MOTOR desenha) ----
+  /**
+   * Texto flutuante ("+100" que sobe e some) — o feedback de TODO arcade/RPG/luta.
+   * O motor move e desenha sozinho (precedente: a fala do RPG); em coords do
+   * MUNDO, entao acompanha a camera. Fisica fixa de proposito: sobe 40px e some
+   * em 0,75 s (o score label do Chris Courses) — nao e resposta da crianca.
+   */
+  function floatText(txt, x, y, color, size) {
+    if (floaties.active.length >= MAX_FLOATIES) {
+      warnOnce('floaties', 'muitos textos flutuantes de uma vez (teto ' + MAX_FLOATIES + ')');
+      return;
+    }
+    var f = floaties.free.pop() || {};
+    f.text = text(txt, '');
+    f.x = num(x, 0);
+    f.y = num(y, 0);
+    f.t = 0;
+    f.life = 0.75;
+    f.color = text(color, '#ffffff');
+    f.size = Math.max(6, num(size, 24));
+    floaties.active.push(f);
+  }
+  function stepFloaties(dt) {
+    for (var i = floaties.active.length - 1; i >= 0; i--) {
+      var f = floaties.active[i];
+      f.t += dt;
+      f.y -= (40 / 0.75) * dt;
+      if (f.t >= f.life) {
+        var last = floaties.active.length - 1;
+        floaties.active[i] = floaties.active[last];
+        floaties.active.pop();
+        floaties.free.push(f);
+      }
+    }
+  }
+  function drawFloaties() {
+    if (!ctx2d || !floaties.active.length) return;
+    var prev = 1;
+    try { prev = ctx2d.globalAlpha; } catch (e) {}
+    for (var i = 0; i < floaties.active.length; i++) {
+      var f = floaties.active[i];
+      try { ctx2d.globalAlpha = Math.max(0, 1 - f.t / f.life); } catch (e) {}
+      ctx2d.fillStyle = f.color;
+      ctx2d.font = 'bold ' + Math.round(f.size) + 'px sans-serif';
+      ctx2d.fillText(f.text, f.x, f.y);
+    }
+    try { ctx2d.globalAlpha = prev; } catch (e) {}
+  }
+  /**
+   * Onda de choque VISUAL (a explosao da Bomb do Chris: circulo cresce 0->R e
+   * some). So desenho — o dano em area e da crianca: "para cada vivo do molde +
+   * distancia entre + machucar" (receita nas docs). Assim a colisao continua
+   * sendo dela.
+   */
+  function shockwave(x, y, radius, seconds, color) {
+    if (shockwaves.active.length >= MAX_SHOCKWAVES) {
+      warnOnce('shockwaves', 'muitas ondas de choque de uma vez (teto ' + MAX_SHOCKWAVES + ')');
+      return;
+    }
+    var s = shockwaves.free.pop() || {};
+    s.x = num(x, 0);
+    s.y = num(y, 0);
+    s.r = Math.max(1, num(radius, 200));
+    s.t = 0;
+    s.secs = Math.max(0.05, num(seconds, 0.4));
+    s.color = text(color, '#ffffff');
+    shockwaves.active.push(s);
+  }
+  function stepShockwaves(dt) {
+    for (var i = shockwaves.active.length - 1; i >= 0; i--) {
+      var s = shockwaves.active[i];
+      s.t += dt;
+      if (s.t >= s.secs) {
+        var last = shockwaves.active.length - 1;
+        shockwaves.active[i] = shockwaves.active[last];
+        shockwaves.active.pop();
+        shockwaves.free.push(s);
+      }
+    }
+  }
+  function drawShockwaves() {
+    if (!ctx2d || !shockwaves.active.length) return;
+    var prev = 1;
+    try { prev = ctx2d.globalAlpha; } catch (e) {}
+    for (var i = 0; i < shockwaves.active.length; i++) {
+      var s = shockwaves.active[i];
+      var k = Math.min(1, s.t / s.secs);
+      try { ctx2d.globalAlpha = 0.9 * (1 - k); } catch (e) {}
+      ctx2d.fillStyle = s.color;
+      ctx2d.beginPath();
+      try {
+        ctx2d.arc(s.x, s.y, Math.max(1, s.r * k), 0, Math.PI * 2);
+        ctx2d.fill();
+      } catch (e) {}
+    }
+    try { ctx2d.globalAlpha = prev; } catch (e) {}
+  }
+  /**
+   * Rastro continuo (jato da nave, cauda de cometa, escapamento): solta faiscas
+   * do CENTRO da entidade numa taxa por segundo. Reusa o pool GLOBAL de faiscas
+   * (o teto MAX_PARTICLES degrada suave, como o burst). Estado por ENTIDADE
+   * (contrato do pool) + registro varrido reverso (padrao combatants).
+   */
+  function trailOn(who, color, size, rate, life) {
+    if (!who || typeof who !== 'object') return;
+    if (!who._trailOn) trailed.push(who);
+    who._trailOn = true;
+    who._trailColor = text(color, '#ffffff');
+    who._trailSize = Math.max(1, num(size, 3));
+    // clamp 60/s: um enxame inteiro com rastro forte engoliria o teto global e
+    // as EXPLOSOES da crianca parariam de aparecer.
+    who._trailRate = Math.max(1, Math.min(60, num(rate, 30)));
+    who._trailLife = Math.max(0.05, Math.min(3, num(life, 0.4)));
+  }
+  function trailOff(who) {
+    if (who && typeof who === 'object') who._trailOn = false;
+  }
+  function stepTrails(dt) {
+    for (var i = trailed.length - 1; i >= 0; i--) {
+      var e = trailed[i];
+      if (!e || e._trailOn !== true || e._active === false) {
+        // morreu/desligou/foi reciclado: sai do registro (e o flag morre junto,
+        // p/ o objeto reusado pelo pool nao arrastar o rastro do anterior).
+        if (e) e._trailOn = false;
+        trailed[i] = trailed[trailed.length - 1];
+        trailed.pop();
+        continue;
+      }
+      // Registrado 2x (ligar de novo apos reciclar)? O carimbo emite 1x so.
+      if (e._trailFrame === frameCount) continue;
+      e._trailFrame = frameCount;
+      e._trailAcc = num(e._trailAcc, 0) + e._trailRate * dt;
+      while (e._trailAcc >= 1) {
+        e._trailAcc -= 1;
+        if (particles.active.length >= MAX_PARTICLES) { e._trailAcc = 0; break; }
+        var p = particles.free.pop() || {};
+        p.x = centerX(e) + (Math.random() - 0.5) * e.w * 0.3;
+        p.y = centerY(e) + (Math.random() - 0.5) * e.h * 0.3;
+        p.vx = (Math.random() - 0.5) * 30;
+        p.vy = (Math.random() - 0.5) * 30;
+        p.life = e._trailLife;
+        p.max = e._trailLife;
+        p.size = e._trailSize;
+        p.color = e._trailColor;
+        p.gravity = 0;
+        particles.active.push(p);
+      }
+    }
+  }
+  /**
+   * 🎨 Inclinacao ao andar de lado (o "lean" da nave do Chris, ±0.15 rad): o
+   * desenho tomba ate N graus na direcao do movimento, suavizado. 0 = desliga.
+   * So visual — quem inclina e o wrapper de giro do drawEntity.
+   */
+  function leanOnMove(who, degrees) {
+    if (!who || typeof who !== 'object') return;
+    who._leanMax = num(degrees, 10);
+  }
+  /**
+   * 🔁 Fundo que ROLA (a versao geral do starfield/parallax): repete a imagem
+   * cobrindo o retangulo visivel (camera-aware, como o drawBackground) e desloca
+   * o padrao em px/s. Chame no "Desenhar o jogo" como 1a camada; varias imagens
+   * com velocidades diferentes = parallax. Anda 1x por quadro (carimbo — desenhar
+   * 2x nao dobra a velocidade) e congela fora de 'jogando' (pausa pausa).
+   */
+  function scrollImage(name, vx, vy) {
+    var k = text(name, '');
+    var rec = images[k];
+    // O aviso vem ANTES do gate de canvas: nome errado nunca e silencioso.
+    if (!rec || !rec.loaded || !rec.img) {
+      warnOnce('scroll:' + k, 'a imagem "' + k + '" não está carregada — use "Carregar a imagem"');
+      return;
+    }
+    if (!ctx2d) return;
+    var iw = Math.max(1, num(rec.img.width, 1));
+    var ih = Math.max(1, num(rec.img.height, 1));
+    // Imagem minuscula viraria milhares de drawImage por quadro.
+    if ((config.w / iw + 2) * (config.h / ih + 2) > 4096) {
+      warnOnce('scrollsmall:' + k, 'a imagem "' + k + '" é pequena demais para rolar de fundo');
+      return;
+    }
+    var st = scrolls[k] || (scrolls[k] = { ox: 0, oy: 0, frame: -1 });
+    if (st.frame !== frameCount && state === 'jogando') {
+      st.frame = frameCount;
+      st.ox += num(vx, 0) * currentDt;
+      st.oy += num(vy, 0) * currentDt;
+    }
+    var camX = camera.on ? camera.x : 0;
+    var camY = camera.on ? camera.y : 0;
+    var mx = (((camX - st.ox) % iw) + iw) % iw;
+    var my = (((camY - st.oy) % ih) + ih) % ih;
+    var x0 = camX - mx;
+    var y0 = camY - my;
+    for (var ty = y0; ty < camY + config.h; ty += ih) {
+      for (var tx = x0; tx < camX + config.w; tx += iw) {
+        try { ctx2d.drawImage(rec.img, tx, ty, iw, ih); } catch (e) {}
+      }
+    }
+  }
+
   // ---- 🎨 Aparências (looks) ----
   function defineLook(name, fn, baseW, baseH) {
     var k = text(name, '');
@@ -5259,6 +5554,15 @@ export const gameKitRuntime = `(function () {
     distanceBetween: guard('distanceBetween', distanceBetween),
     pointIn: guard('pointIn', pointIn),
     launchToPoint: guard('launchToPoint', launchToPoint),
+    // R21 — primitivos gerais
+    randomActive: guard('randomActive', randomActive),
+    floatText: guard('floatText', floatText),
+    trailOn: guard('trailOn', trailOn),
+    trailOff: guard('trailOff', trailOff),
+    shockwave: guard('shockwave', shockwave),
+    scrollImage: guard('scrollImage', scrollImage),
+    leanOnMove: guard('leanOnMove', leanOnMove),
+    fanShot: guard('fanShot', fanShot),
     setVelocityAngle: guard('setVelocityAngle', setVelocityAngle),
     angleOf: guard('angleOf', angleOf),
     angleTo: guard('angleTo', angleTo),

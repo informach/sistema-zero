@@ -33,6 +33,9 @@ const originalGetContext = canvasProto?.getContext
 
 /** Todo fillRect com a cor que estava valendo na hora — é o que prova a cobertura. */
 let rects: Array<{ x: number; y: number; w: number; h: number; fill: string; alpha: number }> = []
+/** R21: fillText/arc também gravam — é como se mede o texto flutuante e a onda. */
+let texts: Array<{ text: string; x: number; y: number; alpha: number }> = []
+let arcs: Array<{ x: number; y: number; r: number; alpha: number }> = []
 const fakeCtx = {
   fillStyle: '',
   strokeStyle: '',
@@ -51,10 +54,14 @@ const fakeCtx = {
   lineTo() {},
   stroke() {},
   fill() {},
-  arc() {},
+  arc(x: number, y: number, r: number) {
+    arcs.push({ x, y, r, alpha: fakeCtx.globalAlpha })
+  },
   closePath() {},
   ellipse() {},
-  fillText() {},
+  fillText(t: unknown, x: number, y: number) {
+    texts.push({ text: String(t), x, y, alpha: fakeCtx.globalAlpha })
+  },
   measureText: () => ({ width: 10 }),
   save() {},
   restore() {},
@@ -89,6 +96,11 @@ interface Api {
   thrust: Fn
   applyFriction: Fn
   knockback: Fn
+  floatText: Fn
+  shockwave: Fn
+  trailOn: Fn
+  trailOff: Fn
+  drawEffects: Fn
   lutaMatch: Fn
   lutaMove: Fn
   lutaFighter: Fn
@@ -572,5 +584,79 @@ describe('gk — R20: física DIRIGIDA por quadros (thrust, varredura da luta, e
     // O contrato: deslocamento aplicado pelo MOTOR deixa a varredura consistente
     // (sem isso, um empurrão grande atravessa parede fina no quadro lento).
     expect(heroi._prevX).toBe(heroi.x)
+  })
+})
+
+describe('gk — R21: o MOTOR desenha o juice (texto flutuante, onda de choque, rastro)', () => {
+  async function palco(h: Harness) {
+    h.api.setup({ width: 960, height: 540 })
+    await startGame(h)
+    h.api.setState('jogando')
+  }
+
+  it('⭐ o "+100" sobe, esmaece e SOME em ~0,75 s (sem a criança desenhar nada)', async () => {
+    const h = loadRuntime()
+    await palco(h)
+    h.api.floatText('+100', 300, 300, '#ffffff', 24)
+    texts = []
+    h.nextFrame(50) // t = 0,05 s
+    const cedo = texts.find((t) => t.text === '+100')
+    expect(cedo).toBeDefined()
+    expect((cedo as { y: number }).y).toBeLessThan(300) // já subiu
+    expect((cedo as { alpha: number }).alpha).toBeGreaterThan(0.8)
+    for (let i = 2; i <= 8; i++) h.nextFrame(i * 50)
+    texts = []
+    h.nextFrame(9 * 50) // t = 0,45 s: mais alto e mais transparente
+    const meio = texts.find((t) => t.text === '+100')
+    expect(meio).toBeDefined()
+    expect((meio as { y: number }).y).toBeLessThan((cedo as { y: number }).y)
+    expect((meio as { alpha: number }).alpha).toBeLessThan((cedo as { alpha: number }).alpha)
+    for (let i = 10; i <= 16; i++) h.nextFrame(i * 50)
+    texts = []
+    h.nextFrame(17 * 50) // t = 0,85 s: acabou (e voltou ao pool)
+    expect(texts.some((t) => t.text === '+100')).toBe(false)
+  })
+
+  it('⭐ a onda de choque cresce até o raio e some sozinha', async () => {
+    const h = loadRuntime()
+    await palco(h)
+    h.api.shockwave(400, 300, 200, 0.4, '#ffffff')
+    arcs = []
+    h.nextFrame(50) // t = 0,05/0,4 → raio 200 × 0,125 = 25
+    const cedo = arcs.filter((a) => a.x === 400 && a.y === 300)
+    expect(cedo.length).toBe(1)
+    expect((cedo[0] as { r: number }).r).toBeCloseTo(25)
+    h.nextFrame(100)
+    h.nextFrame(150)
+    arcs = []
+    h.nextFrame(200) // t = 0,2/0,4 → raio 100, mais transparente
+    const meio = arcs.filter((a) => a.x === 400 && a.y === 300)
+    expect((meio[0] as { r: number }).r).toBeCloseTo(100)
+    expect((meio[0] as { alpha: number }).alpha).toBeLessThan((cedo[0] as { alpha: number }).alpha)
+    for (let i = 5; i <= 12; i++) h.nextFrame(i * 50)
+    arcs = []
+    h.nextFrame(13 * 50) // bem depois de 0,4 s: nada
+    expect(arcs.filter((a) => a.x === 400 && a.y === 300).length).toBe(0)
+  })
+
+  it('⭐ o rastro emite faíscas contínuas e o desligar seca a cauda', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('cometa', { w: 30, h: 30, color: '#888' })
+    await startGame(h)
+    h.api.setState('jogando')
+    const c = h.api.spawnFromMold('cometa', 100, 100)
+    h.api.trailOn(c, '#00ffff', 3, 60, 0.2)
+    h.api.onDraw(() => h.api.drawEffects())
+    for (let i = 1; i <= 10; i++) h.nextFrame(i * 50)
+    rects = []
+    h.nextFrame(11 * 50)
+    // 60/s com vida 0,2 s → ~12 vivas por quadro (banda folgada p/ o arredondo).
+    expect(rects.filter((r) => r.fill === '#00ffff').length).toBeGreaterThan(3)
+    h.api.trailOff(c)
+    for (let i = 12; i <= 20; i++) h.nextFrame(i * 50) // 0,45 s ≫ vida 0,2 s
+    rects = []
+    h.nextFrame(21 * 50)
+    expect(rects.filter((r) => r.fill === '#00ffff').length).toBe(0)
   })
 })

@@ -603,6 +603,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         x: exprInput(block, 'X', { type: 'num', value: 0 }),
         y: exprInput(block, 'Y', { type: 'num', value: 0 }),
       }
+    case 'sz_gk_random_active':
+      return { type: 'gk:randomActive', mold: f(block, 'MOLD') }
     case 'sz_gk_count_item':
       return { type: 'gk:countItem', name: f(block, 'NAME') }
     case 'sz_gk_health_of':
@@ -6230,6 +6232,84 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           charVar: f(block, 'WHO'),
           degrees: exprInput(block, 'DEG', { type: 'num', value: 0 }),
           force: exprInput(block, 'FORCE', { type: 'num', value: 200 }),
+        },
+      }
+    // R21 — primitivos gerais
+    case 'sz_gk_float_text':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:floatText',
+          text: exprInput(block, 'TEXT', { type: 'str', value: '+100' }),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          color: f(block, 'COLOR') || '#ffffff',
+          size: exprInput(block, 'SIZE', { type: 'num', value: 24 }),
+        },
+      }
+    case 'sz_gk_trail_on':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:trailOn',
+          charVar: f(block, 'WHO'),
+          color: f(block, 'COLOR') || '#ffffff',
+          size: exprInput(block, 'SIZE', { type: 'num', value: 3 }),
+          rate: exprInput(block, 'RATE', { type: 'num', value: 30 }),
+          life: exprInput(block, 'LIFE', { type: 'num', value: 0.4 }),
+        },
+      }
+    case 'sz_gk_trail_off':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:trailOff', charVar: f(block, 'WHO') } }
+    case 'sz_gk_shockwave':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:shockwave',
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 200 }),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 0.4 }),
+          color: f(block, 'COLOR') || '#ffffff',
+        },
+      }
+    case 'sz_gk_scroll_image':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:scrollImage',
+          image: f(block, 'IMAGE'),
+          vx: exprInput(block, 'VX', { type: 'num', value: 0 }),
+          vy: exprInput(block, 'VY', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_gk_lean_on_move':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:leanOnMove',
+          charVar: f(block, 'WHO'),
+          degrees: exprInput(block, 'DEG', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_gk_fan_shot':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:fanShot',
+          charVar: f(block, 'WHO'),
+          mold: f(block, 'MOLD'),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 3 }),
+          arc: exprInput(block, 'ARC', { type: 'num', value: 30 }),
+          degrees: exprInput(block, 'DEG', { type: 'num', value: -90 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 600 }),
         },
       }
     case 'sz_gk_set_opacity':

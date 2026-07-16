@@ -247,6 +247,21 @@ API global injetada como window.SZGameKit:
   REPETE; o rpgWait só vale dentro de "Fazer a cena").
 - 👾 nearestActive(molde, x, y) = o vivo mais perto de um ponto (tower defense, IA
   de horda que escolhe alvo).
+- 🎲 randomActive(molde) = um vivo QUALQUER do pool, ou null (em 🎲 Sorte & medida)
+  — o invasor aleatório que atira, o sorteado do power-up. Sempre teste null.
+- ✨ trailOn(quem, cor, tamanho, porSegundo, vidaSeg)/trailOff(quem) = rastro
+  CONTÍNUO (jato de nave, cauda de cometa; o burst é estouro único) ·
+  shockwave(x, y, raio, segundos, cor) = círculo que cresce e some, SÓ VISUAL —
+  dano em área é receita: forEachActive + distanceBetween < raio → hurt.
+- 🖥️ floatText(texto, x, y, cor, tamanho) = "+100" que sobe e some sozinho
+  (0,75 s, coords do MUNDO — acompanha a câmera; em 🖥️ HUD & Missão). Pontos:
+  floatText("+" + pontos, ...).
+- 🎨 leanOnMove(quem, graus) = tomba suave ao andar de lado (nave/peixe/moto;
+  0 desliga; soma com o setAngle) · scrollImage(imagem, vx, vy) = fundo que
+  ROLA/paralaxe (1ª linha do onDraw; em 🔁 A cada quadro; imagem via loadImage).
+- 🎯 fanShot(quem, moldeDoTiro, n, arcoGraus, rumoGraus, vel) = leque de tiros
+  (rumo -90 = p/ cima, como setVelocityAngle); depois mova com moveByVelocity +
+  cullOffscreen, como todo tiro.
 - 🎒 Itens (GERAL, saiu do Kit RPG): rpgGiveItem SOMA quantidade (antes dedupava) e
   rpgCountItem(nome) LÊ — crafting ("3 madeiras"), loja, coleta. As FLAGS
   (rpgAddFlag/rpgHasFlag) também são gerais e vivem coladas na 💾 Memória: a flag
