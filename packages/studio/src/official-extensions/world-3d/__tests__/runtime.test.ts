@@ -27,6 +27,12 @@ interface Api {
   clearArea: (x?: unknown, z?: unknown, r?: unknown) => unknown
   grass: (amount?: unknown) => unknown
   setEffects: (on?: unknown, strength?: unknown) => unknown
+  dayNight: (minutes?: unknown) => unknown
+  setTime: (name?: unknown) => unknown
+  weather: (kind?: unknown) => unknown
+  setWind: (force?: unknown) => unknown
+  onDayNight: (when?: unknown, fn?: unknown) => unknown
+  timeOfDay: () => number
   onCrash: (fn: unknown) => unknown
   onUpdate: (fn: unknown) => unknown
   keyDown: (k: unknown) => boolean
@@ -64,6 +70,12 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'clearArea',
       'grass',
       'setEffects',
+      'dayNight',
+      'setTime',
+      'weather',
+      'setWind',
+      'onDayNight',
+      'timeOfDay',
       'onCrash',
       'onUpdate',
       'keyDown',
@@ -145,5 +157,20 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(() => api.grass('oceano')).not.toThrow() // cai para media
     expect(() => api.setEffects('desligados', 2)).not.toThrow()
     expect(() => api.setEffects('ligados', 99)).not.toThrow() // clampa em 3
+  })
+
+  it('céu & clima: hora do mundo, ganchos e guardas puras', () => {
+    const api = boot()
+    expect(api.timeOfDay()).toBe(10) // manhã default
+    expect(() => api.setTime('noite')).not.toThrow()
+    expect(api.timeOfDay()).toBe(0)
+    expect(() => api.setTime('madrugada')).not.toThrow() // avisa e ignora
+    expect(api.timeOfDay()).toBe(0)
+    expect(() => api.dayNight(4)).not.toThrow()
+    expect(() => api.weather('neve')).not.toThrow()
+    expect(() => api.weather('meteoro')).not.toThrow() // avisa e ignora
+    expect(() => api.setWind(3)).not.toThrow()
+    expect(() => api.onDayNight('noite', () => {})).not.toThrow()
+    expect(() => api.onDayNight('noite', 'não é função')).not.toThrow()
   })
 })

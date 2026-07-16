@@ -294,6 +294,102 @@ export const world3DBlocks = [
       'Roda o "fazer" quando o carrinho TROMBA numa árvore, pedra ou cacto em boa velocidade (encostadinha devagar não conta). Toque um som, trema a câmera, conte batidas…',
   },
 
+  // ---- 🌦️ Céu & clima ----
+  {
+    type: 'sz_w3d_daynight',
+    message0: 'Ligar o ciclo dia e noite: um dia dura %1 minutos',
+    args0: [{ type: 'input_value', name: 'MIN', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O tempo passa DE VERDADE: manhã dourada → meio-dia claro → entardecer laranja → noite estrelada, num ciclo que interpola céu, sol, névoa e estrelas (4 minutos por dia, como no folio do Bruno Simon). O sol enfraquece à noite e as estrelas acendem.',
+  },
+  {
+    type: 'sz_w3d_set_time',
+    message0: 'Deixar o céu de %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'TIME',
+        options: [
+          ['manhã', 'manha'],
+          ['meio-dia', 'meiodia'],
+          ['entardecer', 'entardecer'],
+          ['noite', 'noite'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Fixa a hora do mundo (sem o ciclo andar): o entardecer alaranjado para a corrida do pôr do sol, a noite estrelada para o mundo de inverno. Combine com o ciclo: este bloco escolhe a hora INICIAL.',
+  },
+  {
+    type: 'sz_w3d_weather',
+    message0: 'Fazer %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'W',
+        options: [
+          ['☀️ céu limpo', 'limpo'],
+          ['🌧️ chuva', 'chuva'],
+          ['❄️ neve', 'neve'],
+          ['🍂 folhas ao vento', 'folhas'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O clima do mundo: chuva caindo, neve à deriva ou folhas dançando no vento — as partículas acompanham o carrinho pelo mundo inteiro (e obedecem à força do vento). ☀️ céu limpo desliga.',
+  },
+  {
+    type: 'sz_w3d_wind',
+    message0: 'Vento com força %1',
+    args0: [{ type: 'input_value', name: 'F', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A força do vento (0 = parado, 1 = brisa, 3 = ventania, até 5): mexe a grama E empurra a chuva/neve/folhas. O vendaval do seu mundo de tempestade.',
+  },
+  {
+    type: 'sz_w3d_on_daynight',
+    message0: 'Quando virar %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'WHEN',
+        options: [
+          ['noite', 'noite'],
+          ['dia', 'dia'],
+        ],
+      },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" na VIRADA (dia = das 6h às 18h da hora do mundo): acenda as luzes dos totens à noite, solte os vaga-lumes, toque a música da madrugada. Dispara uma vez por virada.',
+  },
+  {
+    type: 'sz_w3d_time_of_day',
+    message0: 'a hora do mundo (0 a 24)',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A hora do relógio do mundo, de 0 a 24 (12 = meio-dia). Use para inventar as suas regras de horário: "se a hora > 20, …".',
+  },
+
   // ---- 🎥 Câmera & efeitos ----
   {
     type: 'sz_w3d_effects',
@@ -390,6 +486,18 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    name: '🌦️ Céu & clima',
+    colour: C,
+    types: [
+      'sz_w3d_daynight',
+      'sz_w3d_set_time',
+      'sz_w3d_weather',
+      'sz_w3d_wind',
+      'sz_w3d_on_daynight',
+      'sz_w3d_time_of_day',
+    ],
+  },
+  {
     name: '🎥 Câmera & efeitos',
     colour: C,
     types: ['sz_w3d_effects'],
@@ -433,6 +541,8 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_place_model: { X: numShadow(10), Z: numShadow(10), S: numShadow(1), DEG: numShadow(0) },
   sz_w3d_clear_area: { X: numShadow(0), Z: numShadow(0), R: numShadow(15) },
   sz_w3d_effects: { STRENGTH: numShadow(1) },
+  sz_w3d_daynight: { MIN: numShadow(4) },
+  sz_w3d_wind: { F: numShadow(1) },
 }
 
 /**

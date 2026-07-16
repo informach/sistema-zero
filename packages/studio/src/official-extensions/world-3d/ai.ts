@@ -54,6 +54,16 @@ SZWorld3D.start(); // SEMPRE por último
   ANTES dos scatter.
 - \`SZWorld3D.grass('pouca'|'media'|'muita')\` — grama instanciada ao vento
   (1 draw call), acompanha o terreno e segue o carro (parece infinita).
+- \`SZWorld3D.dayNight(minutos)\` — liga o ciclo dia/noite (default 4 min por
+  dia): céu/sol/névoa/estrelas interpolados por keyframes.
+- \`SZWorld3D.setTime('manha'|'meiodia'|'entardecer'|'noite')\` — fixa a hora
+  (ou escolhe a hora inicial do ciclo).
+- \`SZWorld3D.weather('limpo'|'chuva'|'neve'|'folhas')\` — partículas que
+  seguem o carro e obedecem ao vento.
+- \`SZWorld3D.setWind(forca)\` — 0..5; mexe grama + clima.
+- \`SZWorld3D.onDayNight('dia'|'noite', function () { ... })\` — dispara na
+  VIRADA (dia = 6h..18h).
+- \`SZWorld3D.timeOfDay()\` → 0..24.
 - \`SZWorld3D.setEffects('ligados'|'desligados', brilho)\` — bloom + vinheta
   (composer próprio, ACES). Default LIGADO com brilho 1; brilho 0–3. O modo
   turbo (FPS < 45 nos primeiros segundos) desliga sozinho e reduz a grama.

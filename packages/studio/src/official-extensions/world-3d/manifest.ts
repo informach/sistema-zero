@@ -99,6 +99,21 @@ O que o motor já faz por você:
 - **onde o carrinho está (eixo …)** — a posição, um eixo por vez (y = altura).
 - **a velocidade do carrinho** — em m/s, sempre positiva. Ótima para HUD.
 
+### 🌦️ Céu & clima
+
+- **Ligar o ciclo dia e noite: um dia dura … minutos** — o tempo passa de
+  verdade: manhã dourada → meio-dia → entardecer laranja → noite estrelada
+  (o sol enfraquece, a névoa escurece junto, as estrelas acendem).
+- **Deixar o céu de manhã/meio-dia/entardecer/noite** — fixa a hora (ou
+  escolhe a hora INICIAL do ciclo). O entardecer da corrida, a noite do
+  mundo de inverno.
+- **Fazer ☀️/🌧️/❄️/🍂** — o clima: chuva, neve ou folhas dançando, sempre ao
+  redor do carrinho, obedecendo ao vento. ☀️ céu limpo desliga.
+- **Vento com força …** — 0 parado, 1 brisa, 3 ventania (até 5): mexe a
+  grama E o clima.
+- **Quando virar dia/noite** — o gancho da virada: acenda os totens à noite!
+- **a hora do mundo (0 a 24)** — para as SUAS regras de horário.
+
 ### 🎥 Câmera & efeitos
 
 - **Efeitos de cinema ligados/desligados (brilho …)** — o look de filme:

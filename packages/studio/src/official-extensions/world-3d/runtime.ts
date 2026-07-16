@@ -125,6 +125,19 @@ export const world3DRuntime = `import * as THREE from 'three';
   var _gltfMod = null;
   var _modelCache = null;       // nome -> { scene } já parseado
   var _modelPending = null;     // nome -> fila de callbacks (parse em voo)
+  // Céu & clima: ciclo dia/noite por keyframes + tempo fixo + partículas de clima.
+  var dayCfg = { on: false, minutes: 4 };
+  var atmoUsed = false;         // setTime/dayNight ligam a atmosfera por keyframes
+  var timeOfDay = 10;           // hora do mundo (0..24); 10h = manhã clara default
+  var _lastDayPhase = null;     // 'dia' | 'noite' (edge-trigger dos ganchos)
+  var dayNightHooks = { dia: [], noite: [] };
+  var _skyDrawnAt = -1;         // última hora desenhada no degradê (redesenho barato)
+  var _skyCanvas = null;
+  var starsMesh = null;
+  var starsMat = null;
+  var weatherKind = 'limpo';
+  var weatherPts = null;        // { mesh, mat, geo, pos (Float32Array), vel, n }
+  var spriteTex = null;         // círculo suave compartilhado (clima)
   // Pós-processamento (mini-composer próprio) + grama + qualidade adaptativa.
   var composer = null;
   var composerFailed = false;   // WebGL/targets falharam -> render direto p/ sempre
@@ -1239,6 +1252,282 @@ export const world3DRuntime = `import * as THREE from 'three';
     scene.add(grassMesh);
   }
 
+  // ---- 🌦️ Céu & clima (ciclo dia/noite por keyframes + partículas) ----
+
+  /**
+   * Keyframes da atmosfera por HORA (0..24, circular): cada um tinge o céu do
+   * ESTILO (mix) e manda no sol/ambiente/névoa/estrelas. Interpolação por
+   * segmento — a mesma ideia dos presets de DayCycles do folio.
+   */
+  var DAY_KEYS = [
+    { t: 0,  top: '#0b1230', bot: '#1a2342', mix: 0.92, sun: '#8fa8ff', sunI: 0.12, amb: 0.22, stars: 1 },
+    { t: 6,  top: '#f4b46a', bot: '#ffe4b8', mix: 0.55, sun: '#ffd9a8', sunI: 0.75, amb: 0.5,  stars: 0 },
+    { t: 12, top: '',        bot: '',        mix: 0,    sun: '#ffffff', sunI: 1.05, amb: 0.6,  stars: 0 },
+    { t: 18, top: '#f4844d', bot: '#ffd2a0', mix: 0.6,  sun: '#ffb066', sunI: 0.6,  amb: 0.45, stars: 0 },
+    { t: 24, top: '#0b1230', bot: '#1a2342', mix: 0.92, sun: '#8fa8ff', sunI: 0.12, amb: 0.22, stars: 1 }
+  ];
+
+  var _colScratchA = null;
+  var _colScratchB = null;
+  var _colScratchC = null;
+  function ensureColScratch() {
+    if (!_colScratchA) {
+      _colScratchA = new THREE.Color();
+      _colScratchB = new THREE.Color();
+      _colScratchC = new THREE.Color();
+    }
+  }
+
+  /** Interpola os keyframes na hora t e devolve o preset misturado (objeto reusado). */
+  var _atmo = { top: '', bot: '', sunI: 1, amb: 0.6, stars: 0, sun: '#ffffff', fog: '' };
+  function atmosphereAt(t) {
+    var st = styleOf();
+    var a = DAY_KEYS[0];
+    var b = DAY_KEYS[DAY_KEYS.length - 1];
+    for (var i = 0; i < DAY_KEYS.length - 1; i++) {
+      if (t >= DAY_KEYS[i].t && t <= DAY_KEYS[i + 1].t) {
+        a = DAY_KEYS[i];
+        b = DAY_KEYS[i + 1];
+        break;
+      }
+    }
+    var k = (t - a.t) / Math.max(0.001, b.t - a.t);
+    ensureColScratch();
+    // Céu: cor do ESTILO puxada para o tint do keyframe (mix interpola junto).
+    var mixA = a.mix;
+    var mixB = b.mix;
+    var mix = mixA + (mixB - mixA) * k;
+    _colScratchA.set(st.skyTop);
+    _colScratchB.set(a.top || st.skyTop);
+    _colScratchC.set(b.top || st.skyTop);
+    _colScratchB.lerp(_colScratchC, k);
+    _colScratchA.lerp(_colScratchB, mix);
+    _atmo.top = '#' + _colScratchA.getHexString();
+    _colScratchA.set(st.skyBot);
+    _colScratchB.set(a.bot || st.skyBot);
+    _colScratchC.set(b.bot || st.skyBot);
+    _colScratchB.lerp(_colScratchC, k);
+    _colScratchA.lerp(_colScratchB, mix);
+    _atmo.bot = '#' + _colScratchA.getHexString();
+    // Névoa acompanha o horizonte (o mundo escurece junto).
+    _colScratchA.set(st.fog);
+    _colScratchB.set(a.top || st.fog);
+    _colScratchC.set(b.top || st.fog);
+    _colScratchB.lerp(_colScratchC, k);
+    _colScratchA.lerp(_colScratchB, mix * 0.8);
+    _atmo.fog = '#' + _colScratchA.getHexString();
+    _colScratchB.set(a.sun);
+    _colScratchC.set(b.sun);
+    _colScratchB.lerp(_colScratchC, k);
+    _atmo.sun = '#' + _colScratchB.getHexString();
+    _atmo.sunI = a.sunI + (b.sunI - a.sunI) * k;
+    _atmo.amb = a.amb + (b.amb - a.amb) * k;
+    _atmo.stars = a.stars + (b.stars - a.stars) * k;
+    return _atmo;
+  }
+
+  /** Redesenha o degradê do céu NA MESMA textura (barato: canvas 2×256). */
+  function drawSky(top, bot) {
+    if (!scene) return;
+    try {
+      if (!_skyCanvas) {
+        _skyCanvas = document.createElement('canvas');
+        _skyCanvas.width = 2;
+        _skyCanvas.height = 256;
+      }
+      var g = _skyCanvas.getContext('2d');
+      if (!g) return;
+      var grad = g.createLinearGradient(0, 0, 0, 256);
+      grad.addColorStop(0, top);
+      grad.addColorStop(1, bot);
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 2, 256);
+      if (skyTex && skyTex.image === _skyCanvas) {
+        skyTex.needsUpdate = true;
+      } else {
+        if (skyTex && skyTex.dispose) { try { skyTex.dispose(); } catch (e) {} }
+        skyTex = new THREE.CanvasTexture(_skyCanvas);
+        scene.background = skyTex;
+      }
+    } catch (e) {}
+  }
+
+  function ensureStars() {
+    if (starsMesh || !scene) return;
+    try {
+      var N = 350;
+      var rng = mulberry(99);
+      var posArr = new Float32Array(N * 3);
+      var R = Math.max(300, config.world * 2);
+      for (var i = 0; i < N; i++) {
+        var az = rng() * Math.PI * 2;
+        var el = 0.12 + rng() * 1.35;
+        posArr[i * 3] = Math.cos(az) * Math.cos(el) * R;
+        posArr[i * 3 + 1] = Math.sin(el) * R;
+        posArr[i * 3 + 2] = Math.sin(az) * Math.cos(el) * R;
+      }
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+      starsMat = new THREE.PointsMaterial({
+        color: '#ffffff',
+        size: 2.2,
+        sizeAttenuation: false,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false
+      });
+      starsMesh = new THREE.Points(geo, starsMat);
+      starsMesh.frustumCulled = false;
+      scene.add(starsMesh);
+    } catch (e) {}
+  }
+
+  /** Aplica a atmosfera da hora atual (céu/sol/ambiente/névoa/estrelas). */
+  function applyAtmosphere() {
+    if (!worldReady) return;
+    var a = atmosphereAt(timeOfDay);
+    // O degradê só redesenha quando a hora andou o bastante (barato mesmo assim).
+    if (Math.abs(timeOfDay - _skyDrawnAt) > 0.05) {
+      _skyDrawnAt = timeOfDay;
+      drawSky(a.top, a.bot);
+      if (scene.fog && scene.fog.color) { try { scene.fog.color.set(a.fog); } catch (e) {} }
+      if (sunLight) {
+        sunLight.intensity = a.sunI;
+        try { sunLight.color.set(a.sun); } catch (e) {}
+      }
+      if (ambientLight) ambientLight.intensity = a.amb;
+    }
+    if (a.stars > 0.01) {
+      ensureStars();
+      if (starsMat) starsMat.opacity = a.stars;
+      if (starsMesh && carState) starsMesh.position.set(carState.x, 0, carState.z);
+    } else if (starsMat) {
+      starsMat.opacity = 0;
+    }
+    // Ganchos dia/noite (dia = 6h..18h), disparo só na TRANSIÇÃO.
+    var phase = timeOfDay >= 6 && timeOfDay < 18 ? 'dia' : 'noite';
+    if (_lastDayPhase && phase !== _lastDayPhase) {
+      var hooks = dayNightHooks[phase] || [];
+      for (var i = 0; i < hooks.length; i++) {
+        try { hooks[i](); } catch (e) {
+          warnOnce('hook-day-' + phase + '-' + i, 'erro no "Quando virar ' + phase + '": ' + e);
+        }
+      }
+    }
+    _lastDayPhase = phase;
+  }
+
+  function stepDayNight(dt) {
+    if (!dayCfg.on) return;
+    var daySecs = Math.max(10, dayCfg.minutes * 60);
+    timeOfDay = (timeOfDay + (dt / daySecs) * 24) % 24;
+    applyAtmosphere();
+  }
+
+  // ---- Clima (chuva/neve/folhas: UM Points num cilindro ao redor do carro) ----
+
+  function ensureSpriteTex() {
+    if (spriteTex) return spriteTex;
+    try {
+      var cv = document.createElement('canvas');
+      cv.width = 32;
+      cv.height = 32;
+      var g = cv.getContext('2d');
+      if (!g) return null;
+      var grad = g.createRadialGradient(16, 16, 2, 16, 16, 15);
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 32, 32);
+      spriteTex = new THREE.CanvasTexture(cv);
+    } catch (e) {
+      spriteTex = null;
+    }
+    return spriteTex;
+  }
+
+  var WEATHER_KINDS = {
+    chuva:  { color: '#9fb4cc', size: 1.1, vy: -24, drift: 2, n: 900 },
+    neve:   { color: '#ffffff', size: 1.6, vy: -2.4, drift: 1.6, n: 700 },
+    folhas: { color: '#d9822b', size: 1.8, vy: -1.4, drift: 3.2, n: 350 }
+  };
+  var WEATHER_R = 42;   // raio do cilindro que segue o carro
+  var WEATHER_H = 26;   // altura de reciclagem
+
+  function disposeWeather() {
+    if (!weatherPts) return;
+    try {
+      if (scene) scene.remove(weatherPts.mesh);
+      if (weatherPts.geo && weatherPts.geo.dispose) weatherPts.geo.dispose();
+      if (weatherPts.mat && weatherPts.mat.dispose) weatherPts.mat.dispose();
+    } catch (e) {}
+    weatherPts = null;
+  }
+
+  function buildWeather() {
+    disposeWeather();
+    if (!scene || weatherKind === 'limpo') return;
+    var spec = WEATHER_KINDS[weatherKind];
+    if (!spec) return;
+    var n = quality.tier === 'turbo' ? Math.round(spec.n / 3) : spec.n;
+    var rng = mulberry(555);
+    var posArr = new Float32Array(n * 3);
+    var vel = new Float32Array(n * 2); // fase de deriva + velocidade própria
+    var cx = carState ? carState.x : 0;
+    var cz = carState ? carState.z : 0;
+    for (var i = 0; i < n; i++) {
+      posArr[i * 3] = cx + (rng() * 2 - 1) * WEATHER_R;
+      posArr[i * 3 + 1] = rng() * WEATHER_H;
+      posArr[i * 3 + 2] = cz + (rng() * 2 - 1) * WEATHER_R;
+      vel[i * 2] = rng() * Math.PI * 2;      // fase
+      vel[i * 2 + 1] = 0.6 + rng() * 0.8;    // multiplicador de queda
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+    var mat = new THREE.PointsMaterial({
+      color: spec.color,
+      size: spec.size,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false
+    });
+    var tex = ensureSpriteTex();
+    if (tex) mat.map = tex;
+    var mesh = new THREE.Points(geo, mat);
+    mesh.frustumCulled = false;
+    scene.add(mesh);
+    weatherPts = { mesh: mesh, mat: mat, geo: geo, pos: posArr, vel: vel, n: n, spec: spec };
+  }
+
+  function stepWeather(dt) {
+    if (!weatherPts) return;
+    var p = weatherPts;
+    var cx = carState ? carState.x : 0;
+    var cz = carState ? carState.z : 0;
+    var t = playTime;
+    for (var i = 0; i < p.n; i++) {
+      var ix = i * 3;
+      p.pos[ix + 1] += p.spec.vy * p.vel[i * 2 + 1] * dt;
+      var phase = p.vel[i * 2];
+      p.pos[ix] += Math.sin(t * 1.3 + phase) * p.spec.drift * wind * dt;
+      p.pos[ix + 2] += Math.cos(t * 1.1 + phase) * p.spec.drift * wind * 0.7 * dt;
+      // Recicla: caiu no chão OU saiu do cilindro → volta pelo topo, perto do carro.
+      var gy = 0;
+      if (p.pos[ix + 1] < (gy = heightAt(p.pos[ix], p.pos[ix + 2]))) {
+        p.pos[ix] = cx + (Math.random() * 2 - 1) * WEATHER_R;
+        p.pos[ix + 1] = gy + WEATHER_H * (0.7 + Math.random() * 0.3);
+        p.pos[ix + 2] = cz + (Math.random() * 2 - 1) * WEATHER_R;
+      } else {
+        if (p.pos[ix] < cx - WEATHER_R) p.pos[ix] += WEATHER_R * 2;
+        else if (p.pos[ix] > cx + WEATHER_R) p.pos[ix] -= WEATHER_R * 2;
+        if (p.pos[ix + 2] < cz - WEATHER_R) p.pos[ix + 2] += WEATHER_R * 2;
+        else if (p.pos[ix + 2] > cz + WEATHER_R) p.pos[ix + 2] -= WEATHER_R * 2;
+      }
+    }
+    if (p.geo.attributes.position) p.geo.attributes.position.needsUpdate = true;
+  }
+
   /** Modo turbo: menos grama, sombra menor, sem composer (o gate no renderFrame). */
   function applyTurbo() {
     if (quality.tier === 'turbo') return;
@@ -1254,6 +1543,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       } catch (e) {}
     }
     if (grassMesh) buildGrass();
+    if (weatherPts) buildWeather();
   }
 
   // ---- Teclas (com apelidos em português) ----
@@ -1433,6 +1723,11 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (grassCfg) buildGrass();
 
       worldReady = true;
+      if (atmoUsed) {
+        _skyDrawnAt = -1;
+        applyAtmosphere();
+      }
+      if (weatherKind !== 'limpo') buildWeather();
       return true;
     } catch (e) {
       warn('não consegui montar o mundo 3D: ' + e);
@@ -1837,6 +2132,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
 
     stepCar(dt);
+    stepDayNight(dt);
+    stepWeather(dt);
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
         warnOnce('hook-update-' + i, 'erro no "A cada quadro": ' + e);
@@ -1914,6 +2211,8 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (skyTex && skyTex.dispose) { try { skyTex.dispose(); } catch (e) {} }
       if (gradientTex && gradientTex.dispose) { try { gradientTex.dispose(); } catch (e) {} }
       if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
+      if (spriteTex && spriteTex.dispose) { try { spriteTex.dispose(); } catch (e) {} }
+      disposeWeather();
       disposeComposer();
       if (stageEl && stageEl.parentNode) { try { stageEl.parentNode.removeChild(stageEl); } catch (e) {} }
       if (styleEl && styleEl.parentNode) { try { styleEl.parentNode.removeChild(styleEl); } catch (e) {} }
@@ -1935,6 +2234,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     grassMesh = null;
     grassMat = null;
     heightTex = null;
+    starsMesh = null;
+    starsMat = null;
+    spriteTex = null;
+    weatherPts = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -2099,6 +2402,55 @@ export const world3DRuntime = `import * as THREE from 'three';
     clearArea: guard('clearArea', function (x, z, r) {
       exclusions.push({ x: num(x, 0), z: num(z, 0), r: clamp(num(r, 10), 1, 200) });
     }),
+    // 🌦️ Céu & clima
+    dayNight: guard('dayNight', function (minutes) {
+      dayCfg.on = true;
+      dayCfg.minutes = clamp(num(minutes, 4), 0.5, 60);
+      atmoUsed = true;
+      if (worldReady) {
+        _skyDrawnAt = -1;
+        applyAtmosphere();
+      }
+    }),
+    setTime: guard('setTime', function (name) {
+      var map = { manha: 9, meiodia: 12, entardecer: 17.5, noite: 0 };
+      var t = map[text(name, '')];
+      if (t == null) {
+        warn('não conheço a hora "' + text(name, '') + '" — tem: manha, meiodia, entardecer, noite');
+        return;
+      }
+      timeOfDay = t;
+      atmoUsed = true;
+      if (worldReady) {
+        _skyDrawnAt = -1;
+        applyAtmosphere();
+      }
+    }),
+    weather: guard('weather', function (kind) {
+      var k = text(kind, 'limpo');
+      if (k !== 'limpo' && !WEATHER_KINDS[k]) {
+        warn('não conheço o clima "' + k + '" — tem: limpo, chuva, neve, folhas');
+        return;
+      }
+      weatherKind = k;
+      if (worldReady) buildWeather();
+    }),
+    setWind: guard('setWind', function (force) {
+      wind = clamp(num(force, 1), 0, 5);
+    }),
+    onDayNight: guard('onDayNight', function (when, fn) {
+      var w = text(when, 'noite');
+      if (w !== 'dia' && w !== 'noite') w = 'noite';
+      if (typeof fn !== 'function') {
+        warn('"Quando virar ' + w + '" precisa de blocos de fazer dentro');
+        return;
+      }
+      dayNightHooks[w].push(fn);
+    }),
+    timeOfDay: guard('timeOfDay', function () {
+      return timeOfDay;
+    }),
+
     grass: guard('grass', function (amount) {
       var a = text(amount, 'media');
       if (!GRASS_COUNTS[a]) a = 'media';
