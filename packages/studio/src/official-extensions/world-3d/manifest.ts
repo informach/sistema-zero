@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '0.5.0',
+  version: '0.6.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -124,6 +124,26 @@ O que o motor já faz por você:
   grama E o clima.
 - **Quando virar dia/noite** — o gancho da virada: acenda os totens à noite!
 - **a hora do mundo (0 a 24)** — para as SUAS regras de horário.
+
+### 📍 Pontos & placas
+
+- **Criar o ponto interativo … em x z** — marca um lugar com um pilar
+  brilhante e um apelido. Chegando perto, aparece um "E" na tela.
+- **Quando apertar E no ponto …** — roda os blocos de dentro quando o
+  carrinho está perto e a criança aperta E (abrir placa, começar corrida).
+- **Criar a área mágica … / Quando entrar na área …** — um círculo invisível
+  que dispara sozinho quando o carrinho ENTRA (checkpoints, armadilhas).
+- **Pôr um totem … com título e texto** — uma placa de madeira com um
+  recadinho (a apresentação do seu mundo).
+- **Pôr um quadro … com a imagem …** — pendura uma imagem do projeto numa
+  moldura, em pé no mundo.
+
+### 🖼️ Galeria
+
+- **Criar a galeria de projetos …** — uma praça de exposição (aplaina o chão
+  e põe um totem-título).
+- **Pendurar a imagem … com a legenda …** — pendura as imagens num arco;
+  cada quadro ganha um "E: ver" que abre a imagem grande.
 
 ### 🎥 Câmera & efeitos
 

@@ -77,6 +77,15 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.loadSound(apelido, asset)\` / \`playSound(apelido)\` / \`playMusic(apelido)\` (loop) / \`stopMusic()\` — sons/música do projeto.
 - \`SZWorld3D.hud(texto, 'topo-esquerda'|'topo-direita'|'baixo-esquerda'|'baixo-direita')\` — texto fixo num canto (vazio apaga).
 - \`SZWorld3D.say(texto, segundos)\` — balão de fala sobre o carro.
+- \`SZWorld3D.point(nome, x, z)\` — ponto interativo (pilar + badge 'E').
+  \`SZWorld3D.onPoint(nome, function () { ... })\` — aperte E perto do ponto.
+- \`SZWorld3D.zone(nome, x, z, raio)\` — área invisível.
+  \`SZWorld3D.onZone(nome, function () { ... })\` — dispara ao ENTRAR (1×/entrada).
+- \`SZWorld3D.totemText(x, z, titulo, texto)\` — placa de madeira.
+- \`SZWorld3D.totemImage(x, z, nomeDaImagem, largura)\` — quadro com imagem do
+  projeto.
+- \`SZWorld3D.galleryCreate(x, z, titulo)\` + \`SZWorld3D.galleryAdd(nomeDaImagem, legenda)\`
+  — praça de exposição; cada quadro abre num overlay de zoom com 'E: ver'.
 - \`SZWorld3D.onUpdate(function (dt) { ... })\` — gancho por quadro; dt em
   segundos, clampado em 1/30.
 - \`SZWorld3D.keyDown(tecla)\` / \`SZWorld3D.keyPressed(tecla)\` → boolean.
@@ -88,7 +97,7 @@ SZWorld3D.start(); // SEMPRE por último
   runtime parseia o ArrayBuffer; nada de carregar por URL).
 - Sem Rapier/física de biblioteca: o carro é arcade na unha do motor.
 - Sem menu/pausa/vidas: não é um jogo de fases, é um mundo.
-- Pontos interativos, corrida, boliche e galeria chegam em versões futuras da
-  extensão — se os blocos não estão na paleta, o método não existe ainda.
+- Corrida e boliche chegam em versões futuras da extensão — se os blocos não
+  estão na paleta, o método não existe ainda.
 - Use APENAS UMA extensão de jogo/mundo por projeto (brigam pelo canvas).
 `
