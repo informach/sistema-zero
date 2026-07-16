@@ -90,13 +90,14 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var sunLight = null;                    // sol direcional (initWorld)
   var extraLights = [];                   // luzes pontuais adicionadas (addLight)
   var decor = [];
+  var _decorMat = null;                   // material do cristal, compartilhado
   var currentDt = 0;
   var playTime = 0;
   var totalAlive = 0;                    // entidades vivas (todos os moldes)
   var entityLimitWarned = false;
   var _currentMold = null;               // contexto de montagem do defineMold
   // Câmera viva: um MODO por vez (órbita arrastável / seguir / topo).
-  var camMode = { kind: 'orbit', target: null, dist: 25, height: 4, pivot: null };
+  var camMode = { kind: 'orbit', target: null, dist: 25, height: 4, pivot: null, pivotGen: 0, targetGen: 0 };
   var orbit = null;
   var camSmooth = 3;   // suavidade do seguir (era literal); maior = mais colada
   var _shakeT = 0;     // segundos restantes de tremor
@@ -433,11 +434,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       for (var pk in pools) releaseAll(pools[pk]);
       for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
       resetParticles();
-      // Recomeço limpa o que sobrou da partida anterior: balão de fala pendurado
-      // e cronômetro correndo atravessariam para o jogo novo.
+      // Recomeço limpa o que sobrou da partida anterior: balão de fala pendurado,
+      // cronômetro correndo e tremor pendente atravessariam para o jogo novo.
       clearSays();
       _timer.on = false;
       _timer.left = 0;
+      _shakeT = 0;
     }
     var hooks = enterStateHooks[n];
     if (hooks) {
@@ -618,6 +620,15 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     // sua — até 64 geometrias à toa). São liberadas no disposeAll (UNIT_GEOS).
     var rockGeo = unitGeo('rock');
     var crystalGeo = unitGeo('crystal');
+    // O cristal é UM material só (todos usam o accent) — antes cada um dos ~32
+    // alocava um idêntico à toa. A pedra mantém o material próprio: a variação de
+    // cinza por pedra é de propósito. Compartilhado sai no _decorMat (disposeAll).
+    var crystalMat = new THREE.MeshStandardMaterial({ color: config.accent });
+    if (crystalMat.emissive && crystalMat.emissive.set) {
+      crystalMat.emissive.set(config.accent);
+      crystalMat.emissiveIntensity = 0.25;
+    }
+    _decorMat = crystalMat;
     for (var i = 0; i < n; i++) {
       var isRock = i % 2 === 0;
       var geo = isRock ? rockGeo : crystalGeo;
@@ -626,11 +637,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         var shade = 90 + Math.floor(rand() * 60);
         mat = new THREE.MeshStandardMaterial({ color: 'rgb(' + shade + ', ' + shade + ', ' + (shade + 8) + ')' });
       } else {
-        mat = new THREE.MeshStandardMaterial({ color: config.accent });
-        if (mat.emissive && mat.emissive.set) {
-          mat.emissive.set(config.accent);
-          mat.emissiveIntensity = 0.25;
-        }
+        mat = crystalMat;
       }
       var mesh = new THREE.Mesh(geo, mat);
       var ang = rand() * Math.PI * 2;
@@ -639,8 +646,15 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       mesh.scale.set(s, isRock ? s * 0.7 : s * 1.6, s);
       mesh.position.set(Math.cos(ang) * dist, (isRock ? s * 0.35 : s * 0.8), Math.sin(ang) * dist);
       mesh.rotation.y = rand() * Math.PI * 2;
-      mesh.castShadow = true;
+      // ⭐ Enfeite NÃO projeta sombra: é cenário. O passe de sombra roda sobre o
+      // playfield inteiro (não é cortado pelo frustum da câmera), então cada
+      // enfeite que projetava dobrava a si mesmo lá — até 64 desenhos à toa.
+      mesh.castShadow = false;
       mesh.receiveShadow = true;
+      // Enfeite não anda: congela a matriz (o mesmo ganho do estático das
+      // entidades, aqui direto porque não passa pelo stepEntity).
+      mesh.updateMatrix();
+      mesh.matrixAutoUpdate = false;
       scene.add(mesh);
       decor.push(mesh);
     }
@@ -1077,6 +1091,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       return;
     }
     var mold = {
+      name: k,
       health: Math.max(1, num(o.health, 30)),
       speed: num(o.speed, 3),
       template: group,
@@ -1249,7 +1264,13 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         mesh = new THREE.Group();
         var holder = mesh;
         // O molde ANOTA de qual modelo ele é feito: o spawn precisa saber para
-        // clonar com esqueleto (SkeletonUtils) e montar o mixer da entidade.
+        // clonar com esqueleto (SkeletonUtils) e montar o mixer da entidade. Só
+        // UM modelo animado por molde: com dois, o mixer usaria os clipes de um
+        // e o aviso de "animação não existe" MENTIRIA (a animação existe, só é do
+        // outro modelo). Avisa na hora certa em vez de enganar depois.
+        if (mold.model && mold.model !== text(o.model, '')) {
+          warnOnce('twomodel:' + mold.name, 'o molde "' + mold.name + '" tem mais de um modelo (.glb); a animação usa só o último ("' + text(o.model, '') + '")');
+        }
         mold.model = text(o.model, '');
         var ready = loadModel(o.model, function (hit) {
           try {
@@ -1370,17 +1391,25 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (!e) {
       e = blankEntity();
       try {
-        // clone() compartilha geometria e material — nascer não aloca GPU.
-        e.mesh = m.template.clone();
+        // cloneModel compartilha geometria e material (nascer não aloca GPU) E,
+        // ⭐ quando há SkinnedMesh, REAMARRA o esqueleto aos ossos deste clone.
+        // O clone comum do Object3D compartilha o esqueleto por referência: o
+        // mixer da entidade animaria os ossos do CLONE enquanto a malha deforma
+        // pelos ossos do TEMPLATE, que ninguém move — todo boneco rigado ficava
+        // parado em bind pose, sem um aviso. Molde só de peças cai no clone comum
+        // (sem SkeletonUtils) e não paga nada.
+        e.mesh = cloneModel(m.template);
       } catch (err) {
         warn('não consegui fazer nascer do molde "' + k + '": ' + err);
         return null;
       }
-      scene.add(e.mesh);
       // Ponte mesh→entidade para o raycast (clicar/mirar devolve a entidade).
       if (e.mesh.userData) e.mesh.userData.szEntity = e;
       else e.mesh.userData = { szEntity: e };
     }
+    // Entra (ou volta) para a cena — o recycle removeu ao recolher. scene.add num
+    // filho que já está lá é no-op, então nascer de novo sem recolher é seguro.
+    if (scene && e.mesh.parent !== scene) scene.add(e.mesh);
     e.mesh.visible = true;
     e.mesh.position.set(num(x, 0), num(y, 0), num(z, 0));
     e.mesh.rotation.set(0, 0, 0);
@@ -1452,7 +1481,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (e._mixer) stopAnim(e);
     e._alive = false;
     e._iFrames = 0;
-    if (e.mesh) e.mesh.visible = false;
+    // SAI da cena (não só invisível). Recolhido, o mesh continuava sendo
+    // percorrido pelo updateMatrixWorld, pelo projectObject do renderer e pelo
+    // raycast do pick — um enxame morto pesava por nada. O spawn re-adiciona.
+    if (e.mesh && scene) scene.remove(e.mesh);
     gridRemove(e);
     totalAlive = Math.max(0, totalAlive - 1);
     var pool = pools[e._mold];
@@ -1482,9 +1514,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     for (var i = 0; i < pool.active.length; i++) {
       var e = pool.active[i];
       if (e._alive) totalAlive = Math.max(0, totalAlive - 1);
+      if (e._mixer) stopAnim(e);
       e._alive = false;
       e._iFrames = 0;
-      if (e.mesh) e.mesh.visible = false;
+      if (e.mesh && scene) scene.remove(e.mesh);
       gridRemove(e);
       pool.free.push(e);
     }
@@ -2023,8 +2056,20 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     // da entidade e o relógio que a criança lê.
     if (!e.vx && !e.vy && !e.vz && !e.gravity && !e._ride && e._iFrames <= 0) {
       e._dx = 0; e._dy = 0; e._dz = 0;
+      // ⭐ Congela a matriz de quem está parado: um molde sólido (parede, moeda,
+      // enfeite) não muda de transform, então recompô-la todo quadro é puro
+      // desperdício. Assa UMA vez, na transição para estático (o guard do
+      // matrixAutoUpdate), senão a matriz ficaria na identidade e a coisa
+      // renderizaria na ORIGEM. Um setter que mexa depois (place/setYaw/lookAt/
+      // aimAt) chama updateMatrix por conta própria — ver markStaticMoved.
+      if (e.mesh && e.mesh.matrixAutoUpdate) {
+        e.mesh.updateMatrix();
+        e.mesh.matrixAutoUpdate = false;
+      }
       return;
     }
+    // Voltou a se mexer: re-arma o auto-update (senão a matriz ficaria congelada).
+    if (e.mesh && !e.mesh.matrixAutoUpdate) e.mesh.matrixAutoUpdate = true;
     var wasGrounded = e.grounded;
     // 3. Gravidade própria (se ligada): puxa antes de integrar (semi-implícito).
     if (e.gravity) e.vy += e.gravity * dt;
@@ -2284,6 +2329,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     var lambda = Math.max(0.1, num(smooth, 8));
     var t = 1 - Math.exp(-lambda * currentDt);
     who.mesh.quaternion.slerp(_tq1, t);
+    touchStatic(who);
   }
 
   /** "Já mirou?" da torre: frente · direção-do-alvo > 0.999. */
@@ -2300,10 +2346,23 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     return _tv1.dot(_tv2) > 0.999;
   }
 
+  /**
+   * Recompõe a matriz AGORA se ela está congelada (entidade estática). Todo
+   * setter que escreve a transform de uma entidade que pode estar parada
+   * (place/setYaw/lookAt/aimAt) chama isto — senão o congelamento do stepEntity
+   * engoliria o movimento em silêncio (a coisa mudava de posição por dentro e não
+   * na tela). updateMatrix marca matrixWorldNeedsUpdate, então o render seguinte
+   * recompõe o matrixWorld mesmo com o auto-update desligado.
+   */
+  function touchStatic(e) {
+    if (e && e.mesh && e.mesh.matrixAutoUpdate === false) e.mesh.updateMatrix();
+  }
+
   function faceVelocity(e) {
     if (!isEntity(e)) return;
     if (Math.abs(e.vx) < 0.000001 && Math.abs(e.vz) < 0.000001) return;
     e.mesh.rotation.set(0, Math.atan2(e.vx, e.vz), 0);
+    touchStatic(e);
   }
 
   function moveForward(e, speed) {
@@ -2318,6 +2377,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   function lookAt(who, target) {
     if (!isEntity(who) || !isEntity(target)) return;
     who.mesh.lookAt(target.mesh.position.x, who.mesh.position.y, target.mesh.position.z);
+    touchStatic(who);
   }
 
   function distanceBetween(a, b) {
@@ -3309,7 +3369,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   // ---- Câmera viva (um modo por vez) ----
 
   function setOrbit(dist) {
-    camMode = { kind: 'orbit', target: null, dist: Math.max(2, num(dist, 25)), height: 0, pivot: camMode.pivot };
+    camMode = { kind: 'orbit', target: null, dist: Math.max(2, num(dist, 25)), height: 0, pivot: camMode.pivot, pivotGen: camMode.pivotGen };
     if (!orbit) {
       var st = { az: 0.7, el: 0.5, dist: camMode.dist, dragging: false, px: 0, py: 0 };
       orbit = st;
@@ -3380,7 +3440,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
    * num mundo grande, a criança não tinha como olhar para longe da origem.
    */
   function cameraLookAt(target) {
-    if (isEntity(target)) { camMode.pivot = target; return; }
+    if (isEntity(target)) { camMode.pivot = target; camMode.pivotGen = target._gen; return; }
     camMode.pivot = null;
   }
   function cameraLookAtPoint(x, y, z) {
@@ -3391,12 +3451,23 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     camSmooth = Math.max(0.1, num(lambda, 3));
   }
 
-  /** O ponto que a câmera olha: entidade viva, ponto fixo, ou a origem. */
+  /**
+   * A entidade-alvo da câmera ainda é ELA MESMA? ⭐ o isEntity só olha _alive,
+   * mas o pool REUSA o slot: o chefão morre, uma fábrica faz nascer outro do
+   * mesmo molde, o slot volta vivo com _gen novo — e a câmera passaria a orbitar
+   * o estranho em vez de voltar ao centro. A marca de geração é o mesmo latch que
+   * o balão de fala (says) e a carona (_ride) já usam.
+   */
+  function sameCamEntity(e, gen) {
+    return isEntity(e) && e._gen === gen;
+  }
+
+  /** O ponto que a câmera olha: entidade viva (a MESMA), ponto fixo, ou a origem. */
   function pivotInto(v) {
     var p = camMode.pivot;
     if (p && p.mesh) {
-      if (isEntity(p)) { v.set(p.mesh.position.x, p.mesh.position.y, p.mesh.position.z); return; }
-      camMode.pivot = null; // o alvo morreu: volta à origem
+      if (sameCamEntity(p, camMode.pivotGen)) { v.set(p.mesh.position.x, p.mesh.position.y, p.mesh.position.z); return; }
+      camMode.pivot = null; // o alvo morreu (ou o slot virou outro): volta à origem
       v.set(0, 0, 0);
       return;
     }
@@ -3408,9 +3479,16 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
    * Tremor: offset DEPOIS de posicionar, para não corromper o camMode (senão o
    * lerp do seguir perseguiria a própria tremedeira). Usa rand(), então a semente
    * continua valendo — mesma partida, mesmo tremor.
+   *
+   * ⚠️ O return quando dt<=0 é LOAD-BEARING: o updateCamera roda em TODO estado
+   * com dt=0 fora do jogo (pausa/fim/menu). Sem esta guarda, (1) o _shakeT nunca
+   * decai → a tela de fim VIBRA para sempre, e (2) os 3 rand() por
+   * quadro queimariam o gerador semeado enquanto pausado — e o tempo de pausa é
+   * relógio de parede, então a MESMA semente daria partidas diferentes. Congelar
+   * o tremor na pausa é coerente com "a pausa congela o mundo".
    */
   function applyShake(dt) {
-    if (_shakeT <= 0) return;
+    if (dt <= 0 || _shakeT <= 0) return;
     _shakeT -= dt;
     if (_shakeT < 0) _shakeT = 0;
     var k = _shakeAmp * (_shakeT / _shakeMax); // decai até sumir
@@ -3508,6 +3586,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     camMode = {
       kind: 'fps',
       target: e,
+      targetGen: e._gen,
       dist: 0,
       height: h,
       yaw: e.mesh ? e.mesh.rotation.y : 0,
@@ -3554,7 +3633,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (!camera) return;
     if (camMode.kind === 'fps') {
       var f = camMode.target;
-      if (!isEntity(f)) return;
+      if (!sameCamEntity(f, camMode.targetGen)) return;
       var px = f.mesh.position.x;
       var py = f.mesh.position.y + camMode.height;
       var pz = f.mesh.position.z;
@@ -3595,7 +3674,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     }
     if (camMode.kind === 'follow') {
       var t = camMode.target;
-      if (!isEntity(t)) return;
+      if (!sameCamEntity(t, camMode.targetGen)) return;
       // Atrás do alvo (pela frente dele) com amortecimento exponencial.
       _tv1.set(0, 0, 1).applyQuaternion(t.mesh.quaternion);
       _tv1.y = 0;
@@ -3653,9 +3732,11 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
     }
     updateCamera(state === 'jogando' ? dt : 0);
-    // Depois da câmera (a projeção precisa dela já posicionada) e com dt=0 fora do
-    // jogo: na pausa o balão FICA na tela, mas não gasta o tempo dele.
-    stepSays(state === 'jogando' ? dt : 0);
+    // Depois da câmera (a projeção precisa dela já posicionada). Só a PAUSA
+    // congela o balão (fica na tela sem gastar o tempo); no 'fim'/'menu' ele
+    // segue contando e some — senão uma fala em andamento na hora da morte
+    // ficava pendurada para sempre na tela de game over.
+    stepSays(state === 'pausado' ? 0 : dt);
     try {
       renderFrame();
     } catch (e) {
@@ -3862,24 +3943,31 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
    * jogo".
    */
   var _music = null;
+  var _musicName = '';
   function playMusic(name) {
     var k = text(name, '');
-    var a = sounds[k];
-    if (!a) { warnOnce('mus:' + k, 'a música "' + k + '" não está no projeto (importe em "Imagens e sons")'); return; }
-    if (_music === a) return; // já é esta: não recomeça do zero
+    var src = sounds[k];
+    if (!src) { warnOnce('mus:' + k, 'a música "' + k + '" não está no projeto (importe em "Imagens e sons")'); return; }
+    if (_musicName === k && _music) return; // já é esta: não recomeça do zero
     stopMusic();
-    _music = a;
+    // ⭐ Audio PRÓPRIO, não o do sounds[]. O mapa sounds[] é dividido com o
+    // playSound (efeito): reusar o MESMO elemento fazia o efeito de moeda que
+    // usa o mesmo arquivo REINICIAR a música do começo, e o loop=true da música
+    // vazava para o efeito. Uma faixa só, separada dos efeitos.
     try {
-      a.loop = true;
-      a.currentTime = 0;
-      var pr = a.play();
+      _music = new Audio(src.src);
+      _musicName = k;
+      _music.loop = true;
+      var pr = _music.play();
       if (pr && pr.catch) pr.catch(function () {});
-    } catch (e) {}
+    } catch (e) { _music = null; _musicName = ''; }
   }
   function stopMusic() {
-    if (!_music) return;
-    try { _music.pause(); _music.currentTime = 0; _music.loop = false; } catch (e) {}
+    if (_music) {
+      try { _music.pause(); } catch (e) {}
+    }
     _music = null;
+    _musicName = '';
   }
 
   var _audioCtx = null;
@@ -3963,6 +4051,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (disposed) return;
     disposed = true;
     try {
+      // A música é um Audio próprio (fora da cena) — o teardown do renderer não a
+      // alcança. Sem isto ela seguiria tocando na janela do bfcache.
+      stopMusic();
       if (renderer) {
         renderer.setAnimationLoop(null);
         try { renderer.dispose(); } catch (e) {}
@@ -4108,7 +4199,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         warn('"Câmera: seguir" precisa de uma entidade');
         return;
       }
-      camMode = { kind: 'follow', target: e, dist: Math.max(1, num(dist, 8)), height: num(height, 4), pivot: camMode.pivot };
+      camMode = { kind: 'follow', target: e, targetGen: e._gen, dist: Math.max(1, num(dist, 8)), height: num(height, 4), pivot: camMode.pivot, pivotGen: camMode.pivotGen };
     }),
     cameraOrbit: guard('cameraOrbit', function (dist) { setOrbit(dist); }),
     cameraAngle: guard('cameraAngle', cameraAngle),
@@ -4119,17 +4210,19 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     cameraLookAtPoint: guard('cameraLookAtPoint', cameraLookAtPoint),
     cameraSmooth: guard('cameraSmooth', cameraSmooth),
     cameraTop: guard('cameraTop', function (height) {
-      camMode = { kind: 'top', target: null, dist: 0, height: Math.max(4, num(height, 40)), pivot: camMode.pivot };
+      camMode = { kind: 'top', target: null, dist: 0, height: Math.max(4, num(height, 40)), pivot: camMode.pivot, pivotGen: camMode.pivotGen };
     }),
     // 🤖 Entidades
     place: guard('place', function (e, x, y, z) {
       if (!isEntity(e)) return;
       e.mesh.position.set(num(x, 0), num(y, 0), num(z, 0));
+      touchStatic(e);
       gridSync(e);
     }),
     setYaw: guard('setYaw', function (e, deg) {
       if (!isEntity(e)) return;
       e.mesh.rotation.set(0, num(deg, 0) * Math.PI / 180, 0);
+      touchStatic(e);
     }),
     setVelocity: guard('setVelocity', function (e, x, y, z) {
       if (!isEntity(e)) return;

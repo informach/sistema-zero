@@ -65,7 +65,12 @@ export function makeFakeThree() {
         r.loop = fn
       },
       setRenderTarget: () => {},
-      render: (_scene?: unknown, camera?: unknown) => {
+      render: (scene?: unknown, camera?: unknown) => {
+        // O WebGLRenderer REAL chama scene.updateMatrixWorld() no render — sem
+        // isso o matrixWorld nunca atualiza e o teste do matrixAutoUpdate=false
+        // (entidade estática) não teria como observar a matriz. Fiel ao real.
+        const s = scene as { updateMatrixWorld?: () => void } | undefined
+        if (s?.updateMatrixWorld) s.updateMatrixWorld()
         const c = camera as RealTHREE.PerspectiveCamera | undefined
         if (c?.isPerspectiveCamera) r.camera = c
       },
@@ -135,6 +140,8 @@ export interface KitApi {
   stopTimer(): void
   onTimerEnd(fn: () => void): void
   playMusic(name: string): void
+  playSound(name: string): void
+  loadSound(name: string, asset: string): void
   stopMusic(): void
   say(e: unknown, text: string, seconds: number): void
   hideSay(e: unknown): void
@@ -153,6 +160,8 @@ export interface KitApi {
   platformerKeys(e: unknown, speed: number, jump: number): void
   moveFps(e: unknown, speed: number): void
   cameraFollow(e: unknown, dist: number, height: number): void
+  cameraLookAt(e: unknown): void
+  cameraShake(strength: number, seconds: number): void
   cameraOrbit(dist: number): void
   cameraTop(height: number): void
   cameraFps(e: unknown, height: number): void

@@ -555,6 +555,162 @@ describe('SZGameKit3D — física', () => {
     expect(acabou).toBe(1)
   })
 
+  // ---- 🎥 Tremor: não pode comer o sorteio na pausa (5º review) ----
+  it('⭐ o tremor NÃO consome o gerador semeado enquanto pausado', async () => {
+    // O comentário do applyShake prometia "mesma semente, mesmo tremor", mas com
+    // dt=0 na pausa ele girava 3 rand()/quadro para sempre — e o tempo de pausa é
+    // relógio de parede, então a mesma semente daria partidas diferentes.
+    const { api, step } = await loadStartedKit()
+    api.setState('jogando')
+    api.setSeed(5)
+    const semPausa = [api.randomBetween(0, 1000), api.randomBetween(0, 1000)]
+
+    api.setSeed(5)
+    api.cameraShake(0.5, 0.4) // tremor ativo...
+    api.setState('pausado')
+    step(40) // ...e uma pausa longa no meio dele
+    api.setState('jogando')
+    const comPausa = [api.randomBetween(0, 1000), api.randomBetween(0, 1000)]
+    expect(comPausa).toEqual(semPausa) // a pausa não mexeu no sorteio
+  })
+
+  // ---- 🔊 Música é faixa PRÓPRIA, não o Audio dos efeitos ----
+  it('⭐ playMusic não sequestra o Audio que o playSound usa', async () => {
+    // Audio de mentira que grava cada instância: é o único jeito de VER que a
+    // música é um elemento separado do efeito (antes os dois dividiam sounds[k]).
+    const made: FakeAudio[] = []
+    interface FakeAudio {
+      src: string
+      loop: boolean
+      currentTime: number
+      preload: string
+      oncanplaythrough: null | (() => void)
+      onerror: null | (() => void)
+      play(): Promise<void>
+      pause(): void
+    }
+    const RealAudio = (globalThis as { Audio?: unknown }).Audio
+    ;(globalThis as { Audio?: unknown }).Audio = function (this: FakeAudio, src?: string) {
+      const a: FakeAudio = {
+        src: src || '',
+        loop: false,
+        currentTime: 0,
+        preload: '',
+        oncanplaythrough: null,
+        onerror: null,
+        play: () => Promise.resolve(),
+        pause() {},
+      }
+      made.push(a)
+      // loadSound espera o oncanplaythrough para resolver o `pending`.
+      queueMicrotask(() => a.oncanplaythrough?.())
+      return a
+    } as unknown as typeof Audio
+    try {
+      const { api } = await loadStartedKit()
+      const url =
+        'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA='
+      ;(api as unknown as { loadSound: (n: string, a: string) => void }).loadSound('tema', url)
+      await new Promise((r) => setTimeout(r, 5)) // deixa o loadSound resolver
+      const sfx = made.find((a) => a.src === url) // o Audio do EFEITO
+      expect(sfx).toBeTruthy()
+      const before = made.length
+
+      api.playMusic('tema')
+      // A música criou um Audio NOVO (não reusou o do efeito).
+      expect(made.length).toBe(before + 1)
+      const music = made[made.length - 1] as FakeAudio
+      expect(music).not.toBe(sfx)
+      expect(music.loop).toBe(true) // a música repete...
+      expect(sfx?.loop).toBe(false) // ...e o efeito NÃO virou loop (era o bug)
+
+      // O efeito toca sem reiniciar a música nem herdar o loop.
+      ;(api as unknown as { playSound: (n: string) => void }).playSound('tema')
+      expect(sfx?.loop).toBe(false)
+    } finally {
+      ;(globalThis as { Audio?: unknown }).Audio = RealAudio
+    }
+  })
+
+  // ---- 🎥 Câmera não segue o slot reciclado por OUTRA entidade ----
+  it('⭐ câmera: alvo reciclado + slot reusado → volta à origem (não segue o estranho)', async () => {
+    const { api, step, renderers } = await loadStartedKit()
+    api.defineMold('bicho', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.setState('jogando')
+    const chefe = api.spawn('bicho', 20, 0, 20) // longe da origem
+    api.cameraOrbit(25)
+    api.cameraLookAt(chefe) // a câmera orbita o chefe
+    step(2)
+    api.recycle(chefe)
+    // O slot volta a nascer como OUTRO bicho, noutro lugar (o pool reusa o objeto).
+    const novo = api.spawn('bicho', -18, 0, -18)
+    expect(novo).toBe(chefe) // é o MESMO slot, com _gen novo
+    step(2)
+    const cam = (renderers as { camera?: { position: { x: number; z: number } } }[])[0]?.camera
+    // A órbita agora olha para a ORIGEM (o alvo antigo morreu), não para o -18/-18
+    // do estranho. A câmera fica no lado +X/+Z do pivô origem.
+    expect(cam).toBeTruthy()
+    const px = cam?.position.x ?? 0
+    const pz = cam?.position.z ?? 0
+    // Se seguisse o estranho em (-18,-18), a câmera estaria no octante negativo.
+    expect(px).toBeGreaterThan(0)
+    expect(pz).toBeGreaterThan(0)
+  })
+
+  // ---- ⚡ Matriz de quem está parado: congela, mas o setter ainda MOVE ----
+  it('⭐ entidade parada congela a matriz, mas place() ainda move de verdade', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('parede', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#888', w: 2, h: 2, d: 2, x: 0, y: 1, z: 0 })
+    })
+    api.setState('jogando')
+    const e = api.spawn('parede', 3, 0, 3) as {
+      mesh: { matrixAutoUpdate: boolean; matrixWorld: { elements: number[] } }
+    }
+    step(3) // sem velocidade → vira estático
+    expect(e.mesh.matrixAutoUpdate).toBe(false) // a matriz congelou
+    // ...mas a matriz está CERTA (posição de spawn), não na origem: elements[12..14]
+    // é a translação do matrixWorld.
+    expect(e.mesh.matrixWorld.elements[12]).toBeCloseTo(3, 3)
+    expect(e.mesh.matrixWorld.elements[14]).toBeCloseTo(3, 3)
+    // O setter numa entidade CONGELADA tem de mover de verdade (o bug invisível
+    // que o matrixAutoUpdate=false cria se um setter não recompuser).
+    api.place(e, -5, 0, 8)
+    step(1) // o render recompõe o matrixWorld (matrixWorldNeedsUpdate do updateMatrix)
+    expect(e.mesh.matrixWorld.elements[12]).toBeCloseTo(-5, 3)
+    expect(e.mesh.matrixWorld.elements[14]).toBeCloseTo(8, 3)
+  })
+
+  it('entidade que anda mantém o auto-update (não congela quem se mexe)', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('bola', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#0af', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.setState('jogando')
+    const e = api.spawn('bola', 0, 5, 0) as { mesh: { matrixAutoUpdate: boolean } }
+    api.setVelocity(e, 2, 0, 0)
+    step(3)
+    expect(e.mesh.matrixAutoUpdate).toBe(true) // quem anda não congela
+  })
+
+  // ---- ♻️ Entidade recolhida SAI da cena (não só invisível) ----
+  it('⭐ recycle tira o mesh da cena; spawn o traz de volta', async () => {
+    const { api } = await loadStartedKit()
+    api.defineMold('bicho', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.setState('jogando')
+    const e = api.spawn('bicho', 0, 0, 0) as { mesh: { parent: unknown } }
+    expect(e.mesh.parent).toBeTruthy() // na cena
+    api.recycle(e)
+    expect(e.mesh.parent).toBe(null) // saiu da cena (era só visible=false)
+    const e2 = api.spawn('bicho', 1, 0, 0) as { mesh: { parent: unknown } }
+    expect(e2).toBe(e as unknown as typeof e2) // mesmo slot do pool
+    expect(e2.mesh.parent).toBeTruthy() // voltou para a cena
+  })
+
   // ---- Defeito 11: arrasto ----
   it('arrasto do ar não briga mais com a gravidade (só X/Z)', async () => {
     const { api, step } = await loadStartedKit()

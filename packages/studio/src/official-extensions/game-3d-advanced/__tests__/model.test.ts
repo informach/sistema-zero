@@ -18,6 +18,126 @@ import { type KitApi, loadStartedKit, makeFakeThree, runtimeBody } from './kitHa
  */
 
 /**
+ * ⭐ Um .glb 2.0 COM SKIN: 1 SkinnedMesh, 2 ossos (raiz + filho), skin com
+ * inverseBindMatrices e 1 clip que gira o osso filho. É o único jeito de ver o
+ * bug do clone: o `.glb` sem esqueleto (o `makeGlb` comum, translação num nó
+ * solto) aceita o clone comum sem reclamar — foi por isso que a v0.5.0 passou
+ * verde com a animação MORTA no caso real. A montagem binária foi validada
+ * contra o GLTFLoader de verdade (spike) antes de virar teste.
+ */
+function makeSkinnedGlb(clipName: string): string {
+  const f32 = (a: number[]) => new Float32Array(a)
+  const u16 = (a: number[]) => new Uint16Array(a)
+  const parts: Uint8Array[] = []
+  let off = 0
+  const views: { byteOffset: number; byteLength: number }[] = []
+  const push = (typed: Float32Array | Uint16Array): number => {
+    const bytes = new Uint8Array(typed.buffer)
+    while (off % 4 !== 0) {
+      parts.push(new Uint8Array([0]))
+      off++
+    }
+    views.push({ byteOffset: off, byteLength: bytes.length })
+    parts.push(bytes)
+    off += bytes.length
+    return views.length - 1
+  }
+  const ident = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+  const s = Math.sin(Math.PI / 4)
+  const c = Math.cos(Math.PI / 4)
+  const vPos = push(f32([-1, 0, 0, 1, 0, 0, -1, 2, 0, 1, 2, 0]))
+  const vJoints = push(u16([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]))
+  const vWeights = push(f32([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]))
+  const vIdx = push(u16([0, 1, 2, 2, 1, 3]))
+  const vIBM = push(f32([...ident, ...ident]))
+  const vTime = push(f32([0, 1]))
+  const vRot = push(f32([0, 0, 0, 1, 0, s, 0, c]))
+  const binLen = off
+  const bin = new Uint8Array(binLen)
+  {
+    let p = 0
+    for (const ch of parts) {
+      bin.set(ch, p)
+      p += ch.length
+    }
+  }
+  const gltf = {
+    asset: { version: '2.0' },
+    scene: 0,
+    scenes: [{ nodes: [0, 3] }],
+    nodes: [
+      { name: 'Root', children: [1] },
+      { name: 'Bone', translation: [0, 1, 0] },
+      { name: 'unused' },
+      { name: 'Boneco', mesh: 0, skin: 0 },
+    ],
+    meshes: [
+      {
+        primitives: [
+          { attributes: { POSITION: vPos, JOINTS_0: vJoints, WEIGHTS_0: vWeights }, indices: vIdx },
+        ],
+      },
+    ],
+    skins: [{ joints: [0, 1], inverseBindMatrices: vIBM, skeleton: 0 }],
+    animations: [
+      {
+        name: clipName,
+        samplers: [{ input: vTime, interpolation: 'LINEAR', output: vRot }],
+        channels: [{ sampler: 0, target: { node: 1, path: 'rotation' } }],
+      },
+    ],
+    buffers: [{ byteLength: binLen }],
+    bufferViews: views.map((v, i) => ({
+      buffer: 0,
+      byteOffset: v.byteOffset,
+      byteLength: v.byteLength,
+      // POSITION/JOINTS/WEIGHTS = ARRAY_BUFFER; índices = ELEMENT_ARRAY_BUFFER.
+      ...(i < 3 ? { target: 34962 } : i === 3 ? { target: 34963 } : {}),
+    })),
+    accessors: [
+      {
+        bufferView: vPos,
+        componentType: 5126,
+        count: 4,
+        type: 'VEC3',
+        min: [-1, 0, 0],
+        max: [1, 2, 0],
+      },
+      { bufferView: vJoints, componentType: 5123, count: 4, type: 'VEC4' },
+      { bufferView: vWeights, componentType: 5126, count: 4, type: 'VEC4' },
+      { bufferView: vIdx, componentType: 5123, count: 6, type: 'SCALAR' },
+      { bufferView: vIBM, componentType: 5126, count: 2, type: 'MAT4' },
+      { bufferView: vTime, componentType: 5126, count: 2, type: 'SCALAR', min: [0], max: [1] },
+      { bufferView: vRot, componentType: 5126, count: 2, type: 'VEC4' },
+    ],
+  }
+  const json = new TextEncoder().encode(JSON.stringify(gltf))
+  const jpad = (4 - (json.length % 4)) % 4
+  const bpad = (4 - (binLen % 4)) % 4
+  const jsonLen = json.length + jpad
+  const binChunkLen = binLen + bpad
+  const total = 12 + 8 + jsonLen + 8 + binChunkLen
+  const buf = new ArrayBuffer(total)
+  const dv = new DataView(buf)
+  const u8 = new Uint8Array(buf)
+  dv.setUint32(0, 0x46546c67, true)
+  dv.setUint32(4, 2, true)
+  dv.setUint32(8, total, true)
+  dv.setUint32(12, jsonLen, true)
+  dv.setUint32(16, 0x4e4f534a, true)
+  u8.set(json, 20)
+  for (let i = 0; i < jpad; i++) u8[20 + json.length + i] = 0x20
+  const bo = 20 + jsonLen
+  dv.setUint32(bo, binChunkLen, true)
+  dv.setUint32(bo + 4, 0x004e4942, true)
+  u8.set(bin, bo + 8)
+  for (let i = 0; i < bpad; i++) u8[bo + 8 + binLen + i] = 0
+  let out = ''
+  for (let i = 0; i < u8.length; i++) out += String.fromCharCode(u8[i] as number)
+  return `data:model/gltf-binary;base64,${btoa(out)}`
+}
+
+/**
  * Um .glb 2.0 válido e mínimo: 1 nó, opcionalmente com animações de verdade.
  * Cada clipe é um sampler translation com 2 quadros — o suficiente para o
  * GLTFLoader montar um AnimationClip real e o mixer ter o que tocar.
@@ -139,6 +259,97 @@ describe('SZGameKit3D — modelos .glb', () => {
       'correr',
       'parado',
     ])
+  })
+
+  it('⭐⭐ boneco RIGADO: cada entidade tem o PRÓPRIO esqueleto (senão anima morto)', async () => {
+    // ESTE é o teste que faltava. Com clone comum, o SkinnedMesh da entidade
+    // compartilha o esqueleto do TEMPLATE por referência: o mixer da entidade
+    // move os ossos do clone e a malha deforma pelos ossos do template, que
+    // ninguém anima → bind pose eterna, sem aviso. A prova é que os esqueletos
+    // são objetos DIFERENTES. (Falha antes do cloneModel no spawn.)
+    seedModels({ heroi: makeSkinnedGlb('girar') })
+    const { api } = await loadStartedKit((a) => {
+      a.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const findSkeleton = (root: unknown): unknown => {
+      let skel: unknown = null
+      ;(
+        root as {
+          traverse: (fn: (o: { isSkinnedMesh?: boolean; skeleton?: unknown }) => void) => void
+        }
+      ).traverse((o) => {
+        if (o.isSkinnedMesh && o.skeleton) skel = o.skeleton
+      })
+      return skel
+    }
+    const a = api.spawn('heroi', 0, 0, 0) as { mesh: unknown }
+    const b = api.spawn('heroi', 5, 0, 0) as { mesh: unknown }
+    const skelA = findSkeleton(a.mesh)
+    const skelB = findSkeleton(b.mesh)
+    expect(skelA).toBeTruthy() // o SkinnedMesh sobreviveu ao clone
+    // Duas entidades = dois esqueletos. Com clone comum seriam o MESMO objeto
+    // (e uma animaria a outra). Este é o coração do bug.
+    expect(skelA).not.toBe(skelB)
+  })
+
+  it('⭐⭐ o esqueleto do SkinnedMesh aponta para os ossos DA entidade (não do template)', async () => {
+    // A prova de que a reamarração funcionou. O clone comum do Object3D até
+    // clona os ossos, mas o objeto Skeleton (com o ARRAY de ossos que a malha
+    // usa para deformar) é compartilhado por referência com o template — então
+    // a malha deforma pelos ossos do template, que ninguém anima. Aqui exijo o
+    // contrário: cada osso do skeleton do SkinnedMesh tem de estar DENTRO da
+    // árvore da própria entidade. (Falha antes do cloneModel no spawn.)
+    seedModels({ heroi: makeSkinnedGlb('girar') })
+    const { api } = await loadStartedKit((a) => {
+      a.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const e = api.spawn('heroi', 0, 0, 0) as { mesh: unknown }
+    const nodes = new Set<unknown>()
+    ;(e.mesh as { traverse: (fn: (o: unknown) => void) => void }).traverse((o) => nodes.add(o))
+    let skinned: { skeleton: { bones: unknown[] } } | null = null
+    ;(e.mesh as { traverse: (fn: (o: { isSkinnedMesh?: boolean }) => void) => void }).traverse(
+      (o) => {
+        if (o.isSkinnedMesh) skinned = o as { skeleton: { bones: unknown[] } }
+      },
+    )
+    expect(skinned).toBeTruthy()
+    const bones = (skinned as unknown as { skeleton: { bones: unknown[] } }).skeleton.bones
+    expect(bones.length).toBeGreaterThan(0)
+    // TODO osso que a malha usa tem de pertencer à ÁRVORE desta entidade.
+    for (const bone of bones) expect(nodes.has(bone)).toBe(true)
+  })
+
+  it('rodar o mixer de fato anima (o osso da entidade gira com o clip)', async () => {
+    seedModels({ heroi: makeSkinnedGlb('girar') })
+    const { api, step } = await loadStartedKit((a) => {
+      a.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const e = api.spawn('heroi', 0, 0, 0) as { mesh: { skeleton?: unknown } }
+    let bone: { rotation: { y: number } } | null = null
+    ;(
+      e.mesh as {
+        traverse: (
+          fn: (o: { isBone?: boolean; name?: string; rotation?: { y: number } }) => void,
+        ) => void
+      }
+    ).traverse((o) => {
+      if (o.isBone && o.name === 'Bone' && o.rotation) bone = o as { rotation: { y: number } }
+    })
+    expect(bone).toBeTruthy()
+    const y0 = (bone as unknown as { rotation: { y: number } }).rotation.y
+    api.playAnim(e, 'girar', false)
+    step(20) // o clip gira o osso de 0 a 90° ao longo de 1s
+    const y1 = (bone as unknown as { rotation: { y: number } }).rotation.y
+    expect(Math.abs(y1 - y0)).toBeGreaterThan(0.1)
   })
 
   it('⭐ a animação segue o ESTADO da entidade, sozinha', async () => {
