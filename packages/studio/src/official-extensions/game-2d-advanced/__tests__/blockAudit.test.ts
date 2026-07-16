@@ -156,12 +156,21 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
     // "está em ALGUM lugar da toolbox", e o "Mais" É um lugar da toolbox: 4 blocos
     // de peça ficaram nele por 2 versões, com a doc jurando que estavam em 🗺️
     // Mundo & profundidade. Todo bloco tem que estar numa categoria de VERDADE.
+    // (R23: desce RECURSIVO — os kits viraram chips-pai e os blocos ficam 2
+    // níveis abaixo; a versão de 1 nível falharia em falso p/ os 5 kits.)
     const named = new Set<string>()
-    for (const cat of gameKitToolboxCategory.contents) {
-      const c = cat as { kind?: string; name?: string; contents?: { type?: string }[] }
-      if (c.kind !== 'category' || c.name === 'Mais') continue
-      for (const b of c.contents ?? []) if (b.type) named.add(b.type)
+    const walkNamed = (node: unknown): void => {
+      if (Array.isArray(node)) {
+        for (const n of node) walkNamed(n)
+        return
+      }
+      if (!node || typeof node !== 'object') return
+      const c = node as { kind?: string; name?: string; type?: string; contents?: unknown }
+      if (c.kind === 'category' && c.name === 'Mais') return
+      if (c.kind === 'block' && typeof c.type === 'string') named.add(c.type)
+      if (c.contents) walkNamed(c.contents)
     }
+    walkNamed(gameKitToolboxCategory.contents)
     expect(defTypes.filter((t) => !named.has(t))).toEqual([])
   })
 })

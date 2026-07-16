@@ -3,6 +3,7 @@ import {
   arenaGoblinsExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
+  dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
   saltoNaFlorestaExample,
@@ -12,7 +13,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.21.0',
+  version: '0.22.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E cinco atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial) e 🚀 nave (a invasão que marcha, desce e acelera).',
   category: 'games',
@@ -774,5 +775,6 @@ de 3 no ar.
     saltoNaFlorestaExample,
     bichinhosDoQuintalExample,
     invasaoDosOvnisExample,
+    dueloDosBonecosExample,
   ],
 }

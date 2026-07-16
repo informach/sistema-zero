@@ -3544,7 +3544,9 @@ export const gameKitBlocks = [
  * moldes/aparência/comportamentos/animação/câmera/mundo) → combate/ação → HUD →
  * faíscas → som.
  */
-const SUBCATS: { name: string; colour: string; types: string[] }[] = [
+// `kit` agrupa a sub-categoria dentro de um chip-PAI na toolbox (R23): o 1º
+// nível fica com as gerais + 5 pais de kit, em vez de 44 chips planos.
+const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[] = [
   {
     // "Carregar" (só load_image) foi fundido aqui: preparar + carregar imagens.
     name: '🧰 O jogo',
@@ -3917,6 +3919,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   // pular, tiles e o renascer são GERAIS e vivem lá em cima.
   {
     name: '🏃 Kit Plataforma: herói',
+    kit: '🏃 Kit Plataforma',
     colour: C,
     types: [
       'sz_gk_plat_hero',
@@ -3931,6 +3934,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🧗 Kit Plataforma: mundo',
+    kit: '🏃 Kit Plataforma',
     colour: C,
     types: [
       'sz_gk_plat_one_way',
@@ -3955,6 +3959,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     // hard-coded da base, e chão não é de luta — é de todo jogo de lado. O Kit
     // Plataforma também não tem chão próprio.
     name: '🥊 Kit Luta: a partida',
+    kit: '🥊 Kit Luta',
     colour: C,
     types: [
       'sz_gk_luta_match',
@@ -3966,6 +3971,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🥊 Kit Luta: os lutadores',
+    kit: '🥊 Kit Luta',
     colour: C,
     types: ['sz_gk_luta_fighter', 'sz_gk_luta_ai', 'sz_gk_luta_is_guarding'],
   },
@@ -3976,6 +3982,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     // que chute→soco encaixa. E o agarrão é um checkbox ("atravessa a defesa"):
     // o que o agarrão FAZ no jogo é uma coisa só — vencer quem só defende.
     name: '🥊 Kit Luta: golpes & combo',
+    kit: '🥊 Kit Luta',
     colour: C,
     types: [
       'sz_gk_luta_move',
@@ -3992,6 +3999,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   // serve em qualquer jogo.
   {
     name: '🧙 Kit RPG: mundo',
+    kit: '🧙 Kit RPG',
     colour: C,
     types: [
       'sz_gk_rpg_on_map',
@@ -4008,11 +4016,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '💬 Kit RPG: NPCs',
+    kit: '🧙 Kit RPG',
     colour: C,
     types: ['sz_gk_rpg_create_npc', 'sz_gk_rpg_draw_npcs', 'sz_gk_rpg_on_talk'],
   },
   {
     name: '🎬 Kit RPG: cenas',
+    kit: '🧙 Kit RPG',
     colour: C,
     types: [
       'sz_gk_rpg_cutscene',
@@ -4027,6 +4037,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     // Só o SALVAR fica no kit: ele serializa o estado do RPG (flags/itens/mapa/
     // atributos). O menu de escolha saiu p/ o geral (💬 Fala & escolhas).
     name: '💾 Kit RPG: salvar',
+    kit: '🧙 Kit RPG',
     colour: C,
     types: ['sz_gk_rpg_save', 'sz_gk_rpg_load', 'sz_gk_rpg_has_save'],
   },
@@ -4035,6 +4046,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     // abaixo) é "um jogo do Kit RPG com OUTRA batalha" — a vizinhança conta a
     // história. (Ela morava órfã no FIM do array, depois do Monstrinhos inteiro.)
     name: '⚔️ Kit RPG: batalha',
+    kit: '🧙 Kit RPG',
     colour: C,
     types: [
       'sz_gk_rpg_battle_stats',
@@ -4054,6 +4066,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   // flags/salvar) vem de lá. Aqui só o que é do gênero.
   {
     name: '👾 Kit Monstrinhos: criaturas',
+    kit: '👾 Kit Monstrinhos',
     colour: C,
     types: [
       'sz_gk_pkm_creature',
@@ -4066,6 +4079,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🎒 Kit Monstrinhos: meu time',
+    kit: '👾 Kit Monstrinhos',
     colour: C,
     types: [
       'sz_gk_pkm_give',
@@ -4079,6 +4093,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🌿 Kit Monstrinhos: encontros & batalha',
+    kit: '👾 Kit Monstrinhos',
     colour: C,
     types: [
       'sz_gk_pkm_grass_cells',
@@ -4096,16 +4111,19 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   // tiro do jogador/colisão/placar/som são GERAIS — o kit chama, não copia.
   {
     name: '🚀 Kit Nave: a nave',
+    kit: '🚀 Kit Nave',
     colour: C,
     types: ['sz_gk_nave_ship', 'sz_gk_nave_powerup', 'sz_gk_nave_power_of'],
   },
   {
     name: '🛸 Kit Nave: a invasão',
+    kit: '🚀 Kit Nave',
     colour: C,
     types: ['sz_gk_nave_wave', 'sz_gk_nave_wave_shooter', 'sz_gk_nave_invasion_line'],
   },
   {
     name: '🌌 Kit Nave: o espaço',
+    kit: '🚀 Kit Nave',
     colour: C,
     types: ['sz_gk_nave_starfield', 'sz_gk_nave_bomb'],
   },
@@ -4370,17 +4388,39 @@ const toolboxBlock = (type: string) => {
   return inputs ? { kind: 'block' as const, type, inputs } : { kind: 'block' as const, type }
 }
 
+// R23: os kits viram chips-PAI — o 1º nível fica com as ~28 gerais + 5 kits
+// (🏃 🥊 🧙 👾 🚀) em vez de 44 chips planos; as sub-categorias abrem DENTRO
+// do pai (a toolbox é recursiva; filtros/poda/testes já recursam). Os NOMES
+// das filhas mantêm o prefixo "Kit X:" — a doc os cita e o docDrift os casa.
+// O pai herda o tom da 1ª filha; a ordem respeita o SUBCATS.
+const topLevelCats: ExtensionToolboxCategory[] = []
+const kitParents = new Map<string, ExtensionToolboxCategory>()
+for (const sc of SUBCATS) {
+  const child: ExtensionToolboxCategory = {
+    kind: 'category',
+    name: sc.name,
+    colour: sc.colour,
+    contents: sc.types.map(toolboxBlock),
+  }
+  if (!sc.kit) {
+    topLevelCats.push(child)
+    continue
+  }
+  let parent = kitParents.get(sc.kit)
+  if (!parent) {
+    parent = { kind: 'category', name: sc.kit, colour: sc.colour, contents: [] }
+    kitParents.set(sc.kit, parent)
+    topLevelCats.push(parent)
+  }
+  parent.contents.push(child)
+}
+
 export const gameKitToolboxCategory: ExtensionToolboxCategory = {
   kind: 'category',
   name: 'Jogo 2D Avançado',
   colour: C,
   contents: [
-    ...SUBCATS.map((sc) => ({
-      kind: 'category' as const,
-      name: sc.name,
-      colour: sc.colour,
-      contents: sc.types.map(toolboxBlock),
-    })),
+    ...topLevelCats,
     ...(leftover.length > 0
       ? [
           {

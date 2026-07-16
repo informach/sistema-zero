@@ -13,6 +13,7 @@ import {
   arenaGoblinsExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
+  dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
   saltoNaFlorestaExample,
@@ -101,6 +102,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Salto na Floresta',
       'Bichinhos do Quintal',
       'Invasão dos Óvnis',
+      'Duelo dos Bonecos',
     ])
     expect(gameKitExtension.minLevel).toBe('intermediario')
   })
@@ -368,6 +370,7 @@ describe('game-2d-advanced — exemplo Vila do Dragão (Kit RPG)', () => {
       'Salto na Floresta',
       'Bichinhos do Quintal',
       'Invasão dos Óvnis',
+      'Duelo dos Bonecos',
     ])
   })
 
@@ -1020,6 +1023,110 @@ describe('game-2d-advanced — exemplo Invasão dos Óvnis (🚀 Kit Nave)', () 
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(invasaoDosOvnisExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+/**
+ * Drift do exemplo "Duelo dos Bonecos" (🥊 Kit Luta — a pendência do R19): a IR
+ * embutida foi GERADA pelo parser real a partir do SOURCE abaixo (one-off R23).
+ */
+const SOURCE_DUELO = `SZGameKit.setup({ width: 960, height: 540, background: "#241733", accent: "#ffd166" });
+SZGameKit.setScreenText("menu", "Duelo dos Bonecos", "A/D anda - W pula - S agacha - F defende - G soco - H chute - J agarrão", "Lutar");
+SZGameKit.defineMold("chao", { w: 960, h: 60, health: 1, speed: 0, damage: 0, color: "#3d2b52", image: "", look: "" });
+const azul = SZGameKit.createCharacter({ image: "", w: 50, h: 110, speed: 260, color: "#4a9eff" });
+const vermelho = SZGameKit.createCharacter({ image: "", w: 50, h: 110, speed: 260, color: "#e0526a" });
+SZGameKit.lutaMove("soco", azul, "rápido", 8, 70, false, false);
+SZGameKit.lutaMove("chute", azul, "pesado", 18, 90, false, false);
+SZGameKit.lutaMove("agarrao", azul, "médio", 12, 60, true, false);
+SZGameKit.lutaMove("soco", vermelho, "rápido", 8, 70, false, false);
+SZGameKit.lutaMove("chute", vermelho, "pesado", 18, 90, false, false);
+SZGameKit.lutaMove("especial", vermelho, "médio", 25, 110, true, true);
+SZGameKit.onEnterState("jogando", function () {
+  SZGameKit.spawnFromMold("chao", 0, 480);
+  SZGameKit.placeCharacter(azul, 250, 370);
+  SZGameKit.placeCharacter(vermelho, 660, 370);
+  SZGameKit.lutaMatch(azul, vermelho, 3, 45);
+  SZGameKit.lutaAI(vermelho, "normal");
+});
+SZGameKit.on("luta:acabou", function () {
+  SZGameKit.setScreenText("fim", "Fim da luta!", "Venceu: " + SZGameKit.lutaWinner(), "Revanche");
+  SZGameKit.playEffect("win");
+});
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.lutaFighter(azul, "a", "d", "w", "s", "f", dt);
+  if (SZGameKit.keyPressed("g")) {
+    SZGameKit.lutaAttack(azul, "soco");
+  }
+  if (SZGameKit.keyPressed("h")) {
+    SZGameKit.lutaAttack(azul, "chute");
+  }
+  if (SZGameKit.keyPressed("j")) {
+    SZGameKit.lutaAttack(azul, "agarrao");
+  }
+  SZGameKit.collideGroup(azul, "chao");
+  SZGameKit.collideGroup(vermelho, "chao");
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#241733", false);
+  SZGameKit.drawActive("chao");
+  SZGameKit.drawCharacter(azul);
+  SZGameKit.drawCharacter(vermelho);
+});
+SZGameKit.onDrawHud(function (ctx) {
+  SZGameKit.lutaDrawHud();
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Duelo dos Bonecos (🥊 Kit Luta)', () => {
+  it('IR embutida é válida, sem rawJS, e usa o Kit Luta como manda a regra', () => {
+    const parsed = SZIRSchema.safeParse(dueloDosBonecosExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(dueloDosBonecosExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      // o KIT: partida, lutadores, golpes (rápido/pesado = combo emergente;
+      // agarrão = atravessa; especial da IA), placar pronto e o vencedor
+      'gk:lutaMatch',
+      'gk:lutaFighter',
+      'gk:lutaAI',
+      'gk:lutaMove',
+      'gk:lutaAttack',
+      'gk:lutaDrawHud',
+      'gk:lutaWinner',
+      // e o CHÃO é geral, pela regra: molde + nascer + colidir
+      'gk:defineMold',
+      'gk:spawnFromMold',
+      'gk:collideGroup',
+      'gk:keyPressed',
+      'gk:onEvent', // luta:acabou → tela de fim com o vencedor
+      'if',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_DUELO))).toEqual(dueloDosBonecosExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
+    const code1 = compileStatements(dueloDosBonecosExample.ir.js, 0)
+    const code2 = compileStatements(stripIds(parseJS(code1)), 0)
+    expect(code2).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR → workspace → IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      dueloDosBonecosExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(dueloDosBonecosExample.ir.js)
     } finally {
       ws.dispose()
     }
