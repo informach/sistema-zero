@@ -3823,7 +3823,30 @@ export type JSStatement =
   // natureza instanciada com colisores, grama ao vento e efeitos de cinema.
   | (JSStatementCommon & { type: 'w3d:setup'; style: string; world: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:terrain'; h: number | JSExpr; s: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'w3d:flatten'
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:path'
+      x1: number | JSExpr
+      z1: number | JSExpr
+      x2: number | JSExpr
+      z2: number | JSExpr
+      w: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:water'; y: number | JSExpr; color: string })
   | (JSStatementCommon & { type: 'w3d:start' })
+  | (JSStatementCommon & { type: 'w3d:carBoost'; force: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:engineSound'; on: boolean })
+  | (JSStatementCommon & { type: 'w3d:loadSound'; name: string; asset: string })
+  | (JSStatementCommon & { type: 'w3d:playSound'; name: string })
+  | (JSStatementCommon & { type: 'w3d:playMusic'; name: string })
+  | (JSStatementCommon & { type: 'w3d:stopMusic' })
+  | (JSStatementCommon & { type: 'w3d:hud'; text: number | JSExpr; corner: string })
+  | (JSStatementCommon & { type: 'w3d:say'; text: number | JSExpr; secs: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:car'; style: string; color: string })
   | (JSStatementCommon & {
       type: 'w3d:carStats'
@@ -7592,8 +7615,52 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       s: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({
+      type: z.literal('w3d:flatten'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      r: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:path'),
+      x1: z.union([JSExprSchema, z.number()]),
+      z1: z.union([JSExprSchema, z.number()]),
+      x2: z.union([JSExprSchema, z.number()]),
+      z2: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:water'),
+      y: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:start'), ...idField }),
     z.object({ type: z.literal('w3d:car'), style: irText(), color: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:carBoost'),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:engineSound'), on: z.boolean(), ...idField }),
+    z.object({ type: z.literal('w3d:loadSound'), name: irText(), asset: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:playSound'), name: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:playMusic'), name: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:stopMusic'), ...idField }),
+    z.object({
+      type: z.literal('w3d:hud'),
+      text: z.union([JSExprSchema, z.number()]),
+      corner: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:say'),
+      text: z.union([JSExprSchema, z.number()]),
+      secs: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({
       type: z.literal('w3d:carStats'),
       speed: z.union([JSExprSchema, z.number()]),
@@ -8541,10 +8608,21 @@ export const G3K_STATEMENT_TYPES = new Set([
 export const W3D_STATEMENT_TYPES = new Set([
   'w3d:setup',
   'w3d:terrain',
+  'w3d:flatten',
+  'w3d:path',
+  'w3d:water',
   'w3d:start',
   'w3d:car',
   'w3d:carStats',
+  'w3d:carBoost',
+  'w3d:engineSound',
   'w3d:carPlace',
+  'w3d:loadSound',
+  'w3d:playSound',
+  'w3d:playMusic',
+  'w3d:stopMusic',
+  'w3d:hud',
+  'w3d:say',
   'w3d:grass',
   'w3d:scatter',
   'w3d:scatterModel',

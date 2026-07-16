@@ -6141,6 +6141,71 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
     }
     case 'start':
       return args.length === 0 ? { type: 'w3d:start' } : null
+    case 'flatten': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const r = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(r)
+        ? { type: 'w3d:flatten', x, z, r }
+        : null
+    }
+    case 'path': {
+      const x1 = toExpr(args[0], ctx)
+      const z1 = toExpr(args[1], ctx)
+      const x2 = toExpr(args[2], ctx)
+      const z2 = toExpr(args[3], ctx)
+      const w = toExpr(args[4], ctx)
+      return isSimpleValue(x1) &&
+        isSimpleValue(z1) &&
+        isSimpleValue(x2) &&
+        isSimpleValue(z2) &&
+        isSimpleValue(w)
+        ? { type: 'w3d:path', x1, z1, x2, z2, w }
+        : null
+    }
+    case 'water': {
+      if (args[1]?.type !== 'StringLiteral') return null
+      const y = toExpr(args[0], ctx)
+      return isSimpleValue(y) ? { type: 'w3d:water', y, color: args[1].value as string } : null
+    }
+    case 'carBoost': {
+      const force = toExpr(args[0], ctx)
+      return isSimpleValue(force) ? { type: 'w3d:carBoost', force } : null
+    }
+    case 'engineSound': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const on = args[0].value as string
+      if (on !== 'ligado' && on !== 'desligado') return null
+      return { type: 'w3d:engineSound', on: on === 'ligado' }
+    }
+    case 'loadSound': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return {
+        type: 'w3d:loadSound',
+        name: args[0].value as string,
+        asset: args[1].value as string,
+      }
+    }
+    case 'playSound': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'w3d:playSound', name: args[0].value as string }
+    }
+    case 'playMusic': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'w3d:playMusic', name: args[0].value as string }
+    }
+    case 'stopMusic':
+      return args.length === 0 ? { type: 'w3d:stopMusic' } : null
+    case 'hud': {
+      if (args[1]?.type !== 'StringLiteral') return null
+      const t = toExpr(args[0], ctx)
+      return isSimpleValue(t) ? { type: 'w3d:hud', text: t, corner: args[1].value as string } : null
+    }
+    case 'say': {
+      const t = toExpr(args[0], ctx)
+      const secs = toExpr(args[1], ctx)
+      return isSimpleValue(t) && isSimpleValue(secs) ? { type: 'w3d:say', text: t, secs } : null
+    }
     case 'car': {
       // generator: SZWorld3D.car({ style, color })
       if (args[0]?.type !== 'ObjectExpression') return null

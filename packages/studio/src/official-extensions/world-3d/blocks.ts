@@ -48,6 +48,52 @@ export const world3DBlocks = [
       'Levanta colinas no chão inteiro. Altura = o tamanho dos morros em metros (4 dá colinas gostosas de dirigir; 10 vira montanha-russa). Suavidade = o tamanho de cada morro (maior = morros largos e calmos; menor = terreno nervosinho). O meio do mundo fica plano para o carrinho nascer em paz.',
   },
   {
+    type: 'sz_w3d_flatten',
+    message0: 'Aplainar o chão perto de x %1 z %2 num raio de %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Deixa um pedaço do chão bem plano — a praça da sua cidade, o quintal da casa, o pátio da corrida. Use antes de pôr as coisas em cima (elas pousam no chão já aplainado).',
+  },
+  {
+    type: 'sz_w3d_path',
+    message0: 'Desenhar uma trilha de x %1 z %2 até x %3 z %4 (largura %5 )',
+    args0: [
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Z1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Z2', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Abre um caminho plano de um ponto a outro do mundo (aplaina só a faixa da trilha, subindo e descendo com os morros). Ótima para uma estradinha ou a pista da corrida.',
+  },
+  {
+    type: 'sz_w3d_water',
+    message0: 'Pôr água na altura %1 da cor %2',
+    args0: [
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#2b6cb0' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Enche o mundo de água até uma altura (as partes do chão mais baixas viram lago/mar). A água ondula; o carrinho fica lento na beirada e, se cair fundo, volta para o último lugar seco. Altura 0 alaga só os buracos; altura 3 faz um mundo de ilhas.',
+  },
+  {
     type: 'sz_w3d_start',
     message0: 'Começar o passeio',
     args0: [],
@@ -116,6 +162,36 @@ export const world3DBlocks = [
     colour: C,
     tooltip:
       'Afina o carrinho do SEU jeito: velocidade máxima (metros por segundo), curva (quantos graus ele vira por segundo — mais = mais esperto) e a força do pulo. Use depois do "Criar o carrinho".',
+  },
+  {
+    type: 'sz_w3d_car_boost',
+    message0: 'Ligar o turbo (Shift) com força %1',
+    args0: [{ type: 'input_value', name: 'FORCE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Dá um botão de TURBO ao carrinho: segurando Shift, ele acelera mais e chega mais rápido (força 1 = o dobro; até 4). Solte para voltar ao normal.',
+  },
+  {
+    type: 'sz_w3d_engine_sound',
+    message0: 'Som do motor %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'ON',
+        options: [
+          ['ligado', 'ligado'],
+          ['desligado', 'desligado'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga o ronco do motor: um som grave que fica mais agudo e forte quando o carrinho acelera (feito na hora, sem arquivo). Vrum!',
   },
   {
     type: 'sz_w3d_car_place',
@@ -413,7 +489,89 @@ export const world3DBlocks = [
       'Liga/desliga o look de cinema: brilho (as coisas claras "vazam" luz — bloom) e cantos escurecidos (vinheta). Já vem LIGADO; o brilho 1 é o normal (até 3 = show de luz). Desligue para ganhar velocidade num computador fraco — e o modo turbo desliga sozinho se precisar.',
   },
 
+  // ---- 🔊 Sons ----
+  {
+    type: 'sz_w3d_load_sound',
+    message0: 'Carregar o som %1 do arquivo %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'buzina' },
+      { type: 'field_asset_picker', name: 'ASSET', text: '', kind: 'audio' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Prepara um som do projeto (envie o arquivo em "Imagens" na barra de cima) e dá um apelido a ele. Depois use "Tocar o som" com esse apelido. Faça no começo.',
+  },
+  {
+    type: 'sz_w3d_play_sound',
+    message0: 'Tocar o som %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'buzina' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca um som que você carregou (pelo apelido). Perfeito dentro de "Quando o carrinho bater forte" ou "Quando apertar E".',
+  },
+  {
+    type: 'sz_w3d_play_music',
+    message0: 'Tocar a música %1 sem parar',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'musica' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Toca uma música do projeto em loop (repete sem parar) — a trilha sonora do seu mundo. Use o apelido de um som carregado.',
+  },
+  {
+    type: 'sz_w3d_stop_music',
+    message0: 'Parar a música',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Desliga a música que estava tocando.',
+  },
+
   // ---- ⏱️ Jogo & tela ----
+  {
+    type: 'sz_w3d_hud',
+    message0: 'Escrever %1 no canto %2 da tela',
+    args0: [
+      { type: 'input_value', name: 'TEXT', check: 'JSValue' },
+      {
+        type: 'field_dropdown',
+        name: 'CORNER',
+        options: [
+          ['↖ cima-esquerda', 'topo-esquerda'],
+          ['↗ cima-direita', 'topo-direita'],
+          ['↙ baixo-esquerda', 'baixo-esquerda'],
+          ['↘ baixo-direita', 'baixo-direita'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Mostra um texto fixo num canto da tela (placar, velocímetro, dica). Escrever um texto vazio apaga o canto. Atualize a cada quadro para um número que muda.',
+  },
+  {
+    type: 'sz_w3d_say',
+    message0: 'Mostrar o balão %1 por %2 s',
+    args0: [
+      { type: 'input_value', name: 'TEXT', check: 'JSValue' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Faz um balão de fala aparecer em cima do carrinho por alguns segundos, seguindo ele pela tela. "Cheguei!", "Uau!", o que o seu personagem quiser dizer.',
+  },
   {
     type: 'sz_w3d_on_update',
     message0: 'A cada quadro, com o tempo %1 (em segundos)',
@@ -456,6 +614,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_w3d_setup',
       'sz_w3d_terrain',
+      'sz_w3d_flatten',
+      'sz_w3d_path',
+      'sz_w3d_water',
       'sz_w3d_start',
       'sz_w3d_world_size',
       'sz_w3d_ground_height',
@@ -467,6 +628,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_w3d_car',
       'sz_w3d_car_stats',
+      'sz_w3d_car_boost',
+      'sz_w3d_engine_sound',
       'sz_w3d_car_place',
       'sz_w3d_car_pos',
       'sz_w3d_car_speed',
@@ -503,9 +666,20 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_w3d_effects'],
   },
   {
+    name: '🔊 Sons',
+    colour: C,
+    types: ['sz_w3d_load_sound', 'sz_w3d_play_sound', 'sz_w3d_play_music', 'sz_w3d_stop_music'],
+  },
+  {
     name: '⏱️ Jogo & tela',
     colour: C,
-    types: ['sz_w3d_on_update', 'sz_w3d_key_down', 'sz_w3d_key_pressed'],
+    types: [
+      'sz_w3d_hud',
+      'sz_w3d_say',
+      'sz_w3d_on_update',
+      'sz_w3d_key_down',
+      'sz_w3d_key_pressed',
+    ],
   },
 ]
 
@@ -529,6 +703,7 @@ const leftover = world3DBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has
 
 // Sombras pré-preenchidas dos soquetes de VALOR que aparecem na paleta.
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
+const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
 export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_setup: { WORLD: numShadow(160) },
   sz_w3d_terrain: { H: numShadow(4), S: numShadow(5) },
@@ -543,6 +718,18 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_effects: { STRENGTH: numShadow(1) },
   sz_w3d_daynight: { MIN: numShadow(4) },
   sz_w3d_wind: { F: numShadow(1) },
+  sz_w3d_flatten: { X: numShadow(0), Z: numShadow(0), R: numShadow(15) },
+  sz_w3d_path: {
+    X1: numShadow(0),
+    Z1: numShadow(0),
+    X2: numShadow(0),
+    Z2: numShadow(30),
+    W: numShadow(6),
+  },
+  sz_w3d_water: { Y: numShadow(0) },
+  sz_w3d_car_boost: { FORCE: numShadow(1) },
+  sz_w3d_hud: { TEXT: txtShadow('Pontos: 0') },
+  sz_w3d_say: { TEXT: txtShadow('Oi!'), SECS: numShadow(2) },
 }
 
 /**

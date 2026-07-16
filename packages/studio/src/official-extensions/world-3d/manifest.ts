@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '0.4.0',
+  version: '0.5.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -56,6 +56,13 @@ O que o motor já faz por você:
   morros (4 = colinas; 10 = montanha-russa); suavidade é o tamanho de cada
   morro (maior = largos e calmos). Pode usar até DEPOIS do começar: o chão se
   reconstrói na hora.
+- **Aplainar o chão perto de x … z …** — deixa um pedaço bem plano (a praça,
+  o quintal, o pátio da corrida). Use antes de pôr as coisas em cima.
+- **Desenhar uma trilha de … até …** — abre um caminho plano de um ponto a
+  outro (uma estradinha, a pista da corrida), acompanhando os morros.
+- **Pôr água na altura … da cor …** — enche o mundo de água até uma altura
+  (os buracos viram lago/mar). A água ondula; o carrinho fica lento na
+  beirada e, se cair fundo, volta ao último lugar seco.
 - **Começar o passeio** — liga tudo e mostra a telinha "Começar o passeio".
   Sempre o ÚLTIMO bloco.
 - **o tamanho do mundo** — o lado do mundo, para as suas contas.
@@ -94,6 +101,10 @@ O que o motor já faz por você:
   espaço pula. Descer um morro em alta velocidade DECOLA o carrinho!
 - **Ajustar o carrinho: velocidade …, curva …, pulo …** — os números do seu
   jeito: velocidade máxima (m/s), curva (graus por segundo) e força do pulo.
+- **Ligar o turbo (Shift) com força …** — dá um botão de TURBO: segurando
+  Shift o carrinho voa (força 1 = o dobro, até 4).
+- **Som do motor ligado/desligado** — o ronco do motor, mais agudo quando
+  acelera (feito na hora, sem arquivo).
 - **Levar o carrinho para x … z …, virado para … graus** — teleporte: pousa
   no chão, parado, olhando para onde você mandou. A câmera pula junto.
 - **onde o carrinho está (eixo …)** — a posição, um eixo por vez (y = altura).
@@ -122,8 +133,20 @@ O que o motor já faz por você:
   computador fraco o **modo turbo** liga sozinho: menos grama, sombra menor
   e sem efeitos — o passeio continua liso.
 
+### 🔊 Sons
+
+- **Carregar o som … do arquivo …** — prepara um som do projeto (envie em
+  "Imagens") e dá um apelido. Faça no começo.
+- **Tocar o som …** — toca um som carregado (bom em "Quando bater forte").
+- **Tocar a música … sem parar** — a trilha sonora do seu mundo (em loop).
+- **Parar a música** — desliga a música.
+
 ### ⏱️ Jogo & tela
 
+- **Escrever … no canto … da tela** — um texto fixo num canto (placar,
+  velocímetro, dica). Texto vazio apaga o canto.
+- **Mostrar o balão … por … s** — um balãozinho de fala em cima do carrinho,
+  seguindo ele pela tela.
 - **A cada quadro, com o tempo dt** — a escotilha para a SUA mecânica: rode
   qualquer bloco a cada quadro. Multiplique velocidades por dt.
 - **a tecla … está apertada? / acabou de ser apertada?** — teclas extras para

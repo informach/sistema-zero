@@ -8503,6 +8503,40 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           s: exprInput(block, 'S', { type: 'num', value: 5 }),
         },
       }
+    case 'sz_w3d_flatten':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:flatten',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          r: exprInput(block, 'R', { type: 'num', value: 15 }),
+        },
+      }
+    case 'sz_w3d_path':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:path',
+          x1: exprInput(block, 'X1', { type: 'num', value: 0 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 0 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 0 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 30 }),
+          w: exprInput(block, 'W', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_w3d_water':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:water',
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          color: f(block, 'COLOR') || '#2b6cb0',
+        },
+      }
     case 'sz_w3d_start':
       seen.add('world-3d')
       return { kind: 'js', value: { type: 'w3d:start' } }
@@ -8536,6 +8570,56 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           x: exprInput(block, 'X', { type: 'num', value: 0 }),
           z: exprInput(block, 'Z', { type: 'num', value: 0 }),
           deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_car_boost':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:carBoost',
+          force: exprInput(block, 'FORCE', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_engine_sound':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:engineSound', on: (f(block, 'ON') || 'ligado') !== 'desligado' },
+      }
+    case 'sz_w3d_load_sound':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:loadSound', name: f(block, 'NAME'), asset: f(block, 'ASSET') },
+      }
+    case 'sz_w3d_play_sound':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:playSound', name: f(block, 'NAME') } }
+    case 'sz_w3d_play_music':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:playMusic', name: f(block, 'NAME') } }
+    case 'sz_w3d_stop_music':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:stopMusic' } }
+    case 'sz_w3d_hud':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:hud',
+          text: exprInput(block, 'TEXT', { type: 'str', value: 'Pontos: 0' }),
+          corner: f(block, 'CORNER') || 'topo-esquerda',
+        },
+      }
+    case 'sz_w3d_say':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:say',
+          text: exprInput(block, 'TEXT', { type: 'str', value: 'Oi!' }),
+          secs: exprInput(block, 'SECS', { type: 'num', value: 2 }),
         },
       }
     case 'sz_w3d_grass':

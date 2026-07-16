@@ -445,6 +445,12 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_w3d_effects: { STRENGTH: 'number' },
   sz_w3d_daynight: { MIN: 'number' },
   sz_w3d_wind: { F: 'number' },
+  sz_w3d_flatten: { X: 'number', Z: 'number', R: 'number' },
+  sz_w3d_path: { X1: 'number', Z1: 'number', X2: 'number', Z2: 'number', W: 'number' },
+  sz_w3d_water: { Y: 'number' },
+  sz_w3d_car_boost: { FORCE: 'number' },
+  sz_w3d_hud: { TEXT: 'text' },
+  sz_w3d_say: { TEXT: 'text', SECS: 'number' },
 }
 
 interface BlockNode {

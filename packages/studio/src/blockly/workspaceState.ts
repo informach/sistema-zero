@@ -5568,10 +5568,63 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_w3d_terrain', {}, {}, stmt.__id, { H: h, S: s })
     }
+    case 'w3d:flatten': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const r = exprToValueBlock(valueToExpr(stmt.r))
+      return x === null || z === null || r === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_flatten', {}, {}, stmt.__id, { X: x, Z: z, R: r })
+    }
+    case 'w3d:path': {
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      return x1 === null || z1 === null || x2 === null || z2 === null || w === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_path', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2, W: w })
+    }
+    case 'w3d:water': {
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return y === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_water', { COLOR: stmt.color }, {}, stmt.__id, { Y: y })
+    }
     case 'w3d:start':
       return block('sz_w3d_start', {}, {}, stmt.__id)
     case 'w3d:car':
       return block('sz_w3d_car', { STYLE: stmt.style, COLOR: stmt.color }, {}, stmt.__id)
+    case 'w3d:carBoost': {
+      const force = exprToValueBlock(valueToExpr(stmt.force))
+      return force === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_car_boost', {}, {}, stmt.__id, { FORCE: force })
+    }
+    case 'w3d:engineSound':
+      return block('sz_w3d_engine_sound', { ON: stmt.on ? 'ligado' : 'desligado' }, {}, stmt.__id)
+    case 'w3d:loadSound':
+      return block('sz_w3d_load_sound', { NAME: stmt.name, ASSET: stmt.asset }, {}, stmt.__id)
+    case 'w3d:playSound':
+      return block('sz_w3d_play_sound', { NAME: stmt.name }, {}, stmt.__id)
+    case 'w3d:playMusic':
+      return block('sz_w3d_play_music', { NAME: stmt.name }, {}, stmt.__id)
+    case 'w3d:stopMusic':
+      return block('sz_w3d_stop_music', {}, {}, stmt.__id)
+    case 'w3d:hud': {
+      const t = exprToValueBlock(valueToExpr(stmt.text))
+      return t === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_hud', { CORNER: stmt.corner }, {}, stmt.__id, { TEXT: t })
+    }
+    case 'w3d:say': {
+      const t = exprToValueBlock(valueToExpr(stmt.text))
+      const secs = exprToValueBlock(valueToExpr(stmt.secs))
+      return t === null || secs === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_say', {}, {}, stmt.__id, { TEXT: t, SECS: secs })
+    }
     case 'w3d:carStats': {
       const speed = exprToValueBlock(valueToExpr(stmt.speed))
       const turn = exprToValueBlock(valueToExpr(stmt.turn))

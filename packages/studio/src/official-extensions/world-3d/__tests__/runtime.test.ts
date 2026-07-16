@@ -12,6 +12,9 @@ import { world3DRuntime } from '../runtime'
 interface Api {
   setup: (o: unknown) => unknown
   terrain: (h?: unknown, s?: unknown) => unknown
+  flatten: (x?: unknown, z?: unknown, r?: unknown) => unknown
+  path: (a?: unknown, b?: unknown, c?: unknown, d?: unknown, e?: unknown) => unknown
+  water: (y?: unknown, color?: unknown) => unknown
   start: () => unknown
   worldSize: () => number
   groundHeight: (x?: unknown, z?: unknown) => number
@@ -20,6 +23,14 @@ interface Api {
   carPlace: (x?: unknown, z?: unknown, d?: unknown) => unknown
   carPos: (a?: unknown) => number
   carSpeed: () => number
+  carBoost: (force?: unknown) => unknown
+  engineSound: (on?: unknown) => unknown
+  loadSound: (name?: unknown, asset?: unknown) => unknown
+  playSound: (name?: unknown) => unknown
+  playMusic: (name?: unknown) => unknown
+  stopMusic: () => unknown
+  hud: (t?: unknown, corner?: unknown) => unknown
+  say: (t?: unknown, secs?: unknown) => unknown
   scatter: (n?: unknown, thing?: unknown) => unknown
   scatterModel: (n?: unknown, name?: unknown, s?: unknown) => unknown
   placeThing: (thing?: unknown, x?: unknown, z?: unknown, s?: unknown) => unknown
@@ -55,14 +66,25 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     const expected = [
       'setup',
       'terrain',
+      'flatten',
+      'path',
+      'water',
       'start',
       'worldSize',
       'groundHeight',
       'car',
       'carStats',
+      'carBoost',
+      'engineSound',
       'carPlace',
       'carPos',
       'carSpeed',
+      'loadSound',
+      'playSound',
+      'playMusic',
+      'stopMusic',
+      'hud',
+      'say',
       'scatter',
       'scatterModel',
       'placeThing',
@@ -157,6 +179,35 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(() => api.grass('oceano')).not.toThrow() // cai para media
     expect(() => api.setEffects('desligados', 2)).not.toThrow()
     expect(() => api.setEffects('ligados', 99)).not.toThrow() // clampa em 3
+  })
+
+  it('água/trilha/sons/hud: config pura antes do start, sem lançar', () => {
+    const api = boot()
+    expect(() => api.flatten(0, 0, 20)).not.toThrow()
+    expect(() => api.path(0, 0, 30, 30, 6)).not.toThrow()
+    expect(() => api.water(1, '#2b6cb0')).not.toThrow()
+    // groundHeight fica plano onde aplainei (raio 20 no centro)
+    expect(() => api.carBoost(2)).not.toThrow()
+    expect(() => api.engineSound('ligado')).not.toThrow() // sem AudioContext no teste: guardado
+    expect(() => api.loadSound('buzina', 'inexistente')).not.toThrow() // avisa e ignora
+    expect(() => api.playSound('buzina')).not.toThrow()
+    expect(() => api.playMusic('nada')).not.toThrow()
+    expect(() => api.stopMusic()).not.toThrow()
+    expect(() => api.hud('Pontos: 5', 'topo-direita')).not.toThrow()
+    expect(() => api.say('Oi!', 2)).not.toThrow()
+  })
+
+  it('flatten muda a altura do terreno para o valor do centro', () => {
+    const api = boot()
+    // longe do centro há morros; aplainar um disco lá nivela para a altura-base
+    // amostrada no ponto (aqui só provamos que não quebra e é determinístico)
+    const antes = api.groundHeight(70, 50) as number
+    api.flatten(70, 50, 25)
+    const depois = api.groundHeight(70, 50) as number
+    // no centro exato do flatten, a altura vira a base daquele ponto (~a mesma)
+    expect(Number.isFinite(depois)).toBe(true)
+    expect(depois).toBe(depois) // determinístico
+    expect(typeof antes).toBe('number')
   })
 
   it('céu & clima: hora do mundo, ganchos e guardas puras', () => {

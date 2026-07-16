@@ -2435,10 +2435,32 @@ ${pad}});`
       return `${pad}SZWorld3D.setup({ style: ${JSON.stringify(stmt.style)}, world: ${compileExpr(valueToExpr(stmt.world), 0, identifiers, recAt(base))} });`
     case 'w3d:terrain':
       return `${pad}SZWorld3D.terrain(${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
+    case 'w3d:flatten':
+      return `${pad}SZWorld3D.flatten(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:path':
+      return `${pad}SZWorld3D.path(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))});`
+    case 'w3d:water':
+      return `${pad}SZWorld3D.water(${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
     case 'w3d:start':
       return `${pad}SZWorld3D.start();`
     case 'w3d:car':
       return `${pad}SZWorld3D.car({ style: ${JSON.stringify(stmt.style)}, color: ${JSON.stringify(stmt.color)} });`
+    case 'w3d:carBoost':
+      return `${pad}SZWorld3D.carBoost(${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'w3d:engineSound':
+      return `${pad}SZWorld3D.engineSound(${JSON.stringify(stmt.on ? 'ligado' : 'desligado')});`
+    case 'w3d:loadSound':
+      return `${pad}SZWorld3D.loadSound(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.asset)});`
+    case 'w3d:playSound':
+      return `${pad}SZWorld3D.playSound(${JSON.stringify(stmt.name)});`
+    case 'w3d:playMusic':
+      return `${pad}SZWorld3D.playMusic(${JSON.stringify(stmt.name)});`
+    case 'w3d:stopMusic':
+      return `${pad}SZWorld3D.stopMusic();`
+    case 'w3d:hud':
+      return `${pad}SZWorld3D.hud(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.corner)});`
+    case 'w3d:say':
+      return `${pad}SZWorld3D.say(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))});`
     case 'w3d:carStats':
       return `${pad}SZWorld3D.carStats(${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.turn), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'w3d:carPlace':
@@ -5258,6 +5280,36 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:start':
     case 'w3d:car':
     case 'w3d:grass':
+    case 'w3d:engineSound':
+    case 'w3d:loadSound':
+    case 'w3d:playSound':
+    case 'w3d:playMusic':
+    case 'w3d:stopMusic':
+      return
+    case 'w3d:flatten':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:path':
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      return
+    case 'w3d:water':
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'w3d:carBoost':
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      return
+    case 'w3d:hud':
+      collectExprIdentifiers(valueToExpr(stmt.text), names)
+      return
+    case 'w3d:say':
+      collectExprIdentifiers(valueToExpr(stmt.text), names)
+      collectExprIdentifiers(valueToExpr(stmt.secs), names)
       return
     case 'w3d:carStats':
       collectExprIdentifiers(valueToExpr(stmt.speed), names)

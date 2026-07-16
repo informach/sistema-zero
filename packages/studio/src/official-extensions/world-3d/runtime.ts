@@ -88,6 +88,26 @@ export const world3DRuntime = `import * as THREE from 'three';
   var playTime = 0;
   var _lastT = 0;
   var currentDt = 0;
+  // Água: um plano na altura Y com ondulação; o carro afunda/respinga/respawna.
+  var waterCfg = null;          // { y, color }
+  var waterMesh = null;
+  var waterMat = null;
+  // Turbo (Shift) + som do motor sintetizado.
+  var boostCfg = null;          // { force }
+  var boostActive = false;
+  var engineOn = false;
+  var _audioCtx = null;
+  var engineOsc = null;
+  var engineGain = null;
+  var engineFilter = null;
+  // Sons do projeto (HTMLAudio, do __SZGAME_SOUNDS) + música.
+  var sounds = Object.create(null);
+  var music = null;
+  // HUD por canto (DOM) + balão de fala que segue o carro.
+  var hudEls = Object.create(null);
+  var sayEl = null;
+  var sayUntil = 0;
+  var lastSafe = { x: 0, z: 0, yaw: 0 };   // último ponto seco (para respawn)
   // Carrinho: config (dos blocos) + estado físico + peças visuais.
   var carCfg = null;            // { style, color, speed, turn, jump }
   var carState = null;          // { x, y, z, yaw, speed, vy, airborne, steerVis, pitch, pitchV, roll, rollV }
@@ -121,6 +141,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   // Modelos .glb do projeto (data:URL semeada pelo assetsBridge) + cache de parse.
   var MODELS3D = (typeof window !== 'undefined' && window.__SZGAME_ASSETS_3D && typeof window.__SZGAME_ASSETS_3D === 'object')
     ? window.__SZGAME_ASSETS_3D
+    : {};
+  var SOUNDS = (typeof window !== 'undefined' && window.__SZGAME_SOUNDS && typeof window.__SZGAME_SOUNDS === 'object')
+    ? window.__SZGAME_SOUNDS
     : {};
   var _gltfMod = null;
   var _modelCache = null;       // nome -> { scene } já parseado
@@ -220,12 +243,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
   }
 
-  /**
-   * A altura do chão em (x, z) — ANALÍTICA e pura: carro, natureza, água e o
-   * bloco "a altura do chão" consultam a MESMA função (nunca dessincroniza).
-   * O centro do mundo é aplainado (raio ~8..20 m) para o carrinho nascer em paz.
-   */
-  function heightAt(x, z) {
+  /** Altura só do RUÍDO (+ centro aplainado), antes dos modificadores. */
+  function baseHeightAt(x, z) {
     var scale = 1 / Math.max(4, terrainCfg.smooth * 8);
     var h = 0;
     var amp = 1;
@@ -240,6 +259,53 @@ export const world3DRuntime = `import * as THREE from 'three';
     h = (h / tot) * terrainCfg.hills;
     var d = Math.sqrt(x * x + z * z);
     return h * smoothstep(8, 20, d);
+  }
+
+  // Modificadores de terreno (aplainar/trilha): cada um puxa a altura para um
+  // alvo AMOSTRADO no registro (sem recursão) dentro do seu alcance. A trilha é
+  // um segmento; o aplainar é um disco.
+  var terrainMods = [];
+
+  /** Distância do ponto (px,pz) ao segmento (ax,az)-(bx,bz) + parâmetro t [0,1]. */
+  function segDist(px, pz, ax, az, bx, bz) {
+    var dx = bx - ax;
+    var dz = bz - az;
+    var len2 = dx * dx + dz * dz;
+    var t = len2 > 0 ? ((px - ax) * dx + (pz - az) * dz) / len2 : 0;
+    t = clamp(t, 0, 1);
+    var cx = ax + dx * t;
+    var cz = az + dz * t;
+    var ex = px - cx;
+    var ez = pz - cz;
+    return { dist: Math.sqrt(ex * ex + ez * ez), t: t };
+  }
+
+  /**
+   * A altura do chão em (x, z) — ANALÍTICA e pura: carro, natureza, água e o
+   * bloco "a altura do chão" consultam a MESMA função (nunca dessincroniza).
+   * O centro do mundo é aplainado; aplainar/trilha puxam a altura ao seu alvo.
+   */
+  function heightAt(x, z) {
+    var h = baseHeightAt(x, z);
+    for (var i = 0; i < terrainMods.length; i++) {
+      var m = terrainMods[i];
+      if (m.kind === 'flatten') {
+        var dx = x - m.x;
+        var dz = z - m.z;
+        var d = Math.sqrt(dx * dx + dz * dz);
+        // 1 no centro → 0 na borda (com uma orla suave de 30%).
+        var k = 1 - smoothstep(m.r * 0.7, m.r, d);
+        if (k > 0) h = h + (m.y - h) * k;
+      } else if (m.kind === 'path') {
+        var s = segDist(x, z, m.x1, m.z1, m.x2, m.z2);
+        var k2 = 1 - smoothstep(m.w * 0.6, m.w, s.dist);
+        if (k2 > 0) {
+          var target = m.y1 + (m.y2 - m.y1) * s.t;
+          h = h + (target - h) * k2;
+        }
+      }
+    }
+    return h;
   }
 
   /** Componentes da normal do chão por diferenças finitas (para o molejo). */
@@ -1546,6 +1612,183 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (weatherPts) buildWeather();
   }
 
+  // ---- 💧 Água (plano ondulado; o carro afunda/respinga/respawna) ----
+
+  var WATER_VSH = [
+    'uniform float uTime;',
+    'varying vec2 vWorld;',
+    'void main() {',
+    '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+    '  float wave = sin(wp.x * 0.25 + uTime * 1.2) * 0.12 + cos(wp.z * 0.3 + uTime) * 0.1;',
+    '  wp.y += wave;',
+    '  vWorld = wp.xz;',
+    '  gl_Position = projectionMatrix * viewMatrix * wp;',
+    '}'
+  ].join(' ');
+
+  var WATER_FSH = [
+    'uniform vec3 uColor;',
+    'uniform float uTime;',
+    'varying vec2 vWorld;',
+    'void main() {',
+    '  float spark = 0.5 + 0.5 * sin(vWorld.x * 0.8 + uTime * 2.0) * cos(vWorld.y * 0.7 - uTime * 1.5);',
+    '  vec3 col = uColor + spark * 0.08;',
+    '  gl_FragColor = vec4(col, 0.82);',
+    '}'
+  ].join(' ');
+
+  function buildWater() {
+    if (!scene || !waterCfg) return;
+    if (waterMesh) {
+      try {
+        scene.remove(waterMesh);
+        if (waterMesh.geometry && waterMesh.geometry.dispose) waterMesh.geometry.dispose();
+      } catch (e) {}
+      waterMesh = null;
+    }
+    if (!THREE.ShaderMaterial) return;
+    var geo = new THREE.PlaneGeometry(config.world * 1.4, config.world * 1.4, 40, 40);
+    geo.rotateX(-Math.PI / 2);
+    if (!waterMat) {
+      var c = new THREE.Color(waterCfg.color);
+      waterMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uColor: { value: new THREE.Vector3(c.r, c.g, c.b) }
+        },
+        vertexShader: WATER_VSH,
+        fragmentShader: WATER_FSH,
+        transparent: true
+      });
+    }
+    waterMesh = new THREE.Mesh(geo, waterMat);
+    waterMesh.position.y = waterCfg.y;
+    waterMesh.frustumCulled = false;
+    scene.add(waterMesh);
+  }
+
+  // ---- 🔊 Áudio (motor sintetizado + sons/música do projeto) ----
+
+  function ensureAudioCtx() {
+    if (_audioCtx) return _audioCtx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) _audioCtx = new AC();
+    } catch (e) { _audioCtx = null; }
+    return _audioCtx;
+  }
+
+  function resumeAudio() {
+    try {
+      if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
+    } catch (e) {}
+  }
+
+  /** Liga o oscilador do motor (grave, com lowpass) — o pitch segue a velocidade. */
+  function startEngine() {
+    var ac = ensureAudioCtx();
+    if (!ac || engineOsc) return;
+    try {
+      engineOsc = ac.createOscillator();
+      engineGain = ac.createGain();
+      engineFilter = ac.createBiquadFilter();
+      engineOsc.type = 'sawtooth';
+      engineOsc.frequency.value = 60;
+      engineFilter.type = 'lowpass';
+      engineFilter.frequency.value = 500;
+      engineGain.gain.value = 0;
+      engineOsc.connect(engineFilter);
+      engineFilter.connect(engineGain);
+      engineGain.connect(ac.destination);
+      engineOsc.start();
+    } catch (e) { engineOsc = null; }
+  }
+
+  function updateEngine() {
+    if (!engineOn || !engineOsc || !carState) return;
+    var ac = _audioCtx;
+    if (!ac) return;
+    var top = carCfg ? num(carCfg.speed, 22) : 22;
+    var frac = Math.min(1, Math.abs(carState.speed) / Math.max(1, top));
+    try {
+      engineOsc.frequency.setTargetAtTime(55 + frac * 130, ac.currentTime, 0.08);
+      engineFilter.frequency.setTargetAtTime(400 + frac * 1800, ac.currentTime, 0.08);
+      engineGain.gain.setTargetAtTime(0.04 + frac * 0.06, ac.currentTime, 0.1);
+    } catch (e) {}
+  }
+
+  function ensureSound(name) {
+    var key = text(name, '');
+    if (sounds[key]) return sounds[key];
+    var url = SOUNDS[key];
+    if (!url) return null;
+    try {
+      var a = new Audio(url);
+      a.preload = 'auto';
+      sounds[key] = a;
+      return a;
+    } catch (e) { return null; }
+  }
+
+  // ---- 🖥️ HUD + 💬 balão de fala (DOM sobre o canvas) ----
+
+  var HUD_SLOTS = { 'topo-esquerda': 1, 'topo-direita': 1, 'baixo-esquerda': 1, 'baixo-direita': 1 };
+  var HUD_POS = {
+    'topo-esquerda': 'top:12px;left:12px', 'topo-direita': 'top:12px;right:12px',
+    'baixo-esquerda': 'bottom:12px;left:12px', 'baixo-direita': 'bottom:12px;right:12px'
+  };
+  function setHud(slot, value) {
+    if (!ensureShell()) return;
+    var key = text(slot, 'topo-esquerda');
+    if (!HUD_SLOTS[key]) key = 'topo-esquerda';
+    var content = text(value, '');
+    var el = hudEls[key];
+    if (!content) {
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+      delete hudEls[key];
+      return;
+    }
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'szw3d-hud';
+      el.setAttribute('style', 'position:absolute;' + HUD_POS[key] + ';color:#fff;font:700 20px system-ui,sans-serif;text-shadow:0 2px 6px rgba(0,0,0,.6);pointer-events:none;z-index:6');
+      frameEl.appendChild(el);
+      hudEls[key] = el;
+    }
+    el.textContent = content;
+  }
+
+  function showSay(msgTxt, secs) {
+    if (!ensureShell()) return;
+    if (!sayEl) {
+      sayEl = document.createElement('div');
+      sayEl.setAttribute('style', 'position:absolute;padding:6px 12px;border-radius:14px;background:rgba(255,255,255,.92);color:#123;font:600 15px system-ui,sans-serif;transform:translate(-50%,-100%);white-space:nowrap;pointer-events:none;z-index:7;box-shadow:0 4px 12px rgba(0,0,0,.3)');
+      frameEl.appendChild(sayEl);
+    }
+    sayEl.textContent = text(msgTxt, '');
+    sayEl.style.display = 'block';
+    sayUntil = playTime + Math.max(0.5, num(secs, 2));
+  }
+
+  function stepSay() {
+    if (!sayEl) return;
+    if (playTime > sayUntil) {
+      sayEl.style.display = 'none';
+      return;
+    }
+    if (!carState || !camera || !renderer) return;
+    // Projeta a cabeça do carrinho para a tela (mundo → pixel do canvas).
+    _proj.set(carState.x, carState.y + 2.2, carState.z);
+    _proj.project(camera);
+    var rect = canvasEl.getBoundingClientRect();
+    var sx = (_proj.x * 0.5 + 0.5) * rect.width;
+    var sy = (-_proj.y * 0.5 + 0.5) * rect.height;
+    sayEl.style.left = sx + 'px';
+    sayEl.style.top = sy + 'px';
+    sayEl.style.display = _proj.z < 1 ? 'block' : 'none';
+  }
+  var _proj = null;
+
   // ---- Teclas (com apelidos em português) ----
 
   var KEY_ALIASES = {
@@ -1570,10 +1813,14 @@ export const world3DRuntime = `import * as THREE from 'three';
       keys[k] = true;
       justPressed[k] = true;
       hideSplash();
+      resumeAudio();
       // As teclas do passeio rolam a página do iframe (setas/espaço) — segura.
       if (k === ' ' || k.indexOf('arrow') === 0) {
         try { e.preventDefault(); } catch (err) {}
       }
+    });
+    window.addEventListener('pointerdown', function () {
+      resumeAudio();
     });
     window.addEventListener('keyup', function (e) {
       keys[String(e.key).toLowerCase()] = false;
@@ -1717,7 +1964,9 @@ export const world3DRuntime = `import * as THREE from 'three';
         scene.add(sunTarget);
       }
 
+      _proj = new THREE.Vector3();
       buildTerrain();
+      if (waterCfg) buildWater();
       if (carCfg) buildCar();
       buildNature();
       if (grassCfg) buildGrass();
@@ -1933,12 +2182,16 @@ export const world3DRuntime = `import * as THREE from 'three';
     var accelIn = ((isDown('w') || isDown('arrowup')) ? 1 : 0) - ((isDown('s') || isDown('arrowdown')) ? 1 : 0);
     var steerIn = ((isDown('a') || isDown('arrowleft')) ? 1 : 0) - ((isDown('d') || isDown('arrowright')) ? 1 : 0);
 
+    // Turbo (Shift): mais aceleração e um teto de velocidade maior enquanto segura.
+    boostActive = boostCfg != null && (isDown('shift') || isDown('shiftleft') || isDown('shiftright'));
+    var boostMul = boostActive ? 1 + num(boostCfg.force, 1) : 1;
+
     // Aceleração/freio + arrasto natural. Na neve tudo responde mais devagar.
-    var acc = 16 * (0.5 + 0.5 * grip);
+    var acc = 16 * (0.5 + 0.5 * grip) * boostMul;
     if (accelIn > 0) s.speed += acc * dt;
     else if (accelIn < 0) s.speed -= acc * 0.95 * dt;
     else s.speed -= s.speed * Math.min(1, (0.9 + 0.7 * grip) * dt);
-    s.speed = clamp(s.speed, -top * 0.45, top);
+    s.speed = clamp(s.speed, -top * 0.45, top * boostMul);
 
     // Curva: parado não vira; muito rápido vira menos (estabilidade arcade).
     var spdK = Math.min(1, Math.abs(s.speed) / (top * 0.22));
@@ -2008,6 +2261,34 @@ export const world3DRuntime = `import * as THREE from 'three';
         s.vy = jump;
         s.airborne = true;
       }
+    }
+
+    // Água: rasa = arrasta e respinga; funda (> 1.2 m abaixo do nível) = respawn
+    // no último ponto seco. Sem água, guarda o ponto atual como seguro.
+    if (waterCfg && !s.airborne) {
+      var prof = waterCfg.y - s.y;
+      if (prof > 1.2) {
+        s.x = lastSafe.x;
+        s.z = lastSafe.z;
+        s.yaw = lastSafe.yaw;
+        s.y = heightAt(s.x, s.z);
+        s.speed = 0;
+        s.vy = 0;
+        camSnap = true;
+      } else if (prof > 0) {
+        // Arrasto da água rasa: proporcional à profundidade, mas dt-escalado e
+        // com teto — atola sem CONGELAR (o *0.7 por quadro travava tudo).
+        var drag = Math.min(0.7, prof * 0.35);
+        s.speed *= Math.max(0, 1 - drag * dt * 4);
+      } else {
+        lastSafe.x = s.x;
+        lastSafe.z = s.z;
+        lastSafe.yaw = s.yaw;
+      }
+    } else if (!s.airborne) {
+      lastSafe.x = s.x;
+      lastSafe.z = s.z;
+      lastSafe.yaw = s.yaw;
     }
 
     // ---- Molejo COSMÉTICO (mola-amortecedor de pitch/roll na carroceria) ----
@@ -2134,6 +2415,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepCar(dt);
     stepDayNight(dt);
     stepWeather(dt);
+    updateEngine();
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
         warnOnce('hook-update-' + i, 'erro no "A cada quadro": ' + e);
@@ -2141,6 +2423,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
     updateCamera(dt);
     updateSun();
+    stepSay();
+    if (waterMat) waterMat.uniforms.uTime.value = playTime;
     if (grassMat) {
       grassMat.uniforms.uTime.value = playTime;
       grassMat.uniforms.uWind.value = wind;
@@ -2212,6 +2496,12 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (gradientTex && gradientTex.dispose) { try { gradientTex.dispose(); } catch (e) {} }
       if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
       if (spriteTex && spriteTex.dispose) { try { spriteTex.dispose(); } catch (e) {} }
+      if (waterMat && waterMat.dispose) { try { waterMat.dispose(); } catch (e) {} }
+      // O motor e a música vivem no WebAudio/Audio (fora da cena) — o teardown
+      // do renderer não os alcança; parar aqui evita som na janela do bfcache.
+      try { if (engineOsc) engineOsc.stop(); } catch (e) {}
+      try { if (music) music.pause(); } catch (e) {}
+      try { if (_audioCtx && _audioCtx.close) _audioCtx.close(); } catch (e) {}
       disposeWeather();
       disposeComposer();
       if (stageEl && stageEl.parentNode) { try { stageEl.parentNode.removeChild(stageEl); } catch (e) {} }
@@ -2238,6 +2528,13 @@ export const world3DRuntime = `import * as THREE from 'three';
     starsMat = null;
     spriteTex = null;
     weatherPts = null;
+    waterMesh = null;
+    waterMat = null;
+    engineOsc = null;
+    engineGain = null;
+    engineFilter = null;
+    _audioCtx = null;
+    music = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -2291,6 +2588,35 @@ export const world3DRuntime = `import * as THREE from 'three';
     groundHeight: guard('groundHeight', function (x, z) {
       return heightAt(num(x, 0), num(z, 0));
     }),
+    flatten: guard('flatten', function (x, z, r) {
+      var cx = num(x, 0);
+      var cz = num(z, 0);
+      // Alvo = a altura do RUÍDO no centro (sem outros mods → sem recursão).
+      terrainMods.push({ kind: 'flatten', x: cx, z: cz, r: clamp(num(r, 15), 1, 200), y: baseHeightAt(cx, cz) });
+      if (worldReady) {
+        buildTerrain();
+        if (grassMat) buildGrassHeightTex();
+      }
+    }),
+    path: guard('path', function (x1, z1, x2, z2, w) {
+      var ax = num(x1, 0);
+      var az = num(z1, 0);
+      var bx = num(x2, 0);
+      var bz = num(z2, 0);
+      terrainMods.push({
+        kind: 'path', x1: ax, z1: az, x2: bx, z2: bz,
+        w: clamp(num(w, 5), 1, 40),
+        y1: baseHeightAt(ax, az), y2: baseHeightAt(bx, bz)
+      });
+      if (worldReady) {
+        buildTerrain();
+        if (grassMat) buildGrassHeightTex();
+      }
+    }),
+    water: guard('water', function (y, color) {
+      waterCfg = { y: num(y, 0), color: text(color, '#2b6cb0') };
+      if (worldReady) buildWater();
+    }),
 
     // 🚗 Carrinho
     car: guard('car', function (opts) {
@@ -2343,6 +2669,18 @@ export const world3DRuntime = `import * as THREE from 'three';
     }),
     carSpeed: guard('carSpeed', function () {
       return carState ? Math.abs(carState.speed) : 0;
+    }),
+    carBoost: guard('carBoost', function (force) {
+      boostCfg = { force: clamp(num(force, 1), 0, 4) };
+    }),
+    engineSound: guard('engineSound', function (on) {
+      var ligado = on === true || on === 'ligado' || on === 'ligados' || on === 'true';
+      engineOn = ligado;
+      if (ligado) {
+        startEngine();
+      } else if (engineGain && _audioCtx) {
+        try { engineGain.gain.setTargetAtTime(0, _audioCtx.currentTime, 0.1); } catch (e) {}
+      }
     }),
 
     // 🌿 Natureza
@@ -2471,7 +2809,56 @@ export const world3DRuntime = `import * as THREE from 'three';
       crashHooks.push(fn);
     }),
 
+    // 🔊 Sons
+    loadSound: guard('loadSound', function (name, asset) {
+      var key = text(name, '');
+      var url = SOUNDS[text(asset, '')];
+      if (!url) {
+        warn('o som "' + text(asset, '') + '" não está no projeto — envie em "Imagens" na barra de cima');
+        return;
+      }
+      // Aponta o apelido para o arquivo e pré-carrega.
+      SOUNDS[key] = url;
+      ensureSound(key);
+    }),
+    playSound: guard('playSound', function (name) {
+      var a = ensureSound(name);
+      if (!a) {
+        warnOnce('sound:' + text(name, ''), 'o som "' + text(name, '') + '" não foi carregado — use "Carregar o som"');
+        return;
+      }
+      try {
+        a.currentTime = 0;
+        var p = a.play();
+        if (p && p.catch) p.catch(function () {});
+      } catch (e) {}
+    }),
+    playMusic: guard('playMusic', function (name) {
+      var url = SOUNDS[text(name, '')];
+      if (!url) {
+        warn('a música "' + text(name, '') + '" não está no projeto');
+        return;
+      }
+      try {
+        if (music) music.pause();
+        music = new Audio(url);
+        music.loop = true;
+        music.volume = 0.5;
+        var p = music.play();
+        if (p && p.catch) p.catch(function () {});
+      } catch (e) {}
+    }),
+    stopMusic: guard('stopMusic', function () {
+      try { if (music) { music.pause(); music.currentTime = 0; } } catch (e) {}
+    }),
+
     // ⏱️ Jogo & tela
+    hud: guard('hud', function (txt, corner) {
+      setHud(corner, txt);
+    }),
+    say: guard('say', function (txt, secs) {
+      showSay(txt, secs);
+    }),
     onUpdate: guard('onUpdate', function (fn) {
       if (typeof fn !== 'function') {
         warn('"A cada quadro" precisa de um bloco de fazer dentro');

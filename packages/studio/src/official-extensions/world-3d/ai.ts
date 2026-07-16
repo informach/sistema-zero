@@ -29,6 +29,10 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.terrain(alturaMorros, suavidade)\` — colinas por ruído
   determinístico (mesmo mundo sempre); centro plano p/ o spawn. Pode DEPOIS
   do start (reconstrói na hora). altura 0–30 m, suavidade 1–30.
+- \`SZWorld3D.flatten(x, z, raio)\` — aplaina um disco do chão (praça/pátio).
+- \`SZWorld3D.path(x1, z1, x2, z2, largura)\` — trilha plana entre 2 pontos.
+- \`SZWorld3D.water(altura, cor)\` — água até a altura dada; o carro afunda/
+  respinga e respawna se cair fundo.
 - \`SZWorld3D.start()\` — monta tudo, telinha "Começar o passeio", liga o laço.
 - \`SZWorld3D.worldSize()\` → número (lado do mundo).
 - \`SZWorld3D.groundHeight(x, z)\` → altura do terreno naquele ponto (use para
@@ -39,6 +43,7 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.carStats(velocidadeMax, curvaGrausPorSeg, forcaPulo)\` — depois
   do car().
 - \`SZWorld3D.carPlace(x, z, graus)\` — teleporta (pousa no chão, parado).
+- \`SZWorld3D.carBoost(forca)\` — turbo com Shift (0..4). \`SZWorld3D.engineSound('ligado'|'desligado')\` — motor sintetizado.
 - \`SZWorld3D.carPos('x'|'y'|'z')\` → número. \`SZWorld3D.carSpeed()\` → m/s.
 - \`SZWorld3D.scatter(n, especie)\` — espalha n cópias procedurais pelo mundo
   (pousadas no terreno, determinístico). especies: 'arvores' | 'pinheiros' |
@@ -69,6 +74,9 @@ SZWorld3D.start(); // SEMPRE por último
   turbo (FPS < 45 nos primeiros segundos) desliga sozinho e reduz a grama.
 - \`SZWorld3D.onCrash(function () { ... })\` — trombada forte do carro em coisa
   sólida (tem respiro de 0.4 s entre disparos).
+- \`SZWorld3D.loadSound(apelido, asset)\` / \`playSound(apelido)\` / \`playMusic(apelido)\` (loop) / \`stopMusic()\` — sons/música do projeto.
+- \`SZWorld3D.hud(texto, 'topo-esquerda'|'topo-direita'|'baixo-esquerda'|'baixo-direita')\` — texto fixo num canto (vazio apaga).
+- \`SZWorld3D.say(texto, segundos)\` — balão de fala sobre o carro.
 - \`SZWorld3D.onUpdate(function (dt) { ... })\` — gancho por quadro; dt em
   segundos, clampado em 1/30.
 - \`SZWorld3D.keyDown(tecla)\` / \`SZWorld3D.keyPressed(tecla)\` → boolean.
@@ -80,8 +88,7 @@ SZWorld3D.start(); // SEMPRE por último
   runtime parseia o ArrayBuffer; nada de carregar por URL).
 - Sem Rapier/física de biblioteca: o carro é arcade na unha do motor.
 - Sem menu/pausa/vidas: não é um jogo de fases, é um mundo.
-- Grama ao vento, água, dia/noite, clima, pontos interativos, corrida,
-  boliche e galeria chegam em versões futuras da extensão — se os blocos não
-  estão na paleta, o método não existe ainda.
+- Pontos interativos, corrida, boliche e galeria chegam em versões futuras da
+  extensão — se os blocos não estão na paleta, o método não existe ainda.
 - Use APENAS UMA extensão de jogo/mundo por projeto (brigam pelo canvas).
 `
