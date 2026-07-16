@@ -1869,34 +1869,6 @@ function compileStatementCode(
       return `${pad}SZGameKit.lutaMoveAnim(${JSON.stringify(stmt.name)}, ${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))});`
     case 'gk:lutaAttack':
       return `${pad}SZGameKit.lutaAttack(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.move)});`
-    case 'gk:lutaMatch':
-      return `${pad}SZGameKit.lutaMatch(${identifiers.get(stmt.p1Var)}, ${identifiers.get(stmt.p2Var)}, ${compileExpr(valueToExpr(stmt.rounds), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
-    case 'gk:lutaDrawHud':
-      return `${pad}SZGameKit.lutaDrawHud();`
-    case 'gk:lutaFighter':
-      return `${pad}SZGameKit.lutaFighter(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.left)}, ${JSON.stringify(stmt.right)}, ${JSON.stringify(stmt.jump)}, ${JSON.stringify(stmt.crouch)}, ${JSON.stringify(stmt.guard)}, ${identifiers.get(stmt.dtVar)});`
-    case 'gk:lutaAI':
-      return `${pad}SZGameKit.lutaAI(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.level)});`
-    case 'gk:lutaMove':
-      return `${pad}SZGameKit.lutaMove(${JSON.stringify(stmt.name)}, ${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.speed)}, ${compileExpr(valueToExpr(stmt.damage), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.range), 0, identifiers, recAt(base))}, ${stmt.pierce}, ${stmt.special});`
-    case 'gk:lutaMoveAnim':
-      return `${pad}SZGameKit.lutaMoveAnim(${JSON.stringify(stmt.name)}, ${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))});`
-    case 'gk:lutaAttack':
-      return `${pad}SZGameKit.lutaAttack(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.move)});`
-    case 'gk:lutaMatch':
-      return `${pad}SZGameKit.lutaMatch(${identifiers.get(stmt.p1Var)}, ${identifiers.get(stmt.p2Var)}, ${compileExpr(valueToExpr(stmt.rounds), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
-    case 'gk:lutaDrawHud':
-      return `${pad}SZGameKit.lutaDrawHud();`
-    case 'gk:lutaFighter':
-      return `${pad}SZGameKit.lutaFighter(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.left)}, ${JSON.stringify(stmt.right)}, ${JSON.stringify(stmt.jump)}, ${JSON.stringify(stmt.crouch)}, ${JSON.stringify(stmt.guard)}, ${identifiers.get(stmt.dtVar)});`
-    case 'gk:lutaAI':
-      return `${pad}SZGameKit.lutaAI(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.level)});`
-    case 'gk:lutaMove':
-      return `${pad}SZGameKit.lutaMove(${JSON.stringify(stmt.name)}, ${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.speed)}, ${compileExpr(valueToExpr(stmt.damage), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.range), 0, identifiers, recAt(base))}, ${stmt.pierce}, ${stmt.special});`
-    case 'gk:lutaMoveAnim':
-      return `${pad}SZGameKit.lutaMoveAnim(${JSON.stringify(stmt.name)}, ${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))});`
-    case 'gk:lutaAttack':
-      return `${pad}SZGameKit.lutaAttack(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.move)});`
     case 'gk:setSwingWindow':
       return `${pad}SZGameKit.setSwingWindow(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.start), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.active), 0, identifiers, recAt(base))});`
     case 'gk:playAnimOnce':
@@ -4308,58 +4280,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.oy), names)
       collectExprIdentifiers(valueToExpr(stmt.w), names)
       collectExprIdentifiers(valueToExpr(stmt.h), names)
-      return
-    case 'gk:lutaMatch':
-      names.add(stmt.p1Var)
-      names.add(stmt.p2Var)
-      collectExprIdentifiers(valueToExpr(stmt.rounds), names)
-      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
-      return
-    case 'gk:lutaDrawHud':
-      return
-    case 'gk:lutaFighter':
-      names.add(stmt.charVar)
-      names.add(stmt.dtVar)
-      return
-    case 'gk:lutaAI':
-    case 'gk:lutaAttack':
-      names.add(stmt.charVar)
-      return
-    case 'gk:lutaMove':
-      names.add(stmt.charVar)
-      collectExprIdentifiers(valueToExpr(stmt.damage), names)
-      collectExprIdentifiers(valueToExpr(stmt.range), names)
-      return
-    case 'gk:lutaMoveAnim':
-      names.add(stmt.charVar)
-      collectExprIdentifiers(valueToExpr(stmt.from), names)
-      collectExprIdentifiers(valueToExpr(stmt.to), names)
-      return
-    case 'gk:lutaMatch':
-      names.add(stmt.p1Var)
-      names.add(stmt.p2Var)
-      collectExprIdentifiers(valueToExpr(stmt.rounds), names)
-      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
-      return
-    case 'gk:lutaDrawHud':
-      return
-    case 'gk:lutaFighter':
-      names.add(stmt.charVar)
-      names.add(stmt.dtVar)
-      return
-    case 'gk:lutaAI':
-    case 'gk:lutaAttack':
-      names.add(stmt.charVar)
-      return
-    case 'gk:lutaMove':
-      names.add(stmt.charVar)
-      collectExprIdentifiers(valueToExpr(stmt.damage), names)
-      collectExprIdentifiers(valueToExpr(stmt.range), names)
-      return
-    case 'gk:lutaMoveAnim':
-      names.add(stmt.charVar)
-      collectExprIdentifiers(valueToExpr(stmt.from), names)
-      collectExprIdentifiers(valueToExpr(stmt.to), names)
       return
     case 'gk:lutaMatch':
       names.add(stmt.p1Var)
