@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
 import { SZIRSchema } from '#ir'
-import { CORE_EXAMPLES, gorilasNaMaoExample, invadersNaMaoExample } from './core'
+import {
+  CORE_EXAMPLES,
+  gorilasNaMaoExample,
+  invadersNaMaoExample,
+  plataformaVerticalNaMaoExample,
+} from './core'
 
 function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
   if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
@@ -85,5 +90,41 @@ describe('CORE_EXAMPLES — invadersNaMaoExample (classes 100% núcleo)', () => 
     expect((asset?.dataUrl.length ?? 0) < 2_000).toBe(true)
     const css = JSON.stringify(invadersNaMaoExample.ir.css)
     expect(css).toContain("url('background.png')")
+  })
+})
+
+describe('CORE_EXAMPLES — plataformaVerticalNaMaoExample (plataforma 100% núcleo)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(plataformaVerticalNaMaoExample)
+    expect(plataformaVerticalNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRSchema.safeParse(plataformaVerticalNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(plataformaVerticalNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa o vocabulário de física/câmera do núcleo (sem asset)', () => {
+    const types = collectTypes(plataformaVerticalNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Block/Platform/Player
+      'funcDecl', // overlap (colisão AABB) + updateCamera + animate
+      'forRange', // varre blocos/plataformas
+      'requestFrame', // o laço de quadro na mão
+      'canvasSetup',
+      'canvasFillRect', // herói e blocos são retângulos (asset-free)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(plataformaVerticalNaMaoExample.assets ?? []).toEqual([])
+    // a câmera na mão (scale + translate) sobrevive no código gerado
+    const code = compileStatements(plataformaVerticalNaMaoExample.ir.js, 0)
+    expect(code).toContain('ctx.scale(scale, scale)')
+    expect(code).toContain('ctx.translate(0 - camera.x, 0 - camera.y)')
   })
 })
