@@ -68,6 +68,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Cubo girando': '🧊',
   'Plataforma Vertical (na mão)': '🧗',
   'Portas do Castelo (na mão)': '🚪',
+  'Defesa da Torre (na mão)': '🏹',
 }
 
 function toEntry(

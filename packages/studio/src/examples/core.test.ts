@@ -3,6 +3,7 @@ import { compileStatements } from '#generators'
 import { SZIRSchema } from '#ir'
 import {
   CORE_EXAMPLES,
+  defesaDaTorreNaMaoExample,
   gorilasNaMaoExample,
   invadersNaMaoExample,
   plataformaVerticalNaMaoExample,
@@ -161,5 +162,39 @@ describe('CORE_EXAMPLES — portasDoCasteloNaMaoExample (platformer + passagem d
     const code = compileStatements(portasDoCasteloNaMaoExample.ir.js, 0)
     expect(code).toContain('ctx.globalAlpha = fade')
     expect(code).toContain('loadLevel(nextLevel)')
+  })
+})
+
+describe('CORE_EXAMPLES — defesaDaTorreNaMaoExample (tower defense na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(defesaDaTorreNaMaoExample)
+    expect(defesaDaTorreNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRSchema.safeParse(defesaDaTorreNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(defesaDaTorreNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa a mira por distância + o caminho desenhado, sem asset', () => {
+    const types = collectTypes(defesaDaTorreNaMaoExample.ir)
+    for (const expected of [
+      'classDecl',
+      'funcDecl',
+      'requestFrame',
+      'canvasSetup',
+      'canvasStroke',
+      'event',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    expect(defesaDaTorreNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(defesaDaTorreNaMaoExample.ir.js, 0)
+    expect(code).toContain('Math.hypot(ax - bx, ay - by)')
+    expect(code).toContain('Math.atan2(target.y - this.y, target.x - this.x)')
   })
 })
