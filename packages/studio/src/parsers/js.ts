@@ -9140,6 +9140,33 @@ function mapForOf(node: Node, source: string, ctx: ParseCtx): JSStatement {
   }
 }
 
+/**
+ * O corpo (já em IR) referencia a variável `name`? Anda a árvore de nós
+ * procurando um `{ type: 'var', name }`. Usado para decidir `repeat` (sem
+ * índice) × `forRange` (com índice): se o corpo lê o contador, não pode virar
+ * `repeat`, que descarta o nome.
+ */
+function bodyReferencesVar(body: JSStatement[], name: string): boolean {
+  let found = false
+  const walk = (value: unknown): void => {
+    if (found || value == null) return
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item)
+      return
+    }
+    if (typeof value === 'object') {
+      const obj = value as Record<string, unknown>
+      if (obj.type === 'var' && obj.name === name) {
+        found = true
+        return
+      }
+      for (const v of Object.values(obj)) walk(v)
+    }
+  }
+  walk(body)
+  return found
+}
+
 function mapFor(node: Node, source: string, ctx: ParseCtx): JSStatement {
   // for (let v = <de>; v < <ate>; v++ | v += <passo> | v = v + <passo>) { ... }
   const init = node.init
@@ -9201,13 +9228,18 @@ function mapFor(node: Node, source: string, ctx: ParseCtx): JSStatement {
   const body = bodyOfBlock(node.body, source, ctx)
 
   // Match EXATO do bloco "repeat" (de 0, até número, passo 1) tem PRIORIDADE —
-  // preserva o round-trip do sz_js_repeat.
+  // preserva o round-trip do sz_js_repeat. MAS só se o corpo NÃO usa o contador:
+  // "repeat" repete N vezes sem índice (o gerador cria um contador interno e o
+  // descarta), então colapsar um laço cujo corpo LÊ o `i` (ex.: setMatrixAt(i,…)
+  // do InstancedMesh) geraria código quebrado — esse laço fica `forRange`, que
+  // preserva o nome da variável.
   if (
     from.type === 'num' &&
     from.value === 0 &&
     to.type === 'num' &&
     step.type === 'num' &&
-    step.value === 1
+    step.value === 1 &&
+    !bodyReferencesVar(body, iName)
   ) {
     return { type: 'repeat', times: to, body }
   }
