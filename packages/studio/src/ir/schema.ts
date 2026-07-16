@@ -224,6 +224,8 @@ export type JSExpr =
     })
   // R21: um vivo QUALQUER do pool (o atirador aleatório do Space Invaders).
   | (JSExprCommon & { type: 'gk:randomActive'; mold: string })
+  // 🚀 R22 — Kit Nave: o poder de tiro valendo ('normal'|'metralhadora'|'leque').
+  | (JSExprCommon & { type: 'gk:navePowerOf'; charVar: string })
   | (JSExprCommon & { type: 'gk:countItem'; name: string })
   | (JSExprCommon & { type: 'gk:timeSurvived' })
   | (JSExprCommon & { type: 'gk:kills' })
@@ -657,6 +659,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('gk:randomActive'), mold: irText(), ...idField }),
+    z.object({ type: z.literal('gk:navePowerOf'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:countItem'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:timeSurvived'), ...idField }),
     z.object({ type: z.literal('gk:kills'), ...idField }),
@@ -2949,6 +2952,50 @@ export type JSStatement =
       arc: number | JSExpr
       degrees: number | JSExpr
       speed: number | JSExpr
+    })
+  // 🚀 R22 — Kit Nave: pilotar, poder de tiro, a FORMAÇÃO que marcha em bloco,
+  // o atirador aleatório dela, a linha de invasão, o céu de estrelas e a bomba.
+  | (JSStatementCommon & {
+      type: 'gk:naveShip'
+      charVar: string
+      speed: number | JSExpr
+      lean: number | JSExpr
+      dtVar: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:navePowerup'
+      charVar: string
+      power: string
+      seconds: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:naveWave'
+      mold: string
+      cols: number | JSExpr
+      rows: number | JSExpr
+      gap: number | JSExpr
+      speed: number | JSExpr
+      drop: number | JSExpr
+      accel: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:naveWaveShooter'
+      mold: string
+      seconds: number | JSExpr
+      bullet: string
+      speed: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:naveInvasionLine'; y: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:naveStarfield'
+      count: number | JSExpr
+      speed: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:naveBomb'
+      mold: string
+      radius: number | JSExpr
+      target: string
     })
   | (JSStatementCommon & { type: 'gk:setOpacity'; charVar: string; percent: number | JSExpr })
   | (JSStatementCommon & {
@@ -6174,6 +6221,58 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:naveShip'),
+      charVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      lean: z.union([JSExprSchema, z.number()]),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:navePowerup'),
+      charVar: irText(),
+      power: irText(),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:naveWave'),
+      mold: irText(),
+      cols: z.union([JSExprSchema, z.number()]),
+      rows: z.union([JSExprSchema, z.number()]),
+      gap: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      drop: z.union([JSExprSchema, z.number()]),
+      accel: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:naveWaveShooter'),
+      mold: irText(),
+      seconds: z.union([JSExprSchema, z.number()]),
+      bullet: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:naveInvasionLine'),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:naveStarfield'),
+      count: z.union([JSExprSchema, z.number()]),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:naveBomb'),
+      mold: irText(),
+      radius: z.union([JSExprSchema, z.number()]),
+      target: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:setOpacity'),
       charVar: irText(),
       percent: z.union([JSExprSchema, z.number()]),
@@ -7821,6 +7920,13 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:scrollImage',
   'gk:leanOnMove',
   'gk:fanShot',
+  'gk:naveShip',
+  'gk:navePowerup',
+  'gk:naveWave',
+  'gk:naveWaveShooter',
+  'gk:naveInvasionLine',
+  'gk:naveStarfield',
+  'gk:naveBomb',
   'gk:setOpacity',
   'gk:fadeTo',
   'gk:tweenProperty',

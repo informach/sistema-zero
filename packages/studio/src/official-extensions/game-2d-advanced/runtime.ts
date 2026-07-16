@@ -73,6 +73,20 @@ export const gameKitRuntime = `(function () {
   var trailed = [];
   // 🔁 R21: offsets do fundo que rola, por nome de imagem (parallax = N camadas).
   var scrolls = Object.create(null);
+  // 🚀 R22 — Kit Nave. As ondas sao ANONIMAS num array (como os grids do Space
+  // Invaders: varias ao mesmo tempo, a crianca nao nomeia); o resto e config.
+  var nave = {
+    waves: [],      // { id, vx, drop, accel, invaded, members: [] }
+    shooters: [],   // { mold, interval, timer, bullet, speed } (dedupe por molde)
+    bombs: [],      // { e, radius, target }
+    powered: [],    // entidades com _gunMode ativo (varrida reversa)
+    stars: null,    // starfield preguicoso { n, xs, ys, rs, frame }
+    invadeY: 0,     // 0 = fundo da tela (config; NAO reseta em jogo novo)
+    seq: 0          // gerador de id de onda (o carimbo _wave das entidades)
+  };
+  var MAX_WAVES = 8;
+  var MAX_WAVE_VX = 1500;
+  var MAX_NAVE_BOMBS = 3;
   var sounds = Object.create(null);      // nome -> HTMLAudioElement
   var mission = null;                    // { seconds, killCount }
   var missionDone = false;
@@ -343,6 +357,8 @@ export const gameKitRuntime = `(function () {
         waits.length = 0;
         // ⚠️ idem: sem isto, "Jogar de novo" recomeçava no round 3 com 2 a 0.
         lutaNewGame();
+        // 🚀 idem: onda/bomba/poder da partida anterior não invadem a nova.
+        naveNewGame();
         // ⚠️ TODO global de jogo entra AQUI. Os 3 abaixo escaparam quando nasceram:
         // · checkpoint — a criança marca o ponto numa bandeira no meio da fase (uso
         //   natural do bloco); sem zerar, "Jogar de novo" NASCE no meio da fase da
@@ -825,6 +841,7 @@ export const gameKitRuntime = `(function () {
     stepSwings(dt); // decai o tempo dos golpes de ação (🥷)
     stepWaits(); // "Esperar N s, fazer" (⏱️ Tempo) — one-shot no relógio do jogo
     stepLuta(dt); // 🥊 Kit Luta: rounds/fases (travam só os lutadores, sem estado novo)
+    stepNave(dt); // 🚀 Kit Nave: a formação marcha, atira, bomba quica, poder expira
     stepRpg(dt); // NPCs que andam + motor de cena + transição de mapa (Kit RPG)
     for (var i = 0; i < spawners.length; i++) {
       var sp = spawners[i];
@@ -916,7 +933,9 @@ export const gameKitRuntime = `(function () {
       opacity: 1, _hbX: 0, _hbY: 0, _hbW: 0, _hbH: 0,
       // ✨/🎨 R21: rastro contínuo e inclinação ao andar (mesmo shape do pool).
       _trailOn: false, _trailColor: '', _trailSize: 3, _trailRate: 30,
-      _trailLife: 0.4, _trailAcc: 0, _trailFrame: -1, _leanMax: 0, _leanNow: 0
+      _trailLife: 0.4, _trailAcc: 0, _trailFrame: -1, _leanMax: 0, _leanNow: 0,
+      // 🚀 R22: poder de tiro da nave (o herói É um personagem) + shape do pool.
+      _wave: 0, _gunMode: '', _gunT: 0, _naveBomb: false
     };
     c._bornX = c.x;
     c._bornY = c.y;
@@ -1420,6 +1439,9 @@ export const gameKitRuntime = `(function () {
       // deixaria o inimigo novo nascer soltando o jato do anterior, tombado).
       _trailOn: false, _trailColor: '', _trailSize: 3, _trailRate: 30,
       _trailLife: 0.4, _trailAcc: 0, _trailFrame: -1, _leanMax: 0, _leanNow: 0,
+      // 🚀 R22: o carimbo da onda (reciclado NÃO marcha na formação fantasma),
+      // o poder de tiro e a marca de bomba do kit.
+      _wave: 0, _gunMode: '', _gunT: 0, _naveBomb: false,
       // 🥷 R18: a janela do golpe (recuo/ativo em segundos; 0/0 = o golpe inteiro
       // machuca, que é o comportamento de sempre) e o ESTADO com a trava de
       // animação. Reciclar sem zerar deixaria o inimigo novo nascer "golpeando",
@@ -1495,6 +1517,8 @@ export const gameKitRuntime = `(function () {
     // R21: rastro/lean (ver blankEntity — o contrato exige o par).
     e._trailOn = false; e._trailColor = ''; e._trailSize = 3; e._trailRate = 30;
     e._trailLife = 0.4; e._trailAcc = 0; e._trailFrame = -1; e._leanMax = 0; e._leanNow = 0;
+    // R22: sem carimbo de onda, sem poder, sem marca de bomba.
+    e._wave = 0; e._gunMode = ''; e._gunT = 0; e._naveBomb = false;
     pool.active.push(e);
     return e;
   }
@@ -4220,6 +4244,310 @@ export const gameKitRuntime = `(function () {
     }
   }
 
+  // ==========================================================================
+  // 🚀 KIT NAVE - o atalho do genero (Space Invaders / shoot-'em-up)
+  // ==========================================================================
+  // A extensao GERAL ja faz nave "na unha" (molde + spawn + setVelocity + colisao
+  // + cooldown). O kit e o ATALHO do que so existe no genero: a FORMACAO que
+  // marcha em bloco (inverte na borda COLETIVA, desce e acelera - o coracao do
+  // Space Invaders, impossivel de compor com blocos por-entidade), o atirador
+  // aleatorio da formacao, a linha de invasao, o ceu de estrelas e a bomba.
+  //
+  // O QUE ELE REUSA (nao duplica): moldes/pools (os invasores sao entidades
+  // NORMAIS - overlap/hurt/recycle/drawActive/cull da crianca valem sem uma
+  // linha nova; a morte encolhe a formacao sozinha porque o sweep derruba o
+  // membro do bbox), randomActive (o atirador), shockwave (a explosao da bomba),
+  // bounceOnEdges (o quique), leanOnMove (a inclinacao do Pilotar), fanShot (o
+  // poder "leque" e receita: se o poder e leque -> Atirar um leque).
+  //
+  // ⭐ O carimbo _wave e o que evita a onda FANTASMA: entidade reciclada e
+  // renascida p/ outro uso tem _wave zerado pelo spawnFromMold, entao o sweep a
+  // derruba da formacao em vez de marchar um tiro alheio.
+  /** Pilotar: anda de lado (setas ou A/D), preso na tela, com a inclinacao. */
+  function naveShip(who, speed, lean, dt) {
+    if (!who || typeof who !== 'object') return;
+    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
+    var v = num(speed, 420);
+    var dx = 0;
+    if (keys['arrowleft'] || keys['a']) dx -= 1;
+    if (keys['arrowright'] || keys['d']) dx += 1;
+    who.x += dx * v * d;
+    var maxX = config.w - num(who.w, 0);
+    if (who.x < 0) who.x = 0;
+    if (who.x > maxX) who.x = maxX;
+    who._prevX = who.x; // o motor moveu: varredura consistente
+    who._leanMax = num(lean, 10); // compoe o "Inclinar ao andar" geral
+    if (dx) setFacing(who, dx, 0);
+  }
+  /** Poder de tiro temporario POR ENTIDADE (o MachineGun de 5 s do Chris). */
+  var NAVE_POWERS = { metralhadora: 1, leque: 1 };
+  function navePowerup(who, power, seconds) {
+    if (!who || typeof who !== 'object') return;
+    var p = text(power, '');
+    if (!NAVE_POWERS[p]) {
+      warnOnce('navepower:' + p, 'o poder "' + p + '" não existe — use metralhadora ou leque');
+      return;
+    }
+    if (!who._gunMode) nave.powered.push(who); // ja com poder: so renova (sem dupe)
+    who._gunMode = p;
+    who._gunT = Math.max(0.1, num(seconds, 5));
+  }
+  function navePowerOf(who) {
+    if (!who || typeof who !== 'object') return 'normal';
+    return who._gunMode ? who._gunMode : 'normal';
+  }
+  /** A FORMACAO: nasce em grade centrada no topo; o MOTOR marcha (stepNave). */
+  function naveWave(moldName, cols, rows, gap, speed, drop, accel) {
+    var k = text(moldName, '');
+    if (!molds[k]) {
+      warnOnce('wave:' + k, 'o molde "' + k + '" não existe — crie com "Criar o molde"');
+      return;
+    }
+    if (nave.waves.length >= MAX_WAVES) {
+      warnOnce('waves', 'muitas ondas ao mesmo tempo (teto ' + MAX_WAVES + ') — espere a onda:limpa');
+      return;
+    }
+    var c = Math.max(1, Math.min(20, Math.round(num(cols, 8))));
+    var r = Math.max(1, Math.min(10, Math.round(num(rows, 3))));
+    var g = Math.max(8, Math.min(200, num(gap, 60)));
+    nave.seq += 1;
+    var w = {
+      id: nave.seq,
+      vx: num(speed, 150),
+      drop: num(drop, 30),
+      accel: Math.max(0, num(accel, 15)),
+      invaded: false,
+      members: []
+    };
+    var mw = molds[k].w;
+    var totalW = (c - 1) * g + mw;
+    var startX = Math.max(0, (config.w - totalW) / 2);
+    var startY = 40;
+    for (var row = 0; row < r; row++) {
+      for (var col = 0; col < c; col++) {
+        var e = spawnFromMold(k, startX + col * g, startY + row * g);
+        if (!e) break; // pool lotado: o spawnFromMold ja avisou
+        e._wave = w.id;
+        w.members.push(e);
+      }
+    }
+    if (w.members.length) nave.waves.push(w);
+  }
+  /** O atirador da formacao: a cada N s, um vivo ALEATORIO do molde atira. */
+  function naveWaveShooter(moldName, seconds, bulletMold, speed) {
+    var k = text(moldName, '');
+    var b = text(bulletMold, '');
+    if (!molds[b]) {
+      warnOnce('waveshoot:' + b, 'o molde do tiro "' + b + '" não existe — crie com "Criar o molde"');
+      return;
+    }
+    var itv = Math.max(0.1, num(seconds, 1.5));
+    var v = num(speed, 300);
+    // Dedupe por molde (padrao startSpawner): re-ligar so TROCA o ritmo.
+    for (var i = 0; i < nave.shooters.length; i++) {
+      if (nave.shooters[i].mold === k) {
+        nave.shooters[i].interval = itv;
+        nave.shooters[i].bullet = b;
+        nave.shooters[i].speed = v;
+        return;
+      }
+    }
+    nave.shooters.push({ mold: k, interval: itv, timer: 0, bullet: b, speed: v });
+  }
+  /** A linha de invasao (0 = fundo da tela). Config: NAO reseta em jogo novo. */
+  function naveInvasionLine(y) {
+    nave.invadeY = Math.max(0, num(y, 0));
+  }
+  /** Ceu de estrelas rolando (100 estrelas a 0.3 px/quadro no Chris = 18 px/s). */
+  function naveStarfield(count, speed) {
+    if (!ctx2d) return;
+    var n = Math.max(1, Math.min(500, Math.round(num(count, 100))));
+    var st = nave.stars;
+    if (!st || st.n !== n) {
+      st = nave.stars = { n: n, xs: [], ys: [], rs: [], frame: -1 };
+      for (var i = 0; i < n; i++) {
+        st.xs.push(Math.random() * config.w);
+        st.ys.push(Math.random() * config.h);
+        st.rs.push(1 + Math.random() * 2);
+      }
+    }
+    var v = num(speed, 20);
+    // Anda 1x por quadro (carimbo) e congela fora de 'jogando', como as faiscas.
+    if (st.frame !== frameCount && state === 'jogando') {
+      st.frame = frameCount;
+      for (var j = 0; j < n; j++) {
+        st.ys[j] += v * currentDt;
+        if (st.ys[j] > config.h) { st.ys[j] = -2; st.xs[j] = Math.random() * config.w; }
+        else if (st.ys[j] < -4) { st.ys[j] = config.h; st.xs[j] = Math.random() * config.w; }
+      }
+    }
+    // Decor de TELA: com camera ligada, cola no retangulo visivel (drawBackground).
+    var ox = camera.on ? camera.x : 0;
+    var oy = camera.on ? camera.y : 0;
+    ctx2d.fillStyle = '#ffffff';
+    for (var s = 0; s < n; s++) {
+      ctx2d.fillRect(ox + st.xs[s], oy + st.ys[s], st.rs[s], st.rs[s]);
+    }
+  }
+  /**
+   * A Bomb do Chris: quica pela tela; quando a crianca a RECOLHE (no overlap
+   * tiro x bomba ela so diz "Recolher"), o motor solta a onda de choque, varre o
+   * molde-alvo no raio recolhendo e avisa 'bomba:acertou' POR vitima. O gatilho
+   * ser o recycle mantem a colisao com a CRIANCA (paradigma do kit inteiro).
+   */
+  function naveBomb(moldName, radius, targetMold) {
+    var k = text(moldName, '');
+    if (!molds[k]) {
+      warnOnce('bomb:' + k, 'o molde "' + k + '" não existe — crie com "Criar o molde"');
+      return;
+    }
+    var vivas = 0;
+    for (var i = 0; i < nave.bombs.length; i++) {
+      if (nave.bombs[i].e._active !== false) vivas++;
+    }
+    if (vivas >= MAX_NAVE_BOMBS) {
+      warnOnce('bombs', 'já há ' + MAX_NAVE_BOMBS + ' bombas no ar — espere uma explodir');
+      return;
+    }
+    var e = spawnFromMold(k, 0, 0);
+    if (!e) return;
+    e.x = e.w + Math.random() * (config.w - e.w * 3);
+    e.y = e.h + Math.random() * (config.h * 0.5);
+    e._prevX = e.x; e._prevY = e.y;
+    e.vx = (Math.random() - 0.5) * 360; // o +-3 px/quadro do Chris, em px/s
+    e.vy = (Math.random() - 0.5) * 360;
+    e._naveBomb = true;
+    nave.bombs.push({ e: e, radius: Math.max(10, num(radius, 200)), target: text(targetMold, '') });
+  }
+  /** O passo do kit (roda no stepSystems: pausa pausa tudo de graca). */
+  function stepNave(dt) {
+    // 1) ondas: sweep de membros -> bbox dos VIVOS -> marcha em bloco.
+    for (var wi = nave.waves.length - 1; wi >= 0; wi--) {
+      var w = nave.waves[wi];
+      var ms = w.members;
+      var minX = Infinity;
+      var maxX = -Infinity;
+      var maxB = -Infinity;
+      for (var i = ms.length - 1; i >= 0; i--) {
+        var e = ms[i];
+        if (!e || e._active === false || e._wave !== w.id) {
+          ms[i] = ms[ms.length - 1];
+          ms.pop();
+          continue;
+        }
+        if (e.x < minX) minX = e.x;
+        if (e.x + e.w > maxX) maxX = e.x + e.w;
+        if (e.y + e.h > maxB) maxB = e.y + e.h;
+      }
+      if (!ms.length) {
+        nave.waves[wi] = nave.waves[nave.waves.length - 1];
+        nave.waves.pop();
+        emit('onda:limpa', null); // estado consistente ANTES do aviso (setMission)
+        continue;
+      }
+      var dx = w.vx * dt;
+      // Borda COLETIVA com guarda de SINAL: um quadro no teto do dt (0.1 s) com
+      // vx acelerado nao pode re-inverter em loop preso na borda.
+      if ((maxX + dx >= config.w && w.vx > 0) || (minX + dx <= 0 && w.vx < 0)) {
+        w.vx = -w.vx * (1 + w.accel / 100);
+        if (w.vx > MAX_WAVE_VX) w.vx = MAX_WAVE_VX;
+        if (w.vx < -MAX_WAVE_VX) w.vx = -MAX_WAVE_VX;
+        dx = w.vx * dt;
+        for (i = 0; i < ms.length; i++) {
+          ms[i].y += w.drop;
+          ms[i]._prevY = ms[i].y;
+        }
+        maxB += w.drop;
+      }
+      for (i = 0; i < ms.length; i++) {
+        ms[i].x += dx;
+        ms[i]._prevX = ms[i].x; // o motor marcha: varredura consistente
+      }
+      var line = nave.invadeY > 0 ? nave.invadeY : config.h;
+      if (!w.invaded && maxB >= line) {
+        w.invaded = true;
+        emit('onda:invadiu', null);
+      }
+    }
+    // 2) atiradores: um vivo ALEATORIO do molde atira p/ baixo.
+    for (var si = 0; si < nave.shooters.length; si++) {
+      var sh = nave.shooters[si];
+      sh.timer += dt;
+      while (sh.timer >= sh.interval && sh.interval > 0) {
+        sh.timer -= sh.interval;
+        var atirador = randomActive(sh.mold);
+        if (!atirador) continue;
+        var b = spawnFromMold(sh.bullet, 0, 0);
+        if (!b) break;
+        b.x = centerX(atirador) - b.w / 2;
+        b.y = num(atirador.y, 0) + num(atirador.h, 0);
+        b._prevX = b.x;
+        b._prevY = b.y;
+        b.vx = 0;
+        b.vy = sh.speed;
+      }
+    }
+    // 3) bombas: o motor move + quica; recolhida -> explosao.
+    for (var bi = nave.bombs.length - 1; bi >= 0; bi--) {
+      var rec = nave.bombs[bi];
+      var bomba = rec.e;
+      if (bomba._active !== false && bomba._naveBomb === true) {
+        moveByVelocity(bomba, dt);
+        bounceOnEdges(bomba);
+        continue;
+      }
+      // Recolhida pela crianca (ou reciclada): explode ONDE PAROU — a menos que
+      // o pool ja tenha REUSADO o objeto p/ outra entidade (_naveBomb zerado no
+      // respawn): ai a posicao e de outro e a explosao e descartada.
+      if (bomba._active === false) {
+        var bx = centerX(bomba);
+        var by = centerY(bomba);
+        shockwave(bx, by, rec.radius, 0.4, '#ffffff');
+        var alvo = pools[rec.target];
+        if (alvo) {
+          for (var vi = alvo.active.length - 1; vi >= 0; vi--) {
+            var v = alvo.active[vi];
+            if (!v || v._active === false) continue;
+            var ddx = centerX(v) - bx;
+            var ddy = centerY(v) - by;
+            if (ddx * ddx + ddy * ddy <= rec.radius * rec.radius) {
+              recycle(v);
+              emit('bomba:acertou', null);
+            }
+          }
+        } else if (rec.target) {
+          warnOnce('bombalvo:' + rec.target, 'o molde-alvo da bomba "' + rec.target + '" não existe');
+        }
+      }
+      nave.bombs[bi] = nave.bombs[nave.bombs.length - 1];
+      nave.bombs.pop();
+    }
+    // 4) poderes: expira sozinho (o setTimeout de 5 s do Chris, no relogio do jogo).
+    for (var pi = nave.powered.length - 1; pi >= 0; pi--) {
+      var pe = nave.powered[pi];
+      pe._gunT = num(pe._gunT, 0) - dt;
+      if (pe._gunT <= 0 || pe._active === false) {
+        pe._gunMode = '';
+        pe._gunT = 0;
+        nave.powered[pi] = nave.powered[nave.powered.length - 1];
+        nave.powered.pop();
+      }
+    }
+  }
+  /** "Jogar de novo" limpa o kit (as ondas a crianca recria no quando-entrar). */
+  function naveNewGame() {
+    nave.waves.length = 0;
+    nave.bombs.length = 0;
+    for (var i = 0; i < nave.powered.length; i++) {
+      nave.powered[i]._gunMode = '';
+      nave.powered[i]._gunT = 0;
+    }
+    nave.powered.length = 0;
+    // Os ritmos PERSISTEM com o relogio zerado (espelho dos spawners); a linha
+    // de invasao e o ceu sao config e ficam.
+    for (var s = 0; s < nave.shooters.length; s++) nave.shooters[s].timer = 0;
+  }
+
   // ---- 🎨 Aparências (looks) ----
   function defineLook(name, fn, baseW, baseH) {
     var k = text(name, '');
@@ -5563,6 +5891,15 @@ export const gameKitRuntime = `(function () {
     scrollImage: guard('scrollImage', scrollImage),
     leanOnMove: guard('leanOnMove', leanOnMove),
     fanShot: guard('fanShot', fanShot),
+    // 🚀 R22 — Kit Nave
+    naveShip: guard('naveShip', naveShip),
+    navePowerup: guard('navePowerup', navePowerup),
+    navePowerOf: guard('navePowerOf', navePowerOf),
+    naveWave: guard('naveWave', naveWave),
+    naveWaveShooter: guard('naveWaveShooter', naveWaveShooter),
+    naveInvasionLine: guard('naveInvasionLine', naveInvasionLine),
+    naveStarfield: guard('naveStarfield', naveStarfield),
+    naveBomb: guard('naveBomb', naveBomb),
     setVelocityAngle: guard('setVelocityAngle', setVelocityAngle),
     angleOf: guard('angleOf', angleOf),
     angleTo: guard('angleTo', angleTo),

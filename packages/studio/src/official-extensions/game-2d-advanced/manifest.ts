@@ -4,6 +4,7 @@ import {
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   florestaNinjaExample,
+  invasaoDosOvnisExample,
   saltoNaFlorestaExample,
   vilaDoDragaoExample,
 } from './examples'
@@ -11,9 +12,9 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.20.0',
+  version: '0.21.0',
   description:
-    'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E quatro atalhos prontos para começar rápido: 🏃 plataforma (pulo gostoso, plataformas, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, tipos, capturar, evoluir) e 🥊 luta (dois jogadores, rounds, combo, especial).',
+    'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E cinco atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial) e 🚀 nave (a invasão que marcha, desce e acelera).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -702,6 +703,68 @@ progresso do RPG (flags, itens, mapa, posição, atributos, poções, golpe espe
 continua de onde parou, mesmo fechando e reabrindo. Ligue o "Continuar" só quando
 "tem jogo salvo?". (O **Menu de escolha** subiu para 💬 Fala & escolhas — vale em
 qualquer jogo; aqui ele combina lindo com o "Quando conversar" e as cenas.)
+
+## 🚀 Kit Nave
+
+O atalho do jogo de nave (Space Invaders e primos). O que NÃO é só de nave vem
+do motor geral, e é você quem monta: o SEU tiro (molde + "Atirar um leque" ou
+nascer + velocidade), a colisão ("Quando se tocarem"), o placar, o dano com
+invencibilidade, o som e as telas. O kit traz o que SÓ existe no gênero — e a
+joia é a formação que marcha em BLOCO, impossível de montar peça por peça.
+
+### 🚀 Kit Nave: a nave
+
+**Pilotar a nave** anda só de lado (setas ou A/D), preso na tela, já com a
+inclinação de curva. Use no "A cada quadro" — e o tiro é seu: *"se apertou
+espaço E recarregou: Atirar um leque de 1"*.
+
+**Dar o poder de tiro … por N s** é o power-up TEMPORÁRIO (acaba sozinho):
+**metralhadora** = atire com recarga bem menor segurando espaço; **leque** =
+"Atirar um leque" de 5. Na hora de atirar, pergunte **o poder de tiro de …** —
+é o galho do "se". Solte o poder como prêmio: *"ao derrotar, com chance de 8%"*.
+
+### 🛸 Kit Nave: a invasão
+
+**Invadir: onda do molde …** cria a formação (colunas × linhas) e o MOTOR marcha
+o bloco inteiro: bate na borda → todo mundo DESCE um passo e ACELERA. Os
+invasores são vivos NORMAIS do molde — seu tiro os derrota com o "Quando se
+tocarem" de sempre, e a formação encolhe sozinha. ⚠️ Não mova os invasores você
+mesmo (perseguir/deslizar neles briga com a marcha).
+
+Derrotou todos? Sai o aviso \`onda:limpa\` — escute e crie a PRÓXIMA mais
+rápida: *"velocidade = velocidade × 1.2; Invadir de novo"*. A dificuldade
+infinita em dois blocos.
+
+**A cada N s, um invasor atira** — um vivo SORTEADO da formação solta o tiro
+(ligue UMA vez; religar troca o ritmo). O tiro desce sozinho? Não: mova com
+"Para cada vivo + Mover pela velocidade" e recolha com "Recolher quem saiu" —
+tiro é tiro, do kit ou seu.
+
+**Marcar a linha de invasão** é a derrota clássica: a formação DESCEU até ali →
+aviso \`onda:invadiu\` → *"Quando o aviso chegar: Terminar o jogo"*.
+
+### 🌌 Kit Nave: o espaço
+
+**Desenhar o céu de estrelas** — o espaço rolando para sempre (primeira linha do
+"Desenhar o jogo"). Para fundo com IMAGEM, o geral "Pintar o fundo rolando" faz
+até paralaxe.
+
+**Soltar uma bomba** — ela quica pela tela; quando o SEU tiro a recolher (no
+"Quando se tocarem": Recolher a bomba), o motor solta a onda de choque, recolhe
+o molde-alvo no raio e avisa \`bomba:acertou\` por vítima (some +50 lá). Máximo
+de 3 no ar.
+
+### Receitas do gênero de nave (com os blocos gerais)
+
+- **Chefe**: um molde de vida alta + **Nascer com apelido** ("chefe") + **barra
+  de vida** + padrões com "A cada N s" e "Atirar um leque". Nenhum bloco novo.
+- **Asteroide que se parte**: no "Quando se tocarem" tiro × asteroide-grande,
+  nasça 2 do molde pequeno na posição dele (± um empurrãozinho no ângulo) e
+  recolha o grande.
+- **Escudo**: **machucar … 0 de vida com 3 s de invencibilidade** — pisca e fica
+  imune, sem tirar vida. É o escudo num bloco.
+- **3 vidas**: uma variável + **corações** no HUD (o exemplo "Invasão dos Óvnis"
+  mostra tudo isso junto).
 `,
   examples: [
     cacaMoedasExample,
@@ -710,5 +773,6 @@ qualquer jogo; aqui ele combina lindo com o "Quando conversar" e as cenas.)
     florestaNinjaExample,
     saltoNaFlorestaExample,
     bichinhosDoQuintalExample,
+    invasaoDosOvnisExample,
   ],
 }

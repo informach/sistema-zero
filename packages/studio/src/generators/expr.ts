@@ -461,6 +461,8 @@ export function compileExpr(
       return `SZGameKit.nearestActive(${JSON.stringify(expr.mold)}, ${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)})`
     case 'gk:randomActive':
       return `SZGameKit.randomActive(${JSON.stringify(expr.mold)})`
+    case 'gk:navePowerOf':
+      return `SZGameKit.navePowerOf(${identifiers.get(expr.charVar)})`
     case 'gk:countItem':
       return `SZGameKit.rpgCountItem(${JSON.stringify(expr.name)})`
     case 'gk:timeSurvived':

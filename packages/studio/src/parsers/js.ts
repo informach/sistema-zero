@@ -3900,6 +3900,8 @@ const GK_PKM_DIFF = new Set(['fácil', 'normal', 'difícil', 'raríssimo'])
 // Espelham os dropdowns do Kit Luta e as tabelas do runtime.
 const GK_LUTA_SPEEDS = new Set(['rápido', 'médio', 'pesado'])
 const GK_LUTA_LEVELS = new Set(['fácil', 'normal', 'difícil'])
+// 🚀 Kit Nave: espelha o dropdown do sz_gk_nave_powerup (fora do Set → rawJS).
+const GK_NAVE_POWERS = new Set(['metralhadora', 'leque'])
 const GK_ENTITY_STATES = new Set([
   'parado',
   'andando',
@@ -4083,6 +4085,10 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   }
   if (method === 'randomActive' && args[0]?.type === 'StringLiteral') {
     return { type: 'gk:randomActive', mold: args[0].value as string }
+  }
+  if (method === 'navePowerOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:navePowerOf', charVar }
   }
   if (method === 'rpgCountItem' && args[0]?.type === 'StringLiteral') {
     return { type: 'gk:countItem', name: args[0].value as string }
@@ -5156,6 +5162,88 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         isSimpleValue(degrees) &&
         isSimpleValue(speed)
         ? { type: 'gk:fanShot', charVar, mold: args[1].value as string, count, arc, degrees, speed }
+        : null
+    }
+    // 🚀 R22 — Kit Nave
+    case 'naveShip': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[3])
+      if (!charVar || !dtVar) return null
+      const speed = toExpr(args[1], ctx)
+      const lean = toExpr(args[2], ctx)
+      return isSimpleValue(speed) && isSimpleValue(lean)
+        ? { type: 'gk:naveShip', charVar, speed, lean, dtVar }
+        : null
+    }
+    case 'navePowerup': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const power = args[1].value as string
+      if (!GK_NAVE_POWERS.has(power)) return null
+      const seconds = toExpr(args[2], ctx)
+      return isSimpleValue(seconds) ? { type: 'gk:navePowerup', charVar, power, seconds } : null
+    }
+    case 'naveWave': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const cols = toExpr(args[1], ctx)
+      const rows = toExpr(args[2], ctx)
+      const gap = toExpr(args[3], ctx)
+      const speed = toExpr(args[4], ctx)
+      const drop = toExpr(args[5], ctx)
+      const accel = toExpr(args[6], ctx)
+      return isSimpleValue(cols) &&
+        isSimpleValue(rows) &&
+        isSimpleValue(gap) &&
+        isSimpleValue(speed) &&
+        isSimpleValue(drop) &&
+        isSimpleValue(accel)
+        ? {
+            type: 'gk:naveWave',
+            mold: args[0].value as string,
+            cols,
+            rows,
+            gap,
+            speed,
+            drop,
+            accel,
+          }
+        : null
+    }
+    case 'naveWaveShooter': {
+      if (args[0]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') return null
+      const seconds = toExpr(args[1], ctx)
+      const speed = toExpr(args[3], ctx)
+      return isSimpleValue(seconds) && isSimpleValue(speed)
+        ? {
+            type: 'gk:naveWaveShooter',
+            mold: args[0].value as string,
+            seconds,
+            bullet: args[2].value as string,
+            speed,
+          }
+        : null
+    }
+    case 'naveInvasionLine': {
+      const y = toExpr(args[0], ctx)
+      return isSimpleValue(y) ? { type: 'gk:naveInvasionLine', y } : null
+    }
+    case 'naveStarfield': {
+      const count = toExpr(args[0], ctx)
+      const speed = toExpr(args[1], ctx)
+      return isSimpleValue(count) && isSimpleValue(speed)
+        ? { type: 'gk:naveStarfield', count, speed }
+        : null
+    }
+    case 'naveBomb': {
+      if (args[0]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') return null
+      const radius = toExpr(args[1], ctx)
+      return isSimpleValue(radius)
+        ? {
+            type: 'gk:naveBomb',
+            mold: args[0].value as string,
+            radius,
+            target: args[2].value as string,
+          }
         : null
     }
     case 'setOpacity': {
@@ -9492,6 +9580,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:angleTo':
     case 'gk:nearestActive':
     case 'gk:randomActive':
+    case 'gk:navePowerOf':
     case 'gk:countItem':
     case 'gk:timeSurvived':
     case 'gk:kills':

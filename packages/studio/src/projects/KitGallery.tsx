@@ -50,6 +50,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Floresta Ninja': '🥷',
   'Salto na Floresta': '🌳',
   'Bichinhos do Quintal': '👾',
+  'Invasão dos Óvnis': '🛸',
   'Boneco de formas': '🪆',
   'Noite enevoada': '🌙',
   'Enxame que gira': '🐝',

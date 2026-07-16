@@ -347,6 +347,28 @@ API global injetada como window.SZGameKit:
   por estado + platformerAnim(quem) todo quadro (a animação sai da física).
   Ordem canônica no onUpdate: platformerHero → dropThrough → collideGroup(chao) →
   oneWayPlatform → rideOn → stompKill → platformerAnim.
+- 🚀 Kit Nave (Space Invaders — o ATALHO do gênero; nave "na unha" segue possível
+  com molde + spawn + setVelocity + overlap + cooldown): naveShip(quem, vel,
+  inclinaGraus, dt) = anda SÓ de lado (setas/A-D), preso na tela, com lean — o
+  TIRO é da criança: "se keyPressed(' ') e cooldownReady(nave, 0.35): fanShot(
+  nave, 'tiro', 1, 0, -90, 600)". ⭐ naveWave(molde, cols, linhas, espaço, vel,
+  desce, acelera%) = a FORMAÇÃO que o MOTOR marcha em bloco (inverte na borda
+  COLETIVA, desce, acelera; a morte encolhe a formação sozinha) — NUNCA emita
+  seek/tweenTo nos membros (briga com a marcha); o overlap tiro×invasor é da
+  criança, como sempre. Avisos: 'onda:limpa' (crie a próxima MAIS RÁPIDA:
+  velocidade = velocidade * 1.2 → naveWave de novo — a dificuldade em 2 blocos)
+  e 'onda:invadiu' (com naveInvasionLine(y); padrão: endGame()).
+  naveWaveShooter(molde, seg, moldeDoTiro, vel) = um invasor SORTEADO atira
+  (dedupe por molde; o tiro se move com forEachActive + moveByVelocity + cull).
+  navePowerup(quem, "metralhadora"|"leque", seg) + navePowerOf(quem) = power-up
+  temporário (metralhadora = keyDown + cooldown 0.12; leque = fanShot de 5).
+  naveStarfield(n, vel) = céu rolando (1ª linha do onDraw). naveBomb(molde,
+  raio, alvoMolde) = bomba que quica; a criança a RECOLHE no overlap → o motor
+  explode (shockwave + recolhe o alvo no raio + 'bomba:acertou' por vítima,
+  some os pontos lá). Receitas SEM bloco novo: chefe = molde de vida alta +
+  spawn_named + drawHealthBar + fanShot em padrões; asteroide que parte = no
+  overlap, 2 spawns do molde menor + recycle; escudo = hurt(quem, 0, 3);
+  vidas = variável + drawHearts.
 - 🥷 Ação em tempo real (Zelda; Ninja Adventure): attackFacing(quem, alcance,
   duracao) cria uma caixa de golpe NA FRENTE (pela direção que olha) por ~0.3s, com
   trava de 1 acerto por golpe; didHit(quem, alvo) = a caixa encostou no alvo NESTE

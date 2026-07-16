@@ -3239,6 +3239,132 @@ export const gameKitBlocks = [
       'Nascem N tiros do molde em leque, já com velocidade. Rumo -90 = para cima (como o "Mover no ângulo"). Depois mova-os com "Mover pela velocidade" + "Recolher quem saiu".',
   },
   // ==========================================================================
+  // 🚀 KIT NAVE — o atalho do gênero (Space Invaders / shoot-'em-up)
+  // ==========================================================================
+  // Pela REGRA: só o ESPECÍFICO do gênero mora aqui. O tiro do jogador, a
+  // colisão tiro×invasor, o placar, o som e as telas são do motor GERAL — o kit
+  // CHAMA (o exemplo mostra a receita). O que SÓ existe em jogo de nave:
+  // a FORMAÇÃO que marcha em bloco (inverte na borda COLETIVA, desce, acelera —
+  // impossível de compor com blocos por-entidade), o atirador aleatório dela,
+  // a linha de invasão, o céu de estrelas e a bomba que quica.
+  {
+    type: 'sz_gk_nave_ship',
+    message0:
+      'Pilotar a nave %1: anda de lado a %2 px/s (setas ou A/D), inclina até %3 °, usando o tempo %4',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'LEAN', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'O piloto do gênero: anda só de lado, preso na tela, e o desenho tomba na curva. Use no "A cada quadro". O tiro é seu: "apertou espaço?" + nascer do molde.',
+  },
+  {
+    type: 'sz_gk_nave_powerup',
+    message0: 'Dar o poder de tiro %1 a %2 por %3 s',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'POWER',
+        options: [
+          ['metralhadora', 'metralhadora'],
+          ['leque', 'leque'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Um poder TEMPORÁRIO: acaba sozinho. Na hora de atirar, pergunte "o poder de tiro de…" — metralhadora = atire mais rápido (recarga menor); leque = "Atirar um leque".',
+  },
+  {
+    type: 'sz_gk_nave_power_of',
+    message0: 'o poder de tiro de %1',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' }],
+    output: 'JSValue',
+    tooltip:
+      'O poder valendo agora: "normal", "metralhadora" ou "leque". É o galho do "se" na hora de atirar.',
+  },
+  {
+    type: 'sz_gk_nave_wave',
+    message0:
+      'Invadir: onda do molde %1 com %2 colunas × %3 linhas (espaço %4 px), a %5 px/s — desce %6 px e acelera %7 % na borda',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'ovni', kind: 'mold' },
+      { type: 'input_value', name: 'COLS', check: 'JSValue' },
+      { type: 'input_value', name: 'ROWS', check: 'JSValue' },
+      { type: 'input_value', name: 'GAP', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'input_value', name: 'DROP', check: 'JSValue' },
+      { type: 'input_value', name: 'ACCEL', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'A formação clássica: nasce em grade e o MOTOR marcha o bloco inteiro — bate na borda, desce e acelera. Derrotar todos avisa "onda:limpa"; alcançar a linha avisa "onda:invadiu". Não mova os invasores você mesmo: a marcha é do motor.',
+  },
+  {
+    type: 'sz_gk_nave_wave_shooter',
+    message0: 'A cada %1 s, um invasor do molde %2 atira 1 do molde %3 para baixo a %4 px/s',
+    args0: [
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'ovni', kind: 'mold' },
+      { type: 'field_name_picker', name: 'BULLET', text: 'tiro-ovni', kind: 'mold' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'A chuva de tiros da formação: um invasor SORTEADO atira (ligue 1 vez; religar troca o ritmo). O tiro nasce andando — recolha com "Recolher quem saiu da tela" e trate o acerto com "Quando se tocarem".',
+  },
+  {
+    type: 'sz_gk_nave_invasion_line',
+    message0: 'Marcar a linha de invasão na altura y %1 (avisa onda:invadiu)',
+    args0: [{ type: 'input_value', name: 'Y', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'A derrota clássica: se a formação DESCER até essa altura, sai o aviso "onda:invadiu" (escute com "Quando o aviso chegar" e termine o jogo). 0 = o fundo da tela.',
+  },
+  {
+    type: 'sz_gk_nave_starfield',
+    message0: 'Desenhar o céu de estrelas: %1 estrelas caindo a %2 px/s',
+    args0: [
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'O espaço rolando: estrelas descem e renascem no topo, para sempre. Use como a PRIMEIRA linha do "Desenhar o jogo". (Para um fundo com IMAGEM, use "Pintar o fundo rolando".)',
+  },
+  {
+    type: 'sz_gk_nave_bomb',
+    message0:
+      'Soltar uma bomba do molde %1 quicando; recolhida, explode no raio %2 e recolhe o molde %3 (avisa bomba:acertou)',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'bomba', kind: 'mold' },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'ovni', kind: 'mold' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'A bomba-prêmio: quica pela tela; quando o SEU tiro a recolher (no "Quando se tocarem": Recolher a bomba), o motor explode — onda de choque + recolhe o molde-alvo no raio + avisa "bomba:acertou" por vítima (some os pontos lá). No máximo 3 no ar.',
+  },
+  // ==========================================================================
   // KIT LUTA — o atalho do gênero
   // ==========================================================================
   {
@@ -3965,6 +4091,24 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_pkm_caught',
     ],
   },
+  // ---- 🚀 KIT NAVE (o atalho do gênero) ----
+  // A formação que marcha em bloco é o coração intransferível do Space Invaders;
+  // tiro do jogador/colisão/placar/som são GERAIS — o kit chama, não copia.
+  {
+    name: '🚀 Kit Nave: a nave',
+    colour: C,
+    types: ['sz_gk_nave_ship', 'sz_gk_nave_powerup', 'sz_gk_nave_power_of'],
+  },
+  {
+    name: '🛸 Kit Nave: a invasão',
+    colour: C,
+    types: ['sz_gk_nave_wave', 'sz_gk_nave_wave_shooter', 'sz_gk_nave_invasion_line'],
+  },
+  {
+    name: '🌌 Kit Nave: o espaço',
+    colour: C,
+    types: ['sz_gk_nave_starfield', 'sz_gk_nave_bomb'],
+  },
 ]
 
 // Cada sub-categoria recebe um TOM do teal da categoria (claro→escuro).
@@ -4155,6 +4299,21 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     DEG: numShadow(-90),
     SPEED: numShadow(600),
   },
+  // 🚀 R22 — Kit Nave
+  sz_gk_nave_ship: { SPEED: numShadow(420), LEAN: numShadow(10) },
+  sz_gk_nave_powerup: { SECS: numShadow(5) },
+  sz_gk_nave_wave: {
+    COLS: numShadow(8),
+    ROWS: numShadow(3),
+    GAP: numShadow(60),
+    SPEED: numShadow(150),
+    DROP: numShadow(30),
+    ACCEL: numShadow(15),
+  },
+  sz_gk_nave_wave_shooter: { SECS: numShadow(1.5), SPEED: numShadow(300) },
+  sz_gk_nave_invasion_line: { Y: numShadow(0) },
+  sz_gk_nave_starfield: { COUNT: numShadow(100), SPEED: numShadow(20) },
+  sz_gk_nave_bomb: { RADIUS: numShadow(200) },
   sz_gk_fade_screen: { SECS: numShadow(0.4) },
   sz_gk_flash_screen: { TIMES: numShadow(3) },
   sz_gk_save_value: { VALUE: numShadow(0) },

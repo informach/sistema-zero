@@ -14,6 +14,7 @@ import {
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   florestaNinjaExample,
+  invasaoDosOvnisExample,
   saltoNaFlorestaExample,
   vilaDoDragaoExample,
 } from '../examples'
@@ -99,6 +100,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Floresta Ninja',
       'Salto na Floresta',
       'Bichinhos do Quintal',
+      'Invasão dos Óvnis',
     ])
     expect(gameKitExtension.minLevel).toBe('intermediario')
   })
@@ -365,6 +367,7 @@ describe('game-2d-advanced — exemplo Vila do Dragão (Kit RPG)', () => {
       'Floresta Ninja',
       'Salto na Floresta',
       'Bichinhos do Quintal',
+      'Invasão dos Óvnis',
     ])
   })
 
@@ -847,6 +850,176 @@ describe('game-2d-advanced — exemplo Bichinhos do Quintal (Kit Monstrinhos)', 
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(bichinhosDoQuintalExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+/**
+ * Drift do exemplo "Invasão dos Óvnis" (🚀 Kit Nave): a IR embutida foi GERADA
+ * pelo parser real a partir do SOURCE abaixo (one-off do R22).
+ */
+const SOURCE_OVNIS = `SZGameKit.setup({ width: 960, height: 540, background: "#0b1020", accent: "#7cc7ff" });
+SZGameKit.setScreenText("menu", "Invasão dos Óvnis", "Setas ou A/D movem - espaço atira - não deixe descerem!", "Jogar");
+SZGameKit.setScreenText("fim", "Fim de jogo", "Os óvnis venceram desta vez. Tente de novo!", "Jogar de novo");
+SZGameKit.defineMold("ovni", { w: 44, h: 32, health: 1, speed: 0, damage: 10, color: "#5ad66f", image: "", look: "" });
+SZGameKit.defineMold("tiro", { w: 6, h: 16, health: 1, speed: 0, damage: 0, color: "#ffe066", image: "", look: "" });
+SZGameKit.defineMold("tiro-ovni", { w: 4, h: 12, health: 1, speed: 0, damage: 10, color: "#ffffff", image: "", look: "" });
+SZGameKit.defineMold("bomba", { w: 24, h: 24, health: 1, speed: 0, damage: 0, color: "#ff922b", image: "", look: "" });
+SZGameKit.defineEffect("explosao", { count: 16, color: "#9775fa", size: 4, life: 0.5, speed: 200, gravity: 0 });
+const nave = SZGameKit.createCharacter({ image: "", w: 52, h: 28, speed: 420, color: "#7cc7ff" });
+let pontos = 0;
+let vidas = 3;
+let velocidade = 150;
+SZGameKit.naveInvasionLine(430);
+SZGameKit.naveWaveShooter("ovni", 1.5, "tiro-ovni", 300);
+SZGameKit.onEnterState("jogando", function () {
+  pontos = 0;
+  vidas = 3;
+  velocidade = 150;
+  SZGameKit.placeCharacter(nave, 454, 480);
+  SZGameKit.naveWave("ovni", 8, 3, 60, velocidade, 30, 15);
+});
+SZGameKit.on("onda:limpa", function () {
+  velocidade = velocidade * 1.2;
+  SZGameKit.naveWave("ovni", 8, 3, 60, velocidade, 30, 15);
+  SZGameKit.playEffect("win");
+});
+SZGameKit.on("onda:invadiu", function () {
+  SZGameKit.endGame();
+});
+SZGameKit.on("bomba:acertou", function () {
+  pontos = pontos + 50;
+});
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.naveShip(nave, 420, 10, dt);
+  if (SZGameKit.navePowerOf(nave) === "metralhadora") {
+    if (SZGameKit.keyDown(" ") && SZGameKit.cooldownReady(nave, 0.12)) {
+      SZGameKit.fanShot(nave, "tiro", 1, 0, -90, 600);
+      SZGameKit.playEffect("laser");
+    }
+  } else if (SZGameKit.navePowerOf(nave) === "leque") {
+    if (SZGameKit.keyPressed(" ") && SZGameKit.cooldownReady(nave, 0.35)) {
+      SZGameKit.fanShot(nave, "tiro", 5, 40, -90, 600);
+      SZGameKit.playEffect("laser");
+    }
+  } else {
+    if (SZGameKit.keyPressed(" ") && SZGameKit.cooldownReady(nave, 0.35)) {
+      SZGameKit.fanShot(nave, "tiro", 1, 0, -90, 600);
+      SZGameKit.playEffect("laser");
+    }
+  }
+  SZGameKit.forEachActive("tiro", function (item) {
+    SZGameKit.moveByVelocity(item, dt);
+  });
+  SZGameKit.forEachActive("tiro-ovni", function (item) {
+    SZGameKit.moveByVelocity(item, dt);
+  });
+  SZGameKit.cullOffscreen("tiro", 100);
+  SZGameKit.cullOffscreen("tiro-ovni", 100);
+  SZGameKit.overlapGroups("tiro", "ovni", function (a, b) {
+    SZGameKit.recycle(a);
+    SZGameKit.burst("explosao", SZGameKit.charX(b), SZGameKit.charY(b));
+    SZGameKit.floatText("+100", SZGameKit.charX(b), SZGameKit.charY(b), "#ffffff", 22);
+    pontos = pontos + 100;
+    SZGameKit.playEffect("explosion");
+    if (SZGameKit.chance(8)) {
+      SZGameKit.navePowerup(nave, "metralhadora", 5);
+      SZGameKit.floatText("METRALHADORA!", SZGameKit.charX(b), SZGameKit.charY(b), "#ffe066", 20);
+    }
+    if (SZGameKit.chance(5)) {
+      SZGameKit.naveBomb("bomba", 160, "ovni");
+    }
+    SZGameKit.recycle(b);
+  });
+  SZGameKit.forEachActive("tiro-ovni", function (item) {
+    if (SZGameKit.touching(item, nave)) {
+      SZGameKit.recycle(item);
+      if (!SZGameKit.isInvincible(nave)) {
+        SZGameKit.hurt(nave, 0, 1.5);
+        vidas = vidas - 1;
+        SZGameKit.cameraShake(6, 0.3);
+        SZGameKit.playEffect("hurt");
+        SZGameKit.floatText("-1 vida", SZGameKit.charX(nave), SZGameKit.charY(nave), "#ff6b6b", 20);
+        if (vidas <= 0) {
+          SZGameKit.endGame();
+        }
+      }
+    }
+  });
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#0b1020", false);
+  SZGameKit.naveStarfield(100, 20);
+  SZGameKit.drawActive("ovni");
+  SZGameKit.drawActive("tiro");
+  SZGameKit.drawActive("tiro-ovni");
+  SZGameKit.drawActive("bomba");
+  SZGameKit.drawCharacter(nave);
+  SZGameKit.drawEffects();
+});
+SZGameKit.onDrawHud(function (ctx) {
+  SZGameKit.drawHearts(vidas, 3, 20, 20);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "24px sans-serif";
+  ctx.fillText("Pontos: " + pontos, 20, 70);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Invasão dos Óvnis (🚀 Kit Nave)', () => {
+  it('IR embutida é válida, sem rawJS, e usa o kit INTEIRO + o juice do R21', () => {
+    const parsed = SZIRSchema.safeParse(invasaoDosOvnisExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(invasaoDosOvnisExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      // os 8 do 🚀 Kit Nave
+      'gk:naveShip',
+      'gk:navePowerup',
+      'gk:navePowerOf',
+      'gk:naveWave',
+      'gk:naveWaveShooter',
+      'gk:naveInvasionLine',
+      'gk:naveStarfield',
+      'gk:naveBomb',
+      // o juice do R21 que o gênero pede
+      'gk:floatText',
+      'gk:fanShot',
+      // ⭐ a lição da dificuldade: onda:limpa → velocidade × 1.2 → nova onda
+      'gk:onEvent',
+      // e o paradigma geral: tiro/colisão/placar são da criança
+      'gk:overlapGroups',
+      'gk:cooldownReady',
+      'gk:chance',
+      'gk:isInvincible',
+      'gk:cameraShake',
+      'gk:drawHearts',
+      'if',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_OVNIS))).toEqual(invasaoDosOvnisExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
+    const code1 = compileStatements(invasaoDosOvnisExample.ir.js, 0)
+    const code2 = compileStatements(stripIds(parseJS(code1)), 0)
+    expect(code2).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR → workspace → IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      invasaoDosOvnisExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(invasaoDosOvnisExample.ir.js)
     } finally {
       ws.dispose()
     }

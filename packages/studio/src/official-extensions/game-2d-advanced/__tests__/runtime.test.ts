@@ -387,7 +387,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 249 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 257 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -652,6 +652,17 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'scrollImage',
       'leanOnMove',
       'fanShot',
+      // 🚀 R22 — Kit Nave: só o ESPECÍFICO do gênero (a formação que marcha em
+      // bloco, o atirador aleatório dela, a linha de invasão, o céu de estrelas,
+      // a bomba e o poder de tiro). Tiro/colisão/telas/som vêm do motor geral.
+      'naveShip',
+      'navePowerup',
+      'navePowerOf',
+      'naveWave',
+      'naveWaveShooter',
+      'naveInvasionLine',
+      'naveStarfield',
+      'naveBomb',
       // 🥊 R19 — Kit Luta. Só o ESPECÍFICO de luta: gravidade/pulo/caixa de
       // golpe/dano/empurrão/telas vêm do motor geral, que o kit CHAMA.
       'lutaMatch',

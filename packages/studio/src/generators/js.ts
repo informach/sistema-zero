@@ -1864,6 +1864,21 @@ function compileStatementCode(
       return `${pad}SZGameKit.leanOnMove(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.degrees), 0, identifiers, recAt(base))});`
     case 'gk:fanShot':
       return `${pad}SZGameKit.fanShot(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.arc), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.degrees), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    // 🚀 R22 — Kit Nave
+    case 'gk:naveShip':
+      return `${pad}SZGameKit.naveShip(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.lean), 0, identifiers, recAt(base))}, ${identifiers.get(stmt.dtVar)});`
+    case 'gk:navePowerup':
+      return `${pad}SZGameKit.navePowerup(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.power)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
+    case 'gk:naveWave':
+      return `${pad}SZGameKit.naveWave(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.gap), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.drop), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.accel), 0, identifiers, recAt(base))});`
+    case 'gk:naveWaveShooter':
+      return `${pad}SZGameKit.naveWaveShooter(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.bullet)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'gk:naveInvasionLine':
+      return `${pad}SZGameKit.naveInvasionLine(${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'gk:naveStarfield':
+      return `${pad}SZGameKit.naveStarfield(${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'gk:naveBomb':
+      return `${pad}SZGameKit.naveBomb(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.target)});`
     case 'gk:setOpacity':
       return `${pad}SZGameKit.setOpacity(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'gk:fadeTo':
@@ -4312,6 +4327,39 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.degrees), names)
       collectExprIdentifiers(valueToExpr(stmt.speed), names)
       return
+    // 🚀 R22 — Kit Nave
+    case 'gk:naveShip':
+      names.add(stmt.charVar)
+      names.add(stmt.dtVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.lean), names)
+      return
+    case 'gk:navePowerup':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
+      return
+    case 'gk:naveWave':
+      collectExprIdentifiers(valueToExpr(stmt.cols), names)
+      collectExprIdentifiers(valueToExpr(stmt.rows), names)
+      collectExprIdentifiers(valueToExpr(stmt.gap), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.drop), names)
+      collectExprIdentifiers(valueToExpr(stmt.accel), names)
+      return
+    case 'gk:naveWaveShooter':
+      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'gk:naveInvasionLine':
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'gk:naveStarfield':
+      collectExprIdentifiers(valueToExpr(stmt.count), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'gk:naveBomb':
+      collectExprIdentifiers(valueToExpr(stmt.radius), names)
+      return
     case 'gk:setOpacity':
       names.add(stmt.charVar)
       collectExprIdentifiers(valueToExpr(stmt.percent), names)
@@ -5308,6 +5356,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:lutaCombo':
     case 'gk:lutaSpecial':
     case 'gk:lutaIsGuarding':
+    // 🚀 R22
+    case 'gk:navePowerOf':
     case 'gk:isOnGround':
     case 'gk:velocityOf':
     case 'gk:propertyOf':

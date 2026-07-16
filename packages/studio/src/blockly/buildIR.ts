@@ -605,6 +605,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       }
     case 'sz_gk_random_active':
       return { type: 'gk:randomActive', mold: f(block, 'MOLD') }
+    case 'sz_gk_nave_power_of':
+      return { type: 'gk:navePowerOf', charVar: f(block, 'WHO') }
     case 'sz_gk_count_item':
       return { type: 'gk:countItem', name: f(block, 'NAME') }
     case 'sz_gk_health_of':
@@ -6310,6 +6312,87 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           arc: exprInput(block, 'ARC', { type: 'num', value: 30 }),
           degrees: exprInput(block, 'DEG', { type: 'num', value: -90 }),
           speed: exprInput(block, 'SPEED', { type: 'num', value: 600 }),
+        },
+      }
+    // 🚀 R22 — Kit Nave
+    case 'sz_gk_nave_ship':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:naveShip',
+          charVar: f(block, 'WHO'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 420 }),
+          lean: exprInput(block, 'LEAN', { type: 'num', value: 10 }),
+          dtVar: f(block, 'DT') || 'dt',
+        },
+      }
+    case 'sz_gk_nave_powerup':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:navePowerup',
+          charVar: f(block, 'WHO'),
+          power: f(block, 'POWER') || 'metralhadora',
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 5 }),
+        },
+      }
+    case 'sz_gk_nave_wave':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:naveWave',
+          mold: f(block, 'MOLD'),
+          cols: exprInput(block, 'COLS', { type: 'num', value: 8 }),
+          rows: exprInput(block, 'ROWS', { type: 'num', value: 3 }),
+          gap: exprInput(block, 'GAP', { type: 'num', value: 60 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 150 }),
+          drop: exprInput(block, 'DROP', { type: 'num', value: 30 }),
+          accel: exprInput(block, 'ACCEL', { type: 'num', value: 15 }),
+        },
+      }
+    case 'sz_gk_nave_wave_shooter':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:naveWaveShooter',
+          mold: f(block, 'MOLD'),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 1.5 }),
+          bullet: f(block, 'BULLET'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 300 }),
+        },
+      }
+    case 'sz_gk_nave_invasion_line':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:naveInvasionLine',
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_nave_starfield':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:naveStarfield',
+          count: exprInput(block, 'COUNT', { type: 'num', value: 100 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_gk_nave_bomb':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:naveBomb',
+          mold: f(block, 'MOLD'),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 200 }),
+          target: f(block, 'TARGET'),
         },
       }
     case 'sz_gk_set_opacity':

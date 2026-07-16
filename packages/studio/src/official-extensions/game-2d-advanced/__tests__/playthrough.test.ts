@@ -101,6 +101,16 @@ interface Api {
   trailOn: Fn
   trailOff: Fn
   drawEffects: Fn
+  naveWave: Fn
+  naveWaveShooter: Fn
+  naveInvasionLine: Fn
+  navePowerup: Fn
+  navePowerOf: (c: unknown) => string
+  on: Fn
+  countActive: (mold: string) => number
+  forEachActive: Fn
+  recycle: Fn
+  endGame: Fn
   lutaMatch: Fn
   lutaMove: Fn
   lutaFighter: Fn
@@ -658,5 +668,111 @@ describe('gk — R21: o MOTOR desenha o juice (texto flutuante, onda de choque, 
     rects = []
     h.nextFrame(21 * 50)
     expect(rects.filter((r) => r.fill === '#00ffff').length).toBe(0)
+  })
+})
+
+describe('gk — JOGAR uma invasão inteira do 🚀 Kit Nave (a lição do R17)', () => {
+  /**
+   * A regra do R17 vale para o kit novo: a FORMAÇÃO entra aqui JOGANDO — marcha,
+   * bate na borda, desce, acelera, atira, é limpa e invade — não só nascendo.
+   */
+  interface Invasor {
+    x: number
+    y: number
+    w: number
+    h: number
+    vy: number
+  }
+
+  async function espaco(h: Harness) {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('ovni', { w: 40, h: 30, color: '#0f0' })
+    h.api.defineMold('tiro-ovni', { w: 4, h: 12, color: '#fff' })
+    await startGame(h)
+    h.api.setState('jogando')
+  }
+  function vivos(h: Harness, mold: string): Invasor[] {
+    const out: Invasor[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Invasor))
+    return out
+  }
+
+  it('⭐ a onda nasce em grade e MARCHA EM BLOCO: inverte na borda, desce e ACELERA', async () => {
+    const h = loadRuntime()
+    await espaco(h)
+    h.api.naveWave('ovni', 4, 2, 60, 150, 30, 15)
+    expect(h.api.countActive('ovni')).toBe(8)
+    const ms = vivos(h, 'ovni')
+    const x0 = Math.min(...ms.map((m) => m.x))
+    const y0 = Math.min(...ms.map((m) => m.y))
+    const span0 = Math.max(...ms.map((m) => m.x + m.w)) - x0
+    for (let i = 1; i <= 10; i++) h.nextFrame(i * 50)
+    // marchou para a direita, SEM deformar o bloco
+    const x1 = Math.min(...ms.map((m) => m.x))
+    const span1 = Math.max(...ms.map((m) => m.x + m.w)) - x1
+    expect(x1).toBeGreaterThan(x0)
+    expect(span1).toBeCloseTo(span0)
+    // 20 s de jogo: com aceleração de 15% por batida saem ≥5 descidas de 30px;
+    // SEM aceleração (a 150 px/s constantes) seriam só 4 (120px). O limiar de
+    // 150px separa os dois mundos com folga — é o teste da aceleração.
+    for (let i = 11; i <= 400; i++) h.nextFrame(i * 50)
+    const y1 = Math.min(...vivos(h, 'ovni').map((m) => m.y))
+    expect(y1 - y0).toBeGreaterThanOrEqual(150)
+  })
+
+  it('⭐ um invasor SORTEADO atira no ritmo (o tiro nasce descendo)', async () => {
+    const h = loadRuntime()
+    await espaco(h)
+    h.api.naveWave('ovni', 3, 1, 60, 100, 30, 0)
+    h.api.naveWaveShooter('ovni', 1, 'tiro-ovni', 300)
+    for (let i = 1; i <= 45; i++) h.nextFrame(i * 50) // 2,25 s → tiros em 1 s e 2 s
+    expect(h.api.countActive('tiro-ovni')).toBe(2)
+    for (const t of vivos(h, 'tiro-ovni')) expect(t.vy).toBe(300)
+  })
+
+  it('⭐ derrotar TODOS avisa onda:limpa (e a criança encadeia a onda seguinte)', async () => {
+    const h = loadRuntime()
+    await espaco(h)
+    let limpa = 0
+    h.api.on('onda:limpa', () => {
+      limpa += 1
+    })
+    h.api.naveWave('ovni', 3, 1, 60, 100, 30, 0)
+    h.nextFrame(50)
+    expect(limpa).toBe(0)
+    h.api.forEachActive('ovni', (e: unknown) => h.api.recycle(e))
+    h.nextFrame(100) // o sweep do stepNave vê a formação vazia
+    expect(limpa).toBe(1)
+  })
+
+  it('⭐ a formação DESCE até a linha de invasão → onda:invadiu → fim de jogo', async () => {
+    const h = loadRuntime()
+    await espaco(h)
+    h.api.on('onda:invadiu', () => h.api.endGame())
+    h.api.naveInvasionLine(200)
+    h.api.naveWave('ovni', 3, 1, 60, 1500, 30, 30)
+    for (let i = 1; i <= 200 && h.api.state() === 'jogando'; i++) h.nextFrame(i * 50)
+    expect(h.api.state()).toBe('fim')
+  })
+
+  it('⭐ "Jogar de novo" limpa ondas e poderes (sem onda:limpa fantasma)', async () => {
+    const h = loadRuntime()
+    await espaco(h)
+    const nave = h.api.createCharacter({ w: 50, h: 30, color: '#00f' })
+    let limpa = 0
+    h.api.on('onda:limpa', () => {
+      limpa += 1
+    })
+    h.api.naveWave('ovni', 3, 1, 60, 100, 30, 0)
+    h.api.navePowerup(nave, 'metralhadora', 99)
+    expect(h.api.navePowerOf(nave)).toBe('metralhadora')
+    h.api.setState('menu')
+    h.api.setState('jogando') // recomeço de verdade
+    expect(h.api.countActive('ovni')).toBe(0) // o releaseAll recolheu o enxame
+    expect(h.api.navePowerOf(nave)).toBe('normal') // o poder não sobrevive
+    for (let i = 1; i <= 3; i++) h.nextFrame(i * 50)
+    // Se o naveNewGame NÃO limpasse as ondas, o registro órfão (agora vazio)
+    // emitiria um 'onda:limpa' fantasma no 1º quadro do jogo novo.
+    expect(limpa).toBe(0)
   })
 })

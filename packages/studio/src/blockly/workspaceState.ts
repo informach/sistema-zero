@@ -3879,6 +3879,77 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             SPEED: sp,
           })
     }
+    // 🚀 R22 — Kit Nave
+    case 'gk:naveShip': {
+      const sp = exprToValueBlock(valueToExpr(stmt.speed))
+      const ln = exprToValueBlock(valueToExpr(stmt.lean))
+      return sp === null || ln === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_nave_ship', { WHO: stmt.charVar, DT: stmt.dtVar }, {}, stmt.__id, {
+            SPEED: sp,
+            LEAN: ln,
+          })
+    }
+    case 'gk:navePowerup': {
+      const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
+      return s2 === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_nave_powerup', { POWER: stmt.power, WHO: stmt.charVar }, {}, stmt.__id, {
+            SECS: s2,
+          })
+    }
+    case 'gk:naveWave': {
+      const c = exprToValueBlock(valueToExpr(stmt.cols))
+      const r = exprToValueBlock(valueToExpr(stmt.rows))
+      const g = exprToValueBlock(valueToExpr(stmt.gap))
+      const sp = exprToValueBlock(valueToExpr(stmt.speed))
+      const dr = exprToValueBlock(valueToExpr(stmt.drop))
+      const ac = exprToValueBlock(valueToExpr(stmt.accel))
+      return c === null || r === null || g === null || sp === null || dr === null || ac === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_nave_wave', { MOLD: stmt.mold }, {}, stmt.__id, {
+            COLS: c,
+            ROWS: r,
+            GAP: g,
+            SPEED: sp,
+            DROP: dr,
+            ACCEL: ac,
+          })
+    }
+    case 'gk:naveWaveShooter': {
+      const s2 = exprToValueBlock(valueToExpr(stmt.seconds))
+      const sp = exprToValueBlock(valueToExpr(stmt.speed))
+      return s2 === null || sp === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_nave_wave_shooter',
+            { MOLD: stmt.mold, BULLET: stmt.bullet },
+            {},
+            stmt.__id,
+            { SECS: s2, SPEED: sp },
+          )
+    }
+    case 'gk:naveInvasionLine': {
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return y === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_nave_invasion_line', {}, {}, stmt.__id, { Y: y })
+    }
+    case 'gk:naveStarfield': {
+      const c = exprToValueBlock(valueToExpr(stmt.count))
+      const sp = exprToValueBlock(valueToExpr(stmt.speed))
+      return c === null || sp === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_nave_starfield', {}, {}, stmt.__id, { COUNT: c, SPEED: sp })
+    }
+    case 'gk:naveBomb': {
+      const r = exprToValueBlock(valueToExpr(stmt.radius))
+      return r === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_nave_bomb', { MOLD: stmt.mold, TARGET: stmt.target }, {}, stmt.__id, {
+            RADIUS: r,
+          })
+    }
     case 'gk:setOpacity': {
       const p = exprToValueBlock(valueToExpr(stmt.percent))
       return p === null
@@ -5612,6 +5683,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
     }
     case 'gk:randomActive':
       return block('sz_gk_random_active', { MOLD: expr.mold })
+    case 'gk:navePowerOf':
+      return block('sz_gk_nave_power_of', { WHO: expr.charVar })
     case 'gk:countItem':
       return block('sz_gk_count_item', { NAME: expr.name })
     case 'gk:timeSurvived':
