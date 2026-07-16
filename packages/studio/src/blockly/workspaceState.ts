@@ -3832,6 +3832,66 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             SECS: s2,
           })
     }
+    case 'gk:lutaMatch': {
+      const rounds = exprToValueBlock(valueToExpr(stmt.rounds))
+      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+      return rounds === null || secs === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_luta_match', { P1: stmt.p1Var, P2: stmt.p2Var }, {}, stmt.__id, {
+            ROUNDS: rounds,
+            SECS: secs,
+          })
+    }
+    case 'gk:lutaDrawHud':
+      return block('sz_gk_luta_draw_hud', {}, {}, stmt.__id)
+    case 'gk:lutaFighter':
+      return block(
+        'sz_gk_luta_fighter',
+        {
+          WHO: stmt.charVar,
+          LEFT: stmt.left,
+          RIGHT: stmt.right,
+          JUMP: stmt.jump,
+          CROUCH: stmt.crouch,
+          GUARD: stmt.guard,
+          DT: stmt.dtVar,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'gk:lutaAI':
+      return block('sz_gk_luta_ai', { WHO: stmt.charVar, LEVEL: stmt.level }, {}, stmt.__id)
+    case 'gk:lutaMove': {
+      const dmg = exprToValueBlock(valueToExpr(stmt.damage))
+      const range = exprToValueBlock(valueToExpr(stmt.range))
+      return dmg === null || range === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_luta_move',
+            {
+              NAME: stmt.name,
+              WHO: stmt.charVar,
+              SPEED: stmt.speed,
+              PIERCE: stmt.pierce ? 'TRUE' : 'FALSE',
+              SPECIAL: stmt.special ? 'TRUE' : 'FALSE',
+            },
+            {},
+            stmt.__id,
+            { DMG: dmg, RANGE: range },
+          )
+    }
+    case 'gk:lutaMoveAnim': {
+      const from = exprToValueBlock(valueToExpr(stmt.from))
+      const to = exprToValueBlock(valueToExpr(stmt.to))
+      return from === null || to === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_luta_move_anim', { NAME: stmt.name, WHO: stmt.charVar }, {}, stmt.__id, {
+            FROM: from,
+            TO: to,
+          })
+    }
+    case 'gk:lutaAttack':
+      return block('sz_gk_luta_attack', { WHO: stmt.charVar, MOVE: stmt.move }, {}, stmt.__id)
     case 'gk:setSwingWindow': {
       const start = exprToValueBlock(valueToExpr(stmt.start))
       const active = exprToValueBlock(valueToExpr(stmt.active))
@@ -5455,6 +5515,18 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_health_of', { CHAR: expr.charVar })
     case 'gk:animEnded':
       return block('sz_gk_anim_ended', { WHO: expr.charVar })
+    case 'gk:lutaWinner':
+      return block('sz_gk_luta_winner', {})
+    case 'gk:lutaRound':
+      return block('sz_gk_luta_round', {})
+    case 'gk:lutaWinsOf':
+      return block('sz_gk_luta_wins_of', { WHO: expr.charVar })
+    case 'gk:lutaCombo':
+      return block('sz_gk_luta_combo', { WHO: expr.charVar })
+    case 'gk:lutaSpecial':
+      return block('sz_gk_luta_special', { WHO: expr.charVar })
+    case 'gk:lutaIsGuarding':
+      return block('sz_gk_luta_is_guarding', { WHO: expr.charVar })
     case 'gk:entityState':
       return block('sz_gk_entity_state', { WHO: expr.charVar })
     case 'gk:angleOf':

@@ -3124,6 +3124,172 @@ export const gameKitBlocks = [
     tooltip:
       'A quantidade daquele item (0 = nenhum). "Ganhar o item" soma de um em um, então dá para pedir 3 madeiras para construir.',
   },
+  // ==========================================================================
+  // KIT LUTA — o atalho do gênero
+  // ==========================================================================
+  {
+    type: 'sz_gk_luta_match',
+    message0: 'Luta de %1 × %2, melhor de %3 rounds de %4 s',
+    args0: [
+      { type: 'field_name_picker', name: 'P1', text: 'jogador1', kind: 'character' },
+      { type: 'field_name_picker', name: 'P2', text: 'jogador2', kind: 'character' },
+      { type: 'input_value', name: 'ROUNDS', check: 'JSValue' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Casa os dois lutadores. Ponha DEPOIS de "Posicionar o personagem": é dali que sai o lugar onde cada um volta a cada round. Ganha quem levar a maioria (melhor de 3 = quem fizer 2).',
+  },
+  {
+    type: 'sz_gk_luta_fighter',
+    message0: 'Lutador %1 — andar %2 %3, pular %4, agachar %5',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' },
+      { type: 'field_input', name: 'LEFT', text: 'a' },
+      { type: 'field_input', name: 'RIGHT', text: 'd' },
+      { type: 'field_input', name: 'JUMP', text: 'w' },
+      { type: 'field_input', name: 'CROUCH', text: 's' },
+    ],
+    message1: 'defender %1 · usando o tempo %2',
+    args1: [
+      { type: 'field_input', name: 'GUARD', text: 'f' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Faz TUDO: gravidade, andar, pular, agachar, defender — e virar de frente sozinho. Cada lutador tem as teclas DELE, então dois destes = dois jogadores no mesmo teclado. Use no "A cada quadro".',
+  },
+  {
+    type: 'sz_gk_luta_ai',
+    message0: 'Fazer %1 ser controlado pelo computador (dificuldade %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'jogador2', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'LEVEL',
+        options: [
+          ['fácil', 'fácil'],
+          ['normal', 'normal'],
+          ['difícil', 'difícil'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Põe no LUGAR do bloco "Lutador" daquele lutador — trocar um pelo outro é a diferença entre jogar sozinho e jogar com um amigo. Fácil quase não defende; difícil defende quase sempre, espera você errar o golpe e usa o especial quando a barra enche.',
+  },
+  {
+    type: 'sz_gk_luta_move',
+    message0: 'Golpe %1 de %2 — %3, dano %4, alcance %5',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'soco' },
+      { type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' },
+      {
+        type: 'field_dropdown',
+        name: 'SPEED',
+        options: [
+          ['rápido', 'rápido'],
+          ['médio', 'médio'],
+          ['pesado', 'pesado'],
+        ],
+      },
+      { type: 'input_value', name: 'DMG', check: 'JSValue' },
+      { type: 'input_value', name: 'RANGE', check: 'JSValue' },
+    ],
+    message1: 'atravessa a defesa %1 · gasta o especial %2',
+    args1: [
+      { type: 'field_checkbox', name: 'PIERCE', checked: false },
+      { type: 'field_checkbox', name: 'SPECIAL', checked: false },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'A palavra escolhe o RITMO do golpe: rápido sai antes mas machuca pouco; pesado demora, mas se acertar o outro fica travado tempo bastante para você emendar outro golpe — é assim que nasce o combo. "Atravessa a defesa" vence quem só fica defendendo.',
+  },
+  {
+    type: 'sz_gk_luta_move_anim',
+    message0: 'A animação do golpe %1 de %2 são os quadros %3 a %4',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'soco' },
+      { type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' },
+      { type: 'input_value', name: 'FROM', check: 'JSValue' },
+      { type: 'input_value', name: 'TO', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Os quadros da folha que tocam durante o golpe. A velocidade é calculada para a animação durar exatamente o golpe — você não precisa acertar nenhum número.',
+  },
+  {
+    type: 'sz_gk_luta_attack',
+    message0: 'Fazer %1 dar o golpe %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' },
+      { type: 'field_input', name: 'MOVE', text: 'soco' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Use junto com "se a tecla foi apertada". Não sai se ele estiver travado, já golpeando, ou se for o especial e a barra não estiver cheia.',
+  },
+  {
+    type: 'sz_gk_luta_draw_hud',
+    message0: 'Desenhar o placar da luta',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'As duas barras de vida, as barras de especial, o cronômetro, as bolinhas de round ganho e os letreiros (ROUND 2, K.O.!, TEMPO!). Ponha no "Desenhar por cima (HUD)".',
+  },
+  {
+    type: 'sz_gk_luta_winner',
+    message0: 'o vencedor da luta',
+    output: 'JSValue',
+    tooltip: '"jogador 1", "jogador 2" ou "empate". Use no aviso "luta:acabou".',
+  },
+  {
+    type: 'sz_gk_luta_round',
+    message0: 'o round de agora',
+    output: 'JSValue',
+    tooltip: 'Em que round a luta está (1, 2, 3…).',
+  },
+  {
+    type: 'sz_gk_luta_wins_of',
+    message0: 'os rounds ganhos por %1',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' }],
+    output: 'JSValue',
+    tooltip: 'Quantos rounds aquele lutador já ganhou.',
+  },
+  {
+    type: 'sz_gk_luta_combo',
+    message0: 'o combo de %1',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' }],
+    output: 'JSValue',
+    tooltip:
+      'Quantos golpes ele encaixou em seguida, sem o outro se recuperar. Zera sozinho quando o outro volta a se mexer.',
+  },
+  {
+    type: 'sz_gk_luta_special',
+    message0: 'o especial de %1 (de 0 a 100)',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' }],
+    output: 'JSValue',
+    tooltip:
+      'A barra de especial. Enche batendo e apanhando (defender não enche), e ATRAVESSA os rounds — por isso o último round é o mais tenso.',
+  },
+  {
+    type: 'sz_gk_luta_is_guarding',
+    message0: 'o lutador %1 está defendendo?',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' }],
+    output: 'JSValue',
+    tooltip: 'Verdadeiro enquanto ele segura a tecla de defender. Bom para som e faísca.',
+  },
 ]
 
 /**
@@ -3504,6 +3670,47 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   // as categorias levam o prefixo "Kit RPG:". A FALA e o MENU saíram para o
   // geral (💬 Fala & escolhas): o motor os desenha em qualquer jogo.
   {
+    // ⭐ O Kit Luta. Pela REGRA: só o que é ESPECÍFICO de luta mora aqui. Gravidade,
+    // pulo (e o "Regular o pulo" regula a luta de graça), caixa de golpe, recuo,
+    // dano, empurrão, invencibilidade, trava de animação, telas de fim, tremor e
+    // faíscas são do motor GERAL — o kit CHAMA, não copia.
+    //
+    // ⚠️ O chão também é geral: "Criar o molde" + "Nascer" + "Colidir com o
+    // enxame". Um bloco "Chão da luta em y N" seria exatamente o position.y = 330
+    // hard-coded da base, e chão não é de luta — é de todo jogo de lado. O Kit
+    // Plataforma também não tem chão próprio.
+    name: '🥊 Kit Luta: a partida',
+    colour: C,
+    types: [
+      'sz_gk_luta_match',
+      'sz_gk_luta_draw_hud',
+      'sz_gk_luta_winner',
+      'sz_gk_luta_round',
+      'sz_gk_luta_wins_of',
+    ],
+  },
+  {
+    name: '🥊 Kit Luta: os lutadores',
+    colour: C,
+    types: ['sz_gk_luta_fighter', 'sz_gk_luta_ai', 'sz_gk_luta_is_guarding'],
+  },
+  {
+    // ⭐ O COMBO não é bloco: é consequência da tabela de tempos que a palavra
+    // (rápido/médio/pesado) escolhe. Um "pesado" trava o outro por mais tempo do
+    // que leva para você se recuperar — sobra uma frestinha, e a criança DESCOBRE
+    // que chute→soco encaixa. E o agarrão é um checkbox ("atravessa a defesa"):
+    // o que o agarrão FAZ no jogo é uma coisa só — vencer quem só defende.
+    name: '🥊 Kit Luta: golpes & combo',
+    colour: C,
+    types: [
+      'sz_gk_luta_move',
+      'sz_gk_luta_move_anim',
+      'sz_gk_luta_attack',
+      'sz_gk_luta_combo',
+      'sz_gk_luta_special',
+    ],
+  },
+  {
     name: '🧙 Kit RPG: mundo',
     colour: C,
     types: [
@@ -3770,6 +3977,9 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_tween_property: { TO: numShadow(100), SECS: numShadow(0.5) },
   sz_gk_set_hitbox: { OX: numShadow(0), OY: numShadow(0), W: numShadow(0), H: numShadow(0) },
   sz_gk_swing_window: { START: numShadow(0.08), ACTIVE: numShadow(0.08) },
+  sz_gk_luta_match: { ROUNDS: numShadow(3), SECS: numShadow(60) },
+  sz_gk_luta_move: { DMG: numShadow(10), RANGE: numShadow(50) },
+  sz_gk_luta_move_anim: { FROM: numShadow(0), TO: numShadow(3) },
   sz_gk_play_anim_once: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(10) },
   sz_gk_set_entity_state: { SECS: numShadow(0.3) },
   sz_gk_state_anim: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },

@@ -207,6 +207,12 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:isInvincible'; charVar: string })
   | (JSExprCommon & { type: 'gk:healthOf'; charVar: string })
   | (JSExprCommon & { type: 'gk:animEnded'; charVar: string })
+  | (JSExprCommon & { type: 'gk:lutaWinner' })
+  | (JSExprCommon & { type: 'gk:lutaRound' })
+  | (JSExprCommon & { type: 'gk:lutaWinsOf'; charVar: string })
+  | (JSExprCommon & { type: 'gk:lutaCombo'; charVar: string })
+  | (JSExprCommon & { type: 'gk:lutaSpecial'; charVar: string })
+  | (JSExprCommon & { type: 'gk:lutaIsGuarding'; charVar: string })
   | (JSExprCommon & { type: 'gk:entityState'; charVar: string })
   | (JSExprCommon & { type: 'gk:angleOf'; charVar: string })
   | (JSExprCommon & { type: 'gk:angleTo'; charVar: string; targetVar: string })
@@ -627,6 +633,12 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:isInvincible'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:healthOf'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:animEnded'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:lutaWinner'), ...idField }),
+    z.object({ type: z.literal('gk:lutaRound'), ...idField }),
+    z.object({ type: z.literal('gk:lutaWinsOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:lutaCombo'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:lutaSpecial'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:lutaIsGuarding'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:entityState'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:angleOf'), charVar: irText(), ...idField }),
     z.object({
@@ -2907,6 +2919,43 @@ export type JSStatement =
       to: number | JSExpr
       seconds: number | JSExpr
     })
+  | (JSStatementCommon & {
+      type: 'gk:lutaMatch'
+      p1Var: string
+      p2Var: string
+      rounds: number | JSExpr
+      seconds: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:lutaDrawHud' })
+  | (JSStatementCommon & {
+      type: 'gk:lutaFighter'
+      charVar: string
+      left: string
+      right: string
+      jump: string
+      crouch: string
+      guard: string
+      dtVar: string
+    })
+  | (JSStatementCommon & { type: 'gk:lutaAI'; charVar: string; level: string })
+  | (JSStatementCommon & {
+      type: 'gk:lutaMove'
+      name: string
+      charVar: string
+      speed: string
+      damage: number | JSExpr
+      range: number | JSExpr
+      pierce: boolean
+      special: boolean
+    })
+  | (JSStatementCommon & {
+      type: 'gk:lutaMoveAnim'
+      name: string
+      charVar: string
+      from: number | JSExpr
+      to: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:lutaAttack'; charVar: string; move: string })
   | (JSStatementCommon & {
       type: 'gk:setSwingWindow'
       charVar: string
@@ -6050,6 +6099,57 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:lutaMatch'),
+      p1Var: irText(),
+      p2Var: irText(),
+      rounds: z.union([JSExprSchema, z.number()]),
+      seconds: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:lutaDrawHud'), ...idField }),
+    z.object({
+      type: z.literal('gk:lutaFighter'),
+      charVar: irText(),
+      left: irText(),
+      right: irText(),
+      jump: irText(),
+      crouch: irText(),
+      guard: irText(),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:lutaAI'),
+      charVar: irText(),
+      level: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:lutaMove'),
+      name: irText(),
+      charVar: irText(),
+      speed: irText(),
+      damage: z.union([JSExprSchema, z.number()]),
+      range: z.union([JSExprSchema, z.number()]),
+      pierce: z.boolean(),
+      special: z.boolean(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:lutaMoveAnim'),
+      name: irText(),
+      charVar: irText(),
+      from: z.union([JSExprSchema, z.number()]),
+      to: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:lutaAttack'),
+      charVar: irText(),
+      move: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:setSwingWindow'),
       charVar: irText(),
       start: z.union([JSExprSchema, z.number()]),
@@ -7623,6 +7723,13 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:tweenProperty',
   'gk:setHitbox',
   'gk:setSwingWindow',
+  'gk:lutaMatch',
+  'gk:lutaDrawHud',
+  'gk:lutaFighter',
+  'gk:lutaAI',
+  'gk:lutaMove',
+  'gk:lutaMoveAnim',
+  'gk:lutaAttack',
   'gk:playAnimOnce',
   'gk:setEntityState',
   'gk:stateAnim',

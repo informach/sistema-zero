@@ -576,6 +576,18 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:isDead', charVar: f(block, 'CHAR') }
     case 'sz_gk_is_invincible':
       return { type: 'gk:isInvincible', charVar: f(block, 'CHAR') }
+    case 'sz_gk_luta_winner':
+      return { type: 'gk:lutaWinner' }
+    case 'sz_gk_luta_round':
+      return { type: 'gk:lutaRound' }
+    case 'sz_gk_luta_wins_of':
+      return { type: 'gk:lutaWinsOf', charVar: f(block, 'WHO') }
+    case 'sz_gk_luta_combo':
+      return { type: 'gk:lutaCombo', charVar: f(block, 'WHO') }
+    case 'sz_gk_luta_special':
+      return { type: 'gk:lutaSpecial', charVar: f(block, 'WHO') }
+    case 'sz_gk_luta_is_guarding':
+      return { type: 'gk:lutaIsGuarding', charVar: f(block, 'WHO') }
     case 'sz_gk_anim_ended':
       return { type: 'gk:animEnded', charVar: f(block, 'WHO') }
     case 'sz_gk_entity_state':
@@ -6252,6 +6264,75 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           to: exprInput(block, 'TO', { type: 'num', value: 100 }),
           seconds: exprInput(block, 'SECS', { type: 'num', value: 0.5 }),
         },
+      }
+    case 'sz_gk_luta_match':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:lutaMatch',
+          p1Var: f(block, 'P1'),
+          p2Var: f(block, 'P2'),
+          rounds: exprInput(block, 'ROUNDS', { type: 'num', value: 3 }),
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 60 }),
+        },
+      }
+    case 'sz_gk_luta_draw_hud':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:lutaDrawHud' } }
+    case 'sz_gk_luta_fighter':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:lutaFighter',
+          charVar: f(block, 'WHO'),
+          left: f(block, 'LEFT'),
+          right: f(block, 'RIGHT'),
+          jump: f(block, 'JUMP'),
+          crouch: f(block, 'CROUCH'),
+          guard: f(block, 'GUARD'),
+          dtVar: f(block, 'DT'),
+        },
+      }
+    case 'sz_gk_luta_ai':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:lutaAI', charVar: f(block, 'WHO'), level: f(block, 'LEVEL') },
+      }
+    case 'sz_gk_luta_move':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:lutaMove',
+          name: f(block, 'NAME'),
+          charVar: f(block, 'WHO'),
+          speed: f(block, 'SPEED'),
+          damage: exprInput(block, 'DMG', { type: 'num', value: 10 }),
+          range: exprInput(block, 'RANGE', { type: 'num', value: 50 }),
+          pierce: f(block, 'PIERCE') === 'TRUE',
+          special: f(block, 'SPECIAL') === 'TRUE',
+        },
+      }
+    case 'sz_gk_luta_move_anim':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:lutaMoveAnim',
+          name: f(block, 'NAME'),
+          charVar: f(block, 'WHO'),
+          from: exprInput(block, 'FROM', { type: 'num', value: 0 }),
+          to: exprInput(block, 'TO', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_gk_luta_attack':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:lutaAttack', charVar: f(block, 'WHO'), move: f(block, 'MOVE') },
       }
     case 'sz_gk_swing_window':
       seen.add('game-2d-advanced')

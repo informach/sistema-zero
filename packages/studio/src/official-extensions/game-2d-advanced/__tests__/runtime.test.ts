@@ -378,7 +378,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 228 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 241 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -632,6 +632,21 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'nearestActive',
       // R18 — quantos itens (o "Ganhar o item" dedupava: sem crafting nem loja)
       'rpgCountItem',
+      // 🥊 R19 — Kit Luta. Só o ESPECÍFICO de luta: gravidade/pulo/caixa de
+      // golpe/dano/empurrão/telas vêm do motor geral, que o kit CHAMA.
+      'lutaMatch',
+      'lutaDrawHud',
+      'lutaWinner',
+      'lutaRoundNow',
+      'lutaWinsOf',
+      'lutaFighter',
+      'lutaAI',
+      'lutaIsGuarding',
+      'lutaMove',
+      'lutaMoveAnim',
+      'lutaAttack',
+      'lutaComboOf',
+      'lutaSpecialOf',
     ]
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')

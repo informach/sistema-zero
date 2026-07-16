@@ -86,6 +86,15 @@ interface Api {
   flashScreen: Fn
   createCharacter: Fn
   placeCharacter: Fn
+  lutaMatch: Fn
+  lutaMove: Fn
+  lutaFighter: Fn
+  lutaAttack: Fn
+  lutaAI: Fn
+  lutaWinner: () => string
+  lutaRoundNow: () => number
+  lutaWinsOf: (c: unknown) => number
+  lutaSpecialOf: (c: unknown) => number
   onUpdate: Fn
   rpgOnMap: Fn
   rpgGoMap: Fn
@@ -324,5 +333,145 @@ describe('gk — JOGAR a batalha do Kit Monstrinhos até o fim (não só abrir)'
     rects = []
     h.nextFrame(50) // no meio do 1º piscar
     expect(rects.some((r) => r.w === 960 && r.h === 540 && r.fill === '#ffffff')).toBe(true)
+  })
+})
+
+describe('gk — JOGAR uma luta inteira do Kit Luta (a lição do R17)', () => {
+  /**
+   * O Kit Monstrinhos foi para produção com 3 softlocks porque os testes montavam
+   * a batalha e nunca a jogavam. Este não repete: aqui a luta é JOGADA até alguém
+   * ganhar a partida.
+   */
+  interface Lutador {
+    x: number
+    y: number
+    vx: number
+    vy: number
+    health: number
+    maxHealth: number
+    onGround: boolean
+  }
+
+  async function arena(h: Harness) {
+    h.api.setup({ width: 960, height: 540 })
+    const p1 = h.api.createCharacter({ w: 50, h: 110, speed: 260, color: '#00f' }) as Lutador
+    const p2 = h.api.createCharacter({ w: 50, h: 110, speed: 260, color: '#f00' }) as Lutador
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.placeCharacter(p1, 300, 380)
+    h.api.placeCharacter(p2, 500, 380)
+    h.api.lutaMatch(p1, p2, 3, 60)
+    return { p1, p2 }
+  }
+  /** Roda N quadros de 50 ms (cada um chama o "A cada quadro" da criança). */
+  function quadros(h: Harness, n: number, from = 1) {
+    for (let i = from; i < from + n; i++) h.nextFrame(i * 50)
+  }
+
+  it('⭐ o golpe NÃO machuca no quadro do aperto (o recuo existe)', async () => {
+    const h = loadRuntime()
+    const { p1, p2 } = await arena(h)
+    h.api.lutaMove('pesado', p1, 'pesado', 20, 400, false, false)
+    h.api.onUpdate((dt: number) => {
+      h.api.lutaFighter(p1, 'a', 'd', 'w', 's', 'f', dt)
+      h.api.lutaFighter(p2, 'j', 'l', 'i', 'k', 'h', dt)
+    })
+    quadros(h, 40) // passa o anúncio do ROUND 1 (1,5 s)
+    const vida = p2.health
+    h.api.lutaAttack(p1, 'pesado')
+    // O "pesado" tem 0,26 s de recuo: 2 quadros (0,1 s) não podem machucar. Antes
+    // do R18 o didHit valia desde o 1º quadro e quem apertasse primeiro ganhava.
+    quadros(h, 2, 41)
+    expect(p2.health).toBe(vida)
+    quadros(h, 12, 43) // …e passado o recuo, machuca
+    expect(p2.health).toBeLessThan(vida)
+  })
+
+  it('⭐ a luta INTEIRA roda até alguém ganhar a partida (não congela)', async () => {
+    const h = loadRuntime()
+    const { p1, p2 } = await arena(h)
+    h.api.lutaMove('soco', p1, 'rápido', 40, 400, true, false)
+    h.api.onUpdate((dt: number) => {
+      h.api.lutaFighter(p1, 'a', 'd', 'w', 's', 'f', dt)
+      h.api.lutaFighter(p2, 'j', 'l', 'i', 'k', 'h', dt)
+      h.api.lutaAttack(p1, 'soco') // martela: o jogo tem que aguentar
+    })
+    // 3 rounds × (anúncio 1,5 s + luta + K.O. 2 s). Travar em qualquer fase = o
+    // estado nunca vira 'fim'.
+    quadros(h, 600)
+    expect(h.api.state()).toBe('fim')
+    expect(h.api.lutaWinner()).toBe('jogador 1')
+    expect(h.api.lutaWinsOf(p1)).toBe(2) // melhor de 3
+  })
+
+  it('⭐ "Jogar de novo" recomeça do zero, e não no round 3 com 2 a 0', async () => {
+    const h = loadRuntime()
+    const { p1, p2 } = await arena(h)
+    h.api.lutaMove('soco', p1, 'rápido', 60, 400, true, false)
+    h.api.onUpdate((dt: number) => {
+      h.api.lutaFighter(p1, 'a', 'd', 'w', 's', 'f', dt)
+      h.api.lutaFighter(p2, 'j', 'l', 'i', 'k', 'h', dt)
+      h.api.lutaAttack(p1, 'soco')
+    })
+    quadros(h, 600)
+    expect(h.api.state()).toBe('fim')
+    // ⚠️ TODO global de jogo entra no reset do setState. Sem isso a luta anterior
+    // sobrevive e "Jogar de novo" abre já decidida.
+    h.api.setState('jogando')
+    expect(h.api.lutaRoundNow()).toBe(0) // 0 = nenhuma luta declarada
+    expect(h.api.lutaWinner()).toBe('')
+  })
+
+  it('a defesa segura o golpe comum, e o "atravessa a defesa" passa por ela', async () => {
+    const h = loadRuntime()
+    const { p1, p2 } = await arena(h)
+    h.api.lutaMove('soco', p1, 'médio', 20, 400, false, false)
+    h.api.lutaMove('agarrao', p1, 'médio', 20, 400, true, false)
+    h.api.onUpdate((dt: number) => {
+      h.api.lutaFighter(p1, 'a', 'd', 'w', 's', 'f', dt)
+      h.api.lutaFighter(p2, 'j', 'l', 'i', 'k', 'h', dt)
+    })
+    quadros(h, 40)
+    h.fire('keydown', { key: 'h' }) // p2 segura o defender
+    const antes = p2.health
+    h.api.lutaAttack(p1, 'soco')
+    quadros(h, 16, 41)
+    const comDefesa = antes - p2.health
+    expect(comDefesa).toBeGreaterThan(0) // raspão: não é zero
+    expect(comDefesa).toBeLessThan(8) // …mas é MUITO menos que os 20 do golpe
+
+    const antes2 = p2.health
+    h.api.lutaAttack(p1, 'agarrao')
+    quadros(h, 16, 60)
+    expect(antes2 - p2.health).toBeGreaterThan(comDefesa * 2)
+  })
+
+  it('o especial só sai com a barra cheia', async () => {
+    const h = loadRuntime()
+    const { p1, p2 } = await arena(h)
+    h.api.lutaMove('super', p1, 'médio', 35, 400, true, true)
+    h.api.onUpdate((dt: number) => {
+      h.api.lutaFighter(p1, 'a', 'd', 'w', 's', 'f', dt)
+      h.api.lutaFighter(p2, 'j', 'l', 'i', 'k', 'h', dt)
+    })
+    quadros(h, 40)
+    expect(h.api.lutaSpecialOf(p1)).toBe(0)
+    const vida = p2.health
+    h.api.lutaAttack(p1, 'super')
+    quadros(h, 16, 41)
+    expect(p2.health).toBe(vida) // barra vazia: o golpe não sai
+  })
+
+  it('o computador joga sozinho (a luta anda sem ninguém apertar nada)', async () => {
+    const h = loadRuntime()
+    const { p1, p2 } = await arena(h)
+    h.api.lutaMove('soco', p1, 'rápido', 10, 60, false, false)
+    h.api.lutaMove('soco', p2, 'rápido', 10, 60, false, false)
+    h.api.lutaAI(p1, 'difícil')
+    h.api.lutaAI(p2, 'difícil')
+    h.api.onUpdate(() => {})
+    quadros(h, 400)
+    // Os dois se acharam e se bateram: alguém perdeu vida sem nenhum teclado.
+    expect(p1.health + p2.health).toBeLessThan(200)
   })
 })

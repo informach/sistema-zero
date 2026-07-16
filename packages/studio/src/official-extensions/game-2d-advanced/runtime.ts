@@ -325,6 +325,8 @@ export const gameKitRuntime = `(function () {
         // ⚠️ R18: um "Esperar 30 s → nasce o chefe" da partida ANTERIOR dispararia
         // no meio da partida nova. É o mesmo erro do checkpoint/tweens abaixo.
         waits.length = 0;
+        // ⚠️ idem: sem isto, "Jogar de novo" recomeçava no round 3 com 2 a 0.
+        lutaNewGame();
         // ⚠️ TODO global de jogo entra AQUI. Os 3 abaixo escaparam quando nasceram:
         // · checkpoint — a criança marca o ponto numa bandeira no meio da fase (uso
         //   natural do bloco); sem zerar, "Jogar de novo" NASCE no meio da fase da
@@ -798,6 +800,7 @@ export const gameKitRuntime = `(function () {
     stepParticles(dt); // física das faíscas (o drawEffects só DESENHA)
     stepSwings(dt); // decai o tempo dos golpes de ação (🥷)
     stepWaits(); // "Esperar N s, fazer" (⏱️ Tempo) — one-shot no relógio do jogo
+    stepLuta(dt); // 🥊 Kit Luta: rounds/fases (travam só os lutadores, sem estado novo)
     stepRpg(dt); // NPCs que andam + motor de cena + transição de mapa (Kit RPG)
     for (var i = 0; i < spawners.length; i++) {
       var sp = spawners[i];
@@ -3292,6 +3295,409 @@ export const gameKitRuntime = `(function () {
     pkm.grass = {};
     pkm.grassTiles = {};
   }
+
+  // ==========================================================================
+  // KIT LUTA - o atalho do genero (Street Fighter / Mortal Kombat)
+  // ==========================================================================
+  // A extensao GERAL ja faz luta "na unha" (personagem + gravidade + pulo +
+  // attackFacing + didHit + hurt + knockback). Este kit e o ATALHO: junta tudo num
+  // bloco so e acrescenta o que so existe em jogo de luta - rounds, defesa,
+  // especial, combo, e um oponente de computador.
+  //
+  // O QUE ELE REUSA (nao duplica): applyGravity + o feel do pulo (setJumpFeel
+  // regula a luta de graca), attackFacing/didHit/swingBox (a caixa ja vira com a
+  // direcao e ja tem a trava de 1 acerto por golpe), setSwingWindow (o recuo),
+  // setEntityState/autoAnimate (a trava de animacao), hurt/knockback/isInvincible,
+  // drawBar, face, setState + as telas prontas, on/emit, cameraShake, defineEffect.
+  //
+  // O QUE ELE RE-FAZ, e por que: o moveWithCustomKeys e top-down (mexe no y direto,
+  // sem gravidade nem pulo) e o platformerHero tem tecla FIXA - nenhum dos dois faz
+  // dois jogadores no mesmo teclado num jogo de lado. Por isso o Lutador recebe as
+  // teclas dele. E o UNICO ponto em que o kit re-faz algo do geral.
+  var luta = null; // null = ninguem declarou luta (tudo aqui vira no-op)
+
+  // A TABELA. E a alma do kit: a crianca responde UMA PALAVRA (rapido/medio/pesado)
+  // e o motor traduz em cinco numeros que ela nunca teria como responder.
+  // ⭐ O COMBO SAI DAQUI, DE GRACA: "pesado" trava o outro 0,45 s e recupera em
+  // 0,42 s -> sobram 0,03 s e da p/ emendar um "rapido". A crianca DESCOBRE que
+  // chute->soco encaixa. Combo nao e bloco: e consequencia da tabela.
+  var LUTA_SPEEDS = {
+    'rápido': { start: 0.08, active: 0.06, recover: 0.16, stun: 0.18, push: 120, down: false },
+    rapido: { start: 0.08, active: 0.06, recover: 0.16, stun: 0.18, push: 120, down: false },
+    'médio': { start: 0.14, active: 0.08, recover: 0.26, stun: 0.28, push: 220, down: false },
+    medio: { start: 0.14, active: 0.08, recover: 0.26, stun: 0.28, push: 220, down: false },
+    pesado: { start: 0.26, active: 0.1, recover: 0.42, stun: 0.45, push: 420, down: true }
+  };
+  var LUTA_AI = {
+    'fácil': { think: 0.6, approach: 0.6, guard: 10, jump: 5, special: 20 },
+    facil: { think: 0.6, approach: 0.6, guard: 10, jump: 5, special: 20 },
+    normal: { think: 0.35, approach: 1, guard: 45, jump: 15, special: 60 },
+    'difícil': { think: 0.18, approach: 1, guard: 85, jump: 25, special: 95 },
+    dificil: { think: 0.18, approach: 1, guard: 85, jump: 25, special: 95 }
+  };
+  var LUTA_GUARD_CHIP = 0.15;  // defendeu: 15% do dano passa de raspao
+  var LUTA_COMBO_DECAY = 0.1;  // cada golpe do combo tira 10% do dano (min 30%)
+
+  function lutaSide(who) {
+    if (!luta) return null;
+    if (luta.p1.c === who) return luta.p1;
+    if (luta.p2.c === who) return luta.p2;
+    return null;
+  }
+  function lutaBlank(c) {
+    return {
+      c: c, guard: false, stun: 0, combo: 0, comboT: 0, special: 0, wins: 0,
+      homeX: num(c.x, 0), homeY: num(c.y, 0), moves: Object.create(null), ai: null, aiT: 0
+    };
+  }
+  /**
+   * Casa DOIS personagens numa luta. Vem DEPOIS do "Posicionar o personagem": e
+   * daqui que sai o lugar de renascer a cada round (o respawn geral nao serve - o
+   * _bornX nasce 0 no createCharacter e o placeCharacter nao o atualiza).
+   */
+  function lutaMatch(a, b, rounds, secs) {
+    if (!a || !b || typeof a !== 'object' || typeof b !== 'object') {
+      warn('"Luta de" precisa de DOIS personagens');
+      return;
+    }
+    if (a === b) { warn('"Luta de" precisa de dois personagens DIFERENTES'); return; }
+    luta = {
+      p1: lutaBlank(a), p2: lutaBlank(b),
+      rounds: Math.max(1, Math.round(num(rounds, 3))),
+      secs: Math.max(5, num(secs, 60)),
+      round: 1, t: 0, phase: 'anuncio', phaseT: 0, winner: '', roundWinner: ''
+    };
+  }
+  function lutaOther(side) { return side === luta.p1 ? luta.p2 : luta.p1; }
+  /** Golpe data-driven. O 3o argumento e a PALAVRA; os tempos sao do motor. */
+  function lutaMove(name, who, speed, dmg, range, pierce, special) {
+    var side = lutaSide(who);
+    if (!side) { warnOnce('lutamove', 'use "Luta de" ANTES de criar os golpes'); return; }
+    var k = text(name, '');
+    if (!k) { warn('o golpe precisa de um nome'); return; }
+    var sp = LUTA_SPEEDS[text(speed, 'médio')];
+    if (!sp) { warnOnce('lutasp:' + text(speed, ''), 'velocidade "' + text(speed, '') + '" não existe (use rápido, médio ou pesado)'); return; }
+    side.moves[k] = {
+      name: k, sp: sp,
+      dmg: Math.max(1, num(dmg, 10)),
+      range: Math.max(4, num(range, 50)),
+      pierce: !!pierce, special: !!special,
+      from: 0, to: 0, hasAnim: false
+    };
+  }
+  /** A animacao do golpe: os quadros. O fps e ESTICADO p/ durar exatamente o golpe. */
+  function lutaMoveAnim(name, who, from, to) {
+    var side = lutaSide(who);
+    if (!side) { warnOnce('lutaanim', 'use "Luta de" ANTES'); return; }
+    var mv = side.moves[text(name, '')];
+    if (!mv) { warnOnce('lutaanim:' + text(name, ''), 'o golpe "' + text(name, '') + '" não existe'); return; }
+    mv.from = Math.max(0, Math.floor(num(from, 0)));
+    mv.to = Math.max(mv.from, Math.floor(num(to, 0)));
+    mv.hasAnim = true;
+  }
+  function lutaDur(mv) { return mv.sp.start + mv.sp.active + mv.sp.recover; }
+  /** Dar o golpe. Trava a animacao, arma a caixa e a janela, gasta o especial. */
+  function lutaAttack(who, name) {
+    var side = lutaSide(who);
+    if (!side) { warnOnce('lutaatk', 'use "Luta de" ANTES'); return; }
+    if (luta.phase !== 'lutando') return;
+    if (side.stun > 0) return;             // travado pelo dano
+    if (num(who._swingT, 0) > 0) return;   // ja golpeando
+    var mv = side.moves[text(name, '')];
+    if (!mv) { warnOnce('lutaatk:' + text(name, ''), 'o golpe "' + text(name, '') + '" não existe — crie com "Golpe"'); return; }
+    if (mv.special && side.special < 100) return; // barra vazia: nao sai
+    if (mv.special) side.special = 0;
+    side.guard = false;
+    var dur = lutaDur(mv);
+    attackFacing(who, mv.range, dur);
+    setSwingWindow(who, mv.sp.start, mv.sp.active);
+    side.pending = mv;
+    if (mv.hasAnim) {
+      // fps esticado: o golpe manda, a animacao obedece (quadro pulado nao quebra)
+      stateAnim(who, 'golpe', mv.from, mv.to, Math.max(1, (mv.to - mv.from + 1) / dur), true);
+    }
+  }
+  /**
+   * O lutador tudo-em-um. DOIS blocos = dois jogadores, cada um com as teclas dele.
+   */
+  function lutaFighter(who, left, right, jump, crouch, guardKey, dt) {
+    var side = lutaSide(who);
+    if (!side) { warnOnce('lutafighter', 'use "Luta de" ANTES do "Lutador"'); return; }
+    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
+    side.stun = Math.max(0, side.stun - d);
+    if (side.comboT > 0) { side.comboT -= d; if (side.comboT <= 0) side.combo = 0; }
+    // 1) portao de FASE: fora de "lutando" os bonecos congelam (mas caem).
+    var podeAgir = luta.phase === 'lutando' && side.stun <= 0 && num(who._swingT, 0) <= 0;
+    if (who.onGround) who._coyoteT = jumpFeel.coyote;
+    else who._coyoteT = Math.max(0, num(who._coyoteT, 0) - d);
+    applyGravity(who, plat.gravity, d);
+    // 2) virar de frente - SO na horizontal. ⭐ O face() geral usa o eixo DOMINANTE:
+    //    o outro pula por cima e o lutador vira p/ CIMA, e a caixa de golpe dispara
+    //    para o ceu. Num jogo de luta isso nunca pode acontecer.
+    var alvo = lutaOther(side).c;
+    if (num(who._swingT, 0) <= 0) {
+      var virarEsq = centerX(alvo) < centerX(who);
+      who._facingDir = virarEsq ? 'left' : 'right';
+      who._facingLeft = virarEsq;
+    }
+    side.guard = false;
+    if (!podeAgir) { who.vx = 0; moveByVelocity(who, d); return; }
+    // 3) defender: trava o andar e reduz o dano
+    if (keys[normKey(guardKey)]) { side.guard = true; who.vx = 0; moveByVelocity(who, d); return; }
+    // 4) agachar: encolhe (a aparencia vetorial espreme sozinha - o drawEntity
+    //    escala pelo w/h), nao anda, nao pula
+    var agachado = keys[normKey(crouch)] && who.onGround;
+    if (!num(who._lutaH, 0)) who._lutaH = num(who.h, 0);
+    who.h = agachado ? Math.round(num(who._lutaH, 0) * 0.6) : num(who._lutaH, 0);
+    if (agachado) { who.vx = 0; moveByVelocity(who, d); return; }
+    // 5) andar
+    var dx = 0;
+    if (keys[normKey(left)]) dx -= 1;
+    if (keys[normKey(right)]) dx += 1;
+    who.vx = dx * num(who.speed, 260);
+    // 6) pular, com o feel do bloco GERAL "Regular o pulo"
+    if (justPressed[normKey(jump)] && num(who._coyoteT, 0) > 0) {
+      who.vy = -Math.abs(num(who._lutaJump, 700));
+      who.onGround = false;
+      who._coyoteT = 0;
+    }
+    moveByVelocity(who, d);
+  }
+  function lutaAI(who, level) {
+    var side = lutaSide(who);
+    if (!side) { warnOnce('lutaai', 'use "Luta de" ANTES'); return; }
+    var cfg = LUTA_AI[text(level, 'normal')];
+    if (!cfg) { warnOnce('lutaailv:' + text(level, ''), 'dificuldade "' + text(level, '') + '" não existe (use fácil, normal ou difícil)'); return; }
+    side.ai = cfg;
+  }
+  function lutaStepAI(side, dt) {
+    var cfg = side.ai;
+    var who = side.c;
+    var foe = lutaOther(side);
+    var alvo = foe.c;
+    side.stun = Math.max(0, side.stun - dt);
+    if (side.comboT > 0) { side.comboT -= dt; if (side.comboT <= 0) side.combo = 0; }
+    applyGravity(who, plat.gravity, dt);
+    var virarEsq = centerX(alvo) < centerX(who);
+    if (num(who._swingT, 0) <= 0) { who._facingDir = virarEsq ? 'left' : 'right'; who._facingLeft = virarEsq; }
+    side.guard = false;
+    if (luta.phase !== 'lutando' || side.stun > 0 || num(who._swingT, 0) > 0) {
+      who.vx = 0; moveByVelocity(who, dt); return;
+    }
+    side.aiT -= dt;
+    var dist = Math.abs(centerX(alvo) - centerX(who));
+    // o alcance do maior golpe dela
+    var alcance = 60;
+    for (var k in side.moves) alcance = Math.max(alcance, side.moves[k].range);
+    if (side.aiT <= 0) {
+      side.aiT = cfg.think;
+      // defende: mais quando o outro esta golpeando
+      var perigo = num(alvo._swingT, 0) > 0 && dist < alcance + 30;
+      side.aiDecision = 'aproximar';
+      if (perigo && chance(cfg.guard)) side.aiDecision = 'defender';
+      else if (dist <= alcance) side.aiDecision = 'atacar';
+      else if (chance(cfg.jump)) side.aiDecision = 'pular';
+    }
+    if (side.aiDecision === 'defender') { side.guard = true; who.vx = 0; moveByVelocity(who, dt); return; }
+    if (side.aiDecision === 'atacar' && dist <= alcance) {
+      // o especial quando a barra enche; senao o melhor golpe que alcanca
+      var esc = null;
+      for (var m in side.moves) {
+        var mv = side.moves[m];
+        if (mv.range < dist) continue;
+        if (mv.special) { if (side.special >= 100 && chance(cfg.special)) { esc = mv; break; } continue; }
+        if (!esc || mv.dmg > esc.dmg) esc = mv;
+      }
+      if (esc) { lutaAttack(who, esc.name); who.vx = 0; moveByVelocity(who, dt); return; }
+    }
+    if (side.aiDecision === 'pular' && who.onGround) {
+      who.vy = -Math.abs(num(who._lutaJump, 700));
+      who.onGround = false;
+    }
+    // o dificil MANTEM a distancia do golpe (recua se colar); os outros so vem
+    var quer = (cfg.approach === 1 && dist < alcance * 0.6) ? -1 : (dist > alcance * 0.8 ? 1 : 0);
+    var dir = virarEsq ? -1 : 1;
+    who.vx = quer * dir * num(who.speed, 260) * (cfg.approach < 1 ? cfg.approach : 1);
+    moveByVelocity(who, dt);
+  }
+  /** O acerto: dano com vantagem de combo, defesa, empurrao e trava. */
+  function lutaHit(atacante, alvo) {
+    var mv = atacante.pending;
+    if (!mv) return;
+    var dano = mv.dmg;
+    // o dano do combo ESCALA p/ baixo: sem isto um combo de 8 mata e a dificuldade
+    // da IA vira decoracao.
+    if (atacante.combo > 0) dano *= Math.max(0.3, 1 - LUTA_COMBO_DECAY * atacante.combo);
+    var defendeu = alvo.guard && !mv.pierce;
+    if (defendeu) {
+      dano *= LUTA_GUARD_CHIP;
+      alvo.stun = 0.1;
+      knockback(alvo.c, atacante.c, mv.sp.push / 2);
+      emit('luta:defendeu', alvo.c);
+    } else {
+      alvo.stun = mv.sp.stun;
+      knockback(alvo.c, atacante.c, mv.sp.push);
+      atacante.combo += 1;
+      atacante.comboT = mv.sp.stun + 0.15;
+      // a barra enche batendo (+dano) e apanhando (+dano/2); defender NAO enche
+      atacante.special = Math.min(100, atacante.special + dano);
+      alvo.special = Math.min(100, alvo.special + dano / 2);
+      if (mv.sp.down) { alvo.c.vy = -260; alvo.c.onGround = false; } // pesado DERRUBA
+      emit('luta:acertou', alvo.c);
+    }
+    dano = Math.max(1, Math.round(dano));
+    alvo.c.health = Math.max(0, num(alvo.c.health, 0) - dano);
+    setEntityState(alvo.c, 'dano', defendeu ? 0.1 : mv.sp.stun);
+    cameraShake(defendeu ? 3 : 6, 0.1);
+  }
+  function lutaRoundEnd(quem) {
+    luta.roundWinner = quem;
+    luta.phase = 'ko';
+    luta.phaseT = 0;
+    if (quem === 'jogador 1') luta.p1.wins += 1;
+    else if (quem === 'jogador 2') luta.p2.wins += 1;
+    var perdedor = quem === 'jogador 1' ? luta.p2 : quem === 'jogador 2' ? luta.p1 : null;
+    if (perdedor) setEntityState(perdedor.c, 'morte', 2);
+    emit('luta:ko', null);
+  }
+  function lutaNextRound() {
+    var alvo = Math.floor(luta.rounds / 2) + 1;
+    if (luta.p1.wins >= alvo || luta.p2.wins >= alvo || luta.round >= luta.rounds) {
+      luta.winner = luta.p1.wins > luta.p2.wins ? 'jogador 1'
+        : luta.p2.wins > luta.p1.wins ? 'jogador 2' : 'empate';
+      // ⚠️ setState ANTES do emit (o padrao do setMission): assim o ouvinte da
+      // crianca pode sobrescrever a tela sem ser atropelado.
+      setState('fim');
+      emit('luta:acabou', null);
+      return;
+    }
+    luta.round += 1;
+    luta.phase = 'anuncio';
+    luta.phaseT = 0;
+    luta.t = 0;
+    var lados = [luta.p1, luta.p2];
+    for (var i = 0; i < 2; i++) {
+      var sd = lados[i];
+      sd.c.health = num(sd.c.maxHealth, 100);
+      sd.c.x = sd.homeX; sd.c.y = sd.homeY;
+      sd.c.vx = 0; sd.c.vy = 0;
+      sd.stun = 0; sd.combo = 0; sd.guard = false;
+      sd.c._swingT = 0;
+      sd.c._state = ''; sd.c._stateUntil = 0;
+      // o ESPECIAL fica de propósito: e por isso que o round 3 e o tenso.
+    }
+    emit('luta:round', null);
+  }
+  /**
+   * O passo da luta. ⭐ As fases vivem DENTRO do kit e travam so os lutadores.
+   * Um estado 'round' proprio cairia no reset do setState e APAGARIA o jogo da
+   * crianca a cada round (recolhe pools, zera playTime/checkpoint/tweens...).
+   * Roda no stepSystems, entao o relogio do round pausa junto com o jogo de graca.
+   */
+  function stepLuta(dt) {
+    if (!luta) return;
+    luta.phaseT += dt;
+    if (luta.phase === 'anuncio') {
+      if (luta.phaseT >= 1.5) { luta.phase = 'lutando'; luta.phaseT = 0; luta.t = 0; }
+      return;
+    }
+    if (luta.phase === 'ko') {
+      if (luta.phaseT >= 2) lutaNextRound();
+      return;
+    }
+    // fase 'lutando'
+    luta.t += dt;
+    if (luta.p1.ai) lutaStepAI(luta.p1, dt);
+    if (luta.p2.ai) lutaStepAI(luta.p2, dt);
+    // o acerto: a caixa do atacante contra o corpo do outro
+    var pares = [[luta.p1, luta.p2], [luta.p2, luta.p1]];
+    for (var i = 0; i < 2; i++) {
+      var atk = pares[i][0], dfd = pares[i][1];
+      if (atk.pending && didHit(atk.c, dfd.c)) lutaHit(atk, dfd);
+      if (num(atk.c._swingT, 0) <= 0) atk.pending = null;
+    }
+    if (luta.p1.c.health <= 0) { lutaRoundEnd('jogador 2'); return; }
+    if (luta.p2.c.health <= 0) { lutaRoundEnd('jogador 1'); return; }
+    if (luta.t >= luta.secs) {
+      // no tempo, mais vida vence; vida IGUAL = ninguem pontua e o round avanca
+      var h1 = num(luta.p1.c.health, 0), h2 = num(luta.p2.c.health, 0);
+      lutaRoundEnd(h1 > h2 ? 'jogador 1' : h2 > h1 ? 'jogador 2' : 'empate');
+    }
+  }
+  function lutaWinner() { return luta ? text(luta.winner, '') : ''; }
+  function lutaRoundNow() { return luta ? luta.round : 0; }
+  function lutaWinsOf(who) { var sd = lutaSide(who); return sd ? sd.wins : 0; }
+  function lutaComboOf(who) { var sd = lutaSide(who); return sd ? sd.combo : 0; }
+  function lutaSpecialOf(who) { var sd = lutaSide(who); return sd ? Math.round(sd.special) : 0; }
+  function lutaIsGuarding(who) { var sd = lutaSide(who); return !!(sd && sd.guard); }
+  /** O placar. SEM argumentos de propósito: posicao/cor/tamanho das barras nao sao
+   * resposta da crianca (todo jogo de luta tem barra em cima). Quem quiser
+   * diferente ja tem "Desenhar a barra" + "a vida de" - o caminho na unha. */
+  function lutaDrawHud() {
+    if (!luta || !ctx2d) return;
+    ctxSave();
+    var W = config.w;
+    var barW = W * 0.36;
+    lutaBar(20, 20, barW, luta.p1, false);
+    lutaBar(W - 20 - barW, 20, barW, luta.p2, true);
+    // cronometro
+    var falta = Math.max(0, Math.ceil(luta.secs - luta.t));
+    ctx2d.fillStyle = '#000000';
+    ctx2d.fillRect(W / 2 - 34, 16, 68, 42);
+    ctx2d.fillStyle = '#ffffff';
+    ctx2d.font = 'bold 28px sans-serif';
+    ctx2d.textAlign = 'center';
+    ctx2d.fillText(String(falta), W / 2, 47);
+    // bolinhas de round ganho
+    lutaDots(W / 2 - 46, 68, luta.p1.wins);
+    lutaDots(W / 2 + 34, 68, luta.p2.wins);
+    // o letreiro da fase
+    var msg = '';
+    if (luta.phase === 'anuncio') msg = 'ROUND ' + luta.round;
+    else if (luta.phase === 'ko') {
+      msg = luta.roundWinner === 'empate' ? 'EMPATE!' : (luta.t >= luta.secs ? 'TEMPO!' : 'K.O.!');
+    }
+    if (msg) {
+      ctx2d.fillStyle = config.accent || '#ffffff';
+      ctx2d.font = 'bold 56px sans-serif';
+      ctx2d.fillText(msg, W / 2, config.h / 2);
+    }
+    ctx2d.textAlign = 'left';
+    ctxRestore();
+  }
+  function lutaBar(x, y, w, side, direita) {
+    var pct = Math.max(0, Math.min(1, num(side.c.health, 0) / Math.max(1, num(side.c.maxHealth, 100))));
+    ctx2d.fillStyle = '#000000';
+    ctx2d.fillRect(x - 3, y - 3, w + 6, 28);
+    ctx2d.fillStyle = '#5a1111';
+    ctx2d.fillRect(x, y, w, 22);
+    ctx2d.fillStyle = pct > 0.3 ? '#e0b020' : '#e04040';
+    var vw = Math.round(w * pct);
+    ctx2d.fillRect(direita ? x + w - vw : x, y, vw, 22);
+    // a barra de especial, fininha embaixo
+    ctx2d.fillStyle = '#111111';
+    ctx2d.fillRect(x, y + 25, w, 8);
+    ctx2d.fillStyle = side.special >= 100 ? '#40e0ff' : '#2a7a90';
+    var sw = Math.round(w * Math.max(0, Math.min(1, side.special / 100)));
+    ctx2d.fillRect(direita ? x + w - sw : x, y + 25, sw, 8);
+    if (side.combo > 1) {
+      ctx2d.fillStyle = '#ffffff';
+      ctx2d.font = 'bold 16px sans-serif';
+      ctx2d.textAlign = direita ? 'right' : 'left';
+      ctx2d.fillText(side.combo + ' seguidos!', direita ? x + w : x, y + 50);
+      ctx2d.textAlign = 'left';
+    }
+  }
+  function lutaDots(x, y, n) {
+    for (var i = 0; i < 2; i++) {
+      ctx2d.fillStyle = i < n ? '#e0b020' : 'rgba(255,255,255,0.25)';
+      ctx2d.beginPath();
+      ctx2d.arc(x + i * 16, y, 5, 0, Math.PI * 2);
+      ctx2d.fill();
+    }
+  }
+  function lutaNewGame() { luta = null; }
+
   // ---- 🥷 Ação em tempo real (Zelda) — golpe na direção + patrulha (Ninja Adventure) ----
   // O golpe cria uma caixa de acerto NA FRENTE do personagem (pela direção que
   // olha) por alguns instantes, com trava de 1 acerto por golpe e por alvo (o
@@ -4888,6 +5294,19 @@ export const gameKitRuntime = `(function () {
     // ----- 🥷 V10: ação em tempo real (Zelda) -----
     attackFacing: guard('attackFacing', attackFacing),
     setSwingWindow: guard('setSwingWindow', setSwingWindow),
+    lutaMatch: guard('lutaMatch', lutaMatch),
+    lutaDrawHud: guard('lutaDrawHud', lutaDrawHud),
+    lutaWinner: guard('lutaWinner', lutaWinner),
+    lutaRoundNow: guard('lutaRoundNow', lutaRoundNow),
+    lutaWinsOf: guard('lutaWinsOf', lutaWinsOf),
+    lutaFighter: guard('lutaFighter', lutaFighter),
+    lutaAI: guard('lutaAI', lutaAI),
+    lutaIsGuarding: guard('lutaIsGuarding', lutaIsGuarding),
+    lutaMove: guard('lutaMove', lutaMove),
+    lutaMoveAnim: guard('lutaMoveAnim', lutaMoveAnim),
+    lutaAttack: guard('lutaAttack', lutaAttack),
+    lutaComboOf: guard('lutaComboOf', lutaComboOf),
+    lutaSpecialOf: guard('lutaSpecialOf', lutaSpecialOf),
     didHit: guard('didHit', didHit),
     patrolAround: guard('patrolAround', patrolAround),
     drawHearts: guard('drawHearts', drawHearts),

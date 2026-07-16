@@ -120,7 +120,11 @@ const MAX_CATEGORY_CHARS = 60
 // entra no contexto da IA (esse é o `promptContext`, separado). Subiu de 20k
 // porque DUAS extensões oficiais já batiam nele (game-2d e game-2d-advanced), e
 // aí cada kit novo custava enxugar seção antiga em vez de explicar melhor.
-const MAX_DOCS_CHARS = 32_000
+// Subiu de novo (32k → 40k) pelo MESMO motivo, no 4º kit do Jogo 2D Avançado: com
+// 242 blocos, 32k dá ~130 caracteres por bloco — o teto passou a decidir o que a
+// criança pode ler, que é exatamente o que ele não deve fazer. Uma trava de
+// sanidade contra dados malformados não precisa ser apertada.
+const MAX_DOCS_CHARS = 40_000
 const MAX_EXAMPLES = 50
 
 export const ExtensionExampleSchema = z.object({

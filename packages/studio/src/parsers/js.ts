@@ -3897,6 +3897,9 @@ const GK_PKM_FX = new Set(['investida', 'bola', 'raio', 'onda'])
 const GK_PKM_DIFF = new Set(['fácil', 'normal', 'difícil', 'raríssimo'])
 // Espelha o STATE_NAMES do runtime da extensão e os dropdowns de estado do
 // blocks.ts — divergir vira rawJS.
+// Espelham os dropdowns do Kit Luta e as tabelas do runtime.
+const GK_LUTA_SPEEDS = new Set(['rápido', 'médio', 'pesado'])
+const GK_LUTA_LEVELS = new Set(['fácil', 'normal', 'difícil'])
 const GK_ENTITY_STATES = new Set([
   'parado',
   'andando',
@@ -4039,6 +4042,24 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'animEnded') {
     const charVar = identifierName(args[0])
     if (charVar) return { type: 'gk:animEnded', charVar }
+  }
+  if (method === 'lutaWinner' && args.length === 0) return { type: 'gk:lutaWinner' }
+  if (method === 'lutaRoundNow' && args.length === 0) return { type: 'gk:lutaRound' }
+  if (method === 'lutaWinsOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:lutaWinsOf', charVar }
+  }
+  if (method === 'lutaComboOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:lutaCombo', charVar }
+  }
+  if (method === 'lutaSpecialOf') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:lutaSpecial', charVar }
+  }
+  if (method === 'lutaIsGuarding') {
+    const charVar = identifierName(args[0])
+    if (charVar) return { type: 'gk:lutaIsGuarding', charVar }
   }
   if (method === 'entityState') {
     const charVar = identifierName(args[0])
@@ -5096,6 +5117,78 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       return isSimpleValue(to) && isSimpleValue(seconds)
         ? { type: 'gk:tweenProperty', charVar, prop, to, seconds }
         : null
+    }
+    case 'lutaMatch': {
+      const p1Var = identifierName(args[0])
+      const p2Var = identifierName(args[1])
+      if (!p1Var || !p2Var) return null
+      const rounds = toExpr(args[2], ctx)
+      const seconds = toExpr(args[3], ctx)
+      return isSimpleValue(rounds) && isSimpleValue(seconds)
+        ? { type: 'gk:lutaMatch', p1Var, p2Var, rounds, seconds }
+        : null
+    }
+    case 'lutaDrawHud':
+      return args.length === 0 ? { type: 'gk:lutaDrawHud' } : null
+    case 'lutaFighter': {
+      const charVar = identifierName(args[0])
+      const dtVar = identifierName(args[6])
+      if (!charVar || !dtVar) return null
+      for (let i = 1; i <= 5; i++) if (args[i]?.type !== 'StringLiteral') return null
+      return {
+        type: 'gk:lutaFighter',
+        charVar,
+        left: (args[1] as { value: string }).value,
+        right: (args[2] as { value: string }).value,
+        jump: (args[3] as { value: string }).value,
+        crouch: (args[4] as { value: string }).value,
+        guard: (args[5] as { value: string }).value,
+        dtVar,
+      }
+    }
+    case 'lutaAI': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      const level = args[1].value as string
+      if (!GK_LUTA_LEVELS.has(level)) return null // dropdown coage: outro -> rawJS
+      return { type: 'gk:lutaAI', charVar, level }
+    }
+    case 'lutaMove': {
+      const charVar = identifierName(args[1])
+      if (!charVar || args[0]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') {
+        return null
+      }
+      const speed = args[2].value as string
+      if (!GK_LUTA_SPEEDS.has(speed)) return null
+      if (args[5]?.type !== 'BooleanLiteral' || args[6]?.type !== 'BooleanLiteral') return null
+      const damage = toExpr(args[3], ctx)
+      const range = toExpr(args[4], ctx)
+      return isSimpleValue(damage) && isSimpleValue(range)
+        ? {
+            type: 'gk:lutaMove',
+            name: args[0].value as string,
+            charVar,
+            speed,
+            damage,
+            range,
+            pierce: args[5].value,
+            special: args[6].value,
+          }
+        : null
+    }
+    case 'lutaMoveAnim': {
+      const charVar = identifierName(args[1])
+      if (!charVar || args[0]?.type !== 'StringLiteral') return null
+      const from = toExpr(args[2], ctx)
+      const to = toExpr(args[3], ctx)
+      return isSimpleValue(from) && isSimpleValue(to)
+        ? { type: 'gk:lutaMoveAnim', name: args[0].value as string, charVar, from, to }
+        : null
+    }
+    case 'lutaAttack': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:lutaAttack', charVar, move: args[1].value as string }
     }
     case 'setSwingWindow': {
       const charVar = identifierName(args[0])
@@ -9320,7 +9413,13 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:isDead':
     case 'gk:isInvincible':
     case 'gk:healthOf':
-    // R18 — sem estar aqui, o statement que os usa vira rawJS inteiro
+    // R18/R19 — sem estar aqui, o statement que os usa vira rawJS inteiro
+    case 'gk:lutaWinner':
+    case 'gk:lutaRound':
+    case 'gk:lutaWinsOf':
+    case 'gk:lutaCombo':
+    case 'gk:lutaSpecial':
+    case 'gk:lutaIsGuarding':
     case 'gk:animEnded':
     case 'gk:entityState':
     case 'gk:angleOf':

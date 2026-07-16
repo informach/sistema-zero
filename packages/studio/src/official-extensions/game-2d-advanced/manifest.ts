@@ -11,9 +11,9 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.18.0',
+  version: '0.19.0',
   description:
-    'A base de um jogo 2D profissional, pronta para você inventar as regras. Máquina de estados, laço com delta-time (dt), telas de UI, personagens, e a arquitetura de verdade: avisos (eventos), moldes e enxames de inimigos que nascem sozinhos, comportamentos (perseguir/vaguear), combate (vida, dano, empurrão), faíscas, missão e som importado. O motor pronto fica no runtime; a mecânica você escreve nos ganchos, com os blocos — igual a quem programa jogos na unha.',
+    'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E quatro atalhos prontos para começar rápido: 🏃 plataforma (pulo gostoso, plataformas, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, tipos, capturar, evoluir) e 🥊 luta (dois jogadores, rounds, combo, especial).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -168,6 +168,9 @@ recolher + avisar*.
 
 ### 🖥️ HUD & Missão
 
+**Desenhar uma barra** de atual/máximo (vida grande, energia, progresso) —
+combine com "a vida de".
+
 **Vencer quando sobreviver X s ou derrotar N** define a missão (ganhou → tela de
 VITÓRIA pronta + aviso \`missao:completa\`; derrota é o "Terminar o jogo", tela
 de fim). **Contar +1 inimigo derrotado**, **cronômetro**, **tempo jogando** e
@@ -248,11 +251,6 @@ recuo), o momento em que machuca (o retângulo branco aparece só aqui!), e a vo
 Golpe rápido sai antes mas machuca pouco; golpe pesado demora, mas se acertar o
 outro fica travado tempo suficiente para você emendar outro. **Isso é o combo.**
 Deixe 0 e 0 para o golpe inteiro machucar, como antes.
-
-### 📊 Barra (em 🖥️ HUD & Missão)
-
-**Desenhar uma barra de atual/máximo** — vida grande, energia, progresso.
-Combine com "a vida de" e ponha no HUD.
 
 ### 🗺️ Mundo & profundidade
 
@@ -530,6 +528,64 @@ O menu sai dos golpes da sua criatura, e os botões aparecem sozinhos: sem bola,
 mesmos do ⚔️ Kit RPG — é o mesmo conceito, não vale aprender duas vezes). O XP, o
 nível e a evolução acontecem sozinhos, e o jogo ANUNCIA cada um. **Salvar o jogo**
 leva o time junto: nenhum bloco novo.
+
+## 🥊 Kit Luta
+
+### 🥊 Kit Luta: a partida
+
+O atalho do jogo de luta — dois lutadores, rounds, e um amigo (ou o computador)
+do outro lado. O que NÃO é só de luta vem do motor geral: gravidade, pulo (o
+"Regular o pulo" ajusta a luta), chão (molde + nascer + colidir), dano, empurrão,
+telas de fim, tremor e faíscas.
+
+**Luta de A × B, melhor de N rounds de N s** casa os dois. Ponha DEPOIS de
+posicionar cada um: é dali que sai o lugar onde eles voltam a cada round. No fim
+do tempo, quem tem mais vida ganha o round; vida igual = empate.
+
+**Desenhar o placar da luta** (sem argumentos) põe tudo: barras de vida e de
+especial, cronômetro, bolinhas de round ganho e os letreiros ROUND 2 / K.O. /
+TEMPO. Quer diferente? "Desenhar a barra" + "a vida de" — o caminho na unha.
+
+**o vencedor da luta**, **o round de agora** e **os rounds ganhos por** contam o
+resto. Os avisos **luta:round**, **luta:acertou**, **luta:defendeu**, **luta:ko**
+e **luta:acabou** ligam som, tremor e a tela de fim.
+
+### 🥊 Kit Luta: os lutadores
+
+**Lutador — andar a d, pular w, agachar s, defender f** faz TUDO num bloco:
+gravidade, andar, pular, agachar, defender, e virar de frente para o outro. Cada
+lutador tem as teclas DELE — por isso dois destes são dois jogadores no mesmo
+teclado, sem mais nada.
+
+**Fazer … ser controlado pelo computador** vai no LUGAR do "Lutador" daquele
+lutador: trocar um pelo outro é a diferença entre jogar sozinho e chamar um
+amigo. No fácil ele quase não defende; no difícil defende quase sempre, mantém a
+distância, espera você errar e usa o especial na hora. Quer a SUA IA? "distância
+entre", "sorte de %" e "o estado de" estão no geral.
+
+### 🥊 Kit Luta: golpes & combo
+
+**Golpe "soco" de jogador1 — rápido, dano 8, alcance 45.** Você escolhe uma
+PALAVRA, e ela decide o ritmo inteiro do golpe: o **rápido** sai quase na hora
+mas empurra pouco; o **médio** fica no meio; o **pesado** demora para sair, mas
+derruba e trava o outro por muito tempo.
+
+⭐ **É daqui que sai o combo, e ninguém precisa programar nada:** o pesado trava
+o outro por mais tempo do que você leva para se recuperar. Sobra uma frestinha —
+e dá para emendar um rápido. Experimente chute → soco: encaixa. Cada golpe do
+combo machuca um pouco menos que o anterior (senão um combo grande mataria de
+uma vez).
+
+- **atravessa a defesa ✓** é o agarrão: vence quem só fica defendendo (defender
+  para sempre também perde no relógio).
+- **gasta o especial ✓** só sai com a barra cheia. Ela enche batendo e apanhando
+  (defender não enche) e **atravessa os rounds** — por isso o último round é o
+  mais tenso.
+- **A animação do golpe … são os quadros N a N**: a velocidade é calculada para
+  durar exatamente o golpe. Você não acerta número nenhum.
+- **Fazer … dar o golpe** vai com "se a tecla foi apertada" — a tecla é sua, e é
+  isso que deixa você ter dois botões, o especial e o combo.
+- **o combo de** e **o especial de** contam para o placar e para a sua IA.
 
 ## 🧙 Kit RPG
 

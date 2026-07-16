@@ -439,6 +439,18 @@ export function compileExpr(
       return `SZGameKit.healthOf(${identifiers.get(expr.charVar)})`
     case 'gk:animEnded':
       return `SZGameKit.animEnded(${identifiers.get(expr.charVar)})`
+    case 'gk:lutaWinner':
+      return 'SZGameKit.lutaWinner()'
+    case 'gk:lutaRound':
+      return 'SZGameKit.lutaRoundNow()'
+    case 'gk:lutaWinsOf':
+      return `SZGameKit.lutaWinsOf(${identifiers.get(expr.charVar)})`
+    case 'gk:lutaCombo':
+      return `SZGameKit.lutaComboOf(${identifiers.get(expr.charVar)})`
+    case 'gk:lutaSpecial':
+      return `SZGameKit.lutaSpecialOf(${identifiers.get(expr.charVar)})`
+    case 'gk:lutaIsGuarding':
+      return `SZGameKit.lutaIsGuarding(${identifiers.get(expr.charVar)})`
     case 'gk:entityState':
       return `SZGameKit.entityState(${identifiers.get(expr.charVar)})`
     case 'gk:angleOf':

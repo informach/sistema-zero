@@ -282,6 +282,35 @@ API global injetada como window.SZGameKit:
   peca, folha) = mapa por CÓDIGO (masmorra sorteada) → setTileAt num laço.
   moveWithCustomKeys(quem, cima, baixo, esq, dir, dt) = 2º jogador (o moveWithKeys
   tem WASD E setas no MESMO personagem).
+- 🥊 Kit Luta (Street Fighter — o ATALHO do gênero; luta "na unha" segue possível
+  com personagem + applyGravity + attackFacing + didHit + hurt + knockback):
+  lutaMatch(a, b, rounds, segundos) casa os DOIS e grava o "home" de cada um da
+  posição ATUAL — vem DEPOIS do placeCharacter (o respawn geral não serve: o
+  _bornX nasce 0 e o placeCharacter não o atualiza). lutaFighter(quem, esq, dir,
+  pular, agachar, defender, dt) = tudo-em-um com as TECLAS DELE → dois blocos =
+  dois jogadores (⚠️ o moveWithCustomKeys é top-down sem gravidade e o
+  platformerHero tem tecla FIXA: é o ÚNICO ponto em que o kit re-faz algo do
+  geral, e é por limitação real). Ele vira de frente SÓ na horizontal — o face()
+  geral usa eixo DOMINANTE e mandaria a caixa de golpe p/ o CÉU quando o outro
+  pula por cima.
+  ⭐ lutaMove(nome, quem, "rápido"|"médio"|"pesado", dano, alcance, atravessa,
+  especial): a PALAVRA escolhe recuo/ativo/recuperação/trava/empurrão. O COMBO
+  EMERGE daí e não é bloco: o pesado trava 0,45 s e recupera em 0,42 s → sobram
+  0,03 s p/ emendar um rápido. O agarrão é o checkbox "atravessa" (vence a
+  defesa). lutaAttack(quem, golpe) com keyPressed (a tecla é da criança: é o que
+  permite 2 botões + especial + combo). lutaMoveAnim(golpe, quem, de, até) — fps
+  esticado p/ durar o golpe. lutaAI(quem, "fácil"|"normal"|"difícil") vai no LUGAR
+  do lutaFighter daquele lutador. lutaDrawHud() no onDrawHud, SEM argumentos
+  (barras/cronômetro/rounds/letreiros).
+  ⚠️ Os ROUNDS não têm estado próprio DE PROPÓSITO: um setState('round') cairia no
+  reset de 'jogando' e APAGARIA o jogo da criança a cada round. As fases vivem no
+  kit e travam só os lutadores; o stepLuta roda no stepSystems (o relógio do round
+  pausa junto com o jogo de graça). O fim faz setState('fim') e SÓ DEPOIS
+  emit('luta:acabou') — assim o ouvinte pode sobrescrever a tela.
+  Getters: lutaWinner()/lutaRoundNow()/lutaWinsOf/lutaComboOf/lutaSpecialOf/
+  lutaIsGuarding. Avisos: luta:round, luta:acertou, luta:defendeu, luta:ko,
+  luta:acabou. O CHÃO é geral (defineMold + spawn + collideGroup) — NÃO existe
+  "chão da luta", que seria o position.y = 330 hard-coded da base.
 - 🏃 Kit Plataforma (Mario/Celeste/Sunnyland — o ATALHO do gênero; o "na unha"
   segue possível só com ⚙️ Física): platformerHero(quem, vel, pulo, dt) =
   gravidade + A/D-setas + pulo + mover, TUDO-EM-UM, com o feel embutido (coyote

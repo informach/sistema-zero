@@ -36,10 +36,12 @@ describe('ExtensionManifestSchema', () => {
   })
 
   it('rejeita docs absurdamente grande', () => {
-    // O teto subiu 20k → 32k: DUAS extensões oficiais já batiam nele, e aí cada
-    // kit novo custava enxugar seção antiga em vez de explicar melhor.
-    expect(() => validateManifest({ ...validManifest, docs: 'x'.repeat(32_001) })).toThrow()
-    expect(() => validateManifest({ ...validManifest, docs: 'x'.repeat(32_000) })).not.toThrow()
+    // O teto subiu 20k → 32k → 40k SEMPRE pelo mesmo motivo: extensão oficial
+    // batendo nele, e aí kit novo custava enxugar seção antiga em vez de explicar
+    // melhor. É trava de sanidade contra manifest malformado — não é o limite da
+    // UI (o "Saiba mais" é um modal com scroll) e não entra no contexto da IA.
+    expect(() => validateManifest({ ...validManifest, docs: 'x'.repeat(40_001) })).toThrow()
+    expect(() => validateManifest({ ...validManifest, docs: 'x'.repeat(40_000) })).not.toThrow()
   })
 
   it('valida ExtensionManifestSchema parse de raw object', () => {
