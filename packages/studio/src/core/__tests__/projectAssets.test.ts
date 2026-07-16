@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { ASSET_LIBRARY } from '../../asset-library/catalog'
 import {
+  asset3DManifest,
   assetManifest,
   createEmptyProject,
   isValidAssetDataUrl,
@@ -14,6 +15,20 @@ import {
 const PNG = 'data:image/png;base64,AAAA'
 const WEBP = 'data:image/webp;base64,BBBB'
 const MP3 = 'data:audio/mpeg;base64,CCCC'
+
+function base64DataUrl(mime: string, bytes: readonly number[]): string {
+  const binary = String.fromCharCode(...bytes)
+  return `data:${mime};base64,${btoa(binary)}`
+}
+
+const GLB = base64DataUrl(
+  'model/gltf-binary',
+  [0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00],
+)
+const HDR = base64DataUrl(
+  'image/vnd.radiance',
+  Array.from(new TextEncoder().encode('#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n')),
+)
 
 describe('normalizeAssetName', () => {
   it('kebabiza, remove acento e minúsculiza', () => {
@@ -65,6 +80,43 @@ describe('isValidAssetDataUrl', () => {
         'audio',
       ),
     ).toBe(false)
+  })
+
+  // ⚠️ KTX2/Draco ficaram de FORA: o transcoder é WebAssembly e a CSP do preview
+  // não tem `wasm-unsafe-eval` (decisão de segurança infantil) — seriam assets que
+  // VALIDAM mas nunca CARREGAM. Textura comum segue por `kind: 'image'`.
+  it('valida GLB v2 e HDR por extensão, MIME e assinatura', () => {
+    expect(isValidAssetDataUrl(GLB, 'model3d', 'nave.glb')).toBe(true)
+    expect(isValidAssetDataUrl(HDR, 'environment3d', 'ceu.hdr')).toBe(true)
+
+    // extensão precisa casar com o kind
+    expect(isValidAssetDataUrl(GLB, 'model3d', 'nave.hdr')).toBe(false)
+    expect(isValidAssetDataUrl(HDR, 'environment3d', 'ceu.glb')).toBe(false)
+    // MIME precisa casar com o kind (bytes de GLB anunciados como HDR)
+    expect(isValidAssetDataUrl(GLB, 'environment3d', 'ceu.hdr')).toBe(false)
+    // sem nome de arquivo não dá: a extensão faz parte do contrato
+    expect(isValidAssetDataUrl(GLB, 'model3d')).toBe(false)
+    // glTF v1 é recusado: o three só abre v2
+    expect(
+      isValidAssetDataUrl(
+        base64DataUrl('model/gltf-binary', [0x67, 0x6c, 0x54, 0x46, 0x01, 0, 0, 0]),
+        'model3d',
+        'antigo.glb',
+      ),
+    ).toBe(false)
+    // assinatura precisa casar: .glb com bytes que não são glTF
+    expect(
+      isValidAssetDataUrl(
+        base64DataUrl('model/gltf-binary', [1, 2, 3, 4, 5, 6, 7, 8]),
+        'model3d',
+        'x.glb',
+      ),
+    ).toBe(false)
+  })
+
+  it('3D respeita o teto próprio (bem maior que o de imagem)', () => {
+    const big = `data:model/gltf-binary;base64,${'A'.repeat(PROJECT_ASSET_LIMITS.maxModel3DDataUrlChars)}`
+    expect(isValidAssetDataUrl(big, 'model3d', 'grande.glb')).toBe(false)
   })
 })
 
@@ -122,6 +174,17 @@ describe('sanitizeProjectAssets', () => {
     expect(sanitizeProjectAssets('x')).toEqual([])
     expect(sanitizeProjectAssets([null, 1, 'a'])).toEqual([])
   })
+
+  it('preserva assets 3D válidos e descarta metadados de arquivo inconsistentes', () => {
+    const out = sanitizeProjectAssets([
+      { kind: 'model3d', name: 'Nave', dataUrl: GLB, originalFileName: 'nave.glb' },
+      { kind: 'environment3d', name: 'Céu', dataUrl: HDR, originalFileName: 'ceu.hdr' },
+      { kind: 'model3d', name: 'falso', dataUrl: GLB, originalFileName: 'falso.hdr' }, // ext ≠ kind
+      { kind: 'model3d', name: 'sem-nome', dataUrl: GLB }, // sem originalFileName
+    ])
+    expect(out.map((asset) => asset.kind)).toEqual(['model3d', 'environment3d'])
+    expect(out.map((asset) => asset.originalFileName)).toEqual(['nave.glb', 'ceu.hdr'])
+  })
 })
 
 describe('assetManifest', () => {
@@ -148,6 +211,31 @@ describe('soundManifest', () => {
       moeda: 'data:audio/wav;base64,DDDD',
     })
     expect(soundManifest(undefined)).toEqual({})
+  })
+})
+
+describe('asset3DManifest', () => {
+  it('separa os binários 3D com tipo e nome de arquivo confiáveis', () => {
+    const assets = sanitizeProjectAssets([
+      { kind: 'image', name: 'icone', dataUrl: PNG },
+      { kind: 'model3d', name: 'nave', dataUrl: GLB, originalFileName: 'nave.glb' },
+      { kind: 'environment3d', name: 'ceu', dataUrl: HDR, originalFileName: 'ceu.hdr' },
+    ])
+    expect(asset3DManifest(assets)).toEqual({
+      nave: { kind: 'model3d', dataUrl: GLB, fileName: 'nave.glb' },
+      ceu: { kind: 'environment3d', dataUrl: HDR, fileName: 'ceu.hdr' },
+    })
+    // imagem e áudio NÃO entram; ausência devolve {}
+    expect(asset3DManifest(undefined)).toEqual({})
+  })
+
+  it('imagem comum não vaza para o manifesto 3D nem o 3D para o de imagem', () => {
+    const assets = sanitizeProjectAssets([
+      { kind: 'image', name: 'icone', dataUrl: PNG },
+      { kind: 'model3d', name: 'nave', dataUrl: GLB, originalFileName: 'nave.glb' },
+    ])
+    expect(assetManifest(assets)).toEqual({ icone: PNG })
+    expect(Object.keys(asset3DManifest(assets))).toEqual(['nave'])
   })
 })
 

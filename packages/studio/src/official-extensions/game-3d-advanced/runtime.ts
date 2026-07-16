@@ -72,6 +72,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var fsmHooks = Object.create(null);    // mold -> estado -> { enter:[], step:[], exit:[] }
   var stateTimers = [];                  // { mold, state, sec, next }
   var deathHooks = Object.create(null);  // mold -> [fn]
+  var overlapHooks = Object.create(null); // mold da ZONA -> [fn(zona, quem)]
   var effects = Object.create(null);     // nome -> receita + Points + buffers (faíscas)
   var emitters = Object.create(null);    // efeito -> jorro contínuo vivo (ponto/entidade)
   var composer = null;                   // mini-composer próprio (bloom + vinheta + ACES)
@@ -89,18 +90,28 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var sunLight = null;                    // sol direcional (initWorld)
   var extraLights = [];                   // luzes pontuais adicionadas (addLight)
   var decor = [];
+  var _decorMat = null;                   // material do cristal, compartilhado
   var currentDt = 0;
   var playTime = 0;
   var totalAlive = 0;                    // entidades vivas (todos os moldes)
   var entityLimitWarned = false;
   var _currentMold = null;               // contexto de montagem do defineMold
   // Câmera viva: um MODO por vez (órbita arrastável / seguir / topo).
-  var camMode = { kind: 'orbit', target: null, dist: 25, height: 4 };
-  var orbit = null;                      // { az, el, dist, dragging, px, py }
+  var camMode = { kind: 'orbit', target: null, dist: 25, height: 4, pivot: null, pivotGen: 0, targetGen: 0 };
+  var orbit = null;
+  var camSmooth = 3;   // suavidade do seguir (era literal); maior = mais colada
+  var _shakeT = 0;     // segundos restantes de tremor
+  var _shakeAmp = 0;   // força do tremor, em metros
+  var _shakeMax = 1;   // duração pedida (para o tremor decair até zero)                      // { az, el, dist, dragging, px, py }
   // Vetores/quaternions temporários (alocados no initWorld — nunca no top-level).
   var _tv1 = null;
   var _tv2 = null;
   var _tq1 = null;
+  // Base do WASD: frente/direita da CÂMERA achatadas no chão. Vetores PRÓPRIOS
+  // (não reusam _tv1/_tv2) porque quem chama a base também chama moveForward e
+  // companhia — aliasing aqui seria um bug invisível.
+  var _camF = null;
+  var _camR = null;
 
   // Grade espacial (plano XZ): a resposta do curso ao "getNearbyEntities O(n)".
   // Células esparsas por chave 'x,z'; cada entidade guarda a faixa de células
@@ -132,6 +143,44 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   function warn(msg) {
     try { console.warn('SZGameKit3D: ' + msg); } catch (e) {}
+  }
+
+  /**
+   * Aviso UMA vez por chave. Coisa chamada a cada quadro (tocar animação, por
+   * exemplo) com um nome errado entupiria o console a 60/s e esconderia o resto.
+   */
+  var _warned = {};
+  function warnOnce(key, msg) {
+    if (_warned[key]) return;
+    _warned[key] = true;
+    warn(msg);
+  }
+
+  /**
+   * Acaso do motor. Sem semente = Math.random (cada partida diferente, o padrão).
+   * COM semente = gerador próprio determinístico: a mesma semente dá exatamente a
+   * mesma partida — enfeites no mesmo lugar, inimigos nascendo igual, faíscas
+   * iguais. É o Mersenne semeado do curso (o ponto didático é a reprodutibilidade,
+   * não o algoritmo — mulberry32 dá o mesmo em 5 linhas, e vendorizar o Mersenne
+   * inteiro nesta string não se paga).
+   * ⚠️ TODO acaso do motor passa por aqui — trocar por Math.random em qualquer
+   * lugar fura o determinismo em silêncio.
+   */
+  var _rngState = 0;
+  var _rngOn = false;
+  function rand() {
+    if (!_rngOn) return Math.random();
+    _rngState |= 0;
+    _rngState = (_rngState + 0x6d2b79f5) | 0;
+    var t = Math.imul(_rngState ^ (_rngState >>> 15), 1 | _rngState);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  function setSeed(n) {
+    var s = num(n, 0);
+    if (!s) { _rngOn = false; return; }
+    _rngOn = true;
+    _rngState = Math.floor(s) | 0;
   }
 
   function num(v, fallback) {
@@ -214,6 +263,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       '.szg3k-hud-top-right { top: 0; right: 0; text-align: right; }' +
       '.szg3k-hud-bottom-left { bottom: 0; left: 0; }' +
       '.szg3k-hud-bottom-right { bottom: 0; right: 0; text-align: right; }' +
+      // Balão de fala: ancorado no MUNDO (o say projeta a posição da entidade a
+      // cada quadro). translate(-50%,-100%) põe a ponta do balão na cabeça dela.
+      '.szg3k-say { position: absolute; max-width: 40%; padding: 8px 12px; border-radius: 14px; ' +
+      'background: rgba(255,255,255,0.95); color: #0f172a; font-size: 16px; font-weight: 600; ' +
+      'line-height: 1.3; pointer-events: none; transform: translate(-50%, -100%); ' +
+      'box-shadow: 0 4px 14px rgba(0,0,0,0.35); white-space: pre-wrap; }' +
       '.szg3k-panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); ' +
         'background: rgba(2, 4, 12, 0.55); backdrop-filter: blur(10px); ' +
         'border: 3px solid ' + config.accent + '; padding: 30px; border-radius: 15px; text-align: center; ' +
@@ -379,6 +434,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       for (var pk in pools) releaseAll(pools[pk]);
       for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
       resetParticles();
+      // Recomeço limpa o que sobrou da partida anterior: balão de fala pendurado,
+      // cronômetro correndo e tremor pendente atravessariam para o jogo novo.
+      clearSays();
+      _timer.on = false;
+      _timer.left = 0;
+      _shakeT = 0;
     }
     var hooks = enterStateHooks[n];
     if (hooks) {
@@ -438,6 +499,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       _tv1 = new THREE.Vector3();
       _tv2 = new THREE.Vector3();
       _tq1 = new THREE.Quaternion();
+      _camF = new THREE.Vector3(0, 0, -1);
+      _camR = new THREE.Vector3(1, 0, 0);
 
       renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
       // Resolução interna FIXA (as contas do aluno nunca mudam com a janela).
@@ -557,29 +620,41 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     // sua — até 64 geometrias à toa). São liberadas no disposeAll (UNIT_GEOS).
     var rockGeo = unitGeo('rock');
     var crystalGeo = unitGeo('crystal');
+    // O cristal é UM material só (todos usam o accent) — antes cada um dos ~32
+    // alocava um idêntico à toa. A pedra mantém o material próprio: a variação de
+    // cinza por pedra é de propósito. Compartilhado sai no _decorMat (disposeAll).
+    var crystalMat = new THREE.MeshStandardMaterial({ color: config.accent });
+    if (crystalMat.emissive && crystalMat.emissive.set) {
+      crystalMat.emissive.set(config.accent);
+      crystalMat.emissiveIntensity = 0.25;
+    }
+    _decorMat = crystalMat;
     for (var i = 0; i < n; i++) {
       var isRock = i % 2 === 0;
       var geo = isRock ? rockGeo : crystalGeo;
       var mat;
       if (isRock) {
-        var shade = 90 + Math.floor(Math.random() * 60);
+        var shade = 90 + Math.floor(rand() * 60);
         mat = new THREE.MeshStandardMaterial({ color: 'rgb(' + shade + ', ' + shade + ', ' + (shade + 8) + ')' });
       } else {
-        mat = new THREE.MeshStandardMaterial({ color: config.accent });
-        if (mat.emissive && mat.emissive.set) {
-          mat.emissive.set(config.accent);
-          mat.emissiveIntensity = 0.25;
-        }
+        mat = crystalMat;
       }
       var mesh = new THREE.Mesh(geo, mat);
-      var ang = Math.random() * Math.PI * 2;
-      var dist = Math.sqrt(Math.random()) * radius;
-      var s = isRock ? (0.5 + Math.random() * 1.3) : (0.4 + Math.random() * 0.8);
+      var ang = rand() * Math.PI * 2;
+      var dist = Math.sqrt(rand()) * radius;
+      var s = isRock ? (0.5 + rand() * 1.3) : (0.4 + rand() * 0.8);
       mesh.scale.set(s, isRock ? s * 0.7 : s * 1.6, s);
       mesh.position.set(Math.cos(ang) * dist, (isRock ? s * 0.35 : s * 0.8), Math.sin(ang) * dist);
-      mesh.rotation.y = Math.random() * Math.PI * 2;
-      mesh.castShadow = true;
+      mesh.rotation.y = rand() * Math.PI * 2;
+      // ⭐ Enfeite NÃO projeta sombra: é cenário. O passe de sombra roda sobre o
+      // playfield inteiro (não é cortado pelo frustum da câmera), então cada
+      // enfeite que projetava dobrava a si mesmo lá — até 64 desenhos à toa.
+      mesh.castShadow = false;
       mesh.receiveShadow = true;
+      // Enfeite não anda: congela a matriz (o mesmo ganho do estático das
+      // entidades, aqui direto porque não passa pelo stepEntity).
+      mesh.updateMatrix();
+      mesh.matrixAutoUpdate = false;
       scene.add(mesh);
       decor.push(mesh);
     }
@@ -674,6 +749,32 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   // ---- Moldes (aparência por composição de peças) + pool + spawner ----
 
+  /**
+   * Cunha unitária (rampa) — 6 vértices, 8 triângulos. Caixa de -0.5..0.5 em X e
+   * Z; em Y vai de 0 (base) até a reta que sobe de z=-0.5 (altura 0) a z=+0.5
+   * (altura 1). Feita na mão porque o three não tem primitiva de cunha (e addons
+   * de geometria não valem o download). computeVertexNormals dá a sombra certa.
+   */
+  function wedgeGeo() {
+    var g = new THREE.BufferGeometry();
+    // 0..3 = base (y=0); 4..5 = aresta alta (y=1, z=+0.5)
+    var v = [
+      -0.5, 0, -0.5,   0.5, 0, -0.5,   0.5, 0, 0.5,   -0.5, 0, 0.5,
+      -0.5, 1, 0.5,    0.5, 1, 0.5
+    ];
+    var idx = [
+      0, 2, 1,  0, 3, 2,          // base
+      3, 4, 2,  2, 4, 5,          // topo (a rampa em si)
+      0, 1, 5,  0, 5, 4,          // ré (parede alta, z=+0.5)...
+      1, 2, 5,                    // lateral direita
+      0, 4, 3                     // lateral esquerda
+    ];
+    g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    return g;
+  }
+
   var UNIT_GEOS = null;
   function unitGeo(shape) {
     if (!UNIT_GEOS) UNIT_GEOS = {};
@@ -686,12 +787,279 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     else if (shape === 'plane') g = new THREE.PlaneGeometry(1, 1);
     else if (shape === 'torus') g = new THREE.TorusGeometry(0.35, 0.15, 12, 24);
     else if (shape === 'pyramid') g = new THREE.ConeGeometry(0.5, 1, 4);
+    // Rampa: cunha unitária feita na mão (o three não tem). Sobe ao longo de +Z:
+    // em z=-0.5 a altura é 0 (pé) e em z=+0.5 é 1 (topo). O COLISOR de rampa usa
+    // exatamente essa reta (ver rampHeight) — malha e colisão casam por construção.
+    else if (shape === 'rampa') g = wedgeGeo();
     // Enfeites do cenário (facetados) — compartilhados pelo scatterDecor.
     else if (shape === 'rock') g = new THREE.IcosahedronGeometry(0.5, 0);
     else if (shape === 'crystal') g = new THREE.OctahedronGeometry(0.5, 0);
     else g = new THREE.BoxGeometry(1, 1, 1);
     UNIT_GEOS[shape] = g;
     return g;
+  }
+
+  // ---- 🧊 Modelos 3D de verdade (GLB) e céu de foto (HDR) ----
+  //
+  // Os binários chegam como data: URL no __SZGAME_ASSETS_3D. A rede é MORTA no
+  // preview (o permissionGuard mata o fetch e a CSP tem connect-src 'none'), então
+  // loader.load(url) NUNCA funciona — decodificamos o base64 na mão e chamamos
+  // loader.parse(arrayBuffer), que não faz I/O. Mesmo princípio da textura, que já
+  // funciona hoje porque o ImageLoader usa <img> (subrecurso passivo).
+  var MODELS3D = (typeof window !== 'undefined' && window.__SZGAME_ASSETS_3D && typeof window.__SZGAME_ASSETS_3D === 'object')
+    ? window.__SZGAME_ASSETS_3D
+    : {};
+  var _gltfMod = null;       // módulo do GLTFLoader (import dinâmico)
+  var _rgbeMod = null;
+  var _skelMod = null;       // SkeletonUtils: clone que REAMARRA o esqueleto
+  var _modelCache = null;    // nome -> { scene, clips } já parseado (clonado a cada uso)
+  var _modelPending = null;  // nome -> FILA de callbacks (import/parse em voo)
+
+  /** data: URL base64 -> ArrayBuffer, sem tocar na rede. */
+  function dataUrlToBuffer(url) {
+    var comma = url.indexOf(',');
+    if (comma < 0) return null;
+    try {
+      var bin = atob(url.slice(comma + 1));
+      var len = bin.length;
+      var u8 = new Uint8Array(len);
+      for (var i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
+      return u8.buffer;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * Carrega o modelo do projeto e guarda no cache. Assíncrono por causa do
+   * import() do addon; enquanto não chega, o molde usa a peça de reserva (a
+   * criança vê um cubo e o modelo aparece quando fica pronto — nunca uma cena
+   * quebrada). Chamado do part(), que roda no defineMold (antes do start).
+   */
+  /**
+   * Clona um modelo importado. ⭐ O clone comum do Object3D NÃO reamarra o esqueleto aos
+   * ossos do clone — o boneco clonado fica preso ao esqueleto do original e a
+   * animação sai deformada. É por isso que o próprio curso trocou o clone comum
+   * pelo SkeletonUtils.clone (cached-asset-streamer.js:135-136). Sem o addon
+   * carregado, cai no clone comum: peça estática continua certa, e só o boneco
+   * animado é que perderia — por isso o aviso vive no caminho da animação.
+   */
+  function cloneModel(root) {
+    if (_skelMod && _skelMod.clone) {
+      try { return _skelMod.clone(root); } catch (e) {}
+    }
+    return root.clone();
+  }
+
+  // ---- 🕺 Animação do modelo (a lição do AnimatedObjectComponent do curso) ----
+
+  /**
+   * Monta o mixer DA ENTIDADE. ⚠️ Aqui é o spawn, não o part: as peças são do
+   * MOLDE (uma vez), mas a animação é de cada boneco (cada um no seu tempo). Foi
+   * exatamente confundir esses dois tempos que gerou o bug do cubo.
+   */
+  function attachMixer(e, m) {
+    if (!m.model || !THREE.AnimationMixer) return;
+    var hit = _modelCache && _modelCache[m.model];
+    if (!hit || !hit.clips || !hit.clips.length) return;
+    try {
+      e._mixer = new THREE.AnimationMixer(e.mesh);
+      e._clips = hit.clips;
+      e._action = null;
+    } catch (err) {
+      e._mixer = null;
+    }
+  }
+
+  /** Acha o clipe pelo nome (o .glb de cada site nomeia do seu jeito). */
+  function clipByName(e, name) {
+    if (!e._clips) return null;
+    var k = text(name, '');
+    for (var i = 0; i < e._clips.length; i++) {
+      if (e._clips[i] && e._clips[i].name === k) return e._clips[i];
+    }
+    return null;
+  }
+
+  /**
+   * Toca um clipe com uma passagem CURTA de um para o outro. O curso só faz
+   * .play() (e quebra num .glb sem "Idle"); o crossfade é o mínimo para o boneco
+   * não picotar ao trocar de estado, e o aviso gentil é o mínimo para um nome
+   * errado não derrubar o jogo.
+   */
+  function playAnim(e, name, loop) {
+    if (!isEntity(e) || !e._mixer) return;
+    var clip = clipByName(e, name);
+    if (!clip) {
+      warnOnce('anim:' + e._mold + ':' + text(name, ''),
+        'o modelo do molde "' + e._mold + '" não tem a animação "' + text(name, '') + '"');
+      return;
+    }
+    try {
+      var next = e._mixer.clipAction(clip);
+      if (e._action === next) return; // já é essa: não reinicia (idempotente como a FSM)
+      var once = loop === false;
+      next.reset();
+      // Constantes do THREE, não os números (2200/2201) — número cravado é o tipo
+      // de coisa que some sem avisar quando a lib mexe na tabela.
+      next.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, once ? 1 : Infinity);
+      next.clampWhenFinished = once;
+      next.fadeIn(0.2);
+      next.play();
+      if (e._action) e._action.fadeOut(0.2);
+      e._action = next;
+    } catch (err) {}
+  }
+
+  function stopAnim(e) {
+    if (!isEntity(e) || !e._mixer) return;
+    try { e._mixer.stopAllAction(); } catch (err) {}
+    e._action = null;
+  }
+
+  /**
+   * Aquece o modelo — a lição do cached-asset-streamer do curso (compileAsync +
+   * initTexture). Sem isto, o PRIMEIRO inimigo que nasce compila o shader e sobe a
+   * textura NO MEIO do quadro, e o jogo engasga bem na hora da ação. Best-effort:
+   * o compileAsync não existe em toda versão, e aquecer é otimização — nunca pode
+   * derrubar o carregamento.
+   */
+  function warmModel(root) {
+    if (!root || !renderer || !scene || !camera) return;
+    try {
+      // Compila CONTRA a cena real: a permutação do shader depende de luz/névoa/
+      // sombra, então aquecer noutra cena aqueceria o programa errado.
+      if (renderer.compileAsync) renderer.compileAsync(root, camera, scene);
+      else if (renderer.compile) renderer.compile(scene, camera);
+    } catch (e) {}
+    try {
+      root.traverse(function (o) {
+        if (!o.isMesh || !o.material || !renderer.initTexture) return;
+        for (var key in o.material) {
+          var t = o.material[key];
+          if (t && t.isTexture) { try { renderer.initTexture(t); } catch (e) {} }
+        }
+      });
+    } catch (e) {}
+  }
+
+  function loadModel(name, onReady) {
+    var k = text(name, '');
+    if (!k) return null;
+    if (!_modelCache) _modelCache = {};
+    if (_modelCache[k]) return _modelCache[k];
+    if (!_modelPending) _modelPending = {};
+    // Carga JÁ em voo: entra na FILA. Antes devolvia null e DESCARTAVA o onReady —
+    // dois moldes com o MESMO .glb e o segundo ficava com o cubo para sempre.
+    if (_modelPending[k]) {
+      if (typeof onReady === 'function') _modelPending[k].push(onReady);
+      return null;
+    }
+    var entry = MODELS3D[k];
+    if (!entry || entry.kind !== 'model3d') {
+      warn('o modelo "' + k + '" não está no projeto — a peça fica com a forma de reserva');
+      return null;
+    }
+    var buf = dataUrlToBuffer(entry.dataUrl);
+    if (!buf) return null;
+    _modelPending[k] = typeof onReady === 'function' ? [onReady] : [];
+    // ⭐ O start() ESPERA esta promessa (o MESMO array dos sons, com a tela de
+    // "carregando" que já existe). É o que garante que o template está remendado
+    // ANTES do primeiro spawn — senão toda entidade nascida durante o parse ficava
+    // com o cubo para sempre, porque o spawn CLONA o template. Nunca REJEITA: um
+    // modelo quebrado não pode travar a criança na tela de carregando.
+    var release = null;
+    pending.push(new Promise(function (resolve) { release = resolve; }));
+    var flush = function (hit) {
+      var queue = _modelPending[k] || [];
+      _modelPending[k] = null;
+      if (hit) {
+        for (var i = 0; i < queue.length; i++) {
+          try { queue[i](hit); } catch (e) {}
+        }
+      }
+      if (release) release();
+    };
+    var finish = function (mod) {
+      _gltfMod = mod;
+      try {
+        new mod.GLTFLoader().parse(buf, '', function (gltf) {
+          if (gltf && gltf.scene) {
+            // Guarda os CLIPES junto: são eles que dão vida ao boneco (a lição do
+            // AnimatedObjectComponent do curso). Antes o gltf.animations ia no lixo.
+            _modelCache[k] = { scene: gltf.scene, clips: gltf.animations || [] };
+            warmModel(gltf.scene);
+            flush(_modelCache[k]);
+          } else {
+            warn('o modelo "' + k + '" veio vazio — a peça fica com a forma de reserva');
+            flush(null);
+          }
+        }, function (err) {
+          warn('não consegui abrir o modelo "' + k + '": ' + err);
+          flush(null);
+        });
+      } catch (e) {
+        warn('não consegui abrir o modelo "' + k + '": ' + e);
+        flush(null);
+      }
+    };
+    if (_gltfMod) { finish(_gltfMod); return null; }
+    try {
+      // Os DOIS addons antes de parsear. O SkeletonUtils é opcional (catch -> null):
+      // sem ele o clone não reamarra o esqueleto e só a ANIMAÇÃO se perde — a peça
+      // estática continua certa. Esperar os dois evita a corrida de clonar o
+      // template antes de o SkeletonUtils chegar.
+      Promise.all([
+        import('three/addons/loaders/GLTFLoader.js'),
+        import('three/addons/utils/SkeletonUtils.js').catch(function () { return null; })
+      ]).then(function (mods) {
+        if (mods[1] && mods[1].clone) _skelMod = mods[1];
+        finish(mods[0]);
+      }, function (e) {
+        warn('não consegui carregar o leitor de modelos: ' + e);
+        flush(null);
+      });
+    } catch (e) {
+      warn('não consegui carregar o leitor de modelos: ' + e);
+      flush(null);
+    }
+    return null;
+  }
+
+  /** Céu de FOTO (HDR equirretangular) — vira o background da cena. */
+  function setSkyPhoto(name) {
+    var k = text(name, '');
+    var entry = MODELS3D[k];
+    if (!entry || entry.kind !== 'environment3d') {
+      warn('o céu "' + k + '" não está no projeto (envie um arquivo .hdr)');
+      return;
+    }
+    var buf = dataUrlToBuffer(entry.dataUrl);
+    if (!buf) return;
+    var apply = function (mod) {
+      _rgbeMod = mod;
+      try {
+        var tex = new mod.RGBELoader().parse(buf);
+        if (!tex) return;
+        // O parse devolve os dados crus: vira DataTexture equirretangular.
+        var dt = tex.isTexture ? tex : new THREE.DataTexture(tex.data, tex.width, tex.height);
+        if (THREE.EquirectangularReflectionMapping != null) {
+          dt.mapping = THREE.EquirectangularReflectionMapping;
+        }
+        dt.needsUpdate = true;
+        if (scene) { scene.background = dt; scene.environment = dt; }
+      } catch (e) {
+        warn('não consegui abrir o céu "' + k + '": ' + e);
+      }
+    };
+    if (_rgbeMod) { apply(_rgbeMod); return; }
+    try {
+      import('three/addons/loaders/RGBELoader.js').then(apply, function (e) {
+        warn('não consegui carregar o leitor de céu: ' + e);
+      });
+    } catch (e) {
+      warn('não consegui carregar o leitor de céu: ' + e);
+    }
   }
 
   /** Textura de imagem do projeto (data:URL) → cache global + pixel-nítida. */
@@ -723,15 +1091,45 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       return;
     }
     var mold = {
+      name: k,
       health: Math.max(1, num(o.health, 30)),
       speed: num(o.speed, 3),
       template: group,
       parts: 0,
       radius: 0.5,
-      // Caixa (AABB) do molde para colisão sólida — origem = pés (y=0). Cada peça
-      // maximiza estes; o auto-cubo (molde sem peças) garante um valor sensato.
+      // Caixa LOCAL do colisor (origem = pés, y=0). min/max em vez de meia-largura
+      // simétrica: peça fora do centro não infla mais a caixa (uma peça em x=5 com
+      // w=1 vira 4.5..5.5, e não ±5.5 para cada lado) e peça ABAIXO de y=0 entra
+      // na caixa (antes o fundo era grampeado em 0 e a peça ficava sem colisão).
+      col: {
+        kind: 0,                          // 0 caixa · 1 bola · 2 cápsula · 3 rampa
+        minX: 0, maxX: 0,
+        minY: 0, maxY: 0,
+        minZ: 0, maxZ: 0,
+        r: 0.5,                           // bola/cápsula: raio
+        rampAxis: 2, rampY0: 0, rampY1: 0 // rampa: sobe ao longo de Z (2) ou X (0)
+      },
+      // DERIVADOS da caixa (finishMoldBox) — mantidos porque a grade e o resto do
+      // motor já os lêem. hw/hd = meia-extensão; top = altura.
       hw: 0, hd: 0, top: 0,
-      solid: false
+      solid: false,
+      trigger: false,
+      // Quique: 0 = não quica. Vale como COISA QUE CAI e como SUPERFÍCIE — o maior
+      // dos dois manda (ver contact).
+      bounce: 0,
+      // Atrito: -1 = "não definido". Precisa do sentinela porque o mesmo campo
+      // serve a dois papéis com defaults OPOSTOS: como SUPERFÍCIE, não-definido
+      // vale 0 (gelo — sempre foi assim); como COISA QUE ANDA, vale 1 (sem
+      // opinião, quem manda é o chão). Fora isso, o mais escorregadio vence.
+      friction: -1,
+      // Gravidade-padrão do molde (só quem chama "ter física de" define): o spawn
+      // aplica por entidade. 0 = o molde não opina, a criança usa "cair com".
+      gravity: 0,
+      // Nome do .glb de que este molde é feito ('' = só peças). O spawn usa para
+      // montar o mixer da entidade; o "no estado X, tocar Y" usa para achar os
+      // clipes.
+      model: '',
+      stateAnims: null
     };
     molds[k] = mold;
     if (!pools[k]) pools[k] = { active: [], free: [], _sweeping: 0 };
@@ -748,6 +1146,76 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       part({ shape: 'box', color: config.accent, w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 });
       _currentMold = null;
     }
+  }
+
+  /**
+   * Meia-extensão da geometria UNITÁRIA de cada forma, em coords LOCAIS da peça
+   * (antes do scale). Só o plano é girado no part() (deita em XZ), então leva um
+   * flag: o giro de -90 em X mapeia (x,y,z) -> (x, z, -y), ou seja o 'h' vira
+   * PROFUNDIDADE e o 'd' não participa. Era exatamente o que a conta antiga
+   * errava (usava eixo e parâmetro trocados).
+   */
+  var UNIT_HALF = {
+    box:      { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
+    sphere:   { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
+    cylinder: { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
+    cone:     { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
+    pyramid:  { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
+    rampa:    { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
+    torus:    { x: 0.5, y: 0.5, z: 0.15, rot: 0 },  // raio 0.35 + tubo 0.15
+    plane:    { x: 0.5, y: 0.5, z: 0,    rot: 1 },
+    modelo:   { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
+    rock:     { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
+    crystal:  { x: 0.5, y: 0.5, z: 0.5,  rot: 0 }
+  };
+  /**
+   * Espessura MÍNIMA de qualquer eixo do colisor. É load-bearing: sem ela, o
+   * plano (que tem espessura ZERO de verdade) vira um colisor sem volume e a
+   * criança atravessa o próprio piso — a correção honesta da caixa CRIARIA essa
+   * regressão. 10 cm é fino de ver e grosso de colidir.
+   */
+  var MIN_THICK = 0.1;
+  var _ext = { x: 0, y: 0, z: 0 };
+
+  function partExtents(shape, w, h, d, out) {
+    var u = UNIT_HALF[shape] || UNIT_HALF.box;
+    if (u.rot) {
+      out.x = u.x * w;
+      out.y = u.z * d;   // espessura da folha (≈0) vira o eixo vertical
+      out.z = u.y * h;   // a altura da folha vira PROFUNDIDADE
+    } else {
+      out.x = u.x * w;
+      out.y = u.y * h;
+      out.z = u.z * d;
+    }
+    return out;
+  }
+
+  /** Deriva da caixa local o que o resto do motor já lê (grade, alcance, topo). */
+  function finishMoldBox(mold) {
+    var c = mold.col;
+    // Espessura mínima: cresce simetricamente em volta do centro do eixo magro.
+    if (c.maxX - c.minX < MIN_THICK) {
+      var mx = (c.minX + c.maxX) / 2; c.minX = mx - MIN_THICK / 2; c.maxX = mx + MIN_THICK / 2;
+    }
+    if (c.maxY - c.minY < MIN_THICK) {
+      var my = (c.minY + c.maxY) / 2; c.minY = my - MIN_THICK / 2; c.maxY = my + MIN_THICK / 2;
+    }
+    if (c.maxZ - c.minZ < MIN_THICK) {
+      var mz = (c.minZ + c.maxZ) / 2; c.minZ = mz - MIN_THICK / 2; c.maxZ = mz + MIN_THICK / 2;
+    }
+    mold.hw = (c.maxX - c.minX) / 2;
+    mold.hd = (c.maxZ - c.minZ) / 2;
+    mold.top = c.maxY;
+    // Raio da grade: o canto mais longe da origem no plano XZ.
+    var rx = Math.max(Math.abs(c.minX), Math.abs(c.maxX));
+    var rz = Math.max(Math.abs(c.minZ), Math.abs(c.maxZ));
+    mold.radius = Math.max(0.5, Math.sqrt(rx * rx + rz * rz));
+    // Bola/cápsula: raio derivado da caixa (o maior semi-eixo horizontal).
+    c.r = Math.max(mold.hw, mold.hd);
+    // Rampa: sobe ao longo de +Z, de minY (no minZ) até maxY (no maxZ).
+    c.rampY0 = c.minY;
+    c.rampY1 = c.maxY;
   }
 
   function part(opts) {
@@ -788,7 +1256,33 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       // Textura de imagem do projeto (opcional): a peça ganha o desenho.
       var tex = o.texture ? moldTexture(o.texture) : null;
       if (tex) mat.map = tex;
-      var mesh = new THREE.Mesh(unitGeo(shape), mat);
+      var mesh;
+      if (shape === 'modelo') {
+        // Peça = MODELO do projeto. O GLB chega assíncrono (import do addon +
+        // parse), então a peça nasce com um cubo de reserva e o modelo entra no
+        // lugar quando fica pronto — a cena nunca aparece quebrada.
+        mesh = new THREE.Group();
+        var holder = mesh;
+        // O molde ANOTA de qual modelo ele é feito: o spawn precisa saber para
+        // clonar com esqueleto (SkeletonUtils) e montar o mixer da entidade. Só
+        // UM modelo animado por molde: com dois, o mixer usaria os clipes de um
+        // e o aviso de "animação não existe" MENTIRIA (a animação existe, só é do
+        // outro modelo). Avisa na hora certa em vez de enganar depois.
+        if (mold.model && mold.model !== text(o.model, '')) {
+          warnOnce('twomodel:' + mold.name, 'o molde "' + mold.name + '" tem mais de um modelo (.glb); a animação usa só o último ("' + text(o.model, '') + '")');
+        }
+        mold.model = text(o.model, '');
+        var ready = loadModel(o.model, function (hit) {
+          try {
+            while (holder.children.length) holder.remove(holder.children[0]);
+            holder.add(cloneModel(hit.scene));
+          } catch (e) {}
+        });
+        if (ready) holder.add(cloneModel(ready.scene));
+        else holder.add(new THREE.Mesh(unitGeo('box'), mat));
+      } else {
+        mesh = new THREE.Mesh(unitGeo(shape), mat);
+      }
       // Plano nasce deitado no chão (deita a folha em XZ) — piso/parede útil.
       if (shape === 'plane') mesh.rotation.x = -Math.PI / 2;
       mesh.scale.set(w, h, d);
@@ -797,17 +1291,26 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       mesh.receiveShadow = true;
       mold.template.add(mesh);
       mold.parts += 1;
-      // Raio de colisão/grade: alcance horizontal da peça mais afastada.
-      var reach = Math.max(Math.abs(x), Math.abs(z)) + Math.max(w, d) / 2;
-      if (reach > mold.radius) mold.radius = reach;
-      // Caixa AABB do molde (colisão sólida). Origem = pés; a peça vai de
-      // (x±w/2, z±d/2) e o topo até y+h/2.
-      var hwP = Math.abs(x) + w / 2;
-      var hdP = Math.abs(z) + d / 2;
-      var topP = y + h / 2;
-      if (hwP > mold.hw) mold.hw = hwP;
-      if (hdP > mold.hd) mold.hd = hdP;
-      if (topP > mold.top) mold.top = topP;
+      // Caixa LOCAL do colisor: UNIÃO das caixas de cada peça (min/max de verdade,
+      // não meia-largura simétrica). Uma peça só em x=5 não faz mais o molde
+      // colidir do lado oposto, e peça abaixo de y=0 passa a contar.
+      partExtents(shape, w, h, d, _ext);
+      var c = mold.col;
+      if (mold.parts === 1) {
+        c.minX = x - _ext.x; c.maxX = x + _ext.x;
+        c.minY = y - _ext.y; c.maxY = y + _ext.y;
+        c.minZ = z - _ext.z; c.maxZ = z + _ext.z;
+      } else {
+        if (x - _ext.x < c.minX) c.minX = x - _ext.x;
+        if (x + _ext.x > c.maxX) c.maxX = x + _ext.x;
+        if (y - _ext.y < c.minY) c.minY = y - _ext.y;
+        if (y + _ext.y > c.maxY) c.maxY = y + _ext.y;
+        if (z - _ext.z < c.minZ) c.minZ = z - _ext.z;
+        if (z + _ext.z > c.maxZ) c.maxZ = z + _ext.z;
+      }
+      // A peça de RAMPA manda no formato do colisor (cunha em vez de caixa).
+      if (shape === 'rampa') c.kind = 3;
+      finishMoldBox(mold);
     } catch (e) {
       warn('não consegui criar a peça: ' + e);
     }
@@ -826,12 +1329,36 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       // Física: gravidade própria (0 = desligada) e se está pisando em algo.
       gravity: 0,
       grounded: false,
+      // 0 = colide com sólidos · 1 = fantasma (atravessa tudo). É POR ENTIDADE e
+      // não por molde de propósito: os casos interessantes são por instância (o
+      // tiro mágico que passa a cerca, o inimigo fantasma, a câmera que entra na
+      // parede) — um flag por molde obrigaria a criança a criar um 2º molde.
+      body: 0,
+      // Normal do chão sob os pés (o que decide o grounded, em vez do desempate
+      // de eixo): (0,1,0) no plano, inclinada na rampa.
+      nx: 0, ny: 0, nz: 0,
+      // Plataforma que está me carregando (+ geração, contra slot reciclado).
+      _ride: null, _rideGen: 0,
+      // Deslocamento DESTA entidade neste quadro (o passageiro soma o da
+      // plataforma). Sai de pos - _l, então captura integração E teleporte por
+      // place() — velocidade sozinha perderia o segundo.
+      _dx: 0, _dy: 0, _dz: 0,
+      _lx: 0, _ly: 0, _lz: 0,
+      // Zona: geração do visitante que JÁ está dentro (0 = ninguém). É o que faz
+      // o gancho disparar ao ENTRAR e não a cada quadro.
+      _inKey: 0,
       // A "gaveta" de dados da criança (cronômetro/alvo/contador por entidade).
       // Zerada a cada nascimento — nunca vaza de uma vida anterior do slot do pool.
       data: null,
       _alive: false,
       _mold: '',
       _iFrames: 0,
+      // Animação do modelo: mixer/clipes/ação são POR ENTIDADE (o mesh é dela).
+      // Declarados aqui só para o objeto nascer com a forma final — trocar a forma
+      // depois faz o motor de JS re-otimizar o slot do pool.
+      _mixer: null,
+      _clips: null,
+      _action: null,
       // Geração: incrementa a cada nascimento. Um handle guardado de uma entidade
       // reciclada-e-reusada tem _gen antigo → os métodos o tratam como "não é mais ela".
       _gen: 0,
@@ -864,17 +1391,25 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (!e) {
       e = blankEntity();
       try {
-        // clone() compartilha geometria e material — nascer não aloca GPU.
-        e.mesh = m.template.clone();
+        // cloneModel compartilha geometria e material (nascer não aloca GPU) E,
+        // ⭐ quando há SkinnedMesh, REAMARRA o esqueleto aos ossos deste clone.
+        // O clone comum do Object3D compartilha o esqueleto por referência: o
+        // mixer da entidade animaria os ossos do CLONE enquanto a malha deforma
+        // pelos ossos do TEMPLATE, que ninguém move — todo boneco rigado ficava
+        // parado em bind pose, sem um aviso. Molde só de peças cai no clone comum
+        // (sem SkeletonUtils) e não paga nada.
+        e.mesh = cloneModel(m.template);
       } catch (err) {
         warn('não consegui fazer nascer do molde "' + k + '": ' + err);
         return null;
       }
-      scene.add(e.mesh);
       // Ponte mesh→entidade para o raycast (clicar/mirar devolve a entidade).
       if (e.mesh.userData) e.mesh.userData.szEntity = e;
       else e.mesh.userData = { szEntity: e };
     }
+    // Entra (ou volta) para a cena — o recycle removeu ao recolher. scene.add num
+    // filho que já está lá é no-op, então nascer de novo sem recolher é seguro.
+    if (scene && e.mesh.parent !== scene) scene.add(e.mesh);
     e.mesh.visible = true;
     e.mesh.position.set(num(x, 0), num(y, 0), num(z, 0));
     e.mesh.rotation.set(0, 0, 0);
@@ -885,14 +1420,28 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     e.health = m.health;
     e.maxHealth = m.health;
     e.stateTime = 0;
-    e.gravity = 0;
+    // Gravidade-padrão do molde ("ter física de bola/caixa/…"). Molde que não
+    // opina nasce em 0, exatamente como antes — "fazer cair com" segue mandando.
+    e.gravity = m.gravity ? -Math.abs(m.gravity) : 0;
     e.grounded = false;
+    // Higiene do pool: tudo que a vida anterior do slot pôde sujar volta ao zero
+    // (mesmo motivo do data = {} logo abaixo).
+    e.body = 0;
+    e.nx = 0; e.ny = 0; e.nz = 0;
+    e._ride = null; e._rideGen = 0;
+    e._dx = 0; e._dy = 0; e._dz = 0;
+    e._lx = num(x, 0); e._ly = num(y, 0); e._lz = num(z, 0);
+    e._inKey = 0;
     // Gaveta de dados NOVA a cada nascimento — nunca herda o lixo do slot reusado
     // do pool (era o vazamento de campo custom entre vidas).
     e.data = {};
     e._alive = true;
     e._mold = k;
     e._iFrames = 0;
+    // Mixer POR ENTIDADE (cada boneco anima no tempo dele). Slot reusado do pool
+    // já tem o seu — não remonta, só rebobina.
+    if (!e._mixer) attachMixer(e, m);
+    else e._action = null;
     e._gen = (e._gen || 0) + 1;
     e._gi = null;
     pool.active.push(e);
@@ -926,9 +1475,16 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   function recycle(e) {
     if (!e || typeof e !== 'object' || !e._mold) return;
     if (!e._alive) return;
+    // Para a animação ANTES de baixar o _alive: o stopAnim passa pelo isEntity, que
+    // exige entidade viva — invertido, ele saía calado e a ação seguia mexendo nos
+    // ossos de um boneco invisível até o slot ser reusado.
+    if (e._mixer) stopAnim(e);
     e._alive = false;
     e._iFrames = 0;
-    if (e.mesh) e.mesh.visible = false;
+    // SAI da cena (não só invisível). Recolhido, o mesh continuava sendo
+    // percorrido pelo updateMatrixWorld, pelo projectObject do renderer e pelo
+    // raycast do pick — um enxame morto pesava por nada. O spawn re-adiciona.
+    if (e.mesh && scene) scene.remove(e.mesh);
     gridRemove(e);
     totalAlive = Math.max(0, totalAlive - 1);
     var pool = pools[e._mold];
@@ -958,9 +1514,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     for (var i = 0; i < pool.active.length; i++) {
       var e = pool.active[i];
       if (e._alive) totalAlive = Math.max(0, totalAlive - 1);
+      if (e._mixer) stopAnim(e);
       e._alive = false;
       e._iFrames = 0;
-      if (e.mesh) e.mesh.visible = false;
+      if (e.mesh && scene) scene.remove(e.mesh);
       gridRemove(e);
       pool.free.push(e);
     }
@@ -1047,8 +1604,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   function spawnFromSpawner(sp) {
     var radius = config.world * 0.45;
-    var ang = Math.random() * Math.PI * 2;
-    var dist = sp.where === 'anywhere' ? Math.sqrt(Math.random()) * radius : radius;
+    var ang = rand() * Math.PI * 2;
+    var dist = sp.where === 'anywhere' ? Math.sqrt(rand()) * radius : radius;
     spawn(sp.mold, Math.cos(ang) * dist, 0, Math.sin(ang) * dist);
   }
 
@@ -1071,8 +1628,25 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (oldBucket) runEntityHooks(oldBucket.exit, e, 'quando sair do estado ' + e.state);
     e.state = next;
     e.stateTime = 0;
+    // ⭐ A animação amarrada ao ESTADO: é o casamento da lição do curso (mixer por
+    // personagem) com o coração do kit (FSM por entidade). A criança amarra uma
+    // vez e o boneco se anima sozinho conforme o cérebro dele muda — o mesmo que o
+    // autoAnimate do Jogo 2D faz lá.
+    var mold = molds[e._mold];
+    if (mold && mold.stateAnims && e._mixer) {
+      var clipName = mold.stateAnims[next];
+      if (clipName) playAnim(e, clipName, true);
+    }
     var newBucket = perMold ? perMold[next] : null;
     if (newBucket) runEntityHooks(newBucket.enter, e, 'quando entrar no estado ' + next);
+  }
+
+  /** "No molde X, no estado Y, tocar a animação Z." */
+  function setStateAnim(mold, state, clip) {
+    var m = molds[text(mold, '')];
+    if (!m) return;
+    if (!m.stateAnims) m.stateAnims = {};
+    m.stateAnims[text(state, '')] = text(clip, '');
   }
 
   function runEntityHooks(list, e, label) {
@@ -1085,6 +1659,23 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         if (!fn.__szg3kWarned) {
           fn.__szg3kWarned = true;
           warn('erro no "' + label + '": ' + err);
+        }
+      }
+    }
+  }
+
+  /** Ganchos da ZONA: fn(zona, quemEncostou). Warn-1x igual aos outros. */
+  function runOverlapHooks(zone, who) {
+    var list = overlapHooks[zone._mold];
+    if (!list) return;
+    for (var i = 0; i < list.length; i++) {
+      var fn = list[i];
+      try {
+        fn(zone, who);
+      } catch (err) {
+        if (!fn.__szg3kWarned) {
+          fn.__szg3kWarned = true;
+          warn('erro no "Quando alguém encostar": ' + err);
         }
       }
     }
@@ -1106,68 +1697,318 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     stateTimers.push({ mold: m, state: s, sec: Math.max(0.05, num(sec, 1.5)), next: n });
   }
 
-  // ---- Física sólida (gravidade + chão + colisão AABB de molde sólido) ----
+  // ---- Física sólida (gravidade + chão + colisão de molde sólido) ----
+  //
+  // Modelo: cinemático, caixa/bola/cápsula/rampa por MOLDE, resolvido por menor
+  // penetração DEPOIS de integrar, com substepping quando o passo é grande
+  // demais (anti-tunelamento). Quem manda no grounded é a NORMAL do contato —
+  // não o desempate de eixo, que empurrava de lado num pouso raso.
 
-  var anySolid = false;                  // liga a resolução de sólidos só quando há algum
+  var anySolid = false;      // liga a resolução de sólidos só quando há algum
+  var anyTrigger = false;    // idem para as zonas
+  var anyCarrier = false;    // algum molde sólido que se MOVE (plataforma)
+  var _minSolidThin = 1e9;   // o sólido mais FINO do mundo (critério do substep)
+  var MAX_SUBSTEPS = 4;
+  var MIN_GROUND_Y = 0.64;   // ~50°: mais íngreme que isso é PAREDE, escorrega
+  var SNAP_DIST = 0.3;       // grude no chão ao descer rampa (senão vira trampolim)
+  var SKIN = 0.02;
+  var BOUNCE_MIN = 1.2;      // quique morto abaixo disso: não fica tremendo
   var _boxA = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
   var _boxB = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
+  var _cand = [];            // candidatos do broadphase (buffer PRÓPRIO — ver nota)
+  var _candN = 0;
 
+  /** Caixa MUNDO da entidade a partir da caixa local do molde. */
   function entBox(e, out) {
     var m = molds[e._mold];
-    var hw = m ? m.hw : 0.5;
-    var hd = m ? m.hd : 0.5;
-    var top = m ? m.top : 1;
     var p = e.mesh.position;
-    out.minX = p.x - hw; out.maxX = p.x + hw;
-    out.minY = p.y;      out.maxY = p.y + top;
-    out.minZ = p.z - hd; out.maxZ = p.z + hd;
+    if (!m) {
+      out.minX = p.x - 0.5; out.maxX = p.x + 0.5;
+      out.minY = p.y;       out.maxY = p.y + 1;
+      out.minZ = p.z - 0.5; out.maxZ = p.z + 0.5;
+      return;
+    }
+    var c = m.col;
+    out.minX = p.x + c.minX; out.maxX = p.x + c.maxX;
+    out.minY = p.y + c.minY; out.maxY = p.y + c.maxY;
+    out.minZ = p.z + c.minZ; out.maxZ = p.z + c.maxZ;
+  }
+
+  /**
+   * Caixa MUNDO de um sólido, no frame LOCAL dele (desfaz o yaw). Yaw preserva o
+   * eixo Y do mundo, então uma bola/cápsula vertical continua vertical no frame
+   * girado — cápsula-vs-caixa-girada vira cápsula-vs-AABB, sem matemática nova.
+   * (A engine não consegue produzir pitch/roll: setYaw/faceVelocity escrevem
+   * (0,y,0), lookAt força o Y do alvo e aimAt achata em Y.)
+   */
+  function localOf(s, px, pz, out) {
+    var yaw = s.mesh.rotation.y;
+    var dx = px - s.mesh.position.x;
+    var dz = pz - s.mesh.position.z;
+    if (!yaw) { out.x = dx; out.z = dz; return out; }
+    var c = Math.cos(-yaw), si = Math.sin(-yaw);
+    out.x = dx * c - dz * si;
+    out.z = dx * si + dz * c;
+    return out;
+  }
+  var _loc = { x: 0, z: 0 };
+
+  /** Altura da rampa no ponto local (lx,lz) — a MESMA reta da malha (wedgeGeo). */
+  function rampHeight(c, lx, lz) {
+    var t = c.rampAxis === 0
+      ? (lx - c.minX) / (c.maxX - c.minX || 1)
+      : (lz - c.minZ) / (c.maxZ - c.minZ || 1);
+    if (t < 0) t = 0;
+    if (t > 1) t = 1;
+    return c.rampY0 + (c.rampY1 - c.rampY0) * t;
+  }
+
+  /** Marca o contato: a normal decide o grounded (e quem me carrega). */
+  function contact(e, nx, ny, nz, solidEnt) {
+    if (ny >= MIN_GROUND_Y) {
+      e.grounded = true;
+      e.nx = nx; e.ny = ny; e.nz = nz;
+      if (solidEnt) { e._ride = solidEnt; e._rideGen = solidEnt._gen; }
+    }
+    // Impulso na normal. bounce=0 -> v -= vn*N -> remove só a componente que
+    // ENTRA na superfície, que é exatamente o "zera o eixo" de antes — mas sem
+    // matar a velocidade de quem já está SAINDO da parede (o antigo grudava).
+    var vn = e.vx * nx + e.vy * ny + e.vz * nz;
+    if (vn < 0) {
+      // ⭐ O quique é dos DOIS lados, e o MAIOR manda. Antes só a superfície
+      // contava — e o piso-base chega aqui com solidEnt null, então NADA quicava
+      // nele. Resultado: a bola era obrigada a não quicar no chão comum e o
+      // humano era obrigado a quicar no trampolim. Com o máximo: a bola quica em
+      // qualquer chão, o humano não quica em chão nenhum, e o trampolim continua
+      // arremessando o humano (0.9 vence o 0 dele).
+      var m = solidEnt ? molds[solidEnt._mold] : null;
+      var em = molds[e._mold];
+      var b = m ? m.bounce : 0;
+      var eb = em ? em.bounce : 0;
+      if (eb > b) b = eb;
+      var j = (1 + b) * vn;
+      if (b > 0 && Math.abs(vn) < BOUNCE_MIN) j = vn;
+      e.vx -= j * nx; e.vy -= j * ny; e.vz -= j * nz;
+    }
   }
 
   /** Pisa no chão-base (y=0): os pés do molde são a origem. */
   function resolveGround(e) {
     var p = e.mesh.position;
-    if (p.y <= 0) {
-      p.y = 0;
-      if (e.vy < 0) e.vy = 0;
-      e.grounded = true;
+    var m = molds[e._mold];
+    var foot = m ? m.col.minY : 0;
+    if (p.y + foot <= 0) {
+      p.y = -foot;
+      contact(e, 0, 1, 0, null);
     }
   }
 
-  /** Empurra para fora dos moldes SÓLIDOS (paredes/plataformas), menor penetração. */
-  function resolveSolids(e) {
+  /** Resolve a entidade contra UM sólido. Devolve true se houve contato. */
+  function resolveOne(e, s) {
     var p = e.mesh.position;
+    var sm = molds[s._mold];
+    if (!sm) return false;
+    var c = sm.col;
+    entBox(e, _boxA);
+    // Rampa: superfície inclinada — trata pelo topo, não por push-out de caixa.
+    if (c.kind === 3) {
+      localOf(s, p.x, p.z, _loc);
+      if (_loc.x < c.minX || _loc.x > c.maxX || _loc.z < c.minZ || _loc.z > c.maxZ) return false;
+      var em = molds[e._mold];
+      var foot = em ? em.col.minY : 0;
+      var surf = s.mesh.position.y + rampHeight(c, _loc.x, _loc.z);
+      if (p.y + foot < surf && p.y + foot > surf - 1.2) {
+        p.y = surf - foot;
+        // Normal da rampa: a reta sobe (rampY1-rampY0) ao longo de (max-min).
+        var run = (c.rampAxis === 0 ? c.maxX - c.minX : c.maxZ - c.minZ) || 1;
+        var rise = c.rampY1 - c.rampY0;
+        var len = Math.sqrt(run * run + rise * rise) || 1;
+        var ny = run / len;
+        var nt = -rise / len;
+        var yaw = s.mesh.rotation.y;
+        var cs = Math.cos(yaw), sn = Math.sin(yaw);
+        var lnx = c.rampAxis === 0 ? nt : 0;
+        var lnz = c.rampAxis === 0 ? 0 : nt;
+        contact(e, lnx * cs + lnz * sn, ny, -lnx * sn + lnz * cs, s);
+        return true;
+      }
+      return false;
+    }
+    var yaw2 = s.mesh.rotation.y;
+    localOf(s, p.x, p.z, _loc);
+    // Movedor BOLA/CÁPSULA vs caixa sólida: ponto mais próximo na caixa e empurra
+    // na direção dele. É o que tira o enganchar em quina (a caixa engata no canto;
+    // a cápsula desliza) e o que faz gente subir rampa/degrau liso.
+    // Como o yaw preserva o eixo Y do mundo, a cápsula continua EM PÉ no frame
+    // local do sólido — vira cápsula-vs-AABB, sem matemática nova.
+    var em = molds[e._mold];
+    var ec = em ? em.col : null;
+    if (ec && (ec.kind === 1 || ec.kind === 2)) {
+      var r = ec.r;
+      var cy0 = p.y + ec.minY + r;
+      var cy1 = p.y + ec.maxY - r;
+      if (ec.kind === 1 || cy1 < cy0) { cy0 = cy1 = p.y + (ec.minY + ec.maxY) / 2; }
+      var bMinY = s.mesh.position.y + c.minY;
+      var bMaxY = s.mesh.position.y + c.maxY;
+      // Ponto do SEGMENTO da cápsula mais perto da faixa Y da caixa.
+      var segY = (bMinY + bMaxY) / 2;
+      if (segY < cy0) segY = cy0;
+      if (segY > cy1) segY = cy1;
+      // Ponto da CAIXA mais perto desse ponto do segmento.
+      var qx = _loc.x < c.minX ? c.minX : (_loc.x > c.maxX ? c.maxX : _loc.x);
+      var qy = segY < bMinY ? bMinY : (segY > bMaxY ? bMaxY : segY);
+      var qz = _loc.z < c.minZ ? c.minZ : (_loc.z > c.maxZ ? c.maxZ : _loc.z);
+      var ddx = _loc.x - qx, ddy = segY - qy, ddz = _loc.z - qz;
+      var d2 = ddx * ddx + ddy * ddy + ddz * ddz;
+      if (d2 > 0.000001) {
+        var dist = Math.sqrt(d2);
+        if (dist >= r) return false;
+        var pen = r - dist;
+        var lnx3 = ddx / dist, lny3 = ddy / dist, lnz3 = ddz / dist;
+        var cw = Math.cos(yaw2), sw = Math.sin(yaw2);
+        var wnx = lnx3 * cw + lnz3 * sw;
+        var wnz = -lnx3 * sw + lnz3 * cw;
+        p.x += wnx * pen; p.y += lny3 * pen; p.z += wnz * pen;
+        contact(e, wnx, lny3, wnz, s);
+        return true;
+      }
+      // Centro DENTRO da caixa (penetração profunda): cai no caminho de caixa.
+    }
+    // Caixa (yaw-aware): resolve no frame LOCAL do sólido e devolve a correção.
+    var ehw = (_boxA.maxX - _boxA.minX) / 2;
+    var ehd = (_boxA.maxZ - _boxA.minZ) / 2;
+    if (yaw2) { var big = Math.max(ehw, ehd); ehw = big; ehd = big; }  // AABB do movedor não gira
+    var ox = Math.min(_loc.x + ehw, c.maxX) - Math.max(_loc.x - ehw, c.minX);
+    var oz = Math.min(_loc.z + ehd, c.maxZ) - Math.max(_loc.z - ehd, c.minZ);
+    var sMinY = s.mesh.position.y + c.minY;
+    var sMaxY = s.mesh.position.y + c.maxY;
+    var oy = Math.min(_boxA.maxY, sMaxY) - Math.max(_boxA.minY, sMinY);
+    if (ox <= 0 || oy <= 0 || oz <= 0) return false;
+    // Eixo de MENOR penetração. O empate importa de verdade: um objeto pequeno
+    // ENGOLIDO por uma parede grossa tem ox = oy = oz = o próprio tamanho, e aí
+    // "o menor" não diz nada. Desempata por VELOCIDADE — o eixo em que a
+    // entidade mais se move é aquele por onde ela entrou. Sem isso, um tiro
+    // dentro da parede era empurrado para CIMA e seguia atravessando.
+    var EPS = 1e-4;
+    var mn = Math.min(ox, Math.min(oy, oz));
+    var useX = ox <= mn + EPS;
+    var useY = oy <= mn + EPS;
+    var useZ = oz <= mn + EPS;
+    if ((useX ? 1 : 0) + (useY ? 1 : 0) + (useZ ? 1 : 0) > 1) {
+      var avx = useX ? Math.abs(e.vx) : -1;
+      var avy = useY ? Math.abs(e.vy) : -1;
+      var avz = useZ ? Math.abs(e.vz) : -1;
+      if (avy >= avx && avy >= avz) { useX = false; useZ = false; }
+      else if (avx >= avz) { useY = false; useZ = false; }
+      else { useX = false; useY = false; }
+    }
+    if (useY) {
+      // Vertical: pousa em cima ou bate a cabeça.
+      if ((_boxA.minY + _boxA.maxY) / 2 > (sMinY + sMaxY) / 2) { p.y += oy; contact(e, 0, 1, 0, s); }
+      else { p.y -= oy; contact(e, 0, -1, 0, s); }
+      return true;
+    }
+    // Horizontal: empurra pelo eixo escolhido NO FRAME LOCAL e volta ao mundo.
+    var lpx = 0, lpz = 0, lnx2 = 0, lnz2 = 0;
+    if (useX) {
+      var sx = _loc.x < (c.minX + c.maxX) / 2 ? -1 : 1;
+      lpx = ox * sx; lnx2 = sx;
+    } else {
+      var sz = _loc.z < (c.minZ + c.maxZ) / 2 ? -1 : 1;
+      lpz = oz * sz; lnz2 = sz;
+    }
+    var cc = Math.cos(yaw2), ss = Math.sin(yaw2);
+    p.x += lpx * cc + lpz * ss;
+    p.z += -lpx * ss + lpz * cc;
+    contact(e, lnx2 * cc + lnz2 * ss, 0, -lnx2 * ss + lnz2 * cc, s);
+    return true;
+  }
+
+  /** Empurra para fora de TODOS os sólidos candidatos (sequencial). */
+  function resolveSolids(e) {
+    for (var i = 0; i < _candN; i++) {
+      var s = _cand[i];
+      if (s && s._alive) resolveOne(e, s);
+    }
+  }
+
+  /**
+   * Broadphase UMA vez por quadro: copia os candidatos para um buffer PRÓPRIO.
+   * A cópia é obrigatória, não otimização: o gridQuery devolve o buffer
+   * COMPARTILHADO ("o chamador consome antes da próxima consulta"), e um gancho
+   * da criança dentro da resolução (forEachNear/nearest) o sobrescreveria.
+   */
+  function fillCandidates(e, dx, dz) {
+    _candN = 0;
     var m = molds[e._mold];
     if (!m) return;
-    var reach = Math.max(m.hw, m.hd) + 2;
+    var p = e.mesh.position;
+    // alcance = extensão do MOVEDOR + deslocamento do QUADRO + pele. O "+2" fixo
+    // de antes ignorava o deslocamento — com substep, um tiro rápido saía da
+    // consulta antes de a varredura testá-lo.
+    var reach = Math.max(m.hw, m.hd) + Math.sqrt(dx * dx + dz * dz) + SKIN + 0.5;
     var list = gridQuery(p.x, p.z, reach);
-    entBox(e, _boxA);
     for (var i = 0; i < list.length; i++) {
       var s = list[i];
       if (s === e || !s._alive) continue;
       var sm = molds[s._mold];
+      if (!sm || (!sm.solid && !sm.trigger)) continue;
+      _cand[_candN++] = s;
+    }
+  }
+
+  /** Quantos substeps para não atravessar o sólido mais fino do mundo. */
+  function substepsFor(e, dx, dy, dz) {
+    var m = molds[e._mold];
+    var c = m ? m.col : null;
+    var thin = c
+      ? Math.min(c.maxX - c.minX, Math.min(c.maxY - c.minY, c.maxZ - c.minZ))
+      : MIN_THICK;
+    if (_minSolidThin < thin) thin = _minSolidThin;
+    if (thin < MIN_THICK) thin = MIN_THICK;
+    var disp = Math.abs(dx);
+    if (Math.abs(dy) > disp) disp = Math.abs(dy);
+    if (Math.abs(dz) > disp) disp = Math.abs(dz);
+    var k = 1 + Math.floor(disp / (thin * 0.5));
+    return k > MAX_SUBSTEPS ? MAX_SUBSTEPS : k;
+  }
+
+  /** Grude no chão ao descer rampa/degrau (senão a descida vira trampolim). */
+  function snapDown(e) {
+    var p = e.mesh.position;
+    var y0 = p.y;
+    p.y -= SNAP_DIST;
+    var hit = false;
+    for (var i = 0; i < _candN; i++) {
+      var s = _cand[i];
+      if (!s || !s._alive) continue;
+      var sm = molds[s._mold];
       if (!sm || !sm.solid) continue;
-      entBox(s, _boxB);
-      var ox = Math.min(_boxA.maxX, _boxB.maxX) - Math.max(_boxA.minX, _boxB.minX);
-      var oy = Math.min(_boxA.maxY, _boxB.maxY) - Math.max(_boxA.minY, _boxB.minY);
-      var oz = Math.min(_boxA.maxZ, _boxB.maxZ) - Math.max(_boxA.minZ, _boxB.minZ);
-      if (ox <= 0 || oy <= 0 || oz <= 0) continue;
-      if (ox <= oy && ox <= oz) {
-        p.x += ((_boxA.minX + _boxA.maxX) < (_boxB.minX + _boxB.maxX)) ? -ox : ox;
-        e.vx = 0;
-      } else if (oz <= ox && oz <= oy) {
-        p.z += ((_boxA.minZ + _boxA.maxZ) < (_boxB.minZ + _boxB.maxZ)) ? -oz : oz;
-        e.vz = 0;
-      } else {
-        if ((_boxA.minY + _boxA.maxY) > (_boxB.minY + _boxB.maxY)) {
-          p.y += oy;
-          if (e.vy < 0) e.vy = 0;
-          e.grounded = true;
-        } else {
-          p.y -= oy;
-          if (e.vy > 0) e.vy = 0;
-        }
+      if (resolveOne(e, s)) hit = true;
+    }
+    if (!hit) p.y = y0;
+  }
+
+  /** Zonas: sobreposição SEM empurrar; dispara no ENTRAR, não a cada quadro. */
+  function stepTriggers(e) {
+    entBox(e, _boxA);
+    for (var i = 0; i < _candN; i++) {
+      var z = _cand[i];
+      if (!z || !z._alive) continue;
+      var zm = molds[z._mold];
+      if (!zm || !zm.trigger) continue;
+      entBox(z, _boxB);
+      var over = _boxA.maxX > _boxB.minX && _boxA.minX < _boxB.maxX &&
+                 _boxA.maxY > _boxB.minY && _boxA.minY < _boxB.maxY &&
+                 _boxA.maxZ > _boxB.minZ && _boxA.minZ < _boxB.maxZ;
+      // Carimbo de "já estava dentro" no par (zona, geração do visitante): o
+      // gancho roda na ENTRADA. Por quadro seria pegadinha (hurt todo frame).
+      var key = e._gen;
+      if (over) {
+        if (z._inKey !== key) { z._inKey = key; runOverlapHooks(z, e); }
+      } else if (z._inKey === key) {
+        z._inKey = 0;
       }
-      entBox(e, _boxA);
     }
   }
 
@@ -1181,6 +2022,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       if (bucket) runEntityHooks(bucket.step, e, 'enquanto estiver no estado ' + e.state);
     }
     if (!e._alive) return; // o gancho pode ter recolhido a entidade
+    // 1b. O boneco anima. Só quem TEM mixer paga (o curso roda o mixer.update com
+    // o mesmo dt clampado). Vem antes do split estático/dinâmico logo abaixo: um
+    // boneco parado no lugar ainda respira.
+    if (e._mixer) {
+      try { e._mixer.update(dt); } catch (err) {}
+    }
     e.stateTime += dt;
     for (var t = 0; t < stateTimers.length; t++) {
       var timer = stateTimers[t];
@@ -1190,53 +2037,163 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         break;
       }
     }
-    // 2. Gravidade própria (se ligada): puxa antes de integrar (semi-implícito).
-    if (e.gravity) {
-      e.grounded = false;
-      e.vy += e.gravity * dt;
+    var p = e.mesh.position;
+    // 2. Carona: a plataforma que me segura já andou neste quadro (passo A) —
+    //    ando junto ANTES de integrar. _gen guarda contra slot reciclado do pool.
+    if (e._ride) {
+      if (e._ride._alive && e._ride._gen === e._rideGen) {
+        p.x += e._ride._dx; p.y += e._ride._dy; p.z += e._ride._dz;
+      } else {
+        e._ride = null;
+      }
     }
-    // 3. Arrasto exponencial (estável para qualquer dt) + integração.
+    // Split ESTÁTICO/DINÂMICO do curso ("só as dinâmicas dão step"), aqui por
+    // ENTIDADE — a gravidade é da entidade, não do molde. Quem está parado, sem
+    // gravidade, sem carona e sem piscar não tem NADA para integrar: pula a
+    // física, a colisão, as zonas e o gridSync (a posição não mudou, então a
+    // grade e os deltas seguem válidos). Conservador de propósito: os ganchos da
+    // FSM e o stateTime ACIMA continuam rodando — congelá-los pararia o cérebro
+    // da entidade e o relógio que a criança lê.
+    if (!e.vx && !e.vy && !e.vz && !e.gravity && !e._ride && e._iFrames <= 0) {
+      e._dx = 0; e._dy = 0; e._dz = 0;
+      // ⭐ Congela a matriz de quem está parado: um molde sólido (parede, moeda,
+      // enfeite) não muda de transform, então recompô-la todo quadro é puro
+      // desperdício. Assa UMA vez, na transição para estático (o guard do
+      // matrixAutoUpdate), senão a matriz ficaria na identidade e a coisa
+      // renderizaria na ORIGEM. Um setter que mexa depois (place/setYaw/lookAt/
+      // aimAt) chama updateMatrix por conta própria — ver markStaticMoved.
+      if (e.mesh && e.mesh.matrixAutoUpdate) {
+        e.mesh.updateMatrix();
+        e.mesh.matrixAutoUpdate = false;
+      }
+      return;
+    }
+    // Voltou a se mexer: re-arma o auto-update (senão a matriz ficaria congelada).
+    if (e.mesh && !e.mesh.matrixAutoUpdate) e.mesh.matrixAutoUpdate = true;
+    var wasGrounded = e.grounded;
+    // 3. Gravidade própria (se ligada): puxa antes de integrar (semi-implícito).
+    if (e.gravity) e.vy += e.gravity * dt;
+    e.grounded = false;
+    e._ride = null;
+    // 4. Arrasto do AR: só no plano. Aplicar em Y brigava com a gravidade — a
+    //    criança ligava "arrasto" e a entidade passava a flutuar, que não é o
+    //    que o bloco promete.
     if (e.drag > 0) {
       var f = Math.exp(-e.drag * dt);
-      e.vx *= f; e.vy *= f; e.vz *= f;
+      e.vx *= f; e.vz *= f;
     }
-    if (e.vx || e.vy || e.vz) {
-      e.mesh.position.x += e.vx * dt;
-      e.mesh.position.y += e.vy * dt;
-      e.mesh.position.z += e.vz * dt;
+    var dx = e.vx * dt, dy = e.vy * dt, dz = e.vz * dt;
+    // 5. Colisão. Os dois gates são perguntas DIFERENTES e estavam fundidos:
+    //    o CHÃO-BASE (y=0) é consequência da GRAVIDADE — quem não cai não tem por
+    //    que ser parado por um piso invisível (tiro, drone, câmera). Já ser SÓLIDO
+    //    é consequência de EXISTIR: parede para tudo que não é fantasma. Fundir os
+    //    dois era o bug do tiro atravessando a parede.
+    var wantSolid = (anySolid || anyTrigger) && e.body === 0;
+    if (wantSolid && (dx || dy || dz || e.gravity)) {
+      fillCandidates(e, dx, dz);
+      var k = _candN > 0 ? substepsFor(e, dx, dy, dz) : 1;
+      // Integra cada substep com a velocidade VIVA (dt/k), não com um passo
+      // pré-calculado: quando a colisão zera a velocidade no meio do quadro, o
+      // que sobra do movimento tem que morrer junto. Com passo fixo o tiro
+      // continuava avançando dentro da parede depois de já ter sido parado.
+      var h = dt / k;
+      for (var st = 0; st < k; st++) {
+        p.x += e.vx * h; p.y += e.vy * h; p.z += e.vz * h;
+        if (anySolid) resolveSolids(e);
+      }
+      if (e.gravity) resolveGround(e);
+      // 7. Grude no chão ao descer rampa/degrau (senão a descida vira trampolim).
+      if (wasGrounded && !e.grounded && e.vy <= 0 && anySolid) snapDown(e);
+      // 8. Atrito: o mais ESCORREGADIO dos dois manda — gelo no chão OU no disco
+      //    e escorrega igual. Não-definido (-1) vale 0 na superfície (gelo, o de
+      //    sempre) e 1 em quem anda (sem opinião) → min = a superfície decide,
+      //    exatamente como antes de existir atrito por entidade.
+      if (e.grounded && e._ride) {
+        var rm = molds[e._ride._mold];
+        var fm = molds[e._mold];
+        var sfr = rm ? (rm.friction < 0 ? 0 : rm.friction) : 0;
+        var mfr = fm ? (fm.friction < 0 ? 1 : fm.friction) : 1;
+        var fr = sfr < mfr ? sfr : mfr;
+        if (fr > 0) {
+          var ff = Math.exp(-fr * 8 * dt);
+          e.vx *= ff; e.vz *= ff;
+        }
+      }
+      if (anyTrigger) stepTriggers(e);
+    } else {
+      if (dx || dy || dz) { p.x += dx; p.y += dy; p.z += dz; }
+      if (e.gravity) resolveGround(e);
     }
-    // 4. Colisão sólida: pousa no chão (y=0) e nas paredes/plataformas sólidas.
-    if (e.gravity) resolveGround(e);
-    if (e.gravity && anySolid) resolveSolids(e);
-    // 5. Invencibilidade: decai e pisca a 10 Hz.
+    // 9. Invencibilidade: decai e pisca a 10 Hz.
     if (e._iFrames > 0) {
       e._iFrames = Math.max(0, e._iFrames - dt);
       e.mesh.visible = e._iFrames <= 0 || Math.floor(e._iFrames * 10) % 2 === 0;
       if (e._iFrames <= 0) e.mesh.visible = true;
     }
-    // 4. Grade espacial acompanha a posição.
+    // 10. Deslocamento deste quadro (o que os passageiros somam). Sai de
+    //     pos - _l, então captura integração E teleporte por place().
+    e._dx = p.x - e._lx; e._dy = p.y - e._ly; e._dz = p.z - e._lz;
+    e._lx = p.x; e._ly = p.y; e._lz = p.z;
+    // 11. Grade espacial acompanha a posição.
     gridSync(e);
   }
 
   // ---- Comportamentos (a matemática do curso pronta em blocos) ----
 
-  function moveWithKeys(e, speed) {
-    if (!isEntity(e)) return;
-    var sp = num(speed, 8);
-    var dx = 0;
-    var dz = 0;
-    if (keys.w || keys.arrowup) dz -= 1;
-    if (keys.s || keys.arrowdown) dz += 1;
-    if (keys.a || keys.arrowleft) dx -= 1;
-    if (keys.d || keys.arrowright) dx += 1;
-    if (dx || dz) {
-      var len = Math.sqrt(dx * dx + dz * dz);
+  /**
+   * A base do WASD: para onde a CÂMERA olha, achatado no plano do chão.
+   *
+   * ⭐ É o que faz "W entra na tela" valer em TODOS os modos de câmera, que é
+   * como todo jogo 3D de verdade funciona (Mario 64, Zelda). Antes o WASD andava
+   * por eixo FIXO do mundo (W = -Z sempre): certo por acidente na câmera de cima,
+   * torto 40° na de órbita e EXATAMENTE ao contrário na que segue — porque a
+   * câmera que segue fica ATRÁS do alvo, olhando para +Z.
+   *
+   * Lê a orientação REAL da câmera (não o modo), então já nasce certo para
+   * qualquer câmera futura, e o amortecimento do seguir suaviza a base de graça.
+   */
+  function camBasisXZ() {
+    _camF.set(0, 0, -1);
+    if (camera) {
+      camera.getWorldDirection(_camF);
+      _camF.y = 0;
+      // Olhando reto para baixo (câmera de cima): o topo da tela é -Z.
+      if (_camF.lengthSq() < 0.000000000001) _camF.set(0, 0, -1);
+      else _camF.normalize();
+    }
+    // A direita da tela = cross(cima, -frente), achatada.
+    _camR.set(-_camF.z, 0, _camF.x);
+  }
+
+  /** Anda no chão pela base da câmera (o miolo do WASD e do 1ª pessoa). */
+  function moveOnCamBasis(e, sp) {
+    var mf = 0;
+    var mr = 0;
+    if (keys.w || keys.arrowup) mf += 1;
+    if (keys.s || keys.arrowdown) mf -= 1;
+    if (keys.d || keys.arrowright) mr += 1;
+    if (keys.a || keys.arrowleft) mr -= 1;
+    if (!mf && !mr) {
+      e.vx = 0;
+      e.vz = 0;
+      return;
+    }
+    camBasisXZ();
+    var dx = _camF.x * mf + _camR.x * mr;
+    var dz = _camF.z * mf + _camR.z * mr;
+    var len = Math.sqrt(dx * dx + dz * dz);
+    if (len > 0.000001) {
       e.vx = (dx / len) * sp;
       e.vz = (dz / len) * sp;
     } else {
       e.vx = 0;
       e.vz = 0;
     }
+  }
+
+  function moveWithKeys(e, speed) {
+    if (!isEntity(e)) return;
+    moveOnCamBasis(e, num(speed, 8));
   }
 
   // ---- 🏃 Física jogável (gravidade/pulo/plataforma) ----
@@ -1253,32 +2210,94 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       e.grounded = false;
     }
   }
+  /** Recalcula os gates globais (custo zero p/ jogo que não usa sólido/zona). */
+  function refreshSolidGates() {
+    anySolid = false; anyTrigger = false; anyCarrier = false;
+    _minSolidThin = 1e9;
+    for (var k in molds) {
+      var m = molds[k];
+      if (m.trigger) { anyTrigger = true; continue; }
+      if (!m.solid) continue;
+      anySolid = true;
+      // O critério do substep é o sólido mais FINO do mundo — não a espessura do
+      // movedor: um movedor gordo atravessa uma parede fina do mesmo jeito.
+      var c = m.col;
+      var thin = Math.min(c.maxX - c.minX, Math.min(c.maxY - c.minY, c.maxZ - c.minZ));
+      if (thin < _minSolidThin) _minSolidThin = thin;
+      // Molde sólido que anda = plataforma: liga a passada dupla (carona).
+      if (m.speed !== 0) anyCarrier = true;
+    }
+  }
   function makeSolid(mold) {
     var m = molds[text(mold, '')];
-    if (m) {
-      m.solid = true;
-      anySolid = true;
-    }
+    if (!m) return;
+    m.solid = true;
+    m.trigger = false;
+    refreshSolidGates();
+  }
+  /** Zona: detecta quem entra, mas NÃO empurra (moeda, porta, armadilha). */
+  function makeTrigger(mold) {
+    var m = molds[text(mold, '')];
+    if (!m) return;
+    m.trigger = true;
+    m.solid = false;
+    refreshSolidGates();
+  }
+  /** Fantasma POR ENTIDADE: atravessa tudo que é sólido. */
+  function passThrough(e, on) {
+    if (!isEntity(e)) return;
+    e.body = on === false ? 0 : 1;
+  }
+  function setBounce(mold, amount) {
+    var m = molds[text(mold, '')];
+    if (m) m.bounce = Math.max(0, Math.min(1, num(amount, 0)));
+  }
+  function setFriction(mold, amount) {
+    var m = molds[text(mold, '')];
+    if (m) m.friction = Math.max(0, Math.min(1, num(amount, 0)));
+  }
+  /**
+   * Tipos de física prontos: um bloco só e o molde se comporta como a COISA que
+   * ele é. É o atalho por cima dos ajustes finos (colisor/quique/atrito/cair),
+   * que continuam valendo para quem quiser afinar.
+   */
+  var PHYS_TYPES = {
+    bola:       { col: 1, bounce: 0.7,  friction: 0.4,  g: 20 },
+    caixa:      { col: 0, bounce: 0.1,  friction: 0.7,  g: 20 },
+    personagem: { col: 2, bounce: 0,    friction: 0.9,  g: 20 },
+    gelo:       { col: 0, bounce: 0.05, friction: 0.02, g: 20 },
+    flutuante:  { col: 1, bounce: 0.3,  friction: 0.1,  g: 0 }
+  };
+  function setPhysics(mold, type) {
+    var m = molds[text(mold, '')];
+    if (!m) return;
+    var t = PHYS_TYPES[text(type, 'caixa')];
+    if (!t) t = PHYS_TYPES.caixa;
+    m.col.kind = t.col;
+    m.bounce = t.bounce;
+    m.friction = t.friction;
+    m.gravity = t.g;
+    refreshSolidGates();
+  }
+  /** Formato invisível que colide: caixa (padrão) · bola · cápsula. */
+  function setCollider(mold, shape) {
+    var m = molds[text(mold, '')];
+    if (!m) return;
+    var s = text(shape, 'box');
+    m.col.kind = s === 'sphere' ? 1 : (s === 'capsule' ? 2 : 0);
+    refreshSolidGates();
+  }
+  function onOverlap(mold, fn) {
+    var k = text(mold, '');
+    if (!k || typeof fn !== 'function') return;
+    if (!overlapHooks[k]) overlapHooks[k] = [];
+    overlapHooks[k].push(fn);
   }
   /** Plataforma pronta: WASD/setas no plano (preserva a queda) + pulo com espaço. */
   function platformerKeys(e, speed, jumpForce) {
     if (!isEntity(e)) return;
     if (!e.gravity) e.gravity = -20;
-    var sp = num(speed, 8);
-    var dx = 0;
-    var dz = 0;
-    if (keys.w || keys.arrowup) dz -= 1;
-    if (keys.s || keys.arrowdown) dz += 1;
-    if (keys.a || keys.arrowleft) dx -= 1;
-    if (keys.d || keys.arrowright) dx += 1;
-    if (dx || dz) {
-      var len = Math.sqrt(dx * dx + dz * dz);
-      e.vx = (dx / len) * sp;
-      e.vz = (dz / len) * sp;
-    } else {
-      e.vx = 0;
-      e.vz = 0;
-    }
+    moveOnCamBasis(e, num(speed, 8));
     if ((keys[' '] || justPressed[' ']) && e.grounded) {
       e.vy = Math.abs(num(jumpForce, 9));
       e.grounded = false;
@@ -1310,6 +2329,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     var lambda = Math.max(0.1, num(smooth, 8));
     var t = 1 - Math.exp(-lambda * currentDt);
     who.mesh.quaternion.slerp(_tq1, t);
+    touchStatic(who);
   }
 
   /** "Já mirou?" da torre: frente · direção-do-alvo > 0.999. */
@@ -1326,10 +2346,23 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     return _tv1.dot(_tv2) > 0.999;
   }
 
+  /**
+   * Recompõe a matriz AGORA se ela está congelada (entidade estática). Todo
+   * setter que escreve a transform de uma entidade que pode estar parada
+   * (place/setYaw/lookAt/aimAt) chama isto — senão o congelamento do stepEntity
+   * engoliria o movimento em silêncio (a coisa mudava de posição por dentro e não
+   * na tela). updateMatrix marca matrixWorldNeedsUpdate, então o render seguinte
+   * recompõe o matrixWorld mesmo com o auto-update desligado.
+   */
+  function touchStatic(e) {
+    if (e && e.mesh && e.mesh.matrixAutoUpdate === false) e.mesh.updateMatrix();
+  }
+
   function faceVelocity(e) {
     if (!isEntity(e)) return;
     if (Math.abs(e.vx) < 0.000001 && Math.abs(e.vz) < 0.000001) return;
     e.mesh.rotation.set(0, Math.atan2(e.vx, e.vz), 0);
+    touchStatic(e);
   }
 
   function moveForward(e, speed) {
@@ -1344,6 +2377,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   function lookAt(who, target) {
     if (!isEntity(who) || !isEntity(target)) return;
     who.mesh.lookAt(target.mesh.position.x, who.mesh.position.y, target.mesh.position.z);
+    touchStatic(who);
   }
 
   function distanceBetween(a, b) {
@@ -1474,6 +2508,11 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   // particleData = (fração da vida 0→1, id aleatório do grão). O id + o tempo +
   // spinSpeed giram o sprite (o "Data-Driven Particles" do curso). O ramo aditivo
   // pré-multiplica (glow); o normal usa alfa reto (fumaça/névoa com sort por câmera).
+  // A curva de vida vive numa TEXTURA assada (o toTexture() do curso): em vez de
+  // interpolar 2 chaves num uniform, os shaders AMOSTRAM a rampa — dá N chaves
+  // pelo mesmo custo (fogo: amarelo→laranja→vermelho→preto, com o tamanho
+  // crescendo e sumindo). Linha de baixo (v=0.25) = COR; de cima (v=0.75) =
+  // tamanho no R e opacidade no G. Ver bakeCurve.
   var PARTICLE_VSH = [
     'attribute vec2 particleData;',
     'varying float vLife;',
@@ -1481,12 +2520,14 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     'uniform float sizeFrom;',
     'uniform float sizeTo;',
     'uniform float scaleFactor;',
+    'uniform sampler2D curve;',
     'void main() {',
     '  vLife = particleData.x;',
     '  vId = particleData.y;',
     '  vec3 mv = (modelViewMatrix * vec4(position, 1.0)).xyz;',
     '  gl_Position = projectionMatrix * vec4(mv, 1.0);',
-    '  float size = mix(sizeFrom, sizeTo, vLife);',
+    '  float shape = texture2D(curve, vec2(vLife, 0.75)).r;',
+    '  float size = mix(sizeFrom, sizeTo, vLife) * shape * 2.0;',
     '  gl_PointSize = size * scaleFactor / max(0.1, -mv.z);',
     '}'
   ].join(' ');
@@ -1498,6 +2539,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     'uniform float spinSpeed;',
     'uniform float time;',
     'uniform float additive;',
+    'uniform sampler2D curve;',
     'varying float vLife;',
     'varying float vId;',
     'void main() {',
@@ -1507,12 +2549,98 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     '  vec2 uv = gl_PointCoord.xy - 0.5;',
     '  uv = vec2(uv.x * c - uv.y * s, uv.x * s + uv.y * c) + 0.5;',
     '  vec4 texel = texture2D(map, uv);',
-    '  vec3 col = mix(colorFrom, colorTo, vLife);',
-    '  float alpha = texel.a * (1.0 - vLife);',
-    '  if (additive > 0.5) gl_FragColor = vec4(col * alpha, alpha);',
-    '  else gl_FragColor = vec4(col, alpha);',
+    // Cor e opacidade saem da rampa ASSADA (N chaves), moduladas pelo par
+    // cor-de/cor-até que a criança escolheu nos campos do bloco.
+    '  vec3 ramp = texture2D(curve, vec2(vLife, 0.25)).rgb;',
+    '  float fade = texture2D(curve, vec2(vLife, 0.75)).g;',
+    '  vec3 col = mix(colorFrom, colorTo, vLife) * ramp * 2.0;',
+    '  float alpha = texel.a * fade;',
+    // Saída SEMPRE premultiplicada (col*alpha) para casar com o CustomBlending
+    // do curso (One / OneMinusSrcAlpha). O que separa fogo de fumaça é o ALPHA
+    // de saída, não o material: alpha=0 -> src + dst (soma pura, o glow);
+    // alpha>0 -> src + dst*(1-alpha) (cobre o que está atrás, a fumaça).
+    '  float outA = additive > 0.5 ? 0.0 : alpha;',
+    '  gl_FragColor = vec4(col * alpha, outA);',
     '}'
   ].join(' ');
+
+  /**
+   * Curvas de vida PRONTAS. Cada uma é um par de rampas com N chaves em
+   * [posição 0..1, valor]: shape = tamanho, fade = opacidade, tint =
+   * multiplicador de cor. É o Interpolant do curso, com as chaves escolhidas
+   * para os casos que a criança pede pelo NOME (ela não vai autorar curva).
+   * O valor 0.5 é o neutro (o shader multiplica por 2).
+   */
+  var CURVES = {
+    // Linear: some devagar, tamanho constante. É a rampa de 2 chaves de antes.
+    linear: { shape: [[0, 0.5], [1, 0.5]], fade: [[0, 1], [1, 0]], tint: [[0, 0.5], [1, 0.5]] },
+    // Suave: nasce pequeno, incha e some — a faísca "respirando".
+    suave: { shape: [[0, 0.15], [0.3, 0.5], [1, 0.05]], fade: [[0, 0], [0.15, 1], [1, 0]], tint: [[0, 0.5], [1, 0.5]] },
+    // Pulso: estoura grande na hora e murcha rápido (impacto/explosão).
+    pulso: { shape: [[0, 0.6], [0.12, 0.5], [1, 0]], fade: [[0, 1], [0.6, 0.7], [1, 0]], tint: [[0, 0.5], [1, 0.5]] },
+    // Fogo: clarão no nascimento e escurece morrendo — o brilho vem da COR
+    // (tint>0.5 estoura o bloom no começo e apaga no fim).
+    fogo: { shape: [[0, 0.35], [0.25, 0.5], [1, 0.1]], fade: [[0, 1], [0.7, 0.5], [1, 0]], tint: [[0, 0.95], [0.4, 0.55], [1, 0.1]] }
+  };
+  var CURVE_W = 32;
+  var _curveCache = null;
+
+  /** Lê a rampa de chaves na posição t (0..1), interpolando linearmente. */
+  function sampleKeys(keys, t) {
+    var prev = keys[0];
+    for (var i = 1; i < keys.length; i++) {
+      var k = keys[i];
+      if (t <= k[0]) {
+        var span = k[0] - prev[0];
+        var f = span > 0.00001 ? (t - prev[0]) / span : 0;
+        return prev[1] + (k[1] - prev[1]) * f;
+      }
+      prev = k;
+    }
+    return prev[1];
+  }
+
+  /**
+   * Assa a curva numa DataTexture 32×2 (o toTexture() do curso): a interpolação
+   * sai da CPU e vira uma amostra de textura no shader — N chaves pelo preço de
+   * uma. Linha 0 = cor (tint nos 3 canais), linha 1 = tamanho (R) e opacidade (G).
+   */
+  function bakeCurve(name) {
+    var k = text(name, 'linear');
+    if (!CURVES[k]) k = 'linear';
+    if (!_curveCache) _curveCache = {};
+    if (_curveCache[k]) return _curveCache[k];
+    if (!THREE.DataTexture) return null;
+    try {
+      var c = CURVES[k];
+      var data = new Uint8Array(CURVE_W * 2 * 4);
+      for (var x = 0; x < CURVE_W; x++) {
+        var t = CURVE_W > 1 ? x / (CURVE_W - 1) : 0;
+        var tint = Math.max(0, Math.min(1, sampleKeys(c.tint, t)));
+        var shape = Math.max(0, Math.min(1, sampleKeys(c.shape, t)));
+        var fade = Math.max(0, Math.min(1, sampleKeys(c.fade, t)));
+        var row0 = x * 4;                  // linha 0: COR
+        data[row0] = Math.round(tint * 255);
+        data[row0 + 1] = Math.round(tint * 255);
+        data[row0 + 2] = Math.round(tint * 255);
+        data[row0 + 3] = 255;
+        var row1 = (CURVE_W + x) * 4;      // linha 1: TAMANHO (R) + OPACIDADE (G)
+        data[row1] = Math.round(shape * 255);
+        data[row1 + 1] = Math.round(fade * 255);
+        data[row1 + 2] = 0;
+        data[row1 + 3] = 255;
+      }
+      var tex = new THREE.DataTexture(data, CURVE_W, 2);
+      if (THREE.RGBAFormat != null) tex.format = THREE.RGBAFormat;
+      if (THREE.LinearFilter != null) { tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; }
+      if (THREE.ClampToEdgeWrapping != null) { tex.wrapS = THREE.ClampToEdgeWrapping; tex.wrapT = THREE.ClampToEdgeWrapping; }
+      tex.needsUpdate = true;
+      _curveCache[k] = tex;
+      return tex;
+    } catch (e) {
+      return null;
+    }
+  }
 
   /** Círculo suave gerado em canvas 2D (nenhum PNG no kit). */
   function ensureSpriteTex() {
@@ -1568,13 +2696,26 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         scaleFactor: { value: config.h * 0.42 },
         spinSpeed: { value: cfg.spin },
         time: { value: 0 },
-        additive: { value: cfg.glow ? 1 : 0 }
+        additive: { value: cfg.glow ? 1 : 0 },
+        curve: { value: bakeCurve(cfg.curve) }
       },
       vertexShader: PARTICLE_VSH,
       fragmentShader: PARTICLE_FSH,
       transparent: true,
       depthWrite: false,
-      blending: cfg.glow ? THREE.AdditiveBlending : THREE.NormalBlending
+      // Mistura PREMULTIPLICADA (o CustomBlending do curso: One /
+      // OneMinusSrcAlpha) em vez de dois modos separados. O fragmento já sai
+      // premultiplicado (col*alpha), então UM modo só serve para os dois casos:
+      // com alpha=0 o grão só SOMA luz (glow do fogo) e com alpha>0 ele também
+      // COBRE o que está atrás (fumaça) — a diferença passa a ser do dado, não
+      // do material. Fallback para os modos antigos se o three não expuser os
+      // fatores (o stub dos testes não expõe).
+      blending:
+        THREE.CustomBlending != null && THREE.OneFactor != null && THREE.OneMinusSrcAlphaFactor != null
+          ? THREE.CustomBlending
+          : (cfg.glow ? THREE.AdditiveBlending : THREE.NormalBlending),
+      blendSrc: THREE.OneFactor != null ? THREE.OneFactor : undefined,
+      blendDst: THREE.OneMinusSrcAlphaFactor != null ? THREE.OneMinusSrcAlphaFactor : undefined
     });
     var points = new THREE.Points(geometry, material);
     points.frustumCulled = false;
@@ -1631,7 +2772,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         gravityStrength: 1,
         drag: 0.5,
         spin: 0,
-        glow: true
+        glow: true,
+        curve: 'pulso'
       });
     } catch (e) {
       warn('não consegui criar o efeito "' + k + '": ' + e);
@@ -1669,7 +2811,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         gravityStrength: 1,
         drag: 0.5,
         spin: num(o.spin, 1.5),
-        glow: glow
+        glow: glow,
+        curve: text(o.curve, 'suave')
       });
     } catch (e) {
       warn('não consegui criar o emissor "' + k + '": ' + e);
@@ -1701,23 +2844,23 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (fx.particles.length >= MAX_PARTICLES_PER_EFFECT) return;
     var p = fx.free.pop() || { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, id: 0 };
     // Posição no volume (positionRadiusVariance) — grãos não saem de um ponto só.
-    var pphi = Math.random() * Math.PI * 2;
-    var ptheta = Math.random() * Math.PI;
-    var prad = Math.random() * fx.volume;
+    var pphi = rand() * Math.PI * 2;
+    var ptheta = rand() * Math.PI;
+    var prad = rand() * fx.volume;
     p.x = ox + Math.sin(ptheta) * Math.cos(pphi) * prad;
     p.y = oy + Math.cos(ptheta) * prad;
     p.z = oz + Math.sin(ptheta) * Math.sin(pphi) * prad;
     // Direção no cone: theta ∈ [0, cone] em volta de +Y.
-    var dphi = Math.random() * Math.PI * 2;
-    var dtheta = Math.random() * fx.cone;
-    var speed = fx.speed * (1 + (Math.random() * 2 - 1) * fx.speedVar);
+    var dphi = rand() * Math.PI * 2;
+    var dtheta = rand() * fx.cone;
+    var speed = fx.speed * (1 + (rand() * 2 - 1) * fx.speedVar);
     p.vx = Math.sin(dtheta) * Math.cos(dphi) * speed;
     p.vy = Math.cos(dtheta) * speed;
     p.vz = Math.sin(dtheta) * Math.sin(dphi) * speed;
     p.life = 0;
-    p.maxLife = fx.life * (1 + (Math.random() * 2 - 1) * fx.lifeVar);
+    p.maxLife = fx.life * (1 + (rand() * 2 - 1) * fx.lifeVar);
     if (p.maxLife < 0.05) p.maxLife = 0.05;
-    p.id = Math.random();
+    p.id = rand();
     fx.particles.push(p);
   }
 
@@ -2226,7 +3369,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   // ---- Câmera viva (um modo por vez) ----
 
   function setOrbit(dist) {
-    camMode = { kind: 'orbit', target: null, dist: Math.max(2, num(dist, 25)), height: 0 };
+    camMode = { kind: 'orbit', target: null, dist: Math.max(2, num(dist, 25)), height: 0, pivot: camMode.pivot, pivotGen: camMode.pivotGen };
     if (!orbit) {
       var st = { az: 0.7, el: 0.5, dist: camMode.dist, dragging: false, px: 0, py: 0 };
       orbit = st;
@@ -2258,6 +3401,100 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       }
     }
     orbit.dist = camMode.dist;
+  }
+
+  // ---- 🎥 A câmera na mão da criança (girar/afastar/tremer/lente/olhar) ----
+
+  /** Gira e inclina a órbita POR CÓDIGO (antes só o arrastar do mouse mexia). */
+  function cameraAngle(azDeg, elDeg) {
+    if (!orbit) setOrbit(camMode.dist);
+    if (!orbit) return;
+    orbit.az = num(azDeg, 40) * Math.PI / 180;
+    var el = num(elDeg, 28) * Math.PI / 180;
+    // Mesmos limites do arrastar: nem por baixo do chão, nem no zênite (onde a
+    // câmera perde a noção de "para cima" e a base do WASD degenera).
+    if (el > 1.4) el = 1.4;
+    if (el < 0.08) el = 0.08;
+    orbit.el = el;
+  }
+  /** Afasta/aproxima — vale para a órbita E para a que segue. */
+  function cameraDistance(d) {
+    var v = Math.max(1, num(d, 25));
+    camMode.dist = v;
+    if (orbit) orbit.dist = v;
+  }
+  /** Tremor de impacto: força em metros, por N segundos. */
+  function cameraShake(strength, seconds) {
+    _shakeAmp = Math.max(0, num(strength, 0.5));
+    _shakeT = Math.max(0, num(seconds, 0.3));
+    _shakeMax = _shakeT || 1;
+  }
+  /** Lente: campo de visão em graus (era o literal 60). */
+  function cameraLens(deg) {
+    if (!camera) return;
+    camera.fov = Math.max(15, Math.min(120, num(deg, 60)));
+    if (camera.updateProjectionMatrix) camera.updateProjectionMatrix();
+  }
+  /**
+   * Para onde a órbita/a de cima OLHAM. Antes era o (0,0,0) do mundo, cravado:
+   * num mundo grande, a criança não tinha como olhar para longe da origem.
+   */
+  function cameraLookAt(target) {
+    if (isEntity(target)) { camMode.pivot = target; camMode.pivotGen = target._gen; return; }
+    camMode.pivot = null;
+  }
+  function cameraLookAtPoint(x, y, z) {
+    camMode.pivot = { x: num(x, 0), y: num(y, 0), z: num(z, 0) };
+  }
+  /** Suavidade do seguir (era a constante 3): maior = mais colada. */
+  function cameraSmooth(lambda) {
+    camSmooth = Math.max(0.1, num(lambda, 3));
+  }
+
+  /**
+   * A entidade-alvo da câmera ainda é ELA MESMA? ⭐ o isEntity só olha _alive,
+   * mas o pool REUSA o slot: o chefão morre, uma fábrica faz nascer outro do
+   * mesmo molde, o slot volta vivo com _gen novo — e a câmera passaria a orbitar
+   * o estranho em vez de voltar ao centro. A marca de geração é o mesmo latch que
+   * o balão de fala (says) e a carona (_ride) já usam.
+   */
+  function sameCamEntity(e, gen) {
+    return isEntity(e) && e._gen === gen;
+  }
+
+  /** O ponto que a câmera olha: entidade viva (a MESMA), ponto fixo, ou a origem. */
+  function pivotInto(v) {
+    var p = camMode.pivot;
+    if (p && p.mesh) {
+      if (sameCamEntity(p, camMode.pivotGen)) { v.set(p.mesh.position.x, p.mesh.position.y, p.mesh.position.z); return; }
+      camMode.pivot = null; // o alvo morreu (ou o slot virou outro): volta à origem
+      v.set(0, 0, 0);
+      return;
+    }
+    if (p) { v.set(p.x, p.y, p.z); return; }
+    v.set(0, 0, 0);
+  }
+
+  /**
+   * Tremor: offset DEPOIS de posicionar, para não corromper o camMode (senão o
+   * lerp do seguir perseguiria a própria tremedeira). Usa rand(), então a semente
+   * continua valendo — mesma partida, mesmo tremor.
+   *
+   * ⚠️ O return quando dt<=0 é LOAD-BEARING: o updateCamera roda em TODO estado
+   * com dt=0 fora do jogo (pausa/fim/menu). Sem esta guarda, (1) o _shakeT nunca
+   * decai → a tela de fim VIBRA para sempre, e (2) os 3 rand() por
+   * quadro queimariam o gerador semeado enquanto pausado — e o tempo de pausa é
+   * relógio de parede, então a MESMA semente daria partidas diferentes. Congelar
+   * o tremor na pausa é coerente com "a pausa congela o mundo".
+   */
+  function applyShake(dt) {
+    if (dt <= 0 || _shakeT <= 0) return;
+    _shakeT -= dt;
+    if (_shakeT < 0) _shakeT = 0;
+    var k = _shakeAmp * (_shakeT / _shakeMax); // decai até sumir
+    camera.position.x += (rand() * 2 - 1) * k;
+    camera.position.y += (rand() * 2 - 1) * k;
+    camera.position.z += (rand() * 2 - 1) * k;
   }
 
   // ---- Mira & clique no mundo (raycast) + câmera 1ª pessoa ----
@@ -2349,6 +3586,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     camMode = {
       kind: 'fps',
       target: e,
+      targetGen: e._gen,
       dist: 0,
       height: h,
       yaw: e.mesh ? e.mesh.rotation.y : 0,
@@ -2379,60 +3617,64 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       }
     });
   }
-  /** Anda a entidade em 1ª pessoa: WASD/setas relativos ao olhar. */
+  /**
+   * Anda a entidade em 1ª pessoa: WASD/setas relativos ao olhar.
+   *
+   * É a MESMA base do WASD comum — em 1ª pessoa a câmera são os olhos dela, então
+   * "para onde a câmera olha" e "para onde ela olha" são a mesma coisa. Achatar em
+   * XZ é de propósito: olhar para cima e andar não faz ninguém voar.
+   */
   function moveFps(e, speed) {
     if (!isEntity(e)) return;
-    var yaw = camMode.kind === 'fps' ? camMode.yaw : (e.mesh ? e.mesh.rotation.y : 0);
-    var sp = num(speed, 6);
-    var fx = -Math.sin(yaw);
-    var fz = -Math.cos(yaw);
-    var rx = Math.cos(yaw);
-    var rz = -Math.sin(yaw);
-    var mf = 0;
-    var mr = 0;
-    if (keys.w || keys.arrowup) mf += 1;
-    if (keys.s || keys.arrowdown) mf -= 1;
-    if (keys.d || keys.arrowright) mr += 1;
-    if (keys.a || keys.arrowleft) mr -= 1;
-    e.vx = (fx * mf + rx * mr) * sp;
-    e.vz = (fz * mf + rz * mr) * sp;
+    moveOnCamBasis(e, num(speed, 6));
   }
 
   function updateCamera(dt) {
     if (!camera) return;
     if (camMode.kind === 'fps') {
       var f = camMode.target;
-      if (!isEntity(f)) return;
+      if (!sameCamEntity(f, camMode.targetGen)) return;
       var px = f.mesh.position.x;
       var py = f.mesh.position.y + camMode.height;
       var pz = f.mesh.position.z;
       camera.position.set(px, py, pz);
       var cp = Math.cos(camMode.pitch);
+      // Olha ao longo do +Z do corpo (o ensureFpsLook escreve rotation.y = yaw).
+      // Era -sin/-cos: a câmera olhava para um lado e o corpo apontava para o
+      // outro, então o tiro de spawnFrom+moveForward saía PELAS COSTAS.
       camera.lookAt(
-        px + -Math.sin(camMode.yaw) * cp,
+        px + Math.sin(camMode.yaw) * cp,
         py + Math.sin(camMode.pitch),
-        pz + -Math.cos(camMode.yaw) * cp
+        pz + Math.cos(camMode.yaw) * cp
       );
+      applyShake(dt);
       return;
     }
     if (camMode.kind === 'orbit' && orbit) {
       var ce = Math.cos(orbit.el);
+      pivotInto(_tv2);
       camera.position.set(
-        orbit.dist * ce * Math.sin(orbit.az),
-        orbit.dist * Math.sin(orbit.el),
-        orbit.dist * ce * Math.cos(orbit.az)
+        _tv2.x + orbit.dist * ce * Math.sin(orbit.az),
+        _tv2.y + orbit.dist * Math.sin(orbit.el),
+        _tv2.z + orbit.dist * ce * Math.cos(orbit.az)
       );
-      camera.lookAt(0, 0, 0);
+      camera.lookAt(_tv2.x, _tv2.y, _tv2.z);
+      applyShake(dt);
       return;
     }
     if (camMode.kind === 'top') {
-      camera.position.set(0, camMode.height, camMode.height * 0.001 + 0.01);
-      camera.lookAt(0, 0, 0);
+      pivotInto(_tv2);
+      // O epsilon em Z tira a câmera do zênite exato: sem ele o "para cima" da
+      // câmera fica indefinido (gimbal) e a base do WASD não teria para onde
+      // apontar. É ele que faz o topo da tela ser -Z.
+      camera.position.set(_tv2.x, _tv2.y + camMode.height, _tv2.z + camMode.height * 0.001 + 0.01);
+      camera.lookAt(_tv2.x, _tv2.y, _tv2.z);
+      applyShake(dt);
       return;
     }
     if (camMode.kind === 'follow') {
       var t = camMode.target;
-      if (!isEntity(t)) return;
+      if (!sameCamEntity(t, camMode.targetGen)) return;
       // Atrás do alvo (pela frente dele) com amortecimento exponencial.
       _tv1.set(0, 0, 1).applyQuaternion(t.mesh.quaternion);
       _tv1.y = 0;
@@ -2441,9 +3683,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       _tv2.copy(t.mesh.position)
         .addScaledVector(_tv1, -camMode.dist);
       _tv2.y = t.mesh.position.y + camMode.height;
-      var a = 1 - Math.exp(-3 * (dt > 0 ? dt : 0.016));
+      var a = 1 - Math.exp(-camSmooth * (dt > 0 ? dt : 0.016));
       camera.position.lerp(_tv2, a);
       camera.lookAt(t.mesh.position.x, t.mesh.position.y + 1, t.mesh.position.z);
+      applyShake(dt);
     }
   }
 
@@ -2489,6 +3732,11 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
     }
     updateCamera(state === 'jogando' ? dt : 0);
+    // Depois da câmera (a projeção precisa dela já posicionada). Só a PAUSA
+    // congela o balão (fica na tela sem gastar o tempo); no 'fim'/'menu' ele
+    // segue contando e some — senão uma fala em andamento na hora da morte
+    // ficava pendurada para sempre na tela de game over.
+    stepSays(state === 'pausado' ? 0 : dt);
     try {
       renderFrame();
     } catch (e) {
@@ -2500,6 +3748,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   function stepSystems(dt) {
     playTime += dt;
+    stepTimer(dt);
     for (var i = 0; i < spawners.length; i++) {
       var sp = spawners[i];
       sp.timer += dt;
@@ -2508,7 +3757,30 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         spawnFromSpawner(sp);
       }
     }
+    // Sem plataforma móvel no jogo, UMA passada — a ordem dos ganchos entre
+    // moldes fica exatamente a de antes. Com plataforma, as CARREGADORAS andam
+    // primeiro (passo A) para o passageiro somar o deslocamento certo no mesmo
+    // quadro; senão ele fica um quadro atrás e escorrega visivelmente.
+    if (anyCarrier) {
+      stepPools(dt, 1);
+      stepPools(dt, 2);
+    } else {
+      stepPools(dt, 0);
+    }
+    // As faíscas só andam em 'jogando' — a pausa congela tudo, como no curso.
+    stepEmitters(dt);
+    stepParticles(dt);
+  }
+
+  /** phase: 0 = tudo · 1 = só carregadoras (sólido que anda) · 2 = o resto. */
+  function stepPools(dt, phase) {
     for (var pk in pools) {
+      if (phase) {
+        var m = molds[pk];
+        var carrier = !!(m && m.solid && m.speed !== 0);
+        if (phase === 1 && !carrier) continue;
+        if (phase === 2 && carrier) continue;
+      }
       var pool = pools[pk];
       pool._sweeping++;
       for (var eI = pool.active.length - 1; eI >= 0; eI--) {
@@ -2520,9 +3792,103 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       pool._sweeping--;
       if (pool._sweeping === 0) compact(pool);
     }
-    // As faíscas só andam em 'jogando' — a pausa congela tudo, como no curso.
-    stepEmitters(dt);
-    stepParticles(dt);
+  }
+
+  // ---- 💬 Caixa de fala (o balão ancorado na entidade) ----
+
+  /**
+   * Fala presa a uma entidade. É a primeira coisa do kit que mistura DOM com o
+   * mundo 3D: o balão é um div e a entidade é um ponto no espaço, então a posição
+   * dela é PROJETADA na tela a cada quadro (senão o balão não acompanha a câmera).
+   * Sem isso, um RPG/aventura 3D não conta história — só dava HUD nos cantos.
+   */
+  var says = [];
+  function say(e, textValue, seconds) {
+    if (!isEntity(e) || !ensureShell()) return;
+    hideSay(e); // uma fala por entidade: a nova troca a antiga
+    var el = document.createElement('div');
+    el.className = 'szg3k-say';
+    el.textContent = text(textValue, '');
+    hudLayer.appendChild(el);
+    says.push({ e: e, gen: e._gen, el: el, left: Math.max(0.1, num(seconds, 2)) });
+  }
+  function hideSay(e) {
+    for (var i = says.length - 1; i >= 0; i--) {
+      if (says[i].e !== e) continue;
+      if (says[i].el.parentNode) says[i].el.parentNode.removeChild(says[i].el);
+      says.splice(i, 1);
+    }
+  }
+  function clearSays() {
+    for (var i = 0; i < says.length; i++) {
+      if (says[i].el.parentNode) says[i].el.parentNode.removeChild(says[i].el);
+    }
+    says.length = 0;
+  }
+  /** Projeta a cabeça da entidade na tela e move o balão para lá. */
+  function stepSays(dt) {
+    if (!says.length || !camera || !canvasEl) return;
+    var m = null;
+    for (var i = says.length - 1; i >= 0; i--) {
+      var s = says[i];
+      s.left -= dt;
+      // Entidade recolhida (ou o slot reusado por outra): o balão vai junto.
+      if (s.left <= 0 || !s.e._alive || s.e._gen !== s.gen) {
+        if (s.el.parentNode) s.el.parentNode.removeChild(s.el);
+        says.splice(i, 1);
+        continue;
+      }
+      m = molds[s.e._mold];
+      _tv1.set(s.e.mesh.position.x, s.e.mesh.position.y + (m ? m.top : 1) + 0.4, s.e.mesh.position.z);
+      _tv1.project(camera);
+      // Atrás da câmera (z>1): esconde em vez de desenhar espelhado na frente.
+      if (_tv1.z > 1) { s.el.style.display = 'none'; continue; }
+      s.el.style.display = '';
+      s.el.style.left = ((_tv1.x * 0.5 + 0.5) * 100) + '%';
+      s.el.style.top = ((-_tv1.y * 0.5 + 0.5) * 100) + '%';
+    }
+  }
+
+  // ---- 🎲 Sorteio (semeado) + ⏱️ Cronômetro ----
+
+  /**
+   * ⭐ O sorteio DO KIT — passa pelo rand(), então a semente vale de verdade.
+   * O kit não tinha sorteio nenhum: a criança usava o bloco do NÚCLEO, que emite
+   * Math.random() puro e IGNORA a semente. Ou seja, o "mesma semente = mesma
+   * partida" que o setSeed promete só era verdade para o acaso interno (enfeites,
+   * partículas, fábricas). Com estes dois a promessa fecha.
+   */
+  function randomBetween(a, b) {
+    var lo = num(a, 0);
+    var hi = num(b, 1);
+    if (lo > hi) { var t = lo; lo = hi; hi = t; }
+    return lo + rand() * (hi - lo);
+  }
+  function randomChance(percent) {
+    return rand() * 100 < num(percent, 50);
+  }
+
+  // Cronômetro da criança (corrida contra o tempo, bomba, tempo de fase). O de
+  // dentro do motor (stateTimer/fábrica) é outro — este é dela.
+  var _timer = { left: 0, on: false };
+  var timerHooks = [];
+  function startTimer(seconds) {
+    _timer.left = Math.max(0, num(seconds, 30));
+    _timer.on = _timer.left > 0;
+  }
+  function timeLeft() { return _timer.left; }
+  function stopTimer() { _timer.on = false; }
+  function onTimerEnd(fn) {
+    if (typeof fn === 'function') timerHooks.push(fn);
+  }
+  /** Só corre em 'jogando' (o stepSystems), então a pausa CONGELA — como o resto. */
+  function stepTimer(dt) {
+    if (!_timer.on) return;
+    _timer.left -= dt;
+    if (_timer.left > 0) return;
+    _timer.left = 0;
+    _timer.on = false;
+    runHooks(timerHooks, 0, 'quando o tempo acabar');
   }
 
   // ---- 📢 Event bus ----
@@ -2568,6 +3934,40 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     var a = sounds[text(name, '')];
     if (!a) return;
     try { a.currentTime = 0; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
+  }
+
+  /**
+   * 🎵 Música de fundo. O motor não tinha UM .loop sequer — só efeito de
+   * tiro-e-esquece —, então música de fundo era literalmente impossível. Toca UMA
+   * de cada vez (pedir outra troca), que é o que a criança espera de "a música do
+   * jogo".
+   */
+  var _music = null;
+  var _musicName = '';
+  function playMusic(name) {
+    var k = text(name, '');
+    var src = sounds[k];
+    if (!src) { warnOnce('mus:' + k, 'a música "' + k + '" não está no projeto (importe em "Imagens e sons")'); return; }
+    if (_musicName === k && _music) return; // já é esta: não recomeça do zero
+    stopMusic();
+    // ⭐ Audio PRÓPRIO, não o do sounds[]. O mapa sounds[] é dividido com o
+    // playSound (efeito): reusar o MESMO elemento fazia o efeito de moeda que
+    // usa o mesmo arquivo REINICIAR a música do começo, e o loop=true da música
+    // vazava para o efeito. Uma faixa só, separada dos efeitos.
+    try {
+      _music = new Audio(src.src);
+      _musicName = k;
+      _music.loop = true;
+      var pr = _music.play();
+      if (pr && pr.catch) pr.catch(function () {});
+    } catch (e) { _music = null; _musicName = ''; }
+  }
+  function stopMusic() {
+    if (_music) {
+      try { _music.pause(); } catch (e) {}
+    }
+    _music = null;
+    _musicName = '';
   }
 
   var _audioCtx = null;
@@ -2651,6 +4051,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (disposed) return;
     disposed = true;
     try {
+      // A música é um Audio próprio (fora da cena) — o teardown do renderer não a
+      // alcança. Sem isto ela seguiria tocando na janela do bfcache.
+      stopMusic();
       if (renderer) {
         renderer.setAnimationLoop(null);
         try { renderer.dispose(); } catch (e) {}
@@ -2700,6 +4103,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
           if (_texCache[tk] && _texCache[tk].dispose) { try { _texCache[tk].dispose(); } catch (e) {} }
         }
         _texCache = null;
+      }
+      if (_curveCache) {
+        for (var ck in _curveCache) {
+          if (_curveCache[ck] && _curveCache[ck].dispose) { try { _curveCache[ck].dispose(); } catch (e) {} }
+        }
+        _curveCache = null;
       }
       disposeComposer();
       if (stageEl && stageEl.parentNode) { try { stageEl.parentNode.removeChild(stageEl); } catch (e) {} }
@@ -2790,21 +4199,30 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         warn('"Câmera: seguir" precisa de uma entidade');
         return;
       }
-      camMode = { kind: 'follow', target: e, dist: Math.max(1, num(dist, 8)), height: num(height, 4) };
+      camMode = { kind: 'follow', target: e, targetGen: e._gen, dist: Math.max(1, num(dist, 8)), height: num(height, 4), pivot: camMode.pivot, pivotGen: camMode.pivotGen };
     }),
     cameraOrbit: guard('cameraOrbit', function (dist) { setOrbit(dist); }),
+    cameraAngle: guard('cameraAngle', cameraAngle),
+    cameraDistance: guard('cameraDistance', cameraDistance),
+    cameraShake: guard('cameraShake', cameraShake),
+    cameraLens: guard('cameraLens', cameraLens),
+    cameraLookAt: guard('cameraLookAt', cameraLookAt),
+    cameraLookAtPoint: guard('cameraLookAtPoint', cameraLookAtPoint),
+    cameraSmooth: guard('cameraSmooth', cameraSmooth),
     cameraTop: guard('cameraTop', function (height) {
-      camMode = { kind: 'top', target: null, dist: 0, height: Math.max(4, num(height, 40)) };
+      camMode = { kind: 'top', target: null, dist: 0, height: Math.max(4, num(height, 40)), pivot: camMode.pivot, pivotGen: camMode.pivotGen };
     }),
     // 🤖 Entidades
     place: guard('place', function (e, x, y, z) {
       if (!isEntity(e)) return;
       e.mesh.position.set(num(x, 0), num(y, 0), num(z, 0));
+      touchStatic(e);
       gridSync(e);
     }),
     setYaw: guard('setYaw', function (e, deg) {
       if (!isEntity(e)) return;
       e.mesh.rotation.set(0, num(deg, 0) * Math.PI / 180, 0);
+      touchStatic(e);
     }),
     setVelocity: guard('setVelocity', function (e, x, y, z) {
       if (!isEntity(e)) return;
@@ -2824,10 +4242,32 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     onGround: guard('onGround', function (e) { return isEntity(e) && e.grounded === true; }),
     makeSolid: guard('makeSolid', makeSolid),
     platformerKeys: guard('platformerKeys', platformerKeys),
+    setSeed: guard('setSeed', setSeed),
+    randomBetween: guard('randomBetween', randomBetween),
+    randomChance: guard('randomChance', randomChance),
+    playMusic: guard('playMusic', playMusic),
+    stopMusic: guard('stopMusic', stopMusic),
+    startTimer: guard('startTimer', startTimer),
+    timeLeft: guard('timeLeft', timeLeft),
+    stopTimer: guard('stopTimer', stopTimer),
+    onTimerEnd: guard('onTimerEnd', onTimerEnd),
+    say: guard('say', say),
+    hideSay: guard('hideSay', hideSay),
+    playAnim: guard('playAnim', function (e, name, loop) { playAnim(e, name, loop !== false); }),
+    stopAnim: guard('stopAnim', stopAnim),
+    setStateAnim: guard('setStateAnim', setStateAnim),
+    setPhysics: guard('setPhysics', setPhysics),
+    setCollider: guard('setCollider', setCollider),
+    passThrough: guard('passThrough', passThrough),
+    makeTrigger: guard('makeTrigger', makeTrigger),
+    onOverlap: guard('onOverlap', onOverlap),
+    setBounce: guard('setBounce', setBounce),
+    setFriction: guard('setFriction', setFriction),
     // 💡 Luz & céu
     addLight: guard('addLight', addLight),
     setFog: guard('setFog', setFog),
     setSky: guard('setSky', setSkyRuntime),
+    setSkyPhoto: guard('setSkyPhoto', setSkyPhoto),
     setAmbient: guard('setAmbient', setAmbient),
     // 🖱️ Mira & clique no mundo (raycast) + câmera 1ª pessoa
     pick: guard('pick', pickAtMouse),
@@ -2841,6 +4281,24 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       return posAxis(e, a);
     }),
     exists: guard('exists', function (e) { return isEntity(e); }),
+    // Valores que faltavam para a criança escrever a PRÓPRIA regra (o kit tinha
+    // muito comando e pouco valor — sem eles, "se a velocidade for..." ou "se a
+    // distância for..." não dava para montar).
+    velocityOf: guard('velocityOf', function (e, axis) {
+      if (!isEntity(e)) return 0;
+      var a = text(axis, 'x');
+      return a === 'y' ? e.vy : (a === 'z' ? e.vz : e.vx);
+    }),
+    distanceBetween: guard('distanceBetween', function (a, b) {
+      if (!isEntity(a) || !isEntity(b)) return 0;
+      return distanceBetween(a, b);
+    }),
+    maxHealthOf: guard('maxHealthOf', function (e) {
+      return isEntity(e) ? e.maxHealth : 0;
+    }),
+    stateOf: guard('stateOf', function (e) {
+      return isEntity(e) ? e.state : '';
+    }),
     // Gaveta de dados POR ENTIDADE (cronômetro/alvo/contador próprio — como os
     // campos privados de State no curso). Zerada a cada nascimento (sem vazamento).
     setEntityValue: guard('setEntityValue', function (e, key, value) {

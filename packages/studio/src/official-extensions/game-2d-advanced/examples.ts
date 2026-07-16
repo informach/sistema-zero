@@ -1770,3 +1770,3370 @@ export const florestaNinjaExample: ExtensionExample = {
     ],
   },
 }
+
+/**
+ * Exemplo bundlado: "Salto na Floresta" — o 🏃 Kit Plataforma inteiro num
+ * mini-jogo SEM assets (tudo retângulo colorido): herói tudo-em-um com o pulo
+ * gostoso (coyote + buffer + pulo variável), chão sólido, tábua de atravessar
+ * por baixo, plataforma que anda e CARREGA, pisar no bicho (por velocidade),
+ * patrulha que vira na parede, checkpoint/renascer no buraco e faíscas.
+ *
+ * ⚠️ A IR foi GERADA pelo parser real a partir do script achatado (o mesmo
+ * código vive no drift test `examples.test.ts` — se o parser mudar a saída, o
+ * teste manda re-embutir aqui).
+ */
+export const saltoNaFlorestaExample: ExtensionExample = {
+  name: 'Salto na Floresta',
+  description:
+    'Um jogo de plataforma de verdade: pulo gostoso (dá para pular saindo da beirada!), tábuas que se atravessa por baixo, plataforma que anda e te leva junto, e bichos que você derrota pisando. Pegue as 5 frutas!',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'game-2d-advanced' }],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 960,
+        },
+        h: {
+          type: 'num',
+          value: 540,
+        },
+        bg: '#87ceeb',
+        accent: '#e07a3f',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Salto na Floresta',
+        },
+        text: {
+          type: 'str',
+          value: 'Setas ou A/D para andar - espaço para pular - pise nos bichos!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'Você chegou!',
+        },
+        text: {
+          type: 'str',
+          value: 'Pegou as 5 frutas e chegou na bandeira!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar de novo',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'fim',
+        title: {
+          type: 'str',
+          value: 'Ai!',
+        },
+        text: {
+          type: 'str',
+          value: 'Um bicho te pegou. Tente de novo!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar de novo',
+        },
+      },
+      {
+        type: 'gk:setJumpFeel',
+        coyote: {
+          type: 'num',
+          value: 0.1,
+        },
+        buffer: {
+          type: 'num',
+          value: 0.1,
+        },
+        hold: {
+          type: 'num',
+          value: 0.3,
+        },
+        gravity: {
+          type: 'num',
+          value: 2160,
+        },
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'chao',
+        w: {
+          type: 'num',
+          value: 200,
+        },
+        h: {
+          type: 'num',
+          value: 40,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#3f7d3f',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'tabua',
+        w: {
+          type: 'num',
+          value: 120,
+        },
+        h: {
+          type: 'num',
+          value: 12,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#a0522d',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'movel',
+        w: {
+          type: 'num',
+          value: 120,
+        },
+        h: {
+          type: 'num',
+          value: 16,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#c08040',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'bicho',
+        w: {
+          type: 'num',
+          value: 36,
+        },
+        h: {
+          type: 'num',
+          value: 36,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 10,
+        },
+        color: '#8b3a3a',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'fruta',
+        w: {
+          type: 'num',
+          value: 22,
+        },
+        h: {
+          type: 'num',
+          value: 22,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#e6398b',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:defineEffect',
+        name: 'poeira',
+        count: {
+          type: 'num',
+          value: 10,
+        },
+        color: '#ffffff',
+        size: {
+          type: 'num',
+          value: 4,
+        },
+        life: {
+          type: 'num',
+          value: 0.4,
+        },
+        speed: {
+          type: 'num',
+          value: 120,
+        },
+        gravity: {
+          type: 'num',
+          value: 300,
+        },
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'heroi',
+        image: '',
+        w: {
+          type: 'num',
+          value: 34,
+        },
+        h: {
+          type: 'num',
+          value: 46,
+        },
+        speed: {
+          type: 'num',
+          value: 240,
+        },
+        color: '#2b6cb0',
+      },
+      {
+        type: 'var',
+        name: 'frutas',
+        value: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'gk:onEnterState',
+        name: 'jogando',
+        body: [
+          {
+            type: 'assign',
+            name: 'frutas',
+            value: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'gk:setCheckpoint',
+            x: {
+              type: 'num',
+              value: 60,
+            },
+            y: {
+              type: 'num',
+              value: 300,
+            },
+          },
+          {
+            type: 'gk:respawn',
+            charVar: 'heroi',
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'chao',
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 460,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'chao',
+            x: {
+              type: 'num',
+              value: 260,
+            },
+            y: {
+              type: 'num',
+              value: 460,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'chao',
+            x: {
+              type: 'num',
+              value: 700,
+            },
+            y: {
+              type: 'num',
+              value: 460,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'chao',
+            x: {
+              type: 'num',
+              value: 520,
+            },
+            y: {
+              type: 'num',
+              value: 360,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'tabua',
+            x: {
+              type: 'num',
+              value: 210,
+            },
+            y: {
+              type: 'num',
+              value: 300,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'tabua',
+            x: {
+              type: 'num',
+              value: 760,
+            },
+            y: {
+              type: 'num',
+              value: 260,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'movel',
+            x: {
+              type: 'num',
+              value: 380,
+            },
+            y: {
+              type: 'num',
+              value: 380,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'bicho',
+            x: {
+              type: 'num',
+              value: 300,
+            },
+            y: {
+              type: 'num',
+              value: 424,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'bicho',
+            x: {
+              type: 'num',
+              value: 740,
+            },
+            y: {
+              type: 'num',
+              value: 424,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'fruta',
+            x: {
+              type: 'num',
+              value: 240,
+            },
+            y: {
+              type: 'num',
+              value: 250,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'fruta',
+            x: {
+              type: 'num',
+              value: 560,
+            },
+            y: {
+              type: 'num',
+              value: 310,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'fruta',
+            x: {
+              type: 'num',
+              value: 800,
+            },
+            y: {
+              type: 'num',
+              value: 210,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'fruta',
+            x: {
+              type: 'num',
+              value: 420,
+            },
+            y: {
+              type: 'num',
+              value: 330,
+            },
+          },
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'fruta',
+            x: {
+              type: 'num',
+              value: 120,
+            },
+            y: {
+              type: 'num',
+              value: 410,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'gk:forEachActive',
+            mold: 'movel',
+            itemName: 'item',
+            body: [
+              {
+                type: 'gk:movingPlatform',
+                charVar: 'item',
+                x1: {
+                  type: 'num',
+                  value: 380,
+                },
+                y1: {
+                  type: 'num',
+                  value: 380,
+                },
+                x2: {
+                  type: 'num',
+                  value: 620,
+                },
+                y2: {
+                  type: 'num',
+                  value: 380,
+                },
+                seconds: {
+                  type: 'num',
+                  value: 3,
+                },
+                dtVar: 'dt',
+              },
+            ],
+          },
+          {
+            type: 'gk:forEachActive',
+            mold: 'bicho',
+            itemName: 'item',
+            body: [
+              {
+                type: 'gk:patrolTurnAtWall',
+                charVar: 'item',
+                speed: {
+                  type: 'num',
+                  value: 60,
+                },
+              },
+              {
+                type: 'gk:applyGravity',
+                charVar: 'item',
+                g: {
+                  type: 'num',
+                  value: 2160,
+                },
+                dtVar: 'dt',
+              },
+              {
+                type: 'gk:moveByVelocity',
+                charVar: 'item',
+                dtVar: 'dt',
+              },
+              {
+                type: 'gk:collideGroup',
+                charVar: 'item',
+                mold: 'chao',
+              },
+            ],
+          },
+          {
+            type: 'gk:platformerHero',
+            charVar: 'heroi',
+            speed: {
+              type: 'num',
+              value: 240,
+            },
+            force: {
+              type: 'num',
+              value: 660,
+            },
+            dtVar: 'dt',
+          },
+          {
+            type: 'gk:dropThrough',
+            charVar: 'heroi',
+          },
+          {
+            type: 'gk:collideGroup',
+            charVar: 'heroi',
+            mold: 'chao',
+          },
+          {
+            type: 'gk:oneWayPlatform',
+            charVar: 'heroi',
+            mold: 'tabua',
+            dtVar: 'dt',
+          },
+          {
+            type: 'gk:rideOn',
+            charVar: 'heroi',
+            mold: 'movel',
+          },
+          {
+            type: 'gk:stompKill',
+            charVar: 'heroi',
+            mold: 'bicho',
+            bounce: {
+              type: 'num',
+              value: 400,
+            },
+          },
+          {
+            type: 'gk:platformerAnim',
+            charVar: 'heroi',
+          },
+          {
+            type: 'gk:forEachActive',
+            mold: 'fruta',
+            itemName: 'item',
+            body: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'gk:charactersTouch',
+                  aVar: 'heroi',
+                  bVar: 'item',
+                },
+                then: [
+                  {
+                    type: 'assign',
+                    name: 'frutas',
+                    value: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'var',
+                        name: 'frutas',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 1,
+                      },
+                    },
+                  },
+                  {
+                    type: 'gk:burst',
+                    effect: 'poeira',
+                    x: {
+                      type: 'gk:charX',
+                      charVar: 'item',
+                    },
+                    y: {
+                      type: 'gk:charY',
+                      charVar: 'item',
+                    },
+                  },
+                  {
+                    type: 'gk:recycle',
+                    charVar: 'item',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'gk:forEachActive',
+            mold: 'bicho',
+            itemName: 'item',
+            body: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'gk:charactersTouch',
+                  aVar: 'heroi',
+                  bVar: 'item',
+                },
+                then: [
+                  {
+                    type: 'gk:endGame',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>',
+              left: {
+                type: 'gk:charY',
+                charVar: 'heroi',
+              },
+              right: {
+                type: 'num',
+                value: 540,
+              },
+            },
+            then: [
+              {
+                type: 'gk:respawn',
+                charVar: 'heroi',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>=',
+              left: {
+                type: 'var',
+                name: 'frutas',
+              },
+              right: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            then: [
+              {
+                type: 'gk:setState',
+                name: 'vitoria',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onEvent',
+        event: 'plataforma:pisou',
+        body: [
+          {
+            type: 'gk:burst',
+            effect: 'poeira',
+            x: {
+              type: 'gk:charX',
+              charVar: 'heroi',
+            },
+            y: {
+              type: 'gk:charY',
+              charVar: 'heroi',
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'memberCall',
+            object: {
+              type: 'var',
+              name: 'SZGameKit',
+            },
+            method: 'drawBackground',
+            args: [],
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'chao',
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'tabua',
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'movel',
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'fruta',
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'bicho',
+          },
+          {
+            type: 'gk:drawShadow',
+            charVar: 'heroi',
+          },
+          {
+            type: 'gk:drawCharacter',
+            charVar: 'heroi',
+          },
+          {
+            type: 'memberCall',
+            object: {
+              type: 'var',
+              name: 'SZGameKit',
+            },
+            method: 'drawEffects',
+            args: [
+              {
+                type: 'var',
+                name: 'ctx',
+              },
+            ],
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#ffffff',
+            },
+          },
+          {
+            type: 'canvasFont',
+            ctxVar: 'ctx',
+            size: 24,
+            family: 'sans-serif',
+          },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Frutas: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'frutas',
+                },
+              },
+              right: {
+                type: 'str',
+                value: '/5',
+              },
+            },
+            x: {
+              type: 'num',
+              value: 20,
+            },
+            y: {
+              type: 'num',
+              value: 36,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ] as ExtensionExample['ir']['js'],
+  },
+}
+
+/**
+ * Exemplo bundlado: "Bichinhos do Quintal" — o 👾 Kit Monstrinhos inteiro SEM um
+ * único asset (as 5 criaturas são `defineLook` vetorial). Prova a tese do kit: o
+ * MUNDO é o Kit RPG (grade, NPCs, fala, menu de escolha, mapa) e só a BATALHA é
+ * nova. A criança encosta em todo conceito do gênero em ~10 minutos:
+ *   · o TIPO importa — Brasa arrasa a Folhinha (×2) e mal arranha a Gotinha, e
+ *     foi ELA quem escreveu essa regra (3 blocos de tabela);
+ *   · enfraquecer antes — a bola com a vida cheia é 3× mais difícil;
+ *   · trocar é estratégia — Gotinha selvagem × Fogoso → o botão Trocar aparece;
+ *   · risco × segurança — Labareda 32/75% contra Brasa 20/90%;
+ *   · progressão — vitórias → nível 8 → "Fogoso está evoluindo!".
+ *
+ * ⚠️ A IR foi GERADA pelo parser real a partir do script achatado (o mesmo código
+ * vive no drift test `examples.test.ts` — se o parser mudar a saída, o teste manda
+ * re-embutir aqui).
+ */
+export const bichinhosDoQuintalExample: ExtensionExample = {
+  name: 'Bichinhos do Quintal',
+  description:
+    'Pegue e treine bichinhos! Ande no mato, encontre criaturas selvagens, batalhe por turnos e jogue a bola para capturar. Você inventa os bichos, os golpes e a regra de quem vence quem — pegue 3 e ganhe!',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'game-2d-advanced' }],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 960,
+        },
+        h: {
+          type: 'num',
+          value: 540,
+        },
+        bg: '#2d5a2d',
+        accent: '#e6398b',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Bichinhos do Quintal',
+        },
+        text: {
+          type: 'str',
+          value: 'Setas para andar - espaço para falar - pegue 3 bichinhos!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'Você conseguiu!',
+        },
+        text: {
+          type: 'str',
+          value: 'Pegou 3 bichinhos do quintal!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar de novo',
+        },
+      },
+      {
+        type: 'gk:defineLook',
+        name: 'fogoso',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#e05a2b',
+            },
+          },
+          {
+            type: 'canvasBeginPath',
+            ctxVar: 'ctx',
+          },
+          {
+            type: 'memberCall',
+            object: {
+              type: 'var',
+              name: 'ctx',
+            },
+            method: 'arc',
+            args: [
+              {
+                type: 'num',
+                value: 20,
+              },
+              {
+                type: 'num',
+                value: 20,
+              },
+              {
+                type: 'num',
+                value: 18,
+              },
+              {
+                type: 'num',
+                value: 0,
+              },
+              {
+                type: 'num',
+                value: 6.28,
+              },
+            ],
+          },
+          {
+            type: 'canvasFill',
+            ctxVar: 'ctx',
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#ffffff',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 12,
+            },
+            y: {
+              type: 'num',
+              value: 14,
+            },
+            w: {
+              type: 'num',
+              value: 5,
+            },
+            h: {
+              type: 'num',
+              value: 6,
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 23,
+            },
+            y: {
+              type: 'num',
+              value: 14,
+            },
+            w: {
+              type: 'num',
+              value: 5,
+            },
+            h: {
+              type: 'num',
+              value: 6,
+            },
+          },
+        ],
+        baseW: {
+          type: 'num',
+          value: 40,
+        },
+        baseH: {
+          type: 'num',
+          value: 40,
+        },
+      },
+      {
+        type: 'gk:defineLook',
+        name: 'folhinha',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#3f9d3f',
+            },
+          },
+          {
+            type: 'canvasBeginPath',
+            ctxVar: 'ctx',
+          },
+          {
+            type: 'memberCall',
+            object: {
+              type: 'var',
+              name: 'ctx',
+            },
+            method: 'arc',
+            args: [
+              {
+                type: 'num',
+                value: 20,
+              },
+              {
+                type: 'num',
+                value: 20,
+              },
+              {
+                type: 'num',
+                value: 18,
+              },
+              {
+                type: 'num',
+                value: 0,
+              },
+              {
+                type: 'num',
+                value: 6.28,
+              },
+            ],
+          },
+          {
+            type: 'canvasFill',
+            ctxVar: 'ctx',
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#ffffff',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 12,
+            },
+            y: {
+              type: 'num',
+              value: 14,
+            },
+            w: {
+              type: 'num',
+              value: 5,
+            },
+            h: {
+              type: 'num',
+              value: 6,
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 23,
+            },
+            y: {
+              type: 'num',
+              value: 14,
+            },
+            w: {
+              type: 'num',
+              value: 5,
+            },
+            h: {
+              type: 'num',
+              value: 6,
+            },
+          },
+        ],
+        baseW: {
+          type: 'num',
+          value: 40,
+        },
+        baseH: {
+          type: 'num',
+          value: 40,
+        },
+      },
+      {
+        type: 'gk:defineLook',
+        name: 'gotinha',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#2b7de0',
+            },
+          },
+          {
+            type: 'canvasBeginPath',
+            ctxVar: 'ctx',
+          },
+          {
+            type: 'memberCall',
+            object: {
+              type: 'var',
+              name: 'ctx',
+            },
+            method: 'arc',
+            args: [
+              {
+                type: 'num',
+                value: 20,
+              },
+              {
+                type: 'num',
+                value: 20,
+              },
+              {
+                type: 'num',
+                value: 18,
+              },
+              {
+                type: 'num',
+                value: 0,
+              },
+              {
+                type: 'num',
+                value: 6.28,
+              },
+            ],
+          },
+          {
+            type: 'canvasFill',
+            ctxVar: 'ctx',
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#ffffff',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 12,
+            },
+            y: {
+              type: 'num',
+              value: 14,
+            },
+            w: {
+              type: 'num',
+              value: 5,
+            },
+            h: {
+              type: 'num',
+              value: 6,
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 23,
+            },
+            y: {
+              type: 'num',
+              value: 14,
+            },
+            w: {
+              type: 'num',
+              value: 5,
+            },
+            h: {
+              type: 'num',
+              value: 6,
+            },
+          },
+        ],
+        baseW: {
+          type: 'num',
+          value: 40,
+        },
+        baseH: {
+          type: 'num',
+          value: 40,
+        },
+      },
+      {
+        type: 'gk:defineLook',
+        name: 'fogozao',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#b03010',
+            },
+          },
+          {
+            type: 'canvasBeginPath',
+            ctxVar: 'ctx',
+          },
+          {
+            type: 'memberCall',
+            object: {
+              type: 'var',
+              name: 'ctx',
+            },
+            method: 'arc',
+            args: [
+              {
+                type: 'num',
+                value: 24,
+              },
+              {
+                type: 'num',
+                value: 24,
+              },
+              {
+                type: 'num',
+                value: 23,
+              },
+              {
+                type: 'num',
+                value: 0,
+              },
+              {
+                type: 'num',
+                value: 6.28,
+              },
+            ],
+          },
+          {
+            type: 'canvasFill',
+            ctxVar: 'ctx',
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#ffcc00',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 20,
+            },
+            y: {
+              type: 'num',
+              value: 0,
+            },
+            w: {
+              type: 'num',
+              value: 8,
+            },
+            h: {
+              type: 'num',
+              value: 10,
+            },
+          },
+        ],
+        baseW: {
+          type: 'num',
+          value: 48,
+        },
+        baseH: {
+          type: 'num',
+          value: 48,
+        },
+      },
+      {
+        type: 'gk:defineLook',
+        name: 'heroi',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#2b6cb0',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 6,
+            },
+            y: {
+              type: 'num',
+              value: 8,
+            },
+            w: {
+              type: 'num',
+              value: 28,
+            },
+            h: {
+              type: 'num',
+              value: 32,
+            },
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#ffd9a0',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 10,
+            },
+            y: {
+              type: 'num',
+              value: 12,
+            },
+            w: {
+              type: 'num',
+              value: 20,
+            },
+            h: {
+              type: 'num',
+              value: 12,
+            },
+          },
+        ],
+        baseW: {
+          type: 'num',
+          value: 40,
+        },
+        baseH: {
+          type: 'num',
+          value: 48,
+        },
+      },
+      {
+        type: 'gk:pkmCreature',
+        name: 'Fogoso',
+        creatureType: 'fogo',
+        hp: {
+          type: 'num',
+          value: 30,
+        },
+        str: {
+          type: 'num',
+          value: 9,
+        },
+        def: {
+          type: 'num',
+          value: 4,
+        },
+        spd: {
+          type: 'num',
+          value: 7,
+        },
+        image: '',
+        look: 'fogoso',
+      },
+      {
+        type: 'gk:pkmCreature',
+        name: 'Folhinha',
+        creatureType: 'planta',
+        hp: {
+          type: 'num',
+          value: 34,
+        },
+        str: {
+          type: 'num',
+          value: 7,
+        },
+        def: {
+          type: 'num',
+          value: 6,
+        },
+        spd: {
+          type: 'num',
+          value: 4,
+        },
+        image: '',
+        look: 'folhinha',
+      },
+      {
+        type: 'gk:pkmCreature',
+        name: 'Gotinha',
+        creatureType: 'agua',
+        hp: {
+          type: 'num',
+          value: 32,
+        },
+        str: {
+          type: 'num',
+          value: 8,
+        },
+        def: {
+          type: 'num',
+          value: 5,
+        },
+        spd: {
+          type: 'num',
+          value: 6,
+        },
+        image: '',
+        look: 'gotinha',
+      },
+      {
+        type: 'gk:pkmCreature',
+        name: 'Fogozao',
+        creatureType: 'fogo',
+        hp: {
+          type: 'num',
+          value: 45,
+        },
+        str: {
+          type: 'num',
+          value: 13,
+        },
+        def: {
+          type: 'num',
+          value: 7,
+        },
+        spd: {
+          type: 'num',
+          value: 8,
+        },
+        image: '',
+        look: 'fogozao',
+      },
+      {
+        type: 'gk:pkmMove',
+        move: 'Brasa',
+        creature: 'Fogoso',
+        moveType: 'fogo',
+        dmg: {
+          type: 'num',
+          value: 20,
+        },
+        acc: {
+          type: 'num',
+          value: 90,
+        },
+        fx: 'bola',
+        color: '#ff8800',
+      },
+      {
+        type: 'gk:pkmMove',
+        move: 'Investida',
+        creature: 'Fogoso',
+        moveType: 'normal',
+        dmg: {
+          type: 'num',
+          value: 12,
+        },
+        acc: {
+          type: 'num',
+          value: 100,
+        },
+        fx: 'investida',
+        color: '#999999',
+      },
+      {
+        type: 'gk:pkmMove',
+        move: 'Chicote',
+        creature: 'Folhinha',
+        moveType: 'planta',
+        dmg: {
+          type: 'num',
+          value: 18,
+        },
+        acc: {
+          type: 'num',
+          value: 95,
+        },
+        fx: 'onda',
+        color: '#3f9d3f',
+      },
+      {
+        type: 'gk:pkmMove',
+        move: 'Jato',
+        creature: 'Gotinha',
+        moveType: 'agua',
+        dmg: {
+          type: 'num',
+          value: 18,
+        },
+        acc: {
+          type: 'num',
+          value: 95,
+        },
+        fx: 'bola',
+        color: '#2b7de0',
+      },
+      {
+        type: 'gk:pkmMove',
+        move: 'Labareda',
+        creature: 'Fogozao',
+        moveType: 'fogo',
+        dmg: {
+          type: 'num',
+          value: 32,
+        },
+        acc: {
+          type: 'num',
+          value: 75,
+        },
+        fx: 'raio',
+        color: '#ff4400',
+      },
+      {
+        type: 'gk:pkmTypeChart',
+        atk: 'fogo',
+        def: 'planta',
+        mult: {
+          type: 'num',
+          value: 2,
+        },
+      },
+      {
+        type: 'gk:pkmTypeChart',
+        atk: 'planta',
+        def: 'agua',
+        mult: {
+          type: 'num',
+          value: 2,
+        },
+      },
+      {
+        type: 'gk:pkmTypeChart',
+        atk: 'agua',
+        def: 'fogo',
+        mult: {
+          type: 'num',
+          value: 2,
+        },
+      },
+      {
+        type: 'gk:pkmEvolve',
+        from: 'Fogoso',
+        to: 'Fogozao',
+        level: {
+          type: 'num',
+          value: 8,
+        },
+      },
+      {
+        type: 'gk:pkmCatchDifficulty',
+        creature: 'Gotinha',
+        level: 'difícil',
+      },
+      {
+        type: 'gk:pkmEncounterRate',
+        percent: {
+          type: 'num',
+          value: 20,
+        },
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'heroi',
+        image: '',
+        w: {
+          type: 'num',
+          value: 40,
+        },
+        h: {
+          type: 'num',
+          value: 48,
+        },
+        speed: {
+          type: 'num',
+          value: 200,
+        },
+        color: '#2b6cb0',
+      },
+      {
+        type: 'gk:rpgOnMap',
+        map: 'quintal',
+        body: [
+          {
+            type: 'gk:rpgCreateNpc',
+            name: 'Cora',
+            cx: {
+              type: 'num',
+              value: 3,
+            },
+            cy: {
+              type: 'num',
+              value: 3,
+            },
+            image: '',
+            look: 'heroi',
+          },
+          {
+            type: 'gk:rpgCreateNpc',
+            name: 'Enfermeira',
+            cx: {
+              type: 'num',
+              value: 12,
+            },
+            cy: {
+              type: 'num',
+              value: 3,
+            },
+            image: '',
+            look: 'heroi',
+          },
+          {
+            type: 'gk:pkmGrassCells',
+            x1: {
+              type: 'num',
+              value: 5,
+            },
+            y1: {
+              type: 'num',
+              value: 6,
+            },
+            x2: {
+              type: 'num',
+              value: 13,
+            },
+            y2: {
+              type: 'num',
+              value: 10,
+            },
+          },
+          {
+            type: 'gk:pkmWild',
+            creature: 'Folhinha',
+            min: {
+              type: 'num',
+              value: 3,
+            },
+            max: {
+              type: 'num',
+              value: 6,
+            },
+          },
+          {
+            type: 'gk:pkmWild',
+            creature: 'Gotinha',
+            min: {
+              type: 'num',
+              value: 3,
+            },
+            max: {
+              type: 'num',
+              value: 6,
+            },
+          },
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'heroi',
+            x: {
+              type: 'num',
+              value: 128,
+            },
+            y: {
+              type: 'num',
+              value: 128,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnTalk',
+        npc: 'Cora',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:rpgHasFlag',
+              flag: 'ganhou-inicial',
+            },
+            then: [
+              {
+                type: 'gk:rpgMenu',
+                title: {
+                  type: 'str',
+                  value: 'Quer mais bolas?',
+                },
+                body: [
+                  {
+                    type: 'gk:rpgOption',
+                    label: {
+                      type: 'str',
+                      value: 'Sim',
+                    },
+                    body: [
+                      {
+                        type: 'gk:pkmGiveBall',
+                        count: {
+                          type: 'num',
+                          value: 3,
+                        },
+                        power: {
+                          type: 'num',
+                          value: 60,
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    type: 'gk:rpgOption',
+                    label: {
+                      type: 'str',
+                      value: 'Não',
+                    },
+                    body: [],
+                  },
+                ],
+              },
+            ],
+            else: [
+              {
+                type: 'gk:rpgSay',
+                text: {
+                  type: 'str',
+                  value: 'Leve o Fogoso e 5 bolas! Pegue 3 bichinhos no quintal!',
+                },
+                speaker: {
+                  type: 'str',
+                  value: 'Cora',
+                },
+              },
+              {
+                type: 'gk:pkmGive',
+                creature: 'Fogoso',
+                level: {
+                  type: 'num',
+                  value: 5,
+                },
+              },
+              {
+                type: 'gk:pkmGiveBall',
+                count: {
+                  type: 'num',
+                  value: 5,
+                },
+                power: {
+                  type: 'num',
+                  value: 60,
+                },
+              },
+              {
+                type: 'gk:rpgAddFlag',
+                flag: 'ganhou-inicial',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnTalk',
+        npc: 'Enfermeira',
+        body: [
+          {
+            type: 'gk:rpgSay',
+            text: {
+              type: 'str',
+              value: 'Deixe comigo!',
+            },
+            speaker: {
+              type: 'str',
+              value: 'Enfermeira',
+            },
+          },
+          {
+            type: 'gk:pkmHealTeam',
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnBattleEnd',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:pkmCaught',
+            },
+            then: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '>=',
+                  left: {
+                    type: 'gk:pkmTeamSize',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 4,
+                  },
+                },
+                then: [
+                  {
+                    type: 'gk:setState',
+                    name: 'vitoria',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'gk:rpgMoveGrid',
+            charVar: 'heroi',
+            cell: {
+              type: 'num',
+              value: 64,
+            },
+            dtVar: 'dt',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawBackground',
+            color: '#2d5a2d',
+            grid: false,
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#4a8c4a',
+            },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: {
+              type: 'num',
+              value: 320,
+            },
+            y: {
+              type: 'num',
+              value: 384,
+            },
+            w: {
+              type: 'num',
+              value: 576,
+            },
+            h: {
+              type: 'num',
+              value: 320,
+            },
+          },
+          {
+            type: 'gk:drawByDepth',
+            charVar: 'heroi',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDrawHud',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:pkmDrawTeam',
+            x: {
+              type: 'num',
+              value: 10,
+            },
+            y: {
+              type: 'num',
+              value: 10,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ] as ExtensionExample['ir']['js'],
+  },
+}
+
+/**
+ * 🛸 "Invasão dos Óvnis" — a vitrine do 🚀 Kit Nave (asset-free: tudo retângulo
+ * colorido). Usa os 8 blocos do kit + o juice do R21 (texto flutuante, leque) e
+ * mostra a lição da dificuldade: onda:limpa → velocidade × 1.2 → nova onda.
+ *
+ * ⚠️ A IR foi GERADA pelo parser real (one-off); o drift vive no examples.test.ts.
+ */
+export const invasaoDosOvnisExample: ExtensionExample = {
+  name: 'Invasão dos Óvnis',
+  description:
+    'O clássico de nave com o Kit Nave: a formação marcha, desce e acelera; um óvni sorteado atira; power-up de metralhadora, bomba que explode em área e placar com vidas. Não deixe a invasão chegar embaixo!',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-2d-advanced',
+      },
+    ],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 960,
+        },
+        h: {
+          type: 'num',
+          value: 540,
+        },
+        bg: '#0b1020',
+        accent: '#7cc7ff',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Invasão dos Óvnis',
+        },
+        text: {
+          type: 'str',
+          value: 'Setas ou A/D movem - espaço atira - não deixe descerem!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'fim',
+        title: {
+          type: 'str',
+          value: 'Fim de jogo',
+        },
+        text: {
+          type: 'str',
+          value: 'Os óvnis venceram desta vez. Tente de novo!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar de novo',
+        },
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'ovni',
+        w: {
+          type: 'num',
+          value: 44,
+        },
+        h: {
+          type: 'num',
+          value: 32,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 10,
+        },
+        color: '#5ad66f',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'tiro',
+        w: {
+          type: 'num',
+          value: 6,
+        },
+        h: {
+          type: 'num',
+          value: 16,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ffe066',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'tiro-ovni',
+        w: {
+          type: 'num',
+          value: 4,
+        },
+        h: {
+          type: 'num',
+          value: 12,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 10,
+        },
+        color: '#ffffff',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'bomba',
+        w: {
+          type: 'num',
+          value: 24,
+        },
+        h: {
+          type: 'num',
+          value: 24,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ff922b',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:defineEffect',
+        name: 'explosao',
+        count: {
+          type: 'num',
+          value: 16,
+        },
+        color: '#9775fa',
+        size: {
+          type: 'num',
+          value: 4,
+        },
+        life: {
+          type: 'num',
+          value: 0.5,
+        },
+        speed: {
+          type: 'num',
+          value: 200,
+        },
+        gravity: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'nave',
+        image: '',
+        w: {
+          type: 'num',
+          value: 52,
+        },
+        h: {
+          type: 'num',
+          value: 28,
+        },
+        speed: {
+          type: 'num',
+          value: 420,
+        },
+        color: '#7cc7ff',
+      },
+      {
+        type: 'var',
+        name: 'pontos',
+        value: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'var',
+        name: 'vidas',
+        value: {
+          type: 'num',
+          value: 3,
+        },
+      },
+      {
+        type: 'var',
+        name: 'velocidade',
+        value: {
+          type: 'num',
+          value: 150,
+        },
+      },
+      {
+        type: 'gk:naveInvasionLine',
+        y: {
+          type: 'num',
+          value: 430,
+        },
+      },
+      {
+        type: 'gk:naveWaveShooter',
+        mold: 'ovni',
+        seconds: {
+          type: 'num',
+          value: 1.5,
+        },
+        bullet: 'tiro-ovni',
+        speed: {
+          type: 'num',
+          value: 300,
+        },
+      },
+      {
+        type: 'gk:onEnterState',
+        name: 'jogando',
+        body: [
+          {
+            type: 'assign',
+            name: 'pontos',
+            value: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'assign',
+            name: 'vidas',
+            value: {
+              type: 'num',
+              value: 3,
+            },
+          },
+          {
+            type: 'assign',
+            name: 'velocidade',
+            value: {
+              type: 'num',
+              value: 150,
+            },
+          },
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'nave',
+            x: {
+              type: 'num',
+              value: 454,
+            },
+            y: {
+              type: 'num',
+              value: 480,
+            },
+          },
+          {
+            type: 'gk:naveWave',
+            mold: 'ovni',
+            cols: {
+              type: 'num',
+              value: 8,
+            },
+            rows: {
+              type: 'num',
+              value: 3,
+            },
+            gap: {
+              type: 'num',
+              value: 60,
+            },
+            speed: {
+              type: 'var',
+              name: 'velocidade',
+            },
+            drop: {
+              type: 'num',
+              value: 30,
+            },
+            accel: {
+              type: 'num',
+              value: 15,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:onEvent',
+        event: 'onda:limpa',
+        body: [
+          {
+            type: 'assign',
+            name: 'velocidade',
+            value: {
+              type: 'binop',
+              op: '*',
+              left: {
+                type: 'var',
+                name: 'velocidade',
+              },
+              right: {
+                type: 'num',
+                value: 1.2,
+              },
+            },
+          },
+          {
+            type: 'gk:naveWave',
+            mold: 'ovni',
+            cols: {
+              type: 'num',
+              value: 8,
+            },
+            rows: {
+              type: 'num',
+              value: 3,
+            },
+            gap: {
+              type: 'num',
+              value: 60,
+            },
+            speed: {
+              type: 'var',
+              name: 'velocidade',
+            },
+            drop: {
+              type: 'num',
+              value: 30,
+            },
+            accel: {
+              type: 'num',
+              value: 15,
+            },
+          },
+          {
+            type: 'gk:playEffect',
+            fx: 'win',
+          },
+        ],
+      },
+      {
+        type: 'gk:onEvent',
+        event: 'onda:invadiu',
+        body: [
+          {
+            type: 'gk:endGame',
+          },
+        ],
+      },
+      {
+        type: 'gk:onEvent',
+        event: 'bomba:acertou',
+        body: [
+          {
+            type: 'assign',
+            name: 'pontos',
+            value: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'var',
+                name: 'pontos',
+              },
+              right: {
+                type: 'num',
+                value: 50,
+              },
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'gk:naveShip',
+            charVar: 'nave',
+            speed: {
+              type: 'num',
+              value: 420,
+            },
+            lean: {
+              type: 'num',
+              value: 10,
+            },
+            dtVar: 'dt',
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '===',
+              left: {
+                type: 'gk:navePowerOf',
+                charVar: 'nave',
+              },
+              right: {
+                type: 'str',
+                value: 'metralhadora',
+              },
+            },
+            then: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'logical',
+                  op: '&&',
+                  left: {
+                    type: 'gk:keyDown',
+                    key: ' ',
+                  },
+                  right: {
+                    type: 'gk:cooldownReady',
+                    charVar: 'nave',
+                    seconds: {
+                      type: 'num',
+                      value: 0.12,
+                    },
+                  },
+                },
+                then: [
+                  {
+                    type: 'gk:fanShot',
+                    charVar: 'nave',
+                    mold: 'tiro',
+                    count: {
+                      type: 'num',
+                      value: 1,
+                    },
+                    arc: {
+                      type: 'num',
+                      value: 0,
+                    },
+                    degrees: {
+                      type: 'num',
+                      value: -90,
+                    },
+                    speed: {
+                      type: 'num',
+                      value: 600,
+                    },
+                  },
+                  {
+                    type: 'gk:playEffect',
+                    fx: 'laser',
+                  },
+                ],
+              },
+            ],
+            elseif: [
+              {
+                cond: {
+                  type: 'binop',
+                  op: '===',
+                  left: {
+                    type: 'gk:navePowerOf',
+                    charVar: 'nave',
+                  },
+                  right: {
+                    type: 'str',
+                    value: 'leque',
+                  },
+                },
+                then: [
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'logical',
+                      op: '&&',
+                      left: {
+                        type: 'gk:keyPressed',
+                        key: ' ',
+                      },
+                      right: {
+                        type: 'gk:cooldownReady',
+                        charVar: 'nave',
+                        seconds: {
+                          type: 'num',
+                          value: 0.35,
+                        },
+                      },
+                    },
+                    then: [
+                      {
+                        type: 'gk:fanShot',
+                        charVar: 'nave',
+                        mold: 'tiro',
+                        count: {
+                          type: 'num',
+                          value: 5,
+                        },
+                        arc: {
+                          type: 'num',
+                          value: 40,
+                        },
+                        degrees: {
+                          type: 'num',
+                          value: -90,
+                        },
+                        speed: {
+                          type: 'num',
+                          value: 600,
+                        },
+                      },
+                      {
+                        type: 'gk:playEffect',
+                        fx: 'laser',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            else: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'logical',
+                  op: '&&',
+                  left: {
+                    type: 'gk:keyPressed',
+                    key: ' ',
+                  },
+                  right: {
+                    type: 'gk:cooldownReady',
+                    charVar: 'nave',
+                    seconds: {
+                      type: 'num',
+                      value: 0.35,
+                    },
+                  },
+                },
+                then: [
+                  {
+                    type: 'gk:fanShot',
+                    charVar: 'nave',
+                    mold: 'tiro',
+                    count: {
+                      type: 'num',
+                      value: 1,
+                    },
+                    arc: {
+                      type: 'num',
+                      value: 0,
+                    },
+                    degrees: {
+                      type: 'num',
+                      value: -90,
+                    },
+                    speed: {
+                      type: 'num',
+                      value: 600,
+                    },
+                  },
+                  {
+                    type: 'gk:playEffect',
+                    fx: 'laser',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'gk:forEachActive',
+            mold: 'tiro',
+            itemName: 'item',
+            body: [
+              {
+                type: 'gk:moveByVelocity',
+                charVar: 'item',
+                dtVar: 'dt',
+              },
+            ],
+          },
+          {
+            type: 'gk:forEachActive',
+            mold: 'tiro-ovni',
+            itemName: 'item',
+            body: [
+              {
+                type: 'gk:moveByVelocity',
+                charVar: 'item',
+                dtVar: 'dt',
+              },
+            ],
+          },
+          {
+            type: 'gk:cullOffscreen',
+            mold: 'tiro',
+            margin: {
+              type: 'num',
+              value: 100,
+            },
+          },
+          {
+            type: 'gk:cullOffscreen',
+            mold: 'tiro-ovni',
+            margin: {
+              type: 'num',
+              value: 100,
+            },
+          },
+          {
+            type: 'gk:overlapGroups',
+            aName: 'a',
+            moldA: 'tiro',
+            bName: 'b',
+            moldB: 'ovni',
+            body: [
+              {
+                type: 'gk:recycle',
+                charVar: 'a',
+              },
+              {
+                type: 'gk:burst',
+                effect: 'explosao',
+                x: {
+                  type: 'gk:charX',
+                  charVar: 'b',
+                },
+                y: {
+                  type: 'gk:charY',
+                  charVar: 'b',
+                },
+              },
+              {
+                type: 'gk:floatText',
+                text: {
+                  type: 'str',
+                  value: '+100',
+                },
+                x: {
+                  type: 'gk:charX',
+                  charVar: 'b',
+                },
+                y: {
+                  type: 'gk:charY',
+                  charVar: 'b',
+                },
+                color: '#ffffff',
+                size: {
+                  type: 'num',
+                  value: 22,
+                },
+              },
+              {
+                type: 'assign',
+                name: 'pontos',
+                value: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 100,
+                  },
+                },
+              },
+              {
+                type: 'gk:playEffect',
+                fx: 'explosion',
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'gk:chance',
+                  percent: {
+                    type: 'num',
+                    value: 8,
+                  },
+                },
+                then: [
+                  {
+                    type: 'gk:navePowerup',
+                    charVar: 'nave',
+                    power: 'metralhadora',
+                    seconds: {
+                      type: 'num',
+                      value: 5,
+                    },
+                  },
+                  {
+                    type: 'gk:floatText',
+                    text: {
+                      type: 'str',
+                      value: 'METRALHADORA!',
+                    },
+                    x: {
+                      type: 'gk:charX',
+                      charVar: 'b',
+                    },
+                    y: {
+                      type: 'gk:charY',
+                      charVar: 'b',
+                    },
+                    color: '#ffe066',
+                    size: {
+                      type: 'num',
+                      value: 20,
+                    },
+                  },
+                ],
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'gk:chance',
+                  percent: {
+                    type: 'num',
+                    value: 5,
+                  },
+                },
+                then: [
+                  {
+                    type: 'gk:naveBomb',
+                    mold: 'bomba',
+                    radius: {
+                      type: 'num',
+                      value: 160,
+                    },
+                    target: 'ovni',
+                  },
+                ],
+              },
+              {
+                type: 'gk:recycle',
+                charVar: 'b',
+              },
+            ],
+          },
+          {
+            type: 'gk:forEachActive',
+            mold: 'tiro-ovni',
+            itemName: 'item',
+            body: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'gk:charactersTouch',
+                  aVar: 'item',
+                  bVar: 'nave',
+                },
+                then: [
+                  {
+                    type: 'gk:recycle',
+                    charVar: 'item',
+                  },
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'logicalNot',
+                      value: {
+                        type: 'gk:isInvincible',
+                        charVar: 'nave',
+                      },
+                    },
+                    then: [
+                      {
+                        type: 'gk:hurt',
+                        charVar: 'nave',
+                        amount: {
+                          type: 'num',
+                          value: 0,
+                        },
+                        iframes: {
+                          type: 'num',
+                          value: 1.5,
+                        },
+                      },
+                      {
+                        type: 'assign',
+                        name: 'vidas',
+                        value: {
+                          type: 'binop',
+                          op: '-',
+                          left: {
+                            type: 'var',
+                            name: 'vidas',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 1,
+                          },
+                        },
+                      },
+                      {
+                        type: 'gk:cameraShake',
+                        intensity: {
+                          type: 'num',
+                          value: 6,
+                        },
+                        seconds: {
+                          type: 'num',
+                          value: 0.3,
+                        },
+                      },
+                      {
+                        type: 'gk:playEffect',
+                        fx: 'hurt',
+                      },
+                      {
+                        type: 'gk:floatText',
+                        text: {
+                          type: 'str',
+                          value: '-1 vida',
+                        },
+                        x: {
+                          type: 'gk:charX',
+                          charVar: 'nave',
+                        },
+                        y: {
+                          type: 'gk:charY',
+                          charVar: 'nave',
+                        },
+                        color: '#ff6b6b',
+                        size: {
+                          type: 'num',
+                          value: 20,
+                        },
+                      },
+                      {
+                        type: 'if',
+                        cond: {
+                          type: 'binop',
+                          op: '<=',
+                          left: {
+                            type: 'var',
+                            name: 'vidas',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 0,
+                          },
+                        },
+                        then: [
+                          {
+                            type: 'gk:endGame',
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawBackground',
+            color: '#0b1020',
+            grid: false,
+          },
+          {
+            type: 'gk:naveStarfield',
+            count: {
+              type: 'num',
+              value: 100,
+            },
+            speed: {
+              type: 'num',
+              value: 20,
+            },
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'ovni',
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'tiro',
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'tiro-ovni',
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'bomba',
+          },
+          {
+            type: 'gk:drawCharacter',
+            charVar: 'nave',
+          },
+          {
+            type: 'gk:drawEffects',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDrawHud',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawHearts',
+            current: {
+              type: 'var',
+              name: 'vidas',
+            },
+            max: {
+              type: 'num',
+              value: 3,
+            },
+            x: {
+              type: 'num',
+              value: 20,
+            },
+            y: {
+              type: 'num',
+              value: 20,
+            },
+          },
+          {
+            type: 'canvasFillStyle',
+            ctxVar: 'ctx',
+            color: {
+              type: 'color',
+              value: '#ffffff',
+            },
+          },
+          {
+            type: 'canvasFont',
+            ctxVar: 'ctx',
+            size: 24,
+            family: 'sans-serif',
+          },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'str',
+                value: 'Pontos: ',
+              },
+              right: {
+                type: 'var',
+                name: 'pontos',
+              },
+            },
+            x: {
+              type: 'num',
+              value: 20,
+            },
+            y: {
+              type: 'num',
+              value: 70,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ],
+  },
+}
+
+/**
+ * 🥊 "Duelo dos Bonecos" — a vitrine do Kit Luta (asset-free), a pendência do
+ * R19. P1 no teclado × computador; golpes rápido/pesado (o COMBO emerge da
+ * tabela de tempos), agarrão = "atravessa a defesa", especial da IA, rounds e
+ * o chão como manda a regra: molde + nascer + colidir (o kit não tem chão).
+ *
+ * ⚠️ A IR foi GERADA pelo parser real (one-off); o drift vive no examples.test.ts.
+ */
+export const dueloDosBonecosExample: ExtensionExample = {
+  name: 'Duelo dos Bonecos',
+  description:
+    'Um contra um com o Kit Luta: você (A/D/W/S, F defende, G soco, H chute, J agarrão) contra o computador — melhor de 3 rounds. O chute pesado trava mais do que demora a recuperar: descubra o combo!',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-2d-advanced',
+      },
+    ],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 960,
+        },
+        h: {
+          type: 'num',
+          value: 540,
+        },
+        bg: '#241733',
+        accent: '#ffd166',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Duelo dos Bonecos',
+        },
+        text: {
+          type: 'str',
+          value: 'A/D anda - W pula - S agacha - F defende - G soco - H chute - J agarrão',
+        },
+        button: {
+          type: 'str',
+          value: 'Lutar',
+        },
+      },
+      {
+        type: 'gk:defineMold',
+        name: 'chao',
+        w: {
+          type: 'num',
+          value: 960,
+        },
+        h: {
+          type: 'num',
+          value: 60,
+        },
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        damage: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#3d2b52',
+        image: '',
+        look: '',
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'azul',
+        image: '',
+        w: {
+          type: 'num',
+          value: 50,
+        },
+        h: {
+          type: 'num',
+          value: 110,
+        },
+        speed: {
+          type: 'num',
+          value: 260,
+        },
+        color: '#4a9eff',
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'vermelho',
+        image: '',
+        w: {
+          type: 'num',
+          value: 50,
+        },
+        h: {
+          type: 'num',
+          value: 110,
+        },
+        speed: {
+          type: 'num',
+          value: 260,
+        },
+        color: '#e0526a',
+      },
+      {
+        type: 'gk:lutaMove',
+        name: 'soco',
+        charVar: 'azul',
+        speed: 'rápido',
+        damage: {
+          type: 'num',
+          value: 8,
+        },
+        range: {
+          type: 'num',
+          value: 70,
+        },
+        pierce: false,
+        special: false,
+      },
+      {
+        type: 'gk:lutaMove',
+        name: 'chute',
+        charVar: 'azul',
+        speed: 'pesado',
+        damage: {
+          type: 'num',
+          value: 18,
+        },
+        range: {
+          type: 'num',
+          value: 90,
+        },
+        pierce: false,
+        special: false,
+      },
+      {
+        type: 'gk:lutaMove',
+        name: 'agarrao',
+        charVar: 'azul',
+        speed: 'médio',
+        damage: {
+          type: 'num',
+          value: 12,
+        },
+        range: {
+          type: 'num',
+          value: 60,
+        },
+        pierce: true,
+        special: false,
+      },
+      {
+        type: 'gk:lutaMove',
+        name: 'soco',
+        charVar: 'vermelho',
+        speed: 'rápido',
+        damage: {
+          type: 'num',
+          value: 8,
+        },
+        range: {
+          type: 'num',
+          value: 70,
+        },
+        pierce: false,
+        special: false,
+      },
+      {
+        type: 'gk:lutaMove',
+        name: 'chute',
+        charVar: 'vermelho',
+        speed: 'pesado',
+        damage: {
+          type: 'num',
+          value: 18,
+        },
+        range: {
+          type: 'num',
+          value: 90,
+        },
+        pierce: false,
+        special: false,
+      },
+      {
+        type: 'gk:lutaMove',
+        name: 'especial',
+        charVar: 'vermelho',
+        speed: 'médio',
+        damage: {
+          type: 'num',
+          value: 25,
+        },
+        range: {
+          type: 'num',
+          value: 110,
+        },
+        pierce: true,
+        special: true,
+      },
+      {
+        type: 'gk:onEnterState',
+        name: 'jogando',
+        body: [
+          {
+            type: 'gk:spawnFromMold',
+            mold: 'chao',
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 480,
+            },
+          },
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'azul',
+            x: {
+              type: 'num',
+              value: 250,
+            },
+            y: {
+              type: 'num',
+              value: 370,
+            },
+          },
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'vermelho',
+            x: {
+              type: 'num',
+              value: 660,
+            },
+            y: {
+              type: 'num',
+              value: 370,
+            },
+          },
+          {
+            type: 'gk:lutaMatch',
+            p1Var: 'azul',
+            p2Var: 'vermelho',
+            rounds: {
+              type: 'num',
+              value: 3,
+            },
+            seconds: {
+              type: 'num',
+              value: 45,
+            },
+          },
+          {
+            type: 'gk:lutaAI',
+            charVar: 'vermelho',
+            level: 'normal',
+          },
+        ],
+      },
+      {
+        type: 'gk:onEvent',
+        event: 'luta:acabou',
+        body: [
+          {
+            type: 'gk:setScreenText',
+            screen: 'fim',
+            title: {
+              type: 'str',
+              value: 'Fim da luta!',
+            },
+            text: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'str',
+                value: 'Venceu: ',
+              },
+              right: {
+                type: 'gk:lutaWinner',
+              },
+            },
+            button: {
+              type: 'str',
+              value: 'Revanche',
+            },
+          },
+          {
+            type: 'gk:playEffect',
+            fx: 'win',
+          },
+        ],
+      },
+      {
+        type: 'gk:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'gk:lutaFighter',
+            charVar: 'azul',
+            left: 'a',
+            right: 'd',
+            jump: 'w',
+            crouch: 's',
+            guard: 'f',
+            dtVar: 'dt',
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:keyPressed',
+              key: 'g',
+            },
+            then: [
+              {
+                type: 'gk:lutaAttack',
+                charVar: 'azul',
+                move: 'soco',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:keyPressed',
+              key: 'h',
+            },
+            then: [
+              {
+                type: 'gk:lutaAttack',
+                charVar: 'azul',
+                move: 'chute',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:keyPressed',
+              key: 'j',
+            },
+            then: [
+              {
+                type: 'gk:lutaAttack',
+                charVar: 'azul',
+                move: 'agarrao',
+              },
+            ],
+          },
+          {
+            type: 'gk:collideGroup',
+            charVar: 'azul',
+            mold: 'chao',
+          },
+          {
+            type: 'gk:collideGroup',
+            charVar: 'vermelho',
+            mold: 'chao',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawBackground',
+            color: '#241733',
+            grid: false,
+          },
+          {
+            type: 'gk:drawActive',
+            mold: 'chao',
+          },
+          {
+            type: 'gk:drawCharacter',
+            charVar: 'azul',
+          },
+          {
+            type: 'gk:drawCharacter',
+            charVar: 'vermelho',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDrawHud',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:lutaDrawHud',
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ],
+  },
+}

@@ -115,7 +115,16 @@ const BoundedExampleIRSchema = z
 const MAX_NAME_CHARS = 80
 const MAX_DESCRIPTION_CHARS = 500
 const MAX_CATEGORY_CHARS = 60
-const MAX_DOCS_CHARS = 20_000
+// A `docs` é o manual do ALUNO (markdown renderizado no "Saiba mais", um modal
+// com scroll) — o teto é só uma trava de sanidade, não um limite de UI, e não
+// entra no contexto da IA (esse é o `promptContext`, separado). Subiu de 20k
+// porque DUAS extensões oficiais já batiam nele (game-2d e game-2d-advanced), e
+// aí cada kit novo custava enxugar seção antiga em vez de explicar melhor.
+// Subiu de novo (32k → 40k) pelo MESMO motivo, no 4º kit do Jogo 2D Avançado: com
+// 242 blocos, 32k dá ~130 caracteres por bloco — o teto passou a decidir o que a
+// criança pode ler, que é exatamente o que ele não deve fazer. Uma trava de
+// sanidade contra dados malformados não precisa ser apertada.
+const MAX_DOCS_CHARS = 40_000
 const MAX_EXAMPLES = 50
 
 export const ExtensionExampleSchema = z.object({

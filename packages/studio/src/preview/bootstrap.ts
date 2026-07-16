@@ -68,6 +68,12 @@ export interface BuildPreviewDocInput {
    */
   sounds?: Record<string, string>
   /**
+   * Binários 3D (modelo GLB / céu HDR) do projeto — semeados em
+   * . Canal PRÓPRIO: o manifesto de imagem filtra por
+   *  e descartaria um  em silêncio.
+   */
+  models3d?: Record<string, import('#core').Asset3DManifestEntry>
+  /**
    * Módulos ESM de extensões instaladas (`specifier → URL`, ex.:
    * `{ three: 'https://esm.sh/three@0.180.0' }`). Entram no importmap e suas
    * origens são liberadas no `script-src` da CSP.
@@ -267,9 +273,10 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // não há assets (mantém o doc enxuto e idêntico para jogos legados só-fillRect).
   const hasAssets = input.assets && Object.keys(input.assets).length > 0
   const hasSounds = input.sounds && Object.keys(input.sounds).length > 0
+  const has3D = input.models3d && Object.keys(input.models3d).length > 0
   const assetsBridgeTag =
-    hasAssets || hasSounds
-      ? scriptTag(buildAssetsRuntime(input.assets, input.assetsMeta, input.sounds))
+    hasAssets || hasSounds || has3D
+      ? scriptTag(buildAssetsRuntime(input.assets, input.assetsMeta, input.sounds, input.models3d))
       : ''
 
   return `<!doctype html>

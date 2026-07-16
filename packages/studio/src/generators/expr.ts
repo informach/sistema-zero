@@ -394,12 +394,77 @@ export function compileExpr(
       return `SZGameKit.touchCircle(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'gk:didHit':
       return `SZGameKit.didHit(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'gk:isOnGround':
+      return `SZGameKit.isOnGround(${identifiers.get(expr.charVar)})`
+    case 'gk:isInside':
+      return `SZGameKit.isInside(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.region)})`
+    case 'gk:overlapPercent':
+      return `SZGameKit.overlapPercent(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.region)})`
+    case 'gk:chance':
+      return `SZGameKit.chance(${compileExpr(valueToExpr(expr.percent), 0, identifiers, rec)})`
+    case 'gk:distanceBetween':
+      return `SZGameKit.distanceBetween(${identifiers.get(expr.a)}, ${identifiers.get(expr.b)})`
+    case 'gk:pointIn':
+      return `SZGameKit.pointIn(${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)}, ${identifiers.get(expr.charVar)})`
+    case 'gk:opacityOf':
+      return `SZGameKit.opacityOf(${identifiers.get(expr.charVar)})`
+    case 'gk:savedValue':
+      return `SZGameKit.savedValue(${JSON.stringify(expr.name)})`
+    // 👾 R16
+    case 'gk:pkmLevelOf':
+      return `SZGameKit.pkmLevelOf(${JSON.stringify(expr.creature)})`
+    case 'gk:pkmHas':
+      return `SZGameKit.pkmHas(${JSON.stringify(expr.creature)})`
+    case 'gk:pkmTeamSize':
+      return 'SZGameKit.pkmTeamSize()'
+    case 'gk:pkmBallCount':
+      return 'SZGameKit.pkmBallCount()'
+    case 'gk:pkmCaught':
+      return 'SZGameKit.pkmCaught()'
+    case 'gk:velocityOf':
+      return `SZGameKit.velocityOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.axis)})`
+    case 'gk:propertyOf':
+      return `SZGameKit.propertyOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.prop)})`
+    case 'gk:facingOf':
+      return `SZGameKit.facingOf(${identifiers.get(expr.charVar)})`
+    case 'gk:cooldownReady':
+      return `SZGameKit.cooldownReady(${identifiers.get(expr.charVar)}, ${compileExpr(valueToExpr(expr.seconds), 0, identifiers, rec)})`
+    case 'gk:tileAt':
+      return `SZGameKit.tileAt(${JSON.stringify(expr.map)}, ${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)})`
     case 'gk:isDead':
       return `SZGameKit.isDead(${identifiers.get(expr.charVar)})`
     case 'gk:isInvincible':
       return `SZGameKit.isInvincible(${identifiers.get(expr.charVar)})`
     case 'gk:healthOf':
       return `SZGameKit.healthOf(${identifiers.get(expr.charVar)})`
+    case 'gk:animEnded':
+      return `SZGameKit.animEnded(${identifiers.get(expr.charVar)})`
+    case 'gk:lutaWinner':
+      return 'SZGameKit.lutaWinner()'
+    case 'gk:lutaRound':
+      return 'SZGameKit.lutaRoundNow()'
+    case 'gk:lutaWinsOf':
+      return `SZGameKit.lutaWinsOf(${identifiers.get(expr.charVar)})`
+    case 'gk:lutaCombo':
+      return `SZGameKit.lutaComboOf(${identifiers.get(expr.charVar)})`
+    case 'gk:lutaSpecial':
+      return `SZGameKit.lutaSpecialOf(${identifiers.get(expr.charVar)})`
+    case 'gk:lutaIsGuarding':
+      return `SZGameKit.lutaIsGuarding(${identifiers.get(expr.charVar)})`
+    case 'gk:entityState':
+      return `SZGameKit.entityState(${identifiers.get(expr.charVar)})`
+    case 'gk:angleOf':
+      return `SZGameKit.angleOf(${identifiers.get(expr.charVar)})`
+    case 'gk:angleTo':
+      return `SZGameKit.angleTo(${identifiers.get(expr.charVar)}, ${identifiers.get(expr.targetVar)})`
+    case 'gk:nearestActive':
+      return `SZGameKit.nearestActive(${JSON.stringify(expr.mold)}, ${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)})`
+    case 'gk:randomActive':
+      return `SZGameKit.randomActive(${JSON.stringify(expr.mold)})`
+    case 'gk:navePowerOf':
+      return `SZGameKit.navePowerOf(${identifiers.get(expr.charVar)})`
+    case 'gk:countItem':
+      return `SZGameKit.rpgCountItem(${JSON.stringify(expr.name)})`
     case 'gk:timeSurvived':
       return 'SZGameKit.timeSurvived()'
     case 'gk:cameraX':
@@ -455,6 +520,20 @@ export function compileExpr(
       return `SZGameKit3D.stateTime(${identifiers.get(expr.charVar)})`
     case 'g3k:onGround':
       return `SZGameKit3D.onGround(${identifiers.get(expr.charVar)})`
+    case 'g3k:velocityOf':
+      return `SZGameKit3D.velocityOf(${identifiers.get(expr.charVar)}, ${JSON.stringify(expr.axis)})`
+    case 'g3k:distanceBetween':
+      return `SZGameKit3D.distanceBetween(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3k:randomBetween':
+      return `SZGameKit3D.randomBetween(${compileExpr(valueToExpr(expr.from), 0, identifiers)}, ${compileExpr(valueToExpr(expr.to), 0, identifiers)})`
+    case 'g3k:randomChance':
+      return `SZGameKit3D.randomChance(${compileExpr(valueToExpr(expr.percent), 0, identifiers)})`
+    case 'g3k:timeLeft':
+      return 'SZGameKit3D.timeLeft()'
+    case 'g3k:maxHealthOf':
+      return `SZGameKit3D.maxHealthOf(${identifiers.get(expr.charVar)})`
+    case 'g3k:stateOf':
+      return `SZGameKit3D.stateOf(${identifiers.get(expr.charVar)})`
     case 'g3k:pointerOver':
       return `SZGameKit3D.pointerOver(${identifiers.get(expr.charVar)})`
     case 'g3k:groundPoint':

@@ -91,13 +91,25 @@ export interface ProjectAsset {
   id: string
   /** Nome único amigável, kebab-case, referenciado pelos blocos (ex.: `heroi`). */
   name: string
-  /** Imagem (desenho/sprite) ou áudio (som/música importado). */
-  kind: 'image' | 'audio'
   /**
-   * `data:image/...;base64,...` (imagem) ou `data:audio/...;base64,...` (áudio) —
-   * validado: o prefixo precisa casar com o `kind` (ver `isValidAssetDataUrl`).
+   * Imagem (desenho/sprite), áudio (som/música importado) ou binário 3D:
+   * `model3d` (modelo GLB) / `environment3d` (céu HDR). Os 3D são carregados
+   * pelo runtime do Jogo 3D Avançado via `.parse()` (nunca por fetch — a rede
+   * é bloqueada no preview).
+   */
+  kind: 'image' | 'audio' | 'model3d' | 'environment3d'
+  /**
+   * `data:image/...;base64,...` (imagem), `data:audio/...;base64,...` (áudio) ou
+   * `data:model|image/...;base64,...` (3D) — validado: o prefixo precisa casar
+   * com o `kind` (ver `isValidAssetDataUrl`).
    */
   dataUrl: string
+  /**
+   * Nome do arquivo original (ex.: `nave.glb`). Só nos assets 3D, onde a
+   * EXTENSÃO é sinal de tipo: `isValidAssetDataUrl` cruza extensão × MIME ×
+   * assinatura binária, então um `.glb` com bytes de HDR é recusado.
+   */
+  originalFileName?: string
   width?: number
   height?: number
   source: 'upload' | 'library'
@@ -139,6 +151,13 @@ const MAX_ASSET_DATA_URL_CHARS = 800_000
  * não passa pelo Pinta, então não há sincronia a manter.
  */
 const MAX_AUDIO_DATA_URL_CHARS = 7_000_000
+/**
+ * Teto do `dataUrl` de UM binário 3D (modelo GLB / céu HDR). ~7 mi chars ≈ 5 MB,
+ * o mesmo do áudio: um GLB de criança (poucos milhares de tris, textura embutida
+ * pequena) cabe folgado, e o teto de IMAGEM (~580 KB) mataria qualquer modelo de
+ * verdade. Com o orçamento total de ~24 MB dá p/ ~4 modelos por projeto.
+ */
+const MAX_MODEL3D_DATA_URL_CHARS = 7_000_000
 /** Orçamento total de assets do projeto (~24 MB de binário inflado em base64;
  * subido de ~8 MB em 2026-07 p/ caber sons importados de até ~5 MB). */
 const MAX_ASSETS_TOTAL_CHARS = 33_000_000
@@ -165,6 +184,69 @@ const MAX_TILEMAP_DIM = 128
 const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 const ASSET_DATA_URL_PREFIX = 'data:image/'
 const AUDIO_DATA_URL_PREFIX = 'data:audio/'
+/**
+ * Assets 3D: cada kind tem MIME, extensão e ASSINATURA binária próprios, e os
+ * três precisam concordar (ver `isValidAssetDataUrl`). Um `.glb` com bytes de
+ * HDR — ou um GLB versão 1, que o three não abre — é recusado na porta.
+ * ⚠️ KTX2/Draco ficam de FORA de propósito: o transcoder é WebAssembly e a CSP
+ * do preview não tem `wasm-unsafe-eval` (decisão de segurança infantil), então
+ * seriam assets que VALIDAM mas nunca CARREGAM.
+ */
+const ASSET_3D_SPECS = {
+  model3d: { mime: 'data:model/gltf-binary', ext: '.glb' },
+  environment3d: { mime: 'data:image/vnd.radiance', ext: '.hdr' },
+} as const
+
+type Asset3DKind = keyof typeof ASSET_3D_SPECS
+
+function isAsset3DKind(value: unknown): value is Asset3DKind {
+  return value === 'model3d' || value === 'environment3d'
+}
+
+/** Decodifica só o COMEÇO do base64 (o header basta p/ a assinatura). */
+function dataUrlHeadBytes(value: string, count: number): Uint8Array | null {
+  const comma = value.indexOf(',')
+  if (comma < 0) return null
+  // 4 chars de base64 = 3 bytes; pega com folga e corta depois.
+  const chunk = value.slice(comma + 1, comma + 1 + Math.ceil(count / 3) * 4 + 4)
+  try {
+    const bin = atob(chunk)
+    const n = Math.min(count, bin.length)
+    const out = new Uint8Array(n)
+    for (let i = 0; i < n; i++) out[i] = bin.charCodeAt(i)
+    return out
+  } catch {
+    return null
+  }
+}
+
+function startsWithBytes(bytes: Uint8Array, sig: readonly number[]): boolean {
+  if (bytes.length < sig.length) return false
+  for (let i = 0; i < sig.length; i++) if (bytes[i] !== sig[i]) return false
+  return true
+}
+
+/** `glTF` + versão 2 em uint32 LE. Versão 1 é recusada (o three não abre). */
+function isGlbV2(bytes: Uint8Array): boolean {
+  if (!startsWithBytes(bytes, [0x67, 0x6c, 0x54, 0x46])) return false
+  if (bytes.length < 8) return false
+  const b0 = bytes[4] ?? 0
+  const b1 = bytes[5] ?? 0
+  const b2 = bytes[6] ?? 0
+  const b3 = bytes[7] ?? 0
+  return (b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)) === 2
+}
+
+/** `#?RADIANCE` (assinatura do .hdr). */
+function isRadianceHdr(bytes: Uint8Array): boolean {
+  return startsWithBytes(bytes, [0x23, 0x3f, 0x52, 0x41, 0x44, 0x49, 0x41, 0x4e, 0x43, 0x45])
+}
+
+function hasValid3DSignature(kind: Asset3DKind, value: string): boolean {
+  const bytes = dataUrlHeadBytes(value, 16)
+  if (!bytes) return false
+  return kind === 'model3d' ? isGlbV2(bytes) : isRadianceHdr(bytes)
+}
 
 function toPositiveInt(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : null
@@ -291,12 +373,28 @@ export function normalizeAssetName(input: string): string | null {
 }
 
 /**
- * `data:` URL de imagem OU áudio dentro do teto de tamanho do seu tipo. Recusa
+ * `data:` URL de imagem, áudio ou binário 3D dentro do teto do seu tipo. Recusa
  * qualquer outro esquema. `kind` opcional: `'image'`/`'audio'` exige aquele
  * prefixo; ausente aceita imagem OU áudio (cada um no seu teto).
+ *
+ * Para os kinds 3D (`model3d`/`environment3d`) a validação é TRI-MODAL e o
+ * `fileName` é OBRIGATÓRIO: extensão × MIME × assinatura binária precisam
+ * concordar. É o que impede um `.glb` com bytes de HDR — ou um GLB versão 1,
+ * que o three não abre — de entrar no projeto e só explodir no runtime.
  */
-export function isValidAssetDataUrl(value: unknown, kind?: 'image' | 'audio'): value is string {
+export function isValidAssetDataUrl(
+  value: unknown,
+  kind?: 'image' | 'audio' | Asset3DKind,
+  fileName?: string,
+): value is string {
   if (typeof value !== 'string') return false
+  if (isAsset3DKind(kind)) {
+    const spec = ASSET_3D_SPECS[kind]
+    if (value.length > MAX_MODEL3D_DATA_URL_CHARS) return false
+    if (!value.startsWith(`${spec.mime};`) && !value.startsWith(`${spec.mime},`)) return false
+    if (typeof fileName !== 'string' || !fileName.toLowerCase().endsWith(spec.ext)) return false
+    return hasValid3DSignature(kind, value)
+  }
   const isImage = value.startsWith(ASSET_DATA_URL_PREFIX)
   const isAudio = value.startsWith(AUDIO_DATA_URL_PREFIX)
   if (kind === 'image') return isImage && value.length <= MAX_ASSET_DATA_URL_CHARS
@@ -322,9 +420,12 @@ export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
     if (out.length >= MAX_ASSETS_COUNT) break
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const a = item as Record<string, unknown>
-    const kind: ProjectAsset['kind'] = a.kind === 'audio' ? 'audio' : 'image'
-    if (a.kind !== 'image' && a.kind !== 'audio') continue
-    if (!isValidAssetDataUrl(a.dataUrl, kind)) continue
+    if (a.kind !== 'image' && a.kind !== 'audio' && !isAsset3DKind(a.kind)) continue
+    const kind: ProjectAsset['kind'] = a.kind
+    // 3D: a validação cruza extensão × MIME × assinatura, então o nome do
+    // arquivo original faz parte do contrato (sem ele o asset é descartado).
+    const fileName = typeof a.originalFileName === 'string' ? a.originalFileName : undefined
+    if (!isValidAssetDataUrl(a.dataUrl, kind, fileName)) continue
     const name = typeof a.name === 'string' ? normalizeAssetName(a.name) : null
     if (!name || seenNames.has(name)) continue
     if (totalChars + a.dataUrl.length > MAX_ASSETS_TOTAL_CHARS) continue
@@ -336,6 +437,7 @@ export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
       dataUrl: a.dataUrl,
       source,
     }
+    if (fileName && isAsset3DKind(kind)) asset.originalFileName = fileName.slice(0, 128)
     if (typeof a.width === 'number' && Number.isFinite(a.width) && a.width > 0) {
       asset.width = Math.floor(a.width)
     }
@@ -396,6 +498,35 @@ export function soundManifest(
   return out
 }
 
+/** Uma entrada do manifesto 3D: o binário + o tipo e o nome de arquivo confiáveis. */
+export interface Asset3DManifestEntry {
+  kind: Asset3DKind
+  dataUrl: string
+  fileName: string
+}
+
+/**
+ * Manifesto `nome → { kind, dataUrl, fileName }` só dos binários 3D (modelo GLB /
+ * céu HDR) — irmão do `assetManifest`/`soundManifest`, semeado no preview em
+ * `window.__SZGAME_ASSETS_3D`. Leva o `kind` e o `fileName` junto porque o runtime
+ * precisa escolher o loader certo (GLTFLoader × RGBELoader), e ambos são
+ * carregados por `.parse()` de um ArrayBuffer — NUNCA por fetch (a rede é
+ * bloqueada no preview).
+ */
+export function asset3DManifest(
+  assets: readonly ProjectAsset[] | undefined | null,
+): Record<string, Asset3DManifestEntry> {
+  const out: Record<string, Asset3DManifestEntry> = {}
+  if (!assets) return out
+  for (const a of assets) {
+    if (!a || !isAsset3DKind(a.kind)) continue
+    if (typeof a.name !== 'string' || typeof a.dataUrl !== 'string') continue
+    if (typeof a.originalFileName !== 'string') continue
+    out[a.name] = { kind: a.kind, dataUrl: a.dataUrl, fileName: a.originalFileName }
+  }
+  return out
+}
+
 /**
  * Manifesto `nome → metadados de preview` — irmão do `assetManifest`, mas só com
  * o que o RUNTIME precisa (hoje: `tilemap`). Semeado em `window.__SZGAME_ASSET_META`
@@ -419,6 +550,7 @@ export function assetMetaManifest(
 export const PROJECT_ASSET_LIMITS = {
   maxAssetDataUrlChars: MAX_ASSET_DATA_URL_CHARS,
   maxAudioDataUrlChars: MAX_AUDIO_DATA_URL_CHARS,
+  maxModel3DDataUrlChars: MAX_MODEL3D_DATA_URL_CHARS,
   maxAssetsTotalChars: MAX_ASSETS_TOTAL_CHARS,
   maxAssetsCount: MAX_ASSETS_COUNT,
   maxAssetNameChars: MAX_ASSET_NAME_CHARS,

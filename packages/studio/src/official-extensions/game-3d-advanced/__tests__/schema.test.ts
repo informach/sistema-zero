@@ -9,7 +9,7 @@ import { G3K_STATEMENT_TYPES, type JSStatement, SZIRSchema, statementIsExtension
 
 describe('G3K_STATEMENT_TYPES', () => {
   it('tem os 59 statements do kit, todos com o prefixo g3k:', () => {
-    expect(G3K_STATEMENT_TYPES.size).toBe(75)
+    expect(G3K_STATEMENT_TYPES.size).toBe(101)
     for (const type of G3K_STATEMENT_TYPES) {
       expect(type.startsWith('g3k:')).toBe(true)
     }
@@ -55,6 +55,7 @@ describe('SZIRSchema — IR exemplar do kit 3D', () => {
               material: 'normal',
               color: '#22d3ee',
               texture: '',
+              model: '',
               w: { type: 'num', value: 1 },
               h: { type: 'num', value: 1 },
               d: { type: 'num', value: 1 },

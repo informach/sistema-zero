@@ -55,6 +55,9 @@ API global injetada como window.SZGameKit:
   em px/SEGUNDO. moveWithKeys(c, dt): WASD+setas com diagonal normalizada.
   keepOnScreen(c) / placeCharacter(c, x, y) / resetCharacter(c) (centro + vida
   cheia) / setSpeedMultiplier(c, f). touching(a, b): AABB. charX(c)/charY(c).
+  setCheckpoint(x, y) + respawn(quem) = a bandeirinha e o buraco. São GERAIS
+  (valem em RPG, corrida, bullet hell) e por isso ficam AQUI, não no Kit
+  Plataforma. ⚠️ os helpers ainda se chamam plat* por história — o chip é 🧍.
 - Teclas: keyDown(k) — tecla SEGURADA (lowercase; letras, "arrowup"…, " ");
   keyPressed(k) — true SÓ no quadro do aperto (edge-trigger: golpe/tiro 1 por
   aperto, sem flag manual). setPauseKey(k) troca a tecla de pausa (padrão Esc).
@@ -72,7 +75,7 @@ API global injetada como window.SZGameKit:
   margem) recolhe quem passou da margem (use 200; SEMPRE chamar no onUpdate —
   é a lição de otimização); recycle(item) devolve ao pool; drawActive(molde)
   desenha todos (look > image > retângulo); countActive(molde).
-- 🎨 Aparência vetorial: defineLook(nome, fn(ctx), baseW, baseH) desenha uma
+- 🎨 Aparência (vetorial): defineLook(nome, fn(ctx), baseW, baseH) desenha uma
   vez em coords LOCAIS (0,0 = canto, no tamanho-base) — molde com look ganha o
   visual escalado ao w/h dele; drawLook(nome, x, y, w, h) desenha avulso
   (escala do tamanho-base). Blocos de Canvas do núcleo valem dentro da fn.
@@ -84,7 +87,7 @@ API global injetada como window.SZGameKit:
   hit VÁLIDO empurra e toca som). knockback(c, de, força) empurra com
   decaimento; touchCircle(a, b) colisão por círculo; isDead(c) vida <= 0;
   healthOf(c); drawHealthBar(c, max) barrinha em cima (max 0 = usa maxHealth).
-- 🖥️ Missão & HUD: setMission(segundos, kills) — cumpriu (sobreviveu OU
+- 🖥️ HUD & Missão: setMission(segundos, kills) — cumpriu (sobreviveu OU
   derrotou) → estado "vitoria" (tela pronta) + emit("missao:completa");
   missionKill() soma 1 kill; kills() / timeSurvived(); drawTimer(x, y) mm:ss.
 - ✨ Faíscas (partículas data-driven pooled): defineEffect(nome, { count,
@@ -95,7 +98,7 @@ API global injetada como window.SZGameKit:
   "hurt"|"powerup"|"win"|"gameover"|"click") tons sintetizados prontos;
   playTone(freqHz, ms) synth cru. Áudio "acorda" no 1º gesto (clique/tecla) —
   automático.
-- 🎞️ Folha de quadros: setSheet(c, "imagem", fw, fh) cola a spritesheet
+- 🎞️ Folha de quadros (em 🎨 Aparência): setSheet(c, "imagem", fw, fh) cola a spritesheet
   (carregada por loadImage) no personagem; playAnim(c, de, até, fps) toca a
   faixa em loop — PODE rodar todo quadro (guarda de transição: repetir a mesma
   não reinicia). A folha VENCE a imagem estática no desenho.
@@ -103,15 +106,41 @@ API global injetada como window.SZGameKit:
   world-space; keepOnScreen/spawner/cull passam a valer o mundo/retângulo
   visível); cameraStop(); cameraX()/cameraY() = canto visível.
   onDrawHud(fn(ctx)) desenha DEPOIS, SEM câmera (placar/barras presos na tela).
-- ➡️ Tiro: launchTowards(quem, alvo, v) mira UMA vez (seta vx/vy pelo vetor
+- ➡️ Tiro e giro (na cat 🎯 Comportamentos): launchTowards(quem, alvo, v) mira UMA vez (seta vx/vy pelo vetor
   normalizado × v); moveByVelocity(quem, dt) aplica × dt a cada quadro. Com
   const tiro = spawnFromMold(...) fecha tiro reto E mirado. setAngle(c, graus)
   gira o desenho em volta do centro.
-- 🖱️ Mouse/toque (coords do JOGO, letterbox e câmera resolvidos):
+- 🖱️ Mouse/toque (em 🎮 Controles) — coords do JOGO, letterbox e câmera resolvidos:
   onGameClick(fn(px, py)) roda a cada clique/toque no canvas; mouseX()/
   mouseY()/mouseDown() para mirar e arrastar.
 - 📊 drawBar(atual, max, x, y, w, h, cor): barra proporcional (vida/mana/
   progresso) — ideal dentro do onDrawHud.
+- 👾 Kit Monstrinhos (o gênero "pegue e treine bichinhos"). ⭐ TESE: é um jogo do
+  Kit RPG com OUTRA batalha — o mundo (rpgMoveGrid/NPC/rpgSay/rpgOnMap/flags/
+  rpgSave) vem de lá; NÃO duplique nada disso. Dados: pkmCreature(nome, tipo, vida,
+  força, defesa, veloc, imagem, aparência) — os pontos são do NÍVEL 1 (+8 vida/+2
+  força/+1 def por nível); ⭐ o TIPO é TEXTO LIVRE (fogo, gelo, doce, dinossauro —
+  não só os clássicos). pkmMove(golpe, criatura, tipo, dano, acerto, efeito, cor) —
+  até 4 por bicho, e ⭐ o menu da batalha é MONTADO desta lista; efeito ∈
+  investida|bola|raio|onda. ⭐ pkmTypeChart(atacante, defensor, mult) — a criança
+  ESCREVE a regra (2 = super efetivo, 0.5 = fraco, 0 = nada); 3 blocos = o triângulo
+  fogo>planta>água>fogo. SEM tabela, tudo vale 1× (nada de mágica implícita).
+  pkmEvolve(de, para, nível) · pkmCatchDifficulty(nome, "fácil|normal|difícil|
+  raríssimo"). Time: pkmGive(espécie, nível) (até 6) · pkmGiveBall(qtd, força%) ·
+  pkmHealTeam() (o Centro de Cura num bloco) · pkmHas/pkmTeamSize/pkmBallCount/
+  pkmLevelOf/pkmDrawTeam(x, y). Encontros: pkmGrassCells(x1,y1,x2,y2) ou
+  pkmGrassTiles(peça, mapa) + pkmWild(espécie, min, max) (um por bicho = a tabela) +
+  pkmEncounterRate(%) — ⭐ o sorteio é por PASSO do rpgMoveGrid (não por quadro).
+  Monte tudo no rpgOnMap e cada rota ganha os bichos dela. Batalha:
+  pkmBattleWild(espécie, nível) (o lendário/cena; a grama chama sozinha) ·
+  pkmBattleTrainer(nome, fn) + pkmTrainerCreature(espécie, nível) DENTRO (rival/
+  ginásio: troca sozinho, sem bola nem fuga) · pkmCaught(). ⭐ REUSE
+  rpgOnBattleEnd/rpgBattleWon (é o MESMO conceito — não existe pkmOnBattleEnd). O
+  XP/nível/evolução são automáticos e ANUNCIADOS; o rpgSave leva o time junto.
+  ⚠️ Um kit OU o outro: pkmBattleWild com a batalha do Kit RPG aberta avisa e sai.
+  Padrão canônico: rpgOnMap("rota") → rpgBlockCell/rpgCreateNpc/pkmGrassCells/
+  pkmWild; rpgOnTalk("professora") → pkmGive+pkmGiveBall; rpgOnTalk("enfermeira") →
+  pkmHealTeam; rpgOnBattleEnd → "se pkmCaught() e pkmTeamSize() >= 3: vitoria".
 - 🧙 Kit RPG (Canvas RPG Kit em blocos; mecânicas PRONTAS sobre o mesmo motor):
   rpgMoveGrid(heroi, cellPx, dt) — andar por CÉLULAS c/ paredes, portas e o
   ESPAÇO conversando com o NPC à frente (use no onUpdate; a fala/batalha travam
@@ -129,7 +158,7 @@ API global injetada como window.SZGameKit:
   no onTalk do chefe → rpgBattleStart; no rpgOnBattleEnd → "se ganhei:
   setState('vitoria') senão endGame()". Recomeçar o jogo zera flags/itens e
   volta ao 1º mapa.
-- 🎬 Cenas & NPCs vivos (Pizza Legends): rpgCutscene(fn) grava o corpo (cada
+- 🎬 Kit RPG: cenas (& NPCs vivos — Pizza Legends): rpgCutscene(fn) grava o corpo (cada
   passo ENFILEIRA) e toca a fila com esperas — o herói fica TRAVADO até acabar.
   Passos: rpgWait(seg), rpgSay, rpgNpcWalkTo("npc", cx, cy) (anda célula a
   célula; a cena espera chegar), rpgFace("npc", "down"|"up"|"left"|"right"),
@@ -140,14 +169,17 @@ API global injetada como window.SZGameKit:
   rpgAddFlag('intro')". Reserva de intenção: herói e NPC não entram na mesma
   célula. setWalkSheet(c, "folha", fw, fh) = folha de ANDAR de 4 linhas
   (baixo/cima/esquerda/direita) animada pela direção + movimento.
-- 💬 Escolhas & 💾 salvar: rpgMenu(titulo, fn) abre um menu no canvas (setas +
-  espaço/clique) e roda a opção escolhida; DENTRO do fn use rpgOption(label,
-  optFn) por escolha — árvore de diálogo/loja/sim-não (bom no rpgOnTalk ou numa
-  cena). rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/célula/
-  atributos no localStorage (sobrevive a reabrir). Padrão: no rpgOnTalk do
+- 💬 Fala & escolhas (GERAL — o motor desenha e navega em QUALQUER jogo, apesar do
+  prefixo rpg no nome): rpgSay(texto, quem) = caixa typewriter (fila; ESPAÇO avança;
+  emite "fala:terminada"). rpgMenu(titulo, fn) abre um menu no canvas (setas +
+  espaço/clique) e roda a opção escolhida; DENTRO do fn use rpgOption(label, optFn)
+  por escolha — árvore de diálogo/loja/sim-não/quiz. Padrão: no rpgOnTalk do
   lojista → rpgMenu("Comprar?", () => { rpgOption("Sim", () => {...});
-  rpgOption("Não", () => {}); }). Continuar: "se rpgHasSave(): rpgLoad()".
-- ⚔️ Batalha RICA (progressão, TurnCycle/Combatant do Pizza, 1v1): rpgBattleStats(
+  rpgOption("Não", () => {}); }).
+- 💾 Kit RPG: salvar — rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/
+  célula/atributos/poções/especial no localStorage (sobrevive a reabrir).
+  Continuar: "se rpgHasSave(): rpgLoad()".
+- ⚔️ Kit RPG: batalha (a RICA — progressão, TurnCycle/Combatant do Pizza, 1v1): rpgBattleStats(
   vida, força, DEFESA) 1x no começo (nível 1); rpgBattleStart(nome, vida, força,
   defesa) — dano = força ± 20% − defesa/2; menu Atacar/Especial/Item/Defender/
   Fugir. rpgSetSpecial(nome, dano, custo) = golpe que gasta ENERGIA (começa cheia,
@@ -156,22 +188,194 @@ API global injetada como window.SZGameKit:
   "subiu:nivel"); rpgLevel()/rpgXp() getters; rpgInflict("inimigo"|"heroi",
   "veneno", turnos) tira 3 de vida/turno. Padrão: rpgOnBattleEnd → "se
   rpgBattleWon(): rpgBattleReward(20); setState('vitoria') senão endGame()".
-- 🗺️ Mundo de tiles + profundidade (Ninja Adventure; GERAL, vale fora do RPG):
+- 🗺️ Mundo & profundidade (tiles do Ninja Adventure; GERAL, vale fora do RPG):
   loadTilemap(nome, assetDeMapa) lê um MAPA do Pinta (grade+peças+sólidos juntos,
   via ASSET_META). No onDraw, drawTilemap(nome, "chão") ANTES dos personagens e
   drawTilemap(nome, "topos") DEPOIS = profundidade (herói passa atrás das copas).
-  tilemapSolid(nome) marca as peças sólidas como paredes (1x, após carregar).
-  drawByDepth(heroi) desenha herói + NPCs por Y (quem está mais embaixo, na frente)
-  — substitui drawCharacter+rpgDrawNpcs. drawShadow(c) = sombrinha sob o personagem
-  (antes de desenhá-lo). cameraShake(força, segundos) treme a tela (impacto), com
-  câmera ligada ou não.
+  drawByDepth(quem) desenha por Y (quem está mais embaixo, na frente) o personagem
+  passado + TODOS os enxames vivos + os NPCs do RPG (se houver) — substitui
+  drawCharacter+rpgDrawNpcs. drawShadow(c) = sombrinha sob o personagem (antes de
+  desenhá-lo). cameraShake(força, segundos) treme a tela (impacto), com câmera
+  ligada ou não.
+  ⚠️ tilemapSolid(nome) NÃO é geral: ele só alimenta a GRADE do RPG (rpg.walls),
+  que apenas o rpgMoveGrid lê. Num jogo de movimento LIVRE ele não faz nada — não
+  emita tilemapSolid fora do Kit RPG.
+- ⚙️ Física (GERAL — primitivos soltos, FORA de todo kit; é com eles que se faz
+  plataforma/quicar/arco "na unha"): applyGravity(quem, forca, dt) puxa p/ baixo
+  (padrão 2160 px/s²) e DESLIGA onGround; setVelocity(quem, vx, vy) e
+  velocityOf(quem, "x"|"y") escrevem E LEEM (ler destrava "se velocityOf(h,'y') >
+  0: tocar cair"); jump(quem, forca) só age NO CHÃO (padrão 660; é o que impede
+  pulo infinito); isOnGround(quem); setTerminalVelocity(quem, max) limita a queda
+  (padrão 900); bounceOnEdges(quem)/wrapEdges(quem).
+  ⭐ ORDEM OBRIGATÓRIA no onUpdate, nesta sequência: applyGravity → moveByVelocity
+  → collide*. A gravidade zera onGround; SÓ o pouso da colisão (vy > 0) liga de
+  volta. Fora dessa ordem o personagem vibra ou atravessa o chão.
+- 🧱 Colisão sólida (GERAL, sem RPG): collideTilemap(quem, mapa) para o
+  personagem nas peças SÓLIDAS do mapa (empurra pelo eixo de MENOR sobreposição,
+  zera a velocidade do eixo, seta onGround no pouso) — é o que o plataforma usa,
+  NÃO o tilemapSolid do RPG; collideGroup(quem, molde) = o mesmo contra os vivos
+  de um molde (plataformas/caixas/pedras, sem mapa); overlapGroups(moldeA, moldeB,
+  fn(a, b)) roda o par que se tocou (tiro × inimigo, herói × moeda) — pode
+  recycle() os dois lá dentro com segurança.
+- ⏱️ Tempo: everySeconds("chave", s) dentro de um "se" repete de tempo em tempo
+  (acumula o dt do JOGO — pausou, para de contar; NÃO usa relógio de parede);
+  cooldownReady(quem, s) = o "recarregando" do tiro/golpe (true só quando o tempo
+  passou, e JÁ reinicia a contagem).
+- 🎬 Animação (GERAL — a TRAVA): os 3 sistemas de animação deixavam qualquer
+  chamada atropelar a anterior (golpeia e a animação de andar apaga o golpe).
+  ⭐ setEntityState(quem, "parado"|"andando"|"pulando"|"caindo"|"dano"|"golpe"|
+  "morte", segundos) TRAVA o estado; stateAnim(quem, estado, de, ate, fps, umaVez)
+  / stateLook(quem, estado, aparencia) declaram o visual 1x; autoAnimate(quem) todo
+  quadro resolve por prioridade FIXA (morte > golpe > dano > no ar > andando >
+  parado) + flip por vx + fallback (caindo→pulando→andando→parado). playAnimOnce +
+  animEnded = tocar e parar no último quadro. entityState(quem) LÊ o estado.
+  ⚠️ o attackFacing/hurt já chamam setEntityState sozinhos: quem usa só os blocos
+  gerais de ação ganha a trava sem saber que ela existe. NÃO existe "quadro atual
+  da animação" DE PROPÓSITO — "acerta no quadro 4" quebra quando um quadro é
+  pulado; a janela é em SEGUNDOS e a animação é esticada p/ caber nela.
+- 🥷 setSwingWindow(quem, recuo, ativo) em SEGUNDOS = o golpe não machuca no
+  quadro do aperto. Sem isto quem aperta primeiro SEMPRE ganha (sem leitura, sem
+  espaçamento, sem punir). O rastro branco do drawEntity pinta só na janela ATIVA.
+  Golpe pesado que trava mais tempo do que leva p/ recuperar = COMBO emergente.
+- 🚀 thrust(quem, graus, forca) SOMA velocidade (INÉRCIA: nave/Asteroids/carro; o
+  setVelocityAngle SOBRESCREVE e por isso nunca desliza). A força é px/s² e o
+  runtime aplica × dt por baixo (padrão 6000) — use TODO QUADRO; impulso único de
+  evento é setVelocityAngle · applyFriction(quem,
+  fator, dt) = atrito (0.9 chão, 0.1 gelo) · angleOf(quem)/angleTo(a, b) = LER o
+  ângulo (torre que gira até mirar, leque de tiros, stealth).
+- ⏱️ waitThen(segundos, fn) = esperar UMA vez, no relógio do jogo (o everySeconds
+  REPETE; o rpgWait só vale dentro de "Fazer a cena").
+- 👾 nearestActive(molde, x, y) = o vivo mais perto de um ponto (tower defense, IA
+  de horda que escolhe alvo).
+- 🎲 randomActive(molde) = um vivo QUALQUER do pool, ou null (em 🎲 Sorte & medida)
+  — o invasor aleatório que atira, o sorteado do power-up. Sempre teste null.
+- ✨ trailOn(quem, cor, tamanho, porSegundo, vidaSeg)/trailOff(quem) = rastro
+  CONTÍNUO (jato de nave, cauda de cometa; o burst é estouro único) ·
+  shockwave(x, y, raio, segundos, cor) = círculo que cresce e some, SÓ VISUAL —
+  dano em área é receita: forEachActive + distanceBetween < raio → hurt.
+- 🖥️ floatText(texto, x, y, cor, tamanho) = "+100" que sobe e some sozinho
+  (0,75 s, coords do MUNDO — acompanha a câmera; em 🖥️ HUD & Missão). Pontos:
+  floatText("+" + pontos, ...).
+- 🎨 leanOnMove(quem, graus) = tomba suave ao andar de lado (nave/peixe/moto;
+  0 desliga; soma com o setAngle) · scrollImage(imagem, vx, vy) = fundo que
+  ROLA/paralaxe (1ª linha do onDraw; em 🔁 A cada quadro; imagem via loadImage).
+- 🎯 fanShot(quem, moldeDoTiro, n, arcoGraus, rumoGraus, vel) = leque de tiros
+  (rumo -90 = p/ cima, como setVelocityAngle); depois mova com moveByVelocity +
+  cullOffscreen, como todo tiro.
+- 🎒 Itens (GERAL, saiu do Kit RPG): rpgGiveItem SOMA quantidade (antes dedupava) e
+  rpgCountItem(nome) LÊ — crafting ("3 madeiras"), loja, coleta. As FLAGS
+  (rpgAddFlag/rpgHasFlag) também são gerais e vivem coladas na 💾 Memória: a flag
+  morre com a partida, o valor guardado sobrevive a fechar o jogo.
+- 🔧 Propriedades & direção (GERAL): propertyOf(quem, "x"|"y"|"vx"|"vy"|"speed"|"w"|
+  "h"|"health"|"maxHealth"|"damage") e setProperty(quem, prop, v) = a chave-mestra
+  p/ o que não tem bloco
+  pronto. setFacingDir(quem, "down"|"up"|"left"|"right")/facingOf(quem) — a
+  direção move DOIS sistemas: a folha de andar e a caixa do attackFacing.
+- 🗺️ Peças por célula (em 🗺️ Mundo & profundidade): tileAt(mapa, x, y), setTileAt(mapa, x, y, peca),
+  breakTileAt(mapa, quem) (mundo destrutível/cavar), setTileSize(px) (padrão 64).
+- ✨ tweenTo(quem, x, y, s) desliza suave até um ponto (porta/plataforma/cutscene)
+  — chame UMA vez, não todo quadro.
+- 🧭 Regiões · 🎲 Sorte & medida · 🌫️ Sumir & transição · 💾 Memória (GERAIS, fora
+  de todo kit — é com eles que se inventa gênero):
+  defineRegion(nome, x, y, w, h) = retângulo com NOME (grama, porta, zona de dano,
+  área segura) + isInside(quem, regiao) + ⭐ overlapPercent(quem, regiao) 0..100 —
+  o gate honesto: "se overlapPercent(heroi,'grama') > 50 E chance(20)". Só encostar
+  a quina NÃO conta (a área é clampada em 0 sem toque). chance(pct) = sorteio.
+  distanceBetween(a, b) = a conta central de stealth/torre/IA-que-só-persegue-perto.
+  pointIn(x, y, quem) + mouseX()/mouseY() = clicou NAQUELE objeto (point&click,
+  cartas, match-3, tower defense). ⭐ launchToPoint(quem, x, y, vel) mira num PONTO
+  (o launchTowards exige um OBJETO, e o mouse dá números) · setVelocityAngle(quem,
+  graus, forca) MOVE no ângulo (o setAngle só gira o DESENHO). ⚠️ ele SOBRESCREVE o
+  vx/vy: p/ nave/Asteroids/tanque com inércia use o thrust (⚙️ Física), que SOMA. setOpacity(quem, pct)/opacityOf/fadeTo(quem, pct, s) =
+  sumir (o "faint"). tweenProperty(quem, prop, ate, s) = deslizar QUALQUER
+  propriedade (x/y/vx/vy/speed/w/h/health/opacity); ao chegar emite
+  "deslizou:chegou" (dá p/ encadear). setHitbox(quem, ox, oy, w, h) = a caixa que
+  COLIDE ≠ o desenho (num personagem alto, só os PÉS — senão colide com a cabeça);
+  w/h 0 = o desenho todo. fadeScreen(cor, s, escuro)/flashScreen(cor, vezes) =
+  ESCONDER a troca de cena atrás do preto. saveValue(nome, v)/savedValue(nome) =
+  guardar de verdade (recorde/fase destravada) — o rpgSave é SÓ do Kit RPG.
+  ⭐ playMusic(nome) = LOOP (o playSound NÃO repete; re-chamar não reinicia) ·
+  stopSound(nome) · setVolume(nome, 0..1). createEmptyTilemap(nome, cols, linhas,
+  peca, folha) = mapa por CÓDIGO (masmorra sorteada) → setTileAt num laço.
+  moveWithCustomKeys(quem, cima, baixo, esq, dir, dt) = 2º jogador (o moveWithKeys
+  tem WASD E setas no MESMO personagem).
+- 🥊 Kit Luta (Street Fighter — o ATALHO do gênero; luta "na unha" segue possível
+  com personagem + applyGravity + attackFacing + didHit + hurt + knockback):
+  lutaMatch(a, b, rounds, segundos) casa os DOIS e grava o "home" de cada um da
+  posição ATUAL — vem DEPOIS do placeCharacter (o respawn geral não serve: o
+  _bornX nasce 0 e o placeCharacter não o atualiza). lutaFighter(quem, esq, dir,
+  pular, agachar, defender, dt) = tudo-em-um com as TECLAS DELE → dois blocos =
+  dois jogadores (⚠️ o moveWithCustomKeys é top-down sem gravidade e o
+  platformerHero tem tecla FIXA: é o ÚNICO ponto em que o kit re-faz algo do
+  geral, e é por limitação real). Ele vira de frente SÓ na horizontal — o face()
+  geral usa eixo DOMINANTE e mandaria a caixa de golpe p/ o CÉU quando o outro
+  pula por cima.
+  ⭐ lutaMove(nome, quem, "rápido"|"médio"|"pesado", dano, alcance, atravessa,
+  especial): a PALAVRA escolhe recuo/ativo/recuperação/trava/empurrão. O COMBO
+  EMERGE daí e não é bloco: o pesado trava 0,45 s e recupera em 0,42 s → sobram
+  0,03 s p/ emendar um rápido. O agarrão é o checkbox "atravessa" (vence a
+  defesa). lutaAttack(quem, golpe) com keyPressed (a tecla é da criança: é o que
+  permite 2 botões + especial + combo). lutaMoveAnim(golpe, quem, de, até) — fps
+  esticado p/ durar o golpe. lutaAI(quem, "fácil"|"normal"|"difícil") vai no LUGAR
+  do lutaFighter daquele lutador. lutaDrawHud() no onDrawHud, SEM argumentos
+  (barras/cronômetro/rounds/letreiros).
+  ⚠️ Os ROUNDS não têm estado próprio DE PROPÓSITO: um setState('round') cairia no
+  reset de 'jogando' e APAGARIA o jogo da criança a cada round. As fases vivem no
+  kit e travam só os lutadores; o stepLuta roda no stepSystems (o relógio do round
+  pausa junto com o jogo de graça). O fim faz setState('fim') e SÓ DEPOIS
+  emit('luta:acabou') — assim o ouvinte pode sobrescrever a tela.
+  Getters: lutaWinner()/lutaRoundNow()/lutaWinsOf/lutaComboOf/lutaSpecialOf/
+  lutaIsGuarding. Avisos: luta:round, luta:acertou, luta:defendeu, luta:ko,
+  luta:acabou. O CHÃO é geral (defineMold + spawn + collideGroup) — NÃO existe
+  "chão da luta", que seria o position.y = 330 hard-coded da base.
+- 🏃 Kit Plataforma (Mario/Celeste/Sunnyland — o ATALHO do gênero; o "na unha"
+  segue possível só com ⚙️ Física): platformerHero(quem, vel, pulo, dt) =
+  gravidade + A/D-setas + pulo + mover, TUDO-EM-UM, com o feel embutido (coyote
+  0.1s, buffer 0.1s, pulo variável 0.3s, speedBoost do Mario). ⚠️ a COLISÃO fica
+  FORA de propósito: emita collideGroup/collideTilemap LOGO DEPOIS dele.
+  setJumpFeel(coyote, buffer, segurar, gravidade) regula (gravidade 2160 = normal).
+  doubleJump(quem, força, vezes) · wallSlide(quem, vel) · wallJump(quem, fx, fy)
+  (o pouso e a parede devolvem os pulos do ar) · climbLadder(quem, mapa, peça,
+  vel) — DEPOIS do herói e ANTES de colidir; na escada ↑ SOBE (não pula).
+  oneWayPlatform(quem, molde, dt) = tábua (sobe por baixo, pousa em cima) ·
+  dropThrough(quem) = ↓+pulo atravessa · movingPlatform(quem, x1,y1, x2,y2, s, dt)
+  + rideOn(quem, molde) — SEMPRE pareados, senão a plataforma escorrega debaixo do
+  herói. stompKill(quem, molde, quique) = pisar (compara VELOCIDADE; emite
+  "plataforma:pisou") · patrolTurnAtWall(quem, vel) (dirigido por colisão: use
+  dentro do forEachActive + collideGroup) ·
+  platStateFrames(quem, "parado"|"andando"|"pulando"|"caindo", de, até, fps) 1x
+  por estado + platformerAnim(quem) todo quadro (a animação sai da física).
+  Ordem canônica no onUpdate: platformerHero → dropThrough → collideGroup(chao) →
+  oneWayPlatform → rideOn → stompKill → platformerAnim.
+- 🚀 Kit Nave (Space Invaders — o ATALHO do gênero; nave "na unha" segue possível
+  com molde + spawn + setVelocity + overlap + cooldown): naveShip(quem, vel,
+  inclinaGraus, dt) = anda SÓ de lado (setas/A-D), preso na tela, com lean — o
+  TIRO é da criança: "se keyPressed(' ') e cooldownReady(nave, 0.35): fanShot(
+  nave, 'tiro', 1, 0, -90, 600)". ⭐ naveWave(molde, cols, linhas, espaço, vel,
+  desce, acelera%) = a FORMAÇÃO que o MOTOR marcha em bloco (inverte na borda
+  COLETIVA, desce, acelera; a morte encolhe a formação sozinha) — NUNCA emita
+  seek/tweenTo nos membros (briga com a marcha); o overlap tiro×invasor é da
+  criança, como sempre. Avisos: 'onda:limpa' (crie a próxima MAIS RÁPIDA:
+  velocidade = velocidade * 1.2 → naveWave de novo — a dificuldade em 2 blocos)
+  e 'onda:invadiu' (com naveInvasionLine(y); padrão: endGame()).
+  naveWaveShooter(molde, seg, moldeDoTiro, vel) = um invasor SORTEADO atira
+  (dedupe por molde; o tiro se move com forEachActive + moveByVelocity + cull).
+  navePowerup(quem, "metralhadora"|"leque", seg) + navePowerOf(quem) = power-up
+  temporário (metralhadora = keyDown + cooldown 0.12; leque = fanShot de 5).
+  naveStarfield(n, vel) = céu rolando (1ª linha do onDraw). naveBomb(molde,
+  raio, alvoMolde) = bomba que quica; a criança a RECOLHE no overlap → o motor
+  explode (shockwave + recolhe o alvo no raio + 'bomba:acertou' por vítima,
+  some os pontos lá). Receitas SEM bloco novo: chefe = molde de vida alta +
+  spawn_named + drawHealthBar + fanShot em padrões; asteroide que parte = no
+  overlap, 2 spawns do molde menor + recycle; escudo = hurt(quem, 0, 3);
+  vidas = variável + drawHearts.
 - 🥷 Ação em tempo real (Zelda; Ninja Adventure): attackFacing(quem, alcance,
   duracao) cria uma caixa de golpe NA FRENTE (pela direção que olha) por ~0.3s, com
   trava de 1 acerto por golpe; didHit(quem, alvo) = a caixa encostou no alvo NESTE
   golpe (padrão: "se didHit(heroi, inimigo): hurt(inimigo)"). patrolAround(quem, ox,
-  oy, raio) = inimigo vagueia perto do posto (no onUpdate). drawHearts(atual, max,
-  x, y) = HUD de corações. Combate de AÇÃO usa createCharacter + moveWithKeys +
-  hurt/isInvincible (não a batalha por turnos do RPG).
+  oy, raio) = inimigo vagueia perto do posto (no onUpdate). Combate de AÇÃO usa
+  createCharacter + moveWithKeys + hurt/isInvincible (não a batalha por turnos do
+  RPG). O HUD de corações — drawHearts(atual, max, x, y) — é 🖥️ HUD & Missão.
 
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.

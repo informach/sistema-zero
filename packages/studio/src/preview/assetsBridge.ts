@@ -17,10 +17,48 @@
  * bootstrap (este runtime é emitido via `scriptTag`, igual ao storageBridge).
  */
 
-import { PROJECT_ASSET_LIMITS, type ProjectTilemapMeta } from '#core'
+import { type Asset3DManifestEntry, PROJECT_ASSET_LIMITS, type ProjectTilemapMeta } from '#core'
 
 const ASSET_DATA_URL_PREFIX = 'data:image/'
 const AUDIO_DATA_URL_PREFIX = 'data:audio/'
+/** Prefixo esperado por kind 3D — espelha ASSET_3D_SPECS do core. */
+const ASSET_3D_PREFIX: Record<Asset3DManifestEntry['kind'], string> = {
+  model3d: 'data:model/gltf-binary',
+  environment3d: 'data:image/vnd.radiance',
+}
+
+/**
+ * Clampa o manifesto 3D. Irmão do `clampManifest`, mas cada entrada é um OBJETO
+ * ({kind, dataUrl, fileName}) e o prefixo válido depende do `kind` — por isso não
+ * dá para reusar o de string. Mesmos tetos de quantidade/total.
+ */
+function clamp3DManifest(
+  entries: Record<string, Asset3DManifestEntry>,
+): Record<string, Asset3DManifestEntry> {
+  const safe: Record<string, Asset3DManifestEntry> = Object.create(null)
+  let count = 0
+  let totalChars = 0
+  for (const [name, entry] of Object.entries(entries)) {
+    if (count >= PROJECT_ASSET_LIMITS.maxAssetsCount) break
+    if (typeof name !== 'string' || !entry || typeof entry !== 'object') continue
+    const prefix = ASSET_3D_PREFIX[entry.kind]
+    if (!prefix || typeof entry.dataUrl !== 'string' || !entry.dataUrl.startsWith(prefix)) continue
+    if (
+      totalChars + name.length + entry.dataUrl.length >
+      PROJECT_ASSET_LIMITS.maxAssetsTotalChars
+    ) {
+      continue
+    }
+    safe[name] = {
+      kind: entry.kind,
+      dataUrl: entry.dataUrl,
+      fileName: String(entry.fileName ?? ''),
+    }
+    totalChars += name.length + entry.dataUrl.length
+    count++
+  }
+  return safe
+}
 
 /**
  * Clampa um manifesto `nome → dataUrl` a chaves próprias (null-proto anti-`__proto__`),
@@ -108,6 +146,7 @@ export function buildAssetsRuntime(
   assets: Record<string, string> = {},
   meta: Record<string, AssetPreviewMeta> = {},
   sounds: Record<string, string> = {},
+  models3d: Record<string, Asset3DManifestEntry> = {},
 ): string {
   const safe = clampManifest(assets, ASSET_DATA_URL_PREFIX)
   // Doubly-encoded: o seed entra como STRING JSON + JSON.parse em runtime (não como
@@ -138,6 +177,23 @@ export function buildAssetsRuntime(
     try { window.__SZGAME_SOUNDS = SOUNDS; } catch (e2) {}
   }`
       : ''
+  // Binários 3D (modelo GLB / céu HDR). Canal PRÓPRIO porque o `clampManifest`
+  // dos outros filtra por prefixo `data:image/`/`data:audio/` e descartaria um
+  // `data:model/gltf-binary` em silêncio. Cada entrada leva o `kind` junto: o
+  // runtime escolhe o loader (GLTFLoader × RGBELoader) e carrega por `.parse()`
+  // de um ArrayBuffer — NUNCA por fetch (a rede é bloqueada no preview).
+  const safe3D = clamp3DManifest(models3d)
+  const models3dBlock =
+    Object.keys(safe3D).length > 0
+      ? `
+  var MODELS3D;
+  try { MODELS3D = JSON.parse(${JSON.stringify(JSON.stringify(safe3D))}); } catch (e) { MODELS3D = {}; }
+  try {
+    Object.defineProperty(window, '__SZGAME_ASSETS_3D', { value: MODELS3D, writable: false, configurable: true });
+  } catch (e) {
+    try { window.__SZGAME_ASSETS_3D = MODELS3D; } catch (e2) {}
+  }`
+      : ''
   return `(function () {
   var ASSETS;
   try { ASSETS = JSON.parse(${seedLiteral}); } catch (e) { ASSETS = {}; }
@@ -145,6 +201,6 @@ export function buildAssetsRuntime(
     Object.defineProperty(window, '__SZGAME_ASSETS', { value: ASSETS, writable: false, configurable: true });
   } catch (e) {
     try { window.__SZGAME_ASSETS = ASSETS; } catch (e2) {}
-  }${metaBlock}${soundsBlock}
+  }${metaBlock}${soundsBlock}${models3dBlock}
 })();`
 }

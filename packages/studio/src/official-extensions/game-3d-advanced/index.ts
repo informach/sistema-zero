@@ -11,6 +11,28 @@ validateManifest(gameKit3DManifest)
 /** Versão fixada do Three.js (CDN ESM) — a MESMA do game-3d, para o importmap
  * colapsar numa entrada só se as duas extensões coexistirem. */
 const THREE_CDN = 'https://esm.sh/three@0.180.0'
+/**
+ * Loaders de modelo (GLB) e de céu (HDR). São ADDONS do three, e o kit foi
+ * escrito com a regra "sem addons" por medo de o esm.sh embutir uma 2ª cópia do
+ * three (instanceof quebraria). **Medido em browser real (spike 14/07): a regra
+ * era falsa** — o addon dedupa, e `gltf.scene instanceof THREE.Object3D` dá true
+ * com e sem `?external=three`. Mantemos o `?external=three` mesmo assim: ele faz
+ * o addon importar `three` BARE, resolvido pelo NOSSO importmap, em vez de
+ * depender de uma URL interna do esm.sh que pode mudar.
+ *
+ * ⚠️ O `script-src` da CSP sai da ORIGEM (`extensionImportOrigins`), e esm.sh já
+ * está liberado pelo three → estas entradas não pedem mudança de CSP.
+ * ⚠️ A rede é MORTA no preview (`permissionGuard` mata o fetch, `connect-src
+ * 'none'`), então `loader.load(url)` NUNCA funciona — o runtime usa
+ * `loader.parse(arrayBuffer, ...)`, que não faz I/O nenhum.
+ * ⚠️ KTX2/Draco ficam de fora: transcoder WASM + Workers, ambos barrados.
+ */
+const GLTF_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/GLTFLoader.js?external=three`
+const RGBE_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/RGBELoader.js?external=three`
+// SkeletonUtils.clone REAMARRA o esqueleto do clone aos ossos dele — o clone comum
+// do Object3D deixa o boneco preso ao esqueleto do original. É a mesma troca que o
+// curso fez ao passar a animar personagens.
+const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?external=three`
 
 export const gameKit3DExtension: ExtensionDefinition = {
   manifest: gameKit3DManifest,
@@ -24,7 +46,12 @@ export const gameKit3DExtension: ExtensionDefinition = {
   },
   runtime: {
     bootstrapScript: gameKit3DRuntime,
-    esmImports: { three: THREE_CDN },
+    esmImports: {
+      three: THREE_CDN,
+      'three/addons/loaders/GLTFLoader.js': GLTF_LOADER_CDN,
+      'three/addons/loaders/RGBELoader.js': RGBE_LOADER_CDN,
+      'three/addons/utils/SkeletonUtils.js': SKELETON_UTILS_CDN,
+    },
   },
   ai: {
     promptContext: gameKit3DPromptContext,

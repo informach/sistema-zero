@@ -1,4 +1,10 @@
-import { assetManifest, assetMetaManifest, type Project, soundManifest } from '#core'
+import {
+  asset3DManifest,
+  assetManifest,
+  assetMetaManifest,
+  type Project,
+  soundManifest,
+} from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc } from './bootstrap'
@@ -54,6 +60,7 @@ export function renderProjectToPreviewDoc(
     assets: assetManifest(assets),
     assetsMeta: assetMetaManifest(assets),
     sounds: soundManifest(assets),
+    models3d: asset3DManifest(assets),
     parentOrigin: opts.parentOrigin,
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
