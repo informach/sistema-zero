@@ -189,13 +189,21 @@ jobs:
           done
 
           # espera todos chegarem a estado terminal (healthcheck gateia o SUCCESS)
-          FAIL=0
+          # a API às vezes devolve corpo não-JSON transitório num poll — conta como
+          # poll perdido (segue tentando) e só aborta após 5 rounds ruins SEGUIDOS
+          FAIL=0; BADPOLLS=0
           for i in $(seq 1 60); do
             sleep 20
-            PENDING=0; LINE=""
+            PENDING=0; LINE=""; ROUND_OK=1
             for s in "${!DEP[@]}"; do
               Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
-              ST=$(gql "$Q" | jq -r '.data.deployment.status // "?"')
+              RESP=$(gql "$Q") || RESP=""
+              if ! echo "$RESP" | jq -e . >/dev/null 2>&1; then
+                echo "  poll de $s devolveu corpo não-JSON: $(echo "$RESP" | head -c 120)"
+                ROUND_OK=0; PENDING=1; LINE="$LINE $s=?"
+                continue
+              fi
+              ST=$(echo "$RESP" | jq -r '.data.deployment.status // "?"')
               LINE="$LINE $s=$ST"
               case "$ST" in
                 SUCCESS) ;;
@@ -203,6 +211,15 @@ jobs:
                 *) PENDING=1 ;;
               esac
             done
+            if [ "$ROUND_OK" -eq 1 ]; then
+              BADPOLLS=0
+            else
+              BADPOLLS=$((BADPOLLS+1))
+              if [ "$BADPOLLS" -ge 5 ]; then
+                echo "::error::API do Railway sem resposta válida em $BADPOLLS polls consecutivos"
+                exit 1
+              fi
+            fi
             echo "[$i]$LINE"
             [ "$PENDING" -eq 0 ] && break
           done
