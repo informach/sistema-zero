@@ -71,6 +71,10 @@ const KIT_EMOJI: Record<string, string> = {
   'Defesa da Torre (na mão)': '🏹',
   'Duelo (na mão)': '🥊',
   'Passeio 3D (na mão)': '🚗',
+  'Meu Mundo': '🌍',
+  'Corrida do Por do Sol': '🏁',
+  'Boliche na Praca': '🎳',
+  'Inverno Magico': '❄️',
 }
 
 function toEntry(
