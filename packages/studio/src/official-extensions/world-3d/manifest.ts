@@ -64,6 +64,10 @@ O que o motor já faz por você:
 
 ### 🌿 Natureza
 
+- **Grama ao vento: pouca/média/muita** — o toque de vida: milhares de
+  folhinhas que BALANÇAM com o vento e acompanham os morros, viajando junto
+  com o carrinho (parece infinita). Custa UM desenho para a placa de vídeo —
+  a mesma mágica dos sites profissionais.
 - **Espalhar … pelo mundo** — o bloco que POVOA o mundo: centenas de 🌳
   árvores, 🌲 pinheiros, 🪨 pedras, 🌸 flores, 🍄 cogumelos ou 🌵 cactos de
   uma vez, cada um pousado no seu morro com giro e tamanho um pouquinho
@@ -94,6 +98,14 @@ O que o motor já faz por você:
   no chão, parado, olhando para onde você mandou. A câmera pula junto.
 - **onde o carrinho está (eixo …)** — a posição, um eixo por vez (y = altura).
 - **a velocidade do carrinho** — em m/s, sempre positiva. Ótima para HUD.
+
+### 🎥 Câmera & efeitos
+
+- **Efeitos de cinema ligados/desligados (brilho …)** — o look de filme:
+  bloom (as coisas claras "vazam" luz) + vinheta (cantos escurecidos), já
+  LIGADOS de fábrica. Brilho 1 é o normal; até 3 vira show de luz. Num
+  computador fraco o **modo turbo** liga sozinho: menos grama, sombra menor
+  e sem efeitos — o passeio continua liso.
 
 ### ⏱️ Jogo & tela
 

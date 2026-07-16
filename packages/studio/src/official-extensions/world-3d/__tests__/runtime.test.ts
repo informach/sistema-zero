@@ -25,6 +25,8 @@ interface Api {
   placeThing: (thing?: unknown, x?: unknown, z?: unknown, s?: unknown) => unknown
   placeModel: (name?: unknown, x?: unknown, z?: unknown, s?: unknown, deg?: unknown) => unknown
   clearArea: (x?: unknown, z?: unknown, r?: unknown) => unknown
+  grass: (amount?: unknown) => unknown
+  setEffects: (on?: unknown, strength?: unknown) => unknown
   onCrash: (fn: unknown) => unknown
   onUpdate: (fn: unknown) => unknown
   keyDown: (k: unknown) => boolean
@@ -60,6 +62,8 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'placeThing',
       'placeModel',
       'clearArea',
+      'grass',
+      'setEffects',
       'onCrash',
       'onUpdate',
       'keyDown',
@@ -133,5 +137,13 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     // Modelo sem asset no projeto: avisa e segue (o global de modelos está vazio).
     expect(() => api.scatterModel(10, 'foguete', 1)).not.toThrow()
     expect(() => api.placeModel('foguete', 5, 5, 1, 90)).not.toThrow()
+  })
+
+  it('grama e efeitos: config pura antes do start, sem lançar', () => {
+    const api = boot()
+    expect(() => api.grass('muita')).not.toThrow()
+    expect(() => api.grass('oceano')).not.toThrow() // cai para media
+    expect(() => api.setEffects('desligados', 2)).not.toThrow()
+    expect(() => api.setEffects('ligados', 99)).not.toThrow() // clampa em 3
   })
 })

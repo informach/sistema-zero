@@ -33,7 +33,12 @@ export const world3DRuntime = `import * as THREE from 'three';
     w: 1280,
     h: 720,
     world: 160,
-    style: 'floresta'
+    style: 'floresta',
+    // Efeitos de cinema (pós-processamento próprio, sem addons): ligados por
+    // padrão — são a identidade do mundo. setEffects/turbo desligam.
+    bloom: true,
+    bloomStrength: 1.0,
+    vignette: true
   };
   var terrainCfg = {
     hills: 2.5,   // altura dos morros (m) — o default dá um mundo levemente ondulado
@@ -43,11 +48,11 @@ export const world3DRuntime = `import * as THREE from 'three';
   // Paletas por estilo: céu (topo/horizonte), chão (baixo/alto), pedra, névoa e
   // o quanto o chão agarra (a neve escorrega DE PROPÓSITO).
   var STYLES = {
-    floresta:  { skyTop: '#6db8f2', skyBot: '#e8f4d2', low: '#3e7c3a', high: '#7ca63f', rock: '#8a8f7e', fog: '#cfe4c8', grip: 1 },
-    praia:     { skyTop: '#5fc0ee', skyBot: '#fdeec9', low: '#e3cb8d', high: '#d2b268', rock: '#b3a284', fog: '#f2e4c2', grip: 1 },
-    neve:      { skyTop: '#9dbcdd', skyBot: '#eef4fb', low: '#dfe8f2', high: '#ffffff', rock: '#9fb0c0', fog: '#e3ecf6', grip: 0.45 },
-    deserto:   { skyTop: '#74aee6', skyBot: '#f6d8a6', low: '#d3a05c', high: '#e6c079', rock: '#a3794c', fog: '#ecd8ae', grip: 1 },
-    primavera: { skyTop: '#85cbf4', skyBot: '#f8e2ef', low: '#579a49', high: '#8cc061', rock: '#96917f', fog: '#e1eed6', grip: 1 }
+    floresta:  { skyTop: '#6db8f2', skyBot: '#e8f4d2', low: '#3e7c3a', high: '#7ca63f', rock: '#8a8f7e', fog: '#cfe4c8', grip: 1, grass: ['#2f6b2f', '#8fc24a'], grassK: 1 },
+    praia:     { skyTop: '#5fc0ee', skyBot: '#fdeec9', low: '#e3cb8d', high: '#d2b268', rock: '#b3a284', fog: '#f2e4c2', grip: 1, grass: ['#7ea35a', '#c9d97a'], grassK: 0.5 },
+    neve:      { skyTop: '#9dbcdd', skyBot: '#eef4fb', low: '#dfe8f2', high: '#ffffff', rock: '#9fb0c0', fog: '#e3ecf6', grip: 0.45, grass: ['#b9c8d8', '#eef4fb'], grassK: 0.25 },
+    deserto:   { skyTop: '#74aee6', skyBot: '#f6d8a6', low: '#d3a05c', high: '#e6c079', rock: '#a3794c', fog: '#ecd8ae', grip: 1, grass: ['#8a8a4a', '#c9c96a'], grassK: 0.2 },
+    primavera: { skyTop: '#85cbf4', skyBot: '#f8e2ef', low: '#579a49', high: '#8cc061', rock: '#96917f', fog: '#e1eed6', grip: 1, grass: ['#3f7a3a', '#9ed36a'], grassK: 1 }
   };
 
   // Estilos de carrinho: proporções + números de fábrica (car_stats sobrepõe).
@@ -120,6 +125,16 @@ export const world3DRuntime = `import * as THREE from 'three';
   var _gltfMod = null;
   var _modelCache = null;       // nome -> { scene } já parseado
   var _modelPending = null;     // nome -> fila de callbacks (parse em voo)
+  // Pós-processamento (mini-composer próprio) + grama + qualidade adaptativa.
+  var composer = null;
+  var composerFailed = false;   // WebGL/targets falharam -> render direto p/ sempre
+  var grassCfg = null;          // { amount: 'pouca'|'media'|'muita' }
+  var grassMesh = null;
+  var grassMat = null;
+  var heightTex = null;         // DataTexture 8-bit da altura (a grama lê no vertex)
+  var wind = 1;                 // força do vento (o bloco de vento chega na R4)
+  // Qualidade: 'alta' | 'turbo' (auto: mede o FPS nos primeiros segundos).
+  var quality = { tier: 'alta', auto: true, decided: false, probeT: 0, fpsAcc: 0, fpsN: 0 };
 
   function warn(msg) {
     try { console.warn('SZWorld3D: ' + msg); } catch (e) {}
@@ -723,6 +738,523 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- 🎬 Mini-composer próprio (fork do Jogo 3D Avançado) ----
+  // Bloom dual-filter (downsample Karis + upsample tent) + vinheta + ACES
+  // (curva EXATA do three) + conversão sRGB no passe final. Com o composer
+  // ligado a cena renderiza LINEAR (NoToneMapping) em HalfFloat; qualquer
+  // falha cai no render direto para sempre (composerFailed).
+  var BLOOM_LEVELS = 4;
+
+  var QUAD_VSH = [
+    'varying vec2 vUvs;',
+    'void main() {',
+    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+    '  vUvs = uv;',
+    '}'
+  ].join(' ');
+
+  var COPY_FSH = [
+    'uniform sampler2D tDiffuse;',
+    'varying vec2 vUvs;',
+    'void main() { gl_FragColor = texture2D(tDiffuse, vUvs); }'
+  ].join(' ');
+
+  var DOWNSAMPLE_FSH = [
+    'uniform sampler2D frameTexture;',
+    'uniform bool useKaris;',
+    'uniform vec2 resolution;',
+    'varying vec2 vUvs;',
+    'float Luminance(vec4 c) { return max(1.0, dot(c.xyz, vec3(0.2627, 0.6780, 0.0593))); }',
+    'vec4 KarisAverage(vec4 s1, vec4 s2, vec4 s3, vec4 s4) {',
+    '  float w1 = 1.0 / Luminance(s1);',
+    '  float w2 = 1.0 / Luminance(s2);',
+    '  float w3 = 1.0 / Luminance(s3);',
+    '  float w4 = 1.0 / Luminance(s4);',
+    '  float totalWeight = 1.0 / (w1 + w2 + w3 + w4);',
+    '  return (s1 * w1 + s2 * w2 + s3 * w3 + s4 * w4) * totalWeight;',
+    '}',
+    'void main() {',
+    '  vec2 texelSize = 1.0 / resolution;',
+    '  vec4 A = texture2D(frameTexture, vUvs + texelSize * vec2(-1.0, -1.0));',
+    '  vec4 B = texture2D(frameTexture, vUvs + texelSize * vec2(0.0, -1.0));',
+    '  vec4 C = texture2D(frameTexture, vUvs + texelSize * vec2(1.0, -1.0));',
+    '  vec4 D = texture2D(frameTexture, vUvs + texelSize * vec2(-0.5, -0.5));',
+    '  vec4 E = texture2D(frameTexture, vUvs + texelSize * vec2(0.5, -0.5));',
+    '  vec4 F = texture2D(frameTexture, vUvs + texelSize * vec2(-1.0, 0.0));',
+    '  vec4 G = texture2D(frameTexture, vUvs);',
+    '  vec4 H = texture2D(frameTexture, vUvs + texelSize * vec2(1.0, 0.0));',
+    '  vec4 I = texture2D(frameTexture, vUvs + texelSize * vec2(-0.5, 0.5));',
+    '  vec4 J = texture2D(frameTexture, vUvs + texelSize * vec2(0.5, 0.5));',
+    '  vec4 K = texture2D(frameTexture, vUvs + texelSize * vec2(-1.0, 1.0));',
+    '  vec4 L = texture2D(frameTexture, vUvs + texelSize * vec2(0.0, 1.0));',
+    '  vec4 M = texture2D(frameTexture, vUvs + texelSize * vec2(1.0, 1.0));',
+    '  vec2 div = vec2(0.5, 0.125);',
+    '  vec4 colour = vec4(0.0);',
+    '  if (useKaris) {',
+    '    colour = KarisAverage(D, E, I, J) * div.x;',
+    '    colour += KarisAverage(A, B, G, F) * div.y;',
+    '    colour += KarisAverage(B, C, H, G) * div.y;',
+    '    colour += KarisAverage(F, G, L, K) * div.y;',
+    '    colour += KarisAverage(G, H, M, L) * div.y;',
+    '  } else {',
+    '    div *= 0.25;',
+    '    colour = (D + E + I + J) * div.x;',
+    '    colour += (A + B + G + F) * div.y;',
+    '    colour += (B + C + H + G) * div.y;',
+    '    colour += (F + G + L + K) * div.y;',
+    '    colour += (G + H + M + L) * div.y;',
+    '  }',
+    '  gl_FragColor = colour;',
+    '}'
+  ].join(' ');
+
+  var UPSAMPLE_FSH = [
+    'uniform sampler2D frameTexture;',
+    'uniform sampler2D mipTexture;',
+    'uniform vec2 resolution;',
+    'varying vec2 vUvs;',
+    'void main() {',
+    '  float x = 1.0 / resolution.x;',
+    '  float y = 1.0 / resolution.y;',
+    '  vec4 a = texture2D(frameTexture, vec2(vUvs.x - x, vUvs.y + y));',
+    '  vec4 b = texture2D(frameTexture, vec2(vUvs.x, vUvs.y + y));',
+    '  vec4 c = texture2D(frameTexture, vec2(vUvs.x + x, vUvs.y + y));',
+    '  vec4 d = texture2D(frameTexture, vec2(vUvs.x - x, vUvs.y));',
+    '  vec4 e = texture2D(frameTexture, vec2(vUvs.x, vUvs.y));',
+    '  vec4 f = texture2D(frameTexture, vec2(vUvs.x + x, vUvs.y));',
+    '  vec4 g = texture2D(frameTexture, vec2(vUvs.x - x, vUvs.y - y));',
+    '  vec4 h = texture2D(frameTexture, vec2(vUvs.x, vUvs.y - y));',
+    '  vec4 i = texture2D(frameTexture, vec2(vUvs.x + x, vUvs.y - y));',
+    '  vec4 colour = e * 4.0;',
+    '  colour += (b + d + f + h) * 2.0;',
+    '  colour += (a + c + g + i);',
+    '  colour *= 1.0 / 16.0;',
+    '  colour += texture2D(mipTexture, vUvs);',
+    '  gl_FragColor = colour;',
+    '}'
+  ].join(' ');
+
+  var COMPOSITE_FSH = [
+    'uniform sampler2D frameTexture;',
+    'uniform sampler2D bloomTexture;',
+    'uniform float bloomStrength;',
+    'uniform float bloomMix;',
+    'varying vec2 vUvs;',
+    'void main() {',
+    '  vec4 textureSample = texture2D(frameTexture, vUvs);',
+    '  vec4 bloomSample = texture2D(bloomTexture, vUvs);',
+    '  gl_FragColor = mix(textureSample, bloomStrength * bloomSample, bloomMix);',
+    '}'
+  ].join(' ');
+
+  var FINAL_FSH = [
+    'uniform sampler2D tDiffuse;',
+    'uniform float intensity;',
+    'uniform float dropoff;',
+    'varying vec2 vUvs;',
+    'float inverseLerp(float v, float minValue, float maxValue) {',
+    '  return (v - minValue) / (maxValue - minValue);',
+    '}',
+    'float remap(float v, float inMin, float inMax, float outMin, float outMax) {',
+    '  float t = inverseLerp(v, inMin, inMax);',
+    '  return mix(outMin, outMax, t);',
+    '}',
+    'float vignette(vec2 uvs) {',
+    '  float v1 = smoothstep(0.5, 0.3, abs(uvs.x - 0.5));',
+    '  float v2 = smoothstep(0.5, 0.3, abs(uvs.y - 0.5));',
+    '  float v = v1 * v2;',
+    '  v = pow(v, dropoff);',
+    '  v = remap(v, 0.0, 1.0, intensity, 1.0);',
+    '  return v;',
+    '}',
+    'vec3 RRTAndODTFit(vec3 v) {',
+    '  vec3 a = v * (v + 0.0245786) - 0.000090537;',
+    '  vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;',
+    '  return a / b;',
+    '}',
+    'vec3 aces(vec3 color) {',
+    '  mat3 mIn = mat3(0.59719, 0.07600, 0.02840, 0.35458, 0.90834, 0.13383, 0.04823, 0.01566, 0.83777);',
+    '  mat3 mOut = mat3(1.60475, -0.10208, -0.00327, -0.53108, 1.10813, -0.07276, -0.07367, -0.00605, 1.07602);',
+    '  color *= 1.0 / 0.6;',
+    '  color = mIn * color;',
+    '  color = RRTAndODTFit(color);',
+    '  color = mOut * color;',
+    '  return clamp(color, 0.0, 1.0);',
+    '}',
+    'void main() {',
+    '  vec4 texel = texture2D(tDiffuse, vUvs);',
+    '  vec3 col = texel.xyz * vignette(vUvs);',
+    '  col = aces(col);',
+    '  col = pow(col, vec3(0.4545));',
+    '  gl_FragColor = vec4(col, 1.0);',
+    '}'
+  ].join(' ');
+
+  function makeTarget(w, h) {
+    return new THREE.WebGLRenderTarget(Math.max(1, Math.round(w)), Math.max(1, Math.round(h)), {
+      type: THREE.HalfFloatType,
+      magFilter: THREE.LinearFilter,
+      minFilter: THREE.LinearFilter,
+      wrapS: THREE.ClampToEdgeWrapping,
+      wrapT: THREE.ClampToEdgeWrapping,
+      generateMipmaps: false,
+      depthBuffer: false,
+      stencilBuffer: false
+    });
+  }
+
+  function quadMaterial(fsh, uniforms) {
+    return new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: QUAD_VSH,
+      fragmentShader: fsh,
+      depthTest: false,
+      depthWrite: false
+    });
+  }
+
+  function initComposer() {
+    if (composer || composerFailed) return;
+    try {
+      var quadScene = new THREE.Scene();
+      var quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      var quadGeo = new THREE.PlaneGeometry(2, 2);
+      var quadMesh = new THREE.Mesh(quadGeo, null);
+      quadScene.add(quadMesh);
+
+      // Alvo da cena com DEPTH (o mundo 3D precisa dele); os da cascata não.
+      var rtScene = new THREE.WebGLRenderTarget(config.w, config.h, {
+        type: THREE.HalfFloatType,
+        magFilter: THREE.LinearFilter,
+        minFilter: THREE.LinearFilter,
+        depthBuffer: true,
+        stencilBuffer: false
+      });
+      var rtGrade = makeTarget(config.w, config.h);
+      var down = [null];
+      var up = [null];
+      for (var i = 1; i <= BLOOM_LEVELS; i++) {
+        var scaleDiv = Math.pow(2, i);
+        down.push(makeTarget(config.w / scaleDiv, config.h / scaleDiv));
+        up.push(makeTarget(config.w / scaleDiv, config.h / scaleDiv));
+      }
+
+      var matCopy = quadMaterial(COPY_FSH, { tDiffuse: { value: null } });
+      var matDown = quadMaterial(DOWNSAMPLE_FSH, {
+        frameTexture: { value: null },
+        useKaris: { value: false },
+        resolution: { value: new THREE.Vector2(1, 1) }
+      });
+      var matUp = quadMaterial(UPSAMPLE_FSH, {
+        frameTexture: { value: null },
+        mipTexture: { value: null },
+        resolution: { value: new THREE.Vector2(1, 1) }
+      });
+      var matComposite = quadMaterial(COMPOSITE_FSH, {
+        frameTexture: { value: null },
+        bloomTexture: { value: null },
+        bloomStrength: { value: config.bloomStrength },
+        bloomMix: { value: 0.08 }
+      });
+      var matFinal = quadMaterial(FINAL_FSH, {
+        tDiffuse: { value: null },
+        intensity: { value: 0.35 },
+        dropoff: { value: 0.35 }
+      });
+
+      composer = {
+        quadScene: quadScene,
+        quadCam: quadCam,
+        quadGeo: quadGeo,
+        quadMesh: quadMesh,
+        rtScene: rtScene,
+        rtGrade: rtGrade,
+        down: down,
+        up: up,
+        matCopy: matCopy,
+        matDown: matDown,
+        matUp: matUp,
+        matComposite: matComposite,
+        matFinal: matFinal
+      };
+    } catch (e) {
+      composerFailed = true;
+      composer = null;
+      warn('efeitos de cinema indisponíveis neste computador — seguindo sem eles: ' + e);
+    }
+  }
+
+  function quadPass(material, target) {
+    composer.quadMesh.material = material;
+    renderer.setRenderTarget(target);
+    renderer.render(composer.quadScene, composer.quadCam);
+  }
+
+  function renderWithComposer() {
+    var c = composer;
+    // Cena em LINEAR (o ACES roda no passe final).
+    if (THREE.NoToneMapping != null) renderer.toneMapping = THREE.NoToneMapping;
+    renderer.setRenderTarget(c.rtScene);
+    renderer.render(scene, camera);
+
+    var graded = c.rtScene;
+    if (config.bloom) {
+      var src = c.rtScene;
+      for (var i = 1; i <= BLOOM_LEVELS; i++) {
+        c.matDown.uniforms.frameTexture.value = src.texture;
+        c.matDown.uniforms.useKaris.value = i === 1;
+        c.matDown.uniforms.resolution.value.set(src.width, src.height);
+        quadPass(c.matDown, c.down[i]);
+        src = c.down[i];
+      }
+      c.matCopy.uniforms.tDiffuse.value = c.down[BLOOM_LEVELS].texture;
+      quadPass(c.matCopy, c.up[BLOOM_LEVELS]);
+      for (var j = BLOOM_LEVELS - 1; j >= 1; j--) {
+        c.matUp.uniforms.frameTexture.value = c.up[j + 1].texture;
+        c.matUp.uniforms.mipTexture.value = c.down[j + 1].texture;
+        c.matUp.uniforms.resolution.value.set(c.up[j + 1].width, c.up[j + 1].height);
+        quadPass(c.matUp, c.up[j]);
+      }
+      c.matComposite.uniforms.frameTexture.value = c.rtScene.texture;
+      c.matComposite.uniforms.bloomTexture.value = c.up[1].texture;
+      c.matComposite.uniforms.bloomStrength.value = config.bloomStrength;
+      quadPass(c.matComposite, c.rtGrade);
+      graded = c.rtGrade;
+    }
+    // Passe final SEMPRE roda no caminho do composer: vinheta (intensity 1 =
+    // desligada) + ACES + sRGB, direto na tela.
+    c.matFinal.uniforms.tDiffuse.value = graded.texture;
+    c.matFinal.uniforms.intensity.value = config.vignette ? 0.35 : 1.0;
+    quadPass(c.matFinal, null);
+  }
+
+  function disposeComposer() {
+    var c = composer;
+    if (!c) return;
+    composer = null;
+    try {
+      var all = [c.rtScene, c.rtGrade].concat(c.down.slice(1)).concat(c.up.slice(1));
+      for (var i = 0; i < all.length; i++) {
+        if (all[i] && all[i].dispose) all[i].dispose();
+      }
+      var mats = [c.matCopy, c.matDown, c.matUp, c.matComposite, c.matFinal];
+      for (var m = 0; m < mats.length; m++) {
+        if (mats[m] && mats[m].dispose) mats[m].dispose();
+      }
+      if (c.quadGeo && c.quadGeo.dispose) c.quadGeo.dispose();
+    } catch (e) {}
+  }
+
+  function renderFrame() {
+    var wantFx = (config.bloom || config.vignette) && quality.tier !== 'turbo';
+    if (wantFx && !composerFailed) {
+      if (!composer) initComposer();
+      if (composer) {
+        if (grassMat) grassMat.uniforms.uGamma.value = 1.0;
+        renderWithComposer();
+        return;
+      }
+    }
+    // Caminho direto (efeitos desligados/indisponíveis/turbo): ACES do renderer.
+    // A grama (ShaderMaterial cru, fora do tone mapping) compensa o sRGB no uGamma.
+    if (grassMat) grassMat.uniforms.uGamma.value = 0.4545;
+    if (THREE.ACESFilmicToneMapping != null) renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.setRenderTarget(null);
+    renderer.render(scene, camera);
+  }
+
+  // ---- 🌱 Grama ao vento (o show-piece do folio, na versão instanciada) ----
+  // Um ÚNICO draw call: InstancedBufferGeometry de lâminas com offsets fixos
+  // num quadrado de 2R×2R que SEGUE o carro por mod-wrap no vertex shader
+  // (grama "infinita"), altura lida de uma DataTexture 8-bit da MESMA
+  // heightAt(), vento por soma de senos, gradiente raiz→ponta e fade por
+  // distância ESCALANDO a lâmina a zero (sem transparência).
+
+  var GRASS_VSH = [
+    'uniform float uTime;',
+    'uniform float uWind;',
+    'uniform vec2 uCenter;',
+    'uniform float uRadius;',
+    'uniform sampler2D uHeight;',
+    'uniform float uHMin;',
+    'uniform float uHRange;',
+    'uniform float uWorld;',
+    'attribute vec2 aOffset;',
+    'attribute float aRand;',
+    'varying float vY;',
+    'varying float vRand;',
+    'varying float vFade;',
+    'void main() {',
+    '  float span = uRadius * 2.0;',
+    '  vec2 wp = uCenter + mod(aOffset - uCenter, vec2(span)) - vec2(uRadius);',
+    '  vec2 dc = wp - uCenter;',
+    '  float dist = length(dc);',
+    '  float fade = 1.0 - smoothstep(uRadius * 0.72, uRadius * 0.98, dist);',
+    '  float half2 = uWorld * 0.5 - 1.5;',
+    '  if (abs(wp.x) > half2 || abs(wp.y) > half2) fade = 0.0;',
+    '  vec2 huv = (wp + vec2(uWorld * 0.5)) / uWorld;',
+    '  float gh = uHMin + texture2D(uHeight, huv).r * uHRange;',
+    '  float ang = aRand * 6.2831853;',
+    '  float ca = cos(ang);',
+    '  float sa = sin(ang);',
+    '  vec3 pos = position;',
+    '  float h = 0.75 + aRand * 0.6;',
+    '  pos.y *= h;',
+    '  pos = vec3(pos.x * ca, pos.y, pos.x * sa);',
+    '  float sway = sin(uTime * 1.6 + wp.x * 0.35 + wp.y * 0.27 + aRand * 6.28) * (0.1 + uWind * 0.22);',
+    '  float bend = (pos.y * pos.y) / max(h * h, 0.0001);',
+    '  pos.x += sway * bend;',
+    '  pos.z += sway * bend * 0.6;',
+    '  pos *= fade;',
+    '  vec3 world = vec3(wp.x, gh, wp.y) + pos;',
+    '  vY = position.y;',
+    '  vRand = aRand;',
+    '  vFade = dist / max(uRadius, 0.001);',
+    '  gl_Position = projectionMatrix * viewMatrix * vec4(world, 1.0);',
+    '}'
+  ].join(' ');
+
+  var GRASS_FSH = [
+    'uniform vec3 uColorA;',
+    'uniform vec3 uColorB;',
+    'uniform vec3 uFog;',
+    'uniform float uGamma;',
+    'varying float vY;',
+    'varying float vRand;',
+    'varying float vFade;',
+    'void main() {',
+    '  vec3 col = mix(uColorA, uColorB, clamp(vY, 0.0, 1.0));',
+    '  col *= 0.92 + vRand * 0.16;',
+    '  col = mix(col, uFog, smoothstep(0.7, 1.0, vFade) * 0.6);',
+    '  col = pow(col, vec3(uGamma));',
+    '  gl_FragColor = vec4(col, 1.0);',
+    '}'
+  ].join(' ');
+
+  /**
+   * Textura 8-bit da altura do chão (a MESMA heightAt) — 8 bits chegam: com
+   * morros de 4 m o degrau é ~4 cm, invisível numa lâmina de 1 m. Reconstruída
+   * quando o terreno muda (o bloco de morros).
+   */
+  function buildGrassHeightTex() {
+    var HG = 128;
+    var data = new Uint8Array(HG * HG);
+    var hMin = -terrainCfg.hills * 1.25 - 1;
+    var hRange = (terrainCfg.hills * 1.25 + 1) * 2;
+    for (var iz = 0; iz < HG; iz++) {
+      for (var ix = 0; ix < HG; ix++) {
+        var x = (ix / (HG - 1) - 0.5) * config.world;
+        var z = (iz / (HG - 1) - 0.5) * config.world;
+        var v = (heightAt(x, z) - hMin) / hRange;
+        if (v < 0) v = 0;
+        if (v > 1) v = 1;
+        data[iz * HG + ix] = Math.round(v * 255);
+      }
+    }
+    if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
+    heightTex = new THREE.DataTexture(data, HG, HG, THREE.RedFormat);
+    if (THREE.LinearFilter) {
+      heightTex.minFilter = THREE.LinearFilter;
+      heightTex.magFilter = THREE.LinearFilter;
+    }
+    heightTex.needsUpdate = true;
+    if (grassMat) {
+      grassMat.uniforms.uHeight.value = heightTex;
+      grassMat.uniforms.uHMin.value = hMin;
+      grassMat.uniforms.uHRange.value = hRange;
+    }
+  }
+
+  var GRASS_COUNTS = { pouca: 8000, media: 16000, muita: 24000 };
+
+  function buildGrass() {
+    if (!scene || !grassCfg) return;
+    if (grassMesh) {
+      try {
+        scene.remove(grassMesh);
+        if (grassMesh.geometry && grassMesh.geometry.dispose) grassMesh.geometry.dispose();
+      } catch (e) {}
+      grassMesh = null;
+    }
+    if (!THREE.InstancedBufferGeometry || !THREE.InstancedBufferAttribute || !THREE.ShaderMaterial) return;
+    var st = styleOf();
+    var n = Math.round((GRASS_COUNTS[grassCfg.amount] || GRASS_COUNTS.media) * (st.grassK != null ? st.grassK : 1));
+    var radius = 55;
+    if (quality.tier === 'turbo') {
+      n = Math.round(n / 3);
+      radius = 35;
+    }
+    if (n <= 0) return;
+    var base = new THREE.PlaneGeometry(0.14, 1, 1, 2);
+    base.translate(0, 0.5, 0);
+    var geo = new THREE.InstancedBufferGeometry();
+    geo.index = base.index;
+    geo.setAttribute('position', base.attributes.position);
+    geo.setAttribute('uv', base.attributes.uv);
+    var rng = mulberry(777);
+    var span = radius * 2;
+    var offsets = new Float32Array(n * 2);
+    var rands = new Float32Array(n);
+    for (var i = 0; i < n; i++) {
+      offsets[i * 2] = rng() * span;
+      offsets[i * 2 + 1] = rng() * span;
+      rands[i] = rng();
+    }
+    geo.setAttribute('aOffset', new THREE.InstancedBufferAttribute(offsets, 2));
+    geo.setAttribute('aRand', new THREE.InstancedBufferAttribute(rands, 1));
+    geo.instanceCount = n;
+    if (!grassMat) {
+      var ca = new THREE.Color(st.grass[0]);
+      var cb = new THREE.Color(st.grass[1]);
+      var cf = new THREE.Color(st.fog);
+      grassMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uWind: { value: wind },
+          uCenter: { value: new THREE.Vector2(0, 0) },
+          uRadius: { value: radius },
+          uHeight: { value: null },
+          uHMin: { value: 0 },
+          uHRange: { value: 1 },
+          uWorld: { value: config.world },
+          uColorA: { value: new THREE.Vector3(ca.r, ca.g, ca.b) },
+          uColorB: { value: new THREE.Vector3(cb.r, cb.g, cb.b) },
+          uFog: { value: new THREE.Vector3(cf.r, cf.g, cf.b) },
+          uGamma: { value: 1.0 }
+        },
+        vertexShader: GRASS_VSH,
+        fragmentShader: GRASS_FSH,
+        side: THREE.DoubleSide != null ? THREE.DoubleSide : 2
+      });
+    } else {
+      grassMat.uniforms.uRadius.value = radius;
+      grassMat.uniforms.uWorld.value = config.world;
+    }
+    buildGrassHeightTex();
+    grassMesh = new THREE.Mesh(geo, grassMat);
+    // As lâminas dão a volta ao redor do carro no shader — a esfera de recorte
+    // da geometria mentiria. Nunca recortar.
+    grassMesh.frustumCulled = false;
+    scene.add(grassMesh);
+  }
+
+  /** Modo turbo: menos grama, sombra menor, sem composer (o gate no renderFrame). */
+  function applyTurbo() {
+    if (quality.tier === 'turbo') return;
+    quality.tier = 'turbo';
+    warn('modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)');
+    if (sunLight && sunLight.shadow) {
+      try {
+        if (sunLight.shadow.mapSize && sunLight.shadow.mapSize.set) sunLight.shadow.mapSize.set(1024, 1024);
+        if (sunLight.shadow.map) {
+          sunLight.shadow.map.dispose();
+          sunLight.shadow.map = null;
+        }
+      } catch (e) {}
+    }
+    if (grassMesh) buildGrass();
+  }
+
   // ---- Teclas (com apelidos em português) ----
 
   var KEY_ALIASES = {
@@ -897,6 +1429,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       buildTerrain();
       if (carCfg) buildCar();
       buildNature();
+      if (grassCfg) buildGrass();
 
       worldReady = true;
       return true;
@@ -1287,6 +1820,21 @@ export const world3DRuntime = `import * as THREE from 'three';
     currentDt = dt;
     playTime += dt;
 
+    // Sonda de qualidade: mede o FPS entre 1.5 s e 4 s de passeio; abaixo de
+    // 45 liga o modo turbo (uma vez, sem ping-pong).
+    if (quality.auto && !quality.decided) {
+      quality.probeT += dt;
+      if (quality.probeT > 1.5) {
+        quality.fpsAcc += dt;
+        quality.fpsN++;
+      }
+      if (quality.probeT > 4) {
+        quality.decided = true;
+        var fps = quality.fpsN / Math.max(0.001, quality.fpsAcc);
+        if (fps < 45) applyTurbo();
+      }
+    }
+
     stepCar(dt);
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
@@ -1295,9 +1843,16 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
     updateCamera(dt);
     updateSun();
+    if (grassMat) {
+      grassMat.uniforms.uTime.value = playTime;
+      grassMat.uniforms.uWind.value = wind;
+      var gcx = carState ? carState.x : (camera ? camera.position.x : 0);
+      var gcz = carState ? carState.z : (camera ? camera.position.z : 0);
+      grassMat.uniforms.uCenter.value.set(gcx, gcz);
+    }
 
     justPressed = {};
-    if (renderer && scene && camera) renderer.render(scene, camera);
+    if (renderer && scene && camera) renderFrame();
   }
 
   // ---- Começar (shell -> mundo -> input -> resize -> loop) ----
@@ -1357,6 +1912,8 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       if (skyTex && skyTex.dispose) { try { skyTex.dispose(); } catch (e) {} }
       if (gradientTex && gradientTex.dispose) { try { gradientTex.dispose(); } catch (e) {} }
+      if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
+      disposeComposer();
       if (stageEl && stageEl.parentNode) { try { stageEl.parentNode.removeChild(stageEl); } catch (e) {} }
       if (styleEl && styleEl.parentNode) { try { styleEl.parentNode.removeChild(styleEl); } catch (e) {} }
     } catch (e) {}
@@ -1374,6 +1931,9 @@ export const world3DRuntime = `import * as THREE from 'three';
     speciesMats = null;
     collCells = Object.create(null);
     _modelCache = null;
+    grassMesh = null;
+    grassMat = null;
+    heightTex = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -1413,8 +1973,12 @@ export const world3DRuntime = `import * as THREE from 'three';
     terrain: guard('terrain', function (hills, smooth) {
       terrainCfg.hills = clamp(num(hills, terrainCfg.hills), 0, 30);
       terrainCfg.smooth = clamp(num(smooth, terrainCfg.smooth), 1, 30);
-      // Depois do start, reconstrói na hora (ordem dos blocos nunca prende ninguém).
-      if (worldReady) buildTerrain();
+      // Depois do start, reconstrói na hora (ordem dos blocos nunca prende
+      // ninguém) — e a grama relê a altura nova pela textura.
+      if (worldReady) {
+        buildTerrain();
+        if (grassMat) buildGrassHeightTex();
+      }
     }),
     start: guard('start', start),
     worldSize: guard('worldSize', function () {
@@ -1533,6 +2097,18 @@ export const world3DRuntime = `import * as THREE from 'three';
     }),
     clearArea: guard('clearArea', function (x, z, r) {
       exclusions.push({ x: num(x, 0), z: num(z, 0), r: clamp(num(r, 10), 1, 200) });
+    }),
+    grass: guard('grass', function (amount) {
+      var a = text(amount, 'media');
+      if (!GRASS_COUNTS[a]) a = 'media';
+      grassCfg = { amount: a };
+      if (worldReady) buildGrass();
+    }),
+    setEffects: guard('setEffects', function (on, strength) {
+      var ligado = on === true || on === 'ligados' || on === 'ligado' || on === 'true';
+      config.bloom = ligado;
+      config.vignette = ligado;
+      config.bloomStrength = clamp(num(strength, config.bloomStrength), 0, 3);
     }),
     onCrash: guard('onCrash', function (fn) {
       if (typeof fn !== 'function') {

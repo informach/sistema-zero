@@ -163,6 +163,26 @@ export const world3DBlocks = [
 
   // ---- 🌿 Natureza ----
   {
+    type: 'sz_w3d_grass',
+    message0: 'Grama ao vento: %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'AMOUNT',
+        options: [
+          ['pouca', 'pouca'],
+          ['média', 'media'],
+          ['muita', 'muita'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cobre o chão de graminha que BALANÇA com o vento e acompanha os morros — o toque de vida do mundo. Ela viaja junto com o carrinho (parece infinita) e custa UM desenho para a placa de vídeo, mesmo com milhares de folhinhas. Em computador fraco, o modo turbo diminui sozinho.',
+  },
+  {
     type: 'sz_w3d_scatter',
     message0: 'Espalhar %1 %2 pelo mundo',
     args0: [
@@ -274,6 +294,29 @@ export const world3DBlocks = [
       'Roda o "fazer" quando o carrinho TROMBA numa árvore, pedra ou cacto em boa velocidade (encostadinha devagar não conta). Toque um som, trema a câmera, conte batidas…',
   },
 
+  // ---- 🎥 Câmera & efeitos ----
+  {
+    type: 'sz_w3d_effects',
+    message0: 'Efeitos de cinema %1 (brilho %2 )',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'ON',
+        options: [
+          ['ligados', 'ligados'],
+          ['desligados', 'desligados'],
+        ],
+      },
+      { type: 'input_value', name: 'STRENGTH', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga/desliga o look de cinema: brilho (as coisas claras "vazam" luz — bloom) e cantos escurecidos (vinheta). Já vem LIGADO; o brilho 1 é o normal (até 3 = show de luz). Desligue para ganhar velocidade num computador fraco — e o modo turbo desliga sozinho se precisar.',
+  },
+
   // ---- ⏱️ Jogo & tela ----
   {
     type: 'sz_w3d_on_update',
@@ -337,6 +380,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     name: '🌿 Natureza',
     colour: C,
     types: [
+      'sz_w3d_grass',
       'sz_w3d_scatter',
       'sz_w3d_scatter_model',
       'sz_w3d_place_thing',
@@ -344,6 +388,11 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_clear_area',
       'sz_w3d_on_crash',
     ],
+  },
+  {
+    name: '🎥 Câmera & efeitos',
+    colour: C,
+    types: ['sz_w3d_effects'],
   },
   {
     name: '⏱️ Jogo & tela',
@@ -383,6 +432,7 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_place_thing: { X: numShadow(10), Z: numShadow(10), S: numShadow(1) },
   sz_w3d_place_model: { X: numShadow(10), Z: numShadow(10), S: numShadow(1), DEG: numShadow(0) },
   sz_w3d_clear_area: { X: numShadow(0), Z: numShadow(0), R: numShadow(15) },
+  sz_w3d_effects: { STRENGTH: numShadow(1) },
 }
 
 /**

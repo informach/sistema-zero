@@ -52,6 +52,11 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.placeModel(nome, x, z, tamanho, graus)\` — UM .glb num ponto.
 - \`SZWorld3D.clearArea(x, z, raio)\` — círculo sem natureza espalhada; chame
   ANTES dos scatter.
+- \`SZWorld3D.grass('pouca'|'media'|'muita')\` — grama instanciada ao vento
+  (1 draw call), acompanha o terreno e segue o carro (parece infinita).
+- \`SZWorld3D.setEffects('ligados'|'desligados', brilho)\` — bloom + vinheta
+  (composer próprio, ACES). Default LIGADO com brilho 1; brilho 0–3. O modo
+  turbo (FPS < 45 nos primeiros segundos) desliga sozinho e reduz a grama.
 - \`SZWorld3D.onCrash(function () { ... })\` — trombada forte do carro em coisa
   sólida (tem respiro de 0.4 s entre disparos).
 - \`SZWorld3D.onUpdate(function (dt) { ... })\` — gancho por quadro; dt em
