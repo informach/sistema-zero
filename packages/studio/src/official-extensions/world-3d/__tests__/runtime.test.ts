@@ -1,0 +1,111 @@
+import { describe, expect, it } from 'bun:test'
+import { world3DRuntime } from '../runtime'
+
+/**
+ * Testes de UNIDADE do runtime do Mundo 3D, sem DOM e sem three de verdade:
+ * o corpo da string é avaliado com um `window` de mentira e um THREE vazio —
+ * a parte pura da API (config, terreno analítico, guardas) funciona sem
+ * renderer nenhum (é o mesmo contrato lazy do Jogo 3D Avançado: zero
+ * `new THREE.*` e zero DOM fora do start()).
+ */
+
+interface Api {
+  setup: (o: unknown) => unknown
+  terrain: (h?: unknown, s?: unknown) => unknown
+  start: () => unknown
+  worldSize: () => number
+  groundHeight: (x?: unknown, z?: unknown) => number
+  car: (o: unknown) => unknown
+  carStats: (a?: unknown, b?: unknown, c?: unknown) => unknown
+  carPlace: (x?: unknown, z?: unknown, d?: unknown) => unknown
+  carPos: (a?: unknown) => number
+  carSpeed: () => number
+  onUpdate: (fn: unknown) => unknown
+  keyDown: (k: unknown) => boolean
+  keyPressed: (k: unknown) => boolean
+}
+
+function boot(): Api {
+  const body = world3DRuntime.replace(/^import \* as THREE from 'three';\n/, '')
+  const win: { addEventListener: () => void; SZWorld3D?: unknown } = {
+    addEventListener: () => {},
+  }
+  new Function('THREE', 'window', body)({}, win)
+  if (!win.SZWorld3D) throw new Error('o runtime não pendurou window.SZWorld3D')
+  return win.SZWorld3D as Api
+}
+
+describe('SZWorld3D — API pura (sem DOM/three)', () => {
+  it('expõe 1 método por bloco da v0.1', () => {
+    const api = boot()
+    const expected = [
+      'setup',
+      'terrain',
+      'start',
+      'worldSize',
+      'groundHeight',
+      'car',
+      'carStats',
+      'carPlace',
+      'carPos',
+      'carSpeed',
+      'onUpdate',
+      'keyDown',
+      'keyPressed',
+    ]
+    const bag = api as unknown as Record<string, unknown>
+    for (const name of expected) {
+      expect(typeof bag[name]).toBe('function')
+    }
+  })
+
+  it('setup: guarda o tamanho do mundo com clamp 40..600', () => {
+    const api = boot()
+    expect(api.worldSize()).toBe(160)
+    api.setup({ style: 'praia', world: 200 })
+    expect(api.worldSize()).toBe(200)
+    api.setup({ style: 'praia', world: 5 })
+    expect(api.worldSize()).toBe(40)
+    api.setup({ style: 'praia', world: 9999 })
+    expect(api.worldSize()).toBe(600)
+  })
+
+  it('groundHeight: determinístico, e o centro do mundo é PLANO (spawn em paz)', () => {
+    const api = boot()
+    // Centro aplainado (raio < 8): altura exatamente 0 (Math.abs come o -0).
+    expect(Math.abs(api.groundHeight(0, 0) as number)).toBe(0)
+    expect(Math.abs(api.groundHeight(3, -4) as number)).toBe(0)
+    // Longe do centro: os morros existem e a MESMA pergunta dá a MESMA resposta.
+    const a = api.groundHeight(60, 40) as number
+    const b = api.groundHeight(60, 40) as number
+    expect(a).toBe(b)
+    expect(Math.abs(a)).toBeGreaterThan(0)
+  })
+
+  it('terrain: a altura dos morros escala a resposta analiticamente', () => {
+    const api = boot()
+    api.terrain(4, 5)
+    const h4 = api.groundHeight(60, 40) as number
+    api.terrain(8, 5)
+    const h8 = api.groundHeight(60, 40) as number
+    // heightAt é h(x,z) * hills — dobrar a altura dobra a resposta.
+    expect(h8).toBeCloseTo(h4 * 2, 10)
+  })
+
+  it('guardas: chamar fora de ordem avisa e NUNCA lança', () => {
+    const api = boot()
+    expect(() => api.carStats(30, 120, 8)).not.toThrow() // sem car() antes
+    expect(() => api.carPlace(10, 10, 90)).not.toThrow() // sem car() antes
+    expect(api.carPos('x')).toBe(0) // sem carrinho: 0, não crash
+    expect(api.carSpeed()).toBe(0)
+    expect(() => api.onUpdate('não é função' as unknown)).not.toThrow()
+    expect(api.keyDown('espaco')).toBe(false)
+    expect(api.keyPressed('cima')).toBe(false)
+  })
+
+  it('estilo desconhecido cai para floresta sem quebrar', () => {
+    const api = boot()
+    expect(() => api.setup({ style: 'lua', world: 160 })).not.toThrow()
+    expect(() => api.car({ style: 'trator', color: '#123456' })).not.toThrow()
+  })
+})
