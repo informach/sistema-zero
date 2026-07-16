@@ -4077,6 +4077,19 @@ export type JSStatement =
       colorSpace: 'srgb' | 'off'
       toneMapping: 'aces' | 'off'
     })
+  // Canvas 3D: macro de efeito BRILHO (bloom) — 1 bloco que arma o EffectComposer +
+  // RenderPass + UnrealBloomPass + OutputPass (grafia atual, forward-only). `composer`
+  // = a var do composer; strength/radius/threshold = os botões (sockets de valor).
+  | (JSStatementCommon & {
+      type: 'bloomSetup'
+      composer: string
+      renderer: string
+      scene: string
+      camera: string
+      strength: JSExpr
+      radius: JSExpr
+      threshold: JSExpr
+    })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -8081,6 +8094,17 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       shadows: z.enum(['soft', 'hard', 'off']),
       colorSpace: z.enum(['srgb', 'off']),
       toneMapping: z.enum(['aces', 'off']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('bloomSetup'),
+      composer: irText(),
+      renderer: irText(),
+      scene: irText(),
+      camera: irText(),
+      strength: JSExprSchema,
+      radius: JSExprSchema,
+      threshold: JSExprSchema,
       ...idField,
     }),
     z.object({

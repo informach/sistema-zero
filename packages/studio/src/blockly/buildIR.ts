@@ -3392,6 +3392,34 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     }
+    case 'sz_t3d_bloom_setup':
+      // Macro do Brilho (bloom): 1 bloco → esteira EffectComposer/RenderPass/
+      // UnrealBloomPass/OutputPass (o gerador expande + traz os imports).
+      return {
+        kind: 'js',
+        value: {
+          type: 'bloomSetup',
+          composer: f(block, 'COMPOSER') || 'composer',
+          renderer: f(block, 'R'),
+          scene: f(block, 'SCENE'),
+          camera: f(block, 'CAMERA'),
+          strength: exprInput(block, 'STRENGTH', { type: 'num', value: 1.5 }),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 0.4 }),
+          threshold: exprInput(block, 'THRESHOLD', { type: 'num', value: 0.85 }),
+        },
+      }
+    case 'sz_t3d_render_effects':
+      // `composer.render()` — desenhar passando pela esteira de efeitos. Facilitador
+      // → memberCall genérico (reconhecido de volta no workspaceState).
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'COMPOSER') },
+          method: 'render',
+          args: [],
+        },
+      }
     case 'sz_js_call_method':
       return {
         kind: 'js',

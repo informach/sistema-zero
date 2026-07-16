@@ -144,6 +144,29 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
 }
 
 /**
+ * Módulos de pós-processamento que o macro Brilho (`bloomSetup`) precisa importar.
+ * Espelha os caminhos de `FieldAddonPicker.ADDON_MODULES` (aqui em cópia local para
+ * o gerador NÃO depender do blockly). Injetados no topo quando a IR tem um bloom.
+ */
+const BLOOM_IMPORTS: ReadonlyArray<{ name: string; module: string }> = [
+  { name: 'EffectComposer', module: 'three/addons/postprocessing/EffectComposer.js' },
+  { name: 'RenderPass', module: 'three/addons/postprocessing/RenderPass.js' },
+  { name: 'UnrealBloomPass', module: 'three/addons/postprocessing/UnrealBloomPass.js' },
+  { name: 'OutputPass', module: 'three/addons/postprocessing/OutputPass.js' },
+]
+
+/** Anda a árvore de statements (corpos aninhados inclusos) procurando um tipo. */
+function treeHasStatementType(statements: JSStatement[], type: JSStatement['type']): boolean {
+  for (const s of statements) {
+    if (s.type === type) return true
+    for (const body of jsChildBodies(s)) {
+      if (treeHasStatementType(body, type)) return true
+    }
+  }
+  return false
+}
+
+/**
  * Guarda de profundidade ITERATIVA (pilha explícita, sem recursão). Roda ANTES
  * de `hoistAnimationLoops`/`createPreparedIdentifierScope`/compilação — todas
  * recursões sem guarda própria que estourariam a pilha numa IR patológica antes
@@ -201,8 +224,21 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // JS). Os blocos de import são top-level (no frame de Comportamento); movê-los à
   // frente garante o código válido mesmo se a criança os arrastar para baixo.
   const isImport = (s: JSStatement): boolean => s.type === 'importStar' || s.type === 'importNamed'
-  const statements = hoistedLoops.some(isImport)
-    ? [...hoistedLoops.filter(isImport), ...hoistedLoops.filter((s) => !isImport(s))]
+  // Macro Brilho (bloom): traz sozinho os imports do pós-processamento (three/addons/
+  // postprocessing/…), deduplicados por módulo contra o que a criança já importou.
+  const existingModules = new Set(
+    hoistedLoops.filter((s) => s.type === 'importNamed').map((s) => s.module),
+  )
+  const injectedImports: JSStatement[] = treeHasStatementType(hoistedLoops, 'bloomSetup')
+    ? BLOOM_IMPORTS.filter((i) => !existingModules.has(i.module)).map((i) => ({
+        type: 'importNamed',
+        names: [i.name],
+        module: i.module,
+      }))
+    : []
+  const imports = [...hoistedLoops.filter(isImport), ...injectedImports]
+  const statements = imports.length
+    ? [...imports, ...hoistedLoops.filter((s) => !isImport(s))]
     : hoistedLoops
   const identifiers = createPreparedIdentifierScope(statements)
   const headerText = opts.header ? `${opts.header.trim()}\n\n` : ''
@@ -2789,6 +2825,25 @@ ${pad}});`
       if (stmt.colorSpace === 'srgb') lines.push(`${r}.outputColorSpace = THREE.SRGBColorSpace;`)
       if (stmt.toneMapping === 'aces') lines.push(`${r}.toneMapping = THREE.ACESFilmicToneMapping;`)
       // Nada selecionado → statement vazio (raro; a criança removeria o bloco).
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'bloomSetup': {
+      // Macro Brilho: expande a esteira de pós-processamento (grafia atual 0.180).
+      // Os imports de three/addons/postprocessing entram sozinhos (hoist no topo).
+      const c = identifiers.get(stmt.composer)
+      const r = identifiers.get(stmt.renderer)
+      const sc = identifiers.get(stmt.scene)
+      const cam = identifiers.get(stmt.camera)
+      const strength = compileExpr(stmt.strength, 0, identifiers, recAt(base))
+      const radius = compileExpr(stmt.radius, 0, identifiers, recAt(base))
+      const threshold = compileExpr(stmt.threshold, 0, identifiers, recAt(base))
+      const res = 'new THREE.Vector2(window.innerWidth, window.innerHeight)'
+      const lines = [
+        `const ${c} = new EffectComposer(${r});`,
+        `${c}.addPass(new RenderPass(${sc}, ${cam}));`,
+        `${c}.addPass(new UnrealBloomPass(${res}, ${strength}, ${radius}, ${threshold}));`,
+        `${c}.addPass(new OutputPass());`,
+      ]
       return lines.map((l) => `${pad}${l}`).join('\n')
     }
     case 'return':
@@ -5624,6 +5679,15 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'rendererConfig':
       names.add(stmt.renderer)
+      return
+    case 'bloomSetup':
+      names.add(stmt.composer)
+      names.add(stmt.renderer)
+      names.add(stmt.scene)
+      names.add(stmt.camera)
+      collectExprIdentifiers(stmt.strength, names)
+      collectExprIdentifiers(stmt.radius, names)
+      collectExprIdentifiers(stmt.threshold, names)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)

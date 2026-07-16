@@ -571,6 +571,8 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_t3d_enable_shadows',
   'sz_t3d_mount_renderer',
   'sz_t3d_render',
+  'sz_t3d_bloom_setup',
+  'sz_t3d_render_effects',
   'sz_val_array_filter',
   'sz_val_object',
   'sz_val_object_op',

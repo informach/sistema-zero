@@ -504,6 +504,46 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Liga de uma vez os ajustes que deixam o 3D bonito e MODERNO — a criança só escolhe, o bloco escreve a grafia certa do three.js de hoje: nitidez na retina (setPixelRatio), sombras macias (shadowMap.type), cores vivas (outputColorSpace = SRGBColorSpace) e brilho de cinema (toneMapping = ACESFilmicToneMapping). Ponha "não mexer" no que não quiser.',
   },
+
+  // ───────────────────────── ✨ Efeitos ───────────────────────────────────────
+  {
+    // Macro "Brilho (bloom)": arma EffectComposer + RenderPass + UnrealBloomPass +
+    // OutputPass. Os imports do pós-processamento entram sozinhos (gerador).
+    type: 'sz_t3d_bloom_setup',
+    message0: 'ligar Brilho ✨ no renderizador %1',
+    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    message1: 'da cena %1 com a câmera %2',
+    args1: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'variable' },
+    ],
+    message2: 'força %1 · espalhar %2 · brilho mínimo %3 · guardar em %4',
+    args2: [
+      { type: 'input_value', name: 'STRENGTH', check: 'JSValue' },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+      { type: 'input_value', name: 'THRESHOLD', check: 'JSValue' },
+      { type: 'field_input', name: 'COMPOSER', text: 'composer' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O efeito ✨ mais bonito e comum: faz as partes claras BRILHAREM (neon, sol, lâmpadas). Um bloco só arma toda a "esteira de efeitos" do three.js (EffectComposer + RenderPass + UnrealBloomPass + OutputPass) e traz os imports sozinho. Força = quão forte brilha; espalhar = o tamanho do halo; brilho mínimo = o quão claro precisa ser pra brilhar. Depois troque o "desenhar a cena" por "desenhar com efeitos".',
+  },
+  {
+    // `composer.render()` — desenhar passando pela esteira de efeitos (no lugar de
+    // `renderer.render(cena, camera)`). Facilitador → memberCall genérico.
+    type: 'sz_t3d_render_effects',
+    message0: 'desenhar a cena com efeitos %1',
+    args0: [{ type: 'field_name_picker', name: 'COMPOSER', text: 'composer', kind: 'variable' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'No lugar de "desenhar a cena", use este DENTRO do laço de animação quando ligou um efeito (Brilho): desenha a cena passando pela esteira de efeitos. Vira "composer.render()".',
+  },
 ]
 
 export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[] = [
@@ -555,6 +595,11 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
     name: '📦 Modelos',
     colour: C,
     types: ['sz_t3d_load_model', 'sz_t3d_traverse'],
+  },
+  {
+    name: '✨ Efeitos',
+    colour: C,
+    types: ['sz_t3d_bloom_setup', 'sz_t3d_render_effects'],
   },
 ]
 

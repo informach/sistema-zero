@@ -430,6 +430,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_t3d_set_intensity: { N: 'number' },
   sz_t3d_set_matrix_at: { I: 'number' },
   sz_t3d_renderer_size: { W: 'number', H: 'number' },
+  sz_t3d_bloom_setup: { STRENGTH: 'number', RADIUS: 'number', THRESHOLD: 'number' },
   // Mundo 3D (world-3d) — soquetes nascidos input_value (inertes na migração,
   // ativos na restauração de sombra + shouldEmitAsShadow).
   sz_w3d_setup: { WORLD: 'number' },

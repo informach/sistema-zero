@@ -136,6 +136,8 @@ const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   // Canvas 3D: `criar cena = novo THREE.Scene()` declara um objeto do three.js —
   // os facilitadores (posição/rotação/render/…) o consomem pelo seletor de nomes.
   sz_t3d_new_var: ['VARNAME'],
+  // Macro Brilho: declara a var do composer (o "desenhar com efeitos" a consome).
+  sz_t3d_bloom_setup: ['COMPOSER'],
   // (Laços/tentar introduzem nomes LOCAIS — ver VARIABLE_LOOP_BINDERS abaixo.)
   // Canvas: teclado, imagem e gradiente guardam numa variável.
   sz_canvas_keyboard: ['NAME'],

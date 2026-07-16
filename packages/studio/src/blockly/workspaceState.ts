@@ -996,6 +996,10 @@ function recognizeT3dCall(
       )
     }
   }
+  // composer.render() — desenhar passando pela esteira de efeitos (0 args).
+  if (method === 'render' && args.length === 0 && objVar) {
+    return block('sz_t3d_render_effects', { COMPOSER: objVar.name }, {}, stmt.__id)
+  }
   return null
 }
 
@@ -6059,6 +6063,23 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'bloomSetup': {
+      // Macro Brilho (forward-only): só chega aqui via block→IR→block. Do CÓDIGO, a
+      // esteira volta como blocos primitivos (new EffectComposer/addPass/…).
+      const vs = valueSocketsOf([
+        ['STRENGTH', stmt.strength],
+        ['RADIUS', stmt.radius],
+        ['THRESHOLD', stmt.threshold],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_bloom_setup',
+        { R: stmt.renderer, SCENE: stmt.scene, CAMERA: stmt.camera, COMPOSER: stmt.composer },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)

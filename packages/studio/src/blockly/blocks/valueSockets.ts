@@ -76,6 +76,8 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_set_fog: { NEAR: 10, FAR: 100 },
   sz_t3d_set_matrix_at: { I: 0 },
   sz_t3d_renderer_size: { W: 800, H: 600 },
+  // Macro Brilho (bloom): força/espalhar/limiar do UnrealBloomPass (defaults do three).
+  sz_t3d_bloom_setup: { STRENGTH: 1.5, RADIUS: 0.4, THRESHOLD: 0.85 },
 }
 
 /**

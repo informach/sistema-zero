@@ -118,6 +118,9 @@ export const COMMON_CLASSES: ReadonlyArray<{ group: string; items: readonly Clas
       { name: 'PointerLockControls', ns: '' },
       { name: 'RGBELoader', ns: '' },
       { name: 'EffectComposer', ns: '' },
+      { name: 'RenderPass', ns: '' },
+      { name: 'UnrealBloomPass', ns: '' },
+      { name: 'OutputPass', ns: '' },
     ],
   },
 ]
