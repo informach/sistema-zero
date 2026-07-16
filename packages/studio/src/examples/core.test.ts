@@ -6,6 +6,7 @@ import {
   gorilasNaMaoExample,
   invadersNaMaoExample,
   plataformaVerticalNaMaoExample,
+  portasDoCasteloNaMaoExample,
 } from './core'
 
 function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
@@ -126,5 +127,39 @@ describe('CORE_EXAMPLES — plataformaVerticalNaMaoExample (plataforma 100% núc
     const code = compileStatements(plataformaVerticalNaMaoExample.ir.js, 0)
     expect(code).toContain('ctx.scale(scale, scale)')
     expect(code).toContain('ctx.translate(0 - camera.x, 0 - camera.y)')
+  })
+})
+
+describe('CORE_EXAMPLES — portasDoCasteloNaMaoExample (platformer + passagem de fase)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(portasDoCasteloNaMaoExample)
+    expect(portasDoCasteloNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRSchema.safeParse(portasDoCasteloNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(portasDoCasteloNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa a física + o fade de passagem de fase na mão (globalAlpha), sem asset', () => {
+    const types = collectTypes(portasDoCasteloNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Block/Player
+      'funcDecl', // overlap + loadLevel + animate
+      'requestFrame',
+      'canvasSetup',
+      'canvasFillRect',
+      'canvasGlobalAlpha', // o fade preto por cima, na mão (no lugar do gsap)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    expect(portasDoCasteloNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(portasDoCasteloNaMaoExample.ir.js, 0)
+    expect(code).toContain('ctx.globalAlpha = fade')
+    expect(code).toContain('loadLevel(nextLevel)')
   })
 })
