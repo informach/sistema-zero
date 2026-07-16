@@ -821,6 +821,10 @@ export const gameKitRuntime = `(function () {
       if (e._pushX || e._pushY) {
         e.x += e._pushX * dt;
         e.y += e._pushY * dt;
+        // Deslocamento do MOTOR segue o padrão do carryRiders: atualiza a
+        // varredura junto — o resolveSolid por sobreposição é a rede.
+        e._prevX = e.x;
+        e._prevY = e.y;
         var spd = Math.sqrt(e._pushX * e._pushX + e._pushY * e._pushY);
         var decay = PUSHBACK_DECAY * dt;
         if (spd <= decay) { e._pushX = 0; e._pushY = 0; }
@@ -1151,6 +1155,13 @@ export const gameKitRuntime = `(function () {
   };
   var STATE_NAMES = { parado: 1, andando: 1, pulando: 1, caindo: 1, dano: 1, golpe: 1, morte: 1 };
   var STATE_LIST = 'use parado, andando, pulando, caindo, dano, golpe ou morte';
+  // Cadeias completas pre-computadas (estado + fallbacks): o autoAnimate roda
+  // por-entidade-por-quadro e um concat ali alocaria ate ~18k arrays/s num enxame.
+  var STATE_CHAIN = (function () {
+    var m = {};
+    for (var k in STATE_FALLBACK) m[k] = [k].concat(STATE_FALLBACK[k]);
+    return m;
+  })();
 
   /** Poe a entidade num estado por N segundos - e e a TRAVA: enquanto durar, o
    * autoAnimate nao deixa a fisica roubar a animacao. secs <= 0 = ate a animacao
@@ -1215,7 +1226,9 @@ export const gameKitRuntime = `(function () {
     var anims = who._stateAnims;
     var looks = who._stateLooks;
     var key = null;
-    var chain = [st].concat(STATE_FALLBACK[st] || []);
+    // st e sempre um dos 7 nomes (derivedState/setEntityState validam); o ramo
+    // lazy e so rede - o mapa nao cresce alem deles.
+    var chain = STATE_CHAIN[st] || (STATE_CHAIN[st] = [st].concat(STATE_FALLBACK[st] || []));
     for (var i = 0; i < chain.length; i++) {
       if ((anims && anims[chain[i]]) || (looks && looks[chain[i]])) { key = chain[i]; break; }
     }
@@ -2184,11 +2197,14 @@ export const gameKitRuntime = `(function () {
    * SOBRESCREVE o vx/vy - e sem somar nao existe Asteroids, nave com impulso, nem
    * carro. (A doc da IA prometia "tanque/nave/Asteroids" com o setVelocityAngle:
    * era mentira, e este bloco e o que a torna verdade.)
+   * A forca e ACELERACAO em px/s2, aplicada pelo dt do quadro - use no "A cada
+   * quadro" (era o UNICO primitivo de movimento sem dt: a 30fps acelerava a
+   * metade). Impulso unico, de evento? setVelocityAngle.
    */
   function thrust(who, deg, force) {
     if (!who || typeof who !== 'object') return;
     var r = num(deg, 0) * Math.PI / 180;
-    var f = num(force, 100);
+    var f = num(force, 6000) * currentDt;
     who.vx = num(who.vx, 0) + Math.cos(r) * f;
     who.vy = num(who.vy, 0) + Math.sin(r) * f;
   }
@@ -2314,12 +2330,12 @@ export const gameKitRuntime = `(function () {
   }
   function stopSound(name) {
     var a = sounds[text(name, '')];
-    if (!a) return;
+    if (!a) { warnOnce('stopsound:' + text(name, ''), 'o som "' + text(name, '') + '" não foi carregado — use "Carregar o som"'); return; }
     try { a.pause(); a.currentTime = 0; } catch (e) {}
   }
   function setVolume(name, level) {
     var a = sounds[text(name, '')];
-    if (!a) return;
+    if (!a) { warnOnce('volume:' + text(name, ''), 'o som "' + text(name, '') + '" não foi carregado — use "Carregar o som"'); return; }
     try { a.volume = Math.max(0, Math.min(1, num(level, 1))); } catch (e) {}
   }
 
@@ -3304,8 +3320,9 @@ export const gameKitRuntime = `(function () {
   // bloco so e acrescenta o que so existe em jogo de luta - rounds, defesa,
   // especial, combo, e um oponente de computador.
   //
-  // O QUE ELE REUSA (nao duplica): applyGravity + o feel do pulo (setJumpFeel
-  // regula a luta de graca), attackFacing/didHit/swingBox (a caixa ja vira com a
+  // O QUE ELE REUSA (nao duplica): applyGravity + o feel do pulo (o setJumpFeel
+  // regula coyote e gravidade da luta de graca; a FORCA do pulo e a constante
+  // LUTA_JUMP do kit), attackFacing/didHit/swingBox (a caixa ja vira com a
   // direcao e ja tem a trava de 1 acerto por golpe), setSwingWindow (o recuo),
   // setEntityState/autoAnimate (a trava de animacao), hurt/knockback/isInvincible,
   // drawBar, face, setState + as telas prontas, on/emit, cameraShake, defineEffect.
@@ -3337,6 +3354,10 @@ export const gameKitRuntime = `(function () {
   };
   var LUTA_GUARD_CHIP = 0.15;  // defendeu: 15% do dano passa de raspao
   var LUTA_COMBO_DECAY = 0.1;  // cada golpe do combo tira 10% do dano (min 30%)
+  // Forca do pulo do lutador, FIXA do kit (o "Regular o pulo" ajusta coyote e
+  // gravidade da luta - a gravidade muda a ALTURA do arco; a forca nao e
+  // resposta da crianca).
+  var LUTA_JUMP = 700;
 
   function lutaSide(who) {
     if (!luta) return null;
@@ -3457,7 +3478,7 @@ export const gameKitRuntime = `(function () {
     who.vx = dx * num(who.speed, 260);
     // 6) pular, com o feel do bloco GERAL "Regular o pulo"
     if (justPressed[normKey(jump)] && num(who._coyoteT, 0) > 0) {
-      who.vy = -Math.abs(num(who._lutaJump, 700));
+      who.vy = -LUTA_JUMP;
       who.onGround = false;
       who._coyoteT = 0;
     }
@@ -3511,7 +3532,7 @@ export const gameKitRuntime = `(function () {
       if (esc) { lutaAttack(who, esc.name); who.vx = 0; moveByVelocity(who, dt); return; }
     }
     if (side.aiDecision === 'pular' && who.onGround) {
-      who.vy = -Math.abs(num(who._lutaJump, 700));
+      who.vy = -LUTA_JUMP;
       who.onGround = false;
     }
     // o dificil MANTEM a distancia do golpe (recua se colar); os outros so vem
@@ -3580,6 +3601,9 @@ export const gameKitRuntime = `(function () {
       var sd = lados[i];
       sd.c.health = num(sd.c.maxHealth, 100);
       sd.c.x = sd.homeX; sd.c.y = sd.homeY;
+      // teleporte zera a varredura (regra do arquivo) - senao o collideGroup do
+      // round seguinte varre o caminho morte->home e tromba num muro no meio.
+      sd.c._prevX = sd.c.x; sd.c._prevY = sd.c.y;
       sd.c.vx = 0; sd.c.vy = 0;
       sd.stun = 0; sd.combo = 0; sd.guard = false;
       sd.c._swingT = 0;
@@ -3587,6 +3611,11 @@ export const gameKitRuntime = `(function () {
       // o ESPECIAL fica de propósito: e por isso que o round 3 e o tenso.
     }
     emit('luta:round', null);
+  }
+  /** Um lado ataca, o outro defende (helper interno - nao entra na api). */
+  function lutaHitPass(atk, dfd) {
+    if (atk.pending && didHit(atk.c, dfd.c)) lutaHit(atk, dfd);
+    if (num(atk.c._swingT, 0) <= 0) atk.pending = null;
   }
   /**
    * O passo da luta. ⭐ As fases vivem DENTRO do kit e travam so os lutadores.
@@ -3609,13 +3638,10 @@ export const gameKitRuntime = `(function () {
     luta.t += dt;
     if (luta.p1.ai) lutaStepAI(luta.p1, dt);
     if (luta.p2.ai) lutaStepAI(luta.p2, dt);
-    // o acerto: a caixa do atacante contra o corpo do outro
-    var pares = [[luta.p1, luta.p2], [luta.p2, luta.p1]];
-    for (var i = 0; i < 2; i++) {
-      var atk = pares[i][0], dfd = pares[i][1];
-      if (atk.pending && didHit(atk.c, dfd.c)) lutaHit(atk, dfd);
-      if (num(atk.c._swingT, 0) <= 0) atk.pending = null;
-    }
+    // o acerto: a caixa do atacante contra o corpo do outro (2 chamadas fixas -
+    // montar os pares num array alocava 3 arrays POR QUADRO a luta inteira)
+    lutaHitPass(luta.p1, luta.p2);
+    lutaHitPass(luta.p2, luta.p1);
     if (luta.p1.c.health <= 0) { lutaRoundEnd('jogador 2'); return; }
     if (luta.p2.c.health <= 0) { lutaRoundEnd('jogador 1'); return; }
     if (luta.t >= luta.secs) {

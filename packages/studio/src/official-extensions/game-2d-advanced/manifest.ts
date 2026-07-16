@@ -11,7 +11,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.19.0',
+  version: '0.19.1',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E quatro atalhos prontos para começar rápido: 🏃 plataforma (pulo gostoso, plataformas, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, tipos, capturar, evoluir) e 🥊 luta (dois jogadores, rounds, combo, especial).',
   category: 'games',
@@ -295,6 +295,8 @@ primitivos: você liga do seu jeito, na ordem de verdade.
 **Empurrar … no ângulo … com força …** SOMA velocidade em vez de trocar: a nave
 continua andando depois que você solta o botão. É o que faz um Asteroids —
 "Mover no ângulo" apaga a velocidade de antes e o resultado nunca desliza.
+Use dentro do "A cada quadro": a força é POR SEGUNDO (px/s², padrão 6000), então
+o empurrão fica igual em qualquer computador, rápido ou lento.
 **Frear … com atrito …** tira a velocidade aos poucos: 0.9 = chão normal, 0.1 =
 gelo. Com os dois, você tem carro, hóquei, nave e patinação.
 
@@ -535,7 +537,8 @@ leva o time junto: nenhum bloco novo.
 
 O atalho do jogo de luta — dois lutadores, rounds, e um amigo (ou o computador)
 do outro lado. O que NÃO é só de luta vem do motor geral: gravidade, pulo (o
-"Regular o pulo" ajusta a luta), chão (molde + nascer + colidir), dano, empurrão,
+"Regular o pulo" ajusta o coyote e a gravidade da luta; a força do pulo do
+lutador é fixa do kit), chão (molde + nascer + colidir), dano, empurrão,
 telas de fim, tremor e faíscas.
 
 **Luta de A × B, melhor de N rounds de N s** casa os dois. Ponha DEPOIS de

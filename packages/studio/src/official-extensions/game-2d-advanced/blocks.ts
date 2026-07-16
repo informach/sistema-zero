@@ -3073,7 +3073,7 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'SOMA velocidade no ângulo, em vez de trocar — é isso que dá INÉRCIA: a nave continua andando depois que você solta. (O "Mover no ângulo" apaga a velocidade de antes.)',
+      'SOMA velocidade no ângulo, em vez de trocar — é isso que dá INÉRCIA: a nave continua andando depois que você solta. Use no "A cada quadro": a força é por segundo (px/s²). (O "Mover no ângulo" apaga a velocidade de antes.)',
   },
   {
     type: 'sz_gk_apply_friction',
@@ -3621,6 +3621,22 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    // ⭐ HONRAR A REGRA (o R18 decidiu que itens são GERAIS; o R20 trouxe a
+    // categoria para cá): dar/ter/contar itens é de QUALQUER jogo — coleta,
+    // loja, crafting. Só o nome dos types segue "rpg_*" (renomear quebraria
+    // projeto salvo). Vive colada na 💾 Memória: inventário e persistência
+    // andam juntos.
+    name: '🎒 Itens',
+    colour: C,
+    types: [
+      'sz_gk_rpg_give_item',
+      'sz_gk_rpg_has_item',
+      'sz_gk_count_item',
+      'sz_gk_rpg_remove_item',
+      'sz_gk_rpg_draw_inventory',
+    ],
+  },
+  {
     name: '💾 Memória',
     colour: C,
     types: [
@@ -3665,13 +3681,11 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_plat_stomp',
     ],
   },
-  // ---- 🧙 KIT RPG (o kit facilitado, SÓ para montar um RPG) ----
-  // Tudo aqui é acoplado ao mundo `rpg.*` (grade/NPCs/mapas/batalha) — por isso
-  // as categorias levam o prefixo "Kit RPG:". A FALA e o MENU saíram para o
-  // geral (💬 Fala & escolhas): o motor os desenha em qualquer jogo.
+  // ---- 🥊 KIT LUTA (o atalho do gênero) ----
   {
     // ⭐ O Kit Luta. Pela REGRA: só o que é ESPECÍFICO de luta mora aqui. Gravidade,
-    // pulo (e o "Regular o pulo" regula a luta de graça), caixa de golpe, recuo,
+    // pulo (o "Regular o pulo" regula o coyote e a gravidade da luta de graça;
+    // a força do impulso é fixa do kit), caixa de golpe, recuo,
     // dano, empurrão, invencibilidade, trava de animação, telas de fim, tremor e
     // faíscas são do motor GERAL — o kit CHAMA, não copia.
     //
@@ -3710,6 +3724,11 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_luta_special',
     ],
   },
+  // ---- 🧙 KIT RPG (o kit facilitado, SÓ para montar um RPG) ----
+  // Tudo aqui é acoplado ao mundo `rpg.*` (grade/NPCs/mapas/batalha) — por isso
+  // as categorias levam o prefixo "Kit RPG:". A FALA e o MENU saíram para o
+  // geral (💬 Fala & escolhas), e os ITENS para 🎒 Itens (gerais): o motor os
+  // serve em qualquer jogo.
   {
     name: '🧙 Kit RPG: mundo',
     colour: C,
@@ -3732,17 +3751,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_gk_rpg_create_npc', 'sz_gk_rpg_draw_npcs', 'sz_gk_rpg_on_talk'],
   },
   {
-    name: '🎒 Itens',
-    colour: C,
-    types: [
-      'sz_gk_rpg_give_item',
-      'sz_gk_rpg_has_item',
-      'sz_gk_count_item',
-      'sz_gk_rpg_remove_item',
-      'sz_gk_rpg_draw_inventory',
-    ],
-  },
-  {
     name: '🎬 Kit RPG: cenas',
     colour: C,
     types: [
@@ -3760,6 +3768,25 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     name: '💾 Kit RPG: salvar',
     colour: C,
     types: ['sz_gk_rpg_save', 'sz_gk_rpg_load', 'sz_gk_rpg_has_save'],
+  },
+  {
+    // A batalha fecha o cluster do RPG DE PROPÓSITO: o Kit Monstrinhos (logo
+    // abaixo) é "um jogo do Kit RPG com OUTRA batalha" — a vizinhança conta a
+    // história. (Ela morava órfã no FIM do array, depois do Monstrinhos inteiro.)
+    name: '⚔️ Kit RPG: batalha',
+    colour: C,
+    types: [
+      'sz_gk_rpg_battle_stats',
+      'sz_gk_rpg_battle_start',
+      'sz_gk_rpg_set_special',
+      'sz_gk_rpg_give_potion',
+      'sz_gk_rpg_battle_reward',
+      'sz_gk_rpg_inflict',
+      'sz_gk_rpg_on_battle_end',
+      'sz_gk_rpg_battle_won',
+      'sz_gk_rpg_level',
+      'sz_gk_rpg_xp',
+    ],
   },
   // ---- 👾 KIT MONSTRINHOS (o atalho do gênero "pegue e treine bichinhos") ----
   // ⭐ É um jogo do Kit RPG com OUTRA batalha: o mundo (grade/NPC/fala/mapa/
@@ -3801,22 +3828,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_gk_pkm_battle_trainer',
       'sz_gk_pkm_trainer_creature',
       'sz_gk_pkm_caught',
-    ],
-  },
-  {
-    name: '⚔️ Kit RPG: batalha',
-    colour: C,
-    types: [
-      'sz_gk_rpg_battle_stats',
-      'sz_gk_rpg_battle_start',
-      'sz_gk_rpg_set_special',
-      'sz_gk_rpg_give_potion',
-      'sz_gk_rpg_battle_reward',
-      'sz_gk_rpg_inflict',
-      'sz_gk_rpg_on_battle_end',
-      'sz_gk_rpg_battle_won',
-      'sz_gk_rpg_level',
-      'sz_gk_rpg_xp',
     ],
   },
 ]
@@ -3983,7 +3994,7 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_play_anim_once: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(10) },
   sz_gk_set_entity_state: { SECS: numShadow(0.3) },
   sz_gk_state_anim: { FROM: numShadow(0), TO: numShadow(3), FPS: numShadow(8) },
-  sz_gk_thrust: { DEG: numShadow(0), FORCE: numShadow(200) },
+  sz_gk_thrust: { DEG: numShadow(0), FORCE: numShadow(6000) },
   sz_gk_apply_friction: { FACTOR: numShadow(0.9) },
   sz_gk_wait: { SECS: numShadow(1) },
   sz_gk_nearest_active: { X: numShadow(0), Y: numShadow(0) },

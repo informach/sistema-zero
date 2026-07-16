@@ -6404,7 +6404,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'gk:thrust',
           charVar: f(block, 'WHO'),
           degrees: exprInput(block, 'DEG', { type: 'num', value: 0 }),
-          force: exprInput(block, 'FORCE', { type: 'num', value: 200 }),
+          force: exprInput(block, 'FORCE', { type: 'num', value: 6000 }),
         },
       }
     case 'sz_gk_apply_friction':

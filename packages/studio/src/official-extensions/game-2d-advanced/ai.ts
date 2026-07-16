@@ -75,7 +75,7 @@ API global injetada como window.SZGameKit:
   margem) recolhe quem passou da margem (use 200; SEMPRE chamar no onUpdate —
   é a lição de otimização); recycle(item) devolve ao pool; drawActive(molde)
   desenha todos (look > image > retângulo); countActive(molde).
-- 🎨 Aparência vetorial: defineLook(nome, fn(ctx), baseW, baseH) desenha uma
+- 🎨 Aparência (vetorial): defineLook(nome, fn(ctx), baseW, baseH) desenha uma
   vez em coords LOCAIS (0,0 = canto, no tamanho-base) — molde com look ganha o
   visual escalado ao w/h dele; drawLook(nome, x, y, w, h) desenha avulso
   (escala do tamanho-base). Blocos de Canvas do núcleo valem dentro da fn.
@@ -98,7 +98,7 @@ API global injetada como window.SZGameKit:
   "hurt"|"powerup"|"win"|"gameover"|"click") tons sintetizados prontos;
   playTone(freqHz, ms) synth cru. Áudio "acorda" no 1º gesto (clique/tecla) —
   automático.
-- 🎞️ Folha de quadros: setSheet(c, "imagem", fw, fh) cola a spritesheet
+- 🎞️ Folha de quadros (em 🎨 Aparência): setSheet(c, "imagem", fw, fh) cola a spritesheet
   (carregada por loadImage) no personagem; playAnim(c, de, até, fps) toca a
   faixa em loop — PODE rodar todo quadro (guarda de transição: repetir a mesma
   não reinicia). A folha VENCE a imagem estática no desenho.
@@ -110,7 +110,7 @@ API global injetada como window.SZGameKit:
   normalizado × v); moveByVelocity(quem, dt) aplica × dt a cada quadro. Com
   const tiro = spawnFromMold(...) fecha tiro reto E mirado. setAngle(c, graus)
   gira o desenho em volta do centro.
-- 🖱️ Mouse/toque (coords do JOGO, letterbox e câmera resolvidos):
+- 🖱️ Mouse/toque (em 🎮 Controles) — coords do JOGO, letterbox e câmera resolvidos:
   onGameClick(fn(px, py)) roda a cada clique/toque no canvas; mouseX()/
   mouseY()/mouseDown() para mirar e arrastar.
 - 📊 drawBar(atual, max, x, y, w, h, cor): barra proporcional (vida/mana/
@@ -158,7 +158,7 @@ API global injetada como window.SZGameKit:
   no onTalk do chefe → rpgBattleStart; no rpgOnBattleEnd → "se ganhei:
   setState('vitoria') senão endGame()". Recomeçar o jogo zera flags/itens e
   volta ao 1º mapa.
-- 🎬 Cenas & NPCs vivos (Pizza Legends): rpgCutscene(fn) grava o corpo (cada
+- 🎬 Kit RPG: cenas (& NPCs vivos — Pizza Legends): rpgCutscene(fn) grava o corpo (cada
   passo ENFILEIRA) e toca a fila com esperas — o herói fica TRAVADO até acabar.
   Passos: rpgWait(seg), rpgSay, rpgNpcWalkTo("npc", cx, cy) (anda célula a
   célula; a cena espera chegar), rpgFace("npc", "down"|"up"|"left"|"right"),
@@ -176,10 +176,10 @@ API global injetada como window.SZGameKit:
   por escolha — árvore de diálogo/loja/sim-não/quiz. Padrão: no rpgOnTalk do
   lojista → rpgMenu("Comprar?", () => { rpgOption("Sim", () => {...});
   rpgOption("Não", () => {}); }).
-- 💾 Salvar (Kit RPG): rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/
+- 💾 Kit RPG: salvar — rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/
   célula/atributos/poções/especial no localStorage (sobrevive a reabrir).
   Continuar: "se rpgHasSave(): rpgLoad()".
-- ⚔️ Batalha RICA (progressão, TurnCycle/Combatant do Pizza, 1v1): rpgBattleStats(
+- ⚔️ Kit RPG: batalha (a RICA — progressão, TurnCycle/Combatant do Pizza, 1v1): rpgBattleStats(
   vida, força, DEFESA) 1x no começo (nível 1); rpgBattleStart(nome, vida, força,
   defesa) — dano = força ± 20% − defesa/2; menu Atacar/Especial/Item/Defender/
   Fugir. rpgSetSpecial(nome, dano, custo) = golpe que gasta ENERGIA (começa cheia,
@@ -188,7 +188,7 @@ API global injetada como window.SZGameKit:
   "subiu:nivel"); rpgLevel()/rpgXp() getters; rpgInflict("inimigo"|"heroi",
   "veneno", turnos) tira 3 de vida/turno. Padrão: rpgOnBattleEnd → "se
   rpgBattleWon(): rpgBattleReward(20); setState('vitoria') senão endGame()".
-- 🗺️ Mundo de tiles + profundidade (Ninja Adventure; GERAL, vale fora do RPG):
+- 🗺️ Mundo & profundidade (tiles do Ninja Adventure; GERAL, vale fora do RPG):
   loadTilemap(nome, assetDeMapa) lê um MAPA do Pinta (grade+peças+sólidos juntos,
   via ASSET_META). No onDraw, drawTilemap(nome, "chão") ANTES dos personagens e
   drawTilemap(nome, "topos") DEPOIS = profundidade (herói passa atrás das copas).
@@ -200,7 +200,7 @@ API global injetada como window.SZGameKit:
   ⚠️ tilemapSolid(nome) NÃO é geral: ele só alimenta a GRADE do RPG (rpg.walls),
   que apenas o rpgMoveGrid lê. Num jogo de movimento LIVRE ele não faz nada — não
   emita tilemapSolid fora do Kit RPG.
-- ⚙️ Física GERAL (primitivos soltos, FORA de todo kit — é com eles que se faz
+- ⚙️ Física (GERAL — primitivos soltos, FORA de todo kit; é com eles que se faz
   plataforma/quicar/arco "na unha"): applyGravity(quem, forca, dt) puxa p/ baixo
   (padrão 2160 px/s²) e DESLIGA onGround; setVelocity(quem, vx, vy) e
   velocityOf(quem, "x"|"y") escrevem E LEEM (ler destrava "se velocityOf(h,'y') >
@@ -238,7 +238,9 @@ API global injetada como window.SZGameKit:
   espaçamento, sem punir). O rastro branco do drawEntity pinta só na janela ATIVA.
   Golpe pesado que trava mais tempo do que leva p/ recuperar = COMBO emergente.
 - 🚀 thrust(quem, graus, forca) SOMA velocidade (INÉRCIA: nave/Asteroids/carro; o
-  setVelocityAngle SOBRESCREVE e por isso nunca desliza) · applyFriction(quem,
+  setVelocityAngle SOBRESCREVE e por isso nunca desliza). A força é px/s² e o
+  runtime aplica × dt por baixo (padrão 6000) — use TODO QUADRO; impulso único de
+  evento é setVelocityAngle · applyFriction(quem,
   fator, dt) = atrito (0.9 chão, 0.1 gelo) · angleOf(quem)/angleTo(a, b) = LER o
   ângulo (torre que gira até mirar, leque de tiros, stealth).
 - ⏱️ waitThen(segundos, fn) = esperar UMA vez, no relógio do jogo (o everySeconds
@@ -254,7 +256,7 @@ API global injetada como window.SZGameKit:
   p/ o que não tem bloco
   pronto. setFacingDir(quem, "down"|"up"|"left"|"right")/facingOf(quem) — a
   direção move DOIS sistemas: a folha de andar e a caixa do attackFacing.
-- 🗺️ Peças por célula: tileAt(mapa, x, y), setTileAt(mapa, x, y, peca),
+- 🗺️ Peças por célula (em 🗺️ Mundo & profundidade): tileAt(mapa, x, y), setTileAt(mapa, x, y, peca),
   breakTileAt(mapa, quem) (mundo destrutível/cavar), setTileSize(px) (padrão 64).
 - ✨ tweenTo(quem, x, y, s) desliza suave até um ponto (porta/plataforma/cutscene)
   — chame UMA vez, não todo quadro.

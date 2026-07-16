@@ -47,6 +47,40 @@ function titulosComEmoji(texto: string): string[] {
 }
 
 /**
+ * O contexto da IA não usa headers "###" — as citações vivem em bullets
+ * "- <emoji> Nome: …". Antes do R20 a checagem da IA reusava o extrator de
+ * headers e casava ZERO linha: passava em VÁCUO (a doença que este arquivo
+ * existe para matar, no próprio teste). Regras da extração, todas contra o
+ * texto real da ai.ts:
+ * 1. só bullet que COMEÇA com emoji;
+ * 2. assinatura de função começa minúscula (thrust, waitThen, tweenTo…) e não
+ *    alega chip nenhum;
+ * 3. "(em X)" / "(na cat X)" em qualquer posição aponta o chip explicitamente;
+ * 4. senão, o HEAD (até o 1º ":" ou " (") é a alegação — e a linha multi-chip
+ *    ("🧭 Regiões · 🎲 Sorte & medida · …") alega um chip por parte.
+ * Citação de CLUSTER ("🧙 Kit RPG", sem o ": mundo") é legítima: vale se algum
+ * chip real começa com ela seguida de ":".
+ */
+function chipsCitadosNaIA(texto: string): string[] {
+  const out: string[] = []
+  for (const m of texto.matchAll(/^- (.+)$/gm)) {
+    const linha = (m[1] ?? '').trim()
+    if (!COM_EMOJI.test(linha)) continue
+    // o "?" cobre o seletor de variação U+FE0F que sobra de emojis como 🖥️
+    const semEmoji = linha.replace(COM_EMOJI, '').replace(/^️?\s*/u, '')
+    if (!/^[A-ZÀ-Ü]/.test(semEmoji)) continue
+    const aponta = linha.match(/\((?:em|na cat) ([^)]+)\)/)
+    if (aponta) {
+      out.push((aponta[1] ?? '').trim())
+      continue
+    }
+    const head = (linha.split(/(?=:)|(?= \()/, 1)[0] ?? '').trim()
+    for (const parte of head.split('·')) out.push(parte.trim())
+  }
+  return out.filter(Boolean)
+}
+
+/**
  * ⭐ A REGRA (que a doc já segue nas boas seções): todo título com emoji ou **É**
  * um chip, ou **diz em qual chip está**. As duas formas são legítimas:
  *
@@ -84,9 +118,17 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
     expect(semChip(citadas)).toEqual([])
   })
 
+  /** Chip exato OU cluster ("🧙 Kit RPG" cobre "🧙 Kit RPG: mundo"). */
+  const chipRealOuCluster = (chip: string) =>
+    reais.has(chip) || [...reais].some((r) => r.startsWith(`${chip}:`))
+
   it('o contexto da IA não inventa nome de categoria', () => {
     // A IA lê isto e manda a criança clicar no chip: nome errado = ela não acha.
-    expect(semChip(titulosComEmoji(gameKitPromptContext))).toEqual([])
+    const citados = chipsCitadosNaIA(gameKitPromptContext)
+    // Sanidade anti-vácuo: extração vazia passaria em silêncio — foi exatamente
+    // o buraco que o R20 achou aqui (o extrator de "###" casava zero bullet).
+    expect(citados.length).toBeGreaterThan(10)
+    expect(citados.filter((c) => !chipRealOuCluster(c))).toEqual([])
   })
 
   it('todo bloco visível está na toolbox, e em UM lugar só', () => {

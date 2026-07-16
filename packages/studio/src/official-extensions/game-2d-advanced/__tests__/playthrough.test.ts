@@ -86,6 +86,9 @@ interface Api {
   flashScreen: Fn
   createCharacter: Fn
   placeCharacter: Fn
+  thrust: Fn
+  applyFriction: Fn
+  knockback: Fn
   lutaMatch: Fn
   lutaMove: Fn
   lutaFighter: Fn
@@ -473,5 +476,101 @@ describe('gk — JOGAR uma luta inteira do Kit Luta (a lição do R17)', () => {
     quadros(h, 400)
     // Os dois se acharam e se bateram: alguém perdeu vida sem nenhum teclado.
     expect(p1.health + p2.health).toBeLessThan(200)
+  })
+})
+
+describe('gk — R20: física DIRIGIDA por quadros (thrust, varredura da luta, empurrão)', () => {
+  /**
+   * O review #5 achou que thrust/applyFriction só tinham teste de EXISTÊNCIA — e
+   * por isso o thrust sem dt (a física de Asteroids mudava com o fps do
+   * computador da criança) ficou verde por um lote inteiro. Estes testes DIRIGEM.
+   */
+  interface Corpo {
+    x: number
+    y: number
+    vx: number
+    vy: number
+    _prevX: number
+    _prevY: number
+  }
+
+  /** Empurra a nave por 1 s de jogo em quadros de (1000/fps) ms e devolve o vx. */
+  async function corridaDaNave(
+    fps: number,
+  ): Promise<{ h: Harness; nave: Corpo; solta: () => void }> {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    const nave = h.api.createCharacter({ w: 20, h: 20, speed: 200, color: '#fff' }) as Corpo
+    let empurrando = true
+    h.api.onUpdate((dt: number) => {
+      if (empurrando) h.api.thrust(nave, 0, 6000)
+      h.api.applyFriction(nave, 0.5, dt)
+    })
+    await startGame(h)
+    h.api.setState('jogando')
+    for (let i = 1; i <= fps; i++) h.nextFrame(i * (1000 / fps))
+    return { h, nave, solta: () => (empurrando = false) }
+  }
+
+  it('⭐ thrust é px/s²: 1 s a 30 fps e a 60 fps dão a MESMA velocidade', async () => {
+    const a = await corridaDaNave(60)
+    const b = await corridaDaNave(30)
+    // Escala px/s² de verdade (com força 6000 e atrito 0.5, ~4300 depois de 1 s).
+    expect(a.nave.vx).toBeGreaterThan(3000)
+    // Antes do fix o thrust somava a força POR QUADRO: a 30 fps a nave acelerava
+    // a METADE (|vxA − vxB| ≈ 50% de vxA). A folga de 5% cobre a discretização.
+    expect(Math.abs(a.nave.vx - b.nave.vx)).toBeLessThan(a.nave.vx * 0.05)
+  })
+
+  it('soltar o botão: o atrito freia a nave (0.5 = metade da velocidade em 1 s)', async () => {
+    const a = await corridaDaNave(60)
+    const cruzeiro = a.nave.vx
+    a.solta()
+    for (let i = 61; i <= 120; i++) a.h.nextFrame(i * (1000 / 60))
+    expect(a.nave.vx).toBeGreaterThan(0)
+    expect(a.nave.vx).toBeLessThan(cruzeiro * 0.6)
+  })
+
+  it('⭐ o teleporte do round da luta zera a varredura (muro no meio não prende)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    const p1 = h.api.createCharacter({ w: 50, h: 110, speed: 260, color: '#00f' }) as Corpo
+    const p2 = h.api.createCharacter({ w: 50, h: 110, speed: 260, color: '#f00' }) as Corpo
+    // Um muro sólido entre o "home" do p2 (700) e o canto onde ele lutou (100).
+    h.api.defineMold('muro', { w: 40, h: 200, color: '#555' })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.spawnFromMold('muro', 420, 300)
+    h.api.placeCharacter(p1, 850, 400)
+    h.api.placeCharacter(p2, 700, 400)
+    h.api.lutaMatch(p1, p2, 3, 5) // home do p2 = 700
+    h.api.placeCharacter(p2, 100, 400) // teleporte LIMPO (placeCharacter zera _prev)
+    h.api.onUpdate(() => {
+      h.api.collideGroup(p2, 'muro')
+    })
+    // Ninguém aperta nada: o round 1 acaba por TEMPO (empate) e o lutaNextRound
+    // teleporta o p2 de volta ao home — 1,5 s de anúncio + 5 s + 2 s de K.O.
+    for (let i = 1; i <= 180; i++) h.nextFrame(i * 50)
+    expect(h.api.lutaRoundNow()).toBe(2)
+    // Sem o fix, o _prev ficava em 100: o collideGroup varria o caminho 100→700,
+    // trombava no muro (420) e o lutador "voltava" preso do lado errado.
+    expect(p2.x).toBe(700)
+  })
+
+  it('⭐ o empurrão do motor atualiza a varredura junto (padrão carryRiders)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    const heroi = h.api.createCharacter({ w: 60, h: 60, speed: 200, color: '#00f' }) as Corpo
+    const brutamontes = h.api.createCharacter({ w: 60, h: 60, speed: 200, color: '#f00' }) as Corpo
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.placeCharacter(heroi, 100, 400)
+    h.api.placeCharacter(brutamontes, 20, 400) // à esquerda: o empurrão vai p/ a direita
+    h.api.knockback(heroi, brutamontes, 400)
+    h.nextFrame(50) // 1 quadro de 50 ms → anda 400 × 0,05 = 20px
+    expect(heroi.x).toBeCloseTo(120)
+    // O contrato: deslocamento aplicado pelo MOTOR deixa a varredura consistente
+    // (sem isso, um empurrão grande atravessa parede fina no quadro lento).
+    expect(heroi._prevX).toBe(heroi.x)
   })
 })
