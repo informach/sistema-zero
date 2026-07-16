@@ -934,6 +934,32 @@ function recognizeT3dCall(
     }
   }
   const objVar = asVar(object)
+  // obj.position.lerp(alvo, velocidade)
+  if (method === 'lerp' && args.length === 2 && setProp && setProp.name === 'position' && setBase) {
+    const vs = valueSocketsOf([
+      ['TARGET', args[0] as JSExpr],
+      ['ALPHA', args[1] as JSExpr],
+    ])
+    if (vs) return block('sz_t3d_lerp_position', { OBJ: setBase.name }, {}, stmt.__id, vs)
+  }
+  // copias.setMatrixAt(i, molde.matrix)
+  if (method === 'setMatrixAt' && args.length === 2) {
+    const mesh = asVar(object)
+    const matProp = asMemberGet(args[1] as JSExpr, 'matrix')
+    const dummy = matProp && asVar(matProp.object)
+    if (mesh && dummy) {
+      const vs = valueSocketsOf([['I', args[0] as JSExpr]])
+      if (vs) {
+        return block(
+          'sz_t3d_set_matrix_at',
+          { DUMMY: dummy.name, MESH: mesh.name },
+          {},
+          stmt.__id,
+          vs,
+        )
+      }
+    }
+  }
   // camera.lookAt(x, y, z)
   if (method === 'lookAt' && args.length === 3 && objVar) {
     const vs = valueSocketsOf([
@@ -989,6 +1015,28 @@ function recognizeT3dSet(
   ) {
     const vs = valueSocketsOf([['COLOR', value.args[0] as JSExpr]])
     if (vs) return block('sz_t3d_set_background', { SCENE: objVar.name }, {}, stmt.__id, vs)
+  }
+  // cena.fog = new THREE.Fog(cor, perto, longe)
+  if (
+    name === 'fog' &&
+    objVar &&
+    value.type === 'newExpr' &&
+    value.namespace === 'THREE' &&
+    value.className === 'Fog' &&
+    value.args.length === 3
+  ) {
+    const vs = valueSocketsOf([
+      ['COLOR', value.args[0] as JSExpr],
+      ['NEAR', value.args[1] as JSExpr],
+      ['FAR', value.args[2] as JSExpr],
+    ])
+    if (vs) return block('sz_t3d_set_fog', { SCENE: objVar.name }, {}, stmt.__id, vs)
+  }
+  // copias.instanceMatrix.needsUpdate = true
+  const instProp = asMemberGet(object, 'instanceMatrix')
+  const instOwner = instProp && asVar(instProp.object)
+  if (name === 'needsUpdate' && instOwner && value.type === 'bool' && value.value === true) {
+    return block('sz_t3d_instances_dirty', { MESH: instOwner.name }, {}, stmt.__id)
   }
   // obj.rotation.<axis> += delta → obj.rotation.<axis> = obj.rotation.<axis> + delta
   const rotProp = asMemberGet(object, 'rotation')

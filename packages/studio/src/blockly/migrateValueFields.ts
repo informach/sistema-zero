@@ -423,9 +423,12 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_t3d_rotate_axis: { DELTA: 'number' },
   sz_t3d_set_scale: { X: 'number', Y: 'number', Z: 'number' },
   sz_t3d_look_at: { X: 'number', Y: 'number', Z: 'number' },
+  sz_t3d_lerp_position: { ALPHA: 'number' },
   sz_t3d_set_color: { COLOR: 'color' },
   sz_t3d_set_background: { COLOR: 'color' },
+  sz_t3d_set_fog: { COLOR: 'color', NEAR: 'number', FAR: 'number' },
   sz_t3d_set_intensity: { N: 'number' },
+  sz_t3d_set_matrix_at: { I: 'number' },
   sz_t3d_renderer_size: { W: 'number', H: 'number' },
   // Mundo 3D (world-3d) — soquetes nascidos input_value (inertes na migração,
   // ativos na restauração de sombra + shouldEmitAsShadow).

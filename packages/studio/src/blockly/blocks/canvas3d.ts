@@ -252,6 +252,39 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Pinta o fundo da cena de uma cor. Vira "cena.background = new THREE.Color(\'#101830\')".',
   },
+  {
+    // `scene.fog = new THREE.Fog(cor, perto, longe)`
+    type: 'sz_t3d_set_fog',
+    message0: 'névoa da cena %1 → cor %2 de perto %3 até longe %4',
+    args0: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'input_value', name: 'NEAR', check: 'JSValue' },
+      { type: 'input_value', name: 'FAR', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga a névoa de distância: as coisas somem suavemente na cor escolhida entre o "perto" e o "longe" (em metros). Dá profundidade de mundo grande. Vira "cena.fog = new THREE.Fog(\'#aabbcc\', 10, 100)".',
+  },
+  {
+    // `obj.position.lerp(alvo, velocidade)` — o idioma nº 1 de câmera que segue.
+    type: 'sz_t3d_lerp_position',
+    message0: 'mover %1 devagar até %2 na velocidade %3',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'camera', kind: 'variable' },
+      { type: 'input_value', name: 'TARGET', check: 'JSValue' },
+      { type: 'input_value', name: 'ALPHA', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desliza a posição do objeto um pedacinho em direção a um alvo (um Vector3) a cada quadro — a suavidade profissional da câmera que segue. Velocidade 0.1 = 10% do caminho por quadro. Vira "camera.position.lerp(alvo, 0.1)".',
+  },
 
   // ───────────────────────── 💡 Luz e sombra ──────────────────────────────────
   {
@@ -355,6 +388,36 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       'Coloca a tela do renderizador (o canvas 3D) dentro da página, para o desenho aparecer. Vira "document.body.appendChild(renderizador.domElement)".',
   },
 
+  // ───────────────────────── 🌳 Cópias em massa ───────────────────────────────
+  {
+    // `malha.setMatrixAt(i, molde.matrix)` — o miolo do InstancedMesh.
+    type: 'sz_t3d_set_matrix_at',
+    message0: 'gravar a pose do molde %1 na cópia %2 de %3',
+    args0: [
+      { type: 'field_name_picker', name: 'DUMMY', text: 'molde', kind: 'variable' },
+      { type: 'input_value', name: 'I', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'MESH', text: 'copias', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O truque das florestas profissionais (InstancedMesh): posicione um Object3D "molde" (posição/giro/tamanho + "atualizar a matriz") e grave a pose dele na cópia número i. Milhares de árvores custam UM desenho. Vira "copias.setMatrixAt(i, molde.matrix)".',
+  },
+  {
+    // `malha.instanceMatrix.needsUpdate = true`
+    type: 'sz_t3d_instances_dirty',
+    message0: 'avisar que as cópias de %1 mudaram',
+    args0: [{ type: 'field_name_picker', name: 'MESH', text: 'copias', kind: 'variable' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Depois de gravar as poses das cópias, avise a placa de vídeo que elas mudaram (senão nada aparece). Use UMA vez, depois do laço de gravar. Vira "copias.instanceMatrix.needsUpdate = true".',
+  },
+
   // ───────────────────────── 📦 Modelos e texturas ────────────────────────────
   {
     // `carregador.load(url, (modelo) => { … })` — carregamento async de um recurso.
@@ -393,13 +456,14 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
       'sz_t3d_rotate_axis',
       'sz_t3d_set_scale',
       'sz_t3d_look_at',
+      'sz_t3d_lerp_position',
       'sz_t3d_set_visible',
     ],
   },
   {
     name: '🎬 Cena e material',
     colour: C,
-    types: ['sz_t3d_add_to', 'sz_t3d_set_color', 'sz_t3d_set_background'],
+    types: ['sz_t3d_add_to', 'sz_t3d_set_color', 'sz_t3d_set_background', 'sz_t3d_set_fog'],
   },
   {
     name: '💡 Luz e sombra',
@@ -415,6 +479,11 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
       'sz_t3d_mount_renderer',
       'sz_t3d_render',
     ],
+  },
+  {
+    name: '🌳 Cópias em massa',
+    colour: C,
+    types: ['sz_t3d_set_matrix_at', 'sz_t3d_instances_dirty'],
   },
   {
     name: '📦 Modelos',

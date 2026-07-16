@@ -3194,6 +3194,77 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           },
         },
       }
+    case 'sz_t3d_set_fog':
+      // `cena.fog = new THREE.Fog(cor, perto, longe)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: { type: 'var', name: f(block, 'SCENE') },
+          name: 'fog',
+          value: {
+            type: 'newExpr',
+            className: 'Fog',
+            namespace: 'THREE',
+            args: [
+              exprInput(block, 'COLOR', { type: 'color', value: '#aabbcc' }),
+              exprInput(block, 'NEAR', { type: 'num', value: 10 }),
+              exprInput(block, 'FAR', { type: 'num', value: 100 }),
+            ],
+          },
+        },
+      }
+    case 'sz_t3d_lerp_position':
+      // `obj.position.lerp(alvo, velocidade)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: {
+            type: 'memberGet',
+            object: { type: 'var', name: f(block, 'OBJ') },
+            name: 'position',
+          },
+          method: 'lerp',
+          args: [
+            exprInput(block, 'TARGET', { type: 'var', name: 'alvo' }),
+            exprInput(block, 'ALPHA', { type: 'num', value: 0.1 }),
+          ],
+        },
+      }
+    case 'sz_t3d_set_matrix_at':
+      // `copias.setMatrixAt(i, molde.matrix)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'MESH') },
+          method: 'setMatrixAt',
+          args: [
+            exprInput(block, 'I', { type: 'num', value: 0 }),
+            {
+              type: 'memberGet',
+              object: { type: 'var', name: f(block, 'DUMMY') },
+              name: 'matrix',
+            },
+          ],
+        },
+      }
+    case 'sz_t3d_instances_dirty':
+      // `copias.instanceMatrix.needsUpdate = true`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: {
+            type: 'memberGet',
+            object: { type: 'var', name: f(block, 'MESH') },
+            name: 'instanceMatrix',
+          },
+          name: 'needsUpdate',
+          value: { type: 'bool', value: true },
+        },
+      }
     case 'sz_t3d_set_shadow':
       // `obj.castShadow = bool` / `obj.receiveShadow = bool`
       return {
@@ -8550,7 +8621,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('world-3d')
       return {
         kind: 'js',
-        value: { type: 'w3d:dayNight', minutes: exprInput(block, 'MIN', { type: 'num', value: 4 }) },
+        value: {
+          type: 'w3d:dayNight',
+          minutes: exprInput(block, 'MIN', { type: 'num', value: 4 }),
+        },
       }
     case 'sz_w3d_set_time':
       seen.add('world-3d')

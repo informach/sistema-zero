@@ -71,7 +71,10 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_rotate_axis: { DELTA: 0.01 },
   sz_t3d_set_scale: { X: 1, Y: 1, Z: 1 },
   sz_t3d_look_at: { X: 0, Y: 0, Z: 0 },
+  sz_t3d_lerp_position: { ALPHA: 0.1 },
   sz_t3d_set_intensity: { N: 1 },
+  sz_t3d_set_fog: { NEAR: 10, FAR: 100 },
+  sz_t3d_set_matrix_at: { I: 0 },
   sz_t3d_renderer_size: { W: 800, H: 600 },
 }
 
@@ -90,6 +93,7 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   // Canvas 3D: cor de um material e cor de fundo da cena.
   sz_t3d_set_color: { COLOR: '#ff8844' },
   sz_t3d_set_background: { COLOR: '#101830' },
+  sz_t3d_set_fog: { COLOR: '#aabbcc' },
 }
 
 /**
@@ -145,6 +149,11 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
   // Canvas 3D "adicionar %1 em cena": o objeto a adicionar vem como uma variável
   // por padrão (substituível por "novo THREE.Mesh(…)" ou qualquer valor).
   sz_t3d_add_to: { OBJ: OBJ_VAR_SHADOW },
+  // Canvas 3D "mover devagar até %1": o alvo é um Vector3 numa variável "alvo"
+  // por padrão (substituível por "novo THREE.Vector3(…)" ou membro de outro obj).
+  sz_t3d_lerp_position: {
+    TARGET: { shadow: { type: 'sz_val_variable', fields: { NAME: 'alvo' } } },
+  },
   // Distância: os dois objetos vêm como variáveis "player" e "enemy" por padrão.
   sz_val_distance: {
     OBJ1: { shadow: { type: 'sz_val_variable', fields: { NAME: 'player' } } },
