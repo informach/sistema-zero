@@ -76,6 +76,13 @@ export const gameKitRuntime = `(function () {
   var trailed = [];
   // 🔁 R21: offsets do fundo que rola, por nome de imagem (parallax = N camadas).
   var scrolls = Object.create(null);
+  // 🛤️ R25 — caminhos nomeados (waypoints). CONFIG: NAO reseta em jogo novo.
+  // Cada caminho: { pts:[{x,y}], cum:[dist acumulada até cada ponto], total }.
+  var paths = Object.create(null);
+  var pathBuilding = null; // coleta do "Criar o caminho" (espelho do rpg.menuBuilding)
+  // ✨ R25 — explosao por FOLHA one-shot (a explosion.png do Chris), pooled.
+  var sheetBursts = { active: [], free: [] };
+  var MAX_SHEET_BURSTS = 24;
   // 🚀 R22 — Kit Nave. As ondas sao ANONIMAS num array (como os grids do Space
   // Invaders: varias ao mesmo tempo, a crianca nao nomeia); o resto e config.
   var nave = {
@@ -344,6 +351,7 @@ export const gameKitRuntime = `(function () {
         // novo", e o de entidade reciclada o stepTrails varre sozinho.
         while (floaties.active.length) floaties.free.push(floaties.active.pop());
         while (shockwaves.active.length) shockwaves.free.push(shockwaves.active.pop());
+        while (sheetBursts.active.length) sheetBursts.free.push(sheetBursts.active.pop());
         // Cura os combatentes ANTES de esquecer a lista — sem isso um herói que
         // morreu piscando ficava com _iFrames congelado (invencível p/ sempre).
         for (var ci = 0; ci < combatants.length; ci++) {
@@ -754,6 +762,7 @@ export const gameKitRuntime = `(function () {
     // acompanham a câmera) e o MOTOR os desenha — por cima do desenho da criança,
     // por baixo de HUD/fala/transição.
     drawShockwaves();
+    drawSheetBursts(); // ✨ R25: explosões por folha (mundo, como as ondas)
     drawFloaties();
     if (pushed) ctx2d.restore();
     // HUD: por cima de tudo, SEM câmera (placar/barras ficam presos na tela).
@@ -841,6 +850,7 @@ export const gameKitRuntime = `(function () {
     stepTrails(dt); // ✨ R21: rastros contínuos alimentam o pool de faíscas
     stepFloaties(dt); // 🖥️ R21: os "+100" sobem e somem no relógio do jogo
     stepShockwaves(dt); // ✨ R21: anéis da onda de choque crescem e somem
+    stepSheetBursts(dt); // ✨ R25: explosões por folha one-shot avançam o quadro
     stepSwings(dt); // decai o tempo dos golpes de ação (🥷)
     stepWaits(); // "Esperar N s, fazer" (⏱️ Tempo) — one-shot no relógio do jogo
     stepLuta(dt); // 🥊 Kit Luta: rounds/fases (travam só os lutadores, sem estado novo)
@@ -938,7 +948,9 @@ export const gameKitRuntime = `(function () {
       _trailOn: false, _trailColor: '', _trailSize: 3, _trailRate: 30,
       _trailLife: 0.4, _trailAcc: 0, _trailFrame: -1, _leanMax: 0, _leanNow: 0,
       // 🚀 R22: poder de tiro da nave (o herói É um personagem) + shape do pool.
-      _wave: 0, _gunMode: '', _gunT: 0, _naveBomb: false
+      _wave: 0, _gunMode: '', _gunT: 0, _naveBomb: false,
+      // 🛤️ R25: waypoint atual do caminho que segue (reciclado NÃO herda a rota).
+      _pathName: '', _pathIdx: 0, _pathDone: false
     };
     c._bornX = c.x;
     c._bornY = c.y;
@@ -1445,6 +1457,8 @@ export const gameKitRuntime = `(function () {
       // 🚀 R22: o carimbo da onda (reciclado NÃO marcha na formação fantasma),
       // o poder de tiro e a marca de bomba do kit.
       _wave: 0, _gunMode: '', _gunT: 0, _naveBomb: false,
+      // 🛤️ R25: waypoint atual (reciclado NÃO herda a rota do dono anterior).
+      _pathName: '', _pathIdx: 0, _pathDone: false,
       // 🥷 R18: a janela do golpe (recuo/ativo em segundos; 0/0 = o golpe inteiro
       // machuca, que é o comportamento de sempre) e o ESTADO com a trava de
       // animação. Reciclar sem zerar deixaria o inimigo novo nascer "golpeando",
@@ -1522,6 +1536,7 @@ export const gameKitRuntime = `(function () {
     e._trailLife = 0.4; e._trailAcc = 0; e._trailFrame = -1; e._leanMax = 0; e._leanNow = 0;
     // R22: sem carimbo de onda, sem poder, sem marca de bomba.
     e._wave = 0; e._gunMode = ''; e._gunT = 0; e._naveBomb = false;
+    e._pathName = ''; e._pathIdx = 0; e._pathDone = false; // 🛤️ R25
     pool.active.push(e);
     return e;
   }
@@ -1674,6 +1689,29 @@ export const gameKitRuntime = `(function () {
       pick--;
     }
     return null;
+  }
+  /**
+   * 🎲 R25 — o vivo do molde com a MAIOR/MENOR de uma propriedade (ou 'progresso
+   * no caminho'). Generaliza nearest/random: o alvo "mais avançado no caminho"
+   * do Tower Defense sai DE GRAÇA daqui ("genérico primeiro"). Varredura sem
+   * alocação (irmã do nearestActive).
+   */
+  function pickActive(moldName, mode, prop) {
+    var k = text(moldName, '');
+    var pool = pools[k];
+    if (!pool) { warnOnce('pick:' + k, 'o molde "' + k + '" não existe — crie com "Criar o molde"'); return null; }
+    var wantMax = text(mode, 'maior') !== 'menor';
+    var p = text(prop, 'x');
+    var isPath = p === 'pathProgress';
+    var act = pool.active;
+    var best = null, bestV = wantMax ? -Infinity : Infinity;
+    for (var i = 0; i < act.length; i++) {
+      var e = act[i];
+      if (!e || e._active === false) continue;
+      var v = isPath ? pathProgress(e) : (ENTITY_PROPS[p] ? num(e[p], 0) : 0);
+      if ((wantMax && v > bestV) || (!wantMax && v < bestV)) { bestV = v; best = e; }
+    }
+    return best;
   }
   function countActive(name) {
     var pool = pools[text(name, '')];
@@ -4247,6 +4285,186 @@ export const gameKitRuntime = `(function () {
       }
     }
   }
+  /**
+   * 🔁 R25 — fundo PRESO À CÂMERA (paralaxe do sunnyland: camera.x*0.32). O
+   * scrollImage rola por VELOCIDADE (tela fixa); este acompanha a POSIÇÃO da
+   * câmera a um fator (0 = céu ao infinito; 1 = colado no mundo). Duas camadas
+   * com fatores diferentes = profundidade de verdade num jogo com câmera.
+   */
+  function parallaxLayer(name, fx, fy) {
+    var k = text(name, '');
+    var rec = images[k];
+    if (!rec || !rec.loaded || !rec.img) {
+      warnOnce('parallax:' + k, 'a imagem "' + k + '" não está carregada — use "Carregar a imagem"');
+      return;
+    }
+    if (!ctx2d) return;
+    if (!camera.on) { warnOnce('parallaxcam:' + k, 'a paralaxe precisa da câmera ligada — use "A câmera segue"'); }
+    var iw = Math.max(1, num(rec.img.width, 1));
+    var ih = Math.max(1, num(rec.img.height, 1));
+    if ((config.w / iw + 2) * (config.h / ih + 2) > 4096) {
+      warnOnce('parallaxsmall:' + k, 'a imagem "' + k + '" é pequena demais para o fundo');
+      return;
+    }
+    var camX = camera.on ? camera.x : 0;
+    var camY = camera.on ? camera.y : 0;
+    var pfx = Math.max(0, Math.min(1, num(fx, 0.3)));
+    var pfy = Math.max(0, Math.min(1, num(fy, 1)));
+    // A camada "atrasa" a câmera pelo fator: desenhada em coords de mundo, seu
+    // canto acompanha camX*(1-fator) — fator 0 fica colado na tela (céu), 1
+    // acompanha o mundo. Tiling cobrindo o retângulo visível.
+    var ax = camX * (1 - pfx);
+    var ay = camY * (1 - pfy);
+    var mx = (((camX - ax) % iw) + iw) % iw;
+    var my = (((camY - ay) % ih) + ih) % ih;
+    var x0 = camX - mx;
+    var y0 = camY - my;
+    for (var ty = y0; ty < camY + config.h; ty += ih) {
+      for (var tx = x0; tx < camX + config.w; tx += iw) {
+        try { ctx2d.drawImage(rec.img, tx, ty, iw, ih); } catch (e) {}
+      }
+    }
+  }
+
+  // ---- 🛤️ R25 — Caminhos (waypoints): a polilinha nomeada que destrava TD,
+  // corrida, patrulha e cutscene em trilho. definePath é container+filho (o
+  // MESMO padrão do rpgMenu/rpgOption). ----
+  /** Coleta os pontos do corpo do "Criar o caminho" (cada "ponto" empilha). */
+  function definePath(name, fn) {
+    var k = text(name, '');
+    if (!k) { warn('"Criar o caminho" precisa de um nome'); return; }
+    var prev = pathBuilding;
+    pathBuilding = [];
+    try { if (typeof fn === 'function') fn(); } catch (e) { warn('erro ao montar o caminho: ' + e); }
+    var pts = pathBuilding;
+    pathBuilding = prev;
+    if (pts.length < 2) { warnOnce('pathshort:' + k, 'o caminho "' + k + '" precisa de pelo menos 2 pontos'); return; }
+    // Comprimentos ACUMULADOS até cada ponto (progresso O(1) no follow).
+    var cum = [0];
+    var total = 0;
+    for (var i = 1; i < pts.length; i++) {
+      var dx = pts[i].x - pts[i - 1].x, dy = pts[i].y - pts[i - 1].y;
+      total += Math.sqrt(dx * dx + dy * dy);
+      cum.push(total);
+    }
+    paths[k] = { pts: pts, cum: cum, total: Math.max(1, total) };
+  }
+  function pathPoint(x, y) {
+    if (!pathBuilding) { warnOnce('pathpoint', '"ponto" só vale DENTRO de "Criar o caminho"'); return; }
+    pathBuilding.push({ x: num(x, 0), y: num(y, 0) });
+  }
+  /** O passo do seguidor (compartilhado com o Kit Defesa de Torre): snap-e-avança
+   * como o waypoint do Chris, independente de FPS. O while é limitado ao nº de
+   * pontos (dt no teto × velocidade alta não trava na quina). */
+  function followPathStep(e, rec, v, d) {
+    if (e._pathDone) return;
+    var pts = rec.pts;
+    var idx = Math.max(0, Math.round(num(e._pathIdx, 0)));
+    var budget = Math.max(0, v * d);
+    var guard = 0;
+    while (guard++ <= pts.length) {
+      if (idx >= pts.length - 1) {
+        e.x = pts[pts.length - 1].x - e.w / 2;
+        e.y = pts[pts.length - 1].y - e.h / 2;
+        e._pathIdx = pts.length - 1;
+        e._pathDone = true;
+        e._prevX = e.x; e._prevY = e.y;
+        emit('caminho:fim', e);
+        return;
+      }
+      var tx = pts[idx + 1].x - centerX(e);
+      var ty = pts[idx + 1].y - centerY(e);
+      var dist = Math.sqrt(tx * tx + ty * ty);
+      if (dist <= budget) {
+        // encaixa NO waypoint e sobra orçamento p/ o próximo trecho
+        e.x = pts[idx + 1].x - e.w / 2;
+        e.y = pts[idx + 1].y - e.h / 2;
+        budget -= dist;
+        idx += 1;
+        e._pathIdx = idx;
+        setFacing(e, tx, ty);
+        continue;
+      }
+      e.x += (tx / dist) * budget;
+      e.y += (ty / dist) * budget;
+      setFacing(e, tx, ty);
+      e._prevX = e.x; e._prevY = e.y;
+      return;
+    }
+  }
+  /** Fazer QUEM seguir o caminho (por quadro, dentro do "para cada vivo"). */
+  function followPath(who, pathName, speed, dt) {
+    if (!who || typeof who !== 'object') return;
+    var k = text(pathName, '');
+    var rec = paths[k];
+    if (!rec) { warnOnce('follow:' + k, 'o caminho "' + k + '" não existe — crie com "Criar o caminho"'); return; }
+    if (who._pathName !== k) { who._pathName = k; who._pathIdx = 0; who._pathDone = false; }
+    var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
+    followPathStep(who, rec, num(speed, 120), d);
+  }
+  /** O progresso de QUEM no caminho, 0..100 (% é mais kid que 0..1). */
+  function pathProgress(who) {
+    if (!who || typeof who !== 'object' || !who._pathName) return 0;
+    var rec = paths[who._pathName];
+    if (!rec) return 0;
+    if (who._pathDone) return 100;
+    var idx = Math.max(0, Math.round(num(who._pathIdx, 0)));
+    var base = rec.cum[idx] || 0;
+    var seg = 0;
+    if (idx < rec.pts.length - 1) {
+      var dx = centerX(who) - rec.pts[idx].x, dy = centerY(who) - rec.pts[idx].y;
+      seg = Math.sqrt(dx * dx + dy * dy);
+    }
+    return Math.max(0, Math.min(100, ((base + seg) / rec.total) * 100));
+  }
+
+  // ---- ✨ R25 — explosao por FOLHA one-shot (a explosion.png do Chris em 1
+  // bloco; hoje custa spawn + playAnimOnce + vigiar animEnded + recycle). ----
+  function sheetBurst(name, frames, fps, x, y, size) {
+    if (sheetBursts.active.length >= MAX_SHEET_BURSTS) {
+      warnOnce('sheetbursts', 'muitas explosões de folha ao mesmo tempo (teto ' + MAX_SHEET_BURSTS + ')');
+      return;
+    }
+    var k = text(name, '');
+    var rec = images[k];
+    if (!rec || !rec.loaded || !rec.img) {
+      warnOnce('sheetburst:' + k, 'a imagem "' + k + '" não está carregada — use "Carregar a imagem"');
+      return;
+    }
+    var s = sheetBursts.free.pop() || {};
+    s.img = rec.img;
+    s.frames = Math.max(1, Math.round(num(frames, 4)));
+    s.fps = Math.max(1, num(fps, 12));
+    s.x = num(x, 0);
+    s.y = num(y, 0);
+    s.size = Math.max(4, num(size, 64));
+    s.t = 0;
+    sheetBursts.active.push(s);
+  }
+  function stepSheetBursts(dt) {
+    for (var i = sheetBursts.active.length - 1; i >= 0; i--) {
+      var s = sheetBursts.active[i];
+      s.t += dt;
+      if (Math.floor(s.t * s.fps) >= s.frames) {
+        var last = sheetBursts.active.length - 1;
+        sheetBursts.active[i] = sheetBursts.active[last];
+        sheetBursts.active.pop();
+        sheetBursts.free.push(s);
+      }
+    }
+  }
+  function drawSheetBursts() {
+    if (!ctx2d || !sheetBursts.active.length) return;
+    for (var i = 0; i < sheetBursts.active.length; i++) {
+      var s = sheetBursts.active[i];
+      var idx = Math.min(s.frames - 1, Math.floor(s.t * s.fps));
+      var fw = Math.max(1, num(s.img.width, s.frames) / s.frames);
+      try {
+        ctx2d.drawImage(s.img, idx * fw, 0, fw, num(s.img.height, s.size),
+          s.x - s.size / 2, s.y - s.size / 2, s.size, s.size);
+      } catch (e) {}
+    }
+  }
 
   // ==========================================================================
   // 🚀 KIT NAVE - o atalho do genero (Space Invaders / shoot-'em-up)
@@ -4668,6 +4886,7 @@ export const gameKitRuntime = `(function () {
     baseMax: 30, baseStr: 7, baseDef: 0,
     playerXp: 0, playerLevel: 1, playerMaxXp: 20,
     playerEnergy: 10, playerMaxEnergy: 10, playerPoison: 0,
+    playerRegen: 0, playerBlind: 0, // 🌿 R25: status regenera/atrapalha (Pizza Legends)
     special: null,        // {name, dmg, cost} — golpe especial que gasta energia
     potions: [],          // [{name, heal}] — poções usáveis na luta (empilham)
     battleWon: false,
@@ -4705,6 +4924,7 @@ export const gameKitRuntime = `(function () {
     rpg.playerMax = rpg.baseMax; rpg.playerStr = rpg.baseStr; rpg.playerDef = rpg.baseDef;
     rpg.playerHp = rpg.playerMax;
     rpg.playerEnergy = rpg.playerMaxEnergy; rpg.playerPoison = 0;
+    rpg.playerRegen = 0; rpg.playerBlind = 0;
     rpg.potions = [];
     rpg.scene = null;
     rpg.recording = false;
@@ -5425,11 +5645,11 @@ export const gameKitRuntime = `(function () {
     rpg.battle = {
       name: text(name, 'Inimigo'), hp: max, max: max,
       str: Math.max(0, num(str, 5)), def: Math.max(0, num(def, 0)),
-      defending: false, poison: 0
+      defending: false, poison: 0, regen: 0, blind: 0
     };
     rpg.playerHp = rpg.playerMax;     // cada batalha começa com a vida cheia
     rpg.playerEnergy = rpg.playerMaxEnergy; // e a energia cheia
-    rpg.playerPoison = 0;
+    rpg.playerPoison = 0; rpg.playerRegen = 0; rpg.playerBlind = 0;
     var scr = screens.batalha;
     scr.title.textContent = 'Batalha contra ' + rpg.battle.name + '!';
     updateBattleText('Sua vez! O que você faz?');
@@ -5454,9 +5674,10 @@ export const gameKitRuntime = `(function () {
       if (rpg.playerEnergy < rpg.special.cost) { updateBattleText('Sem energia para o ' + rpg.special.name + '!'); return; }
       rpg.playerEnergy -= rpg.special.cost;
       var sdmg = rollDamage(rpg.special.dmg, b.def);
+      if (rpg.playerBlind > 0) { rpg.playerBlind -= 1; if (Math.random() < 0.33) sdmg = 0; }
       b.hp -= sdmg;
       if (b.hp <= 0) { endBattle(true); return; }
-      enemyTurn(rpg.special.name + ' causou ' + sdmg + '!');
+      enemyTurn(sdmg > 0 ? (rpg.special.name + ' causou ' + sdmg + '!') : 'Você se atrapalhou no ' + rpg.special.name + '!');
       return;
     }
     if (kind === 'item') {
@@ -5466,21 +5687,25 @@ export const gameKitRuntime = `(function () {
       enemyTurn('Usou ' + p.name + ' (+' + p.heal + ' de vida)!');
       return;
     }
-    // atacar
+    // atacar (⭐ 'atrapalha' = 33% de errar, o "clumsy" do Pizza Legends)
     var dmg = rollDamage(rpg.playerStr, b.def);
+    if (rpg.playerBlind > 0) { rpg.playerBlind -= 1; if (Math.random() < 0.33) dmg = 0; }
     b.hp -= dmg;
     if (b.hp <= 0) { endBattle(true); return; }
-    enemyTurn('Você causou ' + dmg + '!');
+    enemyTurn(dmg > 0 ? ('Você causou ' + dmg + '!') : 'Você se atrapalhou e errou!');
   }
   function enemyTurn(prefix) {
     var b = rpg.battle;
     var dmg = rollDamage(b.str, rpg.playerDef);
-    if (b.defending) { dmg = Math.max(1, Math.round(dmg / 2)); b.defending = false; }
+    if (b.blind > 0) { b.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
+    if (b.defending) { dmg = Math.max(dmg > 0 ? 1 : 0, Math.round(dmg / 2)); b.defending = false; }
     rpg.playerHp -= dmg;
-    var extra = '';
-    // Fim do turno: veneno tira vida de quem está envenenado (status do Pizza).
+    var extra = dmg === 0 ? ' ' + b.name + ' se atrapalhou!' : '';
+    // Fim do turno: veneno TIRA e 'regenera' DEVOLVE 3 de vida (status do Pizza).
     if (b.poison > 0) { b.hp -= 3; b.poison -= 1; extra += ' ' + b.name + ' sofre 3 de veneno.'; }
     if (rpg.playerPoison > 0) { rpg.playerHp -= 3; rpg.playerPoison -= 1; extra += ' Você sofre 3 de veneno.'; }
+    if (b.regen > 0) { b.hp = Math.min(b.max, b.hp + 3); b.regen -= 1; extra += ' ' + b.name + ' regenera 3.'; }
+    if (rpg.playerRegen > 0) { rpg.playerHp = Math.min(rpg.playerMax, rpg.playerHp + 3); rpg.playerRegen -= 1; extra += ' Você regenera 3.'; }
     rpg.playerEnergy = Math.min(rpg.playerMaxEnergy, rpg.playerEnergy + 2); // regen de energia
     if (b.hp <= 0) { endBattle(true); return; }
     if (rpg.playerHp <= 0) { rpg.playerHp = 0; endBattle(false); return; }
@@ -5502,12 +5727,16 @@ export const gameKitRuntime = `(function () {
       emit('subiu:nivel');
     }
   }
-  /** Envenenar (status): who = 'inimigo' ou 'heroi'; perde 3 de vida por turno. */
+  /** Status de batalha (Pizza Legends): who = 'inimigo'/'heroi'; por N turnos.
+   * veneno = −3/turno · regenera = +3/turno · atrapalha = 33% de errar o golpe. */
   function rpgInflict(who, status, turns) {
     var t = Math.max(1, Math.round(num(turns, 3)));
-    var w = text(who, 'inimigo');
-    if (text(status, 'veneno') !== 'veneno') return; // só veneno por ora
-    if (w === 'heroi' || w === 'herói') rpg.playerPoison = t;
+    var heroi = (text(who, 'inimigo') === 'heroi' || text(who, 'inimigo') === 'herói');
+    var s = text(status, 'veneno');
+    if (s === 'regenera') { if (heroi) rpg.playerRegen = t; else if (rpg.battle) rpg.battle.regen = t; return; }
+    if (s === 'atrapalha') { if (heroi) rpg.playerBlind = t; else if (rpg.battle) rpg.battle.blind = t; return; }
+    // veneno (padrão; o parser já barra status desconhecido na Ponte)
+    if (heroi) rpg.playerPoison = t;
     else if (rpg.battle) rpg.battle.poison = t;
   }
   function endBattle(won) {
@@ -5925,6 +6154,14 @@ export const gameKitRuntime = `(function () {
     scrollImage: guard('scrollImage', scrollImage),
     leanOnMove: guard('leanOnMove', leanOnMove),
     fanShot: guard('fanShot', fanShot),
+    // 🛤️ R25 — caminhos + escolher-vivo + paralaxe + explosão por folha
+    definePath: guard('definePath', definePath),
+    pathPoint: guard('pathPoint', pathPoint),
+    followPath: guard('followPath', followPath),
+    pathProgress: guard('pathProgress', pathProgress),
+    pickActive: guard('pickActive', pickActive),
+    parallaxLayer: guard('parallaxLayer', parallaxLayer),
+    sheetBurst: guard('sheetBurst', sheetBurst),
     // 🚀 R22 — Kit Nave
     naveShip: guard('naveShip', naveShip),
     navePowerup: guard('navePowerup', navePowerup),

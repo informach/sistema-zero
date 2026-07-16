@@ -270,6 +270,17 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_gk_nave_invasion_line: { Y: 'number' },
   sz_gk_nave_starfield: { COUNT: 'number', SPEED: 'number' },
   sz_gk_nave_bomb: { RADIUS: 'number' },
+  // 🛤️ R25 — caminhos + paralaxe + explosão por folha
+  sz_gk_path_point: { X: 'number', Y: 'number' },
+  sz_gk_follow_path: { SPEED: 'number' },
+  sz_gk_parallax_layer: { FX: 'number', FY: 'number' },
+  sz_gk_sheet_burst: {
+    FRAMES: 'number',
+    FPS: 'number',
+    X: 'number',
+    Y: 'number',
+    SIZE: 'number',
+  },
   sz_gk_fade_screen: { SECS: 'number' },
   sz_gk_flash_screen: { TIMES: 'number' },
   sz_gk_save_value: { VALUE: 'number' },

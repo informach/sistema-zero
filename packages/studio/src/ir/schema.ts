@@ -226,6 +226,10 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:randomActive'; mold: string })
   // 🚀 R22 — Kit Nave: o poder de tiro valendo ('normal'|'metralhadora'|'leque').
   | (JSExprCommon & { type: 'gk:navePowerOf'; charVar: string })
+  // 🛤️ R25 — o progresso 0..100 de uma entidade no caminho; e o vivo com
+  // maior/menor de uma propriedade (generaliza nearest/random).
+  | (JSExprCommon & { type: 'gk:pathProgress'; charVar: string })
+  | (JSExprCommon & { type: 'gk:pickActive'; mold: string; mode: string; prop: string })
   | (JSExprCommon & { type: 'gk:countItem'; name: string })
   | (JSExprCommon & { type: 'gk:timeSurvived' })
   | (JSExprCommon & { type: 'gk:kills' })
@@ -664,6 +668,14 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('gk:randomActive'), mold: irText(), ...idField }),
     z.object({ type: z.literal('gk:navePowerOf'), charVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:pathProgress'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:pickActive'),
+      mold: irText(),
+      mode: irText(),
+      prop: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('gk:countItem'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:timeSurvived'), ...idField }),
     z.object({ type: z.literal('gk:kills'), ...idField }),
@@ -3003,6 +3015,32 @@ export type JSStatement =
       mold: string
       radius: number | JSExpr
       target: string
+    })
+  // 🛤️ R25 — caminhos (container+filho, como o rpgMenu), seguir, paralaxe presa
+  // à câmera e explosão por FOLHA one-shot; e o status estendido do rpgInflict.
+  | (JSStatementCommon & { type: 'gk:definePath'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:pathPoint'; x: number | JSExpr; y: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:followPath'
+      charVar: string
+      path: string
+      speed: number | JSExpr
+      dtVar: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:parallaxLayer'
+      image: string
+      fx: number | JSExpr
+      fy: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:sheetBurst'
+      image: string
+      frames: number | JSExpr
+      fps: number | JSExpr
+      x: number | JSExpr
+      y: number | JSExpr
+      size: number | JSExpr
     })
   | (JSStatementCommon & { type: 'gk:setOpacity'; charVar: string; percent: number | JSExpr })
   | (JSStatementCommon & {
@@ -6289,6 +6327,43 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:definePath'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:pathPoint'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:followPath'),
+      charVar: irText(),
+      path: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      dtVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:parallaxLayer'),
+      image: irText(),
+      fx: z.union([JSExprSchema, z.number()]),
+      fy: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:sheetBurst'),
+      image: irText(),
+      frames: z.union([JSExprSchema, z.number()]),
+      fps: z.union([JSExprSchema, z.number()]),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      size: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:setOpacity'),
       charVar: irText(),
       percent: z.union([JSExprSchema, z.number()]),
@@ -7956,6 +8031,11 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:naveInvasionLine',
   'gk:naveStarfield',
   'gk:naveBomb',
+  'gk:definePath',
+  'gk:pathPoint',
+  'gk:followPath',
+  'gk:parallaxLayer',
+  'gk:sheetBurst',
   'gk:setOpacity',
   'gk:fadeTo',
   'gk:tweenProperty',

@@ -3347,10 +3347,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'gk:rpgInflict': {
       const turns = exprToValueBlock(valueToExpr(stmt.turns))
-      // status é sempre 'veneno' (o bloco não tem campo de status — hardcode no buildIR).
+      // R25: STATUS virou campo (veneno|regenera|atrapalha); default veneno.
       return turns === null
         ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_inflict', { WHO: stmt.who }, {}, stmt.__id, { TURNS: turns })
+        : block('sz_gk_rpg_inflict', { WHO: stmt.who, STATUS: stmt.status }, {}, stmt.__id, {
+            TURNS: turns,
+          })
     }
     case 'gk:rpgOnBattleEnd':
       return block(
@@ -3948,6 +3950,58 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_gk_nave_bomb', { MOLD: stmt.mold, TARGET: stmt.target }, {}, stmt.__id, {
             RADIUS: r,
+          })
+    }
+    // 🛤️ R25 — caminhos + paralaxe + explosão por folha
+    case 'gk:definePath':
+      return block(
+        'sz_gk_define_path',
+        { NAME: stmt.name },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:pathPoint': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_path_point', {}, {}, stmt.__id, { X: x, Y: y })
+    }
+    case 'gk:followPath': {
+      const sp = exprToValueBlock(valueToExpr(stmt.speed))
+      return sp === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_follow_path',
+            { WHO: stmt.charVar, PATH: stmt.path, DT: stmt.dtVar },
+            {},
+            stmt.__id,
+            {
+              SPEED: sp,
+            },
+          )
+    }
+    case 'gk:parallaxLayer': {
+      const fx = exprToValueBlock(valueToExpr(stmt.fx))
+      const fy = exprToValueBlock(valueToExpr(stmt.fy))
+      return fx === null || fy === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_parallax_layer', { IMAGE: stmt.image }, {}, stmt.__id, { FX: fx, FY: fy })
+    }
+    case 'gk:sheetBurst': {
+      const fr = exprToValueBlock(valueToExpr(stmt.frames))
+      const fp = exprToValueBlock(valueToExpr(stmt.fps))
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const sz = exprToValueBlock(valueToExpr(stmt.size))
+      return fr === null || fp === null || x === null || y === null || sz === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_sheet_burst', { IMAGE: stmt.image }, {}, stmt.__id, {
+            FRAMES: fr,
+            FPS: fp,
+            X: x,
+            Y: y,
+            SIZE: sz,
           })
     }
     case 'gk:setOpacity': {
@@ -5699,6 +5753,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_random_active', { MOLD: expr.mold })
     case 'gk:navePowerOf':
       return block('sz_gk_nave_power_of', { WHO: expr.charVar })
+    case 'gk:pathProgress':
+      return block('sz_gk_path_progress', { WHO: expr.charVar })
+    case 'gk:pickActive':
+      return block('sz_gk_pick_active', { MOLD: expr.mold, MODE: expr.mode, PROP: expr.prop })
     case 'gk:countItem':
       return block('sz_gk_count_item', { NAME: expr.name })
     case 'gk:timeSurvived':

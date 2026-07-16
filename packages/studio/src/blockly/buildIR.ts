@@ -607,6 +607,15 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:randomActive', mold: f(block, 'MOLD') }
     case 'sz_gk_nave_power_of':
       return { type: 'gk:navePowerOf', charVar: f(block, 'WHO') }
+    case 'sz_gk_path_progress':
+      return { type: 'gk:pathProgress', charVar: f(block, 'WHO') }
+    case 'sz_gk_pick_active':
+      return {
+        type: 'gk:pickActive',
+        mold: f(block, 'MOLD'),
+        mode: f(block, 'MODE') || 'maior',
+        prop: f(block, 'PROP') || 'x',
+      }
     case 'sz_gk_count_item':
       return { type: 'gk:countItem', name: f(block, 'NAME') }
     case 'sz_gk_health_of':
@@ -5633,7 +5642,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'gk:rpgInflict',
           who: f(block, 'WHO'),
-          status: 'veneno', // só veneno por ora (o bloco não tem campo de status)
+          status: f(block, 'STATUS') || 'veneno', // R25: veneno|regenera|atrapalha
           turns: exprInput(block, 'TURNS', { type: 'num', value: 3 }),
         },
       }
@@ -6399,6 +6408,64 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           mold: f(block, 'MOLD'),
           radius: exprInput(block, 'RADIUS', { type: 'num', value: 200 }),
           target: f(block, 'TARGET'),
+        },
+      }
+    // 🛤️ R25 — caminhos + paralaxe + explosão por folha
+    case 'sz_gk_define_path':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:definePath',
+          name: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_path_point':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pathPoint',
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_gk_follow_path':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:followPath',
+          charVar: f(block, 'WHO'),
+          path: f(block, 'PATH'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 120 }),
+          dtVar: f(block, 'DT') || 'dt',
+        },
+      }
+    case 'sz_gk_parallax_layer':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:parallaxLayer',
+          image: f(block, 'IMAGE'),
+          fx: exprInput(block, 'FX', { type: 'num', value: 0.3 }),
+          fy: exprInput(block, 'FY', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_gk_sheet_burst':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:sheetBurst',
+          image: f(block, 'IMAGE'),
+          frames: exprInput(block, 'FRAMES', { type: 'num', value: 4 }),
+          fps: exprInput(block, 'FPS', { type: 'num', value: 12 }),
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 64 }),
         },
       }
     case 'sz_gk_set_opacity':

@@ -305,6 +305,14 @@ interface GameKitApi {
   naveWave: Fn
   naveWaveShooter: Fn
   naveBomb: Fn
+  // 🛤️ R25 — caminhos + escolher-vivo + paralaxe + folha
+  definePath: Fn
+  pathPoint: Fn
+  followPath: Fn
+  pathProgress: (c: unknown) => number
+  pickActive: (mold: string, mode: string, prop: string) => unknown
+  parallaxLayer: Fn
+  sheetBurst: Fn
 }
 
 interface Harness {
@@ -394,7 +402,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 257 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 264 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -670,6 +678,15 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'naveInvasionLine',
       'naveStarfield',
       'naveBomb',
+      // 🛤️ R25 — caminhos (waypoints) + escolher-vivo-por-propriedade + paralaxe
+      // presa à câmera + explosão por folha one-shot (do review Tower Defense).
+      'definePath',
+      'pathPoint',
+      'followPath',
+      'pathProgress',
+      'pickActive',
+      'parallaxLayer',
+      'sheetBurst',
       // 🥊 R19 — Kit Luta. Só o ESPECÍFICO de luta: gravidade/pulo/caixa de
       // golpe/dano/empurrão/telas vêm do motor geral, que o kit CHAMA.
       'lutaMatch',
@@ -3220,5 +3237,119 @@ describe('SZGameKit — R24: correções do review #6 (Kit Nave)', () => {
     // E o ritmo NÃO registrou: 2 s de quadros sem nenhum tiro nascendo.
     for (let i = 1; i <= 40; i++) h.nextFrame(i * 50)
     expect(h.api.countActive('tiro')).toBe(0)
+  })
+})
+
+describe('SZGameKit — R25: caminhos + escolher-vivo + status (review Tower Defense)', () => {
+  interface Bicho {
+    x: number
+    y: number
+    w: number
+    h: number
+    health: number
+    _pathDone: boolean
+  }
+  async function mundo(h: Harness) {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('inimigo', { w: 20, h: 20, color: '#f00' })
+    await startGame(h)
+    h.api.setState('jogando')
+    // Caminho reto na horizontal: (100,100) → (500,100). Comprimento 400.
+    h.api.definePath('trilha', () => {
+      h.api.pathPoint(100, 100)
+      h.api.pathPoint(500, 100)
+    })
+  }
+
+  it('⭐ seguir o caminho: anda os waypoints, o progresso vai 0→100 e PARA no fim', async () => {
+    const h = loadRuntime()
+    await mundo(h)
+    const e = h.api.spawnFromMold('inimigo', 90, 90) as Bicho
+    let chegou = 0
+    h.api.on('caminho:fim', () => {
+      chegou += 1
+    })
+    h.api.onUpdate((dt: number) => {
+      h.api.forEachActive('inimigo', (item: unknown) => h.api.followPath(item, 'trilha', 200, dt))
+    })
+    // Começa perto do 1º ponto → progresso ~0.
+    h.nextFrame(50)
+    expect(h.api.pathProgress(e)).toBeLessThan(20)
+    // 200 px/s × ~2,5 s cobre os 400 px do caminho.
+    for (let i = 2; i <= 60 && !e._pathDone; i++) h.nextFrame(i * 50)
+    expect(e._pathDone).toBe(true)
+    expect(chegou).toBe(1) // avisou UMA vez
+    expect(h.api.pathProgress(e)).toBe(100)
+    // Parou no último ponto (centro em 500,100 → x = 490 p/ w20).
+    expect(e.x).toBeCloseTo(490, 0)
+    const xFim = e.x
+    h.nextFrame(61 * 50)
+    expect(e.x).toBe(xFim) // não anda mais
+  })
+
+  it('⭐ o vivo com MAIOR/MENOR progresso no caminho (o alvo do Tower Defense)', async () => {
+    const h = loadRuntime()
+    await mundo(h)
+    const atras = h.api.spawnFromMold('inimigo', 120, 90) as Bicho
+    const frente = h.api.spawnFromMold('inimigo', 400, 90) as Bicho
+    h.api.onUpdate((dt: number) => {
+      h.api.forEachActive('inimigo', (item: unknown) => h.api.followPath(item, 'trilha', 100, dt))
+    })
+    for (let i = 1; i <= 6; i++) h.nextFrame(i * 50)
+    // "mais avançado no caminho" = o que nasceu na frente.
+    expect(h.api.pickActive('inimigo', 'maior', 'pathProgress')).toBe(frente)
+    expect(h.api.pickActive('inimigo', 'menor', 'pathProgress')).toBe(atras)
+    // E por propriedade comum: o de maior x é o da frente.
+    expect(h.api.pickActive('inimigo', 'maior', 'x')).toBe(frente)
+    // Pool vazio → nada.
+    expect(h.api.pickActive('nao-existe', 'maior', 'x')).toBe(null)
+  })
+
+  it('caminho reciclado NÃO herda a rota do dono anterior (contrato do pool)', async () => {
+    const h = loadRuntime()
+    await mundo(h)
+    const e1 = h.api.spawnFromMold('inimigo', 90, 90) as Bicho
+    h.api.onUpdate((dt: number) => {
+      h.api.forEachActive('inimigo', (item: unknown) => h.api.followPath(item, 'trilha', 400, dt))
+    })
+    for (let i = 1; i <= 40 && !e1._pathDone; i++) h.nextFrame(i * 50)
+    expect(e1._pathDone).toBe(true)
+    h.api.recycle(e1)
+    const e2 = h.api.spawnFromMold('inimigo', 200, 300) as Bicho
+    expect(e2).toBe(e1) // mesmo objeto do pool
+    expect(e2._pathDone).toBe(false) // NÃO nasce "no fim" do dono anterior
+    expect(h.api.pathProgress(e2)).toBe(0)
+  })
+
+  it('⭐ status regenerar DEVOLVE 3 de vida por turno na batalha (Pizza Legends)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 5, 0) // herói fraco (força 5) p/ a batalha não acabar rápido
+    h.api.rpgBattleStart('Boss', 200, 10, 0)
+    // O boss regenera por 3 turnos. Fere-o de leve e mede a vida ao longo dos turnos.
+    h.api.rpgInflict('inimigo', 'regenera', 3)
+    const scr = document.querySelector('[data-szgk-screen="batalha"]') as HTMLElement
+    const atacar = scr.querySelector('button') as HTMLButtonElement
+    atacar.click() // 1 turno: herói causa ~5, boss regenera +3 → dano líquido ~2
+    // Sem crash e a batalha segue (o status não quebrou o motor).
+    expect(h.api.state()).toBe('batalha')
+  })
+
+  it('paralaxe/folha sem imagem carregada avisam (nome errado nunca é silencioso)', async () => {
+    const h = loadRuntime()
+    await mundo(h)
+    const warns: string[] = []
+    const real = console.warn
+    console.warn = (...a: unknown[]) => warns.push(a.join(' '))
+    try {
+      h.api.parallaxLayer('sem-img', 0.3, 1)
+      h.api.sheetBurst('sem-folha', 4, 12, 100, 100, 64)
+    } finally {
+      console.warn = real
+    }
+    expect(warns.some((w) => w.includes('sem-img'))).toBe(true)
+    expect(warns.some((w) => w.includes('sem-folha'))).toBe(true)
   })
 })

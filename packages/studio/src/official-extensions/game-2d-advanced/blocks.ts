@@ -1248,8 +1248,17 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_inflict',
-    message0: 'Envenenar %1 por %2 turnos',
+    message0: 'Aplicar %1 em %2 por %3 turnos',
     args0: [
+      {
+        type: 'field_dropdown',
+        name: 'STATUS',
+        options: [
+          ['veneno', 'veneno'],
+          ['regenerar', 'regenera'],
+          ['atrapalhar', 'atrapalha'],
+        ],
+      },
       {
         type: 'field_dropdown',
         name: 'WHO',
@@ -1265,7 +1274,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Aplica VENENO: quem está envenenado perde vida no fim de cada turno, por alguns turnos. Use na batalha (ex.: dentro de um golpe especial de veneno).',
+      'Aplica um status na batalha por alguns turnos: VENENO tira 3 de vida por turno, REGENERAR devolve 3, ATRAPALHAR faz o golpe errar às vezes. Use dentro de um golpe especial.',
   },
   {
     type: 'sz_gk_rpg_level',
@@ -3239,6 +3248,124 @@ export const gameKitBlocks = [
       'Nascem N tiros do molde em leque, já com velocidade. Rumo -90 = para cima (como o "Mover no ângulo"). Depois mova-os com "Mover pela velocidade" + "Recolher quem saiu".',
   },
   // ==========================================================================
+  // 🛤️ R25 — Caminhos (waypoints) + escolher-vivo + paralaxe + folha one-shot
+  // ==========================================================================
+  {
+    // O container (declara o NOME — segue field_input, regra de ouro). Espelho
+    // do "Menu de escolha": os "ponto" viram a polilinha.
+    type: 'sz_gk_define_path',
+    message0: 'Criar o caminho %1, passando pelos pontos:',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'trilha' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Desenha uma trilha nomeada com uma lista de pontos (ponha blocos "ponto" dentro). O inimigo de defesa de torre, a patrulha, o NPC num trilho de cutscene seguem por ela. Os pontos podem ficar fora da tela.',
+  },
+  {
+    type: 'sz_gk_path_point',
+    message0: 'ponto x %1 y %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Um ponto do caminho. Use DENTRO de "Criar o caminho".',
+  },
+  {
+    type: 'sz_gk_follow_path',
+    message0: 'Fazer %1 seguir o caminho %2 a %3 px/s, usando o tempo %4',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
+      { type: 'field_name_picker', name: 'PATH', text: 'trilha', kind: 'path' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'DT', text: 'dt', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Anda pela trilha, ponto a ponto (use no "A cada quadro", dentro do "para cada vivo"). Chegou ao fim? Avisa "caminho:fim" e para. Para saber SE chegou, teste "o progresso … no caminho = 100".',
+  },
+  {
+    type: 'sz_gk_path_progress',
+    message0: 'o progresso de %1 no caminho (0 a 100)',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' }],
+    output: 'JSValue',
+    tooltip:
+      'Quanto do caminho aquele personagem já andou, de 0 (começo) a 100 (fim). 0 se ele não segue caminho nenhum.',
+  },
+  {
+    type: 'sz_gk_pick_active',
+    message0: 'o vivo do molde %1 com %2 %3',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' },
+      {
+        type: 'field_dropdown',
+        name: 'MODE',
+        options: [
+          ['a maior', 'maior'],
+          ['a menor', 'menor'],
+        ],
+      },
+      {
+        type: 'field_dropdown',
+        name: 'PROP',
+        options: [
+          ['posição x', 'x'],
+          ['posição y', 'y'],
+          ['velocidade x', 'vx'],
+          ['velocidade y', 'vy'],
+          ['velocidade', 'speed'],
+          ['largura', 'w'],
+          ['altura', 'h'],
+          ['vida', 'health'],
+          ['vida máxima', 'maxHealth'],
+          ['dano', 'damage'],
+          ['progresso no caminho', 'pathProgress'],
+        ],
+      },
+    ],
+    output: 'JSValue',
+    tooltip:
+      'O vivo do molde com o MAIOR (ou menor) valor de uma propriedade. É como a torre escolhe o alvo "mais avançado no caminho", o mago escolhe o mais fraco, etc. Nada vivo = devolve nada.',
+  },
+  {
+    type: 'sz_gk_parallax_layer',
+    message0: 'Pintar o fundo %1 preso à câmera (fator x %2 y %3)',
+    args0: [
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'input_value', name: 'FX', check: 'JSValue' },
+      { type: 'input_value', name: 'FY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Um fundo que acompanha a CÂMERA a um fator (0 = céu ao longe, quase parado; 1 = colado no mundo). Duas camadas com fatores diferentes = profundidade. (O "Pintar o fundo rolando" anda por velocidade, para tela fixa.)',
+  },
+  {
+    type: 'sz_gk_sheet_burst',
+    message0: 'Estourar a folha %1 (%2 quadros, a %3 por s) em x %4 y %5 tamanho %6',
+    args0: [
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'input_value', name: 'FRAMES', check: 'JSValue' },
+      { type: 'input_value', name: 'FPS', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Toca uma folha de explosão UMA vez e some (a imagem tem os quadros lado a lado). É a explosão de spritesheet num bloco só — sem precisar de molde nem de "Tocar uma vez".',
+  },
+  // ==========================================================================
   // 🚀 KIT NAVE — o atalho do gênero (Space Invaders / shoot-'em-up)
   // ==========================================================================
   // Pela REGRA: só o ESPECÍFICO do gênero mora aqui. O tiro do jogador, a
@@ -3593,7 +3720,15 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_on_draw_hud',
       'sz_gk_draw_background',
       'sz_gk_scroll_image',
+      'sz_gk_parallax_layer',
     ],
+  },
+  {
+    // 🛤️ R25 — caminho é polilinha nomeada (irmão da 🧭 Região, que é retângulo
+    // nomeado). GERAL: serve TD, corrida, patrulha e cutscene em trilho.
+    name: '🛤️ Caminhos',
+    colour: C,
+    types: ['sz_gk_define_path', 'sz_gk_path_point', 'sz_gk_follow_path', 'sz_gk_path_progress'],
   },
   {
     // Era a única categoria inchada (14). Ficou com o CICLO DE VIDA do
@@ -3844,6 +3979,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_trail_on',
       'sz_gk_trail_off',
       'sz_gk_shockwave',
+      'sz_gk_sheet_burst',
     ],
   },
   {
@@ -3870,7 +4006,13 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   {
     name: '🎲 Sorte & medida',
     colour: C,
-    types: ['sz_gk_chance', 'sz_gk_distance_between', 'sz_gk_point_in', 'sz_gk_random_active'],
+    types: [
+      'sz_gk_chance',
+      'sz_gk_distance_between',
+      'sz_gk_point_in',
+      'sz_gk_random_active',
+      'sz_gk_pick_active',
+    ],
   },
   {
     name: '🌫️ Sumir & transição',
@@ -4314,6 +4456,17 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_apply_friction: { FACTOR: numShadow(0.9) },
   sz_gk_wait: { SECS: numShadow(1) },
   sz_gk_nearest_active: { X: numShadow(0), Y: numShadow(0) },
+  // 🛤️ R25 — caminhos + paralaxe + explosão por folha
+  sz_gk_path_point: { X: numShadow(100), Y: numShadow(100) },
+  sz_gk_follow_path: { SPEED: numShadow(120) },
+  sz_gk_parallax_layer: { FX: numShadow(0.3), FY: numShadow(1) },
+  sz_gk_sheet_burst: {
+    FRAMES: numShadow(4),
+    FPS: numShadow(12),
+    X: numShadow(100),
+    Y: numShadow(100),
+    SIZE: numShadow(64),
+  },
   // R21 — primitivos gerais
   sz_gk_float_text: {
     TEXT: txtShadow('+100'),

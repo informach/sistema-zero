@@ -94,6 +94,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:rpgOnStep':
     case 'gk:rpgMenu':
     case 'gk:rpgOption':
+    case 'gk:definePath':
     case 'gk:forEachActive':
     case 'gk:defineLook':
     case 'g3k:defineMold':
@@ -1879,6 +1880,24 @@ function compileStatementCode(
       return `${pad}SZGameKit.naveStarfield(${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'gk:naveBomb':
       return `${pad}SZGameKit.naveBomb(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.target)});`
+    // 🛤️ R25 — caminhos + paralaxe + explosão por folha
+    case 'gk:definePath': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.definePath(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'gk:pathPoint':
+      return `${pad}SZGameKit.pathPoint(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'gk:followPath':
+      return `${pad}SZGameKit.followPath(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.path)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${identifiers.get(stmt.dtVar)});`
+    case 'gk:parallaxLayer':
+      return `${pad}SZGameKit.parallaxLayer(${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.fx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fy), 0, identifiers, recAt(base))});`
+    case 'gk:sheetBurst':
+      return `${pad}SZGameKit.sheetBurst(${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.frames), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
     case 'gk:setOpacity':
       return `${pad}SZGameKit.setOpacity(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'gk:fadeTo':
@@ -4364,6 +4383,30 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:naveBomb':
       collectExprIdentifiers(valueToExpr(stmt.radius), names)
       return
+    // 🛤️ R25 — caminhos + paralaxe + explosão por folha
+    case 'gk:definePath':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:pathPoint':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'gk:followPath':
+      names.add(stmt.charVar)
+      names.add(stmt.dtVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'gk:parallaxLayer':
+      collectExprIdentifiers(valueToExpr(stmt.fx), names)
+      collectExprIdentifiers(valueToExpr(stmt.fy), names)
+      return
+    case 'gk:sheetBurst':
+      collectExprIdentifiers(valueToExpr(stmt.frames), names)
+      collectExprIdentifiers(valueToExpr(stmt.fps), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      return
     case 'gk:setOpacity':
       names.add(stmt.charVar)
       collectExprIdentifiers(valueToExpr(stmt.percent), names)
@@ -5354,6 +5397,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:lutaWinner':
     case 'gk:lutaRound':
     case 'gk:randomActive':
+    case 'gk:pickActive': // 🛤️ R25: molde/modo/propriedade são strings
       return
     case 'gk:isDead':
     case 'gk:isInvincible':
@@ -5369,6 +5413,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:lutaIsGuarding':
     // 🚀 R22
     case 'gk:navePowerOf':
+    // 🛤️ R25 — o "quem" é uma VARIÁVEL
+    case 'gk:pathProgress':
     case 'gk:isOnGround':
     case 'gk:velocityOf':
     case 'gk:propertyOf':

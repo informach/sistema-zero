@@ -72,8 +72,10 @@ export type NameKind =
   | 'region'
   | 'pkmcreature'
   | 'pkmtype'
+  | 'path'
 
 const NAME_KINDS: readonly NameKind[] = [
+  'path',
   'region',
   'pkmcreature',
   'pkmtype',
@@ -204,6 +206,13 @@ const PKM_TYPE_DECL_BLOCKS: Record<string, string[]> = {
 /** 🧭 As regiões (R15). */
 const REGION_DECL_BLOCKS: Record<string, string[]> = {
   sz_gk_define_region: ['NAME'],
+}
+// 🛤️ R25 — o "Criar o caminho" declara o nome (só o container declara).
+const PATH_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_define_path: ['NAME'],
+}
+function collectPaths(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, PATH_DECL_BLOCKS)
 }
 
 const CHARACTER_LOOP_BINDERS: Record<string, string[]> = {
@@ -486,6 +495,11 @@ interface KindUI {
 }
 
 const KIND_UI: Record<NameKind, KindUI> = {
+  path: {
+    icon: '🛤️',
+    placeholder: 'nome do caminho',
+    empty: 'Nenhum caminho ainda — crie um com "Criar o caminho" (a trilha do inimigo, a rota…).',
+  },
   region: {
     icon: '🧭',
     placeholder: 'nome da região',
@@ -943,6 +957,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectSounds(ws)
       case 'region':
         return collectRegions(ws)
+      case 'path':
+        return collectPaths(ws)
       case 'pkmcreature':
         return collectPkmCreatures(ws)
       case 'pkmtype':

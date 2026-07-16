@@ -124,7 +124,9 @@ const MAX_CATEGORY_CHARS = 60
 // 242 blocos, 32k dá ~130 caracteres por bloco — o teto passou a decidir o que a
 // criança pode ler, que é exatamente o que ele não deve fazer. Uma trava de
 // sanidade contra dados malformados não precisa ser apertada.
-const MAX_DOCS_CHARS = 40_000
+// E de novo (40k → 48k), no 6º review: com 274 blocos (🛤️ Caminhos + 🏰 Kit
+// Defesa de Torre), 40k já apertava. Mesma lógica: é sanidade, não limite de UI.
+const MAX_DOCS_CHARS = 48_000
 // Espelho do MAX_DOCS_CHARS para o CONTEXTO DA IA (ExtensionDefinition.ai.
 // promptContext): ele é concatenado CRU no system prompt (state/aiAdapter →
 // ai/prompts.buildSystemPrompt) e NÃO tem teto em runtime DE PROPÓSITO —

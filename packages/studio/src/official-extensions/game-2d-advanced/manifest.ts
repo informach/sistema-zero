@@ -13,7 +13,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.22.1',
+  version: '0.23.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E cinco atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial) e 🚀 nave (a invasão que marcha, desce e acelera).',
   category: 'games',
@@ -428,6 +428,24 @@ perto de"): é como o jogo de nave escolhe qual invasor atira, quem ganha o
 power-up, qual inimigo vira o elite. Sem nenhum vivo, devolve nada — teste antes
 de usar.
 
+**o vivo do molde … com a maior/menor …** escolhe pelo VALOR de uma propriedade:
+o inimigo com mais vida, o mais baixo na tela, o mais avançado no caminho. É
+assim que a torre de defesa mira no "líder" da fila. Sem nenhum vivo, devolve
+nada.
+
+### 🛤️ Caminhos
+
+Um caminho é uma trilha nomeada de pontos — a versão "linha" da região (que é
+retângulo). **Criar o caminho …** guarda a lista (ponha blocos **ponto x y**
+dentro; os pontos podem começar e terminar fora da tela, como o inimigo que
+entra e sai). **Fazer … seguir o caminho …** anda o personagem ponto a ponto (no
+"A cada quadro", dentro do "para cada vivo"), na velocidade que você der. Chegou
+ao fim? Ele PARA e avisa \`caminho:fim\`. **o progresso de … no caminho** diz
+quanto ele já andou, de 0 a 100 — é assim que você sabe QUEM chegou (dentro do
+"para cada vivo": *"se o progresso de item = 100: tirar uma vida e recolher"*).
+Serve para o inimigo de defesa de torre, a patrulha, a esteira, o NPC num trilho
+de cena, a corrida.
+
 ### 🌌 Fundo que rola (em 🔁 A cada quadro)
 
 **Pintar o fundo rolando** repete uma imagem cobrindo a tela e a desloca na
@@ -435,6 +453,19 @@ velocidade dada — o céu que passa, a estrada infinita. Use como a PRIMEIRA li
 do "Desenhar o jogo"; duas camadas com velocidades diferentes = paralaxe (o
 fundo longe anda devagar, o perto anda rápido — profundidade de graça). Congela
 na pausa, como tudo.
+
+**Pintar o fundo preso à câmera** é a paralaxe para jogos COM câmera: o fundo
+acompanha a posição da câmera a um fator (0 = céu ao longe, quase parado; 1 =
+colado no mundo). A diferença: "rolando" anda por VELOCIDADE (tela fixa); este
+segue a POSIÇÃO da câmera (mundo grande). Ligue a "Câmera segue" e ponha duas
+camadas em fatores diferentes para dar profundidade de verdade.
+
+### ✨ Estourar a folha (em ✨ Faíscas)
+
+**Estourar a folha …** toca uma folha de explosão UMA vez e some (os quadros
+lado a lado na imagem). É a explosão de spritesheet num bloco só — sem molde nem
+"tocar uma vez". Perfeita para o impacto do tiro, o baú que abre, o inimigo que
+explode.
 
 ### 🌫️ Sumir & transição
 
@@ -482,6 +513,22 @@ sorteada, mundo gerado. Depois "Trocar a peça" num laço cava os corredores.
 **Mover … com as teclas: cima/baixo/esquerda/direita** — o "Mover pelas teclas"
 usa WASD E as setas no MESMO personagem; com este você escolhe as teclas e tem
 DOIS jogadores (luta, pong, co-op).
+
+### Receitas úteis (só juntando os blocos)
+
+Alguns clássicos não precisam de bloco novo — saem da combinação certa:
+
+- **Cronômetro regressivo (0 = perdeu):** uma variável \`tempo = 60\`, no "A cada
+  quadro" faça \`tempo = tempo − dt\`; quando \`tempo ≤ 0\`, "Terminar o jogo".
+  Desenhe com fillText ou uma barra.
+- **Fases (mundo livre):** uma variável \`fase\`; ao trocar, "Escurecer a tela",
+  carregar outro mapa/cenário e "Colocar" o herói no começo. É o "próximo nível".
+- **Dash (arrancada):** ao apertar a tecla, se a "recarga" estiver pronta,
+  "Definir a velocidade" forte na direção + deixar invencível um tiquinho; use a
+  recarga para não repetir sem parar.
+- **Colecionável semeado no mapa:** um laço que varre as células; onde a peça é a
+  marcada, "Nascer" uma moeda ali e apagar a peça — espalha itens pelo mapa
+  desenhado no Pinta.
 
 ## 🏃 Kit Plataforma
 
@@ -677,7 +724,9 @@ tiles) continuam valendo e se combinam com o kit.
   + **Ganhar a poção** (cura, usada pelo botão Item) — as armas do RPG.
 - **Ganhar XP** (no "quando a batalha terminar", se venceu) → o herói **sobe de
   nível** (mais vida/força/defesa + aviso \`subiu:nivel\`); **meu nível** / **meu
-  XP** mostram a progressão. **Envenenar** tira vida por turno.
+  XP** mostram a progressão. **Aplicar veneno/regenerar/atrapalhar** dá um status
+  por alguns turnos: veneno tira 3 de vida por turno, regenerar devolve 3,
+  atrapalhar faz o golpe errar às vezes — as armas de status do RPG.
 - **Quando a batalha terminar / ganhei a batalha?** — decida o rumo: vitória →
   tela de vitória (+ XP), derrota → fim de jogo, fuga → tentar de novo.
 
