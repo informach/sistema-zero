@@ -23,15 +23,17 @@ globalWithIdb.indexedDB = globalWithIdb.indexedDB ?? {}
 // (ordem de arquivos ≠ Windows) um mock estreito quebrava o linker do CI com
 // "Export named 'getMany' not found".
 //
-// ⚠️ FLAKY cross-file (CI do monorepo): `mock.module` compartilha UM registry
-// global e re-liga os imports VIVOS do settingsStore. Qualquer outro arquivo que
-// mocke idb-keyval (todos os 14 mockam com o SEU `idb` local) desvia o `get`/
-// `update`/`createStore` que o settingsStore usa p/ o mock DELE. Se esse arquivo
-// rodar depois, `load()` lê pelo mock alheio (get→undefined) e hidrata nos
-// DEFAULTS — daí as falhas determinísticas (modelo padrão, chave '', fonte 13).
-// Passa isolado e em `bun test src`, mas a ordem de arquivos do monorepo muda
-// quem mockou por último. Cura: reaplicar ESTE mock no beforeEach (idbModuleFactory)
-// p/ os imports vivos do settingsStore voltarem a apontar p/ o `idb` daqui.
+// ⚠️ FLAKY cross-file (CI do monorepo) — causa RAIZ: a suíte roda num único
+// processo e outro arquivo pode disparar `load()` ANTES deste definir o stub de
+// `indexedDB` acima. O getStore() do settingsStore.ts latchava `storeInitFailed`
+// p/ SEMPRE nesse caso e `readPersisted()` devolvia `{}` sem nunca chamar o get
+// — hidratava nos DEFAULTS (modelo padrão, chave '', fonte 13). Passa isolado,
+// mas a ordem de travessia do runner (Linux ≠ Windows) decide se há poluidor
+// antes. Cura no FONTE: getStore() não latcha mais quando `indexedDB` está
+// ausente (volta a tentar quando o stub aparece); latch só p/ createStore que
+// lança. Aqui no teste, cinto-e-suspensório contra poluição de mocks: reaplicar
+// ESTE mock no beforeEach (idbModuleFactory) re-liga os imports vivos ao `idb`
+// daqui caso outro arquivo tenha mockado idb-keyval por cima (registry global).
 //
 // update() modela a transação atômica do idb-keyval real: read-modify-write
 // SERIALIZADO por chave (cada chamada espera a anterior na cauda da promise),

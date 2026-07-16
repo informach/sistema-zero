@@ -28,10 +28,10 @@ function getStore(): ReturnType<typeof createStore> | null {
   if (store || storeInitFailed) return store
   // Sem IndexedDB (happy-dom dos testes, contextos restritos) não há o que abrir:
   // bail cedo para a hidratação resolver imediatamente em `{}` em vez de pendurar.
-  if (typeof indexedDB === 'undefined') {
-    storeInitFailed = true
-    return null
-  }
+  // ⚠️ SEM latch neste caminho (igual ao settingsStore.ts): se o stub global de
+  // `indexedDB` só aparecer depois (ordem de arquivos da suíte), volta a tentar.
+  // O latch fica só p/ createStore que LANÇA.
+  if (typeof indexedDB === 'undefined') return null
   try {
     store = createStore('sistema-zero-studio', 'kv')
   } catch {
