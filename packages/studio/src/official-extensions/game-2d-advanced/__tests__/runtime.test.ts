@@ -402,7 +402,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 264 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 273 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -687,6 +687,18 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'pickActive',
       'parallaxLayer',
       'sheetBurst',
+      // 🏰 R26 — Kit Defesa de Torre: onda pelo caminho, lugares de torre com
+      // compra validada, anel de alcance e a carteira (caminho/alvo/tiro vêm do
+      // motor geral, que o kit CHAMA).
+      'tdWave',
+      'tdSlot',
+      'tdDrawSlots',
+      'tdOnBuy',
+      'tdFreeSlot',
+      'tdDrawRange',
+      'tdSetCoins',
+      'tdAddCoins',
+      'tdCoins',
       // 🥊 R19 — Kit Luta. Só o ESPECÍFICO de luta: gravidade/pulo/caixa de
       // golpe/dano/empurrão/telas vêm do motor geral, que o kit CHAMA.
       'lutaMatch',

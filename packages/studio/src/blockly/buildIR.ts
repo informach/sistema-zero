@@ -616,6 +616,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         mode: f(block, 'MODE') || 'maior',
         prop: f(block, 'PROP') || 'x',
       }
+    case 'sz_gk_td_coins':
+      return { type: 'gk:tdCoins' }
     case 'sz_gk_count_item':
       return { type: 'gk:countItem', name: f(block, 'NAME') }
     case 'sz_gk_health_of':
@@ -6467,6 +6469,78 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           y: exprInput(block, 'Y', { type: 'num', value: 100 }),
           size: exprInput(block, 'SIZE', { type: 'num', value: 64 }),
         },
+      }
+    // 🏰 R26 — Kit Defesa de Torre
+    case 'sz_gk_td_wave':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:tdWave',
+          path: f(block, 'PATH'),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 3 }),
+          mold: f(block, 'MOLD'),
+          gap: exprInput(block, 'GAP', { type: 'num', value: 150 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 90 }),
+        },
+      }
+    case 'sz_gk_td_slot':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:tdSlot',
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 64 }),
+        },
+      }
+    case 'sz_gk_td_draw_slots':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:tdDrawSlots' } }
+    case 'sz_gk_td_on_buy':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:tdOnBuy',
+          cost: exprInput(block, 'COST', { type: 'num', value: 50 }),
+          xName: f(block, 'PX') || 'lugarX',
+          yName: f(block, 'PY') || 'lugarY',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_td_free_slot':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:tdFreeSlot',
+          x: exprInput(block, 'X', { type: 'num', value: 100 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_gk_td_draw_range':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:tdDrawRange',
+          charVar: f(block, 'WHO'),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 220 }),
+        },
+      }
+    case 'sz_gk_td_set_coins':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:tdSetCoins', n: exprInput(block, 'N', { type: 'num', value: 100 }) },
+      }
+    case 'sz_gk_td_add_coins':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:tdAddCoins', n: exprInput(block, 'N', { type: 'num', value: 25 }) },
       }
     case 'sz_gk_set_opacity':
       seen.add('game-2d-advanced')

@@ -4004,6 +4004,66 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             SIZE: sz,
           })
     }
+    // 🏰 R26 — Kit Defesa de Torre
+    case 'gk:tdWave': {
+      const count = exprToValueBlock(valueToExpr(stmt.count))
+      const gap = exprToValueBlock(valueToExpr(stmt.gap))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return count === null || gap === null || speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_td_wave', { PATH: stmt.path, MOLD: stmt.mold }, {}, stmt.__id, {
+            COUNT: count,
+            GAP: gap,
+            SPEED: speed,
+          })
+    }
+    case 'gk:tdSlot': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const sz = exprToValueBlock(valueToExpr(stmt.size))
+      return x === null || y === null || sz === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_td_slot', {}, {}, stmt.__id, { X: x, Y: y, SIZE: sz })
+    }
+    case 'gk:tdDrawSlots':
+      return block('sz_gk_td_draw_slots', {}, {}, stmt.__id)
+    case 'gk:tdOnBuy': {
+      const cost = exprToValueBlock(valueToExpr(stmt.cost))
+      return cost === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_td_on_buy',
+            { PX: stmt.xName, PY: stmt.yName },
+            { BODY: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            { COST: cost },
+          )
+    }
+    case 'gk:tdFreeSlot': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_td_free_slot', {}, {}, stmt.__id, { X: x, Y: y })
+    }
+    case 'gk:tdDrawRange': {
+      const r = exprToValueBlock(valueToExpr(stmt.radius))
+      return r === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_td_draw_range', { WHO: stmt.charVar }, {}, stmt.__id, { RADIUS: r })
+    }
+    case 'gk:tdSetCoins': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_td_set_coins', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:tdAddCoins': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_td_add_coins', {}, {}, stmt.__id, { N: n })
+    }
     case 'gk:setOpacity': {
       const p = exprToValueBlock(valueToExpr(stmt.percent))
       return p === null
@@ -5757,6 +5817,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_path_progress', { WHO: expr.charVar })
     case 'gk:pickActive':
       return block('sz_gk_pick_active', { MOLD: expr.mold, MODE: expr.mode, PROP: expr.prop })
+    case 'gk:tdCoins':
+      return block('sz_gk_td_coins', {})
     case 'gk:countItem':
       return block('sz_gk_count_item', { NAME: expr.name })
     case 'gk:timeSurvived':

@@ -57,6 +57,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Bichinhos do Quintal': '👾',
   'Invasão dos Óvnis': '🛸',
   'Duelo dos Bonecos': '🥊',
+  'Defesa do Reino': '🛡️',
   'Boneco de formas': '🪆',
   'Noite enevoada': '🌙',
   'Enxame que gira': '🐝',

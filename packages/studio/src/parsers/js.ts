@@ -4114,6 +4114,7 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       prop: args[2].value as string,
     }
   }
+  if (method === 'tdCoins' && args.length === 0) return { type: 'gk:tdCoins' }
   if (method === 'rpgCountItem' && args[0]?.type === 'StringLiteral') {
     return { type: 'gk:countItem', name: args[0].value as string }
   }
@@ -5317,6 +5318,64 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         isSimpleValue(size)
         ? { type: 'gk:sheetBurst', image: args[0].value as string, frames, fps, x, y, size }
         : null
+    }
+    // 🏰 R26 — Kit Defesa de Torre
+    case 'tdWave': {
+      if (args[0]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') return null
+      const count = toExpr(args[1], ctx)
+      const gap = toExpr(args[3], ctx)
+      const speed = toExpr(args[4], ctx)
+      return isSimpleValue(count) && isSimpleValue(gap) && isSimpleValue(speed)
+        ? {
+            type: 'gk:tdWave',
+            path: args[0].value as string,
+            count,
+            mold: args[2].value as string,
+            gap,
+            speed,
+          }
+        : null
+    }
+    case 'tdSlot': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      const size = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) && isSimpleValue(size)
+        ? { type: 'gk:tdSlot', x, y, size }
+        : null
+    }
+    case 'tdDrawSlots':
+      return { type: 'gk:tdDrawSlots' }
+    case 'tdOnBuy': {
+      // generator: SZGameKit.tdOnBuy(<cost>, function (lugarX, lugarY) {…})
+      const cost = toExpr(args[0], ctx)
+      if (!isSimpleValue(cost) || !isFn(args[1])) return null
+      return {
+        type: 'gk:tdOnBuy',
+        cost,
+        xName: identifierName(args[1].params?.[0]) ?? 'lugarX',
+        yName: identifierName(args[1].params?.[1]) ?? 'lugarY',
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'tdFreeSlot': {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(y) ? { type: 'gk:tdFreeSlot', x, y } : null
+    }
+    case 'tdDrawRange': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const radius = toExpr(args[1], ctx)
+      return isSimpleValue(radius) ? { type: 'gk:tdDrawRange', charVar, radius } : null
+    }
+    case 'tdSetCoins': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:tdSetCoins', n } : null
+    }
+    case 'tdAddCoins': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:tdAddCoins', n } : null
     }
     case 'setOpacity': {
       const charVar = identifierName(args[0])
@@ -9678,6 +9737,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:navePowerOf':
     case 'gk:pathProgress':
     case 'gk:pickActive':
+    case 'gk:tdCoins':
     case 'gk:countItem':
     case 'gk:timeSurvived':
     case 'gk:kills':

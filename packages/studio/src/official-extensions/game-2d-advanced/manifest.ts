@@ -3,6 +3,7 @@ import {
   arenaGoblinsExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
+  defesaDoReinoExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
@@ -13,7 +14,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.23.0',
+  version: '0.24.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E cinco atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial) e 🚀 nave (a invasão que marcha, desce e acelera).',
   category: 'games',
@@ -817,6 +818,78 @@ de 3 no ar.
   imune, sem tirar vida. É o escudo num bloco.
 - **3 vidas**: uma variável + **corações** no HUD (o exemplo "Invasão dos Óvnis"
   mostra tudo isso junto).
+
+## 🏰 Kit Defesa de Torre
+
+O atalho do jogo de defesa de torre (tower defense). Pela mesma regra dos outros
+kits, o que NÃO é só do gênero vem do motor geral e é você quem monta: o
+**caminho** (🛤️ Caminhos, que já era geral), a mira no **alvo mais avançado**
+("o vivo do molde … com a MAIOR *progresso no caminho*", da 🎲 Sorte & medida), o
+**tiro** da torre, a **barra de vida** do invasor, os **corações** e a
+**explosão** ao derrotar. O kit traz só o que SÓ existe em defesa de torre: os
+**lugares** de torre (a grade de compra que acende sob o mouse), a **compra** que
+valida moeda e lugar, a **onda** que nasce espaçada e marcha o caminho, e a
+**carteira** de moedas.
+
+### 🏰 Kit Defesa de Torre: as torres
+
+**Marcar um lugar de torre em x … y …** põe um quadrado onde a criança pode
+comprar (faça no "Preparar"). Marque vários flanqueando o caminho.
+
+**Desenhar os lugares de torre** mostra os livres (o de baixo do mouse acende,
+convidando ao clique); os ocupados somem. Use no "Desenhar o jogo".
+
+**Quando clicar num lugar livre, pagando … moedas** é o coração da compra: a cada
+clique num lugar livre COM moedas, o motor cobra o preço, ocupa o lugar e roda o
+"fazer" com o centro dele em **lugarX** e **lugarY** — nasça a torre aí (*"Nascer
+com apelido 'torre' em lugarX − 20, lugarY − 20"*). Sem moedas, sai o aviso
+\`compra:negada\` e nada acontece. Clique num lugar OCUPADO ou fora dos lugares
+cai no "Quando clicar no jogo" comum (dá para melhorar a torre ali).
+
+**Liberar o lugar de torre em x … y …** solta o lugar (a torre foi vendida ou
+destruída), deixando comprar de novo ali.
+
+**Desenhar o alcance de … (raio …)** pinta um círculo suave sob a torre — bom
+para desenhar sob a torre que o mouse está tocando.
+
+### 👹 Kit Defesa de Torre: a invasão & as moedas
+
+**Invadir pelo caminho …: … inimigos do molde …** solta uma fila de inimigos
+entrando pelo começo do caminho, espaçados, marchando até o fim. Chegou algum ao
+fim? Sai \`invasor:passou\` — tire uma vida no "Quando o aviso chegar". Acabou a
+onda? Sai \`onda:limpa\` (o MESMO aviso do Kit Nave, de propósito: vocabulário
+único — se usar os dois no mesmo jogo, um "Quando \`onda:limpa\`" responde aos
+dois) — solte a próxima, maior: *"leva = leva + 2; Invadir de novo"*. A
+dificuldade infinita em dois blocos.
+
+**Começar com … moedas** enche a carteira no "Preparar" (e o "Jogar de novo"
+volta a esse valor). **Ganhar … moedas** soma por inimigo derrotado ou onda
+vencida (um número negativo GASTA). **As moedas** é o valor de agora — mostre no
+placar e teste antes de deixar comprar.
+
+### A torre que atira (a receita, com os blocos gerais)
+
+O tiro NÃO é um bloco do kit — é a mesma receita de sempre, e é ela que ensina a
+lógica de jogo:
+
+\`\`\`
+No "A cada quadro", para cada vivo do molde "torre":
+  se recarregou (0.8 s):
+    alvo = o vivo do molde "invasor" com a MAIOR progresso no caminho
+    se alvo existe:
+      se a distância entre a torre e o alvo < 220:
+        tiro = Nascer com apelido "tiro" na posição da torre
+        Lançar o tiro na direção do alvo a 420
+Para cada vivo do molde "tiro": Mover pela velocidade; Recolher quem saiu
+Quando "tiro" e "invasor" se sobrepõem:
+  Recolher o tiro; Machucar o invasor 15
+  se o invasor morreu: faíscas + Ganhar 25 moedas + Recolher o invasor
+\`\`\`
+
+O exemplo "Defesa do Reino" monta exatamente isso. Torre de gelo? Some um
+"deslizar até" com fator baixo no invasor atingido. Torre de área? No acerto,
+"para cada vivo perto" leva dano. Vender? **Liberar o lugar** + devolver metade
+das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
 `,
   examples: [
     cacaMoedasExample,
@@ -827,5 +900,6 @@ de 3 no ar.
     bichinhosDoQuintalExample,
     invasaoDosOvnisExample,
     dueloDosBonecosExample,
+    defesaDoReinoExample,
   ],
 }

@@ -80,6 +80,15 @@ export const gameKitRuntime = `(function () {
   // Cada caminho: { pts:[{x,y}], cum:[dist acumulada até cada ponto], total }.
   var paths = Object.create(null);
   var pathBuilding = null; // coleta do "Criar o caminho" (espelho do rpg.menuBuilding)
+  // 🏰 R26 — Kit Defesa de Torre. Slots/coins sao CONFIG de topo (a economia
+  // reseta no jogo novo p/ o coinsInit). As ondas sao anonimas (como o Nave).
+  var td = {
+    waves: [],   // { id, path, mold, speed, members: [] }
+    slots: [],   // { x, y, size, occupied }
+    coins: 0, coinsInit: 0,
+    seq: 0
+  };
+  var MAX_TD_WAVES = 8, MAX_TD_SLOTS = 200;
   // ✨ R25 — explosao por FOLHA one-shot (a explosion.png do Chris), pooled.
   var sheetBursts = { active: [], free: [] };
   var MAX_SHEET_BURSTS = 24;
@@ -370,6 +379,8 @@ export const gameKitRuntime = `(function () {
         lutaNewGame();
         // 🚀 idem: onda/bomba/poder da partida anterior não invadem a nova.
         naveNewGame();
+        // 🏰 idem: ondas somem, slots liberam, moedas voltam ao inicial.
+        tdNewGame();
         // ⚠️ TODO global de jogo entra AQUI. Os 3 abaixo escaparam quando nasceram:
         // · checkpoint — a criança marca o ponto numa bandeira no meio da fase (uso
         //   natural do bloco); sem zerar, "Jogar de novo" NASCE no meio da fase da
@@ -437,9 +448,12 @@ export const gameKitRuntime = `(function () {
   function toGameCoords(ev) {
     if (!canvasEl) return null;
     var rect = canvasEl.getBoundingClientRect();
-    if (!(rect.width > 0) || !(rect.height > 0)) return null;
-    var x = (ev.clientX - rect.left) * (config.w / rect.width);
-    var y = (ev.clientY - rect.top) * (config.h / rect.height);
+    // Rect 0x0 = canvas ainda sem layout (só no teste headless; o preview usa
+    // opacity:0, que preserva o rect). Escala 1: clientX vira coord do jogo.
+    var rw = rect.width > 0 ? rect.width : config.w;
+    var rh = rect.height > 0 ? rect.height : config.h;
+    var x = (ev.clientX - rect.left) * (config.w / rw);
+    var y = (ev.clientY - rect.top) * (config.h / rh);
     if (camera.on) { x += camera.x; y += camera.y; }
     return { x: x, y: y };
   }
@@ -472,6 +486,9 @@ export const gameKitRuntime = `(function () {
         }
         return;
       }
+      // 🏰 Compra de torre: um slot livre sob o clique consome o evento ANTES
+      // dos "Quando clicar no jogo" (que segue livre p/ a receita de upgrade).
+      if (tdHandleClick(p.x, p.y)) return;
       for (var i = 0; i < gameClickHooks.length; i++) {
         var fn = gameClickHooks[i];
         try { fn(p.x, p.y); } catch (e) {
@@ -855,6 +872,7 @@ export const gameKitRuntime = `(function () {
     stepWaits(); // "Esperar N s, fazer" (⏱️ Tempo) — one-shot no relógio do jogo
     stepLuta(dt); // 🥊 Kit Luta: rounds/fases (travam só os lutadores, sem estado novo)
     stepNave(dt); // 🚀 Kit Nave: a formação marcha, atira, bomba quica, poder expira
+    stepTd(dt); // 🏰 Kit Defesa de Torre: as ondas marcham o caminho, avisam vazamento
     stepRpg(dt); // NPCs que andam + motor de cena + transição de mapa (Kit RPG)
     for (var i = 0; i < spawners.length; i++) {
       var sp = spawners[i];
@@ -950,7 +968,9 @@ export const gameKitRuntime = `(function () {
       // 🚀 R22: poder de tiro da nave (o herói É um personagem) + shape do pool.
       _wave: 0, _gunMode: '', _gunT: 0, _naveBomb: false,
       // 🛤️ R25: waypoint atual do caminho que segue (reciclado NÃO herda a rota).
-      _pathName: '', _pathIdx: 0, _pathDone: false
+      _pathName: '', _pathIdx: 0, _pathDone: false,
+      // 🏰 R26: carimbo da onda de TD (reciclado NÃO marcha na onda fantasma).
+      _tdWave: 0
     };
     c._bornX = c.x;
     c._bornY = c.y;
@@ -1459,6 +1479,8 @@ export const gameKitRuntime = `(function () {
       _wave: 0, _gunMode: '', _gunT: 0, _naveBomb: false,
       // 🛤️ R25: waypoint atual (reciclado NÃO herda a rota do dono anterior).
       _pathName: '', _pathIdx: 0, _pathDone: false,
+      // 🏰 R26: carimbo da onda de TD (anti-fantasma).
+      _tdWave: 0,
       // 🥷 R18: a janela do golpe (recuo/ativo em segundos; 0/0 = o golpe inteiro
       // machuca, que é o comportamento de sempre) e o ESTADO com a trava de
       // animação. Reciclar sem zerar deixaria o inimigo novo nascer "golpeando",
@@ -1537,6 +1559,7 @@ export const gameKitRuntime = `(function () {
     // R22: sem carimbo de onda, sem poder, sem marca de bomba.
     e._wave = 0; e._gunMode = ''; e._gunT = 0; e._naveBomb = false;
     e._pathName = ''; e._pathIdx = 0; e._pathDone = false; // 🛤️ R25
+    e._tdWave = 0; // 🏰 R26
     pool.active.push(e);
     return e;
   }
@@ -4467,6 +4490,150 @@ export const gameKitRuntime = `(function () {
   }
 
   // ==========================================================================
+  // 🏰 KIT DEFESA DE TORRE - o atalho do genero (Tower Defense)
+  // ==========================================================================
+  // Pela REGRA: o caminho (🛤️ geral), o alvo (pickActive geral), o tiro da torre
+  // (cooldown + spawn + seek + overlap) sao GERAIS. O kit so tem o que SO existe
+  // em TD: a onda que INVADE pelo caminho, os lugares de torre com compra
+  // validada, e o anel de alcance. A economia (carteira) mora no kit como o XP
+  // do RPG e os rounds da Luta (precedente rpgLevel/lutaWinsOf).
+  /** A onda: nasce ESPACADA atras do inicio do caminho (o xOffset=i*150 do
+   * Chris, generalizado); o MOTOR move cada um pelo caminho (stepTd). */
+  function tdWave(pathName, count, moldName, gap, speed) {
+    var pk = text(pathName, '');
+    var rec = paths[pk];
+    if (!rec) { warnOnce('tdwave:' + pk, 'o caminho "' + pk + '" não existe — crie com "Criar o caminho"'); return; }
+    var mk = text(moldName, '');
+    if (!molds[mk]) { warnOnce('tdmold:' + mk, 'o molde "' + mk + '" não existe — crie com "Criar o molde"'); return; }
+    if (td.waves.length >= MAX_TD_WAVES) { warnOnce('tdwaves', 'muitas ondas ao mesmo tempo (teto ' + MAX_TD_WAVES + ')'); return; }
+    var n = Math.max(1, Math.min(200, Math.round(num(count, 3))));
+    var g = Math.max(0, num(gap, 150));
+    var v = num(speed, 90);
+    // Vetor unitario do 1o trecho: os inimigos entram em fila atras do 1o ponto.
+    var p0 = rec.pts[0], p1 = rec.pts[1];
+    var dx = p1.x - p0.x, dy = p1.y - p0.y;
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ux = dx / len, uy = dy / len;
+    td.seq += 1;
+    var w = { id: td.seq, path: pk, mold: mk, speed: v, members: [] };
+    for (var i = 0; i < n; i++) {
+      var e = spawnFromMold(mk, 0, 0);
+      if (!e) break;
+      e.x = p0.x - ux * g * i - e.w / 2;
+      e.y = p0.y - uy * g * i - e.h / 2;
+      e._prevX = e.x; e._prevY = e.y;
+      e._pathName = pk; e._pathIdx = 0; e._pathDone = false;
+      e._tdWave = w.id; // ⭐ carimbo anti-fantasma (a licao do _wave do Nave)
+      w.members.push(e);
+    }
+    if (w.members.length) td.waves.push(w);
+  }
+  /** Marcar um lugar de torre (um por bloco; funciona com qualquer fundo). */
+  function tdSlot(x, y, size) {
+    if (td.slots.length >= MAX_TD_SLOTS) { warnOnce('tdslots', 'muitos lugares de torre (teto ' + MAX_TD_SLOTS + ')'); return; }
+    td.slots.push({ x: num(x, 100), y: num(y, 100), size: Math.max(8, num(size, 64)), occupied: false });
+  }
+  function tdFreeSlot(x, y) {
+    for (var i = 0; i < td.slots.length; i++) {
+      var s = td.slots[i];
+      if (Math.abs(num(x, 0) - s.x) <= s.size / 2 && Math.abs(num(y, 0) - s.y) <= s.size / 2) {
+        s.occupied = false; return;
+      }
+    }
+  }
+  function tdSlotAt(px, py) {
+    for (var i = 0; i < td.slots.length; i++) {
+      var s = td.slots[i];
+      if (!s.occupied && Math.abs(px - s.x) <= s.size / 2 && Math.abs(py - s.y) <= s.size / 2) return s;
+    }
+    return null;
+  }
+  function tdDrawSlots() {
+    if (!ctx2d) return;
+    for (var i = 0; i < td.slots.length; i++) {
+      var s = td.slots[i];
+      if (s.occupied) continue;
+      var hover = Math.abs(mouse.x - s.x) <= s.size / 2 && Math.abs(mouse.y - s.y) <= s.size / 2;
+      var prev = 1;
+      try { prev = ctx2d.globalAlpha; ctx2d.globalAlpha = hover ? 0.4 : 0.15; } catch (e) {}
+      ctx2d.fillStyle = '#ffffff';
+      ctx2d.fillRect(s.x - s.size / 2, s.y - s.size / 2, s.size, s.size);
+      try { ctx2d.globalAlpha = prev; } catch (e) {}
+    }
+  }
+  function tdDrawRange(who, radius) {
+    if (!ctx2d || !who || typeof who !== 'object') return;
+    var r = Math.max(1, num(radius, 220));
+    var prev = 1;
+    try { prev = ctx2d.globalAlpha; ctx2d.globalAlpha = 0.12; } catch (e) {}
+    ctx2d.fillStyle = '#66aaff';
+    ctx2d.beginPath();
+    try { ctx2d.arc(centerX(who), centerY(who), r, 0, Math.PI * 2); ctx2d.fill(); } catch (e) {}
+    try { ctx2d.globalAlpha = prev; ctx2d.strokeStyle = '#66aaff'; ctx2d.lineWidth = 2; ctx2d.stroke(); } catch (e) {}
+  }
+  // Carteira do kit (precedente rpgLevel/lutaWinsOf — evita o padrao novo de
+  // closures no parser p/ ler a variavel da crianca).
+  function tdSetCoins(n) { td.coins = Math.round(num(n, 100)); td.coinsInit = td.coins; }
+  function tdAddCoins(n) { td.coins = Math.round(td.coins + num(n, 0)); }
+  function tdCoins() { return td.coins; }
+  // Os "Quando comprar" registrados: cada clique num slot livre com moedas roda o corpo.
+  var tdBuyers = [];
+  function tdOnBuy(cost, fn) {
+    if (typeof fn !== 'function') return;
+    tdBuyers.push({ cost: Math.max(0, num(cost, 50)), fn: fn });
+  }
+  /** Clique no jogo: 1o slot livre sob o ponto. Paga e roda o corpo, ou avisa. */
+  function tdHandleClick(px, py) {
+    if (!tdBuyers.length) return false;
+    var slot = tdSlotAt(px, py);
+    if (!slot) return false;
+    var did = false;
+    for (var i = 0; i < tdBuyers.length; i++) {
+      var b = tdBuyers[i];
+      if (td.coins >= b.cost) {
+        td.coins -= b.cost;
+        slot.occupied = true;
+        did = true;
+        try { b.fn(slot.x, slot.y); } catch (e) { warn('erro no "Quando comprar a torre": ' + e); }
+      } else {
+        emit('compra:negada', null);
+        did = true; // consome o clique (nao cai no "Quando clicar no jogo")
+      }
+    }
+    return did;
+  }
+  /** O passo do kit (stepSystems): move as ondas pelo caminho, avisa vazamento. */
+  function stepTd(dt) {
+    for (var wi = td.waves.length - 1; wi >= 0; wi--) {
+      var w = td.waves[wi];
+      var rec = paths[w.path];
+      var ms = w.members;
+      for (var i = ms.length - 1; i >= 0; i--) {
+        var e = ms[i];
+        if (!e || e._active === false || e._tdWave !== w.id) {
+          ms[i] = ms[ms.length - 1]; ms.pop(); continue;
+        }
+        if (rec) followPathStep(e, rec, w.speed, dt);
+        if (e._pathDone) {
+          ms[i] = ms[ms.length - 1]; ms.pop();
+          recycle(e);
+          emit('invasor:passou', null); // a crianca tira a vida no on()
+        }
+      }
+      if (!ms.length) {
+        td.waves[wi] = td.waves[td.waves.length - 1]; td.waves.pop();
+        emit('onda:limpa', null); // MESMO evento do Nave (vocabulario unico)
+      }
+    }
+  }
+  /** "Jogar de novo" limpa o kit; slots liberam, moedas voltam ao inicial. */
+  function tdNewGame() {
+    td.waves.length = 0;
+    for (var i = 0; i < td.slots.length; i++) td.slots[i].occupied = false;
+    td.coins = td.coinsInit;
+  }
+
+  // ==========================================================================
   // 🚀 KIT NAVE - o atalho do genero (Space Invaders / shoot-'em-up)
   // ==========================================================================
   // A extensao GERAL ja faz nave "na unha" (molde + spawn + setVelocity + colisao
@@ -6162,6 +6329,16 @@ export const gameKitRuntime = `(function () {
     pickActive: guard('pickActive', pickActive),
     parallaxLayer: guard('parallaxLayer', parallaxLayer),
     sheetBurst: guard('sheetBurst', sheetBurst),
+    // 🏰 R26 — Kit Defesa de Torre
+    tdWave: guard('tdWave', tdWave),
+    tdSlot: guard('tdSlot', tdSlot),
+    tdDrawSlots: guard('tdDrawSlots', tdDrawSlots),
+    tdOnBuy: guard('tdOnBuy', tdOnBuy),
+    tdFreeSlot: guard('tdFreeSlot', tdFreeSlot),
+    tdDrawRange: guard('tdDrawRange', tdDrawRange),
+    tdSetCoins: guard('tdSetCoins', tdSetCoins),
+    tdAddCoins: guard('tdAddCoins', tdAddCoins),
+    tdCoins: guard('tdCoins', tdCoins),
     // 🚀 R22 — Kit Nave
     naveShip: guard('naveShip', naveShip),
     navePowerup: guard('navePowerup', navePowerup),

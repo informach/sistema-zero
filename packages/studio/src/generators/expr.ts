@@ -467,6 +467,8 @@ export function compileExpr(
       return `SZGameKit.pathProgress(${identifiers.get(expr.charVar)})`
     case 'gk:pickActive':
       return `SZGameKit.pickActive(${JSON.stringify(expr.mold)}, ${JSON.stringify(expr.mode)}, ${JSON.stringify(expr.prop)})`
+    case 'gk:tdCoins':
+      return 'SZGameKit.tdCoins()'
     case 'gk:countItem':
       return `SZGameKit.rpgCountItem(${JSON.stringify(expr.name)})`
     case 'gk:timeSurvived':

@@ -388,6 +388,29 @@ API global injetada como window.SZGameKit:
   spawn_named + drawHealthBar + fanShot em padrões; asteroide que parte = no
   overlap, 2 spawns do molde menor + recycle; escudo = hurt(quem, 0, 3);
   vidas = variável + drawHearts.
+- 🏰 Kit Defesa de Torre (tower defense — o ATALHO do gênero; o resto é geral):
+  o CAMINHO é 🛤️ (definePath/pathPoint), a MIRA é a 🎲 pickActive(inimigo, "maior",
+  "pathProgress") = o invasor mais avançado, e o TIRO/barra/corações/explosão são
+  os blocos gerais. Do kit: tdSlot(x, y, tam) = um lugar de torre (no setup;
+  marque vários flanqueando o caminho); tdDrawSlots() = desenha os livres, o de
+  baixo do mouse acende (no onDraw); tdOnBuy(custo, fn(lugarX, lugarY)) = a
+  COMPRA — cada clique num lugar livre COM moedas cobra, ocupa e roda fn com o
+  centro do lugar (nasça a torre em lugarX-halfW, lugarY-halfH); sem moedas →
+  aviso 'compra:negada'; clique em ocupado/fora cai no onGameClick (upgrade).
+  tdFreeSlot(x, y) = solta o lugar (vender/destruir). tdDrawRange(quem, raio) =
+  círculo do alcance. tdWave(caminho, quantos, molde, espaço, vel) = a ONDA que
+  nasce espaçada e o MOTOR marcha pelo caminho; chegou ao fim → 'invasor:passou'
+  (tire vida); onda vazia → 'onda:limpa' (MESMO aviso do Kit Nave — vocabulário
+  único; crie a próxima maior: leva = leva + 2 → tdWave). Carteira: tdSetCoins(n)
+  no setup (o "Jogar de novo" volta a esse valor), tdAddCoins(n) (negativo gasta),
+  tdCoins() no placar. ⭐ A TORRE QUE ATIRA é receita (ensina a lógica): "no
+  onUpdate, para cada vivo 'torre': se cooldownReady(torre, 0.8): alvo =
+  pickActive('invasor','maior','pathProgress'); se alvo e distanceBetween(torre,
+  alvo) < 220: tiro = spawnFromMold('tiro', charX(torre), charY(torre));
+  launchTowards(tiro, alvo, 420)". Depois mova os tiros (forEachActive +
+  moveByVelocity + cull) e no overlapGroups('tiro','invasor'): recycle(tiro) +
+  hurt(invasor) + se isDead: faíscas + tdAddCoins + recycle. Gelo/área/vender =
+  receitas sobre esse esqueleto. Exemplo: "Defesa do Reino".
 - 🥷 Ação em tempo real (Zelda; Ninja Adventure): attackFacing(quem, alcance,
   duracao) cria uma caixa de golpe NA FRENTE (pela direção que olha) por ~0.3s, com
   trava de 1 acerto por golpe; didHit(quem, alvo) = a caixa encostou no alvo NESTE

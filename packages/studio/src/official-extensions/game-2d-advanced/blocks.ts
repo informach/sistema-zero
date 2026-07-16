@@ -3657,6 +3657,122 @@ export const gameKitBlocks = [
     output: 'JSValue',
     tooltip: 'Verdadeiro enquanto ele segura a tecla de defender. Bom para som e faísca.',
   },
+  // ==========================================================================
+  // 🏰 KIT DEFESA DE TORRE — o atalho do gênero (tower defense)
+  // ==========================================================================
+  // Pela REGRA: só o ESPECÍFICO do gênero mora aqui. O caminho e o alvo "mais
+  // avançado" já são GERAIS (🛤️ Caminhos + "o vivo do molde com maior…"); o
+  // tiro da torre, a barra de vida, os corações e a explosão saem de blocos
+  // gerais (a receita está nas docs). SÓ existe em tower defense: o LUGAR de
+  // torre (a grade de compra sob o mouse), a compra que valida moeda+lugar, a
+  // ONDA que nasce espaçada pelo caminho e a carteira de moedas.
+  {
+    type: 'sz_gk_td_slot',
+    message0: 'Marcar um lugar de torre em x %1 y %2, tamanho %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Um lugar onde cabe uma torre (faça no "Preparar"). A criança clica nele para comprar. Marque vários flanqueando o caminho.',
+  },
+  {
+    type: 'sz_gk_td_draw_slots',
+    message0: 'Desenhar os lugares de torre (o livre sob o mouse acende)',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Mostra os lugares livres (o de baixo do mouse fica mais forte, convidando ao clique). Os ocupados não aparecem. Use no "Ao desenhar".',
+  },
+  {
+    type: 'sz_gk_td_on_buy',
+    message0: 'Quando clicar num lugar livre, pagando %1 moedas — com o lugar em x %2 y %3:',
+    args0: [
+      { type: 'input_value', name: 'COST', check: 'JSValue' },
+      { type: 'field_input', name: 'PX', text: 'lugarX' },
+      { type: 'field_input', name: 'PY', text: 'lugarY' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Toda vez que a criança clica num lugar livre e tem moedas: cobra o preço, ocupa o lugar e roda o "fazer" com o centro dele em lugarX/lugarY (nasça a torre aí). Sem moedas, avisa "compra:negada" e nada acontece.',
+  },
+  {
+    type: 'sz_gk_td_free_slot',
+    message0: 'Liberar o lugar de torre em x %1 y %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Solta o lugar que contém esse ponto (a torre foi vendida ou destruída), deixando comprar de novo ali.',
+  },
+  {
+    type: 'sz_gk_td_draw_range',
+    message0: 'Desenhar o alcance de %1 (raio %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'torre', kind: 'character' },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Um círculo suave mostrando até onde a torre acerta. Bom para desenhar sob a torre que o mouse está tocando.',
+  },
+  {
+    type: 'sz_gk_td_wave',
+    message0: 'Invadir pelo caminho %1: %2 inimigos do molde %3, %4 px entre eles, a %5 px/s',
+    args0: [
+      { type: 'field_name_picker', name: 'PATH', text: 'trilha', kind: 'path' },
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'invasor', kind: 'mold' },
+      { type: 'input_value', name: 'GAP', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Solta uma fila de inimigos entrando pelo começo do caminho, espaçados, andando até o fim. Chegou algum ao fim? Avisa "invasor:passou". Acabou a onda? Avisa "onda:limpa" (aí solte a próxima, maior).',
+  },
+  {
+    type: 'sz_gk_td_set_coins',
+    message0: 'Começar com %1 moedas',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Enche a carteira no início (e no "Jogar de novo" a economia volta a esse valor). Use no "Preparar".',
+  },
+  {
+    type: 'sz_gk_td_add_coins',
+    message0: 'Ganhar %1 moedas',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Soma moedas à carteira (por inimigo derrotado, por onda vencida…). Um número negativo GASTA moedas.',
+  },
+  {
+    type: 'sz_gk_td_coins',
+    message0: 'as moedas',
+    output: 'JSValue',
+    tooltip:
+      'Quantas moedas a criança tem agora. Mostre no placar e teste antes de deixar comprar.',
+  },
 ]
 
 /**
@@ -4270,6 +4386,27 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: ['sz_gk_nave_starfield', 'sz_gk_nave_bomb'],
   },
+  // 🏰 R26 — Kit Defesa de Torre. As torres (lugares/compra/alcance) e a invasão
+  // & as moedas (onda pelo caminho + carteira). O tiro, a barra de vida, os
+  // corações e a explosão saem de blocos GERAIS (receita nas docs).
+  {
+    name: '🏰 Kit Defesa de Torre: as torres',
+    kit: '🏰 Kit Defesa de Torre',
+    colour: C,
+    types: [
+      'sz_gk_td_slot',
+      'sz_gk_td_draw_slots',
+      'sz_gk_td_on_buy',
+      'sz_gk_td_free_slot',
+      'sz_gk_td_draw_range',
+    ],
+  },
+  {
+    name: '👹 Kit Defesa de Torre: a invasão & as moedas',
+    kit: '🏰 Kit Defesa de Torre',
+    colour: C,
+    types: ['sz_gk_td_wave', 'sz_gk_td_set_coins', 'sz_gk_td_add_coins', 'sz_gk_td_coins'],
+  },
 ]
 
 // Cores por GRUPO (R24). Antes era um gradiente único de 44 tons do teal —
@@ -4467,6 +4604,14 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     Y: numShadow(100),
     SIZE: numShadow(64),
   },
+  // 🏰 R26 — Kit Defesa de Torre
+  sz_gk_td_slot: { X: numShadow(100), Y: numShadow(100), SIZE: numShadow(64) },
+  sz_gk_td_on_buy: { COST: numShadow(50) },
+  sz_gk_td_free_slot: { X: numShadow(100), Y: numShadow(100) },
+  sz_gk_td_draw_range: { RADIUS: numShadow(220) },
+  sz_gk_td_wave: { COUNT: numShadow(3), GAP: numShadow(150), SPEED: numShadow(90) },
+  sz_gk_td_set_coins: { N: numShadow(100) },
+  sz_gk_td_add_coins: { N: numShadow(25) },
   // R21 — primitivos gerais
   sz_gk_float_text: {
     TEXT: txtShadow('+100'),
