@@ -94,6 +94,32 @@ export const world3DRuntime = `import * as THREE from 'three';
   var _look = null;
   var _autoAngle = 0;
   var camSnap = true;           // 1º quadro / teleporte: cola sem lerp
+  // Natureza: RECEITAS (os blocos só anotam; o start constrói — ordem livre).
+  var natureRecipes = [];       // { kind, thing/name, n, s, x, z, deg, seed, model, built }
+  var exclusions = [];          // { x, z, r } — "Deixar limpo" (o centro já é implícito)
+  var natureGroup = null;       // raiz de tudo que foi espalhado/posto
+  var scatterBudget = 12000;    // teto TOTAL de instâncias espalhadas (higiene de GPU)
+  var scatterCount = 0;
+  var placedCount = 0;
+  var MAX_PLACED = 200;         // "Pôr 1" é para cantinhos especiais, não para florestas
+  var crashHooks = [];
+  var _crashCd = 0;             // segundos até a próxima batida poder disparar
+  var _dummy = null;            // Object3D p/ compor matrizes de instância
+  var _mat4 = null;
+  var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
+  var speciesMats = null;       // materiais toon compartilhados por cor
+  // Grade de colisores ESTÁTICOS (só insere no build; o carro consulta por raio).
+  var COLL_GRID_DIM = 24;
+  var collCells = Object.create(null);
+  var collStamp = 0;
+  var collResults = [];
+  // Modelos .glb do projeto (data:URL semeada pelo assetsBridge) + cache de parse.
+  var MODELS3D = (typeof window !== 'undefined' && window.__SZGAME_ASSETS_3D && typeof window.__SZGAME_ASSETS_3D === 'object')
+    ? window.__SZGAME_ASSETS_3D
+    : {};
+  var _gltfMod = null;
+  var _modelCache = null;       // nome -> { scene } já parseado
+  var _modelPending = null;     // nome -> fila de callbacks (parse em voo)
 
   function warn(msg) {
     try { console.warn('SZWorld3D: ' + msg); } catch (e) {}
@@ -204,6 +230,497 @@ export const world3DRuntime = `import * as THREE from 'three';
     _normScratch.y = ny / len;
     _normScratch.z = nz / len;
     return _normScratch;
+  }
+
+  /** RNG semeado (mulberry32): a natureza espalhada cai SEMPRE nos mesmos lugares. */
+  function mulberry(seed) {
+    var s = seed | 0;
+    return function () {
+      s = (s + 0x6d2b79f5) | 0;
+      var t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---- Colisores estáticos (grade esparsa no plano XZ, só-insere) ----
+
+  function collIndex(v) {
+    var half = config.world / 2;
+    var t = (v + half) / (config.world || 1);
+    if (t < 0) t = 0;
+    if (t > 1) t = 1;
+    var i = Math.floor(t * COLL_GRID_DIM);
+    return i >= COLL_GRID_DIM ? COLL_GRID_DIM - 1 : i;
+  }
+
+  function colliderAdd(x, z, r) {
+    var c = { x: x, z: z, r: r, _stamp: 0 };
+    var x0 = collIndex(x - r);
+    var z0 = collIndex(z - r);
+    var x1 = collIndex(x + r);
+    var z1 = collIndex(z + r);
+    for (var gx = x0; gx <= x1; gx++) {
+      for (var gz = z0; gz <= z1; gz++) {
+        var k = gx + ',' + gz;
+        (collCells[k] || (collCells[k] = [])).push(c);
+      }
+    }
+  }
+
+  /** Colisores num raio (broad-phase; dedup por carimbo, buffer reusado). */
+  function collidersNear(x, z, radius) {
+    collStamp++;
+    collResults.length = 0;
+    var x0 = collIndex(x - radius);
+    var z0 = collIndex(z - radius);
+    var x1 = collIndex(x + radius);
+    var z1 = collIndex(z + radius);
+    for (var gx = x0; gx <= x1; gx++) {
+      for (var gz = z0; gz <= z1; gz++) {
+        var cell = collCells[gx + ',' + gz];
+        if (!cell) continue;
+        for (var i = 0; i < cell.length; i++) {
+          var c = cell[i];
+          if (c._stamp !== collStamp) {
+            c._stamp = collStamp;
+            collResults.push(c);
+          }
+        }
+      }
+    }
+    return collResults;
+  }
+
+  // ---- 🌿 Natureza (espécies procedurais low-poly + instancing) ----
+
+  /**
+   * Cada espécie é uma lista de PEÇAS sobre geometrias unitárias compartilhadas
+   * (1 InstancedMesh por peça → uma floresta de 300 árvores custa 3 draw calls).
+   * color '' = a cor de pedra do ESTILO do mundo. collR 0 = passa por cima.
+   */
+  var SPECIES = {
+    arvores: {
+      collR: 0.55, smin: 0.8, smax: 1.5,
+      parts: [
+        { g: 'cyl', color: '#7c4a2d', x: 0, y: 0.8, z: 0, sx: 0.36, sy: 1.6, sz: 0.36 },
+        { g: 'ico', color: '#3e8f3e', x: 0, y: 2.3, z: 0, sx: 2.4, sy: 2.2, sz: 2.4 },
+        { g: 'ico', color: '#57a344', x: 0.6, y: 1.7, z: 0.3, sx: 1.5, sy: 1.3, sz: 1.5 }
+      ]
+    },
+    pinheiros: {
+      collR: 0.5, smin: 0.9, smax: 1.7,
+      parts: [
+        { g: 'cyl', color: '#6b4226', x: 0, y: 0.5, z: 0, sx: 0.3, sy: 1, sz: 0.3 },
+        { g: 'cone', color: '#2d6a34', x: 0, y: 1.7, z: 0, sx: 2.2, sy: 1.8, sz: 2.2 },
+        { g: 'cone', color: '#357c3c', x: 0, y: 2.8, z: 0, sx: 1.7, sy: 1.5, sz: 1.7 },
+        { g: 'cone', color: '#3f8f46', x: 0, y: 3.7, z: 0, sx: 1.2, sy: 1.2, sz: 1.2 }
+      ]
+    },
+    pedras: {
+      collR: 0.7, smin: 0.5, smax: 1.6,
+      parts: [{ g: 'ico', color: '', x: 0, y: 0.4, z: 0, sx: 1.6, sy: 1.0, sz: 1.3 }]
+    },
+    flores: {
+      collR: 0, smin: 0.7, smax: 1.2,
+      parts: [
+        { g: 'cyl', color: '#3f9142', x: 0, y: 0.25, z: 0, sx: 0.07, sy: 0.5, sz: 0.07 },
+        { g: 'ico', color: '#f472b6', x: 0, y: 0.55, z: 0, sx: 0.3, sy: 0.3, sz: 0.3 }
+      ]
+    },
+    cogumelos: {
+      collR: 0, smin: 0.5, smax: 1.1,
+      parts: [
+        { g: 'cyl', color: '#f5e6cf', x: 0, y: 0.22, z: 0, sx: 0.22, sy: 0.44, sz: 0.22 },
+        { g: 'sph', color: '#dc2626', x: 0, y: 0.5, z: 0, sx: 0.7, sy: 0.4, sz: 0.7 }
+      ]
+    },
+    cactos: {
+      collR: 0.4, smin: 0.8, smax: 1.4,
+      parts: [
+        { g: 'cyl', color: '#3f9142', x: 0, y: 0.9, z: 0, sx: 0.5, sy: 1.8, sz: 0.5 },
+        { g: 'cyl', color: '#357c3c', x: 0.55, y: 1.1, z: 0, sx: 0.3, sy: 0.7, sz: 0.3 },
+        { g: 'cyl', color: '#357c3c', x: -0.55, y: 0.85, z: 0, sx: 0.3, sy: 0.6, sz: 0.3 }
+      ]
+    }
+  };
+
+  function ensureUnitGeos() {
+    if (UNIT_GEOS) return UNIT_GEOS;
+    UNIT_GEOS = {
+      cyl: new THREE.CylinderGeometry(0.5, 0.5, 1, 10),
+      cone: new THREE.ConeGeometry(0.5, 1, 9),
+      ico: new THREE.IcosahedronGeometry(0.5, 0),
+      sph: new THREE.SphereGeometry(0.5, 7, 6)
+    };
+    return UNIT_GEOS;
+  }
+
+  function speciesMat(color) {
+    if (!speciesMats) speciesMats = {};
+    if (!speciesMats[color]) speciesMats[color] = toonMaterial({ color: color });
+    return speciesMats[color];
+  }
+
+  /** Matrizes locais das peças da espécie (compostas uma vez, cacheadas nela). */
+  function speciesLocals(spec) {
+    if (spec._locals) return spec._locals;
+    spec._locals = [];
+    var q = new THREE.Quaternion();
+    for (var i = 0; i < spec.parts.length; i++) {
+      var p = spec.parts[i];
+      var m = new THREE.Matrix4();
+      m.compose(
+        new THREE.Vector3(p.x || 0, p.y || 0, p.z || 0),
+        q,
+        new THREE.Vector3(p.sx || 1, p.sy || 1, p.sz || 1)
+      );
+      spec._locals.push(m);
+    }
+    return spec._locals;
+  }
+
+  function inExclusion(x, z) {
+    if (Math.sqrt(x * x + z * z) < 10) return true; // o spawn nasce limpo
+    for (var i = 0; i < exclusions.length; i++) {
+      var e = exclusions[i];
+      var dx = x - e.x;
+      var dz = z - e.z;
+      if (dx * dx + dz * dz < e.r * e.r) return true;
+    }
+    return false;
+  }
+
+  function ensureNatureGroup() {
+    if (!natureGroup) {
+      natureGroup = new THREE.Group();
+      scene.add(natureGroup);
+    }
+    return natureGroup;
+  }
+
+  function ensureDummies() {
+    if (!_dummy) _dummy = new THREE.Object3D();
+    if (!_mat4) _mat4 = new THREE.Matrix4();
+  }
+
+  function composeInstance(mesh, i, x, y, z, yaw, s, local) {
+    _dummy.position.set(x, y, z);
+    _dummy.rotation.set(0, yaw, 0);
+    _dummy.scale.set(s, s, s);
+    _dummy.updateMatrix();
+    _mat4.multiplyMatrices(_dummy.matrix, local);
+    mesh.setMatrixAt(i, _mat4);
+  }
+
+  /** Sorteia os lugares de uma receita (fora das áreas limpas), semeado. */
+  function samplePlacements(rec, want, smin, smax) {
+    var rng = mulberry(4242 + rec.seed * 101);
+    var lim = config.world / 2 - 3;
+    var placements = [];
+    var attempts = want * 10;
+    while (placements.length < want && attempts-- > 0) {
+      var x = (rng() * 2 - 1) * lim;
+      var z = (rng() * 2 - 1) * lim;
+      if (inExclusion(x, z)) continue;
+      placements.push({
+        x: x,
+        z: z,
+        yaw: rng() * Math.PI * 2,
+        s: smin + rng() * (smax - smin)
+      });
+    }
+    return placements;
+  }
+
+  function takeScatterRoom(want) {
+    var room = scatterBudget - scatterCount;
+    if (room <= 0) {
+      warnOnce('scatter-budget', 'o mundo está cheio — teto de ' + scatterBudget + ' coisas espalhadas (para o passeio continuar liso)');
+      return 0;
+    }
+    if (want > room) {
+      warnOnce('scatter-budget', 'faltou espaço para tudo — espalhei só ' + room + ' (teto de ' + scatterBudget + ' coisas)');
+      return room;
+    }
+    return want;
+  }
+
+  function buildSpeciesRecipe(rec) {
+    var spec = SPECIES[rec.thing];
+    if (!spec || !scene) return;
+    var want = takeScatterRoom(Math.floor(clamp(num(rec.n, 0), 1, 3000)));
+    if (want <= 0) return;
+    var placements = samplePlacements(rec, want, spec.smin, spec.smax);
+    if (!placements.length) return;
+    scatterCount += placements.length;
+    ensureUnitGeos();
+    ensureDummies();
+    var locals = speciesLocals(spec);
+    var group = ensureNatureGroup();
+    for (var p = 0; p < spec.parts.length; p++) {
+      var part = spec.parts[p];
+      var mesh = new THREE.InstancedMesh(UNIT_GEOS[part.g], speciesMat(part.color || styleOf().rock), placements.length);
+      mesh.castShadow = true;
+      for (var i = 0; i < placements.length; i++) {
+        var pl = placements[i];
+        composeInstance(mesh, i, pl.x, heightAt(pl.x, pl.z), pl.z, pl.yaw, pl.s, locals[p]);
+      }
+      if (mesh.instanceMatrix) mesh.instanceMatrix.needsUpdate = true;
+      group.add(mesh);
+    }
+    if (spec.collR > 0) {
+      for (var c = 0; c < placements.length; c++) {
+        colliderAdd(placements[c].x, placements[c].z, spec.collR * placements[c].s);
+      }
+    }
+  }
+
+  function buildPlaceSpecies(rec) {
+    var spec = SPECIES[rec.thing];
+    if (!spec || !scene) return;
+    if (placedCount >= MAX_PLACED) {
+      warnOnce('placed-max', 'muitos "Pôr 1" — o teto é ' + MAX_PLACED + ' (para florestas, use o Espalhar)');
+      return;
+    }
+    placedCount++;
+    ensureUnitGeos();
+    var g = new THREE.Group();
+    for (var i = 0; i < spec.parts.length; i++) {
+      var part = spec.parts[i];
+      var mesh = new THREE.Mesh(UNIT_GEOS[part.g], speciesMat(part.color || styleOf().rock));
+      mesh.position.set(part.x || 0, part.y || 0, part.z || 0);
+      mesh.scale.set(part.sx || 1, part.sy || 1, part.sz || 1);
+      mesh.castShadow = true;
+      g.add(mesh);
+    }
+    var s = clamp(num(rec.s, 1), 0.1, 10);
+    g.scale.set(s, s, s);
+    var lim = config.world / 2 - 1;
+    var x = clamp(num(rec.x, 0), -lim, lim);
+    var z = clamp(num(rec.z, 0), -lim, lim);
+    g.position.set(x, heightAt(x, z), z);
+    ensureNatureGroup().add(g);
+    if (spec.collR > 0) colliderAdd(x, z, spec.collR * s);
+  }
+
+  // ---- Modelos .glb do projeto (parse de ArrayBuffer — a rede é morta) ----
+
+  /** data: URL base64 -> ArrayBuffer, sem tocar na rede. */
+  function dataUrlToBuffer(url) {
+    var comma = url.indexOf(',');
+    if (comma < 0) return null;
+    try {
+      var bin = atob(url.slice(comma + 1));
+      var len = bin.length;
+      var u8 = new Uint8Array(len);
+      for (var i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
+      return u8.buffer;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /** Aquece o modelo (compileAsync best-effort — nunca derruba o carregamento). */
+  function warmModel(root) {
+    if (!root || !renderer || !scene || !camera) return;
+    try {
+      if (renderer.compileAsync) renderer.compileAsync(root, camera, scene);
+      else if (renderer.compile) renderer.compile(scene, camera);
+    } catch (e) {}
+  }
+
+  /**
+   * Carrega e parseia um .glb do projeto (cacheado; carga em voo enfileira o
+   * callback). O start() ESPERA a promessa em pending — o passeio só começa com
+   * os modelos remendados. NUNCA rejeita: modelo quebrado avisa e segue.
+   */
+  function loadModel(name, onReady) {
+    var k = text(name, '');
+    if (!k) {
+      warn('escreva o NOME do modelo (o nome dele no painel de imagens → modelos 3D)');
+      return null;
+    }
+    if (!_modelCache) _modelCache = {};
+    if (_modelCache[k]) return _modelCache[k];
+    if (!_modelPending) _modelPending = {};
+    if (_modelPending[k]) {
+      if (typeof onReady === 'function') _modelPending[k].push(onReady);
+      return null;
+    }
+    var entry = MODELS3D[k];
+    if (!entry || entry.kind !== 'model3d') {
+      warn('o modelo "' + k + '" não está no projeto — envie o .glb no painel de imagens');
+      return null;
+    }
+    var buf = dataUrlToBuffer(entry.dataUrl);
+    if (!buf) return null;
+    _modelPending[k] = typeof onReady === 'function' ? [onReady] : [];
+    var release = null;
+    pending.push(new Promise(function (resolve) { release = resolve; }));
+    var flush = function (hit) {
+      var queue = _modelPending[k] || [];
+      _modelPending[k] = null;
+      if (hit) {
+        for (var i = 0; i < queue.length; i++) {
+          try { queue[i](hit); } catch (e) {}
+        }
+      }
+      if (release) release();
+    };
+    var finish = function (mod) {
+      _gltfMod = mod;
+      try {
+        new mod.GLTFLoader().parse(buf, '', function (gltf) {
+          if (gltf && gltf.scene) {
+            _modelCache[k] = { scene: gltf.scene };
+            warmModel(gltf.scene);
+            flush(_modelCache[k]);
+          } else {
+            warn('o modelo "' + k + '" veio vazio');
+            flush(null);
+          }
+        }, function (err) {
+          warn('não consegui abrir o modelo "' + k + '": ' + err);
+          flush(null);
+        });
+      } catch (e) {
+        warn('não consegui abrir o modelo "' + k + '": ' + e);
+        flush(null);
+      }
+    };
+    if (_gltfMod) {
+      finish(_gltfMod);
+      return null;
+    }
+    try {
+      import('three/addons/loaders/GLTFLoader.js').then(finish, function (e) {
+        warn('não consegui carregar o leitor de modelos: ' + e);
+        flush(null);
+      });
+    } catch (e) {
+      warn('não consegui carregar o leitor de modelos: ' + e);
+      flush(null);
+    }
+    return null;
+  }
+
+  function modelMeshList(root) {
+    var list = [];
+    try {
+      if (root.updateWorldMatrix) root.updateWorldMatrix(true, true);
+      root.traverse(function (o) {
+        if (o.isMesh && o.geometry) list.push(o);
+      });
+    } catch (e) {}
+    return list;
+  }
+
+  /** Raio de colisão do modelo no plano XZ (metade da diagonal da caixa). */
+  function modelRadius(root) {
+    try {
+      if (!THREE.Box3) return 0;
+      var box = new THREE.Box3().setFromObject(root);
+      var dx = box.max.x - box.min.x;
+      var dz = box.max.z - box.min.z;
+      return Math.sqrt(dx * dx + dz * dz) * 0.35;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function buildScatterModel(rec) {
+    if (!rec.model || !rec.model.scene || !scene) return;
+    var want = takeScatterRoom(Math.floor(clamp(num(rec.n, 0), 1, 500)));
+    if (want <= 0) return;
+    var s = clamp(num(rec.s, 1), 0.05, 20);
+    var placements = samplePlacements(rec, want, s * 0.9, s * 1.15);
+    if (!placements.length) return;
+    scatterCount += placements.length;
+    var meshes = modelMeshList(rec.model.scene);
+    if (!meshes.length) {
+      warn('o modelo "' + rec.name + '" não tem malhas — nada para espalhar');
+      return;
+    }
+    ensureDummies();
+    var group = ensureNatureGroup();
+    for (var m = 0; m < meshes.length; m++) {
+      var src = meshes[m];
+      var inst = new THREE.InstancedMesh(src.geometry, src.material, placements.length);
+      inst.castShadow = true;
+      for (var i = 0; i < placements.length; i++) {
+        var pl = placements[i];
+        _dummy.position.set(pl.x, heightAt(pl.x, pl.z), pl.z);
+        _dummy.rotation.set(0, pl.yaw, 0);
+        _dummy.scale.set(pl.s, pl.s, pl.s);
+        _dummy.updateMatrix();
+        _mat4.multiplyMatrices(_dummy.matrix, src.matrixWorld);
+        inst.setMatrixAt(i, _mat4);
+      }
+      if (inst.instanceMatrix) inst.instanceMatrix.needsUpdate = true;
+      group.add(inst);
+    }
+    var r = modelRadius(rec.model.scene);
+    if (r > 0.35) {
+      for (var c = 0; c < placements.length; c++) {
+        colliderAdd(placements[c].x, placements[c].z, r * placements[c].s);
+      }
+    }
+  }
+
+  function buildPlaceModel(rec) {
+    if (!rec.model || !rec.model.scene || !scene) return;
+    if (placedCount >= MAX_PLACED) {
+      warnOnce('placed-max', 'muitos "Pôr" — o teto é ' + MAX_PLACED);
+      return;
+    }
+    placedCount++;
+    var root = rec.model.scene.clone();
+    try {
+      root.traverse(function (o) {
+        if (o.isMesh) o.castShadow = true;
+      });
+    } catch (e) {}
+    var s = clamp(num(rec.s, 1), 0.05, 20);
+    root.scale.set(s, s, s);
+    var lim = config.world / 2 - 1;
+    var x = clamp(num(rec.x, 0), -lim, lim);
+    var z = clamp(num(rec.z, 0), -lim, lim);
+    root.position.set(x, heightAt(x, z), z);
+    root.rotation.y = num(rec.deg, 0) * Math.PI / 180;
+    ensureNatureGroup().add(root);
+    var r = modelRadius(rec.model.scene);
+    if (r > 0.35) colliderAdd(x, z, r * s);
+  }
+
+  function buildRecipe(rec) {
+    if (rec.built) return;
+    if (rec.kind === 'species') {
+      rec.built = true;
+      buildSpeciesRecipe(rec);
+    } else if (rec.kind === 'placeSpecies') {
+      rec.built = true;
+      buildPlaceSpecies(rec);
+    } else if (rec.kind === 'model' || rec.kind === 'placeModel') {
+      if (!rec.model) return; // constrói quando o parse do .glb chegar
+      rec.built = true;
+      if (rec.kind === 'model') buildScatterModel(rec);
+      else buildPlaceModel(rec);
+    }
+  }
+
+  function buildNature() {
+    for (var i = 0; i < natureRecipes.length; i++) buildRecipe(natureRecipes[i]);
+  }
+
+  function fireCrash() {
+    if (_crashCd > 0) return;
+    _crashCd = 0.4;
+    for (var i = 0; i < crashHooks.length; i++) {
+      try { crashHooks[i](); } catch (e) {
+        warnOnce('hook-crash-' + i, 'erro no "Quando o carrinho bater forte": ' + e);
+      }
+    }
   }
 
   // ---- Teclas (com apelidos em português) ----
@@ -379,6 +896,7 @@ export const world3DRuntime = `import * as THREE from 'three';
 
       buildTerrain();
       if (carCfg) buildCar();
+      buildNature();
 
       worldReady = true;
       return true;
@@ -604,6 +1122,29 @@ export const world3DRuntime = `import * as THREE from 'three';
     s.x += Math.sin(s.yaw) * s.speed * dt;
     s.z += Math.cos(s.yaw) * s.speed * dt;
 
+    // Colisão com a natureza SÓLIDA (círculo × círculo, broad-phase na grade):
+    // empurra para fora, perde velocidade e, se a trombada foi forte, dispara
+    // o "Quando o carrinho bater forte" (com um respiro de 0.4 s).
+    if (_crashCd > 0) _crashCd -= dt;
+    var near = collidersNear(s.x, s.z, 3.5);
+    for (var ci = 0; ci < near.length; ci++) {
+      var col = near[ci];
+      var ddx = s.x - col.x;
+      var ddz = s.z - col.z;
+      var rr = col.r + 1.1;
+      var d2c = ddx * ddx + ddz * ddz;
+      if (d2c >= rr * rr) continue;
+      var dc = Math.sqrt(d2c) || 0.001;
+      s.x += (ddx / dc) * (rr - dc);
+      s.z += (ddz / dc) * (rr - dc);
+      var impact = Math.abs(s.speed);
+      s.speed *= 0.3;
+      if (impact > Math.max(4, top * 0.35)) {
+        s.pitchV -= 1.4;
+        fireCrash();
+      }
+    }
+
     // Bordas do mundo: para com um empurrãozinho de volta (queda vem depois).
     var lim = config.world / 2 - 2;
     if (s.x > lim) { s.x = lim; s.speed *= 0.35; }
@@ -798,6 +1339,9 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       if (scene && scene.traverse) {
         scene.traverse(function (o) {
+          // InstancedMesh.dispose() libera os buffers de instância (o dispose de
+          // geometria/material abaixo não os alcança).
+          if (o.isInstancedMesh && o.dispose) { try { o.dispose(); } catch (e) {} }
           if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
           if (o.material) {
             var m = o.material;
@@ -805,6 +1349,11 @@ export const world3DRuntime = `import * as THREE from 'three';
             else if (m.dispose) { try { m.dispose(); } catch (e2) {} }
           }
         });
+      }
+      if (UNIT_GEOS) {
+        for (var gk in UNIT_GEOS) {
+          if (UNIT_GEOS[gk] && UNIT_GEOS[gk].dispose) { try { UNIT_GEOS[gk].dispose(); } catch (e) {} }
+        }
       }
       if (skyTex && skyTex.dispose) { try { skyTex.dispose(); } catch (e) {} }
       if (gradientTex && gradientTex.dispose) { try { gradientTex.dispose(); } catch (e) {} }
@@ -820,6 +1369,11 @@ export const world3DRuntime = `import * as THREE from 'three';
     carWheels = [];
     skyTex = null;
     gradientTex = null;
+    natureGroup = null;
+    UNIT_GEOS = null;
+    speciesMats = null;
+    collCells = Object.create(null);
+    _modelCache = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -921,6 +1475,71 @@ export const world3DRuntime = `import * as THREE from 'three';
     }),
     carSpeed: guard('carSpeed', function () {
       return carState ? Math.abs(carState.speed) : 0;
+    }),
+
+    // 🌿 Natureza
+    scatter: guard('scatter', function (n, thing) {
+      var t = text(thing, '');
+      if (!SPECIES[t]) {
+        warn('não conheço "' + t + '" — tem: arvores, pinheiros, pedras, flores, cogumelos, cactos');
+        return;
+      }
+      var rec = { kind: 'species', thing: t, n: num(n, 100), seed: natureRecipes.length, built: false };
+      natureRecipes.push(rec);
+      if (worldReady) buildRecipe(rec);
+    }),
+    scatterModel: guard('scatterModel', function (n, name, s) {
+      var rec = {
+        kind: 'model', name: text(name, ''), n: num(n, 20), s: num(s, 1),
+        seed: natureRecipes.length, model: null, built: false
+      };
+      natureRecipes.push(rec);
+      var hit = loadModel(rec.name, function (m) {
+        rec.model = m;
+        if (worldReady) buildRecipe(rec);
+      });
+      if (hit) {
+        rec.model = hit;
+        if (worldReady) buildRecipe(rec);
+      }
+    }),
+    placeThing: guard('placeThing', function (thing, x, z, s) {
+      var t = text(thing, '');
+      if (!SPECIES[t]) {
+        warn('não conheço "' + t + '" — tem: arvores, pinheiros, pedras, flores, cogumelos, cactos');
+        return;
+      }
+      var rec = {
+        kind: 'placeSpecies', thing: t, x: num(x, 0), z: num(z, 0), s: num(s, 1),
+        seed: natureRecipes.length, built: false
+      };
+      natureRecipes.push(rec);
+      if (worldReady) buildRecipe(rec);
+    }),
+    placeModel: guard('placeModel', function (name, x, z, s, deg) {
+      var rec = {
+        kind: 'placeModel', name: text(name, ''), x: num(x, 0), z: num(z, 0),
+        s: num(s, 1), deg: num(deg, 0), seed: natureRecipes.length, model: null, built: false
+      };
+      natureRecipes.push(rec);
+      var hit = loadModel(rec.name, function (m) {
+        rec.model = m;
+        if (worldReady) buildRecipe(rec);
+      });
+      if (hit) {
+        rec.model = hit;
+        if (worldReady) buildRecipe(rec);
+      }
+    }),
+    clearArea: guard('clearArea', function (x, z, r) {
+      exclusions.push({ x: num(x, 0), z: num(z, 0), r: clamp(num(r, 10), 1, 200) });
+    }),
+    onCrash: guard('onCrash', function (fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando o carrinho bater forte" precisa de blocos de fazer dentro');
+        return;
+      }
+      crashHooks.push(fn);
     }),
 
     // ⏱️ Jogo & tela

@@ -161,6 +161,119 @@ export const world3DBlocks = [
       'A velocidade AGORA, em metros por segundo (sempre positiva, mesmo de ré). Boa para HUD de velocímetro e para efeitos que dependem de correr.',
   },
 
+  // ---- 🌿 Natureza ----
+  {
+    type: 'sz_w3d_scatter',
+    message0: 'Espalhar %1 %2 pelo mundo',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      {
+        type: 'field_dropdown',
+        name: 'THING',
+        options: [
+          ['🌳 árvores', 'arvores'],
+          ['🌲 pinheiros', 'pinheiros'],
+          ['🪨 pedras', 'pedras'],
+          ['🌸 flores', 'flores'],
+          ['🍄 cogumelos', 'cogumelos'],
+          ['🌵 cactos', 'cactos'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Espalha CENTENAS de cópias pelo mundo de uma vez, cada uma pousada no seu morro, com giro e tamanho um pouco diferentes — e sempre nos MESMOS lugares (o seu mundo não muda entre jogadas). Árvores, pedras e cactos são sólidos: o carrinho bate! Flores e cogumelos passam por baixo. Por dentro é instancing profissional: milhares de cópias custam quase nada.',
+  },
+  {
+    type: 'sz_w3d_scatter_model',
+    message0: 'Espalhar %1 cópias do modelo %2 (tamanho %3)',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'field_input', name: 'MODEL', text: '' },
+      { type: 'input_value', name: 'S', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Espalha cópias de um modelo .glb SEU (envie no painel de imagens → modelos 3D e escreva o nome dele aqui). Cada cópia pousa no terreno com giro e tamanho parecidos. Tamanho 1 = o tamanho original do arquivo.',
+  },
+  {
+    type: 'sz_w3d_place_thing',
+    message0: 'Pôr 1 %1 em x %2 z %3 (tamanho %4 )',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'THING',
+        options: [
+          ['🌳 árvore', 'arvores'],
+          ['🌲 pinheiro', 'pinheiros'],
+          ['🪨 pedra', 'pedras'],
+          ['🌸 flor', 'flores'],
+          ['🍄 cogumelo', 'cogumelos'],
+          ['🌵 cacto', 'cactos'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'S', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe UMA coisa num lugar exato do mundo (pousada no morro daquele ponto). Para decorar um cantinho especial — a árvore gigante do topo, a pedra marca-lugar. Tamanho 1 = normal; 3 = gigante.',
+  },
+  {
+    type: 'sz_w3d_place_model',
+    message0: 'Pôr o modelo %1 em x %2 z %3 (tamanho %4, girado %5 graus)',
+    args0: [
+      { type: 'field_input', name: 'MODEL', text: '' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'S', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe UM modelo .glb seu num lugar exato, pousado no terreno, do tamanho e com o giro que você quiser. A casinha, a estátua, o foguete — o mundo é seu.',
+  },
+  {
+    type: 'sz_w3d_clear_area',
+    message0: 'Deixar limpo perto de x %1 z %2 num raio de %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Reserva um círculo SEM natureza espalhada — a sua praça, a sua pista, o seu quintal. Use ANTES dos blocos de espalhar (o espalhar respeita as áreas limpas que já existem). O centro do mundo já nasce limpo.',
+  },
+  {
+    type: 'sz_w3d_on_crash',
+    message0: 'Quando o carrinho bater forte',
+    args0: [],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" quando o carrinho TROMBA numa árvore, pedra ou cacto em boa velocidade (encostadinha devagar não conta). Toque um som, trema a câmera, conte batidas…',
+  },
+
   // ---- ⏱️ Jogo & tela ----
   {
     type: 'sz_w3d_on_update',
@@ -221,6 +334,18 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    name: '🌿 Natureza',
+    colour: C,
+    types: [
+      'sz_w3d_scatter',
+      'sz_w3d_scatter_model',
+      'sz_w3d_place_thing',
+      'sz_w3d_place_model',
+      'sz_w3d_clear_area',
+      'sz_w3d_on_crash',
+    ],
+  },
+  {
     name: '⏱️ Jogo & tela',
     colour: C,
     types: ['sz_w3d_on_update', 'sz_w3d_key_down', 'sz_w3d_key_pressed'],
@@ -253,6 +378,11 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_ground_height: { X: numShadow(0), Z: numShadow(0) },
   sz_w3d_car_stats: { SPEED: numShadow(24), TURN: numShadow(110), JUMP: numShadow(7) },
   sz_w3d_car_place: { X: numShadow(0), Z: numShadow(0), DEG: numShadow(0) },
+  sz_w3d_scatter: { N: numShadow(300) },
+  sz_w3d_scatter_model: { N: numShadow(30), S: numShadow(1) },
+  sz_w3d_place_thing: { X: numShadow(10), Z: numShadow(10), S: numShadow(1) },
+  sz_w3d_place_model: { X: numShadow(10), Z: numShadow(10), S: numShadow(1), DEG: numShadow(0) },
+  sz_w3d_clear_area: { X: numShadow(0), Z: numShadow(0), R: numShadow(15) },
 }
 
 /**

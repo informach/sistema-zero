@@ -40,6 +40,20 @@ SZWorld3D.start(); // SEMPRE por último
   do car().
 - \`SZWorld3D.carPlace(x, z, graus)\` — teleporta (pousa no chão, parado).
 - \`SZWorld3D.carPos('x'|'y'|'z')\` → número. \`SZWorld3D.carSpeed()\` → m/s.
+- \`SZWorld3D.scatter(n, especie)\` — espalha n cópias procedurais pelo mundo
+  (pousadas no terreno, determinístico). especies: 'arvores' | 'pinheiros' |
+  'pedras' | 'flores' | 'cogumelos' | 'cactos'. Árvores/pedras/cactos são
+  SÓLIDOS (colidem com o carro); flores/cogumelos não. Teto global ~12.000
+  instâncias. Respeita as áreas do clearArea; o centro (spawn) já nasce limpo.
+- \`SZWorld3D.scatterModel(n, nomeDoModelo, tamanho)\` — espalha um .glb do
+  projeto (o aluno envia no painel de assets e usa o NOME). Sólido se for
+  grandinho.
+- \`SZWorld3D.placeThing(especie, x, z, tamanho)\` — UMA cópia num ponto exato.
+- \`SZWorld3D.placeModel(nome, x, z, tamanho, graus)\` — UM .glb num ponto.
+- \`SZWorld3D.clearArea(x, z, raio)\` — círculo sem natureza espalhada; chame
+  ANTES dos scatter.
+- \`SZWorld3D.onCrash(function () { ... })\` — trombada forte do carro em coisa
+  sólida (tem respiro de 0.4 s entre disparos).
 - \`SZWorld3D.onUpdate(function (dt) { ... })\` — gancho por quadro; dt em
   segundos, clampado em 1/30.
 - \`SZWorld3D.keyDown(tecla)\` / \`SZWorld3D.keyPressed(tecla)\` → boolean.
@@ -47,11 +61,12 @@ SZWorld3D.start(); // SEMPRE por último
 
 ### O que NÃO existe (não invente)
 
-- Sem rede no preview (fetch/XHR morrem) — nada de carregar por URL.
+- Sem rede no preview (fetch/XHR morrem) — modelos .glb só do PROJETO (o
+  runtime parseia o ArrayBuffer; nada de carregar por URL).
 - Sem Rapier/física de biblioteca: o carro é arcade na unha do motor.
 - Sem menu/pausa/vidas: não é um jogo de fases, é um mundo.
-- Natureza espalhada, grama, água, dia/noite, clima, pontos interativos,
-  corrida, boliche e galeria chegam em versões futuras da extensão — se os
-  blocos não estão na paleta, o método não existe ainda.
+- Grama ao vento, água, dia/noite, clima, pontos interativos, corrida,
+  boliche e galeria chegam em versões futuras da extensão — se os blocos não
+  estão na paleta, o método não existe ainda.
 - Use APENAS UMA extensão de jogo/mundo por projeto (brigam pelo canvas).
 `

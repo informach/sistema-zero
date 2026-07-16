@@ -12,6 +12,13 @@ validateManifest(world3DManifest)
  * do Canvas 3D do núcleo (coreImports.THREE_CDN), para o importmap colapsar
  * numa entrada só se coexistirem no mesmo projeto. */
 const THREE_CDN = 'https://esm.sh/three@0.180.0'
+/**
+ * Loader de modelo (GLB) para o "Espalhar/Pôr o modelo". `?external=three` faz
+ * o addon importar `three` BARE, resolvido pelo NOSSO importmap (medido no spike
+ * da g3k 14/07: dedupa com e sem, mas o external não depende de URL interna do
+ * esm.sh). A rede é MORTA no preview → o runtime usa `loader.parse(arrayBuffer)`.
+ */
+const GLTF_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/GLTFLoader.js?external=three`
 
 export const worldThreeDExtension: ExtensionDefinition = {
   manifest: world3DManifest,
@@ -27,8 +34,7 @@ export const worldThreeDExtension: ExtensionDefinition = {
     bootstrapScript: world3DRuntime,
     esmImports: {
       three: THREE_CDN,
-      // GLTFLoader entra quando o "Espalhar cópias do modelo .glb" chegar
-      // (mesmo padrão ?external=three do game-3d-advanced).
+      'three/addons/loaders/GLTFLoader.js': GLTF_LOADER_CDN,
     },
   },
   ai: {

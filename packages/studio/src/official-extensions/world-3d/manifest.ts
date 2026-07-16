@@ -62,6 +62,26 @@ O que o motor já faz por você:
 - **a altura do chão em x … z …** — a altura do terreno naquele ponto. Use
   para pousar as suas coisas EM CIMA do morro.
 
+### 🌿 Natureza
+
+- **Espalhar … pelo mundo** — o bloco que POVOA o mundo: centenas de 🌳
+  árvores, 🌲 pinheiros, 🪨 pedras, 🌸 flores, 🍄 cogumelos ou 🌵 cactos de
+  uma vez, cada um pousado no seu morro com giro e tamanho um pouquinho
+  diferentes — e sempre nos MESMOS lugares (o mundo não muda entre jogadas).
+  Árvores, pedras e cactos são SÓLIDOS (o carrinho bate!); flores e cogumelos
+  o carrinho atropela de boa. Por dentro é instancing profissional: 300
+  árvores custam 3 "desenhos" para a placa de vídeo.
+- **Espalhar … cópias do modelo …** — igual, mas com um modelo .glb SEU:
+  envie o arquivo no painel de imagens (seção de modelos 3D) e escreva o nome
+  dele no bloco. Tamanho 1 = o original.
+- **Pôr 1 … em x z / Pôr o modelo …** — UMA coisa num lugar exato, para os
+  cantinhos especiais (a árvore gigante do topo, a estátua da praça).
+- **Deixar limpo perto de x z num raio de …** — reserva um círculo SEM
+  natureza (a sua praça, a sua pista). Use ANTES dos blocos de espalhar. O
+  centro do mundo (onde o carrinho nasce) já vem limpo.
+- **Quando o carrinho bater forte** — a trombada em coisa sólida com boa
+  velocidade roda os blocos de dentro (encostar devagar não conta).
+
 ### 🚗 Carrinho
 
 - **Criar o carrinho dirigível: … da cor …** — o bloco mágico. 🚗 passeio é

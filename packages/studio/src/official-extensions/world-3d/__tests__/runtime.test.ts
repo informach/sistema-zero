@@ -20,6 +20,12 @@ interface Api {
   carPlace: (x?: unknown, z?: unknown, d?: unknown) => unknown
   carPos: (a?: unknown) => number
   carSpeed: () => number
+  scatter: (n?: unknown, thing?: unknown) => unknown
+  scatterModel: (n?: unknown, name?: unknown, s?: unknown) => unknown
+  placeThing: (thing?: unknown, x?: unknown, z?: unknown, s?: unknown) => unknown
+  placeModel: (name?: unknown, x?: unknown, z?: unknown, s?: unknown, deg?: unknown) => unknown
+  clearArea: (x?: unknown, z?: unknown, r?: unknown) => unknown
+  onCrash: (fn: unknown) => unknown
   onUpdate: (fn: unknown) => unknown
   keyDown: (k: unknown) => boolean
   keyPressed: (k: unknown) => boolean
@@ -36,7 +42,7 @@ function boot(): Api {
 }
 
 describe('SZWorld3D — API pura (sem DOM/three)', () => {
-  it('expõe 1 método por bloco da v0.1', () => {
+  it('expõe 1 método por bloco', () => {
     const api = boot()
     const expected = [
       'setup',
@@ -49,6 +55,12 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'carPlace',
       'carPos',
       'carSpeed',
+      'scatter',
+      'scatterModel',
+      'placeThing',
+      'placeModel',
+      'clearArea',
+      'onCrash',
       'onUpdate',
       'keyDown',
       'keyPressed',
@@ -107,5 +119,19 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     const api = boot()
     expect(() => api.setup({ style: 'lua', world: 160 })).not.toThrow()
     expect(() => api.car({ style: 'trator', color: '#123456' })).not.toThrow()
+  })
+
+  it('natureza: blocos só ANOTAM receitas antes do start (nada constrói sem three)', () => {
+    const api = boot()
+    // Sem THREE/DOM nenhum desses pode lançar: são receitas + guardas.
+    expect(() => api.scatter(300, 'arvores')).not.toThrow()
+    expect(() => api.scatter(50, 'unicornio')).not.toThrow() // avisa e ignora
+    expect(() => api.placeThing('pedras', 20, 20, 2)).not.toThrow()
+    expect(() => api.clearArea(0, 0, 15)).not.toThrow()
+    expect(() => api.onCrash('não é função' as unknown)).not.toThrow()
+    expect(() => api.onCrash(() => {})).not.toThrow()
+    // Modelo sem asset no projeto: avisa e segue (o global de modelos está vazio).
+    expect(() => api.scatterModel(10, 'foguete', 1)).not.toThrow()
+    expect(() => api.placeModel('foguete', 5, 5, 1, 90)).not.toThrow()
   })
 })
