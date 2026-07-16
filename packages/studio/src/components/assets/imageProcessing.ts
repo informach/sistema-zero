@@ -79,6 +79,37 @@ export async function fileToAudioAssetDataUrl(file: File): Promise<{ dataUrl: st
   return { dataUrl }
 }
 
+/**
+ * Lê um binário 3D (modelo `.glb` / céu `.hdr`) como `data:` URL com o MIME
+ * FORÇADO pela extensão: o FileReader devolve `application/octet-stream` para
+ * `.glb`, e a validação do core exige o MIME canônico do tipo
+ * (`data:model/gltf-binary` / `data:image/vnd.radiance`). A assinatura binária
+ * é conferida na entrada do store (`isValidAssetDataUrl` cruza extensão × MIME
+ * × bytes), então um arquivo renomeado falha lá com mensagem legível.
+ */
+export async function fileTo3DAssetDataUrl(file: File): Promise<{
+  dataUrl: string
+  kind: 'model3d' | 'environment3d'
+  fileName: string
+}> {
+  const lower = file.name.toLowerCase()
+  const kind = lower.endsWith('.glb')
+    ? ('model3d' as const)
+    : lower.endsWith('.hdr')
+      ? ('environment3d' as const)
+      : null
+  if (!kind) throw new Error('Selecione um modelo .glb ou um céu .hdr.')
+  const raw = await readAsDataUrl(file)
+  const comma = raw.indexOf(',')
+  if (comma < 0) throw new Error('Falha ao ler o arquivo.')
+  const mime = kind === 'model3d' ? 'data:model/gltf-binary' : 'data:image/vnd.radiance'
+  const dataUrl = `${mime};base64,${raw.slice(comma + 1)}`
+  if (dataUrl.length > PROJECT_ASSET_LIMITS.maxModel3DDataUrlChars) {
+    throw new Error('O arquivo 3D é grande demais (teto ~5 MB). Exporte um modelo mais leve.')
+  }
+  return { dataUrl, kind, fileName: file.name }
+}
+
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()

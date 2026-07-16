@@ -10,7 +10,11 @@ import {
   removePersonalAsset,
 } from '../../asset-library/personal'
 import { useProjectStore } from '../../state/projectStore'
-import { fileToAssetDataUrl, fileToAudioAssetDataUrl } from './imageProcessing'
+import {
+  fileTo3DAssetDataUrl,
+  fileToAssetDataUrl,
+  fileToAudioAssetDataUrl,
+} from './imageProcessing'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 
 /**
@@ -31,10 +35,16 @@ export interface AssetsPanelProps {
 const EMPTY_ASSETS: ProjectAsset[] = []
 
 export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelProps): JSX.Element {
-  const { hasProject, assets } = useProjectStore(
+  const { hasProject, assets, has3DExtension } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       assets: s.project?.assets ?? EMPTY_ASSETS,
+      // Só o Jogo 3D Avançado consome .glb/.hdr — sem ele o upload seria peso
+      // morto na cota (a SEÇÃO de modelos continua sem gate: gerenciar/excluir
+      // um órfão nunca depende da extensão estar instalada).
+      has3DExtension: (s.project?.installedExtensions ?? []).some(
+        (e) => e.id === 'game-3d-advanced',
+      ),
     })),
   )
   const addAsset = useProjectStore((s) => s.addAsset)
@@ -44,12 +54,17 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   const fileInputId = useId()
   const fileRef = useRef<HTMLInputElement>(null)
   const soundRef = useRef<HTMLInputElement>(null)
+  const modelRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  // Imagens (desenhos/sprites) e sons (áudio importado) vivem na mesma lista de
-  // assets; separamos só para exibir em seções distintas.
-  const images = assets.filter((a) => a.kind !== 'audio')
+  // Imagens (desenhos/sprites), sons (áudio importado) e binários 3D (modelo
+  // .glb / céu .hdr) vivem na mesma lista de assets; separamos só para exibir
+  // em seções distintas (um .glb na grade de imagens viraria <img> quebrado).
+  const images = assets.filter(
+    (a) => a.kind !== 'audio' && a.kind !== 'model3d' && a.kind !== 'environment3d',
+  )
   const sounds = assets.filter((a) => a.kind === 'audio')
+  const models3d = assets.filter((a) => a.kind === 'model3d' || a.kind === 'environment3d')
   // "Usar como peças" / "Usar como mapa (fatiar)" — upload vira tileset/mapa sem Pinta.
   const [tileConfig, setTileConfig] = useState<Pick<
     TileConfigDialogProps,
@@ -163,6 +178,33 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     }
   }
 
+  const handle3DFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setError(null)
+    setBusy(true)
+    const taken = new Set(assets.map((a) => a.name))
+    try {
+      for (const file of Array.from(files)) {
+        const { dataUrl, kind, fileName } = await fileTo3DAssetDataUrl(file)
+        const base = file.name.replace(/\.[^.]+$/, '')
+        const name = uniqueName(base, taken)
+        // O nome do arquivo vai junto: a validação do store cruza a extensão
+        // com o MIME e a assinatura binária (um .glb renomeado é recusado).
+        const err = addAsset({ name, dataUrl, kind, originalFileName: fileName, source: 'upload' })
+        if (err) {
+          setError(err)
+          break
+        }
+        taken.add(name)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao processar o arquivo 3D.')
+    } finally {
+      setBusy(false)
+      if (modelRef.current) modelRef.current.value = ''
+    }
+  }
+
   const addFromLibrary = (lib: LibraryAsset) => {
     setError(null)
     const taken = new Set(assets.map((a) => a.name))
@@ -220,6 +262,16 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                 className="hidden"
                 onChange={(e) => void handleAudioFiles(e.target.files)}
               />
+              {has3DExtension ? (
+                <input
+                  ref={modelRef}
+                  type="file"
+                  accept=".glb,.hdr"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => void handle3DFiles(e.target.files)}
+                />
+              ) : null}
               <Button
                 variant="primary"
                 size="sm"
@@ -236,6 +288,17 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
               >
                 🔊 Enviar som
               </Button>
+              {has3DExtension ? (
+                <Button
+                  variant="subtle"
+                  size="sm"
+                  disabled={busy}
+                  title="Modelo 3D (.glb) ou céu 360° (.hdr) para o Jogo 3D Avançado"
+                  onClick={() => modelRef.current?.click()}
+                >
+                  📦 Enviar modelo 3D
+                </Button>
+              ) : null}
               <span className="text-xs text-sz-fg-soft">
                 {assets.length}/{PROJECT_ASSET_LIMITS.maxAssetsCount} arquivos · {budgetPct}% do
                 espaço
@@ -352,6 +415,56 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                       preload="none"
                       className="h-8 max-w-[46%]"
                     />
+                    <button
+                      type="button"
+                      className="text-xs text-red-400 hover:underline"
+                      onClick={() => removeAsset(asset.id)}
+                    >
+                      Excluir
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {models3d.length > 0 ? (
+            <section>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
+                Modelos 3D
+              </h3>
+              <p className="mb-2 text-xs text-sz-fg-soft">
+                Use o NOME na peça "modelo importado" do molde (ou no "céu de foto", se for .hdr).
+              </p>
+              <ul className="flex flex-col gap-2">
+                {models3d.map((asset) => (
+                  <li
+                    key={asset.id}
+                    className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
+                  >
+                    <span
+                      className="text-lg"
+                      aria-hidden
+                      title={asset.kind === 'model3d' ? 'Modelo .glb' : 'Céu 360° .hdr'}
+                    >
+                      {asset.kind === 'model3d' ? '📦' : '🌅'}
+                    </span>
+                    <input
+                      defaultValue={asset.name}
+                      spellCheck={false}
+                      aria-label={`Nome do modelo 3D ${asset.name}`}
+                      className="min-w-0 flex-1 rounded border border-sz-border bg-sz-bg px-1.5 py-0.5 font-mono text-xs text-sz-fg outline-none focus:border-sz-accent"
+                      onBlur={(e) => handleRename(asset, e.target.value.trim())}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                      }}
+                    />
+                    <span
+                      className="max-w-[30%] truncate text-[10px] text-sz-fg-soft"
+                      title={asset.originalFileName}
+                    >
+                      {asset.originalFileName}
+                    </span>
                     <button
                       type="button"
                       className="text-xs text-red-400 hover:underline"
