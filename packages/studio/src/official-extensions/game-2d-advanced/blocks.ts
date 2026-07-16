@@ -3571,14 +3571,6 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    // GERAL, apesar do prefixo `rpg` nos types (renomear type quebra projeto
-    // salvo): o motor desenha a fala e o menu no canvas e navega neles em
-    // QUALQUER jogo — o stepUiInput roda no stepSystems, fora do Kit RPG.
-    name: '💬 Fala & escolhas',
-    colour: C,
-    types: ['sz_gk_rpg_say', 'sz_gk_rpg_menu', 'sz_gk_rpg_option'],
-  },
-  {
     name: '🚦 Estados',
     colour: C,
     types: [
@@ -3656,6 +3648,15 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_mouse_down',
       'sz_gk_move_with_custom_keys',
     ],
+  },
+  {
+    // GERAL, apesar do prefixo `rpg` nos types (renomear type quebra projeto
+    // salvo): o motor desenha a fala e o menu no canvas e navega neles em
+    // QUALQUER jogo — o stepUiInput roda no stepSystems, fora do Kit RPG.
+    // R24: mudou de 3º p/ cá — diálogo DEPOIS de existir personagem e controle.
+    name: '💬 Fala & escolhas',
+    colour: C,
+    types: ['sz_gk_rpg_say', 'sz_gk_rpg_menu', 'sz_gk_rpg_option'],
   },
   {
     name: '📢 Avisos',
@@ -4129,11 +4130,29 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   },
 ]
 
-// Cada sub-categoria recebe um TOM do teal da categoria (claro→escuro).
-const SUBCAT_SHADES = categoryShades(C, SUBCATS.length)
-SUBCATS.forEach((sc, i) => {
-  sc.colour = SUBCAT_SHADES[i] ?? C
+// Cores por GRUPO (R24). Antes era um gradiente único de 44 tons do teal —
+// vizinhos quase iguais e os 5 kits-pai espremidos na ponta escura, todos
+// parecidos. Agora: as GERAIS ganham o gradiente com o passo dobrado (28 tons)
+// e cada KIT ganha um tom-base PRÓPRIO bem espaçado do MESMO teal (a identidade
+// da categoria de topo continua teal — deslocar o matiz brigaria com o
+// arco-íris das categorias), com as filhas em sombras suaves do tom do pai.
+const gerais = SUBCATS.filter((sc) => !sc.kit)
+const GERAL_SHADES = categoryShades(C, gerais.length)
+gerais.forEach((sc, i) => {
+  sc.colour = GERAL_SHADES[i] ?? C
 })
+const kitNames = [...new Set(SUBCATS.flatMap((sc) => (sc.kit ? [sc.kit] : [])))]
+const KIT_BASE_SHADES = categoryShades(C, kitNames.length)
+const KIT_BASES = new Map(kitNames.map((k, i) => [k, KIT_BASE_SHADES[i] ?? C]))
+for (const kitName of kitNames) {
+  const filhas = SUBCATS.filter((sc) => sc.kit === kitName)
+  // Rampa curta (8 passos, fatiada pelas filhas): sombras do tom do pai que
+  // não descem ao preto mesmo no kit de 5 filhas.
+  const tons = categoryShades(KIT_BASES.get(kitName) ?? C, 8)
+  filhas.forEach((sc, i) => {
+    sc.colour = tons[i] ?? KIT_BASES.get(kitName) ?? C
+  })
+}
 // Cor = navegação: pinta cada bloco com a cor do seu grupo.
 const COLOUR_BY_TYPE = new Map<string, string>(
   SUBCATS.flatMap((sc) => sc.types.map((t) => [t, sc.colour] as const)),
@@ -4392,7 +4411,7 @@ const toolboxBlock = (type: string) => {
 // (🏃 🥊 🧙 👾 🚀) em vez de 44 chips planos; as sub-categorias abrem DENTRO
 // do pai (a toolbox é recursiva; filtros/poda/testes já recursam). Os NOMES
 // das filhas mantêm o prefixo "Kit X:" — a doc os cita e o docDrift os casa.
-// O pai herda o tom da 1ª filha; a ordem respeita o SUBCATS.
+// R24: o pai tem tom-base PRÓPRIO (KIT_BASES); as filhas são sombras dele.
 const topLevelCats: ExtensionToolboxCategory[] = []
 const kitParents = new Map<string, ExtensionToolboxCategory>()
 for (const sc of SUBCATS) {
@@ -4408,7 +4427,12 @@ for (const sc of SUBCATS) {
   }
   let parent = kitParents.get(sc.kit)
   if (!parent) {
-    parent = { kind: 'category', name: sc.kit, colour: sc.colour, contents: [] }
+    parent = {
+      kind: 'category',
+      name: sc.kit,
+      colour: KIT_BASES.get(sc.kit) ?? sc.colour,
+      contents: [],
+    }
     kitParents.set(sc.kit, parent)
     topLevelCats.push(parent)
   }

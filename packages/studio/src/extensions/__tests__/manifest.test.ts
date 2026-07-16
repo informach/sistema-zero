@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { ExtensionManifestSchema, validateManifest } from '../manifest'
+import { OFFICIAL_CATALOG } from '#official-extensions'
+import { ExtensionManifestSchema, MAX_PROMPT_CONTEXT_CHARS, validateManifest } from '../manifest'
 
 const validManifest = {
   id: 'game-2d',
@@ -48,5 +49,18 @@ describe('ExtensionManifestSchema', () => {
     const parsed = ExtensionManifestSchema.parse(validManifest)
     expect(parsed.id).toBe('game-2d')
     expect(parsed.permissions).toEqual(['canvas', 'keyboard'])
+  })
+})
+
+describe('promptContext das extensões oficiais — teto de sanidade (R24)', () => {
+  it('nenhum contexto de IA passa do teto (o system prompt paga por char, em TODA chamada)', () => {
+    // O promptContext entra CRU no system prompt, sem truncagem em runtime (de
+    // propósito — cortar receita no meio ensinaria errado). Este teste é a única
+    // trava. Estourou? ENXUGUE o ai.ts da extensão — NÃO suba o teto sem medir o
+    // custo em tokens (a doença do MAX_DOCS_CHARS subindo 3x não se repete aqui).
+    const estourados = OFFICIAL_CATALOG.filter(
+      (e) => (e.ai?.promptContext.length ?? 0) > MAX_PROMPT_CONTEXT_CHARS,
+    ).map((e) => `${e.manifest.id}: ${e.ai?.promptContext.length}`)
+    expect(estourados).toEqual([])
   })
 })

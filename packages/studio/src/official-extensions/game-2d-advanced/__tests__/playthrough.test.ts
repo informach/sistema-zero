@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'bun:test'
+import { afterAll, afterEach, describe, expect, it } from 'bun:test'
 import { gameKitRuntime } from '../runtime'
 
 /**
@@ -131,6 +131,32 @@ interface Api {
   spawnFromMold: Fn
   setHitbox: Fn
   collideGroup: Fn
+  // R24 — playthrough Kit Plataforma
+  platformerHero: Fn
+  setJumpFeel: Fn
+  oneWayPlatform: Fn
+  movingPlatform: Fn
+  rideOn: Fn
+  stompKill: Fn
+  defineRegion: Fn
+  isInside: (who: unknown, region: string) => boolean
+  // R24 — playthrough Kit RPG
+  rpgBlockCell: Fn
+  rpgCreateNpc: Fn
+  rpgOnTalk: Fn
+  rpgSay: Fn
+  rpgAddFlag: Fn
+  rpgHasFlag: (flag: string) => boolean
+  rpgCreateDoor: Fn
+  rpgCell: (n: number) => number
+  rpgBattleStats: Fn
+  rpgBattleStart: Fn
+  rpgOnBattleEnd: Fn
+  rpgBattleWon: () => boolean
+  rpgBattleReward: Fn
+  rpgLevel: () => number
+  rpgXp: () => number
+  placeCharacterAlias?: Fn
 }
 
 interface Harness {
@@ -180,6 +206,16 @@ async function startGame(h: Harness): Promise<void> {
   await Promise.resolve()
   await Promise.resolve()
 }
+
+// Cada loadRuntime cria um runtime NOVO, mas todos compartilham o `document`
+// global do happy-dom — e o motor reusa o painel por id (#szgk-stage). Sem
+// limpar entre testes, a batalha DOM de um teste de RPG acharia o palco de
+// outro. Espelho do afterEach do runtime.test.ts.
+afterEach(() => {
+  for (const el of Array.from(document.querySelectorAll('#szgk-stage, #szgk-style'))) {
+    el.remove()
+  }
+})
 
 /**
  * Um mundinho onde o desmaio ACONTECE: o Fraquinho tem 1 de vida e ataca de
@@ -755,6 +791,41 @@ describe('gk — JOGAR uma invasão inteira do 🚀 Kit Nave (a lição do R17)'
     expect(h.api.state()).toBe('fim')
   })
 
+  it('⭐ R24: 12 colunas × gap 120 CABEM na tela — a onda não treme nem despenca', async () => {
+    const h = loadRuntime()
+    await espaco(h)
+    // Pedido "impossível": 11×120 + 40 = 1360px de grade numa tela de 960.
+    // Antes do R24 a formação tocava as DUAS bordas, invertia TODO quadro e
+    // descia 30px por quadro (600px/s no dt de teste) — invasão instantânea.
+    h.api.naveWave('ovni', 12, 1, 120, 150, 30, 0)
+    const ms = vivos(h, 'ovni')
+    expect(ms.length).toBe(12) // as COLUNAS pedidas são respeitadas
+    const span = Math.max(...ms.map((m) => m.x + m.w)) - Math.min(...ms.map((m) => m.x))
+    expect(span).toBeLessThanOrEqual(960 * 0.9 + 1) // o ESPAÇO foi espremido
+    const y0 = Math.min(...ms.map((m) => m.y))
+    for (let i = 1; i <= 20; i++) h.nextFrame(i * 50) // 1 s de jogo
+    const y1 = Math.min(...vivos(h, 'ovni').map((m) => m.y))
+    expect(y1 - y0).toBeLessThanOrEqual(60) // no máx. 2 descidas legítimas em 1 s
+  })
+
+  it('⭐ R24: poder renovado num objeto RECICLADO do pool não decai em dobro', async () => {
+    const h = loadRuntime()
+    await espaco(h)
+    const e1 = h.api.spawnFromMold('ovni', 100, 100)
+    h.api.navePowerup(e1, 'metralhadora', 1)
+    h.api.recycle(e1)
+    const e2 = h.api.spawnFromMold('ovni', 100, 100)
+    expect(e2).toBe(e1) // o pool reusa o MESMO objeto (free é LIFO)
+    h.api.navePowerup(e2, 'metralhadora', 1)
+    // Antes do R24 o objeto entrava 2× em powered[] e o timer decaía em DOBRO:
+    // o poder de 1 s morria em ~0,5 s. Em 0,75 s ele tem que estar VIVO…
+    for (let i = 1; i <= 15; i++) h.nextFrame(i * 50)
+    expect(h.api.navePowerOf(e2)).toBe('metralhadora')
+    // …e depois de 1 s inteiro, expirar normal.
+    for (let i = 16; i <= 24; i++) h.nextFrame(i * 50)
+    expect(h.api.navePowerOf(e2)).toBe('normal')
+  })
+
   it('⭐ "Jogar de novo" limpa ondas e poderes (sem onda:limpa fantasma)', async () => {
     const h = loadRuntime()
     await espaco(h)
@@ -774,5 +845,305 @@ describe('gk — JOGAR uma invasão inteira do 🚀 Kit Nave (a lição do R17)'
     // Se o naveNewGame NÃO limpasse as ondas, o registro órfão (agora vazio)
     // emitiria um 'onda:limpa' fantasma no 1º quadro do jogo novo.
     expect(limpa).toBe(0)
+  })
+})
+
+describe('gk — JOGAR uma fase inteira do 🏃 Kit Plataforma', () => {
+  interface Heroi {
+    x: number
+    y: number
+    vx: number
+    vy: number
+    onGround: boolean
+    _coyoteT: number
+  }
+
+  // Mundo compartilhado: chão de moldes, ordem canônica no A cada quadro.
+  async function fase(h: Harness, groundW = 400) {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('chao', { w: groundW, h: 40, color: '#3f7d3f' })
+    h.api.defineMold('movel', { w: 120, h: 16, color: '#c08040' })
+    h.api.defineMold('bicho', { w: 40, h: 40, color: '#8b3a3a' })
+    await startGame(h)
+    h.api.setState('jogando')
+    // coyote 0,15s = 3 quadros de 50ms; pulo alto 0,3s.
+    h.api.setJumpFeel(0.15, 0.1, 0.3, 2160)
+  }
+  function quadros(h: Harness, n: number, from = 1) {
+    for (let i = from; i < from + n; i++) h.nextFrame(i * 50)
+  }
+
+  it('⭐ o herói CAI, pousa no chão de moldes e FICA (collideGroup marca onGround)', async () => {
+    const h = loadRuntime()
+    await fase(h)
+    const heroi = h.api.createCharacter({ w: 32, h: 48, speed: 240, color: '#2b6cb0' }) as Heroi
+    h.api.spawnFromMold('chao', 0, 460) // topo em y=460 (x 0..400)
+    h.api.placeCharacter(heroi, 100, 200) // no ar, sobre o chão
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(heroi, 240, 660, dt)
+      h.api.collideGroup(heroi, 'chao')
+    })
+    quadros(h, 30)
+    expect(heroi.onGround).toBe(true)
+    expect(heroi.y).toBeCloseTo(412, 0) // 460 − 48
+    const yPousado = heroi.y
+    quadros(h, 10, 31)
+    expect(heroi.y).toBeCloseTo(yPousado, 0) // ficou parado no chão
+  })
+
+  it('⭐ pular do chão SOBE (o buffer encontra o coyote)', async () => {
+    const h = loadRuntime()
+    await fase(h)
+    const heroi = h.api.createCharacter({ w: 32, h: 48, speed: 240, color: '#00f' }) as Heroi
+    h.api.spawnFromMold('chao', 0, 460)
+    h.api.placeCharacter(heroi, 100, 412)
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(heroi, 240, 660, dt)
+      h.api.collideGroup(heroi, 'chao')
+    })
+    quadros(h, 5) // assenta no chão
+    expect(heroi.onGround).toBe(true)
+    const yChao = heroi.y
+    h.fire('keydown', { key: ' ' })
+    quadros(h, 4, 6) // apertou pular
+    expect(heroi.y).toBeLessThan(yChao - 20) // subiu
+    expect(heroi.vy).toBeLessThan(0)
+  })
+
+  it('⭐ coyote: pular LOGO depois de sair da beirada ainda funciona; tarde demais NÃO', async () => {
+    // Dois runtimes idênticos: um pula 2 quadros após sair do chão (dentro do
+    // coyote de 0,15s = 3 quadros), o outro só no 6º (expirou).
+    async function correuEPulou(atrasoQuadros: number): Promise<boolean> {
+      const h = loadRuntime()
+      await fase(h, 160) // chão estreito x 0..160 (topo 460)
+      const heroi = h.api.createCharacter({ w: 32, h: 48, speed: 240, color: '#0a0' }) as Heroi
+      h.api.spawnFromMold('chao', 0, 460)
+      h.api.placeCharacter(heroi, 40, 412)
+      h.api.onUpdate((dt: number) => {
+        h.api.platformerHero(heroi, 240, 660, dt)
+        h.api.collideGroup(heroi, 'chao')
+      })
+      quadros(h, 4) // assenta
+      // Segura 'd' até SAIR do chão (passa de x=160-32).
+      let t = 5
+      let saiuEm = -1
+      for (; t <= 40; t++) {
+        h.fire('keydown', { key: 'd' })
+        h.nextFrame(t * 50)
+        if (!heroi.onGround && saiuEm < 0) saiuEm = t
+        if (saiuEm > 0 && t >= saiuEm + atrasoQuadros) break
+      }
+      const yAntes = heroi.y
+      h.fire('keydown', { key: ' ' }) // tenta pular
+      h.nextFrame((t + 1) * 50)
+      h.nextFrame((t + 2) * 50)
+      return heroi.y < yAntes - 5 // subiu = o pulo saiu
+    }
+    expect(await correuEPulou(1)).toBe(true) // dentro do coyote
+    expect(await correuEPulou(6)).toBe(false) // coyote expirou: só caiu
+  })
+
+  it('⭐ pulo variável: soltar cedo pula MAIS BAIXO que segurar', async () => {
+    async function pico(segurar: boolean): Promise<number> {
+      const h = loadRuntime()
+      await fase(h)
+      const heroi = h.api.createCharacter({ w: 32, h: 48, speed: 240, color: '#f0f' }) as Heroi
+      h.api.spawnFromMold('chao', 0, 460)
+      h.api.placeCharacter(heroi, 100, 412)
+      h.api.onUpdate((dt: number) => {
+        h.api.platformerHero(heroi, 240, 660, dt)
+        h.api.collideGroup(heroi, 'chao')
+      })
+      quadros(h, 4)
+      let menor = heroi.y
+      for (let i = 5; i <= 30; i++) {
+        if (segurar)
+          h.fire('keydown', { key: ' ' }) // segura o pulo todo quadro
+        else if (i === 5)
+          h.fire('keydown', { key: ' ' }) // toca 1x
+        else if (i === 6) h.fire('keyup', { key: ' ' }) // e solta cedo
+        h.nextFrame(i * 50)
+        if (heroi.y < menor) menor = heroi.y
+      }
+      return menor
+    }
+    const picoSegurando = await pico(true)
+    const picoToque = await pico(false)
+    expect(picoSegurando).toBeLessThan(picoToque - 40) // segurar sobe bem mais alto
+  })
+
+  it('⭐ a plataforma móvel CARREGA o herói (rideOn, sem escorregar)', async () => {
+    const h = loadRuntime()
+    await fase(h)
+    const heroi = h.api.createCharacter({ w: 32, h: 48, speed: 240, color: '#00f' }) as Heroi
+    const plat = h.api.spawnFromMold('movel', 200, 400) as { x: number }
+    h.api.placeCharacter(heroi, 240, 336) // sobre a plataforma (topo 400 − 48 = 352… assenta)
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(heroi, 240, 660, dt)
+      h.api.movingPlatform(plat, 200, 400, 400, 400, 2, dt) // desliza p/ a direita
+      h.api.collideGroup(heroi, 'movel')
+      h.api.rideOn(heroi, 'movel')
+    })
+    quadros(h, 3) // assenta em cima
+    const hx0 = heroi.x
+    const px0 = plat.x
+    quadros(h, 20, 4)
+    const dHeroi = heroi.x - hx0
+    const dPlat = plat.x - px0
+    expect(dPlat).toBeGreaterThan(30) // a plataforma andou mesmo
+    expect(Math.abs(dHeroi - dPlat)).toBeLessThan(8) // o herói foi junto
+  })
+
+  it('⭐ pisar no bicho MATA + QUICA, e a bandeira (região) dá a vitória', async () => {
+    const h = loadRuntime()
+    await fase(h)
+    const heroi = h.api.createCharacter({ w: 32, h: 48, speed: 240, color: '#00f' }) as Heroi
+    h.api.spawnFromMold('chao', 0, 460)
+    h.api.spawnFromMold('bicho', 300, 420) // no chão (topo em 420)
+    h.api.placeCharacter(heroi, 300, 300) // acima do bicho
+    let pisou = 0
+    h.api.on('plataforma:pisou', () => {
+      pisou += 1
+    })
+    h.api.defineRegion('bandeira', 250, 400, 120, 80) // o pouso final, no chão
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(heroi, 240, 660, dt)
+      h.api.collideGroup(heroi, 'chao')
+      h.api.stompKill(heroi, 'bicho', 400)
+      // A bandeira só conta DEPOIS do bicho (o herói cai atravessando a região
+      // no caminho de descida — sem o gate, venceria antes de pisar).
+      if (pisou > 0 && h.api.isInside(heroi, 'bandeira')) h.api.setState('vitoria')
+    })
+    for (let i = 1; i <= 60 && h.api.state() === 'jogando'; i++) h.nextFrame(i * 50)
+    expect(pisou).toBe(1) // pisou no bicho
+    expect(h.api.countActive('bicho')).toBe(0) // que morreu
+    expect(h.api.state()).toBe('vitoria') // e a bandeira deu a vitória
+  })
+})
+
+describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
+  interface Heroi {
+    x: number
+    y: number
+  }
+
+  // Duas telas: vila (guarda + porta p/ o salão) e salão (chefe → batalha).
+  // Herói FORTE (força 50 vs chefe de 10 HP) = vence no 1º Atacar, determinístico
+  // apesar do ±20% do dano.
+  async function mundoRpg(h: Harness): Promise<Heroi> {
+    h.api.setup({ width: 960, height: 640 })
+    h.api.rpgBattleStats(60, 50, 10)
+    const heroi = h.api.createCharacter({ w: 48, h: 48, speed: 640, color: '#2b6cb0' }) as Heroi
+    h.api.rpgOnMap('vila', () => {
+      h.api.placeCharacter(heroi, h.api.rpgCell(1), h.api.rpgCell(2))
+      h.api.rpgCreateNpc('guarda', 3, 2, '', '')
+    })
+    h.api.rpgOnMap('salao', () => {
+      h.api.placeCharacter(heroi, h.api.rpgCell(1), h.api.rpgCell(2))
+      h.api.rpgCreateNpc('chefe', 2, 2, '', '')
+    })
+    h.api.rpgOnTalk('guarda', () => {
+      h.api.rpgSay('Vá ao salão!', 'Guarda')
+      h.api.rpgAddFlag('portao')
+      h.api.rpgCreateDoor(2, 3, 'salao') // porta na célula abaixo do herói
+    })
+    h.api.rpgOnTalk('chefe', () => {
+      h.api.rpgBattleStart('Chefão', 10, 1, 0)
+    })
+    h.api.rpgOnBattleEnd(() => {
+      if (h.api.rpgBattleWon()) h.api.rpgBattleReward(25)
+    })
+    h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
+    await startGame(h)
+    h.api.setState('jogando') // rpgNewGame vai ao 1º mapa (vila) e posiciona
+    return heroi
+  }
+  function segura(h: Harness, key: string, n: number, from: number): number {
+    let t = from
+    for (let i = 0; i < n; i++, t++) {
+      h.fire('keydown', { key })
+      h.nextFrame(t * 50)
+    }
+    h.fire('keyup', { key })
+    return t
+  }
+  function botaoAtacar(): HTMLButtonElement {
+    const scr = document.querySelector('[data-szgk-screen="batalha"]')
+    return scr?.querySelector('button') as HTMLButtonElement
+  }
+
+  it('⭐ a grade anda por célula e o NPC SEGURA (vira, não entra)', async () => {
+    const h = loadRuntime()
+    const heroi = await mundoRpg(h)
+    expect(heroi.x).toBe(64) // nasceu na célula (1,2)
+    segura(h, 'ArrowRight', 16, 1) // tenta ir até a direita
+    // De (1,2) anda p/ (2,2); (3,2) é o guarda → BLOQUEIA. Para em x=128 (não 192).
+    expect(heroi.x).toBe(128)
+  })
+
+  it('⭐ falar (espaço) trava o herói, dá a FLAG e cria a porta', async () => {
+    const h = loadRuntime()
+    const heroi = await mundoRpg(h)
+    const fim = segura(h, 'ArrowRight', 16, 1) // encosta no guarda, virado p/ direita
+    expect(h.api.rpgHasFlag('portao')).toBe(false)
+    h.fire('keydown', { key: ' ' })
+    h.nextFrame(fim * 50) // conversa
+    expect(h.api.rpgHasFlag('portao')).toBe(true)
+    // A fala está aberta: segurar direção NÃO move o herói.
+    const xTravado = heroi.x
+    segura(h, 'ArrowDown', 4, fim + 1)
+    expect(heroi.x).toBe(xTravado)
+  })
+
+  it('⭐ a porta troca de mapa (o hook do salão roda e reposiciona o herói)', async () => {
+    const h = loadRuntime()
+    const heroi = await mundoRpg(h)
+    let t = segura(h, 'ArrowRight', 16, 1)
+    h.fire('keydown', { key: ' ' })
+    h.nextFrame(t * 50) // fala do guarda (cria a porta em (2,3))
+    t += 1
+    let trocou = 0
+    h.api.on('mapa:salao', () => {
+      trocou += 1
+    })
+    // Fecha a fala (espaço até 'fala:terminada' liberar o herói) e desce à porta.
+    for (let i = 0; i < 30 && trocou === 0; i++, t++) {
+      h.fire('keydown', { key: i % 2 === 0 ? ' ' : 'ArrowDown' })
+      h.nextFrame(t * 50)
+    }
+    expect(trocou).toBe(1)
+    expect(heroi.x).toBe(64) // reposicionado na célula (1,2) do salão
+  })
+
+  it('⭐ a batalha joga até VENCER no Atacar → rpgBattleWon → XP sobe o nível', async () => {
+    const h = loadRuntime()
+    const heroi = await mundoRpg(h)
+    // Vai ao salão (fala guarda → porta → descer, até 'mapa:salao').
+    let t = segura(h, 'ArrowRight', 16, 1)
+    h.fire('keydown', { key: ' ' })
+    h.nextFrame(t * 50)
+    t += 1
+    let trocou = 0
+    h.api.on('mapa:salao', () => {
+      trocou += 1
+    })
+    for (let i = 0; i < 30 && trocou === 0; i++, t++) {
+      h.fire('keydown', { key: i % 2 === 0 ? ' ' : 'ArrowDown' })
+      h.nextFrame(t * 50)
+    }
+    expect(trocou).toBe(1) // chegou no salão
+    // No salão, encosta no chefe (célula 2,2; herói em 1,2 → vira p/ direita) e fala.
+    t = segura(h, 'ArrowRight', 6, t + 1)
+    h.fire('keydown', { key: ' ' })
+    h.nextFrame(t * 50)
+    expect(h.api.state()).toBe('batalha')
+    // JOGA a batalha: clica Atacar (força 50 mata o chefe de 10 HP no 1º golpe).
+    botaoAtacar().click()
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.rpgBattleWon()).toBe(true)
+    // A recompensa (25 XP, teto 20) subiu o nível: playerXp 25→5, nível 1→2.
+    expect(h.api.rpgLevel()).toBe(2)
+    expect(h.api.rpgXp()).toBe(5)
+    void heroi
   })
 })

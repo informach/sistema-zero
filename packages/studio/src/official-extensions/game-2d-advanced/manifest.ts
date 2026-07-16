@@ -13,7 +13,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.22.0',
+  version: '0.22.1',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E cinco atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial) e 🚀 nave (a invasão que marcha, desce e acelera).',
   category: 'games',
@@ -727,7 +727,9 @@ espaço E recarregou: Atirar um leque de 1"*.
 ### 🛸 Kit Nave: a invasão
 
 **Invadir: onda do molde …** cria a formação (colunas × linhas) e o MOTOR marcha
-o bloco inteiro: bate na borda → todo mundo DESCE um passo e ACELERA. Os
+o bloco inteiro: bate na borda → todo mundo DESCE um passo e ACELERA. Se a grade
+que você pediu não couber na tela, o motor ESPREME o espaço entre as colunas
+para caber (as colunas que você pediu são respeitadas). Os
 invasores são vivos NORMAIS do molde — seu tiro os derrota com o "Quando se
 tocarem" de sempre, e a formação encolhe sozinha. ⚠️ Não mova os invasores você
 mesmo (perseguir/deslizar neles briga com a marcha).

@@ -125,6 +125,14 @@ const MAX_CATEGORY_CHARS = 60
 // criança pode ler, que é exatamente o que ele não deve fazer. Uma trava de
 // sanidade contra dados malformados não precisa ser apertada.
 const MAX_DOCS_CHARS = 40_000
+// Espelho do MAX_DOCS_CHARS para o CONTEXTO DA IA (ExtensionDefinition.ai.
+// promptContext): ele é concatenado CRU no system prompt (state/aiAdapter →
+// ai/prompts.buildSystemPrompt) e NÃO tem teto em runtime DE PROPÓSITO —
+// truncar cortaria uma receita no meio e a IA passaria a ensinar errado. A
+// trava é de SANIDADE, validada em teste (extensions/__tests__/manifest.test.ts)
+// contra TODAS as extensões oficiais. Hoje o maior (game-2d-advanced) tem ~30k;
+// estourou o teto? ENXUGUE o ai.ts — cada char daqui custa em toda chamada.
+export const MAX_PROMPT_CONTEXT_CHARS = 36_000
 const MAX_EXAMPLES = 50
 
 export const ExtensionExampleSchema = z.object({

@@ -66,6 +66,9 @@ export const gameKitRuntime = `(function () {
   // fala do RPG); pooled com swap-pop, teto proprio.
   var floaties = { active: [], free: [] };
   var MAX_FLOATIES = 60;
+  // R24: cache da string de fonte por tamanho (montar 'bold Npx...' por floatie
+  // por quadro alocava ate 60 strings/quadro; chaves = punhado de tamanhos).
+  var floatieFonts = Object.create(null);
   // ✨ R21: aneis da onda de choque (a explosao da Bomb do Chris Courses).
   var shockwaves = { active: [], free: [] };
   var MAX_SHOCKWAVES = 16;
@@ -4087,7 +4090,8 @@ export const gameKitRuntime = `(function () {
       var f = floaties.active[i];
       try { ctx2d.globalAlpha = Math.max(0, 1 - f.t / f.life); } catch (e) {}
       ctx2d.fillStyle = f.color;
-      ctx2d.font = 'bold ' + Math.round(f.size) + 'px sans-serif';
+      var fs = Math.round(f.size);
+      ctx2d.font = floatieFonts[fs] || (floatieFonts[fs] = 'bold ' + fs + 'px sans-serif');
       ctx2d.fillText(f.text, f.x, f.y);
     }
     try { ctx2d.globalAlpha = prev; } catch (e) {}
@@ -4271,11 +4275,13 @@ export const gameKitRuntime = `(function () {
     var dx = 0;
     if (keys['arrowleft'] || keys['a']) dx -= 1;
     if (keys['arrowright'] || keys['d']) dx += 1;
+    // De ONDE veio, ANTES de mover (contrato do moveByVelocity): a colisao
+    // solida varre _prev->x; gravar depois cegava a varredura no strafe.
+    who._prevX = who.x;
     who.x += dx * v * d;
     var maxX = config.w - num(who.w, 0);
     if (who.x < 0) who.x = 0;
     if (who.x > maxX) who.x = maxX;
-    who._prevX = who.x; // o motor moveu: varredura consistente
     who._leanMax = num(lean, 10); // compoe o "Inclinar ao andar" geral
     if (dx) setFacing(who, dx, 0);
   }
@@ -4288,7 +4294,12 @@ export const gameKitRuntime = `(function () {
       warnOnce('navepower:' + p, 'o poder "' + p + '" não existe — use metralhadora ou leque');
       return;
     }
-    if (!who._gunMode) nave.powered.push(who); // ja com poder: so renova (sem dupe)
+    // Dedupe por IDENTIDADE, nao por _gunMode: o pool RECICLA o objeto (o
+    // spawnFromMold zera _gunMode) e o recycle nao mexe em powered[] — o gate
+    // antigo empurrava o MESMO objeto 2x e o _gunT decaia em DOBRO (poder de
+    // 5 s durava 2,5 s). powered e minusculo; indexOf aqui e barato (no
+    // recycle, laco quente, seria caro a toa).
+    if (nave.powered.indexOf(who) === -1) nave.powered.push(who);
     who._gunMode = p;
     who._gunT = Math.max(0.1, num(seconds, 5));
   }
@@ -4310,6 +4321,15 @@ export const gameKitRuntime = `(function () {
     var c = Math.max(1, Math.min(20, Math.round(num(cols, 8))));
     var r = Math.max(1, Math.min(10, Math.round(num(rows, 3))));
     var g = Math.max(8, Math.min(200, num(gap, 60)));
+    // A crianca manda nas COLUNAS; o motor espreme o ESPACO p/ caber em 90% da
+    // tela. Sem isso, 12 colunas x gap 120 nasciam mais largas que a tela e a
+    // marcha invertia TODO quadro (a formacao tremia e DESPENCAVA a 1800 px/s).
+    // O g tambem e o passo vertical: a grade encolhe proporcional (previsivel).
+    var mwFit = molds[k].w;
+    if (c > 1) {
+      var fitG = (config.w * 0.9 - mwFit) / (c - 1);
+      if (g > fitG) g = Math.max(8, fitG);
+    }
     nave.seq += 1;
     var w = {
       id: nave.seq,
@@ -4319,7 +4339,7 @@ export const gameKitRuntime = `(function () {
       invaded: false,
       members: []
     };
-    var mw = molds[k].w;
+    var mw = mwFit;
     var totalW = (c - 1) * g + mw;
     var startX = Math.max(0, (config.w - totalW) / 2);
     var startY = 40;
@@ -4337,6 +4357,12 @@ export const gameKitRuntime = `(function () {
   function naveWaveShooter(moldName, seconds, bulletMold, speed) {
     var k = text(moldName, '');
     var b = text(bulletMold, '');
+    // Nome errado NUNCA e silencioso — o atirador tambem (R24; antes so o tiro
+    // era validado e o ritmo registrava um molde que nunca atiraria).
+    if (!molds[k]) {
+      warnOnce('waveshootmold:' + k, 'o molde do atirador "' + k + '" não existe — crie com "Criar o molde"');
+      return;
+    }
     if (!molds[b]) {
       warnOnce('waveshoot:' + b, 'o molde do tiro "' + b + '" não existe — crie com "Criar o molde"');
       return;
@@ -4411,8 +4437,12 @@ export const gameKitRuntime = `(function () {
     }
     var e = spawnFromMold(k, 0, 0);
     if (!e) return;
-    e.x = e.w + Math.random() * (config.w - e.w * 3);
-    e.y = e.h + Math.random() * (config.h * 0.5);
+    // No retangulo VISIVEL (precedente spawnAtEdge): com camera ligada, nascer
+    // em coords de tela jogava a bomba p/ fora da vista (o quique segue o mundo).
+    var ox = camera.on ? camera.x : 0;
+    var oy = camera.on ? camera.y : 0;
+    e.x = ox + e.w + Math.random() * (config.w - e.w * 3);
+    e.y = oy + e.h + Math.random() * (config.h * 0.5);
     e._prevX = e.x; e._prevY = e.y;
     e.vx = (Math.random() - 0.5) * 360; // o +-3 px/quadro do Chris, em px/s
     e.vy = (Math.random() - 0.5) * 360;
@@ -4446,9 +4476,13 @@ export const gameKitRuntime = `(function () {
         continue;
       }
       var dx = w.vx * dt;
+      var span = maxX - minX;
       // Borda COLETIVA com guarda de SINAL: um quadro no teto do dt (0.1 s) com
-      // vx acelerado nao pode re-inverter em loop preso na borda.
-      if ((maxX + dx >= config.w && w.vx > 0) || (minX + dx <= 0 && w.vx < 0)) {
+      // vx acelerado nao pode re-inverter em loop preso na borda. E a rede do
+      // R24: formacao mais LARGA que a tela toca as duas bordas ao mesmo tempo
+      // — sem o gate de span ela invertia TODO quadro e descia w.drop 60x/s
+      // (despencava). Sem borda p/ inverter, marcha reto e nao desce.
+      if (span < config.w && ((maxX + dx >= config.w && w.vx > 0) || (minX + dx <= 0 && w.vx < 0))) {
         w.vx = -w.vx * (1 + w.accel / 100);
         if (w.vx > MAX_WAVE_VX) w.vx = MAX_WAVE_VX;
         if (w.vx < -MAX_WAVE_VX) w.vx = -MAX_WAVE_VX;

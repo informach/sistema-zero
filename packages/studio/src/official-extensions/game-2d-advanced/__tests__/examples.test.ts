@@ -361,19 +361,8 @@ SZGameKit.start();
 `
 
 describe('game-2d-advanced — exemplo Vila do Dragão (Kit RPG)', () => {
-  it('o manifest registra os 6 exemplos', () => {
-    expect(gameKitExtension.manifest.examples.map((e) => e.name)).toEqual([
-      'Caça-moedas profissional',
-      'Arena dos Goblins',
-      'Vila do Dragão',
-      'Floresta Ninja',
-      'Salto na Floresta',
-      'Bichinhos do Quintal',
-      'Invasão dos Óvnis',
-      'Duelo dos Bonecos',
-    ])
-  })
-
+  // R24: o assert da lista de exemplos vivia DUPLICADO aqui (com o título
+  // mentindo "6") — o lugar canônico é o describe do Caça-moedas.
   it('IR embutida é válida, sem rawJS, e usa o Kit RPG inteiro', () => {
     const parsed = SZIRSchema.safeParse(vilaDoDragaoExample.ir)
     expect(parsed.success).toBe(true)
