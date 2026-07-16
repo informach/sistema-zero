@@ -1373,6 +1373,9 @@ export type JSStatement =
   // `import * as NOME from 'modulo'` — importa uma biblioteca inteira sob um nome
   // (ex.: `import * as THREE from 'three'`). O gerador eleva ao TOPO do arquivo.
   | (JSStatementCommon & { type: 'importStar'; name: string; module: string })
+  // Import nomeado (`import { GLTFLoader } from 'three/addons/…'`), sem alias.
+  // Também elevado ao topo. `names` = os identificadores importados.
+  | (JSStatementCommon & { type: 'importNamed'; names: string[]; module: string })
   // Itera os itens de uma lista (`for (const item of lista) { … }`). Distinto de
   // `forEach` (sem índice) — preserva a escolha do aluno no round-trip.
   | (JSStatementCommon & {
@@ -3865,6 +3868,15 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'imageOnError'; target: JSExpr; body: JSStatement[] })
   // Pede o próximo quadro rodando um corpo inline com o tempo (`requestAnimationFrame((t) => {…})`).
   | (JSStatementCommon & { type: 'requestFrameDo'; param?: string; body: JSStatement[] })
+  // Canvas 3D: carregar um recurso async (`loader.load(url, (modelo) => { … })`).
+  // `loaderVar` = a var do carregador; `param` = o nome do recurso no corpo.
+  | (JSStatementCommon & {
+      type: 'loaderLoad'
+      loaderVar: string
+      url: JSExpr
+      param: string
+      body: JSStatement[]
+    })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -3949,6 +3961,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('break'), ...idField }),
     z.object({ type: z.literal('continue'), ...idField }),
     z.object({ type: z.literal('importStar'), name: irText(), module: irText(), ...idField }),
+    z.object({
+      type: z.literal('importNamed'),
+      names: z.array(irText()),
+      module: irText(),
+      ...idField,
+    }),
     z.object({
       type: z.literal('forOf'),
       itemName: irText(),
@@ -7591,6 +7609,14 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('requestFrameDo'),
       param: irText().optional(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('loaderLoad'),
+      loaderVar: irText(),
+      url: JSExprSchema,
+      param: irText(),
       body: z.array(JSStatementSchema),
       ...idField,
     }),

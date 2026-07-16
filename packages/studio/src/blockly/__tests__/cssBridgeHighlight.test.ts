@@ -31,7 +31,7 @@ describe('realce bloco↔código do CSS pela posição no texto exibido (modo Po
       '  margin: 0;',
       '  padding: 0;',
       '  height: 100%;',
-      '  overflow: hidden;',
+      '  line-height: 1.5;',
       '  background: #000;',
       '}',
     ].join('\n')
@@ -42,7 +42,7 @@ describe('realce bloco↔código do CSS pela posição no texto exibido (modo Po
       '  margin: 0;', // 4
       '  padding: 0;', // 5
       '  height: 100%;', // 6
-      '  overflow: hidden;', // 7
+      '  line-height: 1.5;', // 7
       '  background: #000;', // 8
       '}', // 9
     ].join('\n')

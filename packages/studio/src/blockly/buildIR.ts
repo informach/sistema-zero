@@ -1860,6 +1860,73 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       if (rows) declarations['grid-template-rows'] = rows
       return { kind: 'css', value: { selector: f(block, 'SELECTOR'), declarations } }
     }
+    // ---- 🎮 Posição & jogo (IR genérica de CSSRule; o round-trip volta ao bloco
+    // dedicado pelo cssEntryToBlocks do workspaceState) ----
+    case 'sz_css_position':
+      return {
+        kind: 'css',
+        value: { selector: f(block, 'SELECTOR'), declarations: { position: f(block, 'VALUE') } },
+      }
+    case 'sz_css_offset':
+      return {
+        kind: 'css',
+        value: {
+          selector: f(block, 'SELECTOR'),
+          declarations: { [f(block, 'SIDE')]: f(block, 'VALUE') },
+        },
+      }
+    case 'sz_css_display':
+      return {
+        kind: 'css',
+        value: { selector: f(block, 'SELECTOR'), declarations: { display: f(block, 'VALUE') } },
+      }
+    case 'sz_css_overflow':
+      return {
+        kind: 'css',
+        value: { selector: f(block, 'SELECTOR'), declarations: { overflow: f(block, 'VALUE') } },
+      }
+    case 'sz_css_cursor':
+      return {
+        kind: 'css',
+        value: { selector: f(block, 'SELECTOR'), declarations: { cursor: f(block, 'VALUE') } },
+      }
+    case 'sz_css_image_rendering':
+      return {
+        kind: 'css',
+        value: {
+          selector: f(block, 'SELECTOR'),
+          declarations: { 'image-rendering': f(block, 'VALUE') },
+        },
+      }
+    case 'sz_css_object_fit':
+      return {
+        kind: 'css',
+        value: {
+          selector: f(block, 'SELECTOR'),
+          declarations: { 'object-fit': f(block, 'VALUE') },
+        },
+      }
+    case 'sz_css_opacity':
+      return {
+        kind: 'css',
+        value: { selector: f(block, 'SELECTOR'), declarations: { opacity: f(block, 'VALUE') } },
+      }
+    case 'sz_css_z_index':
+      return {
+        kind: 'css',
+        value: {
+          selector: f(block, 'SELECTOR'),
+          declarations: { 'z-index': `${fn(block, 'VALUE')}` },
+        },
+      }
+    case 'sz_css_background_image':
+      return {
+        kind: 'css',
+        value: {
+          selector: f(block, 'SELECTOR'),
+          declarations: { 'background-image': `url('${f(block, 'URL')}')` },
+        },
+      }
     case 'sz_css_decl':
       // Só faz sentido como filho de uma "Regra CSS" (coletado por
       // getCssDeclarations); solto no topo é ignorado.
@@ -2961,6 +3028,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'importStar', name: f(block, 'NAME') || 'THREE', module: 'three' },
       }
+    case 'sz_t3d_import_named':
+      return {
+        kind: 'js',
+        value: {
+          type: 'importNamed',
+          names: f(block, 'NAMES')
+            .split(',')
+            .map((n) => n.trim())
+            .filter(Boolean),
+          module: f(block, 'MODULE'),
+        },
+      }
     case 'sz_t3d_new_var':
       return {
         kind: 'js',
@@ -3165,6 +3244,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       // `document.body.appendChild(renderizador.domElement)` — nó dedicado
       // (document.body é denylistado no parser genérico).
       return { kind: 'js', value: { type: 'mountRenderer', renderer: f(block, 'R') } }
+    case 'sz_t3d_load_model':
+      // `carregador.load(url, (modelo) => { … })` — carregamento async (GLTF/HDR/…).
+      return {
+        kind: 'js',
+        value: {
+          type: 'loaderLoad',
+          loaderVar: f(block, 'LOADER'),
+          url: exprInput(block, 'URL', { type: 'str', value: 'modelo.glb' }),
+          param: f(block, 'PARAM') || 'modelo',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
     case 'sz_js_call_method':
       return {
         kind: 'js',

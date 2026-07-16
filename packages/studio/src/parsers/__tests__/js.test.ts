@@ -212,11 +212,11 @@ describe('parseJS', () => {
     expect(ir).toEqual([{ type: 'rawJS', code, advanced: true }])
   })
 
-  it('preserva imports/export de módulo como rawJS advanced sem erro de sintaxe', () => {
+  it('import nomeado → importNamed (Fase 2); export segue rawJS advanced', () => {
     const code = 'import { ok } from "./utils.js";\nexport const resposta = ok;'
     const ir = parseJS(code)
     expect(ir).toEqual([
-      { type: 'rawJS', code: 'import { ok } from "./utils.js";', advanced: true },
+      { type: 'importNamed', names: ['ok'], module: './utils.js' },
       { type: 'rawJS', code: 'export const resposta = ok;', advanced: true },
     ])
   })

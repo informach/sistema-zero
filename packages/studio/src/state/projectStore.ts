@@ -354,6 +354,17 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_text_transform',
   'sz_css_width',
   'sz_css_width_percent',
+  // 🎮 Posição & jogo (propriedades que os jogos mais usam)
+  'sz_css_position',
+  'sz_css_offset',
+  'sz_css_display',
+  'sz_css_overflow',
+  'sz_css_cursor',
+  'sz_css_image_rendering',
+  'sz_css_object_fit',
+  'sz_css_opacity',
+  'sz_css_z_index',
+  'sz_css_background_image',
   // Blocos-CONTAINER (frames): 🧱 Estrutura / 🎨 Aparência / ⚙️ Comportamento.
   'sz_frame_appearance',
   'sz_frame_behavior',
@@ -534,8 +545,10 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_call_method',
   'sz_val_new',
   'sz_t3d_import',
+  'sz_t3d_import_named',
   'sz_t3d_new_var',
   'sz_t3d_new',
+  'sz_t3d_load_model',
   // Canvas 3D — facilitadores (rótulo amigável sobre memberCall/memberSet).
   'sz_t3d_set_position',
   'sz_t3d_set_rotation',

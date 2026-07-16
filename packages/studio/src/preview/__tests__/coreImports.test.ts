@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { coreImportsForCode, THREE_CDN, withCoreImports } from '../coreImports'
+import { coreImportsForCode, THREE_ADDONS_CDN, THREE_CDN, withCoreImports } from '../coreImports'
 
 /**
  * O import automático do three.js (Canvas 3D) é LAZY: entra só quando o código
@@ -24,10 +24,13 @@ describe('coreImportsForCode — lazy por detecção no código', () => {
     expect(coreImportsForCode(undefined)).toEqual({})
   })
 
-  it('NÃO casa addons (three/addons/…) — isso é Fase 2', () => {
+  it('addons (three/addons/…) → mapeia three + o prefixo three/addons/', () => {
     expect(
       coreImportsForCode("import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';"),
-    ).toEqual({})
+    ).toEqual({
+      three: THREE_CDN,
+      'three/addons/': THREE_ADDONS_CDN,
+    })
   })
 
   it('withCoreImports funde com os das extensões, e devolve o MESMO objeto no caso 2D', () => {

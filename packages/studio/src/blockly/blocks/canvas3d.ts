@@ -78,6 +78,19 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Cria um objeto do three.js para usar direto numa tomada de valor (ex.: argumento de "adicionar" ou de um método). Vira "new THREE.Vector3(…)".',
   },
+  {
+    // Import nomeado de um addon: `import { GLTFLoader } from 'three/addons/…'`.
+    type: 'sz_t3d_import_named',
+    message0: 'usar %1',
+    args0: [{ type: 'field_input', name: 'NAMES', text: 'GLTFLoader' }],
+    message1: 'da biblioteca %1',
+    args1: [{ type: 'field_input', name: 'MODULE', text: 'three/addons/loaders/GLTFLoader.js' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Traz uma ferramenta extra da biblioteca 3D (ex.: o carregador de modelos GLTFLoader) para o projeto. Vira "import { GLTFLoader } from \'three/addons/…\'". Separe vários nomes por vírgula.',
+  },
 
   // ───────────────────────── 🎯 Transformar (Object3D) ────────────────────────
   {
@@ -341,13 +354,35 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Coloca a tela do renderizador (o canvas 3D) dentro da página, para o desenho aparecer. Vira "document.body.appendChild(renderizador.domElement)".',
   },
+
+  // ───────────────────────── 📦 Modelos e texturas ────────────────────────────
+  {
+    // `carregador.load(url, (modelo) => { … })` — carregamento async de um recurso.
+    type: 'sz_t3d_load_model',
+    message0: 'com o carregador %1 carregar o modelo %2',
+    args0: [
+      { type: 'field_name_picker', name: 'LOADER', text: 'carregador', kind: 'variable' },
+      { type: 'input_value', name: 'URL', check: 'JSValue' },
+    ],
+    message1: 'quando pronto, com o modelo em %1, fazer %2',
+    args1: [
+      { type: 'field_input', name: 'PARAM', text: 'modelo' },
+      { type: 'input_statement', name: 'DO' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Carrega um modelo 3D (.glb) e, quando terminar, roda os blocos de dentro com o modelo pronto (ex.: "adicionar modelo.scene em cena"). Vira "carregador.load(url, (modelo) => { … })".',
+  },
 ]
 
 export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🧊 Biblioteca 3D',
     colour: C,
-    types: ['sz_t3d_import', 'sz_t3d_new_var', 'sz_t3d_new'],
+    types: ['sz_t3d_import', 'sz_t3d_import_named', 'sz_t3d_new_var', 'sz_t3d_new'],
   },
   {
     name: '🎯 Transformar',
@@ -380,6 +415,11 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
       'sz_t3d_mount_renderer',
       'sz_t3d_render',
     ],
+  },
+  {
+    name: '📦 Modelos',
+    colour: C,
+    types: ['sz_t3d_load_model'],
   },
 ]
 

@@ -103,7 +103,7 @@ button {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden;
+  line-height: 1.5;
   background: #000;
 }`
     const { sourceMap, files, ir, workspace } = bridgeCssWithMap(css)
@@ -121,7 +121,7 @@ button {
       'margin',
       'padding',
       'height',
-      'overflow',
+      'line-height',
       'background',
     ])
 
@@ -132,7 +132,7 @@ button {
     expect(lines[2]).toBe('  margin: 0;')
     expect(lines[3]).toBe('  padding: 0;')
     expect(lines[4]).toBe('  height: 100%;')
-    expect(lines[5]).toBe('  overflow: hidden;')
+    expect(lines[5]).toBe('  line-height: 1.5;')
     expect(lines[6]).toBe('  background: #000;')
     expect(lines[7]).toBe('}')
 
@@ -158,14 +158,15 @@ button {
     // Os ids vivem no `__declIds` do IR; encontramos pelo block.id no workspace.
     const declIds = (genericRule as unknown as { __declIds?: Record<string, string> }).__declIds
     if (!declIds) throw new Error('faltam __declIds no IR')
-    const { margin, padding, height, overflow, background } = declIds
-    if (!margin || !padding || !height || !overflow || !background) {
+    const { margin, padding, height, background } = declIds
+    const lineHeight = declIds['line-height']
+    if (!margin || !padding || !height || !lineHeight || !background) {
       throw new Error('faltam __declIds no IR')
     }
     expect(sourceMap[margin]).toMatchObject({ startLine: 3, endLine: 3 })
     expect(sourceMap[padding]).toMatchObject({ startLine: 4, endLine: 4 })
     expect(sourceMap[height]).toMatchObject({ startLine: 5, endLine: 5 })
-    expect(sourceMap[overflow]).toMatchObject({ startLine: 6, endLine: 6 })
+    expect(sourceMap[lineHeight]).toMatchObject({ startLine: 6, endLine: 6 })
     expect(sourceMap[background]).toMatchObject({ startLine: 7, endLine: 7 })
 
     workspace.dispose()

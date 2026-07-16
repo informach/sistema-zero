@@ -17,14 +17,29 @@
 /** MESMA URL das extensões game-3d/game-3d-advanced (importmaps colapsam). */
 export const THREE_CDN = 'https://esm.sh/three@0.180.0'
 
-/** Especificador exato `three` (não `three/addons/…`, que é Fase 2). */
-const IMPORTS_THREE = /from\s+['"]three['"]/
+/**
+ * Prefixo dos "addons" oficiais do three (`three/addons/loaders/GLTFLoader.js`
+ * etc.) → os `examples/jsm/` do mesmo pacote no esm.sh. É um mapeamento de PREFIXO
+ * (chave com barra final) no importmap, então `three/addons/x/Y.js` resolve para
+ * `…/examples/jsm/x/Y.js`. Mesma origem do `three` base → nada novo na CSP.
+ */
+export const THREE_ADDONS_CDN = 'https://esm.sh/three@0.180.0/examples/jsm/'
 
-/** Os imports de núcleo que o código gerado exige (hoje: só three.js). */
+/** Especificador exato `three` (não `three/addons/…`, tratado à parte). */
+const IMPORTS_THREE = /from\s+['"]three['"]/
+/** Qualquer import de addon (`from 'three/addons/…'`). */
+const IMPORTS_THREE_ADDONS = /from\s+['"]three\/addons\//
+
+/** Os imports de núcleo que o código gerado exige (three.js + addons). */
 export function coreImportsForCode(js: unknown): Record<string, string> {
   if (typeof js !== 'string' || !js) return {}
   const imports: Record<string, string> = {}
   if (IMPORTS_THREE.test(js)) imports.three = THREE_CDN
+  if (IMPORTS_THREE_ADDONS.test(js)) {
+    // Os addons importam o `three` base internamente → sempre mapeie os dois.
+    imports.three = THREE_CDN
+    imports['three/addons/'] = THREE_ADDONS_CDN
+  }
   return imports
 }
 

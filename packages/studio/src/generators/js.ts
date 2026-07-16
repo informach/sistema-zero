@@ -116,6 +116,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'imageOnError':
     case 'onClickAssign':
     case 'requestFrameDo':
+    case 'loaderLoad':
     case 'setTimeout':
     case 'setInterval':
     case 'setTimeoutSeconds':
@@ -186,14 +187,12 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // fora de qualquer bloco: `function frame(){…} frame();`. A chamada precisa do
   // mesmo escopo da função, então ambos sobem juntos.
   const hoistedLoops = hoistAnimationLoops(opts.statements)
-  // `import * as X from '…'` precisa estar no TOPO do módulo (regra do JS). O
-  // bloco de import é top-level (no frame de Comportamento); movê-lo à frente
-  // garante o código válido mesmo se a criança o arrastar para baixo.
-  const statements = hoistedLoops.some((s) => s.type === 'importStar')
-    ? [
-        ...hoistedLoops.filter((s) => s.type === 'importStar'),
-        ...hoistedLoops.filter((s) => s.type !== 'importStar'),
-      ]
+  // `import * as X` / `import { X }` precisam estar no TOPO do módulo (regra do
+  // JS). Os blocos de import são top-level (no frame de Comportamento); movê-los à
+  // frente garante o código válido mesmo se a criança os arrastar para baixo.
+  const isImport = (s: JSStatement): boolean => s.type === 'importStar' || s.type === 'importNamed'
+  const statements = hoistedLoops.some(isImport)
+    ? [...hoistedLoops.filter(isImport), ...hoistedLoops.filter((s) => !isImport(s))]
     : hoistedLoops
   const identifiers = createPreparedIdentifierScope(statements)
   const headerText = opts.header ? `${opts.header.trim()}\n\n` : ''
@@ -470,6 +469,10 @@ function compileStatementCode(
       // Aspas simples (padrão do gerador). O nome entra pelo escopo para casar
       // com os usos (`THREE.Scene`, `new THREE.X`) que resolvem o mesmo THREE.
       return `${pad}import * as ${identifiers.get(stmt.name)} from '${stmt.module}';`
+    case 'importNamed':
+      // `import { GLTFLoader, RGBELoader } from 'three/addons/…';`. Os nomes são
+      // identificadores de escopo (reservados em collectStatementIdentifiers).
+      return `${pad}import { ${stmt.names.map((n) => identifiers.get(n)).join(', ')} } from '${stmt.module}';`
     case 'forOf': {
       const body = compileStatements(
         stmt.body,
@@ -2577,6 +2580,16 @@ ${pad}});`
       const param = stmt.param ? identifiers.get(stmt.param) : ''
       return `${pad}requestAnimationFrame((${param}) => {\n${body}\n${pad}});`
     }
+    case 'loaderLoad': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const url = compileExpr(stmt.url, 0, identifiers, recAt(base))
+      return `${pad}${identifiers.get(stmt.loaderVar)}.load(${url}, (${identifiers.get(stmt.param)}) => {\n${body}\n${pad}});`
+    }
     case 'return':
       return stmt.value === undefined
         ? `${pad}return;`
@@ -2890,6 +2903,9 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       // O nome importado (ex.: THREE) É um identificador de escopo — reservá-lo
       // impede que uma variável do aluno o renomeie/colida.
       names.add(stmt.name)
+      return
+    case 'importNamed':
+      for (const n of stmt.names) names.add(n)
       return
     case 'forOf':
       names.add(stmt.itemName)
@@ -5232,6 +5248,12 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'requestFrameDo':
       if (stmt.param) names.add(stmt.param)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'loaderLoad':
+      names.add(stmt.loaderVar)
+      names.add(stmt.param)
+      collectExprIdentifiers(stmt.url, names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'return':

@@ -99,6 +99,8 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
  */
 export const TEXT_SOCKETS: Record<string, Record<string, string>> = {
   sz_canvas_fill_text: { TEXT: 'Olá' },
+  // Canvas 3D: o caminho do modelo a carregar (ex.: "modelo.glb").
+  sz_t3d_load_model: { URL: 'modelo.glb' },
 }
 
 interface CompareSeed {

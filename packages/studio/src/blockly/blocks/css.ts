@@ -547,6 +547,201 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Monta uma grade (display: grid) com colunas e (opcional) linhas, ex.: "repeat(3, 1fr)" ou "100px auto".',
   },
+
+  // ---- 🎮 Posição & jogo (as propriedades que os jogos mais usam) ----
+  {
+    type: 'sz_css_position',
+    message0: 'Posicionamento do seletor %1 como %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: '#canvas1' },
+      {
+        type: 'field_dropdown',
+        name: 'VALUE',
+        options: [
+          ['normal (no fluxo)', 'static'],
+          ['relativo', 'relative'],
+          ['absoluto (livre)', 'absolute'],
+          ['fixo na tela', 'fixed'],
+          ['colado ao rolar', 'sticky'],
+        ],
+      },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Como o elemento se posiciona. "absoluto" solta ele para você colocar com topo/esquerda — o jeito de centralizar o canvas do jogo.',
+  },
+  {
+    type: 'sz_css_offset',
+    message0: 'Distância do %1 no seletor %2 como %3',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SIDE',
+        options: [
+          ['topo', 'top'],
+          ['esquerda', 'left'],
+          ['direita', 'right'],
+          ['baixo', 'bottom'],
+        ],
+      },
+      { type: 'field_input', name: 'SELECTOR', text: '#canvas1' },
+      { type: 'field_input', name: 'VALUE', text: '50%' },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'A distância de um lado (com "posicionamento absoluto"). Ex.: topo 50% + esquerda 50% centraliza o canvas.',
+  },
+  {
+    type: 'sz_css_display',
+    message0: 'Exibir o seletor %1 como %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: 'canvas' },
+      {
+        type: 'field_dropdown',
+        name: 'VALUE',
+        options: [
+          ['bloco', 'block'],
+          ['em linha', 'inline'],
+          ['bloco em linha', 'inline-block'],
+          ['escondido', 'none'],
+        ],
+      },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Como o elemento ocupa espaço. "bloco" é o normal do canvas (tira o espacinho embaixo); "escondido" some com ele.',
+  },
+  {
+    type: 'sz_css_overflow',
+    message0: 'O que passa da borda do seletor %1: %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: 'body' },
+      {
+        type: 'field_dropdown',
+        name: 'VALUE',
+        options: [
+          ['esconder', 'hidden'],
+          ['mostrar', 'visible'],
+          ['barra de rolagem', 'scroll'],
+          ['automático', 'auto'],
+        ],
+      },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'O que fazer com o que passa da borda. "esconder" tira as barras de rolagem — bom para o jogo ocupar a tela.',
+  },
+  {
+    type: 'sz_css_cursor',
+    message0: 'Cursor do mouse no seletor %1 como %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: 'canvas' },
+      {
+        type: 'field_dropdown',
+        name: 'VALUE',
+        options: [
+          ['mãozinha (clicável)', 'pointer'],
+          ['seta', 'default'],
+          ['cruz (mira)', 'crosshair'],
+          ['mover', 'move'],
+          ['mãozinha aberta', 'grab'],
+          ['proibido', 'not-allowed'],
+        ],
+      },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'O desenho do cursor em cima do elemento. "mãozinha" mostra que dá para clicar; "cruz" é a mira do jogo de tiro.',
+  },
+  {
+    type: 'sz_css_image_rendering',
+    message0: 'Suavização da imagem do seletor %1 como %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: 'canvas' },
+      {
+        type: 'field_dropdown',
+        name: 'VALUE',
+        options: [
+          ['pixelada (sem borrar)', 'pixelated'],
+          ['nítida', 'crisp-edges'],
+          ['suave (normal)', 'auto'],
+        ],
+      },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Como a imagem/canvas fica ao ser ampliado. "pixelada" mantém os quadradinhos nítidos — essencial em pixel art.',
+  },
+  {
+    type: 'sz_css_object_fit',
+    message0: 'Encaixe da imagem do seletor %1 como %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: 'img' },
+      {
+        type: 'field_dropdown',
+        name: 'VALUE',
+        options: [
+          ['cobrir (corta as sobras)', 'cover'],
+          ['conter (mostra tudo)', 'contain'],
+          ['esticar', 'fill'],
+          ['sem ajuste', 'none'],
+        ],
+      },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip: 'Como a imagem se encaixa no espaço dela sem distorcer.',
+  },
+  {
+    type: 'sz_css_opacity',
+    message0: 'Opacidade do seletor %1 como %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+      { type: 'field_input', name: 'VALUE', text: '0.5' },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip: 'De 0 (invisível) a 1 (opaco). Bom para fades e coisas semitransparentes.',
+  },
+  {
+    type: 'sz_css_z_index',
+    message0: 'Camada (z-index) do seletor %1 como %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+      { type: 'field_number', name: 'VALUE', value: 10, precision: 1 },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Quem fica na frente de quem. Número maior aparece por cima — bom para o placar ficar sobre o jogo.',
+  },
+  {
+    type: 'sz_css_background_image',
+    message0: 'Imagem de fundo do seletor %1: %2',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: 'body' },
+      { type: 'field_input', name: 'URL', text: 'fundo.png' },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip: 'Põe uma imagem do projeto como fundo (repetida como azulejo, se for pequena).',
+  },
 ]
 
 /**
@@ -625,6 +820,22 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   { name: '📱 Responsivo', colour: '#8b5cf6', types: ['sz_css_media_query'] },
+  {
+    name: '🎮 Posição & jogo',
+    colour: '#7048e0',
+    types: [
+      'sz_css_position',
+      'sz_css_offset',
+      'sz_css_display',
+      'sz_css_overflow',
+      'sz_css_cursor',
+      'sz_css_image_rendering',
+      'sz_css_object_fit',
+      'sz_css_opacity',
+      'sz_css_z_index',
+      'sz_css_background_image',
+    ],
+  },
 ]
 
 // IDENTIDADE: cada sub-grupo recebe um TOM da cor base da categoria (CSS),

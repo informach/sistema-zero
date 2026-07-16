@@ -4,6 +4,7 @@ import { SZIRSchema } from '#ir'
 import {
   CORE_EXAMPLES,
   defesaDaTorreNaMaoExample,
+  dueloNaMaoExample,
   gorilasNaMaoExample,
   invadersNaMaoExample,
   plataformaVerticalNaMaoExample,
@@ -196,5 +197,39 @@ describe('CORE_EXAMPLES — defesaDaTorreNaMaoExample (tower defense na unha)', 
     const code = compileStatements(defesaDaTorreNaMaoExample.ir.js, 0)
     expect(code).toContain('Math.hypot(ax - bx, ay - by)')
     expect(code).toContain('Math.atan2(target.y - this.y, target.x - this.x)')
+  })
+})
+
+describe('CORE_EXAMPLES — dueloNaMaoExample (luta 2 jogadores na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(dueloNaMaoExample)
+    expect(dueloNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRSchema.safeParse(dueloNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(dueloNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa a caixa de golpe + barras de vida no canvas, sem asset', () => {
+    const types = collectTypes(dueloNaMaoExample.ir)
+    for (const expected of [
+      'classDecl',
+      'funcDecl',
+      'requestFrame',
+      'canvasSetup',
+      'canvasFillRect',
+      'canvasFillText',
+      'event',
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    expect(dueloNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(dueloNaMaoExample.ir.js, 0)
+    expect(code).toContain('p2.health = p2.health - 15')
   })
 })

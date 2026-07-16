@@ -69,6 +69,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Plataforma Vertical (na mão)': '🧗',
   'Portas do Castelo (na mão)': '🚪',
   'Defesa da Torre (na mão)': '🏹',
+  'Duelo (na mão)': '🥊',
 }
 
 function toEntry(

@@ -427,6 +427,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_t3d_set_background: { COLOR: 'color' },
   sz_t3d_set_intensity: { N: 'number' },
   sz_t3d_renderer_size: { W: 'number', H: 'number' },
+  sz_t3d_load_model: { URL: 'text' },
 }
 
 interface BlockNode {

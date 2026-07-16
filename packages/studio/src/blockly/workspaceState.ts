@@ -738,6 +738,88 @@ function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
     }
   }
 
+  // ---- 🎮 Posição & jogo: propriedade com bloco dedicado volta a ele (não à
+  // "Regra" genérica). Palavras-chave = guarda por enum; valores livres
+  // (offset/opacity/url) guardam a string crua e regeneram idênticas. ----
+  if (
+    rule.declarations.position &&
+    ['static', 'relative', 'absolute', 'fixed', 'sticky'].includes(rule.declarations.position)
+  ) {
+    blocks.push(block('sz_css_position', { SELECTOR: selector, VALUE: rule.declarations.position }))
+    consumed.add('position')
+  }
+  for (const side of ['top', 'left', 'right', 'bottom']) {
+    const value = rule.declarations[side]
+    if (value && !consumed.has(side)) {
+      blocks.push(block('sz_css_offset', { SIDE: side, SELECTOR: selector, VALUE: value }))
+      consumed.add(side)
+    }
+  }
+  if (
+    rule.declarations.display &&
+    !consumed.has('display') &&
+    ['block', 'inline', 'inline-block', 'none'].includes(rule.declarations.display)
+  ) {
+    blocks.push(block('sz_css_display', { SELECTOR: selector, VALUE: rule.declarations.display }))
+    consumed.add('display')
+  }
+  if (
+    rule.declarations.overflow &&
+    ['hidden', 'visible', 'scroll', 'auto'].includes(rule.declarations.overflow)
+  ) {
+    blocks.push(block('sz_css_overflow', { SELECTOR: selector, VALUE: rule.declarations.overflow }))
+    consumed.add('overflow')
+  }
+  if (
+    rule.declarations.cursor &&
+    ['pointer', 'default', 'crosshair', 'move', 'grab', 'not-allowed'].includes(
+      rule.declarations.cursor,
+    )
+  ) {
+    blocks.push(block('sz_css_cursor', { SELECTOR: selector, VALUE: rule.declarations.cursor }))
+    consumed.add('cursor')
+  }
+  if (
+    rule.declarations['image-rendering'] &&
+    ['pixelated', 'crisp-edges', 'auto'].includes(rule.declarations['image-rendering'])
+  ) {
+    blocks.push(
+      block('sz_css_image_rendering', {
+        SELECTOR: selector,
+        VALUE: rule.declarations['image-rendering'],
+      }),
+    )
+    consumed.add('image-rendering')
+  }
+  if (
+    rule.declarations['object-fit'] &&
+    ['cover', 'contain', 'fill', 'none'].includes(rule.declarations['object-fit'])
+  ) {
+    blocks.push(
+      block('sz_css_object_fit', { SELECTOR: selector, VALUE: rule.declarations['object-fit'] }),
+    )
+    consumed.add('object-fit')
+  }
+  if (rule.declarations.opacity) {
+    blocks.push(block('sz_css_opacity', { SELECTOR: selector, VALUE: rule.declarations.opacity }))
+    consumed.add('opacity')
+  }
+  if (rule.declarations['z-index']) {
+    const z = rule.declarations['z-index'].trim()
+    const n = Number(z)
+    if (Number.isInteger(n) && String(n) === z) {
+      blocks.push(block('sz_css_z_index', { SELECTOR: selector, VALUE: n }))
+      consumed.add('z-index')
+    }
+  }
+  if (rule.declarations['background-image']) {
+    const m = rule.declarations['background-image'].trim().match(/^url\('([^']*)'\)$/)
+    if (m) {
+      blocks.push(block('sz_css_background_image', { SELECTOR: selector, URL: m[1] ?? '' }))
+      consumed.add('background-image')
+    }
+  }
+
   const remaining = Object.entries(rule.declarations).filter(([name]) => !consumed.has(name))
   if (remaining.length > 0) {
     // Declarações sem bloco amigável dedicado viram uma "Regra CSS" genérica
@@ -5461,6 +5543,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
           )
     case 'importStar':
       return block('sz_t3d_import', { NAME: stmt.name }, {}, stmt.__id)
+    case 'importNamed':
+      return block(
+        'sz_t3d_import_named',
+        { NAMES: stmt.names.join(', '), MODULE: stmt.module },
+        {},
+        stmt.__id,
+      )
     case 'callMethod':
       return callWithArgs(
         'sz_js_call_method',
@@ -5583,6 +5672,17 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_canvas_request_frame', { FN: stmt.fn }, {}, stmt.__id)
     case 'mountRenderer':
       return block('sz_t3d_mount_renderer', { R: stmt.renderer }, {}, stmt.__id)
+    case 'loaderLoad': {
+      const url = exprToValueBlock(stmt.url)
+      if (!url) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_load_model',
+        { LOADER: stmt.loaderVar, PARAM: stmt.param },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+        { URL: url },
+      )
+    }
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)

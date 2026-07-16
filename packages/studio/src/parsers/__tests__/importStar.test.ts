@@ -44,8 +44,12 @@ describe('importStar — import * as NS from "mod"', () => {
     )
   })
 
-  it('outras formas de import continuam rawJS (só o namespace-star é dedicado)', () => {
-    expect(collectRaw(parseJS('import { Scene } from "three";')).length).toBe(1)
+  it('import nomeado agora é dedicado (importNamed, Fase 2); default segue rawJS', () => {
+    // `import { Scene } from '…'` virou nó próprio na Fase 2 (loaders de addons).
+    const named = parseJS('import { Scene } from "three";')
+    expect(collectRaw(named).length).toBe(0)
+    expect(named.some((s) => s.type === 'importNamed')).toBe(true)
+    // Import default (`import Foo from 'bar'`) continua como código avançado.
     expect(collectRaw(parseJS('import Foo from "bar";')).length).toBe(1)
   })
 })

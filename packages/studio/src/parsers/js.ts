@@ -281,13 +281,30 @@ function mapStatement(
     case 'FunctionDeclaration':
       return mapFunction(node, source, ctx)
     case 'ImportDeclaration': {
-      // Só `import * as NOME from 'modulo'` vira nó dedicado (o bloco de lib 3D);
-      // named/default imports seguem como código avançado (fora do escopo).
       const specs = node.specifiers ?? []
-      const star = specs.length === 1 && specs[0]?.type === 'ImportNamespaceSpecifier'
-      const name = star ? identifierName(specs[0].local) : null
       const mod = node.source?.type === 'StringLiteral' ? (node.source.value as string) : null
-      if (name && mod) return { type: 'importStar', name, module: mod }
+      if (!mod) return asRaw(source, node)
+      // `import * as NOME from 'modulo'` → importStar (bloco de lib 3D).
+      if (specs.length === 1 && specs[0]?.type === 'ImportNamespaceSpecifier') {
+        const name = identifierName(specs[0].local)
+        if (name) return { type: 'importStar', name, module: mod }
+      }
+      // `import { A, B } from 'modulo'` (SEM alias/default) → importNamed. É o
+      // `import { GLTFLoader } from 'three/addons/…'` da Fase 2. Alias (`X as Y`)
+      // ou default junto seguem como código avançado.
+      if (
+        specs.length > 0 &&
+        specs.every(
+          (s: Node) =>
+            s?.type === 'ImportSpecifier' &&
+            s.imported?.type === 'Identifier' &&
+            s.local?.type === 'Identifier' &&
+            s.imported.name === s.local.name,
+        )
+      ) {
+        const names = specs.map((s: Node) => s.imported.name as string)
+        return { type: 'importNamed', names, module: mod }
+      }
       return asRaw(source, node)
     }
     case 'ReturnStatement': {
@@ -1023,6 +1040,34 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       arg.property?.name === 'domElement'
     ) {
       return { type: 'mountRenderer', renderer: arg.object.name as string }
+    }
+  }
+
+  // Canvas 3D: `loader.load(url, (modelo) => { … });` → loaderLoad (carregar um
+  // recurso async: modelo GLTF, textura, HDR…). Forma exata: 2 args, o 2º um
+  // arrow/função com 1 parâmetro. (GLTFLoader.load com onProgress/onError — 4
+  // args — segue como código avançado.)
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    !expr.callee.computed &&
+    expr.callee.object?.type === 'Identifier' &&
+    expr.callee.property?.name === 'load' &&
+    expr.arguments?.length === 2 &&
+    (expr.arguments[1]?.type === 'ArrowFunctionExpression' ||
+      expr.arguments[1]?.type === 'FunctionExpression')
+  ) {
+    const url = toExpr(expr.arguments[0], ctx)
+    const fn = expr.arguments[1]
+    const params = fn.params ?? []
+    if (isSimpleValue(url) && params.length === 1 && params[0]?.type === 'Identifier') {
+      return {
+        type: 'loaderLoad',
+        loaderVar: expr.callee.object.name as string,
+        url: url as JSExpr,
+        param: params[0].name as string,
+        body: bodyOfFn(fn, source, ctx),
+      }
     }
   }
 
