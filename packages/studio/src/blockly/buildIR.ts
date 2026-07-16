@@ -3434,6 +3434,21 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           color: exprInput(block, 'COLOR', { type: 'color', value: '#ffffff' }),
         },
       }
+    case 'sz_t3d_water':
+      // Macro Água: 1 bloco → plano Water + normal map procedural (gerador expande).
+      return {
+        kind: 'js',
+        value: {
+          type: 'waterSetup',
+          water: f(block, 'WATER') || 'agua',
+          scene: f(block, 'SCENE'),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 2000 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#0a3d5c' }),
+        },
+      }
+    case 'sz_t3d_water_wave':
+      // `agua.material.uniforms.time.value += 1 / 60` — animar as ondas no laço.
+      return { kind: 'js', value: { type: 'waterTime', water: f(block, 'WATER') } }
     case 'sz_js_call_method':
       return {
         kind: 'js',

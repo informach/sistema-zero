@@ -46,6 +46,13 @@ export const COMMON_ADDONS: ReadonlyArray<{
       { name: 'OutputPass', module: 'three/addons/postprocessing/OutputPass.js' },
     ],
   },
+  {
+    group: '🌊 Objetos',
+    items: [
+      { name: 'Water', module: 'three/addons/objects/Water.js' },
+      { name: 'Sky', module: 'three/addons/objects/Sky.js' },
+    ],
+  },
 ]
 
 /** Nome do addon → módulo canônico (o auto-preenchimento do campo MODULE). */

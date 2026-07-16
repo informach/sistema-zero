@@ -6098,6 +6098,17 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         vs,
       )
     }
+    case 'waterSetup': {
+      // Macro Água (forward-only): só chega aqui via block→IR→block.
+      const vs = valueSocketsOf([
+        ['SIZE', stmt.size],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_water', { SCENE: stmt.scene, WATER: stmt.water }, {}, stmt.__id, vs)
+    }
+    case 'waterTime':
+      return block('sz_t3d_water_wave', { WATER: stmt.water }, {}, stmt.__id)
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)

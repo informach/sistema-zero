@@ -568,6 +568,37 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Cria uma nuvem de pontinhos ✨ (estrelas, poeira mágica, fogo, neve) espalhados no espaço — um efeito lindo e barato. Um bloco só monta a "malha de pontos" do three.js (BufferGeometry + PointsMaterial + Points). Quantidade = quantos pontos; tamanho = o tamanho de cada; espalhar = o quão longe eles vão; cor = a cor deles. Depois gire "particulas" no laço pra dar vida.',
   },
+  {
+    // Macro "Água": plano d'água com reflexo (addon Water) + normal map procedural
+    // (sem depender de arquivo externo). Forward-only; o gerador expande a receita.
+    type: 'sz_t3d_water',
+    message0: 'criar água 🌊 na cena %1',
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    message1: 'tamanho %1 · cor %2 · guardar em %3',
+    args1: [
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'WATER', text: 'agua' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um plano d\'água que REFLETE a cena, como um lago ou oceano. Um bloco só monta o efeito Water do three.js (com as ondinhas de normal geradas na hora, sem precisar de imagem). Tamanho = o quão grande é a água; cor = a cor da água. Depois use "fazer a água ondular" no laço pra ela se mexer.',
+  },
+  {
+    // `water.material.uniforms.time.value += 1 / 60` — animar as ondas no laço.
+    type: 'sz_t3d_water_wave',
+    message0: 'fazer a água %1 ondular',
+    args0: [{ type: 'field_name_picker', name: 'WATER', text: 'agua', kind: 'variable' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Use DENTRO do laço de animação pra a água se mexer (as ondas andarem). Vira "agua.material.uniforms.time.value += 1 / 60".',
+  },
 ]
 
 export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[] = [
@@ -623,7 +654,13 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
   {
     name: '✨ Efeitos',
     colour: C,
-    types: ['sz_t3d_bloom_setup', 'sz_t3d_render_effects', 'sz_t3d_particles'],
+    types: [
+      'sz_t3d_bloom_setup',
+      'sz_t3d_render_effects',
+      'sz_t3d_particles',
+      'sz_t3d_water',
+      'sz_t3d_water_wave',
+    ],
   },
 ]
 

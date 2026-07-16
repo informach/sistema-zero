@@ -4102,6 +4102,18 @@ export type JSStatement =
       spread: JSExpr
       color: JSExpr
     })
+  // Canvas 3D: macro de EFEITO água — 1 bloco que cria um plano d'água (addon Water
+  // + normal map procedural), forward-only. `water` = a var; size/color = os botões.
+  | (JSStatementCommon & {
+      type: 'waterSetup'
+      water: string
+      scene: string
+      size: JSExpr
+      color: JSExpr
+    })
+  // Canvas 3D: fazer a água ondular (atualiza o uniform `time` no laço) — companheiro
+  // do waterSetup.
+  | (JSStatementCommon & { type: 'waterTime'; water: string })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -8127,6 +8139,19 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       size: JSExprSchema,
       spread: JSExprSchema,
       color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('waterSetup'),
+      water: irText(),
+      scene: irText(),
+      size: JSExprSchema,
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('waterTime'),
+      water: irText(),
       ...idField,
     }),
     z.object({

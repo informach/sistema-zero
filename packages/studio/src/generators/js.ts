@@ -144,16 +144,22 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
 }
 
 /**
- * Módulos de pós-processamento que o macro Brilho (`bloomSetup`) precisa importar.
- * Espelha os caminhos de `FieldAddonPicker.ADDON_MODULES` (aqui em cópia local para
- * o gerador NÃO depender do blockly). Injetados no topo quando a IR tem um bloom.
+ * Imports de `three/addons/…` que cada MACRO de efeito precisa. Injetados no topo
+ * (deduped por módulo) quando a IR contém aquele nó — a criança arrasta 1 bloco e
+ * os imports vêm sozinhos. Caminhos espelham `FieldAddonPicker.ADDON_MODULES` (cópia
+ * local para o gerador NÃO depender do blockly).
  */
-const BLOOM_IMPORTS: ReadonlyArray<{ name: string; module: string }> = [
-  { name: 'EffectComposer', module: 'three/addons/postprocessing/EffectComposer.js' },
-  { name: 'RenderPass', module: 'three/addons/postprocessing/RenderPass.js' },
-  { name: 'UnrealBloomPass', module: 'three/addons/postprocessing/UnrealBloomPass.js' },
-  { name: 'OutputPass', module: 'three/addons/postprocessing/OutputPass.js' },
-]
+const MACRO_ADDON_IMPORTS: Partial<
+  Record<JSStatement['type'], ReadonlyArray<{ name: string; module: string }>>
+> = {
+  bloomSetup: [
+    { name: 'EffectComposer', module: 'three/addons/postprocessing/EffectComposer.js' },
+    { name: 'RenderPass', module: 'three/addons/postprocessing/RenderPass.js' },
+    { name: 'UnrealBloomPass', module: 'three/addons/postprocessing/UnrealBloomPass.js' },
+    { name: 'OutputPass', module: 'three/addons/postprocessing/OutputPass.js' },
+  ],
+  waterSetup: [{ name: 'Water', module: 'three/addons/objects/Water.js' }],
+}
 
 /** Anda a árvore de statements (corpos aninhados inclusos) procurando um tipo. */
 function treeHasStatementType(statements: JSStatement[], type: JSStatement['type']): boolean {
@@ -224,18 +230,21 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // JS). Os blocos de import são top-level (no frame de Comportamento); movê-los à
   // frente garante o código válido mesmo se a criança os arrastar para baixo.
   const isImport = (s: JSStatement): boolean => s.type === 'importStar' || s.type === 'importNamed'
-  // Macro Brilho (bloom): traz sozinho os imports do pós-processamento (three/addons/
-  // postprocessing/…), deduplicados por módulo contra o que a criança já importou.
+  // Macros de efeito (Brilho/Água): trazem sozinhos os imports de `three/addons/…`,
+  // deduplicados por módulo contra o que a criança já importou.
   const existingModules = new Set(
     hoistedLoops.filter((s) => s.type === 'importNamed').map((s) => s.module),
   )
-  const injectedImports: JSStatement[] = treeHasStatementType(hoistedLoops, 'bloomSetup')
-    ? BLOOM_IMPORTS.filter((i) => !existingModules.has(i.module)).map((i) => ({
-        type: 'importNamed',
-        names: [i.name],
-        module: i.module,
-      }))
-    : []
+  const injectedImports: JSStatement[] = []
+  const seenInjected = new Set<string>()
+  for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
+    if (!needed || !treeHasStatementType(hoistedLoops, macroType as JSStatement['type'])) continue
+    for (const imp of needed) {
+      if (existingModules.has(imp.module) || seenInjected.has(imp.module)) continue
+      seenInjected.add(imp.module)
+      injectedImports.push({ type: 'importNamed', names: [imp.name], module: imp.module })
+    }
+  }
   const imports = [...hoistedLoops.filter(isImport), ...injectedImports]
   const statements = imports.length
     ? [...imports, ...hoistedLoops.filter((s) => !isImport(s))]
@@ -2871,6 +2880,36 @@ ${pad}});`
       ]
       return lines.map((l) => `${pad}${l}`).join('\n')
     }
+    case 'waterSetup': {
+      // Macro Água: normal map PROCEDURAL (DataTexture 16×16, sem arquivo externo) +
+      // o addon Water (grafia atual). O import de Water entra sozinho (hoist).
+      const w = identifiers.get(stmt.water)
+      const sc = identifiers.get(stmt.scene)
+      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const data = `${w}Data`
+      const nrm = `${w}Normals`
+      const lines = [
+        `const ${data} = new Uint8Array(1024);`,
+        `for (let i = 0; i < 256; i++) {`,
+        `  ${data}[i * 4] = 128 + Math.sin(i * 0.7) * 40;`,
+        `  ${data}[i * 4 + 1] = 128 + Math.cos(i * 1.3) * 40;`,
+        `  ${data}[i * 4 + 2] = 255;`,
+        `  ${data}[i * 4 + 3] = 255;`,
+        `}`,
+        `const ${nrm} = new THREE.DataTexture(${data}, 16, 16);`,
+        `${nrm}.wrapS = THREE.RepeatWrapping;`,
+        `${nrm}.wrapT = THREE.RepeatWrapping;`,
+        `${nrm}.needsUpdate = true;`,
+        `const ${w} = new Water(new THREE.PlaneGeometry(${size}, ${size}), { textureWidth: 512, textureHeight: 512, waterNormals: ${nrm}, sunDirection: new THREE.Vector3(0.7, 0.7, 0), sunColor: 16777215, waterColor: ${color}, distortionScale: 3.7 });`,
+        `${w}.rotation.x = -Math.PI / 2;`,
+        `${sc}.add(${w});`,
+      ]
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'waterTime':
+      // Animar as ondas: avança o relógio interno do shader da água a cada quadro.
+      return `${pad}${identifiers.get(stmt.water)}.material.uniforms.time.value += 1 / 60;`
     case 'return':
       return stmt.value === undefined
         ? `${pad}return;`
@@ -5721,6 +5760,15 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.size, names)
       collectExprIdentifiers(stmt.spread, names)
       collectExprIdentifiers(stmt.color, names)
+      return
+    case 'waterSetup':
+      names.add(stmt.water)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'waterTime':
+      names.add(stmt.water)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)

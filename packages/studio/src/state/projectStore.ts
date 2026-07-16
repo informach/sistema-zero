@@ -574,6 +574,8 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_t3d_bloom_setup',
   'sz_t3d_render_effects',
   'sz_t3d_particles',
+  'sz_t3d_water',
+  'sz_t3d_water_wave',
   'sz_val_array_filter',
   'sz_val_object',
   'sz_val_object_op',

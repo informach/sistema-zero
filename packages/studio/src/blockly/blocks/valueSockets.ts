@@ -80,6 +80,8 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_bloom_setup: { STRENGTH: 1.5, RADIUS: 0.4, THRESHOLD: 0.85 },
   // Macro Partículas: quantidade de pontos, tamanho de cada e o quão longe espalham.
   sz_t3d_particles: { COUNT: 500, SIZE: 0.1, SPREAD: 20 },
+  // Macro Água: o tamanho do plano d'água.
+  sz_t3d_water: { SIZE: 2000 },
 }
 
 /**
@@ -100,6 +102,8 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   sz_t3d_set_fog: { COLOR: '#aabbcc' },
   // Macro Partículas: cor dos pontinhos (branco = estrelas/poeira).
   sz_t3d_particles: { COLOR: '#ffffff' },
+  // Macro Água: a cor da água (azul-esverdeado profundo).
+  sz_t3d_water: { COLOR: '#0a3d5c' },
 }
 
 /**
