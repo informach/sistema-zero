@@ -752,6 +752,40 @@ export const world3DBlocks = [
 
   // ---- 🎥 Câmera & efeitos ----
   {
+    type: 'sz_w3d_camera_mode',
+    message0: 'Câmera %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'MODE',
+        options: [
+          ['🎯 seguir o carrinho', 'seguir'],
+          ['🚁 de cima', 'topo'],
+          ['🎬 cinema (gira)', 'cinema'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escolhe o jeito da câmera: seguir por trás (o normal), de cima (vista de mapa) ou cinema (gira ao redor do carrinho, bonito para mostrar o mundo).',
+  },
+  {
+    type: 'sz_w3d_camera_shake',
+    message0: 'Tremer a câmera com força %1 por %2 s',
+    args0: [
+      { type: 'input_value', name: 'FORCE', check: 'JSValue' },
+      { type: 'input_value', name: 'SECS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Balança a câmera por alguns instantes — o drama de uma batida, uma explosão, um trovão. Force 0.5 é um tremor leve; 2 é um terremoto.',
+  },
+  {
     type: 'sz_w3d_effects',
     message0: 'Efeitos de cinema %1 (brilho %2 )',
     args0: [
@@ -989,7 +1023,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎥 Câmera & efeitos',
     colour: C,
-    types: ['sz_w3d_effects'],
+    types: ['sz_w3d_camera_mode', 'sz_w3d_camera_shake', 'sz_w3d_effects'],
   },
   {
     name: '🔊 Sons',
@@ -1065,6 +1099,7 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_race_checkpoint: { X: numShadow(20), Z: numShadow(20), DEG: numShadow(0) },
   sz_w3d_bowling_create: { X: numShadow(0), Z: numShadow(25), DEG: numShadow(0) },
   sz_w3d_stack: { N: numShadow(5), X: numShadow(15), Z: numShadow(0) },
+  sz_w3d_camera_shake: { FORCE: numShadow(0.5), SECS: numShadow(0.3) },
 }
 
 /**

@@ -52,6 +52,8 @@ interface Api {
   pinsDown: () => number
   stack: (n?: unknown, thing?: unknown, x?: unknown, z?: unknown) => unknown
   knockedCount: () => number
+  cameraMode: (mode?: unknown) => unknown
+  cameraShake: (force?: unknown, secs?: unknown) => unknown
   scatter: (n?: unknown, thing?: unknown) => unknown
   scatterModel: (n?: unknown, name?: unknown, s?: unknown) => unknown
   placeThing: (thing?: unknown, x?: unknown, z?: unknown, s?: unknown) => unknown
@@ -127,6 +129,8 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'pinsDown',
       'stack',
       'knockedCount',
+      'cameraMode',
+      'cameraShake',
       'scatter',
       'scatterModel',
       'placeThing',
@@ -221,6 +225,9 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(() => api.grass('oceano')).not.toThrow() // cai para media
     expect(() => api.setEffects('desligados', 2)).not.toThrow()
     expect(() => api.setEffects('ligados', 99)).not.toThrow() // clampa em 3
+    expect(() => api.cameraMode('topo')).not.toThrow()
+    expect(() => api.cameraMode('drone')).not.toThrow() // avisa e ignora
+    expect(() => api.cameraShake(1, 0.5)).not.toThrow()
   })
 
   it('água/trilha/sons/hud: config pura antes do start, sem lançar', () => {

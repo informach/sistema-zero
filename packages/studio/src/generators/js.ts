@@ -2568,6 +2568,10 @@ ${pad}});`
       )
       return `${pad}SZWorld3D.onCrash(function () {\n${body}\n${pad}});`
     }
+    case 'w3d:cameraMode':
+      return `${pad}SZWorld3D.cameraMode(${JSON.stringify(stmt.mode)});`
+    case 'w3d:cameraShake':
+      return `${pad}SZWorld3D.cameraShake(${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))});`
     case 'w3d:effects':
       return `${pad}SZWorld3D.setEffects(${JSON.stringify(stmt.on ? 'ligados' : 'desligados')}, ${compileExpr(valueToExpr(stmt.strength), 0, identifiers, recAt(base))});`
     case 'w3d:dayNight':
@@ -5488,6 +5492,12 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'w3d:effects':
       collectExprIdentifiers(valueToExpr(stmt.strength), names)
+      return
+    case 'w3d:cameraMode':
+      return
+    case 'w3d:cameraShake':
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      collectExprIdentifiers(valueToExpr(stmt.secs), names)
       return
     case 'w3d:dayNight':
       collectExprIdentifiers(valueToExpr(stmt.minutes), names)

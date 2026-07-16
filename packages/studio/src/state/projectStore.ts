@@ -1355,6 +1355,8 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_w3d_pins_down',
     'sz_w3d_stack',
     'sz_w3d_knocked_count',
+    'sz_w3d_camera_mode',
+    'sz_w3d_camera_shake',
     'sz_w3d_car_pos',
     'sz_w3d_car_speed',
     'sz_w3d_grass',

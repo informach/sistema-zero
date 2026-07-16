@@ -5802,6 +5802,15 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'w3d:onCrash':
       return block('sz_w3d_on_crash', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'w3d:cameraMode':
+      return block('sz_w3d_camera_mode', { MODE: stmt.mode }, {}, stmt.__id)
+    case 'w3d:cameraShake': {
+      const force = exprToValueBlock(valueToExpr(stmt.force))
+      const secs = exprToValueBlock(valueToExpr(stmt.secs))
+      return force === null || secs === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_camera_shake', {}, {}, stmt.__id, { FORCE: force, SECS: secs })
+    }
     case 'w3d:effects': {
       const strength = exprToValueBlock(valueToExpr(stmt.strength))
       return strength === null

@@ -138,6 +138,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   var _look = null;
   var _autoAngle = 0;
   var camSnap = true;           // 1º quadro / teleporte: cola sem lerp
+  var camMode = 'seguir';       // 'seguir' | 'topo' | 'cinema'
+  var _shakeT = 0;              // segundos restantes de tremor
+  var _shakeAmp = 0;            // força do tremor (m)
   // Natureza: RECEITAS (os blocos só anotam; o start constrói — ordem livre).
   var natureRecipes = [];       // { kind, thing/name, n, s, x, z, deg, seed, model, built }
   var exclusions = [];          // { x, z, r } — "Deixar limpo" (o centro já é implícito)
@@ -2498,6 +2501,60 @@ export const world3DRuntime = `import * as THREE from 'three';
     });
     window.addEventListener('contextmenu', function () { keys = {}; });
     window.addEventListener('blur', function () { keys = {}; });
+    ensureJoystick();
+  }
+
+  /** Joystick virtual (só em toque): alavanca esquerda = dirigir; botões pular/E. */
+  function ensureJoystick() {
+    try {
+      var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      if (!coarse || !frameEl) return;
+    } catch (e) { return; }
+    var stick = document.createElement('div');
+    stick.setAttribute('style', 'position:absolute;left:20px;bottom:20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.35);z-index:8;touch-action:none');
+    var nub = document.createElement('div');
+    nub.setAttribute('style', 'position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.55)');
+    stick.appendChild(nub);
+    frameEl.appendChild(stick);
+    var active = false;
+    function setDir(dx, dy) {
+      keys['w'] = dy < -0.3;
+      keys['s'] = dy > 0.3;
+      keys['a'] = dx < -0.3;
+      keys['d'] = dx > 0.3;
+      nub.style.left = (35 + dx * 35) + 'px';
+      nub.style.top = (35 + dy * 35) + 'px';
+    }
+    function clearDir() {
+      keys['w'] = keys['s'] = keys['a'] = keys['d'] = false;
+      nub.style.left = '35px';
+      nub.style.top = '35px';
+    }
+    stick.addEventListener('pointerdown', function (e) { active = true; hideSplash(); resumeAudio(); try { stick.setPointerCapture(e.pointerId); } catch (err) {} });
+    stick.addEventListener('pointermove', function (e) {
+      if (!active) return;
+      var rect = stick.getBoundingClientRect();
+      var dx = (e.clientX - rect.left - 60) / 45;
+      var dy = (e.clientY - rect.top - 60) / 45;
+      var len = Math.sqrt(dx * dx + dy * dy);
+      if (len > 1) { dx /= len; dy /= len; }
+      setDir(dx, dy);
+    });
+    stick.addEventListener('pointerup', function () { active = false; clearDir(); });
+    stick.addEventListener('pointercancel', function () { active = false; clearDir(); });
+    // Botões pular (espaço) e E.
+    var jump = document.createElement('button');
+    jump.textContent = '⤒';
+    jump.setAttribute('style', 'position:absolute;right:24px;bottom:80px;width:64px;height:64px;border-radius:50%;border:0;background:rgba(16,185,129,.7);color:#fff;font-size:26px;z-index:8;touch-action:none');
+    jump.addEventListener('pointerdown', function () { keys[' '] = true; justPressed[' '] = true; });
+    jump.addEventListener('pointerup', function () { keys[' '] = false; });
+    frameEl.appendChild(jump);
+    var eb = document.createElement('button');
+    eb.textContent = 'E';
+    eb.setAttribute('style', 'position:absolute;right:96px;bottom:28px;width:56px;height:56px;border-radius:50%;border:0;background:rgba(34,211,238,.75);color:#04252b;font-weight:800;font-size:20px;z-index:8;touch-action:none');
+    eb.addEventListener('pointerdown', function () { keys['e'] = true; justPressed['e'] = true; });
+    eb.addEventListener('pointerup', function () { keys['e'] = false; });
+    frameEl.appendChild(eb);
   }
 
   // ---- Tela (stage + letterbox + splash "clique para começar") ----
@@ -3012,13 +3069,29 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   function updateCamera(dt) {
     if (!camera) return;
-    if (carState) {
+    if (carState && camMode !== 'cinema-sem-carro') {
       var s = carState;
-      var dist = 7.5 + Math.abs(s.speed) * 0.12;
-      var h = 3.1 + Math.abs(s.speed) * 0.03;
-      var bx = s.x - Math.sin(s.yaw) * dist;
-      var bz = s.z - Math.cos(s.yaw) * dist;
-      var by = s.y + h;
+      var bx, by, bz;
+      if (camMode === 'topo') {
+        // De cima: acompanha o carro olhando para baixo (um pouco atrás).
+        bx = s.x;
+        bz = s.z + 0.01;
+        by = s.y + 22 + Math.abs(s.speed) * 0.2;
+      } else if (camMode === 'cinema') {
+        // Cinema: órbita lenta ao redor do carro (mostra o mundo).
+        _autoAngle += dt * 0.25;
+        var cr = 12 + Math.abs(s.speed) * 0.15;
+        bx = s.x + Math.cos(_autoAngle) * cr;
+        bz = s.z + Math.sin(_autoAngle) * cr;
+        by = s.y + 5;
+      } else {
+        // Seguir (padrão): atrás do carro, com zoom por velocidade.
+        var dist = 7.5 + Math.abs(s.speed) * 0.12;
+        var h = 3.1 + Math.abs(s.speed) * 0.03;
+        bx = s.x - Math.sin(s.yaw) * dist;
+        bz = s.z - Math.cos(s.yaw) * dist;
+        by = s.y + h;
+      }
       // A câmera nunca entra no morro: respeita o chão dela + 1.2 m.
       var minY = heightAt(bx, bz) + 1.2;
       if (by < minY) by = minY;
@@ -3027,7 +3100,7 @@ export const world3DRuntime = `import * as THREE from 'three';
         _look.set(s.x, s.y + 1.1, s.z);
         camSnap = false;
       } else {
-        var k = damp(4.5, dt);
+        var k = damp(camMode === 'topo' ? 6 : 4.5, dt);
         camera.position.x += (bx - camera.position.x) * k;
         camera.position.y += (by - camera.position.y) * k;
         camera.position.z += (bz - camera.position.z) * k;
@@ -3035,6 +3108,14 @@ export const world3DRuntime = `import * as THREE from 'three';
         _look.x += (s.x - _look.x) * k2;
         _look.y += (s.y + 1.1 - _look.y) * k2;
         _look.z += (s.z - _look.z) * k2;
+      }
+      // Tremor: desloca a posição por um pouco de ruído que decai.
+      if (_shakeT > 0) {
+        _shakeT -= dt;
+        var amp = _shakeAmp * Math.max(0, _shakeT);
+        camera.position.x += (Math.random() * 2 - 1) * amp;
+        camera.position.y += (Math.random() * 2 - 1) * amp;
+        camera.position.z += (Math.random() * 2 - 1) * amp;
       }
       camera.lookAt(_look);
     } else {
@@ -3642,6 +3723,21 @@ export const world3DRuntime = `import * as THREE from 'three';
     }),
     knockedCount: guard('knockedCount', function () {
       return knockedCount();
+    }),
+
+    // 🎥 Câmera & efeitos
+    cameraMode: guard('cameraMode', function (mode) {
+      var m = text(mode, 'seguir');
+      if (m !== 'seguir' && m !== 'topo' && m !== 'cinema') {
+        warn('não conheço a câmera "' + m + '" — tem: seguir, topo, cinema');
+        return;
+      }
+      camMode = m;
+      camSnap = true;
+    }),
+    cameraShake: guard('cameraShake', function (force, secs) {
+      _shakeAmp = clamp(num(force, 0.5), 0, 5);
+      _shakeT = Math.max(_shakeT, clamp(num(secs, 0.3), 0.05, 5));
     }),
 
     onUpdate: guard('onUpdate', function (fn) {

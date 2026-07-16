@@ -3965,6 +3965,12 @@ export type JSStatement =
       r: number | JSExpr
     })
   | (JSStatementCommon & { type: 'w3d:onCrash'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
+  | (JSStatementCommon & {
+      type: 'w3d:cameraShake'
+      force: number | JSExpr
+      secs: number | JSExpr
+    })
   | (JSStatementCommon & { type: 'w3d:effects'; on: boolean; strength: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:dayNight'; minutes: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:setTime'; time: string })
@@ -7888,6 +7894,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('w3d:onCrash'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:cameraShake'),
+      force: z.union([JSExprSchema, z.number()]),
+      secs: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({
       type: z.literal('w3d:effects'),
       on: z.boolean(),
@@ -8814,6 +8827,8 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:bowlingReset',
   'w3d:bowlingOnStrike',
   'w3d:stack',
+  'w3d:cameraMode',
+  'w3d:cameraShake',
   'w3d:grass',
   'w3d:scatter',
   'w3d:scatterModel',

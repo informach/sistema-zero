@@ -6435,6 +6435,19 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ? { type: 'w3d:effects', on: on === 'ligados', strength }
         : null
     }
+    case 'cameraMode': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const mode = args[0].value as string
+      if (mode !== 'seguir' && mode !== 'topo' && mode !== 'cinema') return null
+      return { type: 'w3d:cameraMode', mode }
+    }
+    case 'cameraShake': {
+      const force = toExpr(args[0], ctx)
+      const secs = toExpr(args[1], ctx)
+      return isSimpleValue(force) && isSimpleValue(secs)
+        ? { type: 'w3d:cameraShake', force, secs }
+        : null
+    }
     case 'dayNight': {
       const minutes = toExpr(args[0], ctx)
       return isSimpleValue(minutes) ? { type: 'w3d:dayNight', minutes } : null

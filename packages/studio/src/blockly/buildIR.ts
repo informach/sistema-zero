@@ -8791,6 +8791,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           z: exprInput(block, 'Z', { type: 'num', value: 0 }),
         },
       }
+    case 'sz_w3d_camera_mode':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:cameraMode', mode: f(block, 'MODE') || 'seguir' } }
+    case 'sz_w3d_camera_shake':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:cameraShake',
+          force: exprInput(block, 'FORCE', { type: 'num', value: 0.5 }),
+          secs: exprInput(block, 'SECS', { type: 'num', value: 0.3 }),
+        },
+      }
     case 'sz_w3d_grass':
       seen.add('world-3d')
       return {
