@@ -3449,6 +3449,23 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_t3d_water_wave':
       // `agua.material.uniforms.time.value += 1 / 60` — animar as ondas no laço.
       return { kind: 'js', value: { type: 'waterTime', water: f(block, 'WATER') } }
+    case 'sz_t3d_grass':
+      // Macro Grama: 1 bloco → campo instanciado + shader de vento (gerador expande).
+      return {
+        kind: 'js',
+        value: {
+          type: 'grassSetup',
+          grass: f(block, 'GRASS') || 'grama',
+          scene: f(block, 'SCENE'),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 5000 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 1 }),
+          spread: exprInput(block, 'SPREAD', { type: 'num', value: 50 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#4a7c2a' }),
+        },
+      }
+    case 'sz_t3d_grass_wave':
+      // `grama.material.uniforms.time.value += 0.02` — animar o vento no laço.
+      return { kind: 'js', value: { type: 'grassTime', grass: f(block, 'GRASS') } }
     case 'sz_js_call_method':
       return {
         kind: 'js',

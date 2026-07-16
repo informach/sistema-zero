@@ -142,6 +142,8 @@ const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   sz_t3d_particles: ['PARTICLES'],
   // Macro Água: declara a var do plano d'água (pra ondular no laço).
   sz_t3d_water: ['WATER'],
+  // Macro Grama: declara a var do campo de grama (pra balançar no laço).
+  sz_t3d_grass: ['GRASS'],
   // (Laços/tentar introduzem nomes LOCAIS — ver VARIABLE_LOOP_BINDERS abaixo.)
   // Canvas: teclado, imagem e gradiente guardam numa variável.
   sz_canvas_keyboard: ['NAME'],

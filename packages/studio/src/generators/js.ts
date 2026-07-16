@@ -161,6 +161,30 @@ const MACRO_ADDON_IMPORTS: Partial<
   waterSetup: [{ name: 'Water', module: 'three/addons/objects/Water.js' }],
 }
 
+/**
+ * Shaders GLSL do macro Grama (`grassSetup`) — o vento vive AQUI, escondido da
+ * criança (decisão de design: efeito pronto, GLSL invisível). O vertex balança cada
+ * folha pelo topo (uv.y) com fase por instância; o fragment escurece a base.
+ */
+const GRASS_VERTEX_SHADER = [
+  'uniform float time;',
+  'varying float vHeight;',
+  'void main() {',
+  '  vHeight = uv.y;',
+  '  vec3 transformed = position;',
+  '  float phase = instanceMatrix[3][0] + instanceMatrix[3][2];',
+  '  transformed.x += sin(time * 2.0 + phase) * 0.25 * uv.y;',
+  '  gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(transformed, 1.0);',
+  '}',
+].join('\n')
+const GRASS_FRAGMENT_SHADER = [
+  'uniform vec3 grassColor;',
+  'varying float vHeight;',
+  'void main() {',
+  '  gl_FragColor = vec4(mix(grassColor * 0.4, grassColor, vHeight), 1.0);',
+  '}',
+].join('\n')
+
 /** Anda a árvore de statements (corpos aninhados inclusos) procurando um tipo. */
 function treeHasStatementType(statements: JSStatement[], type: JSStatement['type']): boolean {
   for (const s of statements) {
@@ -2910,6 +2934,45 @@ ${pad}});`
     case 'waterTime':
       // Animar as ondas: avança o relógio interno do shader da água a cada quadro.
       return `${pad}${identifiers.get(stmt.water)}.material.uniforms.time.value += 1 / 60;`
+    case 'grassSetup': {
+      // Macro Grama: folhas INSTANCIADAS (1 draw call) + ShaderMaterial com o vento
+      // (GLSL nas constantes acima). Posições/giro/escala aleatórios por folha.
+      const g = identifiers.get(stmt.grass)
+      const sc = identifiers.get(stmt.scene)
+      const count = compileExpr(stmt.count, 0, identifiers, recAt(base))
+      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const spread = compileExpr(stmt.spread, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const blade = `${g}Blade`
+      const mat = `${g}Mat`
+      const dummy = `${g}Dummy`
+      const bt = '`'
+      const lines = [
+        `const ${blade} = new THREE.PlaneGeometry(0.08, ${size}, 1, 4);`,
+        `${blade}.translate(0, ${size} / 2, 0);`,
+        `const ${mat} = new THREE.ShaderMaterial({`,
+        `  uniforms: { time: { value: 0 }, grassColor: { value: new THREE.Color(${color}) } },`,
+        `  side: THREE.DoubleSide,`,
+        `  vertexShader: ${bt}\n${GRASS_VERTEX_SHADER}\n${bt},`,
+        `  fragmentShader: ${bt}\n${GRASS_FRAGMENT_SHADER}\n${bt},`,
+        `});`,
+        `const ${g} = new THREE.InstancedMesh(${blade}, ${mat}, ${count});`,
+        `const ${dummy} = new THREE.Object3D();`,
+        `for (let i = 0; i < ${count}; i++) {`,
+        `  ${dummy}.position.set((Math.random() - 0.5) * ${spread}, 0, (Math.random() - 0.5) * ${spread});`,
+        `  ${dummy}.rotation.y = Math.random() * 3.141592653589793;`,
+        `  ${dummy}.scale.setScalar(0.7 + Math.random() * 0.6);`,
+        `  ${dummy}.updateMatrix();`,
+        `  ${g}.setMatrixAt(i, ${dummy}.matrix);`,
+        `}`,
+        `${g}.instanceMatrix.needsUpdate = true;`,
+        `${sc}.add(${g});`,
+      ]
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'grassTime':
+      // Animar o vento: avança o relógio do shader da grama a cada quadro.
+      return `${pad}${identifiers.get(stmt.grass)}.material.uniforms.time.value += 0.02;`
     case 'return':
       return stmt.value === undefined
         ? `${pad}return;`
@@ -5769,6 +5832,17 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'waterTime':
       names.add(stmt.water)
+      return
+    case 'grassSetup':
+      names.add(stmt.grass)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.count, names)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.spread, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'grassTime':
+      names.add(stmt.grass)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)

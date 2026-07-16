@@ -4114,6 +4114,21 @@ export type JSStatement =
   // Canvas 3D: fazer a água ondular (atualiza o uniform `time` no laço) — companheiro
   // do waterSetup.
   | (JSStatementCommon & { type: 'waterTime'; water: string })
+  // Canvas 3D: macro de EFEITO grama — 1 bloco que cria um campo de grama INSTANCIADA
+  // com shader de vento (GLSL escondido), forward-only. `grass` = a var; count/size/
+  // spread/color = os botões.
+  | (JSStatementCommon & {
+      type: 'grassSetup'
+      grass: string
+      scene: string
+      count: JSExpr
+      size: JSExpr
+      spread: JSExpr
+      color: JSExpr
+    })
+  // Canvas 3D: fazer a grama balançar (avança o uniform `time` no laço) — companheiro
+  // do grassSetup.
+  | (JSStatementCommon & { type: 'grassTime'; grass: string })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -8152,6 +8167,21 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('waterTime'),
       water: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('grassSetup'),
+      grass: irText(),
+      scene: irText(),
+      count: JSExprSchema,
+      size: JSExprSchema,
+      spread: JSExprSchema,
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('grassTime'),
+      grass: irText(),
       ...idField,
     }),
     z.object({

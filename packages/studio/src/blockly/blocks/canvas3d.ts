@@ -599,6 +599,42 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Use DENTRO do laço de animação pra a água se mexer (as ondas andarem). Vira "agua.material.uniforms.time.value += 1 / 60".',
   },
+  {
+    // Macro "Grama": campo de grama INSTANCIADA (milhares de folhas num desenho) com
+    // shader de vento (GLSL escondido). Forward-only; o gerador expande a receita.
+    type: 'sz_t3d_grass',
+    message0: 'criar grama 🌿 na cena %1',
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    message1: 'folhas %1 · altura %2',
+    args1: [
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    message2: 'espalhar %1 · cor %2 · guardar em %3',
+    args2: [
+      { type: 'input_value', name: 'SPREAD', check: 'JSValue' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'GRASS', text: 'grama' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um campo de grama 🌿 com MILHARES de folhinhas — e todas custam UM só desenho (o truque do InstancedMesh) + um shader de vento que faz elas balançarem. Folhas = quantas; altura = o tamanho de cada; espalhar = o tamanho do campo; cor = o verde da grama. Depois use "fazer a grama balançar" no laço.',
+  },
+  {
+    // `grama.material.uniforms.time.value += 0.02` — animar o vento no laço.
+    type: 'sz_t3d_grass_wave',
+    message0: 'fazer a grama %1 balançar',
+    args0: [{ type: 'field_name_picker', name: 'GRASS', text: 'grama', kind: 'variable' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Use DENTRO do laço de animação pra o vento soprar (a grama balançar). Vira "grama.material.uniforms.time.value += 0.02".',
+  },
 ]
 
 export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[] = [
@@ -660,6 +696,8 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
       'sz_t3d_particles',
       'sz_t3d_water',
       'sz_t3d_water_wave',
+      'sz_t3d_grass',
+      'sz_t3d_grass_wave',
     ],
   },
 ]

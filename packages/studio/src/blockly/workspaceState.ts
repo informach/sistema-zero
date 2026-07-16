@@ -6109,6 +6109,19 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'waterTime':
       return block('sz_t3d_water_wave', { WATER: stmt.water }, {}, stmt.__id)
+    case 'grassSetup': {
+      // Macro Grama (forward-only): só chega aqui via block→IR→block.
+      const vs = valueSocketsOf([
+        ['COUNT', stmt.count],
+        ['SIZE', stmt.size],
+        ['SPREAD', stmt.spread],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_grass', { SCENE: stmt.scene, GRASS: stmt.grass }, {}, stmt.__id, vs)
+    }
+    case 'grassTime':
+      return block('sz_t3d_grass_wave', { GRASS: stmt.grass }, {}, stmt.__id)
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)
