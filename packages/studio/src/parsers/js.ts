@@ -10108,6 +10108,11 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3k:stateOf':
     case 'g3k:stateIs':
     case 'g3k:gameState':
+    case 'w3d:worldSize':
+    case 'w3d:carPos':
+    case 'w3d:carSpeed':
+    case 'w3d:keyDown':
+    case 'w3d:keyPressed':
     case 'inputKeyPressed':
     case 'inputPointer':
     case 'isFullscreen':
@@ -10124,6 +10129,11 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
       return typeof expr.n === 'number' || isSimpleValue(expr.n)
     case 'g3k:touches':
       return typeof expr.dist === 'number' || isSimpleValue(expr.dist)
+    case 'w3d:groundHeight':
+      return (
+        (typeof expr.x === 'number' || isSimpleValue(expr.x)) &&
+        (typeof expr.z === 'number' || isSimpleValue(expr.z))
+      )
     case 'concat':
     case 'concatArrays':
       return expr.parts.every(isSimpleValue)
