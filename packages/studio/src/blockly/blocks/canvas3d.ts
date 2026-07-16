@@ -544,6 +544,30 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'No lugar de "desenhar a cena", use este DENTRO do laço de animação quando ligou um efeito (Brilho): desenha a cena passando pela esteira de efeitos. Vira "composer.render()".',
   },
+  {
+    // Macro "Partículas": cria um sistema de Points (BufferGeometry aleatória +
+    // PointsMaterial). Forward-only; o gerador expande a receita.
+    type: 'sz_t3d_particles',
+    message0: 'criar partículas ✨ na cena %1',
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    message1: 'quantidade %1 · tamanho %2',
+    args1: [
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    message2: 'espalhar %1 · cor %2 · guardar em %3',
+    args2: [
+      { type: 'input_value', name: 'SPREAD', check: 'JSValue' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'PARTICLES', text: 'particulas' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma nuvem de pontinhos ✨ (estrelas, poeira mágica, fogo, neve) espalhados no espaço — um efeito lindo e barato. Um bloco só monta a "malha de pontos" do three.js (BufferGeometry + PointsMaterial + Points). Quantidade = quantos pontos; tamanho = o tamanho de cada; espalhar = o quão longe eles vão; cor = a cor deles. Depois gire "particulas" no laço pra dar vida.',
+  },
 ]
 
 export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[] = [
@@ -599,7 +623,7 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
   {
     name: '✨ Efeitos',
     colour: C,
-    types: ['sz_t3d_bloom_setup', 'sz_t3d_render_effects'],
+    types: ['sz_t3d_bloom_setup', 'sz_t3d_render_effects', 'sz_t3d_particles'],
   },
 ]
 

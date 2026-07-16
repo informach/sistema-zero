@@ -2846,6 +2846,31 @@ ${pad}});`
       ]
       return lines.map((l) => `${pad}${l}`).join('\n')
     }
+    case 'particlesSetup': {
+      // Macro Partículas: expande um sistema de Points com posições aleatórias
+      // (grafia atual: BufferGeometry + Float32BufferAttribute + PointsMaterial).
+      const p = identifiers.get(stmt.particles)
+      const sc = identifiers.get(stmt.scene)
+      const count = compileExpr(stmt.count, 0, identifiers, recAt(base))
+      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const spread = compileExpr(stmt.spread, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const geo = `${p}Geo`
+      const pos = `${p}Pos`
+      const lines = [
+        `const ${pos} = [];`,
+        `for (let i = 0; i < ${count}; i++) {`,
+        `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
+        `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
+        `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
+        `}`,
+        `const ${geo} = new THREE.BufferGeometry();`,
+        `${geo}.setAttribute("position", new THREE.Float32BufferAttribute(${pos}, 3));`,
+        `const ${p} = new THREE.Points(${geo}, new THREE.PointsMaterial({ color: ${color}, size: ${size}, sizeAttenuation: true }));`,
+        `${sc}.add(${p});`,
+      ]
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
     case 'return':
       return stmt.value === undefined
         ? `${pad}return;`
@@ -5688,6 +5713,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.strength, names)
       collectExprIdentifiers(stmt.radius, names)
       collectExprIdentifiers(stmt.threshold, names)
+      return
+    case 'particlesSetup':
+      names.add(stmt.particles)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.count, names)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.spread, names)
+      collectExprIdentifiers(stmt.color, names)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)

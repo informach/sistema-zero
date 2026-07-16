@@ -6080,6 +6080,24 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         vs,
       )
     }
+    case 'particlesSetup': {
+      // Macro Partículas (forward-only): só chega aqui via block→IR→block. Do CÓDIGO,
+      // vira os blocos primitivos (BufferGeometry/Points/laço).
+      const vs = valueSocketsOf([
+        ['COUNT', stmt.count],
+        ['SIZE', stmt.size],
+        ['SPREAD', stmt.spread],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_particles',
+        { SCENE: stmt.scene, PARTICLES: stmt.particles },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)

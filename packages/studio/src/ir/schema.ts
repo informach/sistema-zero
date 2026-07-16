@@ -4090,6 +4090,18 @@ export type JSStatement =
       radius: JSExpr
       threshold: JSExpr
     })
+  // Canvas 3D: macro de EFEITO partículas — 1 bloco que cria um sistema de pontos
+  // (BufferGeometry aleatória + PointsMaterial + Points), forward-only. `particles`
+  // = a var do Points; count/size/spread/color = os botões (sockets).
+  | (JSStatementCommon & {
+      type: 'particlesSetup'
+      particles: string
+      scene: string
+      count: JSExpr
+      size: JSExpr
+      spread: JSExpr
+      color: JSExpr
+    })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -8105,6 +8117,16 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       strength: JSExprSchema,
       radius: JSExprSchema,
       threshold: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('particlesSetup'),
+      particles: irText(),
+      scene: irText(),
+      count: JSExprSchema,
+      size: JSExprSchema,
+      spread: JSExprSchema,
+      color: JSExprSchema,
       ...idField,
     }),
     z.object({

@@ -138,6 +138,8 @@ const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   sz_t3d_new_var: ['VARNAME'],
   // Macro Brilho: declara a var do composer (o "desenhar com efeitos" a consome).
   sz_t3d_bloom_setup: ['COMPOSER'],
+  // Macro Partículas: declara a var do sistema de pontos (pra girar no laço).
+  sz_t3d_particles: ['PARTICLES'],
   // (Laços/tentar introduzem nomes LOCAIS — ver VARIABLE_LOOP_BINDERS abaixo.)
   // Canvas: teclado, imagem e gradiente guardam numa variável.
   sz_canvas_keyboard: ['NAME'],

@@ -78,6 +78,8 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_renderer_size: { W: 800, H: 600 },
   // Macro Brilho (bloom): força/espalhar/limiar do UnrealBloomPass (defaults do three).
   sz_t3d_bloom_setup: { STRENGTH: 1.5, RADIUS: 0.4, THRESHOLD: 0.85 },
+  // Macro Partículas: quantidade de pontos, tamanho de cada e o quão longe espalham.
+  sz_t3d_particles: { COUNT: 500, SIZE: 0.1, SPREAD: 20 },
 }
 
 /**
@@ -96,6 +98,8 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   sz_t3d_set_color: { COLOR: '#ff8844' },
   sz_t3d_set_background: { COLOR: '#101830' },
   sz_t3d_set_fog: { COLOR: '#aabbcc' },
+  // Macro Partículas: cor dos pontinhos (branco = estrelas/poeira).
+  sz_t3d_particles: { COLOR: '#ffffff' },
 }
 
 /**

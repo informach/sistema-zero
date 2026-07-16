@@ -3420,6 +3420,20 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           args: [],
         },
       }
+    case 'sz_t3d_particles':
+      // Macro Partículas: 1 bloco → sistema de Points (o gerador expande a receita).
+      return {
+        kind: 'js',
+        value: {
+          type: 'particlesSetup',
+          particles: f(block, 'PARTICLES') || 'particulas',
+          scene: f(block, 'SCENE'),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 500 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 0.1 }),
+          spread: exprInput(block, 'SPREAD', { type: 'num', value: 20 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#ffffff' }),
+        },
+      }
     case 'sz_js_call_method':
       return {
         kind: 'js',
