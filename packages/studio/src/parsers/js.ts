@@ -3869,7 +3869,21 @@ function asSZGameKitCall(expr: Node): { method: string; args: Node[] } | null {
 const GK_FIXED_SCREENS = new Set(['menu', 'pausa', 'carregando', 'fim', 'vitoria'])
 /** Enums dos dropdowns da física (R11) — valor fora da lista vira rawJS, senão o
  * dropdown coagiria p/ a 1ª opção e a criança perderia o que escreveu. */
-const GK_ENTITY_PROPS = new Set(['x', 'y', 'vx', 'vy', 'speed', 'w', 'h', 'health'])
+// ⚠️ Espelha o ENTITY_PROPS do runtime da extensão E os dropdowns de "a
+// propriedade"/"Mudar a propriedade" — divergir vira rawJS. (O deslizar tem a
+// lista própria, GK_TWEEN_PROPS: "dano" não desliza, "opacidade" não se lê.)
+const GK_ENTITY_PROPS = new Set([
+  'x',
+  'y',
+  'vx',
+  'vy',
+  'speed',
+  'w',
+  'h',
+  'health',
+  'maxHealth',
+  'damage',
+])
 const GK_FACING_DIRS = new Set(['left', 'right', 'up', 'down'])
 const GK_AXES = new Set(['x', 'y'])
 /** Os 4 estados do herói de plataforma — espelha o PLAT_STATES do runtime e o

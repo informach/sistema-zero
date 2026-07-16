@@ -1,0 +1,105 @@
+import { describe, expect, it } from 'bun:test'
+import type { ExtensionToolboxCategory } from '#extensions'
+import { gameKitPromptContext } from '../ai'
+import { gameKitBlocks, gameKitToolboxCategory } from '../blocks'
+import { gameKitManifest } from '../manifest'
+
+/**
+ * ⭐ MATA A CLASSE, não o caso (R17).
+ *
+ * Três reviews seguidos acharam UMA categoria fantasma na doc e consertaram só
+ * aquela: o R13 tirou "➡️ Tiro e giro" (que não existia no blocks.ts) e, no
+ * review seguinte, lá estava "📊 Barra" — mesma doença, chip diferente.
+ * Consertar o caso nunca varre a classe.
+ *
+ * A doc do aluno e o contexto da IA citam categorias pelo NOME. Quando um lote
+ * renomeia/funde um chip e esquece o texto, a criança procura um chip que não
+ * existe e a IA manda ela procurar. Este teste cruza os dois textos contra a
+ * fonte da verdade — a TOOLBOX de verdade, a que a criança vê — e falha na hora.
+ *
+ * Se um nome legítimo cair aqui, conserte o TEXTO; não afrouxe o teste.
+ * (Anda em qualquer profundidade: a toolbox é recursiva.)
+ */
+
+/** Todo nome de categoria da toolbox, em qualquer nível. */
+function nomesDeCategoria(cat: ExtensionToolboxCategory, acc: string[] = []): string[] {
+  acc.push(cat.name)
+  for (const c of cat.contents) if (c.kind === 'category') nomesDeCategoria(c, acc)
+  return acc
+}
+
+/** Todo `type` de bloco na toolbox, em qualquer nível (com repetição). */
+function tiposNaToolbox(cat: ExtensionToolboxCategory, acc: string[] = []): string[] {
+  for (const c of cat.contents) {
+    if (c.kind === 'category') tiposNaToolbox(c, acc)
+    else acc.push(c.type)
+  }
+  return acc
+}
+
+/** Só as seções que falam de um chip (começam com emoji). Prosa comum
+ * ("### Estados", "### Telas") não cita categoria e não entra. */
+const COM_EMOJI = /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})/u
+function titulosComEmoji(texto: string): string[] {
+  return [...texto.matchAll(/^###\s+(.+)$/gm)]
+    .map((m) => (m[1] ?? '').trim())
+    .filter((t) => COM_EMOJI.test(t))
+}
+
+/**
+ * ⭐ A REGRA (que a doc já segue nas boas seções): todo título com emoji ou **É**
+ * um chip, ou **diz em qual chip está**. As duas formas são legítimas:
+ *
+ *   "### 🎮 Controles (teclado e mouse)"          → é o chip 🎮 Controles + descrição
+ *   "### 🎯 Mirar (em 🎯 Comportamentos)"          → é um ASSUNTO, e aponta o chip
+ *
+ * O que NÃO passa é o título solto que não é chip nem diz onde está — porque aí a
+ * criança lê "📊 Barra", procura na paleta e não acha nada. Era o caso de "📊
+ * Barra", "⚔️ Batalha por turnos", "💾 Salvar" e "🎬 Cenas (cutscene) & NPCs
+ * vivos": todos quatro invisíveis na toolbox.
+ *
+ * Devolve o nome do chip que o título alega, ou null se ele não alega nenhum.
+ */
+function chipAlegado(titulo: string): string | null {
+  const em = titulo.match(/\(em (.+)\)\s*$/)
+  if (em) return (em[1] ?? '').trim() // "Assunto (em 🔊 Som)" → o chip é o do parêntese
+  return titulo.replace(/\s*\([^)]*\)\s*$/, '').trim() // tira a descrição do fim
+}
+
+describe('gk — a doc não pode citar categoria que não existe', () => {
+  const reais = new Set(nomesDeCategoria(gameKitToolboxCategory))
+
+  /** O título que não aponta para nenhum chip real (ver chipAlegado). */
+  const semChip = (titulos: string[]) =>
+    titulos.filter((t) => {
+      const chip = chipAlegado(t)
+      return !chip || !reais.has(chip)
+    })
+
+  it('toda seção das docs do aluno é um chip, ou diz em qual chip está', () => {
+    const citadas = titulosComEmoji(gameKitManifest.docs ?? '')
+    // Prova que o teste está mesmo lendo: uma regex que não casasse nada passaria
+    // em silêncio — é o modo de falha deste próprio teste.
+    expect(citadas.length).toBeGreaterThan(10)
+    expect(semChip(citadas)).toEqual([])
+  })
+
+  it('o contexto da IA não inventa nome de categoria', () => {
+    // A IA lê isto e manda a criança clicar no chip: nome errado = ela não acha.
+    expect(semChip(titulosComEmoji(gameKitPromptContext))).toEqual([])
+  })
+
+  it('todo bloco visível está na toolbox, e em UM lugar só', () => {
+    // Bloco fora do SUBCATS cai no grupo genérico "Mais" — some do lugar certo sem
+    // erro nenhum. É a versão silenciosa do mesmo problema.
+    const conta = new Map<string, number>()
+    for (const t of tiposNaToolbox(gameKitToolboxCategory)) conta.set(t, (conta.get(t) ?? 0) + 1)
+    const visiveis = gameKitBlocks
+      .filter((b) => !(b as { hidden?: boolean }).hidden)
+      .map((b) => b.type)
+    expect({
+      foraDaToolbox: visiveis.filter((t) => !conta.has(t)),
+      emDoisLugares: [...conta.entries()].filter(([, n]) => n > 1).map(([t]) => t),
+    }).toEqual({ foraDaToolbox: [], emDoisLugares: [] })
+  })
+})

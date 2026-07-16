@@ -769,8 +769,12 @@ export const gameKitRuntime = `(function () {
     // ⭐ A batalha do Kit Monstrinhos roda no estado 'batalha', onde o
     // stepSystems NÃO anda — e é ele que bombeia o relógio da fala, a
     // navegação do menu, os tweens e as faíscas. Por isso o step é AQUI.
+    var estavaEmBatalha = state === 'batalha';
     stepPkmBattle(dt);
-    if (state === 'jogando') {
+    // ⚠️ Se a batalha ACABOU neste quadro, o stepPkmBattle já bombeou relógio + UI +
+    // tweens + faíscas (ele faz isso justamente porque o stepSystems não anda em
+    // 'batalha'). Sem esta guarda o stepSystems rodaria tudo 2× no quadro da volta.
+    if (state === 'jogando' && !estavaEmBatalha) {
       stepSystems(dt);
       // A missão pode ter mudado o estado NESTE quadro (vitória) — não rodar o
       // update da criança num jogo que acabou de terminar (paridade P24).
@@ -1049,14 +1053,14 @@ export const gameKitRuntime = `(function () {
     // 🥷 Rastro do golpe (ação): enquanto golpeando, pinta a caixa de acerto à
     // frente — feedback visual de graça em qualquer "Desenhar o personagem".
     if (num(c._swingT, 0) > 0) {
+      ctxSave();
       try {
         var sb = swingBox(c);
-        var pa = ctx2d.globalAlpha;
         ctx2d.globalAlpha = 0.45 * Math.min(1, c._swingT / 0.3);
-        ctx2d.fillStyle = 'white';
+        ctx2d.fillStyle = 'white'; // ⚠️ vazava: só o globalAlpha era devolvido
         ctx2d.fillRect(sb.x, sb.y, sb.w, sb.h);
-        ctx2d.globalAlpha = pa;
       } catch (e) {}
+      ctxRestore();
     }
   }
 
@@ -1131,6 +1135,14 @@ export const gameKitRuntime = `(function () {
   // 48) e o herói colide com a própria CABEÇA — passar entre dois obstáculos fica
   // errado. Em jogo de verdade a caixa é só os PÉS. Aqui: _hbW/_hbH em 0 = "usa o
   // desenho todo" (é o padrão, então nada muda em quem não mexer).
+  /**
+   * ⭐ ONDE a caixa vale, e por quê:
+   *   · vale  → encostar, olhar, o ponto, a colisão SÓLIDA (parede/chão/tile), as
+   *             plataformas de atravessar, andar em cima, pisar no inimigo;
+   *   · NÃO vale → borda da tela (não sair / quicar / emendar). Essas são sobre o
+   *             DESENHO: a criança quer que o sprite não suma da tela, não que a
+   *             caixa não suma. Manter as bordas no desenho é a escolha certa.
+   */
   function setHitbox(who, ox, oy, w, h) {
     if (!who || typeof who !== 'object') return;
     who._hbX = num(ox, 0);
@@ -1144,13 +1156,26 @@ export const gameKitRuntime = `(function () {
   function hbH(e) { var v = num(e._hbH, 0); return v > 0 ? v : num(e.h, 0); }
   function hbRight(e) { return hbLeft(e) + hbW(e); }
   function hbBottom(e) { return hbTop(e) + hbH(e); }
+  /** ⚠️ CAMINHO MAIS QUENTE do runtime: o overlapGroups chama isto até 90 mil vezes
+   * por quadro (300 × 300 é o teto de dois enxames cheios). Por isso as bordas são
+   * lidas INLINE, uma vez cada: a versão com os 8 hb* aninhados custava ~22 num()
+   * por par (o hbRight recalcula o hbLeft por dentro) contra 12 aqui. Mesma conta,
+   * mesma caixa — só sem o trabalho repetido. */
   function touching(a, b) {
     if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
-    return (
-      hbLeft(a) < hbRight(b) && hbRight(a) > hbLeft(b) && hbTop(a) < hbBottom(b) && hbBottom(a) > hbTop(b)
-    );
+    var aw = num(a._hbW, 0); if (!(aw > 0)) aw = num(a.w, 0);
+    var ah = num(a._hbH, 0); if (!(ah > 0)) ah = num(a.h, 0);
+    var bw = num(b._hbW, 0); if (!(bw > 0)) bw = num(b.w, 0);
+    var bh = num(b._hbH, 0); if (!(bh > 0)) bh = num(b.h, 0);
+    var al = num(a.x, 0) + num(a._hbX, 0);
+    var at = num(a.y, 0) + num(a._hbY, 0);
+    var bl = num(b.x, 0) + num(b._hbX, 0);
+    var bt = num(b.y, 0) + num(b._hbY, 0);
+    return al < bl + bw && al + aw > bl && at < bt + bh && at + ah > bt;
   }
 
+  function hbCenterX(e) { return hbLeft(e) + hbW(e) / 2; }
+  function hbCenterY(e) { return hbTop(e) + hbH(e) / 2; }
   function centerX(c) { return num(c.x, 0) + num(c.w, 0) / 2; }
   function centerY(c) { return num(c.y, 0) + num(c.h, 0) / 2; }
 
@@ -1176,7 +1201,7 @@ export const gameKitRuntime = `(function () {
   function blankEntity() {
     return {
       x: 0, y: 0, w: 0, h: 0,
-      speed: 0, damage: 0, color: '', image: '', look: '', radius: 0,
+      speed: 0, speedMultiplier: 1, damage: 0, color: '', image: '', look: '', radius: 0,
       health: 0, maxHealth: 0,
       vx: 0, vy: 0,
       _active: false, _facingLeft: false, _facingDir: 'down', _iFrames: 0,
@@ -1240,7 +1265,7 @@ export const gameKitRuntime = `(function () {
     if (!e) e = blankEntity();
     e.x = num(x, 0); e.y = num(y, 0);
     e.w = m.w; e.h = m.h;
-    e.speed = m.speed; e.damage = m.damage; e.color = m.color;
+    e.speed = m.speed; e.speedMultiplier = 1; e.damage = m.damage; e.color = m.color;
     e.image = m.image; e.look = m.look; e.radius = m.radius;
     e.health = m.health; e.maxHealth = m.health;
     e._active = true; e._facingLeft = false; e._facingDir = 'down'; e._iFrames = 0;
@@ -1492,12 +1517,16 @@ export const gameKitRuntime = `(function () {
   // ---- 🧱 Colisão sólida (o resolvedor do Jogo 2D, agora com VARREDURA) ----
   // Resolve pelo eixo de MENOR sobreposição (empurra para fora pelo lado mais
   // curto) e só marca "no chão" no POUSO (caindo, vy > 0).
+  /** ⭐ Pela CAIXA DE COLISÃO, não pelo desenho: era a metade que faltava do
+   * "Caixa de colisão de %1" — só o encostar/olhar respeitava a caixa, e o
+   * empurrão (que é o que o bloco vende: "o herói bate a cabeça") ignorava. Sem
+   * caixa declarada os hb* devolvem x/y/w/h, então nada muda para quem não usa. */
   function resolveSolid(who, tx, ty, tw, th, byCenter) {
-    var overlapX = Math.min(num(who.x, 0) + num(who.w, 0), tx + tw) - Math.max(num(who.x, 0), tx);
-    var overlapY = Math.min(num(who.y, 0) + num(who.h, 0), ty + th) - Math.max(num(who.y, 0), ty);
+    var overlapX = Math.min(hbRight(who), tx + tw) - Math.max(hbLeft(who), tx);
+    var overlapY = Math.min(hbBottom(who), ty + th) - Math.max(hbTop(who), ty);
     if (overlapX <= 0 || overlapY <= 0) return;
     if (overlapX < overlapY) {
-      var leftward = byCenter ? (centerX(who) < tx + tw / 2) : (num(who.x, 0) < tx);
+      var leftward = byCenter ? (hbCenterX(who) < tx + tw / 2) : (hbLeft(who) < tx);
       who.x = num(who.x, 0) + (leftward ? -overlapX : overlapX);
       who.vx = 0;
       // De que LADO ficou a parede: empurrei para a esquerda = parede à direita.
@@ -1505,7 +1534,7 @@ export const gameKitRuntime = `(function () {
       // Plataforma lê para o wall jump / deslizar na parede.
       who._wallDir = leftward ? 1 : -1;
     } else {
-      var upward = byCenter ? (centerY(who) < ty + th / 2) : (num(who.y, 0) < ty);
+      var upward = byCenter ? (hbCenterY(who) < ty + th / 2) : (hbTop(who) < ty);
       if (upward) {
         who.y = num(who.y, 0) - overlapY;
         if (num(who.vy, 0) > 0) { who.vy = 0; who.onGround = true; } // POUSO
@@ -1548,7 +1577,7 @@ export const gameKitRuntime = `(function () {
     for (var i = 0; i < act.length; i++) {
       var o = act[i];
       if (o === who || o._active === false) continue;
-      resolveSolid(who, num(o.x, 0), num(o.y, 0), num(o.w, 0), num(o.h, 0), true);
+      resolveSolid(who, hbLeft(o), hbTop(o), hbW(o), hbH(o), true);
     }
   }
   /** Roda o resolvedor em PEDAÇOS do movimento deste quadro (varredura): num
@@ -1715,7 +1744,25 @@ export const gameKitRuntime = `(function () {
   }
 
   // ---- 🧍 Propriedade da entidade (ler/escrever o que move o jogo) ----
-  var ENTITY_PROPS = { x: 1, y: 1, vx: 1, vy: 1, speed: 1, w: 1, h: 1, health: 1 };
+  // ⭐ "dano" e "vida máxima" entram aqui: o bloco "Criar o molde" PEDE o dano à
+  // criança, o spawnFromMold copia — e sem estar nesta lista "a propriedade dano
+  // de" devolvia 0, então o campo era decorativo. Agora ela lê e usa:
+  // "Machucar o herói em (a propriedade dano de este)".
+  // ⚠️ DUAS listas, e cada uma vive em 3 lugares que TÊM que casar (divergir faz a
+  // Ponte degradar o bloco inteiro para rawJS):
+  //   ENTITY_PROPS  = ler/mudar → dropdowns de "a propriedade"/"Mudar a
+  //                   propriedade" + GK_ENTITY_PROPS do parsers/js.ts;
+  //   TWEEN_PROPS   = deslizar  → dropdown de "Deslizar a propriedade" +
+  //                   GK_TWEEN_PROPS do parsers/js.ts.
+  // Elas eram IGUAIS por coincidência (o tweenProperty lia ENTITY_PROPS + opacity)
+  // até o "dano" entrar: deslizar o dano não é coisa, deslizar a opacidade é.
+  var ENTITY_PROPS = {
+    x: 1, y: 1, vx: 1, vy: 1, speed: 1, w: 1, h: 1,
+    health: 1, maxHealth: 1, damage: 1
+  };
+  var TWEEN_PROPS = {
+    x: 1, y: 1, vx: 1, vy: 1, speed: 1, w: 1, h: 1, health: 1, opacity: 1
+  };
   function propertyOf(who, prop) {
     if (!who || typeof who !== 'object') return 0;
     var p = text(prop, 'x');
@@ -1760,10 +1807,23 @@ export const gameKitRuntime = `(function () {
     pushTween(who, 'x', x, secs, false);
     pushTween(who, 'y', y, secs, true); // só o Y avisa: um "cheguei" por deslize
   }
+  /** ⭐ Versões MUDAS, para uso INTERNO do motor (investida da batalha, desmaio,
+   * volta ao posto). O aviso "deslizou:chegou" é da CRIANÇA: quem encadeia
+   * cutscene/torre/rota nele recebia disparos fantasmas várias vezes por turno,
+   * com um objeto interno de payload, só porque o kit anima por dentro. */
+  function tweenToQuiet(who, x, y, secs) {
+    if (!who || typeof who !== 'object') return;
+    pushTween(who, 'x', x, secs, false);
+    pushTween(who, 'y', y, secs, false);
+  }
+  function fadeToQuiet(who, percent, secs) {
+    if (!who || typeof who !== 'object') return;
+    pushTween(who, 'opacity', Math.max(0, Math.min(1, num(percent, 0) / 100)), secs, false);
+  }
   function tweenProperty(who, prop, to, secs) {
     if (!who || typeof who !== 'object') return;
     var pr = text(prop, 'x');
-    if (!ENTITY_PROPS[pr] && pr !== 'opacity') {
+    if (!TWEEN_PROPS[pr]) {
       warnOnce('tweenprop:' + pr, 'não dá para deslizar a propriedade "' + pr + '"');
       return;
     }
@@ -1953,7 +2013,14 @@ export const gameKitRuntime = `(function () {
       screenFx.alpha += (screenFx.target === 1 ? 1 : -1) * screenFx.speed * dt;
       if (screenFx.alpha >= 1) { screenFx.alpha = 1; screenFx.target = 0; screenFx.flashes -= 1; }
       else if (screenFx.alpha <= 0) { screenFx.alpha = 0; screenFx.target = 1; screenFx.flashes -= 1; }
-      if (screenFx.flashes <= 0) { screenFx.alpha = 0; screenFx.flashes = 0; }
+      // ⭐ Zerar o TARGET junto com o alpha, não só o alpha. O piscar sempre acaba
+      // numa DESCIDA, que deixa target = 1; sem esta linha o quadro seguinte caía no
+      // fade comum, via alpha(0) !== target(1) e SUBIA até 1, onde travava — a tela
+      // ficava 100% coberta PARA SEMPRE. E o drawScreenFx é o ÚLTIMO desenho do
+      // render(), então cobria mundo, HUD, fala e menu: toda batalha do Kit
+      // Monstrinhos (que chama flashScreen ao abrir) rodava embaixo de um retângulo
+      // branco sólido.
+      if (screenFx.flashes <= 0) { screenFx.alpha = 0; screenFx.flashes = 0; screenFx.target = 0; }
       return;
     }
     if (screenFx.alpha === screenFx.target) return;
@@ -1961,13 +2028,21 @@ export const gameKitRuntime = `(function () {
     if (screenFx.alpha < screenFx.target) screenFx.alpha = Math.min(screenFx.target, screenFx.alpha + d);
     else screenFx.alpha = Math.max(screenFx.target, screenFx.alpha - d);
   }
+  /** ⭐ O estado do canvas (fillStyle/font/lineWidth/globalAlpha) é PERSISTENTE e
+   * atravessa o quadro: todo desenho do MOTOR tem que devolver o ctx como pegou,
+   * senão vaza para o "Desenhar o jogo" da criança — o pkmBar deixava lineWidth 3
+   * e engrossava TODOS os traços dela. */
+  function ctxSave() { try { ctx2d.save(); } catch (e) {} }
+  function ctxRestore() { try { ctx2d.restore(); } catch (e) {} }
   function drawScreenFx() {
     if (!ctx2d || screenFx.alpha <= 0) return;
-    var prev = 1;
-    try { prev = ctx2d.globalAlpha; ctx2d.globalAlpha = Math.min(1, screenFx.alpha); } catch (e) {}
-    ctx2d.fillStyle = screenFx.color;
-    ctx2d.fillRect(0, 0, config.w, config.h);
-    try { ctx2d.globalAlpha = prev; } catch (e) {}
+    ctxSave();
+    try {
+      ctx2d.globalAlpha = Math.min(1, screenFx.alpha);
+      ctx2d.fillStyle = screenFx.color;
+      ctx2d.fillRect(0, 0, config.w, config.h);
+    } catch (e) {}
+    ctxRestore();
   }
 
   // ---- 💾 Memória (guardar/ler QUALQUER valor) ----
@@ -2232,18 +2307,19 @@ export const gameKitRuntime = `(function () {
     var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
     if (num(who.vy, 0) < 0) return; // subindo: atravessa
     if (who._dropT > 0) return; // pediu para descer (↓): ignora as plataformas
-    var feet = num(who.y, 0) + num(who.h, 0);
+    // Os pés são os da CAIXA (quem declarou uma caixa nos pés quer pousar por ela).
+    var feet = hbBottom(who);
     var feetNext = feet + num(who.vy, 0) * d;
     var act = pool.active;
     for (var i = 0; i < act.length; i++) {
       var p = act[i];
       if (p === who || p._active === false) continue;
-      var top = num(p.y, 0);
+      var top = hbTop(p);
       if (feet > top) continue; // já estava abaixo do topo: não é pouso
       if (feetNext < top) continue; // não alcança o plano neste quadro
-      if (num(who.x, 0) + num(who.w, 0) <= num(p.x, 0)) continue;
-      if (num(who.x, 0) >= num(p.x, 0) + num(p.w, 0)) continue;
-      who.y = top - num(who.h, 0);
+      if (hbRight(who) <= hbLeft(p)) continue;
+      if (hbLeft(who) >= hbRight(p)) continue;
+      who.y = top - hbH(who) - num(who._hbY, 0);
       who.vy = 0;
       who.onGround = true;
       who._prevY = who.y; // a varredura não deve desfazer este pouso
@@ -2286,13 +2362,13 @@ export const gameKitRuntime = `(function () {
     var pool = pools[rk];
     if (!pool) { warnOnce('ride:' + rk, 'o molde "' + rk + '" não existe — crie com "Criar o molde"'); return; }
     var act = pool.active;
-    var feet = num(who.y, 0) + num(who.h, 0);
+    var feet = hbBottom(who);
     for (var i = 0; i < act.length; i++) {
       var p = act[i];
       if (p._active === false) continue;
-      if (Math.abs(feet - num(p.y, 0)) > 4) continue; // não está em cima
-      if (num(who.x, 0) + num(who.w, 0) <= num(p.x, 0)) continue;
-      if (num(who.x, 0) >= num(p.x, 0) + num(p.w, 0)) continue;
+      if (Math.abs(feet - hbTop(p)) > 4) continue; // não está em cima
+      if (hbRight(who) <= hbLeft(p)) continue;
+      if (hbLeft(who) >= hbRight(p)) continue;
       who.x = num(who.x, 0) + num(p._carryX, 0);
       who.y = num(who.y, 0) + num(p._carryY, 0);
       who._prevX = num(who.x, 0);
@@ -2316,7 +2392,7 @@ export const gameKitRuntime = `(function () {
       if (e._active === false) continue;
       if (!touching(who, e)) continue;
       if (num(who.vy, 0) <= num(e.vy, 0)) continue; // não estava caindo NELE
-      who.y = num(e.y, 0) - num(who.h, 0); // encaixa em cima (bounds.bottom = top)
+      who.y = hbTop(e) - hbH(who) - num(who._hbY, 0); // encaixa em cima (bounds.bottom = top)
       who.vy = -Math.abs(num(bounce, 400));
       who.onGround = false;
       who._holdT = 0;
@@ -2485,9 +2561,14 @@ export const gameKitRuntime = `(function () {
     pkm.evolve[f] = { to: text(to, ''), level: Math.max(2, Math.round(num(level, 8))) };
   }
   function pkmCatchDifficulty(name, level) {
+    var k = text(name, '');
+    // Os irmãos (pkmWild/pkmMove/pkmEvolve) avisam; este falhava calado.
+    if (!pkm.species[k]) { warnOnce('pkmcatch:' + k, 'a criatura "' + k + '" não existe'); return; }
     var mult = { 'fácil': 1.6, facil: 1.6, normal: 1, 'difícil': 0.5, dificil: 0.5, 'raríssimo': 0.15, rarissimo: 0.15 };
-    var m = mult[text(level, 'normal')];
-    pkm.catchDiff[text(name, '')] = typeof m === 'number' ? m : 1;
+    var lv = text(level, 'normal');
+    var m = mult[lv];
+    if (typeof m !== 'number') warnOnce('pkmcatchlv:' + lv, 'dificuldade "' + lv + '" não existe (use fácil, normal, difícil ou raríssimo)');
+    pkm.catchDiff[k] = typeof m === 'number' ? m : 1;
   }
 
   // ---- os 3 níveis: espécie (dados) → indivíduo (o time) → lutador (efêmero) ----
@@ -2555,6 +2636,7 @@ export const gameKitRuntime = `(function () {
   }
   function pkmDrawTeam(x, y) {
     if (!ctx2d) return;
+    ctxSave();
     var bx = num(x, 10), by = num(y, 10);
     for (var i = 0; i < pkm.team.length; i++) {
       var t = pkm.team[i];
@@ -2570,6 +2652,7 @@ export const gameKitRuntime = `(function () {
       ctx2d.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.2 ? '#fbbf24' : '#ef4444';
       ctx2d.fillRect(bx + 112, yy + 8, Math.round(50 * pct), 6);
     }
+    ctxRestore();
   }
 
   // ---- 🌿 Encontros (a grama alta) ----
@@ -2627,6 +2710,7 @@ export const gameKitRuntime = `(function () {
     pkmTrainerList = [];
     try { fn(); } catch (e) { warn('erro no time do treinador: ' + e); }
     if (!pkmTrainerList.length) { warn('o treinador "' + text(name, '') + '" não tem nenhuma criatura'); return; }
+    if (rpg.battle) { warn('já tem uma batalha do Kit RPG aberta — use um kit OU o outro'); return; }
     var mine = pkmFirstAlive();
     if (!mine) { rpgSay('Você não tem nenhum monstrinho em pé!', ''); return; }
     pkm.caught = false;
@@ -2678,7 +2762,8 @@ export const gameKitRuntime = `(function () {
     opts.push({ label: '← Voltar', fn: pkmMainMenu });
     rpg.menu = { title: 'Qual golpe?', options: opts, index: 0 };
   }
-  function pkmSwitchMenu() {
+  /** forced = a criatura desmaiou: NÃO pode voltar (lutar com HP 0 não existe). */
+  function pkmSwitchMenu(forced) {
     var opts = [];
     for (var i = 0; i < pkm.team.length; i++) {
       (function (t) {
@@ -2689,8 +2774,12 @@ export const gameKitRuntime = `(function () {
         });
       })(pkm.team[i]);
     }
-    opts.push({ label: '← Voltar', fn: pkmMainMenu });
-    rpg.menu = { title: 'Trocar por quem?', options: opts, index: 0 };
+    if (!forced) opts.push({ label: '← Voltar', fn: pkmMainMenu });
+    rpg.menu = {
+      title: forced ? 'Quem vai lutar agora?' : 'Trocar por quem?',
+      options: opts,
+      index: 0
+    };
   }
   function pkmDoSwitch(t) {
     var b = pkm.battle;
@@ -2724,7 +2813,10 @@ export const gameKitRuntime = `(function () {
     var mult = pkmAdvantage(m.type, pkm.species[dfd.species].type);
     var base = m.dmg + pkmStat(atk, 'str') / 2;
     var vary = 0.85 + Math.random() * 0.3;
-    var dmg = Math.max(1, Math.round(base * mult * vary - pkmStat(dfd, 'def') / 2));
+    // ⭐ "Não teve efeito!" tem que tirar ZERO. O piso de 1 vale para o golpe fraco
+    // (senão a defesa alta trava a batalha para sempre), mas quando a vantagem é 0 a
+    // fala promete imunidade — e tirar 1 mesmo assim é mentir para a criança.
+    var dmg = mult === 0 ? 0 : Math.max(1, Math.round(base * mult * vary - pkmStat(dfd, 'def') / 2));
     var txt = atk.species + ' usou ' + m.name + '!';
     if (mult > 1) txt += ' É SUPER EFETIVO!';
     else if (mult === 0) txt += ' Não teve efeito!';
@@ -2734,7 +2826,7 @@ export const gameKitRuntime = `(function () {
     // A coreografia: investida = o lutador corre e volta; os outros = piscar.
     if (m.fx === 'investida' && atkF && dfdF) {
       var ox = atkF.x;
-      tweenTo(atkF, dfdF.x + (isMine ? -60 : 60), atkF.y, 0.18);
+      tweenToQuiet(atkF, dfdF.x + (isMine ? -60 : 60), atkF.y, 0.18);
       b.returnTo = { f: atkF, x: ox, y: atkF.y };
     }
     burst('__pkm_hit', dfdF ? centerX(dfdF) : 0, dfdF ? centerY(dfdF) : 0);
@@ -2747,11 +2839,16 @@ export const gameKitRuntime = `(function () {
     p.target.hp = Math.max(0, p.target.hp - p.dmg); // ⚠️ nunca negativo (bug da base)
     if (p.targetF) {
       cameraShake(4, 0.15);
-      fadeTo(p.targetF, 40, 0.08);
-      fadeTo(p.targetF, 100, 0.2);
+      // ⭐ O piscar do acerto reusa os i-frames, que o drawEntity JÁ desenha.
+      // Antes eram dois fadeTo em sequência (40% e volta a 100%) — mas o pushTween
+      // DEDUPA por (entidade, propriedade): o 2º apagava o 1º ANTES de ele rodar e
+      // lia "de: opacity = 1", então o tween ia de 1 para 1 e nada piscava. Sobrava
+      // só o tremor. (O pushTween é substitutivo por design; quem quer sequência
+      // não pode empilhar na mesma propriedade.)
+      p.targetF._iFrames = 0.3;
     }
     b.pending = null;
-    if (b.returnTo) { tweenTo(b.returnTo.f, b.returnTo.x, b.returnTo.y, 0.15); b.returnTo = null; }
+    if (b.returnTo) { tweenToQuiet(b.returnTo.f, b.returnTo.x, b.returnTo.y, 0.15); b.returnTo = null; }
   }
   function pkmThrowBall() {
     var b = pkm.battle;
@@ -2783,14 +2880,20 @@ export const gameKitRuntime = `(function () {
     var b = pkm.battle;
     var sp = pkm.species[b.foe.species];
     var mv = sp.moves.length ? pkm.moves[sp.moves[Math.floor(Math.random() * sp.moves.length)]] : null;
-    if (!mv) { b.phase = 'menu'; return; }
+    // Espécie sem golpe ensinado (o esquecimento nº 1 previsível). 'menu' é fase de
+    // REPOUSO: pôr a fase sem ABRIR o menu congelava a batalha para sempre.
+    if (!mv) {
+      warnOnce('pkm-sem-golpe-' + b.foe.species, 'o ' + b.foe.species + ' não tem nenhum golpe: use "Ensinar o golpe"');
+      pkmEnterPhase('menu');
+      return;
+    }
     pkmUseMove(mv, false);
   }
   function pkmCheckFaint() {
     var b = pkm.battle;
     if (b.foe.hp <= 0) {
       rpgSay(b.foe.species + ' desmaiou!', '');
-      if (b.foeF) { tweenTo(b.foeF, b.foeF.x, b.foeF.y + 20, 0.4); fadeTo(b.foeF, 0, 0.4); }
+      if (b.foeF) { tweenToQuiet(b.foeF, b.foeF.x, b.foeF.y + 20, 0.4); fadeToQuiet(b.foeF, 0, 0.4); }
       pkmReward();
       if (b.kind === 'treinador' && b.foeIndex + 1 < b.foes.length) {
         b.foeIndex += 1;
@@ -2808,7 +2911,7 @@ export const gameKitRuntime = `(function () {
     }
     if (b.mine.hp <= 0) {
       rpgSay(b.mine.species + ' desmaiou!', '');
-      if (b.mineF) { tweenTo(b.mineF, b.mineF.x, b.mineF.y + 20, 0.4); fadeTo(b.mineF, 0, 0.4); }
+      if (b.mineF) { tweenToQuiet(b.mineF, b.mineF.x, b.mineF.y + 20, 0.4); fadeToQuiet(b.mineF, 0, 0.4); }
       var next = pkmFirstAlive();
       if (next) { b.phase = 'anim'; b.next = 'trocar-forcado'; return true; }
       b.phase = 'anim';
@@ -2862,6 +2965,11 @@ export const gameKitRuntime = `(function () {
     stepTweens(dt);
     stepParticles(dt);
     b.t += dt;
+    // Os lutadores da batalha não passam pelo stepSystems (que é quem decai os
+    // i-frames de todo mundo), então o piscar do acerto decai aqui — senão ficaria
+    // piscando para sempre.
+    if (b.mineF && b.mineF._iFrames > 0) b.mineF._iFrames = Math.max(0, b.mineF._iFrames - dt);
+    if (b.foeF && b.foeF._iFrames > 0) b.foeF._iFrames = Math.max(0, b.foeF._iFrames - dt);
     if (b.phase === 'abrindo') {
       if (b.t < 0.5) return;
       pkmSetupFighters();
@@ -2873,25 +2981,42 @@ export const gameKitRuntime = `(function () {
     }
     if (b.phase === 'espera-fala') {
       if (rpg.dialog) return; // a criança lê no ritmo dela
-      b.phase = b.next || 'menu';
-      b.t = 0;
-      if (b.phase === 'menu') pkmMainMenu();
+      pkmEnterPhase(b.next);
       return;
     }
     if (b.phase === 'anim') {
       if (b.t > 0.25 && b.pending) pkmApplyPending();
       if (rpg.dialog || b.t < 0.5) return;
       if (pkmCheckFaint()) { b.phase = 'espera-fala'; return; }
-      b.phase = b.next || 'menu';
-      b.t = 0;
-      if (b.phase === 'menu') pkmMainMenu();
-      else if (b.phase === 'inimigo') pkmEnemyTurn();
-      else if (b.phase === 'fim') pkmEndBattle();
-      else if (b.phase === 'trocar-forcado') pkmSwitchMenu();
+      pkmEnterPhase(b.next);
       return;
     }
     if (b.phase === 'inimigo') { pkmEnemyTurn(); return; }
     if (b.phase === 'fim') { pkmEndBattle(); return; }
+    // Rede: 'menu' e 'trocar-forcado' são fases de REPOUSO dirigidas pelo menu — se
+    // ficarem sem menu aberto, ninguém as move e a batalha congela (só recarregando).
+    // Era exatamente o softlock do desmaio. Reabrir é sempre melhor que travar.
+    if (!rpg.menu && !rpg.dialog) {
+      if (b.phase === 'menu') pkmMainMenu();
+      else if (b.phase === 'trocar-forcado') pkmSwitchMenu(true);
+    }
+  }
+  /**
+   * Entrar numa fase = despachar o que ela precisa para andar.
+   * ⭐ Isto estava DUPLICADO em 'espera-fala' (que só sabia despachar 'menu') e em
+   * 'anim' (que sabia as quatro), e as duas cópias divergiram: o desmaio passa por
+   * 'espera-fala', então a fase virava 'trocar-forcado' e NINGUÉM abria o menu de
+   * troca — a criança perdia a criatura e o jogo morria. Um dispatcher só, um
+   * comportamento só.
+   */
+  function pkmEnterPhase(ph) {
+    var b = pkm.battle;
+    b.phase = ph || 'menu';
+    b.t = 0;
+    if (b.phase === 'menu') pkmMainMenu();
+    else if (b.phase === 'inimigo') pkmEnemyTurn();
+    else if (b.phase === 'fim') pkmEndBattle();
+    else if (b.phase === 'trocar-forcado') pkmSwitchMenu(true);
   }
   function drawPkmBattle() {
     var b = pkm.battle;
@@ -2904,9 +3029,10 @@ export const gameKitRuntime = `(function () {
     if (b.mineF) drawEntity(b.mineF);
     pkmBar(b.foe, 50, 40);
     pkmBar(b.mine, config.w - 290, config.h - 190);
-    drawEffects(ctx2d);
+    drawEffects();
   }
   function pkmBar(ind, x, y) {
+    ctxSave();
     ctx2d.fillStyle = '#ffffff';
     ctx2d.fillRect(x, y, 240, 54);
     ctx2d.strokeStyle = '#111';
@@ -2920,6 +3046,7 @@ export const gameKitRuntime = `(function () {
     ctx2d.fillRect(x + 10, y + 32, 220, 8);
     ctx2d.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.2 ? '#fbbf24' : '#ef4444';
     ctx2d.fillRect(x + 10, y + 32, Math.round(220 * pct), 8);
+    ctxRestore();
   }
   function pkmCaught() { return pkm.caught; }
   function pkmNewGame() {
@@ -2927,6 +3054,11 @@ export const gameKitRuntime = `(function () {
     pkm.balls = [];
     pkm.battle = null;
     pkm.caught = false;
+    // ⚠️ TODO estado de jogo entra no reset (é a 3ª vez que esta linha é a causa):
+    // sem isto, "Jogar de novo" recomeçava com a tabela de selvagens acumulada.
+    pkm.wild = [];
+    pkm.grass = {};
+    pkm.grassTiles = {};
   }
   // ---- 🥷 Ação em tempo real (Zelda) — golpe na direção + patrulha (Ninja Adventure) ----
   // O golpe cria uma caixa de acerto NA FRENTE do personagem (pela direção que
@@ -3507,6 +3639,15 @@ export const gameKitRuntime = `(function () {
     rpg.npcs = {};
     rpg.doors = {};
     rpg.stepHandlers = {};   // gatilhos de pisar são por-mapa (montados de novo)
+    // ⭐ A grama e a tabela de selvagens TAMBÉM são por-mapa (o exemplo oficial
+    // chama "Na grama alta deste mapa..." de DENTRO do "Quando chegar no mapa").
+    // Sem limpar aqui, o pkmWild — que faz PUSH — duplicava a cada entrada: sair e
+    // voltar 20× no quintal dava 40 entradas; e a tabela sendo global fazia os
+    // bichos do quintal aparecerem na caverna, apesar do comentário prometer o
+    // contrário. Quem chama no topo (sem mapas) nunca passa por aqui: segue global.
+    pkm.wild = [];
+    pkm.grass = {};
+    pkm.grassTiles = {};
     if (rpg.hero) rpg.hero._gridDest = null;
     rpg.currentMap = k;
     var hooks = rpg.maps[k];
@@ -3568,7 +3709,15 @@ export const gameKitRuntime = `(function () {
   }
   /** Passo de cena "esperar N segundos" — só faz sentido gravando. */
   function rpgWait(seconds) {
-    if (rpg.recording) rpg.sceneSteps.push({ type: 'wait', seconds: Math.max(0, num(seconds, 1)) });
+    if (rpg.recording) {
+      rpg.sceneSteps.push({ type: 'wait', seconds: Math.max(0, num(seconds, 1)) });
+      return;
+    }
+    // ⚠️ Fora de uma cena isto é NO-OP. O bloco lia "Esperar %1 segundos" — texto
+    // 100% genérico —, então a criança arrastava no "A cada quadro", nada
+    // acontecia e NINGUÉM avisava (a mesma classe das falhas silenciosas do R13).
+    // O irmão "Opção" avisa nesse caso exato; este agora também.
+    warn('"Esperar" só vale DENTRO de "Fazer a cena" — fora dela nada acontece');
   }
   /**
    * Cutscene por GRAVAÇÃO: liga recording, roda o corpo (cada passo se ENFILEIRA

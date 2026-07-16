@@ -1316,7 +1316,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_wait',
-    message0: 'Esperar %1 segundos',
+    message0: 'Esperar %1 s (na cena)',
     args0: [{ type: 'input_value', name: 'SECONDS', check: 'JSValue' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1902,6 +1902,8 @@ export const gameKitBlocks = [
           ['largura', 'w'],
           ['altura', 'h'],
           ['vida', 'health'],
+          ['vida máxima', 'maxHealth'],
+          ['dano', 'damage'],
         ],
       },
     ],
@@ -1927,6 +1929,8 @@ export const gameKitBlocks = [
           ['largura', 'w'],
           ['altura', 'h'],
           ['vida', 'health'],
+          ['vida máxima', 'maxHealth'],
+          ['dano', 'damage'],
         ],
       },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
@@ -2767,7 +2771,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pkm_wild',
-    message0: 'Na grama alta pode aparecer %1 do nível %2 ao %3',
+    message0: 'Na grama alta deste mapa pode aparecer %1 do nível %2 ao %3',
     args0: [
       { type: 'field_name_picker', name: 'CREATURE', text: 'Folhinha', kind: 'pkmcreature' },
       { type: 'input_value', name: 'MIN', check: 'JSValue' },

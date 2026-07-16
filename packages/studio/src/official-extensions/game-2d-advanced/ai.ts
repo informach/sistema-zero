@@ -55,6 +55,9 @@ API global injetada como window.SZGameKit:
   em px/SEGUNDO. moveWithKeys(c, dt): WASD+setas com diagonal normalizada.
   keepOnScreen(c) / placeCharacter(c, x, y) / resetCharacter(c) (centro + vida
   cheia) / setSpeedMultiplier(c, f). touching(a, b): AABB. charX(c)/charY(c).
+  setCheckpoint(x, y) + respawn(quem) = a bandeirinha e o buraco. São GERAIS
+  (valem em RPG, corrida, bullet hell) e por isso ficam AQUI, não no Kit
+  Plataforma. ⚠️ os helpers ainda se chamam plat* por história — o chip é 🧍.
 - Teclas: keyDown(k) — tecla SEGURADA (lowercase; letras, "arrowup"…, " ");
   keyPressed(k) — true SÓ no quadro do aperto (edge-trigger: golpe/tiro 1 por
   aperto, sem flag manual). setPauseKey(k) troca a tecla de pausa (padrão Esc).
@@ -218,15 +221,17 @@ API global injetada como window.SZGameKit:
   (acumula o dt do JOGO — pausou, para de contar; NÃO usa relógio de parede);
   cooldownReady(quem, s) = o "recarregando" do tiro/golpe (true só quando o tempo
   passou, e JÁ reinicia a contagem).
-- 🧍 Propriedades/direção (GERAL): propertyOf(quem, "x"|"y"|"vx"|"vy"|"speed"|"w"|
-  "h") e setProperty(quem, prop, v) = a chave-mestra p/ o que não tem bloco
+- 🔧 Propriedades & direção (GERAL): propertyOf(quem, "x"|"y"|"vx"|"vy"|"speed"|"w"|
+  "h"|"health"|"maxHealth"|"damage") e setProperty(quem, prop, v) = a chave-mestra
+  p/ o que não tem bloco
   pronto. setFacingDir(quem, "down"|"up"|"left"|"right")/facingOf(quem) — a
   direção move DOIS sistemas: a folha de andar e a caixa do attackFacing.
 - 🗺️ Peças por célula: tileAt(mapa, x, y), setTileAt(mapa, x, y, peca),
   breakTileAt(mapa, quem) (mundo destrutível/cavar), setTileSize(px) (padrão 64).
 - ✨ tweenTo(quem, x, y, s) desliza suave até um ponto (porta/plataforma/cutscene)
   — chame UMA vez, não todo quadro.
-- 🧭 R15 — primitivos GERAIS (fora de todo kit; é com eles que se inventa gênero):
+- 🧭 Regiões · 🎲 Sorte & medida · 🌫️ Sumir & transição · 💾 Memória (GERAIS, fora
+  de todo kit — é com eles que se inventa gênero):
   defineRegion(nome, x, y, w, h) = retângulo com NOME (grama, porta, zona de dano,
   área segura) + isInside(quem, regiao) + ⭐ overlapPercent(quem, regiao) 0..100 —
   o gate honesto: "se overlapPercent(heroi,'grama') > 50 E chance(20)". Só encostar
@@ -263,7 +268,7 @@ API global injetada como window.SZGameKit:
   + rideOn(quem, molde) — SEMPRE pareados, senão a plataforma escorrega debaixo do
   herói. stompKill(quem, molde, quique) = pisar (compara VELOCIDADE; emite
   "plataforma:pisou") · patrolTurnAtWall(quem, vel) (dirigido por colisão: use
-  dentro do forEachActive + collideGroup) · setCheckpoint(x, y) + respawn(quem) ·
+  dentro do forEachActive + collideGroup) ·
   platStateFrames(quem, "parado"|"andando"|"pulando"|"caindo", de, até, fps) 1x
   por estado + platformerAnim(quem) todo quadro (a animação sai da física).
   Ordem canônica no onUpdate: platformerHero → dropThrough → collideGroup(chao) →
@@ -272,9 +277,9 @@ API global injetada como window.SZGameKit:
   duracao) cria uma caixa de golpe NA FRENTE (pela direção que olha) por ~0.3s, com
   trava de 1 acerto por golpe; didHit(quem, alvo) = a caixa encostou no alvo NESTE
   golpe (padrão: "se didHit(heroi, inimigo): hurt(inimigo)"). patrolAround(quem, ox,
-  oy, raio) = inimigo vagueia perto do posto (no onUpdate). drawHearts(atual, max,
-  x, y) = HUD de corações. Combate de AÇÃO usa createCharacter + moveWithKeys +
-  hurt/isInvincible (não a batalha por turnos do RPG).
+  oy, raio) = inimigo vagueia perto do posto (no onUpdate). Combate de AÇÃO usa
+  createCharacter + moveWithKeys + hurt/isInvincible (não a batalha por turnos do
+  RPG). O HUD de corações — drawHearts(atual, max, x, y) — é 🖥️ HUD & Missão.
 
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.

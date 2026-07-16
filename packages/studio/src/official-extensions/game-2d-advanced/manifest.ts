@@ -11,7 +11,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.17.0',
+  version: '0.17.1',
   description:
     'A base de um jogo 2D profissional, pronta para você inventar as regras. Máquina de estados, laço com delta-time (dt), telas de UI, personagens, e a arquitetura de verdade: avisos (eventos), moldes e enxames de inimigos que nascem sozinhos, comportamentos (perseguir/vaguear), combate (vida, dano, empurrão), faíscas, missão e som importado. O motor pronto fica no runtime; a mecânica você escreve nos ganchos, com os blocos — igual a quem programa jogos na unha.',
   category: 'games',
@@ -204,7 +204,7 @@ desligada.
 chamar de", isso é o tiro reto e o tiro mirado dos jogos de nave. **Girar
 para X graus** roda o desenho em volta do centro.
 
-### 📊 Barra
+### 📊 Barra (em 🖥️ HUD & Missão)
 
 **Desenhar uma barra de atual/máximo** — vida grande, energia, progresso.
 Combine com "a vida de" e ponha no HUD.
@@ -509,7 +509,7 @@ tiles) continuam valendo e se combinam com o kit.
   trocar de mapa limpa o anterior e monta o novo. **Ir para o mapa** troca na
   hora; **Criar a porta** troca ao pisar.
 
-### ⚔️ Batalha por turnos
+### ⚔️ Batalha por turnos (em ⚔️ Kit RPG: batalha)
 
 - **Meus pontos de batalha** (vida/força/**defesa**, 1x no começo) e **Começar a
   batalha contra…** (o inimigo também tem defesa) — abre o menu PRONTO: **Atacar**
@@ -523,7 +523,7 @@ tiles) continuam valendo e se combinam com o kit.
 - **Quando a batalha terminar / ganhei a batalha?** — decida o rumo: vitória →
   tela de vitória (+ XP), derrota → fim de jogo, fuga → tentar de novo.
 
-### 🎬 Cenas (cutscene) & NPCs vivos
+### 🎬 Cenas & NPCs vivos (em 🎬 Kit RPG: cenas)
 
 O jeito profissional de contar história:
 
@@ -539,7 +539,7 @@ O jeito profissional de contar história:
 - **Usar a folha de ANDAR** (🎞️) — 4 linhas (baixo/cima/esquerda/direita): o
   motor anima na direção certa quando anda. O RPG vivo.
 
-### 💾 Salvar
+### 💾 Salvar (em 💾 Kit RPG: salvar)
 
 **Salvar o jogo** / **Continuar o jogo salvo** / **tem jogo salvo?** — guarda o
 progresso do RPG (flags, itens, mapa, posição, atributos, poções, golpe especial) e
