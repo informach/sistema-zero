@@ -968,13 +968,18 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         className: f(block, 'CLASS'),
         args: getArgs(block),
       }
-    case 'sz_t3d_new':
+    case 'sz_t3d_new': {
+      // CLASS = referência completa: `THREE.Vector3` (namespace THREE) ou `GLTFLoader`
+      // (bare, sem namespace). Quebra no 1º ponto.
+      const ref = f(block, 'CLASS')
+      const dot = ref.indexOf('.')
       return {
         type: 'newExpr',
-        namespace: f(block, 'NS') || 'THREE',
-        className: f(block, 'CLASS'),
+        ...(dot > 0 ? { namespace: ref.slice(0, dot) } : {}),
+        className: dot > 0 ? ref.slice(dot + 1) : ref,
         args: getArgs(block),
       }
+    }
     case 'sz_val_object_op':
       return {
         type: 'objectOp',
@@ -3067,17 +3072,22 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           module: f(block, 'MODULE'),
         },
       }
-    case 'sz_t3d_new_var':
+    case 'sz_t3d_new_var': {
+      // CLASS = referência completa: `THREE.Scene` (namespace THREE) ou `GLTFLoader`
+      // (bare, addon sem namespace). Quebra no 1º ponto.
+      const ref = f(block, 'CLASS')
+      const dot = ref.indexOf('.')
       return {
         kind: 'js',
         value: {
           type: 'newInstance',
           varName: f(block, 'VARNAME'),
-          namespace: f(block, 'NS') || 'THREE',
-          className: f(block, 'CLASS'),
+          ...(dot > 0 ? { namespace: ref.slice(0, dot) } : {}),
+          className: dot > 0 ? ref.slice(dot + 1) : ref,
           args: getArgs(block),
         },
       }
+    }
     // ───── Canvas 3D: FACILITADORES → IR genérica (memberCall/memberSet/newExpr).
     // Cada um gera o MESMO código que o bloco manual; o reverso (bloco amigável)
     // vive no workspaceState.ts. Sem schema/parser novos.
@@ -3355,6 +3365,33 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'DO', seen),
         },
       }
+    case 'sz_t3d_traverse':
+      // `objeto.traverse((parte) => { … })` — percorrer cada parte de um objeto/modelo.
+      return {
+        kind: 'js',
+        value: {
+          type: 'traverseEach',
+          object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
+          param: f(block, 'PARAM') || 'parte',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_t3d_renderer_config': {
+      // Modernização do renderizador (forward-only) — os dropdowns viram a grafia atual.
+      const oneOf = <T extends string>(v: string, allowed: readonly T[], fallback: T): T =>
+        (allowed as readonly string[]).includes(v) ? (v as T) : fallback
+      return {
+        kind: 'js',
+        value: {
+          type: 'rendererConfig',
+          renderer: f(block, 'R'),
+          pixels: oneOf(f(block, 'PIXELS'), ['device', 'off'] as const, 'off'),
+          shadows: oneOf(f(block, 'SHADOWS'), ['soft', 'hard', 'off'] as const, 'off'),
+          colorSpace: oneOf(f(block, 'COLORSPACE'), ['srgb', 'off'] as const, 'off'),
+          toneMapping: oneOf(f(block, 'TONE'), ['aces', 'off'] as const, 'off'),
+        },
+      }
+    }
     case 'sz_js_call_method':
       return {
         kind: 'js',

@@ -1078,6 +1078,34 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     }
   }
 
+  // Canvas 3D: `objeto.traverse((parte) => { … });` → traverseEach (percorrer cada
+  // parte de um objeto/modelo). Forma exata: 1 arg, um arrow/função com 1 parâmetro.
+  // O objeto pode ser variável (modelo) OU propriedade (modelo.scene) — qualquer
+  // valor simples. Precede o matcher genérico de método (que rejeitaria o callback).
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'MemberExpression' &&
+    !expr.callee.computed &&
+    expr.callee.property?.name === 'traverse' &&
+    expr.arguments?.length === 1 &&
+    (expr.arguments[0]?.type === 'ArrowFunctionExpression' ||
+      expr.arguments[0]?.type === 'FunctionExpression')
+  ) {
+    const fn = expr.arguments[0]
+    const params = fn.params ?? []
+    if (params.length === 1 && params[0]?.type === 'Identifier') {
+      const object = toExpr(expr.callee.object, ctx)
+      if (isSimpleValue(object)) {
+        return {
+          type: 'traverseEach',
+          object,
+          param: params[0].name as string,
+          body: bodyOfFn(fn, source, ctx),
+        }
+      }
+    }
+  }
+
   if (expr?.type === 'AssignmentExpression' && expr.operator === '=') {
     // this.X = v → setThisProp (dentro de método/construtor).
     if (

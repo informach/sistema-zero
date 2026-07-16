@@ -49,11 +49,10 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     // CLASS = o construtor real do three.js (Scene, Mesh, PerspectiveCamera…).
     // O args-mutator (+/−) adiciona as tomadas de argumento.
     type: 'sz_t3d_new_var',
-    message0: 'criar %1 = novo %2 . %3',
+    message0: 'criar %1 = novo %2',
     args0: [
       { type: 'field_input', name: 'VARNAME', text: 'cena' },
-      { type: 'field_input', name: 'NS', text: 'THREE' },
-      { type: 'field_input', name: 'CLASS', text: 'Scene' },
+      { type: 'field_class_picker', name: 'CLASS', text: 'THREE.Scene' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -61,35 +60,32 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_args_mutator',
     tooltip:
-      'Cria um objeto do three.js e guarda numa variável. Escreva a classe REAL da biblioteca (Scene, PerspectiveCamera, Mesh, SphereGeometry, MeshStandardMaterial, DirectionalLight, Vector3, Color…). Use + para passar argumentos. Vira "const cena = new THREE.Scene(…)".',
+      'Cria um objeto do three.js e guarda numa variável. CLIQUE para ESCOLHER a classe (Scene, PerspectiveCamera, Mesh, SphereGeometry, MeshStandardMaterial, DirectionalLight, Vector3, Color…) — sem digitar. Use + para passar argumentos. Vira "const cena = new THREE.Scene(…)".',
   },
   {
     // Valor: `new THREE.Vector3(1,2,3)` numa tomada (argumento de método, etc.).
     type: 'sz_t3d_new',
-    message0: 'novo %1 . %2',
-    args0: [
-      { type: 'field_input', name: 'NS', text: 'THREE' },
-      { type: 'field_input', name: 'CLASS', text: 'Vector3' },
-    ],
+    message0: 'novo %1',
+    args0: [{ type: 'field_class_picker', name: 'CLASS', text: 'THREE.Vector3' }],
     inputsInline: true,
     output: 'JSValue',
     colour: C,
     mutator: 'sz_args_mutator',
     tooltip:
-      'Cria um objeto do three.js para usar direto numa tomada de valor (ex.: argumento de "adicionar" ou de um método). Vira "new THREE.Vector3(…)".',
+      'Cria um objeto do three.js para usar direto numa tomada de valor (ex.: argumento de "adicionar" ou de um método). CLIQUE para ESCOLHER a classe. Vira "new THREE.Vector3(…)".',
   },
   {
     // Import nomeado de um addon: `import { GLTFLoader } from 'three/addons/…'`.
     type: 'sz_t3d_import_named',
     message0: 'usar %1',
-    args0: [{ type: 'field_input', name: 'NAMES', text: 'GLTFLoader' }],
+    args0: [{ type: 'field_addon_picker', name: 'NAMES', text: 'GLTFLoader' }],
     message1: 'da biblioteca %1',
     args1: [{ type: 'field_input', name: 'MODULE', text: 'three/addons/loaders/GLTFLoader.js' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Traz uma ferramenta extra da biblioteca 3D (ex.: o carregador de modelos GLTFLoader) para o projeto. Vira "import { GLTFLoader } from \'three/addons/…\'". Separe vários nomes por vírgula.',
+      'Traz uma ferramenta extra da biblioteca 3D (carregadores, controles, efeitos). CLIQUE em "usar" e ESCOLHA — o caminho "three/addons/…" é preenchido sozinho. Vira "import { GLTFLoader } from \'three/addons/…\'".',
   },
 
   // ───────────────────────── 🎯 Transformar (Object3D) ────────────────────────
@@ -439,6 +435,75 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Carrega um modelo 3D (.glb) que você enviou em "Imagens" e, quando terminar, roda os blocos de dentro com o modelo pronto (ex.: "adicionar modelo.scene em cena"). Vira "carregador.load(\'nome\', (modelo) => { … })".',
   },
+  {
+    // `objeto.traverse((parte) => { … })` — percorrer cada parte de um objeto/modelo.
+    type: 'sz_t3d_traverse',
+    message0: 'para cada parte de %1',
+    args0: [{ type: 'input_value', name: 'OBJ', check: 'JSValue' }],
+    message1: 'com a parte em %1, fazer %2',
+    args1: [
+      { type: 'field_input', name: 'PARAM', text: 'parte' },
+      { type: 'input_statement', name: 'DO' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Passa por TODAS as partes de um objeto ou modelo carregado (a cena inteira do .glb, cada malha dentro de um grupo) e roda os blocos de dentro em cada uma — o jeito de ligar sombra em tudo, trocar materiais etc. Encaixe "propriedade cena de modelo" na entrada. Vira "objeto.traverse((parte) => { … })".',
+  },
+  {
+    // Modernização do renderizador em 1 bloco: cada dropdown vira a grafia ATUAL do
+    // three.js (setPixelRatio / shadowMap.type / outputColorSpace / toneMapping).
+    type: 'sz_t3d_renderer_config',
+    message0: 'modernizar o renderizador %1',
+    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    message1: 'nitidez na tela %1 · sombras %2',
+    args1: [
+      {
+        type: 'field_dropdown',
+        name: 'PIXELS',
+        options: [
+          ['retina (nítido)', 'device'],
+          ['não mexer', 'off'],
+        ],
+      },
+      {
+        type: 'field_dropdown',
+        name: 'SHADOWS',
+        options: [
+          ['macias', 'soft'],
+          ['duras', 'hard'],
+          ['não mexer', 'off'],
+        ],
+      },
+    ],
+    message2: 'cores %1 · brilho %2',
+    args2: [
+      {
+        type: 'field_dropdown',
+        name: 'COLORSPACE',
+        options: [
+          ['vivas (sRGB)', 'srgb'],
+          ['não mexer', 'off'],
+        ],
+      },
+      {
+        type: 'field_dropdown',
+        name: 'TONE',
+        options: [
+          ['cinema (ACES)', 'aces'],
+          ['não mexer', 'off'],
+        ],
+      },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga de uma vez os ajustes que deixam o 3D bonito e MODERNO — a criança só escolhe, o bloco escreve a grafia certa do three.js de hoje: nitidez na retina (setPixelRatio), sombras macias (shadowMap.type), cores vivas (outputColorSpace = SRGBColorSpace) e brilho de cinema (toneMapping = ACESFilmicToneMapping). Ponha "não mexer" no que não quiser.',
+  },
 ]
 
 export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[] = [
@@ -475,6 +540,7 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
     colour: C,
     types: [
       'sz_t3d_renderer_size',
+      'sz_t3d_renderer_config',
       'sz_t3d_enable_shadows',
       'sz_t3d_mount_renderer',
       'sz_t3d_render',
@@ -488,7 +554,7 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
   {
     name: '📦 Modelos',
     colour: C,
-    types: ['sz_t3d_load_model'],
+    types: ['sz_t3d_load_model', 'sz_t3d_traverse'],
   },
 ]
 

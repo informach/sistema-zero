@@ -4057,6 +4057,26 @@ export type JSStatement =
       param: string
       body: JSStatement[]
     })
+  // Canvas 3D: percorrer cada parte de um objeto/modelo (`obj.traverse((parte) => { … })`).
+  // `object` = o objeto (var ou propriedade, ex.: modelo.scene); `param` = o nome da parte.
+  | (JSStatementCommon & {
+      type: 'traverseEach'
+      object: JSExpr
+      param: string
+      body: JSStatement[]
+    })
+  // Canvas 3D: modernização do renderizador em 1 bloco (forward-only) — cada campo
+  // vira a grafia ATUAL do three.js (setPixelRatio / shadowMap.type /
+  // outputColorSpace / toneMapping); 'off' = não mexer. A Ponte reversa devolve os
+  // memberSet/memberCall genéricos (o parser não reconstrói este nó).
+  | (JSStatementCommon & {
+      type: 'rendererConfig'
+      renderer: string
+      pixels: 'device' | 'off'
+      shadows: 'soft' | 'hard' | 'off'
+      colorSpace: 'srgb' | 'off'
+      toneMapping: 'aces' | 'off'
+    })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -8045,6 +8065,22 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       url: JSExprSchema,
       param: irText(),
       body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('traverseEach'),
+      object: JSExprSchema,
+      param: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('rendererConfig'),
+      renderer: irText(),
+      pixels: z.enum(['device', 'off']),
+      shadows: z.enum(['soft', 'hard', 'off']),
+      colorSpace: z.enum(['srgb', 'off']),
+      toneMapping: z.enum(['aces', 'off']),
       ...idField,
     }),
     z.object({

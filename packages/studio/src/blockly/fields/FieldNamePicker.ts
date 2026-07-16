@@ -425,8 +425,11 @@ const OBJECT3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_torus: ['NAME'],
   sz_g3d_create_model: ['NAME'],
 }
-/** O "item" do "para cada no enxame" é um nome LOCAL de objeto 3D (escopo por ancestral). */
-const OBJECT3D_LOOP_BINDERS: Record<string, string[]> = { sz_g3d_for_each_swarm: ['ITEM'] }
+/** O "item" do "para cada no enxame" e a "parte" do traverse são nomes LOCAIS de objeto 3D. */
+const OBJECT3D_LOOP_BINDERS: Record<string, string[]> = {
+  sz_g3d_for_each_swarm: ['ITEM'],
+  sz_t3d_traverse: ['PARAM'],
+}
 /** Grupos/enxames do Jogo 3D (fonte dos seletores GROUP/SWARM). */
 const GROUP3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_group: ['NAME'],
@@ -458,6 +461,8 @@ const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
   sz_js_try_catch: ['ERR'],
   sz_val_array_map: ['ITEM'],
   sz_val_array_find: ['ITEM'],
+  // Canvas 3D: a "parte" do `objeto.traverse((parte) => { … })` é um nome LOCAL do corpo.
+  sz_t3d_traverse: ['PARAM'],
   // Ganchos do Jogo 2D Avançado: o tempo (dt), o pincel (ctx) e a posição do
   // clique (px/py) são nomes LOCAIS dos corpos dos ganchos.
   sz_gk_on_update: ['DT'],

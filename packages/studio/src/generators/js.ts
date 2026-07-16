@@ -126,6 +126,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'onClickAssign':
     case 'requestFrameDo':
     case 'loaderLoad':
+    case 'traverseEach':
     case 'setTimeout':
     case 'setInterval':
     case 'setTimeoutSeconds':
@@ -2762,6 +2763,33 @@ ${pad}});`
       )
       const url = compileExpr(stmt.url, 0, identifiers, recAt(base))
       return `${pad}${identifiers.get(stmt.loaderVar)}.load(${url}, (${identifiers.get(stmt.param)}) => {\n${body}\n${pad}});`
+    }
+    case 'traverseEach': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const obj = compileExpr(stmt.object, 0, identifiers, recAt(base))
+      return `${pad}${obj}.traverse((${identifiers.get(stmt.param)}) => {\n${body}\n${pad}});`
+    }
+    case 'rendererConfig': {
+      // Modernização (forward-only): cada escolha ≠ 'off' vira uma linha com a
+      // grafia ATUAL do three.js. 'off' = a linha não é emitida.
+      const r = identifiers.get(stmt.renderer)
+      const lines: string[] = []
+      if (stmt.pixels === 'device') lines.push(`${r}.setPixelRatio(window.devicePixelRatio);`)
+      if (stmt.shadows !== 'off') {
+        lines.push(`${r}.shadowMap.enabled = true;`)
+        lines.push(
+          `${r}.shadowMap.type = THREE.${stmt.shadows === 'soft' ? 'PCFSoftShadowMap' : 'BasicShadowMap'};`,
+        )
+      }
+      if (stmt.colorSpace === 'srgb') lines.push(`${r}.outputColorSpace = THREE.SRGBColorSpace;`)
+      if (stmt.toneMapping === 'aces') lines.push(`${r}.toneMapping = THREE.ACESFilmicToneMapping;`)
+      // Nada selecionado → statement vazio (raro; a criança removeria o bloco).
+      return lines.map((l) => `${pad}${l}`).join('\n')
     }
     case 'return':
       return stmt.value === undefined
@@ -5588,6 +5616,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.param)
       collectExprIdentifiers(stmt.url, names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'traverseEach':
+      collectExprIdentifiers(stmt.object, names)
+      names.add(stmt.param)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'rendererConfig':
+      names.add(stmt.renderer)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)

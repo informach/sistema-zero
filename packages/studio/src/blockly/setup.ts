@@ -14,8 +14,10 @@ import { registerIfElseMutator } from './blocks/ifElseMutator'
 import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
 import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE } from './buildIR'
+import { registerFieldAddonPicker } from './fields/FieldAddonPicker'
 import { registerFieldAnimationPicker } from './fields/FieldAnimationPicker'
 import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
+import { registerFieldClassPicker } from './fields/FieldClassPicker'
 import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldNamePicker } from './fields/FieldNamePicker'
 import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
@@ -279,6 +281,10 @@ export function ensureBlocklyInitialized(): void {
   registerFieldAnimationPicker()
   registerFieldSolidTilesPicker()
   registerFieldTileGrid()
+  // Campos de seleção do Canvas 3D (three.js): addon (import → caminho auto) e classe
+  // three. Mesma exigência de ordem: registrados antes dos blocos que os usam.
+  registerFieldAddonPicker()
+  registerFieldClassPicker()
   // Campo de seleção de NOME (variável / grupo-lista já criados) — mesma exigência de
   // ordem: registrado antes dos blocos do núcleo e da extensão que o usam.
   registerFieldNamePicker()

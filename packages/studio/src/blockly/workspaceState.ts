@@ -2,6 +2,7 @@ import { compileStatements } from '#generators'
 import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR } from '#ir'
 import { screenTextToExpr, valueToExpr } from '#ir'
 import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE, SHADOW_PRESETS } from './buildIR'
+import { ADDON_CLASSES } from './fields/FieldClassPicker'
 import { LEGACY_VALUE_FIELDS } from './migrateValueFields'
 
 /** Tags container (têm input CHILDREN) → tipo de bloco. */
@@ -5868,22 +5869,27 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (stmt.superClass) b.extraState = { extends: stmt.superClass }
       return b
     }
-    case 'newInstance':
-      // Com namespace (biblioteca, ex.: THREE) → o bloco da Canvas 3D; sem →
-      // o bloco genérico de classe do aluno.
-      return stmt.namespace
-        ? callWithArgs(
-            'sz_t3d_new_var',
-            { VARNAME: stmt.varName, NS: stmt.namespace, CLASS: stmt.className },
-            stmt.args ?? [],
-            stmt,
-          )
-        : callWithArgs(
-            'sz_js_new_var',
-            { VARNAME: stmt.varName, CLASS: stmt.className },
-            stmt.args ?? [],
-            stmt,
-          )
+    case 'newInstance': {
+      // Canvas 3D: com namespace (`new THREE.X`) OU classe de ADDON conhecida sob um
+      // projeto three (`new GLTFLoader()`) → o bloco Canvas 3D, com CLASS = referência
+      // completa (`THREE.Scene` / `GLTFLoader`). Senão → o bloco genérico do aluno.
+      const t3dNamed = !!stmt.namespace || (recognizeThree && ADDON_CLASSES.has(stmt.className))
+      if (t3dNamed) {
+        const ref = stmt.namespace ? `${stmt.namespace}.${stmt.className}` : stmt.className
+        return callWithArgs(
+          'sz_t3d_new_var',
+          { VARNAME: stmt.varName, CLASS: ref },
+          stmt.args ?? [],
+          stmt,
+        )
+      }
+      return callWithArgs(
+        'sz_js_new_var',
+        { VARNAME: stmt.varName, CLASS: stmt.className },
+        stmt.args ?? [],
+        stmt,
+      )
+    }
     case 'importStar':
       return block('sz_t3d_import', { NAME: stmt.name }, {}, stmt.__id)
     case 'importNamed':
@@ -6026,6 +6032,33 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt.__id,
       )
     }
+    case 'traverseEach': {
+      // `objeto.traverse((parte) => { … })` — o objeto vem no soquete OBJ.
+      const obj = exprToValueBlock(stmt.object)
+      if (!obj) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_traverse',
+        { PARAM: stmt.param },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+        { OBJ: obj },
+      )
+    }
+    case 'rendererConfig':
+      // Forward-only: só chega aqui via block→IR→block (o parser não reconstrói o nó);
+      // remonta os dropdowns. Do CÓDIGO, as linhas voltam como blocos genéricos.
+      return block(
+        'sz_t3d_renderer_config',
+        {
+          R: stmt.renderer,
+          PIXELS: stmt.pixels,
+          SHADOWS: stmt.shadows,
+          COLORSPACE: stmt.colorSpace,
+          TONE: stmt.toneMapping,
+        },
+        {},
+        stmt.__id,
+      )
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)
@@ -6923,12 +6956,14 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
         if (!vb) return null
         valueInputs[`ARG${i}`] = vb
       }
-      // Com namespace (`new THREE.X()`) → o bloco da Canvas 3D (guarda NS+CLASS);
-      // sem → o bloco genérico de classe do aluno.
-      const b = expr.namespace
+      // Com namespace (`new THREE.X()`) OU classe de ADDON sob three (`new
+      // GLTFLoader()`) → o bloco Canvas 3D (CLASS = referência completa); senão → o
+      // bloco genérico de classe do aluno.
+      const t3dNamed = !!expr.namespace || (recognizeThree && ADDON_CLASSES.has(expr.className))
+      const b = t3dNamed
         ? block(
             'sz_t3d_new',
-            { NS: expr.namespace, CLASS: expr.className },
+            { CLASS: expr.namespace ? `${expr.namespace}.${expr.className}` : expr.className },
             {},
             expr.__id,
             valueInputs,

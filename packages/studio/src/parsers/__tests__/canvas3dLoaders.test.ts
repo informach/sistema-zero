@@ -83,6 +83,34 @@ describe('Canvas 3D Fase 2 — loaderLoad (carregamento async)', () => {
   })
 })
 
+describe('Canvas 3D — traverse (percorrer cada parte)', () => {
+  it('modelo.traverse((parte) => {…}) com var → traverseEach (0 raw, regen igual, bloco)', () => {
+    const src = ['modelo.traverse((parte) => {', '  parte.castShadow = true;', '});'].join('\n')
+    const ir = parseJS(src)
+    expect(JSON.stringify(ir)).not.toContain('"rawJS"')
+    expect(ir.some((s) => s.type === 'traverseEach')).toBe(true)
+    const code = generateJS({ statements: ir })
+    expect(generateJS({ statements: parseJS(code) })).toBe(code) // fixpoint
+    const { rebuiltCode, stateJson } = roundtripBlocks(code)
+    expect(stateJson).toContain('"sz_t3d_traverse"')
+    expect(rebuiltCode).toBe(code) // round-trip de blocos byte-idêntico
+    expect(rebuiltCode).toContain('modelo.traverse((parte) => {')
+  })
+
+  it('gltf.scene.traverse((peca) => {…}) com PROPRIEDADE no objeto → traverseEach', () => {
+    const src = ['gltf.scene.traverse((peca) => {', '  peca.receiveShadow = true;', '});'].join(
+      '\n',
+    )
+    const ir = parseJS(src)
+    expect(JSON.stringify(ir)).not.toContain('"rawJS"')
+    expect(ir.some((s) => s.type === 'traverseEach')).toBe(true)
+    const code = generateJS({ statements: ir })
+    const { rebuiltCode } = roundtripBlocks(code)
+    expect(rebuiltCode).toBe(code)
+    expect(rebuiltCode).toContain('gltf.scene.traverse((peca) => {')
+  })
+})
+
 describe('Canvas 3D Fase 2 — cena completa de carregamento (0 raw)', () => {
   it('import + GLTFLoader + TextureLoader + AnimationMixer + load round-trippam', () => {
     const scene = [
