@@ -26,6 +26,9 @@ export interface FakeRenderer {
    * também renderiza um quad com câmera ortográfica própria.
    */
   camera: RealTHREE.PerspectiveCamera | null
+  /** A CENA viva, capturada junto da câmera (mesmo filtro anti-quad do composer)
+   *  — é como os testes observam luz/sombras e as partículas (Points/drawRange). */
+  scene: RealTHREE.Scene | null
   shadowMap: { enabled: boolean; type: number }
   toneMapping: number
   setPixelRatio: (n: number) => void
@@ -57,6 +60,7 @@ export function makeFakeThree() {
       forceContextLossCalls: 0,
       loop: null,
       camera: null,
+      scene: null,
       shadowMap: { enabled: false, type: 0 },
       toneMapping: 0,
       setPixelRatio: () => {},
@@ -72,7 +76,10 @@ export function makeFakeThree() {
         const s = scene as { updateMatrixWorld?: () => void } | undefined
         if (s?.updateMatrixWorld) s.updateMatrixWorld()
         const c = camera as RealTHREE.PerspectiveCamera | undefined
-        if (c?.isPerspectiveCamera) r.camera = c
+        if (c?.isPerspectiveCamera) {
+          r.camera = c
+          r.scene = (scene as RealTHREE.Scene) ?? null
+        }
       },
       dispose: () => {
         r.disposeCalls += 1
@@ -96,6 +103,7 @@ export function makeFakeThree() {
 export interface KitApi {
   setup(opts: Record<string, unknown>): void
   start(): void
+  state(): string
   setState(name: string): void
   defineMold(name: string, opts: Record<string, unknown>, fn: () => void): void
   part(opts: Record<string, unknown>): void
@@ -147,6 +155,14 @@ export interface KitApi {
   hideSay(e: unknown): void
   forEachAlive(mold: string, fn: (e: unknown) => void): void
   startSpawner(mold: string, seconds: number, where: string): void
+  // 6º review: identidade, rumo a ponto, barra de vida e jorros múltiplos.
+  isMold(e: unknown, mold: string): boolean
+  seekPoint(e: unknown, x: number, z: number): void
+  showHealthBar(mold: string, on: boolean): void
+  defineEmitter(name: string, opts: Record<string, unknown>): void
+  startEmitter(name: string, x: number, y: number, z: number): void
+  emitterOn(name: string, e: unknown): void
+  stopEmitter(name: string): void
   // Orientação & câmera — o que a suíte de direção exercita.
   velocityOf(e: unknown, axis: string): number
   setYaw(e: unknown, degrees: number): void
@@ -204,4 +220,53 @@ export async function loadStartedKit(beforeStart?: (api: KitApi) => void): Promi
   // Primeiro tick fixa o _lastT (dt = 0).
   step(1)
   return { api, renderers, step }
+}
+
+/**
+ * Carrega o runtime + o JS GERADO de um exemplo (que já traz o `setup(...)` no
+ * começo e o `start()` no fim — por isso este loader não chama nenhum dos dois).
+ * É a bancada do playthrough: o exemplo roda EXATAMENTE como no preview, e o
+ * teste joga por cima (botão do menu, teclado, quadros).
+ *
+ * O `stage` devolvido é o palco DESTA instância (o último `#szg3k-stage` do
+ * documento — os testes acumulam palcos no happy-dom; despache `pagehide` no
+ * afterEach para o disposeAll recolher os antigos).
+ */
+export async function loadExampleKit(exampleJs: string): Promise<{
+  api: KitApi
+  renderers: FakeRenderer[]
+  step: (frames: number) => void
+  stage: Element
+}> {
+  const { THREE, renderers } = makeFakeThree()
+  const win = globalThis.window as unknown as Record<string, unknown>
+  new Function('THREE', 'window', runtimeBody)(THREE, win)
+  const api = win.SZGameKit3D as KitApi
+  // O exemplo referencia o identificador SZGameKit3D "solto" — entra como
+  // parâmetro (não confiar no reflexo de globais do happy-dom).
+  new Function('SZGameKit3D', 'window', exampleJs)(api, win)
+  // O start() do fim do exemplo espera Promise.all(pending). Os exemplos são
+  // asset-free (pending vazio, resolve num microtick), mas o poll fica: se um
+  // dia um exemplo ganhar asset e o gate regredir, é AQUI que ele congela.
+  for (let i = 0; i < 60 && !renderers[0]?.loop; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 5))
+  }
+  if (!renderers[0]?.loop) {
+    throw new Error(`o loop nunca ligou — preso em "carregando"? estado: ${api.state()}`)
+  }
+  let now = 0
+  const step = (frames: number) => {
+    const loop = renderers[0]?.loop
+    if (!loop) throw new Error('loop não ligado')
+    for (let i = 0; i < frames; i++) {
+      now += 33.4
+      loop(now)
+    }
+  }
+  // Primeiro tick fixa o _lastT (dt = 0).
+  step(1)
+  const stages = document.querySelectorAll('#szg3k-stage')
+  const stage = stages[stages.length - 1]
+  if (!stage) throw new Error('o palco #szg3k-stage não montou')
+  return { api, renderers, step, stage }
 }

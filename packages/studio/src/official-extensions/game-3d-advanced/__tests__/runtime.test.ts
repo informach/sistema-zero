@@ -322,16 +322,30 @@ describe('SZGameKit3D — física', () => {
   })
 
   // ---- Zonas ----
-  it('⭐ zona dispara ao ENTRAR (uma vez), não a cada quadro', async () => {
+  // ⚠️ Os dois testes de zona incluem um SÓLIDO no mundo de propósito: o
+  // resolveSolids só roda sob anySolid, então um mundo só-de-zonas nunca armava
+  // o ramo que empurrava — e foi exatamente assim que "zona vira parede em
+  // qualquer jogo com chão" passou verde por três versões.
+  function defineFloor(api: KitApi) {
+    api.defineMold('piso', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#333', w: 30, h: 0.5, d: 30, x: 0, y: 0, z: 0 })
+    })
+    api.makeSolid('piso')
+  }
+
+  it('⭐ zona dispara ao ENTRAR (uma vez), não a cada quadro — com sólido no mundo', async () => {
     const { api, step } = await loadStartedKit()
     api.defineMold('moeda', { health: 1, speed: 0 }, () => {
       api.part({ shape: 'sphere', color: '#fde047', w: 0.7, h: 0.7, d: 0.7, x: 0, y: 0, z: 0 })
     })
     defineHero(api)
+    defineFloor(api)
     api.makeTrigger('moeda')
     api.setState('jogando')
-    api.spawn('moeda', 3, 0.5, 0)
+    api.spawn('piso', 0, -0.5, 0)
+    api.spawn('moeda', 3, 0.6, 0)
     const h = api.spawn('heroi', 0, 0, 0)
+    api.fall(h, 20) // com gravidade E sólido, o caminho é o de um jogo real
     let hits = 0
     api.onOverlap('moeda', () => {
       hits += 1
@@ -341,18 +355,23 @@ describe('SZGameKit3D — física', () => {
     expect(hits).toBe(1)
   })
 
-  it('zona NÃO empurra: dá para atravessar', async () => {
+  it('⭐ zona NÃO empurra mesmo com sólidos no mundo: dá para atravessar', async () => {
     const { api, step } = await loadStartedKit()
     api.defineMold('moeda', { health: 1, speed: 0 }, () => {
       api.part({ shape: 'sphere', color: '#fde047', w: 0.7, h: 0.7, d: 0.7, x: 0, y: 0, z: 0 })
     })
     defineHero(api)
+    defineFloor(api)
     api.makeTrigger('moeda')
     api.setState('jogando')
-    api.spawn('moeda', 3, 0.5, 0)
+    api.spawn('piso', 0, -0.5, 0)
+    api.spawn('moeda', 3, 0.6, 0)
     const h = api.spawn('heroi', 0, 0, 0)
+    api.fall(h, 20)
     api.setVelocity(h, 3, 0, 0)
     step(60)
+    // Antes do filtro do resolveSolids, a moeda BARRAVA o herói (parede) — ele
+    // parava em x≈2.3 e o jogo inteiro de coleta morria em silêncio.
     expect(api.posOf(h, 'x')).toBeGreaterThan(4)
   })
 
@@ -806,5 +825,176 @@ describe('SZGameKit3D — física', () => {
     api.setVelocity(h, 0, 0, 3) // anda subindo a rampa (+Z)
     step(40)
     expect(api.posOf(h, 'y')).toBeGreaterThan(y0)
+  })
+})
+
+describe('SZGameKit3D — 6º review: identidade, rumo, barras e jorros', () => {
+  function defineBicho(api: KitApi, name = 'bicho', health = 100) {
+    api.defineMold(name, { health, speed: 4 }, () => {
+      api.part({ shape: 'box', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+  }
+
+  it('⭐ estático renascido do pool RENDERIZA no lugar novo (matriz re-assada)', async () => {
+    // O playthrough do Tiro ao Alvo pegou: a vida ESTÁTICA anterior congela a
+    // matriz (matrixAutoUpdate=false) e o renascido ficava desenhado (e
+    // clicável) no lugar da vida passada — .position no lugar novo, fantasma
+    // na tela. Movedor se cura (re-arma o flag); o parado-para-sempre não.
+    const { api, step } = await loadStartedKit()
+    defineBicho(api)
+    api.setState('jogando')
+    const e = api.spawn('bicho', 3, 0, 3)
+    step(5) // congela a matriz (split estático)
+    api.recycle(e)
+    const e2 = api.spawn('bicho', -8, 0, -8) // reusa o slot
+    expect(e2).toBe(e)
+    step(2) // o render (fake) roda scene.updateMatrixWorld()
+    const mesh = (e2 as { mesh: { matrixWorld: { elements: number[] } } }).mesh
+    const el = mesh.matrixWorld.elements
+    expect(el[12]).toBeCloseTo(-8, 4) // a COLUNA de translação da matrixWorld
+    expect(el[14]).toBeCloseTo(-8, 4)
+  })
+
+  it('isMold responde a identidade (o filtro do "quem" das zonas)', async () => {
+    const { api } = await loadStartedKit()
+    defineBicho(api)
+    defineBicho(api, 'outro')
+    api.setState('jogando')
+    const e = api.spawn('bicho', 0, 0, 0)
+    expect(api.isMold(e, 'bicho')).toBe(true)
+    expect(api.isMold(e, 'outro')).toBe(false)
+    api.recycle(e)
+    expect(api.isMold(e, 'bicho')).toBe(false) // recolhido não é mais ninguém
+  })
+
+  it('seekPoint anda rumo ao ponto SÓ no plano e para ao chegar', async () => {
+    const { api, step } = await loadStartedKit()
+    defineBicho(api)
+    api.setState('jogando')
+    const e = api.spawn('bicho', 0, 0, 0)
+    api.setVelocity(e, 0, 5, 0) // sobe — o rumo não pode roubar o Y
+    api.seekPoint(e, 10, 0)
+    expect(api.velocityOf(e, 'x')).toBeCloseTo(4) // velocidade do molde
+    expect(api.velocityOf(e, 'y')).toBeCloseTo(5) // Y intocado
+    step(3)
+    // Em cima do destino: para de empurrar (senão vibra no ponto p/ sempre).
+    api.place(e, 10, 0, 0)
+    api.seekPoint(e, 10, 0)
+    expect(api.velocityOf(e, 'x')).toBe(0)
+    expect(api.velocityOf(e, 'z')).toBe(0)
+  })
+
+  it('⭐ barra de vida: nasce com o molde marcado, encolhe com o dano e some na morte', async () => {
+    const { api, step } = await loadStartedKit()
+    defineBicho(api)
+    api.showHealthBar('bicho', true)
+    api.setState('jogando')
+    const e = api.spawn('bicho', 0, 0, 0)
+    step(2)
+    const barras = () => document.querySelectorAll('.szg3k-bar')
+    expect(barras().length).toBe(1)
+    api.hurt(e, 50)
+    step(2)
+    const fill = document.querySelector('.szg3k-bar i') as { style: { width: string } } | null
+    expect(fill?.style.width).toBe('50%')
+    step(20) // passa a invencibilidade (0.5 s)
+    api.hurt(e, 60) // morre
+    step(2)
+    expect(barras().length).toBe(0)
+  })
+
+  it('⭐ DOIS jorros da mesma receita convivem (a tabela antiga apagava o 1º em silêncio)', async () => {
+    const { api, step, renderers } = await loadStartedKit()
+    api.setSeed(5)
+    api.defineEmitter('fogo', {
+      rate: 30,
+      life: 1,
+      speed: 0.5,
+      cone: 10,
+      gravity: 0,
+      glow: true,
+      curve: 'suave',
+    })
+    api.setState('jogando')
+    api.startEmitter('fogo', 0, 1, 0)
+    api.startEmitter('fogo', 10, 1, 0)
+    step(30) // ~1 s: cada jorro mantém ~30 grãos vivos
+    let vivos = 0
+    renderers[0]?.scene?.traverse((o) => {
+      const p = o as unknown as { isPoints?: boolean; geometry?: { drawRange?: { count: number } } }
+      if (p.isPoints) vivos += p.geometry?.drawRange?.count ?? 0
+    })
+    // Um jorro só chegaria a ~30; dois convivendo passam com folga de 45.
+    expect(vivos).toBeGreaterThan(45)
+  })
+
+  it('jorro preso em entidade morre com o slot RECICLADO (marca de geração)', async () => {
+    const { api, step, renderers } = await loadStartedKit()
+    api.setSeed(5)
+    defineBicho(api)
+    api.defineEmitter('rastro', {
+      rate: 30,
+      life: 0.4,
+      speed: 0.5,
+      cone: 10,
+      gravity: 0,
+      glow: true,
+      curve: 'suave',
+    })
+    api.setState('jogando')
+    const a = api.spawn('bicho', 0, 0, 0)
+    api.emitterOn('rastro', a)
+    step(10)
+    const conta = () => {
+      let vivos = 0
+      renderers[0]?.scene?.traverse((o) => {
+        const p = o as unknown as {
+          isPoints?: boolean
+          geometry?: { drawRange?: { count: number } }
+        }
+        if (p.isPoints) vivos += p.geometry?.drawRange?.count ?? 0
+      })
+      return vivos
+    }
+    expect(conta()).toBeGreaterThan(0) // controle: o rastro está aceso
+    api.recycle(a)
+    api.spawn('bicho', 5, 0, 5) // reusa o slot com OUTRA geração
+    step(30) // 1 s ≫ vida 0.4 s: sem emissão nova, tudo apaga
+    expect(conta()).toBe(0)
+  })
+
+  it('sombra do sol leva o normalBias do curso e a textura de peça é sRGB', async () => {
+    ;(globalThis.window as unknown as Record<string, unknown>).__SZGAME_ASSETS = {
+      'estampa.png':
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    }
+    const { api, step, renderers } = await loadStartedKit((k) => {
+      k.defineMold('caixa', { health: 1, speed: 0 }, () => {
+        k.part({
+          shape: 'box',
+          color: '#fff',
+          texture: 'estampa.png',
+          w: 1,
+          h: 1,
+          d: 1,
+          x: 0,
+          y: 0.5,
+          z: 0,
+        })
+      })
+    })
+    api.setState('jogando')
+    const e = api.spawn('caixa', 0, 0, 0)
+    step(1)
+    let bias = -1
+    renderers[0]?.scene?.traverse((o) => {
+      const l = o as unknown as { isDirectionalLight?: boolean; shadow?: { normalBias: number } }
+      if (l.isDirectionalLight && l.shadow) bias = l.shadow.normalBias
+    })
+    expect(bias).toBe(0.05)
+    const ent = e as { mesh: { children: Array<{ material?: { map?: { colorSpace?: string } } }> } }
+    const map = ent.mesh.children[0]?.material?.map
+    expect(map?.colorSpace).toBe('srgb')
+    delete (globalThis.window as unknown as Record<string, unknown>).__SZGAME_ASSETS
   })
 })

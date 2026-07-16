@@ -49,6 +49,9 @@ secrets/
 # Claude Code (config local + biblioteca de skills — tooling, não código do projeto)
 .claude/
 
+# Agentes (skills de sessão — tooling, não código do projeto)
+.agents/
+
 # Playwright MCP (artefatos de sessão de teste no browser)
 .playwright-mcp/
 

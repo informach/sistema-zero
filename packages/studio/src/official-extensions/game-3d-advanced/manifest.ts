@@ -5,12 +5,13 @@ import {
   parkourDoVulcaoExample,
   quadraMalucaExample,
   saltoNasNuvensExample,
+  tiroAoAlvoExample,
 } from './examples'
 
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.6.0',
+  version: '0.7.0',
   description:
     'A base de um jogo 3D profissional, portada de um curso de engine — um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha a cada estado; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com girar, zoom e tremor, e o WASD sempre relativo a ela; partículas; enxames com pool; vizinhança por grade; combate, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
@@ -45,6 +46,9 @@ O que o motor já faz por você:
   do curso).
 - **Combate com invencibilidade** — machucar dá meio segundo de piscada
   invencível; vida no zero roda o "quando for derrotado" e recolhe sozinho.
+- **Barra de vida flutuante** — "Mostrar a barra de vida do molde" pendura uma
+  barrinha sobre a cabeça de cada entidade viva do molde (verde → vermelha),
+  que acompanha ela pela tela. O chefão e o inimigo de RPG agradecem.
 - **Laço com delta-time (dt)** — o "A cada quadro" recebe quanto durou o
   último quadro, em segundos. O jogo anda igual em qualquer computador.
 
@@ -78,6 +82,11 @@ A torre profissional funciona assim, e você monta igual, em blocos:
 Toda entidade NASCE no estado \`parado\`. Mudar para o estado em que já está
 não faz nada (proteção dos jogos de verdade).
 
+A morte do "Machucar" recolhe NA HORA (de propósito). Quer a morte DRAMÁTICA
+do curso — o bicho cai uns segundos antes de sumir? Faça a SUA: guarde a vida
+numa gaveta e, quando zerar, mude para um estado "morrendo" (ligue a queda,
+espere 2 s com a transição por tempo e recolha ao entrar no estado seguinte).
+
 ### Enxames, alvos e vizinhos
 
 - O "Nascer 1… chamando de" dá um APELIDO (herói, cristal, chefão). Os
@@ -86,6 +95,9 @@ não faz nada (proteção dos jogos de verdade).
   padrão de mira: o alvo pode ter sido derrotado — pergunte antes de usar.
 - "Para cada vizinho a até X" é a colisão em área: o tiro pergunta quem do
   molde invasor está a até 1 dele.
+- **"Andar rumo ao ponto x z"** leva a entidade a um LUGAR do mundo (waypoint)
+  na velocidade do molde, e para ao chegar. Com "sortear de … a …" nos dois
+  eixos + uma transição por tempo, vira PASSEIO: o bicho vagueia sozinho.
 
 ### Física & mundo sólido (🏃 Física)
 
@@ -124,13 +136,17 @@ O motor de entidade tem física de verdade — feita à mão, sem biblioteca:
   avisa: **Quando alguém encostar em … do molde …** roda na hora em que a
   entidade ENTRA (uma vez por entrada, não a cada quadro). É a moeda, a porta,
   a armadilha, a linha de chegada.
+- ⭐ O "quem" da zona pode ser QUALQUER corpo que entrou — o herói, uma bola,
+  um tiro perdido. Pergunte **"… é do molde …?"** antes de contar o ponto: é o
+  filtro de alvo dos jogos de verdade (sem ele, uma bola caindo através de
+  outra contava como "pega").
 - **Quicar** (trampolim, bola pula-pula) e **atrito** (0 = gelo, 1 = gruda)
   valem tanto para a coisa que cai quanto para o chão — veja a regra do "maior
   manda" lá em cima.
 - Um tiro rápido **não atravessa** mais parede fina: o motor parte o passo do
   quadro em pedaços quando a entidade anda mais que a própria espessura.
 
-### Formas, modelos, texturas & luz (🧱 peças, 💡 Luz & céu)
+### Formas, modelos, texturas & luz (🧊 Moldes & peças, 💡 Luz & céu)
 
 - As **peças** dos moldes vêm em muitas formas (caixa, bola, cilindro, cone,
   **plano, rosca, pirâmide, rampa**), com **material** (fosco, metal, vidro,
@@ -183,6 +199,10 @@ Escolha a câmera — **seguir** alguém, **girar em volta** (órbita, arrastáv
   point-and-click, da estratégia e da torre-por-clique.
 - **O mouse está sobre …?** e **o ponto do chão sob o mouse** (eixo x/y/z)
   completam a mira: brilhar ao passar o mouse, mover algo até o clique.
+- **"O mouse foi clicado agora?"** e **"o mouse está apertado?"** são o GATILHO
+  do point-and-click: "se o mouse foi clicado agora → guardar quem está sob o
+  mouse → acertou!". O primeiro vale só no quadro do clique (como a tecla
+  "apertada agora"); o segundo, enquanto o dedo segura.
 - **Câmera em 1ª pessoa em …** vê o mundo pelos olhos da entidade (clique para
   capturar o mouse e olhar em volta); **Mover … em 1ª pessoa** anda para onde
   a câmera olha (WASD relativo ao olhar).
@@ -201,6 +221,12 @@ Escolha a câmera — **seguir** alguém, **girar em volta** (órbita, arrastáv
   ou **em cima de uma entidade** (ele acompanha); "Desligar" para de jorrar.
 - **Atratores** ("Puxar as faíscas … para") criam um ímã que suga as
   partículas para um ponto — vórtice, buraco negro, vento. Pode pôr vários.
+- **Vários jorros da MESMA receita convivem** (duas tochas na parede, rastro em
+  cada nave — até 8 por efeito): religar no mesmo lugar não duplica, e
+  "Desligar o jorro" apaga todos os da receita. Para um jorro que ANDA, prenda
+  numa entidade.
+- A curva **"fogo"** faz o truque-assinatura do curso: o grão NASCE luz pura
+  (brilho que soma) e MORRE fumaça (cobre o fundo), numa passada só.
 - **Efeitos de cinema** já vêm ligados: sombras, brilho (bloom — as coisas
   claras "vazam" luz, como o tiro amarelo) e vinheta (cantos escuros). Num
   computador fraco, desligue no bloco "Efeitos de cinema" (modo turbo).
@@ -264,5 +290,6 @@ obedece à semente.
     parkourDoVulcaoExample,
     quadraMalucaExample,
     guardiaoDoPortalExample,
+    tiroAoAlvoExample,
   ],
 }

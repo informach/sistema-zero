@@ -3278,63 +3278,73 @@ export const quadraMalucaExample: ExtensionExample = {
         whoName: 'quem',
         body: [
           {
-            type: 'g3k:burstOn',
-            effect: 'plim',
-            charVar: 'zona',
-          },
-          {
-            type: 'g3k:playEffect',
-            fx: 'coin',
-          },
-          {
-            type: 'g3k:cameraShake',
-            strength: {
-              type: 'num',
-              value: 0.3,
-            },
-            seconds: {
-              type: 'num',
-              value: 0.25,
-            },
-          },
-          {
-            type: 'g3k:recycle',
-            charVar: 'zona',
-          },
-          {
-            type: 'assign',
-            name: 'pegou',
-            value: {
-              type: 'binop',
-              op: '+',
-              left: {
-                type: 'var',
-                name: 'pegou',
-              },
-              right: {
-                type: 'num',
-                value: 1,
-              },
-            },
-          },
-          {
             type: 'if',
             cond: {
-              type: 'binop',
-              op: '>=',
-              left: {
-                type: 'var',
-                name: 'pegou',
-              },
-              right: {
-                type: 'num',
-                value: 5,
-              },
+              type: 'g3k:isMold',
+              charVar: 'quem',
+              mold: 'heroi',
             },
             then: [
               {
-                type: 'g3k:setState',
-                name: 'vitoria',
+                type: 'g3k:burstOn',
+                effect: 'plim',
+                charVar: 'zona',
+              },
+              {
+                type: 'g3k:playEffect',
+                fx: 'coin',
+              },
+              {
+                type: 'g3k:cameraShake',
+                strength: {
+                  type: 'num',
+                  value: 0.3,
+                },
+                seconds: {
+                  type: 'num',
+                  value: 0.25,
+                },
+              },
+              {
+                type: 'g3k:recycle',
+                charVar: 'zona',
+              },
+              {
+                type: 'assign',
+                name: 'pegou',
+                value: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'var',
+                    name: 'pegou',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '>=',
+                  left: {
+                    type: 'var',
+                    name: 'pegou',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 5,
+                  },
+                },
+                then: [
+                  {
+                    type: 'g3k:setState',
+                    name: 'vitoria',
+                  },
+                ],
               },
             ],
           },
@@ -3777,6 +3787,11 @@ export const guardiaoDoPortalExample: ExtensionExample = {
         kind: 'bola',
       },
       {
+        type: 'g3k:showHealthBar',
+        mold: 'portal',
+        on: true,
+      },
+      {
         type: 'g3k:defineEffect',
         name: 'poeira',
         count: {
@@ -4095,6 +4110,41 @@ export const guardiaoDoPortalExample: ExtensionExample = {
                 charVar: 'ela',
                 targetVar: 'alvo',
               },
+              {
+                type: 'if',
+                cond: {
+                  type: 'g3k:touches',
+                  aVar: 'ela',
+                  bVar: 'alvo',
+                  dist: {
+                    type: 'num',
+                    value: 2.2,
+                  },
+                },
+                then: [
+                  {
+                    type: 'g3k:hurt',
+                    charVar: 'alvo',
+                    amount: {
+                      type: 'num',
+                      value: 15,
+                    },
+                  },
+                  {
+                    type: 'g3k:burstOn',
+                    effect: 'poeira',
+                    charVar: 'ela',
+                  },
+                  {
+                    type: 'g3k:playEffect',
+                    fx: 'hit',
+                  },
+                  {
+                    type: 'g3k:recycle',
+                    charVar: 'ela',
+                  },
+                ],
+              },
             ],
           },
           {
@@ -4176,6 +4226,794 @@ export const guardiaoDoPortalExample: ExtensionExample = {
                 },
               },
             ],
+          },
+        ],
+      },
+      {
+        type: 'g3k:onEntityDeath',
+        mold: 'portal',
+        itemName: 'ela',
+        body: [
+          {
+            type: 'g3k:burstOn',
+            effect: 'poeira',
+            charVar: 'ela',
+          },
+          {
+            type: 'g3k:playEffect',
+            fx: 'gameover',
+          },
+          {
+            type: 'g3k:endGame',
+          },
+        ],
+      },
+      {
+        type: 'g3k:start',
+      },
+    ],
+  },
+}
+
+/**
+ * Exemplo "Tiro ao Alvo" — o point-and-click do kit: alvos aparecem e fogem,
+ * a criança CLICA para acertar (mousePressed + pick), o dourado vale 3 pela
+ * gaveta da entidade, o aviso "acertou" toca som/treme a câmera, e uma tela
+ * PRÓPRIA de dica abre com H. Cobre as famílias que nenhum outro exemplo
+ * exercitava: mira & clique, avisos, tela própria, gaveta da entidade,
+ * teclas por "apertada agora?", céu em runtime e lente/ângulo da câmera.
+ *
+ * A IR abaixo foi GERADA pelo parser real a partir do fonte em __gen_tiro.ts
+ * (o drift test em __tests__/tiroExample.test.ts compara os dois). Se o parser
+ * mudar a forma canônica, re-rode o gerador e cole aqui.
+ */
+export const tiroAoAlvoExample: ExtensionExample = {
+  name: 'Tiro ao Alvo',
+  description:
+    'Point-and-click: alvos aparecem e fogem, e cada CLIQUE certeiro vale pontos (o dourado vale 3). Tela de dica própria, aviso de acerto e lente de mira — feche 12 pontos em 25 segundos.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    js: [
+      {
+        type: 'g3k:setup',
+        w: {
+          type: 'num',
+          value: 1280,
+        },
+        h: {
+          type: 'num',
+          value: 720,
+        },
+        world: {
+          type: 'num',
+          value: 40,
+        },
+        sky: '#1e1b4b',
+        ground: '#365314',
+      },
+      {
+        type: 'g3k:setEffects',
+        shadows: true,
+        bloom: true,
+        strength: {
+          type: 'num',
+          value: 1.1,
+        },
+        vignette: true,
+      },
+      {
+        type: 'g3k:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Tiro ao Alvo',
+        },
+        text: {
+          type: 'str',
+          value:
+            'Clique nos alvos antes que eles fujam. O dourado vale 3! Faça 12 pontos em 25 segundos. Aperte H para a dica.',
+        },
+        button: {
+          type: 'str',
+          value: 'Valendo!',
+        },
+      },
+      {
+        type: 'g3k:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'Olho de águia!',
+        },
+        text: {
+          type: 'str',
+          value: 'Pontaria perfeita.',
+        },
+        button: {
+          type: 'str',
+          value: 'De novo',
+        },
+      },
+      {
+        type: 'g3k:setScreenText',
+        screen: 'fim',
+        title: {
+          type: 'str',
+          value: 'O tempo acabou...',
+        },
+        text: {
+          type: 'str',
+          value: 'Foi por pouco!',
+        },
+        button: {
+          type: 'str',
+          value: 'Tentar de novo',
+        },
+      },
+      {
+        type: 'g3k:defineMold',
+        name: 'alvo',
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        body: [
+          {
+            type: 'g3k:part',
+            shape: 'cylinder',
+            material: 'normal',
+            color: '#b91c1c',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 1.7,
+            },
+            h: {
+              type: 'num',
+              value: 0.25,
+            },
+            d: {
+              type: 'num',
+              value: 1.7,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 1.5,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:part',
+            shape: 'cylinder',
+            material: 'normal',
+            color: '#fef2f2',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 1,
+            },
+            h: {
+              type: 'num',
+              value: 0.3,
+            },
+            d: {
+              type: 'num',
+              value: 1,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 1.5,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:part',
+            shape: 'box',
+            material: 'normal',
+            color: '#78350f',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 0.25,
+            },
+            h: {
+              type: 'num',
+              value: 1.5,
+            },
+            d: {
+              type: 'num',
+              value: 0.25,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0.75,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:defineMold',
+        name: 'dourado',
+        health: {
+          type: 'num',
+          value: 1,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        body: [
+          {
+            type: 'g3k:part',
+            shape: 'cylinder',
+            material: 'brilho',
+            color: '#f59e0b',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 1.7,
+            },
+            h: {
+              type: 'num',
+              value: 0.25,
+            },
+            d: {
+              type: 'num',
+              value: 1.7,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 1.5,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:part',
+            shape: 'box',
+            material: 'normal',
+            color: '#78350f',
+            texture: '',
+            model: '',
+            w: {
+              type: 'num',
+              value: 0.25,
+            },
+            h: {
+              type: 'num',
+              value: 1.5,
+            },
+            d: {
+              type: 'num',
+              value: 0.25,
+            },
+            x: {
+              type: 'num',
+              value: 0,
+            },
+            y: {
+              type: 'num',
+              value: 0.75,
+            },
+            z: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:defineEffect',
+        name: 'acerto',
+        count: {
+          type: 'num',
+          value: 18,
+        },
+        colorFrom: '#fde047',
+        colorTo: '#b91c1c',
+        spread: {
+          type: 'num',
+          value: 5,
+        },
+        sizeFrom: {
+          type: 'num',
+          value: 0.4,
+        },
+        sizeTo: {
+          type: 'num',
+          value: 0,
+        },
+        life: {
+          type: 'num',
+          value: 0.5,
+        },
+        gravity: {
+          type: 'num',
+          value: 2,
+        },
+      },
+      {
+        type: 'g3k:createScreen',
+        name: 'dica',
+        title: {
+          type: 'str',
+          value: 'Dica de caçador',
+        },
+        text: {
+          type: 'str',
+          value:
+            'O dourado foge mais rápido! Aperte C para a lente de mira e V para a lente normal.',
+        },
+      },
+      {
+        type: 'g3k:addButton',
+        screen: 'dica',
+        label: {
+          type: 'str',
+          value: 'Entendi!',
+        },
+        body: [
+          {
+            type: 'g3k:hideScreens',
+          },
+        ],
+      },
+      {
+        type: 'var',
+        name: 'pontos',
+        value: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'g3k:onEnterState',
+        name: 'jogando',
+        body: [
+          {
+            type: 'assign',
+            name: 'pontos',
+            value: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'g3k:setSeed',
+            seed: {
+              type: 'num',
+              value: 3,
+            },
+          },
+          {
+            type: 'g3k:setSky',
+            top: '#312e81',
+            bottom: '#f59e0b',
+          },
+          {
+            type: 'g3k:setAmbient',
+            intensity: {
+              type: 'num',
+              value: 0.55,
+            },
+          },
+          {
+            type: 'g3k:cameraOrbit',
+            dist: {
+              type: 'num',
+              value: 24,
+            },
+          },
+          {
+            type: 'g3k:cameraAngle',
+            az: {
+              type: 'num',
+              value: 0,
+            },
+            el: {
+              type: 'num',
+              value: 42,
+            },
+          },
+          {
+            type: 'g3k:cameraLens',
+            fov: {
+              type: 'num',
+              value: 50,
+            },
+          },
+          {
+            type: 'g3k:startTimer',
+            seconds: {
+              type: 'num',
+              value: 25,
+            },
+          },
+          {
+            type: 'g3k:startSpawner',
+            mold: 'alvo',
+            seconds: {
+              type: 'num',
+              value: 1,
+            },
+            where: 'anywhere',
+          },
+          {
+            type: 'g3k:startSpawner',
+            mold: 'dourado',
+            seconds: {
+              type: 'num',
+              value: 5,
+            },
+            where: 'anywhere',
+          },
+        ],
+      },
+      {
+        type: 'g3k:onEnterEntityState',
+        mold: 'alvo',
+        state: 'parado',
+        itemName: 'ela',
+        body: [
+          {
+            type: 'g3k:setEntityValue',
+            charVar: 'ela',
+            key: 'valor',
+            value: {
+              type: 'num',
+              value: 1,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:onEnterEntityState',
+        mold: 'dourado',
+        state: 'parado',
+        itemName: 'ela',
+        body: [
+          {
+            type: 'g3k:setEntityValue',
+            charVar: 'ela',
+            key: 'valor',
+            value: {
+              type: 'num',
+              value: 3,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:stateTimer',
+        mold: 'alvo',
+        state: 'parado',
+        sec: {
+          type: 'num',
+          value: 2.6,
+        },
+        next: 'fugiu',
+      },
+      {
+        type: 'g3k:stateTimer',
+        mold: 'dourado',
+        state: 'parado',
+        sec: {
+          type: 'num',
+          value: 1.6,
+        },
+        next: 'fugiu',
+      },
+      {
+        type: 'g3k:onEnterEntityState',
+        mold: 'alvo',
+        state: 'fugiu',
+        itemName: 'ela',
+        body: [
+          {
+            type: 'g3k:recycle',
+            charVar: 'ela',
+          },
+        ],
+      },
+      {
+        type: 'g3k:onEnterEntityState',
+        mold: 'dourado',
+        state: 'fugiu',
+        itemName: 'ela',
+        body: [
+          {
+            type: 'g3k:recycle',
+            charVar: 'ela',
+          },
+        ],
+      },
+      {
+        type: 'g3k:onEvent',
+        event: 'acertou',
+        body: [
+          {
+            type: 'g3k:playEffect',
+            fx: 'coin',
+          },
+          {
+            type: 'g3k:cameraShake',
+            strength: {
+              type: 'num',
+              value: 0.15,
+            },
+            seconds: {
+              type: 'num',
+              value: 0.15,
+            },
+          },
+        ],
+      },
+      {
+        type: 'g3k:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'g3k:hudText',
+            slot: 'top-left',
+            text: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Pontos: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+              },
+              right: {
+                type: 'str',
+                value: '/12',
+              },
+            },
+          },
+          {
+            type: 'g3k:hudText',
+            slot: 'top-right',
+            text: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Tempo: ',
+                },
+                right: {
+                  type: 'mathUnary',
+                  fn: 'ceil',
+                  arg: {
+                    type: 'g3k:timeLeft',
+                  },
+                },
+              },
+              right: {
+                type: 'str',
+                value: 's',
+              },
+            },
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'g3k:keyPressed',
+              key: 'h',
+            },
+            then: [
+              {
+                type: 'g3k:showScreen',
+                name: 'dica',
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'g3k:keyPressed',
+              key: 'c',
+            },
+            then: [
+              {
+                type: 'g3k:cameraLens',
+                fov: {
+                  type: 'num',
+                  value: 30,
+                },
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'g3k:keyPressed',
+              key: 'v',
+            },
+            then: [
+              {
+                type: 'g3k:cameraLens',
+                fov: {
+                  type: 'num',
+                  value: 50,
+                },
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'g3k:mousePressed',
+            },
+            then: [
+              {
+                type: 'g3k:pick',
+                varName: 'alvoClicado',
+                mold: 'alvo',
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'g3k:exists',
+                  charVar: 'alvoClicado',
+                },
+                then: [
+                  {
+                    type: 'assign',
+                    name: 'pontos',
+                    value: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                      right: {
+                        type: 'g3k:entityValue',
+                        key: 'valor',
+                        charVar: 'alvoClicado',
+                      },
+                    },
+                  },
+                  {
+                    type: 'g3k:burstOn',
+                    effect: 'acerto',
+                    charVar: 'alvoClicado',
+                  },
+                  {
+                    type: 'g3k:recycle',
+                    charVar: 'alvoClicado',
+                  },
+                  {
+                    type: 'g3k:emit',
+                    event: 'acertou',
+                  },
+                ],
+              },
+              {
+                type: 'g3k:pick',
+                varName: 'douradoClicado',
+                mold: 'dourado',
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'g3k:exists',
+                  charVar: 'douradoClicado',
+                },
+                then: [
+                  {
+                    type: 'assign',
+                    name: 'pontos',
+                    value: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                      right: {
+                        type: 'g3k:entityValue',
+                        key: 'valor',
+                        charVar: 'douradoClicado',
+                      },
+                    },
+                  },
+                  {
+                    type: 'g3k:burstOn',
+                    effect: 'acerto',
+                    charVar: 'douradoClicado',
+                  },
+                  {
+                    type: 'g3k:recycle',
+                    charVar: 'douradoClicado',
+                  },
+                  {
+                    type: 'g3k:emit',
+                    event: 'acertou',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>=',
+              left: {
+                type: 'var',
+                name: 'pontos',
+              },
+              right: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            then: [
+              {
+                type: 'g3k:setState',
+                name: 'vitoria',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'g3k:onTimerEnd',
+        body: [
+          {
+            type: 'g3k:endGame',
           },
         ],
       },

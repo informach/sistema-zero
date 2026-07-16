@@ -2198,6 +2198,8 @@ ${pad}});`
       return `${pad}SZGameKit3D.hideSay(${identifiers.get(stmt.charVar)});`
     case 'g3k:passThrough':
       return `${pad}SZGameKit3D.passThrough(${identifiers.get(stmt.charVar)}, ${stmt.ghost ? 'true' : 'false'});`
+    case 'g3k:showHealthBar':
+      return `${pad}SZGameKit3D.showHealthBar(${JSON.stringify(stmt.mold)}, ${stmt.on ? 'true' : 'false'});`
     case 'g3k:setSeed':
       return `${pad}SZGameKit3D.setSeed(${compileExpr(valueToExpr(stmt.seed), 0, identifiers, recAt(base))});`
     case 'g3k:makeTrigger':
@@ -2266,6 +2268,8 @@ ${pad}});`
       return `${pad}SZGameKit3D.stateTimer(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, ${compileExpr(valueToExpr(stmt.sec), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.next)});`
     case 'g3k:seek':
       return `${pad}SZGameKit3D.seek(${identifiers.get(stmt.charVar)}, ${identifiers.get(stmt.targetVar)});`
+    case 'g3k:seekPoint':
+      return `${pad}SZGameKit3D.seekPoint(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
     case 'g3k:aimAt':
       return `${pad}SZGameKit3D.aimAt(${identifiers.get(stmt.charVar)}, ${identifiers.get(stmt.targetVar)}, ${compileExpr(valueToExpr(stmt.smooth), 0, identifiers, recAt(base))});`
     case 'g3k:faceVelocity':
@@ -4897,6 +4901,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g3k:passThrough':
       names.add(stmt.charVar)
       return
+    case 'g3k:showHealthBar':
+      return
     case 'g3k:onOverlap':
       names.add(stmt.zoneName)
       names.add(stmt.whoName)
@@ -4944,6 +4950,11 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g3k:seek':
       names.add(stmt.charVar)
       names.add(stmt.targetVar)
+      return
+    case 'g3k:seekPoint':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
       return
     case 'g3k:moveForward':
       names.add(stmt.charVar)
@@ -5412,6 +5423,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     // ---- Jogo 3D Avançado (game-3d-advanced) ----
     case 'g3k:posOf':
     case 'g3k:exists':
+    case 'g3k:isMold':
     case 'g3k:entityStateIs':
     case 'g3k:healthOf':
     case 'g3k:entityValue':
@@ -5440,6 +5452,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g3k:countAlive':
     case 'g3k:keyDown':
     case 'g3k:keyPressed':
+    case 'g3k:mouseDown':
+    case 'g3k:mousePressed':
     case 'g3k:stateIs':
     case 'g3k:gameState':
     case 'g3k:groundPoint':

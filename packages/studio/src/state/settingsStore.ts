@@ -109,10 +109,11 @@ function getStore(): ReturnType<typeof createStore> | null {
   // Sem IndexedDB (Firefox em modo privado, contextos restritos, happy-dom) não
   // há o que abrir — e `createStore` pode até LANÇAR. Blindamos igual ao
   // gameStorage.ts: degrada para "sem store" em vez de derrubar o load().
-  if (typeof indexedDB === 'undefined') {
-    storeInitFailed = true
-    return null
-  }
+  // ⚠️ SEM latch neste caminho: na suíte (um processo p/ todos os arquivos), um
+  // arquivo pode disparar load() ANTES do stub global de `indexedDB` existir —
+  // latchar aqui cegava o settingsStore.test.ts p/ sempre (hidratava defaults
+  // sem nunca chamar o get). O latch fica só p/ createStore que LANÇA.
+  if (typeof indexedDB === 'undefined') return null
   try {
     store = createStore('sistema-zero-studio', 'kv')
   } catch {

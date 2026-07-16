@@ -353,7 +353,9 @@ API global injetada como window.SZGameKit:
   TIRO é da criança: "se keyPressed(' ') e cooldownReady(nave, 0.35): fanShot(
   nave, 'tiro', 1, 0, -90, 600)". ⭐ naveWave(molde, cols, linhas, espaço, vel,
   desce, acelera%) = a FORMAÇÃO que o MOTOR marcha em bloco (inverte na borda
-  COLETIVA, desce, acelera; a morte encolhe a formação sozinha) — NUNCA emita
+  COLETIVA, desce, acelera; a morte encolhe a formação sozinha; se a grade não
+  couber na tela o motor ESPREME o espaço p/ caber, respeitando as colunas) —
+  NUNCA emita
   seek/tweenTo nos membros (briga com a marcha); o overlap tiro×invasor é da
   criança, como sempre. Avisos: 'onda:limpa' (crie a próxima MAIS RÁPIDA:
   velocidade = velocidade * 1.2 → naveWave de novo — a dificuldade em 2 blocos)

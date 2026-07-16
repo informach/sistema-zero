@@ -276,11 +276,15 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3k:worldSize' })
   | (JSExprCommon & { type: 'g3k:countAlive'; mold: string })
   | (JSExprCommon & { type: 'g3k:keyDown'; key: string })
+  | (JSExprCommon & { type: 'g3k:mouseDown' })
+  | (JSExprCommon & { type: 'g3k:mousePressed' })
   | (JSExprCommon & { type: 'g3k:keyPressed'; key: string })
   | (JSExprCommon & { type: 'g3k:posOf'; axis: string; charVar: string })
   // "Ainda está no jogo?" — o teste de alvo válido (pode ter sido derrotado).
   | (JSExprCommon & { type: 'g3k:exists'; charVar: string })
   | (JSExprCommon & { type: 'g3k:entityStateIs'; charVar: string; state: string })
+  // "É do molde?" — o filtro de identidade das zonas (o isValidTarget do curso).
+  | (JSExprCommon & { type: 'g3k:isMold'; charVar: string; mold: string })
   // O "dot > 0.999" da torre do curso em forma de pergunta (mirar → atirar).
   | (JSExprCommon & { type: 'g3k:isAimingAt'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g3k:touches'; aVar: string; bVar: string; dist: number | JSExpr })
@@ -727,6 +731,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g3k:worldSize'), ...idField }),
     z.object({ type: z.literal('g3k:countAlive'), mold: irText(), ...idField }),
     z.object({ type: z.literal('g3k:keyDown'), key: irText(), ...idField }),
+    z.object({ type: z.literal('g3k:mouseDown'), ...idField }),
+    z.object({ type: z.literal('g3k:mousePressed'), ...idField }),
     z.object({ type: z.literal('g3k:keyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('g3k:posOf'), axis: irText(), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:exists'), charVar: irText(), ...idField }),
@@ -736,6 +742,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       state: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('g3k:isMold'), charVar: irText(), mold: irText(), ...idField }),
     z.object({ type: z.literal('g3k:isAimingAt'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3k:touches'),
@@ -3512,6 +3519,8 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g3k:hideSay'; charVar: string })
   | (JSStatementCommon & { type: 'g3k:passThrough'; charVar: string; ghost: boolean })
+  // Barra de vida flutuante por MOLDE (projeta sobre cada entidade viva).
+  | (JSStatementCommon & { type: 'g3k:showHealthBar'; mold: string; on: boolean })
   | (JSStatementCommon & { type: 'g3k:makeTrigger'; mold: string })
   | (JSStatementCommon & { type: 'g3k:setSeed'; seed: number | JSExpr })
   | (JSStatementCommon & {
@@ -3611,6 +3620,13 @@ export type JSStatement =
     })
   // 🎯 Comportamentos (a matemática do curso: seek e slerp de mira).
   | (JSStatementCommon & { type: 'g3k:seek'; charVar: string; targetVar: string })
+  // Rumo a um PONTO fixo (patrulha/waypoint) — só XZ, o Y fica com a gravidade.
+  | (JSStatementCommon & {
+      type: 'g3k:seekPoint'
+      charVar: string
+      x: number | JSExpr
+      z: number | JSExpr
+    })
   | (JSStatementCommon & {
       type: 'g3k:aimAt'
       charVar: string
@@ -7031,6 +7047,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ghost: z.boolean(),
       ...idField,
     }),
+    z.object({
+      type: z.literal('g3k:showHealthBar'),
+      mold: irText(),
+      on: z.boolean(),
+      ...idField,
+    }),
     z.object({ type: z.literal('g3k:makeTrigger'), mold: irText(), ...idField }),
     z.object({
       type: z.literal('g3k:setSeed'),
@@ -7166,6 +7188,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g3k:seek'),
       charVar: irText(),
       targetVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:seekPoint'),
+      charVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -8067,6 +8096,7 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:say',
   'g3k:hideSay',
   'g3k:passThrough',
+  'g3k:showHealthBar',
   'g3k:makeTrigger',
   'g3k:setSeed',
   'g3k:onOverlap',
@@ -8091,6 +8121,7 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:setEntityState',
   'g3k:stateTimer',
   'g3k:seek',
+  'g3k:seekPoint',
   'g3k:aimAt',
   'g3k:faceVelocity',
   'g3k:forEachNear',

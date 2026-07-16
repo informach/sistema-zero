@@ -4761,6 +4761,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'g3k:showHealthBar':
+      return block(
+        'sz_g3k_show_health_bar',
+        { MOLD: stmt.mold, ON: stmt.on ? 'TRUE' : 'FALSE' },
+        {},
+        stmt.__id,
+      )
     case 'g3k:onOverlap':
       return block(
         'sz_g3k_on_overlap',
@@ -4873,6 +4880,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g3k:seek':
       return block('sz_g3k_seek', { WHO: stmt.charVar, TARGET: stmt.targetVar }, {}, stmt.__id)
+    case 'g3k:seekPoint': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_seek_point', { WHO: stmt.charVar }, {}, stmt.__id, { X: x, Z: z })
+    }
     case 'g3k:aimAt': {
       const smooth = exprToValueBlock(valueToExpr(stmt.smooth))
       return smooth === null
@@ -5726,12 +5740,18 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3k_key_down', { KEY: expr.key })
     case 'g3k:keyPressed':
       return block('sz_g3k_key_pressed', { KEY: expr.key })
+    case 'g3k:mouseDown':
+      return block('sz_g3k_mouse_down', {})
+    case 'g3k:mousePressed':
+      return block('sz_g3k_mouse_pressed', {})
     case 'g3k:posOf':
       return block('sz_g3k_pos_of', { AXIS: expr.axis, CHAR: expr.charVar })
     case 'g3k:exists':
       return block('sz_g3k_exists', { CHAR: expr.charVar })
     case 'g3k:entityStateIs':
       return block('sz_g3k_entity_state_is', { CHAR: expr.charVar, STATE: expr.state })
+    case 'g3k:isMold':
+      return block('sz_g3k_is_mold', { CHAR: expr.charVar, MOLD: expr.mold })
     case 'g3k:isAimingAt':
       return block('sz_g3k_is_aiming_at', { A: expr.aVar, B: expr.bVar })
     case 'g3k:touches': {

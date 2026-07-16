@@ -298,6 +298,13 @@ interface GameKitApi {
   scrollImage: Fn
   leanOnMove: Fn
   fanShot: Fn
+  // R22 — Kit Nave (regressões do R24)
+  naveShip: Fn
+  navePowerup: Fn
+  navePowerOf: (c: unknown) => string
+  naveWave: Fn
+  naveWaveShooter: Fn
+  naveBomb: Fn
 }
 
 interface Harness {
@@ -3149,5 +3156,69 @@ describe('SZGameKit — R21: primitivos gerais (sorteio, leque, rastro, lean)', 
       console.warn = real
     }
     expect(warns.filter((w) => w.includes('nao-carregada')).length).toBe(1)
+  })
+})
+
+describe('SZGameKit — R24: correções do review #6 (Kit Nave)', () => {
+  interface Corpo {
+    x: number
+    y: number
+    w: number
+    _prevX: number
+  }
+
+  it('⭐ com a câmera ligada, a bomba nasce no retângulo VISÍVEL (não em coords de tela)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('bomba', { w: 24, h: 24, color: '#f80' })
+    const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 300, color: '#00f' }) as Corpo
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.placeCharacter(heroi, 3000, 800)
+    h.api.cameraFollow(heroi, 4000, 2000)
+    h.nextFrame(50) // a câmera se posiciona no herói
+    h.api.naveBomb('bomba', 200, '')
+    const bombas: Corpo[] = []
+    h.api.forEachActive('bomba', (b: unknown) => bombas.push(b as Corpo))
+    expect(bombas.length).toBe(1)
+    // Antes do R24 nascia em 0..960 (coords de TELA) — fora da vista, a ~2,5km
+    // do herói. Agora nasce dentro do retângulo da câmera (~2552..3512).
+    expect((bombas[0] as Corpo).x).toBeGreaterThan(2000)
+  })
+
+  it('⭐ naveShip grava a varredura de ONDE VEIO (contrato do moveByVelocity)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    const nave = h.api.createCharacter({ w: 40, h: 24, speed: 300, color: '#0ff' }) as Corpo
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.placeCharacter(nave, 100, 500)
+    h.fire('keydown', { key: 'ArrowRight' })
+    h.api.naveShip(nave, 400, 10, 0.05)
+    expect(nave.x).toBe(120) // andou 400 × 0,05
+    // Antes o _prevX era gravado DEPOIS de mover (varredura via movimento zero);
+    // agora aponta de onde veio, e a colisão sólida varre 100→120.
+    expect(nave._prevX).toBe(100)
+  })
+
+  it('⭐ atirador com molde errado AVISA (nome errado nunca é silencioso)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('tiro', { w: 4, h: 12, color: '#fff' })
+    await startGame(h)
+    h.api.setState('jogando')
+    const warns: string[] = []
+    const real = console.warn
+    console.warn = (...a: unknown[]) => warns.push(a.join(' '))
+    try {
+      h.api.naveWaveShooter('nao-existe', 1, 'tiro', 300)
+      h.api.naveWaveShooter('nao-existe', 1, 'tiro', 300) // warnOnce
+    } finally {
+      console.warn = real
+    }
+    expect(warns.filter((w) => w.includes('o molde do atirador')).length).toBe(1)
+    // E o ritmo NÃO registrou: 2 s de quadros sem nenhum tiro nascendo.
+    for (let i = 1; i <= 40; i++) h.nextFrame(i * 50)
+    expect(h.api.countActive('tiro')).toBe(0)
   })
 })

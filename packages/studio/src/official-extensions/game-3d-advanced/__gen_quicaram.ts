@@ -62,13 +62,15 @@ SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
   SZGameKit3D.faceVelocity(ela);
 });
 SZGameKit3D.onOverlap("bola", function (zona, quem) {
-  SZGameKit3D.burstOn("plim", zona);
-  SZGameKit3D.playEffect("coin");
-  SZGameKit3D.cameraShake(0.3, 0.25);
-  SZGameKit3D.recycle(zona);
-  pegou = pegou + 1;
-  if (pegou >= 5) {
-    SZGameKit3D.setState("vitoria");
+  if (SZGameKit3D.isMold(quem, "heroi")) {
+    SZGameKit3D.burstOn("plim", zona);
+    SZGameKit3D.playEffect("coin");
+    SZGameKit3D.cameraShake(0.3, 0.25);
+    SZGameKit3D.recycle(zona);
+    pegou = pegou + 1;
+    if (pegou >= 5) {
+      SZGameKit3D.setState("vitoria");
+    }
   }
 });
 SZGameKit3D.start();

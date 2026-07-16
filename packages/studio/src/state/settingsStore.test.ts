@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // settingsStore agora faz bail cedo se `indexedDB` não existir (igual ao
 // gameStorage.ts — Firefox modo privado, contextos restritos). O happy-dom não
@@ -11,12 +11,29 @@ globalWithIdb.indexedDB = globalWithIdb.indexedDB ?? {}
 // mock.module e importa o módulo sob teste DEPOIS, dinamicamente.
 // O mock de idb-keyval NÃO é restaurado no afterAll de propósito: o registry
 // de módulos é compartilhado pela suíte toda e o IndexedDB real não existe no
-// happy-dom — o no-op é a opção segura para os arquivos seguintes.
+// happy-dom — o no-op é a opção segura para os arquivos seguintes (restaurar o
+// idb-keyval REAL derrubaria qualquer arquivo posterior que dependa do mock
+// residual). Por isso ESTE arquivo não copia o padrão "capturar real + restaurar"
+// do BlocksMode.test.tsx: `await import('idb-keyval')` aqui já poderia devolver o
+// mock de OUTRO arquivo (14 arquivos mockam idb-keyval), então não há "real"
+// confiável a capturar. A blindagem cross-file vem do beforeEach (ver abaixo).
 // ⚠️ Por ISSO o mock precisa exportar a superfície COMPLETA consumida em src/
 // (persistence.ts importa getMany/setMany/delMany/keys): como o registry é
 // global, o PRIMEIRO arquivo a mockar define o shape p/ a suíte toda — no Linux
 // (ordem de arquivos ≠ Windows) um mock estreito quebrava o linker do CI com
 // "Export named 'getMany' not found".
+//
+// ⚠️ FLAKY cross-file (CI do monorepo) — causa RAIZ: a suíte roda num único
+// processo e outro arquivo pode disparar `load()` ANTES deste definir o stub de
+// `indexedDB` acima. O getStore() do settingsStore.ts latchava `storeInitFailed`
+// p/ SEMPRE nesse caso e `readPersisted()` devolvia `{}` sem nunca chamar o get
+// — hidratava nos DEFAULTS (modelo padrão, chave '', fonte 13). Passa isolado,
+// mas a ordem de travessia do runner (Linux ≠ Windows) decide se há poluidor
+// antes. Cura no FONTE: getStore() não latcha mais quando `indexedDB` está
+// ausente (volta a tentar quando o stub aparece); latch só p/ createStore que
+// lança. Aqui no teste, cinto-e-suspensório contra poluição de mocks: reaplicar
+// ESTE mock no beforeEach (idbModuleFactory) re-liga os imports vivos ao `idb`
+// daqui caso outro arquivo tenha mockado idb-keyval por cima (registry global).
 //
 // update() modela a transação atômica do idb-keyval real: read-modify-write
 // SERIALIZADO por chave (cada chamada espera a anterior na cauda da promise),
@@ -42,7 +59,9 @@ const idb = {
   }),
 }
 
-mock.module('idb-keyval', () => ({
+// Fábrica reaplicável: o beforeEach chama de novo p/ re-ligar os imports vivos
+// do settingsStore ao `idb` DESTE arquivo, desfazendo poluição de outro arquivo.
+const idbModuleFactory = () => ({
   createStore: idb.createStore,
   del: idb.del,
   delMany: idb.delMany,
@@ -52,7 +71,9 @@ mock.module('idb-keyval', () => ({
   set: idb.set,
   setMany: idb.setMany,
   update: idb.update,
-}))
+})
+
+mock.module('idb-keyval', idbModuleFactory)
 
 const {
   CODE_FONT_SIZE_DEFAULT,
@@ -76,12 +97,19 @@ describe('normalizeAIModel', () => {
 
 describe('useSettingsStore persistence', () => {
   beforeEach(() => {
+    // 1º: reancora o mock de idb-keyval NESTE arquivo. Sem isso, um arquivo que
+    // rodou antes (e mockou idb-keyval com o `idb` DELE) deixaria os imports
+    // vivos do settingsStore lendo pelo mock alheio → load() cai nos defaults e
+    // as asserções falham com valores determinísticos (ver comentário do topo).
+    mock.module('idb-keyval', idbModuleFactory)
     idb.createStore.mockClear()
     idb.get.mockClear()
     idb.set.mockClear()
     idb.update.mockClear()
     memory.clear()
     updateChain = Promise.resolve()
+    // Reseta o SINGLETON do settingsStore (loaded:false força o load() a hidratar
+    // de novo em vez de sair cedo por causa de estado vazado de outro arquivo).
     useSettingsStore.setState({
       aiApiKey: '',
       aiApiKeyStorage: 'session',
@@ -90,6 +118,17 @@ describe('useSettingsStore persistence', () => {
       codeFontSize: CODE_FONT_SIZE_DEFAULT,
       loaded: false,
     })
+  })
+
+  afterEach(() => {
+    // Higiene: não deixa `memory`/histórico vazarem p/ um eventual arquivo que
+    // caia neste mock residual antes de aplicar o seu (todos reaplicam, mas o
+    // custo é nulo e o estado fica limpo p/ depuração).
+    memory.clear()
+    updateChain = Promise.resolve()
+    idb.get.mockClear()
+    idb.set.mockClear()
+    idb.update.mockClear()
   })
 
   it('sanitiza settings corrompidas antes de hidratar a store', async () => {

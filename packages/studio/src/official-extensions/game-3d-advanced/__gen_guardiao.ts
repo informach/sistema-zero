@@ -33,6 +33,7 @@ SZGameKit3D.defineMold("pedra", { health: 1, speed: 0 }, function () {
 });
 SZGameKit3D.setPhysics("guardiao", "personagem");
 SZGameKit3D.setPhysics("pedra", "bola");
+SZGameKit3D.showHealthBar("portal", true);
 SZGameKit3D.defineEffect("poeira", { count: 20, colorFrom: "#f43f5e", colorTo: "#082f49", spread: 6, sizeFrom: 0.5, sizeTo: 0, life: 0.6, gravity: 2 });
 let segurou = 0;
 SZGameKit3D.onEnterState("jogando", function () {
@@ -64,6 +65,12 @@ SZGameKit3D.onEntityStateUpdate("invasor", "parado", function (ela, dt) {
   const alvo = SZGameKit3D.nearest("portal", ela);
   if (SZGameKit3D.exists(alvo)) {
     SZGameKit3D.seek(ela, alvo);
+    if (SZGameKit3D.touches(ela, alvo, 2.2)) {
+      SZGameKit3D.hurt(alvo, 15);
+      SZGameKit3D.burstOn("poeira", ela);
+      SZGameKit3D.playEffect("hit");
+      SZGameKit3D.recycle(ela);
+    }
   }
   SZGameKit3D.faceVelocity(ela);
   SZGameKit3D.forEachNear(ela, "guardiao", 1.6, function (vizinho) {
@@ -76,6 +83,11 @@ SZGameKit3D.onEntityStateUpdate("invasor", "parado", function (ela, dt) {
     SZGameKit3D.recycle(ela);
     segurou = segurou + 1;
   });
+});
+SZGameKit3D.onEntityDeath("portal", function (ela) {
+  SZGameKit3D.burstOn("poeira", ela);
+  SZGameKit3D.playEffect("gameover");
+  SZGameKit3D.endGame();
 });
 SZGameKit3D.start();
 `.trim()

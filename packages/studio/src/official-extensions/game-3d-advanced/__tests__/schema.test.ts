@@ -8,8 +8,8 @@ import { G3K_STATEMENT_TYPES, type JSStatement, SZIRSchema, statementIsExtension
  */
 
 describe('G3K_STATEMENT_TYPES', () => {
-  it('tem os 59 statements do kit, todos com o prefixo g3k:', () => {
-    expect(G3K_STATEMENT_TYPES.size).toBe(101)
+  it('tem os 103 statements do kit, todos com o prefixo g3k:', () => {
+    expect(G3K_STATEMENT_TYPES.size).toBe(103)
     for (const type of G3K_STATEMENT_TYPES) {
       expect(type.startsWith('g3k:')).toBe(true)
     }

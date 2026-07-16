@@ -647,10 +647,16 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3k:keyDown', key: f(block, 'KEY') || 'w' }
     case 'sz_g3k_key_pressed':
       return { type: 'g3k:keyPressed', key: f(block, 'KEY') || 'j' }
+    case 'sz_g3k_mouse_down':
+      return { type: 'g3k:mouseDown' }
+    case 'sz_g3k_mouse_pressed':
+      return { type: 'g3k:mousePressed' }
     case 'sz_g3k_pos_of':
       return { type: 'g3k:posOf', axis: f(block, 'AXIS') || 'x', charVar: f(block, 'CHAR') }
     case 'sz_g3k_exists':
       return { type: 'g3k:exists', charVar: f(block, 'CHAR') }
+    case 'sz_g3k_is_mold':
+      return { type: 'g3k:isMold', charVar: f(block, 'CHAR'), mold: f(block, 'MOLD') }
     case 'sz_g3k_on_ground':
       return { type: 'g3k:onGround', charVar: f(block, 'CHAR') }
     case 'sz_g3k_velocity_of':
@@ -7481,6 +7487,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_g3k_hide_say':
       seen.add('game-3d-advanced')
       return { kind: 'js', value: { type: 'g3k:hideSay', charVar: f(block, 'CHAR') } }
+    case 'sz_g3k_show_health_bar':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:showHealthBar',
+          mold: f(block, 'MOLD'),
+          on: f(block, 'ON') === 'TRUE',
+        },
+      }
     case 'sz_g3k_pass_through':
       seen.add('game-3d-advanced')
       return {
@@ -7661,6 +7677,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return {
         kind: 'js',
         value: { type: 'g3k:seek', charVar: f(block, 'WHO'), targetVar: f(block, 'TARGET') },
+      }
+    case 'sz_g3k_seek_point':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:seekPoint',
+          charVar: f(block, 'WHO'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+        },
       }
     case 'sz_g3k_aim_at':
       seen.add('game-3d-advanced')
