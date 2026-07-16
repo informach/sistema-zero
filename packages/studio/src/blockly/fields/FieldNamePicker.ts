@@ -131,6 +131,9 @@ const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   sz_js_var_create: ['NAME'],
   sz_js_const_create: ['NAME'],
   sz_js_var_assign: ['NAME'],
+  // Canvas 3D: `criar cena = novo THREE.Scene()` declara um objeto do three.js —
+  // os facilitadores (posição/rotação/render/…) o consomem pelo seletor de nomes.
+  sz_t3d_new_var: ['VARNAME'],
   // (Laços/tentar introduzem nomes LOCAIS — ver VARIABLE_LOOP_BINDERS abaixo.)
   // Canvas: teclado, imagem e gradiente guardam numa variável.
   sz_canvas_keyboard: ['NAME'],

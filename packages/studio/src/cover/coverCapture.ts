@@ -7,7 +7,7 @@ import {
 } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
-import { buildPreviewDoc } from '#preview'
+import { buildPreviewDoc, withCoreImports } from '#preview'
 
 /**
  * Captura uma CAPA (print PNG) do projeto RODANDO, para a vitrine "Mural dos
@@ -100,7 +100,10 @@ function runCapture(
     loopBudgetMs: opts.loopBudgetMs,
     // `extraImports` (ex.: html2canvas) entram no importmap E liberam a origem no
     // `script-src` da CSP do iframe (`buildPreviewDoc` deriva de `extensionImports`).
-    extensionImports: { ...ctx.extensionImports, ...extraImports },
+    extensionImports: withCoreImports(
+      { ...ctx.extensionImports, ...extraImports },
+      project.files['script.js'],
+    ),
   })
 
   return new Promise<string | null>((resolve) => {

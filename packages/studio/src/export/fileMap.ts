@@ -9,6 +9,7 @@ import {
 } from '#core'
 import { findExtension } from '#official-extensions'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
+import { coreImportsForCode } from '../preview/coreImports'
 import { rewriteCssAssetUrlsToAssetNames } from '../preview/cssAssets'
 import { transpileExtra } from '../preview/transpile'
 import type { Minifiers } from './minify'
@@ -130,6 +131,14 @@ export async function buildClassicFileMap(
       Object.assign(importmap, ext.runtime.esmImports)
       usesEsmImports = true
     }
+  }
+
+  // + o three.js do NÚCLEO (Canvas 3D) se o script do aluno o importa — mesmo
+  // canal do preview, para o site exportado ter o importmap do three.
+  const coreImports = coreImportsForCode(project.files['script.js'])
+  if (Object.keys(coreImports).length > 0) {
+    Object.assign(importmap, coreImports)
+    usesEsmImports = true
   }
 
   const needsModules = Object.keys(importmap).length > 0

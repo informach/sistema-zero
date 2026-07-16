@@ -17,6 +17,7 @@ import {
   isPreviewMessage,
   isPreviewStorageWriteMessage,
   sanitizePreviewStorageData,
+  withCoreImports,
 } from '#preview'
 import { Button } from '#ui'
 import { useDebounced } from '../../hooks/useDebounced'
@@ -335,7 +336,8 @@ export function PreviewIframe(): JSX.Element {
       installedPermissions,
       fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
       loopBudgetMs: previewSecurity.loopBudgetMs,
-      extensionImports,
+      // + o three.js do NÚCLEO (Canvas 3D) se o código o importa — lazy: 2D não paga.
+      extensionImports: withCoreImports(extensionImports, debouncedJs),
       // Semeia o estado salvo (lido do ref: deliberadamente FORA das deps do memo
       // — uma escrita não deve reconstruir o doc e recarregar o preview).
       localStorageSnapshot: gameStorageRef.current,

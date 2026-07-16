@@ -7,7 +7,7 @@ import {
 } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
-import { buildPreviewDoc, isCheckResultMessage } from '#preview'
+import { buildPreviewDoc, isCheckResultMessage, withCoreImports } from '#preview'
 import type { CheckResult } from '../studio/activity'
 import { buildCheckHarness, type SandboxCheck } from './harness'
 
@@ -72,7 +72,7 @@ export async function runSandboxChecks(
     installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: security.fetchAllowedOrigins,
     loopBudgetMs: security.loopBudgetMs,
-    extensionImports,
+    extensionImports: withCoreImports(extensionImports, project.files['script.js']),
   })
 
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS

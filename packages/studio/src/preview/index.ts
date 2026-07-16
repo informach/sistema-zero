@@ -1,4 +1,5 @@
 export * from './bootstrap'
+export * from './coreImports'
 export * from './csp'
 export * from './interceptors'
 export * from './loopGuard'

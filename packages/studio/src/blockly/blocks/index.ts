@@ -2,6 +2,7 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { ADVANCED_BLOCKS } from './advanced'
 import { CANVAS_BLOCKS, CANVAS_GROUPS } from './canvas'
+import { CANVAS3D_BLOCKS, CANVAS3D_GROUPS } from './canvas3d'
 import { CSS_BLOCKS, CSS_GROUPS } from './css'
 import { DOM_BLOCKS } from './dom'
 import { FRAME_BLOCKS } from './frames'
@@ -20,6 +21,8 @@ export {
   ADVANCED_BLOCKS,
   CANVAS_BLOCKS,
   CANVAS_GROUPS,
+  CANVAS3D_BLOCKS,
+  CANVAS3D_GROUPS,
   CSS_BLOCKS,
   CSS_GROUPS,
   DOM_BLOCKS,
@@ -45,6 +48,7 @@ export const CORE_BLOCKS: BlockDefinition[] = [
   ...DOM_BLOCKS,
   ...JS_BLOCKS,
   ...CANVAS_BLOCKS,
+  ...CANVAS3D_BLOCKS,
   ...VALUE_BLOCKS,
   ...MATH_BLOCKS,
   ...OOP_BLOCKS,

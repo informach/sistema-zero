@@ -736,10 +736,16 @@ export function compileExpr(
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}.${normalizeIdentifier(expr.method)}(${args})`
     }
     case 'newExpr': {
-      // `new Classe(args)` como VALOR (espelha o statement `newInstance`); o nome
-      // da classe resolve pela mesma tabela das declarações (getClassReference).
+      // `new Classe(args)` como VALOR (espelha o statement `newInstance`). Sem
+      // namespace: o nome da classe resolve pela tabela das declarações do aluno
+      // (getClassReference). Com namespace (biblioteca): `new THREE.Scene()` — o
+      // namespace passa pelo scope (get) para casar com o memberGet de THREE, e o
+      // className fica LITERAL (é o nome real da lib, não renomeável).
       const args = expr.args.map((a) => compileExpr(a, 0, identifiers, rec)).join(', ')
-      return `new ${identifiers.getClassReference(expr.className)}(${args})`
+      const ctor = expr.namespace
+        ? `${identifiers.get(expr.namespace)}.${expr.className}`
+        : identifiers.getClassReference(expr.className)
+      return `new ${ctor}(${args})`
     }
     case 'objectOp':
       return `Object.${expr.op}(${compileExpr(expr.object, 0, identifiers, rec)})`

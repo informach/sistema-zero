@@ -941,6 +941,13 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         className: f(block, 'CLASS'),
         args: getArgs(block),
       }
+    case 'sz_t3d_new':
+      return {
+        type: 'newExpr',
+        namespace: f(block, 'NS') || 'THREE',
+        className: f(block, 'CLASS'),
+        args: getArgs(block),
+      }
     case 'sz_val_object_op':
       return {
         type: 'objectOp',
@@ -2948,6 +2955,216 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           args: getArgs(block),
         },
       }
+    // Canvas 3D (three.js cru): import + new com NAMESPACE (`new THREE.Classe()`).
+    case 'sz_t3d_import':
+      return {
+        kind: 'js',
+        value: { type: 'importStar', name: f(block, 'NAME') || 'THREE', module: 'three' },
+      }
+    case 'sz_t3d_new_var':
+      return {
+        kind: 'js',
+        value: {
+          type: 'newInstance',
+          varName: f(block, 'VARNAME'),
+          namespace: f(block, 'NS') || 'THREE',
+          className: f(block, 'CLASS'),
+          args: getArgs(block),
+        },
+      }
+    // ───── Canvas 3D: FACILITADORES → IR genérica (memberCall/memberSet/newExpr).
+    // Cada um gera o MESMO código que o bloco manual; o reverso (bloco amigável)
+    // vive no workspaceState.ts. Sem schema/parser novos.
+    case 'sz_t3d_set_position':
+    case 'sz_t3d_set_rotation':
+    case 'sz_t3d_set_scale': {
+      // `obj.<prop>.set(x, y, z)` — prop pela família do bloco.
+      const prop =
+        block.type === 'sz_t3d_set_position'
+          ? 'position'
+          : block.type === 'sz_t3d_set_rotation'
+            ? 'rotation'
+            : 'scale'
+      const fallback = block.type === 'sz_t3d_set_scale' ? 1 : 0
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: {
+            type: 'memberGet',
+            object: { type: 'var', name: f(block, 'OBJ') },
+            name: prop,
+          },
+          method: 'set',
+          args: [
+            exprInput(block, 'X', { type: 'num', value: fallback }),
+            exprInput(block, 'Y', { type: 'num', value: fallback }),
+            exprInput(block, 'Z', { type: 'num', value: fallback }),
+          ],
+        },
+      }
+    }
+    case 'sz_t3d_rotate_axis': {
+      // `obj.rotation.<axis> += delta` → memberSet com `obj.rotation.<axis> + delta`.
+      const obj = f(block, 'OBJ')
+      const axis = f(block, 'AXIS')
+      const rot = (): JSExpr => ({
+        type: 'memberGet',
+        object: { type: 'var', name: obj },
+        name: 'rotation',
+      })
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: rot(),
+          name: axis,
+          value: {
+            type: 'binop',
+            op: '+',
+            left: { type: 'memberGet', object: rot(), name: axis },
+            right: exprInput(block, 'DELTA', { type: 'num', value: 0.01 }),
+          },
+        },
+      }
+    }
+    case 'sz_t3d_look_at':
+      // `obj.lookAt(x, y, z)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'OBJ') },
+          method: 'lookAt',
+          args: [
+            exprInput(block, 'X', { type: 'num', value: 0 }),
+            exprInput(block, 'Y', { type: 'num', value: 0 }),
+            exprInput(block, 'Z', { type: 'num', value: 0 }),
+          ],
+        },
+      }
+    case 'sz_t3d_set_visible':
+      // `obj.visible = true/false`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: { type: 'var', name: f(block, 'OBJ') },
+          name: 'visible',
+          value: { type: 'bool', value: f(block, 'VAL') === 'true' },
+        },
+      }
+    case 'sz_t3d_add_to':
+      // `alvo.add(objeto)` — pôr um objeto na cena/grupo.
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'TARGET') },
+          method: 'add',
+          args: [exprInput(block, 'OBJ', { type: 'var', name: 'objeto' })],
+        },
+      }
+    case 'sz_t3d_set_color':
+      // `material.color.set(cor)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: {
+            type: 'memberGet',
+            object: { type: 'var', name: f(block, 'OBJ') },
+            name: 'color',
+          },
+          method: 'set',
+          args: [exprInput(block, 'COLOR', { type: 'color', value: '#ff8844' })],
+        },
+      }
+    case 'sz_t3d_set_background':
+      // `cena.background = new THREE.Color(cor)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: { type: 'var', name: f(block, 'SCENE') },
+          name: 'background',
+          value: {
+            type: 'newExpr',
+            className: 'Color',
+            namespace: 'THREE',
+            args: [exprInput(block, 'COLOR', { type: 'color', value: '#101830' })],
+          },
+        },
+      }
+    case 'sz_t3d_set_shadow':
+      // `obj.castShadow = bool` / `obj.receiveShadow = bool`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: { type: 'var', name: f(block, 'OBJ') },
+          name: f(block, 'KIND') === 'receive' ? 'receiveShadow' : 'castShadow',
+          value: { type: 'bool', value: f(block, 'VAL') === 'true' },
+        },
+      }
+    case 'sz_t3d_set_intensity':
+      // `luz.intensity = n`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: { type: 'var', name: f(block, 'OBJ') },
+          name: 'intensity',
+          value: exprInput(block, 'N', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_t3d_renderer_size':
+      // `renderizador.setSize(w, h)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'R') },
+          method: 'setSize',
+          args: [
+            exprInput(block, 'W', { type: 'num', value: 800 }),
+            exprInput(block, 'H', { type: 'num', value: 600 }),
+          ],
+        },
+      }
+    case 'sz_t3d_enable_shadows':
+      // `renderizador.shadowMap.enabled = true`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: {
+            type: 'memberGet',
+            object: { type: 'var', name: f(block, 'R') },
+            name: 'shadowMap',
+          },
+          name: 'enabled',
+          value: { type: 'bool', value: true },
+        },
+      }
+    case 'sz_t3d_render':
+      // `renderizador.render(cena, camera)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'R') },
+          method: 'render',
+          args: [
+            { type: 'var', name: f(block, 'SCENE') },
+            { type: 'var', name: f(block, 'CAMERA') },
+          ],
+        },
+      }
+    case 'sz_t3d_mount_renderer':
+      // `document.body.appendChild(renderizador.domElement)` — nó dedicado
+      // (document.body é denylistado no parser genérico).
+      return { kind: 'js', value: { type: 'mountRenderer', renderer: f(block, 'R') } }
     case 'sz_js_call_method':
       return {
         kind: 'js',

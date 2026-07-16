@@ -75,6 +75,7 @@ export const CATEGORY_COLORS = {
   css: '#e63946', // vermelho
   svg: '#1aaf54', // verde
   canvas: '#9333ea', // roxo
+  canvas3d: '#0d9488', // teal (Canvas 3D — three.js cru)
   advanced: '#38bdf8', // azul do céu (claro)
   extension: '#ec4899', // rosa (extensão genérica = Jogo 2D)
   // Programação (guarda-chuva) — TUDO em tons de LARANJA, variando por área.

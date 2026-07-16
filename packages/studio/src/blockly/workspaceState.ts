@@ -118,6 +118,14 @@ export interface BuildWorkspaceStateOptions {
   startY?: number
   /** Distância horizontal entre as colunas dos 3 frames. */
   colGap?: number
+  /**
+   * Omite os frames 🧱 Estrutura (HTML) / 🎨 Aparência (CSS) quando estão VAZIOS.
+   * O ⚙️ Comportamento (JS) é sempre mantido. Usado no reverse-parse da Ponte: um
+   * projeto que só usa JS (ex.: Canvas 3D) não deve ver as áreas de HTML/CSS
+   * "ressuscitarem" vazias a cada ida-e-volta código→blocos. O seed de projeto
+   * novo (emptyFramesBlocksState) NÃO passa a opção → nasce com os 3 frames.
+   */
+  omitEmptyAuxFrames?: boolean
 }
 
 export function buildWorkspaceStateFromIR(
@@ -134,21 +142,39 @@ export function buildWorkspaceStateFromIR(
 
   const htmlChildren = ir.html.map(htmlNodeToBlock).filter(isBlock)
   const cssChildren = ir.css.flatMap(cssEntryToBlocks)
+  // Gate dos facilitadores do Canvas 3D: só reconhece as formas canônicas do
+  // three.js (scene.add, obj.position.set, obj.visible=…) como bloco amigável
+  // quando o projeto REALMENTE usa three — senão `Set.add`/`Map.set`/`x.visible`
+  // de um projeto 2D viraria bloco 3D (teal, categoria errada). O sinal é o
+  // import da lib (o bloco-raiz) ou um `new THREE.…` de topo.
+  recognizeThree = ir.js.some(
+    (s) =>
+      (s.type === 'importStar' && s.module === 'three') ||
+      (s.type === 'newInstance' && s.namespace === 'THREE'),
+  )
   const jsChildren = statementsToBlocks(ir.js)
+  recognizeThree = false
 
-  const structure = position(block(FRAME_STRUCTURE, {}, { CHILDREN: htmlChildren }), startX, startY)
-  const appearance = position(
-    block(FRAME_APPEARANCE, {}, { CHILDREN: cssChildren }),
-    startX + colGap,
-    startY,
-  )
-  const behavior = position(
-    block(FRAME_BEHAVIOR, {}, { CHILDREN: jsChildren }),
-    startX + colGap * 2,
-    startY,
-  )
+  // Um frame por categoria. Com `omitEmptyAuxFrames`, Estrutura/Aparência VAZIAS
+  // são puladas (o Comportamento fica sempre), e as colunas presentes se compactam
+  // à esquerda — sem buraco onde um frame omitido estaria.
+  const omitEmptyAux = options.omitEmptyAuxFrames === true
+  const frameSpecs: Array<[string, SerializedBlocklyBlock[]]> = [
+    [FRAME_STRUCTURE, htmlChildren],
+    [FRAME_APPEARANCE, cssChildren],
+    [FRAME_BEHAVIOR, jsChildren],
+  ]
+  const blocks: SerializedBlocklyBlock[] = []
+  let col = 0
+  for (const [frameType, children] of frameSpecs) {
+    if (omitEmptyAux && frameType !== FRAME_BEHAVIOR && children.length === 0) continue
+    blocks.push(
+      position(block(frameType, {}, { CHILDREN: children }), startX + colGap * col, startY),
+    )
+    col += 1
+  }
 
-  return { blocks: { languageVersion: 0, blocks: [structure, appearance, behavior] } }
+  return { blocks: { languageVersion: 0, blocks } }
 }
 
 /**
@@ -752,6 +778,190 @@ const STYLE_PROP_VALUES: ReadonlySet<string> = new Set([
   'color',
   'zIndex',
 ])
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Canvas 3D — RECONHECIMENTO das formas canônicas do three.js (IR genérica →
+// bloco FACILITADOR amigável). É o inverso EXATO do buildIR dos `sz_t3d_*`
+// facilitadores: o que aquele compila para memberCall/memberSet, estes
+// reconhecem de volta, para o bloco amigável sobreviver a um round-trip pela
+// Ponte. Gated por `recognizeThree` (setado em buildWorkspaceStateFromIR) — sem
+// isso, `Set.add`/`Map.set`/`x.visible` de um projeto 2D viraria bloco 3D à toa.
+// Devolvem null → o statement cai no bloco genérico (chamar método / definir
+// propriedade). Registro-espelho: allowlist, valueSockets, LEGACY_VALUE_FIELDS.
+// ─────────────────────────────────────────────────────────────────────────────
+let recognizeThree = false
+
+type VarExpr = Extract<JSExpr, { type: 'var' }>
+
+function asVar(e: JSExpr | undefined): VarExpr | null {
+  return e && e.type === 'var' ? e : null
+}
+function asMemberGet(
+  e: JSExpr | undefined,
+  name?: string,
+): Extract<JSExpr, { type: 'memberGet' }> | null {
+  if (e?.type !== 'memberGet') return null
+  return name === undefined || e.name === name ? e : null
+}
+/** Sockets de valor de um facilitador; null se algum arg não vira bloco de valor. */
+function valueSocketsOf(
+  entries: Array<[string, JSExpr]>,
+): Record<string, SerializedBlocklyBlock> | null {
+  const out: Record<string, SerializedBlocklyBlock> = {}
+  for (const [slot, expr] of entries) {
+    const vb = exprToValueBlock(expr)
+    if (!vb) return null
+    out[slot] = vb
+  }
+  return out
+}
+
+function recognizeT3dCall(
+  stmt: Extract<JSStatement, { type: 'memberCall' }>,
+): SerializedBlocklyBlock | null {
+  if (!recognizeThree) return null
+  const { object, method, args } = stmt
+  // obj.<prop>.set(x, y, z) — posição / rotação / escala
+  const setProp = asMemberGet(object)
+  const setBase = setProp && asVar(setProp.object)
+  if (method === 'set' && args.length === 3 && setProp && setBase) {
+    const type =
+      setProp.name === 'position'
+        ? 'sz_t3d_set_position'
+        : setProp.name === 'rotation'
+          ? 'sz_t3d_set_rotation'
+          : setProp.name === 'scale'
+            ? 'sz_t3d_set_scale'
+            : null
+    if (type) {
+      const vs = valueSocketsOf([
+        ['X', args[0] as JSExpr],
+        ['Y', args[1] as JSExpr],
+        ['Z', args[2] as JSExpr],
+      ])
+      if (vs) return block(type, { OBJ: setBase.name }, {}, stmt.__id, vs)
+    }
+  }
+  // material.color.set(cor)
+  if (method === 'set' && args.length === 1) {
+    const colorProp = asMemberGet(object, 'color')
+    const owner = colorProp && asVar(colorProp.object)
+    if (owner) {
+      const vs = valueSocketsOf([['COLOR', args[0] as JSExpr]])
+      if (vs) return block('sz_t3d_set_color', { OBJ: owner.name }, {}, stmt.__id, vs)
+    }
+  }
+  const objVar = asVar(object)
+  // camera.lookAt(x, y, z)
+  if (method === 'lookAt' && args.length === 3 && objVar) {
+    const vs = valueSocketsOf([
+      ['X', args[0] as JSExpr],
+      ['Y', args[1] as JSExpr],
+      ['Z', args[2] as JSExpr],
+    ])
+    if (vs) return block('sz_t3d_look_at', { OBJ: objVar.name }, {}, stmt.__id, vs)
+  }
+  // cena.add(objeto)
+  if (method === 'add' && args.length === 1 && objVar) {
+    const vs = valueSocketsOf([['OBJ', args[0] as JSExpr]])
+    if (vs) return block('sz_t3d_add_to', { TARGET: objVar.name }, {}, stmt.__id, vs)
+  }
+  // renderizador.setSize(w, h)
+  if (method === 'setSize' && args.length === 2 && objVar) {
+    const vs = valueSocketsOf([
+      ['W', args[0] as JSExpr],
+      ['H', args[1] as JSExpr],
+    ])
+    if (vs) return block('sz_t3d_renderer_size', { R: objVar.name }, {}, stmt.__id, vs)
+  }
+  // renderizador.render(cena, camera)
+  if (method === 'render' && args.length === 2 && objVar) {
+    const scene = asVar(args[0] as JSExpr)
+    const cam = asVar(args[1] as JSExpr)
+    if (scene && cam) {
+      return block(
+        'sz_t3d_render',
+        { SCENE: scene.name, CAMERA: cam.name, R: objVar.name },
+        {},
+        stmt.__id,
+      )
+    }
+  }
+  return null
+}
+
+function recognizeT3dSet(
+  stmt: Extract<JSStatement, { type: 'memberSet' }>,
+): SerializedBlocklyBlock | null {
+  if (!recognizeThree) return null
+  const { object, name, value } = stmt
+  const objVar = asVar(object)
+  // cena.background = new THREE.Color(cor)
+  if (
+    name === 'background' &&
+    objVar &&
+    value.type === 'newExpr' &&
+    value.namespace === 'THREE' &&
+    value.className === 'Color' &&
+    value.args.length === 1
+  ) {
+    const vs = valueSocketsOf([['COLOR', value.args[0] as JSExpr]])
+    if (vs) return block('sz_t3d_set_background', { SCENE: objVar.name }, {}, stmt.__id, vs)
+  }
+  // obj.rotation.<axis> += delta → obj.rotation.<axis> = obj.rotation.<axis> + delta
+  const rotProp = asMemberGet(object, 'rotation')
+  const rotOwner = rotProp && asVar(rotProp.object)
+  if (
+    rotOwner &&
+    (name === 'x' || name === 'y' || name === 'z') &&
+    value.type === 'binop' &&
+    value.op === '+'
+  ) {
+    const leftProp = asMemberGet(value.left)
+    const leftRot = leftProp && asMemberGet(leftProp.object, 'rotation')
+    const leftBase = leftRot && asVar(leftRot.object)
+    if (leftProp && leftProp.name === name && leftBase && leftBase.name === rotOwner.name) {
+      const vs = valueSocketsOf([['DELTA', value.right]])
+      if (vs) {
+        return block('sz_t3d_rotate_axis', { OBJ: rotOwner.name, AXIS: name }, {}, stmt.__id, vs)
+      }
+    }
+  }
+  // obj.visible = true/false
+  if (name === 'visible' && objVar && value.type === 'bool') {
+    return block(
+      'sz_t3d_set_visible',
+      { OBJ: objVar.name, VAL: value.value ? 'true' : 'false' },
+      {},
+      stmt.__id,
+    )
+  }
+  // obj.castShadow / obj.receiveShadow = true/false
+  if ((name === 'castShadow' || name === 'receiveShadow') && objVar && value.type === 'bool') {
+    return block(
+      'sz_t3d_set_shadow',
+      {
+        OBJ: objVar.name,
+        KIND: name === 'receiveShadow' ? 'receive' : 'cast',
+        VAL: value.value ? 'true' : 'false',
+      },
+      {},
+      stmt.__id,
+    )
+  }
+  // renderizador.shadowMap.enabled = true
+  const shadowMap = asMemberGet(object, 'shadowMap')
+  const shadowOwner = shadowMap && asVar(shadowMap.object)
+  if (name === 'enabled' && shadowOwner && value.type === 'bool' && value.value === true) {
+    return block('sz_t3d_enable_shadows', { R: shadowOwner.name }, {}, stmt.__id)
+  }
+  // luz.intensity = n
+  if (name === 'intensity' && objVar) {
+    const vs = valueSocketsOf([['N', value]])
+    if (vs) return block('sz_t3d_set_intensity', { OBJ: objVar.name }, {}, stmt.__id, vs)
+  }
+  return null
+}
 
 function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
   switch (stmt.type) {
@@ -5234,12 +5444,23 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return b
     }
     case 'newInstance':
-      return callWithArgs(
-        'sz_js_new_var',
-        { VARNAME: stmt.varName, CLASS: stmt.className },
-        stmt.args ?? [],
-        stmt,
-      )
+      // Com namespace (biblioteca, ex.: THREE) → o bloco da Canvas 3D; sem →
+      // o bloco genérico de classe do aluno.
+      return stmt.namespace
+        ? callWithArgs(
+            'sz_t3d_new_var',
+            { VARNAME: stmt.varName, NS: stmt.namespace, CLASS: stmt.className },
+            stmt.args ?? [],
+            stmt,
+          )
+        : callWithArgs(
+            'sz_js_new_var',
+            { VARNAME: stmt.varName, CLASS: stmt.className },
+            stmt.args ?? [],
+            stmt,
+          )
+    case 'importStar':
+      return block('sz_t3d_import', { NAME: stmt.name }, {}, stmt.__id)
     case 'callMethod':
       return callWithArgs(
         'sz_js_call_method',
@@ -5275,6 +5496,10 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       })
     }
     case 'memberSet': {
+      // Canvas 3D: reconhece obj.visible/castShadow/intensity/background/… →
+      // bloco amigável (só em projeto three). Senão, propriedade genérica.
+      const t3d = recognizeT3dSet(stmt)
+      if (t3d) return t3d
       const obj = exprToValueBlock(stmt.object)
       const value = exprToValueBlock(stmt.value)
       if (!obj || !value) return rawJSBlock(stmt)
@@ -5334,6 +5559,10 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_js_index_set', {}, {}, stmt.__id, { OBJ: obj, INDEX: index, VALUE: value })
     }
     case 'memberCall': {
+      // Canvas 3D: reconhece scene.add / obj.position.set / renderer.render/… →
+      // bloco amigável (só em projeto three). Senão, "chamar método" genérico.
+      const t3d = recognizeT3dCall(stmt)
+      if (t3d) return t3d
       const obj = exprToValueBlock(stmt.object)
       if (!obj) return rawJSBlock(stmt)
       const valueInputs: Record<string, SerializedBlocklyBlock> = { OBJ: obj }
@@ -5352,6 +5581,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return callWithArgs('sz_js_super_method', { METHOD: stmt.method }, stmt.args, stmt)
     case 'requestFrame':
       return block('sz_canvas_request_frame', { FN: stmt.fn }, {}, stmt.__id)
+    case 'mountRenderer':
+      return block('sz_t3d_mount_renderer', { R: stmt.renderer }, {}, stmt.__id)
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)
@@ -6221,7 +6452,17 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
         if (!vb) return null
         valueInputs[`ARG${i}`] = vb
       }
-      const b = block('sz_val_new', { CLASS: expr.className }, {}, expr.__id, valueInputs)
+      // Com namespace (`new THREE.X()`) → o bloco da Canvas 3D (guarda NS+CLASS);
+      // sem → o bloco genérico de classe do aluno.
+      const b = expr.namespace
+        ? block(
+            'sz_t3d_new',
+            { NS: expr.namespace, CLASS: expr.className },
+            {},
+            expr.__id,
+            valueInputs,
+          )
+        : block('sz_val_new', { CLASS: expr.className }, {}, expr.__id, valueInputs)
       if (expr.args.length > 0) b.extraState = { items: expr.args.length }
       return b
     }

@@ -185,7 +185,16 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // O loop de animação ("A cada frame fazer") sempre vai para o nível global,
   // fora de qualquer bloco: `function frame(){…} frame();`. A chamada precisa do
   // mesmo escopo da função, então ambos sobem juntos.
-  const statements = hoistAnimationLoops(opts.statements)
+  const hoistedLoops = hoistAnimationLoops(opts.statements)
+  // `import * as X from '…'` precisa estar no TOPO do módulo (regra do JS). O
+  // bloco de import é top-level (no frame de Comportamento); movê-lo à frente
+  // garante o código válido mesmo se a criança o arrastar para baixo.
+  const statements = hoistedLoops.some((s) => s.type === 'importStar')
+    ? [
+        ...hoistedLoops.filter((s) => s.type === 'importStar'),
+        ...hoistedLoops.filter((s) => s.type !== 'importStar'),
+      ]
+    : hoistedLoops
   const identifiers = createPreparedIdentifierScope(statements)
   const headerText = opts.header ? `${opts.header.trim()}\n\n` : ''
   // Statements começam após o header (1-indexed).
@@ -457,6 +466,10 @@ function compileStatementCode(
       return `${pad}break;`
     case 'continue':
       return `${pad}continue;`
+    case 'importStar':
+      // Aspas simples (padrão do gerador). O nome entra pelo escopo para casar
+      // com os usos (`THREE.Scene`, `new THREE.X`) que resolvem o mesmo THREE.
+      return `${pad}import * as ${identifiers.get(stmt.name)} from '${stmt.module}';`
     case 'forOf': {
       const body = compileStatements(
         stmt.body,
@@ -2470,7 +2483,10 @@ ${pad}});`
       const args = (stmt.args ?? [])
         .map((a) => compileExpr(a, 0, identifiers, recAt(base)))
         .join(', ')
-      return `${pad}const ${identifiers.get(stmt.varName)} = new ${identifiers.getClassReference(stmt.className)}(${args});`
+      const ctor = stmt.namespace
+        ? `${identifiers.get(stmt.namespace)}.${stmt.className}`
+        : identifiers.getClassReference(stmt.className)
+      return `${pad}const ${identifiers.get(stmt.varName)} = new ${ctor}(${args});`
     }
     case 'callMethod': {
       const args = (stmt.args ?? [])
@@ -2517,6 +2533,8 @@ ${pad}});`
     // `requestAnimationFrame(nome)` — a função é uma REFERÊNCIA (nome), não uma chamada.
     case 'requestFrame':
       return `${pad}requestAnimationFrame(${identifiers.get(stmt.fn)});`
+    case 'mountRenderer':
+      return `${pad}document.body.appendChild(${identifiers.get(stmt.renderer)}.domElement);`
     case 'indexSet':
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}[${compileExpr(stmt.index, 0, identifiers, recAt(base))}] = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     case 'imageOnLoad': {
@@ -2867,6 +2885,11 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'break':
     case 'continue':
+      return
+    case 'importStar':
+      // O nome importado (ex.: THREE) É um identificador de escopo — reservá-lo
+      // impede que uma variável do aluno o renomeie/colida.
+      names.add(stmt.name)
       return
     case 'forOf':
       names.add(stmt.itemName)
@@ -5153,6 +5176,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'newInstance':
       names.add(stmt.varName)
+      if (stmt.namespace) names.add(stmt.namespace)
       for (const arg of stmt.args ?? []) collectExprIdentifiers(arg, names)
       return
     case 'callMethod':
@@ -5191,6 +5215,9 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'requestFrame':
       names.add(stmt.fn)
+      return
+    case 'mountRenderer':
+      names.add(stmt.renderer)
       return
     case 'indexSet':
       collectExprIdentifiers(stmt.object, names)
@@ -5354,6 +5381,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'newExpr':
       // O nome da CLASSE resolve por getClassReference/reserveClassNames (igual
       // ao newInstance) — só os argumentos entram na coleta de identificadores.
+      // O namespace (biblioteca, ex.: THREE) É um identificador de escopo.
+      if (expr.namespace) names.add(expr.namespace)
       for (const arg of expr.args) collectExprIdentifiers(arg, names)
       return
     case 'promiseAll':
