@@ -554,7 +554,19 @@ describe('gk — JOGAR uma luta inteira do Kit Luta (a lição do R17)', () => {
     h.api.lutaAI(p1, 'difícil')
     h.api.lutaAI(p2, 'difícil')
     h.api.onUpdate(() => {})
-    quadros(h, 400)
+    // ⚠️ A decisão da IA sorteia (defender/pular via `chance()` → Math.random): SEM
+    // semente, os dois 'difícil' — que MANTÊM distância e defendem 85% — às vezes
+    // dançam 400 quadros sem um golpe conectar (flaky ~1/3, saldo 200 = 0×0). Fixo
+    // o sorteio ALTO só aqui: nunca defende (85) nem pula (25), então os dois
+    // APROXIMAM e ATACAM de verdade. A autonomia (jogar e ferir sozinho) é o que
+    // ESTE teste prova; defesa/pulo têm testes próprios. Determinístico: 0 flaky.
+    const realRandom = Math.random
+    Math.random = () => 0.99
+    try {
+      quadros(h, 400)
+    } finally {
+      Math.random = realRandom
+    }
     // Os dois se acharam e se bateram: alguém perdeu vida sem nenhum teclado.
     expect(p1.health + p2.health).toBeLessThan(200)
   })
