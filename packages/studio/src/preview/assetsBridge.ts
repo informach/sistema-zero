@@ -195,17 +195,21 @@ export function buildAssetsRuntime(
   }`
       : ''
   // Resolvedor LOCAL de assets do projeto para os loaders que usam fetch
-  // (GLTFLoader→.glb, RGBELoader→.hdr passam por THREE.FileLoader→fetch). É a
-  // ponte da categoria Canvas 3D: `carregador.load('modelo.glb', …)` — o código
-  // REAL do three.js, idêntico ao que roda no deploy — não rodava no preview
-  // porque a CSP `connect-src 'none'` barra todo fetch. Este shim NÃO abre a rede:
-  // só devolve os bytes de um asset JÁ embutido na página (o manifesto 3D/imagens),
-  // casando pelo NOME do arquivo pedido; QUALQUER outra URL cai no fetch anterior
-  // (bloqueado pelo permissionGuard → throw). Sem vetor de rede/exfil: lê dado que
-  // a página já tem e não envia nada. Instalado DEPOIS do permissionGuard (ordem
-  // do bootstrap), então envolve o fetch já bloqueado. Só entra quando há 3D.
+  // (GLTFLoader→.glb, RGBELoader→.hdr E AudioLoader→som passam por
+  // THREE.FileLoader→fetch). É a ponte da categoria Canvas 3D:
+  // `carregador.load('modelo.glb', …)` / `carregadorSom.load('motor', …)` — o
+  // código REAL do three.js, idêntico ao que roda no deploy — não rodava no
+  // preview porque a CSP `connect-src 'none'` barra todo fetch. Este shim NÃO
+  // abre a rede: só devolve os bytes de um asset JÁ embutido na página (os
+  // manifestos 3D/sons/imagens), casando pelo NOME do arquivo pedido; QUALQUER
+  // outra URL cai no fetch anterior (bloqueado pelo permissionGuard → throw).
+  // Sem vetor de rede/exfil: lê dado que a página já tem e não envia nada.
+  // Instalado DEPOIS do permissionGuard (ordem do bootstrap), então envolve o
+  // fetch já bloqueado. Entra quando há 3D OU sons — efeito colateral aceito:
+  // um jogo 2D com sons também instala o wrap (inócuo: só devolve dado local e
+  // delega o resto) e o export ganha o mesmo caminho de graça.
   const assetFetchBlock =
-    Object.keys(safe3D).length > 0
+    Object.keys(safe3D).length > 0 || Object.keys(safeSounds).length > 0
       ? `
   (function () {
     var stripExt = function (n) { return n.replace(/\\.[^.]+$/, ''); };
@@ -223,6 +227,9 @@ export function buildAssetsRuntime(
         var e3 = m3d[k];
         if (e3 && e3.dataUrl && (k === name || k === bare || e3.fileName === name)) return e3.dataUrl;
       }
+      var snds = window.__SZGAME_SOUNDS || {};
+      if (typeof snds[name] === 'string') return snds[name];
+      if (typeof snds[bare] === 'string') return snds[bare];
       var imgs = window.__SZGAME_ASSETS || {};
       if (typeof imgs[name] === 'string') return imgs[name];
       if (typeof imgs[bare] === 'string') return imgs[bare];

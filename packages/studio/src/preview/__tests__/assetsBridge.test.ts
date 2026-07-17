@@ -134,7 +134,7 @@ describe('assetsBridge — resolvedor de fetch de asset (Canvas 3D 3D)', () => {
     await expect(p).rejects.toThrow('delegou-ao-guard')
   })
 
-  it('NÃO instala o resolvedor de fetch quando não há asset 3D', () => {
+  it('NÃO instala o resolvedor de fetch quando não há asset 3D nem som (só imagem)', () => {
     const runtime = buildAssetsRuntime({ heroi: PNG })
     expect(runtime).not.toContain('window.fetch =')
   })
@@ -166,6 +166,62 @@ describe('assetsBridge — resolvedor de fetch de asset (Canvas 3D 3D)', () => {
     expect(setAndGet(PNG)).toBe(PNG)
     // nome que não é asset passa direto (404 como antes, sem falso-positivo)
     expect(setAndGet('naoexiste')).toBe('naoexiste')
+  })
+})
+
+/**
+ * Som na unha (Canvas 3D): `new THREE.AudioLoader().load('motor', …)` também passa
+ * por FileLoader→fetch. O MESMO resolvedor agora consulta `__SZGAME_SOUNDS` (entre
+ * o manifesto 3D e o de imagens) — o som embutido do projeto toca no preview sem
+ * abrir a rede. Efeito colateral aceito: projeto SÓ com sons também instala o wrap.
+ */
+describe('assetsBridge — resolvedor de fetch serve SONS (som na unha)', () => {
+  // "RIFF" em base64 → prova que o corpo decodificado são os bytes do WAV.
+  const WAV = 'data:audio/wav;base64,UklGRg=='
+
+  it('projeto SÓ com sons instala o resolvedor e serve por nome/extensão/caminho', async () => {
+    const runtime = buildAssetsRuntime({}, {}, { motor: WAV })
+    expect(runtime).toContain('window.fetch =')
+    const win: Record<string, unknown> = {
+      fetch: () => Promise.reject(new Error('rede bloqueada')),
+    }
+    runInWindow(runtime, win)
+    const fetchFn = win.fetch as (u: string) => Promise<Response>
+    const r = await fetchFn('motor')
+    expect(r.status).toBe(200)
+    expect(r.headers.get('Content-Type')).toBe('audio/wav')
+    const bytes = new Uint8Array(await r.arrayBuffer())
+    expect(Array.from(bytes)).toEqual([0x52, 0x49, 0x46, 0x46]) // "RIFF"
+    // com extensão e por caminho absoluto (Request resolvido pelo three)
+    expect((await fetchFn('motor.wav')).status).toBe(200)
+    expect((await fetchFn('about:srcdoc/motor')).status).toBe(200)
+  })
+
+  it('URL que não é som delega ao fetch anterior (rede segue bloqueada)', async () => {
+    const runtime = buildAssetsRuntime({}, {}, { motor: WAV })
+    const win: Record<string, unknown> = {
+      fetch: () => Promise.reject(new Error('rede bloqueada')),
+    }
+    runInWindow(runtime, win)
+    const fetchFn = win.fetch as (u: string) => Promise<Response>
+    await expect(fetchFn('https://evil.example/exfil')).rejects.toThrow('rede bloqueada')
+    await expect(fetchFn('faltando.mp3')).rejects.toThrow('rede bloqueada')
+  })
+
+  it('3D + som juntos: cada um resolve pelo SEU manifesto (MIME correto)', async () => {
+    const runtime = buildAssetsRuntime(
+      {},
+      {},
+      { motor: WAV },
+      { modelo: { kind: 'model3d', dataUrl: GLB, fileName: 'meu-modelo.glb' } },
+    )
+    const win: Record<string, unknown> = {
+      fetch: () => Promise.reject(new Error('rede bloqueada')),
+    }
+    runInWindow(runtime, win)
+    const fetchFn = win.fetch as (u: string) => Promise<Response>
+    expect((await fetchFn('motor')).headers.get('Content-Type')).toBe('audio/wav')
+    expect((await fetchFn('modelo.glb')).headers.get('Content-Type')).toBe('model/gltf-binary')
   })
 })
 
