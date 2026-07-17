@@ -560,6 +560,72 @@ export const world3DBlocks = [
       'Nuvens fofas lá no alto, derivando com o vento — deixam o céu com cara de mundo grande. "muitas" fica lindo no entardecer.',
   },
   {
+    // R14: natureza acesa.
+    type: 'sz_w3d_waterfall',
+    message0: 'Pôr uma cachoeira 🏞️ em x %1 z %2 (altura %3, virada %4 graus)',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma cortina de água caindo com espuma na base — ponha na encosta de um morro (como a cachoeira das conquistas do folio). Esconda um segredo ATRÁS dela!',
+  },
+  {
+    type: 'sz_w3d_lamp',
+    message0: 'Pôr um poste de luz 🏮 em x %1 z %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um poste que ACENDE sozinho quando anoitece (e apaga de dia). Os 4 postes mais perto de você iluminam o chão de verdade. Faça uma alameda!',
+  },
+  {
+    type: 'sz_w3d_fireflies',
+    message0: 'Vaga-lumes à noite: %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'AMOUNT',
+        options: [
+          ['pouca', 'pouca'],
+          ['média', 'media'],
+          ['muita', 'muita'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Luzinhas dançando pelo mundo quando escurece — aparecem junto das estrelas e somem de manhã. A magia da noite do folio.',
+  },
+  {
+    type: 'sz_w3d_campfire',
+    message0: 'Pôr uma fogueira 🔥 em x %1 z %2 (vira ponto de retorno)',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma fogueira crepitando de toras cruzadas. Passe PERTO dela e ela vira o seu ponto de retorno: se você afundar na água, volta na ÚLTIMA fogueira tocada (não no último ponto seco).',
+  },
+  {
     // R13: bagunça física — objetos que o carrinho EMPURRA (deslizam, giram,
     // quicam e renascem em casa se caírem na água).
     type: 'sz_w3d_push_place',
@@ -1211,6 +1277,10 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_place_thing',
       'sz_w3d_place_model',
       'sz_w3d_clear_area',
+      'sz_w3d_waterfall',
+      'sz_w3d_lamp',
+      'sz_w3d_fireflies',
+      'sz_w3d_campfire',
       'sz_w3d_on_crash',
     ],
   },
@@ -1352,6 +1422,9 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_car_boost: { FORCE: numShadow(1) },
   sz_w3d_tornado: { SECS: numShadow(15) },
   sz_w3d_push_place: { X: numShadow(10), Z: numShadow(10) },
+  sz_w3d_waterfall: { X: numShadow(40), Z: numShadow(-30), H: numShadow(8), DEG: numShadow(0) },
+  sz_w3d_lamp: { X: numShadow(6), Z: numShadow(6) },
+  sz_w3d_campfire: { X: numShadow(0), Z: numShadow(8) },
   sz_w3d_push_scatter: { N: numShadow(12), X: numShadow(0), Z: numShadow(20), R: numShadow(10) },
   sz_w3d_letters: { X: numShadow(0), Z: numShadow(12), S: numShadow(1) },
   sz_w3d_explosive: { X: numShadow(15), Z: numShadow(15) },

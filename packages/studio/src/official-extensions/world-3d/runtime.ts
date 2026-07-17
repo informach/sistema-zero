@@ -216,6 +216,16 @@ export const world3DRuntime = `import * as THREE from 'three';
   var explosives = [];          // { mesh, x, z, fuse, done }
   var explosionHooks = [];
   var boomSpheres = [];         // { mesh, t } — esfera emissiva que incha e some
+  // ---- R14 "natureza acesa": cachoeira, postes, vaga-lumes, fogueira, espuma ----
+  var waterfalls = [];          // { mesh, mat, foam, x, z }
+  var lamps = [];               // { x, z, globeMat }
+  var LAMP_MAX = 24;
+  var lampLights = null;        // pool de até 4 PointLights REAIS (os postes mais perto)
+  var firefliesPts = null;      // { mesh, mat, home:Float32Array, n }
+  var campfires = [];           // { x, z, pts, mat, seeds }
+  var CAMP_MAX = 6;
+  var _campRespawn = null;      // última fogueira TOCADA — vence o lastSafe no resgate
+  var waterFoamTex = null;      // altura do chão p/ a ESPUMA da costa (64×64)
   var _dummy = null;            // Object3D p/ compor matrizes de instância
   var _mat4 = null;
   var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
@@ -1289,12 +1299,14 @@ export const world3DRuntime = `import * as THREE from 'three';
     'uniform vec3 uColorB;',
     'uniform vec3 uFog;',
     'uniform float uGamma;',
+    'uniform float uNight;',
     'varying float vY;',
     'varying float vRand;',
     'varying float vFade;',
     'void main() {',
     '  vec3 col = mix(uColorA, uColorB, clamp(vY, 0.0, 1.0));',
     '  col *= 0.92 + vRand * 0.16;',
+    '  col = mix(col, col * vec3(0.5, 0.55, 0.75), uNight);',
     '  col = mix(col, uFog, smoothstep(0.7, 1.0, vFade) * 0.6);',
     '  col = pow(col, vec3(uGamma));',
     '  gl_FragColor = vec4(col, 1.0);',
@@ -1390,7 +1402,8 @@ export const world3DRuntime = `import * as THREE from 'three';
           uColorA: { value: new THREE.Vector3(ca.r, ca.g, ca.b) },
           uColorB: { value: new THREE.Vector3(cb.r, cb.g, cb.b) },
           uFog: { value: new THREE.Vector3(cf.r, cf.g, cf.b) },
-          uGamma: { value: 1.0 }
+          uGamma: { value: 1.0 },
+          uNight: { value: 0 }
         },
         vertexShader: GRASS_VSH,
         fragmentShader: GRASS_FSH,
@@ -1723,13 +1736,47 @@ export const world3DRuntime = `import * as THREE from 'three';
   var WATER_FSH = [
     'uniform vec3 uColor;',
     'uniform float uTime;',
+    'uniform sampler2D uFoamTex;',
+    'uniform float uHalf;',
+    'uniform float uWaterY;',
+    'uniform float uHasFoam;',
     'varying vec2 vWorld;',
     'void main() {',
     '  float spark = 0.5 + 0.5 * sin(vWorld.x * 0.8 + uTime * 2.0) * cos(vWorld.y * 0.7 - uTime * 1.5);',
     '  vec3 col = uColor + spark * 0.08;',
+    '  if (uHasFoam > 0.5) {',
+    '    float h = texture2D(uFoamTex, vWorld / (uHalf * 2.0) + 0.5).r * 40.0 - 10.0;',
+    '    float depth = uWaterY - h;',
+    '    float band = 0.55 + 0.14 * sin(vWorld.x * 1.7 + uTime * 1.8) + 0.1 * cos(vWorld.y * 2.3 - uTime * 1.3);',
+    '    float foam = (1.0 - smoothstep(0.03, band, depth)) * step(0.0, depth);',
+    '    col = mix(col, vec3(0.96, 0.98, 1.0), foam * 0.75);',
+    '  }',
     '  gl_FragColor = vec4(col, 0.82);',
     '}'
   ].join(' ');
+
+  /** Altura do chão em 64×64 (faixa -10..30 m) — a ESPUMA da costa lê daqui. */
+  function buildWaterFoamTex() {
+    if (!waterMat) return;
+    var N = 64;
+    var data = new Uint8Array(N * N);
+    var half = config.world / 2;
+    for (var j = 0; j < N; j++) {
+      for (var i = 0; i < N; i++) {
+        var wx = (i / (N - 1)) * config.world - half;
+        var wz = (j / (N - 1)) * config.world - half;
+        var h = heightAt(wx, wz);
+        data[j * N + i] = Math.round(clamp((h + 10) / 40, 0, 1) * 255);
+      }
+    }
+    if (waterFoamTex) { try { waterFoamTex.dispose(); } catch (e) {} }
+    waterFoamTex = new THREE.DataTexture(data, N, N, THREE.RedFormat ? THREE.RedFormat : undefined);
+    waterFoamTex.needsUpdate = true;
+    waterMat.uniforms.uFoamTex.value = waterFoamTex;
+    waterMat.uniforms.uHalf.value = half;
+    waterMat.uniforms.uWaterY.value = waterCfg ? waterCfg.y : 0;
+    waterMat.uniforms.uHasFoam.value = 1;
+  }
 
   function buildWater() {
     if (!scene || !waterCfg) return;
@@ -1748,7 +1795,11 @@ export const world3DRuntime = `import * as THREE from 'three';
       waterMat = new THREE.ShaderMaterial({
         uniforms: {
           uTime: { value: 0 },
-          uColor: { value: new THREE.Vector3(c.r, c.g, c.b) }
+          uColor: { value: new THREE.Vector3(c.r, c.g, c.b) },
+          uFoamTex: { value: null },
+          uHalf: { value: config.world / 2 },
+          uWaterY: { value: waterCfg.y },
+          uHasFoam: { value: 0 }
         },
         vertexShader: WATER_VSH,
         fragmentShader: WATER_FSH,
@@ -1759,6 +1810,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     waterMesh.position.y = waterCfg.y;
     waterMesh.frustumCulled = false;
     scene.add(waterMesh);
+    // Espuma da costa: a água lê a altura do chão e pinta a faixa rasa de branco.
+    try { buildWaterFoamTex(); } catch (e) { waterMat.uniforms.uHasFoam.value = 0; }
   }
 
   // ---- 🔊 Áudio (motor sintetizado + sons/música do projeto) ----
@@ -2146,6 +2199,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       reserveGallery(x, z);
       buildTerrain();
       if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
     }
     galleries.push({ x: num(x, 0), z: num(z, 0), count: 0 });
     buildTotemText(num(x, 0), num(z, 0) - 10, text(title, 'Galeria'), '');
@@ -2547,6 +2601,10 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'pushScatter') buildPushScatter(r.n, r.x, r.z, r.r);
       else if (r.kind === 'letters') addLetters(r.word, r.x, r.z, r.s);
       else if (r.kind === 'explosive') addExplosive(r.x, r.z);
+      else if (r.kind === 'waterfall') buildWaterfall(r.x, r.z, r.h, r.deg);
+      else if (r.kind === 'lamp') addLamp(r.x, r.z);
+      else if (r.kind === 'fireflies') buildFireflies(r.amount);
+      else if (r.kind === 'campfire') addCampfire(r.x, r.z);
     }
   }
 
@@ -3352,6 +3410,248 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- R14: cachoeira, postes de luz, vaga-lumes, fogueira (respawn) ----
+
+  var WFALL_VSH = [
+    'varying vec2 vUv;',
+    'void main() {',
+    '  vUv = uv;',
+    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+    '}'
+  ].join(' ');
+
+  var WFALL_FSH = [
+    'uniform float uTime;',
+    'varying vec2 vUv;',
+    'void main() {',
+    '  float s = fract(vUv.y * 3.0 + uTime * 1.4 + sin(vUv.x * 9.0) * 0.08);',
+    '  vec3 agua = vec3(0.55, 0.75, 0.9);',
+    '  vec3 col = mix(agua, vec3(1.0), smoothstep(0.62, 0.95, s) * 0.8);',
+    '  gl_FragColor = vec4(col, 0.85);',
+    '}'
+  ].join(' ');
+
+  function buildWaterfall(x, z, h, deg) {
+    if (!scene) return;
+    var wx = num(x, 0);
+    var wz = num(z, 0);
+    var wh = clamp(num(h, 8), 3, 30);
+    var mat = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 } },
+      vertexShader: WFALL_VSH,
+      fragmentShader: WFALL_FSH,
+      transparent: true,
+      side: THREE.DoubleSide ? THREE.DoubleSide : undefined
+    });
+    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(6, wh), mat);
+    var gy = heightAt(wx, wz);
+    mesh.position.set(wx, gy + wh / 2, wz);
+    mesh.rotation.y = (num(deg, 0) * Math.PI) / 180;
+    scene.add(mesh);
+    // Espuma na base: pontinhos brancos chacoalhando.
+    var n = 26;
+    var pos = new Float32Array(n * 3);
+    for (var i = 0; i < n; i++) {
+      pos[i * 3] = wx + (Math.random() - 0.5) * 5;
+      pos[i * 3 + 1] = gy + 0.3 + Math.random() * 0.5;
+      pos[i * 3 + 2] = wz + (Math.random() - 0.5) * 2.4;
+    }
+    var fgeo = new THREE.BufferGeometry();
+    fgeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var fmat = new THREE.PointsMaterial({ color: '#ffffff', size: 0.7, transparent: true, opacity: 0.85, depthWrite: false });
+    var ftex = ensureSpriteTex();
+    if (ftex) fmat.map = ftex;
+    var foam = new THREE.Points(fgeo, fmat);
+    foam.frustumCulled = false;
+    scene.add(foam);
+    waterfalls.push({ mesh: mesh, mat: mat, foam: foam, x: wx, z: wz });
+  }
+
+  function stepWaterfalls() {
+    for (var i = 0; i < waterfalls.length; i++) {
+      waterfalls[i].mat.uniforms.uTime.value = playTime;
+    }
+  }
+
+  function addLamp(x, z) {
+    if (!scene) return;
+    if (lamps.length >= LAMP_MAX) {
+      warnOnce('lamp-max', 'muitos postes (teto ' + LAMP_MAX + ')');
+      return;
+    }
+    var lx = num(x, 0);
+    var lz = num(z, 0);
+    var gy = heightAt(lx, lz);
+    var g = new THREE.Group();
+    var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 3.4, 8), toonMaterial({ color: '#1f2937' }));
+    pole.position.y = 1.7;
+    pole.castShadow = true;
+    g.add(pole);
+    var globeMat = new THREE.MeshBasicMaterial({ color: '#6b7280' });
+    var globe = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 8), globeMat);
+    globe.position.y = 3.6;
+    g.add(globe);
+    g.position.set(lx, gy, lz);
+    scene.add(g);
+    lamps.push({ x: lx, z: lz, globeMat: globeMat });
+  }
+
+  function stepLamps() {
+    if (!lamps.length) return;
+    var night = nightAmount > 0.2;
+    for (var i = 0; i < lamps.length; i++) {
+      lamps[i].globeMat.color.set(night ? '#ffe9a3' : '#6b7280');
+    }
+    // Orçamento de LUZ REAL: só os 4 postes mais perto do jogador iluminam de
+    // verdade (PointLight é cara); o resto fica só com o globo aceso.
+    if (!night) {
+      if (lampLights) for (var li = 0; li < lampLights.length; li++) lampLights[li].intensity = 0;
+      return;
+    }
+    if (!lampLights) {
+      lampLights = [];
+      for (var c = 0; c < 4; c++) {
+        var pl = new THREE.PointLight(0xffe9a3, 0, 16);
+        scene.add(pl);
+        lampLights.push(pl);
+      }
+    }
+    var p = playerXZ();
+    var order = lamps.slice().sort(function (a, b) {
+      var da = (a.x - p.x) * (a.x - p.x) + (a.z - p.z) * (a.z - p.z);
+      var db = (b.x - p.x) * (b.x - p.x) + (b.z - p.z) * (b.z - p.z);
+      return da - db;
+    });
+    for (var k = 0; k < lampLights.length; k++) {
+      var lamp = order[k];
+      if (lamp) {
+        lampLights[k].position.set(lamp.x, heightAt(lamp.x, lamp.z) + 3.6, lamp.z);
+        lampLights[k].intensity = 1.4 * nightAmount;
+      } else {
+        lampLights[k].intensity = 0;
+      }
+    }
+  }
+
+  var FIREFLY_AMOUNTS = { pouca: 30, media: 80, muita: 150 };
+
+  function buildFireflies(amount) {
+    if (firefliesPts) {
+      try {
+        scene.remove(firefliesPts.mesh);
+        firefliesPts.mesh.geometry.dispose();
+        firefliesPts.mat.dispose();
+      } catch (e) {}
+      firefliesPts = null;
+    }
+    var n = FIREFLY_AMOUNTS[amount] || 0;
+    if (!scene || n <= 0) return;
+    var rng = mulberry(4242);
+    var home = new Float32Array(n * 3);
+    var lim = config.world / 2 - 4;
+    for (var i = 0; i < n; i++) {
+      home[i * 3] = (rng() * 2 - 1) * lim;
+      home[i * 3 + 2] = (rng() * 2 - 1) * lim;
+      home[i * 3 + 1] = heightAt(home[i * 3], home[i * 3 + 2]) + 0.8 + rng() * 1.6;
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(home.slice(), 3));
+    var mat = new THREE.PointsMaterial({ color: '#fef08a', size: 0.35, transparent: true, opacity: 0, depthWrite: false, sizeAttenuation: true });
+    var tex = ensureSpriteTex();
+    if (tex) mat.map = tex;
+    var mesh = new THREE.Points(geo, mat);
+    mesh.frustumCulled = false;
+    scene.add(mesh);
+    firefliesPts = { mesh: mesh, mat: mat, home: home, n: n };
+  }
+
+  function stepFireflies() {
+    if (!firefliesPts) return;
+    firefliesPts.mat.opacity = nightAmount * 0.9;
+    if (nightAmount < 0.02) return;
+    var pos = firefliesPts.mesh.geometry.getAttribute('position');
+    var t = playTime;
+    for (var i = 0; i < firefliesPts.n; i++) {
+      var hx = firefliesPts.home[i * 3];
+      var hy = firefliesPts.home[i * 3 + 1];
+      var hz = firefliesPts.home[i * 3 + 2];
+      pos.setXYZ(
+        i,
+        hx + Math.sin(t * 0.9 + i * 1.7) * 1.2,
+        hy + Math.sin(t * 1.3 + i * 0.9) * 0.5,
+        hz + Math.cos(t * 0.7 + i * 2.3) * 1.2
+      );
+    }
+    pos.needsUpdate = true;
+  }
+
+  function addCampfire(x, z) {
+    if (!scene) return;
+    if (campfires.length >= CAMP_MAX) {
+      warnOnce('camp-max', 'muitas fogueiras (teto ' + CAMP_MAX + ')');
+      return;
+    }
+    var cx = num(x, 0);
+    var cz = num(z, 0);
+    var gy = heightAt(cx, cz);
+    var g = new THREE.Group();
+    var logMat = toonMaterial({ color: '#7c4a2d' });
+    var log1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.4, 6), logMat);
+    log1.rotation.z = Math.PI / 2;
+    log1.rotation.y = 0.6;
+    log1.position.y = 0.14;
+    g.add(log1);
+    var log2 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.4, 6), logMat);
+    log2.rotation.z = Math.PI / 2;
+    log2.rotation.y = -0.6;
+    log2.position.y = 0.16;
+    g.add(log2);
+    g.position.set(cx, gy, cz);
+    scene.add(g);
+    var n = 18;
+    var pos = new Float32Array(n * 3);
+    var seeds = new Float32Array(n);
+    for (var i = 0; i < n; i++) {
+      seeds[i] = Math.random();
+      pos[i * 3] = cx + (Math.random() - 0.5) * 0.5;
+      pos[i * 3 + 1] = gy + Math.random() * 1.2;
+      pos[i * 3 + 2] = cz + (Math.random() - 0.5) * 0.5;
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var mat = new THREE.PointsMaterial({ color: '#fb923c', size: 0.5, transparent: true, opacity: 0.95, depthWrite: false });
+    var tex = ensureSpriteTex();
+    if (tex) mat.map = tex;
+    var pts = new THREE.Points(geo, mat);
+    pts.frustumCulled = false;
+    scene.add(pts);
+    campfires.push({ x: cx, z: cz, gy: gy, pts: pts, seeds: seeds, n: n });
+  }
+
+  function stepCampfires(dt) {
+    for (var c = 0; c < campfires.length; c++) {
+      var cf = campfires[c];
+      var pos = cf.pts.geometry.getAttribute('position');
+      for (var i = 0; i < cf.n; i++) {
+        var y = pos.getY(i) + (0.8 + cf.seeds[i]) * dt;
+        if (y > cf.gy + 1.3) y = cf.gy + 0.1;
+        pos.setXYZ(
+          i,
+          cf.x + Math.sin(playTime * 6 + i * 2.1) * 0.14 * cf.seeds[i],
+          y,
+          cf.z + Math.cos(playTime * 5 + i * 1.3) * 0.14 * cf.seeds[i]
+        );
+      }
+      pos.needsUpdate = true;
+      // Tocar na fogueira grava o CHECKPOINT do resgate da água.
+      if (carState) {
+        var dx = carState.x - cf.x;
+        var dz = carState.z - cf.z;
+        if (dx * dx + dz * dz < 25) _campRespawn = { x: cf.x, z: cf.z };
+      }
+    }
+  }
+
   // ---- R13: empurráveis (bagunça física), letras, caixas explosivas ----
 
   var PUSH_TYPES = {
@@ -4148,9 +4448,16 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (waterCfg && !s.airborne) {
       var prof = waterCfg.y - s.y;
       if (prof > 1.2) {
-        s.x = lastSafe.x;
-        s.z = lastSafe.z;
-        s.yaw = lastSafe.yaw;
+        // Resgate: a última FOGUEIRA tocada vence o último ponto seco (R14).
+        if (_campRespawn) {
+          s.x = _campRespawn.x + 2;
+          s.z = _campRespawn.z + 2;
+          s.yaw = lastSafe.yaw;
+        } else {
+          s.x = lastSafe.x;
+          s.z = lastSafe.z;
+          s.yaw = lastSafe.yaw;
+        }
         s.y = heightAt(s.x, s.z);
         s.speed = 0;
         s.vy = 0;
@@ -4335,6 +4642,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepClouds(dt);
     stepPushables(dt);
     stepExplosives(dt);
+    stepWaterfalls();
+    stepLamps();
+    stepFireflies();
+    stepCampfires(dt);
     updateEngine();
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
@@ -4354,6 +4665,9 @@ export const world3DRuntime = `import * as THREE from 'three';
       var gcx = carState ? carState.x : (camera ? camera.position.x : 0);
       var gcz = carState ? carState.z : (camera ? camera.position.z : 0);
       grassMat.uniforms.uCenter.value.set(gcx, gcz);
+      // Tinta noturna: o gramado escurece/azula junto das estrelas (a grama é
+      // ShaderMaterial cru — o sol não a alcança; este uniform é o "sol" dela).
+      if (grassMat.uniforms.uNight) grassMat.uniforms.uNight.value = nightAmount;
     }
 
     justPressed = {};
@@ -4497,6 +4811,14 @@ export const world3DRuntime = `import * as THREE from 'three';
     explosives = [];
     explosionHooks = [];
     boomSpheres = [];
+    waterfalls = [];
+    lamps = [];
+    lampLights = null;
+    firefliesPts = null;
+    campfires = [];
+    _campRespawn = null;
+    if (waterFoamTex) { try { waterFoamTex.dispose(); } catch (e) {} }
+    waterFoamTex = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -4541,6 +4863,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (worldReady) {
         buildTerrain();
         if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
       }
     }),
     start: guard('start', start),
@@ -4558,6 +4881,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (worldReady) {
         buildTerrain();
         if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
       }
     }),
     path: guard('path', function (x1, z1, x2, z2, w) {
@@ -4573,6 +4897,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (worldReady) {
         buildTerrain();
         if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
       }
     }),
     water: guard('water', function (y, color) {
@@ -4783,6 +5108,40 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       seasonName = n2;
       if (worldReady) applySeason();
+    }),
+    // 🌿 R14 natureza acesa
+    waterfall: guard('waterfall', function (x, z, h, deg) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'waterfall', x: num(x, 0), z: num(z, 0), h: num(h, 8), deg: num(deg, 0) });
+        return;
+      }
+      buildWaterfall(x, z, h, deg);
+    }),
+    lamp: guard('lamp', function (x, z) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'lamp', x: num(x, 0), z: num(z, 0) });
+        return;
+      }
+      addLamp(x, z);
+    }),
+    fireflies: guard('fireflies', function (amount) {
+      var fa = text(amount, 'media');
+      if (!(fa in FIREFLY_AMOUNTS)) {
+        warn('não conheço "' + fa + '" — tem: pouca, media, muita');
+        return;
+      }
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'fireflies', amount: fa });
+        return;
+      }
+      buildFireflies(fa);
+    }),
+    campfire: guard('campfire', function (x, z) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'campfire', x: num(x, 0), z: num(z, 0) });
+        return;
+      }
+      addCampfire(x, z);
     }),
     // 🎳 R13 bagunça física
     pushPlace: guard('pushPlace', function (thing, x, z) {

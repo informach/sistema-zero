@@ -242,6 +242,53 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(booms).toBe(2)
   })
 
+  it('R14: poste acende à noite, vaga-lumes aparecem e a água ganha espuma', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      a.water(-2)
+      const w = a as unknown as {
+        lamp(x: number, z: number): void
+        fireflies(a: string): void
+        waterfall(x: number, z: number, h: number, d: number): void
+      }
+      w.lamp(6, 6)
+      w.fireflies('media')
+      w.waterfall(30, -20, 8, 0)
+      a.setTime('meiodia')
+    })
+    step(3)
+    const scene = renderers[0]?.scene ?? null
+    const mats = () => {
+      const out: string[] = []
+      scene?.traverse((o) => {
+        const m = (o as RealTHREE.Mesh).material as RealTHREE.MeshBasicMaterial | undefined
+        if (m?.isMeshBasicMaterial && m.color) out.push(`#${m.color.getHexString()}`)
+      })
+      return out
+    }
+    expect(mats()).toContain('#6b7280') // globo do poste APAGADO ao meio-dia
+    api.setTime('noite')
+    step(3)
+    expect(mats()).toContain('#ffe9a3') // globo ACESO à noite
+    // Vaga-lumes: o material de pontos amarelo ganha opacidade junto da noite.
+    let fireflyOpacity = 0
+    scene?.traverse((o) => {
+      const p = o as RealTHREE.Points
+      const m = p.material as RealTHREE.PointsMaterial | undefined
+      if (p.isPoints && m?.color && m.color.getHexString() === 'fef08a') {
+        fireflyOpacity = m.opacity
+      }
+    })
+    expect(fireflyOpacity).toBeGreaterThan(0.3)
+    // Espuma da costa: o shader da água ganhou o uniform ligado.
+    let hasFoam = 0
+    scene?.traverse((o) => {
+      const m = (o as RealTHREE.Mesh).material as RealTHREE.ShaderMaterial | undefined
+      if (m?.isShaderMaterial && m.uniforms?.uHasFoam) hasFoam = m.uniforms.uHasFoam.value
+    })
+    expect(hasFoam).toBe(1)
+  })
+
   it('playthrough do exemplo "Meu Mundo": roda, dirige e não quebra', async () => {
     const { api, step } = await loadExampleWorld(MEU_MUNDO_SOURCE)
     const z0 = api.carPos('z')

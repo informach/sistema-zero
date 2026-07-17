@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '1.3.0',
+  version: '1.4.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -90,6 +90,15 @@ O que o motor já faz por você:
 - **Deixar limpo perto de x z num raio de …** — reserva um círculo SEM
   natureza (a sua praça, a sua pista). Use ANTES dos blocos de espalhar. O
   centro do mundo (onde o carrinho nasce) já vem limpo.
+- **Pôr uma cachoeira 🏞️** — uma cortina de água caindo com espuma na base.
+  Ponha na encosta de um morro e esconda um segredo ATRÁS dela.
+- **Pôr um poste de luz 🏮** — acende sozinho quando anoitece; os 4 postes
+  mais perto de você iluminam o chão DE VERDADE. Faça uma alameda!
+- **Vaga-lumes à noite: pouca/média/muita** — luzinhas dançando quando
+  escurece; somem de manhã.
+- **Pôr uma fogueira 🔥 (vira ponto de retorno)** — toras crepitando. Passe
+  perto e ela vira seu CHECKPOINT: afundou na água, volta na última fogueira
+  tocada. E a água agora tem ESPUMA na beirada (a costa fica viva).
 - **Quando o carrinho bater forte** — a trombada em coisa sólida com boa
   velocidade roda os blocos de dentro (encostar devagar não conta).
 

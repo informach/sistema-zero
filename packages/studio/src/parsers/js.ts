@@ -6112,6 +6112,7 @@ const W3D_WEATHER = new Set(['limpo', 'chuva', 'neve', 'folhas', 'tempestade'])
 const W3D_SEASONS = new Set(['primavera', 'verao', 'outono', 'inverno'])
 const W3D_CLOUD_AMOUNTS = new Set(['nenhuma', 'poucas', 'muitas'])
 const W3D_PUSH_THINGS = new Set(['tijolo', 'banco', 'cerca', 'lanterna', 'cone'])
+const W3D_FIREFLY_AMOUNTS = new Set(['pouca', 'media', 'muita'])
 const W3D_DAY_PHASES = new Set(['dia', 'noite'])
 const W3D_POS_AXES = new Set(['x', 'y', 'z'])
 
@@ -6510,6 +6511,30 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       const amount = args[0].value as string
       return W3D_CLOUD_AMOUNTS.has(amount) ? { type: 'w3d:clouds', amount } : null
+    }
+    case 'waterfall': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const h = toExpr(args[2], ctx)
+      const deg = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(h) && isSimpleValue(deg)
+        ? { type: 'w3d:waterfall', x, z, h, deg }
+        : null
+    }
+    case 'lamp': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:lamp', x, z } : null
+    }
+    case 'fireflies': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const amount = args[0].value as string
+      return W3D_FIREFLY_AMOUNTS.has(amount) ? { type: 'w3d:fireflies', amount } : null
+    }
+    case 'campfire': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:campfire', x, z } : null
     }
     case 'pushPlace': {
       if (args[0]?.type !== 'StringLiteral') return null

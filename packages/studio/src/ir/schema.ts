@@ -4000,6 +4000,17 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'w3d:explosive'; x: number | JSExpr; z: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:onExplosion'; body: JSStatement[] })
+  // Mundo 3D R14 "natureza acesa": cachoeira, poste, vaga-lumes, fogueira.
+  | (JSStatementCommon & {
+      type: 'w3d:waterfall'
+      x: number | JSExpr
+      z: number | JSExpr
+      h: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:lamp'; x: number | JSExpr; z: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:fireflies'; amount: string })
+  | (JSStatementCommon & { type: 'w3d:campfire'; x: number | JSExpr; z: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
   | (JSStatementCommon & {
       type: 'w3d:cameraShake'
@@ -8057,6 +8068,27 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('w3d:onExplosion'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
+      type: z.literal('w3d:waterfall'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      h: z.union([z.number(), JSExprSchema]),
+      deg: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:lamp'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:fireflies'), amount: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:campfire'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:cameraShake'),
@@ -9088,6 +9120,10 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:letters',
   'w3d:explosive',
   'w3d:onExplosion',
+  'w3d:waterfall',
+  'w3d:lamp',
+  'w3d:fireflies',
+  'w3d:campfire',
   'w3d:effects',
   'w3d:dayNight',
   'w3d:setTime',

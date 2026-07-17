@@ -59,6 +59,9 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.letters('PALAVRA', x, z, tamanho)\` — cubos de letra empurráveis (cap 24; o "BRUNO" do folio).
 - \`SZWorld3D.explosive(x, z)\` — caixa TNT: encostão rápido detona (bola de fogo + impulso radial + cadeia entre caixas vizinhas + câmera lenta se te pegar).
   \`SZWorld3D.onExplosion(() => { … })\` — roda a cada explosão.
+- \`SZWorld3D.waterfall(x, z, altura, graus)\` — cortina d'água com espuma na base (esconda segredos atrás).
+- \`SZWorld3D.lamp(x, z)\` — poste que acende à noite (os 4 mais perto iluminam de verdade). \`SZWorld3D.fireflies('pouca'|'media'|'muita')\` — vaga-lumes noturnos.
+- \`SZWorld3D.campfire(x, z)\` — fogueira crepitando que vira CHECKPOINT: afundou na água → volta na última fogueira tocada. A água tem espuma na costa automaticamente.
 - weather agora aceita também 'tempestade' (chuva pesada + raios + trovão atrasado; raio no carrinho = chacoalhão + câmera lenta).
 - \`SZWorld3D.carPos('x'|'y'|'z')\` → número. \`SZWorld3D.carSpeed()\` → m/s.
 - \`SZWorld3D.scatter(n, especie)\` — espalha n cópias procedurais pelo mundo
