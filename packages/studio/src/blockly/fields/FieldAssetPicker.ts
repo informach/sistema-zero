@@ -175,7 +175,8 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
         } else {
           const icon = document.createElement('span')
           icon.textContent = a.kind === 'environment3d' ? '🌅' : a.kind === 'audio' ? '🔊' : '📦'
-          icon.style.cssText = 'width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:26px;'
+          icon.style.cssText =
+            'width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:26px;'
           thumb = icon
         }
         const label = document.createElement('span')
@@ -206,7 +207,8 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
     const input = document.createElement('input')
     input.type = 'text'
     input.value = `${this.getValue() ?? ''}`
-    input.placeholder = kind === '3d' ? 'nome do modelo' : kind === 'audio' ? 'nome do som' : 'nome da imagem'
+    input.placeholder =
+      kind === '3d' ? 'nome do modelo' : kind === 'audio' ? 'nome do som' : 'nome da imagem'
     input.spellcheck = false
     input.style.cssText =
       'flex:1;min-width:0;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'

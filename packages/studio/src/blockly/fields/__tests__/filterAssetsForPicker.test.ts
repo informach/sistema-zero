@@ -7,12 +7,17 @@ import { filterAssetsForPicker } from '../FieldAssetPicker'
  * (.glb/.hdr) e sons, além de imagens. Este teste trava o filtro por família —
  * um seletor de modelo NÃO pode oferecer imagens/sons, e vice-versa.
  */
-const a = (name: string, kind: ProjectAsset['kind'], extra: Partial<ProjectAsset> = {}): ProjectAsset =>
-  ({ name, kind, dataUrl: `data:x;base64,${name}`, ...extra }) as ProjectAsset
+const a = (
+  name: string,
+  kind: ProjectAsset['kind'],
+  extra: Partial<ProjectAsset> = {},
+): ProjectAsset => ({ name, kind, dataUrl: `data:x;base64,${name}`, ...extra }) as ProjectAsset
 
 const ASSETS: ProjectAsset[] = [
   a('heroi', 'image'),
-  a('mapa', 'image', { tilemap: { tileSize: 16, cols: 1, rows: 1, grid: '0', solid: [] } as never }),
+  a('mapa', 'image', {
+    tilemap: { tileSize: 16, cols: 1, rows: 1, grid: '0', solid: [] } as never,
+  }),
   a('explosao', 'audio'),
   a('caixa', 'model3d', { originalFileName: 'caixa.glb' }),
   a('ceu', 'environment3d', { originalFileName: 'ceu.hdr' }),
