@@ -436,6 +436,29 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       'Carrega um modelo 3D (.glb) que você enviou em "Imagens" e, quando terminar, roda os blocos de dentro com o modelo pronto (ex.: "adicionar modelo.scene em cena"). Vira "carregador.load(\'nome\', (modelo) => { … })".',
   },
   {
+    // `carregadorSom.load('nome', (buffer) => { … })` — MESMO nó `loaderLoad` do
+    // modelo (buildIR idêntico); só muda o rótulo e o seletor de asset (som). O
+    // reverso (código→bloco) escolhe ESTE bloco quando o carregador foi declarado
+    // como AudioLoader (latch `audioLoaderVars` no workspaceState).
+    type: 'sz_t3d_load_sound',
+    message0: 'com o carregador %1 carregar o som %2',
+    args0: [
+      { type: 'field_name_picker', name: 'LOADER', text: 'carregadorSom', kind: 'variable' },
+      { type: 'field_asset_picker', name: 'URL', text: 'som', kind: 'audio' },
+    ],
+    message1: 'quando pronto, com o som em %1, fazer %2',
+    args1: [
+      { type: 'field_input', name: 'PARAM', text: 'buffer' },
+      { type: 'input_statement', name: 'DO' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Carrega um som que você enviou em "Imagens" (🔊 Enviar som) e, quando terminar, roda os blocos de dentro com o áudio decodificado. Combine com "método setBuffer(buffer)" + "método play()" num THREE.Audio ou THREE.PositionalAudio. Vira "carregadorSom.load(\'nome\', (buffer) => { … })".',
+  },
+  {
     // `objeto.traverse((parte) => { … })` — percorrer cada parte de um objeto/modelo.
     type: 'sz_t3d_traverse',
     message0: 'para cada parte de %1',
@@ -683,9 +706,9 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
     types: ['sz_t3d_set_matrix_at', 'sz_t3d_instances_dirty'],
   },
   {
-    name: '📦 Modelos',
+    name: '📦 Modelos e sons',
     colour: C,
-    types: ['sz_t3d_load_model', 'sz_t3d_traverse'],
+    types: ['sz_t3d_load_model', 'sz_t3d_load_sound', 'sz_t3d_traverse'],
   },
   {
     name: '✨ Efeitos',

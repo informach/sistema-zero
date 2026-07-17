@@ -437,6 +437,8 @@ const OBJECT3D_DECL_BLOCKS: Record<string, string[]> = {
 const OBJECT3D_LOOP_BINDERS: Record<string, string[]> = {
   sz_g3d_for_each_swarm: ['ITEM'],
   sz_t3d_traverse: ['PARAM'],
+  // O "modelo" carregado também é um objeto 3D local do corpo do load_model.
+  sz_t3d_load_model: ['PARAM'],
 }
 /** Grupos/enxames do Jogo 3D (fonte dos seletores GROUP/SWARM). */
 const GROUP3D_DECL_BLOCKS: Record<string, string[]> = {
@@ -469,8 +471,11 @@ const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
   sz_js_try_catch: ['ERR'],
   sz_val_array_map: ['ITEM'],
   sz_val_array_find: ['ITEM'],
-  // Canvas 3D: a "parte" do `objeto.traverse((parte) => { … })` é um nome LOCAL do corpo.
+  // Canvas 3D: a "parte" do `objeto.traverse((parte) => { … })`, o "modelo" do
+  // load_model e o "buffer" do load_sound são nomes LOCAIS dos corpos.
   sz_t3d_traverse: ['PARAM'],
+  sz_t3d_load_model: ['PARAM'],
+  sz_t3d_load_sound: ['PARAM'],
   // Ganchos do Jogo 2D Avançado: o tempo (dt), o pincel (ctx) e a posição do
   // clique (px/py) são nomes LOCAIS dos corpos dos ganchos.
   sz_gk_on_update: ['DT'],

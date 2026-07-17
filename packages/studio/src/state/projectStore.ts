@@ -549,6 +549,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_t3d_new_var',
   'sz_t3d_new',
   'sz_t3d_load_model',
+  'sz_t3d_load_sound',
   'sz_t3d_traverse',
   // Canvas 3D — facilitadores (rótulo amigável sobre memberCall/memberSet).
   'sz_t3d_set_position',

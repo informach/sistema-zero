@@ -153,8 +153,10 @@ export function buildWorkspaceStateFromIR(
       (s.type === 'importStar' && s.module === 'three') ||
       (s.type === 'newInstance' && s.namespace === 'THREE'),
   )
+  audioLoaderVars = collectAudioLoaderVars(ir.js)
   const jsChildren = statementsToBlocks(ir.js)
   recognizeThree = false
+  audioLoaderVars = new Set()
 
   // Um frame por categoria. Com `omitEmptyAuxFrames`, Estrutura/Aparência VAZIAS
   // são puladas (o Comportamento fica sempre), e as colunas presentes se compactam
@@ -873,6 +875,43 @@ const STYLE_PROP_VALUES: ReadonlySet<string> = new Set([
 // propriedade). Registro-espelho: allowlist, valueSockets, LEGACY_VALUE_FIELDS.
 // ─────────────────────────────────────────────────────────────────────────────
 let recognizeThree = false
+
+// Latch-irmão do `recognizeThree`, para DISCRIMINAR o bloco do nó `loaderLoad`:
+// variáveis declaradas como AudioLoader (`new THREE.AudioLoader()` ou
+// `const x = new AudioLoader()`) fazem `x.load('nome', …)` voltar como o bloco
+// "carregar o som" (sz_t3d_load_sound) em vez de "carregar o modelo". Sem
+// AudioLoader declarado, decai para o load_model (o valor sobrevive; só o rótulo
+// fica genérico). Setado/zerado junto do recognizeThree.
+let audioLoaderVars: ReadonlySet<string> = new Set()
+
+/** Anda o IR (recursão por corpos/valores) coletando nomes de AudioLoader. */
+function collectAudioLoaderVars(stmts: readonly JSStatement[]): Set<string> {
+  const out = new Set<string>()
+  const visit = (node: unknown): void => {
+    if (!node || typeof node !== 'object') return
+    if (Array.isArray(node)) {
+      for (const item of node) visit(item)
+      return
+    }
+    const rec = node as Record<string, unknown>
+    if (
+      rec.type === 'newInstance' &&
+      rec.className === 'AudioLoader' &&
+      typeof rec.varName === 'string'
+    ) {
+      out.add(rec.varName)
+    }
+    if (rec.type === 'var' && typeof rec.name === 'string') {
+      const v = rec.value as Record<string, unknown> | null | undefined
+      if (v && typeof v === 'object' && v.type === 'newExpr' && v.className === 'AudioLoader') {
+        out.add(rec.name)
+      }
+    }
+    for (const val of Object.values(rec)) visit(val)
+  }
+  visit(stmts)
+  return out
+}
 
 type VarExpr = Extract<JSExpr, { type: 'var' }>
 
@@ -6027,10 +6066,11 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_t3d_mount_renderer', { R: stmt.renderer }, {}, stmt.__id)
     case 'loaderLoad': {
       // URL é o NOME do asset (campo seletor) — sempre string (o parser só casa
-      // literal de string). Round-trip fiel com o `field_asset_picker`.
+      // literal de string). Round-trip fiel com o `field_asset_picker`. O TIPO do
+      // bloco é discriminado pelo loader: declarado como AudioLoader → bloco de SOM.
       const url = stmt.url.type === 'str' ? stmt.url.value : ''
       return block(
-        'sz_t3d_load_model',
+        audioLoaderVars.has(stmt.loaderVar) ? 'sz_t3d_load_sound' : 'sz_t3d_load_model',
         { LOADER: stmt.loaderVar, PARAM: stmt.param, URL: url },
         { DO: statementsToBlocks(stmt.body) },
         stmt.__id,

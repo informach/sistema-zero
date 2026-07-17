@@ -3365,6 +3365,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'DO', seen),
         },
       }
+    case 'sz_t3d_load_sound':
+      // Irmão do load_model p/ ÁUDIO (AudioLoader): MESMO nó IR `loaderLoad` —
+      // só o rótulo/asset picker mudam; o reverso discrimina pelo tipo do loader.
+      return {
+        kind: 'js',
+        value: {
+          type: 'loaderLoad',
+          loaderVar: f(block, 'LOADER'),
+          url: { type: 'str', value: f(block, 'URL') },
+          param: f(block, 'PARAM') || 'buffer',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
     case 'sz_t3d_traverse':
       // `objeto.traverse((parte) => { … })` — percorrer cada parte de um objeto/modelo.
       return {
