@@ -5964,6 +5964,27 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'w3d:npcAsk':
+      return block(
+        'sz_w3d_npc_ask',
+        { NAME: stmt.name, QUESTION: stmt.question, OPT_A: stmt.optA, OPT_B: stmt.optB },
+        { BODY_A: statementsToBlocks(stmt.bodyA), BODY_B: statementsToBlocks(stmt.bodyB) },
+        stmt.__id,
+      )
+    case 'w3d:door': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const deg = exprToValueBlock(valueToExpr(stmt.deg))
+      return x === null || z === null || deg === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_w3d_door',
+            { TITLE: stmt.title, TEXT: stmt.body, IMAGE: stmt.image },
+            {},
+            stmt.__id,
+            { X: x, Z: z, DEG: deg },
+          )
+    }
     case 'w3d:npcSay':
       return block('sz_w3d_npc_say', { NAME: stmt.name, TEXT: stmt.text }, {}, stmt.__id)
     case 'w3d:npcEmote':

@@ -81,6 +81,14 @@ SZWorld3D.start(); // SEMPRE por último
   cruzamentos; o chão aplaina sozinho e as ruas aparecem no minimapa. UMA
   por mundo. Modo 'neon' = noite + chuva leve por default (se a criança não
   pediu outra hora/clima) + letreiros emissivos brilhando no bloom.
+- \`SZWorld3D.door(x, z, graus, 'Título', 'Texto', 'imagem')\` — porta
+  interativa: E perto abre um overlay LOCAL (título + texto + imagem do
+  projeto via ASSETS; imagem '' = sem). É o "conteúdo do prédio" do
+  Vocation Vista sem rede. Cap 16 portas; prio 1 no árbitro do E; E fecha.
+- \`SZWorld3D.npcAsk('Nome', 'Pergunta?', 'OpA', fnA, 'OpB', fnB)\` —
+  pergunta com 2 escolhas na fila de falas do amigo: balão typewriter + 2
+  botões (clique ou teclas 1/2); a escolha roda fnA/fnB (que normalmente
+  enfileiram npcSay — conversa RAMIFICADA). Enquanto aberta, E é engolido.
 - \`SZWorld3D.traffic(n, 'semaforos'|'livre')\` — carrinhos autônomos (1–12)
   circulando o ANEL da cidade em 1 InstancedMesh: param atrás do jogador
   (buzinam após 2 s), respeitam semáforos sincronizados nos 4 cruzamentos

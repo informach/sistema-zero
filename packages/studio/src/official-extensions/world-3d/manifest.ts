@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '2.3.0',
+  version: '2.4.0',
   description:
     'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: escolha o cenário (🌲🏖️❄️🏜️🌸), levante morros ou um arquipélago e passeie a pé, de carrinho ou de barco (E entra e sai). Buzina, marcas de pneu, boliche, letras e TNT para bagunçar; amigos que conversam, moedas e missões, conquistas que ficam salvas, minimapa com teleporte, clima com tempestade e tornado. Tudo com blocos simples — e o "A cada quadro" para inventar a sua mecânica.',
   category: 'games',
@@ -166,6 +166,10 @@ O que o motor já faz por você:
   muito!), respeitam os semáforos dos cruzamentos (verde anda, amarelo se
   prepara, vermelho para) e nunca batem em ninguém. Escolha quantos (até
   12) e se tem semáforos ou rua livre.
+- **Pôr uma porta interativa 🚪** — chegue perto e aperte E: abre um cartaz
+  com o título, um texto seu e (se quiser) uma imagem do projeto. É o
+  "entrar no prédio": conte o que tem dentro da padaria, da oficina, do
+  castelo… Funciona em QUALQUER lugar do mundo, com ou sem cidade.
 - **Pendurar um varal de luzinhas ✨ de … até …** — dois postes e um fio de
   lâmpadas penduradas que ACENDEM quando escurece. Decore a praça, o quintal
   ou faça um caminho de festa (funciona em qualquer mundo, com ou sem
@@ -194,6 +198,10 @@ O que o motor já faz por você:
   Ponha vários **O amigo fala** dentro: as falas entram numa FILA e cada E
   mostra a próxima, letra por letra, com biplinhos de voz (cada letra tem o
   seu som — o "idioma" dos jogos profissionais).
+- **Quando o amigo … perguntar** — a PERGUNTA com dois botões de resposta
+  (clique neles ou aperte 1/2). Cada resposta roda os próprios blocos: dá
+  para ramificar a conversa, dar missões diferentes para cada escolha,
+  contar segredos… Entra na mesma fila das falas.
 - **O amigo faz acenar/pulinho/girar/dançar** — as gracinhas dele.
 
 ### ⭐ Moedas & missões

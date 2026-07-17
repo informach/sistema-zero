@@ -6791,6 +6791,50 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (!W3D_TRAFFIC_MODES.has(sem)) return null
       return isSimpleValue(n) ? { type: 'w3d:traffic', n, sem } : null
     }
+    case 'door': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const deg = toExpr(args[2], ctx)
+      if (
+        args[3]?.type !== 'StringLiteral' ||
+        args[4]?.type !== 'StringLiteral' ||
+        args[5]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(deg)
+        ? {
+            type: 'w3d:door',
+            x,
+            z,
+            deg,
+            title: args[3].value as string,
+            body: args[4].value as string,
+            image: args[5].value as string,
+          }
+        : null
+    }
+    case 'npcAsk': {
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        args[1]?.type !== 'StringLiteral' ||
+        args[2]?.type !== 'StringLiteral' ||
+        args[4]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      if (!isFn(args[3]) || (args[3].params ?? []).length > 0) return null
+      if (!isFn(args[5]) || (args[5].params ?? []).length > 0) return null
+      return {
+        type: 'w3d:npcAsk',
+        name: args[0].value as string,
+        question: args[1].value as string,
+        optA: args[2].value as string,
+        bodyA: bodyOfFn(args[3], source, ctx),
+        optB: args[4].value as string,
+        bodyB: bodyOfFn(args[5], source, ctx),
+      }
+    }
     case 'fireflies': {
       if (args[0]?.type !== 'StringLiteral') return null
       const amount = args[0].value as string

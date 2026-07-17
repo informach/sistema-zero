@@ -466,6 +466,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_w3d_lamp: { X: 'number', Z: 'number' },
   sz_w3d_city: { X: 'number', Z: 'number' },
   sz_w3d_traffic: { N: 'number' },
+  sz_w3d_door: { X: 'number', Z: 'number', DEG: 'number' },
   sz_w3d_string_lights: { X1: 'number', Z1: 'number', X2: 'number', Z2: 'number' },
   sz_w3d_campfire: { X: 'number', Z: 'number' },
   sz_w3d_scatter_model: { N: 'number', S: 'number' },

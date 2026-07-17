@@ -4032,6 +4032,24 @@ export type JSStatement =
       z2: number | JSExpr
     })
   | (JSStatementCommon & { type: 'w3d:traffic'; n: number | JSExpr; sem: string })
+  | (JSStatementCommon & {
+      type: 'w3d:door'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+      title: string
+      body: string
+      image: string
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:npcAsk'
+      name: string
+      question: string
+      optA: string
+      bodyA: JSStatement[]
+      optB: string
+      bodyB: JSStatement[]
+    })
   | (JSStatementCommon & { type: 'w3d:fireflies'; amount: string })
   | (JSStatementCommon & { type: 'w3d:campfire'; x: number | JSExpr; z: number | JSExpr })
   // Mundo 3D R15 "personagem a pé": rig procedural + entrar/sair do veículo.
@@ -8219,6 +8237,26 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       sem: z.string(),
       ...idField,
     }),
+    z.object({
+      type: z.literal('w3d:door'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      deg: z.union([z.number(), JSExprSchema]),
+      title: z.string(),
+      body: z.string(),
+      image: z.string(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:npcAsk'),
+      name: z.string(),
+      question: z.string(),
+      optA: z.string(),
+      bodyA: z.lazy(() => z.array(JSStatementSchema)),
+      optB: z.string(),
+      bodyB: z.lazy(() => z.array(JSStatementSchema)),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:fireflies'), amount: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:campfire'),
@@ -9398,6 +9436,8 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:city',
   'w3d:stringLights',
   'w3d:traffic',
+  'w3d:door',
+  'w3d:npcAsk',
   'w3d:fireflies',
   'w3d:campfire',
   'w3d:person',

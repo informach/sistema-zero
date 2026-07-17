@@ -728,6 +728,100 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(nearest).toBeGreaterThan(1.4)
   })
 
+  it('R24: E na porta ABRE o cartaz local (e o 2º E fecha sem re-disparar)', async () => {
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        door(x: number, z: number, d: number, t: string, b: string, i: string): void
+      }
+      w.door(6, 0, 0, 'Padaria', 'O melhor pao da cidade!', '')
+    })
+    api.carPlace(4, 0, 90)
+    step(3)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    step(2)
+    const overlay = () =>
+      Array.from(document.querySelectorAll('#szw3d-stage div')).find((d) =>
+        (d.textContent ?? '').includes('O melhor pao da cidade!'),
+      ) as HTMLElement | undefined
+    const el = overlay()
+    expect(el).toBeTruthy()
+    expect((el?.textContent ?? '').includes('Padaria')).toBe(true)
+    // 2º E: fecha (guarda no topo do stepInteractions engole o aperto).
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    step(2)
+    const root = document.querySelector('#szw3d-stage div[style*="inset"]') as HTMLElement | null
+    // O overlay raiz (inset:0) esconde; o mundo volta a andar.
+    const hidden = Array.from(document.querySelectorAll('#szw3d-stage div')).every((d) => {
+      const s = d.getAttribute('style') ?? ''
+      if (!s.includes('inset')) return true
+      return (d as HTMLElement).style.display === 'none'
+    })
+    expect(root === null || hidden).toBe(true)
+  })
+
+  it('R24: pergunta com escolhas — tecla 2 roda o corpo da resposta B', async () => {
+    let colheuA = 0
+    let colheuB = 0
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        npc(n: string, x: number, z: number, c: string, h: string): void
+        npcTalk(n: string, fn: () => void): void
+        npcAsk(n: string, q: string, oa: string, fa: () => void, ob: string, fb: () => void): void
+        npcSay(n: string, t: string): void
+      }
+      w.npc('Guia', 6, 0, '#f97316', 'coroa')
+      w.npcTalk('Guia', () => {
+        w.npcAsk(
+          'Guia',
+          'Milho ou alface?',
+          'Milho',
+          () => {
+            colheuA++
+            w.npcSay('Guia', 'Milho!')
+          },
+          'Alface',
+          () => {
+            colheuB++
+            w.npcSay('Guia', 'Alface!')
+          },
+        )
+      })
+    })
+    api.carPlace(4, 0, 90)
+    step(3)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    step(10)
+    // A pergunta abriu com os 2 botões (o splash também é <button> — filtra
+    // pelos botões ciano da escolha); E é ENGOLIDO enquanto aberta.
+    const buttons = Array.from(document.querySelectorAll('#szw3d-stage button')).filter((b) =>
+      (b.getAttribute('style') ?? '').includes('22d3ee'),
+    )
+    expect(buttons.length).toBe(2)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    expect(colheuA + colheuB).toBe(0)
+    // Tecla 2 → resposta B roda e a fala dela substitui o balão.
+    pressKey('2', 'Digit2')
+    step(2)
+    releaseKey('2', 'Digit2')
+    expect(colheuB).toBe(1)
+    expect(colheuA).toBe(0)
+    step(30)
+    const bubble = Array.from(document.querySelectorAll('#szw3d-stage div')).find((d) =>
+      (d.getAttribute('style') ?? '').includes('max-width'),
+    ) as HTMLElement | undefined
+    expect(bubble?.textContent).toBe('Alface!')
+  })
+
   it('R21: a lua nasce com CRATERAS (fundo do buraco bem abaixo da borda)', async () => {
     const { api } = await loadStartedWorld((a) => {
       const w = a as unknown as { setup(o: { style: string; world: number }): void }

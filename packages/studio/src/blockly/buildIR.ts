@@ -9301,6 +9301,32 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           sem: f(block, 'SEM') || 'semaforos',
         },
       }
+    case 'sz_w3d_door':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:door',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 8 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+          title: f(block, 'TITLE') || '',
+          body: f(block, 'TEXT') || '',
+          image: f(block, 'IMAGE') || '',
+        },
+      }
+    case 'sz_w3d_npc_ask':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcAsk',
+          name: f(block, 'NAME') || 'amigo',
+          question: f(block, 'QUESTION') || '...',
+          optA: f(block, 'OPT_A') || 'Sim',
+          bodyA: getStatementChildren(block, 'BODY_A', seen),
+          optB: f(block, 'OPT_B') || 'Não',
+          bodyB: getStatementChildren(block, 'BODY_B', seen),
+        },
+      }
     case 'sz_w3d_string_lights':
       return {
         kind: 'js',

@@ -272,7 +272,14 @@ export const world3DRuntime = `import * as THREE from 'three';
   var npcs = [];                // { name, group, parts, x, z, yaw, home, target, waitT, phase, vis, emote }
   var NPC_MAX = 8;
   var npcTalkHooks = Object.create(null);  // name -> [fn]
-  var npcSayQueues = Object.create(null);  // name -> [textos] (E avança)
+  // Fila de conversa por amigo (E avança). Itens-OBJETO desde a R24:
+  // { kind:'say', text } | { kind:'ask', q, a, fa, b, fb } (pergunta c/ 2 escolhas).
+  var npcSayQueues = Object.create(null);
+  var npcChoice = null;         // pergunta ABERTA: { name, fa, fb, el } — E engolido; 1/2 ou clique
+  // 🚪 Portas interativas: E abre um overlay LOCAL (título + texto + imagem do projeto).
+  var doors = [];
+  var doorOverlayEl = null;
+  var doorOverlayOpen = false;
   var npcBubble = null;         // { el, name, text, shown, t } — balão typewriter único
   var _npcBlipCd = 0;
   // ---- R18 "moedas & missões" ----
@@ -2238,6 +2245,12 @@ export const world3DRuntime = `import * as THREE from 'three';
   /** A cada quadro: badge "E" no ponto mais perto, gatilho de E e de zona. */
   function stepInteractions() {
     if (!worldReady) return;
+    // Overlay da porta aberto: o E fecha (e NÃO re-dispara a porta no mesmo aperto).
+    if (doorOverlayOpen) {
+      if (isJust('e')) closeDoorOverlay();
+      updatePrompt(null);
+      return;
+    }
     // ⭐ R21: a distância é do JOGADOR ATIVO (a pé/carro/barco), não do carro —
     // medir do carro fazia o "E: entrar" vencer de longe com o carro estacionado
     // e pontos/NPCs só dispararem se o CARRO estivesse perto deles.
@@ -2757,6 +2770,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'flameNote') addFlame(r.x, r.z, r.text, false);
       else if (r.kind === 'city') buildCity();
       else if (r.kind === 'stringLights') buildStringSpan(r.x1, r.z1, r.x2, r.z2);
+      else if (r.kind === 'door') buildDoor(r);
     }
     // 2ª passada: o "passear" precisa do amigo já criado, e o trânsito precisa
     // da cidade já construída (ordem livre dos blocos).
@@ -4243,11 +4257,70 @@ export const world3DRuntime = `import * as THREE from 'three';
     npcBubble.el.textContent = '';
   }
 
-  /** E no amigo: avança a fila de falas; vazia → roda os ganchos (que enfileiram). */
+  /** Avança a fila do amigo: fala vira balão, pergunta vira balão + botões. */
+  function npcQueueNext(name) {
+    var q = npcSayQueues[name] || [];
+    if (!q.length) return false;
+    var item = q.shift();
+    if (item && item.kind === 'ask') npcShowAsk(name, item);
+    else npcShowSay(name, item && item.text != null ? item.text : String(item));
+    return true;
+  }
+
+  /** Pergunta com 2 escolhas: balão (typewriter) + botões 1/2 clicáveis. */
+  function npcShowAsk(name, item) {
+    npcShowSay(name, item.q);
+    if (!frameEl) return;
+    if (!npcChoice) {
+      var holder = document.createElement('div');
+      holder.setAttribute('style', 'position:absolute;display:flex;gap:8px;transform:translate(-50%,0);z-index:9;');
+      frameEl.appendChild(holder);
+      npcChoice = { name: name, fa: null, fb: null, el: holder };
+    }
+    npcChoice.name = name;
+    npcChoice.fa = item.fa;
+    npcChoice.fb = item.fb;
+    npcChoice.el.innerHTML = '';
+    var labels = ['1· ' + item.a, '2· ' + item.b];
+    for (var i = 0; i < 2; i++) {
+      (function (idx) {
+        var b = document.createElement('button');
+        b.textContent = labels[idx];
+        b.setAttribute('style', 'padding:6px 12px;border-radius:12px;border:0;background:#22d3ee;color:#04252b;font:800 13px system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)');
+        b.addEventListener('pointerdown', function (ev) {
+          if (ev && ev.preventDefault) ev.preventDefault();
+          npcChoosePick(idx);
+        });
+        npcChoice.el.appendChild(b);
+      })(i);
+    }
+    npcChoice.el.style.display = 'flex';
+  }
+
+  function npcChoosePick(idx) {
+    if (!npcChoice) return;
+    var name = npcChoice.name;
+    var fn = idx === 0 ? npcChoice.fa : npcChoice.fb;
+    npcChoice.el.style.display = 'none';
+    npcChoice = null;
+    if (typeof fn === 'function') {
+      try { fn(); } catch (e) {
+        warnOnce('npc-ask-' + name, 'erro na resposta de ' + name + ': ' + e);
+      }
+    }
+    // A resposta normalmente ENFILEIRA falas novas: mostra a próxima; se não
+    // veio nada, fecha o balão da pergunta.
+    if (!npcQueueNext(name)) {
+      if (npcBubble && npcBubble.name === name) npcBubble.el.style.display = 'none';
+    }
+  }
+
+  /** E no amigo: avança a fila; vazia → roda os ganchos (que enfileiram). */
   function npcInteract(name) {
+    if (npcChoice) return; // pergunta aberta: responda com 1/2 (ou clique)
     var q = npcSayQueues[name] || [];
     if (q.length) {
-      npcShowSay(name, q.shift());
+      npcQueueNext(name);
       return;
     }
     if (npcBubble && npcBubble.name === name && npcBubble.el.style.display === 'block') {
@@ -4264,13 +4337,18 @@ export const world3DRuntime = `import * as THREE from 'three';
     // Se o gancho já ABRIU o balão (npcSay mostra a 1ª fala na hora), NÃO
     // engolir a próxima da fila — senão a 2ª fala atropela a 1ª.
     var q2 = npcSayQueues[name] || [];
-    if (q2.length && (!npcBubble || npcBubble.el.style.display !== 'block')) {
-      npcShowSay(name, q2.shift());
+    if (q2.length && (!npcBubble || npcBubble.el.style.display !== 'block') && !npcChoice) {
+      npcQueueNext(name);
     }
   }
 
   function stepNpcs(dt) {
     if (!npcs.length) return;
+    // Pergunta aberta: teclas 1/2 respondem (além do clique nos botões).
+    if (npcChoice) {
+      if (isJust('1')) npcChoosePick(0);
+      else if (isJust('2')) npcChoosePick(1);
+    }
     var p = playerXZ();
     for (var i = 0; i < npcs.length; i++) {
       var n = npcs[i];
@@ -4353,6 +4431,11 @@ export const world3DRuntime = `import * as THREE from 'three';
           var rect = canvasEl.getBoundingClientRect();
           npcBubble.el.style.left = (_proj.x * 0.5 + 0.5) * rect.width + 'px';
           npcBubble.el.style.top = (-_proj.y * 0.5 + 0.5) * rect.height + 'px';
+          // Os botões da pergunta seguem logo ABAIXO do balão.
+          if (npcChoice && npcChoice.el.style.display !== 'none') {
+            npcChoice.el.style.left = npcBubble.el.style.left;
+            npcChoice.el.style.top = ((-_proj.y * 0.5 + 0.5) * rect.height + 10) + 'px';
+          }
         }
       }
       if (npcBubble.shown < npcBubble.text.length) {
@@ -5408,6 +5491,95 @@ export const world3DRuntime = `import * as THREE from 'three';
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     cityGroup.add(mesh);
+  }
+
+  // ---- 🚪 Porta interativa: E abre um overlay LOCAL (o "conteúdo do prédio") ----
+
+  function closeDoorOverlay() {
+    if (doorOverlayEl) doorOverlayEl.style.display = 'none';
+    doorOverlayOpen = false;
+  }
+
+  function openDoorOverlay(rec) {
+    if (!ensureShell()) return;
+    if (!doorOverlayEl) {
+      doorOverlayEl = document.createElement('div');
+      doorOverlayEl.setAttribute('style', 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,10,16,.82);z-index:9;cursor:pointer');
+      doorOverlayEl.addEventListener('click', function () { closeDoorOverlay(); });
+      frameEl.appendChild(doorOverlayEl);
+    }
+    doorOverlayEl.innerHTML = '';
+    var card = document.createElement('div');
+    card.setAttribute('style', 'max-width:420px;width:86%;background:#fffef8;border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 44px rgba(0,0,0,.5)');
+    var h = document.createElement('div');
+    h.setAttribute('style', 'font:800 22px system-ui,sans-serif;color:#0f172a');
+    h.textContent = rec.title || 'Porta';
+    card.appendChild(h);
+    var url = ASSETS[text(rec.image, '')];
+    if (url) {
+      var im = document.createElement('img');
+      im.src = url;
+      im.setAttribute('style', 'width:100%;max-height:200px;object-fit:contain;border-radius:10px');
+      card.appendChild(im);
+    }
+    var p = document.createElement('div');
+    p.setAttribute('style', 'font:500 15px system-ui,sans-serif;color:#334155;white-space:pre-wrap');
+    p.textContent = rec.body || '';
+    card.appendChild(p);
+    var hint = document.createElement('div');
+    hint.setAttribute('style', 'font:400 12px system-ui,sans-serif;color:#94a3b8');
+    hint.textContent = 'E ou clique para fechar';
+    card.appendChild(hint);
+    doorOverlayEl.appendChild(card);
+    doorOverlayEl.style.display = 'flex';
+    doorOverlayOpen = true;
+    keys = {}; // padrão splash/pódio: o overlay engole o teclado do passeio
+  }
+
+  function buildDoor(rec) {
+    if (!scene) return;
+    if (doors.length >= 16) {
+      warnOnce('door-max', 'muitas portas (teto 16)');
+      return;
+    }
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var yaw = (num(rec.deg, 0) * Math.PI) / 180;
+    var gy = heightAtDrive(x, z, null);
+    var g = new THREE.Group();
+    var jambMat = toonMaterial({ color: '#7a5a38' });
+    var jambGeo = new THREE.BoxGeometry(0.18, 2.3, 0.22);
+    var j1 = new THREE.Mesh(jambGeo, jambMat);
+    j1.position.set(-0.62, 1.15, 0);
+    g.add(j1);
+    var j2 = new THREE.Mesh(jambGeo, jambMat);
+    j2.position.set(0.62, 1.15, 0);
+    g.add(j2);
+    var lintel = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.2, 0.22), jambMat);
+    lintel.position.set(0, 2.35, 0);
+    g.add(lintel);
+    var slab = new THREE.Mesh(new THREE.BoxGeometry(1.06, 2.2, 0.1), toonMaterial({ color: '#b8543f' }));
+    slab.position.set(0, 1.1, 0);
+    slab.castShadow = true;
+    g.add(slab);
+    var knob = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), new THREE.MeshBasicMaterial({ color: '#fbbf24' }));
+    knob.position.set(0.38, 1.05, 0.09);
+    g.add(knob);
+    if (rec.title) {
+      var tex = makeSignTexture(rec.title, '');
+      var sign = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.55), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+      sign.position.set(0, 2.85, 0.02);
+      g.add(sign);
+    }
+    g.position.set(x, gy, z);
+    g.rotation.y = yaw;
+    scene.add(g);
+    colliderAdd(x, z, 0.7);
+    doors.push(rec);
+    extraInteract.push({
+      x: x, z: z, r: 2.6, label: 'E: abrir', prio: 1, promptY: gy + 2.6,
+      fire: function () { openDoorOverlay(rec); }
+    });
   }
 
   // ---- 🚦 Trânsito: carrinhos educados que seguem o anel + semáforos ----
@@ -6954,6 +7126,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     trafficCars = [];
     trafficMesh = null;
     semState = null;
+    npcChoice = null;
+    doors = [];
+    doorOverlayEl = null;
+    doorOverlayOpen = false;
     firefliesPts = null;
     campfires = [];
     _campRespawn = null;
@@ -7452,11 +7628,25 @@ export const world3DRuntime = `import * as THREE from 'three';
     npcSay: guard('npcSay', function (name, textStr) {
       var nm = text(name, 'amigo');
       if (!npcSayQueues[nm]) npcSayQueues[nm] = [];
-      npcSayQueues[nm].push(text(textStr, '...'));
+      npcSayQueues[nm].push({ kind: 'say', text: text(textStr, '...') });
       // Fora de conversa (chamado solto): mostra na hora.
-      if (worldReady && (!npcBubble || npcBubble.el.style.display !== 'block')) {
-        var q = npcSayQueues[nm];
-        if (q.length === 1) npcShowSay(nm, q.shift());
+      if (worldReady && !npcChoice && (!npcBubble || npcBubble.el.style.display !== 'block')) {
+        if (npcSayQueues[nm].length === 1) npcQueueNext(nm);
+      }
+    }),
+    npcAsk: guard('npcAsk', function (name, q, a, fa, b, fb) {
+      var nm = text(name, 'amigo');
+      if (!npcSayQueues[nm]) npcSayQueues[nm] = [];
+      npcSayQueues[nm].push({
+        kind: 'ask',
+        q: text(q, '...'),
+        a: text(a, 'Sim'),
+        fa: typeof fa === 'function' ? fa : null,
+        b: text(b, 'Não'),
+        fb: typeof fb === 'function' ? fb : null
+      });
+      if (worldReady && !npcChoice && (!npcBubble || npcBubble.el.style.display !== 'block')) {
+        if (npcSayQueues[nm].length === 1) npcQueueNext(nm);
       }
     }),
     npcEmote: guard('npcEmote', function (name, kind) {
@@ -7656,6 +7846,18 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (grassMat) buildGrassHeightTex();
       if (waterMat) buildWaterFoamTex();
       buildCity();
+    }),
+    door: guard('door', function (x, z, deg, title, body, image) {
+      var rec = {
+        kind: 'door',
+        x: num(x, 0), z: num(z, 8), deg: num(deg, 0),
+        title: text(title, ''), body: text(body, ''), image: text(image, '')
+      };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildDoor(rec);
     }),
     traffic: guard('traffic', function (n, mode) {
       if (trafficCfg) {

@@ -1829,6 +1829,51 @@ export const world3DBlocks = [
       'Uma cidadezinha completa estilo Vocation Vista: praça com coreto e varais de luzinhas, anel de rua com faixas de pedestre, 4 ruas de entrada, casinhas, lojas e predinhos coloridos, cercas-vivas e um laguinho. O chão se aplaina sozinho. No modo neon a noite cai, chove de leve e os letreiros brilham!',
   },
   {
+    type: 'sz_w3d_door',
+    message0: 'Pôr uma porta interativa 🚪 em x %1 z %2 virada para %3 graus',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    message1: 'título %1 · texto %2 · imagem %3',
+    args1: [
+      { type: 'field_input', name: 'TITLE', text: 'Padaria' },
+      { type: 'field_input', name: 'TEXT', text: 'Aqui mora o melhor pão da cidade!' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '', kind: 'image' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma porta de verdade: chegue perto e aperte E para abrir um cartaz com título, texto e (se quiser) uma imagem do projeto. É o "entrar no prédio" da cidadezinha — conte o que tem lá dentro! Funciona em qualquer lugar do mundo (até no meio do nada, que é engraçado).',
+  },
+  {
+    type: 'sz_w3d_npc_ask',
+    message0: 'Quando o amigo %1 perguntar: %2',
+    args0: [
+      { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
+      { type: 'field_input', name: 'QUESTION', text: 'O que você quer ser?' },
+    ],
+    message1: 'se responder %1 %2',
+    args1: [
+      { type: 'field_input', name: 'OPT_A', text: 'Inventor' },
+      { type: 'input_statement', name: 'BODY_A' },
+    ],
+    message2: 'se responder %1 %2',
+    args2: [
+      { type: 'field_input', name: 'OPT_B', text: 'Artista' },
+      { type: 'input_statement', name: 'BODY_B' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O amigo faz uma PERGUNTA com dois botões de resposta (clique ou tecla 1/2). Cada resposta roda os próprios blocos — dá para ramificar a conversa, dar missões diferentes, contar segredos… Entra na fila de falas normal (combine com "falar").',
+  },
+  {
     type: 'sz_w3d_traffic',
     message0: 'Ligar o trânsito 🚦 : %1 carrinhos , %2',
     args0: [
@@ -1910,7 +1955,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🏙️ Cidade',
     colour: C,
-    types: ['sz_w3d_city', 'sz_w3d_traffic', 'sz_w3d_string_lights'],
+    types: ['sz_w3d_city', 'sz_w3d_traffic', 'sz_w3d_door', 'sz_w3d_string_lights'],
   },
   {
     name: '🧑‍🤝‍🧑 Amigos',
@@ -1920,6 +1965,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_npc_wander',
       'sz_w3d_npc_talk',
       'sz_w3d_npc_say',
+      'sz_w3d_npc_ask',
       'sz_w3d_npc_emote',
     ],
   },
@@ -2150,6 +2196,7 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_lighthouse: { X: numShadow(50), Z: numShadow(-40) },
   sz_w3d_city: { X: numShadow(0), Z: numShadow(0) },
   sz_w3d_traffic: { N: numShadow(6) },
+  sz_w3d_door: { X: numShadow(0), Z: numShadow(8), DEG: numShadow(0) },
   sz_w3d_string_lights: { X1: numShadow(-8), Z1: numShadow(0), X2: numShadow(8), Z2: numShadow(0) },
   sz_w3d_lamp: { X: numShadow(6), Z: numShadow(6) },
   sz_w3d_campfire: { X: numShadow(0), Z: numShadow(8) },
