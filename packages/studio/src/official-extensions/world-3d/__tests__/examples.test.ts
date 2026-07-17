@@ -3,17 +3,23 @@ import { SZIRSchema } from '#ir'
 import { parseJS } from '../../../parsers/js'
 import { BOLICHE_SOURCE } from '../__gen_boliche'
 import { CORRIDA_SOURCE } from '../__gen_corrida'
+import { FAZENDINHA_SOURCE } from '../__gen_fazendinha'
 import { ILHA_SOURCE } from '../__gen_ilha'
 import { INVERNO_SOURCE } from '../__gen_inverno'
+import { LUA_SOURCE } from '../__gen_lua'
 import { MEU_MUNDO_SOURCE } from '../__gen_meumundo'
 import { PARQUE_SOURCE } from '../__gen_parque'
+import { VILA_SOURCE } from '../__gen_vila'
 import {
   bolicheExample,
   corridaExample,
+  fazendinhaExample,
   ilhaExample,
   invernoExample,
+  luaExample,
   meuMundoExample,
   parqueExample,
+  vilaExample,
   world3DExamples,
 } from '../examples'
 import { world3DManifest } from '../manifest'
@@ -54,12 +60,15 @@ const CASES = [
   { name: 'Inverno Magico', source: INVERNO_SOURCE, example: invernoExample },
   { name: 'Ilha dos Criadores', source: ILHA_SOURCE, example: ilhaExample },
   { name: 'Parque dos Brinquedos', source: PARQUE_SOURCE, example: parqueExample },
+  { name: 'Vila das Vocacoes', source: VILA_SOURCE, example: vilaExample },
+  { name: 'Base da Lua', source: LUA_SOURCE, example: luaExample },
+  { name: 'Fazendinha', source: FAZENDINHA_SOURCE, example: fazendinhaExample },
 ]
 
 describe('Mundo 3D — exemplos da vitrine', () => {
-  it('o manifest registra os 6 exemplos', () => {
-    expect(world3DExamples.length).toBe(6)
-    expect(world3DManifest.examples.length).toBe(6)
+  it('o manifest registra os 9 exemplos', () => {
+    expect(world3DExamples.length).toBe(9)
+    expect(world3DManifest.examples.length).toBe(9)
   })
 
   for (const { name, source, example } of CASES) {

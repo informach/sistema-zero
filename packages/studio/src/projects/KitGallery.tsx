@@ -77,6 +77,9 @@ const KIT_EMOJI: Record<string, string> = {
   'Inverno Magico': '❄️',
   'Ilha dos Criadores': '🏝️',
   'Parque dos Brinquedos': '🎠',
+  'Vila das Vocacoes': '🏙️',
+  'Base da Lua': '🚀',
+  Fazendinha: '🚜',
 }
 
 function toEntry(

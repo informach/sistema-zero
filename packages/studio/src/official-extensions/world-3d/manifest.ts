@@ -4,9 +4,9 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '2.5.0',
+  version: '3.0.0',
   description:
-    'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: escolha o cenário (🌲🏖️❄️🏜️🌸), levante morros ou um arquipélago e passeie a pé, de carrinho ou de barco (E entra e sai). Buzina, marcas de pneu, boliche, letras e TNT para bagunçar; amigos que conversam, moedas e missões, conquistas que ficam salvas, minimapa com teleporte, clima com tempestade e tornado. Tudo com blocos simples — e o "A cada quadro" para inventar a sua mecânica.',
+    'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: 7 cenários (🌲🏖️❄️🏜️🌸🌙🚜), arquipélago com barco, CIDADEZINHA completa com trânsito e semáforos 🏙️, lua com gravidade fraquinha e fazenda com moinho e bichinhos. Passeie a pé, de carrinho ou de barco; portas que abrem cartazes, amigos que conversam e PERGUNTAM, moedas, missões e conquistas salvas; minimapa com teleporte, tempestade e tornado. Blocos simples — e o "A cada quadro" para a sua mecânica.',
   category: 'games',
   official: true,
   enabledByDefault: false,
