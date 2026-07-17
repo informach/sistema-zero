@@ -562,6 +562,101 @@ export const world3DBlocks = [
       'Nuvens fofas lá no alto, derivando com o vento — deixam o céu com cara de mundo grande. "muitas" fica lindo no entardecer.',
   },
   {
+    // R19: sistemas LOCAIS (o "online" do folio sem rede): conquistas no
+    // armazenamento do projeto, minimapa/teleporte, pódio com iniciais e
+    // recados-chama que persistem.
+    type: 'sz_w3d_achievement',
+    message0: 'Dar a conquista %1 🏆',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'Explorador' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma conquista PARA SEMPRE: toast dourado + confete + fanfarra na primeira vez, e fica salva no projeto (continua ganha amanhã). Dar de novo não repete a festa.',
+  },
+  {
+    type: 'sz_w3d_on_achievement',
+    message0: 'Quando ganhar a conquista %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Explorador', kind: 'w3dachieve' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Roda na PRIMEIRA vez que a conquista é ganha — a recompensa especial.',
+  },
+  {
+    type: 'sz_w3d_has_achievement',
+    message0: 'ganhou a conquista %1 ?',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Explorador', kind: 'w3dachieve' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro se a conquista já foi ganha (vale entre jogadas — fica salva no projeto). Use num "se" para desbloquear coisas.',
+  },
+  {
+    type: 'sz_w3d_minimap',
+    message0: 'Mostrar o minimapa 🗺️: %1 (M abre o mapa grande)',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'MODE',
+        options: [
+          ['só ver', 'ver'],
+          ['com teleporte', 'teleporte'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um minimapa no canto (você = seta, pontos, amigos, farol, checkpoints, água). Aperte M para o mapa GRANDE — e no modo teleporte, clique nele para viajar!',
+  },
+  {
+    type: 'sz_w3d_race_podium',
+    message0: 'Ligar o pódio da corrida 🏆 (iniciais + 5 melhores)',
+    args0: [],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Ao cruzar a chegada, digite suas 3 INICIAIS (setas mudam, E confirma) — os 5 melhores tempos ficam salvos NO PROJETO. Aperte P para rever o pódio. O placar de fliperama, sem internet.',
+  },
+  {
+    type: 'sz_w3d_whisper_corner',
+    message0: 'Criar o cantinho dos recados 🔥 em x %1 z %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um totem onde QUEM JOGA deixa recados: E abre a caixinha, o recado vira uma chaminha 🔥 no chão (E lê) e fica salvo no projeto (até 20 — como os sussurros do folio, sem internet).',
+  },
+  {
+    type: 'sz_w3d_flame_note',
+    message0: 'Pôr um recado-chama 🔥 em x %1 z %2 com o texto %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'field_input', name: 'TEXT', text: 'Bem-vindo ao meu mundo!' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma chaminha com um recado SEU, escrito nos blocos: chegue perto e aperte E para ler. Espalhe dicas e segredos pelo mundo.',
+  },
+  {
     // R18: moedas & missões — o loop de coleta/objetivo dos mundos Coastal.
     type: 'sz_w3d_coins_scatter',
     message0: 'Espalhar %1 moedas 🪙 pelo mundo',
@@ -1822,6 +1917,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_on_zone',
       'sz_w3d_totem_text',
       'sz_w3d_totem_image',
+      'sz_w3d_flame_note',
+      'sz_w3d_whisper_corner',
     ],
   },
   {
@@ -1840,6 +1937,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_race_on_finish',
       'sz_w3d_race_time',
       'sz_w3d_race_best',
+      'sz_w3d_race_podium',
     ],
   },
   {
@@ -1887,6 +1985,10 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_w3d_hud',
       'sz_w3d_say',
+      'sz_w3d_achievement',
+      'sz_w3d_on_achievement',
+      'sz_w3d_has_achievement',
+      'sz_w3d_minimap',
       'sz_w3d_on_update',
       'sz_w3d_key_down',
       'sz_w3d_key_pressed',
@@ -1958,6 +2060,8 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   },
   sz_w3d_marker: { X: numShadow(20), Z: numShadow(20) },
   sz_w3d_guide_arrow: { X: numShadow(20), Z: numShadow(20) },
+  sz_w3d_whisper_corner: { X: numShadow(-10), Z: numShadow(10) },
+  sz_w3d_flame_note: { X: numShadow(5), Z: numShadow(12) },
   sz_w3d_bridge: {
     X1: numShadow(0),
     Z1: numShadow(20),

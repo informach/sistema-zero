@@ -319,6 +319,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'w3d:personPos'; axis: 'x' | 'y' | 'z' })
   | (JSExprCommon & { type: 'w3d:isDriving' })
   | (JSExprCommon & { type: 'w3d:coinCount' })
+  | (JSExprCommon & { type: 'w3d:hasAchievement'; name: string })
   | (JSExprCommon & { type: 'w3d:keyDown'; key: string })
   | (JSExprCommon & { type: 'w3d:keyPressed'; key: string })
   | (JSExprCommon & { type: 'w3d:timeOfDay' })
@@ -783,6 +784,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('w3d:personPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
     z.object({ type: z.literal('w3d:isDriving'), ...idField }),
     z.object({ type: z.literal('w3d:coinCount'), ...idField }),
+    z.object({ type: z.literal('w3d:hasAchievement'), name: irText(), ...idField }),
     z.object({ type: z.literal('w3d:keyDown'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:keyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:timeOfDay'), ...idField }),
@@ -4092,6 +4094,22 @@ export type JSStatement =
       x: number | JSExpr
       z: number | JSExpr
       on: boolean
+    })
+  // Mundo 3D R19 "sistemas locais": conquistas, minimapa, pódio, recados.
+  | (JSStatementCommon & { type: 'w3d:achievement'; name: string })
+  | (JSStatementCommon & { type: 'w3d:onAchievement'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:minimap'; mode: string })
+  | (JSStatementCommon & { type: 'w3d:racePodium' })
+  | (JSStatementCommon & {
+      type: 'w3d:whisperCorner'
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:flameNote'
+      x: number | JSExpr
+      z: number | JSExpr
+      text: string
     })
   | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
   | (JSStatementCommon & {
@@ -8285,6 +8303,28 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       on: z.boolean(),
       ...idField,
     }),
+    z.object({ type: z.literal('w3d:achievement'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:onAchievement'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:minimap'), mode: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:racePodium'), ...idField }),
+    z.object({
+      type: z.literal('w3d:whisperCorner'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:flameNote'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      text: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:cameraShake'),
@@ -9345,6 +9385,12 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:onQuestDone',
   'w3d:marker',
   'w3d:guideArrow',
+  'w3d:achievement',
+  'w3d:onAchievement',
+  'w3d:minimap',
+  'w3d:racePodium',
+  'w3d:whisperCorner',
+  'w3d:flameNote',
   'w3d:effects',
   'w3d:dayNight',
   'w3d:setTime',

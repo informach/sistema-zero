@@ -118,6 +118,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'w3d:npcTalk':
     case 'w3d:onCollect':
     case 'w3d:onQuestDone':
+    case 'w3d:onAchievement':
     case 'w3d:onDayNight':
     case 'w3d:onPoint':
     case 'w3d:onZone':
@@ -2661,6 +2662,25 @@ ${pad}});`
       return `${pad}SZWorld3D.tireMarks(${JSON.stringify(stmt.on ? 'ligadas' : 'desligadas')});`
     case 'w3d:carPaint':
       return `${pad}SZWorld3D.carPaint(${JSON.stringify(stmt.paint)});`
+    case 'w3d:achievement':
+      return `${pad}SZWorld3D.achievement(${JSON.stringify(stmt.name)});`
+    case 'w3d:onAchievement': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onAchievement(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:minimap':
+      return `${pad}SZWorld3D.minimap(${JSON.stringify(stmt.mode)});`
+    case 'w3d:racePodium':
+      return `${pad}SZWorld3D.racePodium();`
+    case 'w3d:whisperCorner':
+      return `${pad}SZWorld3D.whisperCorner(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:flameNote':
+      return `${pad}SZWorld3D.flameNote(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.text)});`
     case 'w3d:coinsScatter':
       return `${pad}SZWorld3D.coinsScatter(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
     case 'w3d:coinsRing':
@@ -5916,6 +5936,20 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'w3d:quest':
     case 'w3d:questDone':
+    case 'w3d:achievement':
+    case 'w3d:minimap':
+    case 'w3d:racePodium':
+      return
+    case 'w3d:onAchievement':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:whisperCorner':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:flameNote':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
       return
     case 'w3d:coinsScatter':
       collectExprIdentifiers(valueToExpr(stmt.n), names)
@@ -6506,6 +6540,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:personPos':
     case 'w3d:isDriving':
     case 'w3d:coinCount':
+    case 'w3d:hasAchievement':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':

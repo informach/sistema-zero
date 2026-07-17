@@ -718,6 +718,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'w3d:isDriving' }
     case 'sz_w3d_coin_count':
       return { type: 'w3d:coinCount' }
+    case 'sz_w3d_has_achievement':
+      return { type: 'w3d:hasAchievement', name: f(block, 'NAME') || 'conquista' }
     case 'sz_w3d_key_down':
       return { type: 'w3d:keyDown', key: f(block, 'KEY') || 'e' }
     case 'sz_w3d_key_pressed':
@@ -9028,6 +9030,43 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return { kind: 'js', value: { type: 'w3d:carLights' } }
     case 'sz_w3d_tire_marks':
       return { kind: 'js', value: { type: 'w3d:tireMarks', on: f(block, 'ON') !== 'desligadas' } }
+    case 'sz_w3d_achievement':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:achievement', name: f(block, 'NAME') || 'conquista' },
+      }
+    case 'sz_w3d_on_achievement':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onAchievement',
+          name: f(block, 'NAME') || 'conquista',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_minimap':
+      return { kind: 'js', value: { type: 'w3d:minimap', mode: f(block, 'MODE') || 'ver' } }
+    case 'sz_w3d_race_podium':
+      return { kind: 'js', value: { type: 'w3d:racePodium' } }
+    case 'sz_w3d_whisper_corner':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:whisperCorner',
+          x: exprInput(block, 'X', { type: 'num', value: -10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_flame_note':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:flameNote',
+          x: exprInput(block, 'X', { type: 'num', value: 5 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 12 }),
+          text: f(block, 'TEXT') || '...',
+        },
+      }
     case 'sz_w3d_coins_scatter':
       return {
         kind: 'js',

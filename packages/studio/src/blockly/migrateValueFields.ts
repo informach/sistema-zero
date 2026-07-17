@@ -459,6 +459,8 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_w3d_coins_line: { N: 'number', X1: 'number', Z1: 'number', X2: 'number', Z2: 'number' },
   sz_w3d_marker: { X: 'number', Z: 'number' },
   sz_w3d_guide_arrow: { X: 'number', Z: 'number' },
+  sz_w3d_whisper_corner: { X: 'number', Z: 'number' },
+  sz_w3d_flame_note: { X: 'number', Z: 'number' },
   sz_w3d_bridge: { X1: 'number', Z1: 'number', X2: 'number', Z2: 'number', W: 'number' },
   sz_w3d_lighthouse: { X: 'number', Z: 'number' },
   sz_w3d_lamp: { X: 'number', Z: 'number' },

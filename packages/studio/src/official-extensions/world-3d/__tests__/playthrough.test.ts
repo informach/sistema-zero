@@ -448,6 +448,45 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(venceu).toBe(1) // questDone é idempotente: só comemora UMA vez
   })
 
+  it('R19: conquista PERSISTE entre dois boots (shim) e só festeja na 1ª vez', async () => {
+    try {
+      window.localStorage.removeItem('szw3d:ach:Explorador')
+    } catch {}
+    let ganhou = 0
+    const world1 = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        achievement(n: string): void
+        onAchievement(n: string, fn: () => void): void
+        hasAchievement(n: string): boolean
+      }
+      w.onAchievement('Explorador', () => {
+        ganhou++
+      })
+    })
+    const w1 = world1.api as unknown as {
+      achievement(n: string): void
+      hasAchievement(n: string): boolean
+    }
+    expect(w1.hasAchievement('Explorador')).toBe(false)
+    w1.achievement('Explorador')
+    world1.step(2)
+    expect(ganhou).toBe(1)
+    w1.achievement('Explorador') // repetir NÃO refesteja
+    expect(ganhou).toBe(1)
+    expect(w1.hasAchievement('Explorador')).toBe(true)
+    // "Reabrir o jogo": um SEGUNDO boot lê o mesmo armazenamento.
+    window.dispatchEvent(new Event('pagehide'))
+    const world2 = await loadStartedWorld((a) => {
+      a.car('passeio', '#3b82f6')
+    })
+    const w2 = world2.api as unknown as { hasAchievement(n: string): boolean }
+    expect(w2.hasAchievement('Explorador')).toBe(true)
+    try {
+      window.localStorage.removeItem('szw3d:ach:Explorador')
+    } catch {}
+  })
+
   it('playthrough do exemplo "Meu Mundo": roda, dirige e não quebra', async () => {
     const { api, step } = await loadExampleWorld(MEU_MUNDO_SOURCE)
     const z0 = api.carPos('z')

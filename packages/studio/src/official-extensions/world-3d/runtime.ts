@@ -268,6 +268,19 @@ export const world3DRuntime = `import * as THREE from 'three';
   var markers = [];             // { sprite, x, z } — ícones flutuantes
   var guideTarget = null;       // { x, z } — seta-guia DOM
   var guideEl = null;
+  // ---- R19 "sistemas locais": conquistas, minimapa, pódio, recados ----
+  var achievementHooks = Object.create(null);  // name -> [fn]
+  var achToastEl = null;
+  var minimapMode = 'off';      // off | ver | teleporte
+  var minimapEl = null;         // canvas pequeno (canto)
+  var bigMapEl = null;          // overlay do mapa grande (tecla M)
+  var _mapT = 0;
+  var podiumOn = false;
+  var podiumEntry = null;       // { el, slots:[..], idx } — digitar 3 iniciais
+  var _lastRaceMs = 0;
+  var whisperCornerAt = null;   // { x, z }
+  var flames = [];              // { sprite, x, z, text } — recados-chama
+  var whisperInput = null;      // overlay de escrever recado
   var _dummy = null;            // Object3D p/ compor matrizes de instância
   var _mat4 = null;
   var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
@@ -2477,6 +2490,8 @@ export const world3DRuntime = `import * as THREE from 'three';
                 saveBest(race.time);
               }
               fireRace('finish');
+              // Pódio local (R19): terminou → digite as 3 iniciais.
+              if (podiumOn) openPodiumEntry(Math.round(race.time * 1000));
             } else {
               race.lap++;
             }
@@ -2700,6 +2715,8 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'coinsLine') coinsLineBuild(r.n, r.x1, r.z1, r.x2, r.z2);
       else if (r.kind === 'marker') addMarker(r.icon, r.x, r.z);
       else if (r.kind === 'questHud') refreshQuestHud();
+      else if (r.kind === 'whisperCorner') buildWhisperCorner(r.x, r.z);
+      else if (r.kind === 'flameNote') addFlame(r.x, r.z, r.text, false);
     }
     // 2ª passada: o "passear" precisa do amigo já criado (ordem livre dos blocos).
     for (var j = 0; j < decorRecipes.length; j++) {
@@ -3527,6 +3544,362 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (stormT <= 0) {
       stormT = 4 + Math.random() * 5;
       strikeBolt();
+    }
+  }
+
+  // ---- R19: conquistas (shim), minimapa/teleporte, pódio, recados-chama ----
+
+  function shimGet(key) {
+    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function shimSet(key, value) {
+    try { window.localStorage.setItem(key, value); } catch (e) {}
+  }
+
+  function giveAchievement(name) {
+    var nm = text(name, '');
+    if (!nm) return;
+    var key = 'szw3d:ach:' + nm;
+    if (shimGet(key)) return; // já tem — conquista é para sempre
+    shimSet(key, '1');
+    if (frameEl) {
+      if (!achToastEl) {
+        achToastEl = document.createElement('div');
+        achToastEl.setAttribute('style', 'position:absolute;top:52px;right:12px;padding:8px 14px;border-radius:12px;background:#fbbf24;color:#3b2900;font:800 15px system-ui,sans-serif;z-index:9;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.35);display:none;');
+        frameEl.appendChild(achToastEl);
+      }
+      achToastEl.textContent = '🏆 Conquista: ' + nm;
+      achToastEl.style.display = 'block';
+      _achToastUntil = playTime + 3;
+    }
+    confettiBurst();
+    beep(988, 0.1);
+    beep(1319, 0.16);
+    var hooks = achievementHooks[nm] || [];
+    for (var i = 0; i < hooks.length; i++) {
+      try { hooks[i](); } catch (e) {
+        warnOnce('hook-ach-' + nm, 'erro no "Quando ganhar a conquista": ' + e);
+      }
+    }
+  }
+  var _achToastUntil = 0;
+
+  function stepAchToast() {
+    if (achToastEl && achToastEl.style.display === 'block' && playTime > _achToastUntil) {
+      achToastEl.style.display = 'none';
+    }
+  }
+
+  // Minimapa: canvas pequeno sempre + mapa GRANDE no M (dots; clique teleporta).
+  function ensureMinimap() {
+    if (minimapEl || !frameEl) return;
+    minimapEl = document.createElement('canvas');
+    minimapEl.width = 140;
+    minimapEl.height = 140;
+    minimapEl.setAttribute('style', 'position:absolute;bottom:12px;right:12px;width:140px;height:140px;border-radius:10px;z-index:7;pointer-events:none;opacity:.92;');
+    frameEl.appendChild(minimapEl);
+  }
+
+  function drawMapDots(g, size) {
+    var st = styleOf();
+    g.fillStyle = st.ground2 || '#3f6212';
+    g.fillRect(0, 0, size, size);
+    var half = config.world / 2;
+    var toPx = function (wx) { return ((wx + half) / config.world) * size; };
+    var dot = function (wx, wz, color, r) {
+      g.fillStyle = color;
+      g.beginPath();
+      g.arc(toPx(wx), toPx(wz), r, 0, Math.PI * 2);
+      g.fill();
+    };
+    var i;
+    if (waterCfg) {
+      // Água aproximada: pinta células fundas (amostra 24×24 — barato).
+      g.fillStyle = '#2b6cb0';
+      var n2 = 24;
+      var cell = size / n2;
+      for (var gy = 0; gy < n2; gy++) {
+        for (var gx = 0; gx < n2; gx++) {
+          var wx2 = (gx / (n2 - 1)) * config.world - half;
+          var wz2 = (gy / (n2 - 1)) * config.world - half;
+          if (heightAt(wx2, wz2) < waterCfg.y - 0.2) g.fillRect(gx * cell, gy * cell, cell + 1, cell + 1);
+        }
+      }
+    }
+    for (i = 0; i < points.length; i++) dot(points[i].x, points[i].z, '#22d3ee', 3);
+    for (i = 0; i < npcs.length; i++) dot(npcs[i].x, npcs[i].z, '#f97316', 3);
+    for (i = 0; i < lighthouses.length; i++) dot(lighthouses[i].x, lighthouses[i].z, '#f8fafc', 4);
+    if (race) {
+      for (i = 0; i < race.checkpoints.length; i++) {
+        dot(race.checkpoints[i].x, race.checkpoints[i].z, '#4ade80', 3);
+      }
+    }
+    // O jogador: seta triangular apontando o rumo.
+    var p = playerXZ();
+    var fsY = focusState() ? focusState().yaw : 0;
+    var px = toPx(p.x);
+    var pz = toPx(p.z);
+    g.fillStyle = '#fde68a';
+    g.save();
+    g.translate(px, pz);
+    g.rotate(Math.atan2(Math.sin(fsY), Math.cos(fsY)) * 0 + -fsY);
+    g.beginPath();
+    g.moveTo(0, -7);
+    g.lineTo(5, 6);
+    g.lineTo(-5, 6);
+    g.closePath();
+    g.fill();
+    g.restore();
+  }
+
+  function stepMinimap(dt) {
+    stepAchToast();
+    if (minimapMode === 'off') return;
+    ensureMinimap();
+    if (!minimapEl) return;
+    _mapT -= dt;
+    if (_mapT > 0) return;
+    _mapT = 0.15;
+    var g = minimapEl.getContext('2d');
+    if (g) drawMapDots(g, 140);
+    // Tecla M: abre/fecha o mapa GRANDE.
+    if (isJust('m')) toggleBigMap();
+  }
+
+  function toggleBigMap() {
+    if (bigMapEl) {
+      try { frameEl.removeChild(bigMapEl); } catch (e) {}
+      bigMapEl = null;
+      return;
+    }
+    if (!frameEl) return;
+    bigMapEl = document.createElement('div');
+    bigMapEl.setAttribute('style', 'position:absolute;inset:0;background:rgba(2,6,23,.66);display:flex;align-items:center;justify-content:center;z-index:10;');
+    var cv = document.createElement('canvas');
+    cv.width = 420;
+    cv.height = 420;
+    cv.setAttribute('style', 'width:min(78%,420px);height:auto;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.5);cursor:' + (minimapMode === 'teleporte' ? 'crosshair' : 'default') + ';');
+    bigMapEl.appendChild(cv);
+    var hint = document.createElement('div');
+    hint.setAttribute('style', 'position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#e2e8f0;font:700 14px system-ui,sans-serif;');
+    hint.textContent = minimapMode === 'teleporte' ? 'Clique para TELEPORTAR · M fecha' : 'M fecha';
+    bigMapEl.appendChild(hint);
+    frameEl.appendChild(bigMapEl);
+    var g = cv.getContext('2d');
+    if (g) drawMapDots(g, 420);
+    if (minimapMode === 'teleporte') {
+      cv.addEventListener('pointerdown', function (ev) {
+        var rect = cv.getBoundingClientRect();
+        var half = config.world / 2;
+        var wx = ((ev.clientX - rect.left) / rect.width) * config.world - half;
+        var wz = ((ev.clientY - rect.top) / rect.height) * config.world - half;
+        if (personCfg && !driving && personState) {
+          personState.x = wx;
+          personState.z = wz;
+          personState.y = heightAtDrive(wx, wz, null);
+        } else if (carState) {
+          carState.x = wx;
+          carState.z = wz;
+          carState.y = heightAtDrive(wx, wz, null);
+          carState.speed = 0;
+        }
+        camSnap = true;
+        toggleBigMap();
+      });
+    }
+  }
+
+  // Pódio local: 3 iniciais no fim da corrida; top-5 no shim; P reabre a tabela.
+  function podiumList() {
+    var raw = shimGet('szw3d:podium');
+    if (!raw) return [];
+    try {
+      var arr = JSON.parse(raw);
+      return arr && arr.length ? arr : [];
+    } catch (e) { return []; }
+  }
+
+  function openPodiumEntry(ms) {
+    if (!frameEl || podiumEntry) return;
+    _lastRaceMs = ms;
+    var el = document.createElement('div');
+    el.setAttribute('style', 'position:absolute;inset:0;background:rgba(2,6,23,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:11;color:#f8fafc;font:800 20px system-ui,sans-serif;');
+    el.innerHTML = '';
+    var title = document.createElement('div');
+    title.textContent = '🏁 Suas iniciais (setas mudam, E confirma)';
+    title.style.font = '800 17px system-ui,sans-serif';
+    el.appendChild(title);
+    var row = document.createElement('div');
+    row.setAttribute('style', 'display:flex;gap:12px;font:900 44px system-ui,sans-serif;');
+    el.appendChild(row);
+    frameEl.appendChild(el);
+    podiumEntry = { el: el, row: row, slots: [0, 0, 0], idx: 0 };
+    renderPodiumSlots();
+    keys = {};
+  }
+
+  var LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  function renderPodiumSlots() {
+    if (!podiumEntry) return;
+    var html = '';
+    for (var i = 0; i < 3; i++) {
+      var ch = LETTERS.charAt(podiumEntry.slots[i]);
+      html += '<span style="padding:4px 12px;border-radius:10px;background:' + (i === podiumEntry.idx ? '#22d3ee' : 'rgba(255,255,255,.12)') + ';color:' + (i === podiumEntry.idx ? '#04252b' : '#f8fafc') + ';">' + ch + '</span>';
+    }
+    podiumEntry.row.innerHTML = html;
+  }
+
+  function stepPodium() {
+    if (!podiumEntry) return;
+    if (isJust('arrowleft') || isJust('a')) podiumEntry.idx = (podiumEntry.idx + 2) % 3;
+    if (isJust('arrowright') || isJust('d')) podiumEntry.idx = (podiumEntry.idx + 1) % 3;
+    if (isJust('arrowup') || isJust('w')) podiumEntry.slots[podiumEntry.idx] = (podiumEntry.slots[podiumEntry.idx] + 1) % 26;
+    if (isJust('arrowdown') || isJust('s')) podiumEntry.slots[podiumEntry.idx] = (podiumEntry.slots[podiumEntry.idx] + 25) % 26;
+    renderPodiumSlots();
+    if (isJust('e') || isJust('enter')) {
+      var ini = LETTERS.charAt(podiumEntry.slots[0]) + LETTERS.charAt(podiumEntry.slots[1]) + LETTERS.charAt(podiumEntry.slots[2]);
+      var list = podiumList();
+      list.push({ ini: ini, ms: _lastRaceMs });
+      list.sort(function (a, b) { return a.ms - b.ms; });
+      list = list.slice(0, 5);
+      shimSet('szw3d:podium', JSON.stringify(list));
+      try { frameEl.removeChild(podiumEntry.el); } catch (e) {}
+      podiumEntry = null;
+      showPodiumTable();
+    }
+    // Engole o teclado enquanto digita (o carrinho não anda).
+    keys = {};
+    justPressed = {};
+  }
+
+  function fmtMs(ms) {
+    var s = Math.floor(ms / 1000);
+    var mm = Math.floor(s / 60);
+    var ss = s % 60;
+    var mmm = Math.floor(ms % 1000);
+    return mm + ':' + (ss < 10 ? '0' : '') + ss + '.' + (mmm < 100 ? (mmm < 10 ? '00' : '0') : '') + mmm;
+  }
+
+  function showPodiumTable() {
+    if (!frameEl) return;
+    var list = podiumList();
+    var el = document.createElement('div');
+    el.setAttribute('style', 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:230px;padding:14px 20px;border-radius:16px;background:rgba(2,6,23,.85);color:#f8fafc;font:700 16px system-ui,sans-serif;z-index:11;text-align:center;');
+    var html = '<div style="font-size:19px;margin-bottom:8px;">🏆 Pódio</div>';
+    if (!list.length) html += '<div>Ninguém correu ainda!</div>';
+    for (var i = 0; i < list.length; i++) {
+      html += '<div>' + (i + 1) + 'º ' + list[i].ini + ' — ' + fmtMs(list[i].ms) + '</div>';
+    }
+    el.innerHTML = html;
+    frameEl.appendChild(el);
+    setTimeout(function () {
+      try { frameEl.removeChild(el); } catch (e) {}
+    }, 3200);
+  }
+
+  // Recados-chama: uma chaminha 🔥 com um texto; E lê (balão do say).
+  function addFlame(x, z, textStr, persist) {
+    if (!scene) return;
+    var cv = document.createElement('canvas');
+    cv.width = 64;
+    cv.height = 64;
+    var g = cv.getContext('2d');
+    if (g) {
+      g.font = '46px system-ui, sans-serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText('🔥', 32, 36);
+    }
+    var tex = new THREE.CanvasTexture(cv);
+    if (!THREE.Sprite || !THREE.SpriteMaterial) return;
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthWrite: false }));
+    sp.scale.set(1.4, 1.4, 1);
+    var fx = num(x, 0);
+    var fz = num(z, 0);
+    sp.position.set(fx, heightAtDrive(fx, fz, null) + 1, fz);
+    scene.add(sp);
+    var msg = text(textStr, '...');
+    flames.push({ sprite: sp, x: fx, z: fz, text: msg });
+    extraInteract.push({
+      x: fx, z: fz, r: 2.4, label: 'E: ler', prio: 0,
+      promptY: heightAtDrive(fx, fz, null) + 2.2,
+      fire: function () { showSay(msg, 4); }
+    });
+    if (persist) {
+      var raw = shimGet('szw3d:whispers');
+      var list = [];
+      try { list = raw ? JSON.parse(raw) : []; } catch (e) { list = []; }
+      list.push({ x: fx, z: fz, text: msg });
+      if (list.length > 20) list = list.slice(list.length - 20);
+      shimSet('szw3d:whispers', JSON.stringify(list));
+    }
+  }
+
+  function openWhisperInput() {
+    if (!frameEl || whisperInput) return;
+    var el = document.createElement('div');
+    el.setAttribute('style', 'position:absolute;inset:0;background:rgba(2,6,23,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:11;');
+    var lbl = document.createElement('div');
+    lbl.textContent = '🔥 Deixe seu recado (Enter salva, Esc cancela)';
+    lbl.setAttribute('style', 'color:#f8fafc;font:800 16px system-ui,sans-serif;');
+    el.appendChild(lbl);
+    var input = document.createElement('input');
+    input.setAttribute('maxlength', '80');
+    input.setAttribute('style', 'width:min(70%,340px);padding:10px 14px;border-radius:12px;border:none;font:700 16px system-ui,sans-serif;');
+    el.appendChild(input);
+    frameEl.appendChild(el);
+    whisperInput = { el: el, input: input };
+    keys = {};
+    setTimeout(function () { try { input.focus(); } catch (e) {} }, 30);
+    input.addEventListener('keydown', function (ev) {
+      ev.stopPropagation();
+      if (ev.key === 'Enter') {
+        var msg = String(input.value || '').trim();
+        closeWhisperInput();
+        if (msg && whisperCornerAt) {
+          addFlame(
+            whisperCornerAt.x + (Math.random() * 2 - 1) * 4,
+            whisperCornerAt.z + 2 + Math.random() * 3,
+            msg,
+            true
+          );
+        }
+      } else if (ev.key === 'Escape') {
+        closeWhisperInput();
+      }
+    });
+  }
+
+  function closeWhisperInput() {
+    if (!whisperInput) return;
+    try { frameEl.removeChild(whisperInput.el); } catch (e) {}
+    whisperInput = null;
+    keys = {};
+  }
+
+  function buildWhisperCorner(x, z) {
+    whisperCornerAt = { x: num(x, 0), z: num(z, 0) };
+    buildTotemText(whisperCornerAt.x, whisperCornerAt.z, 'Recados', 'aperte E e escreva');
+    extraInteract.push({
+      x: whisperCornerAt.x, z: whisperCornerAt.z, r: 3, label: 'E: escrever', prio: 1,
+      promptY: heightAtDrive(whisperCornerAt.x, whisperCornerAt.z, null) + 2.6,
+      fire: openWhisperInput
+    });
+    // Reconstrói as chamas salvas neste projeto.
+    var raw = shimGet('szw3d:whispers');
+    if (raw) {
+      try {
+        var list = JSON.parse(raw);
+        for (var i = 0; i < list.length; i++) addFlame(list[i].x, list[i].z, list[i].text, false);
+      } catch (e) {}
+    }
+  }
+
+  function stepFlames() {
+    for (var i = 0; i < flames.length; i++) {
+      var f2 = flames[i];
+      f2.sprite.position.y = heightAtDrive(f2.x, f2.z, null) + 1 + Math.sin(playTime * 3 + i) * 0.12;
     }
   }
 
@@ -5646,6 +6019,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepCoins(dt);
     stepMarkers();
     stepGuide();
+    stepPodium();
+    stepMinimap(dt);
+    stepFlames();
+    if (isJust('p') && podiumOn && !podiumEntry) showPodiumTable();
     updateEngine();
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
@@ -5848,6 +6225,14 @@ export const world3DRuntime = `import * as THREE from 'three';
     markers = [];
     guideTarget = null;
     guideEl = null;
+    achievementHooks = Object.create(null);
+    achToastEl = null;
+    minimapEl = null;
+    bigMapEl = null;
+    podiumEntry = null;
+    whisperCornerAt = null;
+    flames = [];
+    whisperInput = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -6137,6 +6522,47 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       seasonName = n2;
       if (worldReady) applySeason();
+    }),
+    // 🏆 R19 sistemas locais
+    achievement: guard('achievement', function (name) {
+      giveAchievement(name);
+    }),
+    onAchievement: guard('onAchievement', function (name, fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando ganhar a conquista" precisa de blocos de fazer dentro');
+        return;
+      }
+      var an = text(name, 'conquista');
+      if (!achievementHooks[an]) achievementHooks[an] = [];
+      achievementHooks[an].push(fn);
+    }),
+    hasAchievement: guard('hasAchievement', function (name) {
+      return !!shimGet('szw3d:ach:' + text(name, ''));
+    }),
+    minimap: guard('minimap', function (mode) {
+      var mm = text(mode, 'ver');
+      if (mm !== 'ver' && mm !== 'teleporte') {
+        warn('não conheço "' + mm + '" — tem: ver, teleporte');
+        return;
+      }
+      minimapMode = mm;
+    }),
+    racePodium: guard('racePodium', function () {
+      podiumOn = true;
+    }),
+    whisperCorner: guard('whisperCorner', function (x, z) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'whisperCorner', x: num(x, 0), z: num(z, 0) });
+        return;
+      }
+      buildWhisperCorner(x, z);
+    }),
+    flameNote: guard('flameNote', function (x, z, textStr) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'flameNote', x: num(x, 0), z: num(z, 0), text: text(textStr, '...') });
+        return;
+      }
+      addFlame(x, z, textStr, false);
     }),
     // ⭐ R18 moedas & missões
     coinsScatter: guard('coinsScatter', function (n) {

@@ -77,6 +77,10 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.coinsScatter(n)\` / \`coinsRing(n, x, z, raio)\` / \`coinsLine(n, x1, z1, x2, z2)\` — moedas girando (cap 512; nunca na água). Pegar = encostar: plim + HUD 🪙 automático + \`SZWorld3D.onCollect(() => { … })\`. \`SZWorld3D.coinCount()\` → total.
 - \`SZWorld3D.quest('nome', 'descrição')\` — a missão ATIVA aparece no painel sozinha. \`SZWorld3D.questDone('nome')\` — confete + fanfarra + \`SZWorld3D.onQuestDone('nome', () => { … })\`. Meta automática NÃO existe: componha com onCollect + se coinCount() >= N.
 - \`SZWorld3D.marker('alerta'|'estrela'|'alvo'|'moeda', x, z)\` — ícone quicando sobre o lugar. \`SZWorld3D.guideArrow(x, z, 'ligada'|'desligada')\` — seta na tela que aponta o alvo e some ao chegar.
+- \`SZWorld3D.achievement('nome')\` — conquista PARA SEMPRE (salva no projeto; 1ª vez = toast+confete; repetir não refesteja). \`SZWorld3D.onAchievement('nome', () => { … })\` · \`SZWorld3D.hasAchievement('nome')\` → booleano (vale entre jogadas).
+- \`SZWorld3D.minimap('ver'|'teleporte')\` — minimapa no canto; M abre o mapa grande (teleporte = clicar viaja).
+- \`SZWorld3D.racePodium()\` — fim da corrida pede 3 INICIAIS (setas+E); top-5 salvo no projeto; P reabre.
+- \`SZWorld3D.whisperCorner(x, z)\` — cantinho onde o JOGADOR escreve recados (viram chamas 🔥 persistentes, cap 20). \`SZWorld3D.flameNote(x, z, 'texto')\` — a SUA dica-chama (E lê).
 - \`SZWorld3D.scatter(n, especie)\` — espalha n cópias procedurais pelo mundo
   (pousadas no terreno, determinístico). especies: 'arvores' | 'pinheiros' |
   'pedras' | 'flores' | 'cogumelos' | 'cactos'. Árvores/pedras/cactos são

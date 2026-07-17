@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '1.8.0',
+  version: '1.9.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -187,6 +187,17 @@ O que o motor já faz por você:
 - **Mostrar o ícone ❗/⭐/🎯/💰 flutuando sobre …** — o "olhe aqui!" que
   guia o jogador. **Apontar a seta-guia 🧭** — uma seta na tela gira
   apontando o alvo e some quando você chega.
+- **Dar a conquista 🏆 / Quando ganhar / ganhou?** — conquistas PARA SEMPRE
+  (ficam salvas no projeto, entre jogadas): toast dourado + confete na
+  primeira vez; "ganhou a conquista?" desbloqueia coisas amanhã.
+- **Mostrar o minimapa 🗺️** — você (seta), pontos, amigos, farol,
+  checkpoints e a água no canto. M abre o mapa GRANDE; no modo teleporte,
+  clique nele para viajar.
+- **Ligar o pódio da corrida 🏆** — cruzou a chegada, digite as 3 iniciais
+  (setas mudam, E confirma): os 5 melhores tempos ficam no projeto. P revê.
+- **Recados-chama 🔥** — o "Cantinho dos recados" deixa QUEM JOGA escrever
+  (E abre a caixinha; o recado vira chaminha e fica salvo, até 20); o
+  "Pôr um recado-chama" é a SUA dica escrita nos blocos. E lê.
 
 ### 🌦️ Céu & clima
 

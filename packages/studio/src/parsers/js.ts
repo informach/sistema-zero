@@ -6159,6 +6159,9 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   }
   if (method === 'isDriving' && args.length === 0) return { type: 'w3d:isDriving' }
   if (method === 'coinCount' && args.length === 0) return { type: 'w3d:coinCount' }
+  if (method === 'hasAchievement' && args[0]?.type === 'StringLiteral') {
+    return { type: 'w3d:hasAchievement', name: args[0].value as string }
+  }
   if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
     return { type: 'w3d:keyDown', key: args[0].value as string }
   }
@@ -6530,6 +6533,40 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       const amount = args[0].value as string
       return W3D_CLOUD_AMOUNTS.has(amount) ? { type: 'w3d:clouds', amount } : null
+    }
+    case 'achievement': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'w3d:achievement', name: args[0].value as string }
+    }
+    case 'onAchievement': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      if (!isFn(args[1]) || (args[1].params ?? []).length > 0) return null
+      return {
+        type: 'w3d:onAchievement',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'minimap': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const mode = args[0].value as string
+      if (mode !== 'ver' && mode !== 'teleporte') return null
+      return { type: 'w3d:minimap', mode }
+    }
+    case 'racePodium':
+      return { type: 'w3d:racePodium' }
+    case 'whisperCorner': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:whisperCorner', x, z } : null
+    }
+    case 'flameNote': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      if (args[2]?.type !== 'StringLiteral') return null
+      return isSimpleValue(x) && isSimpleValue(z)
+        ? { type: 'w3d:flameNote', x, z, text: args[2].value as string }
+        : null
     }
     case 'coinsScatter': {
       const n = toExpr(args[0], ctx)
@@ -10736,6 +10773,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'w3d:personPos':
     case 'w3d:isDriving':
     case 'w3d:coinCount':
+    case 'w3d:hasAchievement':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':
