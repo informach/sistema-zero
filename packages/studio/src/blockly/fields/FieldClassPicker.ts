@@ -125,6 +125,9 @@ export const COMMON_CLASSES: ReadonlyArray<{ group: string; items: readonly Clas
       { name: 'UnrealBloomPass', ns: '' },
       { name: 'OutputPass', ns: '' },
       { name: 'Water', ns: '' },
+      { name: 'Line2', ns: '' },
+      { name: 'LineGeometry', ns: '' },
+      { name: 'LineMaterial', ns: '' },
     ],
   },
 ]

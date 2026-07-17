@@ -53,6 +53,16 @@ export const COMMON_ADDONS: ReadonlyArray<{
       { name: 'Sky', module: 'three/addons/objects/Sky.js' },
     ],
   },
+  {
+    // Linhas GROSSAS (Line2): o LineBasicMaterial nativo ignora linewidth na
+    // maioria das GPUs — raio/relâmpago/traçado de rota usam este trio.
+    group: '📏 Linhas',
+    items: [
+      { name: 'Line2', module: 'three/addons/lines/Line2.js' },
+      { name: 'LineGeometry', module: 'three/addons/lines/LineGeometry.js' },
+      { name: 'LineMaterial', module: 'three/addons/lines/LineMaterial.js' },
+    ],
+  },
 ]
 
 /** Nome do addon → módulo canônico (o auto-preenchimento do campo MODULE). */
