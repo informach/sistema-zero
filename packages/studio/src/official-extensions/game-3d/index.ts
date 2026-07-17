@@ -13,9 +13,9 @@ const THREE_CDN = 'https://esm.sh/three@0.180.0'
 
 export const gameThreeDExtension: ExtensionDefinition = {
   manifest: gameThreeDManifest,
-  // Kit facilitador de jogo 3D → INTERMEDIÁRIO (o 2D é iniciante; o "na unha"/manual
-  // é que fica avançado). Divulgação progressiva.
-  minLevel: 'intermediario',
+  // Kit facilitador de jogo 3D → é a PORTA DE ENTRADA do 3D (iniciante-3d, o
+  // degrau logo após o Inventor na carreira); o "na unha"/manual fica avançado-3d.
+  minLevel: 'iniciante-3d',
   blockly: {
     blocks: gameThreeDBlocks,
     toolboxCategory: gameThreeDToolboxCategory,

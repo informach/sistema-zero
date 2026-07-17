@@ -342,7 +342,15 @@ describe('Gamificação — GET /members/gamification/me', () => {
       level: {
         slug: 'noob',
         next: 'coder',
-        remaining: { any: 1, iniciante: 0, intermediario: 0, avancado: 0 },
+        remaining: {
+          any: 1,
+          'iniciante-2d': 0,
+          'iniciante-3d': 0,
+          'intermediario-2d': 0,
+          'intermediario-3d': 0,
+          'avancado-2d': 0,
+          'avancado-3d': 0,
+        },
       },
     })
   })
@@ -1109,20 +1117,69 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
       audience: 'adult',
     })
 
-    // Qualificado como INICIANTE → Coder; faltam 5 iniciantes p/ Hacker (piso 6).
+    // Qualificado como INICIANTE 2D → Coder; faltam 5 iniciante-2d p/ Hacker (piso 6).
     const before = await readJson(await getMe(app))
     expect(before.level.slug).toBe('coder')
-    expect(before.level.remaining.iniciante).toBe(5)
+    expect(before.level.remaining['iniciante-2d']).toBe(5)
 
     // O admin re-nivela o curso p/ avançado DEPOIS da qualificação.
     const row = courses.courses.find((c) => c.id === course.courseId)
     if (row) row.level = 'avancado'
 
     // O rank usa o SNAPSHOT congelado no marco: continua contando como iniciante.
-    // Se seguisse o `courses.level` AO VIVO, `remaining.iniciante` viraria 6 (0 qualificados).
+    // Se seguisse o `courses.level` AO VIVO, remaining['iniciante-2d'] viraria 6 (0 qualificados).
     const after = await readJson(await getMe(app))
     expect(after.level.slug).toBe('coder')
-    expect(after.level.remaining.iniciante).toBe(5)
+    expect(after.level.remaining['iniciante-2d']).toBe(5)
+  })
+
+  test('re-taggear o TRACK depois de qualificado também não move o balde (snapshot)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses) // iniciante, track 2d
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await completeCourse(app, course.lessonIds)
+    await postShowcase(app, {
+      userId: USER,
+      accountId: USER,
+      courseId: course.courseId,
+      audience: 'adult',
+    })
+
+    // O admin re-tagueia o curso p/ 3D DEPOIS da qualificação: o marco tem
+    // snapshot de track ('2d'), então o balde NÃO muda — o curso segue contando
+    // como iniciante-2d (faltam 5 p/ o piso 6 do Hacker).
+    const row = courses.courses.find((c) => c.id === course.courseId)
+    if (row) row.track = '3d'
+    const after = await readJson(await getMe(app))
+    expect(after.level.slug).toBe('coder')
+    expect(after.level.remaining['iniciante-2d']).toBe(5)
+  })
+
+  test('marco LEGADO sem snapshot de track segue o courses.track VIVO (re-tag corrige)', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const course = seedSampleCourse(courses) // iniciante, track 2d
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await completeCourse(app, course.lessonIds)
+    await postShowcase(app, {
+      userId: USER,
+      accountId: USER,
+      courseId: course.courseId,
+      audience: 'adult',
+    })
+
+    // Simula linhas ANTERIORES à migration 0044: snapshot de track NULO no ledger.
+    for (const e of gamification.events) {
+      if (e.sourceId === course.courseId) e.sourceTrack = null
+    }
+    // Sem snapshot, o coalesce cai no curso ao vivo: re-taggear p/ 3D MOVE o balde
+    // (é exatamente o mecanismo de correção retroativa da reforma). O curso sai do
+    // balde 2d (remaining volta ao piso cheio 6) mas SEGUE qualificado (any=1 →
+    // continua Coder; se tivesse sumido, o slug regrediria a noob).
+    const row = courses.courses.find((c) => c.id === course.courseId)
+    if (row) row.track = '3d'
+    const after = await readJson(await getMe(app))
+    expect(after.level.slug).toBe('coder')
+    expect(after.level.remaining['iniciante-2d']).toBe(6)
   })
 
   test('webhook é idempotente por x-delivery-id (replay = no-op)', async () => {

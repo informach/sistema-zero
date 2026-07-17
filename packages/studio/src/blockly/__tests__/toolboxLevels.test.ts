@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import type { BlockLevel, LearningProfile } from '#core'
 import { gameTwoDToolboxCategory } from '../../official-extensions/game-2d/blocks'
 import { gameThreeDToolboxCategory } from '../../official-extensions/game-3d/blocks'
+import { world3DToolboxCategory } from '../../official-extensions/world-3d/blocks'
 import { buildCoreToolbox } from '../toolbox'
 
 /** Nomes de TODAS as categorias, em qualquer profundidade. */
@@ -51,10 +52,13 @@ function blockTypesIn(cat: Cat | null): string[] {
     .map((e) => (e as { type: string }).type)
 }
 
-/** Paleta (categorias + tipos) de um nível, JÁ com as extensões Jogo 2D/3D. */
+/** Paleta (categorias + tipos) de um degrau, JÁ com as extensões Jogo 2D/3D + Mundo 3D. */
 function paletteAt(level: BlockLevel): { types: Set<string>; names: Set<string> } {
   const profile: LearningProfile = { level }
-  const tb = buildCoreToolbox([gameTwoDToolboxCategory, gameThreeDToolboxCategory], profile)
+  const tb = buildCoreToolbox(
+    [gameTwoDToolboxCategory, gameThreeDToolboxCategory, world3DToolboxCategory],
+    profile,
+  )
   return { types: new Set(collectTypes(tb.contents)), names: new Set(collectNames(tb.contents)) }
 }
 
@@ -89,25 +93,28 @@ describe('buildCoreToolbox — estrutura e itens sempre válidos', () => {
   })
 
   it('a busca está sempre presente', () => {
-    const tb = buildCoreToolbox([], { level: 'iniciante' })
+    const tb = buildCoreToolbox([], { level: 'iniciante-2d' })
     expect(tb.contents.some((c) => c.kind === 'search')).toBe(true)
   })
 
   it('allowCategories força a sub-categoria além do nível (nome ORIGINAL)', () => {
-    const names = categoryNames({ level: 'iniciante', allowCategories: ['Classes'] })
+    const names = categoryNames({ level: 'iniciante-2d', allowCategories: ['Classes'] })
     expect(names).toContain('🏛️ Classes')
   })
 
-  it('revealed sobe o teto para avançado mesmo com nível iniciante', () => {
-    const names = categoryNames({ level: 'iniciante', revealed: true })
+  it('revealed sobe o teto para o topo mesmo com nível iniciante', () => {
+    const names = categoryNames({ level: 'iniciante-2d', revealed: true })
     expect(names).toContain('🏛️ Classes')
     expect(names).toContain('Avançado')
   })
 })
 
-describe('buildCoreToolbox — curadoria POR BLOCO por nível', () => {
-  it('INICIANTE: facilitadores + kit de lógica; sem programação real, sem 3D', () => {
-    const { types, names } = paletteAt('iniciante')
+describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
+  // ⚠️ Os 3 primeiros testes são a PROVA DE EQUIVALÊNCIA LEGADA: os degraus em
+  // que os níveis antigos normalizam (iniciante→ini-2d, intermediario→int-3d,
+  // avancado→av-3d) mostram exatamente os conjuntos de antes da reforma.
+  it('INICIANTE-2D (≡ iniciante antigo): facilitadores + kit de lógica; sem programação real, sem 3D', () => {
+    const { types, names } = paletteAt('iniciante-2d')
     for (const t of [
       'sz_frame_structure',
       'sz_g2d_create_sprite',
@@ -161,8 +168,8 @@ describe('buildCoreToolbox — curadoria POR BLOCO por nível', () => {
     }
   })
 
-  it('INTERMEDIÁRIO: entra programação real + Jogo 3D; ainda sem avançado', () => {
-    const { types, names } = paletteAt('intermediario')
+  it('INTERMEDIÁRIO-3D (≡ intermediário antigo): programação real + Jogo 3D + Mundo 3D; sem avançado', () => {
+    const { types, names } = paletteAt('intermediario-3d')
     expect(types.has('sz_g2d_create_sprite')).toBe(true) // inclui iniciante
     for (const t of [
       'sz_js_while',
@@ -184,11 +191,13 @@ describe('buildCoreToolbox — curadoria POR BLOCO por nível', () => {
     }
     expect(names.has('🧩 Funções')).toBe(true)
     expect(names.has('Jogo 3D')).toBe(true)
+    // Mundo 3D (int-3d) entra exatamente aqui — como no intermediário antigo.
+    expect(types.has('sz_w3d_setup')).toBe(true)
     for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado']) expect(names.has(n)).toBe(false)
   })
 
-  it('AVANÇADO: entra tudo (classes, objetos, cru, física manual, getters 3D)', () => {
-    const { types, names } = paletteAt('avancado')
+  it('AVANÇADO-3D (≡ avançado antigo, topo): entra tudo (classes, objetos, cru, física, engine 3D)', () => {
+    const { types, names } = paletteAt('avancado-3d')
     for (const t of [
       'sz_val_object',
       'sz_adv_raw_js',
@@ -203,5 +212,55 @@ describe('buildCoreToolbox — curadoria POR BLOCO por nível', () => {
     for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado', 'Jogo 3D']) {
       expect(names.has(n)).toBe(true)
     }
+  })
+
+  // ── Degraus NOVOS da escada (sem equivalente pré-reforma) ────────────────────
+  it('INICIANTE-3D: a porta do 3D — facilitadores g3d entram; programação real ainda não', () => {
+    const { types, names } = paletteAt('iniciante-3d')
+    expect(types.has('sz_g2d_create_sprite')).toBe(true) // inclui o degrau abaixo
+    expect(types.has('sz_g3d_create_scene')).toBe(true) // facilitador 3D
+    expect(names.has('Jogo 3D')).toBe(true)
+    for (const t of [
+      'sz_js_while', // int-2d ainda não
+      'sz_math_arithmetic',
+      'sz_g2d_sprite_vx',
+      'sz_w3d_setup', // Mundo 3D é int-3d
+      'sz_g3d_get_pos', // engine 3D é av-3d
+    ]) {
+      expect(types.has(t)).toBe(false)
+    }
+    for (const n of ['🔢 Matemática', '🧩 Funções']) expect(names.has(n)).toBe(false)
+  })
+
+  it('INTERMEDIÁRIO-2D: programação real entra e o iniciante-3d ABAIXO segue visível (escada única)', () => {
+    const { types, names } = paletteAt('intermediario-2d')
+    for (const t of ['sz_js_while', 'sz_math_arithmetic', 'sz_g2d_sprite_vx']) {
+      expect(types.has(t)).toBe(true)
+    }
+    // Pina a semântica de escada TOTAL: o degrau 2D inclui o iniciante-3d abaixo.
+    expect(types.has('sz_g3d_create_scene')).toBe(true)
+    expect(names.has('🧩 Funções')).toBe(true)
+    for (const t of ['sz_w3d_setup', 'sz_g3d_get_pos', 'sz_js_class', 'sz_adv_raw_js']) {
+      expect(types.has(t)).toBe(false)
+    }
+  })
+
+  it('AVANÇADO-2D: classes/objetos/cru/trig entram; engine 3D (av-3d) ainda não', () => {
+    const { types, names } = paletteAt('avancado-2d')
+    for (const t of [
+      'sz_val_object',
+      'sz_adv_raw_js',
+      'sz_g2d_apply_velocity',
+      'sz_math_trig',
+      'sz_svg_path',
+      'sz_w3d_setup', // int-3d, abaixo do av-2d
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+    for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado']) expect(names.has(n)).toBe(true)
+    // O que fica SÓ para o topo: engine 3D + three.js cru.
+    expect(types.has('sz_g3d_get_pos')).toBe(false)
+    expect(types.has('sz_g3d_body')).toBe(false)
+    expect(names.has('Canvas 3D')).toBe(false)
   })
 })

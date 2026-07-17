@@ -686,7 +686,10 @@ const STUDENT_RANK_LABELS: Record<string, string> = {
   noob: 'Faísca',
   coder: 'Construtor(a)',
   hacker: 'Inventor(a)',
+  explorer: 'Explorador(a) de Mundos',
   elite: 'Mestre dos Jogos',
+  architect: 'Arquiteto(a) de Mundos',
+  champion: 'Gênio da Criação',
   god: 'Lenda',
 }
 

@@ -1,7 +1,9 @@
-import type { BlockLevel } from '#core'
-
 /**
  * Definição enxuta de bloco Blockly compatível com Blockly.Blocks.defineBlocksWithJsonArray.
+ *
+ * ⚠️ NÃO existe campo `level` aqui: o nível do bloco tem fonte ÚNICA em
+ * `blockly/blockLevels.ts` (`resolveBlockLevel`). O campo vestigial foi removido
+ * na reforma 2D/3D (07/2026) — nada o lia e ele enganava como fonte dupla.
  */
 export interface BlockDefinition {
   type: string
@@ -28,10 +30,4 @@ export interface BlockDefinition {
    * Usado para blocos legados substituídos por versões mais novas.
    */
   hidden?: boolean
-  /**
-   * Nível de aprendizado em que o bloco passa a aparecer na paleta (divulgação
-   * progressiva). Ausente ⇒ herda o nível da categoria. Esconder por nível NÃO
-   * remove o bloco do registro nem quebra o roundtrip — só a oferta na paleta.
-   */
-  level?: BlockLevel
 }

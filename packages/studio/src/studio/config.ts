@@ -1,5 +1,12 @@
 import { createContext, useContext } from 'react'
-import { type BlockLevel, DEFAULT_LEARNING_LEVEL, IDE_MODES, type IDEMode } from '#core'
+import {
+  type AnyBlockLevel,
+  type BlockLevel,
+  DEFAULT_LEARNING_LEVEL,
+  IDE_MODES,
+  type IDEMode,
+  normalizeBlockLevel,
+} from '#core'
 import {
   DEFAULT_HEARTBEAT_TIMEOUT_MS,
   DEFAULT_LOOP_BUDGET_MS,
@@ -89,15 +96,22 @@ export interface LearningConfig {
 }
 
 export interface LearningConfigInput {
-  level?: BlockLevel
+  /** Aceita a escala LEGADA de 3 níveis (jsonb de aulas antigas, embutidores antigos). */
+  level?: AnyBlockLevel
   allowBlocks?: readonly string[]
   allowCategories?: readonly string[]
   allowLevelReveal?: boolean
 }
 
+/**
+ * Fronteira ÚNICA de normalização do nível: TODA prop `level` pública passa por
+ * aqui (StudioEditor/StudioLesson/StudioCore chamam 1× por instância), então os
+ * consumidores internos (toolbox, ExtensionsPanel, SettingsDrawer) leem
+ * `config.learning.level` JÁ normalizado — não re-normalize lá.
+ */
 export function resolveLearning(input?: LearningConfigInput): LearningConfig {
   return {
-    level: input?.level ?? DEFAULT_LEARNING_LEVEL,
+    level: normalizeBlockLevel(input?.level) ?? DEFAULT_LEARNING_LEVEL,
     allowBlocks: input?.allowBlocks,
     allowCategories: input?.allowCategories,
     allowLevelReveal: input?.allowLevelReveal ?? true,

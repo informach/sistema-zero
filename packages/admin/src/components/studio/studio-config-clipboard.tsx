@@ -1,6 +1,11 @@
 'use client'
 
-import type { BlockLevel, IDEMode } from '@sistemazero/studio'
+import {
+  BLOCK_LEVEL_OPTIONS,
+  type BlockLevel,
+  type IDEMode,
+  normalizeBlockLevel,
+} from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -28,7 +33,9 @@ function readClip(): StudioConfigSnapshot | null {
     const v = JSON.parse(raw) as Partial<StudioConfigSnapshot>
     if (!v || typeof v !== 'object' || typeof v.level !== 'string') return null
     return {
-      level: v.level as BlockLevel,
+      // O localStorage guarda config LEGADA (escala de 3) para sempre — a
+      // normalização aqui é PERMANENTE, não migração one-off.
+      level: normalizeBlockLevel(v.level) ?? 'iniciante-2d',
       modes: Array.isArray(v.modes) ? (v.modes as IDEMode[]) : [],
       categories: Array.isArray(v.categories)
         ? v.categories.filter((c) => typeof c === 'string')
@@ -87,8 +94,11 @@ export function StudioConfigClipboard({
     toast.success('Configuração colada.')
   }
 
+  const clipLevelLabel = clip
+    ? (BLOCK_LEVEL_OPTIONS.find((o) => o.value === clip.level)?.label ?? clip.level)
+    : null
   const pasteLabel = clip
-    ? `Colar configuração (${clip.level}${clip.allowBlocks.length ? ` · ${clip.allowBlocks.length} blocos` : ''})`
+    ? `Colar configuração (${clipLevelLabel}${clip.allowBlocks.length ? ` · ${clip.allowBlocks.length} blocos` : ''})`
     : 'Colar configuração'
 
   return (

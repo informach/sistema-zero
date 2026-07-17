@@ -10,10 +10,12 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
+  BLOCK_LEVEL_OPTIONS,
   type BlockLevel,
   CORE_CATEGORY_OPTIONS,
   type IDEMode,
   type LessonActivity,
+  normalizeBlockLevel,
   type Project,
   type StudioHandle,
 } from '@sistemazero/studio'
@@ -74,11 +76,10 @@ const BLOCK_DIALOG_WIDTH: Record<string, string> = {
   quiz: 'max-w-4xl',
 }
 
-const STUDIO_LEVELS: { value: BlockLevel; label: string }[] = [
-  { value: 'iniciante', label: 'Iniciante' },
-  { value: 'intermediario', label: 'Intermediário' },
-  { value: 'avancado', label: 'Avançado' },
-]
+// Os 6 degraus (dificuldade × eixo 2D/3D) vêm do PACOTE (`BLOCK_LEVEL_OPTIONS`,
+// fonte única com labels) — não há lista hardcoded p/ desatualizar. Valores
+// LEGADOS de aulas antigas são normalizados no load (`normalizeBlockLevel`).
+const STUDIO_LEVELS = BLOCK_LEVEL_OPTIONS
 // Categorias "sempre visíveis" do Estúdio: vêm do PACOTE (`CORE_CATEGORY_OPTIONS`),
 // derivadas das categorias reais do toolbox — não há mais lista hardcoded p/ desatualizar.
 const STUDIO_MODES: { value: IDEMode; label: string }[] = [
@@ -157,7 +158,7 @@ const EMPTY_BLOCK: BlockForm = {
   captions: [],
   pdfUrl: '',
   title: '',
-  studioLevel: 'iniciante',
+  studioLevel: 'iniciante-2d',
   studioCategories: [],
   studioModes: ['blocks', 'bridge', 'code'],
   studioAllowReveal: true,
@@ -452,7 +453,9 @@ export function LessonEditorClient({
       captions: c.kind === 'video' ? (c.captions ?? []) : [],
       pdfUrl: c.kind === 'ebook' ? c.url : '',
       title: c.kind === 'ebook' ? (c.title ?? '') : '',
-      studioLevel: c.kind === 'studio' ? (c.level ?? 'iniciante') : 'iniciante',
+      // Aula salva antes da reforma 2D/3D guarda o valor LEGADO → normaliza.
+      studioLevel:
+        c.kind === 'studio' ? (normalizeBlockLevel(c.level) ?? 'iniciante-2d') : 'iniciante-2d',
       studioCategories: c.kind === 'studio' ? (c.allowCategories ?? []) : [],
       studioModes:
         c.kind === 'studio'

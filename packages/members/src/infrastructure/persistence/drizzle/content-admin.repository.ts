@@ -46,6 +46,7 @@ const toCourse = (r: CourseRow): Course => ({
   audience: r.audience,
   sequentialLock: r.sequentialLock,
   level: r.level,
+  track: r.track,
   metadata: r.metadata ?? null,
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
@@ -210,6 +211,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       sequentialLock: fields.sequentialLock ?? true,
       // Idem: o service normaliza; `?? 'iniciante'` cobre chamada direta.
       level: fields.level ?? ('iniciante' as const),
+      // Idem: `?? '2d'` cobre chamada direta.
+      track: fields.track ?? ('2d' as const),
       // `salesPageUrl` mora no metadata (jsonb) — única chave gerida pelo form.
       metadata: fields.salesPageUrl ? { salesPageUrl: fields.salesPageUrl } : null,
       createdAt: now,
@@ -242,6 +245,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           audience: course.audience,
           sequentialLock: course.sequentialLock,
           level: course.level,
+          track: course.track,
           metadata: course.metadata,
           updatedAt: new Date(),
           version: expectedVersion + 1,

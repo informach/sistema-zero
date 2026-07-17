@@ -686,6 +686,8 @@ const COURSE_LEVEL = t.Union([
   t.Literal('intermediario'),
   t.Literal('avancado'),
 ])
+// Eixo 2D/3D do curso — espelha o enum `course_track` do schema.
+const COURSE_TRACK = t.Union([t.Literal('2d'), t.Literal('3d')])
 const TITLE = t.String({ minLength: 1, maxLength: 300 })
 const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Null()]))
 // URLs escritas pelo admin exigem esquema http(s) — sem isto um `javascript:`
@@ -718,6 +720,8 @@ export const CourseBody = t.Object({
   // Dificuldade. AUSENTE: create → `iniciante`; update → PRESERVA a atual
   // (mesma régua do audience/sequentialLock).
   level: t.Optional(t.Union([COURSE_LEVEL, t.Null()])),
+  // Eixo 2D/3D. AUSENTE: create → `2d`; update → PRESERVA o atual (mesma régua).
+  track: t.Optional(t.Union([COURSE_TRACK, t.Null()])),
 })
 
 /** Query de `GET /members/admin/courses`. */
@@ -836,7 +840,16 @@ const EbookBlockSchema = t.Object({
   title: t.Optional(t.String({ maxLength: 300 })),
 })
 
+// 6 degraus novos (eixo 2D/3D) + 3 legados tolerados: aulas antigas seguem
+// parseando e um build antigo do admin segue salvando. O members NÃO interpreta
+// o valor (passthrough opaco ao @sistemazero/studio, que normaliza o legado).
 const StudioLevelSchema = t.Union([
+  t.Literal('iniciante-2d'),
+  t.Literal('iniciante-3d'),
+  t.Literal('intermediario-2d'),
+  t.Literal('intermediario-3d'),
+  t.Literal('avancado-2d'),
+  t.Literal('avancado-3d'),
   t.Literal('iniciante'),
   t.Literal('intermediario'),
   t.Literal('avancado'),

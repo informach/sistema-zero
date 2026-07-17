@@ -284,10 +284,11 @@ function EditorScreen({
       onExit={onExit}
       share={share}
       theme={theme}
-      // Modos + perfil de blocos pelo RANK do aluno (Faísca→Lenda; admin=Lenda):
-      // noob/coder → só Blocos + iniciante; hacker/elite → Blocos+Ponte +
-      // intermediário; god → Blocos+Ponte + avançado. Sem "Mostrar blocos
-      // avançados" — o rank é o portão estrito. Código (pro/WebContainer) adiado.
+      // Modos + degrau de blocos pelo RANK do aluno (carreira de 8, Faísca→Lenda;
+      // admin=Lenda): cada nível libera o degrau que vai estudar em seguida; a
+      // Ponte abre no Mestre dos Jogos e o PRO no Gênio da Criação (ver
+      // member-shell/lib/studio-tier.ts). Sem "Mostrar blocos avançados" — o rank
+      // é o portão estrito.
       level={tier.level}
       allowedModes={tier.allowedModes}
       allowLevelReveal={tier.allowLevelReveal}

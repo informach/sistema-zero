@@ -45,7 +45,7 @@ function fakeJogo2D(): ToolboxCategory {
 describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)', () => {
   it('mostra SÓ os blocos CORE listados (+ frames sempre)', () => {
     const profile: LearningProfile = {
-      level: 'avancado',
+      level: 'avancado-3d',
       allowBlocks: ['sz_html_h1', 'sz_val_number'],
     }
     const types = allBlockTypes(buildCoreToolbox([], profile).contents)
@@ -58,27 +58,30 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
   })
 
   it('restringe TAMBÉM as categorias de extensão (só os listados)', () => {
-    const profile: LearningProfile = { level: 'iniciante', allowBlocks: ['sz_g2d_create_sprite'] }
+    const profile: LearningProfile = {
+      level: 'iniciante-2d',
+      allowBlocks: ['sz_g2d_create_sprite'],
+    }
     const types = allBlockTypes(buildCoreToolbox([fakeJogo2D()], profile).contents)
     expect(types).toContain('sz_g2d_create_sprite') // listado
     expect(types).not.toContain('sz_g2d_move_sprite') // não listado → some
   })
 
   it('extensão SEM nenhum bloco listado some inteira', () => {
-    const profile: LearningProfile = { level: 'iniciante', allowBlocks: ['sz_html_h1'] }
+    const profile: LearningProfile = { level: 'iniciante-2d', allowBlocks: ['sz_html_h1'] }
     const names = categoryNames(buildCoreToolbox([fakeJogo2D()], profile).contents)
     expect(names).not.toContain('Jogo 2D')
   })
 
   it('SEM lista, a extensão entra como veio (sem restrição)', () => {
-    const profile: LearningProfile = { level: 'avancado' }
+    const profile: LearningProfile = { level: 'avancado-3d' }
     const types = allBlockTypes(buildCoreToolbox([fakeJogo2D()], profile).contents)
     expect(types).toContain('sz_g2d_create_sprite')
     expect(types).toContain('sz_g2d_move_sprite')
   })
 
   it('categoria CORE sem bloco listado some (poda de vazias)', () => {
-    const profile: LearningProfile = { level: 'avancado', allowBlocks: ['sz_html_h1'] }
+    const profile: LearningProfile = { level: 'avancado-3d', allowBlocks: ['sz_html_h1'] }
     const names = categoryNames(buildCoreToolbox([], profile).contents)
     expect(names).toContain('HTML') // tem o h1
     expect(names).not.toContain('CSS') // sem bloco listado → some
@@ -105,7 +108,10 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
         },
       ],
     }
-    const profile: LearningProfile = { level: 'iniciante', allowBlocks: ['sz_g2d_create_sprite'] }
+    const profile: LearningProfile = {
+      level: 'iniciante-2d',
+      allowBlocks: ['sz_g2d_create_sprite'],
+    }
     const names = categoryNames(buildCoreToolbox([ext], profile).contents)
     expect(names).toContain('🕹️ Sprites') // tem o bloco listado
     expect(names).not.toContain('🌍 Física') // sem bloco listado → some

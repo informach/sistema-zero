@@ -19,6 +19,7 @@ import {
   withWorkspaceLoad,
 } from '#blockly'
 import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
+import { extensionMinLevel } from '#extensions'
 import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
@@ -384,10 +385,10 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       .map((id) => findExtension(id))
       .filter((e): e is NonNullable<ReturnType<typeof findExtension>> => Boolean(e))
       // Gateia a categoria da extensão pelo seu `minLevel` (Kits de Jogo facilitam →
-      // 2D iniciante, 3D intermediário). Default 'intermediario' p/ extensão SEM
-      // minLevel declarado: não aparece na paleta do iniciante por acidente.
+      // 2D no iniciante-2d, 3D no iniciante-3d). O default de extensão sem minLevel
+      // vive em `extensionMinLevel` (fonte única).
       .filter((e) =>
-        isCategoryAllowed(e.blockly.toolboxCategory.name, e.minLevel ?? 'intermediario', profile),
+        isCategoryAllowed(e.blockly.toolboxCategory.name, extensionMinLevel(e), profile),
       )
       .map((e) => e.blockly.toolboxCategory)
     return buildCoreToolbox(extras, profile)

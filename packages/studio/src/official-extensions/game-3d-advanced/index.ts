@@ -39,7 +39,7 @@ export const gameKit3DExtension: ExtensionDefinition = {
   // Decisão de produto (14/07/2026): TODOS os blocos são nível AVANÇADO — é a
   // base de engine profissional (FSM por entidade, pooling, grade espacial).
   // O piso por prefixo sz_g3k_ vive em blockLevels.ts.
-  minLevel: 'avancado',
+  minLevel: 'avancado-3d',
   blockly: {
     blocks: gameKit3DBlocks,
     toolboxCategory: gameKit3DToolboxCategory,

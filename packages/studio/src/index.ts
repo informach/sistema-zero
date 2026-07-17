@@ -2,11 +2,13 @@
 // detalhe interno e pode mudar sem aviso.
 export type { FileSystemTree } from '@webcontainer/api'
 export type {
+  AnyBlockLevel,
   BlockLevel,
   ExtraFile,
   FileName,
   IDEMode,
   InstalledExtension,
+  LegacyBlockLevel,
   ProDirNode,
   ProFileLanguage,
   ProFileNode,
@@ -18,10 +20,14 @@ export type {
   ProProjectMeta,
 } from '#core'
 export {
+  BLOCK_LEVEL_OPTIONS,
+  BLOCK_LEVELS,
   CORE_CATEGORY_OPTIONS,
   createEmptyProject,
   IDE_MODES,
+  MAX_BLOCK_LEVEL,
   MODE_LABELS,
+  normalizeBlockLevel,
   normalizeProPath,
 } from '#core'
 export type { PersonalAsset, SavePersonalAssetResult } from './asset-library/personal'

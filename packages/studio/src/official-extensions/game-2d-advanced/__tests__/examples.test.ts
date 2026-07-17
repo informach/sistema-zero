@@ -106,7 +106,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Duelo dos Bonecos',
       'Defesa do Reino',
     ])
-    expect(gameKitExtension.minLevel).toBe('intermediario')
+    expect(gameKitExtension.minLevel).toBe('intermediario-2d')
   })
 
   it('IR embutida é válida, sem rawJS, e usa o paradigma inteiro', () => {

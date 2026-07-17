@@ -25,6 +25,8 @@ export interface CourseView {
   audience: string
   /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
   level: string
+  /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
+  track: string
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   createdAt: string
@@ -43,6 +45,7 @@ export function toCourseView(c: Course): CourseView {
     status: c.status,
     audience: c.audience,
     level: c.level,
+    track: c.track,
     sequentialLock: c.sequentialLock,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),

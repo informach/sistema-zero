@@ -32,10 +32,9 @@ import { slugify } from '@/lib/slug'
 import {
   AUDIENCE_LABELS,
   COURSE_AUDIENCES,
-  COURSE_LEVELS,
   COURSE_STATUSES,
+  COURSE_TIER_OPTIONS,
   type CourseView,
-  LEVEL_LABELS,
   type Paginated,
 } from '@/lib/types'
 
@@ -51,6 +50,7 @@ interface FormState {
   status: string
   audience: string
   level: string
+  track: string
   sequentialLock: boolean
 }
 
@@ -63,8 +63,9 @@ const EMPTY: FormState = {
   salesPageUrl: '',
   status: 'draft',
   audience: 'adult',
-  // Padrão: todo curso nasce iniciante (espelha o default da coluna no members).
+  // Padrão: todo curso nasce Iniciante 2D (espelha os defaults das colunas no members).
   level: 'iniciante',
+  track: '2d',
   // Padrão LIGADO (decisão da usuária): curso novo já trava as aulas em sequência.
   sequentialLock: true,
 }
@@ -128,6 +129,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       status: c.status,
       audience: c.audience ?? 'adult',
       level: c.level ?? 'iniciante',
+      track: c.track ?? '2d',
       sequentialLock: c.sequentialLock ?? true,
     })
     setOpen(true)
@@ -155,6 +157,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         // SEMPRE enviado (explícito > depender do preserve do members no PATCH).
         audience: form.audience,
         level: form.level,
+        track: form.track,
         sequentialLock: form.sequentialLock,
       }
       if (editing) {
@@ -392,16 +395,20 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
           <Field
             label="Nível do curso"
             htmlFor="clevel"
-            tooltip="Dificuldade do curso (Iniciante/Intermediário/Avançado). Conta para o NÍVEL do aluno: concluir e publicar no Mural cursos de cada dificuldade faz o aluno subir de Faísca até Lenda."
+            tooltip="Degrau do curso: dificuldade (Iniciante/Intermediário/Avançado) × eixo (2D/3D). Conta para a CARREIRA do aluno: concluir e publicar no Mural cursos de cada degrau, na ordem da escada (2D antes do 3D em cada dificuldade), faz o aluno subir de Faísca até Lenda."
           >
+            {/* UM select de 6 opções que escreve os DOIS campos (level + track). */}
             <Select
               id="clevel"
-              value={form.level}
-              onChange={(e) => setForm((f) => ({ ...f, level: e.target.value }))}
+              value={`${form.level}:${form.track}`}
+              onChange={(e) => {
+                const [level, track] = e.target.value.split(':')
+                setForm((f) => ({ ...f, level: level ?? f.level, track: track ?? f.track }))
+              }}
             >
-              {COURSE_LEVELS.map((l) => (
-                <option key={l} value={l}>
-                  {LEVEL_LABELS[l]}
+              {COURSE_TIER_OPTIONS.map((o) => (
+                <option key={`${o.level}:${o.track}`} value={`${o.level}:${o.track}`}>
+                  {o.label}
                 </option>
               ))}
             </Select>

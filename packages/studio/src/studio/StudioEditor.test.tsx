@@ -83,7 +83,7 @@ describe('StudioEditor', () => {
     expect(probe.getAttribute('data-professional')).toBe('false')
   })
 
-  it('abre a paleta CHEIA (nível avancado) — sem curadoria de aula', async () => {
+  it('abre a paleta CHEIA (topo da escada) — sem curadoria de aula', async () => {
     const { getByTestId } = render(
       <StudioEditor
         initialProject={createEmptyProject('editor-2', 'Editor 2')}
@@ -94,7 +94,7 @@ describe('StudioEditor', () => {
     await waitFor(() => {
       expect(getByTestId('config-probe').getAttribute('data-project')).toBe('editor-2')
     })
-    expect(getByTestId('config-probe').getAttribute('data-level')).toBe('avancado')
+    expect(getByTestId('config-probe').getAttribute('data-level')).toBe('avancado-3d')
   })
 
   it('o host liga terminal/IA via features', async () => {

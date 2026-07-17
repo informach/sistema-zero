@@ -3,6 +3,19 @@ import type { SZIR } from '#ir'
 
 export type ExtensionPermission = 'canvas' | 'keyboard' | 'mouse' | 'audio' | 'storage' | 'network'
 
+/**
+ * Default do `minLevel` de extensão SEM classificação: `intermediario-3d` — o
+ * degrau em que o legado `intermediario` normaliza. Preserva "aparecia quando o
+ * intermediário antigo aparecia" para perfis legados e é CONSERVADOR para os
+ * degraus novos (extensão nova não vaza p/ Inventor/Explorador sem opt-in).
+ */
+export const DEFAULT_EXTENSION_MIN_LEVEL: BlockLevel = 'intermediario-3d'
+
+/** Degrau mínimo efetivo de uma extensão (fonte única — não use `?? '…'` inline). */
+export function extensionMinLevel(ext: Pick<ExtensionDefinition, 'minLevel'>): BlockLevel {
+  return ext.minLevel ?? DEFAULT_EXTENSION_MIN_LEVEL
+}
+
 export interface ExtensionManifest {
   /** Identificador único (kebab-case). Ex.: 'game-2d'. */
   id: string
@@ -54,10 +67,9 @@ export interface ExtensionToolboxCategory {
 export interface ExtensionDefinition {
   manifest: ExtensionManifest
   /**
-   * Nível mínimo de aprendizado para a categoria da extensão aparecer na paleta
-   * (divulgação progressiva). Ausente ⇒ default 'intermediario': extensões NUNCA
-   * aparecem no nível iniciante (regra do produto). Ex.: game-2d = 'intermediario',
-   * game-3d = 'avancado'.
+   * Degrau mínimo de aprendizado para a categoria da extensão aparecer na paleta
+   * (divulgação progressiva). Ausente ⇒ `DEFAULT_EXTENSION_MIN_LEVEL`. Use
+   * `extensionMinLevel(ext)` nos call sites (nunca `?? '…'` inline).
    */
   minLevel?: BlockLevel
   blockly: {

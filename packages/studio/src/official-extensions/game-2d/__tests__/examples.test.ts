@@ -14,9 +14,9 @@ import {
 import { gameTwoDExtension } from '../index'
 
 describe('game-2d — definição da extensão', () => {
-  it('nível iniciante — Kit facilitador, já aparece na paleta do iniciante', () => {
+  it('nível iniciante-2d — Kit facilitador, já aparece na paleta do iniciante', () => {
     expect(gameTwoDExtension.manifest.id).toBe('game-2d')
-    expect(gameTwoDExtension.minLevel).toBe('iniciante')
+    expect(gameTwoDExtension.minLevel).toBe('iniciante-2d')
   })
 })
 

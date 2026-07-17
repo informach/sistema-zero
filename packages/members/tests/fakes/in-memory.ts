@@ -6,6 +6,7 @@ import {
   type Course,
   type CourseAudience,
   type CourseLevel,
+  type CourseTrack,
   isCourseAccessible,
   type Lesson,
   type LessonAttachment,
@@ -43,7 +44,11 @@ import {
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
 } from '../../src/domain/gamification/gamification'
-import type { QualifyingByLevel } from '../../src/domain/gamification/levels'
+import {
+  courseTier,
+  emptyQualifyingByTier,
+  type QualifyingByTier,
+} from '../../src/domain/gamification/levels'
 import type { MissionGoalType } from '../../src/domain/gamification/missions'
 import type {
   AnalyticsRepository,
@@ -525,13 +530,14 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const now = new Date()
     // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna;
     // `audience` ausente cai no default da coluna (`adult`).
-    const { salesPageUrl, audience, sequentialLock, level, ...rest } = fields
+    const { salesPageUrl, audience, sequentialLock, level, track, ...rest } = fields
     const course: Course = {
       id: randomUUID(),
       ...rest,
       audience: audience ?? 'adult',
       sequentialLock: sequentialLock ?? true,
       level: level ?? 'iniciante',
+      track: track ?? '2d',
       metadata: salesPageUrl ? { salesPageUrl } : null,
       createdAt: now,
       updatedAt: now,
@@ -1575,6 +1581,8 @@ interface XpEventRow extends XpEventInput {
    * Opcional: fixtures de teste que empurram eventos crus (não-curso) não precisam setá-lo.
    */
   sourceLevel?: CourseLevel | null
+  /** Snapshot do eixo 2D/3D (mirror de `xp_events.source_track` — par do sourceLevel). */
+  sourceTrack?: CourseTrack | null
   createdAt: Date
 }
 
@@ -1683,16 +1691,18 @@ export class InMemoryGamificationRepository implements GamificationRepository {
           x.userId === input.userId && x.sourceType === e.sourceType && x.sourceId === e.sourceId,
       )
       if (dup) continue
-      // Mirror do SQL: congela `courses.level` nos marcos de curso (rank não regride).
-      const sourceLevel =
+      // Mirror do SQL: congela `courses.level`+`courses.track` nos marcos de curso
+      // (rank não regride).
+      const marcoCourse =
         e.sourceType === 'course_complete' || e.sourceType === 'course_showcased'
-          ? (this.sources?.courses.courses.find((c) => c.id === e.sourceId)?.level ?? null)
-          : null
+          ? this.sources?.courses.courses.find((c) => c.id === e.sourceId)
+          : undefined
       this.events.push({
         ...e,
         userId: input.userId,
         audience: input.audience,
-        sourceLevel,
+        sourceLevel: marcoCourse?.level ?? null,
+        sourceTrack: marcoCourse?.track ?? null,
         createdAt: input.now,
       })
       newEvents.push(e)
@@ -2005,39 +2015,39 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       .map((b) => ({ badgeSlug: b.badgeSlug, unlockedAt: b.unlockedAt }))
   }
 
-  /** Mirror do SQL: cursos com AMBOS os marcos (complete ∩ showcased) por dificuldade. */
-  async countQualifyingCoursesByLevel(
+  /** Mirror do SQL: cursos com AMBOS os marcos (complete ∩ showcased) por DEGRAU (nível×eixo). */
+  async countQualifyingCoursesByTier(
     userId: string,
     audience: CourseAudience,
-  ): Promise<QualifyingByLevel> {
+  ): Promise<QualifyingByTier> {
     const mine = this.events.filter((e) => e.userId === userId && e.audience === audience)
     const completed = mine.filter((e) => e.sourceType === 'course_complete')
     const showcasedByCourse = new Map(
       mine.filter((e) => e.sourceType === 'course_showcased').map((e) => [e.sourceId, e]),
     )
-    const result: QualifyingByLevel = { iniciante: 0, intermediario: 0, avancado: 0 }
+    const result = emptyQualifyingByTier()
     for (const ce of completed) {
       const sc = showcasedByCourse.get(ce.sourceId)
       if (!sc) continue
-      // Mirror do COALESCE(showcased.source_level, complete.source_level, courses.level):
-      // o snapshot congelado vence; `courses.level` ao vivo é só fallback legado.
-      const level =
-        sc.sourceLevel ??
-        ce.sourceLevel ??
-        this.sources?.courses.courses.find((c) => c.id === ce.sourceId)?.level
-      if (level && level in result) result[level] += 1
+      const course = this.sources?.courses.courses.find((c) => c.id === ce.sourceId)
+      // Mirror do COALESCE(showcased.source_*, complete.source_*, courses.*):
+      // o snapshot congelado vence; o curso ao vivo é só fallback legado. O track
+      // legado sem curso cai em '2d' (literal final do coalesce do SQL).
+      const level = sc.sourceLevel ?? ce.sourceLevel ?? course?.level
+      const track = sc.sourceTrack ?? ce.sourceTrack ?? course?.track ?? '2d'
+      if (level) result[courseTier(level, track)] += 1
     }
     return result
   }
 
-  async countQualifyingByLevelForProfiles(
+  async countQualifyingByTierForProfiles(
     profileIds: string[],
     audience: CourseAudience,
-  ): Promise<Map<string, QualifyingByLevel>> {
-    const map = new Map<string, QualifyingByLevel>()
+  ): Promise<Map<string, QualifyingByTier>> {
+    const map = new Map<string, QualifyingByTier>()
     for (const id of new Set(profileIds)) {
-      const q = await this.countQualifyingCoursesByLevel(id, audience)
-      if (q.iniciante || q.intermediario || q.avancado) map.set(id, q)
+      const q = await this.countQualifyingCoursesByTier(id, audience)
+      if (Object.values(q).some((n) => n > 0)) map.set(id, q)
     }
     return map
   }

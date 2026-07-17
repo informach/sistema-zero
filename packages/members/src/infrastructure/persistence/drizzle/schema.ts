@@ -43,6 +43,10 @@ export const courseLevelEnum = members.enum('course_level', [
   'intermediario',
   'avancado',
 ])
+// Eixo 2D/3D do curso (ortogonal à dificuldade). Par (level, track) = o DEGRAU
+// pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a carreira de 8 níveis.
+// Default `2d` (backfill dos existentes; a usuária re-tagueia os cursos 3D no admin).
+export const courseTrackEnum = members.enum('course_track', ['2d', '3d'])
 export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'rich_text',
   'video',
@@ -94,6 +98,9 @@ export const courses = members.table(
     // (backfill dos existentes). Régua de autoria igual a `audience`: o UPDATE sem o
     // campo PRESERVA o valor atual (um PATCH de build antigo não rebaixa o curso).
     level: courseLevelEnum('level').notNull().default('iniciante'),
+    // Eixo 2D/3D (par com `level` = degrau pedagógico). Mesma régua de autoria do
+    // `audience`/`level`: UPDATE sem o campo PRESERVA o atual.
+    track: courseTrackEnum('track').notNull().default('2d'),
     // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
     // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
     // (decisão da usuária: padrão ligado, com toggle por curso no admin).
@@ -500,6 +507,11 @@ export const xpEvents = members.table(
     // professor re-nivelar ou apagar o curso depois (XP/badges já são snapshot —
     // a dificuldade passa a ser também). Ver domain/gamification/levels.ts.
     sourceLevel: courseLevelEnum('source_level'),
+    // SNAPSHOT do eixo 2D/3D (par do `source_level`, mesma régua). NULL nas linhas
+    // anteriores à migration 0044 DE PROPÓSITO (sem backfill): a contagem usa
+    // `coalesce(source_track, courses.track, '2d')` — re-taggear um curso 3D no
+    // admin corrige os marcos legados sozinho; congelar '2d' aqui impediria isso.
+    sourceTrack: courseTrackEnum('source_track'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (t) => [

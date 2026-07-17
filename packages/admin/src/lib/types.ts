@@ -7,7 +7,13 @@
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
 // As atividades (auto-correção) reusam os tipos PÚBLICOS do @sistemazero/studio
 // (sem mirror próprio — evita drift; o members tem o espelho do lado servidor).
-import type { BlockLevel, CheckResult, IDEMode, LessonActivity, Project } from '@sistemazero/studio'
+import type {
+  AnyBlockLevel,
+  CheckResult,
+  IDEMode,
+  LessonActivity,
+  Project,
+} from '@sistemazero/studio'
 
 export type { ActivityCheck, CheckResult, LessonActivity } from '@sistemazero/studio'
 
@@ -292,13 +298,42 @@ export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
   kids: 'Kids',
 }
 
-/** Dificuldade do curso. Alimenta o nível do ALUNO (cursos qualificados por nível). */
+/** Dificuldade do curso. Alimenta o nível do ALUNO (cursos qualificados por degrau). */
 export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado'] as const
 export type CourseLevel = (typeof COURSE_LEVELS)[number]
 export const LEVEL_LABELS: Record<CourseLevel, string> = {
   iniciante: 'Iniciante',
   intermediario: 'Intermediário',
   avancado: 'Avançado',
+}
+
+/** Eixo 2D/3D do curso (par com `level` = DEGRAU pedagógico; reforma 07/2026). */
+export const COURSE_TRACKS = ['2d', '3d'] as const
+export type CourseTrack = (typeof COURSE_TRACKS)[number]
+
+/**
+ * Os 6 degraus (dificuldade × eixo) do select "Nível do curso" — a ordem é a
+ * escada da carreira do aluno (2D antes de 3D em cada dificuldade). Duplicação
+ * INTENCIONAL do member-shell/members (o admin não importa dos apps de aluno) —
+ * manter em lockstep com `COURSE_TIERS` de lá.
+ */
+export const COURSE_TIER_OPTIONS: readonly {
+  level: CourseLevel
+  track: CourseTrack
+  label: string
+}[] = [
+  { level: 'iniciante', track: '2d', label: 'Iniciante 2D' },
+  { level: 'iniciante', track: '3d', label: 'Iniciante 3D' },
+  { level: 'intermediario', track: '2d', label: 'Intermediário 2D' },
+  { level: 'intermediario', track: '3d', label: 'Intermediário 3D' },
+  { level: 'avancado', track: '2d', label: 'Avançado 2D' },
+  { level: 'avancado', track: '3d', label: 'Avançado 3D' },
+]
+
+/** Rótulo do degrau de um curso (listagens/badges). */
+export function courseTierLabel(level: string, track?: string): string {
+  const found = COURSE_TIER_OPTIONS.find((o) => o.level === level && o.track === (track ?? '2d'))
+  return found?.label ?? level
 }
 
 export interface CourseView {
@@ -315,6 +350,8 @@ export interface CourseView {
   audience: CourseAudience
   /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
   level: CourseLevel
+  /** Eixo 2D/3D (par com `level` = degrau). Opcional p/ tolerar members antigo. */
+  track?: CourseTrack
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   createdAt: string
@@ -423,7 +460,8 @@ export interface EbookBlock {
 export interface StudioBlock {
   kind: 'studio'
   initialProject: Project
-  level?: BlockLevel
+  /** Aceita a escala LEGADA (aulas pré-reforma 2D/3D); o editor normaliza no load. */
+  level?: AnyBlockLevel
   allowBlocks?: string[]
   allowCategories?: string[]
   allowedModes?: IDEMode[]

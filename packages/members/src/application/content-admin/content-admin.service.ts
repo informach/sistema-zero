@@ -84,6 +84,7 @@ export class CourseAdminService {
         audience: fields.audience ?? 'adult',
         sequentialLock: fields.sequentialLock ?? true,
         level: fields.level ?? 'iniciante',
+        track: fields.track ?? '2d',
       }),
     )
   }
@@ -108,13 +109,15 @@ export class CourseAdminService {
     // PATCH de build antigo do admin sem o campo não rebaixa curso kids → adult.
     // `sequentialLock` AUSENTE também PRESERVA a atual (mesma régua do audience).
     // `level` AUSENTE idem (build antigo do admin sem o campo não rebaixa a dificuldade).
-    const { salesPageUrl, audience, sequentialLock, level, ...rest } = fields
+    // `track` AUSENTE idem (build antigo sem o eixo 2D/3D não re-tagueia o curso).
+    const { salesPageUrl, audience, sequentialLock, level, track, ...rest } = fields
     const merged = {
       ...existing,
       ...rest,
       audience: audience ?? existing.audience,
       sequentialLock: sequentialLock ?? existing.sequentialLock,
       level: level ?? existing.level,
+      track: track ?? existing.track,
       metadata: withSalesPageUrl(existing.metadata, salesPageUrl),
     }
     const ok = await this.content.updateCourse(merged)

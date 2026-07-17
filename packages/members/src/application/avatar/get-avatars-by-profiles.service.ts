@@ -1,5 +1,9 @@
 import type { CourseAudience } from '../../domain/course/course'
-import { computeStudentLevel, type StudentLevelSlug } from '../../domain/gamification/levels'
+import {
+  computeStudentLevel,
+  emptyQualifyingByTier,
+  type StudentLevelSlug,
+} from '../../domain/gamification/levels'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 
@@ -31,13 +35,12 @@ export class GetAvatarsByProfilesService {
     if (unique.length === 0) return result
     const [photos, qualifying] = await Promise.all([
       this.avatar.listPhotoUrlsByProfileIds(unique, audience),
-      this.gamification.countQualifyingByLevelForProfiles(unique, audience),
+      this.gamification.countQualifyingByTierForProfiles(unique, audience),
     ])
-    const EMPTY = { iniciante: 0, intermediario: 0, avancado: 0 }
     for (const id of unique) {
       result[id] = {
         photoUrl: photos.get(id) ?? null,
-        level: computeStudentLevel(qualifying.get(id) ?? EMPTY).slug,
+        level: computeStudentLevel(qualifying.get(id) ?? emptyQualifyingByTier()).slug,
       }
     }
     return result

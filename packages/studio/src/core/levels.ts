@@ -9,27 +9,97 @@
  * - Trocar de nível JAMAIS apaga blocos existentes.
  *
  * Controle: o professor (host) FIXA o nível; o aluno pode REVELAR o avançado
- * (toggle opcional, desligável pelo professor). Modelo = 3 níveis + allowlist
- * custom por aula.
+ * (toggle opcional, desligável pelo professor). Modelo (reforma 2D/3D 07/2026) =
+ * ESCADA TOTAL de 6 degraus — dificuldade × eixo, 2D antes de 3D em cada
+ * dificuldade, na MESMA ordem da carreira do aluno — + allowlist custom por aula.
  */
 
-export type BlockLevel = 'iniciante' | 'intermediario' | 'avancado'
+export type BlockLevel =
+  | 'iniciante-2d'
+  | 'iniciante-3d'
+  | 'intermediario-2d'
+  | 'intermediario-3d'
+  | 'avancado-2d'
+  | 'avancado-3d'
 
-export const BLOCK_LEVELS: readonly BlockLevel[] = ['iniciante', 'intermediario', 'avancado']
+/**
+ * Valores HISTÓRICOS da escala de 3 níveis (pré-reforma). Vivem para sempre em
+ * jsonb de aulas salvas, no clipboard de config do admin e em embutidores antigos
+ * — a API pública aceita ambos e `normalizeBlockLevel` converte na fronteira.
+ */
+export type LegacyBlockLevel = 'iniciante' | 'intermediario' | 'avancado'
+export type AnyBlockLevel = BlockLevel | LegacyBlockLevel
 
-const RANK: Record<BlockLevel, number> = { iniciante: 0, intermediario: 1, avancado: 2 }
+export const BLOCK_LEVELS: readonly BlockLevel[] = [
+  'iniciante-2d',
+  'iniciante-3d',
+  'intermediario-2d',
+  'intermediario-3d',
+  'avancado-2d',
+  'avancado-3d',
+]
+
+/** Teto da escada (o "mostra tudo") — usado pelo reveal e pelo SettingsDrawer. */
+export const MAX_BLOCK_LEVEL: BlockLevel = 'avancado-3d'
+
+const RANK: Record<BlockLevel, number> = {
+  'iniciante-2d': 0,
+  'iniciante-3d': 1,
+  'intermediario-2d': 2,
+  'intermediario-3d': 3,
+  'avancado-2d': 4,
+  'avancado-3d': 5,
+}
+
+/**
+ * Mapeamento do legado — escolhido para preservar EXATAMENTE os conjuntos de
+ * blocos visíveis de antes da reforma: o iniciante antigo não via nada de 3D
+ * (→ rank 0); o intermediário antigo via gk/g3d/w3d (→ rank 3, que cobre
+ * int-2d + ini-3d + int-3d); o avançado antigo via tudo (→ teto).
+ */
+export const LEGACY_BLOCK_LEVEL_MAP: Record<LegacyBlockLevel, BlockLevel> = {
+  iniciante: 'iniciante-2d',
+  intermediario: 'intermediario-3d',
+  avancado: 'avancado-3d',
+}
+
+const LEVEL_SET = new Set<string>(BLOCK_LEVELS)
+
+/**
+ * Fronteira ÚNICA de entrada de nível vindo de FORA (props públicas, jsonb de
+ * aula, clipboard/localStorage): null/undefined → undefined (o caller aplica o
+ * SEU default); legado → mapeado; valor novo válido → ele mesmo; string
+ * DESCONHECIDA → 'iniciante-2d' (fail-CLOSED: lixo num jsonb de aula infantil
+ * RESTRINGE a paleta em vez de abrir tudo).
+ */
+export function normalizeBlockLevel(level: string | null | undefined): BlockLevel | undefined {
+  if (level == null) return undefined
+  if (LEVEL_SET.has(level)) return level as BlockLevel
+  const legacy = LEGACY_BLOCK_LEVEL_MAP[level as LegacyBlockLevel]
+  return legacy ?? 'iniciante-2d'
+}
+
+/** Rótulos dos degraus p/ a autoria (admin) — fonte única do Select "Nível". */
+export const BLOCK_LEVEL_OPTIONS: readonly { value: BlockLevel; label: string }[] = [
+  { value: 'iniciante-2d', label: 'Iniciante 2D' },
+  { value: 'iniciante-3d', label: 'Iniciante 3D' },
+  { value: 'intermediario-2d', label: 'Intermediário 2D' },
+  { value: 'intermediario-3d', label: 'Intermediário 3D' },
+  { value: 'avancado-2d', label: 'Avançado 2D' },
+  { value: 'avancado-3d', label: 'Avançado 3D' },
+]
 
 export function levelRank(level: BlockLevel): number {
   return RANK[level]
 }
 
 /** Default standalone/sem prop: mostra tudo (não regride o playground). */
-export const DEFAULT_LEARNING_LEVEL: BlockLevel = 'avancado'
+export const DEFAULT_LEARNING_LEVEL: BlockLevel = MAX_BLOCK_LEVEL
 
 export interface LearningProfile {
   /** Nível fixado pelo professor (host). */
   level: BlockLevel
-  /** Aluno revelou o avançado → sobe o teto efetivo para 'avancado'. */
+  /** Aluno revelou o avançado → sobe o teto efetivo para o topo da escada. */
   revealed?: boolean
   /**
    * Lista de blocos da aula. Quando NÃO vazia, vira RESTRITIVA: a paleta mostra SÓ
@@ -42,11 +112,11 @@ export interface LearningProfile {
 }
 
 /** Perfil que mostra tudo (default fora de um <Studio> e no playground). */
-export const FULL_LEARNING_PROFILE: LearningProfile = { level: 'avancado' }
+export const FULL_LEARNING_PROFILE: LearningProfile = { level: MAX_BLOCK_LEVEL }
 
 /** Teto de nível efetivo considerando o "revelar avançado" do aluno. */
 export function effectiveLevel(profile: LearningProfile): BlockLevel {
-  return profile.revealed ? 'avancado' : profile.level
+  return profile.revealed ? MAX_BLOCK_LEVEL : profile.level
 }
 
 export function isLevelWithin(level: BlockLevel, profile: LearningProfile): boolean {
@@ -93,20 +163,21 @@ export function isCategoryAllowed(
 // (`blockly/blockLevels.ts` → `resolveBlockLevel`), cada valor aqui deve ser o
 // MENOR nível entre os blocos da categoria (senão a categoria some mesmo tendo
 // bloco visível). A `pruneEmptyCategories` remove o que ficou sem bloco no tier.
+// Categorias core são 2D por natureza, exceto 'Canvas 3D' (three.js cru).
 export const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
-  HTML: 'iniciante',
-  SVG: 'iniciante',
-  CSS: 'iniciante',
-  DOM: 'iniciante',
-  JavaScript: 'iniciante',
-  Matemática: 'intermediario',
-  Canvas: 'iniciante',
-  'Canvas 3D': 'avancado',
-  Valores: 'iniciante',
-  Funções: 'intermediario',
-  Classes: 'avancado',
-  Objetos: 'avancado',
-  Avançado: 'avancado',
+  HTML: 'iniciante-2d',
+  SVG: 'iniciante-2d',
+  CSS: 'iniciante-2d',
+  DOM: 'iniciante-2d',
+  JavaScript: 'iniciante-2d',
+  Matemática: 'intermediario-2d',
+  Canvas: 'iniciante-2d',
+  'Canvas 3D': 'avancado-3d',
+  Valores: 'iniciante-2d',
+  Funções: 'intermediario-2d',
+  Classes: 'avancado-2d',
+  Objetos: 'avancado-2d',
+  Avançado: 'avancado-2d',
 }
 
 /**

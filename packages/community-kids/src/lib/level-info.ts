@@ -1,4 +1,14 @@
-import { Crown, Gamepad2, Hammer, Lightbulb, type LucideIcon, Sparkles } from 'lucide-react'
+import {
+  Castle,
+  Compass,
+  Crown,
+  Gamepad2,
+  Hammer,
+  Lightbulb,
+  type LucideIcon,
+  Sparkles,
+  Wand2,
+} from 'lucide-react'
 import type { StudentLevelSlug, StudentLevelView } from '@/lib/types'
 
 /**
@@ -17,7 +27,7 @@ export interface LevelInfo {
   icon: LucideIcon
 }
 
-// Rótulos kid-friendly (07/2026): slugs internos (noob…god) NÃO mudam — só a apresentação.
+// Escada de 8 (reforma 2D/3D 07/2026): rótulos kid-friendly — os slugs internos NÃO mudam.
 export const LEVEL_INFO: Record<StudentLevelSlug, LevelInfo> = {
   noob: {
     label: 'Faísca',
@@ -33,15 +43,33 @@ export const LEVEL_INFO: Record<StudentLevelSlug, LevelInfo> = {
   },
   hacker: {
     label: 'Inventor(a)',
-    blurb: 'Seis projetos iniciantes no Mural. Mandou bem!',
+    blurb: 'Seis projetos Iniciante 2D no Mural. Mandou bem!',
     colorVar: 'var(--level-hacker)',
     icon: Lightbulb,
+  },
+  explorer: {
+    label: 'Explorador(a) de Mundos',
+    blurb: 'Você entrou na terceira dimensão. Que aventura!',
+    colorVar: 'var(--level-explorer)',
+    icon: Compass,
   },
   elite: {
     label: 'Mestre dos Jogos',
     blurb: 'Projetos intermediários dominados. Você é Mestre dos Jogos!',
     colorVar: 'var(--level-elite)',
     icon: Gamepad2,
+  },
+  architect: {
+    label: 'Arquiteto(a) de Mundos',
+    blurb: 'Mundos 3D completos saem das suas mãos!',
+    colorVar: 'var(--level-architect)',
+    icon: Castle,
+  },
+  champion: {
+    label: 'Gênio da Criação',
+    blurb: 'Projetos avançados de verdade. Falta um passo para a Lenda!',
+    colorVar: 'var(--level-champion)',
+    icon: Wand2,
   },
   god: {
     label: 'Lenda',
@@ -52,7 +80,16 @@ export const LEVEL_INFO: Record<StudentLevelSlug, LevelInfo> = {
 }
 
 /** Ordem da escada (do mais baixo ao mais alto) — base da detecção de "subiu de nível". */
-export const LEVEL_ORDER: StudentLevelSlug[] = ['noob', 'coder', 'hacker', 'elite', 'god']
+export const LEVEL_ORDER: StudentLevelSlug[] = [
+  'noob',
+  'coder',
+  'hacker',
+  'explorer',
+  'elite',
+  'architect',
+  'champion',
+  'god',
+]
 
 /** Slug desconhecido (nível novo no backend antes do deploy daqui) → cai em Noob. */
 export function levelInfo(slug: string | undefined): LevelInfo {
@@ -66,22 +103,38 @@ export function isLevelUp(prev: string | null | undefined, next: string | undefi
   return ni > -1 && pi > -1 && ni > pi
 }
 
+/** Nome kid-friendly de cada DEGRAU de curso (dificuldade × eixo), no singular/plural. */
+const TIER_HINTS: readonly {
+  key: keyof NonNullable<StudentLevelView['remaining']>
+  one: string
+  many: string
+}[] = [
+  { key: 'iniciante-2d', one: 'projeto Iniciante 2D', many: 'projetos Iniciante 2D' },
+  { key: 'iniciante-3d', one: 'projeto Iniciante 3D', many: 'projetos Iniciante 3D' },
+  { key: 'intermediario-2d', one: 'projeto Intermediário 2D', many: 'projetos Intermediário 2D' },
+  { key: 'intermediario-3d', one: 'projeto Intermediário 3D', many: 'projetos Intermediário 3D' },
+  { key: 'avancado-2d', one: 'projeto Avançado 2D', many: 'projetos Avançado 2D' },
+  { key: 'avancado-3d', one: 'projeto Avançado 3D', many: 'projetos Avançado 3D' },
+]
+
 /**
- * Frase kid-friendly do que falta p/ o PRÓXIMO nível (`null` no topo). Pega a 1ª
- * dimensão pendente — "concluído E publicado no Mural" conta como um projeto.
+ * Frase kid-friendly do que falta p/ o PRÓXIMO nível (`null` no topo). Pega o 1º
+ * DEGRAU pendente na ordem da escada — "concluído E publicado no Mural" conta
+ * como um projeto.
  */
 export function nextLevelHint(level: StudentLevelView | undefined): string | null {
   if (!level?.next || !level.remaining) return null
   const next = levelInfo(level.next).label
   const r = level.remaining
-  const plural = (n: number, one: string, many: string) => (n === 1 ? one : many)
-  if (r.iniciante > 0)
-    return `Faltam ${r.iniciante} ${plural(r.iniciante, 'projeto iniciante', 'projetos iniciantes')} (concluído + no Mural) para virar ${next}`
-  if (r.intermediario > 0)
-    return `Faltam ${r.intermediario} ${plural(r.intermediario, 'projeto intermediário', 'projetos intermediários')} para virar ${next}`
-  if (r.avancado > 0)
-    return `Faltam ${r.avancado} ${plural(r.avancado, 'projeto avançado', 'projetos avançados')} para virar ${next}`
+  for (const tier of TIER_HINTS) {
+    const n = r[tier.key]
+    if (typeof n === 'number' && n > 0) {
+      return n === 1
+        ? `Falta 1 ${tier.one} (concluído + no Mural) para virar ${next}`
+        : `Faltam ${n} ${tier.many} (concluídos + no Mural) para virar ${next}`
+    }
+  }
   if (r.any > 0)
-    return `Conclua e publique ${r.any} ${plural(r.any, 'projeto', 'projetos')} no Mural para virar ${next}`
+    return `Conclua e publique ${r.any} ${r.any === 1 ? 'projeto' : 'projetos'} no Mural para virar ${next}`
   return null
 }

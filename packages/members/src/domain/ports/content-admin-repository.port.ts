@@ -3,6 +3,7 @@ import type {
   CourseAudience,
   CourseLevel,
   CourseStatus,
+  CourseTrack,
   Lesson,
   LessonAttachment,
   LessonBlock,
@@ -37,6 +38,11 @@ export interface CourseFields {
    * `iniciante`; no UPDATE **preserva a atual** (mesma régua do `audience`).
    */
   level: CourseLevel | null
+  /**
+   * Eixo 2D/3D (par com `level` = degrau pedagógico). `null` = "não informado":
+   * no CREATE vira `2d`; no UPDATE **preserva o atual** (régua do `audience`).
+   */
+  track: CourseTrack | null
 }
 
 export interface ModuleFields {

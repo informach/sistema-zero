@@ -10,9 +10,10 @@ import type { StudioEditorProps } from './types'
  * editor embarcado numa AULA (configurável + auto-correção), use `<StudioLesson>`.
  *
  * Wrapper fino sobre o `StudioCore`. A curadoria de aprendizado é OPCIONAL
- * (07/2026): sem `level`, a paleta abre cheia (default 'avancado' do
- * `resolveLearning`); o host kids passa `level` + `allowLevelReveal` p/ o
- * editor livre abrir calmo (a criança revela o avançado quando quiser).
+ * (07/2026): sem `level`, a paleta abre cheia (default 'avancado-3d' — topo da
+ * escada de 6 degraus 2D/3D — do `resolveLearning`); o host kids passa o degrau
+ * derivado do RANK do aluno (`resolveStudioTier` do member-shell) com o reveal
+ * DESLIGADO — a carreira é o portão estrito do Estúdio Completo.
  * Renderizar SOMENTE no client (Monaco/Blockly/IndexedDB).
  */
 export function StudioEditor(props: StudioEditorProps): JSX.Element {

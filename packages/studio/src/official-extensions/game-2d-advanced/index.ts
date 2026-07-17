@@ -12,9 +12,9 @@ validateManifest(gameKitManifest)
 export const gameKitExtension: ExtensionDefinition = {
   manifest: gameKitManifest,
   // Decisão de produto (14/07/2026): apesar do NOME "Avançado", todos os blocos
-  // são nível INTERMEDIÁRIO — a extensão é a ponte entre o Jogo 2D facilitado
+  // são nível INTERMEDIÁRIO 2D — a extensão é a ponte entre o Jogo 2D facilitado
   // e o jogo 100% em código. O piso por prefixo sz_gk_ vive em blockLevels.ts.
-  minLevel: 'intermediario',
+  minLevel: 'intermediario-2d',
   blockly: {
     blocks: gameKitBlocks,
     toolboxCategory: gameKitToolboxCategory,

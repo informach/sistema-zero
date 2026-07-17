@@ -86,7 +86,12 @@ import {
   RevokeCertificateService,
   ValidateCertificateService,
 } from '../src/application/validate-certificate/validate-certificate.service'
-import type { CourseAudience, CourseLevel, CourseStatus } from '../src/domain/course/course'
+import type {
+  CourseAudience,
+  CourseLevel,
+  CourseStatus,
+  CourseTrack,
+} from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { AuthGateway } from '../src/domain/ports/auth-gateway.port'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
@@ -479,6 +484,7 @@ export function seedSampleCourse(
   // testes da trava passam `true` explicitamente.
   sequentialLock = false,
   level: CourseLevel = 'iniciante',
+  track: CourseTrack = '2d',
 ) {
   const now = new Date('2026-06-01T00:00:00.000Z')
   const courseId = randomUUID()
@@ -497,6 +503,7 @@ export function seedSampleCourse(
     audience,
     sequentialLock,
     level,
+    track,
     metadata: null,
     createdAt: now,
     updatedAt: now,
