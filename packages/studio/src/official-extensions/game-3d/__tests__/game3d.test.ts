@@ -14,9 +14,9 @@ import {
 import { gameThreeDExtension } from '../index'
 
 describe('game-3d — definição da extensão', () => {
-  it('manifest válido, no catálogo, nível intermediário, com three via CDN', () => {
+  it('manifest válido, no catálogo, porta de entrada do 3D (iniciante-3d), com three via CDN', () => {
     expect(gameThreeDExtension.manifest.id).toBe('game-3d')
-    expect(gameThreeDExtension.minLevel).toBe('intermediario')
+    expect(gameThreeDExtension.minLevel).toBe('iniciante-3d')
     expect(gameThreeDExtension.runtime.esmImports?.three).toMatch(/^https:\/\/esm\.sh\/three@/)
     // NÃO declara 'network' (senão liberaria o fetch do aluno via permissionGuard).
     expect(gameThreeDExtension.manifest.permissions).not.toContain('network')

@@ -57,7 +57,11 @@ export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogC
             </span>
           </div>
         ) : null}
-        <CourseLevelChip level={course.level} className="absolute top-2 left-2" />
+        <CourseLevelChip
+          level={course.level}
+          track={course.track}
+          className="absolute top-2 left-2"
+        />
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>

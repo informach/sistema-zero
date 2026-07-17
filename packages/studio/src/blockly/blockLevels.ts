@@ -2,27 +2,36 @@ import type { BlockLevel } from '#core'
 
 /**
  * Nível de dificuldade POR BLOCO (curadoria da paleta do Estúdio) — a fonte da
- * verdade da progressão. Filosofia (decisão da usuária):
- * - **Iniciante** = FACILITADORES (blocos "de um toque" com resultado visual) +
+ * verdade da progressão. Reforma 2D/3D (07/2026): a escada virou 6 degraus
+ * (dificuldade × eixo, na ordem ini-2d < ini-3d < int-2d < int-3d < av-2d <
+ * av-3d — a MESMA da carreira do aluno). Filosofia (decisão da usuária):
+ * - **Iniciante 2D** = FACILITADORES (blocos "de um toque" com resultado visual) +
  *   um kit essencial de lógica (Se, variáveis, repetir, comparar, valores básicos).
- *   É o DEFAULT: todo bloco NÃO listado abaixo é iniciante.
- * - **Intermediário** = programação "real" guiada (variáveis avulsas, laços,
- *   funções, getters/setters, desenho manual, matemática básica).
- * - **Avançado** = baixo nível / expert (classes/OOP, objetos, código cru, física
- *   manual, trigonometria, vetores, dados, physics 3D).
+ *   É o DEFAULT: todo bloco NÃO listado abaixo é iniciante-2d.
+ * - **Iniciante 3D** = a PORTA DE ENTRADA do 3D: os facilitadores do Jogo 3D
+ *   (`sz_g3d_*` não-avançados) — piso por prefixo.
+ * - **Intermediário 2D** = programação "real" guiada (variáveis avulsas, laços,
+ *   funções, getters/setters, desenho manual, matemática básica) + Jogo 2D Avançado.
+ * - **Intermediário 3D** = Mundo 3D (mundo aberto dirigível, blocos "mágicos").
+ * - **Avançado 2D** = baixo nível / expert em 2D (classes/OOP, objetos, código
+ *   cru, física manual, trigonometria, vetores, dados).
+ * - **Avançado 3D** = engine de verdade: getters/física do Jogo 3D, Jogo 3D
+ *   Avançado (`sz_g3k_*`) e Canvas 3D three.js cru (`sz_t3d_*`).
  *
- * É CUMULATIVO (intermediário inclui iniciante; avançado inclui tudo) — o gate
- * usa `isLevelWithin`. Só listamos as EXCEÇÕES ao default iniciante; a completude
- * (todo bloco conhecido está no tier certo) é travada por `blockLevels.test.ts`.
+ * É CUMULATIVO na escada (cada degrau inclui os anteriores — o gate usa
+ * `isLevelWithin`; note que os degraus "2D" a partir do int-2d INCLUEM o
+ * iniciante-3d abaixo deles: a escada é UMA SÓ, não duas trilhas). Só listamos
+ * as EXCEÇÕES ao default iniciante-2d; a completude (todo bloco conhecido está
+ * no tier certo) é travada por `blockLevels.test.ts`.
  *
  * ⚠️ Os frames (🗂️ Áreas do projeto) NÃO entram aqui — são sempre visíveis.
- * ⚠️ Jogo 3D nunca é iniciante: `resolveBlockLevel` dá piso INTERMEDIÁRIO a todo
- * `sz_g3d_*` por prefixo (os 3D AVANÇADOS listados no set sobem para avançado).
- * ⚠️ Adicionou um bloco? Decida o nível: se for avançado/intermediário, liste
- * aqui (senão vira iniciante por default) — o teste de conformidade cobra.
+ * ⚠️ Adicionou um bloco? Decida o degrau: core/g2d intermediário → `INTERMEDIARIO_2D`;
+ * core/g2d avançado → `AVANCADO_2D`; g3d avançado → `AVANCADO_3D`; senão os
+ * defaults por prefixo decidem (g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k/t3d→av-3d,
+ * resto→ini-2d) — o teste de conformidade cobra.
  */
 
-const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
+const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   // ── CORE ──────────────────────────────────────────────────────────────────
   // HTML — containers estruturais (só "aparecem" com CSS) + fragmento solto
   'sz_html_div',
@@ -186,7 +195,7 @@ const INTERMEDIARIO: ReadonlySet<string> = new Set<string>([
   'sz_g2d_enemy_damage',
 ])
 
-const AVANCADO: ReadonlySet<string> = new Set<string>([
+const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   // ── CORE ──────────────────────────────────────────────────────────────────
   // ⏳ Assíncrono — promessas/await (concorrência de verdade)
   'sz_js_await',
@@ -315,8 +324,13 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_g2d_draw_hitbox',
   'sz_g2d_show_fps',
   'sz_g2d_play_sound',
-  // ── EXTENSÃO Jogo 3D — getters/manual/física (os facilitadores 3D caem no
-  // default iniciante, mas a extensão só aparece do intermediário pra cima) ────
+])
+
+// ── EXTENSÃO Jogo 3D — getters/manual/física: o lado ENGINE do kit 3D. Os
+// facilitadores 3D ficam no piso iniciante-3d (prefixo); estes sobem ao topo.
+// ⚠️ Separado do AVANCADO_2D de propósito: no set único antigo, o degrau
+// "Avançado 2D" veria física 3D — quebraria a promessa do eixo.
+const AVANCADO_3D: ReadonlySet<string> = new Set<string>([
   'sz_g3d_set_camera',
   'sz_g3d_set_position',
   'sz_g3d_set_rotation',
@@ -352,31 +366,37 @@ const AVANCADO: ReadonlySet<string> = new Set<string>([
   'sz_g3d_create_group',
 ])
 
+// Posição dos kits 3D dirigíveis na escada (decisão da usuária 17/07) — parâmetros
+// de 1 linha p/ ajuste fino futuro.
+const G3D_FLOOR: BlockLevel = 'iniciante-3d'
+const W3D_LEVEL: BlockLevel = 'intermediario-3d'
+
 /**
- * Nível de um bloco pelo `type`. Avançado > Intermediário > (default) Iniciante.
- * Os conjuntos acima são as EXCEÇÕES; todo o resto (facilitadores + kit essencial
- * de lógica + facilitadores 3D) é iniciante.
+ * Degrau de um bloco pelo `type`. Sets (exceções nomeadas) primeiro, depois os
+ * defaults por prefixo de extensão; todo o resto (facilitadores + kit essencial
+ * de lógica) é iniciante-2d.
  */
 export function resolveBlockLevel(type: string): BlockLevel {
-  if (AVANCADO.has(type)) return 'avancado'
-  if (INTERMEDIARIO.has(type)) return 'intermediario'
-  // Jogo 3D NUNCA é iniciante (3D é mais complexo que o 2D): piso intermediário —
-  // os facilitadores 3D caem aqui por prefixo (os avançados já saíram acima).
-  if (type.startsWith('sz_g3d_')) return 'intermediario'
-  // Jogo 2D Avançado: TODOS os blocos são intermediários (decisão de produto —
+  if (AVANCADO_3D.has(type)) return 'avancado-3d'
+  if (AVANCADO_2D.has(type)) return 'avancado-2d'
+  if (INTERMEDIARIO_2D.has(type)) return 'intermediario-2d'
+  // Jogo 3D é a PORTA DE ENTRADA do 3D: piso iniciante-3d por prefixo — os
+  // facilitadores caem aqui (o lado engine já saiu no AVANCADO_3D acima).
+  if (type.startsWith('sz_g3d_')) return G3D_FLOOR
+  // Jogo 2D Avançado: TODOS os blocos são intermediário-2d (decisão de produto —
   // apesar do nome, é a ponte entre o Jogo 2D facilitado e o código puro).
-  if (type.startsWith('sz_gk_')) return 'intermediario'
-  // Jogo 3D Avançado: TODOS os blocos são AVANÇADOS (decisão de produto —
-  // é a base de engine profissional: FSM por entidade, pooling, grade espacial).
-  if (type.startsWith('sz_g3k_')) return 'avancado'
-  // Canvas 3D (three.js cru, núcleo): TODOS avançados — é programar a lib de
+  if (type.startsWith('sz_gk_')) return 'intermediario-2d'
+  // Jogo 3D Avançado: TODOS avançado-3d (decisão de produto — é a base de
+  // engine profissional: FSM por entidade, pooling, grade espacial).
+  if (type.startsWith('sz_g3k_')) return 'avancado-3d'
+  // Canvas 3D (three.js cru, núcleo): TODOS avançado-3d — é programar a lib de
   // verdade na unha (construtores, cadeias de método, matemática de vetores).
-  if (type.startsWith('sz_t3d_')) return 'avancado'
-  // Mundo 3D: TODOS intermediários (decisão de produto — blocos "mágicos" de
-  // alto nível, 1 bloco = 1 resultado; o oposto da base de engine da g3k).
-  if (type.startsWith('sz_w3d_')) return 'intermediario'
-  return 'iniciante'
+  if (type.startsWith('sz_t3d_')) return 'avancado-3d'
+  // Mundo 3D: TODOS intermediário-3d (decisão de produto — blocos "mágicos" de
+  // alto nível, 1 bloco = 1 resultado; um degrau acima da entrada do 3D).
+  if (type.startsWith('sz_w3d_')) return W3D_LEVEL
+  return 'iniciante-2d'
 }
 
 /** Exportados só para o teste de conformidade (completude/sem sobreposição/sem typo). */
-export const _LEVEL_SETS = { INTERMEDIARIO, AVANCADO } as const
+export const _LEVEL_SETS = { INTERMEDIARIO_2D, AVANCADO_2D, AVANCADO_3D } as const

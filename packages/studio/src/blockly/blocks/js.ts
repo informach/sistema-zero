@@ -213,7 +213,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'intermediario',
     tooltip:
       'Repete o "fazer" enquanto a condição for verdadeira. Garanta que a condição um dia fique falsa, senão o laço não termina.',
   },
@@ -227,7 +226,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'intermediario',
     tooltip: 'Executa o "fazer" pelo menos uma vez e repete enquanto a condição for verdadeira.',
   },
   {
@@ -236,7 +234,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'intermediario',
     tooltip: 'Interrompe o laço (loop) atual imediatamente.',
   },
   {
@@ -245,7 +242,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'intermediario',
     tooltip: 'Pula o resto desta volta e vai direto para a próxima repetição do laço.',
   },
   {
@@ -256,7 +252,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'avancado',
     tooltip:
       'Dispara um erro com uma mensagem (throw new Error). Use com "tentar … se der erro" para encerrar/desviar (ex.: fim de jogo).',
   },
@@ -271,7 +266,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'avancado',
     tooltip:
       'Copia todas as propriedades de um objeto para outro (Object.assign), atualizando o destino de uma vez.',
   },
@@ -286,7 +280,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'avancado',
     tooltip:
       'Escolhe um caminho conforme o valor (switch). Arraste blocos "caso" dentro. O "senão" roda quando nenhum caso bate.',
   },
@@ -299,7 +292,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'SwitchCase',
     nextStatement: 'SwitchCase',
     colour: C,
-    level: 'avancado',
     tooltip: 'Um caso do "escolha": se o valor bater, roda o "fazer" (e para, break automático).',
   },
   {
@@ -315,7 +307,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'intermediario',
     tooltip:
       'Percorre cada item de uma lista. Sem posição/índice. Use "para cada item" se precisar do índice.',
   },
@@ -334,7 +325,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'intermediario',
     tooltip: 'Laço de contagem: vai de "de" até "até" (exclusivo) somando o passo a cada volta.',
   },
   {
@@ -351,7 +341,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'avancado',
     tooltip:
       'Tenta executar o "tentar"; se acontecer um erro, executa o "se der erro" (com a mensagem na variável); o "no fim" roda sempre. Deixe o "no fim" vazio se não precisar.',
   },
@@ -486,7 +475,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'iniciante',
     tooltip:
       'Salva um valor no navegador. O permanente fica salvo entre visitas; o da sessão só vale nesta aba.',
   },
@@ -507,7 +495,6 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'avancado',
     tooltip:
       'Busca dados de uma URL e converte para JSON. Os dados ficam na variável "quando chegar"; um erro fica na variável "se der erro". Precisa de permissão de rede no preview (o professor libera a origem).',
   },

@@ -252,7 +252,7 @@ export function buildCoreToolbox(
   const only = new Set(profile.allowBlocks ?? [])
 
   const pushContent = (name: string, colour: string, blocks: BlockDefinition[]): void => {
-    const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante'
+    const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante-2d'
     if (!isCategoryAllowed(name, level, profile)) return
     const entries = toEntries(blocks, level, profile)
     if (entries.length === 0) return
@@ -271,7 +271,7 @@ export function buildCoreToolbox(
     blocks: BlockDefinition[],
     groups: { name: string; colour: string; types: string[] }[],
   ): void => {
-    const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante'
+    const level = CORE_CATEGORY_LEVELS[name] ?? 'iniciante-2d'
     if (!isCategoryAllowed(name, level, profile)) return
     const byType = new Map(blocks.map((b) => [b.type, b]))
     const used = new Set<string>()
@@ -311,7 +311,7 @@ export function buildCoreToolbox(
   // o guarda-chuva some.
   const progSubs: (ToolboxCategory | ToolboxCustomCategory)[] = []
   // 1) JavaScript dividido em grupos (nível-base iniciante; o nível por-bloco filtra).
-  if (isCategoryAllowed('JavaScript', 'iniciante', profile)) {
+  if (isCategoryAllowed('JavaScript', 'iniciante-2d', profile)) {
     const jsByType = new Map(JS_BLOCKS.map((b) => [b.type, b]))
     const usedJs = new Set<string>()
     for (const g of JS_GROUPS) {
@@ -321,13 +321,13 @@ export function buildCoreToolbox(
           return jsByType.get(t)
         })
         .filter((b): b is BlockDefinition => Boolean(b))
-      const entries = toEntries(blocks, 'iniciante', profile)
+      const entries = toEntries(blocks, 'iniciante-2d', profile)
       if (entries.length > 0)
         progSubs.push({ kind: 'category', name: g.name, colour: g.colour, contents: entries })
     }
     const leftover = toEntries(
       JS_BLOCKS.filter((b) => !usedJs.has(b.type)),
-      'iniciante',
+      'iniciante-2d',
       profile,
     )
     if (leftover.length > 0)
@@ -364,11 +364,11 @@ export function buildCoreToolbox(
     if (restrict && !blocks.some((b) => only.has(b.type))) return
     progSubs.push({ kind: 'category', name, colour, custom })
   }
-  pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'intermediario', MATH_BLOCKS)
-  pushSub('Valores', '🔣 Valores', CATEGORY_COLORS.values, 'iniciante', VALUE_BLOCKS)
+  pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'intermediario-2d', MATH_BLOCKS)
+  pushSub('Valores', '🔣 Valores', CATEGORY_COLORS.values, 'iniciante-2d', VALUE_BLOCKS)
   // Página: só os blocos de ELEMENTO (os "Quando…" saem para ⚡ Eventos).
   const paginaBlocks = DOM_BLOCKS.filter((b) => !EVENT_LISTENER_TYPES.has(b.type))
-  pushSub('DOM', '🌐 Página', CATEGORY_COLORS.dom, 'iniciante', paginaBlocks)
+  pushSub('DOM', '🌐 Página', CATEGORY_COLORS.dom, 'iniciante-2d', paginaBlocks)
   // ⚡ Eventos: listeners + leitores do evento + temporizadores, na ordem curada.
   // Gateada por 'DOM' (preserva o allowCategories das aulas). Resolve cada tipo a
   // partir das três origens; tipos inexistentes (ex.: nível) são ignorados.
@@ -378,12 +378,12 @@ export function buildCoreToolbox(
   const eventosBlocks = EVENTOS_TYPE_ORDER.map((t) => eventosByType.get(t)).filter(
     (b): b is BlockDefinition => Boolean(b),
   )
-  pushSub('DOM', '⚡ Eventos', CATEGORY_COLORS.events, 'iniciante', eventosBlocks)
+  pushSub('DOM', '⚡ Eventos', CATEGORY_COLORS.events, 'iniciante-2d', eventosBlocks)
   pushSubCustom(
     'Funções',
     '🧩 Funções',
     CATEGORY_COLORS.functions,
-    'intermediario',
+    'intermediario-2d',
     'SZ_FUNCTIONS',
     FUNCTION_BLOCKS,
   )
@@ -391,11 +391,11 @@ export function buildCoreToolbox(
     'Classes',
     '🏛️ Classes',
     CATEGORY_COLORS.classes,
-    'avancado',
+    'avancado-2d',
     'SZ_CLASSES',
     OOP_BLOCKS,
   )
-  pushSub('Objetos', '📦 Objetos', CATEGORY_COLORS.objects, 'avancado', OBJECT_BLOCKS)
+  pushSub('Objetos', '📦 Objetos', CATEGORY_COLORS.objects, 'avancado-2d', OBJECT_BLOCKS)
   if (progSubs.length > 0) {
     contents.push({
       kind: 'category',

@@ -433,7 +433,6 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    level: 'intermediario',
     tooltip: 'Anima suavemente as mudanças de estilo do elemento.',
   },
   {
@@ -447,7 +446,6 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    level: 'intermediario',
     tooltip: 'Organiza o conteúdo em grade, com N colunas iguais e espaço entre elas.',
   },
   {
@@ -461,7 +459,6 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    level: 'avancado',
     tooltip:
       'Cria uma animação, do estado inicial ao final. Para usar, ligue essa animação a um elemento numa Regra CSS.',
   },
@@ -474,7 +471,6 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    level: 'avancado',
     tooltip:
       'Animação com VÁRIOS passos (0%, 25%, 50%, 100%…). Arraste blocos "passo" dentro. Ligue a animação a um elemento numa Regra CSS.',
   },
@@ -487,7 +483,6 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'KeyframeStep',
     nextStatement: 'KeyframeStep',
     colour: C,
-    level: 'avancado',
     tooltip:
       'Um momento da animação (ex.: "0%", "50%", "100%"). Coloque "propriedade: valor" dentro.',
   },

@@ -6,7 +6,13 @@
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-import type { BlockLevel, CheckResult, IDEMode, LessonActivity, Project } from '@sistemazero/studio'
+import type {
+  AnyBlockLevel,
+  CheckResult,
+  IDEMode,
+  LessonActivity,
+  Project,
+} from '@sistemazero/studio'
 
 // ── Sessão / usuário (claims do JWT do auth) ────────────────────────────────
 
@@ -85,6 +91,9 @@ export interface AccessView {
 /** Dificuldade do curso (espelha o enum `course_level` do members). */
 export type CourseLevelSlug = 'iniciante' | 'intermediario' | 'avancado'
 
+/** Eixo 2D/3D do curso (espelha o enum `course_track` do members). Par com `level` = degrau. */
+export type CourseTrack = '2d' | '3d'
+
 export interface CourseProgress {
   completedLessons: number
   totalLessons: number
@@ -107,6 +116,8 @@ export interface CatalogCourseView {
   hasAccess: boolean
   /** Dificuldade do curso — opcional p/ tolerar members antigo. */
   level?: CourseLevelSlug
+  /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
+  track?: CourseTrack
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
   salesPageUrl: string | null
   /** Criação do curso (ISO) — ordena o seletor por data; opcional p/ members antigo. */
@@ -202,6 +213,8 @@ export interface MyCourseView {
   coverImageUrl: string | null
   /** Dificuldade do curso — opcional p/ tolerar members antigo. */
   level?: CourseLevelSlug
+  /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
+  track?: CourseTrack
   access: AccessView
   progress: CourseProgress
   /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
@@ -264,6 +277,8 @@ export interface CourseDetailView {
   coverImageUrl: string | null
   /** Dificuldade do curso — opcional p/ tolerar members antigo. */
   level?: CourseLevelSlug
+  /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
+  track?: CourseTrack
   access: AccessView
   progress: CourseProgressView
   /** Aula-alvo do "Continuar de onde parei" (última acessada > 1ª não concluída > 1ª). */
@@ -349,7 +364,12 @@ export interface EbookBlock {
 export interface StudioBlock {
   kind: 'studio'
   initialProject: Project
-  level?: BlockLevel
+  /**
+   * Aceita a escala LEGADA de 3 níveis além da escada de 6: aulas salvas antes
+   * da reforma 2D/3D vivem no jsonb para sempre; o `<StudioLesson>` normaliza
+   * na fronteira (`resolveLearning`) — aqui só flui.
+   */
+  level?: AnyBlockLevel
   allowBlocks?: string[]
   allowCategories?: string[]
   allowedModes?: IDEMode[]
@@ -479,19 +499,46 @@ export interface GamificationDelta {
   coinsCapped?: boolean
 }
 
-/** Slug do nível (rank) do aluno — apresentação (rótulo/cor/ícone) vive no app. */
-export type StudentLevelSlug = 'noob' | 'coder' | 'hacker' | 'elite' | 'god'
+/**
+ * Slug do nível (rank) do aluno — apresentação (rótulo/cor/ícone) vive no app.
+ * Escada de 8 (reforma 2D/3D 07/2026): Faísca → Construtor(a) → Inventor(a) →
+ * Explorador(a) de Mundos → Mestre dos Jogos → Arquiteto(a) de Mundos →
+ * Gênio da Criação → Lenda.
+ */
+export type StudentLevelSlug =
+  | 'noob'
+  | 'coder'
+  | 'hacker'
+  | 'explorer'
+  | 'elite'
+  | 'architect'
+  | 'champion'
+  | 'god'
+
+/**
+ * O que falta p/ o próximo nível, por DEGRAU (dificuldade × eixo 2D/3D) —
+ * espelha o `LevelRemaining` do members.
+ */
+export interface StudentLevelRemaining {
+  any: number
+  'iniciante-2d': number
+  'iniciante-3d': number
+  'intermediario-2d': number
+  'intermediario-3d': number
+  'avancado-2d': number
+  'avancado-3d': number
+}
 
 /**
  * Nível do aluno (rank de longo prazo). Derivado dos cursos qualificados (concluídos
- * E publicados no Mural) por dificuldade — ver members `domain/gamification/levels.ts`.
+ * E publicados no Mural) por degrau — ver members `domain/gamification/levels.ts`.
  */
 export interface StudentLevelView {
   slug: StudentLevelSlug
   /** Próximo nível (`null` no topo). */
   next: StudentLevelSlug | null
-  /** Quanto falta p/ o próximo, por dificuldade (`null` no topo). */
-  remaining: { any: number; iniciante: number; intermediario: number; avancado: number } | null
+  /** Quanto falta p/ o próximo, por degrau (`null` no topo). */
+  remaining: StudentLevelRemaining | null
 }
 
 /** Rosto + aura de um autor do fórum kids (`GET /members/avatars` em lote). */

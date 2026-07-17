@@ -1,5 +1,6 @@
 'use client'
 
+import { COURSE_TIER_LABELS, COURSE_TIERS } from '@sistemazero/member-shell/lib/course-tier'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
@@ -45,12 +46,14 @@ export function CatalogFilterBar({ filters, onChange, onClear, hasActiveFilters 
           value={filters.nivel}
           onChange={(e) => onChange('nivel', e.target.value)}
           aria-label="Filtrar por nível"
-          className="w-full sm:w-40"
+          className="w-full sm:w-44"
         >
           <option value="todos">Todos os níveis</option>
-          <option value="iniciante">Iniciante</option>
-          <option value="intermediario">Intermediário</option>
-          <option value="avancado">Avançado</option>
+          {COURSE_TIERS.map((tier) => (
+            <option key={tier} value={tier}>
+              {COURSE_TIER_LABELS[tier]}
+            </option>
+          ))}
         </Select>
         <Select
           value={filters.ordem}

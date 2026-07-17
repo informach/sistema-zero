@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { type InstalledExtension, isCategoryAllowed, type LearningProfile, t } from '#core'
-import type { ExtensionDefinition } from '#extensions'
+import { type ExtensionDefinition, extensionMinLevel } from '#extensions'
 import { generateProjectFiles } from '#generators'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { Badge, Button, Modal } from '#ui'
@@ -180,11 +180,7 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
           {OFFICIAL_CATALOG.filter(
             (ext) =>
               installedIds.has(ext.manifest.id) ||
-              isCategoryAllowed(
-                ext.blockly.toolboxCategory.name,
-                ext.minLevel ?? 'intermediario',
-                profile,
-              ),
+              isCategoryAllowed(ext.blockly.toolboxCategory.name, extensionMinLevel(ext), profile),
           ).map((ext) => {
             const installed = installedIds.has(ext.manifest.id)
             const docsOpen = docsOpenId === ext.manifest.id

@@ -16,7 +16,7 @@ import {
   sum,
 } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
-import type { CourseAudience, CourseLevel } from '../../../domain/course/course'
+import type { CourseAudience, CourseLevel, CourseTrack } from '../../../domain/course/course'
 import type { BadgeSlug } from '../../../domain/gamification/badges'
 import {
   applyDailyCap,
@@ -37,7 +37,11 @@ import {
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
 } from '../../../domain/gamification/gamification'
-import type { QualifyingByLevel } from '../../../domain/gamification/levels'
+import {
+  courseTier,
+  emptyQualifyingByTier,
+  type QualifyingByTier,
+} from '../../../domain/gamification/levels'
 import type { MissionGoalType } from '../../../domain/gamification/missions'
 import {
   type AwardInput,
@@ -116,20 +120,21 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${input.userId}`}, 0))`,
       )
 
-      // SNAPSHOT da dificuldade dos MARCOS de curso (course_complete/course_showcased):
-      // resolve `courses.level` AGORA (1 query) p/ congelar o nível no ledger — o rank
-      // do aluno deixa de depender do `courses.level` ao vivo, então re-nivelar/apagar o
-      // curso depois NUNCA rebaixa o rank. Demais sources não têm nível (null).
+      // SNAPSHOT do degrau dos MARCOS de curso (course_complete/course_showcased):
+      // resolve `courses.level`+`courses.track` AGORA (1 query) p/ congelar o degrau
+      // no ledger — o rank do aluno deixa de depender do curso ao vivo, então
+      // re-nivelar/apagar o curso depois NUNCA rebaixa o rank. Demais sources não
+      // têm degrau (null).
       const courseMarcoIds = input.events
         .filter((e) => e.sourceType === 'course_complete' || e.sourceType === 'course_showcased')
         .map((e) => e.sourceId)
-      const levelByCourseId = new Map<string, CourseLevel>()
+      const tierByCourseId = new Map<string, { level: CourseLevel; track: CourseTrack }>()
       if (courseMarcoIds.length > 0) {
-        const levelRows = await tx
-          .select({ id: courses.id, level: courses.level })
+        const tierRows = await tx
+          .select({ id: courses.id, level: courses.level, track: courses.track })
           .from(courses)
           .where(inArray(courses.id, courseMarcoIds))
-        for (const r of levelRows) levelByCourseId.set(r.id, r.level)
+        for (const r of tierRows) tierByCourseId.set(r.id, { level: r.level, track: r.track })
       }
 
       // Ledger idempotente: só os eventos realmente NOVOS voltam do RETURNING.
@@ -145,7 +150,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
                   sourceType: e.sourceType,
                   sourceId: e.sourceId,
                   amount: e.amount,
-                  sourceLevel: levelByCourseId.get(e.sourceId) ?? null,
+                  sourceLevel: tierByCourseId.get(e.sourceId)?.level ?? null,
+                  sourceTrack: tierByCourseId.get(e.sourceId)?.track ?? null,
                   createdAt: input.now,
                 })),
               )
@@ -722,20 +728,23 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     return rows
   }
 
-  async countQualifyingCoursesByLevel(
+  async countQualifyingCoursesByTier(
     userId: string,
     audience: CourseAudience,
-  ): Promise<QualifyingByLevel> {
+  ): Promise<QualifyingByTier> {
     // INTERSEÇÃO dos marcos `course_complete` ∩ `course_showcased` (mesmo curso, mesma
-    // vitrine). A dificuldade vem do SNAPSHOT congelado no ledger (`source_level`) — o
-    // `course.level` ao vivo é só FALLBACK p/ linhas legadas sem snapshot. Assim o RANK
-    // NUNCA REGRIDE quando o curso é re-nivelado depois. Self-join via alias; `countDistinct`
-    // é defensivo (UNIQUE do ledger já dá 1 marco por curso). `courses` é LEFT join: curso
-    // APAGADO ainda conta pelo snapshot (não derruba o rank de quem já qualificou).
+    // vitrine). O degrau (dificuldade × eixo) vem do SNAPSHOT congelado no ledger
+    // (`source_level`/`source_track`) — o curso ao vivo é só FALLBACK p/ linhas legadas
+    // sem snapshot; o track legado sem curso cai em `'2d'` (literal final do coalesce,
+    // deliberado: re-taggear um curso 3D no admin corrige os marcos legados sozinho).
+    // Assim o RANK NUNCA REGRIDE quando o curso é re-nivelado depois. Self-join via
+    // alias; `countDistinct` é defensivo (UNIQUE do ledger já dá 1 marco por curso).
+    // `courses` é LEFT join: curso APAGADO ainda conta pelo snapshot.
     const showcased = alias(xpEvents, 'sc')
     const level = sql<CourseLevel>`coalesce(${showcased.sourceLevel}, ${xpEvents.sourceLevel}, ${courses.level})`
+    const track = sql<CourseTrack>`coalesce(${showcased.sourceTrack}, ${xpEvents.sourceTrack}, ${courses.track}, '2d')`
     const rows = await this.db
-      .select({ level, qualifying: countDistinct(xpEvents.sourceId) })
+      .select({ level, track, qualifying: countDistinct(xpEvents.sourceId) })
       .from(xpEvents)
       .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
       .innerJoin(
@@ -754,29 +763,37 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           eq(xpEvents.sourceType, 'course_complete'),
         ),
       )
-      .groupBy(level)
-    const result: QualifyingByLevel = { iniciante: 0, intermediario: 0, avancado: 0 }
+      .groupBy(level, track)
+    const result = emptyQualifyingByTier()
     // `level` nunca é null na prática (todo marco pós-deploy tem snapshot); o guard
     // descarta uma linha residual sem dificuldade (curso apagado + snapshot legado null).
-    for (const row of rows)
-      if (row.level && row.level in result) result[row.level] = Number(row.qualifying)
+    for (const row of rows) {
+      if (!row.level || !row.track) continue
+      result[courseTier(row.level, row.track)] = Number(row.qualifying)
+    }
     return result
   }
 
-  async countQualifyingByLevelForProfiles(
+  async countQualifyingByTierForProfiles(
     profileIds: string[],
     audience: CourseAudience,
-  ): Promise<Map<string, QualifyingByLevel>> {
+  ): Promise<Map<string, QualifyingByTier>> {
     // MESMA interseção `course_complete` ∩ `course_showcased` do single-profile, só que
     // agrupada TAMBÉM por `user_id` (um GROUP BY a mais) e filtrada por `IN (ids)` — 1
-    // query serve a página inteira do fórum. Dificuldade vem do SNAPSHOT do ledger
-    // (fallback `courses.level` p/ legado), como no `countQualifyingCoursesByLevel`.
-    const result = new Map<string, QualifyingByLevel>()
+    // query serve a página inteira do fórum. Degrau vem do SNAPSHOT do ledger
+    // (fallback curso ao vivo p/ legado), como no `countQualifyingCoursesByTier`.
+    const result = new Map<string, QualifyingByTier>()
     if (profileIds.length === 0) return result
     const showcased = alias(xpEvents, 'sc')
     const level = sql<CourseLevel>`coalesce(${showcased.sourceLevel}, ${xpEvents.sourceLevel}, ${courses.level})`
+    const track = sql<CourseTrack>`coalesce(${showcased.sourceTrack}, ${xpEvents.sourceTrack}, ${courses.track}, '2d')`
     const rows = await this.db
-      .select({ userId: xpEvents.userId, level, qualifying: countDistinct(xpEvents.sourceId) })
+      .select({
+        userId: xpEvents.userId,
+        level,
+        track,
+        qualifying: countDistinct(xpEvents.sourceId),
+      })
       .from(xpEvents)
       .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
       .innerJoin(
@@ -795,15 +812,15 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           eq(xpEvents.sourceType, 'course_complete'),
         ),
       )
-      .groupBy(xpEvents.userId, level)
+      .groupBy(xpEvents.userId, level, track)
     for (const row of rows) {
-      if (!row.level) continue
+      if (!row.level || !row.track) continue
       let q = result.get(row.userId)
       if (!q) {
-        q = { iniciante: 0, intermediario: 0, avancado: 0 }
+        q = emptyQualifyingByTier()
         result.set(row.userId, q)
       }
-      if (row.level in q) q[row.level] = Number(row.qualifying)
+      q[courseTier(row.level, row.track)] = Number(row.qualifying)
     }
     return result
   }

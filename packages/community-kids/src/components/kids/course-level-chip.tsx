@@ -1,31 +1,43 @@
+import {
+  COURSE_TIER_LABELS,
+  type CourseTierSlug,
+  courseTierOf,
+} from '@sistemazero/member-shell/lib/course-tier'
 import { cn } from '@/lib/cn'
-import type { CourseLevelSlug } from '@/lib/types'
+import type { CourseLevelSlug, CourseTrack } from '@/lib/types'
 
 /**
- * Dificuldade do curso (≠ do nível do ALUNO): rótulo + a cor vive no PONTINHO.
- * O texto fica em `text-foreground` (sempre AA em claro/escuro) — a cor saturada
- * de cada nível falharia o contraste como texto pequeno, sobretudo no dark.
+ * DEGRAU do curso (dificuldade × eixo 2D/3D — ≠ do nível do ALUNO): rótulo + a
+ * cor vive no PONTINHO. O texto fica em `text-foreground` (sempre AA em
+ * claro/escuro) — a cor saturada de cada nível falharia o contraste como texto
+ * pequeno, sobretudo no dark. A cor marca a DIFICULDADE (2D e 3D da mesma
+ * dificuldade compartilham o pontinho; o "2D/3D" do rótulo distingue o eixo).
  */
-const INFO: Record<CourseLevelSlug, { label: string; dot: string }> = {
-  iniciante: { label: 'Iniciante', dot: 'bg-(--kids-lime)' },
-  intermediario: { label: 'Intermediário', dot: 'bg-(--sz-hot)' },
-  avancado: { label: 'Avançado', dot: 'bg-(--level-elite)' },
+const DOT: Record<CourseTierSlug, string> = {
+  'iniciante-2d': 'bg-(--kids-lime)',
+  'iniciante-3d': 'bg-(--kids-lime)',
+  'intermediario-2d': 'bg-(--sz-hot)',
+  'intermediario-3d': 'bg-(--sz-hot)',
+  'avancado-2d': 'bg-(--level-elite)',
+  'avancado-3d': 'bg-(--level-elite)',
 }
 
 /**
- * Chip da DIFICULDADE do curso (Iniciante/Intermediário/Avançado). Distinto do
- * nível do aluno — este descreve o curso. Ausente/desconhecido → não renderiza.
- * A cor é só o pontinho; o texto (o nome) já distingue sem depender de cor.
+ * Chip do DEGRAU do curso ("Iniciante 2D" … "Avançado 3D"). Distinto do nível
+ * do aluno — este descreve o curso. Ausente/desconhecido → não renderiza.
+ * `track` ausente (members antigo) → 2D.
  */
 export function CourseLevelChip({
   level,
+  track,
   className,
 }: {
   level?: CourseLevelSlug
+  track?: CourseTrack
   className?: string
 }) {
-  const info = level ? INFO[level] : null
-  if (!info) return null
+  const tier = courseTierOf(level, track)
+  if (!tier) return null
   return (
     <span
       className={cn(
@@ -33,8 +45,8 @@ export function CourseLevelChip({
         className,
       )}
     >
-      <span className={cn('size-2 rounded-full', info.dot)} aria-hidden />
-      {info.label}
+      <span className={cn('size-2 rounded-full', DOT[tier])} aria-hidden />
+      {COURSE_TIER_LABELS[tier]}
     </span>
   )
 }

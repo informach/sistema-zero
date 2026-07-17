@@ -369,6 +369,8 @@ export interface MyCourseView {
   audience: string
   /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
   level: string
+  /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
+  track: string
   access: AccessView
   progress: CourseProgress
   /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
@@ -388,6 +390,7 @@ export function toMyCourseView(
     coverImageUrl: course.coverImageUrl,
     audience: course.audience,
     level: course.level,
+    track: course.track,
     access: toAccessView(entitlement),
     progress,
     continueLessonId,
@@ -407,6 +410,8 @@ export interface CatalogCourseView {
   audience: string
   /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
   level: string
+  /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
+  track: string
   hasAccess: boolean
   /** URL da página de vendas (funil) — de `course.metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
@@ -422,6 +427,7 @@ export function toCatalogCourseView(course: Course, hasAccess: boolean): Catalog
     coverImageUrl: course.coverImageUrl,
     audience: course.audience,
     level: course.level,
+    track: course.track,
     hasAccess,
     salesPageUrl: resolveSalesPageUrl(course),
     createdAt: course.createdAt.toISOString(),
@@ -486,6 +492,8 @@ export interface CourseDetailView {
   audience: string
   /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
   level: string
+  /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
+  track: string
   access: AccessView
   progress: CourseProgressView
   /** Aula-alvo do CTA "Continuar de onde parou" (ver `resolveContinueLesson`). */
@@ -517,6 +525,7 @@ export function toCourseDetailView(
     coverImageUrl: course.coverImageUrl,
     audience: course.audience,
     level: course.level,
+    track: course.track,
     access: toAccessView(entitlement),
     progress,
     continueLessonId,

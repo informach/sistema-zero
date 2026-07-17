@@ -32,8 +32,9 @@ overlay completo abre no **`onVideoEnded`** (fio novo do member-shell); manual s
 **Cartão do jogo com QR** (`game-card-dialog.tsx`; dep `qrcode` client-side, canvas puro
 CSP-safe): botão QrCode no `PlayLinkActions` dos cards do Mural → cartão imprimível (capa +
 título + QR do `/jogar/<id>`; imprimir usa `body[data-print='game-card']` + regra `@media print`
-no globals.css). **`/estudio` com paleta calma:** `studio-full-client` passa
-`level="intermediario"` + `allowLevelReveal` ao `StudioEditor` (aceita curadoria desde 07/2026).
+no globals.css). **`/estudio` gated pelo RANK:** `studio-full-client` passa
+`level`/`allowedModes` derivados da carreira via `resolveStudioTier` (member-shell) ao
+`StudioEditor` — cada nível libera o degrau de blocos que vai estudar (escada 2D/3D de 6).
 Home com mascote + card-herói "Continuar" (`continue-hero.tsx`), **trilha serpenteante** no detalhe do curso
 (`course-trail.tsx` + `trail-layout.ts` puro/testado: módulo = unidade temática
 cyan→lime→rosa→verde→gradiente via `unit-theme.ts` (nomes históricos; hoje azul→laranja→rosa→
@@ -449,16 +450,17 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `room-builder.tsx` (quarto), que também leem `balanceUnlimited`. Compras da equipe voltam grátis
   (`unlimited:true`). Ver `docs/gamificacao.md` §4.
 - `streak-card.tsx` — card da home (só com cursos liberados E gamificação disponível).
-- **Nível do aluno (rank, 06/2026; rótulos kid-friendly 07/2026: Faísca→Construtor(a)→Inventor(a)→Mestre dos Jogos→Lenda — slugs internos noob…god NÃO mudam)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
+- **Carreira do aluno (rank, 06/2026; ESCADA DE 8 na reforma 2D/3D 17/07/2026: Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de Mundos→Gênio da Criação→Lenda — slugs internos noob/coder/hacker/explorer/elite/architect/champion/god)** — `lib/level-info.ts` (`LEVEL_INFO` rótulo/cor/ícone +
   `levelInfo()`/`nextLevelHint()`; cor = CSS var `--level-<slug>` em `globals.css` `:root`+`.dark`),
   `components/kids/avatar-with-aura.tsx` (`AvatarWithAura` — anel/brilho na cor do nível ao redor do
   `KidsAvatar`, estático p/ reduced-motion) e `level-badge.tsx` (`LevelBadge` — insígnia ícone+nome).
   Usados no **perfil** (`profile-client.tsx`: aura no avatar + insígnia + linha "faltam X projetos…"
   via `nextLevelHint`), no **menu** (`user-menu.tsx`: aura no avatar do header + insígnia no dropdown)
   e no **perfil público** (`public-profile-view.tsx`: aura + insígnia). O nível vem de
-  `gamification.level` / `PublicProfileDTO.level` (members deriva). A **dificuldade do CURSO** (≠ do
-  nível do aluno) é o `course-level-chip.tsx` (`CourseLevelChip`) sobre a capa nos cards
-  (`course-card.tsx`/`catalog-course-card.tsx`). **COMEMORAÇÃO de SUBIDA de nível:**
+  `gamification.level` / `PublicProfileDTO.level` (members deriva). O **DEGRAU do CURSO** (dificuldade × eixo 2D/3D, ≠ do
+  nível do aluno) é o `course-level-chip.tsx` (`CourseLevelChip level+track` → 6 rótulos
+  "Iniciante 2D"…"Avançado 3D" via `courseTierOf` do member-shell) sobre a capa nos cards
+  (`course-card.tsx`/`catalog-course-card.tsx`); o filtro do catálogo tem os 6 degraus. **COMEMORAÇÃO de SUBIDA de nível:**
   `level-up-celebration.tsx` (overlay Zappy + confete + som + insígnia GRANDE na cor do nível,
   `useModalA11y`, auto-fecha em 7s) disparada pelo `level-up-watcher.tsx` (cliente) — compara o
   `level.slug` do servidor com o ÚLTIMO visto em `localStorage` (`sz:kids:level:<profileId>`) e

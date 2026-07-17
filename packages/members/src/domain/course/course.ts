@@ -26,6 +26,14 @@ export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado'] as const
 export type CourseLevel = (typeof COURSE_LEVELS)[number]
 
 /**
+ * Eixo 2D/3D do curso (ortogonal à dificuldade). O par (level, track) é o DEGRAU
+ * pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a carreira de 8 níveis.
+ * Default `2d` (cursos existentes; o professor re-tagueia os 3D no admin).
+ */
+export const COURSE_TRACKS = ['2d', '3d'] as const
+export type CourseTrack = (typeof COURSE_TRACKS)[number]
+
+/**
  * Status que concedem acesso a quem já tem matrícula: `published` (à venda) ou
  * `archived` (retirado da venda, mas quem comprou mantém o acesso — padrão LMS).
  * `draft` nunca concede acesso. Descoberta/venda usa só `published`; consumo usa isto.
@@ -47,6 +55,8 @@ export interface Course {
   audience: CourseAudience
   /** Dificuldade do curso (iniciante/intermediário/avançado). Default `iniciante`. */
   level: CourseLevel
+  /** Eixo 2D/3D (par com `level` = degrau pedagógico). Default `2d`. */
+  track: CourseTrack
   /**
    * Trava sequencial (estilo Duolingo): quando `true`, uma aula só fica acessível
    * depois que TODAS as aulas publicadas anteriores (ordem do curso) estão

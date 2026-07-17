@@ -3,13 +3,18 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { applyCatalogSort, type CatalogSort } from './catalog-sort'
-import type { CatalogCourseView, CourseLevelSlug } from './types'
+import { COURSE_TIERS, type CourseTierSlug, courseTierOf } from './course-tier'
+import type { CatalogCourseView } from './types'
 
 export type CatalogAccessFilter = 'todos' | 'liberados' | 'bloqueados'
 /** Ordenação do catálogo — tipo/aplicação no helper PURO `catalog-sort.ts` (testado). */
 export type { CatalogSort } from './catalog-sort'
-/** Filtro por dificuldade do curso (`todos` = sem filtro). */
-export type CatalogLevelFilter = 'todos' | CourseLevelSlug
+/**
+ * Filtro por DEGRAU do curso (`todos` = sem filtro). Reforma 2D/3D: os 6 degraus
+ * (`iniciante-2d` … `avancado-3d`); valor legado da escala de 3 numa URL
+ * compartilhada antiga cai em `todos`.
+ */
+export type CatalogLevelFilter = 'todos' | CourseTierSlug
 
 export interface CatalogFilters {
   q: string
@@ -33,7 +38,7 @@ function parseSort(v: string | null): CatalogSort {
 }
 
 function parseLevel(v: string | null): CatalogLevelFilter {
-  return v === 'iniciante' || v === 'intermediario' || v === 'avancado' ? v : 'todos'
+  return (COURSE_TIERS as readonly string[]).includes(v ?? '') ? (v as CourseTierSlug) : 'todos'
 }
 
 /**
@@ -121,7 +126,8 @@ export function useCatalogFilters(courses: CatalogCourseView[]) {
     }
     if (filters.acesso === 'liberados') list = list.filter((c) => c.hasAccess)
     if (filters.acesso === 'bloqueados') list = list.filter((c) => !c.hasAccess)
-    if (filters.nivel !== 'todos') list = list.filter((c) => c.level === filters.nivel)
+    if (filters.nivel !== 'todos')
+      list = list.filter((c) => courseTierOf(c.level, c.track) === filters.nivel)
     return applyCatalogSort(list, filters.ordem)
   }, [courses, filters.q, filters.acesso, filters.nivel, filters.ordem])
 

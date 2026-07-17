@@ -38,8 +38,8 @@ export default async function EstudioPage() {
   if (res.status !== 200) return <KidsStudioUnavailable />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
   if (!hasAccess) return <KidsLockedStudio />
-  // Modos (Blocos/Ponte) + perfil (iniciante/intermediário/avançado) pelo RANK;
-  // admin/staff = Lenda. Soluço/ausência → noob (degrada seguro). Código adiado.
+  // Modos (Blocos/Ponte) + degrau de blocos (escada de 6, 2D/3D) pelo RANK
+  // (carreira de 8); admin/staff = Lenda. Soluço/ausência → noob (degrada seguro).
   const levelSlug = gam?.status === 200 ? (gam.body?.level?.slug ?? 'noob') : 'noob'
   const tier = resolveStudioTier(levelSlug, session?.role)
   const challengeEligible =

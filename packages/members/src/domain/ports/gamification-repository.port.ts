@@ -1,5 +1,5 @@
 import type { CourseAudience } from '../course/course'
-import type { QualifyingByLevel } from '../gamification/levels'
+import type { QualifyingByTier } from '../gamification/levels'
 import type { MissionGoalType } from '../gamification/missions'
 
 /**
@@ -206,25 +206,25 @@ export interface GamificationRepository {
     audience: CourseAudience,
   ): Promise<{ badgeSlug: string; unlockedAt: Date }[]>
   /**
-   * Cursos "qualificados" do aluno por dificuldade — concluídos (`course_complete`)
-   * E publicados no Mural (`course_showcased`) — para derivar o NÍVEL do aluno. É a
-   * INTERSEÇÃO dos dois marcos no ledger da vitrine, joinada com `courses.level`.
-   * Curso sem ambos os marcos não conta; nível ausente do resultado = 0.
+   * Cursos "qualificados" do aluno por DEGRAU (dificuldade × eixo 2D/3D) —
+   * concluídos (`course_complete`) E publicados no Mural (`course_showcased`) —
+   * para derivar o NÍVEL do aluno. É a INTERSEÇÃO dos dois marcos no ledger da
+   * vitrine. A dificuldade/eixo vêm do SNAPSHOT (`source_level`/`source_track`)
+   * com fallback no `courses.level`/`courses.track` ao vivo (linhas legadas sem
+   * snapshot; track legado sem curso → `'2d'`). Curso sem ambos os marcos não
+   * conta; degrau ausente do resultado = 0.
    */
-  countQualifyingCoursesByLevel(
-    userId: string,
-    audience: CourseAudience,
-  ): Promise<QualifyingByLevel>
+  countQualifyingCoursesByTier(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
   /**
-   * Versão em LOTE do `countQualifyingCoursesByLevel` — cursos qualificados por
-   * dificuldade de VÁRIOS perfis numa query só (para o BFF derivar o nível/aura de
+   * Versão em LOTE do `countQualifyingCoursesByTier` — cursos qualificados por
+   * degrau de VÁRIOS perfis numa query só (para o BFF derivar o nível/aura de
    * cada autor do fórum kids sem N+1). Mapa id→qualificados; perfil sem marco algum
    * some do mapa (o serviço trata como zero → nível Faísca/noob).
    */
-  countQualifyingByLevelForProfiles(
+  countQualifyingByTierForProfiles(
     profileIds: string[],
     audience: CourseAudience,
-  ): Promise<Map<string, QualifyingByLevel>>
+  ): Promise<Map<string, QualifyingByTier>>
   /**
    * Colocação do PERFIL no ranking de XP da VITRINE. Coorte (estilo Netflix) =
    * PERFIS (linhas de `gamification_profiles`, `privileged=false`) cuja CONTA

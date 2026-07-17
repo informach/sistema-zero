@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 import { useEffect, useState } from 'react'
+import { MAX_BLOCK_LEVEL } from '#core'
 import { Button, Modal } from '#ui'
 import { AI_MODEL_OPTIONS, useSettingsStore } from '../../state/settingsStore'
 import { useStudioConfig } from '../../studio/config'
@@ -28,8 +29,9 @@ export function SettingsDrawer({
   const setRevealAdvanced = useSettingsStore((s) => s.setRevealAdvanced)
   const config = useStudioConfig()
   // Toggle de "revelar avançado" só faz sentido quando o professor permite e o
-  // nível fixado não é já o avançado (senão a paleta já mostra tudo).
-  const showRevealToggle = config.learning.allowLevelReveal && config.learning.level !== 'avancado'
+  // nível fixado não é já o topo da escada (senão a paleta já mostra tudo).
+  const showRevealToggle =
+    config.learning.allowLevelReveal && config.learning.level !== MAX_BLOCK_LEVEL
   // Host injetou chave/modelo? As seções correspondentes somem (a configuração
   // é da plataforma, não do aluno).
   const hostKey = Boolean(config.aiConfig.apiKey)

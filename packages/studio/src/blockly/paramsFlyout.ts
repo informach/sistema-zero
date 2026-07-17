@@ -194,15 +194,15 @@ export function dynamicCategoryBlockTypes(): string[] {
  * perfil restrito acharia Funções/Classes digitando o nome — vazamento da oferta
  * que contradiz a divulgação progressiva do professor. Espelha EXATAMENTE o gate
  * da paleta: `pushCustom` em toolbox.ts gateia essas categorias só por
- * `isCategoryAllowed` (Funções='intermediario', Classes='avancado'), sem filtrar
+ * `isCategoryAllowed` (Funções='intermediario-2d', Classes='avancado-2d'), sem filtrar
  * bloco a bloco — então aqui também gateamos por categoria inteira.
  */
 export function blockedDynamicSearchTypes(profile: LearningProfile): Set<string> {
   const blocked = new Set<string>()
-  if (!isCategoryAllowed('Funções', 'intermediario', profile)) {
+  if (!isCategoryAllowed('Funções', 'intermediario-2d', profile)) {
     for (const type of functionCategoryBlockTypes()) blocked.add(type)
   }
-  if (!isCategoryAllowed('Classes', 'avancado', profile)) {
+  if (!isCategoryAllowed('Classes', 'avancado-2d', profile)) {
     for (const type of classCategoryBlockTypes()) blocked.add(type)
   }
   return blocked

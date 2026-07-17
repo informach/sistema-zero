@@ -162,7 +162,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'intermediario',
     tooltip:
       'Use dentro de um "quando ... fazer": cancela a ação padrão do navegador (ex.: enviar formulário) ou para a propagação do evento.',
   },
@@ -389,7 +388,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    level: 'intermediario',
     tooltip:
       'Pega todos os elementos que casam com o seletor. Use "para cada item ... na lista" para percorrê-los.',
   },

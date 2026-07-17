@@ -1,5 +1,5 @@
 import type { CSSProperties, Ref } from 'react'
-import type { BlockLevel, IDEMode, Locale, Project } from '#core'
+import type { AnyBlockLevel, IDEMode, Locale, Project } from '#core'
 import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { ActivityRunResult, LessonActivity } from './activity'
@@ -147,10 +147,12 @@ export interface StudioCommonProps {
  */
 export interface StudioLearningProps {
   /**
-   * Nível de aprendizado: cura a paleta de blocos por dificuldade. Default:
-   * 'avancado' (mostra tudo). Estático por instância.
+   * Degrau de aprendizado: cura a paleta de blocos por dificuldade × eixo 2D/3D
+   * (escada de 6). Default: 'avancado-3d' (mostra tudo). Aceita também a escala
+   * LEGADA de 3 níveis (aulas salvas antes da reforma) — `resolveLearning`
+   * normaliza na fronteira. Estático por instância.
    */
-  level?: BlockLevel
+  level?: AnyBlockLevel
   /** Tipos de bloco sempre visíveis, independente do nível (allowlist da aula). */
   allowBlocks?: readonly string[]
   /** Nomes de categoria sempre visíveis, independente do nível. */
@@ -177,8 +179,8 @@ export type StudioCoreProps = StudioCommonProps &
 
 /**
  * Props do <StudioEditor> — editor completo independente (sem conceito de
- * AULA/atividade; a curadoria de aprendizado é opcional — default 'avancado',
- * paleta cheia, zero regressão p/ hosts existentes).
+ * AULA/atividade; a curadoria de aprendizado é opcional — default 'avancado-3d'
+ * [topo da escada], paleta cheia, zero regressão p/ hosts existentes).
  */
 export type StudioEditorProps = StudioCommonProps & StudioLearningProps
 

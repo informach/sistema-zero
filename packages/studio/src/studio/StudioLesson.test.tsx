@@ -99,11 +99,12 @@ describe('StudioLesson', () => {
     expect(getByTestId('config-probe').getAttribute('data-terminal')).toBe('false')
   })
 
-  it('as props de aprendizado fluem para config.learning', async () => {
+  it('as props de aprendizado fluem para config.learning (legado NORMALIZADO na fronteira)', async () => {
     const { getByTestId } = render(
       <StudioLesson
         initialProject={createEmptyProject('lesson-3', 'Aula 3')}
         persistence="none"
+        // Literal LEGADO de propósito: aulas salvas pré-reforma passam por aqui.
         level="iniciante"
         allowLevelReveal={false}
       />,
@@ -112,7 +113,7 @@ describe('StudioLesson', () => {
     await waitFor(() => {
       expect(getByTestId('config-probe').getAttribute('data-project')).toBe('lesson-3')
     })
-    expect(getByTestId('config-probe').getAttribute('data-level')).toBe('iniciante')
+    expect(getByTestId('config-probe').getAttribute('data-level')).toBe('iniciante-2d')
     expect(getByTestId('config-probe').getAttribute('data-reveal')).toBe('false')
   })
 

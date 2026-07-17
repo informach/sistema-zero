@@ -11,9 +11,9 @@ validateManifest(gameTwoDManifest)
 
 export const gameTwoDExtension: ExtensionDefinition = {
   manifest: gameTwoDManifest,
-  // Os Kits de Jogo são FACILITADORES p/ quem começa → 2D já no INICIANTE (3D no
-  // intermediário; o "na unha"/manual é que fica avançado). Divulgação progressiva.
-  minLevel: 'iniciante',
+  // Os Kits de Jogo são FACILITADORES p/ quem começa → 2D já no INICIANTE 2D (o
+  // 3D entra no iniciante-3d; o "na unha"/manual fica avançado). Divulgação progressiva.
+  minLevel: 'iniciante-2d',
   blockly: {
     blocks: gameTwoDBlocks,
     toolboxCategory: gameTwoDToolboxCategory,

@@ -116,8 +116,21 @@ export interface EbookBlock {
  */
 export const MAX_STUDIO_PROJECT_CHARS = 1_500_000
 
-/** Nível de aprendizado fixado pelo professor (espelha o BlockLevel do @sistemazero/studio). */
-export type StudioLevel = 'iniciante' | 'intermediario' | 'avancado'
+/**
+ * Nível de aprendizado fixado pelo professor (espelha o BlockLevel do
+ * @sistemazero/studio — escada de 6 degraus 2D/3D). Os 3 valores legados
+ * seguem tolerados: vivem em jsonb de aulas antigas e o studio os normaliza.
+ */
+export type StudioLevel =
+  | 'iniciante-2d'
+  | 'iniciante-3d'
+  | 'intermediario-2d'
+  | 'intermediario-3d'
+  | 'avancado-2d'
+  | 'avancado-3d'
+  | 'iniciante'
+  | 'intermediario'
+  | 'avancado'
 
 /** Modos do editor expostos ao aluno (espelha o IDEMode do @sistemazero/studio). */
 export type StudioMode = 'blocks' | 'bridge' | 'code'

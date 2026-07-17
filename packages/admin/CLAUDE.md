@@ -577,11 +577,18 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   sequencial estilo Duolingo): checkbox "Trava sequencial das aulas" no dialog, **sempre enviado**
   (members PRESERVA quando ausente; default `true` no curso novo); `CourseView.sequentialLock`
   devolvido. Ligada, o aluno só abre a próxima aula após concluir a anterior (gate no members → 423).
-  Body de curso também aceita **`level`** (`iniciante`|`intermediario`|`avancado`, 06/2026 —
-  dificuldade): select "Nível do curso" no dialog, **sempre enviado** (members PRESERVA quando ausente;
-  default `iniciante`); `CourseView.level` devolvido. Alimenta o NÍVEL DO ALUNO no community-kids
-  (concluir + publicar no Mural cursos de cada dificuldade → rank Noob→God). `COURSE_LEVELS`/
-  `LEVEL_LABELS` em `lib/types.ts`.
+  Body de curso também aceita **`level`** (`iniciante`|`intermediario`|`avancado`) **+ `track`**
+  (`2d`|`3d`, reforma 2D/3D 07/2026 — o PAR é o DEGRAU pedagógico): o select "Nível do curso" no
+  dialog virou UM select de **6 opções** ("Iniciante 2D"…"Avançado 3D", value composto
+  `level:track` que escreve os DOIS campos), **sempre enviados** (members PRESERVA quando ausentes;
+  defaults `iniciante`/`2d`); `CourseView.level`/`track` devolvidos. Alimenta a CARREIRA DE 8 do
+  aluno no community-kids (concluir + publicar no Mural cursos de cada degrau, na ordem da escada →
+  Faísca→…→Lenda; `STUDENT_RANK_LABELS` do member-detail tem os 8, incl. Explorador(a) de
+  Mundos/Arquiteto(a) de Mundos/Gênio da Criação). `COURSE_TIER_OPTIONS`/`courseTierLabel` em
+  `lib/types.ts` (duplicação intencional do member-shell — manter em lockstep). O select "Nível" do
+  bloco Estúdio no editor de aula usa `BLOCK_LEVEL_OPTIONS` do `@sistemazero/studio` (6 degraus de
+  BLOCOS; aula legada normaliza no load via `normalizeBlockLevel`, e o clipboard de config normaliza
+  no paste — localStorage guarda legado p/ sempre).
   **Convite multi-plataforma**: `POST /auth/admin/users` aceita
   `platform: 'main'|'kids'` (select "Plataforma do convite" no dialog — decide a base do link do
   e-mail `welcome`); impersonação aceita `?platform=kids` (`impersonateUser(id, platform?)` em

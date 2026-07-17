@@ -23,9 +23,11 @@ const GLTF_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/GLTFLoader.js?externa
 export const worldThreeDExtension: ExtensionDefinition = {
   manifest: world3DManifest,
   // Decisão de produto: diferente do Jogo 3D Avançado (base de engine, tudo
-  // 'avancado'), o Mundo 3D é a extensão dos blocos "mágicos" de alto nível —
-  // 1 bloco = 1 resultado. Piso por prefixo sz_w3d_ em blockLevels.ts.
-  minLevel: 'intermediario',
+  // 'avancado-3d'), o Mundo 3D é a extensão dos blocos "mágicos" de alto nível —
+  // 1 bloco = 1 resultado, um degrau acima da entrada do 3D (decisão da usuária
+  // 17/07: Jogo 3D=iniciante-3d, Mundo 3D=intermediario-3d). Piso por prefixo
+  // sz_w3d_ em blockLevels.ts.
+  minLevel: 'intermediario-3d',
   blockly: {
     blocks: world3DBlocks,
     toolboxCategory: world3DToolboxCategory,

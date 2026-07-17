@@ -53,20 +53,22 @@ describe('ExtensionsPanel — exemplos gated por showExamples', () => {
 })
 
 describe('ExtensionsPanel — extensões para instalar gated por nível', () => {
-  const ext2d = OFFICIAL_CATALOG.find((e) => e.minLevel === 'iniciante')
-  const ext3d = OFFICIAL_CATALOG.find((e) => e.minLevel === 'intermediario')
+  const ext2d = OFFICIAL_CATALOG.find((e) => e.minLevel === 'iniciante-2d')
+  const ext3d = OFFICIAL_CATALOG.find((e) => e.minLevel === 'iniciante-3d')
   if (!ext2d || !ext3d)
-    throw new Error('fixture: esperava extensão iniciante (2D) e intermediário (3D)')
+    throw new Error('fixture: esperava extensão iniciante-2d (2D) e iniciante-3d (3D)')
 
   afterEach(() => {
     cleanup()
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
   })
 
-  it('iniciante NÃO vê o Jogo 3D p/ instalar (só o Jogo 2D)', () => {
+  it('iniciante (literal LEGADO) NÃO vê o Jogo 3D p/ instalar (só o Jogo 2D)', () => {
     seedProject()
     const config = {
       ...STANDALONE_CONFIG,
+      // Literal LEGADO de propósito: prova que a fronteira `resolveLearning`
+      // normaliza props públicas antigas (iniciante → iniciante-2d).
       learning: resolveLearning({ level: 'iniciante', allowLevelReveal: false }),
     }
     render(
@@ -78,7 +80,25 @@ describe('ExtensionsPanel — extensões para instalar gated por nível', () => 
     expect(screen.queryByText(ext3d.manifest.name)).toBeNull()
   })
 
-  it('avançado vê as duas (2D e 3D)', () => {
+  it('iniciante-3d (porta do 3D) vê o Jogo 3D, mas não o Mundo 3D (intermediario-3d)', () => {
+    seedProject()
+    const w3d = OFFICIAL_CATALOG.find((e) => e.manifest.id === 'world-3d')
+    if (!w3d) throw new Error('fixture: esperava o world-3d no catálogo')
+    const config = {
+      ...STANDALONE_CONFIG,
+      learning: resolveLearning({ level: 'iniciante-3d', allowLevelReveal: false }),
+    }
+    render(
+      <StudioConfigProvider value={config}>
+        <ExtensionsPanel open onClose={() => {}} />
+      </StudioConfigProvider>,
+    )
+    expect(screen.getByText(ext2d.manifest.name)).not.toBeNull()
+    expect(screen.getByText(ext3d.manifest.name)).not.toBeNull()
+    expect(screen.queryByText(w3d.manifest.name)).toBeNull()
+  })
+
+  it('avançado (literal LEGADO → topo da escada) vê as duas (2D e 3D)', () => {
     seedProject()
     const config = {
       ...STANDALONE_CONFIG,
