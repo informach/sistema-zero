@@ -699,6 +699,41 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3k:pointerOver', charVar: f(block, 'CHAR') }
     case 'sz_g3k_ground_point':
       return { type: 'g3k:groundPoint', axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z' }
+    // ---- Mundo 3D (world-3d) — valores ----
+    case 'sz_w3d_world_size':
+      return { type: 'w3d:worldSize' }
+    case 'sz_w3d_ground_height':
+      return {
+        type: 'w3d:groundHeight',
+        x: exprInput(block, 'X', { type: 'num', value: 0 }),
+        z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+      }
+    case 'sz_w3d_car_pos':
+      return { type: 'w3d:carPos', axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z' }
+    case 'sz_w3d_car_speed':
+      return { type: 'w3d:carSpeed' }
+    case 'sz_w3d_person_pos':
+      return { type: 'w3d:personPos', axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z' }
+    case 'sz_w3d_is_driving':
+      return { type: 'w3d:isDriving' }
+    case 'sz_w3d_coin_count':
+      return { type: 'w3d:coinCount' }
+    case 'sz_w3d_has_achievement':
+      return { type: 'w3d:hasAchievement', name: f(block, 'NAME') || 'conquista' }
+    case 'sz_w3d_key_down':
+      return { type: 'w3d:keyDown', key: f(block, 'KEY') || 'e' }
+    case 'sz_w3d_key_pressed':
+      return { type: 'w3d:keyPressed', key: f(block, 'KEY') || 'e' }
+    case 'sz_w3d_time_of_day':
+      return { type: 'w3d:timeOfDay' }
+    case 'sz_w3d_race_time':
+      return { type: 'w3d:raceTime' }
+    case 'sz_w3d_race_best':
+      return { type: 'w3d:raceBest' }
+    case 'sz_w3d_pins_down':
+      return { type: 'w3d:pinsDown' }
+    case 'sz_w3d_knocked_count':
+      return { type: 'w3d:knockedCount' }
     case 'sz_g3k_entity_value':
       return { type: 'g3k:entityValue', key: f(block, 'KEY'), charVar: f(block, 'CHAR') }
     case 'sz_g3k_state_time':
@@ -941,13 +976,18 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         className: f(block, 'CLASS'),
         args: getArgs(block),
       }
-    case 'sz_t3d_new':
+    case 'sz_t3d_new': {
+      // CLASS = referência completa: `THREE.Vector3` (namespace THREE) ou `GLTFLoader`
+      // (bare, sem namespace). Quebra no 1º ponto.
+      const ref = f(block, 'CLASS')
+      const dot = ref.indexOf('.')
       return {
         type: 'newExpr',
-        namespace: f(block, 'NS') || 'THREE',
-        className: f(block, 'CLASS'),
+        ...(dot > 0 ? { namespace: ref.slice(0, dot) } : {}),
+        className: dot > 0 ? ref.slice(dot + 1) : ref,
         args: getArgs(block),
       }
+    }
     case 'sz_val_object_op':
       return {
         type: 'objectOp',
@@ -3040,17 +3080,22 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           module: f(block, 'MODULE'),
         },
       }
-    case 'sz_t3d_new_var':
+    case 'sz_t3d_new_var': {
+      // CLASS = referência completa: `THREE.Scene` (namespace THREE) ou `GLTFLoader`
+      // (bare, addon sem namespace). Quebra no 1º ponto.
+      const ref = f(block, 'CLASS')
+      const dot = ref.indexOf('.')
       return {
         kind: 'js',
         value: {
           type: 'newInstance',
           varName: f(block, 'VARNAME'),
-          namespace: f(block, 'NS') || 'THREE',
-          className: f(block, 'CLASS'),
+          ...(dot > 0 ? { namespace: ref.slice(0, dot) } : {}),
+          className: dot > 0 ? ref.slice(dot + 1) : ref,
           args: getArgs(block),
         },
       }
+    }
     // ───── Canvas 3D: FACILITADORES → IR genérica (memberCall/memberSet/newExpr).
     // Cada um gera o MESMO código que o bloco manual; o reverso (bloco amigável)
     // vive no workspaceState.ts. Sem schema/parser novos.
@@ -3175,6 +3220,77 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           },
         },
       }
+    case 'sz_t3d_set_fog':
+      // `cena.fog = new THREE.Fog(cor, perto, longe)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: { type: 'var', name: f(block, 'SCENE') },
+          name: 'fog',
+          value: {
+            type: 'newExpr',
+            className: 'Fog',
+            namespace: 'THREE',
+            args: [
+              exprInput(block, 'COLOR', { type: 'color', value: '#aabbcc' }),
+              exprInput(block, 'NEAR', { type: 'num', value: 10 }),
+              exprInput(block, 'FAR', { type: 'num', value: 100 }),
+            ],
+          },
+        },
+      }
+    case 'sz_t3d_lerp_position':
+      // `obj.position.lerp(alvo, velocidade)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: {
+            type: 'memberGet',
+            object: { type: 'var', name: f(block, 'OBJ') },
+            name: 'position',
+          },
+          method: 'lerp',
+          args: [
+            exprInput(block, 'TARGET', { type: 'var', name: 'alvo' }),
+            exprInput(block, 'ALPHA', { type: 'num', value: 0.1 }),
+          ],
+        },
+      }
+    case 'sz_t3d_set_matrix_at':
+      // `copias.setMatrixAt(i, molde.matrix)`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'MESH') },
+          method: 'setMatrixAt',
+          args: [
+            exprInput(block, 'I', { type: 'num', value: 0 }),
+            {
+              type: 'memberGet',
+              object: { type: 'var', name: f(block, 'DUMMY') },
+              name: 'matrix',
+            },
+          ],
+        },
+      }
+    case 'sz_t3d_instances_dirty':
+      // `copias.instanceMatrix.needsUpdate = true`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: {
+            type: 'memberGet',
+            object: { type: 'var', name: f(block, 'MESH') },
+            name: 'instanceMatrix',
+          },
+          name: 'needsUpdate',
+          value: { type: 'bool', value: true },
+        },
+      }
     case 'sz_t3d_set_shadow':
       // `obj.castShadow = bool` / `obj.receiveShadow = bool`
       return {
@@ -3245,15 +3361,144 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       // (document.body é denylistado no parser genérico).
       return { kind: 'js', value: { type: 'mountRenderer', renderer: f(block, 'R') } }
     case 'sz_t3d_load_model':
-      // `carregador.load(url, (modelo) => { … })` — carregamento async (GLTF/HDR/…).
+      // `carregador.load('nome', (modelo) => { … })` — carregamento async (GLTF/HDR).
+      // URL é o NOME do asset 3D (campo seletor), vira string literal.
       return {
         kind: 'js',
         value: {
           type: 'loaderLoad',
           loaderVar: f(block, 'LOADER'),
-          url: exprInput(block, 'URL', { type: 'str', value: 'modelo.glb' }),
+          url: { type: 'str', value: f(block, 'URL') },
           param: f(block, 'PARAM') || 'modelo',
           body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_t3d_load_sound':
+      // Irmão do load_model p/ ÁUDIO (AudioLoader): MESMO nó IR `loaderLoad` —
+      // só o rótulo/asset picker mudam; o reverso discrimina pelo tipo do loader.
+      return {
+        kind: 'js',
+        value: {
+          type: 'loaderLoad',
+          loaderVar: f(block, 'LOADER'),
+          url: { type: 'str', value: f(block, 'URL') },
+          param: f(block, 'PARAM') || 'buffer',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_t3d_traverse':
+      // `objeto.traverse((parte) => { … })` — percorrer cada parte de um objeto/modelo.
+      return {
+        kind: 'js',
+        value: {
+          type: 'traverseEach',
+          object: exprInput(block, 'OBJ', { type: 'var', name: 'objeto' }),
+          param: f(block, 'PARAM') || 'parte',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_t3d_renderer_config': {
+      // Modernização do renderizador (forward-only) — os dropdowns viram a grafia atual.
+      const oneOf = <T extends string>(v: string, allowed: readonly T[], fallback: T): T =>
+        (allowed as readonly string[]).includes(v) ? (v as T) : fallback
+      return {
+        kind: 'js',
+        value: {
+          type: 'rendererConfig',
+          renderer: f(block, 'R'),
+          pixels: oneOf(f(block, 'PIXELS'), ['device', 'off'] as const, 'off'),
+          shadows: oneOf(f(block, 'SHADOWS'), ['soft', 'hard', 'off'] as const, 'off'),
+          colorSpace: oneOf(f(block, 'COLORSPACE'), ['srgb', 'off'] as const, 'off'),
+          toneMapping: oneOf(f(block, 'TONE'), ['aces', 'off'] as const, 'off'),
+        },
+      }
+    }
+    case 'sz_t3d_bloom_setup':
+      // Macro do Brilho (bloom): 1 bloco → esteira EffectComposer/RenderPass/
+      // UnrealBloomPass/OutputPass (o gerador expande + traz os imports).
+      return {
+        kind: 'js',
+        value: {
+          type: 'bloomSetup',
+          composer: f(block, 'COMPOSER') || 'composer',
+          renderer: f(block, 'R'),
+          scene: f(block, 'SCENE'),
+          camera: f(block, 'CAMERA'),
+          strength: exprInput(block, 'STRENGTH', { type: 'num', value: 1.5 }),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 0.4 }),
+          threshold: exprInput(block, 'THRESHOLD', { type: 'num', value: 0.85 }),
+        },
+      }
+    case 'sz_t3d_render_effects':
+      // `composer.render()` — desenhar passando pela esteira de efeitos. Facilitador
+      // → memberCall genérico (reconhecido de volta no workspaceState).
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'COMPOSER') },
+          method: 'render',
+          args: [],
+        },
+      }
+    case 'sz_t3d_particles':
+      // Macro Partículas: 1 bloco → sistema de Points (o gerador expande a receita).
+      return {
+        kind: 'js',
+        value: {
+          type: 'particlesSetup',
+          particles: f(block, 'PARTICLES') || 'particulas',
+          scene: f(block, 'SCENE'),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 500 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 0.1 }),
+          spread: exprInput(block, 'SPREAD', { type: 'num', value: 20 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#ffffff' }),
+        },
+      }
+    case 'sz_t3d_water':
+      // Macro Água: 1 bloco → plano Water + normal map procedural (gerador expande).
+      return {
+        kind: 'js',
+        value: {
+          type: 'waterSetup',
+          water: f(block, 'WATER') || 'agua',
+          scene: f(block, 'SCENE'),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 2000 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#0a3d5c' }),
+        },
+      }
+    case 'sz_t3d_water_wave':
+      // `agua.material.uniforms.time.value += 1 / 60` — animar as ondas no laço.
+      return { kind: 'js', value: { type: 'waterTime', water: f(block, 'WATER') } }
+    case 'sz_t3d_grass':
+      // Macro Grama: 1 bloco → campo instanciado + shader de vento (gerador expande).
+      return {
+        kind: 'js',
+        value: {
+          type: 'grassSetup',
+          grass: f(block, 'GRASS') || 'grama',
+          scene: f(block, 'SCENE'),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 5000 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 1 }),
+          spread: exprInput(block, 'SPREAD', { type: 'num', value: 50 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#4a7c2a' }),
+        },
+      }
+    case 'sz_t3d_grass_wave':
+      // `grama.material.uniforms.time.value += 0.02` — animar o vento no laço.
+      return { kind: 'js', value: { type: 'grassTime', grass: f(block, 'GRASS') } }
+    case 'sz_t3d_sign':
+      // Macro Letreiro 3D: 1 bloco → canvas oculto + CanvasTexture + plano
+      // transparente (gerador expande; TEXT é campo — letreiro é estático).
+      return {
+        kind: 'js',
+        value: {
+          type: 'signSetup',
+          sign: f(block, 'SIGN') || 'placa',
+          scene: f(block, 'SCENE'),
+          text: f(block, 'TEXT') || 'Oi!',
+          size: exprInput(block, 'SIZE', { type: 'num', value: 4 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#ffffff' }),
         },
       }
     case 'sz_js_call_method':
@@ -8388,6 +8633,790 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g3k:playTone',
           freq: exprInput(block, 'FREQ', { type: 'num', value: 440 }),
           ms: exprInput(block, 'MS', { type: 'num', value: 200 }),
+        },
+      }
+
+    // ---- Mundo 3D (world-3d): mundo aberto dirigível ----
+    case 'sz_w3d_setup':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:setup',
+          style: f(block, 'STYLE') || 'floresta',
+          world: exprInput(block, 'WORLD', { type: 'num', value: 160 }),
+        },
+      }
+    case 'sz_w3d_terrain':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:terrain',
+          h: exprInput(block, 'H', { type: 'num', value: 4 }),
+          s: exprInput(block, 'S', { type: 'num', value: 5 }),
+        },
+      }
+    case 'sz_w3d_flatten':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:flatten',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          r: exprInput(block, 'R', { type: 'num', value: 15 }),
+        },
+      }
+    case 'sz_w3d_path':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:path',
+          x1: exprInput(block, 'X1', { type: 'num', value: 0 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 0 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 0 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 30 }),
+          w: exprInput(block, 'W', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_w3d_water':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:water',
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          color: f(block, 'COLOR') || '#2b6cb0',
+        },
+      }
+    case 'sz_w3d_start':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:start' } }
+    case 'sz_w3d_car':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:car',
+          style: f(block, 'STYLE') || 'passeio',
+          color: f(block, 'COLOR') || '#ef4444',
+        },
+      }
+    case 'sz_w3d_car_stats':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:carStats',
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 24 }),
+          turn: exprInput(block, 'TURN', { type: 'num', value: 110 }),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 7 }),
+        },
+      }
+    case 'sz_w3d_car_place':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:carPlace',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_car_boost':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:carBoost',
+          force: exprInput(block, 'FORCE', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_engine_sound':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:engineSound', on: (f(block, 'ON') || 'ligado') !== 'desligado' },
+      }
+    case 'sz_w3d_load_sound':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:loadSound', name: f(block, 'NAME'), asset: f(block, 'ASSET') },
+      }
+    case 'sz_w3d_play_sound':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:playSound', name: f(block, 'NAME') } }
+    case 'sz_w3d_play_music':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:playMusic', name: f(block, 'NAME') } }
+    case 'sz_w3d_stop_music':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:stopMusic' } }
+    case 'sz_w3d_hud':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:hud',
+          text: exprInput(block, 'TEXT', { type: 'str', value: 'Pontos: 0' }),
+          corner: f(block, 'CORNER') || 'topo-esquerda',
+        },
+      }
+    case 'sz_w3d_say':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:say',
+          text: exprInput(block, 'TEXT', { type: 'str', value: 'Oi!' }),
+          secs: exprInput(block, 'SECS', { type: 'num', value: 2 }),
+        },
+      }
+    case 'sz_w3d_point':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:point',
+          name: f(block, 'NAME'),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_on_point':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onPoint',
+          name: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_zone':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:zone',
+          name: f(block, 'NAME'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 30 }),
+          r: exprInput(block, 'R', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_w3d_on_zone':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onZone',
+          name: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_totem_text':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:totemText',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 8 }),
+          title: f(block, 'TITLE'),
+          body: f(block, 'BODY'),
+        },
+      }
+    case 'sz_w3d_totem_image':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:totemImage',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 8 }),
+          image: f(block, 'IMAGE'),
+          w: exprInput(block, 'W', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_w3d_gallery_create':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:galleryCreate',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: -30 }),
+          title: f(block, 'TITLE'),
+        },
+      }
+    case 'sz_w3d_gallery_add':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:galleryAdd',
+          image: f(block, 'IMAGE'),
+          caption: f(block, 'CAPTION'),
+        },
+      }
+    case 'sz_w3d_race_create':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:raceCreate',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+          laps: exprInput(block, 'LAPS', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_race_checkpoint':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:raceCheckpoint',
+          x: exprInput(block, 'X', { type: 'num', value: 20 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_race_on_start':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:raceOnStart', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_race_on_checkpoint':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:raceOnCheckpoint', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_race_on_finish':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:raceOnFinish', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_bowling_create':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:bowlingCreate',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 25 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_bowling_reset':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:bowlingReset' } }
+    case 'sz_w3d_bowling_on_strike':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:bowlingOnStrike', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_stack':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:stack',
+          n: exprInput(block, 'N', { type: 'num', value: 5 }),
+          thing: f(block, 'THING') || 'caixas',
+          x: exprInput(block, 'X', { type: 'num', value: 15 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_camera_mode':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:cameraMode', mode: f(block, 'MODE') || 'seguir' } }
+    case 'sz_w3d_camera_shake':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:cameraShake',
+          force: exprInput(block, 'FORCE', { type: 'num', value: 0.5 }),
+          secs: exprInput(block, 'SECS', { type: 'num', value: 0.3 }),
+        },
+      }
+    case 'sz_w3d_grass':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:grass', amount: f(block, 'AMOUNT') || 'media' },
+      }
+    case 'sz_w3d_scatter':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:scatter',
+          n: exprInput(block, 'N', { type: 'num', value: 300 }),
+          thing: f(block, 'THING') || 'arvores',
+        },
+      }
+    case 'sz_w3d_scatter_model':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:scatterModel',
+          n: exprInput(block, 'N', { type: 'num', value: 30 }),
+          model: f(block, 'MODEL'),
+          s: exprInput(block, 'S', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_place_thing':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:placeThing',
+          thing: f(block, 'THING') || 'arvores',
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+          s: exprInput(block, 'S', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_place_model':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:placeModel',
+          model: f(block, 'MODEL'),
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+          s: exprInput(block, 'S', { type: 'num', value: 1 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_clear_area':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:clearArea',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          r: exprInput(block, 'R', { type: 'num', value: 15 }),
+        },
+      }
+    case 'sz_w3d_on_crash':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:onCrash', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_horn':
+      return { kind: 'js', value: { type: 'w3d:horn' } }
+    case 'sz_w3d_on_horn':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:onHorn', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_car_lights':
+      return { kind: 'js', value: { type: 'w3d:carLights' } }
+    case 'sz_w3d_tire_marks':
+      return { kind: 'js', value: { type: 'w3d:tireMarks', on: f(block, 'ON') !== 'desligadas' } }
+    case 'sz_w3d_achievement':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:achievement', name: f(block, 'NAME') || 'conquista' },
+      }
+    case 'sz_w3d_on_achievement':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onAchievement',
+          name: f(block, 'NAME') || 'conquista',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_minimap':
+      return { kind: 'js', value: { type: 'w3d:minimap', mode: f(block, 'MODE') || 'ver' } }
+    case 'sz_w3d_race_podium':
+      return { kind: 'js', value: { type: 'w3d:racePodium' } }
+    case 'sz_w3d_whisper_corner':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:whisperCorner',
+          x: exprInput(block, 'X', { type: 'num', value: -10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_flame_note':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:flameNote',
+          x: exprInput(block, 'X', { type: 'num', value: 5 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 12 }),
+          text: f(block, 'TEXT') || '...',
+        },
+      }
+    case 'sz_w3d_coins_scatter':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:coinsScatter', n: exprInput(block, 'N', { type: 'num', value: 20 }) },
+      }
+    case 'sz_w3d_coins_ring':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:coinsRing',
+          n: exprInput(block, 'N', { type: 'num', value: 8 }),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+          r: exprInput(block, 'R', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_w3d_coins_line':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:coinsLine',
+          n: exprInput(block, 'N', { type: 'num', value: 10 }),
+          x1: exprInput(block, 'X1', { type: 'num', value: 0 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 10 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 0 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 40 }),
+        },
+      }
+    case 'sz_w3d_on_collect':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:onCollect', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_quest':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:quest',
+          name: f(block, 'NAME') || 'missao',
+          desc: f(block, 'DESC') || 'Complete a missão',
+        },
+      }
+    case 'sz_w3d_quest_done':
+      return { kind: 'js', value: { type: 'w3d:questDone', name: f(block, 'NAME') || 'missao' } }
+    case 'sz_w3d_on_quest_done':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onQuestDone',
+          name: f(block, 'NAME') || 'missao',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_marker':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:marker',
+          icon: f(block, 'ICON') || 'estrela',
+          x: exprInput(block, 'X', { type: 'num', value: 20 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_w3d_guide_arrow':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:guideArrow',
+          x: exprInput(block, 'X', { type: 'num', value: 20 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+          on: f(block, 'ON') !== 'desligada',
+        },
+      }
+    case 'sz_w3d_npc':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npc',
+          name: f(block, 'NAME') || 'amigo',
+          x: exprInput(block, 'X', { type: 'num', value: 8 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 8 }),
+          color: f(block, 'COLOR') || '#f97316',
+          hat: f(block, 'HAT') || 'nenhum',
+        },
+      }
+    case 'sz_w3d_npc_wander':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcWander',
+          name: f(block, 'NAME') || 'amigo',
+          r: exprInput(block, 'R', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_npc_talk':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcTalk',
+          name: f(block, 'NAME') || 'amigo',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_npc_say':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcSay',
+          name: f(block, 'NAME') || 'amigo',
+          text: f(block, 'TEXT') || '...',
+        },
+      }
+    case 'sz_w3d_npc_emote':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcEmote',
+          name: f(block, 'NAME') || 'amigo',
+          emote: f(block, 'EMOTE') || 'acenar',
+        },
+      }
+    case 'sz_w3d_islands':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:islands',
+          n: exprInput(block, 'N', { type: 'num', value: 4 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_boat':
+      return { kind: 'js', value: { type: 'w3d:boat', color: f(block, 'COLOR') || '#f8fafc' } }
+    case 'sz_w3d_bridge':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:bridge',
+          x1: exprInput(block, 'X1', { type: 'num', value: 0 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 20 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 0 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 50 }),
+          w: exprInput(block, 'W', { type: 'num', value: 4 }),
+        },
+      }
+    case 'sz_w3d_lighthouse':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:lighthouse',
+          x: exprInput(block, 'X', { type: 'num', value: 50 }),
+          z: exprInput(block, 'Z', { type: 'num', value: -40 }),
+        },
+      }
+    case 'sz_w3d_ambience':
+      return { kind: 'js', value: { type: 'w3d:ambience', kind: f(block, 'KIND') || 'desligado' } }
+    case 'sz_w3d_person':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:person',
+          color: f(block, 'COLOR') || '#3b82f6',
+          hat: f(block, 'HAT') || 'nenhum',
+        },
+      }
+    case 'sz_w3d_person_stats':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:personStats',
+          walk: exprInput(block, 'WALK', { type: 'num', value: 4 }),
+          run: exprInput(block, 'RUN', { type: 'num', value: 8 }),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 7 }),
+        },
+      }
+    case 'sz_w3d_person_place':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:personPlace',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_person_accessory':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:personAccessory', acc: f(block, 'ACC') || 'nenhum' },
+      }
+    case 'sz_w3d_person_emote':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:personEmote', emote: f(block, 'EMOTE') || 'acenar' },
+      }
+    case 'sz_w3d_on_vehicle':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onVehicle',
+          when: f(block, 'WHEN') || 'entrar',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_waterfall':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:waterfall',
+          x: exprInput(block, 'X', { type: 'num', value: 40 }),
+          z: exprInput(block, 'Z', { type: 'num', value: -30 }),
+          h: exprInput(block, 'H', { type: 'num', value: 8 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_lamp':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:lamp',
+          x: exprInput(block, 'X', { type: 'num', value: 6 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_w3d_fireflies':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:fireflies', amount: f(block, 'AMOUNT') || 'media' },
+      }
+    case 'sz_w3d_campfire':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:campfire',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_w3d_push_place':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:pushPlace',
+          thing: f(block, 'THING') || 'tijolo',
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_push_scatter':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:pushScatter',
+          n: exprInput(block, 'N', { type: 'num', value: 12 }),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+          r: exprInput(block, 'R', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_letters':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:letters',
+          word: f(block, 'WORD') || 'OI',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 12 }),
+          s: exprInput(block, 'S', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_explosive':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:explosive',
+          x: exprInput(block, 'X', { type: 'num', value: 15 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 15 }),
+        },
+      }
+    case 'sz_w3d_on_explosion':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:onExplosion', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_confetti':
+      return { kind: 'js', value: { type: 'w3d:confetti' } }
+    case 'sz_w3d_fireworks':
+      return { kind: 'js', value: { type: 'w3d:fireworks' } }
+    case 'sz_w3d_tornado':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:tornado', secs: exprInput(block, 'SECS', { type: 'num', value: 15 }) },
+      }
+    case 'sz_w3d_season':
+      return { kind: 'js', value: { type: 'w3d:season', season: f(block, 'SEASON') || 'verao' } }
+    case 'sz_w3d_clouds':
+      return { kind: 'js', value: { type: 'w3d:clouds', amount: f(block, 'AMOUNT') || 'nenhuma' } }
+    case 'sz_w3d_car_paint':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:carPaint', paint: f(block, 'PAINT') || 'lisa' },
+      }
+    case 'sz_w3d_effects':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:effects',
+          on: (f(block, 'ON') || 'ligados') !== 'desligados',
+          strength: exprInput(block, 'STRENGTH', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_daynight':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:dayNight',
+          minutes: exprInput(block, 'MIN', { type: 'num', value: 4 }),
+        },
+      }
+    case 'sz_w3d_set_time':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:setTime', time: f(block, 'TIME') || 'meiodia' } }
+    case 'sz_w3d_weather':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:weather', kind: f(block, 'W') || 'limpo' } }
+    case 'sz_w3d_wind':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: { type: 'w3d:wind', force: exprInput(block, 'F', { type: 'num', value: 1 }) },
+      }
+    case 'sz_w3d_on_daynight':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onDayNight',
+          when: f(block, 'WHEN') || 'noite',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_on_update':
+      seen.add('world-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onUpdate',
+          dtName: f(block, 'DT') || 'dt',
+          body: getStatementChildren(block, 'BODY', seen),
         },
       }
 

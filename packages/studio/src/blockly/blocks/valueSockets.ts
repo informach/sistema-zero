@@ -71,8 +71,21 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_rotate_axis: { DELTA: 0.01 },
   sz_t3d_set_scale: { X: 1, Y: 1, Z: 1 },
   sz_t3d_look_at: { X: 0, Y: 0, Z: 0 },
+  sz_t3d_lerp_position: { ALPHA: 0.1 },
   sz_t3d_set_intensity: { N: 1 },
+  sz_t3d_set_fog: { NEAR: 10, FAR: 100 },
+  sz_t3d_set_matrix_at: { I: 0 },
   sz_t3d_renderer_size: { W: 800, H: 600 },
+  // Macro Brilho (bloom): força/espalhar/limiar do UnrealBloomPass (defaults do three).
+  sz_t3d_bloom_setup: { STRENGTH: 1.5, RADIUS: 0.4, THRESHOLD: 0.85 },
+  // Macro Partículas: quantidade de pontos, tamanho de cada e o quão longe espalham.
+  sz_t3d_particles: { COUNT: 500, SIZE: 0.1, SPREAD: 20 },
+  // Macro Água: o tamanho do plano d'água.
+  sz_t3d_water: { SIZE: 2000 },
+  // Macro Grama: nº de folhas, altura de cada e o tamanho do campo.
+  sz_t3d_grass: { COUNT: 5000, SIZE: 1, SPREAD: 50 },
+  // Macro Letreiro: a largura do plano do letreiro (a altura é metade).
+  sz_t3d_sign: { SIZE: 4 },
 }
 
 /**
@@ -90,6 +103,15 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   // Canvas 3D: cor de um material e cor de fundo da cena.
   sz_t3d_set_color: { COLOR: '#ff8844' },
   sz_t3d_set_background: { COLOR: '#101830' },
+  sz_t3d_set_fog: { COLOR: '#aabbcc' },
+  // Macro Partículas: cor dos pontinhos (branco = estrelas/poeira).
+  sz_t3d_particles: { COLOR: '#ffffff' },
+  // Macro Água: a cor da água (azul-esverdeado profundo).
+  sz_t3d_water: { COLOR: '#0a3d5c' },
+  // Macro Grama: o verde da grama.
+  sz_t3d_grass: { COLOR: '#4a7c2a' },
+  // Macro Letreiro: a cor das letras (branco = destaca em qualquer céu).
+  sz_t3d_sign: { COLOR: '#ffffff' },
 }
 
 /**
@@ -99,8 +121,6 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
  */
 export const TEXT_SOCKETS: Record<string, Record<string, string>> = {
   sz_canvas_fill_text: { TEXT: 'Olá' },
-  // Canvas 3D: o caminho do modelo a carregar (ex.: "modelo.glb").
-  sz_t3d_load_model: { URL: 'modelo.glb' },
 }
 
 interface CompareSeed {
@@ -147,6 +167,11 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
   // Canvas 3D "adicionar %1 em cena": o objeto a adicionar vem como uma variável
   // por padrão (substituível por "novo THREE.Mesh(…)" ou qualquer valor).
   sz_t3d_add_to: { OBJ: OBJ_VAR_SHADOW },
+  // Canvas 3D "mover devagar até %1": o alvo é um Vector3 numa variável "alvo"
+  // por padrão (substituível por "novo THREE.Vector3(…)" ou membro de outro obj).
+  sz_t3d_lerp_position: {
+    TARGET: { shadow: { type: 'sz_val_variable', fields: { NAME: 'alvo' } } },
+  },
   // Distância: os dois objetos vêm como variáveis "player" e "enemy" por padrão.
   sz_val_distance: {
     OBJ1: { shadow: { type: 'sz_val_variable', fields: { NAME: 'player' } } },

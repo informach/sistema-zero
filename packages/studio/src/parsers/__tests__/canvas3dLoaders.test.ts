@@ -83,6 +83,86 @@ describe('Canvas 3D Fase 2 — loaderLoad (carregamento async)', () => {
   })
 })
 
+describe('Canvas 3D — traverse (percorrer cada parte)', () => {
+  it('modelo.traverse((parte) => {…}) com var → traverseEach (0 raw, regen igual, bloco)', () => {
+    const src = ['modelo.traverse((parte) => {', '  parte.castShadow = true;', '});'].join('\n')
+    const ir = parseJS(src)
+    expect(JSON.stringify(ir)).not.toContain('"rawJS"')
+    expect(ir.some((s) => s.type === 'traverseEach')).toBe(true)
+    const code = generateJS({ statements: ir })
+    expect(generateJS({ statements: parseJS(code) })).toBe(code) // fixpoint
+    const { rebuiltCode, stateJson } = roundtripBlocks(code)
+    expect(stateJson).toContain('"sz_t3d_traverse"')
+    expect(rebuiltCode).toBe(code) // round-trip de blocos byte-idêntico
+    expect(rebuiltCode).toContain('modelo.traverse((parte) => {')
+  })
+
+  it('gltf.scene.traverse((peca) => {…}) com PROPRIEDADE no objeto → traverseEach', () => {
+    const src = ['gltf.scene.traverse((peca) => {', '  peca.receiveShadow = true;', '});'].join(
+      '\n',
+    )
+    const ir = parseJS(src)
+    expect(JSON.stringify(ir)).not.toContain('"rawJS"')
+    expect(ir.some((s) => s.type === 'traverseEach')).toBe(true)
+    const code = generateJS({ statements: ir })
+    const { rebuiltCode } = roundtripBlocks(code)
+    expect(rebuiltCode).toBe(code)
+    expect(rebuiltCode).toContain('gltf.scene.traverse((peca) => {')
+  })
+})
+
+describe('Canvas 3D — som na unha (load_sound discriminado por AudioLoader)', () => {
+  it('AudioLoader declarado → x.load(...) volta como o bloco de SOM (byte-idêntico)', () => {
+    const src = [
+      "import * as THREE from 'three';",
+      'const listener = new THREE.AudioListener();',
+      'const somMotor = new THREE.PositionalAudio(listener);',
+      'const carregadorSom = new THREE.AudioLoader();',
+      "carregadorSom.load('motor', (buffer) => {",
+      '  somMotor.setBuffer(buffer);',
+      '  somMotor.setLoop(true);',
+      '});',
+    ].join('\n')
+    const ir = parseJS(src)
+    expect(JSON.stringify(ir)).not.toContain('"rawJS"')
+    expect(ir.some((s) => s.type === 'loaderLoad')).toBe(true)
+    const code = generateJS({ statements: ir })
+    expect(generateJS({ statements: parseJS(code) })).toBe(code) // fixpoint
+    const { rebuiltCode, stateJson } = roundtripBlocks(code)
+    expect(stateJson).toContain('"sz_t3d_load_sound"')
+    expect(stateJson).not.toContain('"sz_t3d_load_model"')
+    expect(rebuiltCode).toBe(code) // round-trip de blocos byte-idêntico
+    expect(rebuiltCode).toContain('carregadorSom.load("motor", (buffer) => {')
+  })
+
+  it('contraprova: SEM AudioLoader declarado, x.load decai p/ o bloco de MODELO', () => {
+    const src = [
+      "import * as THREE from 'three';",
+      'const scene = new THREE.Scene();',
+      "loader.load('m.glb', (gltf) => {",
+      '  scene.add(gltf.scene);',
+      '});',
+    ].join('\n')
+    const { stateJson } = roundtripBlocks(generateJS({ statements: parseJS(src) }))
+    expect(stateJson).toContain('"sz_t3d_load_model"')
+    expect(stateJson).not.toContain('"sz_t3d_load_sound"')
+  })
+
+  it('AudioLoader declarado DENTRO de um corpo (recursão) também discrimina', () => {
+    const src = [
+      "import * as THREE from 'three';",
+      'document.addEventListener("click", (event) => {',
+      '  const carregadorSom = new THREE.AudioLoader();',
+      "  carregadorSom.load('plim', (buffer) => {",
+      '    console.log(buffer);',
+      '  });',
+      '});',
+    ].join('\n')
+    const { stateJson } = roundtripBlocks(generateJS({ statements: parseJS(src) }))
+    expect(stateJson).toContain('"sz_t3d_load_sound"')
+  })
+})
+
 describe('Canvas 3D Fase 2 — cena completa de carregamento (0 raw)', () => {
   it('import + GLTFLoader + TextureLoader + AnimationMixer + load round-trippam', () => {
     const scene = [

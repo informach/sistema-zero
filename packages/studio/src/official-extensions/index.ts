@@ -3,6 +3,7 @@ import { gameTwoDExtension } from './game-2d'
 import { gameKitExtension } from './game-2d-advanced'
 import { gameThreeDExtension } from './game-3d'
 import { gameKit3DExtension } from './game-3d-advanced'
+import { worldThreeDExtension } from './world-3d'
 
 /**
  * Catálogo oficial de extensões. É a única fonte da verdade — não há loader
@@ -15,6 +16,7 @@ export const OFFICIAL_CATALOG: readonly ExtensionDefinition[] = Object.freeze([
   gameKitExtension,
   gameThreeDExtension,
   gameKit3DExtension,
+  worldThreeDExtension,
 ])
 
 export function findExtension(id: string): ExtensionDefinition | undefined {
@@ -25,3 +27,4 @@ export * from './game-2d'
 export * from './game-2d-advanced'
 export * from './game-3d'
 export * from './game-3d-advanced'
+export * from './world-3d'

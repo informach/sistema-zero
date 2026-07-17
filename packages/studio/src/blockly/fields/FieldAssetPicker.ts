@@ -15,6 +15,24 @@ interface AssetAccessor {
 }
 
 /**
+ * Assets que a grade do seletor deve listar, por FAMÍLIA (`kind` do bloco):
+ * `'3d'` = modelo .glb + céu .hdr; `'audio'` = som; `'image'` = imagens (com o
+ * sub-filtro `'tilemap'` opcional, só mapas). Puro — a UI e o teste compartilham.
+ */
+export function filterAssetsForPicker(
+  assets: readonly ProjectAsset[],
+  kind: 'image' | '3d' | 'audio',
+  filter?: 'tilemap',
+): ProjectAsset[] {
+  return assets.filter((a) => {
+    if (!a) return false
+    if (kind === '3d') return a.kind === 'model3d' || a.kind === 'environment3d'
+    if (kind === 'audio') return a.kind === 'audio'
+    return a.kind === 'image' && (filter !== 'tilemap' || Boolean(a.tilemap))
+  })
+}
+
+/**
  * Fator de ampliação sugerido para um asset: pixel art pequena (16/32) sobe
  * para perto de ~48–64px por MÚLTIPLO INTEIRO (nítido com o nearest do
  * runtime); imagem já grande fica no tamanho real. Um fator só para W e H —
@@ -83,28 +101,36 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
    * Vem da DEFINIÇÃO do bloco (`filter` no JSON) — estrutural, não serializa.
    */
   private assetFilter?: 'tilemap'
+  /**
+   * Que FAMÍLIA de asset a grade lista: `'image'` (padrão), `'3d'` (modelo .glb /
+   * céu .hdr) ou `'audio'` (som). Vem da DEFINIÇÃO do bloco (`kind` no JSON) —
+   * estrutural, não serializa. O VALOR do campo continua sendo só o nome (string).
+   */
+  private assetKind: 'image' | '3d' | 'audio'
 
-  constructor(text: string, filter?: 'tilemap') {
+  constructor(text: string, filter?: 'tilemap', kind: 'image' | '3d' | 'audio' = 'image') {
     super(text)
     this.assetFilter = filter
+    this.assetKind = kind
   }
 
   static override fromJson(
-    options: Blockly.FieldTextInputFromJsonConfig & { filter?: string },
+    options: Blockly.FieldTextInputFromJsonConfig & { filter?: string; kind?: string },
   ): FieldAssetPicker {
     // `new this(...)` NÃO é garantido na fromJson herdada (algumas hardcodam a
     // classe base) — sobrescrevemos para garantir a instância correta.
+    const kind = options.kind === '3d' || options.kind === 'audio' ? options.kind : 'image'
     return new FieldAssetPicker(
       `${options.text ?? ''}`,
       options.filter === 'tilemap' ? 'tilemap' : undefined,
+      kind,
     )
   }
 
   protected override showEditor_(): void {
     const ws = this.getSourceBlock()?.workspace as unknown as AssetAccessor | undefined
-    const assets = (ws?.__szAssets?.() ?? []).filter(
-      (a) => a && a.kind === 'image' && (this.assetFilter !== 'tilemap' || Boolean(a.tilemap)),
-    )
+    const kind = this.assetKind
+    const assets = filterAssetsForPicker(ws?.__szAssets?.() ?? [], kind, this.assetFilter)
 
     const content = Blockly.DropDownDiv.getContentDiv()
     content.textContent = ''
@@ -117,9 +143,13 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
     if (assets.length === 0) {
       const empty = document.createElement('div')
       empty.textContent =
-        this.assetFilter === 'tilemap'
-          ? 'Nenhum mapa ainda. Desenhe um MAPA no Pinta e toque no foguete "Usar no Estúdio" (ou fatie uma imagem no painel Imagens).'
-          : 'Nenhuma imagem no projeto ainda. Abra "Imagens" na barra de cima para adicionar.'
+        kind === '3d'
+          ? 'Nenhum modelo 3D no projeto ainda. Abra "Imagens" na barra de cima e envie um .glb/.hdr.'
+          : kind === 'audio'
+            ? 'Nenhum som no projeto ainda. Abra "Imagens" na barra de cima e envie um áudio.'
+            : this.assetFilter === 'tilemap'
+              ? 'Nenhum mapa ainda. Desenhe um MAPA no Pinta e toque no foguete "Usar no Estúdio" (ou fatie uma imagem no painel Imagens).'
+              : 'Nenhuma imagem no projeto ainda. Abra "Imagens" na barra de cima para adicionar.'
       empty.style.cssText =
         'font-size:12px;color:var(--color-sz-fg-soft);padding:2px 2px 8px;line-height:1.4;'
       wrap.appendChild(empty)
@@ -133,15 +163,27 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
         btn.title = a.name
         btn.style.cssText =
           'display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px;border:1px solid var(--color-sz-border);border-radius:6px;background:var(--color-sz-bg);cursor:pointer;'
-        const im = document.createElement('img')
-        im.src = a.dataUrl
-        im.alt = a.name
-        im.style.cssText = 'width:40px;height:40px;object-fit:contain;image-rendering:pixelated;'
+        // Miniatura: imagem real p/ `image`; um emoji p/ 3D/áudio (um .glb/.mp3
+        // não renderiza como <img>). 📦 modelo · 🌅 céu HDR · 🔊 som.
+        let thumb: HTMLElement
+        if (a.kind === 'image') {
+          const im = document.createElement('img')
+          im.src = a.dataUrl
+          im.alt = a.name
+          im.style.cssText = 'width:40px;height:40px;object-fit:contain;image-rendering:pixelated;'
+          thumb = im
+        } else {
+          const icon = document.createElement('span')
+          icon.textContent = a.kind === 'environment3d' ? '🌅' : a.kind === 'audio' ? '🔊' : '📦'
+          icon.style.cssText =
+            'width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:26px;'
+          thumb = icon
+        }
         const label = document.createElement('span')
         label.textContent = a.name
         label.style.cssText =
           'font-size:9px;max-width:46px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--color-sz-fg);'
-        btn.append(im, label)
+        btn.append(thumb, label)
         if (a.width && a.height) {
           const dims = document.createElement('span')
           dims.textContent = `${a.width}×${a.height}`
@@ -165,7 +207,8 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
     const input = document.createElement('input')
     input.type = 'text'
     input.value = `${this.getValue() ?? ''}`
-    input.placeholder = 'nome da imagem'
+    input.placeholder =
+      kind === '3d' ? 'nome do modelo' : kind === 'audio' ? 'nome do som' : 'nome da imagem'
     input.spellcheck = false
     input.style.cssText =
       'flex:1;min-width:0;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'

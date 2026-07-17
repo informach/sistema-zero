@@ -142,6 +142,51 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     }
   })
 
+  it('folio: névoa + câmera que segue + floresta instanciada (round-trip amigável)', () => {
+    ensureBlocklyInitialized()
+    // As 4 técnicas do folio que ganharam facilitador na etapa E.
+    const src = [
+      "import * as THREE from 'three';",
+      'const scene = new THREE.Scene();',
+      "scene.fog = new THREE.Fog('#aabbcc', 10, 100);",
+      'const camera = new THREE.PerspectiveCamera(60, 1.5, 0.1, 1000);',
+      'const alvo = new THREE.Vector3(5, 2, 5);',
+      'camera.position.lerp(alvo, 0.08);',
+      'const geo = new THREE.ConeGeometry(1, 2, 6);',
+      'const mat = new THREE.MeshStandardMaterial();',
+      'const arvores = new THREE.InstancedMesh(geo, mat, 60);',
+      'const molde = new THREE.Object3D();',
+      'molde.position.set(3, 0, 4);',
+      'molde.updateMatrix();',
+      'arvores.setMatrixAt(0, molde.matrix);',
+      'arvores.instanceMatrix.needsUpdate = true;',
+    ].join('\n')
+    const code = generateJS({ statements: parseJS(src) })
+    expect(generateJS({ statements: parseJS(code) })).toBe(code) // fixpoint textual
+
+    const ir = parseJS(code)
+    expect(JSON.stringify(ir)).not.toContain('"rawJS"')
+
+    const state = buildWorkspaceStateFromIR({ html: [], css: [], js: ir, extensions: [] })
+    const json = JSON.stringify(state)
+    for (const type of [
+      'sz_t3d_set_fog',
+      'sz_t3d_lerp_position',
+      'sz_t3d_set_matrix_at',
+      'sz_t3d_instances_dirty',
+    ]) {
+      expect(json).toContain(`"${type}"`)
+    }
+
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(generateJS({ statements: buildIRFromWorkspace(ws).js })).toBe(code)
+    } finally {
+      ws.dispose()
+    }
+  })
+
   it('GATE: projeto SEM three NÃO vira bloco 3D (Set.add, .visible ficam genéricos)', () => {
     ensureBlocklyInitialized()
     // Mesmas FORMAS que os facilitadores reconhecem, mas sem importar three.

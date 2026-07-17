@@ -550,6 +550,37 @@ export function compileExpr(
       return `SZGameKit3D.pointerOver(${identifiers.get(expr.charVar)})`
     case 'g3k:groundPoint':
       return `SZGameKit3D.groundPoint(${JSON.stringify(expr.axis)})`
+    // ---- Mundo 3D (world-3d) ----
+    case 'w3d:worldSize':
+      return 'SZWorld3D.worldSize()'
+    case 'w3d:groundHeight':
+      return `SZWorld3D.groundHeight(${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.z), 0, identifiers, rec)})`
+    case 'w3d:carPos':
+      return `SZWorld3D.carPos(${JSON.stringify(expr.axis)})`
+    case 'w3d:carSpeed':
+      return 'SZWorld3D.carSpeed()'
+    case 'w3d:personPos':
+      return `SZWorld3D.personPos(${JSON.stringify(expr.axis)})`
+    case 'w3d:isDriving':
+      return 'SZWorld3D.isDriving()'
+    case 'w3d:coinCount':
+      return 'SZWorld3D.coinCount()'
+    case 'w3d:hasAchievement':
+      return `SZWorld3D.hasAchievement(${JSON.stringify(expr.name)})`
+    case 'w3d:keyDown':
+      return `SZWorld3D.keyDown(${JSON.stringify(expr.key)})`
+    case 'w3d:keyPressed':
+      return `SZWorld3D.keyPressed(${JSON.stringify(expr.key)})`
+    case 'w3d:timeOfDay':
+      return 'SZWorld3D.timeOfDay()'
+    case 'w3d:raceTime':
+      return 'SZWorld3D.raceTime()'
+    case 'w3d:raceBest':
+      return 'SZWorld3D.raceBest()'
+    case 'w3d:pinsDown':
+      return 'SZWorld3D.pinsDown()'
+    case 'w3d:knockedCount':
+      return 'SZWorld3D.knockedCount()'
     case 'g3k:stateIs':
       return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
     case 'g3k:gameState':

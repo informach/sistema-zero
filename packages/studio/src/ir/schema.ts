@@ -311,6 +311,22 @@ export type JSExpr =
   // Mira/clique no mundo: mouse sobre a entidade (bool) e ponto do chão (núm).
   | (JSExprCommon & { type: 'g3k:pointerOver'; charVar: string })
   | (JSExprCommon & { type: 'g3k:groundPoint'; axis: 'x' | 'y' | 'z' })
+  // Mundo 3D (extensão world-3d) — valores: mundo/terreno, carrinho e teclas.
+  | (JSExprCommon & { type: 'w3d:worldSize' })
+  | (JSExprCommon & { type: 'w3d:groundHeight'; x: number | JSExpr; z: number | JSExpr })
+  | (JSExprCommon & { type: 'w3d:carPos'; axis: 'x' | 'y' | 'z' })
+  | (JSExprCommon & { type: 'w3d:carSpeed' })
+  | (JSExprCommon & { type: 'w3d:personPos'; axis: 'x' | 'y' | 'z' })
+  | (JSExprCommon & { type: 'w3d:isDriving' })
+  | (JSExprCommon & { type: 'w3d:coinCount' })
+  | (JSExprCommon & { type: 'w3d:hasAchievement'; name: string })
+  | (JSExprCommon & { type: 'w3d:keyDown'; key: string })
+  | (JSExprCommon & { type: 'w3d:keyPressed'; key: string })
+  | (JSExprCommon & { type: 'w3d:timeOfDay' })
+  | (JSExprCommon & { type: 'w3d:raceTime' })
+  | (JSExprCommon & { type: 'w3d:raceBest' })
+  | (JSExprCommon & { type: 'w3d:pinsDown' })
+  | (JSExprCommon & { type: 'w3d:knockedCount' })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
   | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
@@ -756,6 +772,26 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g3k:mouseDown'), ...idField }),
     z.object({ type: z.literal('g3k:mousePressed'), ...idField }),
     z.object({ type: z.literal('g3k:keyPressed'), key: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:worldSize'), ...idField }),
+    z.object({
+      type: z.literal('w3d:groundHeight'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:carPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
+    z.object({ type: z.literal('w3d:carSpeed'), ...idField }),
+    z.object({ type: z.literal('w3d:personPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
+    z.object({ type: z.literal('w3d:isDriving'), ...idField }),
+    z.object({ type: z.literal('w3d:coinCount'), ...idField }),
+    z.object({ type: z.literal('w3d:hasAchievement'), name: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:keyDown'), key: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:keyPressed'), key: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:timeOfDay'), ...idField }),
+    z.object({ type: z.literal('w3d:raceTime'), ...idField }),
+    z.object({ type: z.literal('w3d:raceBest'), ...idField }),
+    z.object({ type: z.literal('w3d:pinsDown'), ...idField }),
+    z.object({ type: z.literal('w3d:knockedCount'), ...idField }),
     z.object({ type: z.literal('g3k:posOf'), axis: irText(), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:exists'), charVar: irText(), ...idField }),
     z.object({
@@ -3798,6 +3834,296 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3k:playSound'; name: string })
   | (JSStatementCommon & { type: 'g3k:playEffect'; fx: string })
   | (JSStatementCommon & { type: 'g3k:playTone'; freq: number | JSExpr; ms: number | JSExpr })
+  // Mundo 3D (extensão world-3d): mundo aberto dirigível estilo folio —
+  // terreno por ruído com altura consultável, carrinho arcade com molejo,
+  // natureza instanciada com colisores, grama ao vento e efeitos de cinema.
+  | (JSStatementCommon & { type: 'w3d:setup'; style: string; world: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:terrain'; h: number | JSExpr; s: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'w3d:flatten'
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:path'
+      x1: number | JSExpr
+      z1: number | JSExpr
+      x2: number | JSExpr
+      z2: number | JSExpr
+      w: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:water'; y: number | JSExpr; color: string })
+  | (JSStatementCommon & { type: 'w3d:start' })
+  | (JSStatementCommon & { type: 'w3d:carBoost'; force: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:engineSound'; on: boolean })
+  | (JSStatementCommon & { type: 'w3d:loadSound'; name: string; asset: string })
+  | (JSStatementCommon & { type: 'w3d:playSound'; name: string })
+  | (JSStatementCommon & { type: 'w3d:playMusic'; name: string })
+  | (JSStatementCommon & { type: 'w3d:stopMusic' })
+  | (JSStatementCommon & { type: 'w3d:hud'; text: number | JSExpr; corner: string })
+  | (JSStatementCommon & { type: 'w3d:say'; text: number | JSExpr; secs: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'w3d:point'
+      name: string
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:onPoint'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'w3d:zone'
+      name: string
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:onZone'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'w3d:totemText'
+      x: number | JSExpr
+      z: number | JSExpr
+      title: string
+      body: string
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:totemImage'
+      x: number | JSExpr
+      z: number | JSExpr
+      image: string
+      w: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:galleryCreate'
+      x: number | JSExpr
+      z: number | JSExpr
+      title: string
+    })
+  | (JSStatementCommon & { type: 'w3d:galleryAdd'; image: string; caption: string })
+  | (JSStatementCommon & {
+      type: 'w3d:raceCreate'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+      laps: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:raceCheckpoint'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:raceOnStart'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:raceOnCheckpoint'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:raceOnFinish'; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'w3d:bowlingCreate'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:bowlingReset' })
+  | (JSStatementCommon & { type: 'w3d:bowlingOnStrike'; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'w3d:stack'
+      n: number | JSExpr
+      thing: string
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:car'; style: string; color: string })
+  | (JSStatementCommon & {
+      type: 'w3d:carStats'
+      speed: number | JSExpr
+      turn: number | JSExpr
+      jump: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:carPlace'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:grass'; amount: string })
+  | (JSStatementCommon & { type: 'w3d:scatter'; n: number | JSExpr; thing: string })
+  | (JSStatementCommon & {
+      type: 'w3d:scatterModel'
+      n: number | JSExpr
+      model: string
+      s: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:placeThing'
+      thing: string
+      x: number | JSExpr
+      z: number | JSExpr
+      s: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:placeModel'
+      model: string
+      x: number | JSExpr
+      z: number | JSExpr
+      s: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:clearArea'
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:onCrash'; body: JSStatement[] })
+  // Mundo 3D R11 "carrinho vivo": buzina (tecla H), luzes, marcas de pneu, pintura.
+  | (JSStatementCommon & { type: 'w3d:horn' })
+  | (JSStatementCommon & { type: 'w3d:onHorn'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:carLights' })
+  | (JSStatementCommon & { type: 'w3d:tireMarks'; on: boolean })
+  | (JSStatementCommon & { type: 'w3d:carPaint'; paint: string })
+  // Mundo 3D R12 "festa & céu dramático": confete/fogos, tornado, estação, nuvens.
+  | (JSStatementCommon & { type: 'w3d:confetti' })
+  | (JSStatementCommon & { type: 'w3d:fireworks' })
+  | (JSStatementCommon & { type: 'w3d:tornado'; secs: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:season'; season: string })
+  | (JSStatementCommon & { type: 'w3d:clouds'; amount: string })
+  // Mundo 3D R13 "boliche & bagunça": empurráveis, letras físicas, explosivos.
+  | (JSStatementCommon & {
+      type: 'w3d:pushPlace'
+      thing: string
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:pushScatter'
+      n: number | JSExpr
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:letters'
+      word: string
+      x: number | JSExpr
+      z: number | JSExpr
+      s: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:explosive'; x: number | JSExpr; z: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:onExplosion'; body: JSStatement[] })
+  // Mundo 3D R14 "natureza acesa": cachoeira, poste, vaga-lumes, fogueira.
+  | (JSStatementCommon & {
+      type: 'w3d:waterfall'
+      x: number | JSExpr
+      z: number | JSExpr
+      h: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:lamp'; x: number | JSExpr; z: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:fireflies'; amount: string })
+  | (JSStatementCommon & { type: 'w3d:campfire'; x: number | JSExpr; z: number | JSExpr })
+  // Mundo 3D R15 "personagem a pé": rig procedural + entrar/sair do veículo.
+  | (JSStatementCommon & { type: 'w3d:person'; color: string; hat: string })
+  | (JSStatementCommon & {
+      type: 'w3d:personStats'
+      walk: number | JSExpr
+      run: number | JSExpr
+      jump: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:personPlace'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:personAccessory'; acc: string })
+  | (JSStatementCommon & { type: 'w3d:personEmote'; emote: string })
+  | (JSStatementCommon & { type: 'w3d:onVehicle'; when: string; body: JSStatement[] })
+  // Mundo 3D R16 "ilha & barco": arquipélago, barco, ponte, farol, ambiente.
+  | (JSStatementCommon & { type: 'w3d:islands'; n: number | JSExpr; y: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:boat'; color: string })
+  | (JSStatementCommon & {
+      type: 'w3d:bridge'
+      x1: number | JSExpr
+      z1: number | JSExpr
+      x2: number | JSExpr
+      z2: number | JSExpr
+      w: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:lighthouse'; x: number | JSExpr; z: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:ambience'; kind: string })
+  // Mundo 3D R17 "amigos": NPCs com perambulação e conversa em fila.
+  | (JSStatementCommon & {
+      type: 'w3d:npc'
+      name: string
+      x: number | JSExpr
+      z: number | JSExpr
+      color: string
+      hat: string
+    })
+  | (JSStatementCommon & { type: 'w3d:npcWander'; name: string; r: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:npcTalk'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:npcSay'; name: string; text: string })
+  | (JSStatementCommon & { type: 'w3d:npcEmote'; name: string; emote: string })
+  // Mundo 3D R18 "moedas & missões": coleta, objetivos, marcadores, seta-guia.
+  | (JSStatementCommon & { type: 'w3d:coinsScatter'; n: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'w3d:coinsRing'
+      n: number | JSExpr
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:coinsLine'
+      n: number | JSExpr
+      x1: number | JSExpr
+      z1: number | JSExpr
+      x2: number | JSExpr
+      z2: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:onCollect'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:quest'; name: string; desc: string })
+  | (JSStatementCommon & { type: 'w3d:questDone'; name: string })
+  | (JSStatementCommon & { type: 'w3d:onQuestDone'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'w3d:marker'
+      icon: string
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:guideArrow'
+      x: number | JSExpr
+      z: number | JSExpr
+      on: boolean
+    })
+  // Mundo 3D R19 "sistemas locais": conquistas, minimapa, pódio, recados.
+  | (JSStatementCommon & { type: 'w3d:achievement'; name: string })
+  | (JSStatementCommon & { type: 'w3d:onAchievement'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:minimap'; mode: string })
+  | (JSStatementCommon & { type: 'w3d:racePodium' })
+  | (JSStatementCommon & {
+      type: 'w3d:whisperCorner'
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:flameNote'
+      x: number | JSExpr
+      z: number | JSExpr
+      text: string
+    })
+  | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
+  | (JSStatementCommon & {
+      type: 'w3d:cameraShake'
+      force: number | JSExpr
+      secs: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:effects'; on: boolean; strength: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:dayNight'; minutes: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:setTime'; time: string })
+  | (JSStatementCommon & { type: 'w3d:weather'; kind: string })
+  | (JSStatementCommon & { type: 'w3d:wind'; force: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:onDayNight'; when: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:onUpdate'; dtName: string; body: JSStatement[] })
   // Orientação a objetos
   | (JSStatementCommon & {
       type: 'classDecl'
@@ -3876,6 +4202,90 @@ export type JSStatement =
       url: JSExpr
       param: string
       body: JSStatement[]
+    })
+  // Canvas 3D: percorrer cada parte de um objeto/modelo (`obj.traverse((parte) => { … })`).
+  // `object` = o objeto (var ou propriedade, ex.: modelo.scene); `param` = o nome da parte.
+  | (JSStatementCommon & {
+      type: 'traverseEach'
+      object: JSExpr
+      param: string
+      body: JSStatement[]
+    })
+  // Canvas 3D: modernização do renderizador em 1 bloco (forward-only) — cada campo
+  // vira a grafia ATUAL do three.js (setPixelRatio / shadowMap.type /
+  // outputColorSpace / toneMapping); 'off' = não mexer. A Ponte reversa devolve os
+  // memberSet/memberCall genéricos (o parser não reconstrói este nó).
+  | (JSStatementCommon & {
+      type: 'rendererConfig'
+      renderer: string
+      pixels: 'device' | 'off'
+      shadows: 'soft' | 'hard' | 'off'
+      colorSpace: 'srgb' | 'off'
+      toneMapping: 'aces' | 'off'
+    })
+  // Canvas 3D: macro de efeito BRILHO (bloom) — 1 bloco que arma o EffectComposer +
+  // RenderPass + UnrealBloomPass + OutputPass (grafia atual, forward-only). `composer`
+  // = a var do composer; strength/radius/threshold = os botões (sockets de valor).
+  | (JSStatementCommon & {
+      type: 'bloomSetup'
+      composer: string
+      renderer: string
+      scene: string
+      camera: string
+      strength: JSExpr
+      radius: JSExpr
+      threshold: JSExpr
+    })
+  // Canvas 3D: macro de EFEITO partículas — 1 bloco que cria um sistema de pontos
+  // (BufferGeometry aleatória + PointsMaterial + Points), forward-only. `particles`
+  // = a var do Points; count/size/spread/color = os botões (sockets).
+  | (JSStatementCommon & {
+      type: 'particlesSetup'
+      particles: string
+      scene: string
+      count: JSExpr
+      size: JSExpr
+      spread: JSExpr
+      color: JSExpr
+    })
+  // Canvas 3D: macro de EFEITO água — 1 bloco que cria um plano d'água (addon Water
+  // + normal map procedural), forward-only. `water` = a var; size/color = os botões.
+  | (JSStatementCommon & {
+      type: 'waterSetup'
+      water: string
+      scene: string
+      size: JSExpr
+      color: JSExpr
+    })
+  // Canvas 3D: fazer a água ondular (atualiza o uniform `time` no laço) — companheiro
+  // do waterSetup.
+  | (JSStatementCommon & { type: 'waterTime'; water: string })
+  // Canvas 3D: macro de EFEITO grama — 1 bloco que cria um campo de grama INSTANCIADA
+  // com shader de vento (GLSL escondido), forward-only. `grass` = a var; count/size/
+  // spread/color = os botões.
+  | (JSStatementCommon & {
+      type: 'grassSetup'
+      grass: string
+      scene: string
+      count: JSExpr
+      size: JSExpr
+      spread: JSExpr
+      color: JSExpr
+    })
+  // Canvas 3D: fazer a grama balançar (avança o uniform `time` no laço) — companheiro
+  // do grassSetup.
+  | (JSStatementCommon & { type: 'grassTime'; grass: string })
+  // Canvas 3D: macro LETREIRO 3D — 1 bloco que desenha um texto num canvas oculto,
+  // vira CanvasTexture num plano transparente da cena (o jeito FOLIO de texto no
+  // mundo: canvas 2D → textura, nunca TextGeometry), forward-only. `sign` = a var
+  // do plano; `text` é CAMPO (letreiro é estático); size/color = botões (sockets).
+  | (JSStatementCommon & {
+      type: 'signSetup'
+      sign: string
+      scene: string
+      text: string
+      size: JSExpr
+      color: JSExpr
     })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
@@ -7505,6 +7915,454 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('w3d:setup'),
+      style: irText(),
+      world: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:terrain'),
+      h: z.union([JSExprSchema, z.number()]),
+      s: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:flatten'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      r: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:path'),
+      x1: z.union([JSExprSchema, z.number()]),
+      z1: z.union([JSExprSchema, z.number()]),
+      x2: z.union([JSExprSchema, z.number()]),
+      z2: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:water'),
+      y: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:start'), ...idField }),
+    z.object({ type: z.literal('w3d:car'), style: irText(), color: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:carBoost'),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:engineSound'), on: z.boolean(), ...idField }),
+    z.object({ type: z.literal('w3d:loadSound'), name: irText(), asset: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:playSound'), name: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:playMusic'), name: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:stopMusic'), ...idField }),
+    z.object({
+      type: z.literal('w3d:hud'),
+      text: z.union([JSExprSchema, z.number()]),
+      corner: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:say'),
+      text: z.union([JSExprSchema, z.number()]),
+      secs: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:point'),
+      name: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:onPoint'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:zone'),
+      name: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      r: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:onZone'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:totemText'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      title: irText(),
+      body: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:totemImage'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      image: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:galleryCreate'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      title: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:galleryAdd'),
+      image: irText(),
+      caption: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:raceCreate'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      deg: z.union([JSExprSchema, z.number()]),
+      laps: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:raceCheckpoint'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      deg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:raceOnStart'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
+      type: z.literal('w3d:raceOnCheckpoint'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:raceOnFinish'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
+      type: z.literal('w3d:bowlingCreate'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      deg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:bowlingReset'), ...idField }),
+    z.object({
+      type: z.literal('w3d:bowlingOnStrike'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:stack'),
+      n: z.union([JSExprSchema, z.number()]),
+      thing: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:carStats'),
+      speed: z.union([JSExprSchema, z.number()]),
+      turn: z.union([JSExprSchema, z.number()]),
+      jump: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:carPlace'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      deg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:grass'), amount: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:scatter'),
+      n: z.union([JSExprSchema, z.number()]),
+      thing: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:scatterModel'),
+      n: z.union([JSExprSchema, z.number()]),
+      model: irText(),
+      s: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:placeThing'),
+      thing: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      s: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:placeModel'),
+      model: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      s: z.union([JSExprSchema, z.number()]),
+      deg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:clearArea'),
+      x: z.union([JSExprSchema, z.number()]),
+      z: z.union([JSExprSchema, z.number()]),
+      r: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:onCrash'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('w3d:horn'), ...idField }),
+    z.object({ type: z.literal('w3d:onHorn'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('w3d:carLights'), ...idField }),
+    z.object({ type: z.literal('w3d:tireMarks'), on: z.boolean(), ...idField }),
+    z.object({ type: z.literal('w3d:carPaint'), paint: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:confetti'), ...idField }),
+    z.object({ type: z.literal('w3d:fireworks'), ...idField }),
+    z.object({
+      type: z.literal('w3d:tornado'),
+      secs: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:season'), season: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:clouds'), amount: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:pushPlace'),
+      thing: irText(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:pushScatter'),
+      n: z.union([z.number(), JSExprSchema]),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      r: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:letters'),
+      word: irText(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      s: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:explosive'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:onExplosion'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
+      type: z.literal('w3d:waterfall'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      h: z.union([z.number(), JSExprSchema]),
+      deg: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:lamp'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:fireflies'), amount: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:campfire'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:person'), color: irText(), hat: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:personStats'),
+      walk: z.union([z.number(), JSExprSchema]),
+      run: z.union([z.number(), JSExprSchema]),
+      jump: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:personPlace'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      deg: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:personAccessory'), acc: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:personEmote'), emote: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:onVehicle'),
+      when: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:islands'),
+      n: z.union([z.number(), JSExprSchema]),
+      y: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:boat'), color: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:bridge'),
+      x1: z.union([z.number(), JSExprSchema]),
+      z1: z.union([z.number(), JSExprSchema]),
+      x2: z.union([z.number(), JSExprSchema]),
+      z2: z.union([z.number(), JSExprSchema]),
+      w: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:lighthouse'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:ambience'), kind: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:npc'),
+      name: irText(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      color: irText(),
+      hat: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:npcWander'),
+      name: irText(),
+      r: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:npcTalk'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:npcSay'), name: irText(), text: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:npcEmote'), name: irText(), emote: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:coinsScatter'),
+      n: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:coinsRing'),
+      n: z.union([z.number(), JSExprSchema]),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      r: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:coinsLine'),
+      n: z.union([z.number(), JSExprSchema]),
+      x1: z.union([z.number(), JSExprSchema]),
+      z1: z.union([z.number(), JSExprSchema]),
+      x2: z.union([z.number(), JSExprSchema]),
+      z2: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:onCollect'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('w3d:quest'), name: irText(), desc: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:questDone'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:onQuestDone'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:marker'),
+      icon: irText(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:guideArrow'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      on: z.boolean(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:achievement'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:onAchievement'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:minimap'), mode: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:racePodium'), ...idField }),
+    z.object({
+      type: z.literal('w3d:whisperCorner'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:flameNote'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      text: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:cameraShake'),
+      force: z.union([JSExprSchema, z.number()]),
+      secs: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:effects'),
+      on: z.boolean(),
+      strength: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:dayNight'),
+      minutes: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:setTime'), time: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:weather'), kind: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:wind'),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:onDayNight'),
+      when: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:onUpdate'),
+      dtName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:updateEachFrame'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -7618,6 +8476,80 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       url: JSExprSchema,
       param: irText(),
       body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('traverseEach'),
+      object: JSExprSchema,
+      param: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('rendererConfig'),
+      renderer: irText(),
+      pixels: z.enum(['device', 'off']),
+      shadows: z.enum(['soft', 'hard', 'off']),
+      colorSpace: z.enum(['srgb', 'off']),
+      toneMapping: z.enum(['aces', 'off']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('bloomSetup'),
+      composer: irText(),
+      renderer: irText(),
+      scene: irText(),
+      camera: irText(),
+      strength: JSExprSchema,
+      radius: JSExprSchema,
+      threshold: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('particlesSetup'),
+      particles: irText(),
+      scene: irText(),
+      count: JSExprSchema,
+      size: JSExprSchema,
+      spread: JSExprSchema,
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('waterSetup'),
+      water: irText(),
+      scene: irText(),
+      size: JSExprSchema,
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('waterTime'),
+      water: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('grassSetup'),
+      grass: irText(),
+      scene: irText(),
+      count: JSExprSchema,
+      size: JSExprSchema,
+      spread: JSExprSchema,
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('grassTime'),
+      grass: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('signSetup'),
+      sign: irText(),
+      scene: irText(),
+      text: irText(),
+      size: JSExprSchema,
+      color: JSExprSchema,
       ...idField,
     }),
     z.object({
@@ -8364,10 +9296,115 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:playTone',
 ])
 
+/** Statements do Mundo 3D (extensão world-3d) — espelho do Set da g3k. */
+export const W3D_STATEMENT_TYPES = new Set([
+  'w3d:setup',
+  'w3d:terrain',
+  'w3d:flatten',
+  'w3d:path',
+  'w3d:water',
+  'w3d:start',
+  'w3d:car',
+  'w3d:carStats',
+  'w3d:carBoost',
+  'w3d:engineSound',
+  'w3d:carPlace',
+  'w3d:loadSound',
+  'w3d:playSound',
+  'w3d:playMusic',
+  'w3d:stopMusic',
+  'w3d:hud',
+  'w3d:say',
+  'w3d:point',
+  'w3d:onPoint',
+  'w3d:zone',
+  'w3d:onZone',
+  'w3d:totemText',
+  'w3d:totemImage',
+  'w3d:galleryCreate',
+  'w3d:galleryAdd',
+  'w3d:raceCreate',
+  'w3d:raceCheckpoint',
+  'w3d:raceOnStart',
+  'w3d:raceOnCheckpoint',
+  'w3d:raceOnFinish',
+  'w3d:bowlingCreate',
+  'w3d:bowlingReset',
+  'w3d:bowlingOnStrike',
+  'w3d:stack',
+  'w3d:cameraMode',
+  'w3d:cameraShake',
+  'w3d:grass',
+  'w3d:scatter',
+  'w3d:scatterModel',
+  'w3d:placeThing',
+  'w3d:placeModel',
+  'w3d:clearArea',
+  'w3d:onCrash',
+  'w3d:horn',
+  'w3d:onHorn',
+  'w3d:carLights',
+  'w3d:tireMarks',
+  'w3d:carPaint',
+  'w3d:confetti',
+  'w3d:fireworks',
+  'w3d:tornado',
+  'w3d:season',
+  'w3d:clouds',
+  'w3d:pushPlace',
+  'w3d:pushScatter',
+  'w3d:letters',
+  'w3d:explosive',
+  'w3d:onExplosion',
+  'w3d:waterfall',
+  'w3d:lamp',
+  'w3d:fireflies',
+  'w3d:campfire',
+  'w3d:person',
+  'w3d:personStats',
+  'w3d:personPlace',
+  'w3d:personAccessory',
+  'w3d:personEmote',
+  'w3d:onVehicle',
+  'w3d:islands',
+  'w3d:boat',
+  'w3d:bridge',
+  'w3d:lighthouse',
+  'w3d:ambience',
+  'w3d:npc',
+  'w3d:npcWander',
+  'w3d:npcTalk',
+  'w3d:npcSay',
+  'w3d:npcEmote',
+  'w3d:coinsScatter',
+  'w3d:coinsRing',
+  'w3d:coinsLine',
+  'w3d:onCollect',
+  'w3d:quest',
+  'w3d:questDone',
+  'w3d:onQuestDone',
+  'w3d:marker',
+  'w3d:guideArrow',
+  'w3d:achievement',
+  'w3d:onAchievement',
+  'w3d:minimap',
+  'w3d:racePodium',
+  'w3d:whisperCorner',
+  'w3d:flameNote',
+  'w3d:effects',
+  'w3d:dayNight',
+  'w3d:setTime',
+  'w3d:weather',
+  'w3d:wind',
+  'w3d:onDayNight',
+  'w3d:onUpdate',
+])
+
 export function statementIsExtension(stmt: JSStatement, extensionId: string): boolean {
   if (extensionId === 'game-2d') return stmt.type.startsWith('g2d:')
   if (extensionId === 'game-3d') return stmt.type.startsWith('g3d:')
   if (extensionId === 'game-2d-advanced') return stmt.type.startsWith('gk:')
   if (extensionId === 'game-3d-advanced') return stmt.type.startsWith('g3k:')
+  if (extensionId === 'world-3d') return stmt.type.startsWith('w3d:')
   return false
 }

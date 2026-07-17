@@ -73,9 +73,17 @@ export type NameKind =
   | 'pkmcreature'
   | 'pkmtype'
   | 'path'
+  | 'w3dpoint'
+  | 'w3dnpc'
+  | 'w3dquest'
+  | 'w3dachieve'
 
 const NAME_KINDS: readonly NameKind[] = [
   'path',
+  'w3dpoint',
+  'w3dnpc',
+  'w3dquest',
+  'w3dachieve',
   'region',
   'pkmcreature',
   'pkmtype',
@@ -134,6 +142,16 @@ const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   // Canvas 3D: `criar cena = novo THREE.Scene()` declara um objeto do three.js —
   // os facilitadores (posição/rotação/render/…) o consomem pelo seletor de nomes.
   sz_t3d_new_var: ['VARNAME'],
+  // Macro Brilho: declara a var do composer (o "desenhar com efeitos" a consome).
+  sz_t3d_bloom_setup: ['COMPOSER'],
+  // Macro Partículas: declara a var do sistema de pontos (pra girar no laço).
+  sz_t3d_particles: ['PARTICLES'],
+  // Macro Água: declara a var do plano d'água (pra ondular no laço).
+  sz_t3d_water: ['WATER'],
+  // Macro Grama: declara a var do campo de grama (pra balançar no laço).
+  sz_t3d_grass: ['GRASS'],
+  // Macro Letreiro: declara a var do plano do letreiro (pra posicionar depois).
+  sz_t3d_sign: ['SIGN'],
   // (Laços/tentar introduzem nomes LOCAIS — ver VARIABLE_LOOP_BINDERS abaixo.)
   // Canvas: teclado, imagem e gradiente guardam numa variável.
   sz_canvas_keyboard: ['NAME'],
@@ -362,6 +380,35 @@ const ENTITY3D_LOOP_BINDERS: Record<string, string[]> = {
 
 /** Moldes 3D (a receita de peças) — fonte do seletor MOLD do kit 3D. */
 const MOLD3D_DECL_BLOCKS: Record<string, string[]> = { sz_g3k_define_mold: ['NAME'] }
+/** Pontos interativos + áreas do Mundo 3D — fonte dos seletores de "Quando E/entrar". */
+const W3DPOINT_DECL_BLOCKS: Record<string, string[]> = {
+  sz_w3d_point: ['NAME'],
+  sz_w3d_zone: ['NAME'],
+}
+function collectW3dPoints(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, W3DPOINT_DECL_BLOCKS)
+}
+/** Amigos (NPCs) do Mundo 3D — fonte dos seletores dos blocos de conversa. */
+const W3DNPC_DECL_BLOCKS: Record<string, string[]> = {
+  sz_w3d_npc: ['NAME'],
+}
+function collectW3dNpcs(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, W3DNPC_DECL_BLOCKS)
+}
+/** Missões do Mundo 3D — fonte dos seletores de completar/quando-completar. */
+const W3DQUEST_DECL_BLOCKS: Record<string, string[]> = {
+  sz_w3d_quest: ['NAME'],
+}
+function collectW3dQuests(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, W3DQUEST_DECL_BLOCKS)
+}
+/** Conquistas do Mundo 3D — fonte dos seletores de quando-ganhar/ganhou?. */
+const W3DACHIEVE_DECL_BLOCKS: Record<string, string[]> = {
+  sz_w3d_achievement: ['NAME'],
+}
+function collectW3dAchievements(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, W3DACHIEVE_DECL_BLOCKS)
+}
 function collectMolds3d(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, MOLD3D_DECL_BLOCKS)
 }
@@ -415,8 +462,13 @@ const OBJECT3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_torus: ['NAME'],
   sz_g3d_create_model: ['NAME'],
 }
-/** O "item" do "para cada no enxame" é um nome LOCAL de objeto 3D (escopo por ancestral). */
-const OBJECT3D_LOOP_BINDERS: Record<string, string[]> = { sz_g3d_for_each_swarm: ['ITEM'] }
+/** O "item" do "para cada no enxame" e a "parte" do traverse são nomes LOCAIS de objeto 3D. */
+const OBJECT3D_LOOP_BINDERS: Record<string, string[]> = {
+  sz_g3d_for_each_swarm: ['ITEM'],
+  sz_t3d_traverse: ['PARAM'],
+  // O "modelo" carregado também é um objeto 3D local do corpo do load_model.
+  sz_t3d_load_model: ['PARAM'],
+}
 /** Grupos/enxames do Jogo 3D (fonte dos seletores GROUP/SWARM). */
 const GROUP3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_group: ['NAME'],
@@ -448,6 +500,11 @@ const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
   sz_js_try_catch: ['ERR'],
   sz_val_array_map: ['ITEM'],
   sz_val_array_find: ['ITEM'],
+  // Canvas 3D: a "parte" do `objeto.traverse((parte) => { … })`, o "modelo" do
+  // load_model e o "buffer" do load_sound são nomes LOCAIS dos corpos.
+  sz_t3d_traverse: ['PARAM'],
+  sz_t3d_load_model: ['PARAM'],
+  sz_t3d_load_sound: ['PARAM'],
   // Ganchos do Jogo 2D Avançado: o tempo (dt), o pincel (ctx) e a posição do
   // clique (px/py) são nomes LOCAIS dos corpos dos ganchos.
   sz_gk_on_update: ['DT'],
@@ -684,6 +741,27 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do estado da entidade',
     empty:
       'Toda entidade nasce no estado "parado" — invente os seus (mirar, atirar, recarregar) digitando abaixo.',
+  },
+  w3dpoint: {
+    icon: '📍',
+    placeholder: 'nome do ponto ou área',
+    empty:
+      'Nenhum ponto ou área ainda — crie um ("Criar o ponto interativo" ou "Criar a área mágica") ou digite o nome abaixo.',
+  },
+  w3dnpc: {
+    icon: '🧑‍🤝‍🧑',
+    placeholder: 'nome do amigo',
+    empty: 'Nenhum amigo ainda — crie um com "Criar o amigo" ou digite o nome abaixo.',
+  },
+  w3dquest: {
+    icon: '⭐',
+    placeholder: 'nome da missão',
+    empty: 'Nenhuma missão ainda — crie uma com "Criar a missão" ou digite o nome abaixo.',
+  },
+  w3dachieve: {
+    icon: '🏆',
+    placeholder: 'nome da conquista',
+    empty: 'Nenhuma conquista ainda — dê uma com "Dar a conquista" ou digite o nome abaixo.',
   },
 }
 
@@ -982,6 +1060,14 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectEffects3d(ws)
       case 'entitystate':
         return collectEntityStates(ws)
+      case 'w3dpoint':
+        return collectW3dPoints(ws)
+      case 'w3dnpc':
+        return collectW3dNpcs(ws)
+      case 'w3dquest':
+        return collectW3dQuests(ws)
+      case 'w3dachieve':
+        return collectW3dAchievements(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)

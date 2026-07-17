@@ -110,6 +110,22 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'g3k:onEnterState':
     case 'g3k:onTimerEnd':
     case 'g3k:onEvent':
+    case 'w3d:onUpdate':
+    case 'w3d:onCrash':
+    case 'w3d:onHorn':
+    case 'w3d:onExplosion':
+    case 'w3d:onVehicle':
+    case 'w3d:npcTalk':
+    case 'w3d:onCollect':
+    case 'w3d:onQuestDone':
+    case 'w3d:onAchievement':
+    case 'w3d:onDayNight':
+    case 'w3d:onPoint':
+    case 'w3d:onZone':
+    case 'w3d:raceOnStart':
+    case 'w3d:raceOnCheckpoint':
+    case 'w3d:raceOnFinish':
+    case 'w3d:bowlingOnStrike':
     case 'funcDecl':
     case 'forEach':
     case 'imageOnLoad':
@@ -117,6 +133,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'onClickAssign':
     case 'requestFrameDo':
     case 'loaderLoad':
+    case 'traverseEach':
     case 'setTimeout':
     case 'setInterval':
     case 'setTimeoutSeconds':
@@ -131,6 +148,59 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     default:
       return []
   }
+}
+
+/**
+ * Imports de `three/addons/…` que cada MACRO de efeito precisa. Injetados no topo
+ * (deduped por módulo) quando a IR contém aquele nó — a criança arrasta 1 bloco e
+ * os imports vêm sozinhos. Caminhos espelham `FieldAddonPicker.ADDON_MODULES` (cópia
+ * local para o gerador NÃO depender do blockly).
+ */
+const MACRO_ADDON_IMPORTS: Partial<
+  Record<JSStatement['type'], ReadonlyArray<{ name: string; module: string }>>
+> = {
+  bloomSetup: [
+    { name: 'EffectComposer', module: 'three/addons/postprocessing/EffectComposer.js' },
+    { name: 'RenderPass', module: 'three/addons/postprocessing/RenderPass.js' },
+    { name: 'UnrealBloomPass', module: 'three/addons/postprocessing/UnrealBloomPass.js' },
+    { name: 'OutputPass', module: 'three/addons/postprocessing/OutputPass.js' },
+  ],
+  waterSetup: [{ name: 'Water', module: 'three/addons/objects/Water.js' }],
+}
+
+/**
+ * Shaders GLSL do macro Grama (`grassSetup`) — o vento vive AQUI, escondido da
+ * criança (decisão de design: efeito pronto, GLSL invisível). O vertex balança cada
+ * folha pelo topo (uv.y) com fase por instância; o fragment escurece a base.
+ */
+const GRASS_VERTEX_SHADER = [
+  'uniform float time;',
+  'varying float vHeight;',
+  'void main() {',
+  '  vHeight = uv.y;',
+  '  vec3 transformed = position;',
+  '  float phase = instanceMatrix[3][0] + instanceMatrix[3][2];',
+  '  transformed.x += sin(time * 2.0 + phase) * 0.25 * uv.y;',
+  '  gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(transformed, 1.0);',
+  '}',
+].join('\n')
+const GRASS_FRAGMENT_SHADER = [
+  'uniform vec3 grassColor;',
+  'varying float vHeight;',
+  'void main() {',
+  '  gl_FragColor = vec4(mix(grassColor * 0.4, grassColor, vHeight), 1.0);',
+  '}',
+].join('\n')
+
+/** Anda a árvore de statements (corpos aninhados inclusos) procurando um tipo. */
+function treeHasStatementType(statements: JSStatement[], type: JSStatement['type']): boolean {
+  for (const s of statements) {
+    if (s.type === type) return true
+    for (const body of jsChildBodies(s)) {
+      if (treeHasStatementType(body, type)) return true
+    }
+  }
+  return false
 }
 
 /**
@@ -191,8 +261,24 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // JS). Os blocos de import são top-level (no frame de Comportamento); movê-los à
   // frente garante o código válido mesmo se a criança os arrastar para baixo.
   const isImport = (s: JSStatement): boolean => s.type === 'importStar' || s.type === 'importNamed'
-  const statements = hoistedLoops.some(isImport)
-    ? [...hoistedLoops.filter(isImport), ...hoistedLoops.filter((s) => !isImport(s))]
+  // Macros de efeito (Brilho/Água): trazem sozinhos os imports de `three/addons/…`,
+  // deduplicados por módulo contra o que a criança já importou.
+  const existingModules = new Set(
+    hoistedLoops.filter((s) => s.type === 'importNamed').map((s) => s.module),
+  )
+  const injectedImports: JSStatement[] = []
+  const seenInjected = new Set<string>()
+  for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
+    if (!needed || !treeHasStatementType(hoistedLoops, macroType as JSStatement['type'])) continue
+    for (const imp of needed) {
+      if (existingModules.has(imp.module) || seenInjected.has(imp.module)) continue
+      seenInjected.add(imp.module)
+      injectedImports.push({ type: 'importNamed', names: [imp.name], module: imp.module })
+    }
+  }
+  const imports = [...hoistedLoops.filter(isImport), ...injectedImports]
+  const statements = imports.length
+    ? [...imports, ...hoistedLoops.filter((s) => !isImport(s))]
     : hoistedLoops
   const identifiers = createPreparedIdentifierScope(statements)
   const headerText = opts.header ? `${opts.header.trim()}\n\n` : ''
@@ -2427,6 +2513,319 @@ ${pad}});`
       return `${pad}SZGameKit3D.playEffect(${JSON.stringify(stmt.fx)});`
     case 'g3k:playTone':
       return `${pad}SZGameKit3D.playTone(${compileExpr(valueToExpr(stmt.freq), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.ms), 0, identifiers, recAt(base))});`
+    // ---- Mundo 3D (world-3d) ----
+    case 'w3d:setup':
+      return `${pad}SZWorld3D.setup({ style: ${JSON.stringify(stmt.style)}, world: ${compileExpr(valueToExpr(stmt.world), 0, identifiers, recAt(base))} });`
+    case 'w3d:terrain':
+      return `${pad}SZWorld3D.terrain(${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
+    case 'w3d:flatten':
+      return `${pad}SZWorld3D.flatten(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:path':
+      return `${pad}SZWorld3D.path(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))});`
+    case 'w3d:water':
+      return `${pad}SZWorld3D.water(${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'w3d:start':
+      return `${pad}SZWorld3D.start();`
+    case 'w3d:car':
+      return `${pad}SZWorld3D.car({ style: ${JSON.stringify(stmt.style)}, color: ${JSON.stringify(stmt.color)} });`
+    case 'w3d:carBoost':
+      return `${pad}SZWorld3D.carBoost(${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'w3d:engineSound':
+      return `${pad}SZWorld3D.engineSound(${JSON.stringify(stmt.on ? 'ligado' : 'desligado')});`
+    case 'w3d:loadSound':
+      return `${pad}SZWorld3D.loadSound(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.asset)});`
+    case 'w3d:playSound':
+      return `${pad}SZWorld3D.playSound(${JSON.stringify(stmt.name)});`
+    case 'w3d:playMusic':
+      return `${pad}SZWorld3D.playMusic(${JSON.stringify(stmt.name)});`
+    case 'w3d:stopMusic':
+      return `${pad}SZWorld3D.stopMusic();`
+    case 'w3d:hud':
+      return `${pad}SZWorld3D.hud(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.corner)});`
+    case 'w3d:say':
+      return `${pad}SZWorld3D.say(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))});`
+    case 'w3d:point':
+      return `${pad}SZWorld3D.point(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:onPoint': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onPoint(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:zone':
+      return `${pad}SZWorld3D.zone(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:onZone': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onZone(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:totemText':
+      return `${pad}SZWorld3D.totemText(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.title)}, ${JSON.stringify(stmt.body)});`
+    case 'w3d:totemImage':
+      return `${pad}SZWorld3D.totemImage(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))});`
+    case 'w3d:galleryCreate':
+      return `${pad}SZWorld3D.galleryCreate(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.title)});`
+    case 'w3d:galleryAdd':
+      return `${pad}SZWorld3D.galleryAdd(${JSON.stringify(stmt.image)}, ${JSON.stringify(stmt.caption)});`
+    case 'w3d:raceCreate':
+      return `${pad}SZWorld3D.raceCreate(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.laps), 0, identifiers, recAt(base))});`
+    case 'w3d:raceCheckpoint':
+      return `${pad}SZWorld3D.raceCheckpoint(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:raceOnStart': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.raceOnStart(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:raceOnCheckpoint': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.raceOnCheckpoint(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:raceOnFinish': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.raceOnFinish(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:bowlingCreate':
+      return `${pad}SZWorld3D.bowlingCreate(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:bowlingReset':
+      return `${pad}SZWorld3D.bowlingReset();`
+    case 'w3d:bowlingOnStrike': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.bowlingOnStrike(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:stack':
+      return `${pad}SZWorld3D.stack(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.thing)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:carStats':
+      return `${pad}SZWorld3D.carStats(${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.turn), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
+    case 'w3d:carPlace':
+      return `${pad}SZWorld3D.carPlace(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:grass':
+      return `${pad}SZWorld3D.grass(${JSON.stringify(stmt.amount)});`
+    case 'w3d:scatter':
+      return `${pad}SZWorld3D.scatter(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.thing)});`
+    case 'w3d:scatterModel':
+      return `${pad}SZWorld3D.scatterModel(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.model)}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
+    case 'w3d:placeThing':
+      return `${pad}SZWorld3D.placeThing(${JSON.stringify(stmt.thing)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
+    case 'w3d:placeModel':
+      return `${pad}SZWorld3D.placeModel(${JSON.stringify(stmt.model)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:clearArea':
+      return `${pad}SZWorld3D.clearArea(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:onCrash': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onCrash(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:horn':
+      return `${pad}SZWorld3D.horn();`
+    case 'w3d:onHorn': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onHorn(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:carLights':
+      return `${pad}SZWorld3D.carLights();`
+    case 'w3d:tireMarks':
+      return `${pad}SZWorld3D.tireMarks(${JSON.stringify(stmt.on ? 'ligadas' : 'desligadas')});`
+    case 'w3d:carPaint':
+      return `${pad}SZWorld3D.carPaint(${JSON.stringify(stmt.paint)});`
+    case 'w3d:achievement':
+      return `${pad}SZWorld3D.achievement(${JSON.stringify(stmt.name)});`
+    case 'w3d:onAchievement': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onAchievement(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:minimap':
+      return `${pad}SZWorld3D.minimap(${JSON.stringify(stmt.mode)});`
+    case 'w3d:racePodium':
+      return `${pad}SZWorld3D.racePodium();`
+    case 'w3d:whisperCorner':
+      return `${pad}SZWorld3D.whisperCorner(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:flameNote':
+      return `${pad}SZWorld3D.flameNote(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.text)});`
+    case 'w3d:coinsScatter':
+      return `${pad}SZWorld3D.coinsScatter(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'w3d:coinsRing':
+      return `${pad}SZWorld3D.coinsRing(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:coinsLine':
+      return `${pad}SZWorld3D.coinsLine(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))});`
+    case 'w3d:onCollect': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onCollect(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:quest':
+      return `${pad}SZWorld3D.quest(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.desc)});`
+    case 'w3d:questDone':
+      return `${pad}SZWorld3D.questDone(${JSON.stringify(stmt.name)});`
+    case 'w3d:onQuestDone': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onQuestDone(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:marker':
+      return `${pad}SZWorld3D.marker(${JSON.stringify(stmt.icon)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:guideArrow':
+      return `${pad}SZWorld3D.guideArrow(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.on ? 'ligada' : 'desligada')});`
+    case 'w3d:npc':
+      return `${pad}SZWorld3D.npc(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.hat)});`
+    case 'w3d:npcWander':
+      return `${pad}SZWorld3D.npcWander(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:npcTalk': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.npcTalk(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:npcSay':
+      return `${pad}SZWorld3D.npcSay(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.text)});`
+    case 'w3d:npcEmote':
+      return `${pad}SZWorld3D.npcEmote(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.emote)});`
+    case 'w3d:islands':
+      return `${pad}SZWorld3D.islands(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'w3d:boat':
+      return `${pad}SZWorld3D.boat(${JSON.stringify(stmt.color)});`
+    case 'w3d:bridge':
+      return `${pad}SZWorld3D.bridge(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))});`
+    case 'w3d:lighthouse':
+      return `${pad}SZWorld3D.lighthouse(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:ambience':
+      return `${pad}SZWorld3D.ambience(${JSON.stringify(stmt.kind)});`
+    case 'w3d:person':
+      return `${pad}SZWorld3D.person(${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.hat)});`
+    case 'w3d:personStats':
+      return `${pad}SZWorld3D.personStats(${compileExpr(valueToExpr(stmt.walk), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.run), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
+    case 'w3d:personPlace':
+      return `${pad}SZWorld3D.personPlace(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:personAccessory':
+      return `${pad}SZWorld3D.personAccessory(${JSON.stringify(stmt.acc)});`
+    case 'w3d:personEmote':
+      return `${pad}SZWorld3D.personEmote(${JSON.stringify(stmt.emote)});`
+    case 'w3d:onVehicle': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onVehicle(${JSON.stringify(stmt.when)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:waterfall':
+      return `${pad}SZWorld3D.waterfall(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:lamp':
+      return `${pad}SZWorld3D.lamp(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:fireflies':
+      return `${pad}SZWorld3D.fireflies(${JSON.stringify(stmt.amount)});`
+    case 'w3d:campfire':
+      return `${pad}SZWorld3D.campfire(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:pushPlace':
+      return `${pad}SZWorld3D.pushPlace(${JSON.stringify(stmt.thing)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:pushScatter':
+      return `${pad}SZWorld3D.pushScatter(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:letters':
+      return `${pad}SZWorld3D.letters(${JSON.stringify(stmt.word)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
+    case 'w3d:explosive':
+      return `${pad}SZWorld3D.explosive(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:onExplosion': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onExplosion(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:confetti':
+      return `${pad}SZWorld3D.confetti();`
+    case 'w3d:fireworks':
+      return `${pad}SZWorld3D.fireworks();`
+    case 'w3d:tornado':
+      return `${pad}SZWorld3D.tornado(${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))});`
+    case 'w3d:season':
+      return `${pad}SZWorld3D.season(${JSON.stringify(stmt.season)});`
+    case 'w3d:clouds':
+      return `${pad}SZWorld3D.clouds(${JSON.stringify(stmt.amount)});`
+    case 'w3d:cameraMode':
+      return `${pad}SZWorld3D.cameraMode(${JSON.stringify(stmt.mode)});`
+    case 'w3d:cameraShake':
+      return `${pad}SZWorld3D.cameraShake(${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))});`
+    case 'w3d:effects':
+      return `${pad}SZWorld3D.setEffects(${JSON.stringify(stmt.on ? 'ligados' : 'desligados')}, ${compileExpr(valueToExpr(stmt.strength), 0, identifiers, recAt(base))});`
+    case 'w3d:dayNight':
+      return `${pad}SZWorld3D.dayNight(${compileExpr(valueToExpr(stmt.minutes), 0, identifiers, recAt(base))});`
+    case 'w3d:setTime':
+      return `${pad}SZWorld3D.setTime(${JSON.stringify(stmt.time)});`
+    case 'w3d:weather':
+      return `${pad}SZWorld3D.weather(${JSON.stringify(stmt.kind)});`
+    case 'w3d:wind':
+      return `${pad}SZWorld3D.setWind(${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'w3d:onDayNight': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onDayNight(${JSON.stringify(stmt.when)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:onUpdate': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onUpdate(function (${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+    }
     case 'classDecl': {
       const className = identifiers.declareClassName(classKey(stmt), stmt.name)
       const superClause = stmt.superClass
@@ -2589,6 +2988,175 @@ ${pad}});`
       )
       const url = compileExpr(stmt.url, 0, identifiers, recAt(base))
       return `${pad}${identifiers.get(stmt.loaderVar)}.load(${url}, (${identifiers.get(stmt.param)}) => {\n${body}\n${pad}});`
+    }
+    case 'traverseEach': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const obj = compileExpr(stmt.object, 0, identifiers, recAt(base))
+      return `${pad}${obj}.traverse((${identifiers.get(stmt.param)}) => {\n${body}\n${pad}});`
+    }
+    case 'rendererConfig': {
+      // Modernização (forward-only): cada escolha ≠ 'off' vira uma linha com a
+      // grafia ATUAL do three.js. 'off' = a linha não é emitida.
+      const r = identifiers.get(stmt.renderer)
+      const lines: string[] = []
+      if (stmt.pixels === 'device') lines.push(`${r}.setPixelRatio(window.devicePixelRatio);`)
+      if (stmt.shadows !== 'off') {
+        lines.push(`${r}.shadowMap.enabled = true;`)
+        lines.push(
+          `${r}.shadowMap.type = THREE.${stmt.shadows === 'soft' ? 'PCFSoftShadowMap' : 'BasicShadowMap'};`,
+        )
+      }
+      if (stmt.colorSpace === 'srgb') lines.push(`${r}.outputColorSpace = THREE.SRGBColorSpace;`)
+      if (stmt.toneMapping === 'aces') lines.push(`${r}.toneMapping = THREE.ACESFilmicToneMapping;`)
+      // Nada selecionado → statement vazio (raro; a criança removeria o bloco).
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'bloomSetup': {
+      // Macro Brilho: expande a esteira de pós-processamento (grafia atual 0.180).
+      // Os imports de three/addons/postprocessing entram sozinhos (hoist no topo).
+      const c = identifiers.get(stmt.composer)
+      const r = identifiers.get(stmt.renderer)
+      const sc = identifiers.get(stmt.scene)
+      const cam = identifiers.get(stmt.camera)
+      const strength = compileExpr(stmt.strength, 0, identifiers, recAt(base))
+      const radius = compileExpr(stmt.radius, 0, identifiers, recAt(base))
+      const threshold = compileExpr(stmt.threshold, 0, identifiers, recAt(base))
+      const res = 'new THREE.Vector2(window.innerWidth, window.innerHeight)'
+      const lines = [
+        `const ${c} = new EffectComposer(${r});`,
+        `${c}.addPass(new RenderPass(${sc}, ${cam}));`,
+        `${c}.addPass(new UnrealBloomPass(${res}, ${strength}, ${radius}, ${threshold}));`,
+        `${c}.addPass(new OutputPass());`,
+      ]
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'particlesSetup': {
+      // Macro Partículas: expande um sistema de Points com posições aleatórias
+      // (grafia atual: BufferGeometry + Float32BufferAttribute + PointsMaterial).
+      const p = identifiers.get(stmt.particles)
+      const sc = identifiers.get(stmt.scene)
+      const count = compileExpr(stmt.count, 0, identifiers, recAt(base))
+      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const spread = compileExpr(stmt.spread, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const geo = `${p}Geo`
+      const pos = `${p}Pos`
+      const lines = [
+        `const ${pos} = [];`,
+        `for (let i = 0; i < ${count}; i++) {`,
+        `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
+        `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
+        `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
+        `}`,
+        `const ${geo} = new THREE.BufferGeometry();`,
+        `${geo}.setAttribute("position", new THREE.Float32BufferAttribute(${pos}, 3));`,
+        `const ${p} = new THREE.Points(${geo}, new THREE.PointsMaterial({ color: ${color}, size: ${size}, sizeAttenuation: true }));`,
+        `${sc}.add(${p});`,
+      ]
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'waterSetup': {
+      // Macro Água: normal map PROCEDURAL (DataTexture 16×16, sem arquivo externo) +
+      // o addon Water (grafia atual). O import de Water entra sozinho (hoist).
+      const w = identifiers.get(stmt.water)
+      const sc = identifiers.get(stmt.scene)
+      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const data = `${w}Data`
+      const nrm = `${w}Normals`
+      const lines = [
+        `const ${data} = new Uint8Array(1024);`,
+        `for (let i = 0; i < 256; i++) {`,
+        `  ${data}[i * 4] = 128 + Math.sin(i * 0.7) * 40;`,
+        `  ${data}[i * 4 + 1] = 128 + Math.cos(i * 1.3) * 40;`,
+        `  ${data}[i * 4 + 2] = 255;`,
+        `  ${data}[i * 4 + 3] = 255;`,
+        `}`,
+        `const ${nrm} = new THREE.DataTexture(${data}, 16, 16);`,
+        `${nrm}.wrapS = THREE.RepeatWrapping;`,
+        `${nrm}.wrapT = THREE.RepeatWrapping;`,
+        `${nrm}.needsUpdate = true;`,
+        `const ${w} = new Water(new THREE.PlaneGeometry(${size}, ${size}), { textureWidth: 512, textureHeight: 512, waterNormals: ${nrm}, sunDirection: new THREE.Vector3(0.7, 0.7, 0), sunColor: 16777215, waterColor: ${color}, distortionScale: 3.7 });`,
+        `${w}.rotation.x = -Math.PI / 2;`,
+        `${sc}.add(${w});`,
+      ]
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'waterTime':
+      // Animar as ondas: avança o relógio interno do shader da água a cada quadro.
+      return `${pad}${identifiers.get(stmt.water)}.material.uniforms.time.value += 1 / 60;`
+    case 'grassSetup': {
+      // Macro Grama: folhas INSTANCIADAS (1 draw call) + ShaderMaterial com o vento
+      // (GLSL nas constantes acima). Posições/giro/escala aleatórios por folha.
+      const g = identifiers.get(stmt.grass)
+      const sc = identifiers.get(stmt.scene)
+      const count = compileExpr(stmt.count, 0, identifiers, recAt(base))
+      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const spread = compileExpr(stmt.spread, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const blade = `${g}Blade`
+      const mat = `${g}Mat`
+      const dummy = `${g}Dummy`
+      const bt = '`'
+      const lines = [
+        `const ${blade} = new THREE.PlaneGeometry(0.08, ${size}, 1, 4);`,
+        `${blade}.translate(0, ${size} / 2, 0);`,
+        `const ${mat} = new THREE.ShaderMaterial({`,
+        `  uniforms: { time: { value: 0 }, grassColor: { value: new THREE.Color(${color}) } },`,
+        `  side: THREE.DoubleSide,`,
+        `  vertexShader: ${bt}\n${GRASS_VERTEX_SHADER}\n${bt},`,
+        `  fragmentShader: ${bt}\n${GRASS_FRAGMENT_SHADER}\n${bt},`,
+        `});`,
+        `const ${g} = new THREE.InstancedMesh(${blade}, ${mat}, ${count});`,
+        `const ${dummy} = new THREE.Object3D();`,
+        `for (let i = 0; i < ${count}; i++) {`,
+        `  ${dummy}.position.set((Math.random() - 0.5) * ${spread}, 0, (Math.random() - 0.5) * ${spread});`,
+        `  ${dummy}.rotation.y = Math.random() * 3.141592653589793;`,
+        `  ${dummy}.scale.setScalar(0.7 + Math.random() * 0.6);`,
+        `  ${dummy}.updateMatrix();`,
+        `  ${g}.setMatrixAt(i, ${dummy}.matrix);`,
+        `}`,
+        `${g}.instanceMatrix.needsUpdate = true;`,
+        `${sc}.add(${g});`,
+      ]
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'grassTime':
+      // Animar o vento: avança o relógio do shader da grama a cada quadro.
+      return `${pad}${identifiers.get(stmt.grass)}.material.uniforms.time.value += 0.02;`
+    case 'signSetup': {
+      // Macro Letreiro 3D: o jeito FOLIO de texto no mundo — desenha num canvas
+      // oculto, vira CanvasTexture num plano transparente (só as letras têm alfa,
+      // o canvas não pinta fundo). Toda linha expandida round-trippa 0-raw
+      // (createElement é nó dedicado; fillText/font em contexto não-registrado
+      // ficam memberCall/memberSet genéricos).
+      const s = identifiers.get(stmt.sign)
+      const sc = identifiers.get(stmt.scene)
+      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const tela = `${s}Tela`
+      const tinta = `${s}Tinta`
+      const tex = `${s}Tex`
+      const lines = [
+        `const ${tela} = document.createElement("canvas");`,
+        `${tela}.width = 512;`,
+        `${tela}.height = 256;`,
+        `const ${tinta} = ${tela}.getContext("2d");`,
+        `${tinta}.fillStyle = ${color};`,
+        `${tinta}.font = "bold 120px sans-serif";`,
+        `${tinta}.textAlign = "center";`,
+        `${tinta}.textBaseline = "middle";`,
+        `${tinta}.fillText(${JSON.stringify(stmt.text)}, 256, 128);`,
+        `const ${tex} = new THREE.CanvasTexture(${tela});`,
+        `const ${s} = new THREE.Mesh(new THREE.PlaneGeometry(${size}, ${size} * 0.5), new THREE.MeshBasicMaterial({ map: ${tex}, transparent: true }));`,
+        `${sc}.add(${s});`,
+      ]
+      return lines.map((l) => `${pad}${l}`).join('\n')
     }
     case 'return':
       return stmt.value === undefined
@@ -5182,6 +5750,308 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.freq), names)
       collectExprIdentifiers(valueToExpr(stmt.ms), names)
       return
+    // ---- Mundo 3D (world-3d) ----
+    case 'w3d:setup':
+      collectExprIdentifiers(valueToExpr(stmt.world), names)
+      return
+    case 'w3d:terrain':
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      return
+    case 'w3d:start':
+    case 'w3d:car':
+    case 'w3d:grass':
+    case 'w3d:engineSound':
+    case 'w3d:loadSound':
+    case 'w3d:playSound':
+    case 'w3d:playMusic':
+    case 'w3d:stopMusic':
+      return
+    case 'w3d:flatten':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:path':
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      return
+    case 'w3d:water':
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'w3d:carBoost':
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      return
+    case 'w3d:hud':
+      collectExprIdentifiers(valueToExpr(stmt.text), names)
+      return
+    case 'w3d:say':
+      collectExprIdentifiers(valueToExpr(stmt.text), names)
+      collectExprIdentifiers(valueToExpr(stmt.secs), names)
+      return
+    case 'w3d:point':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:zone':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:onPoint':
+    case 'w3d:onZone':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:totemText':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:totemImage':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      return
+    case 'w3d:galleryCreate':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:galleryAdd':
+      return
+    case 'w3d:raceCreate':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      collectExprIdentifiers(valueToExpr(stmt.laps), names)
+      return
+    case 'w3d:raceCheckpoint':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:raceOnStart':
+    case 'w3d:raceOnCheckpoint':
+    case 'w3d:raceOnFinish':
+    case 'w3d:bowlingOnStrike':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:bowlingCreate':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:bowlingReset':
+      return
+    case 'w3d:stack':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:carStats':
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      collectExprIdentifiers(valueToExpr(stmt.turn), names)
+      collectExprIdentifiers(valueToExpr(stmt.jump), names)
+      return
+    case 'w3d:carPlace':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:scatter':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'w3d:scatterModel':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      return
+    case 'w3d:placeThing':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      return
+    case 'w3d:placeModel':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:clearArea':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:onCrash':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:onHorn':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:horn':
+    case 'w3d:carLights':
+    case 'w3d:tireMarks':
+    case 'w3d:carPaint':
+    case 'w3d:confetti':
+    case 'w3d:fireworks':
+    case 'w3d:season':
+    case 'w3d:clouds':
+      return
+    case 'w3d:tornado':
+      collectExprIdentifiers(valueToExpr(stmt.secs), names)
+      return
+    case 'w3d:pushPlace':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:waterfall':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:lamp':
+    case 'w3d:campfire':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:fireflies':
+    case 'w3d:person':
+    case 'w3d:personAccessory':
+    case 'w3d:personEmote':
+    case 'w3d:boat':
+    case 'w3d:ambience':
+    case 'w3d:npcSay':
+    case 'w3d:npcEmote':
+      return
+    case 'w3d:npc':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:npcWander':
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:npcTalk':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:quest':
+    case 'w3d:questDone':
+    case 'w3d:achievement':
+    case 'w3d:minimap':
+    case 'w3d:racePodium':
+      return
+    case 'w3d:onAchievement':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:whisperCorner':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:flameNote':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:coinsScatter':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'w3d:coinsRing':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:coinsLine':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      return
+    case 'w3d:onCollect':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:onQuestDone':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:marker':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:guideArrow':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:islands':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'w3d:bridge':
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      return
+    case 'w3d:lighthouse':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:personStats':
+      collectExprIdentifiers(valueToExpr(stmt.walk), names)
+      collectExprIdentifiers(valueToExpr(stmt.run), names)
+      collectExprIdentifiers(valueToExpr(stmt.jump), names)
+      return
+    case 'w3d:personPlace':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:onVehicle':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:pushScatter':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:letters':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      return
+    case 'w3d:explosive':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:onExplosion':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:effects':
+      collectExprIdentifiers(valueToExpr(stmt.strength), names)
+      return
+    case 'w3d:cameraMode':
+      return
+    case 'w3d:cameraShake':
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      collectExprIdentifiers(valueToExpr(stmt.secs), names)
+      return
+    case 'w3d:dayNight':
+      collectExprIdentifiers(valueToExpr(stmt.minutes), names)
+      return
+    case 'w3d:setTime':
+    case 'w3d:weather':
+      return
+    case 'w3d:wind':
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      return
+    case 'w3d:onDayNight':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:onUpdate':
+      names.add(stmt.dtName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'classDecl':
       for (const param of stmt.ctorParams ?? []) names.add(param)
       for (const child of stmt.ctorBody) collectStatementIdentifiers(child, names)
@@ -5255,6 +6125,57 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.param)
       collectExprIdentifiers(stmt.url, names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'traverseEach':
+      collectExprIdentifiers(stmt.object, names)
+      names.add(stmt.param)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'rendererConfig':
+      names.add(stmt.renderer)
+      return
+    case 'bloomSetup':
+      names.add(stmt.composer)
+      names.add(stmt.renderer)
+      names.add(stmt.scene)
+      names.add(stmt.camera)
+      collectExprIdentifiers(stmt.strength, names)
+      collectExprIdentifiers(stmt.radius, names)
+      collectExprIdentifiers(stmt.threshold, names)
+      return
+    case 'particlesSetup':
+      names.add(stmt.particles)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.count, names)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.spread, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'waterSetup':
+      names.add(stmt.water)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'waterTime':
+      names.add(stmt.water)
+      return
+    case 'grassSetup':
+      names.add(stmt.grass)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.count, names)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.spread, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'grassTime':
+      names.add(stmt.grass)
+      return
+    case 'signSetup':
+      names.add(stmt.sign)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.color, names)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)
@@ -5613,6 +6534,24 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g3k:stateIs':
     case 'g3k:gameState':
     case 'g3k:groundPoint':
+    case 'w3d:worldSize':
+    case 'w3d:carPos':
+    case 'w3d:carSpeed':
+    case 'w3d:personPos':
+    case 'w3d:isDriving':
+    case 'w3d:coinCount':
+    case 'w3d:hasAchievement':
+    case 'w3d:keyDown':
+    case 'w3d:keyPressed':
+    case 'w3d:timeOfDay':
+    case 'w3d:raceTime':
+    case 'w3d:raceBest':
+    case 'w3d:pinsDown':
+    case 'w3d:knockedCount':
+      return
+    case 'w3d:groundHeight':
+      collectExprIdentifiers(valueToExpr(expr.x), names)
+      collectExprIdentifiers(valueToExpr(expr.z), names)
       return
     case 'canvasMeasureText':
       collectExprIdentifiers(expr.text, names)

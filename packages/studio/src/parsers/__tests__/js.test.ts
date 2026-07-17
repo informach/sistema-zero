@@ -266,13 +266,24 @@ describe('parseJS', () => {
     })
   })
 
-  it('reconhece for clássico → repeat', () => {
+  it('reconhece for clássico → repeat (corpo NÃO usa o contador)', () => {
     const code = `for (let i = 0; i < 3; i++) { console.log("oi"); }`
     const ir = parseJS(code)
     expect(ir[0]).toMatchObject({
       type: 'repeat',
       times: { type: 'num', value: 3 },
     })
+  })
+
+  it('for cujo corpo LÊ o contador → forRange (repeat descartaria o `i`)', () => {
+    // Regressão: `repeat` cria um contador interno e o descarta, então um laço
+    // que usa `i` no corpo (ex.: InstancedMesh.setMatrixAt) NÃO pode virar
+    // repeat — geraria código com `i` órfão. Fica forRange, que preserva o nome.
+    const code = `for (let i = 0; i < 3; i++) { total = total + i; }`
+    const ir = parseJS(code)
+    expect(ir[0]).toMatchObject({ type: 'forRange', varName: 'i' })
+    // e regenera o MESMO código (o `i` sobrevive)
+    expect(generateJS({ statements: ir })).toContain('total = total + i;')
   })
 
   it('reconhece document.querySelector como statement querySelector', () => {

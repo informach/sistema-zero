@@ -49,11 +49,10 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     // CLASS = o construtor real do three.js (Scene, Mesh, PerspectiveCamera…).
     // O args-mutator (+/−) adiciona as tomadas de argumento.
     type: 'sz_t3d_new_var',
-    message0: 'criar %1 = novo %2 . %3',
+    message0: 'criar %1 = novo %2',
     args0: [
       { type: 'field_input', name: 'VARNAME', text: 'cena' },
-      { type: 'field_input', name: 'NS', text: 'THREE' },
-      { type: 'field_input', name: 'CLASS', text: 'Scene' },
+      { type: 'field_class_picker', name: 'CLASS', text: 'THREE.Scene' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -61,35 +60,32 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_args_mutator',
     tooltip:
-      'Cria um objeto do three.js e guarda numa variável. Escreva a classe REAL da biblioteca (Scene, PerspectiveCamera, Mesh, SphereGeometry, MeshStandardMaterial, DirectionalLight, Vector3, Color…). Use + para passar argumentos. Vira "const cena = new THREE.Scene(…)".',
+      'Cria um objeto do three.js e guarda numa variável. CLIQUE para ESCOLHER a classe (Scene, PerspectiveCamera, Mesh, SphereGeometry, MeshStandardMaterial, DirectionalLight, Vector3, Color…) — sem digitar. Use + para passar argumentos. Vira "const cena = new THREE.Scene(…)".',
   },
   {
     // Valor: `new THREE.Vector3(1,2,3)` numa tomada (argumento de método, etc.).
     type: 'sz_t3d_new',
-    message0: 'novo %1 . %2',
-    args0: [
-      { type: 'field_input', name: 'NS', text: 'THREE' },
-      { type: 'field_input', name: 'CLASS', text: 'Vector3' },
-    ],
+    message0: 'novo %1',
+    args0: [{ type: 'field_class_picker', name: 'CLASS', text: 'THREE.Vector3' }],
     inputsInline: true,
     output: 'JSValue',
     colour: C,
     mutator: 'sz_args_mutator',
     tooltip:
-      'Cria um objeto do three.js para usar direto numa tomada de valor (ex.: argumento de "adicionar" ou de um método). Vira "new THREE.Vector3(…)".',
+      'Cria um objeto do three.js para usar direto numa tomada de valor (ex.: argumento de "adicionar" ou de um método). CLIQUE para ESCOLHER a classe. Vira "new THREE.Vector3(…)".',
   },
   {
     // Import nomeado de um addon: `import { GLTFLoader } from 'three/addons/…'`.
     type: 'sz_t3d_import_named',
     message0: 'usar %1',
-    args0: [{ type: 'field_input', name: 'NAMES', text: 'GLTFLoader' }],
+    args0: [{ type: 'field_addon_picker', name: 'NAMES', text: 'GLTFLoader' }],
     message1: 'da biblioteca %1',
     args1: [{ type: 'field_input', name: 'MODULE', text: 'three/addons/loaders/GLTFLoader.js' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Traz uma ferramenta extra da biblioteca 3D (ex.: o carregador de modelos GLTFLoader) para o projeto. Vira "import { GLTFLoader } from \'three/addons/…\'". Separe vários nomes por vírgula.',
+      'Traz uma ferramenta extra da biblioteca 3D (carregadores, controles, efeitos). CLIQUE em "usar" e ESCOLHA — o caminho "three/addons/…" é preenchido sozinho. Vira "import { GLTFLoader } from \'three/addons/…\'".',
   },
 
   // ───────────────────────── 🎯 Transformar (Object3D) ────────────────────────
@@ -252,6 +248,39 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Pinta o fundo da cena de uma cor. Vira "cena.background = new THREE.Color(\'#101830\')".',
   },
+  {
+    // `scene.fog = new THREE.Fog(cor, perto, longe)`
+    type: 'sz_t3d_set_fog',
+    message0: 'névoa da cena %1 → cor %2 de perto %3 até longe %4',
+    args0: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'input_value', name: 'NEAR', check: 'JSValue' },
+      { type: 'input_value', name: 'FAR', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga a névoa de distância: as coisas somem suavemente na cor escolhida entre o "perto" e o "longe" (em metros). Dá profundidade de mundo grande. Vira "cena.fog = new THREE.Fog(\'#aabbcc\', 10, 100)".',
+  },
+  {
+    // `obj.position.lerp(alvo, velocidade)` — o idioma nº 1 de câmera que segue.
+    type: 'sz_t3d_lerp_position',
+    message0: 'mover %1 devagar até %2 na velocidade %3',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'camera', kind: 'variable' },
+      { type: 'input_value', name: 'TARGET', check: 'JSValue' },
+      { type: 'input_value', name: 'ALPHA', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desliza a posição do objeto um pedacinho em direção a um alvo (um Vector3) a cada quadro — a suavidade profissional da câmera que segue. Velocidade 0.1 = 10% do caminho por quadro. Vira "camera.position.lerp(alvo, 0.1)".',
+  },
 
   // ───────────────────────── 💡 Luz e sombra ──────────────────────────────────
   {
@@ -355,6 +384,36 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       'Coloca a tela do renderizador (o canvas 3D) dentro da página, para o desenho aparecer. Vira "document.body.appendChild(renderizador.domElement)".',
   },
 
+  // ───────────────────────── 🌳 Cópias em massa ───────────────────────────────
+  {
+    // `malha.setMatrixAt(i, molde.matrix)` — o miolo do InstancedMesh.
+    type: 'sz_t3d_set_matrix_at',
+    message0: 'gravar a pose do molde %1 na cópia %2 de %3',
+    args0: [
+      { type: 'field_name_picker', name: 'DUMMY', text: 'molde', kind: 'variable' },
+      { type: 'input_value', name: 'I', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'MESH', text: 'copias', kind: 'variable' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O truque das florestas profissionais (InstancedMesh): posicione um Object3D "molde" (posição/giro/tamanho + "atualizar a matriz") e grave a pose dele na cópia número i. Milhares de árvores custam UM desenho. Vira "copias.setMatrixAt(i, molde.matrix)".',
+  },
+  {
+    // `malha.instanceMatrix.needsUpdate = true`
+    type: 'sz_t3d_instances_dirty',
+    message0: 'avisar que as cópias de %1 mudaram',
+    args0: [{ type: 'field_name_picker', name: 'MESH', text: 'copias', kind: 'variable' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Depois de gravar as poses das cópias, avise a placa de vídeo que elas mudaram (senão nada aparece). Use UMA vez, depois do laço de gravar. Vira "copias.instanceMatrix.needsUpdate = true".',
+  },
+
   // ───────────────────────── 📦 Modelos e texturas ────────────────────────────
   {
     // `carregador.load(url, (modelo) => { … })` — carregamento async de um recurso.
@@ -362,7 +421,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'com o carregador %1 carregar o modelo %2',
     args0: [
       { type: 'field_name_picker', name: 'LOADER', text: 'carregador', kind: 'variable' },
-      { type: 'input_value', name: 'URL', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'URL', text: 'modelo', kind: '3d' },
     ],
     message1: 'quando pronto, com o modelo em %1, fazer %2',
     args1: [
@@ -374,7 +433,254 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Carrega um modelo 3D (.glb) e, quando terminar, roda os blocos de dentro com o modelo pronto (ex.: "adicionar modelo.scene em cena"). Vira "carregador.load(url, (modelo) => { … })".',
+      'Carrega um modelo 3D (.glb) que você enviou em "Imagens" e, quando terminar, roda os blocos de dentro com o modelo pronto (ex.: "adicionar modelo.scene em cena"). Vira "carregador.load(\'nome\', (modelo) => { … })".',
+  },
+  {
+    // `carregadorSom.load('nome', (buffer) => { … })` — MESMO nó `loaderLoad` do
+    // modelo (buildIR idêntico); só muda o rótulo e o seletor de asset (som). O
+    // reverso (código→bloco) escolhe ESTE bloco quando o carregador foi declarado
+    // como AudioLoader (latch `audioLoaderVars` no workspaceState).
+    type: 'sz_t3d_load_sound',
+    message0: 'com o carregador %1 carregar o som %2',
+    args0: [
+      { type: 'field_name_picker', name: 'LOADER', text: 'carregadorSom', kind: 'variable' },
+      { type: 'field_asset_picker', name: 'URL', text: 'som', kind: 'audio' },
+    ],
+    message1: 'quando pronto, com o som em %1, fazer %2',
+    args1: [
+      { type: 'field_input', name: 'PARAM', text: 'buffer' },
+      { type: 'input_statement', name: 'DO' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Carrega um som que você enviou em "Imagens" (🔊 Enviar som) e, quando terminar, roda os blocos de dentro com o áudio decodificado. Combine com "método setBuffer(buffer)" + "método play()" num THREE.Audio ou THREE.PositionalAudio. Vira "carregadorSom.load(\'nome\', (buffer) => { … })".',
+  },
+  {
+    // `objeto.traverse((parte) => { … })` — percorrer cada parte de um objeto/modelo.
+    type: 'sz_t3d_traverse',
+    message0: 'para cada parte de %1',
+    args0: [{ type: 'input_value', name: 'OBJ', check: 'JSValue' }],
+    message1: 'com a parte em %1, fazer %2',
+    args1: [
+      { type: 'field_input', name: 'PARAM', text: 'parte' },
+      { type: 'input_statement', name: 'DO' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Passa por TODAS as partes de um objeto ou modelo carregado (a cena inteira do .glb, cada malha dentro de um grupo) e roda os blocos de dentro em cada uma — o jeito de ligar sombra em tudo, trocar materiais etc. Encaixe "propriedade cena de modelo" na entrada. Vira "objeto.traverse((parte) => { … })".',
+  },
+  {
+    // Modernização do renderizador em 1 bloco: cada dropdown vira a grafia ATUAL do
+    // three.js (setPixelRatio / shadowMap.type / outputColorSpace / toneMapping).
+    type: 'sz_t3d_renderer_config',
+    message0: 'modernizar o renderizador %1',
+    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    message1: 'nitidez na tela %1 · sombras %2',
+    args1: [
+      {
+        type: 'field_dropdown',
+        name: 'PIXELS',
+        options: [
+          ['retina (nítido)', 'device'],
+          ['não mexer', 'off'],
+        ],
+      },
+      {
+        type: 'field_dropdown',
+        name: 'SHADOWS',
+        options: [
+          ['macias', 'soft'],
+          ['duras', 'hard'],
+          ['não mexer', 'off'],
+        ],
+      },
+    ],
+    message2: 'cores %1 · brilho %2',
+    args2: [
+      {
+        type: 'field_dropdown',
+        name: 'COLORSPACE',
+        options: [
+          ['vivas (sRGB)', 'srgb'],
+          ['não mexer', 'off'],
+        ],
+      },
+      {
+        type: 'field_dropdown',
+        name: 'TONE',
+        options: [
+          ['cinema (ACES)', 'aces'],
+          ['não mexer', 'off'],
+        ],
+      },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga de uma vez os ajustes que deixam o 3D bonito e MODERNO — a criança só escolhe, o bloco escreve a grafia certa do three.js de hoje: nitidez na retina (setPixelRatio), sombras macias (shadowMap.type), cores vivas (outputColorSpace = SRGBColorSpace) e brilho de cinema (toneMapping = ACESFilmicToneMapping). Ponha "não mexer" no que não quiser.',
+  },
+
+  // ───────────────────────── ✨ Efeitos ───────────────────────────────────────
+  {
+    // Macro "Brilho (bloom)": arma EffectComposer + RenderPass + UnrealBloomPass +
+    // OutputPass. Os imports do pós-processamento entram sozinhos (gerador).
+    type: 'sz_t3d_bloom_setup',
+    message0: 'ligar Brilho ✨ no renderizador %1',
+    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    message1: 'da cena %1 com a câmera %2',
+    args1: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'variable' },
+    ],
+    message2: 'força %1 · espalhar %2 · brilho mínimo %3 · guardar em %4',
+    args2: [
+      { type: 'input_value', name: 'STRENGTH', check: 'JSValue' },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+      { type: 'input_value', name: 'THRESHOLD', check: 'JSValue' },
+      { type: 'field_input', name: 'COMPOSER', text: 'composer' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O efeito ✨ mais bonito e comum: faz as partes claras BRILHAREM (neon, sol, lâmpadas). Um bloco só arma toda a "esteira de efeitos" do three.js (EffectComposer + RenderPass + UnrealBloomPass + OutputPass) e traz os imports sozinho. Força = quão forte brilha; espalhar = o tamanho do halo; brilho mínimo = o quão claro precisa ser pra brilhar. Depois troque o "desenhar a cena" por "desenhar com efeitos".',
+  },
+  {
+    // `composer.render()` — desenhar passando pela esteira de efeitos (no lugar de
+    // `renderer.render(cena, camera)`). Facilitador → memberCall genérico.
+    type: 'sz_t3d_render_effects',
+    message0: 'desenhar a cena com efeitos %1',
+    args0: [{ type: 'field_name_picker', name: 'COMPOSER', text: 'composer', kind: 'variable' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'No lugar de "desenhar a cena", use este DENTRO do laço de animação quando ligou um efeito (Brilho): desenha a cena passando pela esteira de efeitos. Vira "composer.render()".',
+  },
+  {
+    // Macro "Partículas": cria um sistema de Points (BufferGeometry aleatória +
+    // PointsMaterial). Forward-only; o gerador expande a receita.
+    type: 'sz_t3d_particles',
+    message0: 'criar partículas ✨ na cena %1',
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    message1: 'quantidade %1 · tamanho %2',
+    args1: [
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    message2: 'espalhar %1 · cor %2 · guardar em %3',
+    args2: [
+      { type: 'input_value', name: 'SPREAD', check: 'JSValue' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'PARTICLES', text: 'particulas' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma nuvem de pontinhos ✨ (estrelas, poeira mágica, fogo, neve) espalhados no espaço — um efeito lindo e barato. Um bloco só monta a "malha de pontos" do three.js (BufferGeometry + PointsMaterial + Points). Quantidade = quantos pontos; tamanho = o tamanho de cada; espalhar = o quão longe eles vão; cor = a cor deles. Depois gire "particulas" no laço pra dar vida.',
+  },
+  {
+    // Macro "Água": plano d'água com reflexo (addon Water) + normal map procedural
+    // (sem depender de arquivo externo). Forward-only; o gerador expande a receita.
+    type: 'sz_t3d_water',
+    message0: 'criar água 🌊 na cena %1',
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    message1: 'tamanho %1 · cor %2 · guardar em %3',
+    args1: [
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'WATER', text: 'agua' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um plano d\'água que REFLETE a cena, como um lago ou oceano. Um bloco só monta o efeito Water do three.js (com as ondinhas de normal geradas na hora, sem precisar de imagem). Tamanho = o quão grande é a água; cor = a cor da água. Depois use "fazer a água ondular" no laço pra ela se mexer.',
+  },
+  {
+    // `water.material.uniforms.time.value += 1 / 60` — animar as ondas no laço.
+    type: 'sz_t3d_water_wave',
+    message0: 'fazer a água %1 ondular',
+    args0: [{ type: 'field_name_picker', name: 'WATER', text: 'agua', kind: 'variable' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Use DENTRO do laço de animação pra a água se mexer (as ondas andarem). Vira "agua.material.uniforms.time.value += 1 / 60".',
+  },
+  {
+    // Macro "Grama": campo de grama INSTANCIADA (milhares de folhas num desenho) com
+    // shader de vento (GLSL escondido). Forward-only; o gerador expande a receita.
+    type: 'sz_t3d_grass',
+    message0: 'criar grama 🌿 na cena %1',
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    message1: 'folhas %1 · altura %2',
+    args1: [
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    message2: 'espalhar %1 · cor %2 · guardar em %3',
+    args2: [
+      { type: 'input_value', name: 'SPREAD', check: 'JSValue' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'GRASS', text: 'grama' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um campo de grama 🌿 com MILHARES de folhinhas — e todas custam UM só desenho (o truque do InstancedMesh) + um shader de vento que faz elas balançarem. Folhas = quantas; altura = o tamanho de cada; espalhar = o tamanho do campo; cor = o verde da grama. Depois use "fazer a grama balançar" no laço.',
+  },
+  {
+    // Macro "Letreiro 3D": o jeito FOLIO de texto no mundo — desenha o texto num
+    // canvas oculto, vira CanvasTexture num plano transparente (só as letras têm
+    // alfa). Forward-only; o gerador expande a receita (12 linhas, todas 0-raw).
+    type: 'sz_t3d_sign',
+    message0: 'criar letreiro 🪧 na cena %1',
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    message1: 'texto %1 · largura %2',
+    args1: [
+      { type: 'field_input', name: 'TEXT', text: 'Oi!' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    message2: 'cor %1 · guardar em %2',
+    args2: [
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'SIGN', text: 'placa' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um letreiro flutuante com o texto que você quiser — o jeito que os sites 3D profissionais fazem: desenha o texto numa telinha escondida (canvas), transforma em textura (CanvasTexture) e cola num plano transparente. Depois posicione com "mudar a posição de placa". Largura em metros; a altura é metade.',
+  },
+  {
+    // `grama.material.uniforms.time.value += 0.02` — animar o vento no laço.
+    type: 'sz_t3d_grass_wave',
+    message0: 'fazer a grama %1 balançar',
+    args0: [{ type: 'field_name_picker', name: 'GRASS', text: 'grama', kind: 'variable' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Use DENTRO do laço de animação pra o vento soprar (a grama balançar). Vira "grama.material.uniforms.time.value += 0.02".',
   },
 ]
 
@@ -393,13 +699,14 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
       'sz_t3d_rotate_axis',
       'sz_t3d_set_scale',
       'sz_t3d_look_at',
+      'sz_t3d_lerp_position',
       'sz_t3d_set_visible',
     ],
   },
   {
     name: '🎬 Cena e material',
     colour: C,
-    types: ['sz_t3d_add_to', 'sz_t3d_set_color', 'sz_t3d_set_background'],
+    types: ['sz_t3d_add_to', 'sz_t3d_set_color', 'sz_t3d_set_background', 'sz_t3d_set_fog'],
   },
   {
     name: '💡 Luz e sombra',
@@ -411,15 +718,35 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
     colour: C,
     types: [
       'sz_t3d_renderer_size',
+      'sz_t3d_renderer_config',
       'sz_t3d_enable_shadows',
       'sz_t3d_mount_renderer',
       'sz_t3d_render',
     ],
   },
   {
-    name: '📦 Modelos',
+    name: '🌳 Cópias em massa',
     colour: C,
-    types: ['sz_t3d_load_model'],
+    types: ['sz_t3d_set_matrix_at', 'sz_t3d_instances_dirty'],
+  },
+  {
+    name: '📦 Modelos e sons',
+    colour: C,
+    types: ['sz_t3d_load_model', 'sz_t3d_load_sound', 'sz_t3d_traverse'],
+  },
+  {
+    name: '✨ Efeitos',
+    colour: C,
+    types: [
+      'sz_t3d_bloom_setup',
+      'sz_t3d_render_effects',
+      'sz_t3d_particles',
+      'sz_t3d_water',
+      'sz_t3d_water_wave',
+      'sz_t3d_grass',
+      'sz_t3d_grass_wave',
+      'sz_t3d_sign',
+    ],
   },
 ]
 
