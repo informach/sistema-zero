@@ -52,7 +52,11 @@ export const world3DRuntime = `import * as THREE from 'three';
     praia:     { skyTop: '#5fc0ee', skyBot: '#fdeec9', low: '#e3cb8d', high: '#d2b268', rock: '#b3a284', fog: '#f2e4c2', grip: 1, grass: ['#7ea35a', '#c9d97a'], grassK: 0.5 },
     neve:      { skyTop: '#9dbcdd', skyBot: '#eef4fb', low: '#dfe8f2', high: '#ffffff', rock: '#9fb0c0', fog: '#e3ecf6', grip: 0.45, grass: ['#b9c8d8', '#eef4fb'], grassK: 0.25 },
     deserto:   { skyTop: '#74aee6', skyBot: '#f6d8a6', low: '#d3a05c', high: '#e6c079', rock: '#a3794c', fog: '#ecd8ae', grip: 1, grass: ['#8a8a4a', '#c9c96a'], grassK: 0.2 },
-    primavera: { skyTop: '#85cbf4', skyBot: '#f8e2ef', low: '#579a49', high: '#8cc061', rock: '#96917f', fog: '#e1eed6', grip: 1, grass: ['#3f7a3a', '#9ed36a'], grassK: 1 }
+    primavera: { skyTop: '#85cbf4', skyBot: '#f8e2ef', low: '#579a49', high: '#8cc061', rock: '#96917f', fog: '#e1eed6', grip: 1, grass: ['#3f7a3a', '#9ed36a'], grassK: 1 },
+    // 🌙 Lua: cinzas + gravidade fraca (pulos flutuantes) + noite default no start.
+    lua:       { skyTop: '#0b0d1a', skyBot: '#2a2440', low: '#6b7080', high: '#9aa1b0', rock: '#565b68', fog: '#1a1c2a', grip: 1, grass: ['#6b7080', '#9aa1b0'], grassK: 0, gravity: 0.4, ground2: '#565b68' },
+    // 🚜 Fazenda: campos verde-dourados (celeiro/moinho/plantação são blocos-receita).
+    fazenda:   { skyTop: '#7cc4f0', skyBot: '#f6ecc0', low: '#5a8c3e', high: '#a8b84e', rock: '#8f8468', fog: '#e8ecc8', grip: 1, grass: ['#4a7a34', '#c2c85e'], grassK: 0.8, ground2: '#5a7a2e' }
   };
 
   // Estilos de carrinho: proporções + números de fábrica (car_stats sobrepõe).
@@ -134,6 +138,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   var carBody = null;           // carroceria (molejo: pitch/roll)
   var carWheels = [];           // { mesh, pivot, front }
   var GRAV = 22;
+  // Escala de gravidade do MUNDO (styles: lua = 0.4). Multiplica pessoa,
+  // empurráveis e carrinho — knockables/festa têm queda própria (cosmética).
+  var gravityScale = 1;
   // Câmera que segue (com zoom por velocidade) + órbita automática sem carro.
   var _look = null;
   var _autoAngle = 0;
@@ -219,6 +226,19 @@ export const world3DRuntime = `import * as THREE from 'three';
   // ---- R14 "natureza acesa": cachoeira, postes, vaga-lumes, fogueira, espuma ----
   var waterfalls = [];          // { mesh, mat, foam, x, z }
   var lamps = [];               // { x, z, globeMat }
+  // 🏙️ Cidade: config + geometria do grafo viário (anel + 4 raios). UMA por
+  // mundo; o grafo é ANALÍTICO (círculo + retas) — o trânsito da R23 deriva
+  // as lanes daqui sem guardar polilinha.
+  var cityCfg = null;           // { x, z, r, size, mode }
+  var cityGraph = null;         // { cx, cz, ringR, plazaR, roadW, entries:[{ang,x,z}], crossings:[{ang,x,z}] }
+  var cityGroup = null;         // raiz de TUDO da cidade (rebuild ao vivo troca inteira)
+  var stringLights = [];        // { bulbsMat } — varais (opacidade segue a noite)
+  // 🚦 Trânsito: carrinhos autônomos no ANEL (1 InstancedMesh p/ todos) +
+  // semáforos sincronizados nos 4 cruzamentos. Tudo em dt (bullet-time junto).
+  var trafficCfg = null;        // { n, sem }
+  var trafficCars = [];         // { lane (0 fora/1 dentro), a (ângulo), speed, hornCd, blockT }
+  var trafficMesh = null;       // IM único: n × TRAFFIC_PARTS.length instâncias
+  var semState = null;          // { t, phase: 'anda'|'amarelo'|'para', bulbMesh }
   var LAMP_MAX = 24;
   var lampLights = null;        // pool de até 4 PointLights REAIS (os postes mais perto)
   var firefliesPts = null;      // { mesh, mat, home:Float32Array, n }
@@ -252,7 +272,21 @@ export const world3DRuntime = `import * as THREE from 'three';
   var npcs = [];                // { name, group, parts, x, z, yaw, home, target, waitT, phase, vis, emote }
   var NPC_MAX = 8;
   var npcTalkHooks = Object.create(null);  // name -> [fn]
-  var npcSayQueues = Object.create(null);  // name -> [textos] (E avança)
+  // Fila de conversa por amigo (E avança). Itens-OBJETO desde a R24:
+  // { kind:'say', text } | { kind:'ask', q, a, fa, b, fb } (pergunta c/ 2 escolhas).
+  var npcSayQueues = Object.create(null);
+  var npcChoice = null;         // pergunta ABERTA: { name, fa, fb, el } — E engolido; 1/2 ou clique
+  // 🚪 Portas interativas: E abre um overlay LOCAL (título + texto + imagem do projeto).
+  var doors = [];
+  var doorOverlayEl = null;
+  var doorOverlayOpen = false;
+  // 🚜 Fazenda + 🌙 Lua (R25): moinhos girando, bichinhos, cercas, bandeiras, foguetes.
+  var windmills = [];           // { blades (Group) }
+  var herds = [];               // { body, head (IMs), kind, list:[{x,z,yaw,home,target,waitT,phase}] }
+  var animalsCount = 0;
+  var fencePosts = 0;
+  var flagsCount = 0;
+  var rocketsCount = 0;
   var npcBubble = null;         // { el, name, text, shown, t } — balão typewriter único
   var _npcBlipCd = 0;
   // ---- R18 "moedas & missões" ----
@@ -472,6 +506,17 @@ export const world3DRuntime = `import * as THREE from 'three';
         if (k2 > 0) {
           var target = m.y1 + (m.y2 - m.y1) * s.t;
           h = h + (target - h) * k2;
+        }
+      } else if (m.kind === 'crater') {
+        // Tigela no centro + borda ERGUIDA ao redor (o anel clássico). Aditivo
+        // sobre o ruído — compõe com flatten/trilha e vale em qualquer estilo.
+        var dx3 = x - m.x;
+        var dz3 = z - m.z;
+        var d3 = Math.sqrt(dx3 * dx3 + dz3 * dz3);
+        if (d3 < m.r * 1.5) {
+          var bowl = 1 - smoothstep(0, m.r * 0.75, d3);
+          var rim = (1 - smoothstep(m.r * 0.75, m.r * 1.4, d3)) * smoothstep(m.r * 0.35, m.r * 0.8, d3);
+          h = h - bowl * m.depth + rim * m.rim;
         }
       }
     }
@@ -1669,7 +1714,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (a.stars > 0.01) {
       ensureStars();
       if (starsMat) starsMat.opacity = a.stars;
-      if (starsMesh && carState) starsMesh.position.set(carState.x, 0, carState.z);
+      if (starsMesh) {
+        var sp = playerXZ();
+        starsMesh.position.set(sp.x, 0, sp.z);
+      }
     } else if (starsMat) {
       starsMat.opacity = 0;
     }
@@ -2203,9 +2251,19 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   /** A cada quadro: badge "E" no ponto mais perto, gatilho de E e de zona. */
   function stepInteractions() {
-    if (!carState) return;
-    var cx = carState.x;
-    var cz = carState.z;
+    if (!worldReady) return;
+    // Overlay da porta aberto: o E fecha (e NÃO re-dispara a porta no mesmo aperto).
+    if (doorOverlayOpen) {
+      if (isJust('e')) closeDoorOverlay();
+      updatePrompt(null);
+      return;
+    }
+    // ⭐ R21: a distância é do JOGADOR ATIVO (a pé/carro/barco), não do carro —
+    // medir do carro fazia o "E: entrar" vencer de longe com o carro estacionado
+    // e pontos/NPCs só dispararem se o CARRO estivesse perto deles.
+    var p0 = playerXZ();
+    var cx = p0.x;
+    var cz = p0.z;
     // Árbitro ÚNICO do "aperte E" (R11): pontos + interagíveis extras (entrar no
     // veículo, falar com o amigo, escrever recado… registram em extraInteract).
     // Maior prioridade ganha; no empate, o mais perto. O badge mostra o rótulo.
@@ -2717,13 +2775,26 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'questHud') refreshQuestHud();
       else if (r.kind === 'whisperCorner') buildWhisperCorner(r.x, r.z);
       else if (r.kind === 'flameNote') addFlame(r.x, r.z, r.text, false);
+      else if (r.kind === 'city') buildCity();
+      else if (r.kind === 'stringLights') buildStringSpan(r.x1, r.z1, r.x2, r.z2);
+      else if (r.kind === 'door') buildDoor(r);
+      else if (r.kind === 'crops') buildCrops(r);
+      else if (r.kind === 'barn') buildBarn(r);
+      else if (r.kind === 'windmill') buildWindmill(r);
+      else if (r.kind === 'fence') buildFence(r);
+      else if (r.kind === 'animals') buildAnimals(r);
+      else if (r.kind === 'flag') buildFlag(r);
+      else if (r.kind === 'rocket') buildRocket(r);
     }
-    // 2ª passada: o "passear" precisa do amigo já criado (ordem livre dos blocos).
+    // 2ª passada: o "passear" precisa do amigo já criado, e o trânsito precisa
+    // da cidade já construída (ordem livre dos blocos).
     for (var j = 0; j < decorRecipes.length; j++) {
       var r2 = decorRecipes[j];
       if (r2.kind === 'npcWander') {
         var npc2 = findNpc(r2.name);
         if (npc2) npc2.home.r = clamp(num(r2.r, 10), 0, 60);
+      } else if (r2.kind === 'traffic') {
+        buildTraffic();
       }
     }
   }
@@ -3015,6 +3086,21 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (grassCfg) buildGrass();
 
       worldReady = true;
+      // 🌙 Na lua a noite é o DEFAULT (estrelas + postes + faróis acendem) —
+      // só quando a criança não pediu hora/ciclo próprios.
+      if (config.style === 'lua' && !atmoUsed) {
+        timeOfDay = 0;
+        atmoUsed = true;
+      }
+      // 🌃 Cidade neon: noite + chuva leve por default (só se a criança não
+      // pediu a própria hora/clima).
+      if (cityCfg && cityCfg.mode === 'neon') {
+        if (!atmoUsed) {
+          timeOfDay = 0;
+          atmoUsed = true;
+        }
+        if (weatherKind === 'limpo') weatherKind = 'chuva';
+      }
       if (atmoUsed) {
         _skyDrawnAt = -1;
         applyAtmosphere();
@@ -3184,7 +3270,11 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (personCfg && !driving && personState) {
       return { x: personState.x, y: personState.y, z: personState.z };
     }
+    if (driving && activeVehicle === 'boat' && boatState) {
+      return { x: boatState.x, y: boatState.y, z: boatState.z };
+    }
     if (carState) return { x: carState.x, y: carState.y, z: carState.z };
+    if (boatState) return { x: boatState.x, y: boatState.y, z: boatState.z };
     return { x: 0, y: heightAt(0, 0), z: 0 };
   }
 
@@ -3625,6 +3715,22 @@ export const world3DRuntime = `import * as THREE from 'three';
           if (heightAt(wx2, wz2) < waterCfg.y - 0.2) g.fillRect(gx * cell, gy * cell, cell + 1, cell + 1);
         }
       }
+    }
+    if (cityGraph) {
+      // As ruas da cidadezinha: anel + 4 raios em traço cinza.
+      g.strokeStyle = '#6b7280';
+      g.lineWidth = Math.max(2, size * 0.022);
+      g.beginPath();
+      g.arc(toPx(cityGraph.cx), toPx(cityGraph.cz), (cityGraph.ringR / config.world) * size, 0, Math.PI * 2);
+      g.stroke();
+      for (i = 0; i < cityGraph.entries.length; i++) {
+        var en = cityGraph.entries[i];
+        g.beginPath();
+        g.moveTo(toPx(cityGraph.cx + Math.cos(en.ang) * cityGraph.plazaR), toPx(cityGraph.cz + Math.sin(en.ang) * cityGraph.plazaR));
+        g.lineTo(toPx(cityGraph.cx + Math.cos(en.ang) * cityGraph.ringR), toPx(cityGraph.cz + Math.sin(en.ang) * cityGraph.ringR));
+        g.stroke();
+      }
+      dot(cityGraph.cx, cityGraph.cz, '#d9c9a3', 3);
     }
     for (i = 0; i < points.length; i++) dot(points[i].x, points[i].z, '#22d3ee', 3);
     for (i = 0; i < npcs.length; i++) dot(npcs[i].x, npcs[i].z, '#f97316', 3);
@@ -4165,11 +4271,70 @@ export const world3DRuntime = `import * as THREE from 'three';
     npcBubble.el.textContent = '';
   }
 
-  /** E no amigo: avança a fila de falas; vazia → roda os ganchos (que enfileiram). */
+  /** Avança a fila do amigo: fala vira balão, pergunta vira balão + botões. */
+  function npcQueueNext(name) {
+    var q = npcSayQueues[name] || [];
+    if (!q.length) return false;
+    var item = q.shift();
+    if (item && item.kind === 'ask') npcShowAsk(name, item);
+    else npcShowSay(name, item && item.text != null ? item.text : String(item));
+    return true;
+  }
+
+  /** Pergunta com 2 escolhas: balão (typewriter) + botões 1/2 clicáveis. */
+  function npcShowAsk(name, item) {
+    npcShowSay(name, item.q);
+    if (!frameEl) return;
+    if (!npcChoice) {
+      var holder = document.createElement('div');
+      holder.setAttribute('style', 'position:absolute;display:flex;gap:8px;transform:translate(-50%,0);z-index:9;');
+      frameEl.appendChild(holder);
+      npcChoice = { name: name, fa: null, fb: null, el: holder };
+    }
+    npcChoice.name = name;
+    npcChoice.fa = item.fa;
+    npcChoice.fb = item.fb;
+    npcChoice.el.innerHTML = '';
+    var labels = ['1· ' + item.a, '2· ' + item.b];
+    for (var i = 0; i < 2; i++) {
+      (function (idx) {
+        var b = document.createElement('button');
+        b.textContent = labels[idx];
+        b.setAttribute('style', 'padding:6px 12px;border-radius:12px;border:0;background:#22d3ee;color:#04252b;font:800 13px system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)');
+        b.addEventListener('pointerdown', function (ev) {
+          if (ev && ev.preventDefault) ev.preventDefault();
+          npcChoosePick(idx);
+        });
+        npcChoice.el.appendChild(b);
+      })(i);
+    }
+    npcChoice.el.style.display = 'flex';
+  }
+
+  function npcChoosePick(idx) {
+    if (!npcChoice) return;
+    var name = npcChoice.name;
+    var fn = idx === 0 ? npcChoice.fa : npcChoice.fb;
+    npcChoice.el.style.display = 'none';
+    npcChoice = null;
+    if (typeof fn === 'function') {
+      try { fn(); } catch (e) {
+        warnOnce('npc-ask-' + name, 'erro na resposta de ' + name + ': ' + e);
+      }
+    }
+    // A resposta normalmente ENFILEIRA falas novas: mostra a próxima; se não
+    // veio nada, fecha o balão da pergunta.
+    if (!npcQueueNext(name)) {
+      if (npcBubble && npcBubble.name === name) npcBubble.el.style.display = 'none';
+    }
+  }
+
+  /** E no amigo: avança a fila; vazia → roda os ganchos (que enfileiram). */
   function npcInteract(name) {
+    if (npcChoice) return; // pergunta aberta: responda com 1/2 (ou clique)
     var q = npcSayQueues[name] || [];
     if (q.length) {
-      npcShowSay(name, q.shift());
+      npcQueueNext(name);
       return;
     }
     if (npcBubble && npcBubble.name === name && npcBubble.el.style.display === 'block') {
@@ -4186,13 +4351,18 @@ export const world3DRuntime = `import * as THREE from 'three';
     // Se o gancho já ABRIU o balão (npcSay mostra a 1ª fala na hora), NÃO
     // engolir a próxima da fila — senão a 2ª fala atropela a 1ª.
     var q2 = npcSayQueues[name] || [];
-    if (q2.length && (!npcBubble || npcBubble.el.style.display !== 'block')) {
-      npcShowSay(name, q2.shift());
+    if (q2.length && (!npcBubble || npcBubble.el.style.display !== 'block') && !npcChoice) {
+      npcQueueNext(name);
     }
   }
 
   function stepNpcs(dt) {
     if (!npcs.length) return;
+    // Pergunta aberta: teclas 1/2 respondem (além do clique nos botões).
+    if (npcChoice) {
+      if (isJust('1')) npcChoosePick(0);
+      else if (isJust('2')) npcChoosePick(1);
+    }
     var p = playerXZ();
     for (var i = 0; i < npcs.length; i++) {
       var n = npcs[i];
@@ -4275,6 +4445,11 @@ export const world3DRuntime = `import * as THREE from 'three';
           var rect = canvasEl.getBoundingClientRect();
           npcBubble.el.style.left = (_proj.x * 0.5 + 0.5) * rect.width + 'px';
           npcBubble.el.style.top = (-_proj.y * 0.5 + 0.5) * rect.height + 'px';
+          // Os botões da pergunta seguem logo ABAIXO do balão.
+          if (npcChoice && npcChoice.el.style.display !== 'none') {
+            npcChoice.el.style.left = npcBubble.el.style.left;
+            npcChoice.el.style.top = ((-_proj.y * 0.5 + 0.5) * rect.height + 10) + 'px';
+          }
         }
       }
       if (npcBubble.shown < npcBubble.text.length) {
@@ -4711,7 +4886,7 @@ export const world3DRuntime = `import * as THREE from 'three';
           spawnParty(s.x, s.y + 0.4, s.z, (Math.random() - 0.5) * 1.5, -2.5, (Math.random() - 0.5) * 1.5, 0.5, 2, 0, '#fde68a');
         }
       }
-      s.vy -= GRAV * dt;
+      s.vy -= GRAV * gravityScale * dt;
       s.y += s.vy * dt;
       if (s.y <= gy) {
         s.y = gy;
@@ -4886,6 +5061,1092 @@ export const world3DRuntime = `import * as THREE from 'three';
         lampLights[k].intensity = 0;
       }
     }
+  }
+
+  // ---- 🏙️ Cidade: praça + anel viário + 4 ruas radiais + casas instanciadas ----
+  // Estilo Vocation Vista: cidadezinha circular. TODO o pesado é instanciado
+  // (1 InstancedMesh por peça de arquétipo) e a malha viária é UMA geometria
+  // mesclada com cor por vértice — a cidade inteira custa ~13 draw calls.
+
+  var CITY_SIZES = { pequena: 28, media: 38, grande: 48 };
+  var CITY_WALL_COLORS = ['#f9c0c0', '#fcd9a8', '#fde68a', '#bbf7d0', '#bfdbfe', '#ddd6fe', '#f5d0fe', '#fecdd3'];
+  var CITY_NEON_COLORS = ['#22d3ee', '#f472b6', '#a3e635', '#fb923c', '#c084fc'];
+  // Arquétipos: a PAREDE é branca e ganha cor pastel POR INSTÂNCIA; as demais
+  // peças têm cor fixa (telhado/porta/janelas/toldo).
+  var CITY_ARCH = {
+    casinha: {
+      coll: 2.3,
+      wall: { g: 'box', x: 0, y: 1.1, z: 0, sx: 3.4, sy: 2.2, sz: 3.0 },
+      parts: [
+        { g: 'pyr', color: '#c2553f', x: 0, y: 2.95, z: 0, sx: 4.4, sy: 1.5, sz: 4.0 },
+        { g: 'box', color: '#3b2f26', x: 0, y: 0.85, z: 1.53, sx: 0.9, sy: 1.7, sz: 0.1 },
+        { g: 'box', color: '#9cc3e8', x: -1.05, y: 1.35, z: 1.53, sx: 0.8, sy: 0.7, sz: 0.08 },
+        { g: 'box', color: '#9cc3e8', x: 1.05, y: 1.35, z: 1.53, sx: 0.8, sy: 0.7, sz: 0.08 }
+      ]
+    },
+    sobrado: {
+      coll: 2.5,
+      wall: { g: 'box', x: 0, y: 2.0, z: 0, sx: 3.2, sy: 4.0, sz: 3.2 },
+      parts: [
+        { g: 'pyr', color: '#7c5cbf', x: 0, y: 4.55, z: 0, sx: 4.2, sy: 1.2, sz: 4.2 },
+        { g: 'box', color: '#3b2f26', x: 0, y: 0.85, z: 1.63, sx: 0.9, sy: 1.7, sz: 0.1 },
+        { g: 'box', color: '#9cc3e8', x: -0.9, y: 3.0, z: 1.63, sx: 0.7, sy: 0.8, sz: 0.08 },
+        { g: 'box', color: '#9cc3e8', x: 0.9, y: 3.0, z: 1.63, sx: 0.7, sy: 0.8, sz: 0.08 }
+      ]
+    },
+    loja: {
+      coll: 2.6,
+      wall: { g: 'box', x: 0, y: 1.25, z: 0, sx: 4.2, sy: 2.5, sz: 3.2 },
+      parts: [
+        { g: 'box', color: '#4b5563', x: 0, y: 2.62, z: 0, sx: 4.4, sy: 0.24, sz: 3.4 },
+        { g: 'box', color: '#ef6a6a', x: 0, y: 2.15, z: 1.75, sx: 3.6, sy: 0.32, sz: 0.9 },
+        { g: 'box', color: '#dbeafe', x: 0, y: 1.05, z: 1.63, sx: 2.6, sy: 1.5, sz: 0.1 },
+        { g: 'box', color: '#3b2f26', x: 1.6, y: 0.9, z: 1.63, sx: 0.8, sy: 1.8, sz: 0.1 }
+      ]
+    },
+    predinho: {
+      coll: 2.6,
+      wall: { g: 'box', x: 0, y: 3.0, z: 0, sx: 3.6, sy: 6.0, sz: 3.6 },
+      parts: [
+        { g: 'box', color: '#4b5563', x: 0, y: 6.12, z: 0, sx: 3.8, sy: 0.24, sz: 3.8 },
+        { g: 'box', color: '#9cc3e8', x: -0.95, y: 2.0, z: 1.83, sx: 0.85, sy: 3.4, sz: 0.08 },
+        { g: 'box', color: '#9cc3e8', x: 0.95, y: 2.0, z: 1.83, sx: 0.85, sy: 3.4, sz: 0.08 },
+        { g: 'box', color: '#3b2f26', x: 0, y: 0.95, z: 1.83, sx: 1.0, sy: 1.9, sz: 0.1 }
+      ]
+    }
+  };
+
+  function ensureCityGeos() {
+    ensureUnitGeos();
+    if (!UNIT_GEOS.box) UNIT_GEOS.box = new THREE.BoxGeometry(1, 1, 1);
+    if (!UNIT_GEOS.pyr) {
+      // Telhado piramidal ALINHADO (cone de 4 lados girado 45°, assado na geo).
+      var pyr = new THREE.ConeGeometry(0.5, 1, 4);
+      pyr.rotateY(Math.PI / 4);
+      UNIT_GEOS.pyr = pyr;
+    }
+  }
+
+  /** Yaw que leva o eixo X local do quad deitado à direção mundial (dx,dz). */
+  function yawForDir(dx, dz) {
+    return Math.atan2(-dz, dx);
+  }
+
+  function cityLakePos() {
+    return {
+      x: cityCfg.x + Math.cos(3.93) * cityCfg.r * 0.42,
+      z: cityCfg.z + Math.sin(3.93) * cityCfg.r * 0.42
+    };
+  }
+
+  /** Reserva do terreno + grafo (SÓ dados — padrão reserveGallery). */
+  function reserveCity() {
+    var c = cityCfg;
+    var y0 = baseHeightAt(c.x, c.z);
+    terrainMods.push({ kind: 'flatten', x: c.x, z: c.z, r: c.r + 8, y: y0 });
+    exclusions.push({ x: c.x, z: c.z, r: c.r + 6 });
+    var ringR = c.r * 0.62;
+    var plazaR = Math.max(6, c.r * 0.22);
+    var entries = [];
+    var crossings = [];
+    for (var i = 0; i < 4; i++) {
+      var ang = (i * Math.PI) / 2;
+      entries.push({ ang: ang, x: c.x + Math.cos(ang) * plazaR, z: c.z + Math.sin(ang) * plazaR });
+      crossings.push({ ang: ang, x: c.x + Math.cos(ang) * ringR, z: c.z + Math.sin(ang) * ringR });
+    }
+    cityGraph = { cx: c.x, cz: c.z, ringR: ringR, plazaR: plazaR, roadW: 5, entries: entries, crossings: crossings };
+    if (!waterCfg) {
+      var lag = cityLakePos();
+      terrainMods.push({ kind: 'flatten', x: lag.x, z: lag.z, r: 6, y: y0 - 1.4 });
+    }
+  }
+
+  function cityColorPush(colArr, c) {
+    colArr.push(c.r, c.g, c.b);
+  }
+
+  /** Malha viária inteira (asfalto/calçada/praça) = UMA geometria, cor por vértice. */
+  function buildCityRoads(cy) {
+    var G = cityGraph;
+    var pos = [];
+    var col = [];
+    var asphalt = new THREE.Color('#3f4854');
+    var walk = new THREE.Color('#a8adb8');
+    var plaza = new THREE.Color('#d9c9a3');
+    function quad(ax, az, bx, bz, cx2, cz2, dx2, dz2, y, c) {
+      // dois triângulos (a,b,c) (a,c,d)
+      pos.push(ax, y, az, bx, y, bz, cx2, y, cz2, ax, y, az, cx2, y, cz2, dx2, y, dz2);
+      for (var t = 0; t < 6; t++) cityColorPush(col, c);
+    }
+    function annulusBand(r0, r1, y, c) {
+      var SEG = 48;
+      for (var i = 0; i < SEG; i++) {
+        var a0 = (i / SEG) * Math.PI * 2;
+        var a1 = ((i + 1) / SEG) * Math.PI * 2;
+        quad(
+          G.cx + Math.cos(a0) * r0, G.cz + Math.sin(a0) * r0,
+          G.cx + Math.cos(a0) * r1, G.cz + Math.sin(a0) * r1,
+          G.cx + Math.cos(a1) * r1, G.cz + Math.sin(a1) * r1,
+          G.cx + Math.cos(a1) * r0, G.cz + Math.sin(a1) * r0,
+          y, c
+        );
+      }
+    }
+    function radialBand(ang, off, w, y, c) {
+      // faixa da praça ao anel, deslocada 'off' pro lado (perpendicular).
+      var px = -Math.sin(ang);
+      var pz = Math.cos(ang);
+      var r0 = G.plazaR - 0.5;
+      var r1 = G.ringR + G.roadW / 2 + 1.4;
+      quad(
+        G.cx + Math.cos(ang) * r0 + px * (off - w / 2), G.cz + Math.sin(ang) * r0 + pz * (off - w / 2),
+        G.cx + Math.cos(ang) * r0 + px * (off + w / 2), G.cz + Math.sin(ang) * r0 + pz * (off + w / 2),
+        G.cx + Math.cos(ang) * r1 + px * (off + w / 2), G.cz + Math.sin(ang) * r1 + pz * (off + w / 2),
+        G.cx + Math.cos(ang) * r1 + px * (off - w / 2), G.cz + Math.sin(ang) * r1 + pz * (off - w / 2),
+        y, c
+      );
+    }
+    // Praça (leque) + orla da praça.
+    var SEGP = 32;
+    for (var p = 0; p < SEGP; p++) {
+      var b0 = (p / SEGP) * Math.PI * 2;
+      var b1 = ((p + 1) / SEGP) * Math.PI * 2;
+      pos.push(
+        G.cx, cy + 0.03, G.cz,
+        G.cx + Math.cos(b0) * G.plazaR, cy + 0.03, G.cz + Math.sin(b0) * G.plazaR,
+        G.cx + Math.cos(b1) * G.plazaR, cy + 0.03, G.cz + Math.sin(b1) * G.plazaR
+      );
+      for (var t2 = 0; t2 < 3; t2++) cityColorPush(col, plaza);
+    }
+    // Anel: calçada interna, asfalto, calçada externa.
+    annulusBand(G.ringR - G.roadW / 2 - 1.4, G.ringR - G.roadW / 2, cy + 0.035, walk);
+    annulusBand(G.ringR - G.roadW / 2, G.ringR + G.roadW / 2, cy + 0.045, asphalt);
+    annulusBand(G.ringR + G.roadW / 2, G.ringR + G.roadW / 2 + 1.4, cy + 0.035, walk);
+    // Raios: asfalto + calçadas dos dois lados.
+    for (var rr = 0; rr < 4; rr++) {
+      var ang2 = G.entries[rr].ang;
+      radialBand(ang2, 0, G.roadW, cy + 0.044, asphalt);
+      radialBand(ang2, -(G.roadW / 2 + 0.7), 1.4, cy + 0.034, walk);
+      radialBand(ang2, G.roadW / 2 + 0.7, 1.4, cy + 0.034, walk);
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.computeVertexNormals();
+    var mesh = new THREE.Mesh(geo, toonMaterial({ color: '#ffffff', vertexColors: true }));
+    mesh.receiveShadow = true;
+    cityGroup.add(mesh);
+  }
+
+  /** Um quad deitado por instância (tracejado + faixas de pedestre). */
+  function setFlatInstance(mesh, i, x, y, z, yaw, sx, sz) {
+    _dummy.position.set(x, y, z);
+    _dummy.rotation.set(0, yaw, 0);
+    _dummy.scale.set(sx, 1, sz);
+    _dummy.updateMatrix();
+    mesh.setMatrixAt(i, _dummy.matrix);
+  }
+
+  function buildCityMarkings(cy) {
+    var G = cityGraph;
+    ensureDummies();
+    var items = [];
+    // Tracejado do anel (a cada ~5 m, tangente).
+    var SEG = Math.floor((Math.PI * 2 * G.ringR) / 5);
+    for (var i = 0; i < SEG; i++) {
+      var a = (i / SEG) * Math.PI * 2;
+      items.push({
+        x: G.cx + Math.cos(a) * G.ringR, z: G.cz + Math.sin(a) * G.ringR,
+        yaw: yawForDir(-Math.sin(a), Math.cos(a)), sx: 1.5, sz: 0.26
+      });
+    }
+    // Tracejado dos raios + FAIXAS DE PEDESTRE (na entrada da praça e antes do anel).
+    for (var r2 = 0; r2 < 4; r2++) {
+      var ang = G.entries[r2].ang;
+      var dx = Math.cos(ang);
+      var dz = Math.sin(ang);
+      for (var d = G.plazaR + 4.5; d < G.ringR - G.roadW / 2 - 2.5; d += 4) {
+        items.push({ x: G.cx + dx * d, z: G.cz + dz * d, yaw: yawForDir(dx, dz), sx: 1.5, sz: 0.26 });
+      }
+      for (var s = 0; s < 5; s++) {
+        var dd = G.plazaR + 1.2 + s * 0.85;
+        items.push({ x: G.cx + dx * dd, z: G.cz + dz * dd, yaw: yawForDir(-dz, dx), sx: 3.8, sz: 0.42 });
+        var dd2 = G.ringR - G.roadW / 2 - 1.4 - s * 0.85;
+        items.push({ x: G.cx + dx * dd2, z: G.cz + dz * dd2, yaw: yawForDir(-dz, dx), sx: 3.8, sz: 0.42 });
+      }
+    }
+    var quadGeo = new THREE.PlaneGeometry(1, 1);
+    quadGeo.rotateX(-Math.PI / 2);
+    var mesh = new THREE.InstancedMesh(quadGeo, new THREE.MeshBasicMaterial({ color: '#e5e7eb' }), items.length);
+    for (var k = 0; k < items.length; k++) {
+      setFlatInstance(mesh, k, items[k].x, cy + 0.06, items[k].z, items[k].yaw, items[k].sx, items[k].sz);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    cityGroup.add(mesh);
+  }
+
+  /** Lotes das casas: na orla EXTERNA do anel, de frente pra praça. */
+  function cityLots() {
+    var G = cityGraph;
+    var n = cityCfg.size === 'pequena' ? 10 : cityCfg.size === 'grande' ? 18 : 14;
+    var rng = mulberry(808 + Math.round(cityCfg.x * 7 + cityCfg.z * 13));
+    var lots = [];
+    var lotR = G.ringR + G.roadW / 2 + 4.6;
+    for (var i = 0; i < n; i++) {
+      var ang = (i / n) * Math.PI * 2 + 0.14;
+      var nearEntry = false;
+      for (var e = 0; e < 4; e++) {
+        var da = Math.abs(Math.atan2(Math.sin(ang - G.entries[e].ang), Math.cos(ang - G.entries[e].ang)));
+        if (da < 0.3) nearEntry = true;
+      }
+      if (nearEntry) continue;
+      var x = G.cx + Math.cos(ang) * lotR;
+      var z = G.cz + Math.sin(ang) * lotR;
+      // frente (+z local) apontando pro CENTRO da praça.
+      var yaw = Math.atan2(G.cx - x, G.cz - z);
+      lots.push({ x: x, z: z, yaw: yaw, color: CITY_WALL_COLORS[Math.floor(rng() * CITY_WALL_COLORS.length)] });
+    }
+    return lots;
+  }
+
+  function cityLocalOf(p) {
+    var m = new THREE.Matrix4();
+    m.compose(
+      new THREE.Vector3(p.x || 0, p.y || 0, p.z || 0),
+      new THREE.Quaternion(),
+      new THREE.Vector3(p.sx || 1, p.sy || 1, p.sz || 1)
+    );
+    return m;
+  }
+
+  function buildCityBuildings(lots, cy) {
+    if (!lots.length) return;
+    ensureCityGeos();
+    ensureDummies();
+    var archOrder = ['casinha', 'loja', 'sobrado', 'casinha', 'predinho', 'loja'];
+    var byArch = {};
+    for (var i = 0; i < lots.length; i++) {
+      var an = archOrder[i % archOrder.length];
+      if (!byArch[an]) byArch[an] = [];
+      byArch[an].push(lots[i]);
+      colliderAdd(lots[i].x, lots[i].z, CITY_ARCH[an].coll);
+      lots[i].arch = an;
+    }
+    for (var name in byArch) {
+      var spec = CITY_ARCH[name];
+      var group = byArch[name];
+      // Parede: material BRANCO + cor pastel por instância (setColorAt).
+      var wallLocal = cityLocalOf(spec.wall);
+      var wallMesh = new THREE.InstancedMesh(UNIT_GEOS[spec.wall.g], toonMaterial({ color: '#ffffff' }), group.length);
+      wallMesh.castShadow = true;
+      for (var w = 0; w < group.length; w++) {
+        var lot = group[w];
+        composeInstance(wallMesh, w, lot.x, heightAt(lot.x, lot.z), lot.z, lot.yaw, 1, wallLocal);
+        wallMesh.setColorAt(w, new THREE.Color(lot.color));
+      }
+      wallMesh.instanceMatrix.needsUpdate = true;
+      if (wallMesh.instanceColor) wallMesh.instanceColor.needsUpdate = true;
+      cityGroup.add(wallMesh);
+      // Peças de cor fixa (telhado/porta/janelas/toldo): 1 IM por peça.
+      for (var pi = 0; pi < spec.parts.length; pi++) {
+        var part = spec.parts[pi];
+        var local = cityLocalOf(part);
+        var pm = new THREE.InstancedMesh(UNIT_GEOS[part.g], speciesMat(part.color), group.length);
+        pm.castShadow = true;
+        for (var j = 0; j < group.length; j++) {
+          composeInstance(pm, j, group[j].x, heightAt(group[j].x, group[j].z), group[j].z, group[j].yaw, 1, local);
+        }
+        pm.instanceMatrix.needsUpdate = true;
+        cityGroup.add(pm);
+      }
+    }
+  }
+
+  /** Cercas-vivas ao redor da praça (com vãos nas 4 entradas). */
+  function buildCityHedges(cy) {
+    var G = cityGraph;
+    ensureCityGeos();
+    ensureDummies();
+    var items = [];
+    var hr = G.plazaR + 1.6;
+    var SEG = Math.floor((Math.PI * 2 * hr) / 1.9);
+    for (var i = 0; i < SEG; i++) {
+      var a = (i / SEG) * Math.PI * 2;
+      var skip = false;
+      for (var e = 0; e < 4; e++) {
+        var da = Math.abs(Math.atan2(Math.sin(a - G.entries[e].ang), Math.cos(a - G.entries[e].ang)));
+        if (da < 0.42) skip = true;
+      }
+      if (skip) continue;
+      items.push({ x: G.cx + Math.cos(a) * hr, z: G.cz + Math.sin(a) * hr, yaw: yawForDir(-Math.sin(a), Math.cos(a)) });
+    }
+    if (!items.length) return;
+    var mesh = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#2f7a3a'), items.length);
+    mesh.castShadow = true;
+    for (var k = 0; k < items.length; k++) {
+      _dummy.position.set(items[k].x, cy + 0.45, items[k].z);
+      _dummy.rotation.set(0, items[k].yaw, 0);
+      _dummy.scale.set(1.7, 0.9, 0.7);
+      _dummy.updateMatrix();
+      mesh.setMatrixAt(k, _dummy.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    cityGroup.add(mesh);
+  }
+
+  /** Coreto central da praça (base + 4 postes + telhado). */
+  function buildCityCoreto(cy) {
+    var G = cityGraph;
+    var base = new THREE.Mesh(new THREE.CylinderGeometry(G.plazaR * 0.34, G.plazaR * 0.38, 0.5, 12), toonMaterial({ color: '#c9a06a' }));
+    base.position.set(G.cx, cy + 0.25, G.cz);
+    base.castShadow = true;
+    cityGroup.add(base);
+    var postGeo = new THREE.CylinderGeometry(0.09, 0.09, 2.6, 6);
+    var postMat = toonMaterial({ color: '#7a5a38' });
+    for (var i = 0; i < 4; i++) {
+      var a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+      var post = new THREE.Mesh(postGeo, postMat);
+      post.position.set(G.cx + Math.cos(a) * G.plazaR * 0.26, cy + 1.7, G.cz + Math.sin(a) * G.plazaR * 0.26);
+      cityGroup.add(post);
+    }
+    var roof = new THREE.Mesh(new THREE.ConeGeometry(G.plazaR * 0.4, 1.4, 8), toonMaterial({ color: '#b8543f' }));
+    roof.position.set(G.cx, cy + 3.6, G.cz);
+    roof.castShadow = true;
+    cityGroup.add(roof);
+    colliderAdd(G.cx, G.cz, G.plazaR * 0.4);
+  }
+
+  /** Varal de luzinhas entre 2 postes (catenária + bolbos que acendem à noite). */
+  function buildStringSpan(x1, z1, x2, z2) {
+    if (!scene) return;
+    var parent = cityGroup || scene;
+    var y1 = heightAt(x1, z1);
+    var y2 = heightAt(x2, z2);
+    var poleGeo = new THREE.CylinderGeometry(0.07, 0.09, 3.1, 6);
+    var poleMat = toonMaterial({ color: '#334155' });
+    var p1 = new THREE.Mesh(poleGeo, poleMat);
+    p1.position.set(x1, y1 + 1.55, z1);
+    parent.add(p1);
+    var p2 = new THREE.Mesh(poleGeo, poleMat);
+    p2.position.set(x2, y2 + 1.55, z2);
+    parent.add(p2);
+    var top1 = y1 + 3.0;
+    var top2 = y2 + 3.0;
+    var len = Math.sqrt((x2 - x1) * (x2 - x1) + (z2 - z1) * (z2 - z1));
+    var sag = Math.min(1.1, 0.35 + len * 0.05);
+    var SEG = 14;
+    var linePos = [];
+    var bulbPos = [];
+    for (var i = 0; i < SEG; i++) {
+      var t0 = i / SEG;
+      var t1 = (i + 1) / SEG;
+      var ax = x1 + (x2 - x1) * t0;
+      var az = z1 + (z2 - z1) * t0;
+      var ay = top1 + (top2 - top1) * t0 - sag * 4 * t0 * (1 - t0);
+      var bx = x1 + (x2 - x1) * t1;
+      var bz = z1 + (z2 - z1) * t1;
+      var by = top1 + (top2 - top1) * t1 - sag * 4 * t1 * (1 - t1);
+      linePos.push(ax, ay, az, bx, by, bz);
+      if (i > 0) bulbPos.push(ax, ay - 0.12, az);
+    }
+    var lineGeo = new THREE.BufferGeometry();
+    lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePos, 3));
+    parent.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: '#1f2937' })));
+    var bulbGeo = new THREE.BufferGeometry();
+    bulbGeo.setAttribute('position', new THREE.Float32BufferAttribute(bulbPos, 3));
+    var bulbMat = new THREE.PointsMaterial({
+      map: ensureSpriteTex(), color: '#ffe9a3', size: 0.55,
+      transparent: true, opacity: 0.25, depthWrite: false, sizeAttenuation: true
+    });
+    var pts = new THREE.Points(bulbGeo, bulbMat);
+    pts.frustumCulled = false;
+    parent.add(pts);
+    stringLights.push({ bulbsMat: bulbMat });
+  }
+
+  function stepStringLights() {
+    if (!stringLights.length) return;
+    var o = 0.22 + nightAmount * 0.78;
+    for (var i = 0; i < stringLights.length; i++) stringLights[i].bulbsMat.opacity = o;
+  }
+
+  /** Laguinho decorativo (a depressão foi reservada; aqui só o espelho d'água). */
+  function buildCityLake(cy) {
+    var lag = cityLakePos();
+    var geo = new THREE.CircleGeometry(5.2, 20);
+    geo.rotateX(-Math.PI / 2);
+    var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: '#2b6cb0', transparent: true, opacity: 0.9 }));
+    mesh.position.set(lag.x, cy - 0.55, lag.z);
+    cityGroup.add(mesh);
+  }
+
+  /** Letreiros neon (quads emissivos sobre a frente das lojas/predinhos). */
+  function buildCityNeon(lots, cy) {
+    ensureDummies();
+    var alvo = [];
+    for (var i = 0; i < lots.length; i++) {
+      if (lots[i].arch === 'loja' || lots[i].arch === 'predinho') alvo.push(lots[i]);
+    }
+    if (!alvo.length) return;
+    var geo = new THREE.PlaneGeometry(1, 1);
+    var mesh = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: '#ffffff' }), alvo.length);
+    for (var k = 0; k < alvo.length; k++) {
+      var lot = alvo[k];
+      var off = lot.arch === 'predinho' ? 1.95 : 1.75;
+      var fx = lot.x + Math.sin(lot.yaw) * off;
+      var fz = lot.z + Math.cos(lot.yaw) * off;
+      _dummy.position.set(fx, heightAt(lot.x, lot.z) + (lot.arch === 'predinho' ? 5.4 : 2.95), fz);
+      _dummy.rotation.set(0, lot.yaw, 0);
+      _dummy.scale.set(2.3, 0.62, 1);
+      _dummy.updateMatrix();
+      mesh.setMatrixAt(k, _dummy.matrix);
+      mesh.setColorAt(k, new THREE.Color(CITY_NEON_COLORS[k % CITY_NEON_COLORS.length]));
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    cityGroup.add(mesh);
+  }
+
+  // ---- 🚪 Porta interativa: E abre um overlay LOCAL (o "conteúdo do prédio") ----
+
+  function closeDoorOverlay() {
+    if (doorOverlayEl) doorOverlayEl.style.display = 'none';
+    doorOverlayOpen = false;
+  }
+
+  function openDoorOverlay(rec) {
+    if (!ensureShell()) return;
+    if (!doorOverlayEl) {
+      doorOverlayEl = document.createElement('div');
+      doorOverlayEl.setAttribute('style', 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,10,16,.82);z-index:9;cursor:pointer');
+      doorOverlayEl.addEventListener('click', function () { closeDoorOverlay(); });
+      frameEl.appendChild(doorOverlayEl);
+    }
+    doorOverlayEl.innerHTML = '';
+    var card = document.createElement('div');
+    card.setAttribute('style', 'max-width:420px;width:86%;background:#fffef8;border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 44px rgba(0,0,0,.5)');
+    var h = document.createElement('div');
+    h.setAttribute('style', 'font:800 22px system-ui,sans-serif;color:#0f172a');
+    h.textContent = rec.title || 'Porta';
+    card.appendChild(h);
+    var url = ASSETS[text(rec.image, '')];
+    if (url) {
+      var im = document.createElement('img');
+      im.src = url;
+      im.setAttribute('style', 'width:100%;max-height:200px;object-fit:contain;border-radius:10px');
+      card.appendChild(im);
+    }
+    var p = document.createElement('div');
+    p.setAttribute('style', 'font:500 15px system-ui,sans-serif;color:#334155;white-space:pre-wrap');
+    p.textContent = rec.body || '';
+    card.appendChild(p);
+    var hint = document.createElement('div');
+    hint.setAttribute('style', 'font:400 12px system-ui,sans-serif;color:#94a3b8');
+    hint.textContent = 'E ou clique para fechar';
+    card.appendChild(hint);
+    doorOverlayEl.appendChild(card);
+    doorOverlayEl.style.display = 'flex';
+    doorOverlayOpen = true;
+    keys = {}; // padrão splash/pódio: o overlay engole o teclado do passeio
+  }
+
+  function buildDoor(rec) {
+    if (!scene) return;
+    if (doors.length >= 16) {
+      warnOnce('door-max', 'muitas portas (teto 16)');
+      return;
+    }
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var yaw = (num(rec.deg, 0) * Math.PI) / 180;
+    var gy = heightAtDrive(x, z, null);
+    var g = new THREE.Group();
+    var jambMat = toonMaterial({ color: '#7a5a38' });
+    var jambGeo = new THREE.BoxGeometry(0.18, 2.3, 0.22);
+    var j1 = new THREE.Mesh(jambGeo, jambMat);
+    j1.position.set(-0.62, 1.15, 0);
+    g.add(j1);
+    var j2 = new THREE.Mesh(jambGeo, jambMat);
+    j2.position.set(0.62, 1.15, 0);
+    g.add(j2);
+    var lintel = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.2, 0.22), jambMat);
+    lintel.position.set(0, 2.35, 0);
+    g.add(lintel);
+    var slab = new THREE.Mesh(new THREE.BoxGeometry(1.06, 2.2, 0.1), toonMaterial({ color: '#b8543f' }));
+    slab.position.set(0, 1.1, 0);
+    slab.castShadow = true;
+    g.add(slab);
+    var knob = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), new THREE.MeshBasicMaterial({ color: '#fbbf24' }));
+    knob.position.set(0.38, 1.05, 0.09);
+    g.add(knob);
+    if (rec.title) {
+      var tex = makeSignTexture(rec.title, '');
+      var sign = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.55), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+      sign.position.set(0, 2.85, 0.02);
+      g.add(sign);
+    }
+    g.position.set(x, gy, z);
+    g.rotation.y = yaw;
+    scene.add(g);
+    colliderAdd(x, z, 0.7);
+    doors.push(rec);
+    extraInteract.push({
+      x: x, z: z, r: 2.6, label: 'E: abrir', prio: 1, promptY: gy + 2.6,
+      fire: function () { openDoorOverlay(rec); }
+    });
+  }
+
+  // ---- 🚜 Fazenda: plantação, celeiro, moinho, cerquinha e bichinhos ----
+
+  var CROP_KINDS = {
+    milho:   { plant: '#d9c24a', tall: 1.1, ball: false },
+    alface:  { plant: '#5fbf5a', tall: 0.4, ball: true },
+    abobora: { plant: '#e8842f', tall: 0.42, ball: true }
+  };
+
+  function buildCrops(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var kind = CROP_KINDS[rec.kindName] || CROP_KINDS.milho;
+    var rows = clamp(num(rec.n, 4), 1, 10);
+    var perRow = 8;
+    var x0 = num(rec.x, 0);
+    var z0 = num(rec.z, 20);
+    var mounds = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#6b4a2f'), rows * perRow);
+    var plantGeo = kind.ball ? UNIT_GEOS.sph : UNIT_GEOS.cone;
+    var plants = new THREE.InstancedMesh(plantGeo, speciesMat(kind.plant), rows * perRow);
+    plants.castShadow = true;
+    var i = 0;
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < perRow; c++) {
+        var px = x0 + (c - perRow / 2) * 1.2;
+        var pz = z0 + r * 1.6;
+        var gy = heightAt(px, pz);
+        _dummy.position.set(px, gy + 0.12, pz);
+        _dummy.rotation.set(0, 0, 0);
+        _dummy.scale.set(0.9, 0.24, 0.9);
+        _dummy.updateMatrix();
+        mounds.setMatrixAt(i, _dummy.matrix);
+        _dummy.position.set(px, gy + 0.24 + kind.tall / 2, pz);
+        _dummy.scale.set(kind.ball ? 0.55 : 0.3, kind.tall, kind.ball ? 0.55 : 0.3);
+        _dummy.updateMatrix();
+        plants.setMatrixAt(i, _dummy.matrix);
+        i++;
+      }
+    }
+    mounds.instanceMatrix.needsUpdate = true;
+    plants.instanceMatrix.needsUpdate = true;
+    scene.add(mounds);
+    scene.add(plants);
+    exclusions.push({ x: x0, z: z0 + rows * 0.8, r: Math.max(perRow * 0.7, rows * 0.9) + 2 });
+  }
+
+  function buildBarn(rec) {
+    if (!scene) return;
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var yaw = (num(rec.deg, 0) * Math.PI) / 180;
+    var gy = heightAt(x, z);
+    ensureCityGeos();
+    var g = new THREE.Group();
+    var body = new THREE.Mesh(UNIT_GEOS.box, toonMaterial({ color: '#b4432f' }));
+    body.scale.set(6, 3.4, 4.6);
+    body.position.y = 1.7;
+    body.castShadow = true;
+    g.add(body);
+    var roof = new THREE.Mesh(UNIT_GEOS.pyr, toonMaterial({ color: '#7a4a30' }));
+    roof.scale.set(7, 2, 5.4);
+    roof.position.y = 4.4;
+    roof.castShadow = true;
+    g.add(roof);
+    var doorMesh = new THREE.Mesh(UNIT_GEOS.box, toonMaterial({ color: '#f5efe0' }));
+    doorMesh.scale.set(1.8, 2.2, 0.12);
+    doorMesh.position.set(0, 1.1, 2.32);
+    g.add(doorMesh);
+    var trim = new THREE.Mesh(UNIT_GEOS.box, toonMaterial({ color: '#f5efe0' }));
+    trim.scale.set(6.2, 0.3, 4.8);
+    trim.position.y = 3.35;
+    g.add(trim);
+    g.position.set(x, gy, z);
+    g.rotation.y = yaw;
+    scene.add(g);
+    colliderAdd(x, z, 3.4);
+  }
+
+  function buildWindmill(rec) {
+    if (!scene) return;
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var gy = heightAt(x, z);
+    var g = new THREE.Group();
+    var tower = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 1.1, 7, 8), toonMaterial({ color: '#e8e0cc' }));
+    tower.position.y = 3.5;
+    tower.castShadow = true;
+    g.add(tower);
+    var cap = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1, 8), toonMaterial({ color: '#b4432f' }));
+    cap.position.y = 7.4;
+    g.add(cap);
+    var blades = new THREE.Group();
+    var bladeMat = toonMaterial({ color: '#f5efe0' });
+    ensureCityGeos();
+    for (var i = 0; i < 4; i++) {
+      var b = new THREE.Mesh(UNIT_GEOS.box, bladeMat);
+      b.scale.set(0.5, 3.2, 0.08);
+      b.position.y = 1.7;
+      var pivot = new THREE.Group();
+      pivot.rotation.z = (i / 4) * Math.PI * 2;
+      pivot.add(b);
+      blades.add(pivot);
+    }
+    blades.position.set(0, 6.6, 1.15);
+    g.add(blades);
+    g.position.set(x, gy, z);
+    scene.add(g);
+    colliderAdd(x, z, 1.2);
+    windmills.push({ blades: blades });
+  }
+
+  function stepWindmills(dt) {
+    if (!windmills.length) return;
+    var spin = (0.5 + wind * 0.5) * dt;
+    for (var i = 0; i < windmills.length; i++) {
+      windmills[i].blades.rotation.z += spin;
+    }
+  }
+
+  function buildFence(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var x1 = num(rec.x1, -8);
+    var z1 = num(rec.z1, 0);
+    var x2 = num(rec.x2, 8);
+    var z2 = num(rec.z2, 0);
+    var len = Math.sqrt((x2 - x1) * (x2 - x1) + (z2 - z1) * (z2 - z1));
+    var posts = Math.min(48, Math.max(2, Math.floor(len / 1.6) + 1));
+    if (fencePosts + posts > 256) {
+      warnOnce('fence-max', 'muita cerquinha (teto 256 postes)');
+      return;
+    }
+    fencePosts += posts;
+    var yaw = yawForDir(x2 - x1, z2 - z1);
+    var postIM = new THREE.InstancedMesh(UNIT_GEOS.cyl, speciesMat('#8a6a3f'), posts);
+    var railIM = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#a8814f'), (posts - 1) * 2);
+    postIM.castShadow = true;
+    var ri = 0;
+    for (var i = 0; i < posts; i++) {
+      var t = posts === 1 ? 0 : i / (posts - 1);
+      var px = x1 + (x2 - x1) * t;
+      var pz = z1 + (z2 - z1) * t;
+      var gy = heightAt(px, pz);
+      _dummy.position.set(px, gy + 0.55, pz);
+      _dummy.rotation.set(0, 0, 0);
+      _dummy.scale.set(0.16, 1.1, 0.16);
+      _dummy.updateMatrix();
+      postIM.setMatrixAt(i, _dummy.matrix);
+      colliderAdd(px, pz, 0.25);
+      if (i < posts - 1) {
+        var t2 = posts === 1 ? 0 : (i + 0.5) / (posts - 1);
+        var mx = x1 + (x2 - x1) * t2;
+        var mz = z1 + (z2 - z1) * t2;
+        var my = (gy + heightAt(x1 + (x2 - x1) * ((i + 1) / (posts - 1)), z1 + (z2 - z1) * ((i + 1) / (posts - 1)))) / 2;
+        for (var rr = 0; rr < 2; rr++) {
+          _dummy.position.set(mx, my + 0.45 + rr * 0.35, mz);
+          _dummy.rotation.set(0, yaw, 0);
+          _dummy.scale.set(len / (posts - 1) + 0.1, 0.09, 0.07);
+          _dummy.updateMatrix();
+          railIM.setMatrixAt(ri++, _dummy.matrix);
+        }
+      }
+    }
+    postIM.instanceMatrix.needsUpdate = true;
+    railIM.instanceMatrix.needsUpdate = true;
+    scene.add(postIM);
+    scene.add(railIM);
+  }
+
+  // Bichinhos instanciados (galinhas/vacas): 2 IMs por chamada (corpo+cabeça),
+  // matrizes recompostas por quadro (bicar/balançar) + perambulação NPC-lite.
+  var ANIMAL_KINDS = {
+    galinhas: { body: '#f5efe0', head: '#e04f3f', s: 0.45, speed: 1.4 },
+    vacas:    { body: '#f5efe0', head: '#3b2f26', s: 1.0, speed: 0.9 }
+  };
+
+  function buildAnimals(rec) {
+    if (!scene) return;
+    var kind = ANIMAL_KINDS[rec.kindName] || ANIMAL_KINDS.galinhas;
+    var room = Math.max(0, 16 - animalsCount);
+    var n = Math.min(room, clamp(num(rec.n, 4), 1, 16));
+    if (n <= 0) {
+      warnOnce('animal-max', 'muitos bichinhos (teto 16)');
+      return;
+    }
+    animalsCount += n;
+    ensureCityGeos();
+    ensureDummies();
+    var body = new THREE.InstancedMesh(UNIT_GEOS.sph, speciesMat(kind.body), n);
+    var head = new THREE.InstancedMesh(UNIT_GEOS.sph, speciesMat(kind.head), n);
+    body.castShadow = true;
+    scene.add(body);
+    scene.add(head);
+    var rng = mulberry(Math.round(num(rec.x, 0) * 3 + num(rec.z, 0) * 5) + 77);
+    var herd = { body: body, head: head, kind: kind, list: [] };
+    for (var i = 0; i < n; i++) {
+      herd.list.push({
+        x: num(rec.x, 0) + (rng() * 2 - 1) * num(rec.r, 8),
+        z: num(rec.z, 0) + (rng() * 2 - 1) * num(rec.r, 8),
+        yaw: rng() * Math.PI * 2,
+        home: { x: num(rec.x, 0), z: num(rec.z, 0), r: clamp(num(rec.r, 8), 2, 40) },
+        target: null,
+        waitT: rng() * 2,
+        phase: rng() * 6
+      });
+    }
+    herds.push(herd);
+  }
+
+  function stepAnimals(dt) {
+    if (!herds.length) return;
+    ensureDummies();
+    for (var h = 0; h < herds.length; h++) {
+      var herd = herds[h];
+      for (var i = 0; i < herd.list.length; i++) {
+        var an = herd.list[i];
+        an.phase += dt * 4;
+        var spd = 0;
+        if (an.target) {
+          var dx = an.target.x - an.x;
+          var dz = an.target.z - an.z;
+          var d = Math.sqrt(dx * dx + dz * dz);
+          if (d < 0.4) {
+            an.target = null;
+            an.waitT = 1 + Math.random() * 3;
+          } else {
+            an.yaw = Math.atan2(dx, dz);
+            spd = herd.kind.speed;
+            an.x += (dx / d) * spd * dt;
+            an.z += (dz / d) * spd * dt;
+          }
+        } else {
+          an.waitT -= dt;
+          if (an.waitT <= 0) {
+            var ang = Math.random() * Math.PI * 2;
+            var rad = Math.sqrt(Math.random()) * an.home.r;
+            an.target = { x: an.home.x + Math.cos(ang) * rad, z: an.home.z + Math.sin(ang) * rad };
+          }
+        }
+        var gy = heightAt(an.x, an.z);
+        var s = herd.kind.s;
+        var peck = spd > 0 ? 0 : Math.max(0, Math.sin(an.phase)) * 0.12 * s;
+        _dummy.position.set(an.x, gy + 0.42 * s, an.z);
+        _dummy.rotation.set(0, an.yaw, 0);
+        _dummy.scale.set(0.8 * s, 0.7 * s, 1.1 * s);
+        _dummy.updateMatrix();
+        herd.body.setMatrixAt(i, _dummy.matrix);
+        _dummy.position.set(
+          an.x + Math.sin(an.yaw) * 0.5 * s,
+          gy + 0.78 * s - peck,
+          an.z + Math.cos(an.yaw) * 0.5 * s
+        );
+        _dummy.scale.set(0.34 * s, 0.34 * s, 0.34 * s);
+        _dummy.updateMatrix();
+        herd.head.setMatrixAt(i, _dummy.matrix);
+      }
+      herd.body.instanceMatrix.needsUpdate = true;
+      herd.head.instanceMatrix.needsUpdate = true;
+    }
+  }
+
+  // ---- 🌙 Lua: bandeira e foguete (as crateras vivem no heightAt) ----
+
+  function buildFlag(rec) {
+    if (!scene) return;
+    if (flagsCount >= 8) {
+      warnOnce('flag-max', 'muitas bandeiras (teto 8)');
+      return;
+    }
+    flagsCount++;
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var gy = heightAt(x, z);
+    var g = new THREE.Group();
+    var mast = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 2.6, 6), toonMaterial({ color: '#d8dde6' }));
+    mast.position.y = 1.3;
+    g.add(mast);
+    var cloth = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.65), new THREE.MeshBasicMaterial({ color: rec.color || '#ef4444', side: THREE.DoubleSide }));
+    cloth.position.set(0.6, 2.2, 0);
+    g.add(cloth);
+    g.position.set(x, gy, z);
+    scene.add(g);
+  }
+
+  function buildRocket(rec) {
+    if (!scene) return;
+    if (rocketsCount >= 8) {
+      warnOnce('rocket-max', 'muitos foguetes (teto 8)');
+      return;
+    }
+    rocketsCount++;
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var gy = heightAt(x, z);
+    var g = new THREE.Group();
+    var bodyMat = toonMaterial({ color: '#e8e8f0' });
+    var body = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 4.2, 12), bodyMat);
+    body.position.y = 3.1;
+    body.castShadow = true;
+    g.add(body);
+    var nose = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1.6, 12), toonMaterial({ color: '#e04f3f' }));
+    nose.position.y = 6;
+    g.add(nose);
+    var winMat = new THREE.MeshBasicMaterial({ color: '#9cc3e8' });
+    var win = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 8), winMat);
+    win.position.set(0, 3.8, 0.82);
+    g.add(win);
+    ensureCityGeos();
+    var finMat = toonMaterial({ color: '#e04f3f' });
+    for (var i = 0; i < 4; i++) {
+      var a = (i / 4) * Math.PI * 2;
+      var fin = new THREE.Mesh(UNIT_GEOS.box, finMat);
+      fin.scale.set(0.16, 1.6, 1.0);
+      fin.position.set(Math.cos(a) * 1.1, 1.2, Math.sin(a) * 1.1);
+      fin.rotation.y = -a;
+      g.add(fin);
+    }
+    g.position.set(x, gy, z);
+    scene.add(g);
+    colliderAdd(x, z, 1.4);
+  }
+
+  // ---- 🚦 Trânsito: carrinhos educados que seguem o anel + semáforos ----
+
+  var TRAFFIC_COLORS = ['#ef4444', '#3b82f6', '#f59e0b', '#10b981', '#a855f7', '#f97316'];
+  // Peças por carrinho (a 1ª — chassi — leva a COR do carro por instância).
+  var TRAFFIC_PARTS = [
+    { g: 'box', x: 0, y: 0.34, z: 0, sx: 1.3, sy: 0.42, sz: 2.3, tint: true },
+    { g: 'box', color: '#dbeafe', x: 0, y: 0.66, z: -0.15, sx: 1.05, sy: 0.34, sz: 1.2 },
+    { g: 'box', color: '#111827', x: 0, y: 0.16, z: 0.75, sx: 1.36, sy: 0.3, sz: 0.34 },
+    { g: 'box', color: '#111827', x: 0, y: 0.16, z: -0.75, sx: 1.36, sy: 0.3, sz: 0.34 }
+  ];
+
+  function trafficLaneRadius(lane) {
+    return cityGraph.ringR + (lane === 0 ? 1.25 : -1.25);
+  }
+
+  function buildTraffic() {
+    if (!cityGraph) {
+      warn('o trânsito precisa da cidadezinha — use "Construir a cidadezinha" antes');
+      trafficCfg = null;
+      return;
+    }
+    ensureCityGeos();
+    ensureDummies();
+    var n = trafficCfg.n;
+    trafficCars = [];
+    for (var i = 0; i < n; i++) {
+      trafficCars.push({
+        lane: i % 2,
+        a: (i / n) * Math.PI * 2,
+        speed: 0,
+        hornCd: 0,
+        blockT: 0
+      });
+    }
+    trafficMesh = new THREE.InstancedMesh(
+      UNIT_GEOS.box,
+      toonMaterial({ color: '#ffffff' }),
+      n * TRAFFIC_PARTS.length
+    );
+    trafficMesh.castShadow = true;
+    for (var c = 0; c < n; c++) {
+      var tint = new THREE.Color(TRAFFIC_COLORS[c % TRAFFIC_COLORS.length]);
+      for (var p = 0; p < TRAFFIC_PARTS.length; p++) {
+        trafficMesh.setColorAt(c * TRAFFIC_PARTS.length + p, TRAFFIC_PARTS[p].tint ? tint : new THREE.Color(TRAFFIC_PARTS[p].color));
+      }
+    }
+    if (trafficMesh.instanceColor) trafficMesh.instanceColor.needsUpdate = true;
+    (cityGroup || scene).add(trafficMesh);
+    if (trafficCfg.sem) buildSemaphores();
+    stepTrafficVisual();
+  }
+
+  /** Semáforos SINCRONIZADOS nos 4 cruzamentos: anda (8s) → amarelo (1,5s) → para (5s). */
+  function buildSemaphores() {
+    var G = cityGraph;
+    ensureDummies();
+    var postGeo = new THREE.CylinderGeometry(0.07, 0.09, 3.2, 6);
+    var postMat = toonMaterial({ color: '#374151' });
+    var bulbs = new THREE.InstancedMesh(new THREE.BoxGeometry(0.3, 0.3, 0.18), new THREE.MeshBasicMaterial({ color: '#ffffff' }), G.crossings.length * 3);
+    for (var i = 0; i < G.crossings.length; i++) {
+      var cr = G.crossings[i];
+      // O poste fica no canto do cruzamento (fora da pista).
+      var px = cr.x + Math.cos(cr.ang) * 3.4 - Math.sin(cr.ang) * 3.4;
+      var pz = cr.z + Math.sin(cr.ang) * 3.4 + Math.cos(cr.ang) * 3.4;
+      var post = new THREE.Mesh(postGeo, postMat);
+      var gy = heightAt(px, pz);
+      post.position.set(px, gy + 1.6, pz);
+      (cityGroup || scene).add(post);
+      for (var b = 0; b < 3; b++) {
+        _dummy.position.set(px, gy + 3.0 - b * 0.36, pz);
+        _dummy.rotation.set(0, cr.ang + Math.PI / 2, 0);
+        _dummy.scale.set(1, 1, 1);
+        _dummy.updateMatrix();
+        bulbs.setMatrixAt(i * 3 + b, _dummy.matrix);
+      }
+    }
+    bulbs.instanceMatrix.needsUpdate = true;
+    (cityGroup || scene).add(bulbs);
+    semState = { t: 0, phase: 'anda', bulbMesh: bulbs };
+    paintSemaphores();
+  }
+
+  function paintSemaphores() {
+    if (!semState || !semState.bulbMesh) return;
+    var on = semState.phase;
+    var red = new THREE.Color(on === 'para' ? '#ef4444' : '#3f1d1d');
+    var amber = new THREE.Color(on === 'amarelo' ? '#fbbf24' : '#3f351d');
+    var green = new THREE.Color(on === 'anda' ? '#22c55e' : '#1d3f28');
+    var count = semState.bulbMesh.count / 3;
+    for (var i = 0; i < count; i++) {
+      semState.bulbMesh.setColorAt(i * 3 + 0, red);
+      semState.bulbMesh.setColorAt(i * 3 + 1, amber);
+      semState.bulbMesh.setColorAt(i * 3 + 2, green);
+    }
+    if (semState.bulbMesh.instanceColor) semState.bulbMesh.instanceColor.needsUpdate = true;
+  }
+
+  /** Distância ANGULAR à frente (respeitando o sentido da lane). */
+  function trafficGapAhead(fromA, toA, dir) {
+    var d = (toA - fromA) * dir;
+    d = d % (Math.PI * 2);
+    if (d < 0) d += Math.PI * 2;
+    return d;
+  }
+
+  function stepTraffic(dt) {
+    if (!trafficCfg || !trafficCars.length || !cityGraph) return;
+    var G = cityGraph;
+    // Fase do semáforo (soma dt → o bullet-time desacelera o ciclo junto).
+    if (semState) {
+      semState.t += dt;
+      var dur = semState.phase === 'anda' ? 8 : semState.phase === 'amarelo' ? 1.5 : 5;
+      if (semState.t >= dur) {
+        semState.t = 0;
+        semState.phase = semState.phase === 'anda' ? 'amarelo' : semState.phase === 'amarelo' ? 'para' : 'anda';
+        paintSemaphores();
+      }
+    }
+    var pj = playerXZ();
+    for (var i = 0; i < trafficCars.length; i++) {
+      var car = trafficCars[i];
+      var R = trafficLaneRadius(car.lane);
+      var dir = car.lane === 0 ? 1 : -1;
+      // Obstáculo mais perto À FRENTE (em metros ao longo da lane).
+      var gap = 999;
+      for (var j = 0; j < trafficCars.length; j++) {
+        if (j === i || trafficCars[j].lane !== car.lane) continue;
+        var ga = trafficGapAhead(car.a, trafficCars[j].a, dir) * R;
+        if (ga > 0.5 && ga < gap) gap = ga;
+      }
+      // O jogador parado na pista (perto do raio da lane) também segura.
+      var pr = Math.sqrt((pj.x - G.cx) * (pj.x - G.cx) + (pj.z - G.cz) * (pj.z - G.cz));
+      if (Math.abs(pr - R) < 2.2) {
+        var pa = Math.atan2(pj.z - G.cz, pj.x - G.cx);
+        var gp = trafficGapAhead(car.a, pa, dir) * R;
+        if (gp > 0.2 && gp < gap) {
+          gap = gp;
+          if (gp < 6) {
+            car.blockT += dt;
+            if (car.blockT > 2 && car.hornCd <= 0) {
+              beep(240, 0.12);
+              car.hornCd = 3;
+            }
+          }
+        }
+      } else if (car.blockT > 0) {
+        car.blockT = 0;
+      }
+      car.hornCd = Math.max(0, car.hornCd - dt);
+      // Semáforo vermelho/amarelo: segura ANTES do próximo cruzamento.
+      if (semState && semState.phase !== 'anda') {
+        for (var k = 0; k < G.crossings.length; k++) {
+          var ca = G.crossings[k].ang;
+          var gs = trafficGapAhead(car.a, ca - dir * (2.8 / R), dir) * R;
+          if (gs > 0.2 && gs < gap) gap = gs;
+        }
+      }
+      // Freio 1-D: longe acelera até ~5 m/s; perto freia; colado para.
+      var want = gap > 10 ? 5 : gap > 2.4 ? Math.max(0, (gap - 2.4) * 0.7) : 0;
+      car.speed += (want - car.speed) * damp(6, dt);
+      car.a += (car.speed * dt * dir) / R;
+    }
+    stepTrafficVisual();
+  }
+
+  function stepTrafficVisual() {
+    if (!trafficMesh || !cityGraph) return;
+    ensureDummies();
+    var G = cityGraph;
+    var cy = heightAt(G.cx, G.cz);
+    for (var i = 0; i < trafficCars.length; i++) {
+      var car = trafficCars[i];
+      var R = trafficLaneRadius(car.lane);
+      var dir = car.lane === 0 ? 1 : -1;
+      var x = G.cx + Math.cos(car.a) * R;
+      var z = G.cz + Math.sin(car.a) * R;
+      // Frente (+z local) apontando o sentido de andar (tangente).
+      var tx = -Math.sin(car.a) * dir;
+      var tz = Math.cos(car.a) * dir;
+      var yaw = Math.atan2(tx, tz);
+      for (var p = 0; p < TRAFFIC_PARTS.length; p++) {
+        var part = TRAFFIC_PARTS[p];
+        _dummy.position.set(
+          x + Math.sin(yaw) * (part.z || 0) + Math.cos(yaw) * (part.x || 0),
+          cy + 0.06 + (part.y || 0),
+          z + Math.cos(yaw) * (part.z || 0) - Math.sin(yaw) * (part.x || 0)
+        );
+        _dummy.rotation.set(0, yaw, 0);
+        _dummy.scale.set(part.sx || 1, part.sy || 1, part.sz || 1);
+        _dummy.updateMatrix();
+        trafficMesh.setMatrixAt(i * TRAFFIC_PARTS.length + p, _dummy.matrix);
+      }
+    }
+    trafficMesh.instanceMatrix.needsUpdate = true;
+  }
+
+  function buildCity() {
+    if (!scene || !cityCfg || !cityGraph) return;
+    if (cityGroup) {
+      try { scene.remove(cityGroup); } catch (e) {}
+    }
+    cityGroup = new THREE.Group();
+    scene.add(cityGroup);
+    var G = cityGraph;
+    var cy = heightAt(G.cx, G.cz);
+    buildCityRoads(cy);
+    buildCityMarkings(cy);
+    var lots = cityLots();
+    buildCityBuildings(lots, cy);
+    buildCityHedges(cy);
+    buildCityCoreto(cy);
+    // Postes nos 4 cruzamentos do anel (entram no orçamento normal de luz).
+    for (var i = 0; i < G.crossings.length; i++) {
+      addLamp(G.crossings[i].x + 3.4, G.crossings[i].z + 3.4);
+    }
+    // Varais da praça: quadrado entre os 4 postes diagonais.
+    var vp = [];
+    for (var v = 0; v < 4; v++) {
+      var a = (v / 4) * Math.PI * 2 + Math.PI / 4;
+      vp.push({ x: G.cx + Math.cos(a) * (G.plazaR - 0.8), z: G.cz + Math.sin(a) * (G.plazaR - 0.8) });
+    }
+    for (var sImp = 0; sImp < 4; sImp++) {
+      var q1 = vp[sImp];
+      var q2 = vp[(sImp + 1) % 4];
+      buildStringSpan(q1.x, q1.z, q2.x, q2.z);
+    }
+    if (!waterCfg) buildCityLake(cy);
+    if (cityCfg.mode === 'neon') buildCityNeon(lots, cy);
   }
 
   var FIREFLY_AMOUNTS = { pouca: 30, media: 80, muita: 150 };
@@ -5161,7 +6422,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       var moving = Math.abs(p.vx) + Math.abs(p.vz) + Math.abs(p.vy) > 0.02;
       if (moving) {
-        p.vy -= GRAV * 0.8 * dt;
+        p.vy -= GRAV * 0.8 * gravityScale * dt;
         p.x += p.vx * dt;
         p.z += p.vz * dt;
         p.y += p.vy * dt;
@@ -5780,7 +7041,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     var gy = heightAtDrive(s.x, s.z, s.y);
     var landed = false;
     if (s.airborne) {
-      s.vy -= GRAV * dt;
+      s.vy -= GRAV * gravityScale * dt;
       s.y += s.vy * dt;
       if (s.y <= gy) {
         s.y = gy;
@@ -6010,6 +7271,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepExplosives(dt);
     stepWaterfalls();
     stepLamps();
+    stepStringLights();
+    stepTraffic(currentDt);
+    stepWindmills(currentDt);
+    stepAnimals(currentDt);
     stepFireflies();
     stepCampfires(dt);
     stepBoat(dt);
@@ -6192,6 +7457,24 @@ export const world3DRuntime = `import * as THREE from 'three';
     waterfalls = [];
     lamps = [];
     lampLights = null;
+    cityCfg = null;
+    cityGraph = null;
+    cityGroup = null;
+    stringLights = [];
+    trafficCfg = null;
+    trafficCars = [];
+    trafficMesh = null;
+    semState = null;
+    npcChoice = null;
+    doors = [];
+    doorOverlayEl = null;
+    doorOverlayOpen = false;
+    windmills = [];
+    herds = [];
+    animalsCount = 0;
+    fencePosts = 0;
+    flagsCount = 0;
+    rocketsCount = 0;
     firefliesPts = null;
     campfires = [];
     _campRespawn = null;
@@ -6263,11 +7546,37 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       var st = text(o.style, config.style);
       if (!STYLES[st]) {
-        warn('não conheço o estilo "' + st + '" — usando floresta (tem: floresta, praia, neve, deserto, primavera)');
+        warn('não conheço o estilo "' + st + '" — usando floresta (tem: floresta, praia, neve, deserto, primavera, lua, fazenda)');
         st = 'floresta';
       }
       config.style = st;
       config.world = clamp(num(o.world, config.world), 40, 600);
+      gravityScale = STYLES[st].gravity || 1;
+      // 🌙 Lua: crateras automáticas determinísticas (longe do spawn). Refeitas
+      // a cada setup — trocar de estilo antes do start remove as anteriores.
+      var keep = [];
+      for (var tm = 0; tm < terrainMods.length; tm++) {
+        if (!terrainMods[tm].autoLua) keep.push(terrainMods[tm]);
+      }
+      terrainMods = keep;
+      if (st === 'lua') {
+        var crng = mulberry(4040);
+        for (var ci = 0; ci < 12; ci++) {
+          var ang = crng() * Math.PI * 2;
+          var spread = Math.max(10, config.world * 0.5 - 30);
+          var dist = 24 + crng() * spread;
+          var cr = 5 + crng() * 9;
+          terrainMods.push({
+            kind: 'crater',
+            x: Math.cos(ang) * dist,
+            z: Math.sin(ang) * dist,
+            r: cr,
+            depth: 1 + cr * 0.16,
+            rim: 0.4 + cr * 0.06,
+            autoLua: true
+          });
+        }
+      }
     }),
     terrain: guard('terrain', function (hills, smooth) {
       terrainCfg.hills = clamp(num(hills, terrainCfg.hills), 0, 30);
@@ -6664,11 +7973,25 @@ export const world3DRuntime = `import * as THREE from 'three';
     npcSay: guard('npcSay', function (name, textStr) {
       var nm = text(name, 'amigo');
       if (!npcSayQueues[nm]) npcSayQueues[nm] = [];
-      npcSayQueues[nm].push(text(textStr, '...'));
+      npcSayQueues[nm].push({ kind: 'say', text: text(textStr, '...') });
       // Fora de conversa (chamado solto): mostra na hora.
-      if (worldReady && (!npcBubble || npcBubble.el.style.display !== 'block')) {
-        var q = npcSayQueues[nm];
-        if (q.length === 1) npcShowSay(nm, q.shift());
+      if (worldReady && !npcChoice && (!npcBubble || npcBubble.el.style.display !== 'block')) {
+        if (npcSayQueues[nm].length === 1) npcQueueNext(nm);
+      }
+    }),
+    npcAsk: guard('npcAsk', function (name, q, a, fa, b, fb) {
+      var nm = text(name, 'amigo');
+      if (!npcSayQueues[nm]) npcSayQueues[nm] = [];
+      npcSayQueues[nm].push({
+        kind: 'ask',
+        q: text(q, '...'),
+        a: text(a, 'Sim'),
+        fa: typeof fa === 'function' ? fa : null,
+        b: text(b, 'Não'),
+        fb: typeof fb === 'function' ? fb : null
+      });
+      if (worldReady && !npcChoice && (!npcBubble || npcBubble.el.style.display !== 'block')) {
+        if (npcSayQueues[nm].length === 1) npcQueueNext(nm);
       }
     }),
     npcEmote: guard('npcEmote', function (name, kind) {
@@ -6840,6 +8163,153 @@ export const world3DRuntime = `import * as THREE from 'three';
         return;
       }
       addLamp(x, z);
+    }),
+    // 🏙️ Cidade & trânsito
+    city: guard('city', function (x, z, size, mode) {
+      if (cityCfg) {
+        warn('já tem uma cidadezinha — só cabe UMA por mundo (mude o tamanho nela)');
+        return;
+      }
+      var sz = text(size, 'media');
+      if (!CITY_SIZES[sz]) {
+        warn('não conheço o tamanho "' + sz + '" — usando media (tem: pequena, media, grande)');
+        sz = 'media';
+      }
+      var md = text(mode, 'dia');
+      if (md !== 'dia' && md !== 'neon') {
+        warn('não conheço o modo "' + md + '" — usando dia (tem: dia, neon)');
+        md = 'dia';
+      }
+      cityCfg = { x: num(x, 0), z: num(z, 0), r: CITY_SIZES[sz], size: sz, mode: md };
+      reserveCity();
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'city' });
+        return;
+      }
+      // Ao vivo: o terreno re-aplaina agora e a cidade nasce na hora.
+      buildTerrain();
+      if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
+      buildCity();
+    }),
+    // 🚜 Fazenda + 🌙 Lua
+    crops: guard('crops', function (n, kindName, x, z) {
+      var k = text(kindName, 'milho');
+      if (!CROP_KINDS[k]) {
+        warn('não conheço a plantação "' + k + '" — usando milho (tem: milho, alface, abobora)');
+        k = 'milho';
+      }
+      var rec = { kind: 'crops', n: num(n, 4), kindName: k, x: num(x, 0), z: num(z, 20) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildCrops(rec);
+    }),
+    barn: guard('barn', function (x, z, deg) {
+      var rec = { kind: 'barn', x: num(x, 0), z: num(z, 0), deg: num(deg, 0) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildBarn(rec);
+    }),
+    windmill: guard('windmill', function (x, z) {
+      var rec = { kind: 'windmill', x: num(x, 0), z: num(z, 0) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildWindmill(rec);
+    }),
+    fence: guard('fence', function (x1, z1, x2, z2) {
+      var rec = { kind: 'fence', x1: num(x1, -8), z1: num(z1, 0), x2: num(x2, 8), z2: num(z2, 0) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildFence(rec);
+    }),
+    animals: guard('animals', function (n, kindName, x, z, r) {
+      var k = text(kindName, 'galinhas');
+      if (!ANIMAL_KINDS[k]) {
+        warn('não conheço o bichinho "' + k + '" — usando galinhas (tem: galinhas, vacas)');
+        k = 'galinhas';
+      }
+      var rec = { kind: 'animals', n: num(n, 4), kindName: k, x: num(x, 0), z: num(z, 0), r: num(r, 8) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildAnimals(rec);
+    }),
+    crater: guard('crater', function (x, z, r) {
+      var cr = clamp(num(r, 6), 2, 30);
+      terrainMods.push({
+        kind: 'crater',
+        x: num(x, 10), z: num(z, 10), r: cr,
+        depth: 1 + cr * 0.16, rim: 0.4 + cr * 0.06
+      });
+      if (worldReady) {
+        buildTerrain();
+        if (grassMat) buildGrassHeightTex();
+        if (waterMat) buildWaterFoamTex();
+      }
+    }),
+    flag: guard('flag', function (x, z, color) {
+      var rec = { kind: 'flag', x: num(x, 0), z: num(z, 0), color: text(color, '#ef4444') };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildFlag(rec);
+    }),
+    rocket: guard('rocket', function (x, z) {
+      var rec = { kind: 'rocket', x: num(x, 0), z: num(z, 0) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildRocket(rec);
+    }),
+    door: guard('door', function (x, z, deg, title, body, image) {
+      var rec = {
+        kind: 'door',
+        x: num(x, 0), z: num(z, 8), deg: num(deg, 0),
+        title: text(title, ''), body: text(body, ''), image: text(image, '')
+      };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildDoor(rec);
+    }),
+    traffic: guard('traffic', function (n, mode) {
+      if (trafficCfg) {
+        warn('o trânsito já está ligado');
+        return;
+      }
+      var md = text(mode, 'semaforos');
+      if (md !== 'semaforos' && md !== 'livre') {
+        warn('não conheço o modo "' + md + '" — usando semaforos (tem: semaforos, livre)');
+        md = 'semaforos';
+      }
+      trafficCfg = { n: Math.round(clamp(num(n, 6), 1, 12)), sem: md === 'semaforos' };
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'traffic' });
+        return;
+      }
+      buildTraffic();
+    }),
+    stringLights: guard('stringLights', function (x1, z1, x2, z2) {
+      if (!worldReady) {
+        decorRecipes.push({
+          kind: 'stringLights',
+          x1: num(x1, -8), z1: num(z1, 0), x2: num(x2, 8), z2: num(z2, 0)
+        });
+        return;
+      }
+      buildStringSpan(num(x1, -8), num(z1, 0), num(x2, 8), num(z2, 0));
     }),
     fireflies: guard('fireflies', function (amount) {
       var fa = text(amount, 'media');

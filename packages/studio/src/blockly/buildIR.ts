@@ -9281,6 +9281,145 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
         },
       }
+    case 'sz_w3d_city':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:city',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          size: f(block, 'SIZE') || 'media',
+          mode: f(block, 'MODE') || 'dia',
+        },
+      }
+    case 'sz_w3d_traffic':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:traffic',
+          n: exprInput(block, 'N', { type: 'num', value: 6 }),
+          sem: f(block, 'SEM') || 'semaforos',
+        },
+      }
+    case 'sz_w3d_door':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:door',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 8 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+          title: f(block, 'TITLE') || '',
+          body: f(block, 'TEXT') || '',
+          image: f(block, 'IMAGE') || '',
+        },
+      }
+    case 'sz_w3d_npc_ask':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcAsk',
+          name: f(block, 'NAME') || 'amigo',
+          question: f(block, 'QUESTION') || '...',
+          optA: f(block, 'OPT_A') || 'Sim',
+          bodyA: getStatementChildren(block, 'BODY_A', seen),
+          optB: f(block, 'OPT_B') || 'Não',
+          bodyB: getStatementChildren(block, 'BODY_B', seen),
+        },
+      }
+    case 'sz_w3d_crops':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:crops',
+          n: exprInput(block, 'N', { type: 'num', value: 4 }),
+          kind: f(block, 'KIND') || 'milho',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_w3d_barn':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:barn',
+          x: exprInput(block, 'X', { type: 'num', value: -15 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 15 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_windmill':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:windmill',
+          x: exprInput(block, 'X', { type: 'num', value: 15 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 25 }),
+        },
+      }
+    case 'sz_w3d_fence':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:fence',
+          x1: exprInput(block, 'X1', { type: 'num', value: -8 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 10 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 8 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_animals':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:animals',
+          n: exprInput(block, 'N', { type: 'num', value: 4 }),
+          kind: f(block, 'KIND') || 'galinhas',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 15 }),
+          r: exprInput(block, 'R', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_w3d_crater':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:crater',
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+          r: exprInput(block, 'R', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_w3d_flag':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:flag',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: -10 }),
+          color: f(block, 'COLOR') || '#ef4444',
+        },
+      }
+    case 'sz_w3d_rocket':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:rocket',
+          x: exprInput(block, 'X', { type: 'num', value: 8 }),
+          z: exprInput(block, 'Z', { type: 'num', value: -10 }),
+        },
+      }
+    case 'sz_w3d_string_lights':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:stringLights',
+          x1: exprInput(block, 'X1', { type: 'num', value: -8 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 0 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 8 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 0 }),
+        },
+      }
     case 'sz_w3d_lamp':
       return {
         kind: 'js',

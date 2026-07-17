@@ -1627,6 +1627,620 @@ export const parqueExample: ExtensionExample = {
   },
 }
 
+export const vilaExample: ExtensionExample = {
+  name: 'Vila das Vocacoes',
+  description:
+    'Uma cidadezinha COMPLETA com transito e semaforos de verdade! Converse com a Guia (ela faz uma PERGUNTA com dois botoes), abra as portas da Padaria e da Oficina para conhecer as profissoes, pegue moedas na praca e use o minimapa para teleportar.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    js: [
+      {
+        type: 'w3d:setup',
+        style: 'primavera',
+        world: {
+          type: 'num',
+          value: 200,
+        },
+      },
+      {
+        type: 'w3d:city',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: 0,
+        },
+        size: 'media',
+        mode: 'dia',
+      },
+      {
+        type: 'w3d:traffic',
+        n: {
+          type: 'num',
+          value: 6,
+        },
+        sem: 'semaforos',
+      },
+      {
+        type: 'w3d:car',
+        style: 'passeio',
+        color: '#3b82f6',
+      },
+      {
+        type: 'w3d:person',
+        color: '#f59e0b',
+        hat: 'bone',
+      },
+      {
+        type: 'w3d:door',
+        x: {
+          type: 'num',
+          value: 31,
+        },
+        z: {
+          type: 'num',
+          value: -6,
+        },
+        deg: {
+          type: 'num',
+          value: 270,
+        },
+        title: 'Padaria',
+        body: 'Cheiro de pao quentinho! A padeira acorda cedinho para assar o pao da vila inteira.',
+        image: '',
+      },
+      {
+        type: 'w3d:door',
+        x: {
+          type: 'num',
+          value: -31,
+        },
+        z: {
+          type: 'num',
+          value: 6,
+        },
+        deg: {
+          type: 'num',
+          value: 90,
+        },
+        title: 'Oficina',
+        body: 'Aqui a mecanica conserta os carrinhos da vila. Chaves, parafusos e muita engenhoca!',
+        image: '',
+      },
+      {
+        type: 'w3d:npc',
+        name: 'Guia',
+        x: {
+          type: 'num',
+          value: 4,
+        },
+        z: {
+          type: 'num',
+          value: 6,
+        },
+        color: '#22c55e',
+        hat: 'coroa',
+      },
+      {
+        type: 'w3d:npcWander',
+        name: 'Guia',
+        r: {
+          type: 'num',
+          value: 4,
+        },
+      },
+      {
+        type: 'w3d:npcTalk',
+        name: 'Guia',
+        body: [
+          {
+            type: 'w3d:npcSay',
+            name: 'Guia',
+            text: 'Bem-vindo a Vila das Vocacoes!',
+          },
+          {
+            type: 'w3d:npcAsk',
+            name: 'Guia',
+            question: 'O que voce quer ser quando crescer?',
+            optA: 'Padeiro',
+            bodyA: [
+              {
+                type: 'w3d:npcSay',
+                name: 'Guia',
+                text: 'A padaria fica na entrada leste. Va conhecer!',
+              },
+              {
+                type: 'w3d:questDone',
+                name: 'conhecer',
+              },
+            ],
+            optB: 'Mecanico',
+            bodyB: [
+              {
+                type: 'w3d:npcSay',
+                name: 'Guia',
+                text: 'A oficina fica na entrada oeste. Boa visita!',
+              },
+              {
+                type: 'w3d:questDone',
+                name: 'conhecer',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'w3d:quest',
+        name: 'conhecer',
+        desc: 'Converse com a Guia da vila',
+      },
+      {
+        type: 'w3d:onQuestDone',
+        name: 'conhecer',
+        body: [
+          {
+            type: 'w3d:confetti',
+          },
+          {
+            type: 'w3d:achievement',
+            name: 'Cidadao da Vila',
+          },
+        ],
+      },
+      {
+        type: 'w3d:coinsRing',
+        n: {
+          type: 'num',
+          value: 10,
+        },
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: 0,
+        },
+        r: {
+          type: 'num',
+          value: 12,
+        },
+      },
+      {
+        type: 'w3d:minimap',
+        mode: 'teleporte',
+      },
+      {
+        type: 'w3d:hud',
+        text: {
+          type: 'str',
+          value: 'Aperte E nas portas e converse com a Guia!',
+        },
+        corner: 'baixo-esquerda',
+      },
+      {
+        type: 'w3d:start',
+      },
+    ],
+  },
+}
+
+export const luaExample: ExtensionExample = {
+  name: 'Base da Lua',
+  description:
+    'Um mundo LUNAR de verdade: gravidade fraquinha (os pulos flutuam!), ceu estrelado, crateras, foguete e bandeira. Voe de jetpack ate a cratera grande, pegue as 12 moedas e vire Astronauta, com direito a fogos!',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    js: [
+      {
+        type: 'w3d:setup',
+        style: 'lua',
+        world: {
+          type: 'num',
+          value: 180,
+        },
+      },
+      {
+        type: 'w3d:person',
+        color: '#e8e8f0',
+        hat: 'capacete',
+      },
+      {
+        type: 'w3d:personAccessory',
+        acc: 'jetpack',
+      },
+      {
+        type: 'w3d:rocket',
+        x: {
+          type: 'num',
+          value: 8,
+        },
+        z: {
+          type: 'num',
+          value: -10,
+        },
+      },
+      {
+        type: 'w3d:flag',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: -10,
+        },
+        color: '#ef4444',
+      },
+      {
+        type: 'w3d:crater',
+        x: {
+          type: 'num',
+          value: 30,
+        },
+        z: {
+          type: 'num',
+          value: 30,
+        },
+        r: {
+          type: 'num',
+          value: 10,
+        },
+      },
+      {
+        type: 'w3d:coinsRing',
+        n: {
+          type: 'num',
+          value: 12,
+        },
+        x: {
+          type: 'num',
+          value: 30,
+        },
+        z: {
+          type: 'num',
+          value: 30,
+        },
+        r: {
+          type: 'num',
+          value: 8,
+        },
+      },
+      {
+        type: 'w3d:quest',
+        name: 'moedas',
+        desc: 'Pegue 12 moedas na cratera',
+      },
+      {
+        type: 'w3d:onCollect',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>=',
+              left: {
+                type: 'w3d:coinCount',
+              },
+              right: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            then: [
+              {
+                type: 'w3d:questDone',
+                name: 'moedas',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'w3d:onQuestDone',
+        name: 'moedas',
+        body: [
+          {
+            type: 'w3d:fireworks',
+          },
+          {
+            type: 'w3d:achievement',
+            name: 'Astronauta',
+          },
+        ],
+      },
+      {
+        type: 'w3d:marker',
+        icon: 'estrela',
+        x: {
+          type: 'num',
+          value: 30,
+        },
+        z: {
+          type: 'num',
+          value: 30,
+        },
+      },
+      {
+        type: 'w3d:guideArrow',
+        x: {
+          type: 'num',
+          value: 30,
+        },
+        z: {
+          type: 'num',
+          value: 30,
+        },
+        on: true,
+      },
+      {
+        type: 'w3d:totemText',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: 6,
+        },
+        title: 'Base da Lua',
+        body: 'Pulos flutuantes! Segure espaco com o jetpack para voar.',
+      },
+      {
+        type: 'w3d:start',
+      },
+    ],
+  },
+}
+
+export const fazendinhaExample: ExtensionExample = {
+  name: 'Fazendinha',
+  description:
+    'Uma fazenda viva: celeiro vermelho, moinho que GIRA com o vento, fileiras de milho, alface e abobora, cerquinha de madeira e bichinhos passeando (galinhas que bicam e vacas que pastam). A Rosa pergunta o que voce quer colher!',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    js: [
+      {
+        type: 'w3d:setup',
+        style: 'fazenda',
+        world: {
+          type: 'num',
+          value: 180,
+        },
+      },
+      {
+        type: 'w3d:terrain',
+        h: {
+          type: 'num',
+          value: 2,
+        },
+        s: {
+          type: 'num',
+          value: 8,
+        },
+      },
+      {
+        type: 'w3d:grass',
+        amount: 'media',
+      },
+      {
+        type: 'w3d:car',
+        style: 'jipe',
+        color: '#16a34a',
+      },
+      {
+        type: 'w3d:barn',
+        x: {
+          type: 'num',
+          value: -15,
+        },
+        z: {
+          type: 'num',
+          value: 15,
+        },
+        deg: {
+          type: 'num',
+          value: 20,
+        },
+      },
+      {
+        type: 'w3d:windmill',
+        x: {
+          type: 'num',
+          value: 15,
+        },
+        z: {
+          type: 'num',
+          value: 25,
+        },
+      },
+      {
+        type: 'w3d:crops',
+        n: {
+          type: 'num',
+          value: 4,
+        },
+        kind: 'milho',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: 30,
+        },
+      },
+      {
+        type: 'w3d:crops',
+        n: {
+          type: 'num',
+          value: 3,
+        },
+        kind: 'alface',
+        x: {
+          type: 'num',
+          value: -18,
+        },
+        z: {
+          type: 'num',
+          value: 34,
+        },
+      },
+      {
+        type: 'w3d:crops',
+        n: {
+          type: 'num',
+          value: 3,
+        },
+        kind: 'abobora',
+        x: {
+          type: 'num',
+          value: 18,
+        },
+        z: {
+          type: 'num',
+          value: 38,
+        },
+      },
+      {
+        type: 'w3d:fence',
+        x1: {
+          type: 'num',
+          value: -24,
+        },
+        z1: {
+          type: 'num',
+          value: 26,
+        },
+        x2: {
+          type: 'num',
+          value: 24,
+        },
+        z2: {
+          type: 'num',
+          value: 26,
+        },
+      },
+      {
+        type: 'w3d:animals',
+        n: {
+          type: 'num',
+          value: 5,
+        },
+        kind: 'galinhas',
+        x: {
+          type: 'num',
+          value: -12,
+        },
+        z: {
+          type: 'num',
+          value: 12,
+        },
+        r: {
+          type: 'num',
+          value: 6,
+        },
+      },
+      {
+        type: 'w3d:animals',
+        n: {
+          type: 'num',
+          value: 3,
+        },
+        kind: 'vacas',
+        x: {
+          type: 'num',
+          value: 14,
+        },
+        z: {
+          type: 'num',
+          value: 10,
+        },
+        r: {
+          type: 'num',
+          value: 8,
+        },
+      },
+      {
+        type: 'w3d:npc',
+        name: 'Rosa',
+        x: {
+          type: 'num',
+          value: -8,
+        },
+        z: {
+          type: 'num',
+          value: 8,
+        },
+        color: '#e04f3f',
+        hat: 'palha',
+      },
+      {
+        type: 'w3d:npcTalk',
+        name: 'Rosa',
+        body: [
+          {
+            type: 'w3d:npcAsk',
+            name: 'Rosa',
+            question: 'O que vamos colher hoje?',
+            optA: 'Milho',
+            bodyA: [
+              {
+                type: 'w3d:npcSay',
+                name: 'Rosa',
+                text: 'O milharal fica atras da cerca. Nao pise nas mudas!',
+              },
+            ],
+            optB: 'Alface',
+            bodyB: [
+              {
+                type: 'w3d:npcSay',
+                name: 'Rosa',
+                text: 'As alfaces estao do lado do celeiro. Capriche!',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'w3d:wind',
+        force: {
+          type: 'num',
+          value: 3,
+        },
+      },
+      {
+        type: 'w3d:weather',
+        kind: 'folhas',
+      },
+      {
+        type: 'w3d:totemText',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: 6,
+        },
+        title: 'Fazendinha',
+        body: 'Visite o celeiro, veja o moinho girar e cuide dos bichinhos!',
+      },
+      {
+        type: 'w3d:start',
+      },
+    ],
+  },
+}
+
 export const world3DExamples: ExtensionExample[] = [
   meuMundoExample,
   corridaExample,
@@ -1634,4 +2248,7 @@ export const world3DExamples: ExtensionExample[] = [
   invernoExample,
   ilhaExample,
   parqueExample,
+  vilaExample,
+  luaExample,
+  fazendinhaExample,
 ]

@@ -141,6 +141,8 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
       return [stmt.body]
     case 'tryCatch':
       return [stmt.body, stmt.handler, stmt.finalizer ?? []]
+    case 'w3d:npcAsk':
+      return [stmt.bodyA, stmt.bodyB]
     case 'fetchJson':
       return [stmt.body, stmt.catchBody ?? []]
     case 'classDecl':
@@ -2763,6 +2765,45 @@ ${pad}});`
       return `${pad}SZWorld3D.waterfall(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
     case 'w3d:lamp':
       return `${pad}SZWorld3D.lamp(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:city':
+      return `${pad}SZWorld3D.city(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.size)}, ${JSON.stringify(stmt.mode)});`
+    case 'w3d:stringLights':
+      return `${pad}SZWorld3D.stringLights(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))});`
+    case 'w3d:traffic':
+      return `${pad}SZWorld3D.traffic(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.sem)});`
+    case 'w3d:door':
+      return `${pad}SZWorld3D.door(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.title)}, ${JSON.stringify(stmt.body)}, ${JSON.stringify(stmt.image)});`
+    case 'w3d:crops':
+      return `${pad}SZWorld3D.crops(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.kind)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:barn':
+      return `${pad}SZWorld3D.barn(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:windmill':
+      return `${pad}SZWorld3D.windmill(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:fence':
+      return `${pad}SZWorld3D.fence(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))});`
+    case 'w3d:animals':
+      return `${pad}SZWorld3D.animals(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.kind)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:crater':
+      return `${pad}SZWorld3D.crater(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:flag':
+      return `${pad}SZWorld3D.flag(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'w3d:rocket':
+      return `${pad}SZWorld3D.rocket(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:npcAsk': {
+      const bodyA = compileStatements(
+        stmt.bodyA,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const bodyB = compileStatements(
+        stmt.bodyB,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 2 + stmt.bodyA.length),
+      )
+      return `${pad}SZWorld3D.npcAsk(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.question)}, ${JSON.stringify(stmt.optA)}, function () {\n${bodyA}\n${pad}}, ${JSON.stringify(stmt.optB)}, function () {\n${bodyB}\n${pad}});`
+    }
     case 'w3d:fireflies':
       return `${pad}SZWorld3D.fireflies(${JSON.stringify(stmt.amount)});`
     case 'w3d:campfire':
@@ -5887,6 +5928,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'w3d:onHorn':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:npcAsk':
+      for (const child of stmt.bodyA) collectStatementIdentifiers(child, names)
+      for (const child of stmt.bodyB) collectStatementIdentifiers(child, names)
       return
     case 'w3d:horn':
     case 'w3d:carLights':

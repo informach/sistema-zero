@@ -6100,8 +6100,13 @@ function asSZWorld3DCall(expr: Node): { method: string; args: Node[] } | null {
 
 /** Enums fixos dos dropdowns do Mundo 3D — valor desconhecido → null → rawJS
  * (o dropdown coagiria para a 1ª opção e o round-trip mentiria). */
-const W3D_STYLES = new Set(['floresta', 'praia', 'neve', 'deserto', 'primavera'])
+const W3D_STYLES = new Set(['floresta', 'praia', 'neve', 'deserto', 'primavera', 'lua', 'fazenda'])
 const W3D_CAR_STYLES = new Set(['passeio', 'jipe', 'corrida'])
+const W3D_CITY_SIZES = new Set(['pequena', 'media', 'grande'])
+const W3D_CITY_MODES = new Set(['dia', 'neon'])
+const W3D_TRAFFIC_MODES = new Set(['semaforos', 'livre'])
+const W3D_CROP_KINDS = new Set(['milho', 'alface', 'abobora'])
+const W3D_ANIMAL_KINDS = new Set(['galinhas', 'vacas'])
 const W3D_THINGS = new Set([
   'arvores',
   'pinheiros',
@@ -6762,6 +6767,141 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const x = toExpr(args[0], ctx)
       const z = toExpr(args[1], ctx)
       return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:lamp', x, z } : null
+    }
+    case 'city': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      if (args[2]?.type !== 'StringLiteral' || args[3]?.type !== 'StringLiteral') return null
+      const size = args[2].value as string
+      const mode = args[3].value as string
+      if (!W3D_CITY_SIZES.has(size) || !W3D_CITY_MODES.has(mode)) return null
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:city', x, z, size, mode } : null
+    }
+    case 'stringLights': {
+      const x1 = toExpr(args[0], ctx)
+      const z1 = toExpr(args[1], ctx)
+      const x2 = toExpr(args[2], ctx)
+      const z2 = toExpr(args[3], ctx)
+      return isSimpleValue(x1) && isSimpleValue(z1) && isSimpleValue(x2) && isSimpleValue(z2)
+        ? { type: 'w3d:stringLights', x1, z1, x2, z2 }
+        : null
+    }
+    case 'traffic': {
+      const n = toExpr(args[0], ctx)
+      if (args[1]?.type !== 'StringLiteral') return null
+      const sem = args[1].value as string
+      if (!W3D_TRAFFIC_MODES.has(sem)) return null
+      return isSimpleValue(n) ? { type: 'w3d:traffic', n, sem } : null
+    }
+    case 'door': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const deg = toExpr(args[2], ctx)
+      if (
+        args[3]?.type !== 'StringLiteral' ||
+        args[4]?.type !== 'StringLiteral' ||
+        args[5]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(deg)
+        ? {
+            type: 'w3d:door',
+            x,
+            z,
+            deg,
+            title: args[3].value as string,
+            body: args[4].value as string,
+            image: args[5].value as string,
+          }
+        : null
+    }
+    case 'crops': {
+      const n = toExpr(args[0], ctx)
+      if (args[1]?.type !== 'StringLiteral') return null
+      const kind = args[1].value as string
+      if (!W3D_CROP_KINDS.has(kind)) return null
+      const x = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      return isSimpleValue(n) && isSimpleValue(x) && isSimpleValue(z)
+        ? { type: 'w3d:crops', n, kind, x, z }
+        : null
+    }
+    case 'barn': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const deg = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(deg)
+        ? { type: 'w3d:barn', x, z, deg }
+        : null
+    }
+    case 'windmill': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:windmill', x, z } : null
+    }
+    case 'fence': {
+      const x1 = toExpr(args[0], ctx)
+      const z1 = toExpr(args[1], ctx)
+      const x2 = toExpr(args[2], ctx)
+      const z2 = toExpr(args[3], ctx)
+      return isSimpleValue(x1) && isSimpleValue(z1) && isSimpleValue(x2) && isSimpleValue(z2)
+        ? { type: 'w3d:fence', x1, z1, x2, z2 }
+        : null
+    }
+    case 'animals': {
+      const n = toExpr(args[0], ctx)
+      if (args[1]?.type !== 'StringLiteral') return null
+      const kind = args[1].value as string
+      if (!W3D_ANIMAL_KINDS.has(kind)) return null
+      const x = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      const r = toExpr(args[4], ctx)
+      return isSimpleValue(n) && isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(r)
+        ? { type: 'w3d:animals', n, kind, x, z, r }
+        : null
+    }
+    case 'crater': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const r = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(r)
+        ? { type: 'w3d:crater', x, z, r }
+        : null
+    }
+    case 'flag': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      if (args[2]?.type !== 'StringLiteral') return null
+      return isSimpleValue(x) && isSimpleValue(z)
+        ? { type: 'w3d:flag', x, z, color: args[2].value as string }
+        : null
+    }
+    case 'rocket': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:rocket', x, z } : null
+    }
+    case 'npcAsk': {
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        args[1]?.type !== 'StringLiteral' ||
+        args[2]?.type !== 'StringLiteral' ||
+        args[4]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      if (!isFn(args[3]) || (args[3].params ?? []).length > 0) return null
+      if (!isFn(args[5]) || (args[5].params ?? []).length > 0) return null
+      return {
+        type: 'w3d:npcAsk',
+        name: args[0].value as string,
+        question: args[1].value as string,
+        optA: args[2].value as string,
+        bodyA: bodyOfFn(args[3], source, ctx),
+        optB: args[4].value as string,
+        bodyB: bodyOfFn(args[5], source, ctx),
+      }
     }
     case 'fireflies': {
       if (args[0]?.type !== 'StringLiteral') return null

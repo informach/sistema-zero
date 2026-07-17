@@ -495,4 +495,438 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     releaseKey('w', 'KeyW')
     expect(Math.abs(api.carPos('z') - z0)).toBeGreaterThan(1)
   })
+
+  it('R21: A PÉ e LONGE do carro, E fala com a amiga (não teleporta pro carrinho)', async () => {
+    // Antes do fix, o árbitro media a distância do CARRO: com o carrinho
+    // estacionado no spawn, o "E: entrar" (r=3 NO carro) vencia de qualquer
+    // lugar do mapa — apertar E aqui ENTRAVA no carro em vez de conversar.
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        person(c: string, h: string): void
+        npc(n: string, x: number, z: number, c: string, h: string): void
+        npcTalk(n: string, fn: () => void): void
+        npcSay(n: string, t: string): void
+      }
+      w.person('#3b82f6', 'bone')
+      w.npc('Lia', 40, 40, '#f97316', 'palha')
+      w.npcTalk('Lia', () => {
+        w.npcSay('Lia', 'Oi!')
+      })
+    })
+    const w2 = api as unknown as {
+      isDriving(): boolean
+      personPlace(x: number, z: number, d: number): void
+    }
+    expect(w2.isDriving()).toBe(false)
+    // Caminha (teleporta) até a amiga — o carro fica LÁ no centro.
+    w2.personPlace(39, 40, 0)
+    step(3)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    step(30)
+    // Falou com a Lia (balão com a fala) e NÃO entrou no carro de longe.
+    expect(w2.isDriving()).toBe(false)
+    // (o happy-dom re-serializa o style com espaços quando el.style é tocado —
+    // casar só por 'max-width', sem o valor colado)
+    const el = Array.from(document.querySelectorAll('#szw3d-stage div')).find((d) =>
+      (d.getAttribute('style') ?? '').includes('max-width'),
+    ) as HTMLElement | undefined
+    expect(el).toBeTruthy()
+    expect(el?.textContent).toBe('Oi!')
+  })
+
+  it('R21: na LUA o pulo flutua (~2,5× mais alto que na floresta)', async () => {
+    const jumpHeight = async (style: string) => {
+      const { api, step } = await loadStartedWorld((a) => {
+        const w = a as unknown as {
+          setup(o: { style: string; world: number }): void
+          person(c: string, h: string): void
+        }
+        w.setup({ style, world: 160 })
+        w.person('#3b82f6', 'capacete')
+      })
+      const w2 = api as unknown as { personPos(a: string): number }
+      step(3)
+      const y0 = w2.personPos('y')
+      pressKey(' ', 'Space')
+      step(2)
+      releaseKey(' ', 'Space')
+      let maxDy = 0
+      for (let i = 0; i < 140; i++) {
+        step(1)
+        const dy = w2.personPos('y') - y0
+        if (dy > maxDy) maxDy = dy
+      }
+      window.dispatchEvent(new Event('pagehide'))
+      for (const el of Array.from(document.querySelectorAll('#szw3d-stage'))) el.remove()
+      return maxDy
+    }
+    const floresta = await jumpHeight('floresta')
+    const lua = await jumpHeight('lua')
+    expect(floresta).toBeGreaterThan(0.5)
+    expect(lua).toBeGreaterThan(floresta * 1.8)
+  })
+
+  it('R22: a cidadezinha nasce PLANA, com casas instanciadas na cena', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as { city(x: number, z: number, s: string, m: string): void }
+      w.city(0, 0, 'media', 'dia')
+    })
+    step(3)
+    // media → r 38, anel a 23.56 m; o flatten do disco (r+8) deixa TUDO na
+    // mesma altura do centro (senão o carro pulava nas ruas).
+    const c = api.groundHeight(0, 0)
+    expect(Math.abs(api.groundHeight(23.6, 0) - c)).toBeLessThan(0.25)
+    expect(Math.abs(api.groundHeight(0, -23.6) - c)).toBeLessThan(0.25)
+    expect(Math.abs(api.groundHeight(-16, 16) - c)).toBeLessThan(0.25)
+    // Casas/ruas/cercas instanciadas: a cena ganha VÁRIOS InstancedMesh.
+    const scene = renderers[0]?.scene ?? null
+    let ims = 0
+    scene?.traverse((o) => {
+      if ((o as RealTHREE.InstancedMesh).isInstancedMesh) ims++
+    })
+    expect(ims).toBeGreaterThan(8)
+  })
+
+  it('R22: o varal de luzinhas ACENDE quando escurece', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as { stringLights(a: number, b: number, c: number, d: number): void }
+      w.stringLights(-6, 0, 6, 0)
+    })
+    step(3)
+    const scene = renderers[0]?.scene ?? null
+    let bulbMat: RealTHREE.PointsMaterial | null = null
+    scene?.traverse((o) => {
+      const p = o as RealTHREE.Points
+      const m = p.material as RealTHREE.PointsMaterial | undefined
+      if (!bulbMat && p.isPoints && m && m.size === 0.55) bulbMat = m
+    })
+    expect(bulbMat).not.toBeNull()
+    expect((bulbMat as unknown as RealTHREE.PointsMaterial).opacity).toBeLessThan(0.4) // dia
+    ;(api as unknown as { setTime(n: string): void }).setTime('noite')
+    step(3)
+    expect((bulbMat as unknown as RealTHREE.PointsMaterial).opacity).toBeGreaterThan(0.9)
+  })
+
+  it('R22: modo NEON cai a noite sozinho (quando a criança não pediu hora)', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as { city(x: number, z: number, s: string, m: string): void }
+      w.city(0, 0, 'pequena', 'neon')
+    })
+    step(5)
+    const hour = (api as unknown as { timeOfDay(): number }).timeOfDay()
+    expect(hour < 6 || hour >= 18).toBe(true)
+    // E os varais da praça já nasceram acesos (nightAmount alto).
+    const scene = renderers[0]?.scene ?? null
+    let lit = false
+    scene?.traverse((o) => {
+      const p = o as RealTHREE.Points
+      const m = p.material as RealTHREE.PointsMaterial | undefined
+      if (p.isPoints && m && m.size === 0.55 && m.opacity > 0.9) lit = true
+    })
+    expect(lit).toBe(true)
+  })
+
+  it('R22/gate: a cidade média BOOTA rápido (eval+build < 2,5 s na bancada)', async () => {
+    const t0 = performance.now()
+    const { step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        city(x: number, z: number, s: string, m: string): void
+        traffic(n: number, m: string): void
+      }
+      w.city(0, 0, 'media', 'dia')
+      w.traffic(6, 'semaforos')
+    })
+    step(3)
+    // Generoso p/ CI — pega regressão de ORDEM DE GRANDEZA no payload/build.
+    expect(performance.now() - t0).toBeLessThan(2500)
+  })
+
+  it('R23: o trânsito ANDA no anel e PAUSA no semáforo (padrão para-e-anda)', async () => {
+    const { renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        city(x: number, z: number, s: string, m: string): void
+        traffic(n: number, m: string): void
+      }
+      w.city(0, 0, 'media', 'dia')
+      w.traffic(4, 'semaforos')
+    })
+    step(5)
+    const scene = renderers[0]?.scene ?? null
+    // O IM do trânsito: 4 carros × 4 peças = 16 instâncias.
+    let tm: RealTHREE.InstancedMesh | null = null
+    scene?.traverse((o) => {
+      const im = o as RealTHREE.InstancedMesh
+      if (!tm && im.isInstancedMesh && im.count === 16) tm = im
+    })
+    expect(tm).not.toBeNull()
+    const posOf = () => {
+      const m = new (Object.getPrototypeOf(
+        (tm as unknown as RealTHREE.InstancedMesh).matrixWorld,
+      ).constructor)()
+      ;(tm as unknown as RealTHREE.InstancedMesh).getMatrixAt(0, m)
+      return { x: m.elements[12], z: m.elements[14] }
+    }
+    // Amostra o movimento do carro 0 em janelas de ~1 s por ~28 s de mundo:
+    // com semáforo tem que existir janela PARADA e janela ANDANDO.
+    let still = 0
+    let moving = 0
+    let prev = posOf()
+    for (let wdw = 0; wdw < 28; wdw++) {
+      step(30)
+      const cur = posOf()
+      const d = Math.abs(cur.x - prev.x) + Math.abs(cur.z - prev.z)
+      if (d < 0.05) still++
+      else if (d > 0.8) moving++
+      prev = cur
+    }
+    expect(moving).toBeGreaterThan(3)
+    expect(still).toBeGreaterThan(1)
+  })
+
+  it('R23: o carrinho autônomo PARA atrás do jogador estacionado na pista', async () => {
+    const { api, step, renderers } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        city(x: number, z: number, s: string, m: string): void
+        traffic(n: number, m: string): void
+      }
+      w.city(0, 0, 'media', 'dia')
+      w.traffic(6, 'livre')
+    })
+    // media → ringR 23.56; lane de fora a 24.81. Estaciona o carro DA CRIANÇA lá.
+    api.carPlace(24.81, 0, 0)
+    step(5)
+    const scene = renderers[0]?.scene ?? null
+    let tm: RealTHREE.InstancedMesh | null = null
+    scene?.traverse((o) => {
+      const im = o as RealTHREE.InstancedMesh
+      if (!tm && im.isInstancedMesh && im.count === 24) tm = im
+    })
+    expect(tm).not.toBeNull()
+    // Deixa o trânsito fluir bastante: alguém chega perto e SEGURA.
+    step(1200)
+    const mesh = tm as unknown as RealTHREE.InstancedMesh
+    const m = new (Object.getPrototypeOf(mesh.matrixWorld).constructor)()
+    let nearest = Infinity
+    for (let i = 0; i < 6; i++) {
+      mesh.getMatrixAt(i * 4, m)
+      const dx = m.elements[12] - api.carPos('x')
+      const dz = m.elements[14] - api.carPos('z')
+      const d = Math.sqrt(dx * dx + dz * dz)
+      if (d < nearest) nearest = d
+    }
+    // Chegou (fila atrás do jogador) mas NÃO encostou (para antes de bater).
+    expect(nearest).toBeLessThan(9)
+    expect(nearest).toBeGreaterThan(1.4)
+  })
+
+  it('R24: E na porta ABRE o cartaz local (e o 2º E fecha sem re-disparar)', async () => {
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        door(x: number, z: number, d: number, t: string, b: string, i: string): void
+      }
+      w.door(6, 0, 0, 'Padaria', 'O melhor pao da cidade!', '')
+    })
+    api.carPlace(4, 0, 90)
+    step(3)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    step(2)
+    const overlay = () =>
+      Array.from(document.querySelectorAll('#szw3d-stage div')).find((d) =>
+        (d.textContent ?? '').includes('O melhor pao da cidade!'),
+      ) as HTMLElement | undefined
+    const el = overlay()
+    expect(el).toBeTruthy()
+    expect((el?.textContent ?? '').includes('Padaria')).toBe(true)
+    // 2º E: fecha (guarda no topo do stepInteractions engole o aperto).
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    step(2)
+    const root = document.querySelector('#szw3d-stage div[style*="inset"]') as HTMLElement | null
+    // O overlay raiz (inset:0) esconde; o mundo volta a andar.
+    const hidden = Array.from(document.querySelectorAll('#szw3d-stage div')).every((d) => {
+      const s = d.getAttribute('style') ?? ''
+      if (!s.includes('inset')) return true
+      return (d as HTMLElement).style.display === 'none'
+    })
+    expect(root === null || hidden).toBe(true)
+  })
+
+  it('R24: pergunta com escolhas — tecla 2 roda o corpo da resposta B', async () => {
+    let colheuA = 0
+    let colheuB = 0
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        npc(n: string, x: number, z: number, c: string, h: string): void
+        npcTalk(n: string, fn: () => void): void
+        npcAsk(n: string, q: string, oa: string, fa: () => void, ob: string, fb: () => void): void
+        npcSay(n: string, t: string): void
+      }
+      w.npc('Guia', 6, 0, '#f97316', 'coroa')
+      w.npcTalk('Guia', () => {
+        w.npcAsk(
+          'Guia',
+          'Milho ou alface?',
+          'Milho',
+          () => {
+            colheuA++
+            w.npcSay('Guia', 'Milho!')
+          },
+          'Alface',
+          () => {
+            colheuB++
+            w.npcSay('Guia', 'Alface!')
+          },
+        )
+      })
+    })
+    api.carPlace(4, 0, 90)
+    step(3)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    step(10)
+    // A pergunta abriu com os 2 botões (o splash também é <button> — filtra
+    // pelos botões ciano da escolha); E é ENGOLIDO enquanto aberta.
+    const buttons = Array.from(document.querySelectorAll('#szw3d-stage button')).filter((b) =>
+      (b.getAttribute('style') ?? '').includes('22d3ee'),
+    )
+    expect(buttons.length).toBe(2)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    expect(colheuA + colheuB).toBe(0)
+    // Tecla 2 → resposta B roda e a fala dela substitui o balão.
+    pressKey('2', 'Digit2')
+    step(2)
+    releaseKey('2', 'Digit2')
+    expect(colheuB).toBe(1)
+    expect(colheuA).toBe(0)
+    step(30)
+    const bubble = Array.from(document.querySelectorAll('#szw3d-stage div')).find((d) =>
+      (d.getAttribute('style') ?? '').includes('max-width'),
+    ) as HTMLElement | undefined
+    expect(bubble?.textContent).toBe('Alface!')
+  })
+
+  it('R21: a lua nasce com CRATERAS (fundo do buraco bem abaixo da borda)', async () => {
+    const { api } = await loadStartedWorld((a) => {
+      const w = a as unknown as { setup(o: { style: string; world: number }): void }
+      w.setup({ style: 'lua', world: 160 })
+      a.car('passeio', '#94a3b8')
+    })
+    // Varre o chão atrás do ponto mais fundo (as crateras nascem a 24m+ do
+    // centro; o ruído puro nunca desce abaixo de ~0 — buraco fundo = cratera).
+    let minH = Infinity
+    let mx = 0
+    let mz = 0
+    for (let x = -70; x <= 70; x += 2) {
+      for (let z = -70; z <= 70; z += 2) {
+        const h = api.groundHeight(x, z)
+        if (h < minH) {
+          minH = h
+          mx = x
+          mz = z
+        }
+      }
+    }
+    expect(minH).toBeLessThan(-0.3)
+    // A borda (anel a 6m do fundo) fica BEM acima do fundo da tigela.
+    let ring = 0
+    for (let i = 0; i < 8; i++) {
+      const ang = (i / 8) * Math.PI * 2
+      ring += api.groundHeight(mx + Math.cos(ang) * 6, mz + Math.sin(ang) * 6)
+    }
+    ring /= 8
+    expect(ring - minH).toBeGreaterThan(0.8)
+  })
+
+  it('R25: moinho gira COM O VENTO (mais vento = mais giro) e a galinha fica no raio', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        windmill(x: number, z: number): void
+        animals(n: number, k: string, x: number, z: number, r: number): void
+      }
+      w.windmill(15, 25)
+      w.animals(3, 'galinhas', -20, -20, 6)
+    })
+    step(3)
+    const scene = renderers[0]?.scene ?? null
+    // O grupo das pás: acha pelo Group com 4 filhos-pivô a ~6,6m de altura.
+    let blades: RealTHREE.Group | null = null
+    scene?.traverse((o) => {
+      if (
+        !blades &&
+        o.type === 'Group' &&
+        o.children.length === 4 &&
+        Math.abs(o.position.y - 6.6) < 0.01
+      ) {
+        blades = o as RealTHREE.Group
+      }
+    })
+    expect(blades).not.toBeNull()
+    const spinAt = (windForce: number, frames: number) => {
+      ;(api as unknown as { setWind(n: number): void }).setWind(windForce)
+      const r0 = (blades as unknown as RealTHREE.Group).rotation.z
+      step(frames)
+      return (blades as unknown as RealTHREE.Group).rotation.z - r0
+    }
+    const calmo = spinAt(0, 60)
+    const ventania = spinAt(4, 60)
+    expect(ventania).toBeGreaterThan(calmo * 1.5)
+    expect(ventania).toBeGreaterThan(0.5)
+    // Galinhas perambulam mas FICAM perto de casa (raio 6 + folga).
+    step(600)
+    let herdIM: RealTHREE.InstancedMesh | null = null
+    scene?.traverse((o) => {
+      const im = o as RealTHREE.InstancedMesh
+      if (!herdIM && im.isInstancedMesh && im.count === 3) herdIM = o as RealTHREE.InstancedMesh
+    })
+    expect(herdIM).not.toBeNull()
+    const mesh = herdIM as unknown as RealTHREE.InstancedMesh
+    const m = new (Object.getPrototypeOf(mesh.matrixWorld).constructor)()
+    for (let i = 0; i < 3; i++) {
+      mesh.getMatrixAt(i, m)
+      const dx = m.elements[12] - -20
+      const dz = m.elements[14] - -20
+      expect(Math.sqrt(dx * dx + dz * dz)).toBeLessThan(10)
+    }
+  })
+
+  it('R25: a cerquinha tem postes SÓLIDOS (o carro esbarra) e a cratera manual afunda', async () => {
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        fence(a: number, b: number, c: number, d: number): void
+        crater(x: number, z: number, r: number): void
+      }
+      w.fence(-6, 12, 6, 12)
+      w.crater(30, 30, 8)
+    })
+    step(3)
+    // Cratera manual (mundo floresta!): fundo bem abaixo da borda.
+    const fundo = api.groundHeight(30, 30)
+    const borda = api.groundHeight(38, 30)
+    expect(borda - fundo).toBeGreaterThan(1)
+    // Postes sólidos: dirigindo reto contra a cerca, o carro NÃO passa.
+    api.carPlace(0, 8, 0) // olhando +z, cerca em z=12
+    pressKey('w', 'KeyW')
+    step(90)
+    releaseKey('w', 'KeyW')
+    expect(api.carPos('z')).toBeLessThan(13.2)
+  })
 })

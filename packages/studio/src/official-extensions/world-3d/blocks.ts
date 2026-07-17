@@ -22,6 +22,8 @@ export const world3DBlocks = [
           ['❄️ neve', 'neve'],
           ['🏜️ deserto', 'deserto'],
           ['🌸 primavera', 'primavera'],
+          ['🌙 lua', 'lua'],
+          ['🚜 fazenda', 'fazenda'],
         ],
       },
       { type: 'input_value', name: 'WORLD', check: 'JSValue' },
@@ -1792,6 +1794,258 @@ export const world3DBlocks = [
     tooltip:
       'Verdadeiro SÓ no quadro em que a tecla desceu (segurar não repete). Perfeito para ações de um toque: buzinar, interagir, soltar fogos.',
   },
+  {
+    type: 'sz_w3d_city',
+    message0: 'Construir a cidadezinha 🏙️ no centro x %1 z %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    message1: 'tamanho %1 · %2',
+    args1: [
+      {
+        type: 'field_dropdown',
+        name: 'SIZE',
+        options: [
+          ['pequena', 'pequena'],
+          ['média', 'media'],
+          ['grande', 'grande'],
+        ],
+      },
+      {
+        type: 'field_dropdown',
+        name: 'MODE',
+        options: [
+          ['☀️ de dia', 'dia'],
+          ['🌃 neon à noite', 'neon'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma cidadezinha completa estilo Vocation Vista: praça com coreto e varais de luzinhas, anel de rua com faixas de pedestre, 4 ruas de entrada, casinhas, lojas e predinhos coloridos, cercas-vivas e um laguinho. O chão se aplaina sozinho. No modo neon a noite cai, chove de leve e os letreiros brilham!',
+  },
+  {
+    type: 'sz_w3d_crops',
+    message0: 'Plantar %1 fileiras de %2 🌾 perto de x %3 z %4',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      {
+        type: 'field_dropdown',
+        name: 'KIND',
+        options: [
+          ['milho', 'milho'],
+          ['alface', 'alface'],
+          ['abóbora', 'abobora'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Fileiras de plantação com montinhos de terra: milho alto, alface redondinha ou abóboras laranjas. A área fica limpa de árvores sozinha.',
+  },
+  {
+    type: 'sz_w3d_barn',
+    message0: 'Construir o celeiro em x %1 z %2 virado para %3 graus',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'O celeiro vermelho clássico com telhado e portão branco. O coração da fazenda!',
+  },
+  {
+    type: 'sz_w3d_windmill',
+    message0: 'Pôr o moinho de vento em x %1 z %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um moinho com 4 pás que GIRAM de verdade — e giram mais rápido quando você aumenta o vento (bloco do vento)!',
+  },
+  {
+    type: 'sz_w3d_fence',
+    message0: 'Fazer uma cerquinha 🪵 de x %1 z %2 até x %3 z %4',
+    args0: [
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Z1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Z2', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Postes de madeira com duas ripas, seguindo o chão. Os postes são SÓLIDOS (o carrinho esbarra) — cerque o pasto, a plantação, a sua casa…',
+  },
+  {
+    type: 'sz_w3d_animals',
+    message0: 'Soltar %1 %2 perto de x %3 z %4 ( raio %5 )',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      {
+        type: 'field_dropdown',
+        name: 'KIND',
+        options: [
+          ['galinhas 🐔', 'galinhas'],
+          ['vacas 🐄', 'vacas'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Bichinhos que passeiam sozinhos no seu cantinho: galinhas que bicam o chão e vacas que pastam devagar. Até 16 no total.',
+  },
+  {
+    type: 'sz_w3d_crater',
+    message0: 'Abrir uma cratera 🕳️ em x %1 z %2 com raio %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Afunda uma tigela no chão com a borda erguida ao redor — a cratera clássica da lua (mas funciona em QUALQUER mundo: faça um lago seco, uma arena, uma toca).',
+  },
+  {
+    type: 'sz_w3d_flag',
+    message0: 'Fincar a bandeira 🚩 em x %1 z %2 da cor %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ef4444' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um mastro com a SUA bandeira. Marque a sua base na lua, o topo do morro, a chegada do passeio.',
+  },
+  {
+    type: 'sz_w3d_rocket',
+    message0: 'Pousar o foguete 🚀 em x %1 z %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O foguete que trouxe você: corpo prateado, nariz vermelho, 4 aletas e uma janelinha. A base lunar começa aqui.',
+  },
+  {
+    type: 'sz_w3d_door',
+    message0: 'Pôr uma porta interativa 🚪 em x %1 z %2 virada para %3 graus',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    message1: 'título %1 · texto %2 · imagem %3',
+    args1: [
+      { type: 'field_input', name: 'TITLE', text: 'Padaria' },
+      { type: 'field_input', name: 'TEXT', text: 'Aqui mora o melhor pão da cidade!' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '', kind: 'image' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma porta de verdade: chegue perto e aperte E para abrir um cartaz com título, texto e (se quiser) uma imagem do projeto. É o "entrar no prédio" da cidadezinha — conte o que tem lá dentro! Funciona em qualquer lugar do mundo (até no meio do nada, que é engraçado).',
+  },
+  {
+    type: 'sz_w3d_npc_ask',
+    message0: 'Quando o amigo %1 perguntar: %2',
+    args0: [
+      { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
+      { type: 'field_input', name: 'QUESTION', text: 'O que você quer ser?' },
+    ],
+    message1: 'se responder %1 %2',
+    args1: [
+      { type: 'field_input', name: 'OPT_A', text: 'Inventor' },
+      { type: 'input_statement', name: 'BODY_A' },
+    ],
+    message2: 'se responder %1 %2',
+    args2: [
+      { type: 'field_input', name: 'OPT_B', text: 'Artista' },
+      { type: 'input_statement', name: 'BODY_B' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O amigo faz uma PERGUNTA com dois botões de resposta (clique ou tecla 1/2). Cada resposta roda os próprios blocos — dá para ramificar a conversa, dar missões diferentes, contar segredos… Entra na fila de falas normal (combine com "falar").',
+  },
+  {
+    type: 'sz_w3d_traffic',
+    message0: 'Ligar o trânsito 🚦 : %1 carrinhos , %2',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      {
+        type: 'field_dropdown',
+        name: 'SEM',
+        options: [
+          ['com semáforos', 'semaforos'],
+          ['sem semáforos', 'livre'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Carrinhos autônomos passeiam pelo anel da cidadezinha. Eles são educados: param atrás de você (e buzinam se demorar!), respeitam o semáforo e nunca batem. Precisa da cidadezinha construída. Até 12 carrinhos.',
+  },
+  {
+    type: 'sz_w3d_string_lights',
+    message0: 'Pendurar um varal de luzinhas ✨ de x %1 z %2 até x %3 z %4',
+    args0: [
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Z1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Z2', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Dois postes e um fio de luzinhas penduradas entre eles (elas acendem quando escurece). Faça um caminho de festa ou decore a sua praça!',
+  },
 ]
 
 // ---- Sub-categorias da paleta (a ordem é a ordem de leitura da criança) ----
@@ -1835,6 +2089,21 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_w3d_islands', 'sz_w3d_boat', 'sz_w3d_bridge', 'sz_w3d_lighthouse'],
   },
   {
+    name: '🏙️ Cidade',
+    colour: C,
+    types: ['sz_w3d_city', 'sz_w3d_traffic', 'sz_w3d_door', 'sz_w3d_string_lights'],
+  },
+  {
+    name: '🌙 Lua & espaço',
+    colour: C,
+    types: ['sz_w3d_crater', 'sz_w3d_flag', 'sz_w3d_rocket'],
+  },
+  {
+    name: '🚜 Fazenda',
+    colour: C,
+    types: ['sz_w3d_crops', 'sz_w3d_barn', 'sz_w3d_windmill', 'sz_w3d_fence', 'sz_w3d_animals'],
+  },
+  {
     name: '🧑‍🤝‍🧑 Amigos',
     colour: C,
     types: [
@@ -1842,6 +2111,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_npc_wander',
       'sz_w3d_npc_talk',
       'sz_w3d_npc_say',
+      'sz_w3d_npc_ask',
       'sz_w3d_npc_emote',
     ],
   },
@@ -2070,6 +2340,18 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     W: numShadow(4),
   },
   sz_w3d_lighthouse: { X: numShadow(50), Z: numShadow(-40) },
+  sz_w3d_city: { X: numShadow(0), Z: numShadow(0) },
+  sz_w3d_traffic: { N: numShadow(6) },
+  sz_w3d_door: { X: numShadow(0), Z: numShadow(8), DEG: numShadow(0) },
+  sz_w3d_crops: { N: numShadow(4), X: numShadow(0), Z: numShadow(20) },
+  sz_w3d_barn: { X: numShadow(-15), Z: numShadow(15), DEG: numShadow(0) },
+  sz_w3d_windmill: { X: numShadow(15), Z: numShadow(25) },
+  sz_w3d_fence: { X1: numShadow(-8), Z1: numShadow(10), X2: numShadow(8), Z2: numShadow(10) },
+  sz_w3d_animals: { N: numShadow(4), X: numShadow(0), Z: numShadow(15), R: numShadow(8) },
+  sz_w3d_crater: { X: numShadow(10), Z: numShadow(10), R: numShadow(6) },
+  sz_w3d_flag: { X: numShadow(0), Z: numShadow(-10) },
+  sz_w3d_rocket: { X: numShadow(8), Z: numShadow(-10) },
+  sz_w3d_string_lights: { X1: numShadow(-8), Z1: numShadow(0), X2: numShadow(8), Z2: numShadow(0) },
   sz_w3d_lamp: { X: numShadow(6), Z: numShadow(6) },
   sz_w3d_campfire: { X: numShadow(0), Z: numShadow(8) },
   sz_w3d_push_scatter: { N: numShadow(12), X: numShadow(0), Z: numShadow(20), R: numShadow(10) },

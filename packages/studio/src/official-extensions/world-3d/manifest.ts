@@ -4,9 +4,9 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '2.0.0',
+  version: '3.0.0',
   description:
-    'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: escolha o cenário (🌲🏖️❄️🏜️🌸), levante morros ou um arquipélago e passeie a pé, de carrinho ou de barco (E entra e sai). Buzina, marcas de pneu, boliche, letras e TNT para bagunçar; amigos que conversam, moedas e missões, conquistas que ficam salvas, minimapa com teleporte, clima com tempestade e tornado. Tudo com blocos simples — e o "A cada quadro" para inventar a sua mecânica.',
+    'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: 7 cenários (🌲🏖️❄️🏜️🌸🌙🚜), arquipélago com barco, CIDADEZINHA completa com trânsito e semáforos 🏙️, lua com gravidade fraquinha e fazenda com moinho e bichinhos. Passeie a pé, de carrinho ou de barco; portas que abrem cartazes, amigos que conversam e PERGUNTAM, moedas, missões e conquistas salvas; minimapa com teleporte, tempestade e tornado. Blocos simples — e o "A cada quadro" para a sua mecânica.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -25,8 +25,10 @@ morros, o céu do seu estilo, e um carrinho gostoso de dirigir. Cada bloco é
 
 O que o motor já faz por você:
 
-- **Mundo com estilo** — floresta, praia, neve, deserto ou primavera: as cores
-  do chão, do céu e da névoa combinam sozinhas. Um bloco: "Criar o mundo 3D".
+- **Mundo com estilo** — floresta, praia, neve, deserto, primavera, 🌙 lua ou
+  🚜 fazenda: as cores do chão, do céu e da névoa combinam sozinhas. Um bloco:
+  "Criar o mundo 3D". Na LUA a gravidade é fraquinha (pulos flutuantes!), o céu
+  já nasce estrelado e o chão vem com crateras de verdade.
 - **Morros de dirigir** — "Deixar o chão com morros" levanta colinas suaves no
   mundo inteiro (o meio fica plano para o carrinho nascer em paz). E "a altura
   do chão em x z" te conta a altura em QUALQUER ponto — nada nasce enterrado.
@@ -149,6 +151,54 @@ O que o motor já faz por você:
 - **onde o personagem está (eixo …)** — dirigindo, é a posição do carrinho
   (o personagem está dentro!). **está dirigindo?** — verdadeiro no volante.
 
+### 🏙️ Cidade
+
+- **Construir a cidadezinha 🏙️** — uma cidade COMPLETA de um bloco só, no
+  estilo Vocation Vista: praça com coreto e varais de luzinhas, anel de rua
+  com tracejado e FAIXAS DE PEDESTRE, 4 ruas de entrada, casinhas, lojas e
+  predinhos coloridos, cercas-vivas, laguinho e postes nos cruzamentos. O
+  chão se aplaina sozinho e as ruas aparecem no minimapa. Escolha o tamanho
+  (pequena, média, grande) e o clima: ☀️ de dia ou **🌃 neon à noite** (a
+  noite cai, chove de leve e os letreiros das lojas brilham). Só cabe UMA
+  cidadezinha por mundo.
+- **Ligar o trânsito 🚦** — carrinhos autônomos passeiam pelo anel da
+  cidade. Eles são EDUCADOS: param atrás de você (e buzinam se você demorar
+  muito!), respeitam os semáforos dos cruzamentos (verde anda, amarelo se
+  prepara, vermelho para) e nunca batem em ninguém. Escolha quantos (até
+  12) e se tem semáforos ou rua livre.
+- **Pôr uma porta interativa 🚪** — chegue perto e aperte E: abre um cartaz
+  com o título, um texto seu e (se quiser) uma imagem do projeto. É o
+  "entrar no prédio": conte o que tem dentro da padaria, da oficina, do
+  castelo… Funciona em QUALQUER lugar do mundo, com ou sem cidade.
+- **Pendurar um varal de luzinhas ✨ de … até …** — dois postes e um fio de
+  lâmpadas penduradas que ACENDEM quando escurece. Decore a praça, o quintal
+  ou faça um caminho de festa (funciona em qualquer mundo, com ou sem
+  cidade).
+
+### 🌙 Lua & espaço
+
+- **Estilo "lua" no Criar o mundo** — chão cinza de crateras, céu estrelado
+  desde o começo e GRAVIDADE FRAQUINHA: os pulos flutuam devagarinho como os
+  astronautas de verdade (vale para o personagem, o carrinho e a bagunça).
+- **Abrir uma cratera 🕳️** — afunda uma tigela com a borda erguida ao redor.
+  Funciona em qualquer mundo: arena, lago seco, toca de dinossauro…
+- **Fincar a bandeira 🚩 da cor …** — marque a sua conquista.
+- **Pousar o foguete 🚀** — o foguete prateado que trouxe você.
+
+### 🚜 Fazenda
+
+- **Estilo "fazenda" no Criar o mundo** — campos verde-dourados prontos para
+  plantar.
+- **Plantar … fileiras de milho/alface/abóbora 🌾** — fileiras certinhas com
+  montinhos de terra.
+- **Construir o celeiro** — o vermelho clássico de portão branco.
+- **Pôr o moinho de vento** — as pás GIRAM de verdade, e giram mais rápido
+  quando você aumenta o vento!
+- **Fazer uma cerquinha 🪵 de … até …** — postes sólidos com duas ripas,
+  seguindo o morro.
+- **Soltar galinhas 🐔 ou vacas 🐄** — bichinhos que passeiam sozinhos no seu
+  cantinho (as galinhas bicam o chão!).
+
 ### 🏝️ Ilha & barco
 
 - **Transformar o mundo em … ilhas num mar na altura …** — o ARQUIPÉLAGO:
@@ -172,6 +222,10 @@ O que o motor já faz por você:
   Ponha vários **O amigo fala** dentro: as falas entram numa FILA e cada E
   mostra a próxima, letra por letra, com biplinhos de voz (cada letra tem o
   seu som — o "idioma" dos jogos profissionais).
+- **Quando o amigo … perguntar** — a PERGUNTA com dois botões de resposta
+  (clique neles ou aperte 1/2). Cada resposta roda os próprios blocos: dá
+  para ramificar a conversa, dar missões diferentes para cada escolha,
+  contar segredos… Entra na mesma fila das falas.
 - **O amigo faz acenar/pulinho/girar/dançar** — as gracinhas dele.
 
 ### ⭐ Moedas & missões

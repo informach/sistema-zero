@@ -5964,6 +5964,90 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
+    case 'w3d:npcAsk':
+      return block(
+        'sz_w3d_npc_ask',
+        { NAME: stmt.name, QUESTION: stmt.question, OPT_A: stmt.optA, OPT_B: stmt.optB },
+        { BODY_A: statementsToBlocks(stmt.bodyA), BODY_B: statementsToBlocks(stmt.bodyB) },
+        stmt.__id,
+      )
+    case 'w3d:door': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const deg = exprToValueBlock(valueToExpr(stmt.deg))
+      return x === null || z === null || deg === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_w3d_door',
+            { TITLE: stmt.title, TEXT: stmt.body, IMAGE: stmt.image },
+            {},
+            stmt.__id,
+            { X: x, Z: z, DEG: deg },
+          )
+    }
+    case 'w3d:crops': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return n === null || x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_crops', { KIND: stmt.kind }, {}, stmt.__id, { N: n, X: x, Z: z })
+    }
+    case 'w3d:barn': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const deg = exprToValueBlock(valueToExpr(stmt.deg))
+      return x === null || z === null || deg === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_barn', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+    }
+    case 'w3d:windmill': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_windmill', {}, {}, stmt.__id, { X: x, Z: z })
+    }
+    case 'w3d:fence': {
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+      return x1 === null || z1 === null || x2 === null || z2 === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_fence', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2 })
+    }
+    case 'w3d:animals': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const r = exprToValueBlock(valueToExpr(stmt.r))
+      return n === null || x === null || z === null || r === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_animals', { KIND: stmt.kind }, {}, stmt.__id, { N: n, X: x, Z: z, R: r })
+    }
+    case 'w3d:crater': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const r = exprToValueBlock(valueToExpr(stmt.r))
+      return x === null || z === null || r === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_crater', {}, {}, stmt.__id, { X: x, Z: z, R: r })
+    }
+    case 'w3d:flag': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_flag', { COLOR: stmt.color }, {}, stmt.__id, { X: x, Z: z })
+    }
+    case 'w3d:rocket': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_rocket', {}, {}, stmt.__id, { X: x, Z: z })
+    }
     case 'w3d:npcSay':
       return block('sz_w3d_npc_say', { NAME: stmt.name, TEXT: stmt.text }, {}, stmt.__id)
     case 'w3d:npcEmote':
@@ -6040,6 +6124,28 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return x === null || z === null
         ? rawJSBlock(stmt)
         : block('sz_w3d_lamp', {}, {}, stmt.__id, { X: x, Z: z })
+    }
+    case 'w3d:city': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_city', { SIZE: stmt.size, MODE: stmt.mode }, {}, stmt.__id, { X: x, Z: z })
+    }
+    case 'w3d:traffic': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_traffic', { SEM: stmt.sem }, {}, stmt.__id, { N: n })
+    }
+    case 'w3d:stringLights': {
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+      return x1 === null || z1 === null || x2 === null || z2 === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_string_lights', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2 })
     }
     case 'w3d:fireflies':
       return block('sz_w3d_fireflies', { AMOUNT: stmt.amount }, {}, stmt.__id)

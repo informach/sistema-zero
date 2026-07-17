@@ -80,10 +80,14 @@ describe('Guarda dos template literals do Mundo 3D', () => {
 
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {
     expect(world3DRuntime.length).toBeGreaterThan(1000)
-    // Teto de tamanho do payload injetado (plano v2): avisa perto de 270 KB via
-    // margem, FALHA acima de 295 KB — antes disso, aplicar os cortes pré-aprovados
-    // do plano (raster do mapa→dots, som da cachoeira, ambience→2.1…).
-    expect(world3DRuntime.length).toBeLessThan(295_000)
+    // Teto de tamanho do payload injetado (plano v3: cidade/trânsito/lua/fazenda
+    // somam ~58 KB sobre a v2): avisa perto de 325 KB via margem, FALHA acima de
+    // 340 KB. O custo real de payload grande é o eval+build, guardado pelo GATE
+    // DE BOOT no playthrough (cidade média < 2,5 s no harness). Antes de subir o
+    // teto de novo, aplicar os cortes pré-aprovados do plano (animais sem anim
+    // por quadro, varal sem bolbos, plaquinhas viram quads, faixas fundidas na
+    // malha, lago próprio fora, rodas fundidas, arquétipos 4→3, vacas fora).
+    expect(world3DRuntime.length).toBeLessThan(340_000)
     expect(world3DPromptContext.length).toBeGreaterThan(500)
     expect(world3DManifest.docs.length).toBeGreaterThan(500)
   })

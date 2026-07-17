@@ -24,8 +24,10 @@ SZWorld3D.start(); // SEMPRE por último
 ### API (1 método por bloco)
 
 - \`SZWorld3D.setup({ style, world })\` — estilos: 'floresta' | 'praia' |
-  'neve' | 'deserto' | 'primavera' (na neve o carro escorrega). world =
-  lado do mundo em metros (40–600, padrão 160). Só ANTES do start.
+  'neve' | 'deserto' | 'primavera' | 'lua' | 'fazenda' (na neve o carro
+  escorrega; na LUA a gravidade cai p/ 40%, o céu nasce estrelado e o chão
+  ganha crateras automáticas). world = lado do mundo em metros (40–600,
+  padrão 160). Só ANTES do start.
 - \`SZWorld3D.terrain(alturaMorros, suavidade)\` — colinas por ruído
   determinístico (mesmo mundo sempre); centro plano p/ o spawn. Pode DEPOIS
   do start (reconstrói na hora). altura 0–30 m, suavidade 1–30.
@@ -72,6 +74,40 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.boat(corHex)\` — barco dirigível: SÓ anda na água, encalha na praia; com personagem, E perto dele embarca; sem carro nem personagem, nasce pilotando.
 - \`SZWorld3D.bridge(x1, z1, x2, z2, largura)\` — ponte em arco: carro/personagem POR CIMA, barco POR BAIXO. \`SZWorld3D.lighthouse(x, z)\` — farol com luz girando à noite.
 - \`SZWorld3D.ambience('mar'|'passaros'|'grilos'|'desligado')\` — som de fundo sintetizado. scatter/placeThing agora aceitam 'palmeiras' 🌴.
+- 🏙️ \`SZWorld3D.city(x, z, 'pequena'|'media'|'grande', 'dia'|'neon')\` — a
+  CIDADEZINHA completa (estilo Vocation Vista): praça com coreto + varais,
+  anel de rua com faixas de pedestre, 4 ruas de entrada, casinhas/lojas/
+  predinhos coloridos instanciados, cercas-vivas, laguinho, postes nos
+  cruzamentos; o chão aplaina sozinho e as ruas aparecem no minimapa. UMA
+  por mundo. Modo 'neon' = noite + chuva leve por default (se a criança não
+  pediu outra hora/clima) + letreiros emissivos brilhando no bloom.
+- 🌙 \`SZWorld3D.crater(x, z, raio)\` — tigela com borda erguida no heightAt
+  (compõe com flatten/trilha; qualquer estilo). \`SZWorld3D.flag(x, z,
+  corHex)\` — mastro + bandeira (cap 8). \`SZWorld3D.rocket(x, z)\` — foguete
+  decorativo com colisor (cap 8). O estilo 'lua' já traz ~12 crateras
+  automáticas + gravidade 0.4 + noite default.
+- 🚜 \`SZWorld3D.crops(n, 'milho'|'alface'|'abobora', x, z)\` — fileiras de
+  plantação (área auto-limpa de scatter). \`SZWorld3D.barn(x, z, graus)\` —
+  celeiro com colisor. \`SZWorld3D.windmill(x, z)\` — pás giram com o
+  setWind. \`SZWorld3D.fence(x1, z1, x2, z2)\` — postes SÓLIDOS + 2 ripas
+  (teto 256 postes). \`SZWorld3D.animals(n, 'galinhas'|'vacas', x, z, raio)\`
+  — bichinhos instanciados que perambulam e bicam (cap 16 total).
+- \`SZWorld3D.door(x, z, graus, 'Título', 'Texto', 'imagem')\` — porta
+  interativa: E perto abre um overlay LOCAL (título + texto + imagem do
+  projeto via ASSETS; imagem '' = sem). É o "conteúdo do prédio" do
+  Vocation Vista sem rede. Cap 16 portas; prio 1 no árbitro do E; E fecha.
+- \`SZWorld3D.npcAsk('Nome', 'Pergunta?', 'OpA', fnA, 'OpB', fnB)\` —
+  pergunta com 2 escolhas na fila de falas do amigo: balão typewriter + 2
+  botões (clique ou teclas 1/2); a escolha roda fnA/fnB (que normalmente
+  enfileiram npcSay — conversa RAMIFICADA). Enquanto aberta, E é engolido.
+- \`SZWorld3D.traffic(n, 'semaforos'|'livre')\` — carrinhos autônomos (1–12)
+  circulando o ANEL da cidade em 1 InstancedMesh: param atrás do jogador
+  (buzinam após 2 s), respeitam semáforos sincronizados nos 4 cruzamentos
+  (anda 8s → amarelo 1,5s → para 5s, tudo em dt — o bullet-time desacelera
+  o ciclo junto) e nunca colidem (freio 1-D na lane). Exige a cidadezinha.
+- \`SZWorld3D.stringLights(x1, z1, x2, z2)\` — varal de luzinhas entre 2
+  postes (catenária; as lâmpadas acendem com o escurecer). Vale em qualquer
+  mundo, com ou sem cidade.
 - \`SZWorld3D.npc('Nome', x, z, corHex, chapeu)\` — amigo que olha p/ você de perto (cap 8). \`SZWorld3D.npcWander('Nome', raio)\` — passeia ao redor de casa.
 - \`SZWorld3D.npcTalk('Nome', () => { … })\` — roda no E perto do amigo; dentro, \`SZWorld3D.npcSay('Nome', 'fala')\` ENFILEIRA falas (cada E mostra a próxima, typewriter + blip por letra à la Animal Crossing). \`SZWorld3D.npcEmote('Nome', 'acenar'|'pular'|'girar'|'dancar')\`.
 - \`SZWorld3D.coinsScatter(n)\` / \`coinsRing(n, x, z, raio)\` / \`coinsLine(n, x1, z1, x2, z2)\` — moedas girando (cap 512; nunca na água). Pegar = encostar: plim + HUD 🪙 automático + \`SZWorld3D.onCollect(() => { … })\`. \`SZWorld3D.coinCount()\` → total.
