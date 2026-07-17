@@ -58,6 +58,20 @@ cabine.position.set(0, 1.35, -0.2);
 cabine.castShadow = true;
 carrinho.add(cabine);
 scene.add(carrinho);
+const listener = new THREE.AudioListener();
+camera.add(listener);
+const somMotor = new THREE.PositionalAudio(listener);
+carrinho.add(somMotor);
+const somBuzina = new THREE.Audio(listener);
+const carregadorSom = new THREE.AudioLoader();
+carregadorSom.load('motor', (buffer) => {
+  somMotor.setBuffer(buffer);
+  somMotor.setLoop(true);
+  somMotor.setRefDistance(8);
+});
+carregadorSom.load('buzina', (buffer) => {
+  somBuzina.setBuffer(buffer);
+});
 const troncoGeo = new THREE.CylinderGeometry(0.3, 0.4, 2, 6);
 const troncoMat = new THREE.MeshStandardMaterial({ color: 9127187 });
 const troncos = new THREE.InstancedMesh(troncoGeo, troncoMat, 60);
@@ -86,6 +100,17 @@ copas.instanceMatrix.needsUpdate = true;
 const teclas = {};
 document.addEventListener("keydown", (event) => {
   teclas[event.code] = true;
+  listener.context.resume();
+  if (event.code === "KeyW") {
+    if (somMotor.buffer && !somMotor.isPlaying) {
+      somMotor.play();
+    }
+  }
+  if (event.code === "KeyH") {
+    if (somBuzina.buffer && !somBuzina.isPlaying) {
+      somBuzina.play();
+    }
+  }
 });
 document.addEventListener("keyup", (event) => {
   teclas[event.code] = false;
@@ -106,6 +131,7 @@ function passo() {
     velocidade = velocidade - 12 * dt;
   }
   velocidade = velocidade * 0.96;
+  somMotor.setPlaybackRate(0.6 + Math.abs(velocidade) * 0.05);
   if (teclas["KeyA"]) {
     carrinho.rotation.y = carrinho.rotation.y + 1.6 * dt;
   }
