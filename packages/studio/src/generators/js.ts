@@ -113,6 +113,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'w3d:onUpdate':
     case 'w3d:onCrash':
     case 'w3d:onHorn':
+    case 'w3d:onExplosion':
     case 'w3d:onDayNight':
     case 'w3d:onPoint':
     case 'w3d:onZone':
@@ -2656,6 +2657,23 @@ ${pad}});`
       return `${pad}SZWorld3D.tireMarks(${JSON.stringify(stmt.on ? 'ligadas' : 'desligadas')});`
     case 'w3d:carPaint':
       return `${pad}SZWorld3D.carPaint(${JSON.stringify(stmt.paint)});`
+    case 'w3d:pushPlace':
+      return `${pad}SZWorld3D.pushPlace(${JSON.stringify(stmt.thing)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:pushScatter':
+      return `${pad}SZWorld3D.pushScatter(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:letters':
+      return `${pad}SZWorld3D.letters(${JSON.stringify(stmt.word)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.s), 0, identifiers, recAt(base))});`
+    case 'w3d:explosive':
+      return `${pad}SZWorld3D.explosive(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:onExplosion': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onExplosion(function () {\n${body}\n${pad}});`
+    }
     case 'w3d:confetti':
       return `${pad}SZWorld3D.confetti();`
     case 'w3d:fireworks':
@@ -5771,6 +5789,28 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'w3d:tornado':
       collectExprIdentifiers(valueToExpr(stmt.secs), names)
+      return
+    case 'w3d:pushPlace':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:pushScatter':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:letters':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.s), names)
+      return
+    case 'w3d:explosive':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:onExplosion':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'w3d:effects':
       collectExprIdentifiers(valueToExpr(stmt.strength), names)

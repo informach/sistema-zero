@@ -3977,6 +3977,29 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'w3d:tornado'; secs: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:season'; season: string })
   | (JSStatementCommon & { type: 'w3d:clouds'; amount: string })
+  // Mundo 3D R13 "boliche & bagunça": empurráveis, letras físicas, explosivos.
+  | (JSStatementCommon & {
+      type: 'w3d:pushPlace'
+      thing: string
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:pushScatter'
+      n: number | JSExpr
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:letters'
+      word: string
+      x: number | JSExpr
+      z: number | JSExpr
+      s: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:explosive'; x: number | JSExpr; z: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:onExplosion'; body: JSStatement[] })
   | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
   | (JSStatementCommon & {
       type: 'w3d:cameraShake'
@@ -8004,6 +8027,36 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('w3d:season'), season: irText(), ...idField }),
     z.object({ type: z.literal('w3d:clouds'), amount: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:pushPlace'),
+      thing: irText(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:pushScatter'),
+      n: z.union([z.number(), JSExprSchema]),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      r: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:letters'),
+      word: irText(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      s: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:explosive'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:onExplosion'), body: z.array(JSStatementSchema), ...idField }),
     z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:cameraShake'),
@@ -9030,6 +9083,11 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:tornado',
   'w3d:season',
   'w3d:clouds',
+  'w3d:pushPlace',
+  'w3d:pushScatter',
+  'w3d:letters',
+  'w3d:explosive',
+  'w3d:onExplosion',
   'w3d:effects',
   'w3d:dayNight',
   'w3d:setTime',

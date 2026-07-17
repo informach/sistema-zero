@@ -206,6 +206,16 @@ export const world3DRuntime = `import * as THREE from 'three';
   var boltT = 0;
   var flashEl = null;           // clarão (overlay DOM)
   var thunderQueue = [];        // trovões agendados pela distância
+  // ---- R13 "boliche & bagunça": empurráveis, letras físicas, explosivos ----
+  var pushables = [];           // { mesh?, type, im?, idx?, x, z, y, vx, vz, vy, spin, yaw, home, sink }
+  var pushIM = null;            // { tipo: { mesh, states:[] } } — 1 InstancedMesh por tipo
+  var PUSH_MAX = 256;
+  var lettersCount = 0;
+  var LETTERS_MAX = 24;
+  var _letterTexCache = null;   // caractere -> CanvasTexture (cache)
+  var explosives = [];          // { mesh, x, z, fuse, done }
+  var explosionHooks = [];
+  var boomSpheres = [];         // { mesh, t } — esfera emissiva que incha e some
   var _dummy = null;            // Object3D p/ compor matrizes de instância
   var _mat4 = null;
   var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
@@ -2533,6 +2543,22 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'galleryAdd') galleryAdd(r.image, r.caption);
       else if (r.kind === 'bowling') buildBowling(r.x, r.z, r.yaw);
       else if (r.kind === 'stack') buildStack(r.n, r.thing, r.x, r.z);
+      else if (r.kind === 'pushPlace') addPushable(r.thing, r.x, r.z);
+      else if (r.kind === 'pushScatter') buildPushScatter(r.n, r.x, r.z, r.r);
+      else if (r.kind === 'letters') addLetters(r.word, r.x, r.z, r.s);
+      else if (r.kind === 'explosive') addExplosive(r.x, r.z);
+    }
+  }
+
+  /** Espalha N empurráveis variados num raio (determinístico pela posição). */
+  function buildPushScatter(n, x, z, r) {
+    var kinds = ['tijolo', 'banco', 'cerca', 'lanterna', 'cone'];
+    var count = clamp(num(n, 8), 1, 60);
+    var rng = mulberry(Math.round(num(x, 0) * 13 + num(z, 0) * 7) + 99);
+    for (var i = 0; i < count; i++) {
+      var ang = rng() * Math.PI * 2;
+      var rad = Math.sqrt(rng()) * clamp(num(r, 10), 2, 80);
+      addPushable(kinds[Math.floor(rng() * kinds.length)], num(x, 0) + Math.cos(ang) * rad, num(z, 0) + Math.sin(ang) * rad);
     }
   }
 
@@ -3326,6 +3352,303 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- R13: empurráveis (bagunça física), letras, caixas explosivas ----
+
+  var PUSH_TYPES = {
+    tijolo:   { g: 'box', sx: 0.55, sy: 0.3, sz: 0.28, color: '#b45309', r: 0.4 },
+    banco:    { g: 'box', sx: 1.3, sy: 0.42, sz: 0.45, color: '#8b5a2b', r: 0.7 },
+    cerca:    { g: 'box', sx: 1.5, sy: 0.95, sz: 0.09, color: '#9a7b4f', r: 0.8 },
+    lanterna: { g: 'cyl', sx: 0.3, sy: 0.55, sz: 0.3, color: '#fbbf24', r: 0.3 },
+    cone:     { g: 'cone', sx: 0.5, sy: 0.7, sz: 0.5, color: '#f97316', r: 0.35 }
+  };
+
+  function ensurePushIM(type) {
+    if (!pushIM) pushIM = {};
+    if (pushIM[type]) return pushIM[type];
+    var spec = PUSH_TYPES[type];
+    var geos = ensureUnitGeos();
+    var geo = spec.g === 'cyl' ? geos.cyl : spec.g === 'cone' ? geos.cone : new THREE.BoxGeometry(1, 1, 1);
+    var im = new THREE.InstancedMesh(geo, toonMaterial({ color: spec.color }), 80);
+    im.count = 0;
+    im.castShadow = true;
+    im.frustumCulled = false;
+    scene.add(im);
+    pushIM[type] = { mesh: im, spec: spec };
+    return pushIM[type];
+  }
+
+  function addPushable(type, x, z) {
+    if (!scene || !PUSH_TYPES[type]) return;
+    if (pushables.length >= PUSH_MAX) {
+      warnOnce('push-max', 'muitos objetos empurráveis (teto ' + PUSH_MAX + ') — os novos foram ignorados');
+      return;
+    }
+    var slot = ensurePushIM(type);
+    var idx = slot.mesh.count;
+    if (idx >= 80) {
+      warnOnce('push-type-max-' + type, 'muitos "' + type + '" (teto 80 por tipo)');
+      return;
+    }
+    slot.mesh.count = idx + 1;
+    var p = {
+      type: type, im: slot, idx: idx,
+      x: num(x, 0), z: num(z, 0), y: 0, vx: 0, vz: 0, vy: 0,
+      spin: 0, yaw: Math.random() * Math.PI * 2,
+      home: { x: num(x, 0), z: num(z, 0) }, sink: 0
+    };
+    p.y = heightAt(p.x, p.z) + slot.spec.sy / 2;
+    pushables.push(p);
+    writePushable(p);
+  }
+
+  function writePushable(p) {
+    if (!_dummy) _dummy = new THREE.Object3D();
+    var spec = p.im.spec;
+    _dummy.position.set(p.x, p.y, p.z);
+    _dummy.rotation.set(0, p.yaw, 0);
+    _dummy.scale.set(spec.sx, spec.sy, spec.sz);
+    _dummy.updateMatrix();
+    p.im.mesh.setMatrixAt(p.idx, _dummy.matrix);
+    p.im.mesh.instanceMatrix.needsUpdate = true;
+  }
+
+  /** Letras físicas: caixas com a LETRA pintada (CanvasTexture cacheada por char). */
+  function letterTexture(ch) {
+    if (!_letterTexCache) _letterTexCache = {};
+    if (_letterTexCache[ch]) return _letterTexCache[ch];
+    var cv = document.createElement('canvas');
+    cv.width = 128;
+    cv.height = 128;
+    var g = cv.getContext('2d');
+    if (!g) return null;
+    g.fillStyle = '#f8fafc';
+    g.fillRect(0, 0, 128, 128);
+    g.fillStyle = '#0f172a';
+    g.font = '900 96px system-ui, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(ch, 64, 70);
+    var tex = new THREE.CanvasTexture(cv);
+    _letterTexCache[ch] = tex;
+    return tex;
+  }
+
+  function addLetters(word, x, z, s) {
+    if (!scene) return;
+    var w = text(word, 'OI').toUpperCase();
+    var size = clamp(num(s, 1), 0.4, 3);
+    var bx = num(x, 0);
+    var bz = num(z, 0);
+    for (var i = 0; i < w.length; i++) {
+      var ch = w.charAt(i);
+      if (ch === ' ') continue;
+      if (lettersCount >= LETTERS_MAX) {
+        warnOnce('letters-max', 'muitas letras (teto ' + LETTERS_MAX + ') — o resto da palavra ficou de fora');
+        return;
+      }
+      lettersCount++;
+      var tex = letterTexture(ch);
+      var mat = tex
+        ? new THREE.MeshBasicMaterial({ map: tex })
+        : new THREE.MeshBasicMaterial({ color: '#f8fafc' });
+      var box = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), mat);
+      box.castShadow = true;
+      var lx = bx + (i - (w.length - 1) / 2) * size;
+      var p = {
+        type: 'letra', mesh: box, x: lx, z: bz, y: 0, vx: 0, vz: 0, vy: 0,
+        spin: 0, yaw: 0, home: { x: lx, z: bz }, sink: 0, scale: size * 0.9
+      };
+      p.y = heightAt(lx, bz) + size * 0.45;
+      box.scale.setScalar(size * 0.9 / 0.9);
+      box.position.set(p.x, p.y, p.z);
+      scene.add(box);
+      pushables.push(p);
+    }
+  }
+
+  function pushImpulse(p, ix, iz, force) {
+    p.vx += ix * force;
+    p.vz += iz * force;
+    p.vy += force * 0.35;
+    p.spin += (Math.random() - 0.5) * force * 2;
+  }
+
+  function stepPushables(dt) {
+    if (!pushables.length) return;
+    var s = carState;
+    for (var i = 0; i < pushables.length; i++) {
+      var p = pushables[i];
+      var spec = p.im ? p.im.spec : { sy: p.scale || 0.9, r: (p.scale || 0.9) * 0.55 };
+      // Afundou na água: espera 2 s e renasce em casa.
+      if (p.sink > 0) {
+        p.sink -= dt;
+        if (p.sink <= 0) {
+          p.x = p.home.x;
+          p.z = p.home.z;
+          p.vx = p.vz = p.vy = 0;
+          p.y = heightAt(p.x, p.z) + spec.sy / 2;
+        } else {
+          continue;
+        }
+      }
+      // Encostão do carrinho: impulso proporcional à velocidade.
+      if (s) {
+        var dx = p.x - s.x;
+        var dz = p.z - s.z;
+        var rr = spec.r + 1.2;
+        var d2 = dx * dx + dz * dz;
+        if (d2 < rr * rr && Math.abs(s.speed) > 0.8) {
+          var d = Math.sqrt(d2) || 0.01;
+          pushImpulse(p, dx / d, dz / d, Math.min(10, Math.abs(s.speed) * 0.55));
+          s.speed *= 0.92;
+          if (Math.abs(s.speed) > 6) beep(160, 0.05);
+        }
+      }
+      var moving = Math.abs(p.vx) + Math.abs(p.vz) + Math.abs(p.vy) > 0.02;
+      if (moving) {
+        p.vy -= GRAV * 0.8 * dt;
+        p.x += p.vx * dt;
+        p.z += p.vz * dt;
+        p.y += p.vy * dt;
+        var gy = heightAt(p.x, p.z) + spec.sy / 2;
+        if (p.y <= gy) {
+          p.y = gy;
+          p.vy = p.vy < -3 ? -p.vy * 0.3 : 0;
+          p.vx *= 0.86;
+          p.vz *= 0.86;
+        }
+        p.yaw += p.spin * dt;
+        p.spin *= 0.94;
+        // Caiu na água funda: afunda e agenda o renascimento.
+        if (waterCfg && waterCfg.y - p.y > 0.6) {
+          p.sink = 2;
+          p.y = -9999;
+        }
+        if (p.im) writePushable(p);
+        if (p.mesh) {
+          p.mesh.position.set(p.x, p.y, p.z);
+          p.mesh.rotation.y = p.yaw;
+        }
+      }
+    }
+  }
+
+  /** Caixa explosiva: detona no encostão forte; explosão em CADEIA com atraso. */
+  function addExplosive(x, z) {
+    if (!scene) return;
+    var mat = toonMaterial({ color: '#dc2626' });
+    var box = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), mat);
+    var bx = num(x, 0);
+    var bz = num(z, 0);
+    box.position.set(bx, heightAt(bx, bz) + 0.45, bz);
+    box.castShadow = true;
+    scene.add(box);
+    var tampa = new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.16, 0.94), toonMaterial({ color: '#7f1d1d' }));
+    tampa.position.y = 0.4;
+    box.add(tampa);
+    explosives.push({ mesh: box, x: bx, z: bz, fuse: -1, done: false });
+  }
+
+  function detonate(ex) {
+    if (ex.done) return;
+    ex.done = true;
+    try { scene.remove(ex.mesh); } catch (e) {}
+    // Bola de fogo que incha e some + faíscas do pool de festa.
+    var bm = new THREE.MeshBasicMaterial({ color: '#fbbf24', transparent: true, opacity: 0.9 });
+    var ball = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 10), bm);
+    ball.position.set(ex.x, heightAt(ex.x, ex.z) + 1, ex.z);
+    scene.add(ball);
+    boomSpheres.push({ mesh: ball, t: 0 });
+    ensureParty();
+    for (var i = 0; i < 40; i++) {
+      var a = Math.random() * Math.PI * 2;
+      var sp = 3 + Math.random() * 6;
+      spawnParty(ex.x, heightAt(ex.x, ex.z) + 1, ex.z, Math.cos(a) * sp, 2 + Math.random() * 5, Math.sin(a) * sp, 1.1, 8, 0, i % 2 ? '#f97316' : '#fde68a');
+    }
+    beep(52, 0.4);
+    beep(90, 0.2);
+    // Impulso radial: empurráveis, pinos/caixas do boliche e o carrinho.
+    var R = 8;
+    for (var pi = 0; pi < pushables.length; pi++) {
+      var p = pushables[pi];
+      var dx = p.x - ex.x;
+      var dz = p.z - ex.z;
+      var d = Math.sqrt(dx * dx + dz * dz);
+      if (d < R) pushImpulse(p, dx / (d || 0.01), dz / (d || 0.01), (1 - d / R) * 14);
+    }
+    for (var ki = 0; ki < knockables.length; ki++) {
+      var k = knockables[ki];
+      var kdx = k.x - ex.x;
+      var kdz = k.z - ex.z;
+      var kd = Math.sqrt(kdx * kdx + kdz * kdz);
+      if (kd < R) {
+        k.vx += (kdx / (kd || 0.01)) * (1 - kd / R) * 10;
+        k.vz += (kdz / (kd || 0.01)) * (1 - kd / R) * 10;
+        k.vy += (1 - kd / R) * 6;
+      }
+    }
+    if (carState) {
+      var cdx = carState.x - ex.x;
+      var cdz = carState.z - ex.z;
+      var cd = Math.sqrt(cdx * cdx + cdz * cdz);
+      if (cd < R) {
+        carState.vy = Math.max(carState.vy, (1 - cd / R) * 9);
+        carState.airborne = true;
+        carState.pitchV += 2;
+        _shakeT = Math.max(_shakeT, 0.5);
+        _shakeAmp = Math.max(_shakeAmp, 0.4);
+        // Bullet-time do folio: explosão que te pega liga a câmera lenta.
+        timeScale = 0.3;
+      }
+    }
+    // Cadeia: vizinhos explodem com um respiro (fica CINEMA).
+    for (var ei = 0; ei < explosives.length; ei++) {
+      var other = explosives[ei];
+      if (other.done || other.fuse >= 0) continue;
+      var odx = other.x - ex.x;
+      var odz = other.z - ex.z;
+      if (Math.sqrt(odx * odx + odz * odz) < 6) other.fuse = 0.15;
+    }
+    for (var hi = 0; hi < explosionHooks.length; hi++) {
+      try { explosionHooks[hi](); } catch (e2) {
+        warnOnce('hook-boom-' + hi, 'erro no "Quando algo explodir": ' + e2);
+      }
+    }
+  }
+
+  function stepExplosives(dt) {
+    for (var i = 0; i < explosives.length; i++) {
+      var ex = explosives[i];
+      if (ex.done) continue;
+      if (ex.fuse >= 0) {
+        ex.fuse -= dt;
+        if (ex.fuse <= 0) detonate(ex);
+        continue;
+      }
+      if (carState) {
+        var dx = ex.x - carState.x;
+        var dz = ex.z - carState.z;
+        if (dx * dx + dz * dz < 2.6 && Math.abs(carState.speed) > 3) detonate(ex);
+      }
+    }
+    for (var b = boomSpheres.length - 1; b >= 0; b--) {
+      var bs = boomSpheres[b];
+      bs.t += dt;
+      var k = bs.t / 0.45;
+      if (k >= 1) {
+        try {
+          scene.remove(bs.mesh);
+          bs.mesh.geometry.dispose();
+          bs.mesh.material.dispose();
+        } catch (e) {}
+        boomSpheres.splice(b, 1);
+      } else {
+        bs.mesh.scale.setScalar(1 + k * 5);
+        bs.mesh.material.opacity = 0.9 * (1 - k);
+      }
+    }
+  }
+
   // ---- R11: buzina / luzes / marcas de pneu / lua / vinheta de turbo ----
 
   /** Bip curto de UI (konami, celebrações) — oscilador descartável. */
@@ -4010,6 +4333,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepParty(dt);
     stepTornado(dt);
     stepClouds(dt);
+    stepPushables(dt);
+    stepExplosives(dt);
     updateEngine();
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
@@ -4165,6 +4490,13 @@ export const world3DRuntime = `import * as THREE from 'three';
     flashEl = null;
     thunderQueue = [];
     _seasonOrig = null;
+    pushables = [];
+    pushIM = null;
+    lettersCount = 0;
+    _letterTexCache = null;
+    explosives = [];
+    explosionHooks = [];
+    boomSpheres = [];
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -4451,6 +4783,47 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       seasonName = n2;
       if (worldReady) applySeason();
+    }),
+    // 🎳 R13 bagunça física
+    pushPlace: guard('pushPlace', function (thing, x, z) {
+      var t2 = text(thing, 'tijolo');
+      if (!PUSH_TYPES[t2]) {
+        warn('não conheço "' + t2 + '" — tem: tijolo, banco, cerca, lanterna, cone');
+        return;
+      }
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'pushPlace', thing: t2, x: num(x, 0), z: num(z, 0) });
+        return;
+      }
+      addPushable(t2, x, z);
+    }),
+    pushScatter: guard('pushScatter', function (n, x, z, r) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'pushScatter', n: num(n, 8), x: num(x, 0), z: num(z, 0), r: num(r, 10) });
+        return;
+      }
+      buildPushScatter(num(n, 8), num(x, 0), num(z, 0), num(r, 10));
+    }),
+    letters: guard('letters', function (word, x, z, s) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'letters', word: text(word, 'OI'), x: num(x, 0), z: num(z, 0), s: num(s, 1) });
+        return;
+      }
+      addLetters(word, x, z, s);
+    }),
+    explosive: guard('explosive', function (x, z) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'explosive', x: num(x, 0), z: num(z, 0) });
+        return;
+      }
+      addExplosive(x, z);
+    }),
+    onExplosion: guard('onExplosion', function (fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando algo explodir" precisa de blocos de fazer dentro');
+        return;
+      }
+      explosionHooks.push(fn);
     }),
     clouds: guard('clouds', function (amount) {
       var a2 = text(amount, 'nenhuma');

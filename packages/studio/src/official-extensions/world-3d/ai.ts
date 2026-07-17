@@ -54,6 +54,11 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.tornado(segundos)\` — tornado passeia, PUXA o carrinho perto e arremessa se encostar; some sozinho (3..60 s).
 - \`SZWorld3D.season('primavera'|'verao'|'outono'|'inverno')\` — recolore copas+grama; outono chove folhas, inverno neva (se o clima estiver limpo).
 - \`SZWorld3D.clouds('nenhuma'|'poucas'|'muitas')\` — nuvens no alto derivando com o vento.
+- \`SZWorld3D.pushPlace('tijolo'|'banco'|'cerca'|'lanterna'|'cone', x, z)\` — 1 objeto EMPURRÁVEL (desliza/gira/quica; renasce se cair na água).
+  \`SZWorld3D.pushScatter(n, x, z, raio)\` — espalha uma bagunça variada (teto 256 no total).
+- \`SZWorld3D.letters('PALAVRA', x, z, tamanho)\` — cubos de letra empurráveis (cap 24; o "BRUNO" do folio).
+- \`SZWorld3D.explosive(x, z)\` — caixa TNT: encostão rápido detona (bola de fogo + impulso radial + cadeia entre caixas vizinhas + câmera lenta se te pegar).
+  \`SZWorld3D.onExplosion(() => { … })\` — roda a cada explosão.
 - weather agora aceita também 'tempestade' (chuva pesada + raios + trovão atrasado; raio no carrinho = chacoalhão + câmera lenta).
 - \`SZWorld3D.carPos('x'|'y'|'z')\` → número. \`SZWorld3D.carSpeed()\` → m/s.
 - \`SZWorld3D.scatter(n, especie)\` — espalha n cópias procedurais pelo mundo

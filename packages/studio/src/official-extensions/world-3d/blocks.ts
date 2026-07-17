@@ -560,6 +560,92 @@ export const world3DBlocks = [
       'Nuvens fofas lá no alto, derivando com o vento — deixam o céu com cara de mundo grande. "muitas" fica lindo no entardecer.',
   },
   {
+    // R13: bagunça física — objetos que o carrinho EMPURRA (deslizam, giram,
+    // quicam e renascem em casa se caírem na água).
+    type: 'sz_w3d_push_place',
+    message0: 'Pôr 1 %1 empurrável em x %2 z %3',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'THING',
+        options: [
+          ['🧱 tijolo', 'tijolo'],
+          ['🪑 banco', 'banco'],
+          ['🚧 cerca', 'cerca'],
+          ['🏮 lanterna', 'lanterna'],
+          ['🎪 cone', 'cone'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um objeto que o carrinho EMPURRA de verdade: desliza, gira, quica e volta pro lugar se cair na água. O parquinho de física do seu mundo.',
+  },
+  {
+    type: 'sz_w3d_push_scatter',
+    message0: 'Espalhar %1 objetos empurráveis perto de x %2 z %3 (raio %4)',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Espalha uma bagunça de tijolos, bancos, cercas, lanternas e cones num círculo — tudo empurrável. Atravesse com o turbo ligado e veja a física acontecer.',
+  },
+  {
+    type: 'sz_w3d_letters',
+    message0: 'Escrever %1 com letras empurráveis em x %2 z %3 (tamanho %4)',
+    args0: [
+      { type: 'field_input', name: 'WORD', text: 'OI' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'S', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escreve uma palavra com CUBOS DE LETRA que o carrinho empurra (como as letras "BRUNO" do folio). Até 24 letras no mundo — escreva seu nome na praça!',
+  },
+  {
+    type: 'sz_w3d_explosive',
+    message0: 'Pôr uma caixa explosiva 🧨 em x %1 z %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma caixa TNT: bata nela em velocidade e BUM — bola de fogo, faíscas, tudo por perto voa (inclusive você, com direito a câmera lenta). Caixas vizinhas explodem em CADEIA.',
+  },
+  {
+    type: 'sz_w3d_on_explosion',
+    message0: 'Quando algo explodir 💥',
+    args0: [],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos de dentro a cada explosão — some pontos, solte fogos, faça o mundo reagir.',
+  },
+  {
     type: 'sz_w3d_confetti',
     message0: 'Soltar confete 🎉',
     args0: [],
@@ -1174,7 +1260,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '🎳 Kit Boliche',
+    name: '🎳 Boliche & bagunça',
     colour: C,
     types: [
       'sz_w3d_bowling_create',
@@ -1183,6 +1269,11 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_pins_down',
       'sz_w3d_stack',
       'sz_w3d_knocked_count',
+      'sz_w3d_push_place',
+      'sz_w3d_push_scatter',
+      'sz_w3d_letters',
+      'sz_w3d_explosive',
+      'sz_w3d_on_explosion',
     ],
   },
   {
@@ -1260,6 +1351,10 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_water: { Y: numShadow(0) },
   sz_w3d_car_boost: { FORCE: numShadow(1) },
   sz_w3d_tornado: { SECS: numShadow(15) },
+  sz_w3d_push_place: { X: numShadow(10), Z: numShadow(10) },
+  sz_w3d_push_scatter: { N: numShadow(12), X: numShadow(0), Z: numShadow(20), R: numShadow(10) },
+  sz_w3d_letters: { X: numShadow(0), Z: numShadow(12), S: numShadow(1) },
+  sz_w3d_explosive: { X: numShadow(15), Z: numShadow(15) },
   sz_w3d_hud: { TEXT: txtShadow('Pontos: 0') },
   sz_w3d_say: { TEXT: txtShadow('Oi!'), SECS: numShadow(2) },
   sz_w3d_point: { X: numShadow(10), Z: numShadow(10) },

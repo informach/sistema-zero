@@ -6111,6 +6111,7 @@ const W3D_TIMES = new Set(['manha', 'meiodia', 'entardecer', 'noite'])
 const W3D_WEATHER = new Set(['limpo', 'chuva', 'neve', 'folhas', 'tempestade'])
 const W3D_SEASONS = new Set(['primavera', 'verao', 'outono', 'inverno'])
 const W3D_CLOUD_AMOUNTS = new Set(['nenhuma', 'poucas', 'muitas'])
+const W3D_PUSH_THINGS = new Set(['tijolo', 'banco', 'cerca', 'lanterna', 'cone'])
 const W3D_DAY_PHASES = new Set(['dia', 'noite'])
 const W3D_POS_AXES = new Set(['x', 'y', 'z'])
 
@@ -6509,6 +6510,41 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       const amount = args[0].value as string
       return W3D_CLOUD_AMOUNTS.has(amount) ? { type: 'w3d:clouds', amount } : null
+    }
+    case 'pushPlace': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const thing = args[0].value as string
+      if (!W3D_PUSH_THINGS.has(thing)) return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:pushPlace', thing, x, z } : null
+    }
+    case 'pushScatter': {
+      const n = toExpr(args[0], ctx)
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const r = toExpr(args[3], ctx)
+      return isSimpleValue(n) && isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(r)
+        ? { type: 'w3d:pushScatter', n, x, z, r }
+        : null
+    }
+    case 'letters': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const s = toExpr(args[3], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(s)
+        ? { type: 'w3d:letters', word: args[0].value as string, x, z, s }
+        : null
+    }
+    case 'explosive': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:explosive', x, z } : null
+    }
+    case 'onExplosion': {
+      if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
+      return { type: 'w3d:onExplosion', body: bodyOfFn(args[0], source, ctx) }
     }
     case 'setEffects': {
       if (args[0]?.type !== 'StringLiteral') return null

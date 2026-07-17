@@ -5856,6 +5856,39 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_w3d_tire_marks', { ON: stmt.on ? 'ligadas' : 'desligadas' }, {}, stmt.__id)
     case 'w3d:carPaint':
       return block('sz_w3d_car_paint', { PAINT: stmt.paint }, {}, stmt.__id)
+    case 'w3d:pushPlace': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_push_place', { THING: stmt.thing }, {}, stmt.__id, { X: x, Z: z })
+    }
+    case 'w3d:pushScatter': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const r = exprToValueBlock(valueToExpr(stmt.r))
+      return n === null || x === null || z === null || r === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_push_scatter', {}, {}, stmt.__id, { N: n, X: x, Z: z, R: r })
+    }
+    case 'w3d:letters': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const s = exprToValueBlock(valueToExpr(stmt.s))
+      return x === null || z === null || s === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_letters', { WORD: stmt.word }, {}, stmt.__id, { X: x, Z: z, S: s })
+    }
+    case 'w3d:explosive': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_explosive', {}, {}, stmt.__id, { X: x, Z: z })
+    }
+    case 'w3d:onExplosion':
+      return block('sz_w3d_on_explosion', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
     case 'w3d:confetti':
       return block('sz_w3d_confetti', {}, {}, stmt.__id)
     case 'w3d:fireworks':

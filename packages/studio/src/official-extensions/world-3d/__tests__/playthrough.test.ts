@@ -173,17 +173,19 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(depois).toBeGreaterThan(vivos - 10)
   })
 
-  it('R12: tornado SUGA o carrinho parado (a distância até ele diminui)', async () => {
+  it('R12: tornado SUGA o carrinho que chega perto (determinístico: teleporta ao lado)', async () => {
     const { api, step } = await loadStartedWorld((a) => {
       a.car('passeio', '#ef4444')
     })
     const world = api as unknown as { tornado(s: number): void }
     world.tornado(30)
-    // O tornado nasce a ~26 m e passeia; o carrinho parado deve ser puxado
-    // quando ele chega perto. Anda o mundo e mede o deslocamento do carro.
+    // O tornado nasce em (spawn+24, spawn+10); pousa o carro a 4 m dele — o raio
+    // de sucção é 9 m, então a puxada começa NO PRIMEIRO quadro (sem depender do
+    // passeio aleatório por waypoints, que tornava o teste flaky).
+    api.carPlace(20, 10, 0)
     const x0 = api.carPos('x')
     const z0 = api.carPos('z')
-    step(600) // ~20 s de passeio do tornado
+    step(60) // ~2 s sob sucção
     const moved = Math.abs(api.carPos('x') - x0) + Math.abs(api.carPos('z') - z0)
     expect(moved).toBeGreaterThan(0.5)
   })
@@ -211,6 +213,33 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     step(2)
     // A MESMA instância de material agora está dourada (d97706/ea9a3c/…).
     expect(leafGreens.has((leafMat as RealTHREE.MeshToonMaterial).color.getHexString())).toBe(false)
+  })
+
+  it('R13: o carrinho EMPURRA um tijolo (ele sai do lugar) e a TNT detona em cadeia', async () => {
+    let booms = 0
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('corrida', '#ef4444')
+      const w = a as unknown as {
+        pushPlace(t: string, x: number, z: number): void
+        explosive(x: number, z: number): void
+        onExplosion(fn: () => void): void
+        carPlace(x: number, z: number, deg: number): void
+      }
+      w.pushPlace('tijolo', 0, 10)
+      w.explosive(0, 16)
+      w.explosive(0, 20) // vizinha: deve ir em CADEIA
+      w.onExplosion(() => {
+        booms++
+      })
+    })
+    const w2 = api as unknown as { carPlace(x: number, z: number, deg: number): void }
+    w2.carPlace(0, 0, 0) // olhando +Z, em linha com tijolo e TNTs
+    pressKey('w', 'KeyW')
+    step(240)
+    releaseKey('w', 'KeyW')
+    expect(booms).toBe(2) // as DUAS caixas explodiram (a 2ª pela cadeia)
+    step(30) // a cadeia tem fuse de 0,15 s — folga
+    expect(booms).toBe(2)
   })
 
   it('playthrough do exemplo "Meu Mundo": roda, dirige e não quebra', async () => {

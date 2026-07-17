@@ -9022,6 +9022,52 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return { kind: 'js', value: { type: 'w3d:carLights' } }
     case 'sz_w3d_tire_marks':
       return { kind: 'js', value: { type: 'w3d:tireMarks', on: f(block, 'ON') !== 'desligadas' } }
+    case 'sz_w3d_push_place':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:pushPlace',
+          thing: f(block, 'THING') || 'tijolo',
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_push_scatter':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:pushScatter',
+          n: exprInput(block, 'N', { type: 'num', value: 12 }),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+          r: exprInput(block, 'R', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_letters':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:letters',
+          word: f(block, 'WORD') || 'OI',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 12 }),
+          s: exprInput(block, 'S', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_explosive':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:explosive',
+          x: exprInput(block, 'X', { type: 'num', value: 15 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 15 }),
+        },
+      }
+    case 'sz_w3d_on_explosion':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:onExplosion', body: getStatementChildren(block, 'BODY', seen) },
+      }
     case 'sz_w3d_confetti':
       return { kind: 'js', value: { type: 'w3d:confetti' } }
     case 'sz_w3d_fireworks':
