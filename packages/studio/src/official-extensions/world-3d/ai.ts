@@ -44,6 +44,12 @@ SZWorld3D.start(); // SEMPRE por último
   do car().
 - \`SZWorld3D.carPlace(x, z, graus)\` — teleporta (pousa no chão, parado).
 - \`SZWorld3D.carBoost(forca)\` — turbo com Shift (0..4). \`SZWorld3D.engineSound('ligado'|'desligado')\` — motor sintetizado.
+- \`SZWorld3D.horn()\` — arma a buzina na tecla H (fom-fom + pulinho da carroceria).
+  \`SZWorld3D.onHorn(() => { … })\` — roda ao buzinar.
+- \`SZWorld3D.carLights()\` — luzes automáticas: faróis à noite, freio, ré e piscas.
+- \`SZWorld3D.tireMarks('ligadas'|'desligadas')\` — marcas de pneu na derrapagem/turbo/neve (somem em ~6 s).
+- \`SZWorld3D.carPaint('lisa'|'listras'|'chamas'|'arco-iris'|'estrelas')\` — pintura do carrinho (arco-iris muda de cor sozinho).
+- Segredo pronto: o código Konami (cima cima baixo baixo esq dir esq dir B A) vira o carrinho um FOGUETE.
 - \`SZWorld3D.carPos('x'|'y'|'z')\` → número. \`SZWorld3D.carSpeed()\` → m/s.
 - \`SZWorld3D.scatter(n, especie)\` — espalha n cópias procedurais pelo mundo
   (pousadas no terreno, determinístico). especies: 'arvores' | 'pinheiros' |

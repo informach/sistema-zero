@@ -3965,6 +3965,12 @@ export type JSStatement =
       r: number | JSExpr
     })
   | (JSStatementCommon & { type: 'w3d:onCrash'; body: JSStatement[] })
+  // Mundo 3D R11 "carrinho vivo": buzina (tecla H), luzes, marcas de pneu, pintura.
+  | (JSStatementCommon & { type: 'w3d:horn' })
+  | (JSStatementCommon & { type: 'w3d:onHorn'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:carLights' })
+  | (JSStatementCommon & { type: 'w3d:tireMarks'; on: boolean })
+  | (JSStatementCommon & { type: 'w3d:carPaint'; paint: string })
   | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
   | (JSStatementCommon & {
       type: 'w3d:cameraShake'
@@ -7978,6 +7984,11 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('w3d:onCrash'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('w3d:horn'), ...idField }),
+    z.object({ type: z.literal('w3d:onHorn'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('w3d:carLights'), ...idField }),
+    z.object({ type: z.literal('w3d:tireMarks'), on: z.boolean(), ...idField }),
+    z.object({ type: z.literal('w3d:carPaint'), paint: irText(), ...idField }),
     z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:cameraShake'),
@@ -8994,6 +9005,11 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:placeModel',
   'w3d:clearArea',
   'w3d:onCrash',
+  'w3d:horn',
+  'w3d:onHorn',
+  'w3d:carLights',
+  'w3d:tireMarks',
+  'w3d:carPaint',
   'w3d:effects',
   'w3d:dayNight',
   'w3d:setTime',

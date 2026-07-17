@@ -151,6 +151,43 @@ export const world3DRuntime = `import * as THREE from 'three';
   var MAX_PLACED = 200;         // "Pôr 1" é para cantinhos especiais, não para florestas
   var crashHooks = [];
   var _crashCd = 0;             // segundos até a próxima batida poder disparar
+  // ---- R11 "carrinho vivo": buzina, luzes, marcas, pintura, konami, lua ----
+  var hornCfg = false;          // "Ligar a buzina" arma a tecla H
+  var hornHooks = [];
+  var hornOsc1 = null;          // par de osciladores em quinta (fom-fom)
+  var hornOsc2 = null;
+  var hornGain = null;
+  var hornSquash = 0;           // mola do "pulinho" da carroceria ao buzinar
+  var hornSquashV = 0;
+  var _hornHeld = false;
+  var lightsOn = false;         // "Ligar as luzes": faróis/freio/ré/piscas
+  var carLightParts = null;     // { head:[], brake:[], rev:[], blinkL:[], blinkR:[] }
+  var blinkPhase = 0;
+  var nightAmount = 0;          // 0..1 (o mesmo fator das estrelas) — faróis/lua
+  var tireOn = false;           // "Marcas de pneu": anel de quads com fade
+  var tireMesh = null;
+  var tireGeo = null;
+  var tireAges = null;
+  var tireIdx = 0;
+  var TIRE_N = 256;
+  var _tireEmitCd = 0;
+  var TIRE_LIFE = 6;
+  var paintStyle = 'lisa';      // lisa | listras | chamas | arco-iris | estrelas
+  var carBodyMat = null;        // material da carroceria (arco-íris muda a cor viva)
+  var rocketMode = false;       // konami: o corpo vira foguete 🚀
+  var konamiBuf = [];
+  var KONAMI = 'ArrowUp,ArrowUp,ArrowDown,ArrowDown,ArrowLeft,ArrowRight,ArrowLeft,ArrowRight,KeyB,KeyA';
+  var moonMesh = null;
+  var moonMat = null;
+  var antennaGroup = null;      // antena cosmética que "chicoteia" com o molejo
+  var speedLinesEl = null;      // vinheta de velocidade do turbo (DOM)
+  // Bullet-time: <1 desacelera o MUNDO (o dt), NUNCA a sonda de FPS/turbo — a
+  // sonda mede o quadro REAL; escalar antes dela mentiria o FPS (documentado).
+  var timeScale = 1;
+  // Árbitro ÚNICO do "aperte E": além dos pontos, sistemas novos (entrar no
+  // veículo, falar com o amigo, escrever recado…) registram interagíveis aqui:
+  // { x, z, r, label, prio, fire, promptY? } — maior prio ganha; empate = mais perto.
+  var extraInteract = [];
   var _dummy = null;            // Object3D p/ compor matrizes de instância
   var _mat4 = null;
   var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
@@ -1495,6 +1532,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     } else if (starsMat) {
       starsMat.opacity = 0;
     }
+    // Fator noturno compartilhado (faróis acendem, a lua aparece).
+    nightAmount = a.stars;
     // Ganchos dia/noite (dia = 6h..18h), disparo só na TRANSIÇÃO.
     var phase = timeOfDay >= 6 && timeOfDay < 18 ? 'dia' : 'noite';
     if (_lastDayPhase && phase !== _lastDayPhase) {
@@ -1984,19 +2023,50 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!carState) return;
     var cx = carState.x;
     var cz = carState.z;
-    // Ponto mais próximo dentro do raio.
+    // Árbitro ÚNICO do "aperte E" (R11): pontos + interagíveis extras (entrar no
+    // veículo, falar com o amigo, escrever recado… registram em extraInteract).
+    // Maior prioridade ganha; no empate, o mais perto. O badge mostra o rótulo.
     var best = null;
     var bestD = Infinity;
+    var bestPrio = -Infinity;
+    var bestLabel = 'E';
+    var bestFire = null;
     for (var i = 0; i < points.length; i++) {
       var p = points[i];
       var dx = cx - p.x;
       var dz = cz - p.z;
       var d = dx * dx + dz * dz;
-      if (d < p.r * p.r && d < bestD) { bestD = d; best = p; }
+      if (d < p.r * p.r && (bestPrio < 0 || d < bestD)) {
+        bestD = d;
+        best = p;
+        bestPrio = 0;
+        bestLabel = 'E';
+        bestFire = null;
+      }
       if (p.marker) p.marker.rotation.y += currentDt * 1.5;
     }
-    updatePrompt(best);
-    if (best && isJust('e')) firePoint(best.name);
+    for (var xi = 0; xi < extraInteract.length; xi++) {
+      var ex = extraInteract[xi];
+      var edx = cx - ex.x;
+      var edz = cz - ex.z;
+      var ed = edx * edx + edz * edz;
+      var eprio = ex.prio || 0;
+      if (ed < ex.r * ex.r && (eprio > bestPrio || (eprio === bestPrio && ed < bestD))) {
+        bestD = ed;
+        best = ex;
+        bestPrio = eprio;
+        bestLabel = ex.label || 'E';
+        bestFire = ex.fire || null;
+      }
+    }
+    updatePrompt(best, bestLabel);
+    if (best && isJust('e')) {
+      if (bestFire) {
+        try { bestFire(); } catch (e) { warnOnce('interact-fire', 'erro no interagir: ' + e); }
+      } else {
+        firePoint(best.name);
+      }
+    }
     // Zonas: dispara na ENTRADA (estava fora, agora dentro).
     for (var z = 0; z < zones.length; z++) {
       var zn = zones[z];
@@ -2008,7 +2078,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
-  function updatePrompt(p) {
+  function updatePrompt(p, label) {
     if (!p) {
       if (promptEl) promptEl.style.display = 'none';
       return;
@@ -2020,8 +2090,9 @@ export const world3DRuntime = `import * as THREE from 'three';
       promptEl.textContent = 'E';
       frameEl.appendChild(promptEl);
     }
+    promptEl.textContent = label || 'E';
     if (!camera || !renderer || !_proj) return;
-    _proj.set(p.x, heightAt(p.x, p.z) + 2.4, p.z);
+    _proj.set(p.x, typeof p.promptY === 'number' ? p.promptY : heightAt(p.x, p.z) + 2.4, p.z);
     _proj.project(camera);
     if (_proj.z >= 1) { promptEl.style.display = 'none'; return; }
     var rect = canvasEl.getBoundingClientRect();
@@ -2488,6 +2559,17 @@ export const world3DRuntime = `import * as THREE from 'three';
       justPressed[k] = true;
       hideSplash();
       resumeAudio();
+      // Konami (↑↑↓↓←→←→BA): o carrinho vira FOGUETE. Segredo de quem sabe.
+      if (!e.repeat) {
+        konamiBuf.push(String(e.code));
+        if (konamiBuf.length > 10) konamiBuf.shift();
+        if (!rocketMode && konamiBuf.join(',') === KONAMI) {
+          rocketMode = true;
+          if (carGroup) buildCar();
+          beep(660, 0.09);
+          beep(880, 0.12);
+        }
+      }
       // As teclas do passeio rolam a página do iframe (setas/espaço) — segura.
       if (k === ' ' || k.indexOf('arrow') === 0) {
         try { e.preventDefault(); } catch (err) {}
@@ -2826,6 +2908,258 @@ export const world3DRuntime = `import * as THREE from 'three';
     return CAR_STYLES[(carCfg && carCfg.style) || 'passeio'] || CAR_STYLES.passeio;
   }
 
+  // ---- R11: buzina / luzes / marcas de pneu / lua / vinheta de turbo ----
+
+  /** Bip curto de UI (konami, celebrações) — oscilador descartável. */
+  function beep(freq, dur) {
+    var ac = ensureAudioCtx();
+    if (!ac) return;
+    try {
+      var o = ac.createOscillator();
+      var g = ac.createGain();
+      o.type = 'square';
+      o.frequency.value = freq;
+      g.gain.value = 0.05;
+      o.connect(g);
+      g.connect(ac.destination);
+      o.start();
+      g.gain.setTargetAtTime(0.0001, ac.currentTime + dur, 0.03);
+      o.stop(ac.currentTime + dur + 0.2);
+    } catch (e) {}
+  }
+
+  function startHorn() {
+    var ac = ensureAudioCtx();
+    if (ac && !hornOsc1) {
+      try {
+        hornGain = ac.createGain();
+        hornGain.gain.value = 0.0001;
+        hornGain.connect(ac.destination);
+        hornOsc1 = ac.createOscillator();
+        hornOsc1.type = 'square';
+        hornOsc1.frequency.value = 392;
+        hornOsc2 = ac.createOscillator();
+        hornOsc2.type = 'square';
+        hornOsc2.frequency.value = 494;
+        hornOsc1.connect(hornGain);
+        hornOsc2.connect(hornGain);
+        hornOsc1.start();
+        hornOsc2.start();
+        hornGain.gain.setTargetAtTime(0.06, ac.currentTime, 0.02);
+      } catch (e) {}
+    }
+    // O "pulinho" do folio: a carroceria dá uma amassadinha ao buzinar.
+    hornSquashV -= 3.2;
+    for (var i = 0; i < hornHooks.length; i++) {
+      try { hornHooks[i](); } catch (e2) {
+        warnOnce('hook-horn-' + i, 'erro no "Quando buzinar": ' + e2);
+      }
+    }
+  }
+
+  function stopHorn() {
+    try {
+      if (hornGain && _audioCtx) hornGain.gain.setTargetAtTime(0.0001, _audioCtx.currentTime, 0.03);
+    } catch (e) {}
+    try { if (hornOsc1) hornOsc1.stop(_audioCtx ? _audioCtx.currentTime + 0.2 : 0); } catch (e) {}
+    try { if (hornOsc2) hornOsc2.stop(_audioCtx ? _audioCtx.currentTime + 0.2 : 0); } catch (e) {}
+    hornOsc1 = null;
+    hornOsc2 = null;
+    hornGain = null;
+  }
+
+  function stepHorn(dt) {
+    if (carBody) {
+      hornSquashV += ((0 - hornSquash) * 60 - hornSquashV * 10) * dt;
+      hornSquash += hornSquashV * dt;
+      carBody.scale.y = 1 + clamp(hornSquash, -0.35, 0.2) * 0.4;
+    }
+    if (!hornCfg || !carState) return;
+    var held = isDown('h');
+    if (held && !hornOsc1 && !_hornHeld) startHorn();
+    if (!held && hornOsc1) stopHorn();
+    _hornHeld = held;
+  }
+
+  /** Anel de quads das marcas de pneu (1 draw call; alpha por vértice com fade). */
+  function ensureTireMesh() {
+    if (tireMesh || !scene) return;
+    tireGeo = new THREE.BufferGeometry();
+    var pos = new Float32Array(TIRE_N * 4 * 3);
+    var alp = new Float32Array(TIRE_N * 4);
+    var idx = [];
+    for (var i = 0; i < TIRE_N; i++) {
+      var b = i * 4;
+      idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
+    }
+    tireGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    tireGeo.setAttribute('aAlpha', new THREE.BufferAttribute(alp, 1));
+    tireGeo.setIndex(idx);
+    tireAges = new Float32Array(TIRE_N);
+    for (var j = 0; j < TIRE_N; j++) tireAges[j] = 1e9;
+    var vsh = [
+      'attribute float aAlpha;',
+      'varying float vA;',
+      'void main() {',
+      '  vA = aAlpha;',
+      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+      '}'
+    ].join(' ');
+    var fsh = [
+      'varying float vA;',
+      'void main() {',
+      '  if (vA <= 0.01) discard;',
+      '  gl_FragColor = vec4(0.12, 0.14, 0.16, vA * 0.55);',
+      '}'
+    ].join(' ');
+    var mat = new THREE.ShaderMaterial({
+      vertexShader: vsh,
+      fragmentShader: fsh,
+      transparent: true,
+      depthWrite: false
+    });
+    tireMesh = new THREE.Mesh(tireGeo, mat);
+    tireMesh.frustumCulled = false;
+    tireMesh.renderOrder = 1;
+    scene.add(tireMesh);
+  }
+
+  /** Grava um quadzinho de marca no anel (sob uma roda traseira). */
+  function stampTire(wx, wz, yaw) {
+    var i = tireIdx;
+    tireIdx = (tireIdx + 1) % TIRE_N;
+    tireAges[i] = 0;
+    var hw = 0.14;
+    var hl = 0.3;
+    var sy = Math.sin(yaw);
+    var cy = Math.cos(yaw);
+    var y = heightAt(wx, wz) + 0.03;
+    var pos = tireGeo.getAttribute('position');
+    var b = i * 4;
+    pos.setXYZ(b, wx - cy * hw - sy * hl, y, wz + sy * hw - cy * hl);
+    pos.setXYZ(b + 1, wx + cy * hw - sy * hl, y, wz - sy * hw - cy * hl);
+    pos.setXYZ(b + 2, wx + cy * hw + sy * hl, y, wz - sy * hw + cy * hl);
+    pos.setXYZ(b + 3, wx - cy * hw + sy * hl, y, wz + sy * hw + cy * hl);
+    pos.needsUpdate = true;
+  }
+
+  function stepTires(dt) {
+    if (!tireOn || !carState || !carCfg) return;
+    ensureTireMesh();
+    if (!tireMesh) return;
+    var s = carState;
+    var cs = carStyleOf();
+    var top = num(carCfg.speed, cs.speed);
+    var grip = styleOf().grip;
+    var drifting = Math.abs(s.steerIn || 0) > 0.5 && Math.abs(s.speed) > top * 0.45;
+    var marking = !s.airborne && (boostActive || drifting || (grip < 0.6 && Math.abs(s.speed) > 2));
+    _tireEmitCd -= dt;
+    if (marking && _tireEmitCd <= 0) {
+      _tireEmitCd = 0.035;
+      var xw = cs.w / 2 + 0.04;
+      var zw = cs.l * 0.34;
+      var sy = Math.sin(s.yaw);
+      var cy = Math.cos(s.yaw);
+      // Rodas TRASEIRAS (local -zw), levadas ao mundo pelo yaw.
+      stampTire(s.x + (-xw) * cy + (-zw) * sy, s.z - (-xw) * sy + (-zw) * cy, s.yaw);
+      stampTire(s.x + xw * cy + (-zw) * sy, s.z - xw * sy + (-zw) * cy, s.yaw);
+    }
+    // Fade: envelhece TODAS e reescreve o alpha (1k floats, barato).
+    var alp = tireGeo.getAttribute('aAlpha');
+    for (var i = 0; i < TIRE_N; i++) {
+      tireAges[i] += dt;
+      var a = 1 - tireAges[i] / TIRE_LIFE;
+      if (a < 0) a = 0;
+      var b = i * 4;
+      alp.setX(b, a);
+      alp.setX(b + 1, a);
+      alp.setX(b + 2, a);
+      alp.setX(b + 3, a);
+    }
+    alp.needsUpdate = true;
+  }
+
+  /** Luzes do carrinho: estados AUTOMÁTICOS (freio/ré/piscas/faróis à noite). */
+  function stepCarLights(dt) {
+    if (!lightsOn || !carLightParts || !carState) return;
+    var s = carState;
+    blinkPhase += dt * 8;
+    var blinkOn = Math.sin(blinkPhase) > 0;
+    var braking = (s.accelIn || 0) < 0 && s.speed > 0.5;
+    var reversing = s.speed < -0.2;
+    var steering = s.steerIn || 0;
+    var i;
+    for (i = 0; i < carLightParts.brake.length; i++) {
+      carLightParts.brake[i].material.color.set(braking ? '#ff2d2d' : '#5f1414');
+    }
+    for (i = 0; i < carLightParts.rev.length; i++) {
+      carLightParts.rev[i].material.color.set(reversing ? '#ffffff' : '#6b7280');
+    }
+    for (i = 0; i < carLightParts.blinkL.length; i++) {
+      carLightParts.blinkL[i].material.color.set(steering > 0.3 && blinkOn ? '#ffb020' : '#7c5a10');
+    }
+    for (i = 0; i < carLightParts.blinkR.length; i++) {
+      carLightParts.blinkR[i].material.color.set(steering < -0.3 && blinkOn ? '#ffb020' : '#7c5a10');
+    }
+    var headBright = nightAmount > 0.25;
+    for (i = 0; i < carLightParts.head.length; i++) {
+      carLightParts.head[i].material.color.set(headBright ? '#fff7c2' : '#8a8672');
+    }
+  }
+
+  /** Lua: um disco que aparece junto das estrelas e olha para a câmera. */
+  function stepMoon() {
+    if (!scene) return;
+    if (!moonMesh && nightAmount > 0.01) {
+      moonMat = new THREE.MeshBasicMaterial({ color: '#f5f3ce', transparent: true, opacity: 0, fog: false, depthWrite: false });
+      moonMesh = new THREE.Mesh(new THREE.CircleGeometry(7, 24), moonMat);
+      moonMesh.renderOrder = -1;
+      scene.add(moonMesh);
+    }
+    if (!moonMesh) return;
+    moonMat.opacity = nightAmount * 0.9;
+    var cx = carState ? carState.x : 0;
+    var cz = carState ? carState.z : 0;
+    moonMesh.position.set(cx - 90, 85, cz - 130);
+    if (camera) moonMesh.lookAt(camera.position);
+  }
+
+  /** Vinheta de velocidade do turbo (DOM — zero draw calls 3D). */
+  function stepSpeedLines() {
+    if (!frameEl) return;
+    var show = false;
+    if (boostActive && carState && carCfg) {
+      var top = num(carCfg.speed, carStyleOf().speed);
+      show = Math.abs(carState.speed) > top * 0.75;
+    }
+    if (show && !speedLinesEl) {
+      speedLinesEl = document.createElement('div');
+      speedLinesEl.setAttribute('style', 'position:absolute;inset:0;pointer-events:none;z-index:5;background:radial-gradient(ellipse at center, rgba(255,255,255,0) 55%, rgba(255,255,255,0.16) 100%);');
+      frameEl.appendChild(speedLinesEl);
+    }
+    if (speedLinesEl) speedLinesEl.style.display = show ? 'block' : 'none';
+  }
+
+  /** Antena cosmética: chicoteia contra o molejo (a alma do carrinho do folio). */
+  function stepAntenna() {
+    if (!antennaGroup || !carState) return;
+    antennaGroup.rotation.x = clamp(-carState.pitch * 1.6, -0.7, 0.7);
+    antennaGroup.rotation.z = clamp(-carState.roll * 1.6, -0.7, 0.7);
+  }
+
+  function stepCarExtras(dt) {
+    stepHorn(dt);
+    stepCarLights(dt);
+    stepTires(dt);
+    stepMoon();
+    stepSpeedLines();
+    stepAntenna();
+    // Pintura arco-íris: a cor da carroceria passeia pelo círculo cromático.
+    if (paintStyle === 'arco-iris' && carBodyMat && carBodyMat.color && carBodyMat.color.setHSL) {
+      carBodyMat.color.setHSL((playTime * 0.12) % 1, 0.75, 0.55);
+    }
+  }
+
   function disposeCar() {
     if (!carGroup) return;
     try {
@@ -2850,21 +3184,56 @@ export const world3DRuntime = `import * as THREE from 'three';
     carBody = new THREE.Group();
     carGroup.add(carBody);
 
-    var bodyMat = toonMaterial({ color: color });
+    // Pintura (R11): cada esquema decide a cor-base e uma listra opcional.
+    var bodyColor = color;
+    var stripeColor = null;
+    if (paintStyle === 'chamas') { bodyColor = '#ea580c'; stripeColor = '#facc15'; }
+    else if (paintStyle === 'listras') { stripeColor = '#ffffff'; }
+    else if (paintStyle === 'estrelas') { bodyColor = '#1e2a5a'; stripeColor = '#ffffff'; }
+    carBodyMat = toonMaterial({ color: bodyColor });
+    var bodyMat = carBodyMat;
     var darkMat = toonMaterial({ color: '#1f2937' });
     var glassMat = toonMaterial({ color: '#bfdbfe' });
 
-    // Carroceria (senta sobre o vão livre; as peças são autoradas do chão p/ cima).
-    var body = new THREE.Mesh(new THREE.BoxGeometry(cs.w, cs.h, cs.l), bodyMat);
-    body.position.y = cs.clear + cs.h / 2;
-    body.castShadow = true;
-    carBody.add(body);
+    if (rocketMode) {
+      // Konami: FOGUETE sobre rodas — corpo cilíndrico + nariz + 3 aletas.
+      var rocketBody = new THREE.Mesh(new THREE.CylinderGeometry(cs.w * 0.34, cs.w * 0.42, cs.l * 0.72, 12), bodyMat);
+      rocketBody.rotation.x = Math.PI / 2;
+      rocketBody.position.y = cs.clear + cs.h * 0.9;
+      rocketBody.castShadow = true;
+      carBody.add(rocketBody);
+      var nose = new THREE.Mesh(new THREE.ConeGeometry(cs.w * 0.34, cs.l * 0.3, 12), toonMaterial({ color: '#ef4444' }));
+      nose.rotation.x = Math.PI / 2;
+      nose.position.set(0, cs.clear + cs.h * 0.9, cs.l * 0.51);
+      nose.castShadow = true;
+      carBody.add(nose);
+      for (var fi = 0; fi < 3; fi++) {
+        var fin = new THREE.Mesh(new THREE.BoxGeometry(0.06, cs.h * 0.9, cs.l * 0.22), toonMaterial({ color: '#ef4444' }));
+        var fa = (fi / 3) * Math.PI * 2;
+        fin.position.set(Math.cos(fa) * cs.w * 0.4, cs.clear + cs.h * 0.9 + Math.sin(fa) * cs.w * 0.4, -cs.l * 0.3);
+        fin.rotation.z = fa;
+        carBody.add(fin);
+      }
+    } else {
+      // Carroceria (senta sobre o vão livre; as peças são autoradas do chão p/ cima).
+      var body = new THREE.Mesh(new THREE.BoxGeometry(cs.w, cs.h, cs.l), bodyMat);
+      body.position.y = cs.clear + cs.h / 2;
+      body.castShadow = true;
+      carBody.add(body);
 
-    // Cabine (um degrau em cima, puxada para trás).
-    var cab = new THREE.Mesh(new THREE.BoxGeometry(cs.w * 0.78, cs.cab, cs.l * 0.42), glassMat);
-    cab.position.set(0, cs.clear + cs.h + cs.cab / 2, -cs.l * 0.06);
-    cab.castShadow = true;
-    carBody.add(cab);
+      // Cabine (um degrau em cima, puxada para trás).
+      var cab = new THREE.Mesh(new THREE.BoxGeometry(cs.w * 0.78, cs.cab, cs.l * 0.42), glassMat);
+      cab.position.set(0, cs.clear + cs.h + cs.cab / 2, -cs.l * 0.06);
+      cab.castShadow = true;
+      carBody.add(cab);
+
+      if (stripeColor) {
+        // Listra de corrida no capô/teto (fina, ao longo do carro).
+        var stripe = new THREE.Mesh(new THREE.BoxGeometry(cs.w * 0.28, 0.03, cs.l * 0.98), toonMaterial({ color: stripeColor }));
+        stripe.position.y = cs.clear + cs.h + 0.02;
+        carBody.add(stripe);
+      }
+    }
 
     // 4 rodas: as da FRENTE ficam num pivô próprio (esterço visual).
     var wheelGeo = new THREE.CylinderGeometry(cs.wheel, cs.wheel, 0.3, 14);
@@ -2889,6 +3258,43 @@ export const world3DRuntime = `import * as THREE from 'three';
       carWheels.push({ mesh: wheel, pivot: pivot, front: c.front });
     }
 
+    // Antena cosmética (traseira) — chicoteia contra o molejo no stepAntenna.
+    antennaGroup = new THREE.Group();
+    var mast = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.7, 6), darkMat);
+    mast.position.y = 0.35;
+    antennaGroup.add(mast);
+    var tip = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), toonMaterial({ color: '#ef4444' }));
+    tip.position.y = 0.72;
+    antennaGroup.add(tip);
+    antennaGroup.position.set(-cs.w * 0.32, cs.clear + cs.h, -cs.l * 0.42);
+    carBody.add(antennaGroup);
+
+    // Luzes (R11): meshes UNLIT (MeshBasicMaterial) — o stepCarLights troca as
+    // cores conforme freio/ré/piscas/noite. Só nascem com "Ligar as luzes".
+    carLightParts = null;
+    if (lightsOn && !rocketMode) {
+      carLightParts = { head: [], brake: [], rev: [], blinkL: [], blinkR: [] };
+      var mk = function (w2, h2, x2, y2, z2, colr, arr) {
+        var m = new THREE.Mesh(new THREE.BoxGeometry(w2, h2, 0.05), new THREE.MeshBasicMaterial({ color: colr }));
+        m.position.set(x2, y2, z2);
+        carBody.add(m);
+        arr.push(m);
+      };
+      var fy = cs.clear + cs.h * 0.62;
+      var fz = cs.l / 2 + 0.026;
+      var bx = cs.w * 0.32;
+      mk(0.22, 0.12, -bx, fy, fz, '#8a8672', carLightParts.head);
+      mk(0.22, 0.12, bx, fy, fz, '#8a8672', carLightParts.head);
+      mk(0.2, 0.1, -bx, fy, -fz, '#5f1414', carLightParts.brake);
+      mk(0.2, 0.1, bx, fy, -fz, '#5f1414', carLightParts.brake);
+      mk(0.1, 0.08, 0, fy - 0.02, -fz, '#6b7280', carLightParts.rev);
+      var by = cs.clear + cs.h * 0.4;
+      mk(0.09, 0.09, -(cs.w / 2 + 0.026), by, cs.l * 0.38, '#7c5a10', carLightParts.blinkL);
+      mk(0.09, 0.09, -(cs.w / 2 + 0.026), by, -cs.l * 0.38, '#7c5a10', carLightParts.blinkL);
+      mk(0.09, 0.09, cs.w / 2 + 0.026, by, cs.l * 0.38, '#7c5a10', carLightParts.blinkR);
+      mk(0.09, 0.09, cs.w / 2 + 0.026, by, -cs.l * 0.38, '#7c5a10', carLightParts.blinkR);
+    }
+
     if (!carState) {
       carState = {
         x: 0, y: 0, z: 0, yaw: 0, speed: 0, vy: 0, airborne: false,
@@ -2911,6 +3317,9 @@ export const world3DRuntime = `import * as THREE from 'three';
 
     var accelIn = ((isDown('w') || isDown('arrowup')) ? 1 : 0) - ((isDown('s') || isDown('arrowdown')) ? 1 : 0);
     var steerIn = ((isDown('a') || isDown('arrowleft')) ? 1 : 0) - ((isDown('d') || isDown('arrowright')) ? 1 : 0);
+    // Guardados p/ os extras (luzes de freio/piscas, marcas de pneu).
+    s.accelIn = accelIn;
+    s.steerIn = steerIn;
 
     // Turbo (Shift): mais aceleração e um teto de velocidade maior enquanto segura.
     boostActive = boostCfg != null && (isDown('shift') || isDown('shiftleft') || isDown('shiftright'));
@@ -3166,7 +3575,17 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
     }
 
+    // Bullet-time: escala o dt DEPOIS da sonda (a sonda mede o quadro REAL —
+    // escalar antes mentiria o FPS e o turbo nunca ligaria). Volta em ~1,2 s.
+    if (timeScale < 1) {
+      var rawDt = dt;
+      dt *= timeScale;
+      currentDt = dt;
+      timeScale = Math.min(1, timeScale + rawDt / 1.2);
+    }
+
     stepCar(dt);
+    stepCarExtras(dt);
     stepDayNight(dt);
     stepWeather(dt);
     updateEngine();
@@ -3257,6 +3676,8 @@ export const world3DRuntime = `import * as THREE from 'three';
       // O motor e a música vivem no WebAudio/Audio (fora da cena) — o teardown
       // do renderer não os alcança; parar aqui evita som na janela do bfcache.
       try { if (engineOsc) engineOsc.stop(); } catch (e) {}
+      try { if (hornOsc1) hornOsc1.stop(); } catch (e) {}
+      try { if (hornOsc2) hornOsc2.stop(); } catch (e) {}
       try { if (music) music.pause(); } catch (e) {}
       try { if (_audioCtx && _audioCtx.close) _audioCtx.close(); } catch (e) {}
       disposeWeather();
@@ -3300,6 +3721,18 @@ export const world3DRuntime = `import * as THREE from 'three';
     race = null;
     knockables = [];
     bowling = null;
+    hornOsc1 = null;
+    hornOsc2 = null;
+    hornGain = null;
+    carLightParts = null;
+    tireMesh = null;
+    tireGeo = null;
+    tireAges = null;
+    moonMesh = null;
+    moonMat = null;
+    antennaGroup = null;
+    speedLinesEl = null;
+    extraInteract = [];
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -3437,6 +3870,36 @@ export const world3DRuntime = `import * as THREE from 'three';
     }),
     carBoost: guard('carBoost', function (force) {
       boostCfg = { force: clamp(num(force, 1), 0, 4) };
+    }),
+    // 🚗 R11 "carrinho vivo"
+    horn: guard('horn', function () {
+      hornCfg = true;
+    }),
+    onHorn: guard('onHorn', function (fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando buzinar" precisa de blocos de fazer dentro');
+        return;
+      }
+      hornHooks.push(fn);
+    }),
+    carLights: guard('carLights', function () {
+      lightsOn = true;
+      if (carGroup) buildCar();
+    }),
+    tireMarks: guard('tireMarks', function (on) {
+      tireOn = !(on === false || on === 'desligadas' || on === 'desligado');
+      if (!tireOn && tireAges) {
+        for (var i = 0; i < TIRE_N; i++) tireAges[i] = 1e9;
+      }
+    }),
+    carPaint: guard('carPaint', function (paint) {
+      var p = text(paint, 'lisa');
+      if (p !== 'lisa' && p !== 'listras' && p !== 'chamas' && p !== 'arco-iris' && p !== 'estrelas') {
+        warn('não conheço a pintura "' + p + '" — tem: lisa, listras, chamas, arco-iris, estrelas');
+        return;
+      }
+      paintStyle = p;
+      if (carGroup) buildCar();
     }),
     engineSound: guard('engineSound', function (on) {
       var ligado = on === true || on === 'ligado' || on === 'ligados' || on === 'true';

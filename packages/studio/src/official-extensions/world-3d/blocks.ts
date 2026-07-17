@@ -358,6 +358,85 @@ export const world3DBlocks = [
       'Reserva um círculo SEM natureza espalhada — a sua praça, a sua pista, o seu quintal. Use ANTES dos blocos de espalhar (o espalhar respeita as áreas limpas que já existem). O centro do mundo já nasce limpo.',
   },
   {
+    // R11: arma a buzina na tecla H (beep em quinta + pulinho da carroceria + evento).
+    type: 'sz_w3d_horn',
+    message0: 'Ligar a buzina (tecla H) 📢',
+    args0: [],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga a buzina do carrinho: aperte H no passeio para buzinar (fom-fom em duas notas, com um pulinho da carroceria). Combine com "Quando buzinar" para a buzina FAZER coisas.',
+  },
+  {
+    type: 'sz_w3d_on_horn',
+    message0: 'Quando buzinar 📢',
+    args0: [],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos de dentro toda vez que você buzinar (tecla H). Ideia: buzinar perto de um totem para abrir um segredo. Precisa do "Ligar a buzina".',
+  },
+  {
+    type: 'sz_w3d_car_lights',
+    message0: 'Ligar as luzes do carrinho 🚨',
+    args0: [],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O carrinho ganha luzes DE VERDADE que se viram sozinhas: faróis que acendem à noite, luz de freio vermelha, ré branca e piscas que piscam quando você vira.',
+  },
+  {
+    type: 'sz_w3d_tire_marks',
+    message0: 'Marcas de pneu %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'ON',
+        options: [
+          ['ligadas', 'ligadas'],
+          ['desligadas', 'desligadas'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O carrinho deixa marcas no chão quando derrapa nas curvas, no turbo e na neve — e elas somem sozinhas depois de alguns segundos (como no jogo do Bruno Simon).',
+  },
+  {
+    type: 'sz_w3d_car_paint',
+    message0: 'Pintar o carrinho de %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'PAINT',
+        options: [
+          ['lisa', 'lisa'],
+          ['listras', 'listras'],
+          ['chamas 🔥', 'chamas'],
+          ['arco-íris 🌈', 'arco-iris'],
+          ['estrelas ✨', 'estrelas'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Troca a pintura do carrinho: lisa (a cor que você escolheu), listras de corrida, chamas, arco-íris que muda de cor sozinho ou céu estrelado.',
+  },
+  {
     type: 'sz_w3d_on_crash',
     message0: 'Quando o carrinho bater forte',
     args0: [],
@@ -949,6 +1028,11 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_car_boost',
       'sz_w3d_engine_sound',
       'sz_w3d_car_place',
+      'sz_w3d_horn',
+      'sz_w3d_on_horn',
+      'sz_w3d_car_lights',
+      'sz_w3d_tire_marks',
+      'sz_w3d_car_paint',
       'sz_w3d_car_pos',
       'sz_w3d_car_speed',
     ],

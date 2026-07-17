@@ -112,6 +112,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'g3k:onEvent':
     case 'w3d:onUpdate':
     case 'w3d:onCrash':
+    case 'w3d:onHorn':
     case 'w3d:onDayNight':
     case 'w3d:onPoint':
     case 'w3d:onZone':
@@ -2638,6 +2639,23 @@ ${pad}});`
       )
       return `${pad}SZWorld3D.onCrash(function () {\n${body}\n${pad}});`
     }
+    case 'w3d:horn':
+      return `${pad}SZWorld3D.horn();`
+    case 'w3d:onHorn': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onHorn(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:carLights':
+      return `${pad}SZWorld3D.carLights();`
+    case 'w3d:tireMarks':
+      return `${pad}SZWorld3D.tireMarks(${JSON.stringify(stmt.on ? 'ligadas' : 'desligadas')});`
+    case 'w3d:carPaint':
+      return `${pad}SZWorld3D.carPaint(${JSON.stringify(stmt.paint)});`
     case 'w3d:cameraMode':
       return `${pad}SZWorld3D.cameraMode(${JSON.stringify(stmt.mode)});`
     case 'w3d:cameraShake':
@@ -5728,6 +5746,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'w3d:onCrash':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:onHorn':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:horn':
+    case 'w3d:carLights':
+    case 'w3d:tireMarks':
+    case 'w3d:carPaint':
       return
     case 'w3d:effects':
       collectExprIdentifiers(valueToExpr(stmt.strength), names)

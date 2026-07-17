@@ -9011,6 +9011,22 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'w3d:onCrash', body: getStatementChildren(block, 'BODY', seen) },
       }
+    case 'sz_w3d_horn':
+      return { kind: 'js', value: { type: 'w3d:horn' } }
+    case 'sz_w3d_on_horn':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:onHorn', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_car_lights':
+      return { kind: 'js', value: { type: 'w3d:carLights' } }
+    case 'sz_w3d_tire_marks':
+      return { kind: 'js', value: { type: 'w3d:tireMarks', on: f(block, 'ON') !== 'desligadas' } }
+    case 'sz_w3d_car_paint':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:carPaint', paint: f(block, 'PAINT') || 'lisa' },
+      }
     case 'sz_w3d_effects':
       seen.add('world-3d')
       return {

@@ -6105,6 +6105,8 @@ const W3D_CAR_STYLES = new Set(['passeio', 'jipe', 'corrida'])
 const W3D_THINGS = new Set(['arvores', 'pinheiros', 'pedras', 'flores', 'cogumelos', 'cactos'])
 const W3D_GRASS_AMOUNTS = new Set(['pouca', 'media', 'muita'])
 const W3D_EFFECTS_ON = new Set(['ligados', 'desligados'])
+const W3D_TIRES_ON = new Set(['ligadas', 'desligadas'])
+const W3D_PAINTS = new Set(['lisa', 'listras', 'chamas', 'arco-iris', 'estrelas'])
 const W3D_TIMES = new Set(['manha', 'meiodia', 'entardecer', 'noite'])
 const W3D_WEATHER = new Set(['limpo', 'chuva', 'neve', 'folhas'])
 const W3D_DAY_PHASES = new Set(['dia', 'noite'])
@@ -6468,6 +6470,25 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       // generator: SZWorld3D.onCrash(function () {…})
       if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
       return { type: 'w3d:onCrash', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'horn':
+      return { type: 'w3d:horn' }
+    case 'onHorn': {
+      if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
+      return { type: 'w3d:onHorn', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'carLights':
+      return { type: 'w3d:carLights' }
+    case 'tireMarks': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const tiresOn = args[0].value as string
+      if (!W3D_TIRES_ON.has(tiresOn)) return null
+      return { type: 'w3d:tireMarks', on: tiresOn === 'ligadas' }
+    }
+    case 'carPaint': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const paint = args[0].value as string
+      return W3D_PAINTS.has(paint) ? { type: 'w3d:carPaint', paint } : null
     }
     case 'setEffects': {
       if (args[0]?.type !== 'StringLiteral') return null

@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '1.0.0',
+  version: '1.1.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -107,6 +107,18 @@ O que o motor já faz por você:
   acelera (feito na hora, sem arquivo).
 - **Levar o carrinho para x … z …, virado para … graus** — teleporte: pousa
   no chão, parado, olhando para onde você mandou. A câmera pula junto.
+- **Ligar a buzina (tecla H) 📢** — fom-fom em duas notas com um pulinho da
+  carroceria. Combine com **Quando buzinar** para a buzina ABRIR coisas
+  (buzine perto de um totem e faça um segredo acontecer!).
+- **Ligar as luzes do carrinho 🚨** — luzes que se viram sozinhas: faróis
+  acendem à noite, freio fica vermelho vivo, ré branca e piscas piscam
+  quando você vira.
+- **Marcas de pneu ligadas/desligadas** — o chão ganha marcas na derrapagem,
+  no turbo e na neve; elas somem sozinhas depois de alguns segundos.
+- **Pintar o carrinho de …** — lisa (a sua cor), listras de corrida, chamas,
+  arco-íris (muda de cor sozinho) ou estrelas.
+- Segredo: quem digitar o código Konami (↑↑↓↓←→←→BA) transforma o carrinho
+  num FOGUETE. Conta pra ninguém. 🚀
 - **onde o carrinho está (eixo …)** — a posição, um eixo por vez (y = altura).
 - **a velocidade do carrinho** — em m/s, sempre positiva. Ótima para HUD.
 

@@ -5846,6 +5846,16 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'w3d:onCrash':
       return block('sz_w3d_on_crash', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'w3d:horn':
+      return block('sz_w3d_horn', {}, {}, stmt.__id)
+    case 'w3d:onHorn':
+      return block('sz_w3d_on_horn', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'w3d:carLights':
+      return block('sz_w3d_car_lights', {}, {}, stmt.__id)
+    case 'w3d:tireMarks':
+      return block('sz_w3d_tire_marks', { ON: stmt.on ? 'ligadas' : 'desligadas' }, {}, stmt.__id)
+    case 'w3d:carPaint':
+      return block('sz_w3d_car_paint', { PAINT: stmt.paint }, {}, stmt.__id)
     case 'w3d:cameraMode':
       return block('sz_w3d_camera_mode', { MODE: stmt.mode }, {}, stmt.__id)
     case 'w3d:cameraShake': {
