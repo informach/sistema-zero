@@ -52,7 +52,11 @@ export const world3DRuntime = `import * as THREE from 'three';
     praia:     { skyTop: '#5fc0ee', skyBot: '#fdeec9', low: '#e3cb8d', high: '#d2b268', rock: '#b3a284', fog: '#f2e4c2', grip: 1, grass: ['#7ea35a', '#c9d97a'], grassK: 0.5 },
     neve:      { skyTop: '#9dbcdd', skyBot: '#eef4fb', low: '#dfe8f2', high: '#ffffff', rock: '#9fb0c0', fog: '#e3ecf6', grip: 0.45, grass: ['#b9c8d8', '#eef4fb'], grassK: 0.25 },
     deserto:   { skyTop: '#74aee6', skyBot: '#f6d8a6', low: '#d3a05c', high: '#e6c079', rock: '#a3794c', fog: '#ecd8ae', grip: 1, grass: ['#8a8a4a', '#c9c96a'], grassK: 0.2 },
-    primavera: { skyTop: '#85cbf4', skyBot: '#f8e2ef', low: '#579a49', high: '#8cc061', rock: '#96917f', fog: '#e1eed6', grip: 1, grass: ['#3f7a3a', '#9ed36a'], grassK: 1 }
+    primavera: { skyTop: '#85cbf4', skyBot: '#f8e2ef', low: '#579a49', high: '#8cc061', rock: '#96917f', fog: '#e1eed6', grip: 1, grass: ['#3f7a3a', '#9ed36a'], grassK: 1 },
+    // 🌙 Lua: cinzas + gravidade fraca (pulos flutuantes) + noite default no start.
+    lua:       { skyTop: '#0b0d1a', skyBot: '#2a2440', low: '#6b7080', high: '#9aa1b0', rock: '#565b68', fog: '#1a1c2a', grip: 1, grass: ['#6b7080', '#9aa1b0'], grassK: 0, gravity: 0.4, ground2: '#565b68' },
+    // 🚜 Fazenda: campos verde-dourados (celeiro/moinho/plantação são blocos-receita).
+    fazenda:   { skyTop: '#7cc4f0', skyBot: '#f6ecc0', low: '#5a8c3e', high: '#a8b84e', rock: '#8f8468', fog: '#e8ecc8', grip: 1, grass: ['#4a7a34', '#c2c85e'], grassK: 0.8, ground2: '#5a7a2e' }
   };
 
   // Estilos de carrinho: proporções + números de fábrica (car_stats sobrepõe).
@@ -134,6 +138,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   var carBody = null;           // carroceria (molejo: pitch/roll)
   var carWheels = [];           // { mesh, pivot, front }
   var GRAV = 22;
+  // Escala de gravidade do MUNDO (styles: lua = 0.4). Multiplica pessoa,
+  // empurráveis e carrinho — knockables/festa têm queda própria (cosmética).
+  var gravityScale = 1;
   // Câmera que segue (com zoom por velocidade) + órbita automática sem carro.
   var _look = null;
   var _autoAngle = 0;
@@ -472,6 +479,17 @@ export const world3DRuntime = `import * as THREE from 'three';
         if (k2 > 0) {
           var target = m.y1 + (m.y2 - m.y1) * s.t;
           h = h + (target - h) * k2;
+        }
+      } else if (m.kind === 'crater') {
+        // Tigela no centro + borda ERGUIDA ao redor (o anel clássico). Aditivo
+        // sobre o ruído — compõe com flatten/trilha e vale em qualquer estilo.
+        var dx3 = x - m.x;
+        var dz3 = z - m.z;
+        var d3 = Math.sqrt(dx3 * dx3 + dz3 * dz3);
+        if (d3 < m.r * 1.5) {
+          var bowl = 1 - smoothstep(0, m.r * 0.75, d3);
+          var rim = (1 - smoothstep(m.r * 0.75, m.r * 1.4, d3)) * smoothstep(m.r * 0.35, m.r * 0.8, d3);
+          h = h - bowl * m.depth + rim * m.rim;
         }
       }
     }
@@ -1669,7 +1687,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (a.stars > 0.01) {
       ensureStars();
       if (starsMat) starsMat.opacity = a.stars;
-      if (starsMesh && carState) starsMesh.position.set(carState.x, 0, carState.z);
+      if (starsMesh) {
+        var sp = playerXZ();
+        starsMesh.position.set(sp.x, 0, sp.z);
+      }
     } else if (starsMat) {
       starsMat.opacity = 0;
     }
@@ -2203,9 +2224,13 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   /** A cada quadro: badge "E" no ponto mais perto, gatilho de E e de zona. */
   function stepInteractions() {
-    if (!carState) return;
-    var cx = carState.x;
-    var cz = carState.z;
+    if (!worldReady) return;
+    // ⭐ R21: a distância é do JOGADOR ATIVO (a pé/carro/barco), não do carro —
+    // medir do carro fazia o "E: entrar" vencer de longe com o carro estacionado
+    // e pontos/NPCs só dispararem se o CARRO estivesse perto deles.
+    var p0 = playerXZ();
+    var cx = p0.x;
+    var cz = p0.z;
     // Árbitro ÚNICO do "aperte E" (R11): pontos + interagíveis extras (entrar no
     // veículo, falar com o amigo, escrever recado… registram em extraInteract).
     // Maior prioridade ganha; no empate, o mais perto. O badge mostra o rótulo.
@@ -3015,6 +3040,12 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (grassCfg) buildGrass();
 
       worldReady = true;
+      // 🌙 Na lua a noite é o DEFAULT (estrelas + postes + faróis acendem) —
+      // só quando a criança não pediu hora/ciclo próprios.
+      if (config.style === 'lua' && !atmoUsed) {
+        timeOfDay = 0;
+        atmoUsed = true;
+      }
       if (atmoUsed) {
         _skyDrawnAt = -1;
         applyAtmosphere();
@@ -3184,7 +3215,11 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (personCfg && !driving && personState) {
       return { x: personState.x, y: personState.y, z: personState.z };
     }
+    if (driving && activeVehicle === 'boat' && boatState) {
+      return { x: boatState.x, y: boatState.y, z: boatState.z };
+    }
     if (carState) return { x: carState.x, y: carState.y, z: carState.z };
+    if (boatState) return { x: boatState.x, y: boatState.y, z: boatState.z };
     return { x: 0, y: heightAt(0, 0), z: 0 };
   }
 
@@ -4711,7 +4746,7 @@ export const world3DRuntime = `import * as THREE from 'three';
           spawnParty(s.x, s.y + 0.4, s.z, (Math.random() - 0.5) * 1.5, -2.5, (Math.random() - 0.5) * 1.5, 0.5, 2, 0, '#fde68a');
         }
       }
-      s.vy -= GRAV * dt;
+      s.vy -= GRAV * gravityScale * dt;
       s.y += s.vy * dt;
       if (s.y <= gy) {
         s.y = gy;
@@ -5161,7 +5196,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       var moving = Math.abs(p.vx) + Math.abs(p.vz) + Math.abs(p.vy) > 0.02;
       if (moving) {
-        p.vy -= GRAV * 0.8 * dt;
+        p.vy -= GRAV * 0.8 * gravityScale * dt;
         p.x += p.vx * dt;
         p.z += p.vz * dt;
         p.y += p.vy * dt;
@@ -5780,7 +5815,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     var gy = heightAtDrive(s.x, s.z, s.y);
     var landed = false;
     if (s.airborne) {
-      s.vy -= GRAV * dt;
+      s.vy -= GRAV * gravityScale * dt;
       s.y += s.vy * dt;
       if (s.y <= gy) {
         s.y = gy;
@@ -6263,11 +6298,37 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       var st = text(o.style, config.style);
       if (!STYLES[st]) {
-        warn('não conheço o estilo "' + st + '" — usando floresta (tem: floresta, praia, neve, deserto, primavera)');
+        warn('não conheço o estilo "' + st + '" — usando floresta (tem: floresta, praia, neve, deserto, primavera, lua, fazenda)');
         st = 'floresta';
       }
       config.style = st;
       config.world = clamp(num(o.world, config.world), 40, 600);
+      gravityScale = STYLES[st].gravity || 1;
+      // 🌙 Lua: crateras automáticas determinísticas (longe do spawn). Refeitas
+      // a cada setup — trocar de estilo antes do start remove as anteriores.
+      var keep = [];
+      for (var tm = 0; tm < terrainMods.length; tm++) {
+        if (!terrainMods[tm].autoLua) keep.push(terrainMods[tm]);
+      }
+      terrainMods = keep;
+      if (st === 'lua') {
+        var crng = mulberry(4040);
+        for (var ci = 0; ci < 12; ci++) {
+          var ang = crng() * Math.PI * 2;
+          var spread = Math.max(10, config.world * 0.5 - 30);
+          var dist = 24 + crng() * spread;
+          var cr = 5 + crng() * 9;
+          terrainMods.push({
+            kind: 'crater',
+            x: Math.cos(ang) * dist,
+            z: Math.sin(ang) * dist,
+            r: cr,
+            depth: 1 + cr * 0.16,
+            rim: 0.4 + cr * 0.06,
+            autoLua: true
+          });
+        }
+      }
     }),
     terrain: guard('terrain', function (hills, smooth) {
       terrainCfg.hills = clamp(num(hills, terrainCfg.hills), 0, 30);

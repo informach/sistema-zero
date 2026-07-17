@@ -24,8 +24,10 @@ SZWorld3D.start(); // SEMPRE por último
 ### API (1 método por bloco)
 
 - \`SZWorld3D.setup({ style, world })\` — estilos: 'floresta' | 'praia' |
-  'neve' | 'deserto' | 'primavera' (na neve o carro escorrega). world =
-  lado do mundo em metros (40–600, padrão 160). Só ANTES do start.
+  'neve' | 'deserto' | 'primavera' | 'lua' | 'fazenda' (na neve o carro
+  escorrega; na LUA a gravidade cai p/ 40%, o céu nasce estrelado e o chão
+  ganha crateras automáticas). world = lado do mundo em metros (40–600,
+  padrão 160). Só ANTES do start.
 - \`SZWorld3D.terrain(alturaMorros, suavidade)\` — colinas por ruído
   determinístico (mesmo mundo sempre); centro plano p/ o spawn. Pode DEPOIS
   do start (reconstrói na hora). altura 0–30 m, suavidade 1–30.

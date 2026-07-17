@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '2.0.0',
+  version: '2.1.0',
   description:
     'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: escolha o cenário (🌲🏖️❄️🏜️🌸), levante morros ou um arquipélago e passeie a pé, de carrinho ou de barco (E entra e sai). Buzina, marcas de pneu, boliche, letras e TNT para bagunçar; amigos que conversam, moedas e missões, conquistas que ficam salvas, minimapa com teleporte, clima com tempestade e tornado. Tudo com blocos simples — e o "A cada quadro" para inventar a sua mecânica.',
   category: 'games',
@@ -25,8 +25,10 @@ morros, o céu do seu estilo, e um carrinho gostoso de dirigir. Cada bloco é
 
 O que o motor já faz por você:
 
-- **Mundo com estilo** — floresta, praia, neve, deserto ou primavera: as cores
-  do chão, do céu e da névoa combinam sozinhas. Um bloco: "Criar o mundo 3D".
+- **Mundo com estilo** — floresta, praia, neve, deserto, primavera, 🌙 lua ou
+  🚜 fazenda: as cores do chão, do céu e da névoa combinam sozinhas. Um bloco:
+  "Criar o mundo 3D". Na LUA a gravidade é fraquinha (pulos flutuantes!), o céu
+  já nasce estrelado e o chão vem com crateras de verdade.
 - **Morros de dirigir** — "Deixar o chão com morros" levanta colinas suaves no
   mundo inteiro (o meio fica plano para o carrinho nascer em paz). E "a altura
   do chão em x z" te conta a altura em QUALQUER ponto — nada nasce enterrado.

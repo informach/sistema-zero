@@ -22,6 +22,8 @@ export const world3DBlocks = [
           ['❄️ neve', 'neve'],
           ['🏜️ deserto', 'deserto'],
           ['🌸 primavera', 'primavera'],
+          ['🌙 lua', 'lua'],
+          ['🚜 fazenda', 'fazenda'],
         ],
       },
       { type: 'input_value', name: 'WORLD', check: 'JSValue' },

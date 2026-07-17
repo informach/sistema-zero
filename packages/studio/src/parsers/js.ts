@@ -6100,7 +6100,7 @@ function asSZWorld3DCall(expr: Node): { method: string; args: Node[] } | null {
 
 /** Enums fixos dos dropdowns do Mundo 3D — valor desconhecido → null → rawJS
  * (o dropdown coagiria para a 1ª opção e o round-trip mentiria). */
-const W3D_STYLES = new Set(['floresta', 'praia', 'neve', 'deserto', 'primavera'])
+const W3D_STYLES = new Set(['floresta', 'praia', 'neve', 'deserto', 'primavera', 'lua', 'fazenda'])
 const W3D_CAR_STYLES = new Set(['passeio', 'jipe', 'corrida'])
 const W3D_THINGS = new Set([
   'arvores',

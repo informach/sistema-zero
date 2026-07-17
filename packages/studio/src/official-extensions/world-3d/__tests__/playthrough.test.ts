@@ -495,4 +495,109 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     releaseKey('w', 'KeyW')
     expect(Math.abs(api.carPos('z') - z0)).toBeGreaterThan(1)
   })
+
+  it('R21: A PÉ e LONGE do carro, E fala com a amiga (não teleporta pro carrinho)', async () => {
+    // Antes do fix, o árbitro media a distância do CARRO: com o carrinho
+    // estacionado no spawn, o "E: entrar" (r=3 NO carro) vencia de qualquer
+    // lugar do mapa — apertar E aqui ENTRAVA no carro em vez de conversar.
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        person(c: string, h: string): void
+        npc(n: string, x: number, z: number, c: string, h: string): void
+        npcTalk(n: string, fn: () => void): void
+        npcSay(n: string, t: string): void
+      }
+      w.person('#3b82f6', 'bone')
+      w.npc('Lia', 40, 40, '#f97316', 'palha')
+      w.npcTalk('Lia', () => {
+        w.npcSay('Lia', 'Oi!')
+      })
+    })
+    const w2 = api as unknown as {
+      isDriving(): boolean
+      personPlace(x: number, z: number, d: number): void
+    }
+    expect(w2.isDriving()).toBe(false)
+    // Caminha (teleporta) até a amiga — o carro fica LÁ no centro.
+    w2.personPlace(39, 40, 0)
+    step(3)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    step(30)
+    // Falou com a Lia (balão com a fala) e NÃO entrou no carro de longe.
+    expect(w2.isDriving()).toBe(false)
+    // (o happy-dom re-serializa o style com espaços quando el.style é tocado —
+    // casar só por 'max-width', sem o valor colado)
+    const el = Array.from(document.querySelectorAll('#szw3d-stage div')).find((d) =>
+      (d.getAttribute('style') ?? '').includes('max-width'),
+    ) as HTMLElement | undefined
+    expect(el).toBeTruthy()
+    expect(el?.textContent).toBe('Oi!')
+  })
+
+  it('R21: na LUA o pulo flutua (~2,5× mais alto que na floresta)', async () => {
+    const jumpHeight = async (style: string) => {
+      const { api, step } = await loadStartedWorld((a) => {
+        const w = a as unknown as {
+          setup(o: { style: string; world: number }): void
+          person(c: string, h: string): void
+        }
+        w.setup({ style, world: 160 })
+        w.person('#3b82f6', 'capacete')
+      })
+      const w2 = api as unknown as { personPos(a: string): number }
+      step(3)
+      const y0 = w2.personPos('y')
+      pressKey(' ', 'Space')
+      step(2)
+      releaseKey(' ', 'Space')
+      let maxDy = 0
+      for (let i = 0; i < 140; i++) {
+        step(1)
+        const dy = w2.personPos('y') - y0
+        if (dy > maxDy) maxDy = dy
+      }
+      window.dispatchEvent(new Event('pagehide'))
+      for (const el of Array.from(document.querySelectorAll('#szw3d-stage'))) el.remove()
+      return maxDy
+    }
+    const floresta = await jumpHeight('floresta')
+    const lua = await jumpHeight('lua')
+    expect(floresta).toBeGreaterThan(0.5)
+    expect(lua).toBeGreaterThan(floresta * 1.8)
+  })
+
+  it('R21: a lua nasce com CRATERAS (fundo do buraco bem abaixo da borda)', async () => {
+    const { api } = await loadStartedWorld((a) => {
+      const w = a as unknown as { setup(o: { style: string; world: number }): void }
+      w.setup({ style: 'lua', world: 160 })
+      a.car('passeio', '#94a3b8')
+    })
+    // Varre o chão atrás do ponto mais fundo (as crateras nascem a 24m+ do
+    // centro; o ruído puro nunca desce abaixo de ~0 — buraco fundo = cratera).
+    let minH = Infinity
+    let mx = 0
+    let mz = 0
+    for (let x = -70; x <= 70; x += 2) {
+      for (let z = -70; z <= 70; z += 2) {
+        const h = api.groundHeight(x, z)
+        if (h < minH) {
+          minH = h
+          mx = x
+          mz = z
+        }
+      }
+    }
+    expect(minH).toBeLessThan(-0.3)
+    // A borda (anel a 6m do fundo) fica BEM acima do fundo da tigela.
+    let ring = 0
+    for (let i = 0; i < 8; i++) {
+      const ang = (i / 8) * Math.PI * 2
+      ring += api.groundHeight(mx + Math.cos(ang) * 6, mz + Math.sin(ang) * 6)
+    }
+    ring /= 8
+    expect(ring - minH).toBeGreaterThan(0.8)
+  })
 })
