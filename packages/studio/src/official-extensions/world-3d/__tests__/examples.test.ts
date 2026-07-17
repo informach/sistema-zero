@@ -3,13 +3,17 @@ import { SZIRSchema } from '#ir'
 import { parseJS } from '../../../parsers/js'
 import { BOLICHE_SOURCE } from '../__gen_boliche'
 import { CORRIDA_SOURCE } from '../__gen_corrida'
+import { ILHA_SOURCE } from '../__gen_ilha'
 import { INVERNO_SOURCE } from '../__gen_inverno'
 import { MEU_MUNDO_SOURCE } from '../__gen_meumundo'
+import { PARQUE_SOURCE } from '../__gen_parque'
 import {
   bolicheExample,
   corridaExample,
+  ilhaExample,
   invernoExample,
   meuMundoExample,
+  parqueExample,
   world3DExamples,
 } from '../examples'
 import { world3DManifest } from '../manifest'
@@ -48,12 +52,14 @@ const CASES = [
   { name: 'Corrida do Por do Sol', source: CORRIDA_SOURCE, example: corridaExample },
   { name: 'Boliche na Praca', source: BOLICHE_SOURCE, example: bolicheExample },
   { name: 'Inverno Magico', source: INVERNO_SOURCE, example: invernoExample },
+  { name: 'Ilha dos Criadores', source: ILHA_SOURCE, example: ilhaExample },
+  { name: 'Parque dos Brinquedos', source: PARQUE_SOURCE, example: parqueExample },
 ]
 
 describe('Mundo 3D — exemplos da vitrine', () => {
-  it('o manifest registra os 4 exemplos', () => {
-    expect(world3DExamples.length).toBe(4)
-    expect(world3DManifest.examples.length).toBe(4)
+  it('o manifest registra os 6 exemplos', () => {
+    expect(world3DExamples.length).toBe(6)
+    expect(world3DManifest.examples.length).toBe(6)
   })
 
   for (const { name, source, example } of CASES) {

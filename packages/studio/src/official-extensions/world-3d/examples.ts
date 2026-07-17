@@ -972,9 +972,666 @@ export const invernoExample: ExtensionExample = {
   },
 }
 
+export const ilhaExample: ExtensionExample = {
+  name: 'Ilha dos Criadores',
+  description:
+    'Um arquipelago de ferias para explorar a pe, de carrinho e de BARCO (aperte E para entrar e sair). Tem farol, ponte, palmeiras, a amiga Lia que conversa e uma missao: pegue 15 moedas e vire Cacador de Moedas, com fogos e conquista!',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    js: [
+      {
+        type: 'w3d:setup',
+        style: 'praia',
+        world: {
+          type: 'num',
+          value: 240,
+        },
+      },
+      {
+        type: 'w3d:islands',
+        n: {
+          type: 'num',
+          value: 4,
+        },
+        y: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'w3d:grass',
+        amount: 'pouca',
+      },
+      {
+        type: 'w3d:clouds',
+        amount: 'muitas',
+      },
+      {
+        type: 'w3d:ambience',
+        kind: 'mar',
+      },
+      {
+        type: 'w3d:dayNight',
+        minutes: {
+          type: 'num',
+          value: 6,
+        },
+      },
+      {
+        type: 'w3d:clearArea',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: 0,
+        },
+        r: {
+          type: 'num',
+          value: 30,
+        },
+      },
+      {
+        type: 'w3d:scatter',
+        n: {
+          type: 'num',
+          value: 120,
+        },
+        thing: 'palmeiras',
+      },
+      {
+        type: 'w3d:scatter',
+        n: {
+          type: 'num',
+          value: 60,
+        },
+        thing: 'flores',
+      },
+      {
+        type: 'w3d:car',
+        style: 'jipe',
+        color: '#f59e0b',
+      },
+      {
+        type: 'w3d:person',
+        color: '#3b82f6',
+        hat: 'palha',
+      },
+      {
+        type: 'w3d:boat',
+        color: '#f8fafc',
+      },
+      {
+        type: 'w3d:bridge',
+        x1: {
+          type: 'num',
+          value: 18,
+        },
+        z1: {
+          type: 'num',
+          value: -16,
+        },
+        x2: {
+          type: 'num',
+          value: 52,
+        },
+        z2: {
+          type: 'num',
+          value: -60,
+        },
+        w: {
+          type: 'num',
+          value: 4,
+        },
+      },
+      {
+        type: 'w3d:lighthouse',
+        x: {
+          type: 'num',
+          value: 60,
+        },
+        z: {
+          type: 'num',
+          value: -70,
+        },
+      },
+      {
+        type: 'w3d:lamp',
+        x: {
+          type: 'num',
+          value: 6,
+        },
+        z: {
+          type: 'num',
+          value: 6,
+        },
+      },
+      {
+        type: 'w3d:lamp',
+        x: {
+          type: 'num',
+          value: -6,
+        },
+        z: {
+          type: 'num',
+          value: 6,
+        },
+      },
+      {
+        type: 'w3d:npc',
+        name: 'Lia',
+        x: {
+          type: 'num',
+          value: 8,
+        },
+        z: {
+          type: 'num',
+          value: 10,
+        },
+        color: '#f97316',
+        hat: 'palha',
+      },
+      {
+        type: 'w3d:npcWander',
+        name: 'Lia',
+        r: {
+          type: 'num',
+          value: 10,
+        },
+      },
+      {
+        type: 'w3d:npcTalk',
+        name: 'Lia',
+        body: [
+          {
+            type: 'w3d:npcSay',
+            name: 'Lia',
+            text: 'Oi! Bem-vindo a ilha!',
+          },
+          {
+            type: 'w3d:npcSay',
+            name: 'Lia',
+            text: 'Dizem que o farol guarda um tesouro...',
+          },
+          {
+            type: 'w3d:npcSay',
+            name: 'Lia',
+            text: 'Pegue 15 moedas e va ate la!',
+          },
+        ],
+      },
+      {
+        type: 'w3d:coinsScatter',
+        n: {
+          type: 'num',
+          value: 30,
+        },
+      },
+      {
+        type: 'w3d:coinsRing',
+        n: {
+          type: 'num',
+          value: 8,
+        },
+        x: {
+          type: 'num',
+          value: 60,
+        },
+        z: {
+          type: 'num',
+          value: -70,
+        },
+        r: {
+          type: 'num',
+          value: 8,
+        },
+      },
+      {
+        type: 'w3d:quest',
+        name: 'moedas',
+        desc: 'Pegue 15 moedas',
+      },
+      {
+        type: 'w3d:onCollect',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>=',
+              left: {
+                type: 'w3d:coinCount',
+              },
+              right: {
+                type: 'num',
+                value: 15,
+              },
+            },
+            then: [
+              {
+                type: 'w3d:questDone',
+                name: 'moedas',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'w3d:onQuestDone',
+        name: 'moedas',
+        body: [
+          {
+            type: 'w3d:fireworks',
+          },
+          {
+            type: 'w3d:say',
+            text: {
+              type: 'str',
+              value: 'Missao completa! Voce e um Cacador de Moedas!',
+            },
+            secs: {
+              type: 'num',
+              value: 4,
+            },
+          },
+          {
+            type: 'w3d:achievement',
+            name: 'Cacador de Moedas',
+          },
+        ],
+      },
+      {
+        type: 'w3d:marker',
+        icon: 'moeda',
+        x: {
+          type: 'num',
+          value: 60,
+        },
+        z: {
+          type: 'num',
+          value: -70,
+        },
+      },
+      {
+        type: 'w3d:guideArrow',
+        x: {
+          type: 'num',
+          value: 60,
+        },
+        z: {
+          type: 'num',
+          value: -70,
+        },
+        on: true,
+      },
+      {
+        type: 'w3d:minimap',
+        mode: 'teleporte',
+      },
+      {
+        type: 'w3d:totemText',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: 12,
+        },
+        title: 'Ilha dos Criadores',
+        body: 'Ande com WASD; E entra no carrinho e no barco!',
+      },
+      {
+        type: 'w3d:start',
+      },
+    ],
+  },
+}
+
+export const parqueExample: ExtensionExample = {
+  name: 'Parque dos Brinquedos',
+  description:
+    'Um parquinho de bagunca fisica: derrube as letras de PARQUE, jogue boliche com o carro de corrida, exploda caixas TNT em cadeia e aperte o botao do TORNADO! Buzine com H, deixe marcas de pneu e escreva um recado no cantinho.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    js: [
+      {
+        type: 'w3d:setup',
+        style: 'primavera',
+        world: {
+          type: 'num',
+          value: 200,
+        },
+      },
+      {
+        type: 'w3d:terrain',
+        h: {
+          type: 'num',
+          value: 3,
+        },
+        s: {
+          type: 'num',
+          value: 6,
+        },
+      },
+      {
+        type: 'w3d:flatten',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: 0,
+        },
+        r: {
+          type: 'num',
+          value: 45,
+        },
+      },
+      {
+        type: 'w3d:grass',
+        amount: 'media',
+      },
+      {
+        type: 'w3d:dayNight',
+        minutes: {
+          type: 'num',
+          value: 5,
+        },
+      },
+      {
+        type: 'w3d:scatter',
+        n: {
+          type: 'num',
+          value: 150,
+        },
+        thing: 'arvores',
+      },
+      {
+        type: 'w3d:scatter',
+        n: {
+          type: 'num',
+          value: 80,
+        },
+        thing: 'flores',
+      },
+      {
+        type: 'w3d:car',
+        style: 'corrida',
+        color: '#3b82f6',
+      },
+      {
+        type: 'w3d:carBoost',
+        force: {
+          type: 'num',
+          value: 2,
+        },
+      },
+      {
+        type: 'w3d:horn',
+      },
+      {
+        type: 'w3d:carLights',
+      },
+      {
+        type: 'w3d:tireMarks',
+        on: true,
+      },
+      {
+        type: 'w3d:carPaint',
+        paint: 'listras',
+      },
+      {
+        type: 'w3d:letters',
+        word: 'PARQUE',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: 18,
+        },
+        s: {
+          type: 'num',
+          value: 1.4,
+        },
+      },
+      {
+        type: 'w3d:pushScatter',
+        n: {
+          type: 'num',
+          value: 20,
+        },
+        x: {
+          type: 'num',
+          value: -20,
+        },
+        z: {
+          type: 'num',
+          value: 0,
+        },
+        r: {
+          type: 'num',
+          value: 12,
+        },
+      },
+      {
+        type: 'w3d:stack',
+        n: {
+          type: 'num',
+          value: 6,
+        },
+        thing: 'caixas',
+        x: {
+          type: 'num',
+          value: 20,
+        },
+        z: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'w3d:bowlingCreate',
+        x: {
+          type: 'num',
+          value: 0,
+        },
+        z: {
+          type: 'num',
+          value: -30,
+        },
+        deg: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'w3d:bowlingOnStrike',
+        body: [
+          {
+            type: 'w3d:confetti',
+          },
+          {
+            type: 'w3d:achievement',
+            name: 'Strike',
+          },
+        ],
+      },
+      {
+        type: 'w3d:explosive',
+        x: {
+          type: 'num',
+          value: 30,
+        },
+        z: {
+          type: 'num',
+          value: 20,
+        },
+      },
+      {
+        type: 'w3d:explosive',
+        x: {
+          type: 'num',
+          value: 30,
+        },
+        z: {
+          type: 'num',
+          value: 26,
+        },
+      },
+      {
+        type: 'w3d:explosive',
+        x: {
+          type: 'num',
+          value: 34,
+        },
+        z: {
+          type: 'num',
+          value: 23,
+        },
+      },
+      {
+        type: 'w3d:onExplosion',
+        body: [
+          {
+            type: 'w3d:cameraShake',
+            force: {
+              type: 'num',
+              value: 0.6,
+            },
+            secs: {
+              type: 'num',
+              value: 0.4,
+            },
+          },
+        ],
+      },
+      {
+        type: 'w3d:point',
+        name: 'tornado',
+        x: {
+          type: 'num',
+          value: -30,
+        },
+        z: {
+          type: 'num',
+          value: 25,
+        },
+      },
+      {
+        type: 'w3d:onPoint',
+        name: 'tornado',
+        body: [
+          {
+            type: 'w3d:tornado',
+            secs: {
+              type: 'num',
+              value: 12,
+            },
+          },
+          {
+            type: 'w3d:say',
+            text: {
+              type: 'str',
+              value: 'SEGURA!',
+            },
+            secs: {
+              type: 'num',
+              value: 2,
+            },
+          },
+        ],
+      },
+      {
+        type: 'w3d:point',
+        name: 'festa',
+        x: {
+          type: 'num',
+          value: 25,
+        },
+        z: {
+          type: 'num',
+          value: -12,
+        },
+      },
+      {
+        type: 'w3d:onPoint',
+        name: 'festa',
+        body: [
+          {
+            type: 'w3d:fireworks',
+          },
+          {
+            type: 'w3d:fireworks',
+          },
+        ],
+      },
+      {
+        type: 'w3d:coinsLine',
+        n: {
+          type: 'num',
+          value: 10,
+        },
+        x1: {
+          type: 'num',
+          value: 0,
+        },
+        z1: {
+          type: 'num',
+          value: 5,
+        },
+        x2: {
+          type: 'num',
+          value: 0,
+        },
+        z2: {
+          type: 'num',
+          value: -25,
+        },
+      },
+      {
+        type: 'w3d:whisperCorner',
+        x: {
+          type: 'num',
+          value: -12,
+        },
+        z: {
+          type: 'num',
+          value: 12,
+        },
+      },
+      {
+        type: 'w3d:minimap',
+        mode: 'ver',
+      },
+      {
+        type: 'w3d:hud',
+        text: {
+          type: 'str',
+          value: 'Buzine com H! E tem um segredo: cima cima baixo baixo esq dir esq dir B A',
+        },
+        corner: 'baixo-esquerda',
+      },
+      {
+        type: 'w3d:start',
+      },
+    ],
+  },
+}
+
 export const world3DExamples: ExtensionExample[] = [
   meuMundoExample,
   corridaExample,
   bolicheExample,
   invernoExample,
+  ilhaExample,
+  parqueExample,
 ]

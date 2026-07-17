@@ -75,6 +75,8 @@ const KIT_EMOJI: Record<string, string> = {
   'Corrida do Por do Sol': '🏁',
   'Boliche na Praca': '🎳',
   'Inverno Magico': '❄️',
+  'Ilha dos Criadores': '🏝️',
+  'Parque dos Brinquedos': '🎠',
 }
 
 function toEntry(
