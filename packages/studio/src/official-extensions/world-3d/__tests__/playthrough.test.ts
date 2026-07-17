@@ -632,6 +632,102 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(lit).toBe(true)
   })
 
+  it('R22/gate: a cidade média BOOTA rápido (eval+build < 2,5 s na bancada)', async () => {
+    const t0 = performance.now()
+    const { step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        city(x: number, z: number, s: string, m: string): void
+        traffic(n: number, m: string): void
+      }
+      w.city(0, 0, 'media', 'dia')
+      w.traffic(6, 'semaforos')
+    })
+    step(3)
+    // Generoso p/ CI — pega regressão de ORDEM DE GRANDEZA no payload/build.
+    expect(performance.now() - t0).toBeLessThan(2500)
+  })
+
+  it('R23: o trânsito ANDA no anel e PAUSA no semáforo (padrão para-e-anda)', async () => {
+    const { renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        city(x: number, z: number, s: string, m: string): void
+        traffic(n: number, m: string): void
+      }
+      w.city(0, 0, 'media', 'dia')
+      w.traffic(4, 'semaforos')
+    })
+    step(5)
+    const scene = renderers[0]?.scene ?? null
+    // O IM do trânsito: 4 carros × 4 peças = 16 instâncias.
+    let tm: RealTHREE.InstancedMesh | null = null
+    scene?.traverse((o) => {
+      const im = o as RealTHREE.InstancedMesh
+      if (!tm && im.isInstancedMesh && im.count === 16) tm = im
+    })
+    expect(tm).not.toBeNull()
+    const posOf = () => {
+      const m = new (Object.getPrototypeOf(
+        (tm as unknown as RealTHREE.InstancedMesh).matrixWorld,
+      ).constructor)()
+      ;(tm as unknown as RealTHREE.InstancedMesh).getMatrixAt(0, m)
+      return { x: m.elements[12], z: m.elements[14] }
+    }
+    // Amostra o movimento do carro 0 em janelas de ~1 s por ~28 s de mundo:
+    // com semáforo tem que existir janela PARADA e janela ANDANDO.
+    let still = 0
+    let moving = 0
+    let prev = posOf()
+    for (let wdw = 0; wdw < 28; wdw++) {
+      step(30)
+      const cur = posOf()
+      const d = Math.abs(cur.x - prev.x) + Math.abs(cur.z - prev.z)
+      if (d < 0.05) still++
+      else if (d > 0.8) moving++
+      prev = cur
+    }
+    expect(moving).toBeGreaterThan(3)
+    expect(still).toBeGreaterThan(1)
+  })
+
+  it('R23: o carrinho autônomo PARA atrás do jogador estacionado na pista', async () => {
+    const { api, step, renderers } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        city(x: number, z: number, s: string, m: string): void
+        traffic(n: number, m: string): void
+      }
+      w.city(0, 0, 'media', 'dia')
+      w.traffic(6, 'livre')
+    })
+    // media → ringR 23.56; lane de fora a 24.81. Estaciona o carro DA CRIANÇA lá.
+    api.carPlace(24.81, 0, 0)
+    step(5)
+    const scene = renderers[0]?.scene ?? null
+    let tm: RealTHREE.InstancedMesh | null = null
+    scene?.traverse((o) => {
+      const im = o as RealTHREE.InstancedMesh
+      if (!tm && im.isInstancedMesh && im.count === 24) tm = im
+    })
+    expect(tm).not.toBeNull()
+    // Deixa o trânsito fluir bastante: alguém chega perto e SEGURA.
+    step(1200)
+    const mesh = tm as unknown as RealTHREE.InstancedMesh
+    const m = new (Object.getPrototypeOf(mesh.matrixWorld).constructor)()
+    let nearest = Infinity
+    for (let i = 0; i < 6; i++) {
+      mesh.getMatrixAt(i * 4, m)
+      const dx = m.elements[12] - api.carPos('x')
+      const dz = m.elements[14] - api.carPos('z')
+      const d = Math.sqrt(dx * dx + dz * dz)
+      if (d < nearest) nearest = d
+    }
+    // Chegou (fila atrás do jogador) mas NÃO encostou (para antes de bater).
+    expect(nearest).toBeLessThan(9)
+    expect(nearest).toBeGreaterThan(1.4)
+  })
+
   it('R21: a lua nasce com CRATERAS (fundo do buraco bem abaixo da borda)', async () => {
     const { api } = await loadStartedWorld((a) => {
       const w = a as unknown as { setup(o: { style: string; world: number }): void }

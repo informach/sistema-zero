@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '2.2.0',
+  version: '2.3.0',
   description:
     'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: escolha o cenário (🌲🏖️❄️🏜️🌸), levante morros ou um arquipélago e passeie a pé, de carrinho ou de barco (E entra e sai). Buzina, marcas de pneu, boliche, letras e TNT para bagunçar; amigos que conversam, moedas e missões, conquistas que ficam salvas, minimapa com teleporte, clima com tempestade e tornado. Tudo com blocos simples — e o "A cada quadro" para inventar a sua mecânica.',
   category: 'games',
@@ -161,6 +161,11 @@ O que o motor já faz por você:
   (pequena, média, grande) e o clima: ☀️ de dia ou **🌃 neon à noite** (a
   noite cai, chove de leve e os letreiros das lojas brilham). Só cabe UMA
   cidadezinha por mundo.
+- **Ligar o trânsito 🚦** — carrinhos autônomos passeiam pelo anel da
+  cidade. Eles são EDUCADOS: param atrás de você (e buzinam se você demorar
+  muito!), respeitam os semáforos dos cruzamentos (verde anda, amarelo se
+  prepara, vermelho para) e nunca batem em ninguém. Escolha quantos (até
+  12) e se tem semáforos ou rua livre.
 - **Pendurar um varal de luzinhas ✨ de … até …** — dois postes e um fio de
   lâmpadas penduradas que ACENDEM quando escurece. Decore a praça, o quintal
   ou faça um caminho de festa (funciona em qualquer mundo, com ou sem

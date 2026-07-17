@@ -9292,6 +9292,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           mode: f(block, 'MODE') || 'dia',
         },
       }
+    case 'sz_w3d_traffic':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:traffic',
+          n: exprInput(block, 'N', { type: 'num', value: 6 }),
+          sem: f(block, 'SEM') || 'semaforos',
+        },
+      }
     case 'sz_w3d_string_lights':
       return {
         kind: 'js',

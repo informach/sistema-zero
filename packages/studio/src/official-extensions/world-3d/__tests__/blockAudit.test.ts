@@ -122,7 +122,7 @@ beforeAll(() => {
 describe('Auditoria Mundo 3D — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(world3DBlocks.length)
-    expect(world3DBlocks.length).toBe(117)
+    expect(world3DBlocks.length).toBe(118)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })

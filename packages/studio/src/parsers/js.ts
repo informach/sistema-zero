@@ -6104,6 +6104,7 @@ const W3D_STYLES = new Set(['floresta', 'praia', 'neve', 'deserto', 'primavera',
 const W3D_CAR_STYLES = new Set(['passeio', 'jipe', 'corrida'])
 const W3D_CITY_SIZES = new Set(['pequena', 'media', 'grande'])
 const W3D_CITY_MODES = new Set(['dia', 'neon'])
+const W3D_TRAFFIC_MODES = new Set(['semaforos', 'livre'])
 const W3D_THINGS = new Set([
   'arvores',
   'pinheiros',
@@ -6782,6 +6783,13 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       return isSimpleValue(x1) && isSimpleValue(z1) && isSimpleValue(x2) && isSimpleValue(z2)
         ? { type: 'w3d:stringLights', x1, z1, x2, z2 }
         : null
+    }
+    case 'traffic': {
+      const n = toExpr(args[0], ctx)
+      if (args[1]?.type !== 'StringLiteral') return null
+      const sem = args[1].value as string
+      if (!W3D_TRAFFIC_MODES.has(sem)) return null
+      return isSimpleValue(n) ? { type: 'w3d:traffic', n, sem } : null
     }
     case 'fireflies': {
       if (args[0]?.type !== 'StringLiteral') return null

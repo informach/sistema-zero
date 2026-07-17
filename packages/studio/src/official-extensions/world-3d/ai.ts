@@ -81,6 +81,11 @@ SZWorld3D.start(); // SEMPRE por último
   cruzamentos; o chão aplaina sozinho e as ruas aparecem no minimapa. UMA
   por mundo. Modo 'neon' = noite + chuva leve por default (se a criança não
   pediu outra hora/clima) + letreiros emissivos brilhando no bloom.
+- \`SZWorld3D.traffic(n, 'semaforos'|'livre')\` — carrinhos autônomos (1–12)
+  circulando o ANEL da cidade em 1 InstancedMesh: param atrás do jogador
+  (buzinam após 2 s), respeitam semáforos sincronizados nos 4 cruzamentos
+  (anda 8s → amarelo 1,5s → para 5s, tudo em dt — o bullet-time desacelera
+  o ciclo junto) e nunca colidem (freio 1-D na lane). Exige a cidadezinha.
 - \`SZWorld3D.stringLights(x1, z1, x2, z2)\` — varal de luzinhas entre 2
   postes (catenária; as lâmpadas acendem com o escurecer). Vale em qualquer
   mundo, com ou sem cidade.

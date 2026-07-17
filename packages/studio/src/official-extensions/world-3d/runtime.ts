@@ -233,6 +233,12 @@ export const world3DRuntime = `import * as THREE from 'three';
   var cityGraph = null;         // { cx, cz, ringR, plazaR, roadW, entries:[{ang,x,z}], crossings:[{ang,x,z}] }
   var cityGroup = null;         // raiz de TUDO da cidade (rebuild ao vivo troca inteira)
   var stringLights = [];        // { bulbsMat } — varais (opacidade segue a noite)
+  // 🚦 Trânsito: carrinhos autônomos no ANEL (1 InstancedMesh p/ todos) +
+  // semáforos sincronizados nos 4 cruzamentos. Tudo em dt (bullet-time junto).
+  var trafficCfg = null;        // { n, sem }
+  var trafficCars = [];         // { lane (0 fora/1 dentro), a (ângulo), speed, hornCd, blockT }
+  var trafficMesh = null;       // IM único: n × TRAFFIC_PARTS.length instâncias
+  var semState = null;          // { t, phase: 'anda'|'amarelo'|'para', bulbMesh }
   var LAMP_MAX = 24;
   var lampLights = null;        // pool de até 4 PointLights REAIS (os postes mais perto)
   var firefliesPts = null;      // { mesh, mat, home:Float32Array, n }
@@ -2752,12 +2758,15 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'city') buildCity();
       else if (r.kind === 'stringLights') buildStringSpan(r.x1, r.z1, r.x2, r.z2);
     }
-    // 2ª passada: o "passear" precisa do amigo já criado (ordem livre dos blocos).
+    // 2ª passada: o "passear" precisa do amigo já criado, e o trânsito precisa
+    // da cidade já construída (ordem livre dos blocos).
     for (var j = 0; j < decorRecipes.length; j++) {
       var r2 = decorRecipes[j];
       if (r2.kind === 'npcWander') {
         var npc2 = findNpc(r2.name);
         if (npc2) npc2.home.r = clamp(num(r2.r, 10), 0, 60);
+      } else if (r2.kind === 'traffic') {
+        buildTraffic();
       }
     }
   }
@@ -5401,6 +5410,202 @@ export const world3DRuntime = `import * as THREE from 'three';
     cityGroup.add(mesh);
   }
 
+  // ---- 🚦 Trânsito: carrinhos educados que seguem o anel + semáforos ----
+
+  var TRAFFIC_COLORS = ['#ef4444', '#3b82f6', '#f59e0b', '#10b981', '#a855f7', '#f97316'];
+  // Peças por carrinho (a 1ª — chassi — leva a COR do carro por instância).
+  var TRAFFIC_PARTS = [
+    { g: 'box', x: 0, y: 0.34, z: 0, sx: 1.3, sy: 0.42, sz: 2.3, tint: true },
+    { g: 'box', color: '#dbeafe', x: 0, y: 0.66, z: -0.15, sx: 1.05, sy: 0.34, sz: 1.2 },
+    { g: 'box', color: '#111827', x: 0, y: 0.16, z: 0.75, sx: 1.36, sy: 0.3, sz: 0.34 },
+    { g: 'box', color: '#111827', x: 0, y: 0.16, z: -0.75, sx: 1.36, sy: 0.3, sz: 0.34 }
+  ];
+
+  function trafficLaneRadius(lane) {
+    return cityGraph.ringR + (lane === 0 ? 1.25 : -1.25);
+  }
+
+  function buildTraffic() {
+    if (!cityGraph) {
+      warn('o trânsito precisa da cidadezinha — use "Construir a cidadezinha" antes');
+      trafficCfg = null;
+      return;
+    }
+    ensureCityGeos();
+    ensureDummies();
+    var n = trafficCfg.n;
+    trafficCars = [];
+    for (var i = 0; i < n; i++) {
+      trafficCars.push({
+        lane: i % 2,
+        a: (i / n) * Math.PI * 2,
+        speed: 0,
+        hornCd: 0,
+        blockT: 0
+      });
+    }
+    trafficMesh = new THREE.InstancedMesh(
+      UNIT_GEOS.box,
+      toonMaterial({ color: '#ffffff' }),
+      n * TRAFFIC_PARTS.length
+    );
+    trafficMesh.castShadow = true;
+    for (var c = 0; c < n; c++) {
+      var tint = new THREE.Color(TRAFFIC_COLORS[c % TRAFFIC_COLORS.length]);
+      for (var p = 0; p < TRAFFIC_PARTS.length; p++) {
+        trafficMesh.setColorAt(c * TRAFFIC_PARTS.length + p, TRAFFIC_PARTS[p].tint ? tint : new THREE.Color(TRAFFIC_PARTS[p].color));
+      }
+    }
+    if (trafficMesh.instanceColor) trafficMesh.instanceColor.needsUpdate = true;
+    (cityGroup || scene).add(trafficMesh);
+    if (trafficCfg.sem) buildSemaphores();
+    stepTrafficVisual();
+  }
+
+  /** Semáforos SINCRONIZADOS nos 4 cruzamentos: anda (8s) → amarelo (1,5s) → para (5s). */
+  function buildSemaphores() {
+    var G = cityGraph;
+    ensureDummies();
+    var postGeo = new THREE.CylinderGeometry(0.07, 0.09, 3.2, 6);
+    var postMat = toonMaterial({ color: '#374151' });
+    var bulbs = new THREE.InstancedMesh(new THREE.BoxGeometry(0.3, 0.3, 0.18), new THREE.MeshBasicMaterial({ color: '#ffffff' }), G.crossings.length * 3);
+    for (var i = 0; i < G.crossings.length; i++) {
+      var cr = G.crossings[i];
+      // O poste fica no canto do cruzamento (fora da pista).
+      var px = cr.x + Math.cos(cr.ang) * 3.4 - Math.sin(cr.ang) * 3.4;
+      var pz = cr.z + Math.sin(cr.ang) * 3.4 + Math.cos(cr.ang) * 3.4;
+      var post = new THREE.Mesh(postGeo, postMat);
+      var gy = heightAt(px, pz);
+      post.position.set(px, gy + 1.6, pz);
+      (cityGroup || scene).add(post);
+      for (var b = 0; b < 3; b++) {
+        _dummy.position.set(px, gy + 3.0 - b * 0.36, pz);
+        _dummy.rotation.set(0, cr.ang + Math.PI / 2, 0);
+        _dummy.scale.set(1, 1, 1);
+        _dummy.updateMatrix();
+        bulbs.setMatrixAt(i * 3 + b, _dummy.matrix);
+      }
+    }
+    bulbs.instanceMatrix.needsUpdate = true;
+    (cityGroup || scene).add(bulbs);
+    semState = { t: 0, phase: 'anda', bulbMesh: bulbs };
+    paintSemaphores();
+  }
+
+  function paintSemaphores() {
+    if (!semState || !semState.bulbMesh) return;
+    var on = semState.phase;
+    var red = new THREE.Color(on === 'para' ? '#ef4444' : '#3f1d1d');
+    var amber = new THREE.Color(on === 'amarelo' ? '#fbbf24' : '#3f351d');
+    var green = new THREE.Color(on === 'anda' ? '#22c55e' : '#1d3f28');
+    var count = semState.bulbMesh.count / 3;
+    for (var i = 0; i < count; i++) {
+      semState.bulbMesh.setColorAt(i * 3 + 0, red);
+      semState.bulbMesh.setColorAt(i * 3 + 1, amber);
+      semState.bulbMesh.setColorAt(i * 3 + 2, green);
+    }
+    if (semState.bulbMesh.instanceColor) semState.bulbMesh.instanceColor.needsUpdate = true;
+  }
+
+  /** Distância ANGULAR à frente (respeitando o sentido da lane). */
+  function trafficGapAhead(fromA, toA, dir) {
+    var d = (toA - fromA) * dir;
+    d = d % (Math.PI * 2);
+    if (d < 0) d += Math.PI * 2;
+    return d;
+  }
+
+  function stepTraffic(dt) {
+    if (!trafficCfg || !trafficCars.length || !cityGraph) return;
+    var G = cityGraph;
+    // Fase do semáforo (soma dt → o bullet-time desacelera o ciclo junto).
+    if (semState) {
+      semState.t += dt;
+      var dur = semState.phase === 'anda' ? 8 : semState.phase === 'amarelo' ? 1.5 : 5;
+      if (semState.t >= dur) {
+        semState.t = 0;
+        semState.phase = semState.phase === 'anda' ? 'amarelo' : semState.phase === 'amarelo' ? 'para' : 'anda';
+        paintSemaphores();
+      }
+    }
+    var pj = playerXZ();
+    for (var i = 0; i < trafficCars.length; i++) {
+      var car = trafficCars[i];
+      var R = trafficLaneRadius(car.lane);
+      var dir = car.lane === 0 ? 1 : -1;
+      // Obstáculo mais perto À FRENTE (em metros ao longo da lane).
+      var gap = 999;
+      for (var j = 0; j < trafficCars.length; j++) {
+        if (j === i || trafficCars[j].lane !== car.lane) continue;
+        var ga = trafficGapAhead(car.a, trafficCars[j].a, dir) * R;
+        if (ga > 0.5 && ga < gap) gap = ga;
+      }
+      // O jogador parado na pista (perto do raio da lane) também segura.
+      var pr = Math.sqrt((pj.x - G.cx) * (pj.x - G.cx) + (pj.z - G.cz) * (pj.z - G.cz));
+      if (Math.abs(pr - R) < 2.2) {
+        var pa = Math.atan2(pj.z - G.cz, pj.x - G.cx);
+        var gp = trafficGapAhead(car.a, pa, dir) * R;
+        if (gp > 0.2 && gp < gap) {
+          gap = gp;
+          if (gp < 6) {
+            car.blockT += dt;
+            if (car.blockT > 2 && car.hornCd <= 0) {
+              beep(240, 0.12);
+              car.hornCd = 3;
+            }
+          }
+        }
+      } else if (car.blockT > 0) {
+        car.blockT = 0;
+      }
+      car.hornCd = Math.max(0, car.hornCd - dt);
+      // Semáforo vermelho/amarelo: segura ANTES do próximo cruzamento.
+      if (semState && semState.phase !== 'anda') {
+        for (var k = 0; k < G.crossings.length; k++) {
+          var ca = G.crossings[k].ang;
+          var gs = trafficGapAhead(car.a, ca - dir * (2.8 / R), dir) * R;
+          if (gs > 0.2 && gs < gap) gap = gs;
+        }
+      }
+      // Freio 1-D: longe acelera até ~5 m/s; perto freia; colado para.
+      var want = gap > 10 ? 5 : gap > 2.4 ? Math.max(0, (gap - 2.4) * 0.7) : 0;
+      car.speed += (want - car.speed) * damp(6, dt);
+      car.a += (car.speed * dt * dir) / R;
+    }
+    stepTrafficVisual();
+  }
+
+  function stepTrafficVisual() {
+    if (!trafficMesh || !cityGraph) return;
+    ensureDummies();
+    var G = cityGraph;
+    var cy = heightAt(G.cx, G.cz);
+    for (var i = 0; i < trafficCars.length; i++) {
+      var car = trafficCars[i];
+      var R = trafficLaneRadius(car.lane);
+      var dir = car.lane === 0 ? 1 : -1;
+      var x = G.cx + Math.cos(car.a) * R;
+      var z = G.cz + Math.sin(car.a) * R;
+      // Frente (+z local) apontando o sentido de andar (tangente).
+      var tx = -Math.sin(car.a) * dir;
+      var tz = Math.cos(car.a) * dir;
+      var yaw = Math.atan2(tx, tz);
+      for (var p = 0; p < TRAFFIC_PARTS.length; p++) {
+        var part = TRAFFIC_PARTS[p];
+        _dummy.position.set(
+          x + Math.sin(yaw) * (part.z || 0) + Math.cos(yaw) * (part.x || 0),
+          cy + 0.06 + (part.y || 0),
+          z + Math.cos(yaw) * (part.z || 0) - Math.sin(yaw) * (part.x || 0)
+        );
+        _dummy.rotation.set(0, yaw, 0);
+        _dummy.scale.set(part.sx || 1, part.sy || 1, part.sz || 1);
+        _dummy.updateMatrix();
+        trafficMesh.setMatrixAt(i * TRAFFIC_PARTS.length + p, _dummy.matrix);
+      }
+    }
+    trafficMesh.instanceMatrix.needsUpdate = true;
+  }
+
   function buildCity() {
     if (!scene || !cityCfg || !cityGraph) return;
     if (cityGroup) {
@@ -6558,6 +6763,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepWaterfalls();
     stepLamps();
     stepStringLights();
+    stepTraffic(currentDt);
     stepFireflies();
     stepCampfires(dt);
     stepBoat(dt);
@@ -6744,6 +6950,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     cityGraph = null;
     cityGroup = null;
     stringLights = [];
+    trafficCfg = null;
+    trafficCars = [];
+    trafficMesh = null;
+    semState = null;
     firefliesPts = null;
     campfires = [];
     _campRespawn = null;
@@ -7446,6 +7656,23 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (grassMat) buildGrassHeightTex();
       if (waterMat) buildWaterFoamTex();
       buildCity();
+    }),
+    traffic: guard('traffic', function (n, mode) {
+      if (trafficCfg) {
+        warn('o trânsito já está ligado');
+        return;
+      }
+      var md = text(mode, 'semaforos');
+      if (md !== 'semaforos' && md !== 'livre') {
+        warn('não conheço o modo "' + md + '" — usando semaforos (tem: semaforos, livre)');
+        md = 'semaforos';
+      }
+      trafficCfg = { n: Math.round(clamp(num(n, 6), 1, 12)), sem: md === 'semaforos' };
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'traffic' });
+        return;
+      }
+      buildTraffic();
     }),
     stringLights: guard('stringLights', function (x1, z1, x2, z2) {
       if (!worldReady) {

@@ -6048,6 +6048,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_w3d_city', { SIZE: stmt.size, MODE: stmt.mode }, {}, stmt.__id, { X: x, Z: z })
     }
+    case 'w3d:traffic': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_traffic', { SEM: stmt.sem }, {}, stmt.__id, { N: n })
+    }
     case 'w3d:stringLights': {
       const x1 = exprToValueBlock(valueToExpr(stmt.x1))
       const z1 = exprToValueBlock(valueToExpr(stmt.z1))

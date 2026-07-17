@@ -1829,6 +1829,27 @@ export const world3DBlocks = [
       'Uma cidadezinha completa estilo Vocation Vista: praça com coreto e varais de luzinhas, anel de rua com faixas de pedestre, 4 ruas de entrada, casinhas, lojas e predinhos coloridos, cercas-vivas e um laguinho. O chão se aplaina sozinho. No modo neon a noite cai, chove de leve e os letreiros brilham!',
   },
   {
+    type: 'sz_w3d_traffic',
+    message0: 'Ligar o trânsito 🚦 : %1 carrinhos , %2',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      {
+        type: 'field_dropdown',
+        name: 'SEM',
+        options: [
+          ['com semáforos', 'semaforos'],
+          ['sem semáforos', 'livre'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Carrinhos autônomos passeiam pelo anel da cidadezinha. Eles são educados: param atrás de você (e buzinam se demorar!), respeitam o semáforo e nunca batem. Precisa da cidadezinha construída. Até 12 carrinhos.',
+  },
+  {
     type: 'sz_w3d_string_lights',
     message0: 'Pendurar um varal de luzinhas ✨ de x %1 z %2 até x %3 z %4',
     args0: [
@@ -1889,7 +1910,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🏙️ Cidade',
     colour: C,
-    types: ['sz_w3d_city', 'sz_w3d_string_lights'],
+    types: ['sz_w3d_city', 'sz_w3d_traffic', 'sz_w3d_string_lights'],
   },
   {
     name: '🧑‍🤝‍🧑 Amigos',
@@ -2128,6 +2149,7 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   },
   sz_w3d_lighthouse: { X: numShadow(50), Z: numShadow(-40) },
   sz_w3d_city: { X: numShadow(0), Z: numShadow(0) },
+  sz_w3d_traffic: { N: numShadow(6) },
   sz_w3d_string_lights: { X1: numShadow(-8), Z1: numShadow(0), X2: numShadow(8), Z2: numShadow(0) },
   sz_w3d_lamp: { X: numShadow(6), Z: numShadow(6) },
   sz_w3d_campfire: { X: numShadow(0), Z: numShadow(8) },

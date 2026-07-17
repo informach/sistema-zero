@@ -4031,6 +4031,7 @@ export type JSStatement =
       x2: number | JSExpr
       z2: number | JSExpr
     })
+  | (JSStatementCommon & { type: 'w3d:traffic'; n: number | JSExpr; sem: string })
   | (JSStatementCommon & { type: 'w3d:fireflies'; amount: string })
   | (JSStatementCommon & { type: 'w3d:campfire'; x: number | JSExpr; z: number | JSExpr })
   // Mundo 3D R15 "personagem a pé": rig procedural + entrar/sair do veículo.
@@ -8212,6 +8213,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       z2: z.union([z.number(), JSExprSchema]),
       ...idField,
     }),
+    z.object({
+      type: z.literal('w3d:traffic'),
+      n: z.union([z.number(), JSExprSchema]),
+      sem: z.string(),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:fireflies'), amount: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:campfire'),
@@ -9390,6 +9397,7 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:lamp',
   'w3d:city',
   'w3d:stringLights',
+  'w3d:traffic',
   'w3d:fireflies',
   'w3d:campfire',
   'w3d:person',
