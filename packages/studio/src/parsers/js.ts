@@ -4064,6 +4064,8 @@ const GK_PICK_MODES = new Set(['maior', 'menor'])
 const GK_PICK_PROPS = new Set([...GK_ENTITY_PROPS, 'pathProgress'])
 // 🌿 R25: espelha o dropdown de status do rpgInflict (veneno é o default).
 const GK_RPG_STATUS = new Set(['veneno', 'regenera', 'atrapalha'])
+// 🌍 Mundo aberto: espelha o dropdown de borda do rpgConnectEdge (fora → rawJS).
+const GK_EDGE_SIDES = new Set(['norte', 'sul', 'leste', 'oeste'])
 const GK_ENTITY_STATES = new Set([
   'parado',
   'andando',
@@ -4304,6 +4306,7 @@ function matchGameKitRpgExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'rpgHasSave' && args.length === 0) return { type: 'gk:rpgHasSave' }
   if (method === 'rpgLevel' && args.length === 0) return { type: 'gk:rpgLevel' }
   if (method === 'rpgXp' && args.length === 0) return { type: 'gk:rpgXp' }
+  if (method === 'rpgCurrentMap' && args.length === 0) return { type: 'gk:rpgCurrentMap' }
   return null
 }
 
@@ -4630,6 +4633,11 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ? { type: 'gk:cameraFollow', charVar, w, h }
         : null
     }
+    case 'cameraFollowMap': {
+      const charVar = identifierName(args[0])
+      if (!charVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:cameraFollowMap', charVar, map: args[1].value as string }
+    }
     case 'cameraStop':
       return { type: 'gk:cameraStop' }
     case 'launchTowards': {
@@ -4757,6 +4765,21 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       return isSimpleValue(cx) && isSimpleValue(cy)
         ? { type: 'gk:rpgCreateDoor', cx, cy, map: args[2].value as string }
         : null
+    }
+    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
+    case 'rpgMapSize': {
+      const cols = toExpr(args[0], ctx)
+      const rows = toExpr(args[1], ctx)
+      return isSimpleValue(cols) && isSimpleValue(rows)
+        ? { type: 'gk:rpgMapSize', cols, rows }
+        : null
+    }
+    case 'rpgConnectEdge': {
+      // Lado fora do enum → rawJS (o dropdown coagiria; código é sagrado).
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const side = args[0].value as string
+      if (!GK_EDGE_SIDES.has(side)) return null
+      return { type: 'gk:rpgConnectEdge', side, map: args[1].value as string }
     }
     case 'rpgBattleStats': {
       const hp = toExpr(args[0], ctx)
@@ -10881,6 +10904,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:rpgHasSave':
     case 'gk:rpgLevel':
     case 'gk:rpgXp':
+    case 'gk:rpgCurrentMap':
     case 'g3k:worldSize':
     case 'g3k:countAlive':
     case 'g3k:keyDown':

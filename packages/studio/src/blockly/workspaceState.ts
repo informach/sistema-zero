@@ -3569,6 +3569,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_gk_camera_follow', { CHAR: stmt.charVar }, {}, stmt.__id, { W: w, H: h })
     }
+    case 'gk:cameraFollowMap':
+      return block('sz_gk_camera_follow_map', { CHAR: stmt.charVar, MAP: stmt.map }, {}, stmt.__id)
     case 'gk:cameraStop':
       return block('sz_gk_camera_stop', {}, {}, stmt.__id)
     case 'gk:launchTowards': {
@@ -3687,6 +3689,16 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_gk_rpg_create_door', { MAP: stmt.map }, {}, stmt.__id, { CX: cx, CY: cy })
     }
+    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
+    case 'gk:rpgMapSize': {
+      const cols = exprToValueBlock(valueToExpr(stmt.cols))
+      const rows = exprToValueBlock(valueToExpr(stmt.rows))
+      return cols === null || rows === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_map_size', {}, {}, stmt.__id, { COLS: cols, ROWS: rows })
+    }
+    case 'gk:rpgConnectEdge':
+      return block('sz_gk_rpg_connect_edge', { SIDE: stmt.side, MAP: stmt.map }, {}, stmt.__id)
     case 'gk:rpgBattleStats': {
       const hp = exprToValueBlock(valueToExpr(stmt.hp))
       const str = exprToValueBlock(valueToExpr(stmt.str))
@@ -7033,6 +7045,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_rpg_level', {})
     case 'gk:rpgXp':
       return block('sz_gk_rpg_xp', {})
+    case 'gk:rpgCurrentMap':
+      return block('sz_gk_rpg_current_map', {})
     // ---- Jogo 3D Avançado (game-3d-advanced) ----
     case 'g3k:worldSize':
       return block('sz_g3k_world_size', {})

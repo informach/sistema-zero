@@ -17,6 +17,7 @@ import {
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
+  reinoAbertoExample,
   saltoNaFlorestaExample,
   vilaDoDragaoExample,
 } from '../examples'
@@ -105,6 +106,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Invasão dos Óvnis',
       'Duelo dos Bonecos',
       'Defesa do Reino',
+      'Reino Aberto',
     ])
     expect(gameKitExtension.minLevel).toBe('intermediario-2d')
   })
@@ -1280,6 +1282,122 @@ describe('game-2d-advanced — exemplo Defesa do Reino (🏰 Kit Defesa de Torre
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(defesaDoReinoExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_REINO = `SZGameKit.setup({ width: 960, height: 640, background: "#1c2b1c", accent: "#ffd166" });
+SZGameKit.setScreenText("menu", "Reino Aberto", "Setas ou WASD andam - espaço conversa - explore os 4 cantos do reino!", "Explorar");
+const heroi = SZGameKit.createCharacter({ image: "", w: 48, h: 48, speed: 320, color: "#4a9eff" });
+SZGameKit.rpgOnMap("campo", function () {
+  SZGameKit.rpgMapSize(15, 10);
+  SZGameKit.rpgConnectEdge("leste", "praia");
+  SZGameKit.rpgConnectEdge("sul", "bosque");
+  SZGameKit.rpgBlockCell(5, 4);
+  SZGameKit.rpgBlockCell(6, 4);
+  SZGameKit.rpgBlockCell(9, 6);
+  SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(2));
+});
+SZGameKit.rpgOnMap("praia", function () {
+  SZGameKit.rpgMapSize(15, 10);
+  SZGameKit.rpgConnectEdge("oeste", "campo");
+  SZGameKit.rpgConnectEdge("sul", "vila");
+  SZGameKit.rpgCreateNpc("pescador", 7, 3, "", "");
+});
+SZGameKit.rpgOnMap("bosque", function () {
+  SZGameKit.rpgMapSize(15, 10);
+  SZGameKit.rpgConnectEdge("norte", "campo");
+  SZGameKit.rpgConnectEdge("leste", "vila");
+  SZGameKit.rpgBlockCell(4, 4);
+  SZGameKit.rpgBlockCell(4, 5);
+  SZGameKit.rpgBlockCell(10, 3);
+});
+SZGameKit.rpgOnMap("vila", function () {
+  SZGameKit.rpgMapSize(30, 20);
+  SZGameKit.rpgConnectEdge("norte", "praia");
+  SZGameKit.rpgConnectEdge("oeste", "bosque");
+  SZGameKit.rpgCreateNpc("prefeita", 20, 12, "", "");
+});
+SZGameKit.rpgOnTalk("pescador", function () {
+  SZGameKit.rpgSay("O mar termina aqui, mas o reino continua pro sul!", "Pescador");
+});
+SZGameKit.rpgOnTalk("prefeita", function () {
+  SZGameKit.rpgSay("Bem-vindo à vila GRANDE — repare a câmera te seguindo!", "Prefeita");
+});
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.rpgMoveGrid(heroi, 64, dt);
+});
+SZGameKit.onEnterState("jogando", function () {
+  SZGameKit.cameraFollow(heroi, 960, 640);
+});
+SZGameKit.onDraw(function (ctx) {
+  if (SZGameKit.rpgCurrentMap() === "praia") {
+    SZGameKit.drawBackground("#2b4a63", true);
+  } else if (SZGameKit.rpgCurrentMap() === "bosque") {
+    SZGameKit.drawBackground("#173317", true);
+  } else if (SZGameKit.rpgCurrentMap() === "vila") {
+    SZGameKit.drawBackground("#4a3c2b", true);
+  } else {
+    SZGameKit.drawBackground("#2d5a2d", true);
+  }
+  SZGameKit.rpgDrawNpcs();
+  SZGameKit.drawCharacter(heroi);
+});
+SZGameKit.onDrawHud(function (ctx) {
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "22px sans-serif";
+  ctx.fillText("Mapa: " + SZGameKit.rpgCurrentMap(), 20, 36);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Reino Aberto (🌍 mundo aberto)', () => {
+  it('IR embutida é válida, sem rawJS, e usa os DOIS jeitos de mundo aberto', () => {
+    const parsed = SZIRSchema.safeParse(reinoAbertoExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(reinoAbertoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      // bordas ligadas (estilo Zelda) + tamanho do mapa
+      'gk:rpgMapSize',
+      'gk:rpgConnectEdge',
+      'gk:rpgCurrentMap',
+      // e a câmera clampando pelo tamanho do mapa (a vila é MAIOR que a tela)
+      'gk:cameraFollow',
+      // o mundo do Kit RPG que os liga
+      'gk:rpgOnMap',
+      'gk:rpgMoveGrid',
+      'gk:rpgBlockCell',
+      'gk:rpgCreateNpc',
+      'gk:rpgOnTalk',
+      'gk:rpgSay',
+      'gk:onDrawHud',
+      'if', // fundo por mapa via "o nome do mapa de agora"
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_REINO))).toEqual(reinoAbertoExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
+    const code1 = compileStatements(reinoAbertoExample.ir.js, 0)
+    const code2 = compileStatements(stripIds(parseJS(code1)), 0)
+    expect(code2).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR → workspace → IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      reinoAbertoExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(reinoAbertoExample.ir.js)
     } finally {
       ws.dispose()
     }

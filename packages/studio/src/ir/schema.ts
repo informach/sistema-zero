@@ -249,6 +249,8 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:rpgHasSave' })
   | (JSExprCommon & { type: 'gk:rpgLevel' })
   | (JSExprCommon & { type: 'gk:rpgXp' })
+  // 🌍 Mundo aberto: o nome do mapa atual.
+  | (JSExprCommon & { type: 'gk:rpgCurrentMap' })
   // 🥷 Ação em tempo real: "o golpe de A acertou B?" (caixa de golpe à frente).
   | (JSExprCommon & { type: 'gk:didHit'; aVar: string; bVar: string })
   // ⚙️ Física geral (R11): valores que o jogo INTEIRO precisa poder ler.
@@ -721,6 +723,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:rpgHasSave'), ...idField }),
     z.object({ type: z.literal('gk:rpgLevel'), ...idField }),
     z.object({ type: z.literal('gk:rpgXp'), ...idField }),
+    z.object({ type: z.literal('gk:rpgCurrentMap'), ...idField }),
     z.object({ type: z.literal('gk:didHit'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isOnGround'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isInside'), charVar: irText(), region: irText(), ...idField }),
@@ -2693,6 +2696,8 @@ export type JSStatement =
       w: number | JSExpr
       h: number | JSExpr
     })
+  // 🌍 Mundo aberto: o tamanho do mundo vem do próprio mapa de tiles.
+  | (JSStatementCommon & { type: 'gk:cameraFollowMap'; charVar: string; map: string })
   | (JSStatementCommon & { type: 'gk:cameraStop' })
   // ➡️ Velocidade própria (tiro reto/mirado) e giro.
   | (JSStatementCommon & {
@@ -2758,6 +2763,13 @@ export type JSStatement =
       cy: number | JSExpr
       map: string
     })
+  // 🌍 Mundo aberto: tamanho do mapa em células + bordas ligadas (estilo Zelda).
+  | (JSStatementCommon & {
+      type: 'gk:rpgMapSize'
+      cols: number | JSExpr
+      rows: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:rpgConnectEdge'; side: string; map: string })
   | (JSStatementCommon & {
       type: 'gk:rpgBattleStats'
       hp: number | JSExpr
@@ -6364,6 +6376,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       h: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({
+      type: z.literal('gk:cameraFollowMap'),
+      charVar: irText(),
+      map: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('gk:cameraStop'), ...idField }),
     z.object({
       type: z.literal('gk:launchTowards'),
@@ -6457,6 +6475,18 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('gk:rpgCreateDoor'),
       cx: z.union([JSExprSchema, z.number()]),
       cy: z.union([JSExprSchema, z.number()]),
+      map: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgMapSize'),
+      cols: z.union([JSExprSchema, z.number()]),
+      rows: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgConnectEdge'),
+      side: irText(),
       map: irText(),
       ...idField,
     }),
@@ -9173,6 +9203,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:setSheet',
   'gk:playAnim',
   'gk:cameraFollow',
+  'gk:cameraFollowMap',
   'gk:cameraStop',
   'gk:launchTowards',
   'gk:moveByVelocity',
@@ -9192,6 +9223,8 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgGoMap',
   'gk:rpgOnMap',
   'gk:rpgCreateDoor',
+  'gk:rpgMapSize',
+  'gk:rpgConnectEdge',
   'gk:rpgBattleStats',
   'gk:rpgBattleStart',
   'gk:rpgOnBattleEnd',

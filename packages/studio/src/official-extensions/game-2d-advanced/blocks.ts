@@ -772,6 +772,22 @@ export const gameKitBlocks = [
       'Liga a câmera: o mundo fica MAIOR que a tela e a câmera acompanha o personagem (presa nas bordas do mundo, como nos jogos de aventura). "Manter dentro da tela" passa a valer o MUNDO.',
   },
   {
+    // 🌍 Mundo aberto: o tamanho do mundo vem do PRÓPRIO mapa de tiles (colunas ×
+    // célula), recalculado a cada quadro — a criança não faz conta nenhuma.
+    type: 'sz_gk_camera_follow_map',
+    message0: 'Fazer a câmera seguir %1 pelo mapa %2',
+    args0: [
+      { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
+      { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Igual ao "Fazer a câmera seguir", mas o tamanho do mundo é o do MAPA de tiles — a tela vira uma janela andando por ele, e o motor só desenha o pedaço visível (como nos jogos profissionais).',
+  },
+  {
     type: 'sz_gk_camera_stop',
     message0: 'Parar a câmera (tela fixa)',
     previousStatement: 'JSStmt',
@@ -1172,6 +1188,52 @@ export const gameKitBlocks = [
     colour: C,
     tooltip:
       'Pisou na célula → vai para o outro mapa. Lembre de posicionar o herói na montagem do mapa de destino.',
+  },
+  // ---- 🌍 Mundo aberto: tamanho do mapa + bordas ligadas (estilo Zelda) ----
+  {
+    type: 'sz_gk_rpg_map_size',
+    message0: 'Este mapa tem %1 × %2 células',
+    args0: [
+      { type: 'input_value', name: 'COLS', check: 'JSValue' },
+      { type: 'input_value', name: 'ROWS', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O tamanho do mapa (use dentro do "Quando chegar no mapa"). Com ele, a câmera trava nas bordas do mapa e as bordas viram o fim do mundo — a não ser que você LIGUE a borda a outro mapa.',
+  },
+  {
+    type: 'sz_gk_rpg_connect_edge',
+    message0: 'Ligar a borda %1 deste mapa ao mapa %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SIDE',
+        options: [
+          ['leste (direita)', 'leste'],
+          ['oeste (esquerda)', 'oeste'],
+          ['norte (cima)', 'norte'],
+          ['sul (baixo)', 'sul'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'MAP', text: 'praia', kind: 'map' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Atravessou essa borda → entra no outro mapa pelo lado oposto, na MESMA linha (estilo Zelda). Declare o "Este mapa tem" antes, e ligue a borda espelhada no outro mapa também.',
+  },
+  {
+    type: 'sz_gk_rpg_current_map',
+    message0: 'o nome do mapa de agora',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O nome do mapa em que o herói está. Bom para "se o mapa de agora = praia" e para mostrar no placar.',
   },
 
   // ---- ⚔️ Kit RPG: batalha por turnos ----
@@ -3986,6 +4048,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: [
       'sz_gk_camera_follow',
+      'sz_gk_camera_follow_map', // 🌍 mundo = tamanho do mapa de tiles
       'sz_gk_camera_stop',
       'sz_gk_camera_shake',
       'sz_gk_camera_x',
@@ -4264,6 +4327,10 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_rpg_on_map',
       'sz_gk_rpg_go_map',
       'sz_gk_rpg_create_door',
+      // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas (estilo Zelda)
+      'sz_gk_rpg_map_size',
+      'sz_gk_rpg_connect_edge',
+      'sz_gk_rpg_current_map',
       'sz_gk_rpg_move_grid',
       'sz_gk_rpg_block_cell',
       // Alimenta a GRADE do RPG (rpg.walls) — só o "Mover pela grade" lê isso,
@@ -4516,6 +4583,8 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_say: { TEXT: txtShadow('Olá, viajante!'), NAME: txtShadow('Ferreiro') },
   sz_gk_rpg_draw_inventory: { X: numShadow(20), Y: numShadow(20) },
   sz_gk_rpg_create_door: { CX: numShadow(5), CY: numShadow(5) },
+  // 🌍 Mundo aberto
+  sz_gk_rpg_map_size: { COLS: numShadow(30), ROWS: numShadow(20) },
   sz_gk_rpg_battle_stats: { HP: numShadow(30), STR: numShadow(7), DEF: numShadow(3) },
   sz_gk_rpg_battle_start: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(2) },
   sz_gk_rpg_set_special: { DMG: numShadow(14), COST: numShadow(4) },

@@ -1688,6 +1688,8 @@ function compileStatementCode(
       return `${pad}SZGameKit.playAnim(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
     case 'gk:cameraFollow':
       return `${pad}SZGameKit.cameraFollow(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
+    case 'gk:cameraFollowMap':
+      return `${pad}SZGameKit.cameraFollowMap(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.map)});`
     case 'gk:cameraStop':
       return `${pad}SZGameKit.cameraStop();`
     case 'gk:launchTowards':
@@ -1738,6 +1740,11 @@ function compileStatementCode(
     }
     case 'gk:rpgCreateDoor':
       return `${pad}SZGameKit.rpgCreateDoor(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.map)});`
+    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
+    case 'gk:rpgMapSize':
+      return `${pad}SZGameKit.rpgMapSize(${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))});`
+    case 'gk:rpgConnectEdge':
+      return `${pad}SZGameKit.rpgConnectEdge(${JSON.stringify(stmt.side)}, ${JSON.stringify(stmt.map)});`
     case 'gk:rpgBattleStats':
       return `${pad}SZGameKit.rpgBattleStats(${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))});`
     case 'gk:rpgBattleStart':
@@ -4752,6 +4759,9 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.w), names)
       collectExprIdentifiers(valueToExpr(stmt.h), names)
       return
+    case 'gk:cameraFollowMap':
+      names.add(stmt.charVar) // o mapa é STRING
+      return
     case 'gk:cameraStop':
       return
     case 'gk:launchTowards':
@@ -5303,6 +5313,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:rpgCreateDoor':
       collectExprIdentifiers(valueToExpr(stmt.cx), names)
       collectExprIdentifiers(valueToExpr(stmt.cy), names)
+      return
+    // 🌍 Mundo aberto (side/map são STRING; só os soquetes têm refs)
+    case 'gk:rpgMapSize':
+      collectExprIdentifiers(valueToExpr(stmt.cols), names)
+      collectExprIdentifiers(valueToExpr(stmt.rows), names)
+      return
+    case 'gk:rpgConnectEdge':
       return
     case 'gk:rpgBattleStats':
       collectExprIdentifiers(valueToExpr(stmt.hp), names)
@@ -6537,6 +6554,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:rpgLevel':
     case 'gk:rpgXp':
     case 'gk:tdCoins': // 🏰 R26: as moedas — sem refs
+    case 'gk:rpgCurrentMap': // 🌍 o nome do mapa — sem refs
       // mold/flag/item são STRING; os getters de estado não têm refs.
       return
     case 'gk:rpgCell':

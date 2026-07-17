@@ -7,6 +7,7 @@ import {
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
+  reinoAbertoExample,
   saltoNaFlorestaExample,
   vilaDoDragaoExample,
 } from './examples'
@@ -14,7 +15,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.24.1',
+  version: '0.25.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E cinco atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial) e 🚀 nave (a invasão que marcha, desce e acelera).',
   category: 'games',
@@ -260,6 +261,12 @@ desenhar o MUNDO; **Desenhar por cima (HUD)** desenha DEPOIS, preso na tela
 x/y da câmera** dizem que pedaço do mundo aparece. **Tremer a câmera** dá um
 abalo de impacto (explosão, o chefe pisando) — funciona com a câmera ligada ou
 desligada.
+
+**Fazer a câmera seguir … pelo mapa** é o atalho do MUNDO GIGANTE: o tamanho do
+mundo vem do próprio mapa de tiles (colunas × célula) — sem fazer conta. E o
+motor faz como os jogos profissionais: desenha SÓ o pedaço do mapa e os
+personagens que estão na janela da câmera (um mapa 512×512 custa o mesmo que uma
+telinha) — pode fazer o mundo do tamanho que quiser.
 
 ### ➡️ Tiro e giro (em 🎯 Comportamentos)
 
@@ -715,6 +722,24 @@ tiles) continuam valendo e se combinam com o kit.
   trocar de mapa limpa o anterior e monta o novo. **Ir para o mapa** troca na
   hora; **Criar a porta** troca ao pisar.
 
+### 🌍 Mundo aberto (em 🧙 mundo)
+
+O RPG de mundo aberto tem DOIS jeitos (e dá para misturar):
+
+1. **Um mapão com câmera** — carregue um mapa de tiles GRANDE e use **Fazer a
+   câmera seguir … pelo mapa** (em 🎥 Câmera): a tela vira uma janela andando
+   pelo mundo, e o motor só desenha o que aparece.
+2. **Mapas ligados pelas bordas (estilo Zelda)** — dentro de cada **Quando
+   chegar no mapa**: declare **Este mapa tem … × … células** e **Ligar a borda
+   … deste mapa ao mapa …**. Atravessou a borda → entra no vizinho pelo lado
+   oposto, na MESMA linha (e sai o aviso \`mapa:<nome>\`, como nas portas).
+   Ligue a borda ESPELHADA no outro mapa também (leste de um = oeste do outro).
+   Borda sem ligação = fim do mundo (o herói só vira). Com a câmera ligada, o
+   **Este mapa tem** também vira a trava dela — cada mapa pode ter um tamanho.
+
+**o nome do mapa de agora** completa: "se o mapa de agora = praia → tocar a
+música da praia" e o nome no HUD.
+
 ### ⚔️ Batalha por turnos (em ⚔️ batalha)
 
 - **Meus pontos de batalha** (vida/força/**defesa**, 1x no começo) e **Começar a
@@ -901,5 +926,6 @@ das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
     invasaoDosOvnisExample,
     dueloDosBonecosExample,
     defesaDoReinoExample,
+    reinoAbertoExample,
   ],
 }
