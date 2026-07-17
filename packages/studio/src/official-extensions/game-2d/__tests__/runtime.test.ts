@@ -1113,6 +1113,44 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(pares).toBe(1)
   })
 
+  it('overlapGroups: se o corpo REMOVE o tiro, ele não perfura os inimigos encostados (R1/A3)', () => {
+    const api = load()
+    const tiros = api.createGroup()
+    const inimigos = api.createGroup()
+    const tiro = api.spawn(tiros, { x: 10, y: 10, w: 8, h: 8, color: '#fff' })
+    // Dois inimigos EMPILHADOS no mesmo lugar, ambos sob o tiro.
+    api.spawn(inimigos, { x: 10, y: 10, w: 20, h: 20, color: '#f00' })
+    api.spawn(inimigos, { x: 10, y: 10, w: 20, h: 20, color: '#f00' })
+    let mortos = 0
+    api.overlapGroups(tiros, inimigos, (t, e) => {
+      api.removeFromGroup(tiros, t) // "remova o tiro"
+      api.removeFromGroup(inimigos, e) // "remova o inimigo"
+      mortos += 1
+    })
+    // O tiro sumiu no 1º acerto → só UM inimigo cai (antes derrubava os dois).
+    expect(mortos).toBe(1)
+    expect(api.countGroup(inimigos)).toBe(1)
+    expect(api.countGroup(tiros)).toBe(0)
+    expect(tiro).toBeTruthy()
+  })
+
+  it('overlapGroups: se o corpo NÃO remove o sprite, ele PERFURA de propósito (R1/A3)', () => {
+    const api = load()
+    const raio = api.createGroup()
+    const inimigos = api.createGroup()
+    api.spawn(raio, { x: 10, y: 10, w: 8, h: 8, color: '#fff' })
+    api.spawn(inimigos, { x: 10, y: 10, w: 20, h: 20, color: '#f00' })
+    api.spawn(inimigos, { x: 10, y: 10, w: 20, h: 20, color: '#f00' })
+    let acertos = 0
+    api.overlapGroups(raio, inimigos, (_r, e) => {
+      api.removeFromGroup(inimigos, e) // remove só o inimigo; o raio continua
+      acertos += 1
+    })
+    // O raio segue vivo → acerta os dois no mesmo quadro (perfura).
+    expect(acertos).toBe(2)
+    expect(api.countGroup(inimigos)).toBe(0)
+  })
+
   it('everyFrames dispara a cada N quadros (por chave)', () => {
     const api = load()
     const hits: number[] = []
