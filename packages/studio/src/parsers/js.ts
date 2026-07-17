@@ -6113,6 +6113,9 @@ const W3D_SEASONS = new Set(['primavera', 'verao', 'outono', 'inverno'])
 const W3D_CLOUD_AMOUNTS = new Set(['nenhuma', 'poucas', 'muitas'])
 const W3D_PUSH_THINGS = new Set(['tijolo', 'banco', 'cerca', 'lanterna', 'cone'])
 const W3D_FIREFLY_AMOUNTS = new Set(['pouca', 'media', 'muita'])
+const W3D_HATS = new Set(['nenhum', 'bone', 'palha', 'coroa', 'capacete'])
+const W3D_ACCESSORIES = new Set(['nenhum', 'jetpack', 'botas'])
+const W3D_EMOTES = new Set(['acenar', 'pular', 'girar', 'dancar'])
 const W3D_DAY_PHASES = new Set(['dia', 'noite'])
 const W3D_POS_AXES = new Set(['x', 'y', 'z'])
 
@@ -6140,6 +6143,11 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const axis = args[0].value as string
     if (W3D_POS_AXES.has(axis)) return { type: 'w3d:carPos', axis: axis as 'x' | 'y' | 'z' }
   }
+  if (method === 'personPos' && args[0]?.type === 'StringLiteral') {
+    const paxis = args[0].value as string
+    if (W3D_POS_AXES.has(paxis)) return { type: 'w3d:personPos', axis: paxis as 'x' | 'y' | 'z' }
+  }
+  if (method === 'isDriving' && args.length === 0) return { type: 'w3d:isDriving' }
   if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
     return { type: 'w3d:keyDown', key: args[0].value as string }
   }
@@ -6511,6 +6519,45 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       const amount = args[0].value as string
       return W3D_CLOUD_AMOUNTS.has(amount) ? { type: 'w3d:clouds', amount } : null
+    }
+    case 'person': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const hat = args[1].value as string
+      if (!W3D_HATS.has(hat)) return null
+      return { type: 'w3d:person', color: args[0].value as string, hat }
+    }
+    case 'personStats': {
+      const walk = toExpr(args[0], ctx)
+      const run = toExpr(args[1], ctx)
+      const jump = toExpr(args[2], ctx)
+      return isSimpleValue(walk) && isSimpleValue(run) && isSimpleValue(jump)
+        ? { type: 'w3d:personStats', walk, run, jump }
+        : null
+    }
+    case 'personPlace': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const deg = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(deg)
+        ? { type: 'w3d:personPlace', x, z, deg }
+        : null
+    }
+    case 'personAccessory': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const acc = args[0].value as string
+      return W3D_ACCESSORIES.has(acc) ? { type: 'w3d:personAccessory', acc } : null
+    }
+    case 'personEmote': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const emote = args[0].value as string
+      return W3D_EMOTES.has(emote) ? { type: 'w3d:personEmote', emote } : null
+    }
+    case 'onVehicle': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const when = args[0].value as string
+      if (when !== 'entrar' && when !== 'sair') return null
+      if (!isFn(args[1]) || (args[1].params ?? []).length > 0) return null
+      return { type: 'w3d:onVehicle', when, body: bodyOfFn(args[1], source, ctx) }
     }
     case 'waterfall': {
       const x = toExpr(args[0], ctx)
@@ -10533,6 +10580,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'w3d:worldSize':
     case 'w3d:carPos':
     case 'w3d:carSpeed':
+    case 'w3d:personPos':
+    case 'w3d:isDriving':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':

@@ -5856,6 +5856,35 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_w3d_tire_marks', { ON: stmt.on ? 'ligadas' : 'desligadas' }, {}, stmt.__id)
     case 'w3d:carPaint':
       return block('sz_w3d_car_paint', { PAINT: stmt.paint }, {}, stmt.__id)
+    case 'w3d:person':
+      return block('sz_w3d_person', { COLOR: stmt.color, HAT: stmt.hat }, {}, stmt.__id)
+    case 'w3d:personStats': {
+      const walk = exprToValueBlock(valueToExpr(stmt.walk))
+      const run = exprToValueBlock(valueToExpr(stmt.run))
+      const jump = exprToValueBlock(valueToExpr(stmt.jump))
+      return walk === null || run === null || jump === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_person_stats', {}, {}, stmt.__id, { WALK: walk, RUN: run, JUMP: jump })
+    }
+    case 'w3d:personPlace': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const deg = exprToValueBlock(valueToExpr(stmt.deg))
+      return x === null || z === null || deg === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_person_place', {}, {}, stmt.__id, { X: x, Z: z, DEG: deg })
+    }
+    case 'w3d:personAccessory':
+      return block('sz_w3d_person_accessory', { ACC: stmt.acc }, {}, stmt.__id)
+    case 'w3d:personEmote':
+      return block('sz_w3d_person_emote', { EMOTE: stmt.emote }, {}, stmt.__id)
+    case 'w3d:onVehicle':
+      return block(
+        'sz_w3d_on_vehicle',
+        { WHEN: stmt.when },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'w3d:waterfall': {
       const x = exprToValueBlock(valueToExpr(stmt.x))
       const z = exprToValueBlock(valueToExpr(stmt.z))
@@ -6836,6 +6865,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_w3d_car_pos', { AXIS: expr.axis })
     case 'w3d:carSpeed':
       return block('sz_w3d_car_speed', {})
+    case 'w3d:personPos':
+      return block('sz_w3d_person_pos', { AXIS: expr.axis })
+    case 'w3d:isDriving':
+      return block('sz_w3d_is_driving', {})
     case 'w3d:keyDown':
       return block('sz_w3d_key_down', { KEY: expr.key })
     case 'w3d:keyPressed':

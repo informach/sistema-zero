@@ -226,6 +226,16 @@ export const world3DRuntime = `import * as THREE from 'three';
   var CAMP_MAX = 6;
   var _campRespawn = null;      // última fogueira TOCADA — vence o lastSafe no resgate
   var waterFoamTex = null;      // altura do chão p/ a ESPUMA da costa (64×64)
+  // ---- R15 "personagem a pé": rig procedural, entrar/sair do veículo ----
+  var personCfg = null;         // { color, hat, walk, run, jump, acc }
+  var personState = null;       // { x, y, z, yaw, vy, airborne, vis (vel p/ anim), phase }
+  var personGroup = null;       // raiz do rig
+  var personParts = null;       // { legL, legR, armL, armR, body, head }
+  var driving = true;           // com carro e SEM pessoa: sempre true; com pessoa: nasce a pé
+  var vehicleHooks = { entrar: [], sair: [] };
+  var _enterInteract = null;    // interagível "E: entrar" (segue o carro)
+  var personEmote = null;       // { kind, t }
+  var _jetPuffCd = 0;
   var _dummy = null;            // Object3D p/ compor matrizes de instância
   var _mat4 = null;
   var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
@@ -2882,6 +2892,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       buildTerrain();
       if (waterCfg) buildWater();
       if (carCfg) buildCar();
+      if (personCfg) buildPerson();
       buildNature();
       buildDecor();
       buildRace();
@@ -3054,8 +3065,17 @@ export const world3DRuntime = `import * as THREE from 'three';
   }
 
   function playerXZ() {
+    if (personCfg && !driving && personState) {
+      return { x: personState.x, y: personState.y, z: personState.z };
+    }
     if (carState) return { x: carState.x, y: carState.y, z: carState.z };
     return { x: 0, y: heightAt(0, 0), z: 0 };
+  }
+
+  /** O "jogador ativo" que a câmera segue: a pé OU o carrinho (R15). */
+  function focusState() {
+    if (personCfg && !driving && personState) return personState;
+    return carState;
   }
 
   function confettiBurst() {
@@ -3407,6 +3427,240 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (stormT <= 0) {
       stormT = 4 + Math.random() * 5;
       strikeBolt();
+    }
+  }
+
+  // ---- R15: personagem a pé (rig procedural + entrar/sair do veículo) ----
+
+  var HAT_COLORS = { bone: '#ef4444', palha: '#eab308', coroa: '#facc15', capacete: '#3b82f6' };
+
+  function buildPerson() {
+    if (!scene || !personCfg) return;
+    disposePerson();
+    var cor = text(personCfg.color, '#3b82f6');
+    personGroup = new THREE.Group();
+    personParts = {};
+    var pele = toonMaterial({ color: '#f5c99b' });
+    var roupa = toonMaterial({ color: cor });
+    var calca = toonMaterial({ color: '#1f2937' });
+    var body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.55, 0.3), roupa);
+    body.position.y = 0.95;
+    body.castShadow = true;
+    personGroup.add(body);
+    personParts.body = body;
+    var head = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.34, 0.32), pele);
+    head.position.y = 1.42;
+    head.castShadow = true;
+    personGroup.add(head);
+    personParts.head = head;
+    var hat = text(personCfg.hat, 'nenhum');
+    if (hat !== 'nenhum' && HAT_COLORS[hat]) {
+      var hm = toonMaterial({ color: HAT_COLORS[hat] });
+      var hatMesh = hat === 'palha'
+        ? new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.06, 10), hm)
+        : hat === 'coroa'
+          ? new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.14, 8), hm)
+          : new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.14, 0.36), hm);
+      hatMesh.position.y = 1.64;
+      personGroup.add(hatMesh);
+    }
+    var mk = function (w, h, x, y, mat) {
+      var pivot = new THREE.Group();
+      pivot.position.set(x, y, 0);
+      var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), mat);
+      m.position.y = -h / 2;
+      m.castShadow = true;
+      pivot.add(m);
+      personGroup.add(pivot);
+      return pivot;
+    };
+    personParts.armL = mk(0.14, 0.5, -0.34, 1.18, roupa);
+    personParts.armR = mk(0.14, 0.5, 0.34, 1.18, roupa);
+    personParts.legL = mk(0.16, 0.62, -0.14, 0.66, calca);
+    personParts.legR = mk(0.16, 0.62, 0.14, 0.66, calca);
+    if (text(personCfg.acc, 'nenhum') === 'jetpack') {
+      var jp = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.44, 0.16), toonMaterial({ color: '#64748b' }));
+      jp.position.set(0, 1.0, -0.24);
+      personGroup.add(jp);
+    }
+    if (!personState) {
+      var sx = carState ? carState.x + 3 : 2;
+      var sz2 = carState ? carState.z : 2;
+      personState = { x: sx, y: heightAt(sx, sz2), z: sz2, yaw: 0, vy: 0, airborne: false, vis: 0, phase: 0, speed: 0 };
+    }
+    personGroup.position.set(personState.x, personState.y, personState.z);
+    personGroup.visible = !driving;
+    scene.add(personGroup);
+  }
+
+  function disposePerson() {
+    if (!personGroup) return;
+    try {
+      scene.remove(personGroup);
+      personGroup.traverse(function (o) {
+        if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
+      });
+    } catch (e) {}
+    personGroup = null;
+    personParts = null;
+  }
+
+  function fireVehicleHooks(kind) {
+    var hooks = vehicleHooks[kind] || [];
+    for (var i = 0; i < hooks.length; i++) {
+      try { hooks[i](); } catch (e) {
+        warnOnce('hook-veh-' + kind + '-' + i, 'erro no "Quando ' + kind + ' do veículo": ' + e);
+      }
+    }
+  }
+
+  function enterVehicle() {
+    if (!personCfg || driving || !carState) return;
+    driving = true;
+    if (personGroup) personGroup.visible = false;
+    camSnap = true;
+    fireVehicleHooks('entrar');
+  }
+
+  function exitVehicle() {
+    if (!personCfg || !driving || !carState) return;
+    driving = false;
+    if (!personState) {
+      personState = { x: 0, y: 0, z: 0, yaw: 0, vy: 0, airborne: false, vis: 0, phase: 0, speed: 0 };
+    }
+    personState.x = carState.x + Math.cos(carState.yaw) * 2.4;
+    personState.z = carState.z - Math.sin(carState.yaw) * 2.4;
+    personState.y = heightAt(personState.x, personState.z);
+    personState.yaw = carState.yaw;
+    personState.vy = 0;
+    personState.airborne = false;
+    if (personGroup) {
+      personGroup.visible = true;
+      personGroup.position.set(personState.x, personState.y, personState.z);
+    }
+    camSnap = true;
+    fireVehicleHooks('sair');
+  }
+
+  function stepPerson(dt) {
+    if (!personCfg || !personState) return;
+    var s = personState;
+    // Interagível "entrar no carrinho" segue o carro (prio alta perto dele).
+    if (carState) {
+      if (!_enterInteract) {
+        _enterInteract = { x: 0, z: 0, r: 3, label: 'E: entrar', prio: 2, fire: enterVehicle };
+        extraInteract.push(_enterInteract);
+      }
+      _enterInteract.x = carState.x;
+      _enterInteract.z = carState.z;
+      _enterInteract.r = driving ? 0 : 3; // dirigindo, o "entrar" some
+      _enterInteract.promptY = carState.y + 2.6;
+    }
+    if (driving) {
+      // Dentro do carro: E desce (sem brigar com pontos — só quando nada mais pegou).
+      if (isJust('e') && carState) {
+        var near = false;
+        for (var i = 0; i < points.length; i++) {
+          var dx0 = carState.x - points[i].x;
+          var dz0 = carState.z - points[i].z;
+          if (dx0 * dx0 + dz0 * dz0 < points[i].r * points[i].r) { near = true; break; }
+        }
+        if (!near) exitVehicle();
+      }
+      return;
+    }
+    // ---- A pé ----
+    var walk = num(personCfg.walk, 4);
+    var run = num(personCfg.run, 8);
+    var jumpF = num(personCfg.jump, 7);
+    var acc = text(personCfg.acc, 'nenhum');
+    if (acc === 'botas') run *= 1.8;
+    var fwd = ((isDown('w') || isDown('arrowup')) ? 1 : 0) - ((isDown('s') || isDown('arrowdown')) ? 1 : 0);
+    var turn = ((isDown('a') || isDown('arrowleft')) ? 1 : 0) - ((isDown('d') || isDown('arrowright')) ? 1 : 0);
+    var running = isDown('shift') || isDown('shiftleft') || isDown('shiftright');
+    var spd = fwd * (running ? run : walk);
+    s.yaw += turn * 2.6 * dt;
+    s.x += Math.sin(s.yaw) * spd * dt;
+    s.z += Math.cos(s.yaw) * spd * dt;
+    s.speed = spd;
+    // Colisão com a natureza sólida (círculo menor que o do carro).
+    var near2 = collidersNear(s.x, s.z, 2.5);
+    for (var ci = 0; ci < near2.length; ci++) {
+      var col = near2[ci];
+      var ddx = s.x - col.x;
+      var ddz = s.z - col.z;
+      var rr = col.r + 0.45;
+      var d2c = ddx * ddx + ddz * ddz;
+      if (d2c >= rr * rr) continue;
+      var dc = Math.sqrt(d2c) || 0.001;
+      s.x += (ddx / dc) * (rr - dc);
+      s.z += (ddz / dc) * (rr - dc);
+    }
+    var lim = config.world / 2 - 1.5;
+    s.x = clamp(s.x, -lim, lim);
+    s.z = clamp(s.z, -lim, lim);
+    // Chão/pulo/jetpack.
+    var gy = heightAt(s.x, s.z);
+    if (s.airborne) {
+      if (acc === 'jetpack' && isDown(' ')) {
+        s.vy = Math.min(7, s.vy + 26 * dt);
+        _jetPuffCd -= dt;
+        if (_jetPuffCd <= 0 && partyState) {
+          _jetPuffCd = 0.05;
+          spawnParty(s.x, s.y + 0.4, s.z, (Math.random() - 0.5) * 1.5, -2.5, (Math.random() - 0.5) * 1.5, 0.5, 2, 0, '#fde68a');
+        }
+      }
+      s.vy -= GRAV * dt;
+      s.y += s.vy * dt;
+      if (s.y <= gy) {
+        s.y = gy;
+        s.vy = 0;
+        s.airborne = false;
+      }
+    } else {
+      s.y = gy;
+      if (isJust(' ')) {
+        s.vy = jumpF;
+        s.airborne = true;
+        if (acc === 'jetpack') ensureParty();
+      }
+    }
+    // Água: a pé afundar dá o mesmo resgate do carrinho.
+    if (waterCfg && waterCfg.y - s.y > 1.1) {
+      var back = _campRespawn || lastSafe;
+      s.x = back.x + 1.5;
+      s.z = back.z + 1.5;
+      s.y = heightAt(s.x, s.z);
+      s.vy = 0;
+      camSnap = true;
+    }
+    // ---- Anim procedural ----
+    s.vis += (Math.abs(spd) - s.vis) * Math.min(1, 8 * dt);
+    s.phase += (2.2 + s.vis * 1.4) * dt * (s.vis > 0.15 ? 1 : 0);
+    var swing = Math.sin(s.phase * 4) * Math.min(0.7, s.vis * 0.16);
+    var emoteArmL = 0;
+    var emoteSpin = 0;
+    if (personEmote) {
+      personEmote.t -= dt;
+      if (personEmote.kind === 'acenar') emoteArmL = 2.4 + Math.sin(playTime * 10) * 0.4;
+      else if (personEmote.kind === 'girar') emoteSpin = 10 * dt;
+      else if (personEmote.kind === 'dancar') {
+        emoteArmL = 1.2 + Math.sin(playTime * 8) * 1.0;
+        emoteSpin = Math.sin(playTime * 6) * 4 * dt;
+      }
+      if (personEmote.t <= 0) personEmote = null;
+    }
+    s.yaw += emoteSpin;
+    if (personGroup && personParts) {
+      personGroup.position.set(s.x, s.y, s.z);
+      personGroup.rotation.y = s.yaw;
+      personParts.legL.rotation.x = swing;
+      personParts.legR.rotation.x = -swing;
+      personParts.armL.rotation.x = emoteArmL ? -emoteArmL : -swing * 0.8;
+      personParts.armR.rotation.x = swing * 0.8;
+      var bob = Math.abs(Math.sin(s.phase * 4)) * Math.min(0.06, s.vis * 0.02);
+      personParts.body.position.y = 0.95 + bob;
+      personParts.head.position.y = 1.42 + bob;
     }
   }
 
@@ -4016,6 +4270,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       carBody.scale.y = 1 + clamp(hornSquash, -0.35, 0.2) * 0.4;
     }
     if (!hornCfg || !carState) return;
+    if (personCfg && !driving) return; // buzina só DENTRO do carrinho
     var held = isDown('h');
     if (held && !hornOsc1 && !_hornHeld) startHorn();
     if (!held && hornOsc1) stopHorn();
@@ -4358,12 +4613,18 @@ export const world3DRuntime = `import * as THREE from 'three';
 
     var accelIn = ((isDown('w') || isDown('arrowup')) ? 1 : 0) - ((isDown('s') || isDown('arrowdown')) ? 1 : 0);
     var steerIn = ((isDown('a') || isDown('arrowleft')) ? 1 : 0) - ((isDown('d') || isDown('arrowright')) ? 1 : 0);
+    // A pé (R15): o carrinho fica ESTACIONADO — o teclado é do personagem.
+    var walking = personCfg && !driving;
+    if (walking) {
+      accelIn = 0;
+      steerIn = 0;
+    }
     // Guardados p/ os extras (luzes de freio/piscas, marcas de pneu).
     s.accelIn = accelIn;
     s.steerIn = steerIn;
 
     // Turbo (Shift): mais aceleração e um teto de velocidade maior enquanto segura.
-    boostActive = boostCfg != null && (isDown('shift') || isDown('shiftleft') || isDown('shiftright'));
+    boostActive = boostCfg != null && !walking && (isDown('shift') || isDown('shiftleft') || isDown('shiftright'));
     var boostMul = boostActive ? 1 + num(boostCfg.force, 1) : 1;
 
     // Aceleração/freio + arrasto natural. Na neve tudo responde mais devagar.
@@ -4437,7 +4698,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       } else {
         s.y = gy;
       }
-      if (isJust(' ')) {
+      if (isJust(' ') && !walking) {
         s.vy = jump;
         s.airborne = true;
       }
@@ -4526,8 +4787,10 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   function updateCamera(dt) {
     if (!camera) return;
-    if (carState && camMode !== 'cinema-sem-carro') {
-      var s = carState;
+    var fs = focusState();
+    if (fs && camMode !== 'cinema-sem-carro') {
+      var s = fs;
+      var walking = personCfg && !driving;
       var bx, by, bz;
       if (camMode === 'topo') {
         // De cima: acompanha o carro olhando para baixo (um pouco atrás).
@@ -4542,9 +4805,10 @@ export const world3DRuntime = `import * as THREE from 'three';
         bz = s.z + Math.sin(_autoAngle) * cr;
         by = s.y + 5;
       } else {
-        // Seguir (padrão): atrás do carro, com zoom por velocidade.
-        var dist = 7.5 + Math.abs(s.speed) * 0.12;
-        var h = 3.1 + Math.abs(s.speed) * 0.03;
+        // Seguir (padrão): atrás do jogador, com zoom por velocidade. A pé a
+        // câmera chega mais perto e mais baixa (escala humana).
+        var dist = (walking ? 5 : 7.5) + Math.abs(s.speed) * 0.12;
+        var h = (walking ? 2.3 : 3.1) + Math.abs(s.speed) * 0.03;
         bx = s.x - Math.sin(s.yaw) * dist;
         bz = s.z - Math.cos(s.yaw) * dist;
         by = s.y + h;
@@ -4633,6 +4897,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
 
     stepCar(dt);
+    stepPerson(dt);
     stepCarExtras(dt);
     stepDayNight(dt);
     stepWeather(dt);
@@ -4662,8 +4927,9 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (grassMat) {
       grassMat.uniforms.uTime.value = playTime;
       grassMat.uniforms.uWind.value = wind;
-      var gcx = carState ? carState.x : (camera ? camera.position.x : 0);
-      var gcz = carState ? carState.z : (camera ? camera.position.z : 0);
+      var gp = focusState();
+      var gcx = gp ? gp.x : (camera ? camera.position.x : 0);
+      var gcz = gp ? gp.z : (camera ? camera.position.z : 0);
       grassMat.uniforms.uCenter.value.set(gcx, gcz);
       // Tinta noturna: o gramado escurece/azula junto das estrelas (a grama é
       // ShaderMaterial cru — o sol não a alcança; este uniform é o "sol" dela).
@@ -4819,6 +5085,11 @@ export const world3DRuntime = `import * as THREE from 'three';
     _campRespawn = null;
     if (waterFoamTex) { try { waterFoamTex.dispose(); } catch (e) {} }
     waterFoamTex = null;
+    personGroup = null;
+    personParts = null;
+    personState = null;
+    _enterInteract = null;
+    personEmote = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -5108,6 +5379,98 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       seasonName = n2;
       if (worldReady) applySeason();
+    }),
+    // 🧍 R15 personagem a pé
+    person: guard('person', function (color, hat) {
+      var h2 = text(hat, 'nenhum');
+      if (h2 !== 'nenhum' && !HAT_COLORS[h2]) {
+        warn('não conheço o chapéu "' + h2 + '" — tem: nenhum, bone, palha, coroa, capacete');
+        h2 = 'nenhum';
+      }
+      personCfg = personCfg || {};
+      personCfg.color = text(color, '#3b82f6');
+      personCfg.hat = h2;
+      if (personCfg.walk == null) personCfg.walk = 4;
+      if (personCfg.run == null) personCfg.run = 8;
+      if (personCfg.jump == null) personCfg.jump = 7;
+      if (personCfg.acc == null) personCfg.acc = 'nenhum';
+      driving = false; // com personagem, o passeio COMEÇA a pé
+      if (worldReady) buildPerson();
+    }),
+    personStats: guard('personStats', function (walk, run, jump) {
+      if (!personCfg) {
+        warn('ajuste DEPOIS de "Criar o personagem a pé"');
+        return;
+      }
+      personCfg.walk = clamp(num(walk, 4), 1, 20);
+      personCfg.run = clamp(num(run, 8), 1, 40);
+      personCfg.jump = clamp(num(jump, 7), 0, 20);
+    }),
+    personPlace: guard('personPlace', function (x, z, deg) {
+      if (!personCfg) {
+        warn('leve o personagem DEPOIS de "Criar o personagem a pé"');
+        return;
+      }
+      if (!personState) {
+        personState = { x: 0, y: 0, z: 0, yaw: 0, vy: 0, airborne: false, vis: 0, phase: 0, speed: 0 };
+      }
+      personState.x = num(x, 0);
+      personState.z = num(z, 0);
+      personState.y = heightAt(personState.x, personState.z);
+      personState.yaw = (num(deg, 0) * Math.PI) / 180;
+      personState.vy = 0;
+      personState.airborne = false;
+      camSnap = true;
+      if (personGroup) personGroup.position.set(personState.x, personState.y, personState.z);
+    }),
+    personAccessory: guard('personAccessory', function (acc) {
+      var a3 = text(acc, 'nenhum');
+      if (a3 !== 'nenhum' && a3 !== 'jetpack' && a3 !== 'botas') {
+        warn('não conheço o acessório "' + a3 + '" — tem: nenhum, jetpack, botas');
+        return;
+      }
+      if (!personCfg) {
+        warn('dê o acessório DEPOIS de "Criar o personagem a pé"');
+        return;
+      }
+      personCfg.acc = a3;
+      if (worldReady && personGroup) buildPerson();
+    }),
+    personEmote: guard('personEmote', function (kind) {
+      var k3 = text(kind, 'acenar');
+      if (k3 === 'pular') {
+        if (personState && !personState.airborne && !driving) {
+          personState.vy = num(personCfg && personCfg.jump, 7);
+          personState.airborne = true;
+        }
+        return;
+      }
+      if (k3 !== 'acenar' && k3 !== 'girar' && k3 !== 'dancar') {
+        warn('não conheço "' + k3 + '" — tem: acenar, pular, girar, dancar');
+        return;
+      }
+      personEmote = { kind: k3, t: k3 === 'dancar' ? 2 : 1.2 };
+    }),
+    onVehicle: guard('onVehicle', function (when, fn) {
+      var w3 = text(when, 'entrar');
+      if (w3 !== 'entrar' && w3 !== 'sair') {
+        warn('"Quando … do veículo" só conhece entrar e sair');
+        return;
+      }
+      if (typeof fn !== 'function') {
+        warn('"Quando ' + w3 + ' do veículo" precisa de blocos de fazer dentro');
+        return;
+      }
+      vehicleHooks[w3].push(fn);
+    }),
+    personPos: guard('personPos', function (axis) {
+      var src = personCfg && !driving && personState ? personState : carState;
+      if (!src) return 0;
+      var a4 = text(axis, 'x');
+      return a4 === 'y' ? src.y : a4 === 'z' ? src.z : src.x;
+    }),
+    isDriving: guard('isDriving', function () {
+      return !!(carState && driving);
     }),
     // 🌿 R14 natureza acesa
     waterfall: guard('waterfall', function (x, z, h, deg) {

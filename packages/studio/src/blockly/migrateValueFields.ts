@@ -449,6 +449,8 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_w3d_letters: { X: 'number', Z: 'number', S: 'number' },
   sz_w3d_explosive: { X: 'number', Z: 'number' },
   sz_w3d_waterfall: { X: 'number', Z: 'number', H: 'number', DEG: 'number' },
+  sz_w3d_person_stats: { WALK: 'number', RUN: 'number', JUMP: 'number' },
+  sz_w3d_person_place: { X: 'number', Z: 'number', DEG: 'number' },
   sz_w3d_lamp: { X: 'number', Z: 'number' },
   sz_w3d_campfire: { X: 'number', Z: 'number' },
   sz_w3d_scatter_model: { N: 'number', S: 'number' },

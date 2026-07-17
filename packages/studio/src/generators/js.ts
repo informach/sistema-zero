@@ -114,6 +114,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'w3d:onCrash':
     case 'w3d:onHorn':
     case 'w3d:onExplosion':
+    case 'w3d:onVehicle':
     case 'w3d:onDayNight':
     case 'w3d:onPoint':
     case 'w3d:onZone':
@@ -2657,6 +2658,25 @@ ${pad}});`
       return `${pad}SZWorld3D.tireMarks(${JSON.stringify(stmt.on ? 'ligadas' : 'desligadas')});`
     case 'w3d:carPaint':
       return `${pad}SZWorld3D.carPaint(${JSON.stringify(stmt.paint)});`
+    case 'w3d:person':
+      return `${pad}SZWorld3D.person(${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.hat)});`
+    case 'w3d:personStats':
+      return `${pad}SZWorld3D.personStats(${compileExpr(valueToExpr(stmt.walk), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.run), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
+    case 'w3d:personPlace':
+      return `${pad}SZWorld3D.personPlace(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
+    case 'w3d:personAccessory':
+      return `${pad}SZWorld3D.personAccessory(${JSON.stringify(stmt.acc)});`
+    case 'w3d:personEmote':
+      return `${pad}SZWorld3D.personEmote(${JSON.stringify(stmt.emote)});`
+    case 'w3d:onVehicle': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onVehicle(${JSON.stringify(stmt.when)}, function () {\n${body}\n${pad}});`
+    }
     case 'w3d:waterfall':
       return `${pad}SZWorld3D.waterfall(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
     case 'w3d:lamp':
@@ -5814,6 +5834,22 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.z), names)
       return
     case 'w3d:fireflies':
+    case 'w3d:person':
+    case 'w3d:personAccessory':
+    case 'w3d:personEmote':
+      return
+    case 'w3d:personStats':
+      collectExprIdentifiers(valueToExpr(stmt.walk), names)
+      collectExprIdentifiers(valueToExpr(stmt.run), names)
+      collectExprIdentifiers(valueToExpr(stmt.jump), names)
+      return
+    case 'w3d:personPlace':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:onVehicle':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'w3d:pushScatter':
       collectExprIdentifiers(valueToExpr(stmt.n), names)
@@ -6343,6 +6379,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:worldSize':
     case 'w3d:carPos':
     case 'w3d:carSpeed':
+    case 'w3d:personPos':
+    case 'w3d:isDriving':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':

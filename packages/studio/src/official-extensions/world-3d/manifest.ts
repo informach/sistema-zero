@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '1.4.0',
+  version: '1.5.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -130,6 +130,24 @@ O que o motor já faz por você:
   num FOGUETE. Conta pra ninguém. 🚀
 - **onde o carrinho está (eixo …)** — a posição, um eixo por vez (y = altura).
 - **a velocidade do carrinho** — em m/s, sempre positiva. Ótima para HUD.
+
+### 🧍 Personagem
+
+- **Criar o personagem a pé: roupa …, chapéu …** — explore o mundo A PÉ,
+  como nos mundos de ilha profissionais: WASD anda, Shift corre, espaço
+  pula. O passeio COMEÇA a pé, do lado do carrinho; chegue perto dele e
+  aperte **E para entrar**; dirigindo, **E desce** (longe de pontos).
+- **Ajustar o personagem: andar …, correr …, pulo …** — as velocidades e o
+  pulo do seu jeito.
+- **Levar o personagem para x … z …** — teleporte a pé.
+- **Dar o acessório …** — 🎒 jetpack (segure espaço NO AR para voar!) ou
+  👟 botas de fogo (corrida quase o dobro) — como no Coastal World.
+- **O personagem faz acenar/pular/girar/dançar** — gracinhas para os seus
+  momentos: acene ao chegar, dance na vitória.
+- **Quando entrar/sair do veículo** — o gancho da troca: "Boa viagem!" ao
+  entrar, "Vamos explorar!" ao descer.
+- **onde o personagem está (eixo …)** — dirigindo, é a posição do carrinho
+  (o personagem está dentro!). **está dirigindo?** — verdadeiro no volante.
 
 ### 🌦️ Céu & clima
 

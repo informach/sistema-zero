@@ -560,6 +560,153 @@ export const world3DBlocks = [
       'Nuvens fofas lá no alto, derivando com o vento — deixam o céu com cara de mundo grande. "muitas" fica lindo no entardecer.',
   },
   {
+    // R15: personagem a pé — o jogador Coastal-style (anda, corre, pula,
+    // entra e sai do carrinho com E).
+    type: 'sz_w3d_person',
+    message0: 'Criar o personagem a pé 🧍: roupa %1, chapéu %2',
+    args0: [
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#3b82f6' },
+      {
+        type: 'field_dropdown',
+        name: 'HAT',
+        options: [
+          ['nenhum', 'nenhum'],
+          ['🧢 boné', 'bone'],
+          ['👒 chapéu de palha', 'palha'],
+          ['👑 coroa', 'coroa'],
+          ['⛑️ capacete', 'capacete'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um personagem para EXPLORAR A PÉ (como nos mundos de ilha profissionais): WASD anda, Shift corre, espaço pula. Perto do carrinho, aperte E para ENTRAR; dirigindo, E desce. O passeio começa a pé, do lado do carrinho.',
+  },
+  {
+    type: 'sz_w3d_person_stats',
+    message0: 'Ajustar o personagem: andar %1, correr %2, pulo %3',
+    args0: [
+      { type: 'input_value', name: 'WALK', check: 'JSValue' },
+      { type: 'input_value', name: 'RUN', check: 'JSValue' },
+      { type: 'input_value', name: 'JUMP', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Os números do seu personagem: velocidade andando e correndo (m/s) e a força do pulo. Use depois do "Criar o personagem".',
+  },
+  {
+    type: 'sz_w3d_person_place',
+    message0: 'Levar o personagem para x %1 z %2, virado para %3 graus',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'DEG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Teleporta o personagem (pousa no chão, parado). A câmera pula junto.',
+  },
+  {
+    type: 'sz_w3d_person_accessory',
+    message0: 'Dar o acessório %1 ao personagem',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'ACC',
+        options: [
+          ['nenhum', 'nenhum'],
+          ['🎒 jetpack', 'jetpack'],
+          ['👟 botas de fogo', 'botas'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Acessórios que mudam o JEITO de andar (como no Coastal World): jetpack = segure espaço NO AR para voar; botas de fogo = a corrida fica quase o dobro.',
+  },
+  {
+    type: 'sz_w3d_person_emote',
+    message0: 'O personagem faz %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'EMOTE',
+        options: [
+          ['👋 acenar', 'acenar'],
+          ['🦘 pular', 'pular'],
+          ['🌀 girar', 'girar'],
+          ['🕺 dançar', 'dancar'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Uma gracinha do personagem — acene ao chegar num ponto, dance na vitória.',
+  },
+  {
+    type: 'sz_w3d_on_vehicle',
+    message0: 'Quando %1 do veículo',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'WHEN',
+        options: [
+          ['entrar', 'entrar'],
+          ['sair', 'sair'],
+        ],
+      },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos quando o personagem ENTRA no carrinho (E perto dele) ou DESCE (E dirigindo). Ideia: mostrar "Boa viagem!" ao entrar.',
+  },
+  {
+    type: 'sz_w3d_person_pos',
+    message0: 'onde o personagem está (eixo %1 )',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'AXIS',
+        options: [
+          ['x', 'x'],
+          ['y', 'y'],
+          ['z', 'z'],
+        ],
+      },
+    ],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A posição do personagem, um eixo por vez (dirigindo, é a posição do carrinho — o personagem está dentro!).',
+  },
+  {
+    type: 'sz_w3d_is_driving',
+    message0: 'está dirigindo?',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro quando o personagem está DENTRO do carrinho. Use num "se" para regras diferentes a pé e sobre rodas.',
+  },
+  {
     // R14: natureza acesa.
     type: 'sz_w3d_waterfall',
     message0: 'Pôr uma cachoeira 🏞️ em x %1 z %2 (altura %3, virada %4 graus)',
@@ -1268,6 +1415,20 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    name: '🧍 Personagem',
+    colour: C,
+    types: [
+      'sz_w3d_person',
+      'sz_w3d_person_stats',
+      'sz_w3d_person_place',
+      'sz_w3d_person_accessory',
+      'sz_w3d_person_emote',
+      'sz_w3d_on_vehicle',
+      'sz_w3d_person_pos',
+      'sz_w3d_is_driving',
+    ],
+  },
+  {
     name: '🌿 Natureza',
     colour: C,
     types: [
@@ -1423,6 +1584,8 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_tornado: { SECS: numShadow(15) },
   sz_w3d_push_place: { X: numShadow(10), Z: numShadow(10) },
   sz_w3d_waterfall: { X: numShadow(40), Z: numShadow(-30), H: numShadow(8), DEG: numShadow(0) },
+  sz_w3d_person_stats: { WALK: numShadow(4), RUN: numShadow(8), JUMP: numShadow(7) },
+  sz_w3d_person_place: { X: numShadow(0), Z: numShadow(0), DEG: numShadow(0) },
   sz_w3d_lamp: { X: numShadow(6), Z: numShadow(6) },
   sz_w3d_campfire: { X: numShadow(0), Z: numShadow(8) },
   sz_w3d_push_scatter: { N: numShadow(12), X: numShadow(0), Z: numShadow(20), R: numShadow(10) },

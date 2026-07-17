@@ -559,6 +559,10 @@ export function compileExpr(
       return `SZWorld3D.carPos(${JSON.stringify(expr.axis)})`
     case 'w3d:carSpeed':
       return 'SZWorld3D.carSpeed()'
+    case 'w3d:personPos':
+      return `SZWorld3D.personPos(${JSON.stringify(expr.axis)})`
+    case 'w3d:isDriving':
+      return 'SZWorld3D.isDriving()'
     case 'w3d:keyDown':
       return `SZWorld3D.keyDown(${JSON.stringify(expr.key)})`
     case 'w3d:keyPressed':

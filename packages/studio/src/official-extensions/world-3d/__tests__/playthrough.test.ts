@@ -289,6 +289,65 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(hasFoam).toBe(1)
   })
 
+  it('R15: personagem ANDA a pé, entra no carrinho com E e desce com E (hooks disparam)', async () => {
+    let entrou = 0
+    let saiu = 0
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        person(c: string, h: string): void
+        onVehicle(w: string, fn: () => void): void
+        personPos(a: string): number
+        isDriving(): boolean
+        personPlace(x: number, z: number, d: number): void
+      }
+      w.person('#3b82f6', 'bone')
+      w.onVehicle('entrar', () => {
+        entrou++
+      })
+      w.onVehicle('sair', () => {
+        saiu++
+      })
+    })
+    const w2 = api as unknown as {
+      personPos(a: string): number
+      isDriving(): boolean
+      personPlace(x: number, z: number, d: number): void
+    }
+    // Começa A PÉ ao lado do carrinho.
+    expect(w2.isDriving()).toBe(false)
+    const x0 = w2.personPos('x')
+    const z0 = w2.personPos('z')
+    pressKey('w', 'KeyW')
+    step(45)
+    releaseKey('w', 'KeyW')
+    const andou = Math.abs(w2.personPos('x') - x0) + Math.abs(w2.personPos('z') - z0)
+    expect(andou).toBeGreaterThan(1)
+    // E o CARRINHO ficou parado enquanto isso (teclado é do personagem).
+    expect(api.carSpeed()).toBeLessThan(0.5)
+    // Volta pra perto do carrinho e ENTRA com E.
+    w2.personPlace(api.carPos('x') + 1.5, api.carPos('z'), 0)
+    step(2)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    expect(w2.isDriving()).toBe(true)
+    expect(entrou).toBe(1)
+    // Dirigindo de verdade: W agora move o CARRO.
+    const cz0 = api.carPos('z')
+    pressKey('w', 'KeyW')
+    step(45)
+    releaseKey('w', 'KeyW')
+    expect(Math.abs(api.carPos('z') - cz0)).toBeGreaterThan(1)
+    // E desce (longe de pontos).
+    step(2)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    expect(w2.isDriving()).toBe(false)
+    expect(saiu).toBe(1)
+  })
+
   it('playthrough do exemplo "Meu Mundo": roda, dirige e não quebra', async () => {
     const { api, step } = await loadExampleWorld(MEU_MUNDO_SOURCE)
     const z0 = api.carPos('z')

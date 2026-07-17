@@ -316,6 +316,8 @@ export type JSExpr =
   | (JSExprCommon & { type: 'w3d:groundHeight'; x: number | JSExpr; z: number | JSExpr })
   | (JSExprCommon & { type: 'w3d:carPos'; axis: 'x' | 'y' | 'z' })
   | (JSExprCommon & { type: 'w3d:carSpeed' })
+  | (JSExprCommon & { type: 'w3d:personPos'; axis: 'x' | 'y' | 'z' })
+  | (JSExprCommon & { type: 'w3d:isDriving' })
   | (JSExprCommon & { type: 'w3d:keyDown'; key: string })
   | (JSExprCommon & { type: 'w3d:keyPressed'; key: string })
   | (JSExprCommon & { type: 'w3d:timeOfDay' })
@@ -777,6 +779,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('w3d:carPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
     z.object({ type: z.literal('w3d:carSpeed'), ...idField }),
+    z.object({ type: z.literal('w3d:personPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
+    z.object({ type: z.literal('w3d:isDriving'), ...idField }),
     z.object({ type: z.literal('w3d:keyDown'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:keyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:timeOfDay'), ...idField }),
@@ -4011,6 +4015,23 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'w3d:lamp'; x: number | JSExpr; z: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:fireflies'; amount: string })
   | (JSStatementCommon & { type: 'w3d:campfire'; x: number | JSExpr; z: number | JSExpr })
+  // Mundo 3D R15 "personagem a pé": rig procedural + entrar/sair do veículo.
+  | (JSStatementCommon & { type: 'w3d:person'; color: string; hat: string })
+  | (JSStatementCommon & {
+      type: 'w3d:personStats'
+      walk: number | JSExpr
+      run: number | JSExpr
+      jump: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:personPlace'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:personAccessory'; acc: string })
+  | (JSStatementCommon & { type: 'w3d:personEmote'; emote: string })
+  | (JSStatementCommon & { type: 'w3d:onVehicle'; when: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
   | (JSStatementCommon & {
       type: 'w3d:cameraShake'
@@ -8089,6 +8110,29 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       z: z.union([z.number(), JSExprSchema]),
       ...idField,
     }),
+    z.object({ type: z.literal('w3d:person'), color: irText(), hat: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:personStats'),
+      walk: z.union([z.number(), JSExprSchema]),
+      run: z.union([z.number(), JSExprSchema]),
+      jump: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:personPlace'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      deg: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:personAccessory'), acc: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:personEmote'), emote: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:onVehicle'),
+      when: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:cameraShake'),
@@ -9124,6 +9168,12 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:lamp',
   'w3d:fireflies',
   'w3d:campfire',
+  'w3d:person',
+  'w3d:personStats',
+  'w3d:personPlace',
+  'w3d:personAccessory',
+  'w3d:personEmote',
+  'w3d:onVehicle',
   'w3d:effects',
   'w3d:dayNight',
   'w3d:setTime',

@@ -712,6 +712,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'w3d:carPos', axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z' }
     case 'sz_w3d_car_speed':
       return { type: 'w3d:carSpeed' }
+    case 'sz_w3d_person_pos':
+      return { type: 'w3d:personPos', axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z' }
+    case 'sz_w3d_is_driving':
+      return { type: 'w3d:isDriving' }
     case 'sz_w3d_key_down':
       return { type: 'w3d:keyDown', key: f(block, 'KEY') || 'e' }
     case 'sz_w3d_key_pressed':
@@ -9022,6 +9026,54 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return { kind: 'js', value: { type: 'w3d:carLights' } }
     case 'sz_w3d_tire_marks':
       return { kind: 'js', value: { type: 'w3d:tireMarks', on: f(block, 'ON') !== 'desligadas' } }
+    case 'sz_w3d_person':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:person',
+          color: f(block, 'COLOR') || '#3b82f6',
+          hat: f(block, 'HAT') || 'nenhum',
+        },
+      }
+    case 'sz_w3d_person_stats':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:personStats',
+          walk: exprInput(block, 'WALK', { type: 'num', value: 4 }),
+          run: exprInput(block, 'RUN', { type: 'num', value: 8 }),
+          jump: exprInput(block, 'JUMP', { type: 'num', value: 7 }),
+        },
+      }
+    case 'sz_w3d_person_place':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:personPlace',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_person_accessory':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:personAccessory', acc: f(block, 'ACC') || 'nenhum' },
+      }
+    case 'sz_w3d_person_emote':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:personEmote', emote: f(block, 'EMOTE') || 'acenar' },
+      }
+    case 'sz_w3d_on_vehicle':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onVehicle',
+          when: f(block, 'WHEN') || 'entrar',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
     case 'sz_w3d_waterfall':
       return {
         kind: 'js',

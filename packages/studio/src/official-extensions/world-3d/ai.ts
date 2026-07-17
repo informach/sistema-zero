@@ -64,6 +64,10 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.campfire(x, z)\` — fogueira crepitando que vira CHECKPOINT: afundou na água → volta na última fogueira tocada. A água tem espuma na costa automaticamente.
 - weather agora aceita também 'tempestade' (chuva pesada + raios + trovão atrasado; raio no carrinho = chacoalhão + câmera lenta).
 - \`SZWorld3D.carPos('x'|'y'|'z')\` → número. \`SZWorld3D.carSpeed()\` → m/s.
+- \`SZWorld3D.person(corHex, 'nenhum'|'bone'|'palha'|'coroa'|'capacete')\` — personagem A PÉ (WASD/Shift/espaço); o passeio começa a pé; E perto do carrinho ENTRA, E dirigindo DESCE.
+  \`SZWorld3D.personStats(andar, correr, pulo)\` · \`SZWorld3D.personPlace(x, z, graus)\` · \`SZWorld3D.personEmote('acenar'|'pular'|'girar'|'dancar')\`.
+- \`SZWorld3D.personAccessory('nenhum'|'jetpack'|'botas')\` — jetpack = segurar espaço no ar VOA; botas = corrida ×1,8 (Coastal-style).
+- \`SZWorld3D.onVehicle('entrar'|'sair', () => { … })\` — gancho da troca. \`SZWorld3D.personPos('x'|'y'|'z')\` → número (no carro = posição do carro). \`SZWorld3D.isDriving()\` → booleano.
 - \`SZWorld3D.scatter(n, especie)\` — espalha n cópias procedurais pelo mundo
   (pousadas no terreno, determinístico). especies: 'arvores' | 'pinheiros' |
   'pedras' | 'flores' | 'cogumelos' | 'cactos'. Árvores/pedras/cactos são
