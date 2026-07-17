@@ -9026,6 +9026,54 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return { kind: 'js', value: { type: 'w3d:carLights' } }
     case 'sz_w3d_tire_marks':
       return { kind: 'js', value: { type: 'w3d:tireMarks', on: f(block, 'ON') !== 'desligadas' } }
+    case 'sz_w3d_npc':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npc',
+          name: f(block, 'NAME') || 'amigo',
+          x: exprInput(block, 'X', { type: 'num', value: 8 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 8 }),
+          color: f(block, 'COLOR') || '#f97316',
+          hat: f(block, 'HAT') || 'nenhum',
+        },
+      }
+    case 'sz_w3d_npc_wander':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcWander',
+          name: f(block, 'NAME') || 'amigo',
+          r: exprInput(block, 'R', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_npc_talk':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcTalk',
+          name: f(block, 'NAME') || 'amigo',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_npc_say':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcSay',
+          name: f(block, 'NAME') || 'amigo',
+          text: f(block, 'TEXT') || '...',
+        },
+      }
+    case 'sz_w3d_npc_emote':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:npcEmote',
+          name: f(block, 'NAME') || 'amigo',
+          emote: f(block, 'EMOTE') || 'acenar',
+        },
+      }
     case 'sz_w3d_islands':
       return {
         kind: 'js',

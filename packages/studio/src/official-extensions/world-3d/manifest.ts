@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '1.6.0',
+  version: '1.7.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -161,6 +161,18 @@ O que o motor já faz por você:
   duas ilhas. Carrinho e personagem passam POR CIMA; o barco, POR BAIXO.
 - **Pôr um farol 🗼** — a torre listrada com a luz girando à noite. E as
   🌴 palmeiras entraram no "Espalhar" — a praia completa.
+
+### 🧑‍🤝‍🧑 Amigos
+
+- **Criar o amigo … em x z (roupa, chapéu)** — um AMIGO mora no seu mundo:
+  para e OLHA para você quando você chega perto. Até 8 amigos.
+- **Deixar o amigo … passear num raio de …** — ele caminha sozinho ao redor
+  de casa (anda, para, pensa, escolhe outro cantinho…).
+- **Quando conversar com o amigo … (aperte E)** — o gancho da conversa.
+  Ponha vários **O amigo fala** dentro: as falas entram numa FILA e cada E
+  mostra a próxima, letra por letra, com biplinhos de voz (cada letra tem o
+  seu som — o "idioma" dos jogos profissionais).
+- **O amigo faz acenar/pulinho/girar/dançar** — as gracinhas dele.
 
 ### 🌦️ Céu & clima
 

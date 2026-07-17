@@ -562,6 +562,98 @@ export const world3DBlocks = [
       'Nuvens fofas lá no alto, derivando com o vento — deixam o céu com cara de mundo grande. "muitas" fica lindo no entardecer.',
   },
   {
+    // R17: amigos (NPCs) — perambulam, conversam em FILA (E avança) com
+    // "fonemas" à la Animal Crossing, e fazem gracinhas.
+    type: 'sz_w3d_npc',
+    message0: 'Criar o amigo %1 em x %2 z %3 (roupa %4, chapéu %5)',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Lia' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#f97316' },
+      {
+        type: 'field_dropdown',
+        name: 'HAT',
+        options: [
+          ['nenhum', 'nenhum'],
+          ['🧢 boné', 'bone'],
+          ['👒 chapéu de palha', 'palha'],
+          ['👑 coroa', 'coroa'],
+          ['⛑️ capacete', 'capacete'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um AMIGO mora no seu mundo: fica no lugar (ou passeia, com o bloco de passear), olha para você quando chega perto e conversa apertando E. Até 8 amigos.',
+  },
+  {
+    type: 'sz_w3d_npc_wander',
+    message0: 'Deixar o amigo %1 passear num raio de %2',
+    args0: [
+      { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
+      { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O amigo caminha sozinho ao redor de casa (para, pensa, escolhe outro cantinho…). Ele PARA e olha para você quando você chega perto.',
+  },
+  {
+    type: 'sz_w3d_npc_talk',
+    message0: 'Quando conversar com o amigo %1 (aperte E)',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda os blocos quando você aperta E perto do amigo. Ponha vários "O amigo fala" dentro: as falas entram numa FILA e cada E mostra a próxima — uma conversa de verdade.',
+  },
+  {
+    type: 'sz_w3d_npc_say',
+    message0: 'O amigo %1 fala: %2',
+    args0: [
+      { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
+      { type: 'field_input', name: 'TEXT', text: 'Oi! Bem-vindo à ilha!' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma fala no balão do amigo, escrita letra por letra com biplinhos de voz (cada letra tem seu som — como nos jogos do Animal Crossing). Dentro do "Quando conversar", as falas fazem FILA.',
+  },
+  {
+    type: 'sz_w3d_npc_emote',
+    message0: 'O amigo %1 faz %2',
+    args0: [
+      { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
+      {
+        type: 'field_dropdown',
+        name: 'EMOTE',
+        options: [
+          ['👋 acenar', 'acenar'],
+          ['🦘 pulinho', 'pular'],
+          ['🌀 girar', 'girar'],
+          ['🕺 dançar', 'dancar'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Uma gracinha do amigo — acene de volta, comemorem juntos.',
+  },
+  {
     // R16: ilha & barco — o arquétipo "férias" (arquipélago, barco, ponte, farol).
     type: 'sz_w3d_islands',
     message0: 'Transformar o mundo em %1 ilhas 🏝️ num mar na altura %2',
@@ -1501,6 +1593,17 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: ['sz_w3d_islands', 'sz_w3d_boat', 'sz_w3d_bridge', 'sz_w3d_lighthouse'],
   },
   {
+    name: '🧑‍🤝‍🧑 Amigos',
+    colour: C,
+    types: [
+      'sz_w3d_npc',
+      'sz_w3d_npc_wander',
+      'sz_w3d_npc_talk',
+      'sz_w3d_npc_say',
+      'sz_w3d_npc_emote',
+    ],
+  },
+  {
     name: '🧍 Personagem',
     colour: C,
     types: [
@@ -1679,6 +1782,8 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_person_stats: { WALK: numShadow(4), RUN: numShadow(8), JUMP: numShadow(7) },
   sz_w3d_person_place: { X: numShadow(0), Z: numShadow(0), DEG: numShadow(0) },
   sz_w3d_islands: { N: numShadow(4), Y: numShadow(0) },
+  sz_w3d_npc: { X: numShadow(8), Z: numShadow(8) },
+  sz_w3d_npc_wander: { R: numShadow(10) },
   sz_w3d_bridge: {
     X1: numShadow(0),
     Z1: numShadow(20),

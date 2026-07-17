@@ -6529,6 +6529,49 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const amount = args[0].value as string
       return W3D_CLOUD_AMOUNTS.has(amount) ? { type: 'w3d:clouds', amount } : null
     }
+    case 'npc': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      if (args[3]?.type !== 'StringLiteral' || args[4]?.type !== 'StringLiteral') return null
+      const hat = args[4].value as string
+      if (!W3D_HATS.has(hat)) return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z)
+        ? {
+            type: 'w3d:npc',
+            name: args[0].value as string,
+            x,
+            z,
+            color: args[3].value as string,
+            hat,
+          }
+        : null
+    }
+    case 'npcWander': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const r = toExpr(args[1], ctx)
+      return isSimpleValue(r) ? { type: 'w3d:npcWander', name: args[0].value as string, r } : null
+    }
+    case 'npcTalk': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      if (!isFn(args[1]) || (args[1].params ?? []).length > 0) return null
+      return {
+        type: 'w3d:npcTalk',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'npcSay': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'w3d:npcSay', name: args[0].value as string, text: args[1].value as string }
+    }
+    case 'npcEmote': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const emote = args[1].value as string
+      return W3D_EMOTES.has(emote)
+        ? { type: 'w3d:npcEmote', name: args[0].value as string, emote }
+        : null
+    }
     case 'islands': {
       const n = toExpr(args[0], ctx)
       const y = toExpr(args[1], ctx)

@@ -72,6 +72,8 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.boat(corHex)\` — barco dirigível: SÓ anda na água, encalha na praia; com personagem, E perto dele embarca; sem carro nem personagem, nasce pilotando.
 - \`SZWorld3D.bridge(x1, z1, x2, z2, largura)\` — ponte em arco: carro/personagem POR CIMA, barco POR BAIXO. \`SZWorld3D.lighthouse(x, z)\` — farol com luz girando à noite.
 - \`SZWorld3D.ambience('mar'|'passaros'|'grilos'|'desligado')\` — som de fundo sintetizado. scatter/placeThing agora aceitam 'palmeiras' 🌴.
+- \`SZWorld3D.npc('Nome', x, z, corHex, chapeu)\` — amigo que olha p/ você de perto (cap 8). \`SZWorld3D.npcWander('Nome', raio)\` — passeia ao redor de casa.
+- \`SZWorld3D.npcTalk('Nome', () => { … })\` — roda no E perto do amigo; dentro, \`SZWorld3D.npcSay('Nome', 'fala')\` ENFILEIRA falas (cada E mostra a próxima, typewriter + blip por letra à la Animal Crossing). \`SZWorld3D.npcEmote('Nome', 'acenar'|'pular'|'girar'|'dancar')\`.
 - \`SZWorld3D.scatter(n, especie)\` — espalha n cópias procedurais pelo mundo
   (pousadas no terreno, determinístico). especies: 'arvores' | 'pinheiros' |
   'pedras' | 'flores' | 'cogumelos' | 'cactos'. Árvores/pedras/cactos são

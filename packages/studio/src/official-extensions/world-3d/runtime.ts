@@ -248,6 +248,13 @@ export const world3DRuntime = `import * as THREE from 'three';
   var ambienceKind = 'desligado';
   var _ambNoise = null;         // loop de "mar" (buffer de ruído + lowpass)
   var _ambT = 0;                // relógio dos chirps/grilos
+  // ---- R17 "amigos": NPCs com perambulação + conversa com fonemas ----
+  var npcs = [];                // { name, group, parts, x, z, yaw, home, target, waitT, phase, vis, emote }
+  var NPC_MAX = 8;
+  var npcTalkHooks = Object.create(null);  // name -> [fn]
+  var npcSayQueues = Object.create(null);  // name -> [textos] (E avança)
+  var npcBubble = null;         // { el, name, text, shown, t } — balão typewriter único
+  var _npcBlipCd = 0;
   var _dummy = null;            // Object3D p/ compor matrizes de instância
   var _mat4 = null;
   var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
@@ -2674,6 +2681,15 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'campfire') addCampfire(r.x, r.z);
       else if (r.kind === 'bridge') buildBridge(r.x1, r.z1, r.x2, r.z2, r.w);
       else if (r.kind === 'lighthouse') buildLighthouse(r.x, r.z);
+      else if (r.kind === 'npc') addNpc(r.name, r.x, r.z, r.color, r.hat);
+    }
+    // 2ª passada: o "passear" precisa do amigo já criado (ordem livre dos blocos).
+    for (var j = 0; j < decorRecipes.length; j++) {
+      var r2 = decorRecipes[j];
+      if (r2.kind === 'npcWander') {
+        var npc2 = findNpc(r2.name);
+        if (npc2) npc2.home.r = clamp(num(r2.r, 10), 0, 60);
+      }
     }
   }
 
@@ -3496,6 +3512,188 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- R17: amigos (NPCs) — perambulação, conversa em fila, fonemas ----
+
+  function addNpc(name, x, z, color, hat) {
+    if (!scene) return;
+    if (npcs.length >= NPC_MAX) {
+      warnOnce('npc-max', 'muitos amigos (teto ' + NPC_MAX + ')');
+      return;
+    }
+    var nm = text(name, 'amigo');
+    var rig = makeRig(color, hat);
+    var npc = {
+      name: nm, group: rig.group, parts: rig.parts,
+      x: num(x, 0), z: num(z, 0), yaw: Math.random() * Math.PI * 2,
+      home: { x: num(x, 0), z: num(z, 0), r: 0 },
+      target: null, waitT: 1 + Math.random() * 2,
+      phase: 0, vis: 0, emote: null
+    };
+    rig.group.position.set(npc.x, heightAtDrive(npc.x, npc.z, null), npc.z);
+    scene.add(rig.group);
+    npcs.push(npc);
+    // Interagível "E: falar" (prio 1 — abaixo do entrar-no-veículo).
+    extraInteract.push({
+      x: npc.x, z: npc.z, r: 2.6, label: 'E: falar', prio: 1, npcName: nm,
+      fire: function () { npcInteract(nm); }
+    });
+  }
+
+  function findNpc(name) {
+    for (var i = 0; i < npcs.length; i++) if (npcs[i].name === name) return npcs[i];
+    return null;
+  }
+
+  function ensureNpcBubble() {
+    if (npcBubble || !frameEl) return;
+    var el = document.createElement('div');
+    el.setAttribute('style', 'position:absolute;max-width:280px;padding:8px 12px;border-radius:14px;background:#ffffff;color:#0f172a;font:700 14px system-ui,sans-serif;transform:translate(-50%,-100%);pointer-events:none;z-index:8;box-shadow:0 4px 14px rgba(0,0,0,.3);display:none;');
+    frameEl.appendChild(el);
+    npcBubble = { el: el, name: '', text: '', shown: 0, t: 0 };
+  }
+
+  function npcShowSay(name, textStr) {
+    ensureNpcBubble();
+    if (!npcBubble) return;
+    npcBubble.name = name;
+    npcBubble.text = String(textStr);
+    npcBubble.shown = 0;
+    npcBubble.t = 0;
+    npcBubble.el.style.display = 'block';
+    npcBubble.el.textContent = '';
+  }
+
+  /** E no amigo: avança a fila de falas; vazia → roda os ganchos (que enfileiram). */
+  function npcInteract(name) {
+    var q = npcSayQueues[name] || [];
+    if (q.length) {
+      npcShowSay(name, q.shift());
+      return;
+    }
+    if (npcBubble && npcBubble.name === name && npcBubble.el.style.display === 'block') {
+      // Fila acabou e o balão está aberto: E fecha.
+      npcBubble.el.style.display = 'none';
+      return;
+    }
+    var hooks = npcTalkHooks[name] || [];
+    for (var i = 0; i < hooks.length; i++) {
+      try { hooks[i](); } catch (e) {
+        warnOnce('hook-npc-' + name, 'erro no "Quando conversar com ' + name + '": ' + e);
+      }
+    }
+    // Se o gancho já ABRIU o balão (npcSay mostra a 1ª fala na hora), NÃO
+    // engolir a próxima da fila — senão a 2ª fala atropela a 1ª.
+    var q2 = npcSayQueues[name] || [];
+    if (q2.length && (!npcBubble || npcBubble.el.style.display !== 'block')) {
+      npcShowSay(name, q2.shift());
+    }
+  }
+
+  function stepNpcs(dt) {
+    if (!npcs.length) return;
+    var p = playerXZ();
+    for (var i = 0; i < npcs.length; i++) {
+      var n = npcs[i];
+      var talkingToMe = npcBubble && npcBubble.name === n.name && npcBubble.el && npcBubble.el.style.display === 'block';
+      var pdx = p.x - n.x;
+      var pdz = p.z - n.z;
+      var pd = Math.sqrt(pdx * pdx + pdz * pdz);
+      var spd = 0;
+      if (talkingToMe || pd < 2.2) {
+        // Perto do jogador: para e OLHA para ele (educação de NPC).
+        n.yaw = Math.atan2(pdx, pdz);
+      } else if (n.home.r > 0.5) {
+        if (!n.target) {
+          n.waitT -= dt;
+          if (n.waitT <= 0) {
+            var a = Math.random() * Math.PI * 2;
+            var r = Math.sqrt(Math.random()) * n.home.r;
+            n.target = { x: n.home.x + Math.cos(a) * r, z: n.home.z + Math.sin(a) * r };
+          }
+        } else {
+          var tdx = n.target.x - n.x;
+          var tdz = n.target.z - n.z;
+          var td = Math.sqrt(tdx * tdx + tdz * tdz);
+          if (td < 0.5) {
+            n.target = null;
+            n.waitT = 1 + Math.random() * 2.5;
+          } else {
+            n.yaw = Math.atan2(tdx, tdz);
+            spd = 1.2;
+            n.x += (tdx / td) * spd * dt;
+            n.z += (tdz / td) * spd * dt;
+          }
+        }
+      }
+      // Anim (mesma linguagem do personagem).
+      n.vis += (spd - n.vis) * Math.min(1, 8 * dt);
+      n.phase += (2.2 + n.vis * 1.4) * dt * (n.vis > 0.1 ? 1 : 0);
+      var swing = Math.sin(n.phase * 4) * Math.min(0.6, n.vis * 0.4);
+      var armL = -swing * 0.8;
+      var spin = 0;
+      var jumpY = 0;
+      if (n.emote) {
+        n.emote.t -= dt;
+        if (n.emote.kind === 'acenar') armL = -(2.4 + Math.sin(playTime * 10) * 0.4);
+        else if (n.emote.kind === 'girar') spin = 10 * dt;
+        else if (n.emote.kind === 'dancar') {
+          armL = -(1.2 + Math.sin(playTime * 8));
+          spin = Math.sin(playTime * 6) * 4 * dt;
+        } else if (n.emote.kind === 'pular') {
+          jumpY = Math.abs(Math.sin((1.2 - Math.max(0, n.emote.t)) * 6)) * 0.5;
+        }
+        if (n.emote.t <= 0) n.emote = null;
+      }
+      n.yaw += spin;
+      n.group.position.set(n.x, heightAtDrive(n.x, n.z, null) + jumpY, n.z);
+      n.group.rotation.y = n.yaw;
+      n.parts.legL.rotation.x = swing;
+      n.parts.legR.rotation.x = -swing;
+      n.parts.armL.rotation.x = armL;
+      n.parts.armR.rotation.x = swing * 0.8;
+    }
+    // Interagíveis dos NPCs acompanham (registrados com npcName).
+    for (var xi = 0; xi < extraInteract.length; xi++) {
+      var ex = extraInteract[xi];
+      if (!ex.npcName) continue;
+      var nn = findNpc(ex.npcName);
+      if (nn) {
+        ex.x = nn.x;
+        ex.z = nn.z;
+        ex.promptY = heightAtDrive(nn.x, nn.z, null) + 2.2;
+      }
+    }
+    // Balão: segue a cabeça do dono + typewriter com blip por letra (fonemas).
+    if (npcBubble && npcBubble.el.style.display === 'block') {
+      var owner = findNpc(npcBubble.name);
+      if (owner && camera && _proj && canvasEl) {
+        _proj.set(owner.x, heightAtDrive(owner.x, owner.z, null) + 2.1, owner.z);
+        _proj.project(camera);
+        if (_proj.z < 1) {
+          var rect = canvasEl.getBoundingClientRect();
+          npcBubble.el.style.left = (_proj.x * 0.5 + 0.5) * rect.width + 'px';
+          npcBubble.el.style.top = (-_proj.y * 0.5 + 0.5) * rect.height + 'px';
+        }
+      }
+      if (npcBubble.shown < npcBubble.text.length) {
+        npcBubble.t += dt;
+        _npcBlipCd -= dt;
+        var want = Math.min(npcBubble.text.length, Math.floor(npcBubble.t / 0.03));
+        if (want > npcBubble.shown) {
+          var ch = npcBubble.text.charAt(npcBubble.shown);
+          npcBubble.shown = want;
+          npcBubble.el.textContent = npcBubble.text.slice(0, npcBubble.shown);
+          // "Fonemas" à la Animal Crossing: um blip por letra (pitch pelo caractere).
+          if (_npcBlipCd <= 0 && ch !== ' ') {
+            _npcBlipCd = 0.055;
+            var code = ch.charCodeAt(0) || 97;
+            beep(380 + (code % 23) * 22, 0.045);
+          }
+        }
+      }
+    }
+  }
+
   // ---- R16: barco, ponte, farol, ambiente ----
 
   function buildBoat() {
@@ -3721,35 +3919,33 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   var HAT_COLORS = { bone: '#ef4444', palha: '#eab308', coroa: '#facc15', capacete: '#3b82f6' };
 
-  function buildPerson() {
-    if (!scene || !personCfg) return;
-    disposePerson();
-    var cor = text(personCfg.color, '#3b82f6');
-    personGroup = new THREE.Group();
-    personParts = {};
+  /** Rig humano procedural COMPARTILHADO (personagem E amigos): 4 pivôs + chapéu. */
+  function makeRig(color, hat) {
+    var group = new THREE.Group();
+    var parts = {};
     var pele = toonMaterial({ color: '#f5c99b' });
-    var roupa = toonMaterial({ color: cor });
+    var roupa = toonMaterial({ color: text(color, '#3b82f6') });
     var calca = toonMaterial({ color: '#1f2937' });
     var body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.55, 0.3), roupa);
     body.position.y = 0.95;
     body.castShadow = true;
-    personGroup.add(body);
-    personParts.body = body;
+    group.add(body);
+    parts.body = body;
     var head = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.34, 0.32), pele);
     head.position.y = 1.42;
     head.castShadow = true;
-    personGroup.add(head);
-    personParts.head = head;
-    var hat = text(personCfg.hat, 'nenhum');
-    if (hat !== 'nenhum' && HAT_COLORS[hat]) {
-      var hm = toonMaterial({ color: HAT_COLORS[hat] });
-      var hatMesh = hat === 'palha'
+    group.add(head);
+    parts.head = head;
+    var h2 = text(hat, 'nenhum');
+    if (h2 !== 'nenhum' && HAT_COLORS[h2]) {
+      var hm = toonMaterial({ color: HAT_COLORS[h2] });
+      var hatMesh = h2 === 'palha'
         ? new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.06, 10), hm)
-        : hat === 'coroa'
+        : h2 === 'coroa'
           ? new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.14, 8), hm)
           : new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.14, 0.36), hm);
       hatMesh.position.y = 1.64;
-      personGroup.add(hatMesh);
+      group.add(hatMesh);
     }
     var mk = function (w, h, x, y, mat) {
       var pivot = new THREE.Group();
@@ -3758,13 +3954,22 @@ export const world3DRuntime = `import * as THREE from 'three';
       m.position.y = -h / 2;
       m.castShadow = true;
       pivot.add(m);
-      personGroup.add(pivot);
+      group.add(pivot);
       return pivot;
     };
-    personParts.armL = mk(0.14, 0.5, -0.34, 1.18, roupa);
-    personParts.armR = mk(0.14, 0.5, 0.34, 1.18, roupa);
-    personParts.legL = mk(0.16, 0.62, -0.14, 0.66, calca);
-    personParts.legR = mk(0.16, 0.62, 0.14, 0.66, calca);
+    parts.armL = mk(0.14, 0.5, -0.34, 1.18, roupa);
+    parts.armR = mk(0.14, 0.5, 0.34, 1.18, roupa);
+    parts.legL = mk(0.16, 0.62, -0.14, 0.66, calca);
+    parts.legR = mk(0.16, 0.62, 0.14, 0.66, calca);
+    return { group: group, parts: parts };
+  }
+
+  function buildPerson() {
+    if (!scene || !personCfg) return;
+    disposePerson();
+    var rig = makeRig(personCfg.color, personCfg.hat);
+    personGroup = rig.group;
+    personParts = rig.parts;
     if (text(personCfg.acc, 'nenhum') === 'jetpack') {
       var jp = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.44, 0.16), toonMaterial({ color: '#64748b' }));
       jp.position.set(0, 1.0, -0.24);
@@ -5208,6 +5413,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepBoat(dt);
     stepLighthouses(dt);
     stepAmbience(dt);
+    stepNpcs(dt);
     updateEngine();
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
@@ -5395,6 +5601,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     lighthouses = [];
     islandsCfg = null;
     ambienceKind = 'desligado';
+    npcs = [];
+    npcTalkHooks = Object.create(null);
+    npcSayQueues = Object.create(null);
+    npcBubble = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -5684,6 +5894,54 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       seasonName = n2;
       if (worldReady) applySeason();
+    }),
+    // 🧑‍🤝‍🧑 R17 amigos
+    npc: guard('npc', function (name, x, z, color, hat) {
+      var h6 = text(hat, 'nenhum');
+      if (h6 !== 'nenhum' && !HAT_COLORS[h6]) h6 = 'nenhum';
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'npc', name: text(name, 'amigo'), x: num(x, 0), z: num(z, 0), color: text(color, '#f97316'), hat: h6 });
+        return;
+      }
+      addNpc(name, x, z, color, h6);
+    }),
+    npcWander: guard('npcWander', function (name, r) {
+      var nm = text(name, 'amigo');
+      var npc = findNpc(nm);
+      if (npc) {
+        npc.home.r = clamp(num(r, 10), 0, 60);
+        return;
+      }
+      // Antes do start: guarda como receita (roda depois do addNpc).
+      decorRecipes.push({ kind: 'npcWander', name: nm, r: num(r, 10) });
+    }),
+    npcTalk: guard('npcTalk', function (name, fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando conversar com o amigo" precisa de blocos de fazer dentro');
+        return;
+      }
+      var nm = text(name, 'amigo');
+      if (!npcTalkHooks[nm]) npcTalkHooks[nm] = [];
+      npcTalkHooks[nm].push(fn);
+    }),
+    npcSay: guard('npcSay', function (name, textStr) {
+      var nm = text(name, 'amigo');
+      if (!npcSayQueues[nm]) npcSayQueues[nm] = [];
+      npcSayQueues[nm].push(text(textStr, '...'));
+      // Fora de conversa (chamado solto): mostra na hora.
+      if (worldReady && (!npcBubble || npcBubble.el.style.display !== 'block')) {
+        var q = npcSayQueues[nm];
+        if (q.length === 1) npcShowSay(nm, q.shift());
+      }
+    }),
+    npcEmote: guard('npcEmote', function (name, kind) {
+      var k7 = text(kind, 'acenar');
+      if (k7 !== 'acenar' && k7 !== 'pular' && k7 !== 'girar' && k7 !== 'dancar') {
+        warn('não conheço "' + k7 + '" — tem: acenar, pular, girar, dancar');
+        return;
+      }
+      var npc = findNpc(text(name, 'amigo'));
+      if (npc) npc.emote = { kind: k7, t: k7 === 'dancar' ? 2 : 1.2 };
     }),
     // 🏝️ R16 ilha & barco
     islands: guard('islands', function (n, y) {

@@ -4045,6 +4045,19 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'w3d:lighthouse'; x: number | JSExpr; z: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:ambience'; kind: string })
+  // Mundo 3D R17 "amigos": NPCs com perambulação e conversa em fila.
+  | (JSStatementCommon & {
+      type: 'w3d:npc'
+      name: string
+      x: number | JSExpr
+      z: number | JSExpr
+      color: string
+      hat: string
+    })
+  | (JSStatementCommon & { type: 'w3d:npcWander'; name: string; r: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:npcTalk'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:npcSay'; name: string; text: string })
+  | (JSStatementCommon & { type: 'w3d:npcEmote'; name: string; emote: string })
   | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
   | (JSStatementCommon & {
       type: 'w3d:cameraShake'
@@ -8169,6 +8182,29 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('w3d:ambience'), kind: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:npc'),
+      name: irText(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      color: irText(),
+      hat: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:npcWander'),
+      name: irText(),
+      r: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:npcTalk'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:npcSay'), name: irText(), text: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:npcEmote'), name: irText(), emote: irText(), ...idField }),
     z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:cameraShake'),
@@ -9215,6 +9251,11 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:bridge',
   'w3d:lighthouse',
   'w3d:ambience',
+  'w3d:npc',
+  'w3d:npcWander',
+  'w3d:npcTalk',
+  'w3d:npcSay',
+  'w3d:npcEmote',
   'w3d:effects',
   'w3d:dayNight',
   'w3d:setTime',

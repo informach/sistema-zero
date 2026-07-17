@@ -115,6 +115,7 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'w3d:onHorn':
     case 'w3d:onExplosion':
     case 'w3d:onVehicle':
+    case 'w3d:npcTalk':
     case 'w3d:onDayNight':
     case 'w3d:onPoint':
     case 'w3d:onZone':
@@ -2658,6 +2659,23 @@ ${pad}});`
       return `${pad}SZWorld3D.tireMarks(${JSON.stringify(stmt.on ? 'ligadas' : 'desligadas')});`
     case 'w3d:carPaint':
       return `${pad}SZWorld3D.carPaint(${JSON.stringify(stmt.paint)});`
+    case 'w3d:npc':
+      return `${pad}SZWorld3D.npc(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.hat)});`
+    case 'w3d:npcWander':
+      return `${pad}SZWorld3D.npcWander(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:npcTalk': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.npcTalk(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:npcSay':
+      return `${pad}SZWorld3D.npcSay(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.text)});`
+    case 'w3d:npcEmote':
+      return `${pad}SZWorld3D.npcEmote(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.emote)});`
     case 'w3d:islands':
       return `${pad}SZWorld3D.islands(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
     case 'w3d:boat':
@@ -5849,6 +5867,18 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:personEmote':
     case 'w3d:boat':
     case 'w3d:ambience':
+    case 'w3d:npcSay':
+    case 'w3d:npcEmote':
+      return
+    case 'w3d:npc':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:npcWander':
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:npcTalk':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'w3d:islands':
       collectExprIdentifiers(valueToExpr(stmt.n), names)

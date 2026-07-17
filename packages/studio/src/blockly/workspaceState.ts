@@ -5856,6 +5856,36 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_w3d_tire_marks', { ON: stmt.on ? 'ligadas' : 'desligadas' }, {}, stmt.__id)
     case 'w3d:carPaint':
       return block('sz_w3d_car_paint', { PAINT: stmt.paint }, {}, stmt.__id)
+    case 'w3d:npc': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_w3d_npc',
+            { NAME: stmt.name, COLOR: stmt.color, HAT: stmt.hat },
+            {},
+            stmt.__id,
+            { X: x, Z: z },
+          )
+    }
+    case 'w3d:npcWander': {
+      const r = exprToValueBlock(valueToExpr(stmt.r))
+      return r === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_npc_wander', { NAME: stmt.name }, {}, stmt.__id, { R: r })
+    }
+    case 'w3d:npcTalk':
+      return block(
+        'sz_w3d_npc_talk',
+        { NAME: stmt.name },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'w3d:npcSay':
+      return block('sz_w3d_npc_say', { NAME: stmt.name, TEXT: stmt.text }, {}, stmt.__id)
+    case 'w3d:npcEmote':
+      return block('sz_w3d_npc_emote', { NAME: stmt.name, EMOTE: stmt.emote }, {}, stmt.__id)
     case 'w3d:islands': {
       const n = exprToValueBlock(valueToExpr(stmt.n))
       const y = exprToValueBlock(valueToExpr(stmt.y))

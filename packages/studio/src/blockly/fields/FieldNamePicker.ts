@@ -74,10 +74,12 @@ export type NameKind =
   | 'pkmtype'
   | 'path'
   | 'w3dpoint'
+  | 'w3dnpc'
 
 const NAME_KINDS: readonly NameKind[] = [
   'path',
   'w3dpoint',
+  'w3dnpc',
   'region',
   'pkmcreature',
   'pkmtype',
@@ -381,6 +383,13 @@ const W3DPOINT_DECL_BLOCKS: Record<string, string[]> = {
 }
 function collectW3dPoints(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, W3DPOINT_DECL_BLOCKS)
+}
+/** Amigos (NPCs) do Mundo 3D — fonte dos seletores dos blocos de conversa. */
+const W3DNPC_DECL_BLOCKS: Record<string, string[]> = {
+  sz_w3d_npc: ['NAME'],
+}
+function collectW3dNpcs(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, W3DNPC_DECL_BLOCKS)
 }
 function collectMolds3d(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, MOLD3D_DECL_BLOCKS)
@@ -721,6 +730,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     empty:
       'Nenhum ponto ou área ainda — crie um ("Criar o ponto interativo" ou "Criar a área mágica") ou digite o nome abaixo.',
   },
+  w3dnpc: {
+    icon: '🧑‍🤝‍🧑',
+    placeholder: 'nome do amigo',
+    empty: 'Nenhum amigo ainda — crie um com "Criar o amigo" ou digite o nome abaixo.',
+  },
 }
 
 /** Laços que introduzem nomes LOCAIS, por `kind` de seletor (escopo por ancestral). */
@@ -1020,6 +1034,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectEntityStates(ws)
       case 'w3dpoint':
         return collectW3dPoints(ws)
+      case 'w3dnpc':
+        return collectW3dNpcs(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)

@@ -377,6 +377,46 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(w2.isDriving()).toBe(true)
   })
 
+  it('R17: conversa em FILA — E roda o gancho, cada E mostra a próxima fala', async () => {
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        npc(n: string, x: number, z: number, c: string, h: string): void
+        npcTalk(n: string, fn: () => void): void
+        npcSay(n: string, t: string): void
+      }
+      w.npc('Lia', 6, 0, '#f97316', 'palha')
+      w.npcTalk('Lia', () => {
+        w.npcSay('Lia', 'Oi!')
+        w.npcSay('Lia', 'Bem-vindo!')
+      })
+    })
+    // Chega PERTO da amiga e aperta E (o carro nasce no centro; Lia está a 6 m).
+    api.carPlace(4, 0, 90)
+    step(3)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    const bubble = () =>
+      (document.querySelector(
+        '#szw3d-stage div[style*="translate(-50%,-100%)"][style*="max-width"]',
+      ) ??
+        Array.from(document.querySelectorAll('#szw3d-stage div')).find((d) =>
+          (d.getAttribute('style') ?? '').includes('max-width:280px'),
+        )) as HTMLElement | undefined
+    // A 1ª fala abriu (typewriter começa) — espera as letras.
+    step(30)
+    const el = bubble()
+    expect(el).toBeTruthy()
+    expect(el?.textContent).toBe('Oi!')
+    // Próximo E → 2ª fala da FILA.
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    step(40)
+    expect(el?.textContent).toBe('Bem-vindo!')
+  })
+
   it('playthrough do exemplo "Meu Mundo": roda, dirige e não quebra', async () => {
     const { api, step } = await loadExampleWorld(MEU_MUNDO_SOURCE)
     const z0 = api.carPos('z')
