@@ -188,6 +188,24 @@ export const world3DRuntime = `import * as THREE from 'three';
   // veículo, falar com o amigo, escrever recado…) registram interagíveis aqui:
   // { x, z, r, label, prio, fire, promptY? } — maior prio ganha; empate = mais perto.
   var extraInteract = [];
+  // ---- R12 "festa & céu dramático": pool de festa, tornado, estação, nuvens ----
+  var partyPts = null;          // Points ÚNICO compartilhado (confete + fogos)
+  var partyGeo = null;
+  var partyState = null;        // estados paralelos aos atributos (age/ttl/vel/g)
+  var partyIdx = 0;
+  var PARTY_N = 400;
+  var PARTY_COLORS = ['#f472b6', '#facc15', '#4ade80', '#22d3ee', '#a78bfa'];
+  var fwRockets = [];           // foguetes subindo: { x, z, y, peak, cd }
+  var tornadoState = null;      // { group, cyls, mats, ttl, x, z, tx, tz, flingCd }
+  var seasonName = null;        // primavera | verao | outono | inverno
+  var _seasonOrig = null;       // cores originais p/ voltar ao verão
+  var cloudsPts = null;
+  var cloudsAmount = 'nenhuma';
+  var stormT = 0;               // segundos até o próximo raio da tempestade
+  var boltLine = null;          // o raio (LineSegments reusado)
+  var boltT = 0;
+  var flashEl = null;           // clarão (overlay DOM)
+  var thunderQueue = [];        // trovões agendados pela distância
   var _dummy = null;            // Object3D p/ compor matrizes de instância
   var _mat4 = null;
   var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
@@ -1579,7 +1597,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   var WEATHER_KINDS = {
     chuva:  { color: '#9fb4cc', size: 1.1, vy: -24, drift: 2, n: 900 },
     neve:   { color: '#ffffff', size: 1.6, vy: -2.4, drift: 1.6, n: 700 },
-    folhas: { color: '#d9822b', size: 1.8, vy: -1.4, drift: 3.2, n: 350 }
+    folhas: { color: '#d9822b', size: 1.8, vy: -1.4, drift: 3.2, n: 350 },
+    // R12: chuva PESADA + raios/trovões (o stepStorm cuida do espetáculo).
+    tempestade: { color: '#8aa3c4', size: 1.1, vy: -34, drift: 3.4, n: 1200 }
   };
   var WEATHER_R = 42;   // raio do cilindro que segue o carro
   var WEATHER_H = 26;   // altura de reciclagem
@@ -2789,6 +2809,8 @@ export const world3DRuntime = `import * as THREE from 'three';
         applyAtmosphere();
       }
       if (weatherKind !== 'limpo') buildWeather();
+      if (cloudsAmount !== 'nenhuma') buildClouds();
+      if (seasonName) applySeason();
       return true;
     } catch (e) {
       warn('não consegui montar o mundo 3D: ' + e);
@@ -2906,6 +2928,402 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   function carStyleOf() {
     return CAR_STYLES[(carCfg && carCfg.style) || 'passeio'] || CAR_STYLES.passeio;
+  }
+
+  // ---- R12: pool de festa (confete/fogos), tornado, estação, nuvens, raio ----
+
+  function ensureParty() {
+    if (partyPts || !scene) return;
+    partyGeo = new THREE.BufferGeometry();
+    var pos = new Float32Array(PARTY_N * 3);
+    var col = new Float32Array(PARTY_N * 3);
+    for (var i = 0; i < PARTY_N; i++) pos[i * 3 + 1] = -9999;
+    partyGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    partyGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    var mat = new THREE.PointsMaterial({
+      size: 0.5, vertexColors: true, sizeAttenuation: true,
+      transparent: true, opacity: 0.95, depthWrite: false
+    });
+    var tex = ensureSpriteTex();
+    if (tex) mat.map = tex;
+    partyPts = new THREE.Points(partyGeo, mat);
+    partyPts.frustumCulled = false;
+    scene.add(partyPts);
+    partyState = [];
+    for (var j = 0; j < PARTY_N; j++) {
+      partyState.push({ x: 0, y: -9999, z: 0, vx: 0, vy: 0, vz: 0, age: 0, ttl: 0, g: 6, flut: 0 });
+    }
+  }
+
+  function spawnParty(x, y, z, vx, vy, vz, ttl, g, flut, colorHex) {
+    if (!partyState) return;
+    var i = partyIdx;
+    partyIdx = (partyIdx + 1) % PARTY_N;
+    var p = partyState[i];
+    p.x = x; p.y = y; p.z = z;
+    p.vx = vx; p.vy = vy; p.vz = vz;
+    p.age = 0; p.ttl = ttl; p.g = g; p.flut = flut;
+    var col = partyGeo.getAttribute('color');
+    var c = new THREE.Color(colorHex);
+    col.setXYZ(i, c.r, c.g, c.b);
+    col.needsUpdate = true;
+  }
+
+  function playerXZ() {
+    if (carState) return { x: carState.x, y: carState.y, z: carState.z };
+    return { x: 0, y: heightAt(0, 0), z: 0 };
+  }
+
+  function confettiBurst() {
+    ensureParty();
+    if (!partyState) return;
+    var p = playerXZ();
+    for (var i = 0; i < 90; i++) {
+      var a = Math.random() * Math.PI * 2;
+      var sp = 1 + Math.random() * 3;
+      spawnParty(
+        p.x + (Math.random() - 0.5) * 2, p.y + 5 + Math.random() * 2, p.z + (Math.random() - 0.5) * 2,
+        Math.cos(a) * sp, 1 + Math.random() * 2.5, Math.sin(a) * sp,
+        2.4, 4.5, 1, PARTY_COLORS[i % PARTY_COLORS.length]
+      );
+    }
+  }
+
+  function fireworksLaunch() {
+    ensureParty();
+    if (!partyState) return;
+    var p = playerXZ();
+    var fx = p.x + (Math.random() - 0.5) * 26;
+    var fz = p.z - 14 - Math.random() * 14;
+    fwRockets.push({ x: fx, z: fz, y: heightAt(fx, fz) + 1, peak: 20 + Math.random() * 10, cd: 0 });
+    beep(988, 0.12);
+  }
+
+  function burstAt(x, y, z) {
+    var colorHex = PARTY_COLORS[Math.floor(Math.random() * PARTY_COLORS.length)];
+    for (var i = 0; i < 80; i++) {
+      var th = Math.random() * Math.PI * 2;
+      var ph = Math.acos(2 * Math.random() - 1);
+      var sp = 6 + Math.random() * 4;
+      spawnParty(
+        x, y, z,
+        Math.sin(ph) * Math.cos(th) * sp, Math.cos(ph) * sp, Math.sin(ph) * Math.sin(th) * sp,
+        1.6, 5, 0, colorHex
+      );
+    }
+    beep(65, 0.35);
+    _shakeT = Math.max(_shakeT, 0.15);
+    _shakeAmp = Math.max(_shakeAmp, 0.08);
+  }
+
+  function stepParty(dt) {
+    // Foguetes dos fogos sobem soltando um rastro; no pico, explodem em esfera.
+    for (var r = fwRockets.length - 1; r >= 0; r--) {
+      var rk = fwRockets[r];
+      rk.y += 26 * dt;
+      rk.cd -= dt;
+      if (rk.cd <= 0 && partyState) {
+        rk.cd = 0.03;
+        spawnParty(rk.x, rk.y, rk.z, 0, -1, 0, 0.5, 2, 0, '#fde68a');
+      }
+      if (rk.y >= rk.peak) {
+        burstAt(rk.x, rk.y, rk.z);
+        fwRockets.splice(r, 1);
+      }
+    }
+    if (!partyState) return;
+    var pos = partyGeo.getAttribute('position');
+    var any = false;
+    for (var i = 0; i < PARTY_N; i++) {
+      var p = partyState[i];
+      if (p.ttl <= 0) continue;
+      p.age += dt;
+      if (p.age >= p.ttl) {
+        p.ttl = 0;
+        pos.setXYZ(i, 0, -9999, 0);
+        any = true;
+        continue;
+      }
+      p.vy -= p.g * dt;
+      p.x += p.vx * dt + (p.flut ? Math.sin((p.age + i) * 7) * 0.8 * dt : 0);
+      p.y += p.vy * dt;
+      p.z += p.vz * dt;
+      pos.setXYZ(i, p.x, p.y, p.z);
+      any = true;
+    }
+    if (any) pos.needsUpdate = true;
+  }
+
+  // Tornado: 3 cilindros girando que passeiam por waypoints e SUGAM o carrinho.
+  function startTornado(secs) {
+    if (!scene) {
+      warn('use "Soltar um tornado" depois do "Começar o passeio"');
+      return;
+    }
+    var ttl = clamp(num(secs, 15), 3, 60);
+    if (tornadoState) {
+      tornadoState.ttl = ttl;
+      return;
+    }
+    var group = new THREE.Group();
+    var cyls = [];
+    var mats = [];
+    var spec = [
+      { r1: 0.9, r2: 1.8, h: 5, y: 2.5 },
+      { r1: 1.8, r2: 3.0, h: 6, y: 8 },
+      { r1: 3.0, r2: 4.4, h: 7, y: 14.5 }
+    ];
+    for (var i = 0; i < spec.length; i++) {
+      var s = spec[i];
+      var m = new THREE.MeshBasicMaterial({ color: '#64748b', transparent: true, opacity: 0.34, depthWrite: false });
+      var cyl = new THREE.Mesh(new THREE.CylinderGeometry(s.r1, s.r2, s.h, 10, 1, true), m);
+      cyl.position.y = s.y;
+      group.add(cyl);
+      cyls.push(cyl);
+      mats.push(m);
+    }
+    var p = playerXZ();
+    var tx = p.x + 24;
+    var tz = p.z + 10;
+    group.position.set(tx, heightAt(tx, tz), tz);
+    scene.add(group);
+    tornadoState = { group: group, cyls: cyls, mats: mats, ttl: ttl, x: tx, z: tz, tx: tx, tz: tz, flingCd: 0 };
+  }
+
+  function stepTornado(dt) {
+    if (!tornadoState) return;
+    var t = tornadoState;
+    t.ttl -= dt;
+    for (var i = 0; i < t.cyls.length; i++) {
+      t.cyls[i].rotation.y += (3.4 - i * 0.8) * dt;
+    }
+    // Passeia por waypoints dentro do mundo.
+    var ddx = t.tx - t.x;
+    var ddz = t.tz - t.z;
+    var d = Math.sqrt(ddx * ddx + ddz * ddz);
+    if (d < 3) {
+      var lim = config.world / 2 - 12;
+      t.tx = (Math.random() * 2 - 1) * lim;
+      t.tz = (Math.random() * 2 - 1) * lim;
+    } else {
+      t.x += (ddx / d) * 7 * dt;
+      t.z += (ddz / d) * 7 * dt;
+    }
+    t.group.position.set(t.x, heightAt(t.x, t.z), t.z);
+    // Sucção: perto puxa; MUITO perto arremessa o carrinho pro alto (uma vez).
+    t.flingCd -= dt;
+    if (carState) {
+      var cdx = t.x - carState.x;
+      var cdz = t.z - carState.z;
+      var cd = Math.sqrt(cdx * cdx + cdz * cdz);
+      if (cd < 9 && cd > 0.01) {
+        carState.x += (cdx / cd) * 8 * dt;
+        carState.z += (cdz / cd) * 8 * dt;
+      }
+      if (cd < 3 && t.flingCd <= 0) {
+        t.flingCd = 1.5;
+        carState.vy = 15;
+        carState.airborne = true;
+        carState.pitchV += 2.5;
+        _shakeT = Math.max(_shakeT, 0.5);
+        _shakeAmp = Math.max(_shakeAmp, 0.35);
+      }
+    }
+    // Última hora: esmaece e vai embora.
+    if (t.ttl < 1) {
+      for (var mi = 0; mi < t.mats.length; mi++) t.mats[mi].opacity = 0.34 * Math.max(0, t.ttl);
+    }
+    if (t.ttl <= 0) {
+      try {
+        scene.remove(t.group);
+        for (var ci = 0; ci < t.cyls.length; ci++) {
+          t.cyls[ci].geometry.dispose();
+          t.mats[ci].dispose();
+        }
+      } catch (e) {}
+      tornadoState = null;
+    }
+  }
+
+  // Estações: recolorem as COPAS (materiais compartilhados) e a grama (uniforms).
+  var LEAF_KEYS = ['#3e8f3e', '#57a344', '#2d6a34', '#357c3c', '#3f8f46'];
+  var SEASONS = {
+    primavera: { leaves: ['#55b055', '#74c463', '#3f8d4b', '#4da457', '#58b862'], grass: ['#3f7c2f', '#68b04a'], weather: null },
+    verao: { leaves: null, grass: null, weather: null },
+    outono: { leaves: ['#d97706', '#ea9a3c', '#b45309', '#c2620e', '#a16207'], grass: ['#8a5a1f', '#c98a2e'], weather: 'folhas' },
+    inverno: { leaves: ['#e5e7eb', '#f3f4f6', '#cbd5e1', '#dbe3ec', '#eef1f5'], grass: ['#9fb2c4', '#dbe4ee'], weather: 'neve' }
+  };
+
+  function applySeason() {
+    if (!seasonName || !worldReady) return;
+    var sz = SEASONS[seasonName];
+    if (!sz) return;
+    // Guarda os originais UMA vez (p/ o verão restaurar).
+    if (!_seasonOrig) {
+      _seasonOrig = { leaves: {}, grass: null };
+      for (var k = 0; k < LEAF_KEYS.length; k++) {
+        var key = LEAF_KEYS[k];
+        if (speciesMats && speciesMats[key]) _seasonOrig.leaves[key] = '#' + speciesMats[key].color.getHexString();
+      }
+      if (grassMat && grassMat.uniforms.uColorA) {
+        _seasonOrig.grass = [
+          grassMat.uniforms.uColorA.value.clone(),
+          grassMat.uniforms.uColorB.value.clone()
+        ];
+      }
+    }
+    for (var i = 0; i < LEAF_KEYS.length; i++) {
+      var lk = LEAF_KEYS[i];
+      if (!speciesMats || !speciesMats[lk]) continue;
+      var target = sz.leaves ? sz.leaves[i] : (_seasonOrig.leaves[lk] || lk);
+      try { speciesMats[lk].color.set(target); } catch (e) {}
+    }
+    if (grassMat && grassMat.uniforms.uColorA) {
+      if (sz.grass) {
+        var ga = new THREE.Color(sz.grass[0]);
+        var gb = new THREE.Color(sz.grass[1]);
+        grassMat.uniforms.uColorA.value.set(ga.r, ga.g, ga.b);
+        grassMat.uniforms.uColorB.value.set(gb.r, gb.g, gb.b);
+      } else if (_seasonOrig.grass) {
+        grassMat.uniforms.uColorA.value.copy(_seasonOrig.grass[0]);
+        grassMat.uniforms.uColorB.value.copy(_seasonOrig.grass[1]);
+      }
+    }
+    // Outono chove folhas, inverno neva — só se a criança não pediu outro clima.
+    if (sz.weather && weatherKind === 'limpo') {
+      weatherKind = sz.weather;
+      buildWeather();
+    }
+  }
+
+  // Nuvens: pontos GRANDES e moles lá no alto, derivando com o vento.
+  var CLOUD_AMOUNTS = { nenhuma: 0, poucas: 10, muitas: 26 };
+
+  function buildClouds() {
+    if (cloudsPts) {
+      try {
+        scene.remove(cloudsPts.mesh);
+        cloudsPts.geo.dispose();
+        cloudsPts.mat.dispose();
+      } catch (e) {}
+      cloudsPts = null;
+    }
+    var n = CLOUD_AMOUNTS[cloudsAmount] || 0;
+    if (!scene || n <= 0) return;
+    var rng = mulberry(777);
+    var pos = new Float32Array(n * 3);
+    var lim = config.world * 0.9;
+    for (var i = 0; i < n; i++) {
+      pos[i * 3] = (rng() * 2 - 1) * lim;
+      pos[i * 3 + 1] = 55 + rng() * 30;
+      pos[i * 3 + 2] = (rng() * 2 - 1) * lim;
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var mat = new THREE.PointsMaterial({
+      color: '#ffffff', size: 34, sizeAttenuation: true,
+      transparent: true, opacity: 0.5, depthWrite: false
+    });
+    var tex = ensureSpriteTex();
+    if (tex) mat.map = tex;
+    var mesh = new THREE.Points(geo, mat);
+    mesh.frustumCulled = false;
+    scene.add(mesh);
+    cloudsPts = { mesh: mesh, geo: geo, mat: mat, pos: pos, n: n };
+  }
+
+  function stepClouds(dt) {
+    if (!cloudsPts) return;
+    var cx = carState ? carState.x : 0;
+    var cz = carState ? carState.z : 0;
+    var lim = config.world * 0.95;
+    for (var i = 0; i < cloudsPts.n; i++) {
+      var ix = i * 3;
+      cloudsPts.pos[ix] += (1.2 + wind * 2.4) * dt;
+      if (cloudsPts.pos[ix] > cx + lim) cloudsPts.pos[ix] -= lim * 2;
+    }
+    cloudsPts.geo.attributes.position.needsUpdate = true;
+  }
+
+  // Tempestade: raio em zigue-zague + clarão + trovão atrasado pela distância.
+  function ensureBolt() {
+    if (boltLine || !scene) return;
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(9 * 2 * 3), 3));
+    var mat = new THREE.LineBasicMaterial({ color: '#fef08a', transparent: true, opacity: 0.95 });
+    boltLine = new THREE.LineSegments(geo, mat);
+    boltLine.frustumCulled = false;
+    boltLine.visible = false;
+    scene.add(boltLine);
+  }
+
+  function strikeBolt() {
+    ensureBolt();
+    if (!boltLine) return;
+    var p = playerXZ();
+    var sx = p.x + (Math.random() * 2 - 1) * 46;
+    var sz2 = p.z + (Math.random() * 2 - 1) * 46;
+    var pos = boltLine.geometry.getAttribute('position');
+    var x = sx;
+    var y = 44;
+    var z = sz2;
+    for (var i = 0; i < 9; i++) {
+      var nx = x + (Math.random() - 0.5) * 4;
+      var ny = y - (44 - heightAt(sx, sz2)) / 9;
+      var nz = z + (Math.random() - 0.5) * 4;
+      pos.setXYZ(i * 2, x, y, z);
+      pos.setXYZ(i * 2 + 1, nx, ny, nz);
+      x = nx; y = ny; z = nz;
+    }
+    pos.needsUpdate = true;
+    boltLine.visible = true;
+    boltT = 0.22;
+    // Clarão (DOM) + trovão atrasado pela distância (som viaja ~340 m/s; aqui
+    // dividimos por menos p/ a criança LIGAR o raio ao barulho).
+    if (frameEl) {
+      if (!flashEl) {
+        flashEl = document.createElement('div');
+        flashEl.setAttribute('style', 'position:absolute;inset:0;background:#ffffff;opacity:0;pointer-events:none;z-index:6;');
+        frameEl.appendChild(flashEl);
+      }
+      flashEl.style.opacity = '0.7';
+    }
+    var dx = sx - p.x;
+    var dz = sz2 - p.z;
+    var dist = Math.sqrt(dx * dx + dz * dz);
+    thunderQueue.push({ t: 0.15 + dist / 90 });
+    // Raio EM CIMA do carrinho: chacoalha e liga a câmera lenta um instante.
+    if (dist < 7 && carState) {
+      carState.pitchV += 2.2;
+      _shakeT = Math.max(_shakeT, 0.6);
+      _shakeAmp = Math.max(_shakeAmp, 0.4);
+      timeScale = 0.35;
+    }
+  }
+
+  function stepStorm(dt) {
+    if (boltT > 0) {
+      boltT -= dt;
+      if (boltT <= 0 && boltLine) boltLine.visible = false;
+    }
+    if (flashEl) {
+      var op = parseFloat(flashEl.style.opacity || '0');
+      if (op > 0) flashEl.style.opacity = String(Math.max(0, op - dt * 3));
+    }
+    for (var i = thunderQueue.length - 1; i >= 0; i--) {
+      thunderQueue[i].t -= dt;
+      if (thunderQueue[i].t <= 0) {
+        beep(52, 0.5);
+        beep(38, 0.7);
+        thunderQueue.splice(i, 1);
+      }
+    }
+    if (weatherKind !== 'tempestade' || !worldReady) return;
+    stormT -= dt;
+    if (stormT <= 0) {
+      stormT = 4 + Math.random() * 5;
+      strikeBolt();
+    }
   }
 
   // ---- R11: buzina / luzes / marcas de pneu / lua / vinheta de turbo ----
@@ -3588,6 +4006,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepCarExtras(dt);
     stepDayNight(dt);
     stepWeather(dt);
+    stepStorm(dt);
+    stepParty(dt);
+    stepTornado(dt);
+    stepClouds(dt);
     updateEngine();
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
@@ -3733,6 +4155,16 @@ export const world3DRuntime = `import * as THREE from 'three';
     antennaGroup = null;
     speedLinesEl = null;
     extraInteract = [];
+    partyPts = null;
+    partyGeo = null;
+    partyState = null;
+    fwRockets = [];
+    tornadoState = null;
+    cloudsPts = null;
+    boltLine = null;
+    flashEl = null;
+    thunderQueue = [];
+    _seasonOrig = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -3995,11 +4427,39 @@ export const world3DRuntime = `import * as THREE from 'three';
     weather: guard('weather', function (kind) {
       var k = text(kind, 'limpo');
       if (k !== 'limpo' && !WEATHER_KINDS[k]) {
-        warn('não conheço o clima "' + k + '" — tem: limpo, chuva, neve, folhas');
+        warn('não conheço o clima "' + k + '" — tem: limpo, chuva, neve, folhas, tempestade');
         return;
       }
       weatherKind = k;
       if (worldReady) buildWeather();
+    }),
+    // 🎉 R12 festa & céu dramático
+    confetti: guard('confetti', function () {
+      confettiBurst();
+    }),
+    fireworks: guard('fireworks', function () {
+      fireworksLaunch();
+    }),
+    tornado: guard('tornado', function (secs) {
+      startTornado(secs);
+    }),
+    season: guard('season', function (name) {
+      var n2 = text(name, 'verao');
+      if (!SEASONS[n2]) {
+        warn('não conheço a estação "' + n2 + '" — tem: primavera, verao, outono, inverno');
+        return;
+      }
+      seasonName = n2;
+      if (worldReady) applySeason();
+    }),
+    clouds: guard('clouds', function (amount) {
+      var a2 = text(amount, 'nenhuma');
+      if (!(a2 in CLOUD_AMOUNTS)) {
+        warn('não conheço "' + a2 + '" — tem: nenhuma, poucas, muitas');
+        return;
+      }
+      cloudsAmount = a2;
+      if (worldReady) buildClouds();
     }),
     setWind: guard('setWind', function (force) {
       wind = clamp(num(force, 1), 0, 5);

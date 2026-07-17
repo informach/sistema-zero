@@ -494,6 +494,7 @@ export const world3DBlocks = [
           ['🌧️ chuva', 'chuva'],
           ['❄️ neve', 'neve'],
           ['🍂 folhas ao vento', 'folhas'],
+          ['⛈️ tempestade', 'tempestade'],
         ],
       },
     ],
@@ -501,7 +502,84 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O clima do mundo: chuva caindo, neve à deriva ou folhas dançando no vento — as partículas acompanham o carrinho pelo mundo inteiro (e obedecem à força do vento). ☀️ céu limpo desliga.',
+      'O clima do mundo: chuva caindo, neve à deriva, folhas dançando ou TEMPESTADE (chuva pesada + raios de verdade, com trovão que chega atrasado pela distância). As partículas acompanham o carrinho. ☀️ céu limpo desliga.',
+  },
+  {
+    // R12: estações recolorem as copas e a grama; outono chove folhas, inverno neva.
+    type: 'sz_w3d_season',
+    message0: 'Estação do ano: %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SEASON',
+        options: [
+          ['🌸 primavera', 'primavera'],
+          ['☀️ verão', 'verao'],
+          ['🍂 outono', 'outono'],
+          ['❄️ inverno', 'inverno'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Muda a estação: as copas das árvores e a grama trocam de cor NA HORA (outono dourado, inverno branquinho). Outono faz chover folhas e inverno faz nevar sozinhos (se você não pediu outro clima).',
+  },
+  {
+    type: 'sz_w3d_tornado',
+    message0: 'Soltar um tornado 🌪️ passeando por %1 segundos',
+    args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um tornado de verdade passeia pelo mundo girando: chegue perto e ele PUXA o carrinho; chegue perto DEMAIS e ele te joga pro alto! Some sozinho quando o tempo acaba. Combine com um ponto interativo (o "botão do tornado").',
+  },
+  {
+    type: 'sz_w3d_clouds',
+    message0: 'Nuvens no céu: %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'AMOUNT',
+        options: [
+          ['nenhuma', 'nenhuma'],
+          ['poucas', 'poucas'],
+          ['muitas', 'muitas'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Nuvens fofas lá no alto, derivando com o vento — deixam o céu com cara de mundo grande. "muitas" fica lindo no entardecer.',
+  },
+  {
+    type: 'sz_w3d_confetti',
+    message0: 'Soltar confete 🎉',
+    args0: [],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma chuva de confete colorido sobre o jogador — a celebração clássica. Use dentro de "Quando cruzar a chegada", "Quando derrubar todos os pinos", "Quando buzinar"…',
+  },
+  {
+    type: 'sz_w3d_fireworks',
+    message0: 'Soltar fogos de artifício 🎆',
+    args0: [],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um foguete sobe assobiando e EXPLODE em cores no céu (com "bum" e chacoalhão da câmera). Cada uso solta um foguete — use 3 seguidos para um show.',
   },
   {
     type: 'sz_w3d_wind',
@@ -1057,6 +1135,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_daynight',
       'sz_w3d_set_time',
       'sz_w3d_weather',
+      'sz_w3d_season',
+      'sz_w3d_clouds',
+      'sz_w3d_tornado',
       'sz_w3d_wind',
       'sz_w3d_on_daynight',
       'sz_w3d_time_of_day',
@@ -1107,7 +1188,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🎥 Câmera & efeitos',
     colour: C,
-    types: ['sz_w3d_camera_mode', 'sz_w3d_camera_shake', 'sz_w3d_effects'],
+    types: [
+      'sz_w3d_camera_mode',
+      'sz_w3d_camera_shake',
+      'sz_w3d_effects',
+      'sz_w3d_confetti',
+      'sz_w3d_fireworks',
+    ],
   },
   {
     name: '🔊 Sons',
@@ -1172,6 +1259,7 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   },
   sz_w3d_water: { Y: numShadow(0) },
   sz_w3d_car_boost: { FORCE: numShadow(1) },
+  sz_w3d_tornado: { SECS: numShadow(15) },
   sz_w3d_hud: { TEXT: txtShadow('Pontos: 0') },
   sz_w3d_say: { TEXT: txtShadow('Oi!'), SECS: numShadow(2) },
   sz_w3d_point: { X: numShadow(10), Z: numShadow(10) },

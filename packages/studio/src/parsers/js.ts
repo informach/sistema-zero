@@ -6108,7 +6108,9 @@ const W3D_EFFECTS_ON = new Set(['ligados', 'desligados'])
 const W3D_TIRES_ON = new Set(['ligadas', 'desligadas'])
 const W3D_PAINTS = new Set(['lisa', 'listras', 'chamas', 'arco-iris', 'estrelas'])
 const W3D_TIMES = new Set(['manha', 'meiodia', 'entardecer', 'noite'])
-const W3D_WEATHER = new Set(['limpo', 'chuva', 'neve', 'folhas'])
+const W3D_WEATHER = new Set(['limpo', 'chuva', 'neve', 'folhas', 'tempestade'])
+const W3D_SEASONS = new Set(['primavera', 'verao', 'outono', 'inverno'])
+const W3D_CLOUD_AMOUNTS = new Set(['nenhuma', 'poucas', 'muitas'])
 const W3D_DAY_PHASES = new Set(['dia', 'noite'])
 const W3D_POS_AXES = new Set(['x', 'y', 'z'])
 
@@ -6489,6 +6491,24 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       const paint = args[0].value as string
       return W3D_PAINTS.has(paint) ? { type: 'w3d:carPaint', paint } : null
+    }
+    case 'confetti':
+      return { type: 'w3d:confetti' }
+    case 'fireworks':
+      return { type: 'w3d:fireworks' }
+    case 'tornado': {
+      const secs = toExpr(args[0], ctx)
+      return isSimpleValue(secs) ? { type: 'w3d:tornado', secs } : null
+    }
+    case 'season': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const season = args[0].value as string
+      return W3D_SEASONS.has(season) ? { type: 'w3d:season', season } : null
+    }
+    case 'clouds': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const amount = args[0].value as string
+      return W3D_CLOUD_AMOUNTS.has(amount) ? { type: 'w3d:clouds', amount } : null
     }
     case 'setEffects': {
       if (args[0]?.type !== 'StringLiteral') return null

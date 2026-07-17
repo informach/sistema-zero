@@ -149,6 +149,70 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(heads()).toContain('#fff7c2') // farol aceso à noite
   })
 
+  it('R12: fogos explodem (pool de festa ganha partículas vivas) e confete cai', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+    })
+    const world = api as unknown as { fireworks(): void; confetti(): void }
+    world.fireworks()
+    step(45) // o foguete sobe (~26 m/s) até o pico e explode
+    const scene = renderers[0]?.scene ?? null
+    const party = findMesh(scene, (o) => {
+      const g = (o as RealTHREE.Points).geometry as RealTHREE.BufferGeometry | undefined
+      return !!(o as RealTHREE.Points).isPoints && !!g?.getAttribute?.('color')
+    }) as RealTHREE.Points | null
+    expect(party).not.toBeNull()
+    const pos = (party?.geometry as RealTHREE.BufferGeometry).getAttribute('position')
+    let vivos = 0
+    for (let i = 0; i < pos.count; i++) if (pos.getY(i) > -100) vivos++
+    expect(vivos).toBeGreaterThan(20)
+    world.confetti()
+    step(3)
+    let depois = 0
+    for (let i = 0; i < pos.count; i++) if (pos.getY(i) > -100) depois++
+    expect(depois).toBeGreaterThan(vivos - 10)
+  })
+
+  it('R12: tornado SUGA o carrinho parado (a distância até ele diminui)', async () => {
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+    })
+    const world = api as unknown as { tornado(s: number): void }
+    world.tornado(30)
+    // O tornado nasce a ~26 m e passeia; o carrinho parado deve ser puxado
+    // quando ele chega perto. Anda o mundo e mede o deslocamento do carro.
+    const x0 = api.carPos('x')
+    const z0 = api.carPos('z')
+    step(600) // ~20 s de passeio do tornado
+    const moved = Math.abs(api.carPos('x') - x0) + Math.abs(api.carPos('z') - z0)
+    expect(moved).toBeGreaterThan(0.5)
+  })
+
+  it('R12: estação recolore as copas SEM rebuild (material compartilhado muda)', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as { scatter(n: number, e: string): void }
+      w.scatter(30, 'arvores')
+    })
+    step(2)
+    const scene = renderers[0]?.scene ?? null
+    const leafGreens = new Set(['3e8f3e', '57a344'])
+    const leafMat = (() => {
+      let hit: RealTHREE.MeshToonMaterial | null = null
+      scene?.traverse((o) => {
+        const m = (o as RealTHREE.Mesh).material as RealTHREE.MeshToonMaterial | undefined
+        if (!hit && m?.color && leafGreens.has(m.color.getHexString())) hit = m
+      })
+      return hit as RealTHREE.MeshToonMaterial | null
+    })()
+    expect(leafMat).not.toBeNull()
+    const world = api as unknown as { season(s: string): void }
+    world.season('outono')
+    step(2)
+    // A MESMA instância de material agora está dourada (d97706/ea9a3c/…).
+    expect(leafGreens.has((leafMat as RealTHREE.MeshToonMaterial).color.getHexString())).toBe(false)
+  })
+
   it('playthrough do exemplo "Meu Mundo": roda, dirige e não quebra', async () => {
     const { api, step } = await loadExampleWorld(MEU_MUNDO_SOURCE)
     const z0 = api.carPos('z')

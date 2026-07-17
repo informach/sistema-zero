@@ -2656,6 +2656,16 @@ ${pad}});`
       return `${pad}SZWorld3D.tireMarks(${JSON.stringify(stmt.on ? 'ligadas' : 'desligadas')});`
     case 'w3d:carPaint':
       return `${pad}SZWorld3D.carPaint(${JSON.stringify(stmt.paint)});`
+    case 'w3d:confetti':
+      return `${pad}SZWorld3D.confetti();`
+    case 'w3d:fireworks':
+      return `${pad}SZWorld3D.fireworks();`
+    case 'w3d:tornado':
+      return `${pad}SZWorld3D.tornado(${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))});`
+    case 'w3d:season':
+      return `${pad}SZWorld3D.season(${JSON.stringify(stmt.season)});`
+    case 'w3d:clouds':
+      return `${pad}SZWorld3D.clouds(${JSON.stringify(stmt.amount)});`
     case 'w3d:cameraMode':
       return `${pad}SZWorld3D.cameraMode(${JSON.stringify(stmt.mode)});`
     case 'w3d:cameraShake':
@@ -5754,6 +5764,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:carLights':
     case 'w3d:tireMarks':
     case 'w3d:carPaint':
+    case 'w3d:confetti':
+    case 'w3d:fireworks':
+    case 'w3d:season':
+    case 'w3d:clouds':
+      return
+    case 'w3d:tornado':
+      collectExprIdentifiers(valueToExpr(stmt.secs), names)
       return
     case 'w3d:effects':
       collectExprIdentifiers(valueToExpr(stmt.strength), names)

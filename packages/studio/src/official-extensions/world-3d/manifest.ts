@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '1.1.0',
+  version: '1.2.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -130,8 +130,18 @@ O que o motor já faz por você:
 - **Deixar o céu de manhã/meio-dia/entardecer/noite** — fixa a hora (ou
   escolhe a hora INICIAL do ciclo). O entardecer da corrida, a noite do
   mundo de inverno.
-- **Fazer ☀️/🌧️/❄️/🍂** — o clima: chuva, neve ou folhas dançando, sempre ao
-  redor do carrinho, obedecendo ao vento. ☀️ céu limpo desliga.
+- **Fazer ☀️/🌧️/❄️/🍂/⛈️** — o clima: chuva, neve, folhas dançando ou
+  TEMPESTADE (chuva pesada + raios em zigue-zague com clarão; o trovão chega
+  ATRASADO pela distância — conte os segundos!). Raio em cima do carrinho
+  chacoalha tudo e liga a câmera lenta por um instante. ☀️ desliga.
+- **Estação do ano: 🌸/☀️/🍂/❄️** — recolore as copas das árvores e a grama
+  NA HORA: outono dourado, inverno branquinho. Outono chove folhas e inverno
+  neva sozinhos (se você não pediu outro clima).
+- **Nuvens no céu: nenhuma/poucas/muitas** — nuvens fofas lá no alto,
+  derivando com o vento.
+- **Soltar um tornado 🌪️ passeando por … segundos** — um tornado gira pelo
+  mundo: perto ele PUXA o carrinho, perto demais ele te joga pro alto! Some
+  sozinho. Combine com um ponto interativo (o "botão do tornado").
 - **Vento com força …** — 0 parado, 1 brisa, 3 ventania (até 5): mexe a
   grama E o clima.
 - **Quando virar dia/noite** — o gancho da virada: acenda os totens à noite!
@@ -185,6 +195,10 @@ O que o motor já faz por você:
   LIGADOS de fábrica. Brilho 1 é o normal; até 3 vira show de luz. Num
   computador fraco o **modo turbo** liga sozinho: menos grama, sombra menor
   e sem efeitos — o passeio continua liso.
+- **Soltar confete 🎉** — chuva de confete colorido sobre o jogador. A
+  celebração de toda vitória: chegada da corrida, strike do boliche…
+- **Soltar fogos de artifício 🎆** — um foguete sobe assobiando e explode em
+  cores no céu, com "bum" e chacoalhão. Use 3 seguidos para um show.
 
 ### 🔊 Sons
 

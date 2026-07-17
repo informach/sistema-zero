@@ -50,6 +50,11 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.tireMarks('ligadas'|'desligadas')\` — marcas de pneu na derrapagem/turbo/neve (somem em ~6 s).
 - \`SZWorld3D.carPaint('lisa'|'listras'|'chamas'|'arco-iris'|'estrelas')\` — pintura do carrinho (arco-iris muda de cor sozinho).
 - Segredo pronto: o código Konami (cima cima baixo baixo esq dir esq dir B A) vira o carrinho um FOGUETE.
+- \`SZWorld3D.confetti()\` — chuva de confete sobre o jogador. \`SZWorld3D.fireworks()\` — 1 foguete sobe e explode (use 3x p/ show).
+- \`SZWorld3D.tornado(segundos)\` — tornado passeia, PUXA o carrinho perto e arremessa se encostar; some sozinho (3..60 s).
+- \`SZWorld3D.season('primavera'|'verao'|'outono'|'inverno')\` — recolore copas+grama; outono chove folhas, inverno neva (se o clima estiver limpo).
+- \`SZWorld3D.clouds('nenhuma'|'poucas'|'muitas')\` — nuvens no alto derivando com o vento.
+- weather agora aceita também 'tempestade' (chuva pesada + raios + trovão atrasado; raio no carrinho = chacoalhão + câmera lenta).
 - \`SZWorld3D.carPos('x'|'y'|'z')\` → número. \`SZWorld3D.carSpeed()\` → m/s.
 - \`SZWorld3D.scatter(n, especie)\` — espalha n cópias procedurais pelo mundo
   (pousadas no terreno, determinístico). especies: 'arvores' | 'pinheiros' |

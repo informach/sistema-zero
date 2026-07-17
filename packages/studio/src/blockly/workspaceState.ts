@@ -5856,6 +5856,20 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_w3d_tire_marks', { ON: stmt.on ? 'ligadas' : 'desligadas' }, {}, stmt.__id)
     case 'w3d:carPaint':
       return block('sz_w3d_car_paint', { PAINT: stmt.paint }, {}, stmt.__id)
+    case 'w3d:confetti':
+      return block('sz_w3d_confetti', {}, {}, stmt.__id)
+    case 'w3d:fireworks':
+      return block('sz_w3d_fireworks', {}, {}, stmt.__id)
+    case 'w3d:tornado': {
+      const secs = exprToValueBlock(valueToExpr(stmt.secs))
+      return secs === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_tornado', {}, {}, stmt.__id, { SECS: secs })
+    }
+    case 'w3d:season':
+      return block('sz_w3d_season', { SEASON: stmt.season }, {}, stmt.__id)
+    case 'w3d:clouds':
+      return block('sz_w3d_clouds', { AMOUNT: stmt.amount }, {}, stmt.__id)
     case 'w3d:cameraMode':
       return block('sz_w3d_camera_mode', { MODE: stmt.mode }, {}, stmt.__id)
     case 'w3d:cameraShake': {
