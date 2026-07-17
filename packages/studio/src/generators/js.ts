@@ -2763,6 +2763,10 @@ ${pad}});`
       return `${pad}SZWorld3D.waterfall(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
     case 'w3d:lamp':
       return `${pad}SZWorld3D.lamp(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:city':
+      return `${pad}SZWorld3D.city(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.size)}, ${JSON.stringify(stmt.mode)});`
+    case 'w3d:stringLights':
+      return `${pad}SZWorld3D.stringLights(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))});`
     case 'w3d:fireflies':
       return `${pad}SZWorld3D.fireflies(${JSON.stringify(stmt.amount)});`
     case 'w3d:campfire':

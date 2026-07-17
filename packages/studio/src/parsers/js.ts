@@ -6102,6 +6102,8 @@ function asSZWorld3DCall(expr: Node): { method: string; args: Node[] } | null {
  * (o dropdown coagiria para a 1ª opção e o round-trip mentiria). */
 const W3D_STYLES = new Set(['floresta', 'praia', 'neve', 'deserto', 'primavera', 'lua', 'fazenda'])
 const W3D_CAR_STYLES = new Set(['passeio', 'jipe', 'corrida'])
+const W3D_CITY_SIZES = new Set(['pequena', 'media', 'grande'])
+const W3D_CITY_MODES = new Set(['dia', 'neon'])
 const W3D_THINGS = new Set([
   'arvores',
   'pinheiros',
@@ -6762,6 +6764,24 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const x = toExpr(args[0], ctx)
       const z = toExpr(args[1], ctx)
       return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:lamp', x, z } : null
+    }
+    case 'city': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      if (args[2]?.type !== 'StringLiteral' || args[3]?.type !== 'StringLiteral') return null
+      const size = args[2].value as string
+      const mode = args[3].value as string
+      if (!W3D_CITY_SIZES.has(size) || !W3D_CITY_MODES.has(mode)) return null
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:city', x, z, size, mode } : null
+    }
+    case 'stringLights': {
+      const x1 = toExpr(args[0], ctx)
+      const z1 = toExpr(args[1], ctx)
+      const x2 = toExpr(args[2], ctx)
+      const z2 = toExpr(args[3], ctx)
+      return isSimpleValue(x1) && isSimpleValue(z1) && isSimpleValue(x2) && isSimpleValue(z2)
+        ? { type: 'w3d:stringLights', x1, z1, x2, z2 }
+        : null
     }
     case 'fireflies': {
       if (args[0]?.type !== 'StringLiteral') return null

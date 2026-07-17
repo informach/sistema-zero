@@ -1794,6 +1794,56 @@ export const world3DBlocks = [
     tooltip:
       'Verdadeiro SÓ no quadro em que a tecla desceu (segurar não repete). Perfeito para ações de um toque: buzinar, interagir, soltar fogos.',
   },
+  {
+    type: 'sz_w3d_city',
+    message0: 'Construir a cidadezinha 🏙️ no centro x %1 z %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    message1: 'tamanho %1 · %2',
+    args1: [
+      {
+        type: 'field_dropdown',
+        name: 'SIZE',
+        options: [
+          ['pequena', 'pequena'],
+          ['média', 'media'],
+          ['grande', 'grande'],
+        ],
+      },
+      {
+        type: 'field_dropdown',
+        name: 'MODE',
+        options: [
+          ['☀️ de dia', 'dia'],
+          ['🌃 neon à noite', 'neon'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma cidadezinha completa estilo Vocation Vista: praça com coreto e varais de luzinhas, anel de rua com faixas de pedestre, 4 ruas de entrada, casinhas, lojas e predinhos coloridos, cercas-vivas e um laguinho. O chão se aplaina sozinho. No modo neon a noite cai, chove de leve e os letreiros brilham!',
+  },
+  {
+    type: 'sz_w3d_string_lights',
+    message0: 'Pendurar um varal de luzinhas ✨ de x %1 z %2 até x %3 z %4',
+    args0: [
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Z1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Z2', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Dois postes e um fio de luzinhas penduradas entre eles (elas acendem quando escurece). Faça um caminho de festa ou decore a sua praça!',
+  },
 ]
 
 // ---- Sub-categorias da paleta (a ordem é a ordem de leitura da criança) ----
@@ -1835,6 +1885,11 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     name: '🏝️ Ilha & barco',
     colour: C,
     types: ['sz_w3d_islands', 'sz_w3d_boat', 'sz_w3d_bridge', 'sz_w3d_lighthouse'],
+  },
+  {
+    name: '🏙️ Cidade',
+    colour: C,
+    types: ['sz_w3d_city', 'sz_w3d_string_lights'],
   },
   {
     name: '🧑‍🤝‍🧑 Amigos',
@@ -2072,6 +2127,8 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     W: numShadow(4),
   },
   sz_w3d_lighthouse: { X: numShadow(50), Z: numShadow(-40) },
+  sz_w3d_city: { X: numShadow(0), Z: numShadow(0) },
+  sz_w3d_string_lights: { X1: numShadow(-8), Z1: numShadow(0), X2: numShadow(8), Z2: numShadow(0) },
   sz_w3d_lamp: { X: numShadow(6), Z: numShadow(6) },
   sz_w3d_campfire: { X: numShadow(0), Z: numShadow(8) },
   sz_w3d_push_scatter: { N: numShadow(12), X: numShadow(0), Z: numShadow(20), R: numShadow(10) },

@@ -1391,6 +1391,8 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_w3d_on_explosion',
     'sz_w3d_waterfall',
     'sz_w3d_lamp',
+    'sz_w3d_city',
+    'sz_w3d_string_lights',
     'sz_w3d_fireflies',
     'sz_w3d_campfire',
     'sz_w3d_person',

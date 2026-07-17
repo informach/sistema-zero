@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '2.1.0',
+  version: '2.2.0',
   description:
     'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: escolha o cenário (🌲🏖️❄️🏜️🌸), levante morros ou um arquipélago e passeie a pé, de carrinho ou de barco (E entra e sai). Buzina, marcas de pneu, boliche, letras e TNT para bagunçar; amigos que conversam, moedas e missões, conquistas que ficam salvas, minimapa com teleporte, clima com tempestade e tornado. Tudo com blocos simples — e o "A cada quadro" para inventar a sua mecânica.',
   category: 'games',
@@ -150,6 +150,21 @@ O que o motor já faz por você:
   entrar, "Vamos explorar!" ao descer.
 - **onde o personagem está (eixo …)** — dirigindo, é a posição do carrinho
   (o personagem está dentro!). **está dirigindo?** — verdadeiro no volante.
+
+### 🏙️ Cidade
+
+- **Construir a cidadezinha 🏙️** — uma cidade COMPLETA de um bloco só, no
+  estilo Vocation Vista: praça com coreto e varais de luzinhas, anel de rua
+  com tracejado e FAIXAS DE PEDESTRE, 4 ruas de entrada, casinhas, lojas e
+  predinhos coloridos, cercas-vivas, laguinho e postes nos cruzamentos. O
+  chão se aplaina sozinho e as ruas aparecem no minimapa. Escolha o tamanho
+  (pequena, média, grande) e o clima: ☀️ de dia ou **🌃 neon à noite** (a
+  noite cai, chove de leve e os letreiros das lojas brilham). Só cabe UMA
+  cidadezinha por mundo.
+- **Pendurar um varal de luzinhas ✨ de … até …** — dois postes e um fio de
+  lâmpadas penduradas que ACENDEM quando escurece. Decore a praça, o quintal
+  ou faça um caminho de festa (funciona em qualquer mundo, com ou sem
+  cidade).
 
 ### 🏝️ Ilha & barco
 

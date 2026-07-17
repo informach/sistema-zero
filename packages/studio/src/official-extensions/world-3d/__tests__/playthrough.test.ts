@@ -569,6 +569,69 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(lua).toBeGreaterThan(floresta * 1.8)
   })
 
+  it('R22: a cidadezinha nasce PLANA, com casas instanciadas na cena', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as { city(x: number, z: number, s: string, m: string): void }
+      w.city(0, 0, 'media', 'dia')
+    })
+    step(3)
+    // media → r 38, anel a 23.56 m; o flatten do disco (r+8) deixa TUDO na
+    // mesma altura do centro (senão o carro pulava nas ruas).
+    const c = api.groundHeight(0, 0)
+    expect(Math.abs(api.groundHeight(23.6, 0) - c)).toBeLessThan(0.25)
+    expect(Math.abs(api.groundHeight(0, -23.6) - c)).toBeLessThan(0.25)
+    expect(Math.abs(api.groundHeight(-16, 16) - c)).toBeLessThan(0.25)
+    // Casas/ruas/cercas instanciadas: a cena ganha VÁRIOS InstancedMesh.
+    const scene = renderers[0]?.scene ?? null
+    let ims = 0
+    scene?.traverse((o) => {
+      if ((o as RealTHREE.InstancedMesh).isInstancedMesh) ims++
+    })
+    expect(ims).toBeGreaterThan(8)
+  })
+
+  it('R22: o varal de luzinhas ACENDE quando escurece', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as { stringLights(a: number, b: number, c: number, d: number): void }
+      w.stringLights(-6, 0, 6, 0)
+    })
+    step(3)
+    const scene = renderers[0]?.scene ?? null
+    let bulbMat: RealTHREE.PointsMaterial | null = null
+    scene?.traverse((o) => {
+      const p = o as RealTHREE.Points
+      const m = p.material as RealTHREE.PointsMaterial | undefined
+      if (!bulbMat && p.isPoints && m && m.size === 0.55) bulbMat = m
+    })
+    expect(bulbMat).not.toBeNull()
+    expect((bulbMat as unknown as RealTHREE.PointsMaterial).opacity).toBeLessThan(0.4) // dia
+    ;(api as unknown as { setTime(n: string): void }).setTime('noite')
+    step(3)
+    expect((bulbMat as unknown as RealTHREE.PointsMaterial).opacity).toBeGreaterThan(0.9)
+  })
+
+  it('R22: modo NEON cai a noite sozinho (quando a criança não pediu hora)', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as { city(x: number, z: number, s: string, m: string): void }
+      w.city(0, 0, 'pequena', 'neon')
+    })
+    step(5)
+    const hour = (api as unknown as { timeOfDay(): number }).timeOfDay()
+    expect(hour < 6 || hour >= 18).toBe(true)
+    // E os varais da praça já nasceram acesos (nightAmount alto).
+    const scene = renderers[0]?.scene ?? null
+    let lit = false
+    scene?.traverse((o) => {
+      const p = o as RealTHREE.Points
+      const m = p.material as RealTHREE.PointsMaterial | undefined
+      if (p.isPoints && m && m.size === 0.55 && m.opacity > 0.9) lit = true
+    })
+    expect(lit).toBe(true)
+  })
+
   it('R21: a lua nasce com CRATERAS (fundo do buraco bem abaixo da borda)', async () => {
     const { api } = await loadStartedWorld((a) => {
       const w = a as unknown as { setup(o: { style: string; world: number }): void }

@@ -9281,6 +9281,28 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
         },
       }
+    case 'sz_w3d_city':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:city',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          size: f(block, 'SIZE') || 'media',
+          mode: f(block, 'MODE') || 'dia',
+        },
+      }
+    case 'sz_w3d_string_lights':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:stringLights',
+          x1: exprInput(block, 'X1', { type: 'num', value: -8 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 0 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 8 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 0 }),
+        },
+      }
     case 'sz_w3d_lamp':
       return {
         kind: 'js',

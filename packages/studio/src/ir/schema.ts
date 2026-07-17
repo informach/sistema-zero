@@ -4017,6 +4017,20 @@ export type JSStatement =
       deg: number | JSExpr
     })
   | (JSStatementCommon & { type: 'w3d:lamp'; x: number | JSExpr; z: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'w3d:city'
+      x: number | JSExpr
+      z: number | JSExpr
+      size: string
+      mode: string
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:stringLights'
+      x1: number | JSExpr
+      z1: number | JSExpr
+      x2: number | JSExpr
+      z2: number | JSExpr
+    })
   | (JSStatementCommon & { type: 'w3d:fireflies'; amount: string })
   | (JSStatementCommon & { type: 'w3d:campfire'; x: number | JSExpr; z: number | JSExpr })
   // Mundo 3D R15 "personagem a pé": rig procedural + entrar/sair do veículo.
@@ -8182,6 +8196,22 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       z: z.union([z.number(), JSExprSchema]),
       ...idField,
     }),
+    z.object({
+      type: z.literal('w3d:city'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      size: z.string(),
+      mode: z.string(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:stringLights'),
+      x1: z.union([z.number(), JSExprSchema]),
+      z1: z.union([z.number(), JSExprSchema]),
+      x2: z.union([z.number(), JSExprSchema]),
+      z2: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:fireflies'), amount: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:campfire'),
@@ -9358,6 +9388,8 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:onExplosion',
   'w3d:waterfall',
   'w3d:lamp',
+  'w3d:city',
+  'w3d:stringLights',
   'w3d:fireflies',
   'w3d:campfire',
   'w3d:person',

@@ -74,6 +74,16 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.boat(corHex)\` — barco dirigível: SÓ anda na água, encalha na praia; com personagem, E perto dele embarca; sem carro nem personagem, nasce pilotando.
 - \`SZWorld3D.bridge(x1, z1, x2, z2, largura)\` — ponte em arco: carro/personagem POR CIMA, barco POR BAIXO. \`SZWorld3D.lighthouse(x, z)\` — farol com luz girando à noite.
 - \`SZWorld3D.ambience('mar'|'passaros'|'grilos'|'desligado')\` — som de fundo sintetizado. scatter/placeThing agora aceitam 'palmeiras' 🌴.
+- 🏙️ \`SZWorld3D.city(x, z, 'pequena'|'media'|'grande', 'dia'|'neon')\` — a
+  CIDADEZINHA completa (estilo Vocation Vista): praça com coreto + varais,
+  anel de rua com faixas de pedestre, 4 ruas de entrada, casinhas/lojas/
+  predinhos coloridos instanciados, cercas-vivas, laguinho, postes nos
+  cruzamentos; o chão aplaina sozinho e as ruas aparecem no minimapa. UMA
+  por mundo. Modo 'neon' = noite + chuva leve por default (se a criança não
+  pediu outra hora/clima) + letreiros emissivos brilhando no bloom.
+- \`SZWorld3D.stringLights(x1, z1, x2, z2)\` — varal de luzinhas entre 2
+  postes (catenária; as lâmpadas acendem com o escurecer). Vale em qualquer
+  mundo, com ou sem cidade.
 - \`SZWorld3D.npc('Nome', x, z, corHex, chapeu)\` — amigo que olha p/ você de perto (cap 8). \`SZWorld3D.npcWander('Nome', raio)\` — passeia ao redor de casa.
 - \`SZWorld3D.npcTalk('Nome', () => { … })\` — roda no E perto do amigo; dentro, \`SZWorld3D.npcSay('Nome', 'fala')\` ENFILEIRA falas (cada E mostra a próxima, typewriter + blip por letra à la Animal Crossing). \`SZWorld3D.npcEmote('Nome', 'acenar'|'pular'|'girar'|'dancar')\`.
 - \`SZWorld3D.coinsScatter(n)\` / \`coinsRing(n, x, z, raio)\` / \`coinsLine(n, x1, z1, x2, z2)\` — moedas girando (cap 512; nunca na água). Pegar = encostar: plim + HUD 🪙 automático + \`SZWorld3D.onCollect(() => { … })\`. \`SZWorld3D.coinCount()\` → total.

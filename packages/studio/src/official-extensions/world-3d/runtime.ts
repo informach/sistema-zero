@@ -226,6 +226,13 @@ export const world3DRuntime = `import * as THREE from 'three';
   // ---- R14 "natureza acesa": cachoeira, postes, vaga-lumes, fogueira, espuma ----
   var waterfalls = [];          // { mesh, mat, foam, x, z }
   var lamps = [];               // { x, z, globeMat }
+  // 🏙️ Cidade: config + geometria do grafo viário (anel + 4 raios). UMA por
+  // mundo; o grafo é ANALÍTICO (círculo + retas) — o trânsito da R23 deriva
+  // as lanes daqui sem guardar polilinha.
+  var cityCfg = null;           // { x, z, r, size, mode }
+  var cityGraph = null;         // { cx, cz, ringR, plazaR, roadW, entries:[{ang,x,z}], crossings:[{ang,x,z}] }
+  var cityGroup = null;         // raiz de TUDO da cidade (rebuild ao vivo troca inteira)
+  var stringLights = [];        // { bulbsMat } — varais (opacidade segue a noite)
   var LAMP_MAX = 24;
   var lampLights = null;        // pool de até 4 PointLights REAIS (os postes mais perto)
   var firefliesPts = null;      // { mesh, mat, home:Float32Array, n }
@@ -2742,6 +2749,8 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'questHud') refreshQuestHud();
       else if (r.kind === 'whisperCorner') buildWhisperCorner(r.x, r.z);
       else if (r.kind === 'flameNote') addFlame(r.x, r.z, r.text, false);
+      else if (r.kind === 'city') buildCity();
+      else if (r.kind === 'stringLights') buildStringSpan(r.x1, r.z1, r.x2, r.z2);
     }
     // 2ª passada: o "passear" precisa do amigo já criado (ordem livre dos blocos).
     for (var j = 0; j < decorRecipes.length; j++) {
@@ -3045,6 +3054,15 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (config.style === 'lua' && !atmoUsed) {
         timeOfDay = 0;
         atmoUsed = true;
+      }
+      // 🌃 Cidade neon: noite + chuva leve por default (só se a criança não
+      // pediu a própria hora/clima).
+      if (cityCfg && cityCfg.mode === 'neon') {
+        if (!atmoUsed) {
+          timeOfDay = 0;
+          atmoUsed = true;
+        }
+        if (weatherKind === 'limpo') weatherKind = 'chuva';
       }
       if (atmoUsed) {
         _skyDrawnAt = -1;
@@ -3660,6 +3678,22 @@ export const world3DRuntime = `import * as THREE from 'three';
           if (heightAt(wx2, wz2) < waterCfg.y - 0.2) g.fillRect(gx * cell, gy * cell, cell + 1, cell + 1);
         }
       }
+    }
+    if (cityGraph) {
+      // As ruas da cidadezinha: anel + 4 raios em traço cinza.
+      g.strokeStyle = '#6b7280';
+      g.lineWidth = Math.max(2, size * 0.022);
+      g.beginPath();
+      g.arc(toPx(cityGraph.cx), toPx(cityGraph.cz), (cityGraph.ringR / config.world) * size, 0, Math.PI * 2);
+      g.stroke();
+      for (i = 0; i < cityGraph.entries.length; i++) {
+        var en = cityGraph.entries[i];
+        g.beginPath();
+        g.moveTo(toPx(cityGraph.cx + Math.cos(en.ang) * cityGraph.plazaR), toPx(cityGraph.cz + Math.sin(en.ang) * cityGraph.plazaR));
+        g.lineTo(toPx(cityGraph.cx + Math.cos(en.ang) * cityGraph.ringR), toPx(cityGraph.cz + Math.sin(en.ang) * cityGraph.ringR));
+        g.stroke();
+      }
+      dot(cityGraph.cx, cityGraph.cz, '#d9c9a3', 3);
     }
     for (i = 0; i < points.length; i++) dot(points[i].x, points[i].z, '#22d3ee', 3);
     for (i = 0; i < npcs.length; i++) dot(npcs[i].x, npcs[i].z, '#f97316', 3);
@@ -4923,6 +4957,484 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- 🏙️ Cidade: praça + anel viário + 4 ruas radiais + casas instanciadas ----
+  // Estilo Vocation Vista: cidadezinha circular. TODO o pesado é instanciado
+  // (1 InstancedMesh por peça de arquétipo) e a malha viária é UMA geometria
+  // mesclada com cor por vértice — a cidade inteira custa ~13 draw calls.
+
+  var CITY_SIZES = { pequena: 28, media: 38, grande: 48 };
+  var CITY_WALL_COLORS = ['#f9c0c0', '#fcd9a8', '#fde68a', '#bbf7d0', '#bfdbfe', '#ddd6fe', '#f5d0fe', '#fecdd3'];
+  var CITY_NEON_COLORS = ['#22d3ee', '#f472b6', '#a3e635', '#fb923c', '#c084fc'];
+  // Arquétipos: a PAREDE é branca e ganha cor pastel POR INSTÂNCIA; as demais
+  // peças têm cor fixa (telhado/porta/janelas/toldo).
+  var CITY_ARCH = {
+    casinha: {
+      coll: 2.3,
+      wall: { g: 'box', x: 0, y: 1.1, z: 0, sx: 3.4, sy: 2.2, sz: 3.0 },
+      parts: [
+        { g: 'pyr', color: '#c2553f', x: 0, y: 2.95, z: 0, sx: 4.4, sy: 1.5, sz: 4.0 },
+        { g: 'box', color: '#3b2f26', x: 0, y: 0.85, z: 1.53, sx: 0.9, sy: 1.7, sz: 0.1 },
+        { g: 'box', color: '#9cc3e8', x: -1.05, y: 1.35, z: 1.53, sx: 0.8, sy: 0.7, sz: 0.08 },
+        { g: 'box', color: '#9cc3e8', x: 1.05, y: 1.35, z: 1.53, sx: 0.8, sy: 0.7, sz: 0.08 }
+      ]
+    },
+    sobrado: {
+      coll: 2.5,
+      wall: { g: 'box', x: 0, y: 2.0, z: 0, sx: 3.2, sy: 4.0, sz: 3.2 },
+      parts: [
+        { g: 'pyr', color: '#7c5cbf', x: 0, y: 4.55, z: 0, sx: 4.2, sy: 1.2, sz: 4.2 },
+        { g: 'box', color: '#3b2f26', x: 0, y: 0.85, z: 1.63, sx: 0.9, sy: 1.7, sz: 0.1 },
+        { g: 'box', color: '#9cc3e8', x: -0.9, y: 3.0, z: 1.63, sx: 0.7, sy: 0.8, sz: 0.08 },
+        { g: 'box', color: '#9cc3e8', x: 0.9, y: 3.0, z: 1.63, sx: 0.7, sy: 0.8, sz: 0.08 }
+      ]
+    },
+    loja: {
+      coll: 2.6,
+      wall: { g: 'box', x: 0, y: 1.25, z: 0, sx: 4.2, sy: 2.5, sz: 3.2 },
+      parts: [
+        { g: 'box', color: '#4b5563', x: 0, y: 2.62, z: 0, sx: 4.4, sy: 0.24, sz: 3.4 },
+        { g: 'box', color: '#ef6a6a', x: 0, y: 2.15, z: 1.75, sx: 3.6, sy: 0.32, sz: 0.9 },
+        { g: 'box', color: '#dbeafe', x: 0, y: 1.05, z: 1.63, sx: 2.6, sy: 1.5, sz: 0.1 },
+        { g: 'box', color: '#3b2f26', x: 1.6, y: 0.9, z: 1.63, sx: 0.8, sy: 1.8, sz: 0.1 }
+      ]
+    },
+    predinho: {
+      coll: 2.6,
+      wall: { g: 'box', x: 0, y: 3.0, z: 0, sx: 3.6, sy: 6.0, sz: 3.6 },
+      parts: [
+        { g: 'box', color: '#4b5563', x: 0, y: 6.12, z: 0, sx: 3.8, sy: 0.24, sz: 3.8 },
+        { g: 'box', color: '#9cc3e8', x: -0.95, y: 2.0, z: 1.83, sx: 0.85, sy: 3.4, sz: 0.08 },
+        { g: 'box', color: '#9cc3e8', x: 0.95, y: 2.0, z: 1.83, sx: 0.85, sy: 3.4, sz: 0.08 },
+        { g: 'box', color: '#3b2f26', x: 0, y: 0.95, z: 1.83, sx: 1.0, sy: 1.9, sz: 0.1 }
+      ]
+    }
+  };
+
+  function ensureCityGeos() {
+    ensureUnitGeos();
+    if (!UNIT_GEOS.box) UNIT_GEOS.box = new THREE.BoxGeometry(1, 1, 1);
+    if (!UNIT_GEOS.pyr) {
+      // Telhado piramidal ALINHADO (cone de 4 lados girado 45°, assado na geo).
+      var pyr = new THREE.ConeGeometry(0.5, 1, 4);
+      pyr.rotateY(Math.PI / 4);
+      UNIT_GEOS.pyr = pyr;
+    }
+  }
+
+  /** Yaw que leva o eixo X local do quad deitado à direção mundial (dx,dz). */
+  function yawForDir(dx, dz) {
+    return Math.atan2(-dz, dx);
+  }
+
+  function cityLakePos() {
+    return {
+      x: cityCfg.x + Math.cos(3.93) * cityCfg.r * 0.42,
+      z: cityCfg.z + Math.sin(3.93) * cityCfg.r * 0.42
+    };
+  }
+
+  /** Reserva do terreno + grafo (SÓ dados — padrão reserveGallery). */
+  function reserveCity() {
+    var c = cityCfg;
+    var y0 = baseHeightAt(c.x, c.z);
+    terrainMods.push({ kind: 'flatten', x: c.x, z: c.z, r: c.r + 8, y: y0 });
+    exclusions.push({ x: c.x, z: c.z, r: c.r + 6 });
+    var ringR = c.r * 0.62;
+    var plazaR = Math.max(6, c.r * 0.22);
+    var entries = [];
+    var crossings = [];
+    for (var i = 0; i < 4; i++) {
+      var ang = (i * Math.PI) / 2;
+      entries.push({ ang: ang, x: c.x + Math.cos(ang) * plazaR, z: c.z + Math.sin(ang) * plazaR });
+      crossings.push({ ang: ang, x: c.x + Math.cos(ang) * ringR, z: c.z + Math.sin(ang) * ringR });
+    }
+    cityGraph = { cx: c.x, cz: c.z, ringR: ringR, plazaR: plazaR, roadW: 5, entries: entries, crossings: crossings };
+    if (!waterCfg) {
+      var lag = cityLakePos();
+      terrainMods.push({ kind: 'flatten', x: lag.x, z: lag.z, r: 6, y: y0 - 1.4 });
+    }
+  }
+
+  function cityColorPush(colArr, c) {
+    colArr.push(c.r, c.g, c.b);
+  }
+
+  /** Malha viária inteira (asfalto/calçada/praça) = UMA geometria, cor por vértice. */
+  function buildCityRoads(cy) {
+    var G = cityGraph;
+    var pos = [];
+    var col = [];
+    var asphalt = new THREE.Color('#3f4854');
+    var walk = new THREE.Color('#a8adb8');
+    var plaza = new THREE.Color('#d9c9a3');
+    function quad(ax, az, bx, bz, cx2, cz2, dx2, dz2, y, c) {
+      // dois triângulos (a,b,c) (a,c,d)
+      pos.push(ax, y, az, bx, y, bz, cx2, y, cz2, ax, y, az, cx2, y, cz2, dx2, y, dz2);
+      for (var t = 0; t < 6; t++) cityColorPush(col, c);
+    }
+    function annulusBand(r0, r1, y, c) {
+      var SEG = 48;
+      for (var i = 0; i < SEG; i++) {
+        var a0 = (i / SEG) * Math.PI * 2;
+        var a1 = ((i + 1) / SEG) * Math.PI * 2;
+        quad(
+          G.cx + Math.cos(a0) * r0, G.cz + Math.sin(a0) * r0,
+          G.cx + Math.cos(a0) * r1, G.cz + Math.sin(a0) * r1,
+          G.cx + Math.cos(a1) * r1, G.cz + Math.sin(a1) * r1,
+          G.cx + Math.cos(a1) * r0, G.cz + Math.sin(a1) * r0,
+          y, c
+        );
+      }
+    }
+    function radialBand(ang, off, w, y, c) {
+      // faixa da praça ao anel, deslocada 'off' pro lado (perpendicular).
+      var px = -Math.sin(ang);
+      var pz = Math.cos(ang);
+      var r0 = G.plazaR - 0.5;
+      var r1 = G.ringR + G.roadW / 2 + 1.4;
+      quad(
+        G.cx + Math.cos(ang) * r0 + px * (off - w / 2), G.cz + Math.sin(ang) * r0 + pz * (off - w / 2),
+        G.cx + Math.cos(ang) * r0 + px * (off + w / 2), G.cz + Math.sin(ang) * r0 + pz * (off + w / 2),
+        G.cx + Math.cos(ang) * r1 + px * (off + w / 2), G.cz + Math.sin(ang) * r1 + pz * (off + w / 2),
+        G.cx + Math.cos(ang) * r1 + px * (off - w / 2), G.cz + Math.sin(ang) * r1 + pz * (off - w / 2),
+        y, c
+      );
+    }
+    // Praça (leque) + orla da praça.
+    var SEGP = 32;
+    for (var p = 0; p < SEGP; p++) {
+      var b0 = (p / SEGP) * Math.PI * 2;
+      var b1 = ((p + 1) / SEGP) * Math.PI * 2;
+      pos.push(
+        G.cx, cy + 0.03, G.cz,
+        G.cx + Math.cos(b0) * G.plazaR, cy + 0.03, G.cz + Math.sin(b0) * G.plazaR,
+        G.cx + Math.cos(b1) * G.plazaR, cy + 0.03, G.cz + Math.sin(b1) * G.plazaR
+      );
+      for (var t2 = 0; t2 < 3; t2++) cityColorPush(col, plaza);
+    }
+    // Anel: calçada interna, asfalto, calçada externa.
+    annulusBand(G.ringR - G.roadW / 2 - 1.4, G.ringR - G.roadW / 2, cy + 0.035, walk);
+    annulusBand(G.ringR - G.roadW / 2, G.ringR + G.roadW / 2, cy + 0.045, asphalt);
+    annulusBand(G.ringR + G.roadW / 2, G.ringR + G.roadW / 2 + 1.4, cy + 0.035, walk);
+    // Raios: asfalto + calçadas dos dois lados.
+    for (var rr = 0; rr < 4; rr++) {
+      var ang2 = G.entries[rr].ang;
+      radialBand(ang2, 0, G.roadW, cy + 0.044, asphalt);
+      radialBand(ang2, -(G.roadW / 2 + 0.7), 1.4, cy + 0.034, walk);
+      radialBand(ang2, G.roadW / 2 + 0.7, 1.4, cy + 0.034, walk);
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    geo.computeVertexNormals();
+    var mesh = new THREE.Mesh(geo, toonMaterial({ color: '#ffffff', vertexColors: true }));
+    mesh.receiveShadow = true;
+    cityGroup.add(mesh);
+  }
+
+  /** Um quad deitado por instância (tracejado + faixas de pedestre). */
+  function setFlatInstance(mesh, i, x, y, z, yaw, sx, sz) {
+    _dummy.position.set(x, y, z);
+    _dummy.rotation.set(0, yaw, 0);
+    _dummy.scale.set(sx, 1, sz);
+    _dummy.updateMatrix();
+    mesh.setMatrixAt(i, _dummy.matrix);
+  }
+
+  function buildCityMarkings(cy) {
+    var G = cityGraph;
+    ensureDummies();
+    var items = [];
+    // Tracejado do anel (a cada ~5 m, tangente).
+    var SEG = Math.floor((Math.PI * 2 * G.ringR) / 5);
+    for (var i = 0; i < SEG; i++) {
+      var a = (i / SEG) * Math.PI * 2;
+      items.push({
+        x: G.cx + Math.cos(a) * G.ringR, z: G.cz + Math.sin(a) * G.ringR,
+        yaw: yawForDir(-Math.sin(a), Math.cos(a)), sx: 1.5, sz: 0.26
+      });
+    }
+    // Tracejado dos raios + FAIXAS DE PEDESTRE (na entrada da praça e antes do anel).
+    for (var r2 = 0; r2 < 4; r2++) {
+      var ang = G.entries[r2].ang;
+      var dx = Math.cos(ang);
+      var dz = Math.sin(ang);
+      for (var d = G.plazaR + 4.5; d < G.ringR - G.roadW / 2 - 2.5; d += 4) {
+        items.push({ x: G.cx + dx * d, z: G.cz + dz * d, yaw: yawForDir(dx, dz), sx: 1.5, sz: 0.26 });
+      }
+      for (var s = 0; s < 5; s++) {
+        var dd = G.plazaR + 1.2 + s * 0.85;
+        items.push({ x: G.cx + dx * dd, z: G.cz + dz * dd, yaw: yawForDir(-dz, dx), sx: 3.8, sz: 0.42 });
+        var dd2 = G.ringR - G.roadW / 2 - 1.4 - s * 0.85;
+        items.push({ x: G.cx + dx * dd2, z: G.cz + dz * dd2, yaw: yawForDir(-dz, dx), sx: 3.8, sz: 0.42 });
+      }
+    }
+    var quadGeo = new THREE.PlaneGeometry(1, 1);
+    quadGeo.rotateX(-Math.PI / 2);
+    var mesh = new THREE.InstancedMesh(quadGeo, new THREE.MeshBasicMaterial({ color: '#e5e7eb' }), items.length);
+    for (var k = 0; k < items.length; k++) {
+      setFlatInstance(mesh, k, items[k].x, cy + 0.06, items[k].z, items[k].yaw, items[k].sx, items[k].sz);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    cityGroup.add(mesh);
+  }
+
+  /** Lotes das casas: na orla EXTERNA do anel, de frente pra praça. */
+  function cityLots() {
+    var G = cityGraph;
+    var n = cityCfg.size === 'pequena' ? 10 : cityCfg.size === 'grande' ? 18 : 14;
+    var rng = mulberry(808 + Math.round(cityCfg.x * 7 + cityCfg.z * 13));
+    var lots = [];
+    var lotR = G.ringR + G.roadW / 2 + 4.6;
+    for (var i = 0; i < n; i++) {
+      var ang = (i / n) * Math.PI * 2 + 0.14;
+      var nearEntry = false;
+      for (var e = 0; e < 4; e++) {
+        var da = Math.abs(Math.atan2(Math.sin(ang - G.entries[e].ang), Math.cos(ang - G.entries[e].ang)));
+        if (da < 0.3) nearEntry = true;
+      }
+      if (nearEntry) continue;
+      var x = G.cx + Math.cos(ang) * lotR;
+      var z = G.cz + Math.sin(ang) * lotR;
+      // frente (+z local) apontando pro CENTRO da praça.
+      var yaw = Math.atan2(G.cx - x, G.cz - z);
+      lots.push({ x: x, z: z, yaw: yaw, color: CITY_WALL_COLORS[Math.floor(rng() * CITY_WALL_COLORS.length)] });
+    }
+    return lots;
+  }
+
+  function cityLocalOf(p) {
+    var m = new THREE.Matrix4();
+    m.compose(
+      new THREE.Vector3(p.x || 0, p.y || 0, p.z || 0),
+      new THREE.Quaternion(),
+      new THREE.Vector3(p.sx || 1, p.sy || 1, p.sz || 1)
+    );
+    return m;
+  }
+
+  function buildCityBuildings(lots, cy) {
+    if (!lots.length) return;
+    ensureCityGeos();
+    ensureDummies();
+    var archOrder = ['casinha', 'loja', 'sobrado', 'casinha', 'predinho', 'loja'];
+    var byArch = {};
+    for (var i = 0; i < lots.length; i++) {
+      var an = archOrder[i % archOrder.length];
+      if (!byArch[an]) byArch[an] = [];
+      byArch[an].push(lots[i]);
+      colliderAdd(lots[i].x, lots[i].z, CITY_ARCH[an].coll);
+      lots[i].arch = an;
+    }
+    for (var name in byArch) {
+      var spec = CITY_ARCH[name];
+      var group = byArch[name];
+      // Parede: material BRANCO + cor pastel por instância (setColorAt).
+      var wallLocal = cityLocalOf(spec.wall);
+      var wallMesh = new THREE.InstancedMesh(UNIT_GEOS[spec.wall.g], toonMaterial({ color: '#ffffff' }), group.length);
+      wallMesh.castShadow = true;
+      for (var w = 0; w < group.length; w++) {
+        var lot = group[w];
+        composeInstance(wallMesh, w, lot.x, heightAt(lot.x, lot.z), lot.z, lot.yaw, 1, wallLocal);
+        wallMesh.setColorAt(w, new THREE.Color(lot.color));
+      }
+      wallMesh.instanceMatrix.needsUpdate = true;
+      if (wallMesh.instanceColor) wallMesh.instanceColor.needsUpdate = true;
+      cityGroup.add(wallMesh);
+      // Peças de cor fixa (telhado/porta/janelas/toldo): 1 IM por peça.
+      for (var pi = 0; pi < spec.parts.length; pi++) {
+        var part = spec.parts[pi];
+        var local = cityLocalOf(part);
+        var pm = new THREE.InstancedMesh(UNIT_GEOS[part.g], speciesMat(part.color), group.length);
+        pm.castShadow = true;
+        for (var j = 0; j < group.length; j++) {
+          composeInstance(pm, j, group[j].x, heightAt(group[j].x, group[j].z), group[j].z, group[j].yaw, 1, local);
+        }
+        pm.instanceMatrix.needsUpdate = true;
+        cityGroup.add(pm);
+      }
+    }
+  }
+
+  /** Cercas-vivas ao redor da praça (com vãos nas 4 entradas). */
+  function buildCityHedges(cy) {
+    var G = cityGraph;
+    ensureCityGeos();
+    ensureDummies();
+    var items = [];
+    var hr = G.plazaR + 1.6;
+    var SEG = Math.floor((Math.PI * 2 * hr) / 1.9);
+    for (var i = 0; i < SEG; i++) {
+      var a = (i / SEG) * Math.PI * 2;
+      var skip = false;
+      for (var e = 0; e < 4; e++) {
+        var da = Math.abs(Math.atan2(Math.sin(a - G.entries[e].ang), Math.cos(a - G.entries[e].ang)));
+        if (da < 0.42) skip = true;
+      }
+      if (skip) continue;
+      items.push({ x: G.cx + Math.cos(a) * hr, z: G.cz + Math.sin(a) * hr, yaw: yawForDir(-Math.sin(a), Math.cos(a)) });
+    }
+    if (!items.length) return;
+    var mesh = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#2f7a3a'), items.length);
+    mesh.castShadow = true;
+    for (var k = 0; k < items.length; k++) {
+      _dummy.position.set(items[k].x, cy + 0.45, items[k].z);
+      _dummy.rotation.set(0, items[k].yaw, 0);
+      _dummy.scale.set(1.7, 0.9, 0.7);
+      _dummy.updateMatrix();
+      mesh.setMatrixAt(k, _dummy.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    cityGroup.add(mesh);
+  }
+
+  /** Coreto central da praça (base + 4 postes + telhado). */
+  function buildCityCoreto(cy) {
+    var G = cityGraph;
+    var base = new THREE.Mesh(new THREE.CylinderGeometry(G.plazaR * 0.34, G.plazaR * 0.38, 0.5, 12), toonMaterial({ color: '#c9a06a' }));
+    base.position.set(G.cx, cy + 0.25, G.cz);
+    base.castShadow = true;
+    cityGroup.add(base);
+    var postGeo = new THREE.CylinderGeometry(0.09, 0.09, 2.6, 6);
+    var postMat = toonMaterial({ color: '#7a5a38' });
+    for (var i = 0; i < 4; i++) {
+      var a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+      var post = new THREE.Mesh(postGeo, postMat);
+      post.position.set(G.cx + Math.cos(a) * G.plazaR * 0.26, cy + 1.7, G.cz + Math.sin(a) * G.plazaR * 0.26);
+      cityGroup.add(post);
+    }
+    var roof = new THREE.Mesh(new THREE.ConeGeometry(G.plazaR * 0.4, 1.4, 8), toonMaterial({ color: '#b8543f' }));
+    roof.position.set(G.cx, cy + 3.6, G.cz);
+    roof.castShadow = true;
+    cityGroup.add(roof);
+    colliderAdd(G.cx, G.cz, G.plazaR * 0.4);
+  }
+
+  /** Varal de luzinhas entre 2 postes (catenária + bolbos que acendem à noite). */
+  function buildStringSpan(x1, z1, x2, z2) {
+    if (!scene) return;
+    var parent = cityGroup || scene;
+    var y1 = heightAt(x1, z1);
+    var y2 = heightAt(x2, z2);
+    var poleGeo = new THREE.CylinderGeometry(0.07, 0.09, 3.1, 6);
+    var poleMat = toonMaterial({ color: '#334155' });
+    var p1 = new THREE.Mesh(poleGeo, poleMat);
+    p1.position.set(x1, y1 + 1.55, z1);
+    parent.add(p1);
+    var p2 = new THREE.Mesh(poleGeo, poleMat);
+    p2.position.set(x2, y2 + 1.55, z2);
+    parent.add(p2);
+    var top1 = y1 + 3.0;
+    var top2 = y2 + 3.0;
+    var len = Math.sqrt((x2 - x1) * (x2 - x1) + (z2 - z1) * (z2 - z1));
+    var sag = Math.min(1.1, 0.35 + len * 0.05);
+    var SEG = 14;
+    var linePos = [];
+    var bulbPos = [];
+    for (var i = 0; i < SEG; i++) {
+      var t0 = i / SEG;
+      var t1 = (i + 1) / SEG;
+      var ax = x1 + (x2 - x1) * t0;
+      var az = z1 + (z2 - z1) * t0;
+      var ay = top1 + (top2 - top1) * t0 - sag * 4 * t0 * (1 - t0);
+      var bx = x1 + (x2 - x1) * t1;
+      var bz = z1 + (z2 - z1) * t1;
+      var by = top1 + (top2 - top1) * t1 - sag * 4 * t1 * (1 - t1);
+      linePos.push(ax, ay, az, bx, by, bz);
+      if (i > 0) bulbPos.push(ax, ay - 0.12, az);
+    }
+    var lineGeo = new THREE.BufferGeometry();
+    lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePos, 3));
+    parent.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: '#1f2937' })));
+    var bulbGeo = new THREE.BufferGeometry();
+    bulbGeo.setAttribute('position', new THREE.Float32BufferAttribute(bulbPos, 3));
+    var bulbMat = new THREE.PointsMaterial({
+      map: ensureSpriteTex(), color: '#ffe9a3', size: 0.55,
+      transparent: true, opacity: 0.25, depthWrite: false, sizeAttenuation: true
+    });
+    var pts = new THREE.Points(bulbGeo, bulbMat);
+    pts.frustumCulled = false;
+    parent.add(pts);
+    stringLights.push({ bulbsMat: bulbMat });
+  }
+
+  function stepStringLights() {
+    if (!stringLights.length) return;
+    var o = 0.22 + nightAmount * 0.78;
+    for (var i = 0; i < stringLights.length; i++) stringLights[i].bulbsMat.opacity = o;
+  }
+
+  /** Laguinho decorativo (a depressão foi reservada; aqui só o espelho d'água). */
+  function buildCityLake(cy) {
+    var lag = cityLakePos();
+    var geo = new THREE.CircleGeometry(5.2, 20);
+    geo.rotateX(-Math.PI / 2);
+    var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: '#2b6cb0', transparent: true, opacity: 0.9 }));
+    mesh.position.set(lag.x, cy - 0.55, lag.z);
+    cityGroup.add(mesh);
+  }
+
+  /** Letreiros neon (quads emissivos sobre a frente das lojas/predinhos). */
+  function buildCityNeon(lots, cy) {
+    ensureDummies();
+    var alvo = [];
+    for (var i = 0; i < lots.length; i++) {
+      if (lots[i].arch === 'loja' || lots[i].arch === 'predinho') alvo.push(lots[i]);
+    }
+    if (!alvo.length) return;
+    var geo = new THREE.PlaneGeometry(1, 1);
+    var mesh = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: '#ffffff' }), alvo.length);
+    for (var k = 0; k < alvo.length; k++) {
+      var lot = alvo[k];
+      var off = lot.arch === 'predinho' ? 1.95 : 1.75;
+      var fx = lot.x + Math.sin(lot.yaw) * off;
+      var fz = lot.z + Math.cos(lot.yaw) * off;
+      _dummy.position.set(fx, heightAt(lot.x, lot.z) + (lot.arch === 'predinho' ? 5.4 : 2.95), fz);
+      _dummy.rotation.set(0, lot.yaw, 0);
+      _dummy.scale.set(2.3, 0.62, 1);
+      _dummy.updateMatrix();
+      mesh.setMatrixAt(k, _dummy.matrix);
+      mesh.setColorAt(k, new THREE.Color(CITY_NEON_COLORS[k % CITY_NEON_COLORS.length]));
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    cityGroup.add(mesh);
+  }
+
+  function buildCity() {
+    if (!scene || !cityCfg || !cityGraph) return;
+    if (cityGroup) {
+      try { scene.remove(cityGroup); } catch (e) {}
+    }
+    cityGroup = new THREE.Group();
+    scene.add(cityGroup);
+    var G = cityGraph;
+    var cy = heightAt(G.cx, G.cz);
+    buildCityRoads(cy);
+    buildCityMarkings(cy);
+    var lots = cityLots();
+    buildCityBuildings(lots, cy);
+    buildCityHedges(cy);
+    buildCityCoreto(cy);
+    // Postes nos 4 cruzamentos do anel (entram no orçamento normal de luz).
+    for (var i = 0; i < G.crossings.length; i++) {
+      addLamp(G.crossings[i].x + 3.4, G.crossings[i].z + 3.4);
+    }
+    // Varais da praça: quadrado entre os 4 postes diagonais.
+    var vp = [];
+    for (var v = 0; v < 4; v++) {
+      var a = (v / 4) * Math.PI * 2 + Math.PI / 4;
+      vp.push({ x: G.cx + Math.cos(a) * (G.plazaR - 0.8), z: G.cz + Math.sin(a) * (G.plazaR - 0.8) });
+    }
+    for (var sImp = 0; sImp < 4; sImp++) {
+      var q1 = vp[sImp];
+      var q2 = vp[(sImp + 1) % 4];
+      buildStringSpan(q1.x, q1.z, q2.x, q2.z);
+    }
+    if (!waterCfg) buildCityLake(cy);
+    if (cityCfg.mode === 'neon') buildCityNeon(lots, cy);
+  }
+
   var FIREFLY_AMOUNTS = { pouca: 30, media: 80, muita: 150 };
 
   function buildFireflies(amount) {
@@ -6045,6 +6557,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepExplosives(dt);
     stepWaterfalls();
     stepLamps();
+    stepStringLights();
     stepFireflies();
     stepCampfires(dt);
     stepBoat(dt);
@@ -6227,6 +6740,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     waterfalls = [];
     lamps = [];
     lampLights = null;
+    cityCfg = null;
+    cityGraph = null;
+    cityGroup = null;
+    stringLights = [];
     firefliesPts = null;
     campfires = [];
     _campRespawn = null;
@@ -6901,6 +7418,44 @@ export const world3DRuntime = `import * as THREE from 'three';
         return;
       }
       addLamp(x, z);
+    }),
+    // 🏙️ Cidade & trânsito
+    city: guard('city', function (x, z, size, mode) {
+      if (cityCfg) {
+        warn('já tem uma cidadezinha — só cabe UMA por mundo (mude o tamanho nela)');
+        return;
+      }
+      var sz = text(size, 'media');
+      if (!CITY_SIZES[sz]) {
+        warn('não conheço o tamanho "' + sz + '" — usando media (tem: pequena, media, grande)');
+        sz = 'media';
+      }
+      var md = text(mode, 'dia');
+      if (md !== 'dia' && md !== 'neon') {
+        warn('não conheço o modo "' + md + '" — usando dia (tem: dia, neon)');
+        md = 'dia';
+      }
+      cityCfg = { x: num(x, 0), z: num(z, 0), r: CITY_SIZES[sz], size: sz, mode: md };
+      reserveCity();
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'city' });
+        return;
+      }
+      // Ao vivo: o terreno re-aplaina agora e a cidade nasce na hora.
+      buildTerrain();
+      if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
+      buildCity();
+    }),
+    stringLights: guard('stringLights', function (x1, z1, x2, z2) {
+      if (!worldReady) {
+        decorRecipes.push({
+          kind: 'stringLights',
+          x1: num(x1, -8), z1: num(z1, 0), x2: num(x2, 8), z2: num(z2, 0)
+        });
+        return;
+      }
+      buildStringSpan(num(x1, -8), num(z1, 0), num(x2, 8), num(z2, 0));
     }),
     fireflies: guard('fireflies', function (amount) {
       var fa = text(amount, 'media');
