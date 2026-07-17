@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '1.7.0',
+  version: '1.8.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -173,6 +173,20 @@ O que o motor já faz por você:
   mostra a próxima, letra por letra, com biplinhos de voz (cada letra tem o
   seu som — o "idioma" dos jogos profissionais).
 - **O amigo faz acenar/pulinho/girar/dançar** — as gracinhas dele.
+
+### ⭐ Moedas & missões
+
+- **Espalhar … moedas 🪙 / em anel / em fila** — moedas douradas girando
+  (nunca embaixo d'água). Encoste para pegar: plim + contador no canto.
+- **Quando pegar uma moeda** — o gancho da coleta. A META é sua: "se
+  **quantas moedas pegou** ≥ 15 → completar a missão" — você monta a regra
+  com os blocos de lógica (é assim que os grandes jogos fazem).
+- **Criar a missão …: …** — a missão ATIVA aparece sozinha no painel.
+  **Completar a missão** solta confete + fanfarra e chama o **Quando
+  completar** (a recompensa: fogos, uma fala do amigo, a próxima missão).
+- **Mostrar o ícone ❗/⭐/🎯/💰 flutuando sobre …** — o "olhe aqui!" que
+  guia o jogador. **Apontar a seta-guia 🧭** — uma seta na tela gira
+  apontando o alvo e some quando você chega.
 
 ### 🌦️ Céu & clima
 

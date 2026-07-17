@@ -6122,6 +6122,7 @@ const W3D_SEASONS = new Set(['primavera', 'verao', 'outono', 'inverno'])
 const W3D_CLOUD_AMOUNTS = new Set(['nenhuma', 'poucas', 'muitas'])
 const W3D_PUSH_THINGS = new Set(['tijolo', 'banco', 'cerca', 'lanterna', 'cone'])
 const W3D_FIREFLY_AMOUNTS = new Set(['pouca', 'media', 'muita'])
+const W3D_MARKER_ICONS = new Set(['alerta', 'estrela', 'alvo', 'moeda'])
 const W3D_HATS = new Set(['nenhum', 'bone', 'palha', 'coroa', 'capacete'])
 const W3D_ACCESSORIES = new Set(['nenhum', 'jetpack', 'botas'])
 const W3D_EMOTES = new Set(['acenar', 'pular', 'girar', 'dancar'])
@@ -6157,6 +6158,7 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     if (W3D_POS_AXES.has(paxis)) return { type: 'w3d:personPos', axis: paxis as 'x' | 'y' | 'z' }
   }
   if (method === 'isDriving' && args.length === 0) return { type: 'w3d:isDriving' }
+  if (method === 'coinCount' && args.length === 0) return { type: 'w3d:coinCount' }
   if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
     return { type: 'w3d:keyDown', key: args[0].value as string }
   }
@@ -6528,6 +6530,72 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       const amount = args[0].value as string
       return W3D_CLOUD_AMOUNTS.has(amount) ? { type: 'w3d:clouds', amount } : null
+    }
+    case 'coinsScatter': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'w3d:coinsScatter', n } : null
+    }
+    case 'coinsRing': {
+      const n = toExpr(args[0], ctx)
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const r = toExpr(args[3], ctx)
+      return isSimpleValue(n) && isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(r)
+        ? { type: 'w3d:coinsRing', n, x, z, r }
+        : null
+    }
+    case 'coinsLine': {
+      const n = toExpr(args[0], ctx)
+      const x1 = toExpr(args[1], ctx)
+      const z1 = toExpr(args[2], ctx)
+      const x2 = toExpr(args[3], ctx)
+      const z2 = toExpr(args[4], ctx)
+      return isSimpleValue(n) &&
+        isSimpleValue(x1) &&
+        isSimpleValue(z1) &&
+        isSimpleValue(x2) &&
+        isSimpleValue(z2)
+        ? { type: 'w3d:coinsLine', n, x1, z1, x2, z2 }
+        : null
+    }
+    case 'onCollect': {
+      if (!isFn(args[0]) || (args[0].params ?? []).length > 0) return null
+      return { type: 'w3d:onCollect', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'quest': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'w3d:quest', name: args[0].value as string, desc: args[1].value as string }
+    }
+    case 'questDone': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'w3d:questDone', name: args[0].value as string }
+    }
+    case 'onQuestDone': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      if (!isFn(args[1]) || (args[1].params ?? []).length > 0) return null
+      return {
+        type: 'w3d:onQuestDone',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'marker': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const icon = args[0].value as string
+      if (!W3D_MARKER_ICONS.has(icon)) return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:marker', icon, x, z } : null
+    }
+    case 'guideArrow': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      if (args[2]?.type !== 'StringLiteral') return null
+      const on = args[2].value as string
+      if (on !== 'ligada' && on !== 'desligada') return null
+      return isSimpleValue(x) && isSimpleValue(z)
+        ? { type: 'w3d:guideArrow', x, z, on: on === 'ligada' }
+        : null
     }
     case 'npc': {
       if (args[0]?.type !== 'StringLiteral') return null
@@ -10667,6 +10735,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'w3d:carSpeed':
     case 'w3d:personPos':
     case 'w3d:isDriving':
+    case 'w3d:coinCount':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':

@@ -417,6 +417,37 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(el?.textContent).toBe('Bem-vindo!')
   })
 
+  it('R18: pega moedas dirigindo por cima e a missão completa dispara o gancho', async () => {
+    let pegas = 0
+    let venceu = 0
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        coinsLine(n: number, x1: number, z1: number, x2: number, z2: number): void
+        onCollect(fn: () => void): void
+        coinCount(): number
+        quest(n: string, d: string): void
+        questDone(n: string): void
+        onQuestDone(n: string, fn: () => void): void
+      }
+      w.coinsLine(5, 0, 6, 0, 22)
+      w.quest('moedas', 'Pegue 3 moedas')
+      w.onQuestDone('moedas', () => {
+        venceu++
+      })
+      w.onCollect(() => {
+        pegas++
+        if (w.coinCount() >= 3) w.questDone('moedas')
+      })
+    })
+    api.carPlace(0, 0, 0)
+    pressKey('w', 'KeyW')
+    step(150)
+    releaseKey('w', 'KeyW')
+    expect(pegas).toBeGreaterThanOrEqual(3)
+    expect(venceu).toBe(1) // questDone é idempotente: só comemora UMA vez
+  })
+
   it('playthrough do exemplo "Meu Mundo": roda, dirige e não quebra', async () => {
     const { api, step } = await loadExampleWorld(MEU_MUNDO_SOURCE)
     const z0 = api.carPos('z')

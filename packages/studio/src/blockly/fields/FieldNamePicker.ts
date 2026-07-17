@@ -75,11 +75,13 @@ export type NameKind =
   | 'path'
   | 'w3dpoint'
   | 'w3dnpc'
+  | 'w3dquest'
 
 const NAME_KINDS: readonly NameKind[] = [
   'path',
   'w3dpoint',
   'w3dnpc',
+  'w3dquest',
   'region',
   'pkmcreature',
   'pkmtype',
@@ -390,6 +392,13 @@ const W3DNPC_DECL_BLOCKS: Record<string, string[]> = {
 }
 function collectW3dNpcs(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, W3DNPC_DECL_BLOCKS)
+}
+/** Missões do Mundo 3D — fonte dos seletores de completar/quando-completar. */
+const W3DQUEST_DECL_BLOCKS: Record<string, string[]> = {
+  sz_w3d_quest: ['NAME'],
+}
+function collectW3dQuests(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, W3DQUEST_DECL_BLOCKS)
 }
 function collectMolds3d(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, MOLD3D_DECL_BLOCKS)
@@ -735,6 +744,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do amigo',
     empty: 'Nenhum amigo ainda — crie um com "Criar o amigo" ou digite o nome abaixo.',
   },
+  w3dquest: {
+    icon: '⭐',
+    placeholder: 'nome da missão',
+    empty: 'Nenhuma missão ainda — crie uma com "Criar a missão" ou digite o nome abaixo.',
+  },
 }
 
 /** Laços que introduzem nomes LOCAIS, por `kind` de seletor (escopo por ancestral). */
@@ -1036,6 +1050,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectW3dPoints(ws)
       case 'w3dnpc':
         return collectW3dNpcs(ws)
+      case 'w3dquest':
+        return collectW3dQuests(ws)
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)

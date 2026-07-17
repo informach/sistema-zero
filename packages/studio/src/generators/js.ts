@@ -116,6 +116,8 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'w3d:onExplosion':
     case 'w3d:onVehicle':
     case 'w3d:npcTalk':
+    case 'w3d:onCollect':
+    case 'w3d:onQuestDone':
     case 'w3d:onDayNight':
     case 'w3d:onPoint':
     case 'w3d:onZone':
@@ -2659,6 +2661,38 @@ ${pad}});`
       return `${pad}SZWorld3D.tireMarks(${JSON.stringify(stmt.on ? 'ligadas' : 'desligadas')});`
     case 'w3d:carPaint':
       return `${pad}SZWorld3D.carPaint(${JSON.stringify(stmt.paint)});`
+    case 'w3d:coinsScatter':
+      return `${pad}SZWorld3D.coinsScatter(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'w3d:coinsRing':
+      return `${pad}SZWorld3D.coinsRing(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
+    case 'w3d:coinsLine':
+      return `${pad}SZWorld3D.coinsLine(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))});`
+    case 'w3d:onCollect': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onCollect(function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:quest':
+      return `${pad}SZWorld3D.quest(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.desc)});`
+    case 'w3d:questDone':
+      return `${pad}SZWorld3D.questDone(${JSON.stringify(stmt.name)});`
+    case 'w3d:onQuestDone': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZWorld3D.onQuestDone(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
+    case 'w3d:marker':
+      return `${pad}SZWorld3D.marker(${JSON.stringify(stmt.icon)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:guideArrow':
+      return `${pad}SZWorld3D.guideArrow(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.on ? 'ligada' : 'desligada')});`
     case 'w3d:npc':
       return `${pad}SZWorld3D.npc(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.hat)});`
     case 'w3d:npcWander':
@@ -5880,6 +5914,39 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:npcTalk':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'w3d:quest':
+    case 'w3d:questDone':
+      return
+    case 'w3d:coinsScatter':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'w3d:coinsRing':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:coinsLine':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      return
+    case 'w3d:onCollect':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:onQuestDone':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'w3d:marker':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:guideArrow':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
     case 'w3d:islands':
       collectExprIdentifiers(valueToExpr(stmt.n), names)
       collectExprIdentifiers(valueToExpr(stmt.y), names)
@@ -6438,6 +6505,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:carSpeed':
     case 'w3d:personPos':
     case 'w3d:isDriving':
+    case 'w3d:coinCount':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':

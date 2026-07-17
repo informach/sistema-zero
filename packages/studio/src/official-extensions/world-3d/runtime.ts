@@ -255,6 +255,19 @@ export const world3DRuntime = `import * as THREE from 'three';
   var npcSayQueues = Object.create(null);  // name -> [textos] (E avança)
   var npcBubble = null;         // { el, name, text, shown, t } — balão typewriter único
   var _npcBlipCd = 0;
+  // ---- R18 "moedas & missões" ----
+  var coinsIM = null;           // InstancedMesh das moedas (1 draw)
+  var coinStates = null;        // [{x, z, y, taken}]
+  var COINS_MAX = 512;
+  var coinsTaken = 0;
+  var collectHooks = [];
+  var coinHudEl = null;         // badge automático "🪙 N"
+  var quests = [];              // { name, desc, done }
+  var questDoneHooks = Object.create(null);  // name -> [fn]
+  var questHudEl = null;        // painel "Missão: …"
+  var markers = [];             // { sprite, x, z } — ícones flutuantes
+  var guideTarget = null;       // { x, z } — seta-guia DOM
+  var guideEl = null;
   var _dummy = null;            // Object3D p/ compor matrizes de instância
   var _mat4 = null;
   var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
@@ -2682,6 +2695,11 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'bridge') buildBridge(r.x1, r.z1, r.x2, r.z2, r.w);
       else if (r.kind === 'lighthouse') buildLighthouse(r.x, r.z);
       else if (r.kind === 'npc') addNpc(r.name, r.x, r.z, r.color, r.hat);
+      else if (r.kind === 'coinsScatter') coinsScatterBuild(r.n);
+      else if (r.kind === 'coinsRing') coinsRingBuild(r.n, r.x, r.z, r.r);
+      else if (r.kind === 'coinsLine') coinsLineBuild(r.n, r.x1, r.z1, r.x2, r.z2);
+      else if (r.kind === 'marker') addMarker(r.icon, r.x, r.z);
+      else if (r.kind === 'questHud') refreshQuestHud();
     }
     // 2ª passada: o "passear" precisa do amigo já criado (ordem livre dos blocos).
     for (var j = 0; j < decorRecipes.length; j++) {
@@ -3509,6 +3527,217 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (stormT <= 0) {
       stormT = 4 + Math.random() * 5;
       strikeBolt();
+    }
+  }
+
+  // ---- R18: moedas colecionáveis, missões, marcadores e seta-guia ----
+
+  function ensureCoins() {
+    if (coinsIM || !scene) return;
+    var geo = new THREE.CylinderGeometry(0.42, 0.42, 0.1, 12);
+    geo.rotateX(Math.PI / 2);
+    coinsIM = new THREE.InstancedMesh(geo, toonMaterial({ color: '#fbbf24' }), COINS_MAX);
+    coinsIM.count = 0;
+    coinsIM.frustumCulled = false;
+    scene.add(coinsIM);
+    coinStates = [];
+  }
+
+  function addCoin(x, z) {
+    ensureCoins();
+    if (!coinStates || coinStates.length >= COINS_MAX) {
+      warnOnce('coins-max', 'muitas moedas (teto ' + COINS_MAX + ')');
+      return;
+    }
+    var cy = heightAtDrive(num(x, 0), num(z, 0), null) + 1;
+    coinStates.push({ x: num(x, 0), z: num(z, 0), y: cy, taken: false });
+    coinsIM.count = coinStates.length;
+  }
+
+  function coinsScatterBuild(n) {
+    var count = clamp(num(n, 20), 1, 200);
+    var rng = mulberry(1234 + count);
+    var lim = config.world / 2 - 6;
+    for (var i = 0; i < count; i++) {
+      var x = (rng() * 2 - 1) * lim;
+      var z = (rng() * 2 - 1) * lim;
+      // Nunca embaixo d'água (moeda afogada não dá pra pegar).
+      if (waterCfg && heightAt(x, z) < waterCfg.y - 0.4) continue;
+      addCoin(x, z);
+    }
+  }
+
+  function coinsRingBuild(n, x, z, r) {
+    var count = clamp(num(n, 8), 1, 64);
+    for (var i = 0; i < count; i++) {
+      var a = (i / count) * Math.PI * 2;
+      addCoin(num(x, 0) + Math.cos(a) * num(r, 6), num(z, 0) + Math.sin(a) * num(r, 6));
+    }
+  }
+
+  function coinsLineBuild(n, x1, z1, x2, z2) {
+    var count = clamp(num(n, 10), 2, 64);
+    for (var i = 0; i < count; i++) {
+      var t = i / (count - 1);
+      addCoin(num(x1, 0) + (num(x2, 0) - num(x1, 0)) * t, num(z1, 0) + (num(z2, 0) - num(z1, 0)) * t);
+    }
+  }
+
+  function ensureCoinHud() {
+    if (coinHudEl || !frameEl) return;
+    coinHudEl = document.createElement('div');
+    coinHudEl.setAttribute('style', 'position:absolute;top:10px;right:12px;padding:5px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#fde68a;font:800 16px system-ui,sans-serif;z-index:7;pointer-events:none;');
+    frameEl.appendChild(coinHudEl);
+    coinHudEl.textContent = '🪙 0';
+  }
+
+  function stepCoins(dt) {
+    if (!coinsIM || !coinStates || !coinStates.length) return;
+    if (!_dummy) _dummy = new THREE.Object3D();
+    var p = playerXZ();
+    var spin = playTime * 2.4;
+    for (var i = 0; i < coinStates.length; i++) {
+      var c = coinStates[i];
+      if (c.taken) {
+        _dummy.position.set(0, -9999, 0);
+        _dummy.rotation.set(0, 0, 0);
+      } else {
+        var dx = p.x - c.x;
+        var dz = p.z - c.z;
+        var dy = p.y + 1 - c.y;
+        if (dx * dx + dz * dz + dy * dy < 2.6) {
+          c.taken = true;
+          coinsTaken++;
+          ensureCoinHud();
+          if (coinHudEl) coinHudEl.textContent = '🪙 ' + coinsTaken;
+          beep(1320, 0.07);
+          beep(1760, 0.09);
+          for (var hi = 0; hi < collectHooks.length; hi++) {
+            try { collectHooks[hi](); } catch (e) {
+              warnOnce('hook-coin-' + hi, 'erro no "Quando pegar uma moeda": ' + e);
+            }
+          }
+          _dummy.position.set(0, -9999, 0);
+        } else {
+          _dummy.position.set(c.x, c.y + Math.sin(spin + i) * 0.12, c.z);
+          _dummy.rotation.set(0, spin + i * 0.7, 0);
+        }
+      }
+      _dummy.updateMatrix();
+      coinsIM.setMatrixAt(i, _dummy.matrix);
+    }
+    coinsIM.instanceMatrix.needsUpdate = true;
+  }
+
+  function ensureQuestHud() {
+    if (questHudEl || !frameEl) return;
+    questHudEl = document.createElement('div');
+    questHudEl.setAttribute('style', 'position:absolute;top:10px;left:12px;max-width:300px;padding:6px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#e2e8f0;font:700 14px system-ui,sans-serif;z-index:7;pointer-events:none;display:none;');
+    frameEl.appendChild(questHudEl);
+  }
+
+  function refreshQuestHud() {
+    ensureQuestHud();
+    if (!questHudEl) return;
+    var active = null;
+    for (var i = 0; i < quests.length; i++) {
+      if (!quests[i].done) { active = quests[i]; break; }
+    }
+    if (active) {
+      questHudEl.textContent = '⭐ Missão: ' + active.desc;
+      questHudEl.style.display = 'block';
+    } else if (quests.length) {
+      questHudEl.textContent = '🏆 Todas as missões completas!';
+      questHudEl.style.display = 'block';
+    } else {
+      questHudEl.style.display = 'none';
+    }
+  }
+
+  function findQuest(name) {
+    for (var i = 0; i < quests.length; i++) if (quests[i].name === name) return quests[i];
+    return null;
+  }
+
+  function completeQuest(name) {
+    var q = findQuest(text(name, ''));
+    if (!q) {
+      warn('não achei a missão "' + text(name, '') + '" — crie com "Criar a missão"');
+      return;
+    }
+    if (q.done) return;
+    q.done = true;
+    refreshQuestHud();
+    confettiBurst();
+    beep(880, 0.12);
+    beep(1175, 0.16);
+    var hooks = questDoneHooks[q.name] || [];
+    for (var i = 0; i < hooks.length; i++) {
+      try { hooks[i](); } catch (e) {
+        warnOnce('hook-quest-' + q.name, 'erro no "Quando completar a missão": ' + e);
+      }
+    }
+  }
+
+  var MARKER_ICONS = { alerta: '❗', estrela: '⭐', alvo: '🎯', moeda: '💰' };
+
+  function addMarker(icon, x, z) {
+    if (!scene) return;
+    var emoji = MARKER_ICONS[icon];
+    if (!emoji) return;
+    var cv = document.createElement('canvas');
+    cv.width = 64;
+    cv.height = 64;
+    var g = cv.getContext('2d');
+    if (!g) return;
+    g.font = '48px system-ui, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(emoji, 32, 36);
+    var tex = new THREE.CanvasTexture(cv);
+    var mat = new THREE.SpriteMaterial ? new THREE.SpriteMaterial({ map: tex, depthWrite: false }) : null;
+    if (!mat || !THREE.Sprite) return;
+    var sp = new THREE.Sprite(mat);
+    sp.scale.set(2.2, 2.2, 1);
+    scene.add(sp);
+    markers.push({ sprite: sp, x: num(x, 0), z: num(z, 0) });
+  }
+
+  function stepMarkers() {
+    for (var i = 0; i < markers.length; i++) {
+      var m = markers[i];
+      m.sprite.position.set(m.x, heightAtDrive(m.x, m.z, null) + 3.4 + Math.sin(playTime * 2 + i) * 0.3, m.z);
+    }
+  }
+
+  function ensureGuide() {
+    if (guideEl || !frameEl) return;
+    guideEl = document.createElement('div');
+    guideEl.setAttribute('style', 'position:absolute;bottom:70px;left:50%;transform:translateX(-50%) rotate(0deg);font:900 30px system-ui,sans-serif;color:#fde68a;text-shadow:0 2px 6px rgba(0,0,0,.5);z-index:7;pointer-events:none;display:none;');
+    guideEl.textContent = '⬆';
+    frameEl.appendChild(guideEl);
+  }
+
+  function stepGuide() {
+    if (!guideTarget) {
+      if (guideEl) guideEl.style.display = 'none';
+      return;
+    }
+    ensureGuide();
+    if (!guideEl || !camera) return;
+    var p = playerXZ();
+    var ang = Math.atan2(guideTarget.x - p.x, guideTarget.z - p.z);
+    // Ângulo relativo ao rumo da CÂMERA (a seta aponta na tela).
+    var camYaw = Math.atan2(camera.position.x - p.x, camera.position.z - p.z) + Math.PI;
+    var rel = ((ang - camYaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+    guideEl.style.transform = 'translateX(-50%) rotate(' + Math.round((rel * 180) / Math.PI) + 'deg)';
+    guideEl.style.display = 'block';
+    // Chegou perto: a seta comemora e some.
+    var ddx = guideTarget.x - p.x;
+    var ddz = guideTarget.z - p.z;
+    if (ddx * ddx + ddz * ddz < 16) {
+      guideTarget = null;
+      guideEl.style.display = 'none';
     }
   }
 
@@ -5414,6 +5643,9 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepLighthouses(dt);
     stepAmbience(dt);
     stepNpcs(dt);
+    stepCoins(dt);
+    stepMarkers();
+    stepGuide();
     updateEngine();
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
@@ -5605,6 +5837,17 @@ export const world3DRuntime = `import * as THREE from 'three';
     npcTalkHooks = Object.create(null);
     npcSayQueues = Object.create(null);
     npcBubble = null;
+    coinsIM = null;
+    coinStates = null;
+    coinsTaken = 0;
+    collectHooks = [];
+    coinHudEl = null;
+    quests = [];
+    questDoneHooks = Object.create(null);
+    questHudEl = null;
+    markers = [];
+    guideTarget = null;
+    guideEl = null;
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -5894,6 +6137,74 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       seasonName = n2;
       if (worldReady) applySeason();
+    }),
+    // ⭐ R18 moedas & missões
+    coinsScatter: guard('coinsScatter', function (n) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'coinsScatter', n: num(n, 20) });
+        return;
+      }
+      coinsScatterBuild(n);
+    }),
+    coinsRing: guard('coinsRing', function (n, x, z, r) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'coinsRing', n: num(n, 8), x: num(x, 0), z: num(z, 0), r: num(r, 6) });
+        return;
+      }
+      coinsRingBuild(n, x, z, r);
+    }),
+    coinsLine: guard('coinsLine', function (n, x1, z1, x2, z2) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'coinsLine', n: num(n, 10), x1: num(x1, 0), z1: num(z1, 0), x2: num(x2, 0), z2: num(z2, 30) });
+        return;
+      }
+      coinsLineBuild(n, x1, z1, x2, z2);
+    }),
+    onCollect: guard('onCollect', function (fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando pegar uma moeda" precisa de blocos de fazer dentro');
+        return;
+      }
+      collectHooks.push(fn);
+    }),
+    coinCount: guard('coinCount', function () {
+      return coinsTaken;
+    }),
+    quest: guard('quest', function (name, desc) {
+      var qn = text(name, 'missao');
+      if (findQuest(qn)) return;
+      quests.push({ name: qn, desc: text(desc, qn), done: false });
+      if (worldReady) refreshQuestHud();
+      else decorRecipes.push({ kind: 'questHud' });
+    }),
+    questDone: guard('questDone', function (name) {
+      completeQuest(name);
+    }),
+    onQuestDone: guard('onQuestDone', function (name, fn) {
+      if (typeof fn !== 'function') {
+        warn('"Quando completar a missão" precisa de blocos de fazer dentro');
+        return;
+      }
+      var qn2 = text(name, 'missao');
+      if (!questDoneHooks[qn2]) questDoneHooks[qn2] = [];
+      questDoneHooks[qn2].push(fn);
+    }),
+    marker: guard('marker', function (icon, x, z) {
+      var ic = text(icon, 'estrela');
+      if (ic === 'nenhum') return;
+      if (!MARKER_ICONS[ic]) {
+        warn('não conheço o ícone "' + ic + '" — tem: alerta, estrela, alvo, moeda, nenhum');
+        return;
+      }
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'marker', icon: ic, x: num(x, 0), z: num(z, 0) });
+        return;
+      }
+      addMarker(ic, x, z);
+    }),
+    guideArrow: guard('guideArrow', function (x, z, on) {
+      var ligada = !(on === false || on === 'desligada' || on === 'desligado');
+      guideTarget = ligada ? { x: num(x, 0), z: num(z, 0) } : null;
     }),
     // 🧑‍🤝‍🧑 R17 amigos
     npc: guard('npc', function (name, x, z, color, hat) {

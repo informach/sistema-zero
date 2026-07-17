@@ -716,6 +716,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'w3d:personPos', axis: (f(block, 'AXIS') || 'x') as 'x' | 'y' | 'z' }
     case 'sz_w3d_is_driving':
       return { type: 'w3d:isDriving' }
+    case 'sz_w3d_coin_count':
+      return { type: 'w3d:coinCount' }
     case 'sz_w3d_key_down':
       return { type: 'w3d:keyDown', key: f(block, 'KEY') || 'e' }
     case 'sz_w3d_key_pressed':
@@ -9026,6 +9028,79 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return { kind: 'js', value: { type: 'w3d:carLights' } }
     case 'sz_w3d_tire_marks':
       return { kind: 'js', value: { type: 'w3d:tireMarks', on: f(block, 'ON') !== 'desligadas' } }
+    case 'sz_w3d_coins_scatter':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:coinsScatter', n: exprInput(block, 'N', { type: 'num', value: 20 }) },
+      }
+    case 'sz_w3d_coins_ring':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:coinsRing',
+          n: exprInput(block, 'N', { type: 'num', value: 8 }),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+          r: exprInput(block, 'R', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_w3d_coins_line':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:coinsLine',
+          n: exprInput(block, 'N', { type: 'num', value: 10 }),
+          x1: exprInput(block, 'X1', { type: 'num', value: 0 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 10 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 0 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 40 }),
+        },
+      }
+    case 'sz_w3d_on_collect':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:onCollect', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_w3d_quest':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:quest',
+          name: f(block, 'NAME') || 'missao',
+          desc: f(block, 'DESC') || 'Complete a missão',
+        },
+      }
+    case 'sz_w3d_quest_done':
+      return { kind: 'js', value: { type: 'w3d:questDone', name: f(block, 'NAME') || 'missao' } }
+    case 'sz_w3d_on_quest_done':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:onQuestDone',
+          name: f(block, 'NAME') || 'missao',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_w3d_marker':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:marker',
+          icon: f(block, 'ICON') || 'estrela',
+          x: exprInput(block, 'X', { type: 'num', value: 20 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_w3d_guide_arrow':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:guideArrow',
+          x: exprInput(block, 'X', { type: 'num', value: 20 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+          on: f(block, 'ON') !== 'desligada',
+        },
+      }
     case 'sz_w3d_npc':
       return {
         kind: 'js',

@@ -318,6 +318,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'w3d:carSpeed' })
   | (JSExprCommon & { type: 'w3d:personPos'; axis: 'x' | 'y' | 'z' })
   | (JSExprCommon & { type: 'w3d:isDriving' })
+  | (JSExprCommon & { type: 'w3d:coinCount' })
   | (JSExprCommon & { type: 'w3d:keyDown'; key: string })
   | (JSExprCommon & { type: 'w3d:keyPressed'; key: string })
   | (JSExprCommon & { type: 'w3d:timeOfDay' })
@@ -781,6 +782,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('w3d:carSpeed'), ...idField }),
     z.object({ type: z.literal('w3d:personPos'), axis: z.enum(['x', 'y', 'z']), ...idField }),
     z.object({ type: z.literal('w3d:isDriving'), ...idField }),
+    z.object({ type: z.literal('w3d:coinCount'), ...idField }),
     z.object({ type: z.literal('w3d:keyDown'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:keyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:timeOfDay'), ...idField }),
@@ -4058,6 +4060,39 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'w3d:npcTalk'; name: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'w3d:npcSay'; name: string; text: string })
   | (JSStatementCommon & { type: 'w3d:npcEmote'; name: string; emote: string })
+  // Mundo 3D R18 "moedas & missões": coleta, objetivos, marcadores, seta-guia.
+  | (JSStatementCommon & { type: 'w3d:coinsScatter'; n: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'w3d:coinsRing'
+      n: number | JSExpr
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:coinsLine'
+      n: number | JSExpr
+      x1: number | JSExpr
+      z1: number | JSExpr
+      x2: number | JSExpr
+      z2: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:onCollect'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'w3d:quest'; name: string; desc: string })
+  | (JSStatementCommon & { type: 'w3d:questDone'; name: string })
+  | (JSStatementCommon & { type: 'w3d:onQuestDone'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'w3d:marker'
+      icon: string
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:guideArrow'
+      x: number | JSExpr
+      z: number | JSExpr
+      on: boolean
+    })
   | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
   | (JSStatementCommon & {
       type: 'w3d:cameraShake'
@@ -8205,6 +8240,51 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({ type: z.literal('w3d:npcSay'), name: irText(), text: irText(), ...idField }),
     z.object({ type: z.literal('w3d:npcEmote'), name: irText(), emote: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:coinsScatter'),
+      n: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:coinsRing'),
+      n: z.union([z.number(), JSExprSchema]),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      r: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:coinsLine'),
+      n: z.union([z.number(), JSExprSchema]),
+      x1: z.union([z.number(), JSExprSchema]),
+      z1: z.union([z.number(), JSExprSchema]),
+      x2: z.union([z.number(), JSExprSchema]),
+      z2: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:onCollect'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('w3d:quest'), name: irText(), desc: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:questDone'), name: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:onQuestDone'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:marker'),
+      icon: irText(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:guideArrow'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      on: z.boolean(),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:cameraShake'),
@@ -9256,6 +9336,15 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:npcTalk',
   'w3d:npcSay',
   'w3d:npcEmote',
+  'w3d:coinsScatter',
+  'w3d:coinsRing',
+  'w3d:coinsLine',
+  'w3d:onCollect',
+  'w3d:quest',
+  'w3d:questDone',
+  'w3d:onQuestDone',
+  'w3d:marker',
+  'w3d:guideArrow',
   'w3d:effects',
   'w3d:dayNight',
   'w3d:setTime',
