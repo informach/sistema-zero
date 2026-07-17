@@ -497,6 +497,8 @@ export function compileExpr(
       return 'SZGameKit.rpgLevel()'
     case 'gk:rpgXp':
       return 'SZGameKit.rpgXp()'
+    case 'gk:rpgCurrentMap':
+      return 'SZGameKit.rpgCurrentMap()'
     case 'gk:kills':
       return 'SZGameKit.kills()'
     // ---- Jogo 3D Avançado (game-3d-advanced) ----

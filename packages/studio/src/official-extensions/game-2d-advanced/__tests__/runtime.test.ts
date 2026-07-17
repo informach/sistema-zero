@@ -138,6 +138,7 @@ interface GameKitApi {
   setSheet: Fn
   playAnim: Fn
   cameraFollow: Fn
+  cameraFollowMap: Fn
   cameraStop: Fn
   cameraX: Fn
   cameraY: Fn
@@ -167,6 +168,9 @@ interface GameKitApi {
   rpgGoMap: Fn
   rpgOnMap: Fn
   rpgCreateDoor: Fn
+  rpgMapSize: Fn
+  rpgConnectEdge: Fn
+  rpgCurrentMap: Fn
   rpgBattleStats: Fn
   rpgBattleStart: Fn
   rpgOnBattleEnd: Fn
@@ -402,7 +406,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 273 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 277 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -481,6 +485,7 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'setSheet',
       'playAnim',
       'cameraFollow',
+      'cameraFollowMap', // 🌍 mundo aberto: mundo = tamanho do mapa
       'cameraStop',
       'cameraX',
       'cameraY',
@@ -510,6 +515,10 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgGoMap',
       'rpgOnMap',
       'rpgCreateDoor',
+      // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas + nome do mapa
+      'rpgMapSize',
+      'rpgConnectEdge',
+      'rpgCurrentMap',
       'rpgBattleStats',
       'rpgBattleStart',
       'rpgOnBattleEnd',
@@ -3363,5 +3372,137 @@ describe('SZGameKit — R25: caminhos + escolher-vivo + status (review Tower Def
     }
     expect(warns.some((w) => w.includes('sem-img'))).toBe(true)
     expect(warns.some((w) => w.includes('sem-folha'))).toBe(true)
+  })
+})
+
+describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho do mapa)', () => {
+  // A folha do tilemap carrega por `new Image()` + onload — o happy-dom não
+  // dispara onload para dataURL, então um stub mínimo resolve em microtask
+  // (o startGame espera 2 voltas). Guardar/restaurar como o getContext.
+  const globalWithImage = globalThis as { Image?: unknown }
+  const RealImage = globalWithImage.Image
+  class FakeImage {
+    width = 256
+    height = 256
+    onload: (() => void) | null = null
+    onerror: (() => void) | null = null
+    set src(_v: string) {
+      queueMicrotask(() => this.onload?.())
+    }
+  }
+  beforeAll(() => {
+    globalWithImage.Image = FakeImage
+  })
+  afterAll(() => {
+    globalWithImage.Image = RealImage
+  })
+
+  function gridCheio(cols: number, rows: number): string {
+    const linha = new Array(cols).fill('1').join(' ')
+    return new Array(rows).fill(linha).join('\n')
+  }
+
+  it('⭐ culling: mapa 100×100 desenha SÓ a fatia visível (não os 10.000 tiles)', async () => {
+    const h = loadRuntime(fakeTilemapAsset(gridCheio(100, 100), [1], 64))
+    h.api.setup({ width: 800, height: 600 })
+    h.api.loadTilemap('mundo', 'mapa')
+    const c = h.api.createCharacter({ w: 32, h: 32 })
+    h.api.onDraw(() => h.api.drawTilemap('mundo', 'chão'))
+    await startGame(h)
+    h.api.setState('jogando')
+    let draws = 0
+    const orig = fakeCtx.drawImage
+    ;(fakeCtx as { drawImage: () => void }).drawImage = () => {
+      draws += 1
+    }
+    try {
+      // Sem câmera: a fatia é a tela (13+1 cols × 10+1 rows ≈ 154), não 10.000.
+      h.nextFrame(16)
+      expect(draws).toBeGreaterThan(100)
+      expect(draws).toBeLessThan(300)
+      // Com a câmera no CANTO OPOSTO do mapa: mesma contagem (a janela desliza).
+      h.api.cameraFollowMap(c, 'mundo')
+      h.api.placeCharacter(c, 100 * 64, 100 * 64)
+      draws = 0
+      h.nextFrame(32)
+      expect(draws).toBeGreaterThan(100)
+      expect(draws).toBeLessThan(300)
+    } finally {
+      ;(fakeCtx as { drawImage: unknown }).drawImage = orig
+    }
+  })
+
+  it('cameraFollowMap: o mundo é o TAMANHO do mapa (trava nas bordas dele)', async () => {
+    const h = loadRuntime(fakeTilemapAsset(gridCheio(50, 30), [1], 64))
+    h.api.setup({ width: 800, height: 600 })
+    h.api.loadTilemap('mundo', 'mapa')
+    const c = h.api.createCharacter({ w: 32, h: 32 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.cameraFollowMap(c, 'mundo')
+    h.api.placeCharacter(c, 0, 0)
+    h.nextFrame(16)
+    expect(h.api.cameraX()).toBe(0)
+    expect(h.api.cameraY()).toBe(0)
+    h.api.placeCharacter(c, 50 * 64, 30 * 64)
+    h.nextFrame(32)
+    expect(h.api.cameraX()).toBe(50 * 64 - 800) // 2400
+    expect(h.api.cameraY()).toBe(30 * 64 - 600) // 1320
+    // Mapa inexistente: avisa e NÃO trava (cai p/ tela única).
+    h.api.cameraFollowMap(c, 'nao-existe')
+    h.nextFrame(48)
+    expect(h.api.cameraX()).toBe(0)
+  })
+
+  it('⭐ culling de entidades: fora da vista NEM toca o canvas; sem câmera pintam todas', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 800, height: 600 })
+    h.api.defineMold('caixa', {
+      w: 40,
+      h: 40,
+      health: 1,
+      speed: 0,
+      damage: 0,
+      color: '#123456',
+      image: '',
+      look: '',
+    })
+    const heroi = h.api.createCharacter({ w: 32, h: 32 })
+    h.api.onDraw(() => h.api.drawActive('caixa'))
+    await startGame(h)
+    h.api.setState('jogando')
+    for (let i = 0; i < 50; i++) h.api.spawnFromMold('caixa', i * 100, 100) // x 0..4900
+    h.api.cameraFollow(heroi, 5000, 600)
+    h.api.placeCharacter(heroi, 4600, 100)
+    ctxCalls.length = 0
+    h.nextFrame(16)
+    const visiveis = ctxCalls.filter(([m, a]) => m === 'fillRect' && a[2] === 40 && a[3] === 40)
+    // câmera x = 5000-800 = 4200; janela [4072..5128] com a margem 128 → ~10 caixas.
+    expect(visiveis.length).toBeGreaterThan(4)
+    expect(visiveis.length).toBeLessThan(20)
+    // Controle: câmera DESLIGADA = sem cull (todas as 50 pintam, o clip é do canvas).
+    h.api.cameraStop()
+    ctxCalls.length = 0
+    h.nextFrame(32)
+    const todas = ctxCalls.filter(([m, a]) => m === 'fillRect' && a[2] === 40 && a[3] === 40)
+    expect(todas.length).toBe(50)
+  })
+
+  it('rpgMapSize alimenta a trava da câmera (mundo = células × célula)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 800, height: 600 })
+    const heroi = h.api.createCharacter({ w: 32, h: 32, speed: 0 })
+    h.api.rpgOnMap('campo', () => {
+      h.api.rpgMapSize(30, 20)
+      h.api.placeCharacter(heroi, 29 * 64, 19 * 64)
+    })
+    h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(heroi, 64, dt))
+    await startGame(h)
+    h.api.setState('jogando') // vai ao 1º mapa → o hook declara o tamanho
+    // O mundo passado na mão (800×600) é SOBRESCRITO pelo tamanho do mapa.
+    h.api.cameraFollow(heroi, 800, 600)
+    h.nextFrame(16)
+    expect(h.api.cameraX()).toBe(30 * 64 - 800) // 1120
+    expect(h.api.cameraY()).toBe(20 * 64 - 600) // 680
   })
 })

@@ -104,7 +104,10 @@ API global injetada como window.SZGameKit:
   não reinicia). A folha VENCE a imagem estática no desenho.
 - 🎥 Câmera: cameraFollow(c, mundoW, mundoH) liga o mundo maior (onDraw vira
   world-space; keepOnScreen/spawner/cull passam a valer o mundo/retângulo
-  visível); cameraStop(); cameraX()/cameraY() = canto visível.
+  visível); cameraFollowMap(c, "mapa") = mundo do TAMANHO do mapa de tiles
+  (colunas × célula, sem conta) — e o motor CULLA o desenho (tilemap fatiado +
+  entidade fora da vista nem pinta): mundo gigante custa o preço de uma tela;
+  cameraStop(); cameraX()/cameraY() = canto visível.
   onDrawHud(fn(ctx)) desenha DEPOIS, SEM câmera (placar/barras presos na tela).
 - ➡️ Tiro e giro (na cat 🎯 Comportamentos): launchTowards(quem, alvo, v) mira UMA vez (seta vx/vy pelo vetor
   normalizado × v); moveByVelocity(quem, dt) aplica × dt a cada quadro. Com
@@ -151,7 +154,12 @@ API global injetada como window.SZGameKit:
   rpgGiveItem(nome, img)/rpgHasItem/rpgRemoveItem/rpgDrawInventory(x, y);
   rpgOnMap(nome, fn) monta o mapa (1º registrado = inicial; trocar limpa
   paredes/NPCs/portas e REMONTA — reposicione o herói na montagem!) +
-  rpgGoMap(nome) + rpgCreateDoor(cx, cy, mapa); batalha por TURNOS com menu
+  rpgGoMap(nome) + rpgCreateDoor(cx, cy, mapa); MUNDO ABERTO estilo Zelda:
+  DENTRO do rpgOnMap declare rpgMapSize(cols, rows) (trava da câmera + a borda
+  vira fim do mundo) e rpgConnectEdge("leste"|"oeste"|"norte"|"sul", "mapa") —
+  atravessou, entra no vizinho pelo lado oposto na MESMA linha (declare a borda
+  espelhada NOS DOIS mapas; sai o aviso "mapa:<nome>"); rpgCurrentMap() = o nome
+  do mapa de agora ("se = praia → música da praia"); batalha por TURNOS com menu
   PRONTO: rpgBattleStats(vida, força) 1x + rpgBattleStart(nome, vida, força)
   (Atacar = força ± 20%, Defender = ½ do próximo dano, Fugir = 50%; o mundo
   congela SEM resetar) + rpgOnBattleEnd(fn) + rpgBattleWon(). Padrão canônico:

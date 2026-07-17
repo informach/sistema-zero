@@ -123,6 +123,9 @@ interface Api {
   onUpdate: Fn
   rpgOnMap: Fn
   rpgGoMap: Fn
+  rpgMapSize: Fn
+  rpgConnectEdge: Fn
+  rpgCurrentMap: () => string
   rpgMoveGrid: Fn
   pkmGrassCells: Fn
   pkmWild: Fn
@@ -1180,6 +1183,103 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     expect(h.api.rpgLevel()).toBe(2)
     expect(h.api.rpgXp()).toBe(5)
     void heroi
+  })
+})
+
+describe('gk — 🌍 ATRAVESSAR as bordas do mundo aberto (mapas ligados)', () => {
+  interface Heroi {
+    x: number
+    y: number
+  }
+
+  // Dois mapas 6×5 ligados: campo (leste→praia) e praia (oeste→campo). O hook da
+  // praia coloca o herói LONGE de propósito — a entrada pela borda tem que VENCER.
+  async function mundoAberto(h: Harness): Promise<Heroi> {
+    h.api.setup({ width: 960, height: 640 })
+    const heroi = h.api.createCharacter({ w: 48, h: 48, speed: 640, color: '#2b6cb0' }) as Heroi
+    h.api.rpgOnMap('campo', () => {
+      h.api.rpgMapSize(6, 5)
+      h.api.rpgConnectEdge('leste', 'praia')
+      h.api.placeCharacter(heroi, h.api.rpgCell(4), h.api.rpgCell(2))
+    })
+    h.api.rpgOnMap('praia', () => {
+      h.api.rpgMapSize(6, 5)
+      h.api.rpgConnectEdge('oeste', 'campo')
+      h.api.placeCharacter(heroi, h.api.rpgCell(4), h.api.rpgCell(4)) // LONGE da borda
+    })
+    h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
+    await startGame(h)
+    h.api.setState('jogando') // vai ao 1º mapa (campo)
+    return heroi
+  }
+  function segura(h: Harness, key: string, n: number, from: number): number {
+    let t = from
+    for (let i = 0; i < n; i++, t++) {
+      h.fire('keydown', { key })
+      h.nextFrame(t * 50)
+    }
+    h.fire('keyup', { key })
+    return t
+  }
+
+  it('⭐ leste → praia na MESMA linha (a borda vence o hook) e oeste volta', async () => {
+    const h = loadRuntime()
+    const heroi = await mundoAberto(h)
+    expect(h.api.rpgCurrentMap()).toBe('campo')
+    let praia = 0
+    let campo = 0
+    h.api.on('mapa:praia', () => {
+      praia += 1
+    })
+    h.api.on('mapa:campo', () => {
+      campo += 1
+    })
+    // De (4,2) até a col 5 e mais um passo: anda ATÉ atravessar a borda LESTE
+    // (o padrão do teste da porta — parar de apertar assim que trocar).
+    let t = 1
+    for (let i = 0; i < 12 && praia === 0; i++, t++) {
+      h.fire('keydown', { key: 'ArrowRight' })
+      h.nextFrame(t * 50)
+    }
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(praia).toBe(1)
+    expect(h.api.rpgCurrentMap()).toBe('praia')
+    // Entrou pela col 0 na MESMA linha (2) — NÃO no (4,4) do placeCharacter do hook.
+    expect(heroi.x).toBe(0)
+    expect(heroi.y).toBe(128)
+    // Voltar pelo OESTE: entra na col 5 do campo (espelhado), mesma linha.
+    for (let i = 0; i < 12 && campo === 0; i++, t++) {
+      h.fire('keydown', { key: 'ArrowLeft' })
+      h.nextFrame(t * 50)
+    }
+    h.fire('keyup', { key: 'ArrowLeft' })
+    expect(campo).toBe(1)
+    expect(h.api.rpgCurrentMap()).toBe('campo')
+    expect(heroi.x).toBe(320) // col 5 = mapCols-1
+    expect(heroi.y).toBe(128)
+  })
+
+  it('borda SEM ligação = fim do mundo (herói para; nenhum aviso de mapa)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 640 })
+    const heroi = h.api.createCharacter({ w: 48, h: 48, speed: 640, color: '#2b6cb0' }) as {
+      x: number
+      y: number
+    }
+    h.api.rpgOnMap('ilha', () => {
+      h.api.rpgMapSize(6, 5)
+      h.api.placeCharacter(heroi, h.api.rpgCell(5), h.api.rpgCell(2))
+    })
+    h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
+    await startGame(h)
+    h.api.setState('jogando')
+    let eventos = 0
+    h.api.on('mapa:ilha', () => {
+      eventos += 1
+    })
+    segura(h, 'ArrowRight', 8, 1)
+    expect(heroi.x).toBe(320) // não saiu da col 5
+    expect(eventos).toBe(0) // nenhuma re-entrada no mapa
   })
 })
 

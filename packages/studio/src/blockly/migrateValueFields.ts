@@ -189,6 +189,8 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_gk_rpg_say: { TEXT: 'text', NAME: 'text' },
   sz_gk_rpg_draw_inventory: { X: 'number', Y: 'number' },
   sz_gk_rpg_create_door: { CX: 'number', CY: 'number' },
+  // 🌍 Mundo aberto
+  sz_gk_rpg_map_size: { COLS: 'number', ROWS: 'number' },
   sz_gk_rpg_battle_stats: { HP: 'number', STR: 'number', DEF: 'number' },
   sz_gk_rpg_battle_start: { HP: 'number', STR: 'number', DEF: 'number' },
   sz_gk_set_walk_sheet: { FW: 'number', FH: 'number' },

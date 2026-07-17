@@ -939,6 +939,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_gk_set_sheet',
     'sz_gk_play_anim',
     'sz_gk_camera_follow',
+    'sz_gk_camera_follow_map',
     'sz_gk_camera_stop',
     'sz_gk_camera_x',
     'sz_gk_camera_y',
@@ -965,6 +966,10 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_gk_rpg_go_map',
     'sz_gk_rpg_on_map',
     'sz_gk_rpg_create_door',
+    // 🌍 Mundo aberto
+    'sz_gk_rpg_map_size',
+    'sz_gk_rpg_connect_edge',
+    'sz_gk_rpg_current_map',
     'sz_gk_rpg_battle_stats',
     'sz_gk_rpg_battle_start',
     'sz_gk_rpg_on_battle_end',

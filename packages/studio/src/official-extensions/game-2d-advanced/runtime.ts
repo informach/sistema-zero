@@ -116,7 +116,12 @@ export const gameKitRuntime = `(function () {
   var debugOverlay = false;              // tecla de crase desenha os círculos de colisão
   // Câmera que segue um personagem num MUNDO maior que a tela (main.js do RPG kit:
   // translate -> mundo -> restore -> HUD). Desligada = tela fixa (coords iguais).
-  var camera = { on: false, target: null, x: 0, y: 0, worldW: 0, worldH: 0, shakeT: 0, shakeMag: 0 };
+  var camera = { on: false, target: null, x: 0, y: 0, worldW: 0, worldH: 0, shakeT: 0, shakeMag: 0, followMap: '', followCols: 0, followRows: 0 };
+  // true SO durante o passe de MUNDO do render (entre o translate da camera e o
+  // restore). E o gate do culling: um drawTilemap/drawEntity chamado no HUD (depois
+  // do restore, coords de TELA) ou fora do render NUNCA pode ser culled contra o
+  // retangulo do mundo — sem isso, minimapa no HUD com camera ligada sumiria.
+  var worldPass = false;
   var tilemaps = Object.create(null);    // nome -> {rows, artTile, imgKey, solid Set}
   var hudHooks = [];                     // desenham DEPOIS do restore (sem câmera)
   var mouse = { x: 0, y: 0, down: false };
@@ -595,6 +600,18 @@ export const gameKitRuntime = `(function () {
 
   function updateCamera() {
     if (!camera.on || !camera.target) return;
+    // Tamanho do mundo DERIVADO por quadro (prioridade: mapa seguido > tamanho do
+    // mapa RPG > worldW/H passados na mao). Escreve em camera.worldW/H para os
+    // consumidores (keepOnScreen/bounceOnEdges/cullOffscreen) verem o mesmo mundo.
+    // Por quadro porque o tilePx e GLOBAL e muda (setTileSize/rpgMoveGrid) —
+    // nunca congelar no momento da chamada.
+    if (camera.followMap) {
+      camera.worldW = Math.max(config.w, camera.followCols * tilePx);
+      camera.worldH = Math.max(config.h, camera.followRows * tilePx);
+    } else if (rpg.mapCols > 0 && rpg.mapRows > 0) {
+      camera.worldW = Math.max(config.w, rpg.mapCols * tilePx);
+      camera.worldH = Math.max(config.h, rpg.mapRows * tilePx);
+    }
     var tx = centerX(camera.target) - config.w / 2;
     var ty = centerY(camera.target) - config.h / 2;
     camera.x = Math.max(0, Math.min(camera.worldW - config.w, tx));
@@ -607,14 +624,42 @@ export const gameKitRuntime = `(function () {
     }
     camera.on = true;
     camera.target = target;
+    camera.followMap = '';
     // O mundo nunca é menor que a tela (senão a trava das bordas inverte).
     camera.worldW = Math.max(config.w, num(worldW, config.w));
     camera.worldH = Math.max(config.h, num(worldH, config.h));
     updateCamera();
   }
+  /** Segue o personagem por um MAPA de tiles: o tamanho do mundo vem do PROPRIO
+   *  mapa (colunas x celula), recalculado a cada quadro — imune ao tamanho da
+   *  celula mudar depois. */
+  function cameraFollowMap(target, mapName) {
+    if (!target || typeof target !== 'object') {
+      warn('"Fazer a câmera seguir pelo mapa" precisa de um personagem');
+      return;
+    }
+    var nm = text(mapName, '');
+    var m = tilemaps[nm];
+    if (!m) {
+      warnOnce('camfollowmap:' + nm, 'o mapa "' + nm + '" não existe — carregue com "Carregar o mapa"');
+      cameraFollow(target, config.w, config.h);
+      return;
+    }
+    var cols = 0;
+    for (var i = 0; i < m.rows.length; i++) {
+      if (m.rows[i].length > cols) cols = m.rows[i].length;
+    }
+    camera.on = true;
+    camera.target = target;
+    camera.followMap = nm;
+    camera.followCols = cols;
+    camera.followRows = m.rows.length;
+    updateCamera();
+  }
   function cameraStop() {
     camera.on = false;
     camera.target = null;
+    camera.followMap = '';
     camera.x = 0;
     camera.y = 0;
   }
@@ -687,9 +732,19 @@ export const gameKitRuntime = `(function () {
     var cols = Math.max(1, Math.floor(num(sheet.img.width, at) / at));
     var cell = tilePx;
     var onlyTops = (text(layer, 'chão') === 'topos');
-    for (var r = 0; r < m.rows.length; r++) {
+    // 🌍 Culling: só a FATIA visível da câmera (o jeito dos jogos profissionais).
+    // Um mapa 512x512 cai de ~262 mil drawImage/quadro para ~200. Fora do passe
+    // de mundo (HUD/chamada avulsa) a fatia é a tela — mesmo recorte do canvas.
+    var vx = (worldPass && camera.on) ? camera.x : 0;
+    var vy = (worldPass && camera.on) ? camera.y : 0;
+    var pad = camera.shakeT > 0 ? camera.shakeMag : 0;
+    var r0 = Math.max(0, Math.floor((vy - pad) / cell));
+    var r1 = Math.min(m.rows.length, Math.ceil((vy + config.h + pad) / cell) + 1);
+    for (var r = r0; r < r1; r++) {
       var rowArr = m.rows[r];
-      for (var c = 0; c < rowArr.length; c++) {
+      var c0 = Math.max(0, Math.floor((vx - pad) / cell));
+      var c1 = Math.min(rowArr.length, Math.ceil((vx + config.w + pad) / cell) + 1);
+      for (var c = c0; c < c1; c++) {
         var idx = rowArr[c];
         if (idx < 0) continue;
         if (onlyTops && !m.solid[idx]) continue;
@@ -773,6 +828,7 @@ export const gameKitRuntime = `(function () {
       ctx2d.save();
       ctx2d.translate(-Math.round(camera.x) + Math.round(shx), -Math.round(camera.y) + Math.round(shy));
     }
+    worldPass = true; // 🌍 culling SO aqui (mundo transladado; HUD fica de fora)
     runHooks(drawHooks, ctx2d, 'Desenhar o jogo');
     if (debugOverlay) drawDebugOverlay();
     // R21: onda de choque + textos flutuantes são do MUNDO (dentro do translate,
@@ -781,6 +837,7 @@ export const gameKitRuntime = `(function () {
     drawShockwaves();
     drawSheetBursts(); // ✨ R25: explosões por folha (mundo, como as ondas)
     drawFloaties();
+    worldPass = false;
     if (pushed) ctx2d.restore();
     // HUD: por cima de tudo, SEM câmera (placar/barras ficam presos na tela).
     runHooks(hudHooks, ctx2d, 'Desenhar por cima (HUD)');
@@ -1025,6 +1082,18 @@ export const gameKitRuntime = `(function () {
   // giro (_angle) — como o RenderSystem do P24.
   function drawEntity(c) {
     if (!ctx2d || !c || typeof c !== 'object') return;
+    // 🌍 Culling: no passe de MUNDO com câmera ligada, quem está fora da vista
+    // nem toca o canvas (choke point único: cobre drawActive, drawByDepth,
+    // drawCharacter e os NPCs). Margem 128 cobre giro/inclinação + tremor.
+    // Seguro: a animação NÃO avança aqui (quadro = função do relógio do jogo).
+    if (worldPass && camera.on) {
+      var cw = num(c.w, 0);
+      var ch = num(c.h, 0);
+      if (num(c.x, 0) + cw < camera.x - 128 || num(c.x, 0) > camera.x + config.w + 128 ||
+          num(c.y, 0) + ch < camera.y - 128 || num(c.y, 0) > camera.y + config.h + 128) {
+        return;
+      }
+    }
     // Anda? = mudou de posição desde o último quadro (serve p/ grade, teclas e
     // velocidade). Alimenta a folha de andar direcional. ⚠️ Carimbo de quadro: só
     // mede UMA vez por quadro por entidade — desenhar o mesmo personagem 2× (ex.:
@@ -5043,6 +5112,12 @@ export const gameKitRuntime = `(function () {
     maps: {},             // nome -> [fns de montagem]
     mapOrder: [],         // ordem de registro (o 1º é o mapa inicial)
     currentMap: '',
+    // 🌍 Mundo aberto: tamanho do mapa ATUAL em células + bordas ligadas
+    // ('norte'|'sul'|'leste'|'oeste' -> nome do mapa). Declarados DENTRO do
+    // "Quando chegar no mapa" e remontados a cada entrada (como pkm.grass).
+    mapCols: 0,
+    mapRows: 0,
+    edges: {},
     hero: null,           // quem usa a grade (a fala/porta/NPC olham ele)
     dialog: null,         // {queue, text, name, start}
     battle: null,         // {name, hp, max, str, def, defending, poison}
@@ -5281,6 +5356,16 @@ export const gameKitRuntime = `(function () {
       var cy = Math.round(num(c.y, 0) / s);
       var nx = cx + dx;
       var ny = cy + dy;
+      // 🌍 Mundo aberto: o passo cruzaria a BORDA do mapa? Com ligação, viaja
+      // (estilo Zelda: entra espelhado do outro lado); sem ligação, a borda é o
+      // fim do mundo (só virou de lado). Sem "Este mapa tem", NADA muda.
+      if (rpg.mapCols > 0 && rpg.mapRows > 0 &&
+          (nx < 0 || nx >= rpg.mapCols || ny < 0 || ny >= rpg.mapRows)) {
+        var eside = dx > 0 ? 'leste' : dx < 0 ? 'oeste' : dy > 0 ? 'sul' : 'norte';
+        var edest = rpg.edges[eside];
+        if (edest) rpgEdgeTravel(c, edest, eside, cx, cy);
+        return;
+      }
       if (rpg.walls[nx + ',' + ny]) return; // parede/NPC: só virou de lado
       c._gridDest = { x: nx * s, y: ny * s };
     }
@@ -5405,6 +5490,10 @@ export const gameKitRuntime = `(function () {
     pkm.wild = [];
     pkm.grass = {};
     pkm.grassTiles = {};
+    // 🌍 Tamanho e bordas TAMBÉM são por-mapa (declarados dentro do hook).
+    rpg.mapCols = 0;
+    rpg.mapRows = 0;
+    rpg.edges = {};
     if (rpg.hero) rpg.hero._gridDest = null;
     rpg.currentMap = k;
     var hooks = rpg.maps[k];
@@ -5422,6 +5511,47 @@ export const gameKitRuntime = `(function () {
     var k = text(map, '');
     if (!k) return;
     rpg.doors[cellKey(cx, cy)] = k;
+  }
+  // ---- 🌍 Mundo aberto: tamanho do mapa + bordas ligadas (estilo Zelda) ----
+  /** Tamanho do mapa ATUAL em células (use dentro do "Quando chegar no mapa").
+   *  Liga a trava da câmera E o "fim do mundo" nas bordas sem ligação. */
+  function rpgMapSize(cols, rows) {
+    rpg.mapCols = Math.max(0, Math.round(num(cols, 0)));
+    rpg.mapRows = Math.max(0, Math.round(num(rows, 0)));
+  }
+  var EDGE_SIDES = { norte: true, sul: true, leste: true, oeste: true };
+  /** Liga uma borda deste mapa a outro mapa: atravessou, viaja (declare o
+   *  "Este mapa tem" antes, e ligue a borda ESPELHADA no outro mapa também). */
+  function rpgConnectEdge(side, map) {
+    var s = text(side, '');
+    var k = text(map, '');
+    if (!EDGE_SIDES[s]) {
+      warnOnce('edgeside:' + s, 'a borda "' + s + '" não existe (use norte, sul, leste ou oeste)');
+      return;
+    }
+    if (!k) return;
+    rpg.edges[s] = k;
+  }
+  function rpgCurrentMap() {
+    return rpg.currentMap;
+  }
+  /** A viagem pela borda: troca o mapa (teardown + hooks + fade + aviso, tudo do
+   *  rpgGoMap) e SÓ DEPOIS põe o herói na borda oposta, MESMA linha/coluna — por
+   *  vir depois dos hooks, a entrada pela borda VENCE o "Colocar" do hook. */
+  function rpgEdgeTravel(who, dest, side, cx, cy) {
+    rpgGoMap(dest);
+    var ncx = cx;
+    var ncy = cy;
+    if (side === 'leste') ncx = 0;
+    else if (side === 'oeste') ncx = Math.max(0, rpg.mapCols - 1);
+    else if (side === 'sul') ncy = 0;
+    else if (side === 'norte') ncy = Math.max(0, rpg.mapRows - 1);
+    // A coordenada perpendicular preserva e CLAMPA ao tamanho do destino.
+    if (rpg.mapCols > 0) ncx = Math.max(0, Math.min(rpg.mapCols - 1, ncx));
+    if (rpg.mapRows > 0) ncy = Math.max(0, Math.min(rpg.mapRows - 1, ncy));
+    who.x = ncx * tilePx;
+    who.y = ncy * tilePx;
+    who._gridDest = null;
   }
   // Gatilho ao PISAR numa célula (footstep cutscene do Pizza): roda quando o herói
   // ENCAIXA nessa célula. Encontros aleatórios, armadilhas, cenas automáticas.
@@ -6164,6 +6294,7 @@ export const gameKitRuntime = `(function () {
     stateLook: guard('stateLook', stateLook),
     autoAnimate: guard('autoAnimate', autoAnimate),
     cameraFollow: guard('cameraFollow', cameraFollow),
+    cameraFollowMap: guard('cameraFollowMap', cameraFollowMap),
     cameraStop: guard('cameraStop', cameraStop),
     cameraX: guard('cameraX', function () { return camera.x; }),
     cameraY: guard('cameraY', function () { return camera.y; }),
@@ -6203,6 +6334,10 @@ export const gameKitRuntime = `(function () {
     rpgGoMap: guard('rpgGoMap', rpgGoMap),
     rpgOnMap: guard('rpgOnMap', rpgOnMap),
     rpgCreateDoor: guard('rpgCreateDoor', rpgCreateDoor),
+    // ----- 🌍 Mundo aberto (tamanho do mapa + bordas ligadas) -----
+    rpgMapSize: guard('rpgMapSize', rpgMapSize),
+    rpgConnectEdge: guard('rpgConnectEdge', rpgConnectEdge),
+    rpgCurrentMap: guard('rpgCurrentMap', rpgCurrentMap),
     rpgBattleStats: guard('rpgBattleStats', rpgBattleStats),
     rpgBattleStart: guard('rpgBattleStart', rpgBattleStart),
     rpgOnBattleEnd: guard('rpgOnBattleEnd', function (fn) {

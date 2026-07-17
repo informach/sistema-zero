@@ -650,6 +650,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:rpgLevel' }
     case 'sz_gk_rpg_xp':
       return { type: 'gk:rpgXp' }
+    case 'sz_gk_rpg_current_map':
+      return { type: 'gk:rpgCurrentMap' }
     case 'sz_g3k_world_size':
       return { type: 'g3k:worldSize' }
     case 'sz_g3k_count_alive':
@@ -5989,6 +5991,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           h: exprInput(block, 'H', { type: 'num', value: 1080 }),
         },
       }
+    case 'sz_gk_camera_follow_map':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cameraFollowMap', charVar: f(block, 'CHAR'), map: f(block, 'MAP') },
+      }
     case 'sz_gk_camera_stop':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:cameraStop' } }
@@ -6134,6 +6142,27 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'gk:rpgCreateDoor',
           cx: exprInput(block, 'CX', { type: 'num', value: 5 }),
           cy: exprInput(block, 'CY', { type: 'num', value: 5 }),
+          map: f(block, 'MAP'),
+        },
+      }
+    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
+    case 'sz_gk_rpg_map_size':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgMapSize',
+          cols: exprInput(block, 'COLS', { type: 'num', value: 30 }),
+          rows: exprInput(block, 'ROWS', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_gk_rpg_connect_edge':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgConnectEdge',
+          side: f(block, 'SIDE') || 'leste',
           map: f(block, 'MAP'),
         },
       }
