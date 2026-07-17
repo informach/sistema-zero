@@ -6162,6 +6162,21 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'grassTime':
       return block('sz_t3d_grass_wave', { GRASS: stmt.grass }, {}, stmt.__id)
+    case 'signSetup': {
+      // Macro Letreiro (forward-only): só chega aqui via block→IR→block.
+      const vs = valueSocketsOf([
+        ['SIZE', stmt.size],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_sign',
+        { SCENE: stmt.scene, TEXT: stmt.text, SIGN: stmt.sign },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)

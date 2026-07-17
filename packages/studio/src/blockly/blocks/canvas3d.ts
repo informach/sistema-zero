@@ -647,6 +647,30 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       'Cria um campo de grama 🌿 com MILHARES de folhinhas — e todas custam UM só desenho (o truque do InstancedMesh) + um shader de vento que faz elas balançarem. Folhas = quantas; altura = o tamanho de cada; espalhar = o tamanho do campo; cor = o verde da grama. Depois use "fazer a grama balançar" no laço.',
   },
   {
+    // Macro "Letreiro 3D": o jeito FOLIO de texto no mundo — desenha o texto num
+    // canvas oculto, vira CanvasTexture num plano transparente (só as letras têm
+    // alfa). Forward-only; o gerador expande a receita (12 linhas, todas 0-raw).
+    type: 'sz_t3d_sign',
+    message0: 'criar letreiro 🪧 na cena %1',
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    message1: 'texto %1 · largura %2',
+    args1: [
+      { type: 'field_input', name: 'TEXT', text: 'Oi!' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    message2: 'cor %1 · guardar em %2',
+    args2: [
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'SIGN', text: 'placa' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um letreiro flutuante com o texto que você quiser — o jeito que os sites 3D profissionais fazem: desenha o texto numa telinha escondida (canvas), transforma em textura (CanvasTexture) e cola num plano transparente. Depois posicione com "mudar a posição de placa". Largura em metros; a altura é metade.',
+  },
+  {
     // `grama.material.uniforms.time.value += 0.02` — animar o vento no laço.
     type: 'sz_t3d_grass_wave',
     message0: 'fazer a grama %1 balançar',
@@ -721,6 +745,7 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
       'sz_t3d_water_wave',
       'sz_t3d_grass',
       'sz_t3d_grass_wave',
+      'sz_t3d_sign',
     ],
   },
 ]

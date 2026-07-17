@@ -2973,6 +2973,35 @@ ${pad}});`
     case 'grassTime':
       // Animar o vento: avança o relógio do shader da grama a cada quadro.
       return `${pad}${identifiers.get(stmt.grass)}.material.uniforms.time.value += 0.02;`
+    case 'signSetup': {
+      // Macro Letreiro 3D: o jeito FOLIO de texto no mundo — desenha num canvas
+      // oculto, vira CanvasTexture num plano transparente (só as letras têm alfa,
+      // o canvas não pinta fundo). Toda linha expandida round-trippa 0-raw
+      // (createElement é nó dedicado; fillText/font em contexto não-registrado
+      // ficam memberCall/memberSet genéricos).
+      const s = identifiers.get(stmt.sign)
+      const sc = identifiers.get(stmt.scene)
+      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const tela = `${s}Tela`
+      const tinta = `${s}Tinta`
+      const tex = `${s}Tex`
+      const lines = [
+        `const ${tela} = document.createElement("canvas");`,
+        `${tela}.width = 512;`,
+        `${tela}.height = 256;`,
+        `const ${tinta} = ${tela}.getContext("2d");`,
+        `${tinta}.fillStyle = ${color};`,
+        `${tinta}.font = "bold 120px sans-serif";`,
+        `${tinta}.textAlign = "center";`,
+        `${tinta}.textBaseline = "middle";`,
+        `${tinta}.fillText(${JSON.stringify(stmt.text)}, 256, 128);`,
+        `const ${tex} = new THREE.CanvasTexture(${tela});`,
+        `const ${s} = new THREE.Mesh(new THREE.PlaneGeometry(${size}, ${size} * 0.5), new THREE.MeshBasicMaterial({ map: ${tex}, transparent: true }));`,
+        `${sc}.add(${s});`,
+      ]
+      return lines.map((l) => `${pad}${l}`).join('\n')
+    }
     case 'return':
       return stmt.value === undefined
         ? `${pad}return;`
@@ -5843,6 +5872,12 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'grassTime':
       names.add(stmt.grass)
+      return
+    case 'signSetup':
+      names.add(stmt.sign)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.color, names)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)

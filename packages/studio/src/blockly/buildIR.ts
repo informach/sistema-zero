@@ -3479,6 +3479,20 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_t3d_grass_wave':
       // `grama.material.uniforms.time.value += 0.02` — animar o vento no laço.
       return { kind: 'js', value: { type: 'grassTime', grass: f(block, 'GRASS') } }
+    case 'sz_t3d_sign':
+      // Macro Letreiro 3D: 1 bloco → canvas oculto + CanvasTexture + plano
+      // transparente (gerador expande; TEXT é campo — letreiro é estático).
+      return {
+        kind: 'js',
+        value: {
+          type: 'signSetup',
+          sign: f(block, 'SIGN') || 'placa',
+          scene: f(block, 'SCENE'),
+          text: f(block, 'TEXT') || 'Oi!',
+          size: exprInput(block, 'SIZE', { type: 'num', value: 4 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#ffffff' }),
+        },
+      }
     case 'sz_js_call_method':
       return {
         kind: 'js',

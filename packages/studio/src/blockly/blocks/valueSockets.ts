@@ -84,6 +84,8 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_water: { SIZE: 2000 },
   // Macro Grama: nº de folhas, altura de cada e o tamanho do campo.
   sz_t3d_grass: { COUNT: 5000, SIZE: 1, SPREAD: 50 },
+  // Macro Letreiro: a largura do plano do letreiro (a altura é metade).
+  sz_t3d_sign: { SIZE: 4 },
 }
 
 /**
@@ -108,6 +110,8 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   sz_t3d_water: { COLOR: '#0a3d5c' },
   // Macro Grama: o verde da grama.
   sz_t3d_grass: { COLOR: '#4a7c2a' },
+  // Macro Letreiro: a cor das letras (branco = destaca em qualquer céu).
+  sz_t3d_sign: { COLOR: '#ffffff' },
 }
 
 /**

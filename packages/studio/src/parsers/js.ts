@@ -61,6 +61,7 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
   const ctx: ParseCtx = {
     source,
     elementVars: new Map(),
+    createdElementVars: new Set(),
     canvasElementVars: new Set(),
     ctxVars: new Set(),
     elementToCtx: new Map(),
@@ -103,6 +104,14 @@ interface ParseCtx {
    * (ex.: o corpo de `new Promise((resolve) => { ... })` no `toExpr`). */
   source: string
   elementVars: Map<string, string>
+  /**
+   * Variáveis que vieram de `document.createElement[NS](...)` (não de
+   * `getElementById`). Guard do `canvasSetup`: um canvas CRIADO não pode ser
+   * fundido em `getElementById(<nome-da-var>)` — o elemento não tem id nenhum e
+   * a reescrita mudaria a semântica (o letreiro canvas→CanvasTexture do folio
+   * usa exatamente `createElement('canvas') + getContext('2d')`).
+   */
+  createdElementVars: Set<string>
   /**
    * Variáveis de elemento `<canvas>` que foram absorvidas num `canvasSetup`
    * (par `getElementById` + `getContext('2d')`). O `getElementById` solto
@@ -702,18 +711,24 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   const createdTag = matchCreateElement(init)
   if (createdTag !== null) {
     ctx.elementVars.set(name, name)
+    ctx.createdElementVars.add(name)
     return [{ type: 'createElement', tag: createdTag, varName: name }]
   }
   // createElementNS (forma SVG): const x = document.createElementNS(<ns>, 'circle')
   const createdNSTag = matchCreateElementNS(init)
   if (createdNSTag !== null) {
     ctx.elementVars.set(name, name)
+    ctx.createdElementVars.add(name)
     return [{ type: 'createElementNS', tag: createdNSTag, varName: name }]
   }
   // canvasSetup: const ctx = <canvasVar>.getContext('2d'), onde <canvasVar>
   // veio de um getElementById anterior. Funde o par numa única IR canvasSetup.
+  // ⚠️ NÃO funde canvas CRIADO (`createElement('canvas')`): ele não tem id e a
+  // fusão regeneraria `getElementById(<nome-da-var>)` — código DIFERENTE (null).
+  // Nesse caso a linha cai no `var` genérico (memberCall) e os desenhos seguem
+  // como métodos genéricos — round-trip byte-fiel (idioma do letreiro do folio).
   const canvasVar = matchGetContext(init)
-  if (canvasVar) {
+  if (canvasVar && !ctx.createdElementVars.has(canvasVar)) {
     const canvasId = ctx.elementVars.get(canvasVar)
     if (canvasId !== undefined) {
       ctx.canvasElementVars.add(canvasVar)

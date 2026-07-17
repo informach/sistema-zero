@@ -434,6 +434,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_t3d_particles: { COUNT: 'number', SIZE: 'number', SPREAD: 'number', COLOR: 'color' },
   sz_t3d_water: { SIZE: 'number', COLOR: 'color' },
   sz_t3d_grass: { COUNT: 'number', SIZE: 'number', SPREAD: 'number', COLOR: 'color' },
+  sz_t3d_sign: { SIZE: 'number', COLOR: 'color' },
   // Mundo 3D (world-3d) — soquetes nascidos input_value (inertes na migração,
   // ativos na restauração de sombra + shouldEmitAsShadow).
   sz_w3d_setup: { WORLD: 'number' },

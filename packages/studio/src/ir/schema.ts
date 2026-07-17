@@ -4129,6 +4129,18 @@ export type JSStatement =
   // Canvas 3D: fazer a grama balançar (avança o uniform `time` no laço) — companheiro
   // do grassSetup.
   | (JSStatementCommon & { type: 'grassTime'; grass: string })
+  // Canvas 3D: macro LETREIRO 3D — 1 bloco que desenha um texto num canvas oculto,
+  // vira CanvasTexture num plano transparente da cena (o jeito FOLIO de texto no
+  // mundo: canvas 2D → textura, nunca TextGeometry), forward-only. `sign` = a var
+  // do plano; `text` é CAMPO (letreiro é estático); size/color = botões (sockets).
+  | (JSStatementCommon & {
+      type: 'signSetup'
+      sign: string
+      scene: string
+      text: string
+      size: JSExpr
+      color: JSExpr
+    })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -8182,6 +8194,15 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('grassTime'),
       grass: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('signSetup'),
+      sign: irText(),
+      scene: irText(),
+      text: irText(),
+      size: JSExprSchema,
+      color: JSExprSchema,
       ...idField,
     }),
     z.object({
