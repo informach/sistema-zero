@@ -12,6 +12,11 @@
  * A infra de preview (`buildPreviewDoc` + `csp.ts`) já é genérica: transforma
  * qualquer mapa em `<script type="importmap">` + abre a origem no `script-src`.
  * three entra por importmap (não por fetch) → sem permissão de rede, sem CSP nova.
+ *
+ * ⚠️ CDN NOVA aqui = decisão de segurança (abre origem no `script-src` de TODO
+ * preview). GSAP e afins ficam FORA por decisão — o equivalente "na unha" é
+ * ensinado (lerp/lerpColors + dt). O que roda × o que não roda no preview está
+ * em `docs/canvas3d-preview-limits.md` (DRACO, pointer lock, gamepad, fetch…).
  */
 
 /** MESMA URL das extensões game-3d/game-3d-advanced (importmaps colapsam). */
