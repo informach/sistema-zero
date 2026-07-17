@@ -6102,7 +6102,16 @@ function asSZWorld3DCall(expr: Node): { method: string; args: Node[] } | null {
  * (o dropdown coagiria para a 1ª opção e o round-trip mentiria). */
 const W3D_STYLES = new Set(['floresta', 'praia', 'neve', 'deserto', 'primavera'])
 const W3D_CAR_STYLES = new Set(['passeio', 'jipe', 'corrida'])
-const W3D_THINGS = new Set(['arvores', 'pinheiros', 'pedras', 'flores', 'cogumelos', 'cactos'])
+const W3D_THINGS = new Set([
+  'arvores',
+  'pinheiros',
+  'pedras',
+  'flores',
+  'cogumelos',
+  'cactos',
+  'palmeiras',
+])
+const W3D_AMBIENCES = new Set(['mar', 'passaros', 'grilos', 'desligado'])
 const W3D_GRASS_AMOUNTS = new Set(['pouca', 'media', 'muita'])
 const W3D_EFFECTS_ON = new Set(['ligados', 'desligados'])
 const W3D_TIRES_ON = new Set(['ligadas', 'desligadas'])
@@ -6519,6 +6528,39 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       const amount = args[0].value as string
       return W3D_CLOUD_AMOUNTS.has(amount) ? { type: 'w3d:clouds', amount } : null
+    }
+    case 'islands': {
+      const n = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      return isSimpleValue(n) && isSimpleValue(y) ? { type: 'w3d:islands', n, y } : null
+    }
+    case 'boat': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'w3d:boat', color: args[0].value as string }
+    }
+    case 'bridge': {
+      const x1 = toExpr(args[0], ctx)
+      const z1 = toExpr(args[1], ctx)
+      const x2 = toExpr(args[2], ctx)
+      const z2 = toExpr(args[3], ctx)
+      const w = toExpr(args[4], ctx)
+      return isSimpleValue(x1) &&
+        isSimpleValue(z1) &&
+        isSimpleValue(x2) &&
+        isSimpleValue(z2) &&
+        isSimpleValue(w)
+        ? { type: 'w3d:bridge', x1, z1, x2, z2, w }
+        : null
+    }
+    case 'lighthouse': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:lighthouse', x, z } : null
+    }
+    case 'ambience': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const kind = args[0].value as string
+      return W3D_AMBIENCES.has(kind) ? { type: 'w3d:ambience', kind } : null
     }
     case 'person': {
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null

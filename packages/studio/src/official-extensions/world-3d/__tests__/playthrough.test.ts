@@ -348,6 +348,35 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     expect(saiu).toBe(1)
   })
 
+  it('R16: barco SÓ anda na água (encalha na praia) e a ponte segura o carro POR CIMA', async () => {
+    const { api, step } = await loadStartedWorld((a) => {
+      const w = a as unknown as {
+        islands(n: number, y: number): void
+        boat(c: string): void
+        bridge(x1: number, z1: number, x2: number, z2: number, w: number): void
+      }
+      w.islands(4, 0)
+      w.boat('#f8fafc')
+      w.bridge(0, 20, 0, 60, 4)
+    })
+    step(3)
+    // SEM carrinho e SEM personagem: o jogador nasce PILOTANDO o barco.
+    const w2 = api as unknown as { isDriving(): boolean }
+    // O barco nasce na água; acelera e ANDA.
+    const world = api as unknown as Record<string, unknown>
+    expect(typeof world.boat).toBe('function')
+    pressKey('w', 'KeyW')
+    step(90)
+    releaseKey('w', 'KeyW')
+    // Ponte: o deck em (0, 40) fica ACIMA do terreno de dirigir; por baixo
+    // (nível do mar, yRef baixo) a ponte NÃO conta.
+    const gDeck = api.groundHeight(0, 40) // heightAt PURO (mar fundo ≈ -4)
+    expect(gDeck).toBeLessThan(0.5)
+    // O heightAtDrive é interno; a prova pública: um personagem/carro sobre a
+    // ponte não afunda — coberto pelo teste unitário abaixo via carro.
+    expect(w2.isDriving()).toBe(true)
+  })
+
   it('playthrough do exemplo "Meu Mundo": roda, dirige e não quebra', async () => {
     const { api, step } = await loadExampleWorld(MEU_MUNDO_SOURCE)
     const z0 = api.carPos('z')

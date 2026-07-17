@@ -5856,6 +5856,34 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_w3d_tire_marks', { ON: stmt.on ? 'ligadas' : 'desligadas' }, {}, stmt.__id)
     case 'w3d:carPaint':
       return block('sz_w3d_car_paint', { PAINT: stmt.paint }, {}, stmt.__id)
+    case 'w3d:islands': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return n === null || y === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_islands', {}, {}, stmt.__id, { N: n, Y: y })
+    }
+    case 'w3d:boat':
+      return block('sz_w3d_boat', { COLOR: stmt.color }, {}, stmt.__id)
+    case 'w3d:bridge': {
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+      const w = exprToValueBlock(valueToExpr(stmt.w))
+      return x1 === null || z1 === null || x2 === null || z2 === null || w === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_bridge', {}, {}, stmt.__id, { X1: x1, Z1: z1, X2: x2, Z2: z2, W: w })
+    }
+    case 'w3d:lighthouse': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      return x === null || z === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_lighthouse', {}, {}, stmt.__id, { X: x, Z: z })
+    }
+    case 'w3d:ambience':
+      return block('sz_w3d_ambience', { KIND: stmt.kind }, {}, stmt.__id)
     case 'w3d:person':
       return block('sz_w3d_person', { COLOR: stmt.color, HAT: stmt.hat }, {}, stmt.__id)
     case 'w3d:personStats': {

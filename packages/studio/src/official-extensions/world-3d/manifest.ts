@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '1.5.0',
+  version: '1.6.0',
   description:
     'Crie um MUNDO 3D aberto e dirija nele. Escolha o estilo (🌲 floresta, 🏖️ praia, ❄️ neve, 🏜️ deserto, 🌸 primavera), levante morros com um bloco e crie o carrinho dirigível — WASD, pulo, molejo de suspensão, câmera que segue e a altura do chão prontos. A base do seu mundo dos sonhos: passeie, explore e construa a sua mecânica por cima com o "A cada quadro".',
   category: 'games',
@@ -149,6 +149,19 @@ O que o motor já faz por você:
 - **onde o personagem está (eixo …)** — dirigindo, é a posição do carrinho
   (o personagem está dentro!). **está dirigindo?** — verdadeiro no volante.
 
+### 🏝️ Ilha & barco
+
+- **Transformar o mundo em … ilhas num mar na altura …** — o ARQUIPÉLAGO:
+  ilhas com praia separadas por mar (a água entra sozinha). Você nasce na
+  ilha do meio — explore as outras de barco ou construa pontes.
+- **Criar o barco dirigível ⛵** — SÓ anda na água (encalha na praia),
+  balança com as ondas e faz curvas de barco. Com o personagem, E perto
+  dele sobe a bordo; sem carrinho nem personagem, você nasce pilotando.
+- **Construir uma ponte 🌉 de … até …** — tábuas com arco suave ligando
+  duas ilhas. Carrinho e personagem passam POR CIMA; o barco, POR BAIXO.
+- **Pôr um farol 🗼** — a torre listrada com a luz girando à noite. E as
+  🌴 palmeiras entraram no "Espalhar" — a praia completa.
+
 ### 🌦️ Céu & clima
 
 - **Ligar o ciclo dia e noite: um dia dura … minutos** — o tempo passa de
@@ -245,6 +258,8 @@ O que o motor já faz por você:
 - **Tocar o som …** — toca um som carregado (bom em "Quando bater forte").
 - **Tocar a música … sem parar** — a trilha sonora do seu mundo (em loop).
 - **Parar a música** — desliga a música.
+- **Sons do lugar: 🌊/🐦/🦗** — o fundo sonoro feito na hora (sem arquivo):
+  mar respirando, passarinhos de dia ou grilos à noite.
 
 ### ⏱️ Jogo & tela
 

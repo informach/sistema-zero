@@ -9026,6 +9026,40 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return { kind: 'js', value: { type: 'w3d:carLights' } }
     case 'sz_w3d_tire_marks':
       return { kind: 'js', value: { type: 'w3d:tireMarks', on: f(block, 'ON') !== 'desligadas' } }
+    case 'sz_w3d_islands':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:islands',
+          n: exprInput(block, 'N', { type: 'num', value: 4 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_boat':
+      return { kind: 'js', value: { type: 'w3d:boat', color: f(block, 'COLOR') || '#f8fafc' } }
+    case 'sz_w3d_bridge':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:bridge',
+          x1: exprInput(block, 'X1', { type: 'num', value: 0 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 20 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 0 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 50 }),
+          w: exprInput(block, 'W', { type: 'num', value: 4 }),
+        },
+      }
+    case 'sz_w3d_lighthouse':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:lighthouse',
+          x: exprInput(block, 'X', { type: 'num', value: 50 }),
+          z: exprInput(block, 'Z', { type: 'num', value: -40 }),
+        },
+      }
+    case 'sz_w3d_ambience':
+      return { kind: 'js', value: { type: 'w3d:ambience', kind: f(block, 'KIND') || 'desligado' } }
     case 'sz_w3d_person':
       return {
         kind: 'js',

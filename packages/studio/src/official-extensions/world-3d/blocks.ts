@@ -273,6 +273,7 @@ export const world3DBlocks = [
           ['🌸 flores', 'flores'],
           ['🍄 cogumelos', 'cogumelos'],
           ['🌵 cactos', 'cactos'],
+          ['🌴 palmeiras', 'palmeiras'],
         ],
       },
     ],
@@ -312,6 +313,7 @@ export const world3DBlocks = [
           ['🌸 flor', 'flores'],
           ['🍄 cogumelo', 'cogumelos'],
           ['🌵 cacto', 'cactos'],
+          ['🌴 palmeira', 'palmeiras'],
         ],
       },
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -558,6 +560,85 @@ export const world3DBlocks = [
     colour: C,
     tooltip:
       'Nuvens fofas lá no alto, derivando com o vento — deixam o céu com cara de mundo grande. "muitas" fica lindo no entardecer.',
+  },
+  {
+    // R16: ilha & barco — o arquétipo "férias" (arquipélago, barco, ponte, farol).
+    type: 'sz_w3d_islands',
+    message0: 'Transformar o mundo em %1 ilhas 🏝️ num mar na altura %2',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Vira um ARQUIPÉLAGO: ilhas com praia separadas por mar (a água entra sozinha na altura escolhida). Você nasce na ilha do meio — explore as outras de barco ou construa pontes!',
+  },
+  {
+    type: 'sz_w3d_boat',
+    message0: 'Criar o barco dirigível ⛵ da cor %1',
+    args0: [{ type: 'field_colour_sz', name: 'COLOR', colour: '#f8fafc' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um barco de verdade: SÓ anda na água (encalha na praia), balança com as ondas e vira devagar como barco. Com o personagem, aperte E perto dele para subir a bordo; sem carrinho nem personagem, você já nasce pilotando.',
+  },
+  {
+    type: 'sz_w3d_bridge',
+    message0: 'Construir uma ponte 🌉 de x %1 z %2 até x %3 z %4 (largura %5)',
+    args0: [
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Z1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Z2', check: 'JSValue' },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Uma ponte de tábuas com arco suave ligando dois pontos (duas ilhas!). O carrinho e o personagem passam POR CIMA — e o barco passa POR BAIXO.',
+  },
+  {
+    type: 'sz_w3d_lighthouse',
+    message0: 'Pôr um farol 🗼 em x %1 z %2',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A torre listrada de vermelho e branco com a luz GIRANDO à noite — o coração de todo mundo de praia. Ponha na ponta da ilha.',
+  },
+  {
+    type: 'sz_w3d_ambience',
+    message0: 'Sons do lugar: %1',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'KIND',
+        options: [
+          ['🌊 mar', 'mar'],
+          ['🐦 passarinhos', 'passaros'],
+          ['🦗 grilos', 'grilos'],
+          ['desligado', 'desligado'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O som de fundo do seu mundo, feito na hora (sem arquivo): ondas do mar respirando, passarinhos de dia ou grilos à noite.',
   },
   {
     // R15: personagem a pé — o jogador Coastal-style (anda, corre, pula,
@@ -1415,6 +1496,11 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    name: '🏝️ Ilha & barco',
+    colour: C,
+    types: ['sz_w3d_islands', 'sz_w3d_boat', 'sz_w3d_bridge', 'sz_w3d_lighthouse'],
+  },
+  {
     name: '🧍 Personagem',
     colour: C,
     types: [
@@ -1521,7 +1607,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🔊 Sons',
     colour: C,
-    types: ['sz_w3d_load_sound', 'sz_w3d_play_sound', 'sz_w3d_play_music', 'sz_w3d_stop_music'],
+    types: [
+      'sz_w3d_load_sound',
+      'sz_w3d_play_sound',
+      'sz_w3d_play_music',
+      'sz_w3d_stop_music',
+      'sz_w3d_ambience',
+    ],
   },
   {
     name: '⏱️ Jogo & tela',
@@ -1586,6 +1678,15 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_w3d_waterfall: { X: numShadow(40), Z: numShadow(-30), H: numShadow(8), DEG: numShadow(0) },
   sz_w3d_person_stats: { WALK: numShadow(4), RUN: numShadow(8), JUMP: numShadow(7) },
   sz_w3d_person_place: { X: numShadow(0), Z: numShadow(0), DEG: numShadow(0) },
+  sz_w3d_islands: { N: numShadow(4), Y: numShadow(0) },
+  sz_w3d_bridge: {
+    X1: numShadow(0),
+    Z1: numShadow(20),
+    X2: numShadow(0),
+    Z2: numShadow(50),
+    W: numShadow(4),
+  },
+  sz_w3d_lighthouse: { X: numShadow(50), Z: numShadow(-40) },
   sz_w3d_lamp: { X: numShadow(6), Z: numShadow(6) },
   sz_w3d_campfire: { X: numShadow(0), Z: numShadow(8) },
   sz_w3d_push_scatter: { N: numShadow(12), X: numShadow(0), Z: numShadow(20), R: numShadow(10) },

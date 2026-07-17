@@ -2658,6 +2658,16 @@ ${pad}});`
       return `${pad}SZWorld3D.tireMarks(${JSON.stringify(stmt.on ? 'ligadas' : 'desligadas')});`
     case 'w3d:carPaint':
       return `${pad}SZWorld3D.carPaint(${JSON.stringify(stmt.paint)});`
+    case 'w3d:islands':
+      return `${pad}SZWorld3D.islands(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
+    case 'w3d:boat':
+      return `${pad}SZWorld3D.boat(${JSON.stringify(stmt.color)});`
+    case 'w3d:bridge':
+      return `${pad}SZWorld3D.bridge(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))});`
+    case 'w3d:lighthouse':
+      return `${pad}SZWorld3D.lighthouse(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
+    case 'w3d:ambience':
+      return `${pad}SZWorld3D.ambience(${JSON.stringify(stmt.kind)});`
     case 'w3d:person':
       return `${pad}SZWorld3D.person(${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.hat)});`
     case 'w3d:personStats':
@@ -5837,6 +5847,23 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:person':
     case 'w3d:personAccessory':
     case 'w3d:personEmote':
+    case 'w3d:boat':
+    case 'w3d:ambience':
+      return
+    case 'w3d:islands':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'w3d:bridge':
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      return
+    case 'w3d:lighthouse':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
       return
     case 'w3d:personStats':
       collectExprIdentifiers(valueToExpr(stmt.walk), names)

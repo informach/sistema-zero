@@ -236,6 +236,18 @@ export const world3DRuntime = `import * as THREE from 'three';
   var _enterInteract = null;    // interagível "E: entrar" (segue o carro)
   var personEmote = null;       // { kind, t }
   var _jetPuffCd = 0;
+  // ---- R16 "ilha & barco": arquipélago, barco, ponte, farol, ambiente ----
+  var islandsCfg = null;        // { list: [{x,z,r,h}] } — muda o baseHeightAt
+  var boatCfg = null;           // { color }
+  var boatState = null;         // { x, z, yaw, speed, roll }
+  var boatGroup = null;
+  var activeVehicle = 'car';    // 'car' | 'boat' — qual veículo o E encosta
+  var _boatInteract = null;
+  var bridges = [];             // { x1,z1,x2,z2,w,y1,y2 } — entram no heightAtDrive
+  var lighthouses = [];         // { beam1, beam2, x, z }
+  var ambienceKind = 'desligado';
+  var _ambNoise = null;         // loop de "mar" (buffer de ruído + lowpass)
+  var _ambT = 0;                // relógio dos chirps/grilos
   var _dummy = null;            // Object3D p/ compor matrizes de instância
   var _mat4 = null;
   var UNIT_GEOS = null;         // geometrias unitárias compartilhadas das espécies
@@ -368,6 +380,21 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
     h = (h / tot) * terrainCfg.hills;
     var d = Math.sqrt(x * x + z * z);
+    if (islandsCfg) {
+      // Arquipélago (R16): N domos determinísticos; fora deles o chão AFUNDA
+      // (mar a -4). O ruído vira só detalhe (×0.3). A ilha 0 cobre o spawn.
+      var best = 0;
+      for (var ii = 0; ii < islandsCfg.list.length; ii++) {
+        var isl = islandsCfg.list[ii];
+        var ddx = x - isl.x;
+        var ddz = z - isl.z;
+        var dd = Math.sqrt(ddx * ddx + ddz * ddz);
+        var k = 1 - smoothstep(isl.r * 0.5, isl.r, dd);
+        var dome = k * isl.h;
+        if (dome > best) best = dome;
+      }
+      return -4 + best + h * 0.3 * smoothstep(8, 20, d);
+    }
     return h * smoothstep(8, 20, d);
   }
 
@@ -413,6 +440,26 @@ export const world3DRuntime = `import * as THREE from 'three';
           var target = m.y1 + (m.y2 - m.y1) * s.t;
           h = h + (target - h) * k2;
         }
+      }
+    }
+    return h;
+  }
+
+  /**
+   * A altura DE DIRIGIR/ANDAR (R16): heightAt + o DECK das pontes. O heightAt
+   * segue PURO (água/scatter/grama/espuma leem o terreno de verdade); a ponte
+   * só conta quando o jogador está à altura dela (yRef > deck − 0.8) — assim o
+   * barco passa POR BAIXO e o carro sobe POR CIMA pela rampa.
+   */
+  function heightAtDrive(x, z, yRef) {
+    var h = heightAt(x, z);
+    for (var i = 0; i < bridges.length; i++) {
+      var b = bridges[i];
+      var s = segDist(x, z, b.x1, b.z1, b.x2, b.z2);
+      if (s.dist > b.w / 2) continue;
+      var deck = b.y1 + (b.y2 - b.y1) * s.t + Math.sin(s.t * Math.PI) * 1.2;
+      if (yRef == null || yRef > deck - 0.8) {
+        if (deck > h) h = deck;
       }
     }
     return h;
@@ -545,6 +592,16 @@ export const world3DRuntime = `import * as THREE from 'three';
         { g: 'cyl', color: '#3f9142', x: 0, y: 0.9, z: 0, sx: 0.5, sy: 1.8, sz: 0.5 },
         { g: 'cyl', color: '#357c3c', x: 0.55, y: 1.1, z: 0, sx: 0.3, sy: 0.7, sz: 0.3 },
         { g: 'cyl', color: '#357c3c', x: -0.55, y: 0.85, z: 0, sx: 0.3, sy: 0.6, sz: 0.3 }
+      ]
+    },
+    palmeiras: {
+      collR: 0.45, smin: 0.9, smax: 1.6,
+      parts: [
+        { g: 'cyl', color: '#8a6a3f', x: 0, y: 1.6, z: 0, sx: 0.28, sy: 3.2, sz: 0.28 },
+        { g: 'cone', color: '#2f9e44', x: 0.9, y: 3.3, z: 0, sx: 1.9, sy: 0.34, sz: 0.7 },
+        { g: 'cone', color: '#2f9e44', x: -0.9, y: 3.3, z: 0, sx: 1.9, sy: 0.34, sz: 0.7 },
+        { g: 'cone', color: '#37a34a', x: 0, y: 3.3, z: 0.9, sx: 0.7, sy: 0.34, sz: 1.9 },
+        { g: 'cone', color: '#37a34a', x: 0, y: 3.3, z: -0.9, sx: 0.7, sy: 0.34, sz: 1.9 }
       ]
     }
   };
@@ -2615,6 +2672,8 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'lamp') addLamp(r.x, r.z);
       else if (r.kind === 'fireflies') buildFireflies(r.amount);
       else if (r.kind === 'campfire') addCampfire(r.x, r.z);
+      else if (r.kind === 'bridge') buildBridge(r.x1, r.z1, r.x2, r.z2, r.w);
+      else if (r.kind === 'lighthouse') buildLighthouse(r.x, r.z);
     }
   }
 
@@ -2893,6 +2952,12 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (waterCfg) buildWater();
       if (carCfg) buildCar();
       if (personCfg) buildPerson();
+      if (boatCfg) buildBoat();
+      // Barco SEM carrinho e SEM personagem: pilota o barco direto.
+      if (boatCfg && !carCfg && !personCfg) {
+        activeVehicle = 'boat';
+        driving = true;
+      }
       buildNature();
       buildDecor();
       buildRace();
@@ -3072,9 +3137,10 @@ export const world3DRuntime = `import * as THREE from 'three';
     return { x: 0, y: heightAt(0, 0), z: 0 };
   }
 
-  /** O "jogador ativo" que a câmera segue: a pé OU o carrinho (R15). */
+  /** O "jogador ativo" que a câmera segue: a pé, no barco OU no carrinho. */
   function focusState() {
     if (personCfg && !driving && personState) return personState;
+    if (driving && activeVehicle === 'boat' && boatState) return boatState;
     return carState;
   }
 
@@ -3430,6 +3496,227 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  // ---- R16: barco, ponte, farol, ambiente ----
+
+  function buildBoat() {
+    if (!scene || !boatCfg) return;
+    if (boatGroup) {
+      try { scene.remove(boatGroup); } catch (e) {}
+      boatGroup = null;
+    }
+    boatGroup = new THREE.Group();
+    var hullMat = toonMaterial({ color: text(boatCfg.color, '#f8fafc') });
+    var hull = new THREE.Mesh(new THREE.BoxGeometry(2, 0.7, 4.4), hullMat);
+    hull.position.y = 0.35;
+    hull.castShadow = true;
+    boatGroup.add(hull);
+    var bow = new THREE.Mesh(new THREE.ConeGeometry(1, 1.4, 4), hullMat);
+    bow.rotation.x = Math.PI / 2;
+    bow.rotation.y = Math.PI / 4;
+    bow.position.set(0, 0.35, 2.8);
+    boatGroup.add(bow);
+    var cab = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 1.2), toonMaterial({ color: '#94a3b8' }));
+    cab.position.set(0, 1.05, -0.8);
+    boatGroup.add(cab);
+    if (!boatState) {
+      // Nasce na água mais perto do spawn: procura raio crescente.
+      var bx = 12;
+      var bz = 0;
+      if (waterCfg) {
+        var found = false;
+        for (var r = 8; r <= config.world / 2 - 4 && !found; r += 4) {
+          for (var a = 0; a < 12 && !found; a++) {
+            var ax = Math.cos((a / 12) * Math.PI * 2) * r;
+            var az = Math.sin((a / 12) * Math.PI * 2) * r;
+            if (heightAt(ax, az) < waterCfg.y - 0.6) {
+              bx = ax;
+              bz = az;
+              found = true;
+            }
+          }
+        }
+      }
+      boatState = { x: bx, z: bz, yaw: 0, speed: 0, roll: 0 };
+    }
+    scene.add(boatGroup);
+  }
+
+  function stepBoat(dt) {
+    if (!boatState || !boatGroup) return;
+    var s = boatState;
+    var piloting = driving && activeVehicle === 'boat';
+    if (piloting) {
+      var fwd = ((isDown('w') || isDown('arrowup')) ? 1 : 0) - ((isDown('s') || isDown('arrowdown')) ? 1 : 0);
+      var turn = ((isDown('a') || isDown('arrowleft')) ? 1 : 0) - ((isDown('d') || isDown('arrowright')) ? 1 : 0);
+      s.speed += fwd * 9 * dt;
+      s.speed = clamp(s.speed, -4, 12);
+      s.speed *= 1 - Math.min(1, 0.5 * dt);
+      var spdK = Math.min(1, Math.abs(s.speed) / 3);
+      s.yaw += turn * 1.4 * spdK * (s.speed >= 0 ? 1 : -1) * dt;
+      var nx = s.x + Math.sin(s.yaw) * s.speed * dt;
+      var nz = s.z + Math.cos(s.yaw) * s.speed * dt;
+      // Barco SÓ anda na água: encalha na praia (empurra de volta e freia).
+      if (waterCfg && heightAt(nx, nz) < waterCfg.y - 0.35) {
+        s.x = nx;
+        s.z = nz;
+      } else {
+        s.speed *= 0.6;
+      }
+      var lim = config.world / 2 - 2;
+      s.x = clamp(s.x, -lim, lim);
+      s.z = clamp(s.z, -lim, lim);
+      s.roll += (turn * spdK * 0.14 - s.roll) * Math.min(1, 5 * dt);
+    } else {
+      s.speed *= 1 - Math.min(1, 1.2 * dt);
+      s.roll *= 1 - Math.min(1, 2 * dt);
+    }
+    var wy = waterCfg ? waterCfg.y : heightAt(s.x, s.z);
+    s.y = wy + 0.05 + Math.sin(playTime * 1.7 + s.x * 0.2) * 0.1;
+    boatGroup.position.set(s.x, s.y, s.z);
+    boatGroup.rotation.set(Math.sin(playTime * 1.3) * 0.02, s.yaw, s.roll);
+    // Interagível "entrar no barco" (só com personagem, a pé, e barco perto da margem).
+    if (personCfg) {
+      if (!_boatInteract) {
+        _boatInteract = { x: 0, z: 0, r: 3.4, label: 'E: barco', prio: 2, fire: function () { enterVehicle('boat'); } };
+        extraInteract.push(_boatInteract);
+      }
+      _boatInteract.x = s.x;
+      _boatInteract.z = s.z;
+      _boatInteract.r = driving ? 0 : 3.4;
+      _boatInteract.promptY = wy + 2.2;
+    }
+  }
+
+  function buildBridge(x1, z1, x2, z2, w) {
+    if (!scene) return;
+    var b = {
+      x1: num(x1, 0), z1: num(z1, 0), x2: num(x2, 20), z2: num(z2, 20),
+      w: clamp(num(w, 4), 2, 12), y1: 0, y2: 0
+    };
+    b.y1 = heightAt(b.x1, b.z1) + 0.2;
+    b.y2 = heightAt(b.x2, b.z2) + 0.2;
+    var dx = b.x2 - b.x1;
+    var dz = b.z2 - b.z1;
+    var len = Math.sqrt(dx * dx + dz * dz) || 1;
+    var n = Math.max(6, Math.round(len / 0.9));
+    var plankGeo = new THREE.BoxGeometry(b.w, 0.12, 0.7);
+    var im = new THREE.InstancedMesh(plankGeo, toonMaterial({ color: '#9a7b4f' }), n);
+    im.castShadow = true;
+    im.frustumCulled = false;
+    if (!_dummy) _dummy = new THREE.Object3D();
+    var yaw = Math.atan2(dx, dz);
+    for (var i = 0; i < n; i++) {
+      var t = i / (n - 1);
+      var deck = b.y1 + (b.y2 - b.y1) * t + Math.sin(t * Math.PI) * 1.2;
+      _dummy.position.set(b.x1 + dx * t, deck, b.z1 + dz * t);
+      _dummy.rotation.set(0, yaw, 0);
+      _dummy.scale.set(1, 1, 1);
+      _dummy.updateMatrix();
+      im.setMatrixAt(i, _dummy.matrix);
+    }
+    im.instanceMatrix.needsUpdate = true;
+    scene.add(im);
+    bridges.push(b);
+  }
+
+  function buildLighthouse(x, z) {
+    if (!scene) return;
+    var lx = num(x, 0);
+    var lz = num(z, 0);
+    var gy = heightAt(lx, lz);
+    var g = new THREE.Group();
+    for (var i = 0; i < 4; i++) {
+      var seg = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.9 - i * 0.12, 1.05 - i * 0.12, 2.2, 10),
+        toonMaterial({ color: i % 2 ? '#f8fafc' : '#ef4444' })
+      );
+      seg.position.y = 1.1 + i * 2.2;
+      seg.castShadow = true;
+      g.add(seg);
+    }
+    var lamp2 = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1, 8), new THREE.MeshBasicMaterial({ color: '#fff7c2' }));
+    lamp2.position.y = 9.4;
+    g.add(lamp2);
+    var beamMat = new THREE.MeshBasicMaterial({ color: '#fff3b0', transparent: true, opacity: 0, depthWrite: false });
+    var beamGeo = new THREE.PlaneGeometry(16, 1.6);
+    var beam1 = new THREE.Mesh(beamGeo, beamMat);
+    beam1.position.set(8, 9.4, 0);
+    var beamPivot = new THREE.Group();
+    beamPivot.position.y = 0;
+    beamPivot.add(beam1);
+    var beam2 = beam1.clone();
+    beam2.position.set(-8, 9.4, 0);
+    beam2.rotation.y = Math.PI;
+    beamPivot.add(beam2);
+    g.add(beamPivot);
+    g.position.set(lx, gy, lz);
+    scene.add(g);
+    lighthouses.push({ pivot: beamPivot, mat: beamMat, x: lx, z: lz });
+    exclusions.push({ x: lx, z: lz, r: 4 });
+  }
+
+  function stepLighthouses(dt) {
+    for (var i = 0; i < lighthouses.length; i++) {
+      var lh = lighthouses[i];
+      lh.pivot.rotation.y += dt * 0.9;
+      lh.mat.opacity = nightAmount * 0.5;
+    }
+  }
+
+  // Ambiente sonoro: mar (ruído em loop), pássaros (dia) e grilos (noite).
+  function startSeaNoise() {
+    var ac = ensureAudioCtx();
+    if (!ac || _ambNoise) return;
+    try {
+      var len = ac.sampleRate * 2;
+      var buf = ac.createBuffer(1, len, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+      var src = ac.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      var filt = ac.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.frequency.value = 320;
+      var g = ac.createGain();
+      g.gain.value = 0.035;
+      src.connect(filt);
+      filt.connect(g);
+      g.connect(ac.destination);
+      src.start();
+      _ambNoise = { src: src, gain: g, filt: filt };
+    } catch (e) {}
+  }
+
+  function stopSeaNoise() {
+    try { if (_ambNoise) _ambNoise.src.stop(); } catch (e) {}
+    _ambNoise = null;
+  }
+
+  function stepAmbience(dt) {
+    if (ambienceKind === 'desligado') return;
+    if (ambienceKind === 'mar') {
+      startSeaNoise();
+      if (_ambNoise) {
+        // A maré "respira" devagar.
+        _ambNoise.filt.frequency.value = 280 + Math.sin(playTime * 0.5) * 120;
+      }
+      return;
+    }
+    _ambT -= dt;
+    if (_ambT > 0) return;
+    if (ambienceKind === 'passaros') {
+      _ambT = 2.5 + Math.random() * 4;
+      if (nightAmount < 0.4) {
+        beep(1800 + Math.random() * 900, 0.07);
+        beep(2300 + Math.random() * 700, 0.05);
+      }
+    } else if (ambienceKind === 'grilos') {
+      _ambT = 0.4 + Math.random() * 0.4;
+      if (nightAmount > 0.3) beep(4200, 0.03);
+    }
+  }
+
   // ---- R15: personagem a pé (rig procedural + entrar/sair do veículo) ----
 
   var HAT_COLORS = { bone: '#ef4444', palha: '#eab308', coroa: '#facc15', capacete: '#3b82f6' };
@@ -3514,8 +3801,12 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
-  function enterVehicle() {
-    if (!personCfg || driving || !carState) return;
+  function enterVehicle(kind) {
+    if (!personCfg || driving) return;
+    var k = kind || 'car';
+    if (k === 'car' && !carState) return;
+    if (k === 'boat' && !boatState) return;
+    activeVehicle = k;
     driving = true;
     if (personGroup) personGroup.visible = false;
     camSnap = true;
@@ -3523,15 +3814,17 @@ export const world3DRuntime = `import * as THREE from 'three';
   }
 
   function exitVehicle() {
-    if (!personCfg || !driving || !carState) return;
+    if (!personCfg || !driving) return;
+    var src = activeVehicle === 'boat' && boatState ? boatState : carState;
+    if (!src) return;
     driving = false;
     if (!personState) {
       personState = { x: 0, y: 0, z: 0, yaw: 0, vy: 0, airborne: false, vis: 0, phase: 0, speed: 0 };
     }
-    personState.x = carState.x + Math.cos(carState.yaw) * 2.4;
-    personState.z = carState.z - Math.sin(carState.yaw) * 2.4;
-    personState.y = heightAt(personState.x, personState.z);
-    personState.yaw = carState.yaw;
+    personState.x = src.x + Math.cos(src.yaw) * 2.4;
+    personState.z = src.z - Math.sin(src.yaw) * 2.4;
+    personState.y = heightAtDrive(personState.x, personState.z, null);
+    personState.yaw = src.yaw;
     personState.vy = 0;
     personState.airborne = false;
     if (personGroup) {
@@ -3548,7 +3841,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     // Interagível "entrar no carrinho" segue o carro (prio alta perto dele).
     if (carState) {
       if (!_enterInteract) {
-        _enterInteract = { x: 0, z: 0, r: 3, label: 'E: entrar', prio: 2, fire: enterVehicle };
+        _enterInteract = { x: 0, z: 0, r: 3, label: 'E: entrar', prio: 2, fire: function () { enterVehicle('car'); } };
         extraInteract.push(_enterInteract);
       }
       _enterInteract.x = carState.x;
@@ -3557,12 +3850,13 @@ export const world3DRuntime = `import * as THREE from 'three';
       _enterInteract.promptY = carState.y + 2.6;
     }
     if (driving) {
-      // Dentro do carro: E desce (sem brigar com pontos — só quando nada mais pegou).
-      if (isJust('e') && carState) {
+      // Dentro do veículo: E desce (sem brigar com pontos — só quando nada mais pegou).
+      var vsrc = activeVehicle === 'boat' && boatState ? boatState : carState;
+      if (isJust('e') && vsrc) {
         var near = false;
         for (var i = 0; i < points.length; i++) {
-          var dx0 = carState.x - points[i].x;
-          var dz0 = carState.z - points[i].z;
+          var dx0 = vsrc.x - points[i].x;
+          var dz0 = vsrc.z - points[i].z;
           if (dx0 * dx0 + dz0 * dz0 < points[i].r * points[i].r) { near = true; break; }
         }
         if (!near) exitVehicle();
@@ -3599,8 +3893,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     var lim = config.world / 2 - 1.5;
     s.x = clamp(s.x, -lim, lim);
     s.z = clamp(s.z, -lim, lim);
-    // Chão/pulo/jetpack.
-    var gy = heightAt(s.x, s.z);
+    // Chão/pulo/jetpack (com o DECK das pontes).
+    var gy = heightAtDrive(s.x, s.z, s.y);
     if (s.airborne) {
       if (acc === 'jetpack' && isDown(' ')) {
         s.vy = Math.min(7, s.vy + 26 * dt);
@@ -4613,8 +4907,8 @@ export const world3DRuntime = `import * as THREE from 'three';
 
     var accelIn = ((isDown('w') || isDown('arrowup')) ? 1 : 0) - ((isDown('s') || isDown('arrowdown')) ? 1 : 0);
     var steerIn = ((isDown('a') || isDown('arrowleft')) ? 1 : 0) - ((isDown('d') || isDown('arrowright')) ? 1 : 0);
-    // A pé (R15): o carrinho fica ESTACIONADO — o teclado é do personagem.
-    var walking = personCfg && !driving;
+    // A pé (R15) ou no BARCO (R16): o carrinho fica ESTACIONADO.
+    var walking = (personCfg && !driving) || (driving && activeVehicle === 'boat');
     if (walking) {
       accelIn = 0;
       steerIn = 0;
@@ -4675,8 +4969,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (s.z > lim) { s.z = lim; s.speed *= 0.35; }
     if (s.z < -lim) { s.z = -lim; s.speed *= 0.35; }
 
-    // Chão + pulo: no chão a altura SEGUE o terreno; no ar, gravidade.
-    var gy = heightAt(s.x, s.z);
+    // Chão + pulo: no chão a altura SEGUE o terreno (com o DECK das pontes).
+    var gy = heightAtDrive(s.x, s.z, s.y);
     var landed = false;
     if (s.airborne) {
       s.vy -= GRAV * dt;
@@ -4911,6 +5205,9 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepLamps();
     stepFireflies();
     stepCampfires(dt);
+    stepBoat(dt);
+    stepLighthouses(dt);
+    stepAmbience(dt);
     updateEngine();
     for (var i = 0; i < updateHooks.length; i++) {
       try { updateHooks[i](dt); } catch (e) {
@@ -5090,6 +5387,14 @@ export const world3DRuntime = `import * as THREE from 'three';
     personState = null;
     _enterInteract = null;
     personEmote = null;
+    stopSeaNoise();
+    boatGroup = null;
+    boatState = null;
+    _boatInteract = null;
+    bridges = [];
+    lighthouses = [];
+    islandsCfg = null;
+    ambienceKind = 'desligado';
   }
 
   if (typeof window !== 'undefined' && window.addEventListener) {
@@ -5275,7 +5580,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     scatter: guard('scatter', function (n, thing) {
       var t = text(thing, '');
       if (!SPECIES[t]) {
-        warn('não conheço "' + t + '" — tem: arvores, pinheiros, pedras, flores, cogumelos, cactos');
+        warn('não conheço "' + t + '" — tem: arvores, pinheiros, pedras, flores, cogumelos, cactos, palmeiras');
         return;
       }
       var rec = { kind: 'species', thing: t, n: num(n, 100), seed: natureRecipes.length, built: false };
@@ -5300,7 +5605,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     placeThing: guard('placeThing', function (thing, x, z, s) {
       var t = text(thing, '');
       if (!SPECIES[t]) {
-        warn('não conheço "' + t + '" — tem: arvores, pinheiros, pedras, flores, cogumelos, cactos');
+        warn('não conheço "' + t + '" — tem: arvores, pinheiros, pedras, flores, cogumelos, cactos, palmeiras');
         return;
       }
       var rec = {
@@ -5379,6 +5684,60 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
       seasonName = n2;
       if (worldReady) applySeason();
+    }),
+    // 🏝️ R16 ilha & barco
+    islands: guard('islands', function (n, y) {
+      var count = clamp(num(n, 4), 2, 8);
+      var seaY = num(y, 0);
+      var list = [{ x: 0, z: 0, r: Math.max(18, config.world * 0.16), h: 5.5 }];
+      var rng = mulberry(count * 31 + 7);
+      for (var i = 1; i < count; i++) {
+        var ang = (i / count) * Math.PI * 2 + rng() * 0.8;
+        var rad = config.world * (0.24 + rng() * 0.14);
+        list.push({
+          x: Math.cos(ang) * rad,
+          z: Math.sin(ang) * rad,
+          r: 12 + rng() * 12,
+          h: 3.5 + rng() * 3
+        });
+      }
+      islandsCfg = { list: list };
+      if (!waterCfg) waterCfg = { y: seaY, color: '#2b6cb0' };
+      else waterCfg.y = seaY;
+      if (worldReady) {
+        buildTerrain();
+        buildWater();
+        if (grassMat) buildGrassHeightTex();
+        if (waterMat) buildWaterFoamTex();
+      }
+    }),
+    boat: guard('boat', function (color) {
+      boatCfg = { color: text(color, '#f8fafc') };
+      if (worldReady) buildBoat();
+    }),
+    bridge: guard('bridge', function (x1, z1, x2, z2, w) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'bridge', x1: num(x1, 0), z1: num(z1, 0), x2: num(x2, 20), z2: num(z2, 20), w: num(w, 4) });
+        return;
+      }
+      buildBridge(x1, z1, x2, z2, w);
+    }),
+    lighthouse: guard('lighthouse', function (x, z) {
+      if (!worldReady) {
+        decorRecipes.push({ kind: 'lighthouse', x: num(x, 0), z: num(z, 0) });
+        return;
+      }
+      buildLighthouse(x, z);
+    }),
+    ambience: guard('ambience', function (kind) {
+      var k5 = text(kind, 'desligado');
+      if (k5 !== 'desligado' && k5 !== 'mar' && k5 !== 'passaros' && k5 !== 'grilos') {
+        warn('não conheço "' + k5 + '" — tem: mar, passaros, grilos, desligado');
+        return;
+      }
+      if (k5 !== 'mar') stopSeaNoise();
+      ambienceKind = k5;
+      _ambT = 0;
     }),
     // 🧍 R15 personagem a pé
     person: guard('person', function (color, hat) {
@@ -5470,7 +5829,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       return a4 === 'y' ? src.y : a4 === 'z' ? src.z : src.x;
     }),
     isDriving: guard('isDriving', function () {
-      return !!(carState && driving);
+      return !!(driving && (carState || boatState));
     }),
     // 🌿 R14 natureza acesa
     waterfall: guard('waterfall', function (x, z, h, deg) {

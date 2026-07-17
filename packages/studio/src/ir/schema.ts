@@ -4032,6 +4032,19 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'w3d:personAccessory'; acc: string })
   | (JSStatementCommon & { type: 'w3d:personEmote'; emote: string })
   | (JSStatementCommon & { type: 'w3d:onVehicle'; when: string; body: JSStatement[] })
+  // Mundo 3D R16 "ilha & barco": arquipélago, barco, ponte, farol, ambiente.
+  | (JSStatementCommon & { type: 'w3d:islands'; n: number | JSExpr; y: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:boat'; color: string })
+  | (JSStatementCommon & {
+      type: 'w3d:bridge'
+      x1: number | JSExpr
+      z1: number | JSExpr
+      x2: number | JSExpr
+      z2: number | JSExpr
+      w: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:lighthouse'; x: number | JSExpr; z: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:ambience'; kind: string })
   | (JSStatementCommon & { type: 'w3d:cameraMode'; mode: string })
   | (JSStatementCommon & {
       type: 'w3d:cameraShake'
@@ -8133,6 +8146,29 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       body: z.array(JSStatementSchema),
       ...idField,
     }),
+    z.object({
+      type: z.literal('w3d:islands'),
+      n: z.union([z.number(), JSExprSchema]),
+      y: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:boat'), color: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:bridge'),
+      x1: z.union([z.number(), JSExprSchema]),
+      z1: z.union([z.number(), JSExprSchema]),
+      x2: z.union([z.number(), JSExprSchema]),
+      z2: z.union([z.number(), JSExprSchema]),
+      w: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:lighthouse'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:ambience'), kind: irText(), ...idField }),
     z.object({ type: z.literal('w3d:cameraMode'), mode: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:cameraShake'),
@@ -9174,6 +9210,11 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:personAccessory',
   'w3d:personEmote',
   'w3d:onVehicle',
+  'w3d:islands',
+  'w3d:boat',
+  'w3d:bridge',
+  'w3d:lighthouse',
+  'w3d:ambience',
   'w3d:effects',
   'w3d:dayNight',
   'w3d:setTime',
