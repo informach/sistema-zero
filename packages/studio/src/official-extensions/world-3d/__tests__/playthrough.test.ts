@@ -853,4 +853,80 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     ring /= 8
     expect(ring - minH).toBeGreaterThan(0.8)
   })
+
+  it('R25: moinho gira COM O VENTO (mais vento = mais giro) e a galinha fica no raio', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        windmill(x: number, z: number): void
+        animals(n: number, k: string, x: number, z: number, r: number): void
+      }
+      w.windmill(15, 25)
+      w.animals(3, 'galinhas', -20, -20, 6)
+    })
+    step(3)
+    const scene = renderers[0]?.scene ?? null
+    // O grupo das pás: acha pelo Group com 4 filhos-pivô a ~6,6m de altura.
+    let blades: RealTHREE.Group | null = null
+    scene?.traverse((o) => {
+      if (
+        !blades &&
+        o.type === 'Group' &&
+        o.children.length === 4 &&
+        Math.abs(o.position.y - 6.6) < 0.01
+      ) {
+        blades = o as RealTHREE.Group
+      }
+    })
+    expect(blades).not.toBeNull()
+    const spinAt = (windForce: number, frames: number) => {
+      ;(api as unknown as { setWind(n: number): void }).setWind(windForce)
+      const r0 = (blades as unknown as RealTHREE.Group).rotation.z
+      step(frames)
+      return (blades as unknown as RealTHREE.Group).rotation.z - r0
+    }
+    const calmo = spinAt(0, 60)
+    const ventania = spinAt(4, 60)
+    expect(ventania).toBeGreaterThan(calmo * 1.5)
+    expect(ventania).toBeGreaterThan(0.5)
+    // Galinhas perambulam mas FICAM perto de casa (raio 6 + folga).
+    step(600)
+    let herdIM: RealTHREE.InstancedMesh | null = null
+    scene?.traverse((o) => {
+      const im = o as RealTHREE.InstancedMesh
+      if (!herdIM && im.isInstancedMesh && im.count === 3) herdIM = o as RealTHREE.InstancedMesh
+    })
+    expect(herdIM).not.toBeNull()
+    const mesh = herdIM as unknown as RealTHREE.InstancedMesh
+    const m = new (Object.getPrototypeOf(mesh.matrixWorld).constructor)()
+    for (let i = 0; i < 3; i++) {
+      mesh.getMatrixAt(i, m)
+      const dx = m.elements[12] - -20
+      const dz = m.elements[14] - -20
+      expect(Math.sqrt(dx * dx + dz * dz)).toBeLessThan(10)
+    }
+  })
+
+  it('R25: a cerquinha tem postes SÓLIDOS (o carro esbarra) e a cratera manual afunda', async () => {
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        fence(a: number, b: number, c: number, d: number): void
+        crater(x: number, z: number, r: number): void
+      }
+      w.fence(-6, 12, 6, 12)
+      w.crater(30, 30, 8)
+    })
+    step(3)
+    // Cratera manual (mundo floresta!): fundo bem abaixo da borda.
+    const fundo = api.groundHeight(30, 30)
+    const borda = api.groundHeight(38, 30)
+    expect(borda - fundo).toBeGreaterThan(1)
+    // Postes sólidos: dirigindo reto contra a cerca, o carro NÃO passa.
+    api.carPlace(0, 8, 0) // olhando +z, cerca em z=12
+    pressKey('w', 'KeyW')
+    step(90)
+    releaseKey('w', 'KeyW')
+    expect(api.carPos('z')).toBeLessThan(13.2)
+  })
 })

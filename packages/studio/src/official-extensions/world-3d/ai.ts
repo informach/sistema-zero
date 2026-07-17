@@ -81,6 +81,17 @@ SZWorld3D.start(); // SEMPRE por último
   cruzamentos; o chão aplaina sozinho e as ruas aparecem no minimapa. UMA
   por mundo. Modo 'neon' = noite + chuva leve por default (se a criança não
   pediu outra hora/clima) + letreiros emissivos brilhando no bloom.
+- 🌙 \`SZWorld3D.crater(x, z, raio)\` — tigela com borda erguida no heightAt
+  (compõe com flatten/trilha; qualquer estilo). \`SZWorld3D.flag(x, z,
+  corHex)\` — mastro + bandeira (cap 8). \`SZWorld3D.rocket(x, z)\` — foguete
+  decorativo com colisor (cap 8). O estilo 'lua' já traz ~12 crateras
+  automáticas + gravidade 0.4 + noite default.
+- 🚜 \`SZWorld3D.crops(n, 'milho'|'alface'|'abobora', x, z)\` — fileiras de
+  plantação (área auto-limpa de scatter). \`SZWorld3D.barn(x, z, graus)\` —
+  celeiro com colisor. \`SZWorld3D.windmill(x, z)\` — pás giram com o
+  setWind. \`SZWorld3D.fence(x1, z1, x2, z2)\` — postes SÓLIDOS + 2 ripas
+  (teto 256 postes). \`SZWorld3D.animals(n, 'galinhas'|'vacas', x, z, raio)\`
+  — bichinhos instanciados que perambulam e bicam (cap 16 total).
 - \`SZWorld3D.door(x, z, graus, 'Título', 'Texto', 'imagem')\` — porta
   interativa: E perto abre um overlay LOCAL (título + texto + imagem do
   projeto via ASSETS; imagem '' = sem). É o "conteúdo do prédio" do

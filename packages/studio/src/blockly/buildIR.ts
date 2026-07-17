@@ -9327,6 +9327,88 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           bodyB: getStatementChildren(block, 'BODY_B', seen),
         },
       }
+    case 'sz_w3d_crops':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:crops',
+          n: exprInput(block, 'N', { type: 'num', value: 4 }),
+          kind: f(block, 'KIND') || 'milho',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 20 }),
+        },
+      }
+    case 'sz_w3d_barn':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:barn',
+          x: exprInput(block, 'X', { type: 'num', value: -15 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 15 }),
+          deg: exprInput(block, 'DEG', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_w3d_windmill':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:windmill',
+          x: exprInput(block, 'X', { type: 'num', value: 15 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 25 }),
+        },
+      }
+    case 'sz_w3d_fence':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:fence',
+          x1: exprInput(block, 'X1', { type: 'num', value: -8 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 10 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 8 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 10 }),
+        },
+      }
+    case 'sz_w3d_animals':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:animals',
+          n: exprInput(block, 'N', { type: 'num', value: 4 }),
+          kind: f(block, 'KIND') || 'galinhas',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 15 }),
+          r: exprInput(block, 'R', { type: 'num', value: 8 }),
+        },
+      }
+    case 'sz_w3d_crater':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:crater',
+          x: exprInput(block, 'X', { type: 'num', value: 10 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 10 }),
+          r: exprInput(block, 'R', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_w3d_flag':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:flag',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: -10 }),
+          color: f(block, 'COLOR') || '#ef4444',
+        },
+      }
+    case 'sz_w3d_rocket':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:rocket',
+          x: exprInput(block, 'X', { type: 'num', value: 8 }),
+          z: exprInput(block, 'Z', { type: 'num', value: -10 }),
+        },
+      }
     case 'sz_w3d_string_lights':
       return {
         kind: 'js',

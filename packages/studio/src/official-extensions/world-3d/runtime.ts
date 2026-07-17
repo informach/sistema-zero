@@ -280,6 +280,13 @@ export const world3DRuntime = `import * as THREE from 'three';
   var doors = [];
   var doorOverlayEl = null;
   var doorOverlayOpen = false;
+  // 🚜 Fazenda + 🌙 Lua (R25): moinhos girando, bichinhos, cercas, bandeiras, foguetes.
+  var windmills = [];           // { blades (Group) }
+  var herds = [];               // { body, head (IMs), kind, list:[{x,z,yaw,home,target,waitT,phase}] }
+  var animalsCount = 0;
+  var fencePosts = 0;
+  var flagsCount = 0;
+  var rocketsCount = 0;
   var npcBubble = null;         // { el, name, text, shown, t } — balão typewriter único
   var _npcBlipCd = 0;
   // ---- R18 "moedas & missões" ----
@@ -2771,6 +2778,13 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'city') buildCity();
       else if (r.kind === 'stringLights') buildStringSpan(r.x1, r.z1, r.x2, r.z2);
       else if (r.kind === 'door') buildDoor(r);
+      else if (r.kind === 'crops') buildCrops(r);
+      else if (r.kind === 'barn') buildBarn(r);
+      else if (r.kind === 'windmill') buildWindmill(r);
+      else if (r.kind === 'fence') buildFence(r);
+      else if (r.kind === 'animals') buildAnimals(r);
+      else if (r.kind === 'flag') buildFlag(r);
+      else if (r.kind === 'rocket') buildRocket(r);
     }
     // 2ª passada: o "passear" precisa do amigo já criado, e o trânsito precisa
     // da cidade já construída (ordem livre dos blocos).
@@ -5582,6 +5596,329 @@ export const world3DRuntime = `import * as THREE from 'three';
     });
   }
 
+  // ---- 🚜 Fazenda: plantação, celeiro, moinho, cerquinha e bichinhos ----
+
+  var CROP_KINDS = {
+    milho:   { plant: '#d9c24a', tall: 1.1, ball: false },
+    alface:  { plant: '#5fbf5a', tall: 0.4, ball: true },
+    abobora: { plant: '#e8842f', tall: 0.42, ball: true }
+  };
+
+  function buildCrops(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var kind = CROP_KINDS[rec.kindName] || CROP_KINDS.milho;
+    var rows = clamp(num(rec.n, 4), 1, 10);
+    var perRow = 8;
+    var x0 = num(rec.x, 0);
+    var z0 = num(rec.z, 20);
+    var mounds = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#6b4a2f'), rows * perRow);
+    var plantGeo = kind.ball ? UNIT_GEOS.sph : UNIT_GEOS.cone;
+    var plants = new THREE.InstancedMesh(plantGeo, speciesMat(kind.plant), rows * perRow);
+    plants.castShadow = true;
+    var i = 0;
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < perRow; c++) {
+        var px = x0 + (c - perRow / 2) * 1.2;
+        var pz = z0 + r * 1.6;
+        var gy = heightAt(px, pz);
+        _dummy.position.set(px, gy + 0.12, pz);
+        _dummy.rotation.set(0, 0, 0);
+        _dummy.scale.set(0.9, 0.24, 0.9);
+        _dummy.updateMatrix();
+        mounds.setMatrixAt(i, _dummy.matrix);
+        _dummy.position.set(px, gy + 0.24 + kind.tall / 2, pz);
+        _dummy.scale.set(kind.ball ? 0.55 : 0.3, kind.tall, kind.ball ? 0.55 : 0.3);
+        _dummy.updateMatrix();
+        plants.setMatrixAt(i, _dummy.matrix);
+        i++;
+      }
+    }
+    mounds.instanceMatrix.needsUpdate = true;
+    plants.instanceMatrix.needsUpdate = true;
+    scene.add(mounds);
+    scene.add(plants);
+    exclusions.push({ x: x0, z: z0 + rows * 0.8, r: Math.max(perRow * 0.7, rows * 0.9) + 2 });
+  }
+
+  function buildBarn(rec) {
+    if (!scene) return;
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var yaw = (num(rec.deg, 0) * Math.PI) / 180;
+    var gy = heightAt(x, z);
+    ensureCityGeos();
+    var g = new THREE.Group();
+    var body = new THREE.Mesh(UNIT_GEOS.box, toonMaterial({ color: '#b4432f' }));
+    body.scale.set(6, 3.4, 4.6);
+    body.position.y = 1.7;
+    body.castShadow = true;
+    g.add(body);
+    var roof = new THREE.Mesh(UNIT_GEOS.pyr, toonMaterial({ color: '#7a4a30' }));
+    roof.scale.set(7, 2, 5.4);
+    roof.position.y = 4.4;
+    roof.castShadow = true;
+    g.add(roof);
+    var doorMesh = new THREE.Mesh(UNIT_GEOS.box, toonMaterial({ color: '#f5efe0' }));
+    doorMesh.scale.set(1.8, 2.2, 0.12);
+    doorMesh.position.set(0, 1.1, 2.32);
+    g.add(doorMesh);
+    var trim = new THREE.Mesh(UNIT_GEOS.box, toonMaterial({ color: '#f5efe0' }));
+    trim.scale.set(6.2, 0.3, 4.8);
+    trim.position.y = 3.35;
+    g.add(trim);
+    g.position.set(x, gy, z);
+    g.rotation.y = yaw;
+    scene.add(g);
+    colliderAdd(x, z, 3.4);
+  }
+
+  function buildWindmill(rec) {
+    if (!scene) return;
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var gy = heightAt(x, z);
+    var g = new THREE.Group();
+    var tower = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 1.1, 7, 8), toonMaterial({ color: '#e8e0cc' }));
+    tower.position.y = 3.5;
+    tower.castShadow = true;
+    g.add(tower);
+    var cap = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1, 8), toonMaterial({ color: '#b4432f' }));
+    cap.position.y = 7.4;
+    g.add(cap);
+    var blades = new THREE.Group();
+    var bladeMat = toonMaterial({ color: '#f5efe0' });
+    ensureCityGeos();
+    for (var i = 0; i < 4; i++) {
+      var b = new THREE.Mesh(UNIT_GEOS.box, bladeMat);
+      b.scale.set(0.5, 3.2, 0.08);
+      b.position.y = 1.7;
+      var pivot = new THREE.Group();
+      pivot.rotation.z = (i / 4) * Math.PI * 2;
+      pivot.add(b);
+      blades.add(pivot);
+    }
+    blades.position.set(0, 6.6, 1.15);
+    g.add(blades);
+    g.position.set(x, gy, z);
+    scene.add(g);
+    colliderAdd(x, z, 1.2);
+    windmills.push({ blades: blades });
+  }
+
+  function stepWindmills(dt) {
+    if (!windmills.length) return;
+    var spin = (0.5 + wind * 0.5) * dt;
+    for (var i = 0; i < windmills.length; i++) {
+      windmills[i].blades.rotation.z += spin;
+    }
+  }
+
+  function buildFence(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var x1 = num(rec.x1, -8);
+    var z1 = num(rec.z1, 0);
+    var x2 = num(rec.x2, 8);
+    var z2 = num(rec.z2, 0);
+    var len = Math.sqrt((x2 - x1) * (x2 - x1) + (z2 - z1) * (z2 - z1));
+    var posts = Math.min(48, Math.max(2, Math.floor(len / 1.6) + 1));
+    if (fencePosts + posts > 256) {
+      warnOnce('fence-max', 'muita cerquinha (teto 256 postes)');
+      return;
+    }
+    fencePosts += posts;
+    var yaw = yawForDir(x2 - x1, z2 - z1);
+    var postIM = new THREE.InstancedMesh(UNIT_GEOS.cyl, speciesMat('#8a6a3f'), posts);
+    var railIM = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#a8814f'), (posts - 1) * 2);
+    postIM.castShadow = true;
+    var ri = 0;
+    for (var i = 0; i < posts; i++) {
+      var t = posts === 1 ? 0 : i / (posts - 1);
+      var px = x1 + (x2 - x1) * t;
+      var pz = z1 + (z2 - z1) * t;
+      var gy = heightAt(px, pz);
+      _dummy.position.set(px, gy + 0.55, pz);
+      _dummy.rotation.set(0, 0, 0);
+      _dummy.scale.set(0.16, 1.1, 0.16);
+      _dummy.updateMatrix();
+      postIM.setMatrixAt(i, _dummy.matrix);
+      colliderAdd(px, pz, 0.25);
+      if (i < posts - 1) {
+        var t2 = posts === 1 ? 0 : (i + 0.5) / (posts - 1);
+        var mx = x1 + (x2 - x1) * t2;
+        var mz = z1 + (z2 - z1) * t2;
+        var my = (gy + heightAt(x1 + (x2 - x1) * ((i + 1) / (posts - 1)), z1 + (z2 - z1) * ((i + 1) / (posts - 1)))) / 2;
+        for (var rr = 0; rr < 2; rr++) {
+          _dummy.position.set(mx, my + 0.45 + rr * 0.35, mz);
+          _dummy.rotation.set(0, yaw, 0);
+          _dummy.scale.set(len / (posts - 1) + 0.1, 0.09, 0.07);
+          _dummy.updateMatrix();
+          railIM.setMatrixAt(ri++, _dummy.matrix);
+        }
+      }
+    }
+    postIM.instanceMatrix.needsUpdate = true;
+    railIM.instanceMatrix.needsUpdate = true;
+    scene.add(postIM);
+    scene.add(railIM);
+  }
+
+  // Bichinhos instanciados (galinhas/vacas): 2 IMs por chamada (corpo+cabeça),
+  // matrizes recompostas por quadro (bicar/balançar) + perambulação NPC-lite.
+  var ANIMAL_KINDS = {
+    galinhas: { body: '#f5efe0', head: '#e04f3f', s: 0.45, speed: 1.4 },
+    vacas:    { body: '#f5efe0', head: '#3b2f26', s: 1.0, speed: 0.9 }
+  };
+
+  function buildAnimals(rec) {
+    if (!scene) return;
+    var kind = ANIMAL_KINDS[rec.kindName] || ANIMAL_KINDS.galinhas;
+    var room = Math.max(0, 16 - animalsCount);
+    var n = Math.min(room, clamp(num(rec.n, 4), 1, 16));
+    if (n <= 0) {
+      warnOnce('animal-max', 'muitos bichinhos (teto 16)');
+      return;
+    }
+    animalsCount += n;
+    ensureCityGeos();
+    ensureDummies();
+    var body = new THREE.InstancedMesh(UNIT_GEOS.sph, speciesMat(kind.body), n);
+    var head = new THREE.InstancedMesh(UNIT_GEOS.sph, speciesMat(kind.head), n);
+    body.castShadow = true;
+    scene.add(body);
+    scene.add(head);
+    var rng = mulberry(Math.round(num(rec.x, 0) * 3 + num(rec.z, 0) * 5) + 77);
+    var herd = { body: body, head: head, kind: kind, list: [] };
+    for (var i = 0; i < n; i++) {
+      herd.list.push({
+        x: num(rec.x, 0) + (rng() * 2 - 1) * num(rec.r, 8),
+        z: num(rec.z, 0) + (rng() * 2 - 1) * num(rec.r, 8),
+        yaw: rng() * Math.PI * 2,
+        home: { x: num(rec.x, 0), z: num(rec.z, 0), r: clamp(num(rec.r, 8), 2, 40) },
+        target: null,
+        waitT: rng() * 2,
+        phase: rng() * 6
+      });
+    }
+    herds.push(herd);
+  }
+
+  function stepAnimals(dt) {
+    if (!herds.length) return;
+    ensureDummies();
+    for (var h = 0; h < herds.length; h++) {
+      var herd = herds[h];
+      for (var i = 0; i < herd.list.length; i++) {
+        var an = herd.list[i];
+        an.phase += dt * 4;
+        var spd = 0;
+        if (an.target) {
+          var dx = an.target.x - an.x;
+          var dz = an.target.z - an.z;
+          var d = Math.sqrt(dx * dx + dz * dz);
+          if (d < 0.4) {
+            an.target = null;
+            an.waitT = 1 + Math.random() * 3;
+          } else {
+            an.yaw = Math.atan2(dx, dz);
+            spd = herd.kind.speed;
+            an.x += (dx / d) * spd * dt;
+            an.z += (dz / d) * spd * dt;
+          }
+        } else {
+          an.waitT -= dt;
+          if (an.waitT <= 0) {
+            var ang = Math.random() * Math.PI * 2;
+            var rad = Math.sqrt(Math.random()) * an.home.r;
+            an.target = { x: an.home.x + Math.cos(ang) * rad, z: an.home.z + Math.sin(ang) * rad };
+          }
+        }
+        var gy = heightAt(an.x, an.z);
+        var s = herd.kind.s;
+        var peck = spd > 0 ? 0 : Math.max(0, Math.sin(an.phase)) * 0.12 * s;
+        _dummy.position.set(an.x, gy + 0.42 * s, an.z);
+        _dummy.rotation.set(0, an.yaw, 0);
+        _dummy.scale.set(0.8 * s, 0.7 * s, 1.1 * s);
+        _dummy.updateMatrix();
+        herd.body.setMatrixAt(i, _dummy.matrix);
+        _dummy.position.set(
+          an.x + Math.sin(an.yaw) * 0.5 * s,
+          gy + 0.78 * s - peck,
+          an.z + Math.cos(an.yaw) * 0.5 * s
+        );
+        _dummy.scale.set(0.34 * s, 0.34 * s, 0.34 * s);
+        _dummy.updateMatrix();
+        herd.head.setMatrixAt(i, _dummy.matrix);
+      }
+      herd.body.instanceMatrix.needsUpdate = true;
+      herd.head.instanceMatrix.needsUpdate = true;
+    }
+  }
+
+  // ---- 🌙 Lua: bandeira e foguete (as crateras vivem no heightAt) ----
+
+  function buildFlag(rec) {
+    if (!scene) return;
+    if (flagsCount >= 8) {
+      warnOnce('flag-max', 'muitas bandeiras (teto 8)');
+      return;
+    }
+    flagsCount++;
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var gy = heightAt(x, z);
+    var g = new THREE.Group();
+    var mast = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 2.6, 6), toonMaterial({ color: '#d8dde6' }));
+    mast.position.y = 1.3;
+    g.add(mast);
+    var cloth = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.65), new THREE.MeshBasicMaterial({ color: rec.color || '#ef4444', side: THREE.DoubleSide }));
+    cloth.position.set(0.6, 2.2, 0);
+    g.add(cloth);
+    g.position.set(x, gy, z);
+    scene.add(g);
+  }
+
+  function buildRocket(rec) {
+    if (!scene) return;
+    if (rocketsCount >= 8) {
+      warnOnce('rocket-max', 'muitos foguetes (teto 8)');
+      return;
+    }
+    rocketsCount++;
+    var x = num(rec.x, 0);
+    var z = num(rec.z, 0);
+    var gy = heightAt(x, z);
+    var g = new THREE.Group();
+    var bodyMat = toonMaterial({ color: '#e8e8f0' });
+    var body = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 4.2, 12), bodyMat);
+    body.position.y = 3.1;
+    body.castShadow = true;
+    g.add(body);
+    var nose = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1.6, 12), toonMaterial({ color: '#e04f3f' }));
+    nose.position.y = 6;
+    g.add(nose);
+    var winMat = new THREE.MeshBasicMaterial({ color: '#9cc3e8' });
+    var win = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 8), winMat);
+    win.position.set(0, 3.8, 0.82);
+    g.add(win);
+    ensureCityGeos();
+    var finMat = toonMaterial({ color: '#e04f3f' });
+    for (var i = 0; i < 4; i++) {
+      var a = (i / 4) * Math.PI * 2;
+      var fin = new THREE.Mesh(UNIT_GEOS.box, finMat);
+      fin.scale.set(0.16, 1.6, 1.0);
+      fin.position.set(Math.cos(a) * 1.1, 1.2, Math.sin(a) * 1.1);
+      fin.rotation.y = -a;
+      g.add(fin);
+    }
+    g.position.set(x, gy, z);
+    scene.add(g);
+    colliderAdd(x, z, 1.4);
+  }
+
   // ---- 🚦 Trânsito: carrinhos educados que seguem o anel + semáforos ----
 
   var TRAFFIC_COLORS = ['#ef4444', '#3b82f6', '#f59e0b', '#10b981', '#a855f7', '#f97316'];
@@ -6936,6 +7273,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     stepLamps();
     stepStringLights();
     stepTraffic(currentDt);
+    stepWindmills(currentDt);
+    stepAnimals(currentDt);
     stepFireflies();
     stepCampfires(dt);
     stepBoat(dt);
@@ -7130,6 +7469,12 @@ export const world3DRuntime = `import * as THREE from 'three';
     doors = [];
     doorOverlayEl = null;
     doorOverlayOpen = false;
+    windmills = [];
+    herds = [];
+    animalsCount = 0;
+    fencePosts = 0;
+    flagsCount = 0;
+    rocketsCount = 0;
     firefliesPts = null;
     campfires = [];
     _campRespawn = null;
@@ -7846,6 +8191,86 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (grassMat) buildGrassHeightTex();
       if (waterMat) buildWaterFoamTex();
       buildCity();
+    }),
+    // 🚜 Fazenda + 🌙 Lua
+    crops: guard('crops', function (n, kindName, x, z) {
+      var k = text(kindName, 'milho');
+      if (!CROP_KINDS[k]) {
+        warn('não conheço a plantação "' + k + '" — usando milho (tem: milho, alface, abobora)');
+        k = 'milho';
+      }
+      var rec = { kind: 'crops', n: num(n, 4), kindName: k, x: num(x, 0), z: num(z, 20) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildCrops(rec);
+    }),
+    barn: guard('barn', function (x, z, deg) {
+      var rec = { kind: 'barn', x: num(x, 0), z: num(z, 0), deg: num(deg, 0) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildBarn(rec);
+    }),
+    windmill: guard('windmill', function (x, z) {
+      var rec = { kind: 'windmill', x: num(x, 0), z: num(z, 0) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildWindmill(rec);
+    }),
+    fence: guard('fence', function (x1, z1, x2, z2) {
+      var rec = { kind: 'fence', x1: num(x1, -8), z1: num(z1, 0), x2: num(x2, 8), z2: num(z2, 0) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildFence(rec);
+    }),
+    animals: guard('animals', function (n, kindName, x, z, r) {
+      var k = text(kindName, 'galinhas');
+      if (!ANIMAL_KINDS[k]) {
+        warn('não conheço o bichinho "' + k + '" — usando galinhas (tem: galinhas, vacas)');
+        k = 'galinhas';
+      }
+      var rec = { kind: 'animals', n: num(n, 4), kindName: k, x: num(x, 0), z: num(z, 0), r: num(r, 8) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildAnimals(rec);
+    }),
+    crater: guard('crater', function (x, z, r) {
+      var cr = clamp(num(r, 6), 2, 30);
+      terrainMods.push({
+        kind: 'crater',
+        x: num(x, 10), z: num(z, 10), r: cr,
+        depth: 1 + cr * 0.16, rim: 0.4 + cr * 0.06
+      });
+      if (worldReady) {
+        buildTerrain();
+        if (grassMat) buildGrassHeightTex();
+        if (waterMat) buildWaterFoamTex();
+      }
+    }),
+    flag: guard('flag', function (x, z, color) {
+      var rec = { kind: 'flag', x: num(x, 0), z: num(z, 0), color: text(color, '#ef4444') };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildFlag(rec);
+    }),
+    rocket: guard('rocket', function (x, z) {
+      var rec = { kind: 'rocket', x: num(x, 0), z: num(z, 0) };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildRocket(rec);
     }),
     door: guard('door', function (x, z, deg, title, body, image) {
       var rec = {

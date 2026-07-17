@@ -4050,6 +4050,48 @@ export type JSStatement =
       optB: string
       bodyB: JSStatement[]
     })
+  | (JSStatementCommon & {
+      type: 'w3d:crops'
+      n: number | JSExpr
+      kind: string
+      x: number | JSExpr
+      z: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:barn'
+      x: number | JSExpr
+      z: number | JSExpr
+      deg: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'w3d:windmill'; x: number | JSExpr; z: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'w3d:fence'
+      x1: number | JSExpr
+      z1: number | JSExpr
+      x2: number | JSExpr
+      z2: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:animals'
+      n: number | JSExpr
+      kind: string
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:crater'
+      x: number | JSExpr
+      z: number | JSExpr
+      r: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:flag'
+      x: number | JSExpr
+      z: number | JSExpr
+      color: string
+    })
+  | (JSStatementCommon & { type: 'w3d:rocket'; x: number | JSExpr; z: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:fireflies'; amount: string })
   | (JSStatementCommon & { type: 'w3d:campfire'; x: number | JSExpr; z: number | JSExpr })
   // Mundo 3D R15 "personagem a pé": rig procedural + entrar/sair do veículo.
@@ -8257,6 +8299,64 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       bodyB: z.lazy(() => z.array(JSStatementSchema)),
       ...idField,
     }),
+    z.object({
+      type: z.literal('w3d:crops'),
+      n: z.union([z.number(), JSExprSchema]),
+      kind: z.string(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:barn'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      deg: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:windmill'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:fence'),
+      x1: z.union([z.number(), JSExprSchema]),
+      z1: z.union([z.number(), JSExprSchema]),
+      x2: z.union([z.number(), JSExprSchema]),
+      z2: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:animals'),
+      n: z.union([z.number(), JSExprSchema]),
+      kind: z.string(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      r: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:crater'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      r: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:flag'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      color: z.string(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:rocket'),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:fireflies'), amount: irText(), ...idField }),
     z.object({
       type: z.literal('w3d:campfire'),
@@ -9438,6 +9538,14 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:traffic',
   'w3d:door',
   'w3d:npcAsk',
+  'w3d:crops',
+  'w3d:barn',
+  'w3d:windmill',
+  'w3d:fence',
+  'w3d:animals',
+  'w3d:crater',
+  'w3d:flag',
+  'w3d:rocket',
   'w3d:fireflies',
   'w3d:campfire',
   'w3d:person',

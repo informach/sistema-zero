@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '2.4.0',
+  version: '2.5.0',
   description:
     'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: escolha o cenário (🌲🏖️❄️🏜️🌸), levante morros ou um arquipélago e passeie a pé, de carrinho ou de barco (E entra e sai). Buzina, marcas de pneu, boliche, letras e TNT para bagunçar; amigos que conversam, moedas e missões, conquistas que ficam salvas, minimapa com teleporte, clima com tempestade e tornado. Tudo com blocos simples — e o "A cada quadro" para inventar a sua mecânica.',
   category: 'games',
@@ -174,6 +174,30 @@ O que o motor já faz por você:
   lâmpadas penduradas que ACENDEM quando escurece. Decore a praça, o quintal
   ou faça um caminho de festa (funciona em qualquer mundo, com ou sem
   cidade).
+
+### 🌙 Lua & espaço
+
+- **Estilo "lua" no Criar o mundo** — chão cinza de crateras, céu estrelado
+  desde o começo e GRAVIDADE FRAQUINHA: os pulos flutuam devagarinho como os
+  astronautas de verdade (vale para o personagem, o carrinho e a bagunça).
+- **Abrir uma cratera 🕳️** — afunda uma tigela com a borda erguida ao redor.
+  Funciona em qualquer mundo: arena, lago seco, toca de dinossauro…
+- **Fincar a bandeira 🚩 da cor …** — marque a sua conquista.
+- **Pousar o foguete 🚀** — o foguete prateado que trouxe você.
+
+### 🚜 Fazenda
+
+- **Estilo "fazenda" no Criar o mundo** — campos verde-dourados prontos para
+  plantar.
+- **Plantar … fileiras de milho/alface/abóbora 🌾** — fileiras certinhas com
+  montinhos de terra.
+- **Construir o celeiro** — o vermelho clássico de portão branco.
+- **Pôr o moinho de vento** — as pás GIRAM de verdade, e giram mais rápido
+  quando você aumenta o vento!
+- **Fazer uma cerquinha 🪵 de … até …** — postes sólidos com duas ripas,
+  seguindo o morro.
+- **Soltar galinhas 🐔 ou vacas 🐄** — bichinhos que passeiam sozinhos no seu
+  cantinho (as galinhas bicam o chão!).
 
 ### 🏝️ Ilha & barco
 

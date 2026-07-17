@@ -6105,6 +6105,8 @@ const W3D_CAR_STYLES = new Set(['passeio', 'jipe', 'corrida'])
 const W3D_CITY_SIZES = new Set(['pequena', 'media', 'grande'])
 const W3D_CITY_MODES = new Set(['dia', 'neon'])
 const W3D_TRAFFIC_MODES = new Set(['semaforos', 'livre'])
+const W3D_CROP_KINDS = new Set(['milho', 'alface', 'abobora'])
+const W3D_ANIMAL_KINDS = new Set(['galinhas', 'vacas'])
 const W3D_THINGS = new Set([
   'arvores',
   'pinheiros',
@@ -6813,6 +6815,72 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
             image: args[5].value as string,
           }
         : null
+    }
+    case 'crops': {
+      const n = toExpr(args[0], ctx)
+      if (args[1]?.type !== 'StringLiteral') return null
+      const kind = args[1].value as string
+      if (!W3D_CROP_KINDS.has(kind)) return null
+      const x = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      return isSimpleValue(n) && isSimpleValue(x) && isSimpleValue(z)
+        ? { type: 'w3d:crops', n, kind, x, z }
+        : null
+    }
+    case 'barn': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const deg = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(deg)
+        ? { type: 'w3d:barn', x, z, deg }
+        : null
+    }
+    case 'windmill': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:windmill', x, z } : null
+    }
+    case 'fence': {
+      const x1 = toExpr(args[0], ctx)
+      const z1 = toExpr(args[1], ctx)
+      const x2 = toExpr(args[2], ctx)
+      const z2 = toExpr(args[3], ctx)
+      return isSimpleValue(x1) && isSimpleValue(z1) && isSimpleValue(x2) && isSimpleValue(z2)
+        ? { type: 'w3d:fence', x1, z1, x2, z2 }
+        : null
+    }
+    case 'animals': {
+      const n = toExpr(args[0], ctx)
+      if (args[1]?.type !== 'StringLiteral') return null
+      const kind = args[1].value as string
+      if (!W3D_ANIMAL_KINDS.has(kind)) return null
+      const x = toExpr(args[2], ctx)
+      const z = toExpr(args[3], ctx)
+      const r = toExpr(args[4], ctx)
+      return isSimpleValue(n) && isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(r)
+        ? { type: 'w3d:animals', n, kind, x, z, r }
+        : null
+    }
+    case 'crater': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      const r = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(r)
+        ? { type: 'w3d:crater', x, z, r }
+        : null
+    }
+    case 'flag': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      if (args[2]?.type !== 'StringLiteral') return null
+      return isSimpleValue(x) && isSimpleValue(z)
+        ? { type: 'w3d:flag', x, z, color: args[2].value as string }
+        : null
+    }
+    case 'rocket': {
+      const x = toExpr(args[0], ctx)
+      const z = toExpr(args[1], ctx)
+      return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:rocket', x, z } : null
     }
     case 'npcAsk': {
       if (
