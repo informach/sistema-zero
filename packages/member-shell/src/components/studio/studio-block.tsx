@@ -44,6 +44,14 @@ function writeSharedFlag(projectId: string): void {
   }
 }
 
+// "Expandir" (overlay de tela cheia) é estado de VISTA efêmero, mas precisa SOBREVIVER ao
+// router.refresh() que o "Enviar para o professor" dispara: o refresh re-monta o bloco (o
+// servidor re-renderiza a aula com submitted:true) e um useState comum voltaria a false — a
+// criança caía da tela cheia ao enviar. Guardamos por projeto num Map de MÓDULO (sobrevive ao
+// refresh e à re-montagem no mesmo load; um F5 real limpa = volta ao normal). Só "Reduzir" ou
+// Esc tiram da tela cheia — nunca o envio.
+const expandedByProject = new Map<string, boolean>()
+
 interface Props {
   blockId: string
   content: StudioBlock
@@ -109,7 +117,7 @@ export function StudioBlockView({
   const [passed, setPassed] = useState<boolean>(studioState?.passed ?? false)
   const [xp, setXp] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(() => expandedByProject.get(projectId) ?? false)
   // Confirmação antes de enviar: o envio destrava/regrava a entrega no professor —
   // um clique sem querer mandava um projeto vazio (relatado pela usuária).
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -200,6 +208,12 @@ export function StudioBlockView({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [expanded])
+
+  // Espelha o estado atual no Map de módulo → sobrevive ao router.refresh()/re-montagem do
+  // envio (o initializer acima o restaura). Fonte única p/ toggle, Esc e "Reduzir".
+  useEffect(() => {
+    expandedByProject.set(projectId, expanded)
+  }, [projectId, expanded])
 
   // (O editor relayouta sozinho ao mudar de tamanho — BlocklyPanel/MonacoTabs têm
   // ResizeObserver no container; não precisa disparar resize manual.)
