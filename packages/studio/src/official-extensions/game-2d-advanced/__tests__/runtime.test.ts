@@ -198,6 +198,7 @@ interface GameKitApi {
   rpgAddAlly: Fn
   rpgAddFoe: Fn
   rpgTeachMove: Fn
+  rpgTeachHeal: Fn
   rpgLevel: Fn
   rpgXp: Fn
   // V9 — mapa de tiles + profundidade
@@ -219,6 +220,12 @@ interface GameKitApi {
   overlapGroups: Fn
   bounceOnEdges: Fn
   wrapEdges: Fn
+  paddleBounce: Fn
+  boardCreate: Fn
+  boardSet: Fn
+  boardGet: Fn
+  boardCount: Fn
+  boardIn: Fn
   everySeconds: Fn
   cooldownReady: Fn
   tileAt: Fn
@@ -497,7 +504,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 281 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 288 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -640,6 +647,7 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgAddAlly',
       'rpgAddFoe',
       'rpgTeachMove',
+      'rpgTeachHeal',
       // V9 — mapa de tiles + profundidade (6)
       'cameraShake',
       'loadTilemap',
@@ -659,6 +667,12 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'overlapGroups',
       'bounceOnEdges',
       'wrapEdges',
+      'paddleBounce',
+      'boardCreate',
+      'boardSet',
+      'boardGet',
+      'boardCount',
+      'boardIn',
       'everySeconds',
       'cooldownReady',
       'tileAt',
@@ -3589,5 +3603,139 @@ describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho
     h.nextFrame(16)
     expect(h.api.cameraX()).toBe(30 * 64 - 800) // 1120
     expect(h.api.cameraY()).toBe(20 * 64 - 600) // 680
+  })
+})
+
+describe('SZGameKit — R29: robustez (nomes perigosos, softlock, cura)', () => {
+  it('⭐ A2: nome "constructor"/"toString" no time NÃO trava o jogo', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    // Nomes que caem na herança do Object (constructor/toString) travavam o motor.
+    h.api.rpgBattleStats(30, 999) // força alta: vence no 1º golpe
+    h.api.rpgTeachMove('toString', 'X', 10, 2) // ally "malvado" (nem existe ainda)
+    h.api.rpgAddFoe('constructor', 20, 5, 0, '#f00')
+    expect(() => h.api.rpgBattleStart('toString', 20, 5, 0)).not.toThrow()
+    expect(h.api.state()).toBe('batalha')
+    // Joga até acabar sem estourar (antes, abrir o painel fazia undefined.name).
+    driveBattle(h, 1)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.rpgBattleWon()).toBe(true)
+  })
+
+  it('⭐ A1: um erro no laço NÃO congela — o próximo quadro ainda roda', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    let quadros = 0
+    // Um "A cada quadro" que SEMPRE lança: o runHooks já protege os ganchos, mas
+    // este teste garante que o laço reagenda mesmo assim (a fila de rAF nunca seca).
+    h.api.onUpdate(() => {
+      quadros += 1
+      throw new Error('boom de propósito')
+    })
+    for (let i = 0; i < 5; i++) {
+      expect(h.rafCount()).toBeGreaterThan(0) // sempre há um próximo quadro agendado
+      h.nextFrame((i + 1) * 16)
+    }
+    expect(quadros).toBe(5) // o laço sobreviveu aos 5 erros
+  })
+
+  it('⭐ A3: "Continuar" (carregar) no MEIO da batalha volta o jogo a "jogando"', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    // Injeta um save mínimo direto no localStorage do harness.
+    h.store.set('szgk-rpg-save', JSON.stringify({ max: 30, hp: 20, lvl: 1, flags: {}, items: [] }))
+    h.api.rpgBattleStats(30, 5, 0)
+    h.api.rpgBattleStart('Chefe', 40, 5, 0)
+    expect(h.api.state()).toBe('batalha')
+    h.api.rpgLoad() // antes: zerava a batalha e ficava PRESO em 'batalha'
+    expect(h.api.state()).toBe('jogando')
+  })
+
+  it('⭐ A4: golpe de CURA cura de verdade (não fere o inimigo)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(60, 5, 0)
+    h.api.rpgTeachHeal('Você', 'Curar', 15, 2) // golpe de cura do herói
+    h.api.rpgBattleStart('Tanque', 100, 3, 0) // inimigo grosso: a batalha continua
+    expect(h.api.state()).toBe('batalha')
+    // Abre o painel e confere que o golpe de CURA aparece rotulado como cura (antes
+    // era código morto: heal:false fixo → o rótulo "(cura …)" nunca renderizava).
+    let opened: BattleSnap | null = null
+    let t = 1
+    for (let i = 0; i < 20 && !opened; i++, t += 100) {
+      const s = battleSnap(h)
+      if (s?.menuOpen) opened = s
+      else h.nextFrame(t)
+    }
+    expect(opened).not.toBeNull()
+    expect(opened?.menuLabels.some((l) => l.includes('Curar') && l.includes('cura'))).toBe(true)
+    const foeHp0 = opened?.foes[0]?.hp
+    pickAction(h, t, 'Curar') // escolhe o golpe de cura
+    // O inimigo NÃO perdeu vida (cura ≠ dano): o golpe curou em vez de ferir.
+    expect(battleSnap(h)?.foes[0]?.hp).toBe(foeHp0)
+  })
+
+  it('🧩 D1: tabuleiro — criar/pôr/ler/contar/cabe (a base do Snake e do Match-3)', () => {
+    const h = loadRuntime()
+    const api = h.api as unknown as {
+      boardCreate: (n: string, c: number, r: number, empty: unknown) => void
+      boardSet: (n: string, v: unknown, c: number, r: number) => void
+      boardGet: (n: string, c: number, r: number) => unknown
+      boardCount: (n: string, v: unknown) => number
+      boardIn: (n: string, c: number, r: number) => boolean
+    }
+    api.boardCreate('mapa', 4, 3, 0) // 4×3 preenchido de 0 ("vazio")
+    expect(api.boardCount('mapa', 0)).toBe(12) // tudo vazio no começo
+    api.boardSet('mapa', 1, 2, 1) // corpo da cobrinha em (2,1)
+    api.boardSet('mapa', 1, 0, 0)
+    expect(api.boardGet('mapa', 2, 1)).toBe(1)
+    expect(api.boardCount('mapa', 1)).toBe(2)
+    expect(api.boardCount('mapa', 0)).toBe(10)
+    // Fora da grade: pôr é ignorado (não estoura), ler devolve o "vazio", cabe = false.
+    api.boardSet('mapa', 9, 99, 99)
+    expect(api.boardCount('mapa', 9)).toBe(0)
+    expect(api.boardGet('mapa', 99, 99)).toBe(0)
+    expect(api.boardIn('mapa', 3, 2)).toBe(true) // último canto válido
+    expect(api.boardIn('mapa', 4, 2)).toBe(false) // 1 coluna além = parede
+    // Tabuleiro inexistente é seguro (não trava).
+    expect(api.boardGet('naoexiste', 0, 0)).toBe(0)
+    expect(api.boardIn('naoexiste', 0, 0)).toBe(false)
+  })
+
+  it('🧱 D2: rebater na raquete — inverte o vy e o ângulo vem do ponto de impacto', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    const api = h.api as unknown as {
+      createCharacter: (o: Record<string, number>) => Record<string, number>
+      placeCharacter: (c: Record<string, number>, x: number, y: number) => void
+      setVelocity: (c: Record<string, number>, vx: number, vy: number) => void
+      velocityOf: (c: Record<string, number>, axis: 'x' | 'y') => number
+      paddleBounce: (ball: Record<string, number>, paddle: Record<string, number>) => void
+    }
+    const paddle = api.createCharacter({ w: 100, h: 16 })
+    api.placeCharacter(paddle, 100, 400) // centro x=150
+    // A bola desce (vy>0) e ENCOSTA na raquete (que está embaixo dela).
+    const ball = api.createCharacter({ w: 16, h: 16 })
+    api.placeCharacter(ball, 142, 392) // centro x=150 (bate no MEIO)
+    api.setVelocity(ball, 0, 200)
+    api.paddleBounce(ball, paddle)
+    expect(api.velocityOf(ball, 'y')).toBeLessThan(0) // subiu (rebateu p/ cima)
+    expect(Math.abs(api.velocityOf(ball, 'x'))).toBeLessThan(1) // meio da raquete = reto
+    // Batendo na BEIRA direita da raquete, ganha vx positivo (abre o ângulo).
+    const ball2 = api.createCharacter({ w: 16, h: 16 })
+    api.placeCharacter(ball2, 188, 392) // centro x=196, à direita do centro 150
+    api.setVelocity(ball2, 0, 200)
+    api.paddleBounce(ball2, paddle)
+    expect(api.velocityOf(ball2, 'x')).toBeGreaterThan(0)
+    // Sem encostar (longe), nada muda.
+    const ball3 = api.createCharacter({ w: 16, h: 16 })
+    api.placeCharacter(ball3, 142, 0)
+    api.setVelocity(ball3, 0, 200)
+    api.paddleBounce(ball3, paddle)
+    expect(api.velocityOf(ball3, 'y')).toBe(200) // intocado
   })
 })

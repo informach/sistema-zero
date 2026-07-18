@@ -1405,6 +1405,22 @@ export const gameKitBlocks = [
       'Ensina um golpe NOMEADO a alguém do time (o herói é "Você"; os aliados pelo nome). Cada um pode ter vários golpes, e eles aparecem no painel de ação da batalha. Gasta energia. Use no começo.',
   },
   {
+    type: 'sz_gk_rpg_teach_heal',
+    message0: 'Ensinar o golpe de CURA %1 (cura %2, energia %3) para %4',
+    args0: [
+      { type: 'field_input', name: 'MOVE', text: 'Curar' },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'COST', check: 'JSValue' },
+      { type: 'field_input', name: 'WHO', text: 'Você' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como "Ensinar o golpe", mas de CURA: em vez de ferir o inimigo, devolve vida a quem usou. Ótimo para um aliado curandeiro. Aparece no painel de ação e gasta energia. Use no começo.',
+  },
+  {
     type: 'sz_gk_rpg_level',
     message0: 'meu nível',
     output: 'JSValue',
@@ -1891,6 +1907,20 @@ export const gameKitBlocks = [
     tooltip: 'Bateu na borda, volta — a bolinha do pong e do breakout.',
   },
   {
+    type: 'sz_gk_paddle_bounce',
+    message0: 'Rebater %1 na raquete %2',
+    args0: [
+      { type: 'field_name_picker', name: 'BALL', text: 'bola', kind: 'character' },
+      { type: 'field_name_picker', name: 'PADDLE', text: 'raquete', kind: 'character' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Quando a bola encosta na raquete, ela QUICA: a direção pra cima/baixo inverte e a direção de lado vem do PONTO que bateu (na beirada, sai mais de lado). É o coração do Breakout e do Pong. Combine com "quicar nas bordas" (paredes) no "A cada quadro".',
+  },
+  {
     type: 'sz_gk_wrap_edges',
     message0: 'Fazer %1 atravessar para o outro lado',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' }],
@@ -1898,6 +1928,77 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Saiu por um lado, aparece no outro — o Pac-Man e o Asteroids.',
+  },
+  // ---- 🧩 Tabuleiro / grade (Snake, Match-3, Sokoban, puzzles) ----
+  {
+    type: 'sz_gk_board_create',
+    message0: 'Criar o tabuleiro %1 com %2 colunas × %3 linhas (vazio = %4)',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'COLS', check: 'JSValue' },
+      { type: 'input_value', name: 'ROWS', check: 'JSValue' },
+      { type: 'input_value', name: 'EMPTY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma GRADE de células por nome (colunas × linhas), tudo começando com o valor "vazio" (ex.: 0). É o coração dos jogos de grade: Cobrinha, Match-3, Sokoban, campo-minado, quebra-cabeças. Você varre a grade com "repita" e lê/escreve por (coluna, linha).',
+  },
+  {
+    type: 'sz_gk_board_set',
+    message0: 'No tabuleiro %1, pôr %2 na coluna %3, linha %4',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+      { type: 'input_value', name: 'COL', check: 'JSValue' },
+      { type: 'input_value', name: 'ROW', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Escreve um valor numa célula da grade (fora dos limites, não faz nada).',
+  },
+  {
+    type: 'sz_gk_board_get',
+    message0: 'o valor do tabuleiro %1 em (coluna %2, linha %3)',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'COL', check: 'JSValue' },
+      { type: 'input_value', name: 'ROW', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Lê o valor de uma célula. Fora dos limites, devolve o valor "vazio" do tabuleiro.',
+  },
+  {
+    type: 'sz_gk_board_count',
+    message0: 'quantas células do tabuleiro %1 têm o valor %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Conta quantas células têm um valor — ex.: quantas minas, quantas peças de uma cor.',
+  },
+  {
+    type: 'sz_gk_board_in',
+    message0: 'a (coluna %2, linha %3) cabe no tabuleiro %1 ?',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'COL', check: 'JSValue' },
+      { type: 'input_value', name: 'ROW', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro se a célula está DENTRO da grade — o jeito de saber se a cobrinha bateu na parede ou se um movimento sai do tabuleiro.',
   },
   {
     type: 'sz_gk_collide_tilemap',
@@ -3932,50 +4033,6 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '🖼️ Telas',
-    colour: C,
-    types: [
-      'sz_gk_set_screen_text',
-      'sz_gk_create_screen',
-      'sz_gk_add_button',
-      'sz_gk_show_screen',
-      'sz_gk_hide_screens',
-    ],
-  },
-  {
-    name: '🚦 Estados',
-    colour: C,
-    types: [
-      'sz_gk_set_state',
-      'sz_gk_on_enter_state',
-      'sz_gk_game_state',
-      'sz_gk_state_is',
-      'sz_gk_pause',
-      'sz_gk_resume',
-      'sz_gk_return_to_menu',
-      'sz_gk_end_game',
-    ],
-  },
-  {
-    name: '🔁 A cada quadro',
-    colour: C,
-    types: [
-      'sz_gk_on_update',
-      'sz_gk_on_draw',
-      'sz_gk_on_draw_hud',
-      'sz_gk_draw_background',
-      'sz_gk_scroll_image',
-      'sz_gk_parallax_layer',
-    ],
-  },
-  {
-    // 🛤️ R25 — caminho é polilinha nomeada (irmão da 🧭 Região, que é retângulo
-    // nomeado). GERAL: serve TD, corrida, patrulha e cutscene em trilho.
-    name: '🛤️ Caminhos',
-    colour: C,
-    types: ['sz_gk_define_path', 'sz_gk_path_point', 'sz_gk_follow_path', 'sz_gk_path_progress'],
-  },
-  {
     // Era a única categoria inchada (14). Ficou com o CICLO DE VIDA do
     // personagem: criar, mover, posicionar, desenhar — e o renascer, que veio do
     // Kit Plataforma (o runtime dele não tem NADA de plataforma: é "guardar um
@@ -4027,6 +4084,43 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_mouse_y',
       'sz_gk_mouse_down',
       'sz_gk_move_with_custom_keys',
+    ],
+  },
+  {
+    name: '🖼️ Telas',
+    colour: C,
+    types: [
+      'sz_gk_set_screen_text',
+      'sz_gk_create_screen',
+      'sz_gk_add_button',
+      'sz_gk_show_screen',
+      'sz_gk_hide_screens',
+    ],
+  },
+  {
+    name: '🚦 Estados',
+    colour: C,
+    types: [
+      'sz_gk_set_state',
+      'sz_gk_on_enter_state',
+      'sz_gk_game_state',
+      'sz_gk_state_is',
+      'sz_gk_pause',
+      'sz_gk_resume',
+      'sz_gk_return_to_menu',
+      'sz_gk_end_game',
+    ],
+  },
+  {
+    name: '🔁 A cada quadro',
+    colour: C,
+    types: [
+      'sz_gk_on_update',
+      'sz_gk_on_draw',
+      'sz_gk_on_draw_hud',
+      'sz_gk_draw_background',
+      'sz_gk_scroll_image',
+      'sz_gk_parallax_layer',
     ],
   },
   {
@@ -4141,6 +4235,14 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
+    // 🛤️ R25 — caminho é polilinha nomeada (irmão da 🧭 Região, que é retângulo
+    // nomeado). GERAL: serve TD, corrida, patrulha e cutscene em trilho. R29: desceu
+    // de perto do topo (era niche demais para a 5ª posição) p/ junto do mundo/mapa.
+    name: '🛤️ Caminhos',
+    colour: C,
+    types: ['sz_gk_define_path', 'sz_gk_path_point', 'sz_gk_follow_path', 'sz_gk_path_progress'],
+  },
+  {
     // ⚙️ GERAL: a física que faz plataforma/corrida/flappy/breakout existirem.
     // A receita é sempre: gravidade → mover pela velocidade → colidir.
     name: '⚙️ Física',
@@ -4155,6 +4257,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_thrust',
       'sz_gk_apply_friction',
       'sz_gk_bounce_on_edges',
+      'sz_gk_paddle_bounce',
       'sz_gk_wrap_edges',
     ],
   },
@@ -4162,6 +4265,19 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     name: '🧱 Colisão sólida',
     colour: C,
     types: ['sz_gk_collide_tilemap', 'sz_gk_collide_group', 'sz_gk_overlap_groups'],
+  },
+  {
+    // 🧩 GERAL: uma grade nomeada de células (a criança varre com "repita" +
+    // ler/pôr). Destrava Snake, Match-3, Sokoban, campo-minado, puzzles de grade.
+    name: '🧩 Tabuleiro',
+    colour: C,
+    types: [
+      'sz_gk_board_create',
+      'sz_gk_board_set',
+      'sz_gk_board_get',
+      'sz_gk_board_count',
+      'sz_gk_board_in',
+    ],
   },
   {
     name: '⏱️ Tempo',
@@ -4447,6 +4563,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_rpg_add_ally',
       'sz_gk_rpg_add_foe',
       'sz_gk_rpg_teach_move',
+      'sz_gk_rpg_teach_heal',
       'sz_gk_rpg_set_special',
       'sz_gk_rpg_give_potion',
       'sz_gk_rpg_battle_reward',
@@ -4547,7 +4664,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
 ]
 
 // Cores por GRUPO (R24). Antes era um gradiente único de 44 tons do teal —
-// vizinhos quase iguais e os 5 kits-pai espremidos na ponta escura, todos
+// vizinhos quase iguais e os kits-pai espremidos na ponta escura, todos
 // parecidos. Agora: as GERAIS ganham o gradiente com o passo dobrado (28 tons)
 // e cada KIT ganha um tom-base PRÓPRIO bem espaçado do MESMO teal (a identidade
 // da categoria de topo continua teal — deslocar o matiz brigaria com o
@@ -4587,6 +4704,11 @@ const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { 
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_setup: { W: numShadow(1280), H: numShadow(720) },
+  sz_gk_board_create: { COLS: numShadow(10), ROWS: numShadow(10), EMPTY: numShadow(0) },
+  sz_gk_board_set: { VALUE: numShadow(1), COL: numShadow(0), ROW: numShadow(0) },
+  sz_gk_board_get: { COL: numShadow(0), ROW: numShadow(0) },
+  sz_gk_board_count: { VALUE: numShadow(1) },
+  sz_gk_board_in: { COL: numShadow(0), ROW: numShadow(0) },
   sz_gk_set_screen_text: {
     TITLE: txtShadow('Meu Jogo'),
     TEXT: txtShadow('WASD ou setas para andar'),
@@ -4660,6 +4782,7 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_add_ally: { HP: numShadow(24), STR: numShadow(6), DEF: numShadow(1) },
   sz_gk_rpg_add_foe: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(0) },
   sz_gk_rpg_teach_move: { DMG: numShadow(12), COST: numShadow(3) },
+  sz_gk_rpg_teach_heal: { AMOUNT: numShadow(12), COST: numShadow(3) },
   sz_gk_rpg_set_special: { DMG: numShadow(14), COST: numShadow(4) },
   sz_gk_rpg_give_potion: { HEAL: numShadow(20) },
   sz_gk_rpg_battle_reward: { XP: numShadow(20) },
@@ -4847,8 +4970,8 @@ const toolboxBlock = (type: string) => {
   return inputs ? { kind: 'block' as const, type, inputs } : { kind: 'block' as const, type }
 }
 
-// R23: os kits viram chips-PAI — o 1º nível fica com as ~28 gerais + 5 kits
-// (🏃 🥊 🧙 👾 🚀) em vez de 44 chips planos; as sub-categorias abrem DENTRO
+// R23: os kits viram chips-PAI — o 1º nível fica com as ~29 gerais + 6 kits
+// (🏃 🥊 🧙 👾 🚀 🏰) em vez de 44 chips planos; as sub-categorias abrem DENTRO
 // do pai (a toolbox é recursiva; filtros/poda/testes já recursam). Os NOMES
 // das filhas mantêm o prefixo "Kit X:" — a doc os cita e o docDrift os casa.
 // R24: o pai tem tom-base PRÓPRIO (KIT_BASES); as filhas são sombras dele.

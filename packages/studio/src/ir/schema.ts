@@ -251,6 +251,20 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:rpgXp' })
   // 🌍 Mundo aberto: o nome do mapa atual.
   | (JSExprCommon & { type: 'gk:rpgCurrentMap' })
+  // 🧩 Tabuleiro/grade: ler valor, contar e checar limites (reporters).
+  | (JSExprCommon & {
+      type: 'gk:boardGet'
+      name: string
+      col: number | JSExpr
+      row: number | JSExpr
+    })
+  | (JSExprCommon & { type: 'gk:boardCount'; name: string; value: number | JSExpr })
+  | (JSExprCommon & {
+      type: 'gk:boardIn'
+      name: string
+      col: number | JSExpr
+      row: number | JSExpr
+    })
   // 🥷 Ação em tempo real: "o golpe de A acertou B?" (caixa de golpe à frente).
   | (JSExprCommon & { type: 'gk:didHit'; aVar: string; bVar: string })
   // ⚙️ Física geral (R11): valores que o jogo INTEIRO precisa poder ler.
@@ -724,6 +738,26 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:rpgLevel'), ...idField }),
     z.object({ type: z.literal('gk:rpgXp'), ...idField }),
     z.object({ type: z.literal('gk:rpgCurrentMap'), ...idField }),
+    z.object({
+      type: z.literal('gk:boardGet'),
+      name: irText(),
+      col: z.union([JSExprSchema, z.number()]),
+      row: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:boardCount'),
+      name: irText(),
+      value: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:boardIn'),
+      name: irText(),
+      col: z.union([JSExprSchema, z.number()]),
+      row: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({ type: z.literal('gk:didHit'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isOnGround'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isInside'), charVar: irText(), region: irText(), ...idField }),
@@ -2831,6 +2865,13 @@ export type JSStatement =
       dmg: number | JSExpr
       cost: number | JSExpr
     })
+  | (JSStatementCommon & {
+      type: 'gk:rpgTeachHeal'
+      who: string
+      move: string
+      amount: number | JSExpr
+      cost: number | JSExpr
+    })
   // 🎬 Cenas & NPCs vivos: folha de andar direcional + cutscene por gravação +
   // NPC que anda/vagueia + gatilho ao pisar numa célula.
   | (JSStatementCommon & {
@@ -2895,6 +2936,22 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'gk:bounceOnEdges'; charVar: string })
   | (JSStatementCommon & { type: 'gk:wrapEdges'; charVar: string })
+  | (JSStatementCommon & { type: 'gk:paddleBounce'; ballVar: string; paddleVar: string })
+  // 🧩 Tabuleiro/grade (geral): cria/lê/escreve células por (coluna, linha).
+  | (JSStatementCommon & {
+      type: 'gk:boardCreate'
+      name: string
+      cols: number | JSExpr
+      rows: number | JSExpr
+      empty: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'gk:boardSet'
+      name: string
+      value: number | JSExpr
+      col: number | JSExpr
+      row: number | JSExpr
+    })
   | (JSStatementCommon & { type: 'gk:collideTilemap'; charVar: string; map: string })
   | (JSStatementCommon & { type: 'gk:collideGroup'; charVar: string; mold: string })
   | (JSStatementCommon & {
@@ -6598,6 +6655,14 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:rpgTeachHeal'),
+      who: irText(),
+      move: irText(),
+      amount: z.union([JSExprSchema, z.number()]),
+      cost: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:rpgOnBattleEnd'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -6698,6 +6763,28 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('gk:bounceOnEdges'), charVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:paddleBounce'),
+      ballVar: irText(),
+      paddleVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:boardCreate'),
+      name: irText(),
+      cols: z.union([JSExprSchema, z.number()]),
+      rows: z.union([JSExprSchema, z.number()]),
+      empty: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:boardSet'),
+      name: irText(),
+      value: z.union([JSExprSchema, z.number()]),
+      col: z.union([JSExprSchema, z.number()]),
+      row: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({ type: z.literal('gk:wrapEdges'), charVar: irText(), ...idField }),
     z.object({
       type: z.literal('gk:collideTilemap'),
@@ -9306,6 +9393,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgAddAlly',
   'gk:rpgAddFoe',
   'gk:rpgTeachMove',
+  'gk:rpgTeachHeal',
   'gk:setWalkSheet',
   'gk:rpgCutscene',
   'gk:rpgWait',
@@ -9328,6 +9416,9 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:setVelocity',
   'gk:setTerminalVelocity',
   'gk:bounceOnEdges',
+  'gk:paddleBounce',
+  'gk:boardCreate',
+  'gk:boardSet',
   'gk:wrapEdges',
   'gk:collideTilemap',
   'gk:collideGroup',

@@ -652,6 +652,26 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:rpgXp' }
     case 'sz_gk_rpg_current_map':
       return { type: 'gk:rpgCurrentMap' }
+    case 'sz_gk_board_get':
+      return {
+        type: 'gk:boardGet',
+        name: f(block, 'NAME'),
+        col: exprInput(block, 'COL', { type: 'num', value: 0 }),
+        row: exprInput(block, 'ROW', { type: 'num', value: 0 }),
+      }
+    case 'sz_gk_board_count':
+      return {
+        type: 'gk:boardCount',
+        name: f(block, 'NAME'),
+        value: exprInput(block, 'VALUE', { type: 'num', value: 1 }),
+      }
+    case 'sz_gk_board_in':
+      return {
+        type: 'gk:boardIn',
+        name: f(block, 'NAME'),
+        col: exprInput(block, 'COL', { type: 'num', value: 0 }),
+        row: exprInput(block, 'ROW', { type: 'num', value: 0 }),
+      }
     case 'sz_g3k_world_size':
       return { type: 'g3k:worldSize' }
     case 'sz_g3k_count_alive':
@@ -6297,6 +6317,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           cost: exprInput(block, 'COST', { type: 'num', value: 3 }),
         },
       }
+    case 'sz_gk_rpg_teach_heal':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgTeachHeal',
+          who: f(block, 'WHO'),
+          move: f(block, 'MOVE'),
+          amount: exprInput(block, 'AMOUNT', { type: 'num', value: 12 }),
+          cost: exprInput(block, 'COST', { type: 'num', value: 3 }),
+        },
+      }
     case 'sz_gk_rpg_on_battle_end':
       seen.add('game-2d-advanced')
       return {
@@ -6463,6 +6495,40 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_gk_bounce_on_edges':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:bounceOnEdges', charVar: f(block, 'WHO') } }
+    case 'sz_gk_paddle_bounce':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:paddleBounce',
+          ballVar: f(block, 'BALL'),
+          paddleVar: f(block, 'PADDLE'),
+        },
+      }
+    case 'sz_gk_board_create':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:boardCreate',
+          name: f(block, 'NAME'),
+          cols: exprInput(block, 'COLS', { type: 'num', value: 10 }),
+          rows: exprInput(block, 'ROWS', { type: 'num', value: 10 }),
+          empty: exprInput(block, 'EMPTY', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_gk_board_set':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:boardSet',
+          name: f(block, 'NAME'),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 1 }),
+          col: exprInput(block, 'COL', { type: 'num', value: 0 }),
+          row: exprInput(block, 'ROW', { type: 'num', value: 0 }),
+        },
+      }
     case 'sz_gk_wrap_edges':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:wrapEdges', charVar: f(block, 'WHO') } }
