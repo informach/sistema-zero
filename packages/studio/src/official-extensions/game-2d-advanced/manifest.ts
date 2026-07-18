@@ -23,7 +23,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.33.0',
+  version: '0.34.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -99,6 +99,10 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
   novas (loja, instruções) no mesmo estilo, com botões que rodam os seus blocos.
   Criar com o nome de uma tela pronta faz você ASSUMIR a tela: os botões dela
   saem e os textos passam a ser os seus.
+- **Na tela…, pôr fundo cor… e imagem…** — dá a SUA cara à tela (pronta ou sua):
+  uma cor de fundo e, se quiser, uma imagem do Pinta cobrindo o painel. (Para uma
+  tela toda DESENHADA no canvas, use um ESTADO inventado — ele esconde os painéis
+  prontos e deixa você desenhar à vontade.)
 
 ### Personagens
 
@@ -838,6 +842,14 @@ música da praia" e o nome no HUD.
   batalha (vários contra vários). **Ensinar o golpe … para …** dá golpes NOMEADOS a
   quem você quiser (o herói é "Você"; os aliados pelo nome) — cada um pode ter vários,
   e eles aparecem no painel de ação. Cada golpe gasta energia.
+- **Imagem no combatente:** "Adicionar inimigo/aliado", "Pôr o CHEFÃO" e "Começar a
+  batalha contra" têm um campo de IMAGEM (a que você "Carregou pelo nome") — o
+  lutador aparece com a arte do Pinta em vez do retângulo da cor. Vazio = a cor.
+- **Ficha de inimigo REUTILIZÁVEL** (defina separado, escolha na hora): **Criar a
+  ficha do inimigo …** guarda um inimigo (vida/força/defesa/imagem/cor, e "chefão?")
+  UMA vez; depois **Começar a batalha contra a ficha …** o coloca como inimigo
+  principal, e **Adicionar o inimigo da ficha …** enfileira mais — só escolhendo pelo
+  nome, sem redigitar. É como os moldes do mundo, mas para a batalha por turnos.
 - **Golpe especial** (dano forte que gasta energia; a energia recupera por turno)
   + **Ganhar a poção** (cura, usada pelo botão Item) — as armas do RPG.
 - **Ensinar o golpe de CURA … para …** — um golpe que devolve VIDA em vez de ferir

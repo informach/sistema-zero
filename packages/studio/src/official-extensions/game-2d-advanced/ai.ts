@@ -46,7 +46,9 @@ API global injetada como window.SZGameKit:
   (os botões default saem e os textos passam a ser seus); addButton(tela,
   rotulo, fn) põe botão clicável; showScreen(nome) / hideScreens(). Telas são
   painéis DOM injetados pelo runtime (ids szgk-*) — o aluno NÃO escreve
-  HTML/CSS para elas.
+  HTML/CSS para elas. setScreenBg(tela, cor, imagem) pinta o painel (cor de
+  fundo + imagem do Pinta opcional). Tela 100% desenhada no canvas = ESTADO
+  inventado (esconde os painéis prontos, os on_draw seguem rodando).
 - Laço: onUpdate(fn(dt)) — dt em SEGUNDOS, clampado a 0.1 (aba em segundo plano
   não teleporta); onUpdate só roda em "jogando" (pausa congela de graça).
   onDraw(fn(ctx)) — roda todo quadro fora do menu; ctx é um
@@ -219,6 +221,13 @@ API global injetada como window.SZGameKit:
   rpgFoeHitAll(nome, dano) (golpe de área em TODO o time). Padrão: rpgOnFoeTurn("Chefe",
   () => { se battlerLife < metade: rpgFoeHitAll('Chefe', 25); senão rpgFoeUse('Chefe',
   'Garra') }).
+  🖼️ IMAGEM no combatente + FICHA reutilizável (R34): rpgAddFoe/rpgAddAlly(...,cor,
+  "imagem"?), rpgAddBoss(...,defesa, "imagem"?) e rpgBattleStart(...,defesa, "imagem"?)
+  aceitam a imagem carregada (loadImage pelo nome) → o lutador vira sprite, não
+  retângulo (antes só o herói). rpgDefineBattler(nome, vida, força, defesa, "imagem",
+  "cor", chefão?) guarda uma FICHA de inimigo; rpgBattleNamed(nome) começa a batalha
+  contra a ficha (inimigo principal) e rpgAddFoeNamed(nome) enfileira mais — "define
+  separado, escolhe na hora" (como os moldes do mundo). Ficha inexistente = no-op+aviso.
 - 🗺️ Mundo & profundidade (tiles do Ninja Adventure; GERAL, vale fora do RPG):
   loadTilemap(nome, assetDeMapa) lê um MAPA do Pinta (grade+peças+sólidos juntos,
   via ASSET_META). No onDraw, drawTilemap(nome, "chão") ANTES dos personagens e
