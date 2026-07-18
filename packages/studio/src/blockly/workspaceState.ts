@@ -3830,6 +3830,29 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             { HP: hp, STR: str, DEF: def },
           )
     }
+    case 'gk:rpgDefineBattler': {
+      const hp = exprToValueBlock(valueToExpr(stmt.hp))
+      const str = exprToValueBlock(valueToExpr(stmt.str))
+      const def = exprToValueBlock(valueToExpr(stmt.def))
+      return hp === null || str === null || def === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_rpg_define_battler',
+            {
+              NAME: stmt.name,
+              IMAGE: stmt.image,
+              COLOR: stmt.color,
+              BOSS: stmt.boss ? 'TRUE' : 'FALSE',
+            },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
+    }
+    case 'gk:rpgBattleNamed':
+      return block('sz_gk_rpg_battle_named', { NAME: stmt.name }, {}, stmt.__id)
+    case 'gk:rpgAddFoeNamed':
+      return block('sz_gk_rpg_add_foe_named', { NAME: stmt.name }, {}, stmt.__id)
     case 'gk:rpgOnFoeTurn':
       return block(
         'sz_gk_rpg_on_foe_turn',

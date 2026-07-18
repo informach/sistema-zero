@@ -1474,6 +1474,49 @@ export const gameKitBlocks = [
     tooltip:
       'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é a que você "Carregou pelo nome" (vazio = retângulo da cor). Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
   },
+  // ---- ⚔️ Fichas reutilizáveis: crie o inimigo separado e escolha na hora ----
+  {
+    type: 'sz_gk_rpg_define_battler',
+    message0:
+      'Criar a ficha do inimigo %1: vida %2, força %3, defesa %4, imagem %5, cor %6, chefão %7',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Dragão' },
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'STR', check: 'JSValue' },
+      { type: 'input_value', name: 'DEF', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#e05a5a' },
+      { type: 'field_checkbox', name: 'BOSS', checked: false },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma FICHA de inimigo reutilizável: vida, força, defesa, a imagem (a que você "Carregou pelo nome") e a cor. Marque "chefão" para ele entrar MAIOR, com barra grande e coroa. Faça a ficha UMA vez no começo; depois é só ESCOLHER com quem batalhar.',
+  },
+  {
+    type: 'sz_gk_rpg_battle_named',
+    message0: 'Começar a batalha contra a ficha %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'battler' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Abre a batalha por turnos ESCOLHENDO um inimigo que você já criou com "Criar a ficha do inimigo" — ele entra com a imagem e os atributos prontos. Some "Adicionar o inimigo da ficha" antes para lutar contra vários.',
+  },
+  {
+    type: 'sz_gk_rpg_add_foe_named',
+    message0: 'Adicionar o inimigo da ficha %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Capanga', kind: 'battler' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe mais um inimigo na PRÓXIMA batalha escolhendo uma FICHA que você já criou (com imagem e atributos). Use antes de "Começar a batalha".',
+  },
   {
     type: 'sz_gk_battler_life',
     message0: 'a vida de %1 na batalha',
@@ -5038,6 +5081,9 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_rpg_battle_start',
       'sz_gk_rpg_add_ally',
       'sz_gk_rpg_add_foe',
+      'sz_gk_rpg_define_battler',
+      'sz_gk_rpg_add_foe_named',
+      'sz_gk_rpg_battle_named',
       'sz_gk_rpg_teach_move',
       'sz_gk_rpg_teach_heal',
       'sz_gk_rpg_set_special',
@@ -5315,6 +5361,7 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_add_ally: { HP: numShadow(24), STR: numShadow(6), DEF: numShadow(1) },
   sz_gk_rpg_add_foe: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(0) },
   sz_gk_rpg_add_boss: { HP: numShadow(120), STR: numShadow(9), DEF: numShadow(2) },
+  sz_gk_rpg_define_battler: { HP: numShadow(120), STR: numShadow(9), DEF: numShadow(2) },
   sz_gk_rpg_foe_hit_all: { DMG: numShadow(15) },
   sz_gk_rpg_teach_move: { DMG: numShadow(12), COST: numShadow(3) },
   sz_gk_rpg_teach_heal: { AMOUNT: numShadow(12), COST: numShadow(3) },

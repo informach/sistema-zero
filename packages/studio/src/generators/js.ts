@@ -1778,6 +1778,12 @@ function compileStatementCode(
       return `${pad}SZGameKit.rpgTeachHeal(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgAddBoss':
       return `${pad}SZGameKit.rpgAddBoss(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}${stmt.image ? `, ${JSON.stringify(stmt.image)}` : ''});`
+    case 'gk:rpgDefineBattler':
+      return `${pad}SZGameKit.rpgDefineBattler(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.image)}, ${JSON.stringify(stmt.color)}, ${stmt.boss});`
+    case 'gk:rpgBattleNamed':
+      return `${pad}SZGameKit.rpgBattleNamed(${JSON.stringify(stmt.name)});`
+    case 'gk:rpgAddFoeNamed':
+      return `${pad}SZGameKit.rpgAddFoeNamed(${JSON.stringify(stmt.name)});`
     case 'gk:rpgFoeUse':
       return `${pad}SZGameKit.rpgFoeUse(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.move)});`
     case 'gk:rpgFoeHitAll':
@@ -5540,10 +5546,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.cost), names)
       return
     case 'gk:rpgAddBoss':
+    case 'gk:rpgDefineBattler':
       collectExprIdentifiers(valueToExpr(stmt.hp), names)
       collectExprIdentifiers(valueToExpr(stmt.str), names)
       collectExprIdentifiers(valueToExpr(stmt.def), names)
       return
+    case 'gk:rpgBattleNamed':
+    case 'gk:rpgAddFoeNamed':
     case 'gk:rpgFoeUse':
       return
     case 'gk:rpgFoeHitAll':

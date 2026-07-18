@@ -5484,7 +5484,11 @@ export const gameKitRuntime = `(function () {
     // 👑 IA de chefe: nome do inimigo -> fn do "Quando for a vez do inimigo".
     // Registro PERSISTENTE (como onUpdate) — sobrevive ao recomeço; se o inimigo
     // não estiver na batalha, o hook simplesmente não dispara.
-    foeTurnHooks: nameMap()
+    foeTurnHooks: nameMap(),
+    // ⚔️ Fichas de inimigo REUTILIZÁVEIS ({name,hp,str,def,image,color,boss}): a
+    // criança define o inimigo/chefão UMA vez ("Criar a ficha do inimigo") e depois
+    // só ESCOLHE com quem batalhar. Registro PERSISTENTE (como os moldes/aparências).
+    battlerDefs: nameMap()
   };
   var SAVE_KEY = 'szgk-rpg-save'; // localStorage do preview (persiste por projeto)
   var DIALOG_CPS = 30; // velocidade do typewriter (chars/segundo)
@@ -5987,7 +5991,7 @@ export const gameKitRuntime = `(function () {
     else if (st.type === 'face') { rpgFace(st.who, st.dir); st._instant = true; }
     else if (st.type === 'flag') { rpgAddFlag(st.name); st._instant = true; }
     else if (st.type === 'goMap') { rpgGoMap(st.name); st._instant = true; }
-    else if (st.type === 'battle') rpgBattleStart(st.name, st.hp, st.str, st.def, st.image);
+    else if (st.type === 'battle') startBattleFromDef({ name: st.name, hp: st.hp, str: st.str, def: st.def, image: st.image, color: st.boss ? '#b23b6e' : '#e05a5a', boss: st.boss });
     else if (st.type === 'menu') {
       if (st.options.length > 0) rpg.menu = { title: st.title, options: st.options, index: 0 };
       else st._instant = true;
@@ -6404,16 +6408,15 @@ export const gameKitRuntime = `(function () {
   function rpgGivePotion(name, heal) {
     rpg.potions.push({ name: text(name, 'Poção'), heal: Math.max(1, num(heal, 20)) });
   }
-  function rpgBattleStart(name, hp, str, def, image) {
-    if (rpg.recording) { rpg.sceneSteps.push({ type: 'battle', name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), image: text(image, '') }); return; }
+  // Núcleo COMPARTILHADO: monta a batalha (herói + party × inimigo principal + fila) e
+  // entra no estado 'batalha'. O mainFoe é um battler JÁ pronto (via defToBattler) — assim
+  // o inimigo principal ganha imagem, chefão e golpes ensinados de graça, igual à fila.
+  function startTeamBattle(mainFoe) {
     if (!ensureShell()) return;
     if (rpg.battle) return;
-    // Aliados: o herói (dos atributos) + a party. Inimigos: o nomeado + a fila.
     var allies = [heroBattler()];
     for (var i = 0; i < rpg.allies.length; i++) allies.push(defToBattler(rpg.allies[i], 'aliado'));
-    var foes = [makeBattler(name, 'inimigo', hp, str, def, '', '#e05a5a', image)];
-    var mv = rpg.movesByName[text(name, 'Inimigo')];
-    if (mv) for (var m = 0; m < mv.length; m++) foes[0].moves.push(mv[m]);
+    var foes = [mainFoe];
     for (var j = 0; j < rpg.foeQueue.length; j++) foes.push(defToBattler(rpg.foeQueue[j], 'inimigo'));
     rpg.foeQueue = []; // a fila é consumida pela batalha
     rpg.battle = {
@@ -6426,6 +6429,42 @@ export const gameKitRuntime = `(function () {
     // do flash (fade começa coberto e clareia). stepScreenFx roda fora do gate de
     // estado, então anima já no 'batalha'; drawScreenFx é o último desenho (por cima).
     fadeScreen('#ffffff', 0.3, false);
+  }
+  // Constrói o inimigo PRINCIPAL a partir de um def-ish e o coloca na batalha. Reusa
+  // defToBattler (imagem/chefão/golpes). Compartilhado por battle_start, battle_named e
+  // o replay de cutscene.
+  function startBattleFromDef(d) {
+    if (rpg.recording) {
+      rpg.sceneSteps.push({ type: 'battle', name: d.name, hp: d.hp, str: d.str, def: d.def, image: text(d.image, ''), boss: !!d.boss });
+      return;
+    }
+    startTeamBattle(defToBattler(d, 'inimigo'));
+  }
+  function rpgBattleStart(name, hp, str, def, image) {
+    startBattleFromDef({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), image: text(image, ''), color: '#e05a5a' });
+  }
+  // ⚔️ Ficha REUTILIZÁVEL: define o inimigo/chefão UMA vez, com imagem e atributos.
+  function rpgDefineBattler(name, hp, str, def, image, color, boss) {
+    var nm = text(name, 'Inimigo');
+    rpg.battlerDefs[nm] = {
+      name: nm, hp: num(hp, 20), str: num(str, 5), def: num(def, 0),
+      image: text(image, ''), color: text(color, boss ? '#b23b6e' : '#e05a5a'), boss: !!boss
+    };
+  }
+  function rpgFindDef(name) {
+    var d = rpg.battlerDefs[text(name, '')];
+    if (!d) warnOnce('battlerdef:' + text(name, ''), 'a ficha do inimigo "' + text(name, '') + '" não existe — crie com "Criar a ficha do inimigo"');
+    return d || null;
+  }
+  // Enfileira um inimigo A PARTIR DA FICHA (a "escolha" de quem entra na próxima batalha).
+  function rpgAddFoeNamed(name) {
+    var d = rpgFindDef(name); if (!d) return;
+    rpg.foeQueue.push({ name: d.name, hp: d.hp, str: d.str, def: d.def, image: d.image, color: d.color, boss: d.boss });
+  }
+  // Começa a batalha ESCOLHENDO uma ficha como inimigo principal (o que a criança pediu).
+  function rpgBattleNamed(name) {
+    var d = rpgFindDef(name); if (!d) return;
+    startBattleFromDef(d);
   }
   // A vez de um aliado: abre o painel de ação (o menu do motor) para o jogador escolher.
   function startAllyTurn(actor) {
@@ -7064,6 +7103,10 @@ export const gameKitRuntime = `(function () {
     // ----- ⚔️ batalha em EQUIPE: aliados, inimigos e golpes nomeados -----
     rpgAddAlly: guard('rpgAddAlly', rpgAddAlly),
     rpgAddFoe: guard('rpgAddFoe', rpgAddFoe),
+    // ⚔️ Fichas reutilizáveis: define separado + escolhe na hora de batalhar.
+    rpgDefineBattler: guard('rpgDefineBattler', rpgDefineBattler),
+    rpgAddFoeNamed: guard('rpgAddFoeNamed', rpgAddFoeNamed),
+    rpgBattleNamed: guard('rpgBattleNamed', rpgBattleNamed),
     rpgTeachMove: guard('rpgTeachMove', rpgTeachMove),
     rpgTeachHeal: guard('rpgTeachHeal', rpgTeachHeal),
     rpgLevel: guard('rpgLevel', function () { return rpg.playerLevel; }),

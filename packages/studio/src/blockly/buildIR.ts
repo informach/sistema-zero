@@ -6393,6 +6393,27 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           ...(f(block, 'IMAGE') ? { image: f(block, 'IMAGE') } : {}),
         },
       }
+    case 'sz_gk_rpg_define_battler':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgDefineBattler',
+          name: f(block, 'NAME'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 120 }),
+          str: exprInput(block, 'STR', { type: 'num', value: 9 }),
+          def: exprInput(block, 'DEF', { type: 'num', value: 2 }),
+          image: f(block, 'IMAGE'),
+          color: f(block, 'COLOR') || '#e05a5a',
+          boss: f(block, 'BOSS') === 'TRUE',
+        },
+      }
+    case 'sz_gk_rpg_battle_named':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgBattleNamed', name: f(block, 'NAME') } }
+    case 'sz_gk_rpg_add_foe_named':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgAddFoeNamed', name: f(block, 'NAME') } }
     case 'sz_gk_rpg_on_foe_turn':
       seen.add('game-2d-advanced')
       return {

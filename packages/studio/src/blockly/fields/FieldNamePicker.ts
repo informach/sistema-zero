@@ -57,6 +57,7 @@ export type NameKind =
   | 'screen'
   | 'gamestate'
   | 'mold'
+  | 'battler'
   | 'effect'
   | 'event'
   | 'look'
@@ -105,6 +106,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'screen',
   'gamestate',
   'mold',
+  'battler',
   'effect',
   'event',
   'look',
@@ -283,6 +285,11 @@ function collectGameStates(workspace: Blockly.Workspace | null | undefined): str
 const MOLD_DECL_BLOCKS: Record<string, string[]> = { sz_gk_define_mold: ['NAME'] }
 function collectMolds(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, MOLD_DECL_BLOCKS)
+}
+// ⚔️ Fichas de inimigo de batalha por turnos (vida/força/defesa/imagem reutilizáveis).
+const BATTLER_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_define_battler: ['NAME'] }
+function collectBattlers(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, BATTLER_DECL_BLOCKS)
 }
 
 /** Efeitos de faísca (partículas data-driven) — fonte do seletor EFFECT. */
@@ -676,6 +683,12 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do molde',
     empty: 'Nenhum molde ainda — crie um (bloco "Criar o molde") ou digite o nome abaixo.',
   },
+  battler: {
+    icon: '⚔️',
+    placeholder: 'nome do inimigo',
+    empty:
+      'Nenhuma ficha de inimigo ainda — crie uma (bloco "Criar a ficha do inimigo") ou digite o nome abaixo.',
+  },
   effect: {
     icon: '✨',
     placeholder: 'nome do efeito',
@@ -1028,6 +1041,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectGameStates(ws)
       case 'mold':
         return collectMolds(ws)
+      case 'battler':
+        return collectBattlers(ws)
       case 'effect':
         return collectEffects(ws)
       case 'event':

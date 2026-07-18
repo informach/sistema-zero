@@ -2953,6 +2953,19 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'gk:rpgOnFoeTurn'; name: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:rpgFoeUse'; name: string; move: string })
   | (JSStatementCommon & { type: 'gk:rpgFoeHitAll'; name: string; dmg: number | JSExpr })
+  // ⚔️ Fichas de inimigo reutilizáveis: definir separado + escolher na batalha.
+  | (JSStatementCommon & {
+      type: 'gk:rpgDefineBattler'
+      name: string
+      hp: number | JSExpr
+      str: number | JSExpr
+      def: number | JSExpr
+      image: string
+      color: string
+      boss: boolean
+    })
+  | (JSStatementCommon & { type: 'gk:rpgBattleNamed'; name: string })
+  | (JSStatementCommon & { type: 'gk:rpgAddFoeNamed'; name: string })
   // 🎬 Cenas & NPCs vivos: folha de andar direcional + cutscene por gravação +
   // NPC que anda/vagueia + gatilho ao pisar numa célula.
   | (JSStatementCommon & {
@@ -6812,6 +6825,19 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:rpgDefineBattler'),
+      name: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      def: z.union([JSExprSchema, z.number()]),
+      image: irText(),
+      color: irText(),
+      boss: z.boolean(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgBattleNamed'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgAddFoeNamed'), name: irText(), ...idField }),
+    z.object({
       type: z.literal('gk:rpgOnBattleEnd'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -9621,6 +9647,9 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgInflict',
   'gk:rpgAddAlly',
   'gk:rpgAddFoe',
+  'gk:rpgDefineBattler',
+  'gk:rpgBattleNamed',
+  'gk:rpgAddFoeNamed',
   'gk:rpgTeachMove',
   'gk:rpgTeachHeal',
   'gk:rpgAddBoss',

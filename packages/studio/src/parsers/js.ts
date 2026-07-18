@@ -5045,6 +5045,38 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ...(image ? { image } : {}),
       }
     }
+    case 'rpgDefineBattler': {
+      // SZGameKit.rpgDefineBattler("nome", hp, str, def, "imagem", "cor", boss)
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        args[4]?.type !== 'StringLiteral' ||
+        args[5]?.type !== 'StringLiteral' ||
+        args[6]?.type !== 'BooleanLiteral'
+      )
+        return null
+      const hp = toExpr(args[1], ctx)
+      const str = toExpr(args[2], ctx)
+      const def = toExpr(args[3], ctx)
+      if (!isSimpleValue(hp) || !isSimpleValue(str) || !isSimpleValue(def)) return null
+      return {
+        type: 'gk:rpgDefineBattler',
+        name: args[0].value as string,
+        hp,
+        str,
+        def,
+        image: args[4].value as string,
+        color: args[5].value as string,
+        boss: args[6].value as boolean,
+      }
+    }
+    case 'rpgBattleNamed': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgBattleNamed', name: args[0].value as string }
+    }
+    case 'rpgAddFoeNamed': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgAddFoeNamed', name: args[0].value as string }
+    }
     case 'rpgFoeUse': {
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
       return { type: 'gk:rpgFoeUse', name: args[0].value as string, move: args[1].value as string }

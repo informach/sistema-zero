@@ -197,6 +197,9 @@ interface GameKitApi {
   rpgInflict: Fn
   rpgAddAlly: Fn
   rpgAddFoe: Fn
+  rpgDefineBattler: Fn
+  rpgBattleNamed: Fn
+  rpgAddFoeNamed: Fn
   rpgTeachMove: Fn
   rpgTeachHeal: Fn
   rpgLevel: Fn
@@ -563,7 +566,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 328 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 331 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -702,9 +705,12 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgInflict',
       'rpgLevel',
       'rpgXp',
-      // ⚔️ batalha em equipe (3)
+      // ⚔️ batalha em equipe (3) + fichas reutilizáveis (3)
       'rpgAddAlly',
       'rpgAddFoe',
+      'rpgDefineBattler',
+      'rpgBattleNamed',
+      'rpgAddFoeNamed',
       'rpgTeachMove',
       'rpgTeachHeal',
       // 👑 R30 — chefes (6)
@@ -3981,6 +3987,37 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     expect(snap?.allies.find((a) => a.name === 'Mago')?.image).toBe('mago-png')
     // Sem imagem segue vazio (cai no retângulo da cor) — não quebra o herói.
     expect(snap?.allies.find((a) => a.name === 'Você')?.image).toBe('')
+  })
+
+  it('⚔️ ficha reutilizável: define separado + ESCOLHE na batalha (imagem + chefão vêm da ficha)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(40, 7, 0)
+    // Cria as fichas UMA vez (com imagem e atributos)…
+    h.api.rpgDefineBattler('Dragão', 200, 9, 2, 'dragao-png', '#b23b6e', true) // chefão
+    h.api.rpgDefineBattler('Capanga', 20, 3, 0, 'capanga-png', '#e05a5a', false)
+    h.api.rpgAddFoeNamed('Capanga') // …e só ESCOLHE quem entra
+    h.api.rpgBattleNamed('Dragão') // o chefão como inimigo principal
+    expect(h.api.state()).toBe('batalha')
+    const snap = battleSnap(h)
+    const dragao = snap?.foes.find((f) => f.name === 'Dragão')
+    const capanga = snap?.foes.find((f) => f.name === 'Capanga')
+    expect(dragao?.boss).toBe(true) // a ficha era chefão → entra maior/coroa
+    expect(dragao?.image).toBe('dragao-png') // imagem veio da ficha
+    expect(dragao?.hp).toBe(200)
+    expect(capanga?.image).toBe('capanga-png') // o extra da fila também saiu da ficha
+    expect(capanga?.boss).toBe(false)
+  })
+
+  it('⚔️ batalhar contra uma ficha que não existe NÃO abre batalha (segue no mundo)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(30, 7, 0)
+    h.api.rpgBattleNamed('NaoExiste') // ficha nunca criada → no-op + aviso
+    expect(h.api.state()).toBe('jogando')
+    expect(battleSnap(h)).toBeNull()
   })
 
   it('a IA de chefe manda na vez dele: "acerta TODO o time" atinge todos os aliados', async () => {
