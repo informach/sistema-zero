@@ -17,6 +17,7 @@ import {
   cobrinhaExample,
   corridaTabuleiroExample,
   defesaDoReinoExample,
+  dueloDeCartasExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
@@ -119,6 +120,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'O Chefao',
       'Corrida de Tabuleiro',
       'Jogo da Memoria',
+      'Duelo de Cartas',
       'Cobrinha',
       'Quebra-blocos',
     ])
@@ -2022,6 +2024,113 @@ describe('game-2d-advanced — exemplo Jogo da Memoria (🃏 cartas)', () => {
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(jogoDaMemoriaExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_DUELO_CARTAS = `SZGameKit.setup({ width: 800, height: 600, background: "#191426", accent: "#c084fc" });
+SZGameKit.setScreenText("menu", "Duelo de Cartas", "Clique numa carta da mao para joga-la (custa 1 energia): 🗡️ ataca, 🛡️ defende. Aperte espaco para passar o turno!", "Jogar");
+SZGameKit.setScreenText("vitoria", "Voce venceu o duelo!", "Que estrategista!", "Jogar de novo");
+SZGameKit.setScreenText("fim", "Voce perdeu...", "Tente outra estrategia!", "Jogar de novo");
+let baralho = [];
+let mao = [];
+let descarte = [];
+SZGameKit.onEnterState("jogando", function () {
+  baralho = [SZGameKit.card("🗡️", "🗡️"), SZGameKit.card("🗡️", "🗡️"), SZGameKit.card("🗡️", "🗡️"), SZGameKit.card("🗡️", "🗡️"), SZGameKit.card("🛡️", "🛡️"), SZGameKit.card("🛡️", "🛡️"), SZGameKit.card("🛡️", "🛡️")];
+  baralho = baralho.sort(() => Math.random() - 0.5);
+  mao = [];
+  descarte = [];
+  SZGameKit.cardsStart(30, 40);
+  SZGameKit.cardsEnergyPerTurn(3);
+  SZGameKit.cardsEnemyIntent("atacar", 7);
+});
+SZGameKit.cardsOnTurn(function () {
+  for (let n = 0; n < 3; n++) {
+    if (SZGameKit.pileSize(baralho) === 0) {
+      SZGameKit.pileShuffleFrom(baralho, descarte);
+    }
+    SZGameKit.pileMoveTop(baralho, mao);
+  }
+});
+SZGameKit.cardsOnEnemyTurn(function () {
+  if (SZGameKit.cardsIntentAction() === "atacar") {
+    SZGameKit.cardsHurtMe(SZGameKit.cardsIntentValue());
+  }
+  SZGameKit.cardsEnemyIntent("atacar", 5 + SZGameKit.rollDice(4));
+});
+SZGameKit.onGameClick(function (px, py) {
+  const i = SZGameKit.cardAt(px, py, mao);
+  if (i >= 0) {
+    if (SZGameKit.cardsEnergy() >= 1) {
+      SZGameKit.cardsSpend(1);
+      if (SZGameKit.cardFace(mao[i]) === "🗡️") {
+        SZGameKit.cardsHurtEnemy(6);
+      } else {
+        SZGameKit.cardsGainBlock(5);
+      }
+      descarte.push(mao[i]);
+      mao.splice(i, 1);
+      if (SZGameKit.cardsEnemyLife() <= 0) {
+        SZGameKit.setState("vitoria");
+      }
+    }
+  }
+});
+SZGameKit.onUpdate(function (dt) {
+  if (SZGameKit.keyPressed(" ")) {
+    SZGameKit.cardsEndTurn();
+    if (SZGameKit.cardsHeroLife() <= 0) {
+      SZGameKit.endGame();
+    }
+  }
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#191426", true);
+  SZGameKit.cardsDrawHud();
+  SZGameKit.handDraw(mao, 120, 440, false);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Duelo de Cartas (🃏 Kit Cartas)', () => {
+  it('IR embutida é válida, sem rawJS, e usa o Kit Cartas inteiro', () => {
+    const parsed = SZIRSchema.safeParse(dueloDeCartasExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(dueloDeCartasExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:cardsStart',
+      'gk:cardsOnTurn',
+      'gk:cardsOnEnemyTurn',
+      'gk:cardsEnemyIntent',
+      'gk:cardsHurtEnemy',
+      'gk:cardsGainBlock',
+      'gk:cardsDrawHud',
+      'gk:pileMoveTop',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_DUELO_CARTAS))).toEqual(dueloDeCartasExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(dueloDeCartasExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      dueloDeCartasExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(dueloDeCartasExample.ir.js)
     } finally {
       ws.dispose()
     }

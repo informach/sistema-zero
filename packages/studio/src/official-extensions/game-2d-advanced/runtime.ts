@@ -2319,6 +2319,65 @@ export const gameKitRuntime = `(function () {
     return -1;
   }
 
+  // ---- 🃏 R30 — Kit Cartas: o RPG DE CARTAS (deck-battler). RECEITA, não mágica:
+  // o kit dá o andaime (vida/energia/escudo/intenção/turnos + HUD); a criança MONTA
+  // o deck (listas + cartas), a mão e O QUE CADA CARTA FAZ com os verbos abaixo. ----
+  var cards = { battle: null, onTurn: [], onEnemyTurn: [] };
+  function cardsStart(heroHp, enemyHp) {
+    var hh = Math.max(1, num(heroHp, 30)), eh = Math.max(1, num(enemyHp, 40));
+    cards.battle = {
+      heroHp: hh, heroMax: hh, enemyHp: eh, enemyMax: eh,
+      energy: 3, energyPerTurn: 3, block: 0,
+      intentAction: 'atacar', intentValue: 6
+    };
+    // ⚠️ NÃO muda o estado: o jogo de cartas roda no 'jogando' da criança (senão o
+    // onUpdate/teclas congelariam). O 1º "meu turno" começa já.
+    cardsStartTurn();
+  }
+  function cardsEnergyPerTurn(n) { if (cards.battle) { cards.battle.energyPerTurn = Math.max(0, num(n, 3)); cards.battle.energy = cards.battle.energyPerTurn; } }
+  function cardsEnergy() { return cards.battle ? cards.battle.energy : 0; }
+  function cardsSpend(n) { if (cards.battle) cards.battle.energy = Math.max(0, cards.battle.energy - Math.max(0, num(n, 1))); }
+  function cardsHeroLife() { return cards.battle ? Math.max(0, cards.battle.heroHp) : 0; }
+  function cardsEnemyLife() { return cards.battle ? Math.max(0, cards.battle.enemyHp) : 0; }
+  function cardsHurtEnemy(n) { if (cards.battle) cards.battle.enemyHp -= Math.max(0, num(n, 0)); }
+  function cardsHurtMe(n) {
+    if (!cards.battle) return;
+    var d = Math.max(0, num(n, 0));
+    var absorbed = Math.min(cards.battle.block, d); // o escudo absorve primeiro
+    cards.battle.block -= absorbed; d -= absorbed;
+    cards.battle.heroHp -= d;
+  }
+  function cardsGainBlock(n) { if (cards.battle) cards.battle.block += Math.max(0, num(n, 0)); }
+  function cardsEnemyIntent(action, value) {
+    if (cards.battle) { cards.battle.intentAction = text(action, 'atacar'); cards.battle.intentValue = Math.max(0, num(value, 6)); }
+  }
+  function cardsIntentAction() { return cards.battle ? cards.battle.intentAction : ''; }
+  function cardsIntentValue() { return cards.battle ? cards.battle.intentValue : 0; }
+  function cardsOnTurn(fn) { if (typeof fn === 'function') cards.onTurn.push(fn); }
+  function cardsOnEnemyTurn(fn) { if (typeof fn === 'function') cards.onEnemyTurn.push(fn); }
+  function cardsStartTurn() {
+    if (!cards.battle) return;
+    cards.battle.energy = cards.battle.energyPerTurn; // RESET (não regenera como o RPG)
+    cards.battle.block = 0; // o escudo some no começo do meu turno (como no gênero)
+    for (var i = 0; i < cards.onTurn.length; i++) { try { cards.onTurn[i](); } catch (e) { warn('erro no "Quando começar o meu turno": ' + e); } }
+  }
+  function cardsEndTurn() {
+    if (!cards.battle) return;
+    for (var i = 0; i < cards.onEnemyTurn.length; i++) { try { cards.onEnemyTurn[i](); } catch (e) { warn('erro no "Quando for a vez do inimigo": ' + e); } }
+    cardsStartTurn(); // volta pra mim (reseta energia/escudo e roda o meu turno)
+  }
+  function cardsDrawHud() {
+    if (!cards.battle || !ctx2d) return;
+    var b = cards.battle;
+    drawBar(Math.max(0, b.enemyHp), b.enemyMax, config.w / 2 - 130, 46, 260, 18, '#ef4444');
+    drawBar(Math.max(0, b.heroHp), b.heroMax, config.w / 2 - 130, config.h - 66, 260, 18, '#4ade80');
+    ctx2d.save();
+    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '15px sans-serif'; ctx2d.textAlign = 'center';
+    ctx2d.fillText('👿 vai: ' + b.intentAction + ' ' + b.intentValue, config.w / 2, 34);
+    ctx2d.fillText('⚡ Energia: ' + b.energy + '     🛡️ Escudo: ' + b.block, config.w / 2, config.h - 34);
+    ctx2d.restore();
+  }
+
   // ---- ⏱️ Tempo (acumulador de dt — NÃO relógio de parede: pausa tem que pausar) ----
   var secondTimers = Object.create(null);
   // Esperas de UMA VEZ em curso. Objeto sem prototipo nao serve aqui (e lista).
@@ -7091,6 +7150,23 @@ export const gameKitRuntime = `(function () {
     cardFace: guard('cardFace', cardFace),
     handDraw: guard('handDraw', handDraw),
     cardAt: guard('cardAt', cardAt),
+    // ----- 🃏 R30: Kit Cartas (deck-battler / RPG de cartas) -----
+    cardsStart: guard('cardsStart', cardsStart),
+    cardsEnergyPerTurn: guard('cardsEnergyPerTurn', cardsEnergyPerTurn),
+    cardsEnergy: guard('cardsEnergy', cardsEnergy),
+    cardsSpend: guard('cardsSpend', cardsSpend),
+    cardsHeroLife: guard('cardsHeroLife', cardsHeroLife),
+    cardsEnemyLife: guard('cardsEnemyLife', cardsEnemyLife),
+    cardsHurtEnemy: guard('cardsHurtEnemy', cardsHurtEnemy),
+    cardsHurtMe: guard('cardsHurtMe', cardsHurtMe),
+    cardsGainBlock: guard('cardsGainBlock', cardsGainBlock),
+    cardsEnemyIntent: guard('cardsEnemyIntent', cardsEnemyIntent),
+    cardsIntentAction: guard('cardsIntentAction', cardsIntentAction),
+    cardsIntentValue: guard('cardsIntentValue', cardsIntentValue),
+    cardsOnTurn: guard('cardsOnTurn', cardsOnTurn),
+    cardsOnEnemyTurn: guard('cardsOnEnemyTurn', cardsOnEnemyTurn),
+    cardsEndTurn: guard('cardsEndTurn', cardsEndTurn),
+    cardsDrawHud: guard('cardsDrawHud', cardsDrawHud),
     everySeconds: guard('everySeconds', everySeconds),
     waitThen: guard('waitThen', waitThen),
     cooldownReady: guard('cooldownReady', cooldownReady),

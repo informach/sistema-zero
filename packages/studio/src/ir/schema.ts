@@ -284,6 +284,12 @@ export type JSExpr =
       y: number | JSExpr
       pileVar: string
     })
+  // 🃏 R30 — Kit Cartas (deck-battler): getters da batalha (reporters).
+  | (JSExprCommon & { type: 'gk:cardsEnergy' })
+  | (JSExprCommon & { type: 'gk:cardsHeroLife' })
+  | (JSExprCommon & { type: 'gk:cardsEnemyLife' })
+  | (JSExprCommon & { type: 'gk:cardsIntentAction' })
+  | (JSExprCommon & { type: 'gk:cardsIntentValue' })
   // 🥷 Ação em tempo real: "o golpe de A acertou B?" (caixa de golpe à frente).
   | (JSExprCommon & { type: 'gk:didHit'; aVar: string; bVar: string })
   // ⚙️ Física geral (R11): valores que o jogo INTEIRO precisa poder ler.
@@ -811,6 +817,11 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       pileVar: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('gk:cardsEnergy'), ...idField }),
+    z.object({ type: z.literal('gk:cardsHeroLife'), ...idField }),
+    z.object({ type: z.literal('gk:cardsEnemyLife'), ...idField }),
+    z.object({ type: z.literal('gk:cardsIntentAction'), ...idField }),
+    z.object({ type: z.literal('gk:cardsIntentValue'), ...idField }),
     z.object({ type: z.literal('gk:didHit'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isOnGround'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isInside'), charVar: irText(), region: irText(), ...idField }),
@@ -3040,6 +3051,26 @@ export type JSStatement =
       y: number | JSExpr
       fan: boolean
     })
+  // 🃏 R30 — Kit Cartas (deck-battler): a batalha, vida/escudo, intenção, turnos.
+  | (JSStatementCommon & {
+      type: 'gk:cardsStart'
+      heroHp: number | JSExpr
+      enemyHp: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:cardsEnergyPerTurn'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:cardsSpend'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:cardsOnTurn'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:cardsEndTurn' })
+  | (JSStatementCommon & { type: 'gk:cardsDrawHud' })
+  | (JSStatementCommon & { type: 'gk:cardsHurtEnemy'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:cardsHurtMe'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:cardsGainBlock'; n: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:cardsEnemyIntent'
+      action: string
+      value: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:cardsOnEnemyTurn'; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:collideTilemap'; charVar: string; map: string })
   | (JSStatementCommon & { type: 'gk:collideGroup'; charVar: string; mold: string })
   | (JSStatementCommon & {
@@ -6930,6 +6961,51 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       fan: z.boolean(),
       ...idField,
     }),
+    z.object({
+      type: z.literal('gk:cardsStart'),
+      heroHp: z.union([JSExprSchema, z.number()]),
+      enemyHp: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsEnergyPerTurn'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsSpend'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:cardsOnTurn'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('gk:cardsEndTurn'), ...idField }),
+    z.object({ type: z.literal('gk:cardsDrawHud'), ...idField }),
+    z.object({
+      type: z.literal('gk:cardsHurtEnemy'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsHurtMe'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsGainBlock'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsEnemyIntent'),
+      action: irText(),
+      value: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsOnEnemyTurn'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
     z.object({ type: z.literal('gk:wrapEdges'), charVar: irText(), ...idField }),
     z.object({
       type: z.literal('gk:collideTilemap'),
@@ -9577,6 +9653,17 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:pileShuffleFrom',
   'gk:cardFlip',
   'gk:handDraw',
+  'gk:cardsStart',
+  'gk:cardsEnergyPerTurn',
+  'gk:cardsSpend',
+  'gk:cardsOnTurn',
+  'gk:cardsEndTurn',
+  'gk:cardsDrawHud',
+  'gk:cardsHurtEnemy',
+  'gk:cardsHurtMe',
+  'gk:cardsGainBlock',
+  'gk:cardsEnemyIntent',
+  'gk:cardsOnEnemyTurn',
   'gk:wrapEdges',
   'gk:collideTilemap',
   'gk:collideGroup',

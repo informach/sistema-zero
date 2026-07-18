@@ -228,6 +228,23 @@ interface GameKitApi {
   cardFace: Fn
   handDraw: Fn
   cardAt: (x: number, y: number, pile: unknown) => number
+  // 🃏 R30 — Kit Cartas (deck-battler)
+  cardsStart: Fn
+  cardsEnergyPerTurn: Fn
+  cardsEnergy: () => number
+  cardsSpend: Fn
+  cardsHeroLife: () => number
+  cardsEnemyLife: () => number
+  cardsHurtEnemy: Fn
+  cardsHurtMe: Fn
+  cardsGainBlock: Fn
+  cardsEnemyIntent: Fn
+  cardsIntentAction: () => string
+  cardsIntentValue: () => number
+  cardsOnTurn: Fn
+  cardsOnEnemyTurn: Fn
+  cardsEndTurn: Fn
+  cardsDrawHud: Fn
   // V9 — mapa de tiles + profundidade
   cameraShake: Fn
   loadTilemap: Fn
@@ -538,7 +555,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 312 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 328 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -709,6 +726,23 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'cardFace',
       'handDraw',
       'cardAt',
+      // 🃏 R30 — Kit Cartas (16)
+      'cardsStart',
+      'cardsEnergyPerTurn',
+      'cardsEnergy',
+      'cardsSpend',
+      'cardsHeroLife',
+      'cardsEnemyLife',
+      'cardsHurtEnemy',
+      'cardsHurtMe',
+      'cardsGainBlock',
+      'cardsEnemyIntent',
+      'cardsIntentAction',
+      'cardsIntentValue',
+      'cardsOnTurn',
+      'cardsOnEnemyTurn',
+      'cardsEndTurn',
+      'cardsDrawHud',
       // V9 — mapa de tiles + profundidade (6)
       'cameraShake',
       'loadTilemap',
@@ -3986,5 +4020,50 @@ describe('SZGameKit — R30: 🃏 cartas (pilha = lista, carta de 2 faces, mão 
     expect(h.api.cardAt(120, 440, cartas)).toBe(0)
     expect(h.api.cardAt(200, 440, cartas)).toBe(1)
     expect(h.api.cardAt(5, 5, cartas)).toBe(-1) // fora de qualquer carta
+  })
+})
+
+describe('SZGameKit — R30: 🃏 Kit Cartas (deck-battler)', () => {
+  it('abre a batalha, gasta/reseta energia, dano no inimigo e escudo que absorve', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.cardsStart(30, 40)
+    expect(h.api.state()).toBe('jogando') // a batalha de cartas roda no 'jogando'
+    expect(h.api.cardsHeroLife()).toBe(30)
+    expect(h.api.cardsEnemyLife()).toBe(40)
+    h.api.cardsEnergyPerTurn(3)
+    expect(h.api.cardsEnergy()).toBe(3)
+    h.api.cardsSpend(2)
+    expect(h.api.cardsEnergy()).toBe(1)
+    h.api.cardsHurtEnemy(10)
+    expect(h.api.cardsEnemyLife()).toBe(30)
+    // escudo: 5 de block apara 8 de dano → o herói perde só 3
+    h.api.cardsGainBlock(5)
+    h.api.cardsHurtMe(8)
+    expect(h.api.cardsHeroLife()).toBe(27)
+  })
+
+  it('a intenção telegrafada + o rodízio de turno (meu → inimigo → meu)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    let meus = 0
+    h.api.cardsOnTurn(() => {
+      meus += 1
+    })
+    h.api.cardsOnEnemyTurn(() => {
+      // a criança RESOLVE a intenção telegrafada
+      if (h.api.cardsIntentAction() === 'atacar') h.api.cardsHurtMe(h.api.cardsIntentValue())
+    })
+    h.api.cardsStart(30, 40) // já roda o 1º "meu turno"
+    expect(meus).toBe(1)
+    h.api.cardsEnergyPerTurn(3)
+    h.api.cardsEnemyIntent('atacar', 6)
+    expect(h.api.cardsIntentAction()).toBe('atacar')
+    expect(h.api.cardsIntentValue()).toBe(6)
+    h.api.cardsEndTurn() // vez do inimigo (tira 6) → volta pra mim (2º meu turno)
+    expect(h.api.cardsHeroLife()).toBe(24) // 30 − 6 (sem escudo neste turno)
+    expect(meus).toBe(2)
   })
 })

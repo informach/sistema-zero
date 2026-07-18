@@ -2193,6 +2193,164 @@ export const gameKitBlocks = [
     tooltip:
       'Qual carta da mão foi clicada (o índice, 0 = a primeira; -1 = nenhuma). Junte com "o mouse x/y" e "Quando clicar no jogo" para jogar uma carta clicando nela.',
   },
+  // ---- 🃏 R30: KIT CARTAS (o RPG de cartas / deck-battler) ----
+  {
+    type: 'sz_gk_cards_start',
+    message0: 'Começar uma batalha de cartas: você com %1 de vida, inimigo com %2',
+    args0: [
+      { type: 'input_value', name: 'HERO_HP', check: 'JSValue' },
+      { type: 'input_value', name: 'ENEMY_HP', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Abre a arena da batalha de cartas (vida sua e do inimigo). NÃO cria deck nem cartas — isso é seu: monte o baralho com listas + o bloco "uma carta". Roda no estado "jogando" (não mexe no estado), e já começa o seu 1º turno.',
+  },
+  {
+    type: 'sz_gk_cards_energy_per_turn',
+    message0: 'A cada turno, começar com %1 de energia',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A energia RESETA para esse valor a cada turno seu (o gasto das cartas). É o que diferencia o deck-battler do RPG comum (lá a energia acumula).',
+  },
+  {
+    type: 'sz_gk_cards_energy',
+    message0: 'a minha energia',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quanta energia você tem agora. Teste antes de jogar uma carta (custa energia).',
+  },
+  {
+    type: 'sz_gk_cards_spend',
+    message0: 'Gastar %1 de energia',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Tira energia (o custo da carta jogada). Não deixa passar de 0.',
+  },
+  {
+    type: 'sz_gk_cards_on_turn',
+    message0: 'Quando começar o meu turno',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda no começo de cada turno seu (a energia e o escudo já resetaram). É aqui que você COMPRA a mão (mover N cartas do baralho para a mão; rebaralhar se acabou).',
+  },
+  {
+    type: 'sz_gk_cards_end_turn',
+    message0: 'Passar o turno',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Termina o seu turno: roda o "Quando for a vez do inimigo" e volta para você (novo turno).',
+  },
+  {
+    type: 'sz_gk_cards_draw_hud',
+    message0: 'Desenhar o painel da batalha de cartas',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha as barras de vida (sua e do inimigo), a energia, o escudo e a INTENÇÃO do inimigo. Use no "Desenhar o jogo" (a mão você desenha com "Desenhar a pilha").',
+  },
+  {
+    type: 'sz_gk_cards_hero_life',
+    message0: 'a minha vida (na batalha de cartas)',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Sua vida na batalha. Vida ≤ 0 = você perdeu (Terminar o jogo).',
+  },
+  {
+    type: 'sz_gk_cards_enemy_life',
+    message0: 'a vida do inimigo (na batalha de cartas)',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'A vida do inimigo. ≤ 0 = você venceu (Mudar o estado para vitória).',
+  },
+  {
+    type: 'sz_gk_cards_hurt_enemy',
+    message0: 'Tirar %1 de vida do inimigo',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'O dano de uma carta de ataque. Use dentro do "o que a carta faz".',
+  },
+  {
+    type: 'sz_gk_cards_hurt_me',
+    message0: 'Tirar %1 da minha vida (o escudo absorve)',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O dano do inimigo em você — o ESCUDO absorve primeiro, o resto tira vida. Use no "Quando for a vez do inimigo" para resolver a intenção de ataque.',
+  },
+  {
+    type: 'sz_gk_cards_gain_block',
+    message0: 'Ganhar %1 de escudo',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O escudo (block) apara o próximo dano do inimigo. Some no começo do seu turno, como no gênero. É o efeito das cartas de defesa.',
+  },
+  {
+    type: 'sz_gk_cards_enemy_intent',
+    message0: 'O inimigo vai %1 de %2 no próximo turno',
+    args0: [
+      { type: 'field_input', name: 'ACTION', text: 'atacar' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Anuncia (telegrafa) o que o inimigo VAI fazer — o segredo do gênero: você vê o ataque vindo e se prepara. A ação é uma palavra que VOCÊ inventa (atacar, defender…).',
+  },
+  {
+    type: 'sz_gk_cards_intent_action',
+    message0: 'o que o inimigo vai fazer',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A palavra da intenção (a que você anunciou). Teste no "Quando for a vez do inimigo": "se = atacar: tirar a minha vida".',
+  },
+  {
+    type: 'sz_gk_cards_intent_value',
+    message0: 'de quanto é a intenção do inimigo',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'O número da intenção (o dano/escudo que o inimigo vai fazer).',
+  },
+  {
+    type: 'sz_gk_cards_on_enemy_turn',
+    message0: 'Quando for a vez do inimigo',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda quando você passa o turno: RESOLVA a intenção telegrafada (ex.: "se o inimigo vai atacar: tirar a minha vida do valor dele") e ANUNCIE a próxima com "O inimigo vai…".',
+  },
   {
     type: 'sz_gk_collide_tilemap',
     message0: 'Fazer %1 colidir com o mapa %2',
@@ -4980,6 +5138,44 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: ['sz_gk_td_wave', 'sz_gk_td_set_coins', 'sz_gk_td_add_coins', 'sz_gk_td_coins'],
   },
+  // ---- 🃏 KIT CARTAS (o RPG de cartas / deck-battler) — R30 ----
+  {
+    name: '🃏 a batalha',
+    kit: '🃏 Kit Cartas',
+    colour: C,
+    types: [
+      'sz_gk_cards_start',
+      'sz_gk_cards_energy_per_turn',
+      'sz_gk_cards_energy',
+      'sz_gk_cards_spend',
+      'sz_gk_cards_on_turn',
+      'sz_gk_cards_end_turn',
+      'sz_gk_cards_draw_hud',
+    ],
+  },
+  {
+    name: '❤️ vida & escudo',
+    kit: '🃏 Kit Cartas',
+    colour: C,
+    types: [
+      'sz_gk_cards_hero_life',
+      'sz_gk_cards_enemy_life',
+      'sz_gk_cards_hurt_enemy',
+      'sz_gk_cards_hurt_me',
+      'sz_gk_cards_gain_block',
+    ],
+  },
+  {
+    name: '👿 o inimigo',
+    kit: '🃏 Kit Cartas',
+    colour: C,
+    types: [
+      'sz_gk_cards_enemy_intent',
+      'sz_gk_cards_intent_action',
+      'sz_gk_cards_intent_value',
+      'sz_gk_cards_on_enemy_turn',
+    ],
+  },
 ]
 
 // Cores por GRUPO (R24). Antes era um gradiente único de 44 tons do teal —
@@ -5029,6 +5225,13 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_card_face: { CARD: numShadow(0) },
   sz_gk_hand_draw: { X: numShadow(60), Y: numShadow(420) },
   sz_gk_card_at: { X: numShadow(0), Y: numShadow(0) },
+  sz_gk_cards_start: { HERO_HP: numShadow(30), ENEMY_HP: numShadow(40) },
+  sz_gk_cards_energy_per_turn: { N: numShadow(3) },
+  sz_gk_cards_spend: { N: numShadow(1) },
+  sz_gk_cards_hurt_enemy: { N: numShadow(6) },
+  sz_gk_cards_hurt_me: { N: numShadow(6) },
+  sz_gk_cards_gain_block: { N: numShadow(5) },
+  sz_gk_cards_enemy_intent: { VALUE: numShadow(6) },
   sz_gk_board_create: { COLS: numShadow(10), ROWS: numShadow(10), EMPTY: numShadow(0) },
   sz_gk_board_set: { VALUE: numShadow(1), COL: numShadow(0), ROW: numShadow(0) },
   sz_gk_board_get: { COL: numShadow(0), ROW: numShadow(0) },

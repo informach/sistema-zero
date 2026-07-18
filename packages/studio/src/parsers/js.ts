@@ -4354,6 +4354,11 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       if (isSimpleValue(x) && isSimpleValue(y)) return { type: 'gk:cardAt', x, y, pileVar: pile }
     }
   }
+  if (method === 'cardsEnergy' && args.length === 0) return { type: 'gk:cardsEnergy' }
+  if (method === 'cardsHeroLife' && args.length === 0) return { type: 'gk:cardsHeroLife' }
+  if (method === 'cardsEnemyLife' && args.length === 0) return { type: 'gk:cardsEnemyLife' }
+  if (method === 'cardsIntentAction' && args.length === 0) return { type: 'gk:cardsIntentAction' }
+  if (method === 'cardsIntentValue' && args.length === 0) return { type: 'gk:cardsIntentValue' }
   if (
     method === 'pickActive' &&
     args[0]?.type === 'StringLiteral' &&
@@ -5236,6 +5241,52 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       return isSimpleValue(x) && isSimpleValue(y)
         ? { type: 'gk:handDraw', pileVar: pile, x, y, fan: args[3].value as boolean }
         : null
+    }
+    case 'cardsStart': {
+      const heroHp = toExpr(args[0], ctx)
+      const enemyHp = toExpr(args[1], ctx)
+      return isSimpleValue(heroHp) && isSimpleValue(enemyHp)
+        ? { type: 'gk:cardsStart', heroHp, enemyHp }
+        : null
+    }
+    case 'cardsEnergyPerTurn': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsEnergyPerTurn', n } : null
+    }
+    case 'cardsSpend': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsSpend', n } : null
+    }
+    case 'cardsOnTurn': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:cardsOnTurn', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'cardsEndTurn':
+      return { type: 'gk:cardsEndTurn' }
+    case 'cardsDrawHud':
+      return { type: 'gk:cardsDrawHud' }
+    case 'cardsHurtEnemy': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsHurtEnemy', n } : null
+    }
+    case 'cardsHurtMe': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsHurtMe', n } : null
+    }
+    case 'cardsGainBlock': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsGainBlock', n } : null
+    }
+    case 'cardsEnemyIntent': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const value = toExpr(args[1], ctx)
+      return isSimpleValue(value)
+        ? { type: 'gk:cardsEnemyIntent', action: args[0].value as string, value }
+        : null
+    }
+    case 'cardsOnEnemyTurn': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:cardsOnEnemyTurn', body: bodyOfFn(args[0], source, ctx) }
     }
     case 'wrapEdges': {
       const charVar = identifierName(args[0])
@@ -11197,6 +11248,11 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:cardIsUp':
     case 'gk:cardFace':
     case 'gk:cardAt':
+    case 'gk:cardsEnergy':
+    case 'gk:cardsHeroLife':
+    case 'gk:cardsEnemyLife':
+    case 'gk:cardsIntentAction':
+    case 'gk:cardsIntentValue':
     case 'gk:rpgCurrentMap':
     case 'g3k:worldSize':
     case 'g3k:countAlive':

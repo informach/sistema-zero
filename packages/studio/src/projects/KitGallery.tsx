@@ -66,6 +66,7 @@ const KIT_EMOJI: Record<string, string> = {
   'O Chefao': '👑',
   'Corrida de Tabuleiro': '🎲',
   'Jogo da Memoria': '🃏',
+  'Duelo de Cartas': '🃏',
   'Boneco de formas': '🪆',
   'Noite enevoada': '🌙',
   'Enxame que gira': '🐝',

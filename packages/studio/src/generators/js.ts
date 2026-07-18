@@ -1910,6 +1910,42 @@ function compileStatementCode(
       return `${pad}SZGameKit.cardFlip(${compileExpr(valueToExpr(stmt.card), 0, identifiers, recAt(base))});`
     case 'gk:handDraw':
       return `${pad}SZGameKit.handDraw(${identifiers.get(stmt.pileVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${stmt.fan});`
+    case 'gk:cardsStart':
+      return `${pad}SZGameKit.cardsStart(${compileExpr(valueToExpr(stmt.heroHp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.enemyHp), 0, identifiers, recAt(base))});`
+    case 'gk:cardsEnergyPerTurn':
+      return `${pad}SZGameKit.cardsEnergyPerTurn(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsSpend':
+      return `${pad}SZGameKit.cardsSpend(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsOnTurn': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.cardsOnTurn(function () {\n${body}\n${pad}});`
+    }
+    case 'gk:cardsEndTurn':
+      return `${pad}SZGameKit.cardsEndTurn();`
+    case 'gk:cardsDrawHud':
+      return `${pad}SZGameKit.cardsDrawHud();`
+    case 'gk:cardsHurtEnemy':
+      return `${pad}SZGameKit.cardsHurtEnemy(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsHurtMe':
+      return `${pad}SZGameKit.cardsHurtMe(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsGainBlock':
+      return `${pad}SZGameKit.cardsGainBlock(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsEnemyIntent':
+      return `${pad}SZGameKit.cardsEnemyIntent(${JSON.stringify(stmt.action)}, ${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))});`
+    case 'gk:cardsOnEnemyTurn': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.cardsOnEnemyTurn(function () {\n${body}\n${pad}});`
+    }
     case 'gk:wrapEdges':
       return `${pad}SZGameKit.wrapEdges(${identifiers.get(stmt.charVar)});`
     case 'gk:collideTilemap':
@@ -4974,6 +5010,27 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.x), names)
       collectExprIdentifiers(valueToExpr(stmt.y), names)
       return
+    case 'gk:cardsStart':
+      collectExprIdentifiers(valueToExpr(stmt.heroHp), names)
+      collectExprIdentifiers(valueToExpr(stmt.enemyHp), names)
+      return
+    case 'gk:cardsEnergyPerTurn':
+    case 'gk:cardsSpend':
+    case 'gk:cardsHurtEnemy':
+    case 'gk:cardsHurtMe':
+    case 'gk:cardsGainBlock':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'gk:cardsEnemyIntent':
+      collectExprIdentifiers(valueToExpr(stmt.value), names)
+      return
+    case 'gk:cardsEndTurn':
+    case 'gk:cardsDrawHud':
+      return
+    case 'gk:cardsOnTurn':
+    case 'gk:cardsOnEnemyTurn':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'gk:collideTilemap':
     case 'gk:collideGroup':
     case 'gk:breakTileAt':
@@ -6722,6 +6779,12 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       collectExprIdentifiers(valueToExpr(expr.x), names)
       collectExprIdentifiers(valueToExpr(expr.y), names)
       names.add(expr.pileVar)
+      return
+    case 'gk:cardsEnergy':
+    case 'gk:cardsHeroLife':
+    case 'gk:cardsEnemyLife':
+    case 'gk:cardsIntentAction':
+    case 'gk:cardsIntentValue':
       return
     case 'gk:currentPlayer':
     case 'gk:countActive':

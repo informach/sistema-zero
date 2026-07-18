@@ -4028,6 +4028,60 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             { X: x, Y: y },
           )
     }
+    case 'gk:cardsStart': {
+      const hero = exprToValueBlock(valueToExpr(stmt.heroHp))
+      const enemy = exprToValueBlock(valueToExpr(stmt.enemyHp))
+      return hero === null || enemy === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_start', {}, {}, stmt.__id, { HERO_HP: hero, ENEMY_HP: enemy })
+    }
+    case 'gk:cardsEnergyPerTurn': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_energy_per_turn', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsSpend': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null ? rawJSBlock(stmt) : block('sz_gk_cards_spend', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsOnTurn':
+      return block('sz_gk_cards_on_turn', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'gk:cardsEndTurn':
+      return block('sz_gk_cards_end_turn', {}, {}, stmt.__id)
+    case 'gk:cardsDrawHud':
+      return block('sz_gk_cards_draw_hud', {}, {}, stmt.__id)
+    case 'gk:cardsHurtEnemy': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_hurt_enemy', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsHurtMe': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_hurt_me', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsGainBlock': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_gain_block', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsEnemyIntent': {
+      const v = exprToValueBlock(valueToExpr(stmt.value))
+      return v === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_enemy_intent', { ACTION: stmt.action }, {}, stmt.__id, { VALUE: v })
+    }
+    case 'gk:cardsOnEnemyTurn':
+      return block(
+        'sz_gk_cards_on_enemy_turn',
+        {},
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'gk:wrapEdges':
       return block('sz_gk_wrap_edges', { WHO: stmt.charVar }, {}, stmt.__id)
     case 'gk:collideTilemap':
@@ -7271,6 +7325,16 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
         ? null
         : block('sz_gk_card_at', { PILE: expr.pileVar }, {}, expr.__id, { X: x, Y: y })
     }
+    case 'gk:cardsEnergy':
+      return block('sz_gk_cards_energy', {})
+    case 'gk:cardsHeroLife':
+      return block('sz_gk_cards_hero_life', {})
+    case 'gk:cardsEnemyLife':
+      return block('sz_gk_cards_enemy_life', {})
+    case 'gk:cardsIntentAction':
+      return block('sz_gk_cards_intent_action', {})
+    case 'gk:cardsIntentValue':
+      return block('sz_gk_cards_intent_value', {})
     // ---- Jogo 3D Avançado (game-3d-advanced) ----
     case 'g3k:worldSize':
       return block('sz_g3k_world_size', {})

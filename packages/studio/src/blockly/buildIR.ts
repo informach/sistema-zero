@@ -636,6 +636,16 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         y: exprInput(block, 'Y', { type: 'num', value: 0 }),
         pileVar: f(block, 'PILE'),
       }
+    case 'sz_gk_cards_energy':
+      return { type: 'gk:cardsEnergy' }
+    case 'sz_gk_cards_hero_life':
+      return { type: 'gk:cardsHeroLife' }
+    case 'sz_gk_cards_enemy_life':
+      return { type: 'gk:cardsEnemyLife' }
+    case 'sz_gk_cards_intent_action':
+      return { type: 'gk:cardsIntentAction' }
+    case 'sz_gk_cards_intent_value':
+      return { type: 'gk:cardsIntentValue' }
     case 'sz_gk_pick_active':
       return {
         type: 'gk:pickActive',
@@ -6668,6 +6678,77 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           y: exprInput(block, 'Y', { type: 'num', value: 420 }),
           fan: f(block, 'FAN') === 'TRUE',
         },
+      }
+    case 'sz_gk_cards_start':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:cardsStart',
+          heroHp: exprInput(block, 'HERO_HP', { type: 'num', value: 30 }),
+          enemyHp: exprInput(block, 'ENEMY_HP', { type: 'num', value: 40 }),
+        },
+      }
+    case 'sz_gk_cards_energy_per_turn':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:cardsEnergyPerTurn',
+          n: exprInput(block, 'N', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_gk_cards_spend':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsSpend', n: exprInput(block, 'N', { type: 'num', value: 1 }) },
+      }
+    case 'sz_gk_cards_on_turn':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsOnTurn', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_gk_cards_end_turn':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:cardsEndTurn' } }
+    case 'sz_gk_cards_draw_hud':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:cardsDrawHud' } }
+    case 'sz_gk_cards_hurt_enemy':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsHurtEnemy', n: exprInput(block, 'N', { type: 'num', value: 6 }) },
+      }
+    case 'sz_gk_cards_hurt_me':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsHurtMe', n: exprInput(block, 'N', { type: 'num', value: 6 }) },
+      }
+    case 'sz_gk_cards_gain_block':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsGainBlock', n: exprInput(block, 'N', { type: 'num', value: 5 }) },
+      }
+    case 'sz_gk_cards_enemy_intent':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:cardsEnemyIntent',
+          action: f(block, 'ACTION'),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_gk_cards_on_enemy_turn':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsOnEnemyTurn', body: getStatementChildren(block, 'BODY', seen) },
       }
     case 'sz_gk_wrap_edges':
       seen.add('game-2d-advanced')

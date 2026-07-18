@@ -470,6 +470,20 @@ API global injetada como window.SZGameKit:
   moveByVelocity + cull) e no overlapGroups('tiro','invasor'): recycle(tiro) +
   hurt(invasor) + se isDead: faíscas + tdAddCoins + recycle. Gelo/área/vender =
   receitas sobre esse esqueleto. Exemplo: "Defesa do Reino".
+- 🃏 Kit Cartas (R30 — deck-battler/Slay the Spire; RECEITA, não mágica: o kit dá o
+  andaime, a criança MONTA o deck/mão/efeitos com as 🃏 Cartas + gerais). cardsStart(
+  minhaVida, vidaInimigo) abre a arena (roda no 'jogando'; NÃO muda o estado). cardsEnergyPerTurn(n) = a
+  energia RESETA por turno (o diferencial do RPG comum) · cardsEnergy()/cardsSpend(n).
+  cardsOnTurn(fn) = começo do meu turno (energia+escudo já resetaram) — COMPRE a mão
+  aqui (pileMoveTop baralho→mão ×N; pileShuffleFrom se zerou) · cardsEndTurn() dá a vez
+  ao inimigo e volta. Vida/escudo: cardsHeroLife()/cardsEnemyLife() · cardsHurtEnemy(n)
+  (ataque) · cardsHurtMe(n) (o escudo absorve antes) · cardsGainBlock(n) (defesa; some
+  no começo do meu turno). Intenção (o telegrafo): cardsEnemyIntent("atacar", n) anuncia
+  · cardsDrawHud() desenha vidas/energia/escudo/intenção · cardsIntentAction()/
+  cardsIntentValue() a criança LÊ no cardsOnEnemyTurn(fn) p/ resolver ("se action==
+  'atacar': cardsHurtMe(value)") e anunciar a próxima. Jogar carta = onGameClick + cardAt
+  (Fase 🃏 Cartas) + cardsSpend + efeito + pileMoveTop mão→descarte. Exemplo "Duelo de
+  Cartas".
 - 🥷 Ação em tempo real (Zelda; Ninja Adventure): attackFacing(quem, alcance,
   duracao) cria uma caixa de golpe NA FRENTE (pela direção que olha) por ~0.3s, com
   trava de 1 acerto por golpe; didHit(quem, alvo) = a caixa encostou no alvo NESTE

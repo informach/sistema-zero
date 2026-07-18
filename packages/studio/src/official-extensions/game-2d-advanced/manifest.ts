@@ -7,6 +7,7 @@ import {
   cobrinhaExample,
   corridaTabuleiroExample,
   defesaDoReinoExample,
+  dueloDeCartasExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
@@ -22,7 +23,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.31.0',
+  version: '0.32.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -1016,6 +1017,35 @@ O exemplo "Defesa do Reino" monta exatamente isso. Torre de gelo? Some um
 "deslizar até" com fator baixo no invasor atingido. Torre de área? No acerto,
 "para cada vivo perto" leva dano. Vender? **Liberar o lugar** + devolver metade
 das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
+
+## 🃏 Kit Cartas
+
+O atalho do RPG DE CARTAS (deck-battler, estilo Slay the Spire). Pela regra dos
+kits, o kit dá só o ANDAIME (vida, energia, escudo, intenção e turnos); o DECK, a
+MÃO e **o que cada carta faz** são seus — montados com as 🃏 Cartas (que são listas
+do núcleo) e blocos gerais.
+
+- **Começar uma batalha de cartas: você com … de vida, inimigo com …** abre a arena
+  (roda no "jogando"; não mexe no estado). **A cada turno, começar com … de energia** é o diferencial
+  do gênero: a energia RESETA todo turno (não acumula). **a minha energia** / **Gastar
+  … de energia** controlam o custo das cartas.
+- **Quando começar o meu turno** roda no início de cada turno seu (energia e escudo já
+  resetaram): é aqui que você COMPRA a mão — "Mover a carta do topo do baralho para a
+  mão" umas 5 vezes (rebaralhe com "Remontar" se o baralho zerou). **Passar o turno**
+  dá a vez ao inimigo e volta pra você.
+- **A vida:** **a minha vida** / **a vida do inimigo** (na batalha) + **Tirar … de
+  vida do inimigo** (ataque) / **Tirar … da minha vida** (o inimigo bate; o ESCUDO
+  absorve primeiro) / **Ganhar … de escudo** (defesa; some no começo do seu turno).
+- **A intenção (o telegrafo, a alma do gênero):** **O inimigo vai … de … no próximo
+  turno** anuncia o que ele fará (a ação é uma palavra que VOCÊ inventa: atacar,
+  defender…). **Desenhar o painel da batalha de cartas** mostra as vidas, energia,
+  escudo e essa intenção. No **Quando for a vez do inimigo** você RESOLVE a intenção
+  ("se o inimigo vai atacar: Tirar a minha vida do valor dele") e anuncia a próxima.
+- **Jogar uma carta** é receita das 🃏 Cartas: no "Quando clicar no jogo", "a carta
+  clicada em (mouse x, mouse y) da mão"; se tem energia, "Gastar" o custo, aplique o
+  efeito (Tirar vida do inimigo / Ganhar escudo) e "Mover" a carta da mão pro descarte.
+- Vitória: "se a vida do inimigo ≤ 0: Mudar o estado para vitória". Derrota: "se a
+  minha vida ≤ 0: Terminar o jogo". O exemplo "Duelo de Cartas" monta tudo isso.
 `,
   examples: [
     meuPrimeiroJogoExample,
@@ -1033,6 +1063,7 @@ das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
     oChefaoExample,
     corridaTabuleiroExample,
     jogoDaMemoriaExample,
+    dueloDeCartasExample,
     cobrinhaExample,
     quebraBlocosExample,
   ],

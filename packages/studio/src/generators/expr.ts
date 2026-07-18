@@ -527,6 +527,16 @@ export function compileExpr(
       return `SZGameKit.cardFace(${compileExpr(valueToExpr(expr.card), 0, identifiers, rec)})`
     case 'gk:cardAt':
       return `SZGameKit.cardAt(${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)}, ${identifiers.get(expr.pileVar)})`
+    case 'gk:cardsEnergy':
+      return 'SZGameKit.cardsEnergy()'
+    case 'gk:cardsHeroLife':
+      return 'SZGameKit.cardsHeroLife()'
+    case 'gk:cardsEnemyLife':
+      return 'SZGameKit.cardsEnemyLife()'
+    case 'gk:cardsIntentAction':
+      return 'SZGameKit.cardsIntentAction()'
+    case 'gk:cardsIntentValue':
+      return 'SZGameKit.cardsIntentValue()'
     case 'gk:kills':
       return 'SZGameKit.kills()'
     // ---- Jogo 3D Avançado (game-3d-advanced) ----
