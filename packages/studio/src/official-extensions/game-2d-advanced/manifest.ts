@@ -23,7 +23,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.32.0',
+  version: '0.33.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -308,9 +308,10 @@ Para o mundo ter cara de jogo de verdade (vale para QUALQUER jogo, não só RPG)
 
 - **Carregar o mapa … do meu desenho** — monta um mapa de peças (tiles) do Pinta
   (grade, peças e sólidos já vêm juntos). Dê um nome e use no comecinho.
-- **Desenhar o mapa … (camada chão / topos)** — o segredo da profundidade: o
-  **chão** ANTES dos personagens e os **topos** (árvores, telhados) DEPOIS —
-  assim o herói passa POR TRÁS das copas. Dentro do "Desenhar o jogo".
+- **Desenhar o mapa … (camada chão / topos / frente)** — o segredo da
+  profundidade: o **chão** ANTES dos personagens; DEPOIS deles os **topos** (só as
+  peças sólidas) OU a **frente** (a camada da frente que você marcou no Pinta,
+  como copas de árvore) — assim o herói passa POR TRÁS. No "Desenhar o jogo".
 - **Desenhar … e os personagens por profundidade** (Y-sort) — desenha na ordem
   certa: quem está mais embaixo na tela aparece na FRENTE. Entram o personagem que
   você passar, TODOS os enxames vivos e os NPCs (se o jogo tiver o Kit RPG).

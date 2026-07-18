@@ -3,6 +3,7 @@
  * Mesmo contrato das ops de pixel: devolvem um asset novo (structural sharing)
  * ou o MESMO asset quando nada muda — o chamador commita por referência.
  */
+import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import { PINTA_LIMITS, type TilemapAsset, type TilemapLayer } from '../core/project'
 
@@ -128,7 +129,7 @@ export function addLayer(tilemap: TilemapAsset, name: string): TilemapAsset {
   if (tilemap.layers.length >= PINTA_LIMITS.maxTilemapLayers) return tilemap
   const layer: TilemapLayer = {
     id: newId(),
-    name: name.trim().slice(0, 30) || `Camada ${tilemap.layers.length + 1}`,
+    name: name.trim().slice(0, 30) || `${COPY.tiles.layerNamePrefix} ${tilemap.layers.length + 1}`,
     visible: true,
     cells: new Int16Array(tilemap.cols * tilemap.rows).fill(-1),
   }

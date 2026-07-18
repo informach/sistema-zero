@@ -6,6 +6,7 @@
  */
 import type { JSX, KeyboardEvent, ReactNode } from 'react'
 import { useEffect, useId, useRef } from 'react'
+import { COPY } from '../../core/copy'
 import { X } from './icons'
 
 const FOCUSABLE_SELECTOR =
@@ -89,7 +90,7 @@ export function Dialog({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fechar"
+            aria-label={COPY.a11y.close}
             className="-mt-1 flex min-h-11 min-w-11 items-center justify-center rounded-xl text-pin-muted transition hover:bg-pin-bg hover:text-pin-text"
           >
             <X aria-hidden="true" className="size-5" />

@@ -104,7 +104,7 @@ export function ToolBar({
   return (
     <div
       role="toolbar"
-      aria-label="Ferramentas"
+      aria-label={COPY.a11y.tools}
       aria-orientation={orientation}
       className={
         // Vertical = GRADE de 3 colunas (padrão MakeCode/Piskel): as 9 ferramentas

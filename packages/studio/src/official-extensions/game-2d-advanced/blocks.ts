@@ -1825,7 +1825,8 @@ export const gameKitBlocks = [
         name: 'LAYER',
         options: [
           ['chão (o fundo, por baixo)', 'chão'],
-          ['topos (árvores/telhados, por cima)', 'topos'],
+          ['topos (peças sólidas, por cima)', 'topos'],
+          ['frente (a camada da frente, por cima)', 'frente'],
         ],
       },
     ],
@@ -1834,7 +1835,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha o mapa. Desenhe o "chão" ANTES dos personagens e os "topos" (árvores, telhados, muros) DEPOIS, dentro do "Desenhar o jogo" — assim o herói passa por trás das copas das árvores e a cena ganha profundidade. O mapa encaixa sozinho na tela.',
+      'Desenha o mapa. Desenhe o "chão" ANTES dos personagens; DEPOIS deles desenhe "topos" (só as peças sólidas: muros/telhados) ou "frente" (a camada da frente que você marcou no Pinta, como copas de árvore) — assim o herói passa por trás e a cena ganha profundidade. O mapa encaixa sozinho na tela.',
   },
   {
     type: 'sz_gk_tilemap_solid',

@@ -97,6 +97,13 @@ export function tilemapMetaFrom(
   include?: (layer: TilemapLayer) => boolean,
 ): PintaTilemapMeta {
   const platformIdx = indicesOf(tileset.platform)
+  // Grade da FRENTE só no meta COMPLETO (sem predicado) e quando há camada de
+  // frente — o gk a desenha por cima do jogador na opção "frente". O meta
+  // `tilemapFront` (chamado COM predicado) não repete essa grade.
+  const frontGrid =
+    include === undefined && hasFrontLayer(tilemap)
+      ? tilemapToStudioGrid(tilemap, (l) => l.front === true)
+      : undefined
   return {
     tileSize: tileset.tileSize,
     cols: tilemap.cols,
@@ -104,6 +111,7 @@ export function tilemapMetaFrom(
     grid: tilemapToStudioGrid(tilemap, include),
     solid: indicesOf(tileset.solid),
     ...(platformIdx.length ? { platform: platformIdx } : {}),
+    ...(frontGrid ? { frontGrid } : {}),
     tileset: sheet,
   }
 }

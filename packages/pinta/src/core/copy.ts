@@ -417,4 +417,18 @@ export const COPY = {
     downloadReady: 'Baixado! Procure na pasta de downloads.',
     downloadError: 'Não consegui gerar a imagem agora. Tente de novo.',
   },
+  // Rótulos de acessibilidade (aria-label) + defaults do modelo que aparecem na
+  // UI — centralizados aqui p/ i18n e p/ não repetir literais soltos nas telas.
+  a11y: {
+    drawArea: 'Área de desenho',
+    tools: 'Ferramentas',
+    close: 'Fechar',
+    colorLabel: (index: number) => `Cor ${index}`,
+    frameLabel: (number: number) => `Quadro ${number}`,
+    sheetFrame: (name: string, number: number) => `${name}: quadro ${number}`,
+    step: (current: number, total: number) => `Passo ${current} de ${total}`,
+    openAsset: (label: string) => `Abrir ${label}`,
+    defaultLayer: 'Chão',
+    defaultAnimation: 'animação',
+  },
 } as const

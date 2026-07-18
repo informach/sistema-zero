@@ -433,6 +433,15 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
         asset,
         persist: persistAsset,
         onSaved: (saved) => gallery.getState().absorb(saved),
+        // Assets ligados (mapas remapeados ao editar peças do tileset) restaurados
+        // por undo/redo: absorve na galeria + persiste — a transação cross-asset.
+        applyLinkedAssets: (assets) => {
+          const g = gallery.getState()
+          for (const linked of assets) {
+            g.absorb(linked)
+            void persistAsset(linked)
+          }
+        },
       }),
       session: createSessionStore(sessionDefaultsFor(asset)),
     }

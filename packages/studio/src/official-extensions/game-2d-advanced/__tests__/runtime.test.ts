@@ -387,13 +387,20 @@ interface Harness {
 
 /** Mapa de tiles falso no formato do Pinta. O runtime lê o ASSET_META UMA vez, no
  * boot do IIFE — por isso ele entra aqui e não depois. `grid` usa "." p/ vazio. */
-function fakeTilemapAsset(grid: string, solid: number[], tileSize = 64, platform?: number[]) {
+function fakeTilemapAsset(
+  grid: string,
+  solid: number[],
+  tileSize = 64,
+  platform?: number[],
+  frontGrid?: string,
+) {
   return {
     mapa: {
       tilemap: {
         grid,
         solid,
         ...(platform ? { platform } : {}),
+        ...(frontGrid ? { frontGrid } : {}),
         tileSize,
         tileset: { dataUrl: 'data:image/png;base64,AA==' },
       },
@@ -3650,6 +3657,54 @@ describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho
     } finally {
       ;(fakeCtx as { drawImage: unknown }).drawImage = orig
     }
+  })
+
+  it('⭐ frente: "Desenhar o mapa" na camada FRENTE usa a grade da frente (por cima, sem filtro de sólido)', async () => {
+    // grade completa 2×1 = duas peças; frontGrid = só a 2ª célula é da frente.
+    const h = loadRuntime(fakeTilemapAsset('1 1', [1], 64, undefined, '. 5'))
+    h.api.setup({ width: 800, height: 600 })
+    h.api.loadTilemap('mundo', 'mapa')
+    let layer = 'chão'
+    h.api.onDraw(() => h.api.drawTilemap('mundo', layer))
+    await startGame(h)
+    h.api.setState('jogando')
+    const countDraws = (): number => {
+      let draws = 0
+      const orig = fakeCtx.drawImage
+      ;(fakeCtx as { drawImage: () => void }).drawImage = () => {
+        draws += 1
+      }
+      try {
+        h.nextFrame(16)
+      } finally {
+        ;(fakeCtx as { drawImage: unknown }).drawImage = orig
+      }
+      return draws
+    }
+    layer = 'chão'
+    expect(countDraws()).toBe(2) // as DUAS peças do mapa completo
+    layer = 'frente'
+    expect(countDraws()).toBe(1) // SÓ a peça da camada da frente
+  })
+
+  it('frente: mapa SEM camada da frente não desenha nada na opção frente', async () => {
+    const h = loadRuntime(fakeTilemapAsset('1 1', [1], 64))
+    h.api.setup({ width: 800, height: 600 })
+    h.api.loadTilemap('mundo', 'mapa')
+    h.api.onDraw(() => h.api.drawTilemap('mundo', 'frente'))
+    await startGame(h)
+    h.api.setState('jogando')
+    let draws = 0
+    const orig = fakeCtx.drawImage
+    ;(fakeCtx as { drawImage: () => void }).drawImage = () => {
+      draws += 1
+    }
+    try {
+      h.nextFrame(16)
+    } finally {
+      ;(fakeCtx as { drawImage: unknown }).drawImage = orig
+    }
+    expect(draws).toBe(0)
   })
 
   it('cameraFollowMap: o mundo é o TAMANHO do mapa (trava nas bordas dele)', async () => {

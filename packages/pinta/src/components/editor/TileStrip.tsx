@@ -12,13 +12,13 @@ import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
+  type PintaAsset,
   type PintaBitmap,
   resolveAssetPalette,
   type TilemapAsset,
   type VectorFrame,
 } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
-import { persistAsset } from '../../state/persistence'
 import {
   addTile,
   cycleCollision,
@@ -141,19 +141,28 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
   const selectedIndex = Math.min(frameIndex, asset.tiles.length - 1)
   const selectedCollision = tileCollisionAt(asset, selectedIndex)
 
-  /** Persiste o remap nos MAPAS deste tileset (best-effort, fora do undo). */
-  function remapMaps(change: { insertedAt: number } | { removedAt: number }): void {
-    const state = gallery.getState()
-    const affected = state.assets.filter(
-      (a): a is TilemapAsset => a.kind === 'tilemap' && a.tilesetId === asset.id,
-    )
+  /**
+   * Remap das células dos MAPAS deste tileset ao inserir/remover uma peça.
+   * Devolve os pares antes/depois (só dos mapas que MUDARAM) para o
+   * `commitLinked` — o remap entra na MESMA entrada de undo do tileset (desfazer
+   * a edição da peça volta os mapas junto; não deixa mais célula apontando errado).
+   */
+  function computeRemap(change: { insertedAt: number } | { removedAt: number }): {
+    before: PintaAsset[]
+    after: PintaAsset[]
+  } {
+    const affected = gallery
+      .getState()
+      .assets.filter((a): a is TilemapAsset => a.kind === 'tilemap' && a.tilesetId === asset.id)
+    const before: PintaAsset[] = []
+    const after: PintaAsset[] = []
     for (const tilemap of affected) {
       const next = remapTilemapCells(tilemap, change)
       if (next === tilemap) continue
-      const stamped = { ...next, updatedAt: Date.now() }
-      state.absorb(stamped)
-      void persistAsset(stamped)
+      before.push(tilemap)
+      after.push({ ...next, updatedAt: Date.now() })
     }
+    return { before, after }
   }
 
   function mutate(
@@ -171,9 +180,12 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
       if (limitToast) showToast(limitToast)
       return
     }
-    editor.getState().commit(next)
+    if (remap) {
+      editor.getState().commitLinked(next, computeRemap(remap))
+    } else {
+      editor.getState().commit(next)
+    }
     if (selectIndex !== undefined) session.getState().selectFrame(selectIndex)
-    if (remap) remapMaps(remap)
   }
 
   return (
@@ -187,7 +199,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
             index={index}
             selected={index === selectedIndex}
             collision={tileCollisionAt(asset, index)}
-            label={`Peça ${index}`}
+            label={COPY.tiles.tileLabel(index)}
             onSelect={() => session.getState().selectFrame(index)}
           >
             {asset.kind === 'tileset' ? (

@@ -341,7 +341,7 @@ export function NewAssetDialog({
       <div
         role="img"
         className="mb-3 flex justify-center gap-2"
-        aria-label={`Passo ${stepIndex + 1} de ${STEP_ORDER.length}`}
+        aria-label={COPY.a11y.step(stepIndex + 1, STEP_ORDER.length)}
       >
         {STEP_ORDER.map((s, i) => (
           <span

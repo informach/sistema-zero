@@ -169,6 +169,18 @@ describe('sanitizeTilemapMeta (metadado de MAPA do Pinta/fatiador)', () => {
     expect(comPlatform?.platform).toEqual([3])
   })
 
+  it('frontGrid: preservado quando tem peça; omitido quando ausente/só-vazio', () => {
+    // sem frontGrid → chave ausente (payload antigo byte-idêntico)
+    const sem = sanitizeTilemapMeta(JSON.parse(JSON.stringify(TILEMAP_META)))
+    expect(sem && 'frontGrid' in sem).toBe(false)
+    // frontGrid só com '.' (sem nenhuma peça) → omitido
+    const soVazio = sanitizeTilemapMeta({ ...TILEMAP_META, frontGrid: '. .;. .' })
+    expect(soVazio && 'frontGrid' in soVazio).toBe(false)
+    // frontGrid com peça → preservado (trim)
+    const com = sanitizeTilemapMeta({ ...TILEMAP_META, frontGrid: '  . 5;. .  ' })
+    expect(com?.frontGrid).toBe('. 5;. .')
+  })
+
   it('tudo-ou-nada: sem folha embutida válida → undefined', () => {
     expect(sanitizeTilemapMeta({ ...TILEMAP_META, tileset: undefined })).toBeUndefined()
     expect(

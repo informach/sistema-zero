@@ -10,6 +10,15 @@ type KV = Map<IDBValidKey, unknown>
 
 const dbs = new Map<string, KV>()
 
+// Gancho de teste: um guard chamado ANTES de cada `set`; se lançar, o write
+// falha (simula disco cheio/quota p/ testar caminhos de erro). Default no-op.
+let writeGuard: ((key: IDBValidKey, value: unknown) => void) | null = null
+
+/** Faz o próximo(s) `set` lançar quando o guard lançar. `null` desliga. */
+export function setIdbWriteGuard(guard: ((key: IDBValidKey, value: unknown) => void) | null): void {
+  writeGuard = guard
+}
+
 function resolveKV(store?: { name?: string } | string): KV {
   const key =
     typeof store === 'string' ? store : ((store as { name?: string } | undefined)?.name ?? '')
@@ -27,6 +36,7 @@ mock.module('idb-keyval', () => ({
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
     keys.map((key) => resolveKV(store).get(key)),
   set: async (key: IDBValidKey, value: unknown, store?: { name?: string }) => {
+    writeGuard?.(key, value)
     resolveKV(store).set(key, value)
   },
   setMany: async (pairs: Array<[IDBValidKey, unknown]>, store?: { name?: string }) => {
@@ -52,6 +62,7 @@ mock.module('idb-keyval', () => ({
 /** Zera TODOS os "DBs" (chamar no beforeEach). */
 export function clearIdbMock(): void {
   dbs.clear()
+  writeGuard = null
 }
 
 /** Acesso direto a um DB (asserções de baixo nível). */

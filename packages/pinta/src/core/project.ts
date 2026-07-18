@@ -10,6 +10,7 @@
 
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { normalizeHex } from './color'
+import { COPY } from './copy'
 import { newId } from './id'
 import { DEFAULT_PALETTE_ID, getPalette, isPaletteId, type PaletteId } from './palette'
 
@@ -425,7 +426,9 @@ export function createTilemapAsset(input: {
     tilesetId: input.tilesetId,
     cols,
     rows,
-    layers: [{ id: newId(), name: 'Chão', visible: true, cells: emptyCells(cols * rows) }],
+    layers: [
+      { id: newId(), name: COPY.a11y.defaultLayer, visible: true, cells: emptyCells(cols * rows) },
+    ],
   }
 }
 
@@ -513,8 +516,16 @@ function sanitizeBitmap(
   if (!isFinitePositiveInt(b.width, PINTA_LIMITS.maxBitmapSize)) return null
   if (!isFinitePositiveInt(b.height, PINTA_LIMITS.maxBitmapSize)) return null
   if (expected && (b.width !== expected.width || b.height !== expected.height)) return null
-  if (!(b.data instanceof Uint8Array) || b.data.length !== b.width * b.height) return null
-  return { width: b.width, height: b.height, data: b.data }
+  // Coage array simples → Uint8Array (registro que veio por JSON/outro realm, em
+  // que o structured clone não preservou o typed array) antes de validar.
+  const data =
+    b.data instanceof Uint8Array
+      ? b.data
+      : Array.isArray(b.data)
+        ? Uint8Array.from(b.data as number[])
+        : null
+  if (!data || data.length !== b.width * b.height) return null
+  return { width: b.width, height: b.height, data }
 }
 
 function sanitizeTimestamps(raw: Record<string, unknown>): {
@@ -596,7 +607,7 @@ function sanitizeAnimation(
   const name =
     typeof a.name === 'string' && a.name.trim()
       ? a.name.trim().slice(0, PINTA_LIMITS.maxAnimationNameChars)
-      : 'animação'
+      : COPY.a11y.defaultAnimation
   const fps = typeof a.fps === 'number' && Number.isFinite(a.fps) ? clampInt(a.fps, 1, 30) : 8
   const loop = a.loop !== false
   if (!Array.isArray(a.frames)) return null
@@ -625,7 +636,7 @@ function sanitizeVectorAnimation(raw: unknown): PintaVectorAnimation | null {
   const name =
     typeof a.name === 'string' && a.name.trim()
       ? a.name.trim().slice(0, PINTA_LIMITS.maxAnimationNameChars)
-      : 'animação'
+      : COPY.a11y.defaultAnimation
   const fps = typeof a.fps === 'number' && Number.isFinite(a.fps) ? clampInt(a.fps, 1, 30) : 8
   const loop = a.loop !== false
   if (!Array.isArray(a.frames)) return null
@@ -729,14 +740,23 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
           if (!layer || typeof layer !== 'object') return null
           const l = layer as Record<string, unknown>
           if (typeof l.id !== 'string' || !l.id) return null
-          if (!(l.cells instanceof Int16Array) || l.cells.length !== cellCount) return null
+          // Coage array simples → Int16Array (JSON/outro realm) antes de validar.
+          const cells =
+            l.cells instanceof Int16Array
+              ? l.cells
+              : Array.isArray(l.cells)
+                ? Int16Array.from(l.cells as number[])
+                : null
+          if (!cells || cells.length !== cellCount) return null
           const name =
-            typeof l.name === 'string' && l.name.trim() ? l.name.trim().slice(0, 30) : 'Camada'
+            typeof l.name === 'string' && l.name.trim()
+              ? l.name.trim().slice(0, 30)
+              : COPY.tiles.layerNamePrefix
           return {
             id: l.id,
             name,
             visible: l.visible !== false,
-            cells: l.cells,
+            cells,
             ...(l.front === true ? { front: true } : {}),
           }
         })

@@ -242,7 +242,12 @@ export function createGalleryStore(): PintaGalleryStore {
         prepared.push(projectRef ? { ...asset, name, projectRef } : { ...asset, name })
       }
       const primary = prepared[built.primaryIndex]
-      if (!primary) return null
+      if (!primary) {
+        // Modelo mal-formado (primaryIndex fora dos assets construídos) — sinaliza
+        // o erro p/ o toast em vez de sumir em silêncio (clique-morto no wizard).
+        set({ mutateError: COPY.editor.saveError })
+        return null
+      }
       try {
         // Persiste na ORDEM do build (tileset antes do mapa) — se a quota ou o
         // disco falhar no meio, o mapa não fica órfão sem as peças.
@@ -352,13 +357,29 @@ export function createGalleryStore(): PintaGalleryStore {
         idMap.set(asset.id, clone.id)
         prepared.push(clone)
       }
+      // Ids que REALMENTE gravaram (tilesets vêm antes) — um mapa cujo tileset
+      // deste import falhou no disco NÃO pode ser importado apontando p/ o vazio.
+      const persistedIds = new Set<string>()
       for (const asset of prepared) {
+        const oldTilesetId = asset.kind === 'tilemap' ? asset.tilesetId : null
         const restored =
           asset.kind === 'tilemap'
             ? { ...asset, tilesetId: idMap.get(asset.tilesetId) ?? asset.tilesetId }
             : asset
+        // Tileset veio NESTE import (idMap tem o id ANTIGO) mas não persistiu →
+        // pular o mapa (senão fica órfão). Referência externa segue igual.
+        if (
+          restored.kind === 'tilemap' &&
+          oldTilesetId !== null &&
+          idMap.has(oldTilesetId) &&
+          !persistedIds.has(restored.tilesetId)
+        ) {
+          skipped += 1
+          continue
+        }
         try {
           await persistAsset(restored)
+          persistedIds.add(restored.id)
           set((state) => ({ assets: upsertSorted(state.assets, restored) }))
           added += 1
         } catch {

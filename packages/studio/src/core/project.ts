@@ -86,6 +86,12 @@ export interface ProjectTilemapMeta {
    * byte-idêntica com payloads antigos sem plataforma).
    */
   platform?: number[]
+  /**
+   * Grade SÓ das camadas "da frente" (mesmo formato do `grid`), desenhada POR
+   * CIMA dos sprites. OMITIDA quando o mapa não tem frente. O Jogo 2D Avançado
+   * (gk) a usa na opção "frente" do "Desenhar o mapa".
+   */
+  frontGrid?: string
   tileset: ProjectTilemapTilesetMeta
 }
 
@@ -358,6 +364,13 @@ export function sanitizeTilemapMeta(raw: unknown): ProjectTilemapMeta | undefine
   if (sheetW === null || sheetH === null) return undefined
   const solid = sanitizeTileIndexList(r.solid)
   const platform = sanitizeTileIndexList(r.platform, new Set(solid))
+  // Grade da frente (opcional): mesma régua do `grid`; OMITIDA quando ausente,
+  // grande demais OU sem nenhuma peça (só '.'/espaços) — retrocompat byte-idêntica.
+  const rawFront = typeof r.frontGrid === 'string' ? r.frontGrid.trim() : ''
+  const frontGrid =
+    rawFront && rawFront.length <= MAX_TILEMAP_GRID_CHARS && /[^\s.;]/.test(rawFront)
+      ? rawFront
+      : ''
   return {
     tileSize,
     cols,
@@ -365,6 +378,7 @@ export function sanitizeTilemapMeta(raw: unknown): ProjectTilemapMeta | undefine
     grid,
     solid,
     ...(platform.length ? { platform } : {}),
+    ...(frontGrid ? { frontGrid } : {}),
     tileset: { dataUrl: sheetUrl, width: sheetW, height: sheetH },
   }
 }

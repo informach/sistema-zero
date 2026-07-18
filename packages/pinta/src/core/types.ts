@@ -44,6 +44,12 @@ export interface PintaTilemapMeta {
   solid: number[]
   /** Índices de peça PLATAFORMA (one-way). Omitido quando vazio (retrocompat). */
   platform?: number[]
+  /**
+   * Grade SÓ das camadas "da frente" (desenhadas por cima do jogador). Mesmo
+   * formato do `grid`. Omitida quando o mapa não tem camada de frente. O Jogo 2D
+   * Avançado (gk) desenha essa grade na opção "frente" do "Desenhar o mapa".
+   */
+  frontGrid?: string
   tileset: { dataUrl: string; width: number; height: number }
 }
 

@@ -300,8 +300,8 @@ export function GalleryScreen(): JSX.Element {
                 setJustCreatedId(asset.id)
                 openAsset(asset.id)
               } else {
-                const error = gallery.getState().mutateError
-                if (error) showToast(error)
+                // Sempre avisa (fallback) — nunca clique-morto se o create falhar.
+                showToast(gallery.getState().mutateError ?? COPY.editor.saveError)
               }
             })
         }}
@@ -318,8 +318,8 @@ export function GalleryScreen(): JSX.Element {
                 setJustCreatedId(asset.id)
                 openAsset(asset.id)
               } else {
-                const error = gallery.getState().mutateError
-                if (error) showToast(error)
+                // Sempre avisa (fallback) — nunca clique-morto se o create falhar.
+                showToast(gallery.getState().mutateError ?? COPY.editor.saveError)
               }
             })
         }}

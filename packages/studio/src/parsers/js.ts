@@ -5117,8 +5117,8 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'drawTilemap': {
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
       const layer = args[1].value as string
-      // O dropdown só tem "chão"/"topos" — camada desconhecida cai em rawJS.
-      if (layer !== 'chão' && layer !== 'topos') return null
+      // O dropdown só tem "chão"/"topos"/"frente" — camada desconhecida cai em rawJS.
+      if (layer !== 'chão' && layer !== 'topos' && layer !== 'frente') return null
       return { type: 'gk:drawTilemap', name: args[0].value as string, layer }
     }
     case 'tilemapSolid': {

@@ -758,10 +758,14 @@ export const gameKitRuntime = `(function () {
         if (typeof p === 'number' && p >= 0 && !solid[Math.floor(p)]) platform[Math.floor(p)] = true;
       }
     }
+    // Grade da FRENTE (opcional): camadas desenhadas POR CIMA do jogador.
+    var frontRows = (typeof meta.frontGrid === 'string' && meta.frontGrid)
+      ? parseTileGrid(meta.frontGrid) : null;
     var imgKey = '__tm_' + nm;
     loadImage(imgKey, meta.tileset.dataUrl); // a folha embutida entra por dataUrl
     tilemaps[nm] = {
       rows: parseTileGrid(meta.grid),
+      frontRows: frontRows,
       artTile: (typeof meta.tileSize === 'number' && meta.tileSize > 0) ? meta.tileSize : 32,
       imgKey: imgKey, solid: solid, platform: platform
     };
@@ -778,7 +782,13 @@ export const gameKitRuntime = `(function () {
     var at = m.artTile;
     var cols = Math.max(1, Math.floor(num(sheet.img.width, at) / at));
     var cell = tilePx;
-    var onlyTops = (text(layer, 'chão') === 'topos');
+    var layerText = text(layer, 'chão');
+    // 'frente' = só a camada da FRENTE (por cima do jogador), sem filtro de
+    // sólido. Sem grade de frente no mapa → nada a desenhar por cima.
+    var frente = (layerText === 'frente');
+    if (frente && !m.frontRows) return;
+    var grid = frente ? m.frontRows : m.rows;
+    var onlyTops = (layerText === 'topos');
     // 🌍 Culling: só a FATIA visível da câmera (o jeito dos jogos profissionais).
     // Um mapa 512x512 cai de ~262 mil drawImage/quadro para ~200. Fora do passe
     // de mundo (HUD/chamada avulsa) a fatia é a tela — mesmo recorte do canvas.
@@ -786,9 +796,9 @@ export const gameKitRuntime = `(function () {
     var vy = (worldPass && camera.on) ? camera.y : 0;
     var pad = camera.shakeT > 0 ? camera.shakeMag : 0;
     var r0 = Math.max(0, Math.floor((vy - pad) / cell));
-    var r1 = Math.min(m.rows.length, Math.ceil((vy + config.h + pad) / cell) + 1);
+    var r1 = Math.min(grid.length, Math.ceil((vy + config.h + pad) / cell) + 1);
     for (var r = r0; r < r1; r++) {
-      var rowArr = m.rows[r];
+      var rowArr = grid[r];
       var c0 = Math.max(0, Math.floor((vx - pad) / cell));
       var c1 = Math.min(rowArr.length, Math.ceil((vx + config.w + pad) / cell) + 1);
       for (var c = c0; c < c1; c++) {

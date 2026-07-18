@@ -172,6 +172,24 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
     expect(fresh.getState().assets).toHaveLength(1)
     expect(fresh.getState().assets[0]?.name).toBe('bom')
   })
+
+  it('importAssets: se o persist do TILESET falhar, o mapa NÃO entra órfão', async () => {
+    const { createTilesetAsset, createTilemapAsset } = await import('../core/project')
+    const { setIdbWriteGuard } = await import('../testing/idbMock')
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const map = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    // Simula disco cheio SÓ no tileset (tilesets persistem antes dos mapas).
+    setIdbWriteGuard((_key, value) => {
+      if ((value as { kind?: string })?.kind === 'tileset') throw new Error('disco cheio')
+    })
+    const store = createGalleryStore()
+    const res = await store.getState().importAssets([tileset, map])
+    setIdbWriteGuard(null)
+    // Nenhum mapa órfão: o tileset falhou → o mapa é pulado, não importado sem peças.
+    expect(store.getState().assets.filter((a) => a.kind === 'tilemap')).toHaveLength(0)
+    expect(res.added).toBe(0)
+    expect(res.skipped).toBe(2)
+  })
 })
 
 describe('setPintaStorageNamespace — isolamento por perfil', () => {

@@ -222,7 +222,8 @@ API global injetada como window.SZGameKit:
 - 🗺️ Mundo & profundidade (tiles do Ninja Adventure; GERAL, vale fora do RPG):
   loadTilemap(nome, assetDeMapa) lê um MAPA do Pinta (grade+peças+sólidos juntos,
   via ASSET_META). No onDraw, drawTilemap(nome, "chão") ANTES dos personagens e
-  drawTilemap(nome, "topos") DEPOIS = profundidade (herói passa atrás das copas).
+  drawTilemap(nome, "topos") (só peças sólidas) OU drawTilemap(nome, "frente") (a
+  camada da frente marcada no Pinta) DEPOIS = profundidade (herói passa atrás).
   drawByDepth(quem) desenha por Y (quem está mais embaixo, na frente) o personagem
   passado + TODOS os enxames vivos + os NPCs do RPG (se houver) — substitui
   drawCharacter+rpgDrawNpcs. drawShadow(c) = sombrinha sob o personagem (antes de

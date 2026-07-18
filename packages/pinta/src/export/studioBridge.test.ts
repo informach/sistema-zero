@@ -113,6 +113,20 @@ describe('metadados da ponte (puros, sem raster)', () => {
     // "Meus desenhos" — a decoração da frente (peça 2) NÃO pode sumir da grade.
     const fullMeta = tilemapMetaFrom(withFront, tileset, sheet)
     expect(fullMeta.grid).toBe('1 2')
+    // frontGrid (p/ o gk desenhar "frente" por cima) só no meta COMPLETO.
+    expect(fullMeta.frontGrid).toBe('. 2')
+    expect(bgMeta.frontGrid).toBeUndefined()
+    expect(frontMeta.frontGrid).toBeUndefined()
+  })
+
+  it('tilemapMetaFrom SEM camada de frente não emite frontGrid (retrocompat)', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const layer = tilemap.layers[0]
+    if (!layer) throw new Error('camada esperada')
+    layer.cells.set([0, 1])
+    const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 16, height: 16 }
+    expect(tilemapMetaFrom(tilemap, tileset, sheet).frontGrid).toBeUndefined()
   })
 
   it('tilemapMetaFrom leva platform quando o tileset tem peça plataforma', () => {

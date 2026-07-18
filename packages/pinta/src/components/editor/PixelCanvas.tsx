@@ -16,6 +16,7 @@
 import type { JSX, PointerEvent } from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 import { activeBitmapOf, previousFrameOf, withActiveBitmap } from '../../core/assetEdit'
+import { COPY } from '../../core/copy'
 import { TRANSPARENT_INDEX } from '../../core/palette'
 import { safeSetPointerCapture } from '../../core/pointer'
 import { type PintaBitmap, resolveAssetPalette } from '../../core/project'
@@ -328,7 +329,7 @@ export function PixelCanvas(): JSX.Element {
           onPointerMove={handlePointerMove}
           onPointerUp={endGesture}
           onPointerCancel={endGesture}
-          aria-label="Área de desenho"
+          aria-label={COPY.a11y.drawArea}
           role="img"
         />
       </div>

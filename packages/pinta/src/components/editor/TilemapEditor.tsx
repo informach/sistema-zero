@@ -746,7 +746,7 @@ export function TilemapEditor(): JSX.Element | null {
         {/* Ferramentas do mapa */}
         <div
           role="toolbar"
-          aria-label="Ferramentas"
+          aria-label={COPY.a11y.tools}
           aria-orientation="vertical"
           className="pin-panel flex shrink-0 flex-col items-center gap-1 overflow-y-auto p-2"
         >
