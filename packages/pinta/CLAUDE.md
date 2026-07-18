@@ -172,6 +172,29 @@ do `createImageBitmap`, cap 2048, accept png/jpeg/webp — `null` no happy-dom).
 importAssets`). Botão "Trazer uma foto" no header da galeria. QA browser: decode real + 4 peças + 3
 cores novas OK.
 
+## Camada da frente + jogar meu mapa — lote MapperMate F4 (18/07)
+
+**Camada "da frente" (F)**: `TilemapLayer` ganhou **`front?: boolean`** (saneado em
+`sanitizePintaAsset` — `...(l.front === true ? { front: true } : {})`, ausente = fundo). Camada da
+frente = desenhada POR CIMA do jogador (copa de árvore, telhado). `tiles/tilemapOps.ts`:
+`flattenLayers(tilemap, include?)` virou genérico com predicado + `flattenBackground` (`l.front !==
+true`), `flattenFront` (`l.front === true`), `hasFrontLayer` (tem camada front visível não-vazia),
+`toggleLayerFront`. `export/studioGrid.ts` (`tilemapToStudioGrid(tilemap, include?)`) e
+`export/studioBridge.ts` (`tilemapMetaFrom(tilemap, tileset, sheet, include?)`) aceitam o predicado:
+o payload leva `tilemap` (só fundo, `l.front !== true`) + **`tilemapFront`** (só frente, OMITIDO
+quando não há frente = retrocompat byte-idêntico). UI: `TilemapEditor` painel de camadas ganhou o
+botão "camada da frente" (ícone `BringToFront`) + selo "frente" no nome.
+
+**"Jogar meu mapa" (C)**: `PintaHostAdapter` ganhou **`sendGameToStudio?(asset)`** e
+`PintaExportedAsset` ganhou `tilemapFront?`. O `EditorScreen` mostra o botão "Jogar meu mapa" só em
+`kind === 'tilemap'` E com o callback presente (`handlePlayMap`: exporta, guarda o teto de folha
+`180_000` = o `MAX_TILEMAP_SHEET_CHARS` do studio, chama o adapter com `tilemap` + `tilemapFront`).
+Quem MONTA o jogo é o **Estúdio** (`@sistemazero/studio` → `buildTilemapGameProject`, ver o CLAUDE.md
+de lá); o kids (`pinta-client`) liga o callback só com o Estúdio Completo. QA browser: marcar
+"Decoração" como frente → payload separa fundo (sem a peça 5) e frente (só a peça 5), zero erro no
+console. ⚠️ **Follow-up adiado:** o dropdown 'frente' do bloco `sz_gk_draw_tilemap` na extensão gk
+(desamarrar de `solid`) NÃO entrou — evitei tocar os arquivos do WIP concorrente da gk.
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data

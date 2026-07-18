@@ -463,6 +463,23 @@ de 1-clique (`sz_g2d_create_tilemap_from_asset`/`sz_gk_load_tilemap`) usa o meta
 manifests: game-2d `0.27.0`, gk `0.28.0`. Testes: `assetMeta.test.ts`, `tilemapFromAsset.test.ts`
 (4 casos one-way), gk `runtime.test.ts` (2 casos).
 
+**"Jogar meu mapa" — projeto-jogo a partir do mapa do Pinta (lote MapperMate F4, 18/07):**
+`projects/tilemapGame.ts` (público no index: **`buildTilemapGameProject(payload)`** +
+`assembleTilemapGameProject` testável + tipo `TilemapGamePayload`). A criança desenha o mapa no
+Pinta e o Estúdio MONTA um `Project` COMPLETO e jogável (equivalente ao export "jogo pronto" do
+MapperMate, mas em BLOCOS editáveis): `sanitizeTilemapMeta` re-valida o payload cru
+(`tilemap`/`tilemapFront` são `unknown` na fronteira), monta a IR do **game-2d**
+(`createTileMapFromAsset` fundo + jogador `createSprite` + `updateEachFrame` = clear → drawTileMap
+fundo → mecânica → `tileMapCollide` → `cameraFollow` → drawSprite → **drawTileMap FRENTE DEPOIS do
+jogador**), gera blocos (`buildWorkspaceStateFromIR`) + arquivos (`generateProjectFiles`) + os
+`ProjectAsset` (mapa + `<mapa>-frente`, nome batendo o `image` do bloco) + extensão game-2d
+instalada; `buildTilemapGameProject` ainda `persistProject`. **Heurística de mecânica:** mapa COM
+peças plataforma (one-way do F2) → PLATAFORMA (gravidade+pulo); sem → TOP-DOWN (RPG). O host
+(community-kids `pinta-client`) chama `setStudioStorageNamespace(viewerId)` ANTES e navega pro
+`/estudio`. Testes: `tilemapGame.test.ts` (5 — asset+IR+arquivos, top-down/plataforma, frente
+DEPOIS do drawSprite, `null` p/ mapa inválido). ⚠️ **Follow-up adiado:** o dropdown 'frente' do
+`sz_gk_draw_tilemap` (desamarrar de `solid`) NÃO entrou — evitei tocar o WIP concorrente da gk.
+
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +
 `attachAnimationNameWatcher`, espelho do thumb-watcher; registrado no inject do `BlocklyPanel` + no
