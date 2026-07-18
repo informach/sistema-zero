@@ -23,7 +23,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.34.1',
+  version: '0.35.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -75,10 +75,58 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
 7. **Começar o jogo** — uma vez, NO FIM: carrega tudo e liga o laço.
 
 > ⭐ **Seu jogo abre no MENU, não jogando.** Ao rodar, você vê a tela de menu —
-> clique no botão **Jogar** (ele já vem pronto) para a partida começar. É por isso
-> que o "A cada quadro" e o "Desenhar o jogo" parecem "não rodar" antes de clicar:
-> eles só valem no estado \`jogando\`. (Sem tela de menu? Um bloco "Mudar o estado
-> para jogando" no começo pula direto para o jogo.)
+> clique no botão **Jogar** (ele já vem pronto) para a partida começar. No menu,
+> o "A cada quadro" e o "Desenhar o jogo" ainda não aparecem — mas por motivos
+> diferentes: **"A cada quadro" só roda no estado \`jogando\`**; já **"Desenhar o
+> jogo" roda em \`jogando\`, \`pausado\`, \`fim\` e nos SEUS estados inventados — só
+> NÃO no \`menu\` nem no \`carregando\`** (por isso dá para desenhar uma tela de
+> pausa ou de fim, mas para um menu 100% seu use um estado inventado). (Sem tela
+> de menu? Um bloco "Mudar o estado para jogando" no começo pula direto ao jogo.)
+
+### Qual kit para qual jogo? 🎮
+
+Você monta QUALQUER jogo com os blocos gerais, mas cada **kit** é um atalho pronto
+para um gênero. Escolha pelo jogo que você quer:
+
+- 🏃 **Kit Plataforma** — jogo de pular (fases, plataformas, pulo bom).
+- ⚔️ **Kit RPG** — explorar um mundo + **batalha por TURNOS** com espada e time.
+- 👾 **Kit Monstrinhos** — pegar e treinar **bichinhos** (estilo Pokémon).
+- 🃏 **Kit Cartas** — **batalha de cartas** (deck: energia, escudo, intenção).
+- 🥊 **Kit Luta** — luta 1 contra 1 por rounds.
+- 🚀 **Kit Nave** — nave atirando, invasores (estilo Space Invaders).
+- 🏰 **Kit Defesa de Torre** — torres contra ondas de inimigos num caminho.
+- 🎲 **Jogo de tabuleiro** — dado + ordem de turno + andar casas numa trilha.
+
+⭐ Escolha UM gênero de batalha por jogo: ⚔️ turnos, 👾 bichinhos e 🃏 cartas são
+três batalhas DIFERENTES — não misture.
+
+### Onde faço um inimigo? (são coisas diferentes!) 👾
+
+A palavra "inimigo" aparece em vários lugares porque cada gênero tem o SEU tipo —
+não são intercambiáveis:
+
+- **Inimigo que ANDA no mapa e nasce em enxame** (o comum de ação) → 👾 **molde**
+  ("Criar o molde" + "Fazer nascer do molde").
+- **Oponente da batalha por TURNOS** (⚔️ Kit RPG) → "Adicionar inimigo" (na hora)
+  OU **"Criar a ficha do inimigo"** (reutilizável, com imagem) + "batalha contra a ficha".
+- **Bichinho que você pega e treina** (👾 Kit Monstrinhos) → **criatura**.
+- **Personagem do mundo que CONVERSA** (não luta) → 💬 **NPC**.
+- O inimigo da 🃏 batalha de cartas já vem embutido no Kit Cartas (vida + intenção).
+
+### Receita: um chefão com FICHA (⚔️ Kit RPG)
+
+A forma nova e organizada: **crie o inimigo separado** (a "ficha", com imagem e
+atributos) e depois **escolha com quem batalhar** — igual aos moldes do mundo.
+
+1. **Criar a ficha do inimigo "Dragão"** (vida 120, imagem do Pinta, cor, e marque
+   **chefão**). Faça no começo, no topo — a ficha FICA salva o jogo todo.
+2. Dê a SUA cara às telas: **"Na tela menu, pôr fundo cor …"** (ou uma imagem do Pinta).
+3. **⚠️ Ensine os golpes DENTRO de "Quando entrar no estado jogando"** — não no topo:
+   ao recomeçar, o motor limpa os golpes (para a partida nascer limpa), então
+   ensinar no topo faz o golpe sumir no 1º "Jogar". No mesmo lugar, **"Adicionar o
+   inimigo da ficha Capanga"** e **"Começar a batalha contra a ficha Dragão"**.
+4. O chefe fica esperto com **"Quando for a vez do inimigo Dragão"** + *"se a vida do
+   Dragão < metade: acerta todo o time; senão: usa um golpe"*.
 
 ### Estados
 

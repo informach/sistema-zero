@@ -278,7 +278,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tudo o que aparece no jogo é desenhado aqui, a cada quadro: pinte o fundo, desenhe os personagens e o placar. Os blocos de Canvas funcionam aqui dentro, usando esse pincel. Com a câmera ligada, este desenho é do MUNDO (anda com a câmera).',
+      'Tudo o que aparece no jogo é desenhado aqui, a cada quadro: pinte o fundo, desenhe os personagens e o placar. Os blocos de Canvas funcionam aqui dentro, usando esse pincel. Desenha em "jogando", "pausado", "fim" e nos SEUS estados — só NÃO no "menu" nem no "carregando" (para um menu desenhado, use um estado inventado). Com a câmera ligada, este desenho é do MUNDO (anda com a câmera).',
   },
   {
     type: 'sz_gk_on_draw_hud',
@@ -1519,7 +1519,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a batalha por turnos ESCOLHENDO um inimigo que você já criou com "Criar a ficha do inimigo" — ele entra com a imagem e os atributos prontos. Some "Adicionar o inimigo da ficha" antes para lutar contra vários.',
+      'Abre a batalha por turnos ESCOLHENDO um inimigo que você já criou com "Criar a ficha do inimigo" — ele entra com a imagem e os atributos prontos. ⚠️ Crie a ficha ANTES (senão nada acontece + um aviso). Some "Adicionar o inimigo da ficha" antes para lutar contra vários.',
   },
   {
     type: 'sz_gk_rpg_add_foe_named',
@@ -2269,7 +2269,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a arena da batalha de cartas (vida sua e do inimigo). NÃO cria deck nem cartas — isso é seu: monte o baralho com listas + o bloco "uma carta". Roda no estado "jogando" (não mexe no estado), e já começa o seu 1º turno.',
+      'Abre a arena da batalha de cartas (vida sua e do inimigo). NÃO cria deck nem cartas — isso é seu: monte o baralho com listas + o bloco "uma carta". ⚠️ Roda SÓ no estado "jogando" (não muda o estado); chame quando já estiver jogando, e já começa o seu 1º turno. Ponha o "Quando começar o meu turno"/"Quando for a vez do inimigo" NO TOPO (não dentro do "quando entrar em jogando").',
   },
   {
     type: 'sz_gk_cards_energy_per_turn',
