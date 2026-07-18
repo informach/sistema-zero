@@ -1,0 +1,1 @@
+ALTER TABLE "members"."challenge_custom_themes" DROP COLUMN "suggested_kit";

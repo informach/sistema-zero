@@ -15,7 +15,6 @@ export interface ChallengeMeView {
     emoji: string
     title: string
     description: string
-    suggestedKit: string
   }
   /** O perfil já tem o marco `challenge_entry` deste mês (publicou no desafio). */
   entered: boolean

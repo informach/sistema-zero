@@ -1057,7 +1057,6 @@ export interface ChallengeThemeView {
   emoji: string
   title: string
   description: string
-  suggestedKit: string
 }
 
 /** Um mês da janela do painel, com o tema RESOLVIDO (definido ou sorteado). */
@@ -1080,7 +1079,6 @@ export interface ChallengeThemeAdminView {
   emoji: string
   title: string
   description: string
-  suggestedKit: string
   archived: boolean
   createdAt: string
   updatedAt: string

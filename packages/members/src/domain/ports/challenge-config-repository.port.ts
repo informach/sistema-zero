@@ -9,7 +9,6 @@ export interface ChallengeCustomThemeRecord {
   emoji: string
   title: string
   description: string
-  suggestedKit: string
   archived: boolean
   createdAt: Date
   updatedAt: Date
@@ -38,7 +37,6 @@ export interface CreateChallengeThemeInput {
   emoji: string
   title: string
   description: string
-  suggestedKit: string
   now: Date
 }
 
@@ -46,7 +44,6 @@ export type ChallengeThemePatch = Partial<{
   emoji: string
   title: string
   description: string
-  suggestedKit: string
   archived: boolean
 }>
 

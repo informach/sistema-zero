@@ -13,7 +13,6 @@ const CUSTOM = {
   emoji: '🎄',
   title: 'Natal dos criadores',
   description: 'Crie um jogo natalino.',
-  suggestedKit: 'Jogo 2D',
 }
 
 describe('resolveChallengeTheme (override → fallback sorteio)', () => {
@@ -50,7 +49,6 @@ describe('resolveChallengeTheme (override → fallback sorteio)', () => {
     expect(source).toBe('definido')
     expect(theme.slug).toBe('custom-aaaabbbb')
     expect(theme.title).toBe('Natal dos criadores')
-    expect(theme.suggestedKit).toBe('Jogo 2D')
   })
 
   test('custom vence mesmo com builtinSlug residual (não deveria coexistir, mas o custom manda)', () => {

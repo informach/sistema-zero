@@ -25,9 +25,6 @@ export function ChallengeCard({ data }: { data: ChallengeMeView }) {
           </p>
           <p className="mt-0.5 sz-display text-lg md:text-xl">{challenge.title}</p>
           <p className="mt-1 text-muted-foreground text-sm">{challenge.description}</p>
-          <p className="mt-1 text-muted-foreground text-xs">
-            Dica: o kit "{challenge.suggestedKit}" do Estúdio é um ótimo começo.
-          </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {entered ? (
               <span className="inline-flex min-h-10 items-center gap-1.5 rounded-full border-2 border-(--kids-lime) px-4 font-bold text-sm">

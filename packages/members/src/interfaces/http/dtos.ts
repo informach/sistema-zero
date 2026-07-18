@@ -1087,12 +1087,10 @@ export const ChallengeThemeBody = t.Object({
   emoji: t.String({ minLength: 1, maxLength: 16 }),
   title: t.String({ minLength: 1, maxLength: 80 }),
   description: t.String({ minLength: 1, maxLength: 300 }),
-  suggestedKit: t.String({ minLength: 1, maxLength: 60 }),
 })
 export const ChallengeThemePatchBody = t.Object({
   emoji: t.Optional(t.String({ minLength: 1, maxLength: 16 })),
   title: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
   description: t.Optional(t.String({ minLength: 1, maxLength: 300 })),
-  suggestedKit: t.Optional(t.String({ minLength: 1, maxLength: 60 })),
   archived: t.Optional(t.Boolean()),
 })

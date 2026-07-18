@@ -255,7 +255,6 @@ function ThemeCard({
         <div>
           <p className="font-semibold">{theme.title}</p>
           <p className="text-muted-foreground text-sm">{theme.description}</p>
-          <p className="mt-1 text-muted-foreground text-xs">Kit sugerido: {theme.suggestedKit}</p>
         </div>
         {actions}
       </CardContent>
@@ -369,9 +368,6 @@ function ChangeMonthDialog({
               {selected.emoji} {selected.title}
             </p>
             <p className="text-muted-foreground text-sm">{selected.description}</p>
-            <p className="mt-1 text-muted-foreground text-xs">
-              Kit sugerido: {selected.suggestedKit}
-            </p>
           </div>
         ) : null}
       </div>
@@ -379,7 +375,7 @@ function ChangeMonthDialog({
   )
 }
 
-/** Criar/editar tema custom (todos os campos obrigatórios: o card kids mostra tudo). */
+/** Criar/editar tema custom (emoji, título e descrição — o que o card kids mostra). */
 function ThemeFormDialog({
   theme,
   onClose,
@@ -392,12 +388,11 @@ function ThemeFormDialog({
   const [emoji, setEmoji] = useState(theme?.emoji ?? '')
   const [title, setTitle] = useState(theme?.title ?? '')
   const [description, setDescription] = useState(theme?.description ?? '')
-  const [suggestedKit, setSuggestedKit] = useState(theme?.suggestedKit ?? '')
   const [saving, setSaving] = useState(false)
 
   async function save() {
-    if (!emoji.trim() || !title.trim() || !description.trim() || !suggestedKit.trim()) {
-      toast.error('Preencha emoji, título, descrição e kit sugerido.')
+    if (!emoji.trim() || !title.trim() || !description.trim()) {
+      toast.error('Preencha emoji, título e descrição.')
       return
     }
     setSaving(true)
@@ -405,7 +400,6 @@ function ThemeFormDialog({
       emoji: emoji.trim(),
       title: title.trim(),
       description: description.trim(),
-      suggestedKit: suggestedKit.trim(),
     }
     try {
       if (theme) {
@@ -428,7 +422,7 @@ function ThemeFormDialog({
       open
       onClose={onClose}
       title={theme ? 'Editar tema' : 'Novo tema'}
-      description="A criança vê emoji, título, descrição e a dica do kit no card do desafio."
+      description="A criança vê emoji, título e descrição no card do desafio."
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={saving}>
@@ -462,14 +456,6 @@ function ThemeFormDialog({
             placeholder="Crie um jogo natalino: presentes, trenós ou uma guerra de bolas de neve."
             rows={3}
             maxLength={300}
-          />
-        </Field>
-        <Field label="Kit sugerido" hint="Kit do Estúdio que combina com o tema">
-          <Input
-            value={suggestedKit}
-            onChange={(e) => setSuggestedKit(e.target.value)}
-            placeholder="Jogo 2D"
-            maxLength={60}
           />
         </Field>
       </div>

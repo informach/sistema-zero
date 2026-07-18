@@ -627,7 +627,6 @@ export interface ChallengeMeView {
     emoji: string
     title: string
     description: string
-    suggestedKit: string
   }
   /** O perfil já publicou no desafio deste mês. */
   entered: boolean

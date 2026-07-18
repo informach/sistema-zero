@@ -37,7 +37,6 @@ export interface CreateChallengeThemeCommand {
   emoji: string
   title: string
   description: string
-  suggestedKit: string
 }
 
 export type PatchChallengeThemeCommand = Partial<
@@ -147,7 +146,6 @@ export class ChallengeAdminService {
       emoji: cmd.emoji,
       title: cmd.title,
       description: cmd.description,
-      suggestedKit: cmd.suggestedKit,
       now: this.clock(),
     })
     return toChallengeThemeAdminView(record)

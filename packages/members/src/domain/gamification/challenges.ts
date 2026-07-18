@@ -14,8 +14,6 @@ export interface ChallengeTheme {
   emoji: string
   title: string
   description: string
-  /** Kit do Estúdio que combina com o tema (sugestão de partida, não trava nada). */
-  suggestedKit: string
 }
 
 export const CHALLENGE_THEMES: readonly ChallengeTheme[] = [
@@ -24,84 +22,72 @@ export const CHALLENGE_THEMES: readonly ChallengeTheme[] = [
     emoji: '🚀',
     title: 'Aventura no espaço',
     description: 'Crie um jogo que se passa no espaço: naves, planetas, asteroides ou estrelas.',
-    suggestedKit: 'Nave clássica',
   },
   {
     slug: 'corrida',
     emoji: '🏁',
     title: 'Corrida maluca',
     description: 'Crie um jogo de correr ou desviar: quanto mais longe, melhor!',
-    suggestedKit: 'Dino Run',
   },
   {
     slug: 'floresta',
     emoji: '🌳',
     title: 'Segredos da floresta',
     description: 'Crie um jogo numa floresta: animais, trilhas, tesouros escondidos.',
-    suggestedKit: 'Travessia',
   },
   {
     slug: 'ceu',
     emoji: '🎈',
     title: 'Voando alto',
     description: 'Crie um jogo de voar: balões, pássaros, aviões ou foguetes de papel.',
-    suggestedKit: 'Balão',
   },
   {
     slug: 'oceano',
     emoji: '🌊',
     title: 'Fundo do mar',
     description: 'Crie um jogo embaixo da água: peixes, submarinos, sereias ou piratas.',
-    suggestedKit: 'Jogo 2D',
   },
   {
     slug: 'castelo',
     emoji: '🏰',
     title: 'Reino do castelo',
     description: 'Crie um jogo de reinos: cavaleiros, dragões, princesas ou torres.',
-    suggestedKit: 'Gorilas',
   },
   {
     slug: 'robos',
     emoji: '🤖',
     title: 'Fábrica de robôs',
     description: 'Crie um jogo com robôs: montar, desviar, consertar ou fugir deles.',
-    suggestedKit: 'Empilhar',
   },
   {
     slug: 'esportes',
     emoji: '⚽',
     title: 'Campeonato radical',
     description: 'Crie um jogo de esporte: futebol, skate, corrida ou um esporte inventado.',
-    suggestedKit: 'Stick Hero',
   },
   {
     slug: 'monstros',
     emoji: '👾',
     title: 'Invasão dos monstrinhos',
     description: 'Crie um jogo com monstrinhos: fofos, engraçados ou de dar friozinho.',
-    suggestedKit: 'Nave × Asteroides',
   },
   {
     slug: 'culinaria',
     emoji: '🍕',
     title: 'Cozinha divertida',
     description: 'Crie um jogo de comida: montar pizzas, pegar frutas, fugir do brócolis.',
-    suggestedKit: 'Jogo 2D',
   },
   {
     slug: 'dinossauros',
     emoji: '🦕',
     title: 'Era dos dinossauros',
     description: 'Crie um jogo com dinossauros: correr, fugir do meteoro ou virar um deles.',
-    suggestedKit: 'Dino Run',
   },
   {
     slug: 'neve',
     emoji: '⛄',
     title: 'Mundo de gelo',
     description: 'Crie um jogo no gelo: escorregar, guerra de bola de neve, pinguins.',
-    suggestedKit: 'Desvie',
   },
 ]
 
@@ -149,7 +135,6 @@ export interface ChallengeCustomThemeData {
   emoji: string
   title: string
   description: string
-  suggestedKit: string
 }
 
 /** Override de um mês carregado do banco (exatamente UM dos dois preenchido). */
@@ -184,7 +169,6 @@ export function resolveChallengeTheme(
         emoji: c.emoji,
         title: c.title,
         description: c.description,
-        suggestedKit: c.suggestedKit,
       },
       source: 'definido',
     }
