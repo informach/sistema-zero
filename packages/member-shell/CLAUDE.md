@@ -44,7 +44,11 @@ real em prod, ok).
 | Libs puras (csrf, download-mime, act, format, markdown, types, api, cn…) | — |
 | Componentes de DOMÍNIO (vimeo-player, lesson-blocks, quiz-block, ebook 3D, **studio/studio-block** — editor @sistemazero/studio embarcado, dynamic ssr:false, rascunho LOCAL IndexedDB chaveado por bloco, "Enviar para o professor" (com confirmação + campo OPCIONAL de **recado ao professor** no modal → corpo `message`, ≤1000, trim; o client `submitStudioProject` e o handler `studioSubmit` repassam) + "Expandir" (tela cheia por **overlay CSS** `fixed inset-0 z-50` no card, **NÃO** a Fullscreen API nativa — ela restringe a pintura à subárvore do elemento e some com os menus/diálogos PORTALADOS no body, ex.: o três-pontinhos do editor "não fazia nada"; o overlay cobre a navegação z-40 e o botão "Reduzir"/Esc mora no cabeçalho DENTRO dele; trava o scroll
 do body enquanto expandido via `useBodyScrollLock` do ui — REFCONTADO com o `Dialog`, senão a barra de
-rolagem fantasma da página atrás voltava ao fechar o "Enviar?") —, anexos, progress-bar, impersonation-banner, user-avatar) — 100% em tokens CSS, vestem o tema do app | Componentes de IDENTIDADE (topnav, user-menu, cards, auth-shell) + globals.css/tokens |
+rolagem fantasma da página atrás voltava ao fechar o "Enviar?"; ⚠️ o estado `expanded` PERSISTE por
+projeto num Map de MÓDULO (`expandedByProject`, restaurado no lazy `useState` + espelhado por effect):
+o "Enviar para o professor" dispara `router.refresh()` que RE-MONTA o `StudioBlockView` (a aula
+re-renderiza com `submitted:true`) e um `useState` comum voltava a `false` → a criança caía da tela
+cheia ao enviar; só "Reduzir"/Esc saem dela agora, F5 limpa o Map) —, anexos, progress-bar, impersonation-banner, user-avatar) — 100% em tokens CSS, vestem o tema do app | Componentes de IDENTIDADE (topnav, user-menu, cards, auth-shell) + globals.css/tokens |
 | Helpers de cookie (`sessionCookieNames`/`prefixedCookieName`/`expireCookieOptions`) | CONSTANTES `sz_member_*`/`sz_kids_*` (compile-time POR APP — cookies não escopam por porta em dev) |
 | `scripts/boot-check.mjs` (fail-fast REAL de prod — os Dockerfiles dos apps copiam DAQUI) | `instrumentation.ts` (fail-fast de dev, autocontido) |
 
