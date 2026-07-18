@@ -2259,6 +2259,66 @@ export const gameKitRuntime = `(function () {
     return cc >= 0 && cc < b.cols && rr >= 0 && rr < b.rows;
   }
 
+  // ---- 🃏 R30 — CARTAS: uma pilha É uma LISTA do núcleo (array); os verbos operam
+  // por REFERÊNCIA. A criança MONTA memória, Uno, deck-battler com listas + estes. ----
+  function pileMoveTop(from, to) {
+    if (!Array.isArray(from) || !Array.isArray(to) || from.length === 0) return;
+    to.push(from.pop());
+  }
+  function pileShuffleFrom(deck, discard) {
+    if (!Array.isArray(deck) || !Array.isArray(discard)) return;
+    while (discard.length) deck.push(discard.pop()); // junta o descarte no monte
+    for (var i = deck.length - 1; i > 0; i--) { // e embaralha (Fisher-Yates)
+      var j = Math.floor(Math.random() * (i + 1)), t = deck[i]; deck[i] = deck[j]; deck[j] = t;
+    }
+  }
+  function pileTop(pile) { return (Array.isArray(pile) && pile.length) ? pile[pile.length - 1] : null; }
+  function pileSize(pile) { return Array.isArray(pile) ? pile.length : 0; }
+  // Carta = objeto leve de 2 faces (frente/verso + virada?). Açúcar de apresentação.
+  function makeCard(front, back) {
+    return { front: front, back: (back === undefined || back === null) ? '?' : back, faceUp: false };
+  }
+  function cardFlip(c) { if (c && typeof c === 'object') c.faceUp = !c.faceUp; }
+  function cardIsUp(c) { return !!(c && typeof c === 'object' && c.faceUp); }
+  function cardFace(c) {
+    if (!c || typeof c !== 'object') return c; // valor cru (não é carta de 2 faces)
+    return c.faceUp ? c.front : c.back;
+  }
+  // Mão clicável: desenha a lista como fileira/leque e guarda os retângulos por
+  // REFERÊNCIA (WeakMap pela própria lista) — o cardAt lê de volta o clique.
+  var handRects = (typeof WeakMap === 'function') ? new WeakMap() : null;
+  function handDraw(pile, x, y, fan) {
+    if (!Array.isArray(pile) || !ctx2d) return;
+    var cw = 60, ch = 84, gap = 12, n = pile.length, rects = [];
+    var bx = num(x, 0), by = num(y, 0);
+    for (var i = 0; i < n; i++) {
+      var rx = bx + i * (cw + gap);
+      var ry = by + (fan ? Math.abs(i - (n - 1) / 2) * 6 : 0); // leque = leve arco
+      ctx2d.save();
+      ctx2d.fillStyle = '#fdfdfd'; ctx2d.strokeStyle = '#2b2b2b'; ctx2d.lineWidth = 2;
+      ctx2d.fillRect(rx, ry, cw, ch); ctx2d.strokeRect(rx, ry, cw, ch);
+      var card = pile[i];
+      var face = (card && typeof card === 'object' && 'faceUp' in card) ? (card.faceUp ? card.front : card.back) : card;
+      ctx2d.fillStyle = '#1b1b1b'; ctx2d.font = '22px sans-serif';
+      ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
+      ctx2d.fillText(String(face === undefined || face === null ? '' : face), rx + cw / 2, ry + ch / 2);
+      ctx2d.restore();
+      rects.push({ x: rx, y: ry, w: cw, h: ch });
+    }
+    if (handRects) handRects.set(pile, rects);
+  }
+  function cardAt(x, y, pile) {
+    if (!Array.isArray(pile) || !handRects) return -1;
+    var rects = handRects.get(pile);
+    if (!rects) return -1;
+    var px = num(x, 0), py = num(y, 0);
+    for (var i = rects.length - 1; i >= 0; i--) { // de trás pra frente: o de cima vence
+      var r = rects[i];
+      if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return i;
+    }
+    return -1;
+  }
+
   // ---- ⏱️ Tempo (acumulador de dt — NÃO relógio de parede: pausa tem que pausar) ----
   var secondTimers = Object.create(null);
   // Esperas de UMA VEZ em curso. Objeto sem prototipo nao serve aqui (e lista).
@@ -7020,6 +7080,17 @@ export const gameKitRuntime = `(function () {
     boardGet: guard('boardGet', boardGet),
     boardCount: guard('boardCount', boardCount),
     boardIn: guard('boardIn', boardIn),
+    // ----- 🃏 R30: cartas (pilha = lista do núcleo; carta de 2 faces; mão) -----
+    pileMoveTop: guard('pileMoveTop', pileMoveTop),
+    pileShuffleFrom: guard('pileShuffleFrom', pileShuffleFrom),
+    pileTop: guard('pileTop', pileTop),
+    pileSize: guard('pileSize', pileSize),
+    card: guard('card', makeCard),
+    cardFlip: guard('cardFlip', cardFlip),
+    cardIsUp: guard('cardIsUp', cardIsUp),
+    cardFace: guard('cardFace', cardFace),
+    handDraw: guard('handDraw', handDraw),
+    cardAt: guard('cardAt', cardAt),
     everySeconds: guard('everySeconds', everySeconds),
     waitThen: guard('waitThen', waitThen),
     cooldownReady: guard('cooldownReady', cooldownReady),

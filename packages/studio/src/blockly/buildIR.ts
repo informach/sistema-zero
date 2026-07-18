@@ -615,6 +615,27 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:currentPlayer' }
     case 'sz_gk_space_of':
       return { type: 'gk:spaceOf', who: f(block, 'WHO') }
+    case 'sz_gk_pile_top':
+      return { type: 'gk:pileTop', pileVar: f(block, 'PILE') }
+    case 'sz_gk_pile_size':
+      return { type: 'gk:pileSize', pileVar: f(block, 'PILE') }
+    case 'sz_gk_card':
+      return {
+        type: 'gk:card',
+        front: exprInput(block, 'FRONT', { type: 'str', value: '🍎' }),
+        back: exprInput(block, 'BACK', { type: 'str', value: '?' }),
+      }
+    case 'sz_gk_card_is_up':
+      return { type: 'gk:cardIsUp', card: exprInput(block, 'CARD', { type: 'num', value: 0 }) }
+    case 'sz_gk_card_face':
+      return { type: 'gk:cardFace', card: exprInput(block, 'CARD', { type: 'num', value: 0 }) }
+    case 'sz_gk_card_at':
+      return {
+        type: 'gk:cardAt',
+        x: exprInput(block, 'X', { type: 'num', value: 0 }),
+        y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        pileVar: f(block, 'PILE'),
+      }
     case 'sz_gk_pick_active':
       return {
         type: 'gk:pickActive',
@@ -6613,6 +6634,40 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return {
         kind: 'js',
         value: { type: 'gk:onLandSpace', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_gk_pile_move_top':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:pileMoveTop', fromVar: f(block, 'FROM'), toVar: f(block, 'TO') },
+      }
+    case 'sz_gk_pile_shuffle_from':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pileShuffleFrom',
+          deckVar: f(block, 'DECK'),
+          discardVar: f(block, 'DISCARD'),
+        },
+      }
+    case 'sz_gk_card_flip':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardFlip', card: exprInput(block, 'CARD', { type: 'num', value: 0 }) },
+      }
+    case 'sz_gk_hand_draw':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:handDraw',
+          pileVar: f(block, 'PILE'),
+          x: exprInput(block, 'X', { type: 'num', value: 60 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 420 }),
+          fan: f(block, 'FAN') === 'TRUE',
+        },
       }
     case 'sz_gk_wrap_edges':
       seen.add('game-2d-advanced')

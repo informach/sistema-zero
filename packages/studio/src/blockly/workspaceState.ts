@@ -4000,6 +4000,34 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'gk:onLandSpace':
       return block('sz_gk_on_land_space', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'gk:pileMoveTop':
+      return block('sz_gk_pile_move_top', { FROM: stmt.fromVar, TO: stmt.toVar }, {}, stmt.__id)
+    case 'gk:pileShuffleFrom':
+      return block(
+        'sz_gk_pile_shuffle_from',
+        { DECK: stmt.deckVar, DISCARD: stmt.discardVar },
+        {},
+        stmt.__id,
+      )
+    case 'gk:cardFlip': {
+      const card = exprToValueBlock(valueToExpr(stmt.card))
+      return card === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_card_flip', {}, {}, stmt.__id, { CARD: card })
+    }
+    case 'gk:handDraw': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_hand_draw',
+            { PILE: stmt.pileVar, FAN: stmt.fan ? 'TRUE' : 'FALSE' },
+            {},
+            stmt.__id,
+            { X: x, Y: y },
+          )
+    }
     case 'gk:wrapEdges':
       return block('sz_gk_wrap_edges', { WHO: stmt.charVar }, {}, stmt.__id)
     case 'gk:collideTilemap':
@@ -7217,6 +7245,32 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_current_player', {})
     case 'gk:spaceOf':
       return block('sz_gk_space_of', { WHO: expr.who })
+    case 'gk:pileTop':
+      return block('sz_gk_pile_top', { PILE: expr.pileVar })
+    case 'gk:pileSize':
+      return block('sz_gk_pile_size', { PILE: expr.pileVar })
+    case 'gk:card': {
+      const front = exprToValueBlock(valueToExpr(expr.front))
+      const back = exprToValueBlock(valueToExpr(expr.back))
+      return front === null || back === null
+        ? null
+        : block('sz_gk_card', {}, {}, expr.__id, { FRONT: front, BACK: back })
+    }
+    case 'gk:cardIsUp': {
+      const card = exprToValueBlock(valueToExpr(expr.card))
+      return card === null ? null : block('sz_gk_card_is_up', {}, {}, expr.__id, { CARD: card })
+    }
+    case 'gk:cardFace': {
+      const card = exprToValueBlock(valueToExpr(expr.card))
+      return card === null ? null : block('sz_gk_card_face', {}, {}, expr.__id, { CARD: card })
+    }
+    case 'gk:cardAt': {
+      const x = exprToValueBlock(valueToExpr(expr.x))
+      const y = exprToValueBlock(valueToExpr(expr.y))
+      return x === null || y === null
+        ? null
+        : block('sz_gk_card_at', { PILE: expr.pileVar }, {}, expr.__id, { X: x, Y: y })
+    }
     // ---- Jogo 3D Avançado (game-3d-advanced) ----
     case 'g3k:worldSize':
       return block('sz_g3k_world_size', {})

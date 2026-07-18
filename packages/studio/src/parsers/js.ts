@@ -4325,6 +4325,35 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const who = identifierName(args[0])
     if (who) return { type: 'gk:spaceOf', who }
   }
+  if (method === 'pileTop') {
+    const pile = identifierName(args[0])
+    if (pile) return { type: 'gk:pileTop', pileVar: pile }
+  }
+  if (method === 'pileSize') {
+    const pile = identifierName(args[0])
+    if (pile) return { type: 'gk:pileSize', pileVar: pile }
+  }
+  if (method === 'card') {
+    const front = toExpr(args[0], ctx)
+    const back = toExpr(args[1], ctx)
+    if (isSimpleValue(front) && isSimpleValue(back)) return { type: 'gk:card', front, back }
+  }
+  if (method === 'cardIsUp') {
+    const card = toExpr(args[0], ctx)
+    if (isSimpleValue(card)) return { type: 'gk:cardIsUp', card }
+  }
+  if (method === 'cardFace') {
+    const card = toExpr(args[0], ctx)
+    if (isSimpleValue(card)) return { type: 'gk:cardFace', card }
+  }
+  if (method === 'cardAt') {
+    const pile = identifierName(args[2])
+    if (pile) {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      if (isSimpleValue(x) && isSimpleValue(y)) return { type: 'gk:cardAt', x, y, pileVar: pile }
+    }
+  }
   if (
     method === 'pickActive' &&
     args[0]?.type === 'StringLiteral' &&
@@ -5182,6 +5211,31 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'onLandSpace': {
       if (!isFn(args[0])) return null
       return { type: 'gk:onLandSpace', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'pileMoveTop': {
+      const from = identifierName(args[0])
+      const to = identifierName(args[1])
+      return from && to ? { type: 'gk:pileMoveTop', fromVar: from, toVar: to } : null
+    }
+    case 'pileShuffleFrom': {
+      const deck = identifierName(args[0])
+      const discard = identifierName(args[1])
+      return deck && discard
+        ? { type: 'gk:pileShuffleFrom', deckVar: deck, discardVar: discard }
+        : null
+    }
+    case 'cardFlip': {
+      const card = toExpr(args[0], ctx)
+      return isSimpleValue(card) ? { type: 'gk:cardFlip', card } : null
+    }
+    case 'handDraw': {
+      const pile = identifierName(args[0])
+      if (!pile || args[3]?.type !== 'BooleanLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(y)
+        ? { type: 'gk:handDraw', pileVar: pile, x, y, fan: args[3].value as boolean }
+        : null
     }
     case 'wrapEdges': {
       const charVar = identifierName(args[0])
@@ -11137,6 +11191,12 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:rollDice':
     case 'gk:currentPlayer':
     case 'gk:spaceOf':
+    case 'gk:pileTop':
+    case 'gk:pileSize':
+    case 'gk:card':
+    case 'gk:cardIsUp':
+    case 'gk:cardFace':
+    case 'gk:cardAt':
     case 'gk:rpgCurrentMap':
     case 'g3k:worldSize':
     case 'g3k:countAlive':

@@ -20,6 +20,7 @@ import {
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
+  jogoDaMemoriaExample,
   meuPrimeiroJogoExample,
   oChefaoExample,
   quebraBlocosExample,
@@ -117,6 +118,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Batalha em Equipe',
       'O Chefao',
       'Corrida de Tabuleiro',
+      'Jogo da Memoria',
       'Cobrinha',
       'Quebra-blocos',
     ])
@@ -1937,6 +1939,89 @@ describe('game-2d-advanced — exemplo Corrida de Tabuleiro (🎲 tabuleiro)', (
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(corridaTabuleiroExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_MEMORIA = `SZGameKit.setup({ width: 720, height: 560, background: "#2a1a3a", accent: "#ffd166" });
+SZGameKit.setScreenText("menu", "Jogo da Memoria", "Clique nas cartas para virar e ache todos os pares iguais!", "Jogar");
+SZGameKit.setScreenText("vitoria", "Voce achou todos os pares!", "Muito bem!", "Jogar de novo");
+let cartas = [];
+let primeira = 0 - 1;
+let segunda = 0 - 1;
+let pares = 0;
+SZGameKit.onEnterState("jogando", function () {
+  cartas = [SZGameKit.card("🍎", "?"), SZGameKit.card("🍎", "?"), SZGameKit.card("🍌", "?"), SZGameKit.card("🍌", "?"), SZGameKit.card("🍇", "?"), SZGameKit.card("🍇", "?")];
+  cartas = cartas.sort(() => Math.random() - 0.5);
+  primeira = 0 - 1;
+  segunda = 0 - 1;
+  pares = 0;
+});
+SZGameKit.onGameClick(function (px, py) {
+  const i = SZGameKit.cardAt(px, py, cartas);
+  if (i >= 0) {
+    if (SZGameKit.cardIsUp(cartas[i]) === false) {
+      SZGameKit.cardFlip(cartas[i]);
+      if (primeira === 0 - 1) {
+        primeira = i;
+      } else {
+        segunda = i;
+        if (SZGameKit.cardFace(cartas[primeira]) === SZGameKit.cardFace(cartas[segunda])) {
+          pares = pares + 1;
+          primeira = 0 - 1;
+          if (pares === 3) {
+            SZGameKit.setState("vitoria");
+          }
+        } else {
+          SZGameKit.waitThen(0.7, function () {
+            SZGameKit.cardFlip(cartas[primeira]);
+            SZGameKit.cardFlip(cartas[segunda]);
+            primeira = 0 - 1;
+          });
+        }
+      }
+    }
+  }
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#2a1a3a", true);
+  SZGameKit.handDraw(cartas, 90, 220, false);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Jogo da Memoria (🃏 cartas)', () => {
+  it('IR embutida é válida, sem rawJS, e usa carta + pilha + mão clicável', () => {
+    const parsed = SZIRSchema.safeParse(jogoDaMemoriaExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(jogoDaMemoriaExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of ['gk:card', 'gk:cardFlip', 'gk:cardFace', 'gk:cardAt', 'gk:handDraw']) {
+      expect(types.has(t)).toBe(true)
+    }
+    // a pilha É uma LISTA do núcleo: o embaralhar é o shuffle do núcleo, não um gk.
+    expect(types.has('shuffle')).toBe(true)
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_MEMORIA))).toEqual(jogoDaMemoriaExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(jogoDaMemoriaExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      jogoDaMemoriaExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(jogoDaMemoriaExample.ir.js)
     } finally {
       ws.dispose()
     }

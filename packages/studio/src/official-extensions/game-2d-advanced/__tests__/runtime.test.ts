@@ -217,6 +217,17 @@ interface GameKitApi {
   moveAlongTrack: Fn
   spaceOf: (who: unknown) => number
   onLandSpace: Fn
+  // 🃏 R30 — cartas
+  pileMoveTop: Fn
+  pileShuffleFrom: Fn
+  pileTop: Fn
+  pileSize: (pile: unknown) => number
+  card: (front: unknown, back: unknown) => Record<string, unknown>
+  cardFlip: Fn
+  cardIsUp: (card: unknown) => boolean
+  cardFace: Fn
+  handDraw: Fn
+  cardAt: (x: number, y: number, pile: unknown) => number
   // V9 — mapa de tiles + profundidade
   cameraShake: Fn
   loadTilemap: Fn
@@ -527,7 +538,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 302 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 312 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -687,6 +698,17 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'moveAlongTrack',
       'spaceOf',
       'onLandSpace',
+      // 🃏 R30 — cartas (10)
+      'pileMoveTop',
+      'pileShuffleFrom',
+      'pileTop',
+      'pileSize',
+      'card',
+      'cardFlip',
+      'cardIsUp',
+      'cardFace',
+      'handDraw',
+      'cardAt',
       // V9 — mapa de tiles + profundidade (6)
       'cameraShake',
       'loadTilemap',
@@ -3926,5 +3948,43 @@ describe('SZGameKit — R30: 🎲 jogos de tabuleiro (dado, turnos, trilha de ca
     h.api.moveAlongTrack(peao, 5, 'tabuleiro') // passa do fim → PARA na última (casa 4)
     expect(h.api.spaceOf(peao)).toBe(4)
     expect(landed).toBe(2)
+  })
+})
+
+describe('SZGameKit — R30: 🃏 cartas (pilha = lista, carta de 2 faces, mão clicável)', () => {
+  it('pilha (lista): mover o topo, espiar, contar e rebaralhar', () => {
+    const h = loadRuntime()
+    const baralho: string[] = ['A', 'B', 'C']
+    const mao: string[] = []
+    h.api.pileMoveTop(baralho, mao) // tira o topo (C) do baralho e põe na mão
+    expect(baralho).toEqual(['A', 'B'])
+    expect(mao).toEqual(['C'])
+    expect(h.api.pileTop(baralho)).toBe('B') // espia sem tirar
+    expect(h.api.pileSize(baralho)).toBe(2)
+    const descarte: string[] = ['X', 'Y']
+    h.api.pileShuffleFrom(baralho, descarte) // junta o descarte no monte + embaralha
+    expect(descarte.length).toBe(0)
+    expect(h.api.pileSize(baralho)).toBe(4)
+  })
+
+  it('carta de 2 faces: nasce virada pra baixo; virar troca a face mostrada', () => {
+    const h = loadRuntime()
+    const c = h.api.card('🍎', '?')
+    expect(h.api.cardIsUp(c)).toBe(false)
+    expect(h.api.cardFace(c)).toBe('?') // virada pra baixo mostra o verso
+    h.api.cardFlip(c)
+    expect(h.api.cardIsUp(c)).toBe(true)
+    expect(h.api.cardFace(c)).toBe('🍎') // pra cima mostra a frente
+  })
+
+  it('mão clicável: desenha a fileira e descobre qual carta foi clicada', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const cartas = [h.api.card('🍎', '?'), h.api.card('🍌', '?'), h.api.card('🍇', '?')]
+    h.api.handDraw(cartas, 100, 400, false) // cw=60, gap=12: carta i em x = 100 + i*72
+    expect(h.api.cardAt(120, 440, cartas)).toBe(0)
+    expect(h.api.cardAt(200, 440, cartas)).toBe(1)
+    expect(h.api.cardAt(5, 5, cartas)).toBe(-1) // fora de qualquer carta
   })
 })

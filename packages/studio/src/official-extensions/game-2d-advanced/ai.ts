@@ -365,6 +365,16 @@ API global injetada como window.SZGameKit:
   row) testa se cabe (parede/limite). SEM bloco de laço DE PROPÓSITO: varra a grade
   com o "repita" do núcleo + boardGet/boardSet (a criança MONTA a mecânica). Cobrinha
   = uma lista de células + o tabuleiro marcando o corpo (bateu no corpo = perdeu).
+- 🃏 Cartas (R30 — memória/Uno/deck-battler; ⭐ uma PILHA é só uma LISTA do núcleo,
+  a criança MONTA): pileMoveTop(de, para) tira o topo de uma lista e põe na outra
+  (= comprar deck→mão E descartar mão→descarte) · pileShuffleFrom(deck, descarte) =
+  junta o descarte no deck e embaralha (rebaralhar) · pileTop(pilha)/pileSize(pilha).
+  Carta de 2 faces: card(frente, verso) (nasce virada pra baixo) · cardFlip(carta) ·
+  cardIsUp(carta) · cardFace(carta) (frente se pra cima, verso se pra baixo — compare
+  para achar o par). Mão clicável: handDraw(lista, x, y, leque?) desenha a fileira e
+  guarda os retângulos · cardAt(mouseX, mouseY, lista) = o índice da carta clicada (−1
+  = nenhuma). Memória: lista de pares + shuffle → onGameClick vira; 2 viradas → compara
+  cardFace → par fica, senão waitThen(0.6) e desvira as duas.
 - 🥊 Kit Luta (Street Fighter — o ATALHO do gênero; luta "na unha" segue possível
   com personagem + applyGravity + attackFacing + didHit + hurt + knockback):
   lutaMatch(a, b, rounds, segundos) casa os DOIS e grava o "home" de cada um da

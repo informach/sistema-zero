@@ -2075,6 +2075,124 @@ export const gameKitBlocks = [
     tooltip:
       'Verdadeiro se a célula está DENTRO da grade — o jeito de saber se a cobrinha bateu na parede ou se um movimento sai do tabuleiro.',
   },
+  // ---- 🃏 R30: CARTAS (pilha = lista do núcleo; carta de 2 faces; mão clicável) ----
+  {
+    type: 'sz_gk_pile_move_top',
+    message0: 'Mover a carta do topo da pilha %1 para a pilha %2',
+    args0: [
+      { type: 'field_name_picker', name: 'FROM', text: 'baralho', kind: 'group' },
+      { type: 'field_name_picker', name: 'TO', text: 'mao', kind: 'group' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Tira a carta de cima de uma pilha (lista) e põe no topo da outra. É o COMPRAR (baralho → mão) E o DESCARTAR (mão → descarte) num bloco só. As pilhas são listas normais do núcleo.',
+  },
+  {
+    type: 'sz_gk_pile_shuffle_from',
+    message0: 'Remontar a pilha %1 juntando %2 e embaralhar',
+    args0: [
+      { type: 'field_name_picker', name: 'DECK', text: 'baralho', kind: 'group' },
+      { type: 'field_name_picker', name: 'DISCARD', text: 'descarte', kind: 'group' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Quando o baralho acaba: joga o descarte de volta no baralho e embaralha. O rebaralhar do deck-battler num bloco.',
+  },
+  {
+    type: 'sz_gk_pile_top',
+    message0: 'a carta do topo da pilha %1',
+    args0: [{ type: 'field_name_picker', name: 'PILE', text: 'baralho', kind: 'group' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Espia a carta de cima SEM tirar (para saber qual é antes de mover). Pilha vazia = nada.',
+  },
+  {
+    type: 'sz_gk_pile_size',
+    message0: 'quantas cartas tem a pilha %1',
+    args0: [{ type: 'field_name_picker', name: 'PILE', text: 'baralho', kind: 'group' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantas cartas há na pilha (lista). Use para saber se o baralho acabou (= 0).',
+  },
+  {
+    type: 'sz_gk_card',
+    message0: 'uma carta: frente %1, verso %2',
+    args0: [
+      { type: 'input_value', name: 'FRONT', check: 'JSValue' },
+      { type: 'input_value', name: 'BACK', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Cria uma carta com duas faces: a FRENTE (o valor/figura) e o VERSO (o que aparece virada pra baixo). Nasce virada pra BAIXO. Ponha várias numa lista para fazer o baralho.',
+  },
+  {
+    type: 'sz_gk_card_flip',
+    message0: 'Virar a carta %1',
+    args0: [{ type: 'input_value', name: 'CARD', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Vira a carta (de cara pra cima ↔ pra baixo). É o coração do jogo da memória.',
+  },
+  {
+    type: 'sz_gk_card_is_up',
+    message0: 'a carta %1 está virada para cima',
+    args0: [{ type: 'input_value', name: 'CARD', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro se a carta está de cara pra cima (mostrando a frente).',
+  },
+  {
+    type: 'sz_gk_card_face',
+    message0: 'o que aparece na carta %1',
+    args0: [{ type: 'input_value', name: 'CARD', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O que a carta MOSTRA agora: a frente se estiver virada pra cima, o verso se pra baixo. Use para comparar duas cartas viradas (par!).',
+  },
+  {
+    type: 'sz_gk_hand_draw',
+    message0: 'Desenhar a pilha %1 como fileira em x %2 y %3 %4',
+    args0: [
+      { type: 'field_name_picker', name: 'PILE', text: 'mao', kind: 'group' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_checkbox', name: 'FAN', checked: false },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha as cartas da pilha (lista) numa fileira a partir de x,y (marque a caixinha para um leque). Guarda onde cada carta ficou para o "a carta clicada". Use no "Desenhar o jogo".',
+  },
+  {
+    type: 'sz_gk_card_at',
+    message0: 'a carta clicada em x %1 y %2 da pilha %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'PILE', text: 'mao', kind: 'group' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Qual carta da mão foi clicada (o índice, 0 = a primeira; -1 = nenhuma). Junte com "o mouse x/y" e "Quando clicar no jogo" para jogar uma carta clicando nela.',
+  },
   {
     type: 'sz_gk_collide_tilemap',
     message0: 'Fazer %1 colidir com o mapa %2',
@@ -4456,6 +4574,24 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
+    // 🃏 GERAL (R30): a pilha É uma LISTA do núcleo; a criança MONTA memória, Uno,
+    // deck-battler com listas + estes verbos + a carta de 2 faces + a mão clicável.
+    name: '🃏 Cartas',
+    colour: C,
+    types: [
+      'sz_gk_card',
+      'sz_gk_pile_move_top',
+      'sz_gk_pile_shuffle_from',
+      'sz_gk_pile_top',
+      'sz_gk_pile_size',
+      'sz_gk_card_flip',
+      'sz_gk_card_is_up',
+      'sz_gk_card_face',
+      'sz_gk_hand_draw',
+      'sz_gk_card_at',
+    ],
+  },
+  {
     name: '⏱️ Tempo',
     colour: C,
     types: ['sz_gk_every_seconds', 'sz_gk_wait', 'sz_gk_cooldown_ready'],
@@ -4887,6 +5023,12 @@ const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { 
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_setup: { W: numShadow(1280), H: numShadow(720) },
+  sz_gk_card: { FRONT: txtShadow('🍎'), BACK: txtShadow('?') },
+  sz_gk_card_flip: { CARD: numShadow(0) },
+  sz_gk_card_is_up: { CARD: numShadow(0) },
+  sz_gk_card_face: { CARD: numShadow(0) },
+  sz_gk_hand_draw: { X: numShadow(60), Y: numShadow(420) },
+  sz_gk_card_at: { X: numShadow(0), Y: numShadow(0) },
   sz_gk_board_create: { COLS: numShadow(10), ROWS: numShadow(10), EMPTY: numShadow(0) },
   sz_gk_board_set: { VALUE: numShadow(1), COL: numShadow(0), ROW: numShadow(0) },
   sz_gk_board_get: { COL: numShadow(0), ROW: numShadow(0) },

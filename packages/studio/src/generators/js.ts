@@ -1902,6 +1902,14 @@ function compileStatementCode(
       )
       return `${pad}SZGameKit.onLandSpace(function () {\n${body}\n${pad}});`
     }
+    case 'gk:pileMoveTop':
+      return `${pad}SZGameKit.pileMoveTop(${identifiers.get(stmt.fromVar)}, ${identifiers.get(stmt.toVar)});`
+    case 'gk:pileShuffleFrom':
+      return `${pad}SZGameKit.pileShuffleFrom(${identifiers.get(stmt.deckVar)}, ${identifiers.get(stmt.discardVar)});`
+    case 'gk:cardFlip':
+      return `${pad}SZGameKit.cardFlip(${compileExpr(valueToExpr(stmt.card), 0, identifiers, recAt(base))});`
+    case 'gk:handDraw':
+      return `${pad}SZGameKit.handDraw(${identifiers.get(stmt.pileVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${stmt.fan});`
     case 'gk:wrapEdges':
       return `${pad}SZGameKit.wrapEdges(${identifiers.get(stmt.charVar)});`
     case 'gk:collideTilemap':
@@ -4950,6 +4958,22 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:onLandSpace':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'gk:pileMoveTop':
+      names.add(stmt.fromVar)
+      names.add(stmt.toVar)
+      return
+    case 'gk:pileShuffleFrom':
+      names.add(stmt.deckVar)
+      names.add(stmt.discardVar)
+      return
+    case 'gk:cardFlip':
+      collectExprIdentifiers(valueToExpr(stmt.card), names)
+      return
+    case 'gk:handDraw':
+      names.add(stmt.pileVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
     case 'gk:collideTilemap':
     case 'gk:collideGroup':
     case 'gk:breakTileAt':
@@ -6681,6 +6705,23 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       return
     case 'gk:spaceOf':
       names.add(expr.who)
+      return
+    case 'gk:pileTop':
+    case 'gk:pileSize':
+      names.add(expr.pileVar)
+      return
+    case 'gk:card':
+      collectExprIdentifiers(valueToExpr(expr.front), names)
+      collectExprIdentifiers(valueToExpr(expr.back), names)
+      return
+    case 'gk:cardIsUp':
+    case 'gk:cardFace':
+      collectExprIdentifiers(valueToExpr(expr.card), names)
+      return
+    case 'gk:cardAt':
+      collectExprIdentifiers(valueToExpr(expr.x), names)
+      collectExprIdentifiers(valueToExpr(expr.y), names)
+      names.add(expr.pileVar)
       return
     case 'gk:currentPlayer':
     case 'gk:countActive':

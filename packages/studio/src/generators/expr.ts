@@ -515,6 +515,18 @@ export function compileExpr(
       return 'SZGameKit.currentPlayer()'
     case 'gk:spaceOf':
       return `SZGameKit.spaceOf(${identifiers.get(expr.who)})`
+    case 'gk:pileTop':
+      return `SZGameKit.pileTop(${identifiers.get(expr.pileVar)})`
+    case 'gk:pileSize':
+      return `SZGameKit.pileSize(${identifiers.get(expr.pileVar)})`
+    case 'gk:card':
+      return `SZGameKit.card(${compileExpr(valueToExpr(expr.front), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.back), 0, identifiers, rec)})`
+    case 'gk:cardIsUp':
+      return `SZGameKit.cardIsUp(${compileExpr(valueToExpr(expr.card), 0, identifiers, rec)})`
+    case 'gk:cardFace':
+      return `SZGameKit.cardFace(${compileExpr(valueToExpr(expr.card), 0, identifiers, rec)})`
+    case 'gk:cardAt':
+      return `SZGameKit.cardAt(${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)}, ${identifiers.get(expr.pileVar)})`
     case 'gk:kills':
       return 'SZGameKit.kills()'
     // ---- Jogo 3D Avançado (game-3d-advanced) ----

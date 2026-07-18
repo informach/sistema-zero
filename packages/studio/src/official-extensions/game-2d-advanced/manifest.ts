@@ -10,6 +10,7 @@ import {
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
+  jogoDaMemoriaExample,
   meuPrimeiroJogoExample,
   oChefaoExample,
   quebraBlocosExample,
@@ -21,7 +22,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.30.0',
+  version: '0.31.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -472,6 +473,32 @@ que faltava para Cobrinha, Match-3, Sokoban, campo-minado e puzzles.
 
 Não há bloco de laço de propósito: você VARRE a grade com o "repita" do núcleo +
 ler/pôr — é assim que se aprende a mexer numa grade de verdade.
+
+### 🃏 Cartas
+
+⭐ **Uma PILHA é só uma LISTA** do núcleo (Valores → "criar lista"). O baralho, a
+mão e o descarte são três listas; estes blocos dão o vocabulário de carta em cima
+delas:
+
+- **uma carta: frente … verso …** — cria uma carta de DUAS faces (a frente = o
+  valor/figura; o verso = o que aparece virada pra baixo). Nasce virada pra baixo.
+  Ponha várias numa lista = o baralho.
+- **Mover a carta do topo da pilha … para a pilha …** — o COMPRAR (baralho → mão)
+  E o DESCARTAR (mão → descarte) num bloco. **Remontar a pilha … juntando … e
+  embaralhar** = quando o baralho acaba, joga o descarte de volta e embaralha.
+- **a carta do topo da pilha …** (espia sem tirar) e **quantas cartas tem a pilha
+  …** (= 0 quando acaba).
+- **Virar a carta …** (memória!), **a carta … está virada para cima** e **o que
+  aparece na carta …** (a frente se pra cima, o verso se pra baixo — compare duas
+  para achar o par).
+- **Desenhar a pilha … como fileira em x,y** mostra as cartas (marque a caixinha
+  para um leque) e guarda onde cada uma ficou; **a carta clicada em x,y da pilha …**
+  devolve o índice da carta sob o clique (−1 = nenhuma). Com "o mouse x/y" +
+  "Quando clicar no jogo" você joga uma carta clicando nela.
+
+Receita do jogo da memória: uma lista de cartas pareadas + "embaralhar" (Valores);
+no clique, vire a carta; quando duas estão viradas, compare "o que aparece" — par
+fica, senão "Esperar 0,6 s" e desvire as duas.
 
 ### 🛤️ Caminhos
 
@@ -1005,6 +1032,7 @@ das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
     batalhaEmEquipeExample,
     oChefaoExample,
     corridaTabuleiroExample,
+    jogoDaMemoriaExample,
     cobrinhaExample,
     quebraBlocosExample,
   ],

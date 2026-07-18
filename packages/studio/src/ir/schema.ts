@@ -272,6 +272,18 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:rollDice'; faces: number | JSExpr })
   | (JSExprCommon & { type: 'gk:currentPlayer' })
   | (JSExprCommon & { type: 'gk:spaceOf'; who: string })
+  // 🃏 R30 — cartas: pilha (lista), carta de 2 faces e a mão clicável (reporters).
+  | (JSExprCommon & { type: 'gk:pileTop'; pileVar: string })
+  | (JSExprCommon & { type: 'gk:pileSize'; pileVar: string })
+  | (JSExprCommon & { type: 'gk:card'; front: number | JSExpr; back: number | JSExpr })
+  | (JSExprCommon & { type: 'gk:cardIsUp'; card: number | JSExpr })
+  | (JSExprCommon & { type: 'gk:cardFace'; card: number | JSExpr })
+  | (JSExprCommon & {
+      type: 'gk:cardAt'
+      x: number | JSExpr
+      y: number | JSExpr
+      pileVar: string
+    })
   // 🥷 Ação em tempo real: "o golpe de A acertou B?" (caixa de golpe à frente).
   | (JSExprCommon & { type: 'gk:didHit'; aVar: string; bVar: string })
   // ⚙️ Física geral (R11): valores que o jogo INTEIRO precisa poder ler.
@@ -774,6 +786,31 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('gk:currentPlayer'), ...idField }),
     z.object({ type: z.literal('gk:spaceOf'), who: irText(), ...idField }),
+    z.object({ type: z.literal('gk:pileTop'), pileVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:pileSize'), pileVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:card'),
+      front: z.union([JSExprSchema, z.number()]),
+      back: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardIsUp'),
+      card: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardFace'),
+      card: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardAt'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      pileVar: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('gk:didHit'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isOnGround'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isInside'), charVar: irText(), region: irText(), ...idField }),
@@ -2992,6 +3029,17 @@ export type JSStatement =
       path: string
     })
   | (JSStatementCommon & { type: 'gk:onLandSpace'; body: JSStatement[] })
+  // 🃏 R30 — cartas: mover topo entre pilhas, rebaralhar, virar, desenhar a mão.
+  | (JSStatementCommon & { type: 'gk:pileMoveTop'; fromVar: string; toVar: string })
+  | (JSStatementCommon & { type: 'gk:pileShuffleFrom'; deckVar: string; discardVar: string })
+  | (JSStatementCommon & { type: 'gk:cardFlip'; card: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:handDraw'
+      pileVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      fan: boolean
+    })
   | (JSStatementCommon & { type: 'gk:collideTilemap'; charVar: string; map: string })
   | (JSStatementCommon & { type: 'gk:collideGroup'; charVar: string; mold: string })
   | (JSStatementCommon & {
@@ -6862,6 +6910,26 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('gk:onLandSpace'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('gk:pileMoveTop'), fromVar: irText(), toVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:pileShuffleFrom'),
+      deckVar: irText(),
+      discardVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardFlip'),
+      card: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:handDraw'),
+      pileVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      fan: z.boolean(),
+      ...idField,
+    }),
     z.object({ type: z.literal('gk:wrapEdges'), charVar: irText(), ...idField }),
     z.object({
       type: z.literal('gk:collideTilemap'),
@@ -9505,6 +9573,10 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:onTurnChange',
   'gk:moveAlongTrack',
   'gk:onLandSpace',
+  'gk:pileMoveTop',
+  'gk:pileShuffleFrom',
+  'gk:cardFlip',
+  'gk:handDraw',
   'gk:wrapEdges',
   'gk:collideTilemap',
   'gk:collideGroup',
