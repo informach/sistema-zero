@@ -4638,7 +4638,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // salvo): o motor desenha a fala e o menu no canvas e navega neles em
     // QUALQUER jogo — o stepUiInput roda no stepSystems, fora do Kit RPG.
     // R24: mudou de 3º p/ cá — diálogo DEPOIS de existir personagem e controle.
-    name: '💬 Fala & escolhas',
+    name: '🗨️ Fala & escolhas',
     colour: C,
     types: ['sz_gk_rpg_say', 'sz_gk_rpg_menu', 'sz_gk_rpg_option'],
   },
@@ -4648,7 +4648,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     types: ['sz_gk_on_event', 'sz_gk_emit'],
   },
   {
-    name: '👾 Moldes & enxames',
+    name: '🐛 Moldes & enxames',
     colour: C,
     types: [
       'sz_gk_define_mold',
@@ -4685,7 +4685,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // ⚠️ A trava é o que faltava nos TRÊS sistemas de animação da extensão (folha
     // manual · folha de andar · quadros por física): sem ela a criança manda
     // golpear e a animação de andar apaga o golpe no quadro seguinte.
-    name: '🎬 Animação',
+    name: '📽️ Animação',
     colour: C,
     types: [
       'sz_gk_play_anim',
@@ -4756,7 +4756,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // 🎲 GERAL (R30): as peças de JOGO DE TABULEIRO — a criança monta o Ludo/Jogo
     // da Vida. Ordem de turno (anel) + a trilha de CASAS (estende 🛤️ Caminhos:
     // cada "ponto" vira uma casa). O dado mora na 🎲 Sorte & medida.
-    name: '🎲 Jogo de tabuleiro',
+    name: '🏁 Jogo de tabuleiro',
     colour: C,
     types: [
       'sz_gk_players_setup',
@@ -4808,7 +4808,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   {
     // 🃏 GERAL (R30): a pilha É uma LISTA do núcleo; a criança MONTA memória, Uno,
     // deck-battler com listas + estes verbos + a carta de 2 faces + a mão clicável.
-    name: '🃏 Cartas',
+    name: '🎴 Cartas',
     colour: C,
     types: [
       'sz_gk_card',
@@ -4830,7 +4830,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   },
   {
     // Combate ANTES de Ação: a ação em tempo real usa hurt/i-frames/knockback.
-    name: '❤️ Combate',
+    name: '🗡️ Combate',
     colour: C,
     types: [
       'sz_gk_hurt',
@@ -4939,7 +4939,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // loja, crafting. Só o nome dos types segue "rpg_*" (renomear quebraria
     // projeto salvo). Vive colada na 💾 Memória: inventário e persistência
     // andam juntos.
-    name: '🎒 Itens',
+    name: '🎁 Itens',
     colour: C,
     types: [
       'sz_gk_rpg_give_item',
@@ -4950,7 +4950,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '💾 Memória',
+    name: '🧠 Memória',
     colour: C,
     types: [
       'sz_gk_save_value',
@@ -5133,7 +5133,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   // ⭐ É um jogo do Kit RPG com OUTRA batalha: o mundo (grade/NPC/fala/mapa/
   // flags/salvar) vem de lá. Aqui só o que é do gênero.
   {
-    name: '👾 criaturas',
+    name: '🐾 criaturas',
     kit: '👾 Kit Monstrinhos',
     colour: C,
     types: [

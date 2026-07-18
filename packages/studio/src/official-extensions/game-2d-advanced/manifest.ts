@@ -23,7 +23,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.37.0',
+  version: '0.38.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -95,7 +95,7 @@ para um gênero. Escolha pelo jogo que você quer:
 - 🥊 **Kit Luta** — luta 1 contra 1 por rounds.
 - 🚀 **Kit Nave** — nave atirando, invasores (estilo Space Invaders).
 - 🏰 **Kit Defesa de Torre** — torres contra ondas de inimigos num caminho.
-- 🎲 **Jogo de tabuleiro** — dado + ordem de turno + andar casas numa trilha.
+- 🏁 **Jogo de tabuleiro** — dado + ordem de turno + andar casas numa trilha.
 
 ⭐ Escolha UM gênero de batalha por jogo: ⚔️ turnos, 👾 bichinhos e 🃏 cartas são
 três batalhas DIFERENTES — não misture.
@@ -105,7 +105,7 @@ três batalhas DIFERENTES — não misture.
 A palavra "inimigo" aparece em vários lugares porque cada gênero tem o SEU tipo —
 não são intercambiáveis:
 
-- **Inimigo que ANDA no mapa e nasce em enxame** (o comum de ação) → 👾 **molde**
+- **Inimigo que ANDA no mapa e nasce em enxame** (o comum de ação) → 🐛 **molde**
   ("Criar o molde" + "Fazer nascer do molde").
 - **Oponente da batalha por TURNOS** (⚔️ Kit RPG) → "Adicionar inimigo" (na hora)
   OU **"Criar a ficha do inimigo"** (reutilizável, com imagem) + "batalha contra a ficha".
@@ -204,7 +204,7 @@ O jeito profissional de ligar as partes do jogo sem elas se conhecerem: uma
 \`inimigo:morreu\`; noutro canto, "Quando chegar o aviso inimigo:morreu" soma 1
 ponto e toca um som. Assim o código não vira um nó.
 
-### 👾 Moldes & enxames
+### 🐛 Moldes & enxames
 
 - **Criar o molde** — os DADOS de um tipo de personagem (inimigo, moeda, tiro):
   tamanho, vida, velocidade, dano, cor/imagem/aparência. Defina UMA vez.
@@ -237,7 +237,7 @@ só — "o chefe aparece aos 30 s", "a mensagem some em 2 s", o próximo golpe d
 combo. ("A cada N segundos" repete para sempre; este acontece uma vez.) Conta no
 relógio do jogo: se pausar, para de contar.
 
-### ❤️ Combate
+### 🗡️ Combate
 
 **Machucar** (tira vida e deixa piscando e invencível um tempinho), **empurrar**,
 **barra de vida** (vida cheia 0 = automática), **encostou (círculo)**, **a vida
@@ -278,7 +278,7 @@ regra é sua — *"para cada vivo do molde: se a distância entre ele e a bomba 
 raio → machucar"*. Assim explosão de fogo, pulso de cura e ímã usam o MESMO
 bloco.
 
-### 🎯 O mais perto (em 👾 Moldes & enxames)
+### 🎯 O mais perto (em 🐛 Moldes & enxames)
 
 **o mais perto de x … y … no molde …** devolve o vivo do enxame mais próximo
 daquele ponto. É como a torre escolhe em quem atirar, e como o inimigo decide
@@ -297,7 +297,7 @@ personagem, dizendo o tamanho de cada quadro.
 movimento — a nave que "deita" ao desviar, o peixe, a moto. Ligue UMA vez (0
 desliga); convive com o "Girar" (um soma no outro).
 
-### 🎬 Animação
+### 📽️ Animação
 
 **Tocar a animação** roda uma faixa de quadros em loop — pode chamar TODO quadro
 ("se andando, tocar andar; senão, tocar parado"): repetir a mesma não reinicia.
@@ -462,7 +462,7 @@ O jeito de lutar sem turnos, no mapa aberto (aventura, beat-em-up — geral):
 - **Desenhar corações: … de …** — a "vidinha" dos jogos de aventura (cheios = vida
   atual). Fica ótima no HUD.
 
-### 💬 Fala & escolhas
+### 🗨️ Fala & escolhas
 
 A UI que o MOTOR desenha para você — vale em qualquer jogo, não só no RPG:
 
@@ -528,7 +528,7 @@ que faltava para Cobrinha, Match-3, Sokoban, campo-minado e puzzles.
 Não há bloco de laço de propósito: você VARRE a grade com o "repita" do núcleo +
 ler/pôr — é assim que se aprende a mexer numa grade de verdade.
 
-### 🃏 Cartas
+### 🎴 Cartas
 
 ⭐ **Uma PILHA é só uma LISTA** do núcleo (Valores → "criar lista"). O baralho, a
 mão e o descarte são três listas; estes blocos dão o vocabulário de carta em cima
@@ -567,7 +567,7 @@ quanto ele já andou, de 0 a 100 — é assim que você sabe QUEM chegou (dentro
 Serve para o inimigo de defesa de torre, a patrulha, a esteira, o NPC num trilho
 de cena, a corrida.
 
-### 🎲 Jogo de tabuleiro
+### 🏁 Jogo de tabuleiro
 
 As peças para MONTAR um Ludo, Jogo da Vida ou Banco Imobiliário — a criança liga
 a lógica, como sempre.
@@ -615,7 +615,7 @@ muda QUALQUER coisa suavemente (crescer, drenar a vida, sumir) e avisa
 > atrás do escuro. Escureça, troque tudo, clareie — e a mágica acontece. **Piscar
 > a tela** é o susto ("apareceu um inimigo!").
 
-### 💾 Memória
+### 🧠 Memória
 
 **Guardar o valor … com o nome …** guarda de VERDADE: fechar o jogo e abrir de
 novo, continua lá. O recorde, a fase destravada, o nome do jogador. **o valor
@@ -844,7 +844,7 @@ tiles) continuam valendo e se combinam com o kit.
 - **Criar o NPC** — um morador parado numa célula (sólido), com imagem ou
   aparência. **Desenhar os NPCs** no "Desenhar o jogo".
 - **Quando conversar com o NPC… fazer** — roda no ESPAÇO olhando para ele. Use a
-  **Mostrar a fala** (lá de cima, em 💬 Fala & escolhas) para ele responder.
+  **Mostrar a fala** (lá de cima, em 🗨️ Fala & escolhas) para ele responder.
 
 ### História, itens e mapas
 
@@ -945,7 +945,7 @@ O jeito profissional de contar história:
 **Salvar o jogo** / **Continuar o jogo salvo** / **tem jogo salvo?** — guarda o
 progresso do RPG (flags, itens, mapa, posição, atributos, poções, golpe especial) e
 continua de onde parou, mesmo fechando e reabrindo. Ligue o "Continuar" só quando
-"tem jogo salvo?". (O **Menu de escolha** subiu para 💬 Fala & escolhas — vale em
+"tem jogo salvo?". (O **Menu de escolha** subiu para 🗨️ Fala & escolhas — vale em
 qualquer jogo; aqui ele combina lindo com o "Quando conversar" e as cenas.)
 
 ## 🚀 Kit Nave
@@ -1087,7 +1087,7 @@ das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
 
 O atalho do RPG DE CARTAS (deck-battler, estilo Slay the Spire). Pela regra dos
 kits, o kit dá só o ANDAIME (vida, energia, escudo, intenção e turnos); o DECK, a
-MÃO e **o que cada carta faz** são seus — montados com as 🃏 Cartas (que são listas
+MÃO e **o que cada carta faz** são seus — montados com as 🎴 Cartas (que são listas
 do núcleo) e blocos gerais.
 
 - **Começar uma batalha de cartas: você com … de vida, inimigo com …** abre a arena

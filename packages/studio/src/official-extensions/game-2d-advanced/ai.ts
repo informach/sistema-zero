@@ -69,7 +69,7 @@ API global injetada como window.SZGameKit:
 - 📢 Avisos (event bus do P24 — a espinha da arquitetura): on(nome, fn) escuta;
   emit(nome) dispara. Desacopla quem causa de quem reage (ex.: goblin morre →
   emit("inimigo:morreu"); o listener soma o kill e toca o som).
-- 👾 Moldes & enxames (data-driven + object pooling do vídeo de otimização):
+- 🐛 Moldes & enxames (data-driven + object pooling do vídeo de otimização):
   defineMold(nome, { w, h, health, speed, damage, color, image, look }) define
   os DADOS de um tipo; spawnFromMold(molde, x, y) nasce 1 (reaproveita
   recolhidos — rápido com centenas); const chefe = spawnFromMold(...) dá
@@ -86,7 +86,7 @@ API global injetada como window.SZGameKit:
   (escala do tamanho-base). Blocos de Canvas do núcleo valem dentro da fn.
 - 🎯 Comportamentos (steering): seek(c, alvo, dt) persegue; drift(c, dt)
   vagueia; face(c, alvo) espelha o desenho na direção do alvo.
-- ❤️ Combate (P24): hurt(c, dano, iframesSeg) tira vida + invencibilidade
+- 🗡️ Combate (P24): hurt(c, dano, iframesSeg) tira vida + invencibilidade
   piscante; isInvincible(c) é o GATE — padrão canônico:
   "se touchCircle(a, b) E NÃO isInvincible(b): hurt + knockback + som" (só o
   hit VÁLIDO empurra e toca som). knockback(c, de, força) empurra com
@@ -182,7 +182,7 @@ API global injetada como window.SZGameKit:
   rpgAddFlag('intro')". Reserva de intenção: herói e NPC não entram na mesma
   célula. setWalkSheet(c, "folha", fw, fh) = folha de ANDAR de 4 linhas
   (baixo/cima/esquerda/direita) animada pela direção + movimento.
-- 💬 Fala & escolhas (GERAL — o motor desenha e navega em QUALQUER jogo, apesar do
+- 🗨️ Fala & escolhas (GERAL — o motor desenha e navega em QUALQUER jogo, apesar do
   prefixo rpg no nome): rpgSay(texto, quem) = caixa typewriter (fila; ESPAÇO avança;
   emite "fala:terminada"). rpgMenu(titulo, fn) abre um menu no canvas (setas +
   espaço/clique) e roda a opção escolhida; DENTRO do fn use rpgOption(label, optFn)
@@ -267,7 +267,7 @@ API global injetada como window.SZGameKit:
   (acumula o dt do JOGO — pausou, para de contar; NÃO usa relógio de parede);
   cooldownReady(quem, s) = o "recarregando" do tiro/golpe (true só quando o tempo
   passou, e JÁ reinicia a contagem).
-- 🎬 Animação (GERAL — a TRAVA): os 3 sistemas de animação deixavam qualquer
+- 📽️ Animação (GERAL — a TRAVA): os 3 sistemas de animação deixavam qualquer
   chamada atropelar a anterior (golpeia e a animação de andar apaga o golpe).
   ⭐ setEntityState(quem, "parado"|"andando"|"pulando"|"caindo"|"dano"|"golpe"|
   "morte", segundos) TRAVA o estado; stateAnim(quem, estado, de, ate, fps, umaVez)
@@ -305,7 +305,7 @@ API global injetada como window.SZGameKit:
   emit "caminho:fim"; QUEM chegou = no forEach, "se pathProgress(item)===100".
   Serve tower defense/patrulha/esteira/cutscene em trilho/corrida. Pontos podem
   ficar fora da tela.
-- 🎲 Jogo de tabuleiro (R30 — Ludo/Jogo da Vida; a criança MONTA): rollDice(lados)
+- 🏁 Jogo de tabuleiro (R30 — Ludo/Jogo da Vida; a criança MONTA): rollDice(lados)
   = sorteia 1..lados (o dado, em 🎲 Sorte & medida). Ordem de turno (anel):
   playersSetup(n) · currentPlayer() (a vez, 1..n) · nextPlayer() (rodízio; volta ao 1)
   · onTurnChange(fn). Trilha de CASAS (reusa 🛤️: cada pathPoint é uma casa):
@@ -333,9 +333,9 @@ API global injetada como window.SZGameKit:
 - 🎯 fanShot(quem, moldeDoTiro, n, arcoGraus, rumoGraus, vel) = leque de tiros
   (rumo -90 = p/ cima, como setVelocityAngle); depois mova com moveByVelocity +
   cullOffscreen, como todo tiro.
-- 🎒 Itens (GERAL, saiu do Kit RPG): rpgGiveItem SOMA quantidade (antes dedupava) e
+- 🎁 Itens (GERAL, saiu do Kit RPG): rpgGiveItem SOMA quantidade (antes dedupava) e
   rpgCountItem(nome) LÊ — crafting ("3 madeiras"), loja, coleta. As FLAGS
-  (rpgAddFlag/rpgHasFlag) também são gerais e vivem coladas na 💾 Memória: a flag
+  (rpgAddFlag/rpgHasFlag) também são gerais e vivem coladas na 🧠 Memória: a flag
   morre com a partida, o valor guardado sobrevive a fechar o jogo.
 - 🔧 Propriedades & direção (GERAL): propertyOf(quem, "x"|"y"|"vx"|"vy"|"speed"|"w"|
   "h"|"health"|"maxHealth"|"damage") e setProperty(quem, prop, v) = a chave-mestra
@@ -346,7 +346,7 @@ API global injetada como window.SZGameKit:
   breakTileAt(mapa, quem) (mundo destrutível/cavar), setTileSize(px) (padrão 64).
 - ✨ tweenTo(quem, x, y, s) desliza suave até um ponto (porta/plataforma/cutscene)
   — chame UMA vez, não todo quadro.
-- 🧭 Regiões · 🎲 Sorte & medida · 🌫️ Sumir & transição · 💾 Memória (GERAIS, fora
+- 🧭 Regiões · 🎲 Sorte & medida · 🌫️ Sumir & transição · 🧠 Memória (GERAIS, fora
   de todo kit — é com eles que se inventa gênero):
   defineRegion(nome, x, y, w, h) = retângulo com NOME (grama, porta, zona de dano,
   área segura) + isInside(quem, regiao) + ⭐ overlapPercent(quem, regiao) 0..100 —
@@ -378,7 +378,7 @@ API global injetada como window.SZGameKit:
   row) testa se cabe (parede/limite). SEM bloco de laço DE PROPÓSITO: varra a grade
   com o "repita" do núcleo + boardGet/boardSet (a criança MONTA a mecânica). Cobrinha
   = uma lista de células + o tabuleiro marcando o corpo (bateu no corpo = perdeu).
-- 🃏 Cartas (R30 — memória/Uno/deck-battler; ⭐ uma PILHA é só uma LISTA do núcleo,
+- 🎴 Cartas (R30 — memória/Uno/deck-battler; ⭐ uma PILHA é só uma LISTA do núcleo,
   a criança MONTA): pileMoveTop(de, para) tira o topo de uma lista e põe na outra
   (= comprar deck→mão E descartar mão→descarte) · pileShuffleFrom(deck, descarte) =
   junta o descarte no deck e embaralha (rebaralhar) · pileTop(pilha)/pileSize(pilha).
@@ -484,7 +484,7 @@ API global injetada como window.SZGameKit:
   hurt(invasor) + se isDead: faíscas + tdAddCoins + recycle. Gelo/área/vender =
   receitas sobre esse esqueleto. Exemplo: "Defesa do Reino".
 - 🃏 Kit Cartas (R30 — deck-battler/Slay the Spire; RECEITA, não mágica: o kit dá o
-  andaime, a criança MONTA o deck/mão/efeitos com as 🃏 Cartas + gerais). cardsStart(
+  andaime, a criança MONTA o deck/mão/efeitos com as 🎴 Cartas + gerais). cardsStart(
   minhaVida, vidaInimigo) abre a arena (roda no 'jogando'; NÃO muda o estado). cardsEnergyPerTurn(n) = a
   energia RESETA por turno (o diferencial do RPG comum) · cardsEnergy()/cardsSpend(n).
   cardsOnTurn(fn) = começo do meu turno (energia+escudo já resetaram) — COMPRE a mão
@@ -495,7 +495,7 @@ API global injetada como window.SZGameKit:
   · cardsDrawHud() desenha vidas/energia/escudo/intenção · cardsIntentAction()/
   cardsIntentValue() a criança LÊ no cardsOnEnemyTurn(fn) p/ resolver ("se action==
   'atacar': cardsHurtMe(value)") e anunciar a próxima. Jogar carta = onGameClick + cardAt
-  (Fase 🃏 Cartas) + cardsSpend + efeito + pileMoveTop mão→descarte. Exemplo "Duelo de
+  (Fase 🎴 Cartas) + cardsSpend + efeito + pileMoveTop mão→descarte. Exemplo "Duelo de
   Cartas".
 - 🥷 Ação em tempo real (Zelda; Ninja Adventure): attackFacing(quem, alcance,
   duracao) cria uma caixa de golpe NA FRENTE (pela direção que olha) por ~0.3s, com
