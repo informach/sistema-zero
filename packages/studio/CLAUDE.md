@@ -480,8 +480,21 @@ top-down cujo tileset (ex.: de template) apenas DEFINE uma peça plataforma cair
 motivo; senão → TOP-DOWN (RPG). O host (community-kids `pinta-client`) chama
 `setStudioStorageNamespace(viewerId)` ANTES e navega pro `/estudio`. Testes: `tilemapGame.test.ts`
 (6 — asset+IR+arquivos, top-down/plataforma-COLOCADA/plataforma-só-declarada-segue-top-down, frente
-DEPOIS do drawSprite, `null` p/ mapa inválido). ⚠️ **Follow-up adiado:** o dropdown 'frente' do
-`sz_gk_draw_tilemap` (desamarrar de `solid`) NÃO entrou — evitei tocar o WIP concorrente da gk.
+DEPOIS do drawSprite, `null` p/ mapa inválido).
+
+**gk: camada "frente" do "Desenhar o mapa" (18/07):** `sz_gk_draw_tilemap` ganhou o valor **'frente'**
+no dropdown LAYER, desamarrado de `solid` (o 'topos' só desenhava peças SÓLIDAS por cima). Como
+"frente" é conceito de CAMADA (não de índice de peça — o mesmo índice pode estar no fundo e na
+frente), o veículo é uma **grade por-célula**: `ProjectTilemapMeta`/`PintaTilemapMeta` ganharam
+**`frontGrid?: string`** (mesmo formato do `grid`, só as camadas de frente). Pinta `tilemapMetaFrom`
+emite `frontGrid` no meta COMPLETO quando `hasFrontLayer` (o `tilemapFront` filtrado não repete);
+`sanitizeTilemapMeta` valida (mesma régua do `grid`, OMITE vazio/só-'.'). Runtime gk: `loadTilemap`
+monta `m.frontRows = parseTileGrid(meta.frontGrid)`; `drawTilemap(name, 'frente')` desenha de
+`frontRows` SEM o filtro de sólido (sem frontRows → não desenha nada). ⚠️ **round-trip:** o guard do
+parser `parsers/js.ts` (`layer !== 'chão' && … && layer !== 'frente'`) PRECISA listar 'frente' (senão
+a Ponte código→blocos joga p/ rawJS e o `blockAudit` quebra). Bump manifest gk `0.32.0 → 0.33.0` +
+`docs`/`ai.ts`. Testes: `assetMeta.test.ts` (frontGrid preservado/omitido), gk `runtime.test.ts`
+(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329.
 
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +

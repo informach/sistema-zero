@@ -225,9 +225,37 @@ typecheck+test(344)+biome do pinta e no studio (`tilemapGame` 6/0). QA browser r
   sanitize lançar em UM registro não derruba a galeria inteira (paridade com o import `.pinta.json`).
 
 **A heurística plataforma×top-down do jogo** também foi refinada, mas o fix vive no studio
-(`projects/tilemapGame.ts`) — ver o CLAUDE.md de lá. **Documentado (por-design/backlog, NÃO
-corrigido):** remap do tileset fora do undo (exige transação); descarte por `instanceof` de
-typed-array e gap de migração de kind (por-design/test-guarded); literais soltos fora do `copy.ts`.
+(`projects/tilemapGame.ts`) — ver o CLAUDE.md de lá.
+
+## Backlog sweep — 18/07/2026 (limpou o "documentado/não corrigido")
+
+- **⭐ Transação de undo CROSS-ASSET (o maior):** editar peça do tileset (add/duplicate/remove)
+  remapeia as células dos MAPAS dependentes; antes isso ia direto p/ a galeria+disco FORA do undo do
+  tileset → desfazer dessincronizava os mapas. Agora o `editorStore` guarda snapshot COMPOSTO
+  `{asset, linkedMaps}`: **`commitLinked(next, {before, after})`** grava o tileset E os mapas na MESMA
+  entrada; `undo`/`redo` restauram/reaplicam os mapas via o callback injetado **`applyLinkedAssets`**
+  (o `EditorScreen` liga = `gallery.absorb` + `persistAsset`). `commit`/`replace`/`commitGesture`
+  carregam o `linkedMaps` corrente adiante (edição comum não toca mapas) → ZERO regressão nos editores
+  sprite/mapa/vetor (nunca chamam commitLinked). ⚠️ a história é POR SESSÃO de editor (fechar perde o
+  undo — o remap fica persistido). QA browser: remover peça → grade do mapa remapeia; remover+desfazer
+  na mesma sessão → mapa volta idêntico.
+- **importAssets** não orfana o mapa se o persist do tileset falhar (Set `persistedIds`).
+- **Autosave** sem duplo-persist: `saveNow` usa `while (saving)` (não `if`).
+- **i18n:** ~16 literais soltos → `COPY.a11y` (aria-labels + `Cor/Quadro/Passo/Abrir/quadro` +
+  defaults de modelo `Chão`/`Camada`/`animação`). `core/project.ts` e `tiles/tilemapOps.ts` passaram a
+  importar `COPY` (é módulo de constantes, sem ciclo de runtime).
+- **Dead-click** do `createFromTemplate` (`!primary` seta `mutateError` + `GalleryScreen` com toast de
+  fallback). **Packers** de tileset compartilham `tiles/packGeometry.ts tilesetGridGeometry(count)`.
+  **Sanitize** coage `number[]`→`Uint8Array`/`Int16Array` (registro sem o typed array do clone/JSON).
+- Gancho de teste novo: `testing/idbMock.ts setIdbWriteGuard(fn)` (faz o `set` lançar p/ testar
+  caminhos de erro). **Não-mudança (por-design/inalcançável):** colisão de id de gradiente na folha
+  (frames.ts regenera ids), gap de migração de kind (exaustivo/test-guarded), borda "tudo-frente"
+  (resolvida pelo `tilemap` completo do full review).
+
+**gk camada "frente" (fatia vertical):** `PintaTilemapMeta` ganhou **`frontGrid?: string`** (grade SÓ
+das camadas de frente); `tilemapMetaFrom` a emite no meta COMPLETO quando `hasFrontLayer` (o
+`tilemapFront` filtrado NÃO repete). O Estúdio (gk) desenha essa grade "por cima" — ver o CLAUDE.md do
+studio.
 
 ## Regras não-negociáveis
 
