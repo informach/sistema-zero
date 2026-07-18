@@ -1413,7 +1413,7 @@ export const gameKitBlocks = [
       { type: 'field_input', name: 'MOVE', text: 'Espadada' },
       { type: 'input_value', name: 'DMG', check: 'JSValue' },
       { type: 'input_value', name: 'COST', check: 'JSValue' },
-      { type: 'field_input', name: 'WHO', text: 'Você' },
+      { type: 'field_name_picker', name: 'WHO', text: 'Você', kind: 'combatant' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1429,7 +1429,7 @@ export const gameKitBlocks = [
       { type: 'field_input', name: 'MOVE', text: 'Curar' },
       { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
       { type: 'input_value', name: 'COST', check: 'JSValue' },
-      { type: 'field_input', name: 'WHO', text: 'Você' },
+      { type: 'field_name_picker', name: 'WHO', text: 'Você', kind: 'combatant' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1535,7 +1535,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_battler_life',
     message0: 'a vida de %1 na batalha',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'Dragão' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' }],
     output: 'JSValue',
     colour: C,
     tooltip:
@@ -1544,7 +1544,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_battler_max_life',
     message0: 'a vida máxima de %1 na batalha',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'Dragão' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' }],
     output: 'JSValue',
     colour: C,
     tooltip:
@@ -1553,7 +1553,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_rpg_on_foe_turn',
     message0: 'Quando for a vez do inimigo %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'Dragão' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
     previousStatement: 'JSStmt',
@@ -1566,7 +1566,7 @@ export const gameKitBlocks = [
     type: 'sz_gk_rpg_foe_use',
     message0: 'O inimigo %1 usa o golpe %2',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'Dragão' },
+      { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' },
       { type: 'field_input', name: 'MOVE', text: 'Baforada' },
     ],
     inputsInline: true,
@@ -1580,7 +1580,7 @@ export const gameKitBlocks = [
     type: 'sz_gk_rpg_foe_hit_all',
     message0: 'O inimigo %1 acerta TODO o time (dano %2)',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'Dragão' },
+      { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' },
       { type: 'input_value', name: 'DMG', check: 'JSValue' },
     ],
     inputsInline: true,

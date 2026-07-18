@@ -58,6 +58,7 @@ export type NameKind =
   | 'gamestate'
   | 'mold'
   | 'battler'
+  | 'combatant'
   | 'effect'
   | 'event'
   | 'look'
@@ -107,6 +108,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'gamestate',
   'mold',
   'battler',
+  'combatant',
   'effect',
   'event',
   'look',
@@ -290,6 +292,21 @@ function collectMolds(workspace: Blockly.Workspace | null | undefined): string[]
 const BATTLER_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_define_battler: ['NAME'] }
 function collectBattlers(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, BATTLER_DECL_BLOCKS)
+}
+// ⚔️ QUALQUER combatente por nome (p/ "Ensinar o golpe para…", "a vida de…", a IA de
+// chefe): o herói "Você" + todos os aliados/inimigos/chefões/fichas nomeados. É o
+// CONSUMIDOR (referencia), ≠ do `battler` (que lista só as fichas, p/ "batalha contra").
+const COMBATANT_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_rpg_add_ally: ['NAME'],
+  sz_gk_rpg_add_foe: ['NAME'],
+  sz_gk_rpg_add_boss: ['NAME'],
+  sz_gk_rpg_battle_start: ['NAME'],
+  sz_gk_rpg_define_battler: ['NAME'],
+}
+function collectCombatants(workspace: Blockly.Workspace | null | undefined): string[] {
+  const seen = new Set<string>(['Você']) // o herói entra sempre
+  for (const n of collectDeclaredNames(workspace, COMBATANT_DECL_BLOCKS)) seen.add(n)
+  return [...seen]
 }
 
 /** Efeitos de faísca (partículas data-driven) — fonte do seletor EFFECT. */
@@ -689,6 +706,12 @@ const KIND_UI: Record<NameKind, KindUI> = {
     empty:
       'Nenhuma ficha de inimigo ainda — crie uma (bloco "Criar a ficha do inimigo") ou digite o nome abaixo.',
   },
+  combatant: {
+    icon: '⚔️',
+    placeholder: 'nome do combatente',
+    empty:
+      'O herói é "Você". Aliados e inimigos aparecem quando você os adiciona/cria — ou digite o nome abaixo.',
+  },
   effect: {
     icon: '✨',
     placeholder: 'nome do efeito',
@@ -1043,6 +1066,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectMolds(ws)
       case 'battler':
         return collectBattlers(ws)
+      case 'combatant':
+        return collectCombatants(ws)
       case 'effect':
         return collectEffects(ws)
       case 'event':
