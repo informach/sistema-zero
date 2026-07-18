@@ -3,6 +3,7 @@
  * Texto de UI vive AQUI (os componentes só referenciam), para revisão de tom
  * num lugar só.
  */
+import type { PintaTemplateId } from '../templates/catalog'
 import type { PintaAssetKind } from './project'
 
 export const COPY = {
@@ -32,6 +33,33 @@ export const COPY = {
     restoredOne: 'Trouxe 1 desenho de volta!',
     restoredMany: (count: number) => `Trouxe ${count} desenhos de volta!`,
     restorePartial: ' Alguns ficaram de fora.',
+    importImage: 'Trazer uma foto',
+    importDecodeError: 'Não consegui abrir essa imagem. Tente um PNG ou JPG.',
+    importDone: 'Sua imagem já está na galeria!',
+  },
+  importImage: {
+    title: 'O que essa imagem vira?',
+    asBackground: {
+      emoji: '🖼️',
+      title: 'Cenário de fundo',
+      description: 'A imagem grande que fica atrás do jogo.',
+    },
+    asTileset: {
+      emoji: '🧩',
+      title: 'Peças do cenário',
+      description: 'Corta a imagem em pecinhas para montar mapas.',
+    },
+    sizeTitle: 'Escolha o tamanho',
+    tileSizeTitle: 'Tamanho de cada peça',
+    colorsNote: 'As cores da foto viram as cores do Pinta.',
+    newColors: (n: number) => (n === 1 ? '1 cor nova' : `${n} cores novas`),
+    uniqueTiles: (n: number) => (n === 1 ? '1 peça' : `${n} peças`),
+    tooManyTiles: 'Essa imagem tem peças demais! Tente um tamanho de peça maior.',
+    detected: 'Detectei sozinho',
+    preview: 'Vai ficar assim:',
+    back: 'Voltar',
+    next: 'Avançar',
+    create: 'Trazer para a galeria',
   },
   newAsset: {
     styleTitle: 'Como você quer desenhar?',
@@ -107,6 +135,30 @@ export const COPY = {
         'Um CONJUNTO de peças feitas de formas. Desenhe VÁRIAS peças aqui e monte o mapa com elas.',
     },
   } satisfies Record<PintaAssetKind, { emoji: string; title: string; description: string }>,
+  templates: {
+    styleCard: {
+      emoji: '✨',
+      title: 'Modelos prontos',
+      description: 'Comece de um desenho pronto e mude do seu jeito.',
+    },
+    stepTitle: 'Escolha um modelo para começar',
+    items: {
+      heroi: { title: 'Herói corajoso', description: 'Um personagem 16×16 que já anda.' },
+      slime: { title: 'Slime saltitante', description: 'Um bichinho verde que pisca.' },
+      moeda: { title: 'Moeda girando', description: 'Uma moeda com 4 quadros de giro.' },
+      nave: { title: 'Nave espacial', description: 'Para jogos de atirar nas estrelas.' },
+      'chao-de-grama': {
+        title: 'Chão de grama',
+        description: 'Peças de chão, terra, plataforma e espinho.',
+      },
+      'fase-plataforma': {
+        title: 'Fase de plataforma',
+        description: 'Um mapa pronto para explorar (já vem com as peças).',
+      },
+      fantasminha: { title: 'Fantasminha', description: 'Um fantasma de formas que flutua.' },
+      'ceu-com-sol': { title: 'Céu com sol', description: 'Um cenário de dia, feito de formas.' },
+    } satisfies Record<PintaTemplateId, { title: string; description: string }>,
+  },
   sizes: {
     16: 'Pequeno',
     32: 'Médio',

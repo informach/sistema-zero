@@ -23,6 +23,7 @@ import {
   type PintaProjectRef,
   sanitizeProjectRef,
 } from '../core/project'
+import { findTemplate } from '../templates/catalog'
 import { deleteAsset, listAllAssets, persistAsset } from './persistence'
 
 export type NewAssetInput = (
@@ -54,6 +55,16 @@ export interface PintaGalleryState {
   load(): Promise<void>
   /** Cria e persiste; devolve o asset novo ou null (nome inválido/duplicado/cota). */
   create(input: NewAssetInput): Promise<PintaAsset | null>
+  /**
+   * Cria a partir de um MODELO PRONTO: pode gerar VÁRIOS assets (um mapa vem com
+   * o tileset). O principal recebe o nome escolhido; companheiros ganham sufixo
+   * anti-colisão. Devolve o asset PRINCIPAL (o que a criança abre) ou null.
+   */
+  createFromTemplate(input: {
+    templateId: string
+    name: string
+    projectRef?: PintaProjectRef
+  }): Promise<PintaAsset | null>
   rename(id: string, name: string): Promise<boolean>
   duplicate(id: string): Promise<PintaAsset | null>
   remove(id: string): Promise<boolean>
@@ -190,6 +201,60 @@ export function createGalleryStore(): PintaGalleryStore {
           lastStyle: assetStyle(asset.kind) ?? state.lastStyle,
         }))
         return asset
+      } catch {
+        set({ mutateError: COPY.editor.saveError })
+        return null
+      }
+    },
+
+    async createFromTemplate(input) {
+      const template = findTemplate(input.templateId)
+      if (!template) {
+        set({ mutateError: COPY.newAsset.nameInvalid })
+        return null
+      }
+      const built = template.build()
+      const { assets } = get()
+      if (assets.length + built.assets.length > PINTA_LIMITS.maxAssets) {
+        set({ mutateError: COPY.gallery.quotaFull })
+        return null
+      }
+      const chosen = normalizeAssetName(input.name)
+      if (!chosen) {
+        set({ mutateError: COPY.newAsset.nameInvalid })
+        return null
+      }
+      const projectRef = sanitizeProjectRef(input.projectRef)
+      const taken = new Set(assets.map((a) => a.name))
+      // Nomeia: o principal com o nome escolhido, os companheiros com o próprio
+      // (sufixo em colisão). Renomear NÃO mexe no `tilesetId` (é por id).
+      const prepared: PintaAsset[] = []
+      for (let i = 0; i < built.assets.length; i += 1) {
+        const asset = built.assets[i]
+        if (!asset) continue
+        const desired = i === built.primaryIndex ? chosen : asset.name
+        const name = uniqueName(desired, taken)
+        if (!name) {
+          set({ mutateError: COPY.newAsset.nameTaken })
+          return null
+        }
+        taken.add(name)
+        prepared.push(projectRef ? { ...asset, name, projectRef } : { ...asset, name })
+      }
+      const primary = prepared[built.primaryIndex]
+      if (!primary) return null
+      try {
+        // Persiste na ORDEM do build (tileset antes do mapa) — se a quota ou o
+        // disco falhar no meio, o mapa não fica órfão sem as peças.
+        for (const asset of prepared) {
+          await persistAsset(asset)
+          set((state) => ({ assets: upsertSorted(state.assets, asset) }))
+        }
+        set((state) => ({
+          mutateError: null,
+          lastStyle: assetStyle(primary.kind) ?? state.lastStyle,
+        }))
+        return primary
       } catch {
         set({ mutateError: COPY.editor.saveError })
         return null

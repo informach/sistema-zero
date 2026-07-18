@@ -11,6 +11,64 @@ beforeEach(() => {
   setPintaStorageNamespace('')
 })
 
+describe('galleryStore — modelos prontos', () => {
+  it('createFromTemplate cria o sprite com o nome escolhido', async () => {
+    const store = createGalleryStore()
+    const asset = await store
+      .getState()
+      .createFromTemplate({ templateId: 'heroi', name: 'meu-heroi' })
+    expect(asset?.kind).toBe('pixel-sprite')
+    expect(asset?.name).toBe('meu-heroi')
+    expect(store.getState().assets).toHaveLength(1)
+  })
+
+  it('modelo de MAPA entra com o tileset companheiro (2 assets, tilesetId casado)', async () => {
+    const store = createGalleryStore()
+    const map = await store
+      .getState()
+      .createFromTemplate({ templateId: 'fase-plataforma', name: 'minha-fase' })
+    expect(map?.kind).toBe('tilemap')
+    expect(map?.name).toBe('minha-fase')
+    const assets = store.getState().assets
+    expect(assets).toHaveLength(2)
+    const tileset = assets.find((a) => a.kind === 'tileset')
+    if (map?.kind !== 'tilemap' || !tileset) throw new Error('esperava mapa + tileset')
+    expect(map.tilesetId).toBe(tileset.id)
+  })
+
+  it('projectRef do Pensa é anexado a TODOS os assets do modelo', async () => {
+    const store = createGalleryStore()
+    await store.getState().createFromTemplate({
+      templateId: 'fase-plataforma',
+      name: 'fase',
+      projectRef: { id: 'p1', name: 'Meu Jogo' },
+    })
+    for (const a of store.getState().assets) {
+      expect(a.projectRef?.id).toBe('p1')
+    }
+  })
+
+  it('quota: modelo de mapa (2 assets) barra quando não cabem os dois', async () => {
+    const store = createGalleryStore()
+    // Enche até faltar 1 slot.
+    for (let i = 0; i < PINTA_LIMITS.maxAssets - 1; i += 1) {
+      await store.getState().create({ kind: 'pixel-sprite', name: `s${i}`, frameSize: 16 })
+    }
+    const map = await store
+      .getState()
+      .createFromTemplate({ templateId: 'fase-plataforma', name: 'fase' })
+    expect(map).toBeNull()
+    expect(store.getState().mutateError).toBe(COPY.gallery.quotaFull)
+  })
+
+  it('nome colidindo ganha sufixo (não sobrescreve)', async () => {
+    const store = createGalleryStore()
+    await store.getState().create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 16 })
+    const asset = await store.getState().createFromTemplate({ templateId: 'heroi', name: 'heroi' })
+    expect(asset?.name).toBe('heroi-2')
+  })
+})
+
 describe('galleryStore — CRUD sobre o IndexedDB local', () => {
   it('create persiste, lista e devolve o asset', async () => {
     const store = createGalleryStore()

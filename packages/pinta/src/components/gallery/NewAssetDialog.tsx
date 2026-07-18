@@ -29,6 +29,17 @@ import type { NewAssetInput } from '../../state/galleryStore'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import { TemplatePicker } from './TemplatePicker'
+
+/** Primeiro nome livre por sufixo (`heroi` → `heroi-2`) para o passo de nome. */
+function firstFreeName(base: string, taken: ReadonlySet<string>): string {
+  if (!taken.has(base)) return base
+  for (let n = 2; n <= 99; n += 1) {
+    const candidate = `${base}-${n}`
+    if (!taken.has(candidate)) return candidate
+  }
+  return base
+}
 
 const TILEMAP_SIZES = [
   { cols: 12, rows: 9 },
@@ -70,7 +81,7 @@ const KIND_FOR_ROLE: Record<PintaAssetStyle, Record<NewAssetRole, PintaAssetKind
   vector: { sprite: 'vector-sprite', background: 'vector-background', tileset: 'vector-tileset' },
 }
 
-type Step = 'style' | 'kind' | 'size' | 'name'
+type Step = 'style' | 'kind' | 'size' | 'template' | 'name'
 
 /**
  * Pré-seleção da missão de arte: sprite pixel nasce em 32 (chega ao Estúdio com
@@ -234,6 +245,7 @@ export function NewAssetDialog({
   projectName = null,
   onClose,
   onCreate,
+  onCreateFromTemplate,
 }: {
   open: boolean
   /** Tilesets existentes de QUALQUER estilo (habilitam o Mapa + seletor). */
@@ -250,12 +262,15 @@ export function NewAssetDialog({
   projectName?: string | null
   onClose: () => void
   onCreate: (input: NewAssetInput) => void
+  /** Cria a partir de um modelo pronto (novo ramo do wizard). */
+  onCreateFromTemplate: (input: { templateId: string; name: string }) => void
 }): JSX.Element | null {
   const [step, setStep] = useState<Step>('style')
   const [style, setStyle] = useState<PintaAssetStyle>(initialStyle)
   const [kind, setKind] = useState<PintaAssetKind | null>(null)
   const [sizeKey, setSizeKey] = useState<string>('')
   const [tilesetId, setTilesetId] = useState<string>('')
+  const [templateId, setTemplateId] = useState<string | null>(null)
   const [name, setName] = useState(initialName)
 
   const normalized = useMemo(() => normalizeAssetName(name), [name])
@@ -273,6 +288,7 @@ export function NewAssetDialog({
     setKind(null)
     setSizeKey('')
     setTilesetId('')
+    setTemplateId(null)
     setName(initialName)
   }
 
@@ -296,6 +312,8 @@ export function NewAssetDialog({
 
   if (!open) return null
 
+  const inTemplateBranch = step === 'template' || (step === 'name' && templateId !== null)
+
   const title =
     step === 'style'
       ? COPY.newAsset.styleTitle
@@ -303,13 +321,22 @@ export function NewAssetDialog({
         ? COPY.newAsset.title
         : step === 'size'
           ? COPY.newAsset.sizeTitle
-          : COPY.newAsset.nameTitle
+          : step === 'template'
+            ? COPY.templates.stepTitle
+            : COPY.newAsset.nameTitle
 
-  const STEP_ORDER: Step[] = ['style', 'kind', 'size', 'name']
+  const STEP_ORDER: Step[] = inTemplateBranch
+    ? ['style', 'template', 'name']
+    : ['style', 'kind', 'size', 'name']
   const stepIndex = STEP_ORDER.indexOf(step)
 
   return (
-    <Dialog open onClose={close} title={title} wide={step === 'style' || step === 'kind'}>
+    <Dialog
+      open
+      onClose={close}
+      title={title}
+      wide={step === 'style' || step === 'kind' || step === 'template'}
+    >
       {/* Bolinhas de progresso: a criança vê quanto falta. */}
       <div
         role="img"
@@ -335,25 +362,55 @@ export function NewAssetDialog({
       ) : null}
 
       {step === 'style' ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {STYLE_ORDER.map((s) => {
-            const info = COPY.styles[s]
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => pickStyle(s)}
-                className={`pin-pop flex flex-col items-center gap-2 rounded-2xl border-2 bg-pin-bg p-6 text-center transition hover:shadow-md ${STYLE_RING_CLASSES[s]}`}
-              >
-                <span aria-hidden="true" className="text-5xl">
-                  {info.emoji}
-                </span>
-                <span className="pin-display block text-lg">{info.title}</span>
-                <span className="block text-sm text-pin-muted">{info.description}</span>
-              </button>
-            )
-          })}
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {STYLE_ORDER.map((s) => {
+              const info = COPY.styles[s]
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => pickStyle(s)}
+                  className={`pin-pop flex flex-col items-center gap-2 rounded-2xl border-2 bg-pin-bg p-6 text-center transition hover:shadow-md ${STYLE_RING_CLASSES[s]}`}
+                >
+                  <span aria-hidden="true" className="text-5xl">
+                    {info.emoji}
+                  </span>
+                  <span className="pin-display block text-lg">{info.title}</span>
+                  <span className="block text-sm text-pin-muted">{info.description}</span>
+                </button>
+              )
+            })}
+          </div>
+          {/* 3º cartão: começar de um MODELO PRONTO (à parte dos 2 estilos). */}
+          <button
+            type="button"
+            onClick={() => setStep('template')}
+            className="pin-pop flex items-center justify-center gap-3 rounded-2xl border-2 border-pin-accent bg-pin-accent/5 p-4 text-center transition hover:shadow-md"
+          >
+            <span aria-hidden="true" className="text-3xl">
+              {COPY.templates.styleCard.emoji}
+            </span>
+            <span>
+              <span className="pin-display block text-base">{COPY.templates.styleCard.title}</span>
+              <span className="block text-sm text-pin-muted">
+                {COPY.templates.styleCard.description}
+              </span>
+            </span>
+          </button>
         </div>
+      ) : null}
+
+      {step === 'template' ? (
+        <TemplatePicker
+          role={initialRole}
+          onPick={(template) => {
+            setTemplateId(template.id)
+            setName(firstFreeName(template.suggestedName, takenNames))
+            setStep('name')
+          }}
+          onBack={() => setStep('style')}
+        />
       ) : null}
 
       {step === 'kind' ? (
@@ -486,13 +543,14 @@ export function NewAssetDialog({
         </div>
       ) : null}
 
-      {step === 'name' && kind ? (
+      {step === 'name' && (kind || templateId) ? (
         <form
           className="flex flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault()
             if (!normalized || nameError) return
-            onCreate(buildInput(kind, sizeKey, normalized, tilesetId))
+            if (templateId) onCreateFromTemplate({ templateId, name: normalized })
+            else if (kind) onCreate(buildInput(kind, sizeKey, normalized, tilesetId))
           }}
         >
           <input
@@ -516,7 +574,7 @@ export function NewAssetDialog({
             ) : null}
           </p>
           <div className="mt-1 flex justify-between">
-            <Button variant="ghost" onClick={() => setStep('size')}>
+            <Button variant="ghost" onClick={() => setStep(templateId ? 'template' : 'size')}>
               {COPY.newAsset.back}
             </Button>
             <Button
