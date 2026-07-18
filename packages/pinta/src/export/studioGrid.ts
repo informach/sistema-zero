@@ -6,12 +6,18 @@
  * Round-trip garantido por teste que reimplementa o `parseGrid`/`parseSolidList`
  * do runtime (game-2d/runtime.ts).
  */
-import type { AnyTilesetAsset, TilemapAsset } from '../core/project'
+import type { AnyTilesetAsset, TilemapAsset, TilemapLayer } from '../core/project'
 import { flattenLayers } from '../tiles/tilemapOps'
 
-/** O texto de grade do bloco (camadas visíveis ACHATADAS, a de cima vence). */
-export function tilemapToStudioGrid(tilemap: TilemapAsset): string {
-  const cells = flattenLayers(tilemap)
+/**
+ * O texto de grade do bloco (camadas visíveis ACHATADAS, a de cima vence).
+ * `include` filtra as camadas (ex.: só fundo, ou só as "da frente").
+ */
+export function tilemapToStudioGrid(
+  tilemap: TilemapAsset,
+  include?: (layer: TilemapLayer) => boolean,
+): string {
+  const cells = flattenLayers(tilemap, include)
   const lines: string[] = []
   for (let row = 0; row < tilemap.rows; row += 1) {
     const parts: string[] = []
@@ -33,6 +39,15 @@ export function tilesetSolidList(tileset: AnyTilesetAsset): string {
   return indices.join(', ')
 }
 
+/** A lista de PLATAFORMAS one-way do bloco (`"2, 5"`); vazia = nenhuma. */
+export function tilesetPlatformList(tileset: AnyTilesetAsset): string {
+  const indices: number[] = []
+  tileset.platform.forEach((isPlatform, index) => {
+    if (isPlatform) indices.push(index)
+  })
+  return indices.join(', ')
+}
+
 /**
  * `.pinta-tilemap.json` — o pacote completo p/ usar FORA do Studio (VS Code):
  * grade + sólidos + tamanho do tile + dimensões (a imagem vai ao lado no ZIP).
@@ -45,6 +60,7 @@ export function tilemapExportJson(tilemap: TilemapAsset, tileset: AnyTilesetAsse
       rows: tilemap.rows,
       grid: tilemapToStudioGrid(tilemap),
       solid: tilesetSolidList(tileset),
+      platform: tilesetPlatformList(tileset),
       layers: tilemap.layers.map((layer) => ({
         name: layer.name,
         visible: layer.visible,
@@ -59,6 +75,7 @@ export function tilemapExportJson(tilemap: TilemapAsset, tileset: AnyTilesetAsse
 /** A receita em PT mostrada no ExportDialog/LEIA-ME. */
 export function tilemapRecipe(tilemap: TilemapAsset, tileset: AnyTilesetAsset): string {
   const solid = tilesetSolidList(tileset)
+  const platform = tilesetPlatformList(tileset)
   return [
     `Mapa de ${tilemap.cols} × ${tilemap.rows} peças, cada peça com ${tileset.tileSize} × ${tileset.tileSize}.`,
     'Jeito FÁCIL: no Pinta, toque no foguete "Usar no Estúdio" e, no Estúdio,',
@@ -66,5 +83,8 @@ export function tilemapRecipe(tilemap: TilemapAsset, tileset: AnyTilesetAsset): 
     'Ou monte na mão com o bloco "Criar mapa de tiles": cole a GRADE no campo,',
     `use a imagem das peças ("${tileset.name}") e tamanho ${tileset.tileSize}.`,
     solid ? `Peças sólidas (barram o personagem): ${solid}.` : 'Nenhuma peça sólida marcada.',
-  ].join('\n')
+    platform ? `Peças plataforma (dá para pisar em cima e passar por baixo): ${platform}.` : '',
+  ]
+    .filter(Boolean)
+    .join('\n')
 }

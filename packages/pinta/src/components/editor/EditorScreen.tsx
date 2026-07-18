@@ -27,7 +27,7 @@ import {
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
 import { Button, IconButton, ToolButton } from '../ui/Button'
-import { ArrowLeft, ChevronDown, Download, Redo2, Rocket, Undo2 } from '../ui/icons'
+import { ArrowLeft, ChevronDown, Download, Gamepad2, Redo2, Rocket, Undo2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AnimationDetails } from './AnimationDetails'
 import { CoachMarks } from './CoachMarks'
@@ -304,6 +304,51 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
     }
   }
 
+  /** "Jogar meu mapa": envia o mapa p/ virar um JOGO pronto no Estúdio. */
+  async function handlePlayMap(): Promise<void> {
+    if (!adapter.sendGameToStudio || sending) return
+    setSending(true)
+    const payload = await exportForStudio().catch(() => null)
+    if (!payload?.tilemap) {
+      setSending(false)
+      showToast(COPY.sendToStudio.error)
+      return
+    }
+    // Teto de UM asset no Studio (miniatura do mapa) — paridade com o
+    // handleSendToStudio; a miniatura é capada em 512px, mas o guarda dá a
+    // mensagem gentil antes do fail-soft genérico se ainda assim estourar.
+    const STUDIO_MAX_ASSET_CHARS = 800_000
+    if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) {
+      setSending(false)
+      showToast(COPY.sendToStudio.tooBig)
+      return
+    }
+    const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
+    if (payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS) {
+      setSending(false)
+      showToast(COPY.sendToStudio.tooBig)
+      return
+    }
+    try {
+      const result = await adapter.sendGameToStudio({
+        id: asset.id,
+        name: asset.name,
+        dataUrl: payload.dataUrl,
+        width: payload.width,
+        height: payload.height,
+        tilemap: payload.tilemap,
+        ...(payload.tilemapFront ? { tilemapFront: payload.tilemapFront } : {}),
+      })
+      showToast(
+        result.ok ? COPY.sendToStudio.playSuccess : (result.error ?? COPY.sendToStudio.error),
+      )
+    } catch {
+      showToast(COPY.sendToStudio.error)
+    } finally {
+      setSending(false)
+    }
+  }
+
   return (
     <header className="flex flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
       <ToolButton icon={ArrowLeft} label={COPY.editor.back} onClick={onBack} />
@@ -335,6 +380,12 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
           <Download aria-hidden="true" className="size-4" />
           {COPY.editor.download}
         </Button>
+        {asset.kind === 'tilemap' && adapter.sendGameToStudio ? (
+          <Button disabled={sending} onClick={() => void handlePlayMap()}>
+            <Gamepad2 aria-hidden="true" className="size-4" />
+            {COPY.tiles.playMap}
+          </Button>
+        ) : null}
         {adapter.sendToStudio ? (
           <Button variant="primary" disabled={sending} onClick={() => void handleSendToStudio()}>
             <Rocket aria-hidden="true" className="size-4" />
@@ -382,6 +433,15 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
         asset,
         persist: persistAsset,
         onSaved: (saved) => gallery.getState().absorb(saved),
+        // Assets ligados (mapas remapeados ao editar peças do tileset) restaurados
+        // por undo/redo: absorve na galeria + persiste — a transação cross-asset.
+        applyLinkedAssets: (assets) => {
+          const g = gallery.getState()
+          for (const linked of assets) {
+            g.absorb(linked)
+            void persistAsset(linked)
+          }
+        },
       }),
       session: createSessionStore(sessionDefaultsFor(asset)),
     }

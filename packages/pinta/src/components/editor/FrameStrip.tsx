@@ -115,7 +115,7 @@ export function FrameStrip({ className }: { className?: string }): JSX.Element |
             // biome-ignore lint/suspicious/noArrayIndexKey: quadros não têm id; a ordem É a identidade
             key={index}
             selected={index === selectedIndex}
-            label={`Quadro ${index + 1}`}
+            label={COPY.a11y.frameLabel(index + 1)}
             onSelect={() => session.getState().selectFrame(index)}
           >
             {asset.kind === 'pixel-sprite' ? (

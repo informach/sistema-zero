@@ -11,12 +11,15 @@ import type { PintaInitialIntent } from '../../core/types'
 import { triggerDownload } from '../../export/download'
 import { importPintaJson } from '../../export/projectJson'
 import { zipGallery } from '../../export/zip'
+import { decodeImageFile, IMPORT_ACCEPT } from '../../import/decodeImage'
+import type { RGBAImage } from '../../import/quantize'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { Download, Plus, Sparkles, Upload } from '../ui/icons'
+import { Download, Image as ImageIcon, Plus, Sparkles, Upload } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
+import { ImportImageDialog } from './ImportImageDialog'
 import { NewAssetDialog, type NewAssetRole } from './NewAssetDialog'
 
 /** Nome sugerido pela missão de arte (com sufixo se a criança já usou o base). */
@@ -60,6 +63,8 @@ export function GalleryScreen(): JSX.Element {
   const [removeId, setRemoveId] = useState<string | null>(null)
   const [justCreatedId, setJustCreatedId] = useState<string | null>(null)
   const [zipping, setZipping] = useState(false)
+  const photoRef = useRef<HTMLInputElement>(null)
+  const [importImage, setImportImage] = useState<RGBAImage | null>(null)
   const restoreRef = useRef<HTMLInputElement>(null)
 
   const renameTarget = assets.find((a) => a.id === renameId) ?? null
@@ -129,6 +134,15 @@ export function GalleryScreen(): JSX.Element {
     }
   }
 
+  async function handlePhoto(file: File): Promise<void> {
+    const decoded = await decodeImageFile(file)
+    if (!decoded) {
+      showToast(COPY.gallery.importDecodeError)
+      return
+    }
+    setImportImage(decoded)
+  }
+
   async function handleRestore(file: File): Promise<void> {
     try {
       const { assets: restored, warnings } = importPintaJson(await file.text())
@@ -168,6 +182,21 @@ export function GalleryScreen(): JSX.Element {
           <Button variant="ghost" onClick={() => restoreRef.current?.click()}>
             <Upload aria-hidden="true" className="size-4" />
             {COPY.gallery.restore}
+          </Button>
+          <input
+            ref={photoRef}
+            type="file"
+            accept={IMPORT_ACCEPT}
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (file) void handlePhoto(file)
+              event.target.value = ''
+            }}
+          />
+          <Button variant="ghost" onClick={() => photoRef.current?.click()}>
+            <ImageIcon aria-hidden="true" className="size-4" />
+            {COPY.gallery.importImage}
           </Button>
           {assets.length > 0 ? (
             <Button variant="ghost" disabled={zipping} onClick={() => void handleDownloadAll()}>
@@ -271,9 +300,41 @@ export function GalleryScreen(): JSX.Element {
                 setJustCreatedId(asset.id)
                 openAsset(asset.id)
               } else {
-                const error = gallery.getState().mutateError
-                if (error) showToast(error)
+                // Sempre avisa (fallback) — nunca clique-morto se o create falhar.
+                showToast(gallery.getState().mutateError ?? COPY.editor.saveError)
               }
+            })
+        }}
+        onCreateFromTemplate={(input) => {
+          setCreating(true)
+          void gallery
+            .getState()
+            .createFromTemplate({ ...input, projectRef: intent?.projectRef })
+            .then((asset) => {
+              setCreating(false)
+              if (asset) {
+                setIntent(null)
+                setCreateOpen(false)
+                setJustCreatedId(asset.id)
+                openAsset(asset.id)
+              } else {
+                // Sempre avisa (fallback) — nunca clique-morto se o create falhar.
+                showToast(gallery.getState().mutateError ?? COPY.editor.saveError)
+              }
+            })
+        }}
+      />
+
+      <ImportImageDialog
+        open={importImage !== null}
+        image={importImage}
+        onClose={() => setImportImage(null)}
+        onImport={(asset) => {
+          void gallery
+            .getState()
+            .importAssets([asset])
+            .then(({ added }) => {
+              showToast(added > 0 ? COPY.gallery.importDone : COPY.gallery.quotaFull)
             })
         }}
       />

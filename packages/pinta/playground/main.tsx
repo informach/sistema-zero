@@ -26,6 +26,18 @@ createRoot(root).render(
               width: asset.width,
               height: asset.height,
               dataUrlChars: asset.dataUrl.length,
+              // Mapa: a grade DEVE trazer as camadas da frente (nada some por aqui).
+              grid: asset.tilemap?.grid,
+            })
+            return { ok: true }
+          },
+          sendGameToStudio: async (asset) => {
+            console.log('[playground] sendGameToStudio', {
+              name: asset.name,
+              hasTilemap: Boolean(asset.tilemap),
+              hasFront: Boolean(asset.tilemapFront),
+              grid: asset.tilemap?.grid,
+              frontGrid: asset.tilemapFront?.grid,
             })
             return { ok: true }
           },

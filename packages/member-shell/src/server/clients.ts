@@ -470,6 +470,17 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body: { playId },
       })
     },
+    /**
+     * Registra o XP DIÁRIO de CRIAR no Estúdio ("criou hoje" → segura o foguinho de quem
+     * já terminou os cursos). Sem corpo: o members exige só posse do Estúdio + deduplica
+     * 1×/dia. Best-effort do cliente (dispara no autosave do editor).
+     */
+    recordStudioActivityDay(): Promise<GatewayResponse<{ recorded: boolean }>> {
+      return gw.gatewayFetch('/members/gamification/activity', {
+        method: 'POST',
+        query: { audience },
+      })
+    },
     /** Compra 1 protetor de sequência com moedas (sem saldo → 402; máximo → 409). */
     buyStreakFreeze(): Promise<GatewayResponse<StreakFreezeResult>> {
       return gw.gatewayFetch('/members/gamification/streak-freeze/buy', {

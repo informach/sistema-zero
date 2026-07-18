@@ -133,6 +133,130 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 - **a11y**: alvos ≥44px, Dialog com foco/Esc/trap, Toast aria-live, wizard com bolinhas de
   progresso + `role=status` no erro de nome.
 
+## Colisão por peça: sólido × plataforma (one-way) — lote MapperMate F2 (18/07)
+
+`TilesetAsset`/`VectorTilesetAsset` ganharam **`platform: boolean[]`** paralelo a `solid`
+(mutuamente exclusivos — sólido vence no conflito; `sanitizePintaAsset` impõe a exclusividade e
+ausência → tudo falso, então asset antigo sanitiza sem plataforma). `tiles/tilesetOps.ts`:
+`cycleCollision` (livre→sólido→plataforma→livre, substituiu `toggleSolid`) + `tileCollisionAt`;
+add/duplicate/remove fazem splice/filter dos DOIS arrays. UI: `TileStrip` ciclo de 3 estados +
+`TileCollisionBadge` (🧱 sólido vermelho / ⬆️ plataforma âmbar via `--color-pin-collision-platform`),
+`TilemapEditor` overlay "Ver as colisões do mapa" (vermelho sólido / âmbar plataforma com faixa forte
+no TOPO). **Cadeia de export** (`platform` OMITIDO quando vazio = payload byte-idêntico ao antigo):
+`core/types.ts` (`PintaTilesetMeta`/`PintaTilemapMeta` + `platform?`), `export/studioGrid.ts`
+(`tilesetPlatformList`), `export/studioBridge.ts` (`tilesetMetaFrom`/`tilemapMetaFrom` emitem só
+quando não-vazio). O Estúdio re-sanitiza (`sanitizeTilesetMeta`/`sanitizeTilemapMeta` dedup contra
+solid) e os runtimes game-2d + gk fazem o one-way (pisa por cima caindo, atravessa por baixo/subindo).
+
+## Modelos prontos + importar imagem — lote MapperMate F3 (18/07)
+
+**Modelos prontos ("Começar de um modelo")**: `templates/` — `art.ts` (`bitmapFromArt`/`cellsFromArt`,
+mesmo dialeto do `bmp()` dos fixtures, que agora DELEGA aqui), `builders.ts` (monta assets pelas
+fábricas + arte, ids frescos por chamada = cópia independente), `catalog.ts` (`PintaTemplate{id,
+style,role,suggestedName,build()}` + `PINTA_TEMPLATES`), `data/*.ts` (8 modelos: herói/slime/moeda/
+nave pixel-sprite, chao-de-grama tileset [tem 1 peça PLATAFORMA, vitrine do F2], fase-plataforma
+mapa 20×15 2 camadas + tileset companheiro no MESMO build, fantasminha vetor, ceu-com-sol vetor).
+`galleryStore.createFromTemplate` (quota c/ companheiros, `firstFreeName`, projectRef sanitizado em
+TODOS, persiste na ordem do build = tileset antes do mapa). Wizard: 3º cartão "✨ Modelos prontos"
+no passo de estilo → passo `template` (TemplatePicker, miniatura real por kind) → nome pré-preenchido;
+bolinhas por ramo. Teste-guarda `catalog.test.ts` (todo build passa sanitize, células<tileCount, ids
+frescos).
+
+**Importar imagem ("Trazer uma foto")**: `import/` — `quantize.ts` PURO (`downscaleRGBA` box+alpha
+premult, `resizeCover` cover+crop central, `quantizeToIndexed` [15 arcade + até 48 extras por
+frequência, posteriza 4 bits, distância `2Δr²+4Δg²+3Δb²`, raio `FUSION_RADIUS_SQ`=1600, SEM
+dithering], `sliceIndexedTiles` dedupe+pula vazias+`tooMany`, `detectTileSize` = MENOR peça que cabe
+no teto ⚠️ [maior daria 1 peça p/ imagem do tamanho de 1 tile]), `decodeImage.ts` BROWSER (ctx antes
+do `createImageBitmap`, cap 2048, accept png/jpeg/webp — `null` no happy-dom). `ImportImageDialog`
+(cenário `pixel-background` cover-crop OU peças `tileset` fatiado → entra por `galleryStore.
+importAssets`). Botão "Trazer uma foto" no header da galeria. QA browser: decode real + 4 peças + 3
+cores novas OK.
+
+## Camada da frente + jogar meu mapa — lote MapperMate F4 (18/07)
+
+**Camada "da frente" (F)**: `TilemapLayer` ganhou **`front?: boolean`** (saneado em
+`sanitizePintaAsset` — `...(l.front === true ? { front: true } : {})`, ausente = fundo). Camada da
+frente = desenhada POR CIMA do jogador (copa de árvore, telhado). `tiles/tilemapOps.ts`:
+`flattenLayers(tilemap, include?)` virou genérico com predicado + `flattenBackground` (`l.front !==
+true`), `flattenFront` (`l.front === true`), `hasFrontLayer` (tem camada front visível não-vazia),
+`toggleLayerFront`. `export/studioGrid.ts` (`tilemapToStudioGrid(tilemap, include?)`) e
+`export/studioBridge.ts` (`tilemapMetaFrom(tilemap, tileset, sheet, include?)`) aceitam o predicado:
+o payload leva `tilemap` (só fundo, `l.front !== true`) + **`tilemapFront`** (só frente, OMITIDO
+quando não há frente = retrocompat byte-idêntico). UI: `TilemapEditor` painel de camadas ganhou o
+botão "camada da frente" (ícone `BringToFront`) + selo "frente" no nome.
+
+**"Jogar meu mapa" (C)**: `PintaHostAdapter` ganhou **`sendGameToStudio?(asset)`** e
+`PintaExportedAsset` ganhou `tilemapFront?`. O `EditorScreen` mostra o botão "Jogar meu mapa" só em
+`kind === 'tilemap'` E com o callback presente (`handlePlayMap`: exporta, guarda o teto de folha
+`180_000` = o `MAX_TILEMAP_SHEET_CHARS` do studio, chama o adapter com `tilemap` + `tilemapFront`).
+Quem MONTA o jogo é o **Estúdio** (`@sistemazero/studio` → `buildTilemapGameProject`, ver o CLAUDE.md
+de lá); o kids (`pinta-client`) liga o callback só com o Estúdio Completo. QA browser: marcar
+"Decoração" como frente → payload separa fundo (sem a peça 5) e frente (só a peça 5), zero erro no
+console. ⚠️ **Follow-up adiado:** o dropdown 'frente' do bloco `sz_gk_draw_tilemap` na extensão gk
+(desamarrar de `solid`) NÃO entrou — evitei tocar os arquivos do WIP concorrente da gk.
+
+## Full review (correções) — 18/07/2026
+
+Auditoria multi-agente (correção/segurança/desempenho/a11y, lente infantil) com foco no lote
+MapperMate F1–F4. **Segurança: NADA acionável** (raster via Blob→Image, não innerHTML; cores
+validadas por `sanitizeFill`; dados 100% locais no IndexedDB). 6 achados corrigidos; verde no
+typecheck+test(344)+biome do pinta e no studio (`tilemapGame` 6/0). QA browser real (:5199).
+
+- **[ALTA — regressão do F4] Camada da frente sumia no "Usar no Estúdio":** o `studioBridge.ts`
+  passou (no F4) a montar `tilemap` só com o FUNDO (`l.front !== true`), e o `handleSendToStudio`
+  repassa esse meta ao `savePersonalAsset` ("Meus desenhos") → um mapa com camada "da frente"
+  PERDIA a decoração da grade que o bloco "Criar mapa do meu desenho" lê (sobrevivia só na
+  miniatura). **Fix:** o campo `tilemap` do payload voltou a ser o mapa COMPLETO (todas as camadas
+  visíveis); `tilemapFront` (só-frente) permanece p/ o passe "por cima do jogador" do jogo. O
+  `buildTilemapGameProject` desenha `tilemap` (base) + `tilemapFront` (topo): peça de frente nos dois
+  passes = oclusão idêntica, colisão inalterada (frente = decoração não-sólida). QA browser: "Usar no
+  Estúdio" num mapa com "Decoração" marcada frente → a grade INCLUI a peça 5.
+- **[MÉDIA — a11y ≥44px]** `TilePicker` (X de limpar carimbo 36→44px) e `AnimationDetails` (botões do
+  segmentado 40→44px).
+- **[MÉDIA — a11y] Trap de Tab do `Dialog` escapava p/ o fundo:** o `Dialog` renderiza INLINE (sem
+  `inert`/portal); quando o foco caía no `<body>` (um botão de passo do wizard desmonta ao avançar),
+  o Tab ia p/ a galeria de fundo. **Fix:** se o `activeElement` NÃO está dentro do card, o Tab é
+  redirecionado p/ o 1º focável do modal (Shift→último). QA browser: foco no body + Tab → volta p/ o
+  "Fechar" do modal (não escapa).
+- **[BAIXA] `handlePlayMap` sem o teto de 800k do `dataUrl`:** paridade com o `handleSendToStudio`
+  (a miniatura é capada em 512px, mas o guarda dá a mensagem gentil).
+- **[BAIXA] Load da galeria não isolava registro corrompido:** `persistence.ts` (`listAllAssets`/
+  `loadAssetById`) ganhou `safeSanitize` (try/catch por registro) — uma regressão futura que faça o
+  sanitize lançar em UM registro não derruba a galeria inteira (paridade com o import `.pinta.json`).
+
+**A heurística plataforma×top-down do jogo** também foi refinada, mas o fix vive no studio
+(`projects/tilemapGame.ts`) — ver o CLAUDE.md de lá.
+
+## Backlog sweep — 18/07/2026 (limpou o "documentado/não corrigido")
+
+- **⭐ Transação de undo CROSS-ASSET (o maior):** editar peça do tileset (add/duplicate/remove)
+  remapeia as células dos MAPAS dependentes; antes isso ia direto p/ a galeria+disco FORA do undo do
+  tileset → desfazer dessincronizava os mapas. Agora o `editorStore` guarda snapshot COMPOSTO
+  `{asset, linkedMaps}`: **`commitLinked(next, {before, after})`** grava o tileset E os mapas na MESMA
+  entrada; `undo`/`redo` restauram/reaplicam os mapas via o callback injetado **`applyLinkedAssets`**
+  (o `EditorScreen` liga = `gallery.absorb` + `persistAsset`). `commit`/`replace`/`commitGesture`
+  carregam o `linkedMaps` corrente adiante (edição comum não toca mapas) → ZERO regressão nos editores
+  sprite/mapa/vetor (nunca chamam commitLinked). ⚠️ a história é POR SESSÃO de editor (fechar perde o
+  undo — o remap fica persistido). QA browser: remover peça → grade do mapa remapeia; remover+desfazer
+  na mesma sessão → mapa volta idêntico.
+- **importAssets** não orfana o mapa se o persist do tileset falhar (Set `persistedIds`).
+- **Autosave** sem duplo-persist: `saveNow` usa `while (saving)` (não `if`).
+- **i18n:** ~16 literais soltos → `COPY.a11y` (aria-labels + `Cor/Quadro/Passo/Abrir/quadro` +
+  defaults de modelo `Chão`/`Camada`/`animação`). `core/project.ts` e `tiles/tilemapOps.ts` passaram a
+  importar `COPY` (é módulo de constantes, sem ciclo de runtime).
+- **Dead-click** do `createFromTemplate` (`!primary` seta `mutateError` + `GalleryScreen` com toast de
+  fallback). **Packers** de tileset compartilham `tiles/packGeometry.ts tilesetGridGeometry(count)`.
+  **Sanitize** coage `number[]`→`Uint8Array`/`Int16Array` (registro sem o typed array do clone/JSON).
+- Gancho de teste novo: `testing/idbMock.ts setIdbWriteGuard(fn)` (faz o `set` lançar p/ testar
+  caminhos de erro). **Não-mudança (por-design/inalcançável):** colisão de id de gradiente na folha
+  (frames.ts regenera ids), gap de migração de kind (exaustivo/test-guarded), borda "tudo-frente"
+  (resolvida pelo `tilemap` completo do full review).
+
+**gk camada "frente" (fatia vertical):** `PintaTilemapMeta` ganhou **`frontGrid?: string`** (grade SÓ
+das camadas de frente); `tilemapMetaFrom` a emite no meta COMPLETO quando `hasFrontLayer` (o
+`tilemapFront` filtrado NÃO repete). O Estúdio (gk) desenha essa grade "por cima" — ver o CLAUDE.md do
+studio.
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data

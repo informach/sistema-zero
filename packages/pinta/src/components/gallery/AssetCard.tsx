@@ -181,7 +181,9 @@ export function AssetCard({
       <button
         type="button"
         onClick={onOpen}
-        aria-label={`Abrir ${asset.name} (${kind.title}${style ? `, ${COPY.styleBadge[style]}` : ''})`}
+        aria-label={COPY.a11y.openAsset(
+          `${asset.name} (${kind.title}${style ? `, ${COPY.styleBadge[style]}` : ''})`,
+        )}
         className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
       >
         <Thumb asset={asset} findAsset={findAsset} />

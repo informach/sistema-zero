@@ -57,6 +57,8 @@ export type NameKind =
   | 'screen'
   | 'gamestate'
   | 'mold'
+  | 'battler'
+  | 'combatant'
   | 'effect'
   | 'event'
   | 'look'
@@ -105,6 +107,8 @@ const NAME_KINDS: readonly NameKind[] = [
   'screen',
   'gamestate',
   'mold',
+  'battler',
+  'combatant',
   'effect',
   'event',
   'look',
@@ -283,6 +287,26 @@ function collectGameStates(workspace: Blockly.Workspace | null | undefined): str
 const MOLD_DECL_BLOCKS: Record<string, string[]> = { sz_gk_define_mold: ['NAME'] }
 function collectMolds(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, MOLD_DECL_BLOCKS)
+}
+// ⚔️ Fichas de inimigo de batalha por turnos (vida/força/defesa/imagem reutilizáveis).
+const BATTLER_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_define_battler: ['NAME'] }
+function collectBattlers(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, BATTLER_DECL_BLOCKS)
+}
+// ⚔️ QUALQUER combatente por nome (p/ "Ensinar o golpe para…", "a vida de…", a IA de
+// chefe): o herói "Você" + todos os aliados/inimigos/chefões/fichas nomeados. É o
+// CONSUMIDOR (referencia), ≠ do `battler` (que lista só as fichas, p/ "batalha contra").
+const COMBATANT_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_rpg_add_ally: ['NAME'],
+  sz_gk_rpg_add_foe: ['NAME'],
+  sz_gk_rpg_add_boss: ['NAME'],
+  sz_gk_rpg_battle_start: ['NAME'],
+  sz_gk_rpg_define_battler: ['NAME'],
+}
+function collectCombatants(workspace: Blockly.Workspace | null | undefined): string[] {
+  const seen = new Set<string>(['Você']) // o herói entra sempre
+  for (const n of collectDeclaredNames(workspace, COMBATANT_DECL_BLOCKS)) seen.add(n)
+  return [...seen]
 }
 
 /** Efeitos de faísca (partículas data-driven) — fonte do seletor EFFECT. */
@@ -676,6 +700,18 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do molde',
     empty: 'Nenhum molde ainda — crie um (bloco "Criar o molde") ou digite o nome abaixo.',
   },
+  battler: {
+    icon: '⚔️',
+    placeholder: 'nome do inimigo',
+    empty:
+      'Nenhuma ficha de inimigo ainda — crie uma (bloco "Criar a ficha do inimigo") ou digite o nome abaixo.',
+  },
+  combatant: {
+    icon: '⚔️',
+    placeholder: 'nome do combatente',
+    empty:
+      'O herói é "Você". Aliados e inimigos aparecem quando você os adiciona/cria — ou digite o nome abaixo.',
+  },
   effect: {
     icon: '✨',
     placeholder: 'nome do efeito',
@@ -1028,6 +1064,10 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectGameStates(ws)
       case 'mold':
         return collectMolds(ws)
+      case 'battler':
+        return collectBattlers(ws)
+      case 'combatant':
+        return collectCombatants(ws)
       case 'effect':
         return collectEffects(ws)
       case 'event':

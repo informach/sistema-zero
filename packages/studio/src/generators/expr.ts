@@ -497,6 +497,10 @@ export function compileExpr(
       return 'SZGameKit.rpgLevel()'
     case 'gk:rpgXp':
       return 'SZGameKit.rpgXp()'
+    case 'gk:battlerLife':
+      return `SZGameKit.battlerLife(${JSON.stringify(expr.name)})`
+    case 'gk:battlerMaxLife':
+      return `SZGameKit.battlerMaxLife(${JSON.stringify(expr.name)})`
     case 'gk:rpgCurrentMap':
       return 'SZGameKit.rpgCurrentMap()'
     case 'gk:boardGet':
@@ -505,6 +509,34 @@ export function compileExpr(
       return `SZGameKit.boardCount(${JSON.stringify(expr.name)}, ${compileExpr(valueToExpr(expr.value), 0, identifiers, rec)})`
     case 'gk:boardIn':
       return `SZGameKit.boardIn(${JSON.stringify(expr.name)}, ${compileExpr(valueToExpr(expr.col), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.row), 0, identifiers, rec)})`
+    case 'gk:rollDice':
+      return `SZGameKit.rollDice(${compileExpr(valueToExpr(expr.faces), 0, identifiers, rec)})`
+    case 'gk:currentPlayer':
+      return 'SZGameKit.currentPlayer()'
+    case 'gk:spaceOf':
+      return `SZGameKit.spaceOf(${identifiers.get(expr.who)})`
+    case 'gk:pileTop':
+      return `SZGameKit.pileTop(${identifiers.get(expr.pileVar)})`
+    case 'gk:pileSize':
+      return `SZGameKit.pileSize(${identifiers.get(expr.pileVar)})`
+    case 'gk:card':
+      return `SZGameKit.card(${compileExpr(valueToExpr(expr.front), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.back), 0, identifiers, rec)})`
+    case 'gk:cardIsUp':
+      return `SZGameKit.cardIsUp(${compileExpr(valueToExpr(expr.card), 0, identifiers, rec)})`
+    case 'gk:cardFace':
+      return `SZGameKit.cardFace(${compileExpr(valueToExpr(expr.card), 0, identifiers, rec)})`
+    case 'gk:cardAt':
+      return `SZGameKit.cardAt(${compileExpr(valueToExpr(expr.x), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.y), 0, identifiers, rec)}, ${identifiers.get(expr.pileVar)})`
+    case 'gk:cardsEnergy':
+      return 'SZGameKit.cardsEnergy()'
+    case 'gk:cardsHeroLife':
+      return 'SZGameKit.cardsHeroLife()'
+    case 'gk:cardsEnemyLife':
+      return 'SZGameKit.cardsEnemyLife()'
+    case 'gk:cardsIntentAction':
+      return 'SZGameKit.cardsIntentAction()'
+    case 'gk:cardsIntentValue':
+      return 'SZGameKit.cardsIntentValue()'
     case 'gk:kills':
       return 'SZGameKit.kills()'
     // ---- Jogo 3D Avançado (game-3d-advanced) ----

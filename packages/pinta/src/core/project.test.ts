@@ -182,6 +182,30 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
     expect(out.solid).toEqual([true])
     expect(out.tiles).toEqual([[]])
   })
+
+  it('coage array simples → typed array (registro sem o typed array do structured clone)', () => {
+    const bg = createPixelBackgroundAsset({ name: 'ceu', width: 2, height: 2 })
+    const out = sanitizePintaAsset({
+      ...bg,
+      bitmap: { ...bg.bitmap, data: Array.from(bg.bitmap.data) },
+    })
+    expect(out?.kind).toBe('pixel-background')
+    if (out?.kind !== 'pixel-background') return
+    expect(out.bitmap.data).toBeInstanceOf(Uint8Array)
+    expect(out.bitmap.data).toHaveLength(4)
+
+    const map = createTilemapAsset({ name: 'fase', tilesetId: 't1', cols: 2, rows: 2 })
+    const layer0 = map.layers[0]
+    if (!layer0) throw new Error('camada esperada')
+    const outMap = sanitizePintaAsset({
+      ...map,
+      layers: [{ ...layer0, cells: Array.from(layer0.cells) }],
+    })
+    expect(outMap?.kind).toBe('tilemap')
+    if (outMap?.kind !== 'tilemap') return
+    expect(outMap.layers[0]?.cells).toBeInstanceOf(Int16Array)
+    expect(outMap.layers[0]?.cells).toHaveLength(4)
+  })
 })
 
 describe('helpers de estilo/papel', () => {
@@ -262,6 +286,31 @@ describe('helpers de estilo/papel', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     const out = sanitizePintaAsset({ ...tileset, solid: [true, true, true] })
     expect(out?.kind === 'tileset' && out.solid).toEqual([true])
+  })
+
+  it('tileset: platform round-trippa; ausente → tudo falso; conflito → sólido vence', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const tiles = [createBitmap(16, 16), createBitmap(16, 16), createBitmap(16, 16)]
+    // tile 0 sólido, tile 1 plataforma, tile 2 conflito (os dois true → sólido)
+    const out = sanitizePintaAsset({
+      ...tileset,
+      tiles,
+      solid: [true, false, true],
+      platform: [true, true, true],
+    })
+    expect(out?.kind).toBe('tileset')
+    if (out?.kind !== 'tileset') return
+    expect(out.solid).toEqual([true, false, true])
+    expect(out.platform).toEqual([false, true, false]) // 0 e 2 perdem p/ sólido
+
+    // Asset ANTIGO (sem platform) sanitiza para tudo-falso.
+    const old = sanitizePintaAsset({
+      ...tileset,
+      tiles,
+      solid: [true, false, false],
+      platform: undefined,
+    })
+    expect(old?.kind === 'tileset' && old.platform).toEqual([false, false, false])
   })
 
   it('extraColors: normaliza, deduplica e corta no teto; lixo cai', () => {

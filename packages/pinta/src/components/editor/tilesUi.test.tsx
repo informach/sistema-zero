@@ -25,7 +25,8 @@ describe('UI de tiles (F4)', () => {
       expect(screen.getByText(COPY.tiles.tiles)).toBeTruthy()
     })
     expect(screen.getByRole('button', { name: 'Peça 0' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: COPY.tiles.solid })).toBeTruthy()
+    // Botão de colisão (ciclo livre → sólido → plataforma), rótulo dinâmico.
+    expect(screen.getByRole('button', { name: new RegExp(COPY.tiles.cycleCollision) })).toBeTruthy()
 
     // Nova peça entra e vira a selecionada.
     fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addTile }))
@@ -62,6 +63,29 @@ describe('UI de tiles (F4)', () => {
     await waitFor(() => {
       expect(screen.getByText('Camada 2')).toBeTruthy()
     })
+  })
+
+  it('tilemap traz as ferramentas novas (linha/retângulo/seleção/crescer) + barra de status', async () => {
+    const seed = createGalleryStore()
+    const tileset = await seed.getState().create({ kind: 'tileset', name: 'pecas', tileSize: 16 })
+    if (!tileset) throw new Error('tileset esperado')
+    await seed
+      .getState()
+      .create({ kind: 'tilemap', name: 'fase', tilesetId: tileset.id, cols: 20, rows: 15 })
+
+    render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir fase/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir fase/ }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.tiles.pickTile)).toBeTruthy()
+    })
+    expect(screen.getByRole('button', { name: COPY.tools.line })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.tools.rect })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.tools.select })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.tiles.autoExpand })).toBeTruthy()
+    expect(screen.getByText(COPY.tiles.statusSize(20, 15))).toBeTruthy()
   })
 
   it('tilemap órfão (tileset apagado) mostra o recado gentil', async () => {

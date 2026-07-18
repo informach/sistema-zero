@@ -23,6 +23,7 @@ import {
   type PintaProjectRef,
   sanitizeProjectRef,
 } from '../core/project'
+import { findTemplate } from '../templates/catalog'
 import { deleteAsset, listAllAssets, persistAsset } from './persistence'
 
 export type NewAssetInput = (
@@ -54,6 +55,16 @@ export interface PintaGalleryState {
   load(): Promise<void>
   /** Cria e persiste; devolve o asset novo ou null (nome inválido/duplicado/cota). */
   create(input: NewAssetInput): Promise<PintaAsset | null>
+  /**
+   * Cria a partir de um MODELO PRONTO: pode gerar VÁRIOS assets (um mapa vem com
+   * o tileset). O principal recebe o nome escolhido; companheiros ganham sufixo
+   * anti-colisão. Devolve o asset PRINCIPAL (o que a criança abre) ou null.
+   */
+  createFromTemplate(input: {
+    templateId: string
+    name: string
+    projectRef?: PintaProjectRef
+  }): Promise<PintaAsset | null>
   rename(id: string, name: string): Promise<boolean>
   duplicate(id: string): Promise<PintaAsset | null>
   remove(id: string): Promise<boolean>
@@ -196,6 +207,65 @@ export function createGalleryStore(): PintaGalleryStore {
       }
     },
 
+    async createFromTemplate(input) {
+      const template = findTemplate(input.templateId)
+      if (!template) {
+        set({ mutateError: COPY.newAsset.nameInvalid })
+        return null
+      }
+      const built = template.build()
+      const { assets } = get()
+      if (assets.length + built.assets.length > PINTA_LIMITS.maxAssets) {
+        set({ mutateError: COPY.gallery.quotaFull })
+        return null
+      }
+      const chosen = normalizeAssetName(input.name)
+      if (!chosen) {
+        set({ mutateError: COPY.newAsset.nameInvalid })
+        return null
+      }
+      const projectRef = sanitizeProjectRef(input.projectRef)
+      const taken = new Set(assets.map((a) => a.name))
+      // Nomeia: o principal com o nome escolhido, os companheiros com o próprio
+      // (sufixo em colisão). Renomear NÃO mexe no `tilesetId` (é por id).
+      const prepared: PintaAsset[] = []
+      for (let i = 0; i < built.assets.length; i += 1) {
+        const asset = built.assets[i]
+        if (!asset) continue
+        const desired = i === built.primaryIndex ? chosen : asset.name
+        const name = uniqueName(desired, taken)
+        if (!name) {
+          set({ mutateError: COPY.newAsset.nameTaken })
+          return null
+        }
+        taken.add(name)
+        prepared.push(projectRef ? { ...asset, name, projectRef } : { ...asset, name })
+      }
+      const primary = prepared[built.primaryIndex]
+      if (!primary) {
+        // Modelo mal-formado (primaryIndex fora dos assets construídos) — sinaliza
+        // o erro p/ o toast em vez de sumir em silêncio (clique-morto no wizard).
+        set({ mutateError: COPY.editor.saveError })
+        return null
+      }
+      try {
+        // Persiste na ORDEM do build (tileset antes do mapa) — se a quota ou o
+        // disco falhar no meio, o mapa não fica órfão sem as peças.
+        for (const asset of prepared) {
+          await persistAsset(asset)
+          set((state) => ({ assets: upsertSorted(state.assets, asset) }))
+        }
+        set((state) => ({
+          mutateError: null,
+          lastStyle: assetStyle(primary.kind) ?? state.lastStyle,
+        }))
+        return primary
+      } catch {
+        set({ mutateError: COPY.editor.saveError })
+        return null
+      }
+    },
+
     async rename(id, name) {
       const normalized = normalizeAssetName(name)
       if (!normalized) {
@@ -287,13 +357,29 @@ export function createGalleryStore(): PintaGalleryStore {
         idMap.set(asset.id, clone.id)
         prepared.push(clone)
       }
+      // Ids que REALMENTE gravaram (tilesets vêm antes) — um mapa cujo tileset
+      // deste import falhou no disco NÃO pode ser importado apontando p/ o vazio.
+      const persistedIds = new Set<string>()
       for (const asset of prepared) {
+        const oldTilesetId = asset.kind === 'tilemap' ? asset.tilesetId : null
         const restored =
           asset.kind === 'tilemap'
             ? { ...asset, tilesetId: idMap.get(asset.tilesetId) ?? asset.tilesetId }
             : asset
+        // Tileset veio NESTE import (idMap tem o id ANTIGO) mas não persistiu →
+        // pular o mapa (senão fica órfão). Referência externa segue igual.
+        if (
+          restored.kind === 'tilemap' &&
+          oldTilesetId !== null &&
+          idMap.has(oldTilesetId) &&
+          !persistedIds.has(restored.tilesetId)
+        ) {
+          skipped += 1
+          continue
+        }
         try {
           await persistAsset(restored)
+          persistedIds.add(restored.id)
           set((state) => ({ assets: upsertSorted(state.assets, restored) }))
           added += 1
         } catch {

@@ -219,7 +219,7 @@ export function SpriteSheetPanel({
                       // biome-ignore lint/suspicious/noArrayIndexKey: quadros não têm id; a ordem É a identidade
                       key={index}
                       type="button"
-                      aria-label={`${animation.name}: quadro ${index + 1}`}
+                      aria-label={COPY.a11y.sheetFrame(animation.name, index + 1)}
                       aria-pressed={frameSelected}
                       onClick={() => {
                         const s = session.getState()

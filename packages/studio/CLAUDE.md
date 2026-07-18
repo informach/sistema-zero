@@ -372,7 +372,7 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 **Bloco de EXTENSÃO** (`game-2d`/`game-3d`, prefixo `g2d:`/`g3d:`) vive em `official-extensions/<id>/blocks.ts` (NÃO no CORE); schema/buildIR/generators/parsers/workspaceState valem igual, mas com 3 pontos PRÓPRIOS além dos acima: (a) `state/projectStore.ts` → `EXTENSION_BLOCKLY_BLOCK_TYPES['<id>']` (não o CORE); (b) `ir/schema.ts` → o `type` no Set `G2D_STATEMENT_TYPES`/`G3D_STATEMENT_TYPES` (testado em `official-extensions/*/__tests__`); (c) o `blocks.ts` da extensão → a entrada na subcategoria certa do array `SUBCATS` (que monta o `*ToolboxCategory`), senão o bloco cai no grupo genérico "Mais". O `manifest.ts` traz a `docs` (markdown do aluno; `description` ≤ ~500 chars) + bump de `version`. Checklist de revisão: `docs/EXTENSIONS.md`.
 
 **Padrões já usados** (clone-os):
-- **Seletores de NOME (escolher, não digitar)** — em vez de a criança redigitar a grafia de algo que já nomeou noutro bloco, o campo CONSUMIDOR abre um pop-up com a lista do que já foi criado (à la Scratch/MakeCode) + um input de texto de fallback. Três campos, TODOS `extends Blockly.FieldTextInput` (o VALOR continua string → IR/round-trip/serialização/allowlist IDÊNTICOS a `field_input`; só troca o EDITOR — **nunca `FieldDropdown`**, que coage nome desconhecido p/ a 1ª opção e PERDE o nome no round-trip): `field_name_picker` (`blockly/fields/FieldNamePicker.ts`, nomes puros por `kind`), `field_sprite_picker` (com miniatura/swatch), `field_asset_picker` (IMAGENS do projeto, `__szAssets`). **Regra de ouro: só CONSUMIDORES viram picker; o campo que DECLARA o nome segue `field_input`** (a criança nomeia uma vez). `FieldNamePicker` tem 12 `kind`: `variable`/`group`(≡lista)/`class`/`function`/`property`/`method`/`canvas`/`spritesheet`/`tilemap`/`scene3d`/`object3d`/`group3d`.
+- **Seletores de NOME (escolher, não digitar)** — em vez de a criança redigitar a grafia de algo que já nomeou noutro bloco, o campo CONSUMIDOR abre um pop-up com a lista do que já foi criado (à la Scratch/MakeCode) + um input de texto de fallback. Três campos, TODOS `extends Blockly.FieldTextInput` (o VALOR continua string → IR/round-trip/serialização/allowlist IDÊNTICOS a `field_input`; só troca o EDITOR — **nunca `FieldDropdown`**, que coage nome desconhecido p/ a 1ª opção e PERDE o nome no round-trip): `field_name_picker` (`blockly/fields/FieldNamePicker.ts`, nomes puros por `kind`), `field_sprite_picker` (com miniatura/swatch), `field_asset_picker` (IMAGENS do projeto, `__szAssets`). **Regra de ouro: só CONSUMIDORES viram picker; o campo que DECLARA o nome segue `field_input`** (a criança nomeia uma vez). `FieldNamePicker` tem **~39 `kind`** (a união `NameKind`; cresceu muito): além dos de programação (`variable`/`group`(≡lista)/`class`/`function`/`property`/`method`) e 3D (`scene3d`/`object3d`/`group3d`/`entity3d`/`mold3d`/…), os de jogo 2D — `canvas`/`spritesheet`/`tilemap`/`character`/`screen`/`gamestate`/`mold`/`battler`(fichas de inimigo de batalha)/`npc`/`flag`/`item`/`map`/`region`/`path`/`look`/`sound`/`effect`/`event`/`enemytype`/`shape`/`pkmcreature`/`pkmtype`.
   - **Trocar um campo p/ picker**: `{type:'field_input', name:'X', text:'…'}` → `{type:'field_name_picker', name:'X', text:'…', kind:'…'}` (ou `field_asset_picker`/`field_sprite_picker`). Nada mais muda (nem setup.ts/IR/parser/allowlist).
   - **Miniatura do sprite NO BLOCO (07/2026):** o `FieldSpritePicker` também desenha a miniatura
     (cor OU imagem do asset) AO LADO do nome dentro do bloco — view custom (`initView`/`render_`/
@@ -448,6 +448,54 @@ grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` tam
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
 extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest HOJE está em **`0.23.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
+**Colisão PLATAFORMA one-way (lote MapperMate F2, 18/07):** o metadado de tileset/tilemap ganhou
+**`platform?: number[]`** (índices de peça one-way: pisa por cima CAINDO, atravessa por baixo/subindo).
+`ProjectTilesetMeta`/`ProjectTilemapMeta` + `sanitizeTilesetMeta`/`sanitizeTilemapMeta` (`core/project.ts`)
+parseiam `platform` com a régua do `solid` (dedup/sort/cap), **removendo os já-sólidos** (sólido vence)
+e OMITINDO a chave quando vazia (payload antigo byte-idêntico). Runtime **game-2d**: `createTileMap`
+ganha `platform` (filtra já-sólidos), `createTileMapFromAsset` serializa `meta.platform`, `isPlatformCell`
++ ramo one-way em `collideTileMap` (só caindo, pé anterior = `y+h-vy` ≤ topo). Runtime **gk**: `loadTilemap`/
+`createEmptyTilemap` montam `m.platform`, `collideTilemapPlatform` clona o cruzamento de plano do
+`oneWayPlatform` (feet × feet+vy·dt, respeita `_dropT`/dropThrough). Bloco "Criar mapa de tiles" ganhou
+campo irmão **`PLATFORM`** (`field_solid_tiles_picker variant:'platform'` — texto/selo ⬆️/preset
+"Plataformas do Pinta"; cadeia IR completa com emissão condicional = fixtures byte-estáveis). O caminho
+de 1-clique (`sz_g2d_create_tilemap_from_asset`/`sz_gk_load_tilemap`) usa o meta direto, ZERO bloco novo.
+manifests: game-2d `0.27.0`, gk `0.28.0`. Testes: `assetMeta.test.ts`, `tilemapFromAsset.test.ts`
+(4 casos one-way), gk `runtime.test.ts` (2 casos).
+
+**"Jogar meu mapa" — projeto-jogo a partir do mapa do Pinta (lote MapperMate F4, 18/07):**
+`projects/tilemapGame.ts` (público no index: **`buildTilemapGameProject(payload)`** +
+`assembleTilemapGameProject` testável + tipo `TilemapGamePayload`). A criança desenha o mapa no
+Pinta e o Estúdio MONTA um `Project` COMPLETO e jogável (equivalente ao export "jogo pronto" do
+MapperMate, mas em BLOCOS editáveis): `sanitizeTilemapMeta` re-valida o payload cru
+(`tilemap`/`tilemapFront` são `unknown` na fronteira), monta a IR do **game-2d**
+(`createTileMapFromAsset` fundo + jogador `createSprite` + `updateEachFrame` = clear → drawTileMap
+fundo → mecânica → `tileMapCollide` → `cameraFollow` → drawSprite → **drawTileMap FRENTE DEPOIS do
+jogador**), gera blocos (`buildWorkspaceStateFromIR`) + arquivos (`generateProjectFiles`) + os
+`ProjectAsset` (mapa + `<mapa>-frente`, nome batendo o `image` do bloco) + extensão game-2d
+instalada; `buildTilemapGameProject` ainda `persistProject`. **Heurística de mecânica (full review
+18/07):** PLATAFORMA (gravidade+pulo) só quando uma peça-plataforma one-way está de fato COLOCADA na
+grade (`gridUsesAny(bgMeta.grid, bgMeta.platform)`), NÃO só declarada no tileset — senão um mapa
+top-down cujo tileset (ex.: de template) apenas DEFINE uma peça plataforma cairia em gravidade sem
+motivo; senão → TOP-DOWN (RPG). O host (community-kids `pinta-client`) chama
+`setStudioStorageNamespace(viewerId)` ANTES e navega pro `/estudio`. Testes: `tilemapGame.test.ts`
+(6 — asset+IR+arquivos, top-down/plataforma-COLOCADA/plataforma-só-declarada-segue-top-down, frente
+DEPOIS do drawSprite, `null` p/ mapa inválido).
+
+**gk: camada "frente" do "Desenhar o mapa" (18/07):** `sz_gk_draw_tilemap` ganhou o valor **'frente'**
+no dropdown LAYER, desamarrado de `solid` (o 'topos' só desenhava peças SÓLIDAS por cima). Como
+"frente" é conceito de CAMADA (não de índice de peça — o mesmo índice pode estar no fundo e na
+frente), o veículo é uma **grade por-célula**: `ProjectTilemapMeta`/`PintaTilemapMeta` ganharam
+**`frontGrid?: string`** (mesmo formato do `grid`, só as camadas de frente). Pinta `tilemapMetaFrom`
+emite `frontGrid` no meta COMPLETO quando `hasFrontLayer` (o `tilemapFront` filtrado não repete);
+`sanitizeTilemapMeta` valida (mesma régua do `grid`, OMITE vazio/só-'.'). Runtime gk: `loadTilemap`
+monta `m.frontRows = parseTileGrid(meta.frontGrid)`; `drawTilemap(name, 'frente')` desenha de
+`frontRows` SEM o filtro de sólido (sem frontRows → não desenha nada). ⚠️ **round-trip:** o guard do
+parser `parsers/js.ts` (`layer !== 'chão' && … && layer !== 'frente'`) PRECISA listar 'frente' (senão
+a Ponte código→blocos joga p/ rawJS e o `blockAudit` quebra). Bump manifest gk `0.32.0 → 0.33.0` +
+`docs`/`ai.ts`. Testes: `assetMeta.test.ts` (frontGrid preservado/omitido), gk `runtime.test.ts`
+(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 333**, gk `0.34.1` — full review R31 adicionou imagem/ficha/telas + correções).
+
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +
 `attachAnimationNameWatcher`, espelho do thumb-watcher; registrado no inject do `BlocklyPanel` + no

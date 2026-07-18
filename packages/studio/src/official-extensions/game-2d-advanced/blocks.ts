@@ -80,7 +80,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Coloca uma imagem do projeto na fila de carregamento (a tela de "carregando" espera todas). O nome é como o jogo chama essa imagem — use o mesmo nome no personagem. Se a imagem falhar, o jogo segue com um retângulo no lugar.',
+      'OPCIONAL: pré-carrega uma imagem do projeto (a tela de "carregando" espera todas) e dá um apelido a ela. Hoje não é obrigatório — os blocos de personagem/inimigo/molde já carregam a imagem do Pinta sozinhos ao escolher. Use este bloco só se quiser um apelido diferente do nome do arquivo. Se a imagem falhar, o jogo segue com um retângulo.',
   },
 
   // ---- 🖼️ Telas ----
@@ -140,6 +140,21 @@ export const gameKitBlocks = [
     colour: C,
     tooltip:
       'Põe um botão numa tela (pronta ou sua) e diz o que acontece no clique — mudar de estado, voltar ao menu, o que você quiser.',
+  },
+  {
+    type: 'sz_gk_set_screen_bg',
+    message0: 'Na tela %1, pôr fundo cor %2 e imagem %3',
+    args0: [
+      { type: 'field_name_picker', name: 'SCREEN', text: 'pausa', kind: 'screen' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#1a1e33' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Deixa uma tela (pronta ou sua) com a SUA cara: uma cor de fundo (o "quadrado colorido por baixo") e, se quiser, uma imagem do Pinta cobrindo o painel. Ótimo para telas de entrada, pausa e fim. Deixe a imagem vazia para usar só a cor.',
   },
   {
     type: 'sz_gk_show_screen',
@@ -263,7 +278,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tudo o que aparece no jogo é desenhado aqui, a cada quadro: pinte o fundo, desenhe os personagens e o placar. Os blocos de Canvas funcionam aqui dentro, usando esse pincel. Com a câmera ligada, este desenho é do MUNDO (anda com a câmera).',
+      'Tudo o que aparece no jogo é desenhado aqui, a cada quadro: pinte o fundo, desenhe os personagens e o placar. Os blocos de Canvas funcionam aqui dentro, usando esse pincel. Desenha em "jogando", "pausado", "fim" e nos SEUS estados — só NÃO no "menu" nem no "carregando" (para um menu desenhado, use um estado inventado). Com a câmera ligada, este desenho é do MUNDO (anda com a câmera).',
   },
   {
     type: 'sz_gk_on_draw_hud',
@@ -309,7 +324,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria um personagem do jogo (herói, moeda, inimigo…). Ele nasce no centro da tela. A imagem é a que você carregou (pelo nome); sem imagem, aparece um retângulo da cor escolhida. A velocidade é em pixels por segundo.',
+      'Cria um personagem do jogo (herói, moeda, inimigo…). Ele nasce no centro da tela. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar a imagem" antes; sem imagem, aparece um retângulo da cor escolhida. A velocidade é em pixels por segundo.',
   },
   {
     type: 'sz_gk_move_with_keys',
@@ -1270,19 +1285,20 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_battle_start',
-    message0: 'Começar a batalha contra %1 com vida %2 , força %3 e defesa %4',
+    message0: 'Começar a batalha contra %1 com vida %2, força %3, defesa %4 e imagem %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Dragão' },
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'STR', check: 'JSValue' },
       { type: 'input_value', name: 'DEF', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). O mundo espera a batalha acabar.',
+      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O mundo espera a batalha acabar. (É a batalha por TURNOS do ⚔️ Kit RPG — para cartas use o 🃏 Kit Cartas; para bichinhos, o 👾 Kit Monstrinhos.)',
   },
   {
     type: 'sz_gk_rpg_set_special',
@@ -1312,6 +1328,16 @@ export const gameKitBlocks = [
     colour: C,
     tooltip:
       'Põe uma poção no estoque de batalha (empilha). Na luta, o botão "Item" usa uma e recupera vida.',
+  },
+  {
+    type: 'sz_gk_rpg_heal_hero',
+    message0: 'Curar o herói',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Recupera a vida do herói ao MÁXIMO, FORA da batalha (a estalagem, um save, um checkpoint). Como o herói CARREGA o dano de uma luta para a outra, é assim que ele se recupera. Subir de nível também cura; perder uma batalha recomeça com a vida cheia.',
   },
   {
     type: 'sz_gk_rpg_battle_reward',
@@ -1356,37 +1382,39 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_add_ally',
-    message0: 'Adicionar aliado %1 com vida %2, força %3, defesa %4, cor %5',
+    message0: 'Adicionar aliado %1 com vida %2, força %3, defesa %4, cor %5, imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Guerreiro' },
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'STR', check: 'JSValue' },
       { type: 'input_value', name: 'DEF', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#4ade80' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. O time fica salvo entre batalhas. Use no começo.',
+      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O time fica salvo entre batalhas. Use no começo.',
   },
   {
     type: 'sz_gk_rpg_add_foe',
-    message0: 'Adicionar inimigo %1 com vida %2, força %3, defesa %4, cor %5',
+    message0: 'Adicionar inimigo %1 com vida %2, força %3, defesa %4, cor %5, imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Capanga' },
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'STR', check: 'JSValue' },
       { type: 'input_value', name: 'DEF', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#e05a5a' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. Use antes de "Começar a batalha".',
+      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Use antes de "Começar a batalha".',
   },
   {
     type: 'sz_gk_rpg_teach_move',
@@ -1395,7 +1423,7 @@ export const gameKitBlocks = [
       { type: 'field_input', name: 'MOVE', text: 'Espadada' },
       { type: 'input_value', name: 'DMG', check: 'JSValue' },
       { type: 'input_value', name: 'COST', check: 'JSValue' },
-      { type: 'field_input', name: 'WHO', text: 'Você' },
+      { type: 'field_name_picker', name: 'WHO', text: 'Você', kind: 'combatant' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1411,7 +1439,7 @@ export const gameKitBlocks = [
       { type: 'field_input', name: 'MOVE', text: 'Curar' },
       { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
       { type: 'input_value', name: 'COST', check: 'JSValue' },
-      { type: 'field_input', name: 'WHO', text: 'Você' },
+      { type: 'field_name_picker', name: 'WHO', text: 'Você', kind: 'combatant' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1452,6 +1480,125 @@ export const gameKitBlocks = [
     colour: C,
     tooltip:
       'Verdadeiro se a ÚLTIMA batalha terminou em vitória. Use no "quando a batalha terminar".',
+  },
+  // ---- 👑 R30: chefes e chefões da batalha por turnos ----
+  {
+    type: 'sz_gk_rpg_add_boss',
+    message0: 'Pôr o CHEFÃO %1 (vida %2, força %3, defesa %4, imagem %5)',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Dragão' },
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'STR', check: 'JSValue' },
+      { type: 'input_value', name: 'DEF', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
+  },
+  // ---- ⚔️ Fichas reutilizáveis: crie o inimigo separado e escolha na hora ----
+  {
+    type: 'sz_gk_rpg_define_battler',
+    message0:
+      'Criar a ficha do inimigo %1: vida %2, força %3, defesa %4, imagem %5, cor %6, chefão %7',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Dragão' },
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'STR', check: 'JSValue' },
+      { type: 'input_value', name: 'DEF', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#e05a5a' },
+      { type: 'field_checkbox', name: 'BOSS', checked: false },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma FICHA de inimigo reutilizável: vida, força, defesa, a imagem (um desenho do Pinta, escolha direto) e a cor. Marque "chefão" para ele entrar MAIOR, com barra grande e coroa. Faça a ficha UMA vez no começo; depois é só ESCOLHER com quem batalhar.',
+  },
+  {
+    type: 'sz_gk_rpg_battle_named',
+    message0: 'Começar a batalha contra a ficha %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'battler' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Abre a batalha por turnos ESCOLHENDO um inimigo que você já criou com "Criar a ficha do inimigo" — ele entra com a imagem e os atributos prontos. ⚠️ Crie a ficha ANTES (senão nada acontece + um aviso). Some "Adicionar o inimigo da ficha" antes para lutar contra vários.',
+  },
+  {
+    type: 'sz_gk_rpg_add_foe_named',
+    message0: 'Adicionar o inimigo da ficha %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Capanga', kind: 'battler' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe mais um inimigo na PRÓXIMA batalha escolhendo uma FICHA que você já criou (com imagem e atributos). Use antes de "Começar a batalha".',
+  },
+  {
+    type: 'sz_gk_battler_life',
+    message0: 'a vida de %1 na batalha',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A vida atual daquele combatente (o herói é "Você"; aliados e inimigos pelo nome). É a chave das FASES do chefe: "se a vida do Dragão < metade: fica furioso". Fora da batalha dá 0.',
+  },
+  {
+    type: 'sz_gk_battler_max_life',
+    message0: 'a vida máxima de %1 na batalha',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A vida CHEIA daquele combatente. Junte com "a vida de …" para achar a fração (metade, um terço) e disparar as fases do chefe.',
+  },
+  {
+    type: 'sz_gk_rpg_on_foe_turn',
+    message0: 'Quando for a vez do inimigo %1',
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A IA do chefe: no turno daquele inimigo, roda os SEUS blocos (no lugar do ataque comum). Dentro, use "o inimigo usa o golpe" / "acerta todo o time" e leia "a vida de …" para mudar de fase.',
+  },
+  {
+    type: 'sz_gk_rpg_foe_use',
+    message0: 'O inimigo %1 usa o golpe %2',
+    args0: [
+      { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' },
+      { type: 'field_input', name: 'MOVE', text: 'Baforada' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O inimigo usa um golpe que você ENSINOU a ele (com "Ensinar o golpe" para o nome dele). Use dentro de "Quando for a vez do inimigo".',
+  },
+  {
+    type: 'sz_gk_rpg_foe_hit_all',
+    message0: 'O inimigo %1 acerta TODO o time (dano %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' },
+      { type: 'input_value', name: 'DMG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O golpe de área do chefão: acerta TODO o seu time de uma vez. Use dentro de "Quando for a vez do inimigo".',
   },
 
   // ---- 🎬 Cenas (cutscene) & NPCs vivos ----
@@ -1750,7 +1897,8 @@ export const gameKitBlocks = [
         name: 'LAYER',
         options: [
           ['chão (o fundo, por baixo)', 'chão'],
-          ['topos (árvores/telhados, por cima)', 'topos'],
+          ['topos (peças sólidas, por cima)', 'topos'],
+          ['frente (a camada da frente, por cima)', 'frente'],
         ],
       },
     ],
@@ -1759,7 +1907,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha o mapa. Desenhe o "chão" ANTES dos personagens e os "topos" (árvores, telhados, muros) DEPOIS, dentro do "Desenhar o jogo" — assim o herói passa por trás das copas das árvores e a cena ganha profundidade. O mapa encaixa sozinho na tela.',
+      'Desenha o mapa. Desenhe o "chão" ANTES dos personagens; DEPOIS deles desenhe "topos" (só as peças sólidas: muros/telhados) ou "frente" (a camada da frente que você marcou no Pinta, como copas de árvore) — assim o herói passa por trás e a cena ganha profundidade. O mapa encaixa sozinho na tela.',
   },
   {
     type: 'sz_gk_tilemap_solid',
@@ -1929,7 +2077,7 @@ export const gameKitBlocks = [
     colour: C,
     tooltip: 'Saiu por um lado, aparece no outro — o Pac-Man e o Asteroids.',
   },
-  // ---- 🧩 Tabuleiro / grade (Snake, Match-3, Sokoban, puzzles) ----
+  // ---- 🧩 Grade (Snake, Match-3, Sokoban, puzzles) ----
   {
     type: 'sz_gk_board_create',
     message0: 'Criar o tabuleiro %1 com %2 colunas × %3 linhas (vazio = %4)',
@@ -1999,6 +2147,282 @@ export const gameKitBlocks = [
     colour: C,
     tooltip:
       'Verdadeiro se a célula está DENTRO da grade — o jeito de saber se a cobrinha bateu na parede ou se um movimento sai do tabuleiro.',
+  },
+  // ---- 🃏 R30: CARTAS (pilha = lista do núcleo; carta de 2 faces; mão clicável) ----
+  {
+    type: 'sz_gk_pile_move_top',
+    message0: 'Mover a carta do topo da pilha %1 para a pilha %2',
+    args0: [
+      { type: 'field_name_picker', name: 'FROM', text: 'baralho', kind: 'group' },
+      { type: 'field_name_picker', name: 'TO', text: 'mao', kind: 'group' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Tira a carta de cima de uma pilha (lista) e põe no topo da outra. É o COMPRAR (baralho → mão) E o DESCARTAR (mão → descarte) num bloco só. As pilhas são listas normais do núcleo.',
+  },
+  {
+    type: 'sz_gk_pile_shuffle_from',
+    message0: 'Remontar a pilha %1 juntando %2 e embaralhar',
+    args0: [
+      { type: 'field_name_picker', name: 'DECK', text: 'baralho', kind: 'group' },
+      { type: 'field_name_picker', name: 'DISCARD', text: 'descarte', kind: 'group' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Quando o baralho acaba: joga o descarte de volta no baralho e embaralha. O rebaralhar do deck-battler num bloco.',
+  },
+  {
+    type: 'sz_gk_pile_top',
+    message0: 'a carta do topo da pilha %1',
+    args0: [{ type: 'field_name_picker', name: 'PILE', text: 'baralho', kind: 'group' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Espia a carta de cima SEM tirar (para saber qual é antes de mover). Pilha vazia = nada.',
+  },
+  {
+    type: 'sz_gk_pile_size',
+    message0: 'quantas cartas tem a pilha %1',
+    args0: [{ type: 'field_name_picker', name: 'PILE', text: 'baralho', kind: 'group' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quantas cartas há na pilha (lista). Use para saber se o baralho acabou (= 0).',
+  },
+  {
+    type: 'sz_gk_card',
+    message0: 'uma carta: frente %1, verso %2',
+    args0: [
+      { type: 'input_value', name: 'FRONT', check: 'JSValue' },
+      { type: 'input_value', name: 'BACK', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Cria uma carta com duas faces: a FRENTE (o valor/figura) e o VERSO (o que aparece virada pra baixo). Nasce virada pra BAIXO. Ponha várias numa lista para fazer o baralho.',
+  },
+  {
+    type: 'sz_gk_card_flip',
+    message0: 'Virar a carta %1',
+    args0: [{ type: 'input_value', name: 'CARD', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Vira a carta (de cara pra cima ↔ pra baixo). É o coração do jogo da memória.',
+  },
+  {
+    type: 'sz_gk_card_is_up',
+    message0: 'a carta %1 está virada para cima',
+    args0: [{ type: 'input_value', name: 'CARD', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro se a carta está de cara pra cima (mostrando a frente).',
+  },
+  {
+    type: 'sz_gk_card_face',
+    message0: 'o que aparece na carta %1',
+    args0: [{ type: 'input_value', name: 'CARD', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'O que a carta MOSTRA agora: a frente se estiver virada pra cima, o verso se pra baixo. Use para comparar duas cartas viradas (par!).',
+  },
+  {
+    type: 'sz_gk_hand_draw',
+    message0: 'Desenhar a pilha %1 como fileira em x %2 y %3 %4',
+    args0: [
+      { type: 'field_name_picker', name: 'PILE', text: 'mao', kind: 'group' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_checkbox', name: 'FAN', checked: false },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha as cartas da pilha (lista) numa fileira a partir de x,y (marque a caixinha para um leque). Guarda onde cada carta ficou para o "a carta clicada". Use no "Desenhar o jogo".',
+  },
+  {
+    type: 'sz_gk_card_at',
+    message0: 'a carta clicada em x %1 y %2 da pilha %3',
+    args0: [
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'PILE', text: 'mao', kind: 'group' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Qual carta da mão foi clicada (o índice, 0 = a primeira; -1 = nenhuma). Junte com "o mouse x/y" e "Quando clicar no jogo" para jogar uma carta clicando nela.',
+  },
+  // ---- 🃏 R30: KIT CARTAS (o RPG de cartas / deck-battler) ----
+  {
+    type: 'sz_gk_cards_start',
+    message0: 'Começar uma batalha de cartas: você com %1 de vida, inimigo com %2',
+    args0: [
+      { type: 'input_value', name: 'HERO_HP', check: 'JSValue' },
+      { type: 'input_value', name: 'ENEMY_HP', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Abre a arena da batalha de cartas (vida sua e do inimigo). NÃO cria deck nem cartas — isso é seu: monte o baralho com listas + o bloco "uma carta". ⚠️ Roda SÓ no estado "jogando" (não muda o estado); chame quando já estiver jogando, e já começa o seu 1º turno. Ponha o "Quando começar o meu turno"/"Quando for a vez do inimigo" NO TOPO (não dentro do "quando entrar em jogando"). (Batalha de CARTAS — para turnos com espada use o ⚔️ Kit RPG; para bichinhos, o 👾 Kit Monstrinhos.)',
+  },
+  {
+    type: 'sz_gk_cards_energy_per_turn',
+    message0: 'A cada turno, começar com %1 de energia',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A energia RESETA para esse valor a cada turno seu (o gasto das cartas). É o que diferencia o deck-battler do RPG comum (lá a energia acumula).',
+  },
+  {
+    type: 'sz_gk_cards_energy',
+    message0: 'a minha energia',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quanta energia você tem agora. Teste antes de jogar uma carta (custa energia).',
+  },
+  {
+    type: 'sz_gk_cards_spend',
+    message0: 'Gastar %1 de energia',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Tira energia (o custo da carta jogada). Não deixa passar de 0.',
+  },
+  {
+    type: 'sz_gk_cards_on_turn',
+    message0: 'Quando começar o meu turno',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda no começo de cada turno seu (a energia e o escudo já resetaram). É aqui que você COMPRA a mão (mover N cartas do baralho para a mão; rebaralhar se acabou).',
+  },
+  {
+    type: 'sz_gk_cards_end_turn',
+    message0: 'Passar o turno',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Termina o seu turno: roda o "Quando for a vez do inimigo" e volta para você (novo turno).',
+  },
+  {
+    type: 'sz_gk_cards_draw_hud',
+    message0: 'Desenhar o painel da batalha de cartas',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha as barras de vida (sua e do inimigo), a energia, o escudo e a INTENÇÃO do inimigo. Use no "Desenhar o jogo" (a mão você desenha com "Desenhar a pilha").',
+  },
+  {
+    type: 'sz_gk_cards_hero_life',
+    message0: 'a minha vida (na batalha de cartas)',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Sua vida na batalha. Vida ≤ 0 = você perdeu (Terminar o jogo).',
+  },
+  {
+    type: 'sz_gk_cards_enemy_life',
+    message0: 'a vida do inimigo (na batalha de cartas)',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'A vida do inimigo. ≤ 0 = você venceu (Mudar o estado para vitória).',
+  },
+  {
+    type: 'sz_gk_cards_hurt_enemy',
+    message0: 'Tirar %1 de vida do inimigo',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'O dano de uma carta de ataque. Use dentro do "o que a carta faz".',
+  },
+  {
+    type: 'sz_gk_cards_hurt_me',
+    message0: 'Tirar %1 da minha vida (o escudo absorve)',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O dano do inimigo em você — o ESCUDO absorve primeiro, o resto tira vida. Use no "Quando for a vez do inimigo" para resolver a intenção de ataque.',
+  },
+  {
+    type: 'sz_gk_cards_gain_block',
+    message0: 'Ganhar %1 de escudo',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O escudo (block) apara o próximo dano do inimigo. Some no começo do seu turno, como no gênero. É o efeito das cartas de defesa.',
+  },
+  {
+    type: 'sz_gk_cards_enemy_intent',
+    message0: 'O inimigo vai %1 de %2 no próximo turno',
+    args0: [
+      { type: 'field_input', name: 'ACTION', text: 'atacar' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Anuncia (telegrafa) o que o inimigo VAI fazer — o segredo do gênero: você vê o ataque vindo e se prepara. A ação é uma palavra que VOCÊ inventa (atacar, defender…).',
+  },
+  {
+    type: 'sz_gk_cards_intent_action',
+    message0: 'o que o inimigo vai fazer',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A palavra da intenção (a que você anunciou). Teste no "Quando for a vez do inimigo": "se = atacar: tirar a minha vida".',
+  },
+  {
+    type: 'sz_gk_cards_intent_value',
+    message0: 'de quanto é a intenção do inimigo',
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'O número da intenção (o dano/escudo que o inimigo vai fazer).',
+  },
+  {
+    type: 'sz_gk_cards_on_enemy_turn',
+    message0: 'Quando for a vez do inimigo',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda quando você passa o turno: RESOLVA a intenção telegrafada (ex.: "se o inimigo vai atacar: tirar a minha vida do valor dele") e ANUNCIE a próxima com "O inimigo vai…".',
   },
   {
     type: 'sz_gk_collide_tilemap',
@@ -2800,7 +3224,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_pkm_creature',
     message0:
-      'Criatura %1 do tipo %2: vida %3, força %4, defesa %5, velocidade %6, imagem %7, aparência %8',
+      'Criar a criatura %1 do tipo %2: vida %3, força %4, defesa %5, velocidade %6, imagem %7, aparência %8',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Fogoso' },
       { type: 'field_name_picker', name: 'TYPE', text: 'fogo', kind: 'pkmtype' },
@@ -3528,6 +3952,91 @@ export const gameKitBlocks = [
     tooltip:
       'Quanto do caminho aquele personagem já andou, de 0 (começo) a 100 (fim). 0 se ele não segue caminho nenhum.',
   },
+  // ---- 🎲 R30: jogos de TABULEIRO (dado + ordem de turno + trilha de casas) ----
+  {
+    type: 'sz_gk_roll_dice',
+    message0: 'rolar um dado de %1 lados',
+    args0: [{ type: 'input_value', name: 'FACES', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Sorteia um número de 1 até o número de lados (um dado de 6 dá 1 a 6). O coração dos jogos de tabuleiro: role e ande esse tanto de casas.',
+  },
+  {
+    type: 'sz_gk_players_setup',
+    message0: 'começar com %1 jogadores',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Prepara a ordem de turno para N jogadores (a vez começa no jogador 1). Use no "Preparar". Depois "passar a vez" roda o rodízio 1 → 2 → … → 1.',
+  },
+  {
+    type: 'sz_gk_current_player',
+    message0: 'o jogador da vez',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'De quem é a vez agora (1, 2, 3…). Use para mostrar "Vez do jogador X" e para decidir quem move a peça.',
+  },
+  {
+    type: 'sz_gk_next_player',
+    message0: 'passar a vez',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Passa para o próximo jogador (volta ao 1 depois do último). Dispara o "Quando a vez mudar".',
+  },
+  {
+    type: 'sz_gk_on_turn_change',
+    message0: 'Quando a vez mudar',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda toda vez que "passar a vez" muda o jogador. Bom para anunciar de quem é a vez e reposicionar a câmera na peça dele.',
+  },
+  {
+    type: 'sz_gk_move_along_track',
+    message0: 'Andar %1 %2 casas na trilha %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'peao', kind: 'character' },
+      { type: 'input_value', name: 'SPACES', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'PATH', text: 'trilha', kind: 'path' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Anda a peça N casas pela trilha (cada "ponto" do caminho é uma casa) e PARA na casa. Avisa "casa:parou" e roda o "Quando um peão parar numa casa".',
+  },
+  {
+    type: 'sz_gk_space_of',
+    message0: 'a casa de %1',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'peao', kind: 'character' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Em qual casa a peça está (0 = a primeira). Use para ligar "se a casa de peao = 7: pague aluguel".',
+  },
+  {
+    type: 'sz_gk_on_land_space',
+    message0: 'Quando um peão parar numa casa',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda quando qualquer peça termina de andar numa casa. Dentro, use "a casa de …" para saber onde parou e dar/tirar pontos, mandar voltar, etc.',
+  },
   {
     type: 'sz_gk_pick_active',
     message0: 'o vivo do molde %1 com %2 %3',
@@ -4093,6 +4602,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_set_screen_text',
       'sz_gk_create_screen',
       'sz_gk_add_button',
+      'sz_gk_set_screen_bg',
       'sz_gk_show_screen',
       'sz_gk_hide_screens',
     ],
@@ -4128,7 +4638,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // salvo): o motor desenha a fala e o menu no canvas e navega neles em
     // QUALQUER jogo — o stepUiInput roda no stepSystems, fora do Kit RPG.
     // R24: mudou de 3º p/ cá — diálogo DEPOIS de existir personagem e controle.
-    name: '💬 Fala & escolhas',
+    name: '🗨️ Fala & escolhas',
     colour: C,
     types: ['sz_gk_rpg_say', 'sz_gk_rpg_menu', 'sz_gk_rpg_option'],
   },
@@ -4138,7 +4648,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     types: ['sz_gk_on_event', 'sz_gk_emit'],
   },
   {
-    name: '👾 Moldes & enxames',
+    name: '🐛 Moldes & enxames',
     colour: C,
     types: [
       'sz_gk_define_mold',
@@ -4175,7 +4685,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // ⚠️ A trava é o que faltava nos TRÊS sistemas de animação da extensão (folha
     // manual · folha de andar · quadros por física): sem ela a criança manda
     // golpear e a animação de andar apaga o golpe no quadro seguinte.
-    name: '🎬 Animação',
+    name: '📽️ Animação',
     colour: C,
     types: [
       'sz_gk_play_anim',
@@ -4243,6 +4753,22 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     types: ['sz_gk_define_path', 'sz_gk_path_point', 'sz_gk_follow_path', 'sz_gk_path_progress'],
   },
   {
+    // 🎲 GERAL (R30): as peças de JOGO DE TABULEIRO — a criança monta o Ludo/Jogo
+    // da Vida. Ordem de turno (anel) + a trilha de CASAS (estende 🛤️ Caminhos:
+    // cada "ponto" vira uma casa). O dado mora na 🎲 Sorte & medida.
+    name: '🏁 Jogo de tabuleiro',
+    colour: C,
+    types: [
+      'sz_gk_players_setup',
+      'sz_gk_current_player',
+      'sz_gk_next_player',
+      'sz_gk_on_turn_change',
+      'sz_gk_move_along_track',
+      'sz_gk_space_of',
+      'sz_gk_on_land_space',
+    ],
+  },
+  {
     // ⚙️ GERAL: a física que faz plataforma/corrida/flappy/breakout existirem.
     // A receita é sempre: gravidade → mover pela velocidade → colidir.
     name: '⚙️ Física',
@@ -4269,7 +4795,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   {
     // 🧩 GERAL: uma grade nomeada de células (a criança varre com "repita" +
     // ler/pôr). Destrava Snake, Match-3, Sokoban, campo-minado, puzzles de grade.
-    name: '🧩 Tabuleiro',
+    name: '🧩 Grade',
     colour: C,
     types: [
       'sz_gk_board_create',
@@ -4280,13 +4806,31 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
+    // 🃏 GERAL (R30): a pilha É uma LISTA do núcleo; a criança MONTA memória, Uno,
+    // deck-battler com listas + estes verbos + a carta de 2 faces + a mão clicável.
+    name: '🎴 Cartas',
+    colour: C,
+    types: [
+      'sz_gk_card',
+      'sz_gk_pile_move_top',
+      'sz_gk_pile_shuffle_from',
+      'sz_gk_pile_top',
+      'sz_gk_pile_size',
+      'sz_gk_card_flip',
+      'sz_gk_card_is_up',
+      'sz_gk_card_face',
+      'sz_gk_hand_draw',
+      'sz_gk_card_at',
+    ],
+  },
+  {
     name: '⏱️ Tempo',
     colour: C,
     types: ['sz_gk_every_seconds', 'sz_gk_wait', 'sz_gk_cooldown_ready'],
   },
   {
     // Combate ANTES de Ação: a ação em tempo real usa hurt/i-frames/knockback.
-    name: '❤️ Combate',
+    name: '🗡️ Combate',
     colour: C,
     types: [
       'sz_gk_hurt',
@@ -4370,6 +4914,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: [
       'sz_gk_chance',
+      'sz_gk_roll_dice',
       'sz_gk_distance_between',
       'sz_gk_point_in',
       'sz_gk_random_active',
@@ -4394,7 +4939,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // loja, crafting. Só o nome dos types segue "rpg_*" (renomear quebraria
     // projeto salvo). Vive colada na 💾 Memória: inventário e persistência
     // andam juntos.
-    name: '🎒 Itens',
+    name: '🎁 Itens',
     colour: C,
     types: [
       'sz_gk_rpg_give_item',
@@ -4405,7 +4950,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '💾 Memória',
+    name: '🧠 Memória',
     colour: C,
     types: [
       'sz_gk_save_value',
@@ -4562,23 +5107,33 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_rpg_battle_start',
       'sz_gk_rpg_add_ally',
       'sz_gk_rpg_add_foe',
+      'sz_gk_rpg_define_battler',
+      'sz_gk_rpg_add_foe_named',
+      'sz_gk_rpg_battle_named',
       'sz_gk_rpg_teach_move',
       'sz_gk_rpg_teach_heal',
       'sz_gk_rpg_set_special',
       'sz_gk_rpg_give_potion',
+      'sz_gk_rpg_heal_hero',
       'sz_gk_rpg_battle_reward',
       'sz_gk_rpg_inflict',
       'sz_gk_rpg_on_battle_end',
       'sz_gk_rpg_battle_won',
       'sz_gk_rpg_level',
       'sz_gk_rpg_xp',
+      'sz_gk_rpg_add_boss',
+      'sz_gk_battler_life',
+      'sz_gk_battler_max_life',
+      'sz_gk_rpg_on_foe_turn',
+      'sz_gk_rpg_foe_use',
+      'sz_gk_rpg_foe_hit_all',
     ],
   },
   // ---- 👾 KIT MONSTRINHOS (o atalho do gênero "pegue e treine bichinhos") ----
   // ⭐ É um jogo do Kit RPG com OUTRA batalha: o mundo (grade/NPC/fala/mapa/
   // flags/salvar) vem de lá. Aqui só o que é do gênero.
   {
-    name: '👾 criaturas',
+    name: '🐾 criaturas',
     kit: '👾 Kit Monstrinhos',
     colour: C,
     types: [
@@ -4661,6 +5216,44 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: ['sz_gk_td_wave', 'sz_gk_td_set_coins', 'sz_gk_td_add_coins', 'sz_gk_td_coins'],
   },
+  // ---- 🃏 KIT CARTAS (o RPG de cartas / deck-battler) — R30 ----
+  {
+    name: '🃏 a batalha',
+    kit: '🃏 Kit Cartas',
+    colour: C,
+    types: [
+      'sz_gk_cards_start',
+      'sz_gk_cards_energy_per_turn',
+      'sz_gk_cards_energy',
+      'sz_gk_cards_spend',
+      'sz_gk_cards_on_turn',
+      'sz_gk_cards_end_turn',
+      'sz_gk_cards_draw_hud',
+    ],
+  },
+  {
+    name: '❤️ vida & escudo',
+    kit: '🃏 Kit Cartas',
+    colour: C,
+    types: [
+      'sz_gk_cards_hero_life',
+      'sz_gk_cards_enemy_life',
+      'sz_gk_cards_hurt_enemy',
+      'sz_gk_cards_hurt_me',
+      'sz_gk_cards_gain_block',
+    ],
+  },
+  {
+    name: '👿 o inimigo',
+    kit: '🃏 Kit Cartas',
+    colour: C,
+    types: [
+      'sz_gk_cards_enemy_intent',
+      'sz_gk_cards_intent_action',
+      'sz_gk_cards_intent_value',
+      'sz_gk_cards_on_enemy_turn',
+    ],
+  },
 ]
 
 // Cores por GRUPO (R24). Antes era um gradiente único de 44 tons do teal —
@@ -4704,6 +5297,19 @@ const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { 
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_setup: { W: numShadow(1280), H: numShadow(720) },
+  sz_gk_card: { FRONT: txtShadow('🍎'), BACK: txtShadow('?') },
+  sz_gk_card_flip: { CARD: numShadow(0) },
+  sz_gk_card_is_up: { CARD: numShadow(0) },
+  sz_gk_card_face: { CARD: numShadow(0) },
+  sz_gk_hand_draw: { X: numShadow(60), Y: numShadow(420) },
+  sz_gk_card_at: { X: numShadow(0), Y: numShadow(0) },
+  sz_gk_cards_start: { HERO_HP: numShadow(30), ENEMY_HP: numShadow(40) },
+  sz_gk_cards_energy_per_turn: { N: numShadow(3) },
+  sz_gk_cards_spend: { N: numShadow(1) },
+  sz_gk_cards_hurt_enemy: { N: numShadow(6) },
+  sz_gk_cards_hurt_me: { N: numShadow(6) },
+  sz_gk_cards_gain_block: { N: numShadow(5) },
+  sz_gk_cards_enemy_intent: { VALUE: numShadow(6) },
   sz_gk_board_create: { COLS: numShadow(10), ROWS: numShadow(10), EMPTY: numShadow(0) },
   sz_gk_board_set: { VALUE: numShadow(1), COL: numShadow(0), ROW: numShadow(0) },
   sz_gk_board_get: { COL: numShadow(0), ROW: numShadow(0) },
@@ -4781,6 +5387,9 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_battle_start: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(2) },
   sz_gk_rpg_add_ally: { HP: numShadow(24), STR: numShadow(6), DEF: numShadow(1) },
   sz_gk_rpg_add_foe: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(0) },
+  sz_gk_rpg_add_boss: { HP: numShadow(120), STR: numShadow(9), DEF: numShadow(2) },
+  sz_gk_rpg_define_battler: { HP: numShadow(120), STR: numShadow(9), DEF: numShadow(2) },
+  sz_gk_rpg_foe_hit_all: { DMG: numShadow(15) },
   sz_gk_rpg_teach_move: { DMG: numShadow(12), COST: numShadow(3) },
   sz_gk_rpg_teach_heal: { AMOUNT: numShadow(12), COST: numShadow(3) },
   sz_gk_rpg_set_special: { DMG: numShadow(14), COST: numShadow(4) },
@@ -4861,6 +5470,9 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   // 🛤️ R25 — caminhos + paralaxe + explosão por folha
   sz_gk_path_point: { X: numShadow(100), Y: numShadow(100) },
   sz_gk_follow_path: { SPEED: numShadow(120) },
+  sz_gk_roll_dice: { FACES: numShadow(6) },
+  sz_gk_players_setup: { N: numShadow(2) },
+  sz_gk_move_along_track: { SPACES: numShadow(1) },
   sz_gk_parallax_layer: { FX: numShadow(0.3), FY: numShadow(1) },
   sz_gk_sheet_burst: {
     FRAMES: numShadow(4),

@@ -2,8 +2,13 @@ import { describe, expect, it } from 'bun:test'
 import { createTilemapAsset, createTilesetAsset } from '../core/project'
 import { packTileset } from '../tiles/packTileset'
 import { addLayer, setCell } from '../tiles/tilemapOps'
-import { addTile, toggleSolid } from '../tiles/tilesetOps'
-import { tilemapExportJson, tilemapToStudioGrid, tilesetSolidList } from './studioGrid'
+import { addTile, cycleCollision } from '../tiles/tilesetOps'
+import {
+  tilemapExportJson,
+  tilemapToStudioGrid,
+  tilesetPlatformList,
+  tilesetSolidList,
+} from './studioGrid'
 
 function makeMap() {
   const tilemap = createTilemapAsset({ name: 'fase', tilesetId: 't1', cols: 4, rows: 2 })
@@ -36,9 +41,26 @@ describe('tilesetSolidList', () => {
     let tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     tileset = addTile(tileset, 0)
     tileset = addTile(tileset, 1)
-    tileset = toggleSolid(tileset, 1)
-    tileset = toggleSolid(tileset, 2)
+    tileset = cycleCollision(tileset, 1)
+    tileset = cycleCollision(tileset, 2)
     expect(tilesetSolidList(tileset)).toBe('1, 2')
+  })
+})
+
+describe('tilesetPlatformList', () => {
+  it('lista só os índices PLATAFORMA (ciclo 2× = plataforma); sólidos ficam fora', () => {
+    let tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    tileset = addTile(tileset, 0)
+    tileset = addTile(tileset, 1)
+    tileset = cycleCollision(tileset, 0) // sólido
+    tileset = cycleCollision(cycleCollision(tileset, 2), 2) // plataforma
+    expect(tilesetSolidList(tileset)).toBe('0')
+    expect(tilesetPlatformList(tileset)).toBe('2')
+  })
+
+  it('nenhuma plataforma = string vazia', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    expect(tilesetPlatformList(tileset)).toBe('')
   })
 })
 
@@ -107,8 +129,8 @@ describe('GUARDA de compatibilidade com o parseGrid/parseSolidList do runtime', 
   it('a lista de sólidos round-trippa pelo parser do runtime', () => {
     let tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     tileset = addTile(tileset, 0)
-    tileset = toggleSolid(tileset, 0)
-    tileset = toggleSolid(tileset, 1)
+    tileset = cycleCollision(tileset, 0)
+    tileset = cycleCollision(tileset, 1)
     expect(parseSolidList(tilesetSolidList(tileset))).toEqual([0, 1])
   })
 

@@ -51,6 +51,11 @@ export type XpSourceType =
   // (`studioPublishDaySourceId`) — spam de republicação não infla XP.
   | 'studio_published'
   | 'studio_publish_day'
+  // CRIOU/editou no Estúdio Completo (retenção pós-cursos, 07/2026): XP REAL (move
+  // streak/liga), 1×/dia pelo sourceId determinístico do dia civil SP
+  // (`studioActivityDaySourceId`) — a âncora de quem já terminou os cursos e cria
+  // SEM publicar. Sem moeda (não é torneira). Disparado pelo autosave do editor.
+  | 'studio_activity_day'
   // MARCO (amount 0): remixou um jogo de colega do Mural ("Fazer a minha versão").
   // sourceId = playId do jogo ORIGINAL → re-remixar o mesmo jogo não conta de novo.
   | 'studio_remix'

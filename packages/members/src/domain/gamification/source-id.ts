@@ -21,6 +21,7 @@ export function deterministicSourceId(namespace: string, name: string): string {
 const ROOM_ITEM_NAMESPACE = '7b1f9a2c-6d84-4e13-b0a5-2f8c9e14d6b3'
 const AVATAR_PART_NAMESPACE = 'c4e28d17-3a95-4f60-8b12-9d7e6a03f5c8'
 const STUDIO_PUBLISH_DAY_NAMESPACE = 'e9a52f80-1c47-4d3b-a6f9-0b8d3e71c245'
+const STUDIO_ACTIVITY_DAY_NAMESPACE = 'b7d3e9a1-4c26-4f85-9a0d-3e1f8c72b6d4'
 
 /** sourceId do marco `room_item_buy` (1 por item do quarto). */
 export function roomItemSourceId(itemId: string): string {
@@ -40,4 +41,15 @@ export function avatarPartSourceId(partId: string): string {
  */
 export function studioPublishDaySourceId(dayKey: string): string {
   return deterministicSourceId(STUDIO_PUBLISH_DAY_NAMESPACE, dayKey)
+}
+
+/**
+ * sourceId do XP DIÁRIO de CRIAR/editar no Estúdio Completo (`studio_activity_day`) —
+ * derivado do DIA CIVIL SP (`YYYY-MM-DD`): o UNIQUE do ledger deduplica 1 XP por dia,
+ * então mexer/salvar várias vezes no mesmo dia rende XP UMA vez (a âncora de streak de
+ * quem já terminou os cursos e fica criando, SEM precisar publicar). Editar de novo no
+ * MESMO dia = mesmo sourceId = inerte.
+ */
+export function studioActivityDaySourceId(dayKey: string): string {
+  return deterministicSourceId(STUDIO_ACTIVITY_DAY_NAMESPACE, dayKey)
 }

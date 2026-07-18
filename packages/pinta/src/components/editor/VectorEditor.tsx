@@ -774,7 +774,7 @@ export function VectorEditor(): JSX.Element | null {
             "Ajustar" mora aqui e o zoom fica no rodapé da tela. */}
         <div
           role="toolbar"
-          aria-label="Ferramentas"
+          aria-label={COPY.a11y.tools}
           aria-orientation="vertical"
           className="pin-panel grid shrink-0 grid-cols-2 content-start justify-items-center gap-1 overflow-y-auto p-2"
         >
@@ -803,7 +803,7 @@ export function VectorEditor(): JSX.Element | null {
               className="block bg-white/60"
               style={{ touchAction: 'none' }}
               role="img"
-              aria-label="Área de desenho"
+              aria-label={COPY.a11y.drawArea}
               onPointerDown={handleCanvasPointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={endGesture}

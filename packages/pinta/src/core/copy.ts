@@ -3,6 +3,7 @@
  * Texto de UI vive AQUI (os componentes só referenciam), para revisão de tom
  * num lugar só.
  */
+import type { PintaTemplateId } from '../templates/catalog'
 import type { PintaAssetKind } from './project'
 
 export const COPY = {
@@ -32,6 +33,33 @@ export const COPY = {
     restoredOne: 'Trouxe 1 desenho de volta!',
     restoredMany: (count: number) => `Trouxe ${count} desenhos de volta!`,
     restorePartial: ' Alguns ficaram de fora.',
+    importImage: 'Trazer uma foto',
+    importDecodeError: 'Não consegui abrir essa imagem. Tente um PNG ou JPG.',
+    importDone: 'Sua imagem já está na galeria!',
+  },
+  importImage: {
+    title: 'O que essa imagem vira?',
+    asBackground: {
+      emoji: '🖼️',
+      title: 'Cenário de fundo',
+      description: 'A imagem grande que fica atrás do jogo.',
+    },
+    asTileset: {
+      emoji: '🧩',
+      title: 'Peças do cenário',
+      description: 'Corta a imagem em pecinhas para montar mapas.',
+    },
+    sizeTitle: 'Escolha o tamanho',
+    tileSizeTitle: 'Tamanho de cada peça',
+    colorsNote: 'As cores da foto viram as cores do Pinta.',
+    newColors: (n: number) => (n === 1 ? '1 cor nova' : `${n} cores novas`),
+    uniqueTiles: (n: number) => (n === 1 ? '1 peça' : `${n} peças`),
+    tooManyTiles: 'Essa imagem tem peças demais! Tente um tamanho de peça maior.',
+    detected: 'Detectei sozinho',
+    preview: 'Vai ficar assim:',
+    back: 'Voltar',
+    next: 'Avançar',
+    create: 'Trazer para a galeria',
   },
   newAsset: {
     styleTitle: 'Como você quer desenhar?',
@@ -107,6 +135,30 @@ export const COPY = {
         'Um CONJUNTO de peças feitas de formas. Desenhe VÁRIAS peças aqui e monte o mapa com elas.',
     },
   } satisfies Record<PintaAssetKind, { emoji: string; title: string; description: string }>,
+  templates: {
+    styleCard: {
+      emoji: '✨',
+      title: 'Modelos prontos',
+      description: 'Comece de um desenho pronto e mude do seu jeito.',
+    },
+    stepTitle: 'Escolha um modelo para começar',
+    items: {
+      heroi: { title: 'Herói corajoso', description: 'Um personagem 16×16 que já anda.' },
+      slime: { title: 'Slime saltitante', description: 'Um bichinho verde que pisca.' },
+      moeda: { title: 'Moeda girando', description: 'Uma moeda com 4 quadros de giro.' },
+      nave: { title: 'Nave espacial', description: 'Para jogos de atirar nas estrelas.' },
+      'chao-de-grama': {
+        title: 'Chão de grama',
+        description: 'Peças de chão, terra, plataforma e espinho.',
+      },
+      'fase-plataforma': {
+        title: 'Fase de plataforma',
+        description: 'Um mapa pronto para explorar (já vem com as peças).',
+      },
+      fantasminha: { title: 'Fantasminha', description: 'Um fantasma de formas que flutua.' },
+      'ceu-com-sol': { title: 'Céu com sol', description: 'Um cenário de dia, feito de formas.' },
+    } satisfies Record<PintaTemplateId, { title: string; description: string }>,
+  },
   sizes: {
     16: 'Pequeno',
     32: 'Médio',
@@ -114,7 +166,7 @@ export const COPY = {
     64: 'Gigante',
   } as Record<number, string>,
   /** Rótulos por POSIÇÃO nas listas de tamanho de cenário/desenho livre/mapa. */
-  sizeScale: ['Pequeno', 'Médio', 'Grande'],
+  sizeScale: ['Pequeno', 'Médio', 'Grande', 'Bem grande', 'Gigante'],
   editor: {
     back: 'Voltar',
     undo: 'Desfazer',
@@ -209,6 +261,11 @@ export const COPY = {
     duplicateTile: 'Duplicar peça',
     removeTile: 'Apagar peça',
     solid: 'Peça sólida (o personagem não atravessa)',
+    // Colisão por peça (ciclo livre → sólido → plataforma)
+    cycleCollision: 'Mudar a colisão da peça',
+    collisionNone: 'Peça livre (o personagem atravessa)',
+    collisionSolid: 'Peça sólida (o personagem não atravessa)',
+    collisionPlatform: 'Peça plataforma (pisa por cima, passa por baixo)',
     tileLimit: 'Você chegou ao limite de peças.',
     layers: 'Camadas',
     addLayer: 'Nova camada',
@@ -222,6 +279,19 @@ export const COPY = {
     mapGrid: 'Grade do mapa',
     tileLabel: (index: number) => `Peça ${index}`,
     layerNamePrefix: 'Camada',
+    // Ferramentas novas do mapa (MapperMate)
+    autoExpand: 'Crescer o mapa pintando na borda',
+    autoExpandLimit: 'O mapa chegou ao tamanho máximo!',
+    stampBlock: (cols: number, rows: number) => `Bloco de ${cols} × ${rows} peças`,
+    stampClear: 'Voltar para uma peça só',
+    copyPiece: 'Copiar pedaço',
+    clearPiece: 'Apagar pedaço',
+    showCollision: 'Ver as colisões do mapa',
+    statusSize: (cols: number, rows: number) => `${cols} colunas × ${rows} linhas`,
+    statusCell: (col: number, row: number) => `Coluna ${col} · Linha ${row}`,
+    frontLayer: 'Camada da frente (aparece por cima do jogador)',
+    frontBadge: 'frente',
+    playMap: 'Jogar meu mapa',
   },
   vector: {
     select: 'Selecionar',
@@ -313,6 +383,7 @@ export const COPY = {
     // grade no clipboard — o caminho de texto continua no "Baixar".
     mapSuccess: 'Seu mapa já está no Estúdio! Procure o bloco "Criar mapa do meu desenho".',
     mapSuccessLocked: 'Salvei! Quando o Estúdio for liberado, seu mapa vai estar lá.',
+    playSuccess: 'Pronto! Seu mapa virou um jogo no Estúdio. É só apertar Jogar!',
   },
   coach: {
     gotIt: 'Entendi!',
@@ -336,7 +407,8 @@ export const COPY = {
       title: 'Dicas rápidas',
       tips: [
         'Escolha uma peça no canto e pinte na grade.',
-        'O Balde de tinta preenche uma área toda de uma vez.',
+        'Arraste sobre as peças para pegar um bloco inteiro e carimbar.',
+        'A Linha e o Retângulo pintam vários tiles de uma vez.',
         'O foguete copia a grade para o bloco de mapa do Estúdio.',
       ],
     },
@@ -344,5 +416,19 @@ export const COPY = {
   toast: {
     downloadReady: 'Baixado! Procure na pasta de downloads.',
     downloadError: 'Não consegui gerar a imagem agora. Tente de novo.',
+  },
+  // Rótulos de acessibilidade (aria-label) + defaults do modelo que aparecem na
+  // UI — centralizados aqui p/ i18n e p/ não repetir literais soltos nas telas.
+  a11y: {
+    drawArea: 'Área de desenho',
+    tools: 'Ferramentas',
+    close: 'Fechar',
+    colorLabel: (index: number) => `Cor ${index}`,
+    frameLabel: (number: number) => `Quadro ${number}`,
+    sheetFrame: (name: string, number: number) => `${name}: quadro ${number}`,
+    step: (current: number, total: number) => `Passo ${current} de ${total}`,
+    openAsset: (label: string) => `Abrir ${label}`,
+    defaultLayer: 'Chão',
+    defaultAnimation: 'animação',
   },
 } as const

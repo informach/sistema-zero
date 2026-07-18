@@ -1082,12 +1082,20 @@ export const gameTwoDRuntime = `(function () {
     // (draw) é calculado no desenho: o mapa ENCAIXA no canvas (a arte é ampliada
     // com nitidez pelo drawFrame). Assim um tile de 16px não fica minúsculo.
     var t = (typeof opts.tile === 'number' && opts.tile > 0) ? opts.tile : 32;
+    var solid = parseSolidList(opts.solid);
+    // Peças PLATAFORMA (one-way: pisa por cima, atravessa por baixo). Sólido
+    // vence no conflito (uma peça não é sólida E plataforma ao mesmo tempo).
+    var platform = parseSolidList(opts.platform);
+    if (platform.length && solid.length) {
+      platform = platform.filter(function (n) { return solid.indexOf(n) === -1; });
+    }
     return {
       tileset: loadSpriteSheet(opts.image, t, t),
       tile: t,
       draw: 0,
       rows: parseGrid(opts.grid),
-      solid: parseSolidList(opts.solid),
+      solid: solid,
+      platform: platform,
       ox: 0,
       oy: 0
     };
@@ -1122,11 +1130,21 @@ export const gameTwoDRuntime = `(function () {
         }
       }
     }
+    var platformText = '';
+    if (meta.platform && typeof meta.platform.length === 'number') {
+      for (var j = 0; j < meta.platform.length; j++) {
+        var m = meta.platform[j];
+        if (typeof m === 'number' && m >= 0) {
+          platformText += (platformText === '' ? '' : ' ') + Math.floor(m);
+        }
+      }
+    }
     // A folha embutida entra como dataUrl direto — loadImage aceita url/dataUrl.
     return createTileMap({
       image: meta.tileset.dataUrl,
       tile: (typeof meta.tileSize === 'number' && meta.tileSize > 0) ? meta.tileSize : 32,
       solid: solidText,
+      platform: platformText,
       grid: meta.grid
     });
   }
@@ -1149,6 +1167,14 @@ export const gameTwoDRuntime = `(function () {
     var r = map.rows[row];
     if (!r || col < 0 || col >= r.length) return false;
     return map.solid.indexOf(r[col]) !== -1;
+  }
+  /** Verdadeiro se a célula é uma PLATAFORMA (one-way). */
+  function isPlatformCell(map, col, row) {
+    if (!map || !map.rows || !map.platform) return false;
+    if (row < 0 || row >= map.rows.length) return false;
+    var r = map.rows[row];
+    if (!r || col < 0 || col >= r.length) return false;
+    return map.platform.indexOf(r[col]) !== -1;
   }
   /** Índice do tile no PIXEL (px,py) do canvas (alinhado a onde o mapa foi desenhado); -1 fora/vazio. */
   function tileAt(map, px, py) {
@@ -1214,6 +1240,23 @@ export const gameTwoDRuntime = `(function () {
     var r1 = Math.floor((sprite.y + sprite.h - 1 - oy) / t);
     for (var r = r0; r <= r1; r++) {
       for (var c = c0; c <= c1; c++) {
+        // Peça PLATAFORMA (one-way): só segura o sprite CAINDO (vy>0) e quando o
+        // pé, no início do quadro, estava no topo da peça ou acima (o helper de
+        // gravidade já fez y += vy, então o pé anterior = y + h - vy). Subindo,
+        // andando de lado ou parado dentro dela: atravessa.
+        if (isPlatformCell(map, c, r)) {
+          var pty = oy + r * t;
+          var pox = ox + c * t;
+          var pOverlapX = Math.min(sprite.x + sprite.w, pox + t) - Math.max(sprite.x, pox);
+          var pOverlapY = Math.min(sprite.y + sprite.h, pty + t) - Math.max(sprite.y, pty);
+          if (pOverlapX > 0 && pOverlapY > 0 && (sprite.vy || 0) > 0 &&
+              (sprite.y + sprite.h - (sprite.vy || 0)) <= pty + 1) {
+            sprite.y = pty - sprite.h;
+            sprite.vy = 0;
+            sprite.onGround = true;
+          }
+          continue;
+        }
         if (!isSolidCell(map, c, r)) continue;
         var tx = ox + c * t, ty = oy + r * t;
         var overlapX = Math.min(sprite.x + sprite.w, tx + t) - Math.max(sprite.x, tx);

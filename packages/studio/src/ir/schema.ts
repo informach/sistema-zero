@@ -249,6 +249,9 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:rpgHasSave' })
   | (JSExprCommon & { type: 'gk:rpgLevel' })
   | (JSExprCommon & { type: 'gk:rpgXp' })
+  // 👑 R30: a vida de um combatente na batalha (por nome) — as fases do chefe.
+  | (JSExprCommon & { type: 'gk:battlerLife'; name: string })
+  | (JSExprCommon & { type: 'gk:battlerMaxLife'; name: string })
   // 🌍 Mundo aberto: o nome do mapa atual.
   | (JSExprCommon & { type: 'gk:rpgCurrentMap' })
   // 🧩 Tabuleiro/grade: ler valor, contar e checar limites (reporters).
@@ -265,6 +268,28 @@ export type JSExpr =
       col: number | JSExpr
       row: number | JSExpr
     })
+  // 🎲 R30 — jogos de tabuleiro: dado, jogador da vez e a casa da peça (reporters).
+  | (JSExprCommon & { type: 'gk:rollDice'; faces: number | JSExpr })
+  | (JSExprCommon & { type: 'gk:currentPlayer' })
+  | (JSExprCommon & { type: 'gk:spaceOf'; who: string })
+  // 🃏 R30 — cartas: pilha (lista), carta de 2 faces e a mão clicável (reporters).
+  | (JSExprCommon & { type: 'gk:pileTop'; pileVar: string })
+  | (JSExprCommon & { type: 'gk:pileSize'; pileVar: string })
+  | (JSExprCommon & { type: 'gk:card'; front: number | JSExpr; back: number | JSExpr })
+  | (JSExprCommon & { type: 'gk:cardIsUp'; card: number | JSExpr })
+  | (JSExprCommon & { type: 'gk:cardFace'; card: number | JSExpr })
+  | (JSExprCommon & {
+      type: 'gk:cardAt'
+      x: number | JSExpr
+      y: number | JSExpr
+      pileVar: string
+    })
+  // 🃏 R30 — Kit Cartas (deck-battler): getters da batalha (reporters).
+  | (JSExprCommon & { type: 'gk:cardsEnergy' })
+  | (JSExprCommon & { type: 'gk:cardsHeroLife' })
+  | (JSExprCommon & { type: 'gk:cardsEnemyLife' })
+  | (JSExprCommon & { type: 'gk:cardsIntentAction' })
+  | (JSExprCommon & { type: 'gk:cardsIntentValue' })
   // 🥷 Ação em tempo real: "o golpe de A acertou B?" (caixa de golpe à frente).
   | (JSExprCommon & { type: 'gk:didHit'; aVar: string; bVar: string })
   // ⚙️ Física geral (R11): valores que o jogo INTEIRO precisa poder ler.
@@ -737,6 +762,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:rpgHasSave'), ...idField }),
     z.object({ type: z.literal('gk:rpgLevel'), ...idField }),
     z.object({ type: z.literal('gk:rpgXp'), ...idField }),
+    z.object({ type: z.literal('gk:battlerLife'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:battlerMaxLife'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:rpgCurrentMap'), ...idField }),
     z.object({
       type: z.literal('gk:boardGet'),
@@ -758,6 +785,43 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       row: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({
+      type: z.literal('gk:rollDice'),
+      faces: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:currentPlayer'), ...idField }),
+    z.object({ type: z.literal('gk:spaceOf'), who: irText(), ...idField }),
+    z.object({ type: z.literal('gk:pileTop'), pileVar: irText(), ...idField }),
+    z.object({ type: z.literal('gk:pileSize'), pileVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:card'),
+      front: z.union([JSExprSchema, z.number()]),
+      back: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardIsUp'),
+      card: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardFace'),
+      card: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardAt'),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      pileVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:cardsEnergy'), ...idField }),
+    z.object({ type: z.literal('gk:cardsHeroLife'), ...idField }),
+    z.object({ type: z.literal('gk:cardsEnemyLife'), ...idField }),
+    z.object({ type: z.literal('gk:cardsIntentAction'), ...idField }),
+    z.object({ type: z.literal('gk:cardsIntentValue'), ...idField }),
     z.object({ type: z.literal('gk:didHit'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isOnGround'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isInside'), charVar: irText(), region: irText(), ...idField }),
@@ -2082,6 +2146,8 @@ export type JSStatement =
       image: string
       tile: number | JSExpr
       solid: string
+      /** Índices de tile PLATAFORMA (one-way). Opcional — omitido quando vazio. */
+      platform?: string
       grid: string
     })
   // Mapa PRONTO do Pinta/fatiador: tudo (grade/peças/sólidos) vem do metadado
@@ -2699,6 +2765,13 @@ export type JSStatement =
       label: ScreenText
       body: JSStatement[]
     })
+  // 🖼️ Fundo da tela (DOM): cor + imagem opcional do Pinta cobrindo o painel.
+  | (JSStatementCommon & {
+      type: 'gk:setScreenBg'
+      screen: string
+      color: string
+      image: string
+    })
   | (JSStatementCommon & { type: 'gk:showScreen'; name: string })
   | (JSStatementCommon & { type: 'gk:hideScreens' })
   | (JSStatementCommon & { type: 'gk:setState'; name: string })
@@ -2824,6 +2897,7 @@ export type JSStatement =
       hp: number | JSExpr
       str: number | JSExpr
       def: number | JSExpr
+      image?: string
     })
   | (JSStatementCommon & { type: 'gk:rpgOnBattleEnd'; body: JSStatement[] })
   // ⚔️ Batalha rica (progressão): golpe especial (energia), poção, XP e status.
@@ -2834,6 +2908,7 @@ export type JSStatement =
       cost: number | JSExpr
     })
   | (JSStatementCommon & { type: 'gk:rpgGivePotion'; name: string; heal: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:rpgHealHero' })
   | (JSStatementCommon & { type: 'gk:rpgBattleReward'; xp: number | JSExpr })
   | (JSStatementCommon & {
       type: 'gk:rpgInflict'
@@ -2849,6 +2924,7 @@ export type JSStatement =
       str: number | JSExpr
       def: number | JSExpr
       color: string
+      image?: string
     })
   | (JSStatementCommon & {
       type: 'gk:rpgAddFoe'
@@ -2857,6 +2933,7 @@ export type JSStatement =
       str: number | JSExpr
       def: number | JSExpr
       color: string
+      image?: string
     })
   | (JSStatementCommon & {
       type: 'gk:rpgTeachMove'
@@ -2872,6 +2949,31 @@ export type JSStatement =
       amount: number | JSExpr
       cost: number | JSExpr
     })
+  // 👑 R30: chefes — chefão (maior + barra), IA de chefe e golpes do inimigo.
+  | (JSStatementCommon & {
+      type: 'gk:rpgAddBoss'
+      name: string
+      hp: number | JSExpr
+      str: number | JSExpr
+      def: number | JSExpr
+      image?: string
+    })
+  | (JSStatementCommon & { type: 'gk:rpgOnFoeTurn'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:rpgFoeUse'; name: string; move: string })
+  | (JSStatementCommon & { type: 'gk:rpgFoeHitAll'; name: string; dmg: number | JSExpr })
+  // ⚔️ Fichas de inimigo reutilizáveis: definir separado + escolher na batalha.
+  | (JSStatementCommon & {
+      type: 'gk:rpgDefineBattler'
+      name: string
+      hp: number | JSExpr
+      str: number | JSExpr
+      def: number | JSExpr
+      image: string
+      color: string
+      boss: boolean
+    })
+  | (JSStatementCommon & { type: 'gk:rpgBattleNamed'; name: string })
+  | (JSStatementCommon & { type: 'gk:rpgAddFoeNamed'; name: string })
   // 🎬 Cenas & NPCs vivos: folha de andar direcional + cutscene por gravação +
   // NPC que anda/vagueia + gatilho ao pisar numa célula.
   | (JSStatementCommon & {
@@ -2952,6 +3054,48 @@ export type JSStatement =
       col: number | JSExpr
       row: number | JSExpr
     })
+  // 🎲 R30 — jogos de tabuleiro: ordem de turno (anel) + trilha de casas.
+  | (JSStatementCommon & { type: 'gk:playersSetup'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:nextPlayer' })
+  | (JSStatementCommon & { type: 'gk:onTurnChange'; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'gk:moveAlongTrack'
+      who: string
+      spaces: number | JSExpr
+      path: string
+    })
+  | (JSStatementCommon & { type: 'gk:onLandSpace'; body: JSStatement[] })
+  // 🃏 R30 — cartas: mover topo entre pilhas, rebaralhar, virar, desenhar a mão.
+  | (JSStatementCommon & { type: 'gk:pileMoveTop'; fromVar: string; toVar: string })
+  | (JSStatementCommon & { type: 'gk:pileShuffleFrom'; deckVar: string; discardVar: string })
+  | (JSStatementCommon & { type: 'gk:cardFlip'; card: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:handDraw'
+      pileVar: string
+      x: number | JSExpr
+      y: number | JSExpr
+      fan: boolean
+    })
+  // 🃏 R30 — Kit Cartas (deck-battler): a batalha, vida/escudo, intenção, turnos.
+  | (JSStatementCommon & {
+      type: 'gk:cardsStart'
+      heroHp: number | JSExpr
+      enemyHp: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:cardsEnergyPerTurn'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:cardsSpend'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:cardsOnTurn'; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:cardsEndTurn' })
+  | (JSStatementCommon & { type: 'gk:cardsDrawHud' })
+  | (JSStatementCommon & { type: 'gk:cardsHurtEnemy'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:cardsHurtMe'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:cardsGainBlock'; n: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'gk:cardsEnemyIntent'
+      action: string
+      value: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:cardsOnEnemyTurn'; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:collideTilemap'; charVar: string; map: string })
   | (JSStatementCommon & { type: 'gk:collideGroup'; charVar: string; mold: string })
   | (JSStatementCommon & {
@@ -5485,6 +5629,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       image: irText(),
       tile: z.union([JSExprSchema, z.number()]),
       solid: irText(),
+      platform: irText().optional(),
       grid: irText(),
       ...idField,
     }),
@@ -6420,6 +6565,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       body: z.array(JSStatementSchema),
       ...idField,
     }),
+    z.object({
+      type: z.literal('gk:setScreenBg'),
+      screen: irText(),
+      color: irText(),
+      image: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('gk:showScreen'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:hideScreens'), ...idField }),
     z.object({ type: z.literal('gk:setState'), name: irText(), ...idField }),
@@ -6601,6 +6753,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       hp: z.union([JSExprSchema, z.number()]),
       str: z.union([JSExprSchema, z.number()]),
       def: z.union([JSExprSchema, z.number()]),
+      image: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -6616,6 +6769,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       heal: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({ type: z.literal('gk:rpgHealHero'), ...idField }),
     z.object({
       type: z.literal('gk:rpgBattleReward'),
       xp: z.union([JSExprSchema, z.number()]),
@@ -6635,6 +6789,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       str: z.union([JSExprSchema, z.number()]),
       def: z.union([JSExprSchema, z.number()]),
       color: irText(),
+      image: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -6644,6 +6799,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       str: z.union([JSExprSchema, z.number()]),
       def: z.union([JSExprSchema, z.number()]),
       color: irText(),
+      image: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -6662,6 +6818,41 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       cost: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({
+      type: z.literal('gk:rpgAddBoss'),
+      name: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      def: z.union([JSExprSchema, z.number()]),
+      image: irText().optional(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgOnFoeTurn'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgFoeUse'), name: irText(), move: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgFoeHitAll'),
+      name: irText(),
+      dmg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgDefineBattler'),
+      name: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      def: z.union([JSExprSchema, z.number()]),
+      image: irText(),
+      color: irText(),
+      boss: z.boolean(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgBattleNamed'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgAddFoeNamed'), name: irText(), ...idField }),
     z.object({
       type: z.literal('gk:rpgOnBattleEnd'),
       body: z.array(JSStatementSchema),
@@ -6783,6 +6974,86 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       value: z.union([JSExprSchema, z.number()]),
       col: z.union([JSExprSchema, z.number()]),
       row: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:playersSetup'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:nextPlayer'), ...idField }),
+    z.object({ type: z.literal('gk:onTurnChange'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
+      type: z.literal('gk:moveAlongTrack'),
+      who: irText(),
+      spaces: z.union([JSExprSchema, z.number()]),
+      path: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:onLandSpace'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('gk:pileMoveTop'), fromVar: irText(), toVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:pileShuffleFrom'),
+      deckVar: irText(),
+      discardVar: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardFlip'),
+      card: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:handDraw'),
+      pileVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      fan: z.boolean(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsStart'),
+      heroHp: z.union([JSExprSchema, z.number()]),
+      enemyHp: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsEnergyPerTurn'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsSpend'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:cardsOnTurn'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({ type: z.literal('gk:cardsEndTurn'), ...idField }),
+    z.object({ type: z.literal('gk:cardsDrawHud'), ...idField }),
+    z.object({
+      type: z.literal('gk:cardsHurtEnemy'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsHurtMe'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsGainBlock'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsEnemyIntent'),
+      action: irText(),
+      value: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:cardsOnEnemyTurn'),
+      body: z.array(JSStatementSchema),
       ...idField,
     }),
     z.object({ type: z.literal('gk:wrapEdges'), charVar: irText(), ...idField }),
@@ -9347,6 +9618,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:setScreenText',
   'gk:createScreen',
   'gk:addButton',
+  'gk:setScreenBg',
   'gk:showScreen',
   'gk:hideScreens',
   'gk:setState',
@@ -9388,12 +9660,20 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgOnBattleEnd',
   'gk:rpgSetSpecial',
   'gk:rpgGivePotion',
+  'gk:rpgHealHero',
   'gk:rpgBattleReward',
   'gk:rpgInflict',
   'gk:rpgAddAlly',
   'gk:rpgAddFoe',
+  'gk:rpgDefineBattler',
+  'gk:rpgBattleNamed',
+  'gk:rpgAddFoeNamed',
   'gk:rpgTeachMove',
   'gk:rpgTeachHeal',
+  'gk:rpgAddBoss',
+  'gk:rpgOnFoeTurn',
+  'gk:rpgFoeUse',
+  'gk:rpgFoeHitAll',
   'gk:setWalkSheet',
   'gk:rpgCutscene',
   'gk:rpgWait',
@@ -9419,6 +9699,26 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:paddleBounce',
   'gk:boardCreate',
   'gk:boardSet',
+  'gk:playersSetup',
+  'gk:nextPlayer',
+  'gk:onTurnChange',
+  'gk:moveAlongTrack',
+  'gk:onLandSpace',
+  'gk:pileMoveTop',
+  'gk:pileShuffleFrom',
+  'gk:cardFlip',
+  'gk:handDraw',
+  'gk:cardsStart',
+  'gk:cardsEnergyPerTurn',
+  'gk:cardsSpend',
+  'gk:cardsOnTurn',
+  'gk:cardsEndTurn',
+  'gk:cardsDrawHud',
+  'gk:cardsHurtEnemy',
+  'gk:cardsHurtMe',
+  'gk:cardsGainBlock',
+  'gk:cardsEnemyIntent',
+  'gk:cardsOnEnemyTurn',
   'gk:wrapEdges',
   'gk:collideTilemap',
   'gk:collideGroup',

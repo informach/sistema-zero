@@ -11,6 +11,64 @@ beforeEach(() => {
   setPintaStorageNamespace('')
 })
 
+describe('galleryStore — modelos prontos', () => {
+  it('createFromTemplate cria o sprite com o nome escolhido', async () => {
+    const store = createGalleryStore()
+    const asset = await store
+      .getState()
+      .createFromTemplate({ templateId: 'heroi', name: 'meu-heroi' })
+    expect(asset?.kind).toBe('pixel-sprite')
+    expect(asset?.name).toBe('meu-heroi')
+    expect(store.getState().assets).toHaveLength(1)
+  })
+
+  it('modelo de MAPA entra com o tileset companheiro (2 assets, tilesetId casado)', async () => {
+    const store = createGalleryStore()
+    const map = await store
+      .getState()
+      .createFromTemplate({ templateId: 'fase-plataforma', name: 'minha-fase' })
+    expect(map?.kind).toBe('tilemap')
+    expect(map?.name).toBe('minha-fase')
+    const assets = store.getState().assets
+    expect(assets).toHaveLength(2)
+    const tileset = assets.find((a) => a.kind === 'tileset')
+    if (map?.kind !== 'tilemap' || !tileset) throw new Error('esperava mapa + tileset')
+    expect(map.tilesetId).toBe(tileset.id)
+  })
+
+  it('projectRef do Pensa é anexado a TODOS os assets do modelo', async () => {
+    const store = createGalleryStore()
+    await store.getState().createFromTemplate({
+      templateId: 'fase-plataforma',
+      name: 'fase',
+      projectRef: { id: 'p1', name: 'Meu Jogo' },
+    })
+    for (const a of store.getState().assets) {
+      expect(a.projectRef?.id).toBe('p1')
+    }
+  })
+
+  it('quota: modelo de mapa (2 assets) barra quando não cabem os dois', async () => {
+    const store = createGalleryStore()
+    // Enche até faltar 1 slot.
+    for (let i = 0; i < PINTA_LIMITS.maxAssets - 1; i += 1) {
+      await store.getState().create({ kind: 'pixel-sprite', name: `s${i}`, frameSize: 16 })
+    }
+    const map = await store
+      .getState()
+      .createFromTemplate({ templateId: 'fase-plataforma', name: 'fase' })
+    expect(map).toBeNull()
+    expect(store.getState().mutateError).toBe(COPY.gallery.quotaFull)
+  })
+
+  it('nome colidindo ganha sufixo (não sobrescreve)', async () => {
+    const store = createGalleryStore()
+    await store.getState().create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 16 })
+    const asset = await store.getState().createFromTemplate({ templateId: 'heroi', name: 'heroi' })
+    expect(asset?.name).toBe('heroi-2')
+  })
+})
+
 describe('galleryStore — CRUD sobre o IndexedDB local', () => {
   it('create persiste, lista e devolve o asset', async () => {
     const store = createGalleryStore()
@@ -113,6 +171,24 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
     await fresh.getState().load()
     expect(fresh.getState().assets).toHaveLength(1)
     expect(fresh.getState().assets[0]?.name).toBe('bom')
+  })
+
+  it('importAssets: se o persist do TILESET falhar, o mapa NÃO entra órfão', async () => {
+    const { createTilesetAsset, createTilemapAsset } = await import('../core/project')
+    const { setIdbWriteGuard } = await import('../testing/idbMock')
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const map = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    // Simula disco cheio SÓ no tileset (tilesets persistem antes dos mapas).
+    setIdbWriteGuard((_key, value) => {
+      if ((value as { kind?: string })?.kind === 'tileset') throw new Error('disco cheio')
+    })
+    const store = createGalleryStore()
+    const res = await store.getState().importAssets([tileset, map])
+    setIdbWriteGuard(null)
+    // Nenhum mapa órfão: o tileset falhou → o mapa é pulado, não importado sem peças.
+    expect(store.getState().assets.filter((a) => a.kind === 'tilemap')).toHaveLength(0)
+    expect(res.added).toBe(0)
+    expect(res.skipped).toBe(2)
   })
 })
 

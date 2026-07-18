@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
 import { CareerTimeline } from '@/components/kids/career-timeline'
+import { FocusRefresh } from '@/components/kids/focus-refresh'
 import { LeagueBoard } from '@/components/kids/league-board'
 import { StreakProtection } from '@/components/kids/streak-protection'
 import { getAvatarReadonly, getGamificationReadonly, getLeagueReadonly } from '@/server/members'
@@ -42,6 +43,8 @@ export default async function ProfilePage() {
 
   return (
     <div className="flex w-full flex-col gap-6">
+      {/* Re-sincroniza ranking/nível/foguinho ao voltar pra tela (sem deslogar). */}
+      <FocusRefresh />
       <div>
         <h1 className="sz-display text-2xl">Meu perfil</h1>
         <p className="mt-1 text-sm text-muted-foreground">Seu avatar, seu nome e seu telefone.</p>

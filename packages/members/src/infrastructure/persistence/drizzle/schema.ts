@@ -398,6 +398,10 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // de jogadas recebidas (o jogo do autor cruzou 10/100 plays; sourceId = playId).
   'studio_published',
   'studio_publish_day',
+  // CRIOU/editou no Estúdio (retenção pós-cursos, 07/2026): XP diário (1×/dia pelo
+  // sourceId determinístico do dia civil SP) que move o streak — âncora de quem já
+  // terminou os cursos e cria sem publicar. Sem moeda.
+  'studio_activity_day',
   'studio_remix',
   'play_milestone_10',
   'play_milestone_100',

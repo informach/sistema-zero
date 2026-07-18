@@ -69,9 +69,23 @@ export async function deleteAsset(id: string): Promise<void> {
   await runSerializedWrite(id, () => del(assetKey(id), getStoreHandle()))
 }
 
+/**
+ * `sanitizePintaAsset` NÃO deve lançar (descarta com `null`), mas o LOAD blinda
+ * por registro mesmo assim: uma regressão futura que faça o sanitize lançar num
+ * ÚNICO registro corrompido NÃO pode derrubar a galeria inteira (paridade com o
+ * caminho de import `.pinta.json`, que já é try/catch por registro).
+ */
+function safeSanitize(raw: unknown): PintaAsset | null {
+  try {
+    return sanitizePintaAsset(raw)
+  } catch {
+    return null
+  }
+}
+
 export async function loadAssetById(id: string): Promise<PintaAsset | null> {
   const raw = await get<unknown>(assetKey(id), getStoreHandle())
-  return sanitizePintaAsset(raw)
+  return safeSanitize(raw)
 }
 
 /**
@@ -87,7 +101,7 @@ export async function listAllAssets(): Promise<PintaAsset[]> {
   if (assetKeys.length === 0) return []
   const values = await getMany<unknown>(assetKeys, kvStore)
   const assets = values
-    .map((value) => sanitizePintaAsset(value))
+    .map((value) => safeSanitize(value))
     .filter((asset): asset is PintaAsset => asset !== null)
   assets.sort((a, b) => b.updatedAt - a.updatedAt)
   return assets

@@ -15,11 +15,16 @@ import {
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   cobrinhaExample,
+  corridaTabuleiroExample,
   defesaDoReinoExample,
+  dueloDeCartasExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
+  jogoDaMemoriaExample,
   meuPrimeiroJogoExample,
+  oChefaoExample,
+  oChefaoFichaExample,
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
@@ -113,6 +118,11 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Defesa do Reino',
       'Reino Aberto',
       'Batalha em Equipe',
+      'O Chefao',
+      'O Chefao da Ficha',
+      'Corrida de Tabuleiro',
+      'Jogo da Memoria',
+      'Duelo de Cartas',
       'Cobrinha',
       'Quebra-blocos',
     ])
@@ -1751,6 +1761,474 @@ describe('game-2d-advanced — exemplo Quebra-blocos (raquete)', () => {
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(quebraBlocosExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_CHEFAO = `SZGameKit.setup({ width: 960, height: 640, background: "#1a1420", accent: "#ff8c42" });
+SZGameKit.setScreenText("menu", "O Chefao", "Fale com o Guardiao (espaco) e enfrente o Dragao! Quando ele fica com metade da vida, vira fera.", "Comecar");
+SZGameKit.setScreenText("vitoria", "Voce venceu o Dragao!", "O reino esta salvo.", "Jogar de novo");
+const heroi = SZGameKit.createCharacter({ image: "", w: 48, h: 48, speed: 320, color: "#4a9eff" });
+SZGameKit.rpgBattleStats(80, 14, 4);
+SZGameKit.rpgTeachMove("Voce", "Investida", 20, 3);
+SZGameKit.rpgTeachHeal("Voce", "Curar", 22, 4);
+SZGameKit.rpgTeachMove("Dragao", "Garra", 16, 0);
+SZGameKit.rpgTeachMove("Dragao", "Baforada", 30, 0);
+SZGameKit.rpgOnFoeTurn("Dragao", function () {
+  if (SZGameKit.battlerLife("Dragao") < SZGameKit.battlerMaxLife("Dragao") / 2) {
+    SZGameKit.rpgFoeHitAll("Dragao", 22);
+  } else {
+    SZGameKit.rpgFoeUse("Dragao", "Garra");
+  }
+});
+SZGameKit.rpgOnMap("caverna", function () {
+  SZGameKit.rpgCreateNpc("Guardiao", 4, 3, "", "");
+  SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(3));
+});
+SZGameKit.rpgOnTalk("Guardiao", function () {
+  SZGameKit.rpgSay("O Dragao acordou! Enfrente-o, heroi!", "Guardiao");
+  SZGameKit.rpgAddBoss("Dragao", 160, 9, 3);
+  SZGameKit.rpgBattleStart("Lacaio", 24, 5, 0);
+});
+SZGameKit.rpgOnBattleEnd(function () {
+  if (SZGameKit.rpgBattleWon()) {
+    SZGameKit.rpgBattleReward(40);
+    SZGameKit.setState("vitoria");
+  } else {
+    SZGameKit.endGame();
+  }
+});
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.rpgMoveGrid(heroi, 64, dt);
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#241a2e", true);
+  SZGameKit.rpgDrawNpcs();
+  SZGameKit.drawCharacter(heroi);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo O Chefao (👑 chefes)', () => {
+  it('IR embutida é válida, sem rawJS, e usa os blocos de chefe', () => {
+    const parsed = SZIRSchema.safeParse(oChefaoExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(oChefaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:rpgAddBoss',
+      'gk:rpgOnFoeTurn',
+      'gk:rpgFoeUse',
+      'gk:rpgFoeHitAll',
+      'gk:battlerLife',
+      'gk:battlerMaxLife',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_CHEFAO))).toEqual(oChefaoExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(oChefaoExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      oChefaoExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(oChefaoExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_CORRIDA = `SZGameKit.setup({ width: 900, height: 600, background: "#1b3a2a", accent: "#ffd166" });
+SZGameKit.setScreenText("menu", "Corrida de Tabuleiro", "Clique para rolar o dado e andar as casas. Dois peoes: chegue ao fim e pegue os pontos da casa premiada!", "Jogar");
+const azul = SZGameKit.createCharacter({ image: "", w: 36, h: 36, speed: 0, color: "#4a9eff" });
+const vermelho = SZGameKit.createCharacter({ image: "", w: 36, h: 36, speed: 0, color: "#ef4444" });
+let pontosAzul = 0;
+let pontosVermelho = 0;
+SZGameKit.definePath("trilha", function () {
+  SZGameKit.pathPoint(120, 480);
+  SZGameKit.pathPoint(260, 480);
+  SZGameKit.pathPoint(400, 480);
+  SZGameKit.pathPoint(540, 420);
+  SZGameKit.pathPoint(680, 340);
+  SZGameKit.pathPoint(680, 200);
+  SZGameKit.pathPoint(520, 150);
+  SZGameKit.pathPoint(380, 150);
+});
+SZGameKit.onEnterState("jogando", function () {
+  SZGameKit.playersSetup(2);
+  pontosAzul = 0;
+  pontosVermelho = 0;
+  SZGameKit.placeCharacter(azul, 120, 480);
+  SZGameKit.placeCharacter(vermelho, 120, 480);
+});
+SZGameKit.onTurnChange(function () {
+  SZGameKit.emit("vez:mudou");
+});
+SZGameKit.onLandSpace(function () {
+  if (SZGameKit.currentPlayer() === 1) {
+    if (SZGameKit.spaceOf(azul) === 7) {
+      pontosAzul = pontosAzul + 10;
+    }
+  } else {
+    if (SZGameKit.spaceOf(vermelho) === 7) {
+      pontosVermelho = pontosVermelho + 10;
+    }
+  }
+});
+SZGameKit.onGameClick(function (px, py) {
+  const passos = SZGameKit.rollDice(6);
+  if (SZGameKit.currentPlayer() === 1) {
+    SZGameKit.moveAlongTrack(azul, passos, "trilha");
+  } else {
+    SZGameKit.moveAlongTrack(vermelho, passos, "trilha");
+  }
+  SZGameKit.nextPlayer();
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#1b3a2a", true);
+  SZGameKit.drawCharacter(azul);
+  SZGameKit.drawCharacter(vermelho);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Corrida de Tabuleiro (🎲 tabuleiro)', () => {
+  it('IR embutida é válida, sem rawJS, e usa dado + turnos + trilha de casas', () => {
+    const parsed = SZIRSchema.safeParse(corridaTabuleiroExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(corridaTabuleiroExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:rollDice',
+      'gk:playersSetup',
+      'gk:currentPlayer',
+      'gk:nextPlayer',
+      'gk:onTurnChange',
+      'gk:moveAlongTrack',
+      'gk:spaceOf',
+      'gk:onLandSpace',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_CORRIDA))).toEqual(corridaTabuleiroExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(corridaTabuleiroExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      corridaTabuleiroExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(corridaTabuleiroExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_MEMORIA = `SZGameKit.setup({ width: 720, height: 560, background: "#2a1a3a", accent: "#ffd166" });
+SZGameKit.setScreenText("menu", "Jogo da Memoria", "Clique nas cartas para virar e ache todos os pares iguais!", "Jogar");
+SZGameKit.setScreenText("vitoria", "Voce achou todos os pares!", "Muito bem!", "Jogar de novo");
+let cartas = [];
+let primeira = 0 - 1;
+let segunda = 0 - 1;
+let pares = 0;
+SZGameKit.onEnterState("jogando", function () {
+  cartas = [SZGameKit.card("🍎", "?"), SZGameKit.card("🍎", "?"), SZGameKit.card("🍌", "?"), SZGameKit.card("🍌", "?"), SZGameKit.card("🍇", "?"), SZGameKit.card("🍇", "?")];
+  cartas = cartas.sort(() => Math.random() - 0.5);
+  primeira = 0 - 1;
+  segunda = 0 - 1;
+  pares = 0;
+});
+SZGameKit.onGameClick(function (px, py) {
+  const i = SZGameKit.cardAt(px, py, cartas);
+  if (i >= 0) {
+    if (SZGameKit.cardIsUp(cartas[i]) === false) {
+      SZGameKit.cardFlip(cartas[i]);
+      if (primeira === 0 - 1) {
+        primeira = i;
+      } else {
+        segunda = i;
+        if (SZGameKit.cardFace(cartas[primeira]) === SZGameKit.cardFace(cartas[segunda])) {
+          pares = pares + 1;
+          primeira = 0 - 1;
+          if (pares === 3) {
+            SZGameKit.setState("vitoria");
+          }
+        } else {
+          SZGameKit.waitThen(0.7, function () {
+            SZGameKit.cardFlip(cartas[primeira]);
+            SZGameKit.cardFlip(cartas[segunda]);
+            primeira = 0 - 1;
+          });
+        }
+      }
+    }
+  }
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#2a1a3a", true);
+  SZGameKit.handDraw(cartas, 90, 220, false);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Jogo da Memoria (🃏 cartas)', () => {
+  it('IR embutida é válida, sem rawJS, e usa carta + pilha + mão clicável', () => {
+    const parsed = SZIRSchema.safeParse(jogoDaMemoriaExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(jogoDaMemoriaExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of ['gk:card', 'gk:cardFlip', 'gk:cardFace', 'gk:cardAt', 'gk:handDraw']) {
+      expect(types.has(t)).toBe(true)
+    }
+    // a pilha É uma LISTA do núcleo: o embaralhar é o shuffle do núcleo, não um gk.
+    expect(types.has('shuffle')).toBe(true)
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_MEMORIA))).toEqual(jogoDaMemoriaExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(jogoDaMemoriaExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      jogoDaMemoriaExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(jogoDaMemoriaExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_DUELO_CARTAS = `SZGameKit.setup({ width: 800, height: 600, background: "#191426", accent: "#c084fc" });
+SZGameKit.setScreenText("menu", "Duelo de Cartas", "Clique numa carta da mao para joga-la (custa 1 energia): 🗡️ ataca, 🛡️ defende. Aperte espaco para passar o turno!", "Jogar");
+SZGameKit.setScreenText("vitoria", "Voce venceu o duelo!", "Que estrategista!", "Jogar de novo");
+SZGameKit.setScreenText("fim", "Voce perdeu...", "Tente outra estrategia!", "Jogar de novo");
+let baralho = [];
+let mao = [];
+let descarte = [];
+SZGameKit.onEnterState("jogando", function () {
+  baralho = [SZGameKit.card("🗡️", "🗡️"), SZGameKit.card("🗡️", "🗡️"), SZGameKit.card("🗡️", "🗡️"), SZGameKit.card("🗡️", "🗡️"), SZGameKit.card("🛡️", "🛡️"), SZGameKit.card("🛡️", "🛡️"), SZGameKit.card("🛡️", "🛡️")];
+  baralho = baralho.sort(() => Math.random() - 0.5);
+  mao = [];
+  descarte = [];
+  SZGameKit.cardsStart(30, 40);
+  SZGameKit.cardsEnergyPerTurn(3);
+  SZGameKit.cardsEnemyIntent("atacar", 7);
+});
+SZGameKit.cardsOnTurn(function () {
+  for (let n = 0; n < 3; n++) {
+    if (SZGameKit.pileSize(baralho) === 0) {
+      SZGameKit.pileShuffleFrom(baralho, descarte);
+    }
+    SZGameKit.pileMoveTop(baralho, mao);
+  }
+});
+SZGameKit.cardsOnEnemyTurn(function () {
+  if (SZGameKit.cardsIntentAction() === "atacar") {
+    SZGameKit.cardsHurtMe(SZGameKit.cardsIntentValue());
+  }
+  SZGameKit.cardsEnemyIntent("atacar", 5 + SZGameKit.rollDice(4));
+});
+SZGameKit.onGameClick(function (px, py) {
+  const i = SZGameKit.cardAt(px, py, mao);
+  if (i >= 0) {
+    if (SZGameKit.cardsEnergy() >= 1) {
+      SZGameKit.cardsSpend(1);
+      if (SZGameKit.cardFace(mao[i]) === "🗡️") {
+        SZGameKit.cardsHurtEnemy(6);
+      } else {
+        SZGameKit.cardsGainBlock(5);
+      }
+      descarte.push(mao[i]);
+      mao.splice(i, 1);
+      if (SZGameKit.cardsEnemyLife() <= 0) {
+        SZGameKit.setState("vitoria");
+      }
+    }
+  }
+});
+SZGameKit.onUpdate(function (dt) {
+  if (SZGameKit.keyPressed(" ")) {
+    SZGameKit.cardsEndTurn();
+    if (SZGameKit.cardsHeroLife() <= 0) {
+      SZGameKit.endGame();
+    }
+  }
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#191426", true);
+  SZGameKit.cardsDrawHud();
+  SZGameKit.handDraw(mao, 120, 440, false);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Duelo de Cartas (🃏 Kit Cartas)', () => {
+  it('IR embutida é válida, sem rawJS, e usa o Kit Cartas inteiro', () => {
+    const parsed = SZIRSchema.safeParse(dueloDeCartasExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(dueloDeCartasExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:cardsStart',
+      'gk:cardsOnTurn',
+      'gk:cardsOnEnemyTurn',
+      'gk:cardsEnemyIntent',
+      'gk:cardsHurtEnemy',
+      'gk:cardsGainBlock',
+      'gk:cardsDrawHud',
+      'gk:pileMoveTop',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_DUELO_CARTAS))).toEqual(dueloDeCartasExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(dueloDeCartasExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      dueloDeCartasExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(dueloDeCartasExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_CHEFAO_FICHA = `SZGameKit.setup({ width: 480, height: 320, background: "#0f1020", accent: "#ffcc44" });
+SZGameKit.setScreenBg("menu", "#241033", "");
+SZGameKit.setScreenBg("vitoria", "#0a2a14", "");
+SZGameKit.setScreenText("menu", "O Chefão da Ficha", "Fale com o Guardião (espaço) e enfrente o Dragão!", "Começar");
+SZGameKit.setScreenText("vitoria", "Você venceu o Dragão!", "O reino está salvo.", "Jogar de novo");
+const heroi = SZGameKit.createCharacter({ image: "", w: 40, h: 40, speed: 300, color: "#4a9eff" });
+SZGameKit.rpgBattleStats(60, 12, 3);
+SZGameKit.rpgSetSpecial("Investida", 20, 4);
+SZGameKit.rpgGivePotion("Poção", 25);
+SZGameKit.rpgDefineBattler("Dragão", 120, 9, 2, "dragao", "#b23b6e", true);
+SZGameKit.rpgDefineBattler("Capanga", 24, 5, 0, "", "#e05a5a", false);
+SZGameKit.rpgTeachMove("Dragão", "Baforada", 26, 0);
+SZGameKit.rpgOnFoeTurn("Dragão", function () {
+  if (SZGameKit.battlerLife("Dragão") < SZGameKit.battlerMaxLife("Dragão") / 2) {
+    SZGameKit.rpgFoeHitAll("Dragão", 16);
+  } else {
+    SZGameKit.rpgFoeUse("Dragão", "Baforada");
+  }
+});
+SZGameKit.rpgOnMap("caverna", function () {
+  SZGameKit.rpgCreateNpc("Guardião", 4, 3, "", "");
+  SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(3));
+});
+SZGameKit.rpgOnTalk("Guardião", function () {
+  SZGameKit.rpgSay("O Dragão acordou! Enfrente-o!", "Guardião");
+  SZGameKit.rpgAddFoeNamed("Capanga");
+  SZGameKit.rpgHealHero();
+  SZGameKit.rpgBattleNamed("Dragão");
+});
+SZGameKit.rpgOnBattleEnd(function () {
+  if (SZGameKit.rpgBattleWon()) {
+    SZGameKit.setState("vitoria");
+  } else {
+    SZGameKit.endGame();
+  }
+});
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.rpgMoveGrid(heroi, 64, dt);
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#241a2e", true);
+  SZGameKit.rpgDrawNpcs();
+  SZGameKit.drawCharacter(heroi);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo O Chefao da Ficha (ficha + imagem + fundo)', () => {
+  it('IR embutida é válida, sem rawJS, e usa ficha + imagem + fundo', () => {
+    const parsed = SZIRSchema.safeParse(oChefaoFichaExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(oChefaoFichaExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:setScreenBg',
+      'gk:rpgDefineBattler',
+      'gk:rpgAddFoeNamed',
+      'gk:rpgHealHero',
+      'gk:rpgBattleNamed',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('traz o sprite do Dragao como asset de imagem embutido', () => {
+    const assets = oChefaoFichaExample.assets ?? []
+    expect(assets.length).toBe(1)
+    const asset = assets[0]
+    expect(asset?.name).toBe('dragao')
+    expect(asset?.kind).toBe('image')
+    expect(asset?.dataUrl.startsWith('data:image/png;base64,')).toBe(true)
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_CHEFAO_FICHA))).toEqual(oChefaoFichaExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(oChefaoFichaExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      oChefaoFichaExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(oChefaoFichaExample.ir.js)
     } finally {
       ws.dispose()
     }

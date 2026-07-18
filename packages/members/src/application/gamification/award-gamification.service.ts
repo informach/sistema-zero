@@ -6,6 +6,7 @@ import { localDateSaoPaulo, quizPassedXp, XP_VALUES } from '../../domain/gamific
 import {
   avatarPartSourceId,
   roomItemSourceId,
+  studioActivityDaySourceId,
   studioPublishDaySourceId,
 } from '../../domain/gamification/source-id'
 import { pensaStageSourceId } from '../../domain/pensa/gamification'
@@ -376,6 +377,34 @@ export class AwardGamificationService {
         },
       ],
       false,
+    )
+  }
+
+  /**
+   * XP DIÁRIO `studio_activity_day` (10 XP, move o streak): a criança CRIOU/editou no
+   * Estúdio Completo hoje. 1×/dia pelo sourceId determinístico do dia civil SP
+   * (re-editar no mesmo dia = inerte). SEM moeda (âncora de streak, não torneira). O
+   * caller (rota de aluno) já validou posse do Estúdio. Fail-open como o resto.
+   */
+  async awardStudioActivityDay(input: {
+    userId: string
+    accountId: string
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    const dayKey = localDateSaoPaulo(this.clock())
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [
+        {
+          sourceType: 'studio_activity_day',
+          sourceId: studioActivityDaySourceId(dayKey),
+          amount: XP_VALUES.STUDIO_ACTIVITY_DAY,
+        },
+      ],
+      input.privileged,
     )
   }
 

@@ -1270,6 +1270,21 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 1024,
     },
+    // XP diário de CRIAR no Estúdio Completo ("criou hoje" → segura o foguinho de
+    // quem já terminou os cursos). Literal `/gamification/activity` (2 seg após
+    // /members) não colide com me/challenge/missions/remix/vacation. Beacon do
+    // autosave: sem corpo (posse + dedupe do dia mandam no members).
+    {
+      id: 'members-gamification-activity',
+      methods: ['POST'],
+      pathPattern: '/members/gamification/activity',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
     {
       id: 'members-streak-freeze-buy',
       methods: ['POST'],

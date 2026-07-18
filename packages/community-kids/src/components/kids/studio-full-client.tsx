@@ -9,8 +9,9 @@ import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import type { Project, StudioShareAdapter } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
@@ -34,6 +35,7 @@ export function StudioFullClient({
   viewerId,
   challenge = null,
   tier,
+  showExamples = false,
 }: {
   viewerId: string | null
   /**
@@ -44,6 +46,13 @@ export function StudioFullClient({
   challenge?: { key: string; title: string } | null
   /** Modos + perfil de blocos derivados do RANK do aluno (ver `resolveStudioTier`). */
   tier: StudioTier
+  /**
+   * Mostrar os EXEMPLOS prontos — a vitrine "Que jogo você quer criar?" na lista
+   * E os "Exemplos clássicos" no painel de Extensões. Ligado SÓ p/ a equipe
+   * interna enquanto o catálogo é validado (a página deriva de `session.role`);
+   * o cliente segue sem exemplos. Default `false`.
+   */
+  showExamples?: boolean
 }) {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -184,6 +193,7 @@ export function StudioFullClient({
           onOpenProject={openProject}
           theme={studioTheme}
           professional={proAvailable}
+          showExamples={showExamples}
         />
       ) : (
         <EditorScreen
@@ -193,6 +203,7 @@ export function StudioFullClient({
           share={share}
           theme={studioTheme}
           tier={tier}
+          showExamples={showExamples}
         />
       )}
     </div>
@@ -207,6 +218,7 @@ function EditorScreen({
   share,
   theme,
   tier,
+  showExamples,
 }: {
   mod: StudioModule
   projectId: string
@@ -214,9 +226,31 @@ function EditorScreen({
   share: StudioShareAdapter
   theme: 'light' | 'dark'
   tier: StudioTier
+  showExamples: boolean
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
+  const router = useRouter()
+  // Guard "1×/sessão" do beacon de "criou hoje" (o dedupe REAL do dia é do members).
+  const activityBeaconedRef = useRef(false)
+
+  // A criança CRIOU/editou no Estúdio hoje → XP diário que SEGURA o foguinho de quem já
+  // terminou os cursos (1×/dia, gated por posse no members). Dispara UMA vez por sessão
+  // do editor, só numa edição REAL (autosave — NÃO em abrir/`onReady` nem no `flush` de
+  // fechamento). Best-effort/fire-and-forget; no sucesso re-sincroniza o chrome
+  // (foguinho/XP/ranking) sem a criança precisar recarregar.
+  const handleActivity = useCallback(
+    (_project: Project, ctx?: { reason: 'autosave' | 'flush' }) => {
+      if (ctx?.reason !== 'autosave' || activityBeaconedRef.current) return
+      activityBeaconedRef.current = true
+      fetch('/api/studio/activity', { method: 'POST' })
+        .then((res) => {
+          if (res.ok) router.refresh()
+        })
+        .catch(() => {})
+    },
+    [router],
+  )
 
   useEffect(() => {
     let active = true
@@ -282,6 +316,7 @@ function EditorScreen({
       initialProject={state.project}
       persistence="local"
       onExit={onExit}
+      onChange={handleActivity}
       share={share}
       theme={theme}
       // Modos + degrau de blocos pelo RANK do aluno (carreira de 8, Faísca→Lenda;
@@ -292,6 +327,8 @@ function EditorScreen({
       level={tier.level}
       allowedModes={tier.allowedModes}
       allowLevelReveal={tier.allowLevelReveal}
+      // Exemplos "clássicos" no painel de Extensões — só p/ a equipe (ver a página).
+      showExamples={showExamples}
     />
   )
 }

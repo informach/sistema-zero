@@ -1,4 +1,4 @@
-import type { BlockLevel } from '#core'
+import type { BlockLevel, ProjectAsset } from '#core'
 import type { SZIR } from '#ir'
 
 export type ExtensionPermission = 'canvas' | 'keyboard' | 'mouse' | 'audio' | 'storage' | 'network'
@@ -40,6 +40,12 @@ export interface ExtensionExample {
   name: string
   description?: string
   ir: SZIR
+  /**
+   * Assets embutidos que o exemplo precisa (ex.: um sprite pequeno do inimigo). Como
+   * os assets de jogos reais são pesados, use SÓ imagens minúsculas geradas (ver o
+   * `invadersStarfieldPng` do exemplo clássico). Vazio/ausente = exemplo sem asset.
+   */
+  assets?: ProjectAsset[]
 }
 
 /**

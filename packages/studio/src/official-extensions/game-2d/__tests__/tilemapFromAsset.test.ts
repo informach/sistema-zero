@@ -11,14 +11,32 @@ import { gameTwoDRuntime } from '../runtime'
 interface TileMap {
   rows: number[][]
   solid: number[]
+  platform: number[]
   tile: number
   tileset: { image: { url?: string } }
 }
 
+interface Sprite {
+  x: number
+  y: number
+  w: number
+  h: number
+  vx: number
+  vy: number
+  onGround?: boolean
+}
+
 interface Api {
+  createTileMap: (opts: {
+    image: string
+    tile: number
+    solid: string
+    platform?: string
+    grid: string
+  }) => TileMap
   createTileMapFromAsset: (name: string) => TileMap
   drawTileMap: (ctx: unknown, map: TileMap, x: number, y: number) => void
-  collideTileMap: (sprite: unknown, map: TileMap) => void
+  collideTileMap: (sprite: Sprite, map: TileMap) => void
 }
 
 const META = {
@@ -84,5 +102,60 @@ describe('createTileMapFromAsset', () => {
     } finally {
       warn.mockRestore()
     }
+  })
+
+  it('meta.platform chega ao mapa (dedup contra solid é do sanitizer, aqui só transporta)', () => {
+    const api = load({
+      'com-plataforma': {
+        tilemap: { ...META['meu-mapa'].tilemap, platform: [3] },
+      },
+    })
+    const map = api.createTileMapFromAsset('com-plataforma')
+    expect(map.platform).toEqual([3])
+  })
+})
+
+describe('colisão PLATAFORMA (one-way)', () => {
+  // grid '0 0;2 2' → linha 1 (y 16..32) é toda plataforma (tile 2). tile = 16.
+  function platformMap(api: Api): TileMap {
+    return api.createTileMap({ image: '', tile: 16, solid: '', platform: '2', grid: '0 0;2 2' })
+  }
+
+  it('caindo por cima (vy>0, pé anterior no topo ou acima): POUSA e fica no chão', () => {
+    const api = load({})
+    const map = platformMap(api)
+    // pé anterior = y+h-vy = 5+16-5 = 16 = topo da plataforma → pousa
+    const s: Sprite = { x: 0, y: 5, w: 16, h: 16, vx: 0, vy: 5 }
+    api.collideTileMap(s, map)
+    expect(s.y).toBe(0) // encostou o pé no topo (16) → y = 16-16
+    expect(s.vy).toBe(0)
+    expect(s.onGround).toBe(true)
+  })
+
+  it('subindo (vy<0): ATRAVESSA (não segura)', () => {
+    const api = load({})
+    const map = platformMap(api)
+    const s: Sprite = { x: 0, y: 20, w: 16, h: 16, vx: 0, vy: -5 }
+    api.collideTileMap(s, map)
+    expect(s.y).toBe(20) // intacto
+    expect(s.vy).toBe(-5)
+  })
+
+  it('andando de lado dentro dela (vy=0): ATRAVESSA', () => {
+    const api = load({})
+    const map = platformMap(api)
+    const s: Sprite = { x: 0, y: 20, w: 16, h: 16, vx: 3, vy: 0 }
+    api.collideTileMap(s, map)
+    expect(s.y).toBe(20)
+    expect(s.vx).toBe(3) // plataforma nunca empurra de lado
+  })
+
+  it('caindo mas já ABAIXO do topo (pé anterior passou): ATRAVESSA (não gruda de volta)', () => {
+    const api = load({})
+    const map = platformMap(api)
+    // pé anterior = 20+16-5 = 31 > topo+1 → não pousa
+    const s: Sprite = { x: 0, y: 20, w: 16, h: 16, vx: 0, vy: 5 }
+    api.collideTileMap(s, map)
+    expect(s.y).toBe(20)
   })
 })

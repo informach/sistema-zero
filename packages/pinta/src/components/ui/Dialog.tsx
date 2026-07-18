@@ -6,6 +6,7 @@
  */
 import type { JSX, KeyboardEvent, ReactNode } from 'react'
 import { useEffect, useId, useRef } from 'react'
+import { COPY } from '../../core/copy'
 import { X } from './icons'
 
 const FOCUSABLE_SELECTOR =
@@ -53,6 +54,15 @@ export function Dialog({
     const last = focusables[focusables.length - 1]
     if (!first || !last) return
     const active = document.activeElement
+    // Foco FORA do card (ex.: um botão de passo do wizard desmontou ao avançar e
+    // o foco caiu no <body>): sem isto o Tab iria p/ um controle da tela de
+    // fundo — o Dialog renderiza INLINE, sem inert/portal. Traz o foco de volta
+    // p/ dentro do modal.
+    if (!(active instanceof Node) || !card.contains(active)) {
+      event.preventDefault()
+      ;(event.shiftKey ? last : first).focus()
+      return
+    }
     if (event.shiftKey && (active === first || active === card)) {
       event.preventDefault()
       last.focus()
@@ -80,7 +90,7 @@ export function Dialog({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fechar"
+            aria-label={COPY.a11y.close}
             className="-mt-1 flex min-h-11 min-w-11 items-center justify-center rounded-xl text-pin-muted transition hover:bg-pin-bg hover:text-pin-text"
           >
             <X aria-hidden="true" className="size-5" />

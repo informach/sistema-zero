@@ -8,6 +8,7 @@
  */
 import { type PintaBitmap, resolveAssetPalette, type TilesetAsset } from '../core/project'
 import { composeSheetPngDataUrl } from '../export/png'
+import { tilesetGridGeometry } from './packGeometry'
 
 export interface TilesetPack {
   tileSize: number
@@ -17,8 +18,7 @@ export interface TilesetPack {
 }
 
 export function packTileset(asset: TilesetAsset): TilesetPack {
-  const columns = Math.min(Math.max(asset.tiles.length, 1), 8)
-  const rows = Math.max(Math.ceil(asset.tiles.length / columns), 1)
+  const { columns, rows } = tilesetGridGeometry(asset.tiles.length)
   const cells = asset.tiles.map((bitmap, index) => ({
     bitmap,
     col: index % columns,

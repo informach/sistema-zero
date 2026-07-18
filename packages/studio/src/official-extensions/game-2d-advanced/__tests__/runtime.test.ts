@@ -72,6 +72,7 @@ interface GameKitApi {
   setScreenText: Fn
   createScreen: Fn
   addButton: Fn
+  setScreenBg: Fn
   showScreen: Fn
   hideScreens: Fn
   setState: Fn
@@ -193,14 +194,62 @@ interface GameKitApi {
   // V8 — batalha rica
   rpgSetSpecial: Fn
   rpgGivePotion: Fn
+  rpgHealHero: Fn
   rpgBattleReward: Fn
   rpgInflict: Fn
   rpgAddAlly: Fn
   rpgAddFoe: Fn
+  rpgDefineBattler: Fn
+  rpgBattleNamed: Fn
+  rpgAddFoeNamed: Fn
   rpgTeachMove: Fn
   rpgTeachHeal: Fn
   rpgLevel: Fn
   rpgXp: Fn
+  // 👑 R30 — chefes
+  rpgAddBoss: Fn
+  battlerLife: (name: string) => number
+  battlerMaxLife: (name: string) => number
+  rpgOnFoeTurn: Fn
+  rpgFoeUse: Fn
+  rpgFoeHitAll: Fn
+  // 🎲 R30 — jogos de tabuleiro
+  rollDice: (faces: number) => number
+  playersSetup: Fn
+  currentPlayer: () => number
+  nextPlayer: Fn
+  onTurnChange: Fn
+  moveAlongTrack: Fn
+  spaceOf: (who: unknown) => number
+  onLandSpace: Fn
+  // 🃏 R30 — cartas
+  pileMoveTop: Fn
+  pileShuffleFrom: Fn
+  pileTop: Fn
+  pileSize: (pile: unknown) => number
+  card: (front: unknown, back: unknown) => Record<string, unknown>
+  cardFlip: Fn
+  cardIsUp: (card: unknown) => boolean
+  cardFace: Fn
+  handDraw: Fn
+  cardAt: (x: number, y: number, pile: unknown) => number
+  // 🃏 R30 — Kit Cartas (deck-battler)
+  cardsStart: Fn
+  cardsEnergyPerTurn: Fn
+  cardsEnergy: () => number
+  cardsSpend: Fn
+  cardsHeroLife: () => number
+  cardsEnemyLife: () => number
+  cardsHurtEnemy: Fn
+  cardsHurtMe: Fn
+  cardsGainBlock: Fn
+  cardsEnemyIntent: Fn
+  cardsIntentAction: () => string
+  cardsIntentValue: () => number
+  cardsOnTurn: Fn
+  cardsOnEnemyTurn: Fn
+  cardsEndTurn: Fn
+  cardsDrawHud: Fn
   // V9 — mapa de tiles + profundidade
   cameraShake: Fn
   loadTilemap: Fn
@@ -343,10 +392,23 @@ interface Harness {
 
 /** Mapa de tiles falso no formato do Pinta. O runtime lê o ASSET_META UMA vez, no
  * boot do IIFE — por isso ele entra aqui e não depois. `grid` usa "." p/ vazio. */
-function fakeTilemapAsset(grid: string, solid: number[], tileSize = 64) {
+function fakeTilemapAsset(
+  grid: string,
+  solid: number[],
+  tileSize = 64,
+  platform?: number[],
+  frontGrid?: string,
+) {
   return {
     mapa: {
-      tilemap: { grid, solid, tileSize, tileset: { dataUrl: 'data:image/png;base64,AA==' } },
+      tilemap: {
+        grid,
+        solid,
+        ...(platform ? { platform } : {}),
+        ...(frontGrid ? { frontGrid } : {}),
+        tileSize,
+        tileset: { dataUrl: 'data:image/png;base64,AA==' },
+      },
     },
   }
 }
@@ -422,6 +484,9 @@ interface BattlerSnap {
   str: number
   def: number
   moves: number
+  boss: boolean
+  image: string
+  color: string
 }
 interface BattleSnap {
   phase: string
@@ -470,13 +535,13 @@ function pickAction(h: Harness, from: number, match: string, maxFrames = 40): nu
     h.nextFrame(t)
   }
   const open = battleSnap(h)
-  if (!open || !open.menuOpen) return t
+  if (!open?.menuOpen) return t
   const idx = open.menuLabels.findIndex((l) => l.includes(match))
   if (idx < 0) return t
   let guard = 0
   while (h.api.state() === 'batalha' && guard++ < 12) {
     const cur = battleSnap(h)
-    if (!cur || !cur.menuOpen || cur.menuIndex === idx) break
+    if (!cur?.menuOpen || cur.menuIndex === idx) break
     h.fire('keydown', { key: 'ArrowDown' })
     t += 100
     h.nextFrame(t)
@@ -490,7 +555,7 @@ function pickAction(h: Harness, from: number, match: string, maxFrames = 40): nu
   // fim). Assim pickAction representa uma RODADA inteira (o teste pode medir depois).
   for (let i = 0; i < 40 && h.api.state() === 'batalha'; i++) {
     const s = battleSnap(h)
-    if (s && s.menuOpen) break // o próximo turno do jogador já abriu
+    if (s?.menuOpen) break // o próximo turno do jogador já abriu
     t += 100
     h.nextFrame(t)
   }
@@ -504,7 +569,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 288 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 333 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -517,6 +582,7 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'setScreenText',
       'createScreen',
       'addButton',
+      'setScreenBg',
       'showScreen',
       'hideScreens',
       'setState',
@@ -639,15 +705,63 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       // V8 — batalha rica (6)
       'rpgSetSpecial',
       'rpgGivePotion',
+      'rpgHealHero',
       'rpgBattleReward',
       'rpgInflict',
       'rpgLevel',
       'rpgXp',
-      // ⚔️ batalha em equipe (3)
+      // ⚔️ batalha em equipe (3) + fichas reutilizáveis (3)
       'rpgAddAlly',
       'rpgAddFoe',
+      'rpgDefineBattler',
+      'rpgBattleNamed',
+      'rpgAddFoeNamed',
       'rpgTeachMove',
       'rpgTeachHeal',
+      // 👑 R30 — chefes (6)
+      'rpgAddBoss',
+      'battlerLife',
+      'battlerMaxLife',
+      'rpgOnFoeTurn',
+      'rpgFoeUse',
+      'rpgFoeHitAll',
+      // 🎲 R30 — jogos de tabuleiro (8)
+      'rollDice',
+      'playersSetup',
+      'currentPlayer',
+      'nextPlayer',
+      'onTurnChange',
+      'moveAlongTrack',
+      'spaceOf',
+      'onLandSpace',
+      // 🃏 R30 — cartas (10)
+      'pileMoveTop',
+      'pileShuffleFrom',
+      'pileTop',
+      'pileSize',
+      'card',
+      'cardFlip',
+      'cardIsUp',
+      'cardFace',
+      'handDraw',
+      'cardAt',
+      // 🃏 R30 — Kit Cartas (16)
+      'cardsStart',
+      'cardsEnergyPerTurn',
+      'cardsEnergy',
+      'cardsSpend',
+      'cardsHeroLife',
+      'cardsEnemyLife',
+      'cardsHurtEnemy',
+      'cardsHurtMe',
+      'cardsGainBlock',
+      'cardsEnemyIntent',
+      'cardsIntentAction',
+      'cardsIntentValue',
+      'cardsOnTurn',
+      'cardsOnEnemyTurn',
+      'cardsEndTurn',
+      'cardsDrawHud',
       // V9 — mapa de tiles + profundidade (6)
       'cameraShake',
       'loadTilemap',
@@ -1040,6 +1154,19 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
     expect(clicked).toBe(1)
     expect(h.api.state()).toBe('menu')
     expect(vitoria?.classList.contains('szgk-active')).toBe(false)
+  })
+
+  it('🖼️ "pôr fundo na tela" pinta o painel de cor e é seguro sem imagem/tela', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setScreenBg('pausa', '#123456', '')
+    const pausa = document.querySelector('[data-szgk-screen="pausa"]') as HTMLElement | null
+    expect(pausa?.style.backgroundColor).toBeTruthy() // o "quadrado colorido por baixo"
+    // imagem que não está no projeto: avisa mas NÃO quebra nem seta background-image
+    expect(() => h.api.setScreenBg('pausa', '', 'nao-existe')).not.toThrow()
+    expect(pausa?.style.backgroundImage || '').toBe('')
+    // tela inexistente: no-op seguro (só avisa)
+    expect(() => h.api.setScreenBg('naoexiste', '#ffffff', '')).not.toThrow()
   })
 
   it('o botão Jogar do menu entra em "jogando" e esconde as telas', async () => {
@@ -2602,6 +2729,32 @@ describe('SZGameKit — R12: Kit Plataforma', () => {
     expect(h.api.velocityOf(c, 'y')).toBeGreaterThan(0)
   })
 
+  it('⭐ tile PLATAFORMA (one-way): cai por cima e POUSA, sobe por baixo e ATRAVESSA', async () => {
+    // linha 0 vazia, linha 1 é PLATAFORMA (peça 2, one-way). tile 64.
+    const h = loadRuntime(fakeTilemapAsset('. . .\n2 2 2', [], 64, [2]))
+    h.api.setup({ width: 800, height: 600 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.loadTilemap('mundo', 'mapa')
+    h.nextFrame(16) // estabelece currentDt (~0.016) p/ o cruzamento de plano
+    const c = h.api.createCharacter({ w: 32, h: 32 }) as { x: number; y: number }
+
+    // CAINDO por cima: pé (62) acima do topo da plataforma (64), vy>0 → pousa.
+    h.api.placeCharacter(c, 80, 30) // bottom = 62
+    h.api.setVelocity(c, 0, 600)
+    h.api.collideTilemap(c, 'mundo')
+    expect(c.y).toBe(32) // topo(64) - altura(32) → em cima da plataforma
+    expect(h.api.velocityOf(c, 'y')).toBe(0)
+    expect((c as { onGround?: boolean }).onGround).toBe(true)
+
+    // SUBINDO por baixo (vy<0): atravessa (não segura).
+    h.api.placeCharacter(c, 80, 80) // dentro da faixa da plataforma
+    h.api.setVelocity(c, 0, -600)
+    h.api.collideTilemap(c, 'mundo')
+    expect(c.y).toBe(80) // intacto
+    expect(h.api.velocityOf(c, 'y')).toBe(-600)
+  })
+
   it('⭐ contrato do pool: reciclado NÃO herda o estado de plataforma', async () => {
     const h = loadRuntime()
     await comChao(h)
@@ -3531,6 +3684,54 @@ describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho
     }
   })
 
+  it('⭐ frente: "Desenhar o mapa" na camada FRENTE usa a grade da frente (por cima, sem filtro de sólido)', async () => {
+    // grade completa 2×1 = duas peças; frontGrid = só a 2ª célula é da frente.
+    const h = loadRuntime(fakeTilemapAsset('1 1', [1], 64, undefined, '. 5'))
+    h.api.setup({ width: 800, height: 600 })
+    h.api.loadTilemap('mundo', 'mapa')
+    let layer = 'chão'
+    h.api.onDraw(() => h.api.drawTilemap('mundo', layer))
+    await startGame(h)
+    h.api.setState('jogando')
+    const countDraws = (): number => {
+      let draws = 0
+      const orig = fakeCtx.drawImage
+      ;(fakeCtx as { drawImage: () => void }).drawImage = () => {
+        draws += 1
+      }
+      try {
+        h.nextFrame(16)
+      } finally {
+        ;(fakeCtx as { drawImage: unknown }).drawImage = orig
+      }
+      return draws
+    }
+    layer = 'chão'
+    expect(countDraws()).toBe(2) // as DUAS peças do mapa completo
+    layer = 'frente'
+    expect(countDraws()).toBe(1) // SÓ a peça da camada da frente
+  })
+
+  it('frente: mapa SEM camada da frente não desenha nada na opção frente', async () => {
+    const h = loadRuntime(fakeTilemapAsset('1 1', [1], 64))
+    h.api.setup({ width: 800, height: 600 })
+    h.api.loadTilemap('mundo', 'mapa')
+    h.api.onDraw(() => h.api.drawTilemap('mundo', 'frente'))
+    await startGame(h)
+    h.api.setState('jogando')
+    let draws = 0
+    const orig = fakeCtx.drawImage
+    ;(fakeCtx as { drawImage: () => void }).drawImage = () => {
+      draws += 1
+    }
+    try {
+      h.nextFrame(16)
+    } finally {
+      ;(fakeCtx as { drawImage: unknown }).drawImage = orig
+    }
+    expect(draws).toBe(0)
+  })
+
   it('cameraFollowMap: o mundo é o TAMANHO do mapa (trava nas bordas dele)', async () => {
     const h = loadRuntime(fakeTilemapAsset(gridCheio(50, 30), [1], 64))
     h.api.setup({ width: 800, height: 600 })
@@ -3737,5 +3938,372 @@ describe('SZGameKit — R29: robustez (nomes perigosos, softlock, cura)', () => 
     api.setVelocity(ball3, 0, 200)
     api.paddleBounce(ball3, paddle)
     expect(api.velocityOf(ball3, 'y')).toBe(200) // intocado
+  })
+})
+
+describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de chefe)', () => {
+  it('⭐ o inimigo USA o golpe ensinado (antes o foeStep ignorava f.moves)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0) // herói vida 100, força fraca
+    h.api.rpgTeachMove('Bruxo', 'Chama', 40, 0) // golpe FORTE ensinado ao INIMIGO
+    h.api.rpgBattleStart('Bruxo', 120, 1, 0) // foe força 1: sem o golpe mal me arranha
+    expect(h.api.state()).toBe('batalha')
+    const before = h.api.battlerLife('Você')
+    pickAction(h, 1, 'Atacar') // uma rodada inteira: herói ataca, depois o Bruxo age
+    // Com o golpe (40), o herói perde MUITO mais do que a força 1 causaria (bite-check
+    // do fix: com o bug de volta, before-after ≈ 1 e isto falha).
+    expect(before - h.api.battlerLife('Você')).toBeGreaterThan(20)
+  })
+
+  it('"a vida de … na batalha" lê qualquer combatente + o CHEFÃO entra marcado', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(30, 7, 0)
+    h.api.rpgAddBoss('Dragão', 200, 9, 2) // o chefão entra na fila
+    h.api.rpgBattleStart('Capanga', 20, 3, 0) // + um capanga normal
+    expect(h.api.state()).toBe('batalha')
+    const snap = battleSnap(h)
+    const dragao = snap?.foes.find((f) => f.name === 'Dragão')
+    const capanga = snap?.foes.find((f) => f.name === 'Capanga')
+    expect(dragao?.boss).toBe(true) // marcado → desenhado maior, com barra proeminente
+    expect(capanga?.boss).toBe(false)
+    expect(h.api.battlerLife('Dragão')).toBe(200)
+    expect(h.api.battlerMaxLife('Dragão')).toBe(200)
+    expect(h.api.battlerLife('Você')).toBe(30)
+    expect(h.api.battlerLife('naoexiste')).toBe(0) // seguro fora
+  })
+
+  it('"o inimigo usa o golpe" desfere o golpe ensinado a ele (e avisa se não tem)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgTeachMove('Ogro', 'Marreta', 30, 0)
+    h.api.rpgBattleStart('Ogro', 100, 1, 0)
+    const before = h.api.battlerLife('Você')
+    h.api.rpgFoeUse('Ogro', 'Marreta') // aciona o golpe direto
+    expect(before - h.api.battlerLife('Você')).toBeGreaterThan(15)
+    const now = h.api.battlerLife('Você')
+    h.api.rpgFoeUse('Ogro', 'GolpeInexistente') // golpe que ele NÃO tem: no-op + aviso
+    expect(h.api.battlerLife('Você')).toBe(now)
+  })
+
+  it('🖼️ inimigo/chefão/aliado entram na batalha com a IMAGEM escolhida (não só cor)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(30, 7, 0)
+    h.api.rpgAddAlly('Mago', 40, 6, 1, '#4ade80', 'mago-png') // aliado com arte
+    h.api.rpgAddBoss('Dragão', 200, 9, 2, 'dragao-png') // o chefão com arte
+    h.api.rpgBattleStart('Capanga', 20, 3, 0, 'capanga-png') // o inimigo nomeado com arte
+    const snap = battleSnap(h)
+    expect(snap?.foes.find((f) => f.name === 'Capanga')?.image).toBe('capanga-png')
+    expect(snap?.foes.find((f) => f.name === 'Dragão')?.image).toBe('dragao-png')
+    expect(snap?.allies.find((a) => a.name === 'Mago')?.image).toBe('mago-png')
+    // Sem imagem segue vazio (cai no retângulo da cor) — não quebra o herói.
+    expect(snap?.allies.find((a) => a.name === 'Você')?.image).toBe('')
+  })
+
+  it('⚔️ ficha reutilizável: define separado + ESCOLHE na batalha (imagem + chefão vêm da ficha)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(40, 7, 0)
+    // Cria as fichas UMA vez (com imagem e atributos)…
+    h.api.rpgDefineBattler('Dragão', 200, 9, 2, 'dragao-png', '#b23b6e', true) // chefão
+    h.api.rpgDefineBattler('Capanga', 20, 3, 0, 'capanga-png', '#e05a5a', false)
+    h.api.rpgAddFoeNamed('Capanga') // …e só ESCOLHE quem entra
+    h.api.rpgBattleNamed('Dragão') // o chefão como inimigo principal
+    expect(h.api.state()).toBe('batalha')
+    const snap = battleSnap(h)
+    const dragao = snap?.foes.find((f) => f.name === 'Dragão')
+    const capanga = snap?.foes.find((f) => f.name === 'Capanga')
+    expect(dragao?.boss).toBe(true) // a ficha era chefão → entra maior/coroa
+    expect(dragao?.image).toBe('dragao-png') // imagem veio da ficha
+    expect(dragao?.hp).toBe(200)
+    expect(capanga?.image).toBe('capanga-png') // o extra da fila também saiu da ficha
+    expect(capanga?.boss).toBe(false)
+  })
+
+  it('⚔️ replay de cutscene preserva a COR custom da ficha (não cai no vermelho padrão)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(40, 7, 0)
+    h.api.rpgDefineBattler('Slime', 20, 3, 0, '', '#22ff88', false) // cor custom, não-chefão
+    h.api.rpgCutscene(() => {
+      h.api.rpgBattleNamed('Slime') // grava um passo 'battle' que carrega a cor da ficha
+    })
+    // toca a cena: o passo de batalha abre o estado 'batalha' e espera lá.
+    for (let t = 16; t <= 400 && h.api.state() !== 'batalha'; t += 16) h.nextFrame(t)
+    expect(h.api.state()).toBe('batalha')
+    const slime = battleSnap(h)?.foes.find((f) => f.name === 'Slime')
+    expect(slime?.color).toBe('#22ff88') // sobreviveu ao record→replay (antes virava '#e05a5a')
+  })
+
+  it('⚔️ batalhar contra uma ficha que não existe NÃO abre batalha (segue no mundo)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(30, 7, 0)
+    h.api.rpgBattleNamed('NaoExiste') // ficha nunca criada → no-op + aviso
+    expect(h.api.state()).toBe('jogando')
+    expect(battleSnap(h)).toBeNull()
+  })
+
+  it('⚔️ golpe ensinado PERSISTE ao "Jogar de novo" (não some no recomeço)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgTeachMove('Ogro', 'Marreta', 30, 0) // ensinado UMA vez
+    // "Jogar de novo": menu → jogando dispara o rpgNewGame de novo.
+    h.api.setState('menu')
+    h.api.setState('jogando')
+    h.api.rpgBattleStart('Ogro', 100, 1, 0) // o Ogro entra com o golpe (antes o wipe apagava)
+    expect(battleSnap(h)?.foes.find((f) => f.name === 'Ogro')?.moves).toBe(1)
+  })
+
+  it('⚔️ re-ensinar o MESMO golpe REPÕE (idempotente): 1 golpe, com o valor novo', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgTeachMove('Ogro', 'Marreta', 10, 0)
+    h.api.rpgTeachMove('Ogro', 'Marreta', 30, 0) // mesmo nome → repõe (não empilha)
+    h.api.rpgBattleStart('Ogro', 100, 1, 0)
+    expect(battleSnap(h)?.foes.find((f) => f.name === 'Ogro')?.moves).toBe(1) // 1, não 2
+    const before = h.api.battlerLife('Você')
+    h.api.rpgFoeUse('Ogro', 'Marreta')
+    expect(before - h.api.battlerLife('Você')).toBeGreaterThan(20) // ~30 (o novo), não ~10
+  })
+
+  it('a IA de chefe manda na vez dele: "acerta TODO o time" atinge todos os aliados', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgAddAlly('Amigo', 100, 3, 0, '#4ade80') // o herói + um aliado
+    h.api.rpgOnFoeTurn('Titã', () => {
+      h.api.rpgFoeHitAll('Titã', 25) // o golpe de área do chefão
+    })
+    h.api.rpgBattleStart('Titã', 400, 1, 0) // tanque: a batalha não acaba
+    expect(h.api.state()).toBe('batalha')
+    const heroBefore = h.api.battlerLife('Você')
+    const amigoBefore = h.api.battlerLife('Amigo')
+    const t = pickAction(h, 1, 'Atacar') // vez do herói
+    pickAction(h, t, 'Atacar') // vez do Amigo → depois o Titã age (hit_all via a IA)
+    expect(h.api.battlerLife('Você')).toBeLessThan(heroBefore)
+    expect(h.api.battlerLife('Amigo')).toBeLessThan(amigoBefore)
+  })
+})
+
+describe('SZGameKit — 🩸 a vida do herói persiste entre batalhas (⚔️ Kit RPG)', () => {
+  it('a 2ª batalha começa com a vida que sobrou da 1ª (não cheia)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 50, 0) // herói vida 100, força 50 (mata o slime num golpe)
+    h.api.rpgTeachMove('Slime', 'Tapa', 30, 0) // o inimigo tem um golpe
+    h.api.rpgBattleStart('Slime', 10, 1, 0) // slime fraco (10 de vida)
+    h.api.rpgFoeUse('Slime', 'Tapa') // o slime bate no herói ANTES de morrer
+    const feridoEm = h.api.battlerLife('Você')
+    expect(feridoEm).toBeLessThan(100) // levou dano
+    pickAction(h, 1, 'Atacar') // o herói ataca → mata o slime → vitória
+    expect(h.api.state()).toBe('jogando')
+    h.api.rpgBattleStart('Slime2', 10, 1, 0) // 2ª batalha
+    expect(h.api.battlerLife('Você')).toBe(feridoEm) // entrou com a vida que sobrou
+  })
+
+  it('"Curar o herói" recupera a vida ao máximo (fora da batalha)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 50, 0)
+    h.api.rpgTeachMove('Slime', 'Tapa', 30, 0)
+    h.api.rpgBattleStart('Slime', 10, 1, 0)
+    h.api.rpgFoeUse('Slime', 'Tapa')
+    pickAction(h, 1, 'Atacar') // vence, ferido
+    expect(h.api.state()).toBe('jogando')
+    h.api.rpgHealHero() // a estalagem/save
+    h.api.rpgBattleStart('Slime2', 10, 1, 0)
+    expect(h.api.battlerLife('Você')).toBe(100) // curado ao máximo
+  })
+
+  it('PERDER a batalha recomeça com a vida cheia (sem soft-lock)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(10, 1, 0) // herói fraquinho (vida 10)
+    h.api.rpgBattleStart('Ogro', 200, 50, 0) // ogro forte: mata o herói
+    let guard = 0
+    while (h.api.state() === 'batalha' && guard++ < 20) pickAction(h, guard * 100, 'Atacar')
+    expect(h.api.state()).toBe('jogando') // batalha acabou (herói morreu → derrota)
+    h.api.rpgBattleStart('Ogro2', 10, 1, 0)
+    expect(h.api.battlerLife('Você')).toBe(10) // derrota = vida cheia de novo
+  })
+})
+
+describe('SZGameKit — R30: 🎲 jogos de tabuleiro (dado, turnos, trilha de casas)', () => {
+  it('🎲 o dado sorteia 1..N (nunca 0, nunca N+1)', () => {
+    const h = loadRuntime()
+    for (let i = 0; i < 200; i++) {
+      const v = h.api.rollDice(6)
+      expect(v).toBeGreaterThanOrEqual(1)
+      expect(v).toBeLessThanOrEqual(6)
+    }
+    expect(h.api.rollDice(1)).toBe(1) // dado de 1 lado sempre dá 1
+  })
+
+  it('🔁 ordem de turno: o anel roda 1→2→3→1 e dispara "quando a vez mudar"', () => {
+    const h = loadRuntime()
+    let changes = 0
+    h.api.onTurnChange(() => {
+      changes += 1
+    })
+    h.api.playersSetup(3)
+    expect(h.api.currentPlayer()).toBe(1)
+    h.api.nextPlayer()
+    expect(h.api.currentPlayer()).toBe(2)
+    h.api.nextPlayer()
+    expect(h.api.currentPlayer()).toBe(3)
+    h.api.nextPlayer()
+    expect(h.api.currentPlayer()).toBe(1) // volta ao começo (anel)
+    expect(changes).toBe(3)
+  })
+
+  it('🎯 a peça anda N casas na trilha, PARA na casa e dispara o "parou numa casa"', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.definePath('tabuleiro', () => {
+      h.api.pathPoint(100, 100)
+      h.api.pathPoint(200, 100)
+      h.api.pathPoint(300, 100)
+      h.api.pathPoint(400, 100)
+      h.api.pathPoint(500, 100)
+    })
+    const peao = h.api.createCharacter({ w: 32, h: 32 })
+    let landed = 0
+    h.api.onLandSpace(() => {
+      landed += 1
+    })
+    expect(h.api.spaceOf(peao)).toBe(0) // começa na casa 0
+    h.api.moveAlongTrack(peao, 3, 'tabuleiro')
+    expect(h.api.spaceOf(peao)).toBe(3) // andou 3 casas
+    expect(landed).toBe(1)
+    h.api.moveAlongTrack(peao, 5, 'tabuleiro') // passa do fim → PARA na última (casa 4)
+    expect(h.api.spaceOf(peao)).toBe(4)
+    expect(landed).toBe(2)
+  })
+})
+
+describe('SZGameKit — R30: 🃏 cartas (pilha = lista, carta de 2 faces, mão clicável)', () => {
+  it('pilha (lista): mover o topo, espiar, contar e rebaralhar', () => {
+    const h = loadRuntime()
+    const baralho: string[] = ['A', 'B', 'C']
+    const mao: string[] = []
+    h.api.pileMoveTop(baralho, mao) // tira o topo (C) do baralho e põe na mão
+    expect(baralho).toEqual(['A', 'B'])
+    expect(mao).toEqual(['C'])
+    expect(h.api.pileTop(baralho)).toBe('B') // espia sem tirar
+    expect(h.api.pileSize(baralho)).toBe(2)
+    const descarte: string[] = ['X', 'Y']
+    h.api.pileShuffleFrom(baralho, descarte) // junta o descarte no monte + embaralha
+    expect(descarte.length).toBe(0)
+    expect(h.api.pileSize(baralho)).toBe(4)
+  })
+
+  it('carta de 2 faces: nasce virada pra baixo; virar troca a face mostrada', () => {
+    const h = loadRuntime()
+    const c = h.api.card('🍎', '?')
+    expect(h.api.cardIsUp(c)).toBe(false)
+    expect(h.api.cardFace(c)).toBe('?') // virada pra baixo mostra o verso
+    h.api.cardFlip(c)
+    expect(h.api.cardIsUp(c)).toBe(true)
+    expect(h.api.cardFace(c)).toBe('🍎') // pra cima mostra a frente
+  })
+
+  it('mão clicável: desenha a fileira e descobre qual carta foi clicada', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const cartas = [h.api.card('🍎', '?'), h.api.card('🍌', '?'), h.api.card('🍇', '?')]
+    h.api.handDraw(cartas, 100, 400, false) // cw=60, gap=12: carta i em x = 100 + i*72
+    expect(h.api.cardAt(120, 440, cartas)).toBe(0)
+    expect(h.api.cardAt(200, 440, cartas)).toBe(1)
+    expect(h.api.cardAt(5, 5, cartas)).toBe(-1) // fora de qualquer carta
+  })
+})
+
+describe('SZGameKit — R30: 🃏 Kit Cartas (deck-battler)', () => {
+  it('abre a batalha, gasta/reseta energia, dano no inimigo e escudo que absorve', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.cardsStart(30, 40)
+    expect(h.api.state()).toBe('jogando') // a batalha de cartas roda no 'jogando'
+    expect(h.api.cardsHeroLife()).toBe(30)
+    expect(h.api.cardsEnemyLife()).toBe(40)
+    h.api.cardsEnergyPerTurn(3)
+    expect(h.api.cardsEnergy()).toBe(3)
+    h.api.cardsSpend(2)
+    expect(h.api.cardsEnergy()).toBe(1)
+    h.api.cardsHurtEnemy(10)
+    expect(h.api.cardsEnemyLife()).toBe(30)
+    // escudo: 5 de block apara 8 de dano → o herói perde só 3
+    h.api.cardsGainBlock(5)
+    h.api.cardsHurtMe(8)
+    expect(h.api.cardsHeroLife()).toBe(27)
+  })
+
+  it('a intenção telegrafada + o rodízio de turno (meu → inimigo → meu)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    let meus = 0
+    h.api.cardsOnTurn(() => {
+      meus += 1
+    })
+    h.api.cardsOnEnemyTurn(() => {
+      // a criança RESOLVE a intenção telegrafada
+      if (h.api.cardsIntentAction() === 'atacar') h.api.cardsHurtMe(h.api.cardsIntentValue())
+    })
+    h.api.cardsStart(30, 40) // já roda o 1º "meu turno"
+    expect(meus).toBe(1)
+    h.api.cardsEnergyPerTurn(3)
+    h.api.cardsEnemyIntent('atacar', 6)
+    expect(h.api.cardsIntentAction()).toBe('atacar')
+    expect(h.api.cardsIntentValue()).toBe(6)
+    h.api.cardsEndTurn() // vez do inimigo (tira 6) → volta pra mim (2º meu turno)
+    expect(h.api.cardsHeroLife()).toBe(24) // 30 − 6 (sem escudo neste turno)
+    expect(meus).toBe(2)
+  })
+
+  it('⭐ "Jogar de novo": a batalha de cartas RESETA e a receita de turno NÃO dobra', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    let meus = 0
+    h.api.cardsOnTurn(() => {
+      meus += 1
+    }) // registrada UMA vez, no topo (como o exemplo Duelo de Cartas)
+    h.api.cardsStart(30, 40) // roda o 1º "meu turno"
+    expect(meus).toBe(1)
+    h.api.cardsHurtEnemy(40) // mato o inimigo desta partida
+    expect(h.api.cardsEnemyLife()).toBe(0)
+    // "Jogar de novo" = voltar ao menu e entrar em jogando de novo → dispara o reset.
+    h.api.setState('menu')
+    h.api.setState('jogando')
+    expect(h.api.cardsHeroLife()).toBe(0) // a batalha da partida anterior foi ZERADA (cardsNewGame)
+    // recomeçar: vida cheia (não estragada) e a receita roda 1×/turno (não 2×/3× por dobra).
+    h.api.cardsStart(30, 40)
+    expect(h.api.cardsHeroLife()).toBe(30)
+    expect(h.api.cardsEnemyLife()).toBe(40)
+    expect(meus).toBe(2) // +1 pelo 2º cardsStart; se a receita tivesse dobrado seria ≥3
   })
 })

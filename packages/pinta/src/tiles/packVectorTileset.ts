@@ -7,6 +7,7 @@
 import type { VectorTilesetAsset } from '../core/project'
 import { cellsToSheetSvg, type VectorSheetCell } from '../export/vectorSheet'
 import { svgToPngDataUrl } from '../vector/rasterize'
+import { tilesetGridGeometry } from './packGeometry'
 
 export interface VectorTilesetPack {
   tileSize: number
@@ -16,8 +17,7 @@ export interface VectorTilesetPack {
 }
 
 export function packVectorTileset(asset: VectorTilesetAsset): VectorTilesetPack {
-  const columns = Math.min(Math.max(asset.tiles.length, 1), 8)
-  const rows = Math.max(Math.ceil(asset.tiles.length / columns), 1)
+  const { columns, rows } = tilesetGridGeometry(asset.tiles.length)
   const cells = asset.tiles.map((shapes, index) => ({
     shapes,
     col: index % columns,

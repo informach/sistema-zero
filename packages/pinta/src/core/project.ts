@@ -10,6 +10,7 @@
 
 import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { normalizeHex } from './color'
+import { COPY } from './copy'
 import { newId } from './id'
 import { DEFAULT_PALETTE_ID, getPalette, isPaletteId, type PaletteId } from './palette'
 
@@ -148,6 +149,11 @@ export interface TilesetAsset extends PintaAssetBase {
   tiles: PintaBitmap[]
   /** Paralelo a `tiles`: alimenta a lista de "tiles sólidos" do bloco. */
   solid: boolean[]
+  /**
+   * Paralelo a `tiles`: peça PLATAFORMA (one-way — pisa por cima, atravessa por
+   * baixo). Mutuamente exclusivo com `solid` (sólido vence no conflito).
+   */
+  platform: boolean[]
 }
 
 export interface TilemapLayer {
@@ -156,6 +162,11 @@ export interface TilemapLayer {
   visible: boolean
   /** Índices de tile por célula, row-major; -1 = vazio. */
   cells: Int16Array
+  /**
+   * Camada "da frente": desenhada POR CIMA do jogador (copa de árvore, telhado).
+   * No Estúdio vira um 2º tilemap desenhado depois do sprite. Ausente = fundo.
+   */
+  front?: boolean
 }
 
 export interface TilemapAsset extends PintaAssetBase {
@@ -194,6 +205,11 @@ export interface VectorTilesetAsset extends PintaAssetBase {
   tiles: VectorFrame[]
   /** Paralelo a `tiles`: alimenta a lista de "tiles sólidos" do bloco. */
   solid: boolean[]
+  /**
+   * Paralelo a `tiles`: peça PLATAFORMA (one-way — pisa por cima, atravessa por
+   * baixo). Mutuamente exclusivo com `solid` (sólido vence no conflito).
+   */
+  platform: boolean[]
 }
 
 export type PintaAsset =
@@ -261,8 +277,10 @@ export const PINTA_LIMITS = {
   maxFrameSize: 128,
   maxBitmapSize: 512,
   maxTiles: 64,
-  maxTilemapCols: 100,
-  maxTilemapRows: 100,
+  // Teto casado com o `MAX_TILEMAP_DIM` do Studio (128) — mapas maiores exigem
+  // grade compacta (RLE) nos dois parsers do runtime + culling no editor.
+  maxTilemapCols: 128,
+  maxTilemapRows: 128,
   maxTilemapLayers: 4,
   maxShapes: 500,
   maxNameChars: 48,
@@ -385,6 +403,7 @@ export function createTilesetAsset(input: {
     paletteId: input.paletteId ?? DEFAULT_PALETTE_ID,
     tiles: [createBitmap(tileSize, tileSize)],
     solid: [false],
+    platform: [false],
   }
 }
 
@@ -407,7 +426,9 @@ export function createTilemapAsset(input: {
     tilesetId: input.tilesetId,
     cols,
     rows,
-    layers: [{ id: newId(), name: 'Chão', visible: true, cells: emptyCells(cols * rows) }],
+    layers: [
+      { id: newId(), name: COPY.a11y.defaultLayer, visible: true, cells: emptyCells(cols * rows) },
+    ],
   }
 }
 
@@ -467,6 +488,7 @@ export function createVectorTilesetAsset(input: {
     tileSize,
     tiles: [[]],
     solid: [false],
+    platform: [false],
   }
 }
 
@@ -494,8 +516,16 @@ function sanitizeBitmap(
   if (!isFinitePositiveInt(b.width, PINTA_LIMITS.maxBitmapSize)) return null
   if (!isFinitePositiveInt(b.height, PINTA_LIMITS.maxBitmapSize)) return null
   if (expected && (b.width !== expected.width || b.height !== expected.height)) return null
-  if (!(b.data instanceof Uint8Array) || b.data.length !== b.width * b.height) return null
-  return { width: b.width, height: b.height, data: b.data }
+  // Coage array simples → Uint8Array (registro que veio por JSON/outro realm, em
+  // que o structured clone não preservou o typed array) antes de validar.
+  const data =
+    b.data instanceof Uint8Array
+      ? b.data
+      : Array.isArray(b.data)
+        ? Uint8Array.from(b.data as number[])
+        : null
+  if (!data || data.length !== b.width * b.height) return null
+  return { width: b.width, height: b.height, data }
 }
 
 function sanitizeTimestamps(raw: Record<string, unknown>): {
@@ -577,7 +607,7 @@ function sanitizeAnimation(
   const name =
     typeof a.name === 'string' && a.name.trim()
       ? a.name.trim().slice(0, PINTA_LIMITS.maxAnimationNameChars)
-      : 'animação'
+      : COPY.a11y.defaultAnimation
   const fps = typeof a.fps === 'number' && Number.isFinite(a.fps) ? clampInt(a.fps, 1, 30) : 8
   const loop = a.loop !== false
   if (!Array.isArray(a.frames)) return null
@@ -606,7 +636,7 @@ function sanitizeVectorAnimation(raw: unknown): PintaVectorAnimation | null {
   const name =
     typeof a.name === 'string' && a.name.trim()
       ? a.name.trim().slice(0, PINTA_LIMITS.maxAnimationNameChars)
-      : 'animação'
+      : COPY.a11y.defaultAnimation
   const fps = typeof a.fps === 'number' && Number.isFinite(a.fps) ? clampInt(a.fps, 1, 30) : 8
   const loop = a.loop !== false
   if (!Array.isArray(a.frames)) return null
@@ -683,6 +713,9 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (tiles.length === 0) return null
       const rawSolid = Array.isArray(record.solid) ? record.solid : []
       const solid = tiles.map((_, i) => rawSolid[i] === true)
+      const rawPlatform = Array.isArray(record.platform) ? record.platform : []
+      // Exclusividade: sólido vence; ausente (asset antigo) → tudo falso.
+      const platform = tiles.map((_, i) => rawPlatform[i] === true && solid[i] !== true)
       const extraColors = sanitizeExtraColors(record.extraColors)
       return {
         ...base,
@@ -692,6 +725,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         ...(extraColors ? { extraColors } : {}),
         tiles,
         solid,
+        platform,
       }
     }
     case 'tilemap': {
@@ -706,10 +740,25 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
           if (!layer || typeof layer !== 'object') return null
           const l = layer as Record<string, unknown>
           if (typeof l.id !== 'string' || !l.id) return null
-          if (!(l.cells instanceof Int16Array) || l.cells.length !== cellCount) return null
+          // Coage array simples → Int16Array (JSON/outro realm) antes de validar.
+          const cells =
+            l.cells instanceof Int16Array
+              ? l.cells
+              : Array.isArray(l.cells)
+                ? Int16Array.from(l.cells as number[])
+                : null
+          if (!cells || cells.length !== cellCount) return null
           const name =
-            typeof l.name === 'string' && l.name.trim() ? l.name.trim().slice(0, 30) : 'Camada'
-          return { id: l.id, name, visible: l.visible !== false, cells: l.cells }
+            typeof l.name === 'string' && l.name.trim()
+              ? l.name.trim().slice(0, 30)
+              : COPY.tiles.layerNamePrefix
+          return {
+            id: l.id,
+            name,
+            visible: l.visible !== false,
+            cells,
+            ...(l.front === true ? { front: true } : {}),
+          }
         })
         .filter((l): l is TilemapLayer => l !== null)
       if (layers.length === 0) return null
@@ -765,7 +814,9 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (tiles.length === 0) return null
       const rawSolid = Array.isArray(record.solid) ? record.solid : []
       const solid = tiles.map((_, i) => rawSolid[i] === true)
-      return { ...base, kind: 'vector-tileset', tileSize: record.tileSize, tiles, solid }
+      const rawPlatform = Array.isArray(record.platform) ? record.platform : []
+      const platform = tiles.map((_, i) => rawPlatform[i] === true && solid[i] !== true)
+      return { ...base, kind: 'vector-tileset', tileSize: record.tileSize, tiles, solid, platform }
     }
     default:
       return null

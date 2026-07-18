@@ -609,6 +609,43 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:navePowerOf', charVar: f(block, 'WHO') }
     case 'sz_gk_path_progress':
       return { type: 'gk:pathProgress', charVar: f(block, 'WHO') }
+    case 'sz_gk_roll_dice':
+      return { type: 'gk:rollDice', faces: exprInput(block, 'FACES', { type: 'num', value: 6 }) }
+    case 'sz_gk_current_player':
+      return { type: 'gk:currentPlayer' }
+    case 'sz_gk_space_of':
+      return { type: 'gk:spaceOf', who: f(block, 'WHO') }
+    case 'sz_gk_pile_top':
+      return { type: 'gk:pileTop', pileVar: f(block, 'PILE') }
+    case 'sz_gk_pile_size':
+      return { type: 'gk:pileSize', pileVar: f(block, 'PILE') }
+    case 'sz_gk_card':
+      return {
+        type: 'gk:card',
+        front: exprInput(block, 'FRONT', { type: 'str', value: '🍎' }),
+        back: exprInput(block, 'BACK', { type: 'str', value: '?' }),
+      }
+    case 'sz_gk_card_is_up':
+      return { type: 'gk:cardIsUp', card: exprInput(block, 'CARD', { type: 'num', value: 0 }) }
+    case 'sz_gk_card_face':
+      return { type: 'gk:cardFace', card: exprInput(block, 'CARD', { type: 'num', value: 0 }) }
+    case 'sz_gk_card_at':
+      return {
+        type: 'gk:cardAt',
+        x: exprInput(block, 'X', { type: 'num', value: 0 }),
+        y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+        pileVar: f(block, 'PILE'),
+      }
+    case 'sz_gk_cards_energy':
+      return { type: 'gk:cardsEnergy' }
+    case 'sz_gk_cards_hero_life':
+      return { type: 'gk:cardsHeroLife' }
+    case 'sz_gk_cards_enemy_life':
+      return { type: 'gk:cardsEnemyLife' }
+    case 'sz_gk_cards_intent_action':
+      return { type: 'gk:cardsIntentAction' }
+    case 'sz_gk_cards_intent_value':
+      return { type: 'gk:cardsIntentValue' }
     case 'sz_gk_pick_active':
       return {
         type: 'gk:pickActive',
@@ -650,6 +687,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:rpgLevel' }
     case 'sz_gk_rpg_xp':
       return { type: 'gk:rpgXp' }
+    case 'sz_gk_battler_life':
+      return { type: 'gk:battlerLife', name: f(block, 'NAME') }
+    case 'sz_gk_battler_max_life':
+      return { type: 'gk:battlerMaxLife', name: f(block, 'NAME') }
     case 'sz_gk_rpg_current_map':
       return { type: 'gk:rpgCurrentMap' }
     case 'sz_gk_board_get':
@@ -4395,8 +4436,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:drawParticles', ctxVar: 'ctx' } }
 
-    case 'sz_g2d_create_tilemap':
+    case 'sz_g2d_create_tilemap': {
       seen.add('game-2d')
+      const platform = f(block, 'PLATFORM')
       return {
         kind: 'js',
         value: {
@@ -4405,9 +4447,13 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           image: f(block, 'IMAGE'),
           tile: exprInput(block, 'TILE', { type: 'num', value: 32 }),
           solid: f(block, 'SOLID'),
+          // Omite a chave quando vazio → IR/JS de mapas sem plataforma ficam
+          // byte-idênticos aos de antes (retrocompat dos fixtures).
+          ...(platform ? { platform } : {}),
           grid: f(block, 'GRID'),
         },
       }
+    }
     case 'sz_g2d_create_tilemap_from_asset':
       seen.add('game-2d')
       return {
@@ -5933,6 +5979,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'BODY', seen),
         },
       }
+    case 'sz_gk_set_screen_bg':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setScreenBg',
+          screen: f(block, 'SCREEN'),
+          color: f(block, 'COLOR') || '#1a1e33',
+          image: f(block, 'IMAGE'),
+        },
+      }
     case 'sz_gk_show_screen':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:showScreen', name: f(block, 'SCREEN') } }
@@ -6236,6 +6293,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           hp: exprInput(block, 'HP', { type: 'num', value: 20 }),
           str: exprInput(block, 'STR', { type: 'num', value: 5 }),
           def: exprInput(block, 'DEF', { type: 'num', value: 0 }),
+          // 🖼️ imagem OPCIONAL: só entra na IR quando preenchida (jogo antigo sem
+          // imagem round-trippa byte-idêntico).
+          ...(f(block, 'IMAGE') ? { image: f(block, 'IMAGE') } : {}),
         },
       }
     case 'sz_gk_rpg_set_special':
@@ -6259,6 +6319,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           heal: exprInput(block, 'HEAL', { type: 'num', value: 20 }),
         },
       }
+    case 'sz_gk_rpg_heal_hero':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgHealHero' } }
     case 'sz_gk_rpg_battle_reward':
       seen.add('game-2d-advanced')
       return {
@@ -6290,6 +6353,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           str: exprInput(block, 'STR', { type: 'num', value: 6 }),
           def: exprInput(block, 'DEF', { type: 'num', value: 1 }),
           color: f(block, 'COLOR') || '#4ade80',
+          ...(f(block, 'IMAGE') ? { image: f(block, 'IMAGE') } : {}),
         },
       }
     case 'sz_gk_rpg_add_foe':
@@ -6303,6 +6367,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           str: exprInput(block, 'STR', { type: 'num', value: 5 }),
           def: exprInput(block, 'DEF', { type: 'num', value: 0 }),
           color: f(block, 'COLOR') || '#e05a5a',
+          ...(f(block, 'IMAGE') ? { image: f(block, 'IMAGE') } : {}),
         },
       }
     case 'sz_gk_rpg_teach_move':
@@ -6327,6 +6392,66 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           move: f(block, 'MOVE'),
           amount: exprInput(block, 'AMOUNT', { type: 'num', value: 12 }),
           cost: exprInput(block, 'COST', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_gk_rpg_add_boss':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgAddBoss',
+          name: f(block, 'NAME'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 120 }),
+          str: exprInput(block, 'STR', { type: 'num', value: 9 }),
+          def: exprInput(block, 'DEF', { type: 'num', value: 2 }),
+          ...(f(block, 'IMAGE') ? { image: f(block, 'IMAGE') } : {}),
+        },
+      }
+    case 'sz_gk_rpg_define_battler':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgDefineBattler',
+          name: f(block, 'NAME'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 120 }),
+          str: exprInput(block, 'STR', { type: 'num', value: 9 }),
+          def: exprInput(block, 'DEF', { type: 'num', value: 2 }),
+          image: f(block, 'IMAGE'),
+          color: f(block, 'COLOR') || '#e05a5a',
+          boss: f(block, 'BOSS') === 'TRUE',
+        },
+      }
+    case 'sz_gk_rpg_battle_named':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgBattleNamed', name: f(block, 'NAME') } }
+    case 'sz_gk_rpg_add_foe_named':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgAddFoeNamed', name: f(block, 'NAME') } }
+    case 'sz_gk_rpg_on_foe_turn':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgOnFoeTurn',
+          name: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_rpg_foe_use':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:rpgFoeUse', name: f(block, 'NAME'), move: f(block, 'MOVE') },
+      }
+    case 'sz_gk_rpg_foe_hit_all':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgFoeHitAll',
+          name: f(block, 'NAME'),
+          dmg: exprInput(block, 'DMG', { type: 'num', value: 15 }),
         },
       }
     case 'sz_gk_rpg_on_battle_end':
@@ -6528,6 +6653,143 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           col: exprInput(block, 'COL', { type: 'num', value: 0 }),
           row: exprInput(block, 'ROW', { type: 'num', value: 0 }),
         },
+      }
+    case 'sz_gk_players_setup':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:playersSetup', n: exprInput(block, 'N', { type: 'num', value: 2 }) },
+      }
+    case 'sz_gk_next_player':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:nextPlayer' } }
+    case 'sz_gk_on_turn_change':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:onTurnChange', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_gk_move_along_track':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:moveAlongTrack',
+          who: f(block, 'WHO'),
+          spaces: exprInput(block, 'SPACES', { type: 'num', value: 1 }),
+          path: f(block, 'PATH'),
+        },
+      }
+    case 'sz_gk_on_land_space':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:onLandSpace', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_gk_pile_move_top':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:pileMoveTop', fromVar: f(block, 'FROM'), toVar: f(block, 'TO') },
+      }
+    case 'sz_gk_pile_shuffle_from':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:pileShuffleFrom',
+          deckVar: f(block, 'DECK'),
+          discardVar: f(block, 'DISCARD'),
+        },
+      }
+    case 'sz_gk_card_flip':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardFlip', card: exprInput(block, 'CARD', { type: 'num', value: 0 }) },
+      }
+    case 'sz_gk_hand_draw':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:handDraw',
+          pileVar: f(block, 'PILE'),
+          x: exprInput(block, 'X', { type: 'num', value: 60 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 420 }),
+          fan: f(block, 'FAN') === 'TRUE',
+        },
+      }
+    case 'sz_gk_cards_start':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:cardsStart',
+          heroHp: exprInput(block, 'HERO_HP', { type: 'num', value: 30 }),
+          enemyHp: exprInput(block, 'ENEMY_HP', { type: 'num', value: 40 }),
+        },
+      }
+    case 'sz_gk_cards_energy_per_turn':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:cardsEnergyPerTurn',
+          n: exprInput(block, 'N', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_gk_cards_spend':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsSpend', n: exprInput(block, 'N', { type: 'num', value: 1 }) },
+      }
+    case 'sz_gk_cards_on_turn':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsOnTurn', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_gk_cards_end_turn':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:cardsEndTurn' } }
+    case 'sz_gk_cards_draw_hud':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:cardsDrawHud' } }
+    case 'sz_gk_cards_hurt_enemy':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsHurtEnemy', n: exprInput(block, 'N', { type: 'num', value: 6 }) },
+      }
+    case 'sz_gk_cards_hurt_me':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsHurtMe', n: exprInput(block, 'N', { type: 'num', value: 6 }) },
+      }
+    case 'sz_gk_cards_gain_block':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsGainBlock', n: exprInput(block, 'N', { type: 'num', value: 5 }) },
+      }
+    case 'sz_gk_cards_enemy_intent':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:cardsEnemyIntent',
+          action: f(block, 'ACTION'),
+          value: exprInput(block, 'VALUE', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_gk_cards_on_enemy_turn':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:cardsOnEnemyTurn', body: getStatementChildren(block, 'BODY', seen) },
       }
     case 'sz_gk_wrap_edges':
       seen.add('game-2d-advanced')

@@ -67,6 +67,22 @@ describe('sanitizeTilesetMeta (metadado de tiles do Pinta)', () => {
     expect(sanitizeTilesetMeta({ tileSize: 0, solid: [1] })).toBeUndefined()
     expect(sanitizeTilesetMeta(null)).toBeUndefined()
   })
+
+  it('platform: deduplica/ordena, exclui os já-sólidos e OMITE quando vazio', () => {
+    // sem platform → chave AUSENTE (payload antigo byte-idêntico)
+    expect(sanitizeTilesetMeta({ tileSize: 16, solid: [1] })).toEqual({ tileSize: 16, solid: [1] })
+    // platform vazia → chave ausente
+    expect(sanitizeTilesetMeta({ tileSize: 16, solid: [1], platform: [] })).toEqual({
+      tileSize: 16,
+      solid: [1],
+    })
+    // conflito: índice 1 está nos dois → sólido vence (sai da plataforma)
+    expect(sanitizeTilesetMeta({ tileSize: 16, solid: [1], platform: [2, 2, 1] })).toEqual({
+      tileSize: 16,
+      solid: [1],
+      platform: [2],
+    })
+  })
 })
 
 describe('sanitizeProjectAssets — metadado do Pinta (nunca derruba o asset)', () => {
@@ -141,6 +157,28 @@ describe('sanitizeTilemapMeta (metadado de MAPA do Pinta/fatiador)', () => {
       solid: [1, 2],
       tileset: { dataUrl: DATA, width: 48, height: 16 },
     })
+  })
+
+  it('platform: presente quando há; omitido quando vazio (payload antigo byte-idêntico)', () => {
+    // mapa antigo sem platform → chave ausente
+    const semPlatform = sanitizeTilemapMeta(JSON.parse(JSON.stringify(TILEMAP_META)))
+    expect(semPlatform && 'platform' in semPlatform).toBe(false)
+    // com plataforma (dedup contra solid: 2 já é sólido → sai)
+    const comPlatform = sanitizeTilemapMeta({ ...TILEMAP_META, platform: [3, 2] })
+    expect(comPlatform?.solid).toEqual([1, 2])
+    expect(comPlatform?.platform).toEqual([3])
+  })
+
+  it('frontGrid: preservado quando tem peça; omitido quando ausente/só-vazio', () => {
+    // sem frontGrid → chave ausente (payload antigo byte-idêntico)
+    const sem = sanitizeTilemapMeta(JSON.parse(JSON.stringify(TILEMAP_META)))
+    expect(sem && 'frontGrid' in sem).toBe(false)
+    // frontGrid só com '.' (sem nenhuma peça) → omitido
+    const soVazio = sanitizeTilemapMeta({ ...TILEMAP_META, frontGrid: '. .;. .' })
+    expect(soVazio && 'frontGrid' in soVazio).toBe(false)
+    // frontGrid com peça → preservado (trim)
+    const com = sanitizeTilemapMeta({ ...TILEMAP_META, frontGrid: '  . 5;. .  ' })
+    expect(com?.frontGrid).toBe('. 5;. .')
   })
 
   it('tudo-ou-nada: sem folha embutida válida → undefined', () => {

@@ -1198,7 +1198,10 @@ function compileStatementCode(
       return `${pad}SZGame2D.drawParticles(${identifiers.get(stmt.ctxVar)});`
     case 'g2d:createTileMap': {
       const v = identifiers.get(stmt.varName)
-      return `${pad}const ${v} = SZGame2D.createTileMap({ image: ${JSON.stringify(stmt.image)}, tile: ${compileExpr(valueToExpr(stmt.tile), 0, identifiers, recAt(base))}, solid: ${JSON.stringify(stmt.solid)}, grid: ${JSON.stringify(stmt.grid)} });`
+      // `platform` só é emitido quando presente (mapas sem plataforma ficam
+      // byte-idênticos aos fixtures antigos).
+      const platformPart = stmt.platform ? `, platform: ${JSON.stringify(stmt.platform)}` : ''
+      return `${pad}const ${v} = SZGame2D.createTileMap({ image: ${JSON.stringify(stmt.image)}, tile: ${compileExpr(valueToExpr(stmt.tile), 0, identifiers, recAt(base))}, solid: ${JSON.stringify(stmt.solid)}${platformPart}, grid: ${JSON.stringify(stmt.grid)} });`
     }
     case 'g2d:createTileMapFromAsset':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createTileMapFromAsset(${JSON.stringify(stmt.image)});`
@@ -1631,6 +1634,8 @@ function compileStatementCode(
       )
       return `${pad}SZGameKit.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
     }
+    case 'gk:setScreenBg':
+      return `${pad}SZGameKit.setScreenBg(${JSON.stringify(stmt.screen)}, ${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.image)});`
     case 'gk:showScreen':
       return `${pad}SZGameKit.showScreen(${JSON.stringify(stmt.name)});`
     case 'gk:hideScreens':
@@ -1756,23 +1761,46 @@ function compileStatementCode(
     case 'gk:rpgBattleStats':
       return `${pad}SZGameKit.rpgBattleStats(${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))});`
     case 'gk:rpgBattleStart':
-      return `${pad}SZGameKit.rpgBattleStart(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))});`
+      return `${pad}SZGameKit.rpgBattleStart(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}${stmt.image ? `, ${JSON.stringify(stmt.image)}` : ''});`
     case 'gk:rpgSetSpecial':
       return `${pad}SZGameKit.rpgSetSpecial(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgGivePotion':
       return `${pad}SZGameKit.rpgGivePotion(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.heal), 0, identifiers, recAt(base))});`
+    case 'gk:rpgHealHero':
+      return `${pad}SZGameKit.rpgHealHero();`
     case 'gk:rpgBattleReward':
       return `${pad}SZGameKit.rpgBattleReward(${compileExpr(valueToExpr(stmt.xp), 0, identifiers, recAt(base))});`
     case 'gk:rpgInflict':
       return `${pad}SZGameKit.rpgInflict(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.status)}, ${compileExpr(valueToExpr(stmt.turns), 0, identifiers, recAt(base))});`
     case 'gk:rpgAddAlly':
-      return `${pad}SZGameKit.rpgAddAlly(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+      return `${pad}SZGameKit.rpgAddAlly(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}${stmt.image ? `, ${JSON.stringify(stmt.image)}` : ''});`
     case 'gk:rpgAddFoe':
-      return `${pad}SZGameKit.rpgAddFoe(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+      return `${pad}SZGameKit.rpgAddFoe(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}${stmt.image ? `, ${JSON.stringify(stmt.image)}` : ''});`
     case 'gk:rpgTeachMove':
       return `${pad}SZGameKit.rpgTeachMove(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgTeachHeal':
       return `${pad}SZGameKit.rpgTeachHeal(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
+    case 'gk:rpgAddBoss':
+      return `${pad}SZGameKit.rpgAddBoss(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}${stmt.image ? `, ${JSON.stringify(stmt.image)}` : ''});`
+    case 'gk:rpgDefineBattler':
+      return `${pad}SZGameKit.rpgDefineBattler(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.image)}, ${JSON.stringify(stmt.color)}, ${stmt.boss});`
+    case 'gk:rpgBattleNamed':
+      return `${pad}SZGameKit.rpgBattleNamed(${JSON.stringify(stmt.name)});`
+    case 'gk:rpgAddFoeNamed':
+      return `${pad}SZGameKit.rpgAddFoeNamed(${JSON.stringify(stmt.name)});`
+    case 'gk:rpgFoeUse':
+      return `${pad}SZGameKit.rpgFoeUse(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.move)});`
+    case 'gk:rpgFoeHitAll':
+      return `${pad}SZGameKit.rpgFoeHitAll(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))});`
+    case 'gk:rpgOnFoeTurn': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.rpgOnFoeTurn(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
     case 'gk:rpgOnBattleEnd': {
       const body = compileStatements(
         stmt.body,
@@ -1860,6 +1888,74 @@ function compileStatementCode(
       return `${pad}SZGameKit.boardCreate(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.empty), 0, identifiers, recAt(base))});`
     case 'gk:boardSet':
       return `${pad}SZGameKit.boardSet(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.col), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.row), 0, identifiers, recAt(base))});`
+    case 'gk:playersSetup':
+      return `${pad}SZGameKit.playersSetup(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:nextPlayer':
+      return `${pad}SZGameKit.nextPlayer();`
+    case 'gk:onTurnChange': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onTurnChange(function () {\n${body}\n${pad}});`
+    }
+    case 'gk:moveAlongTrack':
+      return `${pad}SZGameKit.moveAlongTrack(${identifiers.get(stmt.who)}, ${compileExpr(valueToExpr(stmt.spaces), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.path)});`
+    case 'gk:onLandSpace': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onLandSpace(function () {\n${body}\n${pad}});`
+    }
+    case 'gk:pileMoveTop':
+      return `${pad}SZGameKit.pileMoveTop(${identifiers.get(stmt.fromVar)}, ${identifiers.get(stmt.toVar)});`
+    case 'gk:pileShuffleFrom':
+      return `${pad}SZGameKit.pileShuffleFrom(${identifiers.get(stmt.deckVar)}, ${identifiers.get(stmt.discardVar)});`
+    case 'gk:cardFlip':
+      return `${pad}SZGameKit.cardFlip(${compileExpr(valueToExpr(stmt.card), 0, identifiers, recAt(base))});`
+    case 'gk:handDraw':
+      return `${pad}SZGameKit.handDraw(${identifiers.get(stmt.pileVar)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${stmt.fan});`
+    case 'gk:cardsStart':
+      return `${pad}SZGameKit.cardsStart(${compileExpr(valueToExpr(stmt.heroHp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.enemyHp), 0, identifiers, recAt(base))});`
+    case 'gk:cardsEnergyPerTurn':
+      return `${pad}SZGameKit.cardsEnergyPerTurn(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsSpend':
+      return `${pad}SZGameKit.cardsSpend(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsOnTurn': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.cardsOnTurn(function () {\n${body}\n${pad}});`
+    }
+    case 'gk:cardsEndTurn':
+      return `${pad}SZGameKit.cardsEndTurn();`
+    case 'gk:cardsDrawHud':
+      return `${pad}SZGameKit.cardsDrawHud();`
+    case 'gk:cardsHurtEnemy':
+      return `${pad}SZGameKit.cardsHurtEnemy(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsHurtMe':
+      return `${pad}SZGameKit.cardsHurtMe(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsGainBlock':
+      return `${pad}SZGameKit.cardsGainBlock(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:cardsEnemyIntent':
+      return `${pad}SZGameKit.cardsEnemyIntent(${JSON.stringify(stmt.action)}, ${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))});`
+    case 'gk:cardsOnEnemyTurn': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.cardsOnEnemyTurn(function () {\n${body}\n${pad}});`
+    }
     case 'gk:wrapEdges':
       return `${pad}SZGameKit.wrapEdges(${identifiers.get(stmt.charVar)});`
     case 'gk:collideTilemap':
@@ -4733,6 +4829,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:setupFull':
     case 'gk:start':
     case 'gk:loadImage':
+    case 'gk:setScreenBg':
     case 'gk:showScreen':
     case 'gk:hideScreens':
     case 'gk:setState':
@@ -4742,6 +4839,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:endGame':
     case 'gk:drawBackground':
     case 'gk:setPauseKey':
+    case 'gk:rpgHealHero':
       return
     case 'gk:setScreenText':
       collectExprIdentifiers(valueToExpr(stmt.title), names)
@@ -4840,6 +4938,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:rpgOnTalk':
     case 'gk:rpgOnMap':
     case 'gk:rpgOnBattleEnd':
+    case 'gk:rpgOnFoeTurn':
     case 'gk:rpgCutscene':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
@@ -4893,6 +4992,56 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.value), names)
       collectExprIdentifiers(valueToExpr(stmt.col), names)
       collectExprIdentifiers(valueToExpr(stmt.row), names)
+      return
+    case 'gk:playersSetup':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'gk:nextPlayer':
+      return
+    case 'gk:moveAlongTrack':
+      names.add(stmt.who)
+      collectExprIdentifiers(valueToExpr(stmt.spaces), names)
+      return
+    case 'gk:onTurnChange':
+    case 'gk:onLandSpace':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'gk:pileMoveTop':
+      names.add(stmt.fromVar)
+      names.add(stmt.toVar)
+      return
+    case 'gk:pileShuffleFrom':
+      names.add(stmt.deckVar)
+      names.add(stmt.discardVar)
+      return
+    case 'gk:cardFlip':
+      collectExprIdentifiers(valueToExpr(stmt.card), names)
+      return
+    case 'gk:handDraw':
+      names.add(stmt.pileVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      return
+    case 'gk:cardsStart':
+      collectExprIdentifiers(valueToExpr(stmt.heroHp), names)
+      collectExprIdentifiers(valueToExpr(stmt.enemyHp), names)
+      return
+    case 'gk:cardsEnergyPerTurn':
+    case 'gk:cardsSpend':
+    case 'gk:cardsHurtEnemy':
+    case 'gk:cardsHurtMe':
+    case 'gk:cardsGainBlock':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'gk:cardsEnemyIntent':
+      collectExprIdentifiers(valueToExpr(stmt.value), names)
+      return
+    case 'gk:cardsEndTurn':
+    case 'gk:cardsDrawHud':
+      return
+    case 'gk:cardsOnTurn':
+    case 'gk:cardsOnEnemyTurn':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'gk:collideTilemap':
     case 'gk:collideGroup':
@@ -5401,6 +5550,19 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:rpgTeachHeal':
       collectExprIdentifiers(valueToExpr(stmt.amount), names)
       collectExprIdentifiers(valueToExpr(stmt.cost), names)
+      return
+    case 'gk:rpgAddBoss':
+    case 'gk:rpgDefineBattler':
+      collectExprIdentifiers(valueToExpr(stmt.hp), names)
+      collectExprIdentifiers(valueToExpr(stmt.str), names)
+      collectExprIdentifiers(valueToExpr(stmt.def), names)
+      return
+    case 'gk:rpgBattleNamed':
+    case 'gk:rpgAddFoeNamed':
+    case 'gk:rpgFoeUse':
+      return
+    case 'gk:rpgFoeHitAll':
+      collectExprIdentifiers(valueToExpr(stmt.dmg), names)
       return
     case 'gk:createCharacter':
       names.add(stmt.varName)
@@ -6610,6 +6772,36 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:boardCount':
       collectExprIdentifiers(valueToExpr(expr.value), names)
       return
+    case 'gk:rollDice':
+      collectExprIdentifiers(valueToExpr(expr.faces), names)
+      return
+    case 'gk:spaceOf':
+      names.add(expr.who)
+      return
+    case 'gk:pileTop':
+    case 'gk:pileSize':
+      names.add(expr.pileVar)
+      return
+    case 'gk:card':
+      collectExprIdentifiers(valueToExpr(expr.front), names)
+      collectExprIdentifiers(valueToExpr(expr.back), names)
+      return
+    case 'gk:cardIsUp':
+    case 'gk:cardFace':
+      collectExprIdentifiers(valueToExpr(expr.card), names)
+      return
+    case 'gk:cardAt':
+      collectExprIdentifiers(valueToExpr(expr.x), names)
+      collectExprIdentifiers(valueToExpr(expr.y), names)
+      names.add(expr.pileVar)
+      return
+    case 'gk:cardsEnergy':
+    case 'gk:cardsHeroLife':
+    case 'gk:cardsEnemyLife':
+    case 'gk:cardsIntentAction':
+    case 'gk:cardsIntentValue':
+      return
+    case 'gk:currentPlayer':
     case 'gk:countActive':
     case 'gk:timeSurvived':
     case 'gk:kills':
@@ -6619,6 +6811,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:rpgHasSave':
     case 'gk:rpgLevel':
     case 'gk:rpgXp':
+    case 'gk:battlerLife': // 👑 o nome é STRING — sem refs
+    case 'gk:battlerMaxLife':
     case 'gk:tdCoins': // 🏰 R26: as moedas — sem refs
     case 'gk:rpgCurrentMap': // 🌍 o nome do mapa — sem refs
       // mold/flag/item são STRING; os getters de estado não têm refs.

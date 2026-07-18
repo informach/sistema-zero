@@ -68,6 +68,37 @@ describe('PintaApp — galeria', () => {
     })
   })
 
+  it('cria a partir de um MODELO PRONTO (estilo → modelos → escolher → nome) e abre o editor', async () => {
+    render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    // 3º cartão do passo de estilo: Modelos prontos.
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.templates.styleCard.title) }),
+    )
+    // Passo de modelos: os títulos aparecem.
+    expect(screen.getByText(COPY.templates.stepTitle)).toBeTruthy()
+    expect(screen.getByText(COPY.templates.items.heroi.title)).toBeTruthy()
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.templates.items.heroi.title) }),
+    )
+
+    // Nome já pré-preenchido; criar.
+    fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.createButton }))
+    await waitFor(() => {
+      expect(screen.getByText('heroi')).toBeTruthy()
+    })
+    expect(screen.getByRole('toolbar', { name: 'Ferramentas' })).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.back }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir heroi/ })).toBeTruthy()
+    })
+  })
+
   it('mapa fica desabilitado sem peças do cenário (nos dois estilos)', async () => {
     render(<PintaApp />)
     await waitFor(() => {

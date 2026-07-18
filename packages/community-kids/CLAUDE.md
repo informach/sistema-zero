@@ -160,7 +160,8 @@ página (era um 2º portão que contradizia o "Quem vê" — removido p/ não co
 renderiza o `KidsSpaceViewClient`; o HUB decide o acesso pelo `accessConfig` ("Quem vê" no admin:
 público / por curso / **por comunidade** / por cargo). Sem acesso, o hub devolve o servidor BLOQUEADO
 (teaser) e a página passa um **`lockedView`** custom — `KidsLockedClube`/`KidsLockedMural` ("ainda não
-liberado", espelham o `KidsLockedStudio`); senão cai no genérico `KidsLockedSpace`. ⚠️ **O cliente trata
+liberado", wrappers do `KidsLockedProduct` com CTA — ver `## Telas de produto bloqueado`); senão cai
+no genérico `KidsLockedSpace`. ⚠️ **O cliente trata
 403 `ACCESS_DENIED` como bloqueado** (`forbidden` → `lockedView`), NÃO como erro: um servidor SEM teaser
 (`teaserWhenLocked` false — padrão de quem cria pelo admin) faz o hub 403ar em vez de devolver o teaser
 `locked`, e sem isso a criança via um toast "sem acesso" + "espaço não encontrado" (bug 28/06: Clube
@@ -210,7 +211,8 @@ item **"Estúdio"** no `nav.ts` (perto de Mural/Quarto) → rota `/estudio` (`pr
 gate é resolvido no SERVIDOR: `app/(app)/estudio/page.tsx` chama
 `checkStudioAccessReadonly()` (`GET /members/access?refs=estudio-completo`, acesso pela CONTA) com
 **3 estados** (full review 3ª passada): members RESPONDEU 200 e não tem o produto → `KidsLockedStudio`
-(recado gentil, mascote `thinking`, "peça a um responsável"; sem link de venda — kids não tem funil);
+(recado gentil, mascote `thinking`, prévia + **CTA de assinar a Comunidade dos Criadores** — ver
+`## Telas de produto bloqueado` abaixo);
 COM acesso → `StudioFullClient` (o editor pesado nem carrega p/ quem não comprou); **status ≠ 200
 (gateway/token soluçou) → `KidsStudioUnavailable` ("tente de novo" + `router.refresh()`)** — não mostrar
 "ainda não liberado" a quem JÁ comprou num erro transitório (mentiria que não tem acesso).
@@ -241,6 +243,41 @@ o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`ne
 **`script-src … data:`**: o preview injeta o script.js do aluno como `<script src="data:…">` num iframe
 `srcdoc`, que HERDA a CSP do pai (só RESTRINGE) — sem `data:` o preview do estúdio/bloco não executa. `api/studio/publish-standalone` fica FORA do
 matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no negative-lookahead.
+**CRIAR segura o foguinho (07/2026):** o `studio-full-client` passa `onChange` ao `<StudioEditor>` que,
+na 1ª edição REAL da sessão (`ctx.reason === 'autosave'`, guardado por ref — NÃO em abrir/flush), dispara
+best-effort `POST /api/studio/activity` (shim `shell.routes.studioActivityDay`, DENTRO do matcher, JSON
+sem corpo) → o members dá **10 XP/dia** que MOVE o streak (gated por posse do Estúdio, dedupe 1×/dia). No
+sucesso, `router.refresh()` acende o foguinho/XP/ranking na hora. É a âncora de quem já terminou os cursos
+e só cria (sem publicar). Ver members §Missões "Retenção pós-cursos" (migration `0045`).
+
+## Ranking/foguinho ao vivo (sem deslogar) — 07/2026
+
+As ações que rendem XP re-sincronizam o chrome (foguinho/XP/ranking/nível) na hora: aula/quiz/publicar/
+rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/contexto). Dois complementos:
+- **Resgate de missão** (`missions-panel.tsx`): o `claim()` rende XP → agora chama `router.refresh()` após
+  a marca otimista local (antes só atualizava estado local → ranking ficava velho até navegar/deslogar).
+- **Voltar pra tela** (`focus-refresh.tsx`, `FocusRefresh`): componente cliente montado em `/perfil` e na
+  home que `router.refresh()` no `visibilitychange`→visível / `focus` (THROTTLE ~30s). Cobre o placar
+  mudando por XP de OUTRAS crianças enquanto a tela fica parada — o número do ranking é calculado ao vivo
+  no servidor (members `getRanking`), só faltava re-buscar. Sem polling contínuo (custo do cálculo caro).
+
+## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
+
+As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,
+mural}.tsx`) são **wrappers finos** do componente compartilhado
+**`kids-locked-product.tsx`** (`KidsLockedProduct`, Server Component): mascote `thinking` + título +
+pílula "Ainda não liberado" + prévia (`preview`) + o **bloco da Comunidade dos Criadores** com um
+**CTA** para a oferta de assinatura. Cada wrapper só passa `title`/`intro`/`preview`; a API dos
+exports (`KidsLockedStudio`/`KidsLockedClube`/…, sem props) não mudou. **A promessa é REAL:** a
+assinatura "Comunidade dos Criadores" é um combo do catálogo que concede Clube + Mural + Estúdio +
+Pensa + Pinta (+ cursos) — confirmado em `packages/catalog/scripts/seed.ts`, então o CTA vale para as
+5. ⚠️ A **URL da oferta** é uma CONSTANTE nomeada no componente
+(`https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta`, `target="_blank"`), NÃO uma env
+(kids segue sem `FUNNEL_URL` de env). ⚠️ **NÃO usar `KidsLockedProduct` na tela genérica
+`KidsLockedSpace`** (coringa de qualquer espaço do hub, que pode ser gateado por curso/cargo e não só
+pela assinatura — o CTA prometeria errado); a genérica fica sem CTA. As telas transientes
+`kids-*-unavailable.tsx` ("tente de novo") e a trava de aula `kids-locked-lesson.tsx` são gates
+diferentes (não-produto) e seguem sem CTA.
 
 ### Hub/fórum (compartilhado)
 
@@ -347,8 +384,11 @@ member-shell (ver o CLAUDE.md de lá) + members (portão/posse); aqui é só apr
 3. **Telefone agora é DO PERFIL** (decisão do usuário, 06/2026 — antes o perfil kids não tinha
    telefone): a criança edita nome/foto/**telefone** (`whatsapp` do perfil) na página "Meu
    perfil" via `/api/profiles/:id`. O telefone do RESPONSÁVEL segue na compra (não se mistura).
-4. **SEM `FUNNEL_URL`** (kids não tem funil na v1): curso bloqueado no catálogo sem
-   `salesPageUrl` fica não-clicável — comportamento herdado.
+4. **SEM `FUNNEL_URL` de env** (curso bloqueado no catálogo sem `salesPageUrl` fica não-clicável —
+   comportamento herdado). ⚠️ **Atualização 07/2026:** o funil kids EXISTE (assinatura "Comunidade
+   dos Criadores", em produção) — as 5 telas de PRODUTO bloqueado agora levam um CTA para a oferta
+   (ver `## Telas de produto bloqueado`). A URL é uma CONSTANTE no componente, não uma env; kids
+   segue sem `FUNNEL_URL` de env.
 5. **SEM `public/sw.js`** (kill-switch era cicatriz do domínio do community).
 6. `/impersonar` EXISTE (suporte): o admin gera o handoff com `?platform=kids` no auth → a URL
    devolvida é a deste app. Gamificação é a fase 2 (ver seção própria) — NÃO improvisar

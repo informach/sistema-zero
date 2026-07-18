@@ -86,7 +86,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
             key={hex + String(index)}
             type="button"
             aria-pressed={selected}
-            aria-label={`Cor ${index}`}
+            aria-label={COPY.a11y.colorLabel(index)}
             title={hex}
             onClick={() => {
               const s = session.getState()

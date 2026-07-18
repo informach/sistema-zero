@@ -985,6 +985,20 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /**
+   * XP DIÁRIO de CRIAR no Estúdio Completo ("criou hoje" → segura o foguinho de quem já
+   * terminou os cursos e só cria, sem publicar). Sem corpo — o members exige só posse do
+   * Estúdio e deduplica 1×/dia. Best-effort do cliente kids (dispara no autosave do editor).
+   */
+  const studioActivityDay = {
+    POST: async () => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { status, body } = await members.recordStudioActivityDay()
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
   /** Compra 1 protetor de sequência com moedas (sem saldo → 402; no máximo → 409). */
   const streakFreezeBuy = {
     POST: async () => {
@@ -1488,6 +1502,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     missionsGet,
     missionClaim,
     studioRemix,
+    studioActivityDay,
     streakFreezeBuy,
     vacationSet,
     childrenStats,

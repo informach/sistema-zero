@@ -1,4 +1,4 @@
-import { resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import { isPrivilegedRole, resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
@@ -51,5 +51,17 @@ export default async function EstudioPage() {
     challengeRes?.status === 200 && challengeRes.body
       ? { key: challengeRes.body.challenge.key, title: challengeRes.body.challenge.title }
       : null
-  return <StudioFullClient viewerId={session?.id ?? null} challenge={challenge} tier={tier} />
+  // Exemplos prontos (vitrine + "Exemplos clássicos") aparecem SÓ p/ a EQUIPE
+  // interna (superadmin/admin/staff), enquanto a usuária valida o catálogo — o
+  // cliente segue sem eles. Deriva do PAPEL da conta, não do rank: uma criança
+  // que chegou a Lenda (rank `god`) NÃO é equipe e continua sem exemplos.
+  const showExamples = isPrivilegedRole(session?.role)
+  return (
+    <StudioFullClient
+      viewerId={session?.id ?? null}
+      challenge={challenge}
+      tier={tier}
+      showExamples={showExamples}
+    />
+  )
 }

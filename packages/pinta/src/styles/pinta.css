@@ -36,6 +36,7 @@
   --color-pin-ok: oklch(0.55 0.14 155);
   --color-pin-warn: oklch(0.6 0.14 65);
   --color-pin-danger: oklch(0.55 0.19 25);
+  --color-pin-collision-platform: oklch(0.68 0.16 75); /* âmbar · peça plataforma (one-way) */
   --color-pin-scrim: oklch(0.2 0.02 260 / 0.45); /* fundo do modal */
 
   /* Uma cor alegre e distinta por PAPEL de asset (a mesma nos dois estilos). */
@@ -63,6 +64,7 @@
   --color-pin-ok: oklch(0.8 0.16 155);
   --color-pin-warn: oklch(0.83 0.14 85);
   --color-pin-danger: oklch(0.72 0.17 25);
+  --color-pin-collision-platform: oklch(0.8 0.15 80); /* âmbar · peça plataforma (one-way) */
   --color-pin-scrim: oklch(0.08 0.01 262 / 0.6);
 
   --color-pin-kind-sprite: oklch(0.74 0.16 300);

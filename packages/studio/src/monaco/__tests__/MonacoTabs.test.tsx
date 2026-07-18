@@ -721,18 +721,20 @@ describe('MonacoTabs — Formatar', () => {
   })
 
   it('espera o provider registrar (isSupported false→true) e então roda', async () => {
-    let supported = false
+    // O provider "registra" logo após o 1º poll: isSupported é false na 1ª
+    // consulta e true a partir da 2ª. Amarrar a virada à CONTAGEM de chamadas
+    // (não a um setTimeout de wall-clock) mantém o teste DETERMINÍSTICO sob carga
+    // de CI: o `&&` do loop de poll curto-circuita em `isSupported()`, então a 2ª
+    // iteração sai por si — sem depender de um timer de 5ms cair dentro do teto de
+    // 30ms (a corrida que flakeava: sob carga o teto expirava antes do flip).
+    let checks = 0
     currentFormatAction = {
-      isSupported: () => supported,
+      isSupported: () => ++checks >= 2,
       run: async () => {
         formatCallLog.push('run')
       },
     }
     fireEvent.click(renderWithFormat())
-    // O provider "registra" no meio da janela do poll (1ms/30ms nos testes).
-    setTimeout(() => {
-      supported = true
-    }, 5)
     await waitFor(() => expect(formatCallLog).toContain('run'))
   })
 

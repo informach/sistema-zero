@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { createPixelBackgroundAsset, type PintaAsset } from '../core/project'
+import {
+  createPixelBackgroundAsset,
+  createTilemapAsset,
+  createTilesetAsset,
+  type PintaAsset,
+} from '../core/project'
 import { assetBytes, createEditorStore, setAutosaveDelayForTests } from './editorStore'
 
 setAutosaveDelayForTests(10)
@@ -37,6 +42,75 @@ describe('editorStore — commit/undo/redo', () => {
     const store = createEditorStore({ asset, persist: async () => {} })
     store.getState().replace(edited(asset))
     expect(store.getState().canUndo).toBe(false)
+  })
+})
+
+describe('editorStore — commitLinked (transação cross-asset: tileset + mapas)', () => {
+  const last = (calls: PintaAsset[][]): PintaAsset[] | undefined => calls[calls.length - 1]
+
+  it('undo restaura os mapas ANTES; redo reaplica os mapas DEPOIS', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const mapBefore = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const mapAfter = { ...mapBefore, updatedAt: mapBefore.updatedAt + 1 }
+    const applied: PintaAsset[][] = []
+    const store = createEditorStore({
+      asset: tileset,
+      persist: async () => {},
+      applyLinkedAssets: (maps) => applied.push(maps),
+    })
+
+    store.getState().commitLinked(
+      { ...tileset, updatedAt: tileset.updatedAt + 1 },
+      {
+        before: [mapBefore],
+        after: [mapAfter],
+      },
+    )
+    expect(last(applied)?.[0]).toBe(mapAfter) // aplicou o DEPOIS ao commitar
+    expect(store.getState().canUndo).toBe(true)
+
+    store.getState().undo()
+    expect(last(applied)?.[0]).toBe(mapBefore) // undo → mapas voltam junto do tileset
+    expect(store.getState().asset.id).toBe(tileset.id)
+
+    store.getState().redo()
+    expect(last(applied)?.[0]).toBe(mapAfter) // redo → mapas reaplicados
+  })
+
+  it('undo ATRAVÉS de uma edição comum (pincel) ainda restaura os mapas do remap anterior', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const mapBefore = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const mapAfter = { ...mapBefore, updatedAt: mapBefore.updatedAt + 1 }
+    const applied: PintaAsset[][] = []
+    const store = createEditorStore({
+      asset: tileset,
+      persist: async () => {},
+      applyLinkedAssets: (maps) => applied.push(maps),
+    })
+
+    // 1) add peça (remap): mapas A→B. 2) editar a peça (comum): mapas não mudam.
+    store.getState().commitLinked(
+      { ...tileset, updatedAt: tileset.updatedAt + 1 },
+      {
+        before: [mapBefore],
+        after: [mapAfter],
+      },
+    )
+    store
+      .getState()
+      .commit({ ...store.getState().asset, updatedAt: store.getState().asset.updatedAt + 1 })
+
+    store.getState().undo() // desfaz o pincel
+    store.getState().undo() // desfaz o add → mapas VOLTAM p/ o antes
+    expect(last(applied)?.[0]).toBe(mapBefore)
+  })
+
+  it('editor sem applyLinkedAssets (sprite/mapa) segue igual — undo comum, sem mapas', () => {
+    const asset = makeAsset()
+    const store = createEditorStore({ asset, persist: async () => {} })
+    store.getState().commit(edited(asset))
+    store.getState().undo()
+    expect(store.getState().canRedo).toBe(true) // zero regressão no caminho comum
   })
 })
 

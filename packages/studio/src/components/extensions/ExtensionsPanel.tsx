@@ -135,6 +135,18 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
         projectName: project.name,
       }),
     })
+    // Assets embutidos do exemplo (ex.: sprite do inimigo) — o patch acima não carrega
+    // `assets`, então entram pelo addAsset (igual ao caminho dos exemplos clássicos).
+    for (const asset of example.assets ?? []) {
+      projectStoreApi.getState().addAsset({
+        name: asset.name,
+        dataUrl: asset.dataUrl,
+        width: asset.width,
+        height: asset.height,
+        source: asset.source,
+        libId: asset.libId,
+      })
+    }
   }
 
   // Exemplo CLÁSSICO (sem extensão): aplica a IR direto, sem registrar extensão.

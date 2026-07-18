@@ -57,6 +57,10 @@ export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/
 export { type RenderProjectOptions, renderProjectToPreviewDoc } from './preview/renderProject'
 export { importProjectSnapshot } from './projects/importSnapshot'
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'
+export {
+  buildTilemapGameProject,
+  type TilemapGamePayload,
+} from './projects/tilemapGame'
 export type { ProjectSummary } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
 export type {

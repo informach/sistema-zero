@@ -2,6 +2,7 @@ import { ChallengeCard } from '@/components/kids/challenge-card'
 import { ContinueHero } from '@/components/kids/continue-hero'
 import { CourseCard } from '@/components/kids/course-card'
 import { CreatorCareerCard } from '@/components/kids/creator-career-card'
+import { FocusRefresh } from '@/components/kids/focus-refresh'
 import { KidsMascot } from '@/components/kids/mascot'
 import { MissionsPanel } from '@/components/kids/missions-panel'
 import { unitThemeAt } from '@/components/kids/unit-theme'
@@ -58,6 +59,8 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-8">
+      {/* Re-sincroniza ranking/nível/foguinho ao voltar pra tela (sem deslogar). */}
+      <FocusRefresh />
       <div className="flex items-center gap-4">
         <KidsMascot
           expression={courses.length === 0 ? 'thinking' : 'happy'}

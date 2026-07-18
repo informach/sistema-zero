@@ -6593,7 +6593,7 @@ export const meuPrimeiroJogoExample: ExtensionExample = {
 }
 
 /**
- * Exemplo "Cobrinha" 🐍 (R29): a vitrine do 🧩 Tabuleiro. A grade guarda, em cada
+ * Exemplo "Cobrinha" 🐍 (R29): a vitrine da 🧩 Grade. A grade guarda, em cada
  * celula, por quantos PASSOS ela ainda e corpo (a cabeca marca `tamanho`, tudo
  * decai 1/passo, 0 = vazio) — Snake SEM lista, so com boardGet/boardSet + os lacos
  * do nucleo. Comer a maca aumenta `tamanho`. IR do parser (one-off), asset-free.
@@ -6601,7 +6601,7 @@ export const meuPrimeiroJogoExample: ExtensionExample = {
 export const cobrinhaExample: ExtensionExample = {
   name: 'Cobrinha',
   description:
-    'A cobrinha classica montada num 🧩 Tabuleiro: cada celula guarda por quantos passos faz parte do corpo. Vire com as SETAS, coma as macas e cresca. Bateu na parede ou no proprio corpo, perdeu. Prova o primitivo de grade (sem lista, sem magica).',
+    'A cobrinha classica montada numa 🧩 Grade: cada celula guarda por quantos passos faz parte do corpo. Vire com as SETAS, coma as macas e cresca. Bateu na parede ou no proprio corpo, perdeu. Prova o primitivo de grade (sem lista, sem magica).',
   ir: {
     html: [],
     css: [],
@@ -7870,4 +7870,2227 @@ export const quebraBlocosExample: ExtensionExample = {
       },
     ],
   },
+}
+
+/**
+ * Exemplo "O Chefao" 👑 (R30): a vitrine dos CHEFES. Um RPG de exploracao curtinho
+ * (grade + NPC) onde o Dragao e um add_boss (maior, barra proeminente) que USA os
+ * golpes ensinados a ele e, via rpgOnFoeTurn + battlerLife, muda de fase ao chegar
+ * na metade da vida (rpgFoeHitAll no time). IR do parser (one-off), asset-free.
+ */
+export const oChefaoExample: ExtensionExample = {
+  name: 'O Chefao',
+  description:
+    'Um RPG de exploracao com CHEFAO: fale com o Guardiao e enfrente o Dragao. O chefe usa os golpes ensinados a ele e, quando cai para metade da vida, VIRA FERA e acerta todo o seu time. Prova o inimigo usando golpes + as fases do chefe.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-2d-advanced',
+      },
+    ],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 960,
+        },
+        h: {
+          type: 'num',
+          value: 640,
+        },
+        bg: '#1a1420',
+        accent: '#ff8c42',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'O Chefao',
+        },
+        text: {
+          type: 'str',
+          value:
+            'Fale com o Guardiao (espaco) e enfrente o Dragao! Quando ele fica com metade da vida, vira fera.',
+        },
+        button: {
+          type: 'str',
+          value: 'Comecar',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'Voce venceu o Dragao!',
+        },
+        text: {
+          type: 'str',
+          value: 'O reino esta salvo.',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar de novo',
+        },
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'heroi',
+        image: '',
+        w: {
+          type: 'num',
+          value: 48,
+        },
+        h: {
+          type: 'num',
+          value: 48,
+        },
+        speed: {
+          type: 'num',
+          value: 320,
+        },
+        color: '#4a9eff',
+      },
+      {
+        type: 'gk:rpgBattleStats',
+        hp: {
+          type: 'num',
+          value: 80,
+        },
+        str: {
+          type: 'num',
+          value: 14,
+        },
+        def: {
+          type: 'num',
+          value: 4,
+        },
+      },
+      {
+        type: 'gk:rpgTeachMove',
+        who: 'Voce',
+        move: 'Investida',
+        dmg: {
+          type: 'num',
+          value: 20,
+        },
+        cost: {
+          type: 'num',
+          value: 3,
+        },
+      },
+      {
+        type: 'gk:rpgTeachHeal',
+        who: 'Voce',
+        move: 'Curar',
+        amount: {
+          type: 'num',
+          value: 22,
+        },
+        cost: {
+          type: 'num',
+          value: 4,
+        },
+      },
+      {
+        type: 'gk:rpgTeachMove',
+        who: 'Dragao',
+        move: 'Garra',
+        dmg: {
+          type: 'num',
+          value: 16,
+        },
+        cost: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'gk:rpgTeachMove',
+        who: 'Dragao',
+        move: 'Baforada',
+        dmg: {
+          type: 'num',
+          value: 30,
+        },
+        cost: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'gk:rpgOnFoeTurn',
+        name: 'Dragao',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '<',
+              left: {
+                type: 'gk:battlerLife',
+                name: 'Dragao',
+              },
+              right: {
+                type: 'binop',
+                op: '/',
+                left: {
+                  type: 'gk:battlerMaxLife',
+                  name: 'Dragao',
+                },
+                right: {
+                  type: 'num',
+                  value: 2,
+                },
+              },
+            },
+            then: [
+              {
+                type: 'gk:rpgFoeHitAll',
+                name: 'Dragao',
+                dmg: {
+                  type: 'num',
+                  value: 22,
+                },
+              },
+            ],
+            else: [
+              {
+                type: 'gk:rpgFoeUse',
+                name: 'Dragao',
+                move: 'Garra',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnMap',
+        map: 'caverna',
+        body: [
+          {
+            type: 'gk:rpgCreateNpc',
+            name: 'Guardiao',
+            cx: {
+              type: 'num',
+              value: 4,
+            },
+            cy: {
+              type: 'num',
+              value: 3,
+            },
+            image: '',
+            look: '',
+          },
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'heroi',
+            x: {
+              type: 'gk:rpgCell',
+              n: {
+                type: 'num',
+                value: 2,
+              },
+            },
+            y: {
+              type: 'gk:rpgCell',
+              n: {
+                type: 'num',
+                value: 3,
+              },
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnTalk',
+        npc: 'Guardiao',
+        body: [
+          {
+            type: 'gk:rpgSay',
+            text: {
+              type: 'str',
+              value: 'O Dragao acordou! Enfrente-o, heroi!',
+            },
+            speaker: {
+              type: 'str',
+              value: 'Guardiao',
+            },
+          },
+          {
+            type: 'gk:rpgAddBoss',
+            name: 'Dragao',
+            hp: {
+              type: 'num',
+              value: 160,
+            },
+            str: {
+              type: 'num',
+              value: 9,
+            },
+            def: {
+              type: 'num',
+              value: 3,
+            },
+          },
+          {
+            type: 'gk:rpgBattleStart',
+            name: 'Lacaio',
+            hp: {
+              type: 'num',
+              value: 24,
+            },
+            str: {
+              type: 'num',
+              value: 5,
+            },
+            def: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnBattleEnd',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:rpgBattleWon',
+            },
+            then: [
+              {
+                type: 'gk:rpgBattleReward',
+                xp: {
+                  type: 'num',
+                  value: 40,
+                },
+              },
+              {
+                type: 'gk:setState',
+                name: 'vitoria',
+              },
+            ],
+            else: [
+              {
+                type: 'gk:endGame',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'gk:rpgMoveGrid',
+            charVar: 'heroi',
+            cell: {
+              type: 'num',
+              value: 64,
+            },
+            dtVar: 'dt',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawBackground',
+            color: '#241a2e',
+            grid: true,
+          },
+          {
+            type: 'gk:rpgDrawNpcs',
+          },
+          {
+            type: 'gk:drawCharacter',
+            charVar: 'heroi',
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ],
+  },
+}
+
+/**
+ * Exemplo "Corrida de Tabuleiro" 🎲 (R30): a vitrine dos JOGOS DE TABULEIRO. Dois
+ * peoes numa trilha de casas (cada ponto do caminho e uma casa); clicar rola o dado
+ * (rollDice), anda o peao da vez esse tanto (moveAlongTrack), a casa premiada da
+ * pontos (onLandSpace + spaceOf) e passa a vez (nextPlayer). IR do parser (one-off).
+ */
+export const corridaTabuleiroExample: ExtensionExample = {
+  name: 'Corrida de Tabuleiro',
+  description:
+    'Um jogo de TABULEIRO para dois: clique para rolar o dado e andar as casas na trilha, e passe a vez. Cada peao para na casa e a casa premiada da pontos. Prova o dado + a ordem de turno + a trilha de casas.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-2d-advanced',
+      },
+    ],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 900,
+        },
+        h: {
+          type: 'num',
+          value: 600,
+        },
+        bg: '#1b3a2a',
+        accent: '#ffd166',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Corrida de Tabuleiro',
+        },
+        text: {
+          type: 'str',
+          value:
+            'Clique para rolar o dado e andar as casas. Dois peoes: chegue ao fim e pegue os pontos da casa premiada!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar',
+        },
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'azul',
+        image: '',
+        w: {
+          type: 'num',
+          value: 36,
+        },
+        h: {
+          type: 'num',
+          value: 36,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#4a9eff',
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'vermelho',
+        image: '',
+        w: {
+          type: 'num',
+          value: 36,
+        },
+        h: {
+          type: 'num',
+          value: 36,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ef4444',
+      },
+      {
+        type: 'var',
+        name: 'pontosAzul',
+        value: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'var',
+        name: 'pontosVermelho',
+        value: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'gk:definePath',
+        name: 'trilha',
+        body: [
+          {
+            type: 'gk:pathPoint',
+            x: {
+              type: 'num',
+              value: 120,
+            },
+            y: {
+              type: 'num',
+              value: 480,
+            },
+          },
+          {
+            type: 'gk:pathPoint',
+            x: {
+              type: 'num',
+              value: 260,
+            },
+            y: {
+              type: 'num',
+              value: 480,
+            },
+          },
+          {
+            type: 'gk:pathPoint',
+            x: {
+              type: 'num',
+              value: 400,
+            },
+            y: {
+              type: 'num',
+              value: 480,
+            },
+          },
+          {
+            type: 'gk:pathPoint',
+            x: {
+              type: 'num',
+              value: 540,
+            },
+            y: {
+              type: 'num',
+              value: 420,
+            },
+          },
+          {
+            type: 'gk:pathPoint',
+            x: {
+              type: 'num',
+              value: 680,
+            },
+            y: {
+              type: 'num',
+              value: 340,
+            },
+          },
+          {
+            type: 'gk:pathPoint',
+            x: {
+              type: 'num',
+              value: 680,
+            },
+            y: {
+              type: 'num',
+              value: 200,
+            },
+          },
+          {
+            type: 'gk:pathPoint',
+            x: {
+              type: 'num',
+              value: 520,
+            },
+            y: {
+              type: 'num',
+              value: 150,
+            },
+          },
+          {
+            type: 'gk:pathPoint',
+            x: {
+              type: 'num',
+              value: 380,
+            },
+            y: {
+              type: 'num',
+              value: 150,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:onEnterState',
+        name: 'jogando',
+        body: [
+          {
+            type: 'gk:playersSetup',
+            n: {
+              type: 'num',
+              value: 2,
+            },
+          },
+          {
+            type: 'assign',
+            name: 'pontosAzul',
+            value: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'assign',
+            name: 'pontosVermelho',
+            value: {
+              type: 'num',
+              value: 0,
+            },
+          },
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'azul',
+            x: {
+              type: 'num',
+              value: 120,
+            },
+            y: {
+              type: 'num',
+              value: 480,
+            },
+          },
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'vermelho',
+            x: {
+              type: 'num',
+              value: 120,
+            },
+            y: {
+              type: 'num',
+              value: 480,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:onTurnChange',
+        body: [
+          {
+            type: 'gk:emit',
+            event: 'vez:mudou',
+          },
+        ],
+      },
+      {
+        type: 'gk:onLandSpace',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '===',
+              left: {
+                type: 'gk:currentPlayer',
+              },
+              right: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            then: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '===',
+                  left: {
+                    type: 'gk:spaceOf',
+                    who: 'azul',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 7,
+                  },
+                },
+                then: [
+                  {
+                    type: 'assign',
+                    name: 'pontosAzul',
+                    value: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'var',
+                        name: 'pontosAzul',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 10,
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+            else: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '===',
+                  left: {
+                    type: 'gk:spaceOf',
+                    who: 'vermelho',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 7,
+                  },
+                },
+                then: [
+                  {
+                    type: 'assign',
+                    name: 'pontosVermelho',
+                    value: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'var',
+                        name: 'pontosVermelho',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 10,
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onGameClick',
+        xName: 'px',
+        yName: 'py',
+        body: [
+          {
+            type: 'var',
+            name: 'passos',
+            value: {
+              type: 'gk:rollDice',
+              faces: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            kind: 'const',
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '===',
+              left: {
+                type: 'gk:currentPlayer',
+              },
+              right: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            then: [
+              {
+                type: 'gk:moveAlongTrack',
+                who: 'azul',
+                spaces: {
+                  type: 'var',
+                  name: 'passos',
+                },
+                path: 'trilha',
+              },
+            ],
+            else: [
+              {
+                type: 'gk:moveAlongTrack',
+                who: 'vermelho',
+                spaces: {
+                  type: 'var',
+                  name: 'passos',
+                },
+                path: 'trilha',
+              },
+            ],
+          },
+          {
+            type: 'gk:nextPlayer',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawBackground',
+            color: '#1b3a2a',
+            grid: true,
+          },
+          {
+            type: 'gk:drawCharacter',
+            charVar: 'azul',
+          },
+          {
+            type: 'gk:drawCharacter',
+            charVar: 'vermelho',
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ],
+  },
+}
+
+/**
+ * Exemplo "Jogo da Memoria" 🃏 (R30): a vitrine das CARTAS. Uma lista de cartas
+ * de 2 faces (card) embaralhada (shuffle do nucleo); handDraw desenha a fileira,
+ * cardAt descobre a clicada, cardFlip vira, cardFace compara o par. Sem par →
+ * waitThen desvira as duas. Pilha = lista do nucleo. IR do parser (one-off).
+ */
+export const jogoDaMemoriaExample: ExtensionExample = {
+  name: 'Jogo da Memoria',
+  description:
+    'O classico jogo da memoria montado com CARTAS: uma lista de cartas pareadas embaralhadas; clique para virar duas e, se forem iguais, o par fica. Ache os 3 pares! Prova a carta de 2 faces + a pilha (lista) + a mao clicavel.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-2d-advanced',
+      },
+    ],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 720,
+        },
+        h: {
+          type: 'num',
+          value: 560,
+        },
+        bg: '#2a1a3a',
+        accent: '#ffd166',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Jogo da Memoria',
+        },
+        text: {
+          type: 'str',
+          value: 'Clique nas cartas para virar e ache todos os pares iguais!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'Voce achou todos os pares!',
+        },
+        text: {
+          type: 'str',
+          value: 'Muito bem!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar de novo',
+        },
+      },
+      {
+        type: 'var',
+        name: 'cartas',
+        value: {
+          type: 'array',
+          items: [],
+        },
+      },
+      {
+        type: 'var',
+        name: 'primeira',
+        value: {
+          type: 'binop',
+          op: '-',
+          left: {
+            type: 'num',
+            value: 0,
+          },
+          right: {
+            type: 'num',
+            value: 1,
+          },
+        },
+      },
+      {
+        type: 'var',
+        name: 'segunda',
+        value: {
+          type: 'binop',
+          op: '-',
+          left: {
+            type: 'num',
+            value: 0,
+          },
+          right: {
+            type: 'num',
+            value: 1,
+          },
+        },
+      },
+      {
+        type: 'var',
+        name: 'pares',
+        value: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'gk:onEnterState',
+        name: 'jogando',
+        body: [
+          {
+            type: 'assign',
+            name: 'cartas',
+            value: {
+              type: 'array',
+              items: [
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🍎',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '?',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🍎',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '?',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🍌',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '?',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🍌',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '?',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🍇',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '?',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🍇',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '?',
+                  },
+                },
+              ],
+            },
+          },
+          {
+            type: 'assign',
+            name: 'cartas',
+            value: {
+              type: 'shuffle',
+              arrayVar: 'cartas',
+            },
+          },
+          {
+            type: 'assign',
+            name: 'primeira',
+            value: {
+              type: 'binop',
+              op: '-',
+              left: {
+                type: 'num',
+                value: 0,
+              },
+              right: {
+                type: 'num',
+                value: 1,
+              },
+            },
+          },
+          {
+            type: 'assign',
+            name: 'segunda',
+            value: {
+              type: 'binop',
+              op: '-',
+              left: {
+                type: 'num',
+                value: 0,
+              },
+              right: {
+                type: 'num',
+                value: 1,
+              },
+            },
+          },
+          {
+            type: 'assign',
+            name: 'pares',
+            value: {
+              type: 'num',
+              value: 0,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:onGameClick',
+        xName: 'px',
+        yName: 'py',
+        body: [
+          {
+            type: 'var',
+            name: 'i',
+            value: {
+              type: 'gk:cardAt',
+              x: {
+                type: 'var',
+                name: 'px',
+              },
+              y: {
+                type: 'var',
+                name: 'py',
+              },
+              pileVar: 'cartas',
+            },
+            kind: 'const',
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>=',
+              left: {
+                type: 'var',
+                name: 'i',
+              },
+              right: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            then: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '===',
+                  left: {
+                    type: 'gk:cardIsUp',
+                    card: {
+                      type: 'index',
+                      arrayVar: 'cartas',
+                      index: {
+                        type: 'var',
+                        name: 'i',
+                      },
+                    },
+                  },
+                  right: {
+                    type: 'bool',
+                    value: false,
+                  },
+                },
+                then: [
+                  {
+                    type: 'gk:cardFlip',
+                    card: {
+                      type: 'index',
+                      arrayVar: 'cartas',
+                      index: {
+                        type: 'var',
+                        name: 'i',
+                      },
+                    },
+                  },
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'binop',
+                      op: '===',
+                      left: {
+                        type: 'var',
+                        name: 'primeira',
+                      },
+                      right: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'num',
+                          value: 0,
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    then: [
+                      {
+                        type: 'assign',
+                        name: 'primeira',
+                        value: {
+                          type: 'var',
+                          name: 'i',
+                        },
+                      },
+                    ],
+                    else: [
+                      {
+                        type: 'assign',
+                        name: 'segunda',
+                        value: {
+                          type: 'var',
+                          name: 'i',
+                        },
+                      },
+                      {
+                        type: 'if',
+                        cond: {
+                          type: 'binop',
+                          op: '===',
+                          left: {
+                            type: 'gk:cardFace',
+                            card: {
+                              type: 'index',
+                              arrayVar: 'cartas',
+                              index: {
+                                type: 'var',
+                                name: 'primeira',
+                              },
+                            },
+                          },
+                          right: {
+                            type: 'gk:cardFace',
+                            card: {
+                              type: 'index',
+                              arrayVar: 'cartas',
+                              index: {
+                                type: 'var',
+                                name: 'segunda',
+                              },
+                            },
+                          },
+                        },
+                        then: [
+                          {
+                            type: 'assign',
+                            name: 'pares',
+                            value: {
+                              type: 'binop',
+                              op: '+',
+                              left: {
+                                type: 'var',
+                                name: 'pares',
+                              },
+                              right: {
+                                type: 'num',
+                                value: 1,
+                              },
+                            },
+                          },
+                          {
+                            type: 'assign',
+                            name: 'primeira',
+                            value: {
+                              type: 'binop',
+                              op: '-',
+                              left: {
+                                type: 'num',
+                                value: 0,
+                              },
+                              right: {
+                                type: 'num',
+                                value: 1,
+                              },
+                            },
+                          },
+                          {
+                            type: 'if',
+                            cond: {
+                              type: 'binop',
+                              op: '===',
+                              left: {
+                                type: 'var',
+                                name: 'pares',
+                              },
+                              right: {
+                                type: 'num',
+                                value: 3,
+                              },
+                            },
+                            then: [
+                              {
+                                type: 'gk:setState',
+                                name: 'vitoria',
+                              },
+                            ],
+                          },
+                        ],
+                        else: [
+                          {
+                            type: 'gk:waitThen',
+                            seconds: {
+                              type: 'num',
+                              value: 0.7,
+                            },
+                            body: [
+                              {
+                                type: 'gk:cardFlip',
+                                card: {
+                                  type: 'index',
+                                  arrayVar: 'cartas',
+                                  index: {
+                                    type: 'var',
+                                    name: 'primeira',
+                                  },
+                                },
+                              },
+                              {
+                                type: 'gk:cardFlip',
+                                card: {
+                                  type: 'index',
+                                  arrayVar: 'cartas',
+                                  index: {
+                                    type: 'var',
+                                    name: 'segunda',
+                                  },
+                                },
+                              },
+                              {
+                                type: 'assign',
+                                name: 'primeira',
+                                value: {
+                                  type: 'binop',
+                                  op: '-',
+                                  left: {
+                                    type: 'num',
+                                    value: 0,
+                                  },
+                                  right: {
+                                    type: 'num',
+                                    value: 1,
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawBackground',
+            color: '#2a1a3a',
+            grid: true,
+          },
+          {
+            type: 'gk:handDraw',
+            pileVar: 'cartas',
+            x: {
+              type: 'num',
+              value: 90,
+            },
+            y: {
+              type: 'num',
+              value: 220,
+            },
+            fan: false,
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ],
+  },
+}
+
+/**
+ * Exemplo "Duelo de Cartas" 🃏 (R30): a vitrine do 🃏 Kit Cartas (deck-battler). O
+ * baralho/mao/descarte sao listas do nucleo; cardsStart abre a batalha, cardsOnTurn
+ * compra a mao (pileMoveTop + rebaralhar), o clique joga a carta (cardAt + cardsSpend
+ * + efeito + descarte), a intencao e telegrafada e o espaco passa o turno. IR one-off.
+ */
+export const dueloDeCartasExample: ExtensionExample = {
+  name: 'Duelo de Cartas',
+  description:
+    'Um RPG DE CARTAS (deck-battler estilo Slay the Spire): compre a mao do baralho, clique numa carta para joga-la gastando energia (🗡️ ataca, 🛡️ defende), veja a INTENCAO do inimigo e passe o turno (espaco). Prova o Kit Cartas inteiro.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-2d-advanced',
+      },
+    ],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 800,
+        },
+        h: {
+          type: 'num',
+          value: 600,
+        },
+        bg: '#191426',
+        accent: '#c084fc',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'Duelo de Cartas',
+        },
+        text: {
+          type: 'str',
+          value:
+            'Clique numa carta da mao para joga-la (custa 1 energia): 🗡️ ataca, 🛡️ defende. Aperte espaco para passar o turno!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'Voce venceu o duelo!',
+        },
+        text: {
+          type: 'str',
+          value: 'Que estrategista!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar de novo',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'fim',
+        title: {
+          type: 'str',
+          value: 'Voce perdeu...',
+        },
+        text: {
+          type: 'str',
+          value: 'Tente outra estrategia!',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar de novo',
+        },
+      },
+      {
+        type: 'var',
+        name: 'baralho',
+        value: {
+          type: 'array',
+          items: [],
+        },
+      },
+      {
+        type: 'var',
+        name: 'mao',
+        value: {
+          type: 'array',
+          items: [],
+        },
+      },
+      {
+        type: 'var',
+        name: 'descarte',
+        value: {
+          type: 'array',
+          items: [],
+        },
+      },
+      {
+        type: 'gk:onEnterState',
+        name: 'jogando',
+        body: [
+          {
+            type: 'assign',
+            name: 'baralho',
+            value: {
+              type: 'array',
+              items: [
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🗡️',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '🗡️',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🗡️',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '🗡️',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🗡️',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '🗡️',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🗡️',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '🗡️',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🛡️',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '🛡️',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🛡️',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '🛡️',
+                  },
+                },
+                {
+                  type: 'gk:card',
+                  front: {
+                    type: 'str',
+                    value: '🛡️',
+                  },
+                  back: {
+                    type: 'str',
+                    value: '🛡️',
+                  },
+                },
+              ],
+            },
+          },
+          {
+            type: 'assign',
+            name: 'baralho',
+            value: {
+              type: 'shuffle',
+              arrayVar: 'baralho',
+            },
+          },
+          {
+            type: 'assign',
+            name: 'mao',
+            value: {
+              type: 'array',
+              items: [],
+            },
+          },
+          {
+            type: 'assign',
+            name: 'descarte',
+            value: {
+              type: 'array',
+              items: [],
+            },
+          },
+          {
+            type: 'gk:cardsStart',
+            heroHp: {
+              type: 'num',
+              value: 30,
+            },
+            enemyHp: {
+              type: 'num',
+              value: 40,
+            },
+          },
+          {
+            type: 'gk:cardsEnergyPerTurn',
+            n: {
+              type: 'num',
+              value: 3,
+            },
+          },
+          {
+            type: 'gk:cardsEnemyIntent',
+            action: 'atacar',
+            value: {
+              type: 'num',
+              value: 7,
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:cardsOnTurn',
+        body: [
+          {
+            type: 'repeat',
+            times: {
+              type: 'num',
+              value: 3,
+            },
+            body: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '===',
+                  left: {
+                    type: 'gk:pileSize',
+                    pileVar: 'baralho',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                then: [
+                  {
+                    type: 'gk:pileShuffleFrom',
+                    deckVar: 'baralho',
+                    discardVar: 'descarte',
+                  },
+                ],
+              },
+              {
+                type: 'gk:pileMoveTop',
+                fromVar: 'baralho',
+                toVar: 'mao',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:cardsOnEnemyTurn',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '===',
+              left: {
+                type: 'gk:cardsIntentAction',
+              },
+              right: {
+                type: 'str',
+                value: 'atacar',
+              },
+            },
+            then: [
+              {
+                type: 'gk:cardsHurtMe',
+                n: {
+                  type: 'gk:cardsIntentValue',
+                },
+              },
+            ],
+          },
+          {
+            type: 'gk:cardsEnemyIntent',
+            action: 'atacar',
+            value: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'num',
+                value: 5,
+              },
+              right: {
+                type: 'gk:rollDice',
+                faces: {
+                  type: 'num',
+                  value: 4,
+                },
+              },
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:onGameClick',
+        xName: 'px',
+        yName: 'py',
+        body: [
+          {
+            type: 'var',
+            name: 'i',
+            value: {
+              type: 'gk:cardAt',
+              x: {
+                type: 'var',
+                name: 'px',
+              },
+              y: {
+                type: 'var',
+                name: 'py',
+              },
+              pileVar: 'mao',
+            },
+            kind: 'const',
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>=',
+              left: {
+                type: 'var',
+                name: 'i',
+              },
+              right: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            then: [
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '>=',
+                  left: {
+                    type: 'gk:cardsEnergy',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                then: [
+                  {
+                    type: 'gk:cardsSpend',
+                    n: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'binop',
+                      op: '===',
+                      left: {
+                        type: 'gk:cardFace',
+                        card: {
+                          type: 'index',
+                          arrayVar: 'mao',
+                          index: {
+                            type: 'var',
+                            name: 'i',
+                          },
+                        },
+                      },
+                      right: {
+                        type: 'str',
+                        value: '🗡️',
+                      },
+                    },
+                    then: [
+                      {
+                        type: 'gk:cardsHurtEnemy',
+                        n: {
+                          type: 'num',
+                          value: 6,
+                        },
+                      },
+                    ],
+                    else: [
+                      {
+                        type: 'gk:cardsGainBlock',
+                        n: {
+                          type: 'num',
+                          value: 5,
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    type: 'arrayPush',
+                    arrayVar: 'descarte',
+                    value: {
+                      type: 'index',
+                      arrayVar: 'mao',
+                      index: {
+                        type: 'var',
+                        name: 'i',
+                      },
+                    },
+                  },
+                  {
+                    type: 'arraySplice',
+                    arrayVar: 'mao',
+                    start: {
+                      type: 'var',
+                      name: 'i',
+                    },
+                    count: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                  {
+                    type: 'if',
+                    cond: {
+                      type: 'binop',
+                      op: '<=',
+                      left: {
+                        type: 'gk:cardsEnemyLife',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                    then: [
+                      {
+                        type: 'gk:setState',
+                        name: 'vitoria',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:keyPressed',
+              key: ' ',
+            },
+            then: [
+              {
+                type: 'gk:cardsEndTurn',
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'gk:cardsHeroLife',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                then: [
+                  {
+                    type: 'gk:endGame',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawBackground',
+            color: '#191426',
+            grid: true,
+          },
+          {
+            type: 'gk:cardsDrawHud',
+          },
+          {
+            type: 'gk:handDraw',
+            pileVar: 'mao',
+            x: {
+              type: 'num',
+              value: 120,
+            },
+            y: {
+              type: 'num',
+              value: 440,
+            },
+            fan: false,
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ],
+  },
+}
+
+/**
+ * Exemplo "O Chefao da Ficha" 👑 (full review): a vitrine da FICHA reutilizavel + a
+ * IMAGEM no combatente + o FUNDO de tela. O Dragao e uma "Criar a ficha do inimigo"
+ * (chefao) com um sprite pequeno do Pinta EMBUTIDO (asset "dragao") que RENDERIZA na
+ * batalha; o menu e a vitoria tem fundo colorido (setScreenBg); a batalha comeca ao
+ * falar com o Guardiao. Prova ficha + imagem + fundo num jogo so. IR do parser (one-off).
+ */
+export const oChefaoFichaExample: ExtensionExample = {
+  name: 'O Chefao da Ficha',
+  description:
+    'Um RPG curtinho com CHEFAO montado por FICHA: crie o Dragao uma vez (com sprite e atributos), escolha lutar contra ele, e de a SUA cara as telas com um fundo colorido. Fale com o Guardiao para a batalha comecar.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'game-2d-advanced' }],
+    js: [
+      {
+        type: 'gk:setup',
+        w: {
+          type: 'num',
+          value: 480,
+        },
+        h: {
+          type: 'num',
+          value: 320,
+        },
+        bg: '#0f1020',
+        accent: '#ffcc44',
+      },
+      {
+        type: 'gk:setScreenBg',
+        screen: 'menu',
+        color: '#241033',
+        image: '',
+      },
+      {
+        type: 'gk:setScreenBg',
+        screen: 'vitoria',
+        color: '#0a2a14',
+        image: '',
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'O Chefão da Ficha',
+        },
+        text: {
+          type: 'str',
+          value: 'Fale com o Guardião (espaço) e enfrente o Dragão!',
+        },
+        button: {
+          type: 'str',
+          value: 'Começar',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'Você venceu o Dragão!',
+        },
+        text: {
+          type: 'str',
+          value: 'O reino está salvo.',
+        },
+        button: {
+          type: 'str',
+          value: 'Jogar de novo',
+        },
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'heroi',
+        image: '',
+        w: {
+          type: 'num',
+          value: 40,
+        },
+        h: {
+          type: 'num',
+          value: 40,
+        },
+        speed: {
+          type: 'num',
+          value: 300,
+        },
+        color: '#4a9eff',
+      },
+      {
+        type: 'gk:rpgBattleStats',
+        hp: {
+          type: 'num',
+          value: 60,
+        },
+        str: {
+          type: 'num',
+          value: 12,
+        },
+        def: {
+          type: 'num',
+          value: 3,
+        },
+      },
+      {
+        type: 'gk:rpgSetSpecial',
+        name: 'Investida',
+        dmg: {
+          type: 'num',
+          value: 20,
+        },
+        cost: {
+          type: 'num',
+          value: 4,
+        },
+      },
+      {
+        type: 'gk:rpgGivePotion',
+        name: 'Poção',
+        heal: {
+          type: 'num',
+          value: 25,
+        },
+      },
+      {
+        type: 'gk:rpgDefineBattler',
+        name: 'Dragão',
+        hp: {
+          type: 'num',
+          value: 120,
+        },
+        str: {
+          type: 'num',
+          value: 9,
+        },
+        def: {
+          type: 'num',
+          value: 2,
+        },
+        image: 'dragao',
+        color: '#b23b6e',
+        boss: true,
+      },
+      {
+        type: 'gk:rpgDefineBattler',
+        name: 'Capanga',
+        hp: {
+          type: 'num',
+          value: 24,
+        },
+        str: {
+          type: 'num',
+          value: 5,
+        },
+        def: {
+          type: 'num',
+          value: 0,
+        },
+        image: '',
+        color: '#e05a5a',
+        boss: false,
+      },
+      {
+        type: 'gk:rpgTeachMove',
+        who: 'Dragão',
+        move: 'Baforada',
+        dmg: {
+          type: 'num',
+          value: 26,
+        },
+        cost: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'gk:rpgOnFoeTurn',
+        name: 'Dragão',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '<',
+              left: {
+                type: 'gk:battlerLife',
+                name: 'Dragão',
+              },
+              right: {
+                type: 'binop',
+                op: '/',
+                left: {
+                  type: 'gk:battlerMaxLife',
+                  name: 'Dragão',
+                },
+                right: {
+                  type: 'num',
+                  value: 2,
+                },
+              },
+            },
+            then: [
+              {
+                type: 'gk:rpgFoeHitAll',
+                name: 'Dragão',
+                dmg: {
+                  type: 'num',
+                  value: 16,
+                },
+              },
+            ],
+            else: [
+              {
+                type: 'gk:rpgFoeUse',
+                name: 'Dragão',
+                move: 'Baforada',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnMap',
+        map: 'caverna',
+        body: [
+          {
+            type: 'gk:rpgCreateNpc',
+            name: 'Guardião',
+            cx: {
+              type: 'num',
+              value: 4,
+            },
+            cy: {
+              type: 'num',
+              value: 3,
+            },
+            image: '',
+            look: '',
+          },
+          {
+            type: 'gk:placeCharacter',
+            charVar: 'heroi',
+            x: {
+              type: 'gk:rpgCell',
+              n: {
+                type: 'num',
+                value: 2,
+              },
+            },
+            y: {
+              type: 'gk:rpgCell',
+              n: {
+                type: 'num',
+                value: 3,
+              },
+            },
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnTalk',
+        npc: 'Guardião',
+        body: [
+          {
+            type: 'gk:rpgSay',
+            text: {
+              type: 'str',
+              value: 'O Dragão acordou! Enfrente-o!',
+            },
+            speaker: {
+              type: 'str',
+              value: 'Guardião',
+            },
+          },
+          {
+            type: 'gk:rpgAddFoeNamed',
+            name: 'Capanga',
+          },
+          {
+            type: 'gk:rpgHealHero',
+          },
+          {
+            type: 'gk:rpgBattleNamed',
+            name: 'Dragão',
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnBattleEnd',
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:rpgBattleWon',
+            },
+            then: [
+              {
+                type: 'gk:setState',
+                name: 'vitoria',
+              },
+            ],
+            else: [
+              {
+                type: 'gk:endGame',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'gk:onUpdate',
+        dtName: 'dt',
+        body: [
+          {
+            type: 'gk:rpgMoveGrid',
+            charVar: 'heroi',
+            cell: {
+              type: 'num',
+              value: 64,
+            },
+            dtVar: 'dt',
+          },
+        ],
+      },
+      {
+        type: 'gk:onDraw',
+        ctxName: 'ctx',
+        body: [
+          {
+            type: 'gk:drawBackground',
+            color: '#241a2e',
+            grid: true,
+          },
+          {
+            type: 'gk:rpgDrawNpcs',
+          },
+          {
+            type: 'gk:drawCharacter',
+            charVar: 'heroi',
+          },
+        ],
+      },
+      {
+        type: 'gk:start',
+      },
+    ],
+  },
+  assets: [
+    {
+      id: 'gk-chefao-ficha-dragao',
+      name: 'dragao',
+      kind: 'image',
+      dataUrl:
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAXElEQVR42mNgoAWQCtL4jw0Tq/l/2JkCrJiQISiap31YhYKJMgRmAAzANCHziTXgv4SEBIoBMD5RBuDD9DKg4P89Ly8UTB8XUJoOqJuQkBXjEqe2AagZiVhxigEAziwWOvbfbdoAAAAASUVORK5CYII=',
+      width: 16,
+      height: 16,
+      source: 'library',
+      libId: 'gk:chefao-ficha-dragao',
+    },
+  ],
 }

@@ -6,7 +6,14 @@ import {
   type TilemapAsset,
 } from '../core/project'
 import { setCell } from './tilemapOps'
-import { addTile, duplicateTile, remapTilemapCells, removeTile, toggleSolid } from './tilesetOps'
+import {
+  addTile,
+  cycleCollision,
+  duplicateTile,
+  remapTilemapCells,
+  removeTile,
+  tileCollisionAt,
+} from './tilesetOps'
 
 const makeTileset = () => createTilesetAsset({ name: 'pecas', tileSize: 16 })
 
@@ -22,23 +29,40 @@ function makeMap(): TilemapAsset {
 }
 
 describe('tilesetOps', () => {
-  it('addTile insere VAZIO após o índice, com solid=false alinhado', () => {
-    const base = toggleSolid(makeTileset(), 0)
+  it('addTile insere VAZIO após o índice, com solid/platform=false alinhados', () => {
+    const base = cycleCollision(makeTileset(), 0) // none → solid
     const out = addTile(base, 0)
     expect(out.tiles).toHaveLength(2)
     expect(out.solid).toEqual([true, false])
+    expect(out.platform).toEqual([false, false])
     expect(out.tiles[1]?.data.every((v) => v === 0)).toBe(true)
   })
 
-  it('duplicateTile copia bitmap E o flag de sólido', () => {
+  it('duplicateTile copia bitmap E os flags de colisão', () => {
     let base = makeTileset()
     const tile = base.tiles[0]
     if (tile) tile.data[0] = 5
-    base = toggleSolid(base, 0)
+    base = cycleCollision(base, 0) // solid
     const out = duplicateTile(base, 0)
     expect(out.tiles[1]?.data[0]).toBe(5)
     expect(out.tiles[1]).not.toBe(tile as never)
     expect(out.solid).toEqual([true, true])
+    expect(out.platform).toEqual([false, false])
+  })
+
+  it('cycleCollision cicla livre → sólido → plataforma → livre (exclusivo)', () => {
+    let t = makeTileset()
+    expect(tileCollisionAt(t, 0)).toBe('none')
+    t = cycleCollision(t, 0)
+    expect(tileCollisionAt(t, 0)).toBe('solid')
+    expect(t.solid[0]).toBe(true)
+    expect(t.platform[0]).toBe(false)
+    t = cycleCollision(t, 0)
+    expect(tileCollisionAt(t, 0)).toBe('platform')
+    expect(t.solid[0]).toBe(false)
+    expect(t.platform[0]).toBe(true)
+    t = cycleCollision(t, 0)
+    expect(tileCollisionAt(t, 0)).toBe('none')
   })
 
   it('removeTile nunca deixa o tileset vazio; quota barra add/duplicate', () => {

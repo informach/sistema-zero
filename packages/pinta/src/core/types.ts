@@ -25,6 +25,8 @@ export interface PintaSpriteMeta {
 export interface PintaTilesetMeta {
   tileSize: number
   solid: number[]
+  /** Índices de peça PLATAFORMA (one-way). Omitido quando vazio (retrocompat). */
+  platform?: number[]
 }
 
 /**
@@ -40,6 +42,14 @@ export interface PintaTilemapMeta {
   /** Formato do bloco do Estúdio: células por espaço, linhas por `;`, `.` = vazio. */
   grid: string
   solid: number[]
+  /** Índices de peça PLATAFORMA (one-way). Omitido quando vazio (retrocompat). */
+  platform?: number[]
+  /**
+   * Grade SÓ das camadas "da frente" (desenhadas por cima do jogador). Mesmo
+   * formato do `grid`. Omitida quando o mapa não tem camada de frente. O Jogo 2D
+   * Avançado (gk) desenha essa grade na opção "frente" do "Desenhar o mapa".
+   */
+  frontGrid?: string
   tileset: { dataUrl: string; width: number; height: number }
 }
 
@@ -65,6 +75,11 @@ export interface PintaExportedAsset {
    * o bloco "Criar mapa do meu desenho" do Estúdio monta tudo sozinho.
    */
   tilemap?: PintaTilemapMeta
+  /**
+   * Só mapas com camada "da frente": a grade das camadas desenhadas POR CIMA do
+   * jogador (copa de árvore, telhado). Usado pelo "Jogar meu mapa".
+   */
+  tilemapFront?: PintaTilemapMeta
 }
 
 export interface PintaSendResult {
@@ -100,6 +115,12 @@ export interface PintaHostAdapter {
    * Ausente = o botão "Usar no Estúdio" não aparece.
    */
   sendToStudio?: (asset: PintaExportedAsset) => Promise<PintaSendResult> | PintaSendResult
+  /**
+   * "Jogar meu mapa" (só mapas): o host cria um PROJETO-JOGO completo e jogável
+   * no Estúdio a partir do mapa (jogador + colisão + câmera montados). Ausente =
+   * o botão não aparece.
+   */
+  sendGameToStudio?: (asset: PintaExportedAsset) => Promise<PintaSendResult> | PintaSendResult
   /** Missão de arte do Pensa: abre a criação pré-configurada 1x no mount. */
   initialIntent?: PintaInitialIntent
 }

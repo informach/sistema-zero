@@ -2241,8 +2241,14 @@ function readSpriteOptions(
 function readTileMapOptions(
   obj: Node,
   ctx: ParseCtx,
-): { image: string; tile: JSExpr; solid: string; grid: string } | null {
-  const result = { image: null as string | null, tile: null as JSExpr | null, solid: '', grid: '' }
+): { image: string; tile: JSExpr; solid: string; grid: string; platform?: string } | null {
+  const result = {
+    image: null as string | null,
+    tile: null as JSExpr | null,
+    solid: '',
+    platform: '',
+    grid: '',
+  }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
     const key =
@@ -2255,7 +2261,7 @@ function readTileMapOptions(
       const v = toExpr(prop.value, ctx)
       if (!isSimpleValue(v)) return null
       result.tile = v
-    } else if (key === 'image' || key === 'solid' || key === 'grid') {
+    } else if (key === 'image' || key === 'solid' || key === 'grid' || key === 'platform') {
       if (prop.value?.type !== 'StringLiteral') return null
       result[key] = prop.value.value as string
     } else {
@@ -2263,7 +2269,14 @@ function readTileMapOptions(
     }
   }
   if (result.image === null || result.tile === null) return null
-  return { image: result.image, tile: result.tile, solid: result.solid, grid: result.grid }
+  return {
+    image: result.image,
+    tile: result.tile,
+    solid: result.solid,
+    // Omite quando vazio → IR de mapas sem plataforma fica byte-idêntica.
+    ...(result.platform ? { platform: result.platform } : {}),
+    grid: result.grid,
+  }
 }
 
 /**
@@ -4303,6 +4316,49 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const charVar = identifierName(args[0])
     if (charVar) return { type: 'gk:pathProgress', charVar }
   }
+  if (method === 'rollDice') {
+    const faces = toExpr(args[0], ctx)
+    if (isSimpleValue(faces)) return { type: 'gk:rollDice', faces }
+  }
+  if (method === 'currentPlayer' && args.length === 0) return { type: 'gk:currentPlayer' }
+  if (method === 'spaceOf') {
+    const who = identifierName(args[0])
+    if (who) return { type: 'gk:spaceOf', who }
+  }
+  if (method === 'pileTop') {
+    const pile = identifierName(args[0])
+    if (pile) return { type: 'gk:pileTop', pileVar: pile }
+  }
+  if (method === 'pileSize') {
+    const pile = identifierName(args[0])
+    if (pile) return { type: 'gk:pileSize', pileVar: pile }
+  }
+  if (method === 'card') {
+    const front = toExpr(args[0], ctx)
+    const back = toExpr(args[1], ctx)
+    if (isSimpleValue(front) && isSimpleValue(back)) return { type: 'gk:card', front, back }
+  }
+  if (method === 'cardIsUp') {
+    const card = toExpr(args[0], ctx)
+    if (isSimpleValue(card)) return { type: 'gk:cardIsUp', card }
+  }
+  if (method === 'cardFace') {
+    const card = toExpr(args[0], ctx)
+    if (isSimpleValue(card)) return { type: 'gk:cardFace', card }
+  }
+  if (method === 'cardAt') {
+    const pile = identifierName(args[2])
+    if (pile) {
+      const x = toExpr(args[0], ctx)
+      const y = toExpr(args[1], ctx)
+      if (isSimpleValue(x) && isSimpleValue(y)) return { type: 'gk:cardAt', x, y, pileVar: pile }
+    }
+  }
+  if (method === 'cardsEnergy' && args.length === 0) return { type: 'gk:cardsEnergy' }
+  if (method === 'cardsHeroLife' && args.length === 0) return { type: 'gk:cardsHeroLife' }
+  if (method === 'cardsEnemyLife' && args.length === 0) return { type: 'gk:cardsEnemyLife' }
+  if (method === 'cardsIntentAction' && args.length === 0) return { type: 'gk:cardsIntentAction' }
+  if (method === 'cardsIntentValue' && args.length === 0) return { type: 'gk:cardsIntentValue' }
   if (
     method === 'pickActive' &&
     args[0]?.type === 'StringLiteral' &&
@@ -4351,6 +4407,12 @@ function matchGameKitRpgExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'rpgHasSave' && args.length === 0) return { type: 'gk:rpgHasSave' }
   if (method === 'rpgLevel' && args.length === 0) return { type: 'gk:rpgLevel' }
   if (method === 'rpgXp' && args.length === 0) return { type: 'gk:rpgXp' }
+  if (method === 'battlerLife' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:battlerLife', name: args[0].value as string }
+  }
+  if (method === 'battlerMaxLife' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:battlerMaxLife', name: args[0].value as string }
+  }
   if (method === 'rpgCurrentMap' && args.length === 0) return { type: 'gk:rpgCurrentMap' }
   return null
 }
@@ -4606,6 +4668,21 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
             body: bodyOfFn(args[2], source, ctx),
           }
         : null
+    }
+    case 'setScreenBg': {
+      // generator: SZGameKit.setScreenBg("tela", "cor", "imagem")
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        args[1]?.type !== 'StringLiteral' ||
+        args[2]?.type !== 'StringLiteral'
+      )
+        return null
+      return {
+        type: 'gk:setScreenBg',
+        screen: args[0].value as string,
+        color: args[1].value as string,
+        image: args[2].value as string,
+      }
     }
     case 'showScreen': {
       if (args[0]?.type !== 'StringLiteral') return null
@@ -4866,8 +4943,17 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const hp = toExpr(args[1], ctx)
       const str = toExpr(args[2], ctx)
       const def = toExpr(args[3], ctx)
+      // 🖼️ imagem OPCIONAL (5º arg): presente → entra na IR; ausente → forma antiga.
+      const image = args[4]?.type === 'StringLiteral' ? (args[4].value as string) : undefined
       return isSimpleValue(hp) && isSimpleValue(str) && isSimpleValue(def)
-        ? { type: 'gk:rpgBattleStart', name: args[0].value as string, hp, str, def }
+        ? {
+            type: 'gk:rpgBattleStart',
+            name: args[0].value as string,
+            hp,
+            str,
+            def,
+            ...(image ? { image } : {}),
+          }
         : null
     }
     case 'rpgSetSpecial': {
@@ -4885,6 +4971,8 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ? { type: 'gk:rpgGivePotion', name: args[0].value as string, heal }
         : null
     }
+    case 'rpgHealHero':
+      return args.length === 0 ? { type: 'gk:rpgHealHero' } : null
     case 'rpgBattleReward': {
       const xp = toExpr(args[0], ctx)
       return isSimpleValue(xp) ? { type: 'gk:rpgBattleReward', xp } : null
@@ -4906,12 +4994,13 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     }
     case 'rpgAddAlly':
     case 'rpgAddFoe': {
-      // SZGameKit.rpgAddAlly("nome", hp, str, def, "cor")
+      // SZGameKit.rpgAddAlly("nome", hp, str, def, "cor", "imagem"?)
       if (args[0]?.type !== 'StringLiteral' || args[4]?.type !== 'StringLiteral') return null
       const hp = toExpr(args[1], ctx)
       const str = toExpr(args[2], ctx)
       const def = toExpr(args[3], ctx)
       if (!isSimpleValue(hp) || !isSimpleValue(str) || !isSimpleValue(def)) return null
+      const image = args[5]?.type === 'StringLiteral' ? (args[5].value as string) : undefined
       return {
         type: method === 'rpgAddAlly' ? 'gk:rpgAddAlly' : 'gk:rpgAddFoe',
         name: args[0].value as string,
@@ -4919,6 +5008,7 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         str,
         def,
         color: args[4].value as string,
+        ...(image ? { image } : {}),
       }
     }
     case 'rpgTeachMove': {
@@ -4954,6 +5044,74 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'rpgOnBattleEnd': {
       if (!isFn(args[0])) return null
       return { type: 'gk:rpgOnBattleEnd', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'rpgAddBoss': {
+      // SZGameKit.rpgAddBoss("nome", hp, str, def, "imagem"?)
+      if (args[0]?.type !== 'StringLiteral') return null
+      const hp = toExpr(args[1], ctx)
+      const str = toExpr(args[2], ctx)
+      const def = toExpr(args[3], ctx)
+      if (!isSimpleValue(hp) || !isSimpleValue(str) || !isSimpleValue(def)) return null
+      const image = args[4]?.type === 'StringLiteral' ? (args[4].value as string) : undefined
+      return {
+        type: 'gk:rpgAddBoss',
+        name: args[0].value as string,
+        hp,
+        str,
+        def,
+        ...(image ? { image } : {}),
+      }
+    }
+    case 'rpgDefineBattler': {
+      // SZGameKit.rpgDefineBattler("nome", hp, str, def, "imagem", "cor", boss)
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        args[4]?.type !== 'StringLiteral' ||
+        args[5]?.type !== 'StringLiteral' ||
+        args[6]?.type !== 'BooleanLiteral'
+      )
+        return null
+      const hp = toExpr(args[1], ctx)
+      const str = toExpr(args[2], ctx)
+      const def = toExpr(args[3], ctx)
+      if (!isSimpleValue(hp) || !isSimpleValue(str) || !isSimpleValue(def)) return null
+      return {
+        type: 'gk:rpgDefineBattler',
+        name: args[0].value as string,
+        hp,
+        str,
+        def,
+        image: args[4].value as string,
+        color: args[5].value as string,
+        boss: args[6].value as boolean,
+      }
+    }
+    case 'rpgBattleNamed': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgBattleNamed', name: args[0].value as string }
+    }
+    case 'rpgAddFoeNamed': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgAddFoeNamed', name: args[0].value as string }
+    }
+    case 'rpgFoeUse': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgFoeUse', name: args[0].value as string, move: args[1].value as string }
+    }
+    case 'rpgFoeHitAll': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const dmg = toExpr(args[1], ctx)
+      return isSimpleValue(dmg)
+        ? { type: 'gk:rpgFoeHitAll', name: args[0].value as string, dmg }
+        : null
+    }
+    case 'rpgOnFoeTurn': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'gk:rpgOnFoeTurn',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
     }
     case 'setWalkSheet': {
       const charVar = identifierName(args[0])
@@ -5027,8 +5185,8 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'drawTilemap': {
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
       const layer = args[1].value as string
-      // O dropdown só tem "chão"/"topos" — camada desconhecida cai em rawJS.
-      if (layer !== 'chão' && layer !== 'topos') return null
+      // O dropdown só tem "chão"/"topos"/"frente" — camada desconhecida cai em rawJS.
+      if (layer !== 'chão' && layer !== 'topos' && layer !== 'frente') return null
       return { type: 'gk:drawTilemap', name: args[0].value as string, layer }
     }
     case 'tilemapSolid': {
@@ -5104,6 +5262,99 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       return isSimpleValue(value) && isSimpleValue(col) && isSimpleValue(row)
         ? { type: 'gk:boardSet', name: args[0].value as string, value, col, row }
         : null
+    }
+    case 'playersSetup': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:playersSetup', n } : null
+    }
+    case 'nextPlayer':
+      return { type: 'gk:nextPlayer' }
+    case 'onTurnChange': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:onTurnChange', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'moveAlongTrack': {
+      const who = identifierName(args[0])
+      if (!who || args[2]?.type !== 'StringLiteral') return null
+      const spaces = toExpr(args[1], ctx)
+      return isSimpleValue(spaces)
+        ? { type: 'gk:moveAlongTrack', who, spaces, path: args[2].value as string }
+        : null
+    }
+    case 'onLandSpace': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:onLandSpace', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'pileMoveTop': {
+      const from = identifierName(args[0])
+      const to = identifierName(args[1])
+      return from && to ? { type: 'gk:pileMoveTop', fromVar: from, toVar: to } : null
+    }
+    case 'pileShuffleFrom': {
+      const deck = identifierName(args[0])
+      const discard = identifierName(args[1])
+      return deck && discard
+        ? { type: 'gk:pileShuffleFrom', deckVar: deck, discardVar: discard }
+        : null
+    }
+    case 'cardFlip': {
+      const card = toExpr(args[0], ctx)
+      return isSimpleValue(card) ? { type: 'gk:cardFlip', card } : null
+    }
+    case 'handDraw': {
+      const pile = identifierName(args[0])
+      if (!pile || args[3]?.type !== 'BooleanLiteral') return null
+      const x = toExpr(args[1], ctx)
+      const y = toExpr(args[2], ctx)
+      return isSimpleValue(x) && isSimpleValue(y)
+        ? { type: 'gk:handDraw', pileVar: pile, x, y, fan: args[3].value as boolean }
+        : null
+    }
+    case 'cardsStart': {
+      const heroHp = toExpr(args[0], ctx)
+      const enemyHp = toExpr(args[1], ctx)
+      return isSimpleValue(heroHp) && isSimpleValue(enemyHp)
+        ? { type: 'gk:cardsStart', heroHp, enemyHp }
+        : null
+    }
+    case 'cardsEnergyPerTurn': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsEnergyPerTurn', n } : null
+    }
+    case 'cardsSpend': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsSpend', n } : null
+    }
+    case 'cardsOnTurn': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:cardsOnTurn', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'cardsEndTurn':
+      return { type: 'gk:cardsEndTurn' }
+    case 'cardsDrawHud':
+      return { type: 'gk:cardsDrawHud' }
+    case 'cardsHurtEnemy': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsHurtEnemy', n } : null
+    }
+    case 'cardsHurtMe': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsHurtMe', n } : null
+    }
+    case 'cardsGainBlock': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:cardsGainBlock', n } : null
+    }
+    case 'cardsEnemyIntent': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const value = toExpr(args[1], ctx)
+      return isSimpleValue(value)
+        ? { type: 'gk:cardsEnemyIntent', action: args[0].value as string, value }
+        : null
+    }
+    case 'cardsOnEnemyTurn': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:cardsOnEnemyTurn', body: bodyOfFn(args[0], source, ctx) }
     }
     case 'wrapEdges': {
       const charVar = identifierName(args[0])
@@ -11054,6 +11305,22 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:rpgHasSave':
     case 'gk:rpgLevel':
     case 'gk:rpgXp':
+    case 'gk:battlerLife':
+    case 'gk:battlerMaxLife':
+    case 'gk:rollDice':
+    case 'gk:currentPlayer':
+    case 'gk:spaceOf':
+    case 'gk:pileTop':
+    case 'gk:pileSize':
+    case 'gk:card':
+    case 'gk:cardIsUp':
+    case 'gk:cardFace':
+    case 'gk:cardAt':
+    case 'gk:cardsEnergy':
+    case 'gk:cardsHeroLife':
+    case 'gk:cardsEnemyLife':
+    case 'gk:cardsIntentAction':
+    case 'gk:cardsIntentValue':
     case 'gk:rpgCurrentMap':
     case 'g3k:worldSize':
     case 'g3k:countAlive':

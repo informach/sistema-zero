@@ -5,11 +5,16 @@ import {
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   cobrinhaExample,
+  corridaTabuleiroExample,
   defesaDoReinoExample,
+  dueloDeCartasExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
+  jogoDaMemoriaExample,
   meuPrimeiroJogoExample,
+  oChefaoExample,
+  oChefaoFichaExample,
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
@@ -19,7 +24,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.27.0',
+  version: '0.39.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -71,10 +76,58 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
 7. **Começar o jogo** — uma vez, NO FIM: carrega tudo e liga o laço.
 
 > ⭐ **Seu jogo abre no MENU, não jogando.** Ao rodar, você vê a tela de menu —
-> clique no botão **Jogar** (ele já vem pronto) para a partida começar. É por isso
-> que o "A cada quadro" e o "Desenhar o jogo" parecem "não rodar" antes de clicar:
-> eles só valem no estado \`jogando\`. (Sem tela de menu? Um bloco "Mudar o estado
-> para jogando" no começo pula direto para o jogo.)
+> clique no botão **Jogar** (ele já vem pronto) para a partida começar. No menu,
+> o "A cada quadro" e o "Desenhar o jogo" ainda não aparecem — mas por motivos
+> diferentes: **"A cada quadro" só roda no estado \`jogando\`**; já **"Desenhar o
+> jogo" roda em \`jogando\`, \`pausado\`, \`fim\` e nos SEUS estados inventados — só
+> NÃO no \`menu\` nem no \`carregando\`** (por isso dá para desenhar uma tela de
+> pausa ou de fim, mas para um menu 100% seu use um estado inventado). (Sem tela
+> de menu? Um bloco "Mudar o estado para jogando" no começo pula direto ao jogo.)
+
+### Qual kit para qual jogo? 🎮
+
+Você monta QUALQUER jogo com os blocos gerais, mas cada **kit** é um atalho pronto
+para um gênero. Escolha pelo jogo que você quer:
+
+- 🏃 **Kit Plataforma** — jogo de pular (fases, plataformas, pulo bom).
+- ⚔️ **Kit RPG** — explorar um mundo + **batalha por TURNOS** com espada e time.
+- 👾 **Kit Monstrinhos** — pegar e treinar **bichinhos** (estilo Pokémon).
+- 🃏 **Kit Cartas** — **batalha de cartas** (deck: energia, escudo, intenção).
+- 🥊 **Kit Luta** — luta 1 contra 1 por rounds.
+- 🚀 **Kit Nave** — nave atirando, invasores (estilo Space Invaders).
+- 🏰 **Kit Defesa de Torre** — torres contra ondas de inimigos num caminho.
+- 🏁 **Jogo de tabuleiro** — dado + ordem de turno + andar casas numa trilha.
+
+⭐ Escolha UM gênero de batalha por jogo: ⚔️ turnos, 👾 bichinhos e 🃏 cartas são
+três batalhas DIFERENTES — não misture.
+
+### Onde faço um inimigo? (são coisas diferentes!) 👾
+
+A palavra "inimigo" aparece em vários lugares porque cada gênero tem o SEU tipo —
+não são intercambiáveis:
+
+- **Inimigo que ANDA no mapa e nasce em enxame** (o comum de ação) → 🐛 **molde**
+  ("Criar o molde" + "Fazer nascer do molde").
+- **Oponente da batalha por TURNOS** (⚔️ Kit RPG) → "Adicionar inimigo" (na hora)
+  OU **"Criar a ficha do inimigo"** (reutilizável, com imagem) + "batalha contra a ficha".
+- **Bichinho que você pega e treina** (👾 Kit Monstrinhos) → **criatura**.
+- **Personagem do mundo que CONVERSA** (não luta) → 💬 **NPC**.
+- O inimigo da 🃏 batalha de cartas já vem embutido no Kit Cartas (vida + intenção).
+
+### Receita: um chefão com FICHA (⚔️ Kit RPG)
+
+A forma nova e organizada: **crie o inimigo separado** (a "ficha", com imagem e
+atributos) e depois **escolha com quem batalhar** — igual aos moldes do mundo.
+
+1. **Criar a ficha do inimigo "Dragão"** (vida 120, imagem do Pinta, cor, e marque
+   **chefão**). Faça no começo, no topo — a ficha FICA salva o jogo todo.
+2. Dê a SUA cara às telas: **"Na tela menu, pôr fundo cor …"** (ou uma imagem do Pinta).
+3. **Ensine os golpes** (do herói e do chefe) — pode ser no topo, junto das fichas:
+   os golpes ensinados FICAM salvos e re-ensinar não duplica. Depois, no momento da
+   luta, **"Adicionar o inimigo da ficha Capanga"** e **"Começar a batalha contra a
+   ficha Dragão"** (ou dentro de "quando falar com o NPC", como no O Chefão).
+4. O chefe fica esperto com **"Quando for a vez do inimigo Dragão"** + *"se a vida do
+   Dragão < metade: acerta todo o time; senão: usa um golpe"*.
 
 ### Estados
 
@@ -95,6 +148,10 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
   novas (loja, instruções) no mesmo estilo, com botões que rodam os seus blocos.
   Criar com o nome de uma tela pronta faz você ASSUMIR a tela: os botões dela
   saem e os textos passam a ser os seus.
+- **Na tela…, pôr fundo cor… e imagem…** — dá a SUA cara à tela (pronta ou sua):
+  uma cor de fundo e, se quiser, uma imagem do Pinta cobrindo o painel. (Para uma
+  tela toda DESENHADA no canvas, use um ESTADO inventado — ele esconde os painéis
+  prontos e deixa você desenhar à vontade.)
 
 ### Personagens
 
@@ -148,7 +205,7 @@ O jeito profissional de ligar as partes do jogo sem elas se conhecerem: uma
 \`inimigo:morreu\`; noutro canto, "Quando chegar o aviso inimigo:morreu" soma 1
 ponto e toca um som. Assim o código não vira um nó.
 
-### 👾 Moldes & enxames
+### 🐛 Moldes & enxames
 
 - **Criar o molde** — os DADOS de um tipo de personagem (inimigo, moeda, tiro):
   tamanho, vida, velocidade, dano, cor/imagem/aparência. Defina UMA vez.
@@ -181,7 +238,7 @@ só — "o chefe aparece aos 30 s", "a mensagem some em 2 s", o próximo golpe d
 combo. ("A cada N segundos" repete para sempre; este acontece uma vez.) Conta no
 relógio do jogo: se pausar, para de contar.
 
-### ❤️ Combate
+### 🗡️ Combate
 
 **Machucar** (tira vida e deixa piscando e invencível um tempinho), **empurrar**,
 **barra de vida** (vida cheia 0 = automática), **encostou (círculo)**, **a vida
@@ -222,7 +279,7 @@ regra é sua — *"para cada vivo do molde: se a distância entre ele e a bomba 
 raio → machucar"*. Assim explosão de fogo, pulso de cura e ímã usam o MESMO
 bloco.
 
-### 🎯 O mais perto (em 👾 Moldes & enxames)
+### 🎯 O mais perto (em 🐛 Moldes & enxames)
 
 **o mais perto de x … y … no molde …** devolve o vivo do enxame mais próximo
 daquele ponto. É como a torre escolhe em quem atirar, e como o inimigo decide
@@ -241,7 +298,7 @@ personagem, dizendo o tamanho de cada quadro.
 movimento — a nave que "deita" ao desviar, o peixe, a moto. Ligue UMA vez (0
 desliga); convive com o "Girar" (um soma no outro).
 
-### 🎬 Animação
+### 📽️ Animação
 
 **Tocar a animação** roda uma faixa de quadros em loop — pode chamar TODO quadro
 ("se andando, tocar andar; senão, tocar parado"): repetir a mesma não reinicia.
@@ -304,9 +361,10 @@ Para o mundo ter cara de jogo de verdade (vale para QUALQUER jogo, não só RPG)
 
 - **Carregar o mapa … do meu desenho** — monta um mapa de peças (tiles) do Pinta
   (grade, peças e sólidos já vêm juntos). Dê um nome e use no comecinho.
-- **Desenhar o mapa … (camada chão / topos)** — o segredo da profundidade: o
-  **chão** ANTES dos personagens e os **topos** (árvores, telhados) DEPOIS —
-  assim o herói passa POR TRÁS das copas. Dentro do "Desenhar o jogo".
+- **Desenhar o mapa … (camada chão / topos / frente)** — o segredo da
+  profundidade: o **chão** ANTES dos personagens; DEPOIS deles os **topos** (só as
+  peças sólidas) OU a **frente** (a camada da frente que você marcou no Pinta,
+  como copas de árvore) — assim o herói passa POR TRÁS. No "Desenhar o jogo".
 - **Desenhar … e os personagens por profundidade** (Y-sort) — desenha na ordem
   certa: quem está mais embaixo na tela aparece na FRENTE. Entram o personagem que
   você passar, TODOS os enxames vivos e os NPCs (se o jogo tiver o Kit RPG).
@@ -405,7 +463,7 @@ O jeito de lutar sem turnos, no mapa aberto (aventura, beat-em-up — geral):
 - **Desenhar corações: … de …** — a "vidinha" dos jogos de aventura (cheios = vida
   atual). Fica ótima no HUD.
 
-### 💬 Fala & escolhas
+### 🗨️ Fala & escolhas
 
 A UI que o MOTOR desenha para você — vale em qualquer jogo, não só no RPG:
 
@@ -443,7 +501,7 @@ raro, o crítico. **a distância entre … e …** é a conta central do stealth
 detecção), da torre (alcance) e do inimigo que só persegue se estiver perto. **o
 ponto x y está dentro de …?** junta com "o mouse x/y" e você tem point-and-click,
 cartas e tower defense (detectar O CLIQUE). Para jogos de GRADE (match-3, Cobrinha,
-Sokoban, campo-minado), a peça que faltava é o **🧩 Tabuleiro** — uma grade nomeada
+Sokoban, campo-minado), a peça que faltava é a **🧩 Grade** — uma grade nomeada
 que você lê e escreve por (coluna, linha).
 
 **um vivo qualquer do molde …** sorteia UM dos vivos do enxame (irmão do "o mais
@@ -456,7 +514,7 @@ o inimigo com mais vida, o mais baixo na tela, o mais avançado no caminho. É
 assim que a torre de defesa mira no "líder" da fila. Sem nenhum vivo, devolve
 nada.
 
-### 🧩 Tabuleiro (jogos de grade)
+### 🧩 Grade (jogos de grade)
 
 Uma grade NOMEADA de células que você lê e escreve por (coluna, linha) — a peça
 que faltava para Cobrinha, Match-3, Sokoban, campo-minado e puzzles.
@@ -471,6 +529,32 @@ que faltava para Cobrinha, Match-3, Sokoban, campo-minado e puzzles.
 Não há bloco de laço de propósito: você VARRE a grade com o "repita" do núcleo +
 ler/pôr — é assim que se aprende a mexer numa grade de verdade.
 
+### 🎴 Cartas
+
+⭐ **Uma PILHA é só uma LISTA** do núcleo (Valores → "criar lista"). O baralho, a
+mão e o descarte são três listas; estes blocos dão o vocabulário de carta em cima
+delas:
+
+- **uma carta: frente … verso …** — cria uma carta de DUAS faces (a frente = o
+  valor/figura; o verso = o que aparece virada pra baixo). Nasce virada pra baixo.
+  Ponha várias numa lista = o baralho.
+- **Mover a carta do topo da pilha … para a pilha …** — o COMPRAR (baralho → mão)
+  E o DESCARTAR (mão → descarte) num bloco. **Remontar a pilha … juntando … e
+  embaralhar** = quando o baralho acaba, joga o descarte de volta e embaralha.
+- **a carta do topo da pilha …** (espia sem tirar) e **quantas cartas tem a pilha
+  …** (= 0 quando acaba).
+- **Virar a carta …** (memória!), **a carta … está virada para cima** e **o que
+  aparece na carta …** (a frente se pra cima, o verso se pra baixo — compare duas
+  para achar o par).
+- **Desenhar a pilha … como fileira em x,y** mostra as cartas (marque a caixinha
+  para um leque) e guarda onde cada uma ficou; **a carta clicada em x,y da pilha …**
+  devolve o índice da carta sob o clique (−1 = nenhuma). Com "o mouse x/y" +
+  "Quando clicar no jogo" você joga uma carta clicando nela.
+
+Receita do jogo da memória: uma lista de cartas pareadas + "embaralhar" (Valores);
+no clique, vire a carta; quando duas estão viradas, compare "o que aparece" — par
+fica, senão "Esperar 0,6 s" e desvire as duas.
+
 ### 🛤️ Caminhos
 
 Um caminho é uma trilha nomeada de pontos — a versão "linha" da região (que é
@@ -483,6 +567,24 @@ quanto ele já andou, de 0 a 100 — é assim que você sabe QUEM chegou (dentro
 "para cada vivo": *"se o progresso de item = 100: tirar uma vida e recolher"*).
 Serve para o inimigo de defesa de torre, a patrulha, a esteira, o NPC num trilho
 de cena, a corrida.
+
+### 🏁 Jogo de tabuleiro
+
+As peças para MONTAR um Ludo, Jogo da Vida ou Banco Imobiliário — a criança liga
+a lógica, como sempre.
+
+- **rolar um dado de … lados** (em 🎲 Sorte & medida) — sorteia 1 até o número de
+  lados (um dado de 6 dá 1 a 6). É o motor do turno: role e ande esse tanto.
+- **começar com … jogadores** / **o jogador da vez** / **passar a vez** — o
+  rodízio de turno (um anel: depois do último volta ao 1). **Quando a vez mudar**
+  roda ao passar a vez (anuncie "Vez do jogador X").
+- **A trilha de CASAS** reusa o 🛤️ Caminhos: cada **ponto** do "Criar o caminho" é
+  uma casa. **Andar … N casas na trilha …** avança a peça N casas e PARA na casa
+  (desliza suave e avisa \`casa:parou\`). **a casa de …** diz onde a peça está (0 =
+  a primeira). **Quando um peão parar numa casa** roda ao terminar de andar — lá
+  dentro, *"se a casa de peao = 7: pague aluguel"* (dê/tire pontos, mande voltar,
+  pule a vez). A RECEITA do turno: role o dado → ande as casas → resolva a casa →
+  passe a vez.
 
 ### 🌌 Fundo que rola (em 🔁 A cada quadro)
 
@@ -514,7 +616,7 @@ muda QUALQUER coisa suavemente (crescer, drenar a vida, sumir) e avisa
 > atrás do escuro. Escureça, troque tudo, clareie — e a mágica acontece. **Piscar
 > a tela** é o susto ("apareceu um inimigo!").
 
-### 💾 Memória
+### 🧠 Memória
 
 **Guardar o valor … com o nome …** guarda de VERDADE: fechar o jogo e abrir de
 novo, continua lá. O recorde, a fase destravada, o nome do jogador. **o valor
@@ -565,7 +667,7 @@ Alguns clássicos não precisam de bloco novo — saem da combinação certa:
 - **Colecionável semeado no mapa:** um laço que varre as células; onde a peça é a
   marcada, "Nascer" uma moeda ali e apagar a peça — espalha itens pelo mapa
   desenhado no Pinta.
-- **Cobrinha (Snake):** um 🧩 Tabuleiro marca onde está o corpo; a cada passo, ande
+- **Cobrinha (Snake):** uma 🧩 Grade marca onde está o corpo; a cada passo, ande
   a cabeça uma célula, marque a nova e apague a cauda. Comeu a maçã = não apaga a
   cauda (cresce). Bateu na parede ou no próprio corpo = perdeu.
 - **Quebra-blocos (Breakout):** a bola com velocidade + "quicar nas bordas" +
@@ -743,7 +845,7 @@ tiles) continuam valendo e se combinam com o kit.
 - **Criar o NPC** — um morador parado numa célula (sólido), com imagem ou
   aparência. **Desenhar os NPCs** no "Desenhar o jogo".
 - **Quando conversar com o NPC… fazer** — roda no ESPAÇO olhando para ele. Use a
-  **Mostrar a fala** (lá de cima, em 💬 Fala & escolhas) para ele responder.
+  **Mostrar a fala** (lá de cima, em 🗨️ Fala & escolhas) para ele responder.
 
 ### História, itens e mapas
 
@@ -789,8 +891,20 @@ música da praia" e o nome no HUD.
   batalha (vários contra vários). **Ensinar o golpe … para …** dá golpes NOMEADOS a
   quem você quiser (o herói é "Você"; os aliados pelo nome) — cada um pode ter vários,
   e eles aparecem no painel de ação. Cada golpe gasta energia.
+- **Imagem no combatente:** "Adicionar inimigo/aliado", "Pôr o CHEFÃO" e "Começar a
+  batalha contra" têm um campo de IMAGEM (a que você "Carregou pelo nome") — o
+  lutador aparece com a arte do Pinta em vez do retângulo da cor. Vazio = a cor.
+- **Ficha de inimigo REUTILIZÁVEL** (defina separado, escolha na hora): **Criar a
+  ficha do inimigo …** guarda um inimigo (vida/força/defesa/imagem/cor, e "chefão?")
+  UMA vez; depois **Começar a batalha contra a ficha …** o coloca como inimigo
+  principal, e **Adicionar o inimigo da ficha …** enfileira mais — só escolhendo pelo
+  nome, sem redigitar. É como os moldes do mundo, mas para a batalha por turnos.
 - **Golpe especial** (dano forte que gasta energia; a energia recupera por turno)
   + **Ganhar a poção** (cura, usada pelo botão Item) — as armas do RPG.
+- **A vida do herói CARREGA de uma batalha para a outra** (como num RPG de verdade — ele
+  NÃO enche sozinho). Para recuperar, use **"Curar o herói"** fora da luta (numa
+  estalagem, num save, num checkpoint); **subir de nível** também cura; e **perder** uma
+  batalha recomeça com a vida cheia. (Os aliados ainda entram cheios em cada luta.)
 - **Ensinar o golpe de CURA … para …** — um golpe que devolve VIDA em vez de ferir
   (a Curandeira do time). Gasta energia e aparece no painel de ação, como os outros.
 - **Ganhar XP** (no "quando a batalha terminar", se venceu) → o herói **sobe de
@@ -800,6 +914,16 @@ música da praia" e o nome no HUD.
   atrapalhar faz o golpe errar às vezes — as armas de status do RPG.
 - **Quando a batalha terminar / ganhei a batalha?** — decida o rumo: vitória →
   tela de vitória (+ XP), derrota → fim de jogo, fuga → tentar de novo.
+
+> 👑 **Chefes e chefões:** ⭐ o inimigo AGORA usa os golpes que você ensina a ele
+> (pelo NOME dele — "Ensinar o golpe … para 'Dragão'") — dá-lhe especiais e curas.
+> **Pôr o CHEFÃO …** entra um inimigo MAIOR, com barra de vida grande e coroa.
+> **a vida de … na batalha** (e **a vida máxima de …**) lê QUALQUER combatente → é
+> a receita de FASE: *"se a vida do Chefão < metade: fica furioso"*. E **Quando for
+> a vez do inimigo … : fazer** é a IA do chefe — no lugar do ataque comum, roda os
+> seus blocos; dentro, **O inimigo … usa o golpe …** (um golpe ensinado) e **O
+> inimigo … acerta TODO o time (dano …)** (o golpe de área). Assim o chefão muda de
+> padrão conforme apanha, como nos jogos de verdade.
 
 ### 🎬 Cenas & NPCs vivos (em 🎬 cenas)
 
@@ -822,7 +946,7 @@ O jeito profissional de contar história:
 **Salvar o jogo** / **Continuar o jogo salvo** / **tem jogo salvo?** — guarda o
 progresso do RPG (flags, itens, mapa, posição, atributos, poções, golpe especial) e
 continua de onde parou, mesmo fechando e reabrindo. Ligue o "Continuar" só quando
-"tem jogo salvo?". (O **Menu de escolha** subiu para 💬 Fala & escolhas — vale em
+"tem jogo salvo?". (O **Menu de escolha** subiu para 🗨️ Fala & escolhas — vale em
 qualquer jogo; aqui ele combina lindo com o "Quando conversar" e as cenas.)
 
 ## 🚀 Kit Nave
@@ -959,6 +1083,35 @@ O exemplo "Defesa do Reino" monta exatamente isso. Torre de gelo? Some um
 "deslizar até" com fator baixo no invasor atingido. Torre de área? No acerto,
 "para cada vivo perto" leva dano. Vender? **Liberar o lugar** + devolver metade
 das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
+
+## 🃏 Kit Cartas
+
+O atalho do RPG DE CARTAS (deck-battler, estilo Slay the Spire). Pela regra dos
+kits, o kit dá só o ANDAIME (vida, energia, escudo, intenção e turnos); o DECK, a
+MÃO e **o que cada carta faz** são seus — montados com as 🎴 Cartas (que são listas
+do núcleo) e blocos gerais.
+
+- **Começar uma batalha de cartas: você com … de vida, inimigo com …** abre a arena
+  (roda no "jogando"; não mexe no estado). **A cada turno, começar com … de energia** é o diferencial
+  do gênero: a energia RESETA todo turno (não acumula). **a minha energia** / **Gastar
+  … de energia** controlam o custo das cartas.
+- **Quando começar o meu turno** roda no início de cada turno seu (energia e escudo já
+  resetaram): é aqui que você COMPRA a mão — "Mover a carta do topo do baralho para a
+  mão" umas 5 vezes (rebaralhe com "Remontar" se o baralho zerou). **Passar o turno**
+  dá a vez ao inimigo e volta pra você.
+- **A vida:** **a minha vida** / **a vida do inimigo** (na batalha) + **Tirar … de
+  vida do inimigo** (ataque) / **Tirar … da minha vida** (o inimigo bate; o ESCUDO
+  absorve primeiro) / **Ganhar … de escudo** (defesa; some no começo do seu turno).
+- **A intenção (o telegrafo, a alma do gênero):** **O inimigo vai … de … no próximo
+  turno** anuncia o que ele fará (a ação é uma palavra que VOCÊ inventa: atacar,
+  defender…). **Desenhar o painel da batalha de cartas** mostra as vidas, energia,
+  escudo e essa intenção. No **Quando for a vez do inimigo** você RESOLVE a intenção
+  ("se o inimigo vai atacar: Tirar a minha vida do valor dele") e anuncia a próxima.
+- **Jogar uma carta** é receita das 🃏 Cartas: no "Quando clicar no jogo", "a carta
+  clicada em (mouse x, mouse y) da mão"; se tem energia, "Gastar" o custo, aplique o
+  efeito (Tirar vida do inimigo / Ganhar escudo) e "Mover" a carta da mão pro descarte.
+- Vitória: "se a vida do inimigo ≤ 0: Mudar o estado para vitória". Derrota: "se a
+  minha vida ≤ 0: Terminar o jogo". O exemplo "Duelo de Cartas" monta tudo isso.
 `,
   examples: [
     meuPrimeiroJogoExample,
@@ -973,6 +1126,11 @@ das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
     defesaDoReinoExample,
     reinoAbertoExample,
     batalhaEmEquipeExample,
+    oChefaoExample,
+    oChefaoFichaExample,
+    corridaTabuleiroExample,
+    jogoDaMemoriaExample,
+    dueloDeCartasExample,
     cobrinhaExample,
     quebraBlocosExample,
   ],

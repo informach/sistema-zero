@@ -75,6 +75,74 @@ describe('metadados da ponte (puros, sem raster)', () => {
     expect(tilesetMetaFrom(8, [])).toEqual({ tileSize: 8, solid: [] })
   })
 
+  it('tilesetMetaFrom emite platform SÓ quando há plataforma (retrocompat: omitido quando vazio)', () => {
+    // sem plataforma → chave AUSENTE (payload byte-idêntico ao de antes)
+    expect(tilesetMetaFrom(16, [true, false], [false, false])).toEqual({
+      tileSize: 16,
+      solid: [0],
+    })
+    // com plataforma → chave presente
+    expect(tilesetMetaFrom(16, [true, false, false], [false, true, false])).toEqual({
+      tileSize: 16,
+      solid: [0],
+      platform: [1],
+    })
+  })
+
+  it('tilemapMetaFrom filtra a grade por camada (fundo × frente) e SEM predicado achata tudo', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    // camada de fundo com célula 1; camada da frente (marcada) com célula 2.
+    const bg = tilemap.layers[0]
+    if (!bg) throw new Error('camada esperada')
+    bg.cells.set([1, -1])
+    const frontLayer = {
+      id: 'front',
+      name: 'copa',
+      visible: true,
+      front: true,
+      cells: new Int16Array([-1, 2]),
+    }
+    const withFront = { ...tilemap, layers: [bg, frontLayer] }
+    const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 16, height: 16 }
+    const bgMeta = tilemapMetaFrom(withFront, tileset, sheet, (l) => l.front !== true)
+    const frontMeta = tilemapMetaFrom(withFront, tileset, sheet, (l) => l.front === true)
+    expect(bgMeta.grid).toBe('1 .')
+    expect(frontMeta.grid).toBe('. 2')
+    // SEM predicado = mapa COMPLETO: é o que a ponte "Usar no Estúdio" grava em
+    // "Meus desenhos" — a decoração da frente (peça 2) NÃO pode sumir da grade.
+    const fullMeta = tilemapMetaFrom(withFront, tileset, sheet)
+    expect(fullMeta.grid).toBe('1 2')
+    // frontGrid (p/ o gk desenhar "frente" por cima) só no meta COMPLETO.
+    expect(fullMeta.frontGrid).toBe('. 2')
+    expect(bgMeta.frontGrid).toBeUndefined()
+    expect(frontMeta.frontGrid).toBeUndefined()
+  })
+
+  it('tilemapMetaFrom SEM camada de frente não emite frontGrid (retrocompat)', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const layer = tilemap.layers[0]
+    if (!layer) throw new Error('camada esperada')
+    layer.cells.set([0, 1])
+    const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 16, height: 16 }
+    expect(tilemapMetaFrom(tilemap, tileset, sheet).frontGrid).toBeUndefined()
+  })
+
+  it('tilemapMetaFrom leva platform quando o tileset tem peça plataforma', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    tileset.tiles.push({ ...tileset.tiles[0] } as (typeof tileset.tiles)[number])
+    tileset.solid.push(false)
+    tileset.platform.push(false)
+    tileset.solid[0] = true
+    tileset.platform[1] = true
+    const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 32, height: 16 }
+    const meta = tilemapMetaFrom(tilemap, tileset, sheet)
+    expect(meta.solid).toEqual([0])
+    expect(meta.platform).toEqual([1])
+  })
+
   it('tilemapMetaFrom junta grade (formato do Estúdio) + sólidos + folha embutida', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     tileset.solid[1] = true

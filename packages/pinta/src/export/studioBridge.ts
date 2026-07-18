@@ -13,12 +13,14 @@ import {
   type PintaAsset,
   resolveAssetPalette,
   type TilemapAsset,
+  type TilemapLayer,
 } from '../core/project'
 import type { PintaSpriteMeta, PintaTilemapMeta, PintaTilesetMeta } from '../core/types'
 import { packTileset, tilesetPngDataUrl } from '../tiles/packTileset'
 import { packVectorTileset, vectorTilesetPngDataUrl } from '../tiles/packVectorTileset'
-import { tilemapPngDataUrl } from '../tiles/renderTilemap'
+import { tilemapThumbnail } from '../tiles/renderTilemap'
 import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
+import { hasFrontLayer } from '../tiles/tilemapOps'
 import { vectorPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
 import { packSpritesheet, spritesheetPngDataUrl } from './spritesheet'
@@ -35,6 +37,11 @@ export interface StudioPayload {
   tileset?: PintaTilesetMeta
   /** Só tilemaps: grade jogável + folha de peças EMBUTIDA (mapa auto-contido). */
   tilemap?: PintaTilemapMeta
+  /**
+   * Só tilemaps COM camada "da frente": a grade só das camadas da frente (mesma
+   * folha embutida) — o Estúdio desenha por cima do jogador.
+   */
+  tilemapFront?: PintaTilemapMeta
 }
 
 /** Extrai as animações da geometria da folha (mesma p/ pixel e vetor). */
@@ -56,26 +63,55 @@ export function spriteMetaFromPack(pack: {
   }
 }
 
-/** Índices SÓLIDOS de um tileset (boolean[] paralelo → lista de índices). */
-export function tilesetMetaFrom(tileSize: number, solid: readonly boolean[]): PintaTilesetMeta {
-  return { tileSize, solid: solid.flatMap((s, i) => (s ? [i] : [])) }
+/** boolean[] paralelo → lista de índices ligados. */
+function indicesOf(flags: readonly boolean[]): number[] {
+  return flags.flatMap((f, i) => (f ? [i] : []))
+}
+
+/**
+ * Índices SÓLIDOS + PLATAFORMA de um tileset. `platform` é OMITIDO quando vazio
+ * → payload de tileset sem plataforma fica byte-idêntico ao de antes (retrocompat).
+ */
+export function tilesetMetaFrom(
+  tileSize: number,
+  solid: readonly boolean[],
+  platform: readonly boolean[] = [],
+): PintaTilesetMeta {
+  const platformIdx = indicesOf(platform)
+  return {
+    tileSize,
+    solid: indicesOf(solid),
+    ...(platformIdx.length ? { platform: platformIdx } : {}),
+  }
 }
 
 /**
  * Metadados de MAPA (puro, testável sem canvas): grade no formato do Estúdio +
- * sólidos do tileset + a folha de peças já rasterizada (`sheet`).
+ * sólidos/plataformas do tileset + a folha de peças já rasterizada (`sheet`).
+ * `platform` OMITIDO quando vazio (retrocompat byte-idêntica).
  */
 export function tilemapMetaFrom(
   tilemap: TilemapAsset,
   tileset: AnyTilesetAsset,
   sheet: { dataUrl: string; width: number; height: number },
+  include?: (layer: TilemapLayer) => boolean,
 ): PintaTilemapMeta {
+  const platformIdx = indicesOf(tileset.platform)
+  // Grade da FRENTE só no meta COMPLETO (sem predicado) e quando há camada de
+  // frente — o gk a desenha por cima do jogador na opção "frente". O meta
+  // `tilemapFront` (chamado COM predicado) não repete essa grade.
+  const frontGrid =
+    include === undefined && hasFrontLayer(tilemap)
+      ? tilemapToStudioGrid(tilemap, (l) => l.front === true)
+      : undefined
   return {
     tileSize: tileset.tileSize,
     cols: tilemap.cols,
     rows: tilemap.rows,
-    grid: tilemapToStudioGrid(tilemap),
-    solid: tilesetMetaFrom(tileset.tileSize, tileset.solid).solid,
+    grid: tilemapToStudioGrid(tilemap, include),
+    solid: indicesOf(tileset.solid),
+    ...(platformIdx.length ? { platform: platformIdx } : {}),
+    ...(frontGrid ? { frontGrid } : {}),
     tileset: sheet,
   }
 }
@@ -84,6 +120,10 @@ export function tilemapMetaFrom(
 // MAX_ASSET_DATA_URL_CHARS de packages/studio/src/core/project.ts (o
 // EditorScreen valida de novo antes de enviar, com a mensagem gentil).
 const STUDIO_MAX_ASSET_CHARS = 800_000
+
+// Maior lado da MINIATURA do mapa na biblioteca (o runtime não usa esta imagem
+// — só a grade+folha do metadado). Capar evita cota estourada e canvas gigante.
+const STUDIO_TILEMAP_THUMB_PX = 512
 
 export async function buildStudioPayload(
   asset: PintaAsset,
@@ -110,18 +150,32 @@ export async function buildStudioPayload(
         dataUrl,
         width: pack.columns * pack.tileSize,
         height: pack.rows * pack.tileSize,
-        tileset: tilesetMetaFrom(asset.tileSize, asset.solid),
+        tileset: tilesetMetaFrom(asset.tileSize, asset.solid, asset.platform),
       }
     }
     case 'tilemap': {
       const tileset = findAsset(asset.tilesetId)
       if (!tileset || !isTilesetKind(tileset)) return null
-      // dataUrl do ASSET = o mapa achatado (miniatura reconhecível na biblioteca).
-      const dataUrl =
+      // dataUrl do ASSET = miniatura do mapa achatado, CAPADA em 512px (o
+      // runtime usa a grade+folha do metadado, não esta imagem) — mapas grandes
+      // não estouram a cota nem o teto de canvas do device.
+      const nativeMax = Math.max(asset.cols, asset.rows) * tileset.tileSize
+      const thumbScale =
+        nativeMax > STUDIO_TILEMAP_THUMB_PX ? STUDIO_TILEMAP_THUMB_PX / nativeMax : 1
+      const thumb =
         tileset.kind === 'tileset'
-          ? tilemapPngDataUrl(asset, tileset)
-          : await vectorTilemapPngDataUrl(asset, tileset)
-      if (!dataUrl) return null
+          ? tilemapThumbnail(asset, tileset, STUDIO_TILEMAP_THUMB_PX)
+          : await vectorTilemapPngDataUrl(asset, tileset, thumbScale).then((url) =>
+              url
+                ? {
+                    dataUrl: url,
+                    width: Math.round(asset.cols * tileset.tileSize * thumbScale),
+                    height: Math.round(asset.rows * tileset.tileSize * thumbScale),
+                  }
+                : null,
+            )
+      if (!thumb) return null
+      const dataUrl = thumb.dataUrl
       // A FOLHA de peças vai EMBUTIDA no metadado (mapa auto-contido): o bloco
       // "Criar mapa do meu desenho" monta grade + peças + sólidos sozinho.
       const sheetPack =
@@ -136,11 +190,21 @@ export async function buildStudioPayload(
         width: sheetPack.columns * tileset.tileSize,
         height: sheetPack.rows * tileset.tileSize,
       }
+      // `tilemap` = mapa COMPLETO (todas as camadas visíveis) — é o que a ponte
+      // "Usar no Estúdio" grava em "Meus desenhos" e o que o "Jogar meu mapa"
+      // desenha como base. A frente (se houver) vira um 2º meta SÓ com as
+      // camadas "da frente", que o jogo redesenha DEPOIS do jogador (as peças
+      // de frente aparecem nos dois passes = oclusão por cima do herói; sem
+      // filtrar o `tilemap` aqui a decoração NÃO some no caminho "Meus desenhos").
+      const front = hasFrontLayer(asset)
       return {
         dataUrl,
-        width: asset.cols * tileset.tileSize,
-        height: asset.rows * tileset.tileSize,
+        width: thumb.width,
+        height: thumb.height,
         tilemap: tilemapMetaFrom(asset, tileset, sheet),
+        ...(front
+          ? { tilemapFront: tilemapMetaFrom(asset, tileset, sheet, (l) => l.front === true) }
+          : {}),
       }
     }
     case 'vector-background': {
@@ -175,7 +239,7 @@ export async function buildStudioPayload(
         dataUrl,
         width: pack.columns * pack.tileSize,
         height: pack.rows * pack.tileSize,
-        tileset: tilesetMetaFrom(asset.tileSize, asset.solid),
+        tileset: tilesetMetaFrom(asset.tileSize, asset.solid, asset.platform),
       }
     }
     default: {

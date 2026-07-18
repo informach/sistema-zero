@@ -2372,7 +2372,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block(
             'sz_g2d_create_tilemap',
-            { NAME: stmt.varName, IMAGE: stmt.image, SOLID: stmt.solid, GRID: stmt.grid },
+            {
+              NAME: stmt.varName,
+              IMAGE: stmt.image,
+              SOLID: stmt.solid,
+              PLATFORM: stmt.platform ?? '',
+              GRID: stmt.grid,
+            },
             {},
             stmt.__id,
             { TILE: tile },
@@ -3501,6 +3507,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             { LABEL: label },
           )
     }
+    case 'gk:setScreenBg':
+      return block(
+        'sz_gk_set_screen_bg',
+        { SCREEN: stmt.screen, COLOR: stmt.color, IMAGE: stmt.image },
+        {},
+        stmt.__id,
+      )
     case 'gk:showScreen':
       return block('sz_gk_show_screen', { SCREEN: stmt.name }, {}, stmt.__id)
     case 'gk:hideScreens':
@@ -3723,11 +3736,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const def = exprToValueBlock(valueToExpr(stmt.def))
       return hp === null || str === null || def === null
         ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_battle_start', { NAME: stmt.name }, {}, stmt.__id, {
-            HP: hp,
-            STR: str,
-            DEF: def,
-          })
+        : block(
+            'sz_gk_rpg_battle_start',
+            { NAME: stmt.name, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
     }
     case 'gk:rpgSetSpecial': {
       const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
@@ -3745,6 +3760,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_gk_rpg_give_potion', { NAME: stmt.name }, {}, stmt.__id, { HEAL: heal })
     }
+    case 'gk:rpgHealHero':
+      return block('sz_gk_rpg_heal_hero', {}, {}, stmt.__id)
     case 'gk:rpgBattleReward': {
       const xp = exprToValueBlock(valueToExpr(stmt.xp))
       return xp === null
@@ -3766,11 +3783,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const def = exprToValueBlock(valueToExpr(stmt.def))
       return hp === null || str === null || def === null
         ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_add_ally', { NAME: stmt.name, COLOR: stmt.color }, {}, stmt.__id, {
-            HP: hp,
-            STR: str,
-            DEF: def,
-          })
+        : block(
+            'sz_gk_rpg_add_ally',
+            { NAME: stmt.name, COLOR: stmt.color, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
     }
     case 'gk:rpgAddFoe': {
       const hp = exprToValueBlock(valueToExpr(stmt.hp))
@@ -3778,11 +3797,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const def = exprToValueBlock(valueToExpr(stmt.def))
       return hp === null || str === null || def === null
         ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_add_foe', { NAME: stmt.name, COLOR: stmt.color }, {}, stmt.__id, {
-            HP: hp,
-            STR: str,
-            DEF: def,
-          })
+        : block(
+            'sz_gk_rpg_add_foe',
+            { NAME: stmt.name, COLOR: stmt.color, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
     }
     case 'gk:rpgTeachMove': {
       const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
@@ -3803,6 +3824,58 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             AMOUNT: amount,
             COST: cost,
           })
+    }
+    case 'gk:rpgAddBoss': {
+      const hp = exprToValueBlock(valueToExpr(stmt.hp))
+      const str = exprToValueBlock(valueToExpr(stmt.str))
+      const def = exprToValueBlock(valueToExpr(stmt.def))
+      return hp === null || str === null || def === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_rpg_add_boss',
+            { NAME: stmt.name, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
+    }
+    case 'gk:rpgDefineBattler': {
+      const hp = exprToValueBlock(valueToExpr(stmt.hp))
+      const str = exprToValueBlock(valueToExpr(stmt.str))
+      const def = exprToValueBlock(valueToExpr(stmt.def))
+      return hp === null || str === null || def === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_rpg_define_battler',
+            {
+              NAME: stmt.name,
+              IMAGE: stmt.image,
+              COLOR: stmt.color,
+              BOSS: stmt.boss ? 'TRUE' : 'FALSE',
+            },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
+    }
+    case 'gk:rpgBattleNamed':
+      return block('sz_gk_rpg_battle_named', { NAME: stmt.name }, {}, stmt.__id)
+    case 'gk:rpgAddFoeNamed':
+      return block('sz_gk_rpg_add_foe_named', { NAME: stmt.name }, {}, stmt.__id)
+    case 'gk:rpgOnFoeTurn':
+      return block(
+        'sz_gk_rpg_on_foe_turn',
+        { NAME: stmt.name },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:rpgFoeUse':
+      return block('sz_gk_rpg_foe_use', { NAME: stmt.name, MOVE: stmt.move }, {}, stmt.__id)
+    case 'gk:rpgFoeHitAll': {
+      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+      return dmg === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_foe_hit_all', { NAME: stmt.name }, {}, stmt.__id, { DMG: dmg })
     }
     case 'gk:rpgOnBattleEnd':
       return block(
@@ -3947,6 +4020,108 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             ROW: row,
           })
     }
+    case 'gk:playersSetup': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_players_setup', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:nextPlayer':
+      return block('sz_gk_next_player', {}, {}, stmt.__id)
+    case 'gk:onTurnChange':
+      return block('sz_gk_on_turn_change', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'gk:moveAlongTrack': {
+      const spaces = exprToValueBlock(valueToExpr(stmt.spaces))
+      return spaces === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_move_along_track', { WHO: stmt.who, PATH: stmt.path }, {}, stmt.__id, {
+            SPACES: spaces,
+          })
+    }
+    case 'gk:onLandSpace':
+      return block('sz_gk_on_land_space', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'gk:pileMoveTop':
+      return block('sz_gk_pile_move_top', { FROM: stmt.fromVar, TO: stmt.toVar }, {}, stmt.__id)
+    case 'gk:pileShuffleFrom':
+      return block(
+        'sz_gk_pile_shuffle_from',
+        { DECK: stmt.deckVar, DISCARD: stmt.discardVar },
+        {},
+        stmt.__id,
+      )
+    case 'gk:cardFlip': {
+      const card = exprToValueBlock(valueToExpr(stmt.card))
+      return card === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_card_flip', {}, {}, stmt.__id, { CARD: card })
+    }
+    case 'gk:handDraw': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      return x === null || y === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_hand_draw',
+            { PILE: stmt.pileVar, FAN: stmt.fan ? 'TRUE' : 'FALSE' },
+            {},
+            stmt.__id,
+            { X: x, Y: y },
+          )
+    }
+    case 'gk:cardsStart': {
+      const hero = exprToValueBlock(valueToExpr(stmt.heroHp))
+      const enemy = exprToValueBlock(valueToExpr(stmt.enemyHp))
+      return hero === null || enemy === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_start', {}, {}, stmt.__id, { HERO_HP: hero, ENEMY_HP: enemy })
+    }
+    case 'gk:cardsEnergyPerTurn': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_energy_per_turn', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsSpend': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null ? rawJSBlock(stmt) : block('sz_gk_cards_spend', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsOnTurn':
+      return block('sz_gk_cards_on_turn', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'gk:cardsEndTurn':
+      return block('sz_gk_cards_end_turn', {}, {}, stmt.__id)
+    case 'gk:cardsDrawHud':
+      return block('sz_gk_cards_draw_hud', {}, {}, stmt.__id)
+    case 'gk:cardsHurtEnemy': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_hurt_enemy', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsHurtMe': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_hurt_me', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsGainBlock': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_gain_block', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:cardsEnemyIntent': {
+      const v = exprToValueBlock(valueToExpr(stmt.value))
+      return v === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_cards_enemy_intent', { ACTION: stmt.action }, {}, stmt.__id, { VALUE: v })
+    }
+    case 'gk:cardsOnEnemyTurn':
+      return block(
+        'sz_gk_cards_on_enemy_turn',
+        {},
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
     case 'gk:wrapEdges':
       return block('sz_gk_wrap_edges', { WHO: stmt.charVar }, {}, stmt.__id)
     case 'gk:collideTilemap':
@@ -7130,6 +7305,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_rpg_level', {})
     case 'gk:rpgXp':
       return block('sz_gk_rpg_xp', {})
+    case 'gk:battlerLife':
+      return block('sz_gk_battler_life', { NAME: expr.name })
+    case 'gk:battlerMaxLife':
+      return block('sz_gk_battler_max_life', { NAME: expr.name })
     case 'gk:rpgCurrentMap':
       return block('sz_gk_rpg_current_map', {})
     case 'gk:boardGet': {
@@ -7152,6 +7331,50 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
         ? null
         : block('sz_gk_board_in', { NAME: expr.name }, {}, expr.__id, { COL: col, ROW: row })
     }
+    case 'gk:rollDice': {
+      const faces = exprToValueBlock(valueToExpr(expr.faces))
+      return faces === null ? null : block('sz_gk_roll_dice', {}, {}, expr.__id, { FACES: faces })
+    }
+    case 'gk:currentPlayer':
+      return block('sz_gk_current_player', {})
+    case 'gk:spaceOf':
+      return block('sz_gk_space_of', { WHO: expr.who })
+    case 'gk:pileTop':
+      return block('sz_gk_pile_top', { PILE: expr.pileVar })
+    case 'gk:pileSize':
+      return block('sz_gk_pile_size', { PILE: expr.pileVar })
+    case 'gk:card': {
+      const front = exprToValueBlock(valueToExpr(expr.front))
+      const back = exprToValueBlock(valueToExpr(expr.back))
+      return front === null || back === null
+        ? null
+        : block('sz_gk_card', {}, {}, expr.__id, { FRONT: front, BACK: back })
+    }
+    case 'gk:cardIsUp': {
+      const card = exprToValueBlock(valueToExpr(expr.card))
+      return card === null ? null : block('sz_gk_card_is_up', {}, {}, expr.__id, { CARD: card })
+    }
+    case 'gk:cardFace': {
+      const card = exprToValueBlock(valueToExpr(expr.card))
+      return card === null ? null : block('sz_gk_card_face', {}, {}, expr.__id, { CARD: card })
+    }
+    case 'gk:cardAt': {
+      const x = exprToValueBlock(valueToExpr(expr.x))
+      const y = exprToValueBlock(valueToExpr(expr.y))
+      return x === null || y === null
+        ? null
+        : block('sz_gk_card_at', { PILE: expr.pileVar }, {}, expr.__id, { X: x, Y: y })
+    }
+    case 'gk:cardsEnergy':
+      return block('sz_gk_cards_energy', {})
+    case 'gk:cardsHeroLife':
+      return block('sz_gk_cards_hero_life', {})
+    case 'gk:cardsEnemyLife':
+      return block('sz_gk_cards_enemy_life', {})
+    case 'gk:cardsIntentAction':
+      return block('sz_gk_cards_intent_action', {})
+    case 'gk:cardsIntentValue':
+      return block('sz_gk_cards_intent_value', {})
     // ---- Jogo 3D Avançado (game-3d-advanced) ----
     case 'g3k:worldSize':
       return block('sz_g3k_world_size', {})

@@ -401,6 +401,8 @@ export const gameKitRuntime = `(function () {
         naveNewGame();
         // 🏰 idem: ondas somem, slots liberam, moedas voltam ao inicial.
         tdNewGame();
+        // 🃏 idem: a batalha de cartas da partida anterior não sobrevive ao recomeço.
+        cardsNewGame();
         // ⚠️ TODO global de jogo entra AQUI. Os 3 abaixo escaparam quando nasceram:
         // · checkpoint — a criança marca o ponto numa bandeira no meio da fase (uso
         //   natural do bloco); sem zerar, "Jogar de novo" NASCE no meio da fase da
@@ -616,6 +618,16 @@ export const gameKitRuntime = `(function () {
       } catch (e) { resolve(); }
     }));
   }
+  // 🖼️ Unifica o campo IMAGEM: escolher um desenho do Pinta JÁ funciona em todo lugar
+  // (personagem/inimigo/molde/ficha), sem precisar "Carregar a imagem" antes. Se o nome
+  // bate um asset do projeto e ainda não foi registrado, carrega sozinho — idempotente,
+  // e no setup entra no "pending" (a tela de carregando espera). "Carregar a imagem"
+  // segue valendo (explícito) e vira OPCIONAL.
+  function ensureImageLoaded(name) {
+    var k = text(name, '');
+    if (!k || images[k]) return;
+    if (resolveAsset(k)) loadImage(k, k);
+  }
 
   // ---- Laço do jogo (Game.gameLoop do kit) ----
 
@@ -749,12 +761,25 @@ export const gameKitRuntime = `(function () {
         if (typeof s === 'number' && s >= 0) solid[Math.floor(s)] = true;
       }
     }
+    // Peças PLATAFORMA (one-way): mesmo lookup do sólido. O metadado já garante
+    // que não se sobrepõem (sólido vence no sanitizer).
+    var platform = Object.create(null);
+    if (meta.platform && typeof meta.platform.length === 'number') {
+      for (var j = 0; j < meta.platform.length; j++) {
+        var p = meta.platform[j];
+        if (typeof p === 'number' && p >= 0 && !solid[Math.floor(p)]) platform[Math.floor(p)] = true;
+      }
+    }
+    // Grade da FRENTE (opcional): camadas desenhadas POR CIMA do jogador.
+    var frontRows = (typeof meta.frontGrid === 'string' && meta.frontGrid)
+      ? parseTileGrid(meta.frontGrid) : null;
     var imgKey = '__tm_' + nm;
     loadImage(imgKey, meta.tileset.dataUrl); // a folha embutida entra por dataUrl
     tilemaps[nm] = {
       rows: parseTileGrid(meta.grid),
+      frontRows: frontRows,
       artTile: (typeof meta.tileSize === 'number' && meta.tileSize > 0) ? meta.tileSize : 32,
-      imgKey: imgKey, solid: solid
+      imgKey: imgKey, solid: solid, platform: platform
     };
   }
   /** Desenha o mapa alinhado à grade. layer: 'chão' = tudo; 'topos' = só sólidos
@@ -769,7 +794,13 @@ export const gameKitRuntime = `(function () {
     var at = m.artTile;
     var cols = Math.max(1, Math.floor(num(sheet.img.width, at) / at));
     var cell = tilePx;
-    var onlyTops = (text(layer, 'chão') === 'topos');
+    var layerText = text(layer, 'chão');
+    // 'frente' = só a camada da FRENTE (por cima do jogador), sem filtro de
+    // sólido. Sem grade de frente no mapa → nada a desenhar por cima.
+    var frente = (layerText === 'frente');
+    if (frente && !m.frontRows) return;
+    var grid = frente ? m.frontRows : m.rows;
+    var onlyTops = (layerText === 'topos');
     // 🌍 Culling: só a FATIA visível da câmera (o jeito dos jogos profissionais).
     // Um mapa 512x512 cai de ~262 mil drawImage/quadro para ~200. Fora do passe
     // de mundo (HUD/chamada avulsa) a fatia é a tela — mesmo recorte do canvas.
@@ -777,9 +808,9 @@ export const gameKitRuntime = `(function () {
     var vy = (worldPass && camera.on) ? camera.y : 0;
     var pad = camera.shakeT > 0 ? camera.shakeMag : 0;
     var r0 = Math.max(0, Math.floor((vy - pad) / cell));
-    var r1 = Math.min(m.rows.length, Math.ceil((vy + config.h + pad) / cell) + 1);
+    var r1 = Math.min(grid.length, Math.ceil((vy + config.h + pad) / cell) + 1);
     for (var r = r0; r < r1; r++) {
-      var rowArr = m.rows[r];
+      var rowArr = grid[r];
       var c0 = Math.max(0, Math.floor((vx - pad) / cell));
       var c1 = Math.min(rowArr.length, Math.ceil((vx + config.w + pad) / cell) + 1);
       for (var c = c0; c < c1; c++) {
@@ -1026,6 +1057,7 @@ export const gameKitRuntime = `(function () {
 
   function createCharacter(opts) {
     var o = (opts && typeof opts === 'object') ? opts : {};
+    ensureImageLoaded(o.image); // escolher a imagem do Pinta já basta (sem "Carregar")
     var w = num(o.w, 64);
     var h = num(o.h, 64);
     var hp = num(o.health, 100);
@@ -1613,6 +1645,7 @@ export const gameKitRuntime = `(function () {
     var k = text(name, '');
     if (!k) { warn('"Criar o molde" precisa de um nome'); return; }
     var o = (opts && typeof opts === 'object') ? opts : {};
+    ensureImageLoaded(o.image); // a imagem do molde (Pinta) carrega sozinha
     var w = num(o.w, 40), h = num(o.h, 40);
     molds[k] = {
       w: w, h: h,
@@ -2068,6 +2101,42 @@ export const gameKitRuntime = `(function () {
     who._prevX = num(who.x, 0);
     who._prevY = num(who.y, 0);
   }
+  /**
+   * Colisão ONE-WAY das peças PLATAFORMA do tilemap (pisa por cima, atravessa
+   * por baixo). MESMA técnica de cruzamento de plano do oneWayPlatform (molde):
+   * só segura CAINDO e quando o pé cruza o topo da peça neste quadro. Não é
+   * varrido — o feetNext já projeta o movimento inteiro do quadro (anti-túnel).
+   */
+  function collideTilemapPlatform(who, m, d) {
+    if (!m.platform) return;
+    if (num(who.vy, 0) < 0) return; // subindo: atravessa
+    if (num(who._dropT, 0) > 0) return; // pediu descer (↓): ignora
+    var t = tilePx;
+    var feet = hbBottom(who);
+    var feetNext = feet + num(who.vy, 0) * d;
+    var c0 = Math.floor(hbLeft(who) / t);
+    var c1 = Math.floor((hbRight(who) - 1) / t);
+    var r0 = Math.floor(feet / t);
+    var r1 = Math.floor(feetNext / t) + 1;
+    for (var r = r0; r <= r1; r++) {
+      var rowArr = m.rows[r];
+      if (!rowArr) continue;
+      var top = r * t;
+      if (feet > top + 1) continue; // já estava abaixo do topo: não é pouso
+      if (feetNext < top) continue; // não alcança o plano neste quadro
+      for (var c = c0; c <= c1; c++) {
+        var idx = rowArr[c];
+        if (idx == null || idx < 0 || !m.platform[idx]) continue;
+        if (hbRight(who) <= c * t) continue;
+        if (hbLeft(who) >= c * t + t) continue;
+        who.y = top - hbH(who) - num(who._hbY, 0);
+        who.vy = 0;
+        who.onGround = true;
+        who._prevY = num(who.y, 0); // a varredura não desfaz este pouso
+        return;
+      }
+    }
+  }
   function collideTilemap(who, mapName) {
     if (!who || typeof who !== 'object') return;
     var mk = text(mapName, '');
@@ -2081,6 +2150,7 @@ export const gameKitRuntime = `(function () {
     sweepSolid(who, sweepStepTilemap);
     sweepWho = null;
     sweepMap = null;
+    collideTilemapPlatform(who, m, currentDt);
   }
   function collideGroup(who, moldName) {
     if (!who || typeof who !== 'object') return;
@@ -2174,7 +2244,7 @@ export const gameKitRuntime = `(function () {
     ball.vx = off * speed;
   }
 
-  // ---- 🧩 Tabuleiro / grade (Snake, Match-3, Sokoban, campo-minado, puzzles) ----
+  // ---- 🧩 Grade (Snake, Match-3, Sokoban, campo-minado, puzzles) ----
   // Uma grade NOMEADA de células; a criança varre com "repita" do núcleo + ler/pôr.
   var boards = Object.create(null); // nome -> {cols, rows, empty, cells:[]} (flat row*cols+col)
   function boardAt(name) { return boards[text(name, 'tabuleiro')] || null; }
@@ -2211,6 +2281,137 @@ export const gameKitRuntime = `(function () {
     if (!b) return false;
     var cc = Math.round(num(col, 0)), rr = Math.round(num(row, 0));
     return cc >= 0 && cc < b.cols && rr >= 0 && rr < b.rows;
+  }
+
+  // ---- 🃏 R30 — CARTAS: uma pilha É uma LISTA do núcleo (array); os verbos operam
+  // por REFERÊNCIA. A criança MONTA memória, Uno, deck-battler com listas + estes. ----
+  function pileMoveTop(from, to) {
+    if (!Array.isArray(from) || !Array.isArray(to) || from.length === 0) return;
+    to.push(from.pop());
+  }
+  function pileShuffleFrom(deck, discard) {
+    if (!Array.isArray(deck) || !Array.isArray(discard)) return;
+    while (discard.length) deck.push(discard.pop()); // junta o descarte no monte
+    for (var i = deck.length - 1; i > 0; i--) { // e embaralha (Fisher-Yates)
+      var j = Math.floor(Math.random() * (i + 1)), t = deck[i]; deck[i] = deck[j]; deck[j] = t;
+    }
+  }
+  function pileTop(pile) { return (Array.isArray(pile) && pile.length) ? pile[pile.length - 1] : null; }
+  function pileSize(pile) { return Array.isArray(pile) ? pile.length : 0; }
+  // Carta = objeto leve de 2 faces (frente/verso + virada?). Açúcar de apresentação.
+  function makeCard(front, back) {
+    return { front: front, back: (back === undefined || back === null) ? '?' : back, faceUp: false };
+  }
+  function cardFlip(c) { if (c && typeof c === 'object') c.faceUp = !c.faceUp; }
+  function cardIsUp(c) { return !!(c && typeof c === 'object' && c.faceUp); }
+  function cardFace(c) {
+    if (!c || typeof c !== 'object') return c; // valor cru (não é carta de 2 faces)
+    return c.faceUp ? c.front : c.back;
+  }
+  // Mão clicável: desenha a lista como fileira/leque e guarda os retângulos por
+  // REFERÊNCIA (WeakMap pela própria lista) — o cardAt lê de volta o clique.
+  var handRects = (typeof WeakMap === 'function') ? new WeakMap() : null;
+  function handDraw(pile, x, y, fan) {
+    if (!Array.isArray(pile) || !ctx2d) return;
+    var cw = 60, ch = 84, gap = 12, n = pile.length;
+    // A "desenhar a mão" roda no laço de desenho (todo quadro). Reusa o array de
+    // retângulos POR pilha e os próprios objetos (cresce no lugar) — zero lixo por
+    // quadro em regime, como o depthList; só aloca quando a mão CRESCE.
+    var rects = handRects ? handRects.get(pile) : null;
+    if (!rects) { rects = []; if (handRects) handRects.set(pile, rects); }
+    var bx = num(x, 0), by = num(y, 0);
+    for (var i = 0; i < n; i++) {
+      var rx = bx + i * (cw + gap);
+      var ry = by + (fan ? Math.abs(i - (n - 1) / 2) * 6 : 0); // leque = leve arco
+      ctx2d.save();
+      ctx2d.fillStyle = '#fdfdfd'; ctx2d.strokeStyle = '#2b2b2b'; ctx2d.lineWidth = 2;
+      ctx2d.fillRect(rx, ry, cw, ch); ctx2d.strokeRect(rx, ry, cw, ch);
+      var card = pile[i];
+      var face = (card && typeof card === 'object' && 'faceUp' in card) ? (card.faceUp ? card.front : card.back) : card;
+      ctx2d.fillStyle = '#1b1b1b'; ctx2d.font = '22px sans-serif';
+      ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
+      ctx2d.fillText(String(face === undefined || face === null ? '' : face), rx + cw / 2, ry + ch / 2);
+      ctx2d.restore();
+      var r = rects[i];
+      if (r) { r.x = rx; r.y = ry; r.w = cw; r.h = ch; }
+      else rects[i] = { x: rx, y: ry, w: cw, h: ch };
+    }
+    rects.length = n; // descarta sobras de uma mão MAIOR de um quadro anterior
+  }
+  function cardAt(x, y, pile) {
+    if (!Array.isArray(pile) || !handRects) return -1;
+    var rects = handRects.get(pile);
+    if (!rects) return -1;
+    var px = num(x, 0), py = num(y, 0);
+    for (var i = rects.length - 1; i >= 0; i--) { // de trás pra frente: o de cima vence
+      var r = rects[i];
+      if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) return i;
+    }
+    return -1;
+  }
+
+  // ---- 🃏 R30 — Kit Cartas: o RPG DE CARTAS (deck-battler). RECEITA, não mágica:
+  // o kit dá o andaime (vida/energia/escudo/intenção/turnos + HUD); a criança MONTA
+  // o deck (listas + cartas), a mão e O QUE CADA CARTA FAZ com os verbos abaixo. ----
+  var cards = { battle: null, onTurn: [], onEnemyTurn: [] };
+  function cardsStart(heroHp, enemyHp) {
+    var hh = Math.max(1, num(heroHp, 30)), eh = Math.max(1, num(enemyHp, 40));
+    cards.battle = {
+      heroHp: hh, heroMax: hh, enemyHp: eh, enemyMax: eh,
+      energy: 3, energyPerTurn: 3, block: 0,
+      intentAction: 'atacar', intentValue: 6
+    };
+    // ⚠️ NÃO muda o estado: o jogo de cartas roda no 'jogando' da criança (senão o
+    // onUpdate/teclas congelariam). O 1º "meu turno" começa já.
+    cardsStartTurn();
+  }
+  function cardsEnergyPerTurn(n) { if (cards.battle) { cards.battle.energyPerTurn = Math.max(0, num(n, 3)); cards.battle.energy = cards.battle.energyPerTurn; } }
+  function cardsEnergy() { return cards.battle ? cards.battle.energy : 0; }
+  function cardsSpend(n) { if (cards.battle) cards.battle.energy = Math.max(0, cards.battle.energy - Math.max(0, num(n, 1))); }
+  function cardsHeroLife() { return cards.battle ? Math.max(0, cards.battle.heroHp) : 0; }
+  function cardsEnemyLife() { return cards.battle ? Math.max(0, cards.battle.enemyHp) : 0; }
+  function cardsHurtEnemy(n) { if (cards.battle) cards.battle.enemyHp -= Math.max(0, num(n, 0)); }
+  function cardsHurtMe(n) {
+    if (!cards.battle) return;
+    var d = Math.max(0, num(n, 0));
+    var absorbed = Math.min(cards.battle.block, d); // o escudo absorve primeiro
+    cards.battle.block -= absorbed; d -= absorbed;
+    cards.battle.heroHp -= d;
+  }
+  function cardsGainBlock(n) { if (cards.battle) cards.battle.block += Math.max(0, num(n, 0)); }
+  function cardsEnemyIntent(action, value) {
+    if (cards.battle) { cards.battle.intentAction = text(action, 'atacar'); cards.battle.intentValue = Math.max(0, num(value, 6)); }
+  }
+  function cardsIntentAction() { return cards.battle ? cards.battle.intentAction : ''; }
+  function cardsIntentValue() { return cards.battle ? cards.battle.intentValue : 0; }
+  function cardsOnTurn(fn) { if (typeof fn === 'function') cards.onTurn.push(fn); }
+  function cardsOnEnemyTurn(fn) { if (typeof fn === 'function') cards.onEnemyTurn.push(fn); }
+  function cardsStartTurn() {
+    if (!cards.battle) return;
+    cards.battle.energy = cards.battle.energyPerTurn; // RESET (não regenera como o RPG)
+    cards.battle.block = 0; // o escudo some no começo do meu turno (como no gênero)
+    for (var i = 0; i < cards.onTurn.length; i++) { try { cards.onTurn[i](); } catch (e) { warn('erro no "Quando começar o meu turno": ' + e); } }
+  }
+  function cardsEndTurn() {
+    if (!cards.battle) return;
+    for (var i = 0; i < cards.onEnemyTurn.length; i++) { try { cards.onEnemyTurn[i](); } catch (e) { warn('erro no "Quando for a vez do inimigo": ' + e); } }
+    cardsStartTurn(); // volta pra mim (reseta energia/escudo e roda o meu turno)
+  }
+  // "Jogar de novo": zera a batalha de cartas (ESTADO), como lutaNewGame/tdNewGame. As
+  // receitas de turno (cardsOnTurn/cardsOnEnemyTurn) são registros — como os spawners,
+  // ficam de PÉ (o exemplo as põe no topo; quem entra em jogando re-chama cardsStart e
+  // a batalha nasce do zero). Sem isto, o Kit Cartas era a ÚNICA batalha não resetada.
+  function cardsNewGame() { cards.battle = null; }
+  function cardsDrawHud() {
+    if (!cards.battle || !ctx2d) return;
+    var b = cards.battle;
+    drawBar(Math.max(0, b.enemyHp), b.enemyMax, config.w / 2 - 130, 46, 260, 18, '#ef4444');
+    drawBar(Math.max(0, b.heroHp), b.heroMax, config.w / 2 - 130, config.h - 66, 260, 18, '#4ade80');
+    ctx2d.save();
+    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '15px sans-serif'; ctx2d.textAlign = 'center';
+    ctx2d.fillText('👿 vai: ' + b.intentAction + ' ' + b.intentValue, config.w / 2, 34);
+    ctx2d.fillText('⚡ Energia: ' + b.energy + '     🛡️ Escudo: ' + b.block, config.w / 2, config.h - 34);
+    ctx2d.restore();
   }
 
   // ---- ⏱️ Tempo (acumulador de dt — NÃO relógio de parede: pausa tem que pausar) ----
@@ -2714,6 +2915,7 @@ export const gameKitRuntime = `(function () {
     var an = text(assetName, '');
     var imgKey = '__tm_' + nm;
     var solid = Object.create(null);
+    var platform = Object.create(null);
     var art = 32;
     if (an) {
       var entry = Object.prototype.hasOwnProperty.call(ASSET_META, an) ? ASSET_META[an] : null;
@@ -2725,9 +2927,15 @@ export const gameKitRuntime = `(function () {
           if (typeof sv === 'number' && sv >= 0) solid[Math.floor(sv)] = true;
         }
       }
+      if (ts && ts.platform && typeof ts.platform.length === 'number') {
+        for (var pi = 0; pi < ts.platform.length; pi++) {
+          var pv = ts.platform[pi];
+          if (typeof pv === 'number' && pv >= 0 && !solid[Math.floor(pv)]) platform[Math.floor(pv)] = true;
+        }
+      }
       loadImage(imgKey, an);
     }
-    tilemaps[nm] = { rows: grid, artTile: art, imgKey: imgKey, solid: solid };
+    tilemaps[nm] = { rows: grid, artTile: art, imgKey: imgKey, solid: solid, platform: platform };
   }
 
   // ---- 🎮 2º jogador (teclas ESCOLHIDAS) ----
@@ -3134,6 +3342,7 @@ export const gameKitRuntime = `(function () {
   function pkmCreature(name, type, hp, str, def, spd, image, look) {
     var k = text(name, '');
     if (!k) { warn('"Criatura" precisa de um nome'); return; }
+    ensureImageLoaded(image); // a imagem da criatura (Pinta) carrega sozinha
     pkm.species[k] = {
       name: k, type: pkmKeyType(type),
       hp: Math.max(1, num(hp, 30)), str: Math.max(1, num(str, 8)),
@@ -4617,6 +4826,50 @@ export const gameKitRuntime = `(function () {
     return Math.max(0, Math.min(100, ((base + seg) / rec.total) * 100));
   }
 
+  // ---- 🎲 R30 — Jogos de TABULEIRO: dado + ordem de turno + trilha de casas ----
+  // Peças NEUTRAS: a criança MONTA o Ludo/Jogo-da-Vida. (o dado vai na 🎲 Sorte.)
+  function rollDice(faces) {
+    var n = Math.max(1, Math.round(num(faces, 6)));
+    return Math.floor(Math.random() * n) + 1;
+  }
+  // Ordem de turno = um ANEL puro (1..N). Generaliza o nextAliveAfter das batalhas.
+  var turnRing = { count: 1, current: 1 };
+  var turnHooks = []; // fns do "Quando a vez mudar"
+  function playersSetup(n) {
+    turnRing.count = Math.max(1, Math.round(num(n, 2)));
+    turnRing.current = 1;
+  }
+  function currentPlayer() { return turnRing.current; }
+  function nextPlayer() {
+    turnRing.current = (turnRing.current % turnRing.count) + 1;
+    for (var i = 0; i < turnHooks.length; i++) {
+      try { turnHooks[i](); } catch (e) { warn('erro no "Quando a vez mudar": ' + e); }
+    }
+  }
+  function onTurnChange(fn) { if (typeof fn === 'function') turnHooks.push(fn); }
+  // Trilha de casas: cada PONTO do caminho (🛤️) vira uma casa discreta. A peça
+  // guarda o índice da casa (_spaceIdx) e desliza (tween) até ela, PARANDO.
+  var landHooks = []; // fns do "Quando um peão parar numa casa"
+  function moveAlongTrack(who, spaces, pathName) {
+    if (!who || typeof who !== 'object') return;
+    var k = text(pathName, '');
+    var rec = paths[k];
+    if (!rec) { warnOnce('track:' + k, 'a trilha "' + k + '" não existe — crie com "Criar o caminho"'); return; }
+    var idx = Math.round(num(who._spaceIdx, 0)) + Math.round(num(spaces, 1));
+    idx = Math.max(0, Math.min(rec.pts.length - 1, idx));
+    who._spaceIdx = idx; who._trackName = k;
+    var p = rec.pts[idx];
+    tweenTo(who, p.x - who.w / 2, p.y - who.h / 2, 0.3); // desliza suave até a casa
+    emit('casa:parou', who);
+    for (var i = 0; i < landHooks.length; i++) {
+      try { landHooks[i](); } catch (e) { warn('erro no "Quando um peão parar numa casa": ' + e); }
+    }
+  }
+  function spaceOf(who) {
+    return (who && typeof who === 'object') ? Math.max(0, Math.round(num(who._spaceIdx, 0))) : 0;
+  }
+  function onLandSpace(fn) { if (typeof fn === 'function') landHooks.push(fn); }
+
   // ---- ✨ R25 — explosao por FOLHA one-shot (a explosion.png do Chris em 1
   // bloco; hoje custa spawn + playAnimOnce + vigiar animEnded + recycle). ----
   function sheetBurst(name, frames, fps, x, y, size) {
@@ -5232,7 +5485,7 @@ export const gameKitRuntime = `(function () {
     // entra sozinho), fila de inimigos da próxima batalha, e golpes nomeados por nome.
     allies: [],           // [{name, hp, str, def, look, color}] — "Adicionar aliado"
     foeQueue: [],         // [{...}] — "Adicionar inimigo" (consumida em rpgBattleStart)
-    movesByName: {},      // nome -> [{name, dmg, cost, heal}] — "Ensinar o golpe"
+    movesByName: nameMap(), // nome -> [{name, dmg, cost, heal}] — "Ensinar o golpe" (sem protótipo: nome "constructor"/"toString" da criança não quebra)
     // Atributos do herói na batalha (Combatant do Pizza): vida/força/defesa + XP/
     // nível + energia (mana p/ o golpe especial). base* = valores iniciais (o
     // "Recomeçar" volta a eles); os correntes sobem com o nível.
@@ -5254,7 +5507,15 @@ export const gameKitRuntime = `(function () {
     // 💬 Menu de escolha (KeyboardMenu do Pizza) no canvas: ↑/↓/espaço + clique.
     menu: null,           // {title, options:[{label, fn}], index} — herói TRAVADO
     menuBuilding: null,   // coletando as opções (montagem do menu)
-    menuRects: []         // retângulos das opções p/ o clique (recalculado no draw)
+    menuRects: [],        // retângulos das opções p/ o clique (recalculado no draw)
+    // 👑 IA de chefe: nome do inimigo -> fn do "Quando for a vez do inimigo".
+    // Registro PERSISTENTE (como onUpdate) — sobrevive ao recomeço; se o inimigo
+    // não estiver na batalha, o hook simplesmente não dispara.
+    foeTurnHooks: nameMap(),
+    // ⚔️ Fichas de inimigo REUTILIZÁVEIS ({name,hp,str,def,image,color,boss}): a
+    // criança define o inimigo/chefão UMA vez ("Criar a ficha do inimigo") e depois
+    // só ESCOLHE com quem batalhar. Registro PERSISTENTE (como os moldes/aparências).
+    battlerDefs: nameMap()
   };
   var SAVE_KEY = 'szgk-rpg-save'; // localStorage do preview (persiste por projeto)
   var DIALOG_CPS = 30; // velocidade do typewriter (chars/segundo)
@@ -5280,10 +5541,14 @@ export const gameKitRuntime = `(function () {
     rpg.playerEnergy = rpg.playerMaxEnergy; rpg.playerPoison = 0;
     rpg.playerRegen = 0; rpg.playerBlind = 0;
     rpg.potions = [];
-    // O time e os golpes fazem parte do JOGO, não do motor: zeram ao recomeçar.
+    // O TIME e a fila de inimigos zeram ao recomeçar (são a partida em si).
     rpg.allies = [];
     rpg.foeQueue = [];
-    rpg.movesByName = nameMap();
+    // ⚠️ Os GOLPES ensinados NÃO zeram mais: são DEFINIÇÕES (como as fichas/moldes/
+    // aparências, que também persistem). Antes o wipe apagava "Ensinar o golpe" posto
+    // no TOPO já no 1º "Jogar" (o jeito natural da criança; o exemplo O Chefão caía
+    // nisso). rpgTeachMove/Heal são IDEMPOTENTES (dedup por nome), então re-ensinar no
+    // "quando entrar em jogando" também não duplica — os dois jeitos funcionam.
     rpg.scene = null;
     rpg.recording = false;
     rpg.sceneSteps = [];
@@ -5757,7 +6022,7 @@ export const gameKitRuntime = `(function () {
     else if (st.type === 'face') { rpgFace(st.who, st.dir); st._instant = true; }
     else if (st.type === 'flag') { rpgAddFlag(st.name); st._instant = true; }
     else if (st.type === 'goMap') { rpgGoMap(st.name); st._instant = true; }
-    else if (st.type === 'battle') rpgBattleStart(st.name, st.hp, st.str, st.def);
+    else if (st.type === 'battle') startBattleFromDef({ name: st.name, hp: st.hp, str: st.str, def: st.def, image: st.image, color: st.color || (st.boss ? '#b23b6e' : '#e05a5a'), boss: st.boss });
     else if (st.type === 'menu') {
       if (st.options.length > 0) rpg.menu = { title: st.title, options: st.options, index: 0 };
       else st._instant = true;
@@ -6027,20 +6292,28 @@ export const gameKitRuntime = `(function () {
   // Um COMBATENTE carrega os próprios atributos (o createCharacter não tem stats de
   // luta). O herói entra a partir dos rpg.player* (progressão persiste); aliados e
   // inimigos vêm de "Adicionar aliado/inimigo"; os golpes nomeados de "Ensinar o golpe".
-  function makeBattler(name, side, hp, str, def, look, color) {
+  function makeBattler(name, side, hp, str, def, look, color, image) {
     var mx = Math.max(1, num(hp, 20));
+    ensureImageLoaded(image); // a imagem do combatente (Pinta) carrega sozinha
     return {
       name: text(name, side === 'inimigo' ? 'Inimigo' : 'Aliado'), side: side,
       hp: mx, max: mx, str: Math.max(0, num(str, 5)), def: Math.max(0, num(def, 0)),
       energy: 10, maxEnergy: 10, moves: [],
       defending: false, poison: 0, regen: 0, blind: 0, alive: true,
       look: text(look, ''), color: text(color, side === 'inimigo' ? '#e05a5a' : '#4a9eff'),
-      image: '', x: 0, y: 0, w: 72, h: 72
+      // 🖼️ Imagem do combatente (a que você "Carregou pelo nome"): drawEntity a usa;
+      // sem imagem, cai no retângulo da cor. Só o herói herdava sprite — agora os
+      // inimigos/aliados/chefões também podem ter arte do Pinta.
+      image: text(image, ''), x: 0, y: 0, w: 72, h: 72
     };
   }
   function heroBattler() {
     var b = makeBattler('Você', 'aliado', rpg.playerMax, rpg.playerStr, rpg.playerDef, '', '#4a9eff');
     b.energy = rpg.playerMaxEnergy; b.maxEnergy = rpg.playerMaxEnergy; b.isHero = true;
+    // A vida do herói PERSISTE entre batalhas: ele entra com a vida ATUAL, não cheia
+    // (o endBattle grava de volta ao vencer). Piso 1 p/ um herói ferido ainda lutar;
+    // b.max segue playerMax (subir de nível aumenta o máximo). "Curar o herói" recupera.
+    b.hp = Math.max(1, Math.min(rpg.playerMax, num(rpg.playerHp, rpg.playerMax)));
     // O herói aparece com o SEU visual do mundo (sprite/vetor/cor), se existir.
     if (rpg.hero) { b.image = text(rpg.hero.image, ''); b.look = text(rpg.hero.look, ''); b.color = text(rpg.hero.color, b.color); }
     if (rpg.special) b.moves.push({ name: rpg.special.name, dmg: rpg.special.dmg, cost: rpg.special.cost, heal: false });
@@ -6049,9 +6322,10 @@ export const gameKitRuntime = `(function () {
     return b;
   }
   function defToBattler(def, side) {
-    var b = makeBattler(def.name, side, def.hp, def.str, def.def, def.look, def.color);
+    var b = makeBattler(def.name, side, def.hp, def.str, def.def, def.look, def.color, def.image);
     var mv = rpg.movesByName[def.name];
     if (mv) for (var i = 0; i < mv.length; i++) b.moves.push(mv[i]);
+    if (def.boss) b.boss = true; // 👑 CHEFÃO: maior + barra proeminente
     return b;
   }
   function firstAlive(list) { for (var i = 0; i < list.length; i++) if (list[i].alive && list[i].hp > 0) return list[i]; return null; }
@@ -6071,32 +6345,85 @@ export const gameKitRuntime = `(function () {
   }
   // 🧙 Kit RPG: montar o time. rpgAddAlly = party PERSISTENTE (o herói já entra
   // sozinho); rpgAddFoe = inimigos da PRÓXIMA batalha; rpgTeachMove = golpes nomeados.
-  function rpgAddAlly(name, hp, str, def, color) {
-    rpg.allies.push({ name: text(name, 'Aliado'), hp: num(hp, 24), str: num(str, 6), def: num(def, 1), look: '', color: text(color, '#4ade80') });
+  function rpgAddAlly(name, hp, str, def, color, image) {
+    rpg.allies.push({ name: text(name, 'Aliado'), hp: num(hp, 24), str: num(str, 6), def: num(def, 1), look: '', color: text(color, '#4ade80'), image: text(image, '') });
   }
-  function rpgAddFoe(name, hp, str, def, color) {
-    rpg.foeQueue.push({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), look: '', color: text(color, '#e05a5a') });
+  function rpgAddFoe(name, hp, str, def, color, image) {
+    rpg.foeQueue.push({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), look: '', color: text(color, '#e05a5a'), image: text(image, '') });
+  }
+  // 👑 O CHEFÃO: um inimigo da próxima batalha desenhado MAIOR, com barra proeminente.
+  function rpgAddBoss(name, hp, str, def, image) {
+    rpg.foeQueue.push({ name: text(name, 'Chefão'), hp: num(hp, 120), str: num(str, 9), def: num(def, 2), look: '', color: '#b23b6e', boss: true, image: text(image, '') });
+  }
+  // 👑 R30: ler a vida de um combatente (herói/aliado/inimigo) por NOME — a chave
+  // das FASES de chefe ("se a vida do Chefe < metade: fica furioso").
+  function findBattler(name) {
+    var b = rpg.battle; if (!b) return null;
+    var nm = text(name, '');
+    for (var i = 0; i < b.allies.length; i++) if (b.allies[i].name === nm) return b.allies[i];
+    for (var j = 0; j < b.foes.length; j++) if (b.foes[j].name === nm) return b.foes[j];
+    return null;
+  }
+  function battlerLife(name) { var c = findBattler(name); return c ? Math.max(0, c.hp) : 0; }
+  function battlerMaxLife(name) { var c = findBattler(name); return c ? c.max : 0; }
+  // 👑 IA de chefe: o corpo roda na vez daquele inimigo (no lugar do ataque padrão).
+  function rpgOnFoeTurn(name, fn) {
+    if (typeof fn !== 'function') return;
+    rpg.foeTurnHooks[text(name, 'Inimigo')] = fn;
+  }
+  // O inimigo NOMEADO usa um golpe ENSINADO (dano num aliado ao acaso, ou cura nele).
+  function rpgFoeUse(name, moveName) {
+    if (!rpg.battle) return;
+    var f = findBattler(name); if (!f || !f.alive) return;
+    var mn = text(moveName, ''), mv = null;
+    for (var i = 0; i < f.moves.length; i++) if (f.moves[i].name === mn) { mv = f.moves[i]; break; }
+    if (!mv) { warnOnce('foeuse:' + f.name + mn, 'o inimigo "' + f.name + '" não tem o golpe "' + mn + '" — ensine com "Ensinar o golpe"'); return; }
+    if (mv.heal) foeHeal(f, mv); else foeHit(f, mv);
+  }
+  // O golpe ASSINATURA de chefão: acerta TODO o time de uma vez.
+  function rpgFoeHitAll(name, dmg) {
+    var b = rpg.battle; if (!b) return;
+    var f = findBattler(name);
+    var base = Math.max(0, num(dmg, 10));
+    var allies = aliveList(b.allies);
+    for (var i = 0; i < allies.length; i++) {
+      var v = allies[i];
+      var d = rollDamage(base, v.def);
+      if (v.defending) d = Math.max(d > 0 ? 1 : 0, Math.round(d / 2));
+      v.hp -= d;
+      if (d > 0) floatText('-' + d, v.x + v.w / 2, v.y, '#ff6b6b', 22);
+      if (v.hp <= 0) { v.hp = 0; v.alive = false; }
+    }
+    b.message = (f ? f.name : text(name, 'O inimigo')) + ' atingiu TODO o time!';
+  }
+  // Ensinar é IDEMPOTENTE: um golpe com o MESMO nome REPÕE o anterior em vez de
+  // empilhar — assim re-ensinar no "quando entrar em jogando" (a cada "Jogar de novo")
+  // não duplica os golpes, agora que eles PERSISTEM (ver rpgNewGame).
+  function teachMoveTo(k, mv) {
+    if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
+    var list = rpg.movesByName[k];
+    for (var i = 0; i < list.length; i++) { if (list[i].name === mv.name) { list[i] = mv; return; } }
+    list.push(mv);
   }
   function rpgTeachMove(who, moveName, dmg, cost) {
-    var k = text(who, 'Você');
-    if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
-    rpg.movesByName[k].push({ name: text(moveName, 'Golpe'), dmg: Math.max(1, num(dmg, 10)), cost: Math.max(0, num(cost, 3)), heal: false });
+    teachMoveTo(text(who, 'Você'), { name: text(moveName, 'Golpe'), dmg: Math.max(1, num(dmg, 10)), cost: Math.max(0, num(cost, 3)), heal: false });
   }
   // Golpe de CURA (heal:true) — o painel de ação mostra "(cura N)" e o applyHeal
   // devolve vida ao próprio lutador em vez de ferir o inimigo.
   function rpgTeachHeal(who, moveName, amount, cost) {
-    var k = text(who, 'Você');
-    if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
-    rpg.movesByName[k].push({ name: text(moveName, 'Cura'), dmg: Math.max(1, num(amount, 12)), cost: Math.max(0, num(cost, 3)), heal: true });
+    teachMoveTo(text(who, 'Você'), { name: text(moveName, 'Cura'), dmg: Math.max(1, num(amount, 12)), cost: Math.max(0, num(cost, 3)), heal: true });
   }
   function layoutRow(list, cy) {
     var n = list.length; if (n === 0) return;
-    var sz = 72, gap = 28;
-    var totalW = n * sz + (n - 1) * gap;
-    var startX = (config.w - totalW) / 2;
+    var sz = 72, boss = 112, gap = 28;
+    var totalW = 0;
+    for (var k = 0; k < n; k++) totalW += (list[k].boss ? boss : sz) + (k ? gap : 0);
+    var x = (config.w - totalW) / 2;
     for (var i = 0; i < n; i++) {
       var c = list[i];
-      c.w = sz; c.h = sz; c.x = startX + i * (sz + gap); c.y = cy - sz / 2;
+      var s = c.boss ? boss : sz;
+      c.w = s; c.h = s; c.x = x; c.y = cy - s / 2; // topos alinhados; o chefão desce mais
+      x += s + gap;
     }
   }
   function layoutBattlers() {
@@ -6122,16 +6449,18 @@ export const gameKitRuntime = `(function () {
   function rpgGivePotion(name, heal) {
     rpg.potions.push({ name: text(name, 'Poção'), heal: Math.max(1, num(heal, 20)) });
   }
-  function rpgBattleStart(name, hp, str, def) {
-    if (rpg.recording) { rpg.sceneSteps.push({ type: 'battle', name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0) }); return; }
+  // 🩸 Cura o herói ao MÁXIMO fora da batalha (a estalagem/save/checkpoint). Como a
+  // vida agora PERSISTE entre lutas, é a forma de recuperar. Espelha o pkmHealTeam.
+  function rpgHealHero() { rpg.playerHp = rpg.playerMax; }
+  // Núcleo COMPARTILHADO: monta a batalha (herói + party × inimigo principal + fila) e
+  // entra no estado 'batalha'. O mainFoe é um battler JÁ pronto (via defToBattler) — assim
+  // o inimigo principal ganha imagem, chefão e golpes ensinados de graça, igual à fila.
+  function startTeamBattle(mainFoe) {
     if (!ensureShell()) return;
     if (rpg.battle) return;
-    // Aliados: o herói (dos atributos) + a party. Inimigos: o nomeado + a fila.
     var allies = [heroBattler()];
     for (var i = 0; i < rpg.allies.length; i++) allies.push(defToBattler(rpg.allies[i], 'aliado'));
-    var foes = [makeBattler(name, 'inimigo', hp, str, def, '', '#e05a5a')];
-    var mv = rpg.movesByName[text(name, 'Inimigo')];
-    if (mv) for (var m = 0; m < mv.length; m++) foes[0].moves.push(mv[m]);
+    var foes = [mainFoe];
     for (var j = 0; j < rpg.foeQueue.length; j++) foes.push(defToBattler(rpg.foeQueue[j], 'inimigo'));
     rpg.foeQueue = []; // a fila é consumida pela batalha
     rpg.battle = {
@@ -6140,6 +6469,47 @@ export const gameKitRuntime = `(function () {
     };
     layoutBattlers();
     setState('batalha'); // estado do MEIO do jogo: congela o mundo SEM resetar
+    // ⚡ Transição de ENTRADA (JRPG): a tela pisca branco e a cena de batalha EMERGE
+    // do flash (fade começa coberto e clareia). stepScreenFx roda fora do gate de
+    // estado, então anima já no 'batalha'; drawScreenFx é o último desenho (por cima).
+    fadeScreen('#ffffff', 0.3, false);
+  }
+  // Constrói o inimigo PRINCIPAL a partir de um def-ish e o coloca na batalha. Reusa
+  // defToBattler (imagem/chefão/golpes). Compartilhado por battle_start, battle_named e
+  // o replay de cutscene.
+  function startBattleFromDef(d) {
+    if (rpg.recording) {
+      rpg.sceneSteps.push({ type: 'battle', name: d.name, hp: d.hp, str: d.str, def: d.def, image: text(d.image, ''), color: text(d.color, ''), boss: !!d.boss });
+      return;
+    }
+    startTeamBattle(defToBattler(d, 'inimigo'));
+  }
+  function rpgBattleStart(name, hp, str, def, image) {
+    startBattleFromDef({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), image: text(image, ''), color: '#e05a5a' });
+  }
+  // ⚔️ Ficha REUTILIZÁVEL: define o inimigo/chefão UMA vez, com imagem e atributos.
+  function rpgDefineBattler(name, hp, str, def, image, color, boss) {
+    var nm = text(name, 'Inimigo');
+    ensureImageLoaded(image); // pré-carrega no setup (a tela de carregando espera)
+    rpg.battlerDefs[nm] = {
+      name: nm, hp: num(hp, 20), str: num(str, 5), def: num(def, 0),
+      image: text(image, ''), color: text(color, boss ? '#b23b6e' : '#e05a5a'), boss: !!boss
+    };
+  }
+  function rpgFindDef(name) {
+    var d = rpg.battlerDefs[text(name, '')];
+    if (!d) warnOnce('battlerdef:' + text(name, ''), 'a ficha do inimigo "' + text(name, '') + '" não existe — crie com "Criar a ficha do inimigo"');
+    return d || null;
+  }
+  // Enfileira um inimigo A PARTIR DA FICHA (a "escolha" de quem entra na próxima batalha).
+  function rpgAddFoeNamed(name) {
+    var d = rpgFindDef(name); if (!d) return;
+    rpg.foeQueue.push({ name: d.name, hp: d.hp, str: d.str, def: d.def, image: d.image, color: d.color, boss: d.boss });
+  }
+  // Começa a batalha ESCOLHENDO uma ficha como inimigo principal (o que a criança pediu).
+  function rpgBattleNamed(name) {
+    var d = rpgFindDef(name); if (!d) return;
+    startBattleFromDef(d);
   }
   // A vez de um aliado: abre o painel de ação (o menu do motor) para o jogador escolher.
   function startAllyTurn(actor) {
@@ -6224,22 +6594,44 @@ export const gameKitRuntime = `(function () {
     b.phase = 'foes'; b.t = 0; b.actor = null; b.target = null; b.foeIdx = 0; rpg.menu = null;
     b.message = 'Vez dos inimigos...';
   }
-  // Um inimigo age por tique (a IA ataca um aliado vivo ao acaso).
+  // Um inimigo ATACA um aliado vivo ao acaso (com um golpe, ou pela força).
+  function foeHit(f, mv) {
+    var b = rpg.battle; if (!b) return;
+    var allies = aliveList(b.allies);
+    if (allies.length === 0) { loseBattle(); return; }
+    var victim = allies[Math.floor(Math.random() * allies.length)];
+    var dmg = rollDamage(mv ? mv.dmg : f.str, victim.def);
+    if (f.blind > 0) { f.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
+    if (victim.defending) dmg = Math.max(dmg > 0 ? 1 : 0, Math.round(dmg / 2));
+    victim.hp -= dmg;
+    if (dmg > 0) floatText('-' + dmg, victim.x + victim.w / 2, victim.y, '#ff6b6b', 24);
+    b.message = mv ? (f.name + ' usou ' + mv.name + ' e causou ' + dmg + ' em ' + victim.name + '!')
+                   : (f.name + ' atacou ' + victim.name + ' (' + dmg + ').');
+    if (victim.hp <= 0) { victim.hp = 0; victim.alive = false; b.message += ' ' + victim.name + ' caiu!'; }
+  }
+  function foeHeal(f, mv) {
+    var b = rpg.battle; if (!b) return;
+    f.hp = Math.min(f.max, f.hp + mv.dmg);
+    floatText('+' + mv.dmg, f.x + f.w / 2, f.y, '#4ade80', 22);
+    b.message = f.name + ' usou ' + mv.name + ' (+' + mv.dmg + ' de vida).';
+  }
+  // A vez de um inimigo por tique. ⭐ R30 fix: o inimigo USA os golpes ensinados
+  // (antes ignorava f.moves e só batia pela força — golpe/cura/AoE de chefe eram
+  // impossíveis). Modelo do pkmEnemyTurn. E o hook de IA de chefe manda, se houver.
   function foeStep() {
     var b = rpg.battle; if (!b) return;
     var foes = aliveList(b.foes);
     if (b.foeIdx >= foes.length) { endRound(); return; }
     var f = foes[b.foeIdx]; b.foeIdx += 1;
-    var allies = aliveList(b.allies);
-    if (allies.length === 0) { loseBattle(); return; }
-    var victim = allies[Math.floor(Math.random() * allies.length)];
-    var dmg = rollDamage(f.str, victim.def);
-    if (f.blind > 0) { f.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
-    if (victim.defending) dmg = Math.max(dmg > 0 ? 1 : 0, Math.round(dmg / 2));
-    victim.hp -= dmg;
-    if (dmg > 0) floatText('-' + dmg, victim.x + victim.w / 2, victim.y, '#ff6b6b', 24);
-    b.message = f.name + ' atacou ' + victim.name + ' (' + dmg + ').';
-    if (victim.hp <= 0) { victim.hp = 0; victim.alive = false; b.message += ' ' + victim.name + ' caiu!'; }
+    if (aliveList(b.allies).length === 0) { loseBattle(); return; }
+    var hook = rpg.foeTurnHooks[f.name];
+    if (hook) {
+      try { hook(); } catch (e) { warn('erro na vez de ' + f.name + ': ' + e); }
+    } else {
+      var mv = (f.moves && f.moves.length) ? f.moves[Math.floor(Math.random() * f.moves.length)] : null;
+      if (mv && mv.heal) foeHeal(f, mv);
+      else foeHit(f, mv);
+    }
     b.t = 0;
     if (aliveList(b.allies).length === 0) { loseBattle(); return; }
   }
@@ -6347,10 +6739,12 @@ export const gameKitRuntime = `(function () {
       }
       ctx2d.save();
       ctx2d.fillStyle = c.alive ? '#ffffff' : '#ff8080';
-      ctx2d.font = '13px sans-serif'; ctx2d.textAlign = 'center';
-      ctx2d.fillText(c.name, c.x + c.w / 2, c.y - 10);
+      // 👑 O chefão ganha nome maior (com coroa) e barra de vida mais grossa.
+      ctx2d.font = (c.boss ? 'bold 17px' : '13px') + ' sans-serif'; ctx2d.textAlign = 'center';
+      ctx2d.fillText((c.boss ? '👑 ' : '') + c.name, c.x + c.w / 2, c.y - 10);
       ctx2d.restore();
-      drawBar(Math.max(0, c.hp), c.max, c.x, c.y + c.h + 4, c.w, 7, c.hp > c.max * 0.3 ? '#4ade80' : '#ef4444');
+      var bh = c.boss ? 12 : 7;
+      drawBar(Math.max(0, c.hp), c.max, c.x, c.y + c.h + 4, c.w, bh, c.hp > c.max * 0.3 ? '#4ade80' : '#ef4444');
     }
   }
   function drawBattleMessage(b) {
@@ -6426,8 +6820,18 @@ export const gameKitRuntime = `(function () {
   }
   function endBattle(won) {
     rpg.battleWon = won === true;
+    // A vida do herói PERSISTE. Se ele SOBREVIVEU (venceu OU fugiu vivo), carrega a
+    // vida que sobrou p/ a próxima luta. Se MORREU (perdeu), volta cheio — derrota =
+    // recomeço, sem soft-lock (não há cura automática no mundo; use "Curar o herói").
+    if (rpg.battle) {
+      var hero = null, al = rpg.battle.allies;
+      for (var h = 0; h < al.length; h++) { if (al[h].isHero) { hero = al[h]; break; } }
+      if (!hero && al.length) hero = al[0];
+      if (hero) rpg.playerHp = hero.hp > 0 ? Math.max(0, Math.round(hero.hp)) : rpg.playerMax;
+    }
     rpg.battle = null;
     setState('jogando'); // vindo de 'batalha' o mundo NÃO reseta (ver setState)
+    fadeScreen('#000000', 0.25, false); // 🎬 SAÍDA: o mundo reaparece emergindo do escuro (como o pkm)
     for (var i = 0; i < rpg.onBattleEnd.length; i++) {
       try { rpg.onBattleEnd[i](); } catch (e) { warn('erro no "quando a batalha terminar": ' + e); }
     }
@@ -6618,6 +7022,31 @@ export const gameKitRuntime = `(function () {
       }
       makeButton(entry, text(label, 'Botão'), typeof fn === 'function' ? fn : function () {});
     }),
+    // 🖼️ Deixar a tela (pronta ou sua) com a SUA cara: uma cor de fundo (o "quadrado
+    // colorido por baixo") e/ou uma imagem do Pinta cobrindo o painel. É DOM (o painel
+    // fica por cima do canvas), então mexemos no style do próprio painel.
+    setScreenBg: guard('setScreenBg', function (screen, color, image) {
+      if (!ensureShell()) return;
+      var entry = screens[text(screen, '')];
+      if (!entry) {
+        warn('a tela "' + text(screen, '') + '" não existe — crie-a antes de pôr o fundo');
+        return;
+      }
+      var c = text(color, '');
+      // backgroundColor (não o shorthand background) p/ não apagar a imagem se vier depois.
+      if (c) entry.el.style.backgroundColor = c;
+      var asset = text(image, '');
+      if (asset) {
+        var src = resolveAsset(asset);
+        if (src) {
+          entry.el.style.backgroundImage = 'url("' + src + '")';
+          entry.el.style.backgroundSize = 'cover';
+          entry.el.style.backgroundPosition = 'center';
+        } else {
+          warnOnce('screenbg:' + asset, 'a imagem "' + asset + '" não está no projeto (importe em "Imagens e sons")');
+        }
+      }
+    }),
     showScreen: guard('showScreen', showScreen),
     hideScreens: guard('hideScreens', hideScreens),
     setState: guard('setState', setState),
@@ -6748,15 +7177,27 @@ export const gameKitRuntime = `(function () {
     // ----- ⚔️ V8: batalha rica (progressão) -----
     rpgSetSpecial: guard('rpgSetSpecial', rpgSetSpecial),
     rpgGivePotion: guard('rpgGivePotion', rpgGivePotion),
+    rpgHealHero: guard('rpgHealHero', rpgHealHero),
     rpgBattleReward: guard('rpgBattleReward', rpgBattleReward),
     rpgInflict: guard('rpgInflict', rpgInflict),
     // ----- ⚔️ batalha em EQUIPE: aliados, inimigos e golpes nomeados -----
     rpgAddAlly: guard('rpgAddAlly', rpgAddAlly),
     rpgAddFoe: guard('rpgAddFoe', rpgAddFoe),
+    // ⚔️ Fichas reutilizáveis: define separado + escolhe na hora de batalhar.
+    rpgDefineBattler: guard('rpgDefineBattler', rpgDefineBattler),
+    rpgAddFoeNamed: guard('rpgAddFoeNamed', rpgAddFoeNamed),
+    rpgBattleNamed: guard('rpgBattleNamed', rpgBattleNamed),
     rpgTeachMove: guard('rpgTeachMove', rpgTeachMove),
     rpgTeachHeal: guard('rpgTeachHeal', rpgTeachHeal),
     rpgLevel: guard('rpgLevel', function () { return rpg.playerLevel; }),
     rpgXp: guard('rpgXp', function () { return rpg.playerXp; }),
+    // ----- 👑 R30: chefes (o inimigo usa golpes; ler vida; IA de chefe) -----
+    rpgAddBoss: guard('rpgAddBoss', rpgAddBoss),
+    battlerLife: guard('battlerLife', battlerLife),
+    battlerMaxLife: guard('battlerMaxLife', battlerMaxLife),
+    rpgOnFoeTurn: guard('rpgOnFoeTurn', rpgOnFoeTurn),
+    rpgFoeUse: guard('rpgFoeUse', rpgFoeUse),
+    rpgFoeHitAll: guard('rpgFoeHitAll', rpgFoeHitAll),
     // ----- 🎬 V6: cenas & NPCs vivos -----
     rpgCutscene: guard('rpgCutscene', rpgCutscene),
     rpgWait: guard('rpgWait', rpgWait),
@@ -6839,6 +7280,34 @@ export const gameKitRuntime = `(function () {
     boardGet: guard('boardGet', boardGet),
     boardCount: guard('boardCount', boardCount),
     boardIn: guard('boardIn', boardIn),
+    // ----- 🃏 R30: cartas (pilha = lista do núcleo; carta de 2 faces; mão) -----
+    pileMoveTop: guard('pileMoveTop', pileMoveTop),
+    pileShuffleFrom: guard('pileShuffleFrom', pileShuffleFrom),
+    pileTop: guard('pileTop', pileTop),
+    pileSize: guard('pileSize', pileSize),
+    card: guard('card', makeCard),
+    cardFlip: guard('cardFlip', cardFlip),
+    cardIsUp: guard('cardIsUp', cardIsUp),
+    cardFace: guard('cardFace', cardFace),
+    handDraw: guard('handDraw', handDraw),
+    cardAt: guard('cardAt', cardAt),
+    // ----- 🃏 R30: Kit Cartas (deck-battler / RPG de cartas) -----
+    cardsStart: guard('cardsStart', cardsStart),
+    cardsEnergyPerTurn: guard('cardsEnergyPerTurn', cardsEnergyPerTurn),
+    cardsEnergy: guard('cardsEnergy', cardsEnergy),
+    cardsSpend: guard('cardsSpend', cardsSpend),
+    cardsHeroLife: guard('cardsHeroLife', cardsHeroLife),
+    cardsEnemyLife: guard('cardsEnemyLife', cardsEnemyLife),
+    cardsHurtEnemy: guard('cardsHurtEnemy', cardsHurtEnemy),
+    cardsHurtMe: guard('cardsHurtMe', cardsHurtMe),
+    cardsGainBlock: guard('cardsGainBlock', cardsGainBlock),
+    cardsEnemyIntent: guard('cardsEnemyIntent', cardsEnemyIntent),
+    cardsIntentAction: guard('cardsIntentAction', cardsIntentAction),
+    cardsIntentValue: guard('cardsIntentValue', cardsIntentValue),
+    cardsOnTurn: guard('cardsOnTurn', cardsOnTurn),
+    cardsOnEnemyTurn: guard('cardsOnEnemyTurn', cardsOnEnemyTurn),
+    cardsEndTurn: guard('cardsEndTurn', cardsEndTurn),
+    cardsDrawHud: guard('cardsDrawHud', cardsDrawHud),
     everySeconds: guard('everySeconds', everySeconds),
     waitThen: guard('waitThen', waitThen),
     cooldownReady: guard('cooldownReady', cooldownReady),
@@ -6873,6 +7342,15 @@ export const gameKitRuntime = `(function () {
     pathPoint: guard('pathPoint', pathPoint),
     followPath: guard('followPath', followPath),
     pathProgress: guard('pathProgress', pathProgress),
+    // ----- 🎲 R30: jogos de tabuleiro (dado, turnos, trilha de casas) -----
+    rollDice: guard('rollDice', rollDice),
+    playersSetup: guard('playersSetup', playersSetup),
+    currentPlayer: guard('currentPlayer', currentPlayer),
+    nextPlayer: guard('nextPlayer', nextPlayer),
+    onTurnChange: guard('onTurnChange', onTurnChange),
+    moveAlongTrack: guard('moveAlongTrack', moveAlongTrack),
+    spaceOf: guard('spaceOf', spaceOf),
+    onLandSpace: guard('onLandSpace', onLandSpace),
     pickActive: guard('pickActive', pickActive),
     parallaxLayer: guard('parallaxLayer', parallaxLayer),
     sheetBurst: guard('sheetBurst', sheetBurst),
@@ -7003,7 +7481,7 @@ export const gameKitRuntime = `(function () {
       value: function () {
         var b = rpg.battle;
         if (!b) return null;
-        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length }; }
+        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss, image: c.image, color: c.color }; }
         var i;
         var allies = []; for (i = 0; i < b.allies.length; i++) allies.push(snap(b.allies[i]));
         var foes = []; for (i = 0; i < b.foes.length; i++) foes.push(snap(b.foes[i]));

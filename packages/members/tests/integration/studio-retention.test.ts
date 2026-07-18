@@ -42,6 +42,15 @@ const postRemix = (app: App, playId: string, headers: Record<string, string> = a
     }),
   )
 
+// Sem corpo nem content-type: o beacon de "criou hoje" só carrega a sessão.
+const postActivity = (app: App, headers: Record<string, string> = { 'x-auth-user-id': USER }) =>
+  app.handle(
+    new Request('http://localhost/members/gamification/activity?audience=kids', {
+      method: 'POST',
+      headers,
+    }),
+  )
+
 const getMe = (app: App) =>
   app.handle(
     new Request('http://localhost/members/gamification/me?audience=kids', {
@@ -237,6 +246,53 @@ describe('POST /members/gamification/remix — guards anti-farm', () => {
     hubPlays.set(playId, { visible: true, authorId: OTHER_AUTHOR })
     const res = await postRemix(app, playId, {
       ...authHeaders,
+      'x-auth-user-role': 'admin',
+      'x-auth-user-status': 'active',
+    })
+    expect(res.status).toBe(200)
+    expect(await readJson(res)).toEqual({ recorded: true })
+  })
+})
+
+describe('POST /members/gamification/activity — XP diário de CRIAR no Estúdio', () => {
+  test('com posse: 1º do dia rende 10 XP e MOVE o streak; repetir no MESMO dia não dobra', async () => {
+    const { app, entitlements, gamification } = buildApp()
+    grantCommunity(entitlements, { userId: USER, communityKey: ESTUDIO_ACCESS_REF })
+
+    const res = await postActivity(app)
+    expect(res.status).toBe(200)
+    expect(await readJson(res)).toEqual({ recorded: true })
+
+    let me = await readJson(await getMe(app))
+    expect(me.xp).toBe(XP_VALUES.STUDIO_ACTIVITY_DAY)
+    expect(me.streak.current).toBe(1)
+
+    // Autosave dispara de novo no mesmo dia → inerte pelo sourceId determinístico do dia.
+    await postActivity(app)
+    me = await readJson(await getMe(app))
+    expect(me.xp).toBe(XP_VALUES.STUDIO_ACTIVITY_DAY)
+
+    const events = gamification.events.filter(
+      (e: { sourceType: string }) => e.sourceType === 'studio_activity_day',
+    )
+    expect(events.length).toBe(1)
+  })
+
+  test('sem posse do Estúdio → 403 ACCESS_DENIED, sem XP', async () => {
+    const { app, gamification } = buildApp()
+    const res = await postActivity(app)
+    expect(res.status).toBe(403)
+    expect(
+      gamification.events.some(
+        (e: { sourceType: string }) => e.sourceType === 'studio_activity_day',
+      ),
+    ).toBe(false)
+  })
+
+  test('equipe (privileged) pula o gate de posse', async () => {
+    const { app } = buildApp()
+    const res = await postActivity(app, {
+      'x-auth-user-id': USER,
       'x-auth-user-role': 'admin',
       'x-auth-user-status': 'active',
     })

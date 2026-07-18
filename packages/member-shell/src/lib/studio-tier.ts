@@ -24,6 +24,17 @@ export interface StudioTier {
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 
 /**
+ * O ator é EQUIPE interna (superadmin/admin/staff)? Deriva direto do PAPEL da
+ * conta — NÃO do rank `god` (uma criança que chegou a Lenda também é `god` no
+ * `resolveStudioTier`, mas NÃO é equipe). Use este helper quando o gate é "só
+ * admin de verdade" (ex.: exemplos do Estúdio visíveis só p/ a equipe enquanto
+ * a usuária valida o catálogo).
+ */
+export function isPrivilegedRole(role: string | undefined): boolean {
+  return !!role && PRIVILEGED_ROLES.has(role)
+}
+
+/**
  * Degrau de blocos + modos por RANK (escada de 8 — reforma 2D/3D 07/2026).
  * Cada nível de carreira libera o degrau que o aluno vai ESTUDAR em seguida:
  * concluiu os requisitos do degrau N → a paleta abre o N+1.
