@@ -17,7 +17,7 @@ import {
 import type { PintaSpriteMeta, PintaTilemapMeta, PintaTilesetMeta } from '../core/types'
 import { packTileset, tilesetPngDataUrl } from '../tiles/packTileset'
 import { packVectorTileset, vectorTilesetPngDataUrl } from '../tiles/packVectorTileset'
-import { tilemapPngDataUrl } from '../tiles/renderTilemap'
+import { tilemapThumbnail } from '../tiles/renderTilemap'
 import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
 import { vectorPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
@@ -85,6 +85,10 @@ export function tilemapMetaFrom(
 // EditorScreen valida de novo antes de enviar, com a mensagem gentil).
 const STUDIO_MAX_ASSET_CHARS = 800_000
 
+// Maior lado da MINIATURA do mapa na biblioteca (o runtime não usa esta imagem
+// — só a grade+folha do metadado). Capar evita cota estourada e canvas gigante.
+const STUDIO_TILEMAP_THUMB_PX = 512
+
 export async function buildStudioPayload(
   asset: PintaAsset,
   findAsset: (id: string) => PintaAsset | null,
@@ -116,12 +120,26 @@ export async function buildStudioPayload(
     case 'tilemap': {
       const tileset = findAsset(asset.tilesetId)
       if (!tileset || !isTilesetKind(tileset)) return null
-      // dataUrl do ASSET = o mapa achatado (miniatura reconhecível na biblioteca).
-      const dataUrl =
+      // dataUrl do ASSET = miniatura do mapa achatado, CAPADA em 512px (o
+      // runtime usa a grade+folha do metadado, não esta imagem) — mapas grandes
+      // não estouram a cota nem o teto de canvas do device.
+      const nativeMax = Math.max(asset.cols, asset.rows) * tileset.tileSize
+      const thumbScale =
+        nativeMax > STUDIO_TILEMAP_THUMB_PX ? STUDIO_TILEMAP_THUMB_PX / nativeMax : 1
+      const thumb =
         tileset.kind === 'tileset'
-          ? tilemapPngDataUrl(asset, tileset)
-          : await vectorTilemapPngDataUrl(asset, tileset)
-      if (!dataUrl) return null
+          ? tilemapThumbnail(asset, tileset, STUDIO_TILEMAP_THUMB_PX)
+          : await vectorTilemapPngDataUrl(asset, tileset, thumbScale).then((url) =>
+              url
+                ? {
+                    dataUrl: url,
+                    width: Math.round(asset.cols * tileset.tileSize * thumbScale),
+                    height: Math.round(asset.rows * tileset.tileSize * thumbScale),
+                  }
+                : null,
+            )
+      if (!thumb) return null
+      const dataUrl = thumb.dataUrl
       // A FOLHA de peças vai EMBUTIDA no metadado (mapa auto-contido): o bloco
       // "Criar mapa do meu desenho" monta grade + peças + sólidos sozinho.
       const sheetPack =
@@ -138,8 +156,8 @@ export async function buildStudioPayload(
       }
       return {
         dataUrl,
-        width: asset.cols * tileset.tileSize,
-        height: asset.rows * tileset.tileSize,
+        width: thumb.width,
+        height: thumb.height,
         tilemap: tilemapMetaFrom(asset, tileset, sheet),
       }
     }

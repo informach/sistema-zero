@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'bun:test'
-import { createTilemapAsset, PINTA_LIMITS } from '../core/project'
+import { createTilemapAsset, PINTA_LIMITS, sanitizePintaAsset } from '../core/project'
 import {
   addLayer,
   cellAt,
   flattenLayers,
   floodFillCells,
+  growTilemap,
   removeLayer,
   setCell,
+  setCells,
   toggleLayerVisible,
 } from './tilemapOps'
 
@@ -40,6 +42,80 @@ describe('floodFillCells', () => {
     const { tilemap, layerId } = makeMap(2, 2)
     const out = floodFillCells(tilemap, layerId, 0, 0, 3)
     expect([...(out.layers[0]?.cells ?? [])]).toEqual([3, 3, 3, 3])
+  })
+})
+
+describe('setCells (lote)', () => {
+  it('carimba várias células com um índice; mesmo conteúdo = mesma ref', () => {
+    const { tilemap, layerId } = makeMap(3, 1)
+    const out = setCells(
+      tilemap,
+      layerId,
+      [
+        { col: 0, row: 0 },
+        { col: 2, row: 0 },
+        { col: 9, row: 0 }, // fora da grade: ignorado
+      ],
+      4,
+    )
+    expect([...(out.layers[0]?.cells ?? [])]).toEqual([4, -1, 4])
+    expect(setCells(out, layerId, [{ col: 0, row: 0 }], 4)).toBe(out)
+  })
+})
+
+describe('growTilemap', () => {
+  it('cresce um lado preservando o conteúdo com o offset certo', () => {
+    const { tilemap, layerId } = makeMap(2, 2)
+    const painted = setCells(tilemap, layerId, [{ col: 0, row: 0 }], 5)
+
+    const right = growTilemap(painted, 'right')
+    expect(right.cols).toBe(3)
+    expect(right.rows).toBe(2)
+    expect([...(right.layers[0]?.cells ?? [])]).toEqual([5, -1, -1, -1, -1, -1])
+
+    const left = growTilemap(painted, 'left')
+    expect(left.cols).toBe(3)
+    // o 5 (que estava em 0,0) desloca +1 coluna → índice 1
+    expect([...(left.layers[0]?.cells ?? [])]).toEqual([-1, 5, -1, -1, -1, -1])
+
+    const top = growTilemap(painted, 'top')
+    expect(top.rows).toBe(3)
+    // o 5 desloca +1 linha → índice cols(2)*1 + 0 = 2
+    expect([...(top.layers[0]?.cells ?? [])]).toEqual([-1, -1, 5, -1, -1, -1])
+
+    const bottom = growTilemap(painted, 'bottom')
+    expect(bottom.rows).toBe(3)
+    expect([...(bottom.layers[0]?.cells ?? [])]).toEqual([5, -1, -1, -1, -1, -1])
+  })
+
+  it('cresce TODAS as camadas', () => {
+    const { tilemap, layerId } = makeMap(1, 1)
+    let out = addLayer(tilemap, 'topo')
+    out = growTilemap(out, 'right')
+    expect(out.layers).toHaveLength(2)
+    for (const l of out.layers) expect(l.cells.length).toBe(2)
+    expect(out.tilesetId).toBe(tilemap.tilesetId)
+    expect(layerId).toBeDefined()
+  })
+
+  it('no teto devolve a mesma ref', () => {
+    const tilemap = createTilemapAsset({
+      name: 'grande',
+      tilesetId: 't1',
+      cols: PINTA_LIMITS.maxTilemapCols,
+      rows: 2,
+    })
+    expect(growTilemap(tilemap, 'right')).toBe(tilemap)
+    expect(growTilemap(tilemap, 'bottom').rows).toBe(3) // vertical ainda pode
+  })
+
+  it('mapa 128×128 (novo teto) sobrevive ao sanitize', () => {
+    const tilemap = createTilemapAsset({ name: 'enorme', tilesetId: 't1', cols: 128, rows: 128 })
+    expect(tilemap.cols).toBe(128)
+    expect(tilemap.rows).toBe(128)
+    // O Int16Array vai DIRETO ao IndexedDB (structured clone), não por JSON —
+    // o sanitize aceita o asset com os cells reais.
+    expect(sanitizePintaAsset(tilemap)).not.toBeNull()
   })
 })
 

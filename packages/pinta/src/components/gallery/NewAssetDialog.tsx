@@ -33,7 +33,9 @@ import { Dialog } from '../ui/Dialog'
 const TILEMAP_SIZES = [
   { cols: 12, rows: 9 },
   { cols: 20, rows: 15 },
-  { cols: 30, rows: 20 },
+  { cols: 40, rows: 30 },
+  { cols: 64, rows: 48 },
+  { cols: 128, rows: 96 },
 ] as const
 
 const STYLE_ORDER: PintaAssetStyle[] = ['pixel', 'vector']

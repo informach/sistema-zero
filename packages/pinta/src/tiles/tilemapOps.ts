@@ -43,6 +43,58 @@ export function setCell(
   })
 }
 
+/**
+ * Carimba UM índice de tile em VÁRIAS células de uma vez (um único clone do
+ * `Int16Array`) — o caminho de lote do lápis/borracha/linha/retângulo sem
+ * carimbo. Fora da grade é ignorado. Mesmo asset quando nada muda.
+ */
+export function setCells(
+  tilemap: TilemapAsset,
+  layerId: string,
+  cells: ReadonlyArray<{ col: number; row: number }>,
+  tile: number,
+): TilemapAsset {
+  return withLayer(tilemap, layerId, (layer) => {
+    let next: Int16Array | null = null
+    for (const { col, row } of cells) {
+      if (col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) continue
+      const at = row * tilemap.cols + col
+      if ((next ?? layer.cells)[at] === tile) continue
+      if (!next) next = new Int16Array(layer.cells)
+      next[at] = tile
+    }
+    return next ? { ...layer, cells: next } : layer
+  })
+}
+
+/**
+ * Cresce o mapa em UMA célula de um lado (auto-expandir ao pintar na borda),
+ * copiando TODAS as camadas com o deslocamento certo. Respeita os tetos
+ * `maxTilemapCols/Rows` — no teto devolve o MESMO asset.
+ */
+export function growTilemap(
+  tilemap: TilemapAsset,
+  side: 'left' | 'right' | 'top' | 'bottom',
+): TilemapAsset {
+  const horizontal = side === 'left' || side === 'right'
+  if (horizontal && tilemap.cols >= PINTA_LIMITS.maxTilemapCols) return tilemap
+  if (!horizontal && tilemap.rows >= PINTA_LIMITS.maxTilemapRows) return tilemap
+  const cols = tilemap.cols + (horizontal ? 1 : 0)
+  const rows = tilemap.rows + (horizontal ? 0 : 1)
+  const dCol = side === 'left' ? 1 : 0
+  const dRow = side === 'top' ? 1 : 0
+  const layers = tilemap.layers.map((layer) => {
+    const cells = new Int16Array(cols * rows).fill(-1)
+    for (let r = 0; r < tilemap.rows; r += 1) {
+      for (let c = 0; c < tilemap.cols; c += 1) {
+        cells[(r + dRow) * cols + (c + dCol)] = layer.cells[r * tilemap.cols + c] ?? -1
+      }
+    }
+    return { ...layer, cells }
+  })
+  return { ...tilemap, cols, rows, layers }
+}
+
 /** Balde: preenche a região contígua (conectividade-4) do índice sob o clique. */
 export function floodFillCells(
   tilemap: TilemapAsset,

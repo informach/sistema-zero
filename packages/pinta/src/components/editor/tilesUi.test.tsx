@@ -64,6 +64,29 @@ describe('UI de tiles (F4)', () => {
     })
   })
 
+  it('tilemap traz as ferramentas novas (linha/retângulo/seleção/crescer) + barra de status', async () => {
+    const seed = createGalleryStore()
+    const tileset = await seed.getState().create({ kind: 'tileset', name: 'pecas', tileSize: 16 })
+    if (!tileset) throw new Error('tileset esperado')
+    await seed
+      .getState()
+      .create({ kind: 'tilemap', name: 'fase', tilesetId: tileset.id, cols: 20, rows: 15 })
+
+    render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir fase/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir fase/ }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.tiles.pickTile)).toBeTruthy()
+    })
+    expect(screen.getByRole('button', { name: COPY.tools.line })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.tools.rect })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.tools.select })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.tiles.autoExpand })).toBeTruthy()
+    expect(screen.getByText(COPY.tiles.statusSize(20, 15))).toBeTruthy()
+  })
+
   it('tilemap órfão (tileset apagado) mostra o recado gentil', async () => {
     const seed = createGalleryStore()
     await seed.getState().create({

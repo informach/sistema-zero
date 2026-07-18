@@ -6,6 +6,7 @@
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { PixelToolId } from '../pixel/tools'
+import type { TileStamp } from '../tiles/stamp'
 
 /**
  * Ferramentas da sessão: as do motor pixel + a Mão (navegação, mapa/vetor) + a
@@ -47,6 +48,14 @@ export interface PintaSessionState {
   /** Animação/quadro em edição (sprites; null = a primeira do asset). */
   animationId: string | null
   frameIndex: number
+  /**
+   * Carimbo de tiles ATIVO no editor de mapa (bloco multi-tile pego no picker
+   * ou "copiar pedaço"); `null` = pinta uma peça só (`frameIndex`). Vive na
+   * sessão porque pegar um carimbo não é edição.
+   */
+  stamp: TileStamp | null
+  /** Auto-expandir: pintar na borda do mapa faz ele crescer (off por padrão). */
+  autoExpand: boolean
 
   setTool(tool: PintaSessionTool): void
   setColor(color: number): void
@@ -62,6 +71,8 @@ export interface PintaSessionState {
   setPlaying(playing: boolean): void
   selectAnimation(id: string): void
   selectFrame(index: number): void
+  setStamp(stamp: TileStamp | null): void
+  toggleAutoExpand(): void
 }
 
 export type PintaSessionStore = StoreApi<PintaSessionState>
@@ -88,6 +99,8 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     playing: true,
     animationId: null,
     frameIndex: 0,
+    stamp: null,
+    autoExpand: false,
     ...initial,
 
     setTool: (tool) => set({ tool }),
@@ -104,5 +117,7 @@ export function createSessionStore(initial?: Partial<PintaSessionState>): PintaS
     setPlaying: (playing) => set({ playing }),
     selectAnimation: (id) => set({ animationId: id, frameIndex: 0 }),
     selectFrame: (index) => set({ frameIndex: Math.max(index, 0) }),
+    setStamp: (stamp) => set({ stamp }),
+    toggleAutoExpand: () => set((state) => ({ autoExpand: !state.autoExpand })),
   }))
 }

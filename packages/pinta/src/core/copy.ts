@@ -114,7 +114,7 @@ export const COPY = {
     64: 'Gigante',
   } as Record<number, string>,
   /** Rótulos por POSIÇÃO nas listas de tamanho de cenário/desenho livre/mapa. */
-  sizeScale: ['Pequeno', 'Médio', 'Grande'],
+  sizeScale: ['Pequeno', 'Médio', 'Grande', 'Bem grande', 'Gigante'],
   editor: {
     back: 'Voltar',
     undo: 'Desfazer',
@@ -222,6 +222,16 @@ export const COPY = {
     mapGrid: 'Grade do mapa',
     tileLabel: (index: number) => `Peça ${index}`,
     layerNamePrefix: 'Camada',
+    // Ferramentas novas do mapa (MapperMate)
+    autoExpand: 'Crescer o mapa pintando na borda',
+    autoExpandLimit: 'O mapa chegou ao tamanho máximo!',
+    stampBlock: (cols: number, rows: number) => `Bloco de ${cols} × ${rows} peças`,
+    stampClear: 'Voltar para uma peça só',
+    copyPiece: 'Copiar pedaço',
+    clearPiece: 'Apagar pedaço',
+    showCollision: 'Ver as colisões do mapa',
+    statusSize: (cols: number, rows: number) => `${cols} colunas × ${rows} linhas`,
+    statusCell: (col: number, row: number) => `Coluna ${col} · Linha ${row}`,
   },
   vector: {
     select: 'Selecionar',
@@ -336,7 +346,8 @@ export const COPY = {
       title: 'Dicas rápidas',
       tips: [
         'Escolha uma peça no canto e pinte na grade.',
-        'O Balde de tinta preenche uma área toda de uma vez.',
+        'Arraste sobre as peças para pegar um bloco inteiro e carimbar.',
+        'A Linha e o Retângulo pintam vários tiles de uma vez.',
         'O foguete copia a grade para o bloco de mapa do Estúdio.',
       ],
     },

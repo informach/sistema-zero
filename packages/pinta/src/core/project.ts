@@ -261,8 +261,10 @@ export const PINTA_LIMITS = {
   maxFrameSize: 128,
   maxBitmapSize: 512,
   maxTiles: 64,
-  maxTilemapCols: 100,
-  maxTilemapRows: 100,
+  // Teto casado com o `MAX_TILEMAP_DIM` do Studio (128) — mapas maiores exigem
+  // grade compacta (RLE) nos dois parsers do runtime + culling no editor.
+  maxTilemapCols: 128,
+  maxTilemapRows: 128,
   maxTilemapLayers: 4,
   maxShapes: 500,
   maxNameChars: 48,
