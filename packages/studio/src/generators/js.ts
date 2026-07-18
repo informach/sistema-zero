@@ -1771,6 +1771,8 @@ function compileStatementCode(
       return `${pad}SZGameKit.rpgAddFoe(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
     case 'gk:rpgTeachMove':
       return `${pad}SZGameKit.rpgTeachMove(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
+    case 'gk:rpgTeachHeal':
+      return `${pad}SZGameKit.rpgTeachHeal(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgOnBattleEnd': {
       const body = compileStatements(
         stmt.body,
@@ -5374,6 +5376,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'gk:rpgTeachMove':
       collectExprIdentifiers(valueToExpr(stmt.dmg), names)
+      collectExprIdentifiers(valueToExpr(stmt.cost), names)
+      return
+    case 'gk:rpgTeachHeal':
+      collectExprIdentifiers(valueToExpr(stmt.amount), names)
       collectExprIdentifiers(valueToExpr(stmt.cost), names)
       return
     case 'gk:createCharacter':

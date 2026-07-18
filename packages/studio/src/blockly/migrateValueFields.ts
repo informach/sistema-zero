@@ -221,6 +221,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_gk_rpg_add_ally: { HP: 'number', STR: 'number', DEF: 'number' },
   sz_gk_rpg_add_foe: { HP: 'number', STR: 'number', DEF: 'number' },
   sz_gk_rpg_teach_move: { DMG: 'number', COST: 'number' },
+  sz_gk_rpg_teach_heal: { AMOUNT: 'number', COST: 'number' },
   sz_gk_camera_shake: { INT: 'number', SEC: 'number' },
   sz_gk_apply_gravity: { G: 'number' },
   sz_gk_jump: { FORCE: 'number' },

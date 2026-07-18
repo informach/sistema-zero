@@ -1414,6 +1414,7 @@ SZGameKit.rpgSetSpecial("Golpe Giratorio", 22, 5);
 SZGameKit.rpgAddAlly("Curandeira", 40, 8, 2, "#22c55e");
 SZGameKit.rpgTeachMove("Voce", "Espadada Dupla", 16, 3);
 SZGameKit.rpgTeachMove("Curandeira", "Flechada", 14, 2);
+SZGameKit.rpgTeachHeal("Curandeira", "Curar", 18, 3);
 SZGameKit.rpgGivePotion("Pocao", 25);
 SZGameKit.rpgOnMap("praca", function () {
   SZGameKit.rpgCreateNpc("Capitao", 4, 3, "", "");
@@ -1454,6 +1455,7 @@ describe('game-2d-advanced — exemplo Batalha em Equipe (⚔️ batalha em equi
       'gk:rpgAddAlly',
       'gk:rpgAddFoe',
       'gk:rpgTeachMove',
+      'gk:rpgTeachHeal',
       'gk:rpgSetSpecial',
       'gk:rpgGivePotion',
       'gk:rpgBattleStart',

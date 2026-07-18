@@ -4905,6 +4905,21 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
           }
         : null
     }
+    case 'rpgTeachHeal': {
+      // SZGameKit.rpgTeachHeal("quem", "golpe", cura, cost)
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const amount = toExpr(args[2], ctx)
+      const cost = toExpr(args[3], ctx)
+      return isSimpleValue(amount) && isSimpleValue(cost)
+        ? {
+            type: 'gk:rpgTeachHeal',
+            who: args[0].value as string,
+            move: args[1].value as string,
+            amount,
+            cost,
+          }
+        : null
+    }
     case 'rpgOnBattleEnd': {
       if (!isFn(args[0])) return null
       return { type: 'gk:rpgOnBattleEnd', body: bodyOfFn(args[0], source, ctx) }

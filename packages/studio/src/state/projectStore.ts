@@ -979,6 +979,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_gk_rpg_add_ally',
     'sz_gk_rpg_add_foe',
     'sz_gk_rpg_teach_move',
+    'sz_gk_rpg_teach_heal',
     'sz_gk_rpg_on_battle_end',
     'sz_gk_rpg_battle_won',
     'sz_gk_set_walk_sheet',

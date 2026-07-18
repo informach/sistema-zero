@@ -2831,6 +2831,13 @@ export type JSStatement =
       dmg: number | JSExpr
       cost: number | JSExpr
     })
+  | (JSStatementCommon & {
+      type: 'gk:rpgTeachHeal'
+      who: string
+      move: string
+      amount: number | JSExpr
+      cost: number | JSExpr
+    })
   // 🎬 Cenas & NPCs vivos: folha de andar direcional + cutscene por gravação +
   // NPC que anda/vagueia + gatilho ao pisar numa célula.
   | (JSStatementCommon & {
@@ -6598,6 +6605,14 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:rpgTeachHeal'),
+      who: irText(),
+      move: irText(),
+      amount: z.union([JSExprSchema, z.number()]),
+      cost: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:rpgOnBattleEnd'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -9306,6 +9321,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgAddAlly',
   'gk:rpgAddFoe',
   'gk:rpgTeachMove',
+  'gk:rpgTeachHeal',
   'gk:setWalkSheet',
   'gk:rpgCutscene',
   'gk:rpgWait',

@@ -173,6 +173,18 @@ export const gameKitRuntime = `(function () {
     return s;
   }
 
+  // Mapa indexado por NOME DA CRIANÇA (golpes, mapas, NPCs, flags…): sem protótipo,
+  // então um nome inocente como "constructor"/"toString" NÃO cai na herança do Object
+  // (que travava o jogo no "se o mapa[nome] não existe, cria a lista"). Cópia opcional
+  // de um objeto simples (ex.: um save carregado por JSON.parse) para o formato seguro.
+  function nameMap(src) {
+    var m = Object.create(null);
+    if (src && typeof src === 'object') {
+      for (var k in src) if (Object.prototype.hasOwnProperty.call(src, k)) m[k] = src[k];
+    }
+    return m;
+  }
+
   /** '#rgb'/'#rrggbb' -> 'rgba(r,g,b,a)' (p/ o brilho dos painéis). */
   function hexToRgba(hex, alpha) {
     var h = String(hex == null ? '' : hex).replace('#', '');
@@ -917,27 +929,36 @@ export const gameKitRuntime = `(function () {
     lastTime = timestamp;
     currentDt = dt;
     frameCount += 1;
-    // O tremor decai FORA do gate de estado: o render o aplica em todo estado
-    // (fim/vitória/pausado/batalha), então decair só em 'jogando' deixava a tela
-    // de fim vibrando PARA SEMPRE ("morrer → tremer + terminar o jogo").
-    if (camera.shakeT > 0) camera.shakeT = Math.max(0, camera.shakeT - dt);
-    stepScreenFx(dt); // idem: o render aplica em TODO estado
-    // ⭐ A batalha do Kit Monstrinhos roda no estado 'batalha', onde o
-    // stepSystems NÃO anda — e é ele que bombeia o relógio da fala, a
-    // navegação do menu, os tweens e as faíscas. Por isso o step é AQUI.
-    var estavaEmBatalha = state === 'batalha';
-    stepPkmBattle(dt);
-    stepRpgBattle(dt); // a batalha em equipe do Kit RPG (mesmo motivo: fora do gate)
-    // ⚠️ Se a batalha ACABOU neste quadro, o stepPkmBattle já bombeou relógio + UI +
-    // tweens + faíscas (ele faz isso justamente porque o stepSystems não anda em
-    // 'batalha'). Sem esta guarda o stepSystems rodaria tudo 2× no quadro da volta.
-    if (state === 'jogando' && !estavaEmBatalha) {
-      stepSystems(dt);
-      // A missão pode ter mudado o estado NESTE quadro (vitória) — não rodar o
-      // update da criança num jogo que acabou de terminar (paridade P24).
-      if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
+    // ⭐ TUDO do quadro dentro de um try/catch que SEMPRE reagenda o próximo: um erro
+    // no motor (batalha, render, um sistema) avisa UMA vez e o jogo SEGUE — nunca
+    // congela de vez (antes, um throw aqui matava o requestAnimationFrame e a criança
+    // só recuperava recarregando). Os ganchos da criança já eram protegidos pelo
+    // runHooks; isto fecha o buraco do próprio motor.
+    try {
+      // O tremor decai FORA do gate de estado: o render o aplica em todo estado
+      // (fim/vitória/pausado/batalha), então decair só em 'jogando' deixava a tela
+      // de fim vibrando PARA SEMPRE ("morrer → tremer + terminar o jogo").
+      if (camera.shakeT > 0) camera.shakeT = Math.max(0, camera.shakeT - dt);
+      stepScreenFx(dt); // idem: o render aplica em TODO estado
+      // ⭐ A batalha do Kit Monstrinhos roda no estado 'batalha', onde o
+      // stepSystems NÃO anda — e é ele que bombeia o relógio da fala, a
+      // navegação do menu, os tweens e as faíscas. Por isso o step é AQUI.
+      var estavaEmBatalha = state === 'batalha';
+      stepPkmBattle(dt);
+      stepRpgBattle(dt); // a batalha em equipe do Kit RPG (mesmo motivo: fora do gate)
+      // ⚠️ Se a batalha ACABOU neste quadro, o stepPkmBattle já bombeou relógio + UI +
+      // tweens + faíscas (ele faz isso justamente porque o stepSystems não anda em
+      // 'batalha'). Sem esta guarda o stepSystems rodaria tudo 2× no quadro da volta.
+      if (state === 'jogando' && !estavaEmBatalha) {
+        stepSystems(dt);
+        // A missão pode ter mudado o estado NESTE quadro (vitória) — não rodar o
+        // update da criança num jogo que acabou de terminar (paridade P24).
+        if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
+      }
+      render();
+    } catch (e) {
+      warnOnce('gameloop', 'erro no laço do jogo: ' + e);
     }
-    render();
     // Limpa o edge de "apertada AGORA" no fim do quadro (padrão Input do RPG kit).
     justPressed = {};
     requestAnimationFrame(gameLoop);
@@ -5132,13 +5153,13 @@ export const gameKitRuntime = `(function () {
     walls: {},            // 'cx,cy' -> true (ocupação do mapa CORRENTE: terreno + NPCs)
     terrain: {},          // 'cx,cy' -> true SÓ do terreno fixo (block_cell/tilemap) —
                           // o NPC nunca "libera" essas ao andar (senão furava o mapa)
-    npcs: {},             // nome -> entidade (sólida na grade)
-    npcTalk: {},          // nome -> [fns do "quando conversar"]
+    npcs: nameMap(),      // nome -> entidade (sólida na grade)
+    npcTalk: nameMap(),   // nome -> [fns do "quando conversar"]
     doors: {},            // 'cx,cy' -> nome do mapa
     stepHandlers: {},     // 'cx,cy' -> [fns do "quando pisar" — footstep cutscenes]
-    flags: {},            // StoryFlags: nome -> true
+    flags: nameMap(),     // StoryFlags: nome -> true
     items: [],            // inventário: {name, image}
-    maps: {},             // nome -> [fns de montagem]
+    maps: nameMap(),      // nome -> [fns de montagem]
     mapOrder: [],         // ordem de registro (o 1º é o mapa inicial)
     currentMap: '',
     // 🌍 Mundo aberto: tamanho do mapa ATUAL em células + bordas ligadas
@@ -5190,7 +5211,7 @@ export const gameKitRuntime = `(function () {
   function rpgNewGame() {
     // O time do Kit Monstrinhos morre junto: é parte do "jogo", não do motor.
     pkmNewGame();
-    rpg.flags = {};
+    rpg.flags = nameMap();
     rpg.items = [];
     rpg.dialog = null;
     rpg.battle = null;
@@ -5205,7 +5226,7 @@ export const gameKitRuntime = `(function () {
     // O time e os golpes fazem parte do JOGO, não do motor: zeram ao recomeçar.
     rpg.allies = [];
     rpg.foeQueue = [];
-    rpg.movesByName = {};
+    rpg.movesByName = nameMap();
     rpg.scene = null;
     rpg.recording = false;
     rpg.sceneSteps = [];
@@ -5213,6 +5234,10 @@ export const gameKitRuntime = `(function () {
     rpg.menu = null;
     rpg.menuBuilding = null;
     if (rpg.mapOrder.length > 0) rpgGoMap(rpg.mapOrder[0]);
+    // Se "Recomeçar" rodou NO MEIO de uma batalha, a batalha foi zerada acima —
+    // sem isto o mundo ficaria preso no estado 'batalha' (nada a desenhar/avançar).
+    // No caminho normal (setState('jogando')) o estado já é 'jogando' → no-op.
+    if (state === 'batalha') setState('jogando');
   }
 
   function rpgCreateNpc(name, cx, cy, image, look) {
@@ -5396,13 +5421,17 @@ export const gameKitRuntime = `(function () {
       var ny = cy + dy;
       // 🌍 Mundo aberto: o passo cruzaria a BORDA do mapa? Com ligação, viaja
       // (estilo Zelda: entra espelhado do outro lado); sem ligação, a borda é o
-      // fim do mundo (só virou de lado). Sem "Este mapa tem", NADA muda.
-      if (rpg.mapCols > 0 && rpg.mapRows > 0 &&
-          (nx < 0 || nx >= rpg.mapCols || ny < 0 || ny >= rpg.mapRows)) {
-        var eside = dx > 0 ? 'leste' : dx < 0 ? 'oeste' : dy > 0 ? 'sul' : 'norte';
-        var edest = rpg.edges[eside];
-        if (edest) rpgEdgeTravel(c, edest, eside, cx, cy);
-        return;
+      // fim do mundo (só virou de lado). Sem "Este mapa tem", NADA muda. ⭐ POR EIXO:
+      // só colunas já limita leste/oeste (norte/sul ficam livres) e vice-versa.
+      if (rpg.mapCols > 0 || rpg.mapRows > 0) {
+        var outX = rpg.mapCols > 0 && (nx < 0 || nx >= rpg.mapCols);
+        var outY = rpg.mapRows > 0 && (ny < 0 || ny >= rpg.mapRows);
+        if (outX || outY) {
+          var eside = dx > 0 ? 'leste' : dx < 0 ? 'oeste' : dy > 0 ? 'sul' : 'norte';
+          var edest = rpg.edges[eside];
+          if (edest) rpgEdgeTravel(c, edest, eside, cx, cy);
+          return;
+        }
       }
       if (rpg.walls[nx + ',' + ny]) return; // parede/NPC: só virou de lado
       c._gridDest = { x: nx * s, y: ny * s };
@@ -5516,7 +5545,7 @@ export const gameKitRuntime = `(function () {
     if (!k) return;
     rpg.walls = {};
     rpg.terrain = {};
-    rpg.npcs = {};
+    rpg.npcs = nameMap();
     rpg.doors = {};
     rpg.stepHandlers = {};   // gatilhos de pisar são por-mapa (montados de novo)
     // ⭐ A grama e a tabela de selvagens TAMBÉM são por-mapa (o exemplo oficial
@@ -5879,7 +5908,7 @@ export const gameKitRuntime = `(function () {
       var raw = window.localStorage.getItem(SAVE_KEY);
       if (!raw) { warn('não há jogo salvo'); return; }
       var data = JSON.parse(raw) || {};
-      rpg.flags = (data.flags && typeof data.flags === 'object') ? data.flags : {};
+      rpg.flags = nameMap(data.flags); // save vem por JSON.parse (protótipo comum) -> normaliza
       // localStorage é editável pela criança/inspetor — um item sem name string
       // faria rpgDrawInventory/rpgHasItem estourar. Filtra os malformados.
       rpg.items = Array.isArray(data.items)
@@ -5924,6 +5953,9 @@ export const gameKitRuntime = `(function () {
           rpg.hero._gridDest = null;
         }
       }
+      // "Continuar" no meio de uma batalha: a batalha foi zerada acima — devolve o
+      // jogo ao mundo, senão fica preso no estado 'batalha' sem nada a avançar.
+      if (state === 'batalha') setState('jogando');
     } catch (e) { warn('não consegui carregar o jogo: ' + e); }
   }
 
@@ -5992,6 +6024,13 @@ export const gameKitRuntime = `(function () {
     var k = text(who, 'Você');
     if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
     rpg.movesByName[k].push({ name: text(moveName, 'Golpe'), dmg: Math.max(1, num(dmg, 10)), cost: Math.max(0, num(cost, 3)), heal: false });
+  }
+  // Golpe de CURA (heal:true) — o painel de ação mostra "(cura N)" e o applyHeal
+  // devolve vida ao próprio lutador em vez de ferir o inimigo.
+  function rpgTeachHeal(who, moveName, amount, cost) {
+    var k = text(who, 'Você');
+    if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
+    rpg.movesByName[k].push({ name: text(moveName, 'Cura'), dmg: Math.max(1, num(amount, 12)), cost: Math.max(0, num(cost, 3)), heal: true });
   }
   function layoutRow(list, cy) {
     var n = list.length; if (n === 0) return;
@@ -6187,6 +6226,8 @@ export const gameKitRuntime = `(function () {
       return;
     }
     if (b.phase === 'mira') {
+      // Esc/voltar: desiste da mira e reabre o painel de ação (escolher outra coisa).
+      if (justPressed.escape) { b.phase = 'escolha'; b.t = 0; openActionMenu(b.actor); return; }
       // Clique escolhe o alvo (rpgBattleClick); espaço mira o 1º inimigo vivo.
       if (justPressed[' ']) { var f = firstAlive(b.foes); if (f) { b.target = f; applyPlayerHit(); } }
       return;
@@ -6316,7 +6357,10 @@ export const gameKitRuntime = `(function () {
     var t = Math.max(1, Math.round(num(turns, 3)));
     var heroi = (text(who, 'inimigo') === 'heroi' || text(who, 'inimigo') === 'herói');
     var s = text(status, 'veneno');
-    if (!rpg.battle) return;
+    if (!rpg.battle) {
+      warnOnce('inflict', '"Aplicar veneno/regenerar/atrapalhar" só funciona DENTRO de uma batalha (dá o status a quem está lutando)');
+      return;
+    }
     var target = heroi ? rpg.battle.allies[0] : firstAlive(rpg.battle.foes);
     if (!target) return;
     if (s === 'regenera') target.regen = t;
@@ -6653,6 +6697,7 @@ export const gameKitRuntime = `(function () {
     rpgAddAlly: guard('rpgAddAlly', rpgAddAlly),
     rpgAddFoe: guard('rpgAddFoe', rpgAddFoe),
     rpgTeachMove: guard('rpgTeachMove', rpgTeachMove),
+    rpgTeachHeal: guard('rpgTeachHeal', rpgTeachHeal),
     rpgLevel: guard('rpgLevel', function () { return rpg.playerLevel; }),
     rpgXp: guard('rpgXp', function () { return rpg.playerXp; }),
     // ----- 🎬 V6: cenas & NPCs vivos -----

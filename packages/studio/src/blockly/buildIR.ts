@@ -6297,6 +6297,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           cost: exprInput(block, 'COST', { type: 'num', value: 3 }),
         },
       }
+    case 'sz_gk_rpg_teach_heal':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgTeachHeal',
+          who: f(block, 'WHO'),
+          move: f(block, 'MOVE'),
+          amount: exprInput(block, 'AMOUNT', { type: 'num', value: 12 }),
+          cost: exprInput(block, 'COST', { type: 'num', value: 3 }),
+        },
+      }
     case 'sz_gk_rpg_on_battle_end':
       seen.add('game-2d-advanced')
       return {

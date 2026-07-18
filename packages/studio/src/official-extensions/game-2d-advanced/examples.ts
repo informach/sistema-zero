@@ -6364,7 +6364,7 @@ export const reinoAbertoExample: ExtensionExample = {
 export const batalhaEmEquipeExample: ExtensionExample = {
   name: 'Batalha em Equipe',
   description:
-    'Uma batalha por turnos EM EQUIPE: fale com o Capitão (espaço) e enfrente dois bandidos com o seu time (herói + Curandeira). Clique em qualquer personagem para ver a ficha dele (vida, energia, força, defesa, golpes) e destacar quem está selecionado; no seu turno, escolha o golpe no painel de ação e clique no inimigo que quer acertar. Cada um tem golpes nomeados. Abra e edite à vontade.',
+    'Uma batalha por turnos EM EQUIPE: fale com o Capitão (espaço) e enfrente dois bandidos com o seu time (herói + Curandeira, que tem um golpe de CURA). Clique em qualquer personagem para ver a ficha dele (vida, energia, força, defesa, golpes) e destacar quem está selecionado; no seu turno, escolha o golpe no painel de ação e clique no inimigo que quer acertar. Abra e edite à vontade.',
   ir: {
     html: [],
     css: [],
@@ -6434,6 +6434,13 @@ export const batalhaEmEquipeExample: ExtensionExample = {
         move: 'Flechada',
         dmg: { type: 'num', value: 14 },
         cost: { type: 'num', value: 2 },
+      },
+      {
+        type: 'gk:rpgTeachHeal',
+        who: 'Curandeira',
+        move: 'Curar',
+        amount: { type: 'num', value: 18 },
+        cost: { type: 'num', value: 3 },
       },
       { type: 'gk:rpgGivePotion', name: 'Pocao', heal: { type: 'num', value: 25 } },
       {

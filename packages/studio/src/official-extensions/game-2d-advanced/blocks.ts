@@ -1405,6 +1405,22 @@ export const gameKitBlocks = [
       'Ensina um golpe NOMEADO a alguém do time (o herói é "Você"; os aliados pelo nome). Cada um pode ter vários golpes, e eles aparecem no painel de ação da batalha. Gasta energia. Use no começo.',
   },
   {
+    type: 'sz_gk_rpg_teach_heal',
+    message0: 'Ensinar o golpe de CURA %1 (cura %2, energia %3) para %4',
+    args0: [
+      { type: 'field_input', name: 'MOVE', text: 'Curar' },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'COST', check: 'JSValue' },
+      { type: 'field_input', name: 'WHO', text: 'Você' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como "Ensinar o golpe", mas de CURA: em vez de ferir o inimigo, devolve vida a quem usou. Ótimo para um aliado curandeiro. Aparece no painel de ação e gasta energia. Use no começo.',
+  },
+  {
     type: 'sz_gk_rpg_level',
     message0: 'meu nível',
     output: 'JSValue',
@@ -4447,6 +4463,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_rpg_add_ally',
       'sz_gk_rpg_add_foe',
       'sz_gk_rpg_teach_move',
+      'sz_gk_rpg_teach_heal',
       'sz_gk_rpg_set_special',
       'sz_gk_rpg_give_potion',
       'sz_gk_rpg_battle_reward',
@@ -4660,6 +4677,7 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_add_ally: { HP: numShadow(24), STR: numShadow(6), DEF: numShadow(1) },
   sz_gk_rpg_add_foe: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(0) },
   sz_gk_rpg_teach_move: { DMG: numShadow(12), COST: numShadow(3) },
+  sz_gk_rpg_teach_heal: { AMOUNT: numShadow(12), COST: numShadow(3) },
   sz_gk_rpg_set_special: { DMG: numShadow(14), COST: numShadow(4) },
   sz_gk_rpg_give_potion: { HEAL: numShadow(20) },
   sz_gk_rpg_battle_reward: { XP: numShadow(20) },

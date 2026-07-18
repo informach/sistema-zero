@@ -3794,6 +3794,16 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             COST: cost,
           })
     }
+    case 'gk:rpgTeachHeal': {
+      const amount = exprToValueBlock(valueToExpr(stmt.amount))
+      const cost = exprToValueBlock(valueToExpr(stmt.cost))
+      return amount === null || cost === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_teach_heal', { MOVE: stmt.move, WHO: stmt.who }, {}, stmt.__id, {
+            AMOUNT: amount,
+            COST: cost,
+          })
+    }
     case 'gk:rpgOnBattleEnd':
       return block(
         'sz_gk_rpg_on_battle_end',

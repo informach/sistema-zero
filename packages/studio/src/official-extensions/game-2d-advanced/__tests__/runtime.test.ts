@@ -198,6 +198,7 @@ interface GameKitApi {
   rpgAddAlly: Fn
   rpgAddFoe: Fn
   rpgTeachMove: Fn
+  rpgTeachHeal: Fn
   rpgLevel: Fn
   rpgXp: Fn
   // V9 — mapa de tiles + profundidade
@@ -497,7 +498,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 281 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 282 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -640,6 +641,7 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgAddAlly',
       'rpgAddFoe',
       'rpgTeachMove',
+      'rpgTeachHeal',
       // V9 — mapa de tiles + profundidade (6)
       'cameraShake',
       'loadTilemap',
@@ -3589,5 +3591,79 @@ describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho
     h.nextFrame(16)
     expect(h.api.cameraX()).toBe(30 * 64 - 800) // 1120
     expect(h.api.cameraY()).toBe(20 * 64 - 600) // 680
+  })
+})
+
+describe('SZGameKit — R29: robustez (nomes perigosos, softlock, cura)', () => {
+  it('⭐ A2: nome "constructor"/"toString" no time NÃO trava o jogo', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    // Nomes que caem na herança do Object (constructor/toString) travavam o motor.
+    h.api.rpgBattleStats(30, 999) // força alta: vence no 1º golpe
+    h.api.rpgTeachMove('toString', 'X', 10, 2) // ally "malvado" (nem existe ainda)
+    h.api.rpgAddFoe('constructor', 20, 5, 0, '#f00')
+    expect(() => h.api.rpgBattleStart('toString', 20, 5, 0)).not.toThrow()
+    expect(h.api.state()).toBe('batalha')
+    // Joga até acabar sem estourar (antes, abrir o painel fazia undefined.name).
+    driveBattle(h, 1)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.rpgBattleWon()).toBe(true)
+  })
+
+  it('⭐ A1: um erro no laço NÃO congela — o próximo quadro ainda roda', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    let quadros = 0
+    // Um "A cada quadro" que SEMPRE lança: o runHooks já protege os ganchos, mas
+    // este teste garante que o laço reagenda mesmo assim (a fila de rAF nunca seca).
+    h.api.onUpdate(() => {
+      quadros += 1
+      throw new Error('boom de propósito')
+    })
+    for (let i = 0; i < 5; i++) {
+      expect(h.rafCount()).toBeGreaterThan(0) // sempre há um próximo quadro agendado
+      h.nextFrame((i + 1) * 16)
+    }
+    expect(quadros).toBe(5) // o laço sobreviveu aos 5 erros
+  })
+
+  it('⭐ A3: "Continuar" (carregar) no MEIO da batalha volta o jogo a "jogando"', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    // Injeta um save mínimo direto no localStorage do harness.
+    h.store.set('szgk-rpg-save', JSON.stringify({ max: 30, hp: 20, lvl: 1, flags: {}, items: [] }))
+    h.api.rpgBattleStats(30, 5, 0)
+    h.api.rpgBattleStart('Chefe', 40, 5, 0)
+    expect(h.api.state()).toBe('batalha')
+    h.api.rpgLoad() // antes: zerava a batalha e ficava PRESO em 'batalha'
+    expect(h.api.state()).toBe('jogando')
+  })
+
+  it('⭐ A4: golpe de CURA cura de verdade (não fere o inimigo)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(60, 5, 0)
+    h.api.rpgTeachHeal('Você', 'Curar', 15, 2) // golpe de cura do herói
+    h.api.rpgBattleStart('Tanque', 100, 3, 0) // inimigo grosso: a batalha continua
+    expect(h.api.state()).toBe('batalha')
+    // Abre o painel e confere que o golpe de CURA aparece rotulado como cura (antes
+    // era código morto: heal:false fixo → o rótulo "(cura …)" nunca renderizava).
+    let opened: BattleSnap | null = null
+    let t = 1
+    for (let i = 0; i < 20 && !opened; i++, t += 100) {
+      const s = battleSnap(h)
+      if (s?.menuOpen) opened = s
+      else h.nextFrame(t)
+    }
+    expect(opened).not.toBeNull()
+    expect(opened?.menuLabels.some((l) => l.includes('Curar') && l.includes('cura'))).toBe(true)
+    const foeHp0 = opened?.foes[0]?.hp
+    pickAction(h, t, 'Curar') // escolhe o golpe de cura
+    // O inimigo NÃO perdeu vida (cura ≠ dano): o golpe curou em vez de ferir.
+    expect(battleSnap(h)?.foes[0]?.hp).toBe(foeHp0)
   })
 })
