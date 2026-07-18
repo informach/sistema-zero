@@ -1,6 +1,7 @@
 import type { ExtensionManifest } from '#extensions'
 import {
   arenaGoblinsExample,
+  batalhaEmEquipeExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   defesaDoReinoExample,
@@ -15,7 +16,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.25.0',
+  version: '0.26.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E cinco atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial) e 🚀 nave (a invasão que marcha, desce e acelera).',
   category: 'games',
@@ -49,7 +50,11 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
 ### Começando (a receita)
 
 1. **Preparar o jogo profissional** — uma vez, no começo: resolução, cor de
-   fundo e cor de destaque das telas.
+   fundo e cor de destaque das telas. (Ou **Preparar o jogo para ocupar a tela
+   toda** — sem dimensões: o canvas preenche a tela inteira e a área do jogo
+   ACOMPANHA a janela. Nesse modo "a largura/altura do jogo" mudam com a tela,
+   então centralize por eles, não por números fixos; combine com "entrar em tela
+   cheia" para tomar o monitor todo. Use UM dos dois "Preparar".)
 2. **Carregar a imagem** — uma por imagem do projeto (aba Imagens); o nome que
    você der é o que o personagem usa.
 3. **Criar o personagem** — quantos quiser. Nasce no centro; sem imagem, vira um
@@ -743,9 +748,19 @@ música da praia" e o nome no HUD.
 ### ⚔️ Batalha por turnos (em ⚔️ batalha)
 
 - **Meus pontos de batalha** (vida/força/**defesa**, 1x no começo) e **Começar a
-  batalha contra…** (o inimigo também tem defesa) — abre o menu PRONTO: **Atacar**
-  (força ± 20% − defesa/2), **Especial** (gasta energia), **Item** (usa poção),
-  **Defender** (dano pela metade) e **Fugir** (50%). O inimigo revida sozinho.
+  batalha contra…** (o inimigo também tem defesa) — abre a batalha em EQUIPE
+  desenhada no canvas: os combatentes aparecem em fileiras (o seu time embaixo, os
+  inimigos em cima). **Clique** em qualquer um para VER o painel de informações
+  dele (vida, energia, força, defesa, golpes) e destacar quem está selecionado. No
+  seu turno, o painel de AÇÃO lista **Atacar** (força ± 20% − defesa/2), os seus
+  **golpes** nomeados, **Defender** (dano pela metade), **Item** (poção) e **Fugir**
+  (50%); escolha o golpe e depois **clique no inimigo** que quer acertar. Os
+  inimigos agem sozinhos (IA).
+- **Adicionar aliado** põe um lutador no SEU time (o herói já entra sozinho) — você
+  comanda cada um na vez dele. **Adicionar inimigo** coloca MAIS inimigos na próxima
+  batalha (vários contra vários). **Ensinar o golpe … para …** dá golpes NOMEADOS a
+  quem você quiser (o herói é "Você"; os aliados pelo nome) — cada um pode ter vários,
+  e eles aparecem no painel de ação. Cada golpe gasta energia.
 - **Golpe especial** (dano forte que gasta energia; a energia recupera por turno)
   + **Ganhar a poção** (cura, usada pelo botão Item) — as armas do RPG.
 - **Ganhar XP** (no "quando a batalha terminar", se venceu) → o herói **sobe de
@@ -927,5 +942,6 @@ das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
     dueloDosBonecosExample,
     defesaDoReinoExample,
     reinoAbertoExample,
+    batalhaEmEquipeExample,
   ],
 }

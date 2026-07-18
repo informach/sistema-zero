@@ -25,7 +25,10 @@ export const gameKitRuntime = `(function () {
     h: 720,
     bg: '#1a1a2e',
     accent: '#4a9eff',
-    pauseKey: 'escape'
+    pauseKey: 'escape',
+    // "Ocupar a tela toda": a resolução interna ACOMPANHA a viewport (sem
+    // proporção fixa, sem barras) em vez do letterbox de resolução travada.
+    fill: false
   };
 
   // ---- Estado interno ----
@@ -475,6 +478,12 @@ export const gameKitRuntime = `(function () {
       mouse.x = p.x;
       mouse.y = p.y;
       mouse.down = true;
+      // ⚔️ Batalha em equipe: o clique é da BATALHA (painel de ação + escolher/
+      // inspecionar combatente). Coords SEM câmera (a cena é desenhada em tela).
+      if (rpg.battle && state === 'batalha') {
+        rpgBattleClick(p.x - (camera.on ? camera.x : 0), p.y - (camera.on ? camera.y : 0));
+        return;
+      }
       // Menu de escolha aberto: clicar numa opção escolhe (coords SEM câmera — o
       // menu é UI do motor, desenhado em coords de tela; toGameCoords soma a
       // câmera, então desfazemos aqui).
@@ -512,6 +521,23 @@ export const gameKitRuntime = `(function () {
 
   function resizeCanvas() {
     if (!shellReady || !canvasEl) return;
+    // Modo "ocupar a tela toda": a resolução INTERNA acompanha a viewport, então
+    // as coordenadas do jogo (config.w/h) passam a valer o tamanho real da tela e
+    // o canvas preenche tudo (sem barras). O "a largura/altura do jogo" acompanham
+    // de graça (leem config.w/h) e o toGameCoords segue certo (razão ~1).
+    if (config.fill) {
+      var fw = Math.max(64, window.innerWidth);
+      var fh = Math.max(64, window.innerHeight);
+      config.w = fw;
+      config.h = fh;
+      canvasEl.width = fw;
+      canvasEl.height = fh;
+      canvasEl.style.width = '100%';
+      canvasEl.style.height = '100%';
+      canvasEl.style.border = '0';
+      if (ctx2d) { try { ctx2d.imageSmoothingEnabled = false; } catch (e) {} }
+      return;
+    }
     var ratio = config.w / config.h;
     var margin = 15;
     var availW = window.innerWidth - margin * 2;
@@ -852,6 +878,8 @@ export const gameKitRuntime = `(function () {
     // A cena da batalha do Kit Monstrinhos substitui o mundo (o estado
     // 'batalha' congela o jogo e esta é a outra tela).
     if (pkm.battle && state === 'batalha') drawPkmBattle();
+    // A batalha em EQUIPE do Kit RPG é a outra tela do estado 'batalha'.
+    if (rpg.battle && state === 'batalha') drawRpgBattle();
     // A caixa de fala e o menu de escolha são UI do MOTOR: sempre no topo.
     drawDialog();
     drawMenu();
@@ -899,6 +927,7 @@ export const gameKitRuntime = `(function () {
     // navegação do menu, os tweens e as faíscas. Por isso o step é AQUI.
     var estavaEmBatalha = state === 'batalha';
     stepPkmBattle(dt);
+    stepRpgBattle(dt); // a batalha em equipe do Kit RPG (mesmo motivo: fora do gate)
     // ⚠️ Se a batalha ACABOU neste quadro, o stepPkmBattle já bombeou relógio + UI +
     // tweens + faíscas (ele faz isso justamente porque o stepSystems não anda em
     // 'batalha'). Sem esta guarda o stepSystems rodaria tudo 2× no quadro da volta.
@@ -5120,7 +5149,12 @@ export const gameKitRuntime = `(function () {
     edges: {},
     hero: null,           // quem usa a grade (a fala/porta/NPC olham ele)
     dialog: null,         // {queue, text, name, start}
-    battle: null,         // {name, hp, max, str, def, defending, poison}
+    battle: null,         // batalha em EQUIPE: {allies, foes, phase, actor, target, ...}
+    // ⚔️ Time e golpes (batalha em equipe): party PERSISTENTE de aliados (o herói
+    // entra sozinho), fila de inimigos da próxima batalha, e golpes nomeados por nome.
+    allies: [],           // [{name, hp, str, def, look, color}] — "Adicionar aliado"
+    foeQueue: [],         // [{...}] — "Adicionar inimigo" (consumida em rpgBattleStart)
+    movesByName: {},      // nome -> [{name, dmg, cost, heal}] — "Ensinar o golpe"
     // Atributos do herói na batalha (Combatant do Pizza): vida/força/defesa + XP/
     // nível + energia (mana p/ o golpe especial). base* = valores iniciais (o
     // "Recomeçar" volta a eles); os correntes sobem com o nível.
@@ -5168,6 +5202,10 @@ export const gameKitRuntime = `(function () {
     rpg.playerEnergy = rpg.playerMaxEnergy; rpg.playerPoison = 0;
     rpg.playerRegen = 0; rpg.playerBlind = 0;
     rpg.potions = [];
+    // O time e os golpes fazem parte do JOGO, não do motor: zeram ao recomeçar.
+    rpg.allies = [];
+    rpg.foeQueue = [];
+    rpg.movesByName = {};
     rpg.scene = null;
     rpg.recording = false;
     rpg.sceneSteps = [];
@@ -5892,28 +5930,83 @@ export const gameKitRuntime = `(function () {
   // ⚔️ Batalha por turnos RICA (Combatant/TurnCycle do Pizza, 1v1): Atacar/
   // Especial (energia)/Item (poção)/Defender/Fugir; defesa reduz o dano; XP sobe
   // de nível; veneno tira vida por turno. Dano = força ± 20% − defesa/2.
-  function ensureBattleScreen() {
-    if (screens.batalha) return screens.batalha;
-    var scr = makeScreen('batalha', 'h2', 'Batalha!', '');
-    makeButton(scr, 'Atacar', function () { battleAction('atacar'); });
-    makeButton(scr, 'Especial', function () { battleAction('especial'); });
-    makeButton(scr, 'Item', function () { battleAction('item'); });
-    makeButton(scr, 'Defender', function () { battleAction('defender'); });
-    makeButton(scr, 'Fugir', function () { battleAction('fugir'); });
-    return scr;
-  }
   function rollDamage(strength, targetDef) {
     var raw = Math.round(num(strength, 1) * (0.8 + Math.random() * 0.4));
     return Math.max(1, raw - Math.floor(num(targetDef, 0) / 2));
   }
-  function updateBattleText(msg) {
-    var scr = screens.batalha;
-    var b = rpg.battle;
-    if (!scr || !b) return;
-    scr.text.textContent =
-      'Você Nv' + rpg.playerLevel + ': ' + Math.max(0, rpg.playerHp) + '/' + rpg.playerMax +
-      ' ⚡' + Math.max(0, rpg.playerEnergy) +
-      ' | ' + b.name + ': ' + Math.max(0, b.hp) + '/' + b.max + ' — ' + msg;
+  // ---- ⚔️ Batalha em EQUIPE (canvas): combatentes clicáveis + painéis ----
+  // Um COMBATENTE carrega os próprios atributos (o createCharacter não tem stats de
+  // luta). O herói entra a partir dos rpg.player* (progressão persiste); aliados e
+  // inimigos vêm de "Adicionar aliado/inimigo"; os golpes nomeados de "Ensinar o golpe".
+  function makeBattler(name, side, hp, str, def, look, color) {
+    var mx = Math.max(1, num(hp, 20));
+    return {
+      name: text(name, side === 'inimigo' ? 'Inimigo' : 'Aliado'), side: side,
+      hp: mx, max: mx, str: Math.max(0, num(str, 5)), def: Math.max(0, num(def, 0)),
+      energy: 10, maxEnergy: 10, moves: [],
+      defending: false, poison: 0, regen: 0, blind: 0, alive: true,
+      look: text(look, ''), color: text(color, side === 'inimigo' ? '#e05a5a' : '#4a9eff'),
+      image: '', x: 0, y: 0, w: 72, h: 72
+    };
+  }
+  function heroBattler() {
+    var b = makeBattler('Você', 'aliado', rpg.playerMax, rpg.playerStr, rpg.playerDef, '', '#4a9eff');
+    b.energy = rpg.playerMaxEnergy; b.maxEnergy = rpg.playerMaxEnergy; b.isHero = true;
+    // O herói aparece com o SEU visual do mundo (sprite/vetor/cor), se existir.
+    if (rpg.hero) { b.image = text(rpg.hero.image, ''); b.look = text(rpg.hero.look, ''); b.color = text(rpg.hero.color, b.color); }
+    if (rpg.special) b.moves.push({ name: rpg.special.name, dmg: rpg.special.dmg, cost: rpg.special.cost, heal: false });
+    var extra = rpg.movesByName['Você'];
+    if (extra) for (var i = 0; i < extra.length; i++) b.moves.push(extra[i]);
+    return b;
+  }
+  function defToBattler(def, side) {
+    var b = makeBattler(def.name, side, def.hp, def.str, def.def, def.look, def.color);
+    var mv = rpg.movesByName[def.name];
+    if (mv) for (var i = 0; i < mv.length; i++) b.moves.push(mv[i]);
+    return b;
+  }
+  function firstAlive(list) { for (var i = 0; i < list.length; i++) if (list[i].alive && list[i].hp > 0) return list[i]; return null; }
+  function aliveList(list) { var out = []; for (var i = 0; i < list.length; i++) if (list[i].alive && list[i].hp > 0) out.push(list[i]); return out; }
+  function nextAliveAfter(list, who) {
+    var seen = false;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] === who) { seen = true; continue; }
+      if (seen && list[i].alive && list[i].hp > 0) return list[i];
+    }
+    return null;
+  }
+  function foeNames(b) {
+    var out = '';
+    for (var i = 0; i < b.foes.length; i++) out += (i ? ', ' : '') + b.foes[i].name;
+    return out;
+  }
+  // 🧙 Kit RPG: montar o time. rpgAddAlly = party PERSISTENTE (o herói já entra
+  // sozinho); rpgAddFoe = inimigos da PRÓXIMA batalha; rpgTeachMove = golpes nomeados.
+  function rpgAddAlly(name, hp, str, def, color) {
+    rpg.allies.push({ name: text(name, 'Aliado'), hp: num(hp, 24), str: num(str, 6), def: num(def, 1), look: '', color: text(color, '#4ade80') });
+  }
+  function rpgAddFoe(name, hp, str, def, color) {
+    rpg.foeQueue.push({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), look: '', color: text(color, '#e05a5a') });
+  }
+  function rpgTeachMove(who, moveName, dmg, cost) {
+    var k = text(who, 'Você');
+    if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
+    rpg.movesByName[k].push({ name: text(moveName, 'Golpe'), dmg: Math.max(1, num(dmg, 10)), cost: Math.max(0, num(cost, 3)), heal: false });
+  }
+  function layoutRow(list, cy) {
+    var n = list.length; if (n === 0) return;
+    var sz = 72, gap = 28;
+    var totalW = n * sz + (n - 1) * gap;
+    var startX = (config.w - totalW) / 2;
+    for (var i = 0; i < n; i++) {
+      var c = list[i];
+      c.w = sz; c.h = sz; c.x = startX + i * (sz + gap); c.y = cy - sz / 2;
+    }
+  }
+  function layoutBattlers() {
+    var b = rpg.battle; if (!b) return;
+    layoutRow(b.foes, config.h * 0.30);
+    layoutRow(b.allies, config.h * 0.66);
   }
   function rpgBattleStats(hp, str, def) {
     rpg.baseMax = Math.max(1, num(hp, 30));
@@ -5937,76 +6030,268 @@ export const gameKitRuntime = `(function () {
     if (rpg.recording) { rpg.sceneSteps.push({ type: 'battle', name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0) }); return; }
     if (!ensureShell()) return;
     if (rpg.battle) return;
-    ensureBattleScreen();
-    var max = Math.max(1, num(hp, 20));
+    // Aliados: o herói (dos atributos) + a party. Inimigos: o nomeado + a fila.
+    var allies = [heroBattler()];
+    for (var i = 0; i < rpg.allies.length; i++) allies.push(defToBattler(rpg.allies[i], 'aliado'));
+    var foes = [makeBattler(name, 'inimigo', hp, str, def, '', '#e05a5a')];
+    var mv = rpg.movesByName[text(name, 'Inimigo')];
+    if (mv) for (var m = 0; m < mv.length; m++) foes[0].moves.push(mv[m]);
+    for (var j = 0; j < rpg.foeQueue.length; j++) foes.push(defToBattler(rpg.foeQueue[j], 'inimigo'));
+    rpg.foeQueue = []; // a fila é consumida pela batalha
     rpg.battle = {
-      name: text(name, 'Inimigo'), hp: max, max: max,
-      str: Math.max(0, num(str, 5)), def: Math.max(0, num(def, 0)),
-      defending: false, poison: 0, regen: 0, blind: 0
+      allies: allies, foes: foes, phase: 'abrindo', actor: null, target: null,
+      move: null, inspect: null, message: '', t: 0, foeIdx: 0
     };
-    rpg.playerHp = rpg.playerMax;     // cada batalha começa com a vida cheia
-    rpg.playerEnergy = rpg.playerMaxEnergy; // e a energia cheia
-    rpg.playerPoison = 0; rpg.playerRegen = 0; rpg.playerBlind = 0;
-    var scr = screens.batalha;
-    scr.title.textContent = 'Batalha contra ' + rpg.battle.name + '!';
-    updateBattleText('Sua vez! O que você faz?');
+    layoutBattlers();
     setState('batalha'); // estado do MEIO do jogo: congela o mundo SEM resetar
-    showScreen('batalha');
   }
-  function battleAction(kind) {
-    var b = rpg.battle;
-    if (!b) return;
-    if (kind === 'fugir') {
-      if (Math.random() < 0.5) { endBattle(false); return; }
-      enemyTurn('Não deu para fugir!');
-      return;
-    }
-    if (kind === 'defender') {
-      b.defending = true;
-      enemyTurn('Você se defendeu.');
-      return;
-    }
-    if (kind === 'especial') {
-      if (!rpg.special) { updateBattleText('Você não tem golpe especial.'); return; }
-      if (rpg.playerEnergy < rpg.special.cost) { updateBattleText('Sem energia para o ' + rpg.special.name + '!'); return; }
-      rpg.playerEnergy -= rpg.special.cost;
-      var sdmg = rollDamage(rpg.special.dmg, b.def);
-      if (rpg.playerBlind > 0) { rpg.playerBlind -= 1; if (Math.random() < 0.33) sdmg = 0; }
-      b.hp -= sdmg;
-      if (b.hp <= 0) { endBattle(true); return; }
-      enemyTurn(sdmg > 0 ? (rpg.special.name + ' causou ' + sdmg + '!') : 'Você se atrapalhou no ' + rpg.special.name + '!');
-      return;
-    }
-    if (kind === 'item') {
-      if (rpg.potions.length === 0) { updateBattleText('Você não tem poções.'); return; }
-      var p = rpg.potions.shift();
-      rpg.playerHp = Math.min(rpg.playerMax, rpg.playerHp + p.heal);
-      enemyTurn('Usou ' + p.name + ' (+' + p.heal + ' de vida)!');
-      return;
-    }
-    // atacar (⭐ 'atrapalha' = 33% de errar, o "clumsy" do Pizza Legends)
-    var dmg = rollDamage(rpg.playerStr, b.def);
-    if (rpg.playerBlind > 0) { rpg.playerBlind -= 1; if (Math.random() < 0.33) dmg = 0; }
-    b.hp -= dmg;
-    if (b.hp <= 0) { endBattle(true); return; }
-    enemyTurn(dmg > 0 ? ('Você causou ' + dmg + '!') : 'Você se atrapalhou e errou!');
+  // A vez de um aliado: abre o painel de ação (o menu do motor) para o jogador escolher.
+  function startAllyTurn(actor) {
+    var b = rpg.battle; if (!b) return;
+    if (!actor) { startFoesTurn(); return; }
+    b.actor = actor; b.inspect = actor; b.move = null; b.target = null;
+    b.phase = 'escolha'; b.t = 0;
+    openActionMenu(actor);
   }
-  function enemyTurn(prefix) {
-    var b = rpg.battle;
-    var dmg = rollDamage(b.str, rpg.playerDef);
-    if (b.blind > 0) { b.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
-    if (b.defending) { dmg = Math.max(dmg > 0 ? 1 : 0, Math.round(dmg / 2)); b.defending = false; }
-    rpg.playerHp -= dmg;
-    var extra = dmg === 0 ? ' ' + b.name + ' se atrapalhou!' : '';
-    // Fim do turno: veneno TIRA e 'regenera' DEVOLVE 3 de vida (status do Pizza).
-    if (b.poison > 0) { b.hp -= 3; b.poison -= 1; extra += ' ' + b.name + ' sofre 3 de veneno.'; }
-    if (rpg.playerPoison > 0) { rpg.playerHp -= 3; rpg.playerPoison -= 1; extra += ' Você sofre 3 de veneno.'; }
-    if (b.regen > 0) { b.hp = Math.min(b.max, b.hp + 3); b.regen -= 1; extra += ' ' + b.name + ' regenera 3.'; }
-    if (rpg.playerRegen > 0) { rpg.playerHp = Math.min(rpg.playerMax, rpg.playerHp + 3); rpg.playerRegen -= 1; extra += ' Você regenera 3.'; }
-    rpg.playerEnergy = Math.min(rpg.playerMaxEnergy, rpg.playerEnergy + 2); // regen de energia
-    if (b.hp <= 0) { endBattle(true); return; }
-    if (rpg.playerHp <= 0) { rpg.playerHp = 0; endBattle(false); return; }
-    updateBattleText(prefix + ' ' + b.name + ' devolveu ' + dmg + '.' + extra + ' Sua vez!');
+  function openActionMenu(actor) {
+    var opts = [];
+    opts.push({ label: 'Atacar (força)', fn: function () { chooseMove(null); } });
+    for (var i = 0; i < actor.moves.length; i++) {
+      (function (mv) {
+        var lbl = mv.name + (mv.heal ? ' (cura ' + mv.dmg : ' (dano ' + mv.dmg) + ', energia ' + mv.cost + ')';
+        opts.push({ label: lbl, fn: function () { chooseMove(mv); } });
+      })(actor.moves[i]);
+    }
+    opts.push({ label: 'Defender (dano pela metade)', fn: function () { actor.defending = true; resolveNoTarget(actor.name + ' se defendeu.'); } });
+    if (rpg.potions.length > 0) opts.push({ label: 'Item (poção)', fn: function () { useItem(actor); } });
+    opts.push({ label: 'Fugir', fn: function () { tryFlee(); } });
+    rpg.menu = { title: 'Vez de ' + actor.name + '  —  vida ' + Math.max(0, actor.hp) + '/' + actor.max + '  energia ' + actor.energy, options: opts, index: 0 };
+  }
+  function chooseMove(mv) {
+    var b = rpg.battle; if (!b || !b.actor) return;
+    if (mv && b.actor.energy < mv.cost) { b.message = 'Sem energia para ' + mv.name + '!'; openActionMenu(b.actor); return; }
+    b.move = mv;
+    if (mv && mv.heal) { applyHeal(b.actor, mv); return; }
+    var foes = aliveList(b.foes);
+    if (foes.length === 1) { b.target = foes[0]; applyPlayerHit(); return; }
+    // Vários inimigos: entra na MIRA (clicar/tecla escolhe o alvo).
+    rpg.menu = null; b.phase = 'mira'; b.t = 0;
+    b.message = b.actor.name + ': escolha o alvo (clique num inimigo ou aperte espaço).';
+  }
+  function applyPlayerHit() {
+    var b = rpg.battle; if (!b) return;
+    var a = b.actor, tgt = b.target, mv = b.move;
+    if (!a || !tgt) return;
+    if (mv) a.energy = Math.max(0, a.energy - mv.cost);
+    var dmg = rollDamage(mv ? mv.dmg : a.str, tgt.def);
+    if (a.blind > 0) { a.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
+    tgt.hp -= dmg;
+    if (dmg > 0) { floatText('-' + dmg, tgt.x + tgt.w / 2, tgt.y, '#ffd166', 26); b.message = a.name + (mv ? ' usou ' + mv.name + ' e causou ' : ' causou ') + dmg + ' em ' + tgt.name + '!'; }
+    else b.message = a.name + ' se atrapalhou e errou!';
+    if (tgt.hp <= 0) { tgt.hp = 0; tgt.alive = false; b.message += ' ' + tgt.name + ' caiu!'; }
+    rpg.menu = null; b.phase = 'anima'; b.t = 0;
+  }
+  function applyHeal(a, mv) {
+    var b = rpg.battle; if (!b) return;
+    a.energy = Math.max(0, a.energy - mv.cost);
+    a.hp = Math.min(a.max, a.hp + mv.dmg);
+    floatText('+' + mv.dmg, a.x + a.w / 2, a.y, '#4ade80', 26);
+    b.message = a.name + ' usou ' + mv.name + ' (+' + mv.dmg + ' de vida).';
+    rpg.menu = null; b.phase = 'anima'; b.t = 0;
+  }
+  function resolveNoTarget(msg) {
+    var b = rpg.battle; if (!b) return;
+    b.message = msg; rpg.menu = null; b.phase = 'anima'; b.t = 0;
+  }
+  function useItem(a) {
+    if (rpg.potions.length === 0) { openActionMenu(a); return; }
+    var p = rpg.potions.shift();
+    a.hp = Math.min(a.max, a.hp + p.heal);
+    floatText('+' + p.heal, a.x + a.w / 2, a.y, '#4ade80', 26);
+    resolveNoTarget(a.name + ' usou ' + p.name + ' (+' + p.heal + ' de vida).');
+  }
+  function tryFlee() {
+    if (Math.random() < 0.5) { rpg.menu = null; endBattle(false); return; }
+    resolveNoTarget('Não deu para fugir!');
+  }
+  // Depois de um aliado agir (anima): próximo aliado, ou a vez dos inimigos.
+  function afterAction() {
+    var b = rpg.battle; if (!b) return;
+    if (aliveList(b.foes).length === 0) { winBattle(); return; }
+    if (aliveList(b.allies).length === 0) { loseBattle(); return; }
+    var next = nextAliveAfter(b.allies, b.actor);
+    if (next) { startAllyTurn(next); return; }
+    startFoesTurn();
+  }
+  function startFoesTurn() {
+    var b = rpg.battle; if (!b) return;
+    b.phase = 'foes'; b.t = 0; b.actor = null; b.target = null; b.foeIdx = 0; rpg.menu = null;
+    b.message = 'Vez dos inimigos...';
+  }
+  // Um inimigo age por tique (a IA ataca um aliado vivo ao acaso).
+  function foeStep() {
+    var b = rpg.battle; if (!b) return;
+    var foes = aliveList(b.foes);
+    if (b.foeIdx >= foes.length) { endRound(); return; }
+    var f = foes[b.foeIdx]; b.foeIdx += 1;
+    var allies = aliveList(b.allies);
+    if (allies.length === 0) { loseBattle(); return; }
+    var victim = allies[Math.floor(Math.random() * allies.length)];
+    var dmg = rollDamage(f.str, victim.def);
+    if (f.blind > 0) { f.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
+    if (victim.defending) dmg = Math.max(dmg > 0 ? 1 : 0, Math.round(dmg / 2));
+    victim.hp -= dmg;
+    if (dmg > 0) floatText('-' + dmg, victim.x + victim.w / 2, victim.y, '#ff6b6b', 24);
+    b.message = f.name + ' atacou ' + victim.name + ' (' + dmg + ').';
+    if (victim.hp <= 0) { victim.hp = 0; victim.alive = false; b.message += ' ' + victim.name + ' caiu!'; }
+    b.t = 0;
+    if (aliveList(b.allies).length === 0) { loseBattle(); return; }
+  }
+  function endRound() {
+    var b = rpg.battle; if (!b) return;
+    tickSide(b.allies, true);
+    tickSide(b.foes, false);
+    for (var i = 0; i < b.allies.length; i++) b.allies[i].defending = false;
+    if (aliveList(b.foes).length === 0) { winBattle(); return; }
+    if (aliveList(b.allies).length === 0) { loseBattle(); return; }
+    startAllyTurn(firstAlive(b.allies));
+  }
+  function tickSide(list, isAlly) {
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      if (!c.alive) continue;
+      if (c.poison > 0) { c.hp -= 3; c.poison -= 1; floatText('-3', c.x + c.w / 2, c.y, '#a855f7', 18); }
+      if (c.regen > 0) { c.hp = Math.min(c.max, c.hp + 3); c.regen -= 1; }
+      if (isAlly) c.energy = Math.min(c.maxEnergy, c.energy + 2);
+      if (c.hp <= 0) { c.hp = 0; c.alive = false; }
+    }
+  }
+  function winBattle() { rpg.menu = null; endBattle(true); }
+  function loseBattle() { rpg.menu = null; endBattle(false); }
+  // O laço da batalha (roda FORA do gate de estado, como o do Kit Monstrinhos).
+  function stepRpgBattle(dt) {
+    var b = rpg.battle; if (!b || state !== 'batalha') return;
+    playTime += dt;
+    stepUiInput();      // teclado do painel de ação (setas + espaço)
+    stepTweens(dt); stepParticles(dt); stepFloaties(dt);
+    b.t += dt;
+    if (b.phase === 'abrindo') {
+      if (b.t < 0.4) return;
+      b.message = 'Batalha! Seu time contra ' + foeNames(b) + '.';
+      startAllyTurn(firstAlive(b.allies));
+      return;
+    }
+    if (b.phase === 'escolha') {
+      // Rede anti-softlock: sem menu aberto e ainda é a vez do aliado → reabre.
+      if (!rpg.menu && b.actor) openActionMenu(b.actor);
+      return;
+    }
+    if (b.phase === 'mira') {
+      // Clique escolhe o alvo (rpgBattleClick); espaço mira o 1º inimigo vivo.
+      if (justPressed[' ']) { var f = firstAlive(b.foes); if (f) { b.target = f; applyPlayerHit(); } }
+      return;
+    }
+    if (b.phase === 'anima') { if (b.t < 0.55) return; afterAction(); return; }
+    if (b.phase === 'foes') { if (b.t < 0.5) return; foeStep(); return; }
+  }
+  // Clique DENTRO da batalha: o painel de ação tem prioridade; senão, clicar num
+  // combatente o INSPECIONA (painel de info) e, na mira, escolhe o alvo inimigo.
+  function rpgBattleClick(x, y) {
+    var b = rpg.battle; if (!b) return;
+    if (rpg.menu) {
+      for (var i = 0; i < rpg.menuRects.length; i++) {
+        var r = rpg.menuRects[i];
+        if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) { rpg.menu.index = r.index; selectMenu(); return; }
+      }
+    }
+    var who = battlerAt(x, y);
+    if (who) {
+      b.inspect = who;
+      if (b.phase === 'mira' && who.side === 'inimigo' && who.alive) { b.target = who; applyPlayerHit(); }
+    }
+  }
+  function battlerAt(x, y) {
+    var b = rpg.battle; if (!b) return null;
+    var i;
+    for (i = 0; i < b.foes.length; i++) { var f = b.foes[i]; if (x >= f.x && x <= f.x + f.w && y >= f.y && y <= f.y + f.h) return f; }
+    for (i = 0; i < b.allies.length; i++) { var a = b.allies[i]; if (x >= a.x && x <= a.x + a.w && y >= a.y && y <= a.y + a.h) return a; }
+    return null;
+  }
+  // ---- Desenho da batalha em equipe (canvas) ----
+  function drawRpgBattle() {
+    var b = rpg.battle; if (!b || !ctx2d) return;
+    ctx2d.fillStyle = '#242a44'; ctx2d.fillRect(0, 0, config.w, config.h);
+    ctx2d.fillStyle = 'rgba(0,0,0,0.18)'; ctx2d.fillRect(0, config.h * 0.5, config.w, config.h * 0.5);
+    drawBattlerRow(b.foes, b);
+    drawBattlerRow(b.allies, b);
+    drawBattleMessage(b);
+    drawBattleInfo(b);
+    drawEffects(); // faíscas + números de dano por cima da cena
+  }
+  function drawBattlerRow(list, b) {
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      var prev = 1;
+      if (!c.alive) { try { prev = ctx2d.globalAlpha; ctx2d.globalAlpha = 0.3; } catch (e) {} }
+      drawEntity(c);
+      if (!c.alive) { try { ctx2d.globalAlpha = prev; } catch (e) {} }
+      // Destaque: amarelo = quem age; branco = clicado (info); vermelho = alvos na mira.
+      var ring = null, lw = 2;
+      if (c === b.actor && (b.phase === 'escolha' || b.phase === 'mira')) { ring = '#ffd166'; lw = 4; }
+      else if (c === b.inspect) { ring = '#ffffff'; lw = 3; }
+      else if (b.phase === 'mira' && c.side === 'inimigo' && c.alive) { ring = '#ff6b6b'; lw = 2; }
+      if (c === b.target && b.phase === 'mira') { ring = '#ff3b3b'; lw = 4; }
+      if (ring) {
+        ctx2d.save();
+        ctx2d.strokeStyle = ring; ctx2d.lineWidth = lw;
+        ctx2d.strokeRect(c.x - 4, c.y - 4, c.w + 8, c.h + 8);
+        ctx2d.restore();
+      }
+      ctx2d.save();
+      ctx2d.fillStyle = c.alive ? '#ffffff' : '#ff8080';
+      ctx2d.font = '13px sans-serif'; ctx2d.textAlign = 'center';
+      ctx2d.fillText(c.name, c.x + c.w / 2, c.y - 10);
+      ctx2d.restore();
+      drawBar(Math.max(0, c.hp), c.max, c.x, c.y + c.h + 4, c.w, 7, c.hp > c.max * 0.3 ? '#4ade80' : '#ef4444');
+    }
+  }
+  function drawBattleMessage(b) {
+    if (!b.message) return;
+    ctx2d.save();
+    ctx2d.fillStyle = 'rgba(0,0,0,0.7)'; ctx2d.fillRect(0, 0, config.w, 34);
+    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '15px sans-serif'; ctx2d.textAlign = 'left';
+    ctx2d.fillText(b.message, 14, 22);
+    ctx2d.restore();
+  }
+  // Painel de INFORMAÇÕES do selecionado: dano, vida/energia e os atributos.
+  function drawBattleInfo(b) {
+    var c = b.inspect || b.actor; if (!c) return;
+    var lines = [];
+    lines.push('Vida: ' + Math.max(0, c.hp) + ' / ' + c.max);
+    if (c.side === 'aliado') lines.push('Energia: ' + c.energy + ' / ' + c.maxEnergy);
+    lines.push('Força: ' + c.str + '     Defesa: ' + c.def);
+    if (c.moves && c.moves.length) {
+      var mv = 'Golpes: ';
+      for (var i = 0; i < c.moves.length; i++) mv += (i ? ', ' : '') + c.moves[i].name + ' (' + c.moves[i].dmg + ')';
+      lines.push(mv);
+    }
+    var st = '';
+    if (c.poison > 0) st += 'veneno ';
+    if (c.regen > 0) st += 'regenera ';
+    if (c.blind > 0) st += 'atrapalhado ';
+    if (c.defending) st += 'defendendo ';
+    if (st) lines.push('Estado: ' + st);
+    var pad = 12, w = 280, x = config.w - w - 16, y = 44;
+    var h = 30 + lines.length * 20 + pad;
+    ctx2d.save();
+    ctx2d.textAlign = 'left';
+    ctx2d.fillStyle = 'rgba(0,0,0,0.8)'; ctx2d.fillRect(x, y, w, h);
+    ctx2d.strokeStyle = c.side === 'inimigo' ? '#ff6b6b' : '#7dd3fc'; ctx2d.lineWidth = 2; ctx2d.strokeRect(x, y, w, h);
+    ctx2d.fillStyle = '#ffd166'; ctx2d.font = 'bold 15px sans-serif';
+    ctx2d.fillText(c.name + (c.side === 'inimigo' ? '  (inimigo)' : '  (do seu time)'), x + pad, y + 22);
+    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '13px sans-serif';
+    for (var j = 0; j < lines.length; j++) ctx2d.fillText(lines[j], x + pad, y + 44 + j * 20);
+    ctx2d.restore();
   }
   /** Ganhar XP (após a batalha): sobe de nível, aumenta atributos e cura. */
   function rpgBattleReward(xp) {
@@ -6025,16 +6310,18 @@ export const gameKitRuntime = `(function () {
     }
   }
   /** Status de batalha (Pizza Legends): who = 'inimigo'/'heroi'; por N turnos.
-   * veneno = −3/turno · regenera = +3/turno · atrapalha = 33% de errar o golpe. */
+   * veneno = −3/turno · regenera = +3/turno · atrapalha = 33% de errar o golpe.
+   * No time: 'heroi' aplica no herói (1º aliado); 'inimigo' no 1º inimigo vivo. */
   function rpgInflict(who, status, turns) {
     var t = Math.max(1, Math.round(num(turns, 3)));
     var heroi = (text(who, 'inimigo') === 'heroi' || text(who, 'inimigo') === 'herói');
     var s = text(status, 'veneno');
-    if (s === 'regenera') { if (heroi) rpg.playerRegen = t; else if (rpg.battle) rpg.battle.regen = t; return; }
-    if (s === 'atrapalha') { if (heroi) rpg.playerBlind = t; else if (rpg.battle) rpg.battle.blind = t; return; }
-    // veneno (padrão; o parser já barra status desconhecido na Ponte)
-    if (heroi) rpg.playerPoison = t;
-    else if (rpg.battle) rpg.battle.poison = t;
+    if (!rpg.battle) return;
+    var target = heroi ? rpg.battle.allies[0] : firstAlive(rpg.battle.foes);
+    if (!target) return;
+    if (s === 'regenera') target.regen = t;
+    else if (s === 'atrapalha') target.blind = t;
+    else target.poison = t; // veneno (padrão; o parser barra status desconhecido na Ponte)
   }
   function endBattle(won) {
     rpg.battleWon = won === true;
@@ -6164,8 +6451,21 @@ export const gameKitRuntime = `(function () {
         warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
         return;
       }
+      config.fill = false; // "Preparar o jogo" normal = resolução fixa (letterbox)
       config.w = Math.max(64, Math.min(4096, num(o.width, config.w)));
       config.h = Math.max(64, Math.min(4096, num(o.height, config.h)));
+      if (o.background != null) config.bg = text(o.background, config.bg);
+      if (o.accent != null) config.accent = text(o.accent, config.accent);
+    }),
+    // "Preparar o jogo para ocupar a tela toda": sem dimensões — o canvas preenche
+    // a viewport inteira e a área do jogo acompanha o tamanho da janela.
+    setupFull: guard('setupFull', function (opts) {
+      var o = (opts && typeof opts === 'object') ? opts : {};
+      if (started) {
+        warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
+        return;
+      }
+      config.fill = true;
       if (o.background != null) config.bg = text(o.background, config.bg);
       if (o.accent != null) config.accent = text(o.accent, config.accent);
     }),
@@ -6349,6 +6649,10 @@ export const gameKitRuntime = `(function () {
     rpgGivePotion: guard('rpgGivePotion', rpgGivePotion),
     rpgBattleReward: guard('rpgBattleReward', rpgBattleReward),
     rpgInflict: guard('rpgInflict', rpgInflict),
+    // ----- ⚔️ batalha em EQUIPE: aliados, inimigos e golpes nomeados -----
+    rpgAddAlly: guard('rpgAddAlly', rpgAddAlly),
+    rpgAddFoe: guard('rpgAddFoe', rpgAddFoe),
+    rpgTeachMove: guard('rpgTeachMove', rpgTeachMove),
     rpgLevel: guard('rpgLevel', function () { return rpg.playerLevel; }),
     rpgXp: guard('rpgXp', function () { return rpg.playerXp; }),
     // ----- 🎬 V6: cenas & NPCs vivos -----
@@ -6581,6 +6885,33 @@ export const gameKitRuntime = `(function () {
     playEffect: guard('playEffect', playEffect),
     playTone: guard('playTone', playTone)
   };
+
+  // Espelho SÓ-LEITURA da batalha em equipe para os testes dirigirem o painel de
+  // ação sem enxergar o estado interno. NÃO-enumerável: fora do Object.keys(api),
+  // então não conta como "método" nem vira bloco (invisível para o jogo da criança).
+  try {
+    Object.defineProperty(api, '_battle', {
+      enumerable: false,
+      value: function () {
+        var b = rpg.battle;
+        if (!b) return null;
+        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length }; }
+        var i;
+        var allies = []; for (i = 0; i < b.allies.length; i++) allies.push(snap(b.allies[i]));
+        var foes = []; for (i = 0; i < b.foes.length; i++) foes.push(snap(b.foes[i]));
+        return {
+          phase: b.phase,
+          menuOpen: !!rpg.menu,
+          menuIndex: rpg.menu ? rpg.menu.index : -1,
+          menuLabels: rpg.menu ? rpg.menu.options.map(function (o) { return o.label; }) : [],
+          actor: b.actor ? b.actor.name : '',
+          inspect: b.inspect ? b.inspect.name : '',
+          target: b.target ? b.target.name : '',
+          allies: allies, foes: foes
+        };
+      }
+    });
+  } catch (e) {}
 
   window.SZGameKit = api;
 })();

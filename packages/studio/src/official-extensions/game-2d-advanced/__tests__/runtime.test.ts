@@ -64,6 +64,7 @@ type Fn = (...args: unknown[]) => unknown
  * noUncheckedIndexedAccess não reclamar de cada chamada. */
 interface GameKitApi {
   setup: Fn
+  setupFull: Fn
   start: Fn
   width: Fn
   height: Fn
@@ -194,6 +195,9 @@ interface GameKitApi {
   rpgGivePotion: Fn
   rpgBattleReward: Fn
   rpgInflict: Fn
+  rpgAddAlly: Fn
+  rpgAddFoe: Fn
+  rpgTeachMove: Fn
   rpgLevel: Fn
   rpgXp: Fn
   // V9 — mapa de tiles + profundidade
@@ -399,6 +403,93 @@ async function startGame(h: Harness): Promise<void> {
   await Promise.resolve()
 }
 
+interface BattlerSnap {
+  name: string
+  side: string
+  hp: number
+  max: number
+  energy: number
+  alive: boolean
+  poison: number
+  regen: number
+  str: number
+  def: number
+  moves: number
+}
+interface BattleSnap {
+  phase: string
+  menuOpen: boolean
+  menuIndex: number
+  menuLabels: string[]
+  actor: string
+  inspect: string
+  target: string
+  allies: BattlerSnap[]
+  foes: BattlerSnap[]
+}
+/** Espelho só-leitura da batalha (hook não-enumerável `_battle`), ou null fora dela. */
+function battleSnap(h: Harness): BattleSnap | null {
+  return (h.api as unknown as { _battle: () => BattleSnap | null })._battle()
+}
+
+/**
+ * Dirige a batalha em EQUIPE (canvas): aperta espaço a cada quadro. Quando o painel
+ * de ação está aberto, o espaço confirma a opção destacada (index 0 = "Atacar"); na
+ * mira com vários inimigos, o espaço mira o 1º vivo. Roda quadros de 100ms (dt=0.1)
+ * até a batalha sair de 'batalha' (venceu/perdeu/fugiu) ou o teto de quadros.
+ */
+function driveBattle(h: Harness, from: number, maxFrames = 120): number {
+  let t = from
+  for (let i = 0; i < maxFrames && h.api.state() === 'batalha'; i++) {
+    h.fire('keydown', { key: ' ' })
+    t += 100
+    h.nextFrame(t)
+    h.fire('keyup', { key: ' ' })
+  }
+  return t
+}
+
+/**
+ * Escolhe UMA ação no painel (por trecho do rótulo): roda quadros até o menu abrir,
+ * navega com ↓ até a opção certa e confirma com espaço. Devolve o novo relógio.
+ */
+function pickAction(h: Harness, from: number, match: string, maxFrames = 40): number {
+  let t = from
+  for (let i = 0; i < maxFrames; i++) {
+    const s = battleSnap(h)
+    if (!s || h.api.state() !== 'batalha') return t
+    if (s.menuOpen) break
+    t += 100
+    h.nextFrame(t)
+  }
+  const open = battleSnap(h)
+  if (!open || !open.menuOpen) return t
+  const idx = open.menuLabels.findIndex((l) => l.includes(match))
+  if (idx < 0) return t
+  let guard = 0
+  while (h.api.state() === 'batalha' && guard++ < 12) {
+    const cur = battleSnap(h)
+    if (!cur || !cur.menuOpen || cur.menuIndex === idx) break
+    h.fire('keydown', { key: 'ArrowDown' })
+    t += 100
+    h.nextFrame(t)
+    h.fire('keyup', { key: 'ArrowDown' })
+  }
+  h.fire('keydown', { key: ' ' })
+  t += 100
+  h.nextFrame(t)
+  h.fire('keyup', { key: ' ' })
+  // Deixa o turno RESOLVER: anima → inimigos → tique de status → próximo painel (ou
+  // fim). Assim pickAction representa uma RODADA inteira (o teste pode medir depois).
+  for (let i = 0; i < 40 && h.api.state() === 'batalha'; i++) {
+    const s = battleSnap(h)
+    if (s && s.menuOpen) break // o próximo turno do jogador já abriu
+    t += 100
+    h.nextFrame(t)
+  }
+  return t
+}
+
 afterEach(() => {
   for (const el of Array.from(document.querySelectorAll('#szgk-stage, #szgk-style'))) {
     el.remove()
@@ -406,11 +497,12 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 277 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 281 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
       'setup',
+      'setupFull',
       'start',
       'width',
       'height',
@@ -544,6 +636,10 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgInflict',
       'rpgLevel',
       'rpgXp',
+      // ⚔️ batalha em equipe (3)
+      'rpgAddAlly',
+      'rpgAddFoe',
+      'rpgTeachMove',
       // V9 — mapa de tiles + profundidade (6)
       'cameraShake',
       'loadTilemap',
@@ -1395,7 +1491,7 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     expect(api.rpgHasItem('chave')).toBe(false)
   })
 
-  it('batalha: menu pronto, atacar vence, volta pra jogando SEM resetar o mundo', async () => {
+  it('batalha em equipe: o painel de ação no canvas, atacar vence, volta pra jogando SEM resetar', async () => {
     const h = loadRuntime()
     h.api.defineMold('g', {})
     await startGame(h)
@@ -1407,12 +1503,8 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     })
     h.api.rpgBattleStats(30, 999) // força alta: vence no 1º golpe
     h.api.rpgBattleStart('Dragão', 20, 5, '', '')
-    expect(h.api.state()).toBe('batalha')
-    const scr = document.querySelector('[data-szgk-screen="batalha"]') as HTMLElement
-    expect(scr).not.toBeNull()
-    const botoes = Array.from(scr.querySelectorAll('button')).map((b) => b.textContent)
-    expect(botoes).toEqual(['Atacar', 'Especial', 'Item', 'Defender', 'Fugir'])
-    ;(scr.querySelector('button') as HTMLButtonElement).click() // Atacar
+    expect(h.api.state()).toBe('batalha') // a batalha é desenhada no canvas (sem DOM)
+    driveBattle(h, 1) // aperta "Atacar" no painel até o Dragão cair
     expect(h.api.state()).toBe('jogando')
     expect(h.api.rpgBattleWon()).toBe(true)
     expect(terminouBatalha).toBe(1)
@@ -1627,7 +1719,7 @@ describe('SZGameKit — V8: batalha rica (progressão)', () => {
     expect(api.rpgXp()).toBe(7)
   })
 
-  it('golpe especial (gasta energia) vence a batalha; menu tem 5 botões', async () => {
+  it('golpe especial (gasta energia) é uma opção do painel e vence sozinho', async () => {
     const h = loadRuntime()
     await startGame(h)
     h.api.setState('jogando')
@@ -1637,19 +1729,12 @@ describe('SZGameKit — V8: batalha rica (progressão)', () => {
     h.api.rpgOnBattleEnd(() => {
       ended += 1
     })
-    h.api.rpgBattleStart('Slime', 10, 3, 5) // inimigo com defesa 5 (o raio ainda mata)
-    const scr = document.querySelector('[data-szgk-screen="batalha"]') as HTMLElement
-    const btns = Array.from(scr.querySelectorAll('button'))
-    expect(btns.map((b) => b.textContent)).toEqual([
-      'Atacar',
-      'Especial',
-      'Item',
-      'Defender',
-      'Fugir',
-    ])
-    ;(btns[1] as HTMLButtonElement).click() // Especial
-    expect(h.api.state()).toBe('jogando')
+    h.api.rpgBattleStart('Slime', 30, 3, 0)
+    expect(h.api.state()).toBe('batalha')
+    // O painel de ação (canvas) inclui "Atacar", o golpe "Raio", "Defender" e "Fugir".
+    pickAction(h, 1, 'Raio') // escolhe o especial: o Raio (1000) arrasa o Slime (30)
     expect(h.api.rpgBattleWon()).toBe(true)
+    expect(h.api.state()).toBe('jogando')
     expect(ended).toBe(1)
   })
 
@@ -1660,13 +1745,13 @@ describe('SZGameKit — V8: batalha rica (progressão)', () => {
     h.api.rpgBattleStats(30, 7, 5) // defesa alta: o inimigo fraco quase não me arranha
     h.api.rpgBattleStart('Cobra', 6, 2, 0)
     h.api.rpgInflict('inimigo', 'veneno', 3) // 3 turnos de veneno (3 de dano/turno)
-    const scr = document.querySelector('[data-szgk-screen="batalha"]') as HTMLElement
-    const defender = Array.from(scr.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Defender',
-    ) as HTMLButtonElement
-    defender.click() // fim do turno: veneno 6 → 3 (ainda vivo)
     expect(h.api.state()).toBe('batalha')
-    defender.click() // veneno 3 → 0: o inimigo morre do próprio veneno
+    expect(battleSnap(h)?.foes[0]?.poison).toBe(3)
+    // Só DEFENDER (não ataco): o veneno é quem mata a Cobra (6 → 3 → 0).
+    let t = pickAction(h, 1, 'Defender')
+    expect(h.api.state()).toBe('batalha')
+    expect(battleSnap(h)?.foes[0]?.hp).toBe(3)
+    t = pickAction(h, t, 'Defender')
     expect(h.api.rpgBattleWon()).toBe(true)
     expect(h.api.state()).toBe('jogando')
   })
@@ -3351,11 +3436,11 @@ describe('SZGameKit — R25: caminhos + escolher-vivo + status (review Tower Def
     h.api.rpgBattleStart('Boss', 200, 10, 0)
     // O boss regenera por 3 turnos. Fere-o de leve e mede a vida ao longo dos turnos.
     h.api.rpgInflict('inimigo', 'regenera', 3)
-    const scr = document.querySelector('[data-szgk-screen="batalha"]') as HTMLElement
-    const atacar = scr.querySelector('button') as HTMLButtonElement
-    atacar.click() // 1 turno: herói causa ~5, boss regenera +3 → dano líquido ~2
-    // Sem crash e a batalha segue (o status não quebrou o motor).
+    expect(battleSnap(h)?.foes[0]?.regen).toBe(3)
+    pickAction(h, 1, 'Atacar') // 1 turno: herói causa ~5, boss regenera +3 → líquido ~2
+    // Sem crash e a batalha segue (o status não quebrou o motor); o regen decaiu.
     expect(h.api.state()).toBe('batalha')
+    expect(battleSnap(h)?.foes[0]?.regen).toBe(2)
   })
 
   it('paralaxe/folha sem imagem carregada avisam (nome errado nunca é silencioso)', async () => {

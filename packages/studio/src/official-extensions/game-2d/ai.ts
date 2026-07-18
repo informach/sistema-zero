@@ -10,6 +10,7 @@ API global injetada como window.SZGame2D:
 - drawSprite(ctx, sprite): desenha como fillRect.
 - clear(): limpa a tela inteira (use no começo de cada quadro, antes de desenhar).
 - fitScreen(percent): faz o canvas PREENCHER ~percent% da janela mantendo a proporção. As COORDENADAS do jogo (mundo lógico) não mudam, mas o desenho passa a ser feito na resolução REAL da tela — fica grande E nítido (sem borrar) e se reajusta sozinho ao redimensionar. Chame uma vez no começo. Bloco "Fazer a tela preencher N% da janela".
+- setupStageFull(bg): "ocupar a tela toda" — SEM dimensões e SEM proporção fixa: o canvas preenche 100% da viewport e a resolução LÓGICA do jogo acompanha o tamanho real da tela (a área do jogo É a tela; muda com a janela; nítido via devicePixelRatio). Diferente do setupStage/fitScreen (que mantêm a proporção e deixam barras). Centralize por "a largura/altura da tela", não por número fixo. Bloco "Preparar o jogo para ocupar a tela toda".
 - spawnBullet(grupo, { x, y, radius, color, vx, vy }): cria um TIRO (bolinha com brilho/glow) no grupo; x/y = centro. Bloco "Criar tiro no grupo".
 - arrowsX(sprite, speed): move o sprite SÓ na horizontal com as setas (combine com clampToScreen). Bloco "Mover o sprite com as setas".
 - blink(sprite, frames): faz o sprite PISCAR por N quadros (invencibilidade ao levar dano). Bloco "Fazer o sprite piscar".
@@ -127,6 +128,8 @@ Tiles e tilemaps (v0.5.0) — cenários a partir de um tileset (asset com vário
 - collideGroup(sprite, group): impede o sprite de atravessar os sprites de um grupo (obstáculos SEM
   tilemap: pedras/casas/paredes desenhadas à mão, inclusive por figura). Mesma física do collideTileMap
   (empurra pra fora + desliza). Use no gameLoop, depois de mover o sprite.
+- collideSprite(sprite, other): a mesma colisão sólida, mas contra UM sprite só (uma parede/plataforma
+  solta), sem precisar montar um grupo. Bloco "Impedir de atravessar o sprite".
 - tileAt(map, px, py): índice do tile no pixel (px,py) — -1 se vazio/fora.
 
 Grupos de sprites (v0.6.0) — para MUITOS sprites (tiros, inimigos, estrelas), sem
@@ -134,6 +137,8 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
 - createGroup() -> { items: [] }: cria um grupo vazio (guarde numa variável).
 - spawn(grupo, { x, y, w, h, color | image, vx, vy }): cria um sprite e coloca no grupo (devolve o sprite). Use x/y com número aleatório para nascer em lugares diferentes. Teto de 400 por grupo.
 - updateGroup(grupo): move cada sprite pela velocidade (vx/vy); drawGroup(ctx, grupo): desenha todos.
+- updateGroupNoGravity(grupo): move cada sprite pela velocidade SEM somar gravidade — para os TIROS do
+  jogador num jogo COM gravidade (senão os tiros arqueiam). Bloco "Mover o grupo sem gravidade".
 - forEachInGroup(grupo, function (sprite) {…}): roda o corpo para cada sprite (ordem reversa, pode remover no corpo).
 - countGroup(grupo): quantidade atual (valor, use em if/conta). clearGroup(grupo): esvazia. removeFromGroup(grupo, sprite): tira um.
 - pruneOffscreen(ctx, grupo, margem, function (sprite) {…}): remove os que saíram da tela e roda o corpo para cada um (ex.: perder vida quando um inimigo escapa).

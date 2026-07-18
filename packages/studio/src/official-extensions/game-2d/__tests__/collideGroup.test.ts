@@ -20,6 +20,11 @@ interface Api {
   createSprite: (o: Partial<Sprite>) => Sprite
   createGroup: () => { items: Sprite[] }
   collideGroup: (s: Sprite, g: { items: Sprite[] }) => void
+  collideSprite: (s: Sprite, other: Sprite) => void
+  spawn: (g: { items: Sprite[] }, o: Partial<Sprite>) => Sprite | null
+  updateGroup: (g: { items: Sprite[] }) => void
+  updateGroupNoGravity: (g: { items: Sprite[] }) => void
+  setGravity: (v: number) => void
 }
 
 function load(): Api {
@@ -85,5 +90,45 @@ describe('collideGroup — obstáculos sólidos sem tilemap', () => {
     expect(heroi.x).toBe(0)
     api.collideGroup(heroi, api.createGroup()) // vazio
     expect(heroi.x).toBe(0)
+  })
+})
+
+describe('collideSprite — colisão sólida contra UM sprite (R5/D1)', () => {
+  it('empurra para fora e zera a velocidade no eixo (parede única)', () => {
+    const api = load()
+    const heroi = api.createSprite({ x: 18, y: 0, w: 20, h: 20, vx: 5 })
+    const parede = api.createSprite({ x: 30, y: 0, w: 20, h: 20 })
+    api.collideSprite(heroi, parede)
+    expect(heroi.x).toBe(10) // mesma física do collideGroup, por item
+    expect(heroi.vx).toBe(0)
+  })
+
+  it('não colide consigo mesmo e sem sobreposição é no-op', () => {
+    const api = load()
+    const heroi = api.createSprite({ x: 0, y: 0, w: 20, h: 20, vx: 5 })
+    api.collideSprite(heroi, heroi)
+    expect(heroi.x).toBe(0)
+    api.collideSprite(heroi, api.createSprite({ x: 200, y: 200, w: 20, h: 20 }))
+    expect(heroi.x).toBe(0)
+    expect(heroi.vx).toBe(5)
+  })
+})
+
+describe('updateGroupNoGravity — mover o grupo sem gravidade (R5/D2)', () => {
+  it('move pela velocidade SEM somar gravidade (tiros vão retos)', () => {
+    const api = load()
+    api.setGravity(1)
+    const tiros = api.createGroup()
+    const semG = api.createGroup()
+    const comG = api.createGroup()
+    const t = api.spawn(semG, { x: 0, y: 100, w: 6, h: 6, vx: 0, vy: -5 })
+    const t2 = api.spawn(comG, { x: 0, y: 100, w: 6, h: 6, vx: 0, vy: -5 })
+    expect(tiros.items.length).toBe(0)
+    api.updateGroupNoGravity(semG) // sem gravidade
+    api.updateGroup(comG) // com gravidade (comparação)
+    // o "sem gravidade" mantém o vy constante; o normal já somou +1 de gravidade
+    expect(t?.vy).toBe(-5)
+    expect(t?.y).toBe(95)
+    expect(t2?.vy).toBe(-4) // -5 + gravidade 1
   })
 })

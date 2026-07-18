@@ -154,6 +154,9 @@ interface Api {
   rpgCell: (n: number) => number
   rpgBattleStats: Fn
   rpgBattleStart: Fn
+  rpgAddAlly: Fn
+  rpgAddFoe: Fn
+  rpgTeachMove: Fn
   rpgOnBattleEnd: Fn
   rpgBattleWon: () => boolean
   rpgBattleReward: Fn
@@ -1105,9 +1108,16 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     h.fire('keyup', { key })
     return t
   }
-  function botaoAtacar(): HTMLButtonElement {
-    const scr = document.querySelector('[data-szgk-screen="batalha"]')
-    return scr?.querySelector('button') as HTMLButtonElement
+  // A batalha em equipe é no CANVAS: aperta espaço a cada quadro (confirma "Atacar"
+  // no painel de ação) até a batalha terminar. Devolve o novo contador de quadros.
+  function venceBatalha(h: Harness, from: number): number {
+    let t = from
+    for (let i = 0; i < 80 && h.api.state() === 'batalha'; i++, t++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(t * 50)
+      h.fire('keyup', { key: ' ' })
+    }
+    return t
   }
 
   it('⭐ a grade anda por célula e o NPC SEGURA (vira, não entra)', async () => {
@@ -1175,14 +1185,81 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     h.fire('keydown', { key: ' ' })
     h.nextFrame(t * 50)
     expect(h.api.state()).toBe('batalha')
-    // JOGA a batalha: clica Atacar (força 50 mata o chefe de 10 HP no 1º golpe).
-    botaoAtacar().click()
+    // JOGA a batalha no canvas: aperta "Atacar" no painel (força 50 mata o chefe de
+    // 10 HP no 1º golpe) até vencer.
+    t = venceBatalha(h, t + 1)
     expect(h.api.state()).toBe('jogando')
     expect(h.api.rpgBattleWon()).toBe(true)
     // A recompensa (25 XP, teto 20) subiu o nível: playerXp 25→5, nível 1→2.
     expect(h.api.rpgLevel()).toBe(2)
     expect(h.api.rpgXp()).toBe(5)
     void heroi
+  })
+})
+
+describe('gk — ⚔️ JOGAR a batalha em EQUIPE (aliados + vários inimigos)', () => {
+  interface BattleSnap {
+    phase: string
+    allies: Array<{ name: string; alive: boolean }>
+    foes: Array<{ name: string; alive: boolean }>
+  }
+  function snap(h: Harness): BattleSnap | null {
+    return (h.api as unknown as { _battle: () => BattleSnap | null })._battle()
+  }
+
+  it('⭐ o time (herói + aliado) derrota DOIS inimigos e a vitória dá XP', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(50, 40, 5) // herói forte (vence rápido)
+    h.api.rpgAddAlly('Arqueira', 30, 20, 2, '#22c55e') // 1 aliado no time
+    h.api.rpgTeachMove('Arqueira', 'Flecha', 18, 2)
+    let venceu = 0
+    h.api.rpgOnBattleEnd(() => {
+      if (h.api.rpgBattleWon()) {
+        h.api.rpgBattleReward(30)
+        venceu += 1
+      }
+    })
+    h.api.rpgAddFoe('Capanga', 20, 6, 0, '#ef4444') // 2 inimigos (vários contra vários)
+    h.api.rpgBattleStart('Chefe', 20, 8, 0)
+    expect(h.api.state()).toBe('batalha')
+    const s0 = snap(h)
+    expect(s0?.allies.length).toBe(2) // herói + Arqueira
+    expect(s0?.foes.length).toBe(2) // Chefe + Capanga
+    // JOGA no canvas: aperta "Atacar" a cada quadro (com 2 inimigos, o espaço mira o
+    // 1º vivo na fase de mira) até o time varrer os dois bandidos.
+    let t = 1
+    for (let i = 0; i < 200 && h.api.state() === 'batalha'; i++, t++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(t * 50)
+      h.fire('keyup', { key: ' ' })
+    }
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.rpgBattleWon()).toBe(true)
+    expect(venceu).toBe(1)
+    expect(h.api.rpgXp()).toBeGreaterThan(0)
+  })
+
+  it('a fila de inimigos é CONSUMIDA: a batalha seguinte não herda o Capanga', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(50, 40, 5)
+    h.api.rpgAddFoe('Capanga', 20, 6, 0, '#ef4444')
+    h.api.rpgBattleStart('Chefe', 20, 8, 0)
+    expect(snap(h)?.foes.length).toBe(2)
+    // termina esta batalha
+    let t = 1
+    for (let i = 0; i < 200 && h.api.state() === 'batalha'; i++, t++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(t * 50)
+      h.fire('keyup', { key: ' ' })
+    }
+    expect(h.api.state()).toBe('jogando')
+    // Nova batalha SEM adicionar inimigo: só o nomeado (a fila foi consumida).
+    h.api.rpgBattleStart('Outro', 20, 8, 0)
+    expect(snap(h)?.foes.length).toBe(1)
   })
 })
 

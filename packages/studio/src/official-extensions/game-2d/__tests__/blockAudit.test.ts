@@ -115,6 +115,37 @@ function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   }
 }
 
+/** Instancia o bloco setando campos ANTES de coletar (para opções de dropdown). */
+function buildIrForWithFields(
+  type: string,
+  kind: 'statement' | 'expr',
+  fields: Record<string, string>,
+): JSStatement[] {
+  const ws = new Blockly.Workspace()
+  try {
+    const frame = ws.newBlock(FRAME_BEHAVIOR)
+    const slot = frame.getInput('CHILDREN')?.connection
+    if (!slot) throw new Error('frame de Comportamento sem input CHILDREN')
+    let target: Blockly.Block
+    if (kind === 'statement') {
+      const block = ws.newBlock(type)
+      slot.connect(block.previousConnection as Blockly.Connection)
+      target = block
+    } else {
+      const host = ws.newBlock(EXPR_HOST)
+      slot.connect(host.previousConnection as Blockly.Connection)
+      const socket = host.getInput('VALUE')?.connection
+      const block = ws.newBlock(type)
+      socket?.connect(block.outputConnection as Blockly.Connection)
+      target = block
+    }
+    for (const [name, value] of Object.entries(fields)) target.setFieldValue(value, name)
+    return stripIds(buildIRFromWorkspace(ws).js)
+  } finally {
+    ws.dispose()
+  }
+}
+
 /** IR → blocos (workspaceState) → IR (buildIR), sem os __id. */
 function irThroughBlocks(js: JSStatement[]): JSStatement[] {
   const ir = { html: [], css: [], js, extensions: [{ extensionId: 'game-2d' }] }
@@ -190,6 +221,52 @@ describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {
       if (FORWARD_ONLY[type]) {
         // Degrada para blocos genéricos: exige só que nada vire rawJS.
         expect(reparsed.length).toBeGreaterThan(0)
+        expect(collectTypes(reparsed).has('rawJS')).toBe(false)
+      } else {
+        expect(reparsed).toEqual(ir)
+      }
+    })
+  }
+})
+
+/**
+ * T6 — as OPÇÕES não-default de cada dropdown round-trippam. O pipeline acima usa
+ * só o valor DEFAULT de cada campo; um valor de dropdown novo sem o par no
+ * enum/parser viraria rawJS na Ponte (o parser valida estado/comportamento/param
+ * contra o enum) e só uma varredura das opções pegaria. Aqui, para cada dropdown,
+ * seta CADA opção e prova IR→blocos→IR estável e (fora forward-only) JS→IR fiel.
+ */
+interface DropdownArg {
+  type?: string
+  name?: string
+  options?: [string, string][]
+}
+const dropdownCases: { type: string; kind: 'statement' | 'expr'; field: string; value: string }[] =
+  []
+for (const def of gameTwoDBlocks) {
+  const kind: 'statement' | 'expr' = def.output ? 'expr' : 'statement'
+  for (const arg of (def.args0 ?? []) as DropdownArg[]) {
+    if (arg.type !== 'field_dropdown' || !arg.name || !Array.isArray(arg.options)) continue
+    for (const [, value] of arg.options) {
+      dropdownCases.push({ type: def.type, kind, field: arg.name, value })
+    }
+  }
+}
+
+describe('Auditoria Jogo 2D — opções de dropdown round-trippam (T6)', () => {
+  it('há dropdowns para varrer (anti-vácuo)', () => {
+    expect(dropdownCases.length).toBeGreaterThan(15)
+  })
+
+  for (const { type, kind, field, value } of dropdownCases) {
+    it(`${type}.${field} = "${value}"`, () => {
+      const ir = buildIrForWithFields(type, kind, { [field]: value })
+      expect(collectTypes(ir).has('rawJS')).toBe(false)
+      // IR → blocos → IR estável (a opção sobrevive à reconstrução por blocos).
+      expect(irThroughBlocks(ir)).toEqual(ir)
+      // JS → IR fiel (a opção sobrevive à Ponte), salvo os forward-only.
+      const reparsed = stripIds(parseJS(compileStatements(ir, 0)))
+      if (FORWARD_ONLY[type]) {
         expect(collectTypes(reparsed).has('rawJS')).toBe(false)
       } else {
         expect(reparsed).toEqual(ir)

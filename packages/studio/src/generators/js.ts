@@ -1209,6 +1209,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.collideTileMap(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.mapVar)});`
     case 'g2d:collideGroup':
       return `${pad}SZGame2D.collideGroup(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)});`
+    case 'g2d:collideSprite':
+      return `${pad}SZGame2D.collideSprite(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.otherVar)});`
     case 'g2d:createGroup':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createGroup();`
     case 'g2d:spawnInGroup':
@@ -1223,6 +1225,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.blink(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.frames), 0, identifiers, recAt(base))});`
     case 'g2d:updateGroup':
       return `${pad}SZGame2D.updateGroup(${identifiers.get(stmt.groupVar)});`
+    case 'g2d:updateGroupNoGravity':
+      return `${pad}SZGame2D.updateGroupNoGravity(${identifiers.get(stmt.groupVar)});`
     case 'g2d:drawGroup':
       return `${pad}SZGame2D.drawGroup(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)});`
     case 'g2d:forEachInGroup': {
@@ -1306,6 +1310,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.fitScreen(${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'g2d:setupStage':
       return `${pad}SZGame2D.setupStage(${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.bg)});`
+    case 'g2d:setupFull':
+      return `${pad}SZGame2D.setupStageFull(${JSON.stringify(stmt.bg)});`
     case 'g2d:createShip':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createShip({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, body: ${JSON.stringify(stmt.bodyColor)}, wings: ${JSON.stringify(stmt.wingColor)} });`
     case 'g2d:spawnAsteroid':
@@ -1606,6 +1612,8 @@ function compileStatementCode(
     // ----- game-2d-advanced (kit profissional) -----
     case 'gk:setup':
       return `${pad}SZGameKit.setup({ width: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, height: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, background: ${JSON.stringify(stmt.bg)}, accent: ${JSON.stringify(stmt.accent)} });`
+    case 'gk:setupFull':
+      return `${pad}SZGameKit.setupFull({ background: ${JSON.stringify(stmt.bg)}, accent: ${JSON.stringify(stmt.accent)} });`
     case 'gk:start':
       return `${pad}SZGameKit.start();`
     case 'gk:loadImage':
@@ -1757,6 +1765,12 @@ function compileStatementCode(
       return `${pad}SZGameKit.rpgBattleReward(${compileExpr(valueToExpr(stmt.xp), 0, identifiers, recAt(base))});`
     case 'gk:rpgInflict':
       return `${pad}SZGameKit.rpgInflict(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.status)}, ${compileExpr(valueToExpr(stmt.turns), 0, identifiers, recAt(base))});`
+    case 'gk:rpgAddAlly':
+      return `${pad}SZGameKit.rpgAddAlly(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'gk:rpgAddFoe':
+      return `${pad}SZGameKit.rpgAddFoe(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'gk:rpgTeachMove':
+      return `${pad}SZGameKit.rpgTeachMove(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgOnBattleEnd': {
       const body = compileStatements(
         stmt.body,
@@ -3935,6 +3949,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.vy, names)
       return
     case 'g2d:updateGroup':
+    case 'g2d:updateGroupNoGravity':
     case 'g2d:clearGroup':
       names.add(stmt.groupVar)
       return
@@ -4162,6 +4177,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.width), names)
       collectExprIdentifiers(valueToExpr(stmt.height), names)
       return
+    case 'g2d:setupFull':
+      return
     case 'g2d:computerTurn':
       names.add(stmt.throwerVar)
       names.add(stmt.cityVar)
@@ -4355,6 +4372,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:collideGroup':
       names.add(stmt.spriteVar)
       names.add(stmt.groupVar)
+      return
+    case 'g2d:collideSprite':
+      names.add(stmt.spriteVar)
+      names.add(stmt.otherVar)
       return
     case 'g3d:createScene':
     case 'g3d:createFullscreenScene':
@@ -4701,6 +4722,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.w), names)
       collectExprIdentifiers(valueToExpr(stmt.h), names)
       return
+    case 'gk:setupFull':
     case 'gk:start':
     case 'gk:loadImage':
     case 'gk:showScreen':
@@ -5343,6 +5365,16 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'gk:rpgInflict':
       collectExprIdentifiers(valueToExpr(stmt.turns), names)
+      return
+    case 'gk:rpgAddAlly':
+    case 'gk:rpgAddFoe':
+      collectExprIdentifiers(valueToExpr(stmt.hp), names)
+      collectExprIdentifiers(valueToExpr(stmt.str), names)
+      collectExprIdentifiers(valueToExpr(stmt.def), names)
+      return
+    case 'gk:rpgTeachMove':
+      collectExprIdentifiers(valueToExpr(stmt.dmg), names)
+      collectExprIdentifiers(valueToExpr(stmt.cost), names)
       return
     case 'gk:createCharacter':
       names.add(stmt.varName)

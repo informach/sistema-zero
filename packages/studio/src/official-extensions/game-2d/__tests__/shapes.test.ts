@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, spyOn } from 'bun:test'
 import { gameTwoDRuntime } from '../runtime'
 
 /**
@@ -125,6 +125,24 @@ describe('figura: sprite desenhado por código', () => {
     api.drawSprite(ctx, s)
     expect(ctx.calls).toContain('fillRect 3 4 12 8') // absoluto, fallback
     expect(ctx.calls).not.toContain('translate 3 4')
+  })
+
+  it('figura com nome errado AVISA no console (uma vez por nome) — R1/A4', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const s = api.createSprite({ x: 0, y: 0, w: 10, h: 10, color: '#0f0' })
+      api.setShape(s, 'Estrela') // nunca definida (a criança errou a grafia)
+      api.drawSprite(ctx, s)
+      api.drawSprite(ctx, s) // 2º quadro: NÃO deve avisar de novo (dedup)
+      const msgs = warn.mock.calls.map((c) => String(c[0]))
+      const sobreFigura = msgs.filter((m) => m.includes('Estrela'))
+      expect(sobreFigura.length).toBe(1)
+      expect(sobreFigura[0]).toContain('figura')
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   it('shapeW/shapeH devolvem o tamanho do sprite durante o desenho', () => {

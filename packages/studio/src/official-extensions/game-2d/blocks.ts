@@ -336,7 +336,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_random_chance',
-    message0: 'tem chance de %1 %?',
+    message0: 'tem chance de %1%%?',
     args0: [{ type: 'input_value', name: 'PERCENT', check: 'JSValue' }],
     inputsInline: true,
     output: 'JSValue',
@@ -364,10 +364,10 @@ export const gameTwoDBlocks = [
   // ---- Tier 1: Vida e tempo ----
   {
     type: 'sz_g2d_set_health',
-    message0: 'Dar %1 de vida ao sprite %2',
+    message0: 'Dar ao sprite %1 %2 de vida',
     args0: [
-      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1348,6 +1348,19 @@ export const gameTwoDBlocks = [
     tooltip:
       'O sprite não atravessa nenhum sprite do grupo (pedras, casas, paredes desenhadas por você): ele é empurrado para fora e desliza pela beirada. Ótimo para obstáculos sem mapa de tiles. Use a cada quadro, depois de mover o sprite.',
   },
+  {
+    type: 'sz_g2d_collide_sprite',
+    message0: 'Impedir o sprite %1 de atravessar o sprite %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+      { type: 'field_sprite_picker', name: 'OTHER', text: 'parede' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como "impedir de atravessar os sprites do grupo", mas contra UM sprite só (uma parede, uma plataforma). O sprite é empurrado para fora e desliza pela beirada. Use a cada quadro, depois de mover o sprite.',
+  },
 
   // ---- Grupos de sprites: MUITOS sprites (v0.6.0) ----
   {
@@ -1410,6 +1423,16 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro.',
+  },
+  {
+    type: 'sz_g2d_update_group_no_gravity',
+    message0: 'Mover o grupo %1 sem gravidade',
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Move cada sprite do grupo pela velocidade, SEM somar a gravidade — para os TIROS do jogador num jogo com gravidade (senão eles caem/arqueiam em vez de ir reto).',
   },
   {
     type: 'sz_g2d_draw_group',
@@ -1655,6 +1678,7 @@ export const gameTwoDBlocks = [
       { type: 'input_value', name: 'HINT', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'BG', colour: '#02111f' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1707,6 +1731,17 @@ export const gameTwoDBlocks = [
     colour: C,
     tooltip:
       'Atalho para começar: prepara a tela do jogo (largura × altura) para ocupar a janela inteira, mantendo a proporção e se reajustando sozinha, e centralizada. A cor do fundo combina com o jogo, fica no canvas e na sobra ao redor. Use uma vez no começo. Não precisa criar a tela de desenho no HTML.',
+  },
+  {
+    type: 'sz_g2d_setup_full',
+    message0: 'Preparar o jogo para ocupar a tela toda, fundo %1',
+    args0: [{ type: 'field_colour_sz', name: 'BG', colour: '#0b1020' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como o "Preparar o jogo em tela cheia", mas SEM dimensões: o canvas ocupa a tela inteira (sem barras nas laterais) e a área do jogo ACOMPANHA o tamanho da janela — a resolução do jogo passa a ser o tamanho da tela. Centralize as coisas usando "a largura/altura da tela", não números fixos. Combine com "entrar em tela cheia" para tomar o monitor todo. Use uma vez no começo, no lugar do outro "Preparar".',
   },
 
   // ---- Kit "Nave & Asteroides": desenhos prontos + efeitos (v0.7.0) ----
@@ -2421,11 +2456,8 @@ export const gameTwoDBlocks = [
   // ---- Kit equilibrista (Stick Hero) (v0.13.0) ----
   {
     type: 'sz_g2d_create_stickhero',
-    message0: 'Criar equilibrista %1 no pincel %2',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'jogo' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
-    ],
+    message0: 'Criar equilibrista %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'jogo' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -2472,11 +2504,8 @@ export const gameTwoDBlocks = [
   // ---- Kit balão (Hot-Air-Balloon) (v0.13.0) ----
   {
     type: 'sz_g2d_create_balloon',
-    message0: 'Criar balão %1 no pincel %2',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'jogo' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
-    ],
+    message0: 'Criar balão %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'jogo' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -2531,10 +2560,12 @@ export const gameTwoDBlocks = [
 ]
 
 /**
- * Sub-categorias coloridas por domínio (à la Scratch/MakeCode): cada grupo tem a
- * SUA cor, e cada bloco herda a cor do seu grupo (cor = navegação — a criança acha
- * "o azul é sprite" sem ler). A ordem segue o fluxo mental: o que aparece → como
- * mexe → quando algo acontece → perguntas → enfeites → cenário.
+ * Sub-categorias do Jogo 2D (à la Scratch/MakeCode), na ordem do fluxo mental: o
+ * que aparece → como mexe → quando algo acontece → perguntas → enfeites → cenário.
+ * ⚠️ A `colour` de cada entrada abaixo é só um PLACEHOLDER: logo após o array,
+ * `SUBCAT_SHADES` reescreve TODAS para tons do ciano da categoria (o Jogo 2D é uma
+ * cor só no arco-íris da paleta; a distinção entre grupos é pelo NOME/emoji, não
+ * pela cor). Mudar o literal aqui não muda nada — ajuste `categoryShades(C, …)`.
  */
 const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
@@ -2582,8 +2613,10 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_spawn_image_in_group',
       'sz_g2d_spawn_bullet',
       'sz_g2d_update_group',
+      'sz_g2d_update_group_no_gravity',
       'sz_g2d_draw_group',
       'sz_g2d_collide_group',
+      'sz_g2d_collide_sprite',
       'sz_g2d_for_each_in_group',
       'sz_g2d_count_group',
       'sz_g2d_clear_group',
@@ -2647,9 +2680,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    // Só perguntas de VERDADE (booleanos ao vivo, para encaixar num "se"). Os
+    // blocos "Guardar em X se colide" são COMANDOS (gravam numa variável) — foram
+    // para 🎯 Mira e contas, junto das outras consultas/medidas de sprite.
     name: '❓ Perguntas',
     colour: '#ff8c1a',
-    types: ['sz_g2d_key_down', 'sz_g2d_touches', 'sz_g2d_collides', 'sz_g2d_circle_collides'],
+    types: ['sz_g2d_key_down', 'sz_g2d_touches'],
   },
   {
     name: '🎯 Mira e contas',
@@ -2659,6 +2695,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_move_toward',
       'sz_g2d_angle_to',
       'sz_g2d_distance',
+      'sz_g2d_collides',
+      'sz_g2d_circle_collides',
       'sz_g2d_random_between',
       'sz_g2d_random_chance',
       'sz_g2d_random_x',
@@ -2683,6 +2721,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g2d_clear',
       'sz_g2d_setup_stage',
+      'sz_g2d_setup_full',
       'sz_g2d_fit_screen',
       'sz_g2d_blink',
       'sz_g2d_flash',
@@ -2695,7 +2734,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_scale_sprite',
       'sz_g2d_draw_hitbox',
       'sz_g2d_show_fps',
-      'sz_g2d_game_over',
     ],
   },
   {
@@ -2748,12 +2786,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '🎬 Telas e cenas',
+    name: '📺 Telas e cenas',
     colour: '#1098ad',
     types: [
       'sz_g2d_set_scene',
       'sz_g2d_scene_is',
       'sz_g2d_show_screen',
+      'sz_g2d_game_over',
       'sz_g2d_pause',
       'sz_g2d_resume',
       'sz_g2d_is_paused',
@@ -2989,12 +3028,41 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_set_tile: { INDEX: numShadow(1) },
   sz_g2d_create_tilemap: { TILE: numShadow(32) },
   sz_g2d_draw_tilemap: { X: numShadow(0), Y: numShadow(0), SIZE: numShadow(0) },
-  sz_g2d_spawn_in_group: { W: numShadow(24), H: numShadow(24) },
-  sz_g2d_spawn_image_in_group: { W: numShadow(32), H: numShadow(32) },
-  sz_g2d_spawn_bullet: { R: numShadow(5) },
-  sz_g2d_spawn_asteroid: { SIZE: numShadow(40) },
+  // Todos os soquetes de VALOR nascem preenchidos: soquete vazio compila para
+  // `undefined` → o sprite nasce em posição/velocidade inválida (NaN) sem pista.
+  sz_g2d_spawn_in_group: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    W: numShadow(24),
+    H: numShadow(24),
+    VX: numShadow(0),
+    VY: numShadow(0),
+  },
+  sz_g2d_spawn_image_in_group: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    W: numShadow(32),
+    H: numShadow(32),
+    VX: numShadow(0),
+    VY: numShadow(0),
+  },
+  sz_g2d_spawn_bullet: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    R: numShadow(5),
+    VX: numShadow(0),
+    VY: numShadow(-4),
+  },
+  sz_g2d_spawn_asteroid: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    SIZE: numShadow(40),
+    VX: numShadow(0),
+    VY: numShadow(2),
+  },
   sz_g2d_spawn_asteroid_edge: { SIZE: numShadow(40), SPEED: numShadow(1.5) },
-  sz_g2d_spawn_obstacle: { SIZE: numShadow(44) },
+  sz_g2d_spawn_obstacle: { X: numShadow(400), SIZE: numShadow(44), VX: numShadow(-3) },
+  sz_g2d_spawn_egg: { X: numShadow(400), Y: numShadow(100), VX: numShadow(-3) },
   sz_g2d_prune_old: { SECONDS: numShadow(2) },
   sz_g2d_every_seconds: { SECS: numShadow(2) },
   sz_g2d_random_between: { MIN: numShadow(1), MAX: numShadow(6) },

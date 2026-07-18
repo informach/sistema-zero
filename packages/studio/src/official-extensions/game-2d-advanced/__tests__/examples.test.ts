@@ -11,6 +11,7 @@ import { parseJS } from '../../../parsers/js'
 import { gameKitBlocks } from '../blocks'
 import {
   arenaGoblinsExample,
+  batalhaEmEquipeExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   defesaDoReinoExample,
@@ -107,6 +108,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Duelo dos Bonecos',
       'Defesa do Reino',
       'Reino Aberto',
+      'Batalha em Equipe',
     ])
     expect(gameKitExtension.minLevel).toBe('intermediario-2d')
   })
@@ -1398,6 +1400,91 @@ describe('game-2d-advanced — exemplo Reino Aberto (🌍 mundo aberto)', () => 
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(reinoAbertoExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_BATALHA = `SZGameKit.setup({ width: 960, height: 640, background: "#20263f", accent: "#ffd166" });
+SZGameKit.setScreenText("menu", "Batalha em Equipe", "Fale com o Capitao (espaco) e enfrente os bandidos com o seu time! Clique nos personagens para ver a ficha de cada um.", "Comecar");
+const heroi = SZGameKit.createCharacter({ image: "", w: 48, h: 48, speed: 320, color: "#4a9eff" });
+SZGameKit.rpgBattleStats(60, 12, 4);
+SZGameKit.rpgSetSpecial("Golpe Giratorio", 22, 5);
+SZGameKit.rpgAddAlly("Curandeira", 40, 8, 2, "#22c55e");
+SZGameKit.rpgTeachMove("Voce", "Espadada Dupla", 16, 3);
+SZGameKit.rpgTeachMove("Curandeira", "Flechada", 14, 2);
+SZGameKit.rpgGivePotion("Pocao", 25);
+SZGameKit.rpgOnMap("praca", function () {
+  SZGameKit.rpgCreateNpc("Capitao", 4, 3, "", "");
+  SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(3));
+});
+SZGameKit.rpgOnTalk("Capitao", function () {
+  SZGameKit.rpgSay("Os bandidos chegaram! Vamos juntos!", "Capitao");
+  SZGameKit.rpgAddFoe("Bandido", 26, 7, 1, "#ef4444");
+  SZGameKit.rpgBattleStart("Chefe Bandido", 40, 9, 2);
+});
+SZGameKit.rpgOnBattleEnd(function () {
+  if (SZGameKit.rpgBattleWon()) {
+    SZGameKit.rpgBattleReward(25);
+    SZGameKit.setState("vitoria");
+  } else {
+    SZGameKit.endGame();
+  }
+});
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.rpgMoveGrid(heroi, 64, dt);
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#2d3a2d", true);
+  SZGameKit.rpgDrawNpcs();
+  SZGameKit.drawCharacter(heroi);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Batalha em Equipe (⚔️ batalha em equipe)', () => {
+  it('IR embutida é válida, sem rawJS, e usa os blocos da batalha em equipe', () => {
+    const parsed = SZIRSchema.safeParse(batalhaEmEquipeExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(batalhaEmEquipeExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:rpgBattleStats',
+      'gk:rpgAddAlly',
+      'gk:rpgAddFoe',
+      'gk:rpgTeachMove',
+      'gk:rpgSetSpecial',
+      'gk:rpgGivePotion',
+      'gk:rpgBattleStart',
+      'gk:rpgOnBattleEnd',
+      'gk:rpgBattleWon',
+      'gk:rpgBattleReward',
+      'gk:rpgOnTalk',
+      'gk:rpgSay',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_BATALHA))).toEqual(batalhaEmEquipeExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
+    const code1 = compileStatements(batalhaEmEquipeExample.ir.js, 0)
+    const code2 = compileStatements(stripIds(parseJS(code1)), 0)
+    expect(code2).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR → workspace → IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      batalhaEmEquipeExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(batalhaEmEquipeExample.ir.js)
     } finally {
       ws.dispose()
     }

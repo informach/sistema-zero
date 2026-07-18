@@ -45,6 +45,16 @@ export const gameTwoDRuntime = `(function () {
     } catch (e) { return Date.now(); }
   }
 
+  // Aviso DEDUPADO por chave: um nome errado (de figura/imagem/som/mapa) chamado
+  // DENTRO do "a cada quadro" afogaria o console 60×/s. warnOnce fala UMA vez por
+  // chave e o jogo segue rodando — a criança vê a dica sem o console travar.
+  var _warnedOnce = Object.create(null);
+  function warnOnce(key, msg) {
+    if (_warnedOnce[key]) return;
+    _warnedOnce[key] = true;
+    try { console.warn('SZGame2D: ' + msg); } catch (e) {}
+  }
+
   /**
    * Escala física do ctx do palco: com fitScreen o backing store cresce além do
    * tamanho lógico (devicePixelRatio), então o upscale REAL é maior do que w/h
@@ -84,14 +94,20 @@ export const gameTwoDRuntime = `(function () {
    */
   function loadImage(src) {
     if (!src || typeof src !== 'string') return null;
-    var url = Object.prototype.hasOwnProperty.call(ASSETS, src) ? ASSETS[src] : src;
+    var known = Object.prototype.hasOwnProperty.call(ASSETS, src);
+    var url = known ? ASSETS[src] : src;
+    // Nome que não é asset do projeto NEM parece um endereço (sem "/" nem ":") =
+    // provável erro de digitação. Avisa uma vez; segue tentando como URL.
+    if (!known && src.indexOf('/') === -1 && src.indexOf(':') === -1) {
+      warnOnce('img:' + src, 'a imagem "' + src + '" não está no projeto. Confira o nome no painel Imagens (maiúsculas e espaços contam).');
+    }
     if (imageCache[url]) return imageCache[url];
     var handle = { img: null, loaded: false, url: url };
     try {
       var im = new Image();
       handle.img = im;
       im.onload = function () { handle.loaded = true; };
-      im.onerror = function () { handle.loaded = false; };
+      im.onerror = function () { handle.loaded = false; warnOnce('imgerr:' + url, 'não consegui carregar a imagem "' + src + '".'); };
       im.src = url;
     } catch (e) {}
     imageCache[url] = handle;
@@ -179,6 +195,7 @@ export const gameTwoDRuntime = `(function () {
     var name = sprite.skin ? sprite.skin.shape : null;
     var fn = name ? _shapes[name] : null;
     if (typeof fn !== 'function') {
+      if (name) warnOnce('shape:' + name, 'a figura "' + name + '" não existe. Crie-a com "Guardar a figura" (o nome tem que ser igualzinho: maiúsculas e espaços contam).');
       ctx.fillStyle = sprite.color;
       ctx.fillRect(sprite.x, sprite.y, sprite.w, sprite.h);
       return;
@@ -297,7 +314,10 @@ export const gameTwoDRuntime = `(function () {
    */
   function autoAnimate(s) {
     if (!s) return;
-    if ((s.hurtFrames || 0) > 0) s.hurtFrames--;
+    if ((s.hurtFrames || 0) > 0 && (activeLoopStop === null || s._hurtStamp !== _frameStamp)) {
+      s.hurtFrames--;
+      s._hurtStamp = _frameStamp;
+    }
     // Flip automático: andando p/ a esquerda vira o desenho; parado mantém o
     // último lado (o "Virar o sprite" manual vale enquanto está parado).
     var vx = s.vx || 0;
@@ -354,7 +374,12 @@ export const gameTwoDRuntime = `(function () {
     if (!ctx || !sprite) return;
     var op = (typeof sprite.opacity === 'number') ? sprite.opacity : 1;
     if (sprite.blinkFrames > 0) {
-      sprite.blinkFrames--;
+      // Decai 1× por quadro do jogo (carimbo) — não por desenho. Sem "a cada quadro
+      // do jogo" ativo (aluno desenhando no rAF do núcleo), cai no modo antigo.
+      if (activeLoopStop === null || sprite._blinkStamp !== _frameStamp) {
+        sprite.blinkFrames--;
+        sprite._blinkStamp = _frameStamp;
+      }
       // Fase "apagada" do piscar: meia transparência por cima da opacidade atual.
       if (Math.floor(sprite.blinkFrames / 6) % 2 === 0) op = op * 0.35;
     }
@@ -448,6 +473,11 @@ export const gameTwoDRuntime = `(function () {
    * não acelera por empilhamento de RAFs.
    */
   var activeLoopStop = null;
+  // Carimbo do quadro atual: avança 1× por passada do "a cada quadro do jogo"
+  // (nunca em pausa). O piscar de invencibilidade decai por ESTE carimbo, não por
+  // desenho — desenhar o mesmo sprite 2× não devora a invencibilidade pela metade,
+  // e a pausa não a consome. Sem loop ativo, o decaimento cai no modo antigo.
+  var _frameStamp = 0;
   function gameLoop(fn) {
     if (activeLoopStop) activeLoopStop();
     var canceled = false;
@@ -459,6 +489,7 @@ export const gameTwoDRuntime = `(function () {
       // ganhou/perdeu", desenhe a tela ANTES de "Pausar o jogo" — ela fica
       // congelada por cima. "Continuar o jogo" descongela.
       if (!_paused) {
+        _frameStamp++;
         _particlesDrawnThisFrame = false;
         try { fn(); } catch (e) { console.error(e && e.message ? e.message : e); }
         // As partículas (explosões) se desenham sozinhas no FIM do quadro do aluno,
@@ -618,7 +649,9 @@ export const gameTwoDRuntime = `(function () {
       case 'error': _fxSeq('square', [[200, 0, 0.12], [160, 0.13, 0.2]], 0.1); return;
       case 'select': _fxBeep('triangle', 520, 720, 0.06, 'linear', 0.06); return;
       case 'blip': _fxBeep('square', 1000, 1000, 0.05, 'none', 0.05); return;
-      default: _fxBeep('square', 880, 1320, 0.18, 'exp', 0.08); return;
+      default:
+        warnOnce('fx:' + name, 'não conheço o som "' + name + '" — toquei um bip. Escolha um som da lista do bloco.');
+        _fxBeep('square', 880, 1320, 0.18, 'exp', 0.08); return;
     }
   }
 
@@ -635,6 +668,7 @@ export const gameTwoDRuntime = `(function () {
   };
   function playMusic(name) {
     stopMusic();
+    if (!MUSIC_TUNES[name]) warnOnce('music:' + name, 'não conheço a música "' + name + '" — toquei "adventure". Escolha uma da lista do bloco.');
     var tune = MUSIC_TUNES[name] || MUSIC_TUNES.adventure;
     var step = (typeof tune.step === 'number' && tune.step > 0) ? tune.step : 200;
     var i = 0;
@@ -1152,6 +1186,7 @@ export const gameTwoDRuntime = `(function () {
     var oy = (y || 0) + (hasCanvas ? Math.floor((ch - rowsN * cell) / 2) : 0);
     map.ox = ox;
     map.oy = oy;
+    map._drawn = true;
     for (var r = 0; r < rowsN; r++) {
       var row = map.rows[r];
       for (var c = 0; c < row.length; c++) {
@@ -1169,6 +1204,9 @@ export const gameTwoDRuntime = `(function () {
    */
   function collideTileMap(sprite, map) {
     if (!sprite || !map || !map.rows || !map.tile) return;
+    // Antes do 1º "Desenhar o mapa" não sabemos onde ele fica na tela (o encaixe é
+    // calculado no desenho) — a colisão usaria o canto (0,0) e ficaria torta.
+    if (map && !map._drawn) warnOnce('colmapfirst', 'desenhe o mapa (bloco "Desenhar o mapa") ANTES de "Impedir de atravessar os tiles" — senão a colisão fica fora do lugar no 1º quadro.');
     var t = tileScreenSize(map), ox = map.ox || 0, oy = map.oy || 0;
     var c0 = Math.floor((sprite.x - ox) / t);
     var c1 = Math.floor((sprite.x + sprite.w - 1 - ox) / t);
@@ -1204,41 +1242,75 @@ export const gameTwoDRuntime = `(function () {
    * sobreposição e zera a velocidade nesse eixo (dá parede E chão + deslizar).
    * Compara os CENTROS (obstáculos de tamanhos variados) — não o canto.
    */
-  function collideGroup(sprite, group) {
-    if (!sprite || !group || !group.items) return;
-    for (var i = 0; i < group.items.length; i++) {
-      var o = group.items[i];
-      if (!o || o === sprite) continue;
-      var overlapX = Math.min(sprite.x + sprite.w, o.x + o.w) - Math.max(sprite.x, o.x);
-      var overlapY = Math.min(sprite.y + sprite.h, o.y + o.h) - Math.max(sprite.y, o.y);
-      if (overlapX <= 0 || overlapY <= 0) continue;
-      if (overlapX < overlapY) {
-        var cx = sprite.x + sprite.w / 2, ocx = o.x + o.w / 2;
-        if (cx < ocx) sprite.x -= overlapX; else sprite.x += overlapX;
-        sprite.vx = 0;
+  // Empurra o sprite para FORA de UM outro sprite (o núcleo do collideGroup, por
+  // item): eixo de menor sobreposição, zera a velocidade nesse eixo, pousa em cima.
+  function collideSprite(sprite, o) {
+    if (!sprite || !o || o === sprite) return;
+    var overlapX = Math.min(sprite.x + sprite.w, o.x + o.w) - Math.max(sprite.x, o.x);
+    var overlapY = Math.min(sprite.y + sprite.h, o.y + o.h) - Math.max(sprite.y, o.y);
+    if (overlapX <= 0 || overlapY <= 0) return;
+    if (overlapX < overlapY) {
+      var cx = sprite.x + sprite.w / 2, ocx = o.x + o.w / 2;
+      if (cx < ocx) sprite.x -= overlapX; else sprite.x += overlapX;
+      sprite.vx = 0;
+    } else {
+      var cy = sprite.y + sprite.h / 2, ocy = o.y + o.h / 2;
+      if (cy < ocy) {
+        sprite.y -= overlapY;
+        if ((sprite.vy || 0) > 0) { sprite.vy = 0; sprite.onGround = true; }
       } else {
-        var cy = sprite.y + sprite.h / 2, ocy = o.y + o.h / 2;
-        if (cy < ocy) {
-          sprite.y -= overlapY;
-          if ((sprite.vy || 0) > 0) { sprite.vy = 0; sprite.onGround = true; }
-        } else {
-          sprite.y += overlapY;
-          if ((sprite.vy || 0) < 0) sprite.vy = 0;
-        }
+        sprite.y += overlapY;
+        if ((sprite.vy || 0) < 0) sprite.vy = 0;
       }
     }
   }
+  function collideGroup(sprite, group) {
+    if (!sprite || !group || !group.items) return;
+    for (var i = 0; i < group.items.length; i++) collideSprite(sprite, group.items[i]);
+  }
 
   // ---- Eventos "Quando…" ----
+  // "Quando apertar a tecla" é um statement — pode cair DENTRO do "a cada quadro".
+  // Se registrássemos um addEventListener a CADA chamada (como antes), seriam
+  // dezenas de listeners por segundo: vazamento de memória + N disparos por toque.
+  // Em vez disso há UM listener real que percorre uma lista, com dedup por
+  // ASSINATURA (tecla + o corpo da função em texto): o gerador emite um arrow novo
+  // a cada execução, mas o TEXTO do mesmo bloco é estável → o bloco no "a cada
+  // quadro" converge para um só registro. Teto rígido como o do onPointer.
+  var keyHandlers = [];
+  var keyHandlerSigs = Object.create(null);
+  var MAX_KEY_HANDLERS = 32;
+  var keyLimitWarned = false;
+  window.addEventListener('keydown', function (e) {
+    // O sistema REPETE keydown enquanto a tecla fica segurada; "quando apertar" só
+    // dispara no toque, então ignoramos as repetições (senão vira metralhadora).
+    if (e.repeat) return;
+    for (var i = 0; i < keyHandlers.length; i++) {
+      var h = keyHandlers[i];
+      var hit = e.key === h.key || e.code === h.key ||
+        (h.key === 'Space' && (e.key === ' ' || e.code === 'Space'));
+      if (!hit) continue;
+      try { h.fn(); } catch (err) { console.error(err && err.message ? err.message : err); }
+    }
+  });
   /** Roda fn toda vez que a tecla é apertada (compara e.key e e.code). */
   function onKey(key, fn) {
     if (typeof fn !== 'function' || !key) return;
-    window.addEventListener('keydown', function (e) {
-      var hit = e.key === key || e.code === key ||
-        (key === 'Space' && (e.key === ' ' || e.code === 'Space'));
-      if (!hit) return;
-      try { fn(); } catch (err) { console.error(err && err.message ? err.message : err); }
-    });
+    var sig = key + '|@|' + String(fn); // teclas nunca têm "|@|" → split sem ambiguidade
+    if (keyHandlerSigs[sig]) return;
+    if (keyHandlers.length >= MAX_KEY_HANDLERS) {
+      if (!keyLimitWarned) {
+        keyLimitWarned = true;
+        console.warn(
+          'SZGame2D: muitos "quando apertar a tecla" registrados (limite ' +
+            MAX_KEY_HANDLERS +
+            '). Registros extras serão ignorados. Dica: registre "quando apertar" FORA do "a cada quadro".'
+        );
+      }
+      return;
+    }
+    keyHandlerSigs[sig] = true;
+    keyHandlers.push({ key: key, fn: fn });
   }
   // Sobreposição: registra pares (getA, getB, fn) e checa num rAF interno (começa
   // sob demanda). Edge-triggered: dispara UMA vez quando começam a encostar. Os
@@ -1246,23 +1318,38 @@ export const gameTwoDRuntime = `(function () {
   // ordem dos blocos no topo não causa erro de "antes de declarar".
   var overlapHandlers = [];
   var MAX_OVERLAP_HANDLERS = 32;
+  var overlapLimitWarned = false;
   var overlapLoopStarted = false;
   function overlapTick() {
-    for (var i = 0; i < overlapHandlers.length; i++) {
-      var h = overlapHandlers[i];
-      var a = null, b = null;
-      try { a = h.getA(); b = h.getB(); } catch (e) { h.wasOverlapping = false; continue; }
-      var over = isColliding(a, b);
-      if (over && !h.wasOverlapping) {
-        try { h.fn(); } catch (err) { console.error(err && err.message ? err.message : err); }
+    // "Pausar o jogo" congela também a checagem de sobreposição: sem isto, dois
+    // sprites parados encostados seguiriam disparando o "quando encostar", e ao
+    // despausar viria uma borda FALSA. Congelar o wasOverlapping preserva o estado.
+    if (!_paused) {
+      for (var i = 0; i < overlapHandlers.length; i++) {
+        var h = overlapHandlers[i];
+        var a = null, b = null;
+        try { a = h.getA(); b = h.getB(); } catch (e) { h.wasOverlapping = false; continue; }
+        var over = isColliding(a, b);
+        if (over && !h.wasOverlapping) {
+          try { h.fn(); } catch (err) { console.error(err && err.message ? err.message : err); }
+        }
+        h.wasOverlapping = over;
       }
-      h.wasOverlapping = over;
     }
     requestAnimationFrame(overlapTick);
   }
   function onOverlap(getA, getB, fn) {
     if (typeof getA !== 'function' || typeof getB !== 'function' || typeof fn !== 'function') return;
-    if (overlapHandlers.length >= MAX_OVERLAP_HANDLERS) return;
+    if (overlapHandlers.length >= MAX_OVERLAP_HANDLERS) {
+      if (!overlapLimitWarned) {
+        overlapLimitWarned = true;
+        console.warn(
+          'SZGame2D: muitos "quando encostar" registrados (limite ' + MAX_OVERLAP_HANDLERS +
+            '). Registros extras serão ignorados. Dica: registre "quando encostar" FORA do "a cada quadro".'
+        );
+      }
+      return;
+    }
     overlapHandlers.push({ getA: getA, getB: getB, fn: fn, wasOverlapping: false });
     if (!overlapLoopStarted) { overlapLoopStarted = true; requestAnimationFrame(overlapTick); }
   }
@@ -1272,6 +1359,18 @@ export const gameTwoDRuntime = `(function () {
   var pressedKeys = Object.create(null);
   window.addEventListener('keydown', function (e) { pressedKeys[e.key] = true; pressedKeys[e.code] = true; });
   window.addEventListener('keyup', function (e) { pressedKeys[e.key] = false; pressedKeys[e.code] = false; });
+  // Ao trocar de aba/janela (alt-tab), o "keyup"/"pointerup" não chega ao jogo e a
+  // tecla/dedo ficaria "grudado" (o herói anda sozinho para sempre). Ao perder o
+  // foco, soltamos tudo: setas, todas as teclas seguradas e o clique.
+  function _releaseAllInputs() {
+    keys.left = keys.right = keys.up = keys.down = false;
+    for (var k in pressedKeys) pressedKeys[k] = false;
+    pointer.down = false;
+  }
+  window.addEventListener('blur', _releaseAllInputs);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) _releaseAllInputs();
+  });
   /** Verdadeiro enquanto a tecla está segurada (compara e.key e e.code). */
   function keyDown(key) {
     if (key === 'Space') return !!(pressedKeys[' '] || pressedKeys['Space']);
@@ -1355,6 +1454,19 @@ export const gameTwoDRuntime = `(function () {
     if (!group || !group.items) return;
     for (var i = 0; i < group.items.length; i++) applyVelocity(group.items[i]);
   }
+  /**
+   * Move cada sprite do grupo pela sua velocidade, SEM somar gravidade — para
+   * TIROS do jogador num jogo com gravidade (senão eles arqueiam para baixo).
+   */
+  function updateGroupNoGravity(group) {
+    if (!group || !group.items) return;
+    for (var i = 0; i < group.items.length; i++) {
+      var s = group.items[i];
+      if (!s) continue;
+      s.x += s.vx || 0;
+      s.y += s.vy || 0;
+    }
+  }
   /** Desenha todos os sprites do grupo. */
   function drawGroup(ctx, group) {
     if (!ctx || !group || !group.items) return;
@@ -1417,6 +1529,10 @@ export const gameTwoDRuntime = `(function () {
         if (!bj) continue;
         if (isColliding(ai, bj)) {
           try { fn(ai, bj); } catch (e) { console.error(e && e.message ? e.message : e); }
+          // Se o corpo REMOVEU ai (ex.: "remova o tiro"), ele não deve acertar mais
+          // ninguém neste quadro — senão um tiro só derrubaria TODOS os inimigos
+          // encostados. Se NÃO removeu, o laço segue (o tiro "perfura" de propósito).
+          if (a.items.indexOf(ai) === -1) break;
         }
       }
     }
@@ -3012,7 +3128,7 @@ export const gameTwoDRuntime = `(function () {
     try { _stageCtx = c.getContext('2d'); } catch (e) {}
     return _stageCtx;
   }
-  var _logicalW = 0, _logicalH = 0, _resizeHooked = false;
+  var _logicalW = 0, _logicalH = 0, _resizeHooked = false, _fillMode = false;
   // Tamanho LÓGICO do palco (coordenadas do jogo). Sem fitScreen, é o tamanho do
   // próprio canvas; com fitScreen, fica FIXO enquanto o canvas REAL cresce para a
   // resolução da tela (nitidez) — os helpers usam o lógico para não dependerem disso.
@@ -3024,9 +3140,14 @@ export const gameTwoDRuntime = `(function () {
   }
   function _resizeBacking() {
     var c = _stageCanvas;
-    if (!c || !_logicalW || !c.getBoundingClientRect) return;
+    if (!c || !c.getBoundingClientRect) return;
     var rect = c.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
+    // Modo "ocupar a tela toda": a resolução LÓGICA (coordenadas do jogo) acompanha
+    // o tamanho REAL do canvas — a área do jogo É a tela e muda de tamanho com a
+    // janela. Setar ANTES do guard de _logicalW (que no início é 0).
+    if (_fillMode) { _logicalW = Math.max(1, Math.round(rect.width)); _logicalH = Math.max(1, Math.round(rect.height)); }
+    if (!_logicalW) return;
     var dpr = window.devicePixelRatio || 1;
     var bw = Math.max(1, Math.round(rect.width * dpr));
     var bh = Math.max(1, Math.round(rect.height * dpr));
@@ -3105,6 +3226,40 @@ export const gameTwoDRuntime = `(function () {
       document.body.style.justifyContent = 'center';
     }
     fitScreen(100);
+  }
+  // Facilitador: prepara o palco para OCUPAR A TELA TODA, sem dimensões. Diferente
+  // do setupStage (que mantém a proporção fixa e deixa barras nas laterais), aqui a
+  // resolução do jogo ACOMPANHA a janela: o canvas preenche 100% da viewport e as
+  // coordenadas do jogo passam a valer o tamanho real da tela (via _resizeBacking em
+  // _fillMode). É o bloco "preparar o jogo para ocupar a tela toda".
+  function setupStageFull(bg) {
+    ensureStage();
+    var c = _stageCanvas;
+    if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
+    if (!c) return;
+    _fillMode = true;
+    var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
+    // Full-bleed: fixo, ocupando a viewport inteira; sem proporção/limite travados.
+    c.style.position = 'fixed';
+    c.style.left = '0';
+    c.style.top = '0';
+    c.style.width = '100vw';
+    c.style.height = '100vh';
+    c.style.aspectRatio = '';
+    c.style.maxWidth = '';
+    c.style.boxSizing = 'border-box';
+    c.style.display = 'block';
+    c.style.background = color;
+    if (document.body) {
+      document.body.style.margin = '0';
+      document.body.style.background = color;
+    }
+    _resizeBacking();
+    try { requestAnimationFrame(_resizeBacking); } catch (e) {}
+    if (!_resizeHooked) {
+      _resizeHooked = true;
+      try { window.addEventListener('resize', function () { try { requestAnimationFrame(_resizeBacking); } catch (e) { _resizeBacking(); } }); } catch (e) {}
+    }
   }
   // Expõe 'ctx' e 'tela' como globais preguiçosos. O setter REDEFINE a propriedade
   // como um valor normal — assim um eventual 'const ctx = ...' antigo (canvasSetup)
@@ -3807,6 +3962,7 @@ export const gameTwoDRuntime = `(function () {
     clear: clear,
     fitScreen: fitScreen,
     setupStage: setupStage,
+    setupStageFull: setupStageFull,
     spawnBullet: spawnBullet,
     arrowsX: arrowsX,
     blink: blink,
@@ -3910,11 +4066,13 @@ export const gameTwoDRuntime = `(function () {
     drawTileMap: _camWrap(drawTileMap),
     collideTileMap: collideTileMap,
     collideGroup: collideGroup,
+    collideSprite: collideSprite,
     tileAt: tileAt,
     // Grupos de sprites + temporizadores (v0.6.0).
     createGroup: createGroup,
     spawn: spawn,
     updateGroup: updateGroup,
+    updateGroupNoGravity: updateGroupNoGravity,
     drawGroup: _camWrap(drawGroup),
     forEachInGroup: forEachInGroup,
     countGroup: countGroup,
