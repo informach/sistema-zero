@@ -473,10 +473,13 @@ MapperMate, mas em BLOCOS editáveis): `sanitizeTilemapMeta` re-valida o payload
 fundo → mecânica → `tileMapCollide` → `cameraFollow` → drawSprite → **drawTileMap FRENTE DEPOIS do
 jogador**), gera blocos (`buildWorkspaceStateFromIR`) + arquivos (`generateProjectFiles`) + os
 `ProjectAsset` (mapa + `<mapa>-frente`, nome batendo o `image` do bloco) + extensão game-2d
-instalada; `buildTilemapGameProject` ainda `persistProject`. **Heurística de mecânica:** mapa COM
-peças plataforma (one-way do F2) → PLATAFORMA (gravidade+pulo); sem → TOP-DOWN (RPG). O host
-(community-kids `pinta-client`) chama `setStudioStorageNamespace(viewerId)` ANTES e navega pro
-`/estudio`. Testes: `tilemapGame.test.ts` (5 — asset+IR+arquivos, top-down/plataforma, frente
+instalada; `buildTilemapGameProject` ainda `persistProject`. **Heurística de mecânica (full review
+18/07):** PLATAFORMA (gravidade+pulo) só quando uma peça-plataforma one-way está de fato COLOCADA na
+grade (`gridUsesAny(bgMeta.grid, bgMeta.platform)`), NÃO só declarada no tileset — senão um mapa
+top-down cujo tileset (ex.: de template) apenas DEFINE uma peça plataforma cairia em gravidade sem
+motivo; senão → TOP-DOWN (RPG). O host (community-kids `pinta-client`) chama
+`setStudioStorageNamespace(viewerId)` ANTES e navega pro `/estudio`. Testes: `tilemapGame.test.ts`
+(6 — asset+IR+arquivos, top-down/plataforma-COLOCADA/plataforma-só-declarada-segue-top-down, frente
 DEPOIS do drawSprite, `null` p/ mapa inválido). ⚠️ **Follow-up adiado:** o dropdown 'frente' do
 `sz_gk_draw_tilemap` (desamarrar de `solid`) NÃO entrou — evitei tocar o WIP concorrente da gk.
 

@@ -195,6 +195,40 @@ de lá); o kids (`pinta-client`) liga o callback só com o Estúdio Completo. QA
 console. ⚠️ **Follow-up adiado:** o dropdown 'frente' do bloco `sz_gk_draw_tilemap` na extensão gk
 (desamarrar de `solid`) NÃO entrou — evitei tocar os arquivos do WIP concorrente da gk.
 
+## Full review (correções) — 18/07/2026
+
+Auditoria multi-agente (correção/segurança/desempenho/a11y, lente infantil) com foco no lote
+MapperMate F1–F4. **Segurança: NADA acionável** (raster via Blob→Image, não innerHTML; cores
+validadas por `sanitizeFill`; dados 100% locais no IndexedDB). 6 achados corrigidos; verde no
+typecheck+test(344)+biome do pinta e no studio (`tilemapGame` 6/0). QA browser real (:5199).
+
+- **[ALTA — regressão do F4] Camada da frente sumia no "Usar no Estúdio":** o `studioBridge.ts`
+  passou (no F4) a montar `tilemap` só com o FUNDO (`l.front !== true`), e o `handleSendToStudio`
+  repassa esse meta ao `savePersonalAsset` ("Meus desenhos") → um mapa com camada "da frente"
+  PERDIA a decoração da grade que o bloco "Criar mapa do meu desenho" lê (sobrevivia só na
+  miniatura). **Fix:** o campo `tilemap` do payload voltou a ser o mapa COMPLETO (todas as camadas
+  visíveis); `tilemapFront` (só-frente) permanece p/ o passe "por cima do jogador" do jogo. O
+  `buildTilemapGameProject` desenha `tilemap` (base) + `tilemapFront` (topo): peça de frente nos dois
+  passes = oclusão idêntica, colisão inalterada (frente = decoração não-sólida). QA browser: "Usar no
+  Estúdio" num mapa com "Decoração" marcada frente → a grade INCLUI a peça 5.
+- **[MÉDIA — a11y ≥44px]** `TilePicker` (X de limpar carimbo 36→44px) e `AnimationDetails` (botões do
+  segmentado 40→44px).
+- **[MÉDIA — a11y] Trap de Tab do `Dialog` escapava p/ o fundo:** o `Dialog` renderiza INLINE (sem
+  `inert`/portal); quando o foco caía no `<body>` (um botão de passo do wizard desmonta ao avançar),
+  o Tab ia p/ a galeria de fundo. **Fix:** se o `activeElement` NÃO está dentro do card, o Tab é
+  redirecionado p/ o 1º focável do modal (Shift→último). QA browser: foco no body + Tab → volta p/ o
+  "Fechar" do modal (não escapa).
+- **[BAIXA] `handlePlayMap` sem o teto de 800k do `dataUrl`:** paridade com o `handleSendToStudio`
+  (a miniatura é capada em 512px, mas o guarda dá a mensagem gentil).
+- **[BAIXA] Load da galeria não isolava registro corrompido:** `persistence.ts` (`listAllAssets`/
+  `loadAssetById`) ganhou `safeSanitize` (try/catch por registro) — uma regressão futura que faça o
+  sanitize lançar em UM registro não derruba a galeria inteira (paridade com o import `.pinta.json`).
+
+**A heurística plataforma×top-down do jogo** também foi refinada, mas o fix vive no studio
+(`projects/tilemapGame.ts`) — ver o CLAUDE.md de lá. **Documentado (por-design/backlog, NÃO
+corrigido):** remap do tileset fora do undo (exige transação); descarte por `instanceof` de
+typed-array e gap de migração de kind (por-design/test-guarded); literais soltos fora do `copy.ts`.
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data
