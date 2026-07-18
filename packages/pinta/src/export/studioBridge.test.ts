@@ -89,10 +89,10 @@ describe('metadados da ponte (puros, sem raster)', () => {
     })
   })
 
-  it('tilemapMetaFrom filtra a grade por camada (fundo × frente)', () => {
+  it('tilemapMetaFrom filtra a grade por camada (fundo × frente) e SEM predicado achata tudo', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
-    // camada de fundo com célula 0; camada da frente (marcada) com célula 1.
+    // camada de fundo com célula 1; camada da frente (marcada) com célula 2.
     const bg = tilemap.layers[0]
     if (!bg) throw new Error('camada esperada')
     bg.cells.set([1, -1])
@@ -109,6 +109,10 @@ describe('metadados da ponte (puros, sem raster)', () => {
     const frontMeta = tilemapMetaFrom(withFront, tileset, sheet, (l) => l.front === true)
     expect(bgMeta.grid).toBe('1 .')
     expect(frontMeta.grid).toBe('. 2')
+    // SEM predicado = mapa COMPLETO: é o que a ponte "Usar no Estúdio" grava em
+    // "Meus desenhos" — a decoração da frente (peça 2) NÃO pode sumir da grade.
+    const fullMeta = tilemapMetaFrom(withFront, tileset, sheet)
+    expect(fullMeta.grid).toBe('1 2')
   })
 
   it('tilemapMetaFrom leva platform quando o tileset tem peça plataforma', () => {

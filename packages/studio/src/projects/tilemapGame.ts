@@ -19,10 +19,13 @@ import { persistProject } from '../state/persistence'
  * já montados em blocos (game-2d). Equivalente ao export "jogo pronto" do
  * MapperMate, mas em blocos que a criança pode editar.
  *
- * Heurística de mecânica: mapa COM peças plataforma (one-way) → PLATAFORMA
- * (gravidade + pulo, mostra o recurso da Fase 2); sem → TOP-DOWN (anda livre,
- * estilo RPG). Uma camada "da frente" (payload.tilemapFront) vira um 2º tilemap
- * desenhado DEPOIS do jogador (copa de árvore por cima).
+ * Heurística de mecânica: mapa que COLOCA uma peça plataforma (one-way) na
+ * grade → PLATAFORMA (gravidade + pulo, mostra o recurso da Fase 2); senão →
+ * TOP-DOWN (anda livre, estilo RPG). ⚠️ olha o USO na grade, não só a DECLARAÇÃO
+ * no tileset — senão um mapa top-down cujo tileset (ex.: de template) apenas
+ * DEFINE uma peça plataforma cairia em gravidade sem motivo. Uma camada "da
+ * frente" (payload.tilemapFront) vira um 2º tilemap desenhado DEPOIS do jogador
+ * (copa de árvore por cima).
  */
 
 /** Subconjunto do `PintaExportedAsset` que o host repassa (sem acoplar tipos). */
@@ -38,6 +41,22 @@ export interface TilemapGamePayload {
 
 const VIEWPORT_W = 480
 const VIEWPORT_H = 360
+
+/**
+ * A grade USA alguma das peças `indices`? Grade no formato do Estúdio: linhas
+ * separadas por `;`, células por espaço, `.` = vazio. Base da heurística de
+ * mecânica (plataforma só quando a peça one-way está de fato COLOCADA).
+ */
+function gridUsesAny(grid: string, indices: readonly number[]): boolean {
+  if (indices.length === 0) return false
+  const wanted = new Set(indices)
+  for (const token of grid.split(/[;\s]+/)) {
+    if (token === '' || token === '.') continue
+    const n = Number.parseInt(token, 10)
+    if (Number.isInteger(n) && wanted.has(n)) return true
+  }
+  return false
+}
 
 function gameTwoDVersion(): string {
   return OFFICIAL_CATALOG.find((c) => c.manifest.id === 'game-2d')?.manifest.version ?? '0.0.0'
@@ -135,7 +154,7 @@ export function assembleTilemapGameProject(payload: TilemapGamePayload): Project
   const frontMeta = payload.tilemapFront ? sanitizeTilemapMeta(payload.tilemapFront) : undefined
   const mapName = normalizeAssetName(payload.name) ?? 'meu-mapa'
   const frontName = frontMeta ? `${mapName}-frente` : null
-  const platformer = (bgMeta.platform?.length ?? 0) > 0
+  const platformer = !!bgMeta.platform?.length && gridUsesAny(bgMeta.grid, bgMeta.platform)
 
   const ir = buildIR(mapName, frontName, bgMeta, platformer)
   const assets: ProjectAsset[] = [

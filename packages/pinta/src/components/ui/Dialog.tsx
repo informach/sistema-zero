@@ -53,6 +53,15 @@ export function Dialog({
     const last = focusables[focusables.length - 1]
     if (!first || !last) return
     const active = document.activeElement
+    // Foco FORA do card (ex.: um botão de passo do wizard desmontou ao avançar e
+    // o foco caiu no <body>): sem isto o Tab iria p/ um controle da tela de
+    // fundo — o Dialog renderiza INLINE, sem inert/portal. Traz o foco de volta
+    // p/ dentro do modal.
+    if (!(active instanceof Node) || !card.contains(active)) {
+      event.preventDefault()
+      ;(event.shiftKey ? last : first).focus()
+      return
+    }
     if (event.shiftKey && (active === first || active === card)) {
       event.preventDefault()
       last.focus()

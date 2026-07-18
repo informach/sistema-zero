@@ -50,7 +50,7 @@ function Segmented({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(option.value)}
-            className={`min-h-10 flex-1 px-2 text-sm font-bold transition ${
+            className={`min-h-11 flex-1 px-2 text-sm font-bold transition ${
               active ? 'bg-pin-accent text-pin-accent-fg' : 'text-pin-muted hover:bg-pin-border/40'
             }`}
           >

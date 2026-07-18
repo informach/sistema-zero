@@ -314,6 +314,15 @@ function EditorTopbar({ onBack }: { onBack: () => void }): JSX.Element {
       showToast(COPY.sendToStudio.error)
       return
     }
+    // Teto de UM asset no Studio (miniatura do mapa) — paridade com o
+    // handleSendToStudio; a miniatura é capada em 512px, mas o guarda dá a
+    // mensagem gentil antes do fail-soft genérico se ainda assim estourar.
+    const STUDIO_MAX_ASSET_CHARS = 800_000
+    if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) {
+      setSending(false)
+      showToast(COPY.sendToStudio.tooBig)
+      return
+    }
     const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
     if (payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS) {
       setSending(false)

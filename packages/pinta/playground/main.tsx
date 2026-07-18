@@ -26,6 +26,8 @@ createRoot(root).render(
               width: asset.width,
               height: asset.height,
               dataUrlChars: asset.dataUrl.length,
+              // Mapa: a grade DEVE trazer as camadas da frente (nada some por aqui).
+              grid: asset.tilemap?.grid,
             })
             return { ok: true }
           },

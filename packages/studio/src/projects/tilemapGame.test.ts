@@ -59,10 +59,21 @@ describe('assembleTilemapGameProject', () => {
     expect(body.some((s) => s.type === 'g2d:platformer')).toBe(false)
   })
 
-  it('mapa COM plataforma → mecânica PLATAFORMA (gravidade + pulo)', () => {
+  it('mapa que COLOCA peça plataforma na grade → mecânica PLATAFORMA (gravidade + pulo)', () => {
+    // a peça 2 está na grade ('…;. . 2 .;…') e NÃO é sólida (solid:[1]) → marcá-la
+    // plataforma sobrevive ao sanitize (sólido venceria) e vira jogo de pulo.
+    const base = payload().tilemap as Record<string, unknown>
+    const body = loopBody(irOf({ tilemap: { ...base, platform: [2] } }))
+    expect(body.some((s) => s.type === 'g2d:platformer')).toBe(true)
+    expect(body.some((s) => s.type === 'g2d:topDown')).toBe(false)
+  })
+
+  it('tileset DECLARA plataforma mas a grade não COLOCA → segue TOP-DOWN', () => {
+    // a peça 3 NÃO aparece na grade ('0 1 1 0;. . 2 .;0 0 0 0') → nada de gravidade.
     const base = payload().tilemap as Record<string, unknown>
     const body = loopBody(irOf({ tilemap: { ...base, platform: [3] } }))
-    expect(body.some((s) => s.type === 'g2d:platformer')).toBe(true)
+    expect(body.some((s) => s.type === 'g2d:topDown')).toBe(true)
+    expect(body.some((s) => s.type === 'g2d:platformer')).toBe(false)
   })
 
   it('com camada da frente: 2º tilemap desenhado DEPOIS do jogador', () => {

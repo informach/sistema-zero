@@ -182,14 +182,18 @@ export async function buildStudioPayload(
         width: sheetPack.columns * tileset.tileSize,
         height: sheetPack.rows * tileset.tileSize,
       }
-      // Fundo = tudo menos as camadas "da frente"; a frente (se houver) vira um
-      // 2º meta que o Estúdio desenha DEPOIS do jogador.
+      // `tilemap` = mapa COMPLETO (todas as camadas visíveis) — é o que a ponte
+      // "Usar no Estúdio" grava em "Meus desenhos" e o que o "Jogar meu mapa"
+      // desenha como base. A frente (se houver) vira um 2º meta SÓ com as
+      // camadas "da frente", que o jogo redesenha DEPOIS do jogador (as peças
+      // de frente aparecem nos dois passes = oclusão por cima do herói; sem
+      // filtrar o `tilemap` aqui a decoração NÃO some no caminho "Meus desenhos").
       const front = hasFrontLayer(asset)
       return {
         dataUrl,
         width: thumb.width,
         height: thumb.height,
-        tilemap: tilemapMetaFrom(asset, tileset, sheet, (l) => l.front !== true),
+        tilemap: tilemapMetaFrom(asset, tileset, sheet),
         ...(front
           ? { tilemapFront: tilemapMetaFrom(asset, tileset, sheet, (l) => l.front === true) }
           : {}),

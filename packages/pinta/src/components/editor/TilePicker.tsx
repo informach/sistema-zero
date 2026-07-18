@@ -143,7 +143,7 @@ export function TilePicker({
             aria-label={COPY.tiles.stampClear}
             title={COPY.tiles.stampClear}
             onClick={() => onSelectTile(selectedTile)}
-            className="inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-pin-text hover:bg-pin-border/40"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-pin-text hover:bg-pin-border/40"
           >
             <X aria-hidden="true" className="size-4" />
           </button>
