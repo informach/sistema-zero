@@ -4971,6 +4971,8 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ? { type: 'gk:rpgGivePotion', name: args[0].value as string, heal }
         : null
     }
+    case 'rpgHealHero':
+      return args.length === 0 ? { type: 'gk:rpgHealHero' } : null
     case 'rpgBattleReward': {
       const xp = toExpr(args[0], ctx)
       return isSimpleValue(xp) ? { type: 'gk:rpgBattleReward', xp } : null

@@ -1766,6 +1766,8 @@ function compileStatementCode(
       return `${pad}SZGameKit.rpgSetSpecial(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgGivePotion':
       return `${pad}SZGameKit.rpgGivePotion(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.heal), 0, identifiers, recAt(base))});`
+    case 'gk:rpgHealHero':
+      return `${pad}SZGameKit.rpgHealHero();`
     case 'gk:rpgBattleReward':
       return `${pad}SZGameKit.rpgBattleReward(${compileExpr(valueToExpr(stmt.xp), 0, identifiers, recAt(base))});`
     case 'gk:rpgInflict':
@@ -4837,6 +4839,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:endGame':
     case 'gk:drawBackground':
     case 'gk:setPauseKey':
+    case 'gk:rpgHealHero':
       return
     case 'gk:setScreenText':
       collectExprIdentifiers(valueToExpr(stmt.title), names)

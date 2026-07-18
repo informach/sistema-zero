@@ -210,7 +210,10 @@ API global injetada como window.SZGameKit:
   defesa, aviso "subiu:nivel"); rpgLevel()/rpgXp() getters; rpgInflict("inimigo"|
   "heroi", "veneno", turnos) aplica status (inimigo = 1º foe vivo). Padrão:
   rpgOnBattleEnd → "se rpgBattleWon(): rpgBattleReward(20); setState('vitoria') senão
-  endGame()".
+  endGame()". 🩸 A vida do HERÓI PERSISTE entre batalhas (entra com playerHp, não cheio;
+  endBattle grava de volta ao sobreviver; morrer reseta cheio). rpgHealHero() = curar ao
+  máximo FORA da luta (estalagem/save) — a recuperação, já que poção só vale na batalha;
+  subir de nível também cura. Aliados ainda entram cheios.
   👑 CHEFES (R30): ⭐ o inimigo AGORA usa os golpes ensinados a ele (rpgTeachMove/
   rpgTeachHeal pelo NOME do foe; antes o foeStep só batia pela força). rpgAddBoss(nome,
   vida, força, defesa) = inimigo MAIOR com barra proeminente + coroa. battlerLife(nome)/

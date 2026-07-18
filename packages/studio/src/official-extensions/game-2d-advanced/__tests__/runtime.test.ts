@@ -194,6 +194,7 @@ interface GameKitApi {
   // V8 — batalha rica
   rpgSetSpecial: Fn
   rpgGivePotion: Fn
+  rpgHealHero: Fn
   rpgBattleReward: Fn
   rpgInflict: Fn
   rpgAddAlly: Fn
@@ -568,7 +569,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 332 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 333 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -704,6 +705,7 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       // V8 — batalha rica (6)
       'rpgSetSpecial',
       'rpgGivePotion',
+      'rpgHealHero',
       'rpgBattleReward',
       'rpgInflict',
       'rpgLevel',
@@ -4097,6 +4099,52 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     pickAction(h, t, 'Atacar') // vez do Amigo → depois o Titã age (hit_all via a IA)
     expect(h.api.battlerLife('Você')).toBeLessThan(heroBefore)
     expect(h.api.battlerLife('Amigo')).toBeLessThan(amigoBefore)
+  })
+})
+
+describe('SZGameKit — 🩸 a vida do herói persiste entre batalhas (⚔️ Kit RPG)', () => {
+  it('a 2ª batalha começa com a vida que sobrou da 1ª (não cheia)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 50, 0) // herói vida 100, força 50 (mata o slime num golpe)
+    h.api.rpgTeachMove('Slime', 'Tapa', 30, 0) // o inimigo tem um golpe
+    h.api.rpgBattleStart('Slime', 10, 1, 0) // slime fraco (10 de vida)
+    h.api.rpgFoeUse('Slime', 'Tapa') // o slime bate no herói ANTES de morrer
+    const feridoEm = h.api.battlerLife('Você')
+    expect(feridoEm).toBeLessThan(100) // levou dano
+    pickAction(h, 1, 'Atacar') // o herói ataca → mata o slime → vitória
+    expect(h.api.state()).toBe('jogando')
+    h.api.rpgBattleStart('Slime2', 10, 1, 0) // 2ª batalha
+    expect(h.api.battlerLife('Você')).toBe(feridoEm) // entrou com a vida que sobrou
+  })
+
+  it('"Curar o herói" recupera a vida ao máximo (fora da batalha)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 50, 0)
+    h.api.rpgTeachMove('Slime', 'Tapa', 30, 0)
+    h.api.rpgBattleStart('Slime', 10, 1, 0)
+    h.api.rpgFoeUse('Slime', 'Tapa')
+    pickAction(h, 1, 'Atacar') // vence, ferido
+    expect(h.api.state()).toBe('jogando')
+    h.api.rpgHealHero() // a estalagem/save
+    h.api.rpgBattleStart('Slime2', 10, 1, 0)
+    expect(h.api.battlerLife('Você')).toBe(100) // curado ao máximo
+  })
+
+  it('PERDER a batalha recomeça com a vida cheia (sem soft-lock)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(10, 1, 0) // herói fraquinho (vida 10)
+    h.api.rpgBattleStart('Ogro', 200, 50, 0) // ogro forte: mata o herói
+    let guard = 0
+    while (h.api.state() === 'batalha' && guard++ < 20) pickAction(h, guard * 100, 'Atacar')
+    expect(h.api.state()).toBe('jogando') // batalha acabou (herói morreu → derrota)
+    h.api.rpgBattleStart('Ogro2', 10, 1, 0)
+    expect(h.api.battlerLife('Você')).toBe(10) // derrota = vida cheia de novo
   })
 })
 

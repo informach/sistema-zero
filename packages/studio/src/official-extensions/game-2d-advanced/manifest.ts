@@ -23,7 +23,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.36.0',
+  version: '0.37.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -900,6 +900,10 @@ música da praia" e o nome no HUD.
   nome, sem redigitar. É como os moldes do mundo, mas para a batalha por turnos.
 - **Golpe especial** (dano forte que gasta energia; a energia recupera por turno)
   + **Ganhar a poção** (cura, usada pelo botão Item) — as armas do RPG.
+- **A vida do herói CARREGA de uma batalha para a outra** (como num RPG de verdade — ele
+  NÃO enche sozinho). Para recuperar, use **"Curar o herói"** fora da luta (numa
+  estalagem, num save, num checkpoint); **subir de nível** também cura; e **perder** uma
+  batalha recomeça com a vida cheia. (Os aliados ainda entram cheios em cada luta.)
 - **Ensinar o golpe de CURA … para …** — um golpe que devolve VIDA em vez de ferir
   (a Curandeira do time). Gasta energia e aparece no painel de ação, como os outros.
 - **Ganhar XP** (no "quando a batalha terminar", se venceu) → o herói **sobe de

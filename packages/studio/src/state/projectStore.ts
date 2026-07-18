@@ -1000,6 +1000,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_gk_rpg_has_save',
     'sz_gk_rpg_set_special',
     'sz_gk_rpg_give_potion',
+    'sz_gk_rpg_heal_hero',
     'sz_gk_rpg_battle_reward',
     'sz_gk_rpg_inflict',
     'sz_gk_rpg_level',

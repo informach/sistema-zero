@@ -2908,6 +2908,7 @@ export type JSStatement =
       cost: number | JSExpr
     })
   | (JSStatementCommon & { type: 'gk:rpgGivePotion'; name: string; heal: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:rpgHealHero' })
   | (JSStatementCommon & { type: 'gk:rpgBattleReward'; xp: number | JSExpr })
   | (JSStatementCommon & {
       type: 'gk:rpgInflict'
@@ -6768,6 +6769,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       heal: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({ type: z.literal('gk:rpgHealHero'), ...idField }),
     z.object({
       type: z.literal('gk:rpgBattleReward'),
       xp: z.union([JSExprSchema, z.number()]),
@@ -9658,6 +9660,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgOnBattleEnd',
   'gk:rpgSetSpecial',
   'gk:rpgGivePotion',
+  'gk:rpgHealHero',
   'gk:rpgBattleReward',
   'gk:rpgInflict',
   'gk:rpgAddAlly',

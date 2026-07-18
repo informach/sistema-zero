@@ -6310,6 +6310,10 @@ export const gameKitRuntime = `(function () {
   function heroBattler() {
     var b = makeBattler('Você', 'aliado', rpg.playerMax, rpg.playerStr, rpg.playerDef, '', '#4a9eff');
     b.energy = rpg.playerMaxEnergy; b.maxEnergy = rpg.playerMaxEnergy; b.isHero = true;
+    // A vida do herói PERSISTE entre batalhas: ele entra com a vida ATUAL, não cheia
+    // (o endBattle grava de volta ao vencer). Piso 1 p/ um herói ferido ainda lutar;
+    // b.max segue playerMax (subir de nível aumenta o máximo). "Curar o herói" recupera.
+    b.hp = Math.max(1, Math.min(rpg.playerMax, num(rpg.playerHp, rpg.playerMax)));
     // O herói aparece com o SEU visual do mundo (sprite/vetor/cor), se existir.
     if (rpg.hero) { b.image = text(rpg.hero.image, ''); b.look = text(rpg.hero.look, ''); b.color = text(rpg.hero.color, b.color); }
     if (rpg.special) b.moves.push({ name: rpg.special.name, dmg: rpg.special.dmg, cost: rpg.special.cost, heal: false });
@@ -6445,6 +6449,9 @@ export const gameKitRuntime = `(function () {
   function rpgGivePotion(name, heal) {
     rpg.potions.push({ name: text(name, 'Poção'), heal: Math.max(1, num(heal, 20)) });
   }
+  // 🩸 Cura o herói ao MÁXIMO fora da batalha (a estalagem/save/checkpoint). Como a
+  // vida agora PERSISTE entre lutas, é a forma de recuperar. Espelha o pkmHealTeam.
+  function rpgHealHero() { rpg.playerHp = rpg.playerMax; }
   // Núcleo COMPARTILHADO: monta a batalha (herói + party × inimigo principal + fila) e
   // entra no estado 'batalha'. O mainFoe é um battler JÁ pronto (via defToBattler) — assim
   // o inimigo principal ganha imagem, chefão e golpes ensinados de graça, igual à fila.
@@ -6813,6 +6820,15 @@ export const gameKitRuntime = `(function () {
   }
   function endBattle(won) {
     rpg.battleWon = won === true;
+    // A vida do herói PERSISTE. Se ele SOBREVIVEU (venceu OU fugiu vivo), carrega a
+    // vida que sobrou p/ a próxima luta. Se MORREU (perdeu), volta cheio — derrota =
+    // recomeço, sem soft-lock (não há cura automática no mundo; use "Curar o herói").
+    if (rpg.battle) {
+      var hero = null, al = rpg.battle.allies;
+      for (var h = 0; h < al.length; h++) { if (al[h].isHero) { hero = al[h]; break; } }
+      if (!hero && al.length) hero = al[0];
+      if (hero) rpg.playerHp = hero.hp > 0 ? Math.max(0, Math.round(hero.hp)) : rpg.playerMax;
+    }
     rpg.battle = null;
     setState('jogando'); // vindo de 'batalha' o mundo NÃO reseta (ver setState)
     fadeScreen('#000000', 0.25, false); // 🎬 SAÍDA: o mundo reaparece emergindo do escuro (como o pkm)
@@ -7161,6 +7177,7 @@ export const gameKitRuntime = `(function () {
     // ----- ⚔️ V8: batalha rica (progressão) -----
     rpgSetSpecial: guard('rpgSetSpecial', rpgSetSpecial),
     rpgGivePotion: guard('rpgGivePotion', rpgGivePotion),
+    rpgHealHero: guard('rpgHealHero', rpgHealHero),
     rpgBattleReward: guard('rpgBattleReward', rpgBattleReward),
     rpgInflict: guard('rpgInflict', rpgInflict),
     // ----- ⚔️ batalha em EQUIPE: aliados, inimigos e golpes nomeados -----

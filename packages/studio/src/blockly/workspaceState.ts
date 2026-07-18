@@ -3760,6 +3760,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_gk_rpg_give_potion', { NAME: stmt.name }, {}, stmt.__id, { HEAL: heal })
     }
+    case 'gk:rpgHealHero':
+      return block('sz_gk_rpg_heal_hero', {}, {}, stmt.__id)
     case 'gk:rpgBattleReward': {
       const xp = exprToValueBlock(valueToExpr(stmt.xp))
       return xp === null

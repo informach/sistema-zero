@@ -6319,6 +6319,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           heal: exprInput(block, 'HEAL', { type: 'num', value: 20 }),
         },
       }
+    case 'sz_gk_rpg_heal_hero':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgHealHero' } }
     case 'sz_gk_rpg_battle_reward':
       seen.add('game-2d-advanced')
       return {

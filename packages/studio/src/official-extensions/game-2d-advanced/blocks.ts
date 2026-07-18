@@ -1330,6 +1330,16 @@ export const gameKitBlocks = [
       'Põe uma poção no estoque de batalha (empilha). Na luta, o botão "Item" usa uma e recupera vida.',
   },
   {
+    type: 'sz_gk_rpg_heal_hero',
+    message0: 'Curar o herói',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Recupera a vida do herói ao MÁXIMO, FORA da batalha (a estalagem, um save, um checkpoint). Como o herói CARREGA o dano de uma luta para a outra, é assim que ele se recupera. Subir de nível também cura; perder uma batalha recomeça com a vida cheia.',
+  },
+  {
     type: 'sz_gk_rpg_battle_reward',
     message0: 'Ganhar %1 de experiência (XP)',
     args0: [{ type: 'input_value', name: 'XP', check: 'JSValue' }],
@@ -5104,6 +5114,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_rpg_teach_heal',
       'sz_gk_rpg_set_special',
       'sz_gk_rpg_give_potion',
+      'sz_gk_rpg_heal_hero',
       'sz_gk_rpg_battle_reward',
       'sz_gk_rpg_inflict',
       'sz_gk_rpg_on_battle_end',
