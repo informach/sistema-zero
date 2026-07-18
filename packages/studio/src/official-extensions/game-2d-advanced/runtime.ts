@@ -618,6 +618,16 @@ export const gameKitRuntime = `(function () {
       } catch (e) { resolve(); }
     }));
   }
+  // 🖼️ Unifica o campo IMAGEM: escolher um desenho do Pinta JÁ funciona em todo lugar
+  // (personagem/inimigo/molde/ficha), sem precisar "Carregar a imagem" antes. Se o nome
+  // bate um asset do projeto e ainda não foi registrado, carrega sozinho — idempotente,
+  // e no setup entra no "pending" (a tela de carregando espera). "Carregar a imagem"
+  // segue valendo (explícito) e vira OPCIONAL.
+  function ensureImageLoaded(name) {
+    var k = text(name, '');
+    if (!k || images[k]) return;
+    if (resolveAsset(k)) loadImage(k, k);
+  }
 
   // ---- Laço do jogo (Game.gameLoop do kit) ----
 
@@ -1047,6 +1057,7 @@ export const gameKitRuntime = `(function () {
 
   function createCharacter(opts) {
     var o = (opts && typeof opts === 'object') ? opts : {};
+    ensureImageLoaded(o.image); // escolher a imagem do Pinta já basta (sem "Carregar")
     var w = num(o.w, 64);
     var h = num(o.h, 64);
     var hp = num(o.health, 100);
@@ -1634,6 +1645,7 @@ export const gameKitRuntime = `(function () {
     var k = text(name, '');
     if (!k) { warn('"Criar o molde" precisa de um nome'); return; }
     var o = (opts && typeof opts === 'object') ? opts : {};
+    ensureImageLoaded(o.image); // a imagem do molde (Pinta) carrega sozinha
     var w = num(o.w, 40), h = num(o.h, 40);
     molds[k] = {
       w: w, h: h,
@@ -3330,6 +3342,7 @@ export const gameKitRuntime = `(function () {
   function pkmCreature(name, type, hp, str, def, spd, image, look) {
     var k = text(name, '');
     if (!k) { warn('"Criatura" precisa de um nome'); return; }
+    ensureImageLoaded(image); // a imagem da criatura (Pinta) carrega sozinha
     pkm.species[k] = {
       name: k, type: pkmKeyType(type),
       hp: Math.max(1, num(hp, 30)), str: Math.max(1, num(str, 8)),
@@ -6281,6 +6294,7 @@ export const gameKitRuntime = `(function () {
   // inimigos vêm de "Adicionar aliado/inimigo"; os golpes nomeados de "Ensinar o golpe".
   function makeBattler(name, side, hp, str, def, look, color, image) {
     var mx = Math.max(1, num(hp, 20));
+    ensureImageLoaded(image); // a imagem do combatente (Pinta) carrega sozinha
     return {
       name: text(name, side === 'inimigo' ? 'Inimigo' : 'Aliado'), side: side,
       hp: mx, max: mx, str: Math.max(0, num(str, 5)), def: Math.max(0, num(def, 0)),
@@ -6469,6 +6483,7 @@ export const gameKitRuntime = `(function () {
   // ⚔️ Ficha REUTILIZÁVEL: define o inimigo/chefão UMA vez, com imagem e atributos.
   function rpgDefineBattler(name, hp, str, def, image, color, boss) {
     var nm = text(name, 'Inimigo');
+    ensureImageLoaded(image); // pré-carrega no setup (a tela de carregando espera)
     rpg.battlerDefs[nm] = {
       name: nm, hp: num(hp, 20), str: num(str, 5), def: num(def, 0),
       image: text(image, ''), color: text(color, boss ? '#b23b6e' : '#e05a5a'), boss: !!boss

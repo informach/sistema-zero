@@ -80,7 +80,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Coloca uma imagem do projeto na fila de carregamento (a tela de "carregando" espera todas). O nome é como o jogo chama essa imagem — use o mesmo nome no personagem. Se a imagem falhar, o jogo segue com um retângulo no lugar.',
+      'OPCIONAL: pré-carrega uma imagem do projeto (a tela de "carregando" espera todas) e dá um apelido a ela. Hoje não é obrigatório — os blocos de personagem/inimigo/molde já carregam a imagem do Pinta sozinhos ao escolher. Use este bloco só se quiser um apelido diferente do nome do arquivo. Se a imagem falhar, o jogo segue com um retângulo.',
   },
 
   // ---- 🖼️ Telas ----
@@ -324,7 +324,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria um personagem do jogo (herói, moeda, inimigo…). Ele nasce no centro da tela. A imagem é a que você carregou (pelo nome); sem imagem, aparece um retângulo da cor escolhida. A velocidade é em pixels por segundo.',
+      'Cria um personagem do jogo (herói, moeda, inimigo…). Ele nasce no centro da tela. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar a imagem" antes; sem imagem, aparece um retângulo da cor escolhida. A velocidade é em pixels por segundo.',
   },
   {
     type: 'sz_gk_move_with_keys',
@@ -1298,7 +1298,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). A imagem é a que você "Carregou pelo nome" (deixe vazio para um retângulo da cor). O mundo espera a batalha acabar.',
+      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O mundo espera a batalha acabar. (É a batalha por TURNOS do ⚔️ Kit RPG — para cartas use o 🃏 Kit Cartas; para bichinhos, o 👾 Kit Monstrinhos.)',
   },
   {
     type: 'sz_gk_rpg_set_special',
@@ -1386,7 +1386,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. A imagem é a que você "Carregou pelo nome" (vazio = retângulo da cor). O time fica salvo entre batalhas. Use no começo.',
+      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O time fica salvo entre batalhas. Use no começo.',
   },
   {
     type: 'sz_gk_rpg_add_foe',
@@ -1404,7 +1404,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. A imagem é a que você "Carregou pelo nome" (vazio = retângulo da cor). Use antes de "Começar a batalha".',
+      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Use antes de "Começar a batalha".',
   },
   {
     type: 'sz_gk_rpg_teach_move',
@@ -1487,7 +1487,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é a que você "Carregou pelo nome" (vazio = retângulo da cor). Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
+      'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
   },
   // ---- ⚔️ Fichas reutilizáveis: crie o inimigo separado e escolha na hora ----
   {
@@ -1508,7 +1508,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma FICHA de inimigo reutilizável: vida, força, defesa, a imagem (a que você "Carregou pelo nome") e a cor. Marque "chefão" para ele entrar MAIOR, com barra grande e coroa. Faça a ficha UMA vez no começo; depois é só ESCOLHER com quem batalhar.',
+      'Cria uma FICHA de inimigo reutilizável: vida, força, defesa, a imagem (um desenho do Pinta, escolha direto) e a cor. Marque "chefão" para ele entrar MAIOR, com barra grande e coroa. Faça a ficha UMA vez no começo; depois é só ESCOLHER com quem batalhar.',
   },
   {
     type: 'sz_gk_rpg_battle_named',
@@ -2269,7 +2269,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a arena da batalha de cartas (vida sua e do inimigo). NÃO cria deck nem cartas — isso é seu: monte o baralho com listas + o bloco "uma carta". ⚠️ Roda SÓ no estado "jogando" (não muda o estado); chame quando já estiver jogando, e já começa o seu 1º turno. Ponha o "Quando começar o meu turno"/"Quando for a vez do inimigo" NO TOPO (não dentro do "quando entrar em jogando").',
+      'Abre a arena da batalha de cartas (vida sua e do inimigo). NÃO cria deck nem cartas — isso é seu: monte o baralho com listas + o bloco "uma carta". ⚠️ Roda SÓ no estado "jogando" (não muda o estado); chame quando já estiver jogando, e já começa o seu 1º turno. Ponha o "Quando começar o meu turno"/"Quando for a vez do inimigo" NO TOPO (não dentro do "quando entrar em jogando"). (Batalha de CARTAS — para turnos com espada use o ⚔️ Kit RPG; para bichinhos, o 👾 Kit Monstrinhos.)',
   },
   {
     type: 'sz_gk_cards_energy_per_turn',
@@ -3214,7 +3214,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_pkm_creature',
     message0:
-      'Criatura %1 do tipo %2: vida %3, força %4, defesa %5, velocidade %6, imagem %7, aparência %8',
+      'Criar a criatura %1 do tipo %2: vida %3, força %4, defesa %5, velocidade %6, imagem %7, aparência %8',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Fogoso' },
       { type: 'field_name_picker', name: 'TYPE', text: 'fogo', kind: 'pkmtype' },
