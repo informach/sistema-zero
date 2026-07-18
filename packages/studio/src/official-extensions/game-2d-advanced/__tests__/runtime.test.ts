@@ -485,6 +485,7 @@ interface BattlerSnap {
   moves: number
   boss: boolean
   image: string
+  color: string
 }
 interface BattleSnap {
   phase: string
@@ -4025,6 +4026,23 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     expect(capanga?.boss).toBe(false)
   })
 
+  it('⚔️ replay de cutscene preserva a COR custom da ficha (não cai no vermelho padrão)', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 640, height: 640 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(40, 7, 0)
+    h.api.rpgDefineBattler('Slime', 20, 3, 0, '', '#22ff88', false) // cor custom, não-chefão
+    h.api.rpgCutscene(() => {
+      h.api.rpgBattleNamed('Slime') // grava um passo 'battle' que carrega a cor da ficha
+    })
+    // toca a cena: o passo de batalha abre o estado 'batalha' e espera lá.
+    for (let t = 16; t <= 400 && h.api.state() !== 'batalha'; t += 16) h.nextFrame(t)
+    expect(h.api.state()).toBe('batalha')
+    const slime = battleSnap(h)?.foes.find((f) => f.name === 'Slime')
+    expect(slime?.color).toBe('#22ff88') // sobreviveu ao record→replay (antes virava '#e05a5a')
+  })
+
   it('⚔️ batalhar contra uma ficha que não existe NÃO abre batalha (segue no mundo)', async () => {
     const h = loadRuntime()
     await startGame(h)
@@ -4189,5 +4207,28 @@ describe('SZGameKit — R30: 🃏 Kit Cartas (deck-battler)', () => {
     h.api.cardsEndTurn() // vez do inimigo (tira 6) → volta pra mim (2º meu turno)
     expect(h.api.cardsHeroLife()).toBe(24) // 30 − 6 (sem escudo neste turno)
     expect(meus).toBe(2)
+  })
+
+  it('⭐ "Jogar de novo": a batalha de cartas RESETA e a receita de turno NÃO dobra', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    let meus = 0
+    h.api.cardsOnTurn(() => {
+      meus += 1
+    }) // registrada UMA vez, no topo (como o exemplo Duelo de Cartas)
+    h.api.cardsStart(30, 40) // roda o 1º "meu turno"
+    expect(meus).toBe(1)
+    h.api.cardsHurtEnemy(40) // mato o inimigo desta partida
+    expect(h.api.cardsEnemyLife()).toBe(0)
+    // "Jogar de novo" = voltar ao menu e entrar em jogando de novo → dispara o reset.
+    h.api.setState('menu')
+    h.api.setState('jogando')
+    expect(h.api.cardsHeroLife()).toBe(0) // a batalha da partida anterior foi ZERADA (cardsNewGame)
+    // recomeçar: vida cheia (não estragada) e a receita roda 1×/turno (não 2×/3× por dobra).
+    h.api.cardsStart(30, 40)
+    expect(h.api.cardsHeroLife()).toBe(30)
+    expect(h.api.cardsEnemyLife()).toBe(40)
+    expect(meus).toBe(2) // +1 pelo 2º cardsStart; se a receita tivesse dobrado seria ≥3
   })
 })

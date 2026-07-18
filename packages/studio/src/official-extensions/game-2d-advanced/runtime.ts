@@ -401,6 +401,8 @@ export const gameKitRuntime = `(function () {
         naveNewGame();
         // 🏰 idem: ondas somem, slots liberam, moedas voltam ao inicial.
         tdNewGame();
+        // 🃏 idem: a batalha de cartas da partida anterior não sobrevive ao recomeço.
+        cardsNewGame();
         // ⚠️ TODO global de jogo entra AQUI. Os 3 abaixo escaparam quando nasceram:
         // · checkpoint — a criança marca o ponto numa bandeira no meio da fase (uso
         //   natural do bloco); sem zerar, "Jogar de novo" NASCE no meio da fase da
@@ -2299,7 +2301,12 @@ export const gameKitRuntime = `(function () {
   var handRects = (typeof WeakMap === 'function') ? new WeakMap() : null;
   function handDraw(pile, x, y, fan) {
     if (!Array.isArray(pile) || !ctx2d) return;
-    var cw = 60, ch = 84, gap = 12, n = pile.length, rects = [];
+    var cw = 60, ch = 84, gap = 12, n = pile.length;
+    // A "desenhar a mão" roda no laço de desenho (todo quadro). Reusa o array de
+    // retângulos POR pilha e os próprios objetos (cresce no lugar) — zero lixo por
+    // quadro em regime, como o depthList; só aloca quando a mão CRESCE.
+    var rects = handRects ? handRects.get(pile) : null;
+    if (!rects) { rects = []; if (handRects) handRects.set(pile, rects); }
     var bx = num(x, 0), by = num(y, 0);
     for (var i = 0; i < n; i++) {
       var rx = bx + i * (cw + gap);
@@ -2313,9 +2320,11 @@ export const gameKitRuntime = `(function () {
       ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
       ctx2d.fillText(String(face === undefined || face === null ? '' : face), rx + cw / 2, ry + ch / 2);
       ctx2d.restore();
-      rects.push({ x: rx, y: ry, w: cw, h: ch });
+      var r = rects[i];
+      if (r) { r.x = rx; r.y = ry; r.w = cw; r.h = ch; }
+      else rects[i] = { x: rx, y: ry, w: cw, h: ch };
     }
-    if (handRects) handRects.set(pile, rects);
+    rects.length = n; // descarta sobras de uma mão MAIOR de um quadro anterior
   }
   function cardAt(x, y, pile) {
     if (!Array.isArray(pile) || !handRects) return -1;
@@ -2376,6 +2385,11 @@ export const gameKitRuntime = `(function () {
     for (var i = 0; i < cards.onEnemyTurn.length; i++) { try { cards.onEnemyTurn[i](); } catch (e) { warn('erro no "Quando for a vez do inimigo": ' + e); } }
     cardsStartTurn(); // volta pra mim (reseta energia/escudo e roda o meu turno)
   }
+  // "Jogar de novo": zera a batalha de cartas (ESTADO), como lutaNewGame/tdNewGame. As
+  // receitas de turno (cardsOnTurn/cardsOnEnemyTurn) são registros — como os spawners,
+  // ficam de PÉ (o exemplo as põe no topo; quem entra em jogando re-chama cardsStart e
+  // a batalha nasce do zero). Sem isto, o Kit Cartas era a ÚNICA batalha não resetada.
+  function cardsNewGame() { cards.battle = null; }
   function cardsDrawHud() {
     if (!cards.battle || !ctx2d) return;
     var b = cards.battle;
@@ -5458,7 +5472,7 @@ export const gameKitRuntime = `(function () {
     // entra sozinho), fila de inimigos da próxima batalha, e golpes nomeados por nome.
     allies: [],           // [{name, hp, str, def, look, color}] — "Adicionar aliado"
     foeQueue: [],         // [{...}] — "Adicionar inimigo" (consumida em rpgBattleStart)
-    movesByName: {},      // nome -> [{name, dmg, cost, heal}] — "Ensinar o golpe"
+    movesByName: nameMap(), // nome -> [{name, dmg, cost, heal}] — "Ensinar o golpe" (sem protótipo: nome "constructor"/"toString" da criança não quebra)
     // Atributos do herói na batalha (Combatant do Pizza): vida/força/defesa + XP/
     // nível + energia (mana p/ o golpe especial). base* = valores iniciais (o
     // "Recomeçar" volta a eles); os correntes sobem com o nível.
@@ -5991,7 +6005,7 @@ export const gameKitRuntime = `(function () {
     else if (st.type === 'face') { rpgFace(st.who, st.dir); st._instant = true; }
     else if (st.type === 'flag') { rpgAddFlag(st.name); st._instant = true; }
     else if (st.type === 'goMap') { rpgGoMap(st.name); st._instant = true; }
-    else if (st.type === 'battle') startBattleFromDef({ name: st.name, hp: st.hp, str: st.str, def: st.def, image: st.image, color: st.boss ? '#b23b6e' : '#e05a5a', boss: st.boss });
+    else if (st.type === 'battle') startBattleFromDef({ name: st.name, hp: st.hp, str: st.str, def: st.def, image: st.image, color: st.color || (st.boss ? '#b23b6e' : '#e05a5a'), boss: st.boss });
     else if (st.type === 'menu') {
       if (st.options.length > 0) rpg.menu = { title: st.title, options: st.options, index: 0 };
       else st._instant = true;
@@ -6435,7 +6449,7 @@ export const gameKitRuntime = `(function () {
   // o replay de cutscene.
   function startBattleFromDef(d) {
     if (rpg.recording) {
-      rpg.sceneSteps.push({ type: 'battle', name: d.name, hp: d.hp, str: d.str, def: d.def, image: text(d.image, ''), boss: !!d.boss });
+      rpg.sceneSteps.push({ type: 'battle', name: d.name, hp: d.hp, str: d.str, def: d.def, image: text(d.image, ''), color: text(d.color, ''), boss: !!d.boss });
       return;
     }
     startTeamBattle(defToBattler(d, 'inimigo'));
@@ -7426,7 +7440,7 @@ export const gameKitRuntime = `(function () {
       value: function () {
         var b = rpg.battle;
         if (!b) return null;
-        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss, image: c.image }; }
+        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss, image: c.image, color: c.color }; }
         var i;
         var allies = []; for (i = 0; i < b.allies.length; i++) allies.push(snap(b.allies[i]));
         var foes = []; for (i = 0; i < b.foes.length; i++) foes.push(snap(b.foes[i]));

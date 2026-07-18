@@ -59,9 +59,13 @@ const fakeCtx = {
   measureText: () => ({ width: 10 }),
   save() {},
   restore() {},
-  translate() {},
+  translate(...a: number[]) {
+    calls.push(['translate', a])
+  },
   rotate() {},
-  scale() {},
+  scale(...a: number[]) {
+    calls.push(['scale', a])
+  },
   clearRect() {},
   setTransform() {},
   createLinearGradient: () => ({ addColorStop() {} }),
@@ -80,7 +84,10 @@ const SETUP = {
 } as unknown as JSStatement
 
 /** Compila a IR do bloco e RODA o JS resultante no runtime real. */
-async function drawViaGenerator(stmt: JSStatement): Promise<Array<[string, number[]]>> {
+async function drawViaGenerator(
+  stmt: JSStatement,
+  prep?: (api: Record<string, unknown>) => void,
+): Promise<Array<[string, number[]]>> {
   const win = {
     addEventListener() {},
     performance: { now: () => 0 },
@@ -94,6 +101,7 @@ async function drawViaGenerator(stmt: JSStatement): Promise<Array<[string, numbe
   new Function('SZGameKit', `${compileStatements([SETUP], 0)}\nSZGameKit.start();`)(api)
   await Promise.resolve()
   await Promise.resolve()
+  if (prep) prep(api) // pré-condição (ex.: definir a aparência que o drawLook desenha)
   calls = [] // só interessa o que o bloco sob teste pintar
   new Function('SZGameKit', compileStatements([stmt], 0))(api)
   return calls
@@ -140,5 +148,35 @@ describe('gk — fiação bloco→gerador→runtime (executa de verdade)', () =>
     expect(rects.some((r) => r[0] === 100 && r[1] === 40 && r[2] === 200)).toBe(true)
     // …e a barra, com 5 de 10, sai com METADE (100).
     expect(rects.some((r) => r[2] === 100)).toBe(true)
+  })
+
+  it('⭐ "Desenhar a aparência L em x50 y30 tamanho 20×40" → translate(50,30) + escala certa', async () => {
+    // drawLook(name, x, y, w, h): 5 args posicionais = a forma propensa à transposição
+    // (o motivo do drawHearts). Define uma aparência com tamanho-base 20×10 (assimétrico
+    // p/ distinguir w de h) e confere translate/scale — pega x↔y ou w↔h trocados.
+    const drawLook = {
+      type: 'gk:drawLook',
+      look: 'L',
+      x: { type: 'num', value: 50 },
+      y: { type: 'num', value: 30 },
+      w: { type: 'num', value: 20 },
+      h: { type: 'num', value: 40 },
+    } as unknown as JSStatement
+    expect(compileStatements([drawLook], 0).trim()).toBe('SZGameKit.drawLook("L", 50, 30, 20, 40);')
+
+    const painted = await drawViaGenerator(drawLook, (api) => {
+      ;(api.defineLook as (n: string, fn: () => void, bw: number, bh: number) => void)(
+        'L',
+        () => {},
+        20,
+        10,
+      )
+    })
+    const translate = painted.find((c) => c[0] === 'translate')
+    const scale = painted.find((c) => c[0] === 'scale')
+    // translate = (x, y) — não (y, x).
+    expect(translate?.[1]).toEqual([50, 30])
+    // scale = (w/baseW, h/baseH) = (20/20, 40/10) = (1, 4) — não (2, 4) nem (4, 1).
+    expect(scale?.[1]).toEqual([1, 4])
   })
 })
