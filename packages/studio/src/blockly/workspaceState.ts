@@ -3507,6 +3507,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             { LABEL: label },
           )
     }
+    case 'gk:setScreenBg':
+      return block(
+        'sz_gk_set_screen_bg',
+        { SCREEN: stmt.screen, COLOR: stmt.color, IMAGE: stmt.image },
+        {},
+        stmt.__id,
+      )
     case 'gk:showScreen':
       return block('sz_gk_show_screen', { SCREEN: stmt.name }, {}, stmt.__id)
     case 'gk:hideScreens':

@@ -6968,6 +6968,31 @@ export const gameKitRuntime = `(function () {
       }
       makeButton(entry, text(label, 'Botão'), typeof fn === 'function' ? fn : function () {});
     }),
+    // 🖼️ Deixar a tela (pronta ou sua) com a SUA cara: uma cor de fundo (o "quadrado
+    // colorido por baixo") e/ou uma imagem do Pinta cobrindo o painel. É DOM (o painel
+    // fica por cima do canvas), então mexemos no style do próprio painel.
+    setScreenBg: guard('setScreenBg', function (screen, color, image) {
+      if (!ensureShell()) return;
+      var entry = screens[text(screen, '')];
+      if (!entry) {
+        warn('a tela "' + text(screen, '') + '" não existe — crie-a antes de pôr o fundo');
+        return;
+      }
+      var c = text(color, '');
+      // backgroundColor (não o shorthand background) p/ não apagar a imagem se vier depois.
+      if (c) entry.el.style.backgroundColor = c;
+      var asset = text(image, '');
+      if (asset) {
+        var src = resolveAsset(asset);
+        if (src) {
+          entry.el.style.backgroundImage = 'url("' + src + '")';
+          entry.el.style.backgroundSize = 'cover';
+          entry.el.style.backgroundPosition = 'center';
+        } else {
+          warnOnce('screenbg:' + asset, 'a imagem "' + asset + '" não está no projeto (importe em "Imagens e sons")');
+        }
+      }
+    }),
     showScreen: guard('showScreen', showScreen),
     hideScreens: guard('hideScreens', hideScreens),
     setState: guard('setState', setState),

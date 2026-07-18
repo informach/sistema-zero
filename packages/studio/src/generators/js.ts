@@ -1634,6 +1634,8 @@ function compileStatementCode(
       )
       return `${pad}SZGameKit.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
     }
+    case 'gk:setScreenBg':
+      return `${pad}SZGameKit.setScreenBg(${JSON.stringify(stmt.screen)}, ${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.image)});`
     case 'gk:showScreen':
       return `${pad}SZGameKit.showScreen(${JSON.stringify(stmt.name)});`
     case 'gk:hideScreens':
@@ -4825,6 +4827,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:setupFull':
     case 'gk:start':
     case 'gk:loadImage':
+    case 'gk:setScreenBg':
     case 'gk:showScreen':
     case 'gk:hideScreens':
     case 'gk:setState':

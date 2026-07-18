@@ -142,6 +142,21 @@ export const gameKitBlocks = [
       'Põe um botão numa tela (pronta ou sua) e diz o que acontece no clique — mudar de estado, voltar ao menu, o que você quiser.',
   },
   {
+    type: 'sz_gk_set_screen_bg',
+    message0: 'Na tela %1, pôr fundo cor %2 e imagem %3',
+    args0: [
+      { type: 'field_name_picker', name: 'SCREEN', text: 'pausa', kind: 'screen' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#1a1e33' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Deixa uma tela (pronta ou sua) com a SUA cara: uma cor de fundo (o "quadrado colorido por baixo") e, se quiser, uma imagem do Pinta cobrindo o painel. Ótimo para telas de entrada, pausa e fim. Deixe a imagem vazia para usar só a cor.',
+  },
+  {
     type: 'sz_gk_show_screen',
     message0: 'Mostrar a tela %1',
     args0: [{ type: 'field_name_picker', name: 'SCREEN', text: 'vitoria', kind: 'screen' }],
@@ -4577,6 +4592,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_set_screen_text',
       'sz_gk_create_screen',
       'sz_gk_add_button',
+      'sz_gk_set_screen_bg',
       'sz_gk_show_screen',
       'sz_gk_hide_screens',
     ],

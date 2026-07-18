@@ -72,6 +72,7 @@ interface GameKitApi {
   setScreenText: Fn
   createScreen: Fn
   addButton: Fn
+  setScreenBg: Fn
   showScreen: Fn
   hideScreens: Fn
   setState: Fn
@@ -566,7 +567,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 331 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 332 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -579,6 +580,7 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'setScreenText',
       'createScreen',
       'addButton',
+      'setScreenBg',
       'showScreen',
       'hideScreens',
       'setState',
@@ -1149,6 +1151,19 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
     expect(clicked).toBe(1)
     expect(h.api.state()).toBe('menu')
     expect(vitoria?.classList.contains('szgk-active')).toBe(false)
+  })
+
+  it('🖼️ "pôr fundo na tela" pinta o painel de cor e é seguro sem imagem/tela', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setScreenBg('pausa', '#123456', '')
+    const pausa = document.querySelector('[data-szgk-screen="pausa"]') as HTMLElement | null
+    expect(pausa?.style.backgroundColor).toBeTruthy() // o "quadrado colorido por baixo"
+    // imagem que não está no projeto: avisa mas NÃO quebra nem seta background-image
+    expect(() => h.api.setScreenBg('pausa', '', 'nao-existe')).not.toThrow()
+    expect(pausa?.style.backgroundImage || '').toBe('')
+    // tela inexistente: no-op seguro (só avisa)
+    expect(() => h.api.setScreenBg('naoexiste', '#ffffff', '')).not.toThrow()
   })
 
   it('o botão Jogar do menu entra em "jogando" e esconde as telas', async () => {

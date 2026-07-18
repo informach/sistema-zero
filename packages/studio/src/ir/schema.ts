@@ -2765,6 +2765,13 @@ export type JSStatement =
       label: ScreenText
       body: JSStatement[]
     })
+  // 🖼️ Fundo da tela (DOM): cor + imagem opcional do Pinta cobrindo o painel.
+  | (JSStatementCommon & {
+      type: 'gk:setScreenBg'
+      screen: string
+      color: string
+      image: string
+    })
   | (JSStatementCommon & { type: 'gk:showScreen'; name: string })
   | (JSStatementCommon & { type: 'gk:hideScreens' })
   | (JSStatementCommon & { type: 'gk:setState'; name: string })
@@ -6557,6 +6564,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       body: z.array(JSStatementSchema),
       ...idField,
     }),
+    z.object({
+      type: z.literal('gk:setScreenBg'),
+      screen: irText(),
+      color: irText(),
+      image: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('gk:showScreen'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:hideScreens'), ...idField }),
     z.object({ type: z.literal('gk:setState'), name: irText(), ...idField }),
@@ -9602,6 +9616,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:setScreenText',
   'gk:createScreen',
   'gk:addButton',
+  'gk:setScreenBg',
   'gk:showScreen',
   'gk:hideScreens',
   'gk:setState',

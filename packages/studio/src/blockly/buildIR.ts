@@ -5979,6 +5979,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'BODY', seen),
         },
       }
+    case 'sz_gk_set_screen_bg':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setScreenBg',
+          screen: f(block, 'SCREEN'),
+          color: f(block, 'COLOR') || '#1a1e33',
+          image: f(block, 'IMAGE'),
+        },
+      }
     case 'sz_gk_show_screen':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:showScreen', name: f(block, 'SCREEN') } }

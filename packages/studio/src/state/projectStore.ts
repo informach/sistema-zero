@@ -926,6 +926,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_gk_set_screen_text',
     'sz_gk_create_screen',
     'sz_gk_add_button',
+    'sz_gk_set_screen_bg',
     'sz_gk_show_screen',
     'sz_gk_hide_screens',
     'sz_gk_set_state',

@@ -4669,6 +4669,21 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
           }
         : null
     }
+    case 'setScreenBg': {
+      // generator: SZGameKit.setScreenBg("tela", "cor", "imagem")
+      if (
+        args[0]?.type !== 'StringLiteral' ||
+        args[1]?.type !== 'StringLiteral' ||
+        args[2]?.type !== 'StringLiteral'
+      )
+        return null
+      return {
+        type: 'gk:setScreenBg',
+        screen: args[0].value as string,
+        color: args[1].value as string,
+        image: args[2].value as string,
+      }
+    }
     case 'showScreen': {
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'gk:showScreen', name: args[0].value as string }
