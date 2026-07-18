@@ -37,7 +37,6 @@ async function createTheme(app: App, patch: Partial<Record<string, unknown>> = {
       emoji: '🎄',
       title: 'Natal dos criadores',
       description: 'Crie um jogo natalino com presentes e neve.',
-      suggestedKit: 'Jogo 2D',
       ...patch,
     },
     adminHeaders,
@@ -125,7 +124,6 @@ describe('PUT/DELETE /members/admin/challenge/months/:month', () => {
     )
     expect(me.challenge.key).toBe('m:2026-06')
     expect(me.challenge.title).toBe('Natal dos criadores')
-    expect(me.challenge.suggestedKit).toBe('Jogo 2D')
   })
 
   test('exatamente um: os dois ou nenhum → 400', async () => {
@@ -299,7 +297,7 @@ describe('biblioteca de temas custom', () => {
       app,
       '/members/admin/challenge/themes',
       'POST',
-      { emoji: '🎯', title: '', description: 'x', suggestedKit: 'Jogo 2D' },
+      { emoji: '🎯', title: '', description: 'x' },
       adminHeaders,
     )
     expect(invalid.status).toBe(400)

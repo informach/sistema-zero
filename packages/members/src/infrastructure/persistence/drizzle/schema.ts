@@ -1027,8 +1027,6 @@ export const challengeCustomThemes = members.table('challenge_custom_themes', {
   emoji: text('emoji').notNull(),
   title: text('title').notNull(),
   description: text('description').notNull(),
-  // Obrigatório: o card kids renderiza a dica do kit incondicionalmente.
-  suggestedKit: text('suggested_kit').notNull(),
   // Arquivado sai da lista de ESCOLHA, mas segue valendo em mês que o referencia.
   archived: boolean('archived').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),

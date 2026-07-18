@@ -23,7 +23,6 @@ export interface ChallengeThemeAdminView {
   emoji: string
   title: string
   description: string
-  suggestedKit: string
   archived: boolean
   createdAt: string
   updatedAt: string
@@ -44,7 +43,6 @@ export function toChallengeThemeAdminView(
     emoji: record.emoji,
     title: record.title,
     description: record.description,
-    suggestedKit: record.suggestedKit,
     archived: record.archived,
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),

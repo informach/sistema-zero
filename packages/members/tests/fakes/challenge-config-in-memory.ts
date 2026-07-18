@@ -70,7 +70,6 @@ export class InMemoryChallengeConfigRepository implements ChallengeConfigReposit
       emoji: input.emoji,
       title: input.title,
       description: input.description,
-      suggestedKit: input.suggestedKit,
       archived: false,
       createdAt: input.now,
       updatedAt: input.now,

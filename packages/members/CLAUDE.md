@@ -117,6 +117,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > E **`0045`** (`0045_strange_marvel_apes`: `ALTER TYPE xp_source_type ADD VALUE IF NOT EXISTS
 > 'studio_activity_day'` — XP DIÁRIO de CRIAR no Estúdio Completo, ver §Missões "Retenção pós-cursos";
 > SEM tabela/coin-enum novos — é XP puro que MOVE o streak, sem moeda).
+> E **`0046`** (`0046_light_runaways`: `ALTER TABLE challenge_custom_themes DROP COLUMN suggested_kit`
+> — a "dica do kit" saiu do Desafio do mês (as sugestões confundiam mais que ajudavam; decisão da
+> usuária). O card kids não mostra mais dica; o tema agora é só emoji/título/descrição).
 > ⚠️ As migrations `0029`/`0030` têm 55P04 LATENTE num banco ZERADO (enum ADD VALUE + uso no mesmo
 > lote) — os testes de banco criam o DDL direto em vez de rodar `migrate()` do zero.
 
@@ -867,7 +870,7 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   usuária: MENSAL (1 semana é pouco p/ criança criar um jogo) e SÓ p/ quem tem
   `clube-dos-criadores` + `estudio-completo` (posse validada NO HUB no publish; o kids só
   gateia a UI). Rota do aluno **`GET /members/gamification/challenge?audience=`** →
-  `{challenge: {key, slug, emoji, title, description, suggestedKit}, entered}` (`entered`
+  `{challenge: {key, slug, emoji, title, description}, entered}` (`entered`
   via `hasXpEvent` com o sourceId determinístico). **Webhook
   `POST /members/webhooks/challenge`** (HMAC + dedupe `x-delivery-id`, padrão do
   `/showcase`): o hub avisa `{userId, accountId, audience, challengeKey}` → REVALIDA o mês
@@ -887,8 +890,9 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   cai DEFENSIVAMENTE no sorteio (o caminho do aluno nunca 500a por dado velho). Decisão da
   usuária: temas custom NUNCA entram no pool do sorteio (módulo % 12 estável).
 - **Tabelas (migração `0043_bouncy_the_renegades`)**: `challenge_custom_themes` (biblioteca
-  do professor; `suggested_kit` NOT NULL — o card kids renderiza a dica sempre; `archived`
-  esconde da ESCOLHA mas segue valendo em mês que o referencia) e `challenge_month_overrides`
+  do professor; emoji/título/descrição — a coluna `suggested_kit` foi REMOVIDA na `0046`, ver
+  abaixo; `archived` esconde da ESCOLHA mas segue valendo em mês que o referencia) e
+  `challenge_month_overrides`
   (pk `month_key`, XOR `builtin_slug`/`custom_theme_id` via CHECK, FK RESTRICT → custom não é
   deletável, só arquivável; `updated_by_user_id` = auditoria leve via `resolveOptionalUserId`,
   a trilha real é o `audit` do gateway). Port `challenge-config-repository.port.ts` + repo
