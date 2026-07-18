@@ -1,6 +1,14 @@
-import { describe, expect, it } from 'bun:test'
+import { beforeAll, describe, expect, it } from 'bun:test'
+import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
 import { SZIRSchema } from '#ir'
+import 'blockly/blocks'
+import { registerExtensionBlocks } from '../../../blockly/blocks'
+import { buildIRFromWorkspace } from '../../../blockly/buildIR'
+import { ensureBlocklyInitialized } from '../../../blockly/setup'
+import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
+import { parseJS } from '../../../parsers/js'
+import { gameTwoDBlocks } from '../blocks'
 import {
   asteroidsExample,
   cameraAdventureExample,
@@ -12,6 +20,7 @@ import {
   pongExample,
 } from '../examples'
 import { gameTwoDExtension } from '../index'
+import { gameTwoDManifest } from '../manifest'
 
 describe('game-2d — definição da extensão', () => {
   it('nível iniciante-2d — Kit facilitador, já aparece na paleta do iniciante', () => {
@@ -31,6 +40,56 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
   }
   return out
 }
+
+/**
+ * T2 — VARREDURA de TODOS os exemplos do manifest (os cards da vitrine). Antes,
+ * "Equilibrista" e "Balão" (stickHero/balloon) tinham ZERO teste e nenhum teste
+ * iterava manifest.examples — um exemplo com IR obsoleta ou rawJS vazando chegava
+ * à vitrine sem alarme. Cada card agora prova: schema válido, 0 rawJS, round-trip
+ * por BLOCOS (IR→blocos→IR sem rawJS, com todos os statements) e a Ponte
+ * (JS→IR sem rawJS). Cobre por CONSTRUÇÃO qualquer exemplo NOVO adicionado.
+ */
+describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
+  beforeAll(() => {
+    ensureBlocklyInitialized()
+    registerExtensionBlocks(gameTwoDBlocks)
+  })
+
+  it('a vitrine tem os 14 exemplos (anti-vácuo)', () => {
+    expect(gameTwoDManifest.examples.length).toBe(14)
+  })
+
+  for (const ex of gameTwoDManifest.examples) {
+    describe(ex.name, () => {
+      it('IR válido no SZIRSchema, sem rawJS', () => {
+        expect(SZIRSchema.safeParse(ex.ir).success).toBe(true)
+        expect(collectTypes(ex.ir).has('rawJS')).toBe(false)
+      })
+
+      it('round-trip por blocos (IR→blocos→IR) preserva os statements, sem rawJS', () => {
+        const state = buildWorkspaceStateFromIR(
+          ex.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+        )
+        const ws = new Blockly.Workspace()
+        try {
+          Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+          const back = buildIRFromWorkspace(ws).js
+          expect(collectTypes(back).has('rawJS')).toBe(false)
+          // Nenhum statement se perde na volta (bloco obsoleto sumiria aqui).
+          expect(back.length).toBe(ex.ir.js.length)
+        } finally {
+          ws.dispose()
+        }
+      })
+
+      it('a Ponte (JS→IR) não engole nada em rawJS', () => {
+        const code = compileStatements(ex.ir.js, 0)
+        expect(code.trim().length).toBeGreaterThan(0)
+        expect(collectTypes(parseJS(code)).has('rawJS')).toBe(false)
+      })
+    })
+  }
+})
 
 describe('pongExample (game-2d)', () => {
   it('tem IR válido contra o SZIRSchema', () => {
