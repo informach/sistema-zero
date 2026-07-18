@@ -5987,7 +5987,7 @@ export const gameKitRuntime = `(function () {
     else if (st.type === 'face') { rpgFace(st.who, st.dir); st._instant = true; }
     else if (st.type === 'flag') { rpgAddFlag(st.name); st._instant = true; }
     else if (st.type === 'goMap') { rpgGoMap(st.name); st._instant = true; }
-    else if (st.type === 'battle') rpgBattleStart(st.name, st.hp, st.str, st.def);
+    else if (st.type === 'battle') rpgBattleStart(st.name, st.hp, st.str, st.def, st.image);
     else if (st.type === 'menu') {
       if (st.options.length > 0) rpg.menu = { title: st.title, options: st.options, index: 0 };
       else st._instant = true;
@@ -6257,7 +6257,7 @@ export const gameKitRuntime = `(function () {
   // Um COMBATENTE carrega os próprios atributos (o createCharacter não tem stats de
   // luta). O herói entra a partir dos rpg.player* (progressão persiste); aliados e
   // inimigos vêm de "Adicionar aliado/inimigo"; os golpes nomeados de "Ensinar o golpe".
-  function makeBattler(name, side, hp, str, def, look, color) {
+  function makeBattler(name, side, hp, str, def, look, color, image) {
     var mx = Math.max(1, num(hp, 20));
     return {
       name: text(name, side === 'inimigo' ? 'Inimigo' : 'Aliado'), side: side,
@@ -6265,7 +6265,10 @@ export const gameKitRuntime = `(function () {
       energy: 10, maxEnergy: 10, moves: [],
       defending: false, poison: 0, regen: 0, blind: 0, alive: true,
       look: text(look, ''), color: text(color, side === 'inimigo' ? '#e05a5a' : '#4a9eff'),
-      image: '', x: 0, y: 0, w: 72, h: 72
+      // 🖼️ Imagem do combatente (a que você "Carregou pelo nome"): drawEntity a usa;
+      // sem imagem, cai no retângulo da cor. Só o herói herdava sprite — agora os
+      // inimigos/aliados/chefões também podem ter arte do Pinta.
+      image: text(image, ''), x: 0, y: 0, w: 72, h: 72
     };
   }
   function heroBattler() {
@@ -6279,7 +6282,7 @@ export const gameKitRuntime = `(function () {
     return b;
   }
   function defToBattler(def, side) {
-    var b = makeBattler(def.name, side, def.hp, def.str, def.def, def.look, def.color);
+    var b = makeBattler(def.name, side, def.hp, def.str, def.def, def.look, def.color, def.image);
     var mv = rpg.movesByName[def.name];
     if (mv) for (var i = 0; i < mv.length; i++) b.moves.push(mv[i]);
     if (def.boss) b.boss = true; // 👑 CHEFÃO: maior + barra proeminente
@@ -6302,15 +6305,15 @@ export const gameKitRuntime = `(function () {
   }
   // 🧙 Kit RPG: montar o time. rpgAddAlly = party PERSISTENTE (o herói já entra
   // sozinho); rpgAddFoe = inimigos da PRÓXIMA batalha; rpgTeachMove = golpes nomeados.
-  function rpgAddAlly(name, hp, str, def, color) {
-    rpg.allies.push({ name: text(name, 'Aliado'), hp: num(hp, 24), str: num(str, 6), def: num(def, 1), look: '', color: text(color, '#4ade80') });
+  function rpgAddAlly(name, hp, str, def, color, image) {
+    rpg.allies.push({ name: text(name, 'Aliado'), hp: num(hp, 24), str: num(str, 6), def: num(def, 1), look: '', color: text(color, '#4ade80'), image: text(image, '') });
   }
-  function rpgAddFoe(name, hp, str, def, color) {
-    rpg.foeQueue.push({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), look: '', color: text(color, '#e05a5a') });
+  function rpgAddFoe(name, hp, str, def, color, image) {
+    rpg.foeQueue.push({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), look: '', color: text(color, '#e05a5a'), image: text(image, '') });
   }
   // 👑 O CHEFÃO: um inimigo da próxima batalha desenhado MAIOR, com barra proeminente.
-  function rpgAddBoss(name, hp, str, def) {
-    rpg.foeQueue.push({ name: text(name, 'Chefão'), hp: num(hp, 120), str: num(str, 9), def: num(def, 2), look: '', color: '#b23b6e', boss: true });
+  function rpgAddBoss(name, hp, str, def, image) {
+    rpg.foeQueue.push({ name: text(name, 'Chefão'), hp: num(hp, 120), str: num(str, 9), def: num(def, 2), look: '', color: '#b23b6e', boss: true, image: text(image, '') });
   }
   // 👑 R30: ler a vida de um combatente (herói/aliado/inimigo) por NOME — a chave
   // das FASES de chefe ("se a vida do Chefe < metade: fica furioso").
@@ -6401,14 +6404,14 @@ export const gameKitRuntime = `(function () {
   function rpgGivePotion(name, heal) {
     rpg.potions.push({ name: text(name, 'Poção'), heal: Math.max(1, num(heal, 20)) });
   }
-  function rpgBattleStart(name, hp, str, def) {
-    if (rpg.recording) { rpg.sceneSteps.push({ type: 'battle', name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0) }); return; }
+  function rpgBattleStart(name, hp, str, def, image) {
+    if (rpg.recording) { rpg.sceneSteps.push({ type: 'battle', name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), image: text(image, '') }); return; }
     if (!ensureShell()) return;
     if (rpg.battle) return;
     // Aliados: o herói (dos atributos) + a party. Inimigos: o nomeado + a fila.
     var allies = [heroBattler()];
     for (var i = 0; i < rpg.allies.length; i++) allies.push(defToBattler(rpg.allies[i], 'aliado'));
-    var foes = [makeBattler(name, 'inimigo', hp, str, def, '', '#e05a5a')];
+    var foes = [makeBattler(name, 'inimigo', hp, str, def, '', '#e05a5a', image)];
     var mv = rpg.movesByName[text(name, 'Inimigo')];
     if (mv) for (var m = 0; m < mv.length; m++) foes[0].moves.push(mv[m]);
     for (var j = 0; j < rpg.foeQueue.length; j++) foes.push(defToBattler(rpg.foeQueue[j], 'inimigo'));
@@ -7355,7 +7358,7 @@ export const gameKitRuntime = `(function () {
       value: function () {
         var b = rpg.battle;
         if (!b) return null;
-        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss }; }
+        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss, image: c.image }; }
         var i;
         var allies = []; for (i = 0; i < b.allies.length; i++) allies.push(snap(b.allies[i]));
         var foes = []; for (i = 0; i < b.foes.length; i++) foes.push(snap(b.foes[i]));

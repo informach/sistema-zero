@@ -4928,8 +4928,17 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const hp = toExpr(args[1], ctx)
       const str = toExpr(args[2], ctx)
       const def = toExpr(args[3], ctx)
+      // 🖼️ imagem OPCIONAL (5º arg): presente → entra na IR; ausente → forma antiga.
+      const image = args[4]?.type === 'StringLiteral' ? (args[4].value as string) : undefined
       return isSimpleValue(hp) && isSimpleValue(str) && isSimpleValue(def)
-        ? { type: 'gk:rpgBattleStart', name: args[0].value as string, hp, str, def }
+        ? {
+            type: 'gk:rpgBattleStart',
+            name: args[0].value as string,
+            hp,
+            str,
+            def,
+            ...(image ? { image } : {}),
+          }
         : null
     }
     case 'rpgSetSpecial': {
@@ -4968,12 +4977,13 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     }
     case 'rpgAddAlly':
     case 'rpgAddFoe': {
-      // SZGameKit.rpgAddAlly("nome", hp, str, def, "cor")
+      // SZGameKit.rpgAddAlly("nome", hp, str, def, "cor", "imagem"?)
       if (args[0]?.type !== 'StringLiteral' || args[4]?.type !== 'StringLiteral') return null
       const hp = toExpr(args[1], ctx)
       const str = toExpr(args[2], ctx)
       const def = toExpr(args[3], ctx)
       if (!isSimpleValue(hp) || !isSimpleValue(str) || !isSimpleValue(def)) return null
+      const image = args[5]?.type === 'StringLiteral' ? (args[5].value as string) : undefined
       return {
         type: method === 'rpgAddAlly' ? 'gk:rpgAddAlly' : 'gk:rpgAddFoe',
         name: args[0].value as string,
@@ -4981,6 +4991,7 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         str,
         def,
         color: args[4].value as string,
+        ...(image ? { image } : {}),
       }
     }
     case 'rpgTeachMove': {
@@ -5018,13 +5029,21 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       return { type: 'gk:rpgOnBattleEnd', body: bodyOfFn(args[0], source, ctx) }
     }
     case 'rpgAddBoss': {
-      // SZGameKit.rpgAddBoss("nome", hp, str, def)
+      // SZGameKit.rpgAddBoss("nome", hp, str, def, "imagem"?)
       if (args[0]?.type !== 'StringLiteral') return null
       const hp = toExpr(args[1], ctx)
       const str = toExpr(args[2], ctx)
       const def = toExpr(args[3], ctx)
       if (!isSimpleValue(hp) || !isSimpleValue(str) || !isSimpleValue(def)) return null
-      return { type: 'gk:rpgAddBoss', name: args[0].value as string, hp, str, def }
+      const image = args[4]?.type === 'StringLiteral' ? (args[4].value as string) : undefined
+      return {
+        type: 'gk:rpgAddBoss',
+        name: args[0].value as string,
+        hp,
+        str,
+        def,
+        ...(image ? { image } : {}),
+      }
     }
     case 'rpgFoeUse': {
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null

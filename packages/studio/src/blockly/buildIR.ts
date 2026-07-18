@@ -6282,6 +6282,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           hp: exprInput(block, 'HP', { type: 'num', value: 20 }),
           str: exprInput(block, 'STR', { type: 'num', value: 5 }),
           def: exprInput(block, 'DEF', { type: 'num', value: 0 }),
+          // 🖼️ imagem OPCIONAL: só entra na IR quando preenchida (jogo antigo sem
+          // imagem round-trippa byte-idêntico).
+          ...(f(block, 'IMAGE') ? { image: f(block, 'IMAGE') } : {}),
         },
       }
     case 'sz_gk_rpg_set_special':
@@ -6336,6 +6339,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           str: exprInput(block, 'STR', { type: 'num', value: 6 }),
           def: exprInput(block, 'DEF', { type: 'num', value: 1 }),
           color: f(block, 'COLOR') || '#4ade80',
+          ...(f(block, 'IMAGE') ? { image: f(block, 'IMAGE') } : {}),
         },
       }
     case 'sz_gk_rpg_add_foe':
@@ -6349,6 +6353,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           str: exprInput(block, 'STR', { type: 'num', value: 5 }),
           def: exprInput(block, 'DEF', { type: 'num', value: 0 }),
           color: f(block, 'COLOR') || '#e05a5a',
+          ...(f(block, 'IMAGE') ? { image: f(block, 'IMAGE') } : {}),
         },
       }
     case 'sz_gk_rpg_teach_move':
@@ -6385,6 +6390,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           hp: exprInput(block, 'HP', { type: 'num', value: 120 }),
           str: exprInput(block, 'STR', { type: 'num', value: 9 }),
           def: exprInput(block, 'DEF', { type: 'num', value: 2 }),
+          ...(f(block, 'IMAGE') ? { image: f(block, 'IMAGE') } : {}),
         },
       }
     case 'sz_gk_rpg_on_foe_turn':

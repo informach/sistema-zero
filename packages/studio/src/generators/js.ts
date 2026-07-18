@@ -1759,7 +1759,7 @@ function compileStatementCode(
     case 'gk:rpgBattleStats':
       return `${pad}SZGameKit.rpgBattleStats(${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))});`
     case 'gk:rpgBattleStart':
-      return `${pad}SZGameKit.rpgBattleStart(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))});`
+      return `${pad}SZGameKit.rpgBattleStart(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}${stmt.image ? `, ${JSON.stringify(stmt.image)}` : ''});`
     case 'gk:rpgSetSpecial':
       return `${pad}SZGameKit.rpgSetSpecial(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgGivePotion':
@@ -1769,15 +1769,15 @@ function compileStatementCode(
     case 'gk:rpgInflict':
       return `${pad}SZGameKit.rpgInflict(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.status)}, ${compileExpr(valueToExpr(stmt.turns), 0, identifiers, recAt(base))});`
     case 'gk:rpgAddAlly':
-      return `${pad}SZGameKit.rpgAddAlly(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+      return `${pad}SZGameKit.rpgAddAlly(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}${stmt.image ? `, ${JSON.stringify(stmt.image)}` : ''});`
     case 'gk:rpgAddFoe':
-      return `${pad}SZGameKit.rpgAddFoe(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+      return `${pad}SZGameKit.rpgAddFoe(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}${stmt.image ? `, ${JSON.stringify(stmt.image)}` : ''});`
     case 'gk:rpgTeachMove':
       return `${pad}SZGameKit.rpgTeachMove(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgTeachHeal':
       return `${pad}SZGameKit.rpgTeachHeal(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgAddBoss':
-      return `${pad}SZGameKit.rpgAddBoss(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))});`
+      return `${pad}SZGameKit.rpgAddBoss(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))}${stmt.image ? `, ${JSON.stringify(stmt.image)}` : ''});`
     case 'gk:rpgFoeUse':
       return `${pad}SZGameKit.rpgFoeUse(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.move)});`
     case 'gk:rpgFoeHitAll':

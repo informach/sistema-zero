@@ -3729,11 +3729,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const def = exprToValueBlock(valueToExpr(stmt.def))
       return hp === null || str === null || def === null
         ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_battle_start', { NAME: stmt.name }, {}, stmt.__id, {
-            HP: hp,
-            STR: str,
-            DEF: def,
-          })
+        : block(
+            'sz_gk_rpg_battle_start',
+            { NAME: stmt.name, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
     }
     case 'gk:rpgSetSpecial': {
       const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
@@ -3772,11 +3774,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const def = exprToValueBlock(valueToExpr(stmt.def))
       return hp === null || str === null || def === null
         ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_add_ally', { NAME: stmt.name, COLOR: stmt.color }, {}, stmt.__id, {
-            HP: hp,
-            STR: str,
-            DEF: def,
-          })
+        : block(
+            'sz_gk_rpg_add_ally',
+            { NAME: stmt.name, COLOR: stmt.color, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
     }
     case 'gk:rpgAddFoe': {
       const hp = exprToValueBlock(valueToExpr(stmt.hp))
@@ -3784,11 +3788,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const def = exprToValueBlock(valueToExpr(stmt.def))
       return hp === null || str === null || def === null
         ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_add_foe', { NAME: stmt.name, COLOR: stmt.color }, {}, stmt.__id, {
-            HP: hp,
-            STR: str,
-            DEF: def,
-          })
+        : block(
+            'sz_gk_rpg_add_foe',
+            { NAME: stmt.name, COLOR: stmt.color, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
     }
     case 'gk:rpgTeachMove': {
       const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
@@ -3816,11 +3822,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const def = exprToValueBlock(valueToExpr(stmt.def))
       return hp === null || str === null || def === null
         ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_add_boss', { NAME: stmt.name }, {}, stmt.__id, {
-            HP: hp,
-            STR: str,
-            DEF: def,
-          })
+        : block(
+            'sz_gk_rpg_add_boss',
+            { NAME: stmt.name, ...(stmt.image ? { IMAGE: stmt.image } : {}) },
+            {},
+            stmt.__id,
+            { HP: hp, STR: str, DEF: def },
+          )
     }
     case 'gk:rpgOnFoeTurn':
       return block(

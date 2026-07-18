@@ -2890,6 +2890,7 @@ export type JSStatement =
       hp: number | JSExpr
       str: number | JSExpr
       def: number | JSExpr
+      image?: string
     })
   | (JSStatementCommon & { type: 'gk:rpgOnBattleEnd'; body: JSStatement[] })
   // ⚔️ Batalha rica (progressão): golpe especial (energia), poção, XP e status.
@@ -2915,6 +2916,7 @@ export type JSStatement =
       str: number | JSExpr
       def: number | JSExpr
       color: string
+      image?: string
     })
   | (JSStatementCommon & {
       type: 'gk:rpgAddFoe'
@@ -2923,6 +2925,7 @@ export type JSStatement =
       str: number | JSExpr
       def: number | JSExpr
       color: string
+      image?: string
     })
   | (JSStatementCommon & {
       type: 'gk:rpgTeachMove'
@@ -2945,6 +2948,7 @@ export type JSStatement =
       hp: number | JSExpr
       str: number | JSExpr
       def: number | JSExpr
+      image?: string
     })
   | (JSStatementCommon & { type: 'gk:rpgOnFoeTurn'; name: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:rpgFoeUse'; name: string; move: string })
@@ -6721,6 +6725,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       hp: z.union([JSExprSchema, z.number()]),
       str: z.union([JSExprSchema, z.number()]),
       def: z.union([JSExprSchema, z.number()]),
+      image: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -6755,6 +6760,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       str: z.union([JSExprSchema, z.number()]),
       def: z.union([JSExprSchema, z.number()]),
       color: irText(),
+      image: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -6764,6 +6770,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       str: z.union([JSExprSchema, z.number()]),
       def: z.union([JSExprSchema, z.number()]),
       color: irText(),
+      image: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -6788,6 +6795,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       hp: z.union([JSExprSchema, z.number()]),
       str: z.union([JSExprSchema, z.number()]),
       def: z.union([JSExprSchema, z.number()]),
+      image: irText().optional(),
       ...idField,
     }),
     z.object({

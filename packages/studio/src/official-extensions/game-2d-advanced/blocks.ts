@@ -1270,19 +1270,20 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_battle_start',
-    message0: 'Começar a batalha contra %1 com vida %2 , força %3 e defesa %4',
+    message0: 'Começar a batalha contra %1 com vida %2, força %3, defesa %4 e imagem %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Dragão' },
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'STR', check: 'JSValue' },
       { type: 'input_value', name: 'DEF', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). O mundo espera a batalha acabar.',
+      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). A imagem é a que você "Carregou pelo nome" (deixe vazio para um retângulo da cor). O mundo espera a batalha acabar.',
   },
   {
     type: 'sz_gk_rpg_set_special',
@@ -1356,37 +1357,39 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_add_ally',
-    message0: 'Adicionar aliado %1 com vida %2, força %3, defesa %4, cor %5',
+    message0: 'Adicionar aliado %1 com vida %2, força %3, defesa %4, cor %5, imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Guerreiro' },
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'STR', check: 'JSValue' },
       { type: 'input_value', name: 'DEF', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#4ade80' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. O time fica salvo entre batalhas. Use no começo.',
+      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. A imagem é a que você "Carregou pelo nome" (vazio = retângulo da cor). O time fica salvo entre batalhas. Use no começo.',
   },
   {
     type: 'sz_gk_rpg_add_foe',
-    message0: 'Adicionar inimigo %1 com vida %2, força %3, defesa %4, cor %5',
+    message0: 'Adicionar inimigo %1 com vida %2, força %3, defesa %4, cor %5, imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Capanga' },
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'STR', check: 'JSValue' },
       { type: 'input_value', name: 'DEF', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#e05a5a' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. Use antes de "Começar a batalha".',
+      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. A imagem é a que você "Carregou pelo nome" (vazio = retângulo da cor). Use antes de "Começar a batalha".',
   },
   {
     type: 'sz_gk_rpg_teach_move',
@@ -1456,19 +1459,20 @@ export const gameKitBlocks = [
   // ---- 👑 R30: chefes e chefões da batalha por turnos ----
   {
     type: 'sz_gk_rpg_add_boss',
-    message0: 'Pôr o CHEFÃO %1 (vida %2, força %3, defesa %4)',
+    message0: 'Pôr o CHEFÃO %1 (vida %2, força %3, defesa %4, imagem %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Dragão' },
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'STR', check: 'JSValue' },
       { type: 'input_value', name: 'DEF', check: 'JSValue' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: '' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. O chefe da fase. Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
+      'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é a que você "Carregou pelo nome" (vazio = retângulo da cor). Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
   },
   {
     type: 'sz_gk_battler_life',

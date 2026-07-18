@@ -480,6 +480,7 @@ interface BattlerSnap {
   def: number
   moves: number
   boss: boolean
+  image: string
 }
 interface BattleSnap {
   phase: string
@@ -3964,6 +3965,22 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     const now = h.api.battlerLife('Você')
     h.api.rpgFoeUse('Ogro', 'GolpeInexistente') // golpe que ele NÃO tem: no-op + aviso
     expect(h.api.battlerLife('Você')).toBe(now)
+  })
+
+  it('🖼️ inimigo/chefão/aliado entram na batalha com a IMAGEM escolhida (não só cor)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(30, 7, 0)
+    h.api.rpgAddAlly('Mago', 40, 6, 1, '#4ade80', 'mago-png') // aliado com arte
+    h.api.rpgAddBoss('Dragão', 200, 9, 2, 'dragao-png') // o chefão com arte
+    h.api.rpgBattleStart('Capanga', 20, 3, 0, 'capanga-png') // o inimigo nomeado com arte
+    const snap = battleSnap(h)
+    expect(snap?.foes.find((f) => f.name === 'Capanga')?.image).toBe('capanga-png')
+    expect(snap?.foes.find((f) => f.name === 'Dragão')?.image).toBe('dragao-png')
+    expect(snap?.allies.find((a) => a.name === 'Mago')?.image).toBe('mago-png')
+    // Sem imagem segue vazio (cai no retângulo da cor) — não quebra o herói.
+    expect(snap?.allies.find((a) => a.name === 'Você')?.image).toBe('')
   })
 
   it('a IA de chefe manda na vez dele: "acerta TODO o time" atinge todos os aliados', async () => {
