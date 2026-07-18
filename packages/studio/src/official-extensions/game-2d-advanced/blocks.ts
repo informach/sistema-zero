@@ -2067,7 +2067,7 @@ export const gameKitBlocks = [
     colour: C,
     tooltip: 'Saiu por um lado, aparece no outro — o Pac-Man e o Asteroids.',
   },
-  // ---- 🧩 Tabuleiro / grade (Snake, Match-3, Sokoban, puzzles) ----
+  // ---- 🧩 Grade (Snake, Match-3, Sokoban, puzzles) ----
   {
     type: 'sz_gk_board_create',
     message0: 'Criar o tabuleiro %1 com %2 colunas × %3 linhas (vazio = %4)',
@@ -4746,7 +4746,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     // 🎲 GERAL (R30): as peças de JOGO DE TABULEIRO — a criança monta o Ludo/Jogo
     // da Vida. Ordem de turno (anel) + a trilha de CASAS (estende 🛤️ Caminhos:
     // cada "ponto" vira uma casa). O dado mora na 🎲 Sorte & medida.
-    name: '🎲 Turnos & tabuleiro',
+    name: '🎲 Jogo de tabuleiro',
     colour: C,
     types: [
       'sz_gk_players_setup',
@@ -4785,7 +4785,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   {
     // 🧩 GERAL: uma grade nomeada de células (a criança varre com "repita" +
     // ler/pôr). Destrava Snake, Match-3, Sokoban, campo-minado, puzzles de grade.
-    name: '🧩 Tabuleiro',
+    name: '🧩 Grade',
     colour: C,
     types: [
       'sz_gk_board_create',

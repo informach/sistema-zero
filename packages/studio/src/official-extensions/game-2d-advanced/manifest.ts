@@ -23,7 +23,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.35.1',
+  version: '0.36.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -500,7 +500,7 @@ raro, o crítico. **a distância entre … e …** é a conta central do stealth
 detecção), da torre (alcance) e do inimigo que só persegue se estiver perto. **o
 ponto x y está dentro de …?** junta com "o mouse x/y" e você tem point-and-click,
 cartas e tower defense (detectar O CLIQUE). Para jogos de GRADE (match-3, Cobrinha,
-Sokoban, campo-minado), a peça que faltava é o **🧩 Tabuleiro** — uma grade nomeada
+Sokoban, campo-minado), a peça que faltava é a **🧩 Grade** — uma grade nomeada
 que você lê e escreve por (coluna, linha).
 
 **um vivo qualquer do molde …** sorteia UM dos vivos do enxame (irmão do "o mais
@@ -513,7 +513,7 @@ o inimigo com mais vida, o mais baixo na tela, o mais avançado no caminho. É
 assim que a torre de defesa mira no "líder" da fila. Sem nenhum vivo, devolve
 nada.
 
-### 🧩 Tabuleiro (jogos de grade)
+### 🧩 Grade (jogos de grade)
 
 Uma grade NOMEADA de células que você lê e escreve por (coluna, linha) — a peça
 que faltava para Cobrinha, Match-3, Sokoban, campo-minado e puzzles.
@@ -567,7 +567,7 @@ quanto ele já andou, de 0 a 100 — é assim que você sabe QUEM chegou (dentro
 Serve para o inimigo de defesa de torre, a patrulha, a esteira, o NPC num trilho
 de cena, a corrida.
 
-### 🎲 Turnos & tabuleiro
+### 🎲 Jogo de tabuleiro
 
 As peças para MONTAR um Ludo, Jogo da Vida ou Banco Imobiliário — a criança liga
 a lógica, como sempre.
@@ -666,7 +666,7 @@ Alguns clássicos não precisam de bloco novo — saem da combinação certa:
 - **Colecionável semeado no mapa:** um laço que varre as células; onde a peça é a
   marcada, "Nascer" uma moeda ali e apagar a peça — espalha itens pelo mapa
   desenhado no Pinta.
-- **Cobrinha (Snake):** um 🧩 Tabuleiro marca onde está o corpo; a cada passo, ande
+- **Cobrinha (Snake):** uma 🧩 Grade marca onde está o corpo; a cada passo, ande
   a cabeça uma célula, marque a nova e apague a cauda. Comeu a maçã = não apaga a
   cauda (cresce). Bateu na parede ou no próprio corpo = perdeu.
 - **Quebra-blocos (Breakout):** a bola com velocidade + "quicar nas bordas" +

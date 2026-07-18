@@ -302,7 +302,7 @@ API global injetada como window.SZGameKit:
   emit "caminho:fim"; QUEM chegou = no forEach, "se pathProgress(item)===100".
   Serve tower defense/patrulha/esteira/cutscene em trilho/corrida. Pontos podem
   ficar fora da tela.
-- 🎲 Turnos & tabuleiro (R30 — Ludo/Jogo da Vida; a criança MONTA): rollDice(lados)
+- 🎲 Jogo de tabuleiro (R30 — Ludo/Jogo da Vida; a criança MONTA): rollDice(lados)
   = sorteia 1..lados (o dado, em 🎲 Sorte & medida). Ordem de turno (anel):
   playersSetup(n) · currentPlayer() (a vez, 1..n) · nextPlayer() (rodízio; volta ao 1)
   · onTurnChange(fn). Trilha de CASAS (reusa 🛤️: cada pathPoint é uma casa):
@@ -367,7 +367,7 @@ API global injetada como window.SZGameKit:
   peca, folha) = mapa por CÓDIGO (masmorra sorteada) → setTileAt num laço.
   moveWithCustomKeys(quem, cima, baixo, esq, dir, dt) = 2º jogador (o moveWithKeys
   tem WASD E setas no MESMO personagem).
-- 🧩 Tabuleiro (GERAL — a grade nomeada dos jogos de grade; Snake/Match-3/Sokoban/
+- 🧩 Grade (GERAL — a grade nomeada dos jogos de grade; Snake/Match-3/Sokoban/
   campo-minado/puzzle): boardCreate(nome, cols, rows, vazio) cria a grade cheia do
   valor "vazio" (0, "", "grama"…); boardSet(nome, valor, col, row) grava numa
   célula (fora da grade = ignora); boardGet(nome, col, row) lê (fora = o "vazio");

@@ -6593,7 +6593,7 @@ export const meuPrimeiroJogoExample: ExtensionExample = {
 }
 
 /**
- * Exemplo "Cobrinha" 🐍 (R29): a vitrine do 🧩 Tabuleiro. A grade guarda, em cada
+ * Exemplo "Cobrinha" 🐍 (R29): a vitrine da 🧩 Grade. A grade guarda, em cada
  * celula, por quantos PASSOS ela ainda e corpo (a cabeca marca `tamanho`, tudo
  * decai 1/passo, 0 = vazio) — Snake SEM lista, so com boardGet/boardSet + os lacos
  * do nucleo. Comer a maca aumenta `tamanho`. IR do parser (one-off), asset-free.
@@ -6601,7 +6601,7 @@ export const meuPrimeiroJogoExample: ExtensionExample = {
 export const cobrinhaExample: ExtensionExample = {
   name: 'Cobrinha',
   description:
-    'A cobrinha classica montada num 🧩 Tabuleiro: cada celula guarda por quantos passos faz parte do corpo. Vire com as SETAS, coma as macas e cresca. Bateu na parede ou no proprio corpo, perdeu. Prova o primitivo de grade (sem lista, sem magica).',
+    'A cobrinha classica montada numa 🧩 Grade: cada celula guarda por quantos passos faz parte do corpo. Vire com as SETAS, coma as macas e cresca. Bateu na parede ou no proprio corpo, perdeu. Prova o primitivo de grade (sem lista, sem magica).',
   ir: {
     html: [],
     css: [],

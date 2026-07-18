@@ -2244,7 +2244,7 @@ export const gameKitRuntime = `(function () {
     ball.vx = off * speed;
   }
 
-  // ---- 🧩 Tabuleiro / grade (Snake, Match-3, Sokoban, campo-minado, puzzles) ----
+  // ---- 🧩 Grade (Snake, Match-3, Sokoban, campo-minado, puzzles) ----
   // Uma grade NOMEADA de células; a criança varre com "repita" do núcleo + ler/pôr.
   var boards = Object.create(null); // nome -> {cols, rows, empty, cells:[]} (flat row*cols+col)
   function boardAt(name) { return boards[text(name, 'tabuleiro')] || null; }
