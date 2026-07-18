@@ -1198,7 +1198,10 @@ function compileStatementCode(
       return `${pad}SZGame2D.drawParticles(${identifiers.get(stmt.ctxVar)});`
     case 'g2d:createTileMap': {
       const v = identifiers.get(stmt.varName)
-      return `${pad}const ${v} = SZGame2D.createTileMap({ image: ${JSON.stringify(stmt.image)}, tile: ${compileExpr(valueToExpr(stmt.tile), 0, identifiers, recAt(base))}, solid: ${JSON.stringify(stmt.solid)}, grid: ${JSON.stringify(stmt.grid)} });`
+      // `platform` só é emitido quando presente (mapas sem plataforma ficam
+      // byte-idênticos aos fixtures antigos).
+      const platformPart = stmt.platform ? `, platform: ${JSON.stringify(stmt.platform)}` : ''
+      return `${pad}const ${v} = SZGame2D.createTileMap({ image: ${JSON.stringify(stmt.image)}, tile: ${compileExpr(valueToExpr(stmt.tile), 0, identifiers, recAt(base))}, solid: ${JSON.stringify(stmt.solid)}${platformPart}, grid: ${JSON.stringify(stmt.grid)} });`
     }
     case 'g2d:createTileMapFromAsset':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createTileMapFromAsset(${JSON.stringify(stmt.image)});`

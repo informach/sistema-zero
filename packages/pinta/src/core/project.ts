@@ -148,6 +148,11 @@ export interface TilesetAsset extends PintaAssetBase {
   tiles: PintaBitmap[]
   /** Paralelo a `tiles`: alimenta a lista de "tiles sólidos" do bloco. */
   solid: boolean[]
+  /**
+   * Paralelo a `tiles`: peça PLATAFORMA (one-way — pisa por cima, atravessa por
+   * baixo). Mutuamente exclusivo com `solid` (sólido vence no conflito).
+   */
+  platform: boolean[]
 }
 
 export interface TilemapLayer {
@@ -194,6 +199,11 @@ export interface VectorTilesetAsset extends PintaAssetBase {
   tiles: VectorFrame[]
   /** Paralelo a `tiles`: alimenta a lista de "tiles sólidos" do bloco. */
   solid: boolean[]
+  /**
+   * Paralelo a `tiles`: peça PLATAFORMA (one-way — pisa por cima, atravessa por
+   * baixo). Mutuamente exclusivo com `solid` (sólido vence no conflito).
+   */
+  platform: boolean[]
 }
 
 export type PintaAsset =
@@ -387,6 +397,7 @@ export function createTilesetAsset(input: {
     paletteId: input.paletteId ?? DEFAULT_PALETTE_ID,
     tiles: [createBitmap(tileSize, tileSize)],
     solid: [false],
+    platform: [false],
   }
 }
 
@@ -469,6 +480,7 @@ export function createVectorTilesetAsset(input: {
     tileSize,
     tiles: [[]],
     solid: [false],
+    platform: [false],
   }
 }
 
@@ -685,6 +697,9 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (tiles.length === 0) return null
       const rawSolid = Array.isArray(record.solid) ? record.solid : []
       const solid = tiles.map((_, i) => rawSolid[i] === true)
+      const rawPlatform = Array.isArray(record.platform) ? record.platform : []
+      // Exclusividade: sólido vence; ausente (asset antigo) → tudo falso.
+      const platform = tiles.map((_, i) => rawPlatform[i] === true && solid[i] !== true)
       const extraColors = sanitizeExtraColors(record.extraColors)
       return {
         ...base,
@@ -694,6 +709,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         ...(extraColors ? { extraColors } : {}),
         tiles,
         solid,
+        platform,
       }
     }
     case 'tilemap': {
@@ -767,7 +783,9 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       if (tiles.length === 0) return null
       const rawSolid = Array.isArray(record.solid) ? record.solid : []
       const solid = tiles.map((_, i) => rawSolid[i] === true)
-      return { ...base, kind: 'vector-tileset', tileSize: record.tileSize, tiles, solid }
+      const rawPlatform = Array.isArray(record.platform) ? record.platform : []
+      const platform = tiles.map((_, i) => rawPlatform[i] === true && solid[i] !== true)
+      return { ...base, kind: 'vector-tileset', tileSize: record.tileSize, tiles, solid, platform }
     }
     default:
       return null

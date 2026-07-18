@@ -1291,12 +1291,13 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_create_tilemap',
     message0:
-      'Criar mapa de tiles %1 com imagem %2, tamanho do tile %3 px, tiles sólidos %4, grade %5',
+      'Criar mapa de tiles %1 com imagem %2, tamanho do tile %3 px, tiles sólidos %4, tiles plataforma %5, grade %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'mapa' },
       { type: 'field_asset_picker', name: 'IMAGE', text: 'tileset' },
       { type: 'input_value', name: 'TILE', check: 'JSValue' },
       { type: 'field_solid_tiles_picker', name: 'SOLID', text: '1' },
+      { type: 'field_solid_tiles_picker', name: 'PLATFORM', text: '', variant: 'platform' },
       { type: 'field_tile_grid', name: 'GRID', text: '0 0 0 0;0 0 0 0;1 1 1 1' },
     ],
     inputsInline: true,
@@ -1304,7 +1305,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta um mapa de tiles a partir de uma imagem (o tileset, com vários quadros lado a lado). O "tamanho do tile" é o tamanho de cada quadro NA ARTE (o Pinta já sugere) — na tela o mapa se AJUSTA sozinho para encaixar no canvas. Cada número da GRADE escolhe um quadro do tileset; use ";" para separar as linhas e espaço entre os números. Use "." para uma célula vazia. Em "tiles sólidos", toque nos tiles que barram o jogador (ou liste os números) — os sólidos do Pinta já vêm sugeridos.',
+      'Monta um mapa de tiles a partir de uma imagem (o tileset, com vários quadros lado a lado). O "tamanho do tile" é o tamanho de cada quadro NA ARTE (o Pinta já sugere) — na tela o mapa se AJUSTA sozinho para encaixar no canvas. Cada número da GRADE escolhe um quadro do tileset; use ";" para separar as linhas e espaço entre os números. Use "." para uma célula vazia. Em "tiles sólidos", toque nos tiles que barram o jogador. Em "tiles plataforma", toque nos que dá para PISAR por cima e passar por baixo (estilo Mario) — os sólidos e plataformas do Pinta já vêm sugeridos.',
   },
   {
     type: 'sz_g2d_draw_tilemap',

@@ -21,15 +21,17 @@ import { paintBitmap } from '../../pixel/render'
 import { persistAsset } from '../../state/persistence'
 import {
   addTile,
+  cycleCollision,
   duplicateTile,
   remapTilemapCells,
   removeTile,
-  toggleSolid,
+  type TileCollision,
+  tileCollisionAt,
 } from '../../tiles/tilesetOps'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { usePintaApp } from '../appContext'
 import { ToolButton } from '../ui/Button'
-import { BrickWall, Copy, Plus, Trash2 } from '../ui/icons'
+import { ArrowUpToLine, BrickWall, Copy, Plus, Trash2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 
@@ -54,17 +56,46 @@ function PixelTileThumb({
   )
 }
 
+/** Selo de colisão no canto da peça: 🧱 sólido (vermelho) / ⬆️ plataforma (âmbar). */
+export function TileCollisionBadge({
+  collision,
+}: {
+  collision: TileCollision
+}): JSX.Element | null {
+  if (collision === 'solid') {
+    return (
+      <span
+        aria-hidden="true"
+        className="absolute right-0 bottom-0 rounded-tl-lg bg-pin-surface/85 p-0.5 text-pin-danger"
+      >
+        <BrickWall className="size-3" />
+      </span>
+    )
+  }
+  if (collision === 'platform') {
+    return (
+      <span
+        aria-hidden="true"
+        className="absolute right-0 bottom-0 rounded-tl-lg bg-pin-collision-platform/85 p-0.5 text-pin-text"
+      >
+        <ArrowUpToLine className="size-3" />
+      </span>
+    )
+  }
+  return null
+}
+
 function TileThumbButton({
   index,
   selected,
-  solid,
+  collision,
   label,
   onSelect,
   children,
 }: {
   index: number
   selected: boolean
-  solid: boolean
+  collision: TileCollision
   label: string
   onSelect: () => void
   children: JSX.Element
@@ -87,16 +118,15 @@ function TileThumbButton({
       >
         {index}
       </span>
-      {solid ? (
-        <span
-          aria-hidden="true"
-          className="absolute right-0 bottom-0 rounded-tl-lg bg-pin-surface/85 p-0.5 text-pin-text"
-        >
-          <BrickWall className="size-3" />
-        </span>
-      ) : null}
+      <TileCollisionBadge collision={collision} />
     </button>
   )
+}
+
+const COLLISION_LABEL: Record<TileCollision, string> = {
+  none: COPY.tiles.collisionNone,
+  solid: COPY.tiles.collisionSolid,
+  platform: COPY.tiles.collisionPlatform,
 }
 
 export function TileStrip({ className }: { className?: string }): JSX.Element | null {
@@ -109,6 +139,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
 
   if (!isTilesetKind(asset)) return null
   const selectedIndex = Math.min(frameIndex, asset.tiles.length - 1)
+  const selectedCollision = tileCollisionAt(asset, selectedIndex)
 
   /** Persiste o remap nos MAPAS deste tileset (best-effort, fora do undo). */
   function remapMaps(change: { insertedAt: number } | { removedAt: number }): void {
@@ -155,7 +186,7 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
             key={index}
             index={index}
             selected={index === selectedIndex}
-            solid={asset.solid[index] === true}
+            collision={tileCollisionAt(asset, index)}
             label={`Peça ${index}`}
             onSelect={() => session.getState().selectFrame(index)}
           >
@@ -210,10 +241,10 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
           }
         />
         <ToolButton
-          icon={BrickWall}
-          label={COPY.tiles.solid}
-          active={asset.solid[selectedIndex] === true}
-          onClick={() => mutate((tileset) => ({ next: toggleSolid(tileset, selectedIndex) }))}
+          icon={selectedCollision === 'platform' ? ArrowUpToLine : BrickWall}
+          label={`${COPY.tiles.cycleCollision} — ${COLLISION_LABEL[selectedCollision]}`}
+          active={selectedCollision !== 'none'}
+          onClick={() => mutate((tileset) => ({ next: cycleCollision(tileset, selectedIndex) }))}
         />
       </div>
     </div>

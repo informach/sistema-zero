@@ -2372,7 +2372,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block(
             'sz_g2d_create_tilemap',
-            { NAME: stmt.varName, IMAGE: stmt.image, SOLID: stmt.solid, GRID: stmt.grid },
+            {
+              NAME: stmt.varName,
+              IMAGE: stmt.image,
+              SOLID: stmt.solid,
+              PLATFORM: stmt.platform ?? '',
+              GRID: stmt.grid,
+            },
             {},
             stmt.__id,
             { TILE: tile },

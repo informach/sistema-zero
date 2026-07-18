@@ -448,6 +448,21 @@ grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` tam
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
 extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest HOJE está em **`0.23.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
+**Colisão PLATAFORMA one-way (lote MapperMate F2, 18/07):** o metadado de tileset/tilemap ganhou
+**`platform?: number[]`** (índices de peça one-way: pisa por cima CAINDO, atravessa por baixo/subindo).
+`ProjectTilesetMeta`/`ProjectTilemapMeta` + `sanitizeTilesetMeta`/`sanitizeTilemapMeta` (`core/project.ts`)
+parseiam `platform` com a régua do `solid` (dedup/sort/cap), **removendo os já-sólidos** (sólido vence)
+e OMITINDO a chave quando vazia (payload antigo byte-idêntico). Runtime **game-2d**: `createTileMap`
+ganha `platform` (filtra já-sólidos), `createTileMapFromAsset` serializa `meta.platform`, `isPlatformCell`
++ ramo one-way em `collideTileMap` (só caindo, pé anterior = `y+h-vy` ≤ topo). Runtime **gk**: `loadTilemap`/
+`createEmptyTilemap` montam `m.platform`, `collideTilemapPlatform` clona o cruzamento de plano do
+`oneWayPlatform` (feet × feet+vy·dt, respeita `_dropT`/dropThrough). Bloco "Criar mapa de tiles" ganhou
+campo irmão **`PLATFORM`** (`field_solid_tiles_picker variant:'platform'` — texto/selo ⬆️/preset
+"Plataformas do Pinta"; cadeia IR completa com emissão condicional = fixtures byte-estáveis). O caminho
+de 1-clique (`sz_g2d_create_tilemap_from_asset`/`sz_gk_load_tilemap`) usa o meta direto, ZERO bloco novo.
+manifests: game-2d `0.27.0`, gk `0.28.0`. Testes: `assetMeta.test.ts`, `tilemapFromAsset.test.ts`
+(4 casos one-way), gk `runtime.test.ts` (2 casos).
+
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +
 `attachAnimationNameWatcher`, espelho do thumb-watcher; registrado no inject do `BlocklyPanel` + no

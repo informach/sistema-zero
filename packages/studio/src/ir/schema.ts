@@ -2082,6 +2082,8 @@ export type JSStatement =
       image: string
       tile: number | JSExpr
       solid: string
+      /** Índices de tile PLATAFORMA (one-way). Opcional — omitido quando vazio. */
+      platform?: string
       grid: string
     })
   // Mapa PRONTO do Pinta/fatiador: tudo (grade/peças/sólidos) vem do metadado
@@ -5485,6 +5487,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       image: irText(),
       tile: z.union([JSExprSchema, z.number()]),
       solid: irText(),
+      platform: irText().optional(),
       grid: irText(),
       ...idField,
     }),

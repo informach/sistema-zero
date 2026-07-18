@@ -209,6 +209,11 @@ export const COPY = {
     duplicateTile: 'Duplicar peça',
     removeTile: 'Apagar peça',
     solid: 'Peça sólida (o personagem não atravessa)',
+    // Colisão por peça (ciclo livre → sólido → plataforma)
+    cycleCollision: 'Mudar a colisão da peça',
+    collisionNone: 'Peça livre (o personagem atravessa)',
+    collisionSolid: 'Peça sólida (o personagem não atravessa)',
+    collisionPlatform: 'Peça plataforma (pisa por cima, passa por baixo)',
     tileLimit: 'Você chegou ao limite de peças.',
     layers: 'Camadas',
     addLayer: 'Nova camada',

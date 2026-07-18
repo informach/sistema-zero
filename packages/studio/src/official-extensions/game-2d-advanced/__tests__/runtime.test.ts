@@ -343,10 +343,16 @@ interface Harness {
 
 /** Mapa de tiles falso no formato do Pinta. O runtime lê o ASSET_META UMA vez, no
  * boot do IIFE — por isso ele entra aqui e não depois. `grid` usa "." p/ vazio. */
-function fakeTilemapAsset(grid: string, solid: number[], tileSize = 64) {
+function fakeTilemapAsset(grid: string, solid: number[], tileSize = 64, platform?: number[]) {
   return {
     mapa: {
-      tilemap: { grid, solid, tileSize, tileset: { dataUrl: 'data:image/png;base64,AA==' } },
+      tilemap: {
+        grid,
+        solid,
+        ...(platform ? { platform } : {}),
+        tileSize,
+        tileset: { dataUrl: 'data:image/png;base64,AA==' },
+      },
     },
   }
 }
@@ -2600,6 +2606,32 @@ describe('SZGameKit — R12: Kit Plataforma', () => {
     h.api.platformerHero(c, 240, 660, 1 / 60)
     h.api.climbLadder(c, 'mundo', 2, 160)
     expect(h.api.velocityOf(c, 'y')).toBeGreaterThan(0)
+  })
+
+  it('⭐ tile PLATAFORMA (one-way): cai por cima e POUSA, sobe por baixo e ATRAVESSA', async () => {
+    // linha 0 vazia, linha 1 é PLATAFORMA (peça 2, one-way). tile 64.
+    const h = loadRuntime(fakeTilemapAsset('. . .\n2 2 2', [], 64, [2]))
+    h.api.setup({ width: 800, height: 600 })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.loadTilemap('mundo', 'mapa')
+    h.nextFrame(16) // estabelece currentDt (~0.016) p/ o cruzamento de plano
+    const c = h.api.createCharacter({ w: 32, h: 32 })
+
+    // CAINDO por cima: pé (62) acima do topo da plataforma (64), vy>0 → pousa.
+    h.api.placeCharacter(c, 80, 30) // bottom = 62
+    h.api.setVelocity(c, 0, 600)
+    h.api.collideTilemap(c, 'mundo')
+    expect(c.y).toBe(32) // topo(64) - altura(32) → em cima da plataforma
+    expect(h.api.velocityOf(c, 'y')).toBe(0)
+    expect((c as { onGround?: boolean }).onGround).toBe(true)
+
+    // SUBINDO por baixo (vy<0): atravessa (não segura).
+    h.api.placeCharacter(c, 80, 80) // dentro da faixa da plataforma
+    h.api.setVelocity(c, 0, -600)
+    h.api.collideTilemap(c, 'mundo')
+    expect(c.y).toBe(80) // intacto
+    expect(h.api.velocityOf(c, 'y')).toBe(-600)
   })
 
   it('⭐ contrato do pool: reciclado NÃO herda o estado de plataforma', async () => {

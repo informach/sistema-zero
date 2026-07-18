@@ -75,6 +75,34 @@ describe('metadados da ponte (puros, sem raster)', () => {
     expect(tilesetMetaFrom(8, [])).toEqual({ tileSize: 8, solid: [] })
   })
 
+  it('tilesetMetaFrom emite platform SÓ quando há plataforma (retrocompat: omitido quando vazio)', () => {
+    // sem plataforma → chave AUSENTE (payload byte-idêntico ao de antes)
+    expect(tilesetMetaFrom(16, [true, false], [false, false])).toEqual({
+      tileSize: 16,
+      solid: [0],
+    })
+    // com plataforma → chave presente
+    expect(tilesetMetaFrom(16, [true, false, false], [false, true, false])).toEqual({
+      tileSize: 16,
+      solid: [0],
+      platform: [1],
+    })
+  })
+
+  it('tilemapMetaFrom leva platform quando o tileset tem peça plataforma', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    tileset.tiles.push({ ...tileset.tiles[0] } as (typeof tileset.tiles)[number])
+    tileset.solid.push(false)
+    tileset.platform.push(false)
+    tileset.solid[0] = true
+    tileset.platform[1] = true
+    const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 32, height: 16 }
+    const meta = tilemapMetaFrom(tilemap, tileset, sheet)
+    expect(meta.solid).toEqual([0])
+    expect(meta.platform).toEqual([1])
+  })
+
   it('tilemapMetaFrom junta grade (formato do Estúdio) + sólidos + folha embutida', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     tileset.solid[1] = true

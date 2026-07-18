@@ -25,7 +25,8 @@ describe('UI de tiles (F4)', () => {
       expect(screen.getByText(COPY.tiles.tiles)).toBeTruthy()
     })
     expect(screen.getByRole('button', { name: 'Peça 0' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: COPY.tiles.solid })).toBeTruthy()
+    // Botão de colisão (ciclo livre → sólido → plataforma), rótulo dinâmico.
+    expect(screen.getByRole('button', { name: new RegExp(COPY.tiles.cycleCollision) })).toBeTruthy()
 
     // Nova peça entra e vira a selecionada.
     fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addTile }))

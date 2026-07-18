@@ -264,6 +264,31 @@ describe('helpers de estilo/papel', () => {
     expect(out?.kind === 'tileset' && out.solid).toEqual([true])
   })
 
+  it('tileset: platform round-trippa; ausente → tudo falso; conflito → sólido vence', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const tiles = [createBitmap(16, 16), createBitmap(16, 16), createBitmap(16, 16)]
+    // tile 0 sólido, tile 1 plataforma, tile 2 conflito (os dois true → sólido)
+    const out = sanitizePintaAsset({
+      ...tileset,
+      tiles,
+      solid: [true, false, true],
+      platform: [true, true, true],
+    })
+    expect(out?.kind).toBe('tileset')
+    if (out?.kind !== 'tileset') return
+    expect(out.solid).toEqual([true, false, true])
+    expect(out.platform).toEqual([false, true, false]) // 0 e 2 perdem p/ sólido
+
+    // Asset ANTIGO (sem platform) sanitiza para tudo-falso.
+    const old = sanitizePintaAsset({
+      ...tileset,
+      tiles,
+      solid: [true, false, false],
+      platform: undefined,
+    })
+    expect(old?.kind === 'tileset' && old.platform).toEqual([false, false, false])
+  })
+
   it('extraColors: normaliza, deduplica e corta no teto; lixo cai', () => {
     const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
     const out = sanitizePintaAsset({

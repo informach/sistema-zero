@@ -35,9 +35,13 @@ interface TilesetInfo {
   asset: ProjectAsset
   tileSize: number
   solid: number[]
+  platform: number[]
   cols: number
   count: number
 }
+
+/** Variante do campo: colisão SÓLIDA (barra) ou PLATAFORMA (one-way). */
+type CollisionVariant = 'solid' | 'platform'
 
 /**
  * Lê o valor LITERAL do soquete TILE do bloco (shadow ou `sz_val_number` real).
@@ -69,15 +73,47 @@ export function resolveTileset(field: Blockly.Field): TilesetInfo | null {
   if (!tileSize || tileSize <= 0) return null
   const cols = Math.max(1, Math.floor(asset.width / tileSize))
   const rows = Math.max(1, Math.floor(asset.height / tileSize))
-  return { asset, tileSize, solid: asset.tileset?.solid ?? [], cols, count: cols * rows }
+  return {
+    asset,
+    tileSize,
+    solid: asset.tileset?.solid ?? [],
+    platform: asset.tileset?.platform ?? [],
+    cols,
+    count: cols * rows,
+  }
+}
+
+/** Textos/ícone por variante (só a UI muda; o valor/serialização é idêntico). */
+const VARIANT_UI: Record<
+  CollisionVariant,
+  { help: string; badge: string; preset: string; presetOf: (info: TilesetInfo) => number[] }
+> = {
+  solid: {
+    help: 'Toque nos tiles que BLOQUEIAM o movimento (colisão).',
+    badge: '🧱',
+    preset: 'Sólidos do Pinta',
+    presetOf: (info) => info.solid,
+  },
+  platform: {
+    help: 'Toque nos tiles em que dá para PISAR por cima e passar por baixo.',
+    badge: '⬆️',
+    preset: 'Plataformas do Pinta',
+    presetOf: (info) => info.platform,
+  },
 }
 
 export class FieldSolidTilesPicker extends Blockly.FieldTextInput {
+  /** 'solid' (default) ou 'platform' — só muda a UI do editor, nunca o valor. */
+  private variant: CollisionVariant = 'solid'
+
   static override fromJson(options: Blockly.FieldTextInputFromJsonConfig): FieldSolidTilesPicker {
-    return new FieldSolidTilesPicker(`${options.text ?? ''}`)
+    const field = new FieldSolidTilesPicker(`${options.text ?? ''}`)
+    if ((options as { variant?: string }).variant === 'platform') field.variant = 'platform'
+    return field
   }
 
   protected override showEditor_(): void {
+    const ui = VARIANT_UI[this.variant]
     const info = resolveTileset(this)
     const content = Blockly.DropDownDiv.getContentDiv()
     content.textContent = ''
@@ -97,7 +133,7 @@ export class FieldSolidTilesPicker extends Blockly.FieldTextInput {
     const selected = parseIndices(`${this.getValue() ?? ''}`)
 
     const help = document.createElement('div')
-    help.textContent = 'Toque nos tiles que BLOQUEIAM o movimento (colisão).'
+    help.textContent = ui.help
     help.style.cssText =
       'font-size:11px;color:var(--color-sz-fg-soft);padding:0 0 6px;line-height:1.4;'
 
@@ -126,7 +162,7 @@ export class FieldSolidTilesPicker extends Blockly.FieldTextInput {
       canvas.height = 28
       canvas.style.cssText = 'image-rendering:pixelated;width:28px;height:28px;'
       const badge = document.createElement('span')
-      badge.textContent = '🧱'
+      badge.textContent = ui.badge
       badge.style.cssText = 'position:absolute;top:-6px;right:-6px;font-size:12px;display:none;'
       btn.append(canvas, badge)
       const num = document.createElement('small')
@@ -166,12 +202,12 @@ export class FieldSolidTilesPicker extends Blockly.FieldTextInput {
       'display:flex;gap:6px;margin-top:8px;justify-content:space-between;align-items:center;'
     const usePinta = document.createElement('button')
     usePinta.type = 'button'
-    usePinta.textContent = 'Sólidos do Pinta'
+    usePinta.textContent = ui.preset
     usePinta.style.cssText =
       'padding:3px 8px;background:transparent;color:var(--color-sz-fg-soft);border:1px solid var(--color-sz-border);border-radius:4px;cursor:pointer;font-size:11px;'
     usePinta.addEventListener('click', () => {
       selected.clear()
-      for (const i of info.solid) selected.add(i)
+      for (const i of ui.presetOf(info)) selected.add(i)
       buttons.forEach((b, i) => {
         paint(b, i)
       })

@@ -56,26 +56,46 @@ export function spriteMetaFromPack(pack: {
   }
 }
 
-/** Índices SÓLIDOS de um tileset (boolean[] paralelo → lista de índices). */
-export function tilesetMetaFrom(tileSize: number, solid: readonly boolean[]): PintaTilesetMeta {
-  return { tileSize, solid: solid.flatMap((s, i) => (s ? [i] : [])) }
+/** boolean[] paralelo → lista de índices ligados. */
+function indicesOf(flags: readonly boolean[]): number[] {
+  return flags.flatMap((f, i) => (f ? [i] : []))
+}
+
+/**
+ * Índices SÓLIDOS + PLATAFORMA de um tileset. `platform` é OMITIDO quando vazio
+ * → payload de tileset sem plataforma fica byte-idêntico ao de antes (retrocompat).
+ */
+export function tilesetMetaFrom(
+  tileSize: number,
+  solid: readonly boolean[],
+  platform: readonly boolean[] = [],
+): PintaTilesetMeta {
+  const platformIdx = indicesOf(platform)
+  return {
+    tileSize,
+    solid: indicesOf(solid),
+    ...(platformIdx.length ? { platform: platformIdx } : {}),
+  }
 }
 
 /**
  * Metadados de MAPA (puro, testável sem canvas): grade no formato do Estúdio +
- * sólidos do tileset + a folha de peças já rasterizada (`sheet`).
+ * sólidos/plataformas do tileset + a folha de peças já rasterizada (`sheet`).
+ * `platform` OMITIDO quando vazio (retrocompat byte-idêntica).
  */
 export function tilemapMetaFrom(
   tilemap: TilemapAsset,
   tileset: AnyTilesetAsset,
   sheet: { dataUrl: string; width: number; height: number },
 ): PintaTilemapMeta {
+  const platformIdx = indicesOf(tileset.platform)
   return {
     tileSize: tileset.tileSize,
     cols: tilemap.cols,
     rows: tilemap.rows,
     grid: tilemapToStudioGrid(tilemap),
-    solid: tilesetMetaFrom(tileset.tileSize, tileset.solid).solid,
+    solid: indicesOf(tileset.solid),
+    ...(platformIdx.length ? { platform: platformIdx } : {}),
     tileset: sheet,
   }
 }
@@ -114,7 +134,7 @@ export async function buildStudioPayload(
         dataUrl,
         width: pack.columns * pack.tileSize,
         height: pack.rows * pack.tileSize,
-        tileset: tilesetMetaFrom(asset.tileSize, asset.solid),
+        tileset: tilesetMetaFrom(asset.tileSize, asset.solid, asset.platform),
       }
     }
     case 'tilemap': {
@@ -193,7 +213,7 @@ export async function buildStudioPayload(
         dataUrl,
         width: pack.columns * pack.tileSize,
         height: pack.rows * pack.tileSize,
-        tileset: tilesetMetaFrom(asset.tileSize, asset.solid),
+        tileset: tilesetMetaFrom(asset.tileSize, asset.solid, asset.platform),
       }
     }
     default: {

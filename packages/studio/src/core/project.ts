@@ -46,6 +46,11 @@ export interface ProjectTilesetMeta {
   tileSize: number
   /** Índices de tile SÓLIDOS — subconjunto ordenado/deduplicado (colisão do mapa). */
   solid: number[]
+  /**
+   * Índices de tile PLATAFORMA (one-way: pisa por cima, atravessa por baixo).
+   * OMITIDO quando vazio (payload antigo sem plataforma fica byte-idêntico).
+   */
+  platform?: number[]
 }
 
 /**
@@ -76,6 +81,11 @@ export interface ProjectTilemapMeta {
   grid: string
   /** Índices de tile sólidos (colisão), deduplicados/ordenados. */
   solid: number[]
+  /**
+   * Índices de tile PLATAFORMA (one-way). OMITIDO quando vazio (retrocompat
+   * byte-idêntica com payloads antigos sem plataforma).
+   */
+  platform?: number[]
   tileset: ProjectTilemapTilesetMeta
 }
 
@@ -293,18 +303,26 @@ export function sanitizeSpriteMeta(raw: unknown): ProjectSpriteMeta | undefined 
  * tamanho de tile válido; `solid` vazio é VÁLIDO (tileset sem colisão). Índices
  * deduplicados/ordenados, capados. Exportado (a biblioteca pessoal reusa).
  */
+/** Índices não-negativos, deduplicados, capados (dedupe opcional contra `exclude`). */
+function sanitizeTileIndexList(raw: unknown, exclude?: Set<number>): number[] {
+  const set = new Set<number>()
+  for (const value of Array.isArray(raw) ? raw : []) {
+    if (set.size >= MAX_TILESET_SOLID) break
+    const n = toNonNegativeInt(value)
+    if (n !== null && !exclude?.has(n)) set.add(n)
+  }
+  return [...set].sort((a, b) => a - b)
+}
+
 export function sanitizeTilesetMeta(raw: unknown): ProjectTilesetMeta | undefined {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
   const r = raw as Record<string, unknown>
   const tileSize = toPositiveInt(r.tileSize)
   if (tileSize === null) return undefined
-  const solidSet = new Set<number>()
-  for (const value of Array.isArray(r.solid) ? r.solid : []) {
-    if (solidSet.size >= MAX_TILESET_SOLID) break
-    const n = toNonNegativeInt(value)
-    if (n !== null) solidSet.add(n)
-  }
-  return { tileSize, solid: [...solidSet].sort((a, b) => a - b) }
+  const solid = sanitizeTileIndexList(r.solid)
+  // Plataforma exclui os já-sólidos (sólido vence) e some quando vazia.
+  const platform = sanitizeTileIndexList(r.platform, new Set(solid))
+  return { tileSize, solid, ...(platform.length ? { platform } : {}) }
 }
 
 /**
@@ -338,18 +356,15 @@ export function sanitizeTilemapMeta(raw: unknown): ProjectTilemapMeta | undefine
   const sheetW = toPositiveInt(t.width)
   const sheetH = toPositiveInt(t.height)
   if (sheetW === null || sheetH === null) return undefined
-  const solidSet = new Set<number>()
-  for (const value of Array.isArray(r.solid) ? r.solid : []) {
-    if (solidSet.size >= MAX_TILESET_SOLID) break
-    const n = toNonNegativeInt(value)
-    if (n !== null) solidSet.add(n)
-  }
+  const solid = sanitizeTileIndexList(r.solid)
+  const platform = sanitizeTileIndexList(r.platform, new Set(solid))
   return {
     tileSize,
     cols,
     rows,
     grid,
-    solid: [...solidSet].sort((a, b) => a - b),
+    solid,
+    ...(platform.length ? { platform } : {}),
     tileset: { dataUrl: sheetUrl, width: sheetW, height: sheetH },
   }
 }

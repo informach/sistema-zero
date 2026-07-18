@@ -25,6 +25,8 @@ export interface PintaSpriteMeta {
 export interface PintaTilesetMeta {
   tileSize: number
   solid: number[]
+  /** Índices de peça PLATAFORMA (one-way). Omitido quando vazio (retrocompat). */
+  platform?: number[]
 }
 
 /**
@@ -40,6 +42,8 @@ export interface PintaTilemapMeta {
   /** Formato do bloco do Estúdio: células por espaço, linhas por `;`, `.` = vazio. */
   grid: string
   solid: number[]
+  /** Índices de peça PLATAFORMA (one-way). Omitido quando vazio (retrocompat). */
+  platform?: number[]
   tileset: { dataUrl: string; width: number; height: number }
 }
 

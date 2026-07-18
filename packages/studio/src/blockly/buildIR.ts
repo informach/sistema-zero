@@ -4395,8 +4395,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:drawParticles', ctxVar: 'ctx' } }
 
-    case 'sz_g2d_create_tilemap':
+    case 'sz_g2d_create_tilemap': {
       seen.add('game-2d')
+      const platform = f(block, 'PLATFORM')
       return {
         kind: 'js',
         value: {
@@ -4405,9 +4406,13 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           image: f(block, 'IMAGE'),
           tile: exprInput(block, 'TILE', { type: 'num', value: 32 }),
           solid: f(block, 'SOLID'),
+          // Omite a chave quando vazio → IR/JS de mapas sem plataforma ficam
+          // byte-idênticos aos de antes (retrocompat dos fixtures).
+          ...(platform ? { platform } : {}),
           grid: f(block, 'GRID'),
         },
       }
+    }
     case 'sz_g2d_create_tilemap_from_asset':
       seen.add('game-2d')
       return {

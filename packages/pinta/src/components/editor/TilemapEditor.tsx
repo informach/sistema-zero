@@ -44,6 +44,7 @@ import {
 import { usePintaGallery } from '../appContext'
 import { Button, IconButton, ToolButton } from '../ui/Button'
 import {
+  BrickWall,
   Eraser,
   Eye,
   EyeOff,
@@ -115,6 +116,8 @@ export function TilemapEditor(): JSX.Element | null {
   const [paintTick, setPaintTick] = useState(0)
   // Retângulo de seleção ASSENTADO (dirige os botões Copiar/Apagar pedaço).
   const [selRect, setSelRect] = useState<CellRect | null>(null)
+  // Overlay de colisão (vermelho sólido / âmbar plataforma) por cima do mapa.
+  const [showCollision, setShowCollision] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLCanvasElement | null>(null)
@@ -217,6 +220,41 @@ export function TilemapEditor(): JSX.Element | null {
     [pad, cellPx],
   )
 
+  // Índices de peça sólida / plataforma do tileset (para o overlay de colisão).
+  const collisionSets = useMemo(() => {
+    const solid = new Set<number>()
+    const platform = new Set<number>()
+    if (tileset) {
+      tileset.solid.forEach((s, i) => {
+        if (s) solid.add(i)
+      })
+      tileset.platform.forEach((p, i) => {
+        if (p) platform.add(i)
+      })
+    }
+    return { solid, platform }
+  }, [tileset])
+
+  /** Overlay translúcido de colisão sobre a célula (vermelho sólido / âmbar plataforma). */
+  const drawCollisionAt = useCallback(
+    (ctx: CanvasRenderingContext2D, col: number, row: number, index: number): void => {
+      if (!showCollision || index < 0) return
+      const x = (col + pad) * cellPx
+      const y = (row + pad) * cellPx
+      if (collisionSets.solid.has(index)) {
+        ctx.fillStyle = 'rgba(239,68,68,0.38)'
+        ctx.fillRect(x, y, cellPx, cellPx)
+      } else if (collisionSets.platform.has(index)) {
+        ctx.fillStyle = 'rgba(250,204,21,0.32)'
+        ctx.fillRect(x, y, cellPx, cellPx)
+        // Faixa mais forte no TOPO: comunica "pisa aqui".
+        ctx.fillStyle = 'rgba(250,204,21,0.85)'
+        ctx.fillRect(x, y, cellPx, Math.max(2, Math.round(cellPx * 0.16)))
+      }
+    },
+    [showCollision, collisionSets, pad, cellPx],
+  )
+
   /** Redesenho COMPLETO do mapa `map` (redimensiona + células + grade + anel). */
   const repaintMap = useCallback(
     (map: TilemapAsset): void => {
@@ -251,6 +289,7 @@ export function TilemapEditor(): JSX.Element | null {
             cellPx,
             cellPx,
           )
+          drawCollisionAt(ctx, col, row, index)
         }
       }
       // Grade da área do mapa.
@@ -274,7 +313,7 @@ export function TilemapEditor(): JSX.Element | null {
         ctx.setLineDash([])
       }
     },
-    [tileset, pad, cellPx],
+    [tileset, pad, cellPx, drawCollisionAt],
   )
 
   /** Repinta SÓ um conjunto de células do mapa `map` (incremental, no gesto). */
@@ -299,11 +338,12 @@ export function TilemapEditor(): JSX.Element | null {
           const sx = (index % sheetCols) * ts
           const sy = Math.floor(index / sheetCols) * ts
           ctx.drawImage(sheet, sx, sy, ts, ts, x, y, cellPx, cellPx)
+          drawCollisionAt(ctx, col, row, index)
         }
         drawCellGrid(ctx, col, row)
       }
     },
-    [tileset, pad, cellPx, drawCellGrid],
+    [tileset, pad, cellPx, drawCellGrid, drawCollisionAt],
   )
 
   const overlayRect = useCallback(
@@ -723,6 +763,12 @@ export function TilemapEditor(): JSX.Element | null {
             label={COPY.tiles.autoExpand}
             active={autoExpand}
             onClick={() => session.getState().toggleAutoExpand()}
+          />
+          <ToolButton
+            icon={BrickWall}
+            label={COPY.tiles.showCollision}
+            active={showCollision}
+            onClick={() => setShowCollision((v) => !v)}
           />
         </div>
 

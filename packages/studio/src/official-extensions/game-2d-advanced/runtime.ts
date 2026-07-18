@@ -749,12 +749,21 @@ export const gameKitRuntime = `(function () {
         if (typeof s === 'number' && s >= 0) solid[Math.floor(s)] = true;
       }
     }
+    // Peças PLATAFORMA (one-way): mesmo lookup do sólido. O metadado já garante
+    // que não se sobrepõem (sólido vence no sanitizer).
+    var platform = Object.create(null);
+    if (meta.platform && typeof meta.platform.length === 'number') {
+      for (var j = 0; j < meta.platform.length; j++) {
+        var p = meta.platform[j];
+        if (typeof p === 'number' && p >= 0 && !solid[Math.floor(p)]) platform[Math.floor(p)] = true;
+      }
+    }
     var imgKey = '__tm_' + nm;
     loadImage(imgKey, meta.tileset.dataUrl); // a folha embutida entra por dataUrl
     tilemaps[nm] = {
       rows: parseTileGrid(meta.grid),
       artTile: (typeof meta.tileSize === 'number' && meta.tileSize > 0) ? meta.tileSize : 32,
-      imgKey: imgKey, solid: solid
+      imgKey: imgKey, solid: solid, platform: platform
     };
   }
   /** Desenha o mapa alinhado à grade. layer: 'chão' = tudo; 'topos' = só sólidos
@@ -2068,6 +2077,42 @@ export const gameKitRuntime = `(function () {
     who._prevX = num(who.x, 0);
     who._prevY = num(who.y, 0);
   }
+  /**
+   * Colisão ONE-WAY das peças PLATAFORMA do tilemap (pisa por cima, atravessa
+   * por baixo). MESMA técnica de cruzamento de plano do oneWayPlatform (molde):
+   * só segura CAINDO e quando o pé cruza o topo da peça neste quadro. Não é
+   * varrido — o feetNext já projeta o movimento inteiro do quadro (anti-túnel).
+   */
+  function collideTilemapPlatform(who, m, d) {
+    if (!m.platform) return;
+    if (num(who.vy, 0) < 0) return; // subindo: atravessa
+    if (num(who._dropT, 0) > 0) return; // pediu descer (↓): ignora
+    var t = tilePx;
+    var feet = hbBottom(who);
+    var feetNext = feet + num(who.vy, 0) * d;
+    var c0 = Math.floor(hbLeft(who) / t);
+    var c1 = Math.floor((hbRight(who) - 1) / t);
+    var r0 = Math.floor(feet / t);
+    var r1 = Math.floor(feetNext / t) + 1;
+    for (var r = r0; r <= r1; r++) {
+      var rowArr = m.rows[r];
+      if (!rowArr) continue;
+      var top = r * t;
+      if (feet > top + 1) continue; // já estava abaixo do topo: não é pouso
+      if (feetNext < top) continue; // não alcança o plano neste quadro
+      for (var c = c0; c <= c1; c++) {
+        var idx = rowArr[c];
+        if (idx == null || idx < 0 || !m.platform[idx]) continue;
+        if (hbRight(who) <= c * t) continue;
+        if (hbLeft(who) >= c * t + t) continue;
+        who.y = top - hbH(who) - num(who._hbY, 0);
+        who.vy = 0;
+        who.onGround = true;
+        who._prevY = num(who.y, 0); // a varredura não desfaz este pouso
+        return;
+      }
+    }
+  }
   function collideTilemap(who, mapName) {
     if (!who || typeof who !== 'object') return;
     var mk = text(mapName, '');
@@ -2081,6 +2126,7 @@ export const gameKitRuntime = `(function () {
     sweepSolid(who, sweepStepTilemap);
     sweepWho = null;
     sweepMap = null;
+    collideTilemapPlatform(who, m, currentDt);
   }
   function collideGroup(who, moldName) {
     if (!who || typeof who !== 'object') return;
@@ -2714,6 +2760,7 @@ export const gameKitRuntime = `(function () {
     var an = text(assetName, '');
     var imgKey = '__tm_' + nm;
     var solid = Object.create(null);
+    var platform = Object.create(null);
     var art = 32;
     if (an) {
       var entry = Object.prototype.hasOwnProperty.call(ASSET_META, an) ? ASSET_META[an] : null;
@@ -2725,9 +2772,15 @@ export const gameKitRuntime = `(function () {
           if (typeof sv === 'number' && sv >= 0) solid[Math.floor(sv)] = true;
         }
       }
+      if (ts && ts.platform && typeof ts.platform.length === 'number') {
+        for (var pi = 0; pi < ts.platform.length; pi++) {
+          var pv = ts.platform[pi];
+          if (typeof pv === 'number' && pv >= 0 && !solid[Math.floor(pv)]) platform[Math.floor(pv)] = true;
+        }
+      }
       loadImage(imgKey, an);
     }
-    tilemaps[nm] = { rows: grid, artTile: art, imgKey: imgKey, solid: solid };
+    tilemaps[nm] = { rows: grid, artTile: art, imgKey: imgKey, solid: solid, platform: platform };
   }
 
   // ---- 🎮 2º jogador (teclas ESCOLHIDAS) ----

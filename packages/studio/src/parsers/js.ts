@@ -2241,8 +2241,14 @@ function readSpriteOptions(
 function readTileMapOptions(
   obj: Node,
   ctx: ParseCtx,
-): { image: string; tile: JSExpr; solid: string; grid: string } | null {
-  const result = { image: null as string | null, tile: null as JSExpr | null, solid: '', grid: '' }
+): { image: string; tile: JSExpr; solid: string; grid: string; platform?: string } | null {
+  const result = {
+    image: null as string | null,
+    tile: null as JSExpr | null,
+    solid: '',
+    platform: '',
+    grid: '',
+  }
   for (const prop of obj.properties ?? []) {
     if (prop?.type !== 'ObjectProperty' || prop.computed) return null
     const key =
@@ -2255,7 +2261,7 @@ function readTileMapOptions(
       const v = toExpr(prop.value, ctx)
       if (!isSimpleValue(v)) return null
       result.tile = v
-    } else if (key === 'image' || key === 'solid' || key === 'grid') {
+    } else if (key === 'image' || key === 'solid' || key === 'grid' || key === 'platform') {
       if (prop.value?.type !== 'StringLiteral') return null
       result[key] = prop.value.value as string
     } else {
@@ -2263,7 +2269,14 @@ function readTileMapOptions(
     }
   }
   if (result.image === null || result.tile === null) return null
-  return { image: result.image, tile: result.tile, solid: result.solid, grid: result.grid }
+  return {
+    image: result.image,
+    tile: result.tile,
+    solid: result.solid,
+    // Omite quando vazio → IR de mapas sem plataforma fica byte-idêntica.
+    ...(result.platform ? { platform: result.platform } : {}),
+    grid: result.grid,
+  }
 }
 
 /**

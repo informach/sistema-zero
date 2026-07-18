@@ -6,6 +6,7 @@
 export type { LucideIcon } from 'lucide-react'
 export {
   ArrowLeft,
+  ArrowUpToLine,
   BrickWall,
   BringToFront,
   Brush,

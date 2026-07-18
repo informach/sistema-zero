@@ -34,9 +34,11 @@ export function addTile<A extends AnyTilesetAsset>(asset: A, afterIndex: number)
   if (asset.tiles.length >= PINTA_LIMITS.maxTiles) return asset
   const tiles = [...(asset.tiles as TileOf<A>[])]
   const solid = [...asset.solid]
+  const platform = [...asset.platform]
   tiles.splice(afterIndex + 1, 0, emptyTileFor(asset))
   solid.splice(afterIndex + 1, 0, false)
-  return { ...asset, tiles, solid }
+  platform.splice(afterIndex + 1, 0, false)
+  return { ...asset, tiles, solid, platform }
 }
 
 export function duplicateTile<A extends AnyTilesetAsset>(asset: A, index: number): A {
@@ -45,9 +47,11 @@ export function duplicateTile<A extends AnyTilesetAsset>(asset: A, index: number
   if (!source) return asset
   const tiles = [...(asset.tiles as TileOf<A>[])]
   const solid = [...asset.solid]
+  const platform = [...asset.platform]
   tiles.splice(index + 1, 0, cloneTileOf(asset, source))
   solid.splice(index + 1, 0, asset.solid[index] === true)
-  return { ...asset, tiles, solid }
+  platform.splice(index + 1, 0, asset.platform[index] === true)
+  return { ...asset, tiles, solid, platform }
 }
 
 /** Remove o tile — nunca deixa o tileset vazio (o último não sai). */
@@ -57,12 +61,33 @@ export function removeTile<A extends AnyTilesetAsset>(asset: A, index: number): 
     ...asset,
     tiles: (asset.tiles as TileOf<A>[]).filter((_, i) => i !== index),
     solid: asset.solid.filter((_, i) => i !== index),
+    platform: asset.platform.filter((_, i) => i !== index),
   }
 }
 
-export function toggleSolid<A extends AnyTilesetAsset>(asset: A, index: number): A {
-  if (index < 0 || index >= asset.solid.length) return asset
-  return { ...asset, solid: asset.solid.map((s, i) => (i === index ? !s : s)) }
+/** Estado de colisão de uma peça (derivado dos arrays paralelos, exclusivos). */
+export type TileCollision = 'none' | 'solid' | 'platform'
+
+export function tileCollisionAt(asset: AnyTilesetAsset, index: number): TileCollision {
+  if (asset.solid[index] === true) return 'solid'
+  if (asset.platform[index] === true) return 'platform'
+  return 'none'
+}
+
+/**
+ * Cicla a colisão da peça: livre → sólido → plataforma → livre. Escreve os DOIS
+ * arrays de forma EXCLUSIVA (sólido e plataforma nunca ligados juntos).
+ */
+export function cycleCollision<A extends AnyTilesetAsset>(asset: A, index: number): A {
+  if (index < 0 || index >= asset.tiles.length) return asset
+  const current = tileCollisionAt(asset, index)
+  const next: TileCollision =
+    current === 'none' ? 'solid' : current === 'solid' ? 'platform' : 'none'
+  return {
+    ...asset,
+    solid: asset.solid.map((s, i) => (i === index ? next === 'solid' : s)),
+    platform: asset.platform.map((p, i) => (i === index ? next === 'platform' : p)),
+  }
 }
 
 /**

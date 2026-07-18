@@ -19,8 +19,10 @@ import { bitmapToRGBA } from '../../pixel/render'
 import type { CellPos, CellRect } from '../../tiles/cellGeometry'
 import { normalizeCellRect } from '../../tiles/cellGeometry'
 import { stampFromTileset, type TileStamp } from '../../tiles/stamp'
+import { tileCollisionAt } from '../../tiles/tilesetOps'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
-import { BrickWall, X } from '../ui/icons'
+import { X } from '../ui/icons'
+import { TileCollisionBadge } from './TileStrip'
 
 const TILE_PX = 48
 const GAP_PX = 2
@@ -193,14 +195,7 @@ export function TilePicker({
               >
                 {index}
               </span>
-              {tileset.solid[index] === true ? (
-                <span
-                  aria-hidden="true"
-                  className="absolute right-0 bottom-0 rounded-tl-lg bg-pin-surface/85 p-0.5 text-pin-text"
-                >
-                  <BrickWall className="size-3" />
-                </span>
-              ) : null}
+              <TileCollisionBadge collision={tileCollisionAt(tileset, index)} />
             </button>
           )
         })}
