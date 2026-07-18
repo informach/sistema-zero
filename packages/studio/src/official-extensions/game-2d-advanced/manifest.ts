@@ -23,7 +23,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.35.0',
+  version: '0.35.1',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -121,10 +121,10 @@ atributos) e depois **escolha com quem batalhar** — igual aos moldes do mundo.
 1. **Criar a ficha do inimigo "Dragão"** (vida 120, imagem do Pinta, cor, e marque
    **chefão**). Faça no começo, no topo — a ficha FICA salva o jogo todo.
 2. Dê a SUA cara às telas: **"Na tela menu, pôr fundo cor …"** (ou uma imagem do Pinta).
-3. **⚠️ Ensine os golpes DENTRO de "Quando entrar no estado jogando"** — não no topo:
-   ao recomeçar, o motor limpa os golpes (para a partida nascer limpa), então
-   ensinar no topo faz o golpe sumir no 1º "Jogar". No mesmo lugar, **"Adicionar o
-   inimigo da ficha Capanga"** e **"Começar a batalha contra a ficha Dragão"**.
+3. **Ensine os golpes** (do herói e do chefe) — pode ser no topo, junto das fichas:
+   os golpes ensinados FICAM salvos e re-ensinar não duplica. Depois, no momento da
+   luta, **"Adicionar o inimigo da ficha Capanga"** e **"Começar a batalha contra a
+   ficha Dragão"** (ou dentro de "quando falar com o NPC", como no O Chefão).
 4. O chefe fica esperto com **"Quando for a vez do inimigo Dragão"** + *"se a vida do
    Dragão < metade: acerta todo o time; senão: usa um golpe"*.
 

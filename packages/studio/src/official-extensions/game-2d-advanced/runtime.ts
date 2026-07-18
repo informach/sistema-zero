@@ -5528,10 +5528,14 @@ export const gameKitRuntime = `(function () {
     rpg.playerEnergy = rpg.playerMaxEnergy; rpg.playerPoison = 0;
     rpg.playerRegen = 0; rpg.playerBlind = 0;
     rpg.potions = [];
-    // O time e os golpes fazem parte do JOGO, não do motor: zeram ao recomeçar.
+    // O TIME e a fila de inimigos zeram ao recomeçar (são a partida em si).
     rpg.allies = [];
     rpg.foeQueue = [];
-    rpg.movesByName = nameMap();
+    // ⚠️ Os GOLPES ensinados NÃO zeram mais: são DEFINIÇÕES (como as fichas/moldes/
+    // aparências, que também persistem). Antes o wipe apagava "Ensinar o golpe" posto
+    // no TOPO já no 1º "Jogar" (o jeito natural da criança; o exemplo O Chefão caía
+    // nisso). rpgTeachMove/Heal são IDEMPOTENTES (dedup por nome), então re-ensinar no
+    // "quando entrar em jogando" também não duplica — os dois jeitos funcionam.
     rpg.scene = null;
     rpg.recording = false;
     rpg.sceneSteps = [];
@@ -6374,17 +6378,22 @@ export const gameKitRuntime = `(function () {
     }
     b.message = (f ? f.name : text(name, 'O inimigo')) + ' atingiu TODO o time!';
   }
-  function rpgTeachMove(who, moveName, dmg, cost) {
-    var k = text(who, 'Você');
+  // Ensinar é IDEMPOTENTE: um golpe com o MESMO nome REPÕE o anterior em vez de
+  // empilhar — assim re-ensinar no "quando entrar em jogando" (a cada "Jogar de novo")
+  // não duplica os golpes, agora que eles PERSISTEM (ver rpgNewGame).
+  function teachMoveTo(k, mv) {
     if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
-    rpg.movesByName[k].push({ name: text(moveName, 'Golpe'), dmg: Math.max(1, num(dmg, 10)), cost: Math.max(0, num(cost, 3)), heal: false });
+    var list = rpg.movesByName[k];
+    for (var i = 0; i < list.length; i++) { if (list[i].name === mv.name) { list[i] = mv; return; } }
+    list.push(mv);
+  }
+  function rpgTeachMove(who, moveName, dmg, cost) {
+    teachMoveTo(text(who, 'Você'), { name: text(moveName, 'Golpe'), dmg: Math.max(1, num(dmg, 10)), cost: Math.max(0, num(cost, 3)), heal: false });
   }
   // Golpe de CURA (heal:true) — o painel de ação mostra "(cura N)" e o applyHeal
   // devolve vida ao próprio lutador em vez de ferir o inimigo.
   function rpgTeachHeal(who, moveName, amount, cost) {
-    var k = text(who, 'Você');
-    if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
-    rpg.movesByName[k].push({ name: text(moveName, 'Cura'), dmg: Math.max(1, num(amount, 12)), cost: Math.max(0, num(cost, 3)), heal: true });
+    teachMoveTo(text(who, 'Você'), { name: text(moveName, 'Cura'), dmg: Math.max(1, num(amount, 12)), cost: Math.max(0, num(cost, 3)), heal: true });
   }
   function layoutRow(list, cy) {
     var n = list.length; if (n === 0) return;

@@ -4053,6 +4053,33 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     expect(battleSnap(h)).toBeNull()
   })
 
+  it('⚔️ golpe ensinado PERSISTE ao "Jogar de novo" (não some no recomeço)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgTeachMove('Ogro', 'Marreta', 30, 0) // ensinado UMA vez
+    // "Jogar de novo": menu → jogando dispara o rpgNewGame de novo.
+    h.api.setState('menu')
+    h.api.setState('jogando')
+    h.api.rpgBattleStart('Ogro', 100, 1, 0) // o Ogro entra com o golpe (antes o wipe apagava)
+    expect(battleSnap(h)?.foes.find((f) => f.name === 'Ogro')?.moves).toBe(1)
+  })
+
+  it('⚔️ re-ensinar o MESMO golpe REPÕE (idempotente): 1 golpe, com o valor novo', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgTeachMove('Ogro', 'Marreta', 10, 0)
+    h.api.rpgTeachMove('Ogro', 'Marreta', 30, 0) // mesmo nome → repõe (não empilha)
+    h.api.rpgBattleStart('Ogro', 100, 1, 0)
+    expect(battleSnap(h)?.foes.find((f) => f.name === 'Ogro')?.moves).toBe(1) // 1, não 2
+    const before = h.api.battlerLife('Você')
+    h.api.rpgFoeUse('Ogro', 'Marreta')
+    expect(before - h.api.battlerLife('Você')).toBeGreaterThan(20) // ~30 (o novo), não ~10
+  })
+
   it('a IA de chefe manda na vez dele: "acerta TODO o time" atinge todos os aliados', async () => {
     const h = loadRuntime()
     await startGame(h)
