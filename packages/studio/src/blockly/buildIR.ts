@@ -4676,6 +4676,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           bg: f(block, 'BG'),
         },
       }
+    case 'sz_g2d_setup_full':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:setupFull', bg: f(block, 'BG') } }
 
     // ---- Kit Nave & Asteroides (v0.7.0) ----
     case 'sz_g2d_spawn_bullet':
@@ -5857,6 +5860,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           accent: f(block, 'ACCENT') || '#4a9eff',
         },
       }
+    case 'sz_gk_setup_full':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:setupFull',
+          bg: f(block, 'BG') || '#1a1a2e',
+          accent: f(block, 'ACCENT') || '#4a9eff',
+        },
+      }
     case 'sz_gk_start':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:start' } }
@@ -6244,6 +6257,44 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           who: f(block, 'WHO'),
           status: f(block, 'STATUS') || 'veneno', // R25: veneno|regenera|atrapalha
           turns: exprInput(block, 'TURNS', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_gk_rpg_add_ally':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgAddAlly',
+          name: f(block, 'NAME'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 24 }),
+          str: exprInput(block, 'STR', { type: 'num', value: 6 }),
+          def: exprInput(block, 'DEF', { type: 'num', value: 1 }),
+          color: f(block, 'COLOR') || '#4ade80',
+        },
+      }
+    case 'sz_gk_rpg_add_foe':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgAddFoe',
+          name: f(block, 'NAME'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 20 }),
+          str: exprInput(block, 'STR', { type: 'num', value: 5 }),
+          def: exprInput(block, 'DEF', { type: 'num', value: 0 }),
+          color: f(block, 'COLOR') || '#e05a5a',
+        },
+      }
+    case 'sz_gk_rpg_teach_move':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgTeachMove',
+          who: f(block, 'WHO'),
+          move: f(block, 'MOVE'),
+          dmg: exprInput(block, 'DMG', { type: 'num', value: 12 }),
+          cost: exprInput(block, 'COST', { type: 'num', value: 3 }),
         },
       }
     case 'sz_gk_rpg_on_battle_end':

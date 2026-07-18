@@ -1732,6 +1732,17 @@ export const gameTwoDBlocks = [
     tooltip:
       'Atalho para começar: prepara a tela do jogo (largura × altura) para ocupar a janela inteira, mantendo a proporção e se reajustando sozinha, e centralizada. A cor do fundo combina com o jogo, fica no canvas e na sobra ao redor. Use uma vez no começo. Não precisa criar a tela de desenho no HTML.',
   },
+  {
+    type: 'sz_g2d_setup_full',
+    message0: 'Preparar o jogo para ocupar a tela toda, fundo %1',
+    args0: [{ type: 'field_colour_sz', name: 'BG', colour: '#0b1020' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como o "Preparar o jogo em tela cheia", mas SEM dimensões: o canvas ocupa a tela inteira (sem barras nas laterais) e a área do jogo ACOMPANHA o tamanho da janela — a resolução do jogo passa a ser o tamanho da tela. Centralize as coisas usando "a largura/altura da tela", não números fixos. Combine com "entrar em tela cheia" para tomar o monitor todo. Use uma vez no começo, no lugar do outro "Preparar".',
+  },
 
   // ---- Kit "Nave & Asteroides": desenhos prontos + efeitos (v0.7.0) ----
   {
@@ -2710,6 +2721,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g2d_clear',
       'sz_g2d_setup_stage',
+      'sz_g2d_setup_full',
       'sz_g2d_fit_screen',
       'sz_g2d_blink',
       'sz_g2d_flash',

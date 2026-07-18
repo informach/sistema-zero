@@ -2188,6 +2188,8 @@ export type JSStatement =
       height: number | JSExpr
       bg: string
     })
+  // "Ocupar a tela toda": palco SEM dimensões — a resolução acompanha a viewport.
+  | (JSStatementCommon & { type: 'g2d:setupFull'; bg: string })
   // Tiro redondo com brilho num grupo; mover com setas; piscar (invencibilidade).
   | (JSStatementCommon & {
       type: 'g2d:spawnBullet'
@@ -2638,6 +2640,8 @@ export type JSStatement =
       bg: string
       accent: string
     })
+  // "Ocupar a tela toda": setup SEM dimensões — a resolução acompanha a viewport.
+  | (JSStatementCommon & { type: 'gk:setupFull'; bg: string; accent: string })
   | (JSStatementCommon & { type: 'gk:start' })
   // `name` = como o jogo chama a imagem; `asset` = nome do desenho no projeto.
   | (JSStatementCommon & { type: 'gk:loadImage'; name: string; asset: string })
@@ -2802,6 +2806,30 @@ export type JSStatement =
       who: string
       status: string
       turns: number | JSExpr
+    })
+  // ⚔️ Batalha em EQUIPE: aliados/inimigos com atributos + golpes nomeados.
+  | (JSStatementCommon & {
+      type: 'gk:rpgAddAlly'
+      name: string
+      hp: number | JSExpr
+      str: number | JSExpr
+      def: number | JSExpr
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:rpgAddFoe'
+      name: string
+      hp: number | JSExpr
+      str: number | JSExpr
+      def: number | JSExpr
+      color: string
+    })
+  | (JSStatementCommon & {
+      type: 'gk:rpgTeachMove'
+      who: string
+      move: string
+      dmg: number | JSExpr
+      cost: number | JSExpr
     })
   // 🎬 Cenas & NPCs vivos: folha de andar direcional + cutscene por gravação +
   // NPC que anda/vagueia + gatilho ao pisar numa célula.
@@ -5587,6 +5615,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       bg: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('g2d:setupFull'), bg: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:spawnBullet'),
       groupVar: irText(),
@@ -6309,6 +6338,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       accent: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('gk:setupFull'), bg: irText(), accent: irText(), ...idField }),
     z.object({ type: z.literal('gk:start'), ...idField }),
     z.object({ type: z.literal('gk:loadImage'), name: irText(), asset: irText(), ...idField }),
     z.object({
@@ -6539,6 +6569,32 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       who: irText(),
       status: irText(),
       turns: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgAddAlly'),
+      name: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      def: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgAddFoe'),
+      name: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      def: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgTeachMove'),
+      who: irText(),
+      move: irText(),
+      dmg: z.union([JSExprSchema, z.number()]),
+      cost: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -9054,6 +9110,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:dragX',
   'g2d:fitScreen',
   'g2d:setupStage',
+  'g2d:setupFull',
   'g2d:spawnBullet',
   'g2d:arrowsX',
   'g2d:blinkSprite',
@@ -9197,6 +9254,7 @@ export const G3D_STATEMENT_TYPES = new Set([
 
 export const GK_STATEMENT_TYPES = new Set([
   'gk:setup',
+  'gk:setupFull',
   'gk:start',
   'gk:loadImage',
   'gk:setScreenText',
@@ -9245,6 +9303,9 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgGivePotion',
   'gk:rpgBattleReward',
   'gk:rpgInflict',
+  'gk:rpgAddAlly',
+  'gk:rpgAddFoe',
+  'gk:rpgTeachMove',
   'gk:setWalkSheet',
   'gk:rpgCutscene',
   'gk:rpgWait',

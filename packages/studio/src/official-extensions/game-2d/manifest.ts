@@ -19,7 +19,7 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.25.0',
+  version: '0.26.0',
   description:
     'Blocos para criar jogos 2D no Canvas: sprites (cor, imagem, animação por estado com virada automática) ou desenhados por código, grupos de muitos sprites, inimigos com comportamento (patrulha, perseguidor, voador, saltador, atirador), movimento, física, colisão sólida, efeitos, tiles/tilemaps (do Pinta ou por upload), HUD, telas/cenas, som, e KITS por tema — espaço, dino, gorilas, equilibrista e balão.',
   category: 'games',
@@ -37,6 +37,7 @@ chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(.
 ### Blocos disponíveis
 
 - **Preparar o jogo em tela cheia** — atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
+- **Preparar o jogo para ocupar a tela toda** — como o de cima, mas **sem dimensões**: o canvas preenche a tela INTEIRA (sem barras nas laterais) e a área do jogo **acompanha** o tamanho da janela — a resolução do jogo passa a ser o tamanho da tela. Aqui "a largura/altura da tela" mudam com a janela, então centralize por eles (não por números fixos). Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use UM dos dois "Preparar", no começo.
 - **Criar sprite** — define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
 - **Desenhar o sprite** — desenha o sprite no contexto do canvas.
 - **Mover em 4 direções** — move o sprite com as setas do teclado (ver "Movimento" abaixo).

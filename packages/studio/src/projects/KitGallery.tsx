@@ -59,6 +59,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Duelo dos Bonecos': '🥊',
   'Defesa do Reino': '🛡️',
   'Reino Aberto': '🌍',
+  'Batalha em Equipe': '⚔️',
   'Boneco de formas': '🪆',
   'Noite enevoada': '🌙',
   'Enxame que gira': '🐝',

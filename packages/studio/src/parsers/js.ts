@@ -3490,6 +3490,11 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:setupStage', width, height, bg }
         : null
     }
+    case 'setupStageFull': {
+      // generator: SZGame2D.setupStageFull("cor") — tela toda, sem dimensões.
+      const bg = args[0]?.type === 'StringLiteral' ? (args[0].value as string) : '#0b1020'
+      return { type: 'g2d:setupFull', bg }
+    }
     case 'spawnAsteroid': {
       // generator: SZGame2D.spawnAsteroid(g, { x, y, size, color, vx, vy })
       const groupVar = identifierName(args[0])
@@ -4354,6 +4359,27 @@ function readGameKitSetupOptions(
   return result
 }
 
+/** Opções do `SZGameKit.setupFull({ background, accent })` (tela toda, sem dimensões). */
+function readGameKitSetupFullOptions(obj: Node): { bg: string; accent: string } | null {
+  const result = { bg: '#1a1a2e', accent: '#4a9eff' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'background' || key === 'accent') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      result[key === 'background' ? 'bg' : 'accent'] = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return result
+}
+
 /** Opções do `SZGameKit.createCharacter({ image, w, h, speed, color })`. */
 function readGameKitCharacterOptions(
   obj: Node,
@@ -4499,6 +4525,12 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'ObjectExpression') return null
       const o = readGameKitSetupOptions(args[0], ctx)
       return o ? { type: 'gk:setup', w: o.w, h: o.h, bg: o.bg, accent: o.accent } : null
+    }
+    case 'setupFull': {
+      // generator: SZGameKit.setupFull({ background, accent })
+      if (args[0]?.type !== 'ObjectExpression') return null
+      const o = readGameKitSetupFullOptions(args[0])
+      return o ? { type: 'gk:setupFull', bg: o.bg, accent: o.accent } : null
     }
     case 'start':
       return args.length === 0 ? { type: 'gk:start' } : null
@@ -4838,6 +4870,38 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
             who: args[0].value as string,
             status: args[1].value as string,
             turns,
+          }
+        : null
+    }
+    case 'rpgAddAlly':
+    case 'rpgAddFoe': {
+      // SZGameKit.rpgAddAlly("nome", hp, str, def, "cor")
+      if (args[0]?.type !== 'StringLiteral' || args[4]?.type !== 'StringLiteral') return null
+      const hp = toExpr(args[1], ctx)
+      const str = toExpr(args[2], ctx)
+      const def = toExpr(args[3], ctx)
+      if (!isSimpleValue(hp) || !isSimpleValue(str) || !isSimpleValue(def)) return null
+      return {
+        type: method === 'rpgAddAlly' ? 'gk:rpgAddAlly' : 'gk:rpgAddFoe',
+        name: args[0].value as string,
+        hp,
+        str,
+        def,
+        color: args[4].value as string,
+      }
+    }
+    case 'rpgTeachMove': {
+      // SZGameKit.rpgTeachMove("quem", "golpe", dmg, cost)
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      const dmg = toExpr(args[2], ctx)
+      const cost = toExpr(args[3], ctx)
+      return isSimpleValue(dmg) && isSimpleValue(cost)
+        ? {
+            type: 'gk:rpgTeachMove',
+            who: args[0].value as string,
+            move: args[1].value as string,
+            dmg,
+            cost,
           }
         : null
     }

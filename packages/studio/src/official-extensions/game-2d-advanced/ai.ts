@@ -12,6 +12,9 @@ arquitetura. Não misturar as duas no mesmo projeto.
 
 RECEITA CANÔNICA (ordem no ⚙️ Comportamento):
 1. SZGameKit.setup({ width, height, background, accent })  — 1x, no começo
+   · OU SZGameKit.setupFull({ background, accent }) — "ocupar a tela toda": SEM
+     dimensões, o canvas preenche a viewport e config.w/h (width()/height())
+     ACOMPANHAM a janela (centralize por eles, não por número fixo). Use UM dos dois.
 2. SZGameKit.loadImage("nome", "asset") / loadSound("nome", "asset")
 3. SZGameKit.defineLook / defineMold / defineEffect / setMission — os DADOS
 4. const heroi = SZGameKit.createCharacter({ image, w, h, speed, color })
@@ -187,15 +190,23 @@ API global injetada como window.SZGameKit:
 - 💾 salvar: rpgSave()/rpgLoad()/rpgHasSave() persistem flags/itens/mapa/
   célula/atributos/poções/especial no localStorage (sobrevive a reabrir).
   Continuar: "se rpgHasSave(): rpgLoad()".
-- ⚔️ batalha (a RICA — progressão, TurnCycle/Combatant do Pizza, 1v1): rpgBattleStats(
-  vida, força, DEFESA) 1x no começo (nível 1); rpgBattleStart(nome, vida, força,
-  defesa) — dano = força ± 20% − defesa/2; menu Atacar/Especial/Item/Defender/
-  Fugir. rpgSetSpecial(nome, dano, custo) = golpe que gasta ENERGIA (começa cheia,
-  +2/turno); rpgGivePotion(nome, cura) abastece o botão Item; rpgBattleReward(xp)
-  no rpgOnBattleEnd (se ganhou) → sobe de nível (+vida/força/defesa, aviso
-  "subiu:nivel"); rpgLevel()/rpgXp() getters; rpgInflict("inimigo"|"heroi",
-  "veneno", turnos) tira 3 de vida/turno. Padrão: rpgOnBattleEnd → "se
-  rpgBattleWon(): rpgBattleReward(20); setState('vitoria') senão endGame()".
+- ⚔️ batalha (a RICA — progressão, TurnCycle/Combatant do Pizza; agora em EQUIPE no
+  CANVAS): rpgBattleStats(vida, força, DEFESA) 1x no começo (nível 1); rpgBattleStart(
+  nome, vida, força, defesa) abre a batalha desenhada no canvas — o time do jogador
+  (herói + aliados) embaixo, os inimigos em cima. Clicar num combatente INSPECIONA
+  (painel de info) e destaca; no turno de cada aliado o painel de ação lista Atacar
+  (força ± 20% − defesa/2) + os golpes nomeados + Defender/Item/Fugir, e o alvo é
+  escolhido clicando num inimigo (com vários) ou automático (com um). Os inimigos
+  agem por IA. rpgAddAlly(nome, vida, força, defesa, cor) = aliado no SEU time
+  (persiste; o herói já entra); rpgAddFoe(nome, vida, força, defesa, cor) = MAIS um
+  inimigo na próxima batalha; rpgTeachMove("Você"|nomeDoAliado, "golpe", dano, custo)
+  = golpes NOMEADOS (vários por lutador; gastam energia). rpgSetSpecial(nome, dano,
+  custo) = 1 golpe do herói (compat); rpgGivePotion(nome, cura) abastece o Item;
+  rpgBattleReward(xp) no rpgOnBattleEnd (se ganhou) → sobe de nível (+vida/força/
+  defesa, aviso "subiu:nivel"); rpgLevel()/rpgXp() getters; rpgInflict("inimigo"|
+  "heroi", "veneno", turnos) aplica status (inimigo = 1º foe vivo). Padrão:
+  rpgOnBattleEnd → "se rpgBattleWon(): rpgBattleReward(20); setState('vitoria') senão
+  endGame()".
 - 🗺️ Mundo & profundidade (tiles do Ninja Adventure; GERAL, vale fora do RPG):
   loadTilemap(nome, assetDeMapa) lê um MAPA do Pinta (grade+peças+sólidos juntos,
   via ASSET_META). No onDraw, drawTilemap(nome, "chão") ANTES dos personagens e

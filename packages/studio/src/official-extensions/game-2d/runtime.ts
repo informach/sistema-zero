@@ -3128,7 +3128,7 @@ export const gameTwoDRuntime = `(function () {
     try { _stageCtx = c.getContext('2d'); } catch (e) {}
     return _stageCtx;
   }
-  var _logicalW = 0, _logicalH = 0, _resizeHooked = false;
+  var _logicalW = 0, _logicalH = 0, _resizeHooked = false, _fillMode = false;
   // Tamanho LÓGICO do palco (coordenadas do jogo). Sem fitScreen, é o tamanho do
   // próprio canvas; com fitScreen, fica FIXO enquanto o canvas REAL cresce para a
   // resolução da tela (nitidez) — os helpers usam o lógico para não dependerem disso.
@@ -3140,9 +3140,14 @@ export const gameTwoDRuntime = `(function () {
   }
   function _resizeBacking() {
     var c = _stageCanvas;
-    if (!c || !_logicalW || !c.getBoundingClientRect) return;
+    if (!c || !c.getBoundingClientRect) return;
     var rect = c.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
+    // Modo "ocupar a tela toda": a resolução LÓGICA (coordenadas do jogo) acompanha
+    // o tamanho REAL do canvas — a área do jogo É a tela e muda de tamanho com a
+    // janela. Setar ANTES do guard de _logicalW (que no início é 0).
+    if (_fillMode) { _logicalW = Math.max(1, Math.round(rect.width)); _logicalH = Math.max(1, Math.round(rect.height)); }
+    if (!_logicalW) return;
     var dpr = window.devicePixelRatio || 1;
     var bw = Math.max(1, Math.round(rect.width * dpr));
     var bh = Math.max(1, Math.round(rect.height * dpr));
@@ -3221,6 +3226,40 @@ export const gameTwoDRuntime = `(function () {
       document.body.style.justifyContent = 'center';
     }
     fitScreen(100);
+  }
+  // Facilitador: prepara o palco para OCUPAR A TELA TODA, sem dimensões. Diferente
+  // do setupStage (que mantém a proporção fixa e deixa barras nas laterais), aqui a
+  // resolução do jogo ACOMPANHA a janela: o canvas preenche 100% da viewport e as
+  // coordenadas do jogo passam a valer o tamanho real da tela (via _resizeBacking em
+  // _fillMode). É o bloco "preparar o jogo para ocupar a tela toda".
+  function setupStageFull(bg) {
+    ensureStage();
+    var c = _stageCanvas;
+    if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
+    if (!c) return;
+    _fillMode = true;
+    var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
+    // Full-bleed: fixo, ocupando a viewport inteira; sem proporção/limite travados.
+    c.style.position = 'fixed';
+    c.style.left = '0';
+    c.style.top = '0';
+    c.style.width = '100vw';
+    c.style.height = '100vh';
+    c.style.aspectRatio = '';
+    c.style.maxWidth = '';
+    c.style.boxSizing = 'border-box';
+    c.style.display = 'block';
+    c.style.background = color;
+    if (document.body) {
+      document.body.style.margin = '0';
+      document.body.style.background = color;
+    }
+    _resizeBacking();
+    try { requestAnimationFrame(_resizeBacking); } catch (e) {}
+    if (!_resizeHooked) {
+      _resizeHooked = true;
+      try { window.addEventListener('resize', function () { try { requestAnimationFrame(_resizeBacking); } catch (e) { _resizeBacking(); } }); } catch (e) {}
+    }
   }
   // Expõe 'ctx' e 'tela' como globais preguiçosos. O setter REDEFINE a propriedade
   // como um valor normal — assim um eventual 'const ctx = ...' antigo (canvasSetup)
@@ -3923,6 +3962,7 @@ export const gameTwoDRuntime = `(function () {
     clear: clear,
     fitScreen: fitScreen,
     setupStage: setupStage,
+    setupStageFull: setupStageFull,
     spawnBullet: spawnBullet,
     arrowsX: arrowsX,
     blink: blink,

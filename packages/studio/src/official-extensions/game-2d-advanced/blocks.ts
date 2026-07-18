@@ -25,6 +25,20 @@ export const gameKitBlocks = [
       'O primeiro bloco do jogo profissional: cria a tela com essa resolução (que nunca muda por dentro) e a ajusta sozinha ao tamanho da janela, mantendo a proporção. Também prepara as telas prontas (menu, pausa, carregando, fim) com as suas cores. Use uma vez, no começo.',
   },
   {
+    type: 'sz_gk_setup_full',
+    message0: 'Preparar o jogo para ocupar a tela toda: fundo %1, destaque %2',
+    args0: [
+      { type: 'field_colour_sz', name: 'BG', colour: '#1a1a2e' },
+      { type: 'field_colour_sz', name: 'ACCENT', colour: '#4a9eff' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como o "Preparar o jogo", mas SEM dimensões: o canvas ocupa a tela inteira e a área do jogo ACOMPANHA o tamanho da janela (sem barras nas laterais). Aqui "a largura/altura do jogo" mudam junto com a tela — centralize as coisas usando esses blocos, não números fixos. Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use um OU o outro "Preparar", no começo.',
+  },
+  {
     type: 'sz_gk_start',
     message0: 'Começar o jogo (carrega as imagens e mostra o menu)',
     args0: [],
@@ -40,7 +54,8 @@ export const gameKitBlocks = [
     args0: [],
     output: 'JSValue',
     colour: C,
-    tooltip: 'A largura interna da tela do jogo (a do "Preparar o jogo"). Não muda com a janela.',
+    tooltip:
+      'A largura da tela do jogo. Com o "Preparar o jogo" normal não muda com a janela; com "ocupar a tela toda" passa a valer a largura da janela.',
   },
   {
     type: 'sz_gk_game_height',
@@ -48,7 +63,8 @@ export const gameKitBlocks = [
     args0: [],
     output: 'JSValue',
     colour: C,
-    tooltip: 'A altura interna da tela do jogo (a do "Preparar o jogo"). Não muda com a janela.',
+    tooltip:
+      'A altura da tela do jogo. Com o "Preparar o jogo" normal não muda com a janela; com "ocupar a tela toda" passa a valer a altura da janela.',
   },
 
   // ---- ⏳ Carregar ----
@@ -1337,6 +1353,56 @@ export const gameKitBlocks = [
     colour: C,
     tooltip:
       'Aplica um status na batalha por alguns turnos: VENENO tira 3 de vida por turno, REGENERAR devolve 3, ATRAPALHAR faz o golpe errar às vezes. Use dentro de um golpe especial.',
+  },
+  {
+    type: 'sz_gk_rpg_add_ally',
+    message0: 'Adicionar aliado %1 com vida %2, força %3, defesa %4, cor %5',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Guerreiro' },
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'STR', check: 'JSValue' },
+      { type: 'input_value', name: 'DEF', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#4ade80' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. O time fica salvo entre batalhas. Use no começo.',
+  },
+  {
+    type: 'sz_gk_rpg_add_foe',
+    message0: 'Adicionar inimigo %1 com vida %2, força %3, defesa %4, cor %5',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Capanga' },
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'STR', check: 'JSValue' },
+      { type: 'input_value', name: 'DEF', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#e05a5a' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. Use antes de "Começar a batalha".',
+  },
+  {
+    type: 'sz_gk_rpg_teach_move',
+    message0: 'Ensinar o golpe %1 (dano %2, energia %3) para %4',
+    args0: [
+      { type: 'field_input', name: 'MOVE', text: 'Espadada' },
+      { type: 'input_value', name: 'DMG', check: 'JSValue' },
+      { type: 'input_value', name: 'COST', check: 'JSValue' },
+      { type: 'field_input', name: 'WHO', text: 'Você' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Ensina um golpe NOMEADO a alguém do time (o herói é "Você"; os aliados pelo nome). Cada um pode ter vários golpes, e eles aparecem no painel de ação da batalha. Gasta energia. Use no começo.',
   },
   {
     type: 'sz_gk_rpg_level',
@@ -3858,6 +3924,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: [
       'sz_gk_setup',
+      'sz_gk_setup_full',
       'sz_gk_start',
       'sz_gk_load_image',
       'sz_gk_game_width',
@@ -4377,6 +4444,9 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     types: [
       'sz_gk_rpg_battle_stats',
       'sz_gk_rpg_battle_start',
+      'sz_gk_rpg_add_ally',
+      'sz_gk_rpg_add_foe',
+      'sz_gk_rpg_teach_move',
       'sz_gk_rpg_set_special',
       'sz_gk_rpg_give_potion',
       'sz_gk_rpg_battle_reward',
@@ -4587,6 +4657,9 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_map_size: { COLS: numShadow(30), ROWS: numShadow(20) },
   sz_gk_rpg_battle_stats: { HP: numShadow(30), STR: numShadow(7), DEF: numShadow(3) },
   sz_gk_rpg_battle_start: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(2) },
+  sz_gk_rpg_add_ally: { HP: numShadow(24), STR: numShadow(6), DEF: numShadow(1) },
+  sz_gk_rpg_add_foe: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(0) },
+  sz_gk_rpg_teach_move: { DMG: numShadow(12), COST: numShadow(3) },
   sz_gk_rpg_set_special: { DMG: numShadow(14), COST: numShadow(4) },
   sz_gk_rpg_give_potion: { HEAL: numShadow(20) },
   sz_gk_rpg_battle_reward: { XP: numShadow(20) },
