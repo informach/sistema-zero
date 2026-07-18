@@ -114,6 +114,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > **SEM backfill DE PROPÓSITO** — a contagem usa `coalesce(source_track, courses.track, '2d')`,
 > então re-taggear um curso 3D no admin corrige os marcos legados sozinho; congelar '2d' no
 > backfill impediria isso. Ver Conceito 11).
+> E **`0045`** (`0045_strange_marvel_apes`: `ALTER TYPE xp_source_type ADD VALUE IF NOT EXISTS
+> 'studio_activity_day'` — XP DIÁRIO de CRIAR no Estúdio Completo, ver §Missões "Retenção pós-cursos";
+> SEM tabela/coin-enum novos — é XP puro que MOVE o streak, sem moeda).
 > ⚠️ As migrations `0029`/`0030` têm 55P04 LATENTE num banco ZERADO (enum ADD VALUE + uso no mesmo
 > lote) — os testes de banco criam o DDL direto em vez de rodar `migrate()` do zero.
 
@@ -824,6 +827,14 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
     Estúdio SEMPRE recebe ≥1 missão do estúdio no set semanal e no mensal (semente derivada
     `:studio`) — sem isso o sorteio uniforme dava semana só de missão de aula, travada p/ quem já
     terminou tudo. Detalhes/tabelas: `docs/gamificacao.md` §8 "Retenção pós-cursos".
+  - **CRIAR no Estúdio segura o foguinho (07/2026, migration `0045`):** `studio_activity_day` (XP REAL
+    **10**, SEM moeda) — a criança que terminou os cursos e fica CRIANDO no Estúdio Completo (sem publicar)
+    também mantém a sequência. 1×/dia pelo `studioActivityDaySourceId(dayKey civil SP)` (mexer/salvar de
+    novo no dia = inerte); `amount > 0` → move o streak. Rota de ALUNO `POST /members/gamification/activity`
+    (sem corpo — só "criou hoje"), `RecordStudioActivityDayService` = portão anti-farm (exige posse do
+    Estúdio pela CONTA via `AccessCheckService`; equipe/privileged libera), espelha o
+    `RecordStudioRemixService` SEM o playId/hub. O beacon vem do AUTOSAVE do editor (member-shell/kids,
+    best-effort, 1×/sessão) — o dedupe do dia cuida do resto.
 - **Ligas semanais** (migration `0022`, `league_membership`): coorte competitiva semanal por
   audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.) **Board ENRIQUECIDO
   na vitrine kids (07/2026):** o `GetLeagueService` recebe o `GetAvatarsByProfilesService` + um

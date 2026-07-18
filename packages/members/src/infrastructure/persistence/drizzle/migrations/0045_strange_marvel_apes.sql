@@ -1,0 +1,1 @@
+ALTER TYPE "members"."xp_source_type" ADD VALUE IF NOT EXISTS 'studio_activity_day' BEFORE 'studio_remix';

@@ -417,7 +417,10 @@ Handlers (`createShellRoutes`, espalhados no `index.ts` como `routes.*`): `gamif
 `missionsGet`/`missionClaim`, `streakFreezeBuy`/`vacationSet` (Zod `VacationSchema`), `avatarGet`/
 `avatarBuy`/`avatarEquip` (Zod `AvatarConfigSchema` — só forma; posse/categoria/paleta é portão do
 members) + **`avatarSnapshot`** (multipart, FORA do matcher — sobe o PNG p/ o R2 e chama `setAvatarPhoto`),
-`roomGet`/`roomSave`/`roomBuy` (Zod `RoomStateSchema`), e `childrenStats` (área dos pais: junta
+`roomGet`/`roomSave`/`roomBuy` (Zod `RoomStateSchema`), **`studioActivityDay`** (`POST /api/studio/activity`
+— beacon SEM corpo de "criou no Estúdio hoje"; client `members.recordStudioActivityDay()` → `POST
+/members/gamification/activity`; o members dá 10 XP/dia que MOVE o streak, gated por posse do Estúdio,
+1×/dia — âncora de quem já terminou os cursos e só cria) e `childrenStats` (área dos pais: junta
 identidade dos perfis do auth com os stats por perfil do members; gateado por
 `requireParentGateAccountOnly` no shim do KIDS). Toda escrita passa por `requireWritableSession`
 (impersonação read-only); ids de path validados como UUID na borda.

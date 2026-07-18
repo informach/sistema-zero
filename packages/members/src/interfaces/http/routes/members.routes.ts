@@ -13,6 +13,7 @@ import type { GetChallengeService } from '../../../application/gamification/get-
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetLeagueService } from '../../../application/gamification/get-league.service'
 import type { GetMissionsService } from '../../../application/gamification/get-missions.service'
+import type { RecordStudioActivityDayService } from '../../../application/gamification/record-studio-activity-day.service'
 import type { RecordStudioRemixService } from '../../../application/gamification/record-studio-remix.service'
 import type { SetVacationService } from '../../../application/gamification/set-vacation.service'
 import type { GetAttachmentDownloadService } from '../../../application/get-attachment-download/get-attachment-download.service'
@@ -120,6 +121,7 @@ export interface MembersRoutesDeps {
   getMissions: GetMissionsService
   claimMission: ClaimMissionService
   recordRemix: RecordStudioRemixService
+  recordStudioActivity: RecordStudioActivityDayService
   buyStreakFreeze: BuyStreakFreezeService
   setVacation: SetVacationService
   getLeague: GetLeagueService
@@ -327,6 +329,23 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           return result
         },
         { body: StudioRemixBody, query: AudienceQuery },
+      )
+      // XP DIÁRIO de CRIAR no Estúdio (retenção pós-cursos): 1×/dia, MOVE o streak,
+      // gated por posse do Estúdio (anti-farm). Sem corpo — é só "criou hoje". O
+      // cliente dispara best-effort no autosave; AWARD_FAILED → 503 (ignorado lá).
+      .post(
+        '/gamification/activity',
+        async ({ headers, query, set }) => {
+          const result = await deps.recordStudioActivity.execute({
+            userId: resolveUserId(headers),
+            accountId: resolveAccountId(headers),
+            audience: query.audience ?? 'kids',
+            privileged: isPrivilegedActor(headers),
+          })
+          if (!result.recorded) set.status = 503
+          return result
+        },
+        { query: AudienceQuery },
       )
       // Compra 1 protetor de sequência com moedas (idempotente; 402 sem saldo; 409 no máximo).
       .post(

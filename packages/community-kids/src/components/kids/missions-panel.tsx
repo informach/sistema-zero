@@ -1,6 +1,7 @@
 'use client'
 
 import { Gift, Sparkles } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { type CSSProperties, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
@@ -85,6 +86,7 @@ function missionLabel(m: MissionView): string {
 export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
   const [data, setData] = useState<MissionsMeView | null>(initial)
   const [claiming, setClaiming] = useState<string | null>(null)
+  const router = useRouter()
 
   async function claim(m: MissionView) {
     if (claiming) return
@@ -102,7 +104,7 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
       if (body?.xpAwarded > 0 || body?.coinsAwarded > 0) {
         toast.success(`Recompensa! +${body.xpAwarded} XP e +${body.coinsAwarded} moedas 🎉`)
       }
-      // Marca como resgatada localmente (sem refetch).
+      // Marca como resgatada localmente (feedback instantâneo).
       const mark = (x: MissionView) => (x.slug === m.slug ? { ...x, claimed: true } : x)
       setData((d) =>
         d
@@ -113,6 +115,9 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
             }
           : d,
       )
+      // O resgate rende XP → pode mudar o ranking/nível: re-sincroniza o chrome
+      // (foguinho/XP/ranking) SEM a criança precisar recarregar/deslogar.
+      router.refresh()
     } catch {
       toast.error('Não consegui resgatar agora.')
     } finally {

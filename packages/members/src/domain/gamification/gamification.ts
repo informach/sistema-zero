@@ -23,6 +23,13 @@ export const XP_VALUES = {
    * desafio do mês (50).
    */
   STUDIO_PUBLISH_DAY: 25,
+  /**
+   * CRIOU/editou no Estúdio Completo — XP DIÁRIO (1×/dia pelo sourceId
+   * determinístico do dia civil SP, `studioActivityDaySourceId`): segura o foguinho
+   * de quem já terminou os cursos e fica criando, mesmo SEM publicar. Vale como uma
+   * aula (10) — abaixo de publicar (25) e SEM moeda (é âncora de streak, não torneira).
+   */
+  STUDIO_ACTIVITY_DAY: 10,
 } as const
 
 /** XP de um quiz APROVADO: base + bônus proporcional à nota (cap em +10). */

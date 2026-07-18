@@ -27,6 +27,7 @@ import { GetChallengeService } from '../src/application/gamification/get-challen
 import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
 import { GetLeagueService } from '../src/application/gamification/get-league.service'
 import { GetMissionsService } from '../src/application/gamification/get-missions.service'
+import { RecordStudioActivityDayService } from '../src/application/gamification/record-studio-activity-day.service'
 import { RecordStudioRemixService } from '../src/application/gamification/record-studio-remix.service'
 import { SetVacationService } from '../src/application/gamification/set-vacation.service'
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
@@ -324,6 +325,7 @@ export function buildApp(
       getMissions: new GetMissionsService(gamification, accessCheck, clock),
       claimMission: new ClaimMissionService(gamification, accessCheck, clock),
       recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),
+      recordStudioActivity: new RecordStudioActivityDayService(accessCheck, awardGamification),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
       setVacation: new SetVacationService(gamification, clock),
       getLeague: new GetLeagueService(

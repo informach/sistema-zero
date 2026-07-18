@@ -243,6 +243,23 @@ o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`ne
 **`script-src … data:`**: o preview injeta o script.js do aluno como `<script src="data:…">` num iframe
 `srcdoc`, que HERDA a CSP do pai (só RESTRINGE) — sem `data:` o preview do estúdio/bloco não executa. `api/studio/publish-standalone` fica FORA do
 matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no negative-lookahead.
+**CRIAR segura o foguinho (07/2026):** o `studio-full-client` passa `onChange` ao `<StudioEditor>` que,
+na 1ª edição REAL da sessão (`ctx.reason === 'autosave'`, guardado por ref — NÃO em abrir/flush), dispara
+best-effort `POST /api/studio/activity` (shim `shell.routes.studioActivityDay`, DENTRO do matcher, JSON
+sem corpo) → o members dá **10 XP/dia** que MOVE o streak (gated por posse do Estúdio, dedupe 1×/dia). No
+sucesso, `router.refresh()` acende o foguinho/XP/ranking na hora. É a âncora de quem já terminou os cursos
+e só cria (sem publicar). Ver members §Missões "Retenção pós-cursos" (migration `0045`).
+
+## Ranking/foguinho ao vivo (sem deslogar) — 07/2026
+
+As ações que rendem XP re-sincronizam o chrome (foguinho/XP/ranking/nível) na hora: aula/quiz/publicar/
+rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/contexto). Dois complementos:
+- **Resgate de missão** (`missions-panel.tsx`): o `claim()` rende XP → agora chama `router.refresh()` após
+  a marca otimista local (antes só atualizava estado local → ranking ficava velho até navegar/deslogar).
+- **Voltar pra tela** (`focus-refresh.tsx`, `FocusRefresh`): componente cliente montado em `/perfil` e na
+  home que `router.refresh()` no `visibilitychange`→visível / `focus` (THROTTLE ~30s). Cobre o placar
+  mudando por XP de OUTRAS crianças enquanto a tela fica parada — o número do ranking é calculado ao vivo
+  no servidor (members `getRanking`), só faltava re-buscar. Sem polling contínuo (custo do cálculo caro).
 
 ## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
 
