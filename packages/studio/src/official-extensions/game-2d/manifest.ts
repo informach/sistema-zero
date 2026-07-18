@@ -19,7 +19,7 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.23.0',
+  version: '0.24.0',
   description:
     'Blocos para criar jogos 2D no Canvas: sprites (cor, imagem, animação por estado com virada automática) ou desenhados por código, grupos de muitos sprites, inimigos com comportamento (patrulha, perseguidor, voador, saltador, atirador), movimento, física, colisão sólida, efeitos, tiles/tilemaps (do Pinta ou por upload), HUD, telas/cenas, som, e KITS por tema — espaço, dino, gorilas, equilibrista e balão.',
   category: 'games',
@@ -38,13 +38,13 @@ chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(.
 
 - **Preparar o jogo em tela cheia** — atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Criar sprite** — define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
-- **Desenhar sprite** — desenha o sprite no contexto do canvas.
+- **Desenhar o sprite** — desenha o sprite no contexto do canvas.
 - **Mover em 4 direções** — move o sprite com as setas do teclado (ver "Movimento" abaixo).
-- **Definir posição** / **Definir velocidade** — atualiza propriedades.
-- **Colisão entre A e B** — devolve booleano por interseção retangular.
-- **Pontuação** — declara variável de pontos.
-- **Game over** — escreve mensagem em vermelho no canvas.
-- **A cada frame...** — abre um loop de \`requestAnimationFrame\`.
+- **Mudar a posição do sprite** / **Mudar a velocidade do sprite** — atualiza x/y e vx/vy.
+- **Guardar em X se o sprite A colide com o sprite B** — devolve sim/não por interseção retangular.
+- **Criar pontuação** — declara a variável de pontos.
+- **Mostrar fim de jogo com o texto** — escreve a mensagem em vermelho no canvas.
+- **A cada quadro do jogo...** — abre um loop de \`requestAnimationFrame\`.
 
 ### Física, áudio e mouse (v0.2.0)
 
@@ -70,7 +70,7 @@ retângulo da cor — o jogo nunca quebra por falta de imagem.
 
 ### Movimento e efeitos (v0.4.0)
 
-Use estes blocos dentro do **"A cada frame do jogo"**:
+Use estes blocos dentro do **"A cada quadro do jogo"**:
 
 - **Plataforma** — esquerda/direita + pulo com gravidade (chão = base da tela).
 - **4 direções (top-down)** — anda nas 4 direções; a diagonal não fica mais rápida.
@@ -79,7 +79,7 @@ Use estes blocos dentro do **"A cada frame do jogo"**:
 - **Clarão** — pinta a tela com uma cor translúcida (ex.: ao levar dano).
 - **Tremer a tela** — sacode e para sozinho (chame uma vez, ex.: numa explosão).
 - **Soltar partículas** + **Atualizar e desenhar as partículas** — uma explosão de
-  partículas no ponto x/y; lembre de desenhá-las a cada frame (somem sozinhas).
+  partículas no ponto x/y; lembre de desenhá-las a cada quadro (somem sozinhas).
 
 ### Tiles / tilemaps (v0.5.0)
 
@@ -90,11 +90,11 @@ quadros (o **tileset**) — escolha um da aba **Assets** (ex.: \`tileset\`).
   cada número escolhe um quadro do tileset; \`;\` separa as linhas e espaço separa as
   colunas; \`.\` é uma célula vazia. Em **tiles sólidos**, liste os números que barram o
   jogador (ex.: \`1\`).
-- **Desenhar mapa** — desenha o mapa na tela (use no "a cada frame", antes do sprite). Com
+- **Desenhar mapa** — desenha o mapa na tela (use no "a cada quadro", antes do sprite). Com
   "tiles de 0 px" ele ENCAIXA sozinho no canvas (centralizado, sem distorcer); um valor
   como \`32\` fixa o tamanho do tile na tela (controle de zoom do mapa).
 - **Impedir de atravessar tiles sólidos** — o sprite pousa no chão e bate nas paredes;
-  use a cada frame, depois de mover o sprite.
+  use a cada quadro, depois de mover o sprite.
 - **Impedir de atravessar os sprites de um grupo** (em 📦 Muitos) — mesma colisão, mas
   contra obstáculos SEM mapa: jogue as pedras/casas (até desenhadas por figura) num grupo
   e o sprite não atravessa nenhuma delas, deslizando pela beirada.
@@ -196,6 +196,41 @@ Dá pra montar jogos deste estilo **só com blocos genéricos** (HTML + CSS + Pr
 
 Veja o exemplo clássico **"Cidade & Moinho (na mão)"** (no painel de Extensões → "Exemplos clássicos") — um mini-Gorillas montado SÓ com esses blocos: arrastar a bomba, vento, moinho SVG girando, painel de HTML e botão de tela cheia.
 
+### Kit equilibrista (v0.13.0)
+
+Categoria **🤸 Kit equilibrista** — atalhos PRONTOS para um jogo estilo "Stick Hero":
+estique o bastão do tamanho certo e atravesse para a próxima plataforma. O jogo
+inteiro (herói, plataformas, bastões, fase) mora no runtime; você só guarda o jogo
+numa variável. O controle é pelo ponteiro: **segurar** estica o bastão, **soltar**
+derruba — não precisa registrar teclas. Melhor num canvas **em pé** (ex.: 360×480).
+
+- **Criar equilibrista** — monta o jogo lendo o tamanho da tela. Guarde numa variável
+  (ex.: \`jogo\`). Faça UMA vez, FORA do "a cada quadro do jogo".
+- **Atualizar o equilibrista** — um passo do jogo + desenha tudo (placar e dicas).
+  Use DENTRO do "a cada quadro do jogo". Acertar o meio (faixa vermelha) vale 2 pontos;
+  ele recomeça sozinho quando você toca depois de cair.
+- **pontos do equilibrista** / **o equilibrista caiu?** — para o placar e o fim de jogo.
+- **Recomeçar o equilibrista** — zera o jogo (bom para um botão "de novo").
+
+Veja o exemplo pronto **"Equilibrista"** na vitrine.
+
+### Kit balão (v0.13.0)
+
+Categoria **🎈 Kit balão** — atalhos PRONTOS para um jogo estilo balão de ar quente:
+suba segurando o ponteiro (gasta combustível), voe baixo para economizar e desvie das
+árvores. O jogo mora no runtime; você guarda tudo numa variável. Melhor num canvas
+**deitado** (ex.: 560×360).
+
+- **Criar balão** — monta o jogo (céu, colinas, árvores, combustível) lendo o tamanho
+  da tela. Guarde numa variável. Faça UMA vez.
+- **Atualizar o balão** — um passo do jogo + desenha tudo (medidor de combustível,
+  metros e dicas). Use DENTRO do "a cada quadro do jogo". Recomeça ao tocar depois do fim.
+- **metros do balão** / **combustível do balão** (0 a 100) / **o balão bateu/acabou?** —
+  para o placar, a barra de combustível e o fim de jogo.
+- **Recomeçar o balão** — zera o jogo.
+
+Veja o exemplo pronto **"Balão"** na vitrine.
+
 ### Som rico: efeitos, notas e música (v0.14.0)
 
 A categoria **🔊 Som** ganhou uma biblioteca de sons PRONTOS — tudo sintetizado (Web Audio), sem
@@ -224,11 +259,13 @@ Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e ex
 - **✨ Aparência**: **Virar** (espelhar esquerda/direita), **Mudar a transparência**, **Mudar o tamanho** e
   **Multiplicar o tamanho** do sprite.
 - **🕹️ Movimento**: **Dar a volta na tela** (sai de um lado, reaparece no outro — estilo Pac-Man/Asteroids).
-- **🎬 Telas e cenas**: **Pausar o jogo** CONGELA tudo (o "a cada quadro" para de rodar), **Continuar o
-  jogo** descongela e **o jogo está pausado?** lê o estado (útil num evento de tecla). Para mostrar "Você
-  ganhou/perdeu", **desenhe a tela ANTES de Pausar** (ela fica congelada por cima). Para um fim de jogo com
-  recomeço, prefira as **cenas** (**Ir para a tela 'perdeu'/'ganhou'** + **a tela atual é …?**): o "a cada
-  quadro" decide o que mostrar e o jogo segue rodando a tela de fim.
+- **📺 Telas e cenas**: **Pausar o jogo** CONGELA tudo (o "a cada quadro" para de rodar, e o "quando
+  encostar" também), **Continuar o jogo** descongela e **o jogo está pausado?** lê o estado. Os eventos de
+  toque **"Quando apertar a tecla"** e **"Quando clicar/tocar"** continuam funcionando na pausa DE PROPÓSITO
+  — assim você pode fazer "aperte R para continuar". Para mostrar "Você ganhou/perdeu", **desenhe a tela
+  ANTES de Pausar** (ela fica congelada por cima). Para um fim de jogo com recomeço, prefira as **cenas**
+  (**Ir para a tela 'perdeu'/'ganhou'** + **a tela atual é …?**): o "a cada quadro" decide o que mostrar e o
+  jogo segue rodando a tela de fim.
 
 ### Blocos genéricos Tier 2 (v0.16.0)
 
