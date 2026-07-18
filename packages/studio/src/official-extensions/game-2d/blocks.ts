@@ -1348,6 +1348,19 @@ export const gameTwoDBlocks = [
     tooltip:
       'O sprite não atravessa nenhum sprite do grupo (pedras, casas, paredes desenhadas por você): ele é empurrado para fora e desliza pela beirada. Ótimo para obstáculos sem mapa de tiles. Use a cada quadro, depois de mover o sprite.',
   },
+  {
+    type: 'sz_g2d_collide_sprite',
+    message0: 'Impedir o sprite %1 de atravessar o sprite %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
+      { type: 'field_sprite_picker', name: 'OTHER', text: 'parede' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como "impedir de atravessar os sprites do grupo", mas contra UM sprite só (uma parede, uma plataforma). O sprite é empurrado para fora e desliza pela beirada. Use a cada quadro, depois de mover o sprite.',
+  },
 
   // ---- Grupos de sprites: MUITOS sprites (v0.6.0) ----
   {
@@ -1410,6 +1423,16 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Move cada sprite do grupo pela sua velocidade (vx/vy). Use a cada quadro.',
+  },
+  {
+    type: 'sz_g2d_update_group_no_gravity',
+    message0: 'Mover o grupo %1 sem gravidade',
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Move cada sprite do grupo pela velocidade, SEM somar a gravidade — para os TIROS do jogador num jogo com gravidade (senão eles caem/arqueiam em vez de ir reto).',
   },
   {
     type: 'sz_g2d_draw_group',
@@ -2422,11 +2445,8 @@ export const gameTwoDBlocks = [
   // ---- Kit equilibrista (Stick Hero) (v0.13.0) ----
   {
     type: 'sz_g2d_create_stickhero',
-    message0: 'Criar equilibrista %1 no pincel %2',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'jogo' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
-    ],
+    message0: 'Criar equilibrista %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'jogo' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -2473,11 +2493,8 @@ export const gameTwoDBlocks = [
   // ---- Kit balão (Hot-Air-Balloon) (v0.13.0) ----
   {
     type: 'sz_g2d_create_balloon',
-    message0: 'Criar balão %1 no pincel %2',
-    args0: [
-      { type: 'field_input', name: 'NAME', text: 'jogo' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
-    ],
+    message0: 'Criar balão %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'jogo' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -2585,8 +2602,10 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_spawn_image_in_group',
       'sz_g2d_spawn_bullet',
       'sz_g2d_update_group',
+      'sz_g2d_update_group_no_gravity',
       'sz_g2d_draw_group',
       'sz_g2d_collide_group',
+      'sz_g2d_collide_sprite',
       'sz_g2d_for_each_in_group',
       'sz_g2d_count_group',
       'sz_g2d_clear_group',

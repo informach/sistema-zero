@@ -127,6 +127,8 @@ Tiles e tilemaps (v0.5.0) — cenários a partir de um tileset (asset com vário
 - collideGroup(sprite, group): impede o sprite de atravessar os sprites de um grupo (obstáculos SEM
   tilemap: pedras/casas/paredes desenhadas à mão, inclusive por figura). Mesma física do collideTileMap
   (empurra pra fora + desliza). Use no gameLoop, depois de mover o sprite.
+- collideSprite(sprite, other): a mesma colisão sólida, mas contra UM sprite só (uma parede/plataforma
+  solta), sem precisar montar um grupo. Bloco "Impedir de atravessar o sprite".
 - tileAt(map, px, py): índice do tile no pixel (px,py) — -1 se vazio/fora.
 
 Grupos de sprites (v0.6.0) — para MUITOS sprites (tiros, inimigos, estrelas), sem
@@ -134,6 +136,8 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
 - createGroup() -> { items: [] }: cria um grupo vazio (guarde numa variável).
 - spawn(grupo, { x, y, w, h, color | image, vx, vy }): cria um sprite e coloca no grupo (devolve o sprite). Use x/y com número aleatório para nascer em lugares diferentes. Teto de 400 por grupo.
 - updateGroup(grupo): move cada sprite pela velocidade (vx/vy); drawGroup(ctx, grupo): desenha todos.
+- updateGroupNoGravity(grupo): move cada sprite pela velocidade SEM somar gravidade — para os TIROS do
+  jogador num jogo COM gravidade (senão os tiros arqueiam). Bloco "Mover o grupo sem gravidade".
 - forEachInGroup(grupo, function (sprite) {…}): roda o corpo para cada sprite (ordem reversa, pode remover no corpo).
 - countGroup(grupo): quantidade atual (valor, use em if/conta). clearGroup(grupo): esvazia. removeFromGroup(grupo, sprite): tira um.
 - pruneOffscreen(ctx, grupo, margem, function (sprite) {…}): remove os que saíram da tela e roda o corpo para cada um (ex.: perder vida quando um inimigo escapa).

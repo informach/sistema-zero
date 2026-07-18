@@ -3251,6 +3251,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const groupVar = identifierName(args[1])
       return spriteVar && groupVar ? { type: 'g2d:collideGroup', spriteVar, groupVar } : null
     }
+    case 'collideSprite': {
+      // generator: SZGame2D.collideSprite(sprite, other)
+      const spriteVar = identifierName(args[0])
+      const otherVar = identifierName(args[1])
+      return spriteVar && otherVar ? { type: 'g2d:collideSprite', spriteVar, otherVar } : null
+    }
     case 'spawn': {
       // generator: SZGame2D.spawn(g, { x, y, w, h, color|image, vx, vy })
       const groupVar = identifierName(args[0])
@@ -3267,6 +3273,10 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'updateGroup': {
       const groupVar = identifierName(args[0])
       return groupVar ? { type: 'g2d:updateGroup', groupVar } : null
+    }
+    case 'updateGroupNoGravity': {
+      const groupVar = identifierName(args[0])
+      return groupVar ? { type: 'g2d:updateGroupNoGravity', groupVar } : null
     }
     case 'drawGroup': {
       // generator: SZGame2D.drawGroup(ctx, g)

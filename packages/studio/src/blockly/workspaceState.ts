@@ -2412,6 +2412,13 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'g2d:collideSprite':
+      return block(
+        'sz_g2d_collide_sprite',
+        { SPRITE: stmt.spriteVar, OTHER: stmt.otherVar },
+        {},
+        stmt.__id,
+      )
     case 'g2d:createGroup':
       return block('sz_g2d_create_group', { NAME: stmt.varName }, {}, stmt.__id)
     case 'g2d:spawnInGroup': {
@@ -2448,6 +2455,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g2d:updateGroup':
       return block('sz_g2d_update_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+    case 'g2d:updateGroupNoGravity':
+      return block('sz_g2d_update_group_no_gravity', { GROUP: stmt.groupVar }, {}, stmt.__id)
     case 'g2d:drawGroup':
       return block('sz_g2d_draw_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
     case 'g2d:forEachInGroup':
@@ -2737,18 +2746,15 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
           })
     }
     case 'g2d:createStickHero':
-      return block(
-        'sz_g2d_create_stickhero',
-        { NAME: stmt.varName, CTX: stmt.ctxVar },
-        {},
-        stmt.__id,
-      )
+      // O ctx é o PADRÃO do palco (não é mais um campo do bloco — B7); a IR mantém
+      // ctxVar, mas o bloco só mostra o NOME do jogo.
+      return block('sz_g2d_create_stickhero', { NAME: stmt.varName }, {}, stmt.__id)
     case 'g2d:updateStickHero':
       return block('sz_g2d_update_stickhero', { GAME: stmt.gameVar }, {}, stmt.__id)
     case 'g2d:restartStickHero':
       return block('sz_g2d_restart_stickhero', { GAME: stmt.gameVar }, {}, stmt.__id)
     case 'g2d:createBalloon':
-      return block('sz_g2d_create_balloon', { NAME: stmt.varName, CTX: stmt.ctxVar }, {}, stmt.__id)
+      return block('sz_g2d_create_balloon', { NAME: stmt.varName }, {}, stmt.__id)
     case 'g2d:updateBalloon':
       return block('sz_g2d_update_balloon', { GAME: stmt.gameVar }, {}, stmt.__id)
     case 'g2d:restartBalloon':

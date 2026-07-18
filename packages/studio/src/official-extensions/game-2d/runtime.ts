@@ -1242,29 +1242,31 @@ export const gameTwoDRuntime = `(function () {
    * sobreposição e zera a velocidade nesse eixo (dá parede E chão + deslizar).
    * Compara os CENTROS (obstáculos de tamanhos variados) — não o canto.
    */
-  function collideGroup(sprite, group) {
-    if (!sprite || !group || !group.items) return;
-    for (var i = 0; i < group.items.length; i++) {
-      var o = group.items[i];
-      if (!o || o === sprite) continue;
-      var overlapX = Math.min(sprite.x + sprite.w, o.x + o.w) - Math.max(sprite.x, o.x);
-      var overlapY = Math.min(sprite.y + sprite.h, o.y + o.h) - Math.max(sprite.y, o.y);
-      if (overlapX <= 0 || overlapY <= 0) continue;
-      if (overlapX < overlapY) {
-        var cx = sprite.x + sprite.w / 2, ocx = o.x + o.w / 2;
-        if (cx < ocx) sprite.x -= overlapX; else sprite.x += overlapX;
-        sprite.vx = 0;
+  // Empurra o sprite para FORA de UM outro sprite (o núcleo do collideGroup, por
+  // item): eixo de menor sobreposição, zera a velocidade nesse eixo, pousa em cima.
+  function collideSprite(sprite, o) {
+    if (!sprite || !o || o === sprite) return;
+    var overlapX = Math.min(sprite.x + sprite.w, o.x + o.w) - Math.max(sprite.x, o.x);
+    var overlapY = Math.min(sprite.y + sprite.h, o.y + o.h) - Math.max(sprite.y, o.y);
+    if (overlapX <= 0 || overlapY <= 0) return;
+    if (overlapX < overlapY) {
+      var cx = sprite.x + sprite.w / 2, ocx = o.x + o.w / 2;
+      if (cx < ocx) sprite.x -= overlapX; else sprite.x += overlapX;
+      sprite.vx = 0;
+    } else {
+      var cy = sprite.y + sprite.h / 2, ocy = o.y + o.h / 2;
+      if (cy < ocy) {
+        sprite.y -= overlapY;
+        if ((sprite.vy || 0) > 0) { sprite.vy = 0; sprite.onGround = true; }
       } else {
-        var cy = sprite.y + sprite.h / 2, ocy = o.y + o.h / 2;
-        if (cy < ocy) {
-          sprite.y -= overlapY;
-          if ((sprite.vy || 0) > 0) { sprite.vy = 0; sprite.onGround = true; }
-        } else {
-          sprite.y += overlapY;
-          if ((sprite.vy || 0) < 0) sprite.vy = 0;
-        }
+        sprite.y += overlapY;
+        if ((sprite.vy || 0) < 0) sprite.vy = 0;
       }
     }
+  }
+  function collideGroup(sprite, group) {
+    if (!sprite || !group || !group.items) return;
+    for (var i = 0; i < group.items.length; i++) collideSprite(sprite, group.items[i]);
   }
 
   // ---- Eventos "Quando…" ----
@@ -1451,6 +1453,19 @@ export const gameTwoDRuntime = `(function () {
   function updateGroup(group) {
     if (!group || !group.items) return;
     for (var i = 0; i < group.items.length; i++) applyVelocity(group.items[i]);
+  }
+  /**
+   * Move cada sprite do grupo pela sua velocidade, SEM somar gravidade — para
+   * TIROS do jogador num jogo com gravidade (senão eles arqueiam para baixo).
+   */
+  function updateGroupNoGravity(group) {
+    if (!group || !group.items) return;
+    for (var i = 0; i < group.items.length; i++) {
+      var s = group.items[i];
+      if (!s) continue;
+      s.x += s.vx || 0;
+      s.y += s.vy || 0;
+    }
   }
   /** Desenha todos os sprites do grupo. */
   function drawGroup(ctx, group) {
@@ -4011,11 +4026,13 @@ export const gameTwoDRuntime = `(function () {
     drawTileMap: _camWrap(drawTileMap),
     collideTileMap: collideTileMap,
     collideGroup: collideGroup,
+    collideSprite: collideSprite,
     tileAt: tileAt,
     // Grupos de sprites + temporizadores (v0.6.0).
     createGroup: createGroup,
     spawn: spawn,
     updateGroup: updateGroup,
+    updateGroupNoGravity: updateGroupNoGravity,
     drawGroup: _camWrap(drawGroup),
     forEachInGroup: forEachInGroup,
     countGroup: countGroup,

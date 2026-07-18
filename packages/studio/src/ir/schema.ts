@@ -2065,6 +2065,8 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g2d:tileMapCollide'; spriteVar: string; mapVar: string })
   | (JSStatementCommon & { type: 'g2d:collideGroup'; spriteVar: string; groupVar: string })
+  // Colisão sólida contra UM sprite só (uma parede/plataforma solta).
+  | (JSStatementCommon & { type: 'g2d:collideSprite'; spriteVar: string; otherVar: string })
   // Grupos de sprites (v0.6.0): MUITOS sprites (tiros, inimigos, estrelas). Um
   // grupo é uma lista gerenciada de sprites. x/y/vx/vy são expressões (aceitam
   // aleatório/contas); w/h números; color/image strings (nomes de asset).
@@ -2092,6 +2094,8 @@ export type JSStatement =
       vy: JSExpr
     })
   | (JSStatementCommon & { type: 'g2d:updateGroup'; groupVar: string })
+  // Move o grupo sem gravidade (tiros do jogador num jogo com gravidade).
+  | (JSStatementCommon & { type: 'g2d:updateGroupNoGravity'; groupVar: string })
   | (JSStatementCommon & { type: 'g2d:drawGroup'; groupVar: string; ctxVar: string })
   | (JSStatementCommon & {
       type: 'g2d:forEachInGroup'
@@ -5427,6 +5431,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       groupVar: irText(),
       ...idField,
     }),
+    z.object({
+      type: z.literal('g2d:collideSprite'),
+      spriteVar: irText(),
+      otherVar: irText(),
+      ...idField,
+    }),
     z.object({ type: z.literal('g2d:createGroup'), varName: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:spawnInGroup'),
@@ -5453,6 +5463,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:updateGroup'), groupVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:updateGroupNoGravity'), groupVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:drawGroup'),
       groupVar: irText(),
@@ -9018,10 +9029,12 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:drawTileMap',
   'g2d:tileMapCollide',
   'g2d:collideGroup',
+  'g2d:collideSprite',
   'g2d:createGroup',
   'g2d:spawnInGroup',
   'g2d:spawnImageInGroup',
   'g2d:updateGroup',
+  'g2d:updateGroupNoGravity',
   'g2d:drawGroup',
   'g2d:forEachInGroup',
   'g2d:clearGroup',

@@ -1209,6 +1209,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.collideTileMap(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.mapVar)});`
     case 'g2d:collideGroup':
       return `${pad}SZGame2D.collideGroup(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)});`
+    case 'g2d:collideSprite':
+      return `${pad}SZGame2D.collideSprite(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.otherVar)});`
     case 'g2d:createGroup':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createGroup();`
     case 'g2d:spawnInGroup':
@@ -1223,6 +1225,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.blink(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.frames), 0, identifiers, recAt(base))});`
     case 'g2d:updateGroup':
       return `${pad}SZGame2D.updateGroup(${identifiers.get(stmt.groupVar)});`
+    case 'g2d:updateGroupNoGravity':
+      return `${pad}SZGame2D.updateGroupNoGravity(${identifiers.get(stmt.groupVar)});`
     case 'g2d:drawGroup':
       return `${pad}SZGame2D.drawGroup(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)});`
     case 'g2d:forEachInGroup': {
@@ -3935,6 +3939,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.vy, names)
       return
     case 'g2d:updateGroup':
+    case 'g2d:updateGroupNoGravity':
     case 'g2d:clearGroup':
       names.add(stmt.groupVar)
       return
@@ -4355,6 +4360,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:collideGroup':
       names.add(stmt.spriteVar)
       names.add(stmt.groupVar)
+      return
+    case 'g2d:collideSprite':
+      names.add(stmt.spriteVar)
+      names.add(stmt.otherVar)
       return
     case 'g3d:createScene':
     case 'g3d:createFullscreenScene':

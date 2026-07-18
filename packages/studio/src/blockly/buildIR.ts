@@ -4431,6 +4431,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           groupVar: f(block, 'GROUP'),
         },
       }
+    case 'sz_g2d_collide_sprite':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:collideSprite',
+          spriteVar: f(block, 'SPRITE'),
+          otherVar: f(block, 'OTHER'),
+        },
+      }
 
     // ---- Grupos de sprites + temporizadores (v0.6.0) ----
     case 'sz_g2d_create_group':
@@ -4471,6 +4481,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_g2d_update_group':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:updateGroup', groupVar: f(block, 'GROUP') } }
+    case 'sz_g2d_update_group_no_gravity':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:updateGroupNoGravity', groupVar: f(block, 'GROUP') },
+      }
     case 'sz_g2d_draw_group':
       seen.add('game-2d')
       return {
@@ -4845,7 +4861,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:createStickHero', varName: f(block, 'NAME'), ctxVar: f(block, 'CTX') },
+        value: { type: 'g2d:createStickHero', varName: f(block, 'NAME'), ctxVar: 'ctx' },
       }
     case 'sz_g2d_update_stickhero':
       seen.add('game-2d')
@@ -4857,7 +4873,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       seen.add('game-2d')
       return {
         kind: 'js',
-        value: { type: 'g2d:createBalloon', varName: f(block, 'NAME'), ctxVar: f(block, 'CTX') },
+        value: { type: 'g2d:createBalloon', varName: f(block, 'NAME'), ctxVar: 'ctx' },
       }
     case 'sz_g2d_update_balloon':
       seen.add('game-2d')

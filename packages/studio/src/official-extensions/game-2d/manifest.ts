@@ -19,7 +19,7 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.24.0',
+  version: '0.25.0',
   description:
     'Blocos para criar jogos 2D no Canvas: sprites (cor, imagem, animação por estado com virada automática) ou desenhados por código, grupos de muitos sprites, inimigos com comportamento (patrulha, perseguidor, voador, saltador, atirador), movimento, física, colisão sólida, efeitos, tiles/tilemaps (do Pinta ou por upload), HUD, telas/cenas, som, e KITS por tema — espaço, dino, gorilas, equilibrista e balão.',
   category: 'games',
@@ -98,6 +98,8 @@ quadros (o **tileset**) — escolha um da aba **Assets** (ex.: \`tileset\`).
 - **Impedir de atravessar os sprites de um grupo** (em 📦 Muitos) — mesma colisão, mas
   contra obstáculos SEM mapa: jogue as pedras/casas (até desenhadas por figura) num grupo
   e o sprite não atravessa nenhuma delas, deslizando pela beirada.
+- **Impedir de atravessar o sprite** (em 📦 Muitos) — a mesma ideia, mas contra UM sprite
+  só (uma parede, uma plataforma solta), sem precisar montar um grupo.
 
 Enquanto o tileset carrega (ou se faltar), os tiles aparecem como retângulos — o jogo
 nunca quebra por falta de imagem.
@@ -109,6 +111,8 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
 - **Grupos** — \`Criar grupo\`, \`Criar no grupo … um sprite\` (x/y/vx/vy aceitam número
   aleatório), \`Atualizar/Desenhar o grupo\`, \`Para cada sprite do grupo\`, \`quantos
   sprites tem no grupo\`, \`Esvaziar/Tirar do grupo\`, \`Tirar do grupo quem sair da tela\`.
+  Há também \`Mover o grupo sem gravidade\` — para os TIROS do jogador num jogo COM
+  gravidade (senão os tiros arqueiam para baixo em vez de ir reto).
 - **Colisão de grupo** — \`Quando um sprite do grupo A encostar num do grupo B\` roda o
   "fazer" com os dois sprites (use dentro do "a cada quadro").
 - **Temporizadores** — \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos).
