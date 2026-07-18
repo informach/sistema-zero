@@ -6409,6 +6409,10 @@ export const gameKitRuntime = `(function () {
     };
     layoutBattlers();
     setState('batalha'); // estado do MEIO do jogo: congela o mundo SEM resetar
+    // ⚡ Transição de ENTRADA (JRPG): a tela pisca branco e a cena de batalha EMERGE
+    // do flash (fade começa coberto e clareia). stepScreenFx roda fora do gate de
+    // estado, então anima já no 'batalha'; drawScreenFx é o último desenho (por cima).
+    fadeScreen('#ffffff', 0.3, false);
   }
   // A vez de um aliado: abre o painel de ação (o menu do motor) para o jogador escolher.
   function startAllyTurn(actor) {
@@ -6721,6 +6725,7 @@ export const gameKitRuntime = `(function () {
     rpg.battleWon = won === true;
     rpg.battle = null;
     setState('jogando'); // vindo de 'batalha' o mundo NÃO reseta (ver setState)
+    fadeScreen('#000000', 0.25, false); // 🎬 SAÍDA: o mundo reaparece emergindo do escuro (como o pkm)
     for (var i = 0; i < rpg.onBattleEnd.length; i++) {
       try { rpg.onBattleEnd[i](); } catch (e) { warn('erro no "quando a batalha terminar": ' + e); }
     }
